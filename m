@@ -1,47 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933636AbXCEVib@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933637AbXCEVjA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933636AbXCEVib (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Mar 2007 16:38:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933635AbXCEViE
+	id S933637AbXCEVjA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Mar 2007 16:39:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933644AbXCEVjA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Mar 2007 16:38:04 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4530 "EHLO spitz.ucw.cz"
+	Mon, 5 Mar 2007 16:39:00 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4532 "EHLO spitz.ucw.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S933636AbXCEViC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Mar 2007 16:38:02 -0500
-Date: Tue, 1 Jan 2002 03:05:07 +0000
+	id S933637AbXCEViE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Mar 2007 16:38:04 -0500
+Date: Tue, 1 Jan 2002 04:12:53 +0000
 From: Pavel Machek <pavel@ucw.cz>
-To: Simon Arlott <simon@fire.lp0.eu>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       akpm@linux-foundation.org, arjan@linux.intel.com
-Subject: Re: [PATCH (updated)] timer: Run calc_load halfway through each round_jiffies second
-Message-ID: <20020101030506.GB4106@ucw.cz>
-References: <45E0577C.9020409@simon.arlott.org.uk> <45E698DF.4010006@simon.arlott.org.uk> <45E720E8.1010809@simon.arlott.org.uk> <45E75911.3070907@simon.arlott.org.uk>
+To: Richard Purdie <rpurdie@openedhand.com>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>, Hugh Dickins <hugh@veritas.com>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       linux-mtd@lists.infradead.org, dwmw2@infradead.org
+Subject: Re: [PATCH 6/9] mtd: Add a 'block unused' ioctl call to provide hints to block drivers
+Message-ID: <20020101041253.GC4106@ucw.cz>
+References: <1172850894.11149.126.camel@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <45E75911.3070907@simon.arlott.org.uk>
+In-Reply-To: <1172850894.11149.126.camel@localhost.localdomain>
 User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi!
 
-> Whenever jiffies is started at a multiple of 5*HZ or 
-> wraps, calc_load is run exactly on the second which is 
-> when tasks using round_jiffies will be scheduled to run. 
-> This has a bad effect on the load average, making it 
-> tend towards 1.00 if a task happens to run every time 
-> the load is being calculated.
+> Knowing that the data in a given block is now unused is a useful
+> feature that some block drivers can take advantage of, especially 
+> when dealing with devices like flash.
 > 
-> This changes calc_load so that it updates load half a 
-> second after any tasks scheduled using round_jiffies.
+> This adds an ioctl which allows such hints to be passed to the
 
-Hmm, otoh this makes calc_load more expensive, power-wise, because it
-needs to wake the cpu once more?
+Maybe Documentation/ piece would be nice if this can be called from
+userspace....
 
-Timetraveling, sorry.
-						Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
