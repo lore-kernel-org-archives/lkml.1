@@ -1,57 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760454AbYGUEhz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754811AbYGXL0D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760454AbYGUEhz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jul 2008 00:37:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752605AbYGUEhr
+	id S1754811AbYGXL0D (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jul 2008 07:26:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752473AbYGXLZk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jul 2008 00:37:47 -0400
-Received: from www.swissdisk.com ([216.66.254.197]:32856 "EHLO
-	swissweb.swissdisk.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752254AbYGUEhq (ORCPT
+	Thu, 24 Jul 2008 07:25:40 -0400
+Received: from ik-out-1112.google.com ([66.249.90.182]:48069 "EHLO
+	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752113AbYGXLZi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jul 2008 00:37:46 -0400
-X-Greylist: delayed 2592 seconds by postgrey-1.27 at vger.kernel.org; Mon, 21 Jul 2008 00:37:46 EDT
-From: Ben Collins <ben.collins@canonical.com>
-Date: Wed, 2 Jan 2008 08:57:35 -0700
-Subject: [PATCH 0/7] Patches from Ubuntu kernel tree
-To: linux-kernel@vger.kernel.org
-Message-ID: <24762.90.138.930.038.1036103001.ben.collins@canonical.com>
+	Thu, 24 Jul 2008 07:25:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=references:user-agent:date:from:to:cc:subject:content-disposition
+         :message-id;
+        b=AdHtMKfnmno7mKYW5f3ONnv0GG15vX130NFFK1sdhWRtb74MFWXPzhbodsmOkya79s
+         E7cu5wJuzS4eajYKkaCM4wbZo4A1T7/HlSwgdoPd2hSS70ksc5pE+m5pe1l5yguo+C0x
+         w9Wuy13uCLqML6EUKJ+MvIEHP0uJsA4q4e7EM=
+References: <20080724112241.164873410@gmail.com>>
+User-Agent: quilt/0.46-1
+Date: Thu, 01 Jan 1970 03:00:02 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: mingo@elte.hu, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, macro@linux-mips.org
+Cc: gorcunov@gmail.com
+Subject: [patch 2/2] x86: apic unification - merge down enable_NMI_through_LVT0
+Content-Disposition: inline; filename=x86-apic-merge-enable_NMI_through_LVT0
+Message-ID: <488866b0.2233440a.6886.ffff9b13@mx.google.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following is a set of patches collected from our tree. They are
-available from:
+Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+---
 
-	git.kernel.org:/pub/scm/linux/kernel/git/bcollins/linux-ubuntu#for-linus
+No code change on binary level.
 
-NOTE: Contrary to the branch name, this isn't meant to be pulled
-wholesale.
+Index: linux-2.6.git/arch/x86/kernel/apic_32.c
+===================================================================
+--- linux-2.6.git.orig/arch/x86/kernel/apic_32.c	2008-07-24 14:16:55.000000000 +0400
++++ linux-2.6.git/arch/x86/kernel/apic_32.c	2008-07-24 14:22:00.000000000 +0400
+@@ -205,11 +205,15 @@ EXPORT_SYMBOL_GPL(apic_ops);
+  */
+ void __cpuinit enable_NMI_through_LVT0(void)
+ {
+-	unsigned int v = APIC_DM_NMI;
++	unsigned int v;
++
++	/* unmask and set to NMI */
++	v = APIC_DM_NMI;
+ 
+-	/* Level triggered for 82489DX */
++	/* Level triggered for 82489DX (32bit mode) */
+ 	if (!lapic_is_integrated())
+ 		v |= APIC_LVT_LEVEL_TRIGGER;
++
+ 	apic_write(APIC_LVT0, v);
+ }
+ 
+Index: linux-2.6.git/arch/x86/kernel/apic_64.c
+===================================================================
+--- linux-2.6.git.orig/arch/x86/kernel/apic_64.c	2008-07-24 14:16:55.000000000 +0400
++++ linux-2.6.git/arch/x86/kernel/apic_64.c	2008-07-24 14:22:09.000000000 +0400
+@@ -220,6 +220,11 @@ void __cpuinit enable_NMI_through_LVT0(v
+ 
+ 	/* unmask and set to NMI */
+ 	v = APIC_DM_NMI;
++
++	/* Level triggered for 82489DX (32bit mode) */
++	if (!lapic_is_integrated())
++		v |= APIC_LVT_LEVEL_TRIGGER;
++
+ 	apic_write(APIC_LVT0, v);
+ }
+ 
 
-Alexandre Karpenko (1):
-      HID: Add quirks for fourth generation MacBooks (4,1)
-
-Ben Collins (3):
-      bluetooth: Add quirks for a few hci_usb devices
-      [airprime] Add support for more devices
-      pm: Config option to disable handling of console during suspend/resume
-
-Chuck Short (1):
-      ata: blacklist FUJITSU MHW2160BH PL
-
-Matthew Garrett (1):
-      irda: Default to dongle type 9 on IBM hardware
-
-Tim Gardner (1):
-      netfilter: Export ip6t_mh.h and xt_quota.h for iptables build
-
- drivers/ata/libata-core.c           |    1 +
- drivers/bluetooth/hci_usb.c         |    7 +++++++
- drivers/hid/usbhid/hid-quirks.c     |   13 ++++++++++++-
- drivers/net/irda/nsc-ircc.c         |    5 ++++-
- drivers/usb/serial/airprime.c       |    9 +++++++++
- include/linux/netfilter/Kbuild      |    2 ++
- include/linux/netfilter_ipv6/Kbuild |    1 +
- kernel/power/Kconfig                |   15 +++++++++++++++
- kernel/power/console.c              |    4 ++++
- 9 files changed, 55 insertions(+), 2 deletions(-)
+-- 
