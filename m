@@ -1,53 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935606AbXJQQDP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967889AbXJSWCP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935606AbXJQQDP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Oct 2007 12:03:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965631AbXJQQCq
+	id S967889AbXJSWCP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Oct 2007 18:02:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967137AbXJSWAT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Oct 2007 12:02:46 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:37826 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S965906AbXJQQCo (ORCPT
+	Fri, 19 Oct 2007 18:00:19 -0400
+Received: from mtagate6.de.ibm.com ([195.212.29.155]:36582 "EHLO
+	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S967359AbXJSWAM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Oct 2007 12:02:44 -0400
-Message-ID: <46B3D34B.6010105@sgi.com>
-Date: Fri, 03 Aug 2007 18:15:55 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Andi Kleen <ak@suse.de>, Christoph Lameter <clameter@sgi.com>,
-       Jack Steiner <steiner@sgi.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/1] x86: Convert cpuinfo_x86 array to a per_cpu array
- v3
-References: <20070924210853.256462000@sgi.com> <20071016011827.91350174.akpm@linux-foundation.org>
-In-Reply-To: <20071016011827.91350174.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Fri, 19 Oct 2007 18:00:12 -0400
+Message-Id: <20071019220007.791059000@linux.vnet.ibm.com>
+References: <20071019215538.395133000@linux.vnet.ibm.com>
+User-Agent: quilt/0.46-1
+Date: Thu, 01 Jan 1970 01:00:01 +0100
+From: Ursula Braun <braunu@de.ibm.com>
+To: jgarzik@pobox.com, netdev@vger.kernel.org, linux-s390@vger.kernel.org
+Cc: mschwid2@linux.vnet.ibm.com, apw@shadowen.org,
+       linux-kernel@vger.kernel.org, kamalesh@linux.vnet.ibm.com,
+       kaber@trash.net
+Subject: [patch 1/1] qeth: remove header_ops bug
+Content-Disposition: inline; filename=qeth.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-...
->> ...  This patch deals with the cpu_data array of
->> cpuinfo_x86 structs.  The model that was used in sparc64
->> architecture was adopted for x86.
->>
-> 
-> This has mysteriously started to oops on me, only on x86_64.
-> 
-> http://userweb.kernel.org/~akpm/config-x.txt
-> http://userweb.kernel.org/~akpm/dsc00001.jpg
-> 
-> which is a bit strange since this patch doesn't touch sched.c.  Maybe
-> there's something somewhere else in the -mm lineup which when combined with
-> this prevents it from oopsing, dunno.  I'll hold it back for now and will
-> see what happens.
-> 
+From: Ursula Braun <braunu@de.ibm.com>
 
-I'll take a look at this right away.
+Remove qeth bug caused by commit:
+[NET]: Move hardware header operations out of netdevice.
 
-Thanks,
-Mike
+Signed-off-by: Ursula Braun <braunu@de.ibm.com>
+---
+ drivers/s390/net/qeth_main.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
+Index: linux-2.6-uschi/drivers/s390/net/qeth_main.c
+===================================================================
+--- linux-2.6-uschi.orig/drivers/s390/net/qeth_main.c
++++ linux-2.6-uschi/drivers/s390/net/qeth_main.c
+@@ -6643,7 +6643,8 @@ qeth_netdev_init(struct net_device *dev)
+ 	dev->vlan_rx_kill_vid = qeth_vlan_rx_kill_vid;
+ 	dev->vlan_rx_add_vid = qeth_vlan_rx_add_vid;
+ #endif
+-	dev->header_ops = &qeth_null_ops;
++	if (qeth_get_netdev_flags(card) & IFF_NOARP)
++		dev->header_ops = &qeth_null_ops;
+ 
+ #ifdef CONFIG_QETH_IPV6
+ 	/*IPv6 address autoconfiguration stuff*/
+
+-- 
