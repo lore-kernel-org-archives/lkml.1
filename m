@@ -1,65 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754267AbYI3Xjm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754739AbYIQOMm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754267AbYI3Xjm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Sep 2008 19:39:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753242AbYI3Xi5
+	id S1754739AbYIQOMm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 10:12:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751634AbYIQOMe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Sep 2008 19:38:57 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:49052 "EHLO UNKNOWN"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753420AbYI3Xi4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Sep 2008 19:38:56 -0400
-Date: Mon, 29 Sep 2008 19:56:25 +0200
-From: Pavel Machek <pavel@suse.cz>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Ben Dooks <ben-linux@fluff.org>,
-       Uwe Kleine-K?nig <ukleinek@strlen.de>,
-       Denis Vlasenko <vda@port.imtp.ilyichevsk.odessa.ua>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC] List of maintainers (draft #3)
-Message-ID: <20080929175625.GA3676@ucw.cz>
-References: <200202071054.g17Asst06608@Port.imtp.ilyichevsk.odessa.ua> <20080922081239.GA28726@strlen.de> <20080922091256.GH1916@fluff.org.uk> <84144f020809220223jbb71877ued9d3b2569c4cd67@mail.gmail.com> <48D7CA62.1020805@zytor.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48D7CA62.1020805@zytor.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 17 Sep 2008 10:12:34 -0400
+Received: from [165.204.77.10] ([165.204.77.10]:26094 "EHLO elemente.amd.com"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752361AbYIQOMe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Sep 2008 10:12:34 -0400
+Date: Mon, 17 Sep 2001 00:00:00 +0200
+Message-Id: <200809171324.m8HDO4Kr003664@elemente.amd.com>
+In-Reply-To: <b647ffbd0809161443o5b7bf71aw59853d8d6086ee2d@mail.gmail.com>
+References: <b647ffbd0809161443o5b7bf71aw59853d8d6086ee2d@mail.gmail.com>
+From: Peter Oruba <peter.oruba@amd.com>
+Subject: [PATCH] x86, microcode rework, v2, renaming
+To: Dmitry Adamushko <dmitry.adamushko@gmail.com>, Ingo Molnar <mingo@elte.hu>
+CC: Tigran Aivazian <tigran@aivazian.fsnet.co.uk>,
+       LKML <linux-kernel@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+Renaming based on patch from Dmitry Adamushko.
 
->> Figuring out whom to send a patch to is not something you can automate
->> because it not only depends on what you're changing but *how* you're
->> changing it. The classic case being that whenever you change something
->> related to RCU that's non-trivial, you almost certainly want to CC
->> Paul "RCU" McKenney. But there's no *file* or *directory* pattern that
->> can automatically tell you this.
->>
->> Furthermore, if you're hacking on a specific part of the kernel, you
->> almost certainly are doing it wrong if you don't know who the relevant
->> maintainers are. For simple janitorial patches, you probably should
->> just work out the *top-level* maintainers (davem for networking, ingo
->> et al for x86, and so on) and send the patches to them. And when these
->> simple rules fail you, fall back to patch bombing Andrew.
->>
->
-> This is, of course, true; however, there are people who should *always*  
-> be included when touching specific files, and this *can* be automated.  
-> This is particularly so when sending out cross-architectural patchsets.
->
-> So no, automation isn't a substitute for intelligence, but that doesn't  
-> mean that it can't be an *assistance*.
->
-> We need this.  Right now too many people screw up even the part that  
-> *can* be automated.
+Made code more readable by renaming define and variables related
+to microcode _container_file_ header to make it distinguishable from
+microcode _patch_ header.
 
-Yes please. Manually searching MAINTAINERS is  boring and hard... 'Is
-it NETWORK BLOCK DEVICE' or 'NBD'? 'ALSA' or 'ADVANCED LINUX SOUND 
-SYSTEM'? ... plus if you want subsystem maintainer, search tends to
-give you about 179 individual driver maintainers, first.
+Signed-off-by: Peter Oruba <peter.oruba@amd.com>
 
+
+
+---
+ arch/x86/kernel/microcode_amd.c |   14 +++++++-------
+ 1 files changed, 7 insertions(+), 7 deletions(-)
+
+diff --git a/arch/x86/kernel/microcode_amd.c b/arch/x86/kernel/microcode_amd.c
+index 48aec9f..8d97840 100644
+--- a/arch/x86/kernel/microcode_amd.c
++++ b/arch/x86/kernel/microcode_amd.c
+@@ -274,12 +274,12 @@ static void * get_next_ucode(u8 *buf, unsigned int size,
+ static int install_equiv_cpu_table(u8 *buf,
+ 		int (*get_ucode_data)(void *, const void *, size_t))
+ {
+-#define UCODE_HEADER_SIZE	12
+-	u8 *hdr[UCODE_HEADER_SIZE];
+-	unsigned int *buf_pos = (unsigned int *)hdr;
++#define UCODE_CONTAINER_HEADER_SIZE	12
++	u8 *container_hdr[UCODE_CONTAINER_HEADER_SIZE];
++	unsigned int *buf_pos = (unsigned int *)container_hdr;
+ 	unsigned long size;
+ 
+-	if (get_ucode_data(&hdr, buf, UCODE_HEADER_SIZE))
++	if (get_ucode_data(&container_hdr, buf, UCODE_CONTAINER_HEADER_SIZE))
+ 		return 0;
+ 
+ 	size = buf_pos[2];
+@@ -296,14 +296,14 @@ static int install_equiv_cpu_table(u8 *buf,
+ 		return 0;
+ 	}
+ 
+-	buf += UCODE_HEADER_SIZE;
++	buf += UCODE_CONTAINER_HEADER_SIZE;
+ 	if (get_ucode_data(equiv_cpu_table, buf, size)) {
+ 		vfree(equiv_cpu_table);
+ 		return 0;
+ 	}
+ 
+-	return size + UCODE_HEADER_SIZE; /* add header length */
+-#undef UCODE_HEADER_SIZE
++	return size + UCODE_CONTAINER_HEADER_SIZE; /* add header length */
++#undef UCODE_CONTAINER_HEADER_SIZE
+ }
+ 
+ static void free_equiv_cpu_table(void)
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+1.5.4.1
+
