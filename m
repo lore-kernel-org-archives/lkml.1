@@ -1,89 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760102AbYHNSrj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759547AbYHNSsS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760102AbYHNSrj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Aug 2008 14:47:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754283AbYHNSqy
+	id S1759547AbYHNSsS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Aug 2008 14:48:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755209AbYHNSq4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Aug 2008 14:46:54 -0400
-Received: from fg-out-1718.google.com ([72.14.220.154]:59579 "EHLO
+	Thu, 14 Aug 2008 14:46:56 -0400
+Received: from fg-out-1718.google.com ([72.14.220.156]:57044 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752191AbYHNSqv (ORCPT
+	with ESMTP id S1754417AbYHNSqy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Aug 2008 14:46:51 -0400
+	Thu, 14 Aug 2008 14:46:54 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:references:user-agent:date:from:to:cc:subject
          :content-disposition;
-        b=DmkVRJ1pzpEdonKeIRA0XA/zcuC0OOced4E3xOuVK1lc0HUXgU8kG3jFoBMpmbTZur
-         VnOn8N3C/wstwQcJLh82NCC0c5IEs86hSydtTcvK7XNmKE8nBnP3asN6PlF8iqD8k+qF
-         uh9fD7BugO07on8AqGTGbYKYQTLbQ7QVVDMSA=
-Message-Id: <20080814184651.681143113@gmail.com>
+        b=VSyGebNsp67s5UkDYU5jZPBi+gXCE0GVkZkV64a+j9llC/6TwzWwXsQ0ewkuKN2hp9
+         DiYKdyDH1iN93T6KWlhmgpdkgpjocgwefpqXceIyJTtntn/bqMX3SfbFJX6nLxu4fs1W
+         zjBcFAfG26i7YhdHLyETl/1Ns9ZFXA63aBJGw=
+Message-Id: <20080814184652.179229281@gmail.com>
 References: <20080814183428.550709025@gmail.com>
 User-Agent: quilt/0.46-1
-Date: Thu, 01 Jan 1970 03:00:03 +0300
+Date: Thu, 01 Jan 1970 03:00:06 +0300
 From: Cyrill Gorcunov <gorcunov@gmail.com>
 To: macro@linux-mips.org, mingo@elte.hu, tglx@linutronix.de
 Cc: hpa@zytor.com, yhlu.kernel@gmail.com, linux-kernel@vger.kernel.org,
        Cyrill Gorcunov <gorcunov@gmail.com>
-Subject: [patch 3/8] x86: apic - unify __setup_APIC_LVTT
-Content-Disposition: inline; filename=x86-apic-unify-__setup_APIC_LVTT.patch
+Subject: [patch 6/8] x86: apic - unify verify_local_APIC
+Content-Disposition: inline; filename=0010-x86-apic-unify-verify_local_APIC.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-To be able to unify this function we RE-introduce
-APIC_DIVISOR for 64bit mode. This snipped was eliminated
-in some time ago in a sake of clenup but now we need it
-again since it allow up to get rid of #ifdef(s).
-
-And lapic_is_integrated call is added in apic_64.c but
-since we always have APIC integrated on 64bit cpu compiler
-will ignore this call.
-
 Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
 ---
 
-diff --git a/arch/x86/kernel/apic_64.c b/arch/x86/kernel/apic_64.c
-index 1e0b5d9..5d07689 100644
---- a/arch/x86/kernel/apic_64.c
-+++ b/arch/x86/kernel/apic_64.c
-@@ -244,6 +244,9 @@ int lapic_get_maxlvt(void)
- 	return APIC_INTEGRATED(GET_APIC_VERSION(v)) ? GET_APIC_MAXLVT(v) : 2;
- }
- 
-+/* Clock divisor is set to 1 */
-+#define APIC_DIVISOR 1
-+
- /*
-  * This function sets up the local APIC timer, with a timeout of
-  * 'clocks' APIC bus clock. During calibration we actually call
-@@ -262,6 +265,9 @@ static void __setup_APIC_LVTT(unsigned int clocks, int oneshot, int irqen)
- 	lvtt_value = LOCAL_TIMER_VECTOR;
- 	if (!oneshot)
- 		lvtt_value |= APIC_LVT_TIMER_PERIODIC;
-+	if (!lapic_is_integrated())
-+		lvtt_value |= SET_APIC_TIMER_BASE(APIC_TIMER_BASE_DIV);
-+
- 	if (!irqen)
- 		lvtt_value |= APIC_LVT_MASKED;
- 
-@@ -276,7 +282,7 @@ static void __setup_APIC_LVTT(unsigned int clocks, int oneshot, int irqen)
- 				| APIC_TDR_DIV_16);
- 
- 	if (!oneshot)
--		apic_write(APIC_TMICT, clocks);
-+		apic_write(APIC_TMICT, clocks / APIC_DIVISOR);
- }
- 
- /*
-@@ -450,7 +456,7 @@ static int __init calibrate_APIC_clock(void)
- 	lapic_clockevent.min_delta_ns =
- 		clockevent_delta2ns(0xF, &lapic_clockevent);
- 
--	calibration_result = result / HZ;
-+	calibration_result = (result * APIC_DIVISOR) / HZ;
+Index: linux-2.6.git/arch/x86/kernel/apic_32.c
+===================================================================
+--- linux-2.6.git.orig/arch/x86/kernel/apic_32.c	2008-08-14 22:18:00.000000000 +0400
++++ linux-2.6.git/arch/x86/kernel/apic_32.c	2008-08-14 22:21:49.000000000 +0400
+@@ -882,6 +882,12 @@ int __init verify_local_APIC(void)
+ 	 */
+ 	reg0 = apic_read(APIC_ID);
+ 	apic_printk(APIC_DEBUG, "Getting ID: %x\n", reg0);
++	apic_write(APIC_ID, reg0 ^ APIC_ID_MASK);
++	reg1 = apic_read(APIC_ID);
++	apic_printk(APIC_DEBUG, "Getting ID: %x\n", reg1);
++	apic_write(APIC_ID, reg0);
++	if (reg1 != (reg0 ^ APIC_ID_MASK))
++		return 0;
  
  	/*
- 	 * Do a sanity check on the APIC calibration result
+ 	 * The next two are just to see if we have sane values.
 
 -- 
