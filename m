@@ -1,54 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758620AbYFCSta@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758164AbYFXQUb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758620AbYFCSta (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 14:49:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755192AbYFCSso
+	id S1758164AbYFXQUb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Jun 2008 12:20:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751094AbYFXQUV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 14:48:44 -0400
-Received: from nf-out-0910.google.com ([64.233.182.191]:26799 "EHLO
+	Tue, 24 Jun 2008 12:20:21 -0400
+Received: from nf-out-0910.google.com ([64.233.182.190]:36535 "EHLO
 	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754997AbYFCSsl (ORCPT
+	with ESMTP id S1750789AbYFXQUT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 14:48:41 -0400
+	Tue, 24 Jun 2008 12:20:19 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=references:user-agent:date:from:to:cc:subject:content-disposition:message-id;
-        b=spS+jus7aruav7T9YfLA9/TX+orMc/0+q7KoODviUYEQ9yd20J7A91sCg1vYWFDpTjv0bJGjXiXNbI+e0Vl9KuJ5Y3ZtLtPigBlh8h3AkhtKgGllq+7xUj01HfF/c2uzGulvMREHeg9gz41GohMNkhHXG3kCRh5ooshcETbnF0k=
-References: <20080603184648.162308982@gmail.com>>
+        h=references:user-agent:date:from:to:cc:subject:content-disposition
+         :message-id;
+        b=ISOXk7v075Ai+qE1c6lj3I00man+MNAjvLAQwdwHoyNNAi3rifeIj5TyBxkoFa0uKC
+         NYdn/v8GUNAwTs7wdiITdroSJ47XOCjaTQ5avLVuSWz0mqJgznayUA8rQ+QFpWztxROJ
+         SnidwPAax9doYAydn6DvQ+T8Fc5Nhf0k4z5Z8=
+References: <20080624161624.124913675@gmail.com>>
 User-Agent: quilt/0.46-1
-Date: Thu, 01 Jan 1970 03:00:02 +0300
+Date: Thu, 01 Jan 1970 03:00:03 +0300
 From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, macro@linux-mips.org
-Cc: linux-kernel@vger.kernel.org, gorcunov@gmail.com
-Subject: [patch 2/2] x86: watchdog - check for CPU is being supported
-Content-Disposition: inline; filename=nmi-watchdog-ureserve-check
-Message-ID: <48459207.0407560a.301b.231b@mx.google.com>
+To: mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com, macro@linux-mips.org
+Cc: Cyrill Gorcunov <gorcunov@gmail.com>, linux-kernel@vger.kernel.org
+Subject: [patch 3/5] x86: nmi_watchdog - remove useless check
+Content-Disposition: inline; filename=nmi-reduce-check
+Message-ID: <48611ec1.2234440a.679b.1a7c@mx.google.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch does check if CPU is being recongnized
-before call the unreserve(). Since enable_lapic_nmi_watchdog()
-does have such a check the same is make sense here too
-in a sake of code consistency (but nothing more).
+Since nmi_watchdog is unsigned variable we may
+safely remove the check for negative value
 
 Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
 ---
 
-Index: linux-2.6.git/arch/x86/kernel/cpu/perfctr-watchdog.c
+Index: linux-2.6.git/arch/x86/kernel/nmi.c
 ====================================================================
---- linux-2.6.git.orig/arch/x86/kernel/cpu/perfctr-watchdog.c	2008-06-03 20:48:26.000000000 +0400
-+++ linux-2.6.git/arch/x86/kernel/cpu/perfctr-watchdog.c	2008-06-03 21:26:00.000000000 +0400
-@@ -181,7 +181,9 @@ void disable_lapic_nmi_watchdog(void)
- 		return;
+--- linux-2.6.git.orig/arch/x86/kernel/nmi.c	2008-06-22 23:02:50.000000000 +0400
++++ linux-2.6.git/arch/x86/kernel/nmi.c	2008-06-23 20:02:47.000000000 +0400
+@@ -186,7 +186,7 @@ error:
  
- 	on_each_cpu(stop_apic_nmi_watchdog, NULL, 0, 1);
--	wd_ops->unreserve();
-+
-+	if (wd_ops)
-+		wd_ops->unreserve();
+ static int __init setup_nmi_watchdog(char *str)
+ {
+-	int nmi;
++	unsigned int nmi;
  
- 	BUG_ON(atomic_read(&nmi_active) != 0);
- }
+ 	if (!strncmp(str, "panic", 5)) {
+ 		panic_on_timeout = 1;
+@@ -198,7 +198,7 @@ static int __init setup_nmi_watchdog(cha
+ 
+ 	get_option(&str, &nmi);
+ 
+-	if (nmi >= NMI_INVALID || nmi < NMI_NONE)
++	if (nmi >= NMI_INVALID)
+ 		return 0;
+ 
+ 	nmi_watchdog = nmi;
 
 -- 
