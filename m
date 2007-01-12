@@ -1,52 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751724AbXBALLz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965287AbXBLVVD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751724AbXBALLz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Feb 2007 06:11:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751591AbXBALLz
+	id S965287AbXBLVVD (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Feb 2007 16:21:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965299AbXBLVVC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Feb 2007 06:11:55 -0500
-Received: from mout1.freenet.de ([194.97.50.132]:32865 "EHLO mout1.freenet.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751194AbXBALLy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Feb 2007 06:11:54 -0500
-From: Karsten Wiese <fzu@wemgehoertderstaat.de>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: 2.6.20-rc6-mm3
-Date: Thu, 1 Mar 2007 12:11:08 +0100
-User-Agent: KMail/1.9.5
-Cc: Andrew Morton <akpm@osdl.org>, Maciej Rutecki <maciej.rutecki@gmail.com>,
-       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
-References: <20070129204528.eb8d695e.akpm@osdl.org> <20070201080108.GC14378@elte.hu> <200702011144.43774.fzu@wemgehoertderstaat.de>
-In-Reply-To: <200702011144.43774.fzu@wemgehoertderstaat.de>
+	Mon, 12 Feb 2007 16:21:02 -0500
+Received: from ug-out-1314.google.com ([66.249.92.172]:34483 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965287AbXBLVU6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Feb 2007 16:20:58 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:sender;
+        b=SSXUENL1zxvVg6yIvZLlUe69CiWPYHG0Y98hT+g/GrKYTpEoUhxWmU0wF/hg1m5eQghK9S/WwKUWUaXJPGLoGQXzI+hpMvBvztMnTLiIavqNBBRGz4CbqIvfnptOcWfdFkSIL78XjNUlz6DZYB4QhxpPf+0259BMWZsf70YLT8A=
+Date: Fri, 12 Jan 2007 23:19:25 +0000
+From: Frederik Deweerdt <deweerdt@free.fr>
+To: Robert Hancock <hancockr@shaw.ca>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, Arnd Bergmann <arnd@arndb.de>,
+       arjan@infradead.org
+Subject: Re: -mm merge plans for 2.6.21
+Message-ID: <20070112231925.GA7273@slug>
+References: <fa.7Z67qjqJwFP7+8QiVtu5tq6CZyU@ifi.uio.no> <fa.4Y/nCUol/tGEodoOl/Jm9nf2AEA@ifi.uio.no> <fa.TgZy4z2lRhwhAWCUE8IuGvMVUCU@ifi.uio.no> <fa.HINMjdGzCuxlEiWtVvmNz7Pv9Pc@ifi.uio.no> <fa.2ClW7C4ZyCP9QlT4vg7CbzjSqwg@ifi.uio.no> <45CDFB30.5090102@shaw.ca>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200703011211.09055.fzu@wemgehoertderstaat.de>
+In-Reply-To: <45CDFB30.5090102@shaw.ca>
+User-Agent: mutt-ng/devel-r804 (Linux)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Donnerstag, 1. Februar 2007 11:44 schrieb Karsten Wiese:
-> I think the wait is caused by an interrupt starting somewhere under
-> sysdev_resume(void).
-> possibly lapic timer interrupt? Will try to trace that.
+On Sat, Feb 10, 2007 at 11:04:48AM -0600, Robert Hancock wrote:
+> Frederik Deweerdt wrote:
+> >>How about this one instead then:
+> >Well, the warning you get is not that obvious:
+> >test.c: In function 'main':
+> >test.c:11: warning: 'deprecated_irqf' is deprecated
+> >And as far as I could test 
+... which apparently was not enough :)
+> >(gcc 4.1.1 and gcc 3.4.3), Arjan's comment is
+> >not true, the "static const int" don't use extra space, they get
+> >optimized away by the compiler (see http://lkml.org/lkml/2007/2/9/106).
+> 
+> gcc 3.2 should be tested as well, that is still supported by the kernel, and versions before 3.4 did not have unit-at-a-time optimizations.
+Sorry for the delay. I've setup a 3.2.3 gcc and, indeed, the symbols
+make their way in the binary...
 
-Some evidence:
-[root@a64 Desktop]# echo reboot > /sys/power/disk
-[root@a64 Desktop]# cat /proc/interrupts; echo disk > /sys/power/state ; cat /proc/interrupts
-<snip>
-LOC:    2215504
-<snip, cmos clock untouched>
-LOC:    2216432
-<snip>
-[root@a64 Desktop]# cat /proc/interrupts; echo disk > /sys/power/state ; cat /proc/interrupts
-<snip>
-LOC:    2225752
-<snip, cmos clock advanced by 1 month under biossettings>
-LOC:    2238383
-<snip>
+$ gcc-3.2.3 -O2 -c dont_use_flag.c
+$ nm dont_use_flag.o
+00000000 r SA_INTERRUPT
+00000000 T main
+         U printf
 
-      Karsten
-
-
+Regards,
+Frederik
