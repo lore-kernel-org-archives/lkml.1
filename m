@@ -1,280 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932245AbXAVWRQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751954AbXAVWVW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932245AbXAVWRQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jan 2007 17:17:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932489AbXAVWRQ
+	id S1751954AbXAVWVW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jan 2007 17:21:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932497AbXAVWVW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jan 2007 17:17:16 -0500
-Received: from MAIL.13thfloor.at ([213.145.232.33]:53765 "EHLO
+	Mon, 22 Jan 2007 17:21:22 -0500
+Received: from MAIL.13thfloor.at ([213.145.232.33]:38985 "EHLO
 	MAIL.13thfloor.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932245AbXAVWRP (ORCPT
+	with ESMTP id S1751744AbXAVWVU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jan 2007 17:17:15 -0500
-Date: Mon, 22 Jan 2007 23:17:14 +0100
+	Mon, 22 Jan 2007 17:21:20 -0500
+Date: Mon, 22 Jan 2007 23:21:15 +0100
 From: Herbert Poetzl <herbert@13thfloor.at>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: Cedric Le Goater <clg@fr.ibm.com>,
-       Linux Containers <containers@lists.osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Pavel Emelianov <xemul@openvz.org>
-Subject: Re: [PATCH -mm] ipc namespace : remove CONFIG_IPC_NS
-Message-ID: <20070122221713.GB11128@MAIL.13thfloor.at>
-Mail-Followup-To: "Serge E. Hallyn" <serue@us.ibm.com>,
-	Cedric Le Goater <clg@fr.ibm.com>,
-	Linux Containers <containers@lists.osdl.org>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Pavel Emelianov <xemul@openvz.org>
-References: <45ACE10F.8020109@fr.ibm.com> <20070116151749.GD28253@sergelap.austin.ibm.com>
+To: Kirill Korotaev <dev@sw.ru>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, James.Bottomley@SteelEye.com,
+       linux-parport@lists.infradead.org, rtc-linux@googlegroups.com,
+       linux-mips@linux-mips.org, heiko.carstens@de.ibm.com,
+       containers@lists.osdl.org, lethal@linux-sh.org, clemens@ladisch.de,
+       xfs@oss.sgi.com, xfs-masters@oss.sgi.com, paulus@samba.org,
+       linux390@de.ibm.com, openipmi-developer@lists.sourceforge.net,
+       linux-390@vm.marist.edu, aharkes@cs.cmu.edu, tim@cyberelk.net,
+       codalist@TELEMANN.coda.cs.cmu.edu, a.zummo@towertech.it,
+       tony.luck@intel.com, minyard@acm.org, linux-scsi@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, linux-ntfs-dev@lists.sourceforge.net,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       ralf@linux-mips.org, mark.fasheh@oracle.com, coda@cs.cmu.edu,
+       vojtech@suse.cz, kurt.hackel@oracle.com, schwidefsky@de.ibm.com,
+       aia21@cantab.net, philb@gnu.org, andrea@suse.de,
+       linuxsh-shmedia-dev@lists.sourceforge.net, ak@suse.de
+Subject: Re: [PATCH 25/59] sysctl: C99 convert arch/frv/kernel/pm.c
+Message-ID: <20070122222115.GC11128@MAIL.13thfloor.at>
+Mail-Followup-To: Kirill Korotaev <dev@sw.ru>,
+	"Eric W. Biederman" <ebiederm@xmission.com>,
+	James.Bottomley@SteelEye.com, linux-parport@lists.infradead.org,
+	rtc-linux@googlegroups.com, linux-mips@linux-mips.org,
+	heiko.carstens@de.ibm.com, containers@lists.osdl.org,
+	lethal@linux-sh.org, clemens@ladisch.de, xfs@oss.sgi.com,
+	xfs-masters@oss.sgi.com, paulus@samba.org, linux390@de.ibm.com,
+	openipmi-developer@lists.sourceforge.net, linux-390@vm.marist.edu,
+	aharkes@cs.cmu.edu, tim@cyberelk.net,
+	codalist@TELEMANN.coda.cs.cmu.edu, a.zummo@towertech.it,
+	tony.luck@intel.com, minyard@acm.org, linux-scsi@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, linux-ntfs-dev@lists.sourceforge.net,
+	netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+	ralf@linux-mips.org, mark.fasheh@oracle.com, coda@cs.cmu.edu,
+	vojtech@suse.cz, kurt.hackel@oracle.com, schwidefsky@de.ibm.com,
+	aia21@cantab.net, philb@gnu.org, andrea@suse.de,
+	linuxsh-shmedia-dev@lists.sourceforge.net, ak@suse.de
+References: <m1ac0jc4no.fsf@ebiederm.dsl.xmission.com> <11689656443582-git-send-email-ebiederm@xmission.com> <45AE5969.8030603@sw.ru>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070116151749.GD28253@sergelap.austin.ibm.com>
+In-Reply-To: <45AE5969.8030603@sw.ru>
 User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 16, 2007 at 09:17:49AM -0600, Serge E. Hallyn wrote:
-> Quoting Cedric Le Goater (clg@fr.ibm.com):
-> > CONFIG_IPC_NS has very little value as it only deactivates the unshare 
-> > of the ipc namespace and does not improve performance.
+On Wed, Jan 17, 2007 at 08:14:17PM +0300, Kirill Korotaev wrote:
+> another small minor note.
+> 
+> > From: Eric W. Biederman <ebiederm@xmission.com> - unquoted
 > > 
-> > Signed-off-by: Cedric Le Goater <clg@fr.ibm.com>
+> > Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+> > ---
+> >  arch/frv/kernel/pm.c |   50 +++++++++++++++++++++++++++++++++++++++++++-------
+> >  1 files changed, 43 insertions(+), 7 deletions(-)
+> > 
+> > diff --git a/arch/frv/kernel/pm.c b/arch/frv/kernel/pm.c
+> > index c1840d6..aa50333 100644
+> > --- a/arch/frv/kernel/pm.c
+> > +++ b/arch/frv/kernel/pm.c
+> > @@ -401,17 +401,53 @@ static int cm_sysctl(ctl_table *table, int __user *name, int nlen,
+> >  
+> >  static struct ctl_table pm_table[] =
+> >  {
+> > -	{CTL_PM_SUSPEND, "suspend", NULL, 0, 0200, NULL, &sysctl_pm_do_suspend},
+> > -	{CTL_PM_CMODE, "cmode", &clock_cmode_current, sizeof(int), 0644, NULL, &cmode_procctl, &cmode_sysctl, NULL},
+> > -	{CTL_PM_P0, "p0", &clock_p0_current, sizeof(int), 0644, NULL, &p0_procctl, &p0_sysctl, NULL},
+> > -	{CTL_PM_CM, "cm", &clock_cm_current, sizeof(int), 0644, NULL, &cm_procctl, &cm_sysctl, NULL},
+> > -	{0}
+> > +	{
+> > +		.ctl_name	= CTL_PM_SUSPEND,
+> > +		.procname	= "suspend",
+> > +		.data		= NULL,
+> > +		.maxlen		= 0,
+> > +		.mode		= 0200,
+> > +		.proc_handler	= &sysctl_pm_do_suspend,
+> > +	},
+> > +	{
+> > +		.ctl_name	= CTL_PM_CMODE,
+> > +		.procname	= "cmode",
+> > +		.data		= &clock_cmode_current,
+> > +		.maxlen		= sizeof(int),
+> > +		.mode		= 0644,
+> > +		.proc_handler	= &cmode_procctl,
+> > +		.strategy	= &cmode_sysctl,
+> > +	},
+> > +	{
+> > +		.ctl_name	= CTL_PM_P0,
+> > +		.procname	= "p0",
+> > +		.data		= &clock_p0_current,
+> > +		.maxlen		= sizeof(int),
+> > +		.mode		= 0644,
+> > +		.proc_handler	= &p0_procctl,
+> > +		.strategy	= &p0_sysctl,
+> > +	},
+> > +	{
+> > +		.ctl_name	= CTL_PM_CM,
+> > +		.procname	= "cm",
+> > +		.data		= &clock_cm_current,
+> > +		.maxlen		= sizeof(int),
+> > +		.mode		= 0644,
+> > +		.proc_handler	= &cm_procctl,
+> > +		.strategy	= &cm_sysctl,
+> > +	},
+> > +	{ .ctl_name = 0}
+> in next patch (26/59) you write just "{ }". .ctl_name = 0 not required here.
 
-same a for the UTS namespace, so I'm fine with
-this removal too
+I'd prefer '{ 0 }' here, but I'm fine with the '{ .ctl_name = 0 }'
+too, just '{ }' seems confusing, and it actually might get
+misinterpreted too ..
 
 best,
 Herbert
 
-> Acked-by: Serge Hallyn <serue@us.ibm.com>
-> 
-> > ---
-> >  include/linux/ipc.h |   11 -----------
-> >  init/Kconfig        |    9 ---------
-> >  ipc/msg.c           |    4 +---
-> >  ipc/sem.c           |    4 +---
-> >  ipc/shm.c           |    4 +---
-> >  ipc/util.c          |    4 +---
-> >  ipc/util.h          |    8 ++------
-> >  kernel/fork.c       |   10 ----------
-> >  8 files changed, 6 insertions(+), 48 deletions(-)
-> > 
-> > Index: 2.6.20-rc4-mm1/include/linux/ipc.h
-> > ===================================================================
-> > --- 2.6.20-rc4-mm1.orig/include/linux/ipc.h
-> > +++ 2.6.20-rc4-mm1/include/linux/ipc.h
-> > @@ -96,31 +96,20 @@ extern struct ipc_namespace init_ipc_ns;
-> >  #define INIT_IPC_NS(ns)
-> >  #endif
-> >  
-> > -#ifdef CONFIG_IPC_NS
-> >  extern void free_ipc_ns(struct kref *kref);
-> >  extern int copy_ipcs(unsigned long flags, struct task_struct *tsk);
-> >  extern int unshare_ipcs(unsigned long flags, struct ipc_namespace **ns);
-> > -#else
-> > -static inline int copy_ipcs(unsigned long flags, struct task_struct *tsk)
-> > -{
-> > -	return 0;
-> > -}
-> > -#endif
-> >  
-> >  static inline struct ipc_namespace *get_ipc_ns(struct ipc_namespace *ns)
-> >  {
-> > -#ifdef CONFIG_IPC_NS
-> >  	if (ns)
-> >  		kref_get(&ns->kref);
-> > -#endif
-> >  	return ns;
-> >  }
-> >  
-> >  static inline void put_ipc_ns(struct ipc_namespace *ns)
-> >  {
-> > -#ifdef CONFIG_IPC_NS
-> >  	kref_put(&ns->kref, free_ipc_ns);
-> > -#endif
-> >  }
-> >  
-> >  #endif /* __KERNEL__ */
-> > Index: 2.6.20-rc4-mm1/init/Kconfig
-> > ===================================================================
-> > --- 2.6.20-rc4-mm1.orig/init/Kconfig
-> > +++ 2.6.20-rc4-mm1/init/Kconfig
-> > @@ -138,15 +138,6 @@ config SYSVIPC
-> >  	  section 6.4 of the Linux Programmer's Guide, available from
-> >  	  <http://www.tldp.org/guides.html>.
-> >  
-> > -config IPC_NS
-> > -	bool "IPC Namespaces"
-> > -	depends on SYSVIPC
-> > -	default n
-> > -	help
-> > -	  Support ipc namespaces.  This allows containers, i.e. virtual
-> > -	  environments, to use ipc namespaces to provide different ipc
-> > -	  objects for different servers.  If unsure, say N.
-> > -
-> >  config POSIX_MQUEUE
-> >  	bool "POSIX Message Queues"
-> >  	depends on NET && EXPERIMENTAL
-> > Index: 2.6.20-rc4-mm1/ipc/msg.c
-> > ===================================================================
-> > --- 2.6.20-rc4-mm1.orig/ipc/msg.c
-> > +++ 2.6.20-rc4-mm1/ipc/msg.c
-> > @@ -87,7 +87,7 @@ static int newque (struct ipc_namespace 
-> >  static int sysvipc_msg_proc_show(struct seq_file *s, void *it);
-> >  #endif
-> >  
-> > -static void __ipc_init __msg_init_ns(struct ipc_namespace *ns, struct ipc_ids *ids)
-> > +static void __msg_init_ns(struct ipc_namespace *ns, struct ipc_ids *ids)
-> >  {
-> >  	ns->ids[IPC_MSG_IDS] = ids;
-> >  	ns->msg_ctlmax = MSGMAX;
-> > @@ -96,7 +96,6 @@ static void __ipc_init __msg_init_ns(str
-> >  	ipc_init_ids(ids, ns->msg_ctlmni);
-> >  }
-> >  
-> > -#ifdef CONFIG_IPC_NS
-> >  int msg_init_ns(struct ipc_namespace *ns)
-> >  {
-> >  	struct ipc_ids *ids;
-> > @@ -128,7 +127,6 @@ void msg_exit_ns(struct ipc_namespace *n
-> >  	kfree(ns->ids[IPC_MSG_IDS]);
-> >  	ns->ids[IPC_MSG_IDS] = NULL;
-> >  }
-> > -#endif
-> >  
-> >  void __init msg_init(void)
-> >  {
-> > Index: 2.6.20-rc4-mm1/ipc/sem.c
-> > ===================================================================
-> > --- 2.6.20-rc4-mm1.orig/ipc/sem.c
-> > +++ 2.6.20-rc4-mm1/ipc/sem.c
-> > @@ -122,7 +122,7 @@ static int sysvipc_sem_proc_show(struct 
-> >  #define sc_semopm	sem_ctls[2]
-> >  #define sc_semmni	sem_ctls[3]
-> >  
-> > -static void __ipc_init __sem_init_ns(struct ipc_namespace *ns, struct ipc_ids *ids)
-> > +static void __sem_init_ns(struct ipc_namespace *ns, struct ipc_ids *ids)
-> >  {
-> >  	ns->ids[IPC_SEM_IDS] = ids;
-> >  	ns->sc_semmsl = SEMMSL;
-> > @@ -133,7 +133,6 @@ static void __ipc_init __sem_init_ns(str
-> >  	ipc_init_ids(ids, ns->sc_semmni);
-> >  }
-> >  
-> > -#ifdef CONFIG_IPC_NS
-> >  int sem_init_ns(struct ipc_namespace *ns)
-> >  {
-> >  	struct ipc_ids *ids;
-> > @@ -165,7 +164,6 @@ void sem_exit_ns(struct ipc_namespace *n
-> >  	kfree(ns->ids[IPC_SEM_IDS]);
-> >  	ns->ids[IPC_SEM_IDS] = NULL;
-> >  }
-> > -#endif
-> >  
-> >  void __init sem_init (void)
-> >  {
-> > Index: 2.6.20-rc4-mm1/ipc/shm.c
-> > ===================================================================
-> > --- 2.6.20-rc4-mm1.orig/ipc/shm.c
-> > +++ 2.6.20-rc4-mm1/ipc/shm.c
-> > @@ -67,7 +67,7 @@ static void shm_destroy (struct ipc_name
-> >  static int sysvipc_shm_proc_show(struct seq_file *s, void *it);
-> >  #endif
-> >  
-> > -static void __ipc_init __shm_init_ns(struct ipc_namespace *ns, struct ipc_ids *ids)
-> > +static void __shm_init_ns(struct ipc_namespace *ns, struct ipc_ids *ids)
-> >  {
-> >  	ns->ids[IPC_SHM_IDS] = ids;
-> >  	ns->shm_ctlmax = SHMMAX;
-> > @@ -88,7 +88,6 @@ static void do_shm_rmid(struct ipc_names
-> >  		shm_destroy(ns, shp);
-> >  }
-> >  
-> > -#ifdef CONFIG_IPC_NS
-> >  int shm_init_ns(struct ipc_namespace *ns)
-> >  {
-> >  	struct ipc_ids *ids;
-> > @@ -120,7 +119,6 @@ void shm_exit_ns(struct ipc_namespace *n
-> >  	kfree(ns->ids[IPC_SHM_IDS]);
-> >  	ns->ids[IPC_SHM_IDS] = NULL;
-> >  }
-> > -#endif
-> >  
-> >  void __init shm_init (void)
-> >  {
-> > Index: 2.6.20-rc4-mm1/ipc/util.c
-> > ===================================================================
-> > --- 2.6.20-rc4-mm1.orig/ipc/util.c
-> > +++ 2.6.20-rc4-mm1/ipc/util.c
-> > @@ -51,7 +51,6 @@ struct ipc_namespace init_ipc_ns = {
-> >  	},
 > >  };
 > >  
-> > -#ifdef CONFIG_IPC_NS
-> >  static struct ipc_namespace *clone_ipc_ns(struct ipc_namespace *old_ns)
+> >  static struct ctl_table pm_dir_table[] =
 > >  {
-> >  	int err;
-> > @@ -144,7 +143,6 @@ void free_ipc_ns(struct kref *kref)
-> >  	shm_exit_ns(ns);
-> >  	kfree(ns);
-> >  }
-> > -#endif
-> >  
-> >  /**
-> >   *	ipc_init	-	initialise IPC subsystem
-> > @@ -172,7 +170,7 @@ __initcall(ipc_init);
-> >   *	array itself. 
-> >   */
-> >   
-> > -void __ipc_init ipc_init_ids(struct ipc_ids* ids, int size)
-> > +void ipc_init_ids(struct ipc_ids* ids, int size)
-> >  {
-> >  	int i;
-> >  
-> > Index: 2.6.20-rc4-mm1/ipc/util.h
-> > ===================================================================
-> > --- 2.6.20-rc4-mm1.orig/ipc/util.h
-> > +++ 2.6.20-rc4-mm1/ipc/util.h
-> > @@ -41,12 +41,8 @@ struct ipc_ids {
+> > -	{CTL_PM, "pm", NULL, 0, 0555, pm_table},
+> > -	{0}
+> > +	{
+> > +		.ctl_name	= CTL_PM,
+> > +		.procname	= "pm",
+> > +		.mode		= 0555,
+> > +		.child		= pm_table,
+> > +	},
+> > +	{ .ctl_name = 0}
 > >  };
 > >  
-> >  struct seq_file;
-> > -#ifdef CONFIG_IPC_NS
-> > -#define __ipc_init
-> > -#else
-> > -#define __ipc_init	__init
-> > -#endif
-> > -void __ipc_init ipc_init_ids(struct ipc_ids *ids, int size);
-> > +
-> > +void ipc_init_ids(struct ipc_ids *ids, int size);
-> >  #ifdef CONFIG_PROC_FS
-> >  void __init ipc_init_proc_interface(const char *path, const char *header,
-> >  		int ids, int (*show)(struct seq_file *, void *));
-> > Index: 2.6.20-rc4-mm1/kernel/fork.c
-> > ===================================================================
-> > --- 2.6.20-rc4-mm1.orig/kernel/fork.c
-> > +++ 2.6.20-rc4-mm1/kernel/fork.c
-> > @@ -1595,16 +1595,6 @@ static int unshare_semundo(unsigned long
-> >  	return 0;
-> >  }
-> >  
-> > -#ifndef CONFIG_IPC_NS
-> > -static inline int unshare_ipcs(unsigned long flags, struct ipc_namespace **ns)
-> > -{
-> > -	if (flags & CLONE_NEWIPC)
-> > -		return -EINVAL;
-> > -
-> > -	return 0;
-> > -}
-> > -#endif
-> > -
 > >  /*
-> >   * unshare allows a process to 'unshare' part of the process
-> >   * context which was originally shared using clone.  copy_*
-> > _______________________________________________
-> > Containers mailing list
-> > Containers@lists.osdl.org
-> > https://lists.osdl.org/mailman/listinfo/containers
+> 
 > _______________________________________________
 > Containers mailing list
 > Containers@lists.osdl.org
