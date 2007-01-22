@@ -1,77 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932153AbXAVU6g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932169AbXAVVBw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932153AbXAVU6g (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jan 2007 15:58:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932195AbXAVU6g
+	id S932169AbXAVVBw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jan 2007 16:01:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932659AbXAVVBw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jan 2007 15:58:36 -0500
-Received: from cantor.suse.de ([195.135.220.2]:50701 "EHLO mx1.suse.de"
+	Mon, 22 Jan 2007 16:01:52 -0500
+Received: from mx1.suse.de ([195.135.220.2]:51029 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932169AbXAVU6f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jan 2007 15:58:35 -0500
-Date: Mon, 22 Jan 2007 21:58:29 +0100
-From: Bernhard Walle <bwalle@suse.de>
-To: Andrew Morton <akpm@osdl.org>
-Cc: Alon Bar-Lev <alon.barlev@gmail.com>,
-       Russell King <rmk+lkml@arm.linux.org.uk>, tom@dbservice.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 03/26] Dynamic kernel command-line - arm
-Message-ID: <20070122205829.GA20248@strauss.suse.de>
-Mail-Followup-To: Andrew Morton <akpm@osdl.org>,
-	Alon Bar-Lev <alon.barlev@gmail.com>,
-	Russell King <rmk+lkml@arm.linux.org.uk>, tom@dbservice.com,
-	linux-kernel@vger.kernel.org
-References: <20070118125849.441998000@strauss.suse.de> <20070118130028.719472000@strauss.suse.de> <20070118141359.GB31418@flint.arm.linux.org.uk> <45AF92E7.50901@dbservice.com> <20070118152326.GC31418@flint.arm.linux.org.uk> <20070122115650.d0be8bd3.akpm@osdl.org> <9e0cf0bf0701221231sc638114j2f0123650ffc14ea@mail.gmail.com> <20070122124442.9eed5fd9.akpm@osdl.org>
+	id S932647AbXAVVBv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jan 2007 16:01:51 -0500
+From: Neil Brown <neilb@suse.de>
+To: noah <noah123@gmail.com>
+Date: Tue, 23 Jan 2007 08:01:20 +1100
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="+HP7ph2BbKc20aGI"
-Content-Disposition: inline
-In-Reply-To: <20070122124442.9eed5fd9.akpm@osdl.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <17845.9760.806387.670182@notabene.brown>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Bug in drivers/md/md.c ?
+In-Reply-To: message from noah on Tuesday January 16
+References: <d00698fb0701160013w53d13a4eo6e22ff658fb460bb@mail.gmail.com>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tuesday January 16, noah123@gmail.com wrote:
+> Hi!
+> 
+> I'm getting "md: bug in file drivers/md/md.c, line 1652" (see below) after
+> writing data to a md-device using dd.
+> Is it really a bug or am I just using mdadm in the wrong way? I'm unsure
+> about the --assume-clean flag when creating the raid5 volume.
 
---+HP7ph2BbKc20aGI
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+It is a bug, not an incorrect usage.
 
-* Andrew Morton <akpm@osdl.org> [2007-01-22 21:44]:
->=20
-> > Some general comments... or should I CC other people etc...
-> > I submitted this several times but got almost no architecture to ACK.
-> >=20
-> > I just don't know how we can progress with this issue... All we wanted
-> > is to break the 256 limit in x86...
->=20
-> yes, the patches looked reasonable-looking.  But iirc they were against
-> 2.6.19 which is prehistoric.  Please redo and resend against a development
-> kernel.
+This patch (against 2.6.19-rcX) should fix it.
 
-I refreshed the patches from Alon against 2.6.20-rc4-mm1. Or was I
-totally wrong?
+Thanks,
+NeilBrown
 
 
 
-Regards,
-Bernhard
---=20
-SUSE LINUX Products GmbH                E-Mail:  bwalle@suse.de
-Maxfeldstr. 5                           Phone:   +49 (911) 74053-0
-90409 N=FCrnberg, Germany
-OpenPGP DDAF6454: F61F 34CC 09CA FB82 C9F6  BA4B 8865 3696 DDAF 6454
+Make sure the events count in an md array never returns to zero.
 
---+HP7ph2BbKc20aGI
-Content-Type: application/pgp-signature
-Content-Disposition: inline
+Now that we sometimes step the array events count backwards
+(when transitioning dirty->clean where nothing else interesting
+has happened - so that we don't need to write to spares all the time),
+it is possible for the event count to return to zero, which is
+potentially confusing and triggers and MD_BUG.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
+We could possibly remove the MD_BUG, but is just as easy, and
+probably safer, to make sure we never return to zero.
 
-iD8DBQFFtSV1iGU2lt2vZFQRAgNTAKCuMN0r/EP+8YzWCAGmV9+8Osi73ACfUY9q
-rh3+yjfHM8J/LaFJuL8erJU=
-=WRSc
------END PGP SIGNATURE-----
+Signed-off-by: Neil Brown <neilb@suse.de>
 
---+HP7ph2BbKc20aGI--
+### Diffstat output
+ ./drivers/md/md.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff .prev/drivers/md/md.c ./drivers/md/md.c
+--- .prev/drivers/md/md.c	2007-01-22 09:08:17.000000000 +1100
++++ ./drivers/md/md.c	2007-01-23 07:53:32.000000000 +1100
+@@ -1633,7 +1633,8 @@ repeat:
+ 	 * and 'events' is odd, we can roll back to the previous clean state */
+ 	if (nospares
+ 	    && (mddev->in_sync && mddev->recovery_cp == MaxSector)
+-	    && (mddev->events & 1))
++	    && (mddev->events & 1)
++	    && mddev->events != 1)
+ 		mddev->events--;
+ 	else {
+ 		/* otherwise we have to go forward and ... */
