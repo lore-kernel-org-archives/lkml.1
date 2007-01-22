@@ -1,46 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751936AbXAVTie@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932066AbXAVTlF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751936AbXAVTie (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jan 2007 14:38:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932066AbXAVTid
+	id S932066AbXAVTlF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jan 2007 14:41:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751968AbXAVTlF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jan 2007 14:38:33 -0500
-Received: from main.gmane.org ([80.91.229.2]:47742 "EHLO ciao.gmane.org"
+	Mon, 22 Jan 2007 14:41:05 -0500
+Received: from mga01.intel.com ([192.55.52.88]:32908 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751936AbXAVTid (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jan 2007 14:38:33 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Nicolas Bareil <nico@chdir.org>
-Subject: Re: Linux 2.6.19.2 : Oops
-Date: Mon, 22 Jan 2007 20:37:55 +0100
-Message-ID: <87hcuiam3w.fsf@boz.loft.chdir.org>
-References: <873b6a6ji0.fsf@boz.loft.chdir.org>
-	<20070117233545.GA12717@kroah.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Complaints-To: usenet@sea.gmane.org
-X-Gmane-NNTP-Posting-Host: moog.chdir.org
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.0.92 (gnu/linux)
-Cancel-Lock: sha1:hIDES0FVYFt5ZSGIHxuhDiMA5g0=
+	id S1751938AbXAVTlE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jan 2007 14:41:04 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: i="4.13,221,1167638400"; 
+   d="scan'208"; a="190861298:sNHT25659522"
+Message-ID: <45B5134B.3030909@intel.com>
+Date: Mon, 22 Jan 2007 11:40:59 -0800
+From: Auke Kok <auke-jan.h.kok@intel.com>
+User-Agent: Mail/News 1.5.0.9 (X11/20061228)
+MIME-Version: 1.0
+To: Jeff Garzik <jeff@garzik.org>
+CC: Auke Kok <auke-jan.h.kok@intel.com>, Andrew Morton <akpm@osdl.org>,
+       Linus Torvalds <torvalds@osdl.org>, netdev@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [git patches] net driver fixes
+References: <20070122185508.GA4648@havoc.gtf.org> <45B50A73.7000000@intel.com> <45B50E78.7000107@garzik.org>
+In-Reply-To: <45B50E78.7000107@garzik.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 22 Jan 2007 19:41:01.0089 (UTC) FILETIME=[3EDCD910:01C73E5D]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH <greg@kroah.com> writes:
->> Since 2.6.19, I get the following Oops once a day, always with the same
->> process, newspipe[1] which use a lot of CPU, threads and I/O.
->> 
->> The kernel is patched by Grsecurity. The ext3 filesystem is on a
->> software RAID device (the two disks are SATA2). I tested the 
->> hardware (RAM, SMART disks) but nothing seem problematic.
->
-> Can you reproduce it without the grsec patch applied?
+Jeff Garzik wrote:
+> Auke Kok wrote:
+>> Jeff Garzik wrote:
+>>> Please pull from 'upstream-linus' branch of
+>>> master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/netdev-2.6.git 
+>>> upstream-linus
+>>
+>> Jeff,
+>>
+>> is there a reason that you didn't pull the e1000 tree from us? I send 
+>> you all the information 5 days ago, WITH the changes that you requested.
+> 
+> I did pull the tree.  The fixes were far more than just obvious 
+> one-liners, so they got pulled into #upstream.
 
-After 4 days of tests without grsec, I didn't had any Oops. So it seems
-I will have to find this bug with the grsecurity developpers...
+Forgive me for not seeing the 'pulled' message! I still don't see them in your 
+tree on kernel.org either. Is it just slow again?
 
-Thank you!
--- 
-Nicolas Bareil                                  http://chdir.org/~nico/
-OpenPGP=0xAE4F7057 Fingerprint=34DB22091049FB2F33E6B71580F314DAAE4F7057
 
+Cheers,
+
+Auke
