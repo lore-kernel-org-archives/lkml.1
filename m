@@ -1,84 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932695AbXAVVCO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932648AbXAVVCR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932695AbXAVVCO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jan 2007 16:02:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932692AbXAVVCN
+	id S932648AbXAVVCR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jan 2007 16:02:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932666AbXAVVCP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jan 2007 16:02:13 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:53019 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932666AbXAVVCL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jan 2007 16:02:15 -0500
+Received: from nf-out-0910.google.com ([64.233.182.190]:47431 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932648AbXAVVCL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 22 Jan 2007 16:02:11 -0500
-Message-ID: <45B5261B.1050104@redhat.com>
-Date: Mon, 22 Jan 2007 16:01:15 -0500
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=oou0wa+u3fmEt2QaClFDeZQTI3TgRCo/SkiJG8ci4CcAo11NjY+gel3nvmymR/3LCzrHaH+xVa1vTgllvukYaIjMsZ9HieazNVs5cQfFQbPYvuE5csN4dPuS1HDrMddS29Jg6L3H4R+x05BlKqY/em3d7tfA9x4R/6xcXGdRwws=
+Message-ID: <9e0cf0bf0701221302t390246d3v4bb3e2141c61f6f8@mail.gmail.com>
+Date: Mon, 22 Jan 2007 23:02:04 +0200
+From: "Alon Bar-Lev" <alon.barlev@gmail.com>
+To: "Andrew Morton" <akpm@osdl.org>, "Alon Bar-Lev" <alon.barlev@gmail.com>,
+       "Russell King" <rmk+lkml@arm.linux.org.uk>, tom@dbservice.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 03/26] Dynamic kernel command-line - arm
+In-Reply-To: <20070122205829.GA20248@strauss.suse.de>
 MIME-Version: 1.0
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-CC: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org, xfs@oss.sgi.com,
-       Neil Brown <neilb@suse.de>
-Subject: Re: Kernel 2.6.19.2 New RAID 5 Bug (oops when writing Samba -> RAID5)
-References: <Pine.LNX.4.64.0701200718290.29223@p34.internal.lan>
-In-Reply-To: <Pine.LNX.4.64.0701200718290.29223@p34.internal.lan>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070118125849.441998000@strauss.suse.de>
+	 <20070118130028.719472000@strauss.suse.de>
+	 <20070118141359.GB31418@flint.arm.linux.org.uk>
+	 <45AF92E7.50901@dbservice.com>
+	 <20070118152326.GC31418@flint.arm.linux.org.uk>
+	 <20070122115650.d0be8bd3.akpm@osdl.org>
+	 <9e0cf0bf0701221231sc638114j2f0123650ffc14ea@mail.gmail.com>
+	 <20070122124442.9eed5fd9.akpm@osdl.org>
+	 <20070122205829.GA20248@strauss.suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Justin Piszcz wrote:
-> My .config is attached, please let me know if any other information is 
-> needed and please CC (lkml) as I am not on the list, thanks!
->
-> Running Kernel 2.6.19.2 on a MD RAID5 volume.  Copying files over Samba to 
-> the RAID5 running XFS.
->
-> Any idea what happened here?
->
-> [473795.214705] BUG: unable to handle kernel paging request at virtual 
-> address fffb92b0
-> [473795.214715]  printing eip:
-> [473795.214718] c0358b14
-> [473795.214721] *pde = 00003067
-> [473795.214723] *pte = 00000000
-> [473795.214726] Oops: 0000 [#1]
-> [473795.214729] PREEMPT SMP 
-> [473795.214736] CPU:    0
-> [473795.214737] EIP:    0060:[<c0358b14>]    Not tainted VLI
-> [473795.214738] EFLAGS: 00010286   (2.6.19.2 #1)
-> [473795.214746] EIP is at copy_data+0x6c/0x179
-> [473795.214750] eax: 00000000   ebx: 00001000   ecx: 00000354   edx: fffb9000
-> [473795.214754] esi: fffb92b0   edi: da86c2b0   ebp: 00001000   esp: f7927dc4
-> [473795.214757] ds: 007b   es: 007b   ss: 0068
-> [473795.214761] Process md4_raid5 (pid: 1305, ti=f7926000 task=f7ea9030 task.ti=f7926000)
-> [473795.214765] Stack: c1ba7c40 00000003 f5538c80 00000001 da86c000 00000009 00000000 0000006c 
-> [473795.214790]        00001000 da8536a8 aa6fee90 f5538c80 00000190 c0358d00 aa6fee88 0000ffff 
-> [473795.214863]        d7c5794c 00000001 da853488 f6fbec70 f6fbebc0 00000001 00000005 00000001 
-> [473795.214876] Call Trace:
-> [473795.214880]  [<c0358d00>] compute_parity5+0xdf/0x497
-> [473795.214887]  [<c035b0dd>] handle_stripe+0x930/0x2986
-> [473795.214892]  [<c01146b9>] find_busiest_group+0x124/0x4fd
-> [473795.214898]  [<c03580e0>] release_stripe+0x21/0x2e
-> [473795.214902]  [<c035d233>] raid5d+0x100/0x161
-> [473795.214907]  [<c036b03c>] md_thread+0x40/0x103
-> [473795.214912]  [<c012dbbe>] autoremove_wake_function+0x0/0x4b
-> [473795.214917]  [<c036affc>] md_thread+0x0/0x103
-> [473795.214922]  [<c012da1a>] kthread+0xfc/0x100
-> [473795.214926]  [<c012d91e>] kthread+0x0/0x100
-> [473795.214930]  [<c0103b4b>] kernel_thread_helper+0x7/0x1c
-> [473795.214935]  =======================
-> [473795.214938] Code: 14 39 d1 0f 8d 10 01 00 00 89 c8 01 c0 01 c8 01 c0 
-> 01 c0 89 44 24 1c eb 51 89 d9 c1 e9 02 8b 7c 24 10 01 f7 8b 44 24 18 8d 34 
-> 02 <f3> a5 89 d9 83 e1 03 74 02 f3 a4 c7 44 24 04 03 00 00 00 89 14 
-> [473795.215017] EIP: [<c0358b14>] copy_data+0x6c/0x179 SS:ESP 
-> 0068:f7927dc4
->   
-Without digging too deeply, I'd say you've hit the same bug Sami Farin 
-and others
-have reported starting with 2.6.19: pages mapped with kmap_atomic() 
-become unmapped
-during memcpy() or similar operations.  Try disabling preempt -- that 
-seems to be the
-common factor.
+On 1/22/07, Bernhard Walle <bwalle@suse.de> wrote:
+> I refreshed the patches from Alon against 2.6.20-rc4-mm1. Or was I
+> totally wrong?
 
+I don't know what is "Avoid top-posting? ;)" I hope it is a good thing... :)
+I will look at it again and submit it as requested.
 
+Thank you,
+Alon Bar-Lev.
