@@ -1,59 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751952AbXAVVz1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932155AbXAVWAF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751952AbXAVVz1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jan 2007 16:55:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751953AbXAVVz0
+	id S932155AbXAVWAF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jan 2007 17:00:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932108AbXAVWAE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jan 2007 16:55:26 -0500
-Received: from outbound-mail-43.bluehost.com ([69.89.18.12]:37992 "HELO
-	outbound-mail-43.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751952AbXAVVzZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jan 2007 16:55:25 -0500
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Olivier Galibert <galibert@pobox.com>
-Subject: Re: [PATCH] update MMConfig patches w/915 support
-Date: Mon, 22 Jan 2007 13:55:33 -0800
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>
-References: <200701071142.09428.jbarnes@virtuousgeek.org> <200701081327.16019.jbarnes@virtuousgeek.org> <20070116192800.GB4192@dspnet.fr.eu.org>
-In-Reply-To: <20070116192800.GB4192@dspnet.fr.eu.org>
+	Mon, 22 Jan 2007 17:00:04 -0500
+Received: from ns1.suse.de ([195.135.220.2]:54810 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932094AbXAVWAB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jan 2007 17:00:01 -0500
+From: Neil Brown <neilb@suse.de>
+To: Chuck Ebbert <cebbert@redhat.com>
+Date: Tue, 23 Jan 2007 08:59:36 +1100
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200701221355.34810.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 67.161.73.10 authed with jbarnes@virtuousgeek.org}
+Message-ID: <17845.13256.284461.992275@notabene.brown>
+Cc: Justin Piszcz <jpiszcz@lucidpixels.com>, linux-kernel@vger.kernel.org,
+       linux-raid@vger.kernel.org, xfs@oss.sgi.com
+Subject: Re: Kernel 2.6.19.2 New RAID 5 Bug (oops when writing Samba -> RAID5)
+In-Reply-To: message from Chuck Ebbert on Monday January 22
+References: <Pine.LNX.4.64.0701200718290.29223@p34.internal.lan>
+	<45B5261B.1050104@redhat.com>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, January 16, 2007 11:28 am, Olivier Galibert wrote:
-> > But won't the bridge register value control what actually gets
-> > decoded? If so, it sounds like this BIOS is buggy wrt mmconfig
-> > mapping in general; good thing I'm not using any PCIe devices I
-> > guess...
->
-> Yeah.  I've checked the docs, I think I know what's going on.  On one
-> hand, if the chipset is configured to have the range somewhere, it is
-> decoded before anything external to the chipset, be it ram or mmaped
-> i/o.  So the information you get from the chipset should not be able
-> to conflict with anything by definition, it's the anything that
-> wouldn't be visible.
->
-> But in your case of a f0000000-ffffffff mapping, something else
-> interesting is going on: it's conflicting with other internal
-> registers of the chipset, which, being fixed address, probably have
-> priority.  So you probably have to either reduce the range so that
-> the chipset registers aren't touched, or drop mmconfig if the address
-> is f0000000.
->
-> Technically, we can have the exact same problem with the other
-> chipsets.  BIOSen suck.
+On Monday January 22, cebbert@redhat.com wrote:
+> Justin Piszcz wrote:
+> > My .config is attached, please let me know if any other information is 
+> > needed and please CC (lkml) as I am not on the list, thanks!
+> >
+> > Running Kernel 2.6.19.2 on a MD RAID5 volume.  Copying files over Samba to 
+> > the RAID5 running XFS.
+> >
+> > Any idea what happened here?
+....
+> >   
+> Without digging too deeply, I'd say you've hit the same bug Sami Farin 
+> and others
+> have reported starting with 2.6.19: pages mapped with kmap_atomic() 
+> become unmapped
+> during memcpy() or similar operations.  Try disabling preempt -- that 
+> seems to be the
+> common factor.
 
-Ouch.  It doesn't seem like there's a sane general way to fix this up, 
-aside from some sort of blacklist.  Maybe it's best to leave this 
-particular bridge unsupported for now...
+That is exactly the conclusion I had just come to (a kmap_atomic page
+must be being unmapped during memcpy).  I wasn't aware that others had
+reported it - thanks for that.
 
-Thanks,
-Jesse
+Turning off CONFIG_PREEMPT certainly seems like a good idea.
+
+NeilBrown
