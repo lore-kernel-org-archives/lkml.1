@@ -1,83 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751826AbXAVTYm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751962AbXAVT2g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751826AbXAVTYm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jan 2007 14:24:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751963AbXAVTYm
+	id S1751962AbXAVT2g (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jan 2007 14:28:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751959AbXAVT2g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jan 2007 14:24:42 -0500
-Received: from scrye.com ([216.17.180.1]:54476 "EHLO mail.scrye.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751850AbXAVTYl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jan 2007 14:24:41 -0500
-Subject: Re: PROBLEM: KB->KiB, MB -> MiB, ... (IEC 60027-2)
-From: Tony Foiani <tkil@scrye.com>
-Reply-To: Tony Foiani <tkil@scrye.com>
-X-Attribution: Tony
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Eduard Bloch <edi@gmx.de>, Bodo Eggert <7eggert@gmx.de>,
-       David Schwartz <davids@webmaster.com>,
-       Leon Woestenberg <leon.woestenberg@gmail.com>,
-       linux-kernel@vger.kernel.org
-References: <7FsPf-51s-9@gated-at.bofh.it> <7FxlV-3sb-1@gated-at.bofh.it> <7FyUF-5XD-21@gated-at.bofh.it> <E1H8a7s-0000at-Jx@be1.lrz> <20070121111000.GA6679@rotes76.wohnheim.uni-kl.de> <20070122155354.GB25916@csclub.uwaterloo.ca> <Pine.LNX.4.61.0701221756000.317@yvahk01.tjqt.qr> <20070122183619.2db6538e@localhost.localdomain>
-Date: Mon, 22 Jan 2007 12:24:40 -0700
-In-Reply-To: <20070122183619.2db6538e@localhost.localdomain> (alan@lxorguk.ukuu.org.uk's message of "Mon, 22 Jan 2007 18:36:19 +0000")
-Message-ID: <gsle2n9tz.fsf@brand.scrye.com>
-User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.5-b27 (linux)
+	Mon, 22 Jan 2007 14:28:36 -0500
+Received: from fed1rmmtao05.cox.net ([68.230.241.34]:59928 "EHLO
+	fed1rmmtao05.cox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751850AbXAVT2e (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jan 2007 14:28:34 -0500
+From: Junio C Hamano <junkio@cox.net>
+To: Carl Worth <cworth@cworth.org>
+Cc: git@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [Announce] GIT v1.5.0-rc2
+References: <7v64b04v2e.fsf@assigned-by-dhcp.cox.net>
+	<7v3b6439uh.fsf@assigned-by-dhcp.cox.net>
+	<87lkjvhr2c.wl%cworth@cworth.org>
+Date: Mon, 22 Jan 2007 11:28:32 -0800
+In-Reply-To: <87lkjvhr2c.wl%cworth@cworth.org> (Carl Worth's message of "Mon,
+	22 Jan 2007 10:08:59 -0800")
+Message-ID: <7vd556uahr.fsf@assigned-by-dhcp.cox.net>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>>> "Jan" == Jan Engelhardt <jengelh@linux01.gwdg.de> writes:
+Thanks for your comments; the attached probably needs
+proofreading.
 
-Jan> For "F"s sake, when you gotta use abbreviations, then just use
-Jan> k=1000 and K=1024 already, b for bits and B for bytes. Problem
-Jan> gone.
+The changes in response to the remainder of your comments are
+quite straightforward and I do not think needs proofreading, so
+I'll incorporate them and push the result out in 'todo'.
 
-   The one-letter abbreviations are identical to SI prefixes, except
-   for "K", which is used interchangeably with "k" (in SI, "K" stands
-   for the kelvin, and only "k" stands for 1,000).
+diff --git a/v1.5.0.txt b/v1.5.0.txt
+index c0ff071..596bfd2 100644
+--- a/v1.5.0.txt
++++ b/v1.5.0.txt
+@@ -107,11 +107,40 @@ Updates in v1.5.0 since v1.4.4 series
+    already comfortable with your workflow with the layout.
+ 
+  - git-clone always uses what is known as "separate remote"
+-   layout for a newly created repository with a working tree;
+-   i.e. tracking branches in $GIT_DIR/refs/remotes/origin/ are
+-   used to track branches from the origin, instead of
+-   $GIT_DIR/refs/heads/, making the difference between remotely
+-   tracked and local branches more obvious.
++   layout for a newly created repository with a working tree.
++
++   A repository with the separate remote layout starts with only
++   one default branch, 'master', to be used for your own
++   development.  Unlike the traditional layout that copied all
++   the upstream branches into your branch namespace (while
++   renaming their 'master' to your 'origin'), they are not made
++   into your branches.  Instead, they are kept track of using
++   'refs/remotes/origin/$upstream_branch_name'.
++
++   This layout keeps your own branch namespace less cluttered,
++   avoids name collision with your upstream, makes it possible
++   to automatically track new branches created at the remote
++   after you clone from it, and makes it easier to interact with
++   more than one remote repositories.  There might be some
++   surprises:
++
++   * 'git branch' does not show the branches from your upstream.
++     It only lists your own branches.  Use '-r' option to view
++     the tracking branches.
++
++   * If you are forking off of a branch obtained from the
++     upstream, you would have done something like 'git branch
++     my-next next', because traditional layout dropped the
++     tracking branch 'next' into your own branch namespace.
++     With the separate remote layout, you say 'git branch next
++     origin/next', which allows you to use the matching name
++     'next' for your own branch.  It also allows you to track a
++     remote other than 'origin' (i.e. where you initially cloned
++     from) and fork off of a branch from there the same way
++     (e.g. "git branch mingw j6t/master").
++
++   Repositories initialized with the traditional layout
++   continues to work (and will continue to work).
+ 
+  - New branches that appear on the origin side after a clone is
+    made are also tracked automatically.  This is done with an
 
-   [...]
-
-   BIPM (which maintains SI) expressly prohibits the binary prefix
-   usage, and recommends the use of the IEC prefixes as an alternative
-   (computing units are not included in SI).
-
-   Some have suggested that "k" be used for 1,000, and "K" for 1,024,
-   but this cannot be extended to the higher order prefixes and has
-   never been widely recognised.
-   -- http://en.wikipedia.org/wiki/Binary_prefix
-
-So if you continue insisting that "MB" is really 2^20 bytes, you're
-flouting the SI in at least two ways.  I'd expect that from an USAian,
-not a German.  ;-> (To be clear, I *am* a USAian, and I really
-desperately wish this country were metric...)
-
-Some other gems from that article that haven't been covered in this
-thread:
-
- * CD-Rs are generally specified in MiB, but DVD-Rs in GB
- * CPU clocks are given in decimal
-
-(See http://en.wikipedia.org/wiki/Binary_prefix#Usage_notes )
-
-It also points out that there are some ongoing lawsuits on exactly
-this topic, completely analogous to the CRT diagonal cases.
-
->>>>> "Alan" == Alan Cox <alan@lxorguk.ukuu.org.uk> writes:
-
-Alan> K is Kelvin, k is kilo-
-
-One nice thing about IEC 60027-2 is that it seems to have fixed the
-capitalization inconsistency; kibi- really is "Ki".
-
-(I never cared for the lower-case "k" for "kilo-"; there are other
-clashes of symbols in the SI system proper; think "milli-" and
-"meter".)
-
-The standard also specifically states that "B", when used with the
-binary prefixes, is "byte" not "Bel".  Which is nice.
-
-t.
