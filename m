@@ -1,60 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751972AbXAVU2w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932157AbXAVU25@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751972AbXAVU2w (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jan 2007 15:28:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751981AbXAVU2w
+	id S932157AbXAVU25 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jan 2007 15:28:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932153AbXAVU25
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jan 2007 15:28:52 -0500
-Received: from coyote.holtmann.net ([217.160.111.169]:54562 "EHLO
-	mail.holtmann.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751972AbXAVU2v (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jan 2007 15:28:51 -0500
-Subject: Re: [linux-usb-devel] [GIT PATCH] USB fixes for 2.6.20-rc5
-From: Marcel Holtmann <marcel@holtmann.org>
-To: Greg KH <gregkh@suse.de>
-Cc: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
-       linux-kernel@vger.kernel.org, linux-usb-devel@lists.sourceforge.net
-In-Reply-To: <20070122202344.GA10579@suse.de>
-References: <20070122200746.GA9936@kroah.com>
-	 <1169496904.27023.11.camel@violet>  <20070122202344.GA10579@suse.de>
-Content-Type: text/plain
-Date: Mon, 22 Jan 2007 21:28:24 +0100
-Message-Id: <1169497704.27023.13.camel@violet>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.9.5 
+	Mon, 22 Jan 2007 15:28:57 -0500
+Received: from h155.mvista.com ([63.81.120.155]:36756 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751980AbXAVU24 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jan 2007 15:28:56 -0500
+Message-ID: <45B51E83.1010904@ru.mvista.com>
+Date: Mon, 22 Jan 2007 23:28:51 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
+MIME-Version: 1.0
+To: Alan <alan@lxorguk.ukuu.org.uk>
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 13/15] ide: fix UDMA/MWDMA/SWDMA masks
+References: <20070119003058.14846.43637.sendpatchset@localhost.localdomain>	<20070119003226.14846.87052.sendpatchset@localhost.localdomain>	<45B4FFBD.40507@ru.mvista.com> <20070122184620.1c8b87ac@localhost.localdomain>
+In-Reply-To: <20070122184620.1c8b87ac@localhost.localdomain>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Greg,
+Hello.
 
-> > > They include a small number of fixes for some USB bugs, and some new
-> > > device ids, all of the details are below.  I've also disabled the USB
-> > > multithreaded probe option, as it broke a number of people's machines.
-> > 
-> > what about the two pending patches to make device_move() working as
-> > expected. The current implementation is broken and basically useless.
-> 
-> I don't feel comfortable adding them to the 2.6.20 kernel at this late
-> period, for a variety of reasons.  I really want them to be tested out
-> in the -mm tree and then in the full -rc series due to the fact that
-> they are non-trivial, and touch the driver core code that everyone uses,
-> not just that function.
+Alan wrote:
 
-fair enough.
+>>    Ugh, I'm not seeing any *actual* support for MW/SW DMA in this driver... 
 
-> Also, it's a new feature (reparent back to the original parent), not
-> necessarily a bugfix.
-> 
-> And yes, I realize that the functions don't work fully right now, but as
-> long as you don't want to re-parent the devices, they should work,
-> right?
+> Thats long been broken. Should be correct in the libata driver
 
-Actually even that was broken for me.
+    Here's a surprise for you. pata_cmd64x copied the SW/MW DMA setup code 
+from the IDE driver.  No way it could be working.  You may check against the 
+PC64x datasheets (if you have them -- if you don't I think I may share) and 
+see for yourself -- it's abolutely idiotic.
 
-Regards
+> Alan
 
-Marcel
-
-
+WBR, Sergei
