@@ -1,158 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751966AbXAVWKA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932078AbXAVWMI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751966AbXAVWKA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jan 2007 17:10:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751955AbXAVWKA
+	id S932078AbXAVWMI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jan 2007 17:12:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932096AbXAVWMH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jan 2007 17:10:00 -0500
-Received: from MAIL.13thfloor.at ([213.145.232.33]:40282 "EHLO
-	MAIL.13thfloor.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751954AbXAVWJ7 (ORCPT
+	Mon, 22 Jan 2007 17:12:07 -0500
+Received: from smtp107.sbc.mail.mud.yahoo.com ([68.142.198.206]:30566 "HELO
+	smtp107.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S932078AbXAVWMG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jan 2007 17:09:59 -0500
-Date: Mon, 22 Jan 2007 23:09:58 +0100
-From: Herbert Poetzl <herbert@13thfloor.at>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: Cedric Le Goater <clg@fr.ibm.com>,
-       Linux Containers <containers@lists.osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH -mm] uts namespace : remove CONFIG_UTS_NS
-Message-ID: <20070122220958.GA11128@MAIL.13thfloor.at>
-Mail-Followup-To: "Serge E. Hallyn" <serue@us.ibm.com>,
-	Cedric Le Goater <clg@fr.ibm.com>,
-	Linux Containers <containers@lists.osdl.org>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <45ACE104.6090306@fr.ibm.com> <20070116152734.GE28253@sergelap.austin.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 22 Jan 2007 17:12:06 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=j7o4kpujUmGRHlTuCShXHSUf2ARYF8mkqW5nLIEW8/hTV3mvLyu5TDITYTx17Kd70965qT3wwg+7geq06VAQW5La441q/h0YK0C7zGUmJKSMmzEp86IWKNIOiwsFW/fLrmnrZSzCovGL6aqQcHms66acK6Pe1i5G88av7Cz3TaM=  ;
+X-YMail-OSG: e30Sat4VM1lXFV7kOuZi5bPlhkkYPGsaJb8nJ4j0XSmaNI2C8BW4FntORQZv_58eBzpDyQ5mNjfiTiP1GeyPzP5UV523B4rpXBsjS.6EGcx5RS9AP7GjibxgUp4dHPQ-
+From: David Brownell <david-b@pacbell.net>
+To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+Subject: Re: [PATCH 2.6.20-rc5] SPI: alternative fix for spi_busnum_to_master
+Date: Mon, 22 Jan 2007 14:12:02 -0800
+User-Agent: KMail/1.7.1
+Cc: linux-kernel@vger.kernel.org, hcegtvedt@atmel.com, akpm@osdl.org
+References: <20070118.202849.70477632.nemoto@toshiba-tops.co.jp> <20070122.112509.55511116.nemoto@toshiba-tops.co.jp>
+In-Reply-To: <20070122.112509.55511116.nemoto@toshiba-tops.co.jp>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070116152734.GE28253@sergelap.austin.ibm.com>
-User-Agent: Mutt/1.5.11
+Message-Id: <200701221412.02452.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 16, 2007 at 09:27:34AM -0600, Serge E. Hallyn wrote:
-> Quoting Cedric Le Goater (clg@fr.ibm.com):
-> > CONFIG_UTS_NS has very little value as it only deactivates the unshare
-> > of the uts namespace and does not improve performance.
-> > 
-> > Signed-off-by: Cedric Le Goater <clg@fr.ibm.com>
+On Sunday 21 January 2007 6:25 pm, Atsushi Nemoto wrote:
+
+> Here is a revised version.  The children list of spi_master_class
+> contains only spi_master class so we can just compare bus_num member
+> instead of class_id string.
+
+Looks just a bit iffy ... though, thanks for helping to finally
+sort this out!
+
+
+> +	down(&spi_master_class.sem);
+> +	list_for_each_entry(cdev, &spi_master_class.children, node) {
+> +		cdev = class_device_get(cdev);
+> +		if (!cdev)
+> +			continue;
+
+That "continue" case doesn't seem like it should be possible... but
+at any rate, the "get" can be deferred until the relevent class
+device is known, since that _valid_ handle can't disappear so long
+as that semaphore is held.  And if you find the right device but
+can't get a reference ... no point in continuing!
+
+Something like a class_find_device() would be the best way to solve
+this sort of problem, IMO.  But we don't have one of those.  :(
+
+
+> +		master = container_of(cdev, struct spi_master, cdev);
+> +		if (master->bus_num == bus_num)
+> +			break;
+> +		master = NULL;
+> +		class_device_put(cdev);
+> +	}
+> +	up(&spi_master_class.sem);
+> +	return master;
+>  }
+>  EXPORT_SYMBOL_GPL(spi_busnum_to_master);
+>  
 > 
-> It really is worthless complication, with the sole effect being to
-> complicate testing...
-
-we already force that on by default (in Linux-VServer)
-and I don't think the code can be considered critical
-enough for special casing that ...
-
-so I'm perfectly fine with removing that for UTS
-
-best,
-Herbert
-
-> Acked-by: Serge Hallyn <serue@us.ibm.com>
-> 
-> > ---
-> >  include/linux/utsname.h |   19 -------------------
-> >  init/Kconfig            |    8 --------
-> >  kernel/Makefile         |    3 +--
-> >  kernel/sysctl.c         |    3 +--
-> >  4 files changed, 2 insertions(+), 31 deletions(-)
-> > 
-> > Index: 2.6.20-rc4-mm1/include/linux/utsname.h
-> > ===================================================================
-> > --- 2.6.20-rc4-mm1.orig/include/linux/utsname.h
-> > +++ 2.6.20-rc4-mm1/include/linux/utsname.h
-> > @@ -48,7 +48,6 @@ static inline void get_uts_ns(struct uts
-> >  	kref_get(&ns->kref);
-> >  }
-> > 
-> > -#ifdef CONFIG_UTS_NS
-> >  extern int unshare_utsname(unsigned long unshare_flags,
-> >  				struct uts_namespace **new_uts);
-> >  extern int copy_utsname(int flags, struct task_struct *tsk);
-> > @@ -58,24 +57,6 @@ static inline void put_uts_ns(struct uts
-> >  {
-> >  	kref_put(&ns->kref, free_uts_ns);
-> >  }
-> > -#else
-> > -static inline int unshare_utsname(unsigned long unshare_flags,
-> > -			struct uts_namespace **new_uts)
-> > -{
-> > -	if (unshare_flags & CLONE_NEWUTS)
-> > -		return -EINVAL;
-> > -
-> > -	return 0;
-> > -}
-> > -
-> > -static inline int copy_utsname(int flags, struct task_struct *tsk)
-> > -{
-> > -	return 0;
-> > -}
-> > -static inline void put_uts_ns(struct uts_namespace *ns)
-> > -{
-> > -}
-> > -#endif
-> > 
-> >  static inline struct new_utsname *utsname(void)
-> >  {
-> > Index: 2.6.20-rc4-mm1/init/Kconfig
-> > ===================================================================
-> > --- 2.6.20-rc4-mm1.orig/init/Kconfig
-> > +++ 2.6.20-rc4-mm1/init/Kconfig
-> > @@ -205,14 +205,6 @@ config TASK_DELAY_ACCT
-> > 
-> >  	  Say N if unsure.
-> > 
-> > -config UTS_NS
-> > -	bool "UTS Namespaces"
-> > -	default n
-> > -	help
-> > -	  Support uts namespaces.  This allows containers, i.e.
-> > -	  vservers, to use uts namespaces to provide different
-> > -	  uts info for different servers.  If unsure, say N.
-> > -
-> >  config AUDIT
-> >  	bool "Auditing support"
-> >  	depends on NET
-> > Index: 2.6.20-rc4-mm1/kernel/Makefile
-> > ===================================================================
-> > --- 2.6.20-rc4-mm1.orig/kernel/Makefile
-> > +++ 2.6.20-rc4-mm1/kernel/Makefile
-> > @@ -8,7 +8,7 @@ obj-y     = sched.o fork.o exec_domain.o
-> >  	    signal.o sys.o kmod.o workqueue.o pid.o \
-> >  	    rcupdate.o extable.o params.o posix-timers.o \
-> >  	    kthread.o wait.o kfifo.o sys_ni.o posix-cpu-timers.o mutex.o \
-> > -	    hrtimer.o rwsem.o latency.o nsproxy.o srcu.o
-> > +	    hrtimer.o rwsem.o latency.o nsproxy.o srcu.o utsname.o
-> > 
-> >  obj-$(CONFIG_STACKTRACE) += stacktrace.o
-> >  obj-y += time/
-> > @@ -48,7 +48,6 @@ obj-$(CONFIG_SECCOMP) += seccomp.o
-> >  obj-$(CONFIG_RCU_TORTURE_TEST) += rcutorture.o
-> >  obj-$(CONFIG_DEBUG_SYNCHRO_TEST) += synchro-test.o
-> >  obj-$(CONFIG_RELAY) += relay.o
-> > -obj-$(CONFIG_UTS_NS) += utsname.o
-> >  obj-$(CONFIG_TASK_DELAY_ACCT) += delayacct.o
-> >  obj-$(CONFIG_TASKSTATS) += taskstats.o tsacct.o
-> > 
-> > Index: 2.6.20-rc4-mm1/kernel/sysctl.c
-> > ===================================================================
-> > --- 2.6.20-rc4-mm1.orig/kernel/sysctl.c
-> > +++ 2.6.20-rc4-mm1/kernel/sysctl.c
-> > @@ -187,10 +187,9 @@ int sysctl_legacy_va_layout;
-> >  static void *get_uts(ctl_table *table, int write)
-> >  {
-> >  	char *which = table->data;
-> > -#ifdef CONFIG_UTS_NS
-> >  	struct uts_namespace *uts_ns = current->nsproxy->uts_ns;
-> >  	which = (which - (char *)&init_uts_ns) + (char *)uts_ns;
-> > -#endif
-> > +
-> >  	if (!write)
-> >  		down_read(&uts_sem);
-> >  	else
-> _______________________________________________
-> Containers mailing list
-> Containers@lists.osdl.org
-> https://lists.osdl.org/mailman/listinfo/containers
