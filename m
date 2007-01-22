@@ -1,24 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932435AbXAVT5M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751984AbXAVT5N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932435AbXAVT5M (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jan 2007 14:57:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932416AbXAVT4w
+	id S1751984AbXAVT5N (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jan 2007 14:57:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932432AbXAVT5M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jan 2007 14:56:52 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:45513 "EHLO smtp.osdl.org"
+	Mon, 22 Jan 2007 14:57:12 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:45617 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751970AbXAVT4u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jan 2007 14:56:50 -0500
-Date: Mon, 22 Jan 2007 11:56:24 -0800
+	id S1751997AbXAVT5J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jan 2007 14:57:09 -0500
+Date: Mon, 22 Jan 2007 11:56:50 -0800
 From: Andrew Morton <akpm@osdl.org>
-To: Ben Dooks <ben@trinity.fluff.org>
-Cc: rpurdie@rpsys.net, ben-linux@fluff.org, linux-kernel@vger.kernel.org
-Subject: Re: LEDS: S3C24XX generate name if none given
-Message-Id: <20070122115624.2aefb97c.akpm@osdl.org>
-In-Reply-To: <20070115154221.GH11889@trinity.fluff.org>
-References: <20070115122654.GA25047@home.fluff.org>
-	<1168868669.5860.49.camel@localhost.localdomain>
-	<20070115154221.GH11889@trinity.fluff.org>
+To: Russell King <rmk+lkml@arm.linux.org.uk>
+Cc: tom@dbservice.com, bwalle@suse.de, linux-kernel@vger.kernel.org,
+       alon.barlev@gmail.com
+Subject: Re: [patch 03/26] Dynamic kernel command-line - arm
+Message-Id: <20070122115650.d0be8bd3.akpm@osdl.org>
+In-Reply-To: <20070118152326.GC31418@flint.arm.linux.org.uk>
+References: <20070118125849.441998000@strauss.suse.de>
+	<20070118130028.719472000@strauss.suse.de>
+	<20070118141359.GB31418@flint.arm.linux.org.uk>
+	<45AF92E7.50901@dbservice.com>
+	<20070118152326.GC31418@flint.arm.linux.org.uk>
 X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -26,25 +29,38 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Mon, 15 Jan 2007 15:42:21 +0000 Ben Dooks <ben@trinity.fluff.org> wrote:
-> On Mon, Jan 15, 2007 at 01:44:28PM +0000, Richard Purdie wrote:
-> > On Mon, 2007-01-15 at 12:26 +0000, Ben Dooks wrote:
-> > > Generate a name if none is passed to the S3C24XX GPIO LED driver.
+> On Thu, 18 Jan 2007 15:23:26 +0000 Russell King <rmk+lkml@arm.linux.org.uk> wrote:
+> On Thu, Jan 18, 2007 at 04:31:51PM +0100, Tomas Carnecky wrote:
+> > Russell King wrote:
+> > > On Thu, Jan 18, 2007 at 01:58:52PM +0100, Bernhard Walle wrote: 
+> > >> -static char command_line[COMMAND_LINE_SIZE];
+> > >> +static char __initdata command_line[COMMAND_LINE_SIZE];
+> > > 
+> > > Uninitialised data is placed in the BSS.  Adding __initdata to BSS
+> > > data causes grief.
+> > > 
+> > 
+> > Static variables are implicitly initialized to zero. Does that also
+> > count as initialization?
+> 
+> No.  As I say, they're placed in the BSS.  The BSS is zeroed as part of
+> the C runtime initialisation.
 
-Wouldn't it be better to fix the callers to consistently pass in a name
-rather than hacking around fixing stuff up in the callee?
+I don't understand the objection.  With the above change, command_line[]
+will end up consuming COMMAND_LINE_SIZE bytes of .data.init and will be
+reliably initialized to all-zeros by the compiler (won't it?)
 
-> +	/* create name if we were not passed one */
-> +
-> +	if (led->cdev.name == NULL) {
-> +		char name[64];
-> +
-> +		snprintf(name, sizeof(name), "%s.%d",  dev->name, dev->id);
-> +		led->cdev.name = kstrdup(name);
-> +	}
-> +
+> If you want to place a variable in a specific section, it must be
+> explicitly initialised.  Eg,
+> 
+> static char __initdata command_line[COMMAND_LINE_SIZE] = "";
+> 
+> However, there is a bigger question here: that is the tradeoff between
+> making this variable part of the on-disk kernel image, but throw away
+> the memory at runtime, or to leave it in the BSS where it will not be
+> part of the on-disk kernel image, but will not be thrown away at
+> runtime.
 
-Take a peek at kasprintf() ;)
+Yes, it'll take some space in vmlinux.  We could perhaps create a new
+__initbss to prevent that, I assume.
 
-Please include full-and-fresh changelog in each iteration of a patch, so
-poor patch-takers don't have to go making one up for you, thanks.
