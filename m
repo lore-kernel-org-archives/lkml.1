@@ -1,38 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932108AbXAVWm5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932260AbXAVW4I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932108AbXAVWm5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jan 2007 17:42:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932248AbXAVWm5
+	id S932260AbXAVW4I (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jan 2007 17:56:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932268AbXAVW4H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jan 2007 17:42:57 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:60565 "EHLO mx2.suse.de"
+	Mon, 22 Jan 2007 17:56:07 -0500
+Received: from mail.suse.de ([195.135.220.2]:58509 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932108AbXAVWm5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jan 2007 17:42:57 -0500
-Date: Mon, 22 Jan 2007 23:42:55 +0100
-From: Bernhard Walle <bwalle@suse.de>
-To: Tomas Carnecky <tom@dbservice.com>, linux-kernel@vger.kernel.org,
-       Alon Bar-Lev <alon.barlev@gmail.com>
-Subject: Re: [patch 03/26] Dynamic kernel command-line - arm
-Message-ID: <20070122224255.GA7549@strauss.suse.de>
-Mail-Followup-To: Tomas Carnecky <tom@dbservice.com>,
-	linux-kernel@vger.kernel.org, Alon Bar-Lev <alon.barlev@gmail.com>
-References: <20070118125849.441998000@strauss.suse.de> <20070118130028.719472000@strauss.suse.de> <20070118141359.GB31418@flint.arm.linux.org.uk> <45AF92E7.50901@dbservice.com> <20070118152326.GC31418@flint.arm.linux.org.uk> <20070122221400.GE6262@strauss.suse.de> <20070122222725.GB32085@flint.arm.linux.org.uk>
+	id S932260AbXAVW4G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jan 2007 17:56:06 -0500
+From: Neil Brown <neilb@suse.de>
+To: "yang yin" <yinyang801120@gmail.com>
+Date: Tue, 23 Jan 2007 09:55:40 +1100
+Message-ID: <17845.16620.741319.612842@notabene.brown>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070122222725.GB32085@flint.arm.linux.org.uk>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Transfer-Encoding: 7bit
+Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch] md: bitmap read_page error
+In-Reply-To: message from yang yin on Monday January 22
+References: <34781ae60701220003v76bd43c8h79c59b2b474b3c57@mail.gmail.com>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Russell King <rmk+lkml@arm.linux.org.uk> [2007-01-22 23:27]:
+On Monday January 22, yinyang801120@gmail.com wrote:
+> If the bitmap size is less than one page including super_block and
+> bitmap and the inode's i_blkbits is also small, when doing the
+> read_page function call to read the sb_page, it may return a error.
+> For example, if the device is 12800 chunks, its bitmap file size is
+> about 1.6KB include the bitmap super block. But the inode i_blkbits
+> value of the bitmap file is 10,  the read_page will submit 4 bh to
+> load the sb_page. Because the size of bitmap is only 1.6KB, in the
+> while loop, the error will ocurr when do bmap operation for the block
+> 2, which will  return 0. Then the bitmap can't be initated because of
+> ther read sb page fail.
 > 
-> which reflects precisely what I've been saying concerning the addition
-> of __initdata.
+> Another error is in the bitmap_init_from_disk function.  Before doing
+> read_page,. calculating the count value misses the size of super
+> block. When the bitmap just needs one page, It will read two pages
+> adding the super block. But at the second read, the count value will
+> be set to 0, and not all the bitmap will be read from the disk and
+> some bitmap will missed at the second page.
+> 
+> I give a patch as following:
 
-100 % correct, thanks.
+Thanks a lot for this.
+Rather than checking the file size in read_page, I would like to make
+sure the 'count' that is passed in never exceeds the size of the
+file.  This should have the same effect.
+
+So this is that patch I plan to submit.
+
+Thanks again,
+NeilBrown
 
 
-Regards,
-Bernhard
+------------------
+Avoid reading past the end of a bitmap file.
+
+In most cases we check the size of the bitmap file before
+reading data from it.  However when reading the superblock,
+we always read the first PAGE_SIZE bytes, which might not 
+always be appropriate.  So limit that read to the size of the
+file if appropriate.
+
+Also, we get the count of available bytes wrong in one place,
+so that too can read past the end of the file.
+
+Cc:  "yang yin" <yinyang801120@gmail.com>
+Signed-off-by: Neil Brown <neilb@suse.de>
+
+### Diffstat output
+ ./drivers/md/bitmap.c |   12 ++++++++----
+ 1 file changed, 8 insertions(+), 4 deletions(-)
+
+diff .prev/drivers/md/bitmap.c ./drivers/md/bitmap.c
+--- .prev/drivers/md/bitmap.c	2007-01-23 09:44:11.000000000 +1100
++++ ./drivers/md/bitmap.c	2007-01-23 09:44:59.000000000 +1100
+@@ -479,9 +479,12 @@ static int bitmap_read_sb(struct bitmap 
+ 	int err = -EINVAL;
+ 
+ 	/* page 0 is the superblock, read it... */
+-	if (bitmap->file)
+-		bitmap->sb_page = read_page(bitmap->file, 0, bitmap, PAGE_SIZE);
+-	else {
++	if (bitmap->file) {
++		loff_t isize = i_size_read(bitmap->file->f_mapping->host);
++		int bytes = isize > PAGE_SIZE ? PAGE_SIZE : isize;
++
++		bitmap->sb_page = read_page(bitmap->file, 0, bitmap, bytes);
++	} else {
+ 		bitmap->sb_page = read_sb_page(bitmap->mddev, bitmap->offset, 0);
+ 	}
+ 	if (IS_ERR(bitmap->sb_page)) {
+@@ -877,7 +880,8 @@ static int bitmap_init_from_disk(struct 
+ 			int count;
+ 			/* unmap the old page, we're done with it */
+ 			if (index == num_pages-1)
+-				count = bytes - index * PAGE_SIZE;
++				count = bytes + sizeof(bitmap_super_t)
++					- index * PAGE_SIZE;
+ 			else
+ 				count = PAGE_SIZE;
+ 			if (index == 0) {
