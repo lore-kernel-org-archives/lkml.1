@@ -1,202 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932100AbXAVTlP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932117AbXAVTpO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932100AbXAVTlP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jan 2007 14:41:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932123AbXAVTlO
+	id S932117AbXAVTpO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jan 2007 14:45:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932137AbXAVTpO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jan 2007 14:41:14 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:38081 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932100AbXAVTlG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jan 2007 14:41:06 -0500
-Date: Mon, 22 Jan 2007 20:39:10 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: john stultz <johnstul@us.ibm.com>
-Cc: Roman Zippel <zippel@linux-m68k.org>, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org
-Subject: Re: [patch] HZ-free NTP
-Message-ID: <20070122193909.GA18732@elte.hu>
-References: <Pine.LNX.4.64.0612061334230.1867@scrub.home> <20061206131155.GA8558@elte.hu> <Pine.LNX.4.64.0612061422190.1867@scrub.home> <1165956021.20229.10.camel@localhost> <Pine.LNX.4.64.0612131338420.1867@scrub.home> <1166037549.6425.21.camel@localhost.localdomain> <Pine.LNX.4.64.0612132125450.1867@scrub.home> <1166578357.5594.3.camel@localhost> <1166579658.5594.6.camel@localhost> <20070122192712.GC12911@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 22 Jan 2007 14:45:14 -0500
+Received: from outbound-blu.frontbridge.com ([65.55.251.16]:43080 "EHLO
+	outbound5-blu-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932117AbXAVTpL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jan 2007 14:45:11 -0500
+X-Greylist: delayed 4128 seconds by postgrey-1.27 at vger.kernel.org; Mon, 22 Jan 2007 14:45:11 EST
+X-BigFish: VP
+X-Server-Uuid: 5FC0E2DF-CD44-48CD-883A-0ED95B391E89
+Date: Mon, 22 Jan 2007 19:36:07 +0100
+From: "Andreas Herrmann" <andreas.herrmann3@amd.com>
+To: "Richard Gooch" <rgooch@atnf.csiro.au>
+cc: "linux-kernel" <linux-kernel@vger.kernel.org>
+Subject: [patch] mtrr: fix size_or_mask and size_and_mask
+Message-ID: <20070122183607.GA13729@alberich.amd.com>
+MIME-Version: 1.0
+User-Agent: mutt-ng/devel-r804 (Linux)
+X-OriginalArrivalTime: 22 Jan 2007 18:36:14.0136 (UTC)
+ FILETIME=[320EE380:01C73E54]
+X-WSS-ID: 69ABDBAB2MC5778028-01-01
+Content-Type: text/plain;
+ charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070122192712.GC12911@elte.hu>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -4.3
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-4.3 required=5.9 tests=ALL_TRUSTED,BAYES_00,UPPERCASE_25_50 autolearn=no SpamAssassin version=3.0.3
-	-3.3 ALL_TRUSTED            Did not pass through any untrusted hosts
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 UPPERCASE_25_50        message body is 25-50% uppercase
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+mtrr: fix size_or_mask and size_and_mask
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+This fixes two bugs in /proc/mtrr interface:
+o If physical address size crosses the 44 bit boundary
+  size_or_mask is evaluated wrong.
+o size_and_mask limits width of physical base
+  address for an MTRR to be less than 44 bits.
 
-> thanks John - i've applied the combined patch below to -rt. It appears 
-> to work fine for me.
-
-updated patch below. (previous one was a delta in timex.h)
-
-	Ingo
-
----------------->
-From: John Stultz <johnstul@us.ibm.com>
-Subject: [patch] HZ-free NTP
-
-Basically INTERVAL_LENGTH_NSEC defines the NTP interval length that the
-time code will use to accumulate with. In this patch I've pushed it out
-to a full second, but it could be set via config (NSEC_PER_SEC/HZ for
-regular systems, something larger for systems using dynticks).
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
 ---
- include/linux/timex.h |    7 +++++++
- kernel/hrtimer.c      |    4 +++-
- kernel/time/ntp.c     |   30 +++++++++++++++++++-----------
- kernel/timer.c        |    4 ++--
- 4 files changed, 31 insertions(+), 14 deletions(-)
+ arch/i386/kernel/cpu/mtrr/main.c |    6 +++---
+ arch/i386/kernel/cpu/mtrr/mtrr.h |    2 +-
+ 2 files changed, 4 insertions(+), 4 deletions(-)
 
-Index: linux/include/linux/timex.h
-===================================================================
---- linux.orig/include/linux/timex.h
-+++ linux/include/linux/timex.h
-@@ -286,6 +286,13 @@ static inline void time_interpolator_upd
+diff --git a/arch/i386/kernel/cpu/mtrr/main.c b/arch/i386/kernel/cpu/mtrr/main.c
+index 16bb7ea..0acfb6a 100644
+--- a/arch/i386/kernel/cpu/mtrr/main.c
++++ b/arch/i386/kernel/cpu/mtrr/main.c
+@@ -50,7 +50,7 @@ u32 num_var_ranges = 0;
+ unsigned int *usage_table;
+ static DEFINE_MUTEX(mtrr_mutex);
  
- #define TICK_LENGTH_SHIFT	32
+-u32 size_or_mask, size_and_mask;
++u64 size_or_mask, size_and_mask;
  
-+#ifdef CONFIG_NO_HZ
-+#define NTP_INTERVAL_FREQ  (1)
-+#else
-+#define NTP_INTERVAL_FREQ  (HZ)
-+#endif
-+#define NTP_INTERVAL_LENGTH (NSEC_PER_SEC/NTP_INTERVAL_FREQ)
-+
- /* Returns how long ticks are at present, in ns / 2^(SHIFT_SCALE-10). */
- extern u64 current_tick_length(void);
+ static struct mtrr_ops * mtrr_ops[X86_VENDOR_NUM] = {};
  
-Index: linux/kernel/hrtimer.c
-===================================================================
---- linux.orig/kernel/hrtimer.c
-+++ linux/kernel/hrtimer.c
-@@ -135,12 +135,14 @@ EXPORT_SYMBOL_GPL(ktime_get_ts);
-  */
- static void hrtimer_get_softirq_time(struct hrtimer_cpu_base *base)
- {
-+	struct timespec ts;
- 	ktime_t xtim, tomono;
- 	unsigned long seq;
+@@ -662,8 +662,8 @@ void __init mtrr_bp_init(void)
+ 			     boot_cpu_data.x86_mask == 0x4))
+ 				phys_addr = 36;
  
- 	do {
- 		seq = read_seqbegin(&xtime_lock);
--		xtim = timespec_to_ktime(xtime);
-+		getnstimeofday(&ts);
-+		xtim = timespec_to_ktime(ts);
- 		tomono = timespec_to_ktime(wall_to_monotonic);
+-			size_or_mask = ~((1 << (phys_addr - PAGE_SHIFT)) - 1);
+-			size_and_mask = ~size_or_mask & 0xfff00000;
++			size_or_mask = ~((1ULL << (phys_addr - PAGE_SHIFT)) - 1);
++			size_and_mask = ~size_or_mask & 0xfffff00000ULL;
+ 		} else if (boot_cpu_data.x86_vendor == X86_VENDOR_CENTAUR &&
+ 			   boot_cpu_data.x86 == 6) {
+ 			/* VIA C* family have Intel style MTRRs, but
+diff --git a/arch/i386/kernel/cpu/mtrr/mtrr.h b/arch/i386/kernel/cpu/mtrr/mtrr.h
+index d61ea9d..289dfe6 100644
+--- a/arch/i386/kernel/cpu/mtrr/mtrr.h
++++ b/arch/i386/kernel/cpu/mtrr/mtrr.h
+@@ -84,7 +84,7 @@ void get_mtrr_state(void);
  
- 	} while (read_seqretry(&xtime_lock, seq));
-Index: linux/kernel/time/ntp.c
-===================================================================
---- linux.orig/kernel/time/ntp.c
-+++ linux/kernel/time/ntp.c
-@@ -24,7 +24,7 @@ static u64 tick_length, tick_length_base
+ extern void set_mtrr_ops(struct mtrr_ops * ops);
  
- #define MAX_TICKADJ		500		/* microsecs */
- #define MAX_TICKADJ_SCALED	(((u64)(MAX_TICKADJ * NSEC_PER_USEC) << \
--				  TICK_LENGTH_SHIFT) / HZ)
-+				  TICK_LENGTH_SHIFT) / NTP_INTERVAL_FREQ)
+-extern u32 size_or_mask, size_and_mask;
++extern u64 size_or_mask, size_and_mask;
+ extern struct mtrr_ops * mtrr_if;
  
- /*
-  * phase-lock loop variables
-@@ -46,13 +46,17 @@ long time_adjust;
- 
- static void ntp_update_frequency(void)
- {
--	tick_length_base = (u64)(tick_usec * NSEC_PER_USEC * USER_HZ) << TICK_LENGTH_SHIFT;
--	tick_length_base += (s64)CLOCK_TICK_ADJUST << TICK_LENGTH_SHIFT;
--	tick_length_base += (s64)time_freq << (TICK_LENGTH_SHIFT - SHIFT_NSEC);
-+	u64 second_length = (u64)(tick_usec * NSEC_PER_USEC * USER_HZ)
-+				<< TICK_LENGTH_SHIFT;
-+	second_length += (s64)CLOCK_TICK_ADJUST << TICK_LENGTH_SHIFT;
-+	second_length += (s64)time_freq << (TICK_LENGTH_SHIFT - SHIFT_NSEC);
- 
--	do_div(tick_length_base, HZ);
-+	tick_length_base = second_length;
- 
--	tick_nsec = tick_length_base >> TICK_LENGTH_SHIFT;
-+	do_div(second_length, HZ);
-+	tick_nsec = second_length >> TICK_LENGTH_SHIFT;
-+
-+	do_div(tick_length_base, NTP_INTERVAL_FREQ);
- }
- 
- /**
-@@ -164,7 +168,7 @@ void second_overflow(void)
- 			tick_length -= MAX_TICKADJ_SCALED;
- 		} else {
- 			tick_length += (s64)(time_adjust * NSEC_PER_USEC /
--					     HZ) << TICK_LENGTH_SHIFT;
-+					NTP_INTERVAL_FREQ) << TICK_LENGTH_SHIFT;
- 			time_adjust = 0;
- 		}
- 	}
-@@ -241,7 +245,8 @@ int do_adjtimex(struct timex *txc)
- 		    result = -EINVAL;
- 		    goto leave;
- 		}
--		time_freq = ((s64)txc->freq * NSEC_PER_USEC) >> (SHIFT_USEC - SHIFT_NSEC);
-+		time_freq = ((s64)txc->freq * NSEC_PER_USEC)
-+				>> (SHIFT_USEC - SHIFT_NSEC);
- 	    }
- 
- 	    if (txc->modes & ADJ_MAXERROR) {
-@@ -311,7 +316,8 @@ int do_adjtimex(struct timex *txc)
- 		    freq_adj += time_freq;
- 		    freq_adj = min(freq_adj, (s64)MAXFREQ_NSEC);
- 		    time_freq = max(freq_adj, (s64)-MAXFREQ_NSEC);
--		    time_offset = (time_offset / HZ) << SHIFT_UPDATE;
-+		    time_offset = (time_offset / NTP_INTERVAL_FREQ)
-+		    			<< SHIFT_UPDATE;
- 		} /* STA_PLL */
- 	    } /* txc->modes & ADJ_OFFSET */
- 	    if (txc->modes & ADJ_TICK)
-@@ -326,8 +332,10 @@ leave:	if ((time_status & (STA_UNSYNC|ST
- 	if ((txc->modes & ADJ_OFFSET_SINGLESHOT) == ADJ_OFFSET_SINGLESHOT)
- 	    txc->offset	   = save_adjust;
- 	else
--	    txc->offset    = shift_right(time_offset, SHIFT_UPDATE) * HZ / 1000;
--	txc->freq	   = (time_freq / NSEC_PER_USEC) << (SHIFT_USEC - SHIFT_NSEC);
-+	    txc->offset    = shift_right(time_offset, SHIFT_UPDATE)
-+	    			* NTP_INTERVAL_FREQ / 1000;
-+	txc->freq	   = (time_freq / NSEC_PER_USEC)
-+				<< (SHIFT_USEC - SHIFT_NSEC);
- 	txc->maxerror	   = time_maxerror;
- 	txc->esterror	   = time_esterror;
- 	txc->status	   = time_status;
-Index: linux/kernel/timer.c
-===================================================================
---- linux.orig/kernel/timer.c
-+++ linux/kernel/timer.c
-@@ -1030,7 +1030,7 @@ static void change_clocksource(void)
- 
- 	clock->error = 0;
- 	clock->xtime_nsec = 0;
--	clocksource_calculate_interval(clock, tick_nsec);
-+	clocksource_calculate_interval(clock, NTP_INTERVAL_LENGTH);
- 
- 	tick_clock_notify();
- 
-@@ -1086,7 +1086,7 @@ void __init timekeeping_init(void)
- 	ntp_clear();
- 
- 	clock = clocksource_get_next();
--	clocksource_calculate_interval(clock, tick_nsec);
-+	clocksource_calculate_interval(clock, NTP_INTERVAL_LENGTH);
- 	clock->cycle_last = clocksource_read(clock);
- 
- 	xtime.tv_sec = sec;
+ #define is_cpu(vnd)	(mtrr_if && mtrr_if->vendor == X86_VENDOR_##vnd)
+-- 
+1.4.2.4
+
+
+
+
