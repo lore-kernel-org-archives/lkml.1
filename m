@@ -1,57 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932119AbXAVUAw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932463AbXAVUBJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932119AbXAVUAw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jan 2007 15:00:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932436AbXAVUAd
+	id S932463AbXAVUBJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jan 2007 15:01:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932436AbXAVUAy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jan 2007 15:00:33 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:46024 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932489AbXAVUA2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jan 2007 15:00:28 -0500
-Date: Mon, 22 Jan 2007 20:59:25 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Pavel Pisa <pisa@cmp.felk.cvut.cz>
-Cc: Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
-       Sascha Hauer <s.hauer@pengutronix.de>
-Subject: Re: [PATCH query] arm: i.MX/MX1 clock event source
-Message-ID: <20070122195924.GD21277@elte.hu>
-References: <200701210101.27345.pisa@cmp.felk.cvut.cz>
+	Mon, 22 Jan 2007 15:00:54 -0500
+Received: from caramon.arm.linux.org.uk ([217.147.92.249]:4312 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932422AbXAVUAw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jan 2007 15:00:52 -0500
+Date: Mon, 22 Jan 2007 20:00:39 +0000
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Andrew Morton <akpm@osdl.org>
+Cc: tom@dbservice.com, bwalle@suse.de, linux-kernel@vger.kernel.org,
+       alon.barlev@gmail.com
+Subject: Re: [patch 03/26] Dynamic kernel command-line - arm
+Message-ID: <20070122200038.GA32085@flint.arm.linux.org.uk>
+Mail-Followup-To: Andrew Morton <akpm@osdl.org>, tom@dbservice.com,
+	bwalle@suse.de, linux-kernel@vger.kernel.org, alon.barlev@gmail.com
+References: <20070118125849.441998000@strauss.suse.de> <20070118130028.719472000@strauss.suse.de> <20070118141359.GB31418@flint.arm.linux.org.uk> <45AF92E7.50901@dbservice.com> <20070118152326.GC31418@flint.arm.linux.org.uk> <20070122115650.d0be8bd3.akpm@osdl.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200701210101.27345.pisa@cmp.felk.cvut.cz>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.8
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.8 required=5.9 tests=ALL_TRUSTED,BAYES_50 autolearn=no SpamAssassin version=3.0.3
-	-3.3 ALL_TRUSTED            Did not pass through any untrusted hosts
-	0.5 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
-	[score: 0.4809]
+In-Reply-To: <20070122115650.d0be8bd3.akpm@osdl.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Pavel Pisa <pisa@cmp.felk.cvut.cz> wrote:
-
-> Hello Thomas, Sascha and Ingo
+On Mon, Jan 22, 2007 at 11:56:50AM -0800, Andrew Morton wrote:
+> > On Thu, 18 Jan 2007 15:23:26 +0000 Russell King <rmk+lkml@arm.linux.org.uk> wrote:
+> > On Thu, Jan 18, 2007 at 04:31:51PM +0100, Tomas Carnecky wrote:
+> > > Russell King wrote:
+> > > > On Thu, Jan 18, 2007 at 01:58:52PM +0100, Bernhard Walle wrote: 
+> > > >> -static char command_line[COMMAND_LINE_SIZE];
+> > > >> +static char __initdata command_line[COMMAND_LINE_SIZE];
+> > > > 
+> > > > Uninitialised data is placed in the BSS.  Adding __initdata to BSS
+> > > > data causes grief.
+> > > > 
+> > > 
+> > > Static variables are implicitly initialized to zero. Does that also
+> > > count as initialization?
+> > 
+> > No.  As I say, they're placed in the BSS.  The BSS is zeroed as part of
+> > the C runtime initialisation.
 > 
-> please can you find some time to review next patch
->   arm: i.MX/MX1 clock event source
-> which has been sent to you and to the ALKML at 2007-01-13.
-> 
-> http://thread.gmane.org/gmane.linux.ports.arm.kernel/29510/focus=29533
-> 
-> There seems to be some problems, because this patch has not been 
-> accepted to patch-2.6.20-rc5-rt7.patch, but GENERIC_CLOCKEVENTS are 
-> set already for i.MX and this results in a problems to run RT kernel 
-> on this architecture.
+> I don't understand the objection.  With the above change, command_line[]
+> will end up consuming COMMAND_LINE_SIZE bytes of .data.init and will be
+> reliably initialized to all-zeros by the compiler (won't it?)
 
-i've added your patch to -rt, but note that there's a new, slightly 
-incompatible clockevents code in -rt now so you'll need to do some more 
-(hopefully trivial) fixups for this to build and work.
+You're reading into this something that was never there.  The mail you
+are replying to is an explanatory one, not an objecting one.
 
-	Ingo
+My "objection" (if you want to call it that, it was more an observation)
+was that merely adding an __initdata to an uninitialised variable has in
+the past caused complaints from compilers about section mismatches and
+the like.
+
+Maybe compilers are now smarter though.
+
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
