@@ -1,74 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932749AbXAVVMR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932692AbXAVVOM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932749AbXAVVMR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jan 2007 16:12:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932671AbXAVVMR
+	id S932692AbXAVVOM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jan 2007 16:14:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932697AbXAVVOM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jan 2007 16:12:17 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:45475 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932667AbXAVVMQ (ORCPT
+	Mon, 22 Jan 2007 16:14:12 -0500
+Received: from sj-iport-2-in.cisco.com ([171.71.176.71]:41986 "EHLO
+	sj-iport-2.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932692AbXAVVOL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jan 2007 16:12:16 -0500
-Date: Mon, 22 Jan 2007 21:23:19 +0000
-From: Alan <alan@lxorguk.ukuu.org.uk>
-To: Marc St-Jean <Marc_St-Jean@pmc-sierra.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] serial driver PMC MSP71xx, kernel linux-mips.git master
-Message-ID: <20070122212319.185fd10b@localhost.localdomain>
-In-Reply-To: <45B50A19.6090909@pmc-sierra.com>
-References: <45B50A19.6090909@pmc-sierra.com>
-X-Mailer: Claws Mail 2.7.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 22 Jan 2007 16:14:11 -0500
+X-IronPort-AV: i="4.13,221,1167638400"; 
+   d="scan'208"; a="357292228:sNHT44583220"
+To: Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       openfabrics-ewg@openib.org, openib-general@openib.org,
+       raisch@de.ibm.com
+Subject: Re: [PATCH 2.6.20 2/2] ehca: ehca_irq.c: fix mismatched spin_unlock in irq handler
+X-Message-Flag: Warning: May contain useful information
+References: <200701192251.01888.hnguyen@linux.vnet.ibm.com>
+	<200701201620.16097.hnguyen@linux.vnet.ibm.com>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Mon, 22 Jan 2007 13:14:06 -0800
+In-Reply-To: <200701201620.16097.hnguyen@linux.vnet.ibm.com> (Hoang-Nam Nguyen's message of "Sat, 20 Jan 2007 16:20:15 +0100")
+Message-ID: <adaps96n4rl.fsf@cisco.com>
+User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.19 (linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 22 Jan 2007 21:14:07.0000 (UTC) FILETIME=[40533980:01C73E6A]
+Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim1004 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> There are three different fixes:
-> 1. Fix for THRE errata
+Thanks, queued for 2.6.20 (although I left the line a little longer).
 
-That should be handled anyway. The current code actually spots this and
-uses a backup timer for dodgy UARTS
+I think the right thing to do is restructure this function so you
+don't have lines starting 6 tab stops to the right.
 
-> 2. Fix for Busy Detect on LCR write
-> 3. Workaround for interrupt/data concurrency issue
-
->   	case UPIO_MEM:
-> +#ifdef CONFIG_PMC_MSP
-> +		/* Save the LCR value so it can be re-written when a
-> +		 * Busy Detect interrupt occurs. */
-> +		if (dwapb_offset == UART_LCR)
-> +			up->dwapb_lcr = value;
-> +#endif
->   		writeb(value, up->port.membase + offset);
-> +#ifdef CONFIG_PMC_MSP
-> +		/* Re-read the IER to ensure any interrupt disabling has
-> +		 * completed before proceeding with ISR. */
-> +		if (dwapb_offset == UART_IER)
-> +			value = serial_in(up, dwapb_offset);
-> +#endif
->   		break;
-
-This I would hope you can hide in the platform specific
-serial_in/serial_out functions. If you write the UART_LCR save it in
-serial_out(), if you read IER etc.
-
-
-> +#ifdef CONFIG_PMC_MSP
-> +		} else if ((iir & UART_IER_BUSY) == UART_IER_BUSY) {
-> +			/*
-> +			 * The MSP (DesignWare APB UART) serial subsystem has a
-> +			 * non-standard interrupt condition (0x7) which means
-> +			 * that the LCR was written while the UART was busy, so
-> +			 * the LCR was not actually written.  It is cleared by
-> +			 * reading the special non-standard extended UART status
-> +			 * register.
-
-Ditto... spot this case and whack it in your serial methods.
-
-
-And we might want to add a void * for board specific insanity to the 8250
-structures if we really have to so you can hang your brain damage
-privately off that ?
-
+ - R.
