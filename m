@@ -1,71 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932520AbXAVWXE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932526AbXAVWYr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932520AbXAVWXE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jan 2007 17:23:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932509AbXAVWXE
+	id S932526AbXAVWYr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jan 2007 17:24:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932539AbXAVWYq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jan 2007 17:23:04 -0500
-Received: from mail-out4.apple.com ([17.254.13.23]:56509 "EHLO
-	mail-out4.apple.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932518AbXAVWXC (ORCPT
+	Mon, 22 Jan 2007 17:24:46 -0500
+Received: from MAIL.13thfloor.at ([213.145.232.33]:55069 "EHLO
+	MAIL.13thfloor.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932436AbXAVWYp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jan 2007 17:23:02 -0500
-X-Greylist: delayed 1577 seconds by postgrey-1.27 at vger.kernel.org; Mon, 22 Jan 2007 17:23:02 EST
-X-AuditID: 11807124-a44eebb000006d75-83-45b532652e79 
-In-Reply-To: <45B4547A.3020105@panasas.com>
-References: <45B3F578.7090109@panasas.com> <45B40458.9010107@torque.net> <45B4547A.3020105@panasas.com>
-Mime-Version: 1.0 (Apple Message framework v752.3)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <A5D5F816-B98C-4637-B92F-E2AAF37469D3@apple.com>
-Cc: dougg@torque.net, Boaz Harrosh <bharrosh@panasas.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Mike Christie <michaelc@cs.wisc.edu>, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Daniel.E.Messinger@seagate.com,
-       Liran Schour <LIRANS@il.ibm.com>
-Content-Transfer-Encoding: 7bit
-From: William Studenmund <wrstuden@apple.com>
-Subject: Re: [RFC 1/6] bidi support: request dma_data_direction
-Date: Mon, 22 Jan 2007 13:53:27 -0800
-To: open-iscsi@googlegroups.com
-X-Mailer: Apple Mail (2.752.3)
-X-Brightmail-Tracker: AAAAAA==
+	Mon, 22 Jan 2007 17:24:45 -0500
+Date: Mon, 22 Jan 2007 23:24:42 +0100
+From: Herbert Poetzl <herbert@13thfloor.at>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Kirill Korotaev <dev@sw.ru>, James.Bottomley@SteelEye.com,
+       linux-parport@lists.infradead.org, rtc-linux@googlegroups.com,
+       linux-mips@linux-mips.org, heiko.carstens@de.ibm.com,
+       containers@lists.osdl.org, lethal@linux-sh.org, clemens@ladisch.de,
+       xfs@oss.sgi.com, xfs-masters@oss.sgi.com, paulus@samba.org,
+       linux390@de.ibm.com, openipmi-developer@lists.sourceforge.net,
+       linux-390@vm.marist.edu, aharkes@cs.cmu.edu, tim@cyberelk.net,
+       codalist@TELEMANN.coda.cs.cmu.edu, a.zummo@towertech.it,
+       tony.luck@intel.com, minyard@acm.org, linux-scsi@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, linux-ntfs-dev@lists.sourceforge.net,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       ralf@linux-mips.org, mark.fasheh@oracle.com, coda@cs.cmu.edu,
+       vojtech@suse.cz, kurt.hackel@oracle.com, schwidefsky@de.ibm.com,
+       aia21@cantab.net, philb@gnu.org, andrea@suse.de,
+       linuxsh-shmedia-dev@lists.sourceforge.net, ak@suse.de
+Subject: Re: [PATCH 50/59] sysctl: Move utsname sysctls to their own file
+Message-ID: <20070122222442.GD11128@MAIL.13thfloor.at>
+Mail-Followup-To: "Eric W. Biederman" <ebiederm@xmission.com>,
+	Kirill Korotaev <dev@sw.ru>, James.Bottomley@SteelEye.com,
+	linux-parport@lists.infradead.org, rtc-linux@googlegroups.com,
+	linux-mips@linux-mips.org, heiko.carstens@de.ibm.com,
+	containers@lists.osdl.org, lethal@linux-sh.org, clemens@ladisch.de,
+	xfs@oss.sgi.com, xfs-masters@oss.sgi.com, paulus@samba.org,
+	linux390@de.ibm.com, openipmi-developer@lists.sourceforge.net,
+	linux-390@vm.marist.edu, aharkes@cs.cmu.edu, tim@cyberelk.net,
+	codalist@TELEMANN.coda.cs.cmu.edu, a.zummo@towertech.it,
+	tony.luck@intel.com, minyard@acm.org, linux-scsi@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, linux-ntfs-dev@lists.sourceforge.net,
+	netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+	ralf@linux-mips.org, mark.fasheh@oracle.com, coda@cs.cmu.edu,
+	vojtech@suse.cz, kurt.hackel@oracle.com, schwidefsky@de.ibm.com,
+	aia21@cantab.net, philb@gnu.org, andrea@suse.de,
+	linuxsh-shmedia-dev@lists.sourceforge.net, ak@suse.de
+References: <m1ac0jc4no.fsf@ebiederm.dsl.xmission.com> <11689656853154-git-send-email-ebiederm@xmission.com> <45AE5FDC.5050603@sw.ru> <m1ps9d8n79.fsf@ebiederm.dsl.xmission.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m1ps9d8n79.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 21, 2007, at 10:06 PM, Benny Halevy wrote:
+On Wed, Jan 17, 2007 at 12:31:22PM -0700, Eric W. Biederman wrote:
+> Kirill Korotaev <dev@sw.ru> writes:
+> 
+> > Eric, though I personally don't care much:
+> > 1. I ask for not setting your authorship/copyright on the code which you just
+> > copied
+> >   from other places. Just doesn't look polite IMHO.
+> 
+> I can't claim complete ownership of the code, there was plenty of feed back
+> and contributions from others but the final form without a big switch
+> statement is mine.  I certainly can't claim the table, it has been in
+> that form for years.
+> 
+> If you notice I actually didn't say whose copyright it was :)  just
+> that I wrote the file.
+> 
+> If there are copyright claims I should include I will be happy to do that.
+> Mostly I was just trying to find some stupid boiler plate that would work.
 
-> Douglas Gilbert wrote:
->> Boaz Harrosh wrote:
->>> - Introduce a new enum dma_data_direction data_dir member in  
->>> struct request.
->>>   and remove the RW bit from request->cmd_flag
->>> - Add new API to query request direction.
->>> - Adjust existing API and implementation.
->>> - Cleanup wrong use of DMA_BIDIRECTIONAL
->>> - Introduce new blk_rq_init_unqueued_req() and use it in places  
->>> ad-hoc
->>>   requests were used and bzero'ed.
->>
->> With a bi-directional transfer is it always unambiguous
->> which transfer occurs first (or could they occur at
->> the same time)?
->
-> The bidi transfers can occur in any order and in parallel.
+IMHO that is fine ...
 
-Yes.
+> > 2. I would propose to not introduce utsname_sysctl.c.
+> >   both files are too small and minor that I can't see much reasons splitting
+> > them.
+> 
+> The impact of moving this code out of sysctl.c is a major
+> simplification, to sysctl.c.  Putting them in their own file means we
+> can cleanly restrict the code to only be compiled CONFIG_SYSCTL is set.
+> 
+> It is a necessary first step to implementing a per process /proc/sys.
+> 
+> It reorganizes the ipc and utsname sysctl from a terribly fragile
+> structure to something that is robust and easy to follow.  Code
+> scattered all throughout sysctl.c was just a disaster.  We had
+> several instances of having to fix bugs with odd combinations of
+> CONFIG options, simply because the other spot that needed to be touched
+> wasn't obvious.
+> 
+> So from my perspective this is an extremely worthwhile change that
+> will make maintenance easier and is a small first step towards
+> some nice future functionality.
 
-However it's not that hard. If you're a target (which open-iscsi  
-isn't), you know what the command needs. If you're an initiator, you  
-just send the unsolicited data (if any), then let the target tell you  
-what it needs next.
+yep, agreed ...
 
-While it is possible for commands to have multiple phases, all the  
-BiDi commands I'm familiar with use the Data-Out phase to send extra  
-command data, then use the Data-In phase to get either an extended  
-response to the query (such as a search command) or extended status  
-(OSD commands). So it's not that bad in reality.
+best,
+Herbert
 
-Take care,
-
-Bill
+> Eric
+> _______________________________________________
+> Containers mailing list
+> Containers@lists.osdl.org
+> https://lists.osdl.org/mailman/listinfo/containers
