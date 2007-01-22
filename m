@@ -1,75 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932113AbXAVUES@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932142AbXAVUIg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932113AbXAVUES (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jan 2007 15:04:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932122AbXAVUES
+	id S932142AbXAVUIg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jan 2007 15:08:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751840AbXAVUIf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jan 2007 15:04:18 -0500
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:3565 "HELO
-	mailout.stusta.mhn.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S932113AbXAVUEQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jan 2007 15:04:16 -0500
-Date: Mon, 22 Jan 2007 21:04:23 +0100
-From: Adrian Bunk <bunk@stusta.de>
-To: Kristian =?iso-8859-1?Q?H=F8gsberg?= <krh@redhat.com>
-Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       linux1394-devel@lists.sourceforge.net
-Subject: Re: [-mm patch] drivers/firewire/: cleanups
-Message-ID: <20070122200423.GA9093@stusta.de>
-References: <20070111222627.66bb75ab.akpm@osdl.org> <20070122181736.GU9093@stusta.de> <45B51369.1060408@redhat.com>
+	Mon, 22 Jan 2007 15:08:35 -0500
+Received: from mx2.suse.de ([195.135.220.15]:51096 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751453AbXAVUIf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jan 2007 15:08:35 -0500
+Date: Mon, 22 Jan 2007 12:07:46 -0800
+From: Greg KH <gregkh@suse.de>
+To: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>
+Cc: linux-kernel@vger.kernel.org, linux-usb-devel@lists.sourceforge.net
+Subject: [GIT PATCH] USB fixes for 2.6.20-rc5
+Message-ID: <20070122200746.GA9936@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <45B51369.1060408@redhat.com>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 22, 2007 at 02:41:29PM -0500, Kristian Høgsberg wrote:
-> Adrian Bunk wrote:
-> >On Thu, Jan 11, 2007 at 10:26:27PM -0800, Andrew Morton wrote:
-> >>...
-> >>Changes since 2.6.20-rc3-mm1:
-> >>...
-> >> git-ieee1394.patch
-> >>...
-> >> git trees
-> >>...
-> >
-> >
-> >This patch contains the following cleanups:
-> >- "extern inline" -> "static inline"
-> 
-> I guess that's fine, I do like how extern inline will never generate code 
+Here are some USB fixes for 2.6.20-rc5
 
-Exactly the opposite will be true when gcc will switch to the C99 
-semantics...
+They include a small number of fixes for some USB bugs, and some new
+device ids, all of the details are below.  I've also disabled the USB
+multithreaded probe option, as it broke a number of people's machines.
 
-Besides this, "static inline" forces inlining in the kernel due to
-  #define inline          inline          __attribute__((always_inline))
+Most of them have been in the -mm releases, but due to LCA, some of them
+have not.
 
-> and that gcc warns on missing prototype for these case is more of a gcc 
-> bug.  Not a big deal though, it's more worthwhile to track down real 
-> missing prototype offenders.
-> 
-> >- fw-topology.c: make struct fw_node_create static
-> 
-> Looks good.
-> 
-> Signed-off-by: Kristian Høgsberg <krh@redhat.com>
-> 
-> 
+The gadget driver update looks big, but David says it fixes a number of
+problems with it, and it's self-contained.
 
-cu
-Adrian
+Please pull from:
+	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/usb-2.6.git/
 
--- 
+The full patches will be sent to the linux-usb-devel mailing list, if
+anyone wants to see them.
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+thanks,
+
+greg k-h
+
+
+ drivers/usb/core/Kconfig           |   16 ------
+ drivers/usb/core/hub.c             |    9 +---
+ drivers/usb/host/ohci-ep93xx.c     |    2 +-
+ drivers/usb/input/hid-core.c       |    4 ++
+ drivers/usb/input/usbtouchscreen.c |   98 +++++++++++++++++++++--------------
+ drivers/usb/net/asix.c             |   18 +++++--
+ drivers/usb/net/rndis_host.c       |   23 +++++---
+ drivers/usb/serial/option.c        |    3 +
+ drivers/usb/storage/unusual_devs.h |   19 +++++++
+ 9 files changed, 114 insertions(+), 78 deletions(-)
+
+---------------
+
+Andres Salomon (1):
+      USB: asix: Detect internal PHY and enable/use accordingly
+
+Daniel Gollub (1):
+      USB: rndis_host: fix crash while probing a Nokia S60 mobile
+
+Daniel Ritz (1):
+      usbtouchscreen: make ITM screens report BTN_TOUCH as zero when not touched
+
+garrett_damore@tadpole.com (1):
+      USB: add vendor/device id for Option GT Max 3.6 cards
+
+Greg Kroah-Hartman (1):
+      USB: disable USB_MULTITHREAD_PROBE
+
+Manuel Osdoba (1):
+      USB: unusual_devs.h entry for nokia 6233
+
+Oliver Neukum (1):
+      USB: make usbhid ignore Imation Disc Stakka
+
+Pete Zaitcev (1):
+      USB: unusual_devs.h for 0x046b:ff40
+
+Petr Stetiar (1):
+      USB: Fix for typo in ohci-ep93xx.c
 
