@@ -1,40 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751796AbXAVVda@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932095AbXAVVmd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751796AbXAVVda (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jan 2007 16:33:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751834AbXAVVda
+	id S932095AbXAVVmd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jan 2007 16:42:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932096AbXAVVmd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jan 2007 16:33:30 -0500
-Received: from mtagate2.de.ibm.com ([195.212.29.151]:42518 "EHLO
-	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751796AbXAVVd3 (ORCPT
+	Mon, 22 Jan 2007 16:42:33 -0500
+Received: from nic.NetDirect.CA ([216.16.235.2]:53205 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932095AbXAVVmc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jan 2007 16:33:29 -0500
-In-Reply-To: <adaps96n4rl.fsf@cisco.com>
-Subject: Re: [PATCH 2.6.20 2/2] ehca: ehca_irq.c: fix mismatched spin_unlock	in irq
- handler
-To: Roland Dreier <rdreier@cisco.com>
-Cc: Christoph Raisch <raisch@de.ibm.com>,
-       Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       linuxppc-dev-bounces+hnguyen=de.ibm.com@ozlabs.org,
-       openfabrics-ewg@openib.org, openib-general@openib.org
-X-Mailer: Lotus Notes Release 7.0 HF277 June 21, 2006
-Message-ID: <OF28705E47.AADA4E8C-ONC125726B.00756FD8-8525726B.00766A6A@de.ibm.com>
-From: Hoang-Nam Nguyen <HNGUYEN@de.ibm.com>
-Date: Mon, 22 Jan 2007 16:33:25 -0500
-X-MIMETrack: Serialize by Router on D12ML065/12/M/IBM(Release 6.5.5HF882 | September 26, 2006) at
- 22/01/2007 22:33:26
+	Mon, 22 Jan 2007 16:42:32 -0500
+X-Originating-Ip: 74.109.98.130
+Date: Mon, 22 Jan 2007 16:42:00 -0500 (EST)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@CPE00045a9c397f-CM001225dbafb6
+To: Linux kernel mailing list <linux-kernel@vger.kernel.org>
+cc: dtor@mail.ru, vojtech@ucw.cz
+Subject: [PATCH] Change incorrect "CONFIG_INPUT_ATIXL" to "CONFIG_MOUSE_ATIXL".
+Message-ID: <Pine.LNX.4.64.0701221637560.26403@CPE00045a9c397f-CM001225dbafb6>
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, UPPERCASE_25_50 0.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I think the right thing to do is restructure this function so you
-> don't have lines starting 6 tab stops to the right.
-Yes. Have reworked this irq handler and still struggling with testing.
-When we feel comfortable with the test result, we'll post it here (soon)
-and hopefully it is easier to read.
-Regards
-Nam
 
+  Change the apparently incorrect check for CONFIG_INPUT_ATIXL in a
+source file to be consistent with the kernel config option
+CONFIG_MOUSE_ATIXL.
+
+Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
+
+---
+
+  this *looks* like a bug.
+
+
+diff --git a/drivers/input/mouse/inport.c b/drivers/input/mouse/inport.c
+index 13dd967..701ebd5 100644
+--- a/drivers/input/mouse/inport.c
++++ b/drivers/input/mouse/inport.c
+@@ -61,7 +61,7 @@ MODULE_LICENSE("GPL");
+ #define INPORT_REG_MODE		0x07
+ #define INPORT_RESET		0x80
+
+-#ifdef CONFIG_INPUT_ATIXL
++#ifdef CONFIG_MOUSE_ATIXL
+ #define INPORT_NAME		"ATI XL Mouse"
+ #define INPORT_VENDOR		0x0002
+ #define INPORT_SPEED_30HZ	0x01
