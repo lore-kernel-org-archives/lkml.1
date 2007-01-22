@@ -1,52 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932516AbXAVUo6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932521AbXAVUph@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932516AbXAVUo6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jan 2007 15:44:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932520AbXAVUo6
+	id S932521AbXAVUph (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jan 2007 15:45:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932520AbXAVUpg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jan 2007 15:44:58 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:50113 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932516AbXAVUo5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jan 2007 15:44:57 -0500
-Date: Mon, 22 Jan 2007 12:44:42 -0800
-From: Andrew Morton <akpm@osdl.org>
-To: "Alon Bar-Lev" <alon.barlev@gmail.com>
-Cc: "Russell King" <rmk+lkml@arm.linux.org.uk>, tom@dbservice.com,
-       bwalle@suse.de, linux-kernel@vger.kernel.org
-Subject: Re: [patch 03/26] Dynamic kernel command-line - arm
-Message-Id: <20070122124442.9eed5fd9.akpm@osdl.org>
-In-Reply-To: <9e0cf0bf0701221231sc638114j2f0123650ffc14ea@mail.gmail.com>
-References: <20070118125849.441998000@strauss.suse.de>
-	<20070118130028.719472000@strauss.suse.de>
-	<20070118141359.GB31418@flint.arm.linux.org.uk>
-	<45AF92E7.50901@dbservice.com>
-	<20070118152326.GC31418@flint.arm.linux.org.uk>
-	<20070122115650.d0be8bd3.akpm@osdl.org>
-	<9e0cf0bf0701221231sc638114j2f0123650ffc14ea@mail.gmail.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 22 Jan 2007 15:45:36 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:52731 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932521AbXAVUpf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jan 2007 15:45:35 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <45B52240.6010409@s5r6.in-berlin.de>
+Date: Mon, 22 Jan 2007 21:44:48 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.9) Gecko/20070121 SeaMonkey/1.0.7
+MIME-Version: 1.0
+To: =?ISO-8859-1?Q?Kristian_H=F8gsberg?= <krh@redhat.com>
+CC: Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@osdl.org>,
+       linux-kernel@vger.kernel.org, linux1394-devel@lists.sourceforge.net
+Subject: Re: [-mm patch] drivers/firewire/: cleanups
+References: <20070111222627.66bb75ab.akpm@osdl.org> <20070122181736.GU9093@stusta.de> <45B51369.1060408@redhat.com> <20070122200423.GA9093@stusta.de> <45B518E4.5040104@redhat.com>
+In-Reply-To: <45B518E4.5040104@redhat.com>
+X-Enigmail-Version: 0.94.1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 22 Jan 2007 22:31:48 +0200
-"Alon Bar-Lev" <alon.barlev@gmail.com> wrote:
+>>> Adrian Bunk wrote:
+>>>> This patch contains the following cleanups:
+>>>> - "extern inline" -> "static inline"
+>>>> - fw-topology.c: make struct fw_node_create static
 
-> Hello Andrew,
-> 
-> Can I do anything more in order to be closer to merge?
-
-Avoid top-posting? ;)
-
-> Some general comments... or should I CC other people etc...
-> I submitted this several times but got almost no architecture to ACK.
-> 
-> I just don't know how we can progress with this issue... All we wanted
-> is to break the 256 limit in x86...
-
-yes, the patches looked reasonable-looking.  But iirc they were against
-2.6.19 which is prehistoric.  Please redo and resend against a development
-kernel.
-
+Committed to linux1394-2.6.git.
+-- 
+Stefan Richter
+-=====-=-=== ---= =-==-
+http://arcgraph.de/sr/
