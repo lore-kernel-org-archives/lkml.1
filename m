@@ -1,53 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751847AbXAVVtK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751862AbXAVVum@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751847AbXAVVtK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jan 2007 16:49:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932094AbXAVVtK
+	id S1751862AbXAVVum (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jan 2007 16:50:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751897AbXAVVul
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jan 2007 16:49:10 -0500
-Received: from websrv.werbeagentur-aufwind.de ([88.198.253.206]:44488 "EHLO
-	websrv2.werbeagentur-aufwind.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751847AbXAVVtJ (ORCPT
+	Mon, 22 Jan 2007 16:50:41 -0500
+Received: from an-out-0708.google.com ([209.85.132.243]:13017 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751862AbXAVVul (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jan 2007 16:49:09 -0500
-X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Mon, 22 Jan 2007 16:49:08 EST
-Subject: Re: Data corruption with raid5/dm-crypt/lvm/reiserfs on 2.6.19.2
-From: Christophe Saout <christophe@saout.de>
-To: Andrew Morton <akpm@osdl.org>
-Cc: noah <noah123@gmail.com>, linux-kernel@vger.kernel.org,
-       dm-devel@redhat.com
-In-Reply-To: <20070122115652.1f7862e1.akpm@osdl.org>
-References: <d00698fb0701181211l480966e5o6f10db9300d4c8aa@mail.gmail.com>
-	 <20070122115652.1f7862e1.akpm@osdl.org>
-Content-Type: text/plain
-Date: Mon, 22 Jan 2007 22:42:21 +0100
-Message-Id: <1169502141.17211.7.camel@leto.intern.saout.de>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 
+	Mon, 22 Jan 2007 16:50:41 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=efN1K5c6vT3FUJy2juap+HfRhjrrFMfnUkTwG8VfX9uv2SiEUITcl+MEoo/vwGrlmT0kvguDGI3QZ7MdAN8nPUrEnd4tYvoSRmrgJmzcjh/1CUacivlmJNaXguL84ekeykeFHE7X0kL5i+Qm+K5ET6TVGeRnqd3KxaOlln6tP+g=
+Message-ID: <21d7e9970701221350h3a8959faqcd099bf4e0a761fa@mail.gmail.com>
+Date: Tue, 23 Jan 2007 08:50:39 +1100
+From: "Dave Airlie" <airlied@gmail.com>
+To: "=?ISO-8859-1?Q?Thomas_Hellstr=F6m?=" <thomas@tungstengraphics.com>
+Subject: Re: i810fb fails to load
+Cc: "Tilman Schmidt" <tilman@imap.cc>, "Andrew Morton" <akpm@osdl.org>,
+       linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net,
+       "Dave Airlie" <airlied@linux.ie>
+In-Reply-To: <45B4BF50.9010105@tungstengraphics.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070111222627.66bb75ab.akpm@osdl.org> <45AAC244.8060607@imap.cc>
+	 <20070114162235.4c8d241f.akpm@osdl.org>
+	 <45B4BF50.9010105@tungstengraphics.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Montag, den 22.01.2007, 11:56 -0800 schrieb Andrew Morton:
+> >>
+> >>
+> >
+> > Don't know.  But I bet someone on the Cc does...
+> >
+> Tilman,
+> Thanks for reporting.
+> Can you try the attached patch to see if that fixes the problem.
+>
 
-> There has been a long history of similar problems when raid and dm-crypt
-> are used together.  I thought a couple of months ago that we were hot on
-> the trail of a fix, but I don't think we ever got there.  Perhaps
-> Christophe can comment?
+Hi Thomas,
 
-No, I think it's exactly this bug. Three month ago someone came up with
-a very reliable test case and I managed to nail down the bug.
+This also fixes X starting on old i810/5 hardware, I had noticed it
+broken but hadn't had time to investigate it, this patch fixes it...
 
-Readaheads that were aborted by the raid5 code (or some layer below)
-were signalled using a cleared BIO_UPTODATE bit, but no error code, and
-were missed as aborted by dm-crypt (all other layers apparently set the
-error code in this case, so this only happened with raid5) which could
-mess up the buffer cache.
-
-Anyway, it then turned out this bug was already "accidentally" fixed in
-2.6.19 by RedHat in order to play nicely with make_request changes (the
-stuff to reduce stack usage with stacked block device layers), that's
-why you probably missed that it got fixed. The fix for pre-2.6.19
-kernels went into some 2.6.16.x and 2.6.18.6.
-
-
+Dave.
