@@ -1,112 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932423AbXAVT6V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932158AbXAVT7x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932423AbXAVT6V (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jan 2007 14:58:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932433AbXAVT6U
+	id S932158AbXAVT7x (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jan 2007 14:59:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932436AbXAVT7x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jan 2007 14:58:20 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:45786 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932423AbXAVT6S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jan 2007 14:58:18 -0500
-Date: Mon, 22 Jan 2007 11:57:03 -0800
-From: Andrew Morton <akpm@osdl.org>
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-Cc: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org, xfs@oss.sgi.com
-Subject: Re: 2.6.20-rc5: cp 18gb 18gb.2 = OOM killer, reproducible just like
- 2.16.19.2
-Message-Id: <20070122115703.97ed54f3.akpm@osdl.org>
-In-Reply-To: <Pine.LNX.4.64.0701211424170.2552@p34.internal.lan>
-References: <Pine.LNX.4.64.0701211424170.2552@p34.internal.lan>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 22 Jan 2007 14:59:53 -0500
+Received: from [212.12.190.79] ([212.12.190.79]:33026 "EHLO raad.intranet"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S932416AbXAVT7w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jan 2007 14:59:52 -0500
+From: Al Boldi <a1426z@gawab.com>
+To: "yunfeng zhang" <zyf.zeroos@gmail.com>
+Subject: Re: [PATCH 2.6.20-rc5 1/1] MM: enhance Linux swap subsystem
+Date: Mon, 22 Jan 2007 23:00:41 +0300
+User-Agent: KMail/1.5
+Cc: "Rik van Riel" <riel@redhat.com>, "Pavel Machek" <pavel@ucw.cz>,
+       linux-kernel@vger.kernel.org
+References: <4df04b840701212309l2a283357jbdaa88794e5208a7@mail.gmail.com>
+In-Reply-To: <4df04b840701212309l2a283357jbdaa88794e5208a7@mail.gmail.com>
+MIME-Version: 1.0
+Content-Disposition: inline
+Content-Type: text/plain;
+  charset="windows-1256"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200701222300.41960.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Sun, 21 Jan 2007 14:27:34 -0500 (EST) Justin Piszcz <jpiszcz@lucidpixels.com> wrote:
-> Why does copying an 18GB on a 74GB raptor raid1 cause the kernel to invoke 
-> the OOM killer and kill all of my processes?
+yunfeng zhang wrote:
+> My patch is based on my new idea to Linux swap subsystem, you can find
+> more in Documentation/vm_pps.txt which isn't only patch illustration but
+> also file changelog. In brief, SwapDaemon should scan and reclaim pages on
+> UserSpace::vmalist other than current zone::active/inactive. The change
+> will conspicuously enhance swap subsystem performance by
+>
+> 1) SwapDaemon can collect the statistic of process acessing pages and by
+> it unmaps ptes, SMP specially benefits from it for we can use
+> flush_tlb_range to unmap ptes batchly rather than frequently TLB IPI
+> interrupt per a page in current Linux legacy swap subsystem.
+> 2) Page-fault can issue better readahead requests since history data shows
+> all related pages have conglomerating affinity. In contrast, Linux
+> page-fault readaheads the pages relative to the SwapSpace position of
+> current page-fault page.
+> 3) It's conformable to POSIX madvise API family.
+> 4) It simplifies Linux memory model dramatically. Keep it in mind that new
+> swap strategy is from up to down. In fact, Linux legacy swap subsystem is
+> maybe the only one from down to up.
+>
+> Other problems asked about my pps are
+> 1) There isn't new lock order in my pps, it's compliant to Linux lock
+> order defined in mm/rmap.c.
+> 2) When a memory inode is low, you can set scan_control::reclaim_node to
+> let my kppsd to reclaim the memory inode page.
 
-What's that?   Software raid or hardware raid?  If the latter, which driver?
+Patched against 2.6.19 leads to:
 
-> Doing this on a single disk 2.6.19.2 is OK, no issues.  However, this 
-> happens every time!
-> 
-> Anything to try?  Any other output needed?  Can someone shed some light on 
-> this situation?
-> 
-> Thanks.
-> 
-> 
-> The last lines of vmstat 1 (right before it kill -9'd my shell/ssh)
-> 
-> procs -----------memory---------- ---swap-- -----io---- -system-- 
-> ----cpu----
->  r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id 
-> wa
->  0  7    764  50348     12 1269988    0    0 53632   172 1902 4600  1  8 
-> 29 62
->  0  7    764  49420     12 1260004    0    0 53632 34368 1871 6357  2 11 
-> 48 40
+mm/vmscan.c: In function `shrink_pvma_scan_ptes':
+mm/vmscan.c:1340: too many arguments to function `page_remove_rmap'
 
-The wordwrapping is painful :(
+So changed
+ page_remove_rmap(series.pages[i], vma);
+to
+ page_remove_rmap(series.pages[i]);
 
-> 
-> The last lines of dmesg:
-> [ 5947.199985] lowmem_reserve[]: 0 0 0
-> [ 5947.199992] DMA: 0*4kB 1*8kB 1*16kB 0*32kB 1*64kB 1*128kB 1*256kB 
-> 0*512kB 1*1024kB 1*2048kB 0*4096kB = 3544kB
-> [ 5947.200010] Normal: 1*4kB 0*8kB 1*16kB 1*32kB 0*64kB 1*128kB 0*256kB 
-> 1*512kB 0*1024kB 1*2048kB 0*4096kB = 2740kB
-> [ 5947.200035] HighMem: 98*4kB 35*8kB 9*16kB 69*32kB 4*64kB 1*128kB 
-> 1*256kB 0*512kB 0*1024kB 0*2048kB 0*4096kB = 3664kB
-> [ 5947.200052] Swap cache: add 789, delete 189, find 16/17, race 0+0
-> [ 5947.200055] Free swap  = 2197628kB
-> [ 5947.200058] Total swap = 2200760kB
-> [ 5947.200060] Free swap:       2197628kB
-> [ 5947.205664] 517888 pages of RAM 
-> [ 5947.205671] 288512 pages of HIGHMEM
-> [ 5947.205673] 5666 reserved pages 
-> [ 5947.205675] 257163 pages shared
-> [ 5947.205678] 600 pages swap cached 
-> [ 5947.205680] 88876 pages dirty
-> [ 5947.205682] 115111 pages writeback
-> [ 5947.205684] 5608 pages mapped
-> [ 5947.205686] 49367 pages slab
-> [ 5947.205688] 541 pages pagetables
-> [ 5947.205795] Out of memory: kill process 1853 (named) score 9937 or a 
-> child
-> [ 5947.205801] Killed process 1853 (named)
-> [ 5947.206616] bash invoked oom-killer: gfp_mask=0x84d0, order=0, 
-> oomkilladj=0
-> [ 5947.206621]  [<c013e33b>] out_of_memory+0x17b/0x1b0
-> [ 5947.206631]  [<c013fcac>] __alloc_pages+0x29c/0x2f0
-> [ 5947.206636]  [<c01479ad>] __pte_alloc+0x1d/0x90
-> [ 5947.206643]  [<c0148bf7>] copy_page_range+0x357/0x380
-> [ 5947.206649]  [<c0119d75>] copy_process+0x765/0xfc0
-> [ 5947.206655]  [<c012c3f9>] alloc_pid+0x1b9/0x280
-> [ 5947.206662]  [<c011a839>] do_fork+0x79/0x1e0
-> [ 5947.206674]  [<c015f91f>] do_pipe+0x5f/0xc0
-> [ 5947.206680]  [<c0101176>] sys_clone+0x36/0x40
-> [ 5947.206686]  [<c0103138>] syscall_call+0x7/0xb
-> [ 5947.206691]  [<c0420033>] __sched_text_start+0x853/0x950
-> [ 5947.206698]  ======================= 
+But your patch doesn't offer any swap-performance improvement for both swsusp 
+or tmpfs.  Swap-in is still half speed of Swap-out.
 
-Important information from the oom-killing event is missing.  Please send
-it all.
 
->From your earlier reports we have several hundred MB of ZONE_NORMAL memory
-which has gone awol.
+Thanks!
 
-Please include /proc/meminfo from after the oom-killing.
-
-Please work out what is using all that slab memory, via /proc/slabinfo.
-
-After the oom-killing, please see if you can free up the ZONE_NORMAL memory
-via a few `echo 3 > /proc/sys/vm/drop_caches' commands.  See if you can
-work out what happened to the missing couple-of-hundred MB from
-ZONE_NORMAL.
-
+--
+Al
 
