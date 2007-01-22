@@ -1,59 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932160AbXAVWOE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932126AbXAVWPl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932160AbXAVWOE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jan 2007 17:14:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932245AbXAVWOE
+	id S932126AbXAVWPl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jan 2007 17:15:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932245AbXAVWPl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jan 2007 17:14:04 -0500
-Received: from ns2.suse.de ([195.135.220.15]:58315 "EHLO mx2.suse.de"
+	Mon, 22 Jan 2007 17:15:41 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:46785 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932160AbXAVWOC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jan 2007 17:14:02 -0500
-Date: Mon, 22 Jan 2007 23:14:00 +0100
-From: Bernhard Walle <bwalle@suse.de>
-To: Tomas Carnecky <tom@dbservice.com>, linux-kernel@vger.kernel.org,
-       Alon Bar-Lev <alon.barlev@gmail.com>
-Subject: Re: [patch 03/26] Dynamic kernel command-line - arm
-Message-ID: <20070122221400.GE6262@strauss.suse.de>
-Mail-Followup-To: Tomas Carnecky <tom@dbservice.com>,
-	linux-kernel@vger.kernel.org, Alon Bar-Lev <alon.barlev@gmail.com>
-References: <20070118125849.441998000@strauss.suse.de> <20070118130028.719472000@strauss.suse.de> <20070118141359.GB31418@flint.arm.linux.org.uk> <45AF92E7.50901@dbservice.com> <20070118152326.GC31418@flint.arm.linux.org.uk>
+	id S932126AbXAVWPk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jan 2007 17:15:40 -0500
+Message-ID: <45B53722.9030206@redhat.com>
+Date: Mon, 22 Jan 2007 17:13:54 -0500
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070118152326.GC31418@flint.arm.linux.org.uk>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Chris Wright <chrisw@sous-sol.org>
+Subject: 2.6.18-stable release plans?
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Russell King <rmk+lkml@arm.linux.org.uk> [2007-01-18 16:23]:
-> On Thu, Jan 18, 2007 at 04:31:51PM +0100, Tomas Carnecky wrote:
-> > Russell King wrote:
-> > > On Thu, Jan 18, 2007 at 01:58:52PM +0100, Bernhard Walle wrote: 
-> > >> -static char command_line[COMMAND_LINE_SIZE];
-> > >> +static char __initdata command_line[COMMAND_LINE_SIZE];
-> > > 
-> > > Uninitialised data is placed in the BSS.  Adding __initdata to BSS
-> > > data causes grief.
-> > > 
-> > 
-> > Static variables are implicitly initialized to zero. Does that also
-> > count as initialization?
-> 
-> No.  As I say, they're placed in the BSS.  The BSS is zeroed as part of
-> the C runtime initialisation.
-> 
-> If you want to place a variable in a specific section, it must be
-> explicitly initialised.  Eg,
-> 
-> static char __initdata command_line[COMMAND_LINE_SIZE] = "";
+Is there going to be another 2.6.18-stable release?
 
-Why? It must be initialised if you rely on a initialised value in the
-code. But I don't think that this in in case here. Can you tell me the
-code where you read from command_line before writing to it?
-
-Thanks.
-
-
-Regards,
-Bernhard
