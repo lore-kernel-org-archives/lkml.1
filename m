@@ -1,109 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932260AbXAVW4I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932247AbXAVXAU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932260AbXAVW4I (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jan 2007 17:56:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932268AbXAVW4H
+	id S932247AbXAVXAU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jan 2007 18:00:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932268AbXAVXAU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jan 2007 17:56:07 -0500
-Received: from mail.suse.de ([195.135.220.2]:58509 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932260AbXAVW4G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jan 2007 17:56:06 -0500
-From: Neil Brown <neilb@suse.de>
-To: "yang yin" <yinyang801120@gmail.com>
-Date: Tue, 23 Jan 2007 09:55:40 +1100
-Message-ID: <17845.16620.741319.612842@notabene.brown>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [patch] md: bitmap read_page error
-In-Reply-To: message from yang yin on Monday January 22
-References: <34781ae60701220003v76bd43c8h79c59b2b474b3c57@mail.gmail.com>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+	Mon, 22 Jan 2007 18:00:20 -0500
+Received: from smtp.ono.com ([62.42.230.12]:24550 "EHLO resmaa06.ono.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S932247AbXAVXAS convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jan 2007 18:00:18 -0500
+Date: Mon, 22 Jan 2007 23:59:41 +0100
+From: "J.A. =?UTF-8?B?TWFnYWxsw7Nu?=" <jamagallon@ono.com>
+To: Andrew Morton <akpm@osdl.org>,
+       "Linux-Kernel, " <linux-kernel@vger.kernel.org>
+Subject: Re: Problem with POSIX threads in latest kernel...
+Message-ID: <20070122235941.52b1b228@werewolf-wl>
+In-Reply-To: <20070122115630.a3d790f5.akpm@osdl.org>
+References: <20070116024710.7e94326c@werewolf-wl>
+	<20070122115630.a3d790f5.akpm@osdl.org>
+X-Mailer: Claws Mail 2.7.1cvs47 (GTK+ 2.10.8; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday January 22, yinyang801120@gmail.com wrote:
-> If the bitmap size is less than one page including super_block and
-> bitmap and the inode's i_blkbits is also small, when doing the
-> read_page function call to read the sb_page, it may return a error.
-> For example, if the device is 12800 chunks, its bitmap file size is
-> about 1.6KB include the bitmap super block. But the inode i_blkbits
-> value of the bitmap file is 10,  the read_page will submit 4 bh to
-> load the sb_page. Because the size of bitmap is only 1.6KB, in the
-> while loop, the error will ocurr when do bmap operation for the block
-> 2, which will  return 0. Then the bitmap can't be initated because of
-> ther read sb page fail.
+On Mon, 22 Jan 2007 11:56:30 -0800, Andrew Morton <akpm@osdl.org> wrote:
+
+> > On Tue, 16 Jan 2007 02:47:10 +0100 "J.A. Magallón" <jamagallon@ono.com> wrote:
+> > Hi...
+> > 
+> > I run the (almost) latest -mm kernel (2.6.20-rc3-mm1), and see some strange behaviour
+> > with POSIX threads (glibc-2.4).
+> > I have downgraded my test to a simple textboox example for a SMP-safe spool
+> > queue, it's just a circular queue with a mutex and a condition variable for in
+> > and out. I have seen the same structure in several places.
+> > 
+> > Well, it just sometimes gets blocked. GDB says its stuck in pthread_wait().
+> > I could swear it worked on previous kernels. It works as is on IRIX.
+> > I will try to build an older kernel to test.
+> > I takes a second to block it with something like while :; tst; done.
+> > 
+> > Any ideas ?
 > 
-> Another error is in the bitmap_init_from_disk function.  Before doing
-> read_page,. calculating the count value misses the size of super
-> block. When the bitmap just needs one page, It will read two pages
-> adding the super block. But at the second read, the count value will
-> be set to 0, and not all the bitmap will be read from the disk and
-> some bitmap will missed at the second page.
-> 
-> I give a patch as following:
+> Do I need to worry about this still?
 
-Thanks a lot for this.
-Rather than checking the file size in read_page, I would like to make
-sure the 'count' that is passed in never exceeds the size of the
-file.  This should have the same effect.
+Oops, no, sorry. It was buggy code that previously seemed to work.
+Buggy code:
 
-So this is that patch I plan to submit.
+	pthread_mutex_lock(&slots_mutex);
+		while (slots<=0)
+			pthread_cond_wait(&slots_cond,&slots_mutex);
+		slots--;
+		items++;
+	pthread_mutex_unlock(&slots_mutex);
 
-Thanks again,
-NeilBrown
+	pthread_mutex_lock(&items_mutex);
+		pthread_cond_signal(&items_cond);
+	pthread_mutex_unlock(&items_mutex);
 
+(buggy because it acceses items without locking. The same in the other
+endpoint of the queue).
 
-------------------
-Avoid reading past the end of a bitmap file.
+Correct code:
 
-In most cases we check the size of the bitmap file before
-reading data from it.  However when reading the superblock,
-we always read the first PAGE_SIZE bytes, which might not 
-always be appropriate.  So limit that read to the size of the
-file if appropriate.
+	pthread_mutex_lock(&slots_mutex);
+		while (slots<=0)
+			pthread_cond_wait(&slots_cond,&slots_mutex);
+		slots--;
+	pthread_mutex_unlock(&slots_mutex);
 
-Also, we get the count of available bytes wrong in one place,
-so that too can read past the end of the file.
+	pthread_mutex_lock(&items_mutex);
+		items++;
+		pthread_cond_signal(&items_cond);
+	pthread_mutex_unlock(&items_mutex);
 
-Cc:  "yang yin" <yinyang801120@gmail.com>
-Signed-off-by: Neil Brown <neilb@suse.de>
+So don't worry. I was so busy I forgot to post the solution.
 
-### Diffstat output
- ./drivers/md/bitmap.c |   12 ++++++++----
- 1 file changed, 8 insertions(+), 4 deletions(-)
-
-diff .prev/drivers/md/bitmap.c ./drivers/md/bitmap.c
---- .prev/drivers/md/bitmap.c	2007-01-23 09:44:11.000000000 +1100
-+++ ./drivers/md/bitmap.c	2007-01-23 09:44:59.000000000 +1100
-@@ -479,9 +479,12 @@ static int bitmap_read_sb(struct bitmap 
- 	int err = -EINVAL;
- 
- 	/* page 0 is the superblock, read it... */
--	if (bitmap->file)
--		bitmap->sb_page = read_page(bitmap->file, 0, bitmap, PAGE_SIZE);
--	else {
-+	if (bitmap->file) {
-+		loff_t isize = i_size_read(bitmap->file->f_mapping->host);
-+		int bytes = isize > PAGE_SIZE ? PAGE_SIZE : isize;
-+
-+		bitmap->sb_page = read_page(bitmap->file, 0, bitmap, bytes);
-+	} else {
- 		bitmap->sb_page = read_sb_page(bitmap->mddev, bitmap->offset, 0);
- 	}
- 	if (IS_ERR(bitmap->sb_page)) {
-@@ -877,7 +880,8 @@ static int bitmap_init_from_disk(struct 
- 			int count;
- 			/* unmap the old page, we're done with it */
- 			if (index == num_pages-1)
--				count = bytes - index * PAGE_SIZE;
-+				count = bytes + sizeof(bitmap_super_t)
-+					- index * PAGE_SIZE;
- 			else
- 				count = PAGE_SIZE;
- 			if (index == 0) {
+--
+J.A. Magallon <jamagallon()ono!com>     \               Software is like sex:
+                                         \         It's better when it's free
+Mandriva Linux release 2007.1 (Cooker) for i586
+Linux 2.6.19-jam04 (gcc 4.1.2 20061110 (prerelease) (4.1.2-0.20061110.2mdv2007.1)) #0 SMP PREEMPT
