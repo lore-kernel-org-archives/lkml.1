@@ -1,47 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932786AbXAVVUF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751707AbXAVV2O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932786AbXAVVUF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jan 2007 16:20:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932780AbXAVVUF
+	id S1751707AbXAVV2O (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jan 2007 16:28:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751838AbXAVV2O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jan 2007 16:20:05 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:51464 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932786AbXAVVUE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jan 2007 16:20:04 -0500
-Date: Mon, 22 Jan 2007 21:31:09 +0000
-From: Alan <alan@lxorguk.ukuu.org.uk>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 13/15] ide: fix UDMA/MWDMA/SWDMA masks
-Message-ID: <20070122213109.21e4e805@localhost.localdomain>
-In-Reply-To: <45B51E83.1010904@ru.mvista.com>
-References: <20070119003058.14846.43637.sendpatchset@localhost.localdomain>
-	<20070119003226.14846.87052.sendpatchset@localhost.localdomain>
-	<45B4FFBD.40507@ru.mvista.com>
-	<20070122184620.1c8b87ac@localhost.localdomain>
-	<45B51E83.1010904@ru.mvista.com>
-X-Mailer: Claws Mail 2.7.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 22 Jan 2007 16:28:14 -0500
+Received: from tmailer.gwdg.de ([134.76.10.23]:47738 "EHLO tmailer.gwdg.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751707AbXAVV2N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jan 2007 16:28:13 -0500
+Date: Mon, 22 Jan 2007 22:22:54 +0100 (MET)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+cc: Eduard Bloch <edi@gmx.de>, Bodo Eggert <7eggert@gmx.de>,
+       Tony Foiani <tkil@scrye.com>,
+       Leon Woestenberg <leon.woestenberg@gmail.com>,
+       linux-kernel@vger.kernel.org, David Schwartz <davids@webmaster.com>
+Subject: Re: PROBLEM: KB->KiB, MB -> MiB, ... (IEC 60027-2)
+In-Reply-To: <20070122204326.GA7582@csclub.uwaterloo.ca>
+Message-ID: <Pine.LNX.4.61.0701222221530.317@yvahk01.tjqt.qr>
+References: <7FsPf-51s-9@gated-at.bofh.it> <7FxlV-3sb-1@gated-at.bofh.it>
+ <7FyUF-5XD-21@gated-at.bofh.it> <E1H8a7s-0000at-Jx@be1.lrz>
+ <20070121111000.GA6679@rotes76.wohnheim.uni-kl.de> <20070122155354.GB25916@csclub.uwaterloo.ca>
+ <Pine.LNX.4.61.0701221756000.317@yvahk01.tjqt.qr> <20070122204326.GA7582@csclub.uwaterloo.ca>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> >>    Ugh, I'm not seeing any *actual* support for MW/SW DMA in this driver... 
-> 
-> > Thats long been broken. Should be correct in the libata driver
-> 
->     Here's a surprise for you. pata_cmd64x copied the SW/MW DMA setup code 
-> from the IDE driver.  No way it could be working.  You may check against the 
-> PC64x datasheets (if you have them -- if you don't I think I may share) and 
-> see for yourself -- it's abolutely idiotic.
 
-Not a suprise to be honest. I fixed some of the ALi stuff when I did it
-and I think that was pushed back into drivers/ide. The CMD64x hasn't had
-much love really.
+On Jan 22 2007 15:43, Lennart Sorensen wrote:
+>
+>On Mon, Jan 22, 2007 at 05:58:42PM +0100, Jan Engelhardt wrote:
+>> For "F"s sake, when you gotta use abbreviations, then just use k=1000 and
+>> K=1024 already, b for bits and B for bytes. Problem gone.
+>
+>And for 10^6 vs 2^20?
 
-Wouldn't mind the older 64x (not 640) data sheets if they are sharable.
+"My harddisk is a 251 gB" actually even though it is advertised as 250 GB.
 
+
+	-`J'
+-- 
