@@ -1,56 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932095AbXAVVmd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751851AbXAVVpp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932095AbXAVVmd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jan 2007 16:42:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932096AbXAVVmd
+	id S1751851AbXAVVpp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jan 2007 16:45:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751862AbXAVVpp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jan 2007 16:42:33 -0500
-Received: from nic.NetDirect.CA ([216.16.235.2]:53205 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932095AbXAVVmc (ORCPT
+	Mon, 22 Jan 2007 16:45:45 -0500
+Received: from legolas.ittc.ku.edu ([129.237.121.181]:59052 "EHLO
+	legolas.ittc.ku.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751851AbXAVVpo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jan 2007 16:42:32 -0500
-X-Originating-Ip: 74.109.98.130
-Date: Mon, 22 Jan 2007 16:42:00 -0500 (EST)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@CPE00045a9c397f-CM001225dbafb6
-To: Linux kernel mailing list <linux-kernel@vger.kernel.org>
-cc: dtor@mail.ru, vojtech@ucw.cz
-Subject: [PATCH] Change incorrect "CONFIG_INPUT_ATIXL" to "CONFIG_MOUSE_ATIXL".
-Message-ID: <Pine.LNX.4.64.0701221637560.26403@CPE00045a9c397f-CM001225dbafb6>
+	Mon, 22 Jan 2007 16:45:44 -0500
+X-Greylist: delayed 1436 seconds by postgrey-1.27 at vger.kernel.org; Mon, 22 Jan 2007 16:45:44 EST
+From: noah <nwatkins@legolas.ittc.ku.edu>
+Date: Mon, 22 Jan 2007 15:21:52 -0600
+To: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -rt] whitespace cleanup for 2.6.20-rc5-rt7
+Message-ID: <20070122212148.GA26295@legolas>
+References: <11693256381932-git-send-email-nwatkins@ittc.ku.edu> <20070122195836.GC21277@elte.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, UPPERCASE_25_50 0.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070122195836.GC21277@elte.hu>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+No script. Does trailing whitespace and spaces before tab indents seem
+to cover all the whitespace problem scenarios?
 
-  Change the apparently incorrect check for CONFIG_INPUT_ATIXL in a
-source file to be consistent with the kernel config option
-CONFIG_MOUSE_ATIXL.
+-noah
 
-Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
-
----
-
-  this *looks* like a bug.
-
-
-diff --git a/drivers/input/mouse/inport.c b/drivers/input/mouse/inport.c
-index 13dd967..701ebd5 100644
---- a/drivers/input/mouse/inport.c
-+++ b/drivers/input/mouse/inport.c
-@@ -61,7 +61,7 @@ MODULE_LICENSE("GPL");
- #define INPORT_REG_MODE		0x07
- #define INPORT_RESET		0x80
-
--#ifdef CONFIG_INPUT_ATIXL
-+#ifdef CONFIG_MOUSE_ATIXL
- #define INPORT_NAME		"ATI XL Mouse"
- #define INPORT_VENDOR		0x0002
- #define INPORT_SPEED_30HZ	0x01
+On Mon, Jan 22, 2007 at 08:58:36PM +0100, Ingo Molnar wrote:
+> 
+> * Noah Watkins <nwatkins@ittc.ku.edu> wrote:
+> 
+> > fixes trailing whitespace and spaces before tab indents in 
+> > 2.6.20-rc5-rt7 as reported with: git-apply --whitespace=error-all
+> 
+> thanks. Did you do the patch manually, or do you have a script for that 
+> perhaps?
+> 
+> 	Ingo
