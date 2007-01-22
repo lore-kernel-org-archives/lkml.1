@@ -1,39 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932147AbXAVXiA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932221AbXAVXkv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932147AbXAVXiA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jan 2007 18:38:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751938AbXAVXiA
+	id S932221AbXAVXkv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jan 2007 18:40:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751873AbXAVXkv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jan 2007 18:38:00 -0500
-Received: from main.gmane.org ([80.91.229.2]:60038 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751873AbXAVXh7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jan 2007 18:37:59 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Oleg Verych <olecom@flower.upol.cz>
-Subject: dfsg isn't fsf (Re: GPL only modules [was Re: [GIT PATCH] more Driver core patches for 2.6.19])
-Date: Mon, 22 Jan 2007 23:37:26 +0000 (UTC)
-Organization: Palacky University in Olomouc, experimental physics department.
-Message-ID: <slrneraj5p.e7s.olecom@flower.upol.cz>
-References: <20061214003246.GA12162@suse.de> <22299.1166057009@lwn.net> <20061214005532.GA12790@suse.de> <Pine.LNX.4.64.0612131954530.5718@woody.osdl.org> <1166084480.5253.849.camel@pmac.infradead.org> <20061214112535.16ee7708@localhost.localdomain>
-X-Complaints-To: usenet@sea.gmane.org
-X-Gmane-NNTP-Posting-Host: flower.upol.cz
-User-Agent: slrn/0.9.8.1pl1 (Debian)
+	Mon, 22 Jan 2007 18:40:51 -0500
+Received: from gepetto.dc.ltu.se ([130.240.42.40]:61368 "EHLO
+	gepetto.dc.ltu.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751850AbXAVXkv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jan 2007 18:40:51 -0500
+Message-ID: <45B54BE7.5030805@student.ltu.se>
+Date: Tue, 23 Jan 2007 00:42:31 +0100
+From: Richard Knutsson <ricknu-0@student.ltu.se>
+User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
+MIME-Version: 1.0
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>, Noah Watkins <nwatkins@ittc.ku.edu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -rt] whitespace cleanup for 2.6.20-rc5-rt7
+References: <11693256381932-git-send-email-nwatkins@ittc.ku.edu>	 <20070122195836.GC21277@elte.hu> <6bffcb0e0701221354j341e9f07s761c6c049d7196ce@mail.gmail.com>
+In-Reply-To: <6bffcb0e0701221354j341e9f07s761c6c049d7196ce@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2006-12-14, Alan wrote:
-[]
-> I doubt any distribution but the FSF "purified" Debian (the one that has
-> no firmware so doesn't work) would do it.
+Michal Piotrowski wrote:
+> How about this script?
+>
+> "d) Ensure that your patch does not add new trailing whitespace.  The 
+> below
+>   script will fix up your patch by stripping off such whitespace.
+>
+>     #!/bin/sh
+>
+>     strip1()
+>     {
+>         TMP=$(mktemp /tmp/XXXXXX)
+>         cp "$1" "$TMP"
+>         sed -e '/^+/s/[     ]*$//' <"$TMP" >"$1"
+>         rm "$TMP"
+>     }
+>
+>     for i in "$@"
+>     do
+>         strip1 "$i"
+>     done
+> "
+> http://www.zip.com.au/~akpm/linux/patches/stuff/tpp.txt
+I believe:
 
-DFSG "purified" Debian[1], please.
+for i in "$@"; do \
+	sed --in-place -e "s/[	 ]+$//" "$i"
+done
 
-[1] <http://www.debian.org/social_contract>
+will do as well...
 
---
--o--=O C  info emacs : not found  /. .\ ( is there any reason to live? )
- #oo'L O  info make  : not found      o ( yes! -- R.I.P. FSF+RMS, viva )
-<___=E M  man gcc    : not found    `-- ( Debian Free Operating System )
+Richard Knutsson
 
