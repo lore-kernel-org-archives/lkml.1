@@ -1,63 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932089AbXAVST4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932206AbXAVSXt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932089AbXAVST4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jan 2007 13:19:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932166AbXAVST4
+	id S932206AbXAVSXt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jan 2007 13:23:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932204AbXAVSXt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jan 2007 13:19:56 -0500
-Received: from colo.lackof.org ([198.49.126.79]:56019 "EHLO colo.lackof.org"
+	Mon, 22 Jan 2007 13:23:49 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:38688 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932089AbXAVSTz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jan 2007 13:19:55 -0500
-Date: Mon, 22 Jan 2007 11:19:43 -0700
-From: dann frazier <dannf@dannf.org>
-To: Grant Coady <gcoady.lk@gmail.com>
-Cc: Willy Tarreau <w@1wt.eu>, Santiago Garcia Mantinan <manty@debian.org>,
-       linux-kernel@vger.kernel.org, debian-kernel@lists.debian.org
-Subject: Re: problems with latest smbfs changes on 2.4.34 and security backports
-Message-ID: <20070122181942.GJ28073@colo>
-References: <20070117100030.GA11251@clandestino.aytolacoruna.es> <20070117215519.GX24090@1wt.eu> <20070119010040.GR16053@colo> <20070120010544.GY26210@colo> <t1r7r2thimh3gpuhtfc9l3aehjdd6dqkp8@4ax.com> <20070121230321.GC2480@1wt.eu> <lpu7r2lbtpm5cui8v1qpuj2fb5k3vs6f4n@4ax.com>
+	id S932206AbXAVSXs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jan 2007 13:23:48 -0500
+Message-ID: <45B50124.7030703@redhat.com>
+Date: Mon, 22 Jan 2007 13:23:32 -0500
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <lpu7r2lbtpm5cui8v1qpuj2fb5k3vs6f4n@4ax.com>
-User-Agent: mutt-ng/devel-r782 (Debian)
+To: Theodore Tso <tytso@mit.edu>, Alan Cox <alan@redhat.com>,
+       Christoph Hellwig <hch@lst.de>, ksummit-2006-discuss@thunk.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [Ksummit-2006-discuss] 2007 Linux Kernel Summit
+References: <E1H8tIr-0006QH-Bg@candygram.thunk.org> <20070122110711.GA5917@lst.de> <20070122124502.GC30124@devserv.devel.redhat.com> <20070122131416.GA10562@thunk.org>
+In-Reply-To: <20070122131416.GA10562@thunk.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 22, 2007 at 10:50:47AM +1100, Grant Coady wrote:
-> On Mon, 22 Jan 2007 00:03:21 +0100, Willy Tarreau <w@1wt.eu> wrote:
-> grant@sempro:/home/other$ uname -r
-> 2.4.34b
-> grant@sempro:/home/other$ mkdir test
-> grant@sempro:/home/other$ ln -s test testlink
-> ln: creating symbolic link `testlink' to `test': Operation not permitted
-> grant@sempro:/home/other$ echo "this is also a test" > test/file
-> grant@sempro:/home/other$ ln -s test/file test2
-> ln: creating symbolic link `test2' to `test/file': Operation not permitted
+Theodore Tso wrote:
+> On Mon, Jan 22, 2007 at 07:45:02AM -0500, Alan Cox wrote:
+>> Definitely disagree with that. I'd like to see the conference somewhere
+>> else different this time - perhaps Czech Republic, or somewhere else more
+>> easterly and Linux active (or even Finland...)
+>>
 > 
-> trying to create symlinks.
-> 
-> No problems creating symlinks with 2.4.33.3.
+> Understand that one of the feedback that I get from the keepers of the
+> corporate travel budgets is that money for sending employees to exotic
+> locations is finite 
 
-Yes, I've found that this varies depending upon the options passed. If
-uid=0, I can create symlinks, otherwise I always get permission
-denied. This behavior appears to be consistent with 2.6.
-
-I also need to do some testing with the proposed patch to smbmount
-that will let you omit options (current versions will always pass an
-option to the kernel, even if you the user did not provide one).
-If you do not pass options, the behavior should fallback to
-server-provided values.
-
-Note that this bug has been my only interaction with smbfs, so I'm
-certainly no expert on how it *should* behave. My plan is to
-take all of the use cases we're coming up with and try to maintain
-the "historic" 2.4 behavior as much as possible, but still not
-silently dropping user-provided mount options. When the behavior needs
-to change to honor them, I'll try to match what current 2.6
-does. Make sense?
+So we need to find locations where the increased price of the
+plane ticket is cancelled out by lower hotel rates? :)
 
 -- 
-dann frazier
-
+Politics is the struggle between those who want to make their country
+the best in the world, and those who believe it already is.  Each group
+calls the other unpatriotic.
