@@ -1,85 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932247AbXAVXAU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932147AbXAVXiA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932247AbXAVXAU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jan 2007 18:00:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932268AbXAVXAU
+	id S932147AbXAVXiA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jan 2007 18:38:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751938AbXAVXiA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jan 2007 18:00:20 -0500
-Received: from smtp.ono.com ([62.42.230.12]:24550 "EHLO resmaa06.ono.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932247AbXAVXAS convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jan 2007 18:00:18 -0500
-Date: Mon, 22 Jan 2007 23:59:41 +0100
-From: "J.A. =?UTF-8?B?TWFnYWxsw7Nu?=" <jamagallon@ono.com>
-To: Andrew Morton <akpm@osdl.org>,
-       "Linux-Kernel, " <linux-kernel@vger.kernel.org>
-Subject: Re: Problem with POSIX threads in latest kernel...
-Message-ID: <20070122235941.52b1b228@werewolf-wl>
-In-Reply-To: <20070122115630.a3d790f5.akpm@osdl.org>
-References: <20070116024710.7e94326c@werewolf-wl>
-	<20070122115630.a3d790f5.akpm@osdl.org>
-X-Mailer: Claws Mail 2.7.1cvs47 (GTK+ 2.10.8; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Mon, 22 Jan 2007 18:38:00 -0500
+Received: from main.gmane.org ([80.91.229.2]:60038 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751873AbXAVXh7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jan 2007 18:37:59 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Oleg Verych <olecom@flower.upol.cz>
+Subject: dfsg isn't fsf (Re: GPL only modules [was Re: [GIT PATCH] more Driver core patches for 2.6.19])
+Date: Mon, 22 Jan 2007 23:37:26 +0000 (UTC)
+Organization: Palacky University in Olomouc, experimental physics department.
+Message-ID: <slrneraj5p.e7s.olecom@flower.upol.cz>
+References: <20061214003246.GA12162@suse.de> <22299.1166057009@lwn.net> <20061214005532.GA12790@suse.de> <Pine.LNX.4.64.0612131954530.5718@woody.osdl.org> <1166084480.5253.849.camel@pmac.infradead.org> <20061214112535.16ee7708@localhost.localdomain>
+X-Complaints-To: usenet@sea.gmane.org
+X-Gmane-NNTP-Posting-Host: flower.upol.cz
+User-Agent: slrn/0.9.8.1pl1 (Debian)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 22 Jan 2007 11:56:30 -0800, Andrew Morton <akpm@osdl.org> wrote:
+On 2006-12-14, Alan wrote:
+[]
+> I doubt any distribution but the FSF "purified" Debian (the one that has
+> no firmware so doesn't work) would do it.
 
-> > On Tue, 16 Jan 2007 02:47:10 +0100 "J.A. Magallón" <jamagallon@ono.com> wrote:
-> > Hi...
-> > 
-> > I run the (almost) latest -mm kernel (2.6.20-rc3-mm1), and see some strange behaviour
-> > with POSIX threads (glibc-2.4).
-> > I have downgraded my test to a simple textboox example for a SMP-safe spool
-> > queue, it's just a circular queue with a mutex and a condition variable for in
-> > and out. I have seen the same structure in several places.
-> > 
-> > Well, it just sometimes gets blocked. GDB says its stuck in pthread_wait().
-> > I could swear it worked on previous kernels. It works as is on IRIX.
-> > I will try to build an older kernel to test.
-> > I takes a second to block it with something like while :; tst; done.
-> > 
-> > Any ideas ?
-> 
-> Do I need to worry about this still?
+DFSG "purified" Debian[1], please.
 
-Oops, no, sorry. It was buggy code that previously seemed to work.
-Buggy code:
-
-	pthread_mutex_lock(&slots_mutex);
-		while (slots<=0)
-			pthread_cond_wait(&slots_cond,&slots_mutex);
-		slots--;
-		items++;
-	pthread_mutex_unlock(&slots_mutex);
-
-	pthread_mutex_lock(&items_mutex);
-		pthread_cond_signal(&items_cond);
-	pthread_mutex_unlock(&items_mutex);
-
-(buggy because it acceses items without locking. The same in the other
-endpoint of the queue).
-
-Correct code:
-
-	pthread_mutex_lock(&slots_mutex);
-		while (slots<=0)
-			pthread_cond_wait(&slots_cond,&slots_mutex);
-		slots--;
-	pthread_mutex_unlock(&slots_mutex);
-
-	pthread_mutex_lock(&items_mutex);
-		items++;
-		pthread_cond_signal(&items_cond);
-	pthread_mutex_unlock(&items_mutex);
-
-So don't worry. I was so busy I forgot to post the solution.
+[1] <http://www.debian.org/social_contract>
 
 --
-J.A. Magallon <jamagallon()ono!com>     \               Software is like sex:
-                                         \         It's better when it's free
-Mandriva Linux release 2007.1 (Cooker) for i586
-Linux 2.6.19-jam04 (gcc 4.1.2 20061110 (prerelease) (4.1.2-0.20061110.2mdv2007.1)) #0 SMP PREEMPT
+-o--=O C  info emacs : not found  /. .\ ( is there any reason to live? )
+ #oo'L O  info make  : not found      o ( yes! -- R.I.P. FSF+RMS, viva )
+<___=E M  man gcc    : not found    `-- ( Debian Free Operating System )
+
