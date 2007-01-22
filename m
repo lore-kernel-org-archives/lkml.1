@@ -1,74 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932158AbXAVT7x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932416AbXAVUAP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932158AbXAVT7x (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jan 2007 14:59:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932436AbXAVT7x
+	id S932416AbXAVUAP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jan 2007 15:00:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932463AbXAVUAO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jan 2007 14:59:53 -0500
-Received: from [212.12.190.79] ([212.12.190.79]:33026 "EHLO raad.intranet"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932416AbXAVT7w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jan 2007 14:59:52 -0500
-From: Al Boldi <a1426z@gawab.com>
-To: "yunfeng zhang" <zyf.zeroos@gmail.com>
-Subject: Re: [PATCH 2.6.20-rc5 1/1] MM: enhance Linux swap subsystem
-Date: Mon, 22 Jan 2007 23:00:41 +0300
-User-Agent: KMail/1.5
-Cc: "Rik van Riel" <riel@redhat.com>, "Pavel Machek" <pavel@ucw.cz>,
-       linux-kernel@vger.kernel.org
-References: <4df04b840701212309l2a283357jbdaa88794e5208a7@mail.gmail.com>
-In-Reply-To: <4df04b840701212309l2a283357jbdaa88794e5208a7@mail.gmail.com>
+	Mon, 22 Jan 2007 15:00:14 -0500
+Received: from nf-out-0910.google.com ([64.233.182.191]:48281 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932416AbXAVUAK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jan 2007 15:00:10 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=JqQ5cjt0ZCQYKU8lLXip1Ouvib4gDpsLmklCmZbM9vJwtoa+4u2832MPx4n2gkVsTzaSNiIlINcmPpoU1+U4V6KUt6wQJ1BiSvh/fnIcYjOImjfa8i4+Q/HxIOSfJgx/wB5n9cOoP4Fr7Dnlpa/oyf3SC4X7ed9xDAbwO3st3GU=
+Date: Mon, 22 Jan 2007 21:00:04 +0100
+From: Luca Tettamanti <kronos.it@gmail.com>
+To: Jay Cliburn <jacliburn@bellsouth.net>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, jeff@garzik.org,
+       shemminger@osdl.org, csnook@redhat.com, hch@infradead.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       atl1-devel@lists.sourceforge.net, kronos.it@gmail.com
+Subject: Re: [PATCH 4/4] atl1: Ancillary C files for Attansic L1 driver
+Message-ID: <20070122200004.GA12553@dreamland.darkstar.lan>
+References: <20070121210737.GE2702@osprey.hogchain.net> <20070121183151.4be61ebf.randy.dunlap@oracle.com> <45B43093.6060500@bellsouth.net>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Type: text/plain;
-  charset="windows-1256"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200701222300.41960.a1426z@gawab.com>
+In-Reply-To: <45B43093.6060500@bellsouth.net>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-yunfeng zhang wrote:
-> My patch is based on my new idea to Linux swap subsystem, you can find
-> more in Documentation/vm_pps.txt which isn't only patch illustration but
-> also file changelog. In brief, SwapDaemon should scan and reclaim pages on
-> UserSpace::vmalist other than current zone::active/inactive. The change
-> will conspicuously enhance swap subsystem performance by
->
-> 1) SwapDaemon can collect the statistic of process acessing pages and by
-> it unmaps ptes, SMP specially benefits from it for we can use
-> flush_tlb_range to unmap ptes batchly rather than frequently TLB IPI
-> interrupt per a page in current Linux legacy swap subsystem.
-> 2) Page-fault can issue better readahead requests since history data shows
-> all related pages have conglomerating affinity. In contrast, Linux
-> page-fault readaheads the pages relative to the SwapSpace position of
-> current page-fault page.
-> 3) It's conformable to POSIX madvise API family.
-> 4) It simplifies Linux memory model dramatically. Keep it in mind that new
-> swap strategy is from up to down. In fact, Linux legacy swap subsystem is
-> maybe the only one from down to up.
->
-> Other problems asked about my pps are
-> 1) There isn't new lock order in my pps, it's compliant to Linux lock
-> order defined in mm/rmap.c.
-> 2) When a memory inode is low, you can set scan_control::reclaim_node to
-> let my kppsd to reclaim the memory inode page.
+Il Sun, Jan 21, 2007 at 09:33:39PM -0600, Jay Cliburn ha scritto: 
+> Randy Dunlap wrote:
+> >On Sun, 21 Jan 2007 15:07:37 -0600 Jay Cliburn wrote:
+> [snip]
+> 
+> >>+	value = ioread16(hw->hw_addr + REG_PCIE_CAP_LIST);
+> >>+	return ((value & 0xFF00) == 0x6C00) ? 0 : 1;
+> >
+> >Are there defines or enums for these?
+> >Fewer magic numbers would be nice/helpful/readable.
+> [snip]
+> >>+	s32 ret;
+> >>+	ret = atl1_write_phy_reg(hw, 29, 0x0029);
+> >
+> >Fewer magic numbers?
+> 
+> Unfortunately, we don't have a spec.  This is how the vendor coded it.
+> 
+> [snip]
+> >>+
+> >>+int enable_msi;
+> >>+module_param(enable_msi, int, 0444);
+> >>+MODULE_PARM_DESC(enable_msi, "Enable PCI MSI");
+> >
+> >Hm, I thought that we didn't want individual drivers having MSI config
+> >options...
+> 
+> Luca?  This one was yours IIRC.  Care to chime in?
 
-Patched against 2.6.19 leads to:
+I remember that discussion, but since there's no sistem-wide MSI
+blacklist (or whitelist) I don't think it's safe to enable it
+unconditionally. Judging from bug reports on lkml it's not safe to
+assume that MSI support is sane on non-Intel chipsets.
 
-mm/vmscan.c: In function `shrink_pvma_scan_ptes':
-mm/vmscan.c:1340: too many arguments to function `page_remove_rmap'
-
-So changed
- page_remove_rmap(series.pages[i], vma);
-to
- page_remove_rmap(series.pages[i]);
-
-But your patch doesn't offer any swap-performance improvement for both swsusp 
-or tmpfs.  Swap-in is still half speed of Swap-out.
-
-
-Thanks!
-
---
-Al
-
+Luca
+-- 
+Il coraggio non mi manca.
+E` la paura che mi frega...
