@@ -1,46 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932206AbXAVSXt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932204AbXAVSZP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932206AbXAVSXt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jan 2007 13:23:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932204AbXAVSXt
+	id S932204AbXAVSZP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jan 2007 13:25:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932207AbXAVSZP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jan 2007 13:23:49 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:38688 "EHLO mx1.redhat.com"
+	Mon, 22 Jan 2007 13:25:15 -0500
+Received: from main.gmane.org ([80.91.229.2]:44344 "EHLO ciao.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932206AbXAVSXs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jan 2007 13:23:48 -0500
-Message-ID: <45B50124.7030703@redhat.com>
-Date: Mon, 22 Jan 2007 13:23:32 -0500
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
-MIME-Version: 1.0
-To: Theodore Tso <tytso@mit.edu>, Alan Cox <alan@redhat.com>,
-       Christoph Hellwig <hch@lst.de>, ksummit-2006-discuss@thunk.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [Ksummit-2006-discuss] 2007 Linux Kernel Summit
-References: <E1H8tIr-0006QH-Bg@candygram.thunk.org> <20070122110711.GA5917@lst.de> <20070122124502.GC30124@devserv.devel.redhat.com> <20070122131416.GA10562@thunk.org>
-In-Reply-To: <20070122131416.GA10562@thunk.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S932204AbXAVSZN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jan 2007 13:25:13 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Jakub Narebski <jnareb@gmail.com>
+Subject: Re: [Announce] GIT v1.5.0-rc2
+Followup-To: gmane.comp.version-control.git
+Date: Mon, 22 Jan 2007 19:22:08 +0100
+Organization: At home
+Message-ID: <ep2vb2$p9s$1@sea.gmane.org>
+References: <7v64b04v2e.fsf@assigned-by-dhcp.cox.net> <7v3b6439uh.fsf@assigned-by-dhcp.cox.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7Bit
+X-Complaints-To: usenet@sea.gmane.org
+X-Gmane-NNTP-Posting-Host: host-81-190-20-200.torun.mm.pl
+Mail-Copies-To: jnareb@gmail.com
+User-Agent: KNode/0.10.2
+Cc: git@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Theodore Tso wrote:
-> On Mon, Jan 22, 2007 at 07:45:02AM -0500, Alan Cox wrote:
->> Definitely disagree with that. I'd like to see the conference somewhere
->> else different this time - perhaps Czech Republic, or somewhere else more
->> easterly and Linux active (or even Finland...)
->>
-> 
-> Understand that one of the feedback that I get from the keepers of the
-> corporate travel budgets is that money for sending employees to exotic
-> locations is finite 
+Junio C Hamano wrote:
 
-So we need to find locations where the increased price of the
-plane ticket is cancelled out by lower hotel rates? :)
+> GIT v1.5.0 Release Notes (draft)
+> ================================
 
+Would they be somewhere besides todo branch of git.git repository, like the
+v1.5.0 tag comment (content), or the NEWS file?
 -- 
-Politics is the struggle between those who want to make their country
-the best in the world, and those who believe it already is.  Each group
-calls the other unpatriotic.
+Jakub Narebski
+Warsaw, Poland
+ShadeHawk on #git
+
+
