@@ -1,70 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932371AbXAVTPg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932379AbXAVTRE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932371AbXAVTPg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jan 2007 14:15:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932379AbXAVTPg
+	id S932379AbXAVTRE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jan 2007 14:17:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932389AbXAVTRD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jan 2007 14:15:36 -0500
-Received: from ms-smtp-01.nyroc.rr.com ([24.24.2.55]:55108 "EHLO
-	ms-smtp-01.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932371AbXAVTPf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jan 2007 14:15:35 -0500
-Date: Mon, 22 Jan 2007 14:15:11 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH -rt] make spin_unlock to slab_spin_unlock
-Message-ID: <Pine.LNX.4.58.0701221407060.24244@gandalf.stny.rr.com>
+	Mon, 22 Jan 2007 14:17:03 -0500
+Received: from omx2-ext.sgi.com ([192.48.171.19]:45541 "EHLO omx2.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S932379AbXAVTRB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jan 2007 14:17:01 -0500
+Date: Mon, 22 Jan 2007 11:15:46 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+cc: Aubrey Li <aubreylee@gmail.com>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
+       "linux-os (Dick Johnson)" <linux-os@analogic.com>,
+       Robin Getz <rgetz@blackfin.uclinux.org>,
+       "Hennerich, Michael" <Michael.Hennerich@analog.com>
+Subject: Re: [RPC][PATCH 2.6.20-rc5] limit total vfs page cache
+In-Reply-To: <45B19483.6010300@yahoo.com.au>
+Message-ID: <Pine.LNX.4.64.0701221114060.25121@schroedinger.engr.sgi.com>
+References: <6d6a94c50701171923g48c8652ayd281a10d1cb5dd95@mail.gmail.com> 
+ <45B0DB45.4070004@linux.vnet.ibm.com>  <6d6a94c50701190805saa0c7bbgbc59d2251bed8537@mail.gmail.com>
+  <45B112B6.9060806@linux.vnet.ibm.com>  <6d6a94c50701191804m79c70afdo1e664a072f928b9e@mail.gmail.com>
+  <45B17D6D.2030004@yahoo.com.au> <6d6a94c50701191908i63fe7eebi9a97a4afb94f5df4@mail.gmail.com>
+ <45B19483.6010300@yahoo.com.au>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, 20 Jan 2007, Nick Piggin wrote:
 
-Ingo,
+> > It doesn't reduce the amount of memory available to the system. It
+> > just reduce the amount of memory available to the page cache. So that
+> > page cache is limited and the reserved memory can be allocated by the
+> > application.
+> 
+> But the patch doesn't do that, as I explained.
 
-I hit this bug on one of my work test machines. This bug is probably what
-caused my laptop to crash ever so often too, but since I don't have a
-serial or other debug output, my laptop never showed what was wrong.
-
-Here's the call trace:
-
-------------[ cut here ]------------
-kernel BUG at kernel/rtmutex.c:649!
-invalid opcode: 0000 [1] PREEMPT SMP
-CPU 2
-[...]
-Call Trace:
- [<ffffffff802661a7>] rt_spin_lock+0x1f/0x21
- [<ffffffff802df73b>] drain_freelist+0x4f/0xeb
- [<ffffffff802df941>] cache_reap+0x16a/0x26d
- [<ffffffff8024f29e>] run_workqueue+0x9f/0xf9
- [<ffffffff8024bbe3>] worker_thread+0x11b/0x152
- [<ffffffff80233fcb>] kthread+0xee/0x11a
- [<ffffffff802600f8>] child_rip+0xa/0x12
-
-
-Seems that the goto out of the loop was not updated to be a
-slab_spin_unlock, so there was a way out that would not unlock the slab
-cpu lock.
-
--- Steve
-
-Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
-
-Index: linux-2.6.20-rc5-rt7/mm/slab.c
-===================================================================
---- linux-2.6.20-rc5-rt7.orig/mm/slab.c	2007-01-22 14:05:35.000000000 -0500
-+++ linux-2.6.20-rc5-rt7/mm/slab.c	2007-01-22 14:06:07.000000000 -0500
-@@ -2564,7 +2564,7 @@ static int drain_freelist(struct kmem_ca
- 		slab_spin_lock_irq(&l3->list_lock, this_cpu);
- 		p = l3->slabs_free.prev;
- 		if (p == &l3->slabs_free) {
--			spin_unlock_irq(&l3->list_lock);
-+			slab_spin_unlock_irq(&l3->list_lock, this_cpu);
- 			goto out;
- 		}
-
+The patch could do it if he would be checking NR_FILE_PAGES against 
+a limit instead of the free pages.
 
