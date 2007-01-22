@@ -1,45 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932157AbXAVU25@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932422AbXAVUbv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932157AbXAVU25 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jan 2007 15:28:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932153AbXAVU25
+	id S932422AbXAVUbv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jan 2007 15:31:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932186AbXAVUbv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jan 2007 15:28:57 -0500
-Received: from h155.mvista.com ([63.81.120.155]:36756 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751980AbXAVU24 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jan 2007 15:28:56 -0500
-Message-ID: <45B51E83.1010904@ru.mvista.com>
-Date: Mon, 22 Jan 2007 23:28:51 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
+	Mon, 22 Jan 2007 15:31:51 -0500
+Received: from an-out-0708.google.com ([209.85.132.240]:28602 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932422AbXAVUbu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jan 2007 15:31:50 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=O2caD9Hz9UvIcALEticftZZrFEsDunqgjAOK/9u9uBIzIVm6F9jZrHxSeLvmb4EMRnUqrxWzFECH07ZjIMy9Ks3/OCBG4REfrAiPOL3ox2ucSE3gy6lwHYCy7xsN+vNRFccg1HiBYCnfweFha39qusW8D6HkGphlDU7r3euhjUc=
+Message-ID: <9e0cf0bf0701221231sc638114j2f0123650ffc14ea@mail.gmail.com>
+Date: Mon, 22 Jan 2007 22:31:48 +0200
+From: "Alon Bar-Lev" <alon.barlev@gmail.com>
+To: "Andrew Morton" <akpm@osdl.org>
+Subject: Re: [patch 03/26] Dynamic kernel command-line - arm
+Cc: "Russell King" <rmk+lkml@arm.linux.org.uk>, tom@dbservice.com,
+       bwalle@suse.de, linux-kernel@vger.kernel.org
+In-Reply-To: <20070122115650.d0be8bd3.akpm@osdl.org>
 MIME-Version: 1.0
-To: Alan <alan@lxorguk.ukuu.org.uk>
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 13/15] ide: fix UDMA/MWDMA/SWDMA masks
-References: <20070119003058.14846.43637.sendpatchset@localhost.localdomain>	<20070119003226.14846.87052.sendpatchset@localhost.localdomain>	<45B4FFBD.40507@ru.mvista.com> <20070122184620.1c8b87ac@localhost.localdomain>
-In-Reply-To: <20070122184620.1c8b87ac@localhost.localdomain>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070118125849.441998000@strauss.suse.de>
+	 <20070118130028.719472000@strauss.suse.de>
+	 <20070118141359.GB31418@flint.arm.linux.org.uk>
+	 <45AF92E7.50901@dbservice.com>
+	 <20070118152326.GC31418@flint.arm.linux.org.uk>
+	 <20070122115650.d0be8bd3.akpm@osdl.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+Hello Andrew,
 
-Alan wrote:
+Can I do anything more in order to be closer to merge?
+Some general comments... or should I CC other people etc...
+I submitted this several times but got almost no architecture to ACK.
 
->>    Ugh, I'm not seeing any *actual* support for MW/SW DMA in this driver... 
+I just don't know how we can progress with this issue... All we wanted
+is to break the 256 limit in x86...
 
-> Thats long been broken. Should be correct in the libata driver
+Best Regards,
+Alon Bar-Lev.
 
-    Here's a surprise for you. pata_cmd64x copied the SW/MW DMA setup code 
-from the IDE driver.  No way it could be working.  You may check against the 
-PC64x datasheets (if you have them -- if you don't I think I may share) and 
-see for yourself -- it's abolutely idiotic.
-
-> Alan
-
-WBR, Sergei
+On 1/22/07, Andrew Morton <akpm@osdl.org> wrote:
+> > On Thu, 18 Jan 2007 15:23:26 +0000 Russell King <rmk+lkml@arm.linux.org.uk> wrote:
+> > On Thu, Jan 18, 2007 at 04:31:51PM +0100, Tomas Carnecky wrote:
+> > > Russell King wrote:
+> > > > On Thu, Jan 18, 2007 at 01:58:52PM +0100, Bernhard Walle wrote:
+> > > >> -static char command_line[COMMAND_LINE_SIZE];
+> > > >> +static char __initdata command_line[COMMAND_LINE_SIZE];
+> > > >
+> > > > Uninitialised data is placed in the BSS.  Adding __initdata to BSS
+> > > > data causes grief.
+> > > >
+> > >
+> > > Static variables are implicitly initialized to zero. Does that also
+> > > count as initialization?
+> >
+> > No.  As I say, they're placed in the BSS.  The BSS is zeroed as part of
+> > the C runtime initialisation.
+>
+> I don't understand the objection.  With the above change, command_line[]
+> will end up consuming COMMAND_LINE_SIZE bytes of .data.init and will be
+> reliably initialized to all-zeros by the compiler (won't it?)
+>
+> > If you want to place a variable in a specific section, it must be
+> > explicitly initialised.  Eg,
+> >
+> > static char __initdata command_line[COMMAND_LINE_SIZE] = "";
+> >
+> > However, there is a bigger question here: that is the tradeoff between
+> > making this variable part of the on-disk kernel image, but throw away
+> > the memory at runtime, or to leave it in the BSS where it will not be
+> > part of the on-disk kernel image, but will not be thrown away at
+> > runtime.
+>
+> Yes, it'll take some space in vmlinux.  We could perhaps create a new
+> __initbss to prevent that, I assume.
+>
+>
