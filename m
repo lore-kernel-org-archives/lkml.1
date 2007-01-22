@@ -1,66 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932463AbXAVUBJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932113AbXAVUES@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932463AbXAVUBJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jan 2007 15:01:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932436AbXAVUAy
+	id S932113AbXAVUES (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jan 2007 15:04:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932122AbXAVUES
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jan 2007 15:00:54 -0500
-Received: from caramon.arm.linux.org.uk ([217.147.92.249]:4312 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932422AbXAVUAw (ORCPT
+	Mon, 22 Jan 2007 15:04:18 -0500
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:3565 "HELO
+	mailout.stusta.mhn.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S932113AbXAVUEQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jan 2007 15:00:52 -0500
-Date: Mon, 22 Jan 2007 20:00:39 +0000
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Andrew Morton <akpm@osdl.org>
-Cc: tom@dbservice.com, bwalle@suse.de, linux-kernel@vger.kernel.org,
-       alon.barlev@gmail.com
-Subject: Re: [patch 03/26] Dynamic kernel command-line - arm
-Message-ID: <20070122200038.GA32085@flint.arm.linux.org.uk>
-Mail-Followup-To: Andrew Morton <akpm@osdl.org>, tom@dbservice.com,
-	bwalle@suse.de, linux-kernel@vger.kernel.org, alon.barlev@gmail.com
-References: <20070118125849.441998000@strauss.suse.de> <20070118130028.719472000@strauss.suse.de> <20070118141359.GB31418@flint.arm.linux.org.uk> <45AF92E7.50901@dbservice.com> <20070118152326.GC31418@flint.arm.linux.org.uk> <20070122115650.d0be8bd3.akpm@osdl.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 22 Jan 2007 15:04:16 -0500
+Date: Mon, 22 Jan 2007 21:04:23 +0100
+From: Adrian Bunk <bunk@stusta.de>
+To: Kristian =?iso-8859-1?Q?H=F8gsberg?= <krh@redhat.com>
+Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       linux1394-devel@lists.sourceforge.net
+Subject: Re: [-mm patch] drivers/firewire/: cleanups
+Message-ID: <20070122200423.GA9093@stusta.de>
+References: <20070111222627.66bb75ab.akpm@osdl.org> <20070122181736.GU9093@stusta.de> <45B51369.1060408@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20070122115650.d0be8bd3.akpm@osdl.org>
-User-Agent: Mutt/1.4.2.1i
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <45B51369.1060408@redhat.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 22, 2007 at 11:56:50AM -0800, Andrew Morton wrote:
-> > On Thu, 18 Jan 2007 15:23:26 +0000 Russell King <rmk+lkml@arm.linux.org.uk> wrote:
-> > On Thu, Jan 18, 2007 at 04:31:51PM +0100, Tomas Carnecky wrote:
-> > > Russell King wrote:
-> > > > On Thu, Jan 18, 2007 at 01:58:52PM +0100, Bernhard Walle wrote: 
-> > > >> -static char command_line[COMMAND_LINE_SIZE];
-> > > >> +static char __initdata command_line[COMMAND_LINE_SIZE];
-> > > > 
-> > > > Uninitialised data is placed in the BSS.  Adding __initdata to BSS
-> > > > data causes grief.
-> > > > 
-> > > 
-> > > Static variables are implicitly initialized to zero. Does that also
-> > > count as initialization?
-> > 
-> > No.  As I say, they're placed in the BSS.  The BSS is zeroed as part of
-> > the C runtime initialisation.
+On Mon, Jan 22, 2007 at 02:41:29PM -0500, Kristian Høgsberg wrote:
+> Adrian Bunk wrote:
+> >On Thu, Jan 11, 2007 at 10:26:27PM -0800, Andrew Morton wrote:
+> >>...
+> >>Changes since 2.6.20-rc3-mm1:
+> >>...
+> >> git-ieee1394.patch
+> >>...
+> >> git trees
+> >>...
+> >
+> >
+> >This patch contains the following cleanups:
+> >- "extern inline" -> "static inline"
 > 
-> I don't understand the objection.  With the above change, command_line[]
-> will end up consuming COMMAND_LINE_SIZE bytes of .data.init and will be
-> reliably initialized to all-zeros by the compiler (won't it?)
+> I guess that's fine, I do like how extern inline will never generate code 
 
-You're reading into this something that was never there.  The mail you
-are replying to is an explanatory one, not an objecting one.
+Exactly the opposite will be true when gcc will switch to the C99 
+semantics...
 
-My "objection" (if you want to call it that, it was more an observation)
-was that merely adding an __initdata to an uninitialised variable has in
-the past caused complaints from compilers about section mismatches and
-the like.
+Besides this, "static inline" forces inlining in the kernel due to
+  #define inline          inline          __attribute__((always_inline))
 
-Maybe compilers are now smarter though.
+> and that gcc warns on missing prototype for these case is more of a gcc 
+> bug.  Not a big deal though, it's more worthwhile to track down real 
+> missing prototype offenders.
+> 
+> >- fw-topology.c: make struct fw_node_create static
+> 
+> Looks good.
+> 
+> Signed-off-by: Kristian Høgsberg <krh@redhat.com>
+> 
+> 
+
+cu
+Adrian
 
 -- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
