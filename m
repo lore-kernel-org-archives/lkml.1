@@ -1,84 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933033AbXAWOgH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933026AbXAWOhd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933033AbXAWOgH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jan 2007 09:36:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933026AbXAWOgH
+	id S933026AbXAWOhd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jan 2007 09:37:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933034AbXAWOhd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jan 2007 09:36:07 -0500
-Received: from il.qumranet.com ([62.219.232.206]:56758 "EHLO il.qumranet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933033AbXAWOgF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jan 2007 09:36:05 -0500
-Subject: [PATCH 5/5] KVM: SVM: Propagate cpu shutdown events to userspace
-From: Avi Kivity <avi@qumranet.com>
-Date: Tue, 23 Jan 2007 14:36:04 -0000
-To: kvm-devel@lists.sourceforge.net
-Cc: linux-kernel@vger.kernel.org, akpm@osdl.org, mingo@elte.hu
-References: <45B61C09.5020501@qumranet.com>
-In-Reply-To: <45B61C09.5020501@qumranet.com>
-Message-Id: <20070123143604.4DD1A2507E1@il.qumranet.com>
+	Tue, 23 Jan 2007 09:37:33 -0500
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:33885 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933010AbXAWOhc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jan 2007 09:37:32 -0500
+Message-ID: <45B61E50.6020607@bull.net>
+Date: Tue, 23 Jan 2007 15:40:16 +0100
+From: Nadia Derbey <Nadia.Derbey@bull.net>
+Organization: BULL/DT/OSwR&D/Linux
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.6) Gecko/20040115
+X-Accept-Language: en-us, en
+MIME-Version: 1.0
+To: Andrew Morton <akpm@osdl.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH 6/6] automatic tuning applied to some kernel components
+References: <20070116061516.899460000@bull.net>	<20070116063030.761795000@bull.net> <20070122115638.835b26a1.akpm@osdl.org>
+In-Reply-To: <20070122115638.835b26a1.akpm@osdl.org>
+X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 23/01/2007 15:38:17,
+	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 23/01/2007 15:38:18,
+	Serialize complete at 23/01/2007 15:38:18
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Joerg Roedel <joerg.roedel@amd.com>
+Andrew Morton wrote:
+>>On Tue, 16 Jan 2007 07:15:22 +0100 Nadia.Derbey@bull.net wrote:
+>>The following kernel components register a tunable structure and call the
+>>auto-tuning routine:
+>>  . file system
+>>  . shared memory (per namespace)
+>>  . semaphore (per namespace)
+>>  . message queues (per namespace)
+> 
+> 
+> This is the part of the patch series which really matters, and I just don't
+> understand it :(
+> 
+> Why do we want to autotune these things?  What problem is this patch series
+> solving?  Please describe this part of the work much, much more completely,
+> so we can understand the need to add such a large amount of code to the
+> kernel.
 
-This patch implements forwarding of SHUTDOWN intercepts from the guest
-on to userspace on AMD SVM. A SHUTDOWN event occurs when the guest produces
-a triple fault (e.g. on reboot). This also fixes the bug that a guest
-reboot actually causes a host reboot under some circumstances.
+1) why these tunables?
+The ipc tunables have been selected as "guinea-pig" tunables for the AKT 
+framework because they are likely to be often used in data bases. This 
+applies to file-max too.
+Now, if the framework itself is accepted, the set of impacted tunables 
+can easily be enhanced.
 
-Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
-Signed-off-by: Avi Kivity <avi@qumranet.com>
+2) why autotuning:
+There are at least 3 cases where it can be useful
+. for workloads that are known to need a big amount of a given resource 
+type (say shared memories), but we don't know what the maximum amount 
+needed will be
+. to solve the case of multiple applications running on a single system, 
+and that need the same tunable to be adjusted to feet their needs
+. to make a system correctly react to eventual peak loads for a given 
+resource usage, i.e. make it tune up *and down* as needed.
 
-Index: linux-2.6/include/linux/kvm.h
-===================================================================
---- linux-2.6.orig/include/linux/kvm.h
-+++ linux-2.6/include/linux/kvm.h
-@@ -46,6 +46,7 @@ enum kvm_exit_reason {
- 	KVM_EXIT_HLT              = 5,
- 	KVM_EXIT_MMIO             = 6,
- 	KVM_EXIT_IRQ_WINDOW_OPEN  = 7,
-+	KVM_EXIT_SHUTDOWN         = 8,
- };
- 
- /* for KVM_RUN */
-Index: linux-2.6/drivers/kvm/svm.c
-===================================================================
---- linux-2.6.orig/drivers/kvm/svm.c
-+++ linux-2.6/drivers/kvm/svm.c
-@@ -502,6 +502,7 @@ static void init_vmcb(struct vmcb *vmcb)
- 				(1ULL << INTERCEPT_IOIO_PROT) |
- 				(1ULL << INTERCEPT_MSR_PROT) |
- 				(1ULL << INTERCEPT_TASK_SWITCH) |
-+				(1ULL << INTERCEPT_SHUTDOWN) |
- 				(1ULL << INTERCEPT_VMRUN) |
- 				(1ULL << INTERCEPT_VMMCALL) |
- 				(1ULL << INTERCEPT_VMLOAD) |
-@@ -892,6 +893,19 @@ static int pf_interception(struct kvm_vc
- 	return 0;
- }
- 
-+static int shutdown_interception(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
-+{
-+	/*
-+	 * VMCB is undefined after a SHUTDOWN intercept
-+	 * so reinitialize it.
-+	 */
-+	memset(vcpu->svm->vmcb, 0, PAGE_SIZE);
-+	init_vmcb(vcpu->svm->vmcb);
-+
-+	kvm_run->exit_reason = KVM_EXIT_SHUTDOWN;
-+	return 0;
-+}
-+
- static int io_get_override(struct kvm_vcpu *vcpu,
- 			  struct vmcb_seg **seg,
- 			  int *addr_override)
-@@ -1249,6 +1263,7 @@ static int (*svm_exit_handlers[])(struct
- 	[SVM_EXIT_IOIO] 		  	= io_interception,
- 	[SVM_EXIT_MSR]				= msr_interception,
- 	[SVM_EXIT_TASK_SWITCH]			= task_switch_interception,
-+	[SVM_EXIT_SHUTDOWN]			= shutdown_interception,
- 	[SVM_EXIT_VMRUN]			= invalid_op_interception,
- 	[SVM_EXIT_VMMCALL]			= invalid_op_interception,
- 	[SVM_EXIT_VMLOAD]			= invalid_op_interception,
+In all these cases, the akt framework will enable the kernel to adapt to 
+increasing / decreasing resource consumption:
+1) avoid allocating "a priori" a big amount of memory that will be used 
+only in extreme cases. This is the effect of doing an "echo <huge_value> 
+ > /proc/sys/kernel/shmmni"
+2) the system will come back to the default values as soon as the peak 
+load is over.
+
+> 
+> It seems strange that the whole feature is Kconfigurable.  Please also
+> explain the thinking behind that.
+
+We wanted to make it configurable because it adds some overhead in terms of
+1) generated kernel size
+2) instructions added to the resource creation / removal code paths even 
+if auto-tuning is not activated for th corresponding tunable -> 
+performance impact.
+
+> 
+> I suspect the patches would be much simpler if you simply required that all
+> these new tunables be of type `long'.  About seven eighths of the code
+> would go away.  As would most of those eye-popping macros.
+> 
+
+Yes, agree with you: the idea here was to make the framework more 
+generic. But I can change that.
+
+Regards,
+Nadia
+
+
+
+
