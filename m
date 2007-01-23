@@ -1,63 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965485AbXAWUHj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932920AbXAWULm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965485AbXAWUHj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jan 2007 15:07:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965486AbXAWUHj
+	id S932920AbXAWULm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jan 2007 15:11:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932954AbXAWULm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jan 2007 15:07:39 -0500
-Received: from aa011msr.fastwebnet.it ([85.18.95.71]:60068 "EHLO
-	aa011msr.fastwebnet.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965485AbXAWUHi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jan 2007 15:07:38 -0500
-Date: Tue, 23 Jan 2007 21:07:35 +0100
-From: Mattia Dongili <malattia@linux.it>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Alessandro Di Marco <dmr@gmx.it>, linux-kernel@vger.kernel.org,
-       vojtech@suse.cz
-Subject: Re: [ANNOUNCE] System Inactivity Monitor v1.0
-Message-ID: <20070123200735.GD9219@inferi.kami.home>
-Mail-Followup-To: Pavel Machek <pavel@ucw.cz>,
-	Alessandro Di Marco <dmr@gmx.it>, linux-kernel@vger.kernel.org,
-	vojtech@suse.cz
-References: <877ivkrv5s.fsf@gmx.it> <20070119101103.GA5730@ucw.cz> <877ivfi60i.fsf@gmx.it> <20070123094114.GE6033@ucw.cz> <87wt3dhlte.fsf@gmx.it> <20070123163442.GA18662@elf.ucw.cz> <20070123190107.GB9219@inferi.kami.home> <20070123190257.GF18662@elf.ucw.cz>
+	Tue, 23 Jan 2007 15:11:42 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:48789 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932920AbXAWULl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jan 2007 15:11:41 -0500
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070123190257.GF18662@elf.ucw.cz>
-X-Message-Flag: Cranky? Try Free Software instead!
-X-Operating-System: Linux 2.6.20-rc2-mm1-1 i686
-X-Editor: Vim http://www.vim.org/
-X-Disclaimer: Buh!
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 4/11] i386 vDSO: use VM_ALWAYSDUMP
+In-Reply-To: Linus Torvalds's message of  Tuesday, 23 January 2007 11:57:12 -0800 <Pine.LNX.4.64.0701231154030.32200@woody.linux-foundation.org>
+X-Fcc: ~/Mail/linus
+X-Antipastobozoticataclysm: When George Bush projectile vomits antipasto on the Japanese.
+Message-Id: <20070123201103.E4CAD1800E9@magilla.sf.frob.com>
+Date: Tue, 23 Jan 2007 12:11:03 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 23, 2007 at 08:02:57PM +0100, Pavel Machek wrote:
-> On Tue 2007-01-23 20:01:07, Mattia Dongili wrote:
-> > On Tue, Jan 23, 2007 at 05:34:42PM +0100, Pavel Machek wrote:
-> > [...]
-> > > > Do you believe it could be a user-space daemon or what?
-> > > 
-> > > Yes, what prevents userspace daemon watching /dev/input/event* to
-> > > provide this functionality?
-> > 
-> > hmmm... EVIOCGRAB for example? the synaptics Xorg driver is using
-> > it, maybe others too?
-> > I don't want to start a new discussion about it, just provide an answer
-> > to your question :)
+> Not that the old code did either, so it's not like it's a new bug, but I 
+> thought I'd point it out anyway. As if we care (but you can probably 
+> trigger this by having an app that does
 > 
-> I do not know how EVIOCGRAB works, I believe event* will _still_ see
+> 	munmap(NULL, TASK_SIZE);
+>
+> which will cause a SIGSEGV on return (because the stack doesn't exist) and 
+> then the core-dump should be empty.
 
-AFAIK once an opener has eviocgrab-ed the device no other opener will
-receive events.
+Ok, damn you.  I admit I thought of exactly this case and then glossed it
+over because I didn't want to complicate the patch and discuss the arcane
+justification.  And I was doing a good job of repressing the memory of it
+completely before you dredged it up.
 
-> the events. Anyway, if not, I guess EVIOCGRAB can be fixed/removed/ we
-> can add EVIOCGIVEMEALLTHEDATAREALLYIWANTIT.
+> Not that I tested anythign that evil anyway, nor do I think we really care 
+> if it means that the gate_vma doesn't get shown in the core-dump either.
 
-then probably pbuttonsd is already doing something similar to SI[NM]
-hmmm... was it pbuttonsd? oh, yes:
-http://pbbuttons.sourceforge.net/projects/pbbuttonsd/
--- 
-mattia
-:wq!
+I didn't test it either.  And I do sort of think the vDSO should be (the
+only thing) in that case's core dump on anal principle.  Now that you've
+brought it up, I feel all dirty for ever having sent in code that doesn't
+cover the case.  (Not that we really care, since CONFIG_COMPAT_VDSO won't
+actually be turned on in practice.)
+
+Starting the loops with "vma = current->mm->mmap ?: gate_vma" should do it.
+But I guess Andrew would prefer it:
+
+static struct vm_area_struct *first_vma(struct task_struct *tsk,
+					struct vm_area_struct *gate_vma) 
+{
+	struct vm_area_struct *ret = tsk->mm->mmap;
+	if (ret)
+		return ret;
+	return gate_vma;
+}
+
+and:
+
+	for (vma = first_vma(current); vma; vma = next_vma(vma, gate_vma)) {
+
+
+Thanks,
+Roland
