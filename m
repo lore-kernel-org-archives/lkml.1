@@ -1,52 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933085AbXAWGgm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933090AbXAWGpw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933085AbXAWGgm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jan 2007 01:36:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933088AbXAWGgm
+	id S933090AbXAWGpw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jan 2007 01:45:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933091AbXAWGpw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jan 2007 01:36:42 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:53654 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933085AbXAWGgl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jan 2007 01:36:41 -0500
-Date: Mon, 22 Jan 2007 22:35:50 -0800
-From: Greg KH <gregkh@suse.de>
-To: Don Mullis <dwm@meer.net>
+	Tue, 23 Jan 2007 01:45:52 -0500
+Received: from outbound0.mx.meer.net ([209.157.153.23]:2906 "EHLO
+	outbound0.sv.meer.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933090AbXAWGpv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jan 2007 01:45:51 -0500
+Subject: Re: `make htmldocs` fails -- 2.6.20-rc4-mm1
+From: Don Mullis <dwm@meer.net>
+To: Randy Dunlap <rdunlap@xenotime.net>
 Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
-       rdunlap@xenotime.net
-Subject: Re: `make htmldocs` fails
-Message-ID: <20070123063550.GB8475@suse.de>
-References: <20070111222627.66bb75ab.akpm@osdl.org> <m364aycmbt.fsf@meer.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m364aycmbt.fsf@meer.net>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+       gregkh@suse.de
+In-Reply-To: <20070122222238.b6628c6b.rdunlap@xenotime.net>
+References: <20070111222627.66bb75ab.akpm@osdl.org>
+	 <m364aycmbt.fsf@meer.net>  <20070122222238.b6628c6b.rdunlap@xenotime.net>
+Content-Type: text/plain
+Date: Mon, 22 Jan 2007 22:45:46 -0800
+Message-Id: <1169534747.5146.20.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.3 (2.6.3-1.fc5.5) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 22, 2007 at 10:02:30PM -0800, Don Mullis wrote:
+On Mon, 2007-01-22 at 22:22 -0800, Randy Dunlap wrote:
+> On Mon, 22 Jan 2007 22:02:30 -0800 Don Mullis wrote:
 > 
-> Bisection shows the bad patch to be:
->     gregkh-driver-uio-documentation.patch
+> > 
+> > Bisection shows the bad patch to be:
+> >     gregkh-driver-uio-documentation.patch
+> > 
+> > The htmldocs build failure can be eliminated by:
+> >     quilt remove Documentation/DocBook/kernel-api.tmpl
 > 
-> The htmldocs build failure can be eliminated by:
->     quilt remove Documentation/DocBook/kernel-api.tmpl
-> 
-> The error messages were:
-> 
->     .../linux-2.6.19 $ make htmldocs
->       DOCPROC Documentation/DocBook/kernel-api.xml
->     Warning(/noback/kernel.org/2.6.20-rc_fault-injection/linux-2.6.19//drivers/uio/uio.c:521): No description found for parameter 'owner'
->     Warning(/noback/kernel.org/2.6.20-rc_fault-injection/linux-2.6.19//drivers/uio/uio.c:521): No description found for parameter 'info'
->     Warning(/noback/kernel.org/2.6.20-rc_fault-injection/linux-2.6.19//drivers/uio/uio.c:591): No description found for parameter 'idev'
+> or by:  quilt delete gregkh-driver-uio-documentation.patch ??
 
-Thanks, I've fixed these warnings now.
+That would fix the htmldoc build too, but would throw out lots of
+documentation.  Greg K-H would seem the prime candidate to propose a
+fix.
 
->     Error(/noback/kernel.org/2.6.20-rc_fault-injection/linux-2.6.19//include/linux/uio_driver.h:33): cannot understand prototype: 'struct uio_info '
 
-I think I've fixed this now, the next -mm should contain the update.
+> How about an accurate description of what kernel tree has this problem?
+> It's not 2.6.19.  It's not 2.6.20-rc5.
 
-thanks for letting me know.
+2.6.20-rc4-mm1, sorry.  Forgot that posting as a reply to the
+2.6.20-rc4-mm1 announcement is no help for someone receiving the mail
+directly.
 
-greg k-h
+
