@@ -1,309 +1,218 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933019AbXAWF4g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933017AbXAWF5P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933019AbXAWF4g (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jan 2007 00:56:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933025AbXAWFxu
+	id S933017AbXAWF5P (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jan 2007 00:57:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933025AbXAWF5O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jan 2007 00:53:50 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.158]:2709 "EHLO
+	Tue, 23 Jan 2007 00:57:14 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.158]:2720 "EHLO
 	localhost.localdomain" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S933015AbXAWFxp (ORCPT
+	with ESMTP id S933028AbXAWFxt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jan 2007 00:53:45 -0500
-Message-Id: <20070123055345.068625213@mvista.com>
+	Tue, 23 Jan 2007 00:53:49 -0500
+Message-Id: <20070123055348.328947554@mvista.com>
 References: <20070123055255.338254780@mvista.com>
 User-Agent: quilt/0.46.mv-1
-Date: Mon, 22 Jan 2007 21:52:57 -0800
+Date: Mon, 22 Jan 2007 21:53:07 -0800
 From: Daniel Walker <dwalker@mvista.com>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 02/12] clocksource: rating sorted list
-Content-Disposition: inline; filename=clocksource_priority_sorted_list.patch
+Subject: [PATCH 12/12] clocksource: atomic signals
+Content-Disposition: inline; filename=clocksource_add_atomic_singals.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Converts the original plain list into a sorted list based on the clock rating.
-Later in my tree this allows some of the variables to be dropped since the
-highest rated clock is always at the front of the list. This also does some
-other nice things like allow the sysfs files to print the clocks in a more
-interesting order. It's forward looking.
+Modifies the way clocks are switched to in the timekeeping code. The original
+code would constantly monitor the clocksource list checking for newly added
+clocksources. I modified this by using atomic types to signal when a new clock
+is added. This allows the operation to be used only when it's needed.
+
+The fast path is also reduced to checking a single atomic value.
 
 Signed-Off-By: Daniel Walker <dwalker@mvista.com>
 
 ---
- arch/i386/kernel/tsc.c      |    2 
- arch/x86_64/kernel/tsc.c    |    2 
- include/linux/clocksource.h |    9 ++-
- kernel/time/clocksource.c   |  132 +++++++++++++++++++++++++++++---------------
- 4 files changed, 97 insertions(+), 48 deletions(-)
+ include/linux/clocksource.h |    5 ++++
+ include/linux/timekeeping.h |   10 --------
+ kernel/time/clocksource.c   |    6 +++++
+ kernel/time/timekeeping.c   |   51 +++++++++++++++++++++++++++++++-------------
+ 4 files changed, 49 insertions(+), 23 deletions(-)
 
-Index: linux-2.6.19/arch/i386/kernel/tsc.c
-===================================================================
---- linux-2.6.19.orig/arch/i386/kernel/tsc.c
-+++ linux-2.6.19/arch/i386/kernel/tsc.c
-@@ -361,7 +361,7 @@ static int tsc_update_callback(void)
- 	/* check to see if we should switch to the safe clocksource: */
- 	if (clocksource_tsc.rating != 0 && check_tsc_unstable()) {
- 		clocksource_tsc.rating = 0;
--		clocksource_reselect();
-+		clocksource_rating_change(&clocksource_tsc);
- 		change = 1;
- 	}
- 
-Index: linux-2.6.19/arch/x86_64/kernel/tsc.c
-===================================================================
---- linux-2.6.19.orig/arch/x86_64/kernel/tsc.c
-+++ linux-2.6.19/arch/x86_64/kernel/tsc.c
-@@ -218,7 +218,7 @@ static int tsc_update_callback(void)
- 	/* check to see if we should switch to the safe clocksource: */
- 	if (clocksource_tsc.rating != 50 && check_tsc_unstable()) {
- 		clocksource_tsc.rating = 50;
--		clocksource_reselect();
-+		clocksource_rating_change(&clocksource_tsc);
- 		change = 1;
- 	}
- 	return change;
 Index: linux-2.6.19/include/linux/clocksource.h
 ===================================================================
 --- linux-2.6.19.orig/include/linux/clocksource.h
 +++ linux-2.6.19/include/linux/clocksource.h
-@@ -12,6 +12,9 @@
- #include <linux/timex.h>
- #include <linux/time.h>
- #include <linux/list.h>
-+#include <linux/plist.h>
-+#include <linux/sysdev.h>
+@@ -26,6 +26,11 @@ typedef u64 cycle_t;
+ extern struct clocksource clocksource_jiffies;
+ 
+ /*
++ * Atomic signal that is specific to timekeeping.
++ */
++extern atomic_t clock_check;
 +
- #include <asm/div64.h>
- #include <asm/io.h>
++/*
+  * Allows inlined calling for notifier routines.
+  */
+ extern struct atomic_notifier_head clocksource_list_notifier;
+Index: linux-2.6.19/include/linux/timekeeping.h
+===================================================================
+--- linux-2.6.19.orig/include/linux/timekeeping.h
++++ linux-2.6.19/include/linux/timekeeping.h
+@@ -5,15 +5,7 @@
  
-@@ -183,9 +186,9 @@ static inline void clocksource_calculate
+ extern void update_wall_time(void);
  
+-#ifdef CONFIG_GENERIC_TIME
+-
+-extern struct clocksource *clock;
+-
+-#else /* CONFIG_GENERIC_TIME */
+-static inline int change_clocksource(void)
+-{
+-	return 0;
+-}
++#ifndef CONFIG_GENERIC_TIME
  
- /* used to install a new clocksource */
--int clocksource_register(struct clocksource*);
--void clocksource_reselect(void);
--struct clocksource* clocksource_get_next(void);
-+extern struct clocksource *clocksource_get_next(void);
-+extern int clocksource_register(struct clocksource*);
-+extern void clocksource_rating_change(struct clocksource*);
- 
- #ifdef CONFIG_GENERIC_TIME_VSYSCALL
- extern void update_vsyscall(struct timespec *ts, struct clocksource *c);
+ static inline void change_clocksource(void) { }
+ static inline void timekeeping_init_notifier(void) { }
 Index: linux-2.6.19/kernel/time/clocksource.c
 ===================================================================
 --- linux-2.6.19.orig/kernel/time/clocksource.c
 +++ linux-2.6.19/kernel/time/clocksource.c
-@@ -35,7 +35,7 @@
-  * next_clocksource:
-  *	pending next selected clocksource.
-  * clocksource_list:
-- *	linked list with the registered clocksources
-+ *	rating sorted linked list with the registered clocksources
-  * clocksource_lock:
-  *	protects manipulations to curr_clocksource and next_clocksource
-  *	and the clocksource_list
-@@ -80,69 +80,105 @@ struct clocksource *clocksource_get_next
+@@ -50,6 +50,7 @@ static char override_name[32];
+ static int finished_booting;
+ 
+ ATOMIC_NOTIFIER_HEAD(clocksource_list_notifier);
++atomic_t clock_check = ATOMIC_INIT(0);
+ 
+ /* clocksource_done_booting - Called near the end of bootup
+  *
+@@ -58,6 +59,8 @@ ATOMIC_NOTIFIER_HEAD(clocksource_list_no
+ static int __init clocksource_done_booting(void)
+ {
+ 	finished_booting = 1;
++	/* Check for a new clock now */
++	atomic_inc(&clock_check);
+ 	return 0;
  }
  
- /**
-- * select_clocksource - Finds the best registered clocksource.
-+ * __is_registered - Returns a clocksource if it's registered
-+ * @name:		name of the clocksource to return
-  *
-  * Private function. Must hold clocksource_lock when called.
-  *
-- * Looks through the list of registered clocksources, returning
-- * the one with the highest rating value. If there is a clocksource
-- * name that matches the override string, it returns that clocksource.
-+ * Returns the clocksource if registered, zero otherwise.
-+ * If no clocksources are registered the jiffies clock is
-+ * returned.
-  */
--static struct clocksource *select_clocksource(void)
-+static struct clocksource * __is_registered(char * name)
- {
--	struct clocksource *best = NULL;
- 	struct list_head *tmp;
- 
- 	list_for_each(tmp, &clocksource_list) {
- 		struct clocksource *src;
- 
- 		src = list_entry(tmp, struct clocksource, list);
--		if (!best)
--			best = src;
--
--		/* check for override: */
--		if (strlen(src->name) == strlen(override_name) &&
--		    !strcmp(src->name, override_name)) {
--			best = src;
--			break;
--		}
--		/* pick the highest rating: */
--		if (src->rating > best->rating)
--		 	best = src;
-+		if (!strcmp(src->name, name))
-+			return src;
- 	}
- 
--	return best;
-+	return 0;
- }
- 
- /**
-- * is_registered_source - Checks if clocksource is registered
-- * @c:		pointer to a clocksource
-+ * __get_clock - Finds a specific clocksource
-+ * @name:		name of the clocksource to return
-  *
-- * Private helper function. Must hold clocksource_lock when called.
-+ * Private function. Must hold clocksource_lock when called.
-  *
-- * Returns one if the clocksource is already registered, zero otherwise.
-+ * Returns the clocksource if registered, zero otherwise.
-+ * If the @name is null the highest rated clock is returned.
-  */
--static int is_registered_source(struct clocksource *c)
-+static inline struct clocksource * __get_clock(char * name)
-+{
-+
-+	if (unlikely(list_empty(&clocksource_list)))
-+		return &clocksource_jiffies;
-+
-+	if (!name)
-+		return list_entry(clocksource_list.next,
-+				  struct clocksource, list);
-+
-+	return __is_registered(name);
-+}
-+
-+/**
-+ * select_clocksource - Finds the best registered clocksource.
-+ *
-+ * Private function. Must hold clocksource_lock when called.
-+ *
-+ * Looks through the list of registered clocksources, returning
-+ * the one with the highest rating value. If there is a clocksource
-+ * name that matches the override string, it returns that clocksource.
-+ */
-+static struct clocksource *select_clocksource(void)
-+{
-+	if (!*override_name)
-+		return list_entry(clocksource_list.next,
-+				  struct clocksource, list);
-+
-+	return __get_clock(override_name);
-+}
-+
-+/*
-+ * __sorted_list_add - Sorted clocksource add
-+ * @c:			clocksource to add
-+ *
-+ * Adds a clocksource to the clocksource_list in sorted order.
-+ */
-+static void __sorted_list_add(struct clocksource *c)
- {
--	int len = strlen(c->name);
- 	struct list_head *tmp;
- 
- 	list_for_each(tmp, &clocksource_list) {
- 		struct clocksource *src;
- 
- 		src = list_entry(tmp, struct clocksource, list);
--		if (strlen(src->name) == len &&	!strcmp(src->name, c->name))
--			return 1;
-+
-+		if (c->rating > src->rating) {
-+			list_add_tail(&c->list, &src->list);
-+			return;
-+		}
- 	}
- 
--	return 0;
-+	/*
-+	 * If it's bigger/smaller than all the other entries put it
-+	 * at the end.
-+	 */
-+	list_add_tail(&c->list, &clocksource_list);
- }
- 
- /**
-  * clocksource_register - Used to install new clocksources
-  * @t:		clocksource to be registered
-  *
-- * Returns -EBUSY if registration fails, zero otherwise.
-+ * Returns -EBUSY clock is already registered,
-+ * Returns -EINVAL if clocksource is invalid,
-+ * Return zero otherwise.
-  */
- int clocksource_register(struct clocksource *c)
- {
-@@ -150,14 +186,13 @@ int clocksource_register(struct clocksou
- 	unsigned long flags;
- 
- 	spin_lock_irqsave(&clocksource_lock, flags);
--	/* check if clocksource is already registered */
--	if (is_registered_source(c)) {
--		printk("register_clocksource: Cannot register %s. "
-+	if (unlikely(!list_empty(&c->list) && __is_registered(c->name))) {
-+		printk("register_clocksource: Cannot register %s clocksource. "
- 		       "Already registered!", c->name);
- 		ret = -EBUSY;
- 	} else {
--		/* register it */
-- 		list_add(&c->list, &clocksource_list);
-+		INIT_LIST_HEAD(&c->list);
-+ 		__sorted_list_add(c);
- 		/* scan the registered clocksources, and pick the best one */
- 		next_clocksource = select_clocksource();
- 	}
-@@ -167,21 +202,31 @@ int clocksource_register(struct clocksou
- EXPORT_SYMBOL(clocksource_register);
- 
- /**
-- * clocksource_reselect - Rescan list for next clocksource
-+ * clocksource_rating_change - Allows dynamic rating changes for register
-+ *                           clocksources.
-  *
-- * A quick helper function to be used if a clocksource changes its
-- * rating. Forces the clocksource list to be re-scanned for the best
-- * clocksource.
-+ * Signals that a clocksource is dynamically changing it's rating.
-+ * This could happen if a clocksource becomes more/less stable.
-  */
--void clocksource_reselect(void)
-+void clocksource_rating_change(struct clocksource *c)
- {
- 	unsigned long flags;
- 
--	spin_lock_irqsave(&clocksource_lock, flags);
-+	if (unlikely(list_empty(&c->list)))
-+		return;
-+
-+  	spin_lock_irqsave(&clocksource_lock, flags);
-+
-+	/*
-+	 * Re-register the clocksource with it's new rating.
-+	 */
-+	list_del_init(&c->list);
-+	__sorted_list_add(c);
-+
+@@ -291,6 +294,9 @@ static ssize_t sysfs_override_clocksourc
+ 	/* try to select it: */
  	next_clocksource = select_clocksource();
- 	spin_unlock_irqrestore(&clocksource_lock, flags);
- }
--EXPORT_SYMBOL(clocksource_reselect);
-+EXPORT_SYMBOL(clocksource_rating_change);
  
- #ifdef CONFIG_SYSFS
- /**
-@@ -247,7 +292,8 @@ static ssize_t sysfs_override_clocksourc
-  * @dev:	unused
-  * @buf:	char buffer to be filled with clocksource list
-  *
-- * Provides sysfs interface for listing registered clocksources
-+ * Provides sysfs interface for listing registered clocksources.
-+ * Output in priority sorted order.
++	/* Signal that there is a new clocksource */
++	atomic_inc(&clock_check);
++
+ 	spin_unlock_irq(&clocksource_lock);
+ 
+ 	return ret;
+Index: linux-2.6.19/kernel/time/timekeeping.c
+===================================================================
+--- linux-2.6.19.orig/kernel/time/timekeeping.c
++++ linux-2.6.19/kernel/time/timekeeping.c
+@@ -3,6 +3,7 @@
+ #include <linux/module.h>
+ #include <linux/timekeeping.h>
+ #include <linux/time.h>
++#include <linux/timex.h>
+ #include <linux/hrtimer.h>
+ 
+ /*
+@@ -19,7 +20,6 @@ static unsigned long timekeeping_suspend
+  * Clock used for timekeeping
   */
- static ssize_t
- sysfs_show_available_clocksources(struct sys_device *dev, char *buf)
+ struct clocksource *clock = &clocksource_jiffies;
+-atomic_t clock_recalc_interval = ATOMIC_INIT(0);
+ 
+ /*
+  * The current time
+@@ -150,11 +150,12 @@ int do_settimeofday(struct timespec *tv)
+ EXPORT_SYMBOL(do_settimeofday);
+ 
+ /**
+- * change_clocksource - Swaps clocksources if a new one is available
++ * timkeeping_change_clocksource - Swaps clocksources if a new one is available
+  *
+  * Accumulates current time interval and initializes new clocksource
++ * Needs to be called with the xtime_lock held.
+  */
+-static int change_clocksource(void)
++static int timekeeping_change_clocksource(void)
+ {
+ 	struct clocksource *new;
+ 	cycle_t now;
+@@ -169,9 +170,15 @@ static int change_clocksource(void)
+ 		clock->cycle_last = now;
+ 		printk(KERN_INFO "Time: %s clocksource has been installed.\n",
+ 		       clock->name);
++		hrtimer_clock_notify();
++		clock->error = 0;
++		clock->xtime_nsec = 0;
++		clocksource_calculate_interval(clock, tick_nsec);
+ 		return 1;
+-	} else if (unlikely(atomic_read(&clock_recalc_interval))) {
+-		atomic_set(&clock_recalc_interval, 0);
++	} else {
++		clock->error = 0;
++		clock->xtime_nsec = 0;
++		clocksource_calculate_interval(clock, tick_nsec);
+ 		return 1;
+ 	}
+ 	return 0;
+@@ -198,9 +205,14 @@ int timekeeping_is_continuous(void)
+ static int
+ clocksource_callback(struct notifier_block *nb, unsigned long op, void *c)
+ {
+-	if (c == clock && op == CLOCKSOURCE_NOTIFY_FREQ &&
+-	    !atomic_read(&clock_recalc_interval))
+-		atomic_inc(&clock_recalc_interval);
++	if (likely(c != clock))
++		return 0;
++
++	switch (op) {
++		case CLOCKSOURCE_NOTIFY_FREQ:
++		case CLOCKSOURCE_NOTIFY_RATING:
++			atomic_inc(&clock_check);
++	}
+ 
+ 	return 0;
+ }
+@@ -325,6 +337,13 @@ static int __init timekeeping_init_devic
+ 	int error = sysdev_class_register(&timekeeping_sysclass);
+ 	if (!error)
+ 		error = sysdev_register(&device_timer);
++
++#ifdef CONFIG_GENERIC_TIME
++	/*
++	 * Now we signal to switch to a high-res clock.
++	 */
++	atomic_inc(&clock_check);
++#endif
+ 	return error;
+ }
+ 
+@@ -467,13 +486,17 @@ void update_wall_time(void)
+ 	xtime.tv_nsec = (s64)clock->xtime_nsec >> clock->shift;
+ 	clock->xtime_nsec -= (s64)xtime.tv_nsec << clock->shift;
+ 
+-	/* check to see if there is a new clocksource to use */
+-	if (change_clocksource()) {
+-		clock->error = 0;
+-		clock->xtime_nsec = 0;
+-		hrtimer_clock_notify();
+-		clocksource_calculate_interval(clock, tick_nsec);
++#ifdef CONFIG_GENERIC_TIME
++	/*
++	 * check to see if there is a new clocksource to use
++	 */
++	if (unlikely(atomic_read(&clock_check))) {
++
++		timekeeping_change_clocksource();
++
++		atomic_set(&clock_check, 0);
+ 	}
++#endif /* CONFIG_GENERIC_TIME */
+ 	update_vsyscall(&xtime, clock);
+ }
+ 
 
 -- 
