@@ -1,83 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933115AbXAWT3B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933136AbXAWTeN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933115AbXAWT3B (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jan 2007 14:29:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933116AbXAWT3A
+	id S933136AbXAWTeN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jan 2007 14:34:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933137AbXAWTeN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jan 2007 14:29:00 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:50491 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933111AbXAWT27 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jan 2007 14:28:59 -0500
-Date: Tue, 23 Jan 2007 11:25:22 -0800
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: Luca Tettamanti <kronos.it@gmail.com>
-Cc: Jay Cliburn <jacliburn@bellsouth.net>,
-       Randy Dunlap <randy.dunlap@oracle.com>, jeff@garzik.org,
-       shemminger@osdl.org, csnook@redhat.com, hch@infradead.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       atl1-devel@lists.sourceforge.net, kronos.it@gmail.com
-Subject: Re: [PATCH 4/4] atl1: Ancillary C files for Attansic L1 driver
-Message-ID: <20070123112522.65aac61b@freekitty>
-In-Reply-To: <20070122200004.GA12553@dreamland.darkstar.lan>
-References: <20070121210737.GE2702@osprey.hogchain.net>
-	<20070121183151.4be61ebf.randy.dunlap@oracle.com>
-	<45B43093.6060500@bellsouth.net>
-	<20070122200004.GA12553@dreamland.darkstar.lan>
-Organization: Linux Foundation
-X-Mailer: Sylpheed-Claws 2.5.0-rc3 (GTK+ 2.10.6; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 23 Jan 2007 14:34:13 -0500
+Received: from an-out-0708.google.com ([209.85.132.242]:9100 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933136AbXAWTeM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jan 2007 14:34:12 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=NgRdCH904IUMwun0J7osnlw3HcKygCOk7saCwYKNouMZICIJFhzqPhSehCbqrNEWCqIuwQ8gqWeGeP+LGBUJol6lLf/0SwUMpT28YdKqADmj/VXJ9C51vxx9Ij6SjE9IYP3aqZex+muehN6rUuBQeTEr6BtQR33PM6kdHfOPD4Y=
+Message-ID: <7b69d1470701231134k4e3e8a4dj2b95a230fa3da81c@mail.gmail.com>
+Date: Tue, 23 Jan 2007 13:34:11 -0600
+From: "Scott Preece" <sepreece@gmail.com>
+To: "Pavel Machek" <pavel@ucw.cz>
+Subject: Re: [ANNOUNCE] System Inactivity Monitor v1.0
+Cc: "Alessandro Di Marco" <dmr@gmx.it>, linux-kernel@vger.kernel.org,
+       vojtech@suse.cz
+In-Reply-To: <20070123163442.GA18662@elf.ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <877ivkrv5s.fsf@gmx.it> <20070119101103.GA5730@ucw.cz>
+	 <877ivfi60i.fsf@gmx.it> <20070123094114.GE6033@ucw.cz>
+	 <87wt3dhlte.fsf@gmx.it> <20070123163442.GA18662@elf.ucw.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 22 Jan 2007 21:00:04 +0100
-Luca Tettamanti <kronos.it@gmail.com> wrote:
+On 1/23/07, Pavel Machek <pavel@ucw.cz> wrote:
+> Hi1
+> ...
+> >
+>
+> >    But I still believe it can be out.
+> >
+> > Do you believe it could be a user-space daemon or what?
+>
+> Yes, what prevents userspace daemon watching /dev/input/event* to
+> provide this functionality?
+>                                                                         Pavel
+---
 
-> Il Sun, Jan 21, 2007 at 09:33:39PM -0600, Jay Cliburn ha scritto: 
-> > Randy Dunlap wrote:
-> > >On Sun, 21 Jan 2007 15:07:37 -0600 Jay Cliburn wrote:
-> > [snip]
-> > 
-> > >>+	value = ioread16(hw->hw_addr + REG_PCIE_CAP_LIST);
-> > >>+	return ((value & 0xFF00) == 0x6C00) ? 0 : 1;
-> > >
-> > >Are there defines or enums for these?
-> > >Fewer magic numbers would be nice/helpful/readable.
-> > [snip]
-> > >>+	s32 ret;
-> > >>+	ret = atl1_write_phy_reg(hw, 29, 0x0029);
-> > >
-> > >Fewer magic numbers?
-> > 
-> > Unfortunately, we don't have a spec.  This is how the vendor coded it.
-> > 
-> > [snip]
-> > >>+
-> > >>+int enable_msi;
-> > >>+module_param(enable_msi, int, 0444);
-> > >>+MODULE_PARM_DESC(enable_msi, "Enable PCI MSI");
-> > >
-> > >Hm, I thought that we didn't want individual drivers having MSI config
-> > >options...
-> > 
-> > Luca?  This one was yours IIRC.  Care to chime in?
-> 
-> I remember that discussion, but since there's no sistem-wide MSI
-> blacklist (or whitelist) I don't think it's safe to enable it
-> unconditionally. Judging from bug reports on lkml it's not safe to
-> assume that MSI support is sane on non-Intel chipsets.
-> 
-> Luca
+One possible argument is to allow integrating "input-like" user events
+with other kinds of system-level events that you might want to have
+treated like user activity. For instance, our definition of user
+activity includes: button presses, opening-closing the cover (on a
+phone), and plugging in or removing memory cards, accessories, or
+cables. We actually use a mix of kernel and user-space monitoring,
+today, but would prefer an integrated monitor.
 
-There is MSI blacklisting see drivers/pci/quirks.c code.
-But the blacklist isn't complete enough yet.
+A user-space monitor also has more opportunity for races - for
+instance, deciding that the inactivity timeout has occurred between
+the time that the user does something and the time that the kernel
+gets a notification up to user space.
 
-IMHO the MSI disabling should be removed from drivers and be done
-in the PCI core. But it doesn't seem to have gotten widespread
-support.
-	
+My own hot button is making sure that the definition of what
+constitutes user activity is managed in exactly one place, whether in
+the kernel or not. My naive model would be to put the response at user
+level, but to provide a single point of definition in the kernel (say,
+/dev/useractivity or the equivalent) that the user-level daemon could
+listen to.
 
--- 
-Stephen Hemminger <shemminger@linux-foundation.org>
+scott
