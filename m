@@ -1,52 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932930AbXAWJpQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932933AbXAWJr3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932930AbXAWJpQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jan 2007 04:45:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932931AbXAWJpP
+	id S932933AbXAWJr3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jan 2007 04:47:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932934AbXAWJr3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jan 2007 04:45:15 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:2165 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932930AbXAWJpO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jan 2007 04:45:14 -0500
-Date: Tue, 23 Jan 2007 09:44:56 +0000
-From: Pavel Machek <pavel@ucw.cz>
-To: andi@lisas.de, davej@codemonkey.org.uk,
-       kernel list <linux-kernel@vger.kernel.org>
-Cc: seife@suse.de
-Subject: i965 testers wanted (Re: intel-agp PM experiences)
-Message-ID: <20070123094456.GG6033@ucw.cz>
-References: <20070116135727.GA2831@elf.ucw.cz> <d120d5000701160608t73db4405n5d157db43899776a@mail.gmail.com> <20070116142432.GA6171@elf.ucw.cz> <d120d5000701161325h112a9299w944763b7f1032a61@mail.gmail.com> <20070117004012.GA11140@rhlx01.hs-esslingen.de> <20070117005755.GB6270@elf.ucw.cz> <20070118115105.GA28233@rhlx01.hs-esslingen.de> <20070118231650.GA5352@ucw.cz> <20070122044519.GA24398@zhen-devel.sh.intel.com>
+	Tue, 23 Jan 2007 04:47:29 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:35787 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932933AbXAWJr2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jan 2007 04:47:28 -0500
+Date: Tue, 23 Jan 2007 10:45:50 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: linux-kernel@vger.kernel.org
+Cc: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>
+Subject: [patch] notifiers: fix blocking_notifier_call_chain() scalability
+Message-ID: <20070123094550.GA21105@elte.hu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070122044519.GA24398@zhen-devel.sh.intel.com>
-User-Agent: Mutt/1.5.9i
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.3
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.3 required=5.9 tests=ALL_TRUSTED,BAYES_40 autolearn=no SpamAssassin version=3.0.3
+	-3.3 ALL_TRUSTED            Did not pass through any untrusted hosts
+	1.0 BAYES_40               BODY: Bayesian spam probability is 20 to 40%
+	[score: 0.3245]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+Subject: [patch] notifiers: fix blocking_notifier_call_chain() scalability
+From: Ingo Molnar <mingo@elte.hu>
 
-> > > Whitelist? Let me blacklist it all the way to Timbuktu instead!
-> > 
-> > > I've been doing more testing, and X never managed to come back to working
-> > > state without some of my couple intel-agp changes:
-> > > - a proper suspend method, doing a proper pci_save_state()
-> > >   or improved equivalent
-> > > - a missing resume check for my i815 chipset
-> > > - global cache flush in _configure
-> > > - restoring AGP bridge PCI config space
-> > 
-> > Can you post a patch?
-> 
-> I've post a patch which trys to resolve pci config restore issue, see
-> http://lkml.org/lkml/2007/1/16/297. It resolves s3 issue with my 965G machine,
-> that my X can come back to live after s3, but I wasn't aware of the issues Andreas
-> has noted. It'll be good if more people could try this out. 
+while lock-profiling the -rt kernel i noticed weird contention during 
+mmap-intense workloads, and the tracer showed the following gem, in one 
+of our MM hotpaths:
 
-Ok, I guess we'd like some testing here... so that in can be fixed in
-mainline...
-							Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+ threaded-2771  1....   65us : sys_munmap (sysenter_do_call)
+ threaded-2771  1....   66us : profile_munmap (sys_munmap)
+ threaded-2771  1....   66us : blocking_notifier_call_chain (profile_munmap)
+ threaded-2771  1....   66us : rt_down_read (blocking_notifier_call_chain)
+
+ouch! a global rw-semaphore taken in one of the most 
+performance-sensitive codepaths of the kernel. And i dont even have 
+oprofile enabled! All distro kernels have CONFIG_PROFILING enabled, so 
+this scalability problem affects the majority of Linux users.
+
+The fix is to enhance blocking_notifier_call_chain() to only take the 
+lock if there appears to be work on the call-chain.
+
+With this patch applied i get nicely saturated system, and much higher 
+munmap performance, on SMP systems.
+
+And as a bonus this also fixes a similar scalability bottleneck in the 
+thread-exit codepath: profile_task_exit() ...
+
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ kernel/sys.c |   15 +++++++++++----
+ 1 file changed, 11 insertions(+), 4 deletions(-)
+
+Index: linux/kernel/sys.c
+===================================================================
+--- linux.orig/kernel/sys.c
++++ linux/kernel/sys.c
+@@ -325,11 +325,18 @@ EXPORT_SYMBOL_GPL(blocking_notifier_chai
+ int blocking_notifier_call_chain(struct blocking_notifier_head *nh,
+ 		unsigned long val, void *v)
+ {
+-	int ret;
++	int ret = NOTIFY_DONE;
+ 
+-	down_read(&nh->rwsem);
+-	ret = notifier_call_chain(&nh->head, val, v);
+-	up_read(&nh->rwsem);
++	/*
++	 * We check the head outside the lock, but if this access is
++	 * racy then it does not matter what the result of the test
++	 * is, we re-check the list after having taken the lock anyway:
++	 */
++	if (rcu_dereference(nh->head)) {
++		down_read(&nh->rwsem);
++		ret = notifier_call_chain(&nh->head, val, v);
++		up_read(&nh->rwsem);
++	}
+ 	return ret;
+ }
+ 
