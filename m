@@ -1,496 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932955AbXAWWMb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933152AbXAWWMb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932955AbXAWWMb (ORCPT <rfc822;w@1wt.eu>);
+	id S933152AbXAWWMb (ORCPT <rfc822;w@1wt.eu>);
 	Tue, 23 Jan 2007 17:12:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933142AbXAWWMW
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932955AbXAWWMZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jan 2007 17:12:22 -0500
-Received: from www.osadl.org ([213.239.205.134]:35804 "EHLO mail.tglx.de"
+	Tue, 23 Jan 2007 17:12:25 -0500
+Received: from www.osadl.org ([213.239.205.134]:35799 "EHLO mail.tglx.de"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932955AbXAWWAp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S932939AbXAWWAp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 23 Jan 2007 17:00:45 -0500
-Message-Id: <20070123211203.256182000@localhost.localdomain>
+Message-Id: <20070123211203.414475000@localhost.localdomain>
 References: <20070123211159.178138000@localhost.localdomain>
-Date: Tue, 23 Jan 2007 22:00:59 -0000
+Date: Tue, 23 Jan 2007 22:01:00 -0000
 From: Thomas Gleixner <tglx@linutronix.de>
 To: Andrew Morton <akpm@osdl.org>
 Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
        John Stultz <johnstul@us.ibm.com>,
        Arjan van de Veen <arjan@infradead.org>,
        Roman Zippel <zippel@linux-m68k.org>
-Subject: [patch 04/46] Uninline jiffies.h functions
-Content-Disposition: inline; filename=gtod-uninline-jiffiesh.patch
+Subject: [patch 05/46] 
+Content-Disposition: inline;
+	filename=gtod-fix-multiple-conversion-bugs-in-msecs_to_jiffies.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Ingo Molnar <mingo@elte.hu>
 
-There are loads of fat functions hidden in jiffies.h. Uninline them. No
-code changes.
+Fix multiple conversion bugs in msecs_to_jiffies().
 
-[ export fix from Jeremy Fitzhardinge <jeremy@goop.org> ]
+The main problem is that this condition:
+
+	if (m > jiffies_to_msecs(MAX_JIFFY_OFFSET))
+
+overflows if HZ is smaller than 1000!
+
+This change is user-visible: for HZ=250 SUS-compliant poll()-timeout
+value of -20 is mistakenly converted to 'immediate timeout'.
+
+(The new dyntick code also triggered this, that's how we noticed.)
 
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 Signed-off-by: Andrew Morton <akpm@osdl.org>
 ---
 
- include/linux/jiffies.h |  216 +++---------------------------------------------
- kernel/time.c           |  213 +++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 229 insertions(+), 200 deletions(-)
+ kernel/time.c |   43 ++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 42 insertions(+), 1 deletion(-)
 
-Index: linux-2.6.20-rc4-mm1-bo/include/linux/jiffies.h
-===================================================================
---- linux-2.6.20-rc4-mm1-bo.orig/include/linux/jiffies.h
-+++ linux-2.6.20-rc4-mm1-bo/include/linux/jiffies.h
-@@ -259,207 +259,23 @@ static inline u64 get_jiffies_64(void)
- #endif
- 
- /*
-- * Convert jiffies to milliseconds and back.
-- *
-- * Avoid unnecessary multiplications/divisions in the
-- * two most common HZ cases:
-+ * Convert various time units to each other:
-  */
--static inline unsigned int jiffies_to_msecs(const unsigned long j)
--{
--#if HZ <= MSEC_PER_SEC && !(MSEC_PER_SEC % HZ)
--	return (MSEC_PER_SEC / HZ) * j;
--#elif HZ > MSEC_PER_SEC && !(HZ % MSEC_PER_SEC)
--	return (j + (HZ / MSEC_PER_SEC) - 1)/(HZ / MSEC_PER_SEC);
--#else
--	return (j * MSEC_PER_SEC) / HZ;
--#endif
--}
--
--static inline unsigned int jiffies_to_usecs(const unsigned long j)
--{
--#if HZ <= USEC_PER_SEC && !(USEC_PER_SEC % HZ)
--	return (USEC_PER_SEC / HZ) * j;
--#elif HZ > USEC_PER_SEC && !(HZ % USEC_PER_SEC)
--	return (j + (HZ / USEC_PER_SEC) - 1)/(HZ / USEC_PER_SEC);
--#else
--	return (j * USEC_PER_SEC) / HZ;
--#endif
--}
--
--static inline unsigned long msecs_to_jiffies(const unsigned int m)
--{
--	if (m > jiffies_to_msecs(MAX_JIFFY_OFFSET))
--		return MAX_JIFFY_OFFSET;
--#if HZ <= MSEC_PER_SEC && !(MSEC_PER_SEC % HZ)
--	return (m + (MSEC_PER_SEC / HZ) - 1) / (MSEC_PER_SEC / HZ);
--#elif HZ > MSEC_PER_SEC && !(HZ % MSEC_PER_SEC)
--	return m * (HZ / MSEC_PER_SEC);
--#else
--	return (m * HZ + MSEC_PER_SEC - 1) / MSEC_PER_SEC;
--#endif
--}
--
--static inline unsigned long usecs_to_jiffies(const unsigned int u)
--{
--	if (u > jiffies_to_usecs(MAX_JIFFY_OFFSET))
--		return MAX_JIFFY_OFFSET;
--#if HZ <= USEC_PER_SEC && !(USEC_PER_SEC % HZ)
--	return (u + (USEC_PER_SEC / HZ) - 1) / (USEC_PER_SEC / HZ);
--#elif HZ > USEC_PER_SEC && !(HZ % USEC_PER_SEC)
--	return u * (HZ / USEC_PER_SEC);
--#else
--	return (u * HZ + USEC_PER_SEC - 1) / USEC_PER_SEC;
--#endif
--}
--
--/*
-- * The TICK_NSEC - 1 rounds up the value to the next resolution.  Note
-- * that a remainder subtract here would not do the right thing as the
-- * resolution values don't fall on second boundries.  I.e. the line:
-- * nsec -= nsec % TICK_NSEC; is NOT a correct resolution rounding.
-- *
-- * Rather, we just shift the bits off the right.
-- *
-- * The >> (NSEC_JIFFIE_SC - SEC_JIFFIE_SC) converts the scaled nsec
-- * value to a scaled second value.
-- */
--static __inline__ unsigned long
--timespec_to_jiffies(const struct timespec *value)
--{
--	unsigned long sec = value->tv_sec;
--	long nsec = value->tv_nsec + TICK_NSEC - 1;
--
--	if (sec >= MAX_SEC_IN_JIFFIES){
--		sec = MAX_SEC_IN_JIFFIES;
--		nsec = 0;
--	}
--	return (((u64)sec * SEC_CONVERSION) +
--		(((u64)nsec * NSEC_CONVERSION) >>
--		 (NSEC_JIFFIE_SC - SEC_JIFFIE_SC))) >> SEC_JIFFIE_SC;
--
--}
--
--static __inline__ void
--jiffies_to_timespec(const unsigned long jiffies, struct timespec *value)
--{
--	/*
--	 * Convert jiffies to nanoseconds and separate with
--	 * one divide.
--	 */
--	u64 nsec = (u64)jiffies * TICK_NSEC;
--	value->tv_sec = div_long_long_rem(nsec, NSEC_PER_SEC, &value->tv_nsec);
--}
--
--/* Same for "timeval"
-- *
-- * Well, almost.  The problem here is that the real system resolution is
-- * in nanoseconds and the value being converted is in micro seconds.
-- * Also for some machines (those that use HZ = 1024, in-particular),
-- * there is a LARGE error in the tick size in microseconds.
--
-- * The solution we use is to do the rounding AFTER we convert the
-- * microsecond part.  Thus the USEC_ROUND, the bits to be shifted off.
-- * Instruction wise, this should cost only an additional add with carry
-- * instruction above the way it was done above.
-- */
--static __inline__ unsigned long
--timeval_to_jiffies(const struct timeval *value)
--{
--	unsigned long sec = value->tv_sec;
--	long usec = value->tv_usec;
--
--	if (sec >= MAX_SEC_IN_JIFFIES){
--		sec = MAX_SEC_IN_JIFFIES;
--		usec = 0;
--	}
--	return (((u64)sec * SEC_CONVERSION) +
--		(((u64)usec * USEC_CONVERSION + USEC_ROUND) >>
--		 (USEC_JIFFIE_SC - SEC_JIFFIE_SC))) >> SEC_JIFFIE_SC;
--}
--
--static __inline__ void
--jiffies_to_timeval(const unsigned long jiffies, struct timeval *value)
--{
--	/*
--	 * Convert jiffies to nanoseconds and separate with
--	 * one divide.
--	 */
--	u64 nsec = (u64)jiffies * TICK_NSEC;
--	long tv_usec;
--
--	value->tv_sec = div_long_long_rem(nsec, NSEC_PER_SEC, &tv_usec);
--	tv_usec /= NSEC_PER_USEC;
--	value->tv_usec = tv_usec;
--}
--
--/*
-- * Convert jiffies/jiffies_64 to clock_t and back.
-- */
--static inline clock_t jiffies_to_clock_t(long x)
--{
--#if (TICK_NSEC % (NSEC_PER_SEC / USER_HZ)) == 0
--	return x / (HZ / USER_HZ);
--#else
--	u64 tmp = (u64)x * TICK_NSEC;
--	do_div(tmp, (NSEC_PER_SEC / USER_HZ));
--	return (long)tmp;
--#endif
--}
-+extern unsigned int jiffies_to_msecs(const unsigned long j);
-+extern unsigned int jiffies_to_usecs(const unsigned long j);
-+extern unsigned long msecs_to_jiffies(const unsigned int m);
-+extern unsigned long usecs_to_jiffies(const unsigned int u);
-+extern unsigned long timespec_to_jiffies(const struct timespec *value);
-+extern void jiffies_to_timespec(const unsigned long jiffies,
-+				struct timespec *value);
-+extern unsigned long timeval_to_jiffies(const struct timeval *value);
-+extern void jiffies_to_timeval(const unsigned long jiffies,
-+			       struct timeval *value);
-+extern clock_t jiffies_to_clock_t(long x);
-+extern unsigned long clock_t_to_jiffies(unsigned long x);
-+extern u64 jiffies_64_to_clock_t(u64 x);
-+extern u64 nsec_to_clock_t(u64 x);
- 
--static inline unsigned long clock_t_to_jiffies(unsigned long x)
--{
--#if (HZ % USER_HZ)==0
--	if (x >= ~0UL / (HZ / USER_HZ))
--		return ~0UL;
--	return x * (HZ / USER_HZ);
--#else
--	u64 jif;
--
--	/* Don't worry about loss of precision here .. */
--	if (x >= ~0UL / HZ * USER_HZ)
--		return ~0UL;
--
--	/* .. but do try to contain it here */
--	jif = x * (u64) HZ;
--	do_div(jif, USER_HZ);
--	return jif;
--#endif
--}
--
--static inline u64 jiffies_64_to_clock_t(u64 x)
--{
--#if (TICK_NSEC % (NSEC_PER_SEC / USER_HZ)) == 0
--	do_div(x, HZ / USER_HZ);
--#else
--	/*
--	 * There are better ways that don't overflow early,
--	 * but even this doesn't overflow in hundreds of years
--	 * in 64 bits, so..
--	 */
--	x *= TICK_NSEC;
--	do_div(x, (NSEC_PER_SEC / USER_HZ));
--#endif
--	return x;
--}
--
--static inline u64 nsec_to_clock_t(u64 x)
--{
--#if (NSEC_PER_SEC % USER_HZ) == 0
--	do_div(x, (NSEC_PER_SEC / USER_HZ));
--#elif (USER_HZ % 512) == 0
--	x *= USER_HZ/512;
--	do_div(x, (NSEC_PER_SEC / 512));
--#else
--	/*
--         * max relative error 5.7e-8 (1.8s per year) for USER_HZ <= 1024,
--         * overflow after 64.99 years.
--         * exact for HZ=60, 72, 90, 120, 144, 180, 300, 600, 900, ...
--         */
--	x *= 9;
--	do_div(x, (unsigned long)((9ull * NSEC_PER_SEC + (USER_HZ/2))
--	                          / USER_HZ));
--#endif
--	return x;
--}
-+#define TIMESTAMP_SIZE	30
- 
- #endif
 Index: linux-2.6.20-rc4-mm1-bo/kernel/time.c
 ===================================================================
 --- linux-2.6.20-rc4-mm1-bo.orig/kernel/time.c
 +++ linux-2.6.20-rc4-mm1-bo/kernel/time.c
-@@ -470,6 +470,219 @@ struct timeval ns_to_timeval(const s64 n
- 	return tv;
+@@ -500,15 +500,56 @@ unsigned int jiffies_to_usecs(const unsi
  }
+ EXPORT_SYMBOL(jiffies_to_usecs);
  
 +/*
-+ * Convert jiffies to milliseconds and back.
++ * When we convert to jiffies then we interpret incoming values
++ * the following way:
 + *
-+ * Avoid unnecessary multiplications/divisions in the
-+ * two most common HZ cases:
++ * - negative values mean 'infinite timeout' (MAX_JIFFY_OFFSET)
++ *
++ * - 'too large' values [that would result in larger than
++ *   MAX_JIFFY_OFFSET values] mean 'infinite timeout' too.
++ *
++ * - all other values are converted to jiffies by either multiplying
++ *   the input value by a factor or dividing it with a factor
++ *
++ * We must also be careful about 32-bit overflows.
 + */
-+unsigned int jiffies_to_msecs(const unsigned long j)
-+{
-+#if HZ <= MSEC_PER_SEC && !(MSEC_PER_SEC % HZ)
-+	return (MSEC_PER_SEC / HZ) * j;
-+#elif HZ > MSEC_PER_SEC && !(HZ % MSEC_PER_SEC)
-+	return (j + (HZ / MSEC_PER_SEC) - 1)/(HZ / MSEC_PER_SEC);
-+#else
-+	return (j * MSEC_PER_SEC) / HZ;
-+#endif
-+}
-+EXPORT_SYMBOL(jiffies_to_msecs);
+ unsigned long msecs_to_jiffies(const unsigned int m)
+ {
+-	if (m > jiffies_to_msecs(MAX_JIFFY_OFFSET))
++	/*
++	 * Negative value, means infinite timeout:
++	 */
++	if ((int)m < 0)
+ 		return MAX_JIFFY_OFFSET;
 +
-+unsigned int jiffies_to_usecs(const unsigned long j)
-+{
-+#if HZ <= USEC_PER_SEC && !(USEC_PER_SEC % HZ)
-+	return (USEC_PER_SEC / HZ) * j;
-+#elif HZ > USEC_PER_SEC && !(HZ % USEC_PER_SEC)
-+	return (j + (HZ / USEC_PER_SEC) - 1)/(HZ / USEC_PER_SEC);
-+#else
-+	return (j * USEC_PER_SEC) / HZ;
-+#endif
-+}
-+EXPORT_SYMBOL(jiffies_to_usecs);
-+
-+unsigned long msecs_to_jiffies(const unsigned int m)
-+{
+ #if HZ <= MSEC_PER_SEC && !(MSEC_PER_SEC % HZ)
++	/*
++	 * HZ is equal to or smaller than 1000, and 1000 is a nice
++	 * round multiple of HZ, divide with the factor between them,
++	 * but round upwards:
++	 */
+ 	return (m + (MSEC_PER_SEC / HZ) - 1) / (MSEC_PER_SEC / HZ);
+ #elif HZ > MSEC_PER_SEC && !(HZ % MSEC_PER_SEC)
++	/*
++	 * HZ is larger than 1000, and HZ is a nice round multiple of
++	 * 1000 - simply multiply with the factor between them.
++	 *
++	 * But first make sure the multiplication result cannot
++	 * overflow:
++	 */
 +	if (m > jiffies_to_msecs(MAX_JIFFY_OFFSET))
 +		return MAX_JIFFY_OFFSET;
-+#if HZ <= MSEC_PER_SEC && !(MSEC_PER_SEC % HZ)
-+	return (m + (MSEC_PER_SEC / HZ) - 1) / (MSEC_PER_SEC / HZ);
-+#elif HZ > MSEC_PER_SEC && !(HZ % MSEC_PER_SEC)
-+	return m * (HZ / MSEC_PER_SEC);
-+#else
-+	return (m * HZ + MSEC_PER_SEC - 1) / MSEC_PER_SEC;
-+#endif
-+}
-+EXPORT_SYMBOL(msecs_to_jiffies);
 +
-+unsigned long usecs_to_jiffies(const unsigned int u)
-+{
-+	if (u > jiffies_to_usecs(MAX_JIFFY_OFFSET))
+ 	return m * (HZ / MSEC_PER_SEC);
+ #else
++	/*
++	 * Generic case - multiply, round and divide. But first
++	 * check that if we are doing a net multiplication, that
++	 * we wouldnt overflow:
++	 */
++	if (HZ > MSEC_PER_SEC && m > jiffies_to_msecs(MAX_JIFFY_OFFSET))
 +		return MAX_JIFFY_OFFSET;
-+#if HZ <= USEC_PER_SEC && !(USEC_PER_SEC % HZ)
-+	return (u + (USEC_PER_SEC / HZ) - 1) / (USEC_PER_SEC / HZ);
-+#elif HZ > USEC_PER_SEC && !(HZ % USEC_PER_SEC)
-+	return u * (HZ / USEC_PER_SEC);
-+#else
-+	return (u * HZ + USEC_PER_SEC - 1) / USEC_PER_SEC;
-+#endif
-+}
-+EXPORT_SYMBOL(usecs_to_jiffies);
 +
-+/*
-+ * The TICK_NSEC - 1 rounds up the value to the next resolution.  Note
-+ * that a remainder subtract here would not do the right thing as the
-+ * resolution values don't fall on second boundries.  I.e. the line:
-+ * nsec -= nsec % TICK_NSEC; is NOT a correct resolution rounding.
-+ *
-+ * Rather, we just shift the bits off the right.
-+ *
-+ * The >> (NSEC_JIFFIE_SC - SEC_JIFFIE_SC) converts the scaled nsec
-+ * value to a scaled second value.
-+ */
-+unsigned long
-+timespec_to_jiffies(const struct timespec *value)
-+{
-+	unsigned long sec = value->tv_sec;
-+	long nsec = value->tv_nsec + TICK_NSEC - 1;
-+
-+	if (sec >= MAX_SEC_IN_JIFFIES){
-+		sec = MAX_SEC_IN_JIFFIES;
-+		nsec = 0;
-+	}
-+	return (((u64)sec * SEC_CONVERSION) +
-+		(((u64)nsec * NSEC_CONVERSION) >>
-+		 (NSEC_JIFFIE_SC - SEC_JIFFIE_SC))) >> SEC_JIFFIE_SC;
-+
-+}
-+EXPORT_SYMBOL(timespec_to_jiffies);
-+
-+void
-+jiffies_to_timespec(const unsigned long jiffies, struct timespec *value)
-+{
-+	/*
-+	 * Convert jiffies to nanoseconds and separate with
-+	 * one divide.
-+	 */
-+	u64 nsec = (u64)jiffies * TICK_NSEC;
-+	value->tv_sec = div_long_long_rem(nsec, NSEC_PER_SEC, &value->tv_nsec);
-+}
-+EXPORT_SYMBOL(jiffies_to_timespec);
-+
-+/* Same for "timeval"
-+ *
-+ * Well, almost.  The problem here is that the real system resolution is
-+ * in nanoseconds and the value being converted is in micro seconds.
-+ * Also for some machines (those that use HZ = 1024, in-particular),
-+ * there is a LARGE error in the tick size in microseconds.
-+
-+ * The solution we use is to do the rounding AFTER we convert the
-+ * microsecond part.  Thus the USEC_ROUND, the bits to be shifted off.
-+ * Instruction wise, this should cost only an additional add with carry
-+ * instruction above the way it was done above.
-+ */
-+unsigned long
-+timeval_to_jiffies(const struct timeval *value)
-+{
-+	unsigned long sec = value->tv_sec;
-+	long usec = value->tv_usec;
-+
-+	if (sec >= MAX_SEC_IN_JIFFIES){
-+		sec = MAX_SEC_IN_JIFFIES;
-+		usec = 0;
-+	}
-+	return (((u64)sec * SEC_CONVERSION) +
-+		(((u64)usec * USEC_CONVERSION + USEC_ROUND) >>
-+		 (USEC_JIFFIE_SC - SEC_JIFFIE_SC))) >> SEC_JIFFIE_SC;
-+}
-+
-+void jiffies_to_timeval(const unsigned long jiffies, struct timeval *value)
-+{
-+	/*
-+	 * Convert jiffies to nanoseconds and separate with
-+	 * one divide.
-+	 */
-+	u64 nsec = (u64)jiffies * TICK_NSEC;
-+	long tv_usec;
-+
-+	value->tv_sec = div_long_long_rem(nsec, NSEC_PER_SEC, &tv_usec);
-+	tv_usec /= NSEC_PER_USEC;
-+	value->tv_usec = tv_usec;
-+}
-+
-+/*
-+ * Convert jiffies/jiffies_64 to clock_t and back.
-+ */
-+clock_t jiffies_to_clock_t(long x)
-+{
-+#if (TICK_NSEC % (NSEC_PER_SEC / USER_HZ)) == 0
-+	return x / (HZ / USER_HZ);
-+#else
-+	u64 tmp = (u64)x * TICK_NSEC;
-+	do_div(tmp, (NSEC_PER_SEC / USER_HZ));
-+	return (long)tmp;
-+#endif
-+}
-+EXPORT_SYMBOL(jiffies_to_clock_t);
-+
-+unsigned long clock_t_to_jiffies(unsigned long x)
-+{
-+#if (HZ % USER_HZ)==0
-+	if (x >= ~0UL / (HZ / USER_HZ))
-+		return ~0UL;
-+	return x * (HZ / USER_HZ);
-+#else
-+	u64 jif;
-+
-+	/* Don't worry about loss of precision here .. */
-+	if (x >= ~0UL / HZ * USER_HZ)
-+		return ~0UL;
-+
-+	/* .. but do try to contain it here */
-+	jif = x * (u64) HZ;
-+	do_div(jif, USER_HZ);
-+	return jif;
-+#endif
-+}
-+EXPORT_SYMBOL(clock_t_to_jiffies);
-+
-+u64 jiffies_64_to_clock_t(u64 x)
-+{
-+#if (TICK_NSEC % (NSEC_PER_SEC / USER_HZ)) == 0
-+	do_div(x, HZ / USER_HZ);
-+#else
-+	/*
-+	 * There are better ways that don't overflow early,
-+	 * but even this doesn't overflow in hundreds of years
-+	 * in 64 bits, so..
-+	 */
-+	x *= TICK_NSEC;
-+	do_div(x, (NSEC_PER_SEC / USER_HZ));
-+#endif
-+	return x;
-+}
-+
-+EXPORT_SYMBOL(jiffies_64_to_clock_t);
-+
-+u64 nsec_to_clock_t(u64 x)
-+{
-+#if (NSEC_PER_SEC % USER_HZ) == 0
-+	do_div(x, (NSEC_PER_SEC / USER_HZ));
-+#elif (USER_HZ % 512) == 0
-+	x *= USER_HZ/512;
-+	do_div(x, (NSEC_PER_SEC / 512));
-+#else
-+	/*
-+         * max relative error 5.7e-8 (1.8s per year) for USER_HZ <= 1024,
-+         * overflow after 64.99 years.
-+         * exact for HZ=60, 72, 90, 120, 144, 180, 300, 600, 900, ...
-+         */
-+	x *= 9;
-+	do_div(x, (unsigned long)((9ull * NSEC_PER_SEC + (USER_HZ/2)) /
-+				  USER_HZ));
-+#endif
-+	return x;
-+}
-+
- #if (BITS_PER_LONG < 64)
- u64 get_jiffies_64(void)
- {
+ 	return (m * HZ + MSEC_PER_SEC - 1) / MSEC_PER_SEC;
+ #endif
+ }
 
 --
 
