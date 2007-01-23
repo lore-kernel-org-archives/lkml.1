@@ -1,51 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965484AbXAWUHf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965485AbXAWUHj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965484AbXAWUHf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jan 2007 15:07:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965485AbXAWUHf
+	id S965485AbXAWUHj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jan 2007 15:07:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965486AbXAWUHj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jan 2007 15:07:35 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:58419 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965484AbXAWUHf (ORCPT
+	Tue, 23 Jan 2007 15:07:39 -0500
+Received: from aa011msr.fastwebnet.it ([85.18.95.71]:60068 "EHLO
+	aa011msr.fastwebnet.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965485AbXAWUHi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jan 2007 15:07:35 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <45B66ACE.5010309@s5r6.in-berlin.de>
-Date: Tue, 23 Jan 2007 21:06:38 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.9) Gecko/20070121 SeaMonkey/1.0.7
+	Tue, 23 Jan 2007 15:07:38 -0500
+Date: Tue, 23 Jan 2007 21:07:35 +0100
+From: Mattia Dongili <malattia@linux.it>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Alessandro Di Marco <dmr@gmx.it>, linux-kernel@vger.kernel.org,
+       vojtech@suse.cz
+Subject: Re: [ANNOUNCE] System Inactivity Monitor v1.0
+Message-ID: <20070123200735.GD9219@inferi.kami.home>
+Mail-Followup-To: Pavel Machek <pavel@ucw.cz>,
+	Alessandro Di Marco <dmr@gmx.it>, linux-kernel@vger.kernel.org,
+	vojtech@suse.cz
+References: <877ivkrv5s.fsf@gmx.it> <20070119101103.GA5730@ucw.cz> <877ivfi60i.fsf@gmx.it> <20070123094114.GE6033@ucw.cz> <87wt3dhlte.fsf@gmx.it> <20070123163442.GA18662@elf.ucw.cz> <20070123190107.GB9219@inferi.kami.home> <20070123190257.GF18662@elf.ucw.cz>
 MIME-Version: 1.0
-To: Sunil Naidu <akula2.shark@gmail.com>
-CC: lkml <linux-kernel@vger.kernel.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Jesper Juhl <jesper.juhl@gmail.com>, Chris Wright <chrisw@sous-sol.org>
-Subject: Re: [Proposal] 2.6.18-stable release plans?
-References: <45B53722.9030206@redhat.com>	 <9a8748490701221623q1b61f03fva7b0ad7e7f30316f@mail.gmail.com>	 <8355959a0701230538m2f1201b6u49853e65d4c69a57@mail.gmail.com>	 <45B648CA.3020507@s5r6.in-berlin.de> <8355959a0701231125y36cad93eo7075aa1889674b3e@mail.gmail.com>
-In-Reply-To: <8355959a0701231125y36cad93eo7075aa1889674b3e@mail.gmail.com>
-X-Enigmail-Version: 0.94.1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070123190257.GF18662@elf.ucw.cz>
+X-Message-Flag: Cranky? Try Free Software instead!
+X-Operating-System: Linux 2.6.20-rc2-mm1-1 i686
+X-Editor: Vim http://www.vim.org/
+X-Disclaimer: Buh!
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sunil Naidu wrote:
-...
-> Am talking from the Linux users point of view (who need to know deep
-> about the Kernel development, etc. Imagine, a student or a
-> professional who wants to build a kernel with a patch for a i686
-> machine?
+On Tue, Jan 23, 2007 at 08:02:57PM +0100, Pavel Machek wrote:
+> On Tue 2007-01-23 20:01:07, Mattia Dongili wrote:
+> > On Tue, Jan 23, 2007 at 05:34:42PM +0100, Pavel Machek wrote:
+> > [...]
+> > > > Do you believe it could be a user-space daemon or what?
+> > > 
+> > > Yes, what prevents userspace daemon watching /dev/input/event* to
+> > > provide this functionality?
+> > 
+> > hmmm... EVIOCGRAB for example? the synaptics Xorg driver is using
+> > it, maybe others too?
+> > I don't want to start a new discussion about it, just provide an answer
+> > to your question :)
+> 
+> I do not know how EVIOCGRAB works, I believe event* will _still_ see
 
-You speak of advanced users with very special requirements. They can
-watch respective mailinglists, git trees, bugzillas, ... The file
-MAINTAINERS contains some pointers for them.
+AFAIK once an opener has eviocgrab-ed the device no other opener will
+receive events.
 
-...
-> But we can give info in general? Example, if patch-2.6.19.3
-> comes out - simply we can say as *x86 32/64* based on the weightage of
-> fixes in that patch. What do you say?
+> the events. Anyway, if not, I guess EVIOCGRAB can be fixed/removed/ we
+> can add EVIOCGIVEMEALLTHEDATAREALLYIWANTIT.
 
-This cannot be measured objectively.
+then probably pbuttonsd is already doing something similar to SI[NM]
+hmmm... was it pbuttonsd? oh, yes:
+http://pbbuttons.sourceforge.net/projects/pbbuttonsd/
 -- 
-Stefan Richter
--=====-=-=== ---= =-===
-http://arcgraph.de/sr/
+mattia
+:wq!
