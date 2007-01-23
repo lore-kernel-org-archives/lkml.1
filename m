@@ -1,54 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933090AbXAWGpw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932828AbXAWHLO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933090AbXAWGpw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jan 2007 01:45:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933091AbXAWGpw
+	id S932828AbXAWHLO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jan 2007 02:11:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932839AbXAWHLO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jan 2007 01:45:52 -0500
-Received: from outbound0.mx.meer.net ([209.157.153.23]:2906 "EHLO
-	outbound0.sv.meer.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933090AbXAWGpv (ORCPT
+	Tue, 23 Jan 2007 02:11:14 -0500
+Received: from wx-out-0506.google.com ([66.249.82.227]:4672 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932828AbXAWHLN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jan 2007 01:45:51 -0500
-Subject: Re: `make htmldocs` fails -- 2.6.20-rc4-mm1
-From: Don Mullis <dwm@meer.net>
-To: Randy Dunlap <rdunlap@xenotime.net>
-Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
-       gregkh@suse.de
-In-Reply-To: <20070122222238.b6628c6b.rdunlap@xenotime.net>
-References: <20070111222627.66bb75ab.akpm@osdl.org>
-	 <m364aycmbt.fsf@meer.net>  <20070122222238.b6628c6b.rdunlap@xenotime.net>
-Content-Type: text/plain
-Date: Mon, 22 Jan 2007 22:45:46 -0800
-Message-Id: <1169534747.5146.20.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 (2.6.3-1.fc5.5) 
+	Tue, 23 Jan 2007 02:11:13 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=OPEDJ11QOcDPb6Cz1kAi2dsLPKDJfEZPIVzMmwzTXgOjNYHwmn5bWGr0JM+qHckTvEBbnCpWYxHtR4GRBv7wb6kWdw/N9hNaLst2wesvIT4HXrDguLSrqeq8FgO578gwMn1VZUFqz631TWi7s3VWgR5JaiipV1SXK1AuosYaIBE=
+Message-ID: <3877989d0701222311u5660a3c1id06bbeea3578a1c3@mail.gmail.com>
+Date: Tue, 23 Jan 2007 15:11:12 +0800
+From: "Luming Yu" <luming.yu@gmail.com>
+To: "Jean-Marc Valin" <jean-marc.valin@usherbrooke.ca>
+Subject: Re: Suspend to RAM generates oops and general protection fault
+Cc: "Pavel Machek" <pavel@ucw.cz>, nigel@nigel.suspend2.net,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <45B59239.90403@usherbrooke.ca>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <45B422D3.9040409@usherbrooke.ca>
+	 <1169436221.2190.13.camel@nigel.suspend2.net>
+	 <45B448BA.70800@usherbrooke.ca> <20070122132545.GA4493@ucw.cz>
+	 <45B59239.90403@usherbrooke.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-01-22 at 22:22 -0800, Randy Dunlap wrote:
-> On Mon, 22 Jan 2007 22:02:30 -0800 Don Mullis wrote:
-> 
-> > 
-> > Bisection shows the bad patch to be:
-> >     gregkh-driver-uio-documentation.patch
-> > 
-> > The htmldocs build failure can be eliminated by:
-> >     quilt remove Documentation/DocBook/kernel-api.tmpl
-> 
-> or by:  quilt delete gregkh-driver-uio-documentation.patch ??
+what about removing psmouse module?
 
-That would fix the htmldoc build too, but would throw out lots of
-documentation.  Greg K-H would seem the prime candidate to propose a
-fix.
-
-
-> How about an accurate description of what kernel tree has this problem?
-> It's not 2.6.19.  It's not 2.6.20-rc5.
-
-2.6.20-rc4-mm1, sorry.  Forgot that posting as a reply to the
-2.6.20-rc4-mm1 announcement is no help for someone receiving the mail
-directly.
-
-
+On 1/23/07, Jean-Marc Valin <jean-marc.valin@usherbrooke.ca> wrote:
+> >>> will be a device driver. Common causes of suspend/resume problems from
+> >>> the list you give below are acpi modules, bluetooth and usb. I'd also be
+> >>> consider pcmcia, drm and fuse possibilities. But again, go for unloading
+> >>> everything possible in the first instance.
+> >> Actually, the reason I sent this is that when I showed the oops/gpf to
+> >> Matthew Garrett at linux.conf.au, he said it looked like a CPU hotplug
+> >> problem and suggested I send it to lkml. BTW, with 2.6.20-rc5, the
+> >> suspend to RAM now works ~95% of the time.
+> >
+> > Try a kernel without CONFIG_SMP... that will verify if it is SMP
+> > related.
+>
+> Well, this happens to be my main work machine, which I'm not willing to
+> have running at half speed for several weeks. Anything else you can suggest?
+>
+>         Jean-Marc
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
