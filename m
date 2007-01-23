@@ -1,65 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932899AbXAWQvq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933006AbXAWQ7I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932899AbXAWQvq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jan 2007 11:51:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932911AbXAWQvq
+	id S933006AbXAWQ7I (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jan 2007 11:59:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933089AbXAWQ7I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jan 2007 11:51:46 -0500
-Received: from i9.amg.net.pl ([195.117.14.9]:4446 "EHLO smtp.amg.net.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932899AbXAWQvp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jan 2007 11:51:45 -0500
-Date: Tue, 23 Jan 2007 17:51:43 +0100
-From: areq@areq.eu.org
-To: linux-kernel@vger.kernel.org
-Subject: SAS1068 PCI-X Fusion-MPT SAS 1000:0055
-Message-ID: <20070123165143.GA10423@areq.eu.org>
-Mime-Version: 1.0
+	Tue, 23 Jan 2007 11:59:08 -0500
+Received: from xyzzy.farnsworth.org ([65.39.95.219]:3351 "HELO farnsworth.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S933006AbXAWQ7H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jan 2007 11:59:07 -0500
+X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Tue, 23 Jan 2007 11:59:07 EST
+From: "Dale Farnsworth" <dale@farnsworth.org>
+Date: Tue, 23 Jan 2007 09:52:25 -0700
+To: Jeff Garzik <jgarzik@pobox.com>
+Cc: Thibaut VARENE <T-Bone@parisc-linux.org>, Jarek Poplawski <jarkao2@o2.pl>,
+       mlachwani@mvista.com, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] mv643xx_eth: Fix race condition in mv643xx_eth_free_tx_descs
+Message-ID: <20070123165225.GA20153@xyzzy.farnsworth.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.10i
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+>From Dale Farnsworth <dale@farnsworth.org>
 
-I have new NEC server with SAS1068 PCI-X Fusion-MPT SAS
-pciid: 1000:0055
-mptsas form 2.6.20-rc5 don't recognize it ;(
+mv643xx_eth: Fix race condition in mv643xx_eth_free_tx_descs
 
-I see that driver support only 1000:0054 and 1000:0058 devices.
+This bug was found and isolated by Thibaut VARENE <T-Bone@parisc-linux.org>
+and Jarek Poplawski <jarkao2@o2.pl>.  This patch is a modification of their
+fixes.  We acquire and release the lock for each descriptor that is freed
+to minimize the time the lock is held.
 
-./drivers/message/fusion/mptsas.c:      { PCI_VENDOR_ID_LSI_LOGIC,
-MPI_MANUFACTPAGE_DEVID_SAS1068,
-./drivers/message/fusion/mptsas.c:      { PCI_VENDOR_ID_LSI_LOGIC,
-MPI_MANUFACTPAGE_DEVID_SAS1068E,
-./drivers/message/fusion/mptbase.c:     else if (pdev->device ==
-MPI_MANUFACTPAGE_DEVID_SAS1068) {
-./drivers/message/fusion/mptbase.c:     else if (pdev->device ==
-MPI_MANUFACTPAGE_DEVID_SAS1068E) {
-./drivers/message/fusion/lsi/mpi_cnfg.h:#define
-MPI_MANUFACTPAGE_DEVID_SAS1068              (0x0054)
-./drivers/message/fusion/lsi/mpi_cnfg.h:#define
-MPI_MANUFACTPAGE_DEVID_SAS1068E             (0x0058)
+---
 
-lspci -v:
+ drivers/net/mv643xx_eth.c |   11 +++++++++--
+ 1 file changed, 9 insertions(+), 2 deletions(-)
 
-0d:05.0 SCSI storage controller: LSI Logic / Symbios Logic Unknown
-device 0055 (rev 01)
-	Subsystem: NEC Corporation Unknown device 8336
-	Flags: bus master, 66MHz, medium devsel, latency 32, IRQ 7
-	I/O ports at 3000 [size=256]
-	Memory at deb10000 (64-bit, non-prefetchable) [size=16K]
-	Memory at deb00000 (64-bit, non-prefetchable) [size=64K]
-	[virtual] Expansion ROM at 88000000 [disabled] [size=2M]
-	Capabilities: [50] Power Management version 2
-	Capabilities: [98] Message Signalled Interrupts: Mask- 64bit+
-Queue=0/0 Enable-
-	Capabilities: [68] PCI-X non-bridge device
-	Capabilities: [b0] MSI-X: Enable- Mask- TabSize=1
-
-
-Any solution ?
-
-Cheers,
-Areq
+diff --git a/drivers/net/mv643xx_eth.c b/drivers/net/mv643xx_eth.c
+index c41ae42..b3bf864 100644
+--- a/drivers/net/mv643xx_eth.c
++++ b/drivers/net/mv643xx_eth.c
+@@ -314,6 +314,13 @@ int mv643xx_eth_free_tx_descs(struct net
+ 
+ 	while (mp->tx_desc_count > 0) {
+ 		spin_lock_irqsave(&mp->lock, flags);
++
++		/* tx_desc_count might have changed before acquiring the lock */
++		if (mp->tx_desc_count <= 0) {
++			spin_unlock_irqrestore(&mp->lock, flags);
++			return released;
++		}
++
+ 		tx_index = mp->tx_used_desc_q;
+ 		desc = &mp->p_tx_desc_area[tx_index];
+ 		cmd_sts = desc->cmd_sts;
+@@ -332,13 +339,13 @@ int mv643xx_eth_free_tx_descs(struct net
+ 		if (skb)
+ 			mp->tx_skb[tx_index] = NULL;
+ 
+-		spin_unlock_irqrestore(&mp->lock, flags);
+-
+ 		if (cmd_sts & ETH_ERROR_SUMMARY) {
+ 			printk("%s: Error in TX\n", dev->name);
+ 			mp->stats.tx_errors++;
+ 		}
+ 
++		spin_unlock_irqrestore(&mp->lock, flags);
++
+ 		if (cmd_sts & ETH_TX_FIRST_DESC)
+ 			dma_unmap_single(NULL, addr, count, DMA_TO_DEVICE);
+ 		else
