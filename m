@@ -1,50 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932951AbXAWKxk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932960AbXAWK4a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932951AbXAWKxk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jan 2007 05:53:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932955AbXAWKxj
+	id S932960AbXAWK4a (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jan 2007 05:56:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932959AbXAWK4a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jan 2007 05:53:39 -0500
-Received: from caramon.arm.linux.org.uk ([217.147.92.249]:3856 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932951AbXAWKxj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jan 2007 05:53:39 -0500
-Date: Tue, 23 Jan 2007 10:53:31 +0000
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Alon Bar-Lev <alon.barlev@gmail.com>
-Cc: Tomas Carnecky <tom@dbservice.com>, linux-kernel@vger.kernel.org
-Subject: Re: [patch 03/26] Dynamic kernel command-line - arm
-Message-ID: <20070123105331.GB20660@flint.arm.linux.org.uk>
-Mail-Followup-To: Alon Bar-Lev <alon.barlev@gmail.com>,
-	Tomas Carnecky <tom@dbservice.com>, linux-kernel@vger.kernel.org
-References: <20070118125849.441998000@strauss.suse.de> <20070118130028.719472000@strauss.suse.de> <20070118141359.GB31418@flint.arm.linux.org.uk> <45AF92E7.50901@dbservice.com> <20070118152326.GC31418@flint.arm.linux.org.uk> <20070122221400.GE6262@strauss.suse.de> <20070122222725.GB32085@flint.arm.linux.org.uk> <9e0cf0bf0701230237j5aa1bbya3a70da314e471b9@mail.gmail.com> <20070123104140.GA20660@flint.arm.linux.org.uk> <9e0cf0bf0701230250nb8d9738redc3e1d963b40bda@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <9e0cf0bf0701230250nb8d9738redc3e1d963b40bda@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
+	Tue, 23 Jan 2007 05:56:30 -0500
+Received: from lucidpixels.com ([75.144.35.66]:58618 "EHLO lucidpixels.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S932957AbXAWK43 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jan 2007 05:56:29 -0500
+Date: Tue, 23 Jan 2007 05:56:28 -0500 (EST)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+X-X-Sender: jpiszcz@p34.internal.lan
+To: Neil Brown <neilb@suse.de>
+cc: Chuck Ebbert <cebbert@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-raid@vger.kernel.org, xfs@oss.sgi.com
+Subject: Re: Kernel 2.6.19.2 New RAID 5 Bug (oops when writing Samba -> RAID5)
+In-Reply-To: <17845.13256.284461.992275@notabene.brown>
+Message-ID: <Pine.LNX.4.64.0701230556050.8978@p34.internal.lan>
+References: <Pine.LNX.4.64.0701200718290.29223@p34.internal.lan>
+ <45B5261B.1050104@redhat.com> <17845.13256.284461.992275@notabene.brown>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 23, 2007 at 12:50:15PM +0200, Alon Bar-Lev wrote:
-> On 1/23/07, Russell King <rmk+lkml@arm.linux.org.uk> wrote:
-> >See Message-ID: <20070118152326.GC31418@flint.arm.linux.org.uk> sent on
-> >18 January in this thread.  Such strings might as well be initialised to
-> >an empty string.
+
+
+On Tue, 23 Jan 2007, Neil Brown wrote:
+
+> On Monday January 22, cebbert@redhat.com wrote:
+> > Justin Piszcz wrote:
+> > > My .config is attached, please let me know if any other information is 
+> > > needed and please CC (lkml) as I am not on the list, thanks!
+> > >
+> > > Running Kernel 2.6.19.2 on a MD RAID5 volume.  Copying files over Samba to 
+> > > the RAID5 running XFS.
+> > >
+> > > Any idea what happened here?
+> ....
+> > >   
+> > Without digging too deeply, I'd say you've hit the same bug Sami Farin 
+> > and others
+> > have reported starting with 2.6.19: pages mapped with kmap_atomic() 
+> > become unmapped
+> > during memcpy() or similar operations.  Try disabling preempt -- that 
+> > seems to be the
+> > common factor.
 > 
-> So it will be fine if I initialize it to "" and remove the static from
-> the your example?
+> That is exactly the conclusion I had just come to (a kmap_atomic page
+> must be being unmapped during memcpy).  I wasn't aware that others had
+> reported it - thanks for that.
+> 
+> Turning off CONFIG_PREEMPT certainly seems like a good idea.
+> 
+> NeilBrown
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-raid" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
 
-Why do you want to remove the static?
+Is this a bug that can or will be fixed or should I disable pre-emption on 
+critical and/or server machines?
 
-> BTW: Is there a difference between "" and initialize it to {0}?
-
-Not in the end result.  However, "" is a string but {0} is an array.
-So, "" helps to say to the reader "we're treating this as a string".
-Also, "" is quicker to type than {0}.
-
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+Justin.
