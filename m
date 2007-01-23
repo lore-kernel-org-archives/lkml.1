@@ -1,82 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965242AbXAWVNH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965256AbXAWVOD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965242AbXAWVNH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jan 2007 16:13:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965224AbXAWVNH
+	id S965256AbXAWVOD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jan 2007 16:14:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965452AbXAWVOD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jan 2007 16:13:07 -0500
-Received: from colo.lackof.org ([198.49.126.79]:37190 "EHLO colo.lackof.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965242AbXAWVNG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jan 2007 16:13:06 -0500
-Date: Tue, 23 Jan 2007 14:12:57 -0700
-From: dann frazier <dannf@dannf.org>
-To: Willy Tarreau <w@1wt.eu>
-Cc: Grant Coady <gcoady.lk@gmail.com>,
-       Santiago Garcia Mantinan <manty@debian.org>,
-       linux-kernel@vger.kernel.org, debian-kernel@lists.debian.org
-Subject: Re: problems with latest smbfs changes on 2.4.34 and security backports
-Message-ID: <20070123211256.GB26310@colo>
-References: <20070117100030.GA11251@clandestino.aytolacoruna.es> <20070117215519.GX24090@1wt.eu> <20070119010040.GR16053@colo> <20070120010544.GY26210@colo> <t1r7r2thimh3gpuhtfc9l3aehjdd6dqkp8@4ax.com> <20070121230321.GC2480@1wt.eu> <lpu7r2lbtpm5cui8v1qpuj2fb5k3vs6f4n@4ax.com> <20070122181942.GJ28073@colo> <20070123054258.GA10301@1wt.eu>
+	Tue, 23 Jan 2007 16:14:03 -0500
+Received: from nic.NetDirect.CA ([216.16.235.2]:41345 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965256AbXAWVOA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jan 2007 16:14:00 -0500
+X-Originating-Ip: 74.109.98.130
+Date: Tue, 23 Jan 2007 16:13:43 -0500 (EST)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@CPE00045a9c397f-CM001225dbafb6
+To: Linux kernel mailing list <linux-kernel@vger.kernel.org>
+Subject: identifying CONFIG variable typoes in the source tree
+Message-ID: <Pine.LNX.4.64.0701231559090.3014@CPE00045a9c397f-CM001225dbafb6>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070123054258.GA10301@1wt.eu>
-User-Agent: mutt-ng/devel-r782 (Debian)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Users have reported a symlink issue with my recent smbfs backport.
-Turns out my backport overlooked a second 2.6 patch w/ the fix:
- http://linux.bkbits.net:8080/linux-2.6/?PAGE=cset&REV=419e7b76CdrmRG_NZ8LKj9DUUBGu1w
 
-This is a backport of Haroldo Gamal's 2.6 patch that fixes the symlink
-issue, and also cleans up an unnecessary double assignment. As his
-commit message notes, you will need the userspace patches from Samba
-Bug #999 in order to use the permission/ownership assigned by the
-server.
+  because it's cold outside and i was bored, i put together the
+following script, to be run from the top of the source tree:
 
-Signed-off-by: dann frazier <dannf@debian.org>
+======================================================B
+#!/bin/sh
 
-diff --git a/fs/smbfs/inode.c b/fs/smbfs/inode.c
-index be975fe..7fd9b51 100644
---- a/fs/smbfs/inode.c
-+++ b/fs/smbfs/inode.c
-@@ -513,10 +513,10 @@ smb_read_super(struct super_block *sb, void *raw_data, int silent)
- 		mnt->flags = (oldmnt->file_mode >> 9) | SMB_MOUNT_UID |
- 			SMB_MOUNT_GID | SMB_MOUNT_FMODE | SMB_MOUNT_DMODE;
- 	} else {
--		mnt->file_mode = mnt->dir_mode = S_IRWXU | S_IRGRP | S_IXGRP |
--						S_IROTH | S_IXOTH | S_IFREG;
--		mnt->dir_mode = mnt->dir_mode = S_IRWXU | S_IRGRP | S_IXGRP |
--						S_IROTH | S_IXOTH | S_IFDIR;
-+		mnt->file_mode = S_IRWXU | S_IRGRP | S_IXGRP |
-+				S_IROTH | S_IXOTH | S_IFREG;
-+	        mnt->dir_mode = S_IRWXU | S_IRGRP | S_IXGRP |
-+				S_IROTH | S_IXOTH | S_IFDIR;
- 		if (parse_options(mnt, raw_data))
- 			goto out_bad_option;
- 	}
-diff --git a/fs/smbfs/proc.c b/fs/smbfs/proc.c
-index 7f0794c..5570007 100644
---- a/fs/smbfs/proc.c
-+++ b/fs/smbfs/proc.c
-@@ -1994,10 +1994,11 @@ void smb_decode_unix_basic(struct smb_fattr *fattr, struct smb_sb_info *server,
- 
- 	if ( (server->mnt->flags & SMB_MOUNT_DMODE) &&
- 	     (S_ISDIR(fattr->f_mode)) )
--		fattr->f_mode = (server->mnt->dir_mode & (S_IRWXU | S_IRWXG | S_IRWXO)) | S_IFDIR;
-+		fattr->f_mode = (server->mnt->dir_mode & S_IRWXUGO) | S_IFDIR;
- 	else if ( (server->mnt->flags & SMB_MOUNT_FMODE) &&
- 	          !(S_ISDIR(fattr->f_mode)) )
--		fattr->f_mode = (server->mnt->file_mode & (S_IRWXU | S_IRWXG | S_IRWXO)) | S_IFREG;
-+		fattr->f_mode = (server->mnt->file_mode & S_IRWXUGO) |
-+				(fattr->f_mode & S_IFMT);
- 
- }
- 
+CV=$(grep -rh "^#.*if.* CONFIG_[A-Za-z0-9]" . | grep -v endif)
+CVARS=$(echo "${CV}" | sed "s/.*\(CONFIG_[^	 =\)\*\/]*\).*/\1/" | sort -u | grep "^CONFIG_")
 
+kcfiles=$(find . -name "Kconfig*")
 
--- 
-dann frazier
+for cv in ${CVARS} ; do
+	# echo "cv = ${cv}"
+	str=$(echo ${cv} | sed "s/^CONFIG_//")
+	# echo "str = ${str}"
+	grep -wq ${str} ${kcfiles} || echo ${str}
+done
+=======================================================
 
+  what it does is scan the entire tree for lines of the form
+
+...if... CONFIG_whatever...
+
+collects all of those CONFIG variables and, one at a time, checks to
+see if that variable even exists in any Kconfig file in the tree so
+that it could possibly ever be set.  (i'm not guaranteeing that the
+script is perfect, but it does generate some interesting results.)
+
+  the first few lines of output:
+
+53C700_BE_BUS
+64_BIT
+68328_SERIAL_UART2
+...
+
+  let's check these:
+
+$ grep -r 53C700_BE_BUS .
+./drivers/scsi/53c700.h:#ifdef CONFIG_53C700_BE_BUS
+
+  in short, a variable that's being tested with no possibility of ever
+being set in a Kconfig file.  moving on,
+
+$ grep -rw CONFIG_64_BIT .
+./include/asm-um/elf-ppc.h:#ifdef CONFIG_64_BIT
+$ grep -rw 64_BIT .
+$
+
+  so CONFIG_64_BIT is similarly being tested, but it's not being set
+anywhere.  i'm guessing this is a misspelling of "CONFIG_64BIT", which
+*does* exist in the tree and is quite common.  next:
+
+$ grep -r 68328_SERIAL_UART2 .
+./drivers/serial/68328serial.h:#ifndef CONFIG_68328_SERIAL_UART2
+./arch/m68knommu/platform/68VZ328/config.c:#ifdef CONFIG_68328_SERIAL_UART2
+
+  again, something being tested with no possibility of it being set
+anywhere.
+
+  the script turns up 284 examples of this.
+
+rday
