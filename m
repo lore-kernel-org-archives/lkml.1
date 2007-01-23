@@ -1,54 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932471AbXAWBnn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932507AbXAWBoP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932471AbXAWBnn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jan 2007 20:43:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932482AbXAWBnn
+	id S932507AbXAWBoP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jan 2007 20:44:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932583AbXAWBoP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jan 2007 20:43:43 -0500
-Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:63424 "EHLO
-	pd2mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932471AbXAWBnm (ORCPT
+	Mon, 22 Jan 2007 20:44:15 -0500
+Received: from ug-out-1314.google.com ([66.249.92.168]:47135 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932507AbXAWBoN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jan 2007 20:43:42 -0500
-Date: Mon, 22 Jan 2007 19:41:51 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: SATA exceptions with 2.6.20-rc5
-In-reply-to: <200701230134.57775.s0348365@sms.ed.ac.uk>
-To: Alistair John Strachan <s0348365@sms.ed.ac.uk>
-Cc: =?UTF-8?B?QmrDtnJuIFN0ZWluYnJpbms=?= <B.Steinbrink@gmx.de>,
-       Jeff Garzik <jeff@garzik.org>, Chr <chunkeey@web.de>,
-       linux-kernel@vger.kernel.org, htejun@gmail.com, jens.axboe@oracle.com,
-       lwalton@real.com, pomac@vapor.com
-Message-id: <45B567DF.1050008@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=UTF-8; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.ow4pXUncgdZmfLf3oyfrn1W+Bk0@ifi.uio.no>
- <fa.4QxeKMcmkoyhlL26AivZV6BFQJQ@ifi.uio.no> <45B563C6.5070505@shaw.ca>
- <200701230134.57775.s0348365@sms.ed.ac.uk>
-User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
+	Mon, 22 Jan 2007 20:44:13 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=YyPyqkif8t9RDwskczse5LiMPC6QKh4KCunEEhev/m5UCY6L5HrffWLTZehiTS+g+69dBURTq5ETIaxomAk3IZaO/Z7eLSL6b7LTpIht17I1Lz5JK1bBBf98/M1UmgCo8w1SlEo0m3bpFLmYGIZD6/+3fGqcNwCg+FIN+cNCeM4=
+Message-ID: <e9c3a7c20701221744i7f0de470r4c8183dd3bcd20b5@mail.gmail.com>
+Date: Mon, 22 Jan 2007 18:44:11 -0700
+From: "Dan Williams" <dan.j.williams@gmail.com>
+To: "Neil Brown" <neilb@suse.de>
+Subject: Re: Kernel 2.6.19.2 New RAID 5 Bug (oops when writing Samba -> RAID5)
+Cc: "Chuck Ebbert" <cebbert@redhat.com>,
+       "Justin Piszcz" <jpiszcz@lucidpixels.com>, linux-kernel@vger.kernel.org,
+       linux-raid@vger.kernel.org, xfs@oss.sgi.com
+In-Reply-To: <17845.13256.284461.992275@notabene.brown>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <Pine.LNX.4.64.0701200718290.29223@p34.internal.lan>
+	 <45B5261B.1050104@redhat.com>
+	 <17845.13256.284461.992275@notabene.brown>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alistair John Strachan wrote:
-> On Tuesday 23 January 2007 01:24, Robert Hancock wrote:
->> As a final aside, this is another case where the hardware docs for this
->> controller would really be useful, in order to know whether we are
->> actually supposed to be reading that register in ADMA mode or not. I
->> sent a query to Allen Martin at NVIDIA asking if there's a way I could
->> get access to the documents, but I haven't heard anything yet.
-> 
-> Obviously, NVIDIA's response is disappointing, but thank you for putting the 
-> time in to debug this problem. Definitely sounds like a hardware defect, I'm 
-> just glad there's a workaround.
-> 
-> Will we see this fix in 2.6.20?
+On 1/22/07, Neil Brown <neilb@suse.de> wrote:
+> On Monday January 22, cebbert@redhat.com wrote:
+> > Justin Piszcz wrote:
+> > > My .config is attached, please let me know if any other information is
+> > > needed and please CC (lkml) as I am not on the list, thanks!
+> > >
+> > > Running Kernel 2.6.19.2 on a MD RAID5 volume.  Copying files over Samba to
+> > > the RAID5 running XFS.
+> > >
+> > > Any idea what happened here?
+> ....
+> > >
+> > Without digging too deeply, I'd say you've hit the same bug Sami Farin
+> > and others
+> > have reported starting with 2.6.19: pages mapped with kmap_atomic()
+> > become unmapped
+> > during memcpy() or similar operations.  Try disabling preempt -- that
+> > seems to be the
+> > common factor.
+>
+> That is exactly the conclusion I had just come to (a kmap_atomic page
+> must be being unmapped during memcpy).  I wasn't aware that others had
+> reported it - thanks for that.
+>
+> Turning off CONFIG_PREEMPT certainly seems like a good idea.
+>
+Coming from an ARM background I am not yet versed in the inner
+workings of kmap_atomic, but if you have time for a question I am
+curious as to why spin_lock(&sh->lock)  is not sufficient pre-emption
+protection for copy_data() in this case?
 
-Hopefully, assuming it actually does fix the problem for those that have 
-been seeing it..
+> NeilBrown
 
--- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
-
+Regards,
+Dan
