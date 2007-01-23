@@ -1,184 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751998AbXAWPib@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932622AbXAWPl3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751998AbXAWPib (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jan 2007 10:38:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752003AbXAWPib
+	id S932622AbXAWPl3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jan 2007 10:41:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932865AbXAWPl3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jan 2007 10:38:31 -0500
-Received: from thccv19.oz.nthu.edu.tw ([140.114.63.219]:50468 "EHLO
-	thccv19.oz.nthu.edu.tw" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751998AbXAWPia (ORCPT
+	Tue, 23 Jan 2007 10:41:29 -0500
+Received: from mail.alkar.net ([195.248.191.95]:54783 "EHLO mail.alkar.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932622AbXAWPl1 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jan 2007 10:38:30 -0500
-From: "Yu-Chen Wu" <g944370@oz.nthu.edu.tw>
-To: "'Anton Altaparmakov'" <aia21@cam.ac.uk>
-Cc: <linux-kernel@vger.kernel.org>
-References: <030701c73eef$0b4d0010$0100a8c0@sslabmayasky> <1169557944.4475.8.camel@imp.csi.cam.ac.uk> <030801c73ef8$f2198a00$0100a8c0@sslabmayasky> <Pine.LNX.4.64.0701231449110.16296@hermes-1.csi.cam.ac.uk>
-Subject: RE: Could convert a buffer that allocated by vmalloc to pages?
-Date: Tue, 23 Jan 2007 23:40:29 +0800
-Message-ID: <031101c73f04$cff18700$0100a8c0@sslabmayasky>
+	Tue, 23 Jan 2007 10:41:27 -0500
+From: "Vladimir V. Saveliev" <vs@namesys.com>
+To: Laurent Riffard <laurent.riffard@free.fr>
+Subject: Re: 2.6.20-rc3-mm1: umount reiser4 FS stuck in D state
+Date: Tue, 23 Jan 2007 19:40:57 +0300
+User-Agent: KMail/1.8.2
+Cc: reiserfs-list@namesys.com,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       Jens Axboe <axboe@suse.de>
+References: <20070104220200.ae4e9a46.akpm@osdl.org> <200701062158.06329.vs@namesys.com> <45A81231.6040104@free.fr>
+In-Reply-To: <45A81231.6040104@free.fr>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Microsoft Office Outlook 11
-In-Reply-To: <Pine.LNX.4.64.0701231449110.16296@hermes-1.csi.cam.ac.uk>
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
-Thread-Index: Acc+/fwRujCTdTrtQAW8gRpNMyAOyAABl6bA
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200701231940.58053.vs@namesys.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Anton,
-All of the code as below:
-//==============================================
-extern struct vm_struct *vmlist;
-struct vm_struct *vmlist2,*L2vm;
+Hello
 
-int find_vm_struct(void *addr)
-{
-                struct vm_struct **p;
-                int i;
-                struct page *pg;
-                printk("&vmlist=%x\n",&vmlist);
-                for (p = &vmlist ; (L2vm = *p) != NULL ;p = &L2vm->next) {
-                       if (L2vm->addr == addr)
-                       goto found;
-                }
-                printk(KERN_INFO "find_vm_struct filed\n");
-                return 0;
-                found:
-                printk(KERN_INFO "find_vm_struct OK:%x addr:%x
-nr_pages:%d\n",L2vm,L2vm->addr,L2vm->nr_pages);
-                for(i=0;i<L2vm->nr_pages;i++)
-                {
-                        if(L2vm->pages[i])
-                                printk("page
-allocated:%x\n",page_address(L2vm->pages[i]));
-                }
-                return 1;
-
-}
-
-
-static int __init mymodule_init()
-{
-        L2cache=vmalloc(40960);
-
-        if(L2cache)
-        {
-                struct page *tpage;
-                printk(KERN_INFO "L2 cache allocat success,
-address:%x\n",L2cache);
-                read_lock(&vmlist_lock);
-                find_vm_struct(L2cache);
-                read_unlock(&vmlist_lock);
-                tpage=vmalloc_to_page(L2cache);
-                printk(KERN_INFO "vmalloc_to_page tpage :%x\n",tpage);
-        }
-        else
-        {
-                printk(KERN_INFO "L2 cache allocat failed\n");
-                return -1;
-        }
-        return 0;
-}
-//===============================================================
-The mymodule_init() is the initial function of my moudle, it will call
-vmalloc to malloc a memory area(big buffer), the buffer will be used to do
-DMA transmission.
-If allocated the buffer successfuly, it will find the vm_struct of the
-buffer, the address of vm_struct  will be stored in L2vm.
-If found the vm_struct, it will show all pages of the big buffer.
-You can see the page get from vmalloc_to_page() is different to all of the
-pages get form vm_struct.
-
-Is it possible that the buffer allocated by vmalloc be used to do DMA
-transmission?
-
-THX
------Original Message-----
-From: linux-kernel-owner@vger.kernel.org
-[mailto:linux-kernel-owner@vger.kernel.org] On Behalf Of Anton Altaparmakov
-Sent: Tuesday, January 23, 2007 10:50 PM
-To: Yu-Chen Wu
-Cc: linux-kernel@vger.kernel.org
-Subject: RE: Could convert a buffer that allocated by vmalloc to pages?
-
-On Tue, 23 Jan 2007, Yu-Chen Wu wrote:
-> I tried vmalloc_to_page() and I have some question.
-> I print the "pages" in vm_struct structure of the buffer to compare the
-> address get from vmalloc_to_page(), result as follows:
-
-Both the code you are showing and your question do not make any sense 
-to me...  You need to show all of the code not some random fragments...  
-What the heck is L2vm for a start?
-
-Best regards,
-
-	Anton
-
-> //===source code====
-> L2cache=vmalloc(L2SIZE);// L2SIZE=40960
-> printk(KERN_INFO "find_vm_struct OK:%x
-> addr:%xnr_pages:%d\n",L2vm,L2vm->addr,L2vm->nr_pages);
-> for(i=0;i<L2vm->nr_pages;i++)
->  {
->       if(L2vm->pages[i])
->          printk("page allocated:%x\n",page_address(L2vm->pages[i]));
->  }
-> tpage=vmalloc_to_page(L2cache);
-> printk(KERN_INFO "vmalloc_to_page tpage :%x\n",tpage);
-> //===========info of dmesg==================
-> [ 1561.768471] page allocated:73d65000
-> [ 1561.768474] page allocated:781e9000
-> [ 1561.768476] page allocated:6203f000
-> [ 1561.768478] page allocated:57fdf000
-> [ 1561.768481] page allocated:56ed4000
-> [ 1561.768483] page allocated:56ed5000
-> [ 1561.768485] page allocated:64ab6000
-> [ 1561.768488] page allocated:7cc1e000
-> [ 1561.768490] page allocated:60ea8000
-> [ 1561.768492] page allocated:60ea9000
-> [ 1561.768497] vmalloc_to_page tpage :7fcf7e18
+On Saturday 13 January 2007 01:56, Laurent Riffard wrote:
+> Le 06.01.2007 19:58, Vladimir V. Saveliev a écrit :
+> > Hello
+> > 
+> > On Saturday 06 January 2007 13:58, Laurent Riffard wrote:
+> >> Hello,
+> >>
+> >> got this with 2.6.20-rc3-mm1:
+> >>
+> >> =======================
+> >> SysRq : Show Blocked State
+> >>
+> >>                          free                        sibling
+> >>   task             PC    stack   pid father child younger older
+> >> umount        D C013135E  6044  1168   1150                     (NOTLB)
+> >>        de591ae4 00000086 de591abc c013135e dff979c8 c012a6fe 00000046 00000007 
+> >>        dfd94ac0 128d3000 00000026 00000000 dfd94bcc dff979c8 de591ae4 dffda038 
+> >>        00000002 dff979c0 dff979bc dff979c8 de591b10 c012d600 dff979f8 00000000 
+> >> Call Trace:
+> >>  [<c012d600>] synchronize_qrcu+0x70/0x8c
+> >>  [<c01bede4>] __make_request+0x4c/0x29b
+> >>  [<c01bd24b>] generic_make_request+0x1b0/0x1de
+> >>  [<c01bf354>] submit_bio+0xda/0xe2
+> >>  [<e12674bd>] write_jnodes_to_disk_extent+0x920/0x974 [reiser4]
+> >>  [<e12678dd>] update_journal_footer+0x29f/0x2b7 [reiser4]
+> >>  [<e1268b65>] write_tx_back+0x149/0x185 [reiser4]
+> >>  [<e126a8e7>] reiser4_write_logs+0xea4/0xfd2 [reiser4]
+> >>  [<e125626a>] try_commit_txnh+0x7e6/0xa4f [reiser4]
+> >>  [<e125661b>] reiser4_txn_end+0x148/0x3cf [reiser4]
+> >>  [<e12568ad>] reiser4_txn_restart+0xb/0x1a [reiser4]
+> >>  [<e125692f>] reiser4_txn_restart_current+0x73/0x75 [reiser4]
+> >>  [<e1256b89>] force_commit_atom+0x258/0x261 [reiser4]
+> >>  [<e1257703>] txnmgr_force_commit_all+0x406/0x697 [reiser4]
+> >>  [<e12e5e08>] release_format40+0x10c/0x193 [reiser4]
+> >>  [<e1279922>] reiser4_put_super+0x134/0x16a [reiser4]
+> >>  [<c015c930>] generic_shutdown_super+0x55/0xd8
+> >>  [<c015c9d3>] kill_block_super+0x20/0x32
+> >>  [<c015ca75>] deactivate_super+0x3f/0x51
+> >>  [<c016d903>] mntput_no_expire+0x42/0x5f
+> >>  [<c0160f37>] path_release_on_umount+0x15/0x18
+> >>  [<c016df77>] sys_umount+0x1a3/0x1cb
+> >>  [<c016dfb8>] sys_oldumount+0x19/0x1b
+> >>  [<c0103ed2>] sysenter_past_esp+0x5f/0x99
+> >>  =======================
+> >>
+> >> Scenario:
+> >> - umount a reiser4 FS (no need to write something before)
+> > 
+> > Hmm, I can not reproduce this with 2.6.20-rc3-mm1. Probably I need to config the kernel more close to your system.
+> > 
+> >> Earlier kernels were OK.
 > 
-> Why the page address get from vmalloc_to_page is different with the first
-> page address of the vm_struct (73d65000)?
+> This still happens with 2.6.20-rc4-mm1...
 > 
-> THX
-> -----Original Message-----
-> From: linux-kernel-owner@vger.kernel.org
-> [mailto:linux-kernel-owner@vger.kernel.org] On Behalf Of Anton
-Altaparmakov
-> Sent: Tuesday, January 23, 2007 9:12 PM
-> To: Yu-Chen Wu
-> Cc: linux-kernel@vger.kernel.org
-> Subject: Re: Could convert a buffer that allocated by vmalloc to pages?
-> 
-> On Tue, 2007-01-23 at 21:04 +0800, Yu-Chen Wu wrote:
-> > Hi,
-> > I write a driver have a big buffer (16MB,allocated by vmalloc).
-> > I want to use the buffer to do DMA transmission so I need getting the
-> pages
-> > of the buffer.
-> > Have any kernel API can do this?
-> > My platform is x86_64 and 2GB RAM
-> 
-> vmalloc_to_page()...
-> 
-> See mm/memory.c for the function and how to use it.
-> 
-> Best regards,
-> 
->         Anton
+> Should I open a bug report at http://bugzilla.kernel.org?
 > 
 
--- 
-Anton Altaparmakov <aia21 at cam.ac.uk> (replace at with @)
-Unix Support, Computing Service, University of Cambridge, CB2 3QH, UK
-Linux NTFS maintainer, http://www.linux-ntfs.org/
--
-To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
-Please read the FAQ at  http://www.tux.org/lkml/
+Which device with reiser4 did you try to umount?
+Jens wrote that it could be a barrier related. If there are no multidevices involved - please report to bugzilla.
 
