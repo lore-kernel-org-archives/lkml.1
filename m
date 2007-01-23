@@ -1,117 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932443AbXAWAX0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932594AbXAWAYA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932443AbXAWAX0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jan 2007 19:23:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932567AbXAWAXF
+	id S932594AbXAWAYA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jan 2007 19:24:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932583AbXAWAXm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jan 2007 19:23:05 -0500
-Received: from cantor.suse.de ([195.135.220.2]:35135 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932583AbXAWAW5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jan 2007 19:22:57 -0500
-From: NeilBrown <neilb@suse.de>
-To: Andrew Morton <akpm@osdl.org>
-Date: Tue, 23 Jan 2007 11:22:31 +1100
-Message-Id: <1070123002231.27868@suse.de>
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
-Cc: nfs@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Cc: Peter Staubach <staubach@redhat.com>
-Subject: [PATCH 005 of 5] knfsd: Don't mess with the 'mode' when storing a exclusive-create cookie.
-References: <20070123111558.27683.patches@notabene>
+	Mon, 22 Jan 2007 19:23:42 -0500
+Received: from wx-out-0506.google.com ([66.249.82.224]:47615 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932544AbXAWAXb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jan 2007 19:23:31 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=C4YHP30A5RpHr0rpUFLJlaXEvRnbbGPKZqKNHycOq2ziZXIa41gwRlvsjgEuLOIGGBGCkhiMeZysWLUt5MzGta3uVNzsK/9nQTg0xPt5qnTn3E9Hmb5rLvwvSz+RbqcbHFv5nzze/zZCTQxKSbwXM2liT8h8Nb8ivpSEGU9gP5A=
+Message-ID: <9a8748490701221623q1b61f03fva7b0ad7e7f30316f@mail.gmail.com>
+Date: Tue, 23 Jan 2007 01:23:29 +0100
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: "Chuck Ebbert" <cebbert@redhat.com>
+Subject: Re: 2.6.18-stable release plans?
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Chris Wright" <chrisw@sous-sol.org>
+In-Reply-To: <45B53722.9030206@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <45B53722.9030206@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 22/01/07, Chuck Ebbert <cebbert@redhat.com> wrote:
+> Is there going to be another 2.6.18-stable release?
+>
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
 
-From: Peter Staubach <staubach@redhat.com>
+Now that 2.6.19 is out, most likely not.  -stable releases are made
+for the latest stable 2.6.x kernel, once 2.6.x+1 is out that's the one
+-stable patches are made for (2.6.16 is an exception)..
 
-NFS V3 (and V4) support exclusive create by passing a 'cookie' which
-can get stored with the file.  If the file exists but has exactly the
-right cookie stored, then we assume this is a retransmit and the
-exclusive create was successful.
 
-The cookie is 64bits and is traditionally stored in the mtime and
-atime fields.  This causes a problem with Solaris7 as negative mtime
-or atime confuse it.  So we moved two bits into the mode word instead.
-
-But inherited ACLs sometimes overwrite the mode word on create, so
-this is a problem.
-
-So we give up and just store 62 of the 64 bits and assume that is
-close enough.
-
-Signed-off-by: Neil Brown <neilb@suse.de>
-
-### Diffstat output
- ./fs/nfsd/vfs.c |   21 +++++----------------
- 1 file changed, 5 insertions(+), 16 deletions(-)
-
-diff .prev/fs/nfsd/vfs.c ./fs/nfsd/vfs.c
---- .prev/fs/nfsd/vfs.c	2007-01-23 11:14:54.000000000 +1100
-+++ ./fs/nfsd/vfs.c	2007-01-23 11:15:06.000000000 +1100
-@@ -1249,7 +1249,6 @@ nfsd_create_v3(struct svc_rqst *rqstp, s
- 	__be32		err;
- 	int		host_err;
- 	__u32		v_mtime=0, v_atime=0;
--	int		v_mode=0;
- 
- 	err = nfserr_perm;
- 	if (!flen)
-@@ -1286,16 +1285,11 @@ nfsd_create_v3(struct svc_rqst *rqstp, s
- 		goto out;
- 
- 	if (createmode == NFS3_CREATE_EXCLUSIVE) {
--		/* while the verifier would fit in mtime+atime,
--		 * solaris7 gets confused (bugid 4218508) if these have
--		 * the high bit set, so we use the mode as well
-+		/* solaris7 gets confused (bugid 4218508) if these have
-+		 * the high bit set, so just clear the high bits.
- 		 */
- 		v_mtime = verifier[0]&0x7fffffff;
- 		v_atime = verifier[1]&0x7fffffff;
--		v_mode  = S_IFREG
--			| ((verifier[0]&0x80000000) >> (32-7)) /* u+x */
--			| ((verifier[1]&0x80000000) >> (32-9)) /* u+r */
--			;
- 	}
- 	
- 	if (dchild->d_inode) {
-@@ -1323,7 +1317,6 @@ nfsd_create_v3(struct svc_rqst *rqstp, s
- 		case NFS3_CREATE_EXCLUSIVE:
- 			if (   dchild->d_inode->i_mtime.tv_sec == v_mtime
- 			    && dchild->d_inode->i_atime.tv_sec == v_atime
--			    && dchild->d_inode->i_mode  == v_mode
- 			    && dchild->d_inode->i_size  == 0 )
- 				break;
- 			 /* fallthru */
-@@ -1345,26 +1338,22 @@ nfsd_create_v3(struct svc_rqst *rqstp, s
- 	}
- 
- 	if (createmode == NFS3_CREATE_EXCLUSIVE) {
--		/* Cram the verifier into atime/mtime/mode */
-+		/* Cram the verifier into atime/mtime */
- 		iap->ia_valid = ATTR_MTIME|ATTR_ATIME
--			| ATTR_MTIME_SET|ATTR_ATIME_SET
--			| ATTR_MODE;
-+			| ATTR_MTIME_SET|ATTR_ATIME_SET;
- 		/* XXX someone who knows this better please fix it for nsec */ 
- 		iap->ia_mtime.tv_sec = v_mtime;
- 		iap->ia_atime.tv_sec = v_atime;
- 		iap->ia_mtime.tv_nsec = 0;
- 		iap->ia_atime.tv_nsec = 0;
--		iap->ia_mode  = v_mode;
- 	}
- 
- 	/* Set file attributes.
--	 * Mode has already been set but we might need to reset it
--	 * for CREATE_EXCLUSIVE
- 	 * Irix appears to send along the gid when it tries to
- 	 * implement setgid directories via NFS. Clear out all that cruft.
- 	 */
-  set_attr:
--	if ((iap->ia_valid &= ~(ATTR_UID|ATTR_GID)) != 0) {
-+	if ((iap->ia_valid &= ~(ATTR_UID|ATTR_GID|ATTR_MODE)) != 0) {
-  		__be32 err2 = nfsd_setattr(rqstp, resfhp, iap, 0, (time_t)0);
- 		if (err2)
- 			err = err2;
+-- 
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
