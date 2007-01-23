@@ -1,176 +1,254 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933142AbXAWWMc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933134AbXAWWNt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933142AbXAWWMc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jan 2007 17:12:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933141AbXAWWMR
+	id S933134AbXAWWNt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jan 2007 17:13:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933147AbXAWWMP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jan 2007 17:12:17 -0500
-Received: from www.osadl.org ([213.239.205.134]:35812 "EHLO mail.tglx.de"
+	Tue, 23 Jan 2007 17:12:15 -0500
+Received: from www.osadl.org ([213.239.205.134]:35815 "EHLO mail.tglx.de"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S933135AbXAWWAs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jan 2007 17:00:48 -0500
-Message-Id: <20070123211203.731650000@localhost.localdomain>
+	id S933141AbXAWWAt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jan 2007 17:00:49 -0500
+Message-Id: <20070123211203.889964000@localhost.localdomain>
 References: <20070123211159.178138000@localhost.localdomain>
-Date: Tue, 23 Jan 2007 22:01:02 -0000
+Date: Tue, 23 Jan 2007 22:01:03 -0000
 From: Thomas Gleixner <tglx@linutronix.de>
 To: Andrew Morton <akpm@osdl.org>
 Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
        John Stultz <johnstul@us.ibm.com>,
        Arjan van de Veen <arjan@infradead.org>,
        Roman Zippel <zippel@linux-m68k.org>
-Subject: [patch 07/46] GTOD: persistent clock support
-Content-Disposition: inline; filename=gtod-persistent-clock-support-core.patch
+Subject: [patch 08/46] i386: use GTOD persistent clock support
+Content-Disposition: inline; filename=gtod-persistent-clock-support-i386.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: John Stultz <johnstul@us.ibm.com>
 
-Persistent clock support: do proper timekeeping across suspend/resume.
+Persistent clock support: do proper timekeeping across suspend/resume, i386
+arch support.
 
 [ cleanup from Adrian Bunk <bunk@stusta.de> ]
 
+Build-fixes-from: Andrew Morton <akpm@osdl.org>
 Signed-off-by: John Stultz <johnstul@us.ibm.com>
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Andrew Morton <akpm@osdl.org>
 ---
 
- include/linux/hrtimer.h |    3 +++
- include/linux/time.h    |    1 +
- kernel/hrtimer.c        |    8 ++++++++
- kernel/timer.c          |   37 ++++++++++++++++++++++++++++++++++++-
- 4 files changed, 48 insertions(+), 1 deletion(-)
+ arch/i386/kernel/apm.c  |   44 ---------------------------------------
+ arch/i386/kernel/time.c |   54 ------------------------------------------------
+ 2 files changed, 1 insertion(+), 97 deletions(-)
 
-Index: linux-2.6.20-rc4-mm1-bo/include/linux/hrtimer.h
+Index: linux-2.6.20-rc4-mm1-bo/arch/i386/kernel/apm.c
 ===================================================================
---- linux-2.6.20-rc4-mm1-bo.orig/include/linux/hrtimer.h
-+++ linux-2.6.20-rc4-mm1-bo/include/linux/hrtimer.h
-@@ -146,6 +146,9 @@ extern void hrtimer_init_sleeper(struct 
- /* Soft interrupt function to run the hrtimer queues: */
- extern void hrtimer_run_queues(void);
+--- linux-2.6.20-rc4-mm1-bo.orig/arch/i386/kernel/apm.c
++++ linux-2.6.20-rc4-mm1-bo/arch/i386/kernel/apm.c
+@@ -236,7 +236,6 @@
  
-+/* Resume notification */
-+void hrtimer_notify_resume(void);
-+
- /* Bootup initialization: */
- extern void __init hrtimers_init(void);
+ #include "io_ports.h"
  
-Index: linux-2.6.20-rc4-mm1-bo/include/linux/time.h
-===================================================================
---- linux-2.6.20-rc4-mm1-bo.orig/include/linux/time.h
-+++ linux-2.6.20-rc4-mm1-bo/include/linux/time.h
-@@ -92,6 +92,7 @@ extern struct timespec xtime;
- extern struct timespec wall_to_monotonic;
- extern seqlock_t xtime_lock __attribute__((weak));
+-extern unsigned long get_cmos_time(void);
+ extern void machine_real_restart(unsigned char *, int);
  
-+extern unsigned long read_persistent_clock(void);
- void timekeeping_init(void);
- 
- static inline unsigned long get_seconds(void)
-Index: linux-2.6.20-rc4-mm1-bo/kernel/hrtimer.c
-===================================================================
---- linux-2.6.20-rc4-mm1-bo.orig/kernel/hrtimer.c
-+++ linux-2.6.20-rc4-mm1-bo/kernel/hrtimer.c
-@@ -292,6 +292,14 @@ static unsigned long ktime_divns(const k
- #endif /* BITS_PER_LONG >= 64 */
- 
- /*
-+ * Timekeeping resumed notification
-+ */
-+void hrtimer_notify_resume(void)
-+{
-+	clock_was_set();
-+}
-+
-+/*
-  * Counterpart to lock_timer_base above:
-  */
- static inline
-Index: linux-2.6.20-rc4-mm1-bo/kernel/timer.c
-===================================================================
---- linux-2.6.20-rc4-mm1-bo.orig/kernel/timer.c
-+++ linux-2.6.20-rc4-mm1-bo/kernel/timer.c
-@@ -878,12 +878,27 @@ int timekeeping_is_continuous(void)
- 	return ret;
+ #if defined(CONFIG_APM_DISPLAY_BLANK) && defined(CONFIG_VT)
+@@ -1176,28 +1175,6 @@ out:
+ 	spin_unlock(&user_list_lock);
  }
  
-+/**
-+ * read_persistent_clock -  Return time in seconds from the persistent clock.
-+ *
-+ * Weak dummy function for arches that do not yet support it.
-+ * Returns seconds from epoch using the battery backed persistent clock.
-+ * Returns zero if unsupported.
-+ *
-+ *  XXX - Do be sure to remove it once all arches implement it.
-+ */
-+unsigned long __attribute__((weak)) read_persistent_clock(void)
-+{
-+	return 0;
-+}
-+
- /*
-  * timekeeping_init - Initializes the clocksource and common timekeeping values
-  */
- void __init timekeeping_init(void)
+-static void set_time(void)
+-{
+-	struct timespec ts;
+-	if (got_clock_diff) {	/* Must know time zone in order to set clock */
+-		ts.tv_sec = get_cmos_time() + clock_cmos_diff;
+-		ts.tv_nsec = 0;
+-		do_settimeofday(&ts);
+-	} 
+-}
+-
+-static void get_time_diff(void)
+-{
+-#ifndef CONFIG_APM_RTC_IS_GMT
+-	/*
+-	 * Estimate time zone so that set_time can update the clock
+-	 */
+-	clock_cmos_diff = -get_cmos_time();
+-	clock_cmos_diff += get_seconds();
+-	got_clock_diff = 1;
+-#endif
+-}
+-
+ static void reinit_timer(void)
  {
- 	unsigned long flags;
-+	unsigned long sec = read_persistent_clock();
+ #ifdef INIT_TIMER_AFTER_SUSPEND
+@@ -1237,19 +1214,6 @@ static int suspend(int vetoable)
+ 	local_irq_disable();
+ 	device_power_down(PMSG_SUSPEND);
  
- 	write_seqlock_irqsave(&xtime_lock, flags);
+-	/* serialize with the timer interrupt */
+-	write_seqlock(&xtime_lock);
+-
+-	/* protect against access to timer chip registers */
+-	spin_lock(&i8253_lock);
+-
+-	get_time_diff();
+-	/*
+-	 * Irq spinlock must be dropped around set_system_power_state.
+-	 * We'll undo any timer changes due to interrupts below.
+-	 */
+-	spin_unlock(&i8253_lock);
+-	write_sequnlock(&xtime_lock);
+ 	local_irq_enable();
  
-@@ -893,11 +908,20 @@ void __init timekeeping_init(void)
- 	clocksource_calculate_interval(clock, NTP_INTERVAL_LENGTH);
- 	clock->cycle_last = clocksource_read(clock);
+ 	save_processor_state();
+@@ -1258,7 +1222,6 @@ static int suspend(int vetoable)
+ 	restore_processor_state();
  
-+	xtime.tv_sec = sec;
-+	xtime.tv_nsec = 0;
-+	set_normalized_timespec(&wall_to_monotonic,
-+		-xtime.tv_sec, -xtime.tv_nsec);
-+
- 	write_sequnlock_irqrestore(&xtime_lock, flags);
+ 	local_irq_disable();
+-	set_time();
+ 	reinit_timer();
+ 
+ 	if (err == APM_NO_ERROR)
+@@ -1288,11 +1251,6 @@ static void standby(void)
+ 
+ 	local_irq_disable();
+ 	device_power_down(PMSG_SUSPEND);
+-	/* serialize with the timer interrupt */
+-	write_seqlock(&xtime_lock);
+-	/* If needed, notify drivers here */
+-	get_time_diff();
+-	write_sequnlock(&xtime_lock);
+ 	local_irq_enable();
+ 
+ 	err = set_system_power_state(APM_STATE_STANDBY);
+@@ -1386,7 +1344,6 @@ static void check_events(void)
+ 			ignore_bounce = 1;
+ 			if ((event != APM_NORMAL_RESUME)
+ 			    || (ignore_normal_resume == 0)) {
+-				set_time();
+ 				device_resume();
+ 				pm_send_all(PM_RESUME, (void *)0);
+ 				queue_event(event, NULL);
+@@ -1402,7 +1359,6 @@ static void check_events(void)
+ 			break;
+ 
+ 		case APM_UPDATE_TIME:
+-			set_time();
+ 			break;
+ 
+ 		case APM_CRITICAL_SUSPEND:
+Index: linux-2.6.20-rc4-mm1-bo/arch/i386/kernel/time.c
+===================================================================
+--- linux-2.6.20-rc4-mm1-bo.orig/arch/i386/kernel/time.c
++++ linux-2.6.20-rc4-mm1-bo/arch/i386/kernel/time.c
+@@ -214,7 +214,7 @@ irqreturn_t timer_interrupt(int irq, voi
  }
  
- 
-+/* flag for if timekeeping is suspended */
- static int timekeeping_suspended;
-+/* time in seconds when suspend began */
-+static unsigned long timekeeping_suspend_time;
-+
- /**
-  * timekeeping_resume - Resumes the generic timekeeping subsystem.
-  * @dev:	unused
-@@ -909,13 +933,23 @@ static int timekeeping_suspended;
- static int timekeeping_resume(struct sys_device *dev)
+ /* not static: needed by APM */
+-unsigned long get_cmos_time(void)
++unsigned long read_persistent_clock(void)
  {
+ 	unsigned long retval;
  	unsigned long flags;
-+	unsigned long now = read_persistent_clock();
+@@ -227,7 +227,6 @@ unsigned long get_cmos_time(void)
  
- 	write_seqlock_irqsave(&xtime_lock, flags);
--	/* restart the last cycle value */
-+
-+	if (now && (now > timekeeping_suspend_time)) {
-+		unsigned long sleep_length = now - timekeeping_suspend_time;
-+		xtime.tv_sec += sleep_length;
-+		jiffies_64 += (u64)sleep_length * HZ;
-+	}
-+	/* re-base the last cycle value */
- 	clock->cycle_last = clocksource_read(clock);
- 	clock->error = 0;
- 	timekeeping_suspended = 0;
- 	write_sequnlock_irqrestore(&xtime_lock, flags);
-+
-+	hrtimer_notify_resume();
-+
+ 	return retval;
+ }
+-EXPORT_SYMBOL(get_cmos_time);
+ 
+ static void sync_cmos_clock(unsigned long dummy);
+ 
+@@ -280,58 +279,19 @@ void notify_arch_cmos_timer(void)
+ 		mod_timer(&sync_cmos_timer, jiffies + 1);
+ }
+ 
+-static long clock_cmos_diff;
+-static unsigned long sleep_start;
+-
+-static int timer_suspend(struct sys_device *dev, pm_message_t state)
+-{
+-	/*
+-	 * Estimate time zone so that set_time can update the clock
+-	 */
+-	unsigned long ctime =  get_cmos_time();
+-
+-	clock_cmos_diff = -ctime;
+-	clock_cmos_diff += get_seconds();
+-	sleep_start = ctime;
+-	return 0;
+-}
+-
+ static int timer_resume(struct sys_device *dev)
+ {
+-	unsigned long flags;
+-	unsigned long sec;
+-	unsigned long ctime = get_cmos_time();
+-	long sleep_length = (ctime - sleep_start) * HZ;
+-	struct timespec ts;
+-
+-	if (sleep_length < 0) {
+-		printk(KERN_WARNING "CMOS clock skew detected in timer resume!\n");
+-		/* The time after the resume must not be earlier than the time
+-		 * before the suspend or some nasty things will happen
+-		 */
+-		sleep_length = 0;
+-		ctime = sleep_start;
+-	}
+ #ifdef CONFIG_HPET_TIMER
+ 	if (is_hpet_enabled())
+ 		hpet_reenable();
+ #endif
+ 	setup_pit_timer();
+-
+-	sec = ctime + clock_cmos_diff;
+-	ts.tv_sec = sec;
+-	ts.tv_nsec = 0;
+-	do_settimeofday(&ts);
+-	write_seqlock_irqsave(&xtime_lock, flags);
+-	jiffies_64 += sleep_length;
+-	write_sequnlock_irqrestore(&xtime_lock, flags);
+ 	touch_softlockup_watchdog();
  	return 0;
  }
  
-@@ -925,6 +959,7 @@ static int timekeeping_suspend(struct sy
+ static struct sysdev_class timer_sysclass = {
+ 	.resume = timer_resume,
+-	.suspend = timer_suspend,
+ 	set_kset_name("timer"),
+ };
  
- 	write_seqlock_irqsave(&xtime_lock, flags);
- 	timekeeping_suspended = 1;
-+	timekeeping_suspend_time = read_persistent_clock();
- 	write_sequnlock_irqrestore(&xtime_lock, flags);
- 	return 0;
+@@ -357,12 +317,6 @@ extern void (*late_time_init)(void);
+ /* Duplicate of time_init() below, with hpet_enable part added */
+ static void __init hpet_time_init(void)
+ {
+-	struct timespec ts;
+-	ts.tv_sec = get_cmos_time();
+-	ts.tv_nsec = (INITIAL_JIFFIES % HZ) * (NSEC_PER_SEC / HZ);
+-
+-	do_settimeofday(&ts);
+-
+ 	if ((hpet_enable() >= 0) && hpet_use_timer) {
+ 		printk("Using HPET for base-timer\n");
+ 	}
+@@ -373,7 +327,6 @@ static void __init hpet_time_init(void)
+ 
+ void __init time_init(void)
+ {
+-	struct timespec ts;
+ #ifdef CONFIG_HPET_TIMER
+ 	if (is_hpet_capable()) {
+ 		/*
+@@ -384,10 +337,5 @@ void __init time_init(void)
+ 		return;
+ 	}
+ #endif
+-	ts.tv_sec = get_cmos_time();
+-	ts.tv_nsec = (INITIAL_JIFFIES % HZ) * (NSEC_PER_SEC / HZ);
+-
+-	do_settimeofday(&ts);
+-
+ 	do_time_init();
  }
 
 --
