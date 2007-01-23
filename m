@@ -1,48 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932963AbXAWK7w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932970AbXAWLIg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932963AbXAWK7w (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jan 2007 05:59:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932964AbXAWK7w
+	id S932970AbXAWLIg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jan 2007 06:08:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932969AbXAWLIg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jan 2007 05:59:52 -0500
-Received: from an-out-0708.google.com ([209.85.132.246]:53707 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932963AbXAWK7v (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jan 2007 05:59:51 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Y+VonFAoazXQIxs97l0mcd92oqEradjrtiBoU8BG7b7EiVwBjS+IxV67GU5+GT8XK91tXX29jrdKbii5foaSY2RBq0CodI+afbMa8nFwYAEVq+ndqRSKVg/5Lr50OEF6gBwGxaxtpJIUETFsy7K3SdqB5EPCT224+0EHGbrfu38=
-Message-ID: <9e0cf0bf0701230259j66fff95fw9b3e373a1997c843@mail.gmail.com>
-Date: Tue, 23 Jan 2007 12:59:50 +0200
-From: "Alon Bar-Lev" <alon.barlev@gmail.com>
-To: "Alon Bar-Lev" <alon.barlev@gmail.com>,
-       "Tomas Carnecky" <tom@dbservice.com>, linux-kernel@vger.kernel.org
-Subject: Re: [patch 03/26] Dynamic kernel command-line - arm
-In-Reply-To: <20070123105331.GB20660@flint.arm.linux.org.uk>
+	Tue, 23 Jan 2007 06:08:36 -0500
+Received: from hobbit.corpit.ru ([81.13.94.6]:24655 "EHLO hobbit.corpit.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932967AbXAWLIf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jan 2007 06:08:35 -0500
+Message-ID: <45B5ECAA.6000100@tls.msk.ru>
+Date: Tue, 23 Jan 2007 14:08:26 +0300
+From: Michael Tokarev <mjt@tls.msk.ru>
+Organization: Telecom Service, JSC
+User-Agent: Icedove 1.5.0.8 (X11/20061128)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Justin Piszcz <jpiszcz@lucidpixels.com>
+CC: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
+Subject: Re: Kernel 2.6.19.2 New RAID 5 Bug (oops when writing Samba -> RAID5)
+References: <Pine.LNX.4.64.0701200718290.29223@p34.internal.lan> <45B5261B.1050104@redhat.com> <17845.13256.284461.992275@notabene.brown> <Pine.LNX.4.64.0701230556050.8978@p34.internal.lan>
+In-Reply-To: <Pine.LNX.4.64.0701230556050.8978@p34.internal.lan>
+X-Enigmail-Version: 0.94.1.0
+OpenPGP: id=4F9CF57E
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070118125849.441998000@strauss.suse.de>
-	 <20070118141359.GB31418@flint.arm.linux.org.uk>
-	 <45AF92E7.50901@dbservice.com>
-	 <20070118152326.GC31418@flint.arm.linux.org.uk>
-	 <20070122221400.GE6262@strauss.suse.de>
-	 <20070122222725.GB32085@flint.arm.linux.org.uk>
-	 <9e0cf0bf0701230237j5aa1bbya3a70da314e471b9@mail.gmail.com>
-	 <20070123104140.GA20660@flint.arm.linux.org.uk>
-	 <9e0cf0bf0701230250nb8d9738redc3e1d963b40bda@mail.gmail.com>
-	 <20070123105331.GB20660@flint.arm.linux.org.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 1/23/07, Russell King <rmk+lkml@arm.linux.org.uk> wrote:
-> Why do you want to remove the static?
+Justin Piszcz wrote:
+[]
+> Is this a bug that can or will be fixed or should I disable pre-emption on 
+> critical and/or server machines?
 
-Since current design declare a buffer in main.c which is used by arch
-specific startup code, mainly setup.c.
+Disabling pre-emption on critical and/or server machines seems to be a good
+idea in the first place.  IMHO anyway.. ;)
 
-Regards,
-Alon Bar-Lev.
+/mjt
