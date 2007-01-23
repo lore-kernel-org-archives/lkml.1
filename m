@@ -1,186 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933108AbXAWWRJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933135AbXAWWdi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933108AbXAWWRJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jan 2007 17:17:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933168AbXAWWRI
+	id S933135AbXAWWdi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jan 2007 17:33:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933143AbXAWWdi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jan 2007 17:17:08 -0500
-Received: from www.osadl.org ([213.239.205.134]:35799 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S933108AbXAWWAo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jan 2007 17:00:44 -0500
-Message-Id: <20070123211203.020952000@localhost.localdomain>
-References: <20070123211159.178138000@localhost.localdomain>
-Date: Tue, 23 Jan 2007 22:00:58 -0000
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Andrew Morton <akpm@osdl.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       John Stultz <johnstul@us.ibm.com>,
-       Arjan van de Veen <arjan@infradead.org>,
-       Roman Zippel <zippel@linux-m68k.org>
-Subject: [patch 03/46] [RFC] HZ free ntp
-Content-Disposition: inline; filename=ntp-make-dyntick-aware.patch
+	Tue, 23 Jan 2007 17:33:38 -0500
+Received: from smtp005.mail.ukl.yahoo.com ([217.12.11.36]:47026 "HELO
+	smtp005.mail.ukl.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S933135AbXAWWdh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jan 2007 17:33:37 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.it;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=Jd0a1x1LIwY7L3okIyZlQlPYjMz1qyW3Gu8fdfrF0kOgm9CAFcsYZr5ihI6PrFCco5+dkPTgWsDNtxC90tn2wvBddQis0+HYVq8JSjucxxCeI/vpIBzir63w1IsfeqPDhtpTveHaNKBY/cUJE5SgOk8SI2JajRe5U6bpIvzBFA8=  ;
+X-YMail-OSG: O.3A8SsVM1ma2V16aJR9q38BBnmYxekAyKRPrpU8czls1aJwzDOVzsL3Ayff.yVBa5_rp9WhXu5bulqkReN.LZJrKbPozO9lj5GOwSWXLxUv7j.xoIOsRgiiMbMK5SIpzYEnkEjPhQV_
+From: Blaisorblade <blaisorblade@yahoo.it>
+To: Johannes Stezenbach <js@linuxtv.org>
+Subject: Re: [uml-devel] [PATCH] [UML] fix mknod
+Date: Tue, 23 Jan 2007 23:33:29 +0100
+User-Agent: KMail/1.9.5
+Cc: user-mode-linux-devel@lists.sourceforge.net, Jeff Dike <jdike@karaya.com>,
+       Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org
+References: <20070122201317.GA8594@linuxtv.org> <200701230902.30715.blaisorblade@yahoo.it> <20070123131730.GA9286@linuxtv.org>
+In-Reply-To: <20070123131730.GA9286@linuxtv.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200701232333.29655.blaisorblade@yahoo.it>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From johnstul@us.ibm.com Wed Dec 20 02:36:15 2006
+On Tuesday 23 January 2007 14:17, Johannes Stezenbach wrote:
+> On Tue, Jan 23, 2007 at 09:02:30AM +0100, Blaisorblade wrote:
+> > On Monday 22 January 2007 21:13, Johannes Stezenbach wrote:
+> > > I was playing with user-mode Linux and found that mknod creates
+> > > devices node in hostfs with wrong major/minor numbers.
+> > > The patch below fixes it for me.
+> >
+> > Hmpf. Still having this bug on hostfs is quite bad. Thanks for reporting.
 
-Distangle the NTP update from HZ. This is necessary for dynamic tick
-enabled kernels.
+I've now seen - we never fixed this one, we fixed the analogous problem 
+on 'ls' output and friends (in init_inode, which is used in many places).
 
----
- include/linux/timex.h |    7 +++++++
- kernel/hrtimer.c      |   11 ++++++++---
- kernel/time/ntp.c     |   30 +++++++++++++++++++-----------
- kernel/timer.c        |    4 ++--
- 4 files changed, 36 insertions(+), 16 deletions(-)
+> > It should be hostfs_user.c to take major and minor and to combine them
+> > correctly - it can use libc's macros.
+>
+> Right, below is a better patch.
 
-Index: linux-2.6.20-rc4-mm1-bo/include/linux/timex.h
-===================================================================
---- linux-2.6.20-rc4-mm1-bo.orig/include/linux/timex.h
-+++ linux-2.6.20-rc4-mm1-bo/include/linux/timex.h
-@@ -286,6 +286,13 @@ static inline void time_interpolator_upd
- 
- #define TICK_LENGTH_SHIFT	32
- 
-+#ifdef CONFIG_NO_HZ
-+#define NTP_INTERVAL_FREQ  (2)
-+#else
-+#define NTP_INTERVAL_FREQ  (HZ)
-+#endif
-+#define NTP_INTERVAL_LENGTH (NSEC_PER_SEC/NTP_INTERVAL_FREQ)
-+
- /* Returns how long ticks are at present, in ns / 2^(SHIFT_SCALE-10). */
- extern u64 current_tick_length(void);
- 
-Index: linux-2.6.20-rc4-mm1-bo/kernel/time/ntp.c
-===================================================================
---- linux-2.6.20-rc4-mm1-bo.orig/kernel/time/ntp.c
-+++ linux-2.6.20-rc4-mm1-bo/kernel/time/ntp.c
-@@ -24,7 +24,7 @@ static u64 tick_length, tick_length_base
- 
- #define MAX_TICKADJ		500		/* microsecs */
- #define MAX_TICKADJ_SCALED	(((u64)(MAX_TICKADJ * NSEC_PER_USEC) << \
--				  TICK_LENGTH_SHIFT) / HZ)
-+				  TICK_LENGTH_SHIFT) / NTP_INTERVAL_FREQ)
- 
- /*
-  * phase-lock loop variables
-@@ -46,13 +46,17 @@ long time_adjust;
- 
- static void ntp_update_frequency(void)
- {
--	tick_length_base = (u64)(tick_usec * NSEC_PER_USEC * USER_HZ) << TICK_LENGTH_SHIFT;
--	tick_length_base += (s64)CLOCK_TICK_ADJUST << TICK_LENGTH_SHIFT;
--	tick_length_base += (s64)time_freq << (TICK_LENGTH_SHIFT - SHIFT_NSEC);
-+	u64 second_length = (u64)(tick_usec * NSEC_PER_USEC * USER_HZ)
-+				<< TICK_LENGTH_SHIFT;
-+	second_length += (s64)CLOCK_TICK_ADJUST << TICK_LENGTH_SHIFT;
-+	second_length += (s64)time_freq << (TICK_LENGTH_SHIFT - SHIFT_NSEC);
- 
--	do_div(tick_length_base, HZ);
-+	tick_length_base = second_length;
- 
--	tick_nsec = tick_length_base >> TICK_LENGTH_SHIFT;
-+	do_div(second_length, HZ);
-+	tick_nsec = second_length >> TICK_LENGTH_SHIFT;
-+
-+	do_div(tick_length_base, NTP_INTERVAL_FREQ);
- }
- 
- /**
-@@ -162,7 +166,7 @@ void second_overflow(void)
- 			tick_length -= MAX_TICKADJ_SCALED;
- 		} else {
- 			tick_length += (s64)(time_adjust * NSEC_PER_USEC /
--					     HZ) << TICK_LENGTH_SHIFT;
-+					NTP_INTERVAL_FREQ) << TICK_LENGTH_SHIFT;
- 			time_adjust = 0;
- 		}
- 	}
-@@ -239,7 +243,8 @@ int do_adjtimex(struct timex *txc)
- 		    result = -EINVAL;
- 		    goto leave;
- 		}
--		time_freq = ((s64)txc->freq * NSEC_PER_USEC) >> (SHIFT_USEC - SHIFT_NSEC);
-+		time_freq = ((s64)txc->freq * NSEC_PER_USEC)
-+				>> (SHIFT_USEC - SHIFT_NSEC);
- 	    }
- 
- 	    if (txc->modes & ADJ_MAXERROR) {
-@@ -309,7 +314,8 @@ int do_adjtimex(struct timex *txc)
- 		    freq_adj += time_freq;
- 		    freq_adj = min(freq_adj, (s64)MAXFREQ_NSEC);
- 		    time_freq = max(freq_adj, (s64)-MAXFREQ_NSEC);
--		    time_offset = (time_offset / HZ) << SHIFT_UPDATE;
-+		    time_offset = (time_offset / NTP_INTERVAL_FREQ)
-+		    			<< SHIFT_UPDATE;
- 		} /* STA_PLL */
- 	    } /* txc->modes & ADJ_OFFSET */
- 	    if (txc->modes & ADJ_TICK)
-@@ -324,8 +330,10 @@ leave:	if ((time_status & (STA_UNSYNC|ST
- 	if ((txc->modes & ADJ_OFFSET_SINGLESHOT) == ADJ_OFFSET_SINGLESHOT)
- 	    txc->offset	   = save_adjust;
- 	else
--	    txc->offset    = shift_right(time_offset, SHIFT_UPDATE) * HZ / 1000;
--	txc->freq	   = (time_freq / NSEC_PER_USEC) << (SHIFT_USEC - SHIFT_NSEC);
-+	    txc->offset    = shift_right(time_offset, SHIFT_UPDATE)
-+	    			* NTP_INTERVAL_FREQ / 1000;
-+	txc->freq	   = (time_freq / NSEC_PER_USEC)
-+				<< (SHIFT_USEC - SHIFT_NSEC);
- 	txc->maxerror	   = time_maxerror;
- 	txc->esterror	   = time_esterror;
- 	txc->status	   = time_status;
-Index: linux-2.6.20-rc4-mm1-bo/kernel/timer.c
-===================================================================
---- linux-2.6.20-rc4-mm1-bo.orig/kernel/timer.c
-+++ linux-2.6.20-rc4-mm1-bo/kernel/timer.c
-@@ -890,7 +890,7 @@ void __init timekeeping_init(void)
- 	ntp_clear();
- 
- 	clock = clocksource_get_next();
--	clocksource_calculate_interval(clock, tick_nsec);
-+	clocksource_calculate_interval(clock, NTP_INTERVAL_LENGTH);
- 	clock->cycle_last = clocksource_read(clock);
- 
- 	write_sequnlock_irqrestore(&xtime_lock, flags);
-@@ -1092,7 +1092,7 @@ static void update_wall_time(void)
- 	if (change_clocksource()) {
- 		clock->error = 0;
- 		clock->xtime_nsec = 0;
--		clocksource_calculate_interval(clock, tick_nsec);
-+		clocksource_calculate_interval(clock, NTP_INTERVAL_LENGTH);
- 	}
- }
- 
-Index: linux-2.6.20-rc4-mm1-bo/kernel/hrtimer.c
-===================================================================
---- linux-2.6.20-rc4-mm1-bo.orig/kernel/hrtimer.c
-+++ linux-2.6.20-rc4-mm1-bo/kernel/hrtimer.c
-@@ -128,15 +128,20 @@ EXPORT_SYMBOL_GPL(ktime_get_ts);
- static void hrtimer_get_softirq_time(struct hrtimer_base *base)
- {
- 	ktime_t xtim, tomono;
-+	struct timespec xts;
- 	unsigned long seq;
- 
- 	do {
- 		seq = read_seqbegin(&xtime_lock);
--		xtim = timespec_to_ktime(xtime);
--		tomono = timespec_to_ktime(wall_to_monotonic);
--
-+#ifdef CONFIG_NO_HZ
-+		getnstimeofday(&xts);
-+#else
-+		xts = xtime;
-+#endif
- 	} while (read_seqretry(&xtime_lock, seq));
- 
-+	xtim = timespec_to_ktime(xts);
-+	tomono = timespec_to_ktime(wall_to_monotonic);
- 	base[CLOCK_REALTIME].softirq_time = xtim;
- 	base[CLOCK_MONOTONIC].softirq_time = ktime_add(xtim, tomono);
- }
+Exactly what I meant, thanks!
+I'd say:
+Acked-by: Paolo 'Blaisorblade' Giarrusso <blaisorblade@yahoo.it>
+This can go to 2.6.20, and possibly even to -stable (after either me or Jeff 
+tests it once).
 
---
+> ---
+> Fix UML hostfs mknod(): userspace has differernt
+> dev_t size and encoding than kernel, so extract major/minor
+> and reencode using glibc makedev() macro.
+>
+> Signed-off-by: Johannes Stezenbach <js@linuxtv.org>
+>
+> diff -rup linux-2.6.19.orig/fs/hostfs/hostfs.h
+> linux-2.6.19/fs/hostfs/hostfs.h ---
+> linux-2.6.19.orig/fs/hostfs/hostfs.h	2006-11-29 22:57:37.000000000 +0100
+> +++ linux-2.6.19/fs/hostfs/hostfs.h	2007-01-23 14:11:03.000000000 +0100 @@
+> -76,7 +76,7 @@ extern int make_symlink(const char *from
+>  extern int unlink_file(const char *file);
+>  extern int do_mkdir(const char *file, int mode);
+>  extern int do_rmdir(const char *file);
+> -extern int do_mknod(const char *file, int mode, int dev);
+> +extern int do_mknod(const char *file, int mode, unsigned int major,
+> unsigned int minor);
+> extern int link_file(const char *from, const char 
+> *to);
+>  extern int do_readlink(char *file, char *buf, int size);
+>  extern int rename_file(char *from, char *to);
+> diff -rup linux-2.6.19.orig/fs/hostfs/hostfs_kern.c
+> linux-2.6.19/fs/hostfs/hostfs_kern.c ---
+> linux-2.6.19.orig/fs/hostfs/hostfs_kern.c	2006-11-29 22:57:37.000000000
+> +0100 +++ linux-2.6.19/fs/hostfs/hostfs_kern.c	2007-01-23
+> 14:11:20.000000000 +0100 @@ -755,7 +755,7 @@ int hostfs_mknod(struct inode
+> *dir, stru
+>  		goto out_put;
+>
+>  	init_special_inode(inode, mode, dev);
+> -	err = do_mknod(name, mode, dev);
+> +	err = do_mknod(name, mode, MAJOR(dev), MINOR(dev));
+>  	if(err)
+>  		goto out_free;
+>
+> diff -rup linux-2.6.19.orig/fs/hostfs/hostfs_user.c
+> linux-2.6.19/fs/hostfs/hostfs_user.c ---
+> linux-2.6.19.orig/fs/hostfs/hostfs_user.c	2006-11-29 22:57:37.000000000
+> +0100 +++ linux-2.6.19/fs/hostfs/hostfs_user.c	2007-01-23
+> 14:11:39.000000000 +0100 @@ -295,11 +295,11 @@ int do_rmdir(const char
+> *file)
+>  	return(0);
+>  }
+>
+> -int do_mknod(const char *file, int mode, int dev)
+> +int do_mknod(const char *file, int mode, unsigned int major, unsigned int
+> minor) {
+>  	int err;
+>
+> -	err = mknod(file, mode, dev);
+> +	err = mknod(file, mode, makedev(major, minor));
+>  	if(err) return(-errno);
+>  	return(0);
+>  }
 
+-- 
+Inform me of my mistakes, so I can add them to my list!
+Paolo Giarrusso, aka Blaisorblade
+http://www.user-mode-linux.org/~blaisorblade
+Chiacchiera con i tuoi amici in tempo reale! 
+ http://it.yahoo.com/mail_it/foot/*http://it.messenger.yahoo.com 
