@@ -1,120 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751971AbXAWBbR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932148AbXAWBbp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751971AbXAWBbR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jan 2007 20:31:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751986AbXAWBbR
+	id S932148AbXAWBbp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jan 2007 20:31:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932164AbXAWBbp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jan 2007 20:31:17 -0500
-Received: from py-out-1112.google.com ([64.233.166.183]:41257 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751971AbXAWBbQ (ORCPT
+	Mon, 22 Jan 2007 20:31:45 -0500
+Received: from ausmtp04.au.ibm.com ([202.81.18.152]:37167 "EHLO
+	ausmtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932154AbXAWBbn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jan 2007 20:31:16 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=JUfDLln929V2wXlgqAt5dS68dkCmxy80picg10TRKxe1zmrA09rcVas3BOIOOL6QoCgC+jIhcjaoz5hIc5/DJ72OHSwv7DcixcLQW2844ynX8OuuOW6wQNXMZhBMJE4psDO5S10yUP0ILsm3qsPNYGLod254NDxnXBejZbWrwzM=
-Message-ID: <34781ae60701221731k508d8e97yed69929de5a38977@mail.gmail.com>
-Date: Tue, 23 Jan 2007 09:31:15 +0800
-From: "yang yin" <yinyang801120@gmail.com>
-To: "Neil Brown" <neilb@suse.de>
-Subject: Re: [patch] md: bitmap read_page error
-Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <17845.16620.741319.612842@notabene.brown>
+	Mon, 22 Jan 2007 20:31:43 -0500
+Message-ID: <45B56575.10807@in.ibm.com>
+Date: Tue, 23 Jan 2007 07:01:33 +0530
+From: Balbir Singh <balbir@in.ibm.com>
+Reply-To: balbir@in.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 1.5.0.9 (X11/20070103)
 MIME-Version: 1.0
+To: Andrea Arcangeli <andrea@suse.de>
+CC: Niki Hammler <mailinglists@nobaq.net>, linux-kernel@vger.kernel.org,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Subject: Re: Why active list and inactive list?
+References: <45B55286.5060909@nobaq.net> <20070123003939.GY13798@opteron.random>
+In-Reply-To: <20070123003939.GY13798@opteron.random>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <34781ae60701220003v76bd43c8h79c59b2b474b3c57@mail.gmail.com>
-	 <17845.16620.741319.612842@notabene.brown>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I think your patch is not enough to slove the read_page error
-completely. I think in the bitmap_init_from_disk we also need to check
-the 'count' never exceeds the size of file before calling the
-read_page function. How do your think about it.
-Thanks your reply.
+Andrea Arcangeli wrote:
+> On Tue, Jan 23, 2007 at 01:10:46AM +0100, Niki Hammler wrote:
+>> Dear Linux Developers/Enthusiasts,
+>>
+>> For a course at my university I'm implementing parts of an operating
+>> system where I get most ideas from the Linux Kernel (which I like very
+>> much). One book I gain information from is [1].
+>>
+>> Linux uses for its Page Replacing Algorithm (based on LRU) *two* chained
+>> lists - one active list and one active list.
+>> I implemented my PRA this way too.
+>>
+>> No the big question is: WHY do I need *two* lists? Isn't it just
+>> overhead/more work? Are there any reasons for that?
+>>
+>> In my opinion, it would be better to have just one just; pop frames to
+>> be swapped out from the end of the list and push new frames in front of
+>> it. Then just evaluate the frames and shift them around in the list.
+>>
+>> Is there any explanation why Linux uses two lists?
+> 
+> Back then I designed it with two lru lists because by splitting the
+> active from the inactive cache allows to detect the cache pollution
+> before it starts discarding the working set. The idea is that the
+> pollution will enter and exit the inactive list without ever being
+> elected to the active list because by definition it will never
+> generate a cache hit. The working set will instead trigger cache hits
+> during page faults or repeated reads, and it will be preserved better
+> by electing it to enter the active list.
+> 
+> A page in the inactive list will be collected much more quickly than a
+> page in the active list, so the pollution will be collected more
+> quickly than the working set. Then the VM while freeing cache tries to
+> keep a balance between the size of the two lists to avoid being too
+> unfair, obviously at some point the active list have to be
+> de-activated too. If your server "fits in ram" you'll find lots of
+> cache to be active and so the I/O activity not part of the working set
+> will be collected without affecting the working set much.
 
-2007/1/23, Neil Brown <neilb@suse.de>:
-> On Monday January 22, yinyang801120@gmail.com wrote:
-> > If the bitmap size is less than one page including super_block and
-> > bitmap and the inode's i_blkbits is also small, when doing the
-> > read_page function call to read the sb_page, it may return a error.
-> > For example, if the device is 12800 chunks, its bitmap file size is
-> > about 1.6KB include the bitmap super block. But the inode i_blkbits
-> > value of the bitmap file is 10,  the read_page will submit 4 bh to
-> > load the sb_page. Because the size of bitmap is only 1.6KB, in the
-> > while loop, the error will ocurr when do bmap operation for the block
-> > 2, which will  return 0. Then the bitmap can't be initated because of
-> > ther read sb page fail.
-> >
-> > Another error is in the bitmap_init_from_disk function.  Before doing
-> > read_page,. calculating the count value misses the size of super
-> > block. When the bitmap just needs one page, It will read two pages
-> > adding the super block. But at the second read, the count value will
-> > be set to 0, and not all the bitmap will be read from the disk and
-> > some bitmap will missed at the second page.
-> >
-> > I give a patch as following:
->
-> Thanks a lot for this.
-> Rather than checking the file size in read_page, I would like to make
-> sure the 'count' that is passed in never exceeds the size of the
-> file.  This should have the same effect.
->
-> So this is that patch I plan to submit.
->
-> Thanks again,
-> NeilBrown
->
->
-> ------------------
-> Avoid reading past the end of a bitmap file.
->
-> In most cases we check the size of the bitmap file before
-> reading data from it.  However when reading the superblock,
-> we always read the first PAGE_SIZE bytes, which might not
-> always be appropriate.  So limit that read to the size of the
-> file if appropriate.
->
-> Also, we get the count of available bytes wrong in one place,
-> so that too can read past the end of the file.
->
-> Cc:  "yang yin" <yinyang801120@gmail.com>
-> Signed-off-by: Neil Brown <neilb@suse.de>
->
-> ### Diffstat output
->  ./drivers/md/bitmap.c |   12 ++++++++----
->  1 file changed, 8 insertions(+), 4 deletions(-)
->
-> diff .prev/drivers/md/bitmap.c ./drivers/md/bitmap.c
-> --- .prev/drivers/md/bitmap.c   2007-01-23 09:44:11.000000000 +1100
-> +++ ./drivers/md/bitmap.c       2007-01-23 09:44:59.000000000 +1100
-> @@ -479,9 +479,12 @@ static int bitmap_read_sb(struct bitmap
->         int err = -EINVAL;
->
->         /* page 0 is the superblock, read it... */
-> -       if (bitmap->file)
-> -               bitmap->sb_page = read_page(bitmap->file, 0, bitmap, PAGE_SIZE);
-> -       else {
-> +       if (bitmap->file) {
-> +               loff_t isize = i_size_read(bitmap->file->f_mapping->host);
-> +               int bytes = isize > PAGE_SIZE ? PAGE_SIZE : isize;
-> +
-> +               bitmap->sb_page = read_page(bitmap->file, 0, bitmap, bytes);
-> +       } else {
->                 bitmap->sb_page = read_sb_page(bitmap->mddev, bitmap->offset, 0);
->         }
->         if (IS_ERR(bitmap->sb_page)) {
-> @@ -877,7 +880,8 @@ static int bitmap_init_from_disk(struct
->                         int count;
->                         /* unmap the old page, we're done with it */
->                         if (index == num_pages-1)
-> -                               count = bytes - index * PAGE_SIZE;
-> +                               count = bytes + sizeof(bitmap_super_t)
-> +                                       - index * PAGE_SIZE;
->                         else
->                                 count = PAGE_SIZE;
->                         if (index == 0) {
->
+This makes me wonder if it makes sense to split up the LRU into page
+cache LRU and mapped pages LRU. I see two benefits
+
+1. Currently based on swappiness, we might walk an entire list
+    searching for page cache pages or mapped pages. With these
+    lists separated, it should get easier and faster to implement
+    this scheme
+2. There is another parallel thread on implementing page cache
+    limits. If the lists split out, we need not scan the entire
+    list to find page cache pages to evict them.
+
+Of course I might be missing something (some piece of history)
+
+-- 
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
