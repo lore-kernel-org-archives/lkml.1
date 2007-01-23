@@ -1,117 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965613AbXAXCDM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965611AbXAXCFu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965613AbXAXCDM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jan 2007 21:03:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965615AbXAXCDM
+	id S965611AbXAXCFu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jan 2007 21:05:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965612AbXAXCFu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jan 2007 21:03:12 -0500
-Received: from nic.NetDirect.CA ([216.16.235.2]:53767 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965613AbXAXCDL (ORCPT
+	Tue, 23 Jan 2007 21:05:50 -0500
+Received: from smtp106.sbc.mail.mud.yahoo.com ([68.142.198.205]:38045 "HELO
+	smtp106.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S965611AbXAXCFt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jan 2007 21:03:11 -0500
-X-Originating-Ip: 74.109.98.130
-Date: Tue, 23 Jan 2007 21:02:55 -0500 (EST)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@CPE00045a9c397f-CM001225dbafb6
-To: Oleg Verych <olecom@flower.upol.cz>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: identifying CONFIG variable typoes in the source tree
-In-Reply-To: <slrnerd7e8.e7s.olecom@flower.upol.cz>
-Message-ID: <Pine.LNX.4.64.0701232056040.7737@CPE00045a9c397f-CM001225dbafb6>
-References: <Pine.LNX.4.64.0701231559090.3014@CPE00045a9c397f-CM001225dbafb6>
- <slrnerd7e8.e7s.olecom@flower.upol.cz>
+	Tue, 23 Jan 2007 21:05:49 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=U8L30gOHHijhXZZbFCglrJ5qnpgnrmfiBZVxROCIKXps9ICJxDifssFsMffigKrKHTwdrEv2CMkgYnt3E/28b5gp21nmZ2EE/Zh5eVTcJA6AyxjDuBlIrkvH6cYkSThbcYaT6MwB2vfhX4S2QuKsa8NAHxNqrsBVw9vCSabCN98=  ;
+X-YMail-OSG: SuqQQa4VM1msDR_U5Mc7Mh__qxkpa0eZzJUDYUwyy3bsUh0kpQx.s5PB9JNW7GY.zutLtyouFaP6kXlATcBs9kQWzT0fMHB8jMwcwgqFNLyJ4E2CPBo-
+From: David Brownell <david-b@pacbell.net>
+To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+Subject: Re: [PATCH 2.6.20-rc5] SPI: alternative fix for spi_busnum_to_master
+Date: Tue, 23 Jan 2007 15:43:56 -0800
+User-Agent: KMail/1.7.1
+Cc: linux-kernel@vger.kernel.org, hcegtvedt@atmel.com, akpm@osdl.org
+References: <200701221412.02452.david-b@pacbell.net> <200701230742.15531.david-b@pacbell.net> <20070124.010741.130240814.anemo@mba.ocn.ne.jp>
+In-Reply-To: <20070124.010741.130240814.anemo@mba.ocn.ne.jp>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="0-504790104-1169604174=:7739"
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200701231543.56669.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Tuesday 23 January 2007 8:07 am, Atsushi Nemoto wrote:
+> On Tue, 23 Jan 2007 07:42:15 -0800, David Brownell <david-b@pacbell.net> wrote:
+> > > Indeed the check can be omitted.  Should I send a new patch just
+> > > moving class_device_get() into "if (master->bus_num == bus_num)"
+> > > block?
+> > 
+> > Yes, please.
+> 
+> OK, here is.  This patch uses spi_master_get() instead of
+> class_device_get().
 
---0-504790104-1169604174=:7739
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Much better.  This should be merged for 2.6.20 ...
 
-
-On Tue, 23 Jan 2007, Oleg Verych wrote:
-
-> On 2007-01-23, Robert P. J. Day wrote:
-> []
-> >   what it does is scan the entire tree for lines of the form
-> >
-> > ...if... CONFIG_whatever...
-> >
-> > collects all of those CONFIG variables and, one at a time, checks to
-> > see if that variable even exists in any Kconfig file in the tree so
-> > that it could possibly ever be set.  (i'm not guaranteeing that the
-> > script is perfect, but it does generate some interesting results.)
-> >
-> >   the first few lines of output:
-> >
-> > 53C700_BE_BUS
-> > 64_BIT
-> > 68328_SERIAL_UART2
-> > ...
-> >
-> []
-> >   the script turns up 284 examples of this.
->
-> Next, this script must to learn how to search whom to send this info.
-> And if there's nobody, just to make list of known orphans ;).
-
-  i'm pretty sure that's not going to happen this evening, but i
-tweaked the script just a bit so you can run it (from the top-level
-directory) against any subdirectory to see what CONFIG symbols appear
-to be (for lack of a better word) "orphaned."
-
-  let's test it against, say, fs/xfs:
-
-$ ../config_vars.sh fs/xfs
-FS_POSIX_CAP
-FS_POSIX_MAC
-XFS_DEBUG
-XFS_DMAPI
-XFS_TRACE
-
-$ grep -r FS_POSIX_CAP .
-fs/xfs/xfs_cap.h:#ifdef CONFIG_FS_POSIX_CAP
-
-$ grep -r FS_POSIX_MAC .
-./fs/xfs/xfs_mac.h:#ifdef CONFIG_FS_POSIX_MAC
-
-$ grep -r XFS_DEBUG .
-./fs/xfs/xfs.h:#ifdef CONFIG_XFS_DEBUG
-./fs/xfs/Makefile-linux-2.6:ifeq ($(CONFIG_XFS_DEBUG),y)
-
-and so on.  of course, there may be good reasons for some of these
-variables to be there with no corresponding Kconfig entry -- i'm just
-printing them out.
-
-rday
-
-p.s. new script is attached.
---0-504790104-1169604174=:7739
-Content-Type: APPLICATION/x-sh; name=config_vars.sh
-Content-Transfer-Encoding: BASE64
-Content-ID: <Pine.LNX.4.64.0701232102540.7739@CPE00045a9c397f-CM001225dbafb6>
-Content-Description: 
-Content-Disposition: attachment; filename=config_vars.sh
-
-IyEvYmluL3NoCgpESVI9JHsxLS59CgpDVj0kKGdyZXAgLXJoICJeIy4qaWYu
-KiBDT05GSUdfW0EtWmEtejAtOV0iICR7RElSfSB8IGdyZXAgLXYgZW5kaWYp
-CkNWQVJTPSQoZWNobyAiJHtDVn0iIHwgc2VkICJzLy4qXChDT05GSUdfW14J
-ID1cKVwqXC9dKlwpLiovXDEvIiB8IHNvcnQgLXUgfCBncmVwICJeQ09ORklH
-XyIpCgprY2ZpbGVzPSQoZmluZCAuIC1uYW1lICJLY29uZmlnKiIpCgpmb3Ig
-Y3YgaW4gJHtDVkFSU30gOyBkbwoJIyBlY2hvICJjdiA9ICR7Y3Z9IgoJc3Ry
-PSQoZWNobyAke2N2fSB8IHNlZCAicy9eQ09ORklHXy8vIikKCSMgZWNobyAi
-c3RyID0gJHtzdHJ9IgoJZ3JlcCAtd3EgJHtzdHJ9ICR7a2NmaWxlc30gfHwg
-ewoJCWVjaG8gJHtzdHJ9CgkJIyBncmVwIC1yICR7c3RyfSAke0RJUn0JCSMg
-dW5jb21tZW50IGlmIHlvdSB3YW50Cgl9CmRvbmUK
-
---0-504790104-1169604174=:7739--
+> 
+> 
+> Subject: SPI: alternative fix for spi_busnum_to_master
+> 
+> If a SPI master device exists, udev (udevtrigger) causes kernel crash,
+> due to wrong kobj pointer in kobject_uevent_env().  This problem was
+> not in 2.6.19.
+> 
+> The backtrace (on MIPS) was:
+> [<8024db6c>] kobject_uevent_env+0x54c/0x5e8
+> [<802a8264>] store_uevent+0x1c/0x3c  (in drivers/class.c)
+> [<801cb14c>] subsys_attr_store+0x2c/0x50
+> [<801cb80c>] flush_write_buffer+0x38/0x5c
+> [<801cb900>] sysfs_write_file+0xd0/0x190
+> [<80181444>] vfs_write+0xc4/0x1a0
+> [<80181cdc>] sys_write+0x54/0xa0
+> [<8010dae4>] stack_done+0x20/0x3c
+> 
+> flush_write_buffer() passes kobject of spi_master_class.subsys to
+> subsys_addr_store(), then subsys_addr_store() passes a pointer to a
+> struct subsystem to store_uevent() which expects a pointer to a struct
+> class_device.  The problem seems subsys_attr_store() called instead of
+> class_device_attr_store().
+> 
+> This mismatch was caused by commit
+> 3bd0f6943520e459659d10f3282285e43d3990f1, which overrides kset of
+> master class.  This made spi_master_class.subsys.kset.ktype NULL so
+> subsys_sysfs_ops is used instead of class_dev_sysfs_ops.
+> 
+> The commit was to fix spi_busnum_to_master().  Here is a patch fixes
+> this function in other way, just searching children list of
+> class_device.
+> 
+> Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+> ---
+> diff --git a/drivers/spi/spi.c b/drivers/spi/spi.c
+> index 270e621..6307428 100644
+> --- a/drivers/spi/spi.c
+> +++ b/drivers/spi/spi.c
+> @@ -366,7 +366,6 @@ spi_alloc_master(struct device *dev, uns
+>  
+>  	class_device_initialize(&master->cdev);
+>  	master->cdev.class = &spi_master_class;
+> -	kobj_set_kset_s(&master->cdev, spi_master_class.subsys);
+>  	master->cdev.dev = get_device(dev);
+>  	spi_master_set_devdata(master, &master[1]);
+>  
+> @@ -466,14 +465,20 @@ EXPORT_SYMBOL_GPL(spi_unregister_master)
+>   */
+>  struct spi_master *spi_busnum_to_master(u16 bus_num)
+>  {
+> -	char			name[9];
+> -	struct kobject		*bus;
+> -
+> -	snprintf(name, sizeof name, "spi%u", bus_num);
+> -	bus = kset_find_obj(&spi_master_class.subsys.kset, name);
+> -	if (bus)
+> -		return container_of(bus, struct spi_master, cdev.kobj);
+> -	return NULL;
+> +	struct class_device	*cdev;
+> +	struct spi_master	*master = NULL;
+> +	struct spi_master	*m;
+> +
+> +	down(&spi_master_class.sem);
+> +	list_for_each_entry(cdev, &spi_master_class.children, node) {
+> +		m = container_of(cdev, struct spi_master, cdev);
+> +		if (m->bus_num == bus_num) {
+> +			master = spi_master_get(m);
+> +			break;
+> +		}
+> +	}
+> +	up(&spi_master_class.sem);
+> +	return master;
+>  }
+>  EXPORT_SYMBOL_GPL(spi_busnum_to_master);
+>  
+> 
