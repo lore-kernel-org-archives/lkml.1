@@ -1,42 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933053AbXAWGPU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933063AbXAWGUN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933053AbXAWGPU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jan 2007 01:15:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933061AbXAWGPU
+	id S933063AbXAWGUN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jan 2007 01:20:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933073AbXAWGUN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jan 2007 01:15:20 -0500
-Received: from main.gmane.org ([80.91.229.2]:57378 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933053AbXAWGPS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jan 2007 01:15:18 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Oleg Verych <olecom@flower.upol.cz>
-Subject: Re: [updated PATCH] remove 555 unneeded #includes of sched.h
-Date: Tue, 23 Jan 2007 06:15:02 +0000 (UTC)
-Organization: Palacky University in Olomouc, experimental physics department.
-Message-ID: <slrnerbafa.e7s.olecom@flower.upol.cz>
-References: <Pine.LNX.4.63.0612282059160.8356@gockel.physik3.uni-rostock.de> <20061228124644.4e1ed32b.akpm@osdl.org> <Pine.LNX.4.63.0612282154460.20531@gockel.physik3.uni-rostock.de> <20061228210803.GR17561@ftp.linux.org.uk> <Pine.LNX.4.63.0612282211330.20531@gockel.physik3.uni-rostock.de> <20061228213438.GD20596@flint.arm.linux.org.uk> <Pine.LNX.4.63.0612282239190.20531@gockel.physik3.uni-rostock.de> <Pine.LNX.4.63.0612291115160.5654@gockel.physik3.uni-rostock.de>
-X-Complaints-To: usenet@sea.gmane.org
-X-Gmane-NNTP-Posting-Host: flower.upol.cz
-User-Agent: slrn/0.9.8.1pl1 (Debian)
+	Tue, 23 Jan 2007 01:20:13 -0500
+Received: from nz-out-0506.google.com ([64.233.162.224]:3147 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933063AbXAWGUL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jan 2007 01:20:11 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=lTM+EMY9gSDOoJnUokiFRtFsVDNelGzxZUt0zIzood1dR8UQbzA4tMZshTreLnQPRX4g/7K5uR35OViYTEivgoTI0rCcsi9XG4ReO4IXR9wB8trk9wWoly032zpkiNGpYKcTHhI8tZnmMu5V0GdofUlGkQ3c7H383mx0GYthflE=
+Message-ID: <45B5A901.5050309@gmail.com>
+Date: Tue, 23 Jan 2007 15:19:45 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Icedove 1.5.0.9 (X11/20061220)
+MIME-Version: 1.0
+To: Soeren Sonnenburg <kernel@nn7.de>
+CC: Jeff Garzik <jeff@garzik.org>, Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: SATA hotplug from the user side ?
+References: <1168588629.5403.7.camel@localhost>	 <45A7BFB0.9090308@garzik.org> <1168639639.3707.6.camel@localhost>	 <45A83C22.6050409@gmail.com> <1168672966.3707.24.camel@localhost>	 <45AAE52B.2070705@gmail.com> <1169456682.2901.18.camel@localhost>
+In-Reply-To: <1169456682.2901.18.camel@localhost>
+X-Enigmail-Version: 0.94.1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2006-12-29, Tim Schmielau wrote:
-[]
-> OK, building 2.6.20-rc2-mm1 with all 59 configs from arch/arm/configs 
-> with and w/o the patch indeed found one mysterious #include that may not 
-> be removed. Thanks, Russell!
->
-> Andrew, please use the attached patch instead of the previous one, it also 
-> has a slightly better patch description.
+Soeren Sonnenburg wrote:
+> OK, how about this (please especially check the non SIL part):
+> 
+> SATA Hotplug from the User Side
+> 
+> - For SIL3114 and SIL3124 you don't have to run any commands at all. It
 
-Great job!
+ahci and ck804 flavor of sata_nv's can do hotplug without user
+assistance too.
 
-About patch. To make it smaller, i think, you better use less
-"unified context" lines `diff -u1'.
+[--snip--]
+> - For other chipsets one in addition to stop using the device before
+> unplugging has to call scsiadd -r to fully remove it, e.g. in the
+> following example the disk on scsi host 3 channel 0 id 0 lun 0 will be
+> removed, then on reinserting a disk call scsiadd -s :
+> 
+> # scsiadd -p
+> 
+> Attached devices:
+> Host: scsi2 Channel: 00 Id: 00 Lun: 00
+>   Vendor: ATA      Model: ST3400832AS      Rev: 3.01
+>   Type:   Direct-Access                    ANSI SCSI revision: 05
+> Host: scsi3 Channel: 00 Id: 00 Lun: 00
+>   Vendor: ATA      Model: ST3400620AS      Rev: 3.AA
+>   Type:   Direct-Access                    ANSI SCSI revision: 05
+> 
+> # scsiadd -r 3 0 0 0
+> # scsiadd -s
 
-Nice done! 
-____
+Doing the above might not be such a good idea on drivers which don't
+implement new EH yet.  Those are sata_mv, sata_promise (getting there)
+and sata_sx4.
 
+Thanks.
+
+-- 
+tejun
