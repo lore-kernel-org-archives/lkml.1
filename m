@@ -1,71 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933021AbXAWFyL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933022AbXAWFyL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933021AbXAWFyL (ORCPT <rfc822;w@1wt.eu>);
+	id S933022AbXAWFyL (ORCPT <rfc822;w@1wt.eu>);
 	Tue, 23 Jan 2007 00:54:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933020AbXAWFx4
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933021AbXAWFx5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jan 2007 00:53:56 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.158]:2715 "EHLO
+	Tue, 23 Jan 2007 00:53:57 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.158]:2717 "EHLO
 	localhost.localdomain" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S933021AbXAWFxr (ORCPT
+	with ESMTP id S933022AbXAWFxs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jan 2007 00:53:47 -0500
-Message-Id: <20070123055347.022018534@mvista.com>
+	Tue, 23 Jan 2007 00:53:48 -0500
+Message-Id: <20070123055347.343994209@mvista.com>
 References: <20070123055255.338254780@mvista.com>
 User-Agent: quilt/0.46.mv-1
-Date: Mon, 22 Jan 2007 21:53:03 -0800
+Date: Mon, 22 Jan 2007 21:53:04 -0800
 From: Daniel Walker <dwalker@mvista.com>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 08/12] clocksource: driver initialize list value
-Content-Disposition: inline; filename=clocksource_drivers_list_init.patch
+Subject: [PATCH 09/12] clocksource: initialize list value
+Content-Disposition: inline; filename=clocksource_list_init.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Update drivers/clocksource/ with list initialization.
+A change to clocksource initialization. If the list field is initialized 
+it allows clocksource_register to complete faster since it doesn't have 
+to scan the list of clocks doing strcmp on each looking for duplicates.
 
 Signed-Off-By: Daniel Walker <dwalker@mvista.com>
 
 ---
- drivers/clocksource/acpi_pm.c    |    1 +
- drivers/clocksource/cyclone.c    |    1 +
- drivers/clocksource/scx200_hrt.c |    1 +
- 3 files changed, 3 insertions(+)
+ kernel/time/clocksource.c |    3 +--
+ kernel/time/jiffies.c     |    1 +
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-Index: linux-2.6.19/drivers/clocksource/acpi_pm.c
+Index: linux-2.6.19/kernel/time/clocksource.c
 ===================================================================
---- linux-2.6.19.orig/drivers/clocksource/acpi_pm.c
-+++ linux-2.6.19/drivers/clocksource/acpi_pm.c
-@@ -74,6 +74,7 @@ static struct clocksource clocksource_ac
- 	.mult		= 0, /*to be caluclated*/
- 	.shift		= 22,
- 	.is_continuous	= 1,
-+	.list		= LIST_HEAD_INIT(clocksource_acpi_pm.list),
+--- linux-2.6.19.orig/kernel/time/clocksource.c
++++ linux-2.6.19/kernel/time/clocksource.c
+@@ -186,12 +186,11 @@ int clocksource_register(struct clocksou
+ 	unsigned long flags;
+ 
+ 	spin_lock_irqsave(&clocksource_lock, flags);
+-	if (unlikely(!list_empty(&c->list) && __is_registered(c->name))) {
++	if (unlikely(!list_empty(&c->list))) {
+ 		printk("register_clocksource: Cannot register %s clocksource. "
+ 		       "Already registered!", c->name);
+ 		ret = -EBUSY;
+ 	} else {
+-		INIT_LIST_HEAD(&c->list);
+  		__sorted_list_add(c);
+ 		/* scan the registered clocksources, and pick the best one */
+ 		next_clocksource = select_clocksource();
+Index: linux-2.6.19/kernel/time/jiffies.c
+===================================================================
+--- linux-2.6.19.orig/kernel/time/jiffies.c
++++ linux-2.6.19/kernel/time/jiffies.c
+@@ -63,6 +63,7 @@ struct clocksource clocksource_jiffies =
+ 	.mult		= NSEC_PER_JIFFY << JIFFIES_SHIFT, /* details above */
+ 	.shift		= JIFFIES_SHIFT,
+ 	.is_continuous	= 0, /* tick based, not free running */
++	.list		= LIST_HEAD_INIT(clocksource_jiffies.list),
  };
  
- 
-Index: linux-2.6.19/drivers/clocksource/cyclone.c
-===================================================================
---- linux-2.6.19.orig/drivers/clocksource/cyclone.c
-+++ linux-2.6.19/drivers/clocksource/cyclone.c
-@@ -32,6 +32,7 @@ static struct clocksource clocksource_cy
- 	.mult		= 10,
- 	.shift		= 0,
- 	.is_continuous	= 1,
-+	.list		= LIST_HEAD_INIT(clocksource_cyclone.list),
- };
- 
- static int __init init_cyclone_clocksource(void)
-Index: linux-2.6.19/drivers/clocksource/scx200_hrt.c
-===================================================================
---- linux-2.6.19.orig/drivers/clocksource/scx200_hrt.c
-+++ linux-2.6.19/drivers/clocksource/scx200_hrt.c
-@@ -58,6 +58,7 @@ static struct clocksource cs_hrt = {
- 	.read		= read_hrt,
- 	.mask		= CLOCKSOURCE_MASK(32),
- 	.is_continuous	= 1,
-+	.list		= LIST_HEAD_INIT(cs_hrt.list),
- 	/* mult, shift are set based on mhz27 flag */
- };
- 
+ static int __init init_jiffies_clocksource(void)
 
 -- 
