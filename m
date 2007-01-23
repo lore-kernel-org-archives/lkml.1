@@ -1,60 +1,235 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933137AbXAWUz5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965012AbXAWU6e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933137AbXAWUz5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jan 2007 15:55:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933135AbXAWUz5
+	id S965012AbXAWU6e (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jan 2007 15:58:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965015AbXAWU6e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jan 2007 15:55:57 -0500
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:3369 "HELO
-	mailout.stusta.mhn.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S933137AbXAWUz4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jan 2007 15:55:56 -0500
-Date: Tue, 23 Jan 2007 21:56:00 +0100
-From: Adrian Bunk <bunk@stusta.de>
-To: Chuck Ebbert <cebbert@redhat.com>
-Cc: Jesper Juhl <jesper.juhl@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Chris Wright <chrisw@sous-sol.org>
-Subject: Re: 2.6.18-stable release plans?
-Message-ID: <20070123205600.GD17836@stusta.de>
-References: <45B53722.9030206@redhat.com> <9a8748490701221623q1b61f03fva7b0ad7e7f30316f@mail.gmail.com> <45B6712C.2030901@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <45B6712C.2030901@redhat.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Tue, 23 Jan 2007 15:58:34 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:55084 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965012AbXAWU6d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jan 2007 15:58:33 -0500
+Date: Tue, 23 Jan 2007 12:58:01 -0800
+From: Andrew Morton <akpm@osdl.org>
+To: Alexey Dobriyan <adobriyan@openvz.org>
+Cc: Al Viro <viro@ftp.linux.org.uk>, linux-kernel@vger.kernel.org,
+       devel@openvz.org
+Subject: Re: [PATCH] Fix rmmod/read/write races in /proc entries
+Message-Id: <20070123125801.7982c23f.akpm@osdl.org>
+In-Reply-To: <20070115153927.GA24731@localhost.sw.ru>
+References: <20061227134223.GA6044@localhost.sw.ru>
+	<20061227135624.GP17561@ftp.linux.org.uk>
+	<20061228082147.GA11127@localhost.sw.ru>
+	<20070115153927.GA24731@localhost.sw.ru>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 23, 2007 at 03:33:48PM -0500, Chuck Ebbert wrote:
-> Jesper Juhl wrote:
-> > On 22/01/07, Chuck Ebbert <cebbert@redhat.com> wrote:
-> >> Is there going to be another 2.6.18-stable release?
-> >>
-> >
-> > Now that 2.6.19 is out, most likely not.  -stable releases are made
-> > for the latest stable 2.6.x kernel, once 2.6.x+1 is out that's the one
-> > -stable patches are made for (2.6.16 is an exception)..
-> >
-> Great... just as 2.6.18 approaches actual stability.
+On Mon, 15 Jan 2007 18:39:27 +0300
+Alexey Dobriyan <adobriyan@openvz.org> wrote:
+
+> --------------------------------------------------------
+> pde = create_proc_entry()
+> if (!pde)
+> 	return -ENOMEM;
+> pde->write_proc = ...;
+> 				open
+> 				write
+> 				copy_from_user
+> pde = create_proc_entry();
+> if (!pde) {
+> 	remove_proc_entry();
+> 	return -ENOMEM;
+> 	/* module unloaded */
+> }
+> 				*boom*
+> --------------------------------------------------------
+> pde = create_proc_entry();
+> if (pde) {
+> 	/* which dereferences ->data */
+> 	pde->write_proc = ...;
+> 				open
+> 				write
+> 	pde->data = ...;
+> }
+> --------------------------------------------------------
 > 
-> Adrian, how much longer are you going to support 2.6.16? Would you consider
-> moving to 2.6.18 any time soon?
+> The following plan is going to be executed (as per Al Viro's explanations):
+> 
+> PDE gets atomic counter counting reads and writes in progress
+> via ->read_proc, ->write_proc, ->get_info . Generic proc code will bump
+> PDE's counter before calling into module-specific method and decrement
+> it after it returns.
+> 
+> remove_proc_entry() will wait until all readers and writers are done.
+> To do this reliably it will set ->proc_fops to NULL and generic proc
+> code won't call into module it it sees NULL ->proc_fops.
+> 
+> This patch implements part above. So far, no changes in modules code
+> required. To proceed, lets look into ->proc_fops values during and after PDE
+> creation:
+> 
+> 	pde = create_proc_entry();
+> 	if (pde)
+> 		pde->proc_fops = ...;
+> 
+> proc_create() create empty PDE;		(->proc_fops is NULL)
+> proc_register() glues PDE to /proc	(->proc_fops is NULL)
+> proc_register() sets ->proc_fops to default	(->proc_fops valid)
+> [ module sets ->proc_fops to it's own	(->proc_fops) valid ]
+> 
+> Observation: ->proc_fops is not NULL, when create_proc_entry() exits.
+> 
+> Next set of races come into play:
+> 
+> 	pde = create_proc_entry();
+> 	if (pde) {
+> 		pde->read_proc = ...;
+> 		pde->data = ...;
+> 	}
+> 
+> Almost all ->read_proc, ->write_proc callbacks assume that ->data is valid when
+> they're called. They cast ->data and dereference it.
+> 
+> To fix this we need a way to indicate that PDE is not readable and writeable.
+> ->proc_fops nicely fits, because modules setting ->proc_fops only don't need
+> changes at all. create_proc_entry() will exit with NULL ->proc_fops and helpers
+> will be needed sometimes to set it.
+> 
+> 1. Module sets ->proc_fops only
+> 	no changes
+> 2. Module sets ->data and ->proc_fops
+> 	use a helper to set ->data before ->proc_fops and a barrier.
+> 2. Module uses only create_proc_read_entry()
+> 	changes only in create_proc_read_entry();
+> 3. Module uses only create_proc_info_entry()
+> 	changes only in create_proc_info_entry();
+> 4. Module sets combination of ->data, ->read_proc, ->write_proc
+> 	use helper which will set fields, barrier and sets default ->proc_fops.
+> 	the best name I've come up so far is
+> 
+> 	void set_proc_entry_data_rw(struct proc_dir_entry *, void *, read_proc_t, write_proc_t);
+> 
+> Helper(s) will be introduced, then create_proc_entry() will start exiting with
+> NULL ->proc_fops. After that use of helper(s) will become mandatory. Grepping
+> for offenders will be easy (read_proc, ... are good names). ->data is bad
+> name, however, after helpers will be plugged we can rename ->data to
+> ->pde_data and it'll become good name.
+> 
+> Sorry, for somewhat chaotic explanations, please, comment on patch and RFC.
 
-I'll continue to maintain 2.6.16 - moving to 2.6.18 or any other kernel 
-would defeat the purpose of what I am doing.
+<head spins>
 
-I'm not yet decided whether I'll create other stable kernel branches, 
-but it this will happen it won't be 2.6.18, more like 2.6.25 or 2.6.30.
+Looks a bit hacky.  Can this race not be fixed by addition of suitable
+locking, or possibly refcounting-under-locking?
 
-cu
-Adrian
+> Signed-off-by: Alexey Dobriyan <adobriyan@openvz.org>
+> ---
+> 
+>  fs/proc/generic.c       |   32 ++++++++++++++++++++++++++++----
+>  include/linux/proc_fs.h |    2 ++
+>  2 files changed, 30 insertions(+), 4 deletions(-)
+> 
+> --- a/fs/proc/generic.c
+> +++ b/fs/proc/generic.c
+> @@ -19,6 +19,7 @@ #include <linux/init.h>
+>  #include <linux/idr.h>
+>  #include <linux/namei.h>
+>  #include <linux/bitops.h>
+> +#include <linux/delay.h>
+>  #include <linux/spinlock.h>
+>  #include <asm/uaccess.h>
+>  
+> @@ -76,6 +77,12 @@ proc_file_read(struct file *file, char _
+>  	if (!(page = (char*) __get_free_page(GFP_KERNEL)))
+>  		return -ENOMEM;
+>  
+> +	if (!dp->proc_fops)
+> +		goto out_free;
+> +	atomic_inc(&dp->pde_users);
+> +	if (!dp->proc_fops)
+> +		goto out_dec;
+> +
 
--- 
+You'll be shocked to know that I'd prefer more comments in there.  Enough
+for a later maintainer to be able to understand what's going on.
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
 
+>  	while ((nbytes > 0) && !eof) {
+>  		count = min_t(size_t, PROC_BLOCK_SIZE, nbytes);
+>  
+> @@ -195,6 +202,9 @@ proc_file_read(struct file *file, char _
+>  		buf += n;
+>  		retval += n;
+>  	}
+> +out_dec:
+> +	atomic_dec(&dp->pde_users);
+> +out_free:
+>  	free_page((unsigned long) page);
+>  	return retval;
+>  }
+> @@ -205,14 +215,20 @@ proc_file_write(struct file *file, const
+>  {
+>  	struct inode *inode = file->f_path.dentry->d_inode;
+>  	struct proc_dir_entry * dp;
+> +	ssize_t rv;
+>  	
+>  	dp = PDE(inode);
+>  
+> -	if (!dp->write_proc)
+> +	if (!dp->write_proc || !dp->proc_fops)
+>  		return -EIO;
+>  
+> -	/* FIXME: does this routine need ppos?  probably... */
+> -	return dp->write_proc(file, buffer, count, dp->data);
+> +	rv = -EIO;
+> +	atomic_inc(&dp->pde_users);
+> +	if (dp->proc_fops)
+> +		/* FIXME: does this routine need ppos?  probably... */
+> +		rv = dp->write_proc(file, buffer, count, dp->data);
+> +	atomic_dec(&dp->pde_users);
+> +	return rv;
+>  }
+
+Here too.
+
+>  
+> @@ -717,12 +733,20 @@ void remove_proc_entry(const char *name,
+>  	if (!parent && xlate_proc_name(name, &parent, &fn) != 0)
+>  		goto out;
+>  	len = strlen(fn);
+> -
+> +again:
+>  	spin_lock(&proc_subdir_lock);
+>  	for (p = &parent->subdir; *p; p=&(*p)->next ) {
+>  		if (!proc_match(len, fn, *p))
+>  			continue;
+>  		de = *p;
+> +
+> +		de->proc_fops = NULL;
+> +		if (atomic_read(&de->pde_users) > 0) {
+> +			spin_unlock(&proc_subdir_lock);
+> +			msleep(1);
+> +			goto again;
+> +		}
+> +
+
+And here.
+
+>  		*p = de->next;
+>  		de->next = NULL;
+>  		if (S_ISDIR(de->mode))
+> --- a/include/linux/proc_fs.h
+> +++ b/include/linux/proc_fs.h
+> @@ -66,6 +66,8 @@ struct proc_dir_entry {
+>  	atomic_t count;		/* use count */
+>  	int deleted;		/* delete flag */
+>  	void *set;
+> +	atomic_t pde_users;	/* number of readers + number of writers via
+> +				 * ->read_proc, ->write_proc, ->get_info */
+>  };
+>  
+>  struct kcore_list {
