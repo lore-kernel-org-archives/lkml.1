@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965449AbXAWUVg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933089AbXAWU2Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965449AbXAWUVg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jan 2007 15:21:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965452AbXAWUVg
+	id S933089AbXAWU2Q (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jan 2007 15:28:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933095AbXAWU2Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jan 2007 15:21:36 -0500
-Received: from 69-100-st.zelcom.ru ([80.92.100.69]:2878 "EHLO
+	Tue, 23 Jan 2007 15:28:16 -0500
+Received: from 69-100-st.zelcom.ru ([80.92.100.69]:1480 "EHLO
 	etherstorm.feelingofgreen.ru" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S965449AbXAWUVf (ORCPT
+	by vger.kernel.org with ESMTP id S933089AbXAWU2P (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jan 2007 15:21:35 -0500
-Date: Tue, 23 Jan 2007 23:21:32 +0300
-Message-ID: <878xft8pf7.wl@betelheise.deep.net>
+	Tue, 23 Jan 2007 15:28:15 -0500
+Date: Tue, 23 Jan 2007 23:28:13 +0300
+Message-ID: <877ivd8p42.wl@betelheise.deep.net>
 From: Samium Gromoff <_deepfire@feelingofgreen.ru>
 To: Alan <alan@lxorguk.ukuu.org.uk>
 Cc: Samium Gromoff <_deepfire@feelingofgreen.ru>, Pavel Machek <pavel@ucw.cz>,
        Valdis.Kletnieks@vt.edu, David Wagner <daw@cs.berkeley.edu>,
        linux-kernel@vger.kernel.org
-Subject: [PATCH 0/2] Mechanism to turn of ASR on a per-ELF binary basis
+Subject: [PATCH 1/2] Define the EF_AS_NO_RANDOM e_flag bit
 In-Reply-To: <20070123154127.57059632@localhost.localdomain>
 References: <87r6toufpp.wl@betelheise.deep.net>
 	<200701221520.l0MFKLdK032645@turing-police.cc.vt.edu>
@@ -34,11 +34,24 @@ Content-Type: text/plain; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-These patches allow the binaries which absolutely require that
-their address space layout to be unaffected by address space
-randomisation to specify that in their ELF header.
+Author: Samium Gromoff <deepfire@betelheise.deep.net>
+Date:   Tue Jan 23 22:31:13 2007 +0300
 
-The first part defines the ELF header flag, the second implements
-the corresponding part of the interpreter functionality.
+    Define the ELF binary header flag EF_AS_NO_RANDOM
+    
+    EF_AS_NO_RANDOM should mean that the binary requests to not apply
+    randomisation to address spaces of its processes.
 
-regards, Samium Gromoff
+diff --git a/include/linux/elf.h b/include/linux/elf.h
+index 60713e6..58ebb47 100644
+--- a/include/linux/elf.h
++++ b/include/linux/elf.h
+@@ -172,6 +172,8 @@ typedef struct elf64_sym {
+ 
+ #define EI_NIDENT      16
+ 
++#define EF_AS_NO_RANDOM 0x1    /* do not randomise the address space */
++
+ typedef struct elf32_hdr{
+   unsigned char        e_ident[EI_NIDENT];
+   Elf32_Half   e_type;
