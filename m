@@ -1,68 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932310AbXAVXsR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932344AbXAWAAf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932310AbXAVXsR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jan 2007 18:48:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932304AbXAVXsQ
+	id S932344AbXAWAAf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jan 2007 19:00:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932393AbXAWAAf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jan 2007 18:48:16 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:33866 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932294AbXAVXsQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jan 2007 18:48:16 -0500
-Date: Tue, 23 Jan 2007 00:47:59 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-Cc: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org, xfs@oss.sgi.com
-Subject: Re: 2.6.20-rc5: cp 18gb 18gb.2 = OOM killer, reproducible just like 2.16.19.2
-Message-ID: <20070122234759.GF17637@elf.ucw.cz>
-References: <Pine.LNX.4.64.0701211424170.2552@p34.internal.lan> <20070122133735.GB4493@ucw.cz> <Pine.LNX.4.64.0701221348020.11525@p34.internal.lan>
-MIME-Version: 1.0
+	Mon, 22 Jan 2007 19:00:35 -0500
+Received: from outpost.ds9a.nl ([213.244.168.210]:35528 "EHLO outpost.ds9a.nl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932344AbXAWAAe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jan 2007 19:00:34 -0500
+Date: Tue, 23 Jan 2007 01:00:30 +0100
+From: bert hubert <bert.hubert@netherlabs.nl>
+To: Neil Horman <nhorman@tuxdriver.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Paolo Ornati <ornati@fastwebnet.it>, linux-kernel@vger.kernel.org,
+       akpm@osdl.org, torvalds@osdl.org
+Subject: Re: [PATCH] select: fix sys_select to not leak ERESTARTNOHAND to userspace
+Message-ID: <20070123000030.GA7487@outpost.ds9a.nl>
+Mail-Followup-To: bert hubert <bert.hubert@netherlabs.nl>,
+	Neil Horman <nhorman@tuxdriver.com>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Paolo Ornati <ornati@fastwebnet.it>, linux-kernel@vger.kernel.org,
+	akpm@osdl.org, torvalds@osdl.org
+References: <20070116201332.GA28523@hmsreliant.homelinux.net> <20070122145956.4a68762d@localhost> <20070122145259.GB21059@hmsreliant.homelinux.net> <Pine.LNX.4.64.0701220758120.32200@woody.linux-foundation.org> <20070122162406.GC21059@hmsreliant.homelinux.net>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0701221348020.11525@p34.internal.lan>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+In-Reply-To: <20070122162406.GC21059@hmsreliant.homelinux.net>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 2007-01-22 13:48:44, Justin Piszcz wrote:
-> 
-> 
-> On Mon, 22 Jan 2007, Pavel Machek wrote:
-> 
-> > On Sun 2007-01-21 14:27:34, Justin Piszcz wrote:
-> > > Why does copying an 18GB on a 74GB raptor raid1 cause the kernel to invoke 
-> > > the OOM killer and kill all of my processes?
-> > > 
-> > > Doing this on a single disk 2.6.19.2 is OK, no issues.  However, this 
-> > > happens every time!
-> > > 
-> > > Anything to try?  Any other output needed?  Can someone shed some light on 
-> > > this situation?
-> > 
-> > Is it highmem-related? Can you try it with mem=256M?
-> > 
-> > 							Pavel
-> > -- 
-> > (english) http://www.livejournal.com/~pavelmachek
-> > (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
-> > -
-> > To unsubscribe from this list: send the line "unsubscribe linux-raid" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > 
-> 
-> I will give this a try later or tomorrow, I cannot have my machine crash 
-> at the moment.
-> 
-> Also, the onboard video on the Intel 965 chipset uses 128MB, not sure if 
-> that has anything to do with it because after the system kill -9's all the 
-> processes etc, my terminal looks like garbage.
+On Mon, Jan 22, 2007 at 11:24:06AM -0500, Neil Horman wrote:
 
-That looks like separate problem. Switch to text mode console (vgacon,
-not fbcon) for tests.
-								Pavel
+> The error was reported to me second hand.  I'm expecting a reproducer (although
+> to date, I'm still waiting for it, so I may have jumped the gun here).  In fact,
 
+I've asked for a repoducer weeks ago and nothing happened, nobody even
+bothered to reply - I wrote a small test-app that might exhibit the problem,
+but didn't manage to trigger it.
+
+	Bert
+	
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+http://www.PowerDNS.com      Open source, database driven DNS Software 
+http://netherlabs.nl              Open and Closed source services
