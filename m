@@ -1,53 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932493AbXAWBk6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932471AbXAWBnn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932493AbXAWBk6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jan 2007 20:40:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932507AbXAWBk6
+	id S932471AbXAWBnn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jan 2007 20:43:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932482AbXAWBnn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jan 2007 20:40:58 -0500
-Received: from omx2-ext.sgi.com ([192.48.171.19]:53514 "EHLO omx2.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932493AbXAWBk5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jan 2007 20:40:57 -0500
-Date: Mon, 22 Jan 2007 17:40:34 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-To: Balbir Singh <balbir@in.ibm.com>
-cc: Andrea Arcangeli <andrea@suse.de>, Niki Hammler <mailinglists@nobaq.net>,
-       linux-kernel@vger.kernel.org,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Subject: Re: Why active list and inactive list?
-In-Reply-To: <45B56575.10807@in.ibm.com>
-Message-ID: <Pine.LNX.4.64.0701221737510.30455@schroedinger.engr.sgi.com>
-References: <45B55286.5060909@nobaq.net> <20070123003939.GY13798@opteron.random>
- <45B56575.10807@in.ibm.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 22 Jan 2007 20:43:43 -0500
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:63424 "EHLO
+	pd2mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932471AbXAWBnm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jan 2007 20:43:42 -0500
+Date: Mon, 22 Jan 2007 19:41:51 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: SATA exceptions with 2.6.20-rc5
+In-reply-to: <200701230134.57775.s0348365@sms.ed.ac.uk>
+To: Alistair John Strachan <s0348365@sms.ed.ac.uk>
+Cc: =?UTF-8?B?QmrDtnJuIFN0ZWluYnJpbms=?= <B.Steinbrink@gmx.de>,
+       Jeff Garzik <jeff@garzik.org>, Chr <chunkeey@web.de>,
+       linux-kernel@vger.kernel.org, htejun@gmail.com, jens.axboe@oracle.com,
+       lwalton@real.com, pomac@vapor.com
+Message-id: <45B567DF.1050008@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=UTF-8; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.ow4pXUncgdZmfLf3oyfrn1W+Bk0@ifi.uio.no>
+ <fa.4QxeKMcmkoyhlL26AivZV6BFQJQ@ifi.uio.no> <45B563C6.5070505@shaw.ca>
+ <200701230134.57775.s0348365@sms.ed.ac.uk>
+User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 23 Jan 2007, Balbir Singh wrote:
-
-> This makes me wonder if it makes sense to split up the LRU into page
-> cache LRU and mapped pages LRU. I see two benefits
+Alistair John Strachan wrote:
+> On Tuesday 23 January 2007 01:24, Robert Hancock wrote:
+>> As a final aside, this is another case where the hardware docs for this
+>> controller would really be useful, in order to know whether we are
+>> actually supposed to be reading that register in ADMA mode or not. I
+>> sent a query to Allen Martin at NVIDIA asking if there's a way I could
+>> get access to the documents, but I haven't heard anything yet.
 > 
-> 1. Currently based on swappiness, we might walk an entire list
->    searching for page cache pages or mapped pages. With these
->    lists separated, it should get easier and faster to implement
->    this scheme
-> 2. There is another parallel thread on implementing page cache
->    limits. If the lists split out, we need not scan the entire
->    list to find page cache pages to evict them.
+> Obviously, NVIDIA's response is disappointing, but thank you for putting the 
+> time in to debug this problem. Definitely sounds like a hardware defect, I'm 
+> just glad there's a workaround.
 > 
-> Of course I might be missing something (some piece of history)
+> Will we see this fix in 2.6.20?
 
-This means page cache = unmapped file backed page right? Otherwise this 
-would not work. I always thought that the page cache were all file backed 
-pages both mapped and unmapped.
+Hopefully, assuming it actually does fix the problem for those that have 
+been seeing it..
 
-With the proposed schemd you would have to move pages between lists if 
-they are mapped and unmapped by a process. Terminating a process could 
-lead to lots of pages moving to the unnmapped list.
-
-
-
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
 
