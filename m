@@ -1,75 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932919AbXAWJNO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932907AbXAWJS1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932919AbXAWJNO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jan 2007 04:13:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932917AbXAWJNO
+	id S932907AbXAWJS1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jan 2007 04:18:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932911AbXAWJS1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jan 2007 04:13:14 -0500
-Received: from [85.204.20.254] ([85.204.20.254]:55219 "EHLO megainternet.ro"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932916AbXAWJNM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jan 2007 04:13:12 -0500
-Subject: Re: [BUG] eth0 appers many times in /proc/interrupts after resume
-From: Andrei Popa <andrei.popa@i-neo.ro>
-Reply-To: andrei.popa@i-neo.ro
-To: Frederik Deweerdt <deweerdt@free.fr>
-Cc: linux-kernel@vger.kernel.org, nigel@suspend2.net
-In-Reply-To: <20070121212209.GB8958@slug>
-References: <1167520557.2566.23.camel@nigel.suspend2.net>
-	 <1167571281.7175.1.camel@localhost>
-	 <1167599458.2662.8.camel@nigel.suspend2.net>
-	 <1167605481.12328.0.camel@localhost>
-	 <1167607994.2662.39.camel@nigel.suspend2.net>
-	 <1167644970.7142.6.camel@localhost>
-	 <1168317278.6948.9.camel@nigel.suspend2.net>
-	 <1168448689.7430.1.camel@localhost>
-	 <1168463852.3205.1.camel@nigel.suspend2.net>
-	 <1169407062.1932.4.camel@localhost>  <20070121212209.GB8958@slug>
-Content-Type: text/plain
-Organization: I-NEO
-Date: Tue, 23 Jan 2007 11:12:49 +0200
-Message-Id: <1169543569.10364.2.camel@localhost>
+	Tue, 23 Jan 2007 04:18:27 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:1909 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S932907AbXAWJS0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jan 2007 04:18:26 -0500
+Date: Tue, 23 Jan 2007 09:08:39 +0000
+From: Pavel Machek <pavel@ucw.cz>
+To: "Kawai, Hidehiro" <hidehiro.kawai.ez@hitachi.com>
+Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
+       gregkh@suse.de, james.bottomley@steeleye.com,
+       Satoshi OSHIMA <soshima@redhat.com>,
+       "Hideo AOKI@redhat" <haoki@redhat.com>,
+       sugita <yumiko.sugita.yf@hitachi.com>,
+       Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH] binfmt_elf: core dump masking support
+Message-ID: <20070123090838.GD5560@ucw.cz>
+References: <20061220154056.GA4261@ucw.cz> <45A2EADF.3030807@hitachi.com> <20070109143912.GC19787@elf.ucw.cz> <45A74B89.4040100@hitachi.com> <20070114200157.GA2582@elf.ucw.cz> <45B01387.7010207@hitachi.com> <20070119004548.GE10351@elf.ucw.cz> <45B42194.3050601@hitachi.com> <20070122100610.GC16309@elf.ucw.cz> <45B59218.4040201@hitachi.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <45B59218.4040201@hitachi.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-It's ok, after 4 suspend/resume cycles, eth0 only appers one time.
-
-On Sun, 2007-01-21 at 21:22 +0000, Frederik Deweerdt wrote:
-> On Sun, Jan 21, 2007 at 09:17:41PM +0200, Andrei Popa wrote:
-> > It's the 10th resume and in /proc/interrupts eth0 appers 10 times.
-> > 
+On Tue 2007-01-23 13:42:00, Kawai, Hidehiro wrote:
 > Hi,
 > 
-> The e100_resume() function should be calling netif_device_detach and
-> free_irq. Could you try the following (compile tested) patch?
+> >>>(run echo 1 > coremask, echo 0 > coremask in a loop while dumping
+> >>>core. Do you have enough locking to make it work as expected?)
+> >>
+> >>Currently, any lock isn't acquired.  But I think the kernel only
+> >>have to preserve the coremask setting in a local variable at the
+> >>begining of core dumping.  I'm going to do this in the next version.
+> > 
+> > No, I do not think that is enough. At minimum, you'd need atomic_t
+> > variable. But I'd recomend against it. Playing with locking is tricky.
 > 
-> Regards,
-> Frederik
-> 
-> Signed-off-by: Frederik Deweerdt <frederik.deweerdt@gmail.com>
-> 
-> diff --git a/drivers/net/e100.c b/drivers/net/e100.c
-> index 2fe0445..0c376e4 100644
-> --- a/drivers/net/e100.c
-> +++ b/drivers/net/e100.c
-> @@ -2671,6 +2671,7 @@ static int e100_suspend(struct pci_dev *pdev, pm_message_t state)
->  	del_timer_sync(&nic->watchdog);
->  	netif_carrier_off(nic->netdev);
->  
-> +	netif_device_detach(netdev);
->  	pci_save_state(pdev);
->  
->  	if ((nic->flags & wol_magic) | e100_asf(nic)) {
-> @@ -2682,6 +2683,7 @@ static int e100_suspend(struct pci_dev *pdev, pm_message_t state)
->  	}
->  
->  	pci_disable_device(pdev);
-> +	free_irq(pdev->irq, netdev);
->  	pci_set_power_state(pdev, PCI_D3hot);
->  
->  	return 0;
+> Why do you think it is not enough?  I think that any locking is not
+> needed.
 
+You are wrong.
+
+>   unsigned int mask = current->mm->coremask;
+
+Not a valid C; coremask can change from another cpu.
+
+							Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
