@@ -1,46 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964999AbXAWVZc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965135AbXAWV1V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964999AbXAWVZc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jan 2007 16:25:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965015AbXAWVZc
+	id S965135AbXAWV1V (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jan 2007 16:27:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965156AbXAWV1V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jan 2007 16:25:32 -0500
-Received: from mail4.sea5.speakeasy.net ([69.17.117.6]:40793 "EHLO
-	mail4.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964999AbXAWVZb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jan 2007 16:25:31 -0500
-Date: Tue, 23 Jan 2007 16:25:29 -0500 (EST)
-From: James Morris <jmorris@namei.org>
-X-X-Sender: jmorris@d.namei
-To: Sunil Naidu <akula2.shark@gmail.com>
-cc: Alan Cox <alan@redhat.com>, Christoph Hellwig <hch@lst.de>,
-       "Theodore Ts'o" <tytso@mit.edu>, ksummit-2006-discuss@thunk.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [Ksummit-2006-discuss] 2007 Linux Kernel Summit
-In-Reply-To: <8355959a0701231152n1b4238f8ob54ea1792f299ca5@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0701231622260.29810@d.namei>
-References: <E1H8tIr-0006QH-Bg@candygram.thunk.org>  <20070122110711.GA5917@lst.de>
-  <20070122124502.GC30124@devserv.devel.redhat.com>
- <8355959a0701231152n1b4238f8ob54ea1792f299ca5@mail.gmail.com>
+	Tue, 23 Jan 2007 16:27:21 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:50832 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965140AbXAWV1U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jan 2007 16:27:20 -0500
+Message-ID: <45B67D93.5070904@pobox.com>
+Date: Tue, 23 Jan 2007 16:26:43 -0500
+From: Jeff Garzik <jgarzik@pobox.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Al Viro <viro@ftp.linux.org.uk>
+CC: torvalds@osdl.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] s2io bogus memset
+References: <E1H9Ki4-0006pB-FK@ZenIV.linux.org.uk>
+In-Reply-To: <E1H9Ki4-0006pB-FK@ZenIV.linux.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.7 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 24 Jan 2007, Sunil Naidu wrote:
+Al Viro wrote:
+> memset() after kmalloc() on size * 8 would better be on size * 8, not
+> just size; fixed by switching to kcalloc() - it's more idiomatic anyway.
+> 
+> Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 
-> If Kernel community comes down to India...this would have a big impact
-> on the community + industry too.
-
-I think it's a good idea.
-
-> Any other reasons am missing here?
-
-Cost of flying 70 mainly US/European developers to India.
+applied
 
 
-- James
--- 
-James Morris
-<jmorris@namei.org>
