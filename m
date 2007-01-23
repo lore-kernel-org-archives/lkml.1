@@ -1,113 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964930AbXAWMxw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964919AbXAWM5a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964930AbXAWMxw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jan 2007 07:53:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964933AbXAWMxw
+	id S964919AbXAWM5a (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jan 2007 07:57:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964872AbXAWM5a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jan 2007 07:53:52 -0500
-Received: from outbound-cpk.frontbridge.com ([207.46.163.16]:24297 "EHLO
-	outbound2-cpk-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S964930AbXAWMxv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jan 2007 07:53:51 -0500
-X-BigFish: VP
-X-Server-Uuid: 89466532-923C-4A88-82C1-66ACAA0041DF
-Date: Tue, 23 Jan 2007 13:50:29 +0100
-From: "Joerg Roedel" <joerg.roedel@amd.com>
-To: "Avi Kivity" <avi@qumranet.com>
-cc: linux-kernel@vger.kernel.org, kvm-devel@lists.sourceforge.net
-Subject: [PATCH] KVM: propagate SHUTDOWN intercept to userspace on SVM
-Message-ID: <20070123125029.GA7919@amd.com>
-MIME-Version: 1.0
-User-Agent: mutt-ng/devel-r804 (Linux)
-X-OriginalArrivalTime: 23 Jan 2007 12:50:29.0277 (UTC)
- FILETIME=[0F925CD0:01C73EED]
-X-WSS-ID: 69A8DB121WC5143853-01-01
-Content-Type: multipart/mixed;
- boundary=sdtB3X0nJg68CQEu
-Content-Disposition: inline
+	Tue, 23 Jan 2007 07:57:30 -0500
+Received: from main.gmane.org ([80.91.229.2]:54563 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S964919AbXAWM53 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jan 2007 07:57:29 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Rolf Offermanns <roffermanns@gmail.com>
+Subject: Re: How to use an usb interface than is claimed by HID?
+Date: Tue, 23 Jan 2007 13:57:11 +0100
+Message-ID: <ep50n7$dni$1@sea.gmane.org>
+References: <45B265E0.5020605@gmail.com> <Pine.LNX.4.64.0701211358570.21127@twin.jikos.cz> <Pine.LNX.4.64.0701211821530.21127@twin.jikos.cz> <200701212134.58646.uvsoft@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7Bit
+X-Complaints-To: usenet@sea.gmane.org
+X-Gmane-NNTP-Posting-Host: 62.8.134.2
+User-Agent: KNode/0.10.4
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Ivan Ukhov wrote:
 
---sdtB3X0nJg68CQEu
-Content-Type: text/plain;
- charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
+>> .. which wouldn't help you either, supposing that you don't want to touch
+>> the kernel sources at all, because this function is unexported and
+>> static.
+>>
+>> So I think that there is no straightforward way, sorry.
+>>
+>> Is this a device that doesn't exist anywhere else than on your table? I
+>> still think that putting the code in kernel (if possible) and
+>> blacklisting the device on the hid_blacklist[] is the simplest way.
+>>
+>> The other possibility is writing the driver completely in userspace,
+>> using libhid/hiddev. Would that suit your needs?
+> 
+> I'm afraid it wouldn't.
+> 
+> Thank you very much.
+> 
+There is another way. Have a look at this article:
+http://lwn.net/Articles/143397/
 
-This patch implements forwarding of SHUTDOWN intercepts from the guest
-on to userspace on AMD SVM. A SHUTDOWN event occurs when the guest produces
-a triple fault (e.g. on reboot). This also fixes the bug that a guest
-reboot actually causes a host reboot under some circumstances.
+Maybe this is an option for you.
 
-Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
-
+-Rolf
 -- 
-Joerg Roedel
-Operating System Research Center
-AMD Saxony LLC & Co. KG
-
---sdtB3X0nJg68CQEu
-Content-Type: text/plain;
- charset=us-ascii
-Content-Disposition: attachment;
- filename=kvm-svm-reboot.patch
-Content-Transfer-Encoding: 7bit
-
-diff --git a/drivers/kvm/svm.c b/drivers/kvm/svm.c
-index 714f6a7..1bbaa16 100644
---- a/drivers/kvm/svm.c
-+++ b/drivers/kvm/svm.c
-@@ -502,6 +502,7 @@ static void init_vmcb(struct vmcb *vmcb)
- 				(1ULL << INTERCEPT_IOIO_PROT) |
- 				(1ULL << INTERCEPT_MSR_PROT) |
- 				(1ULL << INTERCEPT_TASK_SWITCH) |
-+				(1ULL << INTERCEPT_SHUTDOWN) |
- 				(1ULL << INTERCEPT_VMRUN) |
- 				(1ULL << INTERCEPT_VMMCALL) |
- 				(1ULL << INTERCEPT_VMLOAD) |
-@@ -892,6 +893,19 @@ static int pf_interception(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
- 	return 0;
- }
- 
-+static int shutdown_interception(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
-+{
-+	/* 
-+	 * VMCB is undefined after a SHUTDOWN intercept 
-+	 * so reinitalize it
-+	 */
-+	memset(vcpu->svm->vmcb, 0, PAGE_SIZE);
-+	init_vmcb(vcpu->svm->vmcb);
-+
-+	kvm_run->exit_reason = KVM_EXIT_SHUTDOWN;
-+	return 0;
-+}
-+
- static int io_get_override(struct kvm_vcpu *vcpu,
- 			  struct vmcb_seg **seg,
- 			  int *addr_override)
-@@ -1249,6 +1263,7 @@ static int (*svm_exit_handlers[])(struct kvm_vcpu *vcpu,
- 	[SVM_EXIT_IOIO] 		  	= io_interception,
- 	[SVM_EXIT_MSR]				= msr_interception,
- 	[SVM_EXIT_TASK_SWITCH]			= task_switch_interception,
-+	[SVM_EXIT_SHUTDOWN]			= shutdown_interception,
- 	[SVM_EXIT_VMRUN]			= invalid_op_interception,
- 	[SVM_EXIT_VMMCALL]			= invalid_op_interception,
- 	[SVM_EXIT_VMLOAD]			= invalid_op_interception,
-diff --git a/include/linux/kvm.h b/include/linux/kvm.h
-index bc8b461..1be148f 100644
---- a/include/linux/kvm.h
-+++ b/include/linux/kvm.h
-@@ -46,6 +46,7 @@ enum kvm_exit_reason {
- 	KVM_EXIT_HLT              = 5,
- 	KVM_EXIT_MMIO             = 6,
- 	KVM_EXIT_IRQ_WINDOW_OPEN  = 7,
-+	KVM_EXIT_SHUTDOWN         = 8,
- };
- 
- /* for KVM_RUN */
-
---sdtB3X0nJg68CQEu--
-
+Rolf Offermanns <roffermanns@sysgo.com>
+SYSGO AG     Tel.: +49-6136-9948-0
+Am Pfaffenstein 14   Fax: +49-6136-9948-10
+55270 Klein-Winternheim  http://www.sysgo.com
 
