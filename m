@@ -1,93 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932622AbXAWPl3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932865AbXAWPmS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932622AbXAWPl3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jan 2007 10:41:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932865AbXAWPl3
+	id S932865AbXAWPmS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jan 2007 10:42:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932903AbXAWPmS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jan 2007 10:41:29 -0500
-Received: from mail.alkar.net ([195.248.191.95]:54783 "EHLO mail.alkar.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932622AbXAWPl1 convert rfc822-to-8bit (ORCPT
+	Tue, 23 Jan 2007 10:42:18 -0500
+Received: from smtp106.sbc.mail.mud.yahoo.com ([68.142.198.205]:26799 "HELO
+	smtp106.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S932865AbXAWPmR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jan 2007 10:41:27 -0500
-From: "Vladimir V. Saveliev" <vs@namesys.com>
-To: Laurent Riffard <laurent.riffard@free.fr>
-Subject: Re: 2.6.20-rc3-mm1: umount reiser4 FS stuck in D state
-Date: Tue, 23 Jan 2007 19:40:57 +0300
-User-Agent: KMail/1.8.2
-Cc: reiserfs-list@namesys.com,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       Jens Axboe <axboe@suse.de>
-References: <20070104220200.ae4e9a46.akpm@osdl.org> <200701062158.06329.vs@namesys.com> <45A81231.6040104@free.fr>
-In-Reply-To: <45A81231.6040104@free.fr>
+	Tue, 23 Jan 2007 10:42:17 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=P5uf2hmX0/ZEa/RLrrArK2cX1BRvAR6JlY7qJ1qtvH7TxQyDd6WebOokurIwJ3zS1wOzGrg7jszyhXcUIjUgKIpGxkKI4VQr40J3xJoEUo58nHBPcBEDusV8l/IGoaGEUHd/SX+GAcnwz3n5FwXLVUgNsBSDYMaygKLhuPt5PtU=  ;
+X-YMail-OSG: BgtwwVAVM1lwEFoZtrz8OfdfDuubCzCECWVWa2z8XVZZG1L_Wv3m_QaUgX20BFlRgJAQCCoMt5SijUQg8txouQT5H8Js7HknI1usGdUORzngW2Ya4Vuksx6j_SPuaOt_4u7a7wnKiFlSSF1gFQ_hE_YcG81OltfR
+From: David Brownell <david-b@pacbell.net>
+To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+Subject: Re: [PATCH 2.6.20-rc5] SPI: alternative fix for spi_busnum_to_master
+Date: Tue, 23 Jan 2007 07:42:15 -0800
+User-Agent: KMail/1.7.1
+Cc: linux-kernel@vger.kernel.org, hcegtvedt@atmel.com, akpm@osdl.org
+References: <20070118.202849.70477632.nemoto@toshiba-tops.co.jp> <200701221412.02452.david-b@pacbell.net> <20070123.101011.25910575.nemoto@toshiba-tops.co.jp>
+In-Reply-To: <20070123.101011.25910575.nemoto@toshiba-tops.co.jp>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200701231940.58053.vs@namesys.com>
+Message-Id: <200701230742.15531.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello
-
-On Saturday 13 January 2007 01:56, Laurent Riffard wrote:
-> Le 06.01.2007 19:58, Vladimir V. Saveliev a écrit :
-> > Hello
+On Monday 22 January 2007 5:10 pm, Atsushi Nemoto wrote:
+> On Mon, 22 Jan 2007 14:12:02 -0800, David Brownell <david-b@pacbell.net> wrote:
+> > > Here is a revised version.  The children list of spi_master_class
+> > > contains only spi_master class so we can just compare bus_num member
+> > > instead of class_id string.
 > > 
-> > On Saturday 06 January 2007 13:58, Laurent Riffard wrote:
-> >> Hello,
-> >>
-> >> got this with 2.6.20-rc3-mm1:
-> >>
-> >> =======================
-> >> SysRq : Show Blocked State
-> >>
-> >>                          free                        sibling
-> >>   task             PC    stack   pid father child younger older
-> >> umount        D C013135E  6044  1168   1150                     (NOTLB)
-> >>        de591ae4 00000086 de591abc c013135e dff979c8 c012a6fe 00000046 00000007 
-> >>        dfd94ac0 128d3000 00000026 00000000 dfd94bcc dff979c8 de591ae4 dffda038 
-> >>        00000002 dff979c0 dff979bc dff979c8 de591b10 c012d600 dff979f8 00000000 
-> >> Call Trace:
-> >>  [<c012d600>] synchronize_qrcu+0x70/0x8c
-> >>  [<c01bede4>] __make_request+0x4c/0x29b
-> >>  [<c01bd24b>] generic_make_request+0x1b0/0x1de
-> >>  [<c01bf354>] submit_bio+0xda/0xe2
-> >>  [<e12674bd>] write_jnodes_to_disk_extent+0x920/0x974 [reiser4]
-> >>  [<e12678dd>] update_journal_footer+0x29f/0x2b7 [reiser4]
-> >>  [<e1268b65>] write_tx_back+0x149/0x185 [reiser4]
-> >>  [<e126a8e7>] reiser4_write_logs+0xea4/0xfd2 [reiser4]
-> >>  [<e125626a>] try_commit_txnh+0x7e6/0xa4f [reiser4]
-> >>  [<e125661b>] reiser4_txn_end+0x148/0x3cf [reiser4]
-> >>  [<e12568ad>] reiser4_txn_restart+0xb/0x1a [reiser4]
-> >>  [<e125692f>] reiser4_txn_restart_current+0x73/0x75 [reiser4]
-> >>  [<e1256b89>] force_commit_atom+0x258/0x261 [reiser4]
-> >>  [<e1257703>] txnmgr_force_commit_all+0x406/0x697 [reiser4]
-> >>  [<e12e5e08>] release_format40+0x10c/0x193 [reiser4]
-> >>  [<e1279922>] reiser4_put_super+0x134/0x16a [reiser4]
-> >>  [<c015c930>] generic_shutdown_super+0x55/0xd8
-> >>  [<c015c9d3>] kill_block_super+0x20/0x32
-> >>  [<c015ca75>] deactivate_super+0x3f/0x51
-> >>  [<c016d903>] mntput_no_expire+0x42/0x5f
-> >>  [<c0160f37>] path_release_on_umount+0x15/0x18
-> >>  [<c016df77>] sys_umount+0x1a3/0x1cb
-> >>  [<c016dfb8>] sys_oldumount+0x19/0x1b
-> >>  [<c0103ed2>] sysenter_past_esp+0x5f/0x99
-> >>  =======================
-> >>
-> >> Scenario:
-> >> - umount a reiser4 FS (no need to write something before)
-> > 
-> > Hmm, I can not reproduce this with 2.6.20-rc3-mm1. Probably I need to config the kernel more close to your system.
-> > 
-> >> Earlier kernels were OK.
+> > Looks just a bit iffy ... though, thanks for helping to finally
+> > sort this out!
 > 
-> This still happens with 2.6.20-rc4-mm1...
-> 
-> Should I open a bug report at http://bugzilla.kernel.org?
-> 
+> Well, so previous patch (which was checking class_id string) would be
+> preferred?
 
-Which device with reiser4 did you try to umount?
-Jens wrote that it could be a barrier related. If there are no multidevices involved - please report to bugzilla.
+No, with this rename support lurking, checking names becomes risky.
 
+
+> > > +		cdev = class_device_get(cdev);
+> > > +		if (!cdev)
+> > > +			continue;
+> > 
+> > That "continue" case doesn't seem like it should be possible... but
+> > at any rate, the "get" can be deferred until the relevent class
+> > device is known, since that _valid_ handle can't disappear so long
+> > as that semaphore is held.  And if you find the right device but
+> > can't get a reference ... no point in continuing!
+> > 
+> > Something like a class_find_device() would be the best way to solve
+> > this sort of problem, IMO.  But we don't have one of those.  :(
+> 
+> Indeed the check can be omitted.  Should I send a new patch just
+> moving class_device_get() into "if (master->bus_num == bus_num)"
+> block?
+
+Yes, please.
+
+ 
+> The crashing with udev is 2.6.20 regression so I wish this fixed very
+> soon.  Thank you for review.
+
+Agreed.
+
+- Dave
+
+
+ 
+> ---
+> Atsushi Nemoto
+> 
