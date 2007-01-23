@@ -1,57 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932947AbXAWKlu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932942AbXAWKuS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932947AbXAWKlu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jan 2007 05:41:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932942AbXAWKlu
+	id S932942AbXAWKuS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jan 2007 05:50:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932951AbXAWKuS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jan 2007 05:41:50 -0500
-Received: from caramon.arm.linux.org.uk ([217.147.92.249]:4948 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932941AbXAWKlt (ORCPT
+	Tue, 23 Jan 2007 05:50:18 -0500
+Received: from an-out-0708.google.com ([209.85.132.243]:47422 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932942AbXAWKuQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jan 2007 05:41:49 -0500
-Date: Tue, 23 Jan 2007 10:41:40 +0000
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Alon Bar-Lev <alon.barlev@gmail.com>
-Cc: Tomas Carnecky <tom@dbservice.com>, linux-kernel@vger.kernel.org
+	Tue, 23 Jan 2007 05:50:16 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=QZGMCBXu/KSFjSiDZ9amKqnC+NzghCC64eLc4Rgp7306igHDrSPbZsAYvVuylXnRhf55CAaCajSZabTiuof0SWLrYAUS957F/b4UBg6jC4StB+Ov/Dtzxo6pG94yOMb5uj5FkHeNQTds/dpSdTUtKymS4w7CENEPZu/gG9nrjzA=
+Message-ID: <9e0cf0bf0701230250nb8d9738redc3e1d963b40bda@mail.gmail.com>
+Date: Tue, 23 Jan 2007 12:50:15 +0200
+From: "Alon Bar-Lev" <alon.barlev@gmail.com>
+To: "Alon Bar-Lev" <alon.barlev@gmail.com>,
+       "Tomas Carnecky" <tom@dbservice.com>, linux-kernel@vger.kernel.org
 Subject: Re: [patch 03/26] Dynamic kernel command-line - arm
-Message-ID: <20070123104140.GA20660@flint.arm.linux.org.uk>
-Mail-Followup-To: Alon Bar-Lev <alon.barlev@gmail.com>,
-	Tomas Carnecky <tom@dbservice.com>, linux-kernel@vger.kernel.org
-References: <20070118125849.441998000@strauss.suse.de> <20070118130028.719472000@strauss.suse.de> <20070118141359.GB31418@flint.arm.linux.org.uk> <45AF92E7.50901@dbservice.com> <20070118152326.GC31418@flint.arm.linux.org.uk> <20070122221400.GE6262@strauss.suse.de> <20070122222725.GB32085@flint.arm.linux.org.uk> <9e0cf0bf0701230237j5aa1bbya3a70da314e471b9@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070123104140.GA20660@flint.arm.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <9e0cf0bf0701230237j5aa1bbya3a70da314e471b9@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
+References: <20070118125849.441998000@strauss.suse.de>
+	 <20070118130028.719472000@strauss.suse.de>
+	 <20070118141359.GB31418@flint.arm.linux.org.uk>
+	 <45AF92E7.50901@dbservice.com>
+	 <20070118152326.GC31418@flint.arm.linux.org.uk>
+	 <20070122221400.GE6262@strauss.suse.de>
+	 <20070122222725.GB32085@flint.arm.linux.org.uk>
+	 <9e0cf0bf0701230237j5aa1bbya3a70da314e471b9@mail.gmail.com>
+	 <20070123104140.GA20660@flint.arm.linux.org.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 23, 2007 at 12:37:06PM +0200, Alon Bar-Lev wrote:
-> On 1/23/07, Russell King <rmk+lkml@arm.linux.org.uk> wrote:
-> >which reflects precisely what I've been saying concerning the addition
-> >of __initdata.
-> 
-> Great!
-> So what do you thing we should do?
-> 
-> Modify this:
-> char __initdata boot_command_line[COMMAND_LINE_SIZE];
-> 
-> Into:
-> char __initdata boot_command_line[COMMAND_LINE_SIZE] = {0};
-> 
-> Or:
-> static char __initdata _boot_command_line[COMMAND_LINE_SIZE];
-> char __initdata *boot_command_line = _boot_command_line;
-> 
-> Or any other option... I will glad to receive any convention you see right.
+On 1/23/07, Russell King <rmk+lkml@arm.linux.org.uk> wrote:
+> See Message-ID: <20070118152326.GC31418@flint.arm.linux.org.uk> sent on
+> 18 January in this thread.  Such strings might as well be initialised to
+> an empty string.
 
-See Message-ID: <20070118152326.GC31418@flint.arm.linux.org.uk> sent on
-18 January in this thread.  Such strings might as well be initialised to
-an empty string.
+So it will be fine if I initialize it to "" and remove the static from
+the your example?
+BTW: Is there a difference between "" and initialize it to {0}?
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+Thanks for you help!
+Alon Bar-Lev.
