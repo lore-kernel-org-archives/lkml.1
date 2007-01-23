@@ -1,50 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932934AbXAWKO6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932937AbXAWKRO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932934AbXAWKO6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jan 2007 05:14:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932936AbXAWKO6
+	id S932937AbXAWKRO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jan 2007 05:17:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932938AbXAWKRO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jan 2007 05:14:58 -0500
-Received: from fnoeppeil48.netpark.at ([217.175.205.176]:3293 "EHLO
-	roarinelk.homelinux.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932934AbXAWKO5 (ORCPT
+	Tue, 23 Jan 2007 05:17:14 -0500
+Received: from mail.first.fraunhofer.de ([194.95.169.2]:55541 "EHLO
+	mail.first.fraunhofer.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932937AbXAWKRN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jan 2007 05:14:57 -0500
-X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Tue, 23 Jan 2007 05:14:57 EST
-Date: Tue, 23 Jan 2007 11:08:14 +0100
-From: Manuel Lauss <mano@roarinelk.homelinux.net>
-To: drzeus-mmc@drzeus.cx
-Cc: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] MMC: au1xmmc R6 response support
-Message-ID: <20070123100814.GA5001@roarinelk.homelinux.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+	Tue, 23 Jan 2007 05:17:13 -0500
+To: linux-kernel@vger.kernel.org
+Date: Tue, 23 Jan 2007 10:17:06 +0000 (UTC)
+From: Soeren Sonnenburg <kernel@nn7.de>
+Message-ID: <ep4nb2$mh2$1@fortknox.intranet.wo.rk>
+Organization: Local Intranet News
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+References: <1169542768.5537.11.camel@cocoduo>
+Subject: Re: 2.6.19.2 sky2/acpi crashes
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Tue, 23 Jan 2007 08:59:28 +0000, Lionel Landwerlin wrote:
 
-here's a trivial patch which adds R6 reponse support to the au1xmmc
-driver. Fixes SD card detection / operation.
+> Hi,
+> 
+> I'm running a macbook with a Marvell ethernet controller, and I have a
+> lots of freezes when using the ethernet controller under a load of
+> ~100K/s. Since I'm running a 2.6.19.2 kernel, I'm able to get some
+> report from the kernel. Here they are :
 
----
+I am also having trouble with the sky2 module, though I've not yet seen a
+oops, the driver stopped working after some heavy traffic (copying some G
+of data). Only rmmod sky2; modprobe sky2 resolved this. (I am also on
+2.6.19.2 but I've seen this happen on 2.6.20-rcX too).
 
-Add Response type R6 support to the au1xmmc driver; fixes SD card
-detection and operation.
-
-Signed-off-by: Manuel Lauss <mano@roarinelk.homelinux.net>
-
---- a/drivers/mmc/au1xmmc.c~	2007-01-23 10:52:33.771983000 +0100
-+++ b/drivers/mmc/au1xmmc.c	2007-01-23 10:52:33.771983000 +0100
-@@ -205,6 +205,9 @@ static int au1xmmc_send_command(struct a
- 	case MMC_RSP_R3:
- 		mmccmd |= SD_CMD_RT_3;
- 		break;
-+	case MMC_RSP_R6:
-+		mmccmd |= SD_CMD_RT_6;
-+		break;
- 	}
- 
- 	switch(cmd->opcode) {
+Soeren
