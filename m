@@ -1,69 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932258AbXAWERy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932088AbXAWEVJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932258AbXAWERy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jan 2007 23:17:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932261AbXAWERy
+	id S932088AbXAWEVJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jan 2007 23:21:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932250AbXAWEVI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jan 2007 23:17:54 -0500
-Received: from smtp101.mail.mud.yahoo.com ([209.191.85.211]:32986 "HELO
-	smtp101.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S932258AbXAWERx (ORCPT
+	Mon, 22 Jan 2007 23:21:08 -0500
+Received: from ug-out-1314.google.com ([66.249.92.171]:11943 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932088AbXAWEVH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jan 2007 23:17:53 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=PsmDYqQAroYNEmUTxzCaJj+nzMz7vXljUj6cEmencEsfR65rI+PxvN7uCym1yT0ykzbaLiRNEBCypX35cTWlykSrsobh5OZcO8OcCTHXzlDBf1Ru1WfrWtFFks+UQtl8ivUtE/w269hEW9uchSt4/HDDGmoe6gJH1VjIGZFTEU8=  ;
-X-YMail-OSG: lvuR3DMVM1lnbUN07_Gxr5Hx9fdBEmXEp_.9o.sA2h9Ir7heFxE2YjUYzdQBYdSIaQfS0bppwQ--
-Message-ID: <45B58C5C.8010900@yahoo.com.au>
-Date: Tue, 23 Jan 2007 15:17:32 +1100
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
+	Mon, 22 Jan 2007 23:21:07 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Tl/7LcbmhX6xmcVaKNbgASQMWZmQCXDvOxqh7XQVGo/mC4IXzcLcoTvTu4EVQUGCns6ccz9SxJelognxXrGkqa0jBVF5MB2WyUe3hBMxc/xgwX0DeuJ+2Fkarp3raKng2x8IOW5O8XvtZinJhNKQCd59XDpuMkIw/dkERJcktHM=
+Message-ID: <4df04b840701222021w5e1aaab2if2ba7fc38d06d64b@mail.gmail.com>
+Date: Tue, 23 Jan 2007 12:21:05 +0800
+From: "yunfeng zhang" <zyf.zeroos@gmail.com>
+To: "Al Boldi" <a1426z@gawab.com>
+Subject: Re: [PATCH 2.6.20-rc5 1/1] MM: enhance Linux swap subsystem
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <200701222300.41960.a1426z@gawab.com>
 MIME-Version: 1.0
-To: balbir@in.ibm.com
-CC: Andrea Arcangeli <andrea@suse.de>, Niki Hammler <mailinglists@nobaq.net>,
-       linux-kernel@vger.kernel.org,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Subject: Re: Why active list and inactive list?
-References: <45B55286.5060909@nobaq.net> <20070123003939.GY13798@opteron.random> <45B56575.10807@in.ibm.com>
-In-Reply-To: <45B56575.10807@in.ibm.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <4df04b840701212309l2a283357jbdaa88794e5208a7@mail.gmail.com>
+	 <200701222300.41960.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Balbir Singh wrote:
+>
+> Patched against 2.6.19 leads to:
+>
+> mm/vmscan.c: In function `shrink_pvma_scan_ptes':
+> mm/vmscan.c:1340: too many arguments to function `page_remove_rmap'
+>
+> So changed
+>  page_remove_rmap(series.pages[i], vma);
+> to
+>  page_remove_rmap(series.pages[i]);
+>
 
-> This makes me wonder if it makes sense to split up the LRU into page
-> cache LRU and mapped pages LRU. I see two benefits
-> 
-> 1. Currently based on swappiness, we might walk an entire list
->    searching for page cache pages or mapped pages. With these
->    lists separated, it should get easier and faster to implement
->    this scheme
-> 2. There is another parallel thread on implementing page cache
->    limits. If the lists split out, we need not scan the entire
->    list to find page cache pages to evict them.
-> 
-> Of course I might be missing something (some piece of history)
+I've worked on 2.6.19, but when update to 2.6.20-rc5, the function is changed.
 
-I actually had patches to do "split active lists" a while back.
-
-They worked by lazily moving the page at reclaim-time, based on
-whether or not it is mapped. This isn't too much worse than the
-kernel's current idea of what a mapped page is.
-
-They actually got a noticable speedup of the swapping kbuild
-workload, but at this stage there were some more basic
-improvements needed, so the difference could be smaller today.
-
-The other nice thing about it was that it didn't have a hard
-cutoff that the current reclaim_mapped toggle does -- you could
-opt to scan the mapped list at a lower ratio than the unmapped
-one. Of course, it also has some downsides too, and would
-require retuning...
-
--- 
-SUSE Labs, Novell Inc.
-Send instant messages to your online friends http://au.messenger.yahoo.com 
+> But your patch doesn't offer any swap-performance improvement for both swsusp
+> or tmpfs.  Swap-in is still half speed of Swap-out.
+>
+>
+Current Linux page allocation fairly provides pages for every process, since
+swap daemon only is started when memory is low, so when it starts to scan
+active_list, the private pages of processes are messed up with each other,
+vmscan.c:shrink_list() is the only approach to attach disk swap page to page on
+active_list, as the result, all private pages lost their affinity on swap
+partition. I will give a testlater...
