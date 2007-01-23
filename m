@@ -1,59 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965455AbXAWVaW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965460AbXAWVc0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965455AbXAWVaW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jan 2007 16:30:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965467AbXAWVaV
+	id S965460AbXAWVc0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jan 2007 16:32:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965465AbXAWVcZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jan 2007 16:30:21 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:50900 "EHLO mail.dvmed.net"
+	Tue, 23 Jan 2007 16:32:25 -0500
+Received: from hera.kernel.org ([140.211.167.34]:50428 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965459AbXAWVaT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jan 2007 16:30:19 -0500
-Message-ID: <45B67E66.4060901@garzik.org>
-Date: Tue, 23 Jan 2007 16:30:14 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
+	id S965460AbXAWVcZ convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jan 2007 16:32:25 -0500
+From: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
+To: Lionel Landwerlin <landwer@free.fr>
+Subject: Re: 2.6.19.2 sky2/acpi crashes
+Date: Tue, 23 Jan 2007 16:30:53 -0500
+User-Agent: KMail/1.9.5
+Cc: Luming Yu <luming.yu@gmail.com>, linux-kernel@vger.kernel.org
+References: <1169542768.5537.11.camel@cocoduo> <3877989d0701230122r426eb5b0h446c897780923d7a@mail.gmail.com> <1169555238.5747.3.camel@cocoduo>
+In-Reply-To: <1169555238.5747.3.camel@cocoduo>
 MIME-Version: 1.0
-To: Auke Kok <auke-jan.h.kok@intel.com>
-CC: Andrew Morton <akpm@osdl.org>, Linus Torvalds <torvalds@osdl.org>,
-       netdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [git patches] net driver fixes
-References: <20070122185508.GA4648@havoc.gtf.org> <45B50A73.7000000@intel.com> <45B50E78.7000107@garzik.org> <45B5134B.3030909@intel.com>
-In-Reply-To: <45B5134B.3030909@intel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.7 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200701231630.55096.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Auke Kok wrote:
-> Jeff Garzik wrote:
->> Auke Kok wrote:
->>> Jeff Garzik wrote:
->>>> Please pull from 'upstream-linus' branch of
->>>> master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/netdev-2.6.git 
->>>> upstream-linus
->>>
->>> Jeff,
->>>
->>> is there a reason that you didn't pull the e1000 tree from us? I send 
->>> you all the information 5 days ago, WITH the changes that you requested.
->>
->> I did pull the tree.  The fixes were far more than just obvious 
->> one-liners, so they got pulled into #upstream.
+On Tuesday 23 January 2007 07:27, Lionel Landwerlin wrote:
+> Le mardi 23 janvier 2007 à 17:22 +0800, Luming Yu a écrit :
+> > Please try to remove processor module.
 > 
-> Forgive me for not seeing the 'pulled' message! I still don't see them 
-> in your tree on kernel.org either. Is it just slow again?
+> Ok, that's done. Same problem.
 
-hrm, no, at the time of your message everything has been mirrored out. 
-So, WYSIWYG.
-
-I ACK'd your latest update of the patch series, so resend the pull info 
-and I'll pull.  Sorry about that.
-
-	Jeff
-
-
-
+any difference with "idle=poll"?
+if yes, how about "idle=halt"?
