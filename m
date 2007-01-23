@@ -1,101 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932902AbXAWPoo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932983AbXAWQHp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932902AbXAWPoo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jan 2007 10:44:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932916AbXAWPoo
+	id S932983AbXAWQHp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jan 2007 11:07:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933013AbXAWQHp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jan 2007 10:44:44 -0500
-Received: from brick.kernel.dk ([62.242.22.158]:27032 "EHLO kernel.dk"
+	Tue, 23 Jan 2007 11:07:45 -0500
+Received: from mba.ocn.ne.jp ([210.190.142.172]:64697 "EHLO smtp.mba.ocn.ne.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932902AbXAWPon (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jan 2007 10:44:43 -0500
-Date: Tue, 23 Jan 2007 16:46:17 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: "Vladimir V. Saveliev" <vs@namesys.com>
-Cc: Laurent Riffard <laurent.riffard@free.fr>, reiserfs-list@namesys.com,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.20-rc3-mm1: umount reiser4 FS stuck in D state
-Message-ID: <20070123154617.GE11995@kernel.dk>
-References: <20070104220200.ae4e9a46.akpm@osdl.org> <200701062158.06329.vs@namesys.com> <45A81231.6040104@free.fr> <200701231940.58053.vs@namesys.com>
+	id S932983AbXAWQHo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jan 2007 11:07:44 -0500
+Date: Wed, 24 Jan 2007 01:07:41 +0900 (JST)
+Message-Id: <20070124.010741.130240814.anemo@mba.ocn.ne.jp>
+To: david-b@pacbell.net
+Cc: linux-kernel@vger.kernel.org, hcegtvedt@atmel.com, akpm@osdl.org
+Subject: Re: [PATCH 2.6.20-rc5] SPI: alternative fix for
+ spi_busnum_to_master
+From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+In-Reply-To: <200701230742.15531.david-b@pacbell.net>
+References: <200701221412.02452.david-b@pacbell.net>
+	<20070123.101011.25910575.nemoto@toshiba-tops.co.jp>
+	<200701230742.15531.david-b@pacbell.net>
+X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
+X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
+X-Mailer: Mew version 3.3 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200701231940.58053.vs@namesys.com>
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 23 2007, Vladimir V. Saveliev wrote:
-> Hello
+On Tue, 23 Jan 2007 07:42:15 -0800, David Brownell <david-b@pacbell.net> wrote:
+> > Indeed the check can be omitted.  Should I send a new patch just
+> > moving class_device_get() into "if (master->bus_num == bus_num)"
+> > block?
 > 
-> On Saturday 13 January 2007 01:56, Laurent Riffard wrote:
-> > Le 06.01.2007 19:58, Vladimir V. Saveliev a écrit :
-> > > Hello
-> > > 
-> > > On Saturday 06 January 2007 13:58, Laurent Riffard wrote:
-> > >> Hello,
-> > >>
-> > >> got this with 2.6.20-rc3-mm1:
-> > >>
-> > >> =======================
-> > >> SysRq : Show Blocked State
-> > >>
-> > >>                          free                        sibling
-> > >>   task             PC    stack   pid father child younger older
-> > >> umount        D C013135E  6044  1168   1150                     (NOTLB)
-> > >>        de591ae4 00000086 de591abc c013135e dff979c8 c012a6fe 00000046 00000007 
-> > >>        dfd94ac0 128d3000 00000026 00000000 dfd94bcc dff979c8 de591ae4 dffda038 
-> > >>        00000002 dff979c0 dff979bc dff979c8 de591b10 c012d600 dff979f8 00000000 
-> > >> Call Trace:
-> > >>  [<c012d600>] synchronize_qrcu+0x70/0x8c
-> > >>  [<c01bede4>] __make_request+0x4c/0x29b
-> > >>  [<c01bd24b>] generic_make_request+0x1b0/0x1de
-> > >>  [<c01bf354>] submit_bio+0xda/0xe2
-> > >>  [<e12674bd>] write_jnodes_to_disk_extent+0x920/0x974 [reiser4]
-> > >>  [<e12678dd>] update_journal_footer+0x29f/0x2b7 [reiser4]
-> > >>  [<e1268b65>] write_tx_back+0x149/0x185 [reiser4]
-> > >>  [<e126a8e7>] reiser4_write_logs+0xea4/0xfd2 [reiser4]
-> > >>  [<e125626a>] try_commit_txnh+0x7e6/0xa4f [reiser4]
-> > >>  [<e125661b>] reiser4_txn_end+0x148/0x3cf [reiser4]
-> > >>  [<e12568ad>] reiser4_txn_restart+0xb/0x1a [reiser4]
-> > >>  [<e125692f>] reiser4_txn_restart_current+0x73/0x75 [reiser4]
-> > >>  [<e1256b89>] force_commit_atom+0x258/0x261 [reiser4]
-> > >>  [<e1257703>] txnmgr_force_commit_all+0x406/0x697 [reiser4]
-> > >>  [<e12e5e08>] release_format40+0x10c/0x193 [reiser4]
-> > >>  [<e1279922>] reiser4_put_super+0x134/0x16a [reiser4]
-> > >>  [<c015c930>] generic_shutdown_super+0x55/0xd8
-> > >>  [<c015c9d3>] kill_block_super+0x20/0x32
-> > >>  [<c015ca75>] deactivate_super+0x3f/0x51
-> > >>  [<c016d903>] mntput_no_expire+0x42/0x5f
-> > >>  [<c0160f37>] path_release_on_umount+0x15/0x18
-> > >>  [<c016df77>] sys_umount+0x1a3/0x1cb
-> > >>  [<c016dfb8>] sys_oldumount+0x19/0x1b
-> > >>  [<c0103ed2>] sysenter_past_esp+0x5f/0x99
-> > >>  =======================
-> > >>
-> > >> Scenario:
-> > >> - umount a reiser4 FS (no need to write something before)
-> > > 
-> > > Hmm, I can not reproduce this with 2.6.20-rc3-mm1. Probably I need to config the kernel more close to your system.
-> > > 
-> > >> Earlier kernels were OK.
-> > 
-> > This still happens with 2.6.20-rc4-mm1...
-> > 
-> > Should I open a bug report at http://bugzilla.kernel.org?
-> > 
-> 
-> Which device with reiser4 did you try to umount?  Jens wrote that it
-> could be a barrier related. If there are no multidevices involved -
-> please report to bugzilla.
+> Yes, please.
 
-Make sure that your kernel contains this fix:
+OK, here is.  This patch uses spi_master_get() instead of
+class_device_get().
 
-http://git.kernel.dk/?p=linux-2.6-block.git;a=commitdiff;h=4af09c42ee1af70356471f51c1f40c1ff7881b68;hp=036f6008f43b5b4dd8c825365f15434d75005c6d
 
-I think it missed 2.6.20-rc3-mm1. Again, that assumes you are using md
-or dm.
+Subject: SPI: alternative fix for spi_busnum_to_master
 
--- 
-Jens Axboe
+If a SPI master device exists, udev (udevtrigger) causes kernel crash,
+due to wrong kobj pointer in kobject_uevent_env().  This problem was
+not in 2.6.19.
 
+The backtrace (on MIPS) was:
+[<8024db6c>] kobject_uevent_env+0x54c/0x5e8
+[<802a8264>] store_uevent+0x1c/0x3c  (in drivers/class.c)
+[<801cb14c>] subsys_attr_store+0x2c/0x50
+[<801cb80c>] flush_write_buffer+0x38/0x5c
+[<801cb900>] sysfs_write_file+0xd0/0x190
+[<80181444>] vfs_write+0xc4/0x1a0
+[<80181cdc>] sys_write+0x54/0xa0
+[<8010dae4>] stack_done+0x20/0x3c
+
+flush_write_buffer() passes kobject of spi_master_class.subsys to
+subsys_addr_store(), then subsys_addr_store() passes a pointer to a
+struct subsystem to store_uevent() which expects a pointer to a struct
+class_device.  The problem seems subsys_attr_store() called instead of
+class_device_attr_store().
+
+This mismatch was caused by commit
+3bd0f6943520e459659d10f3282285e43d3990f1, which overrides kset of
+master class.  This made spi_master_class.subsys.kset.ktype NULL so
+subsys_sysfs_ops is used instead of class_dev_sysfs_ops.
+
+The commit was to fix spi_busnum_to_master().  Here is a patch fixes
+this function in other way, just searching children list of
+class_device.
+
+Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+---
+diff --git a/drivers/spi/spi.c b/drivers/spi/spi.c
+index 270e621..6307428 100644
+--- a/drivers/spi/spi.c
++++ b/drivers/spi/spi.c
+@@ -366,7 +366,6 @@ spi_alloc_master(struct device *dev, uns
+ 
+ 	class_device_initialize(&master->cdev);
+ 	master->cdev.class = &spi_master_class;
+-	kobj_set_kset_s(&master->cdev, spi_master_class.subsys);
+ 	master->cdev.dev = get_device(dev);
+ 	spi_master_set_devdata(master, &master[1]);
+ 
+@@ -466,14 +465,20 @@ EXPORT_SYMBOL_GPL(spi_unregister_master)
+  */
+ struct spi_master *spi_busnum_to_master(u16 bus_num)
+ {
+-	char			name[9];
+-	struct kobject		*bus;
+-
+-	snprintf(name, sizeof name, "spi%u", bus_num);
+-	bus = kset_find_obj(&spi_master_class.subsys.kset, name);
+-	if (bus)
+-		return container_of(bus, struct spi_master, cdev.kobj);
+-	return NULL;
++	struct class_device	*cdev;
++	struct spi_master	*master = NULL;
++	struct spi_master	*m;
++
++	down(&spi_master_class.sem);
++	list_for_each_entry(cdev, &spi_master_class.children, node) {
++		m = container_of(cdev, struct spi_master, cdev);
++		if (m->bus_num == bus_num) {
++			master = spi_master_get(m);
++			break;
++		}
++	}
++	up(&spi_master_class.sem);
++	return master;
+ }
+ EXPORT_SYMBOL_GPL(spi_busnum_to_master);
+ 
