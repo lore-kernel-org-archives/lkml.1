@@ -1,100 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965165AbXAWOug@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965261AbXAWOvM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965165AbXAWOug (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jan 2007 09:50:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965224AbXAWOug
+	id S965261AbXAWOvM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jan 2007 09:51:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965259AbXAWOvM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jan 2007 09:50:36 -0500
-Received: from ppsw-3.csi.cam.ac.uk ([131.111.8.133]:55692 "EHLO
-	ppsw-3.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965165AbXAWOuf (ORCPT
+	Tue, 23 Jan 2007 09:51:12 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.155]:44769 "EHLO
+	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S965302AbXAWOvJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jan 2007 09:50:35 -0500
-X-Cam-SpamDetails: Not scanned
-X-Cam-AntiVirus: No virus found
-X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
-Date: Tue, 23 Jan 2007 14:50:19 +0000 (GMT)
-From: Anton Altaparmakov <aia21@cam.ac.uk>
-To: Yu-Chen Wu <g944370@oz.nthu.edu.tw>
-cc: linux-kernel@vger.kernel.org
-Subject: RE: Could convert a buffer that allocated by vmalloc to pages?
-In-Reply-To: <030801c73ef8$f2198a00$0100a8c0@sslabmayasky>
-Message-ID: <Pine.LNX.4.64.0701231449110.16296@hermes-1.csi.cam.ac.uk>
-References: <030701c73eef$0b4d0010$0100a8c0@sslabmayasky>
- <1169557944.4475.8.camel@imp.csi.cam.ac.uk> <030801c73ef8$f2198a00$0100a8c0@sslabmayasky>
+	Tue, 23 Jan 2007 09:51:09 -0500
+Message-ID: <45B620D7.3030501@ru.mvista.com>
+Date: Tue, 23 Jan 2007 17:51:03 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Alan <alan@lxorguk.ukuu.org.uk>
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 13/15] ide: fix UDMA/MWDMA/SWDMA masks
+References: <20070119003058.14846.43637.sendpatchset@localhost.localdomain>	<20070119003226.14846.87052.sendpatchset@localhost.localdomain>	<45B4FFBD.40507@ru.mvista.com>	<20070122184620.1c8b87ac@localhost.localdomain>	<45B51E83.1010904@ru.mvista.com> <20070122213109.21e4e805@localhost.localdomain>
+In-Reply-To: <20070122213109.21e4e805@localhost.localdomain>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 23 Jan 2007, Yu-Chen Wu wrote:
-> I tried vmalloc_to_page() and I have some question.
-> I print the "pages" in vm_struct structure of the buffer to compare the
-> address get from vmalloc_to_page(), result as follows:
+Hello.
 
-Both the code you are showing and your question do not make any sense 
-to me...  You need to show all of the code not some random fragments...  
-What the heck is L2vm for a start?
+Alan wrote:
+>>>>   Ugh, I'm not seeing any *actual* support for MW/SW DMA in this driver... 
 
-Best regards,
+>>>Thats long been broken. Should be correct in the libata driver
 
-	Anton
+>>    Here's a surprise for you. pata_cmd64x copied the SW/MW DMA setup code 
+>>from the IDE driver.  No way it could be working.  You may check against the 
+>>PC64x datasheets (if you have them -- if you don't I think I may share) and 
+>>see for yourself -- it's abolutely idiotic.
 
-> //===source code====
-> L2cache=vmalloc(L2SIZE);// L2SIZE=40960
-> printk(KERN_INFO "find_vm_struct OK:%x
-> addr:%xnr_pages:%d\n",L2vm,L2vm->addr,L2vm->nr_pages);
-> for(i=0;i<L2vm->nr_pages;i++)
->  {
->       if(L2vm->pages[i])
->          printk("page allocated:%x\n",page_address(L2vm->pages[i]));
->  }
-> tpage=vmalloc_to_page(L2cache);
-> printk(KERN_INFO "vmalloc_to_page tpage :%x\n",tpage);
-> //===========info of dmesg==================
-> [ 1561.768471] page allocated:73d65000
-> [ 1561.768474] page allocated:781e9000
-> [ 1561.768476] page allocated:6203f000
-> [ 1561.768478] page allocated:57fdf000
-> [ 1561.768481] page allocated:56ed4000
-> [ 1561.768483] page allocated:56ed5000
-> [ 1561.768485] page allocated:64ab6000
-> [ 1561.768488] page allocated:7cc1e000
-> [ 1561.768490] page allocated:60ea8000
-> [ 1561.768492] page allocated:60ea9000
-> [ 1561.768497] vmalloc_to_page tpage :7fcf7e18
-> 
-> Why the page address get from vmalloc_to_page is different with the first
-> page address of the vm_struct (73d65000)?
-> 
-> THX
-> -----Original Message-----
-> From: linux-kernel-owner@vger.kernel.org
-> [mailto:linux-kernel-owner@vger.kernel.org] On Behalf Of Anton Altaparmakov
-> Sent: Tuesday, January 23, 2007 9:12 PM
-> To: Yu-Chen Wu
-> Cc: linux-kernel@vger.kernel.org
-> Subject: Re: Could convert a buffer that allocated by vmalloc to pages?
-> 
-> On Tue, 2007-01-23 at 21:04 +0800, Yu-Chen Wu wrote:
-> > Hi,
-> > I write a driver have a big buffer (16MB,allocated by vmalloc).
-> > I want to use the buffer to do DMA transmission so I need getting the
-> pages
-> > of the buffer.
-> > Have any kernel API can do this?
-> > My platform is x86_64 and 2GB RAM
-> 
-> vmalloc_to_page()...
-> 
-> See mm/memory.c for the function and how to use it.
-> 
-> Best regards,
-> 
->         Anton
-> 
+    I.e. MWDMA2 should be working due to the way the driver is written (it 
+sets up PIO4 timings when auto-tuning DMA) but not the other modes since 
+speedproc() method is brain-damaged in this part.
 
--- 
-Anton Altaparmakov <aia21 at cam.ac.uk> (replace at with @)
-Unix Support, Computing Service, University of Cambridge, CB2 3QH, UK
-Linux NTFS maintainer, http://www.linux-ntfs.org/
+> Not a suprise to be honest. I fixed some of the ALi stuff when I did it
+> and I think that was pushed back into drivers/ide. The CMD64x hasn't had
+> much love really.
+
+    Another buglet found by random glancing at this driver:
+
+/**
+  *      cmd648_dma_stop -       DMA stop callback
+  *      @qc: Command in progress
+  *
+  *      DMA has completed.
+  */
+
+static void cmd648_bmdma_stop(struct ata_queued_cmd *qc)
+{
+         struct ata_port *ap = qc->ap;
+         struct pci_dev *pdev = to_pci_dev(ap->host->dev);
+         u8 dma_intr;
+         int dma_reg = ap->port_no ? ARTTIM23_INTR_CH1 : CFR_INTR_CH0;
+         int dma_mask = ap->port_no ? ARTTIM2 : CFR;
+
+         ata_bmdma_stop(qc);
+
+         pci_read_config_byte(pdev, dma_reg, &dma_intr);
+         pci_write_config_byte(pdev, dma_reg, dma_intr | dma_mask);
+}
+
+    dma_reg and dma_mask initializers must have been swapped since ARTTIM2 and 
+CFR are regster names.  So, the code reads/writes semi-random regs...
+
+> Wouldn't mind the older 64x (not 640) data sheets if they are sharable.
+
+    Sent what I had on this machine.  Will looks for newer revision of 
+PCJ0646U2 spec elsewhere...
+
+MBR, Sergei
