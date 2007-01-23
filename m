@@ -1,71 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932857AbXAWLMw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932412AbXAWL2S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932857AbXAWLMw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jan 2007 06:12:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932971AbXAWLMw
+	id S932412AbXAWL2S (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jan 2007 06:28:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932929AbXAWL2S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jan 2007 06:12:52 -0500
-Received: from wx-out-0506.google.com ([66.249.82.238]:34603 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932857AbXAWLMv (ORCPT
+	Tue, 23 Jan 2007 06:28:18 -0500
+Received: from amsfep17-int.chello.nl ([213.46.243.15]:22445 "EHLO
+	amsfep13-int.chello.nl" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S932412AbXAWL2R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jan 2007 06:12:51 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=P9KfjJgMwwbVpSMp88kfmVPZXDeMPdTviu+vlA80Q7+ko1BqurMXY7LRT2W9yfDHlWupTMdB2Kp8gUJSRnS8vGBgdq0TbzLJWdSO7HNiTmhKxA0u9lpQvq5TJFGic0gJlJZIR8agXD3aD9hO7VNTnBrvQgcsJiqVpbLZ1hwNaBw=
-Message-ID: <f4527be0701230312q2a22b41i93abdf8972525d9e@mail.gmail.com>
-Date: Tue, 23 Jan 2007 11:12:50 +0000
-From: "Andrew Lyon" <andrew.lyon@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.19.2 sky2/acpi crashes
-In-Reply-To: <ep4nb2$mh2$1@fortknox.intranet.wo.rk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 23 Jan 2007 06:28:17 -0500
+Subject: Re: [patch] notifiers: fix blocking_notifier_call_chain()
+	scalability
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, Linus Torvalds <torvalds@osdl.org>,
+       Andrew Morton <akpm@osdl.org>
+In-Reply-To: <20070123094550.GA21105@elte.hu>
+References: <20070123094550.GA21105@elte.hu>
+Content-Type: text/plain
+Date: Tue, 23 Jan 2007 12:24:54 +0100
+Message-Id: <1169551494.6197.209.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1169542768.5537.11.camel@cocoduo>
-	 <ep4nb2$mh2$1@fortknox.intranet.wo.rk>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 1/23/07, Soeren Sonnenburg <kernel@nn7.de> wrote:
-> On Tue, 23 Jan 2007 08:59:28 +0000, Lionel Landwerlin wrote:
->
-> > Hi,
-> >
-> > I'm running a macbook with a Marvell ethernet controller, and I have a
-> > lots of freezes when using the ethernet controller under a load of
-> > ~100K/s. Since I'm running a 2.6.19.2 kernel, I'm able to get some
-> > report from the kernel. Here they are :
->
-> I am also having trouble with the sky2 module, though I've not yet seen a
-> oops, the driver stopped working after some heavy traffic (copying some G
-> of data). Only rmmod sky2; modprobe sky2 resolved this. (I am also on
-> 2.6.19.2 but I've seen this happen on 2.6.20-rcX too).
->
-> Soeren
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+On Tue, 2007-01-23 at 10:45 +0100, Ingo Molnar wrote:
+> Subject: [patch] notifiers: fix blocking_notifier_call_chain() scalability
+> From: Ingo Molnar <mingo@elte.hu>
+> 
+> while lock-profiling the -rt kernel i noticed weird contention during 
+> mmap-intense workloads, and the tracer showed the following gem, in one 
+> of our MM hotpaths:
+> 
+>  threaded-2771  1....   65us : sys_munmap (sysenter_do_call)
+>  threaded-2771  1....   66us : profile_munmap (sys_munmap)
+>  threaded-2771  1....   66us : blocking_notifier_call_chain (profile_munmap)
+>  threaded-2771  1....   66us : rt_down_read (blocking_notifier_call_chain)
+> 
+> ouch! a global rw-semaphore taken in one of the most 
+> performance-sensitive codepaths of the kernel. And i dont even have 
+> oprofile enabled! All distro kernels have CONFIG_PROFILING enabled, so 
+> this scalability problem affects the majority of Linux users.
+> 
+> The fix is to enhance blocking_notifier_call_chain() to only take the 
+> lock if there appears to be work on the call-chain.
+> 
+> With this patch applied i get nicely saturated system, and much higher 
+> munmap performance, on SMP systems.
+> 
+> And as a bonus this also fixes a similar scalability bottleneck in the 
+> thread-exit codepath: profile_task_exit() ...
+> 
+> Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-Ive also had the same problem with both 2.6.19.2 and 2.6.20-rcX,
-motherboard is gigabyte ga-965-ds3 , the networking stops completely
-under moderate traffic, I get the following errors or a complete
-lockup:
+Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 
-Jan 21 02:08:04 beast NETDEV WATCHDOG: eth0: transmit timed out
-Jan 21 02:08:04 beast sky2 eth0: tx timeout
-Jan 21 02:08:04 beast sky2 eth0: transmit ring 475 .. 452 report=475 done=475
-Jan 21 02:08:04 beast sky2 hardware hung? flushing
+> ---
+>  kernel/sys.c |   15 +++++++++++----
+>  1 file changed, 11 insertions(+), 4 deletions(-)
+> 
+> Index: linux/kernel/sys.c
+> ===================================================================
+> --- linux.orig/kernel/sys.c
+> +++ linux/kernel/sys.c
+> @@ -325,11 +325,18 @@ EXPORT_SYMBOL_GPL(blocking_notifier_chai
+>  int blocking_notifier_call_chain(struct blocking_notifier_head *nh,
+>  		unsigned long val, void *v)
+>  {
+> -	int ret;
+> +	int ret = NOTIFY_DONE;
+>  
+> -	down_read(&nh->rwsem);
+> -	ret = notifier_call_chain(&nh->head, val, v);
+> -	up_read(&nh->rwsem);
+> +	/*
+> +	 * We check the head outside the lock, but if this access is
+> +	 * racy then it does not matter what the result of the test
+> +	 * is, we re-check the list after having taken the lock anyway:
+> +	 */
+> +	if (rcu_dereference(nh->head)) {
+> +		down_read(&nh->rwsem);
+> +		ret = notifier_call_chain(&nh->head, val, v);
+> +		up_read(&nh->rwsem);
+> +	}
+>  	return ret;
+>  }
 
-At the time I was downloading a iso image at 850k/sec, so not really a
-high network load at all.
 
-rmmod / modprobe does resolve the issue, but more times than not the
-box locks up completely instead of getting those errors.
-
-Andy
