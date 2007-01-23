@@ -1,80 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932973AbXAWEga@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932268AbXAWEia@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932973AbXAWEga (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jan 2007 23:36:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932289AbXAWEga
+	id S932268AbXAWEia (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jan 2007 23:38:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932270AbXAWEia
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jan 2007 23:36:30 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:55148 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932270AbXAWEga (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jan 2007 23:36:30 -0500
-Message-ID: <45B59053.1060007@redhat.com>
-Date: Mon, 22 Jan 2007 23:34:27 -0500
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
+	Mon, 22 Jan 2007 23:38:30 -0500
+Received: from theorix.CeNTIE.NET.au ([202.9.6.84]:44316 "HELO
+	theorix.centie.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S932268AbXAWEia (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jan 2007 23:38:30 -0500
+Message-ID: <45B59140.3050606@usherbrooke.ca>
+Date: Tue, 23 Jan 2007 15:38:24 +1100
+From: Jean-Marc Valin <jean-marc.valin@usherbrooke.ca>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070104)
 MIME-Version: 1.0
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-CC: balbir@in.ibm.com, Andrea Arcangeli <andrea@suse.de>,
-       Niki Hammler <mailinglists@nobaq.net>, linux-kernel@vger.kernel.org,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Subject: Re: Why active list and inactive list?
-References: <45B55286.5060909@nobaq.net> <20070123003939.GY13798@opteron.random> <45B56575.10807@in.ibm.com> <45B58C5C.8010900@yahoo.com.au>
-In-Reply-To: <45B58C5C.8010900@yahoo.com.au>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Suspend to RAM generates oops and general protection fault
+References: <45B422D3.9040409@usherbrooke.ca> <200701221259.06817.rjw@sisk.pl>
+In-Reply-To: <200701221259.06817.rjw@sisk.pl>
+X-Enigmail-Version: 0.94.0.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin wrote:
+>> I just encountered the following oops and general protection fault
+>> trying to suspend/resume my laptop. I've got a Dell D820 laptop with a 2
+>> GHz Core 2 Duo CPU. It usually suspends/resumes fine but not always. The
+>> relevant errors are below but the full dmesg log is at
+>> http://people.xiph.org/~jm/suspend_resume_oops.txt and my config is in
+>> http://people.xiph.org/~jm/config-2.6.20-rc5.txt
+>>
+>> This happens when I'm running 2.6.20-rc5. The previous kernel version I
+>> was using is 2.6.19-rc6 and was much more broken (second attempt
+>> *always* failed), so it's probably not a regression.
+> 
+> This is a shot against the odds, but could you please check if the attached
+> patch has any effect?
 
-> The other nice thing about it was that it didn't have a hard
-> cutoff that the current reclaim_mapped toggle does -- you could
-> opt to scan the mapped list at a lower ratio than the unmapped
-> one. Of course, it also has some downsides too, and would
-> require retuning...
+Thanks, I'll try that. It may take a while because the problem only
+happened once in dozens of suspend/resume cycles.
 
-Here's a simple idea for tuning.
+	Jean-Marc
 
-For each list we keep track of:
-1) the size of the list
-2) the rate at which we scan the list
-3) the fraction of (non new) pages that get
-    referenced
-
-That way we can determine which list has the largest
-fraction of "idle" pages sitting around and consequently
-which list should be scanned more aggressively.
-
-For each list we can calculate how frequently the pages
-in the list are being used:
-
-pressure = referenced percentage * scan rate / list size
-
-The VM can equalize the pressure by scanning the list with
-lower usage less than the other list.  This way the VM can
-give the right amount of memory to each type.
-
-Of course, each list needs to be divided into inactive and
-active like the current VM, in order to make sure that the
-pages which are used once cannot push the real working set
-of that list out of memory.
-
-There is a more subtle problem when the list's working set
-is larger than the amount of memory the list has.  In that
-situation the VM will be faulting pages back in just after
-they got evicted.  Something like my /proc/refaults code
-can detect that and adjust the size of the undersized list
-accordingly.
-
-Of course, once we properly distinguish between the more
-frequently and less frequently accessed pages within each
-of the page sets (mapped/anonymous vs. unmapped) and have
-the pressure between the lists equalized, why do we need
-to keep them separate again?
-
--- 
-Politics is the struggle between those who want to make their country
-the best in the world, and those who believe it already is.  Each group
-calls the other unpatriotic.
+> Rafael
+> 
+> 
+> 
+> 
+> ------------------------------------------------------------------------
+> 
+> Both process_zones()and drain_node_pages() check for populated zones before
+> touching pagesets. However, __drain_pages does not do so,
+> 
+> This may result in a NULL pointer dereference for pagesets in unpopulated
+> zones if a NUMA setup is combined with cpu hotplug.
+> 
+> Initially the unpopulated zone has the pcp pointers pointing to the boot
+> pagesets.  Since the zone is not populated the boot pageset pointers will
+> not be changed during page allocator and slab bootstrap.
+> 
+> If a cpu is later brought down (first call to __drain_pages()) then the pcp
+> pointers for cpus in unpopulated zones are set to NULL since __drain_pages
+> does not first check for an unpopulated zone.
+> 
+> If the cpu is then brought up again then we call process_zones() which will ignore
+> the unpopulated zone. So the pageset pointers will still be NULL.
+> 
+> If the cpu is then again brought down then __drain_pages will attempt to drain
+> pages by following the NULL pageset pointer for unpopulated zones.
+> 
+> Signed-off-by: Christoph Lameter <clameter@sgi.com>
+> 
+> ---
+>  mm/page_alloc.c |    3 +++
+>  1 file changed, 3 insertions(+)
+> 
+> Index: linux-2.6.20-rc4/mm/page_alloc.c
+> ===================================================================
+> --- linux-2.6.20-rc4.orig/mm/page_alloc.c
+> +++ linux-2.6.20-rc4/mm/page_alloc.c
+> @@ -714,6 +714,9 @@ static void __drain_pages(unsigned int c
+>  		if (!populated_zone(zone))
+>  			continue;
+>  
+> +		if (!populated_zone(zone))
+> +			continue;
+> +
+>  		pset = zone_pcp(zone, cpu);
+>  		for (i = 0; i < ARRAY_SIZE(pset->pcp); i++) {
+>  			struct per_cpu_pages *pcp;
