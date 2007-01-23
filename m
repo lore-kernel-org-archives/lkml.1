@@ -1,41 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965481AbXAWVfP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965490AbXAWVhR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965481AbXAWVfP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jan 2007 16:35:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965489AbXAWVfP
+	id S965490AbXAWVhR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jan 2007 16:37:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965493AbXAWVhQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jan 2007 16:35:15 -0500
-Received: from colo.lackof.org ([198.49.126.79]:37914 "EHLO colo.lackof.org"
+	Tue, 23 Jan 2007 16:37:16 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:57900 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965488AbXAWVfN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jan 2007 16:35:13 -0500
-Date: Tue, 23 Jan 2007 14:35:04 -0700
-From: dann frazier <dannf@dannf.org>
-To: Grant Coady <gcoady.lk@gmail.com>
-Cc: Willy Tarreau <w@1wt.eu>, Santiago Garcia Mantinan <manty@debian.org>,
-       linux-kernel@vger.kernel.org, debian-kernel@lists.debian.org
-Subject: Re: problems with latest smbfs changes on 2.4.34 and security backports
-Message-ID: <20070123213503.GF26310@colo>
-References: <20070117100030.GA11251@clandestino.aytolacoruna.es> <20070117215519.GX24090@1wt.eu> <20070119010040.GR16053@colo> <20070120010544.GY26210@colo> <t1r7r2thimh3gpuhtfc9l3aehjdd6dqkp8@4ax.com> <20070121230321.GC2480@1wt.eu> <20070123201936.GA26310@colo> <mstcr2hm6aar4t58o3gm0hit6thpdd6ohp@4ax.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <mstcr2hm6aar4t58o3gm0hit6thpdd6ohp@4ax.com>
-User-Agent: mutt-ng/devel-r782 (Debian)
+	id S965488AbXAWVhO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jan 2007 16:37:14 -0500
+Date: Tue, 23 Jan 2007 13:34:09 -0800
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Luca Tettamanti <kronos.it@gmail.com>,
+       Jay Cliburn <jacliburn@bellsouth.net>,
+       Randy Dunlap <randy.dunlap@oracle.com>, shemminger@osdl.org,
+       csnook@redhat.com, hch@infradead.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, atl1-devel@lists.sourceforge.net
+Subject: Re: [PATCH 4/4] atl1: Ancillary C files for Attansic L1 driver
+Message-ID: <20070123133409.17a32128@freekitty>
+In-Reply-To: <45B67F29.4010703@garzik.org>
+References: <20070121210737.GE2702@osprey.hogchain.net>
+	<20070121183151.4be61ebf.randy.dunlap@oracle.com>
+	<45B43093.6060500@bellsouth.net>
+	<20070122200004.GA12553@dreamland.darkstar.lan>
+	<20070123112522.65aac61b@freekitty>
+	<45B67F29.4010703@garzik.org>
+Organization: Linux Foundation
+X-Mailer: Sylpheed-Claws 2.5.0-rc3 (GTK+ 2.10.6; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 24, 2007 at 08:04:36AM +1100, Grant Coady wrote:
-> Hi Dann,
-> I'm running slackware-11, no smbfs package, 'smbmnt' is from samba-3.0.23c 
-> package with two tiny unrelated (?) patches:
+On Tue, 23 Jan 2007 16:33:29 -0500
+Jeff Garzik <jeff@garzik.org> wrote:
 
-Thanks again Grant. You might check out the patch I just submitted -
-turns out this was an issue that was already fixed in 2.6, and that
-fix is more complete than my previous one. You'll need the additional
-userspace patches to use the server-provided perms (i.e., get rid of
-the +x bits).
+> Stephen Hemminger wrote:
+> > IMHO the MSI disabling should be removed from drivers and be done
+> > in the PCI core.
+> 
+> That is the consensus opinion.
+> 
+> Currently drivers implement the MSI tests because the core PCI code 
+> hasn't been up to snuff.  I (and others) have been discouraging that, 
+> but when a user faces a choice between working and non-working network, 
+> the pragmatic solution wins.
+> 
+> All efforts to get us to the point where we can remove the MSI tests 
+> from drivers are strongly supported...
+> 
+> 	Jeff
+
+So far, either MSI works for all devices or is broken, so it makes
+sense to have a "msi=off" boot option (if there isn't already)
 
 -- 
-dann frazier
-
+Stephen Hemminger <shemminger@linux-foundation.org>
