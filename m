@@ -1,89 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932564AbXAWAXE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932443AbXAWAX0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932564AbXAWAXE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jan 2007 19:23:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932548AbXAWAWy
+	id S932443AbXAWAX0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jan 2007 19:23:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932567AbXAWAXF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jan 2007 19:22:54 -0500
-Received: from cantor.suse.de ([195.135.220.2]:35117 "EHLO mx1.suse.de"
+	Mon, 22 Jan 2007 19:23:05 -0500
+Received: from cantor.suse.de ([195.135.220.2]:35135 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932528AbXAWAWp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jan 2007 19:22:45 -0500
+	id S932583AbXAWAW5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jan 2007 19:22:57 -0500
 From: NeilBrown <neilb@suse.de>
 To: Andrew Morton <akpm@osdl.org>
-Date: Tue, 23 Jan 2007 11:22:18 +1100
-Message-Id: <1070123002218.27842@suse.de>
+Date: Tue, 23 Jan 2007 11:22:31 +1100
+Message-Id: <1070123002231.27868@suse.de>
 X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
 	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
 	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Cc: nfs@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: [PATCH 003 of 5] knfsd: Fix an NFSD bug with full sized, non-page-aligned reads.
+Cc: Peter Staubach <staubach@redhat.com>
+Subject: [PATCH 005 of 5] knfsd: Don't mess with the 'mode' when storing a exclusive-create cookie.
 References: <20070123111558.27683.patches@notabene>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-NFSd assumes that largest number of pages that will be needed
-for a request+response is 2+N where N pages is the size of the largest
-permitted read/write request.  The '2' are 1 for the non-data part of
-the request, and 1 for the non-data part of the reply.
+From: Peter Staubach <staubach@redhat.com>
 
-However, when a read request is not page-aligned, and we choose to use
-->sendfile to send it directly from the page cache, we may need N+1
-pages to hold the whole reply.  This can overflow and array and cause
-an Oops.
+NFS V3 (and V4) support exclusive create by passing a 'cookie' which
+can get stored with the file.  If the file exists but has exactly the
+right cookie stored, then we assume this is a retransmit and the
+exclusive create was successful.
 
-This patch increases size of the array for holding pages by one and
-makes sure that entry is NULL when it is not in use.
+The cookie is 64bits and is traditionally stored in the mtime and
+atime fields.  This causes a problem with Solaris7 as negative mtime
+or atime confuse it.  So we moved two bits into the mode word instead.
+
+But inherited ACLs sometimes overwrite the mode word on create, so
+this is a problem.
+
+So we give up and just store 62 of the 64 bits and assume that is
+close enough.
 
 Signed-off-by: Neil Brown <neilb@suse.de>
 
 ### Diffstat output
- ./fs/nfsd/vfs.c              |    3 ++-
- ./include/linux/sunrpc/svc.h |    5 ++++-
- ./net/sunrpc/svcsock.c       |    2 ++
- 3 files changed, 8 insertions(+), 2 deletions(-)
+ ./fs/nfsd/vfs.c |   21 +++++----------------
+ 1 file changed, 5 insertions(+), 16 deletions(-)
 
 diff .prev/fs/nfsd/vfs.c ./fs/nfsd/vfs.c
---- .prev/fs/nfsd/vfs.c	2007-01-23 11:13:45.000000000 +1100
-+++ ./fs/nfsd/vfs.c	2007-01-23 11:14:54.000000000 +1100
-@@ -822,7 +822,8 @@ nfsd_read_actor(read_descriptor_t *desc,
- 		rqstp->rq_res.page_len = size;
- 	} else if (page != pp[-1]) {
- 		get_page(page);
--		put_page(*pp);
-+		if (*pp)
-+			put_page(*pp);
- 		*pp = page;
- 		rqstp->rq_resused++;
- 		rqstp->rq_res.page_len += size;
-
-diff .prev/include/linux/sunrpc/svc.h ./include/linux/sunrpc/svc.h
---- .prev/include/linux/sunrpc/svc.h	2007-01-23 11:13:45.000000000 +1100
-+++ ./include/linux/sunrpc/svc.h	2007-01-23 11:14:54.000000000 +1100
-@@ -144,8 +144,11 @@ extern u32 svc_max_payload(const struct 
-  *
-  * Each request/reply pair can have at most one "payload", plus two pages,
-  * one for the request, and one for the reply.
-+ * We using ->sendfile to return read data, we might need one extra page
-+ * if the request is not page-aligned.  So add another '1'.
-  */
--#define RPCSVC_MAXPAGES		((RPCSVC_MAXPAYLOAD+PAGE_SIZE-1)/PAGE_SIZE + 2)
-+#define RPCSVC_MAXPAGES		((RPCSVC_MAXPAYLOAD+PAGE_SIZE-1)/PAGE_SIZE \
-+				+ 2 + 1)
+--- .prev/fs/nfsd/vfs.c	2007-01-23 11:14:54.000000000 +1100
++++ ./fs/nfsd/vfs.c	2007-01-23 11:15:06.000000000 +1100
+@@ -1249,7 +1249,6 @@ nfsd_create_v3(struct svc_rqst *rqstp, s
+ 	__be32		err;
+ 	int		host_err;
+ 	__u32		v_mtime=0, v_atime=0;
+-	int		v_mode=0;
  
- static inline u32 svc_getnl(struct kvec *iov)
- {
-
-diff .prev/net/sunrpc/svcsock.c ./net/sunrpc/svcsock.c
---- .prev/net/sunrpc/svcsock.c	2007-01-23 11:13:45.000000000 +1100
-+++ ./net/sunrpc/svcsock.c	2007-01-23 11:14:54.000000000 +1100
-@@ -1306,6 +1306,8 @@ svc_recv(struct svc_rqst *rqstp, long ti
- 				schedule_timeout_uninterruptible(msecs_to_jiffies(500));
- 			rqstp->rq_pages[i] = p;
- 		}
-+	rqstp->rq_pages[i++] = NULL; /* this might be seen in nfs_read_actor */
-+	BUG_ON(pages >= RPCSVC_MAXPAGES);
+ 	err = nfserr_perm;
+ 	if (!flen)
+@@ -1286,16 +1285,11 @@ nfsd_create_v3(struct svc_rqst *rqstp, s
+ 		goto out;
  
- 	/* Make arg->head point to first page and arg->pages point to rest */
- 	arg = &rqstp->rq_arg;
+ 	if (createmode == NFS3_CREATE_EXCLUSIVE) {
+-		/* while the verifier would fit in mtime+atime,
+-		 * solaris7 gets confused (bugid 4218508) if these have
+-		 * the high bit set, so we use the mode as well
++		/* solaris7 gets confused (bugid 4218508) if these have
++		 * the high bit set, so just clear the high bits.
+ 		 */
+ 		v_mtime = verifier[0]&0x7fffffff;
+ 		v_atime = verifier[1]&0x7fffffff;
+-		v_mode  = S_IFREG
+-			| ((verifier[0]&0x80000000) >> (32-7)) /* u+x */
+-			| ((verifier[1]&0x80000000) >> (32-9)) /* u+r */
+-			;
+ 	}
+ 	
+ 	if (dchild->d_inode) {
+@@ -1323,7 +1317,6 @@ nfsd_create_v3(struct svc_rqst *rqstp, s
+ 		case NFS3_CREATE_EXCLUSIVE:
+ 			if (   dchild->d_inode->i_mtime.tv_sec == v_mtime
+ 			    && dchild->d_inode->i_atime.tv_sec == v_atime
+-			    && dchild->d_inode->i_mode  == v_mode
+ 			    && dchild->d_inode->i_size  == 0 )
+ 				break;
+ 			 /* fallthru */
+@@ -1345,26 +1338,22 @@ nfsd_create_v3(struct svc_rqst *rqstp, s
+ 	}
+ 
+ 	if (createmode == NFS3_CREATE_EXCLUSIVE) {
+-		/* Cram the verifier into atime/mtime/mode */
++		/* Cram the verifier into atime/mtime */
+ 		iap->ia_valid = ATTR_MTIME|ATTR_ATIME
+-			| ATTR_MTIME_SET|ATTR_ATIME_SET
+-			| ATTR_MODE;
++			| ATTR_MTIME_SET|ATTR_ATIME_SET;
+ 		/* XXX someone who knows this better please fix it for nsec */ 
+ 		iap->ia_mtime.tv_sec = v_mtime;
+ 		iap->ia_atime.tv_sec = v_atime;
+ 		iap->ia_mtime.tv_nsec = 0;
+ 		iap->ia_atime.tv_nsec = 0;
+-		iap->ia_mode  = v_mode;
+ 	}
+ 
+ 	/* Set file attributes.
+-	 * Mode has already been set but we might need to reset it
+-	 * for CREATE_EXCLUSIVE
+ 	 * Irix appears to send along the gid when it tries to
+ 	 * implement setgid directories via NFS. Clear out all that cruft.
+ 	 */
+  set_attr:
+-	if ((iap->ia_valid &= ~(ATTR_UID|ATTR_GID)) != 0) {
++	if ((iap->ia_valid &= ~(ATTR_UID|ATTR_GID|ATTR_MODE)) != 0) {
+  		__be32 err2 = nfsd_setattr(rqstp, resfhp, iap, 0, (time_t)0);
+ 		if (err2)
+ 			err = err2;
