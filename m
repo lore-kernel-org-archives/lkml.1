@@ -1,52 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933010AbXAWRLp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965066AbXAWRXo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933010AbXAWRLp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jan 2007 12:11:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933093AbXAWRLp
+	id S965066AbXAWRXo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jan 2007 12:23:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965050AbXAWRXo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jan 2007 12:11:45 -0500
-Received: from mail.gmx.net ([213.165.64.20]:33020 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S933010AbXAWRLo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jan 2007 12:11:44 -0500
-X-Authenticated: #14842415
-From: Alessandro Di Marco <dmr@gmx.it>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: linux-kernel@vger.kernel.org, vojtech@suse.cz
-Subject: Re: [ANNOUNCE] System Inactivity Monitor v1.0
-References: <877ivkrv5s.fsf@gmx.it> <20070119101103.GA5730@ucw.cz>
-	<877ivfi60i.fsf@gmx.it> <20070123094114.GE6033@ucw.cz>
-	<87wt3dhlte.fsf@gmx.it> <20070123163442.GA18662@elf.ucw.cz>
-Date: Tue, 23 Jan 2007 18:11:38 +0100
-In-Reply-To: <20070123163442.GA18662@elf.ucw.cz> (Pavel Machek's message of "Tue\, 23 Jan 2007 17\:34\:42 +0100")
-Message-ID: <87lkjthdmd.fsf@gmx.it>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.92 (gnu/linux)
+	Tue, 23 Jan 2007 12:23:44 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:33447 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965012AbXAWRXn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jan 2007 12:23:43 -0500
+Message-ID: <45B644AC.5030109@redhat.com>
+Date: Tue, 23 Jan 2007 11:23:56 -0600
+From: Eric Sandeen <sandeen@redhat.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Y-GMX-Trusted: 0
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+CC: ext4 development <linux-ext4@vger.kernel.org>
+Subject: [PATCH] [RESEND] return ENOENT from ext3_link when racing with unlink
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek <pavel@ucw.cz> writes:
+(resend now that LCA is done)
 
-   >    But I still believe it can be out.
-   >
-   > Do you believe it could be a user-space daemon or what?
+An update from the earlier thread, 
+[PATCH] [RFC] remove ext3 inode from orphan list when link and unlink race
 
-   Yes, what prevents userspace daemon watching /dev/input/event* to
-   provide this functionality?
+I think this is better than the original idea of trying to handle the race;
+I've seen that the orphan inode list can get corrupted, but there may well
+be other implications of the race which haven't yet been exposed.  I think
+it's safer to simply return -ENOENT in this race window, and avoid other
+potential problems.  Anything wrong with this?
 
-Well that was my first attempt. Just an hack, but it works. Nonetheless I found
-the kernel-level approach fitting better the problem: it is elegant, simpler
-and more efficient than user-level one.
+Thanks for the comments suggesting this approach in the prior thread.
 
-For example, the subsystem provides at kernel-level handy
-hiberante/suspend/resume callbacks that I use to turn on/off the timer,
-avoiding the time-warp problem. Doing that at user-level would be far more
-messy...
+Thanks,
 
-Bye
+-Eric
 
---
-An age is called Dark not because the light fails to shine, but because people
-refuse to see it. - James Michener, Space
+---
+
+Return -ENOENT from ext[34]_link if we've raced with unlink and
+i_nlink is 0.  Doing otherwise has the potential to corrupt the
+orphan inode list, because we'd wind up with an inode with a
+non-zero link count on the list, and it will never get properly
+cleaned up & removed from the orphan list before it is freed.
+
+Signed-off-by: Eric Sandeen <sandeen@redhat.com>
+
+Index: linux-2.6.19/fs/ext3/namei.c
+===================================================================
+--- linux-2.6.19.orig/fs/ext3/namei.c
++++ linux-2.6.19/fs/ext3/namei.c
+@@ -2191,6 +2191,8 @@ static int ext3_link (struct dentry * ol
+ 
+ 	if (inode->i_nlink >= EXT3_LINK_MAX)
+ 		return -EMLINK;
++	if (inode->i_nlink == 0)
++		return -ENOENT;
+ 
+ retry:
+ 	handle = ext3_journal_start(dir, EXT3_DATA_TRANS_BLOCKS(dir->i_sb) +
+Index: linux-2.6.19/fs/ext4/namei.c
+===================================================================
+--- linux-2.6.19.orig/fs/ext4/namei.c
++++ linux-2.6.19/fs/ext4/namei.c
+@@ -2189,6 +2189,8 @@ static int ext4_link (struct dentry * ol
+ 
+ 	if (inode->i_nlink >= EXT4_LINK_MAX)
+ 		return -EMLINK;
++	if (inode->i_nlink == 0)
++		return -ENOENT;
+ 
+ retry:
+ 	handle = ext4_journal_start(dir, EXT4_DATA_TRANS_BLOCKS(dir->i_sb) +
+
