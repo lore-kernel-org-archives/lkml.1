@@ -1,53 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965034AbXAWNQp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965032AbXAWNRy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965034AbXAWNQp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jan 2007 08:16:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965024AbXAWNQp
+	id S965032AbXAWNRy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jan 2007 08:17:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965024AbXAWNRy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jan 2007 08:16:45 -0500
-Received: from gw-e.panasas.com ([65.194.124.178]:41298 "EHLO
-	cassoulet.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S964933AbXAWNQo (ORCPT
+	Tue, 23 Jan 2007 08:17:54 -0500
+Received: from allen.werkleitz.de ([80.190.251.108]:38761 "EHLO
+	allen.werkleitz.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965032AbXAWNRx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jan 2007 08:16:44 -0500
-Message-ID: <45B60A55.6080104@panasas.com>
-Date: Tue, 23 Jan 2007 15:15:01 +0200
-From: Benny Halevy <bhalevy@panasas.com>
-User-Agent: Thunderbird 1.5.0.7 (X11/20060909)
+	Tue, 23 Jan 2007 08:17:53 -0500
+Date: Tue, 23 Jan 2007 14:17:30 +0100
+From: Johannes Stezenbach <js@linuxtv.org>
+To: Blaisorblade <blaisorblade@yahoo.it>
+Cc: user-mode-linux-devel@lists.sourceforge.net, Jeff Dike <jdike@karaya.com>,
+       Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org
+Message-ID: <20070123131730.GA9286@linuxtv.org>
+References: <20070122201317.GA8594@linuxtv.org> <200701230902.30715.blaisorblade@yahoo.it>
 MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@SteelEye.com>
-CC: Boaz Harrosh <bharrosh@panasas.com>, Jens Axboe <jens.axboe@oracle.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Mike Christie <michaelc@cs.wisc.edu>, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, open-iscsi@googlegroups.com,
-       Daniel.E.Messinger@seagate.com, Liran Schour <LIRANS@il.ibm.com>
-Subject: Re: [RFC 3/6] bidi support: bidirectional request
-References: <45B3F64C.3030805@panasas.com> <1169478021.2769.5.camel@mulgrave.il.steeleye.com>
-In-Reply-To: <1169478021.2769.5.camel@mulgrave.il.steeleye.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 23 Jan 2007 13:14:39.0558 (UTC) FILETIME=[7001AE60:01C73EF0]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200701230902.30715.blaisorblade@yahoo.it>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SA-Exim-Connect-IP: 84.190.152.70
+Subject: Re: [uml-devel] [PATCH] [UML] fix mknod
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on allen.werkleitz.de)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Bottomley wrote:
-> On Mon, 2007-01-22 at 01:25 +0200, Boaz Harrosh wrote:
->> - Instantiate another request_io_part in request for bidi_read.
->> - Define & Implement new API for accessing bidi parts.
->> - API to Build bidi requests and map to sglists.
->> - Define new end_that_request_block() function to end a complete request.
+On Tue, Jan 23, 2007 at 09:02:30AM +0100, Blaisorblade wrote:
+> On Monday 22 January 2007 21:13, Johannes Stezenbach wrote:
+> >
+> > I was playing with user-mode Linux and found that mknod creates
+> > devices node in hostfs with wrong major/minor numbers.
+> > The patch below fixes it for me.
 > 
-> Actually, this approach looks to be a bit too narrow.  You seem to be
-> predicating on the idea that the bidirectional will transfer in and out
-> of the same area.  For some of the frame in/frame out stuff, we probably
-> need the read and write areas for the bidirectional request to be
-> separated.
+> Hmpf. Still having this bug on hostfs is quite bad. Thanks for reporting.
+> 
+> It should be hostfs_user.c to take major and minor and to combine them 
+> correctly - it can use libc's macros.
 
-Hmm, our proposal introduces two separate and independent i/o areas.
-One used for uni-directional transfers and for bidi data output, the
-other is used for bidi data input so we're in agreement.
+Right, below is a better patch.
 
-Benny
 
+Thanks,
+Johannes
+
+---
+Fix UML hostfs mknod(): userspace has differernt
+dev_t size and encoding than kernel, so extract major/minor
+and reencode using glibc makedev() macro.
+
+Signed-off-by: Johannes Stezenbach <js@linuxtv.org>
+
+diff -rup linux-2.6.19.orig/fs/hostfs/hostfs.h linux-2.6.19/fs/hostfs/hostfs.h
+--- linux-2.6.19.orig/fs/hostfs/hostfs.h	2006-11-29 22:57:37.000000000 +0100
++++ linux-2.6.19/fs/hostfs/hostfs.h	2007-01-23 14:11:03.000000000 +0100
+@@ -76,7 +76,7 @@ extern int make_symlink(const char *from
+ extern int unlink_file(const char *file);
+ extern int do_mkdir(const char *file, int mode);
+ extern int do_rmdir(const char *file);
+-extern int do_mknod(const char *file, int mode, int dev);
++extern int do_mknod(const char *file, int mode, unsigned int major, unsigned int minor);
+ extern int link_file(const char *from, const char *to);
+ extern int do_readlink(char *file, char *buf, int size);
+ extern int rename_file(char *from, char *to);
+diff -rup linux-2.6.19.orig/fs/hostfs/hostfs_kern.c linux-2.6.19/fs/hostfs/hostfs_kern.c
+--- linux-2.6.19.orig/fs/hostfs/hostfs_kern.c	2006-11-29 22:57:37.000000000 +0100
++++ linux-2.6.19/fs/hostfs/hostfs_kern.c	2007-01-23 14:11:20.000000000 +0100
+@@ -755,7 +755,7 @@ int hostfs_mknod(struct inode *dir, stru
+ 		goto out_put;
  
-
+ 	init_special_inode(inode, mode, dev);
+-	err = do_mknod(name, mode, dev);
++	err = do_mknod(name, mode, MAJOR(dev), MINOR(dev));
+ 	if(err)
+ 		goto out_free;
+ 
+diff -rup linux-2.6.19.orig/fs/hostfs/hostfs_user.c linux-2.6.19/fs/hostfs/hostfs_user.c
+--- linux-2.6.19.orig/fs/hostfs/hostfs_user.c	2006-11-29 22:57:37.000000000 +0100
++++ linux-2.6.19/fs/hostfs/hostfs_user.c	2007-01-23 14:11:39.000000000 +0100
+@@ -295,11 +295,11 @@ int do_rmdir(const char *file)
+ 	return(0);
+ }
+ 
+-int do_mknod(const char *file, int mode, int dev)
++int do_mknod(const char *file, int mode, unsigned int major, unsigned int minor)
+ {
+ 	int err;
+ 
+-	err = mknod(file, mode, dev);
++	err = mknod(file, mode, makedev(major, minor));
+ 	if(err) return(-errno);
+ 	return(0);
+ }
