@@ -1,69 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932515AbXAWCMh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932658AbXAWCYz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932515AbXAWCMh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jan 2007 21:12:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932627AbXAWCMh
+	id S932658AbXAWCYz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jan 2007 21:24:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932647AbXAWCYz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jan 2007 21:12:37 -0500
-Received: from ns1.suse.de ([195.135.220.2]:40687 "EHLO mx1.suse.de"
+	Mon, 22 Jan 2007 21:24:55 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:35876 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932515AbXAWCMg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jan 2007 21:12:36 -0500
-Date: Tue, 23 Jan 2007 03:13:27 +0100
-From: Andrea Arcangeli <andrea@suse.de>
-To: Balbir Singh <balbir@in.ibm.com>
-Cc: Niki Hammler <mailinglists@nobaq.net>, linux-kernel@vger.kernel.org,
+	id S932658AbXAWCYy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jan 2007 21:24:54 -0500
+Message-ID: <45B5703E.5010400@redhat.com>
+Date: Mon, 22 Jan 2007 21:17:34 -0500
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
+MIME-Version: 1.0
+To: Christoph Lameter <clameter@sgi.com>
+CC: Balbir Singh <balbir@in.ibm.com>, Andrea Arcangeli <andrea@suse.de>,
+       Niki Hammler <mailinglists@nobaq.net>, linux-kernel@vger.kernel.org,
        Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
 Subject: Re: Why active list and inactive list?
-Message-ID: <20070123021327.GZ13798@opteron.random>
-References: <45B55286.5060909@nobaq.net> <20070123003939.GY13798@opteron.random> <45B56575.10807@in.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <45B56575.10807@in.ibm.com>
+References: <45B55286.5060909@nobaq.net> <20070123003939.GY13798@opteron.random> <45B56575.10807@in.ibm.com> <Pine.LNX.4.64.0701221737510.30455@schroedinger.engr.sgi.com> <45B569A4.3010006@redhat.com> <Pine.LNX.4.64.0701221801420.30595@schroedinger.engr.sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0701221801420.30595@schroedinger.engr.sgi.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 23, 2007 at 07:01:33AM +0530, Balbir Singh wrote:
-> This makes me wonder if it makes sense to split up the LRU into page
-> cache LRU and mapped pages LRU. I see two benefits
-> 1. Currently based on swappiness, we might walk an entire list
->    searching for page cache pages or mapped pages. With these
->    lists separated, it should get easier and faster to implement
->    this scheme
+Christoph Lameter wrote:
+> On Mon, 22 Jan 2007, Rik van Riel wrote:
+> 
+>> It would be really nice if we came up with a page replacement
+>> algorithm that did not need many extra heuristics to make it
+>> work...
+> 
+> I guess the "clock" type algorithms are the most promising in that 
+> area. What happened to all those advanced page replacement endeavors? 
+> What is the most promising of those? You seem to have done a lot of work 
+> on those.
 
-When I tried that long time ago, I recall I had troubles, but there
-wasn't the reclaim_mapped based on static values so it was even
-harder. However it would be still a problem today to decide when to
-switch from the unmapped to the mapped lru. When reclaim_mapped is
-set, you'll still have to shrink some unmapped page, and by splitting
-you literally lose age information to save some cpu. Eventually you
-risk spending time in trying to free unfreeable pinned pages that sits
-in the unmapped list before finally jumping to the mapped list. So
-you've to add yet another list to get rid of the pinned stuff in the
-unmapped list and I stopped when I had to refile pages from the
-"pinned" list to the unmapped list in irq I/O completion context, now
-it's all spin_lock_irq so it would be more natural at least...
+CLOCK-Pro seems the most promising algorithm, because it can
+act well both as a first level cache (operating system running
+applications) and as a second level cache (operating system
+running as a file server), because it tracks both recency and
+frequency well.
 
-> 2. There is another parallel thread on implementing page cache
->    limits. If the lists split out, we need not scan the entire
->    list to find page cache pages to evict them.
+However, there are a few unanswered questions on clock-pro.
 
-BTW I'm unsure about the cache limit thread, the overhead of the vm
-collection shouldn't be an issue, and those tends to hide vm
-inefficiencies.
+The big one is how we are to do some background aging in a
+clock-pro system, so referenced bits don't just pile up when
+the VM has enough memory - otherwise we might not know the
+right pages to evict when a new process starts up and starts
+allocating lots of memory.
 
-For example Neil has a patch to reduce the writeback cache to 10M-50M
-(much lower than the current 1% minimum) to hide huge unfariness in
-the writeback cache. I think they should mount the fs with -o sync
-instead of using that patch until the unfariness is fixed or
-tunable. The patch itself is fine though but for that problem it only
-looks a workaround. So I at least try to be always quite skeptical
-when I hear about cache "fixed size limiting" patches that improve
-responsiveness or performance ;)
+At least we've solved the problems of keeping track of the
+recently evicted pages in a cheap way, and balancing the
+pressure/hotness of different caches against each other.
 
-> Of course I might be missing something (some piece of history)
-
-Partly ;) Code was very different back then, today it would be easier
-thanks to reclaim_mapped but the partial loss of age information and
-potential loss of cpu in a pinned&unmapped walk would probably remain.
+-- 
+Politics is the struggle between those who want to make their country
+the best in the world, and those who believe it already is.  Each group
+calls the other unpatriotic.
