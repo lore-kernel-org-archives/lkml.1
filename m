@@ -1,75 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932523AbXAWFnV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933012AbXAWFwQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932523AbXAWFnV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jan 2007 00:43:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933006AbXAWFnV
+	id S933012AbXAWFwQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jan 2007 00:52:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933011AbXAWFwQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jan 2007 00:43:21 -0500
-Received: from 1wt.eu ([62.212.114.60]:2137 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932523AbXAWFnU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jan 2007 00:43:20 -0500
-Date: Tue, 23 Jan 2007 06:42:59 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: dann frazier <dannf@dannf.org>
-Cc: Grant Coady <gcoady.lk@gmail.com>,
-       Santiago Garcia Mantinan <manty@debian.org>,
-       linux-kernel@vger.kernel.org, debian-kernel@lists.debian.org
-Subject: Re: problems with latest smbfs changes on 2.4.34 and security backports
-Message-ID: <20070123054258.GA10301@1wt.eu>
-References: <20070117100030.GA11251@clandestino.aytolacoruna.es> <20070117215519.GX24090@1wt.eu> <20070119010040.GR16053@colo> <20070120010544.GY26210@colo> <t1r7r2thimh3gpuhtfc9l3aehjdd6dqkp8@4ax.com> <20070121230321.GC2480@1wt.eu> <lpu7r2lbtpm5cui8v1qpuj2fb5k3vs6f4n@4ax.com> <20070122181942.GJ28073@colo>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070122181942.GJ28073@colo>
-User-Agent: Mutt/1.5.11
+	Tue, 23 Jan 2007 00:52:16 -0500
+Received: from ausmtp05.au.ibm.com ([202.81.18.154]:48388 "EHLO
+	ausmtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933012AbXAWFwP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jan 2007 00:52:15 -0500
+Message-ID: <45B5A26A.3060209@in.ibm.com>
+Date: Tue, 23 Jan 2007 11:21:38 +0530
+From: Balbir Singh <balbir@in.ibm.com>
+Reply-To: balbir@in.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 1.5.0.9 (X11/20070103)
+MIME-Version: 1.0
+To: Rik van Riel <riel@redhat.com>
+CC: Nick Piggin <nickpiggin@yahoo.com.au>, Andrea Arcangeli <andrea@suse.de>,
+       Niki Hammler <mailinglists@nobaq.net>, linux-kernel@vger.kernel.org,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Subject: Re: Why active list and inactive list?
+References: <45B55286.5060909@nobaq.net> <20070123003939.GY13798@opteron.random> <45B56575.10807@in.ibm.com> <45B58C5C.8010900@yahoo.com.au> <45B59053.1060007@redhat.com>
+In-Reply-To: <45B59053.1060007@redhat.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Dann,
-
-On Mon, Jan 22, 2007 at 11:19:43AM -0700, dann frazier wrote:
-> On Mon, Jan 22, 2007 at 10:50:47AM +1100, Grant Coady wrote:
-> > On Mon, 22 Jan 2007 00:03:21 +0100, Willy Tarreau <w@1wt.eu> wrote:
-> > grant@sempro:/home/other$ uname -r
-> > 2.4.34b
-> > grant@sempro:/home/other$ mkdir test
-> > grant@sempro:/home/other$ ln -s test testlink
-> > ln: creating symbolic link `testlink' to `test': Operation not permitted
-> > grant@sempro:/home/other$ echo "this is also a test" > test/file
-> > grant@sempro:/home/other$ ln -s test/file test2
-> > ln: creating symbolic link `test2' to `test/file': Operation not permitted
-> > 
-> > trying to create symlinks.
-> > 
-> > No problems creating symlinks with 2.4.33.3.
+Rik van Riel wrote:
+> Nick Piggin wrote:
 > 
-> Yes, I've found that this varies depending upon the options passed. If
-> uid=0, I can create symlinks, otherwise I always get permission
-> denied. This behavior appears to be consistent with 2.6.
+>> The other nice thing about it was that it didn't have a hard
+>> cutoff that the current reclaim_mapped toggle does -- you could
+>> opt to scan the mapped list at a lower ratio than the unmapped
+>> one. Of course, it also has some downsides too, and would
+>> require retuning...
 > 
-> I also need to do some testing with the proposed patch to smbmount
-> that will let you omit options (current versions will always pass an
-> option to the kernel, even if you the user did not provide one).
-> If you do not pass options, the behavior should fallback to
-> server-provided values.
+> Here's a simple idea for tuning.
 > 
-> Note that this bug has been my only interaction with smbfs, so I'm
-> certainly no expert on how it *should* behave. My plan is to
-> take all of the use cases we're coming up with and try to maintain
-> the "historic" 2.4 behavior as much as possible, but still not
-> silently dropping user-provided mount options. When the behavior needs
-> to change to honor them, I'll try to match what current 2.6
-> does. Make sense?
+> For each list we keep track of:
+> 1) the size of the list
+> 2) the rate at which we scan the list
+> 3) the fraction of (non new) pages that get
+>    referenced
+> 
+> That way we can determine which list has the largest
+> fraction of "idle" pages sitting around and consequently
+> which list should be scanned more aggressively.
+> 
+> For each list we can calculate how frequently the pages
+> in the list are being used:
+> 
+> pressure = referenced percentage * scan rate / list size
+> 
+> The VM can equalize the pressure by scanning the list with
+> lower usage less than the other list.  This way the VM can
+> give the right amount of memory to each type.
+> 
 
-Yes, it does for me. So to sum up, I apply your patch to 2.4.34.1
-and it restores the same behaviour for Santiago and Grant as they get
-in 2.6. Whether it's the expected behaviour or not is not the point,
-as it will be easier for us to later mimic 2.6 if a change is needed
-since we're not experts at all in this area.
+This sounds like a good thing to start with. I think we can
+then use swappiness to decide what to evict.
 
-If we're all OK for this, I'll go with that.
+> Of course, each list needs to be divided into inactive and
+> active like the current VM, in order to make sure that the
+> pages which are used once cannot push the real working set
+> of that list out of memory.
+> 
 
-Thanks guys,
-Willy
+Yes, that makes sense.
 
+> There is a more subtle problem when the list's working set
+> is larger than the amount of memory the list has.  In that
+> situation the VM will be faulting pages back in just after
+> they got evicted.  Something like my /proc/refaults code
+> can detect that and adjust the size of the undersized list
+> accordingly.
+> 
+> Of course, once we properly distinguish between the more
+> frequently and less frequently accessed pages within each
+> of the page sets (mapped/anonymous vs. unmapped) and have
+> the pressure between the lists equalized, why do we need
+> to keep them separate again?
+> 
+
+:-)
+
+-- 
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
