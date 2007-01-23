@@ -1,38 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932970AbXAWLIg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932855AbXAWLKm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932970AbXAWLIg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jan 2007 06:08:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932969AbXAWLIg
+	id S932855AbXAWLKm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jan 2007 06:10:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932968AbXAWLKm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jan 2007 06:08:36 -0500
-Received: from hobbit.corpit.ru ([81.13.94.6]:24655 "EHLO hobbit.corpit.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932967AbXAWLIf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jan 2007 06:08:35 -0500
-Message-ID: <45B5ECAA.6000100@tls.msk.ru>
-Date: Tue, 23 Jan 2007 14:08:26 +0300
-From: Michael Tokarev <mjt@tls.msk.ru>
-Organization: Telecom Service, JSC
-User-Agent: Icedove 1.5.0.8 (X11/20061128)
+	Tue, 23 Jan 2007 06:10:42 -0500
+Received: from relay.gothnet.se ([82.193.160.251]:7900 "EHLO
+	GOTHNET-SMTP2.gothnet.se" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S932855AbXAWLKm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jan 2007 06:10:42 -0500
+Message-ID: <45B5C2FD.6090100@tungstengraphics.com>
+Date: Tue, 23 Jan 2007 09:10:37 +0100
+From: =?ISO-8859-1?Q?Thomas_Hellstr=F6m?= <thomas@tungstengraphics.com>
+User-Agent: Thunderbird 1.5.0.7 (X11/20060921)
 MIME-Version: 1.0
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-CC: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
-Subject: Re: Kernel 2.6.19.2 New RAID 5 Bug (oops when writing Samba -> RAID5)
-References: <Pine.LNX.4.64.0701200718290.29223@p34.internal.lan> <45B5261B.1050104@redhat.com> <17845.13256.284461.992275@notabene.brown> <Pine.LNX.4.64.0701230556050.8978@p34.internal.lan>
-In-Reply-To: <Pine.LNX.4.64.0701230556050.8978@p34.internal.lan>
-X-Enigmail-Version: 0.94.1.0
-OpenPGP: id=4F9CF57E
-Content-Type: text/plain; charset=ISO-8859-1
+To: Dave Airlie <airlied@gmail.com>
+CC: Tilman Schmidt <tilman@imap.cc>, Andrew Morton <akpm@osdl.org>,
+       linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net,
+       Dave Airlie <airlied@linux.ie>
+Subject: Re: i810fb fails to load
+References: <20070111222627.66bb75ab.akpm@osdl.org> <45AAC244.8060607@imap.cc>	 <20070114162235.4c8d241f.akpm@osdl.org>	 <45B4BF50.9010105@tungstengraphics.com> <21d7e9970701221350h3a8959faqcd099bf4e0a761fa@mail.gmail.com>
+In-Reply-To: <21d7e9970701221350h3a8959faqcd099bf4e0a761fa@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-BitDefender-Scanner: Mail not scanned due to license constraints
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Justin Piszcz wrote:
-[]
-> Is this a bug that can or will be fixed or should I disable pre-emption on 
-> critical and/or server machines?
+Dave Airlie wrote:
+>> >>
+>> >>
+>> >
+>> > Don't know.  But I bet someone on the Cc does...
+>> >
+>> Tilman,
+>> Thanks for reporting.
+>> Can you try the attached patch to see if that fixes the problem.
+>>
+>
+> Hi Thomas,
+>
+> This also fixes X starting on old i810/5 hardware, I had noticed it
+> broken but hadn't had time to investigate it, this patch fixes it...
+>
+> Dave.
+Great.
+The oldest hardware I have is an i915 which hampers me a bit.
 
-Disabling pre-emption on critical and/or server machines seems to be a good
-idea in the first place.  IMHO anyway.. ;)
+/Thomas
 
-/mjt
+
+
