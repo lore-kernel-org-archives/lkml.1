@@ -1,274 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933025AbXAWF5W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933015AbXAWF5x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933025AbXAWF5W (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jan 2007 00:57:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933028AbXAWF5Q
+	id S933015AbXAWF5x (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jan 2007 00:57:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933026AbXAWF5w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jan 2007 00:57:16 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.158]:2719 "EHLO
-	localhost.localdomain" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S933026AbXAWFxs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jan 2007 00:53:48 -0500
-Message-Id: <20070123055347.983612953@mvista.com>
-References: <20070123055255.338254780@mvista.com>
-User-Agent: quilt/0.46.mv-1
-Date: Mon, 22 Jan 2007 21:53:06 -0800
-From: Daniel Walker <dwalker@mvista.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 11/12] clocksource: remove update_callback
-Content-Disposition: inline; filename=clocksource_remove_update_callback.patch
+	Tue, 23 Jan 2007 00:57:52 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:45454 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933020AbXAWF5u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jan 2007 00:57:50 -0500
+Message-ID: <45B5A3D5.6020508@garzik.org>
+Date: Tue, 23 Jan 2007 00:57:41 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
+MIME-Version: 1.0
+To: Jay Cliburn <jacliburn@bellsouth.net>
+CC: shemminger@osdl.org, csnook@redhat.com, hch@infradead.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       atl1-devel@lists.sourceforge.net
+Subject: Re: [PATCH 0/4] atl1: Attansic L1 ethernet driver
+References: <20070121210416.GA2702@osprey.hogchain.net>
+In-Reply-To: <20070121210416.GA2702@osprey.hogchain.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.7 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Uses the block notifier to replace the functionality of update_callback().
-update_callback() was a special case specifically for the tsc, but including
-it in the clocksource structure duplicated it needlessly for other clocks.
+Jay Cliburn wrote:
+> This is the latest submittal of the patchset providing support for the 
+> Attansic L1 gigabit ethernet adapter.  This patchset is built against 
+> kernel version 2.6.20-rc5.
+> 
+> This version incorporates all comments from:
+> 
+> Christoph Hellwig:
+> http://lkml.org/lkml/2007/1/11/43
+> http://lkml.org/lkml/2007/1/11/45
+> http://lkml.org/lkml/2007/1/11/48
+> http://lkml.org/lkml/2007/1/11/49
+> 
+> Jeff Garzik:
+> http://lkml.org/lkml/2007/1/18/233
+> 
+> Many thanks to both for reviewing the driver.
+> 
+> The monolithic version of this patchset may be found at:
+> ftp://hogchain.net/pub/linux/attansic/kernel_driver/atl1-2.0.5-linux-2.6.20.rc5.patch.bz2
 
-Signed-Off-By: Daniel Walker <dwalker@mvista.com>
+OK, I have merged the monolithic patch into jgarzik/netdev-2.6.git#atl1. 
+  Once I'm done merging patches tonight, I will merge this new 'atl1' 
+branch into the 'ALL' meta-branch, which will auto-propagate this driver 
+into Andrew Morton's -mm for testing.
 
----
- arch/i386/kernel/tsc.c      |   35 ++++++++++-------------------------
- arch/x86_64/kernel/tsc.c    |   19 +++++--------------
- include/linux/clocksource.h |    2 --
- include/linux/timekeeping.h |    1 +
- kernel/time/timekeeping.c   |   32 ++++++++++++++++++++++++++++++--
- 5 files changed, 46 insertions(+), 43 deletions(-)
+For future driver updates, please send a patch rather than the full 
+driver diff.
 
-Index: linux-2.6.19/arch/i386/kernel/tsc.c
-===================================================================
---- linux-2.6.19.orig/arch/i386/kernel/tsc.c
-+++ linux-2.6.19/arch/i386/kernel/tsc.c
-@@ -51,8 +51,7 @@ static int __init tsc_setup(char *str)
- __setup("notsc", tsc_setup);
- 
- /*
-- * code to mark and check if the TSC is unstable
-- * due to cpufreq or due to unsynced TSCs
-+ * Flag that denotes an unstable tsc and check function.
-  */
- static int tsc_unstable;
- 
-@@ -61,12 +60,6 @@ static inline int check_tsc_unstable(voi
- 	return tsc_unstable;
- }
- 
--void mark_tsc_unstable(void)
--{
--	tsc_unstable = 1;
--}
--EXPORT_SYMBOL_GPL(mark_tsc_unstable);
--
- /* Accellerators for sched_clock()
-  * convert from cycles(64bits) => nanoseconds (64bits)
-  *  basic equation:
-@@ -180,6 +173,7 @@ int recalibrate_cpu_khz(void)
- 	if (cpu_has_tsc) {
- 		cpu_khz = calculate_cpu_khz();
- 		tsc_khz = cpu_khz;
-+		mark_tsc_unstable();
- 		cpu_data[0].loops_per_jiffy =
- 			cpufreq_scale(cpu_data[0].loops_per_jiffy,
- 					cpu_khz_old, cpu_khz);
-@@ -332,7 +326,6 @@ core_initcall(cpufreq_tsc);
- /* clock source code */
- 
- static unsigned long current_tsc_khz = 0;
--static int tsc_update_callback(void);
- 
- static cycle_t read_tsc(void)
- {
-@@ -350,32 +343,24 @@ static struct clocksource clocksource_ts
- 	.mask			= CLOCKSOURCE_MASK(64),
- 	.mult			= 0, /* to be set */
- 	.shift			= 22,
--	.update_callback	= tsc_update_callback,
- 	.is_continuous		= 1,
- 	.list			= LIST_HEAD_INIT(clocksource_tsc.list),
- };
- 
--static int tsc_update_callback(void)
-+/*
-+ * code to mark if the TSC is unstable
-+ * due to cpufreq or due to unsynced TSCs
-+ */
-+void mark_tsc_unstable(void)
- {
--	int change = 0;
--
- 	/* check to see if we should switch to the safe clocksource: */
--	if (clocksource_tsc.rating != 0 && check_tsc_unstable()) {
-+	if (unlikely(!tsc_unstable && clocksource_tsc.rating != 0)) {
- 		clocksource_tsc.rating = 0;
- 		clocksource_rating_change(&clocksource_tsc);
--		change = 1;
--	}
--
--	/* only update if tsc_khz has changed: */
--	if (current_tsc_khz != tsc_khz) {
--		current_tsc_khz = tsc_khz;
--		clocksource_tsc.mult = clocksource_khz2mult(current_tsc_khz,
--							clocksource_tsc.shift);
--		change = 1;
- 	}
--
--	return change;
-+	tsc_unstable = 1;
- }
-+EXPORT_SYMBOL_GPL(mark_tsc_unstable);
- 
- static int __init dmi_mark_tsc_unstable(struct dmi_system_id *d)
- {
-Index: linux-2.6.19/arch/x86_64/kernel/tsc.c
-===================================================================
---- linux-2.6.19.orig/arch/x86_64/kernel/tsc.c
-+++ linux-2.6.19/arch/x86_64/kernel/tsc.c
-@@ -47,11 +47,6 @@ static inline int check_tsc_unstable(voi
- 	return tsc_unstable;
- }
- 
--void mark_tsc_unstable(void)
--{
--	tsc_unstable = 1;
--}
--EXPORT_SYMBOL_GPL(mark_tsc_unstable);
- 
- #ifdef CONFIG_CPU_FREQ
- 
-@@ -185,8 +180,6 @@ __setup("notsc", notsc_setup);
- 
- /* clock source code: */
- 
--static int tsc_update_callback(void);
--
- static cycle_t read_tsc(void)
- {
- 	cycle_t ret = (cycle_t)get_cycles_sync();
-@@ -206,24 +199,22 @@ static struct clocksource clocksource_ts
- 	.mask			= (cycle_t)-1,
- 	.mult			= 0, /* to be set */
- 	.shift			= 22,
--	.update_callback	= tsc_update_callback,
- 	.is_continuous		= 1,
- 	.vread			= vread_tsc,
- 	.list			= LIST_HEAD_INIT(clocksource_tsc.list),
- };
- 
--static int tsc_update_callback(void)
-+void mark_tsc_unstable(void)
- {
--	int change = 0;
--
- 	/* check to see if we should switch to the safe clocksource: */
--	if (clocksource_tsc.rating != 50 && check_tsc_unstable()) {
-+	if (unlikely(!tsc_unstable && clocksource_tsc.rating != 50)) {
- 		clocksource_tsc.rating = 50;
- 		clocksource_rating_change(&clocksource_tsc);
--		change = 1;
- 	}
--	return change;
-+
-+	tsc_unstable = 1;
- }
-+EXPORT_SYMBOL_GPL(mark_tsc_unstable);
- 
- static int __init init_tsc_clocksource(void)
- {
-Index: linux-2.6.19/include/linux/clocksource.h
-===================================================================
---- linux-2.6.19.orig/include/linux/clocksource.h
-+++ linux-2.6.19/include/linux/clocksource.h
-@@ -87,7 +87,6 @@ static inline void clocksource_freq_chan
-  *			subtraction of non 64 bit counters
-  * @mult:		cycle to nanosecond multiplier
-  * @shift:		cycle to nanosecond divisor (power of two)
-- * @update_callback:	called when safe to alter clocksource values
-  * @is_continuous:	defines if clocksource is free-running.
-  * @vread:		vsyscall based read
-  * @cycle_interval:	Used internally by timekeeping core, please ignore.
-@@ -101,7 +100,6 @@ struct clocksource {
- 	cycle_t mask;
- 	u32 mult;
- 	u32 shift;
--	int (*update_callback)(void);
- 	int is_continuous;
- 	cycle_t (*vread)(void);
- 
-Index: linux-2.6.19/include/linux/timekeeping.h
-===================================================================
---- linux-2.6.19.orig/include/linux/timekeeping.h
-+++ linux-2.6.19/include/linux/timekeeping.h
-@@ -16,6 +16,7 @@ static inline int change_clocksource(voi
- }
- 
- static inline void change_clocksource(void) { }
-+static inline void timekeeping_init_notifier(void) { }
- 
- #endif /* !CONFIG_GENERIC_TIME */
- 
-Index: linux-2.6.19/kernel/time/timekeeping.c
-===================================================================
---- linux-2.6.19.orig/kernel/time/timekeeping.c
-+++ linux-2.6.19/kernel/time/timekeeping.c
-@@ -19,6 +19,7 @@ static unsigned long timekeeping_suspend
-  * Clock used for timekeeping
-  */
- struct clocksource *clock = &clocksource_jiffies;
-+atomic_t clock_recalc_interval = ATOMIC_INIT(0);
- 
- /*
-  * The current time
-@@ -169,8 +170,9 @@ static int change_clocksource(void)
- 		printk(KERN_INFO "Time: %s clocksource has been installed.\n",
- 		       clock->name);
- 		return 1;
--	} else if (clock->update_callback) {
--		return clock->update_callback();
-+	} else if (unlikely(atomic_read(&clock_recalc_interval))) {
-+		atomic_set(&clock_recalc_interval, 0);
-+		return 1;
- 	}
- 	return 0;
- }
-@@ -192,6 +194,29 @@ int timekeeping_is_continuous(void)
- 
- 	return ret;
- }
-+
-+static int
-+clocksource_callback(struct notifier_block *nb, unsigned long op, void *c)
-+{
-+	if (c == clock && op == CLOCKSOURCE_NOTIFY_FREQ &&
-+	    !atomic_read(&clock_recalc_interval))
-+		atomic_inc(&clock_recalc_interval);
-+
-+	return 0;
-+}
-+
-+static struct notifier_block clocksource_nb = {
-+	.notifier_call = clocksource_callback,
-+};
-+
-+void __init timekeeping_init_notifier(void)
-+{
-+	/*
-+	 * Needs to be done early, incase a clock is unstable
-+	 * early.
-+	 */
-+	clocksource_notifier_register(&clocksource_nb);
-+}
- #endif /* CONFIG_GENERIC_TIME */
- 
- /**
-@@ -230,6 +255,9 @@ void __init timekeeping_init(void)
- 		-xtime.tv_sec, -xtime.tv_nsec);
- 
- 	write_sequnlock_irqrestore(&xtime_lock, flags);
-+
-+	timekeeping_init_notifier();
-+
- }
- 
- 
+If it looks good, we will push for 2.6.21 (or 2.6.22, if updates or 
+objections continue to come fast and furious).  It's in "the system" 
+now, thanks for all your hard work!
 
--- 
+	Jeff
+
+
+
