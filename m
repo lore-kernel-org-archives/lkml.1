@@ -1,50 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933039AbXAWOiO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964933AbXAWOmU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933039AbXAWOiO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jan 2007 09:38:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933034AbXAWOiO
+	id S964933AbXAWOmU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jan 2007 09:42:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965085AbXAWOmU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jan 2007 09:38:14 -0500
-Received: from mtagate5.de.ibm.com ([195.212.29.154]:45632 "EHLO
-	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933040AbXAWOiM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jan 2007 09:38:12 -0500
-Date: Tue, 23 Jan 2007 16:37:58 +0200
-From: Muli Ben-Yehuda <muli@il.ibm.com>
-To: Benny Halevy <bhalevy@panasas.com>
-Cc: Boaz Harrosh <bharrosh@panasas.com>, Jens Axboe <jens.axboe@oracle.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Mike Christie <michaelc@cs.wisc.edu>, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, open-iscsi@googlegroups.com,
-       Daniel.E.Messinger@seagate.com, Liran Schour <LIRANS@il.ibm.com>
-Subject: Re: [RFC 1/6] bidi support: request dma_data_direction
-Message-ID: <20070123143758.GA3660@rhun.ibm.com>
-References: <45B3F578.7090109@panasas.com> <20070122052938.GJ3531@rhun.ibm.com> <45B6115C.2010601@panasas.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <45B6115C.2010601@panasas.com>
-User-Agent: Mutt/1.5.11
+	Tue, 23 Jan 2007 09:42:20 -0500
+Received: from cacti.profiwh.com ([85.93.165.66]:33868 "EHLO cacti.profiwh.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S964933AbXAWOmT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jan 2007 09:42:19 -0500
+Message-id: <444432691808225221@wsc.cz>
+Subject: [PATCH 1/3] Char: mxser_new, do not null driver_data
+From: Jiri Slaby <jirislaby@gmail.com>
+To: Andrew Morton <akpm@osdl.org>
+Cc: <linux-kernel@vger.kernel.org>
+Cc: <osv@javad.com>
+Date: Tue, 23 Jan 2007 15:42:24 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 23, 2007 at 03:45:00PM +0200, Benny Halevy wrote:
+mxser_new, do not null driver_data
 
-> >> +static inline int dma_uni_dir(enum dma_data_direction dir)
-> >> +{
-> >> +	return (dir == DMA_TO_DEVICE) || (dir == DMA_FROM_DEVICE) ||
-> >> +	       (dir == DMA_NONE);
-> >> +}
-> > 
-> > While this doesn't look very useful. Why is "DMA_NONE" a uni-dir? I
-> > suggest replacing this with an open coded (dir != DMA_BIDIRECTIONAL).
-> 
-> The idea was to be resilient to invalid values. (dir != DMA_BIDIRECTIONAL)
-> is fine of course, but I'd add a BUG_ON such as (dir < 0 || dir >
-> DMA_BIDIRECTIONAL)
+driver_data are initialzed to NULL from tty layer, no need to do it in the
+driver. In this case it cases oops, since driver_data may be NULL for a
+short while for another closing process.
 
-If DMA_NONE isn't actually allowed here, you can use valid_dma_direction().
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+Cc: <osv@javad.com>
 
-Cheers,
-Muli
+---
+commit f49b6914c3113f930a31ff7b8f811744f2d8f339
+tree d4f8355eb12a89f779dc4b85e7a908b9e80e88d3
+parent 2826e3a35f34046890c84a77bc2784a184f9bf6a
+author Jiri Slaby <jirislaby@gmail.com> Sat, 20 Jan 2007 17:00:12 +0059
+committer Jiri Slaby <jirislaby@gmail.com> Sat, 20 Jan 2007 17:00:12 +0059
+
+ drivers/char/mxser_new.c |    3 ---
+ 1 files changed, 0 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/char/mxser_new.c b/drivers/char/mxser_new.c
+index 4c80549..1c8e00c 100644
+--- a/drivers/char/mxser_new.c
++++ b/drivers/char/mxser_new.c
+@@ -927,9 +927,6 @@ static int mxser_open(struct tty_struct *tty, struct file *filp)
+ 	struct mxser_port *info;
+ 	int retval, line;
+ 
+-	/* initialize driver_data in case something fails */
+-	tty->driver_data = NULL;
+-
+ 	line = tty->index;
+ 	if (line == MXSER_PORTS)
+ 		return 0;
