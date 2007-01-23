@@ -1,120 +1,213 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933135AbXAWWdi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965498AbXAWWhS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933135AbXAWWdi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jan 2007 17:33:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933143AbXAWWdi
+	id S965498AbXAWWhS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jan 2007 17:37:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965500AbXAWWhS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jan 2007 17:33:38 -0500
-Received: from smtp005.mail.ukl.yahoo.com ([217.12.11.36]:47026 "HELO
-	smtp005.mail.ukl.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S933135AbXAWWdh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jan 2007 17:33:37 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.it;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=Jd0a1x1LIwY7L3okIyZlQlPYjMz1qyW3Gu8fdfrF0kOgm9CAFcsYZr5ihI6PrFCco5+dkPTgWsDNtxC90tn2wvBddQis0+HYVq8JSjucxxCeI/vpIBzir63w1IsfeqPDhtpTveHaNKBY/cUJE5SgOk8SI2JajRe5U6bpIvzBFA8=  ;
-X-YMail-OSG: O.3A8SsVM1ma2V16aJR9q38BBnmYxekAyKRPrpU8czls1aJwzDOVzsL3Ayff.yVBa5_rp9WhXu5bulqkReN.LZJrKbPozO9lj5GOwSWXLxUv7j.xoIOsRgiiMbMK5SIpzYEnkEjPhQV_
-From: Blaisorblade <blaisorblade@yahoo.it>
-To: Johannes Stezenbach <js@linuxtv.org>
-Subject: Re: [uml-devel] [PATCH] [UML] fix mknod
-Date: Tue, 23 Jan 2007 23:33:29 +0100
-User-Agent: KMail/1.9.5
-Cc: user-mode-linux-devel@lists.sourceforge.net, Jeff Dike <jdike@karaya.com>,
-       Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org
-References: <20070122201317.GA8594@linuxtv.org> <200701230902.30715.blaisorblade@yahoo.it> <20070123131730.GA9286@linuxtv.org>
-In-Reply-To: <20070123131730.GA9286@linuxtv.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Tue, 23 Jan 2007 17:37:18 -0500
+Received: from omx2-ext.sgi.com ([192.48.171.19]:55089 "EHLO omx2.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S965498AbXAWWhP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jan 2007 17:37:15 -0500
+Date: Wed, 24 Jan 2007 09:37:02 +1100
+From: David Chinner <dgc@sgi.com>
+To: linux-kernel@vger.kernel.org
+Cc: xfs@oss.sgi.com, akpm@osdl.org
+Subject: [PATCH 1/2]: Fix BUG in cancel_dirty_pages on XFS
+Message-ID: <20070123223702.GF33919298@melbourne.sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200701232333.29655.blaisorblade@yahoo.it>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 23 January 2007 14:17, Johannes Stezenbach wrote:
-> On Tue, Jan 23, 2007 at 09:02:30AM +0100, Blaisorblade wrote:
-> > On Monday 22 January 2007 21:13, Johannes Stezenbach wrote:
-> > > I was playing with user-mode Linux and found that mknod creates
-> > > devices node in hostfs with wrong major/minor numbers.
-> > > The patch below fixes it for me.
-> >
-> > Hmpf. Still having this bug on hostfs is quite bad. Thanks for reporting.
 
-I've now seen - we never fixed this one, we fixed the analogous problem 
-on 'ls' output and friends (in init_inode, which is used in many places).
+With the recent changes to cancel_dirty_pages(), XFS will
+dump warnings in the syslog because it can truncate_inode_pages()
+on dirty mapped pages.
 
-> > It should be hostfs_user.c to take major and minor and to combine them
-> > correctly - it can use libc's macros.
->
-> Right, below is a better patch.
+I've determined that this is indeed correct behaviour for XFS
+as this can happen in the case of races on mmap()d files with
+direct I/O. In this case when we do a direct I/O read, we
+flush the dirty pages to disk, then truncate them out of the
+page cache. Unfortunately, between the flush and the truncate
+the mmap could dirty the page again. At this point we toss a
+dirty page that is mapped.
 
-Exactly what I meant, thanks!
-I'd say:
-Acked-by: Paolo 'Blaisorblade' Giarrusso <blaisorblade@yahoo.it>
-This can go to 2.6.20, and possibly even to -stable (after either me or Jeff 
-tests it once).
+None of the existing functions for truncating pages or invalidating
+pages work in this situation. Invalidating a page only works for
+non-dirty pages with non-dirty buffers, and they only work for
+whole pages and XFS requires partial page truncation.
 
-> ---
-> Fix UML hostfs mknod(): userspace has differernt
-> dev_t size and encoding than kernel, so extract major/minor
-> and reencode using glibc makedev() macro.
->
-> Signed-off-by: Johannes Stezenbach <js@linuxtv.org>
->
-> diff -rup linux-2.6.19.orig/fs/hostfs/hostfs.h
-> linux-2.6.19/fs/hostfs/hostfs.h ---
-> linux-2.6.19.orig/fs/hostfs/hostfs.h	2006-11-29 22:57:37.000000000 +0100
-> +++ linux-2.6.19/fs/hostfs/hostfs.h	2007-01-23 14:11:03.000000000 +0100 @@
-> -76,7 +76,7 @@ extern int make_symlink(const char *from
->  extern int unlink_file(const char *file);
->  extern int do_mkdir(const char *file, int mode);
->  extern int do_rmdir(const char *file);
-> -extern int do_mknod(const char *file, int mode, int dev);
-> +extern int do_mknod(const char *file, int mode, unsigned int major,
-> unsigned int minor);
-> extern int link_file(const char *from, const char 
-> *to);
->  extern int do_readlink(char *file, char *buf, int size);
->  extern int rename_file(char *from, char *to);
-> diff -rup linux-2.6.19.orig/fs/hostfs/hostfs_kern.c
-> linux-2.6.19/fs/hostfs/hostfs_kern.c ---
-> linux-2.6.19.orig/fs/hostfs/hostfs_kern.c	2006-11-29 22:57:37.000000000
-> +0100 +++ linux-2.6.19/fs/hostfs/hostfs_kern.c	2007-01-23
-> 14:11:20.000000000 +0100 @@ -755,7 +755,7 @@ int hostfs_mknod(struct inode
-> *dir, stru
->  		goto out_put;
->
->  	init_special_inode(inode, mode, dev);
-> -	err = do_mknod(name, mode, dev);
-> +	err = do_mknod(name, mode, MAJOR(dev), MINOR(dev));
->  	if(err)
->  		goto out_free;
->
-> diff -rup linux-2.6.19.orig/fs/hostfs/hostfs_user.c
-> linux-2.6.19/fs/hostfs/hostfs_user.c ---
-> linux-2.6.19.orig/fs/hostfs/hostfs_user.c	2006-11-29 22:57:37.000000000
-> +0100 +++ linux-2.6.19/fs/hostfs/hostfs_user.c	2007-01-23
-> 14:11:39.000000000 +0100 @@ -295,11 +295,11 @@ int do_rmdir(const char
-> *file)
->  	return(0);
->  }
->
-> -int do_mknod(const char *file, int mode, int dev)
-> +int do_mknod(const char *file, int mode, unsigned int major, unsigned int
-> minor) {
->  	int err;
->
-> -	err = mknod(file, mode, dev);
-> +	err = mknod(file, mode, makedev(major, minor));
->  	if(err) return(-errno);
->  	return(0);
->  }
+On top of that the page invalidation functions don't actually
+call into the filesystem to invalidate the page and so the filesystem
+can't actually invalidate the page properly (e.g. do stuff based on
+private buffer head flags).
 
--- 
-Inform me of my mistakes, so I can add them to my list!
-Paolo Giarrusso, aka Blaisorblade
-http://www.user-mode-linux.org/~blaisorblade
-Chiacchiera con i tuoi amici in tempo reale! 
- http://it.yahoo.com/mail_it/foot/*http://it.messenger.yahoo.com 
+So that leaves us needing to use truncate semantics an the problem
+is that none of them unmap pages in a non-racy manner - if they
+unmap pages they do it separately tothe truncate of the page,
+leading to races with mmap redirtying the page between the unmap and
+the truncate ofthe page.
+
+Hence we need a truncate function that unmaps the pages while they
+are locked for truncate in a similar fashion to
+invalidate_inode_pages2_range(). The following patch (unchanged from
+the last time it was sent) does this. The XFS changes are in a
+second patch.
+
+The patch has been test on ia64 and x86-64 via XFSQA and a lot
+of fsx mixing mmap and direct I/O operations.
+
+Signed-off-by: Dave Chinner <dgc@sgi.com>
+
+---
+ 
+Index: 2.6.x-xfs-new/include/linux/mm.h
+===================================================================
+--- 2.6.x-xfs-new.orig/include/linux/mm.h	2007-01-15 15:09:57.000000000 +1100
++++ 2.6.x-xfs-new/include/linux/mm.h	2007-01-16 08:59:24.031897743 +1100
+@@ -1060,6 +1060,8 @@ extern unsigned long page_unuse(struct p
+ extern void truncate_inode_pages(struct address_space *, loff_t);
+ extern void truncate_inode_pages_range(struct address_space *,
+ 				       loff_t lstart, loff_t lend);
++extern void truncate_unmap_inode_pages_range(struct address_space *,
++				       loff_t lstart, loff_t lend, int unmap);
+ 
+ /* generic vm_area_ops exported for stackable file systems */
+ extern struct page *filemap_nopage(struct vm_area_struct *, unsigned long, int *);
+Index: 2.6.x-xfs-new/mm/truncate.c
+===================================================================
+--- 2.6.x-xfs-new.orig/mm/truncate.c	2007-01-16 08:59:23.947908876 +1100
++++ 2.6.x-xfs-new/mm/truncate.c	2007-01-16 09:35:53.102924243 +1100
+@@ -59,7 +59,7 @@ void cancel_dirty_page(struct page *page
+ 
+ 		WARN_ON(++warncount < 5);
+ 	}
+-		
++
+ 	if (TestClearPageDirty(page)) {
+ 		struct address_space *mapping = page->mapping;
+ 		if (mapping && mapping_cap_account_dirty(mapping)) {
+@@ -122,16 +122,34 @@ invalidate_complete_page(struct address_
+ 	return ret;
+ }
+ 
++/*
++ * This is a helper for truncate_unmap_inode_page. Unmap the page we
++ * are passed. Page must be locked by the caller.
++ */
++static void
++unmap_single_page(struct address_space *mapping, struct page *page)
++{
++	BUG_ON(!PageLocked(page));
++	while (page_mapped(page)) {
++		unmap_mapping_range(mapping,
++			(loff_t)page->index << PAGE_CACHE_SHIFT,
++			PAGE_CACHE_SIZE, 0);
++	}
++}
++
+ /**
+- * truncate_inode_pages - truncate range of pages specified by start and
++ * truncate_unmap_inode_pages_range - truncate range of pages specified by
++ * start and end byte offsets and optionally unmap them first.
+  * end byte offsets
+  * @mapping: mapping to truncate
+  * @lstart: offset from which to truncate
+  * @lend: offset to which to truncate
++ * @unmap: unmap whole truncated pages if non-zero
+  *
+  * Truncate the page cache, removing the pages that are between
+  * specified offsets (and zeroing out partial page
+- * (if lstart is not page aligned)).
++ * (if lstart is not page aligned)). If specified, unmap the pages
++ * before they are removed.
+  *
+  * Truncate takes two passes - the first pass is nonblocking.  It will not
+  * block on page locks and it will not block on writeback.  The second pass
+@@ -146,8 +164,8 @@ invalidate_complete_page(struct address_
+  * mapping is large, it is probably the case that the final pages are the most
+  * recently touched, and freeing happens in ascending file offset order.
+  */
+-void truncate_inode_pages_range(struct address_space *mapping,
+-				loff_t lstart, loff_t lend)
++void truncate_unmap_inode_pages_range(struct address_space *mapping,
++				loff_t lstart, loff_t lend, int unmap)
+ {
+ 	const pgoff_t start = (lstart + PAGE_CACHE_SIZE-1) >> PAGE_CACHE_SHIFT;
+ 	pgoff_t end;
+@@ -162,6 +180,14 @@ void truncate_inode_pages_range(struct a
+ 	BUG_ON((lend & (PAGE_CACHE_SIZE - 1)) != (PAGE_CACHE_SIZE - 1));
+ 	end = (lend >> PAGE_CACHE_SHIFT);
+ 
++	/*
++	 * if unmapping, do a range unmap up front to minimise the
++	 * overhead of unmapping the pages
++	 */
++	if (unmap) {
++		unmap_mapping_range(mapping, (loff_t)start << PAGE_CACHE_SHIFT,
++					   (loff_t)end << PAGE_CACHE_SHIFT, 0);
++	}
+ 	pagevec_init(&pvec, 0);
+ 	next = start;
+ 	while (next <= end &&
+@@ -184,6 +210,8 @@ void truncate_inode_pages_range(struct a
+ 				unlock_page(page);
+ 				continue;
+ 			}
++			if (unmap)
++				unmap_single_page(mapping, page);
+ 			truncate_complete_page(mapping, page);
+ 			unlock_page(page);
+ 		}
+@@ -195,6 +223,8 @@ void truncate_inode_pages_range(struct a
+ 		struct page *page = find_lock_page(mapping, start - 1);
+ 		if (page) {
+ 			wait_on_page_writeback(page);
++			if (unmap)
++				unmap_single_page(mapping, page);
+ 			truncate_partial_page(page, partial);
+ 			unlock_page(page);
+ 			page_cache_release(page);
+@@ -224,12 +254,30 @@ void truncate_inode_pages_range(struct a
+ 			if (page->index > next)
+ 				next = page->index;
+ 			next++;
++			if (unmap)
++				unmap_single_page(mapping, page);
+ 			truncate_complete_page(mapping, page);
+ 			unlock_page(page);
+ 		}
+ 		pagevec_release(&pvec);
+ 	}
+ }
++EXPORT_SYMBOL(truncate_unmap_inode_pages_range);
++
++/**
++ * truncate_inode_pages_range - truncate range of pages specified by start and
++ * end byte offsets
++ * @mapping: mapping to truncate
++ * @lstart: offset from which to truncate
++ * @lend: offset to which to truncate
++ *
++ * Called under (and serialised by) inode->i_mutex.
++ */
++void truncate_inode_pages_range(struct address_space *mapping,
++				loff_t lstart, loff_t lend)
++{
++	truncate_unmap_inode_pages_range(mapping, lstart, lend, 0);
++}
+ EXPORT_SYMBOL(truncate_inode_pages_range);
+ 
+ /**
+@@ -241,7 +289,7 @@ EXPORT_SYMBOL(truncate_inode_pages_range
+  */
+ void truncate_inode_pages(struct address_space *mapping, loff_t lstart)
+ {
+-	truncate_inode_pages_range(mapping, lstart, (loff_t)-1);
++	truncate_unmap_inode_pages_range(mapping, lstart, (loff_t)-1, 0);
+ }
+ EXPORT_SYMBOL(truncate_inode_pages);
+ 
