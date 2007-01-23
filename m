@@ -1,57 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933084AbXAWGXM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933086AbXAWG0T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933084AbXAWGXM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jan 2007 01:23:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933073AbXAWGXL
+	id S933086AbXAWG0T (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jan 2007 01:26:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933088AbXAWG0T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jan 2007 01:23:11 -0500
-Received: from wx-out-0506.google.com ([66.249.82.239]:50635 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933084AbXAWGXK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jan 2007 01:23:10 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=hA/wGudxCZau0bDQSPzK4Pe5g9TmZrsA+jSfIaz4HtGCBZwHF/eMFNyYn3Bh0ZRABCukiG6afsaoXn9xcOTWvHFoLkJwpisknMTAPasAEL845llAB3YJFqOJMZ3LQP7ySL0oSj1qcQzd/M1wTmhG2yMlhxWYh/h/GQRIXAiycXs=
-Message-ID: <45B5A9C7.5050700@gmail.com>
-Date: Tue, 23 Jan 2007 15:23:03 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Icedove 1.5.0.9 (X11/20061220)
-MIME-Version: 1.0
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-CC: Soeren Sonnenburg <kernel@nn7.de>, Jeff Garzik <jeff@garzik.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: SATA hotplug from the user side ?
-References: <1168588629.5403.7.camel@localhost> <45A7BFB0.9090308@garzik.org> <1168639639.3707.6.camel@localhost> <45A83C22.6050409@gmail.com> <1168672966.3707.24.camel@localhost> <45AAE52B.2070705@gmail.com> <1169456682.2901.18.camel@localhost> <20070122210312.GD4516@khazad-dum.debian.net>
-In-Reply-To: <20070122210312.GD4516@khazad-dum.debian.net>
-X-Enigmail-Version: 0.94.1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 23 Jan 2007 01:26:19 -0500
+Received: from xenotime.net ([66.160.160.81]:33720 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S933086AbXAWG0S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jan 2007 01:26:18 -0500
+Date: Mon, 22 Jan 2007 22:22:38 -0800
+From: Randy Dunlap <rdunlap@xenotime.net>
+To: Don Mullis <dwm@meer.net>
+Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
+       gregkh@suse.de, rdunlap@xenotime.net
+Subject: Re: `make htmldocs` fails
+Message-Id: <20070122222238.b6628c6b.rdunlap@xenotime.net>
+In-Reply-To: <m364aycmbt.fsf@meer.net>
+References: <20070111222627.66bb75ab.akpm@osdl.org>
+	<m364aycmbt.fsf@meer.net>
+Organization: YPO4
+X-Mailer: Sylpheed 2.3.0 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Henrique de Moraes Holschuh wrote:
-> Does SATA electrical conector keying let the disk firmware unload
-> heads before the user manages to pull it out enough to sever power?
+On Mon, 22 Jan 2007 22:02:30 -0800 Don Mullis wrote:
 
-I don't think so.
+> 
+> Bisection shows the bad patch to be:
+>     gregkh-driver-uio-documentation.patch
+> 
+> The htmldocs build failure can be eliminated by:
+>     quilt remove Documentation/DocBook/kernel-api.tmpl
 
-> If it does not, the drive will do an emergency head unload, which is
-> not good and will likely reduce the drive's lifetime.
+or by:  quilt delete gregkh-driver-uio-documentation.patch ??
 
-Probably.
+> The error messages were:
+> 
+>     .../linux-2.6.19 $ make htmldocs
+>       DOCPROC Documentation/DocBook/kernel-api.xml
+>     Warning(/noback/kernel.org/2.6.20-rc_fault-injection/linux-2.6.19//drivers/uio/uio.c:521): No description found for parameter 'owner'
+>     Warning(/noback/kernel.org/2.6.20-rc_fault-injection/linux-2.6.19//drivers/uio/uio.c:521): No description found for parameter 'info'
+>     Warning(/noback/kernel.org/2.6.20-rc_fault-injection/linux-2.6.19//drivers/uio/uio.c:591): No description found for parameter 'idev'
+>     Error(/noback/kernel.org/2.6.20-rc_fault-injection/linux-2.6.19//include/linux/uio_driver.h:33): cannot understand prototype: 'struct uio_info '
+>     Warning(/noback/kernel.org/2.6.20-rc_fault-injection/linux-2.6.19//include/linux/uio_driver.h): no structured comments found
+>     make[1]: *** [Documentation/DocBook/kernel-api.xml] Error 1
+>     make: *** [htmldocs] Error 2
+> 
+> The failure was observed on an up-to-date Fedora Core 5 host. 
 
-> Using hdparm -Y before the unplug, or scsiadd -r (on a kernel that
-> has Tejun's new patch to optionally issue an START_STOP_UNIT to the
-> SCSI device enabled) is probably a good idea.  Unless it is a shared
-> SATA port (I don't know if such a thing exists yet) and another box
-> is talking to the disk, etc.
+How about an accurate description of what kernel tree has this problem?
+It's not 2.6.19.  It's not 2.6.20-rc5.
 
-Agreed.  But it would be *much* better if all these can be taken care of
-by hald and its minions.  Such that the user can just tell the system
-that the hdd is going to be removed and all these dirty tricks are done
-automagically.
-
--- 
-tejun
+---
+~Randy
