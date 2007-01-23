@@ -1,79 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932861AbXAWQeG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932896AbXAWQfB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932861AbXAWQeG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jan 2007 11:34:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932867AbXAWQeF
+	id S932896AbXAWQfB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jan 2007 11:35:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933037AbXAWQfB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jan 2007 11:34:05 -0500
-Received: from smtp-102-tuesday.noc.nerim.net ([62.4.17.102]:2626 "EHLO
-	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932861AbXAWQeE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jan 2007 11:34:04 -0500
-Date: Tue, 23 Jan 2007 17:34:25 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: LM Sensors <lm-sensors@lm-sensors.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH RFC] hwmon/f71805f: Fix a race condition
-Message-Id: <20070123173425.dc47637e.khali@linux-fr.org>
-X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.8.20; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 23 Jan 2007 11:35:01 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:32837 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S932896AbXAWQfA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jan 2007 11:35:00 -0500
+Date: Tue, 23 Jan 2007 17:34:42 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Alessandro Di Marco <dmr@gmx.it>
+Cc: linux-kernel@vger.kernel.org, vojtech@suse.cz
+Subject: Re: [ANNOUNCE] System Inactivity Monitor v1.0
+Message-ID: <20070123163442.GA18662@elf.ucw.cz>
+References: <877ivkrv5s.fsf@gmx.it> <20070119101103.GA5730@ucw.cz> <877ivfi60i.fsf@gmx.it> <20070123094114.GE6033@ucw.cz> <87wt3dhlte.fsf@gmx.it>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87wt3dhlte.fsf@gmx.it>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+Hi1
 
-I think I introduced a potential race condition bug with commit
-51c997d80e1f625aea3426a8a9087f5830ac6db3. I didn't realize it
-back then, but platform_device_put and platform_device_release
-both appear to free the platform data associated with the device.
-This makes an explicit kfree redundant at best, and maybe even
-racy, as it might occur while someone still holds a reference
-to the platform device.
+>    >    > +if [ ! -d "/proc/sin" ]; then
+>    >    > +    echo "/proc/sin not found, has sinmod been loaded?"
+>    >    > +    exit
+>    >    > +fi
+>    >
+>    >    No new /proc files, please.
+>    >
+>    > This was merely a prototype realized in a hurry, not a production
+>    > driver. Really, I did't think it could be interesting for anybody.
+>    >
+>    > Would be /sys ok?
+> 
+>    If it has to be in kernel, /sys/power is probably ok.
+> 
+> Doh! The attached patch introduces /sys/class/misc (along with some bug-fixes.)
+> In case I'll change it again.
 
-Can somebody with more experience with platform drivers than I have
-myself confirm that the current code is broken and that the fix below
-is correct?
+No, just leave it where it is. Maybe better location will be invented,
+but mine idea was just first shot.
 
-Thanks.
+>    But I still believe it can be out.
+> 
+> Do you believe it could be a user-space daemon or what?
 
-Signed-off-by: Jean Delvare <khali@linux-fr.org>
----
- drivers/hwmon/f71805f.c |    8 +-------
- 1 files changed, 1 insertion(+), 7 deletions(-)
-
---- linux-2.6.20-rc5.orig/drivers/hwmon/f71805f.c	2007-01-23 16:54:21.000000000 +0100
-+++ linux-2.6.20-rc5/drivers/hwmon/f71805f.c	2007-01-23 16:55:05.000000000 +0100
-@@ -1290,14 +1290,11 @@
- 	if (err) {
- 		printk(KERN_ERR DRVNAME ": Device addition failed (%d)\n",
- 		       err);
--		goto exit_kfree_data;
-+		goto exit_device_put;
- 	}
- 
- 	return 0;
- 
--exit_kfree_data:
--	kfree(pdev->dev.platform_data);
--	pdev->dev.platform_data = NULL;
- exit_device_put:
- 	platform_device_put(pdev);
- exit:
-@@ -1390,10 +1387,7 @@
- 
- static void __exit f71805f_exit(void)
- {
--	kfree(pdev->dev.platform_data);
--	pdev->dev.platform_data = NULL;
- 	platform_device_unregister(pdev);
--
- 	platform_driver_unregister(&f71805f_driver);
- }
- 
-
-
+Yes, what prevents userspace daemon watching /dev/input/event* to
+provide this functionality?
+									Pavel
 -- 
-Jean Delvare
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
