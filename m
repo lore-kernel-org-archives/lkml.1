@@ -1,235 +1,167 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965511AbXAWWBQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965532AbXAWWBr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965511AbXAWWBQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jan 2007 17:01:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965508AbXAWWBN
+	id S965532AbXAWWBr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jan 2007 17:01:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965528AbXAWWB3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jan 2007 17:01:13 -0500
-Received: from www.osadl.org ([213.239.205.134]:35865 "EHLO mail.tglx.de"
+	Tue, 23 Jan 2007 17:01:29 -0500
+Received: from www.osadl.org ([213.239.205.134]:35902 "EHLO mail.tglx.de"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S933161AbXAWWBE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jan 2007 17:01:04 -0500
-Message-Id: <20070123211206.025974000@localhost.localdomain>
+	id S965507AbXAWWBN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jan 2007 17:01:13 -0500
+Message-Id: <20070123211207.568201000@localhost.localdomain>
 References: <20070123211159.178138000@localhost.localdomain>
-Date: Tue, 23 Jan 2007 22:01:17 -0000
+Date: Tue, 23 Jan 2007 22:01:26 -0000
 From: Thomas Gleixner <tglx@linutronix.de>
 To: Andrew Morton <akpm@osdl.org>
 Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
        John Stultz <johnstul@us.ibm.com>,
        Arjan van de Veen <arjan@infradead.org>,
        Roman Zippel <zippel@linux-m68k.org>
-Subject: [patch 21/46] Fix cascade lookup of next_timer_interrupt
-Content-Disposition: inline;
-	filename=next-timer-interrupt-fix-cascade-lookup.patch
+Subject: [patch 30/46] ACPI keep track of timer broadcasting
+Content-Disposition: inline; filename=acpi-keep-track-of-timer-broadcast.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Thomas Gleixner <tglx@linutronix.de>
 
-When searching for the next pending timer in the timer wheel we
-need to take the cascade into account. The current code has several
-problems:
- 1. it looks into the previous cascade
- 2. it ignores a pending cascade 
- 3. it ignores multiple cascades
+This is a preperatory patch for highres/dyntick:
 
-Change the cascade lookup, so it calculates the array index from the
-point of the next cascade and always look at the cascade buckets, when
-the cascade is pending, i.e. gets executed in the next timer softirq.
-When multiple cascades are pending, then lookup the next buckets too.
+- replace the big #ifdef ARCH_APICTIMER_STOPS_ON_C3 hackery by functions
+
+- remove the double switch in the power verify function (in the worst case
+  we switched ipi to apic and 20usec later apic to ipi)
+
+- keep track of the the state which stops local APIC timer
 
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
+Cc: Len Brown <len.brown@intel.com>
+Cc: <linux-acpi@vger.kernel.org>
+Cc: Andi Kleen <ak@suse.de>
+Signed-off-by: Andrew Morton <akpm@osdl.org>
 ---
- kernel/timer.c |  151 ++++++++++++++++++++++++++++++---------------------------
- 1 file changed, 81 insertions(+), 70 deletions(-)
 
-Index: linux-2.6.20-rc4-mm1-bo/kernel/timer.c
+ drivers/acpi/processor_idle.c |   67 ++++++++++++++++++++++++++++++------------
+ include/acpi/processor.h      |    1 
+ 2 files changed, 49 insertions(+), 19 deletions(-)
+
+Index: linux-2.6.20-rc4-mm1-bo/drivers/acpi/processor_idle.c
 ===================================================================
---- linux-2.6.20-rc4-mm1-bo.orig/kernel/timer.c
-+++ linux-2.6.20-rc4-mm1-bo/kernel/timer.c
-@@ -597,99 +597,110 @@ static inline void __run_timers(tvec_bas
-  * is used on S/390 to stop all activity when a cpus is idle.
-  * This functions needs to be called disabled.
-  */
--unsigned long next_timer_interrupt(void)
-+static unsigned long __next_timer_interrupt(tvec_base_t *base)
- {
--	tvec_base_t *base;
--	struct list_head *list;
-+	unsigned long timer_jiffies = base->timer_jiffies;
-+	unsigned long expires = timer_jiffies + (LONG_MAX >> 1);
-+	int index, slot, array, found = 0;
- 	struct timer_list *nte;
--	unsigned long expires;
--	unsigned long hr_expires = MAX_JIFFY_OFFSET;
--	ktime_t hr_delta;
- 	tvec_t *varray[4];
--	int i, j;
--
--	hr_delta = hrtimer_get_next_event();
--	if (hr_delta.tv64 != KTIME_MAX) {
--		struct timespec tsdelta;
--		tsdelta = ktime_to_timespec(hr_delta);
--		hr_expires = timespec_to_jiffies(&tsdelta);
--		if (hr_expires < 3)
--			return hr_expires + jiffies;
--	}
--	hr_expires += jiffies;
--
--	base = __get_cpu_var(tvec_bases);
--	spin_lock(&base->lock);
--	expires = base->timer_jiffies + (LONG_MAX >> 1);
--	list = NULL;
- 
- 	/* Look for timer events in tv1. */
--	j = base->timer_jiffies & TVR_MASK;
-+	index = slot = timer_jiffies & TVR_MASK;
- 	do {
--		list_for_each_entry(nte, base->tv1.vec + j, entry) {
-+		list_for_each_entry(nte, base->tv1.vec + slot, entry) {
-+			found = 1;
- 			expires = nte->expires;
--			if (j < (base->timer_jiffies & TVR_MASK))
--				list = base->tv2.vec + (INDEX(0));
--			goto found;
-+			/* Look at the cascade bucket(s)? */
-+			if (!index || slot < index)
-+				goto cascade;
-+			return expires;
- 		}
--		j = (j + 1) & TVR_MASK;
--	} while (j != (base->timer_jiffies & TVR_MASK));
-+		slot = (slot + 1) & TVR_MASK;
-+	} while (slot != index);
-+
-+cascade:
-+	/* Calculate the next cascade event */
-+	if (index)
-+		timer_jiffies += TVR_SIZE - index;
-+	timer_jiffies >>= TVR_BITS;
- 
- 	/* Check tv2-tv5. */
- 	varray[0] = &base->tv2;
- 	varray[1] = &base->tv3;
- 	varray[2] = &base->tv4;
- 	varray[3] = &base->tv5;
--	for (i = 0; i < 4; i++) {
--		j = INDEX(i);
-+
-+	for (array = 0; array < 4; array++) {
-+		tvec_t *varp = varray[array];
-+
-+		index = slot = timer_jiffies & TVN_MASK;
- 		do {
--			if (list_empty(varray[i]->vec + j)) {
--				j = (j + 1) & TVN_MASK;
--				continue;
--			}
--			list_for_each_entry(nte, varray[i]->vec + j, entry)
-+			list_for_each_entry(nte, varp->vec + slot, entry) {
-+				found = 1;
- 				if (time_before(nte->expires, expires))
- 					expires = nte->expires;
--			if (j < (INDEX(i)) && i < 3)
--				list = varray[i + 1]->vec + (INDEX(i + 1));
--			goto found;
--		} while (j != (INDEX(i)));
--	}
--found:
--	if (list) {
--		/*
--		 * The search wrapped. We need to look at the next list
--		 * from next tv element that would cascade into tv element
--		 * where we found the timer element.
--		 */
--		list_for_each_entry(nte, list, entry) {
--			if (time_before(nte->expires, expires))
--				expires = nte->expires;
--		}
-+			}
-+			/*
-+			 * Do we still search for the first timer or are
-+			 * we looking up the cascade buckets ?
-+			 */
-+			if (found) {
-+				/* Look at the cascade bucket(s)? */
-+				if (!index || slot < index)
-+					break;
-+				return expires;
-+			}
-+			slot = (slot + 1) & TVN_MASK;
-+		} while (slot != index);
-+
-+		if (index)
-+			timer_jiffies += TVN_SIZE - index;
-+		timer_jiffies >>= TVN_BITS;
+--- linux-2.6.20-rc4-mm1-bo.orig/drivers/acpi/processor_idle.c
++++ linux-2.6.20-rc4-mm1-bo/drivers/acpi/processor_idle.c
+@@ -250,6 +250,49 @@ static void acpi_cstate_enter(struct acp
  	}
--	spin_unlock(&base->lock);
-+	return expires;
-+}
- 
--	/*
--	 * It can happen that other CPUs service timer IRQs and increment
--	 * jiffies, but we have not yet got a local timer tick to process
--	 * the timer wheels.  In that case, the expiry time can be before
--	 * jiffies, but since the high-resolution timer here is relative to
--	 * jiffies, the default expression when high-resolution timers are
--	 * not active,
--	 *
--	 *   time_before(MAX_JIFFY_OFFSET + jiffies, expires)
--	 *
--	 * would falsely evaluate to true.  If that is the case, just
--	 * return jiffies so that we can immediately fire the local timer
--	 */
--	if (time_before(expires, jiffies))
--		return jiffies;
-+/*
-+ * Check, if the next hrtimer event is before the next timer wheel
-+ * event:
-+ */
-+static unsigned long cmp_next_hrtimer_event(unsigned long now,
-+					    unsigned long expires)
-+{
-+	ktime_t hr_delta = hrtimer_get_next_event();
-+	struct timespec tsdelta;
- 
--	if (time_before(hr_expires, expires))
--		return hr_expires;
-+	if (hr_delta.tv64 == KTIME_MAX)
-+		return expires;
- 
-+	if (hr_delta.tv64 <= TICK_NSEC)
-+		return now;
-+
-+	tsdelta = ktime_to_timespec(hr_delta);
-+	now += timespec_to_jiffies(&tsdelta);
-+	if (time_before(now, expires))
-+		return now;
- 	return expires;
  }
-+
-+/**
-+ * next_timer_interrupt - return the jiffy of the next pending timer
-+ */
-+unsigned long next_timer_interrupt(void)
-+{
-+	tvec_base_t *base = __get_cpu_var(tvec_bases);
-+	unsigned long expires, now = jiffies;
-+
-+	spin_lock(&base->lock);
-+	expires = __next_timer_interrupt(base);
-+	spin_unlock(&base->lock);
-+
-+	if (time_before_eq(expires, now))
-+		return now;
-+
-+	return cmp_next_hrtimer_event(now, expires);
-+}
- #endif
  
- /******************************************************************/
++#ifdef ARCH_APICTIMER_STOPS_ON_C3
++
++/*
++ * Some BIOS implementations switch to C3 in the published C2 state. This seems
++ * to be a common problem on AMD boxen.
++ */
++static void acpi_timer_check_state(int state, struct acpi_processor *pr,
++				   struct acpi_processor_cx *cx)
++{
++	struct acpi_processor_power *pwr = &pr->power;
++
++	/*
++	 * Check, if one of the previous states already marked the lapic
++	 * unstable
++	 */
++	if (pwr->timer_broadcast_on_state < state)
++		return;
++
++	if(cx->type == ACPI_STATE_C3 ||
++	   boot_cpu_data.x86_vendor == X86_VENDOR_AMD) {
++		pr->power.timer_broadcast_on_state = state;
++		return;
++	}
++}
++
++static void acpi_propagate_timer_broadcast(struct acpi_processor *pr)
++{
++	cpumask_t mask = cpumask_of_cpu(pr->id);
++
++	if (pr->power.timer_broadcast_on_state < INT_MAX)
++		on_each_cpu(switch_APIC_timer_to_ipi, &mask, 1, 1);
++	else
++		on_each_cpu(switch_ipi_to_APIC_timer, &mask, 1, 1);
++}
++
++#else
++
++static void acpi_timer_check_state(int state, struct acpi_processor *pr,
++				   struct acpi_processor_cx *cstate) { }
++static void acpi_propagate_timer_broadcast(struct acpi_processor *pr) { }
++
++#endif
++
+ static void acpi_processor_idle(void)
+ {
+ 	struct acpi_processor *pr = NULL;
+@@ -920,11 +963,7 @@ static int acpi_processor_power_verify(s
+ 	unsigned int i;
+ 	unsigned int working = 0;
+ 
+-#ifdef ARCH_APICTIMER_STOPS_ON_C3
+-	int timer_broadcast = 0;
+-	cpumask_t mask = cpumask_of_cpu(pr->id);
+-	on_each_cpu(switch_ipi_to_APIC_timer, &mask, 1, 1);
+-#endif
++	pr->power.timer_broadcast_on_state = INT_MAX;
+ 
+ 	for (i = 1; i < ACPI_PROCESSOR_MAX_POWER; i++) {
+ 		struct acpi_processor_cx *cx = &pr->power.states[i];
+@@ -936,21 +975,14 @@ static int acpi_processor_power_verify(s
+ 
+ 		case ACPI_STATE_C2:
+ 			acpi_processor_power_verify_c2(cx);
+-#ifdef ARCH_APICTIMER_STOPS_ON_C3
+-			/* Some AMD systems fake C3 as C2, but still
+-			   have timer troubles */
+-			if (cx->valid && 
+-				boot_cpu_data.x86_vendor == X86_VENDOR_AMD)
+-				timer_broadcast++;
+-#endif
++			if (cx->valid)
++				acpi_timer_check_state(i, pr, cx);
+ 			break;
+ 
+ 		case ACPI_STATE_C3:
+ 			acpi_processor_power_verify_c3(pr, cx);
+-#ifdef ARCH_APICTIMER_STOPS_ON_C3
+ 			if (cx->valid)
+-				timer_broadcast++;
+-#endif
++				acpi_timer_check_state(i, pr, cx);
+ 			break;
+ 		}
+ 
+@@ -958,10 +990,7 @@ static int acpi_processor_power_verify(s
+ 			working++;
+ 	}
+ 
+-#ifdef ARCH_APICTIMER_STOPS_ON_C3
+-	if (timer_broadcast)
+-		on_each_cpu(switch_APIC_timer_to_ipi, &mask, 1, 1);
+-#endif
++	acpi_propagate_timer_broadcast(pr);
+ 
+ 	return (working);
+ }
+Index: linux-2.6.20-rc4-mm1-bo/include/acpi/processor.h
+===================================================================
+--- linux-2.6.20-rc4-mm1-bo.orig/include/acpi/processor.h
++++ linux-2.6.20-rc4-mm1-bo/include/acpi/processor.h
+@@ -79,6 +79,7 @@ struct acpi_processor_power {
+ 	u32 bm_activity;
+ 	int count;
+ 	struct acpi_processor_cx states[ACPI_PROCESSOR_MAX_POWER];
++	int timer_broadcast_on_state;
+ };
+ 
+ /* Performance Management */
 
 --
 
