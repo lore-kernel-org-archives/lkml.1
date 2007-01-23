@@ -1,76 +1,420 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965530AbXAWWEu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965529AbXAWWEv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965530AbXAWWEu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jan 2007 17:04:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965525AbXAWWEu
+	id S965529AbXAWWEv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jan 2007 17:04:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965516AbXAWWBT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jan 2007 17:04:50 -0500
-Received: from www.osadl.org ([213.239.205.134]:35934 "EHLO mail.tglx.de"
+	Tue, 23 Jan 2007 17:01:19 -0500
+Received: from www.osadl.org ([213.239.205.134]:35852 "EHLO mail.tglx.de"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S965520AbXAWWBW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jan 2007 17:01:22 -0500
-Message-Id: <20070123211209.237368000@localhost.localdomain>
+	id S933153AbXAWWBA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jan 2007 17:01:00 -0500
+Message-Id: <20070123211205.541044000@localhost.localdomain>
 References: <20070123211159.178138000@localhost.localdomain>
-Date: Tue, 23 Jan 2007 22:01:37 -0000
+Date: Tue, 23 Jan 2007 22:01:14 -0000
 From: Thomas Gleixner <tglx@linutronix.de>
 To: Andrew Morton <akpm@osdl.org>
 Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
        John Stultz <johnstul@us.ibm.com>,
        Arjan van de Veen <arjan@infradead.org>,
        Roman Zippel <zippel@linux-m68k.org>
-Subject: [patch 40/46] i386 prepare nmi watchdog for dynticks
-Content-Disposition: inline; filename=dynticks-i386-prepare-nmi-watchdog.patch
+Subject: [patch 18/46] clocksource: Add verification (watchdog) helper
+Content-Disposition: inline; filename=clocksource-add-verification-helper.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Thomas Gleixner <tglx@linutronix.de>
 
-The NMI watchdog implementation assumes that the local APIC timer
-interrupt is happening.  This assumption is not longer true when high
-resolution timers and dynamic ticks come into play, as they may switch
-off the local APIC timer completely.  Take the PIT/HPET interrupts into
-account too, to avoid false positives.
+The TSC needs to be verified against another clocksource. Instead of
+using hardwired assumptions of available hardware, provide a generic
+verification mechanism. The verification uses the best available
+clocksource and handles the usability for high resolution timers /
+dynticks of the clocksource which needs to be verified.
 
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
-Cc: Andi Kleen <ak@suse.de>
-Cc: Zachary Amsden <zach@vmware.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Rohit Seth <rohitseth@google.com>
-Signed-off-by: Andrew Morton <akpm@osdl.org>
+
 ---
+ arch/i386/Kconfig           |    4 +
+ arch/i386/kernel/tsc.c      |   49 -----------------
+ include/linux/clocksource.h |   15 ++++-
+ kernel/time/clocksource.c   |  125 ++++++++++++++++++++++++++++++++++++++++++--
+ kernel/timer.c              |   46 ++++++++--------
+ 5 files changed, 161 insertions(+), 78 deletions(-)
 
- arch/i386/kernel/nmi.c |    9 +++++++--
- 1 file changed, 7 insertions(+), 2 deletions(-)
-
-Index: linux-2.6.20-rc4-mm1-bo/arch/i386/kernel/nmi.c
+Index: linux-2.6.20-rc4-mm1-bo/arch/i386/kernel/tsc.c
 ===================================================================
---- linux-2.6.20-rc4-mm1-bo.orig/arch/i386/kernel/nmi.c
-+++ linux-2.6.20-rc4-mm1-bo/arch/i386/kernel/nmi.c
-@@ -23,6 +23,7 @@
- #include <linux/dmi.h>
- #include <linux/kprobes.h>
- #include <linux/cpumask.h>
-+#include <linux/kernel_stat.h>
+--- linux-2.6.20-rc4-mm1-bo.orig/arch/i386/kernel/tsc.c
++++ linux-2.6.20-rc4-mm1-bo/arch/i386/kernel/tsc.c
+@@ -344,49 +344,6 @@ static struct dmi_system_id __initdata b
+ 	 {}
+ };
  
- #include <asm/smp.h>
- #include <asm/nmi.h>
-@@ -971,9 +972,13 @@ __kprobes int nmi_watchdog_tick(struct p
- 		cpu_clear(cpu, backtrace_mask);
+-#define TSC_FREQ_CHECK_INTERVAL (10*MSEC_PER_SEC) /* 10sec in MS */
+-static struct timer_list verify_tsc_freq_timer;
+-
+-/* XXX - Probably should add locking */
+-static void verify_tsc_freq(unsigned long unused)
+-{
+-	static u64 last_tsc;
+-	static unsigned long last_jiffies;
+-
+-	u64 now_tsc, interval_tsc;
+-	unsigned long now_jiffies, interval_jiffies;
+-
+-
+-	if (check_tsc_unstable())
+-		return;
+-
+-	rdtscll(now_tsc);
+-	now_jiffies = jiffies;
+-
+-	if (!last_jiffies) {
+-		goto out;
+-	}
+-
+-	interval_jiffies = now_jiffies - last_jiffies;
+-	interval_tsc = now_tsc - last_tsc;
+-	interval_tsc *= HZ;
+-	do_div(interval_tsc, cpu_khz*1000);
+-
+-	if (interval_tsc < (interval_jiffies * 3 / 4)) {
+-		printk("TSC appears to be running slowly. "
+-			"Marking it as unstable\n");
+-		mark_tsc_unstable();
+-		return;
+-	}
+-
+-out:
+-	last_tsc = now_tsc;
+-	last_jiffies = now_jiffies;
+-	/* set us up to go off on the next interval: */
+-	mod_timer(&verify_tsc_freq_timer,
+-		jiffies + msecs_to_jiffies(TSC_FREQ_CHECK_INTERVAL));
+-}
+-
+ /*
+  * Make an educated guess if the TSC is trustworthy and synchronized
+  * over all CPUs.
+@@ -424,12 +381,6 @@ static int __init init_tsc_clocksource(v
+ 			clocksource_tsc.flags &= ~CLOCK_SOURCE_IS_CONTINUOUS;
+ 		}
+ 
+-		init_timer(&verify_tsc_freq_timer);
+-		verify_tsc_freq_timer.function = verify_tsc_freq;
+-		verify_tsc_freq_timer.expires =
+-			jiffies + msecs_to_jiffies(TSC_FREQ_CHECK_INTERVAL);
+-		add_timer(&verify_tsc_freq_timer);
+-
+ 		return clocksource_register(&clocksource_tsc);
  	}
  
--	sum = per_cpu(irq_stat, cpu).apic_timer_irqs;
-+	/*
-+	 * Take the local apic timer and PIT/HPET into account. We don't
-+	 * know which one is active, when we have highres/dyntick on
-+	 */
-+	sum = per_cpu(irq_stat, cpu).apic_timer_irqs + kstat_irqs(0);
+Index: linux-2.6.20-rc4-mm1-bo/include/linux/clocksource.h
+===================================================================
+--- linux-2.6.20-rc4-mm1-bo.orig/include/linux/clocksource.h
++++ linux-2.6.20-rc4-mm1-bo/include/linux/clocksource.h
+@@ -12,11 +12,13 @@
+ #include <linux/timex.h>
+ #include <linux/time.h>
+ #include <linux/list.h>
++#include <linux/timer.h>
+ #include <asm/div64.h>
+ #include <asm/io.h>
  
--	/* if the apic timer isn't firing, this cpu isn't doing much */
-+	/* if the none of the timers isn't firing, this cpu isn't doing much */
- 	if (!touched && last_irq_sums[cpu] == sum) {
- 		/*
- 		 * Ayiee, looks like this CPU is stuck ...
+ /* clocksource cycle base type */
+ typedef u64 cycle_t;
++struct clocksource;
+ 
+ /**
+  * struct clocksource - hardware abstraction for a free running counter
+@@ -62,13 +64,22 @@ struct clocksource {
+ 	cycle_t cycle_last, cycle_interval;
+ 	u64 xtime_nsec, xtime_interval;
+ 	s64 error;
++
++#ifdef CONFIG_CLOCKSOURCE_WATCHDOG
++	/* Watchdog related data, used by the framework */
++	struct list_head wd_list;
++	cycle_t wd_last;
++#endif
+ };
+ 
+ /*
+  * Clock source flags bits::
+  */
+-#define CLOCK_SOURCE_IS_CONTINUOUS	0x01
+-#define CLOCK_SOURCE_MUST_VERIFY	0x02
++#define CLOCK_SOURCE_IS_CONTINUOUS		0x01
++#define CLOCK_SOURCE_MUST_VERIFY		0x02
++
++#define CLOCK_SOURCE_WATCHDOG			0x10
++#define CLOCK_SOURCE_VALID_FOR_HRES		0x20
+ 
+ /* simplify initialization of mask field */
+ #define CLOCKSOURCE_MASK(bits) (cycle_t)(bits<64 ? ((1ULL<<bits)-1) : -1)
+Index: linux-2.6.20-rc4-mm1-bo/kernel/time/clocksource.c
+===================================================================
+--- linux-2.6.20-rc4-mm1-bo.orig/kernel/time/clocksource.c
++++ linux-2.6.20-rc4-mm1-bo/kernel/time/clocksource.c
+@@ -62,9 +62,115 @@ static int __init clocksource_done_booti
+ 	finished_booting = 1;
+ 	return 0;
+ }
+-
+ late_initcall(clocksource_done_booting);
+ 
++#ifdef CONFIG_CLOCKSOURCE_WATCHDOG
++static LIST_HEAD(watchdog_list);
++static struct clocksource *watchdog;
++static struct timer_list watchdog_timer;
++static DEFINE_SPINLOCK(watchdog_lock);
++static cycle_t watchdog_last;
++/*
++ * Interval: 0.5sec Treshold: 0.0625s
++ */
++#define WATCHDOG_INTERVAL (HZ >> 1)
++#define WATCHDOG_TRESHOLD (NSEC_PER_SEC >> 4)
++
++static void clocksource_ratewd(struct clocksource *cs, int64_t delta)
++{
++	if (delta > -WATCHDOG_TRESHOLD && delta < WATCHDOG_TRESHOLD)
++		return;
++
++	printk(KERN_WARNING "Clocksource %s unstable (delta = %Ld ns)\n",
++	       cs->name, delta);
++	cs->flags &= ~(CLOCK_SOURCE_VALID_FOR_HRES | CLOCK_SOURCE_WATCHDOG);
++	clocksource_change_rating(cs, 0);
++	cs->flags &= ~CLOCK_SOURCE_WATCHDOG;
++	list_del(&cs->wd_list);
++}
++
++static void clocksource_watchdog(unsigned long data)
++{
++	struct clocksource *cs, *tmp;
++	cycle_t csnow, wdnow;
++	int64_t wd_nsec, cs_nsec;
++
++	spin_lock(&watchdog_lock);
++
++	wdnow = watchdog->read();
++	wd_nsec = cyc2ns(watchdog, (wdnow - watchdog_last) & watchdog->mask);
++	watchdog_last = wdnow;
++
++	list_for_each_entry_safe(cs, tmp, &watchdog_list, wd_list) {
++		csnow = cs->read();
++		/* Initialized ? */
++		if (!(cs->flags & CLOCK_SOURCE_WATCHDOG)) {
++			if ((cs->flags & CLOCK_SOURCE_IS_CONTINUOUS) &&
++			    (watchdog->flags & CLOCK_SOURCE_IS_CONTINUOUS))
++				cs->flags |= CLOCK_SOURCE_VALID_FOR_HRES;
++			cs->flags |= CLOCK_SOURCE_WATCHDOG;
++			cs->wd_last = csnow;
++		} else {
++			cs_nsec = cyc2ns(cs, (csnow - cs->wd_last) & cs->mask);
++			cs->wd_last = csnow;
++			/* Check the delta. Might remove from the list ! */
++			clocksource_ratewd(cs, cs_nsec - wd_nsec);
++		}
++	}
++
++	if (!list_empty(&watchdog_list)) {
++		__mod_timer(&watchdog_timer,
++			    watchdog_timer.expires + WATCHDOG_INTERVAL);
++	}
++	spin_unlock(&watchdog_lock);
++}
++static void clocksource_check_watchdog(struct clocksource *cs)
++{
++	struct clocksource *cse;
++	unsigned long flags;
++
++	spin_lock_irqsave(&watchdog_lock, flags);
++	if (cs->flags & CLOCK_SOURCE_MUST_VERIFY) {
++		int started = !list_empty(&watchdog_list);
++
++		list_add(&cs->wd_list, &watchdog_list);
++		if (!started && watchdog) {
++			watchdog_last = watchdog->read();
++			watchdog_timer.expires = jiffies + WATCHDOG_INTERVAL;
++			add_timer(&watchdog_timer);
++		}
++	} else if (cs->flags & CLOCK_SOURCE_IS_CONTINUOUS) {
++			cs->flags |= CLOCK_SOURCE_VALID_FOR_HRES;
++
++		if (!watchdog || cs->rating > watchdog->rating) {
++			if (watchdog)
++				del_timer(&watchdog_timer);
++			watchdog = cs;
++			init_timer(&watchdog_timer);
++			watchdog_timer.function = clocksource_watchdog;
++
++			/* Reset watchdog cycles */
++			list_for_each_entry(cse, &watchdog_list, wd_list)
++				cse->flags &= ~CLOCK_SOURCE_WATCHDOG;
++			/* Start if list is not empty */
++			if (!list_empty(&watchdog_list)) {
++				watchdog_last = watchdog->read();
++				watchdog_timer.expires =
++					jiffies + WATCHDOG_INTERVAL;
++				add_timer(&watchdog_timer);
++			}
++		}
++	}
++	spin_unlock_irqrestore(&watchdog_lock, flags);
++}
++#else
++static void clocksource_check_watchdog(struct clocksource *cs)
++{
++	if (cs->flags & CLOCK_SOURCE_IS_CONTINUOUS)
++		cs->flags |= CLOCK_SOURCE_VALID_FOR_HRES;
++}
++#endif
++
+ /**
+  * clocksource_get_next - Returns the selected clocksource
+  *
+@@ -93,13 +199,21 @@ struct clocksource *clocksource_get_next
+  */
+ static struct clocksource *select_clocksource(void)
+ {
++	struct clocksource *next;
++
+ 	if (list_empty(&clocksource_list))
+ 		return NULL;
+ 
+ 	if (clocksource_override)
+-		return clocksource_override;
++		next = clocksource_override;
++	else
++		next = list_entry(clocksource_list.next, struct clocksource,
++				  list);
+ 
+-	return list_entry(clocksource_list.next, struct clocksource, list);
++	if (next == curr_clocksource)
++		return NULL;
++
++	return next;
+ }
+ 
+ /*
+@@ -137,13 +251,15 @@ static int clocksource_enqueue(struct cl
+ int clocksource_register(struct clocksource *c)
+ {
+ 	unsigned long flags;
+-	int ret = 0;
++	int ret;
+ 
+ 	spin_lock_irqsave(&clocksource_lock, flags);
+ 	ret = clocksource_enqueue(c);
+ 	if (!ret)
+ 		next_clocksource = select_clocksource();
+ 	spin_unlock_irqrestore(&clocksource_lock, flags);
++	if (!ret)
++		clocksource_check_watchdog(c);
+ 	return ret;
+ }
+ EXPORT_SYMBOL(clocksource_register);
+@@ -158,6 +274,7 @@ void clocksource_change_rating(struct cl
+ 
+ 	spin_lock_irqsave(&clocksource_lock, flags);
+ 	list_del(&cs->list);
++	cs->rating = rating;
+ 	clocksource_enqueue(cs);
+ 	next_clocksource = select_clocksource();
+ 	spin_unlock_irqrestore(&clocksource_lock, flags);
+Index: linux-2.6.20-rc4-mm1-bo/kernel/timer.c
+===================================================================
+--- linux-2.6.20-rc4-mm1-bo.orig/kernel/timer.c
++++ linux-2.6.20-rc4-mm1-bo/kernel/timer.c
+@@ -832,30 +832,34 @@ EXPORT_SYMBOL(do_settimeofday);
+  *
+  * Accumulates current time interval and initializes new clocksource
+  */
+-static int change_clocksource(void)
++static void change_clocksource(void)
+ {
+ 	struct clocksource *new;
+ 	cycle_t now;
+ 	u64 nsec;
++
+ 	new = clocksource_get_next();
+-	if (clock != new) {
+-		now = clocksource_read(new);
+-		nsec =  __get_nsec_offset();
+-		timespec_add_ns(&xtime, nsec);
+-
+-		clock = new;
+-		clock->cycle_last = now;
+-		printk(KERN_INFO "Time: %s clocksource has been installed.\n",
+-		       clock->name);
+-		return 1;
+-	}
+-	return 0;
++
++	if (clock == new)
++		return;
++
++	now = clocksource_read(new);
++	nsec =  __get_nsec_offset();
++	timespec_add_ns(&xtime, nsec);
++
++	clock = new;
++	clock->cycle_last = now;
++
++	clock->error = 0;
++	clock->xtime_nsec = 0;
++	clocksource_calculate_interval(clock, NTP_INTERVAL_LENGTH);
++
++	hrtimer_clock_notify();
++	printk(KERN_INFO "Time: %s clocksource has been installed.\n",
++	       clock->name);
+ }
+ #else
+-static inline int change_clocksource(void)
+-{
+-	return 0;
+-}
++static inline void change_clocksource(void) { }
+ #endif
+ 
+ /**
+@@ -869,7 +873,7 @@ int timekeeping_is_continuous(void)
+ 	do {
+ 		seq = read_seqbegin(&xtime_lock);
+ 
+-		ret = clock->flags & CLOCK_SOURCE_IS_CONTINUOUS;
++		ret = clock->flags & CLOCK_SOURCE_VALID_FOR_HRES;
+ 
+ 	} while (read_seqretry(&xtime_lock, seq));
+ 
+@@ -1122,11 +1126,7 @@ static void update_wall_time(void)
+ 	clock->xtime_nsec -= (s64)xtime.tv_nsec << clock->shift;
+ 
+ 	/* check to see if there is a new clocksource to use */
+-	if (change_clocksource()) {
+-		clock->error = 0;
+-		clock->xtime_nsec = 0;
+-		clocksource_calculate_interval(clock, NTP_INTERVAL_LENGTH);
+-	}
++	change_clocksource();
+ }
+ 
+ /*
+Index: linux-2.6.20-rc4-mm1-bo/arch/i386/Kconfig
+===================================================================
+--- linux-2.6.20-rc4-mm1-bo.orig/arch/i386/Kconfig
++++ linux-2.6.20-rc4-mm1-bo/arch/i386/Kconfig
+@@ -18,6 +18,10 @@ config GENERIC_TIME
+ 	bool
+ 	default y
+ 
++config CLOCKSOURCE_WATCHDOG
++	bool
++	default y
++
+ config LOCKDEP_SUPPORT
+ 	bool
+ 	default y
 
 --
 
