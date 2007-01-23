@@ -1,45 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933139AbXAWUDO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965484AbXAWUHf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933139AbXAWUDO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jan 2007 15:03:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933137AbXAWUDO
+	id S965484AbXAWUHf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jan 2007 15:07:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965485AbXAWUHf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jan 2007 15:03:14 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:52503 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933139AbXAWUDN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jan 2007 15:03:13 -0500
-Date: Tue, 23 Jan 2007 12:02:45 -0800
-From: Andrew Morton <akpm@osdl.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [patch 1/3] Scheduled removal of SA_xxx interrupt flags
-Message-Id: <20070123120245.ec3b0772.akpm@osdl.org>
-In-Reply-To: <20070114081926.912658228@inhelltoy.tec.linutronix.de>
-References: <20070114081905.135797900@inhelltoy.tec.linutronix.de>
-	<20070114081926.912658228@inhelltoy.tec.linutronix.de>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 23 Jan 2007 15:07:35 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:58419 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965484AbXAWUHf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jan 2007 15:07:35 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <45B66ACE.5010309@s5r6.in-berlin.de>
+Date: Tue, 23 Jan 2007 21:06:38 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.9) Gecko/20070121 SeaMonkey/1.0.7
+MIME-Version: 1.0
+To: Sunil Naidu <akula2.shark@gmail.com>
+CC: lkml <linux-kernel@vger.kernel.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Jesper Juhl <jesper.juhl@gmail.com>, Chris Wright <chrisw@sous-sol.org>
+Subject: Re: [Proposal] 2.6.18-stable release plans?
+References: <45B53722.9030206@redhat.com>	 <9a8748490701221623q1b61f03fva7b0ad7e7f30316f@mail.gmail.com>	 <8355959a0701230538m2f1201b6u49853e65d4c69a57@mail.gmail.com>	 <45B648CA.3020507@s5r6.in-berlin.de> <8355959a0701231125y36cad93eo7075aa1889674b3e@mail.gmail.com>
+In-Reply-To: <8355959a0701231125y36cad93eo7075aa1889674b3e@mail.gmail.com>
+X-Enigmail-Version: 0.94.1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 14 Jan 2007 08:33:45 -0000
-Thomas Gleixner <tglx@linutronix.de> wrote:
+Sunil Naidu wrote:
+...
+> Am talking from the Linux users point of view (who need to know deep
+> about the Kernel development, etc. Imagine, a student or a
+> professional who wants to build a kernel with a patch for a i686
+> machine?
 
-> The name space cleanup of the interrupt request flags (SA_xxx -> IRQF_xxx)
-> left a 6 month grace period for the old deprecated flags. Remove them.
+You speak of advanced users with very special requirements. They can
+watch respective mailinglists, git trees, bugzillas, ... The file
+MAINTAINERS contains some pointers for them.
 
-fwiw, I'll make this [patch 3/3], so the kernel compiles OK at each step.
+...
+> But we can give info in general? Example, if patch-2.6.19.3
+> comes out - simply we can say as *x86 32/64* based on the weightage of
+> fixes in that patch. What do you say?
 
-This is going to break a lot of external stuff.  We should have found a way
-to make usage of SA_* emit deprecated warnings (or _some_ warning) to warn
-people of impending doom.  But I can't immediately find a way of doing
-that.
-
-If we _can_ find a way of doing this, I suspect we'll need to do it, and
-give people another six months.  It's going to get ugly out there.  We
-shall see...
-
-
+This cannot be measured objectively.
+-- 
+Stefan Richter
+-=====-=-=== ---= =-===
+http://arcgraph.de/sr/
