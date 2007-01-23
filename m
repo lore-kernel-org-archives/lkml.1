@@ -1,141 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751953AbXAWPKK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751986AbXAWPKh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751953AbXAWPKK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jan 2007 10:10:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751955AbXAWPKK
+	id S1751986AbXAWPKh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jan 2007 10:10:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751963AbXAWPKh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jan 2007 10:10:10 -0500
-Received: from sj-iport-6.cisco.com ([171.71.176.117]:47392 "EHLO
-	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751953AbXAWPKI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jan 2007 10:10:08 -0500
-X-IronPort-AV: i="4.13,226,1167638400"; 
-   d="scan'208"; a="104553381:sNHT46464624"
-To: torvalds@osdl.org
-Cc: openib-general@openib.org, linux-kernel@vger.kernel.org
-Subject: [GIT PULL] please pull infiniband.git
-X-Message-Flag: Warning: May contain useful information
-From: Roland Dreier <rdreier@cisco.com>
-Date: Tue, 23 Jan 2007 07:10:07 -0800
-Message-ID: <ada3b61g4og.fsf@cisco.com>
-User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.19 (linux)
+	Tue, 23 Jan 2007 10:10:37 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:49403 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751977AbXAWPKf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jan 2007 10:10:35 -0500
+Message-ID: <45B62376.9000303@redhat.com>
+Date: Tue, 23 Jan 2007 10:02:14 -0500
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 23 Jan 2007 15:10:07.0532 (UTC) FILETIME=[91669EC0:01C73F00]
-Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim2002 verified; ); 
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: Christoph Lameter <clameter@sgi.com>, Balbir Singh <balbir@in.ibm.com>,
+       Andrea Arcangeli <andrea@suse.de>,
+       Niki Hammler <mailinglists@nobaq.net>, linux-kernel@vger.kernel.org,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Subject: Re: Why active list and inactive list?
+References: <45B55286.5060909@nobaq.net>	 <20070123003939.GY13798@opteron.random> <45B56575.10807@in.ibm.com>	 <Pine.LNX.4.64.0701221737510.30455@schroedinger.engr.sgi.com>	 <45B569A4.3010006@redhat.com>	 <Pine.LNX.4.64.0701221801420.30595@schroedinger.engr.sgi.com> <1169540992.6197.202.camel@twins>
+In-Reply-To: <1169540992.6197.202.camel@twins>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus, please pull from
+Peter Zijlstra wrote:
+> On Mon, 2007-01-22 at 18:03 -0800, Christoph Lameter wrote:
+>> What happened to all those advanced page replacement endeavors? 
+> 
+> They are here:
+> http://programming.kicks-ass.net/kernel-patches/page-replace/2.6.19-pr1/
+> 
+> I should update to .20 soonish.
+> 
+>> What is the most promising of those?
+> 
+> I'm still torn between CLOCK-Pro and CART. 
+> 
+> CLOCK-Pro is still vulnerable to the cyclic scan use case, since at that
+> time all pages will have equal distance.
 
-    master.kernel.org:/pub/scm/linux/kernel/git/roland/infiniband.git for-linus
+That's fixable.  Just bias in favor of the already active
+pages and only let pages with a clearly smaller interreference
+distance replace them.
 
-This tree is also available from kernel.org mirrors at:
+> CART might be fixable (my CART-r approach) but I still have to study the
+> full ramifications of that (does it hurt other workloads?).
 
-    git://git.kernel.org/pub/scm/linux/kernel/git/roland/infiniband.git for-linus
+Your CART-r seems reasonable, too.
 
-This will pick up three small fixes:
+> Both seems quite capable to distinguish between recency and frequency.
+> Neither use this horrid swappiness knob to distinguish between mapped
+> and unmapped pages.
 
-Hoang-Nam Nguyen (2):
-      IB/ehca: Fix improper use of yield() with spinlock held
-      IB/ehca: Fix mismatched spin_unlock in irq handler
+Getting rid of swappiness is a very good thing, IMHO.
+I have heard about a few customer workloads that required
+changes to swappiness in order for the system to be able
+to handle their workload at all.
 
-Ishai Rabinovitz (1):
-      IB/srp: Check match_strdup() return
+Systems should not have to be tuned like that...
 
- drivers/infiniband/hw/ehca/ehca_cq.c  |    5 ++++-
- drivers/infiniband/hw/ehca/ehca_irq.c |    3 ++-
- drivers/infiniband/ulp/srp/ib_srp.c   |   20 ++++++++++++++++++++
- 3 files changed, 26 insertions(+), 2 deletions(-)
+> The main problem I'm having is test cases, notably the lack thereof.
+> (and lack of time ofcourse ;-)
 
+Yes, this is always a problem.  I am not aware of any complete
+test cases to test page replacement.
 
-diff --git a/drivers/infiniband/hw/ehca/ehca_cq.c b/drivers/infiniband/hw/ehca/ehca_cq.c
-index 93995b6..6074c89 100644
---- a/drivers/infiniband/hw/ehca/ehca_cq.c
-+++ b/drivers/infiniband/hw/ehca/ehca_cq.c
-@@ -344,8 +344,11 @@ int ehca_destroy_cq(struct ib_cq *cq)
- 	unsigned long flags;
- 
- 	spin_lock_irqsave(&ehca_cq_idr_lock, flags);
--	while (my_cq->nr_callbacks)
-+	while (my_cq->nr_callbacks) {
-+		spin_unlock_irqrestore(&ehca_cq_idr_lock, flags);
- 		yield();
-+		spin_lock_irqsave(&ehca_cq_idr_lock, flags);
-+	}
- 
- 	idr_remove(&ehca_cq_idr, my_cq->token);
- 	spin_unlock_irqrestore(&ehca_cq_idr_lock, flags);
-diff --git a/drivers/infiniband/hw/ehca/ehca_irq.c b/drivers/infiniband/hw/ehca/ehca_irq.c
-index e7209af..c069be8 100644
---- a/drivers/infiniband/hw/ehca/ehca_irq.c
-+++ b/drivers/infiniband/hw/ehca/ehca_irq.c
-@@ -440,7 +440,8 @@ void ehca_tasklet_eq(unsigned long data)
- 					cq = idr_find(&ehca_cq_idr, token);
- 
- 					if (cq == NULL) {
--						spin_unlock(&ehca_cq_idr_lock);
-+						spin_unlock_irqrestore(&ehca_cq_idr_lock,
-+								       flags);
- 						break;
- 					}
- 
-diff --git a/drivers/infiniband/ulp/srp/ib_srp.c b/drivers/infiniband/ulp/srp/ib_srp.c
-index cdecbf5..72611fd 100644
---- a/drivers/infiniband/ulp/srp/ib_srp.c
-+++ b/drivers/infiniband/ulp/srp/ib_srp.c
-@@ -1621,18 +1621,30 @@ static int srp_parse_options(const char *buf, struct srp_target_port *target)
- 		switch (token) {
- 		case SRP_OPT_ID_EXT:
- 			p = match_strdup(args);
-+			if (!p) {
-+				ret = -ENOMEM;
-+				goto out;
-+			}
- 			target->id_ext = cpu_to_be64(simple_strtoull(p, NULL, 16));
- 			kfree(p);
- 			break;
- 
- 		case SRP_OPT_IOC_GUID:
- 			p = match_strdup(args);
-+			if (!p) {
-+				ret = -ENOMEM;
-+				goto out;
-+			}
- 			target->ioc_guid = cpu_to_be64(simple_strtoull(p, NULL, 16));
- 			kfree(p);
- 			break;
- 
- 		case SRP_OPT_DGID:
- 			p = match_strdup(args);
-+			if (!p) {
-+				ret = -ENOMEM;
-+				goto out;
-+			}
- 			if (strlen(p) != 32) {
- 				printk(KERN_WARNING PFX "bad dest GID parameter '%s'\n", p);
- 				kfree(p);
-@@ -1656,6 +1668,10 @@ static int srp_parse_options(const char *buf, struct srp_target_port *target)
- 
- 		case SRP_OPT_SERVICE_ID:
- 			p = match_strdup(args);
-+			if (!p) {
-+				ret = -ENOMEM;
-+				goto out;
-+			}
- 			target->service_id = cpu_to_be64(simple_strtoull(p, NULL, 16));
- 			kfree(p);
- 			break;
-@@ -1693,6 +1709,10 @@ static int srp_parse_options(const char *buf, struct srp_target_port *target)
- 
- 		case SRP_OPT_INITIATOR_EXT:
- 			p = match_strdup(args);
-+			if (!p) {
-+				ret = -ENOMEM;
-+				goto out;
-+			}
- 			target->initiator_ext = cpu_to_be64(simple_strtoull(p, NULL, 16));
- 			kfree(p);
- 			break;
+It would be easy to simulate some database by having part of
+the dataset be the index and referencing that in an r^2 way,
+and the rest being the data which is referenced less.  At that
+point you can see how taking frequency into account helps.
+
+However, tests like that are simply not complete.  They are
+not representative of the things most people do with their
+system.
+
+Something like AIM-7 suffers from the same problems...
+
+Anybody?
+
+-- 
+Politics is the struggle between those who want to make their country
+the best in the world, and those who believe it already is.  Each group
+calls the other unpatriotic.
