@@ -1,44 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932994AbXAWEmg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932997AbXAWEnq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932994AbXAWEmg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jan 2007 23:42:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932289AbXAWEmg
+	id S932997AbXAWEnq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jan 2007 23:43:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932289AbXAWEnq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jan 2007 23:42:36 -0500
-Received: from theorix.CeNTIE.NET.au ([202.9.6.84]:49889 "HELO
-	theorix.centie.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S932270AbXAWEmf (ORCPT
+	Mon, 22 Jan 2007 23:43:46 -0500
+Received: from mail4.hitachi.co.jp ([133.145.228.5]:52431 "EHLO
+	mail4.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932270AbXAWEnp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jan 2007 23:42:35 -0500
-Message-ID: <45B59239.90403@usherbrooke.ca>
-Date: Tue, 23 Jan 2007 15:42:33 +1100
-From: Jean-Marc Valin <jean-marc.valin@usherbrooke.ca>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070104)
+	Mon, 22 Jan 2007 23:43:45 -0500
+Message-ID: <45B59218.4040201@hitachi.com>
+Date: Tue, 23 Jan 2007 13:42:00 +0900
+From: "Kawai, Hidehiro" <hidehiro.kawai.ez@hitachi.com>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja-JP; rv:1.4) 
+    Gecko/20030624 Netscape/7.1 (ax)
+X-Accept-Language: ja
 MIME-Version: 1.0
 To: Pavel Machek <pavel@ucw.cz>
-CC: nigel@nigel.suspend2.net, linux-kernel@vger.kernel.org
-Subject: Re: Suspend to RAM generates oops and general protection fault
-References: <45B422D3.9040409@usherbrooke.ca> <1169436221.2190.13.camel@nigel.suspend2.net> <45B448BA.70800@usherbrooke.ca> <20070122132545.GA4493@ucw.cz>
-In-Reply-To: <20070122132545.GA4493@ucw.cz>
-X-Enigmail-Version: 0.94.0.0
-Content-Type: text/plain; charset=ISO-8859-1
+Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
+       gregkh@suse.de, james.bottomley@steeleye.com,
+       Satoshi OSHIMA <soshima@redhat.com>,
+       "Hideo AOKI@redhat" <haoki@redhat.com>,
+       sugita <yumiko.sugita.yf@hitachi.com>,
+       Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH] binfmt_elf: core dump masking support
+References: <457FA840.5000107@hitachi.com> 
+    <20061213132358.ddcaaaf4.akpm@osdl.org> <20061220154056.GA4261@ucw.cz> 
+    <45A2EADF.3030807@hitachi.com> <20070109143912.GC19787@elf.ucw.cz> 
+    <45A74B89.4040100@hitachi.com> <20070114200157.GA2582@elf.ucw.cz> 
+    <45B01387.7010207@hitachi.com> <20070119004548.GE10351@elf.ucw.cz> 
+    <45B42194.3050601@hitachi.com> <20070122100610.GC16309@elf.ucw.cz>
+In-Reply-To: <20070122100610.GC16309@elf.ucw.cz>
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> will be a device driver. Common causes of suspend/resume problems from
->>> the list you give below are acpi modules, bluetooth and usb. I'd also be
->>> consider pcmcia, drm and fuse possibilities. But again, go for unloading
->>> everything possible in the first instance.
->> Actually, the reason I sent this is that when I showed the oops/gpf to
->> Matthew Garrett at linux.conf.au, he said it looked like a CPU hotplug
->> problem and suggested I send it to lkml. BTW, with 2.6.20-rc5, the
->> suspend to RAM now works ~95% of the time.
+Hi,
+
+>>>(run echo 1 > coremask, echo 0 > coremask in a loop while dumping
+>>>core. Do you have enough locking to make it work as expected?)
+>>
+>>Currently, any lock isn't acquired.  But I think the kernel only
+>>have to preserve the coremask setting in a local variable at the
+>>begining of core dumping.  I'm going to do this in the next version.
 > 
-> Try a kernel without CONFIG_SMP... that will verify if it is SMP
-> related.
+> No, I do not think that is enough. At minimum, you'd need atomic_t
+> variable. But I'd recomend against it. Playing with locking is tricky.
 
-Well, this happens to be my main work machine, which I'm not willing to
-have running at half speed for several weeks. Anything else you can suggest?
+Why do you think it is not enough?  I think that any locking is not
+needed.
+My design principle is that the core dump routine is controlled by
+the bitmask which was assigned to the dumping process at the time of
+starting core dump. So if a coremask setting is changed while
+core dumping, the change doesn't affect current dumping process.
+This can be implemented as follows:
 
-	Jean-Marc
+   core_dump_start:
+  unsigned int mask = current->mm->coremask;
+  for each VMA {
+    write a header which depends on the result of maydump(vma, mask)
+  }
+  for each VMA {
+    write a body which depends on the result of maydump(vma, mask)
+  }
+
+NOTE:
+  maydump() is the central function, which decides whether a given
+  VMA should be dumped or not.
+
+What do you think about this?
+
+
+Best regards,
+-- 
+Hidehiro Kawai
+Hitachi, Ltd., Systems Development Laboratory
+
+
