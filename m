@@ -1,88 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933036AbXAWQL0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932861AbXAWQeG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933036AbXAWQL0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jan 2007 11:11:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933042AbXAWQL0
+	id S932861AbXAWQeG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jan 2007 11:34:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932867AbXAWQeF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jan 2007 11:11:26 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:39915 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933036AbXAWQLZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jan 2007 11:11:25 -0500
-Date: Tue, 23 Jan 2007 11:11:18 -0500
-Message-Id: <200701231611.l0NGBIfB031051@dantu.rdu.redhat.com>
-From: Jeff Layton <jlayton@redhat.com>
-To: akpm@osdl.org
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 3/3] replacement patch for pipefs and sockfs
+	Tue, 23 Jan 2007 11:34:05 -0500
+Received: from smtp-102-tuesday.noc.nerim.net ([62.4.17.102]:2626 "EHLO
+	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932861AbXAWQeE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jan 2007 11:34:04 -0500
+Date: Tue, 23 Jan 2007 17:34:25 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: LM Sensors <lm-sensors@lm-sensors.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH RFC] hwmon/f71805f: Fix a race condition
+Message-Id: <20070123173425.dc47637e.khali@linux-fr.org>
+X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.8.20; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew,
-   I sent a set of 3 patches to you a week or so ago. This patch is a
-replacement for the third one in the set. Either one will work, but I think
-this is a better approach. The main differences here are:
+Hi all,
 
-1) pipefs declares its drop_inode function to be generic_delete_inode, which
-obviates the need to have the fs make certain that i_nlink is properly set
-at drop_inode time.
+I think I introduced a potential race condition bug with commit
+51c997d80e1f625aea3426a8a9087f5830ac6db3. I didn't realize it
+back then, but platform_device_put and platform_device_release
+both appear to free the platform data associated with the device.
+This makes an explicit kfree redundant at best, and maybe even
+racy, as it might occur while someone still holds a reference
+to the platform device.
 
-2) this makes also makes sockfs use unique i_ino values.
+Can somebody with more experience with platform drivers than I have
+myself confirm that the current code is broken and that the fix below
+is correct?
 
-Signed-off-by: Jeff Layton <jlayton@redhat.com>
+Thanks.
 
-diff --git a/fs/pipe.c b/fs/pipe.c
-index 68090e8..9b3cb34 100644
---- a/fs/pipe.c
-+++ b/fs/pipe.c
-@@ -871,6 +871,8 @@ static struct inode * get_pipe_inode(void)
- 	inode->i_uid = current->fsuid;
- 	inode->i_gid = current->fsgid;
- 	inode->i_atime = inode->i_mtime = inode->i_ctime = CURRENT_TIME;
-+	inode->i_ino = iunique(pipe_mnt->mnt_sb, 1);
-+	insert_inode_hash(inode);
+Signed-off-by: Jean Delvare <khali@linux-fr.org>
+---
+ drivers/hwmon/f71805f.c |    8 +-------
+ 1 files changed, 1 insertion(+), 7 deletions(-)
+
+--- linux-2.6.20-rc5.orig/drivers/hwmon/f71805f.c	2007-01-23 16:54:21.000000000 +0100
++++ linux-2.6.20-rc5/drivers/hwmon/f71805f.c	2007-01-23 16:55:05.000000000 +0100
+@@ -1290,14 +1290,11 @@
+ 	if (err) {
+ 		printk(KERN_ERR DRVNAME ": Device addition failed (%d)\n",
+ 		       err);
+-		goto exit_kfree_data;
++		goto exit_device_put;
+ 	}
  
- 	return inode;
+ 	return 0;
  
-@@ -1003,6 +1005,11 @@ int do_pipe(int *fd)
- 	return error;
- }
+-exit_kfree_data:
+-	kfree(pdev->dev.platform_data);
+-	pdev->dev.platform_data = NULL;
+ exit_device_put:
+ 	platform_device_put(pdev);
+ exit:
+@@ -1390,10 +1387,7 @@
  
-+static struct super_operations pipefs_sops = {
-+	.statfs		= simple_statfs,
-+	.drop_inode	= generic_delete_inode,
-+};
-+
- /*
-  * pipefs should _never_ be mounted by userland - too much of security hassle,
-  * no real gain from having the whole whorehouse mounted. So we don't need
-@@ -1013,7 +1020,7 @@ static int pipefs_get_sb(struct file_system_type *fs_type,
- 			 int flags, const char *dev_name, void *data,
- 			 struct vfsmount *mnt)
+ static void __exit f71805f_exit(void)
  {
--	return get_sb_pseudo(fs_type, "pipe:", NULL, PIPEFS_MAGIC, mnt);
-+	return get_sb_pseudo(fs_type, "pipe:", &pipefs_sops, PIPEFS_MAGIC, mnt);
+-	kfree(pdev->dev.platform_data);
+-	pdev->dev.platform_data = NULL;
+ 	platform_device_unregister(pdev);
+-
+ 	platform_driver_unregister(&f71805f_driver);
  }
  
- static struct file_system_type pipe_fs_type = {
-diff --git a/net/socket.c b/net/socket.c
-index 4e39631..20193a8 100644
---- a/net/socket.c
-+++ b/net/socket.c
-@@ -284,6 +284,7 @@ static int init_inodecache(void)
- static struct super_operations sockfs_ops = {
- 	.alloc_inode =	sock_alloc_inode,
- 	.destroy_inode =sock_destroy_inode,
-+	.drop_inode =	generic_delete_inode,
- 	.statfs =	simple_statfs,
- };
- 
-@@ -495,6 +496,8 @@ static struct socket *sock_alloc(void)
- 	inode->i_mode = S_IFSOCK | S_IRWXUGO;
- 	inode->i_uid = current->fsuid;
- 	inode->i_gid = current->fsgid;
-+	inode->i_ino = iunique(sock_mnt->mnt_sb, 1);
-+	insert_inode_hash(inode);
- 
- 	get_cpu_var(sockets_in_use)++;
- 	put_cpu_var(sockets_in_use);
+
+
+-- 
+Jean Delvare
