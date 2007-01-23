@@ -1,82 +1,651 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965508AbXAWWBQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965512AbXAWWIE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965508AbXAWWBQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jan 2007 17:01:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965509AbXAWWBP
+	id S965512AbXAWWIE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jan 2007 17:08:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965539AbXAWWHU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jan 2007 17:01:15 -0500
-Received: from www.osadl.org ([213.239.205.134]:35860 "EHLO mail.tglx.de"
+	Tue, 23 Jan 2007 17:07:20 -0500
+Received: from www.osadl.org ([213.239.205.134]:35919 "EHLO mail.tglx.de"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S933158AbXAWWBC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jan 2007 17:01:02 -0500
-Message-Id: <20070123211205.865612000@localhost.localdomain>
+	id S965512AbXAWWBR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jan 2007 17:01:17 -0500
+Message-Id: <20070123211208.065969000@localhost.localdomain>
 References: <20070123211159.178138000@localhost.localdomain>
-Date: Tue, 23 Jan 2007 22:01:16 -0000
+Date: Tue, 23 Jan 2007 22:01:29 -0000
 From: Thomas Gleixner <tglx@linutronix.de>
 To: Andrew Morton <akpm@osdl.org>
 Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
        John Stultz <johnstul@us.ibm.com>,
        Arjan van de Veen <arjan@infradead.org>,
        Roman Zippel <zippel@linux-m68k.org>
-Subject: [patch 20/46] uninline irq_enter()
-Content-Disposition: inline; filename=dynticks-uninline-irq_enter.patch
+Subject: [patch 33/46] clockevents: add core functionality 
+Content-Disposition: inline; filename=clockevents-core.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ingo Molnar <mingo@elte.hu>
+From: Thomas Gleixner <tglx@linutronix.de>
 
-Uninline irq_enter().  [dynticks adds more stuff to it]
+Architectures register their clock event devices, in the clock events 
+core. Users of the clockevents core can get clock event devices for
+their use. The clockevents core code provides notification mechanisms
+for various clock related management events.
 
-No functional changes.
+This allows to control the clock event devices without the architectures
+having to worry about the details of function assignment.  This is also
+a preliminary for high resolution timers and dynamic ticks to allow the
+core code to control the clock functionality without intrusive changes
+to the architecture code.
 
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+[Fixes-by: Ingo Molnar <mingo@elte.hu>]
+
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Cc: Roman Zippel <zippel@linux-m68k.org>
+Cc: john stultz <johnstul@us.ibm.com>
+Cc: Andi Kleen <ak@suse.de>
 Signed-off-by: Andrew Morton <akpm@osdl.org>
 ---
 
- include/linux/hardirq.h |    7 +------
- kernel/softirq.c        |   10 ++++++++++
- 2 files changed, 11 insertions(+), 6 deletions(-)
+ include/linux/clockchips.h |  142 ++++++++++++++++++
+ include/linux/hrtimer.h    |    5 
+ kernel/hrtimer.c           |   12 -
+ kernel/time/Makefile       |    2 
+ kernel/time/clockevents.c  |  340 +++++++++++++++++++++++++++++++++++++++++++++
+ kernel/timer.c             |    7 
+ 6 files changed, 493 insertions(+), 15 deletions(-)
 
-Index: linux-2.6.20-rc4-mm1-bo/include/linux/hardirq.h
+Index: linux-2.6.20-rc4-mm1-bo/include/linux/clockchips.h
 ===================================================================
---- linux-2.6.20-rc4-mm1-bo.orig/include/linux/hardirq.h
-+++ linux-2.6.20-rc4-mm1-bo/include/linux/hardirq.h
-@@ -106,12 +106,7 @@ static inline void account_system_vtime(
-  * always balanced, so the interrupted value of ->hardirq_context
-  * will always be restored.
-  */
--#define irq_enter()					\
--	do {						\
--		account_system_vtime(current);		\
--		add_preempt_count(HARDIRQ_OFFSET);	\
--		trace_hardirq_enter();			\
--	} while (0)
-+extern void irq_enter(void);
- 
- /*
-  * Exit irq context without processing softirqs:
-Index: linux-2.6.20-rc4-mm1-bo/kernel/softirq.c
-===================================================================
---- linux-2.6.20-rc4-mm1-bo.orig/kernel/softirq.c
-+++ linux-2.6.20-rc4-mm1-bo/kernel/softirq.c
-@@ -273,6 +273,16 @@ EXPORT_SYMBOL(do_softirq);
- 
- #endif
- 
-+/*
-+ * Enter an interrupt context.
+--- /dev/null
++++ linux-2.6.20-rc4-mm1-bo/include/linux/clockchips.h
+@@ -0,0 +1,142 @@
++/*  linux/include/linux/clockchips.h
++ *
++ *  This file contains the structure definitions for clockchips.
++ *
++ *  If you are not a clockchip, or the time of day code, you should
++ *  not be including this file!
 + */
-+void irq_enter(void)
++#ifndef _LINUX_CLOCKCHIPS_H
++#define _LINUX_CLOCKCHIPS_H
++
++#ifdef CONFIG_GENERIC_CLOCKEVENTS
++
++#include <linux/clocksource.h>
++#include <linux/cpumask.h>
++#include <linux/ktime.h>
++#include <linux/notifier.h>
++
++struct clock_event_device;
++
++/* Clock event mode commands */
++enum clock_event_mode {
++	CLOCK_EVT_MODE_UNUSED = 0,
++	CLOCK_EVT_MODE_SHUTDOWN,
++	CLOCK_EVT_MODE_PERIODIC,
++	CLOCK_EVT_MODE_ONESHOT,
++};
++
++/* Clock event notification values */
++enum clock_event_nofitiers {
++	CLOCK_EVT_NOTIFY_ADD,
++	CLOCK_EVT_NOTIFY_BROADCAST_ON,
++	CLOCK_EVT_NOTIFY_BROADCAST_OFF,
++	CLOCK_EVT_NOTIFY_BROADCAST_ENTER,
++	CLOCK_EVT_NOTIFY_BROADCAST_EXIT,
++	CLOCK_EVT_NOTIFY_SUSPEND,
++	CLOCK_EVT_NOTIFY_RESUME,
++};
++
++/*
++ * Clock event features
++ */
++#define CLOCK_EVT_FEAT_PERIODIC		0x000001
++#define CLOCK_EVT_FEAT_ONESHOT		0x000002
++/*
++ * x86(64) specific misfeatures:
++ *
++ * - Clockevent source stops in C3 State and needs broadcast support.
++ * - Local APIC timer is used as a dummy device.
++ */
++#define CLOCK_EVT_FEAT_C3STOP		0x000004
++#define CLOCK_EVT_FEAT_DUMMY		0x000008
++
++/**
++ * struct clock_event_device - clock event device descriptor
++ * @name:		ptr to clock event name
++ * @hints:		usage hints
++ * @max_delta_ns:	maximum delta value in ns
++ * @min_delta_ns:	minimum delta value in ns
++ * @mult:		nanosecond to cycles multiplier
++ * @shift:		nanoseconds to cycles divisor (power of two)
++ * @rating:		variable to rate clock event devices
++ * @irq:		irq number (only for non cpu local devices)
++ * @cpumask:		cpumask to indicate for which cpus this device works
++ * @set_next_event:	set next event
++ * @set_mode:		set mode function
++ * @evthandler:		Assigned by the framework to be called by the low
++ *			level handler of the event source
++ * @broadcast:		function to broadcast events
++ * @list:		list head for the management code
++ * @mode:		operating mode assigned by the management code
++ * @next_event:		local storage for the next event in oneshot mode
++ */
++struct clock_event_device {
++	const char		*name;
++	unsigned int		features;
++	unsigned long		max_delta_ns;
++	unsigned long		min_delta_ns;
++	unsigned long		mult;
++	int			shift;
++	int			rating;
++	int			irq;
++	cpumask_t		cpumask;
++	int			(*set_next_event)(unsigned long evt,
++						  struct clock_event_device *);
++	void			(*set_mode)(enum clock_event_mode mode,
++					    struct clock_event_device *);
++	void			(*event_handler)(struct clock_event_device *);
++	void			(*broadcast)(cpumask_t mask);
++	struct list_head	list;
++	enum clock_event_mode	mode;
++	ktime_t			next_event;
++};
++
++/*
++ * Calculate a multiplication factor for scaled math, which is used to convert
++ * nanoseconds based values to clock ticks:
++ *
++ * clock_ticks = (nanoseconds * factor) >> shift.
++ *
++ * div_sc is the rearranged equation to calculate a factor from a given clock
++ * ticks / nanoseconds ratio:
++ *
++ * factor = (clock_ticks << shift) / nanoseconds
++ */
++static inline unsigned long div_sc(unsigned long ticks, unsigned long nsec,
++				   int shift)
 +{
-+	account_system_vtime(current);
-+	add_preempt_count(HARDIRQ_OFFSET);
-+	trace_hardirq_enter();
++	uint64_t tmp = ((uint64_t)ticks) << shift;
++
++	do_div(tmp, nsec);
++	return (unsigned long) tmp;
 +}
 +
- #ifdef __ARCH_IRQ_EXIT_IRQS_DISABLED
- # define invoke_softirq()	__do_softirq()
- #else
++/* Clock event layer functions */
++extern unsigned long clockevent_delta2ns(unsigned long latch,
++					 struct clock_event_device *evt);
++extern void clockevents_register_device(struct clock_event_device *dev);
++
++extern void clockevents_exchange_device(struct clock_event_device *old,
++					struct clock_event_device *new);
++extern
++struct clock_event_device *clockevents_request_device(unsigned int features,
++						      cpumask_t cpumask);
++extern void clockevents_release_device(struct clock_event_device *dev);
++extern void clockevents_set_mode(struct clock_event_device *dev,
++				 enum clock_event_mode mode);
++extern int clockevents_register_notifier(struct notifier_block *nb);
++extern void clockevents_unregister_notifier(struct notifier_block *nb);
++extern int clockevents_program_event(struct clock_event_device *dev,
++				     ktime_t expires);
++
++extern void clockevents_resume_events(void);
++extern void clockevents_notify(unsigned long reason, void *arg);
++
++#else
++
++static inline void clockevents_resume_events(void) { }
++static inline void clockevents_notify(unsigned long reason, void *arg) { }
++
++#endif
++
++#endif
+Index: linux-2.6.20-rc4-mm1-bo/include/linux/hrtimer.h
+===================================================================
+--- linux-2.6.20-rc4-mm1-bo.orig/include/linux/hrtimer.h
++++ linux-2.6.20-rc4-mm1-bo/include/linux/hrtimer.h
+@@ -144,6 +144,8 @@ struct hrtimer_cpu_base {
+  * is expired in the next softirq when the clock was advanced.
+  */
+ #define clock_was_set()		do { } while (0)
++extern ktime_t ktime_get(void);
++extern ktime_t ktime_get_real(void);
+ 
+ /* Exported timer functions: */
+ 
+@@ -196,9 +198,6 @@ extern void hrtimer_init_sleeper(struct 
+ /* Soft interrupt function to run the hrtimer queues: */
+ extern void hrtimer_run_queues(void);
+ 
+-/* Resume notification */
+-void hrtimer_notify_resume(void);
+-
+ /* Bootup initialization: */
+ extern void __init hrtimers_init(void);
+ 
+Index: linux-2.6.20-rc4-mm1-bo/kernel/hrtimer.c
+===================================================================
+--- linux-2.6.20-rc4-mm1-bo.orig/kernel/hrtimer.c
++++ linux-2.6.20-rc4-mm1-bo/kernel/hrtimer.c
+@@ -46,7 +46,7 @@
+  *
+  * returns the time in ktime_t format
+  */
+-static ktime_t ktime_get(void)
++ktime_t ktime_get(void)
+ {
+ 	struct timespec now;
+ 
+@@ -60,7 +60,7 @@ static ktime_t ktime_get(void)
+  *
+  * returns the time in ktime_t format
+  */
+-static ktime_t ktime_get_real(void)
++ktime_t ktime_get_real(void)
+ {
+ 	struct timespec now;
+ 
+@@ -311,14 +311,6 @@ static unsigned long ktime_divns(const k
+ #endif /* BITS_PER_LONG >= 64 */
+ 
+ /*
+- * Timekeeping resumed notification
+- */
+-void hrtimer_notify_resume(void)
+-{
+-	clock_was_set();
+-}
+-
+-/*
+  * Counterpart to lock_timer_base above:
+  */
+ static inline
+Index: linux-2.6.20-rc4-mm1-bo/kernel/time/Makefile
+===================================================================
+--- linux-2.6.20-rc4-mm1-bo.orig/kernel/time/Makefile
++++ linux-2.6.20-rc4-mm1-bo/kernel/time/Makefile
+@@ -1 +1,3 @@
+ obj-y += ntp.o clocksource.o jiffies.o
++
++obj-$(CONFIG_GENERIC_CLOCKEVENTS) += clockevents.o
+Index: linux-2.6.20-rc4-mm1-bo/kernel/time/clockevents.c
+===================================================================
+--- /dev/null
++++ linux-2.6.20-rc4-mm1-bo/kernel/time/clockevents.c
+@@ -0,0 +1,340 @@
++/*
++ * linux/kernel/time/clockevents.c
++ *
++ * This file contains functions which manage clock event devices.
++ *
++ * Copyright(C) 2005-2006, Thomas Gleixner <tglx@linutronix.de>
++ * Copyright(C) 2005-2007, Red Hat, Inc., Ingo Molnar
++ * Copyright(C) 2006-2007, Timesys Corp., Thomas Gleixner
++ *
++ * This code is licenced under the GPL version 2. For details see
++ * kernel-base/COPYING.
++ */
++
++#include <linux/clockchips.h>
++#include <linux/hrtimer.h>
++#include <linux/init.h>
++#include <linux/module.h>
++#include <linux/notifier.h>
++#include <linux/smp.h>
++#include <linux/sysdev.h>
++
++/* The registered clock event devices */
++static LIST_HEAD(clockevent_devices);
++static LIST_HEAD(clockevents_released);
++
++/* Notification for clock events */
++static RAW_NOTIFIER_HEAD(clockevents_chain);
++
++/* Protection for the above */
++static DEFINE_SPINLOCK(clockevents_lock);
++
++/**
++ * clockevents_delta2ns - Convert a latch value (device ticks) to nanoseconds
++ * @latch:	value to convert
++ * @evt:	pointer to clock event device descriptor
++ *
++ * Math helper, returns latch value converted to nanoseconds (bound checked)
++ */
++unsigned long clockevent_delta2ns(unsigned long latch,
++				  struct clock_event_device *evt)
++{
++	u64 clc = ((u64) latch << evt->shift);
++
++	do_div(clc, evt->mult);
++	if (clc < KTIME_MONOTONIC_RES.tv64)
++		clc = KTIME_MONOTONIC_RES.tv64;
++	if (clc > LONG_MAX)
++		clc = LONG_MAX;
++
++	return (unsigned long) clc;
++}
++
++/**
++ * clockevents_set_mode - set the operating mode of a clock event device
++ * @dev:	device to modify
++ * @mode:	new mode
++ *
++ * Must be called with interrupts disabled !
++ */
++void clockevents_set_mode(struct clock_event_device *dev,
++				 enum clock_event_mode mode)
++{
++	if (dev->mode != mode) {
++		dev->set_mode(mode, dev);
++		dev->mode = mode;
++	}
++}
++
++/**
++ * clockevents_program_event - Reprogram the clock event device.
++ * @expires:	absolute expiry time (monotonic clock)
++ *
++ * Returns 0 on success, -ETIME when the event is in the past.
++ */
++int clockevents_program_event(struct clock_event_device *dev, ktime_t expires)
++{
++	unsigned long long clc;
++	int64_t delta;
++
++	delta = ktime_to_ns(ktime_sub(expires, ktime_get()));
++
++	if (delta <= 0)
++		return -ETIME;
++
++	dev->next_event = expires;
++
++	if (delta > dev->max_delta_ns)
++		delta = dev->max_delta_ns;
++	if (delta < dev->min_delta_ns)
++		delta = dev->min_delta_ns;
++
++	clc = delta * dev->mult;
++	clc >>= dev->shift;
++
++	return dev->set_next_event((unsigned long) clc, dev);
++}
++
++/**
++ * clockevents_register_notifier - register a clock events change listener
++ */
++int clockevents_register_notifier(struct notifier_block *nb)
++{
++	int ret;
++
++	spin_lock(&clockevents_lock);
++	ret = raw_notifier_chain_register(&clockevents_chain, nb);
++	spin_unlock(&clockevents_lock);
++
++	return ret;
++}
++
++/**
++ * clockevents_unregister_notifier - unregister a clock events change listener
++ */
++void clockevents_unregister_notifier(struct notifier_block *nb)
++{
++	spin_lock(&clockevents_lock);
++	raw_notifier_chain_unregister(&clockevents_chain, nb);
++	spin_unlock(&clockevents_lock);
++}
++
++/*
++ * Notify about a clock event change. Called with clockevents_lock
++ * held.
++ */
++static void clockevents_do_notify(unsigned long reason, void *dev)
++{
++	raw_notifier_call_chain(&clockevents_chain, reason, dev);
++}
++
++/*
++ * Called after a notify add to make devices availble which were
++ * released from the notifier call.
++ */
++static void clockevents_notify_released(void)
++{
++	struct clock_event_device *dev;
++
++	while (!list_empty(&clockevents_released)) {
++		dev = list_entry(clockevents_released.next,
++				 struct clock_event_device, list);
++		list_del(&dev->list);
++		list_add(&dev->list, &clockevent_devices);
++		clockevents_do_notify(CLOCK_EVT_NOTIFY_ADD, dev);
++	}
++}
++
++/**
++ * clockevents_register_device - register a clock event device
++ * @dev:	device to register
++ */
++void clockevents_register_device(struct clock_event_device *dev)
++{
++	BUG_ON(dev->mode != CLOCK_EVT_MODE_UNUSED);
++
++	spin_lock(&clockevents_lock);
++
++	list_add(&dev->list, &clockevent_devices);
++	clockevents_do_notify(CLOCK_EVT_NOTIFY_ADD, dev);
++	clockevents_notify_released();
++
++	spin_unlock(&clockevents_lock);
++}
++
++/*
++ * Noop handler when we shut down an event device
++ */
++static void clockevents_handle_noop(struct clock_event_device *dev)
++{
++}
++
++/**
++ * clockevents_exchange_device - release and request clock devices
++ * @old:	device to release (can be NULL)
++ * @new:	device to request (can be NULL)
++ *
++ * Called from the notifier chain. clockevents_lock is held already
++ */
++void clockevents_exchange_device(struct clock_event_device *old,
++				 struct clock_event_device *new)
++{
++	unsigned long flags;
++
++	local_irq_save(flags);
++	/*
++	 * Caller releases a clock event device. We queue it into the
++	 * released list and do a notify add later.
++	 */
++	if (old) {
++		old->event_handler = clockevents_handle_noop;
++		clockevents_set_mode(old, CLOCK_EVT_MODE_UNUSED);
++		list_del(&old->list);
++		list_add(&old->list, &clockevents_released);
++	}
++
++	if (new) {
++		BUG_ON(new->mode != CLOCK_EVT_MODE_UNUSED);
++		clockevents_set_mode(new, CLOCK_EVT_MODE_SHUTDOWN);
++	}
++	local_irq_restore(flags);
++}
++
++/**
++ * clockevents_request_device
++ */
++struct clock_event_device *clockevents_request_device(unsigned int features,
++						      cpumask_t cpumask)
++{
++	struct clock_event_device *cur, *dev = NULL;
++	struct list_head *tmp;
++
++	spin_lock(&clockevents_lock);
++
++	list_for_each(tmp, &clockevent_devices) {
++		cur = list_entry(tmp, struct clock_event_device, list);
++
++		if ((cur->features & features) == features &&
++		    cpus_equal(cpumask, cur->cpumask)) {
++			if (!dev || dev->rating < cur->rating)
++				dev = cur;
++		}
++	}
++
++	clockevents_exchange_device(NULL, dev);
++
++	spin_unlock(&clockevents_lock);
++
++	return dev;
++}
++
++/**
++ * clockevents_release_device
++ */
++void clockevents_release_device(struct clock_event_device *dev)
++{
++	spin_lock(&clockevents_lock);
++
++	clockevents_exchange_device(dev, NULL);
++	clockevents_notify_released();
++
++	spin_unlock(&clockevents_lock);
++}
++
++/**
++ * clockevents_notify - notification about relevant events
++ */
++void clockevents_notify(unsigned long reason, void *arg)
++{
++	spin_lock(&clockevents_lock);
++	clockevents_do_notify(reason, arg);
++	spin_unlock(&clockevents_lock);
++}
++EXPORT_SYMBOL_GPL(clockevents_notify);
++
++void clockevents_do_resume_events(void *arg)
++{
++	spin_lock(&clockevents_lock);
++	clockevents_notify(CLOCK_EVT_NOTIFY_RESUME, NULL);
++	spin_unlock(&clockevents_lock);
++}
++
++/**
++ * clockevents_resume_events - resume the active clock devices
++ *
++ * Called after timekeeping is functional again
++ */
++void clockevents_resume_events(void)
++{
++	on_each_cpu(clockevents_do_resume_events, NULL, 0, 1);
++}
++
++#ifdef CONFIG_SYSFS
++
++/**
++ * clockevents_show_registered - sysfs interface for listing clockevents
++ * @dev:	unused
++ * @buf:	char buffer to be filled with clock events list
++ *
++ * Provides sysfs interface for listing registered clock event devices
++ */
++static ssize_t clockevents_show_registered(struct sys_device *dev, char *buf)
++{
++	struct list_head *tmp;
++	char *p = buf;
++	int cpu;
++
++	spin_lock(&clockevents_lock);
++
++	list_for_each(tmp, &clockevent_devices) {
++		struct clock_event_device *ce;
++
++		ce = list_entry(tmp, struct clock_event_device, list);
++		p += sprintf(p, "%-20s F:%04x M:%d", ce->name,
++			     ce->features, ce->mode);
++		p += sprintf(p, " C:");
++		if (!cpus_equal(ce->cpumask, cpu_possible_map)) {
++			for_each_cpu_mask(cpu, ce->cpumask)
++				p += sprintf(p, " %d", cpu);
++		} else {
++			/*
++			 * FIXME: Add the cpu which is handling this sucker
++			 */
++		}
++		p += sprintf(p, "\n");
++	}
++
++	spin_unlock(&clockevents_lock);
++
++	return p - buf;
++}
++
++/*
++ * Sysfs setup bits:
++ */
++static SYSDEV_ATTR(registered, 0600,
++		   clockevents_show_registered, NULL);
++
++static struct sysdev_class clockevents_sysclass = {
++	set_kset_name("clockevents"),
++};
++
++static struct sys_device clockevents_sys_device = {
++	.id	= 0,
++	.cls	= &clockevents_sysclass,
++};
++
++static int __init clockevents_sysfs_init(void)
++{
++	int error = sysdev_class_register(&clockevents_sysclass);
++
++	if (!error)
++		error = sysdev_register(&clockevents_sys_device);
++	if (!error)
++		error = sysdev_create_file(
++				&clockevents_sys_device,
++				&attr_registered);
++	return error;
++}
++device_initcall(clockevents_sysfs_init);
++#endif
+Index: linux-2.6.20-rc4-mm1-bo/kernel/timer.c
+===================================================================
+--- linux-2.6.20-rc4-mm1-bo.orig/kernel/timer.c
++++ linux-2.6.20-rc4-mm1-bo/kernel/timer.c
+@@ -34,6 +34,7 @@
+ #include <linux/cpu.h>
+ #include <linux/syscalls.h>
+ #include <linux/delay.h>
++#include <linux/clockchips.h>
+ 
+ #include <asm/uaccess.h>
+ #include <asm/unistd.h>
+@@ -873,7 +874,7 @@ static void change_clocksource(void)
+ 	clock->xtime_nsec = 0;
+ 	clocksource_calculate_interval(clock, NTP_INTERVAL_LENGTH);
+ 
+-	hrtimer_clock_notify();
++
+ 	printk(KERN_INFO "Time: %s clocksource has been installed.\n",
+ 	       clock->name);
+ }
+@@ -969,7 +970,9 @@ static int timekeeping_resume(struct sys
+ 	timekeeping_suspended = 0;
+ 	write_sequnlock_irqrestore(&xtime_lock, flags);
+ 
+-	hrtimer_notify_resume();
++	clockevents_resume_events();
++	/* Resume hrtimers */
++	clock_was_set();
+ 
+ 	return 0;
+ }
 
 --
 
