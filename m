@@ -1,43 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965014AbXAWNOM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965034AbXAWNQp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965014AbXAWNOM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jan 2007 08:14:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965024AbXAWNOM
+	id S965034AbXAWNQp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jan 2007 08:16:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965024AbXAWNQp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jan 2007 08:14:12 -0500
-Received: from khc.piap.pl ([195.187.100.11]:58853 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965014AbXAWNOL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jan 2007 08:14:11 -0500
-To: Andreas Schwab <schwab@suse.de>
-Cc: Jan Engelhardt <jengelh@linux01.gwdg.de>, Heikki Orsila <shdl@zakalwe.fi>,
-       Bodo Eggert <7eggert@gmx.de>, Tony Foiani <tkil@scrye.com>,
-       Leon Woestenberg <leon.woestenberg@gmail.com>,
-       linux-kernel@vger.kernel.org, David Schwartz <davids@webmaster.com>
-Subject: Re: PROBLEM: KB->KiB, MB -> MiB, ... (IEC 60027-2)
-References: <7FsPf-51s-9@gated-at.bofh.it> <7FxlV-3sb-1@gated-at.bofh.it>
-	<7FyUF-5XD-21@gated-at.bofh.it> <E1H8a7s-0000at-Jx@be1.lrz>
-	<20070121150618.GA11613@zakalwe.fi>
-	<Pine.LNX.4.61.0701212223340.29213@yvahk01.tjqt.qr>
-	<m38xfvrfhm.fsf@maximus.localdomain> <jemz4bmj5z.fsf@sykes.suse.de>
-	<m31wlmtuxa.fsf@maximus.localdomain> <je8xfujduz.fsf@sykes.suse.de>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Tue, 23 Jan 2007 14:14:09 +0100
-In-Reply-To: <je8xfujduz.fsf@sykes.suse.de> (Andreas Schwab's message of "Tue, 23 Jan 2007 10:23:32 +0100")
-Message-ID: <m364ax28da.fsf@maximus.localdomain>
+	Tue, 23 Jan 2007 08:16:45 -0500
+Received: from gw-e.panasas.com ([65.194.124.178]:41298 "EHLO
+	cassoulet.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S964933AbXAWNQo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jan 2007 08:16:44 -0500
+Message-ID: <45B60A55.6080104@panasas.com>
+Date: Tue, 23 Jan 2007 15:15:01 +0200
+From: Benny Halevy <bhalevy@panasas.com>
+User-Agent: Thunderbird 1.5.0.7 (X11/20060909)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: James Bottomley <James.Bottomley@SteelEye.com>
+CC: Boaz Harrosh <bharrosh@panasas.com>, Jens Axboe <jens.axboe@oracle.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Mike Christie <michaelc@cs.wisc.edu>, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, open-iscsi@googlegroups.com,
+       Daniel.E.Messinger@seagate.com, Liran Schour <LIRANS@il.ibm.com>
+Subject: Re: [RFC 3/6] bidi support: bidirectional request
+References: <45B3F64C.3030805@panasas.com> <1169478021.2769.5.camel@mulgrave.il.steeleye.com>
+In-Reply-To: <1169478021.2769.5.camel@mulgrave.il.steeleye.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 23 Jan 2007 13:14:39.0558 (UTC) FILETIME=[7001AE60:01C73EF0]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andreas Schwab <schwab@suse.de> writes:
+James Bottomley wrote:
+> On Mon, 2007-01-22 at 01:25 +0200, Boaz Harrosh wrote:
+>> - Instantiate another request_io_part in request for bidi_read.
+>> - Define & Implement new API for accessing bidi parts.
+>> - API to Build bidi requests and map to sglists.
+>> - Define new end_that_request_block() function to end a complete request.
+> 
+> Actually, this approach looks to be a bit too narrow.  You seem to be
+> predicating on the idea that the bidirectional will transfer in and out
+> of the same area.  For some of the frame in/frame out stuff, we probably
+> need the read and write areas for the bidirectional request to be
+> separated.
 
-> The exact number of sectors is often printend on the label.
+Hmm, our proposal introduces two separate and independent i/o areas.
+One used for uni-directional transfers and for bidi data output, the
+other is used for bidi data input so we're in agreement.
 
-Sure, I'd even say "almost always" for recent disks. Still, they
-count in GBs, not sectors.
+Benny
 
-OTOH it would be great if they say "xxx,xxx,xxx 512-byte sectors",
-and maybe "approx. X GB".
--- 
-Krzysztof Halasa
+ 
+
