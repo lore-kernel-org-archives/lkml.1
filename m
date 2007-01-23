@@ -1,92 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932412AbXAWL2S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932929AbXAWLb2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932412AbXAWL2S (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jan 2007 06:28:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932929AbXAWL2S
+	id S932929AbXAWLb2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jan 2007 06:31:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932958AbXAWLb1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jan 2007 06:28:18 -0500
-Received: from amsfep17-int.chello.nl ([213.46.243.15]:22445 "EHLO
-	amsfep13-int.chello.nl" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S932412AbXAWL2R (ORCPT
+	Tue, 23 Jan 2007 06:31:27 -0500
+Received: from an-out-0708.google.com ([209.85.132.243]:9721 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932929AbXAWLb1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jan 2007 06:28:17 -0500
-Subject: Re: [patch] notifiers: fix blocking_notifier_call_chain()
-	scalability
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, Linus Torvalds <torvalds@osdl.org>,
-       Andrew Morton <akpm@osdl.org>
-In-Reply-To: <20070123094550.GA21105@elte.hu>
-References: <20070123094550.GA21105@elte.hu>
-Content-Type: text/plain
-Date: Tue, 23 Jan 2007 12:24:54 +0100
-Message-Id: <1169551494.6197.209.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
+	Tue, 23 Jan 2007 06:31:27 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=AQJeicS/91NrwWz5/5Gsy2NBZ0nIiCpt5ozmw8oLAZgi9IKEQanpUCbR1ZBs9zMloQFBhznIOLsF8r56pZ6By1t9fCZ9X6mUWALeeQcPUlTyHp1IK8PCqcXvh+N+hhQIS4zI2doGh7Ye/MnCy7QpdvYRTpMV4Y9iaJ9fA2iyRsk=
+Message-ID: <9e0cf0bf0701230331v6001f540p4d7b048126ce7fd@mail.gmail.com>
+Date: Tue, 23 Jan 2007 13:31:25 +0200
+From: "Alon Bar-Lev" <alon.barlev@gmail.com>
+To: "Alon Bar-Lev" <alon.barlev@gmail.com>,
+       "Tomas Carnecky" <tom@dbservice.com>, linux-kernel@vger.kernel.org
+Subject: Re: [patch 03/26] Dynamic kernel command-line - arm
+In-Reply-To: <20070123105331.GB20660@flint.arm.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070118125849.441998000@strauss.suse.de>
+	 <20070118141359.GB31418@flint.arm.linux.org.uk>
+	 <45AF92E7.50901@dbservice.com>
+	 <20070118152326.GC31418@flint.arm.linux.org.uk>
+	 <20070122221400.GE6262@strauss.suse.de>
+	 <20070122222725.GB32085@flint.arm.linux.org.uk>
+	 <9e0cf0bf0701230237j5aa1bbya3a70da314e471b9@mail.gmail.com>
+	 <20070123104140.GA20660@flint.arm.linux.org.uk>
+	 <9e0cf0bf0701230250nb8d9738redc3e1d963b40bda@mail.gmail.com>
+	 <20070123105331.GB20660@flint.arm.linux.org.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-01-23 at 10:45 +0100, Ingo Molnar wrote:
-> Subject: [patch] notifiers: fix blocking_notifier_call_chain() scalability
-> From: Ingo Molnar <mingo@elte.hu>
-> 
-> while lock-profiling the -rt kernel i noticed weird contention during 
-> mmap-intense workloads, and the tracer showed the following gem, in one 
-> of our MM hotpaths:
-> 
->  threaded-2771  1....   65us : sys_munmap (sysenter_do_call)
->  threaded-2771  1....   66us : profile_munmap (sys_munmap)
->  threaded-2771  1....   66us : blocking_notifier_call_chain (profile_munmap)
->  threaded-2771  1....   66us : rt_down_read (blocking_notifier_call_chain)
-> 
-> ouch! a global rw-semaphore taken in one of the most 
-> performance-sensitive codepaths of the kernel. And i dont even have 
-> oprofile enabled! All distro kernels have CONFIG_PROFILING enabled, so 
-> this scalability problem affects the majority of Linux users.
-> 
-> The fix is to enhance blocking_notifier_call_chain() to only take the 
-> lock if there appears to be work on the call-chain.
-> 
-> With this patch applied i get nicely saturated system, and much higher 
-> munmap performance, on SMP systems.
-> 
-> And as a bonus this also fixes a similar scalability bottleneck in the 
-> thread-exit codepath: profile_task_exit() ...
-> 
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+On 1/23/07, Russell King <rmk+lkml@arm.linux.org.uk> wrote:
+> > So it will be fine if I initialize it to "" and remove the static from
+> > the your example?
+>
+> Why do you want to remove the static?
 
-Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Rossell, I am confused.
+There are many places in kernel where there is static __initdata
+without initialization. Should all these be corrected too? Or your
+comment applies only to none static global data?
 
-> ---
->  kernel/sys.c |   15 +++++++++++----
->  1 file changed, 11 insertions(+), 4 deletions(-)
-> 
-> Index: linux/kernel/sys.c
-> ===================================================================
-> --- linux.orig/kernel/sys.c
-> +++ linux/kernel/sys.c
-> @@ -325,11 +325,18 @@ EXPORT_SYMBOL_GPL(blocking_notifier_chai
->  int blocking_notifier_call_chain(struct blocking_notifier_head *nh,
->  		unsigned long val, void *v)
->  {
-> -	int ret;
-> +	int ret = NOTIFY_DONE;
->  
-> -	down_read(&nh->rwsem);
-> -	ret = notifier_call_chain(&nh->head, val, v);
-> -	up_read(&nh->rwsem);
-> +	/*
-> +	 * We check the head outside the lock, but if this access is
-> +	 * racy then it does not matter what the result of the test
-> +	 * is, we re-check the list after having taken the lock anyway:
-> +	 */
-> +	if (rcu_dereference(nh->head)) {
-> +		down_read(&nh->rwsem);
-> +		ret = notifier_call_chain(&nh->head, val, v);
-> +		up_read(&nh->rwsem);
-> +	}
->  	return ret;
->  }
-
-
+Best Regards,
+Alon Bar-Lev.
