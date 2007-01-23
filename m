@@ -1,89 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751986AbXAWPKh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932582AbXAWPLw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751986AbXAWPKh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jan 2007 10:10:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751963AbXAWPKh
+	id S932582AbXAWPLw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jan 2007 10:11:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932581AbXAWPLw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jan 2007 10:10:37 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:49403 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751977AbXAWPKf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jan 2007 10:10:35 -0500
-Message-ID: <45B62376.9000303@redhat.com>
-Date: Tue, 23 Jan 2007 10:02:14 -0500
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
+	Tue, 23 Jan 2007 10:11:52 -0500
+Received: from smtp104.mail.mud.yahoo.com ([209.191.85.214]:24179 "HELO
+	smtp104.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S932584AbXAWPLv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jan 2007 10:11:51 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=04vhuYvhhID7CKC0EY6ml/kVeGP5ysB7mCUDYS4VPlgfqnVV9Hz6YAu+Qw1hFzDVhCLv1hA9tvzrQBjcHnQq1edLcAwNEiyGoQjAUvTUPOCutqi5QokxDL2RX9Tbb/XZCvRgLNqEzB+x/AWsyzXifz9W1MF98WhkuH3N1/ey2iI=  ;
+X-YMail-OSG: HoyyF_MVM1lVDlf9g5Nqbk2QZBXl5qFcU5VspVltjnRDAqp75YRIOaapMr27tGILCCxrKghKnXGhW9J98pi23tk3rOhLmDjbjjukpRaHjwoIJTUO_p8-
+Message-ID: <45B6258E.2060402@yahoo.com.au>
+Date: Wed, 24 Jan 2007 02:11:10 +1100
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
 MIME-Version: 1.0
 To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: Christoph Lameter <clameter@sgi.com>, Balbir Singh <balbir@in.ibm.com>,
-       Andrea Arcangeli <andrea@suse.de>,
-       Niki Hammler <mailinglists@nobaq.net>, linux-kernel@vger.kernel.org,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Subject: Re: Why active list and inactive list?
-References: <45B55286.5060909@nobaq.net>	 <20070123003939.GY13798@opteron.random> <45B56575.10807@in.ibm.com>	 <Pine.LNX.4.64.0701221737510.30455@schroedinger.engr.sgi.com>	 <45B569A4.3010006@redhat.com>	 <Pine.LNX.4.64.0701221801420.30595@schroedinger.engr.sgi.com> <1169540992.6197.202.camel@twins>
-In-Reply-To: <1169540992.6197.202.camel@twins>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>
+Subject: Re: [patch] notifiers: fix blocking_notifier_call_chain()	scalability
+References: <20070123094550.GA21105@elte.hu> <1169551494.6197.209.camel@twins>
+In-Reply-To: <1169551494.6197.209.camel@twins>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Peter Zijlstra wrote:
-> On Mon, 2007-01-22 at 18:03 -0800, Christoph Lameter wrote:
->> What happened to all those advanced page replacement endeavors? 
+> On Tue, 2007-01-23 at 10:45 +0100, Ingo Molnar wrote:
+
+>>The fix is to enhance blocking_notifier_call_chain() to only take the 
+>>lock if there appears to be work on the call-chain.
+>>
+>>With this patch applied i get nicely saturated system, and much higher 
+>>munmap performance, on SMP systems.
+>>
+>>And as a bonus this also fixes a similar scalability bottleneck in the 
+>>thread-exit codepath: profile_task_exit() ...
+>>
+>>Signed-off-by: Ingo Molnar <mingo@elte.hu>
 > 
-> They are here:
-> http://programming.kicks-ass.net/kernel-patches/page-replace/2.6.19-pr1/
 > 
-> I should update to .20 soonish.
+> Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 > 
->> What is the most promising of those?
-> 
-> I'm still torn between CLOCK-Pro and CART. 
-> 
-> CLOCK-Pro is still vulnerable to the cyclic scan use case, since at that
-> time all pages will have equal distance.
+>>---
+>> kernel/sys.c |   15 +++++++++++----
+>> 1 file changed, 11 insertions(+), 4 deletions(-)
+>>
+>>Index: linux/kernel/sys.c
+>>===================================================================
+>>--- linux.orig/kernel/sys.c
+>>+++ linux/kernel/sys.c
+>>@@ -325,11 +325,18 @@ EXPORT_SYMBOL_GPL(blocking_notifier_chai
+>> int blocking_notifier_call_chain(struct blocking_notifier_head *nh,
+>> 		unsigned long val, void *v)
+>> {
+>>-	int ret;
+>>+	int ret = NOTIFY_DONE;
+>> 
+>>-	down_read(&nh->rwsem);
+>>-	ret = notifier_call_chain(&nh->head, val, v);
+>>-	up_read(&nh->rwsem);
+>>+	/*
+>>+	 * We check the head outside the lock, but if this access is
+>>+	 * racy then it does not matter what the result of the test
+>>+	 * is, we re-check the list after having taken the lock anyway:
+>>+	 */
 
-That's fixable.  Just bias in favor of the already active
-pages and only let pages with a clearly smaller interreference
-distance replace them.
+Great idea!
 
-> CART might be fixable (my CART-r approach) but I still have to study the
-> full ramifications of that (does it hurt other workloads?).
+>>+	if (rcu_dereference(nh->head)) {
 
-Your CART-r seems reasonable, too.
+Except rcu_dereference() is not needed.
 
-> Both seems quite capable to distinguish between recency and frequency.
-> Neither use this horrid swappiness knob to distinguish between mapped
-> and unmapped pages.
-
-Getting rid of swappiness is a very good thing, IMHO.
-I have heard about a few customer workloads that required
-changes to swappiness in order for the system to be able
-to handle their workload at all.
-
-Systems should not have to be tuned like that...
-
-> The main problem I'm having is test cases, notably the lack thereof.
-> (and lack of time ofcourse ;-)
-
-Yes, this is always a problem.  I am not aware of any complete
-test cases to test page replacement.
-
-It would be easy to simulate some database by having part of
-the dataset be the index and referencing that in an r^2 way,
-and the rest being the data which is referenced less.  At that
-point you can see how taking frequency into account helps.
-
-However, tests like that are simply not complete.  They are
-not representative of the things most people do with their
-system.
-
-Something like AIM-7 suffers from the same problems...
-
-Anybody?
+>>+		down_read(&nh->rwsem);
+>>+		ret = notifier_call_chain(&nh->head, val, v);
+>>+		up_read(&nh->rwsem);
+>>+	}
+>> 	return ret;
+>> }
 
 -- 
-Politics is the struggle between those who want to make their country
-the best in the world, and those who believe it already is.  Each group
-calls the other unpatriotic.
+SUSE Labs, Novell Inc.
+Send instant messages to your online friends http://au.messenger.yahoo.com 
