@@ -1,63 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932658AbXAWCYz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932666AbXAWCoR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932658AbXAWCYz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jan 2007 21:24:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932647AbXAWCYz
+	id S932666AbXAWCoR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jan 2007 21:44:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932667AbXAWCoR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jan 2007 21:24:55 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:35876 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932658AbXAWCYy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jan 2007 21:24:54 -0500
-Message-ID: <45B5703E.5010400@redhat.com>
-Date: Mon, 22 Jan 2007 21:17:34 -0500
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
+	Mon, 22 Jan 2007 21:44:17 -0500
+Received: from mail.gmx.net ([213.165.64.20]:57263 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S932666AbXAWCoQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jan 2007 21:44:16 -0500
+X-Authenticated: #5039886
+Date: Tue, 23 Jan 2007 03:44:13 +0100
+From: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>
+To: Robert Hancock <hancockr@shaw.ca>
+Cc: Jeff Garzik <jeff@garzik.org>, Chr <chunkeey@web.de>,
+       Alistair John Strachan <s0348365@sms.ed.ac.uk>,
+       linux-kernel@vger.kernel.org, htejun@gmail.com, jens.axboe@oracle.com,
+       lwalton@real.com, pomac@vapor.com
+Subject: Re: SATA exceptions with 2.6.20-rc5
+Message-ID: <20070123024412.GA16533@atjola.homenet>
+Mail-Followup-To: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>,
+	Robert Hancock <hancockr@shaw.ca>, Jeff Garzik <jeff@garzik.org>,
+	Chr <chunkeey@web.de>,
+	Alistair John Strachan <s0348365@sms.ed.ac.uk>,
+	linux-kernel@vger.kernel.org, htejun@gmail.com,
+	jens.axboe@oracle.com, lwalton@real.com, pomac@vapor.com
+References: <fa.ow4pXUncgdZmfLf3oyfrn1W+Bk0@ifi.uio.no> <fa.SoSeidhDuEr/K0kN+L4vW61Vpnc@ifi.uio.no> <fa.m8QbVQMhuOshKzTdlSjNjOhaNcc@ifi.uio.no> <fa.hDS02YCM8Tv1/STeTpJGEQD/49s@ifi.uio.no> <fa.eqBbU9XvtTizNMpuUjctnk8vuOI@ifi.uio.no> <fa.4QxeKMcmkoyhlL26AivZV6BFQJQ@ifi.uio.no> <45B563C6.5070505@shaw.ca>
 MIME-Version: 1.0
-To: Christoph Lameter <clameter@sgi.com>
-CC: Balbir Singh <balbir@in.ibm.com>, Andrea Arcangeli <andrea@suse.de>,
-       Niki Hammler <mailinglists@nobaq.net>, linux-kernel@vger.kernel.org,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Subject: Re: Why active list and inactive list?
-References: <45B55286.5060909@nobaq.net> <20070123003939.GY13798@opteron.random> <45B56575.10807@in.ibm.com> <Pine.LNX.4.64.0701221737510.30455@schroedinger.engr.sgi.com> <45B569A4.3010006@redhat.com> <Pine.LNX.4.64.0701221801420.30595@schroedinger.engr.sgi.com>
-In-Reply-To: <Pine.LNX.4.64.0701221801420.30595@schroedinger.engr.sgi.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <45B563C6.5070505@shaw.ca>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter wrote:
-> On Mon, 22 Jan 2007, Rik van Riel wrote:
+On 2007.01.22 19:24:22 -0600, Robert Hancock wrote:
+> Björn Steinbrink wrote:
+> >>>Running a kernel with the return statement replace by a line that prints
+> >>>the irq_stat instead.
+> >>>
+> >>>Currently I'm seeing lots of 0x10 on ata1 and 0x0 on ata2.
+> >>40 minutes stress test now and no exception yet. What's interesting is
+> >>that ata1 saw exactly one interrupt with irq_stat 0x0, all others that
+> >>might have get dropped are as above.
+> >>I'll keep it running for some time and will then re-enable the return
+> >>statement to see if there's a relation between the irq_stat 0x0 and the
+> >>exception.
+> >
+> >No, doesn't seem to be related, did get 2 exceptions, but no irq_stat
+> >0x0 for ata1. Syslog/dmesg has nothing new either, still the same
+> >pattern of dismissed irq_stats.
 > 
->> It would be really nice if we came up with a page replacement
->> algorithm that did not need many extra heuristics to make it
->> work...
+> I've finally managed to reproduce this problem on my box, by doing:
 > 
-> I guess the "clock" type algorithms are the most promising in that 
-> area. What happened to all those advanced page replacement endeavors? 
-> What is the most promising of those? You seem to have done a lot of work 
-> on those.
+> watch --interval=0.1 /sbin/hdparm -I /dev/sda
+> 
+> on one drive and then running bonnie++ on /dev/sdb connected to the 
+> other port on the same controller device. Usually within a few minutes 
+> one of the IDENTIFY commands would time out in the same way you guys 
+> have been seeing.
+> 
+> Through some various trials and tribulations, the only conclusion I can 
+> come to is that this controller really doesn't like that 
+> NV_INT_STATUS_CK804 register being looked at in ADMA mode. I tried 
+> adding some debug code to the qc_issue function that would check to see 
+> if the BUSY flag in altstatus went high or that register showed an 
+> interrupt within a certain time afterwards, however that really seemed 
+> to hose things, the system wouldn't even boot.
 
-CLOCK-Pro seems the most promising algorithm, because it can
-act well both as a first level cache (operating system running
-applications) and as a second level cache (operating system
-running as a file server), because it tracks both recency and
-frequency well.
+Hm, I don't think it is unhappy about looking at NV_INT_STATUS_CK804.
+I'm running 2.6.20-rc5 with the INT_DEV check removed for 8 hours now
+without a single problem and that should still look at
+NV_INT_STATUS_CK804, right?
+I just noticed that my last email might not have been clear enough. The
+exceptions happened when I re-enabled the return statement in addition
+to the debug message. Without the INT_DEV check, it is completely fine
+AFAICT.
 
-However, there are a few unanswered questions on clock-pro.
+> Try out this patch, it just calls the ata_host_intr function where 
+> appropriate without using nv_host_intr which looks at the 
+> NV_INT_STATUS_CK804 register. This is what the original ADMA patch from 
+> Mr. Mysterious NVIDIA Person did, I'm guessing there may be a reason for 
+> that. With this patch I can get through a whole bonnie++ run with the 
+> repeated IDENTIFY requests running without seeing the error.
 
-The big one is how we are to do some background aging in a
-clock-pro system, so referenced bits don't just pile up when
-the VM has enough memory - otherwise we might not know the
-right pages to evict when a new process starts up and starts
-allocating lots of memory.
+I'll see if I can schedule a test run for tomorrow, I currently need
+this box.
 
-At least we've solved the problems of keeping track of the
-recently evicted pages in a cheap way, and balancing the
-pressure/hotness of different caches against each other.
-
--- 
-Politics is the struggle between those who want to make their country
-the best in the world, and those who believe it already is.  Each group
-calls the other unpatriotic.
+Thanks,
+Björn
