@@ -1,59 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932896AbXAWQfB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932944AbXAWQmJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932896AbXAWQfB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jan 2007 11:35:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933037AbXAWQfB
+	id S932944AbXAWQmJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jan 2007 11:42:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932943AbXAWQmJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jan 2007 11:35:01 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:32837 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932896AbXAWQfA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jan 2007 11:35:00 -0500
-Date: Tue, 23 Jan 2007 17:34:42 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Alessandro Di Marco <dmr@gmx.it>
-Cc: linux-kernel@vger.kernel.org, vojtech@suse.cz
-Subject: Re: [ANNOUNCE] System Inactivity Monitor v1.0
-Message-ID: <20070123163442.GA18662@elf.ucw.cz>
-References: <877ivkrv5s.fsf@gmx.it> <20070119101103.GA5730@ucw.cz> <877ivfi60i.fsf@gmx.it> <20070123094114.GE6033@ucw.cz> <87wt3dhlte.fsf@gmx.it>
+	Tue, 23 Jan 2007 11:42:09 -0500
+Received: from imf21aec.mail.bellsouth.net ([205.152.59.69]:57357 "EHLO
+	imf21aec.mail.bellsouth.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932941AbXAWQmI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jan 2007 11:42:08 -0500
+Message-ID: <45B63ADC.8060808@bellsouth.net>
+Date: Tue, 23 Jan 2007 10:42:04 -0600
+From: Jay Cliburn <jacliburn@bellsouth.net>
+User-Agent: Thunderbird 1.5.0.9 (X11/20061223)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87wt3dhlte.fsf@gmx.it>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+To: Jeff Garzik <jeff@garzik.org>
+CC: shemminger@osdl.org, csnook@redhat.com, hch@infradead.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       atl1-devel@lists.sourceforge.net
+Subject: Re: [PATCH 0/4] atl1: Attansic L1 ethernet driver
+References: <20070121210416.GA2702@osprey.hogchain.net> <45B5A3D5.6020508@garzik.org>
+In-Reply-To: <45B5A3D5.6020508@garzik.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi1
+Jeff Garzik wrote:
 
->    >    > +if [ ! -d "/proc/sin" ]; then
->    >    > +    echo "/proc/sin not found, has sinmod been loaded?"
->    >    > +    exit
->    >    > +fi
->    >
->    >    No new /proc files, please.
->    >
->    > This was merely a prototype realized in a hurry, not a production
->    > driver. Really, I did't think it could be interesting for anybody.
->    >
->    > Would be /sys ok?
+> OK, I have merged the monolithic patch into jgarzik/netdev-2.6.git#atl1. 
+>  Once I'm done merging patches tonight, I will merge this new 'atl1' 
+> branch into the 'ALL' meta-branch, which will auto-propagate this driver 
+> into Andrew Morton's -mm for testing.
 > 
->    If it has to be in kernel, /sys/power is probably ok.
-> 
-> Doh! The attached patch introduces /sys/class/misc (along with some bug-fixes.)
-> In case I'll change it again.
+> For future driver updates, please send a patch rather than the full 
+> driver diff.
 
-No, just leave it where it is. Maybe better location will be invented,
-but mine idea was just first shot.
+Perhaps a dumb question, but when can I begin submitting differential 
+patches?  Now?  I'd like to incorporate some of Arjan's and Randy's 
+comments.
 
->    But I still believe it can be out.
-> 
-> Do you believe it could be a user-space daemon or what?
+Thank you very much for accepting the driver.
 
-Yes, what prevents userspace daemon watching /dev/input/event* to
-provide this functionality?
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Jay
