@@ -1,72 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932911AbXAWRDF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933010AbXAWRLp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932911AbXAWRDF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jan 2007 12:03:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933093AbXAWRDF
+	id S933010AbXAWRLp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jan 2007 12:11:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933093AbXAWRLp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jan 2007 12:03:05 -0500
-Received: from ug-out-1314.google.com ([66.249.92.173]:20330 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932911AbXAWRDC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jan 2007 12:03:02 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=AAkx51oAyuwhag0qH3lUCXYQtutm9RFAB0L8VZOHQi8tyOQY+YbHMuQH697sSvelrNUgKhxP++l/YPow1yS1ji1v5X7fqCGed7hICyqgEQ2c4NjGtIEOY9BM86OlgCLtI4+8KW2EEvac+HqUbcm5bH+3R4jXr81JzNwyR2zLbGk=
-Message-ID: <7d01f9f00701230902x5876bba3y4d70b083151e16ad@mail.gmail.com>
-Date: Tue, 23 Jan 2007 18:02:59 +0100
-From: "Thibaut VARENE" <T-Bone@parisc-linux.org>
-To: "Dale Farnsworth" <dale@farnsworth.org>
-Subject: Re: [PATCH] mv643xx_eth: Fix race condition in mv643xx_eth_free_tx_descs
-Cc: "Jeff Garzik" <jgarzik@pobox.com>, "Jarek Poplawski" <jarkao2@o2.pl>,
-       mlachwani@mvista.com, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20070123165225.GA20153@xyzzy.farnsworth.org>
+	Tue, 23 Jan 2007 12:11:45 -0500
+Received: from mail.gmx.net ([213.165.64.20]:33020 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S933010AbXAWRLo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jan 2007 12:11:44 -0500
+X-Authenticated: #14842415
+From: Alessandro Di Marco <dmr@gmx.it>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: linux-kernel@vger.kernel.org, vojtech@suse.cz
+Subject: Re: [ANNOUNCE] System Inactivity Monitor v1.0
+References: <877ivkrv5s.fsf@gmx.it> <20070119101103.GA5730@ucw.cz>
+	<877ivfi60i.fsf@gmx.it> <20070123094114.GE6033@ucw.cz>
+	<87wt3dhlte.fsf@gmx.it> <20070123163442.GA18662@elf.ucw.cz>
+Date: Tue, 23 Jan 2007 18:11:38 +0100
+In-Reply-To: <20070123163442.GA18662@elf.ucw.cz> (Pavel Machek's message of "Tue\, 23 Jan 2007 17\:34\:42 +0100")
+Message-ID: <87lkjthdmd.fsf@gmx.it>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.92 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070123165225.GA20153@xyzzy.farnsworth.org>
-X-Google-Sender-Auth: 54b3f3220a65273e
+Content-Type: text/plain; charset=us-ascii
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 1/23/07, Dale Farnsworth <dale@farnsworth.org> wrote:
-> From Dale Farnsworth <dale@farnsworth.org>
->
-> mv643xx_eth: Fix race condition in mv643xx_eth_free_tx_descs
->
-> This bug was found and isolated by Thibaut VARENE <T-Bone@parisc-linux.org>
-> and Jarek Poplawski <jarkao2@o2.pl>.  This patch is a modification of their
-> fixes.  We acquire and release the lock for each descriptor that is freed
-> to minimize the time the lock is held.
->
-> ---
->
->  drivers/net/mv643xx_eth.c |   11 +++++++++--
->  1 file changed, 9 insertions(+), 2 deletions(-)
->
-> diff --git a/drivers/net/mv643xx_eth.c b/drivers/net/mv643xx_eth.c
-> index c41ae42..b3bf864 100644
-> --- a/drivers/net/mv643xx_eth.c
-> +++ b/drivers/net/mv643xx_eth.c
-> @@ -332,13 +339,13 @@ int mv643xx_eth_free_tx_descs(struct net
->                 if (skb)
->                         mp->tx_skb[tx_index] = NULL;
->
-> -               spin_unlock_irqrestore(&mp->lock, flags);
-> -
->                 if (cmd_sts & ETH_ERROR_SUMMARY) {
->                         printk("%s: Error in TX\n", dev->name);
->                         mp->stats.tx_errors++;
->                 }
+Pavel Machek <pavel@ucw.cz> writes:
 
-Note that this printk probably won't show immediately because IRQs are
-disabled. But that's maybe not a big deal.
+   >    But I still believe it can be out.
+   >
+   > Do you believe it could be a user-space daemon or what?
 
-HTH
+   Yes, what prevents userspace daemon watching /dev/input/event* to
+   provide this functionality?
 
--- 
-Thibaut VARENE
-http://www.parisc-linux.org/~varenet/
+Well that was my first attempt. Just an hack, but it works. Nonetheless I found
+the kernel-level approach fitting better the problem: it is elegant, simpler
+and more efficient than user-level one.
+
+For example, the subsystem provides at kernel-level handy
+hiberante/suspend/resume callbacks that I use to turn on/off the timer,
+avoiding the time-warp problem. Doing that at user-level would be far more
+messy...
+
+Bye
+
+--
+An age is called Dark not because the light fails to shine, but because people
+refuse to see it. - James Michener, Space
