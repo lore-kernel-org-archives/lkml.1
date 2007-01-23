@@ -1,91 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932582AbXAWPLw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751955AbXAWPOz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932582AbXAWPLw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jan 2007 10:11:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932581AbXAWPLw
+	id S1751955AbXAWPOz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jan 2007 10:14:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751963AbXAWPOy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jan 2007 10:11:52 -0500
-Received: from smtp104.mail.mud.yahoo.com ([209.191.85.214]:24179 "HELO
-	smtp104.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S932584AbXAWPLv (ORCPT
+	Tue, 23 Jan 2007 10:14:54 -0500
+Received: from 142.163.233.220.exetel.com.au ([220.233.163.142]:54634 "EHLO
+	idefix.homelinux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751955AbXAWPOy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jan 2007 10:11:51 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=04vhuYvhhID7CKC0EY6ml/kVeGP5ysB7mCUDYS4VPlgfqnVV9Hz6YAu+Qw1hFzDVhCLv1hA9tvzrQBjcHnQq1edLcAwNEiyGoQjAUvTUPOCutqi5QokxDL2RX9Tbb/XZCvRgLNqEzB+x/AWsyzXifz9W1MF98WhkuH3N1/ey2iI=  ;
-X-YMail-OSG: HoyyF_MVM1lVDlf9g5Nqbk2QZBXl5qFcU5VspVltjnRDAqp75YRIOaapMr27tGILCCxrKghKnXGhW9J98pi23tk3rOhLmDjbjjukpRaHjwoIJTUO_p8-
-Message-ID: <45B6258E.2060402@yahoo.com.au>
-Date: Wed, 24 Jan 2007 02:11:10 +1100
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
+	Tue, 23 Jan 2007 10:14:54 -0500
+X-Greylist: delayed 1287 seconds by postgrey-1.27 at vger.kernel.org; Tue, 23 Jan 2007 10:14:53 EST
+Message-ID: <45B62163.4040704@usherbrooke.ca>
+Date: Wed, 24 Jan 2007 01:53:23 +1100
+From: Jean-Marc Valin <jean-marc.valin@usherbrooke.ca>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070103)
 MIME-Version: 1.0
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>
-Subject: Re: [patch] notifiers: fix blocking_notifier_call_chain()	scalability
-References: <20070123094550.GA21105@elte.hu> <1169551494.6197.209.camel@twins>
-In-Reply-To: <1169551494.6197.209.camel@twins>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+To: Luming Yu <luming.yu@gmail.com>
+CC: Pavel Machek <pavel@ucw.cz>, nigel@nigel.suspend2.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: Suspend to RAM generates oops and general protection fault
+References: <45B422D3.9040409@usherbrooke.ca>	 <1169436221.2190.13.camel@nigel.suspend2.net>	 <45B448BA.70800@usherbrooke.ca> <20070122132545.GA4493@ucw.cz>	 <45B59239.90403@usherbrooke.ca> <3877989d0701222311u5660a3c1id06bbeea3578a1c3@mail.gmail.com>
+In-Reply-To: <3877989d0701222311u5660a3c1id06bbeea3578a1c3@mail.gmail.com>
+X-Enigmail-Version: 0.94.0.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
-> On Tue, 2007-01-23 at 10:45 +0100, Ingo Molnar wrote:
+Luming Yu a écrit :
+> what about removing psmouse module?
 
->>The fix is to enhance blocking_notifier_call_chain() to only take the 
->>lock if there appears to be work on the call-chain.
+Trying that now. Any particular reason you suspect that one?
+
+	Jean-Marc
+
+> On 1/23/07, Jean-Marc Valin <jean-marc.valin@usherbrooke.ca> wrote:
+>> >>> will be a device driver. Common causes of suspend/resume problems
+>> from
+>> >>> the list you give below are acpi modules, bluetooth and usb. I'd
+>> also be
+>> >>> consider pcmcia, drm and fuse possibilities. But again, go for
+>> unloading
+>> >>> everything possible in the first instance.
+>> >> Actually, the reason I sent this is that when I showed the oops/gpf to
+>> >> Matthew Garrett at linux.conf.au, he said it looked like a CPU hotplug
+>> >> problem and suggested I send it to lkml. BTW, with 2.6.20-rc5, the
+>> >> suspend to RAM now works ~95% of the time.
+>> >
+>> > Try a kernel without CONFIG_SMP... that will verify if it is SMP
+>> > related.
 >>
->>With this patch applied i get nicely saturated system, and much higher 
->>munmap performance, on SMP systems.
+>> Well, this happens to be my main work machine, which I'm not willing to
+>> have running at half speed for several weeks. Anything else you can
+>> suggest?
 >>
->>And as a bonus this also fixes a similar scalability bottleneck in the 
->>thread-exit codepath: profile_task_exit() ...
+>>         Jean-Marc
+>> -
+>> To unsubscribe from this list: send the line "unsubscribe
+>> linux-kernel" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>> Please read the FAQ at  http://www.tux.org/lkml/
 >>
->>Signed-off-by: Ingo Molnar <mingo@elte.hu>
 > 
-> 
-> Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> 
->>---
->> kernel/sys.c |   15 +++++++++++----
->> 1 file changed, 11 insertions(+), 4 deletions(-)
->>
->>Index: linux/kernel/sys.c
->>===================================================================
->>--- linux.orig/kernel/sys.c
->>+++ linux/kernel/sys.c
->>@@ -325,11 +325,18 @@ EXPORT_SYMBOL_GPL(blocking_notifier_chai
->> int blocking_notifier_call_chain(struct blocking_notifier_head *nh,
->> 		unsigned long val, void *v)
->> {
->>-	int ret;
->>+	int ret = NOTIFY_DONE;
->> 
->>-	down_read(&nh->rwsem);
->>-	ret = notifier_call_chain(&nh->head, val, v);
->>-	up_read(&nh->rwsem);
->>+	/*
->>+	 * We check the head outside the lock, but if this access is
->>+	 * racy then it does not matter what the result of the test
->>+	 * is, we re-check the list after having taken the lock anyway:
->>+	 */
-
-Great idea!
-
->>+	if (rcu_dereference(nh->head)) {
-
-Except rcu_dereference() is not needed.
-
->>+		down_read(&nh->rwsem);
->>+		ret = notifier_call_chain(&nh->head, val, v);
->>+		up_read(&nh->rwsem);
->>+	}
->> 	return ret;
->> }
-
--- 
-SUSE Labs, Novell Inc.
-Send instant messages to your online friends http://au.messenger.yahoo.com 
