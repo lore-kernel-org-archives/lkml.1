@@ -1,54 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932539AbXAWAQr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932478AbXAWAW3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932539AbXAWAQr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jan 2007 19:16:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932544AbXAWAQr
+	id S932478AbXAWAW3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jan 2007 19:22:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932445AbXAWAW3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jan 2007 19:16:47 -0500
-Received: from nat-warsl417-01.aon.at ([195.3.96.119]:4861 "EHLO email.aon.at"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932541AbXAWAQq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jan 2007 19:16:46 -0500
-X-Greylist: delayed 402 seconds by postgrey-1.27 at vger.kernel.org; Mon, 22 Jan 2007 19:16:46 EST
-Message-ID: <45B55286.5060909@nobaq.net>
-Date: Tue, 23 Jan 2007 01:10:46 +0100
-From: Niki Hammler <mailinglists@nobaq.net>
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Why active list and inactive list?
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
-X-Homepage: Niki Hammler, http://www.NOBAQ.net
+	Mon, 22 Jan 2007 19:22:29 -0500
+Received: from ns1.suse.de ([195.135.220.2]:35090 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932541AbXAWAW2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jan 2007 19:22:28 -0500
+From: NeilBrown <neilb@suse.de>
+To: Andrew Morton <akpm@osdl.org>
+Date: Tue, 23 Jan 2007 11:22:03 +1100
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+Cc: nfs@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: [PATCH 000 of 5] knfsd: Introduction - Assorted bugfixes
+Message-ID: <20070123111558.27683.patches@notabene>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear Linux Developers/Enthusiasts,
+Following are 5 patches for kNFSd suitable for inclusion in 2.6.20.
 
-For a course at my university I'm implementing parts of an operating
-system where I get most ideas from the Linux Kernel (which I like very
-much). One book I gain information from is [1].
+A couple should go to 2.6.19-stable, but I'll send those separately.
 
-Linux uses for its Page Replacing Algorithm (based on LRU) *two* chained
-lists - one active list and one active list.
-I implemented my PRA this way too.
-
-No the big question is: WHY do I need *two* lists? Isn't it just
-overhead/more work? Are there any reasons for that?
-
-In my opinion, it would be better to have just one just; pop frames to
-be swapped out from the end of the list and push new frames in front of
-it. Then just evaluate the frames and shift them around in the list.
-
-Is there any explanation why Linux uses two lists?
-
-Thanks you very much in advance!
-
-Best regards,
-Niki
+NeilBrown
 
 
-
-[1] Linux Kernelarchitektur. Konzepte, Strukturen und Algorithmen von
-Kernel 2.6. Wolfang Mauerer, Hanser, ISBN 3-446-22566-8
-
-
+ [PATCH 001 of 5] knfsd: Update email address and status for NFSD in MAINTAINERS.
+ [PATCH 002 of 5] knfsd: Fix setting of ACL server versions.
+ [PATCH 003 of 5] knfsd: Fix an NFSD bug with full sized, non-page-aligned reads.
+ [PATCH 004 of 5] knfsd: Replace some warning ins nfsfh.h with BUG_ON or WARN_ON
+ [PATCH 005 of 5] knfsd: Don't mess with the 'mode' when storing a exclusive-create cookie.
