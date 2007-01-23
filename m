@@ -1,81 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932112AbXAWBMb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932403AbXAWBN6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932112AbXAWBMb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jan 2007 20:12:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932482AbXAWBMa
+	id S932403AbXAWBN6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jan 2007 20:13:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932583AbXAWBN6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jan 2007 20:12:30 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:41927 "EHLO smtp.osdl.org"
+	Mon, 22 Jan 2007 20:13:58 -0500
+Received: from main.gmane.org ([80.91.229.2]:40555 "EHLO ciao.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932112AbXAWBM3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jan 2007 20:12:29 -0500
-Date: Mon, 22 Jan 2007 17:12:06 -0800
-From: Andrew Morton <akpm@osdl.org>
-To: Donald Douwsma <donaldd@sgi.com>
-Cc: Justin Piszcz <jpiszcz@lucidpixels.com>, linux-kernel@vger.kernel.org,
-       linux-raid@vger.kernel.org, xfs@oss.sgi.com
-Subject: Re: 2.6.20-rc5: cp 18gb 18gb.2 = OOM killer, reproducible just like
- 2.16.19.2
-Message-Id: <20070122171206.fc2faf5f.akpm@osdl.org>
-In-Reply-To: <45B558B5.6080403@sgi.com>
-References: <Pine.LNX.4.64.0701211424170.2552@p34.internal.lan>
-	<20070122115703.97ed54f3.akpm@osdl.org>
-	<45B558B5.6080403@sgi.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S932403AbXAWBN5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jan 2007 20:13:57 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Oleg Verych <olecom@flower.upol.cz>
+Subject: [ot] Re: coding style and re-inventing the wheel way too many times
+Date: Tue, 23 Jan 2007 01:11:44 +0000 (UTC)
+Organization: Palacky University in Olomouc, experimental physics department.
+Message-ID: <slrneraomj.e7s.olecom@flower.upol.cz>
+References: <Pine.LNX.4.64.0612210614020.32046@localhost.localdomain>
+X-Complaints-To: usenet@sea.gmane.org
+X-Gmane-NNTP-Posting-Host: flower.upol.cz
+User-Agent: slrn/0.9.8.1pl1 (Debian)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 23 Jan 2007 11:37:09 +1100
-Donald Douwsma <donaldd@sgi.com> wrote:
+On 2006-12-21, Robert P. J. Day wrote:
+[]
+>   in any event, even *i* am not going to go near this kind of cleanup,
+> but is there anything actually worth doing about it?  just curious.
 
-> Andrew Morton wrote:
-> >> On Sun, 21 Jan 2007 14:27:34 -0500 (EST) Justin Piszcz <jpiszcz@lucidpixels.com> wrote:
-> >> Why does copying an 18GB on a 74GB raptor raid1 cause the kernel to invoke 
-> >> the OOM killer and kill all of my processes?
-> > 
-> > What's that?   Software raid or hardware raid?  If the latter, which driver?
-> 
-> I've hit this using local disk while testing xfs built against 2.6.20-rc4 (SMP x86_64)
-> 
-> dmesg follows, I'm not sure if anything in this is useful after the first event as our automated tests continued on
-> after the failure.
+Moscow wasn't built at once...
 
-This looks different.
+You may notice as some others are doing little by little steps:
+- source cleanups;
+- right dependancy;
+- headers includes;
+- warnings elimination;
+- code reading-analyzing (brainwashing, as for me;) and a few line
+fixes everywhere.
 
-> ...
->
-> Mem-info:
-> Node 0 DMA per-cpu:
-> CPU    0: Hot: hi:    0, btch:   1 usd:   0   Cold: hi:    0, btch:   1 usd:   0
-> CPU    1: Hot: hi:    0, btch:   1 usd:   0   Cold: hi:    0, btch:   1 usd:   0
-> CPU    2: Hot: hi:    0, btch:   1 usd:   0   Cold: hi:    0, btch:   1 usd:   0
-> CPU    3: Hot: hi:    0, btch:   1 usd:   0   Cold: hi:    0, btch:   1 usd:   0
-> Node 0 DMA32 per-cpu:
-> CPU    0: Hot: hi:  186, btch:  31 usd:  31   Cold: hi:   62, btch:  15 usd:  53
-> CPU    1: Hot: hi:  186, btch:  31 usd:   2   Cold: hi:   62, btch:  15 usd:  60
-> CPU    2: Hot: hi:  186, btch:  31 usd:  20   Cold: hi:   62, btch:  15 usd:  47
-> CPU    3: Hot: hi:  186, btch:  31 usd:  25   Cold: hi:   62, btch:  15 usd:  56
-> Active:76 inactive:495856 dirty:0 writeback:0 unstable:0 free:3680 slab:9119 mapped:32 pagetables:637
+I think there are members here, who doing things, like that for at
+least two years.
 
-No dirty pages, no pages under writeback.
+You are trying to focus (mostly) on style and sense -- ok. And maybe it's
+like to be alone within a crowd. Anyways, as long as you fill, that you
+can do that, and patches are accepded, changes are *documented* its ok,
+also. Sometimes it's stupid, worthless or something else. If so, then
+find more interesting things to do, unless you are going to proof
+something to somebody ;E.
 
-> Node 0 DMA free:8036kB min:24kB low:28kB high:36kB active:0kB inactive:1856kB present:9376kB pages_scanned:3296
-> all_unreclaimable? yes
-> lowmem_reserve[]: 0 2003 2003
-> Node 0 DMA32 free:6684kB min:5712kB low:7140kB high:8568kB active:304kB inactive:1981624kB present:2052068kB
+Here's, as i can see, almost no place for emotions, only technical stuff
+and everything not far from it. See, there isn't any reply on you
+message, except this one. I think, because of that.
 
-Inactive list is filled.
+--
+-o--=O`C
+ #oo'L O
+<___=E M
 
-> pages_scanned:4343329 all_unreclaimable? yes
-
-We scanned our guts out and decided that nothing was reclaimable.
-
-> No available memory (MPOL_BIND): kill process 3492 (hald) score 0 or a child
-> No available memory (MPOL_BIND): kill process 7914 (top) score 0 or a child
-> No available memory (MPOL_BIND): kill process 4166 (nscd) score 0 or a child
-> No available memory (MPOL_BIND): kill process 17869 (xfs_repair) score 0 or a child
-
-But in all cases a constrained memory policy was in use.
