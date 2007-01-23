@@ -1,63 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932715AbXAWDLt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751744AbXAWDSw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932715AbXAWDLt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jan 2007 22:11:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932697AbXAWDLt
+	id S1751744AbXAWDSw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jan 2007 22:18:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751934AbXAWDSw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jan 2007 22:11:49 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:2060 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932715AbXAWDLs (ORCPT
+	Mon, 22 Jan 2007 22:18:52 -0500
+Received: from ausmtp05.au.ibm.com ([202.81.18.154]:58183 "EHLO
+	ausmtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751744AbXAWDSw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jan 2007 22:11:48 -0500
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: jeff.chua.linux@gmail.com (Jeff Chua)
-Subject: Re: Linux v2.6.20-rc5
-Cc: linux-kernel@vger.kernel.org, torvalds@osdl.org, akpm@osdl.org
-Organization: Core
-In-Reply-To: <Pine.LNX.4.64.0701131404520.22948@boston.corp.fedex.com>
-X-Newsgroups: apana.lists.os.linux.kernel
-User-Agent: tin/1.7.4-20040225 ("Benbecula") (UNIX) (Linux/2.6.17-rc4 (i686))
-Message-Id: <E1H9C4X-0006aD-00@gondolin.me.apana.org.au>
-Date: Tue, 23 Jan 2007 14:11:45 +1100
+	Mon, 22 Jan 2007 22:18:52 -0500
+Message-ID: <45B57E73.3000307@in.ibm.com>
+Date: Tue, 23 Jan 2007 08:48:11 +0530
+From: Balbir Singh <balbir@in.ibm.com>
+Reply-To: balbir@in.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 1.5.0.9 (X11/20070103)
+MIME-Version: 1.0
+To: Christoph Lameter <clameter@sgi.com>
+CC: Andrea Arcangeli <andrea@suse.de>, Niki Hammler <mailinglists@nobaq.net>,
+       linux-kernel@vger.kernel.org,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Subject: Re: Why active list and inactive list?
+References: <45B55286.5060909@nobaq.net> <20070123003939.GY13798@opteron.random> <45B56575.10807@in.ibm.com> <Pine.LNX.4.64.0701221737510.30455@schroedinger.engr.sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0701221737510.30455@schroedinger.engr.sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Chua <jeff.chua.linux@gmail.com> wrote:
+Christoph Lameter wrote:
+> On Tue, 23 Jan 2007, Balbir Singh wrote:
 > 
+>> This makes me wonder if it makes sense to split up the LRU into page
+>> cache LRU and mapped pages LRU. I see two benefits
+>>
+>> 1. Currently based on swappiness, we might walk an entire list
+>>    searching for page cache pages or mapped pages. With these
+>>    lists separated, it should get easier and faster to implement
+>>    this scheme
+>> 2. There is another parallel thread on implementing page cache
+>>    limits. If the lists split out, we need not scan the entire
+>>    list to find page cache pages to evict them.
+>>
+>> Of course I might be missing something (some piece of history)
 > 
-> From: Jeff Chua <jchua@fedex.com>
+> This means page cache = unmapped file backed page right? Otherwise this
+> would not work. I always thought that the page cache were all file backed
+> pages both mapped and unmapped.
 > 
->>   CC [M]  drivers/kvm/vmx.o
->> {standard input}: Assembler messages:
->> {standard input}:3257: Error: bad register name `%sil'
->> make[2]: *** [drivers/kvm/vmx.o] Error 1
->> make[1]: *** [drivers/kvm] Error 2
->> make: *** [drivers] Error 2
-> 
-> I'm not using the kernel profiler, so here's a patch to make it work without 
-> CONFIG_PROFILING.
 
-Actually that only happens to work by chance (by making one of al/bl/cl/dl
-available).  This patch should fix it properly.
+Yes, unfortunately my terminology was not clear. I mean unmapped file
+backed pages.
 
-Cheers,
+> With the proposed schemd you would have to move pages between lists if
+> they are mapped and unmapped by a process. Terminating a process could
+> lead to lots of pages moving to the unnmapped list.
+> 
+
+When you unmap or map, you need to touch the pte entries and know the
+pages involved, so shouldn't be equivalent to a list_del and list_add
+for each page impacted by the map/unmap operation?
+
 -- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
---
-diff --git a/drivers/kvm/vmx.c b/drivers/kvm/vmx.c
-index ce219e3..0aa2659 100644
---- a/drivers/kvm/vmx.c
-+++ b/drivers/kvm/vmx.c
-@@ -1824,7 +1824,7 @@ again:
- #endif
- 		"setbe %0 \n\t"
- 		"popf \n\t"
--	      : "=g" (fail)
-+	      : "=q" (fail)
- 	      : "r"(vcpu->launched), "d"((unsigned long)HOST_RSP),
- 		"c"(vcpu),
- 		[rax]"i"(offsetof(struct kvm_vcpu, regs[VCPU_REGS_RAX])),
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
