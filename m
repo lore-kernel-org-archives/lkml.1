@@ -1,87 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965439AbXAWTGh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933073AbXAWTTG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965439AbXAWTGh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jan 2007 14:06:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965436AbXAWTGh
+	id S933073AbXAWTTG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jan 2007 14:19:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933042AbXAWTTF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jan 2007 14:06:37 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:43317 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965439AbXAWTGg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jan 2007 14:06:36 -0500
-X-Greylist: delayed 64395 seconds by postgrey-1.27 at vger.kernel.org; Tue, 23 Jan 2007 14:06:36 EST
-Date: Tue, 23 Jan 2007 11:06:31 -0800
-From: Joel Becker <Joel.Becker@oracle.com>
-To: Michael Noisternig <mnoist@cosy.sbg.ac.at>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: configfs: return value for drop_item()/make_item()?
-Message-ID: <20070123190631.GH9422@ca-server1.us.oracle.com>
-Mail-Followup-To: Michael Noisternig <mnoist@cosy.sbg.ac.at>,
-	linux-kernel@vger.kernel.org
-References: <45AF6D0C.8020600@cosy.sbg.ac.at> <20070118221249.GO27360@ca-server1.us.oracle.com> <45B4AF98.2080407@cosy.sbg.ac.at> <20070123011316.GC9422@ca-server1.us.oracle.com> <45B61287.1060206@cosy.sbg.ac.at>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <45B61287.1060206@cosy.sbg.ac.at>
-X-Burt-Line: Trees are cool.
-X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever come to perfection.
-User-Agent: Mutt/1.5.11
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Tue, 23 Jan 2007 14:19:05 -0500
+Received: from raven.upol.cz ([158.194.120.4]:57796 "EHLO raven.upol.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933073AbXAWTTE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jan 2007 14:19:04 -0500
+X-Greylist: delayed 490 seconds by postgrey-1.27 at vger.kernel.org; Tue, 23 Jan 2007 14:19:04 EST
+To: Alan Cox <alan@redhat.com>, David Miller <davem@davemloft.net>, hch@lst.de,
+       tytso@mit.edu, ksummit-2006-discuss@thunk.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: +1 4 cz (Re: [Ksummit-2006-discuss] 2007 Linux Kernel Summit)
+In-Reply-To: <20070123.095756.30177490.davem@davemloft.net>
+References: <E1H8tIr-0006QH-Bg@candygram.thunk.org> <20070122110711.GA5917@lst.de> <20070122124502.GC30124@devserv.devel.redhat.com> <20070123.095756.30177490.davem@davemloft.net>
+Organization: Palacky University in Olomouc, experimental physics department.
+Date: Tue, 23 Jan 2007 19:18:46 +0000
+Message-Id: <E1H9RAM-0007ny-NP@flower>
+From: Oleg Verych <olecom@flower.upol.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 23, 2007 at 02:49:59PM +0100, Michael Noisternig wrote:
-> Sorry, I wasn't clear. I meant that it's not possible to let the user 
-> create the parent directory via mkdir(2) within sysfs. I.e.
-> # mkdir object  <-- create object/, configfs only
-> # ls object
-> type
-> # echo b > object/type  <-- create b/, sysfs only
-> # ls object
-> type
-> b/
-> I cannot have both, sysfs and configfs functionality, within the same 
-> module configuration file system tree.
+In gmane.linux.kernel, David Miller wrote:
+> From: Alan Cox <alan@redhat.com>
+> Date: Mon, 22 Jan 2007 07:45:02 -0500
+>
+>> On Mon, Jan 22, 2007 at 12:07:11PM +0100, Christoph Hellwig wrote:
+>> > > process.  This year, the Kernel Summit will be held in Cambridge,
+>> > > England, at the DeVere University Arms Hotel, September 5-6 (with a
+>> > > welcome reception on the 4th).  The decision to move the Kernel Summit
+>> > > to England is a one-year experiment based on the very strong request of
+>> > > last year's kernel summit attendees to try a location outside of Ottawa,
+>> > > and especially from the roughly 1/3rd of the attendees that come from
+>> > > the UK or Europe.  So the plan is for us to book the Ottawa Congress
+>> > > Ceter space for July 2008 (which we will need to do by mid-year 2007),
+>> 
+>> Ditto..
+>> 
+>> Definitely disagree with that. I'd like to see the conference somewhere
+   else different this time - perhaps *Czech Republic*, or somewhere else more
+>> easterly and Linux active (or even Finland...)
+>
+> This is my position as well.
+[]
+> For the first time in many years I'm strongly considering actually
+> going to the kernel summit, however if it goes back to Ottawa I
+> definitely will stop going again.
 
-	No, you can't have sysfs and configfs functionality in the same
-exact portion of the tree.  But you can use both sysfs and configfs at
-the same time in your driver.  The different parts will appear in the
-different trees.  Up to you.
+It would be interesting. Thank you Alan, David!
 
-> 1. Is there any guarantee that strings passed to struct 
-> configfs_item_operations->store_attribute are 0-terminated? If not, 
-> there's not only potential for buffer overflows, but there already is - 
-> in configfs_example.c, using simple_strtoul().
-
-	There is no guarantee, but that's a bug.  The attribute handling
-code came from sysfs.  I assume the initial assumption was that since
-you can only copy a page, it's OK.  Clearly not the case.  sysfs fixed
-this in October (commit 035ed7a49447bc8e15d4d9316fc6a359b2d94333).  I'll
-be porting that over.  Thanks for noticing!
-
-> 2. A minor one: I realize that the CONFIGFS_ITEM_NAME_LEN value of 20 is 
-> taken over from sysfs, but in configfs a config_group now has 68 bytes 
-> of size, and assuming that many times one would simply kmalloc a simple 
-> struct config_group (without extending it) this would result in a waste 
-> of 60 bytes per malloc. Do you want to keep that #define or reduce it to 
-> 16? Just a thought...
-
-	Hmm, interesting.  I'll look at that as well.
-
-Joel
-
--- 
-
-Life's Little Instruction Book #511
-
-	"Call your mother."
-
-Joel Becker
-Principal Software Developer
-Oracle
-E-mail: joel.becker@oracle.com
-Phone: (650) 506-8127
+;D
+____
