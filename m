@@ -1,235 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965012AbXAWU6e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965050AbXAWVEq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965012AbXAWU6e (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jan 2007 15:58:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965015AbXAWU6e
+	id S965050AbXAWVEq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jan 2007 16:04:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965067AbXAWVEq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jan 2007 15:58:34 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:55084 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965012AbXAWU6d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jan 2007 15:58:33 -0500
-Date: Tue, 23 Jan 2007 12:58:01 -0800
-From: Andrew Morton <akpm@osdl.org>
-To: Alexey Dobriyan <adobriyan@openvz.org>
-Cc: Al Viro <viro@ftp.linux.org.uk>, linux-kernel@vger.kernel.org,
-       devel@openvz.org
-Subject: Re: [PATCH] Fix rmmod/read/write races in /proc entries
-Message-Id: <20070123125801.7982c23f.akpm@osdl.org>
-In-Reply-To: <20070115153927.GA24731@localhost.sw.ru>
-References: <20061227134223.GA6044@localhost.sw.ru>
-	<20061227135624.GP17561@ftp.linux.org.uk>
-	<20061228082147.GA11127@localhost.sw.ru>
-	<20070115153927.GA24731@localhost.sw.ru>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 23 Jan 2007 16:04:46 -0500
+Received: from relay02.mail-hub.dodo.com.au ([202.136.32.45]:34232 "EHLO
+	relay02.mail-hub.dodo.com.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S965050AbXAWVEo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jan 2007 16:04:44 -0500
+From: Grant Coady <grant_lkml@dodo.com.au>
+To: dann frazier <dannf@dannf.org>
+Cc: Grant Coady <gcoady.lk@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Santiago Garcia Mantinan <manty@debian.org>,
+       linux-kernel@vger.kernel.org, debian-kernel@lists.debian.org
+Subject: Re: problems with latest smbfs changes on 2.4.34 and security backports
+Date: Wed, 24 Jan 2007 08:04:36 +1100
+Organization: http://bugsplatter.mine.nu/
+Reply-To: Grant Coady <gcoady.lk@gmail.com>
+Message-ID: <mstcr2hm6aar4t58o3gm0hit6thpdd6ohp@4ax.com>
+References: <20070117100030.GA11251@clandestino.aytolacoruna.es> <20070117215519.GX24090@1wt.eu> <20070119010040.GR16053@colo> <20070120010544.GY26210@colo> <t1r7r2thimh3gpuhtfc9l3aehjdd6dqkp8@4ax.com> <20070121230321.GC2480@1wt.eu> <20070123201936.GA26310@colo>
+In-Reply-To: <20070123201936.GA26310@colo>
+X-Mailer: Forte Agent 2.0/32.652
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 15 Jan 2007 18:39:27 +0300
-Alexey Dobriyan <adobriyan@openvz.org> wrote:
+On Tue, 23 Jan 2007 13:19:37 -0700, dann frazier <dannf@dannf.org> wrote:
 
-> --------------------------------------------------------
-> pde = create_proc_entry()
-> if (!pde)
-> 	return -ENOMEM;
-> pde->write_proc = ...;
-> 				open
-> 				write
-> 				copy_from_user
-> pde = create_proc_entry();
-> if (!pde) {
-> 	remove_proc_entry();
-> 	return -ENOMEM;
-> 	/* module unloaded */
-> }
-> 				*boom*
-> --------------------------------------------------------
-> pde = create_proc_entry();
-> if (pde) {
-> 	/* which dereferences ->data */
-> 	pde->write_proc = ...;
-> 				open
-> 				write
-> 	pde->data = ...;
-> }
-> --------------------------------------------------------
-> 
-> The following plan is going to be executed (as per Al Viro's explanations):
-> 
-> PDE gets atomic counter counting reads and writes in progress
-> via ->read_proc, ->write_proc, ->get_info . Generic proc code will bump
-> PDE's counter before calling into module-specific method and decrement
-> it after it returns.
-> 
-> remove_proc_entry() will wait until all readers and writers are done.
-> To do this reliably it will set ->proc_fops to NULL and generic proc
-> code won't call into module it it sees NULL ->proc_fops.
-> 
-> This patch implements part above. So far, no changes in modules code
-> required. To proceed, lets look into ->proc_fops values during and after PDE
-> creation:
-> 
-> 	pde = create_proc_entry();
-> 	if (pde)
-> 		pde->proc_fops = ...;
-> 
-> proc_create() create empty PDE;		(->proc_fops is NULL)
-> proc_register() glues PDE to /proc	(->proc_fops is NULL)
-> proc_register() sets ->proc_fops to default	(->proc_fops valid)
-> [ module sets ->proc_fops to it's own	(->proc_fops) valid ]
-> 
-> Observation: ->proc_fops is not NULL, when create_proc_entry() exits.
-> 
-> Next set of races come into play:
-> 
-> 	pde = create_proc_entry();
-> 	if (pde) {
-> 		pde->read_proc = ...;
-> 		pde->data = ...;
-> 	}
-> 
-> Almost all ->read_proc, ->write_proc callbacks assume that ->data is valid when
-> they're called. They cast ->data and dereference it.
-> 
-> To fix this we need a way to indicate that PDE is not readable and writeable.
-> ->proc_fops nicely fits, because modules setting ->proc_fops only don't need
-> changes at all. create_proc_entry() will exit with NULL ->proc_fops and helpers
-> will be needed sometimes to set it.
-> 
-> 1. Module sets ->proc_fops only
-> 	no changes
-> 2. Module sets ->data and ->proc_fops
-> 	use a helper to set ->data before ->proc_fops and a barrier.
-> 2. Module uses only create_proc_read_entry()
-> 	changes only in create_proc_read_entry();
-> 3. Module uses only create_proc_info_entry()
-> 	changes only in create_proc_info_entry();
-> 4. Module sets combination of ->data, ->read_proc, ->write_proc
-> 	use helper which will set fields, barrier and sets default ->proc_fops.
-> 	the best name I've come up so far is
-> 
-> 	void set_proc_entry_data_rw(struct proc_dir_entry *, void *, read_proc_t, write_proc_t);
-> 
-> Helper(s) will be introduced, then create_proc_entry() will start exiting with
-> NULL ->proc_fops. After that use of helper(s) will become mandatory. Grepping
-> for offenders will be easy (read_proc, ... are good names). ->data is bad
-> name, however, after helpers will be plugged we can rename ->data to
-> ->pde_data and it'll become good name.
-> 
-> Sorry, for somewhat chaotic explanations, please, comment on patch and RFC.
+>On Mon, Jan 22, 2007 at 12:03:21AM +0100, Willy Tarreau wrote:
+>> Hi Grant !
+>> 
+>> On Mon, Jan 22, 2007 at 09:52:44AM +1100, Grant Coady wrote:
+>> > On Fri, 19 Jan 2007 18:05:44 -0700, dann frazier <dannf@dannf.org> wrote:
+>> > 
+>> > >On Thu, Jan 18, 2007 at 06:00:40PM -0700, dann frazier wrote:
+>> > >Ah, think I see the problem now:
+>> > >
+>> > >--- kernel-source-2.4.27.orig/fs/smbfs/proc.c	2007-01-19 17:53:57.247695476 -0700
+>> > >+++ kernel-source-2.4.27/fs/smbfs/proc.c	2007-01-19 17:49:07.480161733 -0700
+>> > >@@ -1997,7 +1997,7 @@
+>> > > 		fattr->f_mode = (server->mnt->dir_mode & (S_IRWXU | S_IRWXG | S_IRWXO)) | S_IFDIR;
+>> > > 	else if ( (server->mnt->flags & SMB_MOUNT_FMODE) &&
+>> > > 	          !(S_ISDIR(fattr->f_mode)) )
+>> > >-		fattr->f_mode = (server->mnt->file_mode & (S_IRWXU | S_IRWXG | S_IRWXO)) | S_IFREG;
+>> > >+		fattr->f_mode = (server->mnt->file_mode & (S_IRWXU | S_IRWXG | S_IRWXO)) | (fattr->f_mode & S_IFMT);
+>> > > 
+>> > > }
+>> > > 
+>> > client running 2.4.34 with above patch, server is running 2.6.19.2 to 
+>> > eliminate it from the problem space (hopefully ;) :
+>> > grant@sempro:/home/other$ uname -r
+>> > 2.4.34b
+>> > grant@sempro:/home/other$ ls -l
+>> > total 9
+>> > drwxr-xr-x 1 grant wheel 4096 2007-01-21 11:44 dir/
+>> > drwxr-xr-x 1 grant wheel 4096 2007-01-21 11:44 dirlink/
+>> > -rwxr-xr-x 1 grant wheel   15 2007-01-21 11:43 file*
+>> > -rwxr-xr-x 1 grant wheel   15 2007-01-21 11:43 filelink*
+>> 
+>> It seems to me that there is a difference, because filelink now appears the
+>> same size as file. It's just as if we had hard links instead of symlinks.
+>
+>I was running into this yesterday - turns out that Debian's current
+>smbfs package contains a patch that checks for user passed options,
+>and disables unix capabilities in that case. It was added in
+>3.0.14a-4. I've filed a bug requesting the removal of this patch:
+>  http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=408033
+>
+>Grant: Do you know if are you running a version of smbfs w/ this
+>       patch?
 
-<head spins>
+Hi Dann,
+I'm running slackware-11, no smbfs package, 'smbmnt' is from samba-3.0.23c 
+package with two tiny unrelated (?) patches:
 
-Looks a bit hacky.  Can this race not be fixed by addition of suitable
-locking, or possibly refcounting-under-locking?
+grant@deltree:/home/mirror/slackware-11.0/source$ find . -name samba*
+./n/samba
+./n/samba/samba.cups.diff.gz
+./n/samba/samba.ssl.diff.gz
+./n/samba/samba.SlackBuild
+./n/samba/samba-3.0.23c.tar.asc
+./n/samba/samba-3.0.23c.tar.bz2
+grant@deltree:/home/mirror/slackware-11.0/source$ zless n/samba/samba.cups.diff.gz
+--- ./source/configure.orig     2002-10-23 18:06:43.000000000 -0700
++++ ./source/configure  2002-10-23 18:07:12.000000000 -0700
+@@ -3789,7 +3789,7 @@
 
-> Signed-off-by: Alexey Dobriyan <adobriyan@openvz.org>
-> ---
-> 
->  fs/proc/generic.c       |   32 ++++++++++++++++++++++++++++----
->  include/linux/proc_fs.h |    2 ++
->  2 files changed, 30 insertions(+), 4 deletions(-)
-> 
-> --- a/fs/proc/generic.c
-> +++ b/fs/proc/generic.c
-> @@ -19,6 +19,7 @@ #include <linux/init.h>
->  #include <linux/idr.h>
->  #include <linux/namei.h>
->  #include <linux/bitops.h>
-> +#include <linux/delay.h>
->  #include <linux/spinlock.h>
->  #include <asm/uaccess.h>
->  
-> @@ -76,6 +77,12 @@ proc_file_read(struct file *file, char _
->  	if (!(page = (char*) __get_free_page(GFP_KERNEL)))
->  		return -ENOMEM;
->  
-> +	if (!dp->proc_fops)
-> +		goto out_free;
-> +	atomic_inc(&dp->pde_users);
-> +	if (!dp->proc_fops)
-> +		goto out_dec;
-> +
+                CFLAGS="$CFLAGS `$CUPS_CONFIG --cflags`"
+                LDFLAGS="$LDFLAGS `$CUPS_CONFIG --ldflags`"
+-               LIBS="$LIBS `$CUPS_CONFIG --libs`"
++               LIBS="-lcrypt $LIBS `$CUPS_CONFIG --libs`"
+         fi
+ fi
 
-You'll be shocked to know that I'd prefer more comments in there.  Enough
-for a later maintainer to be able to understand what's going on.
+grant@deltree:/home/mirror/slackware-11.0/source$ zcat n/samba/samba.ssl.diff.gz
+--- ./source/configure.orig     2002-10-09 13:27:21.000000000 -0700
++++ ./source/configure  2002-10-23 18:06:43.000000000 -0700
+@@ -12479,7 +12479,7 @@
 
+     fi
 
->  	while ((nbytes > 0) && !eof) {
->  		count = min_t(size_t, PROC_BLOCK_SIZE, nbytes);
->  
-> @@ -195,6 +202,9 @@ proc_file_read(struct file *file, char _
->  		buf += n;
->  		retval += n;
->  	}
-> +out_dec:
-> +	atomic_dec(&dp->pde_users);
-> +out_free:
->  	free_page((unsigned long) page);
->  	return retval;
->  }
-> @@ -205,14 +215,20 @@ proc_file_write(struct file *file, const
->  {
->  	struct inode *inode = file->f_path.dentry->d_inode;
->  	struct proc_dir_entry * dp;
-> +	ssize_t rv;
->  	
->  	dp = PDE(inode);
->  
-> -	if (!dp->write_proc)
-> +	if (!dp->write_proc || !dp->proc_fops)
->  		return -EIO;
->  
-> -	/* FIXME: does this routine need ppos?  probably... */
-> -	return dp->write_proc(file, buffer, count, dp->data);
-> +	rv = -EIO;
-> +	atomic_inc(&dp->pde_users);
-> +	if (dp->proc_fops)
-> +		/* FIXME: does this routine need ppos?  probably... */
-> +		rv = dp->write_proc(file, buffer, count, dp->data);
-> +	atomic_dec(&dp->pde_users);
-> +	return rv;
->  }
+-    LIBS="-lssl -lcrypto $LIBS"
++    LIBS="$LIBS -lssl -lcrypto"
 
-Here too.
+ #    if test ! -d ${withval}; then
+ #      echo "configure: error: called with --with-ssl, but ssl base directory ${withval} does not exist or is not a directory. Aborting config" 1>&2
 
->  
-> @@ -717,12 +733,20 @@ void remove_proc_entry(const char *name,
->  	if (!parent && xlate_proc_name(name, &parent, &fn) != 0)
->  		goto out;
->  	len = strlen(fn);
-> -
-> +again:
->  	spin_lock(&proc_subdir_lock);
->  	for (p = &parent->subdir; *p; p=&(*p)->next ) {
->  		if (!proc_match(len, fn, *p))
->  			continue;
->  		de = *p;
-> +
-> +		de->proc_fops = NULL;
-> +		if (atomic_read(&de->pde_users) > 0) {
-> +			spin_unlock(&proc_subdir_lock);
-> +			msleep(1);
-> +			goto again;
-> +		}
-> +
-
-And here.
-
->  		*p = de->next;
->  		de->next = NULL;
->  		if (S_ISDIR(de->mode))
-> --- a/include/linux/proc_fs.h
-> +++ b/include/linux/proc_fs.h
-> @@ -66,6 +66,8 @@ struct proc_dir_entry {
->  	atomic_t count;		/* use count */
->  	int deleted;		/* delete flag */
->  	void *set;
-> +	atomic_t pde_users;	/* number of readers + number of writers via
-> +				 * ->read_proc, ->write_proc, ->get_info */
->  };
->  
->  struct kcore_list {
+Grant.
