@@ -1,49 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933008AbXAWF7t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933028AbXAWGCs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933008AbXAWF7t (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jan 2007 00:59:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932299AbXAWF7t
+	id S933028AbXAWGCs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jan 2007 01:02:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933033AbXAWGCs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jan 2007 00:59:49 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:45504 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933008AbXAWF7s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jan 2007 00:59:48 -0500
-Message-ID: <45B5A44E.9020703@garzik.org>
-Date: Tue, 23 Jan 2007 00:59:42 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
+	Tue, 23 Jan 2007 01:02:48 -0500
+Received: from outbound0.mx.meer.net ([209.157.153.23]:2468 "EHLO
+	outbound0.sv.meer.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933028AbXAWGCr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jan 2007 01:02:47 -0500
+To: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org
+Cc: gregkh@suse.de, rdunlap@xenotime.net
+Subject: `make htmldocs` fails
+References: <20070111222627.66bb75ab.akpm@osdl.org>
+From: Don Mullis <dwm@meer.net>
+In-Reply-To: <20070111222627.66bb75ab.akpm@osdl.org> (Andrew Morton's message of "Thu\, 11 Jan 2007 22\:26\:27 -0800")
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.92 (gnu/linux)
+Date: Mon, 22 Jan 2007 22:02:30 -0800
+Message-ID: <m364aycmbt.fsf@meer.net>
 MIME-Version: 1.0
-To: Thomas Klein <osstklei@de.ibm.com>
-CC: Christoph Raisch <raisch@de.ibm.com>,
-       Jan-Bernd Themann <ossthema@de.ibm.com>,
-       Jan-Bernd Themann <themann@de.ibm.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-ppc <linuxppc-dev@ozlabs.org>, Marcus Eder <meder@de.ibm.com>,
-       netdev <netdev@vger.kernel.org>, Thomas Klein <tklein@de.ibm.com>,
-       Stefan Roscher <roscher@de.ibm.com>,
-       Stefan Roscher <ossrosch@de.ibm.com>, Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH 2.6.20-rc5 1/7] ehea: Fixed wrong dereferencation
-References: <200701221252.20814.osstklei@de.ibm.com>
-In-Reply-To: <200701221252.20814.osstklei@de.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.7 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Klein wrote:
-> Not only check the pointer against 0 but also the dereferenced value
-> 
-> Signed-off-by: Thomas Klein <tklein@de.ibm.com>
-> ---
-> 
-> 
->  drivers/net/ehea/ehea.h      |    2 +-
->  drivers/net/ehea/ehea_main.c |    6 ++++--
->  2 files changed, 5 insertions(+), 3 deletions(-)
 
-applied 1-7 to #upstream-fixes
+Bisection shows the bad patch to be:
+    gregkh-driver-uio-documentation.patch
 
+The htmldocs build failure can be eliminated by:
+    quilt remove Documentation/DocBook/kernel-api.tmpl
+
+The error messages were:
+
+    .../linux-2.6.19 $ make htmldocs
+      DOCPROC Documentation/DocBook/kernel-api.xml
+    Warning(/noback/kernel.org/2.6.20-rc_fault-injection/linux-2.6.19//drivers/uio/uio.c:521): No description found for parameter 'owner'
+    Warning(/noback/kernel.org/2.6.20-rc_fault-injection/linux-2.6.19//drivers/uio/uio.c:521): No description found for parameter 'info'
+    Warning(/noback/kernel.org/2.6.20-rc_fault-injection/linux-2.6.19//drivers/uio/uio.c:591): No description found for parameter 'idev'
+    Error(/noback/kernel.org/2.6.20-rc_fault-injection/linux-2.6.19//include/linux/uio_driver.h:33): cannot understand prototype: 'struct uio_info '
+    Warning(/noback/kernel.org/2.6.20-rc_fault-injection/linux-2.6.19//include/linux/uio_driver.h): no structured comments found
+    make[1]: *** [Documentation/DocBook/kernel-api.xml] Error 1
+    make: *** [htmldocs] Error 2
+
+The failure was observed on an up-to-date Fedora Core 5 host. 
