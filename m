@@ -1,67 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933005AbXAWFiT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932523AbXAWFnV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933005AbXAWFiT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jan 2007 00:38:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932289AbXAWFiT
+	id S932523AbXAWFnV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jan 2007 00:43:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933006AbXAWFnV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jan 2007 00:38:19 -0500
-Received: from rwcrmhc14.comcast.net ([216.148.227.154]:61958 "EHLO
-	rwcrmhc14.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933005AbXAWFiS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jan 2007 00:38:18 -0500
-Subject: Re: sigaction's ucontext_t with incorrect stack reference when
-	SA_SIGINFO is being used ?
-From: Nicholas Miell <nmiell@comcast.net>
-To: Xavier Roche <roche+kml2@exalead.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <45B47C68.2000903@exalead.com>
-References: <45B47C68.2000903@exalead.com>
-Content-Type: text/plain
-Date: Mon, 22 Jan 2007 21:37:57 -0800
-Message-Id: <1169530677.2995.8.camel@entropy>
+	Tue, 23 Jan 2007 00:43:21 -0500
+Received: from 1wt.eu ([62.212.114.60]:2137 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932523AbXAWFnU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jan 2007 00:43:20 -0500
+Date: Tue, 23 Jan 2007 06:42:59 +0100
+From: Willy Tarreau <w@1wt.eu>
+To: dann frazier <dannf@dannf.org>
+Cc: Grant Coady <gcoady.lk@gmail.com>,
+       Santiago Garcia Mantinan <manty@debian.org>,
+       linux-kernel@vger.kernel.org, debian-kernel@lists.debian.org
+Subject: Re: problems with latest smbfs changes on 2.4.34 and security backports
+Message-ID: <20070123054258.GA10301@1wt.eu>
+References: <20070117100030.GA11251@clandestino.aytolacoruna.es> <20070117215519.GX24090@1wt.eu> <20070119010040.GR16053@colo> <20070120010544.GY26210@colo> <t1r7r2thimh3gpuhtfc9l3aehjdd6dqkp8@4ax.com> <20070121230321.GC2480@1wt.eu> <lpu7r2lbtpm5cui8v1qpuj2fb5k3vs6f4n@4ax.com> <20070122181942.GJ28073@colo>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 (2.8.2.1-2.0.njm.1) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070122181942.GJ28073@colo>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-01-22 at 09:57 +0100, Xavier Roche wrote:
-> Hi folks,
+Hi Dann,
+
+On Mon, Jan 22, 2007 at 11:19:43AM -0700, dann frazier wrote:
+> On Mon, Jan 22, 2007 at 10:50:47AM +1100, Grant Coady wrote:
+> > On Mon, 22 Jan 2007 00:03:21 +0100, Willy Tarreau <w@1wt.eu> wrote:
+> > grant@sempro:/home/other$ uname -r
+> > 2.4.34b
+> > grant@sempro:/home/other$ mkdir test
+> > grant@sempro:/home/other$ ln -s test testlink
+> > ln: creating symbolic link `testlink' to `test': Operation not permitted
+> > grant@sempro:/home/other$ echo "this is also a test" > test/file
+> > grant@sempro:/home/other$ ln -s test/file test2
+> > ln: creating symbolic link `test2' to `test/file': Operation not permitted
+> > 
+> > trying to create symlinks.
+> > 
+> > No problems creating symlinks with 2.4.33.3.
 > 
-> I have a probably louzy question regarding sigaction() behaviour when an
-> alternate signal stack is used: it seems that I can not get the user
-> stack reference in the ucontext_t stack context ; ie. the uc_stack
-> member contains reference of the alternate signal stack, not the stack
-> that was used before the crash.
+> Yes, I've found that this varies depending upon the options passed. If
+> uid=0, I can create symlinks, otherwise I always get permission
+> denied. This behavior appears to be consistent with 2.6.
 > 
-> Is this is a normal behaviour ? Is there a way to retrieve the original
-> user's stack inside the signal callback ?
+> I also need to do some testing with the proposed patch to smbmount
+> that will let you omit options (current versions will always pass an
+> option to the kernel, even if you the user did not provide one).
+> If you do not pass options, the behavior should fallback to
+> server-provided values.
 > 
-> The example given below demonstrates the issue:
-> top of stack==0x7fffff3d7000, alternative_stack==0x501010
-> SEGV==0x7fffff3d6ff8; sp==0x501010; current stack is the alternate stack
-> 
-> It is obvious that the SEGV was a stack overflow: the si_addr address is
-> just on the page below the stack limit.
+> Note that this bug has been my only interaction with smbfs, so I'm
+> certainly no expert on how it *should* behave. My plan is to
+> take all of the use cases we're coming up with and try to maintain
+> the "historic" 2.4 behavior as much as possible, but still not
+> silently dropping user-provided mount options. When the behavior needs
+> to change to honor them, I'll try to match what current 2.6
+> does. Make sense?
 
-POSIX says:
-"the third argument can be cast to a pointer to an object of type
-ucontext_t to refer to the receiving thread's context that was
-interrupted when the signal was delivered."
+Yes, it does for me. So to sum up, I apply your patch to 2.4.34.1
+and it restores the same behaviour for Santiago and Grant as they get
+in 2.6. Whether it's the expected behaviour or not is not the point,
+as it will be easier for us to later mimic 2.6 if a change is needed
+since we're not experts at all in this area.
 
-so if uc_stack doesn't point to the stack in use immediately prior to
-signal generation, this is a bug.
+If we're all OK for this, I'll go with that.
 
-(In theory I should be able to pass the ucontext_t supplied to the
-signal handler to setcontext() and resume execution exactly where I left
-off -- glibc's refusal to support kernel-generated ucontexts gets in the
-way of this, but the point still stands.)
-
-I have no idea who to bother about i386 signal delivery, though. (And I
-suspect this bug has probably been copied to other architectures as
-well.)
-
--- 
-Nicholas Miell <nmiell@comcast.net>
+Thanks guys,
+Willy
 
