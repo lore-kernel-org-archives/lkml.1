@@ -1,84 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964927AbXAWTsl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965419AbXAWTsk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964927AbXAWTsl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jan 2007 14:48:41 -0500
+	id S965419AbXAWTsk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jan 2007 14:48:40 -0500
 Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965422AbXAWTsk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Tue, 23 Jan 2007 14:48:40 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:51638 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964927AbXAWTsj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+Received: from ms-smtp-01.nyroc.rr.com ([24.24.2.55]:64068 "EHLO
+	ms-smtp-01.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965419AbXAWTsj convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 23 Jan 2007 14:48:39 -0500
-Date: Tue, 23 Jan 2007 11:48:25 -0800
-From: Andrew Morton <akpm@osdl.org>
-To: Roland McGrath <roland@redhat.com>
-Cc: Linus Torvalds <torvalds@osdl.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 4/11] i386 vDSO: use VM_ALWAYSDUMP
-Message-Id: <20070123114825.21ebc2e3.akpm@osdl.org>
-In-Reply-To: <20070114053428.900DB1800E5@magilla.sf.frob.com>
-References: <20070114053140.351701800E5@magilla.sf.frob.com>
-	<20070114053428.900DB1800E5@magilla.sf.frob.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Subject: Re: Any problem if softirq are done in a interrupt context (IRQ
+	stack)?
+From: Steven Rostedt <rostedt@goodmis.org>
+To: =?ISO-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>
+Cc: Zefang.Wang@nokia.com, linux-kernel@vger.kernel.org
+In-Reply-To: <20070103104305.GA3100@atjola.homenet>
+References: <20070103092214.GA2628@atjola.homenet>
+	 <1E9D602D891FA142A769E9EF164712EC355CB0@beebe101.NOE.Nokia.com>
+	 <20070103104305.GA3100@atjola.homenet>
+Content-Type: text/plain; charset=ISO-8859-1
+Date: Tue, 23 Jan 2007 14:48:32 -0500
+Message-Id: <1169581712.13563.16.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.6.3 
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 13 Jan 2007 21:34:28 -0800 (PST)
-Roland McGrath <roland@redhat.com> wrote:
+On Wed, 2007-01-03 at 11:43 +0100, Björn Steinbrink wrote:
+> [Re-added lkml to the CC list, please don't drop anything from CC]
 
-> +	     vma = vma->vm_next ?: vma == gate_vma ? NULL : gate_vma) {
+yes, since I would not have replied to this ;)
 
-Painful.   Can we do this?
+> 
+> On 2007.01.03 17:39:48 +0800, Zefang.Wang@nokia.com wrote:
+> > Hi!
+> > 
+> > Thanks very much for your clear explanation !
+> > 
+> > I have another question about irq_exit(), hope you can help me.
+> > 
+> > void irq_exit(void)
+> > {
+> > 	account_system_vtime(current);          
+> > 	trace_hardirq_exit();
+> > 	sub_preempt_count(IRQ_EXIT_OFFSET);   
+> >            ====================================================================
+> > 		Here, IRQ_EXIT_OFFSET is defined as (HARDIRQ_OFFSET-1),
+> > 		so the purpose seems that it try to avoid the current process
+> > 		from being switched-out druing do_softirq()?
+> > 		And,  if the preempt_count is not zero,  then softirq for 
+> > 		timer interrupt can set  _TIF_NEED_RESCHED flag to current
+> > 		process?
+> > 		What happened if the above sentence is changed to
+> > 		sub_preept_count(HARDIRQ_OFFSET)?
+> > 
+> > 	if (!in_interrupt() && local_softirq_pending())
+> > 		invoke_softirq();
+> > 	preempt_enable_no_resched();
+> >              ==============================================
+> > 	 The remaining 1 is decremented here.
+> > }
+> 
+> I can't really help you with that one. I'd assume that you need to make
+> sure that the current process context is kept while the softirq is
+> running. Could be, that otherwise the process gets preempted and the
+> stored process context would be assigned to the new process or
+> something like that, but I'm just guessing wildly here.
+> Note that IRQ_EXIT_OFFSET is defined as HARDIRQ_OFFSET if preemption is
+> disabled, so that's probably key here, I just don't know what kind of
+> havoc preempting would cause here ;)
 
+It would delay the processing of the softirqs for a full tick or more.
 
-diff -puN fs/binfmt_elf.c~i386-vdso-use-vm_alwaysdump-tidy fs/binfmt_elf.c
---- a/fs/binfmt_elf.c~i386-vdso-use-vm_alwaysdump-tidy
-+++ a/fs/binfmt_elf.c
-@@ -1429,6 +1429,23 @@ static int elf_dump_thread_status(long s
- }
- 
- /*
-+ * Helper function for iterating across a vma list.  It ensures that the caller
-+ * will visit `gate_vma' prior to terminating the search.
-+ */
-+static struct vm_area_struct *next_vma(struct vm_area_struct *this_vma,
-+					struct vm_area_struct *gate_vma)
-+{
-+	struct vm_area_struct *ret;
-+
-+	ret = this_vma->vm_next;
-+	if (ret)
-+		return ret;
-+	if (this_vma == gate_vma)
-+		return NULL;
-+	return gate_vma;
-+}
-+
-+/*
-  * Actual dumper
-  *
-  * This is a two-pass process; first we find the offsets of the bits,
-@@ -1600,8 +1617,7 @@ static int elf_core_dump(long signr, str
- 	dataoff = offset = roundup(offset, ELF_EXEC_PAGESIZE);
- 
- 	/* Write program headers for segments dump */
--	for (vma = current->mm->mmap; vma != NULL;
--	     vma = vma->vm_next ?: vma == gate_vma ? NULL : gate_vma) {
-+	for (vma = current->mm->mmap; vma; vma = next_vma(vma, gate_vma)) {
- 		struct elf_phdr phdr;
- 		size_t sz;
- 
-@@ -1650,8 +1666,7 @@ static int elf_core_dump(long signr, str
- 	/* Align to page */
- 	DUMP_SEEK(dataoff - foffset);
- 
--	for (vma = current->mm->mmap; vma != NULL;
--	     vma = vma->vm_next ?: vma == gate_vma ? NULL : gate_vma) {
-+	for (vma = current->mm->mmap; vma; vma = next_vma(vma, gate_vma)) {
- 		unsigned long addr;
- 
- 		if (!maydump(vma))
-_
+Note that changing to sub_preempt_count(HARDIRQ_OFFSET) is not enough,
+you would then need to add a preempt_disable() right afterwards, which
+would just be an extra subtraction that is avoided in the current
+implementation.
+
+But the big thing is that the softirqs should be handled as soon as they
+can be.
+
+-- Steve
+
 
