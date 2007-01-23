@@ -1,91 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932933AbXAWJr3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932289AbXAWJ57@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932933AbXAWJr3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jan 2007 04:47:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932934AbXAWJr3
+	id S932289AbXAWJ57 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jan 2007 04:57:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932931AbXAWJ57
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jan 2007 04:47:29 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:35787 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932933AbXAWJr2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jan 2007 04:47:28 -0500
-Date: Tue, 23 Jan 2007 10:45:50 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: linux-kernel@vger.kernel.org
-Cc: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>
-Subject: [patch] notifiers: fix blocking_notifier_call_chain() scalability
-Message-ID: <20070123094550.GA21105@elte.hu>
+	Tue, 23 Jan 2007 04:57:59 -0500
+Received: from mtagate3.de.ibm.com ([195.212.29.152]:30472 "EHLO
+	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932289AbXAWJ56 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jan 2007 04:57:58 -0500
+Date: Tue, 23 Jan 2007 10:58:48 +0100
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: Marcel Holtmann <marcel@holtmann.org>
+Cc: Greg KH <gregkh@suse.de>, Linus Torvalds <torvalds@osdl.org>,
+       Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
+       linux-usb-devel@lists.sourceforge.net
+Subject: Re: [linux-usb-devel] [GIT PATCH] USB fixes for 2.6.20-rc5
+Message-ID: <20070123105848.6649ea69@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <1169497704.27023.13.camel@violet>
+References: <20070122200746.GA9936@kroah.com>
+	<1169496904.27023.11.camel@violet>
+	<20070122202344.GA10579@suse.de>
+	<1169497704.27023.13.camel@violet>
+X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.3
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.3 required=5.9 tests=ALL_TRUSTED,BAYES_40 autolearn=no SpamAssassin version=3.0.3
-	-3.3 ALL_TRUSTED            Did not pass through any untrusted hosts
-	1.0 BAYES_40               BODY: Bayesian spam probability is 20 to 40%
-	[score: 0.3245]
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Subject: [patch] notifiers: fix blocking_notifier_call_chain() scalability
-From: Ingo Molnar <mingo@elte.hu>
+On Mon, 22 Jan 2007 21:28:24 +0100,
+Marcel Holtmann <marcel@holtmann.org> wrote:
 
-while lock-profiling the -rt kernel i noticed weird contention during 
-mmap-intense workloads, and the tracer showed the following gem, in one 
-of our MM hotpaths:
+> > I don't feel comfortable adding them to the 2.6.20 kernel at this late
+> > period, for a variety of reasons.  I really want them to be tested out
+> > in the -mm tree and then in the full -rc series due to the fact that
+> > they are non-trivial, and touch the driver core code that everyone uses,
+> > not just that function.
 
- threaded-2771  1....   65us : sys_munmap (sysenter_do_call)
- threaded-2771  1....   66us : profile_munmap (sys_munmap)
- threaded-2771  1....   66us : blocking_notifier_call_chain (profile_munmap)
- threaded-2771  1....   66us : rt_down_read (blocking_notifier_call_chain)
+I agree that the patch allowing device_move(dev, NULL) is non-trivial,
+but the one removing the useless device_is_registered() check should be
+straightforward enough.
 
-ouch! a global rw-semaphore taken in one of the most 
-performance-sensitive codepaths of the kernel. And i dont even have 
-oprofile enabled! All distro kernels have CONFIG_PROFILING enabled, so 
-this scalability problem affects the majority of Linux users.
+> 
+> fair enough.
+> 
+> > Also, it's a new feature (reparent back to the original parent), not
+> > necessarily a bugfix.
+> >
+> > And yes, I realize that the functions don't work fully right now, but as
+> > long as you don't want to re-parent the devices, they should work,
+> > right?
+> 
+> Actually even that was broken for me.
 
-The fix is to enhance blocking_notifier_call_chain() to only take the 
-lock if there appears to be work on the call-chain.
+If removing the device_is_registered() check helps you, I'd lobby for
+the inclusion of that part (and leave device_move(dev, NULL) for
+post-2.6.20). (It should help for devices with no bus; for my use case,
+everything worked fine.)
 
-With this patch applied i get nicely saturated system, and much higher 
-munmap performance, on SMP systems.
-
-And as a bonus this also fixes a similar scalability bottleneck in the 
-thread-exit codepath: profile_task_exit() ...
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- kernel/sys.c |   15 +++++++++++----
- 1 file changed, 11 insertions(+), 4 deletions(-)
-
-Index: linux/kernel/sys.c
-===================================================================
---- linux.orig/kernel/sys.c
-+++ linux/kernel/sys.c
-@@ -325,11 +325,18 @@ EXPORT_SYMBOL_GPL(blocking_notifier_chai
- int blocking_notifier_call_chain(struct blocking_notifier_head *nh,
- 		unsigned long val, void *v)
- {
--	int ret;
-+	int ret = NOTIFY_DONE;
- 
--	down_read(&nh->rwsem);
--	ret = notifier_call_chain(&nh->head, val, v);
--	up_read(&nh->rwsem);
-+	/*
-+	 * We check the head outside the lock, but if this access is
-+	 * racy then it does not matter what the result of the test
-+	 * is, we re-check the list after having taken the lock anyway:
-+	 */
-+	if (rcu_dereference(nh->head)) {
-+		down_read(&nh->rwsem);
-+		ret = notifier_call_chain(&nh->head, val, v);
-+		up_read(&nh->rwsem);
-+	}
- 	return ret;
- }
- 
+-- 
+Cornelia Huck
+Linux for zSeries Developer
+Tel.: +49-7031-16-4837, Mail: cornelia.huck@de.ibm.com
