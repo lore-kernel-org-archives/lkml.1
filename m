@@ -1,80 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932630AbXAWCHQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932515AbXAWCMh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932630AbXAWCHQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jan 2007 21:07:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932622AbXAWCHQ
+	id S932515AbXAWCMh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jan 2007 21:12:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932627AbXAWCMh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jan 2007 21:07:16 -0500
-Received: from mail.suse.de ([195.135.220.2]:40435 "EHLO mx1.suse.de"
+	Mon, 22 Jan 2007 21:12:37 -0500
+Received: from ns1.suse.de ([195.135.220.2]:40687 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932613AbXAWCHO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jan 2007 21:07:14 -0500
-From: Neil Brown <neilb@suse.de>
-To: "Dan Williams" <dan.j.williams@gmail.com>
-Date: Tue, 23 Jan 2007 13:06:40 +1100
-MIME-Version: 1.0
+	id S932515AbXAWCMg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jan 2007 21:12:36 -0500
+Date: Tue, 23 Jan 2007 03:13:27 +0100
+From: Andrea Arcangeli <andrea@suse.de>
+To: Balbir Singh <balbir@in.ibm.com>
+Cc: Niki Hammler <mailinglists@nobaq.net>, linux-kernel@vger.kernel.org,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Subject: Re: Why active list and inactive list?
+Message-ID: <20070123021327.GZ13798@opteron.random>
+References: <45B55286.5060909@nobaq.net> <20070123003939.GY13798@opteron.random> <45B56575.10807@in.ibm.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <17845.28080.887134.987438@notabene.brown>
-Cc: "Chuck Ebbert" <cebbert@redhat.com>,
-       "Justin Piszcz" <jpiszcz@lucidpixels.com>, linux-kernel@vger.kernel.org,
-       linux-raid@vger.kernel.org, xfs@oss.sgi.com
-Subject: Re: Kernel 2.6.19.2 New RAID 5 Bug (oops when writing Samba -> RAID5)
-In-Reply-To: message from Dan Williams on Monday January 22
-References: <Pine.LNX.4.64.0701200718290.29223@p34.internal.lan>
-	<45B5261B.1050104@redhat.com>
-	<17845.13256.284461.992275@notabene.brown>
-	<e9c3a7c20701221744i7f0de470r4c8183dd3bcd20b5@mail.gmail.com>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+Content-Disposition: inline
+In-Reply-To: <45B56575.10807@in.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday January 22, dan.j.williams@gmail.com wrote:
-> On 1/22/07, Neil Brown <neilb@suse.de> wrote:
-> > On Monday January 22, cebbert@redhat.com wrote:
-> > > Justin Piszcz wrote:
-> > > > My .config is attached, please let me know if any other information is
-> > > > needed and please CC (lkml) as I am not on the list, thanks!
-> > > >
-> > > > Running Kernel 2.6.19.2 on a MD RAID5 volume.  Copying files over Samba to
-> > > > the RAID5 running XFS.
-> > > >
-> > > > Any idea what happened here?
-> > ....
-> > > >
-> > > Without digging too deeply, I'd say you've hit the same bug Sami Farin
-> > > and others
-> > > have reported starting with 2.6.19: pages mapped with kmap_atomic()
-> > > become unmapped
-> > > during memcpy() or similar operations.  Try disabling preempt -- that
-> > > seems to be the
-> > > common factor.
-> >
-> > That is exactly the conclusion I had just come to (a kmap_atomic page
-> > must be being unmapped during memcpy).  I wasn't aware that others had
-> > reported it - thanks for that.
-> >
-> > Turning off CONFIG_PREEMPT certainly seems like a good idea.
-> >
-> Coming from an ARM background I am not yet versed in the inner
-> workings of kmap_atomic, but if you have time for a question I am
-> curious as to why spin_lock(&sh->lock)  is not sufficient pre-emption
-> protection for copy_data() in this case?
-> 
+On Tue, Jan 23, 2007 at 07:01:33AM +0530, Balbir Singh wrote:
+> This makes me wonder if it makes sense to split up the LRU into page
+> cache LRU and mapped pages LRU. I see two benefits
+> 1. Currently based on swappiness, we might walk an entire list
+>    searching for page cache pages or mapped pages. With these
+>    lists separated, it should get easier and faster to implement
+>    this scheme
 
-Presumably there is a bug somewhere.
-kmap_atomic itself calls inc_preempt_count so that preemption should
-be disabled at least until the kunmap_atomic is called.
+When I tried that long time ago, I recall I had troubles, but there
+wasn't the reclaim_mapped based on static values so it was even
+harder. However it would be still a problem today to decide when to
+switch from the unmapped to the mapped lru. When reclaim_mapped is
+set, you'll still have to shrink some unmapped page, and by splitting
+you literally lose age information to save some cpu. Eventually you
+risk spending time in trying to free unfreeable pinned pages that sits
+in the unmapped list before finally jumping to the mapped list. So
+you've to add yet another list to get rid of the pinned stuff in the
+unmapped list and I stopped when I had to refile pages from the
+"pinned" list to the unmapped list in irq I/O completion context, now
+it's all spin_lock_irq so it would be more natural at least...
 
-But apparently not.  The symptoms point exactly to the page getting
-unmapped when it shouldn't.  Until that bug is found and fixed, the
-work around of turning of CONFIG_PREEMPT seems to make sense.
+> 2. There is another parallel thread on implementing page cache
+>    limits. If the lists split out, we need not scan the entire
+>    list to find page cache pages to evict them.
 
-Of course it would be great if someone who can easily reproduce this
-bug could do the 'git bisect' thing to find out where the bug crept
-in.....
+BTW I'm unsure about the cache limit thread, the overhead of the vm
+collection shouldn't be an issue, and those tends to hide vm
+inefficiencies.
 
-NeilBrown
+For example Neil has a patch to reduce the writeback cache to 10M-50M
+(much lower than the current 1% minimum) to hide huge unfariness in
+the writeback cache. I think they should mount the fs with -o sync
+instead of using that patch until the unfariness is fixed or
+tunable. The patch itself is fine though but for that problem it only
+looks a workaround. So I at least try to be always quite skeptical
+when I hear about cache "fixed size limiting" patches that improve
+responsiveness or performance ;)
+
+> Of course I might be missing something (some piece of history)
+
+Partly ;) Code was very different back then, today it would be easier
+thanks to reclaim_mapped but the partial loss of age information and
+potential loss of cpu in a pinned&unmapped walk would probably remain.
