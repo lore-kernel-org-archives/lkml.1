@@ -1,79 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752001AbXAXQfI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752004AbXAXQh5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752001AbXAXQfI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jan 2007 11:35:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752003AbXAXQfI
+	id S1752004AbXAXQh5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jan 2007 11:37:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752008AbXAXQh5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jan 2007 11:35:08 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:38845 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752001AbXAXQfG (ORCPT
+	Wed, 24 Jan 2007 11:37:57 -0500
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:2213 "HELO
+	mailout.stusta.mhn.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752004AbXAXQh4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jan 2007 11:35:06 -0500
-Date: Wed, 24 Jan 2007 08:30:47 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Andrew Morton <akpm@osdl.org>, Ingo Molnar <mingo@elte.hu>,
-       rmk+lkml@arm.linux.org.uk, linux-kernel@vger.kernel.org
-Subject: Re: [patch] fix emergency reboot: call reboot notifier list if
- possible
-Message-Id: <20070124083047.37b09f2c.randy.dunlap@oracle.com>
-In-Reply-To: <20070123195712.GB6596@ucw.cz>
-References: <20070117091319.GA30036@elte.hu>
-	<20070117092233.GA30197@flint.arm.linux.org.uk>
-	<20070117093917.GA7538@elte.hu>
-	<20070117020343.8622e44d.akpm@osdl.org>
-	<20070123195712.GB6596@ucw.cz>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.0 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+	Wed, 24 Jan 2007 11:37:56 -0500
+Date: Wed, 24 Jan 2007 17:38:01 +0100
+From: Adrian Bunk <bunk@stusta.de>
+To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+Cc: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       takada <takada@mbf.nifty.com>, Jordan Crouse <jordan.crouse@amd.com>
+Subject: Re: 2.6.20-rc5: known unfixed regressions (v3) (part 2)
+Message-ID: <20070124163801.GM17836@stusta.de>
+References: <Pine.LNX.4.64.0701121424520.11200@woody.osdl.org> <20070124154725.GK17836@stusta.de> <20070124160631.GE7582@csclub.uwaterloo.ca>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070124160631.GE7582@csclub.uwaterloo.ca>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 23 Jan 2007 19:57:12 +0000 Pavel Machek wrote:
-
-> Hi!
+On Wed, Jan 24, 2007 at 11:06:31AM -0500, Lennart Sorensen wrote:
+> On Wed, Jan 24, 2007 at 04:47:25PM +0100, Adrian Bunk wrote:
+> > Subject    : fix geode_configure()
+> > References : http://lkml.org/lkml/2007/1/9/216
+> > Submitter  : Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+> > Caused-By  : takada <takada@mbf.nifty.com>
+> >              commit e4f0ae0ea63caceff37a13f281a72652b7ea71ba
+> > Handled-By : takada <takada@mbf.nifty.com>
+> >              Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+> > Status     : patches are being discussed
 > 
-> > > > On Wed, Jan 17, 2007 at 10:13:19AM +0100, Ingo Molnar wrote:
-> > > > > we dont call the reboot notifiers during emergency reboot mainly because 
-> > > > > it could be called from atomic context and reboot notifiers are a 
-> > > > > blocking notifier list. But actually the kernel is often perfectly 
-> > > > > reschedulable in this stage, so we could as well process the 
-> > > > > reboot_notifier_list.
-> > > > 
-> > > > My experience has been that when there has been the need to use this
-> > > > facility, the kernel hasn't been reschedulable. [...]
-> > > 
-> > > this decision is totally automatic - so if your situation happens and 
-> > > the kernel isnt reschedulable, then the notifier chain wont be called 
-> > > and nothing changes from your perspective. Hm, perhaps this should be 
-> > > dependent on CONFIG_PREEMPT, to make sure preempt_count() is reliable?
-> > > 
-> > > but from my perspective this patch fixes a real regression.
-> > > 
-> > > updated patch attached below.
-> > > 
-> > 
-> > Making it dependent upon CONFIG_PREEMPT seems a bit sucky.  Perhaps pass in
-> > some "you were called from /proc/sysrq-trigger" notification?
-> 
-> What about adding 'B' with 'reboot with notifications' meaning?
+> I wouldn't call this a regression.  It appears to go way back.  I also
+> didn't find it, I just commented on it since it does affect the platform
+> I work on.
 
-if I am reading 'B' vs. 'b' correctly:
+Was the removed
+  setCx86(CX86_CCR3, ccr3);
+without any effects?
 
-sysrq key codes are currently all lower case only.
-Of course, that could be changed to support upper case.
-That would require sysrq help messages in a different format
-(currently the keycode for the action is Capitalized, e.g.,
-b => reBoot).  And I suspect that it would allow some users to
-enter b vs. B or B vs. b etc. unintentionally.
-In any case, the sysrq_key_table could easily fill up soon,
-so we may be force to support UpperCase codes.
+> Len Sorensen
 
----
-~Randy
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
