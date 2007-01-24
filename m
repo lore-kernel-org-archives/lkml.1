@@ -1,80 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751303AbXAXMOL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751315AbXAXMXe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751303AbXAXMOL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jan 2007 07:14:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751315AbXAXMOL
+	id S1751315AbXAXMXe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jan 2007 07:23:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751318AbXAXMXe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jan 2007 07:14:11 -0500
-Received: from [213.46.243.15] ([213.46.243.15]:15484 "EHLO
-	amsfep18-int.chello.nl" rhost-flags-FAIL-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751303AbXAXMOK (ORCPT
+	Wed, 24 Jan 2007 07:23:34 -0500
+Received: from mail1.key-systems.net ([81.3.43.211]:33801 "HELO
+	mail1.key-systems.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751315AbXAXMXe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jan 2007 07:14:10 -0500
-Subject: Re: [PATCH 1/2]: Fix BUG in cancel_dirty_pages on XFS
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: David Chinner <dgc@sgi.com>
-Cc: linux-kernel@vger.kernel.org, xfs@oss.sgi.com, akpm@osdl.org
-In-Reply-To: <20070123223702.GF33919298@melbourne.sgi.com>
-References: <20070123223702.GF33919298@melbourne.sgi.com>
-Content-Type: text/plain
-Date: Wed, 24 Jan 2007 13:13:55 +0100
-Message-Id: <1169640835.6189.14.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 24 Jan 2007 07:23:34 -0500
+Message-ID: <45B74FC2.7090200@scientia.net>
+Date: Wed, 24 Jan 2007 13:23:30 +0100
+From: Christoph Anton Mitterer <calestyo@scientia.net>
+User-Agent: Icedove 1.5.0.9 (X11/20061220)
+MIME-Version: 1.0
+To: Alan <alan@lxorguk.ukuu.org.uk>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Strange
+References: <45B69D0C.8030501@scientia.net>	<20070124000905.3a7b053d@localhost.localdomain>	<45B6A1D4.7020906@scientia.net> <20070124011734.47a06a25@localhost.localdomain>
+In-Reply-To: <20070124011734.47a06a25@localhost.localdomain>
+Content-Type: multipart/mixed;
+ boundary="------------050603010501070005080506"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-01-24 at 09:37 +1100, David Chinner wrote:
-> With the recent changes to cancel_dirty_pages(), XFS will
-> dump warnings in the syslog because it can truncate_inode_pages()
-> on dirty mapped pages.
-> 
-> I've determined that this is indeed correct behaviour for XFS
-> as this can happen in the case of races on mmap()d files with
-> direct I/O. In this case when we do a direct I/O read, we
-> flush the dirty pages to disk, then truncate them out of the
-> page cache. Unfortunately, between the flush and the truncate
-> the mmap could dirty the page again. At this point we toss a
-> dirty page that is mapped.
+This is a multi-part message in MIME format.
+--------------050603010501070005080506
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-This sounds iffy, why not just leave the page in the pagecache if its
-mapped anyway?
-
-> None of the existing functions for truncating pages or invalidating
-> pages work in this situation. Invalidating a page only works for
-> non-dirty pages with non-dirty buffers, and they only work for
-> whole pages and XFS requires partial page truncation.
-> 
-> On top of that the page invalidation functions don't actually
-> call into the filesystem to invalidate the page and so the filesystem
-> can't actually invalidate the page properly (e.g. do stuff based on
-> private buffer head flags).
-
-Have you seen the new launder_page() a_op? called from
-invalidate_inode_pages2_range()
-
-> So that leaves us needing to use truncate semantics and the problem
-> is that none of them unmap pages in a non-racy manner - if they
-> unmap pages they do it separately to the truncate of the page,
-> leading to races with mmap redirtying the page between the unmap and
-> the truncate ofthe page.
-
-Isn't there still a race where the page fault path doesn't yet lock the
-page and can just reinsert it?
-
-Nick's pagefault rework should rid us of this by always locking the page
-in the fault path.
-
-> Hence we need a truncate function that unmaps the pages while they
-> are locked for truncate in a similar fashion to
-> invalidate_inode_pages2_range(). The following patch (unchanged from
-> the last time it was sent) does this. The XFS changes are in a
-> second patch.
-> 
-> The patch has been test on ia64 and x86-64 via XFSQA and a lot
-> of fsx mixing mmap and direct I/O operations.
-> 
-> Signed-off-by: Dave Chinner <dgc@sgi.com>
+Alan wrote:
+>> I knew of course about libdvdcss but I've never noticed before that the
+>> kernel issues these error messages to the syslog.
+>>     
+> Various bits of random desktop junk poll drives to see what has appeared
+> and stick icons on desktops. Some of them do stuff that produces messages
+> like this because they aren't careful how they probe and what they do.
+>   
+Yes of course, but I've disabled that end-user stuff, and for
+convenience even tested the whole thing with runlevel 1 (single user).
 
 
+>> So you say this is normal?! But the problem with ejecting isn't probably
+>> normal.
+>>     
+> Eject is application controllable. Most movie players re-enable the
+> button.
+>   
+Yes I knew,.. I just wondered because that worked even when no player
+was started at all. But I found out that this must depend on GNOME,
+because when mount + eject-button from single-user,.. the disc is not
+ejected.
+Anyway it is ejected (+unmounted) when using the eject command (but I
+assume that this is normal).
+
+Thanks,
+Chris.
+
+--------------050603010501070005080506
+Content-Type: text/x-vcard; charset=utf-8;
+ name="calestyo.vcf"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment;
+ filename="calestyo.vcf"
+
+YmVnaW46dmNhcmQNCmZuOk1pdHRlcmVyLCBDaHJpc3RvcGggQW50b24NCm46TWl0dGVyZXI7
+Q2hyaXN0b3BoIEFudG9uDQplbWFpbDtpbnRlcm5ldDpjYWxlc3R5b0BzY2llbnRpYS5uZXQN
+CngtbW96aWxsYS1odG1sOlRSVUUNCnZlcnNpb246Mi4xDQplbmQ6dmNhcmQNCg0K
+--------------050603010501070005080506--
