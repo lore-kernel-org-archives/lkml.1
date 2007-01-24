@@ -1,68 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752119AbXAXS1L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750975AbXAXS5a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752119AbXAXS1L (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jan 2007 13:27:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752120AbXAXS1L
+	id S1750975AbXAXS5a (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jan 2007 13:57:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751308AbXAXS5a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jan 2007 13:27:11 -0500
-Received: from wx-out-0506.google.com ([66.249.82.224]:43267 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752119AbXAXS1K (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jan 2007 13:27:10 -0500
-Message-ID: <8f3aa8d60701241027p6674915avbc0f9b37383cce32@mail.gmail.com>
-Date: Wed, 24 Jan 2007 10:27:09 -0800
-From: "Martin Bligh" <mbligh@mbligh.org>
-To: "Theodore Tso" <tytso@mit.edu>, "Sunil Naidu" <akula2.shark@gmail.com>,
-       "Josh Boyer" <jwboyer@gmail.com>, "James Morris" <jmorris@namei.org>,
-       "Alan Cox" <alan@redhat.com>, "Christoph Hellwig" <hch@lst.de>,
-       ksummit-2006-discuss@thunk.org, linux-kernel@vger.kernel.org
-Subject: Re: [Ksummit-2006-discuss] 2007 Linux Kernel Summit
-In-Reply-To: <8f3aa8d60701241018o6d4d8c37jb20ddb49f47e3eec@mail.gmail.com>
+	Wed, 24 Jan 2007 13:57:30 -0500
+Received: from mailhub.sw.ru ([195.214.233.200]:45803 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750975AbXAXS53 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jan 2007 13:57:29 -0500
+To: linux-kernel@vger.kernel.org
+CC: <devel@openvz.org>, Andrew Morton <akpm@osdl.org>
+Subject: [PATH][RFC] mm: Move common segments checks to separate function
+From: Dmitriy Monakhov <dmonakhov@openvz.org>
+Date: Wed, 24 Jan 2007 21:57:33 +0300
+Message-ID: <87tzygntgi.fsf@sw.ru>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <E1H8tIr-0006QH-Bg@candygram.thunk.org>
-	 <20070122110711.GA5917@lst.de>
-	 <20070122124502.GC30124@devserv.devel.redhat.com>
-	 <8355959a0701231152n1b4238f8ob54ea1792f299ca5@mail.gmail.com>
-	 <Pine.LNX.4.64.0701231622260.29810@d.namei>
-	 <625fc13d0701231339j523306b6w923c695a3ed0493e@mail.gmail.com>
-	 <8355959a0701231511o4f53796ewd5e403b640a4975c@mail.gmail.com>
-	 <20070124014223.GA26186@thunk.org>
-	 <8f3aa8d60701241018o6d4d8c37jb20ddb49f47e3eec@mail.gmail.com>
+Content-Type: multipart/mixed; boundary="=-=-="
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 1/24/07, Martin Bligh <mbligh@mbligh.org> wrote:
-> Two years ago, maddog tried to convince me that Brazil would be a
-> perfect place to hold a kernel summit, and that the Brazillian
-> government was 100% behind linux, and could provide a wonderful
-> location, yadda, yadda, yadda.  What I told him was that the only way
-> I could imagine it working would be if the Brazillian government was
-> willing to pay travel costs for all 80+ kernel summit attendees to fly
-> from whatever their home airport to Brazil.  That way, we don't have
-> to deal with the pushback from corporate travel budget keepers for
-> having to pay $$$ for travel to places around the world.  When I told
->  maddog that, presumably he went back to his Brazillian contacts and we
-> never heard back from him about moving the kernel summit to Brazil again.  :-)
->
-> I would suspect it would be a similar issue with India.  I'd love to
-> have the opportunity to visit Bangalore (or should I say Bengaluru? :-).
-> I also know that it's extremely unlikely that my employer would agree
-> to pay for me to fly there, not to mention all of the other folks that
-> would need to go to the K-S.  But hey, if you think that there are
-> organizations in India who would be willing to pay travel for _all_ of
-> the K-S attendees (preferably business class travel :-), let's
-> talk....
+--=-=-=
 
-It's not just the cost of travel by any means - the extra travel time and
-jetlag involved is huge - having everybody sleep through a conference is
-distinctly less productive.
+Move common segments checks from  __generic_file_aio_{read,write}_nolock()
+to separate helper function generic_segment_checks(). 
 
-One of the advantages of the EST timezone locations is that it's at least
-reasonably central to most of the players involved. Obviously, wherever
-we hold it, some people get screwed ... the question is what screws
-the fewest people the least. Personally, I'd prefer PST for purely selfish
-reasons, but ... ;-)
+Signed-off-by: Dmitriy Monakhov <dmonakhov@openvz.org>
+-------
+
+--=-=-=
+Content-Disposition: inline; filename=diff-ms-mm-segment-checks-cleanup
+
+diff --git a/mm/filemap.c b/mm/filemap.c
+index 8332c77..d01abb6 100644
+--- a/mm/filemap.c
++++ b/mm/filemap.c
+@@ -1126,6 +1126,38 @@ success:
+ 	return size;
+ }
+ 
++/*
++ * Performs necessary segments checks.
++ * Returns bytes count or appropriate error code that caller should return.
++ */
++static ssize_t 
++generic_segment_checks(unsigned long nr_segs, const struct iovec *iov,
++			unsigned long access_flag)
++{
++	size_t bcount;
++	unsigned long	seg;
++	bcount = 0;
++	for (seg = 0; seg < nr_segs; seg++) {
++		const struct iovec *iv = &iov[seg];
++		
++		/*
++		 * If any segment has a negative length, or the cumulative
++		 * length ever wraps negative then return -EINVAL.
++		 */
++		bcount += iv->iov_len;
++		if (unlikely((ssize_t)(bcount|iv->iov_len) < 0))
++			return -EINVAL;
++		if (access_ok(access_flag, iv->iov_base, iv->iov_len))
++			continue;
++		if (seg == 0)
++			return -EFAULT;
++		nr_segs = seg;
++		bcount -= iv->iov_len;	/* This segment is no good */
++		break;
++	}
++	return bcount;
++}
++
+ /**
+  * generic_file_aio_read - generic filesystem read routine
+  * @iocb:	kernel I/O control block
+@@ -1146,25 +1178,7 @@ generic_file_aio_read(struct kiocb *iocb
+ 	size_t count;
+ 	loff_t *ppos = &iocb->ki_pos;
+ 
+-	count = 0;
+-	for (seg = 0; seg < nr_segs; seg++) {
+-		const struct iovec *iv = &iov[seg];
+-
+-		/*
+-		 * If any segment has a negative length, or the cumulative
+-		 * length ever wraps negative then return -EINVAL.
+-		 */
+-		count += iv->iov_len;
+-		if (unlikely((ssize_t)(count|iv->iov_len) < 0))
+-			return -EINVAL;
+-		if (access_ok(VERIFY_WRITE, iv->iov_base, iv->iov_len))
+-			continue;
+-		if (seg == 0)
+-			return -EFAULT;
+-		nr_segs = seg;
+-		count -= iv->iov_len;	/* This segment is no good */
+-		break;
+-	}
++	count = generic_segment_checks(nr_segs, iov, VERIFY_WRITE);
+ 
+ 	/* coalesce the iovecs and go direct-to-BIO for O_DIRECT */
+ 	if (filp->f_flags & O_DIRECT) {
+@@ -2225,31 +2239,11 @@ __generic_file_aio_write_nolock(struct k
+ 	size_t ocount;		/* original count */
+ 	size_t count;		/* after file limit checks */
+ 	struct inode 	*inode = mapping->host;
+-	unsigned long	seg;
+ 	loff_t		pos;
+ 	ssize_t		written;
+ 	ssize_t		err;
+ 
+-	ocount = 0;
+-	for (seg = 0; seg < nr_segs; seg++) {
+-		const struct iovec *iv = &iov[seg];
+-
+-		/*
+-		 * If any segment has a negative length, or the cumulative
+-		 * length ever wraps negative then return -EINVAL.
+-		 */
+-		ocount += iv->iov_len;
+-		if (unlikely((ssize_t)(ocount|iv->iov_len) < 0))
+-			return -EINVAL;
+-		if (access_ok(VERIFY_READ, iv->iov_base, iv->iov_len))
+-			continue;
+-		if (seg == 0)
+-			return -EFAULT;
+-		nr_segs = seg;
+-		ocount -= iv->iov_len;	/* This segment is no good */
+-		break;
+-	}
+-
++	ocount = generic_segment_checks(nr_segs, iov, VERIFY_READ);
+ 	count = ocount;
+ 	pos = *ppos;
+ 
+
+--=-=-=--
+
