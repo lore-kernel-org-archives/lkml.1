@@ -1,54 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030190AbXAXDQE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030191AbXAXDUX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030190AbXAXDQE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jan 2007 22:16:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030243AbXAXDQE
+	id S1030191AbXAXDUX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jan 2007 22:20:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030229AbXAXDUX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jan 2007 22:16:04 -0500
-Received: from omx1-ext.sgi.com ([192.48.179.11]:55957 "EHLO omx1.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1030190AbXAXDQC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jan 2007 22:16:02 -0500
-Date: Tue, 23 Jan 2007 19:14:02 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-cc: Aubrey Li <aubreylee@gmail.com>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Robin Getz <rgetz@blackfin.uclinux.org>,
-       "Henn, erich, Michael" <Michael.Hennerich@analog.com>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org, dgc@sgi.com
+	Tue, 23 Jan 2007 22:20:23 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:32816 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030191AbXAXDUW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jan 2007 22:20:22 -0500
+Date: Wed, 24 Jan 2007 12:13:18 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: aubreylee@gmail.com, svaidy@linux.vnet.ibm.com, nickpiggin@yahoo.com.au,
+       rgetz@blackfin.uclinux.org, Michael.Hennerich@analog.com,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
 Subject: Re: [RFC] Limit the size of the pagecache
-In-Reply-To: <45B6CBD9.80600@yahoo.com.au>
-Message-ID: <Pine.LNX.4.64.0701231908420.6123@schroedinger.engr.sgi.com>
+Message-Id: <20070124121318.6874f003.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <Pine.LNX.4.64.0701231645260.5239@schroedinger.engr.sgi.com>
 References: <Pine.LNX.4.64.0701231645260.5239@schroedinger.engr.sgi.com>
- <45B6CBD9.80600@yahoo.com.au>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Organization: Fujitsu
+X-Mailer: Sylpheed version 2.2.0 (GTK+ 2.6.10; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 24 Jan 2007, Nick Piggin wrote:
 
-> > 1. Insure that anonymous pages that may contain performance
-> >    critical data is never subject to swap.
-> > 
-> > 2. Insure rapid turnaround of pages in the cache.
-> 
-> So if these two aren't working properly at 100%, then I want to know the
-> reason why. Or at least see what the workload and the numbers look like.
+one more thing...
 
-The reason for the anonymous page may be because data is rarely touched 
-but for some reason the pages must stay in memory. Rapid turnaround is 
-just one of the reason that I vaguely recall but I never really 
-understood what the purpose was.
+On Tue, 23 Jan 2007 16:49:55 -0800 (PST)
+Christoph Lameter <clameter@sgi.com> wrote:
 
-> > 3. Reserve memory for other uses? (Aubrey?)
-> 
-> Maybe. This is still a bad hack, and I don't like to legitimise such use
-> though. I hope Aubrey isn't relying on this alone for his device to work
-> because his customers might end up hitting fragmentation problems sooner
-> or later.
+> @@ -1168,6 +1170,11 @@ zonelist_scan:
+>  			!cpuset_zone_allowed_softwall(zone, gfp_mask))
+>  				goto try_next_zone;
+>  
+> +		if ((gfp_mask & __GFP_PAGECACHE) &&
+> +				zone_page_state(zone, NR_FILE_PAGES) >
+> +					zone->max_pagecache_pages)
+> +				goto try_next_zone;
+> +
 
-I surely wish that Aubrey would give us some more clarity on 
-how this should work. Maybe the others who want this feature could also 
-speak up? I am not that clear on its purpose.
+I don't prefer to cause zone fallback by this.
+This may use ZONE_DMA before exhausing ZONE_NORMAL (ia64),
+ZONE_NORMAL before ZONE_HIGHMEM (x86).
+Very rapid page allocation can eats some amount of lower zone.
+
+Regards,
+-Kame
+
