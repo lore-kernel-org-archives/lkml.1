@@ -1,49 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932735AbXAXVsm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752084AbXAXVy3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932735AbXAXVsm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jan 2007 16:48:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932734AbXAXVsm
+	id S1752084AbXAXVy3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jan 2007 16:54:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932734AbXAXVy3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jan 2007 16:48:42 -0500
-Received: from caffeine.uwaterloo.ca ([129.97.134.17]:44007 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932735AbXAXVsl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jan 2007 16:48:41 -0500
-Date: Wed, 24 Jan 2007 16:48:40 -0500
-To: Paul Fulghum <paulkf@microgate.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Strange problem with tty layer
-Message-ID: <20070124214840.GC7584@csclub.uwaterloo.ca>
-References: <20070124204009.GA7584@csclub.uwaterloo.ca> <45B7CDB5.7020909@microgate.com>
+	Wed, 24 Jan 2007 16:54:29 -0500
+Received: from gate.crashing.org ([63.228.1.57]:43889 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752084AbXAXVy2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jan 2007 16:54:28 -0500
+Subject: Re: [PATCH] gpu/radeonfb: add GPU support to radeonfb
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Roger While <simrw@sim-basis.de>
+Cc: linux-kernel@vger.kernel.org, airlied@linux.ie
+In-Reply-To: <6.1.1.1.2.20070124172600.04f40dc8@192.168.6.12>
+References: <6.1.1.1.2.20070124172600.04f40dc8@192.168.6.12>
+Content-Type: text/plain
+Date: Thu, 25 Jan 2007 08:54:08 +1100
+Message-Id: <1169675648.18754.92.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <45B7CDB5.7020909@microgate.com>
-User-Agent: Mutt/1.5.9i
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+X-Mailer: Evolution 2.8.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 24, 2007 at 03:20:53PM -0600, Paul Fulghum wrote:
-> In 2.6.16 the tty buffering pushes data to the line
-> discipline without regard to tty->receive_room.
-> If the line discipline can't keep up, the data gets dropped.
-> I observed this data loss at higher speeds when
-> placing the system under heavy load.
+On Wed, 2007-01-24 at 17:30 +0100, Roger While wrote:
+> @@ -241,9 +241,9 @@ void radeonfb_engine_reset(struct radeon
+>   	INREG(HOST_PATH_CNTL);
+>   	OUTREG(HOST_PATH_CNTL, host_path_cntl);
 > 
-> 2.6.18 added code to respect tty->receive_room.
+> -	if (rinfo->family != CHIP_FAMILY_R300 ||
+> -	    rinfo->family != CHIP_FAMILY_R350 ||
+> -	    rinfo->family != CHIP_FAMILY_RV350)
+> +	if (rinfo->gpu_info->family != CHIP_FAMILY_R300 ||
+> +	    rinfo->gpu_info->family != CHIP_FAMILY_R350 ||
+> +	    rinfo->gpu_info->family != CHIP_FAMILY_RV350)
+>   		OUTREG(RBBM_SOFT_RESET, rbbm_soft_reset);
 > 
-> This may or may not be your problem, but you should
-> be able to check by adding a conditional printk
-> to drivers/char/tty_io.c:flush_to_ldisc()
-> 
-> If tty->receive_room is less than the size of the buffer
-> passed to disc->receive_buf() then you are losing data.
+> Alarm bells going off - "!=" combined with "||" ?
+> Looks like a reset will always be done.
 
-Sounds plausible.  Certainly higher cpu load makes the problem occour
-more often, and making the system slower made it worse too.  I will take
-a look at the tty_io.c in 2.6.18 and compare it against 2.6.16.
+Wow, good catch ! That's a bug that has been in radeonfb pretty much for
+ever ! Might have come from earlier versions of X before we had
+IS_R300_VARIANT...
 
---
-Len Sorensen
+B
+
