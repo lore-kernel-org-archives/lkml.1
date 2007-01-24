@@ -1,73 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751553AbXAXPyl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751546AbXAXP4g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751553AbXAXPyl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jan 2007 10:54:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751934AbXAXPyl
+	id S1751546AbXAXP4g (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jan 2007 10:56:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751542AbXAXP4f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jan 2007 10:54:41 -0500
-Received: from h155.mvista.com ([63.81.120.158]:20665 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1751553AbXAXPyk (ORCPT
+	Wed, 24 Jan 2007 10:56:35 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:10321 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751401AbXAXP4e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jan 2007 10:54:40 -0500
-Subject: Re: [patch 00/46] High resolution timer / dynamic tick update
-From: Daniel Walker <dwalker@mvista.com>
-To: tglx@linutronix.de
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@osdl.org>,
-       LKML <linux-kernel@vger.kernel.org>, John Stultz <johnstul@us.ibm.com>,
-       Arjan van de Veen <arjan@infradead.org>,
-       Roman Zippel <zippel@linux-m68k.org>
-In-Reply-To: <1169637237.21181.164.camel@localhost.localdomain>
-References: <20070123211159.178138000@localhost.localdomain>
-	 <1169604991.19471.95.camel@imap.mvista.com>
-	 <20070124070701.GA17654@elte.hu>
-	 <1169631016.19471.175.camel@imap.mvista.com>
-	 <20070124095157.GA21346@elte.hu>
-	 <1169634220.19471.197.camel@imap.mvista.com>
-	 <1169637237.21181.164.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Wed, 24 Jan 2007 07:53:21 -0800
-Message-Id: <1169654001.19471.231.camel@imap.mvista.com>
+	Wed, 24 Jan 2007 10:56:34 -0500
+Date: Wed, 24 Jan 2007 07:51:45 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: Andrew Morton <akpm@osdl.org>, Alexey Dobriyan <adobriyan@gmail.com>,
+       adaplas@pol.net, linux-kernel@vger.kernel.org,
+       Jordan Crouse <jordan.crouse@amd.com>
+Subject: Re: [Linux-fbdev-devel] [PATCH] Recognize video=gx1fb:... option
+Message-Id: <20070124075145.8481a9c3.randy.dunlap@oracle.com>
+In-Reply-To: <20070124004826.0d1adffe.akpm@osdl.org>
+References: <20070119211051.GC5013@martell.zuzino.mipt.ru>
+	<20070124004826.0d1adffe.akpm@osdl.org>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.0 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-01-24 at 12:13 +0100, Thomas Gleixner wrote:
-> On Wed, 2007-01-24 at 02:23 -0800, Daniel Walker wrote:
-> > > the 10th major iteration to his codebase. If you have cleanups to his 
-> > > code then please work with Thomas to get your changes into his tree.
-> > 
-> > My code is for clocksouces/timekeeping which has been unrelated to HRT
-> > up until recently. In my original email I suggested that the two tree's
-> > be merged ,or placed on top of each other, which I still think is a good
-> > idea.
+On Wed, 24 Jan 2007 00:48:26 -0800 Andrew Morton wrote:
+
+> On Sat, 20 Jan 2007 00:10:51 +0300
+> Alexey Dobriyan <adobriyan@gmail.com> wrote:
 > 
-> This would require, that your patches are solving a real problem. The
-> last time I looked at them was before they were dropped from -mm. I
-> disagreed with your intent of sched clock changes back then and I still
-> do.
+> > Juergen Beisert reported that the following option doesn't work for him
+> > 
+> > 	video=gx1fb:1024x768-16@60
+> > 
+> > though sisfb was able to parse similar option correctly.
+> > 
+> 
+> And does this patch fix it for him? ;)
 
-My patch set was considered for -mm , but was never included. Andrew
-only stop considering my set because I obsoleted them.
+Yes, Juergen replied to the patch:
 
-My patches are almost all cleaning up the interface. Adding a generic
-sched_clock is just a by product of the clean up. Your changes just add
-more mess/confusion that would need to be handled later.
+Thank you very much. Yes it works. I tried these kernel parameters:
 
-> OTOH, I needed a clean solution for the TSC verification to get rid of
-> the hardwired hackery in tsc.c. The flag change is just used for this
-> and can be extended for other purposes.
+1) video=gx1fb:mode:1280x1024-16@60,crt:1
+  -> CRT was active, 160x64 console
+2) video=gx1fb:mode:1024x768-16@60,crt:1
+  -> CRT was active, 128x48 console
+3) video=gx1fb:mode:800x600-16@60,crt:0,panel:800x600
+  -> CRT was disabled, 100x37 console
+4) video=gx1fb:mode:1024x768-16@60,crt:0,panel:800x600
+  -> CRT was disabled, 80x25 console
 
-I don't see a justification for the level of changes your making. Your
-making substantial changes to a small clocksource interface so you can
-check the output of one clock against another clock. That process is
-designed specifically for the TSC and only used by the TSC .. It's not
-likely that process would be needed on any other architectures.
+Sorry, I have no flatpanel, so I cannot test if the "panel" option works 
+correctly. But somethings changes when I tried different values (see 3 and 
+4).
 
-So your really just adding a bunch of generic overhead to the detriment
-of the interface.
+Regards
+Juergen
 
-Daniel
 
+---
+~Randy
