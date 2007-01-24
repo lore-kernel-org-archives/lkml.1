@@ -1,52 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750925AbXAXKEK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750973AbXAXKUk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750925AbXAXKEK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jan 2007 05:04:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750942AbXAXKEK
+	id S1750973AbXAXKUk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jan 2007 05:20:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750977AbXAXKUk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jan 2007 05:04:10 -0500
-Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:41018 "EHLO
-	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750925AbXAXKEI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jan 2007 05:04:08 -0500
-Message-ID: <45B72F13.4040707@drzeus.cx>
-Date: Wed, 24 Jan 2007 11:04:03 +0100
-From: Pierre Ossman <drzeus-mmc@drzeus.cx>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061223)
+	Wed, 24 Jan 2007 05:20:40 -0500
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:1131 "HELO
+	mailout.stusta.mhn.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750959AbXAXKUj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jan 2007 05:20:39 -0500
+Date: Wed, 24 Jan 2007 11:20:44 +0100
+From: Adrian Bunk <bunk@stusta.de>
+To: David Miller <davem@davemloft.net>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] process include/linux/if_{addr,link}.h with unifdef
+Message-ID: <20070124102044.GG17836@stusta.de>
+References: <20070121191319.GO9093@stusta.de> <20070123.220517.115910657.davem@davemloft.net>
 MIME-Version: 1.0
-To: Manuel Lauss <mano@roarinelk.homelinux.net>
-CC: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] MMC: au1xmmc R6 response support
-References: <20070123100814.GA5001@roarinelk.homelinux.net> <45B65A73.90308@drzeus.cx> <20070124055202.GA6446@roarinelk.homelinux.net>
-In-Reply-To: <20070124055202.GA6446@roarinelk.homelinux.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070123.220517.115910657.davem@davemloft.net>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Manuel Lauss wrote:
+On Tue, Jan 23, 2007 at 10:05:17PM -0800, David Miller wrote:
+> From: Adrian Bunk <bunk@stusta.de>
+> Date: Sun, 21 Jan 2007 20:13:19 +0100
 > 
-> not in my version of 2.6.20-rc5 (and 2.6.19):
+> > After commit d3dcc077bf88806201093f86325ec656e4dbfbce, 
+> > include/linux/if_{addr,link}.h should be processed with unifdef.
+> > 
+> > Signed-off-by: Adrian Bunk <bunk@stusta.de>
 > 
-
-HEAD has this fixed. Every spec I can get my hands on states that R1 and
-R6 have the same format. So it sounds like this controller is doing
-something stupid.
-
+> Applied, thanks Adrian.
 > 
-> Without the patch, SD card detection stops with CMD7 returning error.
+> I believe at least the 2.6.19 -stable branch will need
+> this too, right?  Please submit to -stable as needed,
+> and feel free to add my sign-off:
 > 
+> Signed-off-by: David S. Miller <davem@davemloft.net>
 
-Can I see a dump with MMC_DEBUG enabled?
+All my patch does is to remove "#ifndef __KERNEL__"'s around userspace 
+#define's from the userspace headers, so it's purely cosmetical.
 
-On a related note... Would you, or anyone else you know, be willing to
-sign up as official maintainer of this driver? Otherwise I'll have to
-mark it as unmaintained.
+Except when userspace wrongly defines __KERNEL__, no 
+header-y<->unifdef-y should ever have any non-cosmetical effect.
 
-Rgds
+That said, we really want what I called "cosmetical" - not having
+"#if{,n}def __KERNEL__" in any userspace headers - it's simply that this 
+is not a serious bug.
+
+cu
+Adrian
+
 -- 
-     -- Pierre Ossman
 
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  PulseAudio, core developer          http://pulseaudio.org
-  rdesktop, core developer          http://www.rdesktop.org
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
