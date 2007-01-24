@@ -1,80 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750912AbXAXPWJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750957AbXAXP1f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750912AbXAXPWJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jan 2007 10:22:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750914AbXAXPWJ
+	id S1750957AbXAXP1f (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jan 2007 10:27:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751154AbXAXP1f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jan 2007 10:22:09 -0500
-Received: from pfx2.jmh.fr ([194.153.89.55]:56360 "EHLO pfx2.jmh.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750912AbXAXPWI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jan 2007 10:22:08 -0500
-From: Eric Dumazet <dada1@cosmosbay.com>
-To: Jeff Layton <jlayton@redhat.com>
-Subject: Re: [PATCH 0/3] i_ino uniqueness: alternate approach -- hash the inodes
-Date: Wed, 24 Jan 2007 16:21:44 +0100
-User-Agent: KMail/1.9.5
-Cc: Andrew Morton <akpm@osdl.org>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <200701161857.l0GIvcaA016196@dantu.rdu.redhat.com> <20070123204648.204b1834.akpm@osdl.org> <45B76BAC.4040408@redhat.com>
-In-Reply-To: <45B76BAC.4040408@redhat.com>
+	Wed, 24 Jan 2007 10:27:35 -0500
+Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:41035 "EHLO
+	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750957AbXAXP1e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jan 2007 10:27:34 -0500
+Message-ID: <45B77AE4.2010605@drzeus.cx>
+Date: Wed, 24 Jan 2007 16:27:32 +0100
+From: Pierre Ossman <drzeus-list@drzeus.cx>
+User-Agent: Thunderbird 1.5.0.9 (X11/20061223)
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200701241621.44923.dada1@cosmosbay.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Petr Vandrovec <vandrove@vc.cvut.cz>
+CC: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: NCPFS and brittle connections
+References: <459D1794.2060009@drzeus.cx> <459D38DA.4030803@vc.cvut.cz> <459D55E3.4000905@drzeus.cx> <459E01B2.50309@vc.cvut.cz>
+In-Reply-To: <459E01B2.50309@vc.cvut.cz>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 24 January 2007 15:22, Jeff Layton wrote:
-> Andrew Morton wrote:
-> > What is the additional overhead, expressed in relative terms?  ie: as a
-> > percentage?
+Sorry this took some time, I've been busy with other things.
+
+Petr Vandrovec wrote:
 >
-> Short answer: ~3-4% in a not very scientific test.
+> Unfortunately NCP does not run on top of TCP stream, but on top of
+> IPX/UDP, and so dropping reply is not sufficient - you must continue
+> resending request (so you must buffer it somewhere...) until you get
+> result from server - after you receive answer from server, you can
+> finally throw away both request & reply, and move on.
 >
-> Long answer: I timed 3 different runs of a program that created and then
-> closed a pipe 10 million times on a patched and unpatched kernel. I then
-> added up the "system" times for each and divided them:
 
-Do you mean this program ?
+I don't quite understand why you need to resend. I did the following and
+it seems to work fine with UDP:
 
-int count, pfd[2];
-for (count = 0 ; count < 10000000 ; count++) {
-	pipe(pfd);
-	close(pfd[0]);
-	close(pfd[1]);
-}
-
-The problem is you wont see the overhead of insert/delete the inode in a 
-global tree, since you keep hot caches.
-
-To have a better estimate of the overhead, I suggest you try to use more 
-active pipes like :
-
-#include <unistd.h>
-#define SIZE 16384
-int fds[SIZE];
-
-int main(int argc, char *argv[])
-{
-        unsigned int i , count ;
-
-        for (i = 0 ; i < SIZE ; i += 2)
-                pipe(fds + i);
-        i = 0;
-        for (count = 0 ; count < 10000000 ; count++) {
-                close(fds[i]);
-                close(fds[i + 1]);
-                pipe(fds + i);
-                i = (i + 2) % SIZE;
+diff --git a/fs/ncpfs/sock.c b/fs/ncpfs/sock.c
+index e496d8b..5159bae 100644
+--- a/fs/ncpfs/sock.c
++++ b/fs/ncpfs/sock.c
+@@ -151,6 +153,8 @@ static inline int get_conn_number(struct
+ncp_reply_header *rp)
+        return rp->conn_low | (rp->conn_high << 8);
+ }
+ 
++static void __ncp_next_request(struct ncp_server *server);
++
+ static inline void __ncp_abort_request(struct ncp_server *server,
+struct ncp_request_reply *req, int err)
+ {
+        /* If req is done, we got signal, but we also received answer... */
+@@ -163,7 +167,10 @@ static inline void __ncp_abort_request(struct
+ncp_server *server, struct ncp_req
+                        ncp_finish_request(req, err);
+                        break;
+                case RQ_INPROGRESS:
+-                       __abort_ncp_connection(server, req, err);
++                       printk(KERN_INFO "ncpfs: Killing running
+request!\n");
++                       ncp_finish_request(req, err);
++                       __ncp_next_request(server);
++//                     __abort_ncp_connection(server, req, err);
+                        break;
         }
-        return 0;
-}
+ }
+@@ -754,7 +761,8 @@ static int ncp_do_request(struct ncp_server *server,
+int size,
+        if (result < 0) {
+                /* There was a problem with I/O, so the connections is
+                 * no longer usable. */
+-               ncp_invalidate_conn(server);
++               printk(KERN_INFO "ncpfs: Invalidating connection!\n");
++//             ncp_invalidate_conn(server);
+        }
+        return result;
+ }
 
+I'm not particularly proud of the second chunk though. Ideas on how to
+handle when we actually get a transmission problem and not just getting
+killed by a signal?
 
-# ulimit -n 20000
-# time ./pipebench
+Rgds
 
-Eric
+-- 
+     -- Pierre Ossman
+
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
+
