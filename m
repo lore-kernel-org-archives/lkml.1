@@ -1,59 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751980AbXAXTTy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751351AbXAXT1u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751980AbXAXTTy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jan 2007 14:19:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752011AbXAXTTy
+	id S1751351AbXAXT1u (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jan 2007 14:27:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752008AbXAXT1u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jan 2007 14:19:54 -0500
-Received: from raven.upol.cz ([158.194.120.4]:63217 "EHLO raven.upol.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751980AbXAXTTx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jan 2007 14:19:53 -0500
-Date: Wed, 24 Jan 2007 19:28:02 +0000
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Andrew Morton <akpm@osdl.org>, Sam Ravnborg <sam@ravnborg.org>,
-       Roman Zippel <zippel@linux-m68k.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [patch] spell 4 kbuild: improving option checking
-Message-ID: <20070124192801.GA8740@flower.upol.cz>
-References: <20061029120858.GB3491@quickstop.soohrt.org> <slrnekcu6m.2vm.olecom@flower.upol.cz> <20061031001235.GE2933@quickstop.soohrt.org> <200610310119.10567.ak@suse.de> <20061031011416.GG2933@quickstop.soohrt.org> <20061031135136.GB16063@flower.upol.cz> <20070124085430.GA8160@flower.upol.cz> <20070124080610.0969a15f.randy.dunlap@oracle.com>
+	Wed, 24 Jan 2007 14:27:50 -0500
+Received: from server077.de-nserver.de ([62.27.12.245]:43315 "EHLO
+	server077.de-nserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751351AbXAXT1t (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jan 2007 14:27:49 -0500
+Message-ID: <45B7B334.2050904@profihost.com>
+Date: Wed, 24 Jan 2007 20:27:48 +0100
+From: Stefan Priebe - FH <studium@profihost.com>
+User-Agent: Mozilla Thunderbird 1.0.7 (Windows/20050923)
+X-Accept-Language: de-DE, de, en-us, en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070124080610.0969a15f.randy.dunlap@oracle.com>
-Organization: Palacky University in Olomouc, experimental physics department.
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Oleg Verych <olecom@flower.upol.cz>
+To: Chuck Ebbert <cebbert@redhat.com>
+CC: linux-kernel@vger.kernel.org, edmudama@gmail.com
+Subject: Re: XFS or Kernel Problem / Bug
+References: <20060801141545.B2326184@wobbly.melbourne.sgi.com> <44CED76B.20507@profihost.com> <20060801142755.C2326184@wobbly.melbourne.sgi.com> <44CED8F4.9080208@profihost.com> <20060801143212.D2326184@wobbly.melbourne.sgi.com> <44CEDA1D.5060607@profihost.com> <20060801143803.E2326184@wobbly.melbourne.sgi.com> <44CF36FB.6070606@profihost.com> <20060802090915.C2344877@wobbly.melbourne.sgi.com> <44D07AB7.3020409@profihost.com> <20060802201805.A2360409@wobbly.melbourne.sgi.com> <45B35CD7.4080801@profihost.com> <45B666BE.8000802@redhat.com> <45B70D69.20500@profihost.com> <45B773C1.7090805@redhat.com> <45B77547.4060302@profihost.com> <45B77780.5000504@redhat.com> <45B77C84.6070508@profihost.com> <45B78E9F.4000404@redhat.com> <45B7948B.70104@profihost.com> <45B79DCF.4040904@redhat.com>
+In-Reply-To: <45B79DCF.4040904@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-User-Auth: Auth by hostmaster@profihost.com through 84.133.203.160
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Oleg Verych <olecom@flower.upol.cz>
+Hi Chuck,
+    hi Eric,
 
---- linux~2.6.20-rc5/scripts/Kbuild.include~	2007-01-24 09:19:01.386426000 +0100
-+++ linux~2.6.20-rc5/scripts/Kbuild.include	2007-01-24 20:07:11.152820000 +0100
-@@ -2,5 +2,5 @@
- # kbuild: Generic definitions
- 
--# Convinient constants
-+# Convenient constants
- comma   := ,
- squote  := '
-@@ -171,5 +171,5 @@
- any-prereq = $(filter-out $(PHONY),$?) $(filter-out $(PHONY) $(wildcard $^),$^)
- 
--# Execute command if command has changed or prerequisitei(s) are updated
-+# Execute command if command has changed or prerequisite(s) are updated
- #
- if_changed = $(if $(strip $(any-prereq) $(arg-check)),                       \
-@@ -188,5 +188,5 @@
- 
- # Usage: $(call if_changed_rule,foo)
--# will check if $(cmd_foo) changed, or any of the prequisites changed,
-+# will check if $(cmd_foo) changed, or any of the prerequisites changed,
- # and if so will execute $(rule_foo)
- if_changed_rule = $(if $(strip $(any-prereq) $(arg-check) ),                 \
-@@ -233,2 +233,4 @@
- echo-why = $(call escsq, $(strip $(why)))
- endif
-+
-+ LocalWords:  prequisites
+cause you both asked me nearly the same i will answer you both in one mail.
+
+
+ > What is different about these servers?
+All 300 machines are mostly different. We have Dual Opteron, single P4 
+with HT, single P4 without HT, Dual Xeon, Athlon 64 X2, and many more... 
+different mainboards etc.
+
+The only thing i found out is, that all these servers (where the problem 
+exist) are using a DFI PM-12 Mainboard with a VIA Chipset.
+
+ > Are you building different kernels for them, or is it just different
+ > drivers loaded?
+No every machine builds it's own kernel.
+
+Stefan
+
+Chuck Ebbert schrieb:
+> Stefan Priebe - FH wrote:
+> 
+>>Hi!
+>>
+>>Mhm are you shure? I mean i have this problem on 5 servers - all with
+>>the same mainboard. I cannot believe, that all 5 servers have a
+>>hardware problem that starts on the same day.
+>>
+>>The other thing is - that they all work fine with 2.6.16.x and all
+>>other kernels before. I mean some of them were used with 2.6.x since
+>>two years without any problem...
+>>
+> 
+> OK it's probably not hardware, but a bit is flipped somehow.
+> 
+> What is different about these servers?
+> 
+> Are you building different kernels for them, or is it just different
+> drivers loaded?
+> 
+> 
+
