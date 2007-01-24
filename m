@@ -1,38 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752014AbXAXTTZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751980AbXAXTTy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752014AbXAXTTZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jan 2007 14:19:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752011AbXAXTTZ
+	id S1751980AbXAXTTy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jan 2007 14:19:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752011AbXAXTTy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jan 2007 14:19:25 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:58550 "EHLO mail.dvmed.net"
+	Wed, 24 Jan 2007 14:19:54 -0500
+Received: from raven.upol.cz ([158.194.120.4]:63217 "EHLO raven.upol.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752008AbXAXTTY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jan 2007 14:19:24 -0500
-Message-ID: <45B7B13A.3070202@garzik.org>
-Date: Wed, 24 Jan 2007 14:19:22 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
+	id S1751980AbXAXTTx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jan 2007 14:19:53 -0500
+Date: Wed, 24 Jan 2007 19:28:02 +0000
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Andrew Morton <akpm@osdl.org>, Sam Ravnborg <sam@ravnborg.org>,
+       Roman Zippel <zippel@linux-m68k.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [patch] spell 4 kbuild: improving option checking
+Message-ID: <20070124192801.GA8740@flower.upol.cz>
+References: <20061029120858.GB3491@quickstop.soohrt.org> <slrnekcu6m.2vm.olecom@flower.upol.cz> <20061031001235.GE2933@quickstop.soohrt.org> <200610310119.10567.ak@suse.de> <20061031011416.GG2933@quickstop.soohrt.org> <20061031135136.GB16063@flower.upol.cz> <20070124085430.GA8160@flower.upol.cz> <20070124080610.0969a15f.randy.dunlap@oracle.com>
 MIME-Version: 1.0
-To: Mark Lord <liml@rtr.ca>
-CC: linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: What's in libata-dev.git
-References: <20070124072643.GA32298@havoc.gtf.org> <45B796AE.6050007@rtr.ca>
-In-Reply-To: <45B796AE.6050007@rtr.ca>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.7 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070124080610.0969a15f.randy.dunlap@oracle.com>
+Organization: Palacky University in Olomouc, experimental physics department.
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Oleg Verych <olecom@flower.upol.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Lord wrote:
-> What happened to ATA Passthru command support for ATAPI?
+Signed-off-by: Oleg Verych <olecom@flower.upol.cz>
 
-On Jan 19 in message <45B15D65.1060203@garzik.org> you were asked to 
-send a patch that applies successfully to #upstream.
-
-	Jeff
-
-
+--- linux~2.6.20-rc5/scripts/Kbuild.include~	2007-01-24 09:19:01.386426000 +0100
++++ linux~2.6.20-rc5/scripts/Kbuild.include	2007-01-24 20:07:11.152820000 +0100
+@@ -2,5 +2,5 @@
+ # kbuild: Generic definitions
+ 
+-# Convinient constants
++# Convenient constants
+ comma   := ,
+ squote  := '
+@@ -171,5 +171,5 @@
+ any-prereq = $(filter-out $(PHONY),$?) $(filter-out $(PHONY) $(wildcard $^),$^)
+ 
+-# Execute command if command has changed or prerequisitei(s) are updated
++# Execute command if command has changed or prerequisite(s) are updated
+ #
+ if_changed = $(if $(strip $(any-prereq) $(arg-check)),                       \
+@@ -188,5 +188,5 @@
+ 
+ # Usage: $(call if_changed_rule,foo)
+-# will check if $(cmd_foo) changed, or any of the prequisites changed,
++# will check if $(cmd_foo) changed, or any of the prerequisites changed,
+ # and if so will execute $(rule_foo)
+ if_changed_rule = $(if $(strip $(any-prereq) $(arg-check) ),                 \
+@@ -233,2 +233,4 @@
+ echo-why = $(call escsq, $(strip $(why)))
+ endif
++
++ LocalWords:  prequisites
