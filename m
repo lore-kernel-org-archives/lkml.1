@@ -1,45 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932156AbXAXUp6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751846AbXAXUwM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932156AbXAXUp6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jan 2007 15:45:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932629AbXAXUp6
+	id S1751846AbXAXUwM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jan 2007 15:52:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752006AbXAXUwM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jan 2007 15:45:58 -0500
-Received: from pne-smtpout2-sn1.fre.skanova.net ([81.228.11.159]:49584 "EHLO
-	pne-smtpout2-sn1.fre.skanova.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932156AbXAXUp6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jan 2007 15:45:58 -0500
-To: gd@spherenet.de
-Cc: Adrian Bunk <bunk@stusta.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.20-rc5: known unfixed regressions (v3) (part 2)
-References: <Pine.LNX.4.64.0701121424520.11200@woody.osdl.org>
-	<20070124154725.GK17836@stusta.de>
-From: Peter Osterlund <petero2@telia.com>
-Date: 24 Jan 2007 21:45:53 +0100
-In-Reply-To: <20070124154725.GK17836@stusta.de>
-Message-ID: <m3y7nsi266.fsf@telia.com>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.4
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 24 Jan 2007 15:52:12 -0500
+Received: from zombie.ncsc.mil ([144.51.88.131]:42994 "EHLO jazzdrum.ncsc.mil"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751846AbXAXUwM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jan 2007 15:52:12 -0500
+X-Greylist: delayed 2422 seconds by postgrey-1.27 at vger.kernel.org; Wed, 24 Jan 2007 15:52:11 EST
+Subject: Re: [PATCH 3/3] NFS: Ensure we support selinux xattrs
+From: Stephen Smalley <sds@tycho.nsa.gov>
+To: Trond Myklebust <Trond.Myklebust@netapp.com>
+Cc: torvalds@osdl.org, akpm@osdl.org, linux-kernel@vger.kernel.org,
+       nfs@lists.sourceforge.net, James Morris <jmorris@namei.org>,
+       Eric Paris <eparis@redhat.com>, Jim Meyering <meyering@redhat.com>
+In-Reply-To: <20070124195457.21259.53047.stgit@lade.trondhjem.org>
+References: <20070124195307.21259.64156.stgit@lade.trondhjem.org>
+	 <20070124195457.21259.53047.stgit@lade.trondhjem.org>
+Content-Type: text/plain
+Organization: National Security Agency
+Date: Wed, 24 Jan 2007 15:08:08 -0500
+Message-Id: <1169669288.15390.155.camel@moss-spartans.epoch.ncsc.mil>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk <bunk@stusta.de> writes:
+On Wed, 2007-01-24 at 11:54 -0800, Trond Myklebust wrote:
+> From: Trond Myklebust <Trond.Myklebust@netapp.com>
+> 
+> Some programs (e.g. GNU "cp") are currently crashing because NFS
+> allows you to inquire about SELinux security attributes (vfs_getxattr()
+> automatically handles this), but returns -EOPNOTSUPP when they later
+> attempt to set the SELinux security attributes.
+> 
+> The following patch just ensures that we pass the request to set security
+> attributes on to the default SELinux handler.
 
-> Subject    : pktcdvd fails with pata_amd
-> References : http://bugzilla.kernel.org/show_bug.cgi?id=7810
-> Submitter  : gd@spherenet.de
-> Status     : unknown
+That seems like a bug in cp, and it can happen under other circumstances
+as well (mount with context= option).
 
-Does reverting this patch help?
+I don't think you want to just set the incore inode security state on
+the client side, as that won't be preserved.
 
-http://www.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=406c9b605cbc45151c03ac9a3f95e9acf050808c
-
-If not, I don't know what to suggest except "git bisect". I don't have
-the hardware you are using and the backtrace doesn't give any clues.
-
+> Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+> ---
+> 
+>  fs/nfs/nfs3acl.c  |   13 +++++++++++++
+>  fs/nfs/nfs4proc.c |   14 ++++++++++++++
+>  2 files changed, 27 insertions(+), 0 deletions(-)
+> 
+> diff --git a/fs/nfs/nfs3acl.c b/fs/nfs/nfs3acl.c
+> index 7322da4..5970e7b 100644
+> --- a/fs/nfs/nfs3acl.c
+> +++ b/fs/nfs/nfs3acl.c
+> @@ -4,6 +4,9 @@ #include <linux/nfs3.h>
+>  #include <linux/nfs_fs.h>
+>  #include <linux/posix_acl_xattr.h>
+>  #include <linux/nfsacl.h>
+> +#include <linux/security.h>
+> +#include <linux/xattr.h>
+> +#include <linux/fsnotify.h>
+>  
+>  #define NFSDBG_FACILITY	NFSDBG_PROC
+>  
+> @@ -82,6 +85,16 @@ int nfs3_setxattr(struct dentry *dentry,
+>  	struct posix_acl *acl;
+>  	int type, error;
+>  
+> +	/* Selinux support */
+> +	if (!strncmp(name, XATTR_SECURITY_PREFIX, XATTR_SECURITY_PREFIX_LEN)) {
+> +		const char *suffix = name + XATTR_SECURITY_PREFIX_LEN;
+> +		error = security_inode_setsecurity(inode, suffix, value,
+> +				size, flags);
+> +		if (!error)
+> +			fsnotify_xattr(dentry);
+> +		return error;
+> +	}
+> +
+>  	if (strcmp(name, POSIX_ACL_XATTR_ACCESS) == 0)
+>  		type = ACL_TYPE_ACCESS;
+>  	else if (strcmp(name, POSIX_ACL_XATTR_DEFAULT) == 0)
+> diff --git a/fs/nfs/nfs4proc.c b/fs/nfs/nfs4proc.c
+> index b3fd29b..ac1082b 100644
+> --- a/fs/nfs/nfs4proc.c
+> +++ b/fs/nfs/nfs4proc.c
+> @@ -48,6 +48,9 @@ #include <linux/nfs_page.h>
+>  #include <linux/smp_lock.h>
+>  #include <linux/namei.h>
+>  #include <linux/mount.h>
+> +#include <linux/security.h>
+> +#include <linux/xattr.h>
+> +#include <linux/fsnotify.h>
+>  
+>  #include "nfs4_fs.h"
+>  #include "delegation.h"
+> @@ -3547,6 +3550,17 @@ int nfs4_setxattr(struct dentry *dentry,
+>  {
+>  	struct inode *inode = dentry->d_inode;
+>  
+> +	/* Selinux support */
+> +	if (!strncmp(key, XATTR_SECURITY_PREFIX, XATTR_SECURITY_PREFIX_LEN)) {
+> +		const char *suffix = key + XATTR_SECURITY_PREFIX_LEN;
+> +		int error;
+> +		error = security_inode_setsecurity(inode, suffix, buf,
+> +				buflen, flags);
+> +		if (!error)
+> +			fsnotify_xattr(dentry);
+> +		return error;
+> +	}
+> +
+>  	if (strcmp(key, XATTR_NAME_NFSV4_ACL) != 0)
+>  		return -EOPNOTSUPP;
+>  
 -- 
-Peter Osterlund - petero2@telia.com
-http://web.telia.com/~u89404340
+Stephen Smalley
+National Security Agency
+
