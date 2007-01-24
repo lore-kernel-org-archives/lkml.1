@@ -1,68 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965614AbXAXCII@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965612AbXAXCJv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965614AbXAXCII (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jan 2007 21:08:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965612AbXAXCII
+	id S965612AbXAXCJv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jan 2007 21:09:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965615AbXAXCJv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jan 2007 21:08:08 -0500
-Received: from nf-out-0910.google.com ([64.233.182.185]:17298 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965614AbXAXCIG (ORCPT
+	Tue, 23 Jan 2007 21:09:51 -0500
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:53015 "EHLO
+	pd3mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965612AbXAXCJu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jan 2007 21:08:06 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=uvTuV1AxiYq4bL4LbiLrvtz/11HkOTn+SAZz3KSvucnNZh2LE3thBPl6euT2S0hUUoZ87+pgHuGjFfZVTQuSxLwtGGzXhNOjhjaEovxjpYmur9vVRchnvRjFg1Yn19J5EMhmCI5RgAqnIPzd9HCRNhGtTo4BBGAuFa7HcZj8kxQ=
-Message-ID: <45B6BF5D.1070300@gmail.com>
-Date: Wed, 24 Jan 2007 11:07:25 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Icedove 1.5.0.9 (X11/20061220)
-MIME-Version: 1.0
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-CC: Soeren Sonnenburg <kernel@nn7.de>, Jeff Garzik <jeff@garzik.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: SATA hotplug from the user side ?
-References: <1168588629.5403.7.camel@localhost> <45A7BFB0.9090308@garzik.org> <1168639639.3707.6.camel@localhost> <45A83C22.6050409@gmail.com> <1168672966.3707.24.camel@localhost> <45AAE52B.2070705@gmail.com> <1169456682.2901.18.camel@localhost> <20070122210312.GD4516@khazad-dum.debian.net> <45B5A9C7.5050700@gmail.com> <20070123131040.GB13467@khazad-dum.debian.net>
-In-Reply-To: <20070123131040.GB13467@khazad-dum.debian.net>
-X-Enigmail-Version: 0.94.1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 23 Jan 2007 21:09:50 -0500
+Date: Tue, 23 Jan 2007 20:09:02 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: [PATCH 2.6.20] sata_nv: don't rely on NV_INT_DEV indication with ADMA
+In-reply-to: <20070124003923.GA3093@atjola.homenet>
+To: =?ISO-8859-1?Q?Bj=F6rn_Steinbrink?= <B.Steinbrink@gmx.de>,
+       Robert Hancock <hancockr@shaw.ca>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Larry Walton <lwalton@real.com>, s0348365@sms.ed.ac.uk, pomac@vapor.com,
+       chunkeey@web.de, Jeff Garzik <jeff@garzik.org>
+Message-id: <45B6BFBE.5060709@shaw.ca>
+MIME-version: 1.0
+Content-type: multipart/mixed; boundary=------------020208040709060709040908
+References: <fa.1kBz5luWz8nR0lLqm1VD4hZZYdw@ifi.uio.no>
+ <fa.QZxgjxcwtENaZNY24NMTlKBSgIM@ifi.uio.no>
+ <fa.fkPTbUGmKc/1pt0eD6TE4d02n+Q@ifi.uio.no>
+ <fa.6iQt5OtHZ3x5w8eYbLxwULhLTJ0@ifi.uio.no>
+ <fa.1aqo3IxNGJClHcBVZNTagX6bL9o@ifi.uio.no>
+ <fa.rI60BGlFbSyfLyumqmgiOfDqCI4@ifi.uio.no> <45B697D3.4070707@shaw.ca>
+ <20070124003923.GA3093@atjola.homenet>
+User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Henrique de Moraes Holschuh wrote:
-> On Tue, 23 Jan 2007, Tejun Heo wrote:
->> Henrique de Moraes Holschuh wrote:
->>> Does SATA electrical conector keying let the disk firmware unload
->>> heads before the user manages to pull it out enough to sever power?
->> I don't think so.
-> 
-> Heh, thought as much. (Good) SCSI hotswap bays notice you pulled the disk
-> release lever and issue an START_STOP_UNIT by themselves to the disk well
-> before you have time to start pulling the disk out.  I wonder if the SATA
-> ones do (I kind of doubt that, SATA seems to attract the el-cheapo, el-crapo
-> crowd of manufacturers).
+This is a multi-part message in MIME format.
+--------------020208040709060709040908
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-ahci controller spec has places for such thing but I've never seen it
-actually implemented.  I'm thinking about a CLI tool to list & control
-libata devices including hotplugging, NCQ and other stuff.  Eventually,
-it would be really nice to give the user/admin easy gui/web/whatever
-tool to watch and control ATA devices.
+OK, here it is in full signed-off glory. Hopefully we can get this in 
+for 2.6.20.
 
->>> If it does not, the drive will do an emergency head unload, which is
->>> not good and will likely reduce the drive's lifetime.
->> Probably.
-> 
-> So, that means it should be explained in the docs that you are to stop the
-> disk first, if you can.
+---
 
-Yeap, agreed.
+Several people reported issues with certain drive commands timing out on 
+sata_nv controllers running in ADMA mode. The commands in question were 
+non-DMA-mapped commands, usually FLUSH CACHE or FLUSH CACHE EXT.
 
-> Even if hald does this automatically, it would still be a very good idea to
-> document the proper sequence, IMO...
+ From experimentation it appears that the NV_INT_DEV indication isn't 
+always set when a legitimate command completion interrupt is received on 
+a legacy-mode command, at least not on these controllers in ADMA mode. 
+When a command is pending on the port, force the flag on always in the 
+irq_stat value before calling nv_host_intr so that the drive busy state 
+is always checked by ata_host_intr.
 
-Agreed.
+This also fixes some questionable code in nv_host_intr which called 
+ata_check_status when a command was pending and ata_host_intr returned 
+"unhandled". If the device interrupted at just the wrong time this could 
+cause interrupts to be lost.
 
--- 
-tejun
+Signed-off-by: Robert Hancock <hancockr@shaw.ca>
+
+
+--------------020208040709060709040908
+Content-Type: text/plain;
+ name="sata_nv-force-int-dev-in-interrupt.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="sata_nv-force-int-dev-in-interrupt.patch"
+
+--- linux-2.6.20-rc5/drivers/ata/sata_nv.c	2007-01-19 19:18:53.000000000 -0600
++++ linux-2.6.20-rc5debug/drivers/ata/sata_nv.c	2007-01-22 22:33:43.000000000 -0600
+@@ -700,7 +700,6 @@ static void nv_adma_check_cpb(struct ata
+ static int nv_host_intr(struct ata_port *ap, u8 irq_stat)
+ {
+ 	struct ata_queued_cmd *qc = ata_qc_from_tag(ap, ap->active_tag);
+-	int handled;
+ 
+ 	/* freeze if hotplugged */
+ 	if (unlikely(irq_stat & (NV_INT_ADDED | NV_INT_REMOVED))) {
+@@ -719,13 +718,7 @@ static int nv_host_intr(struct ata_port 
+ 	}
+ 
+ 	/* handle interrupt */
+-	handled = ata_host_intr(ap, qc);
+-	if (unlikely(!handled)) {
+-		/* spurious, clear it */
+-		ata_check_status(ap);
+-	}
+-
+-	return 1;
++	return ata_host_intr(ap, qc);
+ }
+ 
+ static irqreturn_t nv_adma_interrupt(int irq, void *dev_instance)
+@@ -752,6 +745,11 @@ static irqreturn_t nv_adma_interrupt(int
+ 			if (pp->flags & NV_ADMA_PORT_REGISTER_MODE) {
+ 				u8 irq_stat = readb(host->mmio_base + NV_INT_STATUS_CK804)
+ 					>> (NV_INT_PORT_SHIFT * i);
++				if(ata_tag_valid(ap->active_tag))
++					/** NV_INT_DEV indication seems unreliable at times
++					    at least in ADMA mode. Force it on always when a
++					    command is active, to prevent losing interrupts. */
++					irq_stat |= NV_INT_DEV;
+ 				handled += nv_host_intr(ap, irq_stat);
+ 				continue;
+ 			}
+
+--------------020208040709060709040908--
+
