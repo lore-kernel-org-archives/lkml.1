@@ -1,140 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750975AbXAXS5a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751308AbXAXS6u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750975AbXAXS5a (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jan 2007 13:57:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751308AbXAXS5a
+	id S1751308AbXAXS6u (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jan 2007 13:58:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751351AbXAXS6u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jan 2007 13:57:30 -0500
-Received: from mailhub.sw.ru ([195.214.233.200]:45803 "EHLO relay.sw.ru"
+	Wed, 24 Jan 2007 13:58:50 -0500
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:45730 "EHLO e6.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750975AbXAXS53 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jan 2007 13:57:29 -0500
-To: linux-kernel@vger.kernel.org
-CC: <devel@openvz.org>, Andrew Morton <akpm@osdl.org>
-Subject: [PATH][RFC] mm: Move common segments checks to separate function
-From: Dmitriy Monakhov <dmonakhov@openvz.org>
-Date: Wed, 24 Jan 2007 21:57:33 +0300
-Message-ID: <87tzygntgi.fsf@sw.ru>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.4 (gnu/linux)
+	id S1751308AbXAXS6t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jan 2007 13:58:49 -0500
+Date: Wed, 24 Jan 2007 12:58:45 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>, lkml <linux-kernel@vger.kernel.org>,
+       containers@lists.osdl.org
+Subject: Re: [PATCH 7/8] user ns: handle file sigio
+Message-ID: <20070124185845.GA597@sergelap.austin.ibm.com>
+References: <20061219225902.GA25904@sergelap.austin.ibm.com> <20061219230127.GH25904@sergelap.austin.ibm.com> <m1zm881gq4.fsf@ebiederm.dsl.xmission.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="=-=-="
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m1zm881gq4.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---=-=-=
+Quoting Eric W. Biederman (ebiederm@xmission.com):
+> "Serge E. Hallyn" <serue@us.ibm.com> writes:
+> 
+> > From: Serge E. Hallyn <serue@us.ibm.com>
+> > Subject: [PATCH 7/8] user ns: handle file sigio
+> >
+> > A process in one user namespace could set a fowner and sigio on a file in a
+> > shared vfsmount, ending up killing a task in another user namespace.
+> >
+> > Prevent this by adding a user namespace pointer to the fown_struct, and
+> > enforcing that a process causing a signal to be sent be in the same
+> > user namespace as the file owner.
+> >
+> 
+> 
+> > @@ -455,6 +460,9 @@ static const long band_table[NSIGPOLL] =
+> >  static inline int sigio_perm(struct task_struct *p,
+> >                               struct fown_struct *fown, int sig)
+> >  {
+> > +	if (fown->user_ns != init_task.nsproxy->user_ns &&
+> > +				fown->user_ns != p->nsproxy->user_ns)
+> > +		return 0;
+> 
+> Why is the initial user namespace being treated specially here?
 
-Move common segments checks from  __generic_file_aio_{read,write}_nolock()
-to separate helper function generic_segment_checks(). 
+Because we haven't yet agreed upon any other security model.  For now,
+although I know you really dislike it, the fact is that "the initial
+namespace has special privileges" is our basic security model.
 
-Signed-off-by: Dmitriy Monakhov <dmonakhov@openvz.org>
--------
+If you want to have a discussion about an appropriate security model,
+or an infrastructure to support multiple models, I think this would be a
+good time, given that several namespaces are out there.  And networkns,
+making its way up, also has concerns.
 
---=-=-=
-Content-Disposition: inline; filename=diff-ms-mm-segment-checks-cleanup
+Three basic approaches I could see being simple to both implement and
+understand/use are
 
-diff --git a/mm/filemap.c b/mm/filemap.c
-index 8332c77..d01abb6 100644
---- a/mm/filemap.c
-+++ b/mm/filemap.c
-@@ -1126,6 +1126,38 @@ success:
- 	return size;
- }
- 
-+/*
-+ * Performs necessary segments checks.
-+ * Returns bytes count or appropriate error code that caller should return.
-+ */
-+static ssize_t 
-+generic_segment_checks(unsigned long nr_segs, const struct iovec *iov,
-+			unsigned long access_flag)
-+{
-+	size_t bcount;
-+	unsigned long	seg;
-+	bcount = 0;
-+	for (seg = 0; seg < nr_segs; seg++) {
-+		const struct iovec *iv = &iov[seg];
-+		
-+		/*
-+		 * If any segment has a negative length, or the cumulative
-+		 * length ever wraps negative then return -EINVAL.
-+		 */
-+		bcount += iv->iov_len;
-+		if (unlikely((ssize_t)(bcount|iv->iov_len) < 0))
-+			return -EINVAL;
-+		if (access_ok(access_flag, iv->iov_base, iv->iov_len))
-+			continue;
-+		if (seg == 0)
-+			return -EFAULT;
-+		nr_segs = seg;
-+		bcount -= iv->iov_len;	/* This segment is no good */
-+		break;
-+	}
-+	return bcount;
-+}
-+
- /**
-  * generic_file_aio_read - generic filesystem read routine
-  * @iocb:	kernel I/O control block
-@@ -1146,25 +1178,7 @@ generic_file_aio_read(struct kiocb *iocb
- 	size_t count;
- 	loff_t *ppos = &iocb->ki_pos;
- 
--	count = 0;
--	for (seg = 0; seg < nr_segs; seg++) {
--		const struct iovec *iv = &iov[seg];
--
--		/*
--		 * If any segment has a negative length, or the cumulative
--		 * length ever wraps negative then return -EINVAL.
--		 */
--		count += iv->iov_len;
--		if (unlikely((ssize_t)(count|iv->iov_len) < 0))
--			return -EINVAL;
--		if (access_ok(VERIFY_WRITE, iv->iov_base, iv->iov_len))
--			continue;
--		if (seg == 0)
--			return -EFAULT;
--		nr_segs = seg;
--		count -= iv->iov_len;	/* This segment is no good */
--		break;
--	}
-+	count = generic_segment_checks(nr_segs, iov, VERIFY_WRITE);
- 
- 	/* coalesce the iovecs and go direct-to-BIO for O_DIRECT */
- 	if (filp->f_flags & O_DIRECT) {
-@@ -2225,31 +2239,11 @@ __generic_file_aio_write_nolock(struct k
- 	size_t ocount;		/* original count */
- 	size_t count;		/* after file limit checks */
- 	struct inode 	*inode = mapping->host;
--	unsigned long	seg;
- 	loff_t		pos;
- 	ssize_t		written;
- 	ssize_t		err;
- 
--	ocount = 0;
--	for (seg = 0; seg < nr_segs; seg++) {
--		const struct iovec *iv = &iov[seg];
--
--		/*
--		 * If any segment has a negative length, or the cumulative
--		 * length ever wraps negative then return -EINVAL.
--		 */
--		ocount += iv->iov_len;
--		if (unlikely((ssize_t)(ocount|iv->iov_len) < 0))
--			return -EINVAL;
--		if (access_ok(VERIFY_READ, iv->iov_base, iv->iov_len))
--			continue;
--		if (seg == 0)
--			return -EFAULT;
--		nr_segs = seg;
--		ocount -= iv->iov_len;	/* This segment is no good */
--		break;
--	}
--
-+	ocount = generic_segment_checks(nr_segs, iov, VERIFY_READ);
- 	count = ocount;
- 	pos = *ppos;
- 
+1. add a set of capabilities concerning cross-ns operations, not
+reassignable once they are removed.  Simple to understand, very
+limited.
 
---=-=-=--
+2. maintain that any cross-ns operation is allowed if and only if
+the target ns is a child of the subject ns.
 
+3. cross-ns operations are not permitted.  The only way to achieve
+them is using a (as-yet unimplemented, but i'm working on it) namespace
+enter feature to execute code in a child namespace.
+
+> Especially when you start considering nested containers special treatment
+> like this is semantically a real problem, to maintain.
+
+Yup.
+
+> If we need to I can see doing something special if the process setting
+> fown has CAP_KILL
+
+Obviously CAP_KILL is insufficient :)  I assume you mean a new
+CAP_XNS_CAP_KILL?
+
+> and bypassing the security checks that way, but
+> hard coding rules like that when it doesn't appear we have any
+> experience to indicate we need the extra functionality looks
+> premature.
+
+Ok, in this case actually I suspect you're right and we can just ditch
+the exception.  But in general the security discussion is one we should
+still have.
+
+> >  	return (((fown->euid == 0) ||
+> >  		 (fown->euid == p->suid) || (fown->euid == p->uid) ||
+> >  		 (fown->uid == p->suid) || (fown->uid == p->uid)) &&
+> 
+> Eric
