@@ -1,130 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964784AbXAXXac@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964785AbXAXXcx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964784AbXAXXac (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jan 2007 18:30:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964785AbXAXXac
+	id S964785AbXAXXcx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jan 2007 18:32:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964786AbXAXXcx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jan 2007 18:30:32 -0500
-Received: from 125.14.124.24.cm.sunflower.com ([24.124.14.125]:30372 "EHLO
-	mail.atipa.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S964784AbXAXXab (ORCPT
+	Wed, 24 Jan 2007 18:32:53 -0500
+Received: from 67.111.72.3.ptr.us.xo.net ([67.111.72.3]:11405 "EHLO
+	nonameb.ptu.promise.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S964785AbXAXXcw convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jan 2007 18:30:31 -0500
-Message-ID: <45B7EC16.9070706@atipa.com>
-Date: Wed, 24 Jan 2007 17:30:30 -0600
-From: Roger Heflin <rheflin@atipa.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070102)
+	Wed, 24 Jan 2007 18:32:52 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.0.6487.1
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: Auke Kok <auke-jan.h.kok@intel.com>
-CC: NetDev <netdev@vger.kernel.org>, e1000-devel@lists.sourceforge.net,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Nvidia MCP55 Machine reboots on ixgb driver load
-References: <45B7CA3D.9020601@atipa.com> <45B7D88F.30703@intel.com>
-In-Reply-To: <45B7D88F.30703@intel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 24 Jan 2007 23:32:06.0109 (UTC) FILETIME=[DBE280D0:01C7400F]
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [patch] scsi: use lock per host instead of per device for shared queue tag host
+Date: Wed, 24 Jan 2007 15:33:57 -0800
+Message-ID: <B70A50D07063384EB9BCE3330D18414F02F5AF83@nonameb.ptu.promise.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [patch] scsi: use lock per host instead of per device for shared queue tag host
+Thread-Index: Acc/0NITAs4XtQHaRmmJlX3mWPtIrwAO+99Q
+From: "Ed Lin" <ed.lin@promise.com>
+To: "Michael Reed" <mdr@sgi.com>
+Cc: "linux-scsi" <linux-scsi@vger.kernel.org>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>,
+       "james.Bottomley" <james.Bottomley@SteelEye.com>,
+       "jeff" <jeff@garzik.org>, "Promise_Linux" <Promise_Linux@promise.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Auke Kok wrote:
-> [added netdev to CC]
-> 
-> Roger Heflin wrote:
->> I have a machine (actually 2 machines) that upon loading
->> the intel 10GBe driver (ixgb) the machine reboots, I am
->> using a RHAS4.4 based distribution with Vanilla 2.6.19.2
->> (the RHAS 4.4.03 kernel also reboots with the ixgb load),
->> I don't see any messages on the machine before it reboots,
->> loading the driver with debug does not appear to produce
->> any extra messages.   The basic steps are the I load
->> the driver, the machine locks up, and then in a second
->> or 2 it starts to post.
-> 
-> some suggestions immediately come to mind:
-> 
-> * have you tried the latest driver from http://e1000.sf.net/ ?
 
-I have tried the ixgb-1.0-126 driver from intel's web site, with it doing
-the same thing, and that looks to be the same as the sf driver.
 
-> 
-> * what happens when you unplug the card and modprobe the ixgb module?
-
-That loads just fine, and prints out the driver information, and
-the copyright.
-
-> 
-> * have you tried capturing a trace with netconsole or serial console? 
-> probing the ixgb driver produces at least 1 syslog line that should show 
-> up. If nothing shows up on serial or netconsole, the issue may be way 
-> outside the ixgb driver.
-
-I *think* have got the line listing the interrupt 1 or 2 times just
-before it goes away, I got the serial crossover working to a
-laptop and got no extra kernel messages when the driver was loaded
-and rebooted the machine, I did see the full kernel bootup so
-I know the serial console was working correctly.
-
-> 
->> I have tried the default ixgb driver in 2.6.19.2, and I
->> have tried the open source intel driver on RH4.4, both cause
->> the same reboot.    I also tried the linux firmware
->> development kit, and booting fc6 causes the same reboot
->> upon the network driver load.
-> 
-> just for completeness, which driver versions were this?
-
-The ixgb-1.0.126 driver from Intel's site.
-
-The default driver on 4.4.03 does not support the CX4 board,
-but loads just fine, just does not find any cards that it
-can drive.   I did confirm that it does not list the PCIID
-for the CX4 card.
-
-> 
-> and when you say "booting fc6" I assume you mean that fc6 boots OK until 
-> you modprobe the ixgb driver?
-
-Yes, that is correct the machine goes to full multiuser (I have
-the .ko file moved elsewhere so automatic module loading does
-not kill the machine-until it choose to test it), and has been
-used for some io test with no issues until the ixgb driver is loaded.
-
-Both machines have been heavily tested with high cpu applications
-that verify their results to make sure memory is working correctly
-under load.
-
-> 
->> I have tried pci=nomsi
-> 
-> try compiling your kernel without MSI support alltogether. There have 
-> been serious issues found with MSI on certain configurations, and in 
-> your case this might be the cause. Allthough passing pci=nomsi should be 
-> the same as compiling it out, it can't hurt to try.
-
-Ok, I tried that.
-
-I found out that breaks some other unrelated stuff, but loading the ixgb
-driver still crashes the machine.
-
-> 
->> Also note that the linux.nics@intel.com address is apparently
->> unused and returns an email telling you to use a web page,
->> and so far after using the web page I have not got any response
->> indicating that anything got to anyone.
-> 
-> I've taken action to get that straightened out. You're always welcome to 
-> mail netdev, the e1000 devel list or even lkml which we will all pick up 
-> on.
+> -----Original Message-----
+> From: Michael Reed [mailto:mdr@sgi.com] 
+> Sent: Wednesday, January 24, 2007 7:59 AM
+> To: Ed Lin
+> Cc: linux-scsi; linux-kernel; james.Bottomley; jeff; Promise_Linux
+> Subject: Re: [patch] scsi: use lock per host instead of per 
+> device for shared queue tag host
 > 
 > 
-> I can't think of a specific reason for the issue right now, other than 
-> attempting to get a serial/netconsole attached and trying without any 
-> msi support in the kernel. Please give that a try and let us know.
+> How 'bout a comment in scsh_host.h indicating that the 
+> pointer will be NULL unless
+> initialized by the driver?
+> 
+> "Protect shared block queue tag" is unique to stex.  Perhaps 
+> have no comment on
+> the variable declaration in scsi_host.h and explain why you 
+> use it in stex.
+> 
+> Mike
+> 
 > 
 
-Nothing extra from the serial console, and still locks up with no
-msi support.
+Thanks for commenting. I agree more detailed explaination should
+be better.
 
-                          Roger
+It seems another driver(qla4xxx) is also using shared queue tag.
+It is natural to imagine there might be same symptom in that
+driver. But I don't know the driver and have no hardware so I
+can not say anything certain about it.
+
+Ed Lin
