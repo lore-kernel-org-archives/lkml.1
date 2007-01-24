@@ -1,43 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030827AbXAZJbg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1160998AbXAZJbk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030827AbXAZJbg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jan 2007 04:31:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965602AbXAZJbg
+	id S1160998AbXAZJbk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jan 2007 04:31:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965602AbXAZJbk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jan 2007 04:31:36 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4035 "EHLO spitz.ucw.cz"
+	Fri, 26 Jan 2007 04:31:40 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4036 "EHLO spitz.ucw.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S965618AbXAZJbf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jan 2007 04:31:35 -0500
-Date: Wed, 24 Jan 2007 17:08:19 +0000
+	id S965620AbXAZJbj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jan 2007 04:31:39 -0500
+Date: Wed, 24 Jan 2007 14:01:06 +0000
 From: Pavel Machek <pavel@ucw.cz>
-To: Samium Gromoff <_deepfire@feelingofgreen.ru>
-Cc: Jakub Jelinek <jakub@redhat.com>, Alan <alan@lxorguk.ukuu.org.uk>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] Define the EF_AS_NO_RANDOM e_flag bit
-Message-ID: <20070124170819.GA3953@ucw.cz>
-References: <200701221520.l0MFKLdK032645@turing-police.cc.vt.edu> <871wlnq7ue.wl@betelheise.deep.net> <20070123084805.GB5560@ucw.cz> <87mz4996wg.wl@betelheise.deep.net> <20070123154127.57059632@localhost.localdomain> <877ivd8p42.wl@betelheise.deep.net> <20070123205017.GH29911@devserv.devel.redhat.com> <874pqh8nbu.wl@betelheise.deep.net> <20070123211612.GJ29911@devserv.devel.redhat.com> <871wll8h2t.wl@betelheise.deep.net>
+To: Scott Preece <sepreece@gmail.com>
+Cc: Alessandro Di Marco <dmr@gmx.it>, linux-kernel@vger.kernel.org,
+       vojtech@suse.cz
+Subject: Re: [ANNOUNCE] System Inactivity Monitor v1.0
+Message-ID: <20070124140105.GD7365@ucw.cz>
+References: <877ivkrv5s.fsf@gmx.it> <20070119101103.GA5730@ucw.cz> <877ivfi60i.fsf@gmx.it> <20070123094114.GE6033@ucw.cz> <87wt3dhlte.fsf@gmx.it> <20070123163442.GA18662@elf.ucw.cz> <7b69d1470701231134k4e3e8a4dj2b95a230fa3da81c@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <871wll8h2t.wl@betelheise.deep.net>
+In-Reply-To: <7b69d1470701231134k4e3e8a4dj2b95a230fa3da81c@mail.gmail.com>
 User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi!
-
-> > > Should we introduce per-arch asm/elf.h files to hold the relevant flag definitions then?
-> > 
-> > On some architectures there are no bits left.  On others you'd need to go
-> > through whomever maintains the relevant psABI to get a bit officially
-> > allocated.  Really, it is very bad idea to use e_flags for this.
+> >
+> >>    But I still believe it can be out.
+> >>
+> >> Do you believe it could be a user-space daemon or 
+> >what?
+> >
+> >Yes, what prevents userspace daemon watching 
+> >/dev/input/event* to
+> >provide this functionality?
+> >                                                                        Pavel
+> ---
 > 
-> How does one find the relevant maintainers?
+> One possible argument is to allow integrating 
+> "input-like" user events
+> with other kinds of system-level events that you might 
+> want to have
+> treated like user activity. For instance, our definition 
+> of user
+> activity includes: button presses, opening-closing the 
+> cover (on a
+> phone), and plugging in or removing memory cards, 
+> accessories, or
+> cables. We actually use a mix of kernel and user-space 
+> monitoring,
 
-Andi Kleen maintains both i386 and x86-64, so it should be easy.
+Well... input already has 'pseudokey' for lid, and yes, you
+probably can monitor cover, memory cards and cables from userspace,
+already... as you do. Cover, and maybe even cards/cables could be
+integrated with input infrastructure, too.
 
-(Ouch and make it one patch, it is too short to split...)
+(Still waiting for you to start selling those cool phones in czech
+republic :-).
+
+> A user-space monitor also has more opportunity for races 
+> - for
+> instance, deciding that the inactivity timeout has 
+> occurred between
+> the time that the user does something and the time that 
+> the kernel
+> gets a notification up to user space.
+
+Same races are inside kernel, too.
+
+> My own hot button is making sure that the definition of 
+> what
+> constitutes user activity is managed in exactly one 
+> place, whether in
+> the kernel or not. My naive model would be to put the 
+> response at user
+> level, but to provide a single point of definition in 
+> the kernel (say,
+> /dev/useractivity or the equivalent) that the user-level 
+> daemon could
+> listen to.
+
+Actually, I believe right solution is to provide one, unified,
+monitoring daemon, using whatever interfaces are available. (+ add
+missing functionality to the kernel, if neccessary).
 
 							Pavel
 -- 
