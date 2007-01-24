@@ -1,63 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933143AbXAXAB2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933153AbXAXALd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933143AbXAXAB2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jan 2007 19:01:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933149AbXAXAB1
+	id S933153AbXAXALd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jan 2007 19:11:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933149AbXAXALd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jan 2007 19:01:27 -0500
-Received: from mail1.key-systems.net ([81.3.43.211]:53001 "HELO
-	mail1.key-systems.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S933143AbXAXAB1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jan 2007 19:01:27 -0500
-Message-ID: <45B6A1D4.7020906@scientia.net>
-Date: Wed, 24 Jan 2007 01:01:24 +0100
-From: Christoph Anton Mitterer <calestyo@scientia.net>
-User-Agent: Icedove 1.5.0.9 (X11/20061220)
+	Tue, 23 Jan 2007 19:11:33 -0500
+Received: from colo.lackof.org ([198.49.126.79]:41445 "EHLO colo.lackof.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933114AbXAXALc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jan 2007 19:11:32 -0500
+Date: Tue, 23 Jan 2007 17:11:24 -0700
+From: dann frazier <dannf@dannf.org>
+To: Grant Coady <gcoady.lk@gmail.com>
+Cc: Willy Tarreau <w@1wt.eu>, Santiago Garcia Mantinan <manty@debian.org>,
+       linux-kernel@vger.kernel.org, debian-kernel@lists.debian.org
+Subject: Re: problems with latest smbfs changes on 2.4.34 and security backports
+Message-ID: <20070124001123.GG26310@colo>
+References: <20070117215519.GX24090@1wt.eu> <20070119010040.GR16053@colo> <20070120010544.GY26210@colo> <t1r7r2thimh3gpuhtfc9l3aehjdd6dqkp8@4ax.com> <20070121230321.GC2480@1wt.eu> <lpu7r2lbtpm5cui8v1qpuj2fb5k3vs6f4n@4ax.com> <20070122181942.GJ28073@colo> <20070123054258.GA10301@1wt.eu> <20070123211256.GB26310@colo> <nt6dr29m1lalc3dersj4sf22od2l638fvq@4ax.com>
 MIME-Version: 1.0
-To: Alan <alan@lxorguk.ukuu.org.uk>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Strange
-References: <45B69D0C.8030501@scientia.net> <20070124000905.3a7b053d@localhost.localdomain>
-In-Reply-To: <20070124000905.3a7b053d@localhost.localdomain>
-Content-Type: multipart/mixed;
- boundary="------------050504000500000306060601"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <nt6dr29m1lalc3dersj4sf22od2l638fvq@4ax.com>
+User-Agent: mutt-ng/devel-r782 (Debian)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------050504000500000306060601
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+On Wed, Jan 24, 2007 at 10:46:24AM +1100, Grant Coady wrote:
+> On Tue, 23 Jan 2007 14:12:57 -0700, dann frazier <dannf@dannf.org> wrote:
+> 
+> >Users have reported a symlink issue with my recent smbfs backport.
+> >Turns out my backport overlooked a second 2.6 patch w/ the fix:
+> > http://linux.bkbits.net:8080/linux-2.6/?PAGE=cset&REV=419e7b76CdrmRG_NZ8LKj9DUUBGu1w
+> >
+> >This is a backport of Haroldo Gamal's 2.6 patch that fixes the symlink
+> >issue, and also cleans up an unnecessary double assignment. As his
+> >commit message notes, you will need the userspace patches from Samba
+> >Bug #999 in order to use the permission/ownership assigned by the
+> >server.
+> 
+> Server-side:
+> grant@deltree:/home/other$ uname -r
+> 2.6.19.2a
+> grant@deltree:/home/other$ ls -l
+> total 8
+> drwxr-xr-x 2 root  root  96 2007-01-21 11:44 dir/
+> lrwxrwxrwx 1 root  root   3 2007-01-21 11:43 dirlink -> dir/
+> -rw-r--r-- 1 root  root  15 2007-01-21 11:43 file
+> lrwxrwxrwx 1 root  root   4 2007-01-21 11:44 filelink -> file
+> -rw-r--r-- 1 grant wheel 20 2007-01-24 10:24 test
+> lrwxrwxrwx 1 grant wheel  4 2007-01-24 10:23 testlink -> test
+> 
+> Client-side, 2.4.34c is with this new patch, 2.4.33.3 and 2.6.19.2 
+> for comparison:
+> 
+> grant@sempro:/home/other$ uname -r
+> 2.4.33.3
+> grant@sempro:/home/other$ ls -l
+> total 4096
+> drwxr-xr-x 1 root  root   0 2007-01-21 11:44 dir/
+> lrwxrwxrwx 1 root  root   3 2007-01-21 11:43 dirlink -> dir/
+> -rw-r--r-- 1 root  root  15 2007-01-21 11:43 file
+> lrwxrwxrwx 1 root  root   4 2007-01-21 11:44 filelink -> file
+> -rw-r--r-- 1 grant wheel 20 2007-01-24 10:24 test
+> lrwxrwxrwx 1 grant wheel  4 2007-01-24 10:23 testlink -> test
+> 
+> grant@sempro:~$ uname -r
+> 2.6.19.2a
+> grant@sempro:~$ ls -l /home/other/
+> total 10
+> drwxr-xr-x 1 grant wheel  0 2007-01-21 11:44 dir/
+> lrwxr-xr-x 1 grant wheel  3 2007-01-21 11:43 dirlink -> dir/
+> -rwxr-xr-x 1 grant wheel 15 2007-01-21 11:43 file*
+> lrwxr-xr-x 1 grant wheel  4 2007-01-21 11:44 filelink -> file*
+> -rwxr-xr-x 1 grant wheel 20 2007-01-24 10:24 test*
+> lrwxr-xr-x 1 grant wheel  4 2007-01-24 10:23 testlink -> test*
+> 
+> grant@sempro:~$ uname -r
+> 2.4.34c
+> grant@sempro:~$ ls -l /home/other/
+> total 4096
+> drwxr-xr-x 1 grant wheel  0 2007-01-21 11:44 dir/
+> lrwxr-xr-x 1 grant wheel  3 2007-01-21 11:43 dirlink -> dir/
+> -rwxr-xr-x 1 grant wheel 15 2007-01-21 11:43 file*
+> lrwxr-xr-x 1 grant wheel  4 2007-01-21 11:44 filelink -> file*
+> -rwxr-xr-x 1 grant wheel 20 2007-01-24 10:24 test*
+> lrwxr-xr-x 1 grant wheel  4 2007-01-24 10:23 testlink -> test*
 
-Alan wrote:
->> kernel:   Error: Illegal request -- (Sense key=0x05)
->> kernel:   Read of scrambled sector without authentication -- (asc=0x6f,
->> ascq=0x03)
->>     
->
-> The disc is using digital rights management. If you are in a country that
-> permits it you can use a dvd reader library with decss support, if not
-> you'll have to either watch your disks on a system approved by the movie
-> industry enforcers or commit a crime to read the disc.
->   
-I knew of course about libdvdcss but I've never noticed before that the
-kernel issues these error messages to the syslog.
+Great, that's what I'd expect. If you patch your userspace, you can
+avoid the executable bits.
 
-So you say this is normal?! But the problem with ejecting isn't probably
-normal.
 
-Best wishes,
-Chris.
+-- 
+dann frazier
 
---------------050504000500000306060601
-Content-Type: text/x-vcard; charset=utf-8;
- name="calestyo.vcf"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment;
- filename="calestyo.vcf"
-
-YmVnaW46dmNhcmQNCmZuOk1pdHRlcmVyLCBDaHJpc3RvcGggQW50b24NCm46TWl0dGVyZXI7
-Q2hyaXN0b3BoIEFudG9uDQplbWFpbDtpbnRlcm5ldDpjYWxlc3R5b0BzY2llbnRpYS5uZXQN
-CngtbW96aWxsYS1odG1sOlRSVUUNCnZlcnNpb246Mi4xDQplbmQ6dmNhcmQNCg0K
---------------050504000500000306060601--
