@@ -1,72 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030200AbXAXD01@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965634AbXAXDsR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030200AbXAXD01 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jan 2007 22:26:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030229AbXAXD01
+	id S965634AbXAXDsR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jan 2007 22:48:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965638AbXAXDsR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jan 2007 22:26:27 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.158]:4858 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030200AbXAXD00 (ORCPT
+	Tue, 23 Jan 2007 22:48:17 -0500
+Received: from py-out-1112.google.com ([64.233.166.177]:16793 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965634AbXAXDsQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jan 2007 22:26:26 -0500
-Subject: Re: [patch 00/46] High resolution timer / dynamic tick update
-From: Daniel Walker <dwalker@mvista.com>
-To: Andrew Morton <akpm@osdl.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, John Stultz <johnstul@us.ibm.com>,
-       Arjan van de Veen <arjan@infradead.org>,
-       Roman Zippel <zippel@linux-m68k.org>
-In-Reply-To: <20070123182306.34e90711.akpm@osdl.org>
-References: <20070123211159.178138000@localhost.localdomain>
-	 <1169604991.19471.95.camel@imap.mvista.com>
-	 <20070123182306.34e90711.akpm@osdl.org>
-Content-Type: text/plain
-Date: Tue, 23 Jan 2007 19:25:09 -0800
-Message-Id: <1169609109.19471.147.camel@imap.mvista.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
+	Tue, 23 Jan 2007 22:48:16 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition:x-google-sender-auth;
+        b=RKkj+leD4rbGNNPygkorhBD/2VOa3208/ODxyDjhIp0YlPWcqGFF/VgIAQSVWj0FBHA7O1fzpBfwoHWii1+vpuY4kivwh4Oaa6HzMXrvhRCNZPjL6SDfC703gbga5G5c75S2xvvj/RmYShWtxTTNz81ofR/W4HdpNmQ5F80aavw=
+Message-ID: <59ad55d30701231948u5f1e02d8x3d06553cb373e5be@mail.gmail.com>
+Date: Tue, 23 Jan 2007 22:48:15 -0500
+From: "=?UTF-8?Q?Kristian_H=C3=B8gsberg?=" <krh@bitplanet.net>
+To: linux-kernel@vger.kernel.org, linux1394-devel@lists.sourceforge.net,
+       "Stefan Richter" <stefanr@s5r6.in-berlin.de>
+Subject: In-tree version of new FireWire drivers available
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+X-Google-Sender-Auth: c07864a69ae7c00d
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-01-23 at 18:23 -0800, Andrew Morton wrote:
+Hi,
 
-> > There appears to be some fairly clear duplication between my clocksource
-> > tree and this release of high resolution timers. Not to mention that we
-> > both submitted our tree's to Andrew within days . 
-> > 
-> > To lessen Andrews burden it would be wise to integrate the two trees
-> > prior to anything going into -mm .. It makes sense to eliminate this
-> > kind of duplication since it just results in wasted effort. With the
-> > benefit that the merge would likely result in a stronger patch set over
-> > all.
-> > 
-> 
-> There's also the question of testing status.  We know that the dynticks
-> patches in -mm mostly work.  Now that they appear to have been largely respun,
-> we don't know that any more.  Then if we go adding more stuff on top, problem
-> identification becomes harder.
+I've moved the new FireWire stack to an in-tree git repository and
+moved over the missing patches from my out-of-tree version.  The tree
+is available over here:
 
-My code is fairly stable and reviewed, for a couple months .. It also
-goes on -mm without this new high res/dynamic tick patches.. So you
-could accept that set while HRT stabilizes, and gets merged with my
-stuff. I wouldn't be pushing for my changes to go into 2.6.20 , but I
-think they could.
+  git://people.freedesktop.org/~krh/linux-2.6
 
-There is more collision from parts of my patch set which haven't been
-submitted to you. It's the clocksource->flags introduction in this new
-high res/dynamic tick patch set. I'd NAK those just because I'm not
-convinced they're well thought out, and since they make changes to
-several arch clocksources reverting them later wouldn't be to fun.
+with gitweb avialable here:
 
-> I thought that dynticks/hrtimers was a done thing: in fact $certain_people wanted
-> them in 2.6.20.  The late-breaking rip-up-and-rewrite was rather unwelcome.  But
-> I haven't got onto reading the patchset yet.
+  http://gitweb.freedesktop.org/?p=users/krh/linux-2.6.git;a=summary
 
-I haven't review it all either, but I was rather surprised to see such
-extensive changes this late. The -mm version was getting pretty mature
-too..
+There's only one branch there which is branched of off Stefan Richters
+master from the linux1394 repo, and has the most recent work from my
+out-of -tree repo.  Hosting this on freedesktop.org should be fine,
+though kernel.org may be more appropriate :)
 
-Daniel
+Changes since the merge into the linux1394 tree include:
 
+ - gap count optimization
+ - full bus management
+ - loopback for async requests to the local node
+ - a bug fix for a problem exposed by VIA 6306 controllers
+ - a typo fix from the bitfield -> mask+shift conversion.
+
+Plus I've merged Stefans recent fixes and resolved the few conflicts
+from that.  Stefan, I'm still not sure what the work flow should be
+here, do you want to just pull these changes or should I send the 13
+patches to linux1394-devel?
+
+cheers,
+Kristian
