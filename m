@@ -1,71 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751546AbXAXP4g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751469AbXAXP7n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751546AbXAXP4g (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jan 2007 10:56:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751542AbXAXP4f
+	id S1751469AbXAXP7n (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jan 2007 10:59:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751482AbXAXP7m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jan 2007 10:56:35 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:10321 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751401AbXAXP4e (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jan 2007 10:56:34 -0500
-Date: Wed, 24 Jan 2007 07:51:45 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Andrew Morton <akpm@osdl.org>, Alexey Dobriyan <adobriyan@gmail.com>,
-       adaplas@pol.net, linux-kernel@vger.kernel.org,
-       Jordan Crouse <jordan.crouse@amd.com>
-Subject: Re: [Linux-fbdev-devel] [PATCH] Recognize video=gx1fb:... option
-Message-Id: <20070124075145.8481a9c3.randy.dunlap@oracle.com>
-In-Reply-To: <20070124004826.0d1adffe.akpm@osdl.org>
-References: <20070119211051.GC5013@martell.zuzino.mipt.ru>
-	<20070124004826.0d1adffe.akpm@osdl.org>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.0 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 24 Jan 2007 10:59:42 -0500
+Received: from omx2-ext.sgi.com ([192.48.171.19]:33389 "EHLO omx2.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751469AbXAXP7k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jan 2007 10:59:40 -0500
+Message-ID: <45B78261.8070604@sgi.com>
+Date: Wed, 24 Jan 2007 09:59:29 -0600
+From: Michael Reed <mdr@sgi.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20060911)
+MIME-Version: 1.0
+To: Ed Lin <ed.lin@promise.com>
+CC: linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       "james.Bottomley" <james.Bottomley@SteelEye.com>,
+       jeff <jeff@garzik.org>, promise_linux <promise_linux@promise.com>
+Subject: Re: [patch] scsi: use lock per host instead of per device for shared
+ queue tag host
+References: <NONAMEBDp7mvjkO22Zh0000056d@nonameb.ptu.promise.com>
+In-Reply-To: <NONAMEBDp7mvjkO22Zh0000056d@nonameb.ptu.promise.com>
+X-Enigmail-Version: 0.94.1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 24 Jan 2007 00:48:26 -0800 Andrew Morton wrote:
+How 'bout a comment in scsh_host.h indicating that the pointer will be NULL unless
+initialized by the driver?
 
-> On Sat, 20 Jan 2007 00:10:51 +0300
-> Alexey Dobriyan <adobriyan@gmail.com> wrote:
+"Protect shared block queue tag" is unique to stex.  Perhaps have no comment on
+the variable declaration in scsi_host.h and explain why you use it in stex.
+
+Mike
+
+
+Ed Lin wrote:
+> The block layer uses lock to protect request queue. Every scsi device
+> has a unique request queue, and queue lock is the default lock in struct
+> request_queue. This is good for normal cases. But for a  host with
+> shared queue tag (e.g. stex controllers), a queue lock per device means
+> the shared queue tag is not protected when multiple devices are accessed
+> at a same time.  This patch is a simple fix for this situation by introducing
+> a host queue lock to protect shared queue tag. Without this patch we will
+> see various kernel panics (including the BUG() and kernel errors in
+> blk_queue_start_tag and blk_queue_end_tag of ll_rw_blk.c) when accessing
+> different devices simultaneously (e.g. copying big file from one device to
+> another in smp kernels).
 > 
-> > Juergen Beisert reported that the following option doesn't work for him
-> > 
-> > 	video=gx1fb:1024x768-16@60
-> > 
-> > though sisfb was able to parse similar option correctly.
-> > 
+> This is against kernel 2.6.20-rc5.
 > 
-> And does this patch fix it for him? ;)
-
-Yes, Juergen replied to the patch:
-
-Thank you very much. Yes it works. I tried these kernel parameters:
-
-1) video=gx1fb:mode:1280x1024-16@60,crt:1
-  -> CRT was active, 160x64 console
-2) video=gx1fb:mode:1024x768-16@60,crt:1
-  -> CRT was active, 128x48 console
-3) video=gx1fb:mode:800x600-16@60,crt:0,panel:800x600
-  -> CRT was disabled, 100x37 console
-4) video=gx1fb:mode:1024x768-16@60,crt:0,panel:800x600
-  -> CRT was disabled, 80x25 console
-
-Sorry, I have no flatpanel, so I cannot test if the "panel" option works 
-correctly. But somethings changes when I tried different values (see 3 and 
-4).
-
-Regards
-Juergen
-
-
----
-~Randy
+> Signed-off-by: Ed Lin <ed.lin@promise.com>
+> ---
+>  drivers/scsi/scsi_lib.c  |    2 +-
+>  drivers/scsi/stex.c      |    2 ++
+>  include/scsi/scsi_host.h |    3 +++
+>  3 files changed, 6 insertions(+), 1 deletion(-)
+> 
+> diff -purN a/drivers/scsi/scsi_lib.c b/drivers/scsi/scsi_lib.c
+> --- a/drivers/scsi/scsi_lib.c	2007-01-23 14:40:28.000000000 -0800
+> +++ b/drivers/scsi/scsi_lib.c	2007-01-23 14:46:43.000000000 -0800
+> @@ -1574,7 +1574,7 @@ struct request_queue *__scsi_alloc_queue
+>  {
+>  	struct request_queue *q;
+>  
+> -	q = blk_init_queue(request_fn, NULL);
+> +	q = blk_init_queue(request_fn, shost->req_q_lock);
+>  	if (!q)
+>  		return NULL;
+>  
+> diff -purN a/drivers/scsi/stex.c b/drivers/scsi/stex.c
+> --- a/drivers/scsi/stex.c	2007-01-23 14:40:28.000000000 -0800
+> +++ b/drivers/scsi/stex.c	2007-01-23 14:48:59.000000000 -0800
+> @@ -1254,6 +1254,8 @@ stex_probe(struct pci_dev *pdev, const s
+>  	if (err)
+>  		goto out_free_irq;
+>  
+> +	spin_lock_init(&host->__req_q_lock);
+> +	host->req_q_lock = &host->__req_q_lock;
+>  	err = scsi_init_shared_tag_map(host, host->can_queue);
+>  	if (err) {
+>  		printk(KERN_ERR DRV_NAME "(%s): init shared queue failed\n",
+> diff -purN a/include/scsi/scsi_host.h b/include/scsi/scsi_host.h
+> --- a/include/scsi/scsi_host.h	2007-01-23 14:40:29.000000000 -0800
+> +++ b/include/scsi/scsi_host.h	2007-01-23 14:57:04.000000000 -0800
+> @@ -508,6 +508,9 @@ struct Scsi_Host {
+>  	spinlock_t		default_lock;
+>  	spinlock_t		*host_lock;
+>  
+> +	spinlock_t		__req_q_lock;
+> +	spinlock_t		*req_q_lock;/* protect shared block queue tag */
+> +
+>  	struct mutex		scan_mutex;/* serialize scanning activity */
+>  
+>  	struct list_head	eh_cmd_q;
+> 
+> 
+> 
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
