@@ -1,276 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750783AbXAXPQk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750955AbXAXPS3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750783AbXAXPQk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jan 2007 10:16:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750824AbXAXPQk
+	id S1750955AbXAXPS3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jan 2007 10:18:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750943AbXAXPS3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jan 2007 10:16:40 -0500
-Received: from mailhub.sw.ru ([195.214.233.200]:12353 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750783AbXAXPQj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jan 2007 10:16:39 -0500
-Date: Wed, 24 Jan 2007 18:22:51 +0300
-From: Alexey Dobriyan <adobriyan@openvz.org>
-To: Andrew Morton <akpm@osdl.org>
-Cc: Al Viro <viro@ftp.linux.org.uk>, linux-kernel@vger.kernel.org,
-       devel@openvz.org
-Subject: Re: [PATCH] Fix rmmod/read/write races in /proc entries
-Message-ID: <20070124152251.GA11116@localhost.sw.ru>
-References: <20061227134223.GA6044@localhost.sw.ru> <20061227135624.GP17561@ftp.linux.org.uk> <20061228082147.GA11127@localhost.sw.ru> <20070115153927.GA24731@localhost.sw.ru> <20070123125801.7982c23f.akpm@osdl.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070123125801.7982c23f.akpm@osdl.org>
-User-Agent: Mutt/1.5.11
+	Wed, 24 Jan 2007 10:18:29 -0500
+Received: from cdma-33-242.msk.skylink.ru ([83.217.33.242]:52314 "EHLO
+	localhost.localdomain" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750824AbXAXPS2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jan 2007 10:18:28 -0500
+X-Greylist: delayed 2617 seconds by postgrey-1.27 at vger.kernel.org; Wed, 24 Jan 2007 10:18:25 EST
+To: Jeff Garzik <jeff@garzik.org>
+Cc: linuxppc-devel@ozlabs.org
+Cc: netdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Cc: linuxppc-devel@ozlabs.org
+From: Vitaly Bordug <vbordug@ru.mvista.com>
+Subject: [PATCH] [FS_ENET] OF-related fixup for FEC and SCC MAC's
+Date: Wed, 24 Jan 2007 17:33:37 +0300
+Message-ID: <20070124143336.1710.85305.stgit@localhost.localdomain>
+User-Agent: StGIT/0.11
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 23, 2007 at 12:58:01PM -0800, Andrew Morton wrote:
-> <head spins>
->
-> Looks a bit hacky.  Can this race not be fixed by addition of suitable
-> locking, or possibly refcounting-under-locking?
 
-I'll think about it.
+Updated direct resource pass with ioremap call, make it grant proper IRQ
+mapping, stuff incompatible with the new approach were respectively put  under
+#ifndef CONFIG_PPC_MERGE. It is required so that both ppc and powerpc
+could utilize fs_enet effectively.
 
-> > @@ -76,6 +77,12 @@ proc_file_read(struct file *file, char _
-> >  	if (!(page = (char*) __get_free_page(GFP_KERNEL)))
-> >  		return -ENOMEM;
-> >
-> > +	if (!dp->proc_fops)
-> > +		goto out_free;
-> > +	atomic_inc(&dp->pde_users);
-> > +	if (!dp->proc_fops)
-> > +		goto out_dec;
-> > +
->
-> You'll be shocked to know that I'd prefer more comments in there.  Enough
-> for a later maintainer to be able to understand what's going on.
-
-Here is replacement patch with rewritten changelog and comments in
-place. HTH.
-
-
-
-[PATCH] Fix rmmod/read/write races in /proc entries
-
-Current /proc creation interfaces suffer from at least two types of races:
---------------------------------------------------------
-1. Write via ->write_proc sleeps in copy_from_user(). Module disappears
-   meanwhile.
-
-   pde = create_proc_entry()
-   if (!pde)
-	return -ENOMEM;
-   pde->write_proc = ...
-				open
-				write
-				copy_from_user
-   pde = create_proc_entry();
-   if (!pde) {
-	remove_proc_entry();
-	return -ENOMEM;
-	/* module unloaded */
-   }
-				*boom*
---------------------------------------------------------
-2. Read/write happens when PDE only partially initialized. ->data is NULL
-   when create_proc_entry() returns. Almost all ->read_proc and
-   ->write_proc handlers assume that ->data is valid.
-
-   pde = create_proc_entry();
-   if (pde) {
-	/* which dereferences ->data */
-	pde->write_proc = ...
-				open
-				write
-	pde->data = ...
-   }
---------------------------------------------------------
-
-The following plan is going to be executed (as per Al Viro's explanations):
-
-PDE gets atomic counter counting reads and writes in progress done
-via ->read_proc, ->write_proc, ->get_info . Generic proc code will bump
-PDE's counter before calling into module-specific method and decrement
-it after it returns.
-
-remove_proc_entry() will wait until all readers and writers are done.
-To do this reliably it will set ->proc_fops to NULL and generic proc
-code won't call into module it it sees NULL ->proc_fops.
-
-This patch implements part above. So far, no changes in proc users
-required. Patch fixes races of type 1.
-
-
-
-Unfortunately, fixing races of type #2 will require changing in some modules.
-
-We need an indicator of PDE readinness of accepting reads and writes.
-->proc_fops nicely fits. It is going to get new semantics:
-
-* if ->proc_fops is valid, PDE will accept reads and writes via ->read_proc,
-  ->write_proc, ->get_info.
-* if ->proc_fops is NULL, PDE won't call into module's code.
-
-remove_proc_entry() and only remove_proc_entry() will clear ->proc_fops.
-create_proc_entry() will not set ->proc_fops. Helpers will be required.
-
-Helpers will set ->proc_fops last (after ->data, particularly).
-
-	set_proc_entry_data_fops(pde, data, fops);
-	set_proc_entry_data_read_write(pde, data, read_proc, write_proc);
-
-When all necessary helpers will be plugged, create_proc_entry will stop
-setting default proc_fops and helpers will start setting it. Races of
-type #2 will be fixed.
-
-If module sets ->proc_fops only, or uses create_proc_read_entry(), or uses
-create_proc_info_entry(), there won't be any changes for module.
+Signed-off-by: Vitaly Bordug <vbordug@ru.mvista.com>                                                                                  
 ---
 
- fs/proc/generic.c       |   61 +++++++++++++++++++++++++++++++++++++++++++++---
- include/linux/proc_fs.h |   15 +++++++++++
- 2 files changed, 73 insertions(+), 3 deletions(-)
+ drivers/net/fs_enet/mac-fec.c |   13 +++++++++----
+ drivers/net/fs_enet/mac-scc.c |    6 ++++--
+ drivers/net/phy/fixed.c       |    2 +-
+ 3 files changed, 14 insertions(+), 7 deletions(-)
 
---- a/fs/proc/generic.c
-+++ b/fs/proc/generic.c
-@@ -19,6 +19,7 @@ #include <linux/init.h>
- #include <linux/idr.h>
- #include <linux/namei.h>
- #include <linux/bitops.h>
-+#include <linux/delay.h>
- #include <linux/spinlock.h>
- #include <asm/uaccess.h>
- 
-@@ -76,6 +77,25 @@ proc_file_read(struct file *file, char _
- 	if (!(page = (char*) __get_free_page(GFP_KERNEL)))
- 		return -ENOMEM;
- 
-+	if (!dp->proc_fops)
-+		/*
-+		 * remove_proc_entry() marked PDE as "going away".
-+		 * No new readers allowed.
-+		 */
-+		goto out_free;
-+	/*
-+	 * We are going to call into module's code via ->get_info or
-+	 * ->read_proc. Bump refcount so that remove_proc_entry() will
-+	 * wait for read to complete.
-+	 */
-+	atomic_inc(&dp->pde_users);
-+	if (!dp->proc_fops)
-+		/*
-+		 * While we're busy bumping refcount, remove_proc_entry()
-+		 * marked PDE as "going away". Obey.
-+		 */
-+		goto out_dec;
+diff --git a/drivers/net/fs_enet/mac-fec.c b/drivers/net/fs_enet/mac-fec.c
+index c2c5fd4..ff68394 100644
+--- a/drivers/net/fs_enet/mac-fec.c
++++ b/drivers/net/fs_enet/mac-fec.c
+@@ -104,9 +104,9 @@ static int do_pd_setup(struct fs_enet_private *fep)
+ 	fep->interrupt = platform_get_irq_byname(pdev,"interrupt");
+ 	if (fep->interrupt < 0)
+ 		return -EINVAL;
+-	
 +
- 	while ((nbytes > 0) && !eof) {
- 		count = min_t(size_t, PROC_BLOCK_SIZE, nbytes);
+ 	r = platform_get_resource_byname(pdev, IORESOURCE_MEM, "regs");
+-	fep->fec.fecp =(void*)r->start;
++	fep->fec.fecp = ioremap(r->start, r->end - r->start + 1);
  
-@@ -195,6 +215,9 @@ proc_file_read(struct file *file, char _
- 		buf += n;
- 		retval += n;
- 	}
-+out_dec:
-+	atomic_dec(&dp->pde_users);
-+out_free:
- 	free_page((unsigned long) page);
- 	return retval;
- }
-@@ -205,14 +228,33 @@ proc_file_write(struct file *file, const
+ 	if(fep->fec.fecp == NULL)
+ 		return -EINVAL;
+@@ -319,11 +319,14 @@ static void restart(struct net_device *dev)
+ 	 * Clear any outstanding interrupt.
+ 	 */
+ 	FW(fecp, ievent, 0xffc0);
++#ifndef CONFIG_PPC_MERGE
+ 	FW(fecp, ivec, (fep->interrupt / 2) << 29);
+-	
++#else
++	FW(fecp, ivec, (virq_to_hw(fep->interrupt) / 2) << 29);
++#endif
+ 
+ 	/*
+-	 * adjust to speed (only for DUET & RMII) 
++	 * adjust to speed (only for DUET & RMII)
+ 	 */
+ #ifdef CONFIG_DUET
+ 	if (fpi->use_rmii) {
+@@ -418,6 +421,7 @@ static void stop(struct net_device *dev)
+ 
+ static void pre_request_irq(struct net_device *dev, int irq)
  {
- 	struct inode *inode = file->f_path.dentry->d_inode;
- 	struct proc_dir_entry * dp;
-+	ssize_t rv;
- 	
- 	dp = PDE(inode);
++#ifndef CONFIG_PPC_MERGE
+ 	immap_t *immap = fs_enet_immap;
+ 	u32 siel;
  
- 	if (!dp->write_proc)
- 		return -EIO;
-+	/*
-+	 * remove_proc_entry() marked PDE as "going away".
-+	 * No new writers allowed.
-+	 */
-+	if (!dp->proc_fops)
-+		return -EIO;
- 
--	/* FIXME: does this routine need ppos?  probably... */
--	return dp->write_proc(file, buffer, count, dp->data);
-+	rv = -EIO;
-+	/*
-+	 * We are going to call into module's code via ->write_proc .
-+	 * Bump refcount so that module won't dissapear while ->write_proc
-+	 * sleeps in copy_from_user(). remove_proc_entry() will wait for
-+	 * write to complete.
-+	 */
-+	atomic_inc(&dp->pde_users);
-+	if (dp->proc_fops)
-+		/* PDE is ready, refcount bumped, call into module. */
-+		/* FIXME: does this routine need ppos?  probably... */
-+		rv = dp->write_proc(file, buffer, count, dp->data);
-+	atomic_dec(&dp->pde_users);
-+	return rv;
+@@ -431,6 +435,7 @@ static void pre_request_irq(struct net_device *dev, int irq)
+ 			siel &= ~(0x80000000 >> (irq & ~1));
+ 		out_be32(&immap->im_siu_conf.sc_siel, siel);
+ 	}
++#endif
  }
  
+ static void post_free_irq(struct net_device *dev, int irq)
+diff --git a/drivers/net/fs_enet/mac-scc.c b/drivers/net/fs_enet/mac-scc.c
+index 95ec587..afd7fca 100644
+--- a/drivers/net/fs_enet/mac-scc.c
++++ b/drivers/net/fs_enet/mac-scc.c
+@@ -121,13 +121,13 @@ static int do_pd_setup(struct fs_enet_private *fep)
+ 		return -EINVAL;
  
-@@ -717,12 +759,25 @@ void remove_proc_entry(const char *name,
- 	if (!parent && xlate_proc_name(name, &parent, &fn) != 0)
- 		goto out;
- 	len = strlen(fn);
--
-+again:
- 	spin_lock(&proc_subdir_lock);
- 	for (p = &parent->subdir; *p; p=&(*p)->next ) {
- 		if (!proc_match(len, fn, *p))
- 			continue;
- 		de = *p;
-+
-+		/*
-+		 * Stop accepting new readers/writers. If you're dynamically
-+		 * allocating ->proc_fops, save a pointer somewhere.
-+		 */
-+		de->proc_fops = NULL;
-+		/* Wait until all readers/writers are done. */
-+		if (atomic_read(&de->pde_users) > 0) {
-+			spin_unlock(&proc_subdir_lock);
-+			msleep(1);
-+			goto again;
-+		}
-+
- 		*p = de->next;
- 		de->next = NULL;
- 		if (S_ISDIR(de->mode))
---- a/include/linux/proc_fs.h
-+++ b/include/linux/proc_fs.h
-@@ -56,6 +56,19 @@ struct proc_dir_entry {
- 	gid_t gid;
- 	loff_t size;
- 	struct inode_operations * proc_iops;
-+	/*
-+	 * NULL ->proc_fops means "PDE is going away RSN" or
-+	 * "PDE is just created". In either case ->get_info, ->read_proc,
-+	 * ->write_proc won't be called because it's too late or too early,
-+	 * respectively.
-+	 *
-+	 * Valid ->proc_fops means "use this file_operations" or
-+	 * "->data is setup, it's safe to call ->read_proc, ->write_proc which
-+	 * dereference it".
-+	 *
-+	 * If you're allocating ->proc_fops dynamically, save a pointer
-+	 * somewhere.
-+	 */
- 	const struct file_operations * proc_fops;
- 	get_info_t *get_info;
- 	struct module *owner;
-@@ -66,6 +79,8 @@ struct proc_dir_entry {
- 	atomic_t count;		/* use count */
- 	int deleted;		/* delete flag */
- 	void *set;
-+	atomic_t pde_users;	/* number of readers + number of writers via
-+				 * ->read_proc, ->write_proc, ->get_info */
- };
+ 	r = platform_get_resource_byname(pdev, IORESOURCE_MEM, "regs");
+-	fep->scc.sccp = (void *)r->start;
++	fep->scc.sccp = ioremap(r->start, r->end - r->start + 1);
  
- struct kcore_list {
-
+ 	if (fep->scc.sccp == NULL)
+ 		return -EINVAL;
+ 
+ 	r = platform_get_resource_byname(pdev, IORESOURCE_MEM, "pram");
+-	fep->scc.ep = (void *)r->start;
++	fep->scc.ep = ioremap(r->start, r->end - r->start + 1);
+ 
+ 	if (fep->scc.ep == NULL)
+ 		return -EINVAL;
+@@ -397,6 +397,7 @@ static void stop(struct net_device *dev)
+ 
+ static void pre_request_irq(struct net_device *dev, int irq)
+ {
++#ifndef CONFIG_PPC_MERGE
+ 	immap_t *immap = fs_enet_immap;
+ 	u32 siel;
+ 
+@@ -410,6 +411,7 @@ static void pre_request_irq(struct net_device *dev, int irq)
+ 			siel &= ~(0x80000000 >> (irq & ~1));
+ 		out_be32(&immap->im_siu_conf.sc_siel, siel);
+ 	}
++#endif
+ }
+ 
+ static void post_free_irq(struct net_device *dev, int irq)
+diff --git a/drivers/net/phy/fixed.c b/drivers/net/phy/fixed.c
+index 096d4a1..8613539 100644
+--- a/drivers/net/phy/fixed.c
++++ b/drivers/net/phy/fixed.c
+@@ -349,7 +349,7 @@ static int __init fixed_init(void)
+ 	fixed_mdio_register_device(0, 100, 1);
+ #endif
+ 
+-#ifdef CONFIX_FIXED_MII_10_FDX
++#ifdef CONFIG_FIXED_MII_10_FDX
+ 	fixed_mdio_register_device(0, 10, 1);
+ #endif
+ 	return 0;
