@@ -1,98 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750774AbXAXPoB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751441AbXAXPqc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750774AbXAXPoB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jan 2007 10:44:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751391AbXAXPoA
+	id S1751441AbXAXPqc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jan 2007 10:46:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751437AbXAXPqa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jan 2007 10:44:00 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:42711 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750774AbXAXPoA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jan 2007 10:44:00 -0500
-Date: Wed, 24 Jan 2007 16:42:27 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Andrew Morton <akpm@osdl.org>, LKML <linux-kernel@vger.kernel.org>,
-       John Stultz <johnstul@us.ibm.com>,
-       Arjan van de Veen <arjan@infradead.org>,
-       Roman Zippel <zippel@linux-m68k.org>
-Subject: [patch] clocksource: add verification (watchdog) helper, fix
-Message-ID: <20070124154227.GA20726@elte.hu>
-References: <20070123211159.178138000@localhost.localdomain> <20070123211205.541044000@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 24 Jan 2007 10:46:30 -0500
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:2025 "HELO
+	mailout.stusta.mhn.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751265AbXAXPq3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jan 2007 10:46:29 -0500
+Date: Wed, 24 Jan 2007 16:46:34 +0100
+From: Adrian Bunk <bunk@stusta.de>
+To: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Justin Piszcz <jpiszcz@lucidpixels.com>, mingo@redhat.com,
+       neilb@cse.unsw.edu.au, linux-raid@vger.kernel.org,
+       Duncan <1i5t5.duncan@cox.net>, Randy Dunlap <rdunlap@xenotime.net>,
+       sct@redhat.com, adilger@clusterfs.com, linux-ext4@vger.kernel.org,
+       Berthold Cogel <cogel@rrz.uni-koeln.de>,
+       =?utf-8?B?RnJhbsOnb2lz?= Valenduc <francois.valenduc@skynet.be>,
+       Alexey Starikovskiy <alexey.y.starikovskiy@linux.intel.com>,
+       greg@kroah.com, linux-usb-devel@lists.sourceforge.net,
+       Prakash Punnoor <prakash@punnoor.de>, Oliver Neukum <oliver@neukum.org>,
+       Alan Stern <stern@rowland.harvard.edu>
+Subject: 2.6.20-rc5: known unfixed regressions (v3) (part 1)
+Message-ID: <20070124154634.GJ17836@stusta.de>
+References: <Pine.LNX.4.64.0701121424520.11200@woody.osdl.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20070123211205.541044000@localhost.localdomain>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -4.3
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-4.3 required=5.9 tests=ALL_TRUSTED,BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-3.3 ALL_TRUSTED            Did not pass through any untrusted hosts
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <Pine.LNX.4.64.0701121424520.11200@woody.osdl.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This email lists some known regressions in 2.6.20-rc5 compared to 2.6.19
+that are not yet fixed in Linus' tree.
 
-one out of my 10 testsystems didnt properly enter high-res mode (but 
-safely fell back to low-res mode), the patch below fixes this.
+If you find your name in the Cc header, you are either submitter of one
+of the bugs, maintainer of an affectected subsystem or driver, a patch
+of you caused a breakage or I'm considering you in any other way possibly
+involved with one or more of these issues.
 
-	Ingo
+Due to the huge amount of recipients, please trim the Cc when answering.
 
----------------------------->
-Subject: [patch] clocksource: add verification (watchdog) helper, fix
-From: Ingo Molnar <mingo@elte.hu>
 
-if a clocksource is being verified by the watchdog, but the watchdog 
-clocksource is registered /after/ the possibly-unstable clocksource has 
-been registered, then when we switch that clocksource into high-res 
-capable mode we also need to propagate this fact to the rest of the 
-system - so that it properly switches into high-res mode.
+Subject    : raid1: copying a big file triggers OOM killer
+References : http://lkml.org/lkml/2007/1/20/69
+Submitter  : Justin Piszcz <jpiszcz@lucidpixels.com>
+Status     : unknown
 
-this solves one particular system not entering high-res mode (but 
-falling back to low-res mode) - with this patch it properly enters 
-high-res mode:
 
- Switched to high resolution mode on CPU 0
- Switched to high resolution mode on CPU 1
- Switched to high resolution mode on CPU 2
- Switched to high resolution mode on CPU 3
+Subject    : RAID-6 chunk_aligned_read problem
+References : http://bugzilla.kernel.org/show_bug.cgi?id=7835
+Submitter  : Duncan <1i5t5.duncan@cox.net>
+Status     : unknown
 
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- kernel/time/clocksource.c |   11 ++++++++++-
- 1 file changed, 10 insertions(+), 1 deletion(-)
 
-Index: linux/kernel/time/clocksource.c
-===================================================================
---- linux.orig/kernel/time/clocksource.c
-+++ linux/kernel/time/clocksource.c
-@@ -28,6 +28,7 @@
- #include <linux/sysdev.h>
- #include <linux/init.h>
- #include <linux/module.h>
-+#include <linux/tick.h>
- 
- /* XXX - Would like a better way for initializing curr_clocksource */
- extern struct clocksource clocksource_jiffies;
-@@ -106,8 +107,16 @@ static void clocksource_watchdog(unsigne
- 		/* Initialized ? */
- 		if (!(cs->flags & CLOCK_SOURCE_WATCHDOG)) {
- 			if ((cs->flags & CLOCK_SOURCE_IS_CONTINUOUS) &&
--			    (watchdog->flags & CLOCK_SOURCE_IS_CONTINUOUS))
-+			    (watchdog->flags & CLOCK_SOURCE_IS_CONTINUOUS)) {
- 				cs->flags |= CLOCK_SOURCE_VALID_FOR_HRES;
-+				/*
-+				 * We just marked the clocksource as
-+				 * highres-capable, notify the rest of the
-+				 * system as well so that we transition
-+				 * into high-res mode:
-+				 */
-+				tick_clock_notify();
-+			}
- 			cs->flags |= CLOCK_SOURCE_WATCHDOG;
- 			cs->wd_last = csnow;
- 		} else {
+Subject    : ext3 with data=journal hangs when running fsx-linux since -rc2
+References : http://bugzilla.kernel.org/show_bug.cgi?id=7844
+Submitter  : Randy Dunlap <rdunlap@xenotime.net>
+Status     : unknown
+
+
+Subject    : reboot instead of powerdown  (CONFIG_USB_SUSPEND)
+References : http://lkml.org/lkml/2006/12/25/40
+             http://bugzilla.kernel.org/show_bug.cgi?id=7828
+Submitter  : Berthold Cogel <cogel@rrz.uni-koeln.de>
+             François Valenduc <francois.valenduc@skynet.be>
+Handled-By : Alexey Starikovskiy <alexey.y.starikovskiy@linux.intel.com>
+Status     : problem is being debugged
+
+
+Subject    : usb somehow broken  (CONFIG_USB_SUSPEND)
+References : http://lkml.org/lkml/2007/1/11/146
+Submitter  : Prakash Punnoor <prakash@punnoor.de>
+Handled-By : Oliver Neukum <oliver@neukum.org>
+             Alan Stern <stern@rowland.harvard.edu>
+Status     : problem is being debugged
+
+
