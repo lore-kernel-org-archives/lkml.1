@@ -1,52 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965610AbXAXCCd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965613AbXAXCDM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965610AbXAXCCd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jan 2007 21:02:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965611AbXAXCCd
+	id S965613AbXAXCDM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jan 2007 21:03:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965615AbXAXCDM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jan 2007 21:02:33 -0500
-Received: from mail.gmx.net ([213.165.64.20]:57769 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S965610AbXAXCCc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jan 2007 21:02:32 -0500
-X-Authenticated: #14842415
-From: Alessandro Di Marco <dmr@gmx.it>
-To: "Scott Preece" <sepreece@gmail.com>
-Cc: "Pavel Machek" <pavel@ucw.cz>, linux-kernel@vger.kernel.org,
-       vojtech@suse.cz
-Subject: Re: [ANNOUNCE] System Inactivity Monitor v1.0
-References: <877ivkrv5s.fsf@gmx.it> <20070119101103.GA5730@ucw.cz>
-	<877ivfi60i.fsf@gmx.it> <20070123094114.GE6033@ucw.cz>
-	<87wt3dhlte.fsf@gmx.it> <20070123163442.GA18662@elf.ucw.cz>
-	<7b69d1470701231134k4e3e8a4dj2b95a230fa3da81c@mail.gmail.com>
-Date: Wed, 24 Jan 2007 03:02:29 +0100
-In-Reply-To: <7b69d1470701231134k4e3e8a4dj2b95a230fa3da81c@mail.gmail.com> (Scott Preece's message of "Tue\, 23 Jan 2007 13\:34\:11 -0600")
-Message-ID: <877ivdchca.fsf@gmx.it>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.92 (gnu/linux)
+	Tue, 23 Jan 2007 21:03:12 -0500
+Received: from nic.NetDirect.CA ([216.16.235.2]:53767 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965613AbXAXCDL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jan 2007 21:03:11 -0500
+X-Originating-Ip: 74.109.98.130
+Date: Tue, 23 Jan 2007 21:02:55 -0500 (EST)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@CPE00045a9c397f-CM001225dbafb6
+To: Oleg Verych <olecom@flower.upol.cz>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: identifying CONFIG variable typoes in the source tree
+In-Reply-To: <slrnerd7e8.e7s.olecom@flower.upol.cz>
+Message-ID: <Pine.LNX.4.64.0701232056040.7737@CPE00045a9c397f-CM001225dbafb6>
+References: <Pine.LNX.4.64.0701231559090.3014@CPE00045a9c397f-CM001225dbafb6>
+ <slrnerd7e8.e7s.olecom@flower.upol.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Y-GMX-Trusted: 0
+Content-Type: MULTIPART/MIXED; BOUNDARY="0-504790104-1169604174=:7739"
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Scott Preece" <sepreece@gmail.com> writes:
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-   My own hot button is making sure that the definition of what
-   constitutes user activity is managed in exactly one place, whether in
-   the kernel or not. My naive model would be to put the response at user
-   level, but to provide a single point of definition in the kernel (say,
-   /dev/useractivity or the equivalent) that the user-level daemon could
-   listen to.
+--0-504790104-1169604174=:7739
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 
-Unfortunately the term "user activity" seems a bit too vague for this. IMHO
-different users (but also applications) present different needs that you cannot
-fit with a single device node.
 
-Example. The user expects that the keyboard light is turned off after 10
-minutes of keyboard inactivity, disregarding the mouse movements. This makes
-sense since the glare at the bottom disturb the Quake sessions. :-) However when
-the screen is blanked, the user expects that either keyboard or mouse events
-can unblank it...
+On Tue, 23 Jan 2007, Oleg Verych wrote:
 
--- 
-All of the significant battles are waged within the self. - Sheldon Kopp
+> On 2007-01-23, Robert P. J. Day wrote:
+> []
+> >   what it does is scan the entire tree for lines of the form
+> >
+> > ...if... CONFIG_whatever...
+> >
+> > collects all of those CONFIG variables and, one at a time, checks to
+> > see if that variable even exists in any Kconfig file in the tree so
+> > that it could possibly ever be set.  (i'm not guaranteeing that the
+> > script is perfect, but it does generate some interesting results.)
+> >
+> >   the first few lines of output:
+> >
+> > 53C700_BE_BUS
+> > 64_BIT
+> > 68328_SERIAL_UART2
+> > ...
+> >
+> []
+> >   the script turns up 284 examples of this.
+>
+> Next, this script must to learn how to search whom to send this info.
+> And if there's nobody, just to make list of known orphans ;).
+
+  i'm pretty sure that's not going to happen this evening, but i
+tweaked the script just a bit so you can run it (from the top-level
+directory) against any subdirectory to see what CONFIG symbols appear
+to be (for lack of a better word) "orphaned."
+
+  let's test it against, say, fs/xfs:
+
+$ ../config_vars.sh fs/xfs
+FS_POSIX_CAP
+FS_POSIX_MAC
+XFS_DEBUG
+XFS_DMAPI
+XFS_TRACE
+
+$ grep -r FS_POSIX_CAP .
+fs/xfs/xfs_cap.h:#ifdef CONFIG_FS_POSIX_CAP
+
+$ grep -r FS_POSIX_MAC .
+./fs/xfs/xfs_mac.h:#ifdef CONFIG_FS_POSIX_MAC
+
+$ grep -r XFS_DEBUG .
+./fs/xfs/xfs.h:#ifdef CONFIG_XFS_DEBUG
+./fs/xfs/Makefile-linux-2.6:ifeq ($(CONFIG_XFS_DEBUG),y)
+
+and so on.  of course, there may be good reasons for some of these
+variables to be there with no corresponding Kconfig entry -- i'm just
+printing them out.
+
+rday
+
+p.s. new script is attached.
+--0-504790104-1169604174=:7739
+Content-Type: APPLICATION/x-sh; name=config_vars.sh
+Content-Transfer-Encoding: BASE64
+Content-ID: <Pine.LNX.4.64.0701232102540.7739@CPE00045a9c397f-CM001225dbafb6>
+Content-Description: 
+Content-Disposition: attachment; filename=config_vars.sh
+
+IyEvYmluL3NoCgpESVI9JHsxLS59CgpDVj0kKGdyZXAgLXJoICJeIy4qaWYu
+KiBDT05GSUdfW0EtWmEtejAtOV0iICR7RElSfSB8IGdyZXAgLXYgZW5kaWYp
+CkNWQVJTPSQoZWNobyAiJHtDVn0iIHwgc2VkICJzLy4qXChDT05GSUdfW14J
+ID1cKVwqXC9dKlwpLiovXDEvIiB8IHNvcnQgLXUgfCBncmVwICJeQ09ORklH
+XyIpCgprY2ZpbGVzPSQoZmluZCAuIC1uYW1lICJLY29uZmlnKiIpCgpmb3Ig
+Y3YgaW4gJHtDVkFSU30gOyBkbwoJIyBlY2hvICJjdiA9ICR7Y3Z9IgoJc3Ry
+PSQoZWNobyAke2N2fSB8IHNlZCAicy9eQ09ORklHXy8vIikKCSMgZWNobyAi
+c3RyID0gJHtzdHJ9IgoJZ3JlcCAtd3EgJHtzdHJ9ICR7a2NmaWxlc30gfHwg
+ewoJCWVjaG8gJHtzdHJ9CgkJIyBncmVwIC1yICR7c3RyfSAke0RJUn0JCSMg
+dW5jb21tZW50IGlmIHlvdSB3YW50Cgl9CmRvbmUK
+
+--0-504790104-1169604174=:7739--
