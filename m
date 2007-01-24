@@ -1,87 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751465AbXAXTxf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751649AbXAXT5j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751465AbXAXTxf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jan 2007 14:53:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751649AbXAXTxf
+	id S1751649AbXAXT5j (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jan 2007 14:57:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752003AbXAXT5j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jan 2007 14:53:35 -0500
-Received: from hera.kernel.org ([140.211.167.34]:55947 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751465AbXAXTxe convert rfc822-to-8bit (ORCPT
+	Wed, 24 Jan 2007 14:57:39 -0500
+Received: from e31.co.us.ibm.com ([32.97.110.149]:46952 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751649AbXAXT5i (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jan 2007 14:53:34 -0500
-From: Len Brown <lenb@kernel.org>
-Organization: Intel Open Source Technology Center
-To: Lionel Landwerlin <landwer@free.fr>
-Subject: Re: 2.6.19.2 sky2/acpi crashes
-Date: Wed, 24 Jan 2007 14:51:52 -0500
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org
-References: <1169542768.5537.11.camel@cocoduo> <200701232136.54731.lenb@kernel.org> <1169641425.8145.5.camel@cocoduo>
-In-Reply-To: <1169641425.8145.5.camel@cocoduo>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200701241451.52238.lenb@kernel.org>
+	Wed, 24 Jan 2007 14:57:38 -0500
+Subject: Re: [patch 00/46] High resolution timer / dynamic tick update
+From: john stultz <johnstul@us.ibm.com>
+To: Daniel Walker <dwalker@mvista.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@osdl.org>, LKML <linux-kernel@vger.kernel.org>,
+       Arjan van de Veen <arjan@infradead.org>,
+       Roman Zippel <zippel@linux-m68k.org>
+In-Reply-To: <1169631016.19471.175.camel@imap.mvista.com>
+References: <20070123211159.178138000@localhost.localdomain>
+	 <1169604991.19471.95.camel@imap.mvista.com>
+	 <20070124070701.GA17654@elte.hu>
+	 <1169631016.19471.175.camel@imap.mvista.com>
+Content-Type: text/plain
+Date: Wed, 24 Jan 2007 11:57:33 -0800
+Message-Id: <1169668653.6905.49.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 24 January 2007 07:23, Lionel Landwerlin wrote:
-> Le mardi 23 janvier 2007 à 21:36 -0500, Len Brown a écrit :
-> > > > > Apple Macbook 2GHz (x86, not amd64)
-> > 
-> > > > > > > Please try to remove processor module.
-> > > > > >
-> > > > > > Ok, that's done. Same problem.
-> > > > >
-> > > > > any difference with "idle=poll"?
-> > > > > if yes, how about "idle=halt"?
-> > > >
-> > > > idle=poll seems to fix the problem (cpu fan is running almost at full
-> > > > speed). Maybe I should run a longer test... For now it consists to run
-> > > > about 15 torrents and watching HDTV through ethernet device.
-> > > >
-> > > > idle=halt does not :
-> > > 
-> > > It sounds like issues relative to Processor C state.
-> > > Please enter a bug in ACPI category on bugzilla.kernel.org
-> > 
-> > Actually, the test above with the processor module removed proved
-> > that it isn't ACPI C-states -- as they will not be available.
-> > You should be able to observe that /proc/acpi/processor/*/power
-> > does not indicate any C-state use when processor is unloaded.
-> > 
-> > My guess was that some deep C-state with long exit latency
-> > was interfering with the device.  booting w/o the processor
-> > module should have left you running the native mwait idle.
-> > booting with idle=halt should have left you running the HLT idle.
-> > booting with idle=poll is a busy spin loop that never enters
-> > any hardware power saving state.
-> > 
-> > I'm quite puzzled that idle=halt was not sufficient to solve the issue,
-> > because that should be the lowest exit latency idle loop.
-> > So maybe I'm wrong about the cause -- though I can't then
-> > explain why idle=poll helps...
-> > 
-> > All of the idle selection options cause the kernel to print
-> > a line with the word "idle" in it.  Perhaps you could search
-> > your dmesg for "idle" to verify that it is running what we
-> > think it is?
+On Wed, 2007-01-24 at 01:30 -0800, Daniel Walker wrote:
 > 
-> Here I join the complete log for idle=halt
+> My patch set has been stable for months, and reviewed and tested by
+> John and I constantly (With you and Thomas on the CC list each
+> release).. It's a completely safe bet, IMO . 
 
-it is indeed doing what you asked it to
-Jan 24 01:11:21 cocoduo kernel: [   30.741018] using halt in idle threads.
+Oh, I really wanted to stay out of this, but just a small clarification:
+I've reviewed your patches on a number of occasions, but I can't recall
+actually having the time to run them.
 
-> I'm running idle=poll for more 1 hour now with heavy ethernet load, no
-> crash. It usualy happens in 10~15mn with idle=halt and 4~5mn with no
-> idle option.
+Personally, I'm a little paranoid, so I'd be wary of counting any
+testing outside of -mm for much, as there are an amazing number of
+strange systems out there.
 
-I think my guess is wrong.  If idle=halt doesn't help, then the failure
-doesn't have anything to do with the idle loop and power saving idle states.
+Ok, so my take: While I've looked over both patch sets, and have noticed
+(and mentioned to tglx) the similarity in some of the changes, I don't
+see any big conflict in intent. They're both cleanups that make the
+clocksource code more flexible for uses other them just system
+timekeeping.
 
-I can't explain why idle=poll helps.
+Thomas' changes are more obviously purpose driven, and Daniel's appear
+more like just cleanups. So given that, if it were me, I'd put Thomas
+changes in first, and re-diff Daniel's non-redundant changes on top.
 
--Len
+Although, to be fair, I do know that Daniel has future sched_clock
+related patches that need his cleanups (so the cleanups are not just
+shuffling code). However, I'm not as psyched about those changes as I am
+about HRT, so again I'd rank HRT higher on the priority list.
+
+So I'm bummed this has collided like it has. I do like a number of
+Daniel's cleanups, and Thomas (and myself as well, really) could have
+communicated better. So the duplicate code is unfortunate, but its not
+really a stop-everything deal breaker, is it?
+
+Anyway, just my take.
+-john
+
