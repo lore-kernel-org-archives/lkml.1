@@ -1,68 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752037AbXAXRFj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752043AbXAXRGg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752037AbXAXRFj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jan 2007 12:05:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752039AbXAXRFj
+	id S1752043AbXAXRGg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jan 2007 12:06:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752041AbXAXRGg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jan 2007 12:05:39 -0500
-Received: from tomts25-srv.bellnexxia.net ([209.226.175.188]:47066 "EHLO
-	tomts25-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752037AbXAXRFi (ORCPT
+	Wed, 24 Jan 2007 12:06:36 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:50213 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752043AbXAXRGf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jan 2007 12:05:38 -0500
-Date: Wed, 24 Jan 2007 12:00:22 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Paul Mackerras <paulus@samba.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@osdl.org>,
-       Ingo Molnar <mingo@redhat.com>, Greg Kroah-Hartman <gregkh@suse.de>,
-       Christoph Hellwig <hch@infradead.org>,
-       "Martin J. Bligh" <mbligh@mbligh.org>, linuxppc-dev@ozlabs.org,
-       Douglas Niehaus <niehaus@eecs.ku.edu>, ltt-dev@shafik.org,
-       systemtap@sources.redhat.com, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 7/10] local_t : powerpc
-Message-ID: <20070124170022.GE4979@Krystal>
-References: <20061221001545.GP28643@Krystal> <20061221002705.GW28643@Krystal> <17847.8700.118329.777644@cargo.ozlabs.ibm.com>
-Mime-Version: 1.0
+	Wed, 24 Jan 2007 12:06:35 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: lkml <linux-kernel@vger.kernel.org>, containers@lists.osdl.org,
+       Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH 4/8] user ns: hook permission
+References: <20061219225902.GA25904@sergelap.austin.ibm.com>
+	<20061219230051.GE25904@sergelap.austin.ibm.com>
+Date: Wed, 24 Jan 2007 10:06:03 -0700
+In-Reply-To: <20061219230051.GE25904@sergelap.austin.ibm.com> (Serge
+	E. Hallyn's message of "Tue, 19 Dec 2006 17:00:51 -0600")
+Message-ID: <m14pqg2w3o.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <17847.8700.118329.777644@cargo.ozlabs.ibm.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.4.32-grsec (i686)
-X-Uptime: 11:59:50 up 154 days, 14:07,  4 users,  load average: 0.42, 0.74, 0.69
-User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Paul Mackerras (paulus@samba.org) wrote:
-> Mathieu Desnoyers writes:
-> 
-> > +static __inline__ int local_dec_if_positive(local_t *l)
-> > +{
-> > +	int t;
-> > +
-> > +	__asm__ __volatile__(
-> > +"1:	lwarx	%0,0,%1		# local_dec_if_positive\n\
-> > +	addic.	%0,%0,-1\n\
-> > +	blt-	2f\n"
-> > +	PPC405_ERR77(0,%1)
-> > +"	stwcx.	%0,0,%1\n\
-> > +	bne-	1b"
-> 
-> This has the same bugs that we fixed recently in atomic_dec_if_positive;
-> first, on 64-bit machines, the lwarx will zero-extend the word loaded
-> from memory, and so the result of the addic will be negative only if
-> the word was originally 0.  Secondly, even on 32-bit machines,
-> 0x80000000 will be considered positive since decrementing it gives
-> 0x7fffffff, which is positive.
-> 
-Hi Paul,
+"Serge E. Hallyn" <serue@us.ibm.com> writes:
 
-Thanks, will fix.
+> From: Serge E. Hallyn <serue@us.ibm.com>
+> Subject: [PATCH 4/8] user ns: hook permission
+>
+> Hook permission to check vfsmnt->user_ns against current.
 
-Mathieu
+This looks wrong on several levels.
+- This should ultimately be inside generic_permission instead of
+  permission as there are some distributed filesystems that know how to cope with
+  multiple mount namespaces simultaneous.
 
--- 
-OpenPGP public key:              http://krystal.dyndns.org:8080/key/compudj.gpg
-Key fingerprint:     8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68 
+- As implemented the test is not what I would expect.  I would
+  expect comparisons of uid X == uid Y and gid X == gid Y to
+  be replaced by comparing the tuples of uid namesspace and uid.
+  Which would allow access to world readable/writeable files,
+  and it would allow users with CAP_DAC_OVERRIDE to be able to access
+  everything.
+
+All we are really saying as I understand a user namespace is that 
+instead of uid's uniquely identifying a user the pair the pair uidns,
+uid is uniquely identifies a user.
+
+Because you didn't pick what I would consider the obvious choice
+you now need an extra mount flag to disable the uid namespace all
+together, so you can transition through the intermediate uid namespace
+state.  That really feels wrong.
+
+All mounts should have an associated uid namespace and the only
+way you should be able to ignore that is to access filesystems
+that can cope with multiple uid namespaces simultaneously.
+
+Eric
