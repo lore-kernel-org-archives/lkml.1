@@ -1,51 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751487AbXAXOMc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751569AbXAXORP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751487AbXAXOMc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jan 2007 09:12:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751510AbXAXOMc
+	id S1751569AbXAXORP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jan 2007 09:17:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751574AbXAXORP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jan 2007 09:12:32 -0500
-Received: from h155.mvista.com ([63.81.120.155]:55169 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751487AbXAXOMb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jan 2007 09:12:31 -0500
-Message-ID: <45B76946.1070009@ru.mvista.com>
-Date: Wed, 24 Jan 2007 17:12:22 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
-MIME-Version: 1.0
-To: Adrian Bunk <bunk@stusta.de>
-Cc: Andrew Morton <akpm@osdl.org>, Jeff Garzik <jgarzik@pobox.com>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: 2.6.20-rc4-mm1: PCI=n: drivers/net/3c59x.c compile error
-References: <20070111222627.66bb75ab.akpm@osdl.org> <20070124135354.GI17836@stusta.de>
-In-Reply-To: <20070124135354.GI17836@stusta.de>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 24 Jan 2007 09:17:15 -0500
+Received: from rtsoft3.corbina.net ([85.21.88.6]:19637 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751566AbXAXORO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jan 2007 09:17:14 -0500
+Date: Wed, 24 Jan 2007 17:14:41 +0300
+From: Vitaly Bordug <vbordug@ru.mvista.com>
+To: Greg KH <gregkh@suse.de>
+Cc: lkml <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>
+Subject: drivers/base: device_bind_driver() fix
+Message-ID: <20070124171441.6a07d06b@localhost.localdomain>
+X-Mailer: Sylpheed-Claws 2.5.6cvs10 (GTK+ 2.10.7; i686-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="Sig_/MYi3kddlux/KQTzjkJkQuS";
+ protocol="application/pgp-signature"; micalg=PGP-SHA1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+--Sig_/MYi3kddlux/KQTzjkJkQuS
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-Adrian Bunk wrote:
-> 3x59x-fix-pci-resource-management.patch causes the following compile 
-> error with CONFIG_PCI=n:
-> 
-> <--  snip  -->
-> 
-> ...
->   CC      drivers/net/3c59x.o
-> /home/bunk/linux/kernel-2.6/linux-2.6.20-rc4-mm1/drivers/net/3c59x.c: In function 'vortex_init_one':
-> /home/bunk/linux/kernel-2.6/linux-2.6.20-rc4-mm1/drivers/net/3c59x.c:961: error: implicit declaration of function 'pci_request_regions'
-> /home/bunk/linux/kernel-2.6/linux-2.6.20-rc4-mm1/drivers/net/3c59x.c:985: error: implicit declaration of function 'pci_release_regions'
-> make[3]: *** [drivers/net/3c59x.o] Error 1
 
-    Grr, at at the same time it's happy with pci_enable_device().
-    I'd say the problem is in <linux/pci.h>,  not in the patch.
+Keeps sysfs from creating link if device is already bound to driver.
+Similar behavior was before the rework; now without this patch fixed
+PHY will complain about not been able to create file in sysfs.
 
-> cu
-> Adrian
+Signed-off-by: Vitaly Bordug <vbordug@ru.mvista.com>
+---
 
-MBR, Sergei
+ drivers/base/dd.c |    8 +++++---
+ 1 files changed, 5 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/base/dd.c b/drivers/base/dd.c
+index 510e788..6da3d01 100644
+--- a/drivers/base/dd.c
++++ b/drivers/base/dd.c
+@@ -26,12 +26,12 @@
+ #define to_drv(node) container_of(node, struct device_driver, kobj.entry)
+=20
+=20
+-static void driver_bound(struct device *dev)
++static int driver_bound(struct device *dev)
+ {
+ 	if (klist_node_attached(&dev->knode_driver)) {
+ 		printk(KERN_WARNING "%s: device %s already bound\n",
+ 			__FUNCTION__, kobject_name(&dev->kobj));
+-		return;
++		return 0;
+ 	}
+=20
+ 	pr_debug("bound device '%s' to driver '%s'\n",
+@@ -42,6 +42,7 @@ static void driver_bound(struct device *dev)
+ 					     BUS_NOTIFY_BOUND_DRIVER, dev);
+=20
+ 	klist_add_tail(&dev->knode_driver, &dev->driver->klist_devices);
++	return 1;
+ }
+=20
+ static int driver_sysfs_add(struct device *dev)
+@@ -86,7 +87,8 @@ static void driver_sysfs_remove(struct device *dev)
+  */
+ int device_bind_driver(struct device *dev)
+ {
+-	driver_bound(dev);
++	if (!driver_bound(dev))
++		return 0;
+ 	return driver_sysfs_add(dev);
+ }
+=20
+
+--Sig_/MYi3kddlux/KQTzjkJkQuS
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFFt2nSuOg9JvQhSEsRAi7IAJ0c0anU1wgCtIHqBdGg0ce9c8uWwQCfUFbY
+Hu0IWbw+xMbd1HkeXGGdW2Y=
+=RdRP
+-----END PGP SIGNATURE-----
+
+--Sig_/MYi3kddlux/KQTzjkJkQuS--
