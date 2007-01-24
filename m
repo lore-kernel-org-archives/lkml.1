@@ -1,22 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932510AbXAXUVG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932333AbXAXUVH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932510AbXAXUVG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jan 2007 15:21:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932333AbXAXUUm
+	id S932333AbXAXUVH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jan 2007 15:21:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932332AbXAXUUo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jan 2007 15:20:42 -0500
-Received: from dsl081-065-125.sfo1.dsl.speakeasy.net ([64.81.65.125]:57417
+	Wed, 24 Jan 2007 15:20:44 -0500
+Received: from dsl081-065-125.sfo1.dsl.speakeasy.net ([64.81.65.125]:57419
 	"EHLO lade.trondhjem.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932332AbXAXUUk (ORCPT
+	with ESMTP id S932231AbXAXUUk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 24 Jan 2007 15:20:40 -0500
-X-Greylist: delayed 1542 seconds by postgrey-1.27 at vger.kernel.org; Wed, 24 Jan 2007 15:20:40 EST
 From: Trond Myklebust <Trond.Myklebust@netapp.com>
-Subject: [PATCH 1/3] NFS: Fix Oops in rpc_call_sync()
-Date: Wed, 24 Jan 2007 11:54:53 -0800
+Subject: [PATCH 2/3] NFS: Fix races in nfs_revalidate_mapping()
+Date: Wed, 24 Jan 2007 11:54:55 -0800
 To: torvalds@osdl.org, akpm@osdl.org
 Cc: linux-kernel@vger.kernel.org, nfs@lists.sourceforge.net, sds@tycho.nsa.gov
-Message-Id: <20070124195453.21259.74390.stgit@lade.trondhjem.org>
+Message-Id: <20070124195455.21259.4066.stgit@lade.trondhjem.org>
 In-Reply-To: <20070124195307.21259.64156.stgit@lade.trondhjem.org>
 References: <20070124195307.21259.64156.stgit@lade.trondhjem.org>
 Content-Type: text/plain; charset=utf-8; format=fixed
@@ -27,79 +26,176 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Trond Myklebust <Trond.Myklebust@netapp.com>
 
-Fix the Oops in http://bugzilla.linux-nfs.org/show_bug.cgi?id=138
-We shouldn't be calling rpc_release_task() for tasks that are not active.
+Prevent the call to invalidate_inode_pages2() from racing with file writes
+by taking the inode->i_mutex across the page cache flush and invalidate.
 
 Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
 ---
 
- include/linux/sunrpc/sched.h |    1 -
- net/sunrpc/clnt.c            |    8 +++-----
- net/sunrpc/sched.c           |    3 ++-
- 3 files changed, 5 insertions(+), 7 deletions(-)
+ fs/nfs/dir.c           |    2 -
+ fs/nfs/inode.c         |   97 +++++++++++++++++++++++++++++++++---------------
+ fs/nfs/symlink.c       |    4 +-
+ include/linux/nfs_fs.h |    1 
+ 4 files changed, 72 insertions(+), 32 deletions(-)
 
-diff --git a/include/linux/sunrpc/sched.h b/include/linux/sunrpc/sched.h
-index 97c7616..8b6ce60 100644
---- a/include/linux/sunrpc/sched.h
-+++ b/include/linux/sunrpc/sched.h
-@@ -250,7 +250,6 @@ void		rpc_init_task(struct rpc_task *tas
- 				int flags, const struct rpc_call_ops *ops,
- 				void *data);
- void		rpc_put_task(struct rpc_task *);
--void		rpc_release_task(struct rpc_task *);
- void		rpc_exit_task(struct rpc_task *);
- void		rpc_release_calldata(const struct rpc_call_ops *, void *);
- void		rpc_killall_tasks(struct rpc_clnt *);
-diff --git a/net/sunrpc/clnt.c b/net/sunrpc/clnt.c
-index aba528b..16c9fbc 100644
---- a/net/sunrpc/clnt.c
-+++ b/net/sunrpc/clnt.c
-@@ -490,16 +490,14 @@ int rpc_call_sync(struct rpc_clnt *clnt,
+diff --git a/fs/nfs/dir.c b/fs/nfs/dir.c
+index dee3d6c..d9ba8cb 100644
+--- a/fs/nfs/dir.c
++++ b/fs/nfs/dir.c
+@@ -532,7 +532,7 @@ static int nfs_readdir(struct file *filp
  
- 	/* Set up the call info struct and execute the task */
- 	status = task->tk_status;
--	if (status != 0) {
--		rpc_release_task(task);
-+	if (status != 0)
- 		goto out;
--	}
- 	atomic_inc(&task->tk_count);
- 	status = rpc_execute(task);
- 	if (status == 0)
- 		status = task->tk_status;
--	rpc_put_task(task);
- out:
-+	rpc_put_task(task);
- 	rpc_restore_sigmask(&oldset);
- 	return status;
+ 	lock_kernel();
+ 
+-	res = nfs_revalidate_mapping(inode, filp->f_mapping);
++	res = nfs_revalidate_mapping_nolock(inode, filp->f_mapping);
+ 	if (res < 0) {
+ 		unlock_kernel();
+ 		return res;
+diff --git a/fs/nfs/inode.c b/fs/nfs/inode.c
+index 63e4702..d834982 100644
+--- a/fs/nfs/inode.c
++++ b/fs/nfs/inode.c
+@@ -665,49 +665,86 @@ int nfs_revalidate_inode(struct nfs_serv
+ 	return __nfs_revalidate_inode(server, inode);
  }
-@@ -537,7 +535,7 @@ rpc_call_async(struct rpc_clnt *clnt, st
- 	if (status == 0)
- 		rpc_execute(task);
- 	else
--		rpc_release_task(task);
-+		rpc_put_task(task);
  
- 	rpc_restore_sigmask(&oldset);		
- 	return status;
-diff --git a/net/sunrpc/sched.c b/net/sunrpc/sched.c
-index 79bc4cd..fc083f0 100644
---- a/net/sunrpc/sched.c
-+++ b/net/sunrpc/sched.c
-@@ -42,6 +42,7 @@ static mempool_t	*rpc_buffer_mempool __r
- static void			__rpc_default_timer(struct rpc_task *task);
- static void			rpciod_killall(void);
- static void			rpc_async_schedule(struct work_struct *);
-+static void			 rpc_release_task(struct rpc_task *task);
- 
- /*
-  * RPC tasks sit here while waiting for conditions to improve.
-@@ -896,7 +897,7 @@ void rpc_put_task(struct rpc_task *task)
- }
- EXPORT_SYMBOL(rpc_put_task);
- 
--void rpc_release_task(struct rpc_task *task)
-+static void rpc_release_task(struct rpc_task *task)
++static int nfs_invalidate_mapping_nolock(struct inode *inode, struct address_space *mapping)
++{
++	struct nfs_inode *nfsi = NFS_I(inode);
++	
++	if (mapping->nrpages != 0) {
++		int ret = invalidate_inode_pages2(mapping);
++		if (ret < 0)
++			return ret;
++	}
++	spin_lock(&inode->i_lock);
++	nfsi->cache_validity &= ~NFS_INO_INVALID_DATA;
++	if (S_ISDIR(inode->i_mode)) {
++		memset(nfsi->cookieverf, 0, sizeof(nfsi->cookieverf));
++		/* This ensures we revalidate child dentries */
++		nfsi->cache_change_attribute = jiffies;
++	}
++	spin_unlock(&inode->i_lock);
++	nfs_inc_stats(inode, NFSIOS_DATAINVALIDATE);
++	dfprintk(PAGECACHE, "NFS: (%s/%Ld) data cache invalidated\n",
++			inode->i_sb->s_id, (long long)NFS_FILEID(inode));
++	return 0;
++}
++
++static int nfs_invalidate_mapping(struct inode *inode, struct address_space *mapping)
++{
++	int ret = 0;
++
++	mutex_lock(&inode->i_mutex);
++	if (NFS_I(inode)->cache_validity & NFS_INO_INVALID_DATA) {
++		ret = nfs_sync_mapping(mapping);
++		if (ret == 0)
++			ret = nfs_invalidate_mapping_nolock(inode, mapping);
++	}
++	mutex_unlock(&inode->i_mutex);
++	return ret;
++}
++
+ /**
+- * nfs_revalidate_mapping - Revalidate the pagecache
++ * nfs_revalidate_mapping_nolock - Revalidate the pagecache
+  * @inode - pointer to host inode
+  * @mapping - pointer to mapping
+  */
+-int nfs_revalidate_mapping(struct inode *inode, struct address_space *mapping)
++int nfs_revalidate_mapping_nolock(struct inode *inode, struct address_space *mapping)
  {
- #ifdef RPC_DEBUG
- 	BUG_ON(task->tk_magic != RPC_TASK_MAGIC_ID);
+ 	struct nfs_inode *nfsi = NFS_I(inode);
+ 	int ret = 0;
+ 
+-	if (NFS_STALE(inode))
+-		ret = -ESTALE;
+ 	if ((nfsi->cache_validity & NFS_INO_REVAL_PAGECACHE)
+-			|| nfs_attribute_timeout(inode))
++			|| nfs_attribute_timeout(inode) || NFS_STALE(inode)) {
+ 		ret = __nfs_revalidate_inode(NFS_SERVER(inode), inode);
+-	if (ret < 0)
+-		goto out;
++		if (ret < 0)
++			goto out;
++	}
++	if (nfsi->cache_validity & NFS_INO_INVALID_DATA)
++		ret = nfs_invalidate_mapping_nolock(inode, mapping);
++out:
++	return ret;
++}
+ 
+-	if (nfsi->cache_validity & NFS_INO_INVALID_DATA) {
+-		if (mapping->nrpages != 0) {
+-			if (S_ISREG(inode->i_mode)) {
+-				ret = nfs_sync_mapping(mapping);
+-				if (ret < 0)
+-					goto out;
+-			}
+-			ret = invalidate_inode_pages2(mapping);
+-			if (ret < 0)
+-				goto out;
+-		}
+-		spin_lock(&inode->i_lock);
+-		nfsi->cache_validity &= ~NFS_INO_INVALID_DATA;
+-		if (S_ISDIR(inode->i_mode)) {
+-			memset(nfsi->cookieverf, 0, sizeof(nfsi->cookieverf));
+-			/* This ensures we revalidate child dentries */
+-			nfsi->cache_change_attribute = jiffies;
+-		}
+-		spin_unlock(&inode->i_lock);
++/**
++ * nfs_revalidate_mapping - Revalidate the pagecache
++ * @inode - pointer to host inode
++ * @mapping - pointer to mapping
++ *
++ * This version of the function will take the inode->i_mutex and attempt to
++ * flush out all dirty data if it needs to invalidate the page cache.
++ */
++int nfs_revalidate_mapping(struct inode *inode, struct address_space *mapping)
++{
++	struct nfs_inode *nfsi = NFS_I(inode);
++	int ret = 0;
+ 
+-		nfs_inc_stats(inode, NFSIOS_DATAINVALIDATE);
+-		dfprintk(PAGECACHE, "NFS: (%s/%Ld) data cache invalidated\n",
+-				inode->i_sb->s_id,
+-				(long long)NFS_FILEID(inode));
++	if ((nfsi->cache_validity & NFS_INO_REVAL_PAGECACHE)
++			|| nfs_attribute_timeout(inode) || NFS_STALE(inode)) {
++		ret = __nfs_revalidate_inode(NFS_SERVER(inode), inode);
++		if (ret < 0)
++			goto out;
+ 	}
++	if (nfsi->cache_validity & NFS_INO_INVALID_DATA)
++		ret = nfs_invalidate_mapping(inode, mapping);
+ out:
+ 	return ret;
+ }
+diff --git a/fs/nfs/symlink.c b/fs/nfs/symlink.c
+index 6c68611..525c136 100644
+--- a/fs/nfs/symlink.c
++++ b/fs/nfs/symlink.c
+@@ -50,7 +50,9 @@ static void *nfs_follow_link(struct dent
+ {
+ 	struct inode *inode = dentry->d_inode;
+ 	struct page *page;
+-	void *err = ERR_PTR(nfs_revalidate_mapping(inode, inode->i_mapping));
++	void *err;
++
++	err = ERR_PTR(nfs_revalidate_mapping_nolock(inode, inode->i_mapping));
+ 	if (err)
+ 		goto read_failed;
+ 	page = read_cache_page(&inode->i_data, 0,
+diff --git a/include/linux/nfs_fs.h b/include/linux/nfs_fs.h
+index 0496306..c5d4084 100644
+--- a/include/linux/nfs_fs.h
++++ b/include/linux/nfs_fs.h
+@@ -308,6 +308,7 @@ extern int nfs_attribute_timeout(struct 
+ extern int nfs_revalidate_inode(struct nfs_server *server, struct inode *inode);
+ extern int __nfs_revalidate_inode(struct nfs_server *, struct inode *);
+ extern int nfs_revalidate_mapping(struct inode *inode, struct address_space *mapping);
++extern int nfs_revalidate_mapping_nolock(struct inode *inode, struct address_space *mapping);
+ extern int nfs_setattr(struct dentry *, struct iattr *);
+ extern void nfs_setattr_update_inode(struct inode *inode, struct iattr *attr);
+ extern void nfs_begin_attr_update(struct inode *);
