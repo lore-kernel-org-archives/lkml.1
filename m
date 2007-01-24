@@ -1,90 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965462AbXAXBHF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965458AbXAXBHr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965462AbXAXBHF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jan 2007 20:07:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965461AbXAXBHF
+	id S965458AbXAXBHr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jan 2007 20:07:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965471AbXAXBHr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jan 2007 20:07:05 -0500
-Received: from 67.111.72.3.ptr.us.xo.net ([67.111.72.3]:50833 "EHLO
-	nonameb.ptu.promise.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S965458AbXAXBHD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jan 2007 20:07:03 -0500
-X-Greylist: delayed 859 seconds by postgrey-1.27 at vger.kernel.org; Tue, 23 Jan 2007 20:07:01 EST
-Date: Tue, 23 Jan 2007 16:53:44 -0800
-From: "Ed Lin" <ed.lin@promise.com>
-To: "linux-scsi" <linux-scsi@vger.kernel.org>
-Cc: "linux-kernel" <linux-kernel@vger.kernel.org>,
-       "james.Bottomley" <james.Bottomley@SteelEye.com>,
-       "jeff" <jeff@garzik.org>, "promise_linux" <promise_linux@promise.com>
-Subject: [patch] scsi: use lock per host instead of per device for shared queue tag host
-X-mailer: Foxmail 5.0 [en]
+	Tue, 23 Jan 2007 20:07:47 -0500
+Received: from main.gmane.org ([80.91.229.2]:40823 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965458AbXAXBHq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jan 2007 20:07:46 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Oleg Verych <olecom@flower.upol.cz>
+Subject: Re: [KBUILD] I don't want initramfs in 2.6.19.1 but usr/ is still processed
+Date: Wed, 24 Jan 2007 01:07:21 +0000 (UTC)
+Organization: Palacky University in Olomouc, experimental physics department.
+Message-ID: <slrnerdcqe.e7s.olecom@flower.upol.cz>
+References: <20070103111936.GB18441@DervishD>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <NONAMEBDp7mvjkO22Zh0000056d@nonameb.ptu.promise.com>
-X-OriginalArrivalTime: 24 Jan 2007 00:53:52.0140 (UTC) FILETIME=[1DB1ACC0:01C73F52]
+Content-Type: text/plain; charset=koi8-r
+Content-Transfer-Encoding: 8bit
+X-Complaints-To: usenet@sea.gmane.org
+X-Gmane-NNTP-Posting-Host: flower.upol.cz
+User-Agent: slrn/0.9.8.1pl1 (Debian)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The block layer uses lock to protect request queue. Every scsi device
-has a unique request queue, and queue lock is the default lock in struct
-request_queue. This is good for normal cases. But for a  host with
-shared queue tag (e.g. stex controllers), a queue lock per device means
-the shared queue tag is not protected when multiple devices are accessed
-at a same time.  This patch is a simple fix for this situation by introducing
-a host queue lock to protect shared queue tag. Without this patch we will
-see various kernel panics (including the BUG() and kernel errors in
-blk_queue_start_tag and blk_queue_end_tag of ll_rw_blk.c) when accessing
-different devices simultaneously (e.g. copying big file from one device to
-another in smp kernels).
+On 2007-01-03, DervishD wrote:
+>
+>     Hi all :)
 
-This is against kernel 2.6.20-rc5.
+Hallo!
 
-Signed-off-by: Ed Lin <ed.lin@promise.com>
----
- drivers/scsi/scsi_lib.c  |    2 +-
- drivers/scsi/stex.c      |    2 ++
- include/scsi/scsi_host.h |    3 +++
- 3 files changed, 6 insertions(+), 1 deletion(-)
+>     I've noticed that, even if I say NO to initramfs (and even ramdisk
+> support), the make process wants to GEN usr/initramfs_data.cpio.gz by
+> running the scripts/gen_initramfs_list.sh script.
+>
+>     Why is that script run no matter the initramfs support? Looks like
+> it only depends on the contents of CONFIG_INITRAMFS_SOURCE :?
 
-diff -purN a/drivers/scsi/scsi_lib.c b/drivers/scsi/scsi_lib.c
---- a/drivers/scsi/scsi_lib.c	2007-01-23 14:40:28.000000000 -0800
-+++ b/drivers/scsi/scsi_lib.c	2007-01-23 14:46:43.000000000 -0800
-@@ -1574,7 +1574,7 @@ struct request_queue *__scsi_alloc_queue
- {
- 	struct request_queue *q;
- 
--	q = blk_init_queue(request_fn, NULL);
-+	q = blk_init_queue(request_fn, shost->req_q_lock);
- 	if (!q)
- 		return NULL;
- 
-diff -purN a/drivers/scsi/stex.c b/drivers/scsi/stex.c
---- a/drivers/scsi/stex.c	2007-01-23 14:40:28.000000000 -0800
-+++ b/drivers/scsi/stex.c	2007-01-23 14:48:59.000000000 -0800
-@@ -1254,6 +1254,8 @@ stex_probe(struct pci_dev *pdev, const s
- 	if (err)
- 		goto out_free_irq;
- 
-+	spin_lock_init(&host->__req_q_lock);
-+	host->req_q_lock = &host->__req_q_lock;
- 	err = scsi_init_shared_tag_map(host, host->can_queue);
- 	if (err) {
- 		printk(KERN_ERR DRV_NAME "(%s): init shared queue failed\n",
-diff -purN a/include/scsi/scsi_host.h b/include/scsi/scsi_host.h
---- a/include/scsi/scsi_host.h	2007-01-23 14:40:29.000000000 -0800
-+++ b/include/scsi/scsi_host.h	2007-01-23 14:57:04.000000000 -0800
-@@ -508,6 +508,9 @@ struct Scsi_Host {
- 	spinlock_t		default_lock;
- 	spinlock_t		*host_lock;
- 
-+	spinlock_t		__req_q_lock;
-+	spinlock_t		*req_q_lock;/* protect shared block queue tag */
-+
- 	struct mutex		scan_mutex;/* serialize scanning activity */
- 
- 	struct list_head	eh_cmd_q;
+I think reading Documentation/filesystems/ramfs-rootfs-initramfs.txt
+will answer your question.
 
-
+>     Thanks in advance :)
+>
+>     Raúl Núñez de Arenas Coronado
+>
+> -- 
+> Linux Registered User 88736 | http://www.dervishd.net
+> It's my PC and I'll cry if I want to... RAmen!
+____
 
