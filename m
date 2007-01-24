@@ -1,69 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752012AbXAXQtB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752002AbXAXQvi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752012AbXAXQtB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jan 2007 11:49:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752016AbXAXQtB
+	id S1752002AbXAXQvi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jan 2007 11:51:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752017AbXAXQvi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jan 2007 11:49:01 -0500
-Received: from mother.pmc-sierra.com ([216.241.224.12]:55267 "HELO
-	mother.pmc-sierra.bc.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752012AbXAXQtA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jan 2007 11:49:00 -0500
-Message-ID: <45B78DF5.9000203@pmc-sierra.com>
-From: Marc St-Jean <Marc_St-Jean@pmc-sierra.com>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Cc: Alan <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       linux-serial@vger.kernel.org, linux-mips@linux-mips.org
-Subject: Re: [PATCH] serial driver PMC MSP71xx, kernel linux-mips.git mast
-	 er
-Date: Wed, 24 Jan 2007 08:48:53 -0800
+	Wed, 24 Jan 2007 11:51:38 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:52373 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752002AbXAXQvh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jan 2007 11:51:37 -0500
+Message-ID: <45B78E9F.4000404@redhat.com>
+Date: Wed, 24 Jan 2007 11:51:43 -0500
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
 MIME-Version: 1.0
-X-Mailer: Internet Mail Service (5.5.2657.72)
-x-originalarrivaltime: 24 Jan 2007 16:48:54.0136 (UTC) FILETIME=[88585F80:01C73FD7]
-user-agent: Thunderbird 1.5.0.9 (X11/20061206)
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: Stefan Priebe - FH <studium@profihost.com>
+CC: linux-kernel@vger.kernel.org, stefan@priebe.ws,
+       David Chinner <dgc@sgi.com>
+Subject: Re: XFS or Kernel Problem / Bug
+References: <20060801141545.B2326184@wobbly.melbourne.sgi.com> <44CED76B.20507@profihost.com> <20060801142755.C2326184@wobbly.melbourne.sgi.com> <44CED8F4.9080208@profihost.com> <20060801143212.D2326184@wobbly.melbourne.sgi.com> <44CEDA1D.5060607@profihost.com> <20060801143803.E2326184@wobbly.melbourne.sgi.com> <44CF36FB.6070606@profihost.com> <20060802090915.C2344877@wobbly.melbourne.sgi.com> <44D07AB7.3020409@profihost.com> <20060802201805.A2360409@wobbly.melbourne.sgi.com> <45B35CD7.4080801@profihost.com> <45B666BE.8000802@redhat.com> <45B70D69.20500@profihost.com> <45B773C1.7090805@redhat.com> <45B77547.4060302@profihost.com> <45B77780.5000504@redhat.com> <45B77C84.6070508@profihost.com>
+In-Reply-To: <45B77C84.6070508@profihost.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sergei Shtylyov wrote:
-> 
->  >>This I would hope you can hide in the platform specific
->  >>serial_in/serial_out functions. If you write the UART_LCR save it in
->  >>serial_out(), if you read IER etc.
-> 
->  > I couldn't find hooks for platform specific serial_in/out functions.
-> 
->     It's because there are none. :-)
-> 
->  > Do you mean using the up->port.iotype's in serial_in/out from 8250.c?
-> 
->     Not sure what Alan meant, but this seems the only option for now.
+Stefan Priebe - FH wrote:
+> Sorry that is not possible - cause it is a production machine.
+>
+> But i've catched the error and the files from another machine -
+> perhaps this helps.
+>
+> "BUG: unable to handle kernel NULL pointer dereference at virtual
+> address 00000288"
+> " printing eip:"
+> "c0142ff7"
+> "*pde = 00000000"
+> "Oops: 0000 [#1]"
+> "SMP "
+> "Modules linked in: iptable_filter ip_tables x_tables"
+> "CPU:    0"
+> "EIP:    0060:[<c0142ff7>]    Not tainted VLI"
+> "EFLAGS: 00010246   (2.6.18.6 #1) "
+> "EIP is at generic_file_buffered_write+0x390/0x6cf"
+> "eax: 00000000   ebx: 000001ec   ecx: ea029a40   edx: 00008002"
+> "esi: 00000000   edi: e3b28c9c   ebp: 000001ec   esp: dd04bd18"
+> "ds: 007b   es: 007b   ss: 0068"
+> "Process proftpd (pid: 3615, ti=dd04a000 task=eba88a70 task.ti=dd04a000)"
+> "Stack: e3b28d44 00000001 00000010 000001fc c036d793 000001fc c14765c0
+> 00000010 "
+> "       080d404c 000001ec e3b28c9c c03e78c0 e3b28d44 ea029a40 000001fc
+> 00000000 "
+> "       00000000 000001ec dd04beac 00d420b1 00000000 00000000 dd04bd80
+> 45b1fa67 "
+> "Call Trace:"
+> " [<c036d793>] sock_def_readable+0x7f/0x81"
+> " [<c017a03a>] file_update_time+0xad/0xcb"
+> " [<c0232015>] xfs_iunlock+0x55/0x9f"
+> " [<c0262eeb>] xfs_write+0xa74/0xc61"
+> " [<c036a253>] sock_aio_read+0x95/0x99"
+> " [<c025d9fb>] xfs_file_aio_write+0x8f/0xa0"
+> " [<c015fb94>] do_sync_write+0xc9/0x10f"
+> " [<c0133ad6>] autoremove_wake_function+0x0/0x57"
+> " [<c015f3d5>] generic_file_llseek+0x95/0xbc"
+> " [<c015facb>] do_sync_write+0x0/0x10f"
+> " [<c015fc80>] vfs_write+0xa6/0x179"
+> " [<c015fe24>] sys_write+0x51/0x80"
+> " [<c0102d3f>] syscall_call+0x7/0xb"
+> "Code: 04 89 10 8b 44 24 40 85 c0 0f 85 db 00 00 00 8b 5c 24 24 85 db
+> 0f 88 c3 00 00 00 8b 4c 24 34 8b 51 18 f6 c6 10 75 73 8b 7c 24 28 <8b>
+> 85 9c 00 00 00 f6 40 30 10 75 63 f6 87 48 01 00 00 01 75 5a "
+> "EIP: [<c0142ff7>] generic_file_buffered_write+0x390/0x6cf SS:ESP
+> 0068:dd04bd18"
+>
+> Files:
+> http://server113-han.de-nserver.de/filemap.s
+> http://server113-han.de-nserver.de/filemap.o
+>
+You seem to have some kind of hardware/memory problem.
 
-That's the conclusion I came to. I've rewritten the patch to use port.type
-instead of iotype since one of the fix is SoC and not UART specific. I guess
-I could use both iotype and type with a test on each for the appropriate
-bug, what do you recommend?
+Disassembly of the failing instruction from the oops:
 
+     8b 7c 24 28               mov    0x28(%esp),%edi
+     8b 85 9c 00 00 00         mov    0x9c(%ebp),%eax   <=====
 
->   >>And we might want to add a void * for board specific insanity to the 
-> 8250
->  >>structures if we really have to so you can hang your brain damage
->  >>privately off that ?
-> 
->  > Sounds good to me, it would give us a location to store the address 
-> of the
->  > UART_STATUS_REG required by this UART variant.
-> 
->     I doubt we really need to *store* it somewhere. Isn't it an fixed 
-> offset
-> from UART's base (I haven't seen the header)?
+Dump of the object code:
 
-Unfortunately it's not a constant offset from the UART in the SoC register
-space. I've used Alan suggestion and added a classic, on some other OSes %-|,
-void "user" pointer.
+           8b 7c 24 28             mov    0x28(%esp),%edi
+           8b 87 9c 00 00 00       mov    0x9c(%edi),%eax
 
-I'll repost as soon I complete testing and try the new timer patch.
+Looks like a bit is flipped.
 
-Marc
