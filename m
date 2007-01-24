@@ -1,43 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750778AbXAXJcL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750863AbXAXJoG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750778AbXAXJcL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jan 2007 04:32:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750790AbXAXJcL
+	id S1750863AbXAXJoG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jan 2007 04:44:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750842AbXAXJoG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jan 2007 04:32:11 -0500
-Received: from weequay.is.scarlet.be ([193.74.71.24]:41486 "EHLO
-	weequay.is.scarlet.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750778AbXAXJcJ (ORCPT
+	Wed, 24 Jan 2007 04:44:06 -0500
+Received: from mclmx.mail.saic.com ([149.8.64.10]:44818 "EHLO
+	mclmx.mail.saic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750863AbXAXJoF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jan 2007 04:32:09 -0500
-Message-ID: <45B75FDB.1000004@joow.be>
-Date: Wed, 24 Jan 2007 10:32:11 -0300
-From: Pieter Palmers <pieterp@joow.be>
-User-Agent: Thunderbird 1.5.0.2 (X11/20060501)
-MIME-Version: 1.0
-To: =?ISO-8859-1?Q?Kristian_H=F8gsberg?= <krh@bitplanet.net>
-CC: linux-kernel@vger.kernel.org, linux1394-devel@lists.sourceforge.net,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: Re: In-tree version of new FireWire drivers available
-References: <59ad55d30701231948u5f1e02d8x3d06553cb373e5be@mail.gmail.com>
-In-Reply-To: <59ad55d30701231948u5f1e02d8x3d06553cb373e5be@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
-X-DCC-scarlet.be-Metrics: weequay 20001; Body=4 Fuz1=4 Fuz2=4
+	Wed, 24 Jan 2007 04:44:05 -0500
+X-Greylist: delayed 900 seconds by postgrey-1.27 at vger.kernel.org; Wed, 24 Jan 2007 04:44:04 EST
+Subject: IO-APIC + timer doesn't work - 2.6.20-rc5 on abit KN9-Ultra bios
+	1.6
+From: Eamonn Hamilton <EAMONN.HAMILTON@saic.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Date: Wed, 24 Jan 2007 09:28:33 +0000
+Message-Id: <1169630914.22508.151.camel@ukabzc383.uk.saic.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2.1 
+Content-Transfer-Encoding: 7bit
+X-ukabzc383-MailScanner: Found to be clean
+X-ukabzc383-MailScanner-From: eamonn.hamilton@saic.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kristian Høgsberg wrote:
-> Changes since the merge into the linux1394 tree include:
-> 
->  - gap count optimization
->  - full bus management
->  - loopback for async requests to the local node
->  - a bug fix for a problem exposed by VIA 6306 controllers
->  - a typo fix from the bitfield -> mask+shift conversion.
+Hi,
 
-Kristian,
+I can't get any kernel up to 2.6.20-rc5 to boot without using noapic on
+an ABIT KN9-Ultra with a dual-core Athlon.
 
-What is your ETA on a the completion of the isochronous interface?
+I booted with apic=debug as suggested and got the following :
 
-Pieter
+ENABLING IO-APIC IRQs
+.. TIMER: vector=0x31 apic1=0 pin1=0 apic2=-1 pin2=-1
+.. MP-BIOS bug: 8254 timer not connected to IO-APIC
+... trying to set up timer (IRQ0) through the 8252A ... failed
+... trying to set up timer as Virtual Wire IRQ ... failed
+... trying to set up timer as ExtINT IRQ ... failed :(
+
+The bios is the latest, although in various posts on the web it would
+appear this occurs in older versions also.
+
+What can I do to help resolve this?
+
+Cheers,
+Eamonn
+-- 
+Eamonn Hamilton <eamonn.hamilton@saic.com>
+
+
+-- 
+This message has been scanned for viruses and
+dangerous content by MailScanner, and is
+believed to be clean.
+
