@@ -1,67 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750943AbXAXQLy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751562AbXAXQMe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750943AbXAXQLy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jan 2007 11:11:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751154AbXAXQLy
+	id S1751562AbXAXQMe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jan 2007 11:12:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751542AbXAXQMe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jan 2007 11:11:54 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:21360 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750943AbXAXQLx (ORCPT
+	Wed, 24 Jan 2007 11:12:34 -0500
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:62424 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751308AbXAXQMd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jan 2007 11:11:53 -0500
-Date: Wed, 24 Jan 2007 08:06:10 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Oleg Verych <olecom@flower.upol.cz>
-Cc: Horst Schirmeier <horst@schirmeier.com>, Andi Kleen <ak@suse.de>,
-       Valdis.Kletnieks@vt.edu, Jan Beulich <jbeulich@novell.com>,
-       dsd@gentoo.org, kernel@gentoo.org, draconx@gmail.com,
-       jpdenheijer@gmail.com, Andrew Morton <akpm@osdl.org>,
-       Sam Ravnborg <sam@ravnborg.org>, Roman Zippel <zippel@linux-m68k.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [patch] kbuild: improving option checking (Re: [PATCH -mm]
- replacement for broken kbuild-dont-put-temp-files-in-the-source-tree.patch)
-Message-Id: <20070124080610.0969a15f.randy.dunlap@oracle.com>
-In-Reply-To: <20070124085430.GA8160@flower.upol.cz>
-References: <20061029120858.GB3491@quickstop.soohrt.org>
-	<slrnekcu6m.2vm.olecom@flower.upol.cz>
-	<20061031001235.GE2933@quickstop.soohrt.org>
-	<200610310119.10567.ak@suse.de>
-	<20061031011416.GG2933@quickstop.soohrt.org>
-	<20061031135136.GB16063@flower.upol.cz>
-	<20070124085430.GA8160@flower.upol.cz>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.0 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+	Wed, 24 Jan 2007 11:12:33 -0500
+X-AuditID: d80ac287-9e09dbb0000026f2-86-45b78755cf01 
+Date: Wed, 24 Jan 2007 16:12:46 +0000 (GMT)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Chris Rankin <rankincj@yahoo.com>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.18-stable release plans?
+In-Reply-To: <964414.64865.qm@web52908.mail.yahoo.com>
+Message-ID: <Pine.LNX.4.64.0701241607160.17843@blonde.wat.veritas.com>
+References: <964414.64865.qm@web52908.mail.yahoo.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-OriginalArrivalTime: 24 Jan 2007 16:12:33.0047 (UTC) FILETIME=[74509A70:01C73FD2]
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 24 Jan 2007 08:54:30 +0000 Oleg Verych wrote:
-
-> Hallo. Tmpfiles, root users, external mod-builds again.
+On Wed, 24 Jan 2007, Chris Rankin wrote:
 > 
-> Kind of fix has finally landed. Instead for `O=/$dir' a patch...
-> 
-> Anyway i whould like propose my solution of:
-> -- external modules build without KBUILD_OUTPUT set;
-> -- /dev/null, GNU binutils and root users;
-> -- beauty;
-> ---
-> 
-> --- linux~2.6.20-rc5/scripts/Kbuild.include~blackhole-4-tmpfiles	2007-01-12 19:54:26.000000000 +0100
-> +++ linux~2.6.20-rc5/scripts/Kbuild.include	2007-01-24 09:19:01.386426000 +0100
-> @@ -2,5 +2,5 @@
->  # kbuild: Generic definitions
->  
-> -# Convinient variables
-> +# Convinient constants
+> I suppose what I'm *really* asking is what the basis is for assuming that this *isn't* a kernel
+> bug and can therefore be safely ignored, seeing as the oops is real, the hardware is fine and the
+> kernel is untainted? That seems to cover the bases from where I'm sitting.
 
-     Convenient
+All I'm claiming is that it's no more a reason to avoid 2.6.19*
+than to avoid any other release (the kernels before 2.6.7 happened
+to have no such check, but that doesn't imply they were any safer).
 
----
-~Randy
+It may indeed be due to a kernel bug, but I can't tell you where: sorry.
+
+Hugh
