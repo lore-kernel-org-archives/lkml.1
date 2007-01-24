@@ -1,60 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933176AbXAXHa7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933189AbXAXHdG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933176AbXAXHa7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jan 2007 02:30:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933180AbXAXHa7
+	id S933189AbXAXHdG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jan 2007 02:33:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933183AbXAXHdG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jan 2007 02:30:59 -0500
-Received: from [218.246.32.199] ([218.246.32.199]:41535 "EHLO
-	giant.minigui.org" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S933176AbXAXHa6 (ORCPT
+	Wed, 24 Jan 2007 02:33:06 -0500
+Received: from nz-out-0506.google.com ([64.233.162.238]:7491 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933187AbXAXHdE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jan 2007 02:30:58 -0500
-X-Greylist: delayed 1679 seconds by postgrey-1.27 at vger.kernel.org; Wed, 24 Jan 2007 02:30:58 EST
-Message-ID: <7675224.1169622001812.JavaMail.Administrator@2fd9f289359f4a2>
-Date: Wed, 24 Jan 2007 15:00:01 +0800 (CST)
-From: Linda Su <sulin@minigui.org>
-Subject: A Professional GUI
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 24 Jan 2007 02:33:04 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=JckmQPCTH8znIy5mkSPPU6Y/+hbiPdbRVINdG2ccBqmDIsKfJTh33okZpF303C5OEBqlNWP1yOHcnGMCnAypRTAMW2/E0VG7F/x7e9OKzRZdS0WlwQ+ElZtqbyW1wZoCTOh0ZWXrPyCRYKJQ71b4pPwOQo5lucrBkHydaZG4Y4M=
+Message-ID: <4ae3c140701232333j4772794j6e49da2d32c0b26d@mail.gmail.com>
+Date: Wed, 24 Jan 2007 02:33:03 -0500
+From: "Xin Zhao" <uszhaoxin@gmail.com>
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Is it possible to directly call do_path_lookup() in kernel?
+In-Reply-To: <4ae3c140701231032xd6eca27td46cc1c25e150e25@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Mailer: GroupMail
-To: undisclosed-recipients:;
+Content-Disposition: inline
+References: <4ae3c140701231032xd6eca27td46cc1c25e150e25@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear Sir/Madam,
+I just successfully called do_path_lookup() in my kernel module. I
+just removed the "fastcall" from the declaration of do_path_lookup(),
+then the problem disappeared. I don't quite understand "fastcall"
+though.
 
-Are you developing a product such as mobile phone, Set-top box, PMP, videophone, 
-IPTV or other product with a GUI? 
+Can someone explain it?
 
-If you are just looking for a good GUI for a embedded device, MiniGUI must be your 
-best choice! 
- 
-MiniGUI, which is "a cross-operating-system graphics user interface support system 
-for embedded devices", and "an embedded graphics middleware", developed by 
-China Beijing Feynman Software Technology Co. Ltd.
+Thanks,
+-x
 
-MiniGUI has become a cross-operating-system GUI system; it can run on Linux/uClinux, 
-eCos, VxWorks, pSOS, ThreadX, Nucleus, and even uC/OS-II, even on the Win32 platform;
-The hardware platforms tested include Intel x86, ARM (ARM7/ARM9/StrongARM/xScale), 
-PowerPC, MIPS, and M68k (DragonBall/ColdFire). 
-
-MiniGUI has been widely adopted and applied by the leading manufacturers in the following 
-fields: telecommunication (hand-held terminals, digital-media devices and STBs), industry 
-instrument, medical equipment, and military industry.
-
-MiniGUI, make your devices vivid!
-
-go to http://www.minigui.com/  to know more information about our products and company.
-If you have any interest or question, please feel free to contact with us: sulin@minigui.org  
- 
-Best Regards,
-Linda Su
-
-Beijing Feynman Software Technology Co., Ltd.
-An Embedded Software Tech., Solutions & Dev. Tools Provider.
-Website: http://www.minigui.com
-Tel: +8610-82652611\2652 ext.816
-Email: sulin@minigui.org
-
+On 1/23/07, Xin Zhao <uszhaoxin@gmail.com> wrote:
+> Hi,
+>
+> I tried to call the following code in a kernel module:
+>
+>         error = do_path_lookup(AT_FDCWD, "/etc/profile.d/glib2.csh",
+> LOOKUP_PARENT, &nd);
+>
+> I exported the function do_path_lookup() using
+> "EXPORT_SYMBOL_GPL(do_path_lookup);"
+>
+> But do_path_lookup() caused the "general protection fault: 0000 [#1]"
+> kernel error.
+>
+> I thought it could be the problem of protection error, so I used the
+> following codes to enclose the code that calls do_path_lookup(), but
+> still got the same error.
+>
+>         fs = get_fs ();                                                   /* save previous value */
+>         set_fs (KERNEL_DS);                                               /* use kernel limit */
+>         ......
+>         set_fs(fs);
+>
+> Any idea on this?
+>
+> Thanks a lot!
+>
+> -x
+>
