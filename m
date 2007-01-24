@@ -1,618 +1,208 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750937AbXAXTgd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751001AbXAXThh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750937AbXAXTgd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jan 2007 14:36:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750959AbXAXTgd
+	id S1751001AbXAXThh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jan 2007 14:37:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751013AbXAXThh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jan 2007 14:36:33 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:36916 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750949AbXAXTgb (ORCPT
+	Wed, 24 Jan 2007 14:37:37 -0500
+Received: from mtagate7.uk.ibm.com ([195.212.29.140]:4831 "EHLO
+	mtagate7.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751001AbXAXThg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jan 2007 14:36:31 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 1/2] sysfs: Shadow directory support
-CC: <linux-kernel@vger.kernel.org>,
-       Linux Containers <containers@lists.osdl.org>,
-       linux-fsdevel@vger.kernel.org, Andrew Morton <akpm@osdl.org>
-Date: Wed, 24 Jan 2007 12:35:52 -0700
-Message-ID: <m1fya01alj.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Wed, 24 Jan 2007 14:37:36 -0500
+Message-ID: <45B77FA5.6070708@fr.ibm.com>
+Date: Wed, 24 Jan 2007 16:47:49 +0100
+From: Cedric Le Goater <clg@fr.ibm.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Cedric Le Goater <clg@fr.ibm.com>
+CC: Herbert Poetzl <herbert@13thfloor.at>, containers@lists.osdl.org,
+       v4l-dvb-maintainer@linuxtv.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH/RFC] kthread API conversion for dvb_frontend and	av7110
+References: <45019CC3.2030709@fr.ibm.com> <4509C4A5.5030600@fr.ibm.com>	<20060914221024.GB26916@MAIL.13thfloor.at> <200611170150.02207.adq_dvb@lidskialf.net> <45646512.7070806@fr.ibm.com>
+In-Reply-To: <45646512.7070806@fr.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Cedric Le Goater wrote:
+> Andrew de Quincey wrote:
+> 
+>> Hi - the conversion looks good to me.. I can't really offer any more 
+>> constructive suggestions beyond what Cedric has already said. 
+> 
+> ok. so, should we just resend a refreshed version of the patch when 2.6.19
+> comes out ?  
+> 
+>> Theres another thread in dvb_ca_en50221.c that could be converted as well 
+>> though, hint hint ;)
+> 
+> ok ok :) i'll look at it ...
 
-The problem.  When implementing a network namespace I need to be able
-to have multiple network devices with the same name.  Currently this
-is a problem for /sys/class/net/*. 
+Here's a try. Compiles and boots but I have no hardware to test the
+patch :( 
 
-What I want is a separate /sys/class/net directory in sysfs for each
-network namespace, and I want to name each of them /sys/class/net.
+could we replace wait_event_interruptible_timeout() with  
+wait_event_timeout() ? I don't see who would signal the thread.
 
-I looked and the VFS actually allows that.  All that is needed is
-for /sys/class/net to implement a follow link method to redirect
-lookups to the real directory you want. 
+thanks,
 
-Implementing a follow link method that is sensitive to the current
-network namespace turns out to be 3 lines of code so it looks like a
-clean approach.  Modifying sysfs so it doesn't get in my was is a bit
-trickier. 
+C.
 
-I am calling the concept of multiple directories all at the same path
-in the filesystem shadow directories.  With the directory entry really
-at that location the shadow master. 
 
-The following patch modifies sysfs so it can handle a directory
-structure slightly different from the kobject tree so I can implement
-the shadow directories for handling /sys/class/net/.
-
-Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+Signed-off-by: Cedric Le Goater <clg@fr.ibm.com>
 ---
- fs/sysfs/dir.c          |  207 +++++++++++++++++++++++++++++++++++++++--------
- fs/sysfs/group.c        |    1 +
- fs/sysfs/inode.c        |   10 +++
- fs/sysfs/mount.c        |    2 +-
- fs/sysfs/sysfs.h        |    5 +
- include/linux/kobject.h |    4 +
- include/linux/sysfs.h   |   23 +++++-
- lib/kobject.c           |   42 +++++++++-
- 8 files changed, 249 insertions(+), 45 deletions(-)
+ drivers/media/dvb/dvb-core/dvb_ca_en50221.c |   59 ++++++++--------------------
+ 1 file changed, 18 insertions(+), 41 deletions(-)
 
-diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
-index 511edef..dd23903 100644
---- a/fs/sysfs/dir.c
-+++ b/fs/sysfs/dir.c
-@@ -32,8 +32,7 @@ static struct dentry_operations sysfs_dentry_ops = {
- /*
-  * Allocates a new sysfs_dirent and links it to the parent sysfs_dirent
-  */
--static struct sysfs_dirent * sysfs_new_dirent(struct sysfs_dirent * parent_sd,
--						void * element)
-+static struct sysfs_dirent * __sysfs_new_dirent(void * element)
- {
- 	struct sysfs_dirent * sd;
+Index: 2.6.20-rc4-mm1/drivers/media/dvb/dvb-core/dvb_ca_en50221.c
+===================================================================
+--- 2.6.20-rc4-mm1.orig/drivers/media/dvb/dvb-core/dvb_ca_en50221.c
++++ 2.6.20-rc4-mm1/drivers/media/dvb/dvb-core/dvb_ca_en50221.c
+@@ -37,6 +37,7 @@
+ #include <linux/delay.h>
+ #include <linux/spinlock.h>
+ #include <linux/sched.h>
++#include <linux/kthread.h>
  
-@@ -45,12 +44,28 @@ static struct sysfs_dirent * sysfs_new_dirent(struct sysfs_dirent * parent_sd,
- 	atomic_set(&sd->s_count, 1);
- 	atomic_set(&sd->s_event, 1);
- 	INIT_LIST_HEAD(&sd->s_children);
--	list_add(&sd->s_sibling, &parent_sd->s_children);
-+	INIT_LIST_HEAD(&sd->s_sibling);
- 	sd->s_element = element;
+ #include "dvb_ca_en50221.h"
+ #include "dvb_ringbuffer.h"
+@@ -140,14 +141,11 @@ struct dvb_ca_private {
+ 	wait_queue_head_t wait_queue;
  
- 	return sd;
- }
+ 	/* PID of the monitoring thread */
+-	pid_t thread_pid;
++	struct task_struct* thread;
  
-+static void __sysfs_list_dirent(struct sysfs_dirent *parent_sd,
-+			      struct sysfs_dirent *sd)
-+{
-+	if (sd)
-+		list_add(&sd->s_sibling, &parent_sd->s_children);
-+}
-+
-+static struct sysfs_dirent * sysfs_new_dirent(struct sysfs_dirent *parent_sd,
-+						void * element)
-+{
-+	struct sysfs_dirent *sd;
-+	sd = __sysfs_new_dirent(element);
-+	__sysfs_list_dirent(parent_sd, sd);
-+	return sd;
-+}
-+
- /*
-  *
-  * Return -EEXIST if there is already a sysfs element with the same name for
-@@ -77,14 +92,14 @@ int sysfs_dirent_exist(struct sysfs_dirent *parent_sd,
- }
+ 	/* Wait queue used when shutting thread down */
+ 	wait_queue_head_t thread_queue;
  
+-	/* Flag indicating when thread should exit */
+-	unsigned int exit:1;
+-
+ 	/* Flag indicating if the CA device is open */
+ 	unsigned int open:1;
  
--int sysfs_make_dirent(struct sysfs_dirent * parent_sd, struct dentry * dentry,
--			void * element, umode_t mode, int type)
-+static struct sysfs_dirent *
-+__sysfs_make_dirent(struct dentry *dentry, void *element, mode_t mode, int type)
- {
- 	struct sysfs_dirent * sd;
- 
--	sd = sysfs_new_dirent(parent_sd, element);
-+	sd = __sysfs_new_dirent(element);
- 	if (!sd)
--		return -ENOMEM;
-+		goto out;
- 
- 	sd->s_mode = mode;
- 	sd->s_type = type;
-@@ -94,7 +109,19 @@ int sysfs_make_dirent(struct sysfs_dirent * parent_sd, struct dentry * dentry,
- 		dentry->d_op = &sysfs_dentry_ops;
+@@ -916,8 +914,6 @@ static int dvb_ca_en50221_thread_should_
+ 		ca->wakeup = 0;
+ 		return 1;
  	}
+-	if (ca->exit)
+-		return 1;
  
--	return 0;
-+out:
-+	return sd;
-+}
-+
-+int sysfs_make_dirent(struct sysfs_dirent * parent_sd, struct dentry * dentry,
-+			void * element, umode_t mode, int type)
-+{
-+	struct sysfs_dirent *sd;
-+	
-+	sd = __sysfs_make_dirent(dentry, element, mode, type);
-+	__sysfs_list_dirent(parent_sd, sd);
-+
-+	return sd ? 0 : -ENOMEM;
- }
- 
- static int init_dir(struct inode * inode)
-@@ -165,11 +192,11 @@ int sysfs_create_subdir(struct kobject * k, const char * n, struct dentry ** d)
- 
- /**
-  *	sysfs_create_dir - create a directory for an object.
-- *	@parent:	parent parent object.
-  *	@kobj:		object we're creating directory for. 
-+ *	@shadow_parent:	parent parent object.
-  */
- 
--int sysfs_create_dir(struct kobject * kobj)
-+int sysfs_create_dir(struct kobject * kobj, struct dentry *shadow_parent)
- {
- 	struct dentry * dentry = NULL;
- 	struct dentry * parent;
-@@ -177,7 +204,9 @@ int sysfs_create_dir(struct kobject * kobj)
- 
- 	BUG_ON(!kobj);
- 
--	if (kobj->parent)
-+	if (shadow_parent)
-+		parent = shadow_parent;
-+	else if (kobj->parent)
- 		parent = kobj->parent->dentry;
- 	else if (sysfs_mount && sysfs_mount->mnt_sb)
- 		parent = sysfs_mount->mnt_sb->s_root;
-@@ -298,21 +327,12 @@ void sysfs_remove_subdir(struct dentry * d)
- }
- 
- 
--/**
-- *	sysfs_remove_dir - remove an object's directory.
-- *	@kobj:	object. 
-- *
-- *	The only thing special about this is that we remove any files in 
-- *	the directory before we remove the directory, and we've inlined
-- *	what used to be sysfs_rmdir() below, instead of calling separately.
-- */
--
--void sysfs_remove_dir(struct kobject * kobj)
-+static void __sysfs_remove_dir(struct dentry *dentry)
- {
--	struct dentry * dentry = dget(kobj->dentry);
- 	struct sysfs_dirent * parent_sd;
- 	struct sysfs_dirent * sd, * tmp;
- 
-+	dget(dentry);
- 	if (!dentry)
- 		return;
- 
-@@ -333,32 +353,60 @@ void sysfs_remove_dir(struct kobject * kobj)
- 	 * Drop reference from dget() on entrance.
- 	 */
- 	dput(dentry);
-+}
-+
-+/**
-+ *	sysfs_remove_dir - remove an object's directory.
-+ *	@kobj:	object. 
-+ *
-+ *	The only thing special about this is that we remove any files in 
-+ *	the directory before we remove the directory, and we've inlined
-+ *	what used to be sysfs_rmdir() below, instead of calling separately.
-+ */
-+
-+void sysfs_remove_dir(struct kobject * kobj)
-+{
-+	__sysfs_remove_dir(kobj->dentry);
- 	kobj->dentry = NULL;
- }
- 
--int sysfs_rename_dir(struct kobject * kobj, const char *new_name)
-+int sysfs_rename_dir(struct kobject * kobj, struct dentry *new_parent,
-+		     const char *new_name)
- {
- 	int error = 0;
--	struct dentry * new_dentry, * parent;
--
--	if (!strcmp(kobject_name(kobj), new_name))
--		return -EINVAL;
-+	struct dentry * new_dentry;
- 
--	if (!kobj->parent)
--		return -EINVAL;
-+	if (!new_parent)
-+		return -EFAULT;
- 
- 	down_write(&sysfs_rename_sem);
--	parent = kobj->parent->dentry;
--
--	mutex_lock(&parent->d_inode->i_mutex);
-+	mutex_lock(&new_parent->d_inode->i_mutex);
- 
--	new_dentry = lookup_one_len(new_name, parent, strlen(new_name));
-+	new_dentry = lookup_one_len(new_name, new_parent, strlen(new_name));
- 	if (!IS_ERR(new_dentry)) {
--  		if (!new_dentry->d_inode) {
-+		/* By allowing two different directories with the
-+		 * same d_parent we allow this routine to move
-+		 * between different shadows of the same directory
-+		 */
-+		if (kobj->dentry->d_parent->d_inode != new_parent->d_inode)
-+			return -EINVAL;
-+		else if (new_dentry->d_parent->d_inode != new_parent->d_inode)
-+			error = -EINVAL;
-+		else if (new_dentry == kobj->dentry)
-+			error = -EINVAL;
-+		else if (!new_dentry->d_inode) {
- 			error = kobject_set_name(kobj, "%s", new_name);
- 			if (!error) {
-+				struct sysfs_dirent *sd, *parent_sd;
-+
- 				d_add(new_dentry, NULL);
- 				d_move(kobj->dentry, new_dentry);
-+
-+				sd = kobj->dentry->d_fsdata;
-+				parent_sd = new_parent->d_fsdata;
-+
-+				list_del_init(&sd->s_sibling);
-+				list_add(&sd->s_sibling, &parent_sd->s_children);
- 			}
- 			else
- 				d_drop(new_dentry);
-@@ -366,7 +414,7 @@ int sysfs_rename_dir(struct kobject * kobj, const char *new_name)
- 			error = -EEXIST;
- 		dput(new_dentry);
- 	}
--	mutex_unlock(&parent->d_inode->i_mutex);
-+	mutex_unlock(&new_parent->d_inode->i_mutex);
- 	up_write(&sysfs_rename_sem);
- 
- 	return error;
-@@ -547,6 +595,95 @@ static loff_t sysfs_dir_lseek(struct file * file, loff_t offset, int origin)
- 	return offset;
- }
- 
-+
-+/**
-+ *	sysfs_make_shadowed_dir - Setup so a directory can be shadowed
-+ *	@kobj:	object we're creating shadow of. 
-+ */
-+
-+int sysfs_make_shadowed_dir(struct kobject *kobj, 
-+	void * (*follow_link)(struct dentry *, struct nameidata *))
-+{
-+	struct inode *inode;
-+	struct inode_operations *i_op;
-+
-+	inode = kobj->dentry->d_inode;
-+	if (inode->i_op != &sysfs_dir_inode_operations)
-+		return -EINVAL;
-+
-+	i_op = kmalloc(sizeof(*i_op), GFP_KERNEL);
-+	if (!i_op)
-+		return -ENOMEM;
-+
-+	memcpy(i_op, &sysfs_dir_inode_operations, sizeof(*i_op));
-+	i_op->follow_link = follow_link;
-+
-+	/* Locking of inode->i_op?
-+	 * Since setting i_op is a single word write and they
-+	 * are atomic we should be ok here.
-+	 */
-+	inode->i_op = i_op;
-+	return 0;
-+}
-+
-+/**
-+ *	sysfs_create_shadow_dir - create a shadow directory for an object.
-+ *	@kobj:	object we're creating directory for. 
-+ *
-+ *	sysfs_make_shadowed_dir must already have been called on this
-+ *	directory.
-+ */
-+
-+struct dentry *sysfs_create_shadow_dir(struct kobject *kobj)
-+{
-+	struct sysfs_dirent *sd;
-+	struct dentry *parent, *dir, *shadow;
-+	struct inode *inode;
-+
-+	dir = kobj->dentry;
-+	inode = dir->d_inode;
-+	parent = dir->d_parent;
-+	shadow = ERR_PTR(-EINVAL);
-+	if (!sysfs_is_shadowed_inode(inode))
-+		goto out;
-+
-+	shadow = d_alloc(parent, &dir->d_name);
-+	if (!shadow)
-+		goto nomem;
-+
-+	sd = __sysfs_make_dirent(shadow, kobj, inode->i_mode, SYSFS_DIR);
-+	if (!sd)
-+		goto nomem;
-+
-+	d_instantiate(shadow, igrab(inode));
-+	inc_nlink(inode);
-+	inc_nlink(parent->d_inode);
-+	shadow->d_op = &sysfs_dentry_ops;
-+
-+	dget(shadow);		/* Extra count - pin the dentry in core */
-+
-+out:
-+	return shadow;
-+nomem:
-+	dput(shadow);
-+	shadow = ERR_PTR(-ENOMEM);
-+	goto out;
-+}
-+
-+/**
-+ *	sysfs_remove_shadow_dir - remove an object's directory.
-+ *	@shadow: dentry of shadow directory
-+ *
-+ *	The only thing special about this is that we remove any files in 
-+ *	the directory before we remove the directory, and we've inlined
-+ *	what used to be sysfs_rmdir() below, instead of calling separately.
-+ */
-+
-+void sysfs_remove_shadow_dir(struct dentry *shadow)
-+{
-+	__sysfs_remove_dir(shadow);
-+}
-+
- const struct file_operations sysfs_dir_operations = {
- 	.open		= sysfs_dir_open,
- 	.release	= sysfs_dir_close,
-diff --git a/fs/sysfs/group.c b/fs/sysfs/group.c
-index 122145b..050d23d 100644
---- a/fs/sysfs/group.c
-+++ b/fs/sysfs/group.c
-@@ -13,6 +13,7 @@
- #include <linux/dcache.h>
- #include <linux/namei.h>
- #include <linux/err.h>
-+#include <linux/fs.h>
- #include "sysfs.h"
- 
- 
-diff --git a/fs/sysfs/inode.c b/fs/sysfs/inode.c
-index e79e38d..b94b9d3 100644
---- a/fs/sysfs/inode.c
-+++ b/fs/sysfs/inode.c
-@@ -32,6 +32,16 @@ static struct inode_operations sysfs_inode_operations ={
- 	.setattr	= sysfs_setattr,
- };
- 
-+void sysfs_delete_inode(struct inode *inode)
-+{
-+	/* Free the shadowed directory inode operations */
-+	if (sysfs_is_shadowed_inode(inode)) {
-+		kfree(inode->i_op);
-+		inode->i_op = NULL;
-+	}
-+	return generic_delete_inode(inode);
-+}
-+
- int sysfs_setattr(struct dentry * dentry, struct iattr * iattr)
- {
- 	struct inode * inode = dentry->d_inode;
-diff --git a/fs/sysfs/mount.c b/fs/sysfs/mount.c
-index e503f85..8be465b 100644
---- a/fs/sysfs/mount.c
-+++ b/fs/sysfs/mount.c
-@@ -20,7 +20,7 @@ struct kmem_cache *sysfs_dir_cachep;
- 
- static struct super_operations sysfs_ops = {
- 	.statfs		= simple_statfs,
--	.drop_inode	= generic_delete_inode,
-+	.drop_inode	= sysfs_delete_inode,
- };
- 
- static struct sysfs_dirent sysfs_root = {
-diff --git a/fs/sysfs/sysfs.h b/fs/sysfs/sysfs.h
-index bd7cec2..908f05b 100644
---- a/fs/sysfs/sysfs.h
-+++ b/fs/sysfs/sysfs.h
-@@ -2,6 +2,7 @@
- extern struct vfsmount * sysfs_mount;
- extern struct kmem_cache *sysfs_dir_cachep;
- 
-+extern void sysfs_delete_inode(struct inode *inode);
- extern struct inode * sysfs_new_inode(mode_t mode, struct sysfs_dirent *);
- extern int sysfs_create(struct dentry *, int mode, int (*init)(struct inode *));
- 
-@@ -96,3 +97,7 @@ static inline void sysfs_put(struct sysfs_dirent * sd)
- 		release_sysfs_dirent(sd);
- }
- 
-+static inline int sysfs_is_shadowed_inode(struct inode *inode)
-+{
-+	return S_ISDIR(inode->i_mode) && inode->i_op->follow_link;
-+}
-diff --git a/include/linux/kobject.h b/include/linux/kobject.h
-index 76538fc..b850e03 100644
---- a/include/linux/kobject.h
-+++ b/include/linux/kobject.h
-@@ -74,9 +74,13 @@ extern void kobject_init(struct kobject *);
- extern void kobject_cleanup(struct kobject *);
- 
- extern int __must_check kobject_add(struct kobject *);
-+extern int __must_check kobject_shadow_add(struct kobject *, struct dentry *);
- extern void kobject_del(struct kobject *);
- 
- extern int __must_check kobject_rename(struct kobject *, const char *new_name);
-+extern int __must_check kobject_shadow_rename(struct kobject *kobj,
-+						struct dentry *new_parent,
-+						const char *new_name);
- extern int __must_check kobject_move(struct kobject *, struct kobject *);
- 
- extern int __must_check kobject_register(struct kobject *);
-diff --git a/include/linux/sysfs.h b/include/linux/sysfs.h
-index 2129d1b..6573a5d 100644
---- a/include/linux/sysfs.h
-+++ b/include/linux/sysfs.h
-@@ -15,6 +15,7 @@
- 
- struct kobject;
- struct module;
-+struct nameidata;
- 
- struct attribute {
- 	const char		* name;
-@@ -88,13 +89,13 @@ struct sysfs_dirent {
- #ifdef CONFIG_SYSFS
- 
- extern int __must_check
--sysfs_create_dir(struct kobject *);
-+sysfs_create_dir(struct kobject *, struct dentry *);
- 
- extern void
- sysfs_remove_dir(struct kobject *);
- 
- extern int __must_check
--sysfs_rename_dir(struct kobject *, const char *new_name);
-+sysfs_rename_dir(struct kobject *, struct dentry *, const char *new_name);
- 
- extern int __must_check
- sysfs_move_dir(struct kobject *, struct kobject *);
-@@ -126,11 +127,17 @@ int __must_check sysfs_create_group(struct kobject *,
- void sysfs_remove_group(struct kobject *, const struct attribute_group *);
- void sysfs_notify(struct kobject * k, char *dir, char *attr);
- 
-+
-+extern int sysfs_make_shadowed_dir(struct kobject *kobj, 
-+	void * (*follow_link)(struct dentry *, struct nameidata *));
-+extern struct dentry *sysfs_create_shadow_dir(struct kobject *kobj);
-+extern void sysfs_remove_shadow_dir(struct dentry *dir);
-+
- extern int __must_check sysfs_init(void);
- 
- #else /* CONFIG_SYSFS */
- 
--static inline int sysfs_create_dir(struct kobject * k)
-+static inline int sysfs_create_dir(struct kobject * k, struct dentry *shadow)
- {
  	return 0;
  }
-@@ -140,7 +147,9 @@ static inline void sysfs_remove_dir(struct kobject * k)
- 	;
- }
+@@ -982,7 +978,6 @@ static void dvb_ca_en50221_thread_update
+ static int dvb_ca_en50221_thread(void *data)
+ {
+ 	struct dvb_ca_private *ca = data;
+-	char name[15];
+ 	int slot;
+ 	int flags;
+ 	int status;
+@@ -991,28 +986,19 @@ static int dvb_ca_en50221_thread(void *d
  
--static inline int sysfs_rename_dir(struct kobject * k, const char *new_name)
-+static inline int sysfs_rename_dir(struct kobject * k,
-+					struct dentry *new_parent,
-+					const char *new_name)
- {
- 	return 0;
- }
-@@ -204,6 +213,12 @@ static inline void sysfs_notify(struct kobject * k, char *dir, char *attr)
- {
- }
+ 	dprintk("%s\n", __FUNCTION__);
  
-+static inline int sysfs_make_shadowed_dir(struct kobject *kobj, 
-+	void * (*follow_link)(struct dentry *, struct nameidata *))
-+{
-+	return 0;
-+}
-+
- static inline int __must_check sysfs_init(void)
- {
- 	return 0;
-diff --git a/lib/kobject.c b/lib/kobject.c
-index 7ce6dc1..a260aea 100644
---- a/lib/kobject.c
-+++ b/lib/kobject.c
-@@ -44,11 +44,11 @@ static int populate_dir(struct kobject * kobj)
- 	return error;
- }
+-	/* setup kernel thread */
+-	snprintf(name, sizeof(name), "kdvb-ca-%i:%i", ca->dvbdev->adapter->num, ca->dvbdev->id);
+-
+-	lock_kernel();
+-	daemonize(name);
+-	sigfillset(&current->blocked);
+-	unlock_kernel();
+-
+ 	/* choose the correct initial delay */
+ 	dvb_ca_en50221_thread_update_delay(ca);
  
--static int create_dir(struct kobject * kobj)
-+static int create_dir(struct kobject * kobj, struct dentry *shadow_parent)
- {
- 	int error = 0;
- 	if (kobject_name(kobj)) {
--		error = sysfs_create_dir(kobj);
-+		error = sysfs_create_dir(kobj, shadow_parent);
- 		if (!error) {
- 			if ((error = populate_dir(kobj)))
- 				sysfs_remove_dir(kobj);
-@@ -156,9 +156,10 @@ static void unlink(struct kobject * kobj)
- /**
-  *	kobject_add - add an object to the hierarchy.
-  *	@kobj:	object.
-+ *	@shadow_parent: sysfs directory to add to.
-  */
+ 	/* main loop */
+-	while (!ca->exit) {
++	while (1) {
+ 		/* sleep for a bit */
+ 		if (!ca->wakeup) {
+-			flags = wait_event_interruptible_timeout(ca->thread_queue,
+-								 dvb_ca_en50221_thread_should_wakeup(ca),
+-								 ca->delay);
+-			if ((flags == -ERESTARTSYS) || ca->exit) {
+-				/* got signal or quitting */
++			flags = wait_event_interruptible_timeout(
++				ca->thread_queue,
++				dvb_ca_en50221_thread_should_wakeup(ca) || kthread_should_stop(),
++				ca->delay);
++			if ((flags == -ERESTARTSYS) || kthread_should_stop())
+ 				break;
+-			}
+ 		}
+ 		ca->wakeup = 0;
  
--int kobject_add(struct kobject * kobj)
-+int kobject_shadow_add(struct kobject * kobj, struct dentry *shadow_parent)
- {
- 	int error = 0;
- 	struct kobject * parent;
-@@ -189,7 +190,7 @@ int kobject_add(struct kobject * kobj)
+@@ -1182,9 +1168,8 @@ static int dvb_ca_en50221_thread(void *d
  	}
- 	kobj->parent = parent;
  
--	error = create_dir(kobj);
-+	error = create_dir(kobj, shadow_parent);
- 	if (error) {
- 		/* unlink does the kobject_put() for us */
- 		unlink(kobj);
-@@ -211,6 +212,15 @@ int kobject_add(struct kobject * kobj)
- 	return error;
+ 	/* completed */
+-	ca->thread_pid = 0;
++	ca->thread = NULL;
+ 	mb();
+-	wake_up_interruptible(&ca->thread_queue);
+ 	return 0;
  }
  
-+/**
-+ *	kobject_add - add an object to the hierarchy.
-+ *	@kobj:	object.
-+ */
-+int kobject_add(struct kobject * kobj)
-+{
-+	return kobject_shadow_add(kobj, NULL);
-+}
-+
+@@ -1663,6 +1648,7 @@ int dvb_ca_en50221_init(struct dvb_adapt
+ 	int ret;
+ 	struct dvb_ca_private *ca = NULL;
+ 	int i;
++	struct task_struct *thread;
  
- /**
-  *	kobject_register - initialize and add an object.
-@@ -303,7 +313,29 @@ int kobject_rename(struct kobject * kobj, const char *new_name)
- 	kobj = kobject_get(kobj);
- 	if (!kobj)
- 		return -EINVAL;
--	error = sysfs_rename_dir(kobj, new_name);
-+	if (!kobj->parent)
-+		return -EINVAL;
-+	error = sysfs_rename_dir(kobj, kobj->parent->dentry, new_name);
-+	kobject_put(kobj);
-+
-+	return error;
-+}
-+
-+/**
-+ *	kobject_rename - change the name of an object
-+ *	@kobj:	object in question.
-+ *	@new_name: object's new name
-+ */
-+
-+int kobject_shadow_rename(struct kobject * kobj, struct dentry *new_parent,
-+			  const char *new_name)
-+{
-+	int error = 0;
-+
-+	kobj = kobject_get(kobj);
-+	if (!kobj)
-+		return -EINVAL;
-+	error = sysfs_rename_dir(kobj, new_parent, new_name);
- 	kobject_put(kobj);
+ 	dprintk("%s\n", __FUNCTION__);
  
- 	return error;
--- 
-1.4.4.1.g278f
-
+@@ -1682,9 +1668,8 @@ int dvb_ca_en50221_init(struct dvb_adapt
+ 		goto error;
+ 	}
+ 	init_waitqueue_head(&ca->wait_queue);
+-	ca->thread_pid = 0;
++	ca->thread = NULL;
+ 	init_waitqueue_head(&ca->thread_queue);
+-	ca->exit = 0;
+ 	ca->open = 0;
+ 	ca->wakeup = 0;
+ 	ca->next_read_slot = 0;
+@@ -1711,13 +1696,14 @@ int dvb_ca_en50221_init(struct dvb_adapt
+ 
+ 	/* create a kthread for monitoring this CA device */
+ 
+-	ret = kernel_thread(dvb_ca_en50221_thread, ca, 0);
+-
+-	if (ret < 0) {
++	thread = kthread_run(dvb_ca_en50221_thread, ca, "kdvb-ca-%i:%i",
++			     ca->dvbdev->adapter->num, ca->dvbdev->id);
++	if (IS_ERR(thread)) {
++		ret = PTR_ERR(thread);
+ 		printk("dvb_ca_init: failed to start kernel_thread (%d)\n", ret);
+ 		goto error;
+ 	}
+-	ca->thread_pid = ret;
++	ca->thread = thread;
+ 	return 0;
+ 
+ error:
+@@ -1748,17 +1734,8 @@ void dvb_ca_en50221_release(struct dvb_c
+ 	dprintk("%s\n", __FUNCTION__);
+ 
+ 	/* shutdown the thread if there was one */
+-	if (ca->thread_pid) {
+-		if (kill_proc(ca->thread_pid, 0, 1) == -ESRCH) {
+-			printk("dvb_ca_release adapter %d: thread PID %d already died\n",
+-			       ca->dvbdev->adapter->num, ca->thread_pid);
+-		} else {
+-			ca->exit = 1;
+-			mb();
+-			dvb_ca_en50221_thread_wakeup(ca);
+-			wait_event_interruptible(ca->thread_queue, ca->thread_pid == 0);
+-		}
+-	}
++	if (ca->thread)
++		kthread_stop(ca->thread);
+ 
+ 	for (i = 0; i < ca->slot_count; i++) {
+ 		dvb_ca_en50221_slot_shutdown(ca, i);
