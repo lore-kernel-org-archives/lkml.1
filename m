@@ -1,123 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932118AbXAXTEz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751410AbXAXTG5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932118AbXAXTEz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jan 2007 14:04:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932231AbXAXTEz
+	id S1751410AbXAXTG5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jan 2007 14:06:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751977AbXAXTG5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jan 2007 14:04:55 -0500
-Received: from mailhub.sw.ru ([195.214.233.200]:45496 "EHLO relay.sw.ru"
+	Wed, 24 Jan 2007 14:06:57 -0500
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:50346 "EHLO e5.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932118AbXAXTEy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jan 2007 14:04:54 -0500
-To: linux-kernel@vger.kernel.org
-Cc: devel@openvz.org,
-       "David Chinner <dgc@sgi.com> Andrew Morton" <akpm@osdl.org>
-Subject: [PATCH][RFC] incorrect direct io error handling (v3)  
-From: Dmitriy Monakhov <dmonakhov@sw.ru>
-Date: Wed, 24 Jan 2007 22:05:06 +0300
-Message-ID: <87fya0nt3x.fsf@sw.ru>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.4 (gnu/linux)
+	id S1751410AbXAXTG4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jan 2007 14:06:56 -0500
+Date: Wed, 24 Jan 2007 13:06:33 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>, lkml <linux-kernel@vger.kernel.org>,
+       containers@lists.osdl.org, Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH 4/8] user ns: hook permission
+Message-ID: <20070124190633.GB597@sergelap.austin.ibm.com>
+References: <20061219225902.GA25904@sergelap.austin.ibm.com> <20061219230051.GE25904@sergelap.austin.ibm.com> <m14pqg2w3o.fsf@ebiederm.dsl.xmission.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="=-=-="
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m14pqg2w3o.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---=-=-=
+Quoting Eric W. Biederman (ebiederm@xmission.com):
+> "Serge E. Hallyn" <serue@us.ibm.com> writes:
+> 
+> > From: Serge E. Hallyn <serue@us.ibm.com>
+> > Subject: [PATCH 4/8] user ns: hook permission
+> >
+> > Hook permission to check vfsmnt->user_ns against current.
+> 
+> This looks wrong on several levels.
+> - This should ultimately be inside generic_permission instead of
+>   permission as there are some distributed filesystems that know how to cope with
+>   multiple mount namespaces simultaneous.
+> 
+> - As implemented the test is not what I would expect.  I would
+>   expect comparisons of uid X == uid Y and gid X == gid Y to
+>   be replaced by comparing the tuples of uid namesspace and uid.
+>   Which would allow access to world readable/writeable files,
+>   and it would allow users with CAP_DAC_OVERRIDE to be able to access
+>   everything.
 
-incorrect direct io error handling (v3)
-Changes from v2:
- - Remove BUG_ON(!mutex_is_locked(..)) for non blkdev.
- - vmtruncate() called from generic_file_aio_write().
- - depends on patch titled:
-   [PATH][RFC] mm: Move common segments checks to separate function
+Whoa - why on earth would we want that?
 
-LOG:
-If generic_file_direct_write() has fail (ENOSPC condition) inside 
-__generic_file_aio_write_nolock() it may have instantiated
-a few blocks outside i_size. And fsck will complain about wrong i_size
-(ext2, ext3 and reiserfs interpret i_size and biggest block difference as error),
-after fsck will fix error i_size will be increased to the biggest block,
-but this blocks contain gurbage from previous write attempt, this is not 
-information leak, but its silence file data corruption. This issue affect 
-fs regardless the values of blocksize or pagesize.
-We need truncate any block beyond i_size after write have failed , do in simular
-generic_file_buffered_write() error path. Initialy i've proposed do it in
-__generic_file_aio_write_nolock() with explicit guarantee i_mutex always held,
-but not everybody was agree with it. So we may safely call vmtruncate() inside 
-generic_file_aio_write(), here i_mutex already locked.
- 
-TEST_CASE:
-open("/mnt/test/BIG_FILE", O_WRONLY|O_CREAT|O_DIRECT, 0666) = 3
-write(3, "aaaaaaaaaaaaaaa"..., 104857600) = -1 ENOSPC (No space left on device)
+> All we are really saying as I understand a user namespace is that 
+> instead of uid's uniquely identifying a user the pair the pair uidns,
+> uid is uniquely identifies a user.
 
-#stat /mnt/test/BIG_FILE
-  File: `/mnt/test/BIG_FILE'
-  Size: 0               Blocks: 110896     IO Block: 1024   regular empty file
-<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<^^^^^^^^file size is less than biggest block idx
+Ok that would be one way to interpret it, but it is insufficient for
+preventing root in one vserver from messing with users in another
+vserver.
 
-Device: fe07h/65031d    Inode: 14          Links: 1
-Access: (0644/-rw-r--r--)  Uid: (    0/    root)   Gid: (    0/    root)
-Access: 2007-01-24 20:03:38.000000000 +0300
-Modify: 2007-01-24 20:03:38.000000000 +0300
-Change: 2007-01-24 20:03:39.000000000 +0300
+> Because you didn't pick what I would consider the obvious choice
+> you now need an extra mount flag to disable the uid namespace all
+> together, so you can transition through the intermediate uid namespace
+> state.  That really feels wrong.
 
-#fsck.ext3 -f /dev/VG/test 
-e2fsck 1.39 (29-May-2006)
-Pass 1: Checking inodes, blocks, and sizes
-Inode 14, i_size is 0, should be 56556544.  Fix<y>? yes
-Pass 2: Checking directory structure
+Some bit of required bootstrapping seems both acceptable and expected
+to me.
 
-Signed-off-by: Dmitriy Monakhov <dmonakhov@openvz.org>
--------
+> All mounts should have an associated uid namespace and the only
 
---=-=-=
-Content-Disposition: inline; filename=diff-ms-direct_io-write-fix
+check
 
-diff --git a/mm/filemap.c b/mm/filemap.c
-index d01abb6..96840e5 100644
---- a/mm/filemap.c
-+++ b/mm/filemap.c
-@@ -2058,8 +2058,9 @@ generic_file_direct_write(struct kiocb *
- 	/*
- 	 * Sync the fs metadata but not the minor inode changes and
- 	 * of course not the data as we did direct DMA for the IO.
--	 * i_mutex is held, which protects generic_osync_inode() from
--	 * livelocking.  AIO O_DIRECT ops attempt to sync metadata here.
-+	 * i_mutex may not being held, if so some specific locking
-+	 * ordering must protect generic_osync_inode() from livelocking.
-+	 * AIO O_DIRECT ops attempt to sync metadata here.
- 	 */
- 	if ((written >= 0 || written == -EIOCBQUEUED) &&
- 	    ((file->f_flags & O_SYNC) || IS_SYNC(inode))) {
-@@ -2365,6 +2366,17 @@ ssize_t generic_file_aio_write(struct ki
- 			&iocb->ki_pos);
- 	mutex_unlock(&inode->i_mutex);
- 
-+	if (unlikely(ret < 0 && (file->f_flags & O_DIRECT))) {
-+		ssize_t cnt = generic_segment_checks(nr_segs, iov, VERIFY_READ);
-+		loff_t isize = i_size_read(inode);
-+		/*
-+		 * generic_file_direct_write() may have instantiated a few 
-+		 * blocks outside i_size.  Trim these off again.
-+		 */
-+		if (cnt > 0 && (pos + cnt > isize))
-+			vmtruncate(inode, isize);
-+	}
-+
- 	if (ret > 0 && ((file->f_flags & O_SYNC) || IS_SYNC(inode))) {
- 		ssize_t err;
- 
-@@ -2377,8 +2389,8 @@ ssize_t generic_file_aio_write(struct ki
- EXPORT_SYMBOL(generic_file_aio_write);
- 
- /*
-- * Called under i_mutex for writes to S_ISREG files.   Returns -EIO if something
-- * went wrong during pagecache shootdown.
-+ * May be called without i_mutex for writes to S_ISREG files.
-+ * Returns -EIO if something went wrong during pagecache shootdown.
-  */
- static ssize_t
- generic_file_direct_IO(int rw, struct kiocb *iocb, const struct iovec *iov,
+> way you should be able to ignore that is to access filesystems
+> that can cope with multiple uid namespaces simultaneously.
 
---=-=-=--
+But it's my fs on my box, why shouldn't i be able to say all uid
+namespaces can acces this subtree read-only, just bc you feel the
+fs is inadequate?  :)
 
+Note that the tiniest of trees, with just a statically compiled bash,
+mount, pivot_mount, and initrc, should suffice, mounted readonly for
+all uid namespaces to use to bootstrap.
+
+-serge
