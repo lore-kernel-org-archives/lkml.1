@@ -1,45 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752021AbXAXQ5K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752029AbXAXQ6u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752021AbXAXQ5K (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jan 2007 11:57:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752025AbXAXQ5K
+	id S1752029AbXAXQ6u (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jan 2007 11:58:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752026AbXAXQ6u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jan 2007 11:57:10 -0500
-Received: from caffeine.uwaterloo.ca ([129.97.134.17]:57031 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752021AbXAXQ5J (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jan 2007 11:57:09 -0500
-Date: Wed, 24 Jan 2007 11:57:09 -0500
-To: Adrian Bunk <bunk@stusta.de>
-Cc: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       takada <takada@mbf.nifty.com>, Jordan Crouse <jordan.crouse@amd.com>
-Subject: Re: 2.6.20-rc5: known unfixed regressions (v3) (part 2)
-Message-ID: <20070124165708.GF7582@csclub.uwaterloo.ca>
-References: <Pine.LNX.4.64.0701121424520.11200@woody.osdl.org> <20070124154725.GK17836@stusta.de> <20070124160631.GE7582@csclub.uwaterloo.ca> <20070124163801.GM17836@stusta.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070124163801.GM17836@stusta.de>
-User-Agent: Mutt/1.5.9i
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+	Wed, 24 Jan 2007 11:58:50 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:55733 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752017AbXAXQ6t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jan 2007 11:58:49 -0500
+Message-ID: <45B78FF9.40202@redhat.com>
+Date: Wed, 24 Jan 2007 11:57:29 -0500
+From: Jeff Layton <jlayton@redhat.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
+MIME-Version: 1.0
+To: Eric Dumazet <dada1@cosmosbay.com>
+CC: Andrew Morton <akpm@osdl.org>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/3] i_ino uniqueness: alternate approach -- hash the
+ inodes
+References: <200701161857.l0GIvcaA016196@dantu.rdu.redhat.com> <20070123204648.204b1834.akpm@osdl.org> <45B76BAC.4040408@redhat.com> <200701241621.44923.dada1@cosmosbay.com>
+In-Reply-To: <200701241621.44923.dada1@cosmosbay.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 24, 2007 at 05:38:01PM +0100, Adrian Bunk wrote:
-> Was the removed
->   setCx86(CX86_CCR3, ccr3);
-> without any effects?
+Eric Dumazet wrote:
+ > The problem is you wont see the overhead of insert/delete the inode in a
+ > global tree, since you keep hot caches.
+ >
+ > To have a better estimate of the overhead, I suggest you try to use more
+ > active pipes like :
+ >
 
-I didn't think that was ever checked in.  I thought the patch was still
-being discussed.
+Eric, thanks for the new program. With that, the situation looks slightly
+worse:
 
-The line missing will not as far as I can see cause any problems, it
-will leave some registers accessible that normaly are not, but unless
-something was to try and access them that shouldn't matter.  It is of
-course more correct to reprotect them after the required changes are
-done so it should be put back (if it was ever actually removed).
+hashing patch (pipebench):
+sys     1m15.329s
+sys     1m16.249s
+sys     1m17.169s
 
---
-Len Sorensen
+unpatched (pipebench):
+sys     1m9.836s
+sys     1m12.541s
+sys     1m14.153s
+
+Which works out to 1.05642174294555027017. So ~5-6%.
+
+-- Jeff
+
