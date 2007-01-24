@@ -1,101 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751872AbXAXO5G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751879AbXAXO7L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751872AbXAXO5G (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jan 2007 09:57:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751879AbXAXO5G
+	id S1751879AbXAXO7L (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jan 2007 09:59:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751890AbXAXO7L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jan 2007 09:57:06 -0500
-Received: from amsfep15-int.chello.nl ([62.179.120.10]:59399 "EHLO
-	amsfep15-int.chello.nl" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751872AbXAXO5F (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jan 2007 09:57:05 -0500
-Subject: Re: [RFC] Limit the size of the pagecache
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Aubrey Li <aubreylee@gmail.com>
-Cc: Christoph Lameter <clameter@sgi.com>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
+	Wed, 24 Jan 2007 09:59:11 -0500
+Received: from omx2-ext.sgi.com ([192.48.171.19]:58699 "EHLO omx2.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751879AbXAXO7K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jan 2007 09:59:10 -0500
+Date: Wed, 24 Jan 2007 06:56:59 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+To: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+cc: Aubrey Li <aubreylee@gmail.com>, Nick Piggin <nickpiggin@yahoo.com.au>,
        Robin Getz <rgetz@blackfin.uclinux.org>,
-       "Frysinger, Michael" <Michael.Frysinger@analog.com>,
-       Bryan Wu <cooloney.lkml@gmail.com>,
-       "Hennerich, Michael" <Michael.Hennerich@analog.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <6d6a94c50701240622n30f1092cq4570f84160fe87f7@mail.gmail.com>
+       "Henn, erich, Michael" <Michael.Hennerich@analog.com>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC] Limit the size of the pagecache
+In-Reply-To: <45B75208.90208@linux.vnet.ibm.com>
+Message-ID: <Pine.LNX.4.64.0701240655400.9696@schroedinger.engr.sgi.com>
 References: <Pine.LNX.4.64.0701231645260.5239@schroedinger.engr.sgi.com>
-	 <1169625333.4493.16.camel@taijtu>
-	 <6d6a94c50701240622n30f1092cq4570f84160fe87f7@mail.gmail.com>
-Content-Type: text/plain
-Date: Wed, 24 Jan 2007 15:56:56 +0100
-Message-Id: <1169650616.6189.41.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
-Content-Transfer-Encoding: 7bit
+ <45B75208.90208@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-01-24 at 22:22 +0800, Aubrey Li wrote:
-> On 1/24/07, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-> > On Tue, 2007-01-23 at 16:49 -0800, Christoph Lameter wrote:
-> > > This is a patch using some of Aubrey's work plugging it in what is IMHO
-> > > the right way. Feel free to improve on it. I have gotten repeatedly
-> > > requests to be able to limit the pagecache. With the revised VM statistics
-> > > this is now actually possile. I'd like to know more about possible uses of
-> > > such a feature.
-> > >
-> > >
-> > >
-> > >
-> > > It may be useful to limit the size of the page cache for various reasons
-> > > such as
-> > >
-> > > 1. Insure that anonymous pages that may contain performance
-> > >    critical data is never subject to swap.
-> >
-> > This is what we have mlock for, no?
-> >
-> > > 2. Insure rapid turnaround of pages in the cache.
-> >
-> > This sounds like we either need more fadvise hints and/or understand why
-> > the VM doesn't behave properly.
-> >
-> > > 3. Reserve memory for other uses? (Aubrey?)
-> >
-> > He wants to make a nommu system act like a mmu system; this will just
-> > never ever work.
-> 
-> Nope. Actually my nommu system works great with some of patches made by us.
-> What let you think this will never work?
+On Wed, 24 Jan 2007, Vaidyanathan Srinivasan wrote:
 
-Because there are perfectly valid things user-space can do to mess you
-up. I forgot the test-case but it had something to do with opening a
-million files, this will scatter slab pages all over the place.
+> With your patch, MMAP of a file that will cross the pagecache limit hangs the
+> system.  As I mentioned in my previous mail, without subtracting the
+> NR_FILE_MAPPED, the reclaim will infinitely try and fail.
 
-Also, if you cycle your large user-space allocations a bit unluckily
-you'll also fragment it into oblivion.
+Well mapped pages are still pagecache pages.
+ 
+> I have tested your patch with the attached fix on my PPC64 box.
 
-So you can not guarantee it will not fragment into smithereens stopping
-your user-space from using large than page size allocations.
-
-If your user-space consists of several applications that do dynamic
-memory allocation of various sizes its a matter of (run-) time before
-things will start failing.
-
-If you prealloc a large area at boot time (like we now do for hugepages)
-and use that for user-space, you might 'reset' the status quo by cycling
-the whole of userspace.
-
-> > Memory fragmentation is a real issue not some gimmick
-> > thought up by the hardware folks to sell these mmu chips.
-> >
-> I totally disagree. Memory fragmentations is the issue not only on
-> nommu, it's also on mmu chips. That's not the reason mmu chips can be
-> sold.
-
-For MMU enabled chips these fragmentation issues (at the page allocation
-level) will never reach (regular - !hugepages) user-space. Exactly
-because of the MMU, it will make things virtually contiguous.
-
-Yes, there are problem in kernel space, esp. when we want to use huge
-pages.
+Interesting. What is your reason for wanting to limit the size of the 
+pagecache?
 
