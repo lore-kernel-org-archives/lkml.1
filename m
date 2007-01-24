@@ -1,88 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933128AbXAXH5s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933188AbXAXH7r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933128AbXAXH5s (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jan 2007 02:57:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965224AbXAXH5r
+	id S933188AbXAXH7r (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jan 2007 02:59:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933195AbXAXH7r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jan 2007 02:57:47 -0500
-Received: from amsfep17-int.chello.nl ([213.46.243.15]:8334 "EHLO
-	amsfep14-int.chello.nl" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S933128AbXAXH5r (ORCPT
+	Wed, 24 Jan 2007 02:59:47 -0500
+Received: from nz-out-0506.google.com ([64.233.162.225]:15917 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933188AbXAXH7q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jan 2007 02:57:47 -0500
-Subject: Re: [RFC] Limit the size of the pagecache
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Aubrey Li <aubreylee@gmail.com>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Robin Getz <rgetz@blackfin.uclinux.org>,
-       "Henn, erich, Michael" <Michael.Hennerich@analog.com>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0701231645260.5239@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0701231645260.5239@schroedinger.engr.sgi.com>
-Content-Type: text/plain; charset=utf-8
-Date: Wed, 24 Jan 2007 08:55:33 +0100
-Message-Id: <1169625333.4493.16.camel@taijtu>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.9.4 (2.9.4-1.fc7) 
+	Wed, 24 Jan 2007 02:59:46 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=hPuG9IaWwFIK72Z0LMgLWI8cdIuu6B3nd3qxzhHsqe/7G1VwNLNbFWRn55mqOMAFrfV0/ght5vXtFVBerjNaIVc4XMVS28CAw3JJRW8jCSAP9sbresKtwxq9mYWNxiA/wi/YFnA7VrBVMAvxWFGtfQp4wUXkfBtXrQuvfXGfOow=
+Message-ID: <4ae3c140701232359o50e9c27ahe30d441b8083a7ae@mail.gmail.com>
+Date: Wed, 24 Jan 2007 02:59:45 -0500
+From: "Xin Zhao" <uszhaoxin@gmail.com>
+To: "Oleg Verych" <olecom@flower.upol.cz>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [newbie] Re: Is it possible to directly call do_path_lookup() in kernel?
+In-Reply-To: <slrnere41b.e7s.olecom@flower.upol.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <4ae3c140701231032xd6eca27td46cc1c25e150e25@mail.gmail.com>
+	 <4ae3c140701232333j4772794j6e49da2d32c0b26d@mail.gmail.com>
+	 <slrnere41b.e7s.olecom@flower.upol.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-01-23 at 16:49 -0800, Christoph Lameter wrote:
-> This is a patch using some of Aubrey's work plugging it in what is IMHO 
-> the right way. Feel free to improve on it. I have gotten repeatedly 
-> requests to be able to limit the pagecache. With the revised VM statistics 
-> this is now actually possile. I'd like to know more about possible uses of 
-> such a feature.
-> 
-> 
-> 
-> 
-> It may be useful to limit the size of the page cache for various reasons
-> such as
-> 
-> 1. Insure that anonymous pages that may contain performance
->    critical data is never subject to swap.
+Thanks for your reply.
 
-This is what we have mlock for, no?
+But more details are appreciated. Actually I checked linkage.h before
+I sent last email. Looks like "fastcall" is used to direct the
+compiler to put the first 3 parameters into registers instead of
+stack. But I just don't understand why that causes "general protection
+fault".
 
-> 2. Insure rapid turnaround of pages in the cache.
+I am writing a new file system on Linux platform. So I thought this is
+the right email list where I can discuss Linux kernel developing
+questions. Is this email list only used to post patches and report
+bugs? If so, I will stay away.
 
-This sounds like we either need more fadvise hints and/or understand why
-the VM doesn't behave properly.
+-x
 
-> 3. Reserve memory for other uses? (Aubrey?)
-
-He wants to make a nommu system act like a mmu system; this will just
-never ever work. Memory fragmentation is a real issue not some gimmick
-thought up by the hardware folks to sell these mmu chips.
-
-> We add a new variable "pagecache_ratio" to /proc/sys/vm/ that
-> defaults to 100 (all memory usable for the pagecache).
-> 
-> The size of the pagecache is the number of file backed
-> pages in a zone which is available through NR_FILE_PAGES.
-> 
-> We skip zones that contain too many page cache pages in
-> the page allocator which may cause us to enter reclaim.
-> 
-> If we enter reclaim and the number of page cache pages
-> is too high then we switch off swapping during reclaim
-> to avoid touching anonymous pages.
-> 
-> Signed-off-by: Christoph Lameter <clameter@sgi.com>
-
-Code looks nice, however earlier responses have raised good points. Esp.
-the one pointing out you'd need to defeat swappiness too.
-
-That said, I'm not much in favour of a limit pagecache knob.
-
-Esp. the "my customers are scared of the 99.9% memory used scenario" is
-a clear case of educate them. We don't go fix psychological problems
-with code.
-
-The only maybe valid point would be 2, and I'd like to see if we can't
-solve that differently - a better use-once logic comes to mind.
-
+On 1/24/07, Oleg Verych <olecom@flower.upol.cz> wrote:
+>
+> On 2007-01-24, Xin Zhao wrote:
+> > Archived-At: <http://permalink.gmane.org/gmane.linux.kernel/485775>
+>
+> Hallo.
+>
+> > I just successfully called do_path_lookup() in my kernel module. I
+> > just removed the "fastcall" from the declaration of do_path_lookup(),
+> > then the problem disappeared. I don't quite understand "fastcall"
+> > though.
+>
+> In linkage.h header near you.
+>
+> > Can someone explain it?
+>
+> Please use appropriate mailing list:
+>
+> Kernelnewbies: Help each other learn about the Linux kernel.
+> Archive:       http://mail.nl.linux.org/kernelnewbies/
+> FAQ:           http://kernelnewbies.org/faq/
+>
+> > Thanks,
+> > -x
+> >
+> ____
+>
