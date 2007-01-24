@@ -1,67 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751093AbXAXTrs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751960AbXAXTvP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751093AbXAXTrs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jan 2007 14:47:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751129AbXAXTrs
+	id S1751960AbXAXTvP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jan 2007 14:51:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751465AbXAXTvO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jan 2007 14:47:48 -0500
-Received: from wr-out-0506.google.com ([64.233.184.234]:5510 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751093AbXAXTrr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jan 2007 14:47:47 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=K2z71dnrDFe7AkiNBWRIIjn+9nNUBYgwBHqfM4FLdwf2SuNo9hDXYKGiJLQ91qQC23l/4RFLYUQ/p5/wmH5AJ4OrO/3ZllVZ0Z8pQunj4IukCpplBukJjOBRZUgmpddhTWVc4hvnP1nT0gkZcmB90bndOi02yl0VrzzrfZ5RFEg=
-Message-ID: <7b69d1470701241147m6b3f905erca392c3a4761c4e8@mail.gmail.com>
-Date: Wed, 24 Jan 2007 13:47:45 -0600
-From: "Scott Preece" <sepreece@gmail.com>
-To: "Martin Bligh" <mbligh@mbligh.org>
-Subject: Re: [Ksummit-2006-discuss] 2007 Linux Kernel Summit
-Cc: "Theodore Tso" <tytso@mit.edu>, "Sunil Naidu" <akula2.shark@gmail.com>,
-       "Josh Boyer" <jwboyer@gmail.com>, "James Morris" <jmorris@namei.org>,
-       "Alan Cox" <alan@redhat.com>, "Christoph Hellwig" <hch@lst.de>,
-       ksummit-2006-discuss@thunk.org, linux-kernel@vger.kernel.org
-In-Reply-To: <8f3aa8d60701241027p6674915avbc0f9b37383cce32@mail.gmail.com>
+	Wed, 24 Jan 2007 14:51:14 -0500
+Received: from mx2.suse.de ([195.135.220.15]:51174 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751402AbXAXTvN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jan 2007 14:51:13 -0500
+Date: Wed, 24 Jan 2007 11:50:17 -0800
+From: Greg KH <gregkh@suse.de>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: linux-kernel@vger.kernel.org, Linux Containers <containers@lists.osdl.org>,
+       linux-fsdevel@vger.kernel.org, Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH 2/2] Implement shadow directory support for device classes.
+Message-ID: <20070124195017.GA27315@suse.de>
+References: <m1fya01alj.fsf@ebiederm.dsl.xmission.com> <m1bqko1aj4.fsf@ebiederm.dsl.xmission.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <E1H8tIr-0006QH-Bg@candygram.thunk.org>
-	 <20070122110711.GA5917@lst.de>
-	 <20070122124502.GC30124@devserv.devel.redhat.com>
-	 <8355959a0701231152n1b4238f8ob54ea1792f299ca5@mail.gmail.com>
-	 <Pine.LNX.4.64.0701231622260.29810@d.namei>
-	 <625fc13d0701231339j523306b6w923c695a3ed0493e@mail.gmail.com>
-	 <8355959a0701231511o4f53796ewd5e403b640a4975c@mail.gmail.com>
-	 <20070124014223.GA26186@thunk.org>
-	 <8f3aa8d60701241018o6d4d8c37jb20ddb49f47e3eec@mail.gmail.com>
-	 <8f3aa8d60701241027p6674915avbc0f9b37383cce32@mail.gmail.com>
+In-Reply-To: <m1bqko1aj4.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 1/24/07, Martin Bligh <mbligh@mbligh.org> wrote:
->
-> It's not just the cost of travel by any means - the extra travel time and
-> jetlag involved is huge - having everybody sleep through a conference is
-> distinctly less productive.
->
-> One of the advantages of the EST timezone locations is that it's at least
-> reasonably central to most of the players involved. Obviously, wherever
-> we hold it, some people get screwed ... the question is what screws
-> the fewest people the least. Personally, I'd prefer PST for purely selfish
-> reasons, but ... ;-)
----
+On Wed, Jan 24, 2007 at 12:37:19PM -0700, Eric W. Biederman wrote:
+> 
+> Modify the device class code so that normal manipulations work
+> in the presence of shadow directories.  Some of the shadow directory
+> support still needs to be implemented in the implementation of the
+> class but these modifications are sufficient to make that simple.
 
-Hmm - Sounds like it needs to go to Halifax! [I was going to suggest
-Reykjavik, but was surprised to see it was in the same time zone as
-the UK.]
+This is a nice idea, but I'm working to get rid of 'struct class_device'
+from the tree.  Network devices have already been converted, the patch
+is in the -mm tree, I'm working on some firewire fixes before pushing it
+to Linus.
 
-I wonder what the geographic center of the kernel community is.
-Somebody with boundless energy could harvest the mail headers from
-LKML, remove duplicates, and figure out the temporal center from the
-timezone information in the headers, but I don't know an easy way to
-get to air-mile distances...
+So, I think you want to do this work for 'struct device' too, as that is
+what will be the real user of this code.
 
-scott
+thanks,
+
+greg k-h
