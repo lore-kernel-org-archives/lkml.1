@@ -1,98 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965463AbXAXDM3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030190AbXAXDQE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965463AbXAXDM3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jan 2007 22:12:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965634AbXAXDM3
+	id S1030190AbXAXDQE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jan 2007 22:16:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030243AbXAXDQE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jan 2007 22:12:29 -0500
-Received: from smtp109.mail.mud.yahoo.com ([209.191.85.219]:21555 "HELO
-	smtp109.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S965463AbXAXDM2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jan 2007 22:12:28 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=dwDk7G1nH/gSs5DbMjzqTxpuO457JhulUjM9JvlN9gQ1t2NnfJgpMHpqB+/NkTrYK62mMGlta38XG0tnM5S+C8K4kNRj6l0O6fBJXiCAKL+h416J+YrWKQJscXJnW2hjI5jOQq7FMkSMGnghxOHGp2Bx7tTjSP8Bl3XVoPT1Nng=  ;
-X-YMail-OSG: iACuhogVM1kTPCzG7M9y9ZQL6gEvb1H6pylWLOzbYVKDUsRySKwKd.jFAeZnnMXzJZwvK2ktmg--
-Message-ID: <45B6CE8C.8010807@yahoo.com.au>
-Date: Wed, 24 Jan 2007 14:12:12 +1100
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
+	Tue, 23 Jan 2007 22:16:04 -0500
+Received: from omx1-ext.sgi.com ([192.48.179.11]:55957 "EHLO omx1.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1030190AbXAXDQC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jan 2007 22:16:02 -0500
+Date: Tue, 23 Jan 2007 19:14:02 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+cc: Aubrey Li <aubreylee@gmail.com>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Robin Getz <rgetz@blackfin.uclinux.org>,
+       "Henn, erich, Michael" <Michael.Hennerich@analog.com>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org, dgc@sgi.com
+Subject: Re: [RFC] Limit the size of the pagecache
+In-Reply-To: <45B6CBD9.80600@yahoo.com.au>
+Message-ID: <Pine.LNX.4.64.0701231908420.6123@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0701231645260.5239@schroedinger.engr.sgi.com>
+ <45B6CBD9.80600@yahoo.com.au>
 MIME-Version: 1.0
-To: Paul Davies <pauld@cse.unsw.edu.au>
-CC: linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] Page Table cleanup patch
-References: <20070124023828.11302.51100.sendpatchset@weill.orchestra.cse.unsw.EDU.AU>
-In-Reply-To: <20070124023828.11302.51100.sendpatchset@weill.orchestra.cse.unsw.EDU.AU>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Davies wrote:
-> This patch is a proposed cleanup of the current page table organisation.
-> Such a cleanup would be a logical first step towards introducing at least
-> a partial clean page table interface, geared towards providing enhanced 
-> virtualization oportunities for x86.  It is also a common sense cleanup 
-> in its own right.
+On Wed, 24 Jan 2007, Nick Piggin wrote:
+
+> > 1. Insure that anonymous pages that may contain performance
+> >    critical data is never subject to swap.
+> > 
+> > 2. Insure rapid turnaround of pages in the cache.
 > 
->  * Creates mlpt.c to hold the page table implementation currently held 
->    in memory.c.
->  * Adjust Makefile 
->  * Move implementation dependent page table code out of 
->    include/linux/mm.h into include/linux/mlpt-mm.h
->  * Move implementation dependent page table code out of 
->    include/asm-generic/pgtable.h to include/asm-generic/pgtable-mlpt.h
+> So if these two aren't working properly at 100%, then I want to know the
+> reason why. Or at least see what the workload and the numbers look like.
+
+The reason for the anonymous page may be because data is rarely touched 
+but for some reason the pages must stay in memory. Rapid turnaround is 
+just one of the reason that I vaguely recall but I never really 
+understood what the purpose was.
+
+> > 3. Reserve memory for other uses? (Aubrey?)
 > 
-> mlpt stands from multi level page table.
+> Maybe. This is still a bad hack, and I don't like to legitimise such use
+> though. I hope Aubrey isn't relying on this alone for his device to work
+> because his customers might end up hitting fragmentation problems sooner
+> or later.
 
-Hi Paul,
-
-I'm not sure that I see the point of this patch alone, as there is still
-all the mlpt implementation details in all the page table walkers. Or
-did you have a scheme to change implementations somehow just using the
-p*d_addr_next?
-
-> -#ifndef __PAGETABLE_PUD_FOLDED
-> -/*
-> - * Allocate page upper directory.
-> - * We've already handled the fast-path in-line.
-> - */
-> -int __pud_alloc(struct mm_struct *mm, pgd_t *pgd, unsigned long address)
-> -{
-> -	pud_t *new = pud_alloc_one(mm, address);
-> -	if (!new)
-> -		return -ENOMEM;
-> -
-> -	spin_lock(&mm->page_table_lock);
-> -	if (pgd_present(*pgd))		/* Another has populated it */
-> -		pud_free(new);
-> -	else
-> -		pgd_populate(mm, pgd, new);
-> -	spin_unlock(&mm->page_table_lock);
-> -	return 0;
-> -}
-> -#else
-> -/* Workaround for gcc 2.96 */
-> -int __pud_alloc(struct mm_struct *mm, pgd_t *pgd, unsigned long address)
-> -{
-> -	return 0;
-> -}
-> -#endif /* __PAGETABLE_PUD_FOLDED */
-
-...
-
-> -/* Workaround for gcc 2.96 */
-> -int __pmd_alloc(struct mm_struct *mm, pud_t *pud, unsigned long address)
-> -{
-> -	return 0;
-> -}
-> -#endif /* __PAGETABLE_PMD_FOLDED */
-
-Hmm, we're gcc-3.2 minimum now -- let's get rid of that crud?
-
--- 
-SUSE Labs, Novell Inc.
-Send instant messages to your online friends http://au.messenger.yahoo.com 
+I surely wish that Aubrey would give us some more clarity on 
+how this should work. Maybe the others who want this feature could also 
+speak up? I am not that clear on its purpose.
