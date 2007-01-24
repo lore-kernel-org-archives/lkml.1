@@ -1,53 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965458AbXAXBHr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933095AbXAXBjj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965458AbXAXBHr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jan 2007 20:07:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965471AbXAXBHr
+	id S933095AbXAXBjj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jan 2007 20:39:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933100AbXAXBji
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jan 2007 20:07:47 -0500
-Received: from main.gmane.org ([80.91.229.2]:40823 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965458AbXAXBHq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jan 2007 20:07:46 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Oleg Verych <olecom@flower.upol.cz>
-Subject: Re: [KBUILD] I don't want initramfs in 2.6.19.1 but usr/ is still processed
-Date: Wed, 24 Jan 2007 01:07:21 +0000 (UTC)
-Organization: Palacky University in Olomouc, experimental physics department.
-Message-ID: <slrnerdcqe.e7s.olecom@flower.upol.cz>
-References: <20070103111936.GB18441@DervishD>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=koi8-r
-Content-Transfer-Encoding: 8bit
-X-Complaints-To: usenet@sea.gmane.org
-X-Gmane-NNTP-Posting-Host: flower.upol.cz
-User-Agent: slrn/0.9.8.1pl1 (Debian)
+	Tue, 23 Jan 2007 20:39:38 -0500
+Received: from wx-out-0506.google.com ([66.249.82.238]:13947 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933095AbXAXBji convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jan 2007 20:39:38 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=mi72KBaYm4GNPSWxQ9jKMuEnJ020fuQ8ylTQGBxaY3sT06XZx+6kwDKjYNBV13NPSho6ROvUu0pdWELRKDXo2lMNdQH2sj6SlZWymuNswtfjtWcL1DSavOpA7OVRapqf1pMWTrBE0SueYMx8L6muJE15HBKnZ69fUp6qcZzs+9c=
+Message-ID: <3877989d0701231739l1399afaci61aed9f26e3cd14@mail.gmail.com>
+Date: Wed, 24 Jan 2007 09:39:37 +0800
+From: "Luming Yu" <luming.yu@gmail.com>
+To: "Lionel Landwerlin" <landwer@free.fr>
+Subject: Re: 2.6.19.2 sky2/acpi crashes
+Cc: "Len Brown" <lenb@kernel.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <1169599541.5235.4.camel@cocoduo>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+References: <1169542768.5537.11.camel@cocoduo>
+	 <3877989d0701230122r426eb5b0h446c897780923d7a@mail.gmail.com>
+	 <1169555238.5747.3.camel@cocoduo> <200701231630.55096.lenb@kernel.org>
+	 <1169599541.5235.4.camel@cocoduo>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2007-01-03, DervishD wrote:
+On 1/24/07, Lionel Landwerlin <landwer@free.fr> wrote:
+> Le mardi 23 janvier 2007 à 16:30 -0500, Len Brown a écrit :
+> > On Tuesday 23 January 2007 07:27, Lionel Landwerlin wrote:
+> > > Le mardi 23 janvier 2007 à 17:22 +0800, Luming Yu a écrit :
+> > > > Please try to remove processor module.
+> > >
+> > > Ok, that's done. Same problem.
+> >
+> > any difference with "idle=poll"?
+> > if yes, how about "idle=halt"?
 >
->     Hi all :)
-
-Hallo!
-
->     I've noticed that, even if I say NO to initramfs (and even ramdisk
-> support), the make process wants to GEN usr/initramfs_data.cpio.gz by
-> running the scripts/gen_initramfs_list.sh script.
+> idle=poll seems to fix the problem (cpu fan is running almost at full
+> speed). Maybe I should run a longer test... For now it consists to run
+> about 15 torrents and watching HDTV through ethernet device.
 >
->     Why is that script run no matter the initramfs support? Looks like
-> it only depends on the contents of CONFIG_INITRAMFS_SOURCE :?
+> idle=halt does not :
 
-I think reading Documentation/filesystems/ramfs-rootfs-initramfs.txt
-will answer your question.
-
->     Thanks in advance :)
->
->     Raúl Núñez de Arenas Coronado
->
-> -- 
-> Linux Registered User 88736 | http://www.dervishd.net
-> It's my PC and I'll cry if I want to... RAmen!
-____
-
+It sounds like issues relative to Processor C state.
+Please enter a bug in ACPI category on bugzilla.kernel.org
