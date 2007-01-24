@@ -1,60 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752004AbXAXQh5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752009AbXAXQlI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752004AbXAXQh5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jan 2007 11:37:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752008AbXAXQh5
+	id S1752009AbXAXQlI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jan 2007 11:41:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752015AbXAXQlI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jan 2007 11:37:57 -0500
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:2213 "HELO
-	mailout.stusta.mhn.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752004AbXAXQh4 (ORCPT
+	Wed, 24 Jan 2007 11:41:08 -0500
+Received: from mother.pmc-sierra.com ([216.241.224.12]:54847 "HELO
+	mother.pmc-sierra.bc.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752012AbXAXQlG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jan 2007 11:37:56 -0500
-Date: Wed, 24 Jan 2007 17:38:01 +0100
-From: Adrian Bunk <bunk@stusta.de>
-To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-Cc: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       takada <takada@mbf.nifty.com>, Jordan Crouse <jordan.crouse@amd.com>
-Subject: Re: 2.6.20-rc5: known unfixed regressions (v3) (part 2)
-Message-ID: <20070124163801.GM17836@stusta.de>
-References: <Pine.LNX.4.64.0701121424520.11200@woody.osdl.org> <20070124154725.GK17836@stusta.de> <20070124160631.GE7582@csclub.uwaterloo.ca>
+	Wed, 24 Jan 2007 11:41:06 -0500
+Message-ID: <45B78C19.4030408@pmc-sierra.com>
+From: Marc St-Jean <Marc_St-Jean@pmc-sierra.com>
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Cc: linux-mips@linux-mips.org, linux-serial@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] serial driver PMC MSP71xx, kernel linux-mips.git mast
+	 er
+Date: Wed, 24 Jan 2007 08:40:57 -0800
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070124160631.GE7582@csclub.uwaterloo.ca>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+X-Mailer: Internet Mail Service (5.5.2657.72)
+x-originalarrivaltime: 24 Jan 2007 16:40:57.0674 (UTC) FILETIME=[6C5A0AA0:01C73FD6]
+user-agent: Thunderbird 1.5.0.9 (X11/20061206)
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 24, 2007 at 11:06:31AM -0500, Lennart Sorensen wrote:
-> On Wed, Jan 24, 2007 at 04:47:25PM +0100, Adrian Bunk wrote:
-> > Subject    : fix geode_configure()
-> > References : http://lkml.org/lkml/2007/1/9/216
-> > Submitter  : Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-> > Caused-By  : takada <takada@mbf.nifty.com>
-> >              commit e4f0ae0ea63caceff37a13f281a72652b7ea71ba
-> > Handled-By : takada <takada@mbf.nifty.com>
-> >              Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-> > Status     : patches are being discussed
+
+
+Sergei Shtylyov wrote:
+> Hello, I wrote:
 > 
-> I wouldn't call this a regression.  It appears to go way back.  I also
-> didn't find it, I just commented on it since it does affect the platform
-> I work on.
+>  >>>> Here is a serial driver patch for the PMC-Sierra MSP71xx device.
+> 
+>  >>>> There are three different fixes:
+>  >>>> 1. Fix for THRE errata
+>  >>>> 2. Fix for Busy Detect on LCR write
+>  >>>> 3. Workaround for interrupt/data concurrency issue
+> 
+>  >>>> The first fix is handled cleanly using a UART_BUG_* flag.
+> 
+>  >>>    Hm, I wouldn't call it clean...
+> 
+>  >> Relative to the other two. Any recommended improvements on this one?
+> 
+>  >    I already told: runtime check.
+> 
+>     BTW, I've just came accross 2 patches in the -mm tree related to the
+> transmitter bug:
+> 
+> http://www.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.20-rc4/2.6.20-rc4-mm1/broken-out/8250-make-probing-for-txen-bug-a-config-option.patch
 
-Was the removed
-  setCx86(CX86_CCR3, ccr3);
-without any effects?
+Thanks. The first of these is not at all what we are seeing. However I guess
+there could be a remote chance it's triggering our THRE errata as it did for
+the pnx4008 boards.
 
-> Len Sorensen
+> http://www.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.20-rc4/2.6.20-rc4-mm1/broken-out/8250-uart-backup-timer.patch
 
-cu
-Adrian
+This second patch failure description is identical to what we are seeing without
+the THRE work-around. This must be the timer patch Alan mentioned but it's not
+in the linux.git at l-m.o.
 
--- 
+Could you please explain what you mean by and where I can find the "-mm tree"?
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Marc
