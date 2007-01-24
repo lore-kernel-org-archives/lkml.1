@@ -1,75 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933188AbXAXH7r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965424AbXAXIHo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933188AbXAXH7r (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jan 2007 02:59:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933195AbXAXH7r
+	id S965424AbXAXIHo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jan 2007 03:07:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965391AbXAXIHo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jan 2007 02:59:47 -0500
-Received: from nz-out-0506.google.com ([64.233.162.225]:15917 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933188AbXAXH7q (ORCPT
+	Wed, 24 Jan 2007 03:07:44 -0500
+Received: from topsns2.toshiba-tops.co.jp ([202.230.225.126]:37413 "EHLO
+	topsns2.toshiba-tops.co.jp" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S965224AbXAXIHn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jan 2007 02:59:46 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=hPuG9IaWwFIK72Z0LMgLWI8cdIuu6B3nd3qxzhHsqe/7G1VwNLNbFWRn55mqOMAFrfV0/ght5vXtFVBerjNaIVc4XMVS28CAw3JJRW8jCSAP9sbresKtwxq9mYWNxiA/wi/YFnA7VrBVMAvxWFGtfQp4wUXkfBtXrQuvfXGfOow=
-Message-ID: <4ae3c140701232359o50e9c27ahe30d441b8083a7ae@mail.gmail.com>
-Date: Wed, 24 Jan 2007 02:59:45 -0500
-From: "Xin Zhao" <uszhaoxin@gmail.com>
-To: "Oleg Verych" <olecom@flower.upol.cz>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [newbie] Re: Is it possible to directly call do_path_lookup() in kernel?
-In-Reply-To: <slrnere41b.e7s.olecom@flower.upol.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 24 Jan 2007 03:07:43 -0500
+Date: Wed, 24 Jan 2007 17:07:36 +0900 (JST)
+Message-Id: <20070124.170736.63741899.nemoto@toshiba-tops.co.jp>
+To: akpm@osdl.org
+Cc: sshtylyov@ru.mvista.com, Eric.Piel@lifl.fr, ralf@linux-mips.org,
+       linux-kernel@vger.kernel.org, linux-mips@linux-mips.org
+Subject: Re: [PATCH] Make CARDBUS_MEM_SIZE and CARDBUS_IO_SIZE customizable
+From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+In-Reply-To: <20070123235029.d49eda3d.akpm@osdl.org>
+References: <20070123.103027.126140726.nemoto@toshiba-tops.co.jp>
+	<20070123234507.08f63b5e.akpm@osdl.org>
+	<20070123235029.d49eda3d.akpm@osdl.org>
+X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
+X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
+X-Mailer: Mew version 3.3 on Emacs 21.3 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <4ae3c140701231032xd6eca27td46cc1c25e150e25@mail.gmail.com>
-	 <4ae3c140701232333j4772794j6e49da2d32c0b26d@mail.gmail.com>
-	 <slrnere41b.e7s.olecom@flower.upol.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks for your reply.
+On Tue, 23 Jan 2007 23:50:29 -0800, Andrew Morton <akpm@osdl.org> wrote:
+> > setup-bus.o is linked only on x86
+> 
+> oops, that's untrue.  But it will break ppc32, I think.
 
-But more details are appreciated. Actually I checked linkage.h before
-I sent last email. Looks like "fastcall" is used to direct the
-compiler to put the first 3 parameters into registers instead of
-stack. But I just don't understand why that causes "general protection
-fault".
+Oh sorry for confusion, I had updated wrong version of the patch when
+applying comments from Eric and Sergei.
 
-I am writing a new file system on Linux platform. So I thought this is
-the right email list where I can discuss Linux kernel developing
-questions. Is this email list only used to post patches and report
-bugs? If so, I will stay away.
+Final shape in mm tree looks fine.  Thank you.
 
--x
-
-On 1/24/07, Oleg Verych <olecom@flower.upol.cz> wrote:
->
-> On 2007-01-24, Xin Zhao wrote:
-> > Archived-At: <http://permalink.gmane.org/gmane.linux.kernel/485775>
->
-> Hallo.
->
-> > I just successfully called do_path_lookup() in my kernel module. I
-> > just removed the "fastcall" from the declaration of do_path_lookup(),
-> > then the problem disappeared. I don't quite understand "fastcall"
-> > though.
->
-> In linkage.h header near you.
->
-> > Can someone explain it?
->
-> Please use appropriate mailing list:
->
-> Kernelnewbies: Help each other learn about the Linux kernel.
-> Archive:       http://mail.nl.linux.org/kernelnewbies/
-> FAQ:           http://kernelnewbies.org/faq/
->
-> > Thanks,
-> > -x
-> >
-> ____
->
+---
+Atsushi Nemoto
