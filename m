@@ -1,79 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750979AbXAXKZA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750978AbXAXK1A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750979AbXAXKZA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jan 2007 05:25:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750983AbXAXKY7
+	id S1750978AbXAXK1A (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jan 2007 05:27:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750996AbXAXK1A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jan 2007 05:24:59 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.158]:56003 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750978AbXAXKY7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jan 2007 05:24:59 -0500
-Subject: Re: [patch 00/46] High resolution timer / dynamic tick update
-From: Daniel Walker <dwalker@mvista.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Andrew Morton <akpm@osdl.org>,
-       LKML <linux-kernel@vger.kernel.org>, John Stultz <johnstul@us.ibm.com>,
-       Arjan van de Veen <arjan@infradead.org>,
-       Roman Zippel <zippel@linux-m68k.org>
-In-Reply-To: <20070124095157.GA21346@elte.hu>
-References: <20070123211159.178138000@localhost.localdomain>
-	 <1169604991.19471.95.camel@imap.mvista.com>
-	 <20070124070701.GA17654@elte.hu>
-	 <1169631016.19471.175.camel@imap.mvista.com>
-	 <20070124095157.GA21346@elte.hu>
-Content-Type: text/plain
-Date: Wed, 24 Jan 2007 02:23:40 -0800
-Message-Id: <1169634220.19471.197.camel@imap.mvista.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
-Content-Transfer-Encoding: 7bit
+	Wed, 24 Jan 2007 05:27:00 -0500
+Received: from smtp.ocgnet.org ([64.20.243.3]:49108 "EHLO smtp.ocgnet.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750937AbXAXK07 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jan 2007 05:26:59 -0500
+Date: Wed, 24 Jan 2007 19:25:20 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Roland McGrath <roland@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@osdl.org>,
+       Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/11] Fix CONFIG_COMPAT_VDSO
+Message-ID: <20070124102520.GA25174@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Roland McGrath <roland@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+	Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
+	linux-kernel@vger.kernel.org
+References: <20070117084947.GA19093@elte.hu> <20070117090334.5B6EB1800E8@magilla.sf.frob.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070117090334.5B6EB1800E8@magilla.sf.frob.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-01-24 at 10:51 +0100, Ingo Molnar wrote:
-
-> please read what i wrote: in the first section above i am talking about 
-> Thomas' -hrt tree and its track record. Thomas' tree is more than a year 
-> old and has an excellent track record. In the last sentence i was 
-> talking about this latest iteration of his -hrt tree, which i released 
-> as part of -rt yesterday. (but which i have tested internally longer 
-> than that, prior release.)
+On Wed, Jan 17, 2007 at 01:03:34AM -0800, Roland McGrath wrote:
+> > i think your patches #1...#7 are must-haves for v2.6.20, while #8-#11 
+> > could be delayed to v2.6.21?
 > 
-> > Since this new release has a fair amount of new code it's not totally 
-> > fair to says "it's been in -rt for a while".
+> Indeed 1-7 are fixes while 8-11 are only cleanups not changing behavior.
 > 
-> Thomas' -hrt tree has been in -rt for over a year.
+Here's an update for the SH bits when the 8-11 parts are ready..
 
-Ok. The history is well known to me.
+Signed-off-by: Paul Mundt <lethal@linux-sh.org>
 
-> > If stability is a question, -rt10 does currently compile for my test 
-> > config, due to this new HRT introduction. [...]
-> 
-> isnt your test config ARM? If it's x86 or x86_64 then please send me a 
-> bugreport about it. rt10 wont compile on non-i686 and non-x86_64 because 
-> their clockevents drivers have not been updated yet (but should be 
-> trivial). In any case, this is an -rt internal matter that has no 
-> relevance on the -mm submission, i'm not sure why you are bringing it 
-> up.
-
-No, the test config I was talking about is SMP i386 (which is what I
-usually use). All tho I've sent you ARM and PowerPC code in the past.
-
-> > My queue has always been 90% clean up, some of that is moving code 
-> > around. [...]
-> 
-> in the -rt tree i'm tracking the high-res code that has been started by 
-> Thomas in mid-2005. In the past 1.5 years, 90%+ of the bugfixes to 
-> high-res timers issues in -rt came from Thomas and this has been about 
-> the 10th major iteration to his codebase. If you have cleanups to his 
-> code then please work with Thomas to get your changes into his tree.
-
-My code is for clocksouces/timekeeping which has been unrelated to HRT
-up until recently. In my original email I suggested that the two tree's
-be merged ,or placed on top of each other, which I still think is a good
-idea.
-
-Daniel
-
+diff --git a/arch/sh/kernel/vsyscall/vsyscall.c b/arch/sh/kernel/vsyscall/vsyscall.c
+index deb4694..7b0f66f 100644
+--- a/arch/sh/kernel/vsyscall/vsyscall.c
++++ b/arch/sh/kernel/vsyscall/vsyscall.c
+@@ -37,11 +37,12 @@ __setup("vdso=", vdso_setup);
+  * of the ELF DSO images included therein.
+  */
+ extern const char vsyscall_trapa_start, vsyscall_trapa_end;
+-static void *syscall_page;
++static struct page *syscall_pages[1];
+ 
+ int __init vsyscall_init(void)
+ {
+-	syscall_page = (void *)get_zeroed_page(GFP_ATOMIC);
++	void *syscall_page = (void *)get_zeroed_page(GFP_ATOMIC);
++	syscall_pages[0] = virt_to_page(syscall_page);
+ 
+ 	/*
+ 	 * XXX: Map this page to a fixmap entry if we get around
+@@ -55,37 +56,10 @@ int __init vsyscall_init(void)
+ 	return 0;
+ }
+ 
+-static struct page *syscall_vma_nopage(struct vm_area_struct *vma,
+-				       unsigned long address, int *type)
+-{
+-	unsigned long offset = address - vma->vm_start;
+-	struct page *page;
+-
+-	if (address < vma->vm_start || address > vma->vm_end)
+-		return NOPAGE_SIGBUS;
+-
+-	page = virt_to_page(syscall_page + offset);
+-
+-	get_page(page);
+-
+-	return page;
+-}
+-
+-/* Prevent VMA merging */
+-static void syscall_vma_close(struct vm_area_struct *vma)
+-{
+-}
+-
+-static struct vm_operations_struct syscall_vm_ops = {
+-	.nopage	= syscall_vma_nopage,
+-	.close	= syscall_vma_close,
+-};
+-
+ /* Setup a VMA at program startup for the vsyscall page */
+ int arch_setup_additional_pages(struct linux_binprm *bprm,
+ 				int executable_stack)
+ {
+-	struct vm_area_struct *vma;
+ 	struct mm_struct *mm = current->mm;
+ 	unsigned long addr;
+ 	int ret;
+@@ -97,30 +71,16 @@ int arch_setup_additional_pages(struct l
+ 		goto up_fail;
+ 	}
+ 
+-	vma = kmem_cache_zalloc(vm_area_cachep, GFP_KERNEL);
+-	if (!vma) {
+-		ret = -ENOMEM;
++	ret = install_special_mapping(mm, addr, PAGE_SIZE,
++				      VM_READ | VM_EXEC |
++				      VM_MAYREAD | VM_MAYWRITE | VM_MAYEXEC |
++				      VM_ALWAYSDUMP,
++				      syscall_pages);
++	if (unlikely(ret))
+ 		goto up_fail;
+-	}
+-
+-	vma->vm_start = addr;
+-	vma->vm_end = addr + PAGE_SIZE;
+-	/* MAYWRITE to allow gdb to COW and set breakpoints */
+-	vma->vm_flags = VM_READ|VM_EXEC|VM_MAYREAD|VM_MAYEXEC|VM_MAYWRITE;
+-	vma->vm_flags |= mm->def_flags;
+-	vma->vm_page_prot = protection_map[vma->vm_flags & 7];
+-	vma->vm_ops = &syscall_vm_ops;
+-	vma->vm_mm = mm;
+-
+-	ret = insert_vm_struct(mm, vma);
+-	if (unlikely(ret)) {
+-		kmem_cache_free(vm_area_cachep, vma);
+-		goto up_fail;
+-	}
+ 
+ 	current->mm->context.vdso = (void *)addr;
+ 
+-	mm->total_vm++;
+ up_fail:
+ 	up_write(&mm->mmap_sem);
+ 	return ret;
