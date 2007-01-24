@@ -1,56 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751387AbXAXM6P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751384AbXAXNCt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751387AbXAXM6P (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jan 2007 07:58:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751391AbXAXM6P
+	id S1751384AbXAXNCt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jan 2007 08:02:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751399AbXAXNCt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jan 2007 07:58:15 -0500
-Received: from amsfep17-int.chello.nl ([213.46.243.15]:42678 "EHLO
-	amsfep12-int.chello.nl" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751387AbXAXM6N (ORCPT
+	Wed, 24 Jan 2007 08:02:49 -0500
+Received: from mail.first.fraunhofer.de ([194.95.169.2]:55214 "EHLO
+	mail.first.fraunhofer.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751384AbXAXNCs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jan 2007 07:58:13 -0500
-Subject: Re: [RFC] Limit the size of the pagecache
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Christoph Lameter <clameter@sgi.com>, Aubrey Li <aubreylee@gmail.com>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Robin Getz <rgetz@blackfin.uclinux.org>,
-       "Henn, erich, Michael" <Michael.Hennerich@analog.com>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-In-Reply-To: <45B7561C.9000102@yahoo.com.au>
-References: <Pine.LNX.4.64.0701231645260.5239@schroedinger.engr.sgi.com>
-	 <1169625333.4493.16.camel@taijtu>  <45B7561C.9000102@yahoo.com.au>
-Content-Type: text/plain
-Date: Wed, 24 Jan 2007 13:58:08 +0100
-Message-Id: <1169643488.6189.18.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 24 Jan 2007 08:02:48 -0500
+To: linux-kernel@vger.kernel.org
+Date: Wed, 24 Jan 2007 13:02:42 +0000 (UTC)
+From: Soeren Sonnenburg <kernel@nn7.de>
+Message-ID: <ep7ldh$gsm$1@fortknox.intranet.wo.rk>
+Organization: Local Intranet News
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+References: <1169542768.5537.11.camel@cocoduo>
+Subject: Re: 2.6.19.2 sky2/acpi crashes
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-01-24 at 23:50 +1100, Nick Piggin wrote:
-> Peter Zijlstra wrote:
-> > On Tue, 2007-01-23 at 16:49 -0800, Christoph Lameter wrote:
-> 
-> >>2. Insure rapid turnaround of pages in the cache.
-> 
-> [...]
-> 
-> > The  only maybe valid point would be 2, and I'd like to see if we can't
-> > solve that differently - a better use-once logic comes to mind.
-> 
-> There must be something I'm missing with that point. The faster
-> the turnaround of pagecache pages, the *less* efficiently the
-> pagecache is working (assuming a rapid turnaround means a high
-> rate of pages brought into, then reclaimed from pagecache).
-> 
-> I can't argue that a smaller pagecache will be subject to a
-> higher turnaround given the same workload, but I don't know why
-> that would be a good thing.
+On Tue, 23 Jan 2007 11:12:50 +0000, Andrew Lyon wrote:
 
-I interpreted the issue as selecting the wrong pages for the 'working
-set'. Like not quickly evicting pages from a large streaming read, which
-then pushes out more useful pages.
+> On 1/23/07, Soeren Sonnenburg <kernel@nn7.de> wrote:
+>> On Tue, 23 Jan 2007 08:59:28 +0000, Lionel Landwerlin wrote:
+>>
+>> > Hi,
+>> >
+>> > I'm running a macbook with a Marvell ethernet controller, and I have a
+>> > lots of freezes when using the ethernet controller under a load of
+>> > ~100K/s. Since I'm running a 2.6.19.2 kernel, I'm able to get some
+>> > report from the kernel. Here they are :
+>>
+>> I am also having trouble with the sky2 module, though I've not yet seen a
+>> oops, the driver stopped working after some heavy traffic (copying some G
+>> of data). Only rmmod sky2; modprobe sky2 resolved this. (I am also on
+>> 2.6.19.2 but I've seen this happen on 2.6.20-rcX too).
 
+[...]
+> Ive also had the same problem with both 2.6.19.2 and 2.6.20-rcX,
+> motherboard is gigabyte ga-965-ds3 , the networking stops completely
+> under moderate traffic, I get the following errors or a complete
+> lockup:
+> 
+> Jan 21 02:08:04 beast NETDEV WATCHDOG: eth0: transmit timed out
+> Jan 21 02:08:04 beast sky2 eth0: tx timeout
+> Jan 21 02:08:04 beast sky2 eth0: transmit ring 475 .. 452 report=475 done=475
+> Jan 21 02:08:04 beast sky2 hardware hung? flushing
+> 
+> At the time I was downloading a iso image at 850k/sec, so not really a
+> high network load at all.
+> 
+> rmmod / modprobe does resolve the issue, but more times than not the
+> box locks up completely instead of getting those errors.
+
+I am on a completely different system (macbook pro 1,1) with PREEMPT and
+cpu frequency scaling on not sure how this could be related...
+
+Soeren
