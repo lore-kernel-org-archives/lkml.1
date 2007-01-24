@@ -1,52 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751468AbXAXNxt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751472AbXAXOKU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751468AbXAXNxt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jan 2007 08:53:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751469AbXAXNxs
+	id S1751472AbXAXOKU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jan 2007 09:10:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751487AbXAXOKT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jan 2007 08:53:48 -0500
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:1676 "HELO
-	mailout.stusta.mhn.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751468AbXAXNxr (ORCPT
+	Wed, 24 Jan 2007 09:10:19 -0500
+Received: from cytosin.uni-konstanz.de ([134.34.240.61]:40780 "EHLO
+	cytosin.uni-konstanz.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751472AbXAXOKT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jan 2007 08:53:47 -0500
-Date: Wed, 24 Jan 2007 14:53:54 +0100
-From: Adrian Bunk <bunk@stusta.de>
-To: Andrew Morton <akpm@osdl.org>, Sergei Shtylyov <sshtylyov@ru.mvista.com>,
-       Jeff Garzik <jgarzik@pobox.com>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: 2.6.20-rc4-mm1: PCI=n: drivers/net/3c59x.c compile error
-Message-ID: <20070124135354.GI17836@stusta.de>
-References: <20070111222627.66bb75ab.akpm@osdl.org>
+	Wed, 24 Jan 2007 09:10:19 -0500
+X-Greylist: delayed 1437 seconds by postgrey-1.27 at vger.kernel.org; Wed, 24 Jan 2007 09:10:19 EST
+X-IronPort-AV: i="4.13,231,1167609600"; 
+   d="scan'208"; a="6288286:sNHT20337751"
+Message-ID: <1169646379.45b7632be1cb1@webmail.uni-konstanz.de>
+Date: Wed, 24 Jan 2007 14:46:19 +0100
+From: Jochen Oekonomopulos <jochen.oekonomopulos@uni-konstanz.de>
+To: linux-kernel@vger.kernel.org
+Subject: bio -> bi_bdev
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070111222627.66bb75ab.akpm@osdl.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+User-Agent: Internet Messaging Program (IMP) 3.2.2
+X-Originating-IP: 195.176.20.45
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-3x59x-fix-pci-resource-management.patch causes the following compile 
-error with CONFIG_PCI=n:
 
-<--  snip  -->
+Hello,
 
-...
-  CC      drivers/net/3c59x.o
-/home/bunk/linux/kernel-2.6/linux-2.6.20-rc4-mm1/drivers/net/3c59x.c: In function 'vortex_init_one':
-/home/bunk/linux/kernel-2.6/linux-2.6.20-rc4-mm1/drivers/net/3c59x.c:961: error: implicit declaration of function 'pci_request_regions'
-/home/bunk/linux/kernel-2.6/linux-2.6.20-rc4-mm1/drivers/net/3c59x.c:985: error: implicit declaration of function 'pci_release_regions'
-make[3]: *** [drivers/net/3c59x.o] Error 1
+I am working on a module to redirect a bio request from one block device
+to another. Therefore, I catch every bio from one device, clone it and
+change the underlying block_device bi_bdev to the other block device.
+Everything works fine, except that the first page read is always filled
+with random data. Everything else works fine. So I am wondering, if
+there is something I did not take into consideration.
 
-<--  snip  -->
+I tested it under 2.6.8 and 2.6.19 with the same results.
 
-cu
-Adrian
+Below is the essence of my redirection code.
 
--- 
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+"device" is the instance of my device structure. The original read was
+made to it and I want to redirect it to the block_device linked in
+bdev.
 
+struct bio bio, cloned_bio;
+int sect = 0;
+
+
+rq_for_each_bio(bio, req) {
+		
+		cloned_bio = bio_clone(bio, GFP_NOIO);
+		cloned_bio -> bi_private = bio;
+		cloned_bio -> bi_bdev = device -> bdev;
+		
+		if(bio_data_dir(cloned_bio) == WRITE) {
+
+			submit_bio(WRITE, cloned_bio);
+		}
+		else {
+
+			submit_bio(READ, cloned_bio);
+		}
+		
+		sect += cloned_bio->bi_size/KERNEL_SECTOR_SIZE;
+
+	}
+
+thanks in advance for any feedback,
+
+Jochen Oekonomopulos
