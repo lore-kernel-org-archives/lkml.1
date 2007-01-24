@@ -1,50 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751581AbXAXOWr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751590AbXAXOhM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751581AbXAXOWr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jan 2007 09:22:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751584AbXAXOWr
+	id S1751590AbXAXOhM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jan 2007 09:37:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751598AbXAXOhM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jan 2007 09:22:47 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:37638 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751553AbXAXOWq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jan 2007 09:22:46 -0500
-Message-ID: <45B76BAC.4040408@redhat.com>
-Date: Wed, 24 Jan 2007 09:22:36 -0500
-From: Jeff Layton <jlayton@redhat.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
+	Wed, 24 Jan 2007 09:37:12 -0500
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:20394 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751590AbXAXOhK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jan 2007 09:37:10 -0500
+X-AuditID: d80ac287-9e09dbb0000026f2-f4-45b770f9383b 
+Date: Wed, 24 Jan 2007 14:37:23 +0000 (GMT)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Chris Rankin <rankincj@yahoo.com>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.18-stable release plans?
+In-Reply-To: <20070124133037.98357.qmail@web52914.mail.yahoo.com>
+Message-ID: <Pine.LNX.4.64.0701241425170.10956@blonde.wat.veritas.com>
+References: <20070124133037.98357.qmail@web52914.mail.yahoo.com>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@osdl.org>
-CC: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/3] i_ino uniqueness: alternate approach -- hash the
- inodes
-References: <200701161857.l0GIvcaA016196@dantu.rdu.redhat.com> <20070123204648.204b1834.akpm@osdl.org>
-In-Reply-To: <20070123204648.204b1834.akpm@osdl.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-OriginalArrivalTime: 24 Jan 2007 14:37:10.0016 (UTC) FILETIME=[211F6000:01C73FC5]
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
+On Wed, 24 Jan 2007, Chris Rankin wrote:
 > 
-> What is the additional overhead, expressed in relative terms?  ie: as a percentage?
+> Personally, I dumped 2.6.19.x like a hot coal as soon as I tripped over this bug:
+> 
+> http://bugzilla.kernel.org/show_bug.cgi?id=7707
+> 
+> I didn't take much to trigger it, either. But the silence has been deafening.
 
-Short answer: ~3-4% in a not very scientific test.
+Oh, the page_remove_rmap BUG, page_mapcount negative.
 
-Long answer: I timed 3 different runs of a program that created and then closed 
-a pipe 10 million times on a patched and unpatched kernel. I then added up the
-"system" times for each and divided them:
+Sorry for the deafening silence, see I was CC'ed but dropped the ball.
 
-unpatched:
-sys     1m53.959s
-sys     1m56.083s
-sys     1m48.055s
+That's surely no reason to dump 2.6.19.x, you'll find the occasional
+such report on every(?) release since page mapcount went into 2.6.7.
 
-patched:
-sys     1m56.899s
-sys     1m57.027s
-sys     1m57.031s
+Oftentimes it's bad RAM (try memtest86), sometimes it's a bad driver
+(probably the case for the tainted P report appended to your untainted
+one), sometimes it's unidentified memory corruption.  Not once (except
+during experimental patch testing) has it been proved due to an actual
+VM problem.
 
-The result was 1.03803642150033866020.
-
--- Jeff
+Hugh
