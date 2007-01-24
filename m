@@ -1,85 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932845AbXAXWrn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932833AbXAXWwM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932845AbXAXWrn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jan 2007 17:47:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932846AbXAXWrO
+	id S932833AbXAXWwM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jan 2007 17:52:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932846AbXAXWwL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jan 2007 17:47:14 -0500
-Received: from omx2-ext.sgi.com ([192.48.171.19]:47362 "EHLO omx2.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932845AbXAXWrL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jan 2007 17:47:11 -0500
-Date: Thu, 25 Jan 2007 09:46:54 +1100
-From: David Chinner <dgc@sgi.com>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, David Chinner <dgc@sgi.com>,
-       linux-kernel@vger.kernel.org, xfs@oss.sgi.com, akpm@osdl.org
-Subject: Re: [PATCH 1/2]: Fix BUG in cancel_dirty_pages on XFS
-Message-ID: <20070124224654.GN33919298@melbourne.sgi.com>
-References: <20070123223702.GF33919298@melbourne.sgi.com> <1169640835.6189.14.camel@twins> <45B7627B.8050202@yahoo.com.au>
-Mime-Version: 1.0
+	Wed, 24 Jan 2007 17:52:11 -0500
+Received: from adsl-69-232-92-238.dsl.sndg02.pacbell.net ([69.232.92.238]:52342
+	"EHLO gnuppy.monkey.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932833AbXAXWwK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jan 2007 17:52:10 -0500
+Date: Wed, 24 Jan 2007 14:52:05 -0800
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "Chen, Tim C" <tim.c.chen@intel.com>, linux-kernel@vger.kernel.org,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       "Bill Huey (hui)" <billh@gnuppy.monkey.org>
+Subject: Re: [PATCH] lock stat for -rt 2.6.20-rc2-rt2.2.lock_stat.patch
+Message-ID: <20070124225205.GA5220@gnuppy.monkey.org>
+References: <9D2C22909C6E774EBFB8B5583AE5291C019998CA@fmsmsx414.amr.corp.intel.com> <20061229232618.GA11239@gnuppy.monkey.org> <20061230111940.GA8412@elte.hu> <20070103074124.GA25594@gnuppy.monkey.org> <20070124113115.GA12667@elte.hu>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <45B7627B.8050202@yahoo.com.au>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20070124113115.GA12667@elte.hu>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Bill Huey (hui) <billh@gnuppy.monkey.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 25, 2007 at 12:43:23AM +1100, Nick Piggin wrote:
-> Peter Zijlstra wrote:
-> >On Wed, 2007-01-24 at 09:37 +1100, David Chinner wrote:
-> >
-> >>With the recent changes to cancel_dirty_pages(), XFS will
-> >>dump warnings in the syslog because it can truncate_inode_pages()
-> >>on dirty mapped pages.
-> >>
-> >>I've determined that this is indeed correct behaviour for XFS
-> >>as this can happen in the case of races on mmap()d files with
-> >>direct I/O. In this case when we do a direct I/O read, we
-> >>flush the dirty pages to disk, then truncate them out of the
-> >>page cache. Unfortunately, between the flush and the truncate
-> >>the mmap could dirty the page again. At this point we toss a
-> >>dirty page that is mapped.
-> >
-> >
-> >This sounds iffy, why not just leave the page in the pagecache if its
-> >mapped anyway?
+On Wed, Jan 24, 2007 at 12:31:15PM +0100, Ingo Molnar wrote:
+> * Bill Huey <billh@gnuppy.monkey.org> wrote:
 > 
-> And why not just leave it in the pagecache and be done with it?
+> > Patch here:
+> > 
+> > 	http://mmlinux.sourceforge.net/public/patch-2.6.20-rc2-rt2.2.lock_stat.patch
+> 
+> hm, most of the review feedback i gave has not been addressed in the 
+> patch above. So i did it myself: find below various fixups for problems 
+> i outlined plus for a few other problems as well (ontop of 
+> 2.3.lock_stat).
 
-because what is in cache is then not coherent with what is on disk,
-and a direct read is supposed to read the data that is present
-in the file at the time it is issued. 
+Sorry, I've been siliently keeping your suggested change in my private
+repo without announcing it to the world. I'll reply to the old email in
+another message at length.
 
-> All you need is to do a writeout before a direct IO read, which is
-> what generic dio code does.
+	http://mmlinux.sourceforge.net/public/patch-2.6.20-rc2-rt2.4.lock_stat.patch
 
-No, that's not good enough - after writeout but before the
-direct I/O read is issued a process can fault the page and dirty
-it. If you do a direct read, followed by a buffered read you should
-get the same data. The only way to guarantee this is to chuck out
-any cached pages across the range of the direct I/O so they are
-fetched again from disk on the next buffered I/O. i.e. coherent
-at the time the direct I/O is issued.
+> While it's now markedly better it's still not quite mergeable, for 
+> example the build fails quite spectacularly if LOCK_STAT is disabled in 
+> the .config.
 
-> I guess you'll say that direct writes still need to remove pages,
+I'll look into it. I've been focused on clean up and a couple of other
+things regard the stability of this patch. Making small changes in it
+tends to make the kernel crash hard and I suspect that it's an interaction
+problem with lockdep and that I need to turn lockdep off when hitting
+"lock stats" locks. I'm going to move to "__raw_..." locks...
 
-Yup.
+Meanwhile please wait until I hand interpret and merge your changes to an
+older patch into my latest stuff. If it's takes too long, I suggest keeping
+out of the tree for a bit until I finish this round unless something is
+pressing for this to happen now like a mass change to the spinlock macros
+or something. I stalled a bit trying to get Peter Zijlstra an extra feature.
 
-> but in that case you'll either have to live with some racyness
-> (which is what the generic code does), or have a higher level
-> synchronisation to prevent buffered + direct IO writes I suppose?
+> Also, it would be nice to replace those #ifdef CONFIG_LOCK_STAT changes 
+> in rtmutex.c with some nice inline functions that do nothing on 
+> !CONFIG_LOCK_STAT.
 
-The XFS inode iolock - direct I/O writes take it shared, buffered
-writes takes it exclusive - so you can't do both at once. Buffered
-reads take is shared, which is another reason why we need to purge
-the cache on direct I/O writes - they can operate concurrently
-(and coherently) with buffered reads.
+I'll look into it. Not sure what your choice in style is here and I'm
+open to suggestions. I'm also interested in a reduction of #define
+identifier length if you or somebody else has some kind of good convention
+to suggest.
 
-Cheers,
+> but in general i'm positive about the direction this is heading, it just 
+> needs more work.
 
-Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+Sorry, for the lag. Trying to juggle this and the current demands of my
+employeer contributed to this lag unfortunately.
+
+bill
+
