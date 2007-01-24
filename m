@@ -1,135 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750978AbXAXK1A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751043AbXAXKb1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750978AbXAXK1A (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jan 2007 05:27:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750996AbXAXK1A
+	id S1751043AbXAXKb1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jan 2007 05:31:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751062AbXAXKb1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jan 2007 05:27:00 -0500
-Received: from smtp.ocgnet.org ([64.20.243.3]:49108 "EHLO smtp.ocgnet.org"
+	Wed, 24 Jan 2007 05:31:27 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:54638 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750937AbXAXK07 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jan 2007 05:26:59 -0500
-Date: Wed, 24 Jan 2007 19:25:20 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Roland McGrath <roland@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@osdl.org>,
-       Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/11] Fix CONFIG_COMPAT_VDSO
-Message-ID: <20070124102520.GA25174@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Roland McGrath <roland@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-	Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
-	linux-kernel@vger.kernel.org
-References: <20070117084947.GA19093@elte.hu> <20070117090334.5B6EB1800E8@magilla.sf.frob.com>
-MIME-Version: 1.0
+	id S1751043AbXAXKb0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jan 2007 05:31:26 -0500
+Date: Wed, 24 Jan 2007 11:29:02 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Daniel Walker <dwalker@mvista.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Andrew Morton <akpm@osdl.org>,
+       LKML <linux-kernel@vger.kernel.org>, John Stultz <johnstul@us.ibm.com>,
+       Arjan van de Veen <arjan@infradead.org>,
+       Roman Zippel <zippel@linux-m68k.org>
+Subject: Re: [patch 00/46] High resolution timer / dynamic tick update
+Message-ID: <20070124102902.GA28025@elte.hu>
+References: <20070123211159.178138000@localhost.localdomain> <1169604991.19471.95.camel@imap.mvista.com> <20070124070701.GA17654@elte.hu> <1169631016.19471.175.camel@imap.mvista.com> <20070124095157.GA21346@elte.hu> <1169634220.19471.197.camel@imap.mvista.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070117090334.5B6EB1800E8@magilla.sf.frob.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <1169634220.19471.197.camel@imap.mvista.com>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -4.3
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-4.3 required=5.9 tests=ALL_TRUSTED,BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-3.3 ALL_TRUSTED            Did not pass through any untrusted hosts
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 17, 2007 at 01:03:34AM -0800, Roland McGrath wrote:
-> > i think your patches #1...#7 are must-haves for v2.6.20, while #8-#11 
-> > could be delayed to v2.6.21?
-> 
-> Indeed 1-7 are fixes while 8-11 are only cleanups not changing behavior.
-> 
-Here's an update for the SH bits when the 8-11 parts are ready..
 
-Signed-off-by: Paul Mundt <lethal@linux-sh.org>
+* Daniel Walker <dwalker@mvista.com> wrote:
 
-diff --git a/arch/sh/kernel/vsyscall/vsyscall.c b/arch/sh/kernel/vsyscall/vsyscall.c
-index deb4694..7b0f66f 100644
---- a/arch/sh/kernel/vsyscall/vsyscall.c
-+++ b/arch/sh/kernel/vsyscall/vsyscall.c
-@@ -37,11 +37,12 @@ __setup("vdso=", vdso_setup);
-  * of the ELF DSO images included therein.
-  */
- extern const char vsyscall_trapa_start, vsyscall_trapa_end;
--static void *syscall_page;
-+static struct page *syscall_pages[1];
- 
- int __init vsyscall_init(void)
- {
--	syscall_page = (void *)get_zeroed_page(GFP_ATOMIC);
-+	void *syscall_page = (void *)get_zeroed_page(GFP_ATOMIC);
-+	syscall_pages[0] = virt_to_page(syscall_page);
- 
- 	/*
- 	 * XXX: Map this page to a fixmap entry if we get around
-@@ -55,37 +56,10 @@ int __init vsyscall_init(void)
- 	return 0;
- }
- 
--static struct page *syscall_vma_nopage(struct vm_area_struct *vma,
--				       unsigned long address, int *type)
--{
--	unsigned long offset = address - vma->vm_start;
--	struct page *page;
--
--	if (address < vma->vm_start || address > vma->vm_end)
--		return NOPAGE_SIGBUS;
--
--	page = virt_to_page(syscall_page + offset);
--
--	get_page(page);
--
--	return page;
--}
--
--/* Prevent VMA merging */
--static void syscall_vma_close(struct vm_area_struct *vma)
--{
--}
--
--static struct vm_operations_struct syscall_vm_ops = {
--	.nopage	= syscall_vma_nopage,
--	.close	= syscall_vma_close,
--};
--
- /* Setup a VMA at program startup for the vsyscall page */
- int arch_setup_additional_pages(struct linux_binprm *bprm,
- 				int executable_stack)
- {
--	struct vm_area_struct *vma;
- 	struct mm_struct *mm = current->mm;
- 	unsigned long addr;
- 	int ret;
-@@ -97,30 +71,16 @@ int arch_setup_additional_pages(struct l
- 		goto up_fail;
- 	}
- 
--	vma = kmem_cache_zalloc(vm_area_cachep, GFP_KERNEL);
--	if (!vma) {
--		ret = -ENOMEM;
-+	ret = install_special_mapping(mm, addr, PAGE_SIZE,
-+				      VM_READ | VM_EXEC |
-+				      VM_MAYREAD | VM_MAYWRITE | VM_MAYEXEC |
-+				      VM_ALWAYSDUMP,
-+				      syscall_pages);
-+	if (unlikely(ret))
- 		goto up_fail;
--	}
--
--	vma->vm_start = addr;
--	vma->vm_end = addr + PAGE_SIZE;
--	/* MAYWRITE to allow gdb to COW and set breakpoints */
--	vma->vm_flags = VM_READ|VM_EXEC|VM_MAYREAD|VM_MAYEXEC|VM_MAYWRITE;
--	vma->vm_flags |= mm->def_flags;
--	vma->vm_page_prot = protection_map[vma->vm_flags & 7];
--	vma->vm_ops = &syscall_vm_ops;
--	vma->vm_mm = mm;
--
--	ret = insert_vm_struct(mm, vma);
--	if (unlikely(ret)) {
--		kmem_cache_free(vm_area_cachep, vma);
--		goto up_fail;
--	}
- 
- 	current->mm->context.vdso = (void *)addr;
- 
--	mm->total_vm++;
- up_fail:
- 	up_write(&mm->mmap_sem);
- 	return ret;
+> No, the test config I was talking about is SMP i386 (which is what I 
+> usually use). [...]
+
+then please send me the .config.
+
+	Ingo
