@@ -1,60 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752078AbXAXVUz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752070AbXAXVXj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752078AbXAXVUz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jan 2007 16:20:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752076AbXAXVUz
+	id S1752070AbXAXVXj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jan 2007 16:23:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752084AbXAXVXj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jan 2007 16:20:55 -0500
-Received: from adsl-70-250-156-241.dsl.austtx.swbell.net ([70.250.156.241]:52332
-	"EHLO gw.microgate.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752078AbXAXVUy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jan 2007 16:20:54 -0500
-Message-ID: <45B7CDB5.7020909@microgate.com>
-Date: Wed, 24 Jan 2007 15:20:53 -0600
-From: Paul Fulghum <paulkf@microgate.com>
-User-Agent: Thunderbird 1.5.0.8 (Windows/20061025)
-MIME-Version: 1.0
-To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Strange problem with tty layer
-References: <20070124204009.GA7584@csclub.uwaterloo.ca>
-In-Reply-To: <20070124204009.GA7584@csclub.uwaterloo.ca>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 24 Jan 2007 16:23:39 -0500
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:42561 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752070AbXAXVXi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jan 2007 16:23:38 -0500
+Subject: Re: [patch 00/46] High resolution timer / dynamic tick update
+From: john stultz <johnstul@us.ibm.com>
+To: Daniel Walker <dwalker@mvista.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@osdl.org>, LKML <linux-kernel@vger.kernel.org>,
+       Arjan van de Veen <arjan@infradead.org>,
+       Roman Zippel <zippel@linux-m68k.org>
+In-Reply-To: <1169671890.19471.309.camel@imap.mvista.com>
+References: <20070123211159.178138000@localhost.localdomain>
+	 <1169604991.19471.95.camel@imap.mvista.com>
+	 <20070124070701.GA17654@elte.hu>
+	 <1169631016.19471.175.camel@imap.mvista.com>
+	 <1169668653.6905.49.camel@localhost.localdomain>
+	 <1169671890.19471.309.camel@imap.mvista.com>
+Content-Type: text/plain
+Date: Wed, 24 Jan 2007 13:23:32 -0800
+Message-Id: <1169673812.6905.71.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Lennart Sorensen wrote:
-> I have confirmed that the driver does in fact receive all the
-> characters, and that they are correct, and that they are being passed to
-> the tty layer using tty_insert_flip_string, and that it returns that all
-> the characters have been passed to the tty layer.  The user space
-> application however still doesn't see the last few characters (when it
-> fails).
+On Wed, 2007-01-24 at 12:51 -0800, Daniel Walker wrote:
+> On Wed, 2007-01-24 at 11:57 -0800, john stultz wrote:
+> > Thomas' changes are more obviously purpose driven, and Daniel's appear
+> > more like just cleanups. So given that, if it were me, I'd put Thomas
+> > changes in first, and re-diff Daniel's non-redundant changes on top.
 > 
-> The problem seems to occour every few hours of testing on a 266MHz Geode
-> SC1200.  When I change the clock to 133MHz, it happens every few minutes
-> instead (so much more frequently).  I suspect there is some race
-> condition that allows the tty layer to not get around to processing all
-> the data in the buffer, even when asked for data by the application
-> (which is waiting on the serial port using select, with a 4s timeout).
+> Seems backwards , clean ups should always go first. If Thomas had
+> started off my patch set his changes would have been smaller and
+> hopefully stronger. (I even remember you tell me that you wanted the
+> kernel/time/timekeeping.c change first in my series cause clean ups
+> should go first..)
 
-In 2.6.16 the tty buffering pushes data to the line
-discipline without regard to tty->receive_room.
-If the line discipline can't keep up, the data gets dropped.
-I observed this data loss at higher speeds when
-placing the system under heavy load.
+Well, I suggested the kernel/time/timekeeping.c change go in last cycle,
+when you pushed your other cleanups, because that sort of large,
+move-tons-of-code patch sucks to keep out of the tree for long as it
+would surely collide with something at some point.
 
-2.6.18 added code to respect tty->receive_room.
+> If the HRT changes went in I would have to re-make my cleanups, then do
+> more cleanup to change the stuff Thomas is introducing. Looking at his
+> code, to do a clean up I would want to just outright revert it.
+[snip]
+> Given the circumstances I don't see how we can do anything less than
+> resolve the conflicts .. My cleanups first, then his code and condense
+> and update his set. I'll gladly volunteer to do that.
 
-This may or may not be your problem, but you should
-be able to check by adding a conditional printk
-to drivers/char/tty_io.c:flush_to_ldisc()
+Hmmm. I just don't quite see the severity of the conflict.
 
-If tty->receive_room is less than the size of the buffer
-passed to disc->receive_buf() then you are losing data.
+Nonetheless, code talks, so don't let me get in the way, but I really
+think patching on top of the HRT queue is the best way forward. 
 
--- 
-Paul Fulghum
-Microgate Systems, Ltd.
+Even if they revert portions, it clearly points out why your changes
+would be better, focusing the discussion, instead of just making a large
+alternate patch queue.
+
+-john
+
