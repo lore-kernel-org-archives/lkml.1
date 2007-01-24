@@ -1,62 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752043AbXAXRGg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751996AbXAXRRB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752043AbXAXRGg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jan 2007 12:06:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752041AbXAXRGg
+	id S1751996AbXAXRRB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jan 2007 12:17:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752015AbXAXRRB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jan 2007 12:06:36 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:50213 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752043AbXAXRGf (ORCPT
+	Wed, 24 Jan 2007 12:17:01 -0500
+Received: from server077.de-nserver.de ([62.27.12.245]:57961 "EHLO
+	server077.de-nserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751996AbXAXRRA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jan 2007 12:06:35 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: lkml <linux-kernel@vger.kernel.org>, containers@lists.osdl.org,
-       Andrew Morton <akpm@osdl.org>
-Subject: Re: [PATCH 4/8] user ns: hook permission
-References: <20061219225902.GA25904@sergelap.austin.ibm.com>
-	<20061219230051.GE25904@sergelap.austin.ibm.com>
-Date: Wed, 24 Jan 2007 10:06:03 -0700
-In-Reply-To: <20061219230051.GE25904@sergelap.austin.ibm.com> (Serge
-	E. Hallyn's message of "Tue, 19 Dec 2006 17:00:51 -0600")
-Message-ID: <m14pqg2w3o.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Wed, 24 Jan 2007 12:17:00 -0500
+Message-ID: <45B7948B.70104@profihost.com>
+Date: Wed, 24 Jan 2007 18:16:59 +0100
+From: Stefan Priebe - FH <studium@profihost.com>
+User-Agent: Mozilla Thunderbird 1.0.7 (Windows/20050923)
+X-Accept-Language: de-DE, de, en-us, en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Chuck Ebbert <cebbert@redhat.com>
+CC: linux-kernel@vger.kernel.org, David Chinner <dgc@sgi.com>
+Subject: Re: XFS or Kernel Problem / Bug
+References: <20060801141545.B2326184@wobbly.melbourne.sgi.com> <44CED76B.20507@profihost.com> <20060801142755.C2326184@wobbly.melbourne.sgi.com> <44CED8F4.9080208@profihost.com> <20060801143212.D2326184@wobbly.melbourne.sgi.com> <44CEDA1D.5060607@profihost.com> <20060801143803.E2326184@wobbly.melbourne.sgi.com> <44CF36FB.6070606@profihost.com> <20060802090915.C2344877@wobbly.melbourne.sgi.com> <44D07AB7.3020409@profihost.com> <20060802201805.A2360409@wobbly.melbourne.sgi.com> <45B35CD7.4080801@profihost.com> <45B666BE.8000802@redhat.com> <45B70D69.20500@profihost.com> <45B773C1.7090805@redhat.com> <45B77547.4060302@profihost.com> <45B77780.5000504@redhat.com> <45B77C84.6070508@profihost.com> <45B78E9F.4000404@redhat.com>
+In-Reply-To: <45B78E9F.4000404@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-User-Auth: Auth by hostmaster@profihost.com through 84.133.203.160
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Serge E. Hallyn" <serue@us.ibm.com> writes:
+Hi!
 
-> From: Serge E. Hallyn <serue@us.ibm.com>
-> Subject: [PATCH 4/8] user ns: hook permission
->
-> Hook permission to check vfsmnt->user_ns against current.
+Mhm are you shure? I mean i have this problem on 5 servers - all with 
+the same mainboard. I cannot believe, that all 5 servers have a hardware 
+problem that starts on the same day.
 
-This looks wrong on several levels.
-- This should ultimately be inside generic_permission instead of
-  permission as there are some distributed filesystems that know how to cope with
-  multiple mount namespaces simultaneous.
+The other thing is - that they all work fine with 2.6.16.x and all other 
+kernels before. I mean some of them were used with 2.6.x since two years 
+without any problem...
 
-- As implemented the test is not what I would expect.  I would
-  expect comparisons of uid X == uid Y and gid X == gid Y to
-  be replaced by comparing the tuples of uid namesspace and uid.
-  Which would allow access to world readable/writeable files,
-  and it would allow users with CAP_DAC_OVERRIDE to be able to access
-  everything.
+Stefan
 
-All we are really saying as I understand a user namespace is that 
-instead of uid's uniquely identifying a user the pair the pair uidns,
-uid is uniquely identifies a user.
 
-Because you didn't pick what I would consider the obvious choice
-you now need an extra mount flag to disable the uid namespace all
-together, so you can transition through the intermediate uid namespace
-state.  That really feels wrong.
+Chuck Ebbert schrieb:
+> Stefan Priebe - FH wrote:
+> 
+>>Sorry that is not possible - cause it is a production machine.
+>>
+>>But i've catched the error and the files from another machine -
+>>perhaps this helps.
+>>
+>>"BUG: unable to handle kernel NULL pointer dereference at virtual
+>>address 00000288"
+>>" printing eip:"
+>>"c0142ff7"
+>>"*pde = 00000000"
+>>"Oops: 0000 [#1]"
+>>"SMP "
+>>"Modules linked in: iptable_filter ip_tables x_tables"
+>>"CPU:    0"
+>>"EIP:    0060:[<c0142ff7>]    Not tainted VLI"
+>>"EFLAGS: 00010246   (2.6.18.6 #1) "
+>>"EIP is at generic_file_buffered_write+0x390/0x6cf"
+>>"eax: 00000000   ebx: 000001ec   ecx: ea029a40   edx: 00008002"
+>>"esi: 00000000   edi: e3b28c9c   ebp: 000001ec   esp: dd04bd18"
+>>"ds: 007b   es: 007b   ss: 0068"
+>>"Process proftpd (pid: 3615, ti=dd04a000 task=eba88a70 task.ti=dd04a000)"
+>>"Stack: e3b28d44 00000001 00000010 000001fc c036d793 000001fc c14765c0
+>>00000010 "
+>>"       080d404c 000001ec e3b28c9c c03e78c0 e3b28d44 ea029a40 000001fc
+>>00000000 "
+>>"       00000000 000001ec dd04beac 00d420b1 00000000 00000000 dd04bd80
+>>45b1fa67 "
+>>"Call Trace:"
+>>" [<c036d793>] sock_def_readable+0x7f/0x81"
+>>" [<c017a03a>] file_update_time+0xad/0xcb"
+>>" [<c0232015>] xfs_iunlock+0x55/0x9f"
+>>" [<c0262eeb>] xfs_write+0xa74/0xc61"
+>>" [<c036a253>] sock_aio_read+0x95/0x99"
+>>" [<c025d9fb>] xfs_file_aio_write+0x8f/0xa0"
+>>" [<c015fb94>] do_sync_write+0xc9/0x10f"
+>>" [<c0133ad6>] autoremove_wake_function+0x0/0x57"
+>>" [<c015f3d5>] generic_file_llseek+0x95/0xbc"
+>>" [<c015facb>] do_sync_write+0x0/0x10f"
+>>" [<c015fc80>] vfs_write+0xa6/0x179"
+>>" [<c015fe24>] sys_write+0x51/0x80"
+>>" [<c0102d3f>] syscall_call+0x7/0xb"
+>>"Code: 04 89 10 8b 44 24 40 85 c0 0f 85 db 00 00 00 8b 5c 24 24 85 db
+>>0f 88 c3 00 00 00 8b 4c 24 34 8b 51 18 f6 c6 10 75 73 8b 7c 24 28 <8b>
+>>85 9c 00 00 00 f6 40 30 10 75 63 f6 87 48 01 00 00 01 75 5a "
+>>"EIP: [<c0142ff7>] generic_file_buffered_write+0x390/0x6cf SS:ESP
+>>0068:dd04bd18"
+>>
+>>Files:
+>>http://server113-han.de-nserver.de/filemap.s
+>>http://server113-han.de-nserver.de/filemap.o
+>>
+> 
+> You seem to have some kind of hardware/memory problem.
+> 
+> Disassembly of the failing instruction from the oops:
+> 
+>      8b 7c 24 28               mov    0x28(%esp),%edi
+>      8b 85 9c 00 00 00         mov    0x9c(%ebp),%eax   <=====
+> 
+> Dump of the object code:
+> 
+>            8b 7c 24 28             mov    0x28(%esp),%edi
+>            8b 87 9c 00 00 00       mov    0x9c(%edi),%eax
+> 
+> Looks like a bit is flipped.
+> 
 
-All mounts should have an associated uid namespace and the only
-way you should be able to ignore that is to access filesystems
-that can cope with multiple uid namespaces simultaneously.
-
-Eric
