@@ -1,38 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752075AbXAXV1F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932812AbXAXV3U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752075AbXAXV1F (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jan 2007 16:27:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752085AbXAXV1F
+	id S932812AbXAXV3U (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jan 2007 16:29:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752084AbXAXV3U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jan 2007 16:27:05 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:58088 "EHLO mx1.redhat.com"
+	Wed, 24 Jan 2007 16:29:20 -0500
+Received: from cantor.suse.de ([195.135.220.2]:50336 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752083AbXAXV1D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jan 2007 16:27:03 -0500
-Date: Wed, 24 Jan 2007 16:26:49 -0500
-From: Alan Cox <alan@redhat.com>
-To: Scott Preece <sepreece@gmail.com>
-Cc: Martin Bligh <mbligh@mbligh.org>, Theodore Tso <tytso@mit.edu>,
-       Sunil Naidu <akula2.shark@gmail.com>, Josh Boyer <jwboyer@gmail.com>,
-       James Morris <jmorris@namei.org>, Alan Cox <alan@redhat.com>,
-       Christoph Hellwig <hch@lst.de>, ksummit-2006-discuss@thunk.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [Ksummit-2006-discuss] 2007 Linux Kernel Summit
-Message-ID: <20070124212649.GA12410@devserv.devel.redhat.com>
-References: <20070122110711.GA5917@lst.de> <20070122124502.GC30124@devserv.devel.redhat.com> <8355959a0701231152n1b4238f8ob54ea1792f299ca5@mail.gmail.com> <Pine.LNX.4.64.0701231622260.29810@d.namei> <625fc13d0701231339j523306b6w923c695a3ed0493e@mail.gmail.com> <8355959a0701231511o4f53796ewd5e403b640a4975c@mail.gmail.com> <20070124014223.GA26186@thunk.org> <8f3aa8d60701241018o6d4d8c37jb20ddb49f47e3eec@mail.gmail.com> <8f3aa8d60701241027p6674915avbc0f9b37383cce32@mail.gmail.com> <7b69d1470701241147m6b3f905erca392c3a4761c4e8@mail.gmail.com>
-Mime-Version: 1.0
+	id S1752085AbXAXV3T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jan 2007 16:29:19 -0500
+Date: Wed, 24 Jan 2007 13:28:24 -0800
+From: Greg KH <gregkh@suse.de>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: linux-kernel@vger.kernel.org, Linux Containers <containers@lists.osdl.org>,
+       linux-fsdevel@vger.kernel.org, Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH 2/2] Implement shadow directory support for device classes.
+Message-ID: <20070124212824.GA29981@suse.de>
+References: <m1fya01alj.fsf@ebiederm.dsl.xmission.com> <m1bqko1aj4.fsf@ebiederm.dsl.xmission.com> <20070124195017.GA27315@suse.de> <m1y7nsyxsp.fsf@ebiederm.dsl.xmission.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <7b69d1470701241147m6b3f905erca392c3a4761c4e8@mail.gmail.com>
-User-Agent: Mutt/1.4.1i
+In-Reply-To: <m1y7nsyxsp.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 24, 2007 at 01:47:45PM -0600, Scott Preece wrote:
-> Hmm - Sounds like it needs to go to Halifax! [I was going to suggest
-> Reykjavik, but was surprised to see it was in the same time zone as
-> the UK.]
+On Wed, Jan 24, 2007 at 01:28:22PM -0700, Eric W. Biederman wrote:
+> Greg KH <gregkh@suse.de> writes:
+> 
+> > On Wed, Jan 24, 2007 at 12:37:19PM -0700, Eric W. Biederman wrote:
+> >> 
+> >> Modify the device class code so that normal manipulations work
+> >> in the presence of shadow directories.  Some of the shadow directory
+> >> support still needs to be implemented in the implementation of the
+> >> class but these modifications are sufficient to make that simple.
+> >
+> > This is a nice idea, but I'm working to get rid of 'struct class_device'
+> > from the tree.  Network devices have already been converted, the patch
+> > is in the -mm tree, I'm working on some firewire fixes before pushing it
+> > to Linus.
+> >
+> > So, I think you want to do this work for 'struct device' too, as that is
+> > what will be the real user of this code.
+> 
+> Sure.  That shouldn't be too hard.
+> 
+> Is any of that work in Dave Millers' networking tree?
 
-Reykjavik is a fantastic place with some truely wonderful Linux folks. As to
-the timezone, well winter is mostly dark, summer is mostly light so time 
-zones don't matter 8)
+No, it's in my tree, and in -mm.  It's all in one patch at:
+	http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/gregkh-01-driver/network-device.patch
+if you want to try it out.
+
+Or you can try it with any of the subsystems that have already been
+converted over to use the struct device code, like misc, mem, and many
+others.  Just look for the symlinks in /sys/class/CLASS_NAME/ instead of
+real subdirectories.
+
+So I'd really prefer to not apply this patch, and just do this kind of
+work for 'struct device' instead.
+
+The first one looks fine, I'll add it to my queue.
+
+thanks,
+
+greg k-h
