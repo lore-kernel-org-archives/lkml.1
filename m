@@ -1,94 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933190AbXAXHyD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933128AbXAXH5s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933190AbXAXHyD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jan 2007 02:54:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933194AbXAXHyD
+	id S933128AbXAXH5s (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jan 2007 02:57:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965224AbXAXH5r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jan 2007 02:54:03 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:56793 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933190AbXAXHyB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jan 2007 02:54:01 -0500
-Date: Tue, 23 Jan 2007 23:50:29 -0800
-From: Andrew Morton <akpm@osdl.org>
-To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>, sshtylyov@ru.mvista.com,
-       Eric.Piel@lifl.fr, ralf@linux-mips.org, linux-kernel@vger.kernel.org,
-       linux-mips@linux-mips.org
-Subject: Re: [PATCH] Make CARDBUS_MEM_SIZE and CARDBUS_IO_SIZE customizable
-Message-Id: <20070123235029.d49eda3d.akpm@osdl.org>
-In-Reply-To: <20070123234507.08f63b5e.akpm@osdl.org>
-References: <45B4C2DA.8020906@lifl.fr>
-	<20070122.233251.74752372.anemo@mba.ocn.ne.jp>
-	<45B4D592.9050703@ru.mvista.com>
-	<20070123.103027.126140726.nemoto@toshiba-tops.co.jp>
-	<20070123234507.08f63b5e.akpm@osdl.org>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Wed, 24 Jan 2007 02:57:47 -0500
+Received: from amsfep17-int.chello.nl ([213.46.243.15]:8334 "EHLO
+	amsfep14-int.chello.nl" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S933128AbXAXH5r (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jan 2007 02:57:47 -0500
+Subject: Re: [RFC] Limit the size of the pagecache
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Aubrey Li <aubreylee@gmail.com>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Robin Getz <rgetz@blackfin.uclinux.org>,
+       "Henn, erich, Michael" <Michael.Hennerich@analog.com>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0701231645260.5239@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0701231645260.5239@schroedinger.engr.sgi.com>
+Content-Type: text/plain; charset=utf-8
+Date: Wed, 24 Jan 2007 08:55:33 +0100
+Message-Id: <1169625333.4493.16.camel@taijtu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.9.4 (2.9.4-1.fc7) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 23 Jan 2007 23:45:07 -0800
-Andrew Morton <akpm@osdl.org> wrote:
+On Tue, 2007-01-23 at 16:49 -0800, Christoph Lameter wrote:
+> This is a patch using some of Aubrey's work plugging it in what is IMHO 
+> the right way. Feel free to improve on it. I have gotten repeatedly 
+> requests to be able to limit the pagecache. With the revised VM statistics 
+> this is now actually possile. I'd like to know more about possible uses of 
+> such a feature.
+> 
+> 
+> 
+> 
+> It may be useful to limit the size of the page cache for various reasons
+> such as
+> 
+> 1. Insure that anonymous pages that may contain performance
+>    critical data is never subject to swap.
 
-> setup-bus.o is linked only on x86
+This is what we have mlock for, no?
 
-oops, that's untrue.  But it will break ppc32, I think.
+> 2. Insure rapid turnaround of pages in the cache.
 
-I suppose we can deprive the ppc32 guys of eight bytes of RAM.  But putting
-cardbus things in pci.c seems wrong..
+This sounds like we either need more fadvise hints and/or understand why
+the VM doesn't behave properly.
 
+> 3. Reserve memory for other uses? (Aubrey?)
 
-diff -puN drivers/pci/pci.c~make-cardbus_mem_size-and-cardbus_io_size-boot-options-fix drivers/pci/pci.c
---- a/drivers/pci/pci.c~make-cardbus_mem_size-and-cardbus_io_size-boot-options-fix
-+++ a/drivers/pci/pci.c
-@@ -21,6 +21,12 @@
- 
- unsigned int pci_pm_d3_delay = 10;
- 
-+#define DEFAULT_CARDBUS_IO_SIZE		(256)
-+#define DEFAULT_CARDBUS_MEM_SIZE	(64*1024*1024)
-+/* pci=cbmemsize=nnM,cbiosize=nn can override this */
-+unsigned long pci_cardbus_io_size = DEFAULT_CARDBUS_IO_SIZE;
-+unsigned long pci_cardbus_mem_size = DEFAULT_CARDBUS_MEM_SIZE;
-+
- /**
-  * pci_bus_max_busnr - returns maximum PCI bus number of given bus' children
-  * @bus: pointer to PCI bus structure to search
-@@ -1213,11 +1219,9 @@ static int __devinit pci_setup(char *str
- 			if (!strcmp(str, "nomsi")) {
- 				pci_no_msi();
- 			} else if (!strncmp(str, "cbiosize=", 9)) {
--				pci_cardbus_io_size =
--					memparse(str + 9, &str);
-+				pci_cardbus_io_size = memparse(str + 9, &str);
- 			} else if (!strncmp(str, "cbmemsize=", 10)) {
--				pci_cardbus_mem_size =
--					memparse(str + 10, &str);
-+				pci_cardbus_mem_size = memparse(str + 10, &str);
- 			} else {
- 				printk(KERN_ERR "PCI: Unknown option `%s'\n",
- 						str);
-diff -puN drivers/pci/setup-bus.c~make-cardbus_mem_size-and-cardbus_io_size-boot-options-fix drivers/pci/setup-bus.c
---- a/drivers/pci/setup-bus.c~make-cardbus_mem_size-and-cardbus_io_size-boot-options-fix
-+++ a/drivers/pci/setup-bus.c
-@@ -36,16 +36,6 @@
- 
- #define ROUND_UP(x, a)		(((x) + (a) - 1) & ~((a) - 1))
- 
--/*
-- * FIXME: IO should be max 256 bytes.  However, since we may
-- * have a P2P bridge below a cardbus bridge, we need 4K.
-- */
--#define DEFAULT_CARDBUS_IO_SIZE		(256)
--#define DEFAULT_CARDBUS_MEM_SIZE	(64*1024*1024)
--/* pci=cbmemsize=nnM,cbiosize=nn can override this */
--unsigned long pci_cardbus_io_size = DEFAULT_CARDBUS_IO_SIZE;
--unsigned long pci_cardbus_mem_size = DEFAULT_CARDBUS_MEM_SIZE;
--
- static void __devinit
- pbus_assign_resources_sorted(struct pci_bus *bus)
- {
-_
+He wants to make a nommu system act like a mmu system; this will just
+never ever work. Memory fragmentation is a real issue not some gimmick
+thought up by the hardware folks to sell these mmu chips.
+
+> We add a new variable "pagecache_ratio" to /proc/sys/vm/ that
+> defaults to 100 (all memory usable for the pagecache).
+> 
+> The size of the pagecache is the number of file backed
+> pages in a zone which is available through NR_FILE_PAGES.
+> 
+> We skip zones that contain too many page cache pages in
+> the page allocator which may cause us to enter reclaim.
+> 
+> If we enter reclaim and the number of page cache pages
+> is too high then we switch off swapping during reclaim
+> to avoid touching anonymous pages.
+> 
+> Signed-off-by: Christoph Lameter <clameter@sgi.com>
+
+Code looks nice, however earlier responses have raised good points. Esp.
+the one pointing out you'd need to defeat swappiness too.
+
+That said, I'm not much in favour of a limit pagecache knob.
+
+Esp. the "my customers are scared of the 99.9% memory used scenario" is
+a clear case of educate them. We don't go fix psychological problems
+with code.
+
+The only maybe valid point would be 2, and I'd like to see if we can't
+solve that differently - a better use-once logic comes to mind.
 
