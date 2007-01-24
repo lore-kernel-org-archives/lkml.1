@@ -1,86 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964845AbXAXXmY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750786AbXAXXn7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964845AbXAXXmY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jan 2007 18:42:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964857AbXAXXmY
+	id S1750786AbXAXXn7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jan 2007 18:43:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752093AbXAXXn6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jan 2007 18:42:24 -0500
-Received: from lucidpixels.com ([75.144.35.66]:59312 "EHLO lucidpixels.com"
+	Wed, 24 Jan 2007 18:43:58 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:37075 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964845AbXAXXmX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jan 2007 18:42:23 -0500
-Date: Wed, 24 Jan 2007 18:42:22 -0500 (EST)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-X-X-Sender: jpiszcz@p34.internal.lan
-To: Pavel Machek <pavel@ucw.cz>
-cc: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org, xfs@oss.sgi.com
-Subject: Re: 2.6.20-rc5: cp 18gb 18gb.2 = OOM killer, reproducible just like
- 2.16.19.2
-In-Reply-To: <Pine.LNX.4.64.0701241837550.2930@p34.internal.lan>
-Message-ID: <Pine.LNX.4.64.0701241842020.2930@p34.internal.lan>
-References: <Pine.LNX.4.64.0701211424170.2552@p34.internal.lan>
- <20070122133735.GB4493@ucw.cz> <Pine.LNX.4.64.0701221348020.11525@p34.internal.lan>
- <Pine.LNX.4.64.0701241837550.2930@p34.internal.lan>
+	id S1750786AbXAXXn5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jan 2007 18:43:57 -0500
+Date: Wed, 24 Jan 2007 15:42:59 -0800
+From: Greg KH <gregkh@suse.de>
+To: Vitaly Bordug <vbordug@ru.mvista.com>
+Cc: lkml <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>
+Subject: Re: drivers/base: device_bind_driver() fix
+Message-ID: <20070124234259.GB2160@suse.de>
+References: <20070124171441.6a07d06b@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070124171441.6a07d06b@localhost.localdomain>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-And FYI yes I used mem=256M just as you said, not mem=256.
+On Wed, Jan 24, 2007 at 05:14:41PM +0300, Vitaly Bordug wrote:
+> 
+> Keeps sysfs from creating link if device is already bound to driver.
+> Similar behavior was before the rework;
 
-Justin.
+Which "rework" caused this?
 
-On Wed, 24 Jan 2007, Justin Piszcz wrote:
+> now without this patch fixed PHY will complain about not been able to
+> create file in sysfs.
 
-> > Is it highmem-related? Can you try it with mem=256M?
+Which device is being bound to a driver before it is registered?  I know
+the i2c layer does it, but I haven't had any people reporting issues
+there.
+
+> Signed-off-by: Vitaly Bordug <vbordug@ru.mvista.com>
+> ---
 > 
-> Bad idea, the kernel crashes & burns when I use mem=256, I had to boot 
-> 2.6.20-rc5-6 single to get back into my machine, very nasty.  Remember I 
-> use an onboard graphics controller that has 128MB of RAM allocated to it 
-> and I believe the ICH8 chipset also uses some memory, in any event mem=256 
-> causes the machine to lockup before it can even get to the boot/init 
-> processes, the two leds on the keyboard were blinking, caps lock and 
-> scroll lock and I saw no console at all!
+>  drivers/base/dd.c |    8 +++++---
+>  1 files changed, 5 insertions(+), 3 deletions(-)
 > 
-> Justin.
-> 
-> On Mon, 22 Jan 2007, Justin Piszcz wrote:
-> 
-> > 
-> > 
-> > On Mon, 22 Jan 2007, Pavel Machek wrote:
-> > 
-> > > On Sun 2007-01-21 14:27:34, Justin Piszcz wrote:
-> > > > Why does copying an 18GB on a 74GB raptor raid1 cause the kernel to invoke 
-> > > > the OOM killer and kill all of my processes?
-> > > > 
-> > > > Doing this on a single disk 2.6.19.2 is OK, no issues.  However, this 
-> > > > happens every time!
-> > > > 
-> > > > Anything to try?  Any other output needed?  Can someone shed some light on 
-> > > > this situation?
-> > > 
-> > > Is it highmem-related? Can you try it with mem=256M?
-> > > 
-> > > 							Pavel
-> > > -- 
-> > > (english) http://www.livejournal.com/~pavelmachek
-> > > (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
-> > > -
-> > > To unsubscribe from this list: send the line "unsubscribe linux-raid" in
-> > > the body of a message to majordomo@vger.kernel.org
-> > > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > > 
-> > 
-> > I will give this a try later or tomorrow, I cannot have my machine crash 
-> > at the moment.
-> > 
-> > Also, the onboard video on the Intel 965 chipset uses 128MB, not sure if 
-> > that has anything to do with it because after the system kill -9's all the 
-> > processes etc, my terminal looks like garbage.
-> > 
-> > Justin.
-> > 
-> > 
-> 
-> 
+> diff --git a/drivers/base/dd.c b/drivers/base/dd.c
+> index 510e788..6da3d01 100644
+> --- a/drivers/base/dd.c
+> +++ b/drivers/base/dd.c
+> @@ -26,12 +26,12 @@
+>  #define to_drv(node) container_of(node, struct device_driver, kobj.entry)
+>  
+>  
+> -static void driver_bound(struct device *dev)
+> +static int driver_bound(struct device *dev)
+>  {
+>  	if (klist_node_attached(&dev->knode_driver)) {
+>  		printk(KERN_WARNING "%s: device %s already bound\n",
+>  			__FUNCTION__, kobject_name(&dev->kobj));
+> -		return;
+> +		return 0;
+>  	}
+>  
+>  	pr_debug("bound device '%s' to driver '%s'\n",
+> @@ -42,6 +42,7 @@ static void driver_bound(struct device *dev)
+>  					     BUS_NOTIFY_BOUND_DRIVER, dev);
+>  
+>  	klist_add_tail(&dev->knode_driver, &dev->driver->klist_devices);
+> +	return 1;
+
+Please return 0 for "good" and -ERRORSOMETHING for a when a problem
+happens, like the rest of the kernel.
+
+thanks,
+
+greg k-h
