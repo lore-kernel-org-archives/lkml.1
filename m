@@ -1,201 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932333AbXAXUVH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932085AbXAXUWm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932333AbXAXUVH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jan 2007 15:21:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932332AbXAXUUo
+	id S932085AbXAXUWm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jan 2007 15:22:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932231AbXAXUWm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jan 2007 15:20:44 -0500
-Received: from dsl081-065-125.sfo1.dsl.speakeasy.net ([64.81.65.125]:57419
-	"EHLO lade.trondhjem.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932231AbXAXUUk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jan 2007 15:20:40 -0500
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
-Subject: [PATCH 2/3] NFS: Fix races in nfs_revalidate_mapping()
-Date: Wed, 24 Jan 2007 11:54:55 -0800
-To: torvalds@osdl.org, akpm@osdl.org
-Cc: linux-kernel@vger.kernel.org, nfs@lists.sourceforge.net, sds@tycho.nsa.gov
-Message-Id: <20070124195455.21259.4066.stgit@lade.trondhjem.org>
-In-Reply-To: <20070124195307.21259.64156.stgit@lade.trondhjem.org>
-References: <20070124195307.21259.64156.stgit@lade.trondhjem.org>
-Content-Type: text/plain; charset=utf-8; format=fixed
-Content-Transfer-Encoding: 8bit
-User-Agent: StGIT/0.9
+	Wed, 24 Jan 2007 15:22:42 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:38371 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932085AbXAXUWl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jan 2007 15:22:41 -0500
+Message-ID: <45B7C019.1040209@redhat.com>
+Date: Wed, 24 Jan 2007 15:22:49 -0500
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
+MIME-Version: 1.0
+To: linux-kernel <linux-kernel@vger.kernel.org>
+CC: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@osdl.org>
+Subject: [patch] i386: add option to show more code in oops reports
+Content-Type: multipart/mixed;
+ boundary="------------070108090207040508010803"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
+This is a multi-part message in MIME format.
+--------------070108090207040508010803
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-Prevent the call to invalidate_inode_pages2() from racing with file writes
-by taking the inode->i_mutex across the page cache flush and invalidate.
+Sometimes we may need to see more code than the default in an oops,
+so add an option for that.
 
-Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
----
+Signed-off-by: Chuck Ebbert <cebbert@redhat.com>
 
- fs/nfs/dir.c           |    2 -
- fs/nfs/inode.c         |   97 +++++++++++++++++++++++++++++++++---------------
- fs/nfs/symlink.c       |    4 +-
- include/linux/nfs_fs.h |    1 
- 4 files changed, 72 insertions(+), 32 deletions(-)
 
-diff --git a/fs/nfs/dir.c b/fs/nfs/dir.c
-index dee3d6c..d9ba8cb 100644
---- a/fs/nfs/dir.c
-+++ b/fs/nfs/dir.c
-@@ -532,7 +532,7 @@ static int nfs_readdir(struct file *filp
+--------------070108090207040508010803
+Content-Type: text/plain;
+ name="i386_show_more_code.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="i386_show_more_code.patch"
+
+ Documentation/kernel-parameters.txt |    5 +++++
+ arch/i386/kernel/traps.c            |   17 +++++++++++++++--
+ 2 files changed, 20 insertions(+), 2 deletions(-)
+
+--- 2.6.20-rc5-32.orig/Documentation/kernel-parameters.txt
++++ 2.6.20-rc5-32/Documentation/kernel-parameters.txt
+@@ -361,6 +361,11 @@ and is between 256 and 4096 characters. 
+ 			clocksource is not available, it defaults to PIT.
+ 			Format: { pit | tsc | cyclone | pmtmr }
  
- 	lock_kernel();
++	code_bytes	[IA32] How many bytes of object code to print in an
++			oops report.
++			Range: 64 - 1024
++			Default: 64
++
+ 	disable_8254_timer
+ 	enable_8254_timer
+ 			[IA32/X86_64] Disable/Enable interrupt 0 timer routing
+--- 2.6.20-rc5-32.orig/arch/i386/kernel/traps.c
++++ 2.6.20-rc5-32/arch/i386/kernel/traps.c
+@@ -94,6 +94,7 @@ asmlinkage void spurious_interrupt_bug(v
+ asmlinkage void machine_check(void);
  
--	res = nfs_revalidate_mapping(inode, filp->f_mapping);
-+	res = nfs_revalidate_mapping_nolock(inode, filp->f_mapping);
- 	if (res < 0) {
- 		unlock_kernel();
- 		return res;
-diff --git a/fs/nfs/inode.c b/fs/nfs/inode.c
-index 63e4702..d834982 100644
---- a/fs/nfs/inode.c
-+++ b/fs/nfs/inode.c
-@@ -665,49 +665,86 @@ int nfs_revalidate_inode(struct nfs_serv
- 	return __nfs_revalidate_inode(server, inode);
+ int kstack_depth_to_print = 24;
++int code_bytes = 64;
+ ATOMIC_NOTIFIER_HEAD(i386die_chain);
+ 
+ int register_die_notifier(struct notifier_block *nb)
+@@ -324,7 +325,7 @@ void show_registers(struct pt_regs *regs
+ 	 */
+ 	if (in_kernel) {
+ 		u8 *eip;
+-		int code_bytes = 64;
++		int code_prologue = code_bytes * 43 / 64;
+ 		unsigned char c;
+ 
+ 		printk("\n" KERN_EMERG "Stack: ");
+@@ -332,7 +333,7 @@ void show_registers(struct pt_regs *regs
+ 
+ 		printk(KERN_EMERG "Code: ");
+ 
+-		eip = (u8 *)regs->eip - 43;
++		eip = (u8 *)regs->eip - code_prologue;
+ 		if (eip < (u8 *)PAGE_OFFSET ||
+ 			probe_kernel_address(eip, c)) {
+ 			/* try starting at EIP */
+@@ -1191,3 +1192,15 @@ static int __init kstack_setup(char *s)
+ 	return 1;
  }
- 
-+static int nfs_invalidate_mapping_nolock(struct inode *inode, struct address_space *mapping)
+ __setup("kstack=", kstack_setup);
++
++static int __init code_bytes_setup(char *s)
 +{
-+	struct nfs_inode *nfsi = NFS_I(inode);
-+	
-+	if (mapping->nrpages != 0) {
-+		int ret = invalidate_inode_pages2(mapping);
-+		if (ret < 0)
-+			return ret;
-+	}
-+	spin_lock(&inode->i_lock);
-+	nfsi->cache_validity &= ~NFS_INO_INVALID_DATA;
-+	if (S_ISDIR(inode->i_mode)) {
-+		memset(nfsi->cookieverf, 0, sizeof(nfsi->cookieverf));
-+		/* This ensures we revalidate child dentries */
-+		nfsi->cache_change_attribute = jiffies;
-+	}
-+	spin_unlock(&inode->i_lock);
-+	nfs_inc_stats(inode, NFSIOS_DATAINVALIDATE);
-+	dfprintk(PAGECACHE, "NFS: (%s/%Ld) data cache invalidated\n",
-+			inode->i_sb->s_id, (long long)NFS_FILEID(inode));
-+	return 0;
++	code_bytes = simple_strtoul(s, NULL, 0);
++	if (code_bytes < 64)
++		code_bytes = 64;
++	if (code_bytes > 1024)
++		code_bytes = 1024;
++
++	return 1;
 +}
-+
-+static int nfs_invalidate_mapping(struct inode *inode, struct address_space *mapping)
-+{
-+	int ret = 0;
-+
-+	mutex_lock(&inode->i_mutex);
-+	if (NFS_I(inode)->cache_validity & NFS_INO_INVALID_DATA) {
-+		ret = nfs_sync_mapping(mapping);
-+		if (ret == 0)
-+			ret = nfs_invalidate_mapping_nolock(inode, mapping);
-+	}
-+	mutex_unlock(&inode->i_mutex);
-+	return ret;
-+}
-+
- /**
-- * nfs_revalidate_mapping - Revalidate the pagecache
-+ * nfs_revalidate_mapping_nolock - Revalidate the pagecache
-  * @inode - pointer to host inode
-  * @mapping - pointer to mapping
-  */
--int nfs_revalidate_mapping(struct inode *inode, struct address_space *mapping)
-+int nfs_revalidate_mapping_nolock(struct inode *inode, struct address_space *mapping)
- {
- 	struct nfs_inode *nfsi = NFS_I(inode);
- 	int ret = 0;
- 
--	if (NFS_STALE(inode))
--		ret = -ESTALE;
- 	if ((nfsi->cache_validity & NFS_INO_REVAL_PAGECACHE)
--			|| nfs_attribute_timeout(inode))
-+			|| nfs_attribute_timeout(inode) || NFS_STALE(inode)) {
- 		ret = __nfs_revalidate_inode(NFS_SERVER(inode), inode);
--	if (ret < 0)
--		goto out;
-+		if (ret < 0)
-+			goto out;
-+	}
-+	if (nfsi->cache_validity & NFS_INO_INVALID_DATA)
-+		ret = nfs_invalidate_mapping_nolock(inode, mapping);
-+out:
-+	return ret;
-+}
- 
--	if (nfsi->cache_validity & NFS_INO_INVALID_DATA) {
--		if (mapping->nrpages != 0) {
--			if (S_ISREG(inode->i_mode)) {
--				ret = nfs_sync_mapping(mapping);
--				if (ret < 0)
--					goto out;
--			}
--			ret = invalidate_inode_pages2(mapping);
--			if (ret < 0)
--				goto out;
--		}
--		spin_lock(&inode->i_lock);
--		nfsi->cache_validity &= ~NFS_INO_INVALID_DATA;
--		if (S_ISDIR(inode->i_mode)) {
--			memset(nfsi->cookieverf, 0, sizeof(nfsi->cookieverf));
--			/* This ensures we revalidate child dentries */
--			nfsi->cache_change_attribute = jiffies;
--		}
--		spin_unlock(&inode->i_lock);
-+/**
-+ * nfs_revalidate_mapping - Revalidate the pagecache
-+ * @inode - pointer to host inode
-+ * @mapping - pointer to mapping
-+ *
-+ * This version of the function will take the inode->i_mutex and attempt to
-+ * flush out all dirty data if it needs to invalidate the page cache.
-+ */
-+int nfs_revalidate_mapping(struct inode *inode, struct address_space *mapping)
-+{
-+	struct nfs_inode *nfsi = NFS_I(inode);
-+	int ret = 0;
- 
--		nfs_inc_stats(inode, NFSIOS_DATAINVALIDATE);
--		dfprintk(PAGECACHE, "NFS: (%s/%Ld) data cache invalidated\n",
--				inode->i_sb->s_id,
--				(long long)NFS_FILEID(inode));
-+	if ((nfsi->cache_validity & NFS_INO_REVAL_PAGECACHE)
-+			|| nfs_attribute_timeout(inode) || NFS_STALE(inode)) {
-+		ret = __nfs_revalidate_inode(NFS_SERVER(inode), inode);
-+		if (ret < 0)
-+			goto out;
- 	}
-+	if (nfsi->cache_validity & NFS_INO_INVALID_DATA)
-+		ret = nfs_invalidate_mapping(inode, mapping);
- out:
- 	return ret;
- }
-diff --git a/fs/nfs/symlink.c b/fs/nfs/symlink.c
-index 6c68611..525c136 100644
---- a/fs/nfs/symlink.c
-+++ b/fs/nfs/symlink.c
-@@ -50,7 +50,9 @@ static void *nfs_follow_link(struct dent
- {
- 	struct inode *inode = dentry->d_inode;
- 	struct page *page;
--	void *err = ERR_PTR(nfs_revalidate_mapping(inode, inode->i_mapping));
-+	void *err;
-+
-+	err = ERR_PTR(nfs_revalidate_mapping_nolock(inode, inode->i_mapping));
- 	if (err)
- 		goto read_failed;
- 	page = read_cache_page(&inode->i_data, 0,
-diff --git a/include/linux/nfs_fs.h b/include/linux/nfs_fs.h
-index 0496306..c5d4084 100644
---- a/include/linux/nfs_fs.h
-+++ b/include/linux/nfs_fs.h
-@@ -308,6 +308,7 @@ extern int nfs_attribute_timeout(struct 
- extern int nfs_revalidate_inode(struct nfs_server *server, struct inode *inode);
- extern int __nfs_revalidate_inode(struct nfs_server *, struct inode *);
- extern int nfs_revalidate_mapping(struct inode *inode, struct address_space *mapping);
-+extern int nfs_revalidate_mapping_nolock(struct inode *inode, struct address_space *mapping);
- extern int nfs_setattr(struct dentry *, struct iattr *);
- extern void nfs_setattr_update_inode(struct inode *inode, struct iattr *attr);
- extern void nfs_begin_attr_update(struct inode *);
++__setup("code_bytes=", code_bytes_setup);
+
+--------------070108090207040508010803--
