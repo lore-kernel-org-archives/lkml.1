@@ -1,208 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751001AbXAXThh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751018AbXAXThy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751001AbXAXThh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jan 2007 14:37:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751013AbXAXThh
+	id S1751018AbXAXThy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jan 2007 14:37:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751034AbXAXThy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jan 2007 14:37:37 -0500
-Received: from mtagate7.uk.ibm.com ([195.212.29.140]:4831 "EHLO
-	mtagate7.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751001AbXAXThg (ORCPT
+	Wed, 24 Jan 2007 14:37:54 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:36926 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751013AbXAXThv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jan 2007 14:37:36 -0500
-Message-ID: <45B77FA5.6070708@fr.ibm.com>
-Date: Wed, 24 Jan 2007 16:47:49 +0100
-From: Cedric Le Goater <clg@fr.ibm.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
+	Wed, 24 Jan 2007 14:37:51 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Greg Kroah-Hartman <gregkh@suse.de>
+Cc: <linux-kernel@vger.kernel.org>,
+       Linux Containers <containers@lists.osdl.org>,
+       linux-fsdevel@vger.kernel.org, Andrew Morton <akpm@osdl.org>
+Subject: [PATCH 2/2] Implement shadow directory support for device classes.
+References: <m1fya01alj.fsf@ebiederm.dsl.xmission.com>
+Date: Wed, 24 Jan 2007 12:37:19 -0700
+In-Reply-To: <m1fya01alj.fsf@ebiederm.dsl.xmission.com> (Eric W. Biederman's
+	message of "Wed, 24 Jan 2007 12:35:52 -0700")
+Message-ID: <m1bqko1aj4.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-To: Cedric Le Goater <clg@fr.ibm.com>
-CC: Herbert Poetzl <herbert@13thfloor.at>, containers@lists.osdl.org,
-       v4l-dvb-maintainer@linuxtv.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH/RFC] kthread API conversion for dvb_frontend and	av7110
-References: <45019CC3.2030709@fr.ibm.com> <4509C4A5.5030600@fr.ibm.com>	<20060914221024.GB26916@MAIL.13thfloor.at> <200611170150.02207.adq_dvb@lidskialf.net> <45646512.7070806@fr.ibm.com>
-In-Reply-To: <45646512.7070806@fr.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Cedric Le Goater wrote:
-> Andrew de Quincey wrote:
-> 
->> Hi - the conversion looks good to me.. I can't really offer any more 
->> constructive suggestions beyond what Cedric has already said. 
-> 
-> ok. so, should we just resend a refreshed version of the patch when 2.6.19
-> comes out ?  
-> 
->> Theres another thread in dvb_ca_en50221.c that could be converted as well 
->> though, hint hint ;)
-> 
-> ok ok :) i'll look at it ...
 
-Here's a try. Compiles and boots but I have no hardware to test the
-patch :( 
+Modify the device class code so that normal manipulations work
+in the presence of shadow directories.  Some of the shadow directory
+support still needs to be implemented in the implementation of the
+class but these modifications are sufficient to make that simple.
 
-could we replace wait_event_interruptible_timeout() with  
-wait_event_timeout() ? I don't see who would signal the thread.
-
-thanks,
-
-C.
-
-
-Signed-off-by: Cedric Le Goater <clg@fr.ibm.com>
+Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 ---
- drivers/media/dvb/dvb-core/dvb_ca_en50221.c |   59 ++++++++--------------------
- 1 file changed, 18 insertions(+), 41 deletions(-)
+ drivers/base/class.c   |   34 ++++++++++++++++++++++++++++++++--
+ include/linux/device.h |    4 ++++
+ 2 files changed, 36 insertions(+), 2 deletions(-)
 
-Index: 2.6.20-rc4-mm1/drivers/media/dvb/dvb-core/dvb_ca_en50221.c
-===================================================================
---- 2.6.20-rc4-mm1.orig/drivers/media/dvb/dvb-core/dvb_ca_en50221.c
-+++ 2.6.20-rc4-mm1/drivers/media/dvb/dvb-core/dvb_ca_en50221.c
-@@ -37,6 +37,7 @@
- #include <linux/delay.h>
- #include <linux/spinlock.h>
- #include <linux/sched.h>
-+#include <linux/kthread.h>
- 
- #include "dvb_ca_en50221.h"
- #include "dvb_ringbuffer.h"
-@@ -140,14 +141,11 @@ struct dvb_ca_private {
- 	wait_queue_head_t wait_queue;
- 
- 	/* PID of the monitoring thread */
--	pid_t thread_pid;
-+	struct task_struct* thread;
- 
- 	/* Wait queue used when shutting thread down */
- 	wait_queue_head_t thread_queue;
- 
--	/* Flag indicating when thread should exit */
--	unsigned int exit:1;
--
- 	/* Flag indicating if the CA device is open */
- 	unsigned int open:1;
- 
-@@ -916,8 +914,6 @@ static int dvb_ca_en50221_thread_should_
- 		ca->wakeup = 0;
- 		return 1;
+diff --git a/drivers/base/class.c b/drivers/base/class.c
+index 8bf2ca2..f72ddc0 100644
+--- a/drivers/base/class.c
++++ b/drivers/base/class.c
+@@ -136,6 +136,18 @@ static void remove_class_attrs(struct class * cls)
  	}
--	if (ca->exit)
--		return 1;
- 
- 	return 0;
  }
-@@ -982,7 +978,6 @@ static void dvb_ca_en50221_thread_update
- static int dvb_ca_en50221_thread(void *data)
+ 
++static int class_setup_shadow(struct class *cls)
++{
++	if (!cls->class_device_dparent && !cls->class_follow_link)
++		return 0;
++
++	if (!cls->class_device_dparent || !cls->class_device_dparent)
++		return -EINVAL;
++
++	return sysfs_make_shadowed_dir(&cls->subsys.kset.kobj,
++					cls->class_follow_link);
++}
++
+ int class_register(struct class * cls)
  {
- 	struct dvb_ca_private *ca = data;
--	char name[15];
- 	int slot;
- 	int flags;
- 	int status;
-@@ -991,28 +986,19 @@ static int dvb_ca_en50221_thread(void *d
+ 	int error;
+@@ -154,6 +166,11 @@ int class_register(struct class * cls)
  
- 	dprintk("%s\n", __FUNCTION__);
- 
--	/* setup kernel thread */
--	snprintf(name, sizeof(name), "kdvb-ca-%i:%i", ca->dvbdev->adapter->num, ca->dvbdev->id);
--
--	lock_kernel();
--	daemonize(name);
--	sigfillset(&current->blocked);
--	unlock_kernel();
--
- 	/* choose the correct initial delay */
- 	dvb_ca_en50221_thread_update_delay(ca);
- 
- 	/* main loop */
--	while (!ca->exit) {
-+	while (1) {
- 		/* sleep for a bit */
- 		if (!ca->wakeup) {
--			flags = wait_event_interruptible_timeout(ca->thread_queue,
--								 dvb_ca_en50221_thread_should_wakeup(ca),
--								 ca->delay);
--			if ((flags == -ERESTARTSYS) || ca->exit) {
--				/* got signal or quitting */
-+			flags = wait_event_interruptible_timeout(
-+				ca->thread_queue,
-+				dvb_ca_en50221_thread_should_wakeup(ca) || kthread_should_stop(),
-+				ca->delay);
-+			if ((flags == -ERESTARTSYS) || kthread_should_stop())
- 				break;
--			}
- 		}
- 		ca->wakeup = 0;
- 
-@@ -1182,9 +1168,8 @@ static int dvb_ca_en50221_thread(void *d
+ 	error = subsystem_register(&cls->subsys);
+ 	if (!error) {
++		error = class_setup_shadow(cls);
++		if (error)
++			subsystem_unregister(&cls->subsys);
++	}
++	if (!error) {
+ 		error = add_class_attrs(class_get(cls));
+ 		class_put(cls);
  	}
+@@ -582,6 +599,7 @@ int class_device_add(struct class_device *class_dev)
+ 	struct class *parent_class = NULL;
+ 	struct class_device *parent_class_dev = NULL;
+ 	struct class_interface *class_intf;
++	struct dentry *dparent;
+ 	int error = -EINVAL;
  
- 	/* completed */
--	ca->thread_pid = 0;
-+	ca->thread = NULL;
- 	mb();
--	wake_up_interruptible(&ca->thread_queue);
- 	return 0;
- }
+ 	class_dev = class_device_get(class_dev);
+@@ -610,7 +628,11 @@ int class_device_add(struct class_device *class_dev)
+ 	else
+ 		class_dev->kobj.parent = &parent_class->subsys.kset.kobj;
  
-@@ -1663,6 +1648,7 @@ int dvb_ca_en50221_init(struct dvb_adapt
- 	int ret;
- 	struct dvb_ca_private *ca = NULL;
- 	int i;
-+	struct task_struct *thread;
+-	error = kobject_add(&class_dev->kobj);
++	if (parent_class->class_device_dparent)
++		dparent = parent_class->class_device_dparent(class_dev);
++	else
++		dparent = parent_class->subsys.kset.kobj.dentry;
++	error = kobject_shadow_add(&class_dev->kobj, dparent);
+ 	if (error)
+ 		goto out2;
  
- 	dprintk("%s\n", __FUNCTION__);
+@@ -841,11 +863,15 @@ int class_device_rename(struct class_device *class_dev, char *new_name)
+ {
+ 	int error = 0;
+ 	char *old_class_name = NULL, *new_class_name = NULL;
++	struct class *class;
++	struct dentry *new_parent;
  
-@@ -1682,9 +1668,8 @@ int dvb_ca_en50221_init(struct dvb_adapt
- 		goto error;
- 	}
- 	init_waitqueue_head(&ca->wait_queue);
--	ca->thread_pid = 0;
-+	ca->thread = NULL;
- 	init_waitqueue_head(&ca->thread_queue);
--	ca->exit = 0;
- 	ca->open = 0;
- 	ca->wakeup = 0;
- 	ca->next_read_slot = 0;
-@@ -1711,13 +1696,14 @@ int dvb_ca_en50221_init(struct dvb_adapt
+ 	class_dev = class_device_get(class_dev);
+ 	if (!class_dev)
+ 		return -EINVAL;
  
- 	/* create a kthread for monitoring this CA device */
++	class = class_dev->class;
++
+ 	pr_debug("CLASS: renaming '%s' to '%s'\n", class_dev->class_id,
+ 		 new_name);
  
--	ret = kernel_thread(dvb_ca_en50221_thread, ca, 0);
--
--	if (ret < 0) {
-+	thread = kthread_run(dvb_ca_en50221_thread, ca, "kdvb-ca-%i:%i",
-+			     ca->dvbdev->adapter->num, ca->dvbdev->id);
-+	if (IS_ERR(thread)) {
-+		ret = PTR_ERR(thread);
- 		printk("dvb_ca_init: failed to start kernel_thread (%d)\n", ret);
- 		goto error;
- 	}
--	ca->thread_pid = ret;
-+	ca->thread = thread;
- 	return 0;
+@@ -857,7 +883,11 @@ int class_device_rename(struct class_device *class_dev, char *new_name)
  
- error:
-@@ -1748,17 +1734,8 @@ void dvb_ca_en50221_release(struct dvb_c
- 	dprintk("%s\n", __FUNCTION__);
+ 	strlcpy(class_dev->class_id, new_name, KOBJ_NAME_LEN);
  
- 	/* shutdown the thread if there was one */
--	if (ca->thread_pid) {
--		if (kill_proc(ca->thread_pid, 0, 1) == -ESRCH) {
--			printk("dvb_ca_release adapter %d: thread PID %d already died\n",
--			       ca->dvbdev->adapter->num, ca->thread_pid);
--		} else {
--			ca->exit = 1;
--			mb();
--			dvb_ca_en50221_thread_wakeup(ca);
--			wait_event_interruptible(ca->thread_queue, ca->thread_pid == 0);
--		}
--	}
-+	if (ca->thread)
-+		kthread_stop(ca->thread);
+-	error = kobject_rename(&class_dev->kobj, new_name);
++	if (class->class_device_dparent)
++		new_parent = class->class_device_dparent(class_dev);
++	else
++		new_parent = class->subsys.kset.kobj.dentry;
++	error = kobject_shadow_rename(&class_dev->kobj, new_parent, new_name);
  
- 	for (i = 0; i < ca->slot_count; i++) {
- 		dvb_ca_en50221_slot_shutdown(ca, i);
+ #ifdef CONFIG_SYSFS_DEPRECATED
+ 	if (class_dev->dev) {
+diff --git a/include/linux/device.h b/include/linux/device.h
+index f44247f..162e840 100644
+--- a/include/linux/device.h
++++ b/include/linux/device.h
+@@ -33,6 +33,7 @@ struct device;
+ struct device_driver;
+ struct class;
+ struct class_device;
++struct nameidata;
+ 
+ struct bus_type {
+ 	const char		* name;
+@@ -197,6 +198,9 @@ struct class {
+ 
+ 	int	(*suspend)(struct device *, pm_message_t state);
+ 	int	(*resume)(struct device *);
++
++	struct dentry *(*class_device_dparent)(struct class_device *);
++	void *(*class_follow_link)(struct dentry *dentry, struct nameidata *nd);
+ };
+ 
+ extern int __must_check class_register(struct class *);
+-- 
+1.4.4.1.g278f
+
