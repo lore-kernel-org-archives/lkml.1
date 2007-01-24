@@ -1,49 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932300AbXAXUOU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932240AbXAXUOc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932300AbXAXUOU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jan 2007 15:14:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932240AbXAXUOU
+	id S932240AbXAXUOc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jan 2007 15:14:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932333AbXAXUOc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jan 2007 15:14:20 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:55893 "EHLO mx2.mail.elte.hu"
+	Wed, 24 Jan 2007 15:14:32 -0500
+Received: from codepoet.org ([166.70.99.138]:56012 "EHLO codepoet.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932300AbXAXUOT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jan 2007 15:14:19 -0500
-Date: Wed, 24 Jan 2007 21:13:04 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Daniel Walker <dwalker@mvista.com>
-Cc: tglx@linutronix.de, Andrew Morton <akpm@osdl.org>,
-       LKML <linux-kernel@vger.kernel.org>, John Stultz <johnstul@us.ibm.com>,
-       Arjan van de Veen <arjan@infradead.org>,
-       Roman Zippel <zippel@linux-m68k.org>
-Subject: Re: [patch 00/46] High resolution timer / dynamic tick update
-Message-ID: <20070124201304.GA1841@elte.hu>
-References: <20070124070701.GA17654@elte.hu> <1169631016.19471.175.camel@imap.mvista.com> <20070124095157.GA21346@elte.hu> <1169634220.19471.197.camel@imap.mvista.com> <1169637237.21181.164.camel@localhost.localdomain> <1169654001.19471.231.camel@imap.mvista.com> <20070124160046.GA24798@elte.hu> <1169655076.19471.241.camel@imap.mvista.com> <20070124193822.GA28259@elte.hu> <1169669372.19471.274.camel@imap.mvista.com>
-Mime-Version: 1.0
+	id S932240AbXAXUOb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jan 2007 15:14:31 -0500
+Date: Wed, 24 Jan 2007 13:06:14 -0700
+From: Erik Andersen <andersen@codepoet.org>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Aubrey Li <aubreylee@gmail.com>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Robin Getz <rgetz@blackfin.uclinux.org>,
+       "Henn, erich, Michael" <Michael.Hennerich@analog.com>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC] Limit the size of the pagecache
+Message-ID: <20070124200614.GA25690@codepoet.org>
+Reply-To: andersen@codepoet.org
+Mail-Followup-To: andersen@codepoet.org,
+	Christoph Lameter <clameter@sgi.com>,
+	Nick Piggin <nickpiggin@yahoo.com.au>,
+	Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	Aubrey Li <aubreylee@gmail.com>,
+	Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+	Robin Getz <rgetz@blackfin.uclinux.org>,
+	"Henn, erich, Michael" <Michael.Hennerich@analog.com>,
+	linux-mm@kvack.org, linux-kernel@vger.kernel.org
+References: <Pine.LNX.4.64.0701231645260.5239@schroedinger.engr.sgi.com> <1169625333.4493.16.camel@taijtu> <45B7561C.9000102@yahoo.com.au> <Pine.LNX.4.64.0701240657130.9696@schroedinger.engr.sgi.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1169669372.19471.274.camel@imap.mvista.com>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -4.3
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-4.3 required=5.9 tests=ALL_TRUSTED,BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-3.3 ALL_TRUSTED            Did not pass through any untrusted hosts
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <Pine.LNX.4.64.0701240657130.9696@schroedinger.engr.sgi.com>
+X-No-Junk-Mail: I do not want to get *any* junk mail.
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed Jan 24, 2007 at 06:58:42AM -0800, Christoph Lameter wrote:
+> On Wed, 24 Jan 2007, Nick Piggin wrote:
+> 
+> > I can't argue that a smaller pagecache will be subject to a
+> > higher turnaround given the same workload, but I don't know why
+> > that would be a good thing.
+> 
+> Neither do I. Wonder why we need this but I keep getting 
+> these requests. Could we either find a reason for limiting the pagecache 
+> or get this out of our system for good?
 
-* Daniel Walker <dwalker@mvista.com> wrote:
+I think this paints with too broad a brushstroke...
 
-> I think his approach was wrong that's why I'm resistant to his 
-> implementation .. [...]
+Simply limiting the page cache with no regard to the potential
+for particular content to be later reused seems a rather
+pointless exercise which is guaranteed to diminish system
+performance.
 
-how can you still say this while you showed clear misunderstanding of 
-what Thomas did and why? Why should i care about you being 'resistant' 
-to anything under these circumstances?
+It would be far more useful if an application could hint to the
+pagecache as to which files are and which files as not worth
+caching, especially when the application knows a priori that data
+from a particular file will or will not ever be reused.
 
-	Ingo
+ -Erik
+
+--
+Erik B. Andersen             http://codepoet-consulting.com/
+--This message was written using 73% post-consumer electrons--
