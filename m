@@ -1,124 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965611AbXAXCFu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965614AbXAXCII@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965611AbXAXCFu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jan 2007 21:05:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965612AbXAXCFu
+	id S965614AbXAXCII (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jan 2007 21:08:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965612AbXAXCII
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jan 2007 21:05:50 -0500
-Received: from smtp106.sbc.mail.mud.yahoo.com ([68.142.198.205]:38045 "HELO
-	smtp106.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S965611AbXAXCFt (ORCPT
+	Tue, 23 Jan 2007 21:08:08 -0500
+Received: from nf-out-0910.google.com ([64.233.182.185]:17298 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965614AbXAXCIG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jan 2007 21:05:49 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=U8L30gOHHijhXZZbFCglrJ5qnpgnrmfiBZVxROCIKXps9ICJxDifssFsMffigKrKHTwdrEv2CMkgYnt3E/28b5gp21nmZ2EE/Zh5eVTcJA6AyxjDuBlIrkvH6cYkSThbcYaT6MwB2vfhX4S2QuKsa8NAHxNqrsBVw9vCSabCN98=  ;
-X-YMail-OSG: SuqQQa4VM1msDR_U5Mc7Mh__qxkpa0eZzJUDYUwyy3bsUh0kpQx.s5PB9JNW7GY.zutLtyouFaP6kXlATcBs9kQWzT0fMHB8jMwcwgqFNLyJ4E2CPBo-
-From: David Brownell <david-b@pacbell.net>
-To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-Subject: Re: [PATCH 2.6.20-rc5] SPI: alternative fix for spi_busnum_to_master
-Date: Tue, 23 Jan 2007 15:43:56 -0800
-User-Agent: KMail/1.7.1
-Cc: linux-kernel@vger.kernel.org, hcegtvedt@atmel.com, akpm@osdl.org
-References: <200701221412.02452.david-b@pacbell.net> <200701230742.15531.david-b@pacbell.net> <20070124.010741.130240814.anemo@mba.ocn.ne.jp>
-In-Reply-To: <20070124.010741.130240814.anemo@mba.ocn.ne.jp>
+	Tue, 23 Jan 2007 21:08:06 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=uvTuV1AxiYq4bL4LbiLrvtz/11HkOTn+SAZz3KSvucnNZh2LE3thBPl6euT2S0hUUoZ87+pgHuGjFfZVTQuSxLwtGGzXhNOjhjaEovxjpYmur9vVRchnvRjFg1Yn19J5EMhmCI5RgAqnIPzd9HCRNhGtTo4BBGAuFa7HcZj8kxQ=
+Message-ID: <45B6BF5D.1070300@gmail.com>
+Date: Wed, 24 Jan 2007 11:07:25 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Icedove 1.5.0.9 (X11/20061220)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+CC: Soeren Sonnenburg <kernel@nn7.de>, Jeff Garzik <jeff@garzik.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: SATA hotplug from the user side ?
+References: <1168588629.5403.7.camel@localhost> <45A7BFB0.9090308@garzik.org> <1168639639.3707.6.camel@localhost> <45A83C22.6050409@gmail.com> <1168672966.3707.24.camel@localhost> <45AAE52B.2070705@gmail.com> <1169456682.2901.18.camel@localhost> <20070122210312.GD4516@khazad-dum.debian.net> <45B5A9C7.5050700@gmail.com> <20070123131040.GB13467@khazad-dum.debian.net>
+In-Reply-To: <20070123131040.GB13467@khazad-dum.debian.net>
+X-Enigmail-Version: 0.94.1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200701231543.56669.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 23 January 2007 8:07 am, Atsushi Nemoto wrote:
-> On Tue, 23 Jan 2007 07:42:15 -0800, David Brownell <david-b@pacbell.net> wrote:
-> > > Indeed the check can be omitted.  Should I send a new patch just
-> > > moving class_device_get() into "if (master->bus_num == bus_num)"
-> > > block?
-> > 
-> > Yes, please.
+Henrique de Moraes Holschuh wrote:
+> On Tue, 23 Jan 2007, Tejun Heo wrote:
+>> Henrique de Moraes Holschuh wrote:
+>>> Does SATA electrical conector keying let the disk firmware unload
+>>> heads before the user manages to pull it out enough to sever power?
+>> I don't think so.
 > 
-> OK, here is.  This patch uses spi_master_get() instead of
-> class_device_get().
+> Heh, thought as much. (Good) SCSI hotswap bays notice you pulled the disk
+> release lever and issue an START_STOP_UNIT by themselves to the disk well
+> before you have time to start pulling the disk out.  I wonder if the SATA
+> ones do (I kind of doubt that, SATA seems to attract the el-cheapo, el-crapo
+> crowd of manufacturers).
 
-Much better.  This should be merged for 2.6.20 ...
+ahci controller spec has places for such thing but I've never seen it
+actually implemented.  I'm thinking about a CLI tool to list & control
+libata devices including hotplugging, NCQ and other stuff.  Eventually,
+it would be really nice to give the user/admin easy gui/web/whatever
+tool to watch and control ATA devices.
 
+>>> If it does not, the drive will do an emergency head unload, which is
+>>> not good and will likely reduce the drive's lifetime.
+>> Probably.
 > 
-> 
-> Subject: SPI: alternative fix for spi_busnum_to_master
-> 
-> If a SPI master device exists, udev (udevtrigger) causes kernel crash,
-> due to wrong kobj pointer in kobject_uevent_env().  This problem was
-> not in 2.6.19.
-> 
-> The backtrace (on MIPS) was:
-> [<8024db6c>] kobject_uevent_env+0x54c/0x5e8
-> [<802a8264>] store_uevent+0x1c/0x3c  (in drivers/class.c)
-> [<801cb14c>] subsys_attr_store+0x2c/0x50
-> [<801cb80c>] flush_write_buffer+0x38/0x5c
-> [<801cb900>] sysfs_write_file+0xd0/0x190
-> [<80181444>] vfs_write+0xc4/0x1a0
-> [<80181cdc>] sys_write+0x54/0xa0
-> [<8010dae4>] stack_done+0x20/0x3c
-> 
-> flush_write_buffer() passes kobject of spi_master_class.subsys to
-> subsys_addr_store(), then subsys_addr_store() passes a pointer to a
-> struct subsystem to store_uevent() which expects a pointer to a struct
-> class_device.  The problem seems subsys_attr_store() called instead of
-> class_device_attr_store().
-> 
-> This mismatch was caused by commit
-> 3bd0f6943520e459659d10f3282285e43d3990f1, which overrides kset of
-> master class.  This made spi_master_class.subsys.kset.ktype NULL so
-> subsys_sysfs_ops is used instead of class_dev_sysfs_ops.
-> 
-> The commit was to fix spi_busnum_to_master().  Here is a patch fixes
-> this function in other way, just searching children list of
-> class_device.
-> 
-> Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-> ---
-> diff --git a/drivers/spi/spi.c b/drivers/spi/spi.c
-> index 270e621..6307428 100644
-> --- a/drivers/spi/spi.c
-> +++ b/drivers/spi/spi.c
-> @@ -366,7 +366,6 @@ spi_alloc_master(struct device *dev, uns
->  
->  	class_device_initialize(&master->cdev);
->  	master->cdev.class = &spi_master_class;
-> -	kobj_set_kset_s(&master->cdev, spi_master_class.subsys);
->  	master->cdev.dev = get_device(dev);
->  	spi_master_set_devdata(master, &master[1]);
->  
-> @@ -466,14 +465,20 @@ EXPORT_SYMBOL_GPL(spi_unregister_master)
->   */
->  struct spi_master *spi_busnum_to_master(u16 bus_num)
->  {
-> -	char			name[9];
-> -	struct kobject		*bus;
-> -
-> -	snprintf(name, sizeof name, "spi%u", bus_num);
-> -	bus = kset_find_obj(&spi_master_class.subsys.kset, name);
-> -	if (bus)
-> -		return container_of(bus, struct spi_master, cdev.kobj);
-> -	return NULL;
-> +	struct class_device	*cdev;
-> +	struct spi_master	*master = NULL;
-> +	struct spi_master	*m;
-> +
-> +	down(&spi_master_class.sem);
-> +	list_for_each_entry(cdev, &spi_master_class.children, node) {
-> +		m = container_of(cdev, struct spi_master, cdev);
-> +		if (m->bus_num == bus_num) {
-> +			master = spi_master_get(m);
-> +			break;
-> +		}
-> +	}
-> +	up(&spi_master_class.sem);
-> +	return master;
->  }
->  EXPORT_SYMBOL_GPL(spi_busnum_to_master);
->  
-> 
+> So, that means it should be explained in the docs that you are to stop the
+> disk first, if you can.
+
+Yeap, agreed.
+
+> Even if hald does this automatically, it would still be a very good idea to
+> document the proper sequence, IMO...
+
+Agreed.
+
+-- 
+tejun
