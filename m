@@ -1,86 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751154AbXAXQWO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751934AbXAXQ2u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751154AbXAXQWO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jan 2007 11:22:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751586AbXAXQWO
+	id S1751934AbXAXQ2u (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jan 2007 11:28:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751963AbXAXQ2u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jan 2007 11:22:14 -0500
-Received: from mclmx2.mail.saic.com ([149.8.64.32]:56544 "EHLO
-	mclmx2.mail.saic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751154AbXAXQWN (ORCPT
+	Wed, 24 Jan 2007 11:28:50 -0500
+Received: from wx-out-0506.google.com ([66.249.82.228]:53438 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751934AbXAXQ2t (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jan 2007 11:22:13 -0500
-Subject: Re: IO-APIC + timer doesn't work - 2.6.20-rc5 on abit KN9-Ultra
-	bios 1.6
-From: Eamonn Hamilton <EAMONN.HAMILTON@saic.com>
-To: Luming Yu <luming.yu@gmail.com>
+	Wed, 24 Jan 2007 11:28:49 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:in-reply-to:references:mime-version:content-type:message-id:cc:content-transfer-encoding:subject:date:to:x-mailer:from;
+        b=E2XAuW+2rwnClTtYZzjxFLDUfR8YqoyFUnO0ZUT/gwGnSx1O7xsp5mrF3gJefkbX7Tpl9X5NabF/jvRss8CL76u/MHdzI6JCAAEGZMCxHlBCZj5FDE2uULZ/eRVBp+CRuUVfWQg8mJeaEMtfL4WEu/GOdddDx+jUZakMOaPqQcA=
+In-Reply-To: <964414.64865.qm@web52908.mail.yahoo.com>
+References: <964414.64865.qm@web52908.mail.yahoo.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <4238B011-A417-41DE-8998-01BAAA484486@gmail.com>
 Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <3877989d0701240721lcba4833p76aa14802e3620f7@mail.gmail.com>
-References: <1169630914.22508.151.camel@ukabzc383.uk.saic.com>
-	 <3877989d0701240721lcba4833p76aa14802e3620f7@mail.gmail.com>
-Content-Type: text/plain
-Date: Wed, 24 Jan 2007 16:21:40 +0000
-Message-Id: <1169655700.22508.186.camel@ukabzc383.uk.saic.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 
 Content-Transfer-Encoding: 7bit
-X-ukabzc383-MailScanner: Found to be clean
-X-ukabzc383-MailScanner-From: eamonn.hamilton@saic.com
+Subject: Re: 2.6.18-stable release plans?
+Date: Wed, 24 Jan 2007 10:28:43 -0600
+To: Chris Rankin <rankincj@yahoo.com>
+X-Mailer: Apple Mail (2.752.2)
+From: Mark Rustad <mrustad@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I've also just found bug #7820 on bugzilla which has a patch which may
-address this issue from Ingo.
+On Jan 24, 2007, at 9:53 AM, Chris Rankin wrote:
 
-I'll give that a shot as well.
+>>> But MY kernel is clearly untainted.
+>>> So what other explanation is there apart from a kernel bug?
+>
+>> If it's me you're asking: I don't know (overheating, cosmic  
+>> rays, ...)
+>
+> I suppose what I'm *really* asking is what the basis is for  
+> assuming that this *isn't* a kernel
+> bug and can therefore be safely ignored, seeing as the oops is  
+> real, the hardware is fine and the
+> kernel is untainted? That seems to cover the bases from where I'm  
+> sitting.
+>
+> Cheers,
+> Chris
+>
+> P.S. No micro-heatwaves have occurred here, either. Do we all need  
+> to install muon detectors in
+> our homes before reporting bugs now, so that we can exclude cosmic  
+> ray events too?
 
-Cheers,
-Eamonn
+Well, do you have ECC memory? If not, it is at least possible that  
+that the solar flares that occurred last month may have affected your  
+system. There were three X-class solar flares in the month of  
+December. Even if you have ECC memory, it is still possible to suffer  
+data corruption because many BIOSes do not turn on bus parity error  
+detection. And are the memories in your disk drive controllers ECC or  
+parity protected? I wouldn't bet on it...
 
-On Wed, 2007-01-24 at 23:21 +0800, Luming Yu wrote:
-> what about acpi=off?
-> 
-> On 1/24/07, Eamonn Hamilton <EAMONN.HAMILTON@saic.com> wrote:
-> > Hi,
-> >
-> > I can't get any kernel up to 2.6.20-rc5 to boot without using noapic on
-> > an ABIT KN9-Ultra with a dual-core Athlon.
-> >
-> > I booted with apic=debug as suggested and got the following :
-> >
-> > ENABLING IO-APIC IRQs
-> > .. TIMER: vector=0x31 apic1=0 pin1=0 apic2=-1 pin2=-1
-> > .. MP-BIOS bug: 8254 timer not connected to IO-APIC
-> > ... trying to set up timer (IRQ0) through the 8252A ... failed
-> > ... trying to set up timer as Virtual Wire IRQ ... failed
-> > ... trying to set up timer as ExtINT IRQ ... failed :(
-> >
-> > The bios is the latest, although in various posts on the web it would
-> > appear this occurs in older versions also.
-> >
-> > What can I do to help resolve this?
-> >
-> > Cheers,
-> > Eamonn
-> > --
-> > Eamonn Hamilton <eamonn.hamilton@saic.com>
-> >
-> >
-> > --
-> > This message has been scanned for viruses and
-> > dangerous content by MailScanner, and is
-> > believed to be clean.
-> >
-> > -
-> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > Please read the FAQ at  http://www.tux.org/lkml/
-> >
-
+All too often, modern PCs are data corruption accidents waiting to  
+happen.
 
 -- 
-This message has been scanned for viruses and
-dangerous content by MailScanner, and is
-believed to be clean.
+Mark Rustad, MRustad@mac.com
+
 
