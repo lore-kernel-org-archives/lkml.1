@@ -1,89 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030210AbXAXFz2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030211AbXAXF7i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030210AbXAXFz2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jan 2007 00:55:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030223AbXAXFz1
+	id S1030211AbXAXF7i (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jan 2007 00:59:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030214AbXAXF7i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jan 2007 00:55:27 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:53221 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030210AbXAXFz0 convert rfc822-to-8bit (ORCPT
+	Wed, 24 Jan 2007 00:59:38 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:53678
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1030211AbXAXF7h (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jan 2007 00:55:26 -0500
-Date: Tue, 23 Jan 2007 21:35:13 -0800
-From: Andrew Morton <akpm@osdl.org>
-To: =?ISO-8859-1?B?U+liYXN0aWVuIER1Z3Xp?= <sebastien.dugue@bull.net>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-aio <linux-aio@kvack.org>, Bharata B Rao <bharata@in.ibm.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
-       Jean Pierre Dion <jean-pierre.dion@bull.net>,
-       Badari Pulavarty <pbadari@us.ibm.com>
-Subject: Re: [PATCH -mm 4/5][AIO] - AIO completion signal notification
-Message-Id: <20070123213513.2454b24d.akpm@osdl.org>
-In-Reply-To: <20070117105018.7213ed7c@frecb000686>
-References: <20070117104601.36b2ab18@frecb000686>
-	<20070117105018.7213ed7c@frecb000686>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Wed, 24 Jan 2007 00:59:37 -0500
+Date: Tue, 23 Jan 2007 21:59:26 -0800 (PST)
+Message-Id: <20070123.215926.85409740.davem@davemloft.net>
+To: nhorman@tuxdriver.com
+Cc: linux-kernel@vger.kernel.org, akpm@osdl.com, torvalds@osdl.com
+Subject: Re: [PATCH] select: fix sys_select to not leak ERESTARTNOHAND to
+ userspace
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20070116201332.GA28523@hmsreliant.homelinux.net>
+References: <20070116201332.GA28523@hmsreliant.homelinux.net>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 17 Jan 2007 10:50:18 +0100
-Sébastien Dugué <sebastien.dugue@bull.net> wrote:
+From: Neil Horman <nhorman@tuxdriver.com>
+Date: Tue, 16 Jan 2007 15:13:32 -0500
 
-> +static long aio_setup_sigevent(struct aio_notify *notify,
-> +			       struct sigevent __user *user_event)
-> +{
-> +	sigevent_t event;
-> +	struct task_struct *target;
-> +
-> +	if (copy_from_user(&event, user_event, sizeof (event)))
-> +		return -EFAULT;
-> +
-> +	if (event.sigev_notify == SIGEV_NONE)
-> +		return 0;
-> +
-> +	notify->notify = event.sigev_notify;
-> +	notify->signo = event.sigev_signo;
-> +	notify->value = event.sigev_value;
-> +
-> +	read_lock(&tasklist_lock);
-> +	target = good_sigevent(&event);
-> +
-> +	if (unlikely(!target || (target->flags & PF_EXITING)))
-> +		goto out_unlock;
-> +
-> +	/*
-> +	 * At this point, we know that notify is either SIGEV_SIGNAL or
-> +	 * SIGEV_THREAD_ID and the target task is valid. So get a reference
-> +	 * on the task, it will be dropped in really_put_req() when
-> +	 * we're done with the request.
-> +	 */
-> +	get_task_struct(target);
-> +	notify->target = target;
-> +	read_unlock(&tasklist_lock);
-> +
-> +	/*
-> +	 * NOTE: we cannot free the sigqueue in the completion path as
-> +	 * the signal may not have been delivered to the target task.
-> +	 * Therefore it has to be freed in __sigqueue_free() when the
-> +	 * signal is collected if si_code is SI_ASYNCIO.
-> +	 */
-> +	notify->sigq = sigqueue_alloc();
-> +
-> +	if (unlikely(!notify->sigq))
-> +		return -EAGAIN;
+> As it is currently written, sys_select checks its return code to convert
+> ERESTARTNOHAND to EINTR.  However, the check is within an if (tvp) clause, and
+> so if select is called from userspace with a NULL timeval, then it is possible
+> for the ERESTARTNOHAND errno to leak into userspace, which is incorrect.  This
+> patch moves that check outside of the conditional, and prevents the errno leak.
+> 
+> Signed-Off-By: Neil Horman <nhorman@tuxdriver.com>
 
-Did this just leak a ref on the task_struct?
+As has been probably mentioned, this change is bogus.
 
-> +
-> +	return 0;
-> +
-> +out_unlock:
-> +	read_unlock(&tasklist_lock);
-> +	return -EINVAL;
-> +}
+core_sys_select() returns -ERESTARTNOHAND in exactly the
+case where that return value is legal, when a signal is
+pending, so that the signal dispatch code (on return from
+the system call) will "fixup" the -ERESTARTNOHAND return
+value so that userspace does not see it.
+
+What could be happening is that, somehow, we see the signal
+pending in core_sys_select(), but for some reason by the time
+the signal dispatch code would run, the signal is cleared.
+
+I always found this scheme a little fishy, relying on signal
+pending state to guarentee the fixup of the syscall restart
+error return values.
+
+For example, I see nothing that prevents another thread sharing
+this signal state from clearing the signal between the syscall
+checking in the other thread and the signal dispatch check running
+in that other thread.
+
+	cpu 1			cpu 2
+	check sigpending
+				clear signal
+	syscall return
+	no signal panding
+	get -ERESTARTNOHAND
+
+Perhaps something makes this no happen, but I don't see it :)
