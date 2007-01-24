@@ -1,70 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750944AbXAXPVI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750912AbXAXPWJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750944AbXAXPVI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jan 2007 10:21:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750957AbXAXPVI
+	id S1750912AbXAXPWJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jan 2007 10:22:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750914AbXAXPWJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jan 2007 10:21:08 -0500
-Received: from wx-out-0506.google.com ([66.249.82.227]:20941 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750944AbXAXPVH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jan 2007 10:21:07 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=l7D3Klqt1CktkYluDG01Y039sAvVbCM+QlaLKTSSHcFf8ET22dBJXdmppBIxT8T3rpb9hUOeBX2EKsZw6YRl4gNKpzbq/taAatZJ3K6K3ylhMkHeSaNTije1G/VmOvt/AsbyYFQ1K4oPBOYRoNdqVTdHGs/BUqgSROB25kGjoOA=
-Message-ID: <3877989d0701240721lcba4833p76aa14802e3620f7@mail.gmail.com>
-Date: Wed, 24 Jan 2007 23:21:04 +0800
-From: "Luming Yu" <luming.yu@gmail.com>
-To: "Eamonn Hamilton" <EAMONN.HAMILTON@saic.com>
-Subject: Re: IO-APIC + timer doesn't work - 2.6.20-rc5 on abit KN9-Ultra bios 1.6
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <1169630914.22508.151.camel@ukabzc383.uk.saic.com>
+	Wed, 24 Jan 2007 10:22:09 -0500
+Received: from pfx2.jmh.fr ([194.153.89.55]:56360 "EHLO pfx2.jmh.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750912AbXAXPWI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jan 2007 10:22:08 -0500
+From: Eric Dumazet <dada1@cosmosbay.com>
+To: Jeff Layton <jlayton@redhat.com>
+Subject: Re: [PATCH 0/3] i_ino uniqueness: alternate approach -- hash the inodes
+Date: Wed, 24 Jan 2007 16:21:44 +0100
+User-Agent: KMail/1.9.5
+Cc: Andrew Morton <akpm@osdl.org>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <200701161857.l0GIvcaA016196@dantu.rdu.redhat.com> <20070123204648.204b1834.akpm@osdl.org> <45B76BAC.4040408@redhat.com>
+In-Reply-To: <45B76BAC.4040408@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <1169630914.22508.151.camel@ukabzc383.uk.saic.com>
+Message-Id: <200701241621.44923.dada1@cosmosbay.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-what about acpi=off?
+On Wednesday 24 January 2007 15:22, Jeff Layton wrote:
+> Andrew Morton wrote:
+> > What is the additional overhead, expressed in relative terms?  ie: as a
+> > percentage?
+>
+> Short answer: ~3-4% in a not very scientific test.
+>
+> Long answer: I timed 3 different runs of a program that created and then
+> closed a pipe 10 million times on a patched and unpatched kernel. I then
+> added up the "system" times for each and divided them:
 
-On 1/24/07, Eamonn Hamilton <EAMONN.HAMILTON@saic.com> wrote:
-> Hi,
->
-> I can't get any kernel up to 2.6.20-rc5 to boot without using noapic on
-> an ABIT KN9-Ultra with a dual-core Athlon.
->
-> I booted with apic=debug as suggested and got the following :
->
-> ENABLING IO-APIC IRQs
-> .. TIMER: vector=0x31 apic1=0 pin1=0 apic2=-1 pin2=-1
-> .. MP-BIOS bug: 8254 timer not connected to IO-APIC
-> ... trying to set up timer (IRQ0) through the 8252A ... failed
-> ... trying to set up timer as Virtual Wire IRQ ... failed
-> ... trying to set up timer as ExtINT IRQ ... failed :(
->
-> The bios is the latest, although in various posts on the web it would
-> appear this occurs in older versions also.
->
-> What can I do to help resolve this?
->
-> Cheers,
-> Eamonn
-> --
-> Eamonn Hamilton <eamonn.hamilton@saic.com>
->
->
-> --
-> This message has been scanned for viruses and
-> dangerous content by MailScanner, and is
-> believed to be clean.
->
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+Do you mean this program ?
+
+int count, pfd[2];
+for (count = 0 ; count < 10000000 ; count++) {
+	pipe(pfd);
+	close(pfd[0]);
+	close(pfd[1]);
+}
+
+The problem is you wont see the overhead of insert/delete the inode in a 
+global tree, since you keep hot caches.
+
+To have a better estimate of the overhead, I suggest you try to use more 
+active pipes like :
+
+#include <unistd.h>
+#define SIZE 16384
+int fds[SIZE];
+
+int main(int argc, char *argv[])
+{
+        unsigned int i , count ;
+
+        for (i = 0 ; i < SIZE ; i += 2)
+                pipe(fds + i);
+        i = 0;
+        for (count = 0 ; count < 10000000 ; count++) {
+                close(fds[i]);
+                close(fds[i + 1]);
+                pipe(fds + i);
+                i = (i + 2) % SIZE;
+        }
+        return 0;
+}
+
+
+# ulimit -n 20000
+# time ./pipebench
+
+Eric
