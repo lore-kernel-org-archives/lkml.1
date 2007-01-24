@@ -1,41 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932905AbXAXBGN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965462AbXAXBHF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932905AbXAXBGN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jan 2007 20:06:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933129AbXAXBGM
+	id S965462AbXAXBHF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jan 2007 20:07:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965461AbXAXBHF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jan 2007 20:06:12 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:52170 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932905AbXAXBGM (ORCPT
+	Tue, 23 Jan 2007 20:07:05 -0500
+Received: from 67.111.72.3.ptr.us.xo.net ([67.111.72.3]:50833 "EHLO
+	nonameb.ptu.promise.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S965458AbXAXBHD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jan 2007 20:06:12 -0500
-Date: Wed, 24 Jan 2007 01:17:34 +0000
-From: Alan <alan@lxorguk.ukuu.org.uk>
-To: Christoph Anton Mitterer <calestyo@scientia.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Strange
-Message-ID: <20070124011734.47a06a25@localhost.localdomain>
-In-Reply-To: <45B6A1D4.7020906@scientia.net>
-References: <45B69D0C.8030501@scientia.net>
-	<20070124000905.3a7b053d@localhost.localdomain>
-	<45B6A1D4.7020906@scientia.net>
-X-Mailer: Claws Mail 2.7.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+	Tue, 23 Jan 2007 20:07:03 -0500
+X-Greylist: delayed 859 seconds by postgrey-1.27 at vger.kernel.org; Tue, 23 Jan 2007 20:07:01 EST
+Date: Tue, 23 Jan 2007 16:53:44 -0800
+From: "Ed Lin" <ed.lin@promise.com>
+To: "linux-scsi" <linux-scsi@vger.kernel.org>
+Cc: "linux-kernel" <linux-kernel@vger.kernel.org>,
+       "james.Bottomley" <james.Bottomley@SteelEye.com>,
+       "jeff" <jeff@garzik.org>, "promise_linux" <promise_linux@promise.com>
+Subject: [patch] scsi: use lock per host instead of per device for shared queue tag host
+X-mailer: Foxmail 5.0 [en]
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 7BIT
+Message-ID: <NONAMEBDp7mvjkO22Zh0000056d@nonameb.ptu.promise.com>
+X-OriginalArrivalTime: 24 Jan 2007 00:53:52.0140 (UTC) FILETIME=[1DB1ACC0:01C73F52]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I knew of course about libdvdcss but I've never noticed before that the
-> kernel issues these error messages to the syslog.
+The block layer uses lock to protect request queue. Every scsi device
+has a unique request queue, and queue lock is the default lock in struct
+request_queue. This is good for normal cases. But for a  host with
+shared queue tag (e.g. stex controllers), a queue lock per device means
+the shared queue tag is not protected when multiple devices are accessed
+at a same time.  This patch is a simple fix for this situation by introducing
+a host queue lock to protect shared queue tag. Without this patch we will
+see various kernel panics (including the BUG() and kernel errors in
+blk_queue_start_tag and blk_queue_end_tag of ll_rw_blk.c) when accessing
+different devices simultaneously (e.g. copying big file from one device to
+another in smp kernels).
 
-Various bits of random desktop junk poll drives to see what has appeared
-and stick icons on desktops. Some of them do stuff that produces messages
-like this because they aren't careful how they probe and what they do.
+This is against kernel 2.6.20-rc5.
 
-> So you say this is normal?! But the problem with ejecting isn't probably
-> normal.
+Signed-off-by: Ed Lin <ed.lin@promise.com>
+---
+ drivers/scsi/scsi_lib.c  |    2 +-
+ drivers/scsi/stex.c      |    2 ++
+ include/scsi/scsi_host.h |    3 +++
+ 3 files changed, 6 insertions(+), 1 deletion(-)
 
-Eject is application controllable. Most movie players re-enable the
-button.
+diff -purN a/drivers/scsi/scsi_lib.c b/drivers/scsi/scsi_lib.c
+--- a/drivers/scsi/scsi_lib.c	2007-01-23 14:40:28.000000000 -0800
++++ b/drivers/scsi/scsi_lib.c	2007-01-23 14:46:43.000000000 -0800
+@@ -1574,7 +1574,7 @@ struct request_queue *__scsi_alloc_queue
+ {
+ 	struct request_queue *q;
+ 
+-	q = blk_init_queue(request_fn, NULL);
++	q = blk_init_queue(request_fn, shost->req_q_lock);
+ 	if (!q)
+ 		return NULL;
+ 
+diff -purN a/drivers/scsi/stex.c b/drivers/scsi/stex.c
+--- a/drivers/scsi/stex.c	2007-01-23 14:40:28.000000000 -0800
++++ b/drivers/scsi/stex.c	2007-01-23 14:48:59.000000000 -0800
+@@ -1254,6 +1254,8 @@ stex_probe(struct pci_dev *pdev, const s
+ 	if (err)
+ 		goto out_free_irq;
+ 
++	spin_lock_init(&host->__req_q_lock);
++	host->req_q_lock = &host->__req_q_lock;
+ 	err = scsi_init_shared_tag_map(host, host->can_queue);
+ 	if (err) {
+ 		printk(KERN_ERR DRV_NAME "(%s): init shared queue failed\n",
+diff -purN a/include/scsi/scsi_host.h b/include/scsi/scsi_host.h
+--- a/include/scsi/scsi_host.h	2007-01-23 14:40:29.000000000 -0800
++++ b/include/scsi/scsi_host.h	2007-01-23 14:57:04.000000000 -0800
+@@ -508,6 +508,9 @@ struct Scsi_Host {
+ 	spinlock_t		default_lock;
+ 	spinlock_t		*host_lock;
+ 
++	spinlock_t		__req_q_lock;
++	spinlock_t		*req_q_lock;/* protect shared block queue tag */
++
+ 	struct mutex		scan_mutex;/* serialize scanning activity */
+ 
+ 	struct list_head	eh_cmd_q;
+
+
+
