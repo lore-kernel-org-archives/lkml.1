@@ -1,49 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932821AbXAXWjt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751322AbXAXWqy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932821AbXAXWjt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jan 2007 17:39:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932831AbXAXWjt
+	id S1751322AbXAXWqy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jan 2007 17:46:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752081AbXAXWqy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jan 2007 17:39:49 -0500
-Received: from wr-out-0506.google.com ([64.233.184.233]:8462 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932821AbXAXWjs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jan 2007 17:39:48 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=pxJSeKE4jcBtr32HY3zwqWtkBBGyWyJfd57kfBH4xRMZWVCN2nVFWlL1WEsRY9xCF0UIxrIeKEc6/bBJ/y2j+QlEuiTsEdJp3SzLuWmecuxLEMoatcmF7CKbmnBFUv7EldVS08hp5M52t31Dc2HkF5Si1HZpw/2NUjRQmPVPybQ=
-Message-ID: <21d7e9970701241439y1431254bwf088f9f3043dd0c@mail.gmail.com>
-Date: Thu, 25 Jan 2007 09:39:47 +1100
-From: "Dave Airlie" <airlied@gmail.com>
-To: "Greg KH" <greg@kroah.com>
-Subject: Re: gpu sharing layer for kernel
-Cc: airlied@linux.ie, linux-kernel@vger.kernel.org
-In-Reply-To: <20070124214654.GA30634@kroah.com>
+	Wed, 24 Jan 2007 17:46:54 -0500
+Received: from agmk.net ([87.236.194.20]:4041 "EHLO mail.agmk.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751322AbXAXWqx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jan 2007 17:46:53 -0500
+From: =?utf-8?q?Pawe=C5=82_Sikora?= <pluto@agmk.net>
+To: linux-kernel@vger.kernel.org
+Subject: 2.6.20rc5 k8/acpi regression ( 2.6.17.13 works fine ).
+Date: Wed, 24 Jan 2007 23:46:44 +0100
+User-Agent: KMail/1.9.6
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <1169637623985-git-send-email-airlied@linux.ie>
-	 <20070124214654.GA30634@kroah.com>
+Message-Id: <200701242346.44673.pluto@agmk.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > Why do we want this?
-> >
-> > Currently the kernel cannot provide both the fb and drm drivers with
-> > access to the device model and this means the drm cannot get any
-> > suspend/resume callbacks.  This layer attempts to fix this problem by
-> > adding a bus for the gpu drivers to attach to. Currently a lowlevel
-> > binding driver is needed along with optional fb and drm components.
->
-> If we were to allow this kind of "sharing" for all PCI devices would
-> that work out instead?  Or would this layer still be needed?
+hi,
 
-Initially this layer wouldn't be needed, but I'd like to add some
-awareness to the drivers, so the drm can tell the fb to stop doing
-stuff and vice-versa if necessary....  but perhaps that could be done
-with a generic layer also.. or via the lowlevel driver I have...
+for 2.6.20rc5 i get an acpi related oops during x86-64 boot:
+http://minus.ds14.agh.edu.pl/~pluto/2.6.20rc5-acpi-oops.jpg
+disabling the "amd-k8 cool'n'quiet" option in bios helps.
+moreover, it works fine for 2.6.17.13, so it looks like
+a recent regression. i can provide more details if you need.
 
-Dave.
+BR,
+pawel.
