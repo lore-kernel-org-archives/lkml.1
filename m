@@ -1,47 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751043AbXAXKb1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751063AbXAXKdh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751043AbXAXKb1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jan 2007 05:31:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751062AbXAXKb1
+	id S1751063AbXAXKdh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jan 2007 05:33:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751073AbXAXKdh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jan 2007 05:31:27 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:54638 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751043AbXAXKb0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jan 2007 05:31:26 -0500
-Date: Wed, 24 Jan 2007 11:29:02 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Daniel Walker <dwalker@mvista.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Andrew Morton <akpm@osdl.org>,
-       LKML <linux-kernel@vger.kernel.org>, John Stultz <johnstul@us.ibm.com>,
-       Arjan van de Veen <arjan@infradead.org>,
-       Roman Zippel <zippel@linux-m68k.org>
-Subject: Re: [patch 00/46] High resolution timer / dynamic tick update
-Message-ID: <20070124102902.GA28025@elte.hu>
-References: <20070123211159.178138000@localhost.localdomain> <1169604991.19471.95.camel@imap.mvista.com> <20070124070701.GA17654@elte.hu> <1169631016.19471.175.camel@imap.mvista.com> <20070124095157.GA21346@elte.hu> <1169634220.19471.197.camel@imap.mvista.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1169634220.19471.197.camel@imap.mvista.com>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -4.3
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-4.3 required=5.9 tests=ALL_TRUSTED,BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-3.3 ALL_TRUSTED            Did not pass through any untrusted hosts
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Wed, 24 Jan 2007 05:33:37 -0500
+Received: from nic.NetDirect.CA ([216.16.235.2]:40730 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751059AbXAXKdg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jan 2007 05:33:36 -0500
+X-Originating-Ip: 74.109.98.130
+Date: Wed, 24 Jan 2007 05:33:13 -0500 (EST)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@CPE00045a9c397f-CM001225dbafb6
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>
+Subject: Re: identifying CONFIG variable typoes in the source tree
+In-Reply-To: <Pine.LNX.4.62.0701240917530.30467@pademelon.sonytel.be>
+Message-ID: <Pine.LNX.4.64.0701240511300.23168@CPE00045a9c397f-CM001225dbafb6>
+References: <Pine.LNX.4.64.0701231559090.3014@CPE00045a9c397f-CM001225dbafb6>
+ <Pine.LNX.4.62.0701240917530.30467@pademelon.sonytel.be>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 24 Jan 2007, Geert Uytterhoeven wrote:
 
-* Daniel Walker <dwalker@mvista.com> wrote:
+> On Tue, 23 Jan 2007, Robert P. J. Day wrote:
+> >   let's check these:
+> >
+> > $ grep -r 53C700_BE_BUS .
+> > ./drivers/scsi/53c700.h:#ifdef CONFIG_53C700_BE_BUS
+>
+> This is the core support for big endian 53c700 SCSI busses. It's
+> needed for various m68k machines, patch to be submitted when the
+> m68k support is ready for submission.
+>
+> Gr{oetje,eeting}s,
 
-> No, the test config I was talking about is SMP i386 (which is what I 
-> usually use). [...]
+  just to be clear, all that script is doing is identifying variables
+of the form "CONFIG_fubar" that are being tested in *some*
+preprocessor directive somewhere in the tree, but for which there is
+apparently no corresponding entry in a Kconfig file anywhere that
+could cause that variable to be configured.
 
-then please send me the .config.
+  naturally, as geert suggests, this might represent a feature that's
+in progress so it's clearly not a mistake.  but it's a good way to
+trap potential problems, as in finding "GALILLEO_GT64240_ETH" which,
+superficially, would seem like an obvious typo no matter what:
 
-	Ingo
+$ grep -r GALILLEO_GT64240_ETH .
+./arch/mips/momentum/ocelot_g/prom.c:#ifdef CONFIG_GALILLEO_GT64240_ETH
+./arch/mips/momentum/ocelot_g/prom.c:#ifdef CONFIG_GALILLEO_GT64240_ETH
+./arch/mips/momentum/ocelot_g/setup.c:#ifdef CONFIG_GALILLEO_GT64240_ETH
+./arch/mips/momentum/ocelot_g/setup.c:#ifdef CONFIG_GALILLEO_GT64240_ETH
+$
+
+as well as what is *obviously* dead code:
+
+$ grep -rw CONFIG_KERNELD .
+./sound/core/timer.c:#ifdef CONFIG_KERNELD
+$ grep -rw KERNELD .
+./net/core/dev.c: *             Bjorn Ekwall    :       Added KERNELD hack.
+
+  the script isn't perfect -- it will generate false positives if the
+variable is being set elsewhere -- perhaps hardcoded in the file or
+defined in a Makefile.  but if you're curious, just run it against
+your favourite subdirectory and see what comes up.
+
+rday
+
