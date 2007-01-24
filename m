@@ -1,27 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751384AbXAXNCt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751393AbXAXNE0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751384AbXAXNCt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jan 2007 08:02:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751399AbXAXNCt
+	id S1751393AbXAXNE0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jan 2007 08:04:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751399AbXAXNE0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jan 2007 08:02:49 -0500
-Received: from mail.first.fraunhofer.de ([194.95.169.2]:55214 "EHLO
+	Wed, 24 Jan 2007 08:04:26 -0500
+Received: from mail.first.fraunhofer.de ([194.95.169.2]:62375 "EHLO
 	mail.first.fraunhofer.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751384AbXAXNCs (ORCPT
+	with ESMTP id S1751393AbXAXNEZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jan 2007 08:02:48 -0500
-To: linux-kernel@vger.kernel.org
-Date: Wed, 24 Jan 2007 13:02:42 +0000 (UTC)
-From: Soeren Sonnenburg <kernel@nn7.de>
-Message-ID: <ep7ldh$gsm$1@fortknox.intranet.wo.rk>
-Organization: Local Intranet News
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-References: <1169542768.5537.11.camel@cocoduo>
+	Wed, 24 Jan 2007 08:04:25 -0500
 Subject: Re: 2.6.19.2 sky2/acpi crashes
+From: Soeren Sonnenburg <kernel@nn7.de>
+To: Linux Kernel <linux-kernel@vger.kernel.org>
+Cc: Stephen Hemminger <shemminger@osdl.org>
+References: <1169542768.5537.11.camel@cocoduo>
+%3cep4nb2%24mh2%241%40fortknox.intranet.wo.rk%3e: 
+%3cf4527be0701230312q2a22b41i93abdf8972525d9e%40mail.gmail.com%3e: 
+MIME-Version: 1.0
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Wed, 24 Jan 2007 14:04:11 +0100
+Message-Id: <1169643852.29990.11.camel@localhost>
+X-Mailer: Evolution 2.8.2.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
+
+[This mail was also posted to newsgate.kernel.]
 
 On Tue, 23 Jan 2007 11:12:50 +0000, Andrew Lyon wrote:
 
@@ -61,3 +66,6 @@ I am on a completely different system (macbook pro 1,1) with PREEMPT and
 cpu frequency scaling on not sure how this could be related...
 
 Soeren
+-- 
+Sometimes, there's a moment as you're waking, when you become aware of
+the real world around you, but you're still dreaming.
