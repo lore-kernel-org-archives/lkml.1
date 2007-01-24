@@ -1,112 +1,222 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751996AbXAXRRB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752015AbXAXRW6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751996AbXAXRRB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jan 2007 12:17:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752015AbXAXRRB
+	id S1752015AbXAXRW6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jan 2007 12:22:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752036AbXAXRW6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jan 2007 12:17:01 -0500
-Received: from server077.de-nserver.de ([62.27.12.245]:57961 "EHLO
-	server077.de-nserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751996AbXAXRRA (ORCPT
+	Wed, 24 Jan 2007 12:22:58 -0500
+Received: from h155.mvista.com ([63.81.120.158]:37157 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1752015AbXAXRW4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jan 2007 12:17:00 -0500
-Message-ID: <45B7948B.70104@profihost.com>
-Date: Wed, 24 Jan 2007 18:16:59 +0100
-From: Stefan Priebe - FH <studium@profihost.com>
-User-Agent: Mozilla Thunderbird 1.0.7 (Windows/20050923)
-X-Accept-Language: de-DE, de, en-us, en
-MIME-Version: 1.0
-To: Chuck Ebbert <cebbert@redhat.com>
-CC: linux-kernel@vger.kernel.org, David Chinner <dgc@sgi.com>
-Subject: Re: XFS or Kernel Problem / Bug
-References: <20060801141545.B2326184@wobbly.melbourne.sgi.com> <44CED76B.20507@profihost.com> <20060801142755.C2326184@wobbly.melbourne.sgi.com> <44CED8F4.9080208@profihost.com> <20060801143212.D2326184@wobbly.melbourne.sgi.com> <44CEDA1D.5060607@profihost.com> <20060801143803.E2326184@wobbly.melbourne.sgi.com> <44CF36FB.6070606@profihost.com> <20060802090915.C2344877@wobbly.melbourne.sgi.com> <44D07AB7.3020409@profihost.com> <20060802201805.A2360409@wobbly.melbourne.sgi.com> <45B35CD7.4080801@profihost.com> <45B666BE.8000802@redhat.com> <45B70D69.20500@profihost.com> <45B773C1.7090805@redhat.com> <45B77547.4060302@profihost.com> <45B77780.5000504@redhat.com> <45B77C84.6070508@profihost.com> <45B78E9F.4000404@redhat.com>
-In-Reply-To: <45B78E9F.4000404@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 24 Jan 2007 12:22:56 -0500
+Subject: Re: [patch 00/46] High resolution timer / dynamic tick update
+From: Daniel Walker <dwalker@mvista.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: tglx@linutronix.de, Andrew Morton <akpm@osdl.org>,
+       LKML <linux-kernel@vger.kernel.org>, John Stultz <johnstul@us.ibm.com>,
+       Arjan van de Veen <arjan@infradead.org>,
+       Roman Zippel <zippel@linux-m68k.org>
+In-Reply-To: <20070124160046.GA24798@elte.hu>
+References: <20070123211159.178138000@localhost.localdomain>
+	 <1169604991.19471.95.camel@imap.mvista.com>
+	 <20070124070701.GA17654@elte.hu>
+	 <1169631016.19471.175.camel@imap.mvista.com>
+	 <20070124095157.GA21346@elte.hu>
+	 <1169634220.19471.197.camel@imap.mvista.com>
+	 <1169637237.21181.164.camel@localhost.localdomain>
+	 <1169654001.19471.231.camel@imap.mvista.com>
+	 <20070124160046.GA24798@elte.hu>
+Content-Type: text/plain
+Date: Wed, 24 Jan 2007 09:21:37 -0800
+Message-Id: <1169659297.19471.247.camel@imap.mvista.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
 Content-Transfer-Encoding: 7bit
-X-User-Auth: Auth by hostmaster@profihost.com through 84.133.203.160
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Wed, 2007-01-24 at 17:00 +0100, Ingo Molnar wrote:
+> you are also misunderstand the change. While the TSC is the only 
+> unstable clocksource right now, the previous code tied the TSC to the
+> >pm-timer< clocksource. This change makes it generic, hence the TSC can
+> be verified by a hpet-only system (no pm-timer) as well. Systems without 
+> a pm-timer and with a TSC are quite common. So it solves a real problem.
 
-Mhm are you shure? I mean i have this problem on 5 servers - all with 
-the same mainboard. I cannot believe, that all 5 servers have a hardware 
-problem that starts on the same day.
+Here is an example of what I was talking about in my last email . This
+is a TSC specific clock verify ontop of -mm + my patches. It will use
+and acpi_pm or and hpet (or pit or whatever) . Clearly the
+implementation details could be worked on but the clock access would
+remain largely the same.
 
-The other thing is - that they all work fine with 2.6.16.x and all other 
-kernels before. I mean some of them were used with 2.6.x since two years 
-without any problem...
+Signed-Off-By: Daniel Walker <dwalker@mvista.com>
 
-Stefan
+---
+ arch/i386/kernel/tsc.c      |   93 ++++++++++++++++++++------------------------
+ include/linux/clocksource.h |    5 ++
+ 2 files changed, 49 insertions(+), 49 deletions(-)
 
+Index: linux-2.6.19/arch/i386/kernel/tsc.c
+===================================================================
+--- linux-2.6.19.orig/arch/i386/kernel/tsc.c
++++ linux-2.6.19/arch/i386/kernel/tsc.c
+@@ -343,7 +343,7 @@ static struct clocksource clocksource_ts
+ 	.mask			= CLOCKSOURCE_MASK(64),
+ 	.mult			= 0, /* to be set */
+ 	.shift			= 22,
+-	.flags			= CLOCKSOURCE_64BITS,
++	.flags			= CLOCKSOURCE_64BITS | CLOCKSOURCE_PM_AFFECTED,
+ 	.list			= LIST_HEAD_INIT(clocksource_tsc.list),
+ };
+ 
+@@ -382,55 +382,54 @@ static struct dmi_system_id __initdata b
+ 	 {}
+ };
+ 
+-#define TSC_FREQ_CHECK_INTERVAL MSEC_PER_SEC
++#define WATCHDOG_TRESHOLD (NSEC_PER_SEC >> 4)
++#define TSC_FREQ_CHECK_INTERVAL (MSEC_PER_SEC/2)
+ static struct timer_list verify_tsc_freq_timer;
+ static unsigned long pm_multiplier;
++struct clocksource *verify_clock;
++
+ 
+ /* XXX - Probably should add locking */
+ static void verify_tsc_freq(unsigned long unused)
+ {
+-	static u64 last_tsc;
+-	static unsigned long last_jiffies, last_pm;
++	static unsigned long last_jiffies;
++	static cycle_t last_tsc, last_verify;
+ 
+-	u64 now_tsc, interval_tsc, tmp;
+-	unsigned long now_jiffies, interval_jiffies, pm, pm_delta;
++	cycle_t now_tsc, interval_tsc, verify_clock_now, interval_verify;
++	unsigned long now_jiffies, interval_jiffies;
++	s64 ns_tsc, ns_verify, clock_diff;
+ 
+ 	if (check_tsc_unstable())
+ 		return;
+ 
+-	rdtscll(now_tsc);
+ 	now_jiffies = jiffies;
+-	pm = acpi_pm_read_early();
++
++	now_tsc = clocksource_read(&clocksource_tsc);
++	verify_clock_now = clocksource_read(verify_clock);
+ 
+ 	if (!last_jiffies)
+ 		goto out;
+ 
+-	interval_tsc = now_tsc - last_tsc;
+-	interval_tsc *= HZ;
+-	do_div(interval_tsc, cpu_khz*1000);
+-
+-	if (pm == last_pm) {
+-		interval_jiffies = now_jiffies - last_jiffies;
+-	} else {
+-		if (pm < last_pm)
+-			pm_delta = (pm + ACPI_PM_OVRRUN) - last_pm;
+-		else
+-			pm_delta = pm - last_pm;
+-		tmp = (((u64) pm_delta) * pm_multiplier) >> 22;
+-		do_div(tmp, (NSEC_PER_SEC/HZ));
+-		interval_jiffies = (unsigned long) tmp;
+-	}
+ 
+-	if (interval_tsc < (interval_jiffies * 3 / 4)) {
++	interval_tsc = clocksource_subtract(&clocksource_tsc, last_tsc, now_tsc);
++	interval_verify = clocksource_subtract(verify_clock, last_verify,
++					       verify_clock_now);
++
++	ns_tsc = cyc2ns(&clocksource_tsc, interval_tsc);
++	ns_verify = cyc2ns(verify_clock, interval_verify);
++
++	clock_diff = ns_tsc - ns_verify;
++	if (abs(clock_diff) > WATCHDOG_TRESHOLD) {
+ 		printk("TSC appears to be running slowly. "
+-		       "Marking it as unstable\n");
++		       "Marking it as unstable");
+ 		mark_tsc_unstable();
+ 		return;
+ 	}
+ out:
+ 	last_tsc = now_tsc;
+ 	last_jiffies = now_jiffies;
+-	last_pm = pm;
++	last_verify = verify_clock_now;
++
+ 	/* set us up to go off on the next interval: */
+ 	mod_timer(&verify_tsc_freq_timer,
+ 		jiffies + msecs_to_jiffies(TSC_FREQ_CHECK_INTERVAL));
+@@ -471,29 +470,6 @@ static int __init init_tsc_clocksource(v
+ 		if (check_tsc_unstable())
+ 			clocksource_tsc.flags |= CLOCKSOURCE_UNSTABLE;
+ 
+-		/*
+-		 * Mark TSC unsuitable for high resolution timers, when
+-		 * pm_timer is not available as a fallback. TSC has so many
+-		 * pitfalls: frequency changes, stop in idle ...  When we
+-		 * switch to high resolution mode we can not longer detect a
+-		 * firmware caused frequency change, as the emulated tick uses
+-		 * TSC as reference. This results in a circular dependency.
+-		 * Switch only to high resolution mode, if pm_timer or such is
+-		 * available.
+-		 */
+-		if (!pmtmr_ioport) {
+-			mark_tsc_unstable();
+-			clocksource_tsc.flags &= CLOCKSOURCE_UNSTABLE;
+-		}
+-
+-		pm_multiplier = clocksource_hz2mult(PMTMR_TICKS_PER_SEC, 22);
+-
+-		init_timer(&verify_tsc_freq_timer);
+-		verify_tsc_freq_timer.function = verify_tsc_freq;
+-		verify_tsc_freq_timer.expires =
+-			jiffies + msecs_to_jiffies(TSC_FREQ_CHECK_INTERVAL);
+-		add_timer(&verify_tsc_freq_timer);
+-
+ 		return clocksource_register(&clocksource_tsc);
+ 	}
+ 
+@@ -501,3 +477,22 @@ static int __init init_tsc_clocksource(v
+ }
+ 
+ fs_initcall(init_tsc_clocksource);
++
++void tsc_verify_init(void)
++{
++	verify_clock = clocksource_get_clock(NULL, CLOCKSOURCE_PM_AFFECTED);
++	if (!verify_clock) {
++		printk("TSC: Verify clock not found!\n");
++		return;
++	}
++
++	printk("TSC: selected %s for TSC verification\n", verify_clock->name);
++
++	init_timer(&verify_tsc_freq_timer);
++	verify_tsc_freq_timer.function = verify_tsc_freq;
++	verify_tsc_freq_timer.expires =
++		jiffies + msecs_to_jiffies(TSC_FREQ_CHECK_INTERVAL);
++	add_timer(&verify_tsc_freq_timer);
++
++}
++device_initcall(tsc_verify_init);
+Index: linux-2.6.19/include/linux/clocksource.h
+===================================================================
+--- linux-2.6.19.orig/include/linux/clocksource.h
++++ linux-2.6.19/include/linux/clocksource.h
+@@ -207,6 +207,11 @@ static inline s64 cyc2ns(struct clocksou
+ 	return ret;
+ }
+ 
++static inline s64 clocksource_subtract(struct clocksource* cs, s64 start, s64 stop)
++{
++	return ((stop - start) & cs->mask);
++}
++
+ /**
+  * clocksource_calculate_interval - Calculates a clocksource interval struct
+  *
 
-Chuck Ebbert schrieb:
-> Stefan Priebe - FH wrote:
-> 
->>Sorry that is not possible - cause it is a production machine.
->>
->>But i've catched the error and the files from another machine -
->>perhaps this helps.
->>
->>"BUG: unable to handle kernel NULL pointer dereference at virtual
->>address 00000288"
->>" printing eip:"
->>"c0142ff7"
->>"*pde = 00000000"
->>"Oops: 0000 [#1]"
->>"SMP "
->>"Modules linked in: iptable_filter ip_tables x_tables"
->>"CPU:    0"
->>"EIP:    0060:[<c0142ff7>]    Not tainted VLI"
->>"EFLAGS: 00010246   (2.6.18.6 #1) "
->>"EIP is at generic_file_buffered_write+0x390/0x6cf"
->>"eax: 00000000   ebx: 000001ec   ecx: ea029a40   edx: 00008002"
->>"esi: 00000000   edi: e3b28c9c   ebp: 000001ec   esp: dd04bd18"
->>"ds: 007b   es: 007b   ss: 0068"
->>"Process proftpd (pid: 3615, ti=dd04a000 task=eba88a70 task.ti=dd04a000)"
->>"Stack: e3b28d44 00000001 00000010 000001fc c036d793 000001fc c14765c0
->>00000010 "
->>"       080d404c 000001ec e3b28c9c c03e78c0 e3b28d44 ea029a40 000001fc
->>00000000 "
->>"       00000000 000001ec dd04beac 00d420b1 00000000 00000000 dd04bd80
->>45b1fa67 "
->>"Call Trace:"
->>" [<c036d793>] sock_def_readable+0x7f/0x81"
->>" [<c017a03a>] file_update_time+0xad/0xcb"
->>" [<c0232015>] xfs_iunlock+0x55/0x9f"
->>" [<c0262eeb>] xfs_write+0xa74/0xc61"
->>" [<c036a253>] sock_aio_read+0x95/0x99"
->>" [<c025d9fb>] xfs_file_aio_write+0x8f/0xa0"
->>" [<c015fb94>] do_sync_write+0xc9/0x10f"
->>" [<c0133ad6>] autoremove_wake_function+0x0/0x57"
->>" [<c015f3d5>] generic_file_llseek+0x95/0xbc"
->>" [<c015facb>] do_sync_write+0x0/0x10f"
->>" [<c015fc80>] vfs_write+0xa6/0x179"
->>" [<c015fe24>] sys_write+0x51/0x80"
->>" [<c0102d3f>] syscall_call+0x7/0xb"
->>"Code: 04 89 10 8b 44 24 40 85 c0 0f 85 db 00 00 00 8b 5c 24 24 85 db
->>0f 88 c3 00 00 00 8b 4c 24 34 8b 51 18 f6 c6 10 75 73 8b 7c 24 28 <8b>
->>85 9c 00 00 00 f6 40 30 10 75 63 f6 87 48 01 00 00 01 75 5a "
->>"EIP: [<c0142ff7>] generic_file_buffered_write+0x390/0x6cf SS:ESP
->>0068:dd04bd18"
->>
->>Files:
->>http://server113-han.de-nserver.de/filemap.s
->>http://server113-han.de-nserver.de/filemap.o
->>
-> 
-> You seem to have some kind of hardware/memory problem.
-> 
-> Disassembly of the failing instruction from the oops:
-> 
->      8b 7c 24 28               mov    0x28(%esp),%edi
->      8b 85 9c 00 00 00         mov    0x9c(%ebp),%eax   <=====
-> 
-> Dump of the object code:
-> 
->            8b 7c 24 28             mov    0x28(%esp),%edi
->            8b 87 9c 00 00 00       mov    0x9c(%edi),%eax
-> 
-> Looks like a bit is flipped.
-> 
 
