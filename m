@@ -1,103 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750857AbXAXJxG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750896AbXAXJyH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750857AbXAXJxG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jan 2007 04:53:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750886AbXAXJxG
+	id S1750896AbXAXJyH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jan 2007 04:54:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750907AbXAXJyH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jan 2007 04:53:06 -0500
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:41202 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750857AbXAXJxF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jan 2007 04:53:05 -0500
-Message-ID: <45B72C7A.90803@bull.net>
-Date: Wed, 24 Jan 2007 10:52:58 +0100
-From: Laurent Vivier <Laurent.Vivier@bull.net>
-Organization: Bull S.A.S.
-User-Agent: Thunderbird 1.5.0.2 (X11/20060420)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@osdl.org>
-Cc: =?ISO-8859-1?Q?S=E9bastien_Dugu=E9?= <sebastien.dugue@bull.net>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-aio <linux-aio@kvack.org>, Bharata B Rao <bharata@in.ibm.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
-       Jean Pierre Dion <jean-pierre.dion@bull.net>,
-       Badari Pulavarty <pbadari@us.ibm.com>
-Subject: Re: [PATCH -mm 5/5][AIO] - Add listio syscall support
-References: <20070117104601.36b2ab18@frecb000686>	<20070117105554.346324b4@frecb000686> <20070123215318.beddfdf7.akpm@osdl.org>
-In-Reply-To: <20070123215318.beddfdf7.akpm@osdl.org>
-X-Enigmail-Version: 0.94.0.0
-X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 24/01/2007 10:53:50,
-	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 24/01/2007 10:53:52,
-	Serialize complete at 24/01/2007 10:53:52
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig15900E2BD5ECAD1A61201609"
+	Wed, 24 Jan 2007 04:54:07 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:59197 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750896AbXAXJyG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jan 2007 04:54:06 -0500
+Date: Wed, 24 Jan 2007 10:51:57 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Daniel Walker <dwalker@mvista.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Andrew Morton <akpm@osdl.org>,
+       LKML <linux-kernel@vger.kernel.org>, John Stultz <johnstul@us.ibm.com>,
+       Arjan van de Veen <arjan@infradead.org>,
+       Roman Zippel <zippel@linux-m68k.org>
+Subject: Re: [patch 00/46] High resolution timer / dynamic tick update
+Message-ID: <20070124095157.GA21346@elte.hu>
+References: <20070123211159.178138000@localhost.localdomain> <1169604991.19471.95.camel@imap.mvista.com> <20070124070701.GA17654@elte.hu> <1169631016.19471.175.camel@imap.mvista.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1169631016.19471.175.camel@imap.mvista.com>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -4.3
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-4.3 required=5.9 tests=ALL_TRUSTED,BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-3.3 ALL_TRUSTED            Did not pass through any untrusted hosts
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig15900E2BD5ECAD1A61201609
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
 
-Andrew Morton wrote:
-> On Wed, 17 Jan 2007 10:55:54 +0100
-> S=E9bastien Dugu=E9 <sebastien.dugue@bull.net> wrote:
->=20
->> +struct lio_event *lio_create(struct sigevent __user *user_event,
->> +			int mode)
->> +{
->> +	int ret =3D 0;
->> +	struct lio_event *lio =3D NULL;
->> +
->> +	if (unlikely((mode =3D=3D LIO_NOWAIT) && !user_event))
->> +		return lio;
->> +
->> +	lio =3D kzalloc(sizeof(*lio), GFP_KERNEL);
->> +
->> +	if (!lio)
->> +		return ERR_PTR(-EAGAIN);
->> +
->=20
-> Why EAGAIN and not ENOMEM?
+* Daniel Walker <dwalker@mvista.com> wrote:
 
-According to the POSIX AIO specifications:
+> > i disagree. Thomas' tree has been tested in -rt for some time 
+> > already, and he's the author of this code so as far as i'm concerned 
+> > he calls the shots of what to do and in what order to do. He did the 
+> > overwhelming majority of regression fixes of dynticks/hrt stuff both 
+> > in -mm and in -rt. So why should i not take his queue over yours? 
+> > Last i checked your queue didnt really do anything substantial to 
+> > the code - other than shuffling around wast amounts of code around. 
+> > Even this latest iteration from Thomas that is now in -rt is working 
+> > well on the target platform we are aiming for currently (i686). (and 
+> > it's working on x86_64 as well in -rt)
+> 
+> The majority of the new code was added yesterday in -rt8. [...]
 
-"ERRORS:
-=2E..
-[EAGAIN]
-    The resources necessary to queue all the I/O requests were not availa=
-ble. "
+please read what i wrote: in the first section above i am talking about 
+Thomas' -hrt tree and its track record. Thomas' tree is more than a year 
+old and has an excellent track record. In the last sentence i was 
+talking about this latest iteration of his -hrt tree, which i released 
+as part of -rt yesterday. (but which i have tested internally longer 
+than that, prior release.)
 
-I think memory is "a resource necessary to queue all the I/O requests"...=
+> Since this new release has a fair amount of new code it's not totally 
+> fair to says "it's been in -rt for a while".
 
+Thomas' -hrt tree has been in -rt for over a year.
 
-http://www.opengroup.org/onlinepubs/009695399/functions/lio_listio.html
+> If stability is a question, -rt10 does currently compile for my test 
+> config, due to this new HRT introduction. [...]
 
-Regards,
-Laurent
---=20
-------------- Laurent.Vivier@bull.net  --------------
-       "Any sufficiently advanced technology is
-  indistinguishable from magic." - Arthur C. Clarke
+isnt your test config ARM? If it's x86 or x86_64 then please send me a 
+bugreport about it. rt10 wont compile on non-i686 and non-x86_64 because 
+their clockevents drivers have not been updated yet (but should be 
+trivial). In any case, this is an -rt internal matter that has no 
+relevance on the -mm submission, i'm not sure why you are bringing it 
+up.
 
+the -mm queue Thomas sent is for i686 - other architectures wont use 
+clockevents and they are expected to build and boot just fine.
 
---------------enig15900E2BD5ECAD1A61201609
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+> My queue has always been 90% clean up, some of that is moving code 
+> around. [...]
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.7 (GNU/Linux)
+in the -rt tree i'm tracking the high-res code that has been started by 
+Thomas in mid-2005. In the past 1.5 years, 90%+ of the bugfixes to 
+high-res timers issues in -rt came from Thomas and this has been about 
+the 10th major iteration to his codebase. If you have cleanups to his 
+code then please work with Thomas to get your changes into his tree.
 
-iD8DBQFFtyx+9Kffa9pFVzwRAl5LAKDHXpIVnu7tPsF3QMm4e/GDR7pxcACdEx1I
-MA+iUx0ilN0oL6Ays60uhE4=
-=1zkU
------END PGP SIGNATURE-----
-
---------------enig15900E2BD5ECAD1A61201609--
+	Ingo
