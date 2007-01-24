@@ -1,77 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750786AbXAXXn7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752093AbXAXXp7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750786AbXAXXn7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jan 2007 18:43:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752093AbXAXXn6
+	id S1752093AbXAXXp7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jan 2007 18:45:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752094AbXAXXp7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jan 2007 18:43:58 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:37075 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750786AbXAXXn5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jan 2007 18:43:57 -0500
-Date: Wed, 24 Jan 2007 15:42:59 -0800
-From: Greg KH <gregkh@suse.de>
-To: Vitaly Bordug <vbordug@ru.mvista.com>
-Cc: lkml <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>
-Subject: Re: drivers/base: device_bind_driver() fix
-Message-ID: <20070124234259.GB2160@suse.de>
-References: <20070124171441.6a07d06b@localhost.localdomain>
+	Wed, 24 Jan 2007 18:45:59 -0500
+Received: from web52906.mail.yahoo.com ([206.190.49.16]:24800 "HELO
+	web52906.mail.yahoo.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752093AbXAXXp6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jan 2007 18:45:58 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=SMA39K8wUbQUSPQreb11w7OwH5QPlp4AiT2cIl7UJul4Yk+KIrmYuC6Wu+aFAFQvlK8V/Cu4lB8kafZeU+C4AS9DhtHoEepYCkYOAANl4DatYCveT7sazYtwrBpB/kiFMvbPOQyh8sorp9dv+hHzk18CqzC2scWCyz0BTVgUDtc=;
+X-YMail-OSG: rC4Q5bsVM1lg1tTdu2sxDAR.FwTzPH8PURl3BswCsBJ7BtNtFtoBqbA.I0Vpk3XA691AIfPQ1B.j30Vx7BdzySn3FKNWfSVzv2S7VtEu0LhQsscbh5_6FsjCQwyLi1hUb4aPhoATz44-
+Date: Wed, 24 Jan 2007 23:45:57 +0000 (GMT)
+From: Chris Rankin <rankincj@yahoo.com>
+Subject: Re: 2.6.18-stable release plans?
+To: Mark Rustad <mrustad@gmail.com>, Alan <alan@lxorguk.ukuu.org.uk>
+Cc: Chris Rankin <rankincj@yahoo.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <1C9991E6-04F3-493D-9236-D24E95BB609F@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070124171441.6a07d06b@localhost.localdomain>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <559149.89346.qm@web52906.mail.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 24, 2007 at 05:14:41PM +0300, Vitaly Bordug wrote:
-> 
-> Keeps sysfs from creating link if device is already bound to driver.
-> Similar behavior was before the rework;
+--- Mark Rustad <mrustad@gmail.com> wrote:
+> Exactly. Halting use of a version of the kernel based on a single  
+> incident provides no insight to the source of the problem. It could  
+> be anything...
 
-Which "rework" caused this?
+There is a world of difference between a polite request for more information (although I gave you
+everything I had), and fobbing someone off with a story about cosmic rays.
 
-> now without this patch fixed PHY will complain about not been able to
-> create file in sysfs.
+Cheers,
+Chris
 
-Which device is being bound to a driver before it is registered?  I know
-the i2c layer does it, but I haven't had any people reporting issues
-there.
 
-> Signed-off-by: Vitaly Bordug <vbordug@ru.mvista.com>
-> ---
-> 
->  drivers/base/dd.c |    8 +++++---
->  1 files changed, 5 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/base/dd.c b/drivers/base/dd.c
-> index 510e788..6da3d01 100644
-> --- a/drivers/base/dd.c
-> +++ b/drivers/base/dd.c
-> @@ -26,12 +26,12 @@
->  #define to_drv(node) container_of(node, struct device_driver, kobj.entry)
->  
->  
-> -static void driver_bound(struct device *dev)
-> +static int driver_bound(struct device *dev)
->  {
->  	if (klist_node_attached(&dev->knode_driver)) {
->  		printk(KERN_WARNING "%s: device %s already bound\n",
->  			__FUNCTION__, kobject_name(&dev->kobj));
-> -		return;
-> +		return 0;
->  	}
->  
->  	pr_debug("bound device '%s' to driver '%s'\n",
-> @@ -42,6 +42,7 @@ static void driver_bound(struct device *dev)
->  					     BUS_NOTIFY_BOUND_DRIVER, dev);
->  
->  	klist_add_tail(&dev->knode_driver, &dev->driver->klist_devices);
-> +	return 1;
 
-Please return 0 for "good" and -ERRORSOMETHING for a when a problem
-happens, like the rest of the kernel.
-
-thanks,
-
-greg k-h
+		
+___________________________________________________________ 
+Now you can scan emails quickly with a reading pane. Get the new Yahoo! Mail. http://uk.docs.yahoo.com/nowyoucan.html
