@@ -1,46 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751963AbXAXQ24@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752001AbXAXQfI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751963AbXAXQ24 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jan 2007 11:28:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751968AbXAXQ24
+	id S1752001AbXAXQfI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jan 2007 11:35:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752003AbXAXQfI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jan 2007 11:28:56 -0500
-Received: from omx1-ext.sgi.com ([192.48.179.11]:43026 "EHLO omx1.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751963AbXAXQ2z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jan 2007 11:28:55 -0500
-Date: Wed, 24 Jan 2007 10:30:05 -0600
-From: "Bill O'Donnell" <billodo@sgi.com>
-To: KaiGai Kohei <kaigai@kaigai.gr.jp>, "Serge E. Hallyn" <serue@us.ibm.com>,
-       Chris Friedhoff <chris@friedhoff.org>
-Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       Stephen Smalley <sds@tycho.nsa.gov>
-Subject: Re: [PATCH] Implement file posix capabilities
-Message-ID: <20070124163004.GA15979@sgi.com>
-References: <20061127170740.GA5859@sergelap.austin.ibm.com> <20061129112848.8e48267e.chris@friedhoff.org> <20061129204013.GA7228@sgi.com> <20061130180502.GA20345@sgi.com> <20061130225707.GA23379@sergelap.austin.ibm.com> <4570F373.5090608@kaigai.gr.jp>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4570F373.5090608@kaigai.gr.jp>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 24 Jan 2007 11:35:08 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:38845 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752001AbXAXQfG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jan 2007 11:35:06 -0500
+Date: Wed, 24 Jan 2007 08:30:47 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Andrew Morton <akpm@osdl.org>, Ingo Molnar <mingo@elte.hu>,
+       rmk+lkml@arm.linux.org.uk, linux-kernel@vger.kernel.org
+Subject: Re: [patch] fix emergency reboot: call reboot notifier list if
+ possible
+Message-Id: <20070124083047.37b09f2c.randy.dunlap@oracle.com>
+In-Reply-To: <20070123195712.GB6596@ucw.cz>
+References: <20070117091319.GA30036@elte.hu>
+	<20070117092233.GA30197@flint.arm.linux.org.uk>
+	<20070117093917.GA7538@elte.hu>
+	<20070117020343.8622e44d.akpm@osdl.org>
+	<20070123195712.GB6596@ucw.cz>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.0 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm in the process of testing the (backported) capabilities patch 
-and Kaigai's userspace tools on a SLES10 based x86-64 target (2.6.16).  
-Chris Friedhoff's examples (http://www.friedhoff.org/fscaps.html)
-run cleanly.  That said, can one expect, through the use of these
-enhanced capabilities, to be able to add some finer grain 
-capabilities based on a specific userid?  In Chris' ping example,
-the suid is removed from /bin/ping to restrict it to root, and a 
-capability added to allow any user to execute it.  Can that example
-be extended to make it so only a _particular_ user can execute it?
-I realize with SELinux, one could achieve the goal, but as a stopgap,
-can capabilities be used to get there?
-Thanks,
-Bill
+On Tue, 23 Jan 2007 19:57:12 +0000 Pavel Machek wrote:
 
--- 
-Bill O'Donnell
-SGI
-billodo@sgi.com
+> Hi!
+> 
+> > > > On Wed, Jan 17, 2007 at 10:13:19AM +0100, Ingo Molnar wrote:
+> > > > > we dont call the reboot notifiers during emergency reboot mainly because 
+> > > > > it could be called from atomic context and reboot notifiers are a 
+> > > > > blocking notifier list. But actually the kernel is often perfectly 
+> > > > > reschedulable in this stage, so we could as well process the 
+> > > > > reboot_notifier_list.
+> > > > 
+> > > > My experience has been that when there has been the need to use this
+> > > > facility, the kernel hasn't been reschedulable. [...]
+> > > 
+> > > this decision is totally automatic - so if your situation happens and 
+> > > the kernel isnt reschedulable, then the notifier chain wont be called 
+> > > and nothing changes from your perspective. Hm, perhaps this should be 
+> > > dependent on CONFIG_PREEMPT, to make sure preempt_count() is reliable?
+> > > 
+> > > but from my perspective this patch fixes a real regression.
+> > > 
+> > > updated patch attached below.
+> > > 
+> > 
+> > Making it dependent upon CONFIG_PREEMPT seems a bit sucky.  Perhaps pass in
+> > some "you were called from /proc/sysrq-trigger" notification?
+> 
+> What about adding 'B' with 'reboot with notifications' meaning?
+
+if I am reading 'B' vs. 'b' correctly:
+
+sysrq key codes are currently all lower case only.
+Of course, that could be changed to support upper case.
+That would require sysrq help messages in a different format
+(currently the keycode for the action is Capitalized, e.g.,
+b => reBoot).  And I suspect that it would allow some users to
+enter b vs. B or B vs. b etc. unintentionally.
+In any case, the sysrq_key_table could easily fill up soon,
+so we may be force to support UpperCase codes.
+
+---
+~Randy
