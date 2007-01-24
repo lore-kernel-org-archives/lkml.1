@@ -1,111 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965612AbXAXCJv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965617AbXAXCRt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965612AbXAXCJv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jan 2007 21:09:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965615AbXAXCJv
+	id S965617AbXAXCRt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jan 2007 21:17:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965620AbXAXCRt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jan 2007 21:09:51 -0500
-Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:53015 "EHLO
-	pd3mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965612AbXAXCJu (ORCPT
+	Tue, 23 Jan 2007 21:17:49 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.158]:62316 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965617AbXAXCRs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jan 2007 21:09:50 -0500
-Date: Tue, 23 Jan 2007 20:09:02 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: [PATCH 2.6.20] sata_nv: don't rely on NV_INT_DEV indication with ADMA
-In-reply-to: <20070124003923.GA3093@atjola.homenet>
-To: =?ISO-8859-1?Q?Bj=F6rn_Steinbrink?= <B.Steinbrink@gmx.de>,
-       Robert Hancock <hancockr@shaw.ca>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Larry Walton <lwalton@real.com>, s0348365@sms.ed.ac.uk, pomac@vapor.com,
-       chunkeey@web.de, Jeff Garzik <jeff@garzik.org>
-Message-id: <45B6BFBE.5060709@shaw.ca>
-MIME-version: 1.0
-Content-type: multipart/mixed; boundary=------------020208040709060709040908
-References: <fa.1kBz5luWz8nR0lLqm1VD4hZZYdw@ifi.uio.no>
- <fa.QZxgjxcwtENaZNY24NMTlKBSgIM@ifi.uio.no>
- <fa.fkPTbUGmKc/1pt0eD6TE4d02n+Q@ifi.uio.no>
- <fa.6iQt5OtHZ3x5w8eYbLxwULhLTJ0@ifi.uio.no>
- <fa.1aqo3IxNGJClHcBVZNTagX6bL9o@ifi.uio.no>
- <fa.rI60BGlFbSyfLyumqmgiOfDqCI4@ifi.uio.no> <45B697D3.4070707@shaw.ca>
- <20070124003923.GA3093@atjola.homenet>
-User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
+	Tue, 23 Jan 2007 21:17:48 -0500
+Subject: Re: [patch 00/46] High resolution timer / dynamic tick update
+From: Daniel Walker <dwalker@mvista.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Andrew Morton <akpm@osdl.org>, LKML <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, John Stultz <johnstul@us.ibm.com>,
+       Arjan van de Veen <arjan@infradead.org>,
+       Roman Zippel <zippel@linux-m68k.org>
+In-Reply-To: <20070123211159.178138000@localhost.localdomain>
+References: <20070123211159.178138000@localhost.localdomain>
+Content-Type: text/plain
+Date: Tue, 23 Jan 2007 18:16:31 -0800
+Message-Id: <1169604991.19471.95.camel@imap.mvista.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------020208040709060709040908
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-
-OK, here it is in full signed-off glory. Hopefully we can get this in 
-for 2.6.20.
-
----
-
-Several people reported issues with certain drive commands timing out on 
-sata_nv controllers running in ADMA mode. The commands in question were 
-non-DMA-mapped commands, usually FLUSH CACHE or FLUSH CACHE EXT.
-
- From experimentation it appears that the NV_INT_DEV indication isn't 
-always set when a legitimate command completion interrupt is received on 
-a legacy-mode command, at least not on these controllers in ADMA mode. 
-When a command is pending on the port, force the flag on always in the 
-irq_stat value before calling nv_host_intr so that the drive busy state 
-is always checked by ata_host_intr.
-
-This also fixes some questionable code in nv_host_intr which called 
-ata_check_status when a command was pending and ata_host_intr returned 
-"unhandled". If the device interrupted at just the wrong time this could 
-cause interrupts to be lost.
-
-Signed-off-by: Robert Hancock <hancockr@shaw.ca>
+On Tue, 2007-01-23 at 22:00 +0000, Thomas Gleixner wrote:
+>  - Provide a generic way to verify clocksources. TSC needs
+>    verification due to broken hardware and BIOS implementations. The
+>    previous attempt to allow TSC usage for high resolution and/or
+>    dynamic ticks only in combination with the PM-Timer made hardwired
+>    assumptions, which are ugly to maintain. The new verification code
+>    solves this by chosing the best available clocksource for
+>    verification and handles the usability check for highres / dynamic
+>    ticks. This makes TSC code agnostic of other hardware available in
+>    the system.
 
 
---------------020208040709060709040908
-Content-Type: text/plain;
- name="sata_nv-force-int-dev-in-interrupt.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="sata_nv-force-int-dev-in-interrupt.patch"
+There appears to be some fairly clear duplication between my clocksource
+tree and this release of high resolution timers. Not to mention that we
+both submitted our tree's to Andrew within days . 
 
---- linux-2.6.20-rc5/drivers/ata/sata_nv.c	2007-01-19 19:18:53.000000000 -0600
-+++ linux-2.6.20-rc5debug/drivers/ata/sata_nv.c	2007-01-22 22:33:43.000000000 -0600
-@@ -700,7 +700,6 @@ static void nv_adma_check_cpb(struct ata
- static int nv_host_intr(struct ata_port *ap, u8 irq_stat)
- {
- 	struct ata_queued_cmd *qc = ata_qc_from_tag(ap, ap->active_tag);
--	int handled;
- 
- 	/* freeze if hotplugged */
- 	if (unlikely(irq_stat & (NV_INT_ADDED | NV_INT_REMOVED))) {
-@@ -719,13 +718,7 @@ static int nv_host_intr(struct ata_port 
- 	}
- 
- 	/* handle interrupt */
--	handled = ata_host_intr(ap, qc);
--	if (unlikely(!handled)) {
--		/* spurious, clear it */
--		ata_check_status(ap);
--	}
--
--	return 1;
-+	return ata_host_intr(ap, qc);
- }
- 
- static irqreturn_t nv_adma_interrupt(int irq, void *dev_instance)
-@@ -752,6 +745,11 @@ static irqreturn_t nv_adma_interrupt(int
- 			if (pp->flags & NV_ADMA_PORT_REGISTER_MODE) {
- 				u8 irq_stat = readb(host->mmio_base + NV_INT_STATUS_CK804)
- 					>> (NV_INT_PORT_SHIFT * i);
-+				if(ata_tag_valid(ap->active_tag))
-+					/** NV_INT_DEV indication seems unreliable at times
-+					    at least in ADMA mode. Force it on always when a
-+					    command is active, to prevent losing interrupts. */
-+					irq_stat |= NV_INT_DEV;
- 				handled += nv_host_intr(ap, irq_stat);
- 				continue;
- 			}
+To lessen Andrews burden it would be wise to integrate the two trees
+prior to anything going into -mm .. It makes sense to eliminate this
+kind of duplication since it just results in wasted effort. With the
+benefit that the merge would likely result in a stronger patch set over
+all.
 
---------------020208040709060709040908--
+Daniel
 
