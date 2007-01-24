@@ -1,44 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965424AbXAXIHo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965446AbXAXIVG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965424AbXAXIHo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jan 2007 03:07:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965391AbXAXIHo
+	id S965446AbXAXIVG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jan 2007 03:21:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965224AbXAXIVG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jan 2007 03:07:44 -0500
-Received: from topsns2.toshiba-tops.co.jp ([202.230.225.126]:37413 "EHLO
-	topsns2.toshiba-tops.co.jp" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S965224AbXAXIHn (ORCPT
+	Wed, 24 Jan 2007 03:21:06 -0500
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:59966 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S965446AbXAXIVF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jan 2007 03:07:43 -0500
-Date: Wed, 24 Jan 2007 17:07:36 +0900 (JST)
-Message-Id: <20070124.170736.63741899.nemoto@toshiba-tops.co.jp>
-To: akpm@osdl.org
-Cc: sshtylyov@ru.mvista.com, Eric.Piel@lifl.fr, ralf@linux-mips.org,
-       linux-kernel@vger.kernel.org, linux-mips@linux-mips.org
-Subject: Re: [PATCH] Make CARDBUS_MEM_SIZE and CARDBUS_IO_SIZE customizable
-From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-In-Reply-To: <20070123235029.d49eda3d.akpm@osdl.org>
-References: <20070123.103027.126140726.nemoto@toshiba-tops.co.jp>
-	<20070123234507.08f63b5e.akpm@osdl.org>
-	<20070123235029.d49eda3d.akpm@osdl.org>
-X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
-X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
-X-Mailer: Mew version 3.3 on Emacs 21.3 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 24 Jan 2007 03:21:05 -0500
+Date: Wed, 24 Jan 2007 09:21:02 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>
+Subject: Re: identifying CONFIG variable typoes in the source tree
+In-Reply-To: <Pine.LNX.4.64.0701231559090.3014@CPE00045a9c397f-CM001225dbafb6>
+Message-ID: <Pine.LNX.4.62.0701240917530.30467@pademelon.sonytel.be>
+References: <Pine.LNX.4.64.0701231559090.3014@CPE00045a9c397f-CM001225dbafb6>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 23 Jan 2007 23:50:29 -0800, Andrew Morton <akpm@osdl.org> wrote:
-> > setup-bus.o is linked only on x86
+On Tue, 23 Jan 2007, Robert P. J. Day wrote:
+>   let's check these:
 > 
-> oops, that's untrue.  But it will break ppc32, I think.
+> $ grep -r 53C700_BE_BUS .
+> ./drivers/scsi/53c700.h:#ifdef CONFIG_53C700_BE_BUS
 
-Oh sorry for confusion, I had updated wrong version of the patch when
-applying comments from Eric and Sergei.
+This is the core support for big endian 53c700 SCSI busses. It's needed for
+various m68k machines, patch to be submitted when the m68k support is ready for
+submission.
 
-Final shape in mm tree looks fine.  Thank you.
+Gr{oetje,eeting}s,
 
----
-Atsushi Nemoto
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
