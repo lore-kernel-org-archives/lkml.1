@@ -1,68 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751598AbXAXOkN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751641AbXAXOlQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751598AbXAXOkN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jan 2007 09:40:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751604AbXAXOkN
+	id S1751641AbXAXOlQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jan 2007 09:41:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751649AbXAXOlQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jan 2007 09:40:13 -0500
-Received: from amsfep19-int.chello.nl ([213.46.243.16]:59225 "EHLO
-	amsfep11-int.chello.nl" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751598AbXAXOkL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jan 2007 09:40:11 -0500
-Subject: Re: [PATCH 1/2]: Fix BUG in cancel_dirty_pages on XFS
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: David Chinner <dgc@sgi.com>, linux-kernel@vger.kernel.org, xfs@oss.sgi.com,
-       akpm@osdl.org
-In-Reply-To: <45B7627B.8050202@yahoo.com.au>
-References: <20070123223702.GF33919298@melbourne.sgi.com>
-	 <1169640835.6189.14.camel@twins>  <45B7627B.8050202@yahoo.com.au>
-Content-Type: text/plain
-Date: Wed, 24 Jan 2007 15:40:04 +0100
-Message-Id: <1169649604.6189.27.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 24 Jan 2007 09:41:16 -0500
+Received: from mail.gmx.net ([213.165.64.20]:40346 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751636AbXAXOlP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jan 2007 09:41:15 -0500
+X-Authenticated: #5039886
+Date: Wed, 24 Jan 2007 15:41:11 +0100
+From: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>
+To: Ian Kumlien <pomac@vapor.com>
+Cc: Robert Hancock <hancockr@shaw.ca>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Larry Walton <lwalton@real.com>, s0348365@sms.ed.ac.uk, chunkeey@web.de,
+       Jeff Garzik <jeff@garzik.org>
+Subject: Re: SATA exceptions with 2.6.20-rc5
+Message-ID: <20070124144111.GC2117@atjola.homenet>
+Mail-Followup-To: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>,
+	Ian Kumlien <pomac@vapor.com>, Robert Hancock <hancockr@shaw.ca>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	Larry Walton <lwalton@real.com>, s0348365@sms.ed.ac.uk,
+	chunkeey@web.de, Jeff Garzik <jeff@garzik.org>
+References: <fa.1kBz5luWz8nR0lLqm1VD4hZZYdw@ifi.uio.no> <fa.QZxgjxcwtENaZNY24NMTlKBSgIM@ifi.uio.no> <fa.fkPTbUGmKc/1pt0eD6TE4d02n+Q@ifi.uio.no> <fa.6iQt5OtHZ3x5w8eYbLxwULhLTJ0@ifi.uio.no> <fa.1aqo3IxNGJClHcBVZNTagX6bL9o@ifi.uio.no> <fa.rI60BGlFbSyfLyumqmgiOfDqCI4@ifi.uio.no> <45B697D3.4070707@shaw.ca> <1169627043.11590.1.camel@pi.pomac.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1169627043.11590.1.camel@pi.pomac.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-01-25 at 00:43 +1100, Nick Piggin wrote:
-
-> > Have you seen the new launder_page() a_op? called from
-> > invalidate_inode_pages2_range()
-> 
-> It would have been nice to make that one into a more potentially
-> useful generic callback.
-
-That can still be done when the need arises, right?
-
-> But why was it introduced, exactly? I can't tell from the code or
-> the discussion why NFS couldn't start the IO, and signal the caller
-> to wait_on_page_writeback and retry? That seemed to me like the
-> convetional fix.
-
-to quote a bit:
-
-On Tue, 19 Dec 2006 18:19:38 -0500
-Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
-
->     NFS: Fix race in nfs_release_page()
->     
->     invalidate_inode_pages2() may set the dirty bit on a page owing to the call
->     to unmap_mapping_range() after the page was locked. In order to fix this,
->     NFS has hooked the releasepage() method. This, however leads to deadlocks
->     in other parts of the VM.
-
-and:
-
-> > Now, arguably the VM shouldn't be calling try_to_release_page() with
-> > __GFP_FS when it's holding a lock on a page.
+On 2007.01.24 09:24:00 +0100, Ian Kumlien wrote:
+> On tis, 2007-01-23 at 17:18 -0600, Robert Hancock wrote:
+> > Larry Walton wrote:
+> > > The last patch (sata_nv-force-int-dev-in-interrupt.patch) 
+> > > seems to have fix the problem.  Much appreciated, 
+> > > thank you. I'd consider it a must have in 2.6.20.
 > > 
-> > But otoh, NFS should never be running lock_page() within nfs_release_page()
-> > against the page which was passed into nfs_release_page().  It'll deadlock
-> > for sure.
+> > Can any of the rest of you that have been seeing this problem also 
+> > confirm that this fixes it?
 > 
-> The reason why it is happening is that the last dirty page from that
-> inode gets cleaned, resulting in a call to dput().
+> I applied it yesterday and today my dmesg contains three:
+> BUG: at mm/truncate.c:60 cancel_dirty_page()
 
+David Chinner sent two patches regarding that bug yesterday.
+http://lkml.org/lkml/2007/1/23/190
+http://lkml.org/lkml/2007/1/23/192
+
+Björn
