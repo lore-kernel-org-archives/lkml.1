@@ -1,50 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751925AbXAXPGZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750696AbXAXPMw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751925AbXAXPGZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jan 2007 10:06:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751890AbXAXPGZ
+	id S1750696AbXAXPMw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jan 2007 10:12:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751890AbXAXPMw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jan 2007 10:06:25 -0500
-Received: from web52902.mail.yahoo.com ([206.190.49.12]:42917 "HELO
-	web52902.mail.yahoo.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751925AbXAXPGY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jan 2007 10:06:24 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=m48hJ1sPj6IDw17crw0Bn+HCfPcZ3I7Y/TmBxRcbb4isYmWX3n0HxaizFMtfG++KgAjiFDqBjPRVr5HAiAnKBQBfXpGSqOwKa0ubnVEQMAUopL9RRjIv8tIF9q5iWNWmn/jAmDkZP4p1pY3LJ/NJ7tOHcxSo7vylr3OJX3M+O4A=;
-X-YMail-OSG: KJve14IVM1n17Egj.i6KKSduYbbbI9eRmaUkHm8.R8A1jbyYbyZabZ.4PvO21gqNcuewo_xUnBzzEoBKryhhrtofJqk8lk9D5.npyGEM83l2fwSHhgTAlQL7QEeeKpXN6CphZ.BIFyOoanI-
-Date: Wed, 24 Jan 2007 15:06:23 +0000 (GMT)
-From: Chris Rankin <rankincj@yahoo.com>
-Subject: Re: 2.6.18-stable release plans?
-To: linux-kernel@vger.kernel.org
+	Wed, 24 Jan 2007 10:12:52 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:58860 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750696AbXAXPMv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jan 2007 10:12:51 -0500
+Message-ID: <45B77780.5000504@redhat.com>
+Date: Wed, 24 Jan 2007 10:13:04 -0500
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-Message-ID: <249539.3227.qm@web52902.mail.yahoo.com>
+To: Stefan Priebe - FH <studium@profihost.com>
+CC: linux-kernel@vger.kernel.org, stefan@priebe.ws,
+       David Chinner <dgc@sgi.com>
+Subject: Re: XFS or Kernel Problem / Bug
+References: <20060801141545.B2326184@wobbly.melbourne.sgi.com> <44CED76B.20507@profihost.com> <20060801142755.C2326184@wobbly.melbourne.sgi.com> <44CED8F4.9080208@profihost.com> <20060801143212.D2326184@wobbly.melbourne.sgi.com> <44CEDA1D.5060607@profihost.com> <20060801143803.E2326184@wobbly.melbourne.sgi.com> <44CF36FB.6070606@profihost.com> <20060802090915.C2344877@wobbly.melbourne.sgi.com> <44D07AB7.3020409@profihost.com> <20060802201805.A2360409@wobbly.melbourne.sgi.com> <45B35CD7.4080801@profihost.com> <45B666BE.8000802@redhat.com> <45B70D69.20500@profihost.com> <45B773C1.7090805@redhat.com> <45B77547.4060302@profihost.com>
+In-Reply-To: <45B77547.4060302@profihost.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> That's surely no reason to dump 2.6.19.x, you'll find the occasional
-> such report on every(?) release since page mapcount went into 2.6.7.
+Stefan Priebe - FH wrote:
+> It could be, that the options are now different - cause i my first try
+> was to change the kernel options - if that did not help i switched
+> back to 2.6.16.37.
+>
+> Any idea what i can do?
+>
+> Chuck Ebbert schrieb:
+>> That doesn't match your oops at all.  Did you use a different compiler
+>> and/or
+>> different kernel build options?
+>>
+>>
+>
+If you don't know what changed you can try different options until the
+filemap.s
+is the same.  You should see
 
-This was the only time I've seen it, before or since.
-
-> Oftentimes it's bad RAM (try memtest86)
-
-There is nothing wrong with my RAM. I tested it quite extensively when I upgraded to 2 GB.
-
-> sometimes it's a bad driver (probably the case for the tainted P report appended
-> to your untainted one), sometimes it's unidentified memory corruption.
-
-But MY kernel is clearly untainted. So what other explanation is there apart from a kernel bug?
-
-Cheers,
-Chris
+        movl   156(%ebp),%eax
+        testb   16, 48(%eax)
 
 
+in generic_file_buffered_write.  And you need to regenerate filemap.s
+manually
+each time.
 
-		
-___________________________________________________________ 
-All New Yahoo! Mail – Tired of unwanted email come-ons? Let our SpamGuard protect you. http://uk.docs.yahoo.com/nowyoucan.html
+
+(Did you test the kernel that you posted these pieces from? If you can
+get it to oops
+the same way, just post that instead.)
+
