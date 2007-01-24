@@ -1,31 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751441AbXAXPqc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751391AbXAXPrX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751441AbXAXPqc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jan 2007 10:46:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751437AbXAXPqa
+	id S1751391AbXAXPrX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jan 2007 10:47:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751437AbXAXPrW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jan 2007 10:46:30 -0500
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:2025 "HELO
+	Wed, 24 Jan 2007 10:47:22 -0500
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:2044 "HELO
 	mailout.stusta.mhn.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751265AbXAXPq3 (ORCPT
+	with SMTP id S1751391AbXAXPrV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jan 2007 10:46:29 -0500
-Date: Wed, 24 Jan 2007 16:46:34 +0100
+	Wed, 24 Jan 2007 10:47:21 -0500
+Date: Wed, 24 Jan 2007 16:47:25 +0100
 From: Adrian Bunk <bunk@stusta.de>
 To: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Justin Piszcz <jpiszcz@lucidpixels.com>, mingo@redhat.com,
-       neilb@cse.unsw.edu.au, linux-raid@vger.kernel.org,
-       Duncan <1i5t5.duncan@cox.net>, Randy Dunlap <rdunlap@xenotime.net>,
-       sct@redhat.com, adilger@clusterfs.com, linux-ext4@vger.kernel.org,
-       Berthold Cogel <cogel@rrz.uni-koeln.de>,
-       =?utf-8?B?RnJhbsOnb2lz?= Valenduc <francois.valenduc@skynet.be>,
-       Alexey Starikovskiy <alexey.y.starikovskiy@linux.intel.com>,
-       greg@kroah.com, linux-usb-devel@lists.sourceforge.net,
-       Prakash Punnoor <prakash@punnoor.de>, Oliver Neukum <oliver@neukum.org>,
-       Alan Stern <stern@rowland.harvard.edu>
-Subject: 2.6.20-rc5: known unfixed regressions (v3) (part 1)
-Message-ID: <20070124154634.GJ17836@stusta.de>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, gd@spherenet.de,
+       petero2@telia.com, jgarzik@pobox.com, linux-ide@vger.kernel.org,
+       Uwe Bugla <uwe.bugla@gmx.de>, alan@lxorguk.ukuu.org.uk,
+       Cijoml Cijomlovic Cijomlov <cijoml@volny.cz>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, ttb@tentacle.dhs.org,
+       rml@novell.com, Livio Soares <livio@eecg.toronto.edu>,
+       Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org,
+       Malte =?utf-8?B?U2NocsO2ZGVy?= <MalteSch@gmx.de>,
+       "Vladimir V. Saveliev" <vs@namesys.com>, reiserfs-dev@namesys.com,
+       Sami Farin <7atbggg02@sneakemail.com>, David Chinner <dgc@sgi.com>,
+       xfs-masters@oss.sgi.com,
+       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+       takada <takada@mbf.nifty.com>, Jordan Crouse <jordan.crouse@amd.com>,
+       Andrew Clayton <andrew@digital-domain.net>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>
+Subject: 2.6.20-rc5: known unfixed regressions (v3) (part 2)
+Message-ID: <20070124154725.GK17836@stusta.de>
 References: <Pine.LNX.4.64.0701121424520.11200@woody.osdl.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
@@ -47,38 +51,68 @@ involved with one or more of these issues.
 Due to the huge amount of recipients, please trim the Cc when answering.
 
 
-Subject    : raid1: copying a big file triggers OOM killer
-References : http://lkml.org/lkml/2007/1/20/69
-Submitter  : Justin Piszcz <jpiszcz@lucidpixels.com>
+Subject    : pktcdvd fails with pata_amd
+References : http://bugzilla.kernel.org/show_bug.cgi?id=7810
+Submitter  : gd@spherenet.de
 Status     : unknown
 
 
-Subject    : RAID-6 chunk_aligned_read problem
-References : http://bugzilla.kernel.org/show_bug.cgi?id=7835
-Submitter  : Duncan <1i5t5.duncan@cox.net>
+Subject    : problems with CD burning
+References : http://www.spinics.net/lists/linux-ide/msg06545.html
+Submitter  : Uwe Bugla <uwe.bugla@gmx.de>
 Status     : unknown
 
 
-Subject    : ext3 with data=journal hangs when running fsx-linux since -rc2
-References : http://bugzilla.kernel.org/show_bug.cgi?id=7844
-Submitter  : Randy Dunlap <rdunlap@xenotime.net>
-Status     : unknown
-
-
-Subject    : reboot instead of powerdown  (CONFIG_USB_SUSPEND)
-References : http://lkml.org/lkml/2006/12/25/40
-             http://bugzilla.kernel.org/show_bug.cgi?id=7828
-Submitter  : Berthold Cogel <cogel@rrz.uni-koeln.de>
-             François Valenduc <francois.valenduc@skynet.be>
-Handled-By : Alexey Starikovskiy <alexey.y.starikovskiy@linux.intel.com>
+Subject    : BUG: at fs/inotify.c:172 set_dentry_child_flags()
+References : http://bugzilla.kernel.org/show_bug.cgi?id=7785
+Submitter  : Cijoml Cijomlovic Cijomlov <cijoml@volny.cz>
+Handled-By : Nick Piggin <nickpiggin@yahoo.com.au>
 Status     : problem is being debugged
 
 
-Subject    : usb somehow broken  (CONFIG_USB_SUSPEND)
-References : http://lkml.org/lkml/2007/1/11/146
-Submitter  : Prakash Punnoor <prakash@punnoor.de>
-Handled-By : Oliver Neukum <oliver@neukum.org>
-             Alan Stern <stern@rowland.harvard.edu>
-Status     : problem is being debugged
+Subject    : powerpc64: performance monitor exception
+References : http://ozlabs.org/pipermail/linuxppc-dev/2007-January/030045.html
+Submitter  : Livio Soares <livio@eecg.toronto.edu>
+Caused-By  : Paul Mackerras <paulus@samba.org>
+             commit d04c56f73c30a5e593202ecfcf25ed43d42363a2
+Status     : problem is being discussed
+
+
+Subject    : BUG: at mm/truncate.c:60 cancel_dirty_page()  (reiserfs)
+References : http://lkml.org/lkml/2007/1/7/117
+             http://lkml.org/lkml/2007/1/10/202
+Submitter  : Malte Schröder <MalteSch@gmx.de>
+Handled-By : Vladimir V. Saveliev <vs@namesys.com>
+             Nick Piggin <nickpiggin@yahoo.com.au>
+Patch      : http://lkml.org/lkml/2007/1/10/202
+Status     : problem is being discussed
+
+
+Subject    : BUG: at mm/truncate.c:60 cancel_dirty_page()  (XFS)
+References : http://lkml.org/lkml/2007/1/5/308
+             http://lkml.org/lkml/2007/1/23/190
+             http://lkml.org/lkml/2007/1/23/192
+Submitter  : Sami Farin <7atbggg02@sneakemail.com>
+Handled-By : David Chinner <dgc@sgi.com>
+Status     : patches are being discussed
+
+
+Subject    : fix geode_configure()
+References : http://lkml.org/lkml/2007/1/9/216
+Submitter  : Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+Caused-By  : takada <takada@mbf.nifty.com>
+             commit e4f0ae0ea63caceff37a13f281a72652b7ea71ba
+Handled-By : takada <takada@mbf.nifty.com>
+             Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+Status     : patches are being discussed
+
+
+Subject    : NFS triggers WARN_ON() in invalidate_inode_pages2_range()
+References : http://bugzilla.kernel.org/show_bug.cgi?id=7826
+Submitter  : Andrew Clayton <andrew@digital-domain.net>
+Caused-By  : Andrew Morton <akpm@osdl.org>
+             commit 8258d4a574d3a8c01f0ef68aa26b969398a0e140
+Handled-By : Trond Myklebust <trond.myklebust@fys.uio.no>
+Status     : Trond: the WARN_ON() needs to be thrown out
 
 
