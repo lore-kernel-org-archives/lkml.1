@@ -1,47 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751457AbXAXPxW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751553AbXAXPyl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751457AbXAXPxW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jan 2007 10:53:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751890AbXAXPxW
+	id S1751553AbXAXPyl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jan 2007 10:54:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751934AbXAXPyl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jan 2007 10:53:22 -0500
-Received: from web52908.mail.yahoo.com ([206.190.49.18]:37114 "HELO
-	web52908.mail.yahoo.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751553AbXAXPxV (ORCPT
+	Wed, 24 Jan 2007 10:54:41 -0500
+Received: from h155.mvista.com ([63.81.120.158]:20665 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1751553AbXAXPyk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jan 2007 10:53:21 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=jtPEbhxkh0Cep2xZfPHTu5neCw3ZifuRCWzbAKyA6XoNOd4Rh6tPg8PR5f8ZIA0pB7c2ZPvpdFgP3ggehoFAfaTTbEJM5OfzcoeddMt1LvYkAYgAsn2nX34SzCaminJXdVyUVOR6eEijJau7Lhr/8MDj7sHo6Z+EY5SiiW1ySTg=;
-X-YMail-OSG: kSVQKVEVM1n.NTXTKjwFdSL.W2kGywqMkTXdzATl6f8VGSsdliXGDCIjKiXHAG5URwn1vRsDggf49UkwqMM24GFhkWdALzNJKjb229GMl8j2bOevIZhuDKOa2aWKQB_hGBBZd6Ux2f2tFp2OCZ7RPZsoDVhuAJZx2P5o.rmi70fXQjlarkKz46Z5oT.W
-Date: Wed, 24 Jan 2007 15:53:19 +0000 (GMT)
-From: Chris Rankin <rankincj@yahoo.com>
-Subject: Re: 2.6.18-stable release plans?
-To: linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <964414.64865.qm@web52908.mail.yahoo.com>
+	Wed, 24 Jan 2007 10:54:40 -0500
+Subject: Re: [patch 00/46] High resolution timer / dynamic tick update
+From: Daniel Walker <dwalker@mvista.com>
+To: tglx@linutronix.de
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@osdl.org>,
+       LKML <linux-kernel@vger.kernel.org>, John Stultz <johnstul@us.ibm.com>,
+       Arjan van de Veen <arjan@infradead.org>,
+       Roman Zippel <zippel@linux-m68k.org>
+In-Reply-To: <1169637237.21181.164.camel@localhost.localdomain>
+References: <20070123211159.178138000@localhost.localdomain>
+	 <1169604991.19471.95.camel@imap.mvista.com>
+	 <20070124070701.GA17654@elte.hu>
+	 <1169631016.19471.175.camel@imap.mvista.com>
+	 <20070124095157.GA21346@elte.hu>
+	 <1169634220.19471.197.camel@imap.mvista.com>
+	 <1169637237.21181.164.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Wed, 24 Jan 2007 07:53:21 -0800
+Message-Id: <1169654001.19471.231.camel@imap.mvista.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > But MY kernel is clearly untainted.
-> > So what other explanation is there apart from a kernel bug?
+On Wed, 2007-01-24 at 12:13 +0100, Thomas Gleixner wrote:
+> On Wed, 2007-01-24 at 02:23 -0800, Daniel Walker wrote:
+> > > the 10th major iteration to his codebase. If you have cleanups to his 
+> > > code then please work with Thomas to get your changes into his tree.
+> > 
+> > My code is for clocksouces/timekeeping which has been unrelated to HRT
+> > up until recently. In my original email I suggested that the two tree's
+> > be merged ,or placed on top of each other, which I still think is a good
+> > idea.
+> 
+> This would require, that your patches are solving a real problem. The
+> last time I looked at them was before they were dropped from -mm. I
+> disagreed with your intent of sched clock changes back then and I still
+> do.
 
-> If it's me you're asking: I don't know (overheating, cosmic rays, ...)
+My patch set was considered for -mm , but was never included. Andrew
+only stop considering my set because I obsoleted them.
 
-I suppose what I'm *really* asking is what the basis is for assuming that this *isn't* a kernel
-bug and can therefore be safely ignored, seeing as the oops is real, the hardware is fine and the
-kernel is untainted? That seems to cover the bases from where I'm sitting.
+My patches are almost all cleaning up the interface. Adding a generic
+sched_clock is just a by product of the clean up. Your changes just add
+more mess/confusion that would need to be handled later.
 
-Cheers,
-Chris
+> OTOH, I needed a clean solution for the TSC verification to get rid of
+> the hardwired hackery in tsc.c. The flag change is just used for this
+> and can be extended for other purposes.
 
-P.S. No micro-heatwaves have occurred here, either. Do we all need to install muon detectors in
-our homes before reporting bugs now, so that we can exclude cosmic ray events too?
+I don't see a justification for the level of changes your making. Your
+making substantial changes to a small clocksource interface so you can
+check the output of one clock against another clock. That process is
+designed specifically for the TSC and only used by the TSC .. It's not
+likely that process would be needed on any other architectures.
 
+So your really just adding a bunch of generic overhead to the detriment
+of the interface.
 
-		
-___________________________________________________________ 
-To help you stay safe and secure online, we've developed the all new Yahoo! Security Centre. http://uk.security.yahoo.com
+Daniel
+
