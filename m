@@ -1,62 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965634AbXAXDsR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965644AbXAXDvl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965634AbXAXDsR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jan 2007 22:48:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965638AbXAXDsR
+	id S965644AbXAXDvl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jan 2007 22:51:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965646AbXAXDvl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jan 2007 22:48:17 -0500
-Received: from py-out-1112.google.com ([64.233.166.177]:16793 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965634AbXAXDsQ (ORCPT
+	Tue, 23 Jan 2007 22:51:41 -0500
+Received: from wx-out-0506.google.com ([66.249.82.227]:61915 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965644AbXAXDvk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jan 2007 22:48:16 -0500
+	Tue, 23 Jan 2007 22:51:40 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition:x-google-sender-auth;
-        b=RKkj+leD4rbGNNPygkorhBD/2VOa3208/ODxyDjhIp0YlPWcqGFF/VgIAQSVWj0FBHA7O1fzpBfwoHWii1+vpuY4kivwh4Oaa6HzMXrvhRCNZPjL6SDfC703gbga5G5c75S2xvvj/RmYShWtxTTNz81ofR/W4HdpNmQ5F80aavw=
-Message-ID: <59ad55d30701231948u5f1e02d8x3d06553cb373e5be@mail.gmail.com>
-Date: Tue, 23 Jan 2007 22:48:15 -0500
-From: "=?UTF-8?Q?Kristian_H=C3=B8gsberg?=" <krh@bitplanet.net>
-To: linux-kernel@vger.kernel.org, linux1394-devel@lists.sourceforge.net,
-       "Stefan Richter" <stefanr@s5r6.in-berlin.de>
-Subject: In-tree version of new FireWire drivers available
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=bZP7MpNoJLwILoVJa6HIdnOCp+uV2xnj2qaUfhPj5NDdpYQrM5xGSkmK6I+cADx/7SYJ/OH5qfkkVc9MORx7HL8ECWrf3ehBSJKOLWhKRwmwPsnWYIrsk1AXSK/JBh/MTJdLC4OhqT4mB6hxqazD5N2LzZZTZAO3DIJefUKto94=
+Message-ID: <6d6a94c50701231951o66487813vcd078fc25e25ffa0@mail.gmail.com>
+Date: Wed, 24 Jan 2007 11:51:39 +0800
+From: "Aubrey Li" <aubreylee@gmail.com>
+To: "Christoph Lameter" <clameter@sgi.com>
+Subject: Re: [RFC] Limit the size of the pagecache
+Cc: "Nick Piggin" <nickpiggin@yahoo.com.au>,
+       "Vaidyanathan Srinivasan" <svaidy@linux.vnet.ibm.com>,
+       "Robin Getz" <rgetz@blackfin.uclinux.org>,
+       "Hennerich, Michael" <Michael.Hennerich@analog.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, dgc@sgi.com
+In-Reply-To: <Pine.LNX.4.64.0701231908420.6123@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-X-Google-Sender-Auth: c07864a69ae7c00d
+References: <Pine.LNX.4.64.0701231645260.5239@schroedinger.engr.sgi.com>
+	 <45B6CBD9.80600@yahoo.com.au>
+	 <Pine.LNX.4.64.0701231908420.6123@schroedinger.engr.sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On 1/24/07, Christoph Lameter <clameter@sgi.com> wrote:
+> On Wed, 24 Jan 2007, Nick Piggin wrote:
+>
+> > > 1. Insure that anonymous pages that may contain performance
+> > >    critical data is never subject to swap.
+> > >
+> > > 2. Insure rapid turnaround of pages in the cache.
+> >
+> > So if these two aren't working properly at 100%, then I want to know the
+> > reason why. Or at least see what the workload and the numbers look like.
+>
+> The reason for the anonymous page may be because data is rarely touched
+> but for some reason the pages must stay in memory. Rapid turnaround is
+> just one of the reason that I vaguely recall but I never really
+> understood what the purpose was.
+>
+> > > 3. Reserve memory for other uses? (Aubrey?)
+> >
+> > Maybe. This is still a bad hack, and I don't like to legitimise such use
+> > though. I hope Aubrey isn't relying on this alone for his device to work
+> > because his customers might end up hitting fragmentation problems sooner
+> > or later.
+>
+> I surely wish that Aubrey would give us some more clarity on
+> how this should work. Maybe the others who want this feature could also
+> speak up? I am not that clear on its purpose.
+>
+Sorry for the delay. Somehow this thread was put into the spam folder
+of my gmail box. :(
+The patch I posted several days ago works properly on my side. I'm
+working on blackfin-uclinux platform. So I'm not sure it works 100% on
+the other arch platform. From O_DIRECT threads, I know different
+people suffer from VFS pagecache issue for different reason. So I
+really hope the patch can be improved.
 
-I've moved the new FireWire stack to an in-tree git repository and
-moved over the missing patches from my out-of-tree version.  The tree
-is available over here:
+On my side, When VFS pagecache eat up all of the available memory,
+applications who want to allocate the largeish block(order =4 ?) will
+fail. So the logic is as follows:
 
-  git://people.freedesktop.org/~krh/linux-2.6
+if request pagecache
+      watermark =  min + reserved_pagecache.
+else
+      watermark =  min.
 
-with gitweb avialable here:
+Here, assume min=123 pages, reserved_pagecache = 200 pages. That means
+when VFS pagecache eat up its all of available memory, there are still
+200 pages available for the allocation of the application. Does that
+make sense?
 
-  http://gitweb.freedesktop.org/?p=users/krh/linux-2.6.git;a=summary
+> I hope Aubrey isn't relying on this alone for his device to work
+> because his customers might end up hitting fragmentation problems sooner
+> or later.
 
-There's only one branch there which is branched of off Stefan Richters
-master from the linux1394 repo, and has the most recent work from my
-out-of -tree repo.  Hosting this on freedesktop.org should be fine,
-though kernel.org may be more appropriate :)
+That's true. I wrote a replacement of buddy system, it's here:
+http://lkml.org/lkml/2006/12/30/36.
 
-Changes since the merge into the linux1394 tree include:
+That can improve the fragmentation problems on our platform.
 
- - gap count optimization
- - full bus management
- - loopback for async requests to the local node
- - a bug fix for a problem exposed by VIA 6306 controllers
- - a typo fix from the bitfield -> mask+shift conversion.
+Christoph - I can't find your original patch, Can you send me again?
+it would be great if you merged all of the  enhancement.
 
-Plus I've merged Stefans recent fixes and resolved the few conflicts
-from that.  Stefan, I'm still not sure what the work flow should be
-here, do you want to just pull these changes or should I send the 13
-patches to linux1394-devel?
-
-cheers,
-Kristian
+Thanks,
+-Aubrey
