@@ -1,69 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751934AbXAXQ2u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751963AbXAXQ24@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751934AbXAXQ2u (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jan 2007 11:28:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751963AbXAXQ2u
+	id S1751963AbXAXQ24 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jan 2007 11:28:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751968AbXAXQ24
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jan 2007 11:28:50 -0500
-Received: from wx-out-0506.google.com ([66.249.82.228]:53438 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751934AbXAXQ2t (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jan 2007 11:28:49 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:in-reply-to:references:mime-version:content-type:message-id:cc:content-transfer-encoding:subject:date:to:x-mailer:from;
-        b=E2XAuW+2rwnClTtYZzjxFLDUfR8YqoyFUnO0ZUT/gwGnSx1O7xsp5mrF3gJefkbX7Tpl9X5NabF/jvRss8CL76u/MHdzI6JCAAEGZMCxHlBCZj5FDE2uULZ/eRVBp+CRuUVfWQg8mJeaEMtfL4WEu/GOdddDx+jUZakMOaPqQcA=
-In-Reply-To: <964414.64865.qm@web52908.mail.yahoo.com>
-References: <964414.64865.qm@web52908.mail.yahoo.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <4238B011-A417-41DE-8998-01BAAA484486@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 7bit
-Subject: Re: 2.6.18-stable release plans?
-Date: Wed, 24 Jan 2007 10:28:43 -0600
-To: Chris Rankin <rankincj@yahoo.com>
-X-Mailer: Apple Mail (2.752.2)
-From: Mark Rustad <mrustad@gmail.com>
+	Wed, 24 Jan 2007 11:28:56 -0500
+Received: from omx1-ext.sgi.com ([192.48.179.11]:43026 "EHLO omx1.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751963AbXAXQ2z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jan 2007 11:28:55 -0500
+Date: Wed, 24 Jan 2007 10:30:05 -0600
+From: "Bill O'Donnell" <billodo@sgi.com>
+To: KaiGai Kohei <kaigai@kaigai.gr.jp>, "Serge E. Hallyn" <serue@us.ibm.com>,
+       Chris Friedhoff <chris@friedhoff.org>
+Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       Stephen Smalley <sds@tycho.nsa.gov>
+Subject: Re: [PATCH] Implement file posix capabilities
+Message-ID: <20070124163004.GA15979@sgi.com>
+References: <20061127170740.GA5859@sergelap.austin.ibm.com> <20061129112848.8e48267e.chris@friedhoff.org> <20061129204013.GA7228@sgi.com> <20061130180502.GA20345@sgi.com> <20061130225707.GA23379@sergelap.austin.ibm.com> <4570F373.5090608@kaigai.gr.jp>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4570F373.5090608@kaigai.gr.jp>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 24, 2007, at 9:53 AM, Chris Rankin wrote:
-
->>> But MY kernel is clearly untainted.
->>> So what other explanation is there apart from a kernel bug?
->
->> If it's me you're asking: I don't know (overheating, cosmic  
->> rays, ...)
->
-> I suppose what I'm *really* asking is what the basis is for  
-> assuming that this *isn't* a kernel
-> bug and can therefore be safely ignored, seeing as the oops is  
-> real, the hardware is fine and the
-> kernel is untainted? That seems to cover the bases from where I'm  
-> sitting.
->
-> Cheers,
-> Chris
->
-> P.S. No micro-heatwaves have occurred here, either. Do we all need  
-> to install muon detectors in
-> our homes before reporting bugs now, so that we can exclude cosmic  
-> ray events too?
-
-Well, do you have ECC memory? If not, it is at least possible that  
-that the solar flares that occurred last month may have affected your  
-system. There were three X-class solar flares in the month of  
-December. Even if you have ECC memory, it is still possible to suffer  
-data corruption because many BIOSes do not turn on bus parity error  
-detection. And are the memories in your disk drive controllers ECC or  
-parity protected? I wouldn't bet on it...
-
-All too often, modern PCs are data corruption accidents waiting to  
-happen.
+I'm in the process of testing the (backported) capabilities patch 
+and Kaigai's userspace tools on a SLES10 based x86-64 target (2.6.16).  
+Chris Friedhoff's examples (http://www.friedhoff.org/fscaps.html)
+run cleanly.  That said, can one expect, through the use of these
+enhanced capabilities, to be able to add some finer grain 
+capabilities based on a specific userid?  In Chris' ping example,
+the suid is removed from /bin/ping to restrict it to root, and a 
+capability added to allow any user to execute it.  Can that example
+be extended to make it so only a _particular_ user can execute it?
+I realize with SELinux, one could achieve the goal, but as a stopgap,
+can capabilities be used to get there?
+Thanks,
+Bill
 
 -- 
-Mark Rustad, MRustad@mac.com
-
-
+Bill O'Donnell
+SGI
+billodo@sgi.com
