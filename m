@@ -1,55 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965624AbXAXCwA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965630AbXAXC4o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965624AbXAXCwA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jan 2007 21:52:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965629AbXAXCwA
+	id S965630AbXAXC4o (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jan 2007 21:56:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965632AbXAXC4o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jan 2007 21:52:00 -0500
-Received: from mail.gmx.net ([213.165.64.20]:46003 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S965624AbXAXCv7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jan 2007 21:51:59 -0500
-X-Authenticated: #14842415
-From: Alessandro Di Marco <dmr@gmx.it>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: linux-kernel@vger.kernel.org, vojtech@suse.cz
-Subject: Re: [ANNOUNCE] System Inactivity Monitor v1.0
-References: <877ivkrv5s.fsf@gmx.it> <20070119101103.GA5730@ucw.cz>
-	<877ivfi60i.fsf@gmx.it> <20070123094114.GE6033@ucw.cz>
-	<87wt3dhlte.fsf@gmx.it> <20070123163442.GA18662@elf.ucw.cz>
-	<87lkjthdmd.fsf@gmx.it> <20070123184432.GE18662@elf.ucw.cz>
-Date: Wed, 24 Jan 2007 03:51:56 +0100
-In-Reply-To: <20070123184432.GE18662@elf.ucw.cz> (Pavel Machek's message of "Tue\, 23 Jan 2007 19\:44\:32 +0100")
-Message-ID: <873b61cf1v.fsf@gmx.it>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.92 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Y-GMX-Trusted: 0
+	Tue, 23 Jan 2007 21:56:44 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:45026 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965629AbXAXC4n (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jan 2007 21:56:43 -0500
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: V4L-DVB Maintainers <v4l-dvb-maintainer@linuxtv.org>,
+       Oleg Nesterov <oleg@tv-sign.ru>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>
+Subject: [PATCH 1/1] V4L/DVB (5123): Buf_qbuf: fix: videobuf_queue->stream
+	corruption and lockup
+Date: Wed, 24 Jan 2007 00:54:05 -0200
+Message-id: <20070124025405.PS0573700001@infradead.org>
+In-Reply-To: <20070124024701.PS2866700000@infradead.org>
+References: <20070124024701.PS2866700000@infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0-1mdv2007.0 
+Content-Transfer-Encoding: 7bit
+X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek <pavel@ucw.cz> writes:
 
-   Imagine for a moment that we solve time-warp somehow. Any other
-   problems? 
+From: Oleg Nesterov <oleg@tv-sign.ru>
 
-Well, a user-level daemon have to process a lot of data just to detect user
-interaction. Considering that the trackpad bandwidth is nearly 5KB/sec,
-probably would be better to leave my panel alone... :-/
+We are doing ->buf_prepare(buf) before adding buf to q->stream list. This
+means that videobuf_qbuf() should not try to re-add a STATE_PREPARED buffer.
 
-   I'd really like to get "is user idle" solved, but it really should not be in
-   kernel unless it _has_ to. And time-warp probably causes problems not only
-   for your daemon.
+Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
+Signed-off-by: Mauro Carvalho Chehab <mchehab@infradead.org>
+---
 
-IMHO signal the user-space is a kernel duty and no user-space daemon will ever
-make it better. There are plenty of PM daemons out there, but Linux still lacks
-of a decent power management. Thanks to SIN, acpid and a silly bash script I'm
-able to save a lot of battery and furthermore, when my friends see the dimming
-panel they break out: WOW, how do you succeed in running MacOS on your Vaio!?!
-:-(
+ drivers/media/video/video-buf.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-Best,
+diff --git a/drivers/media/video/video-buf.c b/drivers/media/video/video-buf.c
+index 635d102..6504a58 100644
+--- a/drivers/media/video/video-buf.c
++++ b/drivers/media/video/video-buf.c
+@@ -700,6 +700,7 @@ videobuf_qbuf(struct videobuf_queue *q,
+ 		goto done;
+ 	}
+ 	if (buf->state == STATE_QUEUED ||
++	    buf->state == STATE_PREPARED ||
+ 	    buf->state == STATE_ACTIVE) {
+ 		dprintk(1,"qbuf: buffer is already queued or active.\n");
+ 		goto done;
 
--- 
-Gratitude is not only the greatest of virtues, but the parent of all the
-others. - Cicero
