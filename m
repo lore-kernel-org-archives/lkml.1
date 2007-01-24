@@ -1,68 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751225AbXAXLYv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751229AbXAXLZi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751225AbXAXLYv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jan 2007 06:24:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751229AbXAXLYv
+	id S1751229AbXAXLZi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jan 2007 06:25:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751246AbXAXLZi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jan 2007 06:24:51 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:60940 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751225AbXAXLYt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jan 2007 06:24:49 -0500
-Date: Wed, 24 Jan 2007 12:23:26 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Andrew Morton <akpm@osdl.org>, LKML <linux-kernel@vger.kernel.org>,
-       John Stultz <johnstul@us.ibm.com>,
-       Arjan van de Veen <arjan@infradead.org>,
-       Roman Zippel <zippel@linux-m68k.org>
-Subject: [patch] clocksource: fixup is_continous changes in vmitime.c
-Message-ID: <20070124112326.GA9937@elte.hu>
-References: <20070123211159.178138000@localhost.localdomain> <20070123211204.553722000@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070123211204.553722000@localhost.localdomain>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.8
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.8 required=5.9 tests=ALL_TRUSTED,BAYES_50 autolearn=no SpamAssassin version=3.0.3
-	-3.3 ALL_TRUSTED            Did not pass through any untrusted hosts
-	0.5 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
-	[score: 0.4103]
+	Wed, 24 Jan 2007 06:25:38 -0500
+Received: from ipmail03.adl2.internode.on.net ([203.16.214.135]:53752 "EHLO
+	ipmail03.adl2.internode.on.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751229AbXAXLZh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jan 2007 06:25:37 -0500
+X-Greylist: delayed 303 seconds by postgrey-1.27 at vger.kernel.org; Wed, 24 Jan 2007 06:25:36 EST
+X-IronPort-AV: i="4.13,231,1167571800"; 
+   d="scan'208"; a="39454194:sNHT17432184"
+From: airlied@linux.ie
+To: linux-kernel@vger.kernel.org
+Subject: gpu sharing layer for kernel
+Date: Wed, 24 Jan 2007 22:20:18 +1100
+Message-Id: <1169637623985-git-send-email-airlied@linux.ie>
+X-Mailer: git-send-email 1.4.1.ga3e6
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This patch series contains the gpu sharing layer for kernel that I've mentioned before. It should apply against Linus's git tree.
 
-small update: the following -mm -only patch is needed as well to convert 
-vmitime.c to CLOCK_SOURCE_IS_CONTINUOUS.
+Why do we want this?
 
-	Ingo
+Currently the kernel cannot provide both the fb and drm drivers with access to the device model and this means the drm cannot get any suspend/resume callbacks. 
+This layer attempts to fix this problem by adding a bus for the gpu drivers
+to attach to. Currently a lowlevel binding driver is needed along with optional
+fb and drm components.
 
----------------------------->
-Subject: [patch] clocksource: fixup is_continous changes in vmitime.c
-From: Ingo Molnar <mingo@elte.hu>
+This patch series only covers the generic code and radeon initially, I'll
+probably target intel next.
 
-convert vmitime.c to the new clocksource flag.
+All the patches are available at:
+http://www.skynet.ie/~airlied/patches/gpu
 
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/i386/kernel/vmitime.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+I think maybe the radeonfb patch may not make it pass the list filter..
 
-Index: linux/arch/i386/kernel/vmitime.c
-===================================================================
---- linux.orig/arch/i386/kernel/vmitime.c
-+++ linux/arch/i386/kernel/vmitime.c
-@@ -113,7 +113,7 @@ static struct clocksource clocksource_vm
- 	.mask			= CLOCKSOURCE_MASK(64),
- 	.mult			= 0, /* to be set */
- 	.shift			= 22,
--	.is_continuous		= 1,
-+	.flags			= CLOCK_SOURCE_IS_CONTINUOUS,
- };
- 
- 
+Dave.
+
