@@ -1,59 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750696AbXAXPMw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751959AbXAXPNu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750696AbXAXPMw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jan 2007 10:12:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751890AbXAXPMw
+	id S1751959AbXAXPNu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jan 2007 10:13:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751963AbXAXPNu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jan 2007 10:12:52 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:58860 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750696AbXAXPMv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jan 2007 10:12:51 -0500
-Message-ID: <45B77780.5000504@redhat.com>
-Date: Wed, 24 Jan 2007 10:13:04 -0500
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
+	Wed, 24 Jan 2007 10:13:50 -0500
+Received: from hp3.statik.TU-Cottbus.De ([141.43.120.68]:41653 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751959AbXAXPNt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jan 2007 10:13:49 -0500
+Message-ID: <45B777AC.9050709@s5r6.in-berlin.de>
+Date: Wed, 24 Jan 2007 16:13:48 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.0.8) Gecko/20061030 SeaMonkey/1.0.6
 MIME-Version: 1.0
-To: Stefan Priebe - FH <studium@profihost.com>
-CC: linux-kernel@vger.kernel.org, stefan@priebe.ws,
-       David Chinner <dgc@sgi.com>
-Subject: Re: XFS or Kernel Problem / Bug
-References: <20060801141545.B2326184@wobbly.melbourne.sgi.com> <44CED76B.20507@profihost.com> <20060801142755.C2326184@wobbly.melbourne.sgi.com> <44CED8F4.9080208@profihost.com> <20060801143212.D2326184@wobbly.melbourne.sgi.com> <44CEDA1D.5060607@profihost.com> <20060801143803.E2326184@wobbly.melbourne.sgi.com> <44CF36FB.6070606@profihost.com> <20060802090915.C2344877@wobbly.melbourne.sgi.com> <44D07AB7.3020409@profihost.com> <20060802201805.A2360409@wobbly.melbourne.sgi.com> <45B35CD7.4080801@profihost.com> <45B666BE.8000802@redhat.com> <45B70D69.20500@profihost.com> <45B773C1.7090805@redhat.com> <45B77547.4060302@profihost.com>
-In-Reply-To: <45B77547.4060302@profihost.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+To: =?UTF-8?B?S3Jpc3RpYW4gSMO4Z3NiZXJn?= <krh@bitplanet.net>
+CC: linux-kernel@vger.kernel.org, linux1394-devel@lists.sourceforge.net
+Subject: Re: In-tree version of new FireWire drivers available
+References: <59ad55d30701231948u5f1e02d8x3d06553cb373e5be@mail.gmail.com>
+In-Reply-To: <59ad55d30701231948u5f1e02d8x3d06553cb373e5be@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stefan Priebe - FH wrote:
-> It could be, that the options are now different - cause i my first try
-> was to change the kernel options - if that did not help i switched
-> back to 2.6.16.37.
->
-> Any idea what i can do?
->
-> Chuck Ebbert schrieb:
->> That doesn't match your oops at all.  Did you use a different compiler
->> and/or
->> different kernel build options?
->>
->>
->
-If you don't know what changed you can try different options until the
-filemap.s
-is the same.  You should see
+Kristian Høgsberg wrote:
+> Hosting this on freedesktop.org should be fine,
+> though kernel.org may be more appropriate :)
 
-        movl   156(%ebp),%eax
-        testb   16, 48(%eax)
+At the moment, a host outside of kernel.org is actually better for
+gitweb lurkers. (But I trust that kernel.org will get up to speed again
+soon.)
 
+> Stefan, I'm still not sure what the work flow should be
+> here, do you want to just pull these changes or should I send the 13
+> patches to linux1394-devel?
 
-in generic_file_buffered_write.  And you need to regenerate filemap.s
-manually
-each time.
+IMO: Posting patches to linux1394-devel is a must for anything that is
+meant to go to -mm or ultimately to mainline. In some cases, patches
+should also be Cc'd to linux-kernel or specialized lists like linux-scsi
+or linuxppc-dev etc. depending on the issue. I think linux1394-devel can
+bear the additional traffic from this new development.
 
-
-(Did you test the kernel that you posted these pieces from? If you can
-get it to oops
-the same way, just post that instead.)
-
+The question is whether you will post what you wrote, or if I will post
+what I pulled from you...
+-- 
+Stefan Richter
+-=====-=-=== ---= ==---
+http://arcgraph.de/sr/
