@@ -1,48 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752090AbXAXWhY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932821AbXAXWjt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752090AbXAXWhY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jan 2007 17:37:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752081AbXAXWhY
+	id S932821AbXAXWjt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jan 2007 17:39:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932831AbXAXWjt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jan 2007 17:37:24 -0500
-Received: from web52908.mail.yahoo.com ([206.190.49.18]:42570 "HELO
-	web52908.mail.yahoo.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752090AbXAXWhW (ORCPT
+	Wed, 24 Jan 2007 17:39:49 -0500
+Received: from wr-out-0506.google.com ([64.233.184.233]:8462 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932821AbXAXWjs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jan 2007 17:37:22 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=4mjfAjKev1nsFmdQ6vmDH1PHXBtCA8PrQwrvLvfTXbkov5DIyFQ5JZXob6aqVIRUJMf8yWEZWDz4uXmdbFHAB9gdXf1roBJjNx2Q46Vpb2V46C4dz4jzwSi5k63TMSWgsA9mH1G2GWJnQDCgInPYOc/Zp8uOPQQ+l9BHK4EhnKo=;
-X-YMail-OSG: Ps2F0OgVM1k.ZHW33obJ5tqsoPoMrCs0UoG74CDzc1J0zLV8lEphhpPBs4.ts8oMRLCLINTmK.rMuEI2E5Ge3Tg8cYCjagdhdAnNxl7ND1pGJHYBM2Z.4cqk.Ihk_u7aNDpQ4ZFWdc6n7bU-
-Date: Wed, 24 Jan 2007 22:37:20 +0000 (GMT)
-From: Chris Rankin <rankincj@yahoo.com>
-Subject: Re: 2.6.18-stable release plans?
-To: Mark Rustad <mrustad@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <4238B011-A417-41DE-8998-01BAAA484486@gmail.com>
+	Wed, 24 Jan 2007 17:39:48 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=pxJSeKE4jcBtr32HY3zwqWtkBBGyWyJfd57kfBH4xRMZWVCN2nVFWlL1WEsRY9xCF0UIxrIeKEc6/bBJ/y2j+QlEuiTsEdJp3SzLuWmecuxLEMoatcmF7CKbmnBFUv7EldVS08hp5M52t31Dc2HkF5Si1HZpw/2NUjRQmPVPybQ=
+Message-ID: <21d7e9970701241439y1431254bwf088f9f3043dd0c@mail.gmail.com>
+Date: Thu, 25 Jan 2007 09:39:47 +1100
+From: "Dave Airlie" <airlied@gmail.com>
+To: "Greg KH" <greg@kroah.com>
+Subject: Re: gpu sharing layer for kernel
+Cc: airlied@linux.ie, linux-kernel@vger.kernel.org
+In-Reply-To: <20070124214654.GA30634@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <999038.34946.qm@web52908.mail.yahoo.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1169637623985-git-send-email-airlied@linux.ie>
+	 <20070124214654.GA30634@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---- Mark Rustad <mrustad@gmail.com> wrote:
-> Well, do you have ECC memory? If not, it is at least possible that  
-> that the solar flares that occurred last month may have affected your  
-> system.
+> > Why do we want this?
+> >
+> > Currently the kernel cannot provide both the fb and drm drivers with
+> > access to the device model and this means the drm cannot get any
+> > suspend/resume callbacks.  This layer attempts to fix this problem by
+> > adding a bus for the gpu drivers to attach to. Currently a lowlevel
+> > binding driver is needed along with optional fb and drm components.
+>
+> If we were to allow this kind of "sharing" for all PCI devices would
+> that work out instead?  Or would this layer still be needed?
 
-I am going to assume that you are being facaetious, because it would be the rarified pinnacle of
-supreme arrogance to suggest that a cosmic ray event is a more likely explanation than a bug in
-the kernel.
+Initially this layer wouldn't be needed, but I'd like to add some
+awareness to the drivers, so the drm can tell the fb to stop doing
+stuff and vice-versa if necessary....  but perhaps that could be done
+with a generic layer also.. or via the lowlevel driver I have...
 
-Cheers,
-Chris
-
-
-
-		
-___________________________________________________________ 
-What kind of emailer are you? Find out today - get a free analysis of your email personality. Take the quiz at the Yahoo! Mail Championship. 
-http://uk.rd.yahoo.com/evt=44106/*http://mail.yahoo.net/uk 
+Dave.
