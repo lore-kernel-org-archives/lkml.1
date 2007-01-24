@@ -1,51 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751590AbXAXOhM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751598AbXAXOkN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751590AbXAXOhM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jan 2007 09:37:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751598AbXAXOhM
+	id S1751598AbXAXOkN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jan 2007 09:40:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751604AbXAXOkN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jan 2007 09:37:12 -0500
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:20394 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751590AbXAXOhK (ORCPT
+	Wed, 24 Jan 2007 09:40:13 -0500
+Received: from amsfep19-int.chello.nl ([213.46.243.16]:59225 "EHLO
+	amsfep11-int.chello.nl" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751598AbXAXOkL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jan 2007 09:37:10 -0500
-X-AuditID: d80ac287-9e09dbb0000026f2-f4-45b770f9383b 
-Date: Wed, 24 Jan 2007 14:37:23 +0000 (GMT)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.wat.veritas.com
-To: Chris Rankin <rankincj@yahoo.com>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.18-stable release plans?
-In-Reply-To: <20070124133037.98357.qmail@web52914.mail.yahoo.com>
-Message-ID: <Pine.LNX.4.64.0701241425170.10956@blonde.wat.veritas.com>
-References: <20070124133037.98357.qmail@web52914.mail.yahoo.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-OriginalArrivalTime: 24 Jan 2007 14:37:10.0016 (UTC) FILETIME=[211F6000:01C73FC5]
-X-Brightmail-Tracker: AAAAAA==
+	Wed, 24 Jan 2007 09:40:11 -0500
+Subject: Re: [PATCH 1/2]: Fix BUG in cancel_dirty_pages on XFS
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: David Chinner <dgc@sgi.com>, linux-kernel@vger.kernel.org, xfs@oss.sgi.com,
+       akpm@osdl.org
+In-Reply-To: <45B7627B.8050202@yahoo.com.au>
+References: <20070123223702.GF33919298@melbourne.sgi.com>
+	 <1169640835.6189.14.camel@twins>  <45B7627B.8050202@yahoo.com.au>
+Content-Type: text/plain
+Date: Wed, 24 Jan 2007 15:40:04 +0100
+Message-Id: <1169649604.6189.27.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 24 Jan 2007, Chris Rankin wrote:
+On Thu, 2007-01-25 at 00:43 +1100, Nick Piggin wrote:
+
+> > Have you seen the new launder_page() a_op? called from
+> > invalidate_inode_pages2_range()
 > 
-> Personally, I dumped 2.6.19.x like a hot coal as soon as I tripped over this bug:
+> It would have been nice to make that one into a more potentially
+> useful generic callback.
+
+That can still be done when the need arises, right?
+
+> But why was it introduced, exactly? I can't tell from the code or
+> the discussion why NFS couldn't start the IO, and signal the caller
+> to wait_on_page_writeback and retry? That seemed to me like the
+> convetional fix.
+
+to quote a bit:
+
+On Tue, 19 Dec 2006 18:19:38 -0500
+Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
+
+>     NFS: Fix race in nfs_release_page()
+>     
+>     invalidate_inode_pages2() may set the dirty bit on a page owing to the call
+>     to unmap_mapping_range() after the page was locked. In order to fix this,
+>     NFS has hooked the releasepage() method. This, however leads to deadlocks
+>     in other parts of the VM.
+
+and:
+
+> > Now, arguably the VM shouldn't be calling try_to_release_page() with
+> > __GFP_FS when it's holding a lock on a page.
+> > 
+> > But otoh, NFS should never be running lock_page() within nfs_release_page()
+> > against the page which was passed into nfs_release_page().  It'll deadlock
+> > for sure.
 > 
-> http://bugzilla.kernel.org/show_bug.cgi?id=7707
-> 
-> I didn't take much to trigger it, either. But the silence has been deafening.
+> The reason why it is happening is that the last dirty page from that
+> inode gets cleaned, resulting in a call to dput().
 
-Oh, the page_remove_rmap BUG, page_mapcount negative.
-
-Sorry for the deafening silence, see I was CC'ed but dropped the ball.
-
-That's surely no reason to dump 2.6.19.x, you'll find the occasional
-such report on every(?) release since page mapcount went into 2.6.7.
-
-Oftentimes it's bad RAM (try memtest86), sometimes it's a bad driver
-(probably the case for the tainted P report appended to your untainted
-one), sometimes it's unidentified memory corruption.  Not once (except
-during experimental patch testing) has it been proved due to an actual
-VM problem.
-
-Hugh
