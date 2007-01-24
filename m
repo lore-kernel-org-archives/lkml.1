@@ -1,36 +1,448 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965636AbXAXDBv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965637AbXAXDEv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965636AbXAXDBv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jan 2007 22:01:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965637AbXAXDBv
+	id S965637AbXAXDEv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jan 2007 22:04:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965635AbXAXDEv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jan 2007 22:01:51 -0500
-Received: from omx2-ext.sgi.com ([192.48.171.19]:33532 "EHLO omx2.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S965636AbXAXDBu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jan 2007 22:01:50 -0500
-Date: Tue, 23 Jan 2007 19:01:31 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-cc: aubreylee@gmail.com, svaidy@linux.vnet.ibm.com, nickpiggin@yahoo.com.au,
-       rgetz@blackfin.uclinux.org, Michael.Hennerich@analog.com,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC] Limit the size of the pagecache
-In-Reply-To: <20070124115310.48cda374.kamezawa.hiroyu@jp.fujitsu.com>
-Message-ID: <Pine.LNX.4.64.0701231901130.6049@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0701231645260.5239@schroedinger.engr.sgi.com>
- <20070124115310.48cda374.kamezawa.hiroyu@jp.fujitsu.com>
+	Tue, 23 Jan 2007 22:04:51 -0500
+Received: from iucha.net ([209.98.146.184]:39815 "EHLO mail.iucha.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965634AbXAXDEt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jan 2007 22:04:49 -0500
+Date: Tue, 23 Jan 2007 21:04:47 -0600
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Jiri Kosina <jikos@jikos.cz>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-usb-devel@lists.sourceforge.net, Adrian Bunk <bunk@stusta.de>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>
+Subject: Re: heavy nfs[4]] causes fs badness Was: 2.6.20-rc4: known unfixed regressions (v2)
+Message-ID: <20070124030447.GH11860@iucha.net>
+References: <20070115020221.GC6053@iucha.net> <Pine.LNX.4.44L0.0701151055010.15327-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="DwoPkXS38qd3dnhB"
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.0701151055010.15327-100000@netrider.rowland.org>
+X-GPG-Key: http://iucha.net/florin_iucha.gpg
+X-GPG-Fingerprint: 5E59 C2E7 941E B592 3BA4  7DCF 343D 2B14 2376 6F5B
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: florin@iucha.net (Florin Iucha)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 24 Jan 2007, KAMEZAWA Hiroyuki wrote:
 
-> if (sc->may_swap &&
->     zone_page_state(zone, NR_FILE_PAGES) &&
->     !(curreht->flags & PF_MEMALLOC))
-> 	sc->may_swap = 0;
+--DwoPkXS38qd3dnhB
+Content-Type: multipart/mixed; boundary="54u2kuW9sGWg/X+X"
+Content-Disposition: inline
 
-That is probably better than what we have so far.
 
+--54u2kuW9sGWg/X+X
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Mon, Jan 15, 2007 at 10:58:29AM -0500, Alan Stern wrote:
+> On Sun, 14 Jan 2007, Florin Iucha wrote:
+>=20
+> > Jiri and Trond,
+> >=20
+> > On Mon, Jan 15, 2007 at 01:14:09AM +0100, Jiri Kosina wrote:
+> > > On Sun, 14 Jan 2007, Florin Iucha wrote:
+> > >=20
+> > > > All the testing was done via a ssh into the workstation.  The conso=
+le=20
+> > > > was left as booted into, with the gdm running.  The remote nfs4=20
+> > > > directory was mounted on "/mnt". After copying the 60+ GB and testi=
+ng=20
+> > > > that the keyboard was still functioning, I did not reboot but staye=
+d in=20
+> > > > the same kernel and pulled the latest git then started bisecting. =
+=20
+> > >=20
+> > > Hi Florin,
+> > >=20
+> > > thanks a lot for the testing. Just to verify - what kernel is 'the sa=
+me=20
+> > > kernel' mentioned above? (just to isolate whether the problem is real=
+ly=20
+> > > somewhere between 2.6.19 and 2.6.20-rc2, as you stated in previous po=
+sts,=20
+> > > or the situation has changed).
+> >=20
+> > This happened with 2.6.19.  It worked last time, but I wanted to test
+> > again, to make sure.  This time, it bombed, but half an hour after the=
+=20
+> > transfer finished.
+> >=20
+> > > > After recompiling, I moved over to the workstation to reboot it, bu=
+t the=20
+> > > > keyboard was not functioning ;(
+> > >=20
+> > > So this time the hang occured when the system was idle, not during th=
+e=20
+> > > transfers, right?
+> >=20
+> > Yes it was idle.  Immediately after the transfer finished, the keyboard=
+ was
+> > still functioning.  It "hang" minutes later, after the first bisected k=
+ernel
+> > was compiled and installed.
+> >=20
+> > > > I ran "lsusb" and it displayed all the devices. "dmesg" did not show
+> > > > any oops, anything for that matter.  I have unplugged the keyboard =
+and
+> > > > run "lsusb" again, but it hang.  I ran "ls /mnt" and it hang as wel=
+l.
+> > > > Stracing "lsusb" showed it hang (entered the kernel) at opening the=
+ device
+> > > > that used to be the keyboard.  Stracing "ls /mnt" showed that it
+> > > > hang at "stat(/mnt)".  Both processes were in "D" state.  "ls /root"
+> > > > worked without problem, so it appears that crossing mountpoints cau=
+ses
+> > > > some hang in the kernel.
+> > >=20
+> > > Could you please do alt-sysrq-t (or "echo t > /proc/sysrq-trigger" vi=
+a=20
+> > > ssh, when your keyboard is dead) to see the calltraces of the process=
+es=20
+> > > which are stuck inside kernel?
+> > >=20
+> > > You will probably get a lot of output after the sysrq, so please eith=
+er=20
+> > > put it somewhere on the web if possible, or just extract the interest=
+ing=20
+> > > processes out of it (mainly the ones which are stuck).
+> >=20
+> > Will do.
+>=20
+> It would be nice to learn exactly why the keyboard stopped working.  Try
+> using the usbmon facility (instructions in Documentation/usb/usbmon.txt)
+> to see what happens when you type on the dead keyboard.  Be sure to turn
+> on CONFIG_USB_DEBUG as well.  And also check /proc/interrupts; each time
+> you hit a key the USB controller should get an interrupt.
+
+Attached is the output from usbmon, unfortunately this kernel did not
+have CONFIG_USB_DEBUG set.  This is kernel 2.6.20-rc5.
+
+So, the bus sees some traffic when the keyboard is used, but gdm does
+not receive any keystrokes.
+
+florin
+
+--=20
+Bruce Schneier expects the Spanish Inquisition.
+      http://geekz.co.uk/schneierfacts/fact/163
+
+--54u2kuW9sGWg/X+X
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: attachment; filename="usbmon.1.log"
+
+ffff81007fe91308 707039742 C Ii:003:01 0 8 = 00002800 00000000
+ffff81007fe91308 707039783 S Ii:003:01 -115 8 <
+ffff81007fe91308 707103733 C Ii:003:01 0 8 = 00000000 00000000
+ffff81007fe91308 707103749 S Ii:003:01 -115 8 <
+ffff81007fe91308 707207728 C Ii:003:01 0 8 = 00002800 00000000
+ffff81007fe91308 707207744 S Ii:003:01 -115 8 <
+ffff81007fe91308 707271726 C Ii:003:01 0 8 = 00000000 00000000
+ffff81007fe91308 707271741 S Ii:003:01 -115 8 <
+ffff81007fe91308 707375721 C Ii:003:01 0 8 = 00002800 00000000
+ffff81007fe91308 707375736 S Ii:003:01 -115 8 <
+ffff81007fe91308 707447718 C Ii:003:01 0 8 = 00000000 00000000
+ffff81007fe91308 707447732 S Ii:003:01 -115 8 <
+ffff81007fe91308 707655708 C Ii:003:01 0 8 = 00000f00 00000000
+ffff81007fe91308 707655725 S Ii:003:01 -115 8 <
+ffff81007fe91308 707663708 C Ii:003:01 0 8 = 00000f33 00000000
+ffff81007fe91308 707663724 S Ii:003:01 -115 8 <
+ffff81007fe91308 707679708 C Ii:003:01 0 8 = 00000f33 0e000000
+ffff81007fe91308 707679724 S Ii:003:01 -115 8 <
+ffff81007fe91308 707719706 C Ii:003:01 0 8 = 00000f33 0e0d0000
+ffff81007fe91308 707719721 S Ii:003:01 -115 8 <
+ffff81007fe91308 707727706 C Ii:003:01 0 8 = 00000f0e 0d000000
+ffff81007fe91308 707727721 S Ii:003:01 -115 8 <
+ffff81007fe91308 707743704 C Ii:003:01 0 8 = 00000e0d 00000000
+ffff81007fe91308 707743719 S Ii:003:01 -115 8 <
+ffff81007fe91308 707791703 C Ii:003:01 0 8 = 00000d00 00000000
+ffff81007fe91308 707791717 S Ii:003:01 -115 8 <
+ffff81007fe91308 707831702 C Ii:003:01 0 8 = 00000000 00000000
+ffff81007fe91308 707831717 S Ii:003:01 -115 8 <
+ffff81007fe91308 707847701 C Ii:003:01 0 8 = 00000900 00000000
+ffff81007fe91308 707847716 S Ii:003:01 -115 8 <
+ffff81007fe91308 707879698 C Ii:003:01 0 8 = 0000090f 00000000
+ffff81007fe91308 707879714 S Ii:003:01 -115 8 <
+ffff81007fe91308 707895700 C Ii:003:01 0 8 = 0000090f 33000000
+ffff81007fe91308 707895715 S Ii:003:01 -115 8 <
+ffff81007fe91308 707919698 C Ii:003:01 0 8 = 0000090f 330e0000
+ffff81007fe91308 707919713 S Ii:003:01 -115 8 <
+ffff81007fe91308 707935697 C Ii:003:01 0 8 = 0000090f 0e000000
+ffff81007fe91308 707935711 S Ii:003:01 -115 8 <
+ffff81007fe91308 707943696 C Ii:003:01 0 8 = 00000f0e 00000000
+ffff81007fe91308 707943711 S Ii:003:01 -115 8 <
+ffff81007fe91308 707959695 C Ii:003:01 0 8 = 00000f0e 0d000000
+ffff81007fe91308 707959711 S Ii:003:01 -115 8 <
+ffff81007fe91308 707967695 C Ii:003:01 0 8 = 00000e0d 00000000
+ffff81007fe91308 707967710 S Ii:003:01 -115 8 <
+ffff81007fe91308 707975695 C Ii:003:01 0 8 = 00000e0d 16000000
+ffff81007fe91308 707975712 S Ii:003:01 -115 8 <
+ffff81007fe91308 707983695 C Ii:003:01 0 8 = 00000e0d 16040000
+ffff81007fe91308 707983710 S Ii:003:01 -115 8 <
+ffff81007fe91308 707991695 C Ii:003:01 0 8 = 00000d16 04000000
+ffff81007fe91308 707991709 S Ii:003:01 -115 8 <
+ffff81007fe91308 708031693 C Ii:003:01 0 8 = 00001604 00000000
+ffff81007fe91308 708031708 S Ii:003:01 -115 8 <
+ffff81007fe91308 708063692 C Ii:003:01 0 8 = 00000400 00000000
+ffff81007fe91308 708063706 S Ii:003:01 -115 8 <
+ffff81007fe91308 708079690 C Ii:003:01 0 8 = 0000040f 00000000
+ffff81007fe91308 708079705 S Ii:003:01 -115 8 <
+ffff81007fe91308 708095689 C Ii:003:01 0 8 = 0000040f 33000000
+ffff81007fe91308 708095705 S Ii:003:01 -115 8 <
+ffff81007fe91308 708103688 C Ii:003:01 0 8 = 0000040f 330e0000
+ffff81007fe91308 708103703 S Ii:003:01 -115 8 <
+ffff81007fe91308 708127688 C Ii:003:01 0 8 = 0000040f 330e0900
+ffff81007fe91308 708127703 S Ii:003:01 -115 8 <
+ffff81007fe91308 708135688 C Ii:003:01 0 8 = 00000f33 0e090000
+ffff81007fe91308 708135703 S Ii:003:01 -115 8 <
+ffff81007fe91308 708143688 C Ii:003:01 0 8 = 00000f0e 09000000
+ffff81007fe91308 708143703 S Ii:003:01 -115 8 <
+ffff81007fe91308 708151687 C Ii:003:01 0 8 = 00000f09 00000000
+ffff81007fe91308 708151702 S Ii:003:01 -115 8 <
+ffff81007fe91308 708159687 C Ii:003:01 0 8 = 00000900 00000000
+ffff81007fe91308 708159702 S Ii:003:01 -115 8 <
+ffff81007fe91308 708175686 C Ii:003:01 0 8 = 0000090d 00000000
+ffff81007fe91308 708175701 S Ii:003:01 -115 8 <
+ffff81007fe91308 708183685 C Ii:003:01 0 8 = 00000d00 00000000
+ffff81007fe91308 708183700 S Ii:003:01 -115 8 <
+ffff81007fe91308 708191687 C Ii:003:01 0 8 = 00000d07 00000000
+ffff81007fe91308 708191702 S Ii:003:01 -115 8 <
+ffff81007fe91308 708207685 C Ii:003:01 0 8 = 00000d07 16000000
+ffff81007fe91308 708207700 S Ii:003:01 -115 8 <
+ffff81007fe91308 708223684 C Ii:003:01 0 8 = 00000d07 160e0000
+ffff81007fe91308 708223700 S Ii:003:01 -115 8 <
+ffff81007fe91308 708247683 C Ii:003:01 0 8 = 00000d07 160e0f00
+ffff81007fe91308 708247699 S Ii:003:01 -115 8 <
+ffff81007fe91308 708255682 C Ii:003:01 0 8 = 00000d07 160e0f04
+ffff81007fe91308 708255697 S Ii:003:01 -115 8 <
+ffff81007fe91308 708263683 C Ii:003:01 0 8 = 00000101 01010101
+ffff81007fe91308 708263692 S Ii:003:01 -115 8 <
+ffff81007fe91308 708279681 C Ii:003:01 0 8 = 00003300 00000000
+ffff81007fe91308 708279713 S Ii:003:01 -115 8 <
+ffff81007fe91308 708287681 C Ii:003:01 0 8 = 00000000 00000000
+ffff81007fe91308 708287696 S Ii:003:01 -115 8 <
+ffff81007fe91308 708303681 C Ii:003:01 0 8 = 00000000 00000000
+ffff81007fe91308 708303689 S Ii:003:01 -115 8 <
+ffff81007fe91308 708319680 C Ii:003:01 0 8 = 00000000 00000000
+ffff81007fe91308 708319688 S Ii:003:01 -115 8 <
+ffff81007fe91308 708327679 C Ii:003:01 0 8 = 00000000 00000000
+ffff81007fe91308 708327688 S Ii:003:01 -115 8 <
+ffff81007fe91308 708343680 C Ii:003:01 0 8 = 00000000 00000000
+ffff81007fe91308 708343688 S Ii:003:01 -115 8 <
+ffff81007fe91308 708351679 C Ii:003:01 0 8 = 00000000 00000000
+ffff81007fe91308 708351687 S Ii:003:01 -115 8 <
+ffff81007fe91308 708367678 C Ii:003:01 0 8 = 00000000 00000000
+ffff81007fe91308 708367687 S Ii:003:01 -115 8 <
+ffff81007fe91308 708391676 C Ii:003:01 0 8 = 00000000 00000000
+ffff81007fe91308 708391684 S Ii:003:01 -115 8 <
+ffff81007fe91308 728310814 C Ii:003:01 0 8 = 00000f00 00000000
+ffff81007fe91308 728310845 S Ii:003:01 -115 8 <
+ffff81007fe91308 728398803 C Ii:003:01 0 8 = 00000f0e 00000000
+ffff81007fe91308 728398820 S Ii:003:01 -115 8 <
+ffff81007fe91308 728438803 C Ii:003:01 0 8 = 00000e00 00000000
+ffff81007fe91308 728438818 S Ii:003:01 -115 8 <
+ffff81007fe91308 728454802 C Ii:003:01 0 8 = 00000e0d 00000000
+ffff81007fe91308 728454818 S Ii:003:01 -115 8 <
+ffff81007fe91308 728526799 C Ii:003:01 0 8 = 00000d00 00000000
+ffff81007fe91308 728526814 S Ii:003:01 -115 8 <
+ffff81007fe91308 728574797 C Ii:003:01 0 8 = 00000000 00000000
+ffff81007fe91308 728574811 S Ii:003:01 -115 8 <
+ffff81007fe91308 728590796 C Ii:003:01 0 8 = 00000f00 00000000
+ffff81007fe91308 728590811 S Ii:003:01 -115 8 <
+ffff81007fe91308 728670793 C Ii:003:01 0 8 = 00000f0e 00000000
+ffff81007fe91308 728670810 S Ii:003:01 -115 8 <
+ffff81007fe91308 728702791 C Ii:003:01 0 8 = 00000f0e 0d000000
+ffff81007fe91308 728702807 S Ii:003:01 -115 8 <
+ffff81007fe91308 728726790 C Ii:003:01 0 8 = 00000e0d 00000000
+ffff81007fe91308 728726805 S Ii:003:01 -115 8 <
+ffff81007fe91308 728742789 C Ii:003:01 0 8 = 00000d00 00000000
+ffff81007fe91308 728742804 S Ii:003:01 -115 8 <
+ffff81007fe91308 728782787 C Ii:003:01 0 8 = 00000000 00000000
+ffff81007fe91308 728782803 S Ii:003:01 -115 8 <
+ffff81007fe91308 729022777 C Ii:003:01 0 8 = 00002800 00000000
+ffff81007fe91308 729022793 S Ii:003:01 -115 8 <
+ffff81007fe91308 729118773 C Ii:003:01 0 8 = 00000000 00000000
+ffff81007fe91308 729118787 S Ii:003:01 -115 8 <
+ffff81007fe91308 729238768 C Ii:003:01 0 8 = 00002800 00000000
+ffff81007fe91308 729238783 S Ii:003:01 -115 8 <
+ffff81007fe91308 729318765 C Ii:003:01 0 8 = 00000000 00000000
+ffff81007fe91308 729318781 S Ii:003:01 -115 8 <
+ffff81007fe91308 729414760 C Ii:003:01 0 8 = 00002800 00000000
+ffff81007fe91308 729414776 S Ii:003:01 -115 8 <
+ffff81007fe91308 729494756 C Ii:003:01 0 8 = 00000000 00000000
+ffff81007fe91308 729494770 S Ii:003:01 -115 8 <
+ffff81007fe91308 730166727 C Ii:003:01 0 8 = 00002800 00000000
+ffff81007fe91308 730166745 S Ii:003:01 -115 8 <
+ffff81007fe91308 730230724 C Ii:003:01 0 8 = 00000000 00000000
+ffff81007fe91308 730230740 S Ii:003:01 -115 8 <
+ffff81007fe91308 730334720 C Ii:003:01 0 8 = 00002800 00000000
+ffff81007fe91308 730334736 S Ii:003:01 -115 8 <
+ffff81007fe91308 730422717 C Ii:003:01 0 8 = 00000000 00000000
+ffff81007fe91308 730422732 S Ii:003:01 -115 8 <
+ffff81007fe91308 730566710 C Ii:003:01 0 8 = 00000f00 00000000
+ffff81007fe91308 730566726 S Ii:003:01 -115 8 <
+ffff81007fe91308 730582709 C Ii:003:01 0 8 = 00000f33 00000000
+ffff81007fe91308 730582724 S Ii:003:01 -115 8 <
+ffff81007fe91308 730598709 C Ii:003:01 0 8 = 00000f33 0e000000
+ffff81007fe91308 730598724 S Ii:003:01 -115 8 <
+ffff81007fe91308 730646708 C Ii:003:01 0 8 = 00000f0e 00000000
+ffff81007fe91308 730646724 S Ii:003:01 -115 8 <
+ffff81007fe91308 730654706 C Ii:003:01 0 8 = 00000f0e 0d000000
+ffff81007fe91308 730654721 S Ii:003:01 -115 8 <
+ffff81007fe91308 730694703 C Ii:003:01 0 8 = 00000e0d 00000000
+ffff81007fe91308 730694718 S Ii:003:01 -115 8 <
+ffff81007fe91308 730726703 C Ii:003:01 0 8 = 00000d00 00000000
+ffff81007fe91308 730726718 S Ii:003:01 -115 8 <
+ffff81007fe91308 730806700 C Ii:003:01 0 8 = 00000000 00000000
+ffff81007fe91308 730806716 S Ii:003:01 -115 8 <
+ffff81007fe91308 730830698 C Ii:003:01 0 8 = 00000f00 00000000
+ffff81007fe91308 730830713 S Ii:003:01 -115 8 <
+ffff81007fe91308 730846697 C Ii:003:01 0 8 = 00000f33 00000000
+ffff81007fe91308 730846712 S Ii:003:01 -115 8 <
+ffff81007fe91308 730878697 C Ii:003:01 0 8 = 00000f33 0e000000
+ffff81007fe91308 730878713 S Ii:003:01 -115 8 <
+ffff81007fe91308 730910695 C Ii:003:01 0 8 = 00000f33 0e0d0000
+ffff81007fe91308 730910710 S Ii:003:01 -115 8 <
+ffff81007fe91308 730926693 C Ii:003:01 0 8 = 00000f0e 0d000000
+ffff81007fe91308 730926708 S Ii:003:01 -115 8 <
+ffff81007fe91308 730934693 C Ii:003:01 0 8 = 00000e0d 00000000
+ffff81007fe91308 730934709 S Ii:003:01 -115 8 <
+ffff81007fe91308 730966692 C Ii:003:01 0 8 = 00000d00 00000000
+ffff81007fe91308 730966707 S Ii:003:01 -115 8 <
+ffff81007fe91308 731038690 C Ii:003:01 0 8 = 00000d0f 00000000
+ffff81007fe91308 731038705 S Ii:003:01 -115 8 <
+ffff81007fe91308 731046689 C Ii:003:01 0 8 = 00000f00 00000000
+ffff81007fe91308 731046703 S Ii:003:01 -115 8 <
+ffff81007fe91308 731062688 C Ii:003:01 0 8 = 00000f33 00000000
+ffff81007fe91308 731062704 S Ii:003:01 -115 8 <
+ffff81007fe91308 731078687 C Ii:003:01 0 8 = 00000f33 0e000000
+ffff81007fe91308 731078702 S Ii:003:01 -115 8 <
+ffff81007fe91308 731150684 C Ii:003:01 0 8 = 00000f33 0e0d0000
+ffff81007fe91308 731150699 S Ii:003:01 -115 8 <
+ffff81007fe91308 731198682 C Ii:003:01 0 8 = 00000f0e 0d000000
+ffff81007fe91308 731198697 S Ii:003:01 -115 8 <
+ffff81007fe91308 731206681 C Ii:003:01 0 8 = 00000e0d 00000000
+ffff81007fe91308 731206696 S Ii:003:01 -115 8 <
+ffff81007fe91308 731286678 C Ii:003:01 0 8 = 00000d00 00000000
+ffff81007fe91308 731286693 S Ii:003:01 -115 8 <
+ffff81007fe91308 731294677 C Ii:003:01 0 8 = 00000000 00000000
+ffff81007fe91308 731294692 S Ii:003:01 -115 8 <
+ffff81007fe91308 731886652 C Ii:003:01 0 8 = 00000f00 00000000
+ffff81007fe91308 731886670 S Ii:003:01 -115 8 <
+ffff81007fe91308 731902652 C Ii:003:01 0 8 = 00000f0e 00000000
+ffff81007fe91308 731902668 S Ii:003:01 -115 8 <
+ffff81007fe91308 731966648 C Ii:003:01 0 8 = 00000f0e 0d000000
+ffff81007fe91308 731966663 S Ii:003:01 -115 8 <
+ffff81007fe91308 732014646 C Ii:003:01 0 8 = 00000e0d 00000000
+ffff81007fe91308 732014661 S Ii:003:01 -115 8 <
+ffff81007fe91308 732054645 C Ii:003:01 0 8 = 00000d00 00000000
+ffff81007fe91308 732054660 S Ii:003:01 -115 8 <
+ffff81007fe91308 732110642 C Ii:003:01 0 8 = 00000000 00000000
+ffff81007fe91308 732110657 S Ii:003:01 -115 8 <
+ffff81007fe91308 732318633 C Ii:003:01 0 8 = 00000f00 00000000
+ffff81007fe91308 732318649 S Ii:003:01 -115 8 <
+ffff81007fe91308 732366631 C Ii:003:01 0 8 = 00000f0e 00000000
+ffff81007fe91308 732366647 S Ii:003:01 -115 8 <
+ffff81007fe91308 732446628 C Ii:003:01 0 8 = 00000f0e 0d000000
+ffff81007fe91308 732446642 S Ii:003:01 -115 8 <
+ffff81007fe91308 732494626 C Ii:003:01 0 8 = 00000e0d 00000000
+ffff81007fe91308 732494640 S Ii:003:01 -115 8 <
+ffff81007fe91308 732542623 C Ii:003:01 0 8 = 00000d00 00000000
+ffff81007fe91308 732542638 S Ii:003:01 -115 8 <
+ffff81007fe91308 732590622 C Ii:003:01 0 8 = 00000000 00000000
+ffff81007fe91308 732590636 S Ii:003:01 -115 8 <
+ffff81007fe91308 732774614 C Ii:003:01 0 8 = 00000f00 00000000
+ffff81007fe91308 732774631 S Ii:003:01 -115 8 <
+ffff81007fe91308 732854611 C Ii:003:01 0 8 = 00000f0e 00000000
+ffff81007fe91308 732854627 S Ii:003:01 -115 8 <
+ffff81007fe91308 732870609 C Ii:003:01 0 8 = 00000f0e 33000000
+ffff81007fe91308 732870625 S Ii:003:01 -115 8 <
+ffff81007fe91308 732910607 C Ii:003:01 0 8 = 00000f0e 330d0000
+ffff81007fe91308 732910622 S Ii:003:01 -115 8 <
+ffff81007fe91308 732974605 C Ii:003:01 0 8 = 00000f0e 0d000000
+ffff81007fe91308 732974620 S Ii:003:01 -115 8 <
+ffff81007fe91308 732982604 C Ii:003:01 0 8 = 00000e0d 00000000
+ffff81007fe91308 732982619 S Ii:003:01 -115 8 <
+ffff81007fe91308 733022603 C Ii:003:01 0 8 = 00000d00 00000000
+ffff81007fe91308 733022618 S Ii:003:01 -115 8 <
+ffff81007fe91308 733078601 C Ii:003:01 0 8 = 00000000 00000000
+ffff81007fe91308 733078615 S Ii:003:01 -115 8 <
+ffff81007fe91308 734382549 C Ii:003:01 0 8 = 00003300 00000000
+ffff81007fe91308 734382578 S Ii:003:01 -115 8 <
+ffff81007fe91308 734390543 C Ii:003:01 0 8 = 0000330f 00000000
+ffff81007fe91308 734390560 S Ii:003:01 -115 8 <
+ffff81007fe91308 734422541 C Ii:003:01 0 8 = 0000330f 0e000000
+ffff81007fe91308 734422558 S Ii:003:01 -115 8 <
+ffff81007fe91308 734470539 C Ii:003:01 0 8 = 0000330f 0e0d0000
+ffff81007fe91308 734470554 S Ii:003:01 -115 8 <
+ffff81007fe91308 734486539 C Ii:003:01 0 8 = 0000330e 0d000000
+ffff81007fe91308 734486554 S Ii:003:01 -115 8 <
+ffff81007fe91308 734494539 C Ii:003:01 0 8 = 00000e0d 00000000
+ffff81007fe91308 734494554 S Ii:003:01 -115 8 <
+ffff81007fe91308 734550536 C Ii:003:01 0 8 = 00000d00 00000000
+ffff81007fe91308 734550551 S Ii:003:01 -115 8 <
+ffff81007fe91308 734614533 C Ii:003:01 0 8 = 00000000 00000000
+ffff81007fe91308 734614547 S Ii:003:01 -115 8 <
+ffff81007fe91308 734638534 C Ii:003:01 0 8 = 00003300 00000000
+ffff81007fe91308 734638550 S Ii:003:01 -115 8 <
+ffff81007fe91308 734646538 C Ii:003:01 0 8 = 0000330f 00000000
+ffff81007fe91308 734646565 S Ii:003:01 -115 8 <
+ffff81007fe91308 734686530 C Ii:003:01 0 8 = 0000330f 0e000000
+ffff81007fe91308 734686547 S Ii:003:01 -115 8 <
+ffff81007fe91308 734734529 C Ii:003:01 0 8 = 0000330f 0e0d0000
+ffff81007fe91308 734734545 S Ii:003:01 -115 8 <
+ffff81007fe91308 734750527 C Ii:003:01 0 8 = 0000330e 0d000000
+ffff81007fe91308 734750543 S Ii:003:01 -115 8 <
+ffff81007fe91308 734758527 C Ii:003:01 0 8 = 00000e0d 00000000
+ffff81007fe91308 734758541 S Ii:003:01 -115 8 <
+ffff81007fe91308 734806525 C Ii:003:01 0 8 = 00000d00 00000000
+ffff81007fe91308 734806542 S Ii:003:01 -115 8 <
+ffff81007fe91308 734862522 C Ii:003:01 0 8 = 00000d0f 00000000
+ffff81007fe91308 734862538 S Ii:003:01 -115 8 <
+ffff81007fe91308 734870522 C Ii:003:01 0 8 = 00000d0f 0e000000
+ffff81007fe91308 734870538 S Ii:003:01 -115 8 <
+ffff81007fe91308 734886521 C Ii:003:01 0 8 = 00000d0f 0e330000
+ffff81007fe91308 734886537 S Ii:003:01 -115 8 <
+ffff81007fe91308 734894521 C Ii:003:01 0 8 = 00000f0e 33000000
+ffff81007fe91308 734894536 S Ii:003:01 -115 8 <
+ffff81007fe91308 735006517 C Ii:003:01 0 8 = 00000e33 00000000
+ffff81007fe91308 735006531 S Ii:003:01 -115 8 <
+ffff81007fe91308 735014515 C Ii:003:01 0 8 = 00000e00 00000000
+ffff81007fe91308 735014531 S Ii:003:01 -115 8 <
+ffff81007fe91308 735038514 C Ii:003:01 0 8 = 00000000 00000000
+ffff81007fe91308 735038529 S Ii:003:01 -115 8 <
+ffff81007fe91308 735150510 C Ii:003:01 0 8 = 00002800 00000000
+ffff81007fe91308 735150526 S Ii:003:01 -115 8 <
+ffff81007fe91308 735246506 C Ii:003:01 0 8 = 00000000 00000000
+ffff81007fe91308 735246521 S Ii:003:01 -115 8 <
+ffff81007fe91308 735326502 C Ii:003:01 0 8 = 00002800 00000000
+ffff81007fe91308 735326518 S Ii:003:01 -115 8 <
+ffff81007fe91308 735414500 C Ii:003:01 0 8 = 00000000 00000000
+ffff81007fe91308 735414517 S Ii:003:01 -115 8 <
+ffff81007fe91308 735470496 C Ii:003:01 0 8 = 00002800 00000000
+ffff81007fe91308 735470513 S Ii:003:01 -115 8 <
+ffff81007fe91308 735550491 C Ii:003:01 0 8 = 00000000 00000000
+ffff81007fe91308 735550506 S Ii:003:01 -115 8 <
+
+--54u2kuW9sGWg/X+X--
+
+--DwoPkXS38qd3dnhB
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFFtszPND0rFCN2b1sRApJ5AJ9KKxxI96owpkUpp5KPq/klV9RTZACfV7fL
+f+euouwH1IpXtvIdUYHfd58=
+=+nKc
+-----END PGP SIGNATURE-----
+
+--DwoPkXS38qd3dnhB--
