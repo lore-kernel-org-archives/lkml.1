@@ -1,42 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030229AbXAXGFU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030235AbXAXGGF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030229AbXAXGFU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jan 2007 01:05:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030228AbXAXGFU
+	id S1030235AbXAXGGF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jan 2007 01:06:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030236AbXAXGGE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jan 2007 01:05:20 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:54315
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1030227AbXAXGFS (ORCPT
+	Wed, 24 Jan 2007 01:06:04 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:53532 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030235AbXAXGGC convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jan 2007 01:05:18 -0500
-Date: Tue, 23 Jan 2007 22:05:17 -0800 (PST)
-Message-Id: <20070123.220517.115910657.davem@davemloft.net>
-To: bunk@stusta.de
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] process include/linux/if_{addr,link}.h with unifdef
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20070121191319.GO9093@stusta.de>
-References: <20070121191319.GO9093@stusta.de>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+	Wed, 24 Jan 2007 01:06:02 -0500
+Date: Tue, 23 Jan 2007 22:04:33 -0800
+From: Andrew Morton <akpm@osdl.org>
+To: =?ISO-8859-1?B?U+liYXN0aWVuIER1Z3Xp?= <sebastien.dugue@bull.net>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-aio <linux-aio@kvack.org>, Bharata B Rao <bharata@in.ibm.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
+       Jean Pierre Dion <jean-pierre.dion@bull.net>,
+       Badari Pulavarty <pbadari@us.ibm.com>
+Subject: Re: [PATCH -mm 5/5][AIO] - Add listio syscall support
+Message-Id: <20070123220433.018b40b6.akpm@osdl.org>
+In-Reply-To: <20070117105554.346324b4@frecb000686>
+References: <20070117104601.36b2ab18@frecb000686>
+	<20070117105554.346324b4@frecb000686>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Adrian Bunk <bunk@stusta.de>
-Date: Sun, 21 Jan 2007 20:13:19 +0100
+On Wed, 17 Jan 2007 10:55:54 +0100
+Sébastien Dugué <sebastien.dugue@bull.net> wrote:
 
-> After commit d3dcc077bf88806201093f86325ec656e4dbfbce, 
-> include/linux/if_{addr,link}.h should be processed with unifdef.
-> 
-> Signed-off-by: Adrian Bunk <bunk@stusta.de>
+> +void lio_check(struct lio_event *lio)
+> +{
+> +	int ret;
+> +
+> +	ret = atomic_dec_and_test(&lio->lio_users);
+> +
+> +	if (unlikely(ret) && lio->lio_notify.notify != SIGEV_NONE) {
+> +		/* last one -> notify process */
+> +		if (aio_send_signal(&lio->lio_notify))
+> +			sigqueue_free(lio->lio_notify.sigq);
+> +		kfree(lio);
+> +	}
+> +}
 
-Applied, thanks Adrian.
+That's a scary function.  It may (or may not) free the memory at lio,
+returning no indication to the caller whether or not that memory is still
+allocated.  This is most peculiar - are you really sure there's no
+potential for a use-after-free here?
 
-I believe at least the 2.6.19 -stable branch will need
-this too, right?  Please submit to -stable as needed,
-and feel free to add my sign-off:
+The function is poorly named: I'd expect something called "foo_check" to
+not have any side-effects.  This one has gross side-effects.  Want to think
+up a better name, please?
 
-Signed-off-by: David S. Miller <davem@davemloft.net>
+And given that this function has global scope, perhaps a little explanatory
+comment is in order?
+
+> +struct lio_event *lio_create(struct sigevent __user *user_event,
+> +			int mode)
+
+Here too.
