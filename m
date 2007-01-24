@@ -1,80 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932332AbXAXUiv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932578AbXAXUkM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932332AbXAXUiv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jan 2007 15:38:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752065AbXAXUiv
+	id S932578AbXAXUkM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jan 2007 15:40:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932579AbXAXUkL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jan 2007 15:38:51 -0500
-Received: from homer.mvista.com ([63.81.120.155]:57313 "EHLO
-	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752040AbXAXUiu (ORCPT
+	Wed, 24 Jan 2007 15:40:11 -0500
+Received: from caffeine.uwaterloo.ca ([129.97.134.17]:40054 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932578AbXAXUkK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jan 2007 15:38:50 -0500
-Message-ID: <45B7C3CE.2050301@ru.mvista.com>
-Date: Wed, 24 Jan 2007 23:38:38 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
-MIME-Version: 1.0
-To: Marc St-Jean <Marc_St-Jean@pmc-sierra.com>
-Cc: Alan <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       linux-serial@vger.kernel.org, linux-mips@linux-mips.org
-Subject: Re: [PATCH] serial driver PMC MSP71xx, kernel linux-mips.git mast
-  er
-References: <45B78DF5.9000203@pmc-sierra.com>
-In-Reply-To: <45B78DF5.9000203@pmc-sierra.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 24 Jan 2007 15:40:10 -0500
+Date: Wed, 24 Jan 2007 15:40:09 -0500
+To: linux-kernel@vger.kernel.org
+Subject: Strange problem with tty layer
+Message-ID: <20070124204009.GA7584@csclub.uwaterloo.ca>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.9i
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+I am seeing a very strange problem which seems to be in the tty layer.
 
-Marc St-Jean wrote:
+I am using an exar 17D154 based PCI card (like the digi neo style card)
+using the jsm driver.  Kernel version 2.6.16.25.
 
->> >>This I would hope you can hide in the platform specific
->> >>serial_in/serial_out functions. If you write the UART_LCR save it in
->> >>serial_out(), if you read IER etc.
+My test involves connecting two ports together with a cross over cable
+and then sending a test pattern of characters.  I am currently using
+11520 characters at 230400bps (so 0.5s for the transfer).
 
->> > I couldn't find hooks for platform specific serial_in/out functions.
+Most of the time, it works perfectly, but once in a while, I never
+receiver the last few characters (between 1 and 65 or so characters it
+seems).
 
->>    It's because there are none. :-)
+I have confirmed that the driver does in fact receive all the
+characters, and that they are correct, and that they are being passed to
+the tty layer using tty_insert_flip_string, and that it returns that all
+the characters have been passed to the tty layer.  The user space
+application however still doesn't see the last few characters (when it
+fails).
 
->> > Do you mean using the up->port.iotype's in serial_in/out from 8250.c?
+The problem seems to occour every few hours of testing on a 266MHz Geode
+SC1200.  When I change the clock to 133MHz, it happens every few minutes
+instead (so much more frequently).  I suspect there is some race
+condition that allows the tty layer to not get around to processing all
+the data in the buffer, even when asked for data by the application
+(which is waiting on the serial port using select, with a 4s timeout).
 
->>    Not sure what Alan meant, but this seems the only option for now.
+Any suggestions on where to head next to debug this?
 
-> That's the conclusion I came to. I've rewritten the patch to use port.type
-> instead of iotype since one of the fix is SoC and not UART specific. I guess
+Sending a few more characters when the receive times out before getting
+the complete message does not cause the missing data to arive it seems,
+only completely closing and starting the test program again seems to
+recover it, although I may just not have been patient enough.
 
-    I failed to folkow your logic. :-)
-
-> I could use both iotype and type with a test on each for the appropriate
-> bug, what do you recommend?
-
-    I think iotype would be enough. You can't pass type for platform devices 
-anyway, IIRC (the thing I don't quite like).
-
->>  >>And we might want to add a void * for board specific insanity to the 8250
->> >>structures if we really have to so you can hang your brain damage
->> >>privately off that ?
-
->> > Sounds good to me, it would give us a location to store the address of the
->> > UART_STATUS_REG required by this UART variant.
-
->>    I doubt we really need to *store* it somewhere. Isn't it an fixed offset
->>from UART's base (I haven't seen the header)?
-
-> Unfortunately it's not a constant offset from the UART in the SoC register
-
-    Hm...
-
-> space. I've used Alan suggestion and added a classic, on some other OSes %-|,
-> void "user" pointer.
-
-    Only do not do it under #ifdef.
-
-> Marc
-
-WBR, Sergei
+--
+Len Sorensen
