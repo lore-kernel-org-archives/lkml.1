@@ -1,43 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030595AbXAYVjF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030597AbXAYVk1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030595AbXAYVjF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jan 2007 16:39:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030602AbXAYVjE
+	id S1030597AbXAYVk1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jan 2007 16:40:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030602AbXAYVk1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jan 2007 16:39:04 -0500
-Received: from waste.org ([66.93.16.53]:39402 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030599AbXAYVjC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jan 2007 16:39:02 -0500
-Date: Thu, 25 Jan 2007 15:26:22 -0600
-From: Matt Mackall <mpm@selenic.com>
-To: Andrey Borzenkov <arvidjaar@mail.ru>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Subject: Re: [patch] suspend debugging: simulate suspend-to-RAM
-Message-ID: <20070125212622.GB16722@waste.org>
-References: <20070125113350.GA31068@elte.hu> <20070125180324.36E8B557CF8@chen.mtu.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 25 Jan 2007 16:40:27 -0500
+Received: from nz-out-0506.google.com ([64.233.162.238]:45992 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030597AbXAYVkZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jan 2007 16:40:25 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=UpoPXeb2qjEw+csaSIR47y1QBHEqo62Qkl5cQrr9jQGWnXUewhpQc6ji8BDRximVxEWN8wbNLJkNunrUcZatrJEWs9lX/YTOj40DUt65LY/qfdCKRi8g3NPebOWhFU88+rlUd0pFN4dDpNZ+9SCGRNQcvMWKN03uxiG+1l4iJb8=
+Message-ID: <56a8daef0701251340x77df99a6j8b8582cdb03732e9@mail.gmail.com>
+Date: Thu, 25 Jan 2007 13:40:23 -0800
+From: "John Ronciak" <john.ronciak@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
+Subject: [ANNOUNCE] PRO/1000 PCI-e Software Developer Manual is now available
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070125180324.36E8B557CF8@chen.mtu.ru>
-User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 25, 2007 at 09:03:22PM +0300, Andrey Borzenkov wrote:
-> Ingo Molnar wrote:
-> > Make debugging such bugs easier by offering a resume mode that does not
-> > actually call into the BIOS to turn off the machine. This, in
-> > combination with earlyprintk=serial,ttyS0,115200,keep ,
-> > CONFIG_PM_DEBUG=y, CONFIG_DISABLE_CONSOLE_SUSPEND=y and
-> > /sys/power/filter enables me to have a fully functional serial console
-> > during the full suspend/resume cycle.
-> >
-> 
-> Will it work with netconsole too? COM port is often missing in notebooks
-> today.
-
-Should, if you add your network device to the aforementioned filter.
+The Software Developer Manual for the PRO/1000 PCI-e controllers is
+now available via the http://e1000.sf.net/ web site.  The file is
+OpenSDM_8257x-10.pdf.  I know it's been a long time coming but
+sometimes that's just how it goes.  Enjoy.
 
 -- 
-Mathematics is the supreme nostalgia of our time.
+Cheers,
+John
