@@ -1,182 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030513AbXAYTGi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030503AbXAYTOn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030513AbXAYTGi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jan 2007 14:06:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030514AbXAYTGi
+	id S1030503AbXAYTOn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jan 2007 14:14:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030508AbXAYTOn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jan 2007 14:06:38 -0500
-Received: from mail6.sea5.speakeasy.net ([69.17.117.8]:48136 "EHLO
-	mail6.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030513AbXAYTGh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jan 2007 14:06:37 -0500
-Message-ID: <45B8FFBB.4090307@kernel.org>
-Date: Thu, 25 Jan 2007 11:06:35 -0800
-From: Josh Triplett <josh@kernel.org>
-User-Agent: Icedove 1.5.0.9 (X11/20061220)
-MIME-Version: 1.0
-To: paulmck@linux.vnet.ibm.com
-CC: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linuxtronix.de,
-       dipankar@in.ibm.com, tytso@us.ibm.com, dvhltc@us.ibm.com,
-       oleg@tv-sign.ru, twoerner.k@gmail.com, billh@gnuppy.monkey.org,
-       nielsen.esben@googlemail.com, corbet@lwn.net
-Subject: Re: [RFC PATCH -rt 2/2] RCU priority boosting additions to rcutorture
-References: <20070125021101.GA23428@linux.vnet.ibm.com> <20070125021444.GA22540@linux.vnet.ibm.com> <20070125022338.GB22540@linux.vnet.ibm.com> <45B86E88.6020209@kernel.org> <20070125180158.GC1705@linux.vnet.ibm.com>
-In-Reply-To: <20070125180158.GC1705@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Thu, 25 Jan 2007 14:14:43 -0500
+Received: from the.earth.li ([193.201.200.66]:36884 "EHLO the.earth.li"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030503AbXAYTOn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jan 2007 14:14:43 -0500
+X-Greylist: delayed 1982 seconds by postgrey-1.27 at vger.kernel.org; Thu, 25 Jan 2007 14:14:42 EST
+Date: Thu, 25 Jan 2007 18:41:39 +0000
+From: Jonathan McDowell <noodles@earth.li>
+To: i2c@lm-sensors.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] Add support for OneForAll remote JP1 parallel port interface
+Message-ID: <20070125184139.GV27092@earth.li>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul E. McKenney wrote:
-> On Thu, Jan 25, 2007 at 12:47:04AM -0800, Josh Triplett wrote:
->> One major item: this new test feature really needs a new module parameter to
->> enable or disable it.
-> 
-> CONFIG_PREEMPT_RCU_BOOST is the parameter -- if not set, then no test.
-> This parameter is provided by the accompanying RCU-boost patch.
+This simple patch adds support to i2c-parport for the OneForAll remote
+JP1 parallel port interfaces which can be found detailed at:
 
-It seems useful for rcutorture to use or not use the preempting thread
-independently of CONFIG_PREEMPT_RCU_BOOST.  That would bring you from two
-cases to four, and the two new cases both make sense:
+http://www.hifi-remote.com/jp1/hardware.shtml
 
-* CONFIG_PREEMPT_RCU_BOOST=n, but run rcutorture with the preempting thread.
-  This configuration allows you to demonstrate the need for
-  CONFIG_PREEMPT_RCU_BOOST, by showing what happens when you need it and don't
-  have it.
+These allow access to the internal configuration EEPROM on various
+remote controls and there are a variety of Windows tools that make use
+of this hardware. I have tested this patch with the "simple" parallel
+port device and a OneForAll URC-7562 and confirmed that the data read
+using the eeprom i2c driver matches that returned by the Windows "IR"
+JP1 tool.
 
-* CONFIG_PREEMPT_RCU_BOOST=y, but run rcutorture without the preempting
-  thread.  This configuration allows you to test with rcutorture while running
-  a *real* real-time workload rather than the simple preempting thread, or
-  just test basic RCU functionality.
+Signed-Off-By: Jonathan McDowell <noodles@earth.li>
 
-A simple boolean module_param would work here.
+-----
+--- linux-2.6.19/Documentation/i2c/busses/i2c-parport.orig	2007-01-25 18:19:29.000000000 +0000
++++ linux-2.6.19/Documentation/i2c/busses/i2c-parport	2007-01-25 18:22:12.000000000 +0000
+@@ -19,6 +19,7 @@
+  * (type=4) Analog Devices ADM1032 evaluation board
+  * (type=5) Analog Devices evaluation boards: ADM1025, ADM1030, ADM1031
+  * (type=6) Barco LPT->DVI (K5800236) adapter
++ * (type=7) OneForAll JP1 parallel port adapter
+ 
+ These devices use different pinout configurations, so you have to tell
+ the driver what you have, using the type module parameter. There is no
+@@ -157,3 +158,17 @@
+   http://home.wanadoo.nl/hihihi/libk8005.htm
+   http://struyve.mine.nu:8080/index.php?block=k8000
+   http://sourceforge.net/projects/libk8005/
++
++
++OneForAll JP1 parallel port adapter
++-----------------------------------
++
++The JP1 project revolves around a set of remote controls which expose
++the i2c bus their internal configuration EEPROM lives on via a 6 pin
++jumper in the battery compartment. More details can be found at:
++
++http://www.hifi-remote.com/jp1/
++
++Details of the simple parallel port hardware can be found at:
++
++http://www.hifi-remote.com/jp1/hardware.shtml
+--- linux-2.6.19/drivers/i2c/busses/i2c-parport.h.orig	2007-01-25 18:26:06.000000000 +0000
++++ linux-2.6.19/drivers/i2c/busses/i2c-parport.h	2007-01-25 18:23:14.000000000 +0000
+@@ -88,6 +88,13 @@
+ 		.getscl	= { 0x40, STAT, 0 },
+ 		.init	= { 0xfc, DATA, 0 },
+ 	},
++	/* type 7: OneForAll JP1 parallel port adapter */
++	{
++		.setsda	= { 0x01, DATA, 0 },
++		.setscl	= { 0x02, DATA, 0 },
++		.getsda	= { 0x80, STAT, 1 },
++		.init	= { 0x04, DATA, 1 },
++	},
+ };
+ 
+ static int type = -1;
+@@ -101,4 +108,5 @@
+ 	" 4 = ADM1032 evaluation board\n"
+ 	" 5 = ADM1025, ADM1030 and ADM1031 evaluation boards\n"
+ 	" 6 = Barco LPT->DVI (K5800236) adapter\n"
++	" 7 = OneForAll JP1 parallel port adapter\n"
+ );
+-----
 
-At some point, we may want to add the ability to run multiple preempting
-threads, but that doesn't need to happen for this patch.
+J.
 
->> Paul E. McKenney wrote:
->>> diff -urpNa -X dontdiff linux-2.6.20-rc4-rt1/kernel/rcutorture.c linux-2.6.20-rc4-rt1-rcubtorture/kernel/rcutorture.c
->>> --- linux-2.6.20-rc4-rt1/kernel/rcutorture.c	2007-01-09 10:59:54.000000000 -0800
->>> +++ linux-2.6.20-rc4-rt1-rcubtorture/kernel/rcutorture.c	2007-01-23 11:27:49.000000000 -0800
-
->>> +static int rcu_torture_preempt(void *arg)
->>> +{
->>> +	int completedstart;
->>> +	time_t gcstart;
->>> +	struct sched_param sp;
->>> +
->>> +	sp.sched_priority = MAX_RT_PRIO - 1;
->>> +	sched_setscheduler(current, SCHED_RR, &sp);
->>> +	current->flags |= PF_NOFREEZE;
->>> +
->>> +	do {
->>> +		completedstart = rcu_torture_completed();
->>> +		gcstart = xtime.tv_sec;
->>> +		while ((xtime.tv_sec - gcstart < 10) &&
->>> +		       (rcu_torture_completed() == completedstart))
->>> +			cond_resched();
->>> +		if (rcu_torture_completed() == completedstart)
->>> +			rcu_torture_preempt_errors++;
->>> +		schedule_timeout_interruptible(shuffle_interval * HZ);
->> Why call schedule_timeout_interruptible here without actually handling
->> interruptions?  So that you can send it a signal to cause the shuffle early?
-> 
-> It allows you to kill the process in order to get the module unload to
-> happen more quickly in case someone specified an overly long interval.
-
-I didn't actually know that you could kill a kthread from userspace. :)
-
-That rationale makes sense.
-
-> But now that you mention this, a simple one-second sleep is probably
-> appropriate here.
-
-OK.
-
->>> +	} while (!kthread_should_stop());
->>> +	return NULL;
->>> +}
->>> +
->>> +static void rcu_preempt_start(void)
->>> +{
->>> +	rcu_preeempt_task = kthread_run(rcu_torture_preempt, NULL,
->>> +					"rcu_torture_preempt");
->>> +	if (IS_ERR(rcu_preeempt_task)) {
->>> +		VERBOSE_PRINTK_ERRSTRING("Failed to create preempter");
->> This ought to include the errno value, PTR_ERR(rcu_preempt_task).
-> 
-> Good point -- what I should do is return this value so that
-> rcu_torture_init() can return it, failing the module-load process
-> and unwinding.
-
-Even better, yes.
-
->>> +		rcu_preeempt_task = NULL;
->>> +	}
->>> +}
->>> +
->>> +static void rcu_preempt_end(void)
->>> +{
->>> +	if (rcu_preeempt_task != NULL) {
->> if (rcu_preempt_task) would work just as well here.
-> 
-> True, but was being consistent with usage elsewhere in this file.
-
-Fair enough; don't worry about it for this patch, then.  I'll deal with that
-particular style cleanup later, throughout rcutorture.
-
->>>  static struct rcu_torture_ops rcu_ops = {
->>>  	.init = NULL,
->>>  	.cleanup = NULL,
->>> @@ -267,7 +334,9 @@ static struct rcu_torture_ops rcu_ops = 
->>>  	.completed = rcu_torture_completed,
->>>  	.deferredfree = rcu_torture_deferred_free,
->>>  	.sync = synchronize_rcu,
->>> -	.stats = NULL,
->>> +	.preemptstart = rcu_preempt_start,
->>> +	.preemptend = rcu_preempt_end,
->>> +	.stats = rcu_preempt_stats,
->>>  	.name = "rcu"
->>>  };
->>>  
->>> @@ -306,6 +375,8 @@ static struct rcu_torture_ops rcu_sync_o
->>>  	.completed = rcu_torture_completed,
->>>  	.deferredfree = rcu_sync_torture_deferred_free,
->>>  	.sync = synchronize_rcu,
->>> +	.preemptstart = NULL,
->>> +	.preemptend = NULL,
->>>  	.stats = NULL,
->>>  	.name = "rcu_sync"
->>>  };
->> Much like other common structures such as struct file_operations, no need to
->> explicitly specify members as NULL here; any member you don't specify will get
->> a NULL value.  That avoids the need to update every use of this structure
->> whenever you add a new member used by only some of them.
-> 
-> Untrusting, aren't I?  ;-) 
-
-Heh.  I have that problem as well; I always hestitate to trust the compiler to
-initialize values.
-
-> I removed all the "= NULL" entries.
-
-Thanks.
-
->>> @@ -856,6 +935,8 @@ rcu_torture_cleanup(void)
->>>  		kthread_stop(stats_task);
->>>  	}
->>>  	stats_task = NULL;
->>> +	if (cur_ops->preemptend != NULL)
->> if (cur_ops->preemptend) would work as well.
-> 
-> True, though again there is a lot of existing "!= NULL" in this file
-> and elsewhere.  Many thousands of them through the kernel.  ;-)
-
-As before, don't worry about it for this patch then.
-
-> I will run this through the mill and repost.
-
-Thanks!
-
-- Josh Triplett
+-- 
+] http://www.earth.li/~noodles/ []   "Hey, topic drift isn't just a    [
+]  PGP/GPG Key @ the.earth.li   []   hobby, its a way of life around   [
+] via keyserver, web or email.  []      here ..." -- \pir, b.l-w       [
+] RSA: 4DC4E7FD / DSA: 5B430367 []                                     [
