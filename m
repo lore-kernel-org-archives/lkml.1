@@ -1,42 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932984AbXAYAT4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933093AbXAYAXk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932984AbXAYAT4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jan 2007 19:19:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933093AbXAYAT4
+	id S933093AbXAYAXk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jan 2007 19:23:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933097AbXAYAXk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jan 2007 19:19:56 -0500
-Received: from ug-out-1314.google.com ([66.249.92.169]:55692 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932984AbXAYATz (ORCPT
+	Wed, 24 Jan 2007 19:23:40 -0500
+Received: from tone.orchestra.cse.unsw.EDU.AU ([129.94.242.59]:39975 "EHLO
+	tone.orchestra.cse.unsw.EDU.AU" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933093AbXAYAXk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jan 2007 19:19:55 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=L0doBoZeUKTFZ8ZAWOqGAwG/3I6/QLNy3PyZI/uMY6o2dXT5GfFvyzYprVL60OaXhr08ekAXRFMrTPA7x1W5pyBKrEosjXVp4CLNBOPJu+Re8lIozrnKh9ibD3lJZ3XXsStaZ8JqTYAZ2WtAKSfdJnd5yGxRNIVFpyeGMGfNvfs=
-Message-ID: <3d57814d0701241619l4b9239fdk78342f08469bbbd7@mail.gmail.com>
-Date: Thu, 25 Jan 2007 10:19:52 +1000
-From: "Trent Waddington" <trent.waddington@gmail.com>
-To: "Jan Engelhardt" <jengelh@linux01.gwdg.de>
-Subject: Re: [discuss] portmapping sucks
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.61.0701250030530.32656@yvahk01.tjqt.qr>
+	Wed, 24 Jan 2007 19:23:40 -0500
+X-Greylist: delayed 342 seconds by postgrey-1.27 at vger.kernel.org; Wed, 24 Jan 2007 19:23:39 EST
+From: Paul Cameron Davies <pauld@cse.unsw.EDU.AU>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Date: Thu, 25 Jan 2007 11:17:22 +1100 (EST)
+X-X-Sender: pauld@weill.orchestra.cse.unsw.EDU.AU
+cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] Page Table cleanup patch
+In-Reply-To: <45B6CE8C.8010807@yahoo.com.au>
+Message-ID: <Pine.LNX.4.64.0701251116040.4081@weill.orchestra.cse.unsw.EDU.AU>
+References: <20070124023828.11302.51100.sendpatchset@weill.orchestra.cse.unsw.EDU.AU>
+ <45B6CE8C.8010807@yahoo.com.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <Pine.LNX.4.61.0701250030530.32656@yvahk01.tjqt.qr>
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 1/25/07, Jan Engelhardt <jengelh@linux01.gwdg.de> wrote:
-> There are a number of common ports in the 512-1023 range. All
-> obsolescence and meaninglessness aside, there _are_ rather "important"
-> services in that range, ldaps, rtsp, kerberos, rsync, ftps, imaps, just
-> to name a few from /etc/services. This map-to-random-port behavior is a
-> total DoS thing.
+Hi Nick
 
-Any reason why you can't make a one line code change to use a better
-range?  Or add a blacklist?
+On Wed, 24 Jan 2007, Nick Piggin wrote:
 
-Trent
+> Paul Davies wrote:
+>> This patch is a proposed cleanup of the current page table organisation.
+>> Such a cleanup would be a logical first step towards introducing at least
+>> a partial clean page table interface, geared towards providing enhanced 
+>> virtualization oportunities for x86.  It is also a common sense cleanup in 
+>> its own right.
+>>
+>>  * Creates mlpt.c to hold the page table implementation currently held 
+>> in memory.c.
+>>  * Adjust Makefile  * Move implementation dependent page table code out of 
+>> include/linux/mm.h into include/linux/mlpt-mm.h
+>>  * Move implementation dependent page table code out of 
+>> include/asm-generic/pgtable.h to include/asm-generic/pgtable-mlpt.h
+>> 
+>> mlpt stands from multi level page table.
+>
+> Hi Paul,
+>
+> I'm not sure that I see the point of this patch alone, as there is still
+> all the mlpt implementation details in all the page table walkers. Or
+> did you have a scheme to change implementations somehow just using the
+> p*d_addr_next?
+
+This patch alone doesn't acheive nearly enough.  Separating out as much
+implementation (without tackling the walkers) would be a start though.
+The MLPT appears to be intrinsic to the kernel owing to its open coding, 
+and starting to isolate its implementation (even partially) is an 
+important step towards destroying this misconception.
+
+I strongly prefer not to go down the path of using a scheme to change 
+implementations with p*d_addr_next.  I tried this kind of thing early on 
+and it was horribly ugly.  There are far cleaner ways to do it.
+
+Cheers
+
+Paul Davies
