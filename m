@@ -1,43 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965734AbXAYJR3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965730AbXAYJ1n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965734AbXAYJR3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jan 2007 04:17:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965731AbXAYJR3
+	id S965730AbXAYJ1n (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jan 2007 04:27:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965731AbXAYJ1n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jan 2007 04:17:29 -0500
-Received: from wx-out-0506.google.com ([66.249.82.233]:5225 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965734AbXAYJR1 (ORCPT
+	Thu, 25 Jan 2007 04:27:43 -0500
+Received: from fnoeppeil48.netpark.at ([217.175.205.176]:2376 "EHLO
+	roarinelk.homelinux.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965730AbXAYJ1m (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jan 2007 04:17:27 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=eeuBYb2w2+ZhyHOSeIMm/tc3X4gfNKJZCrw7cYwu0kVyPoJu/WsOC+BntvWfBf6dcLiGBQrr8k4/Wp1ESddEsy4QQS4/y1tukGZufJauEQ8NGJKcvmBXXA6gPAV9DuHeksHaywdLmtjDDxPjMgaQQq6zc1PWgZZoN78ztrX+6dQ=
-Message-ID: <3877989d0701250117j29c04687rbb8214ed5bbb2bbd@mail.gmail.com>
-Date: Thu, 25 Jan 2007 17:17:27 +0800
-From: "Luming Yu" <luming.yu@gmail.com>
-To: "Eamonn Hamilton" <EAMONN.HAMILTON@saic.com>
-Subject: Re: IO-APIC + timer doesn't work - 2.6.20-rc5 on abit KN9-Ultra b ios 1.6
+	Thu, 25 Jan 2007 04:27:42 -0500
+Date: Thu, 25 Jan 2007 10:27:41 +0100
+From: Manuel Lauss <mano@roarinelk.homelinux.net>
+To: drzeus-mmc@drzeus.cx
 Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <1169715782.22508.202.camel@ukabzc383.uk.saic.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Subject: [PATCH] mmc: au1xmmc: return errors for unknown response types
+Message-ID: <20070125092741.GA8512@roarinelk.homelinux.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <3877989d0701242133v2d554d45j603af0b597085fb9@mail.gmail.com>
-	 <1169715782.22508.202.camel@ukabzc383.uk.saic.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I didn't get a chance to try the -mm patch, but booting with acpi=off
-> works - other than no acpi, of course :)
->
-> What now?
-Well, this should be ACPI interrupt configure issue.
-Please feel free to enter a bug on bugzilla.kernel.org.
-And, post acpidump output, /proc/interrupts ,lspci -vvx, dmesg for
-(acpi=off ) there.
 
-Thanks,
-Luming
+au1xmmc: return error when encountering unhandled/unknown response type.
+
+Signed-off-by: Manuel Lauss <mano@roarinelk.homelinux.net>
+
+--- a/drivers/mmc/au1xmmc.c.orig	2007-01-25 09:56:10.851983000 +0100
++++ b/drivers/mmc/au1xmmc.c	2007-01-25 10:13:12.121983000 +0100
+@@ -193,6 +194,8 @@ static int au1xmmc_send_command(struct a
+ 	u32 mmccmd = (cmd->opcode << SD_CMD_CI_SHIFT);
+ 
+ 	switch (mmc_resp_type(cmd)) {
++	case MMC_RSP_NONE:
++		break;
+ 	case MMC_RSP_R1:
+ 		mmccmd |= SD_CMD_RT_1;
+ 		break;
+@@ -205,6 +208,10 @@ static int au1xmmc_send_command(struct a
+ 	case MMC_RSP_R3:
+ 		mmccmd |= SD_CMD_RT_3;
+ 		break;
++	default:
++		printk(KERN_INFO "au1xmmc: unhandled response type %02x\n",
++			mmc_resp_type(cmd));
++		return MMC_ERR_INVALID;
+ 	}
+ 
+ 	switch(cmd->opcode) {
