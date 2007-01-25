@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965768AbXAYLLk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965770AbXAYLNK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965768AbXAYLLk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jan 2007 06:11:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965762AbXAYLLk
+	id S965770AbXAYLNK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jan 2007 06:13:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965769AbXAYLNK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jan 2007 06:11:40 -0500
-Received: from lucidpixels.com ([75.144.35.66]:38272 "EHLO lucidpixels.com"
+	Thu, 25 Jan 2007 06:13:10 -0500
+Received: from lucidpixels.com ([75.144.35.66]:54749 "EHLO lucidpixels.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965756AbXAYLLj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jan 2007 06:11:39 -0500
-Date: Thu, 25 Jan 2007 06:11:38 -0500 (EST)
+	id S965762AbXAYLNI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jan 2007 06:13:08 -0500
+Date: Thu, 25 Jan 2007 06:13:07 -0500 (EST)
 From: Justin Piszcz <jpiszcz@lucidpixels.com>
 X-X-Sender: jpiszcz@p34.internal.lan
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
-       linux-raid@vger.kernel.org, xfs@oss.sgi.com
+To: Bill Cizek <cizek@rcn.com>
+cc: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org, xfs@oss.sgi.com,
+       Alan Piszcz <ap@solarrain.com>
 Subject: Re: 2.6.20-rc5: cp 18gb 18gb.2 = OOM killer, reproducible just like
  2.16.19.2
-In-Reply-To: <45B7FB71.5030603@yahoo.com.au>
-Message-ID: <Pine.LNX.4.64.0701250611260.8945@p34.internal.lan>
+In-Reply-To: <45B80610.5010804@rcn.com>
+Message-ID: <Pine.LNX.4.64.0701250612040.8945@p34.internal.lan>
 References: <Pine.LNX.4.64.0701211424170.2552@p34.internal.lan>
  <20070122115703.97ed54f3.akpm@osdl.org> <Pine.LNX.4.64.0701241909120.2930@p34.internal.lan>
- <45B7FB71.5030603@yahoo.com.au>
+ <45B80610.5010804@rcn.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -29,41 +29,48 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 
-On Thu, 25 Jan 2007, Nick Piggin wrote:
+On Wed, 24 Jan 2007, Bill Cizek wrote:
 
 > Justin Piszcz wrote:
-> > 
 > > On Mon, 22 Jan 2007, Andrew Morton wrote:
-> 
-> > >After the oom-killing, please see if you can free up the ZONE_NORMAL memory
-> > >via a few `echo 3 > /proc/sys/vm/drop_caches' commands.  See if you can
-> > >work out what happened to the missing couple-of-hundred MB from
-> > >ZONE_NORMAL.
-> > >
-> > 
+> >   
+> > > > On Sun, 21 Jan 2007 14:27:34 -0500 (EST) Justin Piszcz
+> > > > <jpiszcz@lucidpixels.com> wrote:
+> > > > Why does copying an 18GB on a 74GB raptor raid1 cause the kernel to
+> > > > invoke the OOM killer and kill all of my processes?
+> > > >       
 > > Running with PREEMPT OFF lets me copy the file!!  The machine LAGS
 > > occasionally every 5-30-60 seconds or so VERY BADLY, talking 5-10 seconds of
 > > lag, but hey, it does not crash!! I will boot the older kernel with preempt
 > > on and see if I can get you that information you requested.
+> >   
+> Justin,
 > 
-> It wouldn't be a bad idea to recompile the new kernel with preempt on
-> and get the info from there.
+> According to your kernel_ring_buffer.txt (attached to another email), you are
+> using "anticipatory" as your io scheduler:
+>   289  Jan 24 18:35:25 p34 kernel: [    0.142130] io scheduler noop registered
+>   290  Jan 24 18:35:25 p34 kernel: [    0.142194] io scheduler anticipatory
+> registered (default)
 > 
-> It is usually best to be working with the most recent kernels. We can
-> always backport any important fixes if we need to.
+> I had a problem with this scheduler where my system would occasionally lockup
+> during heavy I/O.  Sometimes it would fix itself, sometimes I had to reboot.
+> I changed to the "CFQ" io scheduler and my system has worked fine since then.
 > 
-> Thanks,
-> Nick
+> CFQ has to be built into the kernel (under BlockLayer/IOSchedulers).  It can
+> be selected as default or you can set it during runtime:
 > 
-> -- 
-> SUSE Labs, Novell Inc.
-> Send instant messages to your online friends http://au.messenger.yahoo.com -
-> To unsubscribe from this list: send the line "unsubscribe linux-raid" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> echo cfq > /sys/block/<disk>/queue/scheduler
+> ...
 > 
+> Hope this helps,
+> Bill
+> 
+>
 
-In my tests for the most part I am using the latest kernels.
+I used to run CFQ awhile back but then I switched over to AS as it has 
+better performance for my workloads, currently, I am running with PREEMPT 
+off, if I see any additional issues, I will switch to the CFQ scheduler.
+
+Right now, its the OOM killer that is going crazy.
 
 Justin.
-
