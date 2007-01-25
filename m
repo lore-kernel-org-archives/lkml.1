@@ -1,65 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933239AbXAYFB0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933250AbXAYFGm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933239AbXAYFB0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jan 2007 00:01:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933241AbXAYFBZ
+	id S933250AbXAYFGm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jan 2007 00:06:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933249AbXAYFGm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jan 2007 00:01:25 -0500
-Received: from nic2.axis.se ([193.13.178.10]:41827 "EHLO krynn.se.axis.com"
+	Thu, 25 Jan 2007 00:06:42 -0500
+Received: from ns.suse.de ([195.135.220.2]:46736 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933231AbXAYFBY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jan 2007 00:01:24 -0500
-Date: Thu, 25 Jan 2007 05:49:03 +0100
-Message-Id: <200701250449.l0P4n34B017001@ignucius.se.axis.com>
-From: Hans-Peter Nilsson <hans-peter.nilsson@axis.com>
-To: dbrownell@users.sourceforge.net
-CC: mikael.starvik@axis.com, spi-devel-general@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] 1/5: Updates to SPI and mmc_spi for SD+MMC over SPI: spi_bitbang fix, kernel 2.6.19
+	id S933241AbXAYFGk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jan 2007 00:06:40 -0500
+From: NeilBrown <neilb@suse.de>
+To: Andrew Morton <akpm@osdl.org>
+Date: Thu, 25 Jan 2007 16:06:16 +1100
+Message-Id: <1070125050616.21497@suse.de>
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] md: Remove unnecessary printk when raid5 gets an unaligned read.
+References: <20070125160528.21465.patches@notabene>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(Please CC me on replies, I'm not subscribed to LKML.  Thanks.)
+One more... (sorry about the dribs-and-drabs approach)
+NeilBrown
 
-First, a small bug-fix for spi_bitbang: it must always call the
-setup_transfer function via the overridable pointer, not assume
-that its spi_bitbang_setup_transfer is sufficient.  Otherwise,
-if all options in the transfers are default (0), the overrided
-function will never be called.  Granted, the function replacing
-it must call spi_bitbang_setup_transfer, but it might also have
-other important things to do, even if the second argument (the
-spi_transfer) is NULL.  Tested together with the other patches
-on the spi_crisv32_sser and spi_crisv32_gpio drivers (not yet in
-the kernel, will IIUC be submitted as part of the usual
-arch-maintainer-pushes).
 
-Signed-off-by: Hans-Peter Nilsson <hp@axis.com>
+### Comments for Changeset
 
---- a/drivers/spi/spi_bitbang.c	2006-10-13 10:02:33.000000000 +0200
-+++ b/drivers/spi/spi_bitbang.c	2007-01-24 05:21:12.959454043 +0100
-@@ -210,7 +216,7 @@ int spi_bitbang_setup(struct spi_device 
- 	if (!cs->txrx_word)
- 		return -EINVAL;
+raid5_mergeable_bvec tries to ensure that raid5 never sees a read
+request that does not fit within just one chunk.  However as we
+must always accept a single-page read, that is not always possible.
+
+So when "in_chunk_boundary" fails, it might be unusual, but it is not
+a problem and printing a message every time is a bad idea.
+
+Signed-off-by: Neil Brown <neilb@suse.de>
+
+### Diffstat output
+ ./drivers/md/raid5.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff .prev/drivers/md/raid5.c ./drivers/md/raid5.c
+--- .prev/drivers/md/raid5.c	2007-01-25 15:57:56.000000000 +1100
++++ ./drivers/md/raid5.c	2007-01-25 15:55:43.000000000 +1100
+@@ -2630,7 +2630,7 @@ static int chunk_aligned_read(request_qu
+ 	mdk_rdev_t *rdev;
  
--	retval = spi_bitbang_setup_transfer(spi, NULL);
-+	retval = bitbang->setup_transfer(spi, NULL);
- 	if (retval < 0)
- 		return retval;
- 
-@@ -441,9 +463,10 @@ EXPORT_SYMBOL_GPL(spi_bitbang_transfer);
-  * hardware that basically exposes a shift register) or per-spi_transfer
-  * (which takes better advantage of hardware like fifos or DMA engines).
-  *
-- * Drivers using per-word I/O loops should use (or call) spi_bitbang_setup and
-- * spi_bitbang_cleanup to handle those spi master methods.  Those methods are
-- * the defaults if the bitbang->txrx_bufs routine isn't initialized.
-+ * Drivers using per-word I/O loops should use (or call) spi_bitbang_setup,
-+ * spi_bitbang_cleanup and spi_bitbang_setup_transfer to handle those spi
-+ * master methods.  Those methods are the defaults if the bitbang->txrx_bufs
-+ * routine isn't initialized.
-  *
-  * This routine registers the spi_master, which will process requests in a
-  * dedicated task, keeping IRQs unblocked most of the time.  To stop
-
-
-brgds, H-P
+ 	if (!in_chunk_boundary(mddev, raid_bio)) {
+-		printk("chunk_aligned_read : non aligned\n");
++		PRINTK("chunk_aligned_read : non aligned\n");
+ 		return 0;
+ 	}
+ 	/*
