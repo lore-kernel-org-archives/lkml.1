@@ -1,48 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965403AbXAYWMP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030628AbXAYWTO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965403AbXAYWMP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jan 2007 17:12:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965591AbXAYWMP
+	id S1030628AbXAYWTO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jan 2007 17:19:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030629AbXAYWTO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jan 2007 17:12:15 -0500
-Received: from agmk.net ([87.236.194.20]:4289 "EHLO mail.agmk.net"
+	Thu, 25 Jan 2007 17:19:14 -0500
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:49272 "EHLO e5.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965403AbXAYWMO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jan 2007 17:12:14 -0500
-From: =?utf-8?q?Pawe=C5=82_Sikora?= <pluto@agmk.net>
-To: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.20rc5 k8/acpi regression ( 2.6.17.13 works fine ).
-Date: Thu, 25 Jan 2007 23:11:46 +0100
-User-Agent: KMail/1.9.6
-Cc: Len Brown <lenb@kernel.org>, Adrian Bunk <bunk@stusta.de>,
-       linux-acpi@vger.kernel.org, cpufreq@lists.linux.org.uk
-References: <200701242346.44673.pluto@agmk.net> <20070124225238.GT17836@stusta.de> <200701242350.45276.lenb@kernel.org>
-In-Reply-To: <200701242350.45276.lenb@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	id S1030628AbXAYWTN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jan 2007 17:19:13 -0500
+Subject: Re: One-shot high-resolution POSIX timer periodically late
+From: john stultz <johnstul@us.ibm.com>
+To: John <shill@free.fr>
+Cc: linux-kernel@vger.kernel.org, tglx@timesys.com, mingo@elte.hu,
+       akpm@osdl.org
+In-Reply-To: <45B87F9A.9060201@free.fr>
+References: <fa.NwnlFyMPfa3XG6my3HKGWnCW3x4@ifi.uio.no>
+	 <fa.Ji4GnAbBF2FR5JbSxvxn2haJZIk@ifi.uio.no>  <45B87F9A.9060201@free.fr>
+Content-Type: text/plain; charset=utf-8
+Date: Thu, 25 Jan 2007 14:19:03 -0800
+Message-Id: <1169763543.5396.12.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
 Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200701252311.46858.pluto@agmk.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 25 of January 2007 05:50:45 Len Brown wrote:
-> On Wednesday 24 January 2007 17:52, Adrian Bunk wrote:
-> > On Wed, Jan 24, 2007 at 11:46:44PM +0100, Paweł Sikora wrote:
-> > > for 2.6.20rc5 i get an acpi related oops during x86-64 boot:
-> > > http://minus.ds14.agh.edu.pl/~pluto/2.6.20rc5-acpi-oops.jpg
-> > > disabling the "amd-k8 cool'n'quiet" option in bios helps.
-> > > moreover, it works fine for 2.6.17.13, so it looks like
-> > > a recent regression. i can provide more details if you need.
-> >
-> > thanks for your report.
-> >
-> > Can you narrow down a bit when it started?
-> > Is 2.6.19 OK?
-> > Is 2.6.18 OK?
->
-> Is the stack trace always the same?  It doesn't make much sense to me.
+On Thu, 2007-01-25 at 10:59 +0100, John wrote:
+> John Stultz wrote:
+> > On Wed, 2007-01-24 at 10:41 +0100, John wrote:
+> >> As you can see, the first diagnostic came at 472.410501014... Then
+> >> another diagnostic almost exactly two seconds apart 9 times in a row!
+> >>
+> >> My process is the only SCHED_FIFO process on the system. There are no
+> >> user-space processes with a higher priority. AFAICT, only a kernel
+> >> thread could keep the CPU away from my app.
+> >>
+> >> Is there a periodic kernel thread that runs every 2 seconds, cannot be
+> >> preempted, and runs for over 50 µs??
+> > 
+> > This sounds like a BIOS SMI issue. Can you reproduce this behavior on
+> > different hardware?
+[snip]
+> Do PCs typically enter System Management Mode periodically?
 
-with debug options enabled oops looks better:
-http://minus.ds14.agh.edu.pl/~pluto/2.6.20rc5-oops-01.jpg
+Completely depends on the system hardware and BIOS.
+
+> Is it possible to disable SMM?
+
+Not usually. Sometimes some SMIs can be disabled via BIOS options.
+
+> According to the Wikipedia article, even the kernel is unaware that
+> the CPU has entered SMM, is that correct?
+
+Yes. The kernel has no notification that the SMI occurred.
+
+> I've run my tests on a Dell PC. IIRC, the BIOS options are very basic.
+> 
+> I'll also try another PC as you suggest.
+
+Also do check the -rt tree as Ingo suggested. I mis-read your earlier
+email and thought you were running it.
+
+
+> +++++
+> 
+> On a related note, John, AFAIU, you wrote the GTOD infrastructure. In my 
+> app, I need to call clock_gettime(CLOCK_MONOTONIC, ...) very often, i.e. 
+> around 2000 times every second (when I receive a packet, and when I 
+> re-send a packet). Is there a way to improve the overhead / latency of 
+> these calls? I've heard about vsyscalls, are they relevant?
+> 
+> Do I need a specific glibc to use vsyscalls?
+
+vsyscalls are only supported on x86_64/powerpc (I think) right now.
+glibc support is necessary, and right now its only for gettimeofday()
+not clock_gettime().
+
+> If I call clock_gettime(CLOCK_MONOTONIC, &spec) twice in a row, then 
+> subtract the two timespecs, I get ~1400 ns on a 2.8 GHz P4. AFAIU, my 
+> clock source is acpi_pm. I tried setting it to tsc but it made hell 
+> break loose.
+> 
+> http://groups.google.com/group/fa.linux.kernel/msg/a095241d49adfc44?dmode=source
+> 
+> Apparently, 1400 ns is similar to what you observe with acpi_pm.
+> I suppose I'll need to use the TSC if I want any improvement?
+
+Yea, unfortunately the ACPI PM is much slower then the TSC.
+However, the TSC is often unstable, so you might not be able to utilize
+it.
+
+You can play around w/ the "idle=poll" boot option to see if that allows
+you to use it, but that will up your power usage and has possible
+thermal risks.
+
+thanks
+-john
+
+
