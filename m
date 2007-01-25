@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030274AbXAYQQA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030270AbXAYQQI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030274AbXAYQQA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jan 2007 11:16:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030273AbXAYQP7
+	id S1030270AbXAYQQI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jan 2007 11:16:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030258AbXAYQQI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jan 2007 11:15:59 -0500
-Received: from tomts10-srv.bellnexxia.net ([209.226.175.54]:46892 "EHLO
+	Thu, 25 Jan 2007 11:16:08 -0500
+Received: from tomts10.bellnexxia.net ([209.226.175.54]:46920 "EHLO
 	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1030258AbXAYQP6 (ORCPT
+	by vger.kernel.org with ESMTP id S1030272AbXAYQQG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jan 2007 11:15:58 -0500
+	Thu, 25 Jan 2007 11:16:06 -0500
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: linux-kernel@vger.kernel.org
 Cc: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
@@ -19,21 +19,61 @@ Cc: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
        "Martin J. Bligh" <mbligh@mbligh.org>,
        Thomas Gleixner <tglx@linutronix.de>, Paul Mackerras <paulus@samba.org>,
        Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: [PATCH 00/09] atomic.h : standardizing atomic primitives
-Date: Thu, 25 Jan 2007 11:15:45 -0500
-Message-Id: <11697417541743-git-send-email-mathieu.desnoyers@polymtl.ca>
+Subject: [PATCH 04/09] atomic.h : Add atomic64 cmpxchg, xchg and add_unless to ia64
+Date: Thu, 25 Jan 2007 11:15:49 -0500
+Message-Id: <1169741755638-git-send-email-mathieu.desnoyers@polymtl.ca>
 X-Mailer: git-send-email 1.4.4.3
+In-Reply-To: <11697417541743-git-send-email-mathieu.desnoyers@polymtl.ca>
+References: <11697417541743-git-send-email-mathieu.desnoyers@polymtl.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-atomic.h : standardizing atomic primitives
+atomic.h : Add atomic64 cmpxchg, xchg and add_unless to ia64
 
-It mainly adds support for missing 64 bits cmpxchg and 64 bits atomic add
-unless. Therefore, principally 64 bits architectures are targeted by these
-patches. It also adds the complete list of atomic operations on the atomic_long
-type.
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 
-These patches apply on 2.6.20-rc5-git4.
-
-Signed-off-by : Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-
+--- a/include/asm-ia64/atomic.h
++++ b/include/asm-ia64/atomic.h
+@@ -88,12 +88,17 @@ ia64_atomic64_sub (__s64 i, atomic64_t *v)
+ 	return new;
+ }
+ 
+-#define atomic_cmpxchg(v, old, new) ((int)cmpxchg(&((v)->counter), old, new))
++#define atomic_cmpxchg(v, old, new) \
++	((__typeof__((v)->counter))cmpxchg(&((v)->counter), old, new))
+ #define atomic_xchg(v, new) (xchg(&((v)->counter), new))
+ 
++#define atomic64_cmpxchg(v, old, new) \
++	((__typeof__((v)->counter))cmpxchg(&((v)->counter), old, new))
++#define atomic64_xchg(v, new) (xchg(&((v)->counter), new))
++
+ #define atomic_add_unless(v, a, u)				\
+ ({								\
+-	int c, old;						\
++	__typeof__(v->counter) c, old;				\
+ 	c = atomic_read(v);					\
+ 	for (;;) {						\
+ 		if (unlikely(c == (u)))				\
+@@ -107,6 +112,22 @@ ia64_atomic64_sub (__s64 i, atomic64_t *v)
+ })
+ #define atomic_inc_not_zero(v) atomic_add_unless((v), 1, 0)
+ 
++#define atomic64_add_unless(v, a, u)				\
++({								\
++	__typeof__(v->counter) c, old;				\
++	c = atomic64_read(v);					\
++	for (;;) {						\
++		if (unlikely(c == (u)))				\
++			break;					\
++		old = atomic64_cmpxchg((v), c, c + (a));	\
++		if (likely(old == c))				\
++			break;					\
++		c = old;					\
++	}							\
++	c != (u);						\
++})
++#define atomic64_inc_not_zero(v) atomic64_add_unless((v), 1, 0)
++
+ #define atomic_add_return(i,v)						\
+ ({									\
+ 	int __ia64_aar_i = (i);						\
