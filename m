@@ -1,133 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030651AbXAYX43@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030652AbXAYX4i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030651AbXAYX43 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jan 2007 18:56:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030652AbXAYX42
+	id S1030652AbXAYX4i (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jan 2007 18:56:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030653AbXAYX4i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jan 2007 18:56:28 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:40292 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030651AbXAYX42 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jan 2007 18:56:28 -0500
-Message-ID: <45B943B7.8070500@redhat.com>
-Date: Thu, 25 Jan 2007 18:56:39 -0500
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
+	Thu, 25 Jan 2007 18:56:38 -0500
+Received: from mtaout01-winn.ispmail.ntl.com ([81.103.221.47]:36087 "EHLO
+	mtaout01-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1030652AbXAYX4h convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jan 2007 18:56:37 -0500
+Date: Thu, 25 Jan 2007 23:56:27 +0000
+From: Ken Moffat <zarniwhoop@ntlworld.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Len Brown <lenb@kernel.org>, linux-kernel@vger.kernel.org
+Subject: Re: x86 instability with 2.6.1{8,9}
+Message-ID: <20070125235627.GA17168@deepthought>
+References: <20070101160158.GA26547@deepthought> <200701021225.57708.lenb@kernel.org> <20070102180425.GA18680@deepthought> <200701021342.32195.lenb@kernel.org> <20070102193459.GA19894@deepthought> <20070106140459.a6b72039.randy.dunlap@oracle.com> <20070107142641.GA30379@deepthought> <20070115162911.GA13198@deepthought>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@osdl.org>
-CC: linux-kernel <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>
-Subject: Re: [patch] i386: add option to show more code in oops reports
-References: <45B7C019.1040209@redhat.com> <20070125145504.c8c0a98a.akpm@osdl.org>
-In-Reply-To: <20070125145504.c8c0a98a.akpm@osdl.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20070115162911.GA13198@deepthought>
+User-Agent: Mutt/1.5.12-2006-07-14
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Wed, 24 Jan 2007 15:22:49 -0500
-> Chuck Ebbert <cebbert@redhat.com> wrote:
->
->   
->> Sometimes we may need to see more code than the default in an oops,
->> so add an option for that.
->>     
->
-> spose so, but some more justification would be nice.  As would an x86_64
-> version?
->   
+On Mon, Jan 15, 2007 at 04:29:11PM +0000, Ken Moffat wrote:
+> 
+>  Today, I've built 2.6.19.2 without highmem (the box only has 1GB,
+> dunno why I'd included that in the original config) and I will
+> continue to wait patiently for either a week without problems, or
+> something that I can manage to note - although I think at the moment
+> that the second coming of the great prophet Zarquon is more likely.
+> 
+ Bizarre - it panic'd again last Thursday while I was in X, but I
+still didn't manage to log any output.  At the weekend, I had the
+bright idea of using chattr +j on the syslog to try to journal any
+data, since then it has been fine.  So, it isn't down to highmem, and
+I still can't trigger it reliably, or get any trace.  Tried running
+as x86_64 this morning (because cold starts on Thursdays seem
+particularly problematic, perhaps it's a time/power-supply-noise
+problem), then x86 from a cold start this afternoon.
 
-Can't think of a way to word the justification, but I've wanted to see more
-code a few times.
+ Time to hope it won't bite me too often, and move on to testing
+2.6.20-rc6.
 
-As for x86_64, Andi doesn't want to print any code before the failure
-and just
-printing more afterwards didn't seem to make much sense.
->   
->> Signed-off-by: Chuck Ebbert <cebbert@redhat.com>
->>     
->
-> ooh, congrats.
->   
-Thanks. Looks like I'll have plenty to do here...
->   
->> --- 2.6.20-rc5-32.orig/arch/i386/kernel/traps.c
->> +++ 2.6.20-rc5-32/arch/i386/kernel/traps.c
->> @@ -94,6 +94,7 @@ asmlinkage void spurious_interrupt_bug(v
->>  asmlinkage void machine_check(void);
->>  
->>  int kstack_depth_to_print = 24;
->> +int code_bytes = 64;
->>     
->
-> static scope, please.  And I think it should be unsigned.
->
->   
->>  ATOMIC_NOTIFIER_HEAD(i386die_chain);
->>  
->>  int register_die_notifier(struct notifier_block *nb)
->> @@ -324,7 +325,7 @@ void show_registers(struct pt_regs *regs
->>  	 */
->>  	if (in_kernel) {
->>  		u8 *eip;
->> -		int code_bytes = 64;
->> +		int code_prologue = code_bytes * 43 / 64;
->>  		unsigned char c;
->>  
->>  		printk("\n" KERN_EMERG "Stack: ");
->> @@ -332,7 +333,7 @@ void show_registers(struct pt_regs *regs
->>  
->>  		printk(KERN_EMERG "Code: ");
->>  
->> -		eip = (u8 *)regs->eip - 43;
->> +		eip = (u8 *)regs->eip - code_prologue;
->>  		if (eip < (u8 *)PAGE_OFFSET ||
->>  			probe_kernel_address(eip, c)) {
->>  			/* try starting at EIP */
->>     
->
-> You missed this bit:
->
-> 		if (eip < (u8 *)PAGE_OFFSET ||
-> 			probe_kernel_address(eip, c)) {
-> 			/* try starting at EIP */
-> 			eip = (u8 *)regs->eip;
-> 			code_bytes = 32;
-> 		}
->
-> Do we really want to be modifying the global variable here?
->   
-Oops.
->   
->> @@ -1191,3 +1192,15 @@ static int __init kstack_setup(char *s)
->>  	return 1;
->>  }
->>  __setup("kstack=", kstack_setup);
->> +
->> +static int __init code_bytes_setup(char *s)
->> +{
->> +	code_bytes = simple_strtoul(s, NULL, 0);
->> +	if (code_bytes < 64)
->> +		code_bytes = 64;
->> +	if (code_bytes > 1024)
->> +		code_bytes = 1024;
->> +
->> +	return 1;
->> +}
->> +__setup("code_bytes=", code_bytes_setup);
->>     
->
-> I'm OK with the upper limit, but I'd sugegst that we remove the lower
-> limit: someone might _want_ to be able to set code_bytes=0, who knows?
->
-> And if code_bytes is unsigned, the single comparison with 1024 will suffice.
->
-> OTOH, why have any checks at all in there?  If the user sets
-> code_bytes=0xfffffff0 and things break, he gets to own both pieces...
->
->   
-It's multiplying the number by 43 and dividing by 64, so we need to
-avoid overflow.
-(I couldn't think of an easy way to preserve current behavior.)
-
+Ken
+-- 
+das eine Mal als Tragödie, das andere Mal als Farce
