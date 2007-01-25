@@ -1,50 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965448AbXAYPVr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965487AbXAYPWi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965448AbXAYPVr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jan 2007 10:21:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965459AbXAYPVr
+	id S965487AbXAYPWi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jan 2007 10:22:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965482AbXAYPWi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jan 2007 10:21:47 -0500
-Received: from [217.111.56.2] ([217.111.56.2]:47587 "EHLO semtex.sncag.com"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S965448AbXAYPVr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jan 2007 10:21:47 -0500
-To: torvalds@linux-foundation.org
-Cc: bunk@stusta.de, linux-kernel@vger.kernel.org
-Subject: unfixed regression in 2.6.20-rc6 (since 2.6.19)
-From: Rainer Weikusat <rainer.weikusat@sncag.com>
-Date: Thu, 25 Jan 2007 16:20:55 +0100
-Message-ID: <877ivb2kvc.fsf@semtex.sncag.com>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.4 (gnu/linux)
+	Thu, 25 Jan 2007 10:22:38 -0500
+Received: from styx.suse.cz ([82.119.242.94]:42067 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S965488AbXAYPWh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jan 2007 10:22:37 -0500
+Date: Thu, 25 Jan 2007 16:22:38 +0100
+From: Vojtech Pavlik <vojtech@suse.cz>
+To: Oleg Verych <olecom@flower.upol.cz>
+Cc: Alan Cox <alan@redhat.com>, David Miller <davem@davemloft.net>, hch@lst.de,
+       tytso@mit.edu, ksummit-2006-discuss@thunk.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: +1 4 cz (Re: [Ksummit-2006-discuss] 2007 Linux Kernel Summit)
+Message-ID: <20070125152238.GA6494@suse.cz>
+References: <E1H8tIr-0006QH-Bg@candygram.thunk.org> <20070122110711.GA5917@lst.de> <20070122124502.GC30124@devserv.devel.redhat.com> <20070123.095756.30177490.davem@davemloft.net> <E1H9RAM-0007ny-NP@flower>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <E1H9RAM-0007ny-NP@flower>
+X-Bounce-Cookie: It's a lemon tree, dear Watson!
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.19 introduced changes to the UHCI handling of interrupt URBs that
-caused at least some keyspan USB-to-serial converters to fail, because
-the driver code incorrectly assumes that all URBs of the device are
-bulk URBs, while some of them (in the default configuration) are
-actually interrupt URBs. This has been reported via kernel bugzilla as
-bug 7544 on 2006/11/17:
+On Tue, Jan 23, 2007 at 07:18:46PM +0000, Oleg Verych wrote:
 
-	http://bugzilla.kernel.org/show_bug.cgi?id=7544
+> >> Ditto..
+> >> 
+> >> Definitely disagree with that. I'd like to see the conference somewhere
+> >> else different this time - perhaps *Czech Republic*, or somewhere else more
+> >> easterly and Linux active (or even Finland...)
+> >
+> > This is my position as well.
+> > 
+> > For the first time in many years I'm strongly considering actually
+> > going to the kernel summit, however if it goes back to Ottawa I
+> > definitely will stop going again.
+> 
+> It would be interesting. Thank you Alan, David!
 
-I happen to use such a device, but I didn't have the time to deal with
-this issue until end of december. A fix for this regression has been
-available at least since 2006/12/26. The patch available via bugzilla
-has been reworked by me because of comments from Mr. Kroah-Hartmann,
+I (and SUSE/Novell) would be happy to help organizing the Kernel Summit
+in Czech Republic.
 
-	http://marc.theaimsgroup.com/?l=linux-kernel&m=116783507105717&w=2
-
-It has been part of the -mm tree until about three days ago and was
-then dropped by Andrew Morton because Mr Kroah-Hartmann added a
-structurally identical and functionally neutral (or slightly worse)
-rewritten-by-him version of it to something called 'gregkh-2.6',
-presumably, judging from the age of other patches in this particular
-tree (back until 2006/09/19), to never see the light of the day again.
-
-If this issue is not going to be fixed for some reason, it would at
-least be appropriate to close the bugzilla entry with something like
-WILL_NOT_FIX, because that appears to be the situation at present and
-for an indefinite time to come.
+-- 
+Vojtech Pavlik
+Director SuSE Labs
