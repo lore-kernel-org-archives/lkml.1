@@ -1,61 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030331AbXAYQcb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030324AbXAYQe7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030331AbXAYQcb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jan 2007 11:32:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030330AbXAYQcb
+	id S1030324AbXAYQe7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jan 2007 11:34:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030316AbXAYQe7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jan 2007 11:32:31 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:44278 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030324AbXAYQca (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jan 2007 11:32:30 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: linux-kernel@vger.kernel.org, Cedric Le Goater <clg@fr.ibm.com>,
-       Oleg Nesterov <oleg@tv-sign.ru>,
-       Daniel Hokka Zakrisson <daniel@hozac.com>, herbert@13thfloor.at,
-       akpm@osdl.org, trond.myklebust@fys.uio.no,
-       Linux Containers <containers@lists.osdl.org>
-Subject: Re: [PATCH] namespaces: fix race at task exit
-References: <20070125150542.GA27472@sergelap.austin.ibm.com>
-Date: Thu, 25 Jan 2007 09:29:13 -0700
-In-Reply-To: <20070125150542.GA27472@sergelap.austin.ibm.com> (Serge
-	E. Hallyn's message of "Thu, 25 Jan 2007 09:05:42 -0600")
-Message-ID: <m14pqfysrq.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
+	Thu, 25 Jan 2007 11:34:59 -0500
+Received: from mail.screens.ru ([213.234.233.54]:43261 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030324AbXAYQe6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jan 2007 11:34:58 -0500
+Date: Thu, 25 Jan 2007 19:34:07 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Sebastien Dugue <sebastien.dugue@bull.net>,
+       Laurent Vivier <laurent.vivier@bull.net>
+Cc: Zach Brown <zach.brown@oracle.com>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Benjamin LaHaise <bcrl@kvack.org>, Ulrich Drepper <drepper@redhat.com>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org
+Subject: Re: + aio-completion-signal-notification.patch added to -mm tree
+Message-ID: <20070125163407.GA238@tv-sign.ru>
+References: <20070125162141.GA226@tv-sign.ru>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070125162141.GA226@tv-sign.ru>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Serge E. Hallyn" <serue@us.ibm.com> writes:
-
-> In do_exit(), the exit_task_namespaces() was placed after
-> exit_notify() because exit_notify ends up using the pid
-> namespace both to access the reaper, and for detaching the
-> pid.  However, this placement allows an nfs server to reap
-> the task before exit_task_namespaces() completes.
+On 01/25, Oleg Nesterov wrote:
 >
-> This patch moves the exit_task_namespaces() into release_task,
-> below release_thread() which puts the pids(), and just above
-> the call_rcu(delayed_put_task_struct).  I believe this should
-> solve both problems.
+> Sebastien Dugue wrote:
+> >
+> > +	if (iocb->ki_notify.notify != SIGEV_NONE) {
+> > +		ret = aio_send_signal(&iocb->ki_notify);
+> > +
+> > +		/* If signal generation failed, release the sigqueue */
+> > +		if (ret)
+> > +			sigqueue_free(iocb->ki_notify.sigq);
+> 
+> We should not use sigqueue_free() here. It takes current->sighand->siglock
+> to remove sigqueue from "struct sigpending". But current is just a "random"
+> process here.
 
+... and it is possible that current->sighand == NULL.
 
-For the pid namespace this seems to be correct placement.
-For the mount namespace this would seem to exacerbate the problem
-because it now gets called after the task has been reaped!
+Oleg.
 
-I'd love to be convinced otherwise but I do not believe we
-can safely exit both the mount and the pid namespace at the
-same location in the code.
-
-The NFS unmount currently wants a killable thread as it
-uses interruptible sleeps.  How does starting that process
-after the process in which it lives aid this?
-
-But thanks for remembering this.  This is a real problem we
-do need to solve.
-
-Eric
