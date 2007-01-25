@@ -1,91 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965236AbXAYDS5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932579AbXAYDYF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965236AbXAYDS5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jan 2007 22:18:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965244AbXAYDS4
+	id S932579AbXAYDYF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jan 2007 22:24:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932566AbXAYDYE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jan 2007 22:18:56 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:56430 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965236AbXAYDS4 (ORCPT
+	Wed, 24 Jan 2007 22:24:04 -0500
+Received: from 67.111.72.3.ptr.us.xo.net ([67.111.72.3]:41406 "EHLO
+	nonameb.ptu.promise.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932549AbXAYDYD convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jan 2007 22:18:56 -0500
-Date: Thu, 25 Jan 2007 12:12:54 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: aubreylee@gmail.com, svaidy@linux.vnet.ibm.com, nickpiggin@yahoo.com.au,
-       rgetz@blackfin.uclinux.org, Michael.Hennerich@analog.com,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC] Limit the size of the pagecache
-Message-Id: <20070125121254.a2e91875.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <Pine.LNX.4.64.0701241841000.12325@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0701231645260.5239@schroedinger.engr.sgi.com>
-	<20070124121318.6874f003.kamezawa.hiroyu@jp.fujitsu.com>
-	<Pine.LNX.4.64.0701232028520.6820@schroedinger.engr.sgi.com>
-	<20070124141510.7775829c.kamezawa.hiroyu@jp.fujitsu.com>
-	<20070125093259.74f76144.kamezawa.hiroyu@jp.fujitsu.com>
-	<Pine.LNX.4.64.0701241841000.12325@schroedinger.engr.sgi.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed version 2.2.0 (GTK+ 2.6.10; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 24 Jan 2007 22:24:03 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.0.6487.1
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [patch] scsi: use lock per host instead of per device forshared queue tag host
+Date: Wed, 24 Jan 2007 19:25:11 -0800
+Message-ID: <B70A50D07063384EB9BCE3330D18414F02F5AF9D@nonameb.ptu.promise.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [patch] scsi: use lock per host instead of per device forshared queue tag host
+Thread-Index: Acc/2TxkbUnpGckfQReqvrsqh7ZrvgAVtD1Q
+From: "Ed Lin" <ed.lin@promise.com>
+To: "James Bottomley" <James.Bottomley@SteelEye.com>
+Cc: "linux-scsi" <linux-scsi@vger.kernel.org>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>, "jeff" <jeff@garzik.org>,
+       "Promise_Linux" <Promise_Linux@promise.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 24 Jan 2007 18:41:27 -0800 (PST)
-Christoph Lameter <clameter@sgi.com> wrote:
-> > But I can't think of the way to show that.
-> > ==
-> > [kamezawa@aworks src]$ free
-> >             total       used       free     shared    buffers     cached
-> > Mem:        741604     724628      16976          0      62700     564600
-> > -/+ buffers/cache:      97328     644276
-> > Swap:      1052216       2532    1049684
-> > ==
+
+
+> -----Original Message-----
+> From: James Bottomley [mailto:James.Bottomley@SteelEye.com] 
+> Sent: Wednesday, January 24, 2007 9:00 AM
+> To: Ed Lin
+> Cc: linux-scsi; linux-kernel; jeff; Promise_Linux
+> Subject: Re: [patch] scsi: use lock per host instead of per 
+> device forshared queue tag host
 > 
-> Could we call the free memory "unused memory" and not talk about free 
-> memory at all?
+...
 > 
-Ah, maybe it's better.
+> This patch looks OK in principle.
+> 
+> However, are you sure you're not using a sledgehammer to crack a nut?
+> If the only reason you're doing this is because of the shared tag map,
+> then probably that should be the area you protect with a per-tag-map
+> lock.   The net effect of what you've done will be to serialise all
+> accesses to your storage devices.  For a small number of devices, this
+> probably won't matter than much, but for large numbers of devices,
+> you're probably going to introduce artificial performance 
+> degredation in
+> the I/O scheduler.
+> 
+> James
+> 
 
-I met several memory troubles in user's systems in these days. (on older kernels)
-Thousands/hundreds of process works on it.
+Thanks.
+Maybe this issue needs more discussion. I'll follow up.
 
-When I explain the cutomers about memory management, I devides memory into..
-
-(1) unused memory  --- memory which is not used, in free-list of zones.
-
-(2) reclaimable memory --- page cache, which is reclaimable
-	clean pages  --- can be reclaimed soon
-	dirty pages  --- need to be written back
-	*BUT* busy pages are unreclaimable. 
-
-(3) swappable memory --- user process's pages. basically reclaimable if 
-                         swap is available.
-			 shmem pages are included here.
-
-(4) locked memory --- mlocked memory, which is not reclaimable(but movable)
-
-(5) kernel memory --- used by kernel, 
-                      (and we can't see how many pages are reclaimable)
- 
-We can know the amount of (1) and (5) and total memory.
-Basically, (3) = (Total) - (2) - (1).
-busy data-set of (2)(3) is not reclaimable. but the amount of busy data-set
-is unknown. Many users takes log of 'ps' or 'sar' to estimate their memory
-usage. (and sometimes page-cache of 'log-file' eats their memory.....)
-
-The amount of (4) is unknown. But there was a system with 6GB of 8GB
-memory was mlocked (--; and OOM works.
-
-I'm sorry that I can't catch up how the current kernel can show memory usage.
-I should investigate that. 
-
-FYI:
-Because some customers are migrated from mainframes, they want to control
-almost all features in OS, IOW, designing memory usages.
-
--Kame
-
-
+Ed Lin
