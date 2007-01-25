@@ -1,45 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964907AbXAYAfA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933111AbXAYAf5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964907AbXAYAfA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jan 2007 19:35:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933111AbXAYAfA
+	id S933111AbXAYAf5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jan 2007 19:35:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933132AbXAYAf4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jan 2007 19:35:00 -0500
-Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:50420 "EHLO
-	pd4mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933104AbXAYAe7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jan 2007 19:34:59 -0500
-Date: Wed, 24 Jan 2007 18:33:25 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: SATA hotplug from the user side ?
-In-reply-to: <fa.DH50RMz6OHKG0AoGA/cChsCW8Ig@ifi.uio.no>
-To: Soeren Sonnenburg <kernel@nn7.de>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Cc: Tejun Heo <htejun@gmail.com>
-Message-id: <45B7FAD5.6030506@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=UTF-8; format=flowed
-Content-transfer-encoding: 8BIT
-References: <fa.pn1gmGiSlhDVMiPyzEEm1A66vcY@ifi.uio.no>
- <fa.Od11QHN89ZQ9VkFktF6HvxWuLV0@ifi.uio.no>
- <fa.vsuV8EVipw4cXaHgzWpaf0q1pAA@ifi.uio.no>
- <fa.8a1kVu4a2ISeaFZcL3migbjZ5N0@ifi.uio.no>
- <fa.79JzgEcD2u5B9SYqrw3sr5b+iy8@ifi.uio.no>
- <fa.DH50RMz6OHKG0AoGA/cChsCW8Ig@ifi.uio.no>
-User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
+	Wed, 24 Jan 2007 19:35:56 -0500
+Received: from omx2-ext.sgi.com ([192.48.171.19]:50463 "EHLO omx2.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S933111AbXAYAfz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jan 2007 19:35:55 -0500
+Date: Thu, 25 Jan 2007 11:35:36 +1100
+From: David Chinner <dgc@sgi.com>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: David Chinner <dgc@sgi.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       linux-kernel@vger.kernel.org, xfs@oss.sgi.com, akpm@osdl.org
+Subject: Re: [PATCH 1/2]: Fix BUG in cancel_dirty_pages on XFS
+Message-ID: <20070125003536.GS33919298@melbourne.sgi.com>
+References: <20070123223702.GF33919298@melbourne.sgi.com> <1169640835.6189.14.camel@twins> <45B7627B.8050202@yahoo.com.au> <20070124224654.GN33919298@melbourne.sgi.com> <45B7F5F9.2070308@yahoo.com.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <45B7F5F9.2070308@yahoo.com.au>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Soeren Sonnenburg wrote:
-> • Note that it might not be such a good idea to do the above on drivers
-> which don't implement the new EH yet. Those are as of January 2007:
-> sata_nv, sata_promise (getting there) and sata_sx4.
+On Thu, Jan 25, 2007 at 11:12:41AM +1100, Nick Piggin wrote:
+> David Chinner wrote:
+> >On Thu, Jan 25, 2007 at 12:43:23AM +1100, Nick Piggin wrote:
+> 
+> >>And why not just leave it in the pagecache and be done with it?
+> >
+> >
+> >because what is in cache is then not coherent with what is on disk,
+> >and a direct read is supposed to read the data that is present
+> >in the file at the time it is issued. 
+> 
+> So after a writeout it will be coherent of course, so the point in
+> question is what happens when someone comes in and dirties it at the
+> worst possible moment? That relates to the paragraph below...
+> 
+> >>All you need is to do a writeout before a direct IO read, which is
+> >>what generic dio code does.
+> >
+> >
+> >No, that's not good enough - after writeout but before the
+> >direct I/O read is issued a process can fault the page and dirty
+> >it. If you do a direct read, followed by a buffered read you should
+> >get the same data. The only way to guarantee this is to chuck out
+> >any cached pages across the range of the direct I/O so they are
+> >fetched again from disk on the next buffered I/O. i.e. coherent
+> >at the time the direct I/O is issued.
+> 
+> ... so surely if you do a direct read followed by a buffered read,
+> you should *not* get the same data if there has been some activity
+> to modify that part of the file in the meantime (whether that be a
+> buffered or direct write).
 
-That should be sata_mv not sata_nv.
+Right. And that is what happens in XFS because it purges the
+caches on direct I/O and forces data to be re-read from disk.
 
+Effectively, if you are mixing direct I/O with other types of I/O
+(buffered or mmap) then the application really needs to be certain
+it is doing the right thing because there are races that can occur
+below the filesystem. All we care about in the filesystem is that
+what we cache is the same as what is on disk, and that implies that
+direct I/O needs to purge the cache regardless of the state it is in....
+
+Hence we need to unmap pages and use truncate semantics on them to
+ensure they are removed from the page cache....
+
+Cheers,
+
+Dave.
 -- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
-
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
