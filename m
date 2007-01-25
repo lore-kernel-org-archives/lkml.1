@@ -1,59 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965127AbXAYBvr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965134AbXAYBwY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965127AbXAYBvr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jan 2007 20:51:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965134AbXAYBvr
+	id S965134AbXAYBwY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jan 2007 20:52:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965156AbXAYBwX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jan 2007 20:51:47 -0500
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:40416
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965127AbXAYBvq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jan 2007 20:51:46 -0500
-From: Rob Landley <rob@landley.net>
-To: Oleg Verych <olecom@flower.upol.cz>
-Subject: Re: [rft] (g)awk substitution (Re: [PATCH] sed s/gawk/awk/scripts/gen_init_ramfs.sh)
-Date: Wed, 24 Jan 2007 20:51:32 -0500
-User-Agent: KMail/1.9.1
-Cc: Andrew Morton <akpm@osdl.org>, Sam Ravnborg <sam@ravnborg.org>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <200701151624.18033.rob@landley.net> <200701241230.40996.rob@landley.net> <E1H9pHf-0002Iu-4D@flower>
-In-Reply-To: <E1H9pHf-0002Iu-4D@flower>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+	Wed, 24 Jan 2007 20:52:23 -0500
+Received: from omx2-ext.sgi.com ([192.48.171.19]:52322 "EHLO omx2.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S965134AbXAYBwX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jan 2007 20:52:23 -0500
+Date: Thu, 25 Jan 2007 12:52:04 +1100
+From: David Chinner <dgc@sgi.com>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: David Chinner <dgc@sgi.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       linux-kernel@vger.kernel.org, xfs@oss.sgi.com, akpm@osdl.org
+Subject: Re: [PATCH 1/2]: Fix BUG in cancel_dirty_pages on XFS
+Message-ID: <20070125015204.GV33919298@melbourne.sgi.com>
+References: <20070123223702.GF33919298@melbourne.sgi.com> <1169640835.6189.14.camel@twins> <45B7627B.8050202@yahoo.com.au> <20070124224654.GN33919298@melbourne.sgi.com> <45B7F5F9.2070308@yahoo.com.au> <20070125003536.GS33919298@melbourne.sgi.com> <45B7FE1C.3070807@yahoo.com.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200701242051.34153.rob@landley.net>
+In-Reply-To: <45B7FE1C.3070807@yahoo.com.au>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 24 January 2007 4:03 pm, Oleg Verych wrote:
+On Thu, Jan 25, 2007 at 11:47:24AM +1100, Nick Piggin wrote:
+> David Chinner wrote:
+> >On Thu, Jan 25, 2007 at 11:12:41AM +1100, Nick Piggin wrote:
+> 
+> >>... so surely if you do a direct read followed by a buffered read,
+> >>you should *not* get the same data if there has been some activity
+> >>to modify that part of the file in the meantime (whether that be a
+> >>buffered or direct write).
+> >
+> >
+> >Right. And that is what happens in XFS because it purges the
+> >caches on direct I/O and forces data to be re-read from disk.
+> 
+> And that is critical for direct IO writes, of course.
+> 
+> >Effectively, if you are mixing direct I/O with other types of I/O
+> >(buffered or mmap) then the application really needs to be certain
+> >it is doing the right thing because there are races that can occur
+> >below the filesystem. All we care about in the filesystem is that
+> >what we cache is the same as what is on disk, and that implies that
+> >direct I/O needs to purge the cache regardless of the state it is in....
+> >
+> >Hence we need to unmap pages and use truncate semantics on them to
+> >ensure they are removed from the page cache....
+> 
+> OK, I understand that this does need to happen (at least for writes),
+> so you need to fix it regardless of the DIO read issue.
+> 
+> But I'm just interested about DIO reads. I think you can get pretty
+> reasonable semantics without discarding pagecache, but the semantics
+> are weaker in one aspect.
+> 
+> DIO read
+> 1. writeback page
+> 2. read from disk
+> 
+> Now your read will pick up data no older than 1. And if a buffered
+> write happens after 2, then there is no problem either.
+> 
+> So if you are doing a buffered write and DIO read concurrently, you
+> want synchronisation so the buffered write happens either before 1
+> or after 2 -- the DIO read will see either all or none of the write.
+> 
+> Supposing your pagecache isn't invalidated, then a buffered write
+> (from mmap, if XFS doesn't allow write(2)) comes in between 1 and 2,
+> then the DIO read will find either none, some, or all of that write.
+>
+> So I guess what you are preventing is the "some" case. Am I right?
 
-> Let me propose you to test this as solution, that need no awk, only shell:
+No. The only thing that will happen here is that the direct read
+will see _none_ of the write because the mmap write occurred during
+the DIO read to a different set of pages in memory. There is no
+"some" or "all" case here.
 
-Actually awk is one of the standard Single Unix Specification (version 3) 
-utilities and the kernel build uses it in a number of places, such as 
-arch/alpha/boot/Makefile, drivers/eisa/Makefile, scripts/ver_linux.
+IOWs, at a single point in time we have 2 different views
+of the one file which are both apparently valid and that is what
+we are trying to avoid. We have a coherency problem here which is
+solved by forcing the mmap write to reread the data off disk....
 
-Your objection is a bit like saying "and don't use cat".  I'm saying don't 
-call cat "gcat" when you just mean plain old cat.
+Look at it this way - direct I/O in XFS implies an I/O barrier
+(similar to a memory barrier). Writing back and tossing out of the
+page cache at the start of the direct IO gives us an I/O coherency
+barrier - everything before the direct IO is sync'd to disk before
+the direct IO can proceed, and everything after the direct IO has
+started must be fetched from disk again.
 
-> p.s. who is going to make alternative to GNU make ? ;D
+Because mmap I/O doesn't necessarily need I/O to change the state
+of a page (think of a read fault then a later write fault), to make
+the I/O barrier work correctly with mmap() we need to ensure that
+it will fault the page from disk again. We can only do that by
+unmapping the pages before tossing them from the page cache.....
 
-Me.  Seriously.  It's on my todo list, as part of the Firmware Linux project:
+Cheers,
 
-http://lwn.net/Articles/215941/
-
-Although as major projects go, it's about fifth down on the list after getting 
-toybox up to speed, writing a proper bash replacement shell, getting tcc to 
-build an unmodified Linux kernel, convincing the uClibc guys to HAVE ANOTHER 
-RELEASE ALREADY (it's been a year and a half, I _sent_ a cake)...
-
-Today, I'm writing a gene2fs that produces streaming output (I.E. it works 
-like tar).  It's not done yet...
-
-Rob
+Dave.
 -- 
-"Perfection is reached, not when there is no longer anything to add, but
-when there is no longer anything to take away." - Antoine de Saint-Exupery
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
