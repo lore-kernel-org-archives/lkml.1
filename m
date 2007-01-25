@@ -1,73 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750853AbXAYL1q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751034AbXAYL2t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750853AbXAYL1q (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jan 2007 06:27:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751363AbXAYL1q
+	id S1751034AbXAYL2t (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jan 2007 06:28:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751402AbXAYL2t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jan 2007 06:27:46 -0500
-Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:41071 "EHLO
-	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751034AbXAYL1q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jan 2007 06:27:46 -0500
-Message-ID: <45B8942F.7050006@drzeus.cx>
-Date: Thu, 25 Jan 2007 12:27:43 +0100
-From: Pierre Ossman <drzeus@drzeus.cx>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061223)
+	Thu, 25 Jan 2007 06:28:49 -0500
+Received: from nigel.suspend2.net ([203.171.70.205]:53250 "EHLO
+	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751034AbXAYL2s (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jan 2007 06:28:48 -0500
+Subject: Re: [patch] suspend/resume debugging: device filter
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
+Reply-To: nigel@nigel.suspend2.net
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
+       Pavel Machek <pavel@ucw.cz>, Linus Torvalds <torvalds@osdl.org>,
+       Greg KH <gregkh@suse.de>
+In-Reply-To: <20070125110501.GA25151@elte.hu>
+References: <20070125110501.GA25151@elte.hu>
+Content-Type: text/plain
+Date: Thu, 25 Jan 2007 22:28:46 +1100
+Message-Id: <1169724526.1316.8.camel@nigel.suspend2.net>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=_hera.drzeus.cx-11376-1169724464-0001-2"
-To: "Christopher \"Monty\" Montgomery" <xiphmont@gmail.com>
-CC: perex@suse.cz, greg@kroah.com, mclasen@redhat.com, jrb@redhat.com,
-       Lennart Poettering <lennart@poettering.net>,
-       linux-kernel@vger.kernel.org, alsa-devel@alsa-project.org,
-       fedora-desktop-list@redhat.com
-Subject: Re: [PATCH] alsa: correct nonsensical sysfs device symlinks
-References: <806dafc20701241750t53b86babn36831cadc7dfa76c@mail.gmail.com>
-In-Reply-To: <806dafc20701241750t53b86babn36831cadc7dfa76c@mail.gmail.com>
-X-Enigmail-Version: 0.94.0.0
+X-Mailer: Evolution 2.8.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+Hi.
 
---=_hera.drzeus.cx-11376-1169724464-0001-2
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Thu, 2007-01-25 at 12:05 +0100, Ingo Molnar wrote:
+> it might be better to do this centrally in sysfs, via a per-device 
+> attribute, to individually enable suspend and resume on a per device 
+> basis, but my sysfs-fu is not strong enough for that now ;-)
 
-Christopher "Monty" Montgomery wrote:
-> This patch was generated against 2.6.20-rc5; it fixes a bug that
-> cropped up in a late 2.6.19-mm kernel.
->=20
-> When ALSA's sysfs device creation was converted from using
-> class_device_create() to device_create(), the fourth param from
-> class_device_create() [dev] was simply plugged into arg 2 of
-> device_create().  This causes the device symlinks under all the
-> class/sound/[node] to point to nonsensical places.  Among other
-> problems, this breaks HAL and all audio software that depends on HAL.
->=20
+Yeah. I was thinking recently of doing a per-device attribute, but like
+so many things at the moment, getting around to it is a little bit of a
+problem.
 
-There are no device symlinks anymore, so the current behaviour seems
-correct. HAL should follow the symlink, then move up in the device tree
-to find a suitable parent.
+> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> ---
+>  drivers/base/power/resume.c  |    6 ++++
+>  drivers/base/power/suspend.c |    3 +-
+>  include/linux/resume-trace.h |    6 ++++
+>  kernel/power/main.c          |   58 +++++++++++++++++++++++++++++++++++++++++++
 
-Rgds
-Pierre
+Should the sysfs stuff (not just this) be in kernel/power/main.c? I
+wonder if it would be better put in drivers/base?
 
+Regards,
 
+Nigel
 
---=_hera.drzeus.cx-11376-1169724464-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-Comment: Using GnuPG with Fedora - http://enigmail.mozdev.org
-
-iD8DBQFFuJQy7b8eESbyJLgRAsEuAJ9Qlmg66NBRO59pfo95lTTSTrnbqgCfRwbC
-pqiWo5eXUTOVQLcNqOKiYKk=
-=buKe
------END PGP SIGNATURE-----
-
---=_hera.drzeus.cx-11376-1169724464-0001-2--
