@@ -1,71 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965738AbXAYJce@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965737AbXAYJck@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965738AbXAYJce (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jan 2007 04:32:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965737AbXAYJce
+	id S965737AbXAYJck (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jan 2007 04:32:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965741AbXAYJck
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jan 2007 04:32:34 -0500
-Received: from raven.upol.cz ([158.194.120.4]:35510 "EHLO raven.upol.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965739AbXAYJcd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jan 2007 04:32:33 -0500
-Date: Thu, 25 Jan 2007 09:40:51 +0000
-To: Rob Landley <rob@landley.net>
-Cc: Andrew Morton <akpm@osdl.org>, Sam Ravnborg <sam@ravnborg.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: sed _s_gnu_alternatives_ (Re: [rft] (g)awk substitution)
-Message-ID: <20070125094051.GA9725@flower.upol.cz>
-References: <200701151624.18033.rob@landley.net> <200701241230.40996.rob@landley.net> <E1H9pHf-0002Iu-4D@flower> <200701242051.34153.rob@landley.net>
+	Thu, 25 Jan 2007 04:32:40 -0500
+Received: from nic.NetDirect.CA ([216.16.235.2]:60913 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965737AbXAYJcj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jan 2007 04:32:39 -0500
+X-Originating-Ip: 74.109.98.130
+Date: Thu, 25 Jan 2007 04:32:12 -0500 (EST)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@CPE00045a9c397f-CM001225dbafb6
+To: Linux kernel mailing list <linux-kernel@vger.kernel.org>
+cc: Andrew Morton <akpm@osdl.org>, dhowells@redhat.com
+Subject: [PATCH] Add a rounddown_pow_of_two() macro to log2.h.
+Message-ID: <Pine.LNX.4.64.0701250426400.7715@CPE00045a9c397f-CM001225dbafb6>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200701242051.34153.rob@landley.net>
-Organization: Palacky University in Olomouc, experimental physics department.
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Oleg Verych <olecom@flower.upol.cz>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 24, 2007 at 08:51:32PM -0500, Rob Landley wrote:
-> On Wednesday 24 January 2007 4:03 pm, Oleg Verych wrote:
-> 
-> > Let me propose you to test this as solution, that need no awk, only shell:
-> 
-> Actually awk is one of the standard Single Unix Specification (version 3) 
-> utilities and the kernel build uses it in a number of places, such as 
-> arch/alpha/boot/Makefile, drivers/eisa/Makefile, scripts/ver_linux.
 
-I saw that. If you will test my first replacements and it will be ok,
-i will go to this.
+  In the same way that include/linux/log2.h defines the
+roundup_pow_of_two() macro, define the rounddown_pow_of_two() macro so
+peopls can stop re-implementing this operation using a loop.
 
-> Your objection is a bit like saying "and don't use cat".  I'm saying don't 
-> call cat "gcat" when you just mean plain old cat.
+Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
 
-No it's not, really. I don't want to see pipes, fork()s, disk seek,
-when task can be done without it. I know, what awk is, and i hope it
-will have its better time.
+---
 
-> > p.s. who is going to make alternative to GNU make ? ;D
-> 
-> Me.  Seriously.  It's on my todo list, as part of the Firmware Linux project:
+  compile tested on x86 using "make allyesconfig", but there wasn't
+much chance of the build failing anyway since the patch only adds the
+macro definition, it doesn't change any existing code to use it.
+those patches will be submitted later, bit by bit.
 
-Well. I didn't expect such answer! So, after my trying to deal with
-makefiles (there so many to cleanup and structure), i think it will be
-easy to do so. I did contacted (ft)jam developers, but didn't get any
-answer on current state of it vs GNU make.
+diff --git a/include/linux/log2.h b/include/linux/log2.h
+index d02e1a5..6cf7081 100644
+--- a/include/linux/log2.h
++++ b/include/linux/log2.h
+@@ -52,6 +63,15 @@ unsigned long __roundup_pow_of_two(unsigned long n)
+ 	return 1UL << fls_long(n - 1);
+ }
 
-> http://lwn.net/Articles/215941/
-> 
-> Although as major projects go, it's about fifth down on the list after getting 
-> toybox up to speed, writing a proper bash replacement shell, getting tcc to 
-> build an unmodified Linux kernel, convincing the uClibc guys to HAVE ANOTHER 
-> RELEASE ALREADY (it's been a year and a half, I _sent_ a cake)...
++/*
++ * round down to nearest power of two
++ */
++static inline __attribute__((const))
++unsigned long __rounddown_pow_of_two(unsigned long n)
++{
++	return 1UL << (fls_long(n) - 1);
++}
++
+ /**
+  * ilog2 - log of base 2 of 32-bit or a 64-bit unsigned value
+  * @n - parameter
+@@ -154,4 +174,20 @@ unsigned long __roundup_pow_of_two(unsigned long n)
+ 	__roundup_pow_of_two(n)			\
+  )
 
-Thanks for information.
++/**
++ * rounddown_pow_of_two - round the given value down to nearest power of two
++ * @n - parameter
++ *
++ * round the given value down to the nearest power of two
++ * - the result is undefined when n == 0
++ * - this can be used to initialise global variables from constant data
++ */
++#define rounddown_pow_of_two(n)			\
++(						\
++	__builtin_constant_p(n) ? (		\
++		(n == 1) ? 0 :			\
++		(1UL << ilog2(n)) :		\
++	__rounddown_pow_of_two(n)		\
++ )
++
+ #endif /* _LINUX_LOG2_H */
 
-> Today, I'm writing a gene2fs that produces streaming output (I.E. it works 
-> like tar).  It's not done yet...
+-- 
+==============================================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
 
-Good luck !
-
-____
+http://www.fsdev.dreamhosters.com/wiki/index.php?title=Kernel_Janitor%27s_Todo_List
+==============================================================================================
