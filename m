@@ -1,50 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965643AbXAYGuS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965661AbXAYHUF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965643AbXAYGuS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jan 2007 01:50:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965651AbXAYGuS
+	id S965661AbXAYHUF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jan 2007 02:20:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965667AbXAYHUF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jan 2007 01:50:18 -0500
-Received: from omx2-ext.sgi.com ([192.48.171.19]:58993 "EHLO omx2.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S965643AbXAYGuI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jan 2007 01:50:08 -0500
-Date: Wed, 24 Jan 2007 22:47:58 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-To: Aubrey Li <aubreylee@gmail.com>
-cc: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Robin Getz <rgetz@blackfin.uclinux.org>,
-       "Hennerich, Michael" <Michael.Hennerich@analog.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC] Limit the size of the pagecache
-In-Reply-To: <6d6a94c50701242235m48013856kb5a947c489d9da37@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0701242243080.14597@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0701231645260.5239@schroedinger.engr.sgi.com> 
- <45B75208.90208@linux.vnet.ibm.com>  <Pine.LNX.4.64.0701240655400.9696@schroedinger.engr.sgi.com>
-  <45B82F41.9040705@linux.vnet.ibm.com> <6d6a94c50701242235m48013856kb5a947c489d9da37@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 25 Jan 2007 02:20:05 -0500
+Received: from fnoeppeil48.netpark.at ([217.175.205.176]:4565 "EHLO
+	roarinelk.homelinux.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965661AbXAYHUD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jan 2007 02:20:03 -0500
+Date: Thu, 25 Jan 2007 08:20:00 +0100
+From: Manuel Lauss <mano@roarinelk.homelinux.net>
+To: Pierre Ossman <drzeus-mmc@drzeus.cx>
+Cc: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] MMC: au1xmmc R6 response support
+Message-ID: <20070125072000.GA8257@roarinelk.homelinux.net>
+References: <20070123100814.GA5001@roarinelk.homelinux.net> <45B65A73.90308@drzeus.cx> <20070124055202.GA6446@roarinelk.homelinux.net> <45B72F13.4040707@drzeus.cx>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <45B72F13.4040707@drzeus.cx>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 25 Jan 2007, Aubrey Li wrote:
+Hi Pierre,
 
-> But Vaidy - even with your patch, we are still using the existing
-> reclaimer, that means we dont ensure that only page cache is
-> reclaimed/limited. mapped pages will be hit also.
-> I think we still need to add a new scancontrol field to lock mmaped
-> pages and remove unmapped pagecache pages only.
+> HEAD has this fixed. Every spec I can get my hands on states that R1 and
+> R6 have the same format. So it sounds like this controller is doing
+> something stupid.
 
-Setting sc->swappiness to zero will make the reclaimer hit 
-unmapped pages until we get into problems. Maybe set that to some negative 
-value to avoid reclaim_mapped being set to 1 in shrink_active_list?
+Apparently my HW is broken... I got a hold of a DB1200 demoboard and
+the distributed version works fine there.
 
-Oh. But reclaim_mapped is staying at zero anyways if may_swap is off. So 
-we are already fine.
+I'm very sorry for the noise!
 
-I still wonder why you are doing this at all. If you just run your own app 
-on the box then preallocate your higher order allocations from user space. 
-Much less trouble.
+> On a related note... Would you, or anyone else you know, be willing to
+> sign up as official maintainer of this driver? Otherwise I'll have to
+> mark it as unmaintained.
 
+Aren't people from AMD (now Raza) maintaining it? I have source for this
+driver which also implements SDIO, also from AMD. It's a bit dated (for
+2.6.11). But I'm willing to look into problems, as long as I have access
+to the hardware.
 
+Thanks for your time,
+
+-- 
+ ml.
