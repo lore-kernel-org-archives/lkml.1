@@ -1,74 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965237AbXAYDKc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965246AbXAYDNW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965237AbXAYDKc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jan 2007 22:10:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965236AbXAYDKc
+	id S965246AbXAYDNW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jan 2007 22:13:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965244AbXAYDNW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jan 2007 22:10:32 -0500
-Received: from pat.uio.no ([129.240.10.15]:56071 "EHLO pat.uio.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965237AbXAYDKb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jan 2007 22:10:31 -0500
-Subject: Re: [discuss] portmapping sucks
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.61.0701250030530.32656@yvahk01.tjqt.qr>
-References: <Pine.LNX.4.61.0701250030530.32656@yvahk01.tjqt.qr>
-Content-Type: text/plain
-Date: Wed, 24 Jan 2007 19:10:19 -0800
-Message-Id: <1169694619.8355.9.camel@lade.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
-Content-Transfer-Encoding: 7bit
-X-UiO-Resend: resent
-X-UiO-Spam-info: not spam, SpamAssassin (score=0.0, required=12.0, autolearn=disabled, none)
-X-UiO-Scanned: 198BACBD69FD1AE84BBBAF75324A02ABE395C112
-X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 10 total 90237 max/h 1952 blacklist 0 greylist 1 ratelimit 0
+	Wed, 24 Jan 2007 22:13:22 -0500
+Received: from 67.111.72.3.ptr.us.xo.net ([67.111.72.3]:40101 "EHLO
+	nonameb.ptu.promise.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S965239AbXAYDNV convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jan 2007 22:13:21 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.0.6487.1
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [patch] scsi: use lock per host instead of per device for shared queue tag host
+Date: Wed, 24 Jan 2007 19:14:22 -0800
+Message-ID: <B70A50D07063384EB9BCE3330D18414F02F5AF9B@nonameb.ptu.promise.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [patch] scsi: use lock per host instead of per device for shared queue tag host
+Thread-Index: Acc/0NITAs4XtQHaRmmJlX3mWPtIrwAO+99QAAMiO5AAAWwl0A==
+From: "Ed Lin" <ed.lin@promise.com>
+To: "David Somayajulu" <david.somayajulu@qlogic.com>,
+       "Michael Reed" <mdr@sgi.com>
+Cc: "linux-scsi" <linux-scsi@vger.kernel.org>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>,
+       "james.Bottomley" <james.Bottomley@SteelEye.com>,
+       "jeff" <jeff@garzik.org>, "Promise_Linux" <Promise_Linux@promise.com>,
+       "Jens Axboe" <axboe@kernel.dk>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-01-25 at 00:50 +0100, Jan Engelhardt wrote:
-> Hello list,
-> 
-> 
-> I just don't know where else I could send this, it's sooo generic to 
-> Linux and UNIX (perhaps blame SUN for inventing portmap?)
-> Well, here goes...
-> 
-> As we all know, mountd and other SUNRPC (I question this invention too) 
-> services are at a fixed RPC port number (/etc/rpc) which are mapped 
-> to a random TCP/UDP port, and the application doing the mappings is
-> portmap. This random TCP/UDP port selection is what makes it suck.
-> 
-> Already twice in 6 months, it has occurred to me that mountd was 
-> assigned to vital TCP ports, among which there was:
-> 
-> 631/tcp causing
->   - cups could not start up properly
->   - samba went into an infinite loop upon startup trying
->     to access port 631 with IPP
-> 
-> There are a number of common ports in the 512-1023 range. All 
-> obsolescence and meaninglessness aside, there _are_ rather "important" 
-> services in that range, ldaps, rtsp, kerberos, rsync, ftps, imaps, just 
-> to name a few from /etc/services. This map-to-random-port behavior is a 
-> total DoS thing.
-> 
-> Not starting portmap until boot has finished does not work. Think 
-> of importing NFS beforehand (/usr, anyone?). Even if, your admin would 
-> be very puzzled if he finds that normally-disabled daemons cannot be 
-> started at any later time.
-> 
-> At best I'd obsolete the whole SUNRPC stuff, do away with portmap (and 
-> just use TCP/UDP port numbers already) and have a LOT of code simplified 
-> (portmap registration for knfsd, to name a prime example).
-> Or at least give it fixed TCP/UDP/etc. port numbers too.
 
-1) What the hell does this have to do with the kernel mailing list?
 
-2) Then assign a bloody port number to mountd, and stick to it. Why do
-you think there is a '-p' command line option in the first place?
+> -----Original Message-----
+> From: David Somayajulu [mailto:david.somayajulu@qlogic.com] 
+> Sent: Wednesday, January 24, 2007 5:03 PM
+> To: Ed Lin; Michael Reed
+> Cc: linux-scsi; linux-kernel; james.Bottomley; jeff; 
+> Promise_Linux; Jens Axboe
+> Subject: RE: [patch] scsi: use lock per host instead of per 
+> device for shared queue tag host
+> 
+> 
+> > It seems another driver(qla4xxx) is also using shared queue tag.
+> > It is natural to imagine there might be same symptom in that
+> > driver. But I don't know the driver and have no hardware so I
+> > can not say anything certain about it.
+> 
+> qla4xxx implements slightly differently, in the sense we 
+> don't have the
+> equivalent of         
+> struct st_ccb ccb[MU_MAX_REQUEST]; 
+> which is in struct st_hba. In other words we don't have a local array
+> which like stex to keep track of the outstanding commands to the hba.
+> 
+> We had a discussion on this one while implementing block-layer tagging
+> in qla4xxx and Jens Axboe added the test_and_set_bit() in the 
+> following
+> code in blk_queue_start_tag() to take care of it.
+> 	do {
+> 		tag = find_first_zero_bit(bqt->tag_map, bqt->max_depth);
+> 		if (tag >= bqt->max_depth)
+> 			return 1;
+> 	} while (test_and_set_bit(tag, bqt->tag_map));
+> Please see the following link for the discussion
+> http://marc.theaimsgroup.com/?l=linux-scsi&m=115886351206726&w=2
+> 
+> Cheers
+> David Somayajulu
+> QLogic Corporation
+>
 
-Trond
+Yes, this piece of code of allocating tag, in itself, is safe.
+But the following
 
+	if (unlikely(!__test_and_clear_bit(tag, bqt->tag_map))) {
+		printk(KERN_ERR "%s: attempt to clear non-busy tag
+(%d)\n",
+		       __FUNCTION__, tag);
+		return;
+	}
+
+code of freeing tag (in blk_queue_end_tag())seems to be using
+unsafe __test_and_clear_bit instead of test_and_clear_bit.
+I once changed it to test_and_clear_bit and thought it was fixed.
+But the panic happened thereafter nonetheless(using gcc 3.4.6.
+gcc 4.1.0 is better but still with kernel errors). bqt also needs
+to be protected in this case. Replacing queue lock per device with
+a host lock is a simple but logical fix for it. To introduce a
+more refined lock is possible, but seems too tedious and elaborate
+for this issue, since a queue lock is already out there, and a
+hostwide lock is needed anyway.
+
+Thanks,
+
+Ed Lin
