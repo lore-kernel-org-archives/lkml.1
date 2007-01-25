@@ -1,57 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964916AbXAYLUH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750824AbXAYLYL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964916AbXAYLUH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jan 2007 06:20:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965769AbXAYLUH
+	id S1750824AbXAYLYL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jan 2007 06:24:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750853AbXAYLYL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jan 2007 06:20:07 -0500
-Received: from customer-domains.icp-qv1-irony14.iinet.net.au ([203.59.1.169]:51164
-	"EHLO customer-domains.icp-qv1-irony14.iinet.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964916AbXAYLUF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jan 2007 06:20:05 -0500
-X-Greylist: delayed 600 seconds by postgrey-1.27 at vger.kernel.org; Thu, 25 Jan 2007 06:20:05 EST
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ao8CABIfuEXKoR9jdGdsb2JhbACNeA
-X-IronPort-AV: i="4.13,237,1167577200"; 
-   d="scan'208"; a="107410953:sNHT8093028"
-Message-ID: <45B89008.9000809@eyal.emu.id.au>
-Date: Thu, 25 Jan 2007 22:10:00 +1100
-From: Eyal Lebedinsky <eyal@eyal.emu.id.au>
-Organization: Eyal at Home
-User-Agent: Debian Thunderbird 1.0.2 (X11/20061113)
-X-Accept-Language: en-us, en
+	Thu, 25 Jan 2007 06:24:11 -0500
+Received: from ausmtp04.au.ibm.com ([202.81.18.152]:57258 "EHLO
+	ausmtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750824AbXAYLYK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jan 2007 06:24:10 -0500
+Message-ID: <45B8934F.50205@linux.vnet.ibm.com>
+Date: Thu, 25 Jan 2007 16:53:59 +0530
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Organization: IBM
+User-Agent: Thunderbird 1.5.0.5 (X11/20060728)
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.20-rc6 - build failure
-References: <Pine.LNX.4.64.0701241847360.25027@woody.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0701241847360.25027@woody.linux-foundation.org>
-X-Enigmail-Version: 0.91.0.0
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: Al Boldi <a1426z@gawab.com>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC] Limit the size of the pagecache
+References: <200701250942.47321.a1426z@gawab.com> <45B86930.2090709@linux.vnet.ibm.com> <1169720945.6189.52.camel@twins>
+In-Reply-To: <1169720945.6189.52.camel@twins>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-i386
-Practically all modules selected.
 
-  Building modules, stage 2.
-  MODPOST 1931 modules
-WARNING: drivers/atm/fore_200e.o - Section mismatch: reference to .init.text: from .text between 'fore200e_initialize' (at offset 0x25af) and 'fore200e_monitor_putc'
-WARNING: drivers/atm/lanai.o - Section mismatch: reference to .init.text: from .text between 'sram_test_pass' (at offset 0x1a8) and 'sram_test_and_clear'
-WARNING: drivers/atm/zatm.o - Section mismatch: reference to .init.text: from .text after 'zatm_init_one' (at offset 0x1f25)
-WARNING: drivers/atm/zatm.o - Section mismatch: reference to .init.text: from .text after 'zatm_init_one' (at offset 0x1f32)
-WARNING: drivers/net/rrunner.o - Section mismatch: reference to .init.text:rr_init from .text between 'rr_init_one' (at offset 0x1d0) and 'rr_remove_one'
-WARNING: drivers/net/sis900.o - Section mismatch: reference to .init.text:sis900_mii_probe from .text between 'sis900_probe' (at offset 0x47b) and 'sis900_default_phy'
-WARNING: drivers/net/sunhme.o - Section mismatch: reference to .init.text: from .text between 'happy_meal_pci_probe' (at offset 0x2add) and 'happy_meal_pci_remove'
-WARNING: drivers/net/tokenring/3c359.o - Section mismatch: reference to .init.text:xl_init from .text between 'xl_probe' (at offset 0x1da) and 'xl_hw_reset'
-WARNING: drivers/net/tulip/de2104x.o - Section mismatch: reference to .init.text: from .text between 'de_init_one' (at offset 0x2151) and 'de_remove_one'
-WARNING: drivers/net/tulip/de2104x.o - Section mismatch: reference to .init.text: from .text between 'de_init_one' (at offset 0x2158) and 'de_remove_one'
-WARNING: drivers/net/tulip/de2104x.o - Section mismatch: reference to .init.text: from .text between 'de_init_one' (at offset 0x2220) and 'de_remove_one'
-WARNING: "__udivdi3" [fs/ocfs2/ocfs2.ko] undefined!
-make[1]: *** [__modpost] Error 1
 
--- 
-Eyal Lebedinsky (eyal@eyal.emu.id.au) <http://samba.org/eyal/>
-	attach .zip as .dat
+Peter Zijlstra wrote:
+>> Apart from kswapd, limiting pagecache helps performance of
+>> applications by not eating away their ANON pages or other parts of its
+>> resident data set.  When there is enough free memory, then there is no
+>> performance issue.  However memory is always utilized to the max.
+>> Hence every pagecache page that is allocated should come from some
+>> application's RSS, or from cold pagecache page.  If that page was
+>> stolen from some application, then that application pays the price for
+>> swapping or reading the page back to memory.  This scenario is what we
+>>  want to avoid.  All that we are trying to achieve is that pagecache
+>> eats a (unmapped) pagecache page and not steal memory from other
+>> important application's resident set.
+>>
+>> Certainly this should be a configurable option and kernel's behavior
+>> should not be changed in general.
+> 
+> Ah, this would be a clear case of the page reclaim selecting the wrong
+> working set.
+> 
+> It is perfectly fine for a page cache page to evict a app page (be it
+> anon or not) if that page cache page is used more frequently than the
+> app page in question.
+
+Well, this is true only as long as all applications running in the
+system are graded equally and it is kernel's job to provide the best
+of the system resources to all applications.
+
+> Trouble seems to be that the current algorithm gets it quite wrong at
+> times.
+
+The current reclaim code does a good job based on the assumption that
+pages belonging to different applications have equal priority.  The
+aging of the page is independent of application's priority or class.
+This is good for best overall system performance.
+
+The new use case that is challenging this assumption is the fact that
+application groups fall into different class on the same system and
+there is a need to make certain class perform better at the cost of
+certain other class of applications.  In this scenario system
+performance is not judged by overall average throughput, but by
+performance of certain class of applications only.
+
+A backup job running in the database server can take any amount of
+performance hit to marginally improve database performance since that
+is what the users care about.  We would run into similar situations
+when running various virtualization and consolidation solutions.
+
+> Also stating that free memory somehow is good for you is weird, free
+> memory is a loss, you under utilise your machine. Keeping clean
+> pagecache pages in there that are likely to be referenced again is a
+> clear win; it saves the tediously slow load from disk.
+
+Agreed
+
+> 
+> So you're now proposing to limit the page cache were as its clear that
+> the better solution would be to tune replacement policy (and or provide
+> hints to said mechanism using madvise/fadvise)
+
+Well, we may need to use both the approach.  Hints with
+madvise/fadvise is definitely a good approach and the kernel should
+take these hints aggressively. Yet even with these hints we may want
+to have limits in the interest of other applications that do not use
+pagecache.
+
+System wide limit to pagecache may not sound very interesting, but if
+we think about 'containers' and group of process having such limits it
+will have more practical use cases.  An aggregation of process having
+ limit on pagecache would give relative importance to certain class of
+pages during page replacement.  Controlling limits among group of
+applications will help achieve peak application performance with the
+applications that we care about.
+
+--Vaidy
+
