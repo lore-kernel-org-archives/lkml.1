@@ -1,107 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965576AbXAYWzQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965601AbXAYW5w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965576AbXAYWzQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jan 2007 17:55:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965579AbXAYWzQ
+	id S965601AbXAYW5w (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jan 2007 17:57:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965578AbXAYW5w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jan 2007 17:55:16 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:33945 "EHLO smtp.osdl.org"
+	Thu, 25 Jan 2007 17:57:52 -0500
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:44578 "EHLO 2ka.mipt.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965576AbXAYWzP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jan 2007 17:55:15 -0500
-Date: Thu, 25 Jan 2007 14:55:04 -0800
-From: Andrew Morton <akpm@osdl.org>
-To: Chuck Ebbert <cebbert@redhat.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>
-Subject: Re: [patch] i386: add option to show more code in oops reports
-Message-Id: <20070125145504.c8c0a98a.akpm@osdl.org>
-In-Reply-To: <45B7C019.1040209@redhat.com>
-References: <45B7C019.1040209@redhat.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+	id S965585AbXAYW5u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jan 2007 17:57:50 -0500
+Date: Fri, 26 Jan 2007 01:56:34 +0300
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: linux-kernel@vger.kernel.org
+Cc: David Miller <davem@davemloft.net>, Ulrich Drepper <drepper@redhat.com>,
+       Andrew Morton <akpm@osdl.org>, netdev <netdev@vger.kernel.org>,
+       Zach Brown <zach.brown@oracle.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Chase Venters <chase.venters@clientec.com>,
+       Johann Borck <johann.borck@densedata.com>, linux-kernel@vger.kernel.org,
+       Jeff Garzik <jeff@garzik.org>, Jamal Hadi Salim <hadi@cyberus.ca>,
+       Ingo Molnar <mingo@elte.hu>, linux-fsdevel@vger.kernel.org
+Subject: Re: [take34 0/10] kevent: Generic event handling mechanism.
+Message-ID: <20070125225634.GA9905@2ka.mipt.ru>
+References: <1315adqaa0591036@2ka.mipt.ru> <11697329102169@2ka.mipt.ru>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=koi8-r
+Content-Disposition: inline
+In-Reply-To: <11697329102169@2ka.mipt.ru>
+User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.7.5 (2ka.mipt.ru [0.0.0.0]); Fri, 26 Jan 2007 01:56:46 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 24 Jan 2007 15:22:49 -0500
-Chuck Ebbert <cebbert@redhat.com> wrote:
+On Thu, Jan 25, 2007 at 04:48:30PM +0300, Evgeniy Polyakov (johnpol@2ka.mipt.ru) wrote:
+> Changes from 'take33' patchset:
+>  * Added optional header pointer and its size into aio_sendfile_path(), 
+>    which allows to send header and file in one syscall instead of
+>    send(header), open file, sendfile(file).
 
-> Sometimes we may need to see more code than the default in an oops,
-> so add an option for that.
+Btw, aio_sendfile and aio_sendfile_path use naive and actually the 
+simplest approach of async IO - it just stupidly blocks on sending or 
+resends (like repeated sending approach) - I'm a bit lazy to use kevent 
+there, since there is _no_ gain after a bit more deep analysis 
+(hint: there are multiple IO threads, some of them might block), 
+and network AIO does not exist (yet, kevent status is in hinged state,
+and I was asked to postpone additional feature addons, which otherwise
+could happen a bit more frequently then current kevent/kernel releases), 
+due to kevent future is indeterminate...
 
-spose so, but some more justification would be nice.  As would an x86_64
-version?
-
-> Signed-off-by: Chuck Ebbert <cebbert@redhat.com>
-
-ooh, congrats.
-
-> --- 2.6.20-rc5-32.orig/arch/i386/kernel/traps.c
-> +++ 2.6.20-rc5-32/arch/i386/kernel/traps.c
-> @@ -94,6 +94,7 @@ asmlinkage void spurious_interrupt_bug(v
->  asmlinkage void machine_check(void);
->  
->  int kstack_depth_to_print = 24;
-> +int code_bytes = 64;
-
-static scope, please.  And I think it should be unsigned.
-
->  ATOMIC_NOTIFIER_HEAD(i386die_chain);
->  
->  int register_die_notifier(struct notifier_block *nb)
-> @@ -324,7 +325,7 @@ void show_registers(struct pt_regs *regs
->  	 */
->  	if (in_kernel) {
->  		u8 *eip;
-> -		int code_bytes = 64;
-> +		int code_prologue = code_bytes * 43 / 64;
->  		unsigned char c;
->  
->  		printk("\n" KERN_EMERG "Stack: ");
-> @@ -332,7 +333,7 @@ void show_registers(struct pt_regs *regs
->  
->  		printk(KERN_EMERG "Code: ");
->  
-> -		eip = (u8 *)regs->eip - 43;
-> +		eip = (u8 *)regs->eip - code_prologue;
->  		if (eip < (u8 *)PAGE_OFFSET ||
->  			probe_kernel_address(eip, c)) {
->  			/* try starting at EIP */
-
-You missed this bit:
-
-		if (eip < (u8 *)PAGE_OFFSET ||
-			probe_kernel_address(eip, c)) {
-			/* try starting at EIP */
-			eip = (u8 *)regs->eip;
-			code_bytes = 32;
-		}
-
-Do we really want to be modifying the global variable here?
-
-> @@ -1191,3 +1192,15 @@ static int __init kstack_setup(char *s)
->  	return 1;
->  }
->  __setup("kstack=", kstack_setup);
-> +
-> +static int __init code_bytes_setup(char *s)
-> +{
-> +	code_bytes = simple_strtoul(s, NULL, 0);
-> +	if (code_bytes < 64)
-> +		code_bytes = 64;
-> +	if (code_bytes > 1024)
-> +		code_bytes = 1024;
-> +
-> +	return 1;
-> +}
-> +__setup("code_bytes=", code_bytes_setup);
-
-I'm OK with the upper limit, but I'd sugegst that we remove the lower
-limit: someone might _want_ to be able to set code_bytes=0, who knows?
-
-And if code_bytes is unsigned, the single comparison with 1024 will suffice.
-
-OTOH, why have any checks at all in there?  If the user sets
-code_bytes=0xfffffff0 and things break, he gets to own both pieces...
-
+-- 
+	Evgeniy Polyakov
