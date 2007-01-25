@@ -1,60 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965713AbXAYJQI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965734AbXAYJR3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965713AbXAYJQI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jan 2007 04:16:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965722AbXAYJQH
+	id S965734AbXAYJR3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jan 2007 04:17:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965731AbXAYJR3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jan 2007 04:16:07 -0500
-Received: from web52903.mail.yahoo.com ([206.190.49.13]:39727 "HELO
-	web52903.mail.yahoo.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S965713AbXAYJQG (ORCPT
+	Thu, 25 Jan 2007 04:17:29 -0500
+Received: from wx-out-0506.google.com ([66.249.82.233]:5225 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965734AbXAYJR1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jan 2007 04:16:06 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=08vfs4zSc9TsPk1+8ggyfEg5JbaMsJN5V71N1GTaX2sbyDI/IRl76/VX94kfzFOSvfND4kqEuLU+XKi9f+jaQZZo95ju4WmhxXlHPQYZRJQHdYWVOWOsVCA7cBNCLztPStieom59WQkoJ/CkpqrwD24q9Edxz49UohUb70xVGzg=;
-X-YMail-OSG: 2zhql0IVM1lyExyPdUnrKhXE3s13lvLXIKl7JKFmB0d7ZbSNcoClJH3NMYo4QSHgL3nRFap_h1VkdFwoANXN5_FEdNbHS9igF23Cj23ko6lR9goge0xWXtQhSrMGCq8JeNJX8HJm5cQsRuE-
-Date: Thu, 25 Jan 2007 09:16:04 +0000 (GMT)
-From: Chris Rankin <rankincj@yahoo.com>
-Subject: Re: 2.6.18-stable release plans?
-To: Ken Moffat <zarniwhoop@ntlworld.com>
-Cc: Alan <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
-In-Reply-To: <20070125010020.GB26654@deepthought>
+	Thu, 25 Jan 2007 04:17:27 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=eeuBYb2w2+ZhyHOSeIMm/tc3X4gfNKJZCrw7cYwu0kVyPoJu/WsOC+BntvWfBf6dcLiGBQrr8k4/Wp1ESddEsy4QQS4/y1tukGZufJauEQ8NGJKcvmBXXA6gPAV9DuHeksHaywdLmtjDDxPjMgaQQq6zc1PWgZZoN78ztrX+6dQ=
+Message-ID: <3877989d0701250117j29c04687rbb8214ed5bbb2bbd@mail.gmail.com>
+Date: Thu, 25 Jan 2007 17:17:27 +0800
+From: "Luming Yu" <luming.yu@gmail.com>
+To: "Eamonn Hamilton" <EAMONN.HAMILTON@saic.com>
+Subject: Re: IO-APIC + timer doesn't work - 2.6.20-rc5 on abit KN9-Ultra b ios 1.6
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <1169715782.22508.202.camel@ukabzc383.uk.saic.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <486377.64357.qm@web52903.mail.yahoo.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <3877989d0701242133v2d554d45j603af0b597085fb9@mail.gmail.com>
+	 <1169715782.22508.202.camel@ukabzc383.uk.saic.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---- Ken Moffat <zarniwhoop@ntlworld.com> wrote:
-> At the moment, you have a problem that nobody recognises.  If you're not
-> willing to test if the problem happens repeatably, (you appear to
-> have had one failure and immediately reverted to an old kernel), who
-> do you think will be able to fix it?
+> I didn't get a chance to try the -mm patch, but booting with acpi=off
+> works - other than no acpi, of course :)
+>
+> What now?
+Well, this should be ACPI interrupt configure issue.
+Please feel free to enter a bug on bugzilla.kernel.org.
+And, post acpidump output, /proc/interrupts ,lspci -vvx, dmesg for
+(acpi=off ) there.
 
-This bug seems to be in the kernel's "memory management", and the last memory-related bug I had
-(caused by a bad DIMM on another machine) caused creeping filesystem corruption. However, this
-machine is my main desktop, and so I am keen to keep the filesystems intact. So yes, that involves
-not running a kernel that has shown itself to be unreliable. 
-
-I was hoping that someone with a deeper knowledge of the differences between 2.6.18 and 2.6.19
-would have an idea of what might have triggered this problem, and yes, I was also thinking that
-some more people would trip over it and help debug it.
-
-But anyway - can someone please tell me what "Eeek! page_mapcount(page) went negative! (-1)" is
-*really* saying/implying? Because I am currently translating this as "I WANT TO EAT YOUR
-FILESYSTEMS".
-
-Cheers,
-Chris
-
-
-
-	
-	
-		
-___________________________________________________________ 
-New Yahoo! Mail is the ultimate force in competitive emailing. Find out more at the Yahoo! Mail Championships. Plus: play games and win prizes. 
-http://uk.rd.yahoo.com/evt=44106/*http://mail.yahoo.net/uk 
+Thanks,
+Luming
