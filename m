@@ -1,55 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965552AbXAYSSs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965556AbXAYSX2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965552AbXAYSSs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jan 2007 13:18:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965555AbXAYSSs
+	id S965556AbXAYSX2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jan 2007 13:23:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965557AbXAYSX2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jan 2007 13:18:48 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:27569 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965552AbXAYSSr (ORCPT
+	Thu, 25 Jan 2007 13:23:28 -0500
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:18096 "EHLO
+	outbound4-sin-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S965556AbXAYSX1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jan 2007 13:18:47 -0500
-Message-ID: <45B8F38D.9090800@oracle.com>
-Date: Thu, 25 Jan 2007 10:14:37 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
+	Thu, 25 Jan 2007 13:23:27 -0500
+X-BigFish: V
+Message-ID: <45B8F5FB.6090704@am.sony.com>
+Date: Thu, 25 Jan 2007 10:24:59 -0800
+From: Tim Bird <tim.bird@am.sony.com>
+User-Agent: Thunderbird 1.5.0.4 (X11/20060614)
 MIME-Version: 1.0
-To: Sunil Naidu <akula2.shark@gmail.com>
-CC: lkml <linux-kernel@vger.kernel.org>
-Subject: Re: Strange LKML home page!!!
-References: <8355959a0701250229y227bacf6hfc22a747e58e4e3@mail.gmail.com>	 <20070125084716.ee3134b1.randy.dunlap@oracle.com> <8355959a0701251016g399b66bese95b0ac4478ebfe5@mail.gmail.com>
-In-Reply-To: <8355959a0701251016g399b66bese95b0ac4478ebfe5@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Paul Mundt <lethal@linux-sh.org>, Tim Bird <tim.bird@am.sony.com>,
+       linux kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] init: support preset lpj value as config option
+References: <45B7F5E2.4070800@am.sony.com> <20070125021847.GA7609@linux-sh.org>
+In-Reply-To: <20070125021847.GA7609@linux-sh.org>
+X-Enigmail-Version: 0.94.0.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sunil Naidu wrote:
-> On 1/25/07, Randy Dunlap <randy.dunlap@oracle.com> wrote:
->> On Thu, 25 Jan 2007 15:59:47 +0530 Sunil Naidu wrote:
+Paul Mundt wrote:
+> On Wed, Jan 24, 2007 at 04:12:18PM -0800, Tim Bird wrote:
+>> This patch provides a config option for preset lpj, which means
+>> the value can be easily preserved, and conveyed between developers
+>> in a config file.
 >>
->> > Hello,
->> >
->> > I got stunned when I opened www.lkml.org
->> >
->> > => <title>lkml deals psp ipod laptop hotel flight travel holiday lcd
->> > tv mac pc</title>
->> >
->> > All junk & nonsence .....looks like a Domain seller!!!
->> >
->> > What's the problem here?
->>
->> It looks normal to me.  but lkml.org isn't associated with kernel.org.
-> 
-> I don't know why it happened like that. This time I shall take a
-> picture with my Digicam & post here.
+> This seems excessive, it's already possible to set the preset lpj on the
+> kernel command line, and virtually every one of the embedded
+> architectures supports setting the kernel command line as a config
+> option. Is there any reason why you can't simply set it there as a
+> default instead? It's all going to be .config resident in the end
+> anyways.
 
-No need to post it here.  Just contact the lkml.org owner/maintainer.
-He's listed at the bottom of the (regular) web page.
+i386 is missing CONFIG_CMDLINE support, and this architecture
+is used in embedded.  I think many other x86 derivatives are
+also missing .config-based command line support.  CELF has
+worked to get patches submitted to fix this, but so far these
+haven't been accepted.
 
--- 
-~Randy
+For this reason (and IMHO from the standpoint of orthogonality)
+I think it's awkward to have options which ONLY have a command-line
+representation, and not a way to compile them in separately.
+
+=============================
+Tim Bird
+Architecture Group Chair, CE Linux Forum
+Senior Staff Engineer, Sony Electronics
+=============================
+
