@@ -1,120 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030298AbXAYQjD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030332AbXAYQjd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030298AbXAYQjD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jan 2007 11:39:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030304AbXAYQjC
+	id S1030332AbXAYQjd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jan 2007 11:39:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030335AbXAYQjd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jan 2007 11:39:02 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:26981 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030298AbXAYQjB (ORCPT
+	Thu, 25 Jan 2007 11:39:33 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.158]:9160 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030332AbXAYQjc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jan 2007 11:39:01 -0500
-Date: Thu, 25 Jan 2007 08:34:24 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Nadia Derbey <Nadia.Derbey@bull.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCH 1/6] Tunable structure and registration routines
-Message-Id: <20070125083424.7c455d94.randy.dunlap@oracle.com>
-In-Reply-To: <45B8DA37.5050502@bull.net>
-References: <20070116061516.899460000@bull.net>
-	<20070116063028.375290000@bull.net>
-	<20070124163218.ec54891d.randy.dunlap@oracle.com>
-	<45B8DA37.5050502@bull.net>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.0 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+	Thu, 25 Jan 2007 11:39:32 -0500
+Subject: Re: [patch 00/46] High resolution timer / dynamic tick update
+From: Daniel Walker <dwalker@mvista.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: john stultz <johnstul@us.ibm.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@osdl.org>, LKML <linux-kernel@vger.kernel.org>,
+       Arjan van de Veen <arjan@infradead.org>,
+       Roman Zippel <zippel@linux-m68k.org>
+In-Reply-To: <20070125063206.GA26764@elte.hu>
+References: <20070123211159.178138000@localhost.localdomain>
+	 <1169604991.19471.95.camel@imap.mvista.com>
+	 <20070124070701.GA17654@elte.hu>
+	 <1169631016.19471.175.camel@imap.mvista.com>
+	 <1169668653.6905.49.camel@localhost.localdomain>
+	 <20070125063206.GA26764@elte.hu>
+Content-Type: text/plain
+Date: Thu, 25 Jan 2007 08:38:10 -0800
+Message-Id: <1169743090.3073.71.camel@imap.mvista.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
 Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 25 Jan 2007 17:26:31 +0100 Nadia Derbey wrote:
-
-> Randy,
+On Thu, 2007-01-25 at 07:32 +0100, Ingo Molnar wrote:
+> * john stultz <johnstul@us.ibm.com> wrote:
 > 
-> Thanks for reviewing the code!
-> My comments embedded.
-> I'll re-send the patches as soon as possible.
-
-OK, thanks.
-
-
-> Randy Dunlap wrote:
-> > On Tue, 16 Jan 2007 07:15:17 +0100 Nadia.Derbey@bull.net wrote:
-> > 
-> > 
-> >>[PATCH 01/06]
-> >>
-> <snip>
-> > 
-> > 
-> >>+Any kernel subsystem that has registered a tunable should call
-> >>+auto_tune_func() as follows:
-> >>+
-> >>++-------------------------+--------------------------------------------+
-> >>+| Step                    | Routine to call                            |
-> >>++-------------------------+--------------------------------------------+
-> >>+| Declaration phase       | DEFINE_TUNABLE(name, values...);           |
-> >>++-------------------------+--------------------------------------------+
-> >>+| Initialization routine  | set_tunable_min_max(name, min, max);       |
-> >>+|                         | set_autotuning_routine(name, routine);     |
-> >>+|                         | register_tunable(&name);                   |
-> >>+| Note: the 1st 2 calls   |                                            |
-> >>+|       are optional      |                                            |
-> >>++-------------------------+--------------------------------------------+
-> >>+| Alloc                   | activate_auto_tuning(AKT_UP, &name);       |
-> >>++-------------------------+--------------------------------------------+
-> >>+| Free                    | activate_auto_tuning(AKT_DOWN, &name);     |
-> > 
-> > 
-> > So does Free always use AKT_DOWN?  why does it matter?
-> > Seems unneeded and inconsistent.
+> > Although, to be fair, I do know that Daniel has future sched_clock 
+> > related patches that need his cleanups [...]
 > 
-> Tuning down is recommended in order to come back to the default tunable 
-> value.
+> btw., i dont find those sched_clock() changes really acceptable in their 
+> present form, and i've pointed out my reasons for that in the past, ~2 
+> months ago when Daniel last sent his cleanup queue.
 
-Let me try to be clearer.  What is Alloc?  and why is AKT_UP
-associated with Alloc and AFK_DOWN associated with Free (whatever
-that means)?
+I address your complaints .. You said you didn't want sched_clock to
+have the underlying clock selectable, and it's not any longer .. You
+also said I was adding cycles to the scheduling hot patch which I
+addressed , but it's not clear if really needed.
 
+Daniel
 
-> I agree with you: today it has quite no effect, except on the tunable 
-> value. If we take the ipc's example, grow_ary() just returns if the new 
-> tunable value happens to be lower than the previous one.
-> But we can imagine, in the future, that grow_ary could deallocate the 
-> unused memory.
-> + in that particular case, lowering the tunable value makes the 1st loop 
-> in ipc_addid() shorter.
-> 
-> > How does one activate a tunable for downward adjustment?
-> 
-> Actually a tunable is activated to be dynamically adjusted (whatever the 
-> direction).
-> But you are giving me an idea for a future enhancement: we can imagine a 
-> tunable that could be allowed to increase only (or decrease only). In 
-> that case, we should move the autotune sysfs attribute into an 'up' and 
-> a 'down' attribute?
-
-Couldn't the tunable owner just adjust the min value to a new
-(larger) min value, e.g.?
-
-
-> >>+extern void fork_late_init(void);
-> > 
-> > 
-> > Looks like the wrong header file for that extern.
-> > 
-> > 
-> 
-> Actually, I wanted the changes to the existing kernel files to be as 
-> small as possible. That's why everything is concentrated, whenever 
-> possible, in the added files.
-
-I suppose that's OK for review, but it shouldn't be merged that way.
-
----
-~Randy
