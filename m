@@ -1,60 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030447AbXAYRDU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030381AbXAYRGf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030447AbXAYRDU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jan 2007 12:03:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030446AbXAYRDU
+	id S1030381AbXAYRGf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jan 2007 12:06:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030446AbXAYRGf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jan 2007 12:03:20 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.155]:2034 "EHLO
-	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1030363AbXAYRDS (ORCPT
+	Thu, 25 Jan 2007 12:06:35 -0500
+Received: from tomts13-srv.bellnexxia.net ([209.226.175.34]:62121 "EHLO
+	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1030381AbXAYRGe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jan 2007 12:03:18 -0500
-Message-ID: <45B8E2D5.1030508@ru.mvista.com>
-Date: Thu, 25 Jan 2007 20:03:17 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
-MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 8/15] ide: disable DMA in ->ide_dma_check for "no IORDY"
- case
-References: <20070119003058.14846.43637.sendpatchset@localhost.localdomain>	 <20070119003154.14846.87217.sendpatchset@localhost.localdomain>	 <45B0F12B.3000202@ru.mvista.com>	 <58cb370e0701191047h524434eobdb9d86ed614bc71@mail.gmail.com>	 <45B117D4.7050406@gmail.com> <45B11D8D.8070105@ru.mvista.com>	 <58cb370e0701191200i10119313i4aacae9c504a02e4@mail.gmail.com>	 <45B13B8D.2020402@gmail.com> <45B24CBA.8080900@ru.mvista.com> <58cb370e0701200947p578f4d74g1fee511ded6c9a77@mail.gmail.com> <45B25DB7.8050903@gmail.com>
-In-Reply-To: <45B25DB7.8050903@gmail.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 25 Jan 2007 12:06:34 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: linux-kernel@vger.kernel.org
+Cc: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
+       Ingo Molnar <mingo@redhat.com>, Greg Kroah-Hartman <gregkh@suse.de>,
+       Christoph Hellwig <hch@infradead.org>, ltt-dev@shafik.org,
+       systemtap@sources.redhat.com, Douglas Niehaus <niehaus@eecs.ku.edu>,
+       "Martin J. Bligh" <mbligh@mbligh.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Paul Mackerras <paulus@samba.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: [PATCH 09/09] atomic.h : Add atomic64 cmpxchg, xchg and add_unless to x86_64
+Date: Thu, 25 Jan 2007 11:15:54 -0500
+Message-Id: <1169741757697-git-send-email-mathieu.desnoyers@polymtl.ca>
+X-Mailer: git-send-email 1.4.4.3
+In-Reply-To: <11697417541743-git-send-email-mathieu.desnoyers@polymtl.ca>
+References: <11697417541743-git-send-email-mathieu.desnoyers@polymtl.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+atomic.h : Add atomic64 cmpxchg, xchg and add_unless to x86_64
 
-Bartlomiej Zolnierkiewicz wrote:
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 
->>>The other advantage of doing cleanups is that code becomes cleaner/simpler
->>>which matters a lot for this codebase, i.e. ide-dma-off-void.patch exposed
->>>(yet to be fixed) bug in set_using_dma() (->ide_dma_off_quietly always returns
->>>0 which is passed by ->ide_dma_check to set_using_dma() which incorrectly
->>>then calls ->ide_dma_on).
-
->>   Well, this seems a newly intruduced bug.
-
-> The old code is so convulted that it is hard to see it w/o cleanup. :)
-
-> ->ide_dma_check implementations often do
-
-> 		return hwif->ide_dma_off_quietly(drive);
-
-> so the return value of ide_dma_off_quietly() (which is always 0) is passed to
-
-> 			if (HWIF(drive)->ide_dma_check(drive)) return -EIO;
-
-> in ide.c:set_using_dma() -> as a result the next line is executed
-
-> 			if (HWIF(drive)->ide_dma_on(drive)) return -EIO;
-
-    So, the error seems to call hwif->ide_dma_on() after hwif->ide_dma_check() 
-since hwif->ide_dma_check() must've already called that.
-
-MBR, Sergei
+--- a/include/asm-x86_64/atomic.h
++++ b/include/asm-x86_64/atomic.h
+@@ -375,8 +375,8 @@ static __inline__ long atomic64_add_return(long i, atomic64_t *v)
+ 	long __i = i;
+ 	__asm__ __volatile__(
+ 		LOCK_PREFIX "xaddq %0, %1;"
+-		:"=r"(i)
+-		:"m"(v->counter), "0"(i));
++		:"+r" (i), "+m" (v->counter)
++		: : "memory");
+ 	return i + __i;
+ }
+ 
+@@ -388,7 +388,12 @@ static __inline__ long atomic64_sub_return(long i, atomic64_t *v)
+ #define atomic64_inc_return(v)  (atomic64_add_return(1,v))
+ #define atomic64_dec_return(v)  (atomic64_sub_return(1,v))
+ 
+-#define atomic_cmpxchg(v, old, new) ((int)cmpxchg(&((v)->counter), old, new))
++#define atomic64_cmpxchg(v, old, new) \
++	((__typeof__((v)->counter))cmpxchg(&((v)->counter), old, new))
++#define atomic64_xchg(v, new) (xchg(&((v)->counter), new))
++
++#define atomic_cmpxchg(v, old, new) \
++	((__typeof__((v)->counter))cmpxchg(&((v)->counter), old, new))
+ #define atomic_xchg(v, new) (xchg(&((v)->counter), new))
+ 
+ /**
+@@ -402,7 +407,7 @@ static __inline__ long atomic64_sub_return(long i, atomic64_t *v)
+  */
+ #define atomic_add_unless(v, a, u)				\
+ ({								\
+-	int c, old;						\
++	__typeof__((v)->counter) c, old;			\
+ 	c = atomic_read(v);					\
+ 	for (;;) {						\
+ 		if (unlikely(c == (u)))				\
+@@ -416,6 +421,31 @@ static __inline__ long atomic64_sub_return(long i, atomic64_t *v)
+ })
+ #define atomic_inc_not_zero(v) atomic_add_unless((v), 1, 0)
+ 
++/**
++ * atomic64_add_unless - add unless the number is a given value
++ * @v: pointer of type atomic64_t
++ * @a: the amount to add to v...
++ * @u: ...unless v is equal to u.
++ *
++ * Atomically adds @a to @v, so long as it was not @u.
++ * Returns non-zero if @v was not @u, and zero otherwise.
++ */
++#define atomic64_add_unless(v, a, u)				\
++({								\
++	__typeof__((v)->counter) c, old;			\
++	c = atomic64_read(v);					\
++	for (;;) {						\
++		if (unlikely(c == (u)))				\
++			break;					\
++		old = atomic64_cmpxchg((v), c, c + (a));	\
++		if (likely(old == c))				\
++			break;					\
++		c = old;					\
++	}							\
++	c != (u);						\
++})
++#define atomic64_inc_not_zero(v) atomic64_add_unless((v), 1, 0)
++
+ /* These are x86-specific, used by some header files */
+ #define atomic_clear_mask(mask, addr) \
+ __asm__ __volatile__(LOCK_PREFIX "andl %0,%1" \
