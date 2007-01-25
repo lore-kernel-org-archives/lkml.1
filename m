@@ -1,87 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030440AbXAYRB7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030443AbXAYRDP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030440AbXAYRB7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jan 2007 12:01:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030444AbXAYRB6
+	id S1030443AbXAYRDP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jan 2007 12:03:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030363AbXAYRDO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jan 2007 12:01:58 -0500
-Received: from tomts25-srv.bellnexxia.net ([209.226.175.188]:34301 "EHLO
-	tomts25-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1030440AbXAYRBj (ORCPT
+	Thu, 25 Jan 2007 12:03:14 -0500
+Received: from nz-out-0506.google.com ([64.233.162.228]:63561 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030443AbXAYRDN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jan 2007 12:01:39 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: linux-kernel@vger.kernel.org
-Cc: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
-       Ingo Molnar <mingo@redhat.com>, Greg Kroah-Hartman <gregkh@suse.de>,
-       Christoph Hellwig <hch@infradead.org>, ltt-dev@shafik.org,
-       systemtap@sources.redhat.com, Douglas Niehaus <niehaus@eecs.ku.edu>,
-       "Martin J. Bligh" <mbligh@mbligh.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Paul Mackerras <paulus@samba.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: [PATCH 04/10] local_t : ia64 extension
-Date: Thu, 25 Jan 2007 11:16:11 -0500
-Message-Id: <1169741780668-git-send-email-mathieu.desnoyers@polymtl.ca>
-X-Mailer: git-send-email 1.4.4.3
-In-Reply-To: <1169741777507-git-send-email-mathieu.desnoyers@polymtl.ca>
-References: <1169741777507-git-send-email-mathieu.desnoyers@polymtl.ca>
+	Thu, 25 Jan 2007 12:03:13 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=biuh77ZAQTXDwnLjPSJi2z0PK6oe0sQOemFbGU05apoDjVtzlEJr79xjJrZyZSdWrd661FxFK40celQQLgHMXwJfqEqFhjmeGsdNRXWLyYMjwTEe7AND4AdwKgoKpWKJUlnyl4QpNoedyIdeFKhoIpMTjgV7dXJbt1fhVJMkBcE=
+Message-ID: <806dafc20701250903p6b67d176wf00dd2a9d92d899f@mail.gmail.com>
+Date: Thu, 25 Jan 2007 12:03:12 -0500
+From: "Christopher \"Monty\" Montgomery" <xiphmont@gmail.com>
+To: "Takashi Iwai" <tiwai@suse.de>
+Subject: Re: [Alsa-devel] [PATCH] alsa: correct nonsensical sysfs device symlinks
+Cc: "Pierre Ossman" <drzeus@drzeus.cx>, fedora-desktop-list@redhat.com,
+       alsa-devel@alsa-project.org, jrb@redhat.com, "Greg KH" <greg@kroah.com>,
+       linux-kernel@vger.kernel.org, mclasen@redhat.com,
+       "Lennart Poettering" <lennart@poettering.net>, perex@suse.cz
+In-Reply-To: <s5hfy9zujvr.wl%tiwai@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <806dafc20701241750t53b86babn36831cadc7dfa76c@mail.gmail.com>
+	 <20070125042616.GA21813@kroah.com>
+	 <806dafc20701250611u9935049ja8f88deb2aac4d40@mail.gmail.com>
+	 <45B8C9A3.6060107@drzeus.cx>
+	 <806dafc20701250736yc5c3048u14ec98e9b6b92574@mail.gmail.com>
+	 <45B8CF7E.2040908@drzeus.cx>
+	 <806dafc20701250757n3dcb38b7ma5f8423ab3de9850@mail.gmail.com>
+	 <s5hfy9zujvr.wl%tiwai@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-local_t : ia64 extension
+> > What was there (plugging the old 'dev' arg into the new call's
+> > 'parent' makes no sense) is clearly wrong.
+>
+> It makes sense because the meaning of card->dev was changed, too.
+> Now it points the "card*" object that is the root of all belonging
+> devices.  The former card->dev is stored in card->parent.
 
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
---- a/include/asm-ia64/local.h
-+++ b/include/asm-ia64/local.h
-@@ -1,50 +1 @@
--#ifndef _ASM_IA64_LOCAL_H
--#define _ASM_IA64_LOCAL_H
--
--/*
-- * Copyright (C) 2003 Hewlett-Packard Co
-- *	David Mosberger-Tang <davidm@hpl.hp.com>
-- */
--
--#include <linux/percpu.h>
--
--typedef struct {
--	atomic64_t val;
--} local_t;
--
--#define LOCAL_INIT(i)	((local_t) { { (i) } })
--#define local_read(l)	atomic64_read(&(l)->val)
--#define local_set(l, i)	atomic64_set(&(l)->val, i)
--#define local_inc(l)	atomic64_inc(&(l)->val)
--#define local_dec(l)	atomic64_dec(&(l)->val)
--#define local_add(i, l)	atomic64_add((i), &(l)->val)
--#define local_sub(i, l)	atomic64_sub((i), &(l)->val)
--
--/* Non-atomic variants, i.e., preemption disabled and won't be touched in interrupt, etc.  */
--
--#define __local_inc(l)		(++(l)->val.counter)
--#define __local_dec(l)		(--(l)->val.counter)
--#define __local_add(i,l)	((l)->val.counter += (i))
--#define __local_sub(i,l)	((l)->val.counter -= (i))
--
--/*
-- * Use these for per-cpu local_t variables.  Note they take a variable (eg. mystruct.foo),
-- * not an address.
-- */
--#define cpu_local_read(v)	local_read(&__ia64_per_cpu_var(v))
--#define cpu_local_set(v, i)	local_set(&__ia64_per_cpu_var(v), (i))
--#define cpu_local_inc(v)	local_inc(&__ia64_per_cpu_var(v))
--#define cpu_local_dec(v)	local_dec(&__ia64_per_cpu_var(v))
--#define cpu_local_add(i, v)	local_add((i), &__ia64_per_cpu_var(v))
--#define cpu_local_sub(i, v)	local_sub((i), &__ia64_per_cpu_var(v))
--
--/*
-- * Non-atomic increments, i.e., preemption disabled and won't be touched in interrupt,
-- * etc.
-- */
--#define __cpu_local_inc(v)	__local_inc(&__ia64_per_cpu_var(v))
--#define __cpu_local_dec(v)	__local_dec(&__ia64_per_cpu_var(v))
--#define __cpu_local_add(i, v)	__local_add((i), &__ia64_per_cpu_var(v))
--#define __cpu_local_sub(i, v)	__local_sub((i), &__ia64_per_cpu_var(v))
--
--#endif /* _ASM_IA64_LOCAL_H */
-+#include <asm-generic/local.h>
+Unfortunately card->parent does not work... but card->dev->parent does...
+
+> > And it's clear my pacth is incomplete, as it doesn't correct the
+> > device entries for the other entries.
+>
+> Well, for older systems, we shouldn't have also "card*" objects, too.
+
+True enough.
+
+> An untested patch below...
+
+This patch does not correct the problem, unfortunately.  I had
+originally tried something similar, but card->parent still results in
+the device symlink pointing to ../../../class/cardN.
+
+I'm working on this now and will doublecheck just in case my test was
+flawed first time.
+
+Monty
