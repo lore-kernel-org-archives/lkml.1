@@ -1,68 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965551AbXAYGfb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965580AbXAYGjO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965551AbXAYGfb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jan 2007 01:35:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965546AbXAYGfa
+	id S965580AbXAYGjO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jan 2007 01:39:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965582AbXAYGjO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jan 2007 01:35:30 -0500
-Received: from wx-out-0506.google.com ([66.249.82.232]:3902 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965551AbXAYGfa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jan 2007 01:35:30 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=D1CWP+DCNC2CFkmVJT+tNldbvwYuJYjkojQE6CCvQi1ktQ8ntCf/4myof+X7nh8q6rlVKy1HW41PlKTsxMBqhadyHZ7hTq28c5F4ICJgPx2US2kOOEPRDYBJnVNjWBzqpPYQwp2F8jc1U6SI9knFRscAND3MHYs7v5jBHe0/VQw=
-Message-ID: <6d6a94c50701242235m48013856kb5a947c489d9da37@mail.gmail.com>
-Date: Thu, 25 Jan 2007 14:35:29 +0800
-From: "Aubrey Li" <aubreylee@gmail.com>
-To: "Vaidyanathan Srinivasan" <svaidy@linux.vnet.ibm.com>
-Subject: Re: [RFC] Limit the size of the pagecache
-Cc: "Christoph Lameter" <clameter@sgi.com>,
-       "Nick Piggin" <nickpiggin@yahoo.com.au>,
-       "Robin Getz" <rgetz@blackfin.uclinux.org>,
-       "Hennerich, Michael" <Michael.Hennerich@analog.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <45B82F41.9040705@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 25 Jan 2007 01:39:14 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:57398 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965580AbXAYGjN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jan 2007 01:39:13 -0500
+Date: Thu, 25 Jan 2007 07:37:39 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Daniel Walker <dwalker@mvista.com>
+Cc: john stultz <johnstul@us.ibm.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@osdl.org>, LKML <linux-kernel@vger.kernel.org>,
+       Arjan van de Veen <arjan@infradead.org>,
+       Roman Zippel <zippel@linux-m68k.org>
+Subject: Re: [patch 00/46] High resolution timer / dynamic tick update
+Message-ID: <20070125063739.GB26764@elte.hu>
+References: <20070123211159.178138000@localhost.localdomain> <1169604991.19471.95.camel@imap.mvista.com> <20070124070701.GA17654@elte.hu> <1169631016.19471.175.camel@imap.mvista.com> <1169668653.6905.49.camel@localhost.localdomain> <1169671890.19471.309.camel@imap.mvista.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <Pine.LNX.4.64.0701231645260.5239@schroedinger.engr.sgi.com>
-	 <45B75208.90208@linux.vnet.ibm.com>
-	 <Pine.LNX.4.64.0701240655400.9696@schroedinger.engr.sgi.com>
-	 <45B82F41.9040705@linux.vnet.ibm.com>
+In-Reply-To: <1169671890.19471.309.camel@imap.mvista.com>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.8
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.8 required=5.9 tests=ALL_TRUSTED,BAYES_50 autolearn=no SpamAssassin version=3.0.3
+	-3.3 ALL_TRUSTED            Did not pass through any untrusted hosts
+	0.5 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
+	[score: 0.4965]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 1/25/07, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> wrote:
->
->
-> Christoph Lameter wrote:
-> > On Wed, 24 Jan 2007, Vaidyanathan Srinivasan wrote:
-> >
-> >> With your patch, MMAP of a file that will cross the pagecache limit hangs the
-> >> system.  As I mentioned in my previous mail, without subtracting the
-> >> NR_FILE_MAPPED, the reclaim will infinitely try and fail.
-> >
-> > Well mapped pages are still pagecache pages.
-> >
->
-> Yes, but they can be classified under a process RSS pages.  Whether it
-> is an anon page or shared mem or mmap of pagecache, it would show up
-> under RSS.  Those pages can be limited by RSS limiter similar to the
-> one we are discussing in pagecache limiter.  In my opinion, once a
-> file page is mapped by the process, then it should be treated at par
-> with anon pages.  Application programs generally do not mmap a file
-> page if the reuse for the content is very low.
->
 
-I agree, we shouldn't take mmapped page into account.
-But Vaidy - even with your patch, we are still using the existing
-reclaimer, that means we dont ensure that only page cache is
-reclaimed/limited. mapped pages will be hit also.
-I think we still need to add a new scancontrol field to lock mmaped
-pages and remove unmapped pagecache pages only.
+* Daniel Walker <dwalker@mvista.com> wrote:
 
--Aubrey
+> > Thomas' changes are more obviously purpose driven, and Daniel's 
+> > appear more like just cleanups. So given that, if it were me, I'd 
+> > put Thomas changes in first, and re-diff Daniel's non-redundant 
+> > changes on top.
+> 
+> Seems backwards , clean ups should always go first. If Thomas had 
+> started off my patch set his changes would have been smaller and 
+> hopefully stronger. [...]
+
+if it were the same area of code, and if all your cleanups were fine, 
+i'd agree. But even assuming that all your cleanups are fine, this is 
+90% /not/ the same area of code. Thomas's changes refactor the 
+clockevents infrastructure, while passingly touching clocksources too, 
+on an as-needed basis. Your changes touch the clocksource area of code. 
+In that sense Thomas' changes are more important and you should be able 
+to refactor your queue ontop of Thomas' (trivial) change to the 
+clocksources code.
+
+You are complaining that we didnt pick up your high-flux cleanups, but 
+we pointed out our reasons. In fact we couldnt really even consider your 
+queue because the last version of yours when we did ours was 2 months 
+old and yours included the showstopper sched_clock() changes. Your queue 
+had all the signs of abandonment, so your injection into this submission 
+of the -hrt queue to suggest that your queue is suddenly a 'must have' 
+is quite puzzling to me.
+
+	Ingo
