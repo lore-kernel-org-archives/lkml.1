@@ -1,44 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965282AbXAYMhx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965295AbXAYM4d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965282AbXAYMhx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jan 2007 07:37:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965278AbXAYMhx
+	id S965295AbXAYM4d (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jan 2007 07:56:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965276AbXAYM4d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jan 2007 07:37:53 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:42581 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965276AbXAYMhw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jan 2007 07:37:52 -0500
-Date: Thu, 25 Jan 2007 13:36:33 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Rui Nuno Capela <rncbc@rncbc.org>
-Cc: linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.20-rc6-rt1 timekeeping_is_continuous question
-Message-ID: <20070125123633.GA8684@elte.hu>
-References: <11401.194.65.103.1.1169725008.squirrel@www.rncbc.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <11401.194.65.103.1.1169725008.squirrel@www.rncbc.org>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.8
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.8 required=5.9 tests=ALL_TRUSTED,BAYES_50 autolearn=no SpamAssassin version=3.0.3
-	-3.3 ALL_TRUSTED            Did not pass through any untrusted hosts
-	0.5 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
-	[score: 0.4896]
+	Thu, 25 Jan 2007 07:56:33 -0500
+Received: from web7706.mail.in.yahoo.com ([202.86.4.44]:38402 "HELO
+	web7706.mail.in.yahoo.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S965295AbXAYM4d (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jan 2007 07:56:33 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.co.in;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=NEvLCrSkBFnxwbJTp7+U0bsbDo+8TwNmIVkqiTBkL14E4eVEXYpPux+c/iOWjlB60l/gbXtAum2IwXkB1dfmXo0ogLQj3PMpL2tTvrqtJxt93KFgSH7/wo3jw53cNWapO4NhMuFnrkzhES3i8MpCWf0qM3vXSwMuv5FID5wQ4cQ=;
+X-YMail-OSG: tmBiBgcVM1les9ItD_TxqReo_QERXW051nYYnDNFowD8Ss24YTPMkv22.sLXrq6KBJYnXs5QtI4Bihj4Lplvg1D.a7bh8KgFhJgJthaai8vf3wX6TKTt5fSEoATelVQ-
+Date: Thu, 25 Jan 2007 12:56:30 +0000 (GMT)
+From: Seetharam Dharmosoth <seetharam_kernel@yahoo.co.in>
+Subject: que: How can we Eliminate the DMA Zone from the kernel?
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <161367.39134.qm@web7706.mail.in.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-* Rui Nuno Capela <rncbc@rncbc.org> wrote:
+Want to remove DMA zone the from the Linux Kernel.
+(Don't want to use DMA Zone, because i am not
+using ISA bus, am using PCI bus. So, I don't need
+this)
 
-> I'm having the following traces on every boot; are they of any 
-> concern, or should I just ignore and carry on?
+Can you please give me suggestions in this regards.
 
-please ignore them - i've removed them from the current tree.
+Thanks
+RAM
 
-	Ingo
+
+
+
+		
+__________________________________________________________
+Yahoo! India Answers: Share what you know. Learn something new
+http://in.answers.yahoo.com/
