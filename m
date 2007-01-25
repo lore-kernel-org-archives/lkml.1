@@ -1,50 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965566AbXAYWHj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965403AbXAYWMP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965566AbXAYWHj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jan 2007 17:07:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965567AbXAYWHj
+	id S965403AbXAYWMP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jan 2007 17:12:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965591AbXAYWMP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jan 2007 17:07:39 -0500
-Received: from mail.suse.de ([195.135.220.2]:54740 "EHLO mx1.suse.de"
+	Thu, 25 Jan 2007 17:12:15 -0500
+Received: from agmk.net ([87.236.194.20]:4289 "EHLO mail.agmk.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965566AbXAYWHi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jan 2007 17:07:38 -0500
-Date: Thu, 25 Jan 2007 14:06:31 -0800
-From: Greg KH <greg@kroah.com>
-To: Dave Airlie <airlied@gmail.com>
-Cc: airlied@linux.ie, linux-kernel@vger.kernel.org
-Subject: Re: gpu sharing layer for kernel
-Message-ID: <20070125220631.GB5886@kroah.com>
-References: <1169637623985-git-send-email-airlied@linux.ie> <20070124214654.GA30634@kroah.com> <21d7e9970701241439y1431254bwf088f9f3043dd0c@mail.gmail.com>
+	id S965403AbXAYWMO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jan 2007 17:12:14 -0500
+From: =?utf-8?q?Pawe=C5=82_Sikora?= <pluto@agmk.net>
+To: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.20rc5 k8/acpi regression ( 2.6.17.13 works fine ).
+Date: Thu, 25 Jan 2007 23:11:46 +0100
+User-Agent: KMail/1.9.6
+Cc: Len Brown <lenb@kernel.org>, Adrian Bunk <bunk@stusta.de>,
+       linux-acpi@vger.kernel.org, cpufreq@lists.linux.org.uk
+References: <200701242346.44673.pluto@agmk.net> <20070124225238.GT17836@stusta.de> <200701242350.45276.lenb@kernel.org>
+In-Reply-To: <200701242350.45276.lenb@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8bit
 Content-Disposition: inline
-In-Reply-To: <21d7e9970701241439y1431254bwf088f9f3043dd0c@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200701252311.46858.pluto@agmk.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 25, 2007 at 09:39:47AM +1100, Dave Airlie wrote:
-> >> Why do we want this?
-> >>
-> >> Currently the kernel cannot provide both the fb and drm drivers with
-> >> access to the device model and this means the drm cannot get any
-> >> suspend/resume callbacks.  This layer attempts to fix this problem by
-> >> adding a bus for the gpu drivers to attach to. Currently a lowlevel
-> >> binding driver is needed along with optional fb and drm components.
+On Thursday 25 of January 2007 05:50:45 Len Brown wrote:
+> On Wednesday 24 January 2007 17:52, Adrian Bunk wrote:
+> > On Wed, Jan 24, 2007 at 11:46:44PM +0100, Paweł Sikora wrote:
+> > > for 2.6.20rc5 i get an acpi related oops during x86-64 boot:
+> > > http://minus.ds14.agh.edu.pl/~pluto/2.6.20rc5-acpi-oops.jpg
+> > > disabling the "amd-k8 cool'n'quiet" option in bios helps.
+> > > moreover, it works fine for 2.6.17.13, so it looks like
+> > > a recent regression. i can provide more details if you need.
 > >
-> >If we were to allow this kind of "sharing" for all PCI devices would
-> >that work out instead?  Or would this layer still be needed?
-> 
-> Initially this layer wouldn't be needed, but I'd like to add some
-> awareness to the drivers, so the drm can tell the fb to stop doing
-> stuff and vice-versa if necessary....  but perhaps that could be done
-> with a generic layer also.. or via the lowlevel driver I have...
+> > thanks for your report.
+> >
+> > Can you narrow down a bit when it started?
+> > Is 2.6.19 OK?
+> > Is 2.6.18 OK?
+>
+> Is the stack trace always the same?  It doesn't make much sense to me.
 
-Ok, I have no objection to this layer right now, as it solves your
-problem, and while I would like some time in the future to add such a
-layer for the PCI devices, it is no where on my todo plate just yet...
-
-thanks,
-
-greg k-h
+with debug options enabled oops looks better:
+http://minus.ds14.agh.edu.pl/~pluto/2.6.20rc5-oops-01.jpg
