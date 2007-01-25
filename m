@@ -1,204 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752035AbXAYCXx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752011AbXAYC1p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752035AbXAYCXx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jan 2007 21:23:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752011AbXAYCXx
+	id S1752011AbXAYC1p (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jan 2007 21:27:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752025AbXAYC1p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jan 2007 21:23:53 -0500
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:51728 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752035AbXAYCXw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jan 2007 21:23:52 -0500
-Date: Wed, 24 Jan 2007 18:23:38 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: mingo@elte.hu, tglx@linuxtronix.de, dipankar@in.ibm.com, tytso@us.ibm.com,
-       dvhltc@us.ibm.com, oleg@tv-sign.ru, twoerner.k@gmail.com,
-       josh@freedesktop.org, billh@gnuppy.monkey.org,
-       nielsen.esben@googlemail.com, corbet@lwn.net
-Subject: [RFC PATCH -rt 2/2] RCU priority boosting additions to rcutorture
-Message-ID: <20070125022338.GB22540@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20070125021101.GA23428@linux.vnet.ibm.com> <20070125021444.GA22540@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 24 Jan 2007 21:27:45 -0500
+Received: from wx-out-0506.google.com ([66.249.82.224]:41492 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752011AbXAYC1o (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jan 2007 21:27:44 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=uZuim5m1G+htU62Qxclv2mvMscVJrIOwd7IgmlpEIaxEPU+5Jx234wI3L7I2RKe5r78SYJWTy9uaBQWvQMNW/6gOAp/NvB7nFKAV1jo30MEixJRJyvchdP10mfGV+9aKwltEXXmK+hPfn5iNyO1vcygCffL5xsrzFZ4G6QecBdI=
+Message-ID: <6d6a94c50701241827y715353ccwb8c4b4697e5607ca@mail.gmail.com>
+Date: Thu, 25 Jan 2007 10:27:43 +0800
+From: "Aubrey Li" <aubreylee@gmail.com>
+To: "Peter Zijlstra" <a.p.zijlstra@chello.nl>
+Subject: Re: [RFC] Limit the size of the pagecache
+Cc: "Christoph Lameter" <clameter@sgi.com>,
+       "Vaidyanathan Srinivasan" <svaidy@linux.vnet.ibm.com>,
+       "Nick Piggin" <nickpiggin@yahoo.com.au>,
+       "Robin Getz" <rgetz@blackfin.uclinux.org>,
+       "Frysinger, Michael" <Michael.Frysinger@analog.com>,
+       "Bryan Wu" <cooloney.lkml@gmail.com>,
+       "Hennerich, Michael" <Michael.Hennerich@analog.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <1169650616.6189.41.camel@twins>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070125021444.GA22540@linux.vnet.ibm.com>
-User-Agent: Mutt/1.4.1i
+References: <Pine.LNX.4.64.0701231645260.5239@schroedinger.engr.sgi.com>
+	 <1169625333.4493.16.camel@taijtu>
+	 <6d6a94c50701240622n30f1092cq4570f84160fe87f7@mail.gmail.com>
+	 <1169650616.6189.41.camel@twins>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds an optional preemption kernel thread to the rcutorture
-tests.  This thread sets itself to a low RT priority and chews up
-CPU in 10-second bursts, verifying that grace periods progress during
-this 10-second interval.  This has thus far passed about 30 hours of
-RCU torture testing on a 4-CPU (a pair of 2-CPU dies) 64-bit Xeon 
-system.
+On 1/24/07, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+> On Wed, 2007-01-24 at 22:22 +0800, Aubrey Li wrote:
+> > On 1/24/07, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+> > > On Tue, 2007-01-23 at 16:49 -0800, Christoph Lameter wrote:
+> > > > This is a patch using some of Aubrey's work plugging it in what is IMHO
+> > > > the right way. Feel free to improve on it. I have gotten repeatedly
+> > > > requests to be able to limit the pagecache. With the revised VM statistics
+> > > > this is now actually possile. I'd like to know more about possible uses of
+> > > > such a feature.
+> > > >
+> > > >
+> > > >
+> > > >
+> > > > It may be useful to limit the size of the page cache for various reasons
+> > > > such as
+> > > >
+> > > > 1. Insure that anonymous pages that may contain performance
+> > > >    critical data is never subject to swap.
+> > >
+> > > This is what we have mlock for, no?
+> > >
+> > > > 2. Insure rapid turnaround of pages in the cache.
+> > >
+> > > This sounds like we either need more fadvise hints and/or understand why
+> > > the VM doesn't behave properly.
+> > >
+> > > > 3. Reserve memory for other uses? (Aubrey?)
+> > >
+> > > He wants to make a nommu system act like a mmu system; this will just
+> > > never ever work.
+> >
+> > Nope. Actually my nommu system works great with some of patches made by us.
+> > What let you think this will never work?
+>
+> Because there are perfectly valid things user-space can do to mess you
+> up. I forgot the test-case but it had something to do with opening a
+> million files, this will scatter slab pages all over the place.
+>
+> Also, if you cycle your large user-space allocations a bit unluckily
+> you'll also fragment it into oblivion.
+>
+> So you can not guarantee it will not fragment into smithereens stopping
+> your user-space from using large than page size allocations.
+>
+> If your user-space consists of several applications that do dynamic
+> memory allocation of various sizes its a matter of (run-) time before
+> things will start failing.
+>
+> If you prealloc a large area at boot time (like we now do for hugepages)
+> and use that for user-space, you might 'reset' the status quo by cycling
+> the whole of userspace.
+>
 
-I am experimenting with more-vicious tests, but extra viciousness thus
-far comes at the expense of grotesque code.
+It seems you are talking about a perfect system. Opening a million
+files will never be the requirement of my system. You know I'm working
+on an embedded system, most of the time the whole system just run for
+one application, if I can guarantee this application works forever, I
+think it's enough. I'm not trying to make a nommu system act like a
+mmu system, it's impossible, I just make my nommu system work.
 
-Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
----
-
- rcutorture.c |   85 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-
- 1 files changed, 84 insertions(+), 1 deletion(-)
-
-diff -urpNa -X dontdiff linux-2.6.20-rc4-rt1/kernel/rcutorture.c linux-2.6.20-rc4-rt1-rcubtorture/kernel/rcutorture.c
---- linux-2.6.20-rc4-rt1/kernel/rcutorture.c	2007-01-09 10:59:54.000000000 -0800
-+++ linux-2.6.20-rc4-rt1-rcubtorture/kernel/rcutorture.c	2007-01-23 11:27:49.000000000 -0800
-@@ -194,6 +194,8 @@ struct rcu_torture_ops {
- 	int (*completed)(void);
- 	void (*deferredfree)(struct rcu_torture *p);
- 	void (*sync)(void);
-+	void (*preemptstart)(void);
-+	void (*preemptend)(void);
- 	int (*stats)(char *page);
- 	char *name;
- };
-@@ -258,6 +260,71 @@ static void rcu_torture_deferred_free(st
- 	call_rcu(&p->rtort_rcu, rcu_torture_cb);
- }
- 
-+#ifndef CONFIG_PREEMPT_RCU_BOOST
-+static void rcu_preempt_start(void) { }
-+static void rcu_preempt_end(void) { }
-+static int rcu_preempt_stats(char *page) { return 0; }
-+#else /* #ifndef CONFIG_PREEMPT_RCU_BOOST */
-+
-+static struct task_struct *rcu_preeempt_task;
-+static long rcu_torture_preempt_errors = 0;
-+
-+static int rcu_torture_preempt(void *arg)
-+{
-+	int completedstart;
-+	time_t gcstart;
-+	struct sched_param sp;
-+
-+	sp.sched_priority = MAX_RT_PRIO - 1;
-+	sched_setscheduler(current, SCHED_RR, &sp);
-+	current->flags |= PF_NOFREEZE;
-+
-+	do {
-+		completedstart = rcu_torture_completed();
-+		gcstart = xtime.tv_sec;
-+		while ((xtime.tv_sec - gcstart < 10) &&
-+		       (rcu_torture_completed() == completedstart))
-+			cond_resched();
-+		if (rcu_torture_completed() == completedstart)
-+			rcu_torture_preempt_errors++;
-+		schedule_timeout_interruptible(shuffle_interval * HZ);
-+	} while (!kthread_should_stop());
-+	return NULL;
-+}
-+
-+static void rcu_preempt_start(void)
-+{
-+	rcu_preeempt_task = kthread_run(rcu_torture_preempt, NULL,
-+					"rcu_torture_preempt");
-+	if (IS_ERR(rcu_preeempt_task)) {
-+		VERBOSE_PRINTK_ERRSTRING("Failed to create preempter");
-+		rcu_preeempt_task = NULL;
-+	}
-+}
-+
-+static void rcu_preempt_end(void)
-+{
-+	if (rcu_preeempt_task != NULL) {
-+		VERBOSE_PRINTK_STRING("Stopping rcu_preempt task");
-+		kthread_stop(rcu_preeempt_task);
-+	}
-+	rcu_preeempt_task = NULL;
-+}
-+
-+static int rcu_preempt_stats(char *page) {
-+	int cnt = 0;
-+
-+	cnt += sprintf(&page[cnt],
-+		       "Preemption stalls: %ld\n", rcu_torture_preempt_errors);
-+	return (cnt);
-+}
-+#endif /* #else #ifndef CONFIG_PREEMPT_RCU_BOOST */
-+
-+static void rcu_preemptstart(void)
-+{
-+	
-+}
-+
- static struct rcu_torture_ops rcu_ops = {
- 	.init = NULL,
- 	.cleanup = NULL,
-@@ -267,7 +334,9 @@ static struct rcu_torture_ops rcu_ops = 
- 	.completed = rcu_torture_completed,
- 	.deferredfree = rcu_torture_deferred_free,
- 	.sync = synchronize_rcu,
--	.stats = NULL,
-+	.preemptstart = rcu_preempt_start,
-+	.preemptend = rcu_preempt_end,
-+	.stats = rcu_preempt_stats,
- 	.name = "rcu"
- };
- 
-@@ -306,6 +375,8 @@ static struct rcu_torture_ops rcu_sync_o
- 	.completed = rcu_torture_completed,
- 	.deferredfree = rcu_sync_torture_deferred_free,
- 	.sync = synchronize_rcu,
-+	.preemptstart = NULL,
-+	.preemptend = NULL,
- 	.stats = NULL,
- 	.name = "rcu_sync"
- };
-@@ -370,6 +441,8 @@ static struct rcu_torture_ops rcu_bh_ops
- 	.completed = rcu_bh_torture_completed,
- 	.deferredfree = rcu_bh_torture_deferred_free,
- 	.sync = rcu_bh_torture_synchronize,
-+	.preemptstart = NULL,
-+	.preemptend = NULL,
- 	.stats = NULL,
- 	.name = "rcu_bh"
- };
-@@ -383,6 +456,8 @@ static struct rcu_torture_ops rcu_bh_syn
- 	.completed = rcu_bh_torture_completed,
- 	.deferredfree = rcu_sync_torture_deferred_free,
- 	.sync = rcu_bh_torture_synchronize,
-+	.preemptstart = NULL,
-+	.preemptend = NULL,
- 	.stats = NULL,
- 	.name = "rcu_bh_sync"
- };
-@@ -464,6 +539,8 @@ static struct rcu_torture_ops srcu_ops =
- 	.completed = srcu_torture_completed,
- 	.deferredfree = rcu_sync_torture_deferred_free,
- 	.sync = srcu_torture_synchronize,
-+	.preemptstart = NULL,
-+	.preemptend = NULL,
- 	.stats = srcu_torture_stats,
- 	.name = "srcu"
- };
-@@ -502,6 +579,8 @@ static struct rcu_torture_ops sched_ops 
- 	.completed = sched_torture_completed,
- 	.deferredfree = rcu_sync_torture_deferred_free,
- 	.sync = sched_torture_synchronize,
-+	.preemptstart = NULL,
-+	.preemptend = NULL,
- 	.stats = NULL,
- 	.name = "sched"
- };
-@@ -856,6 +935,8 @@ rcu_torture_cleanup(void)
- 		kthread_stop(stats_task);
- 	}
- 	stats_task = NULL;
-+	if (cur_ops->preemptend != NULL)
-+		cur_ops->preemptend();
- 
- 	/* Wait for all RCU callbacks to fire.  */
- 	rcu_barrier();
-@@ -997,6 +1078,8 @@ rcu_torture_init(void)
- 			goto unwind;
- 		}
- 	}
-+	if (cur_ops->preemptstart != NULL)
-+		cur_ops->preemptstart();
- 	return 0;
- 
- unwind:
+-Aubrey
