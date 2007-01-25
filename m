@@ -1,77 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965546AbXAYSHJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965535AbXAYSQG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965546AbXAYSHJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jan 2007 13:07:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965535AbXAYSHI
+	id S965535AbXAYSQG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jan 2007 13:16:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965552AbXAYSQG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jan 2007 13:07:08 -0500
-Received: from qb-out-0506.google.com ([72.14.204.237]:51187 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965516AbXAYSHF (ORCPT
+	Thu, 25 Jan 2007 13:16:06 -0500
+Received: from ug-out-1314.google.com ([66.249.92.168]:46197 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965535AbXAYSQE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jan 2007 13:07:05 -0500
+	Thu, 25 Jan 2007 13:16:04 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=ciOzZiMGwatZV7A2zFMBc3aueKF+fkEItszRaHGMfx5W9Vy1UUjfmgCOD8/xsyav2G7EPm8Y8GJDMjYMI0zMNgqDYWeHCyzzvyPOmEpcFngEmrx4Y5T5fWIPLFeM/qyRKhrRPcJznTavvGquk9rm8viFrFWxxndOxKSYY1wsw8s=
-Message-ID: <806dafc20701251007n69bc9b3cse023b51369501d42@mail.gmail.com>
-Date: Thu, 25 Jan 2007 13:07:04 -0500
-From: xiphmont@xiph.org
-To: "Takashi Iwai" <tiwai@suse.de>
-Subject: Re: [Alsa-devel] [PATCH] alsa: correct nonsensical sysfs device symlinks
-Cc: "Pierre Ossman" <drzeus@drzeus.cx>, fedora-desktop-list@redhat.com,
-       alsa-devel@alsa-project.org, jrb@redhat.com, "Greg KH" <greg@kroah.com>,
-       linux-kernel@vger.kernel.org, mclasen@redhat.com,
-       "Lennart Poettering" <lennart@poettering.net>, perex@suse.cz
-In-Reply-To: <s5h7ivbuhg1.wl%tiwai@suse.de>
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=N7ou3ZIsIJ6RKJVr6UcZDMpN18ZrWi6ey6XIZ+RvVDZ6bAAfpcbXPoh6/ULfOvikd5Tsvz+rDi88Tvqo0dFsW5OVTiFoHD3fzuHN3jBiC+0OSGJ9PYzM3FfTNMhqfs9iShEIfKpTGx8Pddcl9m4pmzVrO5c5+/BRA06S2pzEwQE=
+Message-ID: <8355959a0701251016g399b66bese95b0ac4478ebfe5@mail.gmail.com>
+Date: Thu, 25 Jan 2007 23:46:01 +0530
+From: "Sunil Naidu" <akula2.shark@gmail.com>
+To: "Randy Dunlap" <randy.dunlap@oracle.com>
+Subject: Re: Strange LKML home page!!!
+Cc: lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070125084716.ee3134b1.randy.dunlap@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <806dafc20701241750t53b86babn36831cadc7dfa76c@mail.gmail.com>
-	 <806dafc20701250611u9935049ja8f88deb2aac4d40@mail.gmail.com>
-	 <45B8C9A3.6060107@drzeus.cx>
-	 <806dafc20701250736yc5c3048u14ec98e9b6b92574@mail.gmail.com>
-	 <45B8CF7E.2040908@drzeus.cx>
-	 <806dafc20701250757n3dcb38b7ma5f8423ab3de9850@mail.gmail.com>
-	 <s5hfy9zujvr.wl%tiwai@suse.de>
-	 <806dafc20701250903p6b67d176wf00dd2a9d92d899f@mail.gmail.com>
-	 <806dafc20701250930n185e9773i64bbd2d845c836be@mail.gmail.com>
-	 <s5h7ivbuhg1.wl%tiwai@suse.de>
-X-Google-Sender-Auth: 7da94f51c8b5bbbe
+References: <8355959a0701250229y227bacf6hfc22a747e58e4e3@mail.gmail.com>
+	 <20070125084716.ee3134b1.randy.dunlap@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 1/25/07, Takashi Iwai <tiwai@suse.de> wrote:
-> At Thu, 25 Jan 2007 12:30:44 -0500,
-> xiphmont@xiph.org wrote:
+On 1/25/07, Randy Dunlap <randy.dunlap@oracle.com> wrote:
+> On Thu, 25 Jan 2007 15:59:47 +0530 Sunil Naidu wrote:
+>
+> > Hello,
 > >
-> > > I'm working on this now and will doublecheck just in case my test was
-> > > flawed first time.
+> > I got stunned when I opened www.lkml.org
 > >
-> > Doublechecking indicates my initial test was wrong somehow; both
-> > card->dev->parent and card->parent passed as arg 2 to the
-> > device_create call in snd_register_device result in correct device
-> > symlinks. Are these two actually semantically different?  I'm just
-> > curious.
+> > => <title>lkml deals psp ipod laptop hotel flight travel holiday lcd
+> > tv mac pc</title>
+> >
+> > All junk & nonsence .....looks like a Domain seller!!!
+> >
+> > What's the problem here?
 >
-> If card->dev is created, they should be identical.
-> But, again, card->dev should be NULL on the older systems.
->
-> > The call to device_create in cound_core.c:sound_insert_unit also needs
-> > to be modified in order for the device symlinks in the other unit
-> > types to be correct.  Again, modifying the 'dev' argument to
-> > '(dev?dev->parent:NULL)' appears to fix the problem.  Is that
-> > correct/appropriate there?
->
-> Your change breaks the expected heavior if CONFIG_SYSFS_DEPRECATED is
-> enabled.  Then devices won't belong to card* objects any more...
+> It looks normal to me.  but lkml.org isn't associated with kernel.org.
 
-FWIW, CONFIG_SYSFS_DEPRECATED is enabled on all my machines-- it's
-exactly that behavior that is wrong in 2.6.20-rc5 and that I'm trying
-to fix (and testing against here/now).
+I don't know why it happened like that. This time I shall take a
+picture with my Digicam & post here.
 
-Having just checked a 2.6.18 machine, none of the device symlinks
-point to card* objects; thay all point to /sys/devices/....
+> ~Randy
 
-Monty
+~Akula@
