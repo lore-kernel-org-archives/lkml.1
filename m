@@ -1,101 +1,179 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965225AbXAYE4p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965250AbXAYFAa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965225AbXAYE4p (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jan 2007 23:56:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933231AbXAYE4p
+	id S965250AbXAYFAa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jan 2007 00:00:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933225AbXAYFAa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jan 2007 23:56:45 -0500
-Received: from nic2.axis.se ([193.13.178.10]:57646 "EHLO krynn.se.axis.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933229AbXAYE4o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jan 2007 23:56:44 -0500
-Date: Thu, 25 Jan 2007 05:56:34 +0100
-Message-Id: <200701250456.l0P4uYhj017248@ignucius.se.axis.com>
-From: Hans-Peter Nilsson <hans-peter.nilsson@axis.com>
-To: dbrownell@users.sourceforge.net
-CC: mikael.starvik@axis.com, spi-devel-general@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: 5/5: Updates to SPI and mmc_spi: nonconst SPI cleanup(), kernel 2.6.19
+	Thu, 25 Jan 2007 00:00:30 -0500
+Received: from cavan.codon.org.uk ([217.147.92.49]:48070 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933217AbXAYFA3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jan 2007 00:00:29 -0500
+Date: Thu, 25 Jan 2007 05:00:09 +0000
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: David Brownell <david-b@pacbell.net>
+Cc: linux-kernel@vger.kernel.org, gregkh@suse.de
+Message-ID: <20070125050009.GA8672@srcf.ucam.org>
+References: <20061219185223.GA13256@srcf.ucam.org> <200612201318.06976.david-b@pacbell.net> <20061221012924.GC32625@srcf.ucam.org> <200612201904.28681.david-b@pacbell.net> <20061221040648.GA1499@srcf.ucam.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20061221040648.GA1499@srcf.ucam.org>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+Subject: [PATCH] Fix /sys/device/.../power/state regression
+X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
+X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(Please CC me on replies, I'm not subscribed to LKML or the SPI list.  Thanks.)
+In 2.6.19, support for splitting driver suspend and resume callbacks 
+into interrupt and non-interrupt contexts was added. Unfortunately, this 
+broke /sys/device/.../power/state support for all devices. In the long 
+run, this should be obsoleted by power management support in the 
+individual drivers - however, in the case of network drivers (for 
+example), currently only three drivers implement any sort of useful 
+run-time power management.
 
-I'd like to assign NULL to kfree()d members of a structure.  I
-can't do that without ugly casting (see the PXA patch) when the
-structure pointed to is const-qualified.  I don't really see a
-reason why the cleanup method isn't allowed to alter the object
-it should clean up. :-)
+This patch allows the bus driver to check whether a specific driver 
+requires the split. If not, the 2.6.18 functionality is restored. It 
+also alters feature-removals.txt to note that the deprecated 
+functionality should not be removed until a replacement actually exists.
 
-No, I didn't test the PXA patch, but I verified that the
-NULL-assignment doesn't stop me from doing rmmod/insmodding my
-own spi_bitbang-based driver.
+Signed-off-by: Matthew Garrett <mjg59@srcf.ucam.org>
 
-Signed-off-by: Hans-Peter Nilsson <hp@axis.com>
-
-diff -upr a/drivers/spi/pxa2xx_spi.c b/drivers/spi/pxa2xx_spi.c
---- a/drivers/spi/pxa2xx_spi.c	2007-01-13 19:00:11.000000000 +0100
-+++ b/drivers/spi/pxa2xx_spi.c	2007-01-25 05:19:21.000000000 +0100
-@@ -1080,9 +1080,9 @@ static int setup(struct spi_device *spi)
- 	return 0;
- }
+--- a/Documentation/feature-removal-schedule.txt
++++ b/Documentation/feature-removal-schedule.txt
+@@ -9,7 +9,8 @@ be removed from this file.
+ What:	/sys/devices/.../power/state
+ 	dev->power.power_state
+ 	dpm_runtime_{suspend,resume)()
+-When:	July 2007
++	bus->pm_has_noirq_stage()
++When:	Once alternative functionality has been implemented
+ Why:	Broken design for runtime control over driver power states, confusing
+ 	driver-internal runtime power management with:  mechanisms to support
+ 	system-wide sleep state transitions; event codes that distinguish
+diff --git a/Documentation/power/devices.txt b/Documentation/power/devices.txt
+index d0e79d5..345cca4 100644
+--- a/Documentation/power/devices.txt
++++ b/Documentation/power/devices.txt
+@@ -79,6 +79,7 @@ struct bus_type {
  
--static void cleanup(const struct spi_device *spi)
-+static void cleanup(struct spi_device *spi)
- {
--	struct chip_data *chip = spi_get_ctldata((struct spi_device *)spi);
-+	struct chip_data *chip = spi_get_ctldata(spi);
- 
- 	kfree(chip);
- }
-Only in b/drivers/spi: pxa2xx_spi.c.~1.1.1.2.~
-diff -upr a/drivers/spi/spi.c b/drivers/spi/spi.c
---- a/drivers/spi/spi.c	2007-01-13 19:00:11.000000000 +0100
-+++ b/drivers/spi/spi.c	2007-01-25 05:09:56.000000000 +0100
-@@ -32,7 +32,7 @@
-  */
- static void spidev_release(struct device *dev)
- {
--	const struct spi_device	*spi = to_spi_device(dev);
-+	struct spi_device	*spi = to_spi_device(dev);
- 
- 	/* spi masters may cleanup for released devices */
- 	if (spi->master->cleanup)
-diff -upr a/drivers/spi/spi_bitbang.c b/drivers/spi/spi_bitbang.c
---- a/drivers/spi/spi_bitbang.c	2007-01-24 06:15:56.000000000 +0100
-+++ b/drivers/spi/spi_bitbang.c	2007-01-25 05:06:49.000000000 +0100
-@@ -244,7 +244,7 @@ EXPORT_SYMBOL_GPL(spi_bitbang_setup);
- /**
-  * spi_bitbang_cleanup - default cleanup for per-word I/O loops
-  */
--void spi_bitbang_cleanup(const struct spi_device *spi)
-+void spi_bitbang_cleanup(struct spi_device *spi)
- {
- 	kfree(spi->controller_state);
- }
-diff -upr a/include/linux/spi/spi.h b/include/linux/spi/spi.h
---- a/include/linux/spi/spi.h	2007-01-24 03:58:32.000000000 +0100
-+++ b/include/linux/spi/spi.h	2007-01-25 05:05:03.000000000 +0100
-@@ -228,7 +228,7 @@ struct spi_master {
- 						struct spi_message *mesg);
- 
- 	/* called on release() to free memory provided by spi_master */
--	void			(*cleanup)(const struct spi_device *spi);
-+	void			(*cleanup)(struct spi_device *spi);
+ 	int  (*resume_early)(struct device *dev);
+ 	int  (*resume)(struct device *dev);
++	int  (*pm_has_noirq_stage)(struct device *dev);
  };
  
- static inline void *spi_master_get_devdata(struct spi_master *master)
-diff -upr a/include/linux/spi/spi_bitbang.h b/include/linux/spi/spi_bitbang.h
---- a/include/linux/spi/spi_bitbang.h	2006-06-25 14:58:31.000000000 +0200
-+++ b/include/linux/spi/spi_bitbang.h	2007-01-25 05:10:34.000000000 +0100
-@@ -55,7 +55,7 @@ struct spi_bitbang {
-  * methods, if you like.
-  */
- extern int spi_bitbang_setup(struct spi_device *spi);
--extern void spi_bitbang_cleanup(const struct spi_device *spi);
-+extern void spi_bitbang_cleanup(struct spi_device *spi);
- extern int spi_bitbang_transfer(struct spi_device *spi, struct spi_message *m);
- extern int spi_bitbang_setup_transfer(struct spi_device *spi,
- 				      struct spi_transfer *t);
+ Bus drivers implement those methods as appropriate for the hardware and
+@@ -236,6 +237,10 @@ The phases are seen by driver notifications issued in this order:
+ 	may stay partly usable until this late.  This "late" call may also
+ 	help when coping with hardware that behaves badly.
+ 
++	If a bus implements the suspend_late method, it must also provide a
++	pm_has_noirq_stage function in order to determine whether devices 
++	may be suspended during runtime.
++
+ The pm_message_t parameter is currently used to refine those semantics
+ (described later).
+ 
+@@ -348,7 +353,9 @@ The phases are seen by driver notifications issued in this order:
+ 	won't be supported on busses that require IRQs in order to
+ 	interact with devices.
+ 
+-	This reverses the effects of bus.suspend_late().
++	This reverses the effects of bus.suspend_late(). As with suspend_late,
++	if a bus implements this function it must provide a pm_has_noirq_stage
++	function.
+ 
+    2	bus.resume(dev) is called next.  This may be morphed into a device
+    	driver call with bus-specific parameters; implementations may sleep.
+diff --git a/drivers/base/platform.c b/drivers/base/platform.c
+index f9c903b..6bf1218 100644
+--- a/drivers/base/platform.c
++++ b/drivers/base/platform.c
+@@ -597,6 +597,16 @@ static int platform_resume(struct device * dev)
+ 	return ret;
+ }
+ 
++static int platform_pm_has_noirq_stage(struct device * dev)
++{
++	int ret = 0;
++	struct platform_driver *drv = to_platform_driver(dev->driver);
++
++	if (dev->driver && (drv->resume_early || drv->suspend_late))
++		ret = 1;
++	return ret;
++}
++
+ struct bus_type platform_bus_type = {
+ 	.name		= "platform",
+ 	.dev_attrs	= platform_dev_attrs,
+@@ -606,6 +616,7 @@ struct bus_type platform_bus_type = {
+ 	.suspend_late	= platform_suspend_late,
+ 	.resume_early	= platform_resume_early,
+ 	.resume		= platform_resume,
++	.pm_has_noirq_stage = platform_pm_has_noirq_stage,
+ };
+ EXPORT_SYMBOL_GPL(platform_bus_type);
+ 
+diff --git a/drivers/base/power/sysfs.c b/drivers/base/power/sysfs.c
+index 2d47517..c4ce060 100644
+--- a/drivers/base/power/sysfs.c
++++ b/drivers/base/power/sysfs.c
+@@ -46,7 +46,8 @@ static ssize_t state_store(struct device * dev, struct device_attribute *attr, c
+ 	int error = -EINVAL;
+ 
+ 	/* disallow incomplete suspend sequences */
+-	if (dev->bus && (dev->bus->suspend_late || dev->bus->resume_early))
++	if (dev->bus && dev->bus->pm_has_noirq_stage 
++			&& dev->bus->pm_has_noirq_stage(dev))
+ 		return error;
+ 
+ 	state.event = PM_EVENT_SUSPEND;
+diff --git a/drivers/pci/pci-driver.c b/drivers/pci/pci-driver.c
+index e5ae3a0..c0e4e7a 100644
+--- a/drivers/pci/pci-driver.c
++++ b/drivers/pci/pci-driver.c
+@@ -351,6 +351,17 @@ static int pci_device_resume(struct device * dev)
+ 	return error;
+ }
+ 
++static int pci_device_pm_has_noirq_stage(struct device * dev)
++{
++	int error = 0;
++	struct pci_dev * pci_dev = to_pci_dev(dev);
++	struct pci_driver * drv = pci_dev->driver;
++
++	if (drv && (drv->resume_early || drv->suspend_late))
++		error = 1;
++	return error;
++}
++
+ static int pci_device_resume_early(struct device * dev)
+ {
+ 	int error = 0;
+@@ -569,6 +580,7 @@ struct bus_type pci_bus_type = {
+ 	.suspend_late	= pci_device_suspend_late,
+ 	.resume_early	= pci_device_resume_early,
+ 	.resume		= pci_device_resume,
++	.pm_has_noirq_stage = pci_device_pm_has_noirq_stage,
+ 	.shutdown	= pci_device_shutdown,
+ 	.dev_attrs	= pci_dev_attrs,
+ };
+diff --git a/include/linux/device.h b/include/linux/device.h
+index 49ab53c..1c663c4 100644
+--- a/include/linux/device.h
++++ b/include/linux/device.h
+@@ -59,6 +59,7 @@ struct bus_type {
+ 	int (*suspend)(struct device * dev, pm_message_t state);
+ 	int (*suspend_late)(struct device * dev, pm_message_t state);
+ 	int (*resume_early)(struct device * dev);
++	int (*pm_has_noirq_stage)(struct device * dev);
+ 	int (*resume)(struct device * dev);
+ };
 
-brgds, H-P
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
