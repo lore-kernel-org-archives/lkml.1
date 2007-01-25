@@ -1,82 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965087AbXAYMEI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933172AbXAYM0M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965087AbXAYMEI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jan 2007 07:04:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932936AbXAYMEI
+	id S933172AbXAYM0M (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jan 2007 07:26:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933177AbXAYM0L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jan 2007 07:04:08 -0500
-Received: from smtp5-g19.free.fr ([212.27.42.35]:48375 "EHLO smtp5-g19.free.fr"
+	Thu, 25 Jan 2007 07:26:11 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:39924 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932886AbXAYMEH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jan 2007 07:04:07 -0500
-X-Greylist: delayed 7315 seconds by postgrey-1.27 at vger.kernel.org; Thu, 25 Jan 2007 07:04:07 EST
-Message-ID: <45B89C99.2060500@free.fr>
-Date: Thu, 25 Jan 2007 13:03:37 +0100
-From: John <shill@free.fr>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061108 SeaMonkey/1.0.6
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: tglx@timesys.com, mingo@elte.hu, johnstul@us.ibm.com, akpm@osdl.org,
-       shill@free.fr
-Subject: Re: One-shot high-resolution POSIX timer periodically late
-References: <fa.NwnlFyMPfa3XG6my3HKGWnCW3x4@ifi.uio.no> <fa.Ji4GnAbBF2FR5JbSxvxn2haJZIk@ifi.uio.no> <fa.8TBiwbgs8B881k+3X+IlFjhqpLI@ifi.uio.no>
-In-Reply-To: <fa.8TBiwbgs8B881k+3X+IlFjhqpLI@ifi.uio.no>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+	id S933172AbXAYM0L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jan 2007 07:26:11 -0500
+Subject: Re: 2.6.20-rc4 gfs2 bug
+From: Steven Whitehouse <swhiteho@redhat.com>
+To: Dan Merillat <dmerillat@sequiam.com>
+Cc: linux-cluster@redhat.com, linux-kernel@vger.kernel.org
+In-Reply-To: <20070125050731.GA23270@chaos.ao.net>
+References: <20070125050731.GA23270@chaos.ao.net>
+Content-Type: text/plain
+Organization: Red Hat (UK) Ltd
+Date: Thu, 25 Jan 2007 12:29:49 +0000
+Message-Id: <1169728189.11001.107.camel@quoit.chygwyn.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.2.2 (2.2.2-5) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[ Re-sending in the hope that it will be archived ]
+Hi,
 
-Ingo Molnar wrote:
-
-> John Stultz wrote:
+On Thu, 2007-01-25 at 00:07 -0500, Dan Merillat wrote:
+> Running 2.6.20-rc4 _WITH_ the following patch: (Shouldn't be the issue,
+> but just in case, I'm listing it here)
 > 
->> On Wed, 2007-01-24 at 10:41 +0100, John wrote:
->> 
->>> I'm using the POSIX timers API. My platform is x86 running Linux
->>> 2.6.18.6 patched with the high-resolution timer subsystem.
->>> 
->>> http://www.tglx.de/hrtimers.html
->>> 
->>> My process is the only SCHED_FIFO process on the system. There are 
->>> no user-space processes with a higher priority. AFAICT, only a 
->>> kernel thread could keep the CPU away from my app.
->>> 
->>> Is there a periodic kernel thread that runs every 2 seconds, cannot 
->>> be preempted, and runs for over 50 µs??
->> 
->> This sounds like a BIOS SMI issue. Can you reproduce this behavior on 
->> different hardware?
+> Date:	Fri, 29 Dec 2006 21:03:57 +0100
+> From:	Ingo Molnar <mingo@elte.hu>
+> Subject: [patch] remove MAX_ARG_PAGES
+> Message-ID: <20061229200357.GA5940@elte.hu>
 > 
-> note that only the -hrt patchset is used - not the full -rt patchset
-> - so 50 usecs delays (and more) are quite possible and common.
+> Linux fileserver 2.6.20-rc4MAX_ARGS #4 PREEMPT Fri Jan 12 03:58:25 EST 2007 x86_64 GNU/Linux
+> 
+> This happened when I started testing gfs2 for the first time.  I
+> installed userspace from CVS, loaded the gfs2/dlm modules, mkfs.gfs2,
+> then "mount -t gfs2 -v /dev/vg1/gfs2 /mnt/gfs"
+> 
+> This was the initial mount of the new filesystem.  I can create
+> directories, but attempting a stress-test with bonnie seems to have
+> deadlocked something.  (at "Start 'em", immediately.)
+> 
+> To clarify: the two oopses happened at first mount.  After that, I
+> created files/directories, then attempted to stress it a bit with
+> bonnie++.  No further oops/dmesg output.
+> 
+Are you in a position to test a kernel without preempt? I have a
+sneeking suspicion that its related to that.
 
-Ingo,
+> For the GFS2 folks, latest CVS gfs_tool doesn't have lockdump, is there
+> any way to examine what I'm stuck on?
+> 
+There isn't anything similar at the moment, however we do know about
+that and there is a bugzilla entry relating to it, #221300. I don't
+think that in this case it will help though since I think this is
+something more fundamental in the locking code.
 
-You are correct, I only used -hrt.
-I will _definitely_ give -rt a try.
+I'll see if I can reproduce something similar locally in the mean time,
 
-I am fully aware that an occasional 100 µs delay is possible, given a
-soft real-time operating system. However, what I cannot explain is:
+Steve.
 
-Why do these /occasional/ delays always happen a multiple of 2 seconds
-apart? Can you explain this odd behavior?
-
-> My question would be: does the same problem occur with the full -rt
-> patchset and PREEMPT_RT? (see http://rt.wiki.kernel.org for details)
-
-I will test on a different PC, as John suggested.
-I will try the full -rt patchset in a few days.
-
-+++++
-
-On a related note, there is no -hrt patch for 2.6.19:
-http://www.tglx.de/projects/hrtimers/
-Is it because the patch for 2.6.19-rc4-mm1 applies cleanly to 2.6.19?
-
-There is no -hrt patch for 2.6.20.
-Has it been completely merged?
-
-Regards.
 
