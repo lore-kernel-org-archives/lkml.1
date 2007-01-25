@@ -1,168 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965362AbXAYNtr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965388AbXAYNty@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965362AbXAYNtr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jan 2007 08:49:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965388AbXAYNsx
+	id S965388AbXAYNty (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jan 2007 08:49:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965383AbXAYNtr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jan 2007 08:48:53 -0500
-Received: from tservice.net.ru ([195.178.208.66]:36207 "EHLO tservice.net.ru"
+	Thu, 25 Jan 2007 08:49:47 -0500
+Received: from raven.upol.cz ([158.194.120.4]:48326 "EHLO raven.upol.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965364AbXAYNsk convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jan 2007 08:48:40 -0500
-Cc: David Miller <davem@davemloft.net>, Ulrich Drepper <drepper@redhat.com>,
-       Andrew Morton <akpm@osdl.org>, Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       netdev <netdev@vger.kernel.org>, Zach Brown <zach.brown@oracle.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Chase Venters <chase.venters@clientec.com>,
-       Johann Borck <johann.borck@densedata.com>, linux-kernel@vger.kernel.org,
-       Jeff Garzik <jeff@garzik.org>, Jamal Hadi Salim <hadi@cyberus.ca>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: [take34 5/10] kevent: Timer notifications.
-In-Reply-To: <11697329123020@2ka.mipt.ru>
-X-Mailer: gregkh_patchbomb
-Date: Thu, 25 Jan 2007 16:48:32 +0300
-Message-Id: <1169732912131@2ka.mipt.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Reply-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Content-Transfer-Encoding: 7BIT
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+	id S965156AbXAYNth (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jan 2007 08:49:37 -0500
+Date: Thu, 25 Jan 2007 13:58:13 +0000
+To: Martin Drab <drab@kepler.fjfi.cvut.cz>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Intel PCI-E bridge ACPI resources and possibly related SATA unstability problems on ASUS A8Js
+Message-ID: <20070125135813.GB9917@flower.upol.cz>
+References: <Pine.LNX.4.64.0701250142180.14408@kepler.fjfi.cvut.cz> <E1HA1Se-0002Y3-VQ@flower> <Pine.LNX.4.64.0701251325250.20484@kepler.fjfi.cvut.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0701251325250.20484@kepler.fjfi.cvut.cz>
+Organization: Palacky University in Olomouc, experimental physics department.
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Oleg Verych <olecom@flower.upol.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Jan 25, 2007 at 01:28:56PM +0100, Martin Drab wrote:
+> On Thu, 25 Jan 2007, Oleg Verych wrote:
+> 
+> > gmane.linux.kernel:
+> > > recently I got my hands on an ASUS A8Js notebook (Core 2 Duo T7200,
+> > > Intel 945 PM PCI-E Chipset, for details see attached log). After booting 
+> > > the latest 2.6.20-rc5-git3 kernel (but the same behaviour occurs also with 
+> > > the 2.6.19.2, didn't try any other), some strange behaviour can be 
+> > > observed.
+> > 
+> > There were disscussions about mmconfig and what nightmare it brought to
+> > PCI(E) configuration in scope of BIOS, chip bugs. Here's (one of) such:
+> > <http://marc.theaimsgroup.com/?l=linux-kernel&m=116007091004503&w=2>
+> > 
+> > > At first the following messages appear in the log:
+> > >
+> > > ...
+      [   40.303154] PCI: BIOS *Bug*: MCFG area at e0000000 is not E820-reserved
+> > > [   40.303157] PCI: Not using MMCONFIG.
+> > >
+> > > (not sure whether this is really a problem)
+> > 
+> > I think it may be the major problem.
+> 
+> Hmm, it may be. Was there suggested any solution (or at least proposal) 
+> that I may try?
 
-Timer notifications.
+Try fix BIOS bugs: <http://permalink.gmane.org/gmane.linux.kernel/462632>
 
-Timer notifications can be used for fine grained per-process time 
-management, since interval timers are very inconvenient to use, 
-and they are limited.
-
-This subsystem uses high-resolution timers.
-id.raw[0] is used as number of seconds
-id.raw[1] is used as number of nanoseconds
-
-Signed-off-by: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-
-diff --git a/kernel/kevent/kevent_timer.c b/kernel/kevent/kevent_timer.c
-new file mode 100644
-index 0000000..c21a155
---- /dev/null
-+++ b/kernel/kevent/kevent_timer.c
-@@ -0,0 +1,114 @@
-+/*
-+ * 2006 Copyright (c) Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-+ * All rights reserved.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/types.h>
-+#include <linux/list.h>
-+#include <linux/slab.h>
-+#include <linux/spinlock.h>
-+#include <linux/hrtimer.h>
-+#include <linux/jiffies.h>
-+#include <linux/kevent.h>
-+
-+struct kevent_timer
-+{
-+	struct hrtimer		ktimer;
-+	struct kevent_storage	ktimer_storage;
-+	struct kevent		*ktimer_event;
-+};
-+
-+static int kevent_timer_func(struct hrtimer *timer)
-+{
-+	struct kevent_timer *t = container_of(timer, struct kevent_timer, ktimer);
-+	struct kevent *k = t->ktimer_event;
-+
-+	kevent_storage_ready(&t->ktimer_storage, NULL, KEVENT_MASK_ALL);
-+	hrtimer_forward(timer, timer->base->softirq_time,
-+			ktime_set(k->event.id.raw[0], k->event.id.raw[1]));
-+	return HRTIMER_RESTART;
-+}
-+
-+static struct lock_class_key kevent_timer_key;
-+
-+static int kevent_timer_enqueue(struct kevent *k)
-+{
-+	int err;
-+	struct kevent_timer *t;
-+
-+	t = kmalloc(sizeof(struct kevent_timer), GFP_KERNEL);
-+	if (!t)
-+		return -ENOMEM;
-+
-+	hrtimer_init(&t->ktimer, CLOCK_MONOTONIC, HRTIMER_REL);
-+	t->ktimer.expires = ktime_set(k->event.id.raw[0], k->event.id.raw[1]);
-+	t->ktimer.function = kevent_timer_func;
-+	t->ktimer_event = k;
-+
-+	err = kevent_storage_init(&t->ktimer, &t->ktimer_storage);
-+	if (err)
-+		goto err_out_free;
-+	lockdep_set_class(&t->ktimer_storage.lock, &kevent_timer_key);
-+
-+	err = kevent_storage_enqueue(&t->ktimer_storage, k);
-+	if (err)
-+		goto err_out_st_fini;
-+
-+	hrtimer_start(&t->ktimer, t->ktimer.expires, HRTIMER_REL);
-+
-+	return 0;
-+
-+err_out_st_fini:
-+	kevent_storage_fini(&t->ktimer_storage);
-+err_out_free:
-+	kfree(t);
-+
-+	return err;
-+}
-+
-+static int kevent_timer_dequeue(struct kevent *k)
-+{
-+	struct kevent_storage *st = k->st;
-+	struct kevent_timer *t = container_of(st, struct kevent_timer, ktimer_storage);
-+
-+	hrtimer_cancel(&t->ktimer);
-+	kevent_storage_dequeue(st, k);
-+	kfree(t);
-+
-+	return 0;
-+}
-+
-+static int kevent_timer_callback(struct kevent *k)
-+{
-+	k->event.ret_data[0] = jiffies_to_msecs(jiffies);
-+	return 1;
-+}
-+
-+static int __init kevent_init_timer(void)
-+{
-+	struct kevent_callbacks tc = {
-+		.callback = &kevent_timer_callback,
-+		.enqueue = &kevent_timer_enqueue,
-+		.dequeue = &kevent_timer_dequeue,
-+		.flags = 0,
-+	};
-+
-+	return kevent_add_callbacks(&tc, KEVENT_TIMER);
-+}
-+module_init(kevent_init_timer);
-+
-
+> Martin
+____
