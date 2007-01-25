@@ -1,86 +1,278 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965376AbXAYR6a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965480AbXAYSDb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965376AbXAYR6a (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jan 2007 12:58:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965379AbXAYR6a
+	id S965480AbXAYSDb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jan 2007 13:03:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965459AbXAYSDb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jan 2007 12:58:30 -0500
-Received: from ausmtp04.au.ibm.com ([202.81.18.152]:47199 "EHLO
-	ausmtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965376AbXAYR63 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jan 2007 12:58:29 -0500
-Message-ID: <45B8EF74.6010704@in.ibm.com>
-Date: Thu, 25 Jan 2007 23:27:08 +0530
-From: Balbir Singh <balbir@in.ibm.com>
-Reply-To: balbir@in.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 1.5.0.9 (X11/20070103)
-MIME-Version: 1.0
-To: Rik van Riel <riel@redhat.com>
-CC: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Christoph Lameter <clameter@sgi.com>, Aubrey Li <aubreylee@gmail.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Robin Getz <rgetz@blackfin.uclinux.org>,
-       "Henn, erich, Michael" <Michael.Hennerich@analog.com>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC] Limit the size of the pagecache
-References: <Pine.LNX.4.64.0701231645260.5239@schroedinger.engr.sgi.com> <45B75208.90208@linux.vnet.ibm.com> <Pine.LNX.4.64.0701240655400.9696@schroedinger.engr.sgi.com> <45B82F41.9040705@linux.vnet.ibm.com> <45B835FE.6030107@redhat.com> <45B844E3.4050203@linux.vnet.ibm.com> <45B8D5AB.8040803@redhat.com>
-In-Reply-To: <45B8D5AB.8040803@redhat.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 25 Jan 2007 13:03:31 -0500
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:47219 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965383AbXAYSDa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jan 2007 13:03:30 -0500
+Date: Thu, 25 Jan 2007 10:01:58 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Josh Triplett <josh@kernel.org>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linuxtronix.de,
+       dipankar@in.ibm.com, tytso@us.ibm.com, dvhltc@us.ibm.com,
+       oleg@tv-sign.ru, twoerner.k@gmail.com, billh@gnuppy.monkey.org,
+       nielsen.esben@googlemail.com, corbet@lwn.net
+Subject: Re: [RFC PATCH -rt 2/2] RCU priority boosting additions to rcutorture
+Message-ID: <20070125180158.GC1705@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20070125021101.GA23428@linux.vnet.ibm.com> <20070125021444.GA22540@linux.vnet.ibm.com> <20070125022338.GB22540@linux.vnet.ibm.com> <45B86E88.6020209@kernel.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <45B86E88.6020209@kernel.org>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rik van Riel wrote:
-> Vaidyanathan Srinivasan wrote:
->> Rik van Riel wrote:
+On Thu, Jan 25, 2007 at 12:47:04AM -0800, Josh Triplett wrote:
+> Paul E. McKenney wrote:
+> > This patch adds an optional preemption kernel thread to the rcutorture
+> > tests.  This thread sets itself to a low RT priority and chews up
+> > CPU in 10-second bursts, verifying that grace periods progress during
+> > this 10-second interval.  This has thus far passed about 30 hours of
+> > RCU torture testing on a 4-CPU (a pair of 2-CPU dies) 64-bit Xeon 
+> > system.
+> > 
+> > I am experimenting with more-vicious tests, but extra viciousness thus
+> > far comes at the expense of grotesque code.
 > 
->>> There are a few databases out there that mmap the whole
->>> thing.  Sleepycat for one...
->>
->> That is why my suggestion would be not to touch mmapped pagecache
->> pages in the current pagecache limit code.  The limit should concern
->> only unmapped pagecache pages.
+> Overall, the new feature seems like a good idea, and it should exercise the
+> new RCU boosting code.  Some comments below.
+
+Thank you for the review!!!
+
+> One major item: this new test feature really needs a new module parameter to
+> enable or disable it.
+
+CONFIG_PREEMPT_RCU_BOOST is the parameter -- if not set, then no test.
+This parameter is provided by the accompanying RCU-boost patch.
+
+> > diff -urpNa -X dontdiff linux-2.6.20-rc4-rt1/kernel/rcutorture.c linux-2.6.20-rc4-rt1-rcubtorture/kernel/rcutorture.c
+> > --- linux-2.6.20-rc4-rt1/kernel/rcutorture.c	2007-01-09 10:59:54.000000000 -0800
+> > +++ linux-2.6.20-rc4-rt1-rcubtorture/kernel/rcutorture.c	2007-01-23 11:27:49.000000000 -0800
+> > @@ -194,6 +194,8 @@ struct rcu_torture_ops {
+> >  	int (*completed)(void);
+> >  	void (*deferredfree)(struct rcu_torture *p);
+> >  	void (*sync)(void);
+> > +	void (*preemptstart)(void);
+> > +	void (*preemptend)(void);
+> >  	int (*stats)(char *page);
+> >  	char *name;
+> >  };
+> > @@ -258,6 +260,71 @@ static void rcu_torture_deferred_free(st
+> >  	call_rcu(&p->rtort_rcu, rcu_torture_cb);
+> >  }
+> >  
+> > +#ifndef CONFIG_PREEMPT_RCU_BOOST
+> > +static void rcu_preempt_start(void) { }
+> > +static void rcu_preempt_end(void) { }
+> > +static int rcu_preempt_stats(char *page) { return 0; }
+> > +#else /* #ifndef CONFIG_PREEMPT_RCU_BOOST */
+> > +
+> > +static struct task_struct *rcu_preeempt_task;
+> > +static long rcu_torture_preempt_errors = 0;
 > 
-> So you want to limit how much data the kernel caches for mysql
-> or postgresql, but not limit how much of the rpm database is
-> cached ?!
+> Might as well make this an unsigned long; negative values wouldn't make sense.
+
+Good point, fixed.
+
+> > +static int rcu_torture_preempt(void *arg)
+> > +{
+> > +	int completedstart;
+> > +	time_t gcstart;
+> > +	struct sched_param sp;
+> > +
+> > +	sp.sched_priority = MAX_RT_PRIO - 1;
+> > +	sched_setscheduler(current, SCHED_RR, &sp);
+> > +	current->flags |= PF_NOFREEZE;
+> > +
+> > +	do {
+> > +		completedstart = rcu_torture_completed();
+> > +		gcstart = xtime.tv_sec;
+> > +		while ((xtime.tv_sec - gcstart < 10) &&
+> > +		       (rcu_torture_completed() == completedstart))
+> > +			cond_resched();
+> > +		if (rcu_torture_completed() == completedstart)
+> > +			rcu_torture_preempt_errors++;
+> > +		schedule_timeout_interruptible(shuffle_interval * HZ);
 > 
-> IMHO your proposal does the exact opposite of what would be
-> right for my systems :)
+> Why call schedule_timeout_interruptible here without actually handling
+> interruptions?  So that you can send it a signal to cause the shuffle early?
+
+It allows you to kill the process in order to get the module unload to
+happen more quickly in case someone specified an overly long interval.
+But now that you mention this, a simple one-second sleep is probably
+appropriate here.
+
+> > +	} while (!kthread_should_stop());
+> > +	return NULL;
+> > +}
+> > +
+> > +static void rcu_preempt_start(void)
+> > +{
+> > +	rcu_preeempt_task = kthread_run(rcu_torture_preempt, NULL,
+> > +					"rcu_torture_preempt");
+> > +	if (IS_ERR(rcu_preeempt_task)) {
+> > +		VERBOSE_PRINTK_ERRSTRING("Failed to create preempter");
 > 
+> This ought to include the errno value, PTR_ERR(rcu_preempt_task).
 
-<Jumping in late into the discussion>
+Good point -- what I should do is return this value so that
+rcu_torture_init() can return it, failing the module-load process
+and unwinding.
 
-One scenario I can think of is
+> > +		rcu_preeempt_task = NULL;
+> > +	}
+> > +}
+> > +
+> > +static void rcu_preempt_end(void)
+> > +{
+> > +	if (rcu_preeempt_task != NULL) {
+> 
+> if (rcu_preempt_task) would work just as well here.
 
-A group of I/O intensive task can cause readahead and
-dirty page I/O and make good forward progress, but
-they'll hit another group of processes by swapping
-their pages out. How do we make fair forward progress?
-The system administrator can currently control the
-amount of swappiness by setting it, but swappiness is
-a reclaim time control parameter.
+True, but was being consistent with usage elsewhere in this file.
 
-We can control dirty page I/O by setting vm_dirty_ratio.
-Readahead is also tuneable with fadvise(), but not many
-applications use fadvise.
+> > +		VERBOSE_PRINTK_STRING("Stopping rcu_preempt task");
+> > +		kthread_stop(rcu_preeempt_task);
+> > +	}
+> > +	rcu_preeempt_task = NULL;
+> > +}
+> > +
+> > +static int rcu_preempt_stats(char *page) {
+> > +	int cnt = 0;
+> > +
+> > +	cnt += sprintf(&page[cnt],
+> > +		       "Preemption stalls: %ld\n", rcu_torture_preempt_errors);
+> > +	return (cnt);
+> > +}
+> 
+> How about just:
+> return sprintf(page, ...);
+> ?
 
-The question now is, is it easier for the system administrator
-to say, limit my page cache usage to say 30% of total memory available,
-so that other allocations do not have to wait on disk I/O or page
-reclaim (consider slab allocations, other kernel data structures).
+Good point.
 
-A low priority task might run infrequently and end up spending all
-it's time either swapping in pages or reclaiming memory and by
-the time it runs again, it ends up doing the same thing.
+> Also, if you decide to make rcu_torture_preempt_errors an unsigned long as
+> suggested above, this should use %lu.
 
-I understand the swap token mitigates this problem to some extent,
-but limiting the page cache will give the system administrator
-control over system memory behaviour.
+Done.
 
--- 
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+> > +#endif /* #else #ifndef CONFIG_PREEMPT_RCU_BOOST */
+> > +
+> > +static void rcu_preemptstart(void)
+> > +{
+> > +	
+> > +}
+> > +
+> 
+> This looks like a bit of stray code.
+
+Yep, good eyes!  Deleted.
+
+> >  static struct rcu_torture_ops rcu_ops = {
+> >  	.init = NULL,
+> >  	.cleanup = NULL,
+> > @@ -267,7 +334,9 @@ static struct rcu_torture_ops rcu_ops = 
+> >  	.completed = rcu_torture_completed,
+> >  	.deferredfree = rcu_torture_deferred_free,
+> >  	.sync = synchronize_rcu,
+> > -	.stats = NULL,
+> > +	.preemptstart = rcu_preempt_start,
+> > +	.preemptend = rcu_preempt_end,
+> > +	.stats = rcu_preempt_stats,
+> >  	.name = "rcu"
+> >  };
+> >  
+> > @@ -306,6 +375,8 @@ static struct rcu_torture_ops rcu_sync_o
+> >  	.completed = rcu_torture_completed,
+> >  	.deferredfree = rcu_sync_torture_deferred_free,
+> >  	.sync = synchronize_rcu,
+> > +	.preemptstart = NULL,
+> > +	.preemptend = NULL,
+> >  	.stats = NULL,
+> >  	.name = "rcu_sync"
+> >  };
+> 
+> Much like other common structures such as struct file_operations, no need to
+> explicitly specify members as NULL here; any member you don't specify will get
+> a NULL value.  That avoids the need to update every use of this structure
+> whenever you add a new member used by only some of them.
+
+Untrusting, aren't I?  ;-) 
+
+I removed all the "= NULL" entries.
+
+> > @@ -370,6 +441,8 @@ static struct rcu_torture_ops rcu_bh_ops
+> >  	.completed = rcu_bh_torture_completed,
+> >  	.deferredfree = rcu_bh_torture_deferred_free,
+> >  	.sync = rcu_bh_torture_synchronize,
+> > +	.preemptstart = NULL,
+> > +	.preemptend = NULL,
+> >  	.stats = NULL,
+> >  	.name = "rcu_bh"
+> >  };
+> 
+> Likewise.
+> 
+> > @@ -383,6 +456,8 @@ static struct rcu_torture_ops rcu_bh_syn
+> >  	.completed = rcu_bh_torture_completed,
+> >  	.deferredfree = rcu_sync_torture_deferred_free,
+> >  	.sync = rcu_bh_torture_synchronize,
+> > +	.preemptstart = NULL,
+> > +	.preemptend = NULL,
+> >  	.stats = NULL,
+> >  	.name = "rcu_bh_sync"
+> >  };
+> 
+> Likewise.
+> 
+> > @@ -464,6 +539,8 @@ static struct rcu_torture_ops srcu_ops =
+> >  	.completed = srcu_torture_completed,
+> >  	.deferredfree = rcu_sync_torture_deferred_free,
+> >  	.sync = srcu_torture_synchronize,
+> > +	.preemptstart = NULL,
+> > +	.preemptend = NULL,
+> >  	.stats = srcu_torture_stats,
+> >  	.name = "srcu"
+> >  };
+> 
+> Likewise.
+> 
+> > @@ -502,6 +579,8 @@ static struct rcu_torture_ops sched_ops 
+> >  	.completed = sched_torture_completed,
+> >  	.deferredfree = rcu_sync_torture_deferred_free,
+> >  	.sync = sched_torture_synchronize,
+> > +	.preemptstart = NULL,
+> > +	.preemptend = NULL,
+> >  	.stats = NULL,
+> >  	.name = "sched"
+> 
+> Likewise.
+> 
+> > @@ -856,6 +935,8 @@ rcu_torture_cleanup(void)
+> >  		kthread_stop(stats_task);
+> >  	}
+> >  	stats_task = NULL;
+> > +	if (cur_ops->preemptend != NULL)
+> 
+> if (cur_ops->preemptend) would work as well.
+
+True, though again there is a lot of existing "!= NULL" in this file
+and elsewhere.  Many thousands of them through the kernel.  ;-)
+
+> > @@ -997,6 +1078,8 @@ rcu_torture_init(void)
+> >  			goto unwind;
+> >  		}
+> >  	}
+> > +	if (cur_ops->preemptstart != NULL)
+> 
+> Likewise.
+
+I will run this through the mill and repost.
+
+							Thanx, Paul
