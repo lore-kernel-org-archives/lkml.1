@@ -1,54 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965373AbXAYO3c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965372AbXAYObW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965373AbXAYO3c (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jan 2007 09:29:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965372AbXAYO3c
+	id S965372AbXAYObW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jan 2007 09:31:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965380AbXAYObW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jan 2007 09:29:32 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.155]:1229 "EHLO
-	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S965140AbXAYO3b (ORCPT
+	Thu, 25 Jan 2007 09:31:22 -0500
+Received: from caramon.arm.linux.org.uk ([217.147.92.249]:2273 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965372AbXAYObV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jan 2007 09:29:31 -0500
-Message-ID: <45B8BEC5.7010000@ru.mvista.com>
-Date: Thu, 25 Jan 2007 17:29:25 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
-MIME-Version: 1.0
-To: Marc St-Jean <Marc_St-Jean@pmc-sierra.com>
-Cc: Alan <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       linux-serial@vger.kernel.org, linux-mips@linux-mips.org
-Subject: Re: [PATCH] serial driver PMC MSP71xx, kernel linux-mips.git mast
-  er
-References: <45B7CB34.60209@pmc-sierra.com>
-In-Reply-To: <45B7CB34.60209@pmc-sierra.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 25 Jan 2007 09:31:21 -0500
+Date: Thu, 25 Jan 2007 14:31:12 +0000
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+Cc: "Kilau, Scott" <Scott_Kilau@digi.com>, linux-kernel@vger.kernel.org
+Subject: Re: Strange problem with tty layer
+Message-ID: <20070125143112.GC31145@flint.arm.linux.org.uk>
+Mail-Followup-To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+	"Kilau, Scott" <Scott_Kilau@digi.com>, linux-kernel@vger.kernel.org
+References: <335DD0B75189FB428E5C32680089FB9F012DCACD@mtk-sms-mail01.digi.com> <20070124213447.GB7584@csclub.uwaterloo.ca>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070124213447.GB7584@csclub.uwaterloo.ca>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+On Wed, Jan 24, 2007 at 04:34:47PM -0500, Lennart Sorensen wrote:
+> I am using the GPIO lines too, and didn't want to mess with the 8250
+> driver (since I use that for a serial console on a 16550 UART), plus
+> being able to use the 64byte fifo rather than 16byte 16550 mode fifo
+> seems nicer.
 
-Marc St-Jean wrote:
+Note that 8250 will use the deeper fifos if it knows how to.
 
->> > I could use both iotype and type with a test on each for the appropriate
->> > bug, what do you recommend?
-
->>    I think iotype would be enough. You can't pass type for platform 
->>devices anyway, IIRC (the thing I don't quite like).
-
-> I just found that out the hard way, it get's overwritten during autoconfig* and
-> ends up back at PORT_16550A.
-
-> I'm now trying to use my own iotype = UPIO_DWAPB and I've added it to all cases
-> that check for UPIO_MEM. However at boot time I'm getting:
-> 	"serial8250: ttyS0 at *unknown* (irq = 27) is a 16550A".
-> It looks like something outside of 8250.c must be checking for UPIO_MEM, I'm
-> looking into it.
-
-    Yeah, be sure to change serial_core.c as well (whereever you'll see 
-UPIO_AU/TSI there)... Quite ugly. :-/
-
-WBR, Sergei
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
