@@ -1,54 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030570AbXAYVN5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030565AbXAYVQ7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030570AbXAYVN5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jan 2007 16:13:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030573AbXAYVN5
+	id S1030565AbXAYVQ7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jan 2007 16:16:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030575AbXAYVQ7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jan 2007 16:13:57 -0500
-Received: from ug-out-1314.google.com ([66.249.92.172]:11639 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030570AbXAYVN4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jan 2007 16:13:56 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=fz6AcBytxVMRTPM4W/9wYrWaCqxmHT/v644xl+1zoaO+pVHtW95sK3iElN+4ml4D11v0M9suOflYoba24MCjLkJw7VPpMV9HDlL/M7eE26d/eFlwHo+KBJqNWfDe/7EqMLqzJ8BM773wn0v4UkmhIp2rqLkbpx3GmHZ/Ee5imgU=
-From: Denis Vlasenko <vda.linux@googlemail.com>
-To: Michael Tokarev <mjt@tls.msk.ru>
-Subject: Re: O_DIRECT question
-Date: Thu, 25 Jan 2007 22:11:38 +0100
-User-Agent: KMail/1.8.2
-Cc: Phillip Susi <psusi@cfl.rr.com>, Linus Torvalds <torvalds@osdl.org>,
-       Viktor <vvp01@inbox.ru>, Aubrey <aubreylee@gmail.com>,
-       Hua Zhong <hzhong@gmail.com>, Hugh Dickins <hugh@veritas.com>,
-       linux-kernel@vger.kernel.org, hch@infradead.org, kenneth.w.chen@in
-References: <6d6a94c50701101857v2af1e097xde69e592135e54ae@mail.gmail.com> <45B90D19.60106@cfl.rr.com> <45B916F2.4070906@tls.msk.ru>
-In-Reply-To: <45B916F2.4070906@tls.msk.ru>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Thu, 25 Jan 2007 16:16:59 -0500
+Received: from waste.org ([66.93.16.53]:47385 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030565AbXAYVQ6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jan 2007 16:16:58 -0500
+Date: Thu, 25 Jan 2007 15:04:29 -0600
+From: Matt Mackall <mpm@selenic.com>
+To: Chris Rankin <rankincj@yahoo.com>
+Cc: Mark Rustad <mrustad@gmail.com>, Alan <alan@lxorguk.ukuu.org.uk>,
+       linux-kernel@vger.kernel.org
+Subject: Re: 2.6.18-stable release plans?
+Message-ID: <20070125210428.GA16722@waste.org>
+References: <4238B011-A417-41DE-8998-01BAAA484486@gmail.com> <999038.34946.qm@web52908.mail.yahoo.com> <20070124231153.6bc04063@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200701252211.39017.vda.linux@googlemail.com>
+In-Reply-To: <20070124231153.6bc04063@localhost.localdomain>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 25 January 2007 21:45, Michael Tokarev wrote:
-> Phillip Susi wrote:
-> > Denis Vlasenko wrote:
-> >> You mean "You can use aio_write" ?
-> > 
-> > Exactly.  You generally don't use O_DIRECT without aio.  Combining the
-> > two is what gives the big win.
+On Wed, Jan 24, 2007 at 11:11:53PM +0000, Alan wrote:
+> > I am going to assume that you are being facaetious, because it would be the rarified pinnacle of
+> > supreme arrogance to suggest that a cosmic ray event is a more likely explanation than a bug in
+> > the kernel.
 > 
-> Well, it's not only aio.  Multithreaded I/O also helps alot -- all this,
-> say, to utilize a raid array with many spindles.
-> 
-> But even single-threaded I/O but in large quantities benefits from O_DIRECT
-> significantly, and I pointed this out before.
+> A one off non repeatable error experienced by two people out of the
+> millions using it does fit the cosmic ray description quite well. That's
+> not to say there isn't a bug, but you don't have enough data to even
+> begin debugging it unless its rather more reproducable.
 
-Which shouldn't be true. There is no fundamental reason why
-ordinary writes should be slower than O_DIRECT.
---
-vda
+The soft error rate (cosmic rays, alpha decay, etc.) for modern memory
+at sea level is estimated to be somewhere around 1000 - 5000
+FIT/Mbit[1]. FIT is Failures in Time - errors per billion hours of
+use. If you've got 1GB of memory, you've got 8000Mbits. So you'd
+expect 8M - 40M errors per billion hours on your machine. Or 8 to 40
+errors per 1000 hours. That's about one single-bit error per week to
+one per day.
+
+Yes, that's a lot. Can it really be that high? Big supercomputer
+installations actually measure it in errors per day or hour.
+
+Most of these errors will go completely unnoticed because they happen
+in data structures that aren't revisited (stale cache, unused code,
+empty memory). The remainder will often look like random disk read or
+write errors or random application bugs/crashes. Sound familiar? That's why
+people buy ECC memory.
+
+Now if we say that 10% of of that 1GB of RAM (~100MB) is kernel code/data
+(not including page cache) and that, say, 1-10% of errors trigger
+BUG/WARN code, we'll see these bug messages once every 100 days to
+once every 1000 weeks (per GB per user).
+
+As for the relative error rate vs kernel bugs - there are no shortage
+of Linux boxes with trouble-free uptimes much longer than the 100 days
+above.
+
+So yes, if a user reports a bug that's attributable to a single bit
+memory error that's otherwise unreproduced and unexplained, it's
+totally reasonable to chalk it up to cosmic rays until some sort of
+pattern of reports emerges.
+
+As for your particular bug:
+
+ Eeek! page_mapcount(page) went negative! (-1)
+  page->flags = 14
+  page->count = 0
+  page->mapping = 00000000
+
+This check occurs whenever the last mapping is removed from a page.
+It's a very heavily used piece of code. The check is there as
+sanity-checking from when this logic was introduced. If there were a
+new bug here that could be triggered by gcc or telnet, odds are very
+good that it would trigger for TONS of people.
+
+So more likely theories are: a) pointer scribble from something
+completely unrelated or b) cosmic rays. As the nearby data (flags,
+count, mapping) doesn't appear to be scribbled on, (a) looks less
+promising. 
+
+[1] http://www.tezzaron.com/about/papers/soft_errors_1_1_secure.pdf
+
+-- 
+Mathematics is the supreme nostalgia of our time.
