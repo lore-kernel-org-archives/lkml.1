@@ -1,153 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932835AbXAYLfY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752076AbXAYLho@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932835AbXAYLfY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jan 2007 06:35:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932792AbXAYLfY
+	id S1752076AbXAYLho (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jan 2007 06:37:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752077AbXAYLhn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jan 2007 06:35:24 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:38868 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932835AbXAYLfX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jan 2007 06:35:23 -0500
-Date: Thu, 25 Jan 2007 12:33:50 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@osdl.org>
-Cc: linux-kernel@vger.kernel.org, Linus Torvalds <torvalds@osdl.org>,
-       Pavel Machek <pavel@ucw.cz>, Len Brown <lenb@kernel.org>
-Subject: [patch] suspend debugging: simulate suspend-to-RAM
-Message-ID: <20070125113350.GA31068@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -4.3
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-4.3 required=5.9 tests=ALL_TRUSTED,BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-3.3 ALL_TRUSTED            Did not pass through any untrusted hosts
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Thu, 25 Jan 2007 06:37:43 -0500
+Received: from smtp4.netcabo.pt ([212.113.174.31]:30974 "EHLO
+	exch01smtp11.hdi.tvcabo" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752076AbXAYLhm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jan 2007 06:37:42 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ao8CAKIluEVZmGJA/2dsb2JhbAA
+Message-ID: <11401.194.65.103.1.1169725008.squirrel@www.rncbc.org>
+Date: Thu, 25 Jan 2007 11:36:47 -0000 (WET)
+Subject: 2.6.20-rc6-rt1 timekeeping_is_continuous question
+From: "Rui Nuno Capela" <rncbc@rncbc.org>
+To: "Ingo Molnar" <mingo@elte.hu>
+Cc: linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org
+User-Agent: SquirrelMail/1.5.1
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-OriginalArrivalTime: 25 Jan 2007 11:37:38.0696 (UTC) FILETIME=[37542080:01C74075]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Subject: [patch] suspend debugging: simulate suspend-to-RAM
-From: Ingo Molnar <mingo@elte.hu>
+Hi,
 
-most resume bugs are due to the kernel hanging or crashing while trying 
-to resume a specific device. It is extremely hard to debug such hangs 
-because often when the hang happens there's no console available yet.
+I'm having the following traces on every boot; are they of any concern, or
+should I just ignore and carry on?
 
-Make debugging such bugs easier by offering a resume mode that does not 
-actually call into the BIOS to turn off the machine. This, in 
-combination with earlyprintk=serial,ttyS0,115200,keep , 
-CONFIG_PM_DEBUG=y, CONFIG_DISABLE_CONSOLE_SUSPEND=y and 
-/sys/power/filter enables me to have a fully functional serial console 
-during the full suspend/resume cycle.
+(machine is an Intel Core2 Duo T7200 2.0Ghz laptop)
 
-I debugged two suspend bugs in the -rt kernel this way already, so it's 
-pretty useful.
+Linux version 2.6.20-rc6-rt1.0 (root@zeta) (gcc version 4.1.2 20061115
+(prerelease) (SUSE Linux)) #1 SMP PREEMPT Thu Jan 25 10:02:28 WET 2007
+[...]
+Total of 2 processors activated (7985.17 BogoMIPS).
+ENABLING IO-APIC IRQs
+..TIMER: vector=0x31 apic1=0 pin1=2 apic2=-1 pin2=-1
+timekeeping_is_continuous(jiffies): 0
+ [<c0105068>] dump_trace+0x63/0x1ec
+ [<c010520b>] show_trace_log_lvl+0x1a/0x2f
+ [<c0105836>] show_trace+0x12/0x14
+ [<c01058c9>] dump_stack+0x16/0x18
+ [<c012715f>] timekeeping_is_continuous+0x58/0x60
+ [<c0135c71>] tick_check_oneshot_change+0x3e/0x111
+ [<c013220b>] hrtimer_run_queues+0x40/0x26a
+ [<c012680b>] run_timer_softirq+0x785/0x975
+ [<c012313a>] ksoftirqd+0xfd/0x1a2
+ [<c012f947>] kthread+0xb5/0xde
+ [<c0104c33>] kernel_thread_helper+0x7/0x10
+ =======================
+checking TSC synchronization [CPU#0 -> CPU#1]: passed.
+Brought up 2 CPUs
+timekeeping_is_continuous(jiffies): 0
+ [<c0105068>] dump_trace+0x63/0x1ec
+ [<c010520b>] show_trace_log_lvl+0x1a/0x2f
+ [<c0105836>] show_trace+0x12/0x14
+ [<c01058c9>] dump_stack+0x16/0x18
+ [<c012715f>] timekeeping_is_continuous+0x58/0x60
+ [<c0135c71>] tick_check_oneshot_change+0x3e/0x111
+ [<c013220b>] hrtimer_run_queues+0x40/0x26a
+ [<c012680b>] run_timer_softirq+0x785/0x975
+ [<c012313a>] ksoftirqd+0xfd/0x1a2
+ [<c012f947>] kthread+0xb5/0xde
+ [<c0104c33>] kernel_thread_helper+0x7/0x10
+ =======================
+migration_cost=34
+Booting paravirtualized kernel on bare hardware
+[...]
+Time: tsc clocksource has been installed.
+timekeeping_is_continuous(tsc): 0
+ [<c0105068>] dump_trace+0x63/0x1ec
+ [<c010520b>] show_trace_log_lvl+0x1a/0x2f
+ [<c0105836>] show_trace+0x12/0x14
+ [<c01058c9>] dump_stack+0x16/0x18
+ [<c012715f>] timekeeping_is_continuous+0x58/0x60
+ [<c0135c71>] tick_check_oneshot_change+0x3e/0x111
+ [<c013220b>] hrtimer_run_queues+0x40/0x26a
+ [<c012680b>] run_timer_softirq+0x785/0x975
+ [<c012313a>] ksoftirqd+0xfd/0x1a2
+ [<c012f947>] kthread+0xb5/0xde
+ [<c0104c33>] kernel_thread_helper+0x7/0x10
+ =======================
+timekeeping_is_continuous(tsc): 0
+ [<c0105068>] dump_trace+0x63/0x1ec
+ [<c010520b>] show_trace_log_lvl+0x1a/0x2f
+ [<c0105836>] show_trace+0x12/0x14
+ [<c01058c9>] dump_stack+0x16/0x18
+ [<c012715f>] timekeeping_is_continuous+0x58/0x60
+ [<c0135c71>] tick_check_oneshot_change+0x3e/0x111
+ [<c013220b>] hrtimer_run_queues+0x40/0x26a
+ [<c012680b>] run_timer_softirq+0x785/0x975
+ [<c012313a>] ksoftirqd+0xfd/0x1a2
+ [<c012f947>] kthread+0xb5/0xde
+ [<c0104c33>] kernel_thread_helper+0x7/0x10
+ =======================
+Write protecting the kernel read-only data: 794k
+timekeeping_is_continuous(tsc): 1
+timekeeping_is_continuous(tsc): 1
+ [<c0105068>] dump_trace+0x63/0x1ec
+ [<c010520b>] show_trace_log_lvl+0x1a/0x2f
+ [<c0105836>] show_trace+0x12/0x14
+ [<c01058c9>] dump_stack+0x16/0x18
+ [<c012715f>] timekeeping_is_continuous+0x58/0x60
+ [<c0135c71>] tick_check_oneshot_change+0x3e/0x111
+ [<c013220b>] hrtimer_run_queues+0x40/0x26a
+ [<c012680b>] run_timer_softirq+0x785/0x975
+ [<c012313a>] ksoftirqd+0xfd/0x1a2
+ [<c012f947>] kthread+0xb5/0xde
+ [<c0104c33>] kernel_thread_helper+0x7/0x10
+ =======================
+Switched to high resolution mode on CPU 1
+ [<c0105068>] dump_trace+0x63/0x1ec
+ [<c010520b>] show_trace_log_lvl+0x1a/0x2f
+ [<c0105836>] show_trace+0x12/0x14
+ [<c01058c9>] dump_stack+0x16/0x18
+ [<c012715f>] timekeeping_is_continuous+0x58/0x60
+ [<c0135c71>] tick_check_oneshot_change+0x3e/0x111
+ [<c013220b>] hrtimer_run_queues+0x40/0x26a
+ [<c012680b>] run_timer_softirq+0x785/0x975
+ [<c012313a>] ksoftirqd+0xfd/0x1a2
+ [<c012f947>] kthread+0xb5/0xde
+ [<c0104c33>] kernel_thread_helper+0x7/0x10
+ =======================
+Switched to high resolution mode on CPU 0
+[...]
 
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- Documentation/kernel-parameters.txt |    4 ++++
- drivers/acpi/sleep/main.c           |   15 ++++++++++++++-
- include/linux/acpi.h                |    1 +
- kernel/sysctl.c                     |   16 ++++++++++++++++
- 4 files changed, 35 insertions(+), 1 deletion(-)
-
-Index: linux/Documentation/kernel-parameters.txt
-===================================================================
---- linux.orig/Documentation/kernel-parameters.txt
-+++ linux/Documentation/kernel-parameters.txt
-@@ -159,6 +159,10 @@ and is between 256 and 4096 characters. 
- 
- 	acpi_osi=	[HW,ACPI] empty param disables _OSI
- 
-+	acpi_simulate_suspend_to_ram
-+			[KNL] Do not call into BIOS to do suspend-to-RAM
-+			Format: <0/1>
-+
- 	acpi_serialize	[HW,ACPI] force serialization of AML methods
- 
- 	acpi_skip_timer_override [HW,ACPI]
-Index: linux/drivers/acpi/sleep/main.c
-===================================================================
---- linux.orig/drivers/acpi/sleep/main.c
-+++ linux/drivers/acpi/sleep/main.c
-@@ -35,6 +35,14 @@ static u32 acpi_suspend_states[] = {
- 
- static int init_8259A_after_S1;
- 
-+/*
-+ * simulate entry into the BIOS - this way the system will not
-+ * be turned off for real, and the kernel's resume functionality
-+ * can be debugged while still having some system capabilities
-+ * left. This is especially useful in combination with /sys/power/filter.
-+ */
-+int acpi_simulate_suspend_to_ram;
-+
- /**
-  *	acpi_pm_prepare - Do preliminary suspend work.
-  *	@pm_state:		suspend state we're entering.
-@@ -91,7 +99,12 @@ static int acpi_pm_enter(suspend_state_t
- 		break;
- 
- 	case PM_SUSPEND_MEM:
--		do_suspend_lowlevel();
-+		if (unlikely(acpi_simulate_suspend_to_ram)) {
-+			printk(KERN_INFO "ACPI: simulating suspend-to-RAM: "
-+					 "not calling BIOS.\n");
-+		} else {
-+			do_suspend_lowlevel();
-+		}
- 		break;
- 
- 	case PM_SUSPEND_DISK:
-Index: linux/include/linux/acpi.h
-===================================================================
---- linux.orig/include/linux/acpi.h
-+++ linux/include/linux/acpi.h
-@@ -438,6 +438,7 @@ extern int pci_mmcfg_config_num;
- 
- extern int sbf_port;
- extern unsigned long acpi_video_flags;
-+extern int acpi_simulate_suspend_to_ram;
- 
- #else	/* !CONFIG_ACPI */
- 
-Index: linux/kernel/sysctl.c
-===================================================================
---- linux.orig/kernel/sysctl.c
-+++ linux/kernel/sysctl.c
-@@ -329,6 +329,14 @@ static ctl_table kern_table[] = {
- 		.proc_handler	= &proc_dointvec,
- 	},
- 	{
-+		.ctl_name	= CTL_UNNUMBERED,
-+		.procname	= "futex_performance_hack",
-+		.data		= &futex_performance_hack,
-+		.maxlen		= sizeof(int),
-+		.mode		= 0644,
-+		.proc_handler	= &proc_dointvec,
-+	},
-+	{
- 		.ctl_name	= KERN_PANIC,
- 		.procname	= "prof_pid",
- 		.data		= &prof_pid,
-@@ -908,6 +916,14 @@ static ctl_table kern_table[] = {
- 		.mode		= 0644,
- 		.proc_handler	= &proc_doulongvec_minmax,
- 	},
-+	{
-+		.ctl_name	= CTL_UNNUMBERED,
-+		.procname	= "acpi_simulate_suspend_to_ram",
-+		.data		= &acpi_simulate_suspend_to_ram,
-+		.maxlen		= sizeof (int),
-+		.mode		= 0644,
-+		.proc_handler	= &proc_dointvec,
-+	},
- #endif
- #ifdef CONFIG_IA64
- 	{
+Bye.
+-- 
+rncbc aka Rui Nuno Capela
+rncbc@rncbc.org
