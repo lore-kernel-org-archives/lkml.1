@@ -1,77 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030475AbXAYRhA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030472AbXAYRiZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030475AbXAYRhA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jan 2007 12:37:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030472AbXAYRhA
+	id S1030472AbXAYRiZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jan 2007 12:38:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030479AbXAYRiZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jan 2007 12:37:00 -0500
-Received: from e33.co.us.ibm.com ([32.97.110.151]:41490 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030475AbXAYRg7 (ORCPT
+	Thu, 25 Jan 2007 12:38:25 -0500
+Received: from fmmailgate09.web.de ([217.72.192.184]:34911 "EHLO
+	fmmailgate09.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030472AbXAYRiY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jan 2007 12:36:59 -0500
-Date: Thu, 25 Jan 2007 11:36:55 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: "Serge E. Hallyn" <serue@us.ibm.com>, linux-kernel@vger.kernel.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Cedric Le Goater <clg@fr.ibm.com>,
-       Daniel Hokka Zakrisson <daniel@hozac.com>, herbert@13thfloor.at,
-       akpm@osdl.org, trond.myklebust@fys.uio.no,
-       Linux Containers <containers@lists.osdl.org>
-Subject: Re: [PATCH] namespaces: fix race at task exit
-Message-ID: <20070125173655.GB10073@sergelap.austin.rr.com>
-References: <20070125150542.GA27472@sergelap.austin.ibm.com> <20070125163936.GA249@tv-sign.ru>
+	Thu, 25 Jan 2007 12:38:24 -0500
+Date: Thu, 25 Jan 2007 18:38:21 +0100
+Message-Id: <1584060127@web.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070125163936.GA249@tv-sign.ru>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+From: devzero@web.de
+To: linux-kernel@vger.kernel.org
+Subject: Re: maximum of 256 loop devices - not enough for cdrom server
+Organization: http://freemail.web.de/
+Content-Type: text/plain; charset=iso-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Oleg Nesterov (oleg@tv-sign.ru):
-> On 01/25, Serge E. Hallyn wrote:
-> >
-> > In do_exit(), the exit_task_namespaces() was placed after
-> > exit_notify() because exit_notify ends up using the pid
-> > namespace both to access the reaper, and for detaching the
-> > pid.  However, this placement allows an nfs server to reap
-> > the task before exit_task_namespaces() completes.
-> > 
-> > This patch moves the exit_task_namespaces() into release_task,
-> > below release_thread() which puts the pids(), and just above
-> > the call_rcu(delayed_put_task_struct).  I believe this should
-> > solve both problems.
-> > 
-> > Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
-> > 
-> > ---
-> > 
-> >  kernel/exit.c |    2 +-
-> >  1 files changed, 1 insertions(+), 1 deletions(-)
-> > 
-> > 765277a4170d7bbd1c4613de661ec6ac64d5580a
-> > diff --git a/kernel/exit.c b/kernel/exit.c
-> > index 3540172..ab9ae30 100644
-> > --- a/kernel/exit.c
-> > +++ b/kernel/exit.c
-> > @@ -174,6 +174,7 @@ repeat:
-> >  	write_unlock_irq(&tasklist_lock);
-> >  	proc_flush_task(p);
-> >  	release_thread(p);
-> > +	exit_task_namespaces(p);
-> >  	call_rcu(&p->rcu, delayed_put_task_struct);
+Hi !
+
+this thread was about maximum number of loopdevices being limited to 256.
+
+actually, there is dm-loop.c under development, a device-mapper target to replace traditional loopdevice. see discussion on dm-devel mailinglist.
+
+it`s still having issues and thus not being an option for now, but maybe worth keeping an eye on if you are in need of having more than 256 loop devices......
+
+regards
+roland
+
+
+
+On Thu, 26 May 2005 22:14:38 +0200 Jose Luis Domingo Lopez wrote:
+
+> On Thursday, 26 May 2005, at 03:06:34 +0200,
+> roland wrote:
 > 
-> Probably I missed some other patches in this area, but I can't understand
-> this fix.
+> > I want to build a cd-rom server and want to use the loop-driver (loop.c) for \
+> > that.
+> > That server will be HUGE and I will need to loopback mount more than 256 .iso \
+> > images in the near future.
+> > Unfortunately, the loop driver doesn`t support >256 device nodes.
+> > 
+> > Is there a possible solution for this "problem" ?
+
+
+First, let's understand the kernel version.  2.4.x or 2.6.y?
+I'm only looking at 2.6.y.
+
+Roland, have you tried increasing the max. value of max_loop yet?
+
+
+> Beware: not a kernel hacker, not even a proficient programmer.
 > 
-> With this change we are doing __put_mnt_ns() when we surely don't have ->sighand,
-> no? Could you please explain?
+> It seems it would be easy, just changing the max current loop device
+> number value (256) to something higher (i.e., 4096). Note, however, that
+> loop devices are described by an array of structs statically allocated at
+> module load time, so expect memory usage to grow linearly and search operations 
+> on the array become slower at least linearly.
 
-Explanation: it's wrong  :)
+The loop_device array is kmalloc-ed at load/init time.
+On x86 (32-bit), struct loop_device is 336 bytes, and with kmalloc()
+having an upper limit of 128 KB, the max. number of loop_devices that
+can be allocated at one time is 128 * 1024 / 336 = 390, not a huge
+improvement over 256 loopback devices.
 
-we'll just need to break exit_task_namespaces() up.
+I don't know of any reason that vmalloc() couldn't be used here
+instead of kmalloc(), and once that hurdle is cleared (the 128 KB one),
+since minor number on 2.6.y is 20 bits, there can be plenty of loopback
+devices AFAIK.
 
-thanks,
--serge
+I'm sure that Al or probably Andrew could answer this reliably.
+
+> There is one thing that maybe would need some attetion: minor number
+> allocation for loopback block devices. Now they are assigned at module
+> initialization, but I don't know the current status in the Linux kernel
+> with respect to (major,minor) sizes and allocation.
+> 
+> Hope someone more knowledgeable jumps into this :-)
+
+
+---
+~Randy
+http://www.madrone.org/donate/RFD1.html
+-
+To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Please read the FAQ at  http://www.tux.org/lkml/
+_____________________________________________________________________
+Der WEB.DE SmartSurfer hilft bis zu 70% Ihrer Onlinekosten zu sparen!
+http://smartsurfer.web.de/?mc=100071&distributionid=000000000066
+
