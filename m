@@ -1,68 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965289AbXAYFYB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933217AbXAYFeA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965289AbXAYFYB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jan 2007 00:24:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965341AbXAYFYB
+	id S933217AbXAYFeA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jan 2007 00:34:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933244AbXAYFd7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jan 2007 00:24:01 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:33634 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965289AbXAYFYA (ORCPT
+	Thu, 25 Jan 2007 00:33:59 -0500
+Received: from wx-out-0506.google.com ([66.249.82.226]:44940 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933217AbXAYFd7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jan 2007 00:24:00 -0500
-Date: Thu, 25 Jan 2007 14:19:44 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Rik van Riel <riel@redhat.com>
-Cc: clameter@sgi.com, aubreylee@gmail.com, svaidy@linux.vnet.ibm.com,
-       nickpiggin@yahoo.com.au, rgetz@blackfin.uclinux.org,
-       Michael.Hennerich@analog.com, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC] Limit the size of the pagecache
-Message-Id: <20070125141944.67347aeb.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <45B831DF.7080506@redhat.com>
-References: <Pine.LNX.4.64.0701231645260.5239@schroedinger.engr.sgi.com>
-	<20070124121318.6874f003.kamezawa.hiroyu@jp.fujitsu.com>
-	<Pine.LNX.4.64.0701232028520.6820@schroedinger.engr.sgi.com>
-	<20070124141510.7775829c.kamezawa.hiroyu@jp.fujitsu.com>
-	<20070125093259.74f76144.kamezawa.hiroyu@jp.fujitsu.com>
-	<Pine.LNX.4.64.0701241841000.12325@schroedinger.engr.sgi.com>
-	<20070125121254.a2e91875.kamezawa.hiroyu@jp.fujitsu.com>
-	<45B831DF.7080506@redhat.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed version 2.2.0 (GTK+ 2.6.10; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 25 Jan 2007 00:33:59 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=FAHVlYXthqBVT60mMTjSeeQmMTWQ1Ze0LvZuQWRNnQY+jdRJODmqAh0XbGOSG6NUHRVmRXwK86bc+HVlznef62eYrtCzvYfbR9NGNRBCIB+ETpnazBd+kX+iGQxCVXQxnLO4iIJyMLaGcDpnBfcs39QahYVmPBKLBMsxfjDHNEI=
+Message-ID: <3877989d0701242133v2d554d45j603af0b597085fb9@mail.gmail.com>
+Date: Thu, 25 Jan 2007 13:33:58 +0800
+From: "Luming Yu" <luming.yu@gmail.com>
+To: "Eamonn Hamilton" <EAMONN.HAMILTON@saic.com>
+Subject: Re: IO-APIC + timer doesn't work - 2.6.20-rc5 on abit KN9-Ultra bios 1.6
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <1169655700.22508.186.camel@ukabzc383.uk.saic.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1169630914.22508.151.camel@ukabzc383.uk.saic.com>
+	 <3877989d0701240721lcba4833p76aa14802e3620f7@mail.gmail.com>
+	 <1169655700.22508.186.camel@ukabzc383.uk.saic.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 24 Jan 2007 23:28:15 -0500
-Rik van Riel <riel@redhat.com> wrote:
+On 1/25/07, Eamonn Hamilton <EAMONN.HAMILTON@saic.com> wrote:
+> I've also just found bug #7820 on bugzilla which has a patch which may
+> address this issue from Ingo.
+>
+> I'll give that a shot as well.
+>
 
-> KAMEZAWA Hiroyuki wrote:
-> 
-> > FYI:
-> > Because some customers are migrated from mainframes, they want to control
-> > almost all features in OS, IOW, designing memory usages.
-> 
-> Don't you mean:
-> 
-> "Because some customers are migrating from mainframes, they are
->   used to needing to control all features in OS" ? :)
-> 
-Ah yes ;)
-I always says Linux is different from mainframes.
-
---
-Because some customers have been migrated from mainframes,
-they expected that they could do what they did on mainframes.
-They want to control almost all features in OS. But they can't now.
-This means they can't use their experience and schemes from old days.
---
-
-Because they are studying Linux now, the case may change in future, I think.
-
-
-Thanks,
--Kame
-
+Yes, that patch workaround the problem. But it is just a workaround.
+It would be much helpful to others by fixing the original problem.
