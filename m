@@ -1,49 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965543AbXAYGeM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965551AbXAYGfb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965543AbXAYGeM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jan 2007 01:34:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965549AbXAYGeM
+	id S965551AbXAYGfb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jan 2007 01:35:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965546AbXAYGfa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jan 2007 01:34:12 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:41485 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965543AbXAYGeL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jan 2007 01:34:11 -0500
-Date: Thu, 25 Jan 2007 07:32:06 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: john stultz <johnstul@us.ibm.com>
-Cc: Daniel Walker <dwalker@mvista.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@osdl.org>, LKML <linux-kernel@vger.kernel.org>,
-       Arjan van de Veen <arjan@infradead.org>,
-       Roman Zippel <zippel@linux-m68k.org>
-Subject: Re: [patch 00/46] High resolution timer / dynamic tick update
-Message-ID: <20070125063206.GA26764@elte.hu>
-References: <20070123211159.178138000@localhost.localdomain> <1169604991.19471.95.camel@imap.mvista.com> <20070124070701.GA17654@elte.hu> <1169631016.19471.175.camel@imap.mvista.com> <1169668653.6905.49.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 25 Jan 2007 01:35:30 -0500
+Received: from wx-out-0506.google.com ([66.249.82.232]:3902 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965551AbXAYGfa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jan 2007 01:35:30 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=D1CWP+DCNC2CFkmVJT+tNldbvwYuJYjkojQE6CCvQi1ktQ8ntCf/4myof+X7nh8q6rlVKy1HW41PlKTsxMBqhadyHZ7hTq28c5F4ICJgPx2US2kOOEPRDYBJnVNjWBzqpPYQwp2F8jc1U6SI9knFRscAND3MHYs7v5jBHe0/VQw=
+Message-ID: <6d6a94c50701242235m48013856kb5a947c489d9da37@mail.gmail.com>
+Date: Thu, 25 Jan 2007 14:35:29 +0800
+From: "Aubrey Li" <aubreylee@gmail.com>
+To: "Vaidyanathan Srinivasan" <svaidy@linux.vnet.ibm.com>
+Subject: Re: [RFC] Limit the size of the pagecache
+Cc: "Christoph Lameter" <clameter@sgi.com>,
+       "Nick Piggin" <nickpiggin@yahoo.com.au>,
+       "Robin Getz" <rgetz@blackfin.uclinux.org>,
+       "Hennerich, Michael" <Michael.Hennerich@analog.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <45B82F41.9040705@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1169668653.6905.49.camel@localhost.localdomain>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.3
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.3 required=5.9 tests=ALL_TRUSTED,BAYES_40 autolearn=no SpamAssassin version=3.0.3
-	-3.3 ALL_TRUSTED            Did not pass through any untrusted hosts
-	1.0 BAYES_40               BODY: Bayesian spam probability is 20 to 40%
-	[score: 0.3240]
+References: <Pine.LNX.4.64.0701231645260.5239@schroedinger.engr.sgi.com>
+	 <45B75208.90208@linux.vnet.ibm.com>
+	 <Pine.LNX.4.64.0701240655400.9696@schroedinger.engr.sgi.com>
+	 <45B82F41.9040705@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 1/25/07, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> wrote:
+>
+>
+> Christoph Lameter wrote:
+> > On Wed, 24 Jan 2007, Vaidyanathan Srinivasan wrote:
+> >
+> >> With your patch, MMAP of a file that will cross the pagecache limit hangs the
+> >> system.  As I mentioned in my previous mail, without subtracting the
+> >> NR_FILE_MAPPED, the reclaim will infinitely try and fail.
+> >
+> > Well mapped pages are still pagecache pages.
+> >
+>
+> Yes, but they can be classified under a process RSS pages.  Whether it
+> is an anon page or shared mem or mmap of pagecache, it would show up
+> under RSS.  Those pages can be limited by RSS limiter similar to the
+> one we are discussing in pagecache limiter.  In my opinion, once a
+> file page is mapped by the process, then it should be treated at par
+> with anon pages.  Application programs generally do not mmap a file
+> page if the reuse for the content is very low.
+>
 
-* john stultz <johnstul@us.ibm.com> wrote:
+I agree, we shouldn't take mmapped page into account.
+But Vaidy - even with your patch, we are still using the existing
+reclaimer, that means we dont ensure that only page cache is
+reclaimed/limited. mapped pages will be hit also.
+I think we still need to add a new scancontrol field to lock mmaped
+pages and remove unmapped pagecache pages only.
 
-> Although, to be fair, I do know that Daniel has future sched_clock 
-> related patches that need his cleanups [...]
-
-btw., i dont find those sched_clock() changes really acceptable in their 
-present form, and i've pointed out my reasons for that in the past, ~2 
-months ago when Daniel last sent his cleanup queue.
-
-	Ingo
+-Aubrey
