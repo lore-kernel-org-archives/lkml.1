@@ -1,69 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965574AbXAYUvX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030563AbXAYUzA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965574AbXAYUvX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jan 2007 15:51:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965577AbXAYUvX
+	id S1030563AbXAYUzA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jan 2007 15:55:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965605AbXAYUzA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jan 2007 15:51:23 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:35761
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S965574AbXAYUvW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jan 2007 15:51:22 -0500
-Date: Thu, 25 Jan 2007 12:51:21 -0800 (PST)
-Message-Id: <20070125.125121.98861775.davem@davemloft.net>
-To: dirk.hohndel@intel.com
-Cc: alan@redhat.com, ksummit-2006-discuss@thunk.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [Ksummit-2006-discuss] 2007 Linux Kernel Summit
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <C1DDFD3E.8658%dirk.hohndel@intel.com>
-References: <20070123.095756.30177490.davem@davemloft.net>
-	<C1DDFD3E.8658%dirk.hohndel@intel.com>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 25 Jan 2007 15:55:00 -0500
+Received: from agmk.net ([87.236.194.20]:1641 "EHLO mail.agmk.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965596AbXAYUy7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jan 2007 15:54:59 -0500
+From: =?utf-8?q?Pawe=C5=82_Sikora?= <pluto@agmk.net>
+To: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.20rc5 k8/acpi regression ( 2.6.17.13 works fine ).
+Date: Thu, 25 Jan 2007 21:54:16 +0100
+User-Agent: KMail/1.9.6
+Cc: Len Brown <lenb@kernel.org>, Adrian Bunk <bunk@stusta.de>,
+       linux-acpi@vger.kernel.org, cpufreq@lists.linux.org.uk
+References: <200701242346.44673.pluto@agmk.net> <20070124225238.GT17836@stusta.de> <200701242350.45276.lenb@kernel.org>
+In-Reply-To: <200701242350.45276.lenb@kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+Message-Id: <200701252154.16723.pluto@agmk.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Dirk Hohndel <dirk.hohndel@intel.com>
-Date: Thu, 25 Jan 2007 06:22:54 -0800
+On Thursday 25 of January 2007 05:50:45 Len Brown wrote:
+> On Wednesday 24 January 2007 17:52, Adrian Bunk wrote:
+> > On Wed, Jan 24, 2007 at 11:46:44PM +0100, Paweł Sikora wrote:
+> > > for 2.6.20rc5 i get an acpi related oops during x86-64 boot:
+> > > http://minus.ds14.agh.edu.pl/~pluto/2.6.20rc5-acpi-oops.jpg
+> > > disabling the "amd-k8 cool'n'quiet" option in bios helps.
+> > > moreover, it works fine for 2.6.17.13, so it looks like
+> > > a recent regression. i can provide more details if you need.
+> >
+> > thanks for your report.
+> >
+> > Can you narrow down a bit when it started?
+> > Is 2.6.19 OK?
+> > Is 2.6.18 OK?
 
-> > For the first time in many years I'm strongly considering actually
-> > going to the kernel summit, however if it goes back to Ottawa I
-> > definitely will stop going again.
-> 
-> Is that specific to Ottawa, or is this any North American location?
+ok, here are results of my tests:
 
-It's about repetitiveness and what that does to human beings.
+M/B: http://www.epox.nl/products/view.php?product_id=421
 
-As someone who organizes a yearly Linux kernel conference for all the
-networking folks, I can proudly say we haven't gone to the same
-location more than one time.  I believe that is critical to keep the
-repetitiveness out of a conference.
+$ cat /proc/cpuinfo
+processor       : 0
+vendor_id       : AuthenticAMD
+cpu family      : 15
+model           : 55
+model name      : AMD Athlon(tm) 64 Processor 3700+
+stepping        : 2
+cpu MHz         : 2200.000
+cache size      : 1024 KB
+fpu             : yes
+fpu_exception   : yes
+cpuid level     : 1
+wp              : yes
+flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca 
+cmov pat pse36 clflush mmx fxsr sse sse2 syscall nx mmxext fxsr_opt lm 
+3dnowext 3dnow pni lahf_lm
+bogomips        : 4423.06
+TLB size        : 1024 4K pages
+clflush size    : 64
+cache_alignment : 64
+address sizes   : 40 bits physical, 48 bits virtual
+power management: ts fid vid ttp
 
-We've held netconf in Japan, Montreal, Portland, and this year will
-likely be Europe.  People found a way to make it and we found
-sufficient sponsorship for all attendees who needed monetary travel
-assistence every time.  This is why I don't buy the funding argument
-at all.  People who want to come and have the desire, will find a way.
-Conferences who think attendance is important, will find a way to
-provide sponsorship for travel when needed.
+amd-k8 cool'n'quiet enabled in bios.
 
-It's too damn repetitive to go to the same location over and over.
-Why do you think LCA tries to go to a different city every year and
-even let "foreigners" run the show last year in New Zealand? :-)
-Nobody want to go to the same place twice if they have to travel
-at all.
+2.6.17.13-uni, 2.6.17.14-smp, 2.6.18.6-smp and 2.6.20rc5-uni work.
+2.6.20rc5-smp ooopses during boot but works if c'n'q is disabled.
+pure 2.6.19.x not tested yet...
 
-As an added bonus, we can hand off the conference organizing to
-different folks in the local location each year.  That will also add
-some new life and excitement to kernel summit, have different people
-chair, organize, and run the conference.  If you use the same people,
-just like using the same venue, the thing gets stale, and the kernel
-summit is extremely stale at the moment.
+> Is the stack trace always the same?  It doesn't make much sense to me.
+>
+> if AMD cool & quiet is enabled in the BIOS, but CONFIG_CPU_FREQ=n
+> in the kernel, do you see the same problem?
 
-That's what I'm against, going to the same location over and over.  It
-makes the event more like a chore than something to look forward to
-and enjoy.
+looks like not related to config_cpu_freq.
