@@ -1,54 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030644AbXAYWn6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965576AbXAYWzQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030644AbXAYWn6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jan 2007 17:43:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030650AbXAYWn6
+	id S965576AbXAYWzQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jan 2007 17:55:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965579AbXAYWzQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jan 2007 17:43:58 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:35146 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030630AbXAYWn5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jan 2007 17:43:57 -0500
-Message-ID: <45B932A1.90003@torque.net>
-Date: Thu, 25 Jan 2007 17:43:45 -0500
-From: Douglas Gilbert <dougg@torque.net>
-Reply-To: dougg@torque.net
-User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
-MIME-Version: 1.0
-To: linux-scsi@vger.kernel.org
-CC: linux-kernel@vger.kernel.org, taggart@debian.org
-Subject: lsscsi-0.19 released
-X-Enigmail-Version: 0.94.0.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 25 Jan 2007 17:55:16 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:33945 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965576AbXAYWzP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jan 2007 17:55:15 -0500
+Date: Thu, 25 Jan 2007 14:55:04 -0800
+From: Andrew Morton <akpm@osdl.org>
+To: Chuck Ebbert <cebbert@redhat.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>
+Subject: Re: [patch] i386: add option to show more code in oops reports
+Message-Id: <20070125145504.c8c0a98a.akpm@osdl.org>
+In-Reply-To: <45B7C019.1040209@redhat.com>
+References: <45B7C019.1040209@redhat.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-lsscsi is a utility that uses sysfs in linux 2.6 series kernels
-to list information about SCSI devices and SCSI hosts. Both a
-compact format (default) which is one line per device and a
-"classic" format (like the output of 'cat /proc/scsi/scsi') are
-supported.
+On Wed, 24 Jan 2007 15:22:49 -0500
+Chuck Ebbert <cebbert@redhat.com> wrote:
 
-Version 0.19 is available at
-http://www.torque.net/scsi/lsscsi.html
-More information can be found on that page including examples
-and a Download section for tarballs, rpm and deb packages.
-This version adds transport specific information.
+> Sometimes we may need to see more code than the default in an oops,
+> so add an option for that.
 
-ChangeLog:
-Version 0.19 2007/1/25
-  - add transport information (target + initiator)
-    - start with FC, SAS, SPI, iSCSI and SBP
-    - alter ISCSI for 2.6.20 changes
-  - SAS fix for lk 2.6.20 (SYSFS_DEPRECATED=n)
-  - enhance host name search when proc_name is "<NULL>"
-  - implement filter option for '--hosts'
-    - accept 'host<n>' as first item in filter to mean host <n>
-  - output more host attributes when '-Hll' given
-  - add '--list' (or '-L') option output attribute=value
-    entries, one per line
+spose so, but some more justification would be nice.  As would an x86_64
+version?
 
+> Signed-off-by: Chuck Ebbert <cebbert@redhat.com>
 
-Doug Gilbert
+ooh, congrats.
+
+> --- 2.6.20-rc5-32.orig/arch/i386/kernel/traps.c
+> +++ 2.6.20-rc5-32/arch/i386/kernel/traps.c
+> @@ -94,6 +94,7 @@ asmlinkage void spurious_interrupt_bug(v
+>  asmlinkage void machine_check(void);
+>  
+>  int kstack_depth_to_print = 24;
+> +int code_bytes = 64;
+
+static scope, please.  And I think it should be unsigned.
+
+>  ATOMIC_NOTIFIER_HEAD(i386die_chain);
+>  
+>  int register_die_notifier(struct notifier_block *nb)
+> @@ -324,7 +325,7 @@ void show_registers(struct pt_regs *regs
+>  	 */
+>  	if (in_kernel) {
+>  		u8 *eip;
+> -		int code_bytes = 64;
+> +		int code_prologue = code_bytes * 43 / 64;
+>  		unsigned char c;
+>  
+>  		printk("\n" KERN_EMERG "Stack: ");
+> @@ -332,7 +333,7 @@ void show_registers(struct pt_regs *regs
+>  
+>  		printk(KERN_EMERG "Code: ");
+>  
+> -		eip = (u8 *)regs->eip - 43;
+> +		eip = (u8 *)regs->eip - code_prologue;
+>  		if (eip < (u8 *)PAGE_OFFSET ||
+>  			probe_kernel_address(eip, c)) {
+>  			/* try starting at EIP */
+
+You missed this bit:
+
+		if (eip < (u8 *)PAGE_OFFSET ||
+			probe_kernel_address(eip, c)) {
+			/* try starting at EIP */
+			eip = (u8 *)regs->eip;
+			code_bytes = 32;
+		}
+
+Do we really want to be modifying the global variable here?
+
+> @@ -1191,3 +1192,15 @@ static int __init kstack_setup(char *s)
+>  	return 1;
+>  }
+>  __setup("kstack=", kstack_setup);
+> +
+> +static int __init code_bytes_setup(char *s)
+> +{
+> +	code_bytes = simple_strtoul(s, NULL, 0);
+> +	if (code_bytes < 64)
+> +		code_bytes = 64;
+> +	if (code_bytes > 1024)
+> +		code_bytes = 1024;
+> +
+> +	return 1;
+> +}
+> +__setup("code_bytes=", code_bytes_setup);
+
+I'm OK with the upper limit, but I'd sugegst that we remove the lower
+limit: someone might _want_ to be able to set code_bytes=0, who knows?
+
+And if code_bytes is unsigned, the single comparison with 1024 will suffice.
+
+OTOH, why have any checks at all in there?  If the user sets
+code_bytes=0xfffffff0 and things break, he gets to own both pieces...
+
