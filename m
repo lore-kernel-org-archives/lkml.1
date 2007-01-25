@@ -1,59 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965344AbXAYFmr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933255AbXAYFoL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965344AbXAYFmr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jan 2007 00:42:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965345AbXAYFmr
+	id S933255AbXAYFoL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jan 2007 00:44:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933254AbXAYFoL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jan 2007 00:42:47 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:44645 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965344AbXAYFmq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jan 2007 00:42:46 -0500
-Date: Thu, 25 Jan 2007 05:42:42 +0000
-From: Christoph Hellwig <hch@infradead.org>
-To: S?bastien Dugu? <sebastien.dugue@bull.net>
-Cc: Andrew Morton <akpm@osdl.org>, linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-aio <linux-aio@kvack.org>, Bharata B Rao <bharata@in.ibm.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
-       Jean Pierre Dion <jean-pierre.dion@bull.net>,
-       Badari Pulavarty <pbadari@us.ibm.com>
-Subject: Re: [PATCH -mm 4/5][AIO] - AIO completion signal notification
-Message-ID: <20070125054242.GA8799@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	S?bastien Dugu? <sebastien.dugue@bull.net>,
-	Andrew Morton <akpm@osdl.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	linux-aio <linux-aio@kvack.org>, Bharata B Rao <bharata@in.ibm.com>,
-	Suparna Bhattacharya <suparna@in.ibm.com>,
-	Ulrich Drepper <drepper@redhat.com>,
-	Zach Brown <zach.brown@oracle.com>,
-	Jean Pierre Dion <jean-pierre.dion@bull.net>,
-	Badari Pulavarty <pbadari@us.ibm.com>
-References: <20070117104601.36b2ab18@frecb000686> <20070117105018.7213ed7c@frecb000686> <20070123213513.2454b24d.akpm@osdl.org> <20070124121130.0dfc8573@frecb000686>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070124121130.0dfc8573@frecb000686>
-User-Agent: Mutt/1.4.2.2i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Thu, 25 Jan 2007 00:44:11 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:54895 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933255AbXAYFoK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jan 2007 00:44:10 -0500
+Message-ID: <45B842E6.5040008@redhat.com>
+Date: Thu, 25 Jan 2007 00:40:54 -0500
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
+MIME-Version: 1.0
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+CC: clameter@sgi.com, aubreylee@gmail.com, svaidy@linux.vnet.ibm.com,
+       nickpiggin@yahoo.com.au, rgetz@blackfin.uclinux.org,
+       Michael.Hennerich@analog.com, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC] Limit the size of the pagecache
+References: <Pine.LNX.4.64.0701231645260.5239@schroedinger.engr.sgi.com>	<20070124121318.6874f003.kamezawa.hiroyu@jp.fujitsu.com>	<Pine.LNX.4.64.0701232028520.6820@schroedinger.engr.sgi.com>	<20070124141510.7775829c.kamezawa.hiroyu@jp.fujitsu.com>	<20070125093259.74f76144.kamezawa.hiroyu@jp.fujitsu.com>	<Pine.LNX.4.64.0701241841000.12325@schroedinger.engr.sgi.com>	<20070125121254.a2e91875.kamezawa.hiroyu@jp.fujitsu.com>	<45B831DF.7080506@redhat.com> <20070125141944.67347aeb.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20070125141944.67347aeb.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 24, 2007 at 12:11:30PM +0100, S?bastien Dugu? wrote:
-> > > +	if (unlikely(!notify->sigq))
-> > > +		return -EAGAIN;
-> > 
-> > Did this just leak a ref on the task_struct?
-> > 
+KAMEZAWA Hiroyuki wrote:
+> On Wed, 24 Jan 2007 23:28:15 -0500
+> Rik van Riel <riel@redhat.com> wrote:
 > 
->   No, the ref is released in really_put_req() when we dispose of
-> the iocb.
+>> KAMEZAWA Hiroyuki wrote:
+>>
+>>> FYI:
+>>> Because some customers are migrated from mainframes, they want to control
+>>> almost all features in OS, IOW, designing memory usages.
+>> Don't you mean:
+>>
+>> "Because some customers are migrating from mainframes, they are
+>>   used to needing to control all features in OS" ? :)
+>>
+> Ah yes ;)
+> I always says Linux is different from mainframes.
 
-And the code really needs a comment explaining this.  I tripped over
-this before, and I think it's even already the second time Andrew
-stumbled over it.
+It's not just about Linux.
 
+Applications behave differently too from the way they were 15
+years ago.
+
+Some databases, eg. sleepycat's db, map the whole database in
+memory.  Other databases, like MySQL and postgresql, rely on
+the kernel's page cache to cache the most frequently accessed
+data.
+
+To make matters more interesting, memory sizes have increased
+by a factor 1000, but disk seek times have only gotten 10 times
+faster.  This means that simplistic memory management algorithms
+can hurt performance a lot more than they could back then.
+
+In short, I am not convinced that any of the simple tunable knobs
+from the "good old days" will do much to actually help people
+with modern workloads on modern computers.
+
+-- 
+Politics is the struggle between those who want to make their country
+the best in the world, and those who believe it already is.  Each group
+calls the other unpatriotic.
