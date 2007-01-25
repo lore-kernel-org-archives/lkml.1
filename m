@@ -1,129 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030238AbXAYPqE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030234AbXAYPwg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030238AbXAYPqE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jan 2007 10:46:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030244AbXAYPqD
+	id S1030234AbXAYPwg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jan 2007 10:52:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030245AbXAYPwg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jan 2007 10:46:03 -0500
-Received: from brick.kernel.dk ([62.242.22.158]:22462 "EHLO kernel.dk"
+	Thu, 25 Jan 2007 10:52:36 -0500
+Received: from mx2.suse.de ([195.135.220.15]:53940 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030238AbXAYPqA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jan 2007 10:46:00 -0500
-Date: Thu, 25 Jan 2007 16:47:42 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Ed Lin <ed.lin@promise.com>
-Cc: David Somayajulu <david.somayajulu@qlogic.com>, Michael Reed <mdr@sgi.com>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       "james.Bottomley" <james.Bottomley@SteelEye.com>,
-       jeff <jeff@garzik.org>, Promise_Linux <Promise_Linux@promise.com>
-Subject: Re: [patch] scsi: use lock per host instead of per device for shared queue tag host
-Message-ID: <20070125154742.GY12718@kernel.dk>
-References: <B70A50D07063384EB9BCE3330D18414F02F5AF9B@nonameb.ptu.promise.com> <20070125153447.GU12718@kernel.dk>
-Mime-Version: 1.0
+	id S1030234AbXAYPwe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jan 2007 10:52:34 -0500
+Date: Thu, 25 Jan 2007 07:51:39 -0800
+From: Greg KH <greg@kroah.com>
+To: Markku Savela <msa@moth.iki.fi>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: How to get /dev entry created automaticly for dynamic major number?
+Message-ID: <20070125155139.GA24945@kroah.com>
+References: <200701250735.l0P7Z7aN018630@moth.iki.fi> <20070125082544.GA16300@kroah.com> <200701251311.l0PDBFD0025319@moth.iki.fi>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070125153447.GU12718@kernel.dk>
+In-Reply-To: <200701251311.l0PDBFD0025319@moth.iki.fi>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 25 2007, Jens Axboe wrote:
-> On Wed, Jan 24 2007, Ed Lin wrote:
-> > 
-> > 
-> > > -----Original Message-----
-> > > From: David Somayajulu [mailto:david.somayajulu@qlogic.com] 
-> > > Sent: Wednesday, January 24, 2007 5:03 PM
-> > > To: Ed Lin; Michael Reed
-> > > Cc: linux-scsi; linux-kernel; james.Bottomley; jeff; 
-> > > Promise_Linux; Jens Axboe
-> > > Subject: RE: [patch] scsi: use lock per host instead of per 
-> > > device for shared queue tag host
-> > > 
-> > > 
-> > > > It seems another driver(qla4xxx) is also using shared queue tag.
-> > > > It is natural to imagine there might be same symptom in that
-> > > > driver. But I don't know the driver and have no hardware so I
-> > > > can not say anything certain about it.
-> > > 
-> > > qla4xxx implements slightly differently, in the sense we 
-> > > don't have the
-> > > equivalent of         
-> > > struct st_ccb ccb[MU_MAX_REQUEST]; 
-> > > which is in struct st_hba. In other words we don't have a local array
-> > > which like stex to keep track of the outstanding commands to the hba.
-> > > 
-> > > We had a discussion on this one while implementing block-layer tagging
-> > > in qla4xxx and Jens Axboe added the test_and_set_bit() in the 
-> > > following
-> > > code in blk_queue_start_tag() to take care of it.
-> > > 	do {
-> > > 		tag = find_first_zero_bit(bqt->tag_map, bqt->max_depth);
-> > > 		if (tag >= bqt->max_depth)
-> > > 			return 1;
-> > > 	} while (test_and_set_bit(tag, bqt->tag_map));
-> > > Please see the following link for the discussion
-> > > http://marc.theaimsgroup.com/?l=linux-scsi&m=115886351206726&w=2
-> > > 
-> > > Cheers
-> > > David Somayajulu
-> > > QLogic Corporation
-> > >
-> > 
-> > Yes, this piece of code of allocating tag, in itself, is safe.
-> > But the following
-> > 
-> > 	if (unlikely(!__test_and_clear_bit(tag, bqt->tag_map))) {
-> > 		printk(KERN_ERR "%s: attempt to clear non-busy tag
-> > (%d)\n",
-> > 		       __FUNCTION__, tag);
-> > 		return;
-> > 	}
-> > 
-> > code of freeing tag (in blk_queue_end_tag())seems to be using
-> > unsafe __test_and_clear_bit instead of test_and_clear_bit.
-> > I once changed it to test_and_clear_bit and thought it was fixed.
-> > But the panic happened thereafter nonetheless(using gcc 3.4.6.
-> > gcc 4.1.0 is better but still with kernel errors). bqt also needs
-> > to be protected in this case. Replacing queue lock per device with
-> > a host lock is a simple but logical fix for it. To introduce a
-> > more refined lock is possible, but seems too tedious and elaborate
-> > for this issue, since a queue lock is already out there, and a
-> > hostwide lock is needed anyway.
+On Thu, Jan 25, 2007 at 03:11:15PM +0200, Markku Savela wrote:
+> Solution found!
 > 
-> Does this fix it? There really should be no need to add extra locking
-> for this, it would be a shame.
+> > On Thu, Jan 25, 2007 at 09:35:07AM +0200, Markku Savela wrote:
+> > > If want to write a loadable module which "implements" a char device
+> > > ("virtual", no real device present). How do I get the correct
+> > > "/dev/foo" to appear automaticly?
 > 
-> diff --git a/block/ll_rw_blk.c b/block/ll_rw_blk.c
-> index fb67897..e752e5d 100644
-> --- a/block/ll_rw_blk.c
-> +++ b/block/ll_rw_blk.c
-> @@ -1072,12 +1072,16 @@ void blk_queue_end_tag(request_queue_t *q, struct request *rq)
->  		 */
->  		return;
->  
-> -	if (unlikely(!__test_and_clear_bit(tag, bqt->tag_map))) {
-> +	smp_mb__before_clear_bit();
-> +
-> +	if (unlikely(!test_and_clear_bit(tag, bqt->tag_map))) {
->  		printk(KERN_ERR "%s: attempt to clear non-busy tag (%d)\n",
->  		       __FUNCTION__, tag);
->  		return;
->  	}
->  
-> +	smp_mb__after_clear_bit();
-> +
->  	list_del_init(&rq->queuelist);
->  	rq->cmd_flags &= ~REQ_QUEUED;
->  	rq->tag = -1;
+> > From: Greg KH <greg@kroah.com>
 > 
+> > If you look in the book, Linux Device Drivers, third edition, free
+> > online, there's a section on what is needed for udev to work properly.
+> > 
+> > The ideas are still the same, but the way to do it has changed since the
+> > book was written.  Just use a struct device and a class, and you will be
+> > fine.  Look at the misc device core or the mem code in
+> > drivers/char/mem.c for examples of what you need to do.
+> 
+> Thanks! The solution seems to work. The final *obstacle* was, that
+> class_* symbols were not available until I added the
+> LICENSE("GPL"). Here is the resulting template, maybe useful for
+> someone, and just for verification, that I got it right.
 
-Double checking the actual implementation, the smp_mb__* should not be
-needed with the test_and_*_bit operations. The __test_and_clear_bit()
-change is needed, though. What kind of crash did you see when you did
-that? It should not crash, but you could see the "attempt to clear
-non-busy tag" error though.
+Your code _is_ licensed under the GPL, right?
 
--- 
-Jens Axboe
+> ...
+> static int foo_major = 0;
+> static struct class *foo_class;
+> static struct class_device *foo_device;
+> ...
+> 
+> static int __init foo_init(void)
+>   {
+>     foo_major = 0;
+>     foo_class = NULL;
+>     foo_device = NULL;
+> 
+>     foo_major = register_chrdev(foo_major, "foo", &foo_fops);
+>     if (foo_major <= 0)
+>         return -EIO;
+>     foo_class = class_create(THIS_MODULE, "foo");
+>     if (IS_ERR(foo_class))
+>        {
+>        return PTR_ERR(foo_class);
+>        }
+>     foo_device = class_device_create(foo_class, NULL, MKDEV(foo_major, 0), NULL, "foo0");
+>     if (IS_ERR(foo_device))
+>        {
+>        return PTR_ERR(foo_device);
+>        }
+>     return 0;
+>     }
+> 
+> static void __exit foo_exit(void)
+>     {
+>     if (foo_device && !IS_ERR(foo_device))
+>        class_device_del(foo_device);
+>     if (foo_class && !IS_ERR(foo_class))
+>        class_destroy(foo_class);
+>     if (foo_major > 0)
+>        unregister_chrdev(foo_major, "foo");
+>     }
 
+Yes, this should work just fine.  But as others said, try just using
+'device_create' instead, so I don't have to go changing your code in the
+next few months when 'struct class_device' finally goes away (it is
+being replaced.)
+
+thanks,
+
+greg k-h
