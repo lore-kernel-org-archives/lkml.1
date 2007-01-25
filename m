@@ -1,91 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752105AbXAYCfH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750969AbXAYCmF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752105AbXAYCfH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jan 2007 21:35:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752109AbXAYCfH
+	id S1750969AbXAYCmF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jan 2007 21:42:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752108AbXAYCmF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jan 2007 21:35:07 -0500
-Received: from main.gmane.org ([80.91.229.2]:48000 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752105AbXAYCfF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jan 2007 21:35:05 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Piet Delaney <piet@bluelane.com>
-Subject: Problem booting a kernel built in an older environemnt in the newer LFS LiveCDs 6.2-3 and 6.2-4 environments.
-Followup-To: gmane.linux.lfs.devel
-Date: Wed, 24 Jan 2007 18:24:54 -0800
-Organization: BlueLane Tech
-Message-ID: <ep94dm$13o$1@sea.gmane.org>
-Reply-To: piet@bluelane.com
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7Bit
-X-Complaints-To: usenet@sea.gmane.org
-X-Gmane-NNTP-Posting-Host: 64.95.123.130
-Mail-Copies-To: piet@bluelane.com
-User-Agent: KNode/0.9.1
-Cc: lfs-dev@linuxfromscratch.org
+	Wed, 24 Jan 2007 21:42:05 -0500
+Received: from omx2-ext.sgi.com ([192.48.171.19]:53393 "EHLO omx2.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750969AbXAYCmD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jan 2007 21:42:03 -0500
+Date: Wed, 24 Jan 2007 18:41:27 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+cc: aubreylee@gmail.com, svaidy@linux.vnet.ibm.com, nickpiggin@yahoo.com.au,
+       rgetz@blackfin.uclinux.org, Michael.Hennerich@analog.com,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC] Limit the size of the pagecache
+In-Reply-To: <20070125093259.74f76144.kamezawa.hiroyu@jp.fujitsu.com>
+Message-ID: <Pine.LNX.4.64.0701241841000.12325@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0701231645260.5239@schroedinger.engr.sgi.com>
+ <20070124121318.6874f003.kamezawa.hiroyu@jp.fujitsu.com>
+ <Pine.LNX.4.64.0701232028520.6820@schroedinger.engr.sgi.com>
+ <20070124141510.7775829c.kamezawa.hiroyu@jp.fujitsu.com>
+ <20070125093259.74f76144.kamezawa.hiroyu@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm having two unexpected problems with LFS LiveCDs 6.2-3 and 6.2-4
-that don't occure on lfslivecd-x86-6.1.1-4.iso. I've got a workaround
-for the second problem but haven't found a solution yet for the second;
-see 2. below.
+On Thu, 25 Jan 2007, KAMEZAWA Hiroyuki wrote:
 
- 1. The first is that I need to add a symbolic pointer from stage
-    to stage2 in the ${DISK}/boot/ directory when running grub-install.
-    The difference seems to be that the script is passing the wrong
-    arg in grub to the install command. The '2' is missing from the
-    the "(hd0,0)/boot/grub/stage2" argument; Ex:
+> On Wed, 24 Jan 2007 14:15:10 +0900
+> KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> 
+> >   And...some customers want to keep memory Free as much as possible.
+> >   99% memory usage makes insecure them ;)
+> > 
+> If there is a way that the "free" command can show "never used" memory,
+> they will not complain ;).
+> 
+> But I can't think of the way to show that.
+> ==
+> [kamezawa@aworks src]$ free
+>             total       used       free     shared    buffers     cached
+> Mem:        741604     724628      16976          0      62700     564600
+> -/+ buffers/cache:      97328     644276
+> Swap:      1052216       2532    1049684
+> ==
 
-        # grub-install --debug  --root-directory=/recovery /dev/sda
-        + case "$host_os" in
-        + bootdir=/recovery/boot
-        + grubdir=/recovery/boot/grub
-        + device_map=/recovery/boot/grub/device.map
-        + set /usr/sbin/grub dummy
-        .
-        .
-        .
-        grub> root (hd0,0)
-        Filesystem type is ext2fs, partition type 0x83
-        grub> setup  --stage2=/recovery/boot/grub/stage2 
-                     --prefix=/boot/grub (hd0)
-        Checking if "/boot/grub/stage1" exists... yes
-        Checking if "/boot/grub/stage2" exists... yes
-        Checking if "/boot/grub/e2fs_stage1_5" exists... yes
-        Running "embed /boot/grub/e2fs_stage1_5 (hd0)"...  15 sectors are
-        embedded.
-        succeeded
-        Running "instal--stage2=/recovery/boot/grub/stage2 
-                        /boot/grub/stage1
-                        (hd0) (hd0)1+15 p 
-                        (hd0,0)/boot/grub/stage /boot/grub/menu.lst"...
-        succeeded                             ^
-        Done.                                 |
-        grub> quit                            +---- HERE
-
-
-
- 2. The second, and more important problem, is that once one of my
-    kernels is running that it can't open the root filesystem. Looks
-    like it can't read the partition table or something. It's not 
-    the kernel source being to old, as kernels more recent than the 
-    2.6.16 kernel (2.6.18 for example) also fail to boot.
-
-    I made a static version of our mke2fs ran it on the lfslivecd-x86-6.2.3
-    and used it instead of the stock mke2fs and it didn't effect the
-    problem. I ran a static dumpe2fs and checked the magic number.
-    Seems the magic number hasn't changed.
-
-    I recall when migrating from 2.4 to 2.6 there being some bin-utils or
-    something that the kernel build process used to make the kerenl image.
-    I suspect that I need to update that in my build environmennt. If that's
-    it anyone know which package that is and where to get it from. I tried
-    kernel.org wonder if it's util-linux-2.12r.
-
--piet
-
-
+Could we call the free memory "unused memory" and not talk about free 
+memory at all?
