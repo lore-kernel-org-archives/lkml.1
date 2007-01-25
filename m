@@ -1,71 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965364AbXAYOXe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965373AbXAYO3c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965364AbXAYOXe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jan 2007 09:23:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965140AbXAYOXe
+	id S965373AbXAYO3c (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jan 2007 09:29:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965372AbXAYO3c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jan 2007 09:23:34 -0500
-Received: from mga03.intel.com ([143.182.124.21]:32969 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965364AbXAYOXd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jan 2007 09:23:33 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.13,238,1167638400"; 
-   d="scan'208"; a="172877918:sNHT19834164"
-User-Agent: Microsoft-Entourage/11.3.3.061214
-Date: Thu, 25 Jan 2007 06:22:54 -0800
-Subject: Re: [Ksummit-2006-discuss] 2007 Linux Kernel Summit
-From: Dirk Hohndel <dirk.hohndel@intel.com>
-To: David Miller <davem@davemloft.net>, <alan@redhat.com>
-CC: <ksummit-2006-discuss@thunk.org>, <linux-kernel@vger.kernel.org>
-Message-ID: <C1DDFD3E.8658%dirk.hohndel@intel.com>
-Thread-Topic: [Ksummit-2006-discuss] 2007 Linux Kernel Summit
-Thread-Index: AcdARVwZqtO4/5ZnRjuLv0l4qWUn4QARvE3U
-In-Reply-To: <20070123.095756.30177490.davem@davemloft.net>
-Mime-version: 1.0
-Content-type: text/plain;
-	charset="US-ASCII"
-Content-transfer-encoding: 7bit
-X-OriginalArrivalTime: 25 Jan 2007 14:23:32.0617 (UTC) FILETIME=[6453EF90:01C7408C]
+	Thu, 25 Jan 2007 09:29:32 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.155]:1229 "EHLO
+	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S965140AbXAYO3b (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jan 2007 09:29:31 -0500
+Message-ID: <45B8BEC5.7010000@ru.mvista.com>
+Date: Thu, 25 Jan 2007 17:29:25 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
+MIME-Version: 1.0
+To: Marc St-Jean <Marc_St-Jean@pmc-sierra.com>
+Cc: Alan <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       linux-serial@vger.kernel.org, linux-mips@linux-mips.org
+Subject: Re: [PATCH] serial driver PMC MSP71xx, kernel linux-mips.git mast
+  er
+References: <45B7CB34.60209@pmc-sierra.com>
+In-Reply-To: <45B7CB34.60209@pmc-sierra.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello.
 
-On 1/23/07 9:57 AM, "David Miller" <davem@davemloft.net> wrote:
->> Definitely disagree with that. I'd like to see the conference somewhere
->> else different this time - perhaps Czech Republic, or somewhere else more
->> easterly and Linux active (or even Finland...)
-> 
-> This is my position as well.
-> 
-> If the kernel summit is important enough, all the bean counters will
-> find a way to get their constituents to the event, it's as simple as
-> that.
+Marc St-Jean wrote:
 
-Actually, it isn't.
+>> > I could use both iotype and type with a test on each for the appropriate
+>> > bug, what do you recommend?
 
-Within the Northern Hemisphere and with locations that are reasonably
-cheaply to reach from most of Europe and North America, yes, at the end of
-the day people will be able to come.
+>>    I think iotype would be enough. You can't pass type for platform 
+>>devices anyway, IIRC (the thing I don't quite like).
 
-We seem to have two different types of motivation for proposed locations in
-this discussion. Some of us are looking for a convenient location. Some of
-us are proposing locations as a political statement. I believe the latter
-isn't a good idea. The kernel summit is by invitation only. It therefore is
-a very bad forum to bring Linux to a place.
+> I just found that out the hard way, it get's overwritten during autoconfig* and
+> ends up back at PORT_16550A.
 
-Add to that that locations like Brazil or India will add thousands of
-dollars of cost per person and add much more problems with jet lag for many
-people I think they'll be very hard to justify.
+> I'm now trying to use my own iotype = UPIO_DWAPB and I've added it to all cases
+> that check for UPIO_MEM. However at boot time I'm getting:
+> 	"serial8250: ttyS0 at *unknown* (irq = 27) is a 16550A".
+> It looks like something outside of 8250.c must be checking for UPIO_MEM, I'm
+> looking into it.
 
-> For the first time in many years I'm strongly considering actually
-> going to the kernel summit, however if it goes back to Ottawa I
-> definitely will stop going again.
+    Yeah, be sure to change serial_core.c as well (whereever you'll see 
+UPIO_AU/TSI there)... Quite ugly. :-/
 
-Is that specific to Ottawa, or is this any North American location? I
-strongly believe that it's a good idea to alternate between locations in
-North America and Europe. That's were most of the attendees live. Just as it
-was a bad idea to keep it in North America all the time, it would be a bad
-idea to keep it in Europe.
-
-/D
+WBR, Sergei
