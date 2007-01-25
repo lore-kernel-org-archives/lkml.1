@@ -1,47 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751968AbXAYCR0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751723AbXAYCU1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751968AbXAYCR0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jan 2007 21:17:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752003AbXAYCR0
+	id S1751723AbXAYCU1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jan 2007 21:20:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752011AbXAYCU1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jan 2007 21:17:26 -0500
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:45918 "EHLO
-	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751968AbXAYCRZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jan 2007 21:17:25 -0500
-Subject: Re: In-tree version of new FireWire drivers available
-From: David Moore <dcm@MIT.EDU>
-To: Kristian =?ISO-8859-1?Q?H=F8gsberg?= <krh@bitplanet.net>
-Cc: Pieter Palmers <pieterp@joow.be>, linux1394-devel@lists.sourceforge.net,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <59ad55d30701241630o6995d115je8e37a1d1eb6252f@mail.gmail.com>
-References: <59ad55d30701231948u5f1e02d8x3d06553cb373e5be@mail.gmail.com>
-	 <45B75FDB.1000004@joow.be>
-	 <59ad55d30701241245l7671af23w3e19a83621c6fb51@mail.gmail.com>
-	 <45B7CD78.8010907@mit.edu>
-	 <59ad55d30701241630o6995d115je8e37a1d1eb6252f@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8
-Date: Wed, 24 Jan 2007 21:17:00 -0500
-Message-Id: <1169691420.16086.4.camel@eastgate-five-sixty-four.mit.edu>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
-Content-Transfer-Encoding: 8bit
-X-Spam-Flag: NO
-X-Spam-Score: 0.00
+	Wed, 24 Jan 2007 21:20:27 -0500
+Received: from smtp.ocgnet.org ([64.20.243.3]:36946 "EHLO smtp.ocgnet.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751723AbXAYCU0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jan 2007 21:20:26 -0500
+Date: Thu, 25 Jan 2007 11:18:47 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Tim Bird <tim.bird@am.sony.com>
+Cc: linux kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] init: support preset lpj value as config option
+Message-ID: <20070125021847.GA7609@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Tim Bird <tim.bird@am.sony.com>,
+	linux kernel <linux-kernel@vger.kernel.org>
+References: <45B7F5E2.4070800@am.sony.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <45B7F5E2.4070800@am.sony.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-01-24 at 19:30 -0500, Kristian Høgsberg wrote:
-
-> The problem isn't packets that are too big, the problem is we can get
-> unexpected / too many empty packets, which will then cause the DMA
-> engine to move on to the next descriptor before the payload buffer has
-> been completely filled. 
-
-I was under the impression that for an empty packet, the descriptor
-wouldn't fire at all.  Is that not correct?
-
--David
-
+On Wed, Jan 24, 2007 at 04:12:18PM -0800, Tim Bird wrote:
+> This patch provides a config option for preset lpj, which means
+> the value can be easily preserved, and conveyed between developers
+> in a config file.
+> 
+This seems excessive, it's already possible to set the preset lpj on the
+kernel command line, and virtually every one of the embedded
+architectures supports setting the kernel command line as a config
+option. Is there any reason why you can't simply set it there as a
+default instead? It's all going to be .config resident in the end
+anyways.
