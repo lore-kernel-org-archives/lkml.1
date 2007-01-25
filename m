@@ -1,51 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965661AbXAYHUF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965673AbXAYHdg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965661AbXAYHUF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jan 2007 02:20:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965667AbXAYHUF
+	id S965673AbXAYHdg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jan 2007 02:33:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965674AbXAYHdg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jan 2007 02:20:05 -0500
-Received: from fnoeppeil48.netpark.at ([217.175.205.176]:4565 "EHLO
-	roarinelk.homelinux.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965661AbXAYHUD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jan 2007 02:20:03 -0500
-Date: Thu, 25 Jan 2007 08:20:00 +0100
-From: Manuel Lauss <mano@roarinelk.homelinux.net>
-To: Pierre Ossman <drzeus-mmc@drzeus.cx>
-Cc: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] MMC: au1xmmc R6 response support
-Message-ID: <20070125072000.GA8257@roarinelk.homelinux.net>
-References: <20070123100814.GA5001@roarinelk.homelinux.net> <45B65A73.90308@drzeus.cx> <20070124055202.GA6446@roarinelk.homelinux.net> <45B72F13.4040707@drzeus.cx>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <45B72F13.4040707@drzeus.cx>
-User-Agent: Mutt/1.5.11
+	Thu, 25 Jan 2007 02:33:36 -0500
+Received: from fil.mine.nu ([82.240.81.52]:50616 "EHLO fil.mine.nu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965673AbXAYHdf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jan 2007 02:33:35 -0500
+Message-ID: <45B85D48.9080403@laposte.net>
+Date: Thu, 25 Jan 2007 08:33:28 +0100
+From: Vince <fuzzy77@laposte.net>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070102)
+MIME-Version: 1.0
+To: "Vladimir V. Saveliev" <vs@namesys.com>
+CC: reiserfs-list@namesys.com, Andrew Morton <akpm@osdl.org>,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>
+Subject: Re: linux-2.6.20-rc4-mm1 Reiser4 filesystem freeze and corruption
+References: <1169229490.6266.11.camel@oberon> <45B5BB5E.4010802@laposte.net> <200701232215.37321.vs@namesys.com>
+In-Reply-To: <200701232215.37321.vs@namesys.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Pierre,
+Vladimir V. Saveliev wrote:
+> Hello
+> 
+> On Tuesday 23 January 2007 10:38, Vince wrote:
+[...]
+>> I don't know if it is related, but I've had the following BUG on 
+>> 2.6.20-rc4-mm1 (+ hot-fixes patches applied) :
+>>
+>> -------------------
+>> kernel BUG at fs/reiser4/plugin/item/extent_file_ops.c:973!
+> 
+> This is another problem than Zan's one. The attached patch should fix it.
+> 
+> Andrew, please apply.
+> 
+> 
+> From: Vladimir Saveliev <vs@namesys.com>
+> 
+> remove_suid may open a transaction in reiser4 which is to be restarted
+> before entering into main write loop.
+> 
+> Signed-off-by: Vladimir Saveliev <vs@namesys.com>
 
-> HEAD has this fixed. Every spec I can get my hands on states that R1 and
-> R6 have the same format. So it sounds like this controller is doing
-> something stupid.
+I'm pleased to confirm I wasn't able to reproduce the bug with your 
+patch applied.
 
-Apparently my HW is broken... I got a hold of a DB1200 demoboard and
-the distributed version works fine there.
+Regards,
 
-I'm very sorry for the noise!
-
-> On a related note... Would you, or anyone else you know, be willing to
-> sign up as official maintainer of this driver? Otherwise I'll have to
-> mark it as unmaintained.
-
-Aren't people from AMD (now Raza) maintaining it? I have source for this
-driver which also implements SDIO, also from AMD. It's a bit dated (for
-2.6.11). But I'm willing to look into problems, as long as I have access
-to the hardware.
-
-Thanks for your time,
-
--- 
- ml.
+Vince
