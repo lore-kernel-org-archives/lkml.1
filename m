@@ -1,102 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752011AbXAYC1p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752105AbXAYCfH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752011AbXAYC1p (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jan 2007 21:27:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752025AbXAYC1p
+	id S1752105AbXAYCfH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jan 2007 21:35:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752109AbXAYCfH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jan 2007 21:27:45 -0500
-Received: from wx-out-0506.google.com ([66.249.82.224]:41492 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752011AbXAYC1o (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jan 2007 21:27:44 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=uZuim5m1G+htU62Qxclv2mvMscVJrIOwd7IgmlpEIaxEPU+5Jx234wI3L7I2RKe5r78SYJWTy9uaBQWvQMNW/6gOAp/NvB7nFKAV1jo30MEixJRJyvchdP10mfGV+9aKwltEXXmK+hPfn5iNyO1vcygCffL5xsrzFZ4G6QecBdI=
-Message-ID: <6d6a94c50701241827y715353ccwb8c4b4697e5607ca@mail.gmail.com>
-Date: Thu, 25 Jan 2007 10:27:43 +0800
-From: "Aubrey Li" <aubreylee@gmail.com>
-To: "Peter Zijlstra" <a.p.zijlstra@chello.nl>
-Subject: Re: [RFC] Limit the size of the pagecache
-Cc: "Christoph Lameter" <clameter@sgi.com>,
-       "Vaidyanathan Srinivasan" <svaidy@linux.vnet.ibm.com>,
-       "Nick Piggin" <nickpiggin@yahoo.com.au>,
-       "Robin Getz" <rgetz@blackfin.uclinux.org>,
-       "Frysinger, Michael" <Michael.Frysinger@analog.com>,
-       "Bryan Wu" <cooloney.lkml@gmail.com>,
-       "Hennerich, Michael" <Michael.Hennerich@analog.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <1169650616.6189.41.camel@twins>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <Pine.LNX.4.64.0701231645260.5239@schroedinger.engr.sgi.com>
-	 <1169625333.4493.16.camel@taijtu>
-	 <6d6a94c50701240622n30f1092cq4570f84160fe87f7@mail.gmail.com>
-	 <1169650616.6189.41.camel@twins>
+	Wed, 24 Jan 2007 21:35:07 -0500
+Received: from main.gmane.org ([80.91.229.2]:48000 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752105AbXAYCfF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jan 2007 21:35:05 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Piet Delaney <piet@bluelane.com>
+Subject: Problem booting a kernel built in an older environemnt in the newer LFS LiveCDs 6.2-3 and 6.2-4 environments.
+Followup-To: gmane.linux.lfs.devel
+Date: Wed, 24 Jan 2007 18:24:54 -0800
+Organization: BlueLane Tech
+Message-ID: <ep94dm$13o$1@sea.gmane.org>
+Reply-To: piet@bluelane.com
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7Bit
+X-Complaints-To: usenet@sea.gmane.org
+X-Gmane-NNTP-Posting-Host: 64.95.123.130
+Mail-Copies-To: piet@bluelane.com
+User-Agent: KNode/0.9.1
+Cc: lfs-dev@linuxfromscratch.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 1/24/07, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-> On Wed, 2007-01-24 at 22:22 +0800, Aubrey Li wrote:
-> > On 1/24/07, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-> > > On Tue, 2007-01-23 at 16:49 -0800, Christoph Lameter wrote:
-> > > > This is a patch using some of Aubrey's work plugging it in what is IMHO
-> > > > the right way. Feel free to improve on it. I have gotten repeatedly
-> > > > requests to be able to limit the pagecache. With the revised VM statistics
-> > > > this is now actually possile. I'd like to know more about possible uses of
-> > > > such a feature.
-> > > >
-> > > >
-> > > >
-> > > >
-> > > > It may be useful to limit the size of the page cache for various reasons
-> > > > such as
-> > > >
-> > > > 1. Insure that anonymous pages that may contain performance
-> > > >    critical data is never subject to swap.
-> > >
-> > > This is what we have mlock for, no?
-> > >
-> > > > 2. Insure rapid turnaround of pages in the cache.
-> > >
-> > > This sounds like we either need more fadvise hints and/or understand why
-> > > the VM doesn't behave properly.
-> > >
-> > > > 3. Reserve memory for other uses? (Aubrey?)
-> > >
-> > > He wants to make a nommu system act like a mmu system; this will just
-> > > never ever work.
-> >
-> > Nope. Actually my nommu system works great with some of patches made by us.
-> > What let you think this will never work?
->
-> Because there are perfectly valid things user-space can do to mess you
-> up. I forgot the test-case but it had something to do with opening a
-> million files, this will scatter slab pages all over the place.
->
-> Also, if you cycle your large user-space allocations a bit unluckily
-> you'll also fragment it into oblivion.
->
-> So you can not guarantee it will not fragment into smithereens stopping
-> your user-space from using large than page size allocations.
->
-> If your user-space consists of several applications that do dynamic
-> memory allocation of various sizes its a matter of (run-) time before
-> things will start failing.
->
-> If you prealloc a large area at boot time (like we now do for hugepages)
-> and use that for user-space, you might 'reset' the status quo by cycling
-> the whole of userspace.
->
+I'm having two unexpected problems with LFS LiveCDs 6.2-3 and 6.2-4
+that don't occure on lfslivecd-x86-6.1.1-4.iso. I've got a workaround
+for the second problem but haven't found a solution yet for the second;
+see 2. below.
 
-It seems you are talking about a perfect system. Opening a million
-files will never be the requirement of my system. You know I'm working
-on an embedded system, most of the time the whole system just run for
-one application, if I can guarantee this application works forever, I
-think it's enough. I'm not trying to make a nommu system act like a
-mmu system, it's impossible, I just make my nommu system work.
+ 1. The first is that I need to add a symbolic pointer from stage
+    to stage2 in the ${DISK}/boot/ directory when running grub-install.
+    The difference seems to be that the script is passing the wrong
+    arg in grub to the install command. The '2' is missing from the
+    the "(hd0,0)/boot/grub/stage2" argument; Ex:
 
--Aubrey
+        # grub-install --debug  --root-directory=/recovery /dev/sda
+        + case "$host_os" in
+        + bootdir=/recovery/boot
+        + grubdir=/recovery/boot/grub
+        + device_map=/recovery/boot/grub/device.map
+        + set /usr/sbin/grub dummy
+        .
+        .
+        .
+        grub> root (hd0,0)
+        Filesystem type is ext2fs, partition type 0x83
+        grub> setup  --stage2=/recovery/boot/grub/stage2 
+                     --prefix=/boot/grub (hd0)
+        Checking if "/boot/grub/stage1" exists... yes
+        Checking if "/boot/grub/stage2" exists... yes
+        Checking if "/boot/grub/e2fs_stage1_5" exists... yes
+        Running "embed /boot/grub/e2fs_stage1_5 (hd0)"...  15 sectors are
+        embedded.
+        succeeded
+        Running "instal--stage2=/recovery/boot/grub/stage2 
+                        /boot/grub/stage1
+                        (hd0) (hd0)1+15 p 
+                        (hd0,0)/boot/grub/stage /boot/grub/menu.lst"...
+        succeeded                             ^
+        Done.                                 |
+        grub> quit                            +---- HERE
+
+
+
+ 2. The second, and more important problem, is that once one of my
+    kernels is running that it can't open the root filesystem. Looks
+    like it can't read the partition table or something. It's not 
+    the kernel source being to old, as kernels more recent than the 
+    2.6.16 kernel (2.6.18 for example) also fail to boot.
+
+    I made a static version of our mke2fs ran it on the lfslivecd-x86-6.2.3
+    and used it instead of the stock mke2fs and it didn't effect the
+    problem. I ran a static dumpe2fs and checked the magic number.
+    Seems the magic number hasn't changed.
+
+    I recall when migrating from 2.4 to 2.6 there being some bin-utils or
+    something that the kernel build process used to make the kerenl image.
+    I suspect that I need to update that in my build environmennt. If that's
+    it anyone know which package that is and where to get it from. I tried
+    kernel.org wonder if it's util-linux-2.12r.
+
+-piet
+
+
