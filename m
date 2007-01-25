@@ -1,65 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030225AbXAYPoK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030240AbXAYPpG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030225AbXAYPoK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jan 2007 10:44:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030215AbXAYPoJ
+	id S1030240AbXAYPpG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jan 2007 10:45:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030243AbXAYPpG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jan 2007 10:44:09 -0500
-Received: from iriserv.iradimed.com ([69.44.168.233]:15005 "EHLO iradimed.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1030225AbXAYPoI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jan 2007 10:44:08 -0500
-Message-ID: <45B8D041.8050507@cfl.rr.com>
-Date: Thu, 25 Jan 2007 10:44:01 -0500
-From: Phillip Susi <psusi@cfl.rr.com>
-User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
-MIME-Version: 1.0
-To: Denis Vlasenko <vda.linux@googlemail.com>
-CC: Michael Tokarev <mjt@tls.msk.ru>, Linus Torvalds <torvalds@osdl.org>,
-       Viktor <vvp01@inbox.ru>, Aubrey <aubreylee@gmail.com>,
-       Hua Zhong <hzhong@gmail.com>, Hugh Dickins <hugh@veritas.com>,
-       linux-kernel@vger.kernel.org, hch@infradead.org, kenneth.w.chen@in
-Subject: Re: O_DIRECT question
-References: <6d6a94c50701101857v2af1e097xde69e592135e54ae@mail.gmail.com> <200701212102.43028.vda.linux@googlemail.com> <45B4E3A3.40706@cfl.rr.com> <200701242215.47777.vda.linux@googlemail.com>
-In-Reply-To: <200701242215.47777.vda.linux@googlemail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 25 Jan 2007 15:44:17.0053 (UTC) FILETIME=[ABD634D0:01C74097]
-X-TM-AS-Product-Ver: SMEX-7.2.0.1122-3.6.1039-14956.003
-X-TM-AS-Result: No--10.534100-5.000000-31
+	Thu, 25 Jan 2007 10:45:06 -0500
+Received: from mail.screens.ru ([213.234.233.54]:56473 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030240AbXAYPpE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jan 2007 10:45:04 -0500
+Date: Thu, 25 Jan 2007 18:43:24 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: sebastien.dugue@bull.net
+Cc: Zach Brown <zach.brown@oracle.com>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Benjamin LaHaise <bcrl@kvack.org>, Ulrich Drepper <drepper@redhat.com>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org
+Subject: Re: + make-good_sigevent-non-static.patch added to -mm tree
+Message-ID: <20070125154324.GA183@tv-sign.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=koi8-r
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Denis Vlasenko wrote:
-> I will still disagree on this point (on point "use O_DIRECT, it's faster").
-> There is no reason why O_DIRECT should be faster than "normal" read/write
-> to large, aligned buffer. If O_DIRECT is faster on today's kernel,
-> then Linux' read()/write() can be optimized more.
+Sébastien Dugué wrote:
+>
+> +struct task_struct *good_sigevent(sigevent_t *event)
+> +{
+> +	struct task_struct *task = current->group_leader;
+> +
+> +	if ((event->sigev_notify & SIGEV_THREAD_ID) == SIGEV_THREAD_ID) {
+> +		task = find_task_by_pid(event->sigev_notify_thread_id);
+> +
+> +		if (!task || task->tgid != current->tgid)
+> +			return NULL;
+> +	} else if (event->sigev_notify == SIGEV_SIGNAL) {
 
-Ahh but there IS a reason for it to be faster: the application knows 
-what data it will require, so it should tell the kernel rather than ask 
-it to guess.  Even if you had the kernel playing vmsplice games to get 
-avoid the copy to user space ( which still has a fair amount of overhead 
-), then you still have the problem of the kernel having to guess what 
-data the application will require next, and try to fetch it early.  Then 
-when the application requests the data, if it is not already in memory, 
-the application blocks until it is, and blocking stalls the pipeline.
+No, no, we can't use "else" here,
 
-> (I hoped that they can be made even *faster* than O_DIRECT, but as I said,
-> you convinced me with your "error reporting" argument that reads must still
-> block until entire buffer is read. Writes can avoid that - apps can do
-> fdatasync/whatever to make sync writes & error checks if they want).
+> +		if (event->sigev_signo <= 0 || event->sigev_signo > SIGRTMAX)
 
+because we skip the check above in SIGEV_THREAD_ID case.
 
-fdatasync() is not acceptable either because it flushes the entire file. 
-  This does not allow the application to control the ordering of various 
-writes unless it limits itself to a single write/fdatasync pair at a 
-time.  Further, fdatasync again blocks the application.
+This way any user can crash the kernel with a minimal effort.
 
-With aio, the application can keep several read/writes going in 
-parallel, thus keeping the pipeline full.  Even if the io were not 
-O_DIRECT, and the kernel played vmsplice games to avoid the copy, it 
-would still have more overhead, complexity and I think, very little gain 
-in most cases.
-
+Oleg.
 
