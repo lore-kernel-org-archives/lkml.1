@@ -1,98 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965728AbXAYJIj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965725AbXAYJQK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965728AbXAYJIj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jan 2007 04:08:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965727AbXAYJIj
+	id S965725AbXAYJQK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jan 2007 04:16:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965722AbXAYJQJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jan 2007 04:08:39 -0500
-Received: from lucidpixels.com ([75.144.35.66]:37832 "EHLO lucidpixels.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965724AbXAYJIh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jan 2007 04:08:37 -0500
-Date: Thu, 25 Jan 2007 04:08:36 -0500 (EST)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-X-X-Sender: jpiszcz@p34.internal.lan
-To: Pavel Machek <pavel@ucw.cz>
-cc: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org, xfs@oss.sgi.com
-Subject: Re: 2.6.20-rc5: cp 18gb 18gb.2 = OOM killer, reproducible just like
- 2.16.19.2
-In-Reply-To: <20070125003242.GA23343@elf.ucw.cz>
-Message-ID: <Pine.LNX.4.64.0701250407590.3673@p34.internal.lan>
-References: <Pine.LNX.4.64.0701211424170.2552@p34.internal.lan>
- <20070122133735.GB4493@ucw.cz> <Pine.LNX.4.64.0701221348020.11525@p34.internal.lan>
- <Pine.LNX.4.64.0701241837550.2930@p34.internal.lan> <20070125003242.GA23343@elf.ucw.cz>
+	Thu, 25 Jan 2007 04:16:09 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:41360 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965725AbXAYJQH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jan 2007 04:16:07 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=YB1e3fWdwmhhgqpMyzIrDby7HD1Iv0dTOYZD/tI7GYAe4Fn8A1EyE/p2iK+Rssn4Q
+	pqzTcUuzbh3+7kSe+Myyw==
+Message-ID: <b040c32a0701250116l250338b6r37dc11df10b9d27b@mail.gmail.com>
+Date: Thu, 25 Jan 2007 01:16:00 -0800
+From: "Ken Chen" <kenchen@google.com>
+To: "Dmitriy Monakhov" <dmonakhov@openvz.org>, akpm@osdl.org
+Subject: Re: [RFC] mm: Move common segments checks to separate function
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <1169715856.841146.284660@h3g2000cwc.googlegroups.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <7GVvX-5In-3@gated-at.bofh.it> <7H6KE-6iG-5@gated-at.bofh.it>
+	 <1169715856.841146.284660@h3g2000cwc.googlegroups.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Dmitriy Monakhov wrote on Jan 24, 11:00 pm
+> > Move common segments checks from  __generic_file_aio_{read,write}_nolock()
+> > to separate helper function generic_segment_checks().WOW my eyes ....
+> I'm realy sorry but this patch is litle bit broken. :(
+> I've forgot to check generic_segment_checks() return value.
 
+why not remove the for loop all together?  like this:
 
-On Thu, 25 Jan 2007, Pavel Machek wrote:
-
-> Hi!
-> 
-> > > Is it highmem-related? Can you try it with mem=256M?
-> > 
-> > Bad idea, the kernel crashes & burns when I use mem=256, I had to boot 
-> > 2.6.20-rc5-6 single to get back into my machine, very nasty.  Remember I 
-> > use an onboard graphics controller that has 128MB of RAM allocated to it 
-> > and I believe the ICH8 chipset also uses some memory, in any event mem=256 
-> > causes the machine to lockup before it can even get to the boot/init 
-> > processes, the two leds on the keyboard were blinking, caps lock and 
-> > scroll lock and I saw no console at all!
-> 
-> Okay, so try mem=700M or disable CONFIG_HIGHMEM or something.
-> 									Pavel
-> -- 
-> (english) http://www.livejournal.com/~pavelmachek
-> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-raid" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
-
-I forgot to remove the mem=700M with PREEMPT off and this is what I saw 
-this morning:
-
-[18005.261875] Killed process 4768 (screen)
-[18005.262343] Out of memory: kill process 4793 (screen) score 385 or a 
-child
-[18005.262350] Killed process 4793 (screen)
-[18005.378536] Out of memory: kill process 4825 (screen) score 385 or a 
-child
-[18005.378542] Killed process 4825 (screen)
-[18005.378547] Out of memory: kill process 4825 (screen) score 385 or a 
-child
-[18005.378553] Killed process 4825 (screen)
-[18005.413072] Out of memory: kill process 4875 (screen) score 385 or a 
-child
-[18005.413079] Killed process 4875 (screen)
-[18005.423735] Out of memory: kill process 4970 (screen) score 385 or a 
-child
-[18005.423742] Killed process 4970 (screen)
-[18005.431391] Out of memory: kill process 21365 (xfs_fsr) score 286 or a 
-child
-[18005.431398] Killed process 21365 (xfs_fsr)
- 
-$ screen -ls
-  There are screens on:
-        2532.pts-0.p34  (Dead ???)
-        3776.pts-2.p34  (Dead ???)
-        4768.pts-7.p34  (Dead ???)
-        4793.pts-9.p34  (Dead ???)
-        4825.pts-11.p34 (Dead ???)
-        4875.pts-13.p34 (Dead ???)
-        4970.pts-15.p34 (Dead ???)
- 
-
-Lovely...
-
-$ uname -r
-2.6.20-rc5
-
-Something is seriously wrong with that OOM killer.
-
-Justin.
-
+http://groups.google.com/group/linux.kernel/browse_frm/thread/97550ddba48c8c8b/623ddad30b547702?lnk=st&q=&rnum=9#623ddad30b547702
