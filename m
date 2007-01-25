@@ -1,74 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965365AbXAYPQl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965394AbXAYPSq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965365AbXAYPQl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jan 2007 10:16:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965456AbXAYPQk
+	id S965394AbXAYPSq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jan 2007 10:18:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965405AbXAYPSq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jan 2007 10:16:40 -0500
-Received: from caffeine.uwaterloo.ca ([129.97.134.17]:58613 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S965365AbXAYPQk (ORCPT
+	Thu, 25 Jan 2007 10:18:46 -0500
+Received: from ug-out-1314.google.com ([66.249.92.170]:55969 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965394AbXAYPSp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jan 2007 10:16:40 -0500
-Date: Thu, 25 Jan 2007 10:16:39 -0500
-To: Paul Fulghum <paulkf@microgate.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Strange problem with tty layer
-Message-ID: <20070125151639.GH7582@csclub.uwaterloo.ca>
-References: <20070124204009.GA7584@csclub.uwaterloo.ca> <45B7CDB5.7020909@microgate.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 25 Jan 2007 10:18:45 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=JZY3QI/Afi881iKlk+kv9EY1pBtn54qcrDXy41FELGhVkTH9NyV3po37/gS3LPsIZl9rym3CDtBpe9zBnAWWbqrXYLqZTk1SipJU/2WtYVOOQ1G5yQUEEomgUrKiXkYiX+NsPnrh1ZSkqqfyQ2h++WFMnxsXwY7PWM0L3XC0HUc=
+Message-ID: <7b69d1470701250718l58dfbc35rd0b24e5935e32331@mail.gmail.com>
+Date: Thu, 25 Jan 2007 09:18:43 -0600
+From: "Scott Preece" <sepreece@gmail.com>
+To: 7eggert@gmx.de
+Subject: Re: [ANNOUNCE] System Inactivity Monitor v1.0
+Cc: "Pavel Machek" <pavel@ucw.cz>, "Alessandro Di Marco" <dmr@gmx.it>,
+       linux-kernel@vger.kernel.org, vojtech@suse.cz
+In-Reply-To: <E1HA3iW-0000kF-VU@be1.lrz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <45B7CDB5.7020909@microgate.com>
-User-Agent: Mutt/1.5.9i
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+References: <7ELhf-4rC-9@gated-at.bofh.it> <7FKM6-7Gy-1@gated-at.bofh.it>
+	 <7G6ME-1g2-11@gated-at.bofh.it> <7GqrZ-6YY-1@gated-at.bofh.it>
+	 <7GuFj-5pj-5@gated-at.bofh.it> <7GwQL-h3-7@gated-at.bofh.it>
+	 <7GzF3-4L6-47@gated-at.bofh.it> <E1HA3iW-0000kF-VU@be1.lrz>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 24, 2007 at 03:20:53PM -0600, Paul Fulghum wrote:
-> In 2.6.16 the tty buffering pushes data to the line
-> discipline without regard to tty->receive_room.
-> If the line discipline can't keep up, the data gets dropped.
-> I observed this data loss at higher speeds when
-> placing the system under heavy load.
-> 
-> 2.6.18 added code to respect tty->receive_room.
-> 
-> This may or may not be your problem, but you should
-> be able to check by adding a conditional printk
-> to drivers/char/tty_io.c:flush_to_ldisc()
-> 
-> If tty->receive_room is less than the size of the buffer
-> passed to disc->receive_buf() then you are losing data.
+On 1/25/07, Bodo Eggert <7eggert@gmx.de> wrote:
+> Scott Preece <sepreece@gmail.com> wrote:
+>
+> > My own hot button is making sure that the definition of what
+> > constitutes user activity is managed in exactly one place, whether in
+> > the kernel or not. My naive model would be to put the response at user
+> > level, but to provide a single point of definition in the kernel (say,
+> > /dev/useractivity or the equivalent) that the user-level daemon could
+> > listen to.
+>
+> Imagine one computer serving two users. Two monitors, two keyboards ...
+---
 
-I am now trying this, which so far seem to help (I had a printk in there
-earlier and managed to trigger that).
+Good point! Of late I've been working on single-user systems, so it
+was not at the front of my brain, despite years of building and using
+multi-user systems.
 
---- ori/drivers/char/tty_io.c	2007-01-24 18:02:48.000000000 -0500
-+++ new/drivers/char/tty_io.c	2007-01-25 09:50:02.000000000 -0500
-@@ -2774,6 +2778,14 @@
- 	spin_lock_irqsave(&tty->buf.lock, flags);
- 	while((tbuf = tty->buf.head) != NULL) {
- 		while ((count = tbuf->commit - tbuf->read) != 0) {
-+			if (!tty->receive_room) {
-+				schedule_delayed_work(&tty->buf.work, 1);
-+				spin_unlock_irqrestore(&tty->buf.lock, flags);
-+				goto out;
-+			}
-+			if (count > tty->receive_room) {
-+				count = tty->receive_room;
-+			}
- 			char_buf = tbuf->char_buf_ptr + tbuf->read;
- 			flag_buf = tbuf->flag_buf_ptr + tbuf->read;
- 			tbuf->read += count;
+It's a point that multi-user systems have struggled with forever (when
+somebody inserts a CR in the drive mounted in the system box, which
+user do you pop up a media player for?).
 
-This appeared to be (essentially) the key change in 2.6.18 related to
-the check of tty->receive_room.
-
-I will now run a bunch more tests to see if it manages to keep it from
-having any more character losses.
-
-Thank you for the suggestion of where to look.
-
---
-Len Sorensen
+I tend to think it's not a kernel-vs-user-space issue, though. To
+solve it you need, somewhere, a notion of a "user session" and you
+need some way to separate system-level issues (like low-battery) from
+user-level issues (like activiating user X's screensaver).
