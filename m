@@ -1,42 +1,218 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030287AbXAYQTS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030272AbXAYQVG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030287AbXAYQTS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jan 2007 11:19:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030272AbXAYQTS
+	id S1030272AbXAYQVG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jan 2007 11:21:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030297AbXAYQVF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jan 2007 11:19:18 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:53913 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030287AbXAYQTR (ORCPT
+	Thu, 25 Jan 2007 11:21:05 -0500
+Received: from tomts16.bellnexxia.net ([209.226.175.4]:47377 "EHLO
+	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1030272AbXAYQVE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jan 2007 11:19:17 -0500
-Subject: Re: [PATCH] libata-sff: Don't call bmdma_stop on non DMA capable
-	controllers
-From: David Woodhouse <dwmw2@infradead.org>
-To: Jeff Garzik <jgarzik@pobox.com>
-Cc: Alan <alan@lxorguk.ukuu.org.uk>, torvalds@osdl.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <45B8D810.3030501@pobox.com>
-References: <20070125150905.652f9ce2@localhost.localdomain>
-	 <1169741658.3593.98.camel@shinybook.infradead.org>
-	 <45B8D810.3030501@pobox.com>
-Content-Type: text/plain
-Date: Fri, 26 Jan 2007 00:19:00 +0800
-Message-Id: <1169741940.3593.104.camel@shinybook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6.dwmw2.1) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Thu, 25 Jan 2007 11:21:04 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: linux-kernel@vger.kernel.org
+Cc: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
+       Ingo Molnar <mingo@redhat.com>, Greg Kroah-Hartman <gregkh@suse.de>,
+       Christoph Hellwig <hch@infradead.org>, ltt-dev@shafik.org,
+       systemtap@sources.redhat.com, Douglas Niehaus <niehaus@eecs.ku.edu>,
+       "Martin J. Bligh" <mbligh@mbligh.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Paul Mackerras <paulus@samba.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: [PATCH 02/09] atomic.h : Complete atomic_long operations in asm-generic
+Date: Thu, 25 Jan 2007 11:15:47 -0500
+Message-Id: <1169741754354-git-send-email-mathieu.desnoyers@polymtl.ca>
+X-Mailer: git-send-email 1.4.4.3
+In-Reply-To: <11697417541743-git-send-email-mathieu.desnoyers@polymtl.ca>
+References: <11697417541743-git-send-email-mathieu.desnoyers@polymtl.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-01-25 at 11:17 -0500, Jeff Garzik wrote:
-> Read the code...  This test is already widely in use in libata. 
+atomic.h : Complete atomic_long operations in asm-generic
 
-That doesn't make it correct; it just means it's your fault not Alan's,
-right? :)
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 
--- 
-dwmw2
-
+--- a/include/asm-generic/atomic.h
++++ b/include/asm-generic/atomic.h
+@@ -66,6 +66,90 @@ static inline void atomic_long_sub(long i, atomic_long_t *l)
+ 	atomic64_sub(i, v);
+ }
+ 
++static inline int atomic_long_sub_and_test(long i, atomic_long_t *l)
++{
++	atomic64_t *v = (atomic64_t *)l;
++	
++	return (long)atomic64_sub_and_test(i, v);
++}
++
++static inline int atomic_long_dec_and_test(atomic_long_t *l)
++{
++	atomic64_t *v = (atomic64_t *)l;
++	
++	return (long)atomic64_dec_and_test(v);
++}
++
++static inline int atomic_long_inc_and_test(atomic_long_t *l)
++{
++	atomic64_t *v = (atomic64_t *)l;
++	
++	return (long)atomic64_inc_and_test(v);
++}
++
++static inline int atomic_long_add_negative(long i, atomic_long_t *l)
++{
++	atomic64_t *v = (atomic64_t *)l;
++	
++	return (long)atomic64_add_negative(i, v);
++}
++
++static inline long atomic_long_add_return(long i, atomic_long_t *l)
++{
++	atomic64_t *v = (atomic64_t *)l;
++	
++	return (long)atomic64_add_return(i, v);
++}
++
++static inline long atomic_long_sub_return(long i, atomic_long_t *l)
++{
++	atomic64_t *v = (atomic64_t *)l;
++	
++	return (long)atomic64_sub_return(i, v);
++}
++
++static inline long atomic_long_inc_return(atomic_long_t *l)
++{
++	atomic64_t *v = (atomic64_t *)l;
++	
++	return (long)atomic64_inc_return(v);
++}
++
++static inline long atomic_long_dec_return(atomic_long_t *l)
++{
++	atomic64_t *v = (atomic64_t *)l;
++	
++	return (long)atomic64_dec_return(v);
++}
++
++static inline long atomic_long_add_unless(atomic_long_t *l, long a, long u)
++{
++	atomic64_t *v = (atomic64_t *)l;
++	
++	return (long)atomic64_add_unless(v, a, u);
++}
++
++static inline long atomic_long_inc_not_zero(atomic_long_t *l)
++{
++	atomic64_t *v = (atomic64_t *)l;
++	
++	return (long)atomic64_inc_not_zero(v);
++}
++
++static inline long atomic_long_cmpxchg(atomic_long_t *l, long old, long new)
++{
++	atomic64_t *v = (atomic64_t *)l;
++	
++	return (long)atomic64_cmpxchg(v, old, new);
++}
++
++static inline long atomic_long_xchg(atomic_long_t *l, long new)
++{
++	atomic64_t *v = (atomic64_t *)l;
++	
++	return (long)atomic64_xchg(v, new);
++}
++
+ #else  /*  BITS_PER_LONG == 64  */
+ 
+ typedef atomic_t atomic_long_t;
+@@ -113,6 +197,90 @@ static inline void atomic_long_sub(long i, atomic_long_t *l)
+ 	atomic_sub(i, v);
+ }
+ 
++static inline int atomic_long_sub_and_test(long i, atomic_long_t *l)
++{
++	atomic_t *v = (atomic_t *)l;
++	
++	return atomic_sub_and_test(i, v);
++}
++
++static inline int atomic_long_dec_and_test(atomic_long_t *l)
++{
++	atomic_t *v = (atomic_t *)l;
++	
++	return atomic_dec_and_test(v);
++}
++
++static inline int atomic_long_inc_and_test(atomic_long_t *l)
++{
++	atomic_t *v = (atomic_t *)l;
++	
++	return atomic_inc_and_test(v);
++}
++
++static inline int atomic_long_add_negative(long i, atomic_long_t *l)
++{
++	atomic_t *v = (atomic_t *)l;
++	
++	return atomic_add_negative(i, v);
++}
++
++static inline long atomic_long_add_return(long i, atomic_long_t *l)
++{
++	atomic_t *v = (atomic_t *)l;
++	
++	return (long)atomic_add_return(i, v);
++}
++
++static inline long atomic_long_sub_return(long i, atomic_long_t *l)
++{
++	atomic_t *v = (atomic_t *)l;
++	
++	return (long)atomic_sub_return(i, v);
++}
++
++static inline long atomic_long_inc_return(atomic_long_t *l)
++{
++	atomic_t *v = (atomic_t *)l;
++	
++	return (long)atomic_inc_return(v);
++}
++
++static inline long atomic_long_dec_return(atomic_long_t *l)
++{
++	atomic_t *v = (atomic_t *)l;
++	
++	return (long)atomic_dec_return(v);
++}
++
++static inline long atomic_long_add_unless(atomic_long_t *l, long a, long u)
++{
++	atomic_t *v = (atomic_t *)l;
++	
++	return (long)atomic_add_unless(v, a, u);
++}
++
++static inline long atomic_long_inc_not_zero(atomic_long_t *l)
++{
++	atomic_t *v = (atomic_t *)l;
++	
++	return (long)atomic_inc_not_zero(v);
++}
++
++static inline long atomic_long_cmpxchg(atomic_long_t *l, long old, long new)
++{
++	atomic_t *v = (atomic_t *)l;
++	
++	return (long)atomic_cmpxchg(v, old, new);
++}
++
++static inline long atomic_long_xchg(atomic_long_t *l, long new)
++{
++	atomic_t *v = (atomic_t *)l;
++	
++	return (long)atomic_xchg(v, new);
++}
++
+ #endif  /*  BITS_PER_LONG == 64  */
+ 
+ #endif  /*  _ASM_GENERIC_ATOMIC_H  */
