@@ -1,85 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030312AbXAYQWE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030302AbXAYQWo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030312AbXAYQWE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jan 2007 11:22:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030307AbXAYQVk
+	id S1030302AbXAYQWo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jan 2007 11:22:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030298AbXAYQWS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jan 2007 11:21:40 -0500
-Received: from tomts36.bellnexxia.net ([209.226.175.93]:40182 "EHLO
-	tomts36-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1030297AbXAYQVY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jan 2007 11:21:24 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: linux-kernel@vger.kernel.org
-Cc: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
-       Ingo Molnar <mingo@redhat.com>, Greg Kroah-Hartman <gregkh@suse.de>,
-       Christoph Hellwig <hch@infradead.org>, ltt-dev@shafik.org,
-       systemtap@sources.redhat.com, Douglas Niehaus <niehaus@eecs.ku.edu>,
-       "Martin J. Bligh" <mbligh@mbligh.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Paul Mackerras <paulus@samba.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: [PATCH 01/10] local_t : architecture independant extension
-Date: Thu, 25 Jan 2007 11:16:08 -0500
-Message-Id: <11697417771413-git-send-email-mathieu.desnoyers@polymtl.ca>
-X-Mailer: git-send-email 1.4.4.3
-In-Reply-To: <1169741777507-git-send-email-mathieu.desnoyers@polymtl.ca>
-References: <1169741777507-git-send-email-mathieu.desnoyers@polymtl.ca>
+	Thu, 25 Jan 2007 11:22:18 -0500
+Received: from mail.screens.ru ([213.234.233.54]:39025 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030302AbXAYQWQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jan 2007 11:22:16 -0500
+Date: Thu, 25 Jan 2007 19:21:41 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Sebastien Dugue <sebastien.dugue@bull.net>,
+       Laurent Vivier <laurent.vivier@bull.net>
+Cc: Zach Brown <zach.brown@oracle.com>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Benjamin LaHaise <bcrl@kvack.org>, Ulrich Drepper <drepper@redhat.com>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org
+Subject: Re: + aio-completion-signal-notification.patch added to -mm tree
+Message-ID: <20070125162141.GA226@tv-sign.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-local_t : architecture independant extension
+Sebastien Dugue wrote:
+>
+> +static long aio_setup_sigevent(struct aio_notify *notify,
+> +			       struct sigevent __user *user_event)
+> +{
+> +	sigevent_t event;
+> +	struct task_struct *target;
+> +
+> +	if (copy_from_user(&event, user_event, sizeof(event)))
+> +		return -EFAULT;
+> +
+> +	if (event.sigev_notify == SIGEV_NONE)
+> +		return 0;
+> +
+> +	notify->notify = event.sigev_notify;
+> +	notify->signo = event.sigev_signo;
+> +	notify->value = event.sigev_value;
+> +
+> +	read_lock(&tasklist_lock);
 
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
---- a/include/asm-generic/local.h
-+++ b/include/asm-generic/local.h
-@@ -33,6 +33,19 @@ typedef struct
- #define local_add(i,l)	atomic_long_add((i),(&(l)->a))
- #define local_sub(i,l)	atomic_long_sub((i),(&(l)->a))
- 
-+#define local_sub_and_test(i, l) atomic_long_sub_and_test((i), (&(l)->a))
-+#define local_dec_and_test(l) atomic_long_dec_and_test(&(l)->a)
-+#define local_inc_and_test(l) atomic_long_inc_and_test(&(l)->a)
-+#define local_add_negative(i, l) atomic_long_add_negative((i), (&(l)->a))
-+#define local_add_return(i, l) atomic_long_add_return((i), (&(l)->a))
-+#define local_sub_return(i, l) atomic_long_sub_return((i), (&(l)->a))
-+#define local_inc_return(l) atomic_long_inc_return(&(l)->a)
-+
-+#define local_cmpxchg(l, old, new) atomic_long_cmpxchg((&(l)->a), (old), (new))
-+#define local_xchg(l, new) atomic_long_xchg((&(l)->a), (new))
-+#define local_add_unless(l, a, u) atomic_long_add_unless((&(l)->a), (a), (u))
-+#define local_inc_not_zero(l) atomic_long_inc_not_zero(&(l)->a)
-+
- /* Non-atomic variants, ie. preemption disabled and won't be touched
-  * in interrupt, etc.  Some archs can optimize this case well. */
- #define __local_inc(l)		local_set((l), local_read(l) + 1)
-@@ -44,19 +57,19 @@ typedef struct
-  * much more efficient than these naive implementations.  Note they take
-  * a variable (eg. mystruct.foo), not an address.
-  */
--#define cpu_local_read(v)	local_read(&__get_cpu_var(v))
--#define cpu_local_set(v, i)	local_set(&__get_cpu_var(v), (i))
--#define cpu_local_inc(v)	local_inc(&__get_cpu_var(v))
--#define cpu_local_dec(v)	local_dec(&__get_cpu_var(v))
--#define cpu_local_add(i, v)	local_add((i), &__get_cpu_var(v))
--#define cpu_local_sub(i, v)	local_sub((i), &__get_cpu_var(v))
-+#define cpu_local_read(l)	local_read(&__get_cpu_var(l))
-+#define cpu_local_set(l, i)	local_set(&__get_cpu_var(l), (i))
-+#define cpu_local_inc(l)	local_inc(&__get_cpu_var(l))
-+#define cpu_local_dec(l)	local_dec(&__get_cpu_var(l))
-+#define cpu_local_add(i, l)	local_add((i), &__get_cpu_var(l))
-+#define cpu_local_sub(i, l)	local_sub((i), &__get_cpu_var(l))
- 
- /* Non-atomic increments, ie. preemption disabled and won't be touched
-  * in interrupt, etc.  Some archs can optimize this case well.
-  */
--#define __cpu_local_inc(v)	__local_inc(&__get_cpu_var(v))
--#define __cpu_local_dec(v)	__local_dec(&__get_cpu_var(v))
--#define __cpu_local_add(i, v)	__local_add((i), &__get_cpu_var(v))
--#define __cpu_local_sub(i, v)	__local_sub((i), &__get_cpu_var(v))
-+#define __cpu_local_inc(l)	__local_inc(&__get_cpu_var(l))
-+#define __cpu_local_dec(l)	__local_dec(&__get_cpu_var(l))
-+#define __cpu_local_add(i, l)	__local_add((i), &__get_cpu_var(l))
-+#define __cpu_local_sub(i, l)	__local_sub((i), &__get_cpu_var(l))
- 
- #endif /* _ASM_GENERIC_LOCAL_H */
+We don't need tasklist_lock, we can use rcu_read_lock() instead.
+
+> +	target = good_sigevent(&event);
+> +
+> +	if (unlikely(!target || (target->flags & PF_EXITING)))
+> +		goto out_unlock;
+
+PF_EXITING check is racy and unneded. In fact, it is wrong. If the main
+thread is already died, we can only use SIGEV_THREAD_ID signals, because
+otherwise good_sigevent() returns ->group_leader.
+
+> @@ -994,6 +1077,15 @@ int fastcall aio_complete(struct kiocb *
+>  	kunmap_atomic(ring, KM_IRQ1);
+>
+>  	pr_debug("added to ring %p at [%lu]\n", iocb, tail);
+> +
+> +	if (iocb->ki_notify.notify != SIGEV_NONE) {
+> +		ret = aio_send_signal(&iocb->ki_notify);
+> +
+> +		/* If signal generation failed, release the sigqueue */
+> +		if (ret)
+> +			sigqueue_free(iocb->ki_notify.sigq);
+
+We should not use sigqueue_free() here. It takes current->sighand->siglock
+to remove sigqueue from "struct sigpending". But current is just a "random"
+process here.
+
+Yes, if I understand this patch correctly, it is not possible that this
+sigqueue is pending, but still this is bad imho.
+
+>  static void __sigqueue_free(struct sigqueue *q)
+>  {
+> -	if (q->flags & SIGQUEUE_PREALLOC)
+> +	if (q->flags & SIGQUEUE_PREALLOC && q->info.si_code != SI_ASYNCIO)
+>  		return;
+
+Oh, this is not nice. Could we change send_sigqueue/send_group_sigqueue
+instead ?
+
+-	BUG_ON(!(q->flags & SIGQUEUE_PREALLOC));
++	BUG_ON(!(q->flags & SIGQUEUE_PREALLOC) && q->info.si_code != SI_ASYNCIO);
+
+This way aio can use __sigqueue_alloc/__sigqueue_free directly and forget
+about SIGQUEUE_PREALLOC.
+
+On the other hand, imho this patch takes a wrong direction.
+
+The purpose of SIGQUEUE_PREALLOC + send_sigqueue() is to re-use the same
+sigqueue while sending a stream of signals. But in aio case we allocate
+sigqueue to send only 1 signal, then it freed after the delivery like
+the regular sigqueue. So what is the point?
+
+I'd suggest to not use this interface. Just use group_send_sig_info() or
+specific_send_sig_info(). Yes, this way we will do GFP_ATOMIC allocation
+of sigqueue in interrupt context, but is this so bad in this case?
+
+Oleg.
+
