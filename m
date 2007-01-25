@@ -1,77 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030532AbXAYTrT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030531AbXAYTuk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030532AbXAYTrT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jan 2007 14:47:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030535AbXAYTrT
+	id S1030531AbXAYTuk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jan 2007 14:50:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030534AbXAYTuk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jan 2007 14:47:19 -0500
-Received: from ug-out-1314.google.com ([66.249.92.168]:34847 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030532AbXAYTrS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jan 2007 14:47:18 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=SWKaCzhnKKZpNXd6d2c7+Mi4VxxqiLk9JLybQwWaZDsL/gf3M+9opkXU3UWSLfinxx5k5oerZs/3VPYd8Npbl7bnqF1HY7pFISveT2mThyzSFh+702SY5tsbjL2rbXYxceyhIZOBHe925P0LO6aqiqiGSKMgT3XQunjj7QdbB+k=
-Message-ID: <fb6b09f20701251147n76388866tb66a825a5f1041c@mail.gmail.com>
-Date: Thu, 25 Jan 2007 14:47:15 -0500
-From: "Sue Alfano" <smalfano@gmail.com>
-To: linux-kernel@vger.kernel.org, "James Chapman" <jchapman@katalix.com>
-Subject: Re: uClibc - waitid()
-In-Reply-To: <45AFE875.5040204@katalix.com>
+	Thu, 25 Jan 2007 14:50:40 -0500
+Received: from mail.suse.de ([195.135.220.2]:45522 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030531AbXAYTuj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jan 2007 14:50:39 -0500
+Date: Thu, 25 Jan 2007 11:49:33 -0800
+From: Greg KH <greg@kroah.com>
+To: xiphmont@xiph.org
+Cc: Takashi Iwai <tiwai@suse.de>, Pierre Ossman <drzeus@drzeus.cx>,
+       fedora-desktop-list@redhat.com, alsa-devel@alsa-project.org,
+       jrb@redhat.com, linux-kernel@vger.kernel.org, mclasen@redhat.com,
+       Lennart Poettering <lennart@poettering.net>, perex@suse.cz
+Subject: Re: [Alsa-devel] [PATCH] alsa: correct nonsensical sysfs device symlinks
+Message-ID: <20070125194933.GA27857@kroah.com>
+References: <806dafc20701250757n3dcb38b7ma5f8423ab3de9850@mail.gmail.com> <s5hfy9zujvr.wl%tiwai@suse.de> <806dafc20701250903p6b67d176wf00dd2a9d92d899f@mail.gmail.com> <806dafc20701250930n185e9773i64bbd2d845c836be@mail.gmail.com> <s5h7ivbuhg1.wl%tiwai@suse.de> <806dafc20701251007n69bc9b3cse023b51369501d42@mail.gmail.com> <s5h4pqfufs8.wl%tiwai@suse.de> <806dafc20701251034l59fc5be7ta881606046eb819a@mail.gmail.com> <s5h1wljuf2f.wl%tiwai@suse.de> <806dafc20701251051p2750cb34sab88a38282020497@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <fb6b09f20701180318i5f3b2785sd7f3f0931808b849@mail.gmail.com>
-	 <45AFE875.5040204@katalix.com>
+In-Reply-To: <806dafc20701251051p2750cb34sab88a38282020497@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Well, I'm back.  I didn't get any help from the uClibc folks, but I eventually
-figured out how to get to the waitid function in the kernel using the _syscall4
-macro and the right header file.  waitid worked great, but then I started
-having problems when more than one child needed to be reaped.
+On Thu, Jan 25, 2007 at 01:51:42PM -0500, xiphmont@xiph.org wrote:
+> On 1/25/07, Takashi Iwai <tiwai@suse.de> wrote:
+> 
+> >> [This does beg the question: Does the benefit of this complete
+> >> restructuring in a subminor release of an allegedly stable kernel
+> >> outweigh the fact that it breaks all audio for any user running a
+> >> gnome desktop?]
+> >
+> >Well, that's not me who introduced that ;)
+> 
+> Consider it addressed to those responsible.
 
-Basically, the parent process registers a SIGCHLD signal handler via sigaction()
-with the SA_RESTART option and then sits on a timed select().  All the signal
-handler does is set a flag - the waitid processing takes place when the parent
-drops out of the select because of the signal or a timeout.  When the waitid
-succeeds, the pid is used to do some processing and then is used to call
-waitpid to clean up the mess.  This is all in a while loop, so when the waitid
-is called again, 0 is returned with si_pid = 0 indicating that there are no
-more children to reap.  That's all great.  The problem occurs when there's 2
-or more children to reap.  When this occurs, the 2nd waitid call returns -1
-and si_pid = 0.  The waitid continues to fail in this manner until the parent
-receives another SIGCHLD signal, then it works for the next zombie child in
-the waiting line, but only one.  I can send SIGCHLD kills to the parent from
-the console and eventually get everything cleaned up.  Sending the kill from
-the parent isn't enough - I suppose it wants to be blocking on the select.
+Which would be me. :)
 
-I tried registering the signal handler without SA_RESRART and also via signal(),
-since there was a posting about SA_RESTART, but that made no difference.  I
-also tried not having a signal handler at all, but then I couldn't reap any
-children on the timeout.
+And no, I don't want to break anything, hence that config option.  If
+it's enabled, sysfs should look just like before.  But it looks like we
+messed up somewhere and we need to fix it
 
-So, are there known issues with waitid when there are multiple children piled
-up waiting to be reaped?  If so, is there a patch or a workaround?
+> >Also, avoid creating card* instance.  It makes no sense in that case.
+> 
+> Well, the 'new' entries don't interfere with old-- and we inevitably
+> are going to end up with a situation where some software can only read
+> the 'new' entries and some software can only read the 'old', otherwise
+> why offer compatability at all?  I interpreted the
+> CONFIG_SYSFS_DEPRECATED option to mean 'also offer the deprecated
+> entries in addition to the new structure', otherwise the name should
+> be CONFIG_SYSFS_OLDSTYLE or some such to imply they're mutually
+> exclusive....
 
-The product that I'm working on is using Linux version 2.6.12-2.0.0-258
+The name of the config option doesn't really matter as much as the help
+text of the option does.  Does reading that help out more?
 
-Thanks for any help,
-Sue
+Basically, new distros can disable that option if their userspace can
+handle the new structure of sysfs with the symlinks.  Users of older
+distros with newer kernels can enable the option and (hopefully) not
+break anything.  So far, it's been working with this being the first
+regression reported.
 
-On 1/18/07, James Chapman <jchapman@katalix.com> wrote:
-> You're asking the wrong list. Try the uClibc list at uclibc.org.
->
-> glibc and uClibc provide C APIs to kernel system calls. uClibc doesn't
-> implement all features that glibc supports - there are several kernel
-> APIs that uClibc doesn't expose. Ask the uClibc folk for advice.
->
-> --
-> James Chapman
-> Katalix Systems Ltd
-> http://www.katalix.com
-> Catalysts for your Embedded Linux software development
->
+> >(So... what's wrong with my patch?)
+> 
+> As it turns out, nothing (I made some error somewhere initially when
+> testing it).
+> Apologies if I wasn't clear.
+> 
+> (Well, it's incomplete like my original patch was in that it only
+> changed the device symlinks for controlX and pcmX; the other entries
+> still had device entries pointing at card*).
+
+So what does running with this patch make sysfs look like?
+
+thanks,
+
+greg k-h
