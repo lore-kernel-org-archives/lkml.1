@@ -1,59 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933201AbXAYE1Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933208AbXAYE3n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933201AbXAYE1Z (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jan 2007 23:27:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933204AbXAYE1Z
+	id S933208AbXAYE3n (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jan 2007 23:29:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933206AbXAYE3m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jan 2007 23:27:25 -0500
-Received: from ns2.suse.de ([195.135.220.15]:48401 "EHLO mx2.suse.de"
+	Wed, 24 Jan 2007 23:29:42 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:42519 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933201AbXAYE1Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jan 2007 23:27:24 -0500
-Date: Wed, 24 Jan 2007 20:26:16 -0800
-From: Greg KH <greg@kroah.com>
-To: Christopher Monty Montgomery <xiphmont@gmail.com>
-Cc: perex@suse.cz, mclasen@redhat.com, jrb@redhat.com,
-       Lennart Poettering <lennart@poettering.net>,
-       Pierre Ossman <drzeus@drzeus.cx>, linux-kernel@vger.kernel.org,
-       alsa-devel@alsa-project.org, fedora-desktop-list@redhat.com
-Subject: Re: [PATCH] alsa: correct nonsensical sysfs device symlinks
-Message-ID: <20070125042616.GA21813@kroah.com>
-References: <806dafc20701241750t53b86babn36831cadc7dfa76c@mail.gmail.com>
+	id S933208AbXAYE3m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jan 2007 23:29:42 -0500
+Message-ID: <45B831DF.7080506@redhat.com>
+Date: Wed, 24 Jan 2007 23:28:15 -0500
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <806dafc20701241750t53b86babn36831cadc7dfa76c@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+CC: Christoph Lameter <clameter@sgi.com>, aubreylee@gmail.com,
+       svaidy@linux.vnet.ibm.com, nickpiggin@yahoo.com.au,
+       rgetz@blackfin.uclinux.org, Michael.Hennerich@analog.com,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC] Limit the size of the pagecache
+References: <Pine.LNX.4.64.0701231645260.5239@schroedinger.engr.sgi.com>	<20070124121318.6874f003.kamezawa.hiroyu@jp.fujitsu.com>	<Pine.LNX.4.64.0701232028520.6820@schroedinger.engr.sgi.com>	<20070124141510.7775829c.kamezawa.hiroyu@jp.fujitsu.com>	<20070125093259.74f76144.kamezawa.hiroyu@jp.fujitsu.com>	<Pine.LNX.4.64.0701241841000.12325@schroedinger.engr.sgi.com> <20070125121254.a2e91875.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20070125121254.a2e91875.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 24, 2007 at 08:50:06PM -0500, Christopher Monty Montgomery wrote:
-> This patch was generated against 2.6.20-rc5; it fixes a bug that
-> cropped up in a late 2.6.19-mm kernel.
-> 
-> When ALSA's sysfs device creation was converted from using
-> class_device_create() to device_create(), the fourth param from
-> class_device_create() [dev] was simply plugged into arg 2 of
-> device_create().  This causes the device symlinks under all the
-> class/sound/[node] to point to nonsensical places.  Among other
-> problems, this breaks HAL and all audio software that depends on HAL.
+KAMEZAWA Hiroyuki wrote:
 
-I don't understand, where does the symlink currently point to?  It looks
-correct to me on my machines:
+> FYI:
+> Because some customers are migrated from mainframes, they want to control
+> almost all features in OS, IOW, designing memory usages.
 
-$ tree /sys/class/sound/
-/sys/class/sound/
-|-- card0 -> ../../devices/pci0000:00/0000:00:1b.0/card0
-|-- controlC0 -> ../../devices/pci0000:00/0000:00:1b.0/card0/controlC0
-|-- pcmC0D0c -> ../../devices/pci0000:00/0000:00:1b.0/card0/pcmC0D0c
-|-- pcmC0D0p -> ../../devices/pci0000:00/0000:00:1b.0/card0/pcmC0D0p
-|-- pcmC0D2c -> ../../devices/pci0000:00/0000:00:1b.0/card0/pcmC0D2c
-|-- pcmC0D6c -> ../../devices/pci0000:00/0000:00:1b.0/card0/pcmC0D6c
-|-- pcmC0D6p -> ../../devices/pci0000:00/0000:00:1b.0/card0/pcmC0D6p
-`-- timer -> ../../devices/virtual/sound/timer
+Don't you mean:
 
-What do the symlinks look on your machine?
+"Because some customers are migrating from mainframes, they are
+  used to needing to control all features in OS" ? :)
 
-thanks,
-
-greg k-h
+-- 
+Politics is the struggle between those who want to make their country
+the best in the world, and those who believe it already is.  Each group
+calls the other unpatriotic.
