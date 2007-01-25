@@ -1,84 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932879AbXAYMCh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965087AbXAYMEI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932879AbXAYMCh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jan 2007 07:02:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932884AbXAYMCh
+	id S965087AbXAYMEI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jan 2007 07:04:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932936AbXAYMEI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jan 2007 07:02:37 -0500
-Received: from [212.12.190.202] ([212.12.190.202]:32992 "EHLO raad.intranet"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932879AbXAYMCg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jan 2007 07:02:36 -0500
-From: Al Boldi <a1426z@gawab.com>
-To: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Subject: Re: [RFC] Limit the size of the pagecache
-Date: Thu, 25 Jan 2007 14:57:27 +0300
-User-Agent: KMail/1.5
-Cc: linux-kernel@vger.kernel.org
-References: <200701250942.47321.a1426z@gawab.com> <45B86930.2090709@linux.vnet.ibm.com>
-In-Reply-To: <45B86930.2090709@linux.vnet.ibm.com>
+	Thu, 25 Jan 2007 07:04:08 -0500
+Received: from smtp5-g19.free.fr ([212.27.42.35]:48375 "EHLO smtp5-g19.free.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932886AbXAYMEH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jan 2007 07:04:07 -0500
+X-Greylist: delayed 7315 seconds by postgrey-1.27 at vger.kernel.org; Thu, 25 Jan 2007 07:04:07 EST
+Message-ID: <45B89C99.2060500@free.fr>
+Date: Thu, 25 Jan 2007 13:03:37 +0100
+From: John <shill@free.fr>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061108 SeaMonkey/1.0.6
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="windows-1256"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200701251457.27813.a1426z@gawab.com>
+To: linux-kernel@vger.kernel.org
+CC: tglx@timesys.com, mingo@elte.hu, johnstul@us.ibm.com, akpm@osdl.org,
+       shill@free.fr
+Subject: Re: One-shot high-resolution POSIX timer periodically late
+References: <fa.NwnlFyMPfa3XG6my3HKGWnCW3x4@ifi.uio.no> <fa.Ji4GnAbBF2FR5JbSxvxn2haJZIk@ifi.uio.no> <fa.8TBiwbgs8B881k+3X+IlFjhqpLI@ifi.uio.no>
+In-Reply-To: <fa.8TBiwbgs8B881k+3X+IlFjhqpLI@ifi.uio.no>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vaidyanathan Srinivasan wrote:
-> Al Boldi wrote:
-> > Rik van Riel wrote:
-> >> Christoph Lameter wrote:
-> >>> This is a patch using some of Aubrey's work plugging it in what is
-> >>> IMHO the right way. Feel free to improve on it. I have gotten
-> >>> repeatedly requests to be able to limit the pagecache.
-> >>
-> >> IMHO it's a bad hack.
-> >>
-> >> It would be better to identify the problem this "feature" is
-> >> trying to fix, and then fix the root cause.
-> >
-> > Ok, here is the problem:  kswapd.
-> >
-> > Limiting the page-cache memory inhibits invoking kswapd needlessly,
-> > aiding performance and easing OOM pressures.
->
-> Apart from kswapd, limiting pagecache helps performance of
-> applications by not eating away their ANON pages or other parts of its
-> resident data set.  When there is enough free memory, then there is no
-> performance issue.  However memory is always utilized to the max.
-> Hence every pagecache page that is allocated should come from some
-> application's RSS, or from cold pagecache page.  If that page was
-> stolen from some application, then that application pays the price for
-> swapping or reading the page back to memory.  This scenario is what we
->  want to avoid.  All that we are trying to achieve is that pagecache
-> eats a (unmapped) pagecache page and not steal memory from other
-> important application's resident set.
+[ Re-sending in the hope that it will be archived ]
 
-Agreed 100%.  Thanks for expanding exactly what I meant.
+Ingo Molnar wrote:
 
-> Certainly this should be a configurable option and kernel's behavior
-> should not be changed in general.
->
-> > I tried the patch; it works.
-> >
-> :)
-> :
-> > But it needs a bit of debugging.  Setting pagecache_ratio = 1 either
-> > deadlocks or reduces thru-put to < 1mb/s.
->
-> Yes, going below 5% on my 1GB RAM machine causes severe performance
-> problems.  We need to hard wire a reasonable lower limit and not
-> provide a noose for the end user to tie around!
+> John Stultz wrote:
+> 
+>> On Wed, 2007-01-24 at 10:41 +0100, John wrote:
+>> 
+>>> I'm using the POSIX timers API. My platform is x86 running Linux
+>>> 2.6.18.6 patched with the high-resolution timer subsystem.
+>>> 
+>>> http://www.tglx.de/hrtimers.html
+>>> 
+>>> My process is the only SCHED_FIFO process on the system. There are 
+>>> no user-space processes with a higher priority. AFAICT, only a 
+>>> kernel thread could keep the CPU away from my app.
+>>> 
+>>> Is there a periodic kernel thread that runs every 2 seconds, cannot 
+>>> be preempted, and runs for over 50 µs??
+>> 
+>> This sounds like a BIOS SMI issue. Can you reproduce this behavior on 
+>> different hardware?
+> 
+> note that only the -hrt patchset is used - not the full -rt patchset
+> - so 50 usecs delays (and more) are quite possible and common.
 
-One reason to test full range settings, is to expose underlying system 
-problems, like scalability.  By limiting the range, you only hide a problem 
-that was exposed.
+Ingo,
 
+You are correct, I only used -hrt.
+I will _definitely_ give -rt a try.
 
-Thanks!
+I am fully aware that an occasional 100 µs delay is possible, given a
+soft real-time operating system. However, what I cannot explain is:
 
---
-Al
+Why do these /occasional/ delays always happen a multiple of 2 seconds
+apart? Can you explain this odd behavior?
+
+> My question would be: does the same problem occur with the full -rt
+> patchset and PREEMPT_RT? (see http://rt.wiki.kernel.org for details)
+
+I will test on a different PC, as John suggested.
+I will try the full -rt patchset in a few days.
+
++++++
+
+On a related note, there is no -hrt patch for 2.6.19:
+http://www.tglx.de/projects/hrtimers/
+Is it because the patch for 2.6.19-rc4-mm1 applies cleanly to 2.6.19?
+
+There is no -hrt patch for 2.6.20.
+Has it been completely merged?
+
+Regards.
 
