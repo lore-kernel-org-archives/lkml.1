@@ -1,48 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965171AbXAYMd4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965282AbXAYMhx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965171AbXAYMd4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jan 2007 07:33:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965273AbXAYMd4
+	id S965282AbXAYMhx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jan 2007 07:37:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965278AbXAYMhx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jan 2007 07:33:56 -0500
-Received: from moutng.kundenserver.de ([212.227.126.188]:50119 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965171AbXAYMd4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jan 2007 07:33:56 -0500
-From: Bodo Eggert <7eggert@gmx.de>
-Subject: Re: [ANNOUNCE] System Inactivity Monitor v1.0
-To: Scott Preece <sepreece@gmail.com>, Pavel Machek <pavel@ucw.cz>,
-       Alessandro Di Marco <dmr@gmx.it>, linux-kernel@vger.kernel.org,
-       vojtech@suse.cz
-Reply-To: 7eggert@gmx.de
-Date: Thu, 25 Jan 2007 13:28:36 +0100
-References: <7ELhf-4rC-9@gated-at.bofh.it> <7FKM6-7Gy-1@gated-at.bofh.it> <7G6ME-1g2-11@gated-at.bofh.it> <7GqrZ-6YY-1@gated-at.bofh.it> <7GuFj-5pj-5@gated-at.bofh.it> <7GwQL-h3-7@gated-at.bofh.it> <7GzF3-4L6-47@gated-at.bofh.it>
-User-Agent: KNode/0.7.2
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8Bit
-Message-Id: <E1HA3iW-0000kF-VU@be1.lrz>
-X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
-X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
-X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
-X-Provags-ID: kundenserver.de abuse@kundenserver.de login:9b3b2cc444a07783f194c895a09f1de9
-X-Provags-ID2: V01U2FsdGVkX19XdAwYIfW4ORDR/TVEpfAfEYBtur4hX5heop3+oY5oL8bd2efyPYk5OU1PbpsCoA7fk+Kv3sHtE3LtdsrRkeWnlLyrLGABXT90g1BWwxnYtg==
+	Thu, 25 Jan 2007 07:37:53 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:42581 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965276AbXAYMhw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jan 2007 07:37:52 -0500
+Date: Thu, 25 Jan 2007 13:36:33 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Rui Nuno Capela <rncbc@rncbc.org>
+Cc: linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.20-rc6-rt1 timekeeping_is_continuous question
+Message-ID: <20070125123633.GA8684@elte.hu>
+References: <11401.194.65.103.1.1169725008.squirrel@www.rncbc.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <11401.194.65.103.1.1169725008.squirrel@www.rncbc.org>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.8
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.8 required=5.9 tests=ALL_TRUSTED,BAYES_50 autolearn=no SpamAssassin version=3.0.3
+	-3.3 ALL_TRUSTED            Did not pass through any untrusted hosts
+	0.5 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
+	[score: 0.4896]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Scott Preece <sepreece@gmail.com> wrote:
 
-> My own hot button is making sure that the definition of what
-> constitutes user activity is managed in exactly one place, whether in
-> the kernel or not. My naive model would be to put the response at user
-> level, but to provide a single point of definition in the kernel (say,
-> /dev/useractivity or the equivalent) that the user-level daemon could
-> listen to.
+* Rui Nuno Capela <rncbc@rncbc.org> wrote:
 
-Imagine one computer serving two users. Two monitors, two keyboards ...
--- 
-Funny quotes:
-38. Last night I played a blank tape at full blast. The mime next door went
-    nuts.
-Friß, Spammer: hEOzVVU@voJ.7eggert.dyndns.org
+> I'm having the following traces on every boot; are they of any 
+> concern, or should I just ignore and carry on?
+
+please ignore them - i've removed them from the current tree.
+
+	Ingo
