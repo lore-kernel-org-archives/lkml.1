@@ -1,48 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965395AbXAYSDx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965387AbXAYSGg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965395AbXAYSDx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jan 2007 13:03:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965387AbXAYSDw
+	id S965387AbXAYSGg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jan 2007 13:06:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965383AbXAYSGg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jan 2007 13:03:52 -0500
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:52015
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965395AbXAYSDw (ORCPT
+	Thu, 25 Jan 2007 13:06:36 -0500
+Received: from tomts22-srv.bellnexxia.net ([209.226.175.184]:59387 "EHLO
+	tomts22-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S965387AbXAYSGf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jan 2007 13:03:52 -0500
-From: Rob Landley <rob@landley.net>
-To: Oleg Verych <olecom@flower.upol.cz>
-Subject: Re: sed _s_gnu_alternatives_ (Re: [rft] (g)awk substitution)
-Date: Thu, 25 Jan 2007 13:03:32 -0500
-User-Agent: KMail/1.9.1
-Cc: Andrew Morton <akpm@osdl.org>, Sam Ravnborg <sam@ravnborg.org>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <200701151624.18033.rob@landley.net> <200701242051.34153.rob@landley.net> <20070125094051.GA9725@flower.upol.cz>
-In-Reply-To: <20070125094051.GA9725@flower.upol.cz>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200701251303.33607.rob@landley.net>
+	Thu, 25 Jan 2007 13:06:35 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: linux-kernel@vger.kernel.org
+Cc: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
+       Ingo Molnar <mingo@redhat.com>, Greg Kroah-Hartman <gregkh@suse.de>,
+       Christoph Hellwig <hch@infradead.org>, ltt-dev@shafik.org,
+       systemtap@sources.redhat.com, Douglas Niehaus <niehaus@eecs.ku.edu>,
+       "Martin J. Bligh" <mbligh@mbligh.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Paul Mackerras <paulus@samba.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: [PATCH 03/09] atomic.h : i386 type safety fix
+Date: Thu, 25 Jan 2007 11:15:48 -0500
+Message-Id: <11697417552523-git-send-email-mathieu.desnoyers@polymtl.ca>
+X-Mailer: git-send-email 1.4.4.3
+In-Reply-To: <11697417541743-git-send-email-mathieu.desnoyers@polymtl.ca>
+References: <11697417541743-git-send-email-mathieu.desnoyers@polymtl.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 25 January 2007 4:40 am, Oleg Verych wrote:
-> > Your objection is a bit like saying "and don't use cat".  I'm saying don't 
-> > call cat "gcat" when you just mean plain old cat.
-> 
-> No it's not, really. I don't want to see pipes, fork()s, disk seek,
-> when task can be done without it. I know, what awk is, and i hope it
-> will have its better time.
+atomic.h : i386 type safety fix
 
-*shrug*  Making the need for "gawk" go away was my goal, and gawk->awk was the 
-minimal change.  If you want more than that, I'm not objecting, just not 
-personally interested.
+This patch removes an explicit cast to an integer type for the result returned
+by cmpxchg. It is not per se a problem on the i386 architecture, because
+sizeof(int) == sizeof(long), but whenever this code is cut'n'pasted to a
+different architecture (which happened at least for x86_64), it would simply
+accept passing an atomic64_t value as parameter to cmpxchg, xchg and
+add_unless, having 64 bits inputs casted to 32 bits.
 
-I believe "shift 5" is also SUSv3. :)
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 
-Rob
--- 
-"Perfection is reached, not when there is no longer anything to add, but
-when there is no longer anything to take away." - Antoine de Saint-Exupery
+--- a/include/asm-i386/atomic.h
++++ b/include/asm-i386/atomic.h
+@@ -207,8 +207,9 @@ static __inline__ int atomic_sub_return(int i, atomic_t *v)
+ 	return atomic_add_return(-i,v);
+ }
+ 
+-#define atomic_cmpxchg(v, old, new) ((int)cmpxchg(&((v)->counter), old, new))
+-#define atomic_xchg(v, new) (xchg(&((v)->counter), new))
++#define atomic_cmpxchg(v, old, new) \
++	((__typeof__((v)->counter))cmpxchg(&((v)->counter), (old), (new)))
++#define atomic_xchg(v, new) (xchg(&((v)->counter), (new)))
+ 
+ /**
+  * atomic_add_unless - add unless the number is a given value
+@@ -221,7 +222,7 @@ static __inline__ int atomic_sub_return(int i, atomic_t *v)
+  */
+ #define atomic_add_unless(v, a, u)				\
+ ({								\
+-	int c, old;						\
++	__typeof__((v)->counter) c, old;			\
+ 	c = atomic_read(v);					\
+ 	for (;;) {						\
+ 		if (unlikely(c == (u)))				\
