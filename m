@@ -1,50 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030519AbXAYT2W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030522AbXAYTgx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030519AbXAYT2W (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jan 2007 14:28:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030520AbXAYT2W
+	id S1030522AbXAYTgx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jan 2007 14:36:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030525AbXAYTgx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jan 2007 14:28:22 -0500
-Received: from iriserv.iradimed.com ([69.44.168.233]:17315 "EHLO iradimed.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1030519AbXAYT2W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jan 2007 14:28:22 -0500
-Message-ID: <45B904CF.1070102@cfl.rr.com>
-Date: Thu, 25 Jan 2007 14:28:15 -0500
-From: Phillip Susi <psusi@cfl.rr.com>
-User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
+	Thu, 25 Jan 2007 14:36:53 -0500
+Received: from mtaout02-winn.ispmail.ntl.com ([81.103.221.48]:45048 "EHLO
+	mtaout02-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1030522AbXAYTgw convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jan 2007 14:36:52 -0500
+Date: Thu, 25 Jan 2007 19:36:44 +0000
+From: Ken Moffat <zarniwhoop@ntlworld.com>
+To: Chris Rankin <rankincj@yahoo.com>
+Cc: Alan <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.18-stable release plans?
+Message-ID: <20070125193644.GA12624@deepthought>
+References: <20070125010020.GB26654@deepthought> <486377.64357.qm@web52903.mail.yahoo.com>
 MIME-Version: 1.0
-To: Denis Vlasenko <vda.linux@googlemail.com>
-CC: Michael Tokarev <mjt@tls.msk.ru>, Linus Torvalds <torvalds@osdl.org>,
-       Viktor <vvp01@inbox.ru>, Aubrey <aubreylee@gmail.com>,
-       Hua Zhong <hzhong@gmail.com>, Hugh Dickins <hugh@veritas.com>,
-       linux-kernel@vger.kernel.org, hch@infradead.org, kenneth.w.chen@in
-Subject: Re: O_DIRECT question
-References: <6d6a94c50701101857v2af1e097xde69e592135e54ae@mail.gmail.com> <200701242215.47777.vda.linux@googlemail.com> <45B8D041.8050507@cfl.rr.com> <200701251838.30796.vda.linux@googlemail.com>
-In-Reply-To: <200701251838.30796.vda.linux@googlemail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 25 Jan 2007 19:28:34.0975 (UTC) FILETIME=[016222F0:01C740B7]
-X-TM-AS-Product-Ver: SMEX-7.2.0.1122-3.6.1039-14956.003
-X-TM-AS-Result: No--5.769700-5.000000-31
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <486377.64357.qm@web52903.mail.yahoo.com>
+User-Agent: Mutt/1.5.12-2006-07-14
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Denis Vlasenko wrote:
-> If you opened a file and are doing only O_DIRECT writes, you
-> *always* have your written data flushed, by each write().
-> How is it different from writes done using
-> "normal" write() + fdatasync() pairs?
+On Thu, Jan 25, 2007 at 09:16:04AM +0000, Chris Rankin wrote:
+> 
+> But anyway - can someone please tell me what "Eeek! page_mapcount(page) went negative! (-1)" is
+> *really* saying/implying? Because I am currently translating this as "I WANT TO EAT YOUR
+> FILESYSTEMS".
+> 
+ I can't, but Dave Jones had a similar problem earlier this month,
+archived at http://uwsg.iu.edu/hypermail/linux/kernel/0701.0/1822.html
+which I think is a followup from
+http://www.mail-archive.com/linux-kernel@vger.kernel.org/msg105370.html
+ - and seems to be a possible hardware failure (bulging capacitors)
+becoming apparent under load.
 
-Because you can do writes async, but not fdatasync ( unless there is an 
-async version I don't know about ).
-
-> Ahhh shit, are you saying that fdatasync will wait until writes
-> *by all other processes* to thios file will hit the disk?
-> Is that thue?
-
-
-I think all processes yes, but certainly all writes to this file by this 
-process.  That means you have to sync for every write, which means you 
-block.  Blocking stalls the pipeline.
-
+Ken
+-- 
+das eine Mal als Tragödie, das andere Mal als Farce
