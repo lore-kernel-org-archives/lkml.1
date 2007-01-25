@@ -1,69 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030209AbXAYPks@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030205AbXAYPnQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030209AbXAYPks (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jan 2007 10:40:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030215AbXAYPks
+	id S1030205AbXAYPnQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jan 2007 10:43:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030215AbXAYPnQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jan 2007 10:40:48 -0500
-Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:41097 "EHLO
-	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030209AbXAYPkr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jan 2007 10:40:47 -0500
-Message-ID: <45B8CF7E.2040908@drzeus.cx>
-Date: Thu, 25 Jan 2007 16:40:46 +0100
-From: Pierre Ossman <drzeus@drzeus.cx>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061223)
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=_hera.drzeus.cx-15853-1169739646-0001-2"
-To: "Christopher \"Monty\" Montgomery" <xiphmont@gmail.com>
-CC: Greg KH <greg@kroah.com>, perex@suse.cz, mclasen@redhat.com,
-       jrb@redhat.com, Lennart Poettering <lennart@poettering.net>,
-       linux-kernel@vger.kernel.org, alsa-devel@alsa-project.org,
-       fedora-desktop-list@redhat.com
-Subject: Re: [PATCH] alsa: correct nonsensical sysfs device symlinks
-References: <806dafc20701241750t53b86babn36831cadc7dfa76c@mail.gmail.com>	 <20070125042616.GA21813@kroah.com>	 <806dafc20701250611u9935049ja8f88deb2aac4d40@mail.gmail.com>	 <45B8C9A3.6060107@drzeus.cx> <806dafc20701250736yc5c3048u14ec98e9b6b92574@mail.gmail.com>
-In-Reply-To: <806dafc20701250736yc5c3048u14ec98e9b6b92574@mail.gmail.com>
-X-Enigmail-Version: 0.94.0.0
+	Thu, 25 Jan 2007 10:43:16 -0500
+Received: from mail.gmx.net ([213.165.64.20]:51293 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1030205AbXAYPnP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jan 2007 10:43:15 -0500
+X-Authenticated: #14842415
+From: Alessandro Di Marco <dmr@gmx.it>
+To: "Scott Preece" <sepreece@gmail.com>
+Cc: 7eggert@gmx.de, "Pavel Machek" <pavel@ucw.cz>,
+       linux-kernel@vger.kernel.org, vojtech@suse.cz
+Subject: Re: [ANNOUNCE] System Inactivity Monitor v1.0
+References: <7ELhf-4rC-9@gated-at.bofh.it> <7FKM6-7Gy-1@gated-at.bofh.it>
+	<7G6ME-1g2-11@gated-at.bofh.it> <7GqrZ-6YY-1@gated-at.bofh.it>
+	<7GuFj-5pj-5@gated-at.bofh.it> <7GwQL-h3-7@gated-at.bofh.it>
+	<7GzF3-4L6-47@gated-at.bofh.it> <E1HA3iW-0000kF-VU@be1.lrz>
+	<7b69d1470701250718l58dfbc35rd0b24e5935e32331@mail.gmail.com>
+Date: Thu, 25 Jan 2007 16:43:10 +0100
+In-Reply-To: <7b69d1470701250718l58dfbc35rd0b24e5935e32331@mail.gmail.com> (Scott Preece's message of "Thu\, 25 Jan 2007 09\:18\:43 -0600")
+Message-ID: <878xfrglip.fsf@gmx.it>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.92 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+"Scott Preece" <sepreece@gmail.com> writes:
 
---=_hera.drzeus.cx-15853-1169739646-0001-2
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+   On 1/25/07, Bodo Eggert <7eggert@gmx.de> wrote:
+   > Imagine one computer serving two users. Two monitors, two keyboards ...
+   ---
 
-Christopher "Monty" Montgomery wrote:
->=20
-> Interesting to know.  Looking more closely, it looks like machines
-> here are split between the messed up output I forwarded previously and
-> the output that is expected.  All of my personal boxes are messed up.
->=20
+   Good point! Of late I've been working on single-user systems, so it
+   was not at the front of my brain, despite years of building and using
+   multi-user systems.
 
-There is some option about deprecated sysfs stuff. Perhaps this is the
-cause of your twisted tree. It's off here:
+   It's a point that multi-user systems have struggled with forever (when
+   somebody inserts a CR in the drive mounted in the system box, which user do
+   you pop up a media player for?).
 
-# CONFIG_SYSFS_DEPRECATED is not set
+sed s/user X's screensaver/suspend to disk/g <<EOF
 
-Rgds
-Pierre
+   I tend to think it's not a kernel-vs-user-space issue, though. To
+   solve it you need, somewhere, a notion of a "user session" and you
+   need some way to separate system-level issues (like low-battery) from
+   user-level issues (like activiating user X's screensaver).
 
+EOF
 
+Are you sure?
 
---=_hera.drzeus.cx-15853-1169739646-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+best,
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-Comment: Using GnuPG with Fedora - http://enigmail.mozdev.org
-
-iD8DBQFFuM9+7b8eESbyJLgRAggKAJ0X1bf23DqlfgKGpRK84BxyRMiaygCgiolP
-jf/KM4MgkJg3UsS3/adrhfI=
-=cMWM
------END PGP SIGNATURE-----
-
---=_hera.drzeus.cx-15853-1169739646-0001-2--
+-- 
+Experience teaches slowly and at the cost of mistakes. - James A. Froude
