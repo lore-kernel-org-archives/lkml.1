@@ -1,61 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030205AbXAYPnQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030225AbXAYPoK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030205AbXAYPnQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jan 2007 10:43:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030215AbXAYPnQ
+	id S1030225AbXAYPoK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jan 2007 10:44:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030215AbXAYPoJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jan 2007 10:43:16 -0500
-Received: from mail.gmx.net ([213.165.64.20]:51293 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1030205AbXAYPnP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jan 2007 10:43:15 -0500
-X-Authenticated: #14842415
-From: Alessandro Di Marco <dmr@gmx.it>
-To: "Scott Preece" <sepreece@gmail.com>
-Cc: 7eggert@gmx.de, "Pavel Machek" <pavel@ucw.cz>,
-       linux-kernel@vger.kernel.org, vojtech@suse.cz
-Subject: Re: [ANNOUNCE] System Inactivity Monitor v1.0
-References: <7ELhf-4rC-9@gated-at.bofh.it> <7FKM6-7Gy-1@gated-at.bofh.it>
-	<7G6ME-1g2-11@gated-at.bofh.it> <7GqrZ-6YY-1@gated-at.bofh.it>
-	<7GuFj-5pj-5@gated-at.bofh.it> <7GwQL-h3-7@gated-at.bofh.it>
-	<7GzF3-4L6-47@gated-at.bofh.it> <E1HA3iW-0000kF-VU@be1.lrz>
-	<7b69d1470701250718l58dfbc35rd0b24e5935e32331@mail.gmail.com>
-Date: Thu, 25 Jan 2007 16:43:10 +0100
-In-Reply-To: <7b69d1470701250718l58dfbc35rd0b24e5935e32331@mail.gmail.com> (Scott Preece's message of "Thu\, 25 Jan 2007 09\:18\:43 -0600")
-Message-ID: <878xfrglip.fsf@gmx.it>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.92 (gnu/linux)
+	Thu, 25 Jan 2007 10:44:09 -0500
+Received: from iriserv.iradimed.com ([69.44.168.233]:15005 "EHLO iradimed.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1030225AbXAYPoI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jan 2007 10:44:08 -0500
+Message-ID: <45B8D041.8050507@cfl.rr.com>
+Date: Thu, 25 Jan 2007 10:44:01 -0500
+From: Phillip Susi <psusi@cfl.rr.com>
+User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Y-GMX-Trusted: 0
+To: Denis Vlasenko <vda.linux@googlemail.com>
+CC: Michael Tokarev <mjt@tls.msk.ru>, Linus Torvalds <torvalds@osdl.org>,
+       Viktor <vvp01@inbox.ru>, Aubrey <aubreylee@gmail.com>,
+       Hua Zhong <hzhong@gmail.com>, Hugh Dickins <hugh@veritas.com>,
+       linux-kernel@vger.kernel.org, hch@infradead.org, kenneth.w.chen@in
+Subject: Re: O_DIRECT question
+References: <6d6a94c50701101857v2af1e097xde69e592135e54ae@mail.gmail.com> <200701212102.43028.vda.linux@googlemail.com> <45B4E3A3.40706@cfl.rr.com> <200701242215.47777.vda.linux@googlemail.com>
+In-Reply-To: <200701242215.47777.vda.linux@googlemail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 25 Jan 2007 15:44:17.0053 (UTC) FILETIME=[ABD634D0:01C74097]
+X-TM-AS-Product-Ver: SMEX-7.2.0.1122-3.6.1039-14956.003
+X-TM-AS-Result: No--10.534100-5.000000-31
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Scott Preece" <sepreece@gmail.com> writes:
+Denis Vlasenko wrote:
+> I will still disagree on this point (on point "use O_DIRECT, it's faster").
+> There is no reason why O_DIRECT should be faster than "normal" read/write
+> to large, aligned buffer. If O_DIRECT is faster on today's kernel,
+> then Linux' read()/write() can be optimized more.
 
-   On 1/25/07, Bodo Eggert <7eggert@gmx.de> wrote:
-   > Imagine one computer serving two users. Two monitors, two keyboards ...
-   ---
+Ahh but there IS a reason for it to be faster: the application knows 
+what data it will require, so it should tell the kernel rather than ask 
+it to guess.  Even if you had the kernel playing vmsplice games to get 
+avoid the copy to user space ( which still has a fair amount of overhead 
+), then you still have the problem of the kernel having to guess what 
+data the application will require next, and try to fetch it early.  Then 
+when the application requests the data, if it is not already in memory, 
+the application blocks until it is, and blocking stalls the pipeline.
 
-   Good point! Of late I've been working on single-user systems, so it
-   was not at the front of my brain, despite years of building and using
-   multi-user systems.
+> (I hoped that they can be made even *faster* than O_DIRECT, but as I said,
+> you convinced me with your "error reporting" argument that reads must still
+> block until entire buffer is read. Writes can avoid that - apps can do
+> fdatasync/whatever to make sync writes & error checks if they want).
 
-   It's a point that multi-user systems have struggled with forever (when
-   somebody inserts a CR in the drive mounted in the system box, which user do
-   you pop up a media player for?).
 
-sed s/user X's screensaver/suspend to disk/g <<EOF
+fdatasync() is not acceptable either because it flushes the entire file. 
+  This does not allow the application to control the ordering of various 
+writes unless it limits itself to a single write/fdatasync pair at a 
+time.  Further, fdatasync again blocks the application.
 
-   I tend to think it's not a kernel-vs-user-space issue, though. To
-   solve it you need, somewhere, a notion of a "user session" and you
-   need some way to separate system-level issues (like low-battery) from
-   user-level issues (like activiating user X's screensaver).
+With aio, the application can keep several read/writes going in 
+parallel, thus keeping the pipeline full.  Even if the io were not 
+O_DIRECT, and the kernel played vmsplice games to avoid the copy, it 
+would still have more overhead, complexity and I think, very little gain 
+in most cases.
 
-EOF
 
-Are you sure?
-
-best,
-
--- 
-Experience teaches slowly and at the cost of mistakes. - James A. Froude
