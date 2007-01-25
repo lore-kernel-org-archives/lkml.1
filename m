@@ -1,446 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965357AbXAYOLe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965364AbXAYOXe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965357AbXAYOLe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jan 2007 09:11:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965353AbXAYOLe
+	id S965364AbXAYOXe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jan 2007 09:23:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965140AbXAYOXe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jan 2007 09:11:34 -0500
-Received: from nz-out-0506.google.com ([64.233.162.225]:53925 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965280AbXAYOLd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jan 2007 09:11:33 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=if9TUhW1XuVRT6KSIdtC0dC/yTalvZDZRBEl3amg41hEUBR/nDczNqSQUI/E6BGLToNqqtG6PoFUMEQTPdZs4QqRpvV6O3EHalzXulxzSg6ffSq4cuiJK36gKYuj26RxKdSJ8RlWE5hhsDIZZqW7uCoxpI4ss5NpZoRarFUPuKc=
-Message-ID: <806dafc20701250611u9935049ja8f88deb2aac4d40@mail.gmail.com>
-Date: Thu, 25 Jan 2007 09:11:32 -0500
-From: "Christopher \"Monty\" Montgomery" <xiphmont@gmail.com>
-To: "Greg KH" <greg@kroah.com>
-Subject: Re: [PATCH] alsa: correct nonsensical sysfs device symlinks
-Cc: perex@suse.cz, mclasen@redhat.com, jrb@redhat.com,
-       "Lennart Poettering" <lennart@poettering.net>,
-       "Pierre Ossman" <drzeus@drzeus.cx>, linux-kernel@vger.kernel.org,
-       alsa-devel@alsa-project.org, fedora-desktop-list@redhat.com
-In-Reply-To: <20070125042616.GA21813@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <806dafc20701241750t53b86babn36831cadc7dfa76c@mail.gmail.com>
-	 <20070125042616.GA21813@kroah.com>
+	Thu, 25 Jan 2007 09:23:34 -0500
+Received: from mga03.intel.com ([143.182.124.21]:32969 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965364AbXAYOXd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jan 2007 09:23:33 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: i="4.13,238,1167638400"; 
+   d="scan'208"; a="172877918:sNHT19834164"
+User-Agent: Microsoft-Entourage/11.3.3.061214
+Date: Thu, 25 Jan 2007 06:22:54 -0800
+Subject: Re: [Ksummit-2006-discuss] 2007 Linux Kernel Summit
+From: Dirk Hohndel <dirk.hohndel@intel.com>
+To: David Miller <davem@davemloft.net>, <alan@redhat.com>
+CC: <ksummit-2006-discuss@thunk.org>, <linux-kernel@vger.kernel.org>
+Message-ID: <C1DDFD3E.8658%dirk.hohndel@intel.com>
+Thread-Topic: [Ksummit-2006-discuss] 2007 Linux Kernel Summit
+Thread-Index: AcdARVwZqtO4/5ZnRjuLv0l4qWUn4QARvE3U
+In-Reply-To: <20070123.095756.30177490.davem@davemloft.net>
+Mime-version: 1.0
+Content-type: text/plain;
+	charset="US-ASCII"
+Content-transfer-encoding: 7bit
+X-OriginalArrivalTime: 25 Jan 2007 14:23:32.0617 (UTC) FILETIME=[6453EF90:01C7408C]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 1/24/07, Greg KH <greg@kroah.com> wrote:
-> I don't understand, where does the symlink currently point to?  It looks
-> correct to me on my machines:
 
-My machines and the fedora rawhide machines using the 2.6.20-rcX
-releases look nothing like what you pasted.  If they did, hald would
-be working...  (I'll note that bugs have also been logged against
-Pulse and HAL by users having trouble, so it's not just us.)
+On 1/23/07 9:57 AM, "David Miller" <davem@davemloft.net> wrote:
+>> Definitely disagree with that. I'd like to see the conference somewhere
+>> else different this time - perhaps Czech Republic, or somewhere else more
+>> easterly and Linux active (or even Finland...)
+> 
+> This is my position as well.
+> 
+> If the kernel summit is important enough, all the bean counters will
+> find a way to get their constituents to the event, it's as simple as
+> that.
 
-What you said you have:
+Actually, it isn't.
 
-> $ tree /sys/class/sound/
-> /sys/class/sound/
-> |-- card0 -> ../../devices/pci0000:00/0000:00:1b.0/card0
-> |-- controlC0 -> ../../devices/pci0000:00/0000:00:1b.0/card0/controlC0
-> |-- pcmC0D0c -> ../../devices/pci0000:00/0000:00:1b.0/card0/pcmC0D0c
-> |-- pcmC0D0p -> ../../devices/pci0000:00/0000:00:1b.0/card0/pcmC0D0p
-> |-- pcmC0D2c -> ../../devices/pci0000:00/0000:00:1b.0/card0/pcmC0D2c
-> |-- pcmC0D6c -> ../../devices/pci0000:00/0000:00:1b.0/card0/pcmC0D6c
-> |-- pcmC0D6p -> ../../devices/pci0000:00/0000:00:1b.0/card0/pcmC0D6p
-> `-- timer -> ../../devices/virtual/sound/timer
+Within the Northern Hemisphere and with locations that are reasonably
+cheaply to reach from most of Europe and North America, yes, at the end of
+the day people will be able to come.
 
-What we actually have here:
-/sys/class/sound/
-|-- adsp
-|   |-- dev
-|   |-- device -> ../../../class/sound/card0
-|   |-- power
-|   |   `-- wakeup
-|   |-- subsystem -> ../../../class/sound
-|   `-- uevent
-|-- audio
-|   |-- dev
-|   |-- device -> ../../../class/sound/card0
-|   |-- power
-|   |   `-- wakeup
-|   |-- subsystem -> ../../../class/sound
-|   `-- uevent
-|-- audio1
-|   |-- dev
-|   |-- device -> ../../../class/sound/card1
-|   |-- power
-|   |   `-- wakeup
-|   |-- subsystem -> ../../../class/sound
-|   `-- uevent
-|-- card0
-|   |-- 0-0:AD1981B
-|   |   |-- bus -> ../../../../bus/ac97
-|   |   |-- power
-|   |   |   `-- wakeup
-|   |   |-- subsystem -> ../../../../bus/ac97
-|   |   `-- uevent
-|   |-- device -> ../../../devices/pci0000:00/0000:00:1f.5
-|   |-- power
-|   |   `-- wakeup
-|   |-- sound:adsp -> ../../../class/sound/adsp
-|   |-- sound:audio -> ../../../class/sound/audio
-|   |-- sound:controlC0 -> ../../../class/sound/controlC0
-|   |-- sound:dsp -> ../../../class/sound/dsp
-|   |-- sound:mixer -> ../../../class/sound/mixer
-|   |-- sound:pcmC0D0c -> ../../../class/sound/pcmC0D0c
-|   |-- sound:pcmC0D0p -> ../../../class/sound/pcmC0D0p
-|   |-- sound:pcmC0D1c -> ../../../class/sound/pcmC0D1c
-|   |-- sound:pcmC0D2c -> ../../../class/sound/pcmC0D2c
-|   |-- sound:pcmC0D3c -> ../../../class/sound/pcmC0D3c
-|   |-- sound:pcmC0D4p -> ../../../class/sound/pcmC0D4p
-|   |-- subsystem -> ../../../class/sound
-|   `-- uevent
-|-- card1
-|   |-- 1-1:unknown codec
-|   |   |-- bus -> ../../../../bus/ac97
-|   |   |-- power
-|   |   |   `-- wakeup
-|   |   |-- subsystem -> ../../../../bus/ac97
-|   |   `-- uevent
-|   |-- device -> ../../../devices/pci0000:00/0000:00:1f.6
-|   |-- power
-|   |   `-- wakeup
-|   |-- sound:audio1 -> ../../../class/sound/audio1
-|   |-- sound:controlC1 -> ../../../class/sound/controlC1
-|   |-- sound:dsp1 -> ../../../class/sound/dsp1
-|   |-- sound:mixer1 -> ../../../class/sound/mixer1
-|   |-- sound:pcmC1D0c -> ../../../class/sound/pcmC1D0c
-|   |-- sound:pcmC1D0p -> ../../../class/sound/pcmC1D0p
-|   |-- subsystem -> ../../../class/sound
-|   `-- uevent
-|-- controlC0
-|   |-- dev
-|   |-- device -> ../../../class/sound/card0
-|   |-- power
-|   |   `-- wakeup
-|   |-- subsystem -> ../../../class/sound
-|   `-- uevent
-|-- controlC1
-|   |-- dev
-|   |-- device -> ../../../class/sound/card1
-|   |-- power
-|   |   `-- wakeup
-|   |-- subsystem -> ../../../class/sound
-|   `-- uevent
-|-- dsp
-|   |-- dev
-|   |-- device -> ../../../class/sound/card0
-|   |-- power
-|   |   `-- wakeup
-|   |-- subsystem -> ../../../class/sound
-|   `-- uevent
-|-- dsp1
-|   |-- dev
-|   |-- device -> ../../../class/sound/card1
-|   |-- power
-|   |   `-- wakeup
-|   |-- subsystem -> ../../../class/sound
-|   `-- uevent
-|-- mixer
-|   |-- dev
-|   |-- device -> ../../../class/sound/card0
-|   |-- power
-|   |   `-- wakeup
-|   |-- subsystem -> ../../../class/sound
-|   `-- uevent
-|-- mixer1
-|   |-- dev
-|   |-- device -> ../../../class/sound/card1
-|   |-- power
-|   |   `-- wakeup
-|   |-- subsystem -> ../../../class/sound
-|   `-- uevent
-|-- pcmC0D0c
-|   |-- dev
-|   |-- device -> ../../../class/sound/card0
-|   |-- pcm_class
-|   |-- power
-|   |   `-- wakeup
-|   |-- subsystem -> ../../../class/sound
-|   `-- uevent
-|-- pcmC0D0p
-|   |-- dev
-|   |-- device -> ../../../class/sound/card0
-|   |-- pcm_class
-|   |-- power
-|   |   `-- wakeup
-|   |-- subsystem -> ../../../class/sound
-|   `-- uevent
-|-- pcmC0D1c
-|   |-- dev
-|   |-- device -> ../../../class/sound/card0
-|   |-- pcm_class
-|   |-- power
-|   |   `-- wakeup
-|   |-- subsystem -> ../../../class/sound
-|   `-- uevent
-|-- pcmC0D2c
-|   |-- dev
-|   |-- device -> ../../../class/sound/card0
-|   |-- pcm_class
-|   |-- power
-|   |   `-- wakeup
-|   |-- subsystem -> ../../../class/sound
-|   `-- uevent
-|-- pcmC0D3c
-|   |-- dev
-|   |-- device -> ../../../class/sound/card0
-|   |-- pcm_class
-|   |-- power
-|   |   `-- wakeup
-|   |-- subsystem -> ../../../class/sound
-|   `-- uevent
-|-- pcmC0D4p
-|   |-- dev
-|   |-- device -> ../../../class/sound/card0
-|   |-- pcm_class
-|   |-- power
-|   |   `-- wakeup
-|   |-- subsystem -> ../../../class/sound
-|   `-- uevent
-|-- pcmC1D0c
-|   |-- dev
-|   |-- device -> ../../../class/sound/card1
-|   |-- pcm_class
-|   |-- power
-|   |   `-- wakeup
-|   |-- subsystem -> ../../../class/sound
-|   `-- uevent
-|-- pcmC1D0p
-|   |-- dev
-|   |-- device -> ../../../class/sound/card1
-|   |-- pcm_class
-|   |-- power
-|   |   `-- wakeup
-|   |-- subsystem -> ../../../class/sound
-|   `-- uevent
-|-- seq
-|   |-- dev
-|   |-- power
-|   |   `-- wakeup
-|   |-- subsystem -> ../../../class/sound
-|   `-- uevent
-|-- sequencer
-|   |-- dev
-|   |-- power
-|   |   `-- wakeup
-|   |-- subsystem -> ../../../class/sound
-|   `-- uevent
-|-- sequencer2
-|   |-- dev
-|   |-- power
-|   |   `-- wakeup
-|   |-- subsystem -> ../../../class/sound
-|   `-- uevent
-`-- timer
-    |-- dev
-    |-- power
-    |   `-- wakeup
-    |-- subsystem -> ../../../class/sound
-    `-- uevent
+We seem to have two different types of motivation for proposed locations in
+this discussion. Some of us are looking for a convenient location. Some of
+us are proposing locations as a political statement. I believe the latter
+isn't a good idea. The kernel summit is by invitation only. It therefore is
+a very bad forum to bring Linux to a place.
 
-In other words... no resemblance whatsoever, so something is obviously
-very wrong.  That is a vanilla 2.6.20-rc5 build on a fedora rawhide
-machine, the rawhide-tweaked kernel and 2.6.19-rc6-mm2 produces the
-same results.
+Add to that that locations like Brazil or India will add thousands of
+dollars of cost per person and add much more problems with jet lag for many
+people I think they'll be very hard to justify.
 
-With my patch, at least the 'old' entries for the pcm devices are as
-before (The patch doesn't 'correct' anything for the device types
-other than pcm and control, adsp and audio are still messed):
+> For the first time in many years I'm strongly considering actually
+> going to the kernel summit, however if it goes back to Ottawa I
+> definitely will stop going again.
 
-/sys/class/sound/
-|-- adsp
-|   |-- dev
-|   |-- device -> ../../../class/sound/card0
-|   |-- power
-|   |   `-- wakeup
-|   |-- subsystem -> ../../../class/sound
-|   `-- uevent
-|-- audio
-|   |-- dev
-|   |-- device -> ../../../class/sound/card0
-|   |-- power
-|   |   `-- wakeup
-|   |-- subsystem -> ../../../class/sound
-|   `-- uevent
-|-- audio1
-|   |-- dev
-|   |-- device -> ../../../class/sound/card1
-|   |-- power
-|   |   `-- wakeup
-|   |-- subsystem -> ../../../class/sound
-|   `-- uevent
-|-- card0
-|   |-- 0-0:AD1981B
-|   |   |-- bus -> ../../../../bus/ac97
-|   |   |-- power
-|   |   |   `-- wakeup
-|   |   |-- subsystem -> ../../../../bus/ac97
-|   |   `-- uevent
-|   |-- device -> ../../../devices/pci0000:00/0000:00:1f.5
-|   |-- power
-|   |   `-- wakeup
-|   |-- sound:adsp -> ../../../class/sound/adsp
-|   |-- sound:audio -> ../../../class/sound/audio
-|   |-- sound:dsp -> ../../../class/sound/dsp
-|   |-- sound:mixer -> ../../../class/sound/mixer
-|   |-- subsystem -> ../../../class/sound
-|   `-- uevent
-|-- card1
-|   |-- 1-1:unknown codec
-|   |   |-- bus -> ../../../../bus/ac97
-|   |   |-- power
-|   |   |   `-- wakeup
-|   |   |-- subsystem -> ../../../../bus/ac97
-|   |   `-- uevent
-|   |-- device -> ../../../devices/pci0000:00/0000:00:1f.6
-|   |-- power
-|   |   `-- wakeup
-|   |-- sound:audio1 -> ../../../class/sound/audio1
-|   |-- sound:dsp1 -> ../../../class/sound/dsp1
-|   |-- sound:mixer1 -> ../../../class/sound/mixer1
-|   |-- subsystem -> ../../../class/sound
-|   `-- uevent
-|-- controlC0
-|   |-- dev
-|   |-- device -> ../../../devices/pci0000:00/0000:00:1f.5
-|   |-- power
-|   |   `-- wakeup
-|   |-- subsystem -> ../../../class/sound
-|   `-- uevent
-|-- controlC1
-|   |-- dev
-|   |-- device -> ../../../devices/pci0000:00/0000:00:1f.6
-|   |-- power
-|   |   `-- wakeup
-|   |-- subsystem -> ../../../class/sound
-|   `-- uevent
-|-- dsp
-|   |-- dev
-|   |-- device -> ../../../class/sound/card0
-|   |-- power
-|   |   `-- wakeup
-|   |-- subsystem -> ../../../class/sound
-|   `-- uevent
-|-- dsp1
-|   |-- dev
-|   |-- device -> ../../../class/sound/card1
-|   |-- power
-|   |   `-- wakeup
-|   |-- subsystem -> ../../../class/sound
-|   `-- uevent
-|-- mixer
-|   |-- dev
-|   |-- device -> ../../../class/sound/card0
-|   |-- power
-|   |   `-- wakeup
-|   |-- subsystem -> ../../../class/sound
-|   `-- uevent
-|-- mixer1
-|   |-- dev
-|   |-- device -> ../../../class/sound/card1
-|   |-- power
-|   |   `-- wakeup
-|   |-- subsystem -> ../../../class/sound
-|   `-- uevent
-|-- pcmC0D0c
-|   |-- dev
-|   |-- device -> ../../../devices/pci0000:00/0000:00:1f.5
-|   |-- pcm_class
-|   |-- power
-|   |   `-- wakeup
-|   |-- subsystem -> ../../../class/sound
-|   `-- uevent
-|-- pcmC0D0p
-|   |-- dev
-|   |-- device -> ../../../devices/pci0000:00/0000:00:1f.5
-|   |-- pcm_class
-|   |-- power
-|   |   `-- wakeup
-|   |-- subsystem -> ../../../class/sound
-|   `-- uevent
-|-- pcmC0D1c
-|   |-- dev
-|   |-- device -> ../../../devices/pci0000:00/0000:00:1f.5
-|   |-- pcm_class
-|   |-- power
-|   |   `-- wakeup
-|   |-- subsystem -> ../../../class/sound
-|   `-- uevent
-|-- pcmC0D2c
-|   |-- dev
-|   |-- device -> ../../../devices/pci0000:00/0000:00:1f.5
-|   |-- pcm_class
-|   |-- power
-|   |   `-- wakeup
-|   |-- subsystem -> ../../../class/sound
-|   `-- uevent
-|-- pcmC0D3c
-|   |-- dev
-|   |-- device -> ../../../devices/pci0000:00/0000:00:1f.5
-|   |-- pcm_class
-|   |-- power
-|   |   `-- wakeup
-|   |-- subsystem -> ../../../class/sound
-|   `-- uevent
-|-- pcmC0D4p
-|   |-- dev
-|   |-- device -> ../../../devices/pci0000:00/0000:00:1f.5
-|   |-- pcm_class
-|   |-- power
-|   |   `-- wakeup
-|   |-- subsystem -> ../../../class/sound
-|   `-- uevent
-|-- pcmC1D0c
-|   |-- dev
-|   |-- device -> ../../../devices/pci0000:00/0000:00:1f.6
-|   |-- pcm_class
-|   |-- power
-|   |   `-- wakeup
-|   |-- subsystem -> ../../../class/sound
-|   `-- uevent
-|-- pcmC1D0p
-|   |-- dev
-|   |-- device -> ../../../devices/pci0000:00/0000:00:1f.6
-|   |-- pcm_class
-|   |-- power
-|   |   `-- wakeup
-|   |-- subsystem -> ../../../class/sound
-|   `-- uevent
-|-- seq
-|   |-- dev
-|   |-- power
-|   |   `-- wakeup
-|   |-- subsystem -> ../../../class/sound
-|   `-- uevent
-|-- sequencer
-|   |-- dev
-|   |-- power
-|   |   `-- wakeup
-|   |-- subsystem -> ../../../class/sound
-|   `-- uevent
-|-- sequencer2
-|   |-- dev
-|   |-- power
-|   |   `-- wakeup
-|   |-- subsystem -> ../../../class/sound
-|   `-- uevent
-`-- timer
-    |-- dev
-    |-- power
-    |   `-- wakeup
-    |-- subsystem -> ../../../class/sound
-    `-- uevent
+Is that specific to Ottawa, or is this any North American location? I
+strongly believe that it's a good idea to alternate between locations in
+North America and Europe. That's were most of the attendees live. Just as it
+was a bad idea to keep it in North America all the time, it would be a bad
+idea to keep it in Europe.
 
-Monty
+/D
