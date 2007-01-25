@@ -1,71 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965290AbXAYNHx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965301AbXAYNLT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965290AbXAYNHx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jan 2007 08:07:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965298AbXAYNHx
+	id S965301AbXAYNLT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jan 2007 08:11:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965299AbXAYNLT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jan 2007 08:07:53 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:36631 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S965290AbXAYNHx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jan 2007 08:07:53 -0500
-Date: Thu, 25 Jan 2007 14:07:29 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@osdl.org>, Len Brown <lenb@kernel.org>
-Subject: Re: [patch] suspend debugging: simulate suspend-to-RAM
-Message-ID: <20070125130729.GA23620@elf.ucw.cz>
-References: <20070125113350.GA31068@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070125113350.GA31068@elte.hu>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+	Thu, 25 Jan 2007 08:11:19 -0500
+Received: from burp.tkv.asdf.org ([212.16.99.49]:46119 "EHLO moth.iki.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965152AbXAYNLS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jan 2007 08:11:18 -0500
+Date: Thu, 25 Jan 2007 15:11:15 +0200
+Message-Id: <200701251311.l0PDBFD0025319@moth.iki.fi>
+From: Markku Savela <msa@moth.iki.fi>
+To: greg@kroah.com
+CC: linux-kernel@vger.kernel.org
+In-reply-to: <20070125082544.GA16300@kroah.com> (message from Greg KH on Thu,
+	25 Jan 2007 00:25:44 -0800)
+Subject: Re: How to get /dev entry created automaticly for dynamic major number?
+References: <200701250735.l0P7Z7aN018630@moth.iki.fi> <20070125082544.GA16300@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+Solution found!
 
-> Subject: [patch] suspend debugging: simulate suspend-to-RAM
-> From: Ingo Molnar <mingo@elte.hu>
+> On Thu, Jan 25, 2007 at 09:35:07AM +0200, Markku Savela wrote:
+> > If want to write a loadable module which "implements" a char device
+> > ("virtual", no real device present). How do I get the correct
+> > "/dev/foo" to appear automaticly?
+
+> From: Greg KH <greg@kroah.com>
+
+> If you look in the book, Linux Device Drivers, third edition, free
+> online, there's a section on what is needed for udev to work properly.
 > 
-> most resume bugs are due to the kernel hanging or crashing while trying 
-> to resume a specific device. It is extremely hard to debug such hangs 
-> because often when the hang happens there's no console available
-> yet.
+> The ideas are still the same, but the way to do it has changed since the
+> book was written.  Just use a struct device and a class, and you will be
+> fine.  Look at the misc device core or the mem code in
+> drivers/char/mem.c for examples of what you need to do.
 
-While the functionality is useful, no I do not think this should be
-configured by sysctl or kernel parameter.
+Thanks! The solution seems to work. The final *obstacle* was, that
+class_* symbols were not available until I added the
+LICENSE("GPL"). Here is the resulting template, maybe useful for
+someone, and just for verification, that I got it right.
 
-Perhaps right interface is "echo fake-mem > /sys/power/state"? 
+...
+static int foo_major = 0;
+static struct class *foo_class;
+static struct class_device *foo_device;
+...
 
-								Pavel
+static int __init foo_init(void)
+  {
+    foo_major = 0;
+    foo_class = NULL;
+    foo_device = NULL;
 
-> Index: linux/kernel/sysctl.c
-> ===================================================================
-> --- linux.orig/kernel/sysctl.c
-> +++ linux/kernel/sysctl.c
-> @@ -329,6 +329,14 @@ static ctl_table kern_table[] = {
->  		.proc_handler	= &proc_dointvec,
->  	},
->  	{
-> +		.ctl_name	= CTL_UNNUMBERED,
-> +		.procname	= "futex_performance_hack",
-> +		.data		= &futex_performance_hack,
-> +		.maxlen		= sizeof(int),
-> +		.mode		= 0644,
-> +		.proc_handler	= &proc_dointvec,
-> +	},
-> +	{
->  		.ctl_name	= KERN_PANIC,
->  		.procname	= "prof_pid",
->  		.data		= &prof_pid,
+    foo_major = register_chrdev(foo_major, "foo", &foo_fops);
+    if (foo_major <= 0)
+        return -EIO;
+    foo_class = class_create(THIS_MODULE, "foo");
+    if (IS_ERR(foo_class))
+       {
+       return PTR_ERR(foo_class);
+       }
+    foo_device = class_device_create(foo_class, NULL, MKDEV(foo_major, 0), NULL, "foo0");
+    if (IS_ERR(foo_device))
+       {
+       return PTR_ERR(foo_device);
+       }
+    return 0;
+    }
 
-Leftover hunk?
+static void __exit foo_exit(void)
+    {
+    if (foo_device && !IS_ERR(foo_device))
+       class_device_del(foo_device);
+    if (foo_class && !IS_ERR(foo_class))
+       class_destroy(foo_class);
+    if (foo_major > 0)
+       unregister_chrdev(foo_major, "foo");
+    }
 
+module_init(foo_init);
+module_exit(foo_exit);
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+MODULE_LICENSE("GPL");
+MODULE_AUTHOR("Markku Savela");
+MODULE_DESCRIPTION("Just fooling around");
