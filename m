@@ -1,82 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932948AbXAYAM6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932954AbXAYANH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932948AbXAYAM6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jan 2007 19:12:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932965AbXAYAM6
+	id S932954AbXAYANH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jan 2007 19:13:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932968AbXAYANG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jan 2007 19:12:58 -0500
-Received: from smtp110.mail.mud.yahoo.com ([209.191.85.220]:25615 "HELO
-	smtp110.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S932948AbXAYAM5 (ORCPT
+	Wed, 24 Jan 2007 19:13:06 -0500
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:22214 "EHLO
+	pd3mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932965AbXAYANF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jan 2007 19:12:57 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=SUG/0qvcxeFnLgrcwo+MdUKRKMnHVXMD1ZALUDcM+Ya7ZBVTClXe6UiXDLpAPx2VK7zB2nqabEsW6KO5jniY3OkpuYzWwKaLVbI/3GxELWldXsLPctfRQsL/MGmmic54bngsJzPy6sv5WZEqeYAZe3uZ7QGwPc8wH6Jl8e3aucI=  ;
-X-YMail-OSG: vBQBlUgVM1nL5FVXzyr6L1deC41pJun8tVa9X3TepIrBDJXRYFfqjiFAwiwCOXg2g4MG_wDHEw--
-Message-ID: <45B7F5F9.2070308@yahoo.com.au>
-Date: Thu, 25 Jan 2007 11:12:41 +1100
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
-MIME-Version: 1.0
-To: David Chinner <dgc@sgi.com>
-CC: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
-       xfs@oss.sgi.com, akpm@osdl.org
-Subject: Re: [PATCH 1/2]: Fix BUG in cancel_dirty_pages on XFS
-References: <20070123223702.GF33919298@melbourne.sgi.com> <1169640835.6189.14.camel@twins> <45B7627B.8050202@yahoo.com.au> <20070124224654.GN33919298@melbourne.sgi.com>
-In-Reply-To: <20070124224654.GN33919298@melbourne.sgi.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 24 Jan 2007 19:13:05 -0500
+Date: Wed, 24 Jan 2007 18:12:48 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: reading a binary sysfs attribute continues forever
+In-reply-to: <fa.uWrqVGz9Bu85mnRCc+6sYuYueiQ@ifi.uio.no>
+To: linux-kernel@vger.kernel.org
+Cc: "Jonathan M. McCune" <jonmccune@cmu.edu>
+Message-id: <45B7F600.1040906@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.uWrqVGz9Bu85mnRCc+6sYuYueiQ@ifi.uio.no>
+User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Chinner wrote:
-> On Thu, Jan 25, 2007 at 12:43:23AM +1100, Nick Piggin wrote:
-
->>And why not just leave it in the pagecache and be done with it?
+Jonathan M. McCune wrote:
+> Hello,
 > 
+> I have written a kernel module which introduces a new subsystem in
+> sysfs, and it contains several attributes, one of which is binary.  So
+> far, I've been testing it using text.  My problem is, attempting to read
+> data continues forever.  For example:
 > 
-> because what is in cache is then not coherent with what is on disk,
-> and a direct read is supposed to read the data that is present
-> in the file at the time it is issued. 
-
-So after a writeout it will be coherent of course, so the point in
-question is what happens when someone comes in and dirties it at the
-worst possible moment? That relates to the paragraph below...
-
->>All you need is to do a writeout before a direct IO read, which is
->>what generic dio code does.
+> # echo "test data" > /sys/mystuff/binaryattrib
+> # cat /sys/mystuff/binaryattrib
 > 
+> test data
+> test data
+> test data
+> test data
+> test data
+> test data
+> test data
+> test data
+> test data
+> test data
+> test data
+> test data
+> .. and so on forever.
 > 
-> No, that's not good enough - after writeout but before the
-> direct I/O read is issued a process can fault the page and dirty
-> it. If you do a direct read, followed by a buffered read you should
-> get the same data. The only way to guarantee this is to chuck out
-> any cached pages across the range of the direct I/O so they are
-> fetched again from disk on the next buffered I/O. i.e. coherent
-> at the time the direct I/O is issued.
-
-... so surely if you do a direct read followed by a buffered read,
-you should *not* get the same data if there has been some activity
-to modify that part of the file in the meantime (whether that be a
-buffered or direct write).
-
->>but in that case you'll either have to live with some racyness
->>(which is what the generic code does), or have a higher level
->>synchronisation to prevent buffered + direct IO writes I suppose?
+> Here are the read and write functions for the binary attribute:
+> 'void *input_params' is a pointer to PAGE_SIZE (4096 for me) bytes, and
+> 'size_t input_params_size' contains the actual number of bytes which
+> were written  to input_params by the _write function.  input_params_size
+> is initialized to zero when the module is first loaded.
 > 
+> static ssize_t binaryattrib_read(struct kobject *kobj, char *buf, loff_t
+> pos,
+>                            size_t count) {
 > 
-> The XFS inode iolock - direct I/O writes take it shared, buffered
-> writes takes it exclusive - so you can't do both at once. Buffered
-> reads take is shared, which is another reason why we need to purge
-> the cache on direct I/O writes - they can operate concurrently
-> (and coherently) with buffered reads.
+>     if(input_params_size + sizeof(size_t) > count)
+>         return -EINVAL;
+> 
+>     memcpy(buf, (void *)&input_params_size, sizeof(size_t));
+>     memcpy(buf+sizeof(size_t), input_params, input_params_size);
+> 
+>     return input_params_size + sizeof(size_t);
 
-Ah, I'm glad to see somebody cares about doing the right thing ;)
-Maybe I'll use XFS for my filesystems in future.
+I don't know sysfs functions well but this looks wrong, you're ignoring 
+the pos argument completely and always returning the same data. You 
+should be copying the data starting at pos and returning only the number 
+of bytes available from that point (possibly zero). Otherwise the user 
+app will never get an end of file since more data is always available.
+
+Also, you shouldn't be returning EINVAL if they try to read less than 
+the size of your data as that is acceptable behavior and will work fine 
+if you handle the pos argument properly.
 
 -- 
-SUSE Labs, Novell Inc.
-Send instant messages to your online friends http://au.messenger.yahoo.com 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
+
