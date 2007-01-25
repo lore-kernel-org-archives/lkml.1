@@ -1,36 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030597AbXAYVk1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030603AbXAYVnB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030597AbXAYVk1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jan 2007 16:40:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030602AbXAYVk1
+	id S1030603AbXAYVnB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jan 2007 16:43:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030604AbXAYVnB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jan 2007 16:40:27 -0500
-Received: from nz-out-0506.google.com ([64.233.162.238]:45992 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030597AbXAYVkZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jan 2007 16:40:25 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=UpoPXeb2qjEw+csaSIR47y1QBHEqo62Qkl5cQrr9jQGWnXUewhpQc6ji8BDRximVxEWN8wbNLJkNunrUcZatrJEWs9lX/YTOj40DUt65LY/qfdCKRi8g3NPebOWhFU88+rlUd0pFN4dDpNZ+9SCGRNQcvMWKN03uxiG+1l4iJb8=
-Message-ID: <56a8daef0701251340x77df99a6j8b8582cdb03732e9@mail.gmail.com>
-Date: Thu, 25 Jan 2007 13:40:23 -0800
-From: "John Ronciak" <john.ronciak@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
-Subject: [ANNOUNCE] PRO/1000 PCI-e Software Developer Manual is now available
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+	Thu, 25 Jan 2007 16:43:01 -0500
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:45077 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030603AbXAYVnA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jan 2007 16:43:00 -0500
+From: Adam Litke <agl@us.ibm.com>
+Subject: [PATCH] Don't allow the stack to grow into hugetlb reserved regions
+Date: Thu, 25 Jan 2007 13:40:52 -0800
+To: linux-mm@kvack.org
+Cc: david@gibson.dropbear.id.au, linux-kernel@vger.kernel.org, agl@us.ibm.com
+Message-Id: <20070125214052.22841.33449.stgit@localhost.localdomain>
+Content-Type: text/plain; charset=utf-8; format=fixed
+Content-Transfer-Encoding: 8bit
+User-Agent: StGIT/0.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The Software Developer Manual for the PRO/1000 PCI-e controllers is
-now available via the http://e1000.sf.net/ web site.  The file is
-OpenSDM_8257x-10.pdf.  I know it's been a long time coming but
-sometimes that's just how it goes.  Enjoy.
 
--- 
-Cheers,
-John
+When expanding the stack, we don't currently check if the VMA will cross into
+an area of the address space that is reserved for hugetlb pages.  Subsequent
+faults on the expanded portion of such a VMA will confuse the low-level MMU
+code, resulting in an OOPS.  Check for this.
+
+Signed-off-by: Adam Litke <agl@us.ibm.com>
+---
+
+ mm/mmap.c |    7 +++++++
+ 1 files changed, 7 insertions(+), 0 deletions(-)
+
+diff --git a/mm/mmap.c b/mm/mmap.c
+index 9717337..2c6b163 100644
+--- a/mm/mmap.c
++++ b/mm/mmap.c
+@@ -1477,6 +1477,7 @@ static int acct_stack_growth(struct vm_area_struct * vma, unsigned long size, un
+ {
+ 	struct mm_struct *mm = vma->vm_mm;
+ 	struct rlimit *rlim = current->signal->rlim;
++	unsigned long new_start;
+ 
+ 	/* address space limit tests */
+ 	if (!may_expand_vm(mm, grow))
+@@ -1496,6 +1497,12 @@ static int acct_stack_growth(struct vm_area_struct * vma, unsigned long size, un
+ 			return -ENOMEM;
+ 	}
+ 
++	/* Check to make the stack will not grow into a hugetlb-only region. */
++	new_start = (vma->vm_flags & VM_GROWSUP) ? vma->vm_start :
++			vma->vm_end - size;
++	if (is_hugepage_only_range(vma->vm_mm, new_start, size))
++		return -EFAULT;
++
+ 	/*
+ 	 * Overcommit..  This must be the final test, as it will
+ 	 * update security statistics.
