@@ -1,109 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965679AbXAYHkl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965680AbXAYHve@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965679AbXAYHkl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jan 2007 02:40:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965680AbXAYHkl
+	id S965680AbXAYHve (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jan 2007 02:51:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965681AbXAYHve
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jan 2007 02:40:41 -0500
-Received: from omx2-ext.sgi.com ([192.48.171.19]:60197 "EHLO omx2.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S965679AbXAYHkk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jan 2007 02:40:40 -0500
-Date: Thu, 25 Jan 2007 18:40:18 +1100
-From: David Chinner <dgc@sgi.com>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: David Chinner <dgc@sgi.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       linux-kernel@vger.kernel.org, xfs@oss.sgi.com, akpm@osdl.org
-Subject: Re: [PATCH 1/2]: Fix BUG in cancel_dirty_pages on XFS
-Message-ID: <20070125074018.GB33919298@melbourne.sgi.com>
-References: <1169640835.6189.14.camel@twins> <45B7627B.8050202@yahoo.com.au> <20070124224654.GN33919298@melbourne.sgi.com> <45B7F5F9.2070308@yahoo.com.au> <20070125003536.GS33919298@melbourne.sgi.com> <45B7FE1C.3070807@yahoo.com.au> <20070125015204.GV33919298@melbourne.sgi.com> <45B80F65.6010206@yahoo.com.au> <20070125034227.GX33919298@melbourne.sgi.com> <45B83139.1040007@yahoo.com.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <45B83139.1040007@yahoo.com.au>
-User-Agent: Mutt/1.4.2.1i
+	Thu, 25 Jan 2007 02:51:34 -0500
+Received: from ausmtp04.au.ibm.com ([202.81.18.152]:41704 "EHLO
+	ausmtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965680AbXAYHvd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jan 2007 02:51:33 -0500
+Message-ID: <45B86120.1020201@linux.vnet.ibm.com>
+Date: Thu, 25 Jan 2007 13:19:52 +0530
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Organization: IBM
+User-Agent: Thunderbird 1.5.0.5 (X11/20060728)
+MIME-Version: 1.0
+To: Aubrey Li <aubreylee@gmail.com>
+CC: Christoph Lameter <clameter@sgi.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Robin Getz <rgetz@blackfin.uclinux.org>,
+       "Hennerich, Michael" <Michael.Hennerich@analog.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC] Limit the size of the pagecache
+References: <Pine.LNX.4.64.0701231645260.5239@schroedinger.engr.sgi.com> <45B75208.90208@linux.vnet.ibm.com> <Pine.LNX.4.64.0701240655400.9696@schroedinger.engr.sgi.com> <45B82F41.9040705@linux.vnet.ibm.com> <6d6a94c50701242235m48013856kb5a947c489d9da37@mail.gmail.com>
+In-Reply-To: <6d6a94c50701242235m48013856kb5a947c489d9da37@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 25, 2007 at 03:25:29PM +1100, Nick Piggin wrote:
-> David Chinner wrote:
-> >On Thu, Jan 25, 2007 at 01:01:09PM +1100, Nick Piggin wrote:
-> >
-> >>David Chinner wrote:
+
+
+Aubrey Li wrote:
+> On 1/25/07, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> wrote:
+>>
+>> Christoph Lameter wrote:
+>>> On Wed, 24 Jan 2007, Vaidyanathan Srinivasan wrote:
+>>>
+>>>> With your patch, MMAP of a file that will cross the pagecache limit hangs the
+>>>> system.  As I mentioned in my previous mail, without subtracting the
+>>>> NR_FILE_MAPPED, the reclaim will infinitely try and fail.
+>>> Well mapped pages are still pagecache pages.
+>>>
+>> Yes, but they can be classified under a process RSS pages.  Whether it
+>> is an anon page or shared mem or mmap of pagecache, it would show up
+>> under RSS.  Those pages can be limited by RSS limiter similar to the
+>> one we are discussing in pagecache limiter.  In my opinion, once a
+>> file page is mapped by the process, then it should be treated at par
+>> with anon pages.  Application programs generally do not mmap a file
+>> page if the reuse for the content is very low.
+>>
 > 
-> >>>No. The only thing that will happen here is that the direct read
-> >>>will see _none_ of the write because the mmap write occurred during
-> >>>the DIO read to a different set of pages in memory. There is no
-> >>>"some" or "all" case here.
-> >>
-> >>But if the buffers get partially or completely written back in the
-> >>meantime, then the DIO read could see that.
-> >
-> >
-> >Only if you can dirty them and flush them to disk while the direct
-> >read is waiting in the I/O queue (remember, the direct read flushes
-> >dirty cached data before being issued). Given that we don't lock the
-> >inode in the buffered I/O *writeback* path, we have to stop pages being
-> >dirtied in the page cache up front so we don't have mmap writeback
-> >over the top of the direct read.
+> I agree, we shouldn't take mmapped page into account.
+> But Vaidy - even with your patch, we are still using the existing
+> reclaimer, that means we dont ensure that only page cache is
+> reclaimed/limited. mapped pages will be hit also.
+> I think we still need to add a new scancontrol field to lock mmaped
+> pages and remove unmapped pagecache pages only.
+
+I have tried to add scan control to Roy's patch at
+http://lkml.org/lkml/2007/01/17/96
+
+In that patch, we search and remove only pages that are not mapped.
+We also remove referenced and hot pagecache pages which the normal
+reclaimer is not expected to consider.
+
+I will try to fit that logic in Christoph's patch and test.
+
+--Vaidy
+
+> -Aubrey
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 > 
-> However unlikely it may be, that is what I'm talking about in my "some"
-> or "all" cases. Note that I'm not talking about a specific implementation
-> (eg. XFS I guess avoids "some"), but just the possible scenarios.
-
-Unfortunately, behaviour is different for different filesystems. I
-can only answer for XFS, which is different to most of the other
-filesystems in both locking and the way it treats the page cache.
-IOWs, if you want to talk about details, then have to talk about
-specific implementations because.....
-
-
-> >Hence we have to prevent mmap for dirtying the same file offset we
-> >are doing direct reads on until the direct read has been issued.
-> >
-> >i.e. we need a barrier.
-> 
-> So you need to eliminate the "some" case? Because of course "none" and
-> "all" are unavoidable.
-
-"all" is avoidable, too, once you've kicked the pages out of
-the page cache - you just have to block the buffered read triggered
-by refaulting the page will cause until the direct I/O completes.
-
-> >>>IOWs, at a single point in time we have 2 different views
-> >>>of the one file which are both apparently valid and that is what
-> >>>we are trying to avoid. We have a coherency problem here which is
-> >>>solved by forcing the mmap write to reread the data off disk....
-> >>
-> >>I don't see why the mmap write needs to reread data off disk. The
-> >>data on disk won't get changed by the DIO read.
-> >
-> >
-> >No, but the data _in memory_ will, and now when the direct read
-> >completes it will data that is different to what is in the page
-> >cache. For direct I/O we define the correct data to be what is on
-> >disk, not what is in memory, so any time we bypass what is in
-> >memory, we need to ensure that we prevent the data being changed
-> >again in memory before we issue the disk I/O.
-> 
-> But when you drop your locks, before the direct IO read returns, some
-> guy can mmap and dirty the pagecache anyway.
-> By the time the read returns, the data is stale.
-
-Only if we leave the page in the page cache. If we toss the page,
-the time it takes to do the I/O for the page fault is enough for
-the direct I/o to complete. Sure it's not an absolute guarantee,
-but if you want an absolute guarantee:
-
-> This obviously must be synchronised in
-> userspace.
-
-As I said earlier.....
-
-Cheers,
-
-Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
