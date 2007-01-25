@@ -1,144 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933191AbXAYEUF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752110AbXAYEVV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933191AbXAYEUF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jan 2007 23:20:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933194AbXAYEUF
+	id S1752110AbXAYEVV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jan 2007 23:21:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752115AbXAYEVV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jan 2007 23:20:05 -0500
-Received: from mx2.suse.de ([195.135.220.15]:48132 "EHLO mx2.suse.de"
+	Wed, 24 Jan 2007 23:21:21 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:45856 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933191AbXAYEUD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jan 2007 23:20:03 -0500
-From: NeilBrown <neilb@suse.de>
-To: Andrew Morton <akpm@osdl.org>
-Date: Thu, 25 Jan 2007 15:19:37 +1100
-Message-Id: <1070125041937.12383@suse.de>
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
-Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] md: Fix potential memalloc deadlock in md
-References: <20070125151902.12347.patches@notabene>
+	id S1752110AbXAYEVT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jan 2007 23:21:19 -0500
+Date: Wed, 24 Jan 2007 20:21:07 -0800
+From: Andrew Morton <akpm@osdl.org>
+To: Evgeniy Dushistov <dushistov@mail.ru>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH 3/3] ufs: rellocation fix
+Message-Id: <20070124202107.4788d802.akpm@osdl.org>
+In-Reply-To: <20070122150751.GA11129@rain>
+References: <20070122150751.GA11129@rain>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Another md patch suitable for 2.6.20.
-Thanks,
-NeilBrown
+On Mon, 22 Jan 2007 18:07:51 +0300
+Evgeniy Dushistov <dushistov@mail.ru> wrote:
+
+> In blocks reallocation function sometimes does not update some
+> of buffer_head::b_blocknr, which may and cause data damage.
+> 
+> Signed-off-by: Evgeniy Dushistov <dushistov@mail.ru>
+> 
+> ---
+> 
+> Index: linux-2.6.20-rc5/fs/ufs/balloc.c
+> ===================================================================
+> --- linux-2.6.20-rc5.orig/fs/ufs/balloc.c
+> +++ linux-2.6.20-rc5/fs/ufs/balloc.c
+> @@ -231,10 +231,10 @@ static void ufs_change_blocknr(struct in
+>  			       unsigned int count, unsigned int oldb,
+>  			       unsigned int newb, struct page *locked_page)
+>  {
+> -	unsigned int blk_per_page = 1 << (PAGE_CACHE_SHIFT - inode->i_blkbits);
+> -	struct address_space *mapping = inode->i_mapping;
+> +	const unsigned mask = (1 << (PAGE_CACHE_SHIFT - inode->i_blkbits)) - 1;
+> +	struct address_space * const mapping = inode->i_mapping;
+>  	pgoff_t index, cur_index;
+> -	unsigned int i, j;
+> +	unsigned i, pos, j;
+>  	struct page *page;
+>  	struct buffer_head *head, *bh;
+>  
+> @@ -246,7 +246,7 @@ static void ufs_change_blocknr(struct in
+>  
+>  	cur_index = locked_page->index;
+>  
+> -	for (i = 0; i < count; i += blk_per_page) {
+> +	for (i = 0; i < count; i = (i | mask) + 1) {
+
+This is a funny looking thing.  As far as I can tell, this is a more
+complicated way of doing the same thing as the old code did.
+
+Am I missing something?
 
 
-### Comments for Changeset
+>  		index = (baseblk+i) >> (PAGE_CACHE_SHIFT - inode->i_blkbits);
+>  
+>  		if (likely(cur_index != index)) {
+> @@ -256,21 +256,32 @@ static void ufs_change_blocknr(struct in
+>  		} else
+>  			page = locked_page;
+>  
+> -		j = i;
+>  		head = page_buffers(page);
+>  		bh = head;
+> +		pos = i & mask;
 
-If a GFP_KERNEL allocation is attempted in md while the mddev_lock is
-held, it is possible for a deadlock to eventuate.
-This happens if the array was marked 'clean', and the memalloc triggers 
-a write-out to the md device.
-For the writeout to succeed, the array must be marked 'dirty', and that 
-requires getting the mddev_lock.
+And this is equivalent to
 
-So, before attempting a GFP_KERNEL alloction while holding the lock,
-make sure the array is marked 'dirty' (unless it is currently read-only).
+		pos = 0;
 
+?
 
-Signed-off-by: Neil Brown <neilb@suse.de>
-
-### Diffstat output
- ./drivers/md/md.c         |   29 +++++++++++++++++++++++++++++
- ./drivers/md/raid1.c      |    2 ++
- ./drivers/md/raid5.c      |    3 +++
- ./include/linux/raid/md.h |    2 +-
- 4 files changed, 35 insertions(+), 1 deletion(-)
-
-diff .prev/drivers/md/md.c ./drivers/md/md.c
---- .prev/drivers/md/md.c	2007-01-23 11:23:58.000000000 +1100
-+++ ./drivers/md/md.c	2007-01-25 12:47:58.000000000 +1100
-@@ -3564,6 +3564,8 @@ static int get_bitmap_file(mddev_t * mdd
- 	char *ptr, *buf = NULL;
- 	int err = -ENOMEM;
- 
-+	md_allow_write(mddev);
-+
- 	file = kmalloc(sizeof(*file), GFP_KERNEL);
- 	if (!file)
- 		goto out;
-@@ -5032,6 +5034,33 @@ void md_write_end(mddev_t *mddev)
- 	}
- }
- 
-+/* md_allow_write(mddev)
-+ * Calling this ensures that the array is marked 'active' so that writes
-+ * may proceed without blocking.  It is important to call this before
-+ * attempting a GFP_KERNEL allocation while holding the mddev lock.
-+ * Must be called with mddev_lock held.
-+ */
-+void md_allow_write(mddev_t *mddev)
-+{
-+	if (!mddev->pers)
-+		return;
-+	if (mddev->ro)
-+		return;
-+
-+	spin_lock_irq(&mddev->write_lock);
-+	if (mddev->in_sync) {
-+		mddev->in_sync = 0;
-+		set_bit(MD_CHANGE_CLEAN, &mddev->flags);
-+		if (mddev->safemode_delay &&
-+		    mddev->safemode == 0)
-+			mddev->safemode = 1;
-+		spin_unlock_irq(&mddev->write_lock);
-+		md_update_sb(mddev, 0);
-+	} else
-+		spin_unlock_irq(&mddev->write_lock);
-+}
-+EXPORT_SYMBOL_GPL(md_allow_write);
-+
- static DECLARE_WAIT_QUEUE_HEAD(resync_wait);
- 
- #define SYNC_MARKS	10
-
-diff .prev/drivers/md/raid1.c ./drivers/md/raid1.c
---- .prev/drivers/md/raid1.c	2007-01-23 11:23:43.000000000 +1100
-+++ ./drivers/md/raid1.c	2007-01-25 12:09:43.000000000 +1100
-@@ -2050,6 +2050,8 @@ static int raid1_reshape(mddev_t *mddev)
- 		return -EINVAL;
- 	}
- 
-+	md_allow_write(mddev);
-+
- 	raid_disks = mddev->raid_disks + mddev->delta_disks;
- 
- 	if (raid_disks < conf->raid_disks) {
-
-diff .prev/drivers/md/raid5.c ./drivers/md/raid5.c
---- .prev/drivers/md/raid5.c	2007-01-23 11:13:44.000000000 +1100
-+++ ./drivers/md/raid5.c	2007-01-25 12:18:04.000000000 +1100
-@@ -399,6 +399,8 @@ static int resize_stripes(raid5_conf_t *
- 	if (newsize <= conf->pool_size)
- 		return 0; /* never bother to shrink */
- 
-+	md_allow_write(conf->mddev);
-+
- 	/* Step 1 */
- 	sc = kmem_cache_create(conf->cache_name[1-conf->active_name],
- 			       sizeof(struct stripe_head)+(newsize-1)*sizeof(struct r5dev),
-@@ -3195,6 +3197,7 @@ raid5_store_stripe_cache_size(mddev_t *m
- 		else
- 			break;
- 	}
-+	md_allow_write(mddev);
- 	while (new > conf->max_nr_stripes) {
- 		if (grow_one_stripe(conf))
- 			conf->max_nr_stripes++;
-
-diff .prev/include/linux/raid/md.h ./include/linux/raid/md.h
---- .prev/include/linux/raid/md.h	2007-01-25 12:16:57.000000000 +1100
-+++ ./include/linux/raid/md.h	2007-01-25 12:17:18.000000000 +1100
-@@ -93,7 +93,7 @@ extern int sync_page_io(struct block_dev
- 			struct page *page, int rw);
- extern void md_do_sync(mddev_t *mddev);
- extern void md_new_event(mddev_t *mddev);
--
-+extern void md_allow_write(mddev_t *mddev);
- 
- #endif /* CONFIG_MD */
- #endif 
+> +		for (j = 0; j < pos; ++j)
+> +			bh = bh->b_this_page;
+> +		j = 0;
+>  		do {
+> -			if (likely(bh->b_blocknr == j + oldb && j < count)) {
+> -				unmap_underlying_metadata(bh->b_bdev,
+> -							  bh->b_blocknr);
+> -				bh->b_blocknr = newb + j++;
+> -				mark_buffer_dirty(bh);
+> +			if (buffer_mapped(bh)) {
+> +				pos = bh->b_blocknr - oldb;
+> +				if (pos < count) {
+> +					UFSD(" change from %llu to %llu\n",
+> +					     (unsigned long long)pos + odlb,
+> +					     (unsigned long long)pos + newb);
+> +					bh->b_blocknr = newb + pos;
+> +					unmap_underlying_metadata(bh->b_bdev,
+> +								  bh->b_blocknr);
+> +					mark_buffer_dirty(bh);
+> +					++j;
+> +				}
+>  			}
+>  
+>  			bh = bh->b_this_page;
+>  		} while (bh != head);
+>  
+> -		set_page_dirty(page);
+> +		if (j)
+> +			set_page_dirty(page);
+>  
+>  		if (likely(cur_index != index))
+>  			ufs_put_locked_page(page);
+> @@ -418,14 +429,14 @@ unsigned ufs_new_fragments(struct inode 
+>  	}
+>  	result = ufs_alloc_fragments (inode, cgno, goal, request, err);
+>  	if (result) {
+> +		ufs_clear_frags(inode, result + oldcount, newcount - oldcount,
+> +				locked_page != NULL);
+>  		ufs_change_blocknr(inode, fragment - oldcount, oldcount, tmp,
+>  				   result, locked_page);
+>  
+>  		*p = cpu_to_fs32(sb, result);
+>  		*err = 0;
+>  		UFS_I(inode)->i_lastfrag = max_t(u32, UFS_I(inode)->i_lastfrag, fragment + count);
+> -		ufs_clear_frags(inode, result + oldcount, newcount - oldcount,
+> -				locked_page != NULL);
+>  		unlock_super(sb);
+>  		if (newcount < request)
+>  			ufs_free_fragments (inode, result + newcount, request - newcount);
+> -- 
+> /Evgeniy
