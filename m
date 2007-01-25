@@ -1,134 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752076AbXAYLho@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932876AbXAYLzw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752076AbXAYLho (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jan 2007 06:37:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752077AbXAYLhn
+	id S932876AbXAYLzw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jan 2007 06:55:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932879AbXAYLzw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jan 2007 06:37:43 -0500
-Received: from smtp4.netcabo.pt ([212.113.174.31]:30974 "EHLO
-	exch01smtp11.hdi.tvcabo" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752076AbXAYLhm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jan 2007 06:37:42 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ao8CAKIluEVZmGJA/2dsb2JhbAA
-Message-ID: <11401.194.65.103.1.1169725008.squirrel@www.rncbc.org>
-Date: Thu, 25 Jan 2007 11:36:47 -0000 (WET)
-Subject: 2.6.20-rc6-rt1 timekeeping_is_continuous question
-From: "Rui Nuno Capela" <rncbc@rncbc.org>
-To: "Ingo Molnar" <mingo@elte.hu>
-Cc: linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org
-User-Agent: SquirrelMail/1.5.1
+	Thu, 25 Jan 2007 06:55:52 -0500
+Received: from [212.12.190.202] ([212.12.190.202]:32956 "EHLO raad.intranet"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S932876AbXAYLzv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jan 2007 06:55:51 -0500
+From: Al Boldi <a1426z@gawab.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [RFC] Limit the size of the pagecache
+Date: Thu, 25 Jan 2007 14:57:32 +0300
+User-Agent: KMail/1.5
+Cc: linux-kernel@vger.kernel.org,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+References: <200701250942.47321.a1426z@gawab.com> <45B86930.2090709@linux.vnet.ibm.com> <1169720945.6189.52.camel@twins>
+In-Reply-To: <1169720945.6189.52.camel@twins>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-OriginalArrivalTime: 25 Jan 2007 11:37:38.0696 (UTC) FILETIME=[37542080:01C74075]
+Content-Type: text/plain;
+  charset="windows-1256"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200701251457.32999.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Peter Zijlstra wrote:
+> > Apart from kswapd, limiting pagecache helps performance of
+> > applications by not eating away their ANON pages or other parts of its
+> > resident data set.  When there is enough free memory, then there is no
+> > performance issue.  However memory is always utilized to the max.
+> > Hence every pagecache page that is allocated should come from some
+> > application's RSS, or from cold pagecache page.  If that page was
+> > stolen from some application, then that application pays the price for
+> > swapping or reading the page back to memory.  This scenario is what we
+> >  want to avoid.  All that we are trying to achieve is that pagecache
+> > eats a (unmapped) pagecache page and not steal memory from other
+> > important application's resident set.
+> >
+> > Certainly this should be a configurable option and kernel's behavior
+> > should not be changed in general.
+>
+> Ah, this would be a clear case of the page reclaim selecting the wrong
+> working set.
 
-I'm having the following traces on every boot; are they of any concern, or
-should I just ignore and carry on?
+Yes.
 
-(machine is an Intel Core2 Duo T7200 2.0Ghz laptop)
+> It is perfectly fine for a page cache page to evict a app page (be it
+> anon or not) if that page cache page is used more frequently than the
+> app page in question.
 
-Linux version 2.6.20-rc6-rt1.0 (root@zeta) (gcc version 4.1.2 20061115
-(prerelease) (SUSE Linux)) #1 SMP PREEMPT Thu Jan 25 10:02:28 WET 2007
-[...]
-Total of 2 processors activated (7985.17 BogoMIPS).
-ENABLING IO-APIC IRQs
-..TIMER: vector=0x31 apic1=0 pin1=2 apic2=-1 pin2=-1
-timekeeping_is_continuous(jiffies): 0
- [<c0105068>] dump_trace+0x63/0x1ec
- [<c010520b>] show_trace_log_lvl+0x1a/0x2f
- [<c0105836>] show_trace+0x12/0x14
- [<c01058c9>] dump_stack+0x16/0x18
- [<c012715f>] timekeeping_is_continuous+0x58/0x60
- [<c0135c71>] tick_check_oneshot_change+0x3e/0x111
- [<c013220b>] hrtimer_run_queues+0x40/0x26a
- [<c012680b>] run_timer_softirq+0x785/0x975
- [<c012313a>] ksoftirqd+0xfd/0x1a2
- [<c012f947>] kthread+0xb5/0xde
- [<c0104c33>] kernel_thread_helper+0x7/0x10
- =======================
-checking TSC synchronization [CPU#0 -> CPU#1]: passed.
-Brought up 2 CPUs
-timekeeping_is_continuous(jiffies): 0
- [<c0105068>] dump_trace+0x63/0x1ec
- [<c010520b>] show_trace_log_lvl+0x1a/0x2f
- [<c0105836>] show_trace+0x12/0x14
- [<c01058c9>] dump_stack+0x16/0x18
- [<c012715f>] timekeeping_is_continuous+0x58/0x60
- [<c0135c71>] tick_check_oneshot_change+0x3e/0x111
- [<c013220b>] hrtimer_run_queues+0x40/0x26a
- [<c012680b>] run_timer_softirq+0x785/0x975
- [<c012313a>] ksoftirqd+0xfd/0x1a2
- [<c012f947>] kthread+0xb5/0xde
- [<c0104c33>] kernel_thread_helper+0x7/0x10
- =======================
-migration_cost=34
-Booting paravirtualized kernel on bare hardware
-[...]
-Time: tsc clocksource has been installed.
-timekeeping_is_continuous(tsc): 0
- [<c0105068>] dump_trace+0x63/0x1ec
- [<c010520b>] show_trace_log_lvl+0x1a/0x2f
- [<c0105836>] show_trace+0x12/0x14
- [<c01058c9>] dump_stack+0x16/0x18
- [<c012715f>] timekeeping_is_continuous+0x58/0x60
- [<c0135c71>] tick_check_oneshot_change+0x3e/0x111
- [<c013220b>] hrtimer_run_queues+0x40/0x26a
- [<c012680b>] run_timer_softirq+0x785/0x975
- [<c012313a>] ksoftirqd+0xfd/0x1a2
- [<c012f947>] kthread+0xb5/0xde
- [<c0104c33>] kernel_thread_helper+0x7/0x10
- =======================
-timekeeping_is_continuous(tsc): 0
- [<c0105068>] dump_trace+0x63/0x1ec
- [<c010520b>] show_trace_log_lvl+0x1a/0x2f
- [<c0105836>] show_trace+0x12/0x14
- [<c01058c9>] dump_stack+0x16/0x18
- [<c012715f>] timekeeping_is_continuous+0x58/0x60
- [<c0135c71>] tick_check_oneshot_change+0x3e/0x111
- [<c013220b>] hrtimer_run_queues+0x40/0x26a
- [<c012680b>] run_timer_softirq+0x785/0x975
- [<c012313a>] ksoftirqd+0xfd/0x1a2
- [<c012f947>] kthread+0xb5/0xde
- [<c0104c33>] kernel_thread_helper+0x7/0x10
- =======================
-Write protecting the kernel read-only data: 794k
-timekeeping_is_continuous(tsc): 1
-timekeeping_is_continuous(tsc): 1
- [<c0105068>] dump_trace+0x63/0x1ec
- [<c010520b>] show_trace_log_lvl+0x1a/0x2f
- [<c0105836>] show_trace+0x12/0x14
- [<c01058c9>] dump_stack+0x16/0x18
- [<c012715f>] timekeeping_is_continuous+0x58/0x60
- [<c0135c71>] tick_check_oneshot_change+0x3e/0x111
- [<c013220b>] hrtimer_run_queues+0x40/0x26a
- [<c012680b>] run_timer_softirq+0x785/0x975
- [<c012313a>] ksoftirqd+0xfd/0x1a2
- [<c012f947>] kthread+0xb5/0xde
- [<c0104c33>] kernel_thread_helper+0x7/0x10
- =======================
-Switched to high resolution mode on CPU 1
- [<c0105068>] dump_trace+0x63/0x1ec
- [<c010520b>] show_trace_log_lvl+0x1a/0x2f
- [<c0105836>] show_trace+0x12/0x14
- [<c01058c9>] dump_stack+0x16/0x18
- [<c012715f>] timekeeping_is_continuous+0x58/0x60
- [<c0135c71>] tick_check_oneshot_change+0x3e/0x111
- [<c013220b>] hrtimer_run_queues+0x40/0x26a
- [<c012680b>] run_timer_softirq+0x785/0x975
- [<c012313a>] ksoftirqd+0xfd/0x1a2
- [<c012f947>] kthread+0xb5/0xde
- [<c0104c33>] kernel_thread_helper+0x7/0x10
- =======================
-Switched to high resolution mode on CPU 0
-[...]
+It seems, that there is currently a clear preference for pagecache-page over 
+app-page.  Some form of prio-selection could probably aid the situation.
 
-Bye.
--- 
-rncbc aka Rui Nuno Capela
-rncbc@rncbc.org
+> Trouble seems to be that the current algorithm gets it quite wrong at
+> times.
+
+It breaks down when memory gets tight.  You can actually hear it thrashing 
+the disk, although it's not supposed to thrash, even with swapoff.
+
+> Also stating that free memory somehow is good for you is weird, free
+> memory is a loss, you under utilise your machine. Keeping clean
+> pagecache pages in there that are likely to be referenced again is a
+> clear win; it saves the tediously slow load from disk.
+
+That's the theory.
+
+> So you're now proposing to limit the page cache
+
+As a workaround.
+
+> where as its clear that
+> the better solution would be to tune replacement policy
+
+Yes.  Hopefully successfully.
+
+> (and or provide
+> hints to said mechanism using madvise/fadvise)
+
+Not feasible; source is sometimes not immediately available.
+
+
+Thanks!
+
+--
+Al
+
