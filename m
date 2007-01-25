@@ -1,48 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965531AbXAYGcE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965543AbXAYGeM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965531AbXAYGcE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jan 2007 01:32:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965547AbXAYGcE
+	id S965543AbXAYGeM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jan 2007 01:34:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965549AbXAYGeM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jan 2007 01:32:04 -0500
-Received: from mailout05.sul.t-online.com ([194.25.134.82]:45449 "EHLO
-	mailout05.sul.t-online.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S965546AbXAYGcB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jan 2007 01:32:01 -0500
-X-Greylist: delayed 50430 seconds by postgrey-1.27 at vger.kernel.org; Thu, 25 Jan 2007 01:32:01 EST
-Message-Id: <6.1.1.1.2.20070124172600.04f40dc8@192.168.6.12>
-X-Mailer: QUALCOMM Windows Eudora Version 6.1.1.1
-Date: Wed, 24 Jan 2007 17:30:59 +0100
-To: linux-kernel@vger.kernel.org
-From: Roger While <simrw@sim-basis.de>
-Subject: [PATCH] gpu/radeonfb: add GPU support to radeonfb
-Cc: airlied@linux.ie, benh@kernel.crashing.org
+	Thu, 25 Jan 2007 01:34:12 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:41485 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965543AbXAYGeL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jan 2007 01:34:11 -0500
+Date: Thu, 25 Jan 2007 07:32:06 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: john stultz <johnstul@us.ibm.com>
+Cc: Daniel Walker <dwalker@mvista.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@osdl.org>, LKML <linux-kernel@vger.kernel.org>,
+       Arjan van de Veen <arjan@infradead.org>,
+       Roman Zippel <zippel@linux-m68k.org>
+Subject: Re: [patch 00/46] High resolution timer / dynamic tick update
+Message-ID: <20070125063206.GA26764@elte.hu>
+References: <20070123211159.178138000@localhost.localdomain> <1169604991.19471.95.camel@imap.mvista.com> <20070124070701.GA17654@elte.hu> <1169631016.19471.175.camel@imap.mvista.com> <1169668653.6905.49.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
-X-SIMBasis-MailScanner-Information: Please contact the ISP for more information
-X-SIMBasis-MailScanner: Found to be clean
-X-SIMBasis-MailScanner-From: simrw@sim-basis.de
-X-ID: rSe2WuZLweiSyFXZ-bFBHTk-DK0iGy772AccM72DOt7VqeEWD4Jcgw@t-dialin.net
-X-TOI-MSGID: 4581106c-bc60-4102-abeb-2fcfeb8efeab
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1169668653.6905.49.camel@localhost.localdomain>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.3
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.3 required=5.9 tests=ALL_TRUSTED,BAYES_40 autolearn=no SpamAssassin version=3.0.3
+	-3.3 ALL_TRUSTED            Did not pass through any untrusted hosts
+	1.0 BAYES_40               BODY: Bayesian spam probability is 20 to 40%
+	[score: 0.3240]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-@@ -241,9 +241,9 @@ void radeonfb_engine_reset(struct radeon
-  	INREG(HOST_PATH_CNTL);
-  	OUTREG(HOST_PATH_CNTL, host_path_cntl);
 
--	if (rinfo->family != CHIP_FAMILY_R300 ||
--	    rinfo->family != CHIP_FAMILY_R350 ||
--	    rinfo->family != CHIP_FAMILY_RV350)
-+	if (rinfo->gpu_info->family != CHIP_FAMILY_R300 ||
-+	    rinfo->gpu_info->family != CHIP_FAMILY_R350 ||
-+	    rinfo->gpu_info->family != CHIP_FAMILY_RV350)
-  		OUTREG(RBBM_SOFT_RESET, rbbm_soft_reset);
+* john stultz <johnstul@us.ibm.com> wrote:
 
-Alarm bells going off - "!=" combined with "||" ?
-Looks like a reset will always be done.
+> Although, to be fair, I do know that Daniel has future sched_clock 
+> related patches that need his cleanups [...]
 
-Roger While
+btw., i dont find those sched_clock() changes really acceptable in their 
+present form, and i've pointed out my reasons for that in the past, ~2 
+months ago when Daniel last sent his cleanup queue.
 
-
+	Ingo
