@@ -1,107 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030302AbXAYQWo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030329AbXAYQXQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030302AbXAYQWo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jan 2007 11:22:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030298AbXAYQWS
+	id S1030329AbXAYQXQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jan 2007 11:23:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030304AbXAYQXP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jan 2007 11:22:18 -0500
-Received: from mail.screens.ru ([213.234.233.54]:39025 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030302AbXAYQWQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jan 2007 11:22:16 -0500
-Date: Thu, 25 Jan 2007 19:21:41 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Sebastien Dugue <sebastien.dugue@bull.net>,
-       Laurent Vivier <laurent.vivier@bull.net>
-Cc: Zach Brown <zach.brown@oracle.com>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Benjamin LaHaise <bcrl@kvack.org>, Ulrich Drepper <drepper@redhat.com>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org
-Subject: Re: + aio-completion-signal-notification.patch added to -mm tree
-Message-ID: <20070125162141.GA226@tv-sign.ru>
+	Thu, 25 Jan 2007 11:23:15 -0500
+Received: from caramon.arm.linux.org.uk ([217.147.92.249]:2519 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030299AbXAYQXN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jan 2007 11:23:13 -0500
+Date: Thu, 25 Jan 2007 16:22:55 +0000
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Jeff Garzik <jgarzik@pobox.com>
+Cc: David Woodhouse <dwmw2@infradead.org>, Alan <alan@lxorguk.ukuu.org.uk>,
+       torvalds@osdl.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] libata-sff: Don't call bmdma_stop on non DMA capable controllers
+Message-ID: <20070125162255.GF31145@flint.arm.linux.org.uk>
+Mail-Followup-To: Jeff Garzik <jgarzik@pobox.com>,
+	David Woodhouse <dwmw2@infradead.org>,
+	Alan <alan@lxorguk.ukuu.org.uk>, torvalds@osdl.org,
+	linux-kernel@vger.kernel.org
+References: <20070125150905.652f9ce2@localhost.localdomain> <1169741658.3593.98.camel@shinybook.infradead.org> <45B8D810.3030501@pobox.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+In-Reply-To: <45B8D810.3030501@pobox.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sebastien Dugue wrote:
->
-> +static long aio_setup_sigevent(struct aio_notify *notify,
-> +			       struct sigevent __user *user_event)
-> +{
-> +	sigevent_t event;
-> +	struct task_struct *target;
-> +
-> +	if (copy_from_user(&event, user_event, sizeof(event)))
-> +		return -EFAULT;
-> +
-> +	if (event.sigev_notify == SIGEV_NONE)
-> +		return 0;
-> +
-> +	notify->notify = event.sigev_notify;
-> +	notify->signo = event.sigev_signo;
-> +	notify->value = event.sigev_value;
-> +
-> +	read_lock(&tasklist_lock);
+On Thu, Jan 25, 2007 at 11:17:20AM -0500, Jeff Garzik wrote:
+> David Woodhouse wrote:
+> >On Thu, 2007-01-25 at 15:09 +0000, Alan wrote:
+> >>diff -u --new-file --recursive --exclude-from /usr/src/exclude 
+> >>linux.vanilla-2.6.20-rc4-mm1/drivers/ata/libata-sff.c 
+> >>linux-2.6.20-rc4-mm1/drivers/ata/libata-sff.c
+> >>--- linux.vanilla-2.6.20-rc4-mm1/drivers/ata/libata-sff.c       
+> >>2007-01-22 16:26:50.000000000 +0000
+> >>+++ linux-2.6.20-rc4-mm1/drivers/ata/libata-sff.c       2007-01-24 
+> >>17:31:40.000000000 +0000
+> >>@@ -827,7 +827,8 @@
+> >>  */
+> >> void ata_bmdma_post_internal_cmd(struct ata_queued_cmd *qc)
+> >> {
+> >>-       ata_bmdma_stop(qc);
+> >>+       if (qc->ap->ioaddr.bmdma_addr)
+> >>+               ata_bmdma_stop(qc);
+> >> }
+> >
+> >But what if the bmdma_addr _is_ zero? Please, let's not allow the "zero
+> >is not a valid number" braindamage to spread any further than the IRQ
+> >setup it's already broken.
+> 
+> Read the code...  This test is already widely in use in libata.
 
-We don't need tasklist_lock, we can use rcu_read_lock() instead.
+Ditto.  The only interpretation that can be placed upon DMA addresses
+is done by dma_mapping_error(), which _is_ a per-architecture defined
+test because these things aren't defined in the API.
 
-> +	target = good_sigevent(&event);
-> +
-> +	if (unlikely(!target || (target->flags & PF_EXITING)))
-> +		goto out_unlock;
+The zero DMA address is absolutely and totally valid.  It might not
+correspond with physical address zero on platforms.
 
-PF_EXITING check is racy and unneded. In fact, it is wrong. If the main
-thread is already died, we can only use SIGEV_THREAD_ID signals, because
-otherwise good_sigevent() returns ->group_leader.
+Also, DMA address zero is not the same as NULL.
 
-> @@ -994,6 +1077,15 @@ int fastcall aio_complete(struct kiocb *
->  	kunmap_atomic(ring, KM_IRQ1);
->
->  	pr_debug("added to ring %p at [%lu]\n", iocb, tail);
-> +
-> +	if (iocb->ki_notify.notify != SIGEV_NONE) {
-> +		ret = aio_send_signal(&iocb->ki_notify);
-> +
-> +		/* If signal generation failed, release the sigqueue */
-> +		if (ret)
-> +			sigqueue_free(iocb->ki_notify.sigq);
-
-We should not use sigqueue_free() here. It takes current->sighand->siglock
-to remove sigqueue from "struct sigpending". But current is just a "random"
-process here.
-
-Yes, if I understand this patch correctly, it is not possible that this
-sigqueue is pending, but still this is bad imho.
-
->  static void __sigqueue_free(struct sigqueue *q)
->  {
-> -	if (q->flags & SIGQUEUE_PREALLOC)
-> +	if (q->flags & SIGQUEUE_PREALLOC && q->info.si_code != SI_ASYNCIO)
->  		return;
-
-Oh, this is not nice. Could we change send_sigqueue/send_group_sigqueue
-instead ?
-
--	BUG_ON(!(q->flags & SIGQUEUE_PREALLOC));
-+	BUG_ON(!(q->flags & SIGQUEUE_PREALLOC) && q->info.si_code != SI_ASYNCIO);
-
-This way aio can use __sigqueue_alloc/__sigqueue_free directly and forget
-about SIGQUEUE_PREALLOC.
-
-On the other hand, imho this patch takes a wrong direction.
-
-The purpose of SIGQUEUE_PREALLOC + send_sigqueue() is to re-use the same
-sigqueue while sending a stream of signals. But in aio case we allocate
-sigqueue to send only 1 signal, then it freed after the delivery like
-the regular sigqueue. So what is the point?
-
-I'd suggest to not use this interface. Just use group_send_sig_info() or
-specific_send_sig_info(). Yes, this way we will do GFP_ATOMIC allocation
-of sigqueue in interrupt context, but is this so bad in this case?
-
-Oleg.
-
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
