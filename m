@@ -1,49 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030458AbXAYROB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030450AbXAYROK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030458AbXAYROB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jan 2007 12:14:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030460AbXAYROB
+	id S1030450AbXAYROK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jan 2007 12:14:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030456AbXAYROK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jan 2007 12:14:01 -0500
-Received: from hp3.statik.TU-Cottbus.De ([141.43.120.68]:45796 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030458AbXAYROA (ORCPT
+	Thu, 25 Jan 2007 12:14:10 -0500
+Received: from ftp.linux-mips.org ([194.74.144.162]:47267 "EHLO
+	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030450AbXAYROJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jan 2007 12:14:00 -0500
-Message-ID: <45B8E556.5000200@s5r6.in-berlin.de>
-Date: Thu, 25 Jan 2007 18:13:58 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.0.8) Gecko/20061030 SeaMonkey/1.0.6
-MIME-Version: 1.0
-To: Pete Zaitcev <zaitcev@redhat.com>
-CC: krh@redhat.com, linux-kernel@vger.kernel.org
-Subject: Re: Juju
-References: <20070124223745.33278eb4.zaitcev@redhat.com>
-In-Reply-To: <20070124223745.33278eb4.zaitcev@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Thu, 25 Jan 2007 12:14:09 -0500
+Date: Thu, 25 Jan 2007 17:14:05 +0000
+From: Ralf Baechle <ralf@linux-mips.org>
+To: Jan Altenberg <jan@linutronix.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2.6.20-rc6][MIPS]Malta: trivial compile error fix
+Message-ID: <20070125171405.GA24043@linux-mips.org>
+References: <1169738756.18700.12.camel@jan-laptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1169738756.18700.12.camel@jan-laptop>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pete Zaitcev wrote:
-...
-> Now, about small things:
+On Thu, Jan 25, 2007 at 04:25:56PM +0100, Jan Altenberg wrote:
 
-Thanks Pete, I'm sure I will find some of these issues in mainline's
-sbp2 too. :-)
+> the following patch should fix a compile error for MIPS_MALTA, when
+> CONFIG_MTD is disabled.
 
-...
-> P.S. If I were using git, I would clone a Linus git tree and work
-> there. All this out-of-tree module stuff is just a waste of time.
+Thanks, applied.
 
-Kristian just announced
-http://gitweb.freedesktop.org/?p=users/krh/linux-2.6.git
-git://people.freedesktop.org/~krh/linux-2.6
-shortly before you posted.
+Btw, git will strip anything below the "---" line from the log message,
+so you better put the Signed-off-by: line before it.
 
-(And time-lagged/ filtered versions: kernel.org's linux1394-2.6.git, and
-non-canonical patchkits for 2.6.{18,19,20} on my homepage.)
--- 
-Stefan Richter
--=====-=-=== ---= ==--=
-http://arcgraph.de/sr/
+  Ralf
