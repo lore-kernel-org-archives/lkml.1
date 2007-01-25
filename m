@@ -1,79 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965383AbXAYSGr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965546AbXAYSHJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965383AbXAYSGr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jan 2007 13:06:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965459AbXAYSGr
+	id S965546AbXAYSHJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jan 2007 13:07:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965535AbXAYSHI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jan 2007 13:06:47 -0500
-Received: from tomts22.bellnexxia.net ([209.226.175.184]:59449 "EHLO
-	tomts22-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S965399AbXAYSGq (ORCPT
+	Thu, 25 Jan 2007 13:07:08 -0500
+Received: from qb-out-0506.google.com ([72.14.204.237]:51187 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965516AbXAYSHF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jan 2007 13:06:46 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: linux-kernel@vger.kernel.org
-Cc: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
-       Ingo Molnar <mingo@redhat.com>, Greg Kroah-Hartman <gregkh@suse.de>,
-       Christoph Hellwig <hch@infradead.org>, ltt-dev@shafik.org,
-       systemtap@sources.redhat.com, Douglas Niehaus <niehaus@eecs.ku.edu>,
-       "Martin J. Bligh" <mbligh@mbligh.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Paul Mackerras <paulus@samba.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: [PATCH 09/10] local_t : sparc64 cleanup
-Date: Thu, 25 Jan 2007 11:16:16 -0500
-Message-Id: <11697417832619-git-send-email-mathieu.desnoyers@polymtl.ca>
-X-Mailer: git-send-email 1.4.4.3
-In-Reply-To: <1169741777507-git-send-email-mathieu.desnoyers@polymtl.ca>
-References: <1169741777507-git-send-email-mathieu.desnoyers@polymtl.ca>
+	Thu, 25 Jan 2007 13:07:05 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=ciOzZiMGwatZV7A2zFMBc3aueKF+fkEItszRaHGMfx5W9Vy1UUjfmgCOD8/xsyav2G7EPm8Y8GJDMjYMI0zMNgqDYWeHCyzzvyPOmEpcFngEmrx4Y5T5fWIPLFeM/qyRKhrRPcJznTavvGquk9rm8viFrFWxxndOxKSYY1wsw8s=
+Message-ID: <806dafc20701251007n69bc9b3cse023b51369501d42@mail.gmail.com>
+Date: Thu, 25 Jan 2007 13:07:04 -0500
+From: xiphmont@xiph.org
+To: "Takashi Iwai" <tiwai@suse.de>
+Subject: Re: [Alsa-devel] [PATCH] alsa: correct nonsensical sysfs device symlinks
+Cc: "Pierre Ossman" <drzeus@drzeus.cx>, fedora-desktop-list@redhat.com,
+       alsa-devel@alsa-project.org, jrb@redhat.com, "Greg KH" <greg@kroah.com>,
+       linux-kernel@vger.kernel.org, mclasen@redhat.com,
+       "Lennart Poettering" <lennart@poettering.net>, perex@suse.cz
+In-Reply-To: <s5h7ivbuhg1.wl%tiwai@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <806dafc20701241750t53b86babn36831cadc7dfa76c@mail.gmail.com>
+	 <806dafc20701250611u9935049ja8f88deb2aac4d40@mail.gmail.com>
+	 <45B8C9A3.6060107@drzeus.cx>
+	 <806dafc20701250736yc5c3048u14ec98e9b6b92574@mail.gmail.com>
+	 <45B8CF7E.2040908@drzeus.cx>
+	 <806dafc20701250757n3dcb38b7ma5f8423ab3de9850@mail.gmail.com>
+	 <s5hfy9zujvr.wl%tiwai@suse.de>
+	 <806dafc20701250903p6b67d176wf00dd2a9d92d899f@mail.gmail.com>
+	 <806dafc20701250930n185e9773i64bbd2d845c836be@mail.gmail.com>
+	 <s5h7ivbuhg1.wl%tiwai@suse.de>
+X-Google-Sender-Auth: 7da94f51c8b5bbbe
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-local_t : sparc64 cleanup
+On 1/25/07, Takashi Iwai <tiwai@suse.de> wrote:
+> At Thu, 25 Jan 2007 12:30:44 -0500,
+> xiphmont@xiph.org wrote:
+> >
+> > > I'm working on this now and will doublecheck just in case my test was
+> > > flawed first time.
+> >
+> > Doublechecking indicates my initial test was wrong somehow; both
+> > card->dev->parent and card->parent passed as arg 2 to the
+> > device_create call in snd_register_device result in correct device
+> > symlinks. Are these two actually semantically different?  I'm just
+> > curious.
+>
+> If card->dev is created, they should be identical.
+> But, again, card->dev should be NULL on the older systems.
+>
+> > The call to device_create in cound_core.c:sound_insert_unit also needs
+> > to be modified in order for the device symlinks in the other unit
+> > types to be correct.  Again, modifying the 'dev' argument to
+> > '(dev?dev->parent:NULL)' appears to fix the problem.  Is that
+> > correct/appropriate there?
+>
+> Your change breaks the expected heavior if CONFIG_SYSFS_DEPRECATED is
+> enabled.  Then devices won't belong to card* objects any more...
 
-sparc64 local_t cleanup : simply use asm-generic/local.h.
+FWIW, CONFIG_SYSFS_DEPRECATED is enabled on all my machines-- it's
+exactly that behavior that is wrong in 2.6.20-rc5 and that I'm trying
+to fix (and testing against here/now).
 
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
---- a/include/asm-sparc64/local.h
-+++ b/include/asm-sparc64/local.h
-@@ -1,40 +1 @@
--#ifndef _ARCH_SPARC64_LOCAL_H
--#define _ARCH_SPARC64_LOCAL_H
--
--#include <linux/percpu.h>
--#include <asm/atomic.h>
--
--typedef atomic64_t local_t;
--
--#define LOCAL_INIT(i)	ATOMIC64_INIT(i)
--#define local_read(v)	atomic64_read(v)
--#define local_set(v,i)	atomic64_set(v,i)
--
--#define local_inc(v)	atomic64_inc(v)
--#define local_dec(v)	atomic64_dec(v)
--#define local_add(i, v)	atomic64_add(i, v)
--#define local_sub(i, v)	atomic64_sub(i, v)
--
--#define __local_inc(v)		((v)->counter++)
--#define __local_dec(v)		((v)->counter--)
--#define __local_add(i,v)	((v)->counter+=(i))
--#define __local_sub(i,v)	((v)->counter-=(i))
--
--/* Use these for per-cpu local_t variables: on some archs they are
-- * much more efficient than these naive implementations.  Note they take
-- * a variable, not an address.
-- */
--#define cpu_local_read(v)	local_read(&__get_cpu_var(v))
--#define cpu_local_set(v, i)	local_set(&__get_cpu_var(v), (i))
--
--#define cpu_local_inc(v)	local_inc(&__get_cpu_var(v))
--#define cpu_local_dec(v)	local_dec(&__get_cpu_var(v))
--#define cpu_local_add(i, v)	local_add((i), &__get_cpu_var(v))
--#define cpu_local_sub(i, v)	local_sub((i), &__get_cpu_var(v))
--
--#define __cpu_local_inc(v)	__local_inc(&__get_cpu_var(v))
--#define __cpu_local_dec(v)	__local_dec(&__get_cpu_var(v))
--#define __cpu_local_add(i, v)	__local_add((i), &__get_cpu_var(v))
--#define __cpu_local_sub(i, v)	__local_sub((i), &__get_cpu_var(v))
--
--#endif /* _ARCH_SPARC64_LOCAL_H */
-+#include <asm-generic/local.h>
+Having just checked a 2.6.18 machine, none of the device symlinks
+point to card* objects; thay all point to /sys/devices/....
+
+Monty
