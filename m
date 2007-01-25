@@ -1,54 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030646AbXAYWkn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030644AbXAYWn6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030646AbXAYWkn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jan 2007 17:40:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030647AbXAYWkn
+	id S1030644AbXAYWn6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jan 2007 17:43:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030650AbXAYWn6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jan 2007 17:40:43 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:50868 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030646AbXAYWkm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jan 2007 17:40:42 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Matt Mackall <mpm@selenic.com>
-Subject: Re: [patch] suspend debugging: simulate suspend-to-RAM
-Date: Thu, 25 Jan 2007 23:41:24 +0100
-User-Agent: KMail/1.9.1
-Cc: Andrey Borzenkov <arvidjaar@mail.ru>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-References: <20070125113350.GA31068@elte.hu> <20070125180324.36E8B557CF8@chen.mtu.ru> <20070125212622.GB16722@waste.org>
-In-Reply-To: <20070125212622.GB16722@waste.org>
+	Thu, 25 Jan 2007 17:43:58 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:35146 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030630AbXAYWn5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jan 2007 17:43:57 -0500
+Message-ID: <45B932A1.90003@torque.net>
+Date: Thu, 25 Jan 2007 17:43:45 -0500
+From: Douglas Gilbert <dougg@torque.net>
+Reply-To: dougg@torque.net
+User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: linux-scsi@vger.kernel.org
+CC: linux-kernel@vger.kernel.org, taggart@debian.org
+Subject: lsscsi-0.19 released
+X-Enigmail-Version: 0.94.0.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200701252341.25514.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 25 January 2007 22:26, Matt Mackall wrote:
-> On Thu, Jan 25, 2007 at 09:03:22PM +0300, Andrey Borzenkov wrote:
-> > Ingo Molnar wrote:
-> > > Make debugging such bugs easier by offering a resume mode that does not
-> > > actually call into the BIOS to turn off the machine. This, in
-> > > combination with earlyprintk=serial,ttyS0,115200,keep ,
-> > > CONFIG_PM_DEBUG=y, CONFIG_DISABLE_CONSOLE_SUSPEND=y and
-> > > /sys/power/filter enables me to have a fully functional serial console
-> > > during the full suspend/resume cycle.
-> > >
-> > 
-> > Will it work with netconsole too? COM port is often missing in notebooks
-> > today.
-> 
-> Should, if you add your network device to the aforementioned filter.
+lsscsi is a utility that uses sysfs in linux 2.6 series kernels
+to list information about SCSI devices and SCSI hosts. Both a
+compact format (default) which is one line per device and a
+"classic" format (like the output of 'cat /proc/scsi/scsi') are
+supported.
 
-Hm, what about the bus to which the device is connected?
+Version 0.19 is available at
+http://www.torque.net/scsi/lsscsi.html
+More information can be found on that page including examples
+and a Download section for tarballs, rpm and deb packages.
+This version adds transport specific information.
 
-Rafael
+ChangeLog:
+Version 0.19 2007/1/25
+  - add transport information (target + initiator)
+    - start with FC, SAS, SPI, iSCSI and SBP
+    - alter ISCSI for 2.6.20 changes
+  - SAS fix for lk 2.6.20 (SYSFS_DEPRECATED=n)
+  - enhance host name search when proc_name is "<NULL>"
+  - implement filter option for '--hosts'
+    - accept 'host<n>' as first item in filter to mean host <n>
+  - output more host attributes when '-Hll' given
+  - add '--list' (or '-L') option output attribute=value
+    entries, one per line
 
 
--- 
-If you don't have the time to read,
-you don't have the time or the tools to write.
-		- Stephen King
+Doug Gilbert
