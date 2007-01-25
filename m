@@ -1,53 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030267AbXAYQOh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030271AbXAYQOs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030267AbXAYQOh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jan 2007 11:14:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030270AbXAYQOh
+	id S1030271AbXAYQOs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jan 2007 11:14:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030270AbXAYQOq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jan 2007 11:14:37 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:52242 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030267AbXAYQOh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jan 2007 11:14:37 -0500
-Subject: Re: [PATCH] libata-sff: Don't call bmdma_stop on non DMA capable
-	controllers
-From: David Woodhouse <dwmw2@infradead.org>
-To: Alan <alan@lxorguk.ukuu.org.uk>
-Cc: jgarzik@pobox.com, torvalds@osdl.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20070125150905.652f9ce2@localhost.localdomain>
-References: <20070125150905.652f9ce2@localhost.localdomain>
-Content-Type: text/plain
-Date: Fri, 26 Jan 2007 00:14:18 +0800
-Message-Id: <1169741658.3593.98.camel@shinybook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6.dwmw2.1) 
+	Thu, 25 Jan 2007 11:14:46 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:36768 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030274AbXAYQOo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jan 2007 11:14:44 -0500
+Message-ID: <45B8D5AB.8040803@redhat.com>
+Date: Thu, 25 Jan 2007 11:07:07 -0500
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
+MIME-Version: 1.0
+To: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+CC: Christoph Lameter <clameter@sgi.com>, Aubrey Li <aubreylee@gmail.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Robin Getz <rgetz@blackfin.uclinux.org>,
+       "Henn, erich, Michael" <Michael.Hennerich@analog.com>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC] Limit the size of the pagecache
+References: <Pine.LNX.4.64.0701231645260.5239@schroedinger.engr.sgi.com> <45B75208.90208@linux.vnet.ibm.com> <Pine.LNX.4.64.0701240655400.9696@schroedinger.engr.sgi.com> <45B82F41.9040705@linux.vnet.ibm.com> <45B835FE.6030107@redhat.com> <45B844E3.4050203@linux.vnet.ibm.com>
+In-Reply-To: <45B844E3.4050203@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-01-25 at 15:09 +0000, Alan wrote:
+Vaidyanathan Srinivasan wrote:
+> Rik van Riel wrote:
+
+>> There are a few databases out there that mmap the whole
+>> thing.  Sleepycat for one...
 > 
-> diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.20-rc4-mm1/drivers/ata/libata-sff.c linux-2.6.20-rc4-mm1/drivers/ata/libata-sff.c
-> --- linux.vanilla-2.6.20-rc4-mm1/drivers/ata/libata-sff.c       2007-01-22 16:26:50.000000000 +0000
-> +++ linux-2.6.20-rc4-mm1/drivers/ata/libata-sff.c       2007-01-24 17:31:40.000000000 +0000
-> @@ -827,7 +827,8 @@
->   */
->  void ata_bmdma_post_internal_cmd(struct ata_queued_cmd *qc)
->  {
-> -       ata_bmdma_stop(qc);
-> +       if (qc->ap->ioaddr.bmdma_addr)
-> +               ata_bmdma_stop(qc);
->  }
+> That is why my suggestion would be not to touch mmapped pagecache
+> pages in the current pagecache limit code.  The limit should concern
+> only unmapped pagecache pages.
 
-But what if the bmdma_addr _is_ zero? Please, let's not allow the "zero
-is not a valid number" braindamage to spread any further than the IRQ
-setup it's already broken.
+So you want to limit how much data the kernel caches for mysql
+or postgresql, but not limit how much of the rpm database is
+cached ?!
 
-All the world is not a PeeCee.
+IMHO your proposal does the exact opposite of what would be
+right for my systems :)
 
 -- 
-dwmw2
-
+Politics is the struggle between those who want to make their country
+the best in the world, and those who believe it already is.  Each group
+calls the other unpatriotic.
