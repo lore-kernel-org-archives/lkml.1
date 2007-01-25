@@ -1,123 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965716AbXAYJF0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965728AbXAYJIj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965716AbXAYJF0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jan 2007 04:05:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965719AbXAYJF0
+	id S965728AbXAYJIj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jan 2007 04:08:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965727AbXAYJIj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jan 2007 04:05:26 -0500
-Received: from oola.is.scarlet.be ([193.74.71.23]:46879 "EHLO
-	oola.is.scarlet.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965716AbXAYJFY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jan 2007 04:05:24 -0500
-Message-ID: <45B872BB.1010703@joow.be>
-Date: Thu, 25 Jan 2007 06:04:59 -0300
-From: Pieter Palmers <pieterp@joow.be>
-User-Agent: Thunderbird 1.5.0.2 (X11/20060501)
+	Thu, 25 Jan 2007 04:08:39 -0500
+Received: from lucidpixels.com ([75.144.35.66]:37832 "EHLO lucidpixels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965724AbXAYJIh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jan 2007 04:08:37 -0500
+Date: Thu, 25 Jan 2007 04:08:36 -0500 (EST)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+X-X-Sender: jpiszcz@p34.internal.lan
+To: Pavel Machek <pavel@ucw.cz>
+cc: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org, xfs@oss.sgi.com
+Subject: Re: 2.6.20-rc5: cp 18gb 18gb.2 = OOM killer, reproducible just like
+ 2.16.19.2
+In-Reply-To: <20070125003242.GA23343@elf.ucw.cz>
+Message-ID: <Pine.LNX.4.64.0701250407590.3673@p34.internal.lan>
+References: <Pine.LNX.4.64.0701211424170.2552@p34.internal.lan>
+ <20070122133735.GB4493@ucw.cz> <Pine.LNX.4.64.0701221348020.11525@p34.internal.lan>
+ <Pine.LNX.4.64.0701241837550.2930@p34.internal.lan> <20070125003242.GA23343@elf.ucw.cz>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Lee Revell <rlrevell@joe-job.com>, Steven Rostedt <rostedt@goodmis.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: status of: tasklet_unlock_wait() causes soft lockup with -rt
- and ieee1394	audio
-References: <1152371924.4736.169.camel@mindpipe> <45B3F7A5.2050708@joow.be> <20070122091035.GA11821@elte.hu>
-In-Reply-To: <20070122091035.GA11821@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-DCC-scarlet.be-Metrics: oola 20001; Body=5 Fuz1=5 Fuz2=5
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Pieter Palmers <pieterp@joow.be> wrote:
-> 
->> Dear all,
->>
->> What is the status with respect to this problem? I see that in the 
->> current -rt patch the problematic code piece is different. I 
->> personally haven't tried to reproduce this myself on a more recent 
->> kernel, but I just got a report from one of our users who experienced 
->> the same problem with 2.6.19-rt15 and RT preemption (desktop 
->> preemption works fine).
->>
->> Should the latest -rt patches be fixed with respect to this issue? If 
->> so I'll try and test them, otherwise I omit the effort.
-> 
-> it's not fixed yet. Could you try the patch below?
 
-Ingo,
 
-I couldn't get my laptop booting on 2.6.20-rc3 or 2.6.19, but I passed 
-the patch on to one of our users and he reports that it is working (on 
-2.6.19-rt15).
+On Thu, 25 Jan 2007, Pavel Machek wrote:
 
-Thanks,
+> Hi!
+> 
+> > > Is it highmem-related? Can you try it with mem=256M?
+> > 
+> > Bad idea, the kernel crashes & burns when I use mem=256, I had to boot 
+> > 2.6.20-rc5-6 single to get back into my machine, very nasty.  Remember I 
+> > use an onboard graphics controller that has 128MB of RAM allocated to it 
+> > and I believe the ICH8 chipset also uses some memory, in any event mem=256 
+> > causes the machine to lockup before it can even get to the boot/init 
+> > processes, the two leds on the keyboard were blinking, caps lock and 
+> > scroll lock and I saw no console at all!
+> 
+> Okay, so try mem=700M or disable CONFIG_HIGHMEM or something.
+> 									Pavel
+> -- 
+> (english) http://www.livejournal.com/~pavelmachek
+> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-raid" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
 
-Pieter
+I forgot to remove the mem=700M with PREEMPT off and this is what I saw 
+this morning:
 
-> 
-> 	Ingo
-> 
-> ---
->  include/linux/interrupt.h |    6 ++----
->  kernel/softirq.c          |   20 ++++++++++++++++++++
->  2 files changed, 22 insertions(+), 4 deletions(-)
-> 
-> Index: linux/include/linux/interrupt.h
-> ===================================================================
-> --- linux.orig/include/linux/interrupt.h
-> +++ linux/include/linux/interrupt.h
-> @@ -328,10 +328,8 @@ static inline void tasklet_unlock(struct
->  	clear_bit(TASKLET_STATE_RUN, &(t)->state);
->  }
->  
-> -static inline void tasklet_unlock_wait(struct tasklet_struct *t)
-> -{
-> -	while (test_bit(TASKLET_STATE_RUN, &(t)->state)) { barrier(); }
-> -}
-> +extern void tasklet_unlock_wait(struct tasklet_struct *t);
-> +
->  #else
->  # define tasklet_trylock(t)		1
->  # define tasklet_tryunlock(t)		1
-> Index: linux/kernel/softirq.c
-> ===================================================================
-> --- linux.orig/kernel/softirq.c
-> +++ linux/kernel/softirq.c
-> @@ -20,6 +20,7 @@
->  #include <linux/mm.h>
->  #include <linux/notifier.h>
->  #include <linux/percpu.h>
-> +#include <linux/delay.h>
->  #include <linux/cpu.h>
->  #include <linux/kthread.h>
->  #include <linux/rcupdate.h>
-> @@ -656,6 +657,25 @@ void __init softirq_init(void)
->  	open_softirq(HI_SOFTIRQ, tasklet_hi_action, NULL);
->  }
->  
-> +#if defined(CONFIG_SMP) || defined(CONFIG_PREEMPT_RT)
-> +
-> +void tasklet_unlock_wait(struct tasklet_struct *t)
-> +{
-> +	while (test_bit(TASKLET_STATE_RUN, &(t)->state)) {
-> +		/*
-> +		 * Hack for now to avoid this busy-loop:
-> +		 */
-> +#ifdef CONFIG_PREEMPT_RT
-> +		msleep(1);
-> +#else
-> +		barrier();
-> +#endif
-> +	}
-> +}
-> +EXPORT_SYMBOL(tasklet_unlock_wait);
-> +
-> +#endif
-> +
->  static int ksoftirqd(void * __data)
->  {
->  	struct sched_param param = { .sched_priority = MAX_USER_RT_PRIO/2 };
-> 
+[18005.261875] Killed process 4768 (screen)
+[18005.262343] Out of memory: kill process 4793 (screen) score 385 or a 
+child
+[18005.262350] Killed process 4793 (screen)
+[18005.378536] Out of memory: kill process 4825 (screen) score 385 or a 
+child
+[18005.378542] Killed process 4825 (screen)
+[18005.378547] Out of memory: kill process 4825 (screen) score 385 or a 
+child
+[18005.378553] Killed process 4825 (screen)
+[18005.413072] Out of memory: kill process 4875 (screen) score 385 or a 
+child
+[18005.413079] Killed process 4875 (screen)
+[18005.423735] Out of memory: kill process 4970 (screen) score 385 or a 
+child
+[18005.423742] Killed process 4970 (screen)
+[18005.431391] Out of memory: kill process 21365 (xfs_fsr) score 286 or a 
+child
+[18005.431398] Killed process 21365 (xfs_fsr)
+ 
+$ screen -ls
+  There are screens on:
+        2532.pts-0.p34  (Dead ???)
+        3776.pts-2.p34  (Dead ???)
+        4768.pts-7.p34  (Dead ???)
+        4793.pts-9.p34  (Dead ???)
+        4825.pts-11.p34 (Dead ???)
+        4875.pts-13.p34 (Dead ???)
+        4970.pts-15.p34 (Dead ???)
+ 
+
+Lovely...
+
+$ uname -r
+2.6.20-rc5
+
+Something is seriously wrong with that OOM killer.
+
+Justin.
 
