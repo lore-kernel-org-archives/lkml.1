@@ -1,68 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933093AbXAYAXk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964898AbXAYAdX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933093AbXAYAXk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jan 2007 19:23:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933097AbXAYAXk
+	id S964898AbXAYAdX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jan 2007 19:33:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933104AbXAYAdX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jan 2007 19:23:40 -0500
-Received: from tone.orchestra.cse.unsw.EDU.AU ([129.94.242.59]:39975 "EHLO
-	tone.orchestra.cse.unsw.EDU.AU" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933093AbXAYAXk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jan 2007 19:23:40 -0500
-X-Greylist: delayed 342 seconds by postgrey-1.27 at vger.kernel.org; Wed, 24 Jan 2007 19:23:39 EST
-From: Paul Cameron Davies <pauld@cse.unsw.EDU.AU>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Date: Thu, 25 Jan 2007 11:17:22 +1100 (EST)
-X-X-Sender: pauld@weill.orchestra.cse.unsw.EDU.AU
-cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] Page Table cleanup patch
-In-Reply-To: <45B6CE8C.8010807@yahoo.com.au>
-Message-ID: <Pine.LNX.4.64.0701251116040.4081@weill.orchestra.cse.unsw.EDU.AU>
-References: <20070124023828.11302.51100.sendpatchset@weill.orchestra.cse.unsw.EDU.AU>
- <45B6CE8C.8010807@yahoo.com.au>
+	Wed, 24 Jan 2007 19:33:23 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:48369 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S933100AbXAYAdW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jan 2007 19:33:22 -0500
+Date: Thu, 25 Jan 2007 01:32:42 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Justin Piszcz <jpiszcz@lucidpixels.com>
+Cc: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org, xfs@oss.sgi.com
+Subject: Re: 2.6.20-rc5: cp 18gb 18gb.2 = OOM killer, reproducible just like 2.16.19.2
+Message-ID: <20070125003242.GA23343@elf.ucw.cz>
+References: <Pine.LNX.4.64.0701211424170.2552@p34.internal.lan> <20070122133735.GB4493@ucw.cz> <Pine.LNX.4.64.0701221348020.11525@p34.internal.lan> <Pine.LNX.4.64.0701241837550.2930@p34.internal.lan>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0701241837550.2930@p34.internal.lan>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Nick
+Hi!
 
-On Wed, 24 Jan 2007, Nick Piggin wrote:
+> > Is it highmem-related? Can you try it with mem=256M?
+> 
+> Bad idea, the kernel crashes & burns when I use mem=256, I had to boot 
+> 2.6.20-rc5-6 single to get back into my machine, very nasty.  Remember I 
+> use an onboard graphics controller that has 128MB of RAM allocated to it 
+> and I believe the ICH8 chipset also uses some memory, in any event mem=256 
+> causes the machine to lockup before it can even get to the boot/init 
+> processes, the two leds on the keyboard were blinking, caps lock and 
+> scroll lock and I saw no console at all!
 
-> Paul Davies wrote:
->> This patch is a proposed cleanup of the current page table organisation.
->> Such a cleanup would be a logical first step towards introducing at least
->> a partial clean page table interface, geared towards providing enhanced 
->> virtualization oportunities for x86.  It is also a common sense cleanup in 
->> its own right.
->>
->>  * Creates mlpt.c to hold the page table implementation currently held 
->> in memory.c.
->>  * Adjust Makefile  * Move implementation dependent page table code out of 
->> include/linux/mm.h into include/linux/mlpt-mm.h
->>  * Move implementation dependent page table code out of 
->> include/asm-generic/pgtable.h to include/asm-generic/pgtable-mlpt.h
->> 
->> mlpt stands from multi level page table.
->
-> Hi Paul,
->
-> I'm not sure that I see the point of this patch alone, as there is still
-> all the mlpt implementation details in all the page table walkers. Or
-> did you have a scheme to change implementations somehow just using the
-> p*d_addr_next?
-
-This patch alone doesn't acheive nearly enough.  Separating out as much
-implementation (without tackling the walkers) would be a start though.
-The MLPT appears to be intrinsic to the kernel owing to its open coding, 
-and starting to isolate its implementation (even partially) is an 
-important step towards destroying this misconception.
-
-I strongly prefer not to go down the path of using a scheme to change 
-implementations with p*d_addr_next.  I tried this kind of thing early on 
-and it was horribly ugly.  There are far cleaner ways to do it.
-
-Cheers
-
-Paul Davies
+Okay, so try mem=700M or disable CONFIG_HIGHMEM or something.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
