@@ -1,86 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965705AbXAYIY1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965707AbXAYIZ6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965705AbXAYIY1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jan 2007 03:24:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965703AbXAYIY0
+	id S965707AbXAYIZ6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jan 2007 03:25:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965703AbXAYIZ6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jan 2007 03:24:26 -0500
-Received: from ausmtp05.au.ibm.com ([202.81.18.154]:64387 "EHLO
-	ausmtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965705AbXAYIYZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jan 2007 03:24:25 -0500
-Message-ID: <45B86930.2090709@linux.vnet.ibm.com>
-Date: Thu, 25 Jan 2007 13:54:16 +0530
-From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Organization: IBM
-User-Agent: Thunderbird 1.5.0.5 (X11/20060728)
+	Thu, 25 Jan 2007 03:25:58 -0500
+Received: from mail.kroah.org ([69.55.234.183]:48889 "EHLO perch.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965707AbXAYIZ5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jan 2007 03:25:57 -0500
+Date: Thu, 25 Jan 2007 00:25:44 -0800
+From: Greg KH <greg@kroah.com>
+To: Markku Savela <msa@moth.iki.fi>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: How to get /dev entry created automaticly for dynamic major number?
+Message-ID: <20070125082544.GA16300@kroah.com>
+References: <200701250735.l0P7Z7aN018630@moth.iki.fi>
 MIME-Version: 1.0
-To: Al Boldi <a1426z@gawab.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [RFC] Limit the size of the pagecache
-References: <200701250942.47321.a1426z@gawab.com>
-In-Reply-To: <200701250942.47321.a1426z@gawab.com>
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <200701250735.l0P7Z7aN018630@moth.iki.fi>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-Al Boldi wrote:
-> Rik van Riel wrote:
->> Christoph Lameter wrote:
->>> This is a patch using some of Aubrey's work plugging it in what is IMHO
->>> the right way. Feel free to improve on it. I have gotten repeatedly
->>> requests to be able to limit the pagecache.
->> IMHO it's a bad hack.
->>
->> It would be better to identify the problem this "feature" is
->> trying to fix, and then fix the root cause.
+On Thu, Jan 25, 2007 at 09:35:07AM +0200, Markku Savela wrote:
 > 
-> Ok, here is the problem:  kswapd.
+> If want to write a loadable module which "implements" a char device
+> ("virtual", no real device present). How do I get the correct
+> "/dev/foo" to appear automaticly?  What is the current recommended
+> solution (kernel 2.6.17 in Ubuntu and later).
 > 
-> Limiting the page-cache memory inhibits invoking kswapd needlessly, aiding 
-> performance and easing OOM pressures.
-
-Apart from kswapd, limiting pagecache helps performance of
-applications by not eating away their ANON pages or other parts of its
-resident data set.  When there is enough free memory, then there is no
-performance issue.  However memory is always utilized to the max.
-Hence every pagecache page that is allocated should come from some
-application's RSS, or from cold pagecache page.  If that page was
-stolen from some application, then that application pays the price for
-swapping or reading the page back to memory.  This scenario is what we
- want to avoid.  All that we are trying to achieve is that pagecache
-eats a (unmapped) pagecache page and not steal memory from other
-important application's resident set.
-
-Certainly this should be a configurable option and kernel's behavior
-should not be changed in general.
-
-> I tried the patch; it works.
-
-:)
-
-> But it needs a bit of debugging.  Setting pagecache_ratio = 1 either 
-> deadlocks or reduces thru-put to < 1mb/s.
-
-Yes, going below 5% on my 1GB RAM machine causes severe performance
-problems.  We need to hard wire a reasonable lower limit and not
-provide a noose for the end user to tie around!
-
---Vaidy
-
+> static int major;
 > 
-> Thanks!
+> static int __init foo_init(void)
+>     {
+>     ...
+>     major = register_chrdev(0, "foo", &fops);
+>     ....
+>     }
 > 
-> --
-> Al
+> static void __exit foo_exit(void)
+>     {
+>     ...
+>     if (major > 0)
+>         unregister_chrdev(major, "foo");
+>     ...
+>     }
 > 
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> I thought that the above code would be enough to trigger the "udevd",
+> but apparently not (if it should, what is the match rule I have to
+> use? DRIVER=="foo" or KERNEL="foo[0-9]*"? None of these seem to
+> work). Do I have to do some additional poking with sysfs?  I can see
+> my module there, but nothing else.
 > 
+> The problem seems to be that most information I find from books or net
+> is out of date for 2.6, or carries note "these things are currently
+> been changed". A pointer to a definitive documentation would also do!
+
+If you look in the book, Linux Device Drivers, third edition, free
+online, there's a section on what is needed for udev to work properly.
+
+The ideas are still the same, but the way to do it has changed since the
+book was written.  Just use a struct device and a class, and you will be
+fine.  Look at the misc device core or the mem code in
+drivers/char/mem.c for examples of what you need to do.
+
+Hope this helps,
+
+greg k-h
