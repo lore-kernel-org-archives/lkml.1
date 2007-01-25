@@ -1,68 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933172AbXAYM0M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965130AbXAYM27@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933172AbXAYM0M (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jan 2007 07:26:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933177AbXAYM0L
+	id S965130AbXAYM27 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jan 2007 07:28:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965152AbXAYM26
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jan 2007 07:26:11 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:39924 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933172AbXAYM0L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jan 2007 07:26:11 -0500
-Subject: Re: 2.6.20-rc4 gfs2 bug
-From: Steven Whitehouse <swhiteho@redhat.com>
-To: Dan Merillat <dmerillat@sequiam.com>
-Cc: linux-cluster@redhat.com, linux-kernel@vger.kernel.org
-In-Reply-To: <20070125050731.GA23270@chaos.ao.net>
-References: <20070125050731.GA23270@chaos.ao.net>
-Content-Type: text/plain
-Organization: Red Hat (UK) Ltd
-Date: Thu, 25 Jan 2007 12:29:49 +0000
-Message-Id: <1169728189.11001.107.camel@quoit.chygwyn.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.2.2 (2.2.2-5) 
-Content-Transfer-Encoding: 7bit
+	Thu, 25 Jan 2007 07:28:58 -0500
+Received: from kepler.fjfi.cvut.cz ([147.32.6.11]:39184 "EHLO
+	kepler.fjfi.cvut.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965130AbXAYM26 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jan 2007 07:28:58 -0500
+Date: Thu, 25 Jan 2007 13:28:56 +0100 (CET)
+From: Martin Drab <drab@kepler.fjfi.cvut.cz>
+To: Oleg Verych <olecom@flower.upol.cz>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Intel PCI-E bridge ACPI resources and possibly related SATA
+ unstability problems on ASUS A8Js
+In-Reply-To: <E1HA1Se-0002Y3-VQ@flower>
+Message-ID: <Pine.LNX.4.64.0701251325250.20484@kepler.fjfi.cvut.cz>
+References: <Pine.LNX.4.64.0701250142180.14408@kepler.fjfi.cvut.cz>
+ <E1HA1Se-0002Y3-VQ@flower>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Thu, 25 Jan 2007, Oleg Verych wrote:
 
-On Thu, 2007-01-25 at 00:07 -0500, Dan Merillat wrote:
-> Running 2.6.20-rc4 _WITH_ the following patch: (Shouldn't be the issue,
-> but just in case, I'm listing it here)
+> gmane.linux.kernel:
+> > recently I got my hands on an ASUS A8Js notebook (Core 2 Duo T7200,
+> > Intel 945 PM PCI-E Chipset, for details see attached log). After booting 
+> > the latest 2.6.20-rc5-git3 kernel (but the same behaviour occurs also with 
+> > the 2.6.19.2, didn't try any other), some strange behaviour can be 
+> > observed.
 > 
-> Date:	Fri, 29 Dec 2006 21:03:57 +0100
-> From:	Ingo Molnar <mingo@elte.hu>
-> Subject: [patch] remove MAX_ARG_PAGES
-> Message-ID: <20061229200357.GA5940@elte.hu>
+> There were disscussions about mmconfig and what nightmare it brought to
+> PCI(E) configuration in scope of BIOS, chip bugs. Here's (one of) such:
+> <http://marc.theaimsgroup.com/?l=linux-kernel&m=116007091004503&w=2>
 > 
-> Linux fileserver 2.6.20-rc4MAX_ARGS #4 PREEMPT Fri Jan 12 03:58:25 EST 2007 x86_64 GNU/Linux
+> > At first the following messages appear in the log:
+> >
+> > ...
+> > [   40.303154] PCI: BIOS Bug: MCFG area at e0000000 is not E820-reserved
+> > [   40.303157] PCI: Not using MMCONFIG.
+> >
+> > (not sure whether this is really a problem)
 > 
-> This happened when I started testing gfs2 for the first time.  I
-> installed userspace from CVS, loaded the gfs2/dlm modules, mkfs.gfs2,
-> then "mount -t gfs2 -v /dev/vg1/gfs2 /mnt/gfs"
-> 
-> This was the initial mount of the new filesystem.  I can create
-> directories, but attempting a stress-test with bonnie seems to have
-> deadlocked something.  (at "Start 'em", immediately.)
-> 
-> To clarify: the two oopses happened at first mount.  After that, I
-> created files/directories, then attempted to stress it a bit with
-> bonnie++.  No further oops/dmesg output.
-> 
-Are you in a position to test a kernel without preempt? I have a
-sneeking suspicion that its related to that.
+> I think it may be the major problem.
 
-> For the GFS2 folks, latest CVS gfs_tool doesn't have lockdump, is there
-> any way to examine what I'm stuck on?
-> 
-There isn't anything similar at the moment, however we do know about
-that and there is a bugzilla entry relating to it, #221300. I don't
-think that in this case it will help though since I think this is
-something more fundamental in the locking code.
+Hmm, it may be. Was there suggested any solution (or at least proposal) 
+that I may try?
 
-I'll see if I can reproduce something similar locally in the mean time,
-
-Steve.
-
-
+Martin
