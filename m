@@ -1,63 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965758AbXAYK30@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965764AbXAYK3u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965758AbXAYK30 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jan 2007 05:29:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965761AbXAYK30
+	id S965764AbXAYK3u (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jan 2007 05:29:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965765AbXAYK3u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jan 2007 05:29:26 -0500
-Received: from amsfep16-int.chello.nl ([62.179.120.11]:37526 "EHLO
-	amsfep16-int.chello.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965758AbXAYK3Z (ORCPT
+	Thu, 25 Jan 2007 05:29:50 -0500
+Received: from ug-out-1314.google.com ([66.249.92.175]:22391 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965764AbXAYK3t (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jan 2007 05:29:25 -0500
-Subject: Re: [RFC] Limit the size of the pagecache
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Cc: Al Boldi <a1426z@gawab.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <45B86930.2090709@linux.vnet.ibm.com>
-References: <200701250942.47321.a1426z@gawab.com>
-	 <45B86930.2090709@linux.vnet.ibm.com>
-Content-Type: text/plain
-Date: Thu, 25 Jan 2007 11:29:05 +0100
-Message-Id: <1169720945.6189.52.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
+	Thu, 25 Jan 2007 05:29:49 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=n9I2ls21/d2dPi+vU+Zj0C8+clDpRXLUaNBKt3zc/pVUpE1SSdRAlbXLRf9+PH+XeDRJlIjWhCwsJ9/5CI1fBjG26evO8KY/hS6cdIxK9DRUKdXmkSzVpvo4Tqv2dl6Z6wHqQAal9p1RozxKHUhrszoCdeYBsh3yCOU/xlnXH+A=
+Message-ID: <8355959a0701250229y227bacf6hfc22a747e58e4e3@mail.gmail.com>
+Date: Thu, 25 Jan 2007 15:59:47 +0530
+From: "Sunil Naidu" <akula2.shark@gmail.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Subject: Strange LKML home page!!!
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello,
 
-> Apart from kswapd, limiting pagecache helps performance of
-> applications by not eating away their ANON pages or other parts of its
-> resident data set.  When there is enough free memory, then there is no
-> performance issue.  However memory is always utilized to the max.
-> Hence every pagecache page that is allocated should come from some
-> application's RSS, or from cold pagecache page.  If that page was
-> stolen from some application, then that application pays the price for
-> swapping or reading the page back to memory.  This scenario is what we
->  want to avoid.  All that we are trying to achieve is that pagecache
-> eats a (unmapped) pagecache page and not steal memory from other
-> important application's resident set.
-> 
-> Certainly this should be a configurable option and kernel's behavior
-> should not be changed in general.
+I got stunned when I opened www.lkml.org
 
-Ah, this would be a clear case of the page reclaim selecting the wrong
-working set.
+=> <title>lkml deals psp ipod laptop hotel flight travel holiday lcd
+tv mac pc</title>
 
-It is perfectly fine for a page cache page to evict a app page (be it
-anon or not) if that page cache page is used more frequently than the
-app page in question.
+All junk & nonsence .....looks like a Domain seller!!!
 
-Trouble seems to be that the current algorithm gets it quite wrong at
-times.
+What's the problem here?
 
-Also stating that free memory somehow is good for you is weird, free
-memory is a loss, you under utilise your machine. Keeping clean
-pagecache pages in there that are likely to be referenced again is a
-clear win; it saves the tediously slow load from disk.
-
-So you're now proposing to limit the page cache were as its clear that
-the better solution would be to tune replacement policy (and or provide
-hints to said mechanism using madvise/fadvise)
-
+~Akula2
