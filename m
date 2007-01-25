@@ -1,89 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030581AbXAYV3W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030587AbXAYVep@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030581AbXAYV3W (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jan 2007 16:29:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030582AbXAYV3W
+	id S1030587AbXAYVep (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jan 2007 16:34:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030591AbXAYVep
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jan 2007 16:29:22 -0500
-Received: from server077.de-nserver.de ([62.27.12.245]:35903 "EHLO
-	server077.de-nserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030581AbXAYV3V (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jan 2007 16:29:21 -0500
-Message-ID: <45B9212E.2070100@profihost.com>
-Date: Thu, 25 Jan 2007 22:29:18 +0100
-From: Stefan Priebe - FH <studium@profihost.com>
-User-Agent: Mozilla Thunderbird 1.0.7 (Windows/20050923)
-X-Accept-Language: de-DE, de, en-us, en
-MIME-Version: 1.0
-To: Chuck Ebbert <cebbert@redhat.com>
-CC: linux-kernel@vger.kernel.org, edmudama@gmail.com
-Subject: Re: XFS or Kernel Problem / Bug
-References: <20060801141545.B2326184@wobbly.melbourne.sgi.com> <44CED76B.20507@profihost.com> <20060801142755.C2326184@wobbly.melbourne.sgi.com> <44CED8F4.9080208@profihost.com> <20060801143212.D2326184@wobbly.melbourne.sgi.com> <44CEDA1D.5060607@profihost.com> <20060801143803.E2326184@wobbly.melbourne.sgi.com> <44CF36FB.6070606@profihost.com> <20060802090915.C2344877@wobbly.melbourne.sgi.com> <44D07AB7.3020409@profihost.com> <20060802201805.A2360409@wobbly.melbourne.sgi.com> <45B35CD7.4080801@profihost.com> <45B666BE.8000802@redhat.com> <45B70D69.20500@profihost.com> <45B773C1.7090805@redhat.com> <45B77547.4060302@profihost.com> <45B77780.5000504@redhat.com> <45B77C84.6070508@profihost.com> <45B78E9F.4000404@redhat.com> <45B7948B.70104@profihost.com> <45B79DCF.4040904@redhat.com> <45B7B334.2050904@profihost.com> <45B91894.3040604@redhat.com>
-In-Reply-To: <45B91894.3040604@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 25 Jan 2007 16:34:45 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:55241 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030587AbXAYVeo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jan 2007 16:34:44 -0500
+Date: Thu, 25 Jan 2007 13:34:05 -0800
+From: Andrew Morton <akpm@osdl.org>
+To: Dmitriy Monakhov <dmonakhov@sw.ru>
+Cc: linux-kernel@vger.kernel.org, devel@openvz.org
+Subject: Re: [PATCH][RFC] incorrect direct io error handling (v3)
+Message-Id: <20070125133405.3a4ffeda.akpm@osdl.org>
+In-Reply-To: <87fya0nt3x.fsf@sw.ru>
+References: <87fya0nt3x.fsf@sw.ru>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-User-Auth: Auth by hostmaster@profihost.com through 84.133.245.39
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Wed, 24 Jan 2007 22:05:06 +0300
+Dmitriy Monakhov <dmonakhov@sw.ru> wrote:
 
-OK - i rechecked everything. We've 22 Servers with the DFI PM-12 
-Mainboard with VIA Chipset.
+> incorrect direct io error handling (v3)
+> Changes from v2:
+>  - Remove BUG_ON(!mutex_is_locked(..)) for non blkdev.
+>  - vmtruncate() called from generic_file_aio_write().
+>  - depends on patch titled:
+>    [PATH][RFC] mm: Move common segments checks to separate function
 
-But only the 5 oldest of them (before 2004 / 01 / 20) (we've buyed all 
-in a range of 10 month) have this problem.
-
-So i think it is a mixture of software and hardware problem. Perhaps DFI 
-changed something on the mainboard (e.g. new revision) or there was a 
-new BIOS Version on it.
-
-But there must also changed something in the kernel.
-
- > OK, can you post configs for one that works and one that doesn't?
-You mean Kernel .configs?
-
- > And which C compiler(s) do you use? The same for all, I hope...
-On all 32bit Machines:
-
-gcc -v
-Reading specs from /usr/lib/gcc-lib/i486-linux/3.3.5/specs
-Configured with: ../src/configure -v 
---enable-languages=c,c++,java,f77,pascal,objc,ada,treelang --prefix=/usr 
---mandir=/usr/share/man --infodir=/usr/share/info 
---with-gxx-include-dir=/usr/include/c++/3.3 --enable-shared 
---enable-__cxa_atexit --with-system-zlib --enable-nls 
---without-included-gettext --enable-clocale=gnu --enable-debug 
---enable-java-gc=boehm --enable-java-awt=xlib --enable-objc-gc i486-linux
-Thread model: posix
-gcc version 3.3.5 (Debian 1:3.3.5-13)
-
-Stefan
+drat, I skipped that patch due to rejects, and because Nick is working on
+things in the same area.
 
 
-Chuck Ebbert schrieb:
-> Stefan Priebe - FH wrote:
+> LOG:
+> If generic_file_direct_write() has fail (ENOSPC condition) inside 
+> __generic_file_aio_write_nolock() it may have instantiated
+> a few blocks outside i_size. And fsck will complain about wrong i_size
+> (ext2, ext3 and reiserfs interpret i_size and biggest block difference as error),
+> after fsck will fix error i_size will be increased to the biggest block,
+> but this blocks contain gurbage from previous write attempt, this is not 
+> information leak, but its silence file data corruption. This issue affect 
+> fs regardless the values of blocksize or pagesize.
+> We need truncate any block beyond i_size after write have failed , do in simular
+> generic_file_buffered_write() error path. Initialy i've proposed do it in
+> __generic_file_aio_write_nolock() with explicit guarantee i_mutex always held,
+> but not everybody was agree with it. So we may safely call vmtruncate() inside 
+> generic_file_aio_write(), here i_mutex already locked.
+>  
+> TEST_CASE:
+> open("/mnt/test/BIG_FILE", O_WRONLY|O_CREAT|O_DIRECT, 0666) = 3
+> write(3, "aaaaaaaaaaaaaaa"..., 104857600) = -1 ENOSPC (No space left on device)
 > 
->>>What is different about these servers?
->>
->>All 300 machines are mostly different. We have Dual Opteron, single P4
->>with HT, single P4 without HT, Dual Xeon, Athlon 64 X2, and many
->>more... different mainboards etc.
->>
->>The only thing i found out is, that all these servers (where the
->>problem exist) are using a DFI PM-12 Mainboard with a VIA Chipset.
+> #stat /mnt/test/BIG_FILE
+>   File: `/mnt/test/BIG_FILE'
+>   Size: 0               Blocks: 110896     IO Block: 1024   regular empty file
+> <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<^^^^^^^^file size is less than biggest block idx
 > 
-> Any others with VIA chipsets?
+> Device: fe07h/65031d    Inode: 14          Links: 1
+> Access: (0644/-rw-r--r--)  Uid: (    0/    root)   Gid: (    0/    root)
+> Access: 2007-01-24 20:03:38.000000000 +0300
+> Modify: 2007-01-24 20:03:38.000000000 +0300
+> Change: 2007-01-24 20:03:39.000000000 +0300
 > 
->>>Are you building different kernels for them, or is it just different
->>>drivers loaded?
->>
->>No every machine builds it's own kernel.
->>
+> #fsck.ext3 -f /dev/VG/test 
+> e2fsck 1.39 (29-May-2006)
+> Pass 1: Checking inodes, blocks, and sizes
+> Inode 14, i_size is 0, should be 56556544.  Fix<y>? yes
+> Pass 2: Checking directory structure
 > 
-> OK, can you post configs for one that works and one that doesn't?
-> 
-> And which C compiler(s) do you use? The same for all, I hope...
+> Signed-off-by: Dmitriy Monakhov <dmonakhov@openvz.org>
+> -------
 > 
 
+diff --git a/mm/filemap.c b/mm/filemap.c
+> index d01abb6..96840e5 100644
+> --- a/mm/filemap.c
+> +++ b/mm/filemap.c
+> @@ -2058,8 +2058,9 @@ generic_file_direct_write(struct kiocb *
+>  	/*
+>  	 * Sync the fs metadata but not the minor inode changes and
+>  	 * of course not the data as we did direct DMA for the IO.
+> -	 * i_mutex is held, which protects generic_osync_inode() from
+> -	 * livelocking.  AIO O_DIRECT ops attempt to sync metadata here.
+> +	 * i_mutex may not being held, if so some specific locking
+> +	 * ordering must protect generic_osync_inode() from livelocking.
+> +	 * AIO O_DIRECT ops attempt to sync metadata here.
+>  	 */
+>  	if ((written >= 0 || written == -EIOCBQUEUED) &&
+>  	    ((file->f_flags & O_SYNC) || IS_SYNC(inode))) {
+> @@ -2365,6 +2366,17 @@ ssize_t generic_file_aio_write(struct ki
+>  			&iocb->ki_pos);
+>  	mutex_unlock(&inode->i_mutex);
+>  
+> +	if (unlikely(ret < 0 && (file->f_flags & O_DIRECT))) {
+> +		ssize_t cnt = generic_segment_checks(nr_segs, iov, VERIFY_READ);
+> +		loff_t isize = i_size_read(inode);
+> +		/*
+> +		 * generic_file_direct_write() may have instantiated a few 
+> +		 * blocks outside i_size.  Trim these off again.
+> +		 */
+> +		if (cnt > 0 && (pos + cnt > isize))
+> +			vmtruncate(inode, isize);
+> +	}
+> +
+
+vmtruncate() really wants i_mutex to be held.  Can't we do that here?
