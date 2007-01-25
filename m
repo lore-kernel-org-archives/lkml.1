@@ -1,97 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030234AbXAYPwg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030239AbXAYP50@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030234AbXAYPwg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jan 2007 10:52:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030245AbXAYPwg
+	id S1030239AbXAYP50 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jan 2007 10:57:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030246AbXAYP50
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jan 2007 10:52:36 -0500
-Received: from mx2.suse.de ([195.135.220.15]:53940 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030234AbXAYPwe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jan 2007 10:52:34 -0500
-Date: Thu, 25 Jan 2007 07:51:39 -0800
-From: Greg KH <greg@kroah.com>
-To: Markku Savela <msa@moth.iki.fi>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: How to get /dev entry created automaticly for dynamic major number?
-Message-ID: <20070125155139.GA24945@kroah.com>
-References: <200701250735.l0P7Z7aN018630@moth.iki.fi> <20070125082544.GA16300@kroah.com> <200701251311.l0PDBFD0025319@moth.iki.fi>
+	Thu, 25 Jan 2007 10:57:26 -0500
+Received: from nz-out-0506.google.com ([64.233.162.234]:33630 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030239AbXAYP50 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jan 2007 10:57:26 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=HapSV7tQewCltvTxyOsNO6iCfXUK972ACd13qXeMHZvOEeKiQ0ZYOCHSplVxxYuPJA/VgBaL8mBNlVCUvUtRGwGNbcIX2pXeyzev7UfO2KYM8wDXa20Ky+jDgZ5zx5qb29b1hVVsJsQHTVZi0EZgDdvnI1PpN58SPugMp2q6u5g=
+Message-ID: <806dafc20701250757n3dcb38b7ma5f8423ab3de9850@mail.gmail.com>
+Date: Thu, 25 Jan 2007 10:57:25 -0500
+From: "Christopher \"Monty\" Montgomery" <xiphmont@gmail.com>
+To: "Pierre Ossman" <drzeus@drzeus.cx>
+Subject: Re: [PATCH] alsa: correct nonsensical sysfs device symlinks
+Cc: "Greg KH" <greg@kroah.com>, perex@suse.cz, mclasen@redhat.com,
+       jrb@redhat.com, "Lennart Poettering" <lennart@poettering.net>,
+       linux-kernel@vger.kernel.org, alsa-devel@alsa-project.org,
+       fedora-desktop-list@redhat.com
+In-Reply-To: <45B8CF7E.2040908@drzeus.cx>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200701251311.l0PDBFD0025319@moth.iki.fi>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <806dafc20701241750t53b86babn36831cadc7dfa76c@mail.gmail.com>
+	 <20070125042616.GA21813@kroah.com>
+	 <806dafc20701250611u9935049ja8f88deb2aac4d40@mail.gmail.com>
+	 <45B8C9A3.6060107@drzeus.cx>
+	 <806dafc20701250736yc5c3048u14ec98e9b6b92574@mail.gmail.com>
+	 <45B8CF7E.2040908@drzeus.cx>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 25, 2007 at 03:11:15PM +0200, Markku Savela wrote:
-> Solution found!
-> 
-> > On Thu, Jan 25, 2007 at 09:35:07AM +0200, Markku Savela wrote:
-> > > If want to write a loadable module which "implements" a char device
-> > > ("virtual", no real device present). How do I get the correct
-> > > "/dev/foo" to appear automaticly?
-> 
-> > From: Greg KH <greg@kroah.com>
-> 
-> > If you look in the book, Linux Device Drivers, third edition, free
-> > online, there's a section on what is needed for udev to work properly.
-> > 
-> > The ideas are still the same, but the way to do it has changed since the
-> > book was written.  Just use a struct device and a class, and you will be
-> > fine.  Look at the misc device core or the mem code in
-> > drivers/char/mem.c for examples of what you need to do.
-> 
-> Thanks! The solution seems to work. The final *obstacle* was, that
-> class_* symbols were not available until I added the
-> LICENSE("GPL"). Here is the resulting template, maybe useful for
-> someone, and just for verification, that I got it right.
+On 1/25/07, Pierre Ossman <drzeus@drzeus.cx> wrote:
 
-Your code _is_ licensed under the GPL, right?
+> There is some option about deprecated sysfs stuff. Perhaps this is the
+> cause of your twisted tree. It's off here:
+>
+> # CONFIG_SYSFS_DEPRECATED is not set
 
-> ...
-> static int foo_major = 0;
-> static struct class *foo_class;
-> static struct class_device *foo_device;
-> ...
-> 
-> static int __init foo_init(void)
->   {
->     foo_major = 0;
->     foo_class = NULL;
->     foo_device = NULL;
-> 
->     foo_major = register_chrdev(foo_major, "foo", &foo_fops);
->     if (foo_major <= 0)
->         return -EIO;
->     foo_class = class_create(THIS_MODULE, "foo");
->     if (IS_ERR(foo_class))
->        {
->        return PTR_ERR(foo_class);
->        }
->     foo_device = class_device_create(foo_class, NULL, MKDEV(foo_major, 0), NULL, "foo0");
->     if (IS_ERR(foo_device))
->        {
->        return PTR_ERR(foo_device);
->        }
->     return 0;
->     }
-> 
-> static void __exit foo_exit(void)
->     {
->     if (foo_device && !IS_ERR(foo_device))
->        class_device_del(foo_device);
->     if (foo_class && !IS_ERR(foo_class))
->        class_destroy(foo_class);
->     if (foo_major > 0)
->        unregister_chrdev(foo_major, "foo");
->     }
+It is set.  It is also set in the default config, so plently of people
+are running with a broken sysfs tree.
 
-Yes, this should work just fine.  But as others said, try just using
-'device_create' instead, so I don't have to go changing your code in the
-next few months when 'struct class_device' finally goes away (it is
-being replaced.)
+I assume we agree that even if that's set, the tree should not be
+outright broken like it is (the compatability mode should actually be
+compatable, ie, work, right? :-)  Given that, is my patch correct?
+What was there (plugging the old 'dev' arg into the new call's
+'parent' makes no sense) is clearly wrong.
 
-thanks,
+And it's clear my pacth is incomplete, as it doesn't correct the
+device entries for the other entries.
 
-greg k-h
+Monty
