@@ -1,84 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030758AbXAZQr5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030775AbXAZQsO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030758AbXAZQr5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jan 2007 11:47:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030804AbXAZQr4
+	id S1030775AbXAZQsO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jan 2007 11:48:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030834AbXAZQsO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jan 2007 11:47:56 -0500
-Received: from mtagate5.de.ibm.com ([195.212.29.154]:58667 "EHLO
-	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030758AbXAZQrz (ORCPT
+	Fri, 26 Jan 2007 11:48:14 -0500
+Received: from calculon.skynet.ie ([193.1.99.88]:40238 "EHLO
+	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030804AbXAZQsI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jan 2007 11:47:55 -0500
-Date: Fri, 26 Jan 2007 17:47:52 +0100
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
-Subject: [S390] cpcmd with vmalloc addresses.
-Message-ID: <20070126164752.GE11609@skybase>
+	Fri, 26 Jan 2007 11:48:08 -0500
+Date: Fri, 26 Jan 2007 16:48:04 +0000 (GMT)
+From: Mel Gorman <mel@csn.ul.ie>
+X-X-Sender: mel@skynet.skynet.ie
+To: Christoph Lameter <clameter@sgi.com>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/8] Create ZONE_MOVABLE to partition memory between
+ movable and non-movable pages
+In-Reply-To: <Pine.LNX.4.64.0701260812150.6141@schroedinger.engr.sgi.com>
+Message-ID: <Pine.LNX.4.64.0701261629050.23091@skynet.skynet.ie>
+References: <20070125234458.28809.5412.sendpatchset@skynet.skynet.ie>
+ <Pine.LNX.4.64.0701260812150.6141@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Christian Borntraeger <cborntra@de.ibm.com>
+On Fri, 26 Jan 2007, Christoph Lameter wrote:
 
-[S390] cpcmd with vmalloc addresses.
+> On Thu, 25 Jan 2007, Mel Gorman wrote:
+>
+>> The following 8 patches against 2.6.20-rc4-mm1 create a zone called
+>> ZONE_MOVABLE that is only usable by allocations that specify both __GFP_HIGHMEM
+>> and __GFP_MOVABLE. This has the effect of keeping all non-movable pages
+>> within a single memory partition while allowing movable allocations to be
+>> satisified from either partition.
+>
+> For arches that do not have HIGHMEM other zones would be okay too it
+> seems.
+>
 
-Change the bounce buffer logic of cpcmd. diag8 needs _real_ memory below
-2GB. Therefore vmalloced data does not work. As the data might cross a
-page boundary, we cannot use virt_to_page either. The solution is to use
-virt_to_page only in the check for a bounce buffer.
+It would, but it'd obscure the code to take advantage of that.
 
-There was a redundant check for response==NULL. response < 2GB contains
-this check as well.
+>> The size of the zone is determined by a kernelcore= parameter specified at
+>> boot-time. This specifies how much memory is usable by non-movable allocations
+>> and the remainder is used for ZONE_MOVABLE. Any range of pages within
+>> ZONE_MOVABLE can be released by migrating the pages or by reclaiming.
+>
+> The user has to manually fiddle around with the size of the unmovable
+> partition until it works?
+>
 
-I also removed the rlen==0 check, since rlen=0 and response!=NULL would
-be a caller bug and response==NULL is already checked.
+They have to fiddle with the size of the unmovable partition if their 
+workload uses more unmovable kernel allocations than expected. This was 
+always going to be the restriction with using zones for partitioning 
+memory. Resizing zones on the fly is not really an option because the 
+resizing would only work reliably in one direction.
 
-Signed-off-by: Christian Borntraeger <cborntra@de.ibm.com>
-Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
----
+The anti-fragmentation code could potentially be used to have subzone 
+groups that kept movable and unmovable allocations as far apart as 
+possible and at opposite ends of a zone. That approach has been kicked a 
+few times because of complexity.
 
- arch/s390/kernel/cpcmd.c |   14 +++++++-------
- 1 files changed, 7 insertions(+), 7 deletions(-)
+>> When selecting a zone to take pages from for ZONE_MOVABLE, there are two
+>> things to consider. First, only memory from the highest populated zone is
+>> used for ZONE_MOVABLE. On the x86, this is probably going to be ZONE_HIGHMEM
+>> but it would be ZONE_DMA on ppc64 or possibly ZONE_DMA32 on x86_64. Second,
+>> the amount of memory usable by the kernel will be spreadly evenly throughout
+>> NUMA nodes where possible. If the nodes are not of equal size, the amount
+>> of memory usable by the kernel on some nodes may be greater than others.
+>
+> So how is the amount of movable memory on a node calculated?
 
-diff -urpN linux-2.6/arch/s390/kernel/cpcmd.c linux-2.6-patched/arch/s390/kernel/cpcmd.c
---- linux-2.6/arch/s390/kernel/cpcmd.c	2007-01-26 17:27:27.000000000 +0100
-+++ linux-2.6-patched/arch/s390/kernel/cpcmd.c	2007-01-26 17:27:50.000000000 +0100
-@@ -16,6 +16,7 @@
- #include <asm/ebcdic.h>
- #include <asm/cpcmd.h>
- #include <asm/system.h>
-+#include <asm/io.h>
- 
- static DEFINE_SPINLOCK(cpcmd_lock);
- static char cpcmd_buf[241];
-@@ -88,13 +89,8 @@ int cpcmd(const char *cmd, char *respons
- 	int len;
- 	unsigned long flags;
- 
--	if ((rlen == 0) || (response == NULL)
--	    || !((unsigned long)response >> 31)) {
--		spin_lock_irqsave(&cpcmd_lock, flags);
--		len = __cpcmd(cmd, response, rlen, response_code);
--		spin_unlock_irqrestore(&cpcmd_lock, flags);
--	}
--	else {
-+	if ((virt_to_phys(response) != (unsigned long) response) ||
-+			(((unsigned long)response + rlen) >> 31)) {
- 		lowbuf = kmalloc(rlen, GFP_KERNEL | GFP_DMA);
- 		if (!lowbuf) {
- 			printk(KERN_WARNING
-@@ -106,6 +102,10 @@ int cpcmd(const char *cmd, char *respons
- 		spin_unlock_irqrestore(&cpcmd_lock, flags);
- 		memcpy(response, lowbuf, rlen);
- 		kfree(lowbuf);
-+	} else {
-+		spin_lock_irqsave(&cpcmd_lock, flags);
-+		len = __cpcmd(cmd, response, rlen, response_code);
-+		spin_unlock_irqrestore(&cpcmd_lock, flags);
- 	}
- 	return len;
- }
+Subtle difference. The amount of unmovable memory is calculated per node.
+
+> Evenly
+> distributed?
+
+As evenly as possible.
+
+> There are some NUMA architectures that are not that
+> symmetric.
+>
+
+I know, it's why find_zone_movable_pfns_for_nodes() is as complex as it 
+is. The mechanism spreads the unmovable memory evenly throughout all 
+nodes. In the event some nodes are too small to hold their share, the 
+remaining unmovable memory is divided between the nodes that are larger.
+
+>> By default, the zone is not as useful for hugetlb allocations because they
+>> are pinned and non-migratable (currently at least). A sysctl is provided that
+>> allows huge pages to be allocated from that zone. This means that the huge
+>> page pool can be resized to the size of ZONE_MOVABLE during the lifetime of
+>> the system assuming that pages are not mlocked. Despite huge pages being
+>> non-movable, we do not introduce additional external fragmentation of note
+>> as huge pages are always the largest contiguous block we care about.
+>
+> The user already has to specify the partitioning of the system at bootup
+> and could take the huge page sizes into account.
+>
+
+Not in all cases. Some systems will not know how many huge pages they need 
+in advance because it is used as a batch system running jobs as requested. 
+The zone allows an amount of memory to be set aside that can be 
+*optionally* used for hugepages if desired or base pages if not. Between 
+jobs, the hugepage pool can be resized up to the size of ZONE_MOVABLE.
+
+The other case is ever supporting memory hot-remove. Any memory within 
+ZONE_MOVABLE can potentially be removed by migrating pages and off-lined.
+
+> Also huge pages may have variable sizes that can be specified on bootup
+> for IA64. The assumption that a huge page is always the largest
+> contiguous block is *not true*.
+>
+
+I didn't say they were the largest supported contiguous block, I said they 
+were the largest contiguous block we *care* about. Right now, it is 
+assumed that variable pages are not supported at runtime. If they were, 
+some smarts would be needed to keep huge pages of the same size together 
+to control external fragmentation but that's about it.
+
+> The huge page sizes on i386 and x86_64 platforms are contigent on
+> their page table structure. This can be completely different on other
+> platforms.
+>
+
+The size doesn't really make much difference to the mechanism.
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
