@@ -1,81 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030604AbXAZCWF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030625AbXAZCWk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030604AbXAZCWF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jan 2007 21:22:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030617AbXAZCWF
+	id S1030625AbXAZCWk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jan 2007 21:22:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030710AbXAZCWj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jan 2007 21:22:05 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:41832 "EHLO mail.dvmed.net"
+	Thu, 25 Jan 2007 21:22:39 -0500
+Received: from customer-domains.icp-qv1-irony15.iinet.net.au ([203.59.1.175]:60532
+	"EHLO customer-domains.icp-qv1-irony15.iinet.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030604AbXAZCWE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jan 2007 21:22:04 -0500
-Message-ID: <45B965C6.5090604@pobox.com>
-Date: Thu, 25 Jan 2007 21:21:58 -0500
-From: Jeff Garzik <jgarzik@pobox.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
+	id S1030625AbXAZCWi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jan 2007 21:22:38 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ao8CAA71uEXKoR9jdGdsb2JhbACOAQ
+X-IronPort-AV: i="4.13,240,1167580800"; 
+   d="scan'208"; a="34946030:sNHT7891590"
+Message-ID: <45B965EA.20106@eyal.emu.id.au>
+Date: Fri, 26 Jan 2007 13:22:34 +1100
+From: Eyal Lebedinsky <eyal@eyal.emu.id.au>
+Organization: Eyal at Home
+User-Agent: Debian Thunderbird 1.0.2 (X11/20061113)
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
-CC: linux-ide@vger.kernel.org, kay.sievers@suse.de,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH] remove duplicate ids from ata_piix
-References: <20070126021228.GA3444@kroah.com>
-In-Reply-To: <20070126021228.GA3444@kroah.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.20-rc6 - build failure
+References: <Pine.LNX.4.64.0701241847360.25027@woody.linux-foundation.org> <45B89008.9000809@eyal.emu.id.au>
+In-Reply-To: <45B89008.9000809@eyal.emu.id.au>
+X-Enigmail-Version: 0.91.0.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.7 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
-> From: Greg Kroah-Hartman <gregkh@suse.de>
+I should have added that this is on Debian stable:
+	$ gcc --version
+	gcc (GCC) 3.3.5 (Debian 1:3.3.5-13)
+
+Eyal Lebedinsky wrote:
+> i386
+> Practically all modules selected.
 > 
-> It seems that the ata_piix driver has two duplicate ids, one of them
-> with a different 'private' field in it, which was never being used due
-> to the match for the device happening on an earlier entry.
-> 
-> This patch removes the duplicates, if this is the correct thing to do in
-> this case for the ICH5 device or not, I'll leave to you :)
-> 
-> This duplication was pointed out to me by Kay Sievers <kay.sievers@suse.de>
-> 
-> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-> 
-> ---
->  drivers/ata/ata_piix.c |    4 ----
->  1 file changed, 4 deletions(-)
-> 
-> --- gregkh-2.6.orig/drivers/ata/ata_piix.c
-> +++ gregkh-2.6/drivers/ata/ata_piix.c
-> @@ -191,12 +191,8 @@ static const struct pci_device_id piix_p
->  	/* Intel ICH4 (i845GV, i845E, i852, i855) UDMA 100 */
->  	{ 0x8086, 0x24CA, PCI_ANY_ID, PCI_ANY_ID, 0, 0, ich_pata_100 },
->  	{ 0x8086, 0x24CB, PCI_ANY_ID, PCI_ANY_ID, 0, 0, ich_pata_100 },
-> -	/* Intel ICH5 */
-> -	{ 0x8086, 0x24DB, PCI_ANY_ID, PCI_ANY_ID, 0, 0, ich_pata_133 },
->  	/* C-ICH (i810E2) */
->  	{ 0x8086, 0x245B, PCI_ANY_ID, PCI_ANY_ID, 0, 0, ich_pata_100 },
-> -	/* ESB (855GME/875P + 6300ESB) UDMA 100  */
-> -	{ 0x8086, 0x25A2, PCI_ANY_ID, PCI_ANY_ID, 0, 0, ich_pata_100 },
->  	/* ICH6 (and 6) (i915) UDMA 100 */
->  	{ 0x8086, 0x266F, PCI_ANY_ID, PCI_ANY_ID, 0, 0, ich_pata_100 },
->  	/* ICH7/7-R (i945, i975) UDMA 100*/
+>   Building modules, stage 2.
+>   MODPOST 1931 modules
+> WARNING: drivers/atm/fore_200e.o - Section mismatch: reference to .init.text: from .text between 'fore200e_initialize' (at offset 0x25af) and 'fore200e_monitor_putc'
+> WARNING: drivers/atm/lanai.o - Section mismatch: reference to .init.text: from .text between 'sram_test_pass' (at offset 0x1a8) and 'sram_test_and_clear'
+> WARNING: drivers/atm/zatm.o - Section mismatch: reference to .init.text: from .text after 'zatm_init_one' (at offset 0x1f25)
+> WARNING: drivers/atm/zatm.o - Section mismatch: reference to .init.text: from .text after 'zatm_init_one' (at offset 0x1f32)
+> WARNING: drivers/net/rrunner.o - Section mismatch: reference to .init.text:rr_init from .text between 'rr_init_one' (at offset 0x1d0) and 'rr_remove_one'
+> WARNING: drivers/net/sis900.o - Section mismatch: reference to .init.text:sis900_mii_probe from .text between 'sis900_probe' (at offset 0x47b) and 'sis900_default_phy'
+> WARNING: drivers/net/sunhme.o - Section mismatch: reference to .init.text: from .text between 'happy_meal_pci_probe' (at offset 0x2add) and 'happy_meal_pci_remove'
+> WARNING: drivers/net/tokenring/3c359.o - Section mismatch: reference to .init.text:xl_init from .text between 'xl_probe' (at offset 0x1da) and 'xl_hw_reset'
+> WARNING: drivers/net/tulip/de2104x.o - Section mismatch: reference to .init.text: from .text between 'de_init_one' (at offset 0x2151) and 'de_remove_one'
+> WARNING: drivers/net/tulip/de2104x.o - Section mismatch: reference to .init.text: from .text between 'de_init_one' (at offset 0x2158) and 'de_remove_one'
+> WARNING: drivers/net/tulip/de2104x.o - Section mismatch: reference to .init.text: from .text between 'de_init_one' (at offset 0x2220) and 'de_remove_one'
+> WARNING: "__udivdi3" [fs/ocfs2/ocfs2.ko] undefined!
+> make[1]: *** [__modpost] Error 1
 
-Both IDs are clearly dups, but ICH5 should support ich_pata_133, so 
-you're removing the wrong entry there.
-
-I think the right thing to do is remove the entries that appear near the 
-top of the list, but I would like Alan (Mr. PATA) to confirm...
-
-	/* Also PIIX4E (fn3 rev 2) and PIIX4M (fn3 rev 3) */
-	{ 0x8086, 0x7111, PCI_ANY_ID, PCI_ANY_ID, 0, 0, piix_pata_33 },
--	{ 0x8086, 0x24db, PCI_ANY_ID, PCI_ANY_ID, 0, 0, ich_pata_100 },
--	{ 0x8086, 0x25a2, PCI_ANY_ID, PCI_ANY_ID, 0, 0, ich_pata_100 },
-
-Regards,
-
-	Jeff
-
-
+-- 
+Eyal Lebedinsky (eyal@eyal.emu.id.au) <http://samba.org/eyal/>
+	attach .zip as .dat
