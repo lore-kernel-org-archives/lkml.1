@@ -1,76 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965622AbXAZMYE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751652AbXAZM1a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965622AbXAZMYE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jan 2007 07:24:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965620AbXAZMYE
+	id S1751652AbXAZM1a (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jan 2007 07:27:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752017AbXAZM1a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jan 2007 07:24:04 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:51690 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965623AbXAZMYB (ORCPT
+	Fri, 26 Jan 2007 07:27:30 -0500
+Received: from smtp106.mail.mud.yahoo.com ([209.191.85.216]:45939 "HELO
+	smtp106.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751652AbXAZM1a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jan 2007 07:24:01 -0500
-Subject: Re: [Ksummit-2006-discuss] 2007 Linux Kernel Summit
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: David Miller <davem@davemloft.net>
-Cc: dirk.hohndel@intel.com, ksummit-2006-discuss@thunk.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20070125.125121.98861775.davem@davemloft.net>
-References: <20070123.095756.30177490.davem@davemloft.net>
-	 <C1DDFD3E.8658%dirk.hohndel@intel.com>
-	 <20070125.125121.98861775.davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-15
-Date: Fri, 26 Jan 2007 10:23:40 -0200
-Message-Id: <1169814220.5759.54.camel@areia>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0-1mdv2007.0 
-Content-Transfer-Encoding: 8bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Fri, 26 Jan 2007 07:27:30 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=qmMdrUoW0mS6DhzJ4lcpmuQ55Y1Yt2C0ryzJ/gqUmdoFisD/a2J0/esHTL/Zz3ztJX0qMu7eX/AjXNuprhcDrBAia2BaI/fjtgGrAiEX4cR3YiqofuZ5crKEsl8QP2mHZMTi2sZh15wBj5IeEifmA7eQ0epAneRY2jmhvPI82Vs=  ;
+X-YMail-OSG: FjlW_ZkVM1n3pLmYV6YWkxVwd.6FbI_fz6vjXPXT_y2O1wrWwe8e9ejKbBbbZfj4dGEhX4PpeA--
+Message-ID: <45B9F3A3.6080003@yahoo.com.au>
+Date: Fri, 26 Jan 2007 23:27:15 +1100
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
+MIME-Version: 1.0
+To: Mel Gorman <mel@csn.ul.ie>
+CC: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/8] Add __GFP_MOVABLE for callers to flag allocations
+ that may be migrated
+References: <20070125234458.28809.5412.sendpatchset@skynet.skynet.ie> <20070125234518.28809.86069.sendpatchset@skynet.skynet.ie>
+In-Reply-To: <20070125234518.28809.86069.sendpatchset@skynet.skynet.ie>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Qui, 2007-01-25 às 12:51 -0800, David Miller escreveu:
-> From: Dirk Hohndel <dirk.hohndel@intel.com>
-> Date: Thu, 25 Jan 2007 06:22:54 -0800
-> 
+Mel Gorman wrote:
+> It is often known at allocation time when a page may be migrated or
+> not. This patch adds a flag called __GFP_MOVABLE and a new mask called
+> GFP_HIGH_MOVABLE.
 
-> It's too damn repetitive to go to the same location over and over.
-> Why do you think LCA tries to go to a different city every year and
-> even let "foreigners" run the show last year in New Zealand? :-)
-> Nobody want to go to the same place twice if they have to travel
-> at all.
-> 
-> As an added bonus, we can hand off the conference organizing to
-> different folks in the local location each year.  That will also add
-> some new life and excitement to kernel summit, have different people
-> chair, organize, and run the conference.  If you use the same people,
-> just like using the same venue, the thing gets stale, and the kernel
-> summit is extremely stale at the moment.
-> 
-> That's what I'm against, going to the same location over and over.  It
-> makes the event more like a chore than something to look forward to
-> and enjoy.
-If the conference would be hold in Brazil, I may help having local
-support. 
+Shouldn't that be HIGHUSER_MOVABLE?
 
-The company I work hold last year an ETSI internal meeting about IMS in
-Brasília. It were a very interesting experience. The meeting were closed
-to ETSI members and some people invited. After the meeting, there were
-two days of an open event.
-
-It should be noticed that about 99.9% of the attendants came from
-Europe, with travelling costs covered by their companies. The Brazilian
-company organized the event and covered some local costs (like
-lunch/dinner/cocktail/event hostage).
-
-Probably, the major companies with worldwide presence will cover
-travelling costs, whatever place KS would be hold, since the local
-offices of those companies will have interests on holding the
-conference.
-
-Just my $2 cents.
-
-Cheers,
-Mauro.
-
+-- 
+SUSE Labs, Novell Inc.
+Send instant messages to your online friends http://au.messenger.yahoo.com 
