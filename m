@@ -1,41 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933178AbXAZLRF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933194AbXAZLRm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933178AbXAZLRF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jan 2007 06:17:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933183AbXAZLRE
+	id S933194AbXAZLRm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jan 2007 06:17:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933199AbXAZLRl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jan 2007 06:17:04 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:56299 "EHLO smtp.osdl.org"
+	Fri, 26 Jan 2007 06:17:41 -0500
+Received: from mailhub.sw.ru ([195.214.233.200]:35627 "EHLO relay.sw.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933187AbXAZLRB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jan 2007 06:17:01 -0500
-Date: Fri, 26 Jan 2007 03:16:54 -0800
-From: Andrew Morton <akpm@osdl.org>
-To: "Matthew Kirk" <mkirk01@rcn.com>
-Cc: <linux-kernel@vger.kernel.org>
-Subject: Re: fsync occasionally very slow
-Message-Id: <20070126031654.a41fe374.akpm@osdl.org>
-In-Reply-To: <001a01c74136$0028ecf0$6600a8c0@charm>
-References: <001a01c74136$0028ecf0$6600a8c0@charm>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	id S933194AbXAZLRk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jan 2007 06:17:40 -0500
+Date: Fri, 26 Jan 2007 14:23:45 +0300
+From: Alexey Dobriyan <adobriyan@openvz.org>
+To: akpm@osdl.org
+Cc: devel@openvz.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 3/3] lutimesat: actual syscall and wire-up on i386
+Message-ID: <20070126112345.GC11128@localhost.sw.ru>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 26 Jan 2007 05:37:38 -0500
-"Matthew Kirk" <mkirk01@rcn.com> wrote:
+lutimesat(2) does everything futimesat(2) does except it doesn't follow
+symlinks.
 
-> I am working on an application that fsync(2) files and directories as
-> needed.    I’m seeing intermittent stalls on fsync that can last many
-> seconds.
+It could be used by tar(1) and cp(1).
 
-Please generate an all-task backtrace during the stall via:
+FreeBSD and NetBSD have lutimes(2) which can be emulated by C library:
 
-dmesg -n 8
-<wait for a stall>
-echo t > /prov/sysrq-trigger
-dmesg -s 1000000 > foo
+	lutimesat(AT_FDCWD, filename, utimes)
 
-and send foo.
+Closes http://bugme.osdl.org/show_bug.cgi?id=4433
+
+Signed-off-by: Alexey Dobriyan <adobriyan@openvz.org>
+---
+
+ arch/i386/kernel/syscall_table.S |    1 +
+ fs/utimes.c                      |    9 +++++++++
+ include/asm-i386/unistd.h        |    3 ++-
+ 3 files changed, 12 insertions(+), 1 deletion(-)
+
+--- a/arch/i386/kernel/syscall_table.S
++++ b/arch/i386/kernel/syscall_table.S
+@@ -319,3 +319,4 @@ ENTRY(sys_call_table)
+ 	.long sys_move_pages
+ 	.long sys_getcpu
+ 	.long sys_epoll_pwait
++	.long sys_lutimesat		/* 320 */
+--- a/fs/utimes.c
++++ b/fs/utimes.c
+@@ -105,3 +105,12 @@ asmlinkage long sys_utimes(char __user *
+ {
+ 	return sys_futimesat(AT_FDCWD, filename, utimes);
+ }
++
++asmlinkage long sys_lutimesat(int dfd, char __user *filename, struct timeval __user *utimes)
++{
++	struct timeval times[2];
++
++	if (utimes && copy_from_user(&times, utimes, sizeof(times)))
++		return -EFAULT;
++	return do_utimes(dfd, filename, utimes ? times : NULL, AT_SYMLINK_NOFOLLOW);
++}
+--- a/include/asm-i386/unistd.h
++++ b/include/asm-i386/unistd.h
+@@ -325,10 +325,11 @@ #define __NR_vmsplice		316
+ #define __NR_move_pages		317
+ #define __NR_getcpu		318
+ #define __NR_epoll_pwait	319
++#define __NR_lutimesat		320
+ 
+ #ifdef __KERNEL__
+ 
+-#define NR_syscalls 320
++#define NR_syscalls 321
+ 
+ #define __ARCH_WANT_IPC_PARSE_VERSION
+ #define __ARCH_WANT_OLD_READDIR
+
