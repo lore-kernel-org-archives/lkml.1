@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030744AbXAZFDK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030746AbXAZFKI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030744AbXAZFDK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jan 2007 00:03:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030745AbXAZFDJ
+	id S1030746AbXAZFKI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jan 2007 00:10:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030747AbXAZFKI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jan 2007 00:03:09 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:45638 "EHLO smtp.osdl.org"
+	Fri, 26 Jan 2007 00:10:08 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:45841 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030744AbXAZFDI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jan 2007 00:03:08 -0500
-Date: Thu, 25 Jan 2007 21:02:45 -0800
+	id S1030746AbXAZFKG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jan 2007 00:10:06 -0500
+Date: Thu, 25 Jan 2007 21:09:50 -0800
 From: Andrew Morton <akpm@osdl.org>
 To: Peter Zijlstra <a.p.zijlstra@chello.nl>
 Cc: Trond Myklebust <trond.myklebust@fys.uio.no>,
        Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org,
        linux-mm@kvack.org, pj@sgi.com
 Subject: Re: [PATCH] nfs: fix congestion control -v4
-Message-Id: <20070125210245.3fb0e30e.akpm@osdl.org>
+Message-Id: <20070125210950.bcdaa7f6.akpm@osdl.org>
 In-Reply-To: <1169739148.6189.68.camel@twins>
 References: <20070116054743.15358.77287.sendpatchset@schroedinger.engr.sgi.com>
 	<20070116135325.3441f62b.akpm@osdl.org>
@@ -44,43 +44,32 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 On Thu, 25 Jan 2007 16:32:28 +0100
 Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
 
-> +long congestion_wait_interruptible(int rw, long timeout)
-> +{
-> +	long ret;
-> +	DEFINE_WAIT(wait);
-> +	wait_queue_head_t *wqh = &congestion_wqh[rw];
-> +
-> +	prepare_to_wait(wqh, &wait, TASK_INTERRUPTIBLE);
-> +	if (signal_pending(current))
-> +		ret = -ERESTARTSYS;
-> +	else
-> +		ret = io_schedule_timeout(timeout);
-> +	finish_wait(wqh, &wait);
-> +	return ret;
-> +}
-> +EXPORT_SYMBOL(congestion_wait_interruptible);
+> Hopefully the last version ;-)
+> 
+> 
+> ---
+> Subject: nfs: fix congestion control
+> 
+> The current NFS client congestion logic is severly broken, it marks the backing
+> device congested during each nfs_writepages() call but doesn't mirror this in
+> nfs_writepage() which makes for deadlocks. Also it implements its own waitqueue.
+> 
+> Replace this by a more regular congestion implementation that puts a cap on the
+> number of active writeback pages and uses the bdi congestion waitqueue.
+> 
+> Also always use an interruptible wait since it makes sense to be able to 
+> SIGKILL the process even for mounts without 'intr'.
+> 
+> ..
+>
+> --- linux-2.6-git.orig/include/linux/nfs_fs_sb.h	2007-01-25 16:07:03.000000000 +0100
+> +++ linux-2.6-git/include/linux/nfs_fs_sb.h	2007-01-25 16:07:12.000000000 +0100
+> @@ -82,6 +82,7 @@ struct nfs_server {
+>  	struct rpc_clnt *	client_acl;	/* ACL RPC client handle */
+>  	struct nfs_iostats *	io_stats;	/* I/O statistics */
+>  	struct backing_dev_info	backing_dev_info;
+> +	atomic_t		writeback;	/* number of writeback pages */
 
-I think this can share code with congestion_wait()?
+We're going to get in trouble with this sort of thing within a few years. 
+atomic_t is 32-bit.  Put 16TB of memory under writeback and blam.
 
-static long __congestion_wait(int rw, long timeout, int state)
-{
-	long ret;
-	DEFINE_WAIT(wait);
-	wait_queue_head_t *wqh = &congestion_wqh[rw];
-
-	prepare_to_wait(wqh, &wait, state);
-	ret = io_schedule_timeout(timeout);
-	finish_wait(wqh, &wait);
-	return ret;
-}
-
-long congestion_wait_interruptible(int rw, long timeout)
-{
-	long ret = __congestion_wait(rw, timeout);
-
-	if (signal_pending(current))
-		ret = -ERESTARTSYS;
-	return ret;
-}
-
-it's only infinitesimally less efficient..
