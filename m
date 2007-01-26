@@ -1,41 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751129AbXAZGFN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030769AbXAZGMd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751129AbXAZGFN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jan 2007 01:05:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750723AbXAZGFN
+	id S1030769AbXAZGMd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jan 2007 01:12:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030772AbXAZGMd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jan 2007 01:05:13 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:47391 "EHLO smtp.osdl.org"
+	Fri, 26 Jan 2007 01:12:33 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:47655 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751129AbXAZGFL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jan 2007 01:05:11 -0500
-Date: Thu, 25 Jan 2007 22:04:57 -0800
+	id S1030769AbXAZGMc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jan 2007 01:12:32 -0500
+Date: Thu, 25 Jan 2007 22:09:16 -0800
 From: Andrew Morton <akpm@osdl.org>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org, pj@sgi.com
-Subject: Re: [PATCH] nfs: fix congestion control -v4
-Message-Id: <20070125220457.a761ae6a.akpm@osdl.org>
-In-Reply-To: <Pine.LNX.4.64.0701252130500.7147@schroedinger.engr.sgi.com>
-References: <20070116054743.15358.77287.sendpatchset@schroedinger.engr.sgi.com>
-	<20070116135325.3441f62b.akpm@osdl.org>
-	<1168985323.5975.53.camel@lappy>
-	<Pine.LNX.4.64.0701171158290.7397@schroedinger.engr.sgi.com>
-	<1169070763.5975.70.camel@lappy>
-	<1169070886.6523.8.camel@lade.trondhjem.org>
-	<1169126868.6197.55.camel@twins>
-	<1169135375.6105.15.camel@lade.trondhjem.org>
-	<1169199234.6197.129.camel@twins>
-	<1169212022.6197.148.camel@twins>
-	<Pine.LNX.4.64.0701190912540.14617@schroedinger.engr.sgi.com>
-	<1169229461.6197.154.camel@twins>
-	<1169231212.5775.29.camel@lade.trondhjem.org>
-	<1169276500.6197.159.camel@twins>
-	<1169482343.6083.7.camel@lade.trondhjem.org>
-	<1169739148.6189.68.camel@twins>
-	<20070125210950.bcdaa7f6.akpm@osdl.org>
-	<Pine.LNX.4.64.0701252130500.7147@schroedinger.engr.sgi.com>
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       lkml <linux-kernel@vger.kernel.org>, containers@lists.osdl.org,
+       Sukadev Bhattiprolu <sukadev@us.ibm.com>
+Subject: Re: [PATCH 7/8] user ns: handle file sigio
+Message-Id: <20070125220916.3d112f24.akpm@osdl.org>
+In-Reply-To: <20070126053808.GA30017@sergelap.austin.ibm.com>
+References: <20061219225902.GA25904@sergelap.austin.ibm.com>
+	<20061219230127.GH25904@sergelap.austin.ibm.com>
+	<m1zm881gq4.fsf@ebiederm.dsl.xmission.com>
+	<20070124185845.GA597@sergelap.austin.ibm.com>
+	<20070125001253.75f899d6.akpm@osdl.org>
+	<20070125153239.GA17904@sergelap.austin.ibm.com>
+	<20070126053808.GA30017@sergelap.austin.ibm.com>
 X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -43,17 +32,47 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 25 Jan 2007 21:31:43 -0800 (PST)
-Christoph Lameter <clameter@sgi.com> wrote:
+On Thu, 25 Jan 2007 23:38:08 -0600
+"Serge E. Hallyn" <serue@us.ibm.com> wrote:
 
-> On Thu, 25 Jan 2007, Andrew Morton wrote:
-> 
-> > atomic_t is 32-bit.  Put 16TB of memory under writeback and blam.
-> 
-> We have systems with 8TB main memory and are able to get to 16TB.
+>  fs/fcntl.c            |    3 +--
+>  include/linux/sched.h |    4 +---
+>  2 files changed, 2 insertions(+), 5 deletions(-)
 
-But I bet you don't use 4k pages on 'em ;)
+My confidence in this lot:
 
-> Better change it now.
+introduce-and-use-get_task_mnt_ns.patch
+introduce-and-use-get_task_mnt_ns-tweaks.patch
+nsproxy-externalizes-exit_task_namespaces.patch
+user-namespace-add-the-framework.patch
+user-namespace-add-the-framework-fix.patch
+user-namespace-add-the-framework-fixes.patch
+user-ns-add-user_namespace-ptr-to-vfsmount.patch
+user-ns-add-user_namespace-ptr-to-vfsmount-fixes.patch
+# user-ns-hook-permission.patch: Eric no like
+user-ns-hook-permission.patch
+user-ns-prepare-copy_tree-copy_mnt-and-their-callers-to-handle-errs.patch
+user-ns-prepare-copy_tree-copy_mnt-and-their-callers-to-handle-errs-fix.patch
+user-ns-implement-shared-mounts.patch
+user-ns-implement-shared-mounts-fixes.patch
+# user_ns-handle-file-sigio.patch: Eric no like
+user_ns-handle-file-sigio.patch
+user_ns-handle-file-sigio-fix.patch
+user_ns-handle-file-sigio-fix-2.patch
+user-ns-implement-user-ns-unshare.patch
+user-ns-implement-user-ns-unshare-tidy.patch
+#
+rename-attach_pid-to-find_attach_pid.patch
+attach_pid-with-struct-pid-parameter.patch
+remove-find_attach_pid.patch
+statically-initialize-struct-pid-for-swapper.patch
+explicitly-set-pgid-sid-of-init.patch
+#
+uts-namespace-remove-config_uts_ns.patch
+ipc-namespace-remove-config_ipc_ns.patch
 
-yup.
+is very low.  If I can by some miracle get all this gunk to compile and
+boot a bit, I'd ask that we all very carefully review the patches which
+landed and make sure that we're all happy with it.
+
+That's still a couple of days away, I expect.
