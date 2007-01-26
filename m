@@ -1,81 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752131AbXAZTqa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161229AbXAZTrP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752131AbXAZTqa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jan 2007 14:46:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752132AbXAZTqa
+	id S1161229AbXAZTrP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jan 2007 14:47:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161234AbXAZTrP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jan 2007 14:46:30 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:52076 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752131AbXAZTq2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jan 2007 14:46:28 -0500
-Date: Fri, 26 Jan 2007 11:46:15 -0800
-From: Andrew Morton <akpm@osdl.org>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Mel Gorman <mel@csn.ul.ie>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Christoph Lameter <clameter@engr.sgi.com>
-Subject: Re: [PATCH 0/8] Create ZONE_MOVABLE to partition memory between
- movable and non-movable pages
-Message-Id: <20070126114615.5aa9e213.akpm@osdl.org>
-In-Reply-To: <Pine.LNX.4.64.0701260751230.6141@schroedinger.engr.sgi.com>
-References: <20070125234458.28809.5412.sendpatchset@skynet.skynet.ie>
-	<20070126030753.03529e7a.akpm@osdl.org>
-	<Pine.LNX.4.64.0701260751230.6141@schroedinger.engr.sgi.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+	Fri, 26 Jan 2007 14:47:15 -0500
+Received: from e33.co.us.ibm.com ([32.97.110.151]:40303 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161229AbXAZTrN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jan 2007 14:47:13 -0500
+Date: Sat, 27 Jan 2007 01:16:22 +0530
+From: Dipankar Sarma <dipankar@in.ibm.com>
+To: Andrew Morton <akpm@osdl.org>
+Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Gautham Shenoy <ego@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: Fw: Re: [mm PATCH 4/6] RCU: (now) CPU hotplug
+Message-ID: <20070126194622.GA17134@in.ibm.com>
+Reply-To: dipankar@in.ibm.com
+References: <20070124011519.GG1613@linux.vnet.ibm.com> <20070124090111.GC27221@in.ibm.com> <20070124161559.GA1762@linux.vnet.ibm.com> <20070124210645.GA19650@in.ibm.com> <20070126191113.GA14770@in.ibm.com> <20070126112837.059502fc.akpm@osdl.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070126112837.059502fc.akpm@osdl.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 26 Jan 2007 07:56:09 -0800 (PST)
-Christoph Lameter <clameter@sgi.com> wrote:
-
-> On Fri, 26 Jan 2007, Andrew Morton wrote:
+On Fri, Jan 26, 2007 at 11:28:37AM -0800, Andrew Morton wrote:
+> On Sat, 27 Jan 2007 00:41:13 +0530
+> Dipankar Sarma <dipankar@in.ibm.com> wrote:
 > 
-> > - They add zillions of ifdefs
+> > Is this a good example to
+> > show why per-subsystem locks might be unmaintainable ?
 > 
-> They just add a few for ZONE_DMA where we alreaday have similar ifdefs for 
-> ZONE_DMA32 and ZONE_HIGHMEM.
+> Maybe.  It might also be a good example of confused design.
 
-I refreshed my memory.  It remains awful.
+Not this one. The point is that this forces us to determine
+which APIs are usable in cpu hotplug path and which aren't.
+It isn't unreasonable to expect that some one may need
+to use sched_setaffinity() in hotplug path. This now forces
+us to have two versions of sched_setaffinity() - one with
+the hotplug per-subsystem lock, the other one without.
 
-> > - They make the VM's behaviour diverge between different platforms and
-> >   between differen configs on the same platforms, and hence degrade
-> >   maintainability and increase complexity.
+> > Can we go back
 > 
-> They avoid unecessary complexity on platforms. They could be made to work 
-> on more platforms with measures to deal with what ZONE_DMA 
-> provides in different ways. There are 6 or so platforms that do not need 
-> ZONE_DMA at all.
+> "back" assumes it was once present.  It wasn't.
 
-As Mel points out, distros will ship with CONFIG_ZONE_DMA=y, so the number
-of machines which will actually benefit from this change is really small. 
-And the benefit to those few machines will also, I suspect, be small.
+IIRC, there was one get_cpu_hotplug()/put_cpu_hotplug() implementation
+based on Arjan's suggestion and implemented in a scalable way by Gautham.
 
-> > - We kicked around some quite different ways of implementing the same
-> >   things, but nothing came of it.  iirc, one was to remove the hard-coded
-> >   zones altogether and rework all the MM to operate in terms of
-> > 
-> > 	for (idx = 0; idx < NUMBER_OF_ZONES; idx++)
-> > 		...
 > 
-> Hmmm.. How would that be simpler?
-
-Replace a sprinkle of open-coded ifdefs with a regular code sequence which
-everyone uses.  Pretty obvious, I'd thought.
-
-Plus it becoems straightforward to extend this from the present four zones
-to a complete 12 zones, which gives use the full set of
-ZONE_DMA20,ZONE_DMA21,...,ZONE_DMA32 for those funny devices.
-
-> > - I haven't seen any hard numbers to justify the change.
+> > to a simple
 > 
-> I have send you numbers showing significant reductions in code size.
+> "simple" hasn't been demonstrated.  New lock types and their use are never
+> simple, especially magic ones.
 
-If it isn't in the changelog it doesn't exist.  I guess I didn't copy it
-into the changelog.
+get_cpu_hotplug()/put_cpu_hotplug() hides all the refcount complexities
+underneath and most kernel programmers are familiar with the
+get()/put() model. This seems like the most simple thing we
+could do in the short term without making too many changes in all over the
+kernel for CPU hotplug.
 
-If the only demonstrable benefit is a saving of a few k of text on a small
-number of machines then things are looking very grim, IMO.
+> 
+> > scalable refcount model
+> > for CPU hotplug now ?
+> 
+> The plan is, I hope, to rip it all out and do freeze_processes() on the
+> hotplug side, so nobody else needs to worry about cpu hotplug any more. 
+> But at present everyone seems to be in hiding.
 
+This would be ideal. However, we don't seem to have any momentum
+on this. The other thing we would need to do in this case is to
+check if all the users of cpu hotplug can tolerate a very slow
+hotplug step if there are 10s of thousands of processes and threads.
+
+Thanks
+Dipankar
