@@ -1,143 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030717AbXAZC7N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030567AbXAZDU4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030717AbXAZC7N (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jan 2007 21:59:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030711AbXAZC7N
+	id S1030567AbXAZDU4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jan 2007 22:20:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030582AbXAZDU4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jan 2007 21:59:13 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:42791 "EHLO smtp.osdl.org"
+	Thu, 25 Jan 2007 22:20:56 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:43241 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030717AbXAZC7M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jan 2007 21:59:12 -0500
-Date: Thu, 25 Jan 2007 18:58:57 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: David Woodhouse <dwmw2@infradead.org>
-cc: Alan <alan@lxorguk.ukuu.org.uk>, Jeff Garzik <jgarzik@pobox.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] libata-sff: Don't call bmdma_stop on non DMA capable
- controllers
-In-Reply-To: <1169778239.3593.195.camel@shinybook.infradead.org>
-Message-ID: <Pine.LNX.4.64.0701251832040.25027@woody.linux-foundation.org>
-References: <20070125150905.652f9ce2@localhost.localdomain> 
- <1169741658.3593.98.camel@shinybook.infradead.org> 
- <20070125172739.0c990a9a@localhost.localdomain> 
- <Pine.LNX.4.64.0701250940220.25027@woody.linux-foundation.org> 
- <1169770985.3593.146.camel@shinybook.infradead.org> 
- <Pine.LNX.4.64.0701251703570.25027@woody.linux-foundation.org>
- <1169778239.3593.195.camel@shinybook.infradead.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1030567AbXAZDUz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jan 2007 22:20:55 -0500
+Date: Thu, 25 Jan 2007 19:20:44 -0800
+From: Andrew Morton <akpm@osdl.org>
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+Cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       dhowells@redhat.com
+Subject: Re: [PATCH] Add a rounddown_pow_of_two() macro to log2.h.
+Message-Id: <20070125192044.c9c2a093.akpm@osdl.org>
+In-Reply-To: <Pine.LNX.4.64.0701250426400.7715@CPE00045a9c397f-CM001225dbafb6>
+References: <Pine.LNX.4.64.0701250426400.7715@CPE00045a9c397f-CM001225dbafb6>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 25 Jan 2007 04:32:12 -0500 (EST)
+"Robert P. J. Day" <rpjday@mindspring.com> wrote:
 
-
-On Fri, 26 Jan 2007, David Woodhouse wrote:
 > 
-> The quality of our drivers is low; I'm fully aware that trying to
-> improve driver quality is a quixotic task.
+>   In the same way that include/linux/log2.h defines the
+> roundup_pow_of_two() macro, define the rounddown_pow_of_two() macro so
+> peopls can stop re-implementing this operation using a loop.
+> 
+> Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
+> 
+> ---
+> 
+>   compile tested on x86 using "make allyesconfig", but there wasn't
+> much chance of the build failing anyway since the patch only adds the
+> macro definition, it doesn't change any existing code to use it.
+> those patches will be submitted later, bit by bit.
+> 
+> diff --git a/include/linux/log2.h b/include/linux/log2.h
+> index d02e1a5..6cf7081 100644
+> --- a/include/linux/log2.h
+> +++ b/include/linux/log2.h
+> @@ -52,6 +63,15 @@ unsigned long __roundup_pow_of_two(unsigned long n)
+>  	return 1UL << fls_long(n - 1);
+>  }
+> 
+> +/*
+> + * round down to nearest power of two
+> + */
+> +static inline __attribute__((const))
+> +unsigned long __rounddown_pow_of_two(unsigned long n)
+> +{
+> +	return 1UL << (fls_long(n) - 1);
+> +}
 
-This is an important point. I actually hold things like the kernel VM 
-layer to _much_ higher standards than I would ever hold a driver writer. 
-That said, we tend to have "0 is special" even there, although we tend to 
-try to make it always be about a pointer for those cases.
+So __rounddown_pow_of_two(16) returns 8?
 
-But drivers really are not just the bulk of the code, but they also can't 
-be tested nearly as well. So for that reason (and really _only_ for that 
-reason), we should always just accept that a "driver" should never have to 
-worry, and *all* of the inconvenience of some special case or whatever 
-must be solidly elsewhere.
+>  /**
+>   * ilog2 - log of base 2 of 32-bit or a 64-bit unsigned value
+>   * @n - parameter
+> @@ -154,4 +174,20 @@ unsigned long __roundup_pow_of_two(unsigned long n)
+>  	__roundup_pow_of_two(n)			\
+>   )
+> 
+> +/**
+> + * rounddown_pow_of_two - round the given value down to nearest power of two
+> + * @n - parameter
+> + *
+> + * round the given value down to the nearest power of two
+> + * - the result is undefined when n == 0
+> + * - this can be used to initialise global variables from constant data
+> + */
+> +#define rounddown_pow_of_two(n)			\
+> +(						\
+> +	__builtin_constant_p(n) ? (		\
+> +		(n == 1) ? 0 :			\
+> +		(1UL << ilog2(n)) :		\
+> +	__rounddown_pow_of_two(n)		\
+> + )
 
-> But where do we draw the line? Should we abandon the dma-mapping stuff 
-> too? Declare that page zero is a special case and you can't DMA to it? 
-> Should we try to make every PCI write also do a read in order to flush 
-> posted writes, because people can't cope with the real world?
+But (1UL << ilog2(16)) returns 16?
 
-I think we should try to aim for two things:
 
- - things that "just work" on a PC should generally "just work" everywhere 
-   else. Just for the simple reason that most drivers never get tested 
-   anywhere else.
+And, afiact, your __rounddown_pow_of_two() is basically equivalent to (1UL
+<< ilog2(n)) anyway.  So a suitable (and less buggy) implementation might be
 
- - if it can't "just work", we should have as many static checks as 
-   possible, and not let it compile.
+static inline unsigned long rounddown_pow_of_two(unsigned long n)
+{
+	return (n == 1) ? 0 : (1UL << ilog2(n));
+}
 
- - and if it does compile, the stuff that "looks simple" should just work.
-
-For example, the reason "0" is special really _is_ about the compiler. For 
-any integer (or pointer, or FP) type in C, there really is just one 
-special value. 0 (or NULL, for pointers).
-
-The reason why resources work fine with zeroes is that for a *resource*, 
-zero isn't actually a special value at all. Why? A resource isn't an 
-integer value. It's a struct.
-
-So compiler type safety (or lack thereof) really ends up forcing some of 
-these issues. If something is represented as an integral type, the only 
-*obvious* real special case is always going to be 0, just because it's the 
-only one you can "test for" implicitly. Similarly, if you return a 
-pointer, you only have NULL that can sanely be used as a special value.
-
-(Yeah, mmap() has taught some people about MAP_FAIL, but that's pretty 
-unusual too. And in the VFS layer, we use the magic "error pointers" that 
-actually encode error values in the bits too - but then, VFS people tend 
-to have to know a lot more about the kernel than a driver writer should 
-have to - VFS people are just held to higher standards).
-
-With a pointer, NULL is usually ok anyway, and always tends to mean 
-something special - and for the other stuff you can then hide things 
-"behind" the pointer. So with a pointer, you could often have "ptr->valid" 
-or something else. With an integer, you can't really do that, because 0 
-always remains special, just because EVEN JUST BY MISTAKE the test of the 
-integer actually just ends up making zero be special.
-
-So if you want a separate "enable" value, it almost has to be a structure 
-or some opaque type, because that's the only type where there isn't an 
-implicit special value.
-
-We've done it occasionally. The VM has done it, for example. And we do it 
-in drivers for more complex cases (and resources is one such case: it's 
-already not a single value, since it has a start and a length, and other 
-structure).
-
-We could have done it for interrupts too. A "struct irqnum" that has a bit 
-that specifies "valid". That would work. But it tends to be painful, so it 
-really has to give you something more than "zero is disabled".
-
-It's just not worth it.
-
-And it's why I decreed, that the ONLY SANE THING is to just let people do 
-the obvious thing:
-
-	if (!dev->irq)
-		return -ENODEV;
-
-you don't have to know ANYTHING, and that code just works, and just looks 
-obvious. And you know what? If it causes a bit of pain for some platform 
-maintainer, I don't care one whit. Because it's obviously much better than 
-the alternatives.
-
-We may not "need" that rule for IO ports. If IO port 0 "happens to work", 
-then hey, fine. But on the other hand, _all_ the same arguments really 
-end up being still 100% true. If some driver happens to write
-
-	if (!dev->ioport)
-		return -ENODEV;
-
-then I say: go for it. The _driver_ is correct. It's the obvious thing to 
-do. It works on PC's, and it's simple and looks fine. Why not? If it 
-causes some minor heartburn for an architecture maintainer, so what? 
-Really? The tradeoff is obvious, and the architecture maintainer needs to 
-just go and fix his IO mappings so that no device ever sees a "valid" port 
-at port 0.
-
-But in the meantime: if nobody complains, and it happens to work on 
-hardware even though some devices _can_ see a port of zero, I also don't 
-care. So I'm certainly not going to claim that your laptop "must be 
-fixed". If it works, it works. Hey fine.
-
-But the first driver that doesn't work because it thought it didn't have 
-an IO port (beause it was zero), and the first time somebody complains, I 
-know *exactly* whose fault it is. It's not the driver.
-
-			Linus
+But I'm not sure.  Please create a userspace test harness to test this
+patch.
