@@ -1,56 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030761AbXAZRP5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030885AbXAZRQi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030761AbXAZRP5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jan 2007 12:15:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030843AbXAZRP5
+	id S1030885AbXAZRQi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jan 2007 12:16:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030873AbXAZRQi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jan 2007 12:15:57 -0500
-Received: from terminus.zytor.com ([192.83.249.54]:50657 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030761AbXAZRP4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jan 2007 12:15:56 -0500
-Date: Fri, 26 Jan 2007 09:15:47 -0800
-From: "H. Peter Anvin" <hpa@anvin.org>
-Message-Id: <200701261715.l0QHFlND013482@tazenda.hos.anvin.org>
-To: akpm@osdl.org, etienne_lorrain@yahoo.fr, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, torvalds@osdl.org
-Subject: [PATCH] Boot loader ID for Gujin
+	Fri, 26 Jan 2007 12:16:38 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:50816 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1030891AbXAZRQh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jan 2007 12:16:37 -0500
+Date: Fri, 26 Jan 2007 18:15:36 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Alessandro Di Marco <dmr@gmx.it>
+Cc: linux-kernel@vger.kernel.org, vojtech@suse.cz
+Subject: Re: [ANNOUNCE] System Inactivity Monitor v1.0
+Message-ID: <20070126171536.GB964@elf.ucw.cz>
+References: <877ivkrv5s.fsf@gmx.it> <20070119101103.GA5730@ucw.cz> <877ivfi60i.fsf@gmx.it> <20070123094114.GE6033@ucw.cz> <87wt3dhlte.fsf@gmx.it> <20070123163442.GA18662@elf.ucw.cz> <87lkjthdmd.fsf@gmx.it> <20070123184432.GE18662@elf.ucw.cz> <873b61cf1v.fsf@gmx.it>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <873b61cf1v.fsf@gmx.it>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add an official boot loader ID for Gujin.
+Hi!
 
-Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+>    Imagine for a moment that we solve time-warp somehow. Any other
+>    problems? 
+> 
+> Well, a user-level daemon have to process a lot of data just to detect user
+> interaction. Considering that the trackpad bandwidth is nearly 5KB/sec,
+> probably would be better to leave my panel alone... :-/
 
----
-commit 1edec5c931a67413245cd41c10694a69f7750497
-tree cd7838958c199bbc1f9f0e819aaf12d58e9b6ef7
-parent 44597f65f6af3c692560a639f61d25398d13d1b6
-author H. Peter Anvin <hpa@zytor.com> Fri, 26 Jan 2007 09:07:01 -0800
-committer H. Peter Anvin <hpa@zytor.com> Fri, 26 Jan 2007 09:07:01 -0800
+Ok, so we may want to introduce something like "tell me if some data
+came from last time"... Actually, 5KB/sec is pretty much okay, and you
+probably could get around actually reading that data.
 
- Documentation/i386/boot.txt |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+When you know user is moving the touchpad, you could just sleep for 5
+seconds (assuming user activity) and only then start monitoring it
+again?
 
-diff --git a/Documentation/i386/boot.txt b/Documentation/i386/boot.txt
-index c51314b..477dad2 100644
---- a/Documentation/i386/boot.txt
-+++ b/Documentation/i386/boot.txt
-@@ -2,7 +2,7 @@
- 		     ----------------------------
- 
- 		    H. Peter Anvin <hpa@zytor.com>
--			Last update 2005-09-02
-+			Last update 2007-01-26
- 
- On the i386 platform, the Linux kernel uses a rather complicated boot
- convention.  This has evolved partially due to historical aspects, as
-@@ -182,6 +182,7 @@ filled out, however:
- 	7  GRuB
- 	8  U-BOOT
- 	9  Xen
-+	A  Gujin
- 
- 	Please contact <hpa@zytor.com> if you need a bootloader ID
- 	value assigned.
+>    I'd really like to get "is user idle" solved, but it really should not be in
+>    kernel unless it _has_ to. And time-warp probably causes problems not only
+>    for your daemon.
+> 
+> IMHO signal the user-space is a kernel duty and no user-space daemon will ever
+> make it better. There are plenty of PM daemons out there, but Linux still lacks
+
+Well, I do not think your kernel code is mergeable. But bits to enable
+similar functionality in userspace probably would be mergeable.
+
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
