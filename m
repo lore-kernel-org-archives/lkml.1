@@ -1,75 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965696AbXAZP5t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965239AbXAZQBV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965696AbXAZP5t (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jan 2007 10:57:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965708AbXAZP5s
+	id S965239AbXAZQBV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jan 2007 11:01:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965708AbXAZQBV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jan 2007 10:57:48 -0500
-Received: from smtpout.mac.com ([17.250.248.178]:59155 "EHLO smtpout.mac.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965696AbXAZP5s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jan 2007 10:57:48 -0500
-In-Reply-To: <Pine.LNX.4.64.0701260219040.17773@CPE00045a9c397f-CM001225dbafb6>
-References: <Pine.LNX.4.64.0701250426400.7715@CPE00045a9c397f-CM001225dbafb6> <20070125192044.c9c2a093.akpm@osdl.org> <Pine.LNX.4.64.0701260219040.17773@CPE00045a9c397f-CM001225dbafb6>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <0A70B252-C11C-4A5C-93B3-AEF820C9D284@mac.com>
-Cc: Andrew Morton <akpm@osdl.org>,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       dhowells@redhat.com
-Content-Transfer-Encoding: 7bit
-From: Kyle Moffett <mrmacman_g4@mac.com>
-Subject: Re: [PATCH] Add a rounddown_pow_of_two() macro to log2.h.
-Date: Fri, 26 Jan 2007 10:57:30 -0500
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-X-Mailer: Apple Mail (2.752.2)
-X-Brightmail-Tracker: AAAAAA==
-X-Brightmail-scanned: yes
+	Fri, 26 Jan 2007 11:01:21 -0500
+Received: from omx1-ext.sgi.com ([192.48.179.11]:58418 "EHLO omx1.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S965239AbXAZQBU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jan 2007 11:01:20 -0500
+Date: Fri, 26 Jan 2007 08:01:07 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+To: Mel Gorman <mel@csn.ul.ie>
+cc: Andrew Morton <akpm@osdl.org>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Christoph Lameter <clameter@engr.sgi.com>
+Subject: Re: [PATCH 0/8] Create ZONE_MOVABLE to partition memory between
+ movable and non-movable pages
+In-Reply-To: <Pine.LNX.4.64.0701261334240.19245@skynet.skynet.ie>
+Message-ID: <Pine.LNX.4.64.0701260756580.6141@schroedinger.engr.sgi.com>
+References: <20070125234458.28809.5412.sendpatchset@skynet.skynet.ie>
+ <20070126030753.03529e7a.akpm@osdl.org> <Pine.LNX.4.64.0701261334240.19245@skynet.skynet.ie>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 26, 2007, at 02:24:35, Robert P. J. Day wrote:
-> On Thu, 25 Jan 2007, Andrew Morton wrote:
->> On Thu, 25 Jan 2007 04:32:12 -0500 (EST)
->> "Robert P. J. Day" <rpjday@mindspring.com> wrote:
->>> +/*
->>> + * round down to nearest power of two
->>> + */
->>> +static inline __attribute__((const))
->>> +unsigned long __rounddown_pow_of_two(unsigned long n)
->>> +{
->>> +	return 1UL << (fls_long(n) - 1);
->>> +}
->>
->> So __rounddown_pow_of_two(16) returns 8?
->
-> it does?  but if that was true, so would 17, and 18, and 19 ...  i  
-> didn't actually test this since it seemed so straightforward.  
-> doesn't fls_long() return the most significant bit?  oh, wait ...  
-> reading further ...
+On Fri, 26 Jan 2007, Mel Gorman wrote:
 
-The way that "ilog2" is defined this should be really  
-straightforward, I dunno why those functions seem so
-overly complicated:
-   roundup_pow_of_two(x) := 1 << ilog2(2*x - 1)
-   rounddown_pow_of_two(x) := 1 << ilog2(x)
+> I haven't thought about it much so I probably am missing something. The major
+> difference I see is when only one zone is present. In that case, a number of
+> loops presumably get optimised away and the behavior is very different
+> (presumably better although you point out no figures exist to prove it). Where
+> there are two or more zones, the code paths should be similar whether there
+> are 2, 3 or 4 zones present.
 
-Where ilog2(x) simply returns the first bit set in the word:
-   ilog2(0) => undefined or -1 or something
-   ilog2(1) => 0
-   ilog2(2) => 1
-   ilog2(3) => 1
-   ilog2(4) => 2
-   [...]
+The balancing of allocations between zones is becoming unnecessary. Also 
+in a NUMA system we then have zone == node which allows for a series of 
+simplifications.
+ 
+> As the common platforms will always have more than one zone, it'll be heavily
+> tested and I'm guessing that distros are always going to have to ship kernels
+> with ZONE_DMA for the devices that require it. The only platform I see that
+> may have problems at the moment is IA64 which looks like the only platform
+> that can have one and only one zone. I am guessing that Christoph will catch
+> problems here fairly quickly although a non-optional ZONE_MOVABLE would throw
+> a spanner into the works somewhat.
 
-The results:
-   roundup_pow_of_two(1) = 1    rounddown_pow_of_two(1) = 1
-   roundup_pow_of_two(2) = 2    rounddown_pow_of_two(2) = 2
-   roundup_pow_of_two(3) = 4    rounddown_pow_of_two(3) = 2
-   roundup_pow_of_two(4) = 4    rounddown_pow_of_two(4) = 4
-   roundup_pow_of_two(5) = 8    rounddown_pow_of_two(5) = 4
-   [...]
-
-Cheers,
-Kyle Moffett
-
+There are 6 platforms that have only one zone. These are not major 
+platforms. In order for major platforms to go to a single zone in general 
+we would have to implement a generic mechanism to do an allocation where 
+one can specify the memory boundaries. Many DMA engines have different
+limitations from what ZONE_DMA and ZONE_DMA32 can provide. If such a 
+scheme would be implemented then those would be able to utilize memory 
+better and the amount of bounce buffers would be reduced.
