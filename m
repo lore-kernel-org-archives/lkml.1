@@ -1,66 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965571AbXAZPym@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965695AbXAZPzW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965571AbXAZPym (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jan 2007 10:54:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965695AbXAZPym
+	id S965695AbXAZPzW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jan 2007 10:55:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965692AbXAZPzW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jan 2007 10:54:42 -0500
-Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:41126 "EHLO
-	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965571AbXAZPyl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jan 2007 10:54:41 -0500
-Message-ID: <45BA2437.4000803@drzeus.cx>
-Date: Fri, 26 Jan 2007 16:54:31 +0100
-From: Pierre Ossman <drzeus-list@drzeus.cx>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061223)
-MIME-Version: 1.0
-To: Petr Vandrovec <vandrove@vc.cvut.cz>, LKML <linux-kernel@vger.kernel.org>
-Subject: ncpfs and TCP vs UDP
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 26 Jan 2007 10:55:22 -0500
+Received: from main.gmane.org ([80.91.229.2]:46981 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965695AbXAZPzU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jan 2007 10:55:20 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Bill Davidsen <davidsen@tmr.com>
+Subject: Re: O_DIRECT question
+Date: Fri, 26 Jan 2007 10:53:43 -0500
+Message-ID: <45BA2407.1000003@tmr.com>
+References: <6d6a94c50701101857v2af1e097xde69e592135e54ae@mail.gmail.com> <200701210005.36274.vda.linux@googlemail.com> <45B3580F.7040407@tls.msk.ru> <200701212102.43028.vda.linux@googlemail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@sea.gmane.org
+Cc: Linus Torvalds <torvalds@osdl.org>, Viktor <vvp01@inbox.ru>,
+       Aubrey <aubreylee@gmail.com>, Hua Zhong <hzhong@gmail.com>,
+       Hugh Dickins <hugh@veritas.com>, linux-kernel@vger.kernel.org,
+       hch@infradead.org, kenneth.w.chen@intel.com, akpm@osdl.org
+X-Gmane-NNTP-Posting-Host: mail.tmr.com
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+In-Reply-To: <200701212102.43028.vda.linux@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Petr,
+Denis Vlasenko wrote:
 
-I was hoping you could give me some input on another concern I have.
-Which of TCP and UDP is the preferred transport for NCP? The client for
-Windows seems to use TCP, which would suggest that that is the most
-tested dialect. I also did a quick test with bonnie++:
+> Well, I too currently work with Oracle.
+> Apparently people who wrote damn thing have very, eh, Oracle-centric
+> world-view. "We want direct writes to the disk. Period." Why? Does it
+> makes sense? Are there better ways? - nothing. They think they know better.
+> 
+I fear you are taking the Windows approach, that the computer is there 
+to serve the o/s and applications have to do things the way the o/s 
+wants. As opposed to the UNIX way, where you can either be clever or 
+stupid, the o/s is there to allow you to use the hardware, not be your 
+mother.
 
-UDP:
+Currently applications have the option of letting the o/s make decisions 
+  via open/read/write, or let the o/s make decisions and tell the 
+application via aio, or using O_DIRECT and having full control over the 
+process. And that's exactly as it should be. It's not up to the o/s to 
+be mother.
 
-Version  1.03 -----Sequential Output------ --Sequential Input- --Random-
-             -Per Chr- --Block-- -Rewrite- -Per Chr- --Block-- --Seeks--
-Machine Size K/sec %CP K/sec %CP K/sec %CP K/sec %CP K/sec %CP  /sec %CP
-        500M  1569  19  1714  10   826   9  1414  18  1569   9  65.2   3
-             ------Sequential Create------ --------Random Create--------
-             -Create-- --Read--- -Delete-- -Create-- --Read--- -Delete--
-       files  /sec %CP  /sec %CP  /sec %CP  /sec %CP  /sec %CP  /sec %CP
-          16   460  14   897  16   556  15   491  15  1131  13   320   6
-poseidon.drzeus.cx,500M,1569,19,1714,10,826,9,1414,18,1569,9,65.2,3,16,460,14,897,16,556,15,491,15,1131,13,320,6
+> (And let's not even start on why oracle ignores SIGTERM. Apparently Unix
+> rules aren't for them. They're too big to play by rules.)
 
-TCP:
+Any process can ignore SIGTERM, or do a significant amount of cleanup 
+before exit()ing. Complex operations need to be completed or unwound. 
+Why select Oracle? Other applications may also do that, with more or 
+less valid reasons.
 
-Version  1.03 -----Sequential Output------ --Sequential Input- --Random-
-             -Per Chr- --Block-- -Rewrite- -Per Chr- --Block-- --Seeks--
-Machine Size K/sec %CP K/sec %CP K/sec %CP K/sec %CP K/sec %CP  /sec %CP
-        500M  1653  19  3711  11  2312   9  1419  18  4489   6  91.5   1
-             ------Sequential Create------ --------Random Create--------
-             -Create-- --Read--- -Delete-- -Create-- --Read--- -Delete--
-       files  /sec %CP  /sec %CP  /sec %CP  /sec %CP  /sec %CP  /sec %CP
-          16   483  14   912  15   587  14   483  14  1176  13   287   6
-poseidon.drzeus.cx,500M,1653,19,3711,11,2312,9,1419,18,4489,6,91.5,1,16,483,14,912,15,587,14,483,14,1176,13,287,6
-
-TCP has roughly twice the throughput of UDP. Note that this was done
-against a vmware machine that wasn't exactly maxing out the network.
-
-Input welcome.
-
-Rgds
 -- 
-     -- Pierre Ossman
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
 
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  PulseAudio, core developer          http://pulseaudio.org
-  rdesktop, core developer          http://www.rdesktop.org
