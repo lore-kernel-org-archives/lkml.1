@@ -1,55 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965239AbXAZQBV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965708AbXAZQBc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965239AbXAZQBV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jan 2007 11:01:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965708AbXAZQBV
+	id S965708AbXAZQBc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jan 2007 11:01:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965712AbXAZQBc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jan 2007 11:01:21 -0500
-Received: from omx1-ext.sgi.com ([192.48.179.11]:58418 "EHLO omx1.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S965239AbXAZQBU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jan 2007 11:01:20 -0500
-Date: Fri, 26 Jan 2007 08:01:07 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-To: Mel Gorman <mel@csn.ul.ie>
-cc: Andrew Morton <akpm@osdl.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Christoph Lameter <clameter@engr.sgi.com>
-Subject: Re: [PATCH 0/8] Create ZONE_MOVABLE to partition memory between
- movable and non-movable pages
-In-Reply-To: <Pine.LNX.4.64.0701261334240.19245@skynet.skynet.ie>
-Message-ID: <Pine.LNX.4.64.0701260756580.6141@schroedinger.engr.sgi.com>
-References: <20070125234458.28809.5412.sendpatchset@skynet.skynet.ie>
- <20070126030753.03529e7a.akpm@osdl.org> <Pine.LNX.4.64.0701261334240.19245@skynet.skynet.ie>
+	Fri, 26 Jan 2007 11:01:32 -0500
+Received: from tomts10.bellnexxia.net ([209.226.175.54]:42543 "EHLO
+	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S965708AbXAZQBb convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jan 2007 11:01:31 -0500
+Date: Fri, 26 Jan 2007 11:01:24 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH 00/09] atomic.h : standardizing atomic primitives
+Message-ID: <20070126160124.GA26138@Krystal>
+References: <11697417541743-git-send-email-mathieu.desnoyers@polymtl.ca> <1169806002.6189.94.camel@twins>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8BIT
+In-Reply-To: <1169806002.6189.94.camel@twins>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.4.32-grsec (i686)
+X-Uptime: 10:59:56 up 156 days, 13:07,  4 users,  load average: 1.85, 2.80, 2.82
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 26 Jan 2007, Mel Gorman wrote:
+* Peter Zijlstra (a.p.zijlstra@chello.nl) wrote:
+> On Thu, 2007-01-25 at 11:15 -0500, Mathieu Desnoyers wrote:
+> > atomic.h : standardizing atomic primitives
+> > 
+> > It mainly adds support for missing 64 bits cmpxchg and 64 bits atomic add
+> > unless. Therefore, principally 64 bits architectures are targeted by these
+> > patches. It also adds the complete list of atomic operations on the atomic_long
+> > type.
+> > 
+> > These patches apply on 2.6.20-rc5-git4.
+> 
+> ARCH=um SUBARCH=i386
+> 
+> In file included from include2/asm/arch/atomic.h:257,
+>                  from include2/asm/atomic.h:10,
+>                  from /usr/src/linux-2.6-git/include/linux/file.h:9,
+>                  from /usr/src/linux-2.6-git/mm/fadvise.c:12:
+> /usr/src/linux-2.6-git/include/asm-generic/atomic.h: In function ‘atomic_long_add_unless’:
+> /usr/src/linux-2.6-git/include/asm-generic/atomic.h:260: warning: implicit declaration of function ‘cmpxchg’
+> /usr/src/linux-2.6-git/include/asm-generic/atomic.h: In function ‘atomic_long_xchg’:
+> /usr/src/linux-2.6-git/include/asm-generic/atomic.h:281: warning: implicit declaration of function ‘xchg’
+> 
+> 
+> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> ---
+> diff --git a/include/asm-um/atomic.h b/include/asm-um/atomic.h
+> index b683f10..b2766b0 100644
+> --- a/include/asm-um/atomic.h
+> +++ b/include/asm-um/atomic.h
+> @@ -6,6 +6,7 @@ #define __UM_ATOMIC_H
+>   */
+>  #include "linux/kernel.h"
+>  
+> +#include "asm/arch/system.h"
+>  #include "asm/arch/atomic.h"
+>  
+>  #endif
+> 
+> 
 
-> I haven't thought about it much so I probably am missing something. The major
-> difference I see is when only one zone is present. In that case, a number of
-> loops presumably get optimised away and the behavior is very different
-> (presumably better although you point out no figures exist to prove it). Where
-> there are two or more zones, the code paths should be similar whether there
-> are 2, 3 or 4 zones present.
+Thanks for the fix,
 
-The balancing of allocations between zones is becoming unnecessary. Also 
-in a NUMA system we then have zone == node which allows for a series of 
-simplifications.
- 
-> As the common platforms will always have more than one zone, it'll be heavily
-> tested and I'm guessing that distros are always going to have to ship kernels
-> with ZONE_DMA for the devices that require it. The only platform I see that
-> may have problems at the moment is IA64 which looks like the only platform
-> that can have one and only one zone. I am guessing that Christoph will catch
-> problems here fairly quickly although a non-optional ZONE_MOVABLE would throw
-> a spanner into the works somewhat.
+Acked-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 
-There are 6 platforms that have only one zone. These are not major 
-platforms. In order for major platforms to go to a single zone in general 
-we would have to implement a generic mechanism to do an allocation where 
-one can specify the memory boundaries. Many DMA engines have different
-limitations from what ZONE_DMA and ZONE_DMA32 can provide. If such a 
-scheme would be implemented then those would be able to utilize memory 
-better and the amount of bounce buffers would be reduced.
+
+-- 
+OpenPGP public key:              http://krystal.dyndns.org:8080/key/compudj.gpg
+Key fingerprint:     8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68 
