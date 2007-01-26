@@ -1,58 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752135AbXAZU2B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030787AbXAZUiD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752135AbXAZU2B (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jan 2007 15:28:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030787AbXAZU2B
+	id S1030787AbXAZUiD (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jan 2007 15:38:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030793AbXAZUiC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jan 2007 15:28:01 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:53621 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752135AbXAZU2A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jan 2007 15:28:00 -0500
-Date: Fri, 26 Jan 2007 12:27:47 -0800
-From: Andrew Morton <akpm@osdl.org>
+	Fri, 26 Jan 2007 15:38:02 -0500
+Received: from calculon.skynet.ie ([193.1.99.88]:44312 "EHLO
+	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030787AbXAZUiB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jan 2007 15:38:01 -0500
+Date: Fri, 26 Jan 2007 20:37:59 +0000 (GMT)
+From: Mel Gorman <mel@csn.ul.ie>
+X-X-Sender: mel@skynet.skynet.ie
 To: Christoph Lameter <clameter@sgi.com>
-Cc: Mel Gorman <mel@csn.ul.ie>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Christoph Lameter <clameter@engr.sgi.com>
-Subject: Re: [PATCH 0/8] Create ZONE_MOVABLE to partition memory between
- movable and non-movable pages
-Message-Id: <20070126122747.dde74c97.akpm@osdl.org>
-In-Reply-To: <Pine.LNX.4.64.0701261147300.15394@schroedinger.engr.sgi.com>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/8] Allow huge page allocations to use GFP_HIGH_MOVABLE
+In-Reply-To: <Pine.LNX.4.64.0701261019210.7848@schroedinger.engr.sgi.com>
+Message-ID: <Pine.LNX.4.64.0701262036200.23091@skynet.skynet.ie>
 References: <20070125234458.28809.5412.sendpatchset@skynet.skynet.ie>
-	<20070126030753.03529e7a.akpm@osdl.org>
-	<Pine.LNX.4.64.0701260751230.6141@schroedinger.engr.sgi.com>
-	<20070126114615.5aa9e213.akpm@osdl.org>
-	<Pine.LNX.4.64.0701261147300.15394@schroedinger.engr.sgi.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+ <20070125234558.28809.21103.sendpatchset@skynet.skynet.ie>
+ <Pine.LNX.4.64.0701260832260.6141@schroedinger.engr.sgi.com>
+ <Pine.LNX.4.64.0701261649040.23091@skynet.skynet.ie>
+ <Pine.LNX.4.64.0701260903110.6966@schroedinger.engr.sgi.com>
+ <Pine.LNX.4.64.0701261720120.23091@skynet.skynet.ie>
+ <Pine.LNX.4.64.0701260921310.7301@schroedinger.engr.sgi.com>
+ <Pine.LNX.4.64.0701261727400.23091@skynet.skynet.ie>
+ <Pine.LNX.4.64.0701260944270.7457@schroedinger.engr.sgi.com>
+ <Pine.LNX.4.64.0701261747290.23091@skynet.skynet.ie>
+ <Pine.LNX.4.64.0701261019210.7848@schroedinger.engr.sgi.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 26 Jan 2007 11:58:18 -0800 (PST)
-Christoph Lameter <clameter@sgi.com> wrote:
+On Fri, 26 Jan 2007, Christoph Lameter wrote:
 
-> > If the only demonstrable benefit is a saving of a few k of text on a small
-> > number of machines then things are looking very grim, IMO.
-> 
-> The main benefit is a significant simplification of the VM, leading to 
-> robust and reliable operations and a reduction of the maintenance 
-> headaches coming with the additional zones.
-> 
-> If we would introduce the ability of allocating from a range of 
-> physical addresses then the need for DMA zones would go away allowing 
-> flexibility for device driver DMA allocations and at the same time we get 
-> rid of special casing in the VM.
+> On Fri, 26 Jan 2007, Mel Gorman wrote:
+>
+>> The zone-based approach does nothing to help jumbo frame allocations. It only
+>> helps hugepage allocations at runtime and potentially memory hot-remove.
+>
+> Sounds like the max order based approach is better in many ways.
 
-None of this is valid.  The great majority of machines out there will
-continue to have the same number of zones.  Nothing changes.
+I agree but too many people are not pleased with the main allocator path 
+being affected and wanted to see zones, so here we are :)
 
-What will happen is that a small number of machines will have different
-runtime behaviour.  So they don't benefit from the majority's testing and
-they don't contrinute to it and they potentially have unique-to-them
-problems which we need to worry about.
+> Also avoids modifications to vmstat.c/.h ;-)
+>
 
-That's all a real cost, so we need to see *good* benefits to outweigh that
-cost.  Thus far I don't think we've seen that.
-
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
