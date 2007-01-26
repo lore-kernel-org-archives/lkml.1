@@ -1,56 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030845AbXAZUmB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161234AbXAZUml@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030845AbXAZUmB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jan 2007 15:42:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030834AbXAZUmB
+	id S1161234AbXAZUml (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jan 2007 15:42:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161249AbXAZUmk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jan 2007 15:42:01 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:54084 "EHLO smtp.osdl.org"
+	Fri, 26 Jan 2007 15:42:40 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:55304 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030845AbXAZUmA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jan 2007 15:42:00 -0500
-Date: Fri, 26 Jan 2007 12:17:39 -0800
-From: Andrew Morton <akpm@osdl.org>
-To: dipankar@in.ibm.com
-Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Gautham Shenoy <ego@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: Fw: Re: [mm PATCH 4/6] RCU: (now) CPU hotplug
-Message-Id: <20070126121739.be3e072a.akpm@osdl.org>
-In-Reply-To: <20070126194622.GA17134@in.ibm.com>
-References: <20070124011519.GG1613@linux.vnet.ibm.com>
-	<20070124090111.GC27221@in.ibm.com>
-	<20070124161559.GA1762@linux.vnet.ibm.com>
-	<20070124210645.GA19650@in.ibm.com>
-	<20070126191113.GA14770@in.ibm.com>
-	<20070126112837.059502fc.akpm@osdl.org>
-	<20070126194622.GA17134@in.ibm.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1161234AbXAZUmk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jan 2007 15:42:40 -0500
+Date: Fri, 26 Jan 2007 12:41:40 -0800
+From: Greg KH <gregkh@suse.de>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: David Brownell <david-b@pacbell.net>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Fix /sys/device/.../power/state regression
+Message-ID: <20070126204140.GA8407@suse.de>
+References: <20061219185223.GA13256@srcf.ucam.org> <200612201318.06976.david-b@pacbell.net> <20061221012924.GC32625@srcf.ucam.org> <200612201904.28681.david-b@pacbell.net> <20061221040648.GA1499@srcf.ucam.org> <20070125050009.GA8672@srcf.ucam.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070125050009.GA8672@srcf.ucam.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 27 Jan 2007 01:16:22 +0530
-Dipankar Sarma <dipankar@in.ibm.com> wrote:
-
-> > The plan is, I hope, to rip it all out and do freeze_processes() on the
-> > hotplug side, so nobody else needs to worry about cpu hotplug any more. 
-> > But at present everyone seems to be in hiding.
+On Thu, Jan 25, 2007 at 05:00:09AM +0000, Matthew Garrett wrote:
+> In 2.6.19, support for splitting driver suspend and resume callbacks 
+> into interrupt and non-interrupt contexts was added. Unfortunately, this 
+> broke /sys/device/.../power/state support for all devices. In the long 
+> run, this should be obsoleted by power management support in the 
+> individual drivers - however, in the case of network drivers (for 
+> example), currently only three drivers implement any sort of useful 
+> run-time power management.
 > 
-> This would be ideal. However, we don't seem to have any momentum
-> on this.
+> This patch allows the bus driver to check whether a specific driver 
+> requires the split. If not, the 2.6.18 functionality is restored. It 
+> also alters feature-removals.txt to note that the deprecated 
+> functionality should not be removed until a replacement actually exists.
 
-There's no point in expending effort on a fancy new lock until this option
-has been eliminated, so yeah, things are stuck.
+Ick, no.
 
-> The other thing we would need to do in this case is to
-> check if all the users of cpu hotplug can tolerate a very slow
-> hotplug step if there are 10s of thousands of processes and threads.
+As stated before, it was broken in the past, and no userspace tools use
+it because of that.  So it was disabled.
 
-Yes, that needs evaluation.  If it's a problem then we might need to
-introduce a more sophisticated user interface which enables userspace to
-take multiple CPUs online and offline in a single step, rather than
-one-at-a-time.  I expect that'd be fairly straightforward.
+Or am I misstating that long thread?  David, your thoughts?
 
+thanks,
+
+greg k-h
