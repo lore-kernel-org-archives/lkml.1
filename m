@@ -1,98 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030716AbXAZC55@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030717AbXAZC7N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030716AbXAZC55 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jan 2007 21:57:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030717AbXAZC55
+	id S1030717AbXAZC7N (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jan 2007 21:59:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030711AbXAZC7N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jan 2007 21:57:57 -0500
-Received: from mailout1.vmware.com ([65.113.40.130]:44284 "EHLO
-	mailout1.vmware.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030716AbXAZC54 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jan 2007 21:57:56 -0500
-Message-ID: <45B96E33.1080400@vmware.com>
-Date: Thu, 25 Jan 2007 18:57:55 -0800
-From: Zachary Amsden <zach@vmware.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061206)
+	Thu, 25 Jan 2007 21:59:13 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:42791 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030717AbXAZC7M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jan 2007 21:59:12 -0500
+Date: Thu, 25 Jan 2007 18:58:57 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: David Woodhouse <dwmw2@infradead.org>
+cc: Alan <alan@lxorguk.ukuu.org.uk>, Jeff Garzik <jgarzik@pobox.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] libata-sff: Don't call bmdma_stop on non DMA capable
+ controllers
+In-Reply-To: <1169778239.3593.195.camel@shinybook.infradead.org>
+Message-ID: <Pine.LNX.4.64.0701251832040.25027@woody.linux-foundation.org>
+References: <20070125150905.652f9ce2@localhost.localdomain> 
+ <1169741658.3593.98.camel@shinybook.infradead.org> 
+ <20070125172739.0c990a9a@localhost.localdomain> 
+ <Pine.LNX.4.64.0701250940220.25027@woody.linux-foundation.org> 
+ <1169770985.3593.146.camel@shinybook.infradead.org> 
+ <Pine.LNX.4.64.0701251703570.25027@woody.linux-foundation.org>
+ <1169778239.3593.195.camel@shinybook.infradead.org>
 MIME-Version: 1.0
-To: Andi Kleen <ak@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jim Mattson <jmattson@vmware.com>
-Subject: [PATCH] x86_64 - Fix FS/GS registers for VT execution
-Content-Type: multipart/mixed;
- boundary="------------070706090907000509050102"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------070706090907000509050102
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
 
-Hi Andi, as we discussed, FS/GS segment state doesn't allow VT execution 
-during boot.  Patch fixes this problem.  Please apply.  I will be 
-sending for -stable review when upstream.
 
-Thanks,
+On Fri, 26 Jan 2007, David Woodhouse wrote:
+> 
+> The quality of our drivers is low; I'm fully aware that trying to
+> improve driver quality is a quixotic task.
 
-Zach
+This is an important point. I actually hold things like the kernel VM 
+layer to _much_ higher standards than I would ever hold a driver writer. 
+That said, we tend to have "0 is special" even there, although we tend to 
+try to make it always be about a pointer for those cases.
 
---------------070706090907000509050102
-Content-Type: text/plain;
- name="fs-gs-clear"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="fs-gs-clear"
+But drivers really are not just the bulk of the code, but they also can't 
+be tested nearly as well. So for that reason (and really _only_ for that 
+reason), we should always just accept that a "driver" should never have to 
+worry, and *all* of the inconvenience of some special case or whatever 
+must be solidly elsewhere.
 
-Initialize FS and GS to __KERNEL_DS as well.  The actual value of them is not
-important, but it is important to reload them in protected mode.  At this time,
-they still retain the real mode values from initial boot.  VT disallows
-execution of code under such conditions, which means hardware virtualization
-can not be used to boot the kernel on Intel platforms, making the boot time
-painfully slow.
+> But where do we draw the line? Should we abandon the dma-mapping stuff 
+> too? Declare that page zero is a special case and you can't DMA to it? 
+> Should we try to make every PCI write also do a read in order to flush 
+> posted writes, because people can't cope with the real world?
 
-This requires moving the GS load before the load of GS_BASE, so just move
-all the segments loads there to keep them together in the code.
+I think we should try to aim for two things:
 
-Signed-off-by: Zachary Amsden <zach@vmware.com>
+ - things that "just work" on a PC should generally "just work" everywhere 
+   else. Just for the simple reason that most drivers never get tested 
+   anywhere else.
 
-Index: linux-2.6.19/arch/x86_64/kernel/head.S
-===================================================================
---- linux-2.6.19.orig/arch/x86_64/kernel/head.S	2006-11-29 13:57:37.000000000 -0800
-+++ linux-2.6.19/arch/x86_64/kernel/head.S	2007-01-11 16:57:24.000000000 -0800
-@@ -163,6 +163,20 @@ startup_64:
- 	 */
- 	lgdt	cpu_gdt_descr
- 
-+	/* set up data segments. actually 0 would do too */
-+	movl $__KERNEL_DS,%eax
-+	movl %eax,%ds	
-+	movl %eax,%ss
-+	movl %eax,%es
-+
-+	/*
-+	 * We don't really need to load %fs or %gs, but load them anyway
-+	 * to kill any stale realmode selectors.  This allows execution
-+	 * under VT hardware.
-+	 */
-+	movl %eax,%fs
-+	movl %eax,%gs
-+			
- 	/* 
- 	 * Setup up a dummy PDA. this is just for some early bootup code
- 	 * that does in_interrupt() 
-@@ -173,12 +187,6 @@ startup_64:
- 	shrq	$32,%rdx
- 	wrmsr	
- 
--	/* set up data segments. actually 0 would do too */
--	movl $__KERNEL_DS,%eax
--	movl %eax,%ds	
--	movl %eax,%ss
--	movl %eax,%es
--			
- 	/* esi is pointer to real mode structure with interesting info.
- 	   pass it to C */
- 	movl	%esi, %edi
+ - if it can't "just work", we should have as many static checks as 
+   possible, and not let it compile.
 
---------------070706090907000509050102--
+ - and if it does compile, the stuff that "looks simple" should just work.
+
+For example, the reason "0" is special really _is_ about the compiler. For 
+any integer (or pointer, or FP) type in C, there really is just one 
+special value. 0 (or NULL, for pointers).
+
+The reason why resources work fine with zeroes is that for a *resource*, 
+zero isn't actually a special value at all. Why? A resource isn't an 
+integer value. It's a struct.
+
+So compiler type safety (or lack thereof) really ends up forcing some of 
+these issues. If something is represented as an integral type, the only 
+*obvious* real special case is always going to be 0, just because it's the 
+only one you can "test for" implicitly. Similarly, if you return a 
+pointer, you only have NULL that can sanely be used as a special value.
+
+(Yeah, mmap() has taught some people about MAP_FAIL, but that's pretty 
+unusual too. And in the VFS layer, we use the magic "error pointers" that 
+actually encode error values in the bits too - but then, VFS people tend 
+to have to know a lot more about the kernel than a driver writer should 
+have to - VFS people are just held to higher standards).
+
+With a pointer, NULL is usually ok anyway, and always tends to mean 
+something special - and for the other stuff you can then hide things 
+"behind" the pointer. So with a pointer, you could often have "ptr->valid" 
+or something else. With an integer, you can't really do that, because 0 
+always remains special, just because EVEN JUST BY MISTAKE the test of the 
+integer actually just ends up making zero be special.
+
+So if you want a separate "enable" value, it almost has to be a structure 
+or some opaque type, because that's the only type where there isn't an 
+implicit special value.
+
+We've done it occasionally. The VM has done it, for example. And we do it 
+in drivers for more complex cases (and resources is one such case: it's 
+already not a single value, since it has a start and a length, and other 
+structure).
+
+We could have done it for interrupts too. A "struct irqnum" that has a bit 
+that specifies "valid". That would work. But it tends to be painful, so it 
+really has to give you something more than "zero is disabled".
+
+It's just not worth it.
+
+And it's why I decreed, that the ONLY SANE THING is to just let people do 
+the obvious thing:
+
+	if (!dev->irq)
+		return -ENODEV;
+
+you don't have to know ANYTHING, and that code just works, and just looks 
+obvious. And you know what? If it causes a bit of pain for some platform 
+maintainer, I don't care one whit. Because it's obviously much better than 
+the alternatives.
+
+We may not "need" that rule for IO ports. If IO port 0 "happens to work", 
+then hey, fine. But on the other hand, _all_ the same arguments really 
+end up being still 100% true. If some driver happens to write
+
+	if (!dev->ioport)
+		return -ENODEV;
+
+then I say: go for it. The _driver_ is correct. It's the obvious thing to 
+do. It works on PC's, and it's simple and looks fine. Why not? If it 
+causes some minor heartburn for an architecture maintainer, so what? 
+Really? The tradeoff is obvious, and the architecture maintainer needs to 
+just go and fix his IO mappings so that no device ever sees a "valid" port 
+at port 0.
+
+But in the meantime: if nobody complains, and it happens to work on 
+hardware even though some devices _can_ see a port of zero, I also don't 
+care. So I'm certainly not going to claim that your laptop "must be 
+fixed". If it works, it works. Hey fine.
+
+But the first driver that doesn't work because it thought it didn't have 
+an IO port (beause it was zero), and the first time somebody complains, I 
+know *exactly* whose fault it is. It's not the driver.
+
+			Linus
