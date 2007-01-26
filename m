@@ -1,70 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030525AbXAZBEe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030550AbXAZBGH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030525AbXAZBEe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jan 2007 20:04:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030553AbXAZBEe
+	id S1030550AbXAZBGH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jan 2007 20:06:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030553AbXAZBGH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jan 2007 20:04:34 -0500
-Received: from mail1.webmaster.com ([216.152.64.169]:4452 "EHLO
-	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030525AbXAZBEd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jan 2007 20:04:33 -0500
-From: "David Schwartz" <davids@webmaster.com>
-To: "linux-kernel" <linux-kernel@vger.kernel.org>
-Subject: RE: Excessive printks increase top mem usage?
-Date: Thu, 25 Jan 2007 17:03:56 -0800
-Message-ID: <MDEHLPKNGKAHNMBLJOLKKEFLBCAC.davids@webmaster.com>
+	Thu, 25 Jan 2007 20:06:07 -0500
+Received: from mx2.suse.de ([195.135.220.15]:54749 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030550AbXAZBGG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jan 2007 20:06:06 -0500
+From: Andreas Schwab <schwab@suse.de>
+To: Jim Gifford <maillist@jg555.com>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Powermac Sound Issue with Wallstreet PowerBook
+References: <45B9466E.3020805@jg555.com>
+X-Yow: There's a little picture of ED MCMAHON doing BAD THINGS to JOAN RIVERS
+ in a $200,000 MALIBU BEACH HOUSE!!
+Date: Fri, 26 Jan 2007 02:05:54 +0100
+In-Reply-To: <45B9466E.3020805@jg555.com> (Jim Gifford's message of "Thu, 25
+	Jan 2007 16:08:14 -0800")
+Message-ID: <je1wli8uml.fsf@sykes.suse.de>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.0.91 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-X-Priority: 3 (Normal)
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
-In-Reply-To: <b681c62b0701250523w14f0d0efl78b1ab3be7693c31@mail.gmail.com>
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
-Importance: Normal
-X-Authenticated-Sender: joelkatz@webmaster.com
-X-Spam-Processed: mail1.webmaster.com, Fri, 26 Jan 2007 17:04:08 -0800
-	(not processed: message from trusted or authenticated source)
-X-MDRemoteIP: 206.171.168.138
-X-Return-Path: davids@webmaster.com
-X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
-Reply-To: davids@webmaster.com
-X-MDAV-Processed: mail1.webmaster.com, Fri, 26 Jan 2007 17:04:10 -0800
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jim Gifford <maillist@jg555.com> writes:
 
-> On 1/25/07, yogeshwar sonawane <yogyas@gmail.com> wrote:
-> > Hi all,
-> > I am running a user application which will just open/close my driver
-> > (simple one, empty functions with only printks) infinitely.
-> > A massive use of printk can slow down the system noticeably OR it can
-> > affect some time calculations.
-> > Apart from this, it was increasing top mem usage also. After closing
-> > the application, the memory consumption was not coming down(not
-> > freeing mem). Is this the expected behaviour? OR i am missing
-> > something?
-> >
-> > Can anybody help me in guiding the reason for this? Any help/links plz.
-> >
-> > Thanks in advance,
-> > Yogeshwar
+> For over the last few weeks, I've been trying to get sound working on my
+> Powerbook G3. I've tried various different things with no luck. Anyone got
+> any ideas??
+>
+> dmasound_pmac: Awacs/Screamer Codec Mfct: 2 Rev 3
+> input: dmasound beeper as /class/input/input4
+> PowerMac Screamer  DMA sound driver rev 016 installed
+> Core driver edition 01.06 : PowerMac Built-in Sound driver edition 00.07
+> Write will use    4 fragments of   32768 bytes as default
+> Read  will use    4 fragments of   32768 bytes as default
+> Advanced Linux Sound Architecture Driver Version 1.0.13 (Tue Nov 28
+> 14:07:24 2006 UTC).
+> PM: Adding info for platform:snd_powermac
+> snd: can't request rsrc  0 (Sound Control:
+> 0x00000000f3014000:00000000f3014fff)
+> ALSA device list:
+>  No soundcards found.
 
-What does "increased top mem usage" mean? You have given no reason to
-suggest that there's anything unusual about this.
+Looks like the problem is that you have both the OSS and the ALSA driver
+built into your kernel.  Try removing one of them, preferably the OSS
+driver (it's obsolete).
 
-Here's one theory: Some program is writing these kernel messages to a file.
-Because some other process might come and read that file later, the kernel
-keeps copies of the file data in memory.
+Andreas.
 
-The kernel sees no advantage in having memory free. Free memory is memory
-that's not doing any good. Better to keep data in memory that might be
-useful later. We can always free the memory later if (and only if) we have
-something better to do with it.
-
-DS
-
-
+-- 
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
