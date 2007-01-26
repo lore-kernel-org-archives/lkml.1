@@ -1,70 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161175AbXAZS4x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161177AbXAZS6c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161175AbXAZS4x (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jan 2007 13:56:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161177AbXAZS4x
+	id S1161177AbXAZS6c (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jan 2007 13:58:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161180AbXAZS6c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jan 2007 13:56:53 -0500
-Received: from agminet02.oracle.com ([141.146.126.229]:47689 "EHLO
-	agminet02.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161175AbXAZS4v (ORCPT
+	Fri, 26 Jan 2007 13:58:32 -0500
+Received: from e33.co.us.ibm.com ([32.97.110.151]:55203 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161177AbXAZS6a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jan 2007 13:56:51 -0500
-Date: Fri, 26 Jan 2007 10:46:59 -0800
-From: Mark Fasheh <mark.fasheh@oracle.com>
-To: Eyal Lebedinsky <eyal@eyal.emu.id.au>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.20-rc6 - build failure
-Message-ID: <20070126184659.GA8176@ca-server1.us.oracle.com>
-Reply-To: Mark Fasheh <mark.fasheh@oracle.com>
-References: <Pine.LNX.4.64.0701241847360.25027@woody.linux-foundation.org> <45B89008.9000809@eyal.emu.id.au>
+	Fri, 26 Jan 2007 13:58:30 -0500
+Date: Fri, 26 Jan 2007 12:58:22 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@osdl.org>, clg@fr.ibm.com, herbert@13thfloor.at,
+       oleg@tv-sign.ru, daniel@hozac.com
+Subject: Re: mm snapshot broken-out-2007-01-26-00-36.tar.gz uploaded
+Message-ID: <20070126185822.GA18361@sergelap.austin.ibm.com>
+References: <200701260837.l0Q8blBr011622@shell0.pdx.osdl.net> <45BA3A8C.5020802@googlemail.com> <20070126181437.GA28927@sergelap.austin.ibm.com> <6bffcb0e0701261022m5996540cyb75a2214328116fe@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <45B89008.9000809@eyal.emu.id.au>
-Organization: Oracle Corporation
-User-Agent: Mutt/1.5.11
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+In-Reply-To: <6bffcb0e0701261022m5996540cyb75a2214328116fe@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 25, 2007 at 10:10:00PM +1100, Eyal Lebedinsky wrote:
-> WARNING: "__udivdi3" [fs/ocfs2/ocfs2.ko] undefined!
+Quoting Michal Piotrowski (michal.k.k.piotrowski@gmail.com):
+> On 26/01/07, Serge E. Hallyn <serue@us.ibm.com> wrote:
+> >Can you send me your series file for broken-out-2007-01-26-00-36.tar.gz,
+> >and I'll try to iron these out?  This is due to an older patch of
+> >Cedric's being applied at the same time as the preexit_task_namespaces
+> >one, and I just need to properly integrate them.
+> 
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/mm/broken-out-2007-01-26-00-36.tar.gz
+> 
+> Series file is in the archive, but not in broken-out dir as usually.
 
-Doh! This one is almost definitely my fault. Does the attached patch get rid
-of that warning for you?
+Ah!  Sorry.
 
+Ok, this patch should hopefully resolve the conflict between the two
+patches, however I can't compile due to some noisy atomic64_xchg
+problem and a few other failures.
 
-From: Mark Fasheh <mark.fasheh@oracle.com>
-ocfs2: fix thinko in ocfs2_backup_super_blkno()
+-serge
 
-Fix a bug which was introduced when I synced up ocfs2_fs.h with ocfs2-tools.
-We can't do u64/u32 in kernel.
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+Subject: [PATCH] namespaces: resolve conflicts between two patches
 
-Signed-off-by: Mark Fasheh <mark.fasheh@oracle.com>
+Two patches affecting nsproxy conflicted preventing compilation.
+Hopefully this resolves all the problems.
+
+Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
+
 ---
- fs/ocfs2/ocfs2_fs.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/fs/ocfs2/ocfs2_fs.h b/fs/ocfs2/ocfs2_fs.h
-index c99e905..e61e218 100644
---- a/fs/ocfs2/ocfs2_fs.h
-+++ b/fs/ocfs2/ocfs2_fs.h
-@@ -587,7 +587,7 @@ static inline u64 ocfs2_backup_super_blkno(struct super_block *sb, int index)
+ include/linux/nsproxy.h |    8 ++------
+ kernel/nsproxy.c        |    5 +++++
+ 2 files changed, 7 insertions(+), 6 deletions(-)
+
+300377d87b9889b5c2f5822bfb458f00ef3addd5
+diff --git a/include/linux/nsproxy.h b/include/linux/nsproxy.h
+index 45f68de..d519290 100644
+--- a/include/linux/nsproxy.h
++++ b/include/linux/nsproxy.h
+@@ -51,11 +51,7 @@ static inline void put_and_finalize_nspr
+ 	finalize_put_nsproxy(put_nsproxy(ns));
+ }
  
- 	if (index >= 0 && index < OCFS2_MAX_BACKUP_SUPERBLOCKS) {
- 		offset <<= (2 * index);
--		offset /= sb->s_blocksize;
-+		offset >>= sb->s_blocksize_bits;
- 		return offset;
- 	}
+-static inline struct nsproxy *preexit_task_namespaces(struct task_struct *p)
+-{
+-	return put_nsproxy(p->nsproxy);
+-}
+-
+-extern void exit_task_namespaces(struct task_struct *p);
++extern struct nsproxy *preexit_task_namespaces(struct task_struct *p);
++extern void exit_task_namespaces(struct task_struct *p, struct nsproxy *ns);
  
+ #endif
+diff --git a/kernel/nsproxy.c b/kernel/nsproxy.c
+index afdb9fb..bbe94df 100644
+--- a/kernel/nsproxy.c
++++ b/kernel/nsproxy.c
+@@ -167,6 +167,11 @@ struct nsproxy *put_nsproxy(struct nspro
+ 	return NULL;
+ }
+ 
++struct nsproxy *preexit_task_namespaces(struct task_struct *p)
++{
++	return put_nsproxy(p->nsproxy);
++}
++
+ void free_nsproxy(struct nsproxy *ns)
+ {
+ 	if (ns->mnt_ns)
 -- 
-1.4.4.2
-
+1.1.6
