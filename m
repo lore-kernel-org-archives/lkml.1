@@ -1,55 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161233AbXAZTp6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752131AbXAZTqa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161233AbXAZTp6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jan 2007 14:45:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161234AbXAZTp6
+	id S1752131AbXAZTqa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jan 2007 14:46:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752132AbXAZTqa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jan 2007 14:45:58 -0500
-Received: from ug-out-1314.google.com ([66.249.92.173]:34802 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161233AbXAZTp5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jan 2007 14:45:57 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding:from;
-        b=co1V281SOjzIQL0MjdtD/48tjL16b7VKOBTLU5wsvrFP8wmSC6na8p7YAZqTCshSBImt+GpL25X27OLwynulT3OoC/5tmQZv0yuHFHly2W+qU9m+c4uAtjEA/a3G/w59KAySqyhYAGV9QQVvU+FcB0LkxfRPR+1Nv17lICC3+rY=
-Message-ID: <45BA5A65.8040500@googlemail.com>
-Date: Fri, 26 Jan 2007 20:45:41 +0100
-User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: Andrew Morton <akpm@osdl.org>, Stephen Smalley <sds@epoch.ncsc.mil>,
-       Chris Vance <cvance@nai.com>, Wayne Salamon <wsalamon@nai.com>,
-       James Morris <jmorris@redhat.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: mm snapshot broken-out-2007-01-26-00-36.tar.gz uploaded
-References: <200701260837.l0Q8blBr011622@shell0.pdx.osdl.net>
-In-Reply-To: <200701260837.l0Q8blBr011622@shell0.pdx.osdl.net>
-X-Enigmail-Version: 0.94.1.1
-Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: 8bit
-From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+	Fri, 26 Jan 2007 14:46:30 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:52076 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752131AbXAZTq2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jan 2007 14:46:28 -0500
+Date: Fri, 26 Jan 2007 11:46:15 -0800
+From: Andrew Morton <akpm@osdl.org>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Mel Gorman <mel@csn.ul.ie>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Christoph Lameter <clameter@engr.sgi.com>
+Subject: Re: [PATCH 0/8] Create ZONE_MOVABLE to partition memory between
+ movable and non-movable pages
+Message-Id: <20070126114615.5aa9e213.akpm@osdl.org>
+In-Reply-To: <Pine.LNX.4.64.0701260751230.6141@schroedinger.engr.sgi.com>
+References: <20070125234458.28809.5412.sendpatchset@skynet.skynet.ie>
+	<20070126030753.03529e7a.akpm@osdl.org>
+	<Pine.LNX.4.64.0701260751230.6141@schroedinger.engr.sgi.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-akpm@osdl.org napisa³(a):
-> The mm snapshot broken-out-2007-01-26-00-36.tar.gz has been uploaded to
+On Fri, 26 Jan 2007 07:56:09 -0800 (PST)
+Christoph Lameter <clameter@sgi.com> wrote:
+
+> On Fri, 26 Jan 2007, Andrew Morton wrote:
 > 
->    ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/mm/broken-out-2007-01-26-00-36.tar.gz
+> > - They add zillions of ifdefs
+> 
+> They just add a few for ZONE_DMA where we alreaday have similar ifdefs for 
+> ZONE_DMA32 and ZONE_HIGHMEM.
 
-security/selinux/hooks.c: In function 'selinux_sysctl':
-security/selinux/hooks.c:1440: error: 'ctl_table' has no member named 'de'
-make[2]: *** [security/selinux/hooks.o] Error 1
-make[1]: *** [security/selinux] Error 2
-make: *** [security] Error 2
+I refreshed my memory.  It remains awful.
 
-Sysctl patches?
+> > - They make the VM's behaviour diverge between different platforms and
+> >   between differen configs on the same platforms, and hence degrade
+> >   maintainability and increase complexity.
+> 
+> They avoid unecessary complexity on platforms. They could be made to work 
+> on more platforms with measures to deal with what ZONE_DMA 
+> provides in different ways. There are 6 or so platforms that do not need 
+> ZONE_DMA at all.
 
-Regards,
-Michal
+As Mel points out, distros will ship with CONFIG_ZONE_DMA=y, so the number
+of machines which will actually benefit from this change is really small. 
+And the benefit to those few machines will also, I suspect, be small.
 
--- 
-Michal K. K. Piotrowski
-LTG - Linux Testers Group
-(http://www.stardust.webpages.pl/ltg/)
+> > - We kicked around some quite different ways of implementing the same
+> >   things, but nothing came of it.  iirc, one was to remove the hard-coded
+> >   zones altogether and rework all the MM to operate in terms of
+> > 
+> > 	for (idx = 0; idx < NUMBER_OF_ZONES; idx++)
+> > 		...
+> 
+> Hmmm.. How would that be simpler?
+
+Replace a sprinkle of open-coded ifdefs with a regular code sequence which
+everyone uses.  Pretty obvious, I'd thought.
+
+Plus it becoems straightforward to extend this from the present four zones
+to a complete 12 zones, which gives use the full set of
+ZONE_DMA20,ZONE_DMA21,...,ZONE_DMA32 for those funny devices.
+
+> > - I haven't seen any hard numbers to justify the change.
+> 
+> I have send you numbers showing significant reductions in code size.
+
+If it isn't in the changelog it doesn't exist.  I guess I didn't copy it
+into the changelog.
+
+If the only demonstrable benefit is a saving of a few k of text on a small
+number of machines then things are looking very grim, IMO.
+
