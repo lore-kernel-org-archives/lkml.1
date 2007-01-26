@@ -1,59 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161081AbXAZQ7B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030848AbXAZRC0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161081AbXAZQ7B (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jan 2007 11:59:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161082AbXAZQ66
+	id S1030848AbXAZRC0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jan 2007 12:02:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030861AbXAZRC0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jan 2007 11:58:58 -0500
-Received: from calculon.skynet.ie ([193.1.99.88]:40430 "EHLO
-	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161050AbXAZQ6n (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jan 2007 11:58:43 -0500
-Date: Fri, 26 Jan 2007 16:58:40 +0000 (GMT)
-From: Mel Gorman <mel@csn.ul.ie>
-X-X-Sender: mel@skynet.skynet.ie
-To: Christoph Lameter <clameter@sgi.com>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/8] Allow huge page allocations to use GFP_HIGH_MOVABLE
-In-Reply-To: <Pine.LNX.4.64.0701260832260.6141@schroedinger.engr.sgi.com>
-Message-ID: <Pine.LNX.4.64.0701261649040.23091@skynet.skynet.ie>
+	Fri, 26 Jan 2007 12:02:26 -0500
+Received: from omx1-ext.sgi.com ([192.48.179.11]:60440 "EHLO omx1.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1030848AbXAZRCY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jan 2007 12:02:24 -0500
+Date: Fri, 26 Jan 2007 09:02:16 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+To: Mel Gorman <mel@csn.ul.ie>
+cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/8] Create ZONE_MOVABLE to partition memory between
+ movable and non-movable pages
+In-Reply-To: <Pine.LNX.4.64.0701261629050.23091@skynet.skynet.ie>
+Message-ID: <Pine.LNX.4.64.0701260855560.6966@schroedinger.engr.sgi.com>
 References: <20070125234458.28809.5412.sendpatchset@skynet.skynet.ie>
- <20070125234558.28809.21103.sendpatchset@skynet.skynet.ie>
- <Pine.LNX.4.64.0701260832260.6141@schroedinger.engr.sgi.com>
+ <Pine.LNX.4.64.0701260812150.6141@schroedinger.engr.sgi.com>
+ <Pine.LNX.4.64.0701261629050.23091@skynet.skynet.ie>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 26 Jan 2007, Christoph Lameter wrote:
+On Fri, 26 Jan 2007, Mel Gorman wrote:
 
-> Unmovable allocations in the movable zone. Yuck.
+> > For arches that do not have HIGHMEM other zones would be okay too it
+> > seems.
+> It would, but it'd obscure the code to take advantage of that.
 
-I know, but my objective at this time is to allow the hugepage pool to be 
-resized at runtime for situations where the number of required hugepages 
-is not known in advance. Having a zone for movable pages allows that to 
-happen. Also, it's possible that migration of hugepages will be supported 
-at some time in the future. That's a more reasonable possibility than 
-moving kernel memory.
+No MOVABLE memory for 64 bit platforms that do not have HIGHMEM right now?
 
-> Why dont you abandon the
-> whole concept of statically sized movable zone and go back to the nice
-> earlier idea of dynamically assigning MAX_ORDER chunks to be movable or not?
->
+> The anti-fragmentation code could potentially be used to have subzone groups
+> that kept movable and unmovable allocations as far apart as possible and at
+> opposite ends of a zone. That approach has been kicked a few times because of
+> complexity.
 
-Because Andrew has made it pretty clear he will not take those patches on 
-the grounds of complexity - at least until it can be shown that they fix 
-the e1000 problem. Any improvement on the behavior of those patches such 
-as address biasing to allow memory hot-remove of the higher addresses 
-makes them even more complex.
+Hmm... But his patch also introduces additional complexity plus its 
+difficult to handle for the end user.
 
-Also, almost every time the anti-frag patches are posted, someone suggests 
-that zones be used instead. I wanted to show what those patches look like.
-(of course, every time I post the zone approach, someone suggests I go 
-back the other way)
+> > There are some NUMA architectures that are not that
+> > symmetric.
+> I know, it's why find_zone_movable_pfns_for_nodes() is as complex as it is.
+> The mechanism spreads the unmovable memory evenly throughout all nodes. In the
+> event some nodes are too small to hold their share, the remaining unmovable
+> memory is divided between the nodes that are larger.
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+I would have expected a percentage of a node. If equal amounts of 
+unmovable memory are assigned to all nodes at first then there will be 
+large disparities in the amount of movable memories f.e. between a node 
+with 8G memory compared to a node with 1GB memory.
+
+How do you handle headless nodes? I.e. memory nodes with no processors? 
+Those may be particularly large compared to the rest but these are mainly 
+used for movable pages since unmovable things like device drivers buffers
+have to be kept near the processors that take the interrupt.
