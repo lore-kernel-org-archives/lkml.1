@@ -1,57 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965308AbXAZNAr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965527AbXAZNCP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965308AbXAZNAr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jan 2007 08:00:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752128AbXAZNAr
+	id S965527AbXAZNCP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jan 2007 08:02:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965619AbXAZNCP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jan 2007 08:00:47 -0500
-Received: from py-out-1112.google.com ([64.233.166.183]:61165 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752126AbXAZNAq (ORCPT
+	Fri, 26 Jan 2007 08:02:15 -0500
+Received: from web52914.mail.yahoo.com ([206.190.49.24]:21263 "HELO
+	web52914.mail.yahoo.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S965623AbXAZNCO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jan 2007 08:00:46 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=MOpmmDWvHGzfm/kKu39uE7N3GDILrpPfOoVIX5BJbal/DcNiyh5jsf+WR5lhv4QYecILLrf8KhNHGoHvsVvLHxaUQ1zLlS1XB7XLYR5KJlfLE9wzLUbqxUMnnq+mschftb1jvEEw9GIW70umgof6Mn+U6yaZEU57mkjJFj//SQQ=
-Message-ID: <a37929f0701260500x68cf6bb0i8a5ef603794a861f@mail.gmail.com>
-Date: Fri, 26 Jan 2007 14:00:45 +0100
-From: "mirek kratochvil" <exa.exa@gmail.com>
-To: "Jiri Kosina" <jikos@jikos.cz>
-Subject: Re: r8169 problems on x86_64 (transmit timeout & crash)
-Cc: linux-kernel@vger.kernel.org
+	Fri, 26 Jan 2007 08:02:14 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=Message-ID:X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding;
+  b=Xvf+oTsA1cIF+xZf2lcLOa0AeyVKkSbfctQrP5drtbX+o3/bvLeslSTIwo3QOYpaVWmRo02jTekbkHJ+TTidTajQqcbnlku1cAlnLPRZeTNn4XnsykOu9ttBFn62I3tOfiTMwGXBQC3cJ9BM37LoGEHwrrcF3Q4bgIGVnxSgY4A=  ;
+Message-ID: <20070126130213.50355.qmail@web52914.mail.yahoo.com>
+X-YMail-OSG: 3XrbX7oVM1kZ1KIydn2IX279.Fo1EN6jTc8APIBaAmYXsytsRFTmYrpEjJaJrX_o05psGC.JB42_3Y_F79Dp9erYOKrMpCdcYGufwJDCtMwgrCDzQHjzP4WfPkLv_Q4AlKhkyN9p7SPlJYvRrZK_ZjSuv9Y5ZBkOZp9df8oAcMWSgcowHFXZiIeCMGSY
+Date: Fri, 26 Jan 2007 13:02:13 +0000 (GMT)
+From: Chris Rankin <rankincj@yahoo.com>
+Subject: Re: 2.6.18-stable release plans?
+To: Ken Moffat <zarniwhoop@ntlworld.com>
+Cc: Alan <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
+In-Reply-To: <20070125193644.GA12624@deepthought>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->
-> In case you have BIOS 04.., try to upgrade to 06.. version. Also, does it
-> help when you boot with acpi=off kernel commandline parameter? (do you
-> compile kernel with both acpi and apic support?).
->
-> Jiri Kosina
->
+--- Ken Moffat <zarniwhoop@ntlworld.com> wrote:
+>  I can't, but Dave Jones had a similar problem earlier this month,
+> archived at http://uwsg.iu.edu/hypermail/linux/kernel/0701.0/1822.html
+> which I think is a followup from
+> http://www.mail-archive.com/linux-kernel@vger.kernel.org/msg105370.html
+>  - and seems to be a possible hardware failure (bulging capacitors)
+> becoming apparent under load.
 
-Upgraded to bios 0802,  but still the same problem. I think it's
-definitely something
-about the r8169 driver. acpi=off doesn't help. turning on/off apic
-also doesn't matter.
+Interesting, although I don't believe I have a hardware fault. The box is perfectly stable under
+2.6.18.x. Anyway, my particular problem happened very quickly last time so I am hoping that
+recompiling xine from scratch will trigger something again. This time, however, I have built a
+2.6.19.x kernel with a few memory debugging options turned on.
 
-What exactly means msg "Netdev watchdog: Transmit timed out" ? I hope
-the broblem
-is just about that tx (dying when transmitting...), because otherwise
-I'd start suspecting
-hardware. (note: full-speed receive doesn't crash anything)
+Cheers,
+Chris
 
-one thing more - have confirmed that the bug is reproducible on *any*
-laptop with 8168,
-not only Asus. I guess the disk-usage-crash was some other bug.
 
-I'm gonna ask some other people with 8168Realtek NICs to test this, hope some of
-them can reproduce this and get better view of what's going on...
-
-thanks
-mirek kratochvil
+		
+___________________________________________________________ 
+Copy addresses and emails from any email account to Yahoo! Mail - quick, easy and free. http://uk.docs.yahoo.com/trueswitch2.html
