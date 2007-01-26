@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030874AbXAZQw5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030888AbXAZQxf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030874AbXAZQw5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jan 2007 11:52:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030804AbXAZQw4
+	id S1030888AbXAZQxf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jan 2007 11:53:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030879AbXAZQxe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jan 2007 11:52:56 -0500
-Received: from mtagate1.de.ibm.com ([195.212.29.150]:19180 "EHLO
-	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030786AbXAZQwq (ORCPT
+	Fri, 26 Jan 2007 11:53:34 -0500
+Received: from mtagate6.de.ibm.com ([195.212.29.155]:35589 "EHLO
+	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030885AbXAZQxV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jan 2007 11:52:46 -0500
-Date: Fri, 26 Jan 2007 17:52:42 +0100
+	Fri, 26 Jan 2007 11:53:21 -0500
+Date: Fri, 26 Jan 2007 17:53:16 +0100
 From: Martin Schwidefsky <schwidefsky@de.ibm.com>
 To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
-Subject: [S390] Update maintainers file.
-Message-ID: <20070126165242.GR11609@skybase>
+Cc: heiko.carstens@de.ibm.com
+Subject: [S390] kretprobe_trampoline_holder() in wrong section.
+Message-ID: <20070126165316.GT11609@skybase>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -22,46 +23,30 @@ User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
 
-[S390] Update maintainers file.
+[S390] kretprobe_trampoline_holder() in wrong section.
 
-Use the new linux-s390@vger.kernel.org mailing list instead of
-linux-390@vm.marist.edu.
+kretprobe_trampoline_holder() is in kprobes section but used to
+register a kprobe in arch_init_kprobes(). Hence register_kprobe()
+and therefore arch_init_kprobes() will fail.
 
+Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
 Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
 ---
 
- MAINTAINERS |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+ arch/s390/kernel/kprobes.c |    2 +-
+ 1 files changed, 1 insertion(+), 1 deletion(-)
 
-diff -urpN linux-2.6/MAINTAINERS linux-2.6-patched/MAINTAINERS
---- linux-2.6/MAINTAINERS	2007-01-26 17:27:37.000000000 +0100
-+++ linux-2.6-patched/MAINTAINERS	2007-01-26 17:28:04.000000000 +0100
-@@ -2799,7 +2799,7 @@ M:	schwidefsky@de.ibm.com
- P:	Heiko Carstens
- M:	heiko.carstens@de.ibm.com
- M:	linux390@de.ibm.com
--L:	linux-390@vm.marist.edu
-+L:	linux-s390@vger.kernel.org
- W:	http://www.ibm.com/developerworks/linux/linux390/
- S:	Supported
- 
-@@ -2807,7 +2807,7 @@ S390 NETWORK DRIVERS
- P:	Frank Pavlic
- M:	fpavlic@de.ibm.com
- M:	linux390@de.ibm.com
--L:	linux-390@vm.marist.edu
-+L:	linux-s390@vger.kernel.org
- W:	http://www.ibm.com/developerworks/linux/linux390/
- S:	Supported
- 
-@@ -2815,7 +2815,7 @@ S390 ZFCP DRIVER
- P:	Swen Schillig
- M:	swen@vnet.ibm.com
- M:	linux390@de.ibm.com
--L:	linux-390@vm.marist.edu
-+L:	linux-s390@vger.kernel.org
- W:	http://www.ibm.com/developerworks/linux/linux390/
- S:	Supported
- 
+diff -urpN linux-2.6/arch/s390/kernel/kprobes.c linux-2.6-patched/arch/s390/kernel/kprobes.c
+--- linux-2.6/arch/s390/kernel/kprobes.c	2007-01-26 17:27:47.000000000 +0100
++++ linux-2.6-patched/arch/s390/kernel/kprobes.c	2007-01-26 17:28:06.000000000 +0100
+@@ -356,7 +356,7 @@ no_kprobe:
+  *	- When the probed function returns, this probe
+  *		causes the handlers to fire
+  */
+-void __kprobes kretprobe_trampoline_holder(void)
++void kretprobe_trampoline_holder(void)
+ {
+ 	asm volatile(".global kretprobe_trampoline\n"
+ 		     "kretprobe_trampoline: bcr 0,0\n");
