@@ -1,83 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751602AbXAZVCR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752143AbXAZVCl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751602AbXAZVCR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jan 2007 16:02:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751608AbXAZVCQ
+	id S1752143AbXAZVCl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jan 2007 16:02:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752142AbXAZVCl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jan 2007 16:02:16 -0500
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:49885 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751602AbXAZVCP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jan 2007 16:02:15 -0500
-Date: Sat, 27 Jan 2007 02:30:17 +0530
-From: Dipankar Sarma <dipankar@in.ibm.com>
-To: Andrew Morton <akpm@osdl.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Paul E McKenney <paulmck@linux.vnet.ibm.com>,
+	Fri, 26 Jan 2007 16:02:41 -0500
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:59826 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752143AbXAZVCk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jan 2007 16:02:40 -0500
+X-AuditID: d80ac287-9dae7bb000007e48-20-45ba6e71f118 
+Date: Fri, 26 Jan 2007 21:02:47 +0000 (GMT)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Adam Litke <agl@us.ibm.com>
+cc: Andrew Morton <akpm@osdl.org>, William Irwin <wli@holomorphy.com>,
+       David Gibson <david@gibson.dropbear.id.au>, linux-mm@kvack.org,
        linux-kernel@vger.kernel.org
-Subject: Re: [mm PATCH 4/6] RCU: preemptible RCU
-Message-ID: <20070126210017.GC17134@in.ibm.com>
-Reply-To: dipankar@in.ibm.com
-References: <20070115191909.GA32238@in.ibm.com> <20070115192858.GE32238@in.ibm.com> <20070123163259.0d1d5ffc.akpm@osdl.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070123163259.0d1d5ffc.akpm@osdl.org>
-User-Agent: Mutt/1.5.11
+Subject: Re: [PATCH] Don't allow the stack to grow into hugetlb reserved
+ regions
+In-Reply-To: <20070125214052.22841.33449.stgit@localhost.localdomain>
+Message-ID: <Pine.LNX.4.64.0701262025590.22196@blonde.wat.veritas.com>
+References: <20070125214052.22841.33449.stgit@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-OriginalArrivalTime: 26 Jan 2007 21:02:36.0697 (UTC) FILETIME=[4E865890:01C7418D]
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 23, 2007 at 04:32:59PM -0800, Andrew Morton wrote:
-> On Tue, 16 Jan 2007 00:58:58 +0530
-> Dipankar Sarma <dipankar@in.ibm.com> wrote:
+On Thu, 25 Jan 2007, Adam Litke wrote:
+
+> When expanding the stack, we don't currently check if the VMA will cross into
+> an area of the address space that is reserved for hugetlb pages.  Subsequent
+> faults on the expanded portion of such a VMA will confuse the low-level MMU
+> code, resulting in an OOPS.  Check for this.
+
+Good point, and your patch looks good; but a couple of reservations.
+
+Trivial: I'd have preferred your error return to be -ENOMEM like all
+the rest there, I can't see a good reason for this one to say -EFAULT.
+Though apparently nothing cares just so long as it's non-zero.
+
+Less trivial (and I wonder whether you've come to this from an ia64
+or a powerpc direction): I notice that ia64 has more stringent REGION
+checks in its ia64_do_page_fault, before calling expand_stack or
+expand_upwards.  So on that path, the usual path, I think your
+new check in acct_stack_growth is unnecessary on ia64; whereas
+coming from the get_user_pages find_extend_vma direction,
+your check is inadequate?
+
+I'd dearly like to believe that get_user_pages shouldn't be needing
+find_extend_vma (it ends up using the wrong task's rlimits); but last
+time I researched that, it looked very deliberate, that ptrace be
+allowed to expand the stack - I think there's something out there
+which would break if that weren't allowed, but I don't know what.
+
+Hugh
+
 > 
-> > This patch implements a new version of RCU which allows its read-side
-> > critical sections to be preempted.
+> Signed-off-by: Adam Litke <agl@us.ibm.com>
+> ---
 > 
-> Why is it selectable if CONFIG_PREEMPT=n?
-
-It would probably make sense to make CONFIG_RCU_PREEMPT dependent
-on CONFIG_PREEMPT. I kept it independent because I wanted to
-test rcupreempt as an equivalent RCU implementation not just
-for its "preemptibility".
-
-> > It uses a set of counter pairs
-> > to keep track of the read-side critical sections and flips them
-> > when all tasks exit read-side critical section. The details
-> > of this implementation can be found in this paper -
-> >
-> > http://www.rdrop.com/users/paulmck/RCU/OLSrtRCU.2006.08.11a.pdf
-> >
-> > This patch was developed as a part of the -rt kernel
-> > development and meant to provide better latencies when
-> > read-side critical sections of RCU don't disable preemption.
+>  mm/mmap.c |    7 +++++++
+>  1 files changed, 7 insertions(+), 0 deletions(-)
 > 
-> Does it succeed in that attempt?  Thus far you've given no reason for
-> merging this code..
+> diff --git a/mm/mmap.c b/mm/mmap.c
+> index 9717337..2c6b163 100644
+> --- a/mm/mmap.c
+> +++ b/mm/mmap.c
+> @@ -1477,6 +1477,7 @@ static int acct_stack_growth(struct vm_area_struct * vma, unsigned long size, un
+>  {
+>  	struct mm_struct *mm = vma->vm_mm;
+>  	struct rlimit *rlim = current->signal->rlim;
+> +	unsigned long new_start;
+>  
+>  	/* address space limit tests */
+>  	if (!may_expand_vm(mm, grow))
+> @@ -1496,6 +1497,12 @@ static int acct_stack_growth(struct vm_area_struct * vma, unsigned long size, un
+>  			return -ENOMEM;
+>  	}
+>  
+> +	/* Check to make the stack will not grow into a hugetlb-only region. */
+> +	new_start = (vma->vm_flags & VM_GROWSUP) ? vma->vm_start :
+> +			vma->vm_end - size;
+> +	if (is_hugepage_only_range(vma->vm_mm, new_start, size))
+> +		return -EFAULT;
+> +
+>  	/*
+>  	 * Overcommit..  This must be the final test, as it will
+>  	 * update security statistics.
 > 
-> This is a pile of tricky new core kernel code for us to test, maintain,
-> understand, debug, etc.  It needs to provide a substantial benefit.  Does
-> it?
-
-I am working to compare some latency numbers between different
-implementations. I will have them out soon.
-
-
-> > As a consequence of keeping track of RCU readers, the readers
-> > have a slight overhead (optimizations in the paper).
-> > This implementation co-exists with the "classic" RCU
-> > implementations and can be switched to at compiler.
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
 > 
-> That's yet another question we need to ask people when their kernel dies,
-> and yet another deviation between the kernels which we all test, causing
-> more dilution of testing efforts.  It would be much better if we could
-> remove classic RCU.  You say this would incur extra cost, but the magnitude
-> of that cost is not clear.  Please help us make that decision.
-
-See the Table 2, page 10 of the paper mentioned above. There is a
-~100ns cost per read-side critical section involved in the preemptible
-version of RCU at the moment. Until, we are sure that we don't have
-an impact on common workloads, we need to keep the "classic" 
-implementation around.
-
-Thanks
-Dipankar
