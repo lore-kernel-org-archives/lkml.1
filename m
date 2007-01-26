@@ -1,75 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030746AbXAZFKI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030749AbXAZFKf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030746AbXAZFKI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jan 2007 00:10:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030747AbXAZFKI
+	id S1030749AbXAZFKf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jan 2007 00:10:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030750AbXAZFKf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jan 2007 00:10:08 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:45841 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030746AbXAZFKG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jan 2007 00:10:06 -0500
-Date: Thu, 25 Jan 2007 21:09:50 -0800
-From: Andrew Morton <akpm@osdl.org>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, pj@sgi.com
-Subject: Re: [PATCH] nfs: fix congestion control -v4
-Message-Id: <20070125210950.bcdaa7f6.akpm@osdl.org>
-In-Reply-To: <1169739148.6189.68.camel@twins>
-References: <20070116054743.15358.77287.sendpatchset@schroedinger.engr.sgi.com>
-	<20070116135325.3441f62b.akpm@osdl.org>
-	<1168985323.5975.53.camel@lappy>
-	<Pine.LNX.4.64.0701171158290.7397@schroedinger.engr.sgi.com>
-	<1169070763.5975.70.camel@lappy>
-	<1169070886.6523.8.camel@lade.trondhjem.org>
-	<1169126868.6197.55.camel@twins>
-	<1169135375.6105.15.camel@lade.trondhjem.org>
-	<1169199234.6197.129.camel@twins>
-	<1169212022.6197.148.camel@twins>
-	<Pine.LNX.4.64.0701190912540.14617@schroedinger.engr.sgi.com>
-	<1169229461.6197.154.camel@twins>
-	<1169231212.5775.29.camel@lade.trondhjem.org>
-	<1169276500.6197.159.camel@twins>
-	<1169482343.6083.7.camel@lade.trondhjem.org>
-	<1169739148.6189.68.camel@twins>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Fri, 26 Jan 2007 00:10:35 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:44123 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030749AbXAZFKe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jan 2007 00:10:34 -0500
+Subject: Re: [PATCH] libata-sff: Don't call bmdma_stop on non DMA capable
+	controllers
+From: David Woodhouse <dwmw2@infradead.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Alan <alan@lxorguk.ukuu.org.uk>, Jeff Garzik <jgarzik@pobox.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0701252029570.25027@woody.linux-foundation.org>
+References: <20070125150905.652f9ce2@localhost.localdomain>
+	 <1169741658.3593.98.camel@shinybook.infradead.org>
+	 <20070125172739.0c990a9a@localhost.localdomain>
+	 <Pine.LNX.4.64.0701250940220.25027@woody.linux-foundation.org>
+	 <1169770985.3593.146.camel@shinybook.infradead.org>
+	 <Pine.LNX.4.64.0701251703570.25027@woody.linux-foundation.org>
+	 <1169778239.3593.195.camel@shinybook.infradead.org>
+	 <Pine.LNX.4.64.0701251832040.25027@woody.linux-foundation.org>
+	 <1169782107.3593.219.camel@shinybook.infradead.org>
+	 <Pine.LNX.4.64.0701251932250.25027@woody.linux-foundation.org>
+	 <1169785150.3593.231.camel@shinybook.infradead.org>
+	 <Pine.LNX.4.64.0701252029570.25027@woody.linux-foundation.org>
+Content-Type: text/plain
+Date: Fri, 26 Jan 2007 13:09:40 +0800
+Message-Id: <1169788181.3593.250.camel@shinybook.infradead.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6.dwmw2.1) 
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 25 Jan 2007 16:32:28 +0100
-Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+On Thu, 2007-01-25 at 20:48 -0800, Linus Torvalds wrote:
+> Irq0 may _exist_. IO Port 0 may _exist_. Virtual address 0 may
+> _exist_. 
+> 
+> Got it?
+> 
+> But they ARE NOT VALID THINGS FOR DRIVERS TO WORRY ABOUT.
 
-> Hopefully the last version ;-)
-> 
-> 
-> ---
-> Subject: nfs: fix congestion control
-> 
-> The current NFS client congestion logic is severly broken, it marks the backing
-> device congested during each nfs_writepages() call but doesn't mirror this in
-> nfs_writepage() which makes for deadlocks. Also it implements its own waitqueue.
-> 
-> Replace this by a more regular congestion implementation that puts a cap on the
-> number of active writeback pages and uses the bdi congestion waitqueue.
-> 
-> Also always use an interruptible wait since it makes sense to be able to 
-> SIGKILL the process even for mounts without 'intr'.
-> 
-> ..
->
-> --- linux-2.6-git.orig/include/linux/nfs_fs_sb.h	2007-01-25 16:07:03.000000000 +0100
-> +++ linux-2.6-git/include/linux/nfs_fs_sb.h	2007-01-25 16:07:12.000000000 +0100
-> @@ -82,6 +82,7 @@ struct nfs_server {
->  	struct rpc_clnt *	client_acl;	/* ACL RPC client handle */
->  	struct nfs_iostats *	io_stats;	/* I/O statistics */
->  	struct backing_dev_info	backing_dev_info;
-> +	atomic_t		writeback;	/* number of writeback pages */
+I do understand what you're saying; there's no need to shout. I think
+it's very misguided and leads to both internal inconsistency (as
+demonstrated by the setup_irq() patch) and external inconsistency with
+stuff like hardware documentation. But I _do_ understand what you're
+saying.
 
-We're going to get in trouble with this sort of thing within a few years. 
-atomic_t is 32-bit.  Put 16TB of memory under writeback and blam.
+> When a *DRIVER* sees a [zero], it's always a sign of "not here".
+
+Except when it isn't. Like when it's a DMA address. Or a file
+descriptor. Or a CPU number. Or one of numerous other things.
+
+But still, I do understand what you're saying although I disagree with
+your intention and your statement above is plain wrong (well, at least
+my misquote of it is wrong -- you actually said 'NULL' which is fair
+enough, but in the middle of a rant about _zero_ so I edited the quote
+to say zero because that's what we're actually talking about).
+
+> But they ARE NOT VALID THINGS FOR DRIVERS TO WORRY ABOUT.
+ ...
+> NO NORMAL USER SHOULD EVER SEE [zero] AS A REAL IO PORT. 
+
+Yes, that much I understand. We disagree, but I understand you. My last
+response was not intending to pursue that part of the discussion.
+
+My question was about _how_ you think this should be achieved in this
+particular case. You didn't like the suggestion that we should put your
+new special-case hack into the resource code... where/how _do_ you
+suggest that it's done, so that we can protect those poor driver authors
+from the number zero?
+
+-- 
+dwmw2
 
