@@ -1,47 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161004AbXAZJb5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965628AbXAZJdQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161004AbXAZJb5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jan 2007 04:31:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161002AbXAZJb5
+	id S965628AbXAZJdQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jan 2007 04:33:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965618AbXAZJdP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jan 2007 04:31:57 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4034 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S965623AbXAZJbl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jan 2007 04:31:41 -0500
-Date: Wed, 24 Jan 2007 17:50:51 +0000
-From: Pavel Machek <pavel@ucw.cz>
-To: Ralf Baechle <ralf@linux-mips.org>
-Cc: Paul Mundt <lethal@linux-sh.org>, Andrew Morton <akpm@osdl.org>,
-       Alexey Dobriyan <adobriyan@gmail.com>, linux-kernel@vger.kernel.org,
-       rmk@arm.linux.org.uk
-Subject: Re: [PATCH 2/3] ARM: Convert to use shared APM emulation.
-Message-ID: <20070124175050.GB3953@ucw.cz>
-References: <20070115205935.GA5010@martell.zuzino.mipt.ru> <20070123164541.42faf54e.akpm@osdl.org> <20070124071337.GA21110@linux-sh.org> <20070124124422.GA14757@linux-mips.org> <20070124124538.GA14917@linux-mips.org>
+	Fri, 26 Jan 2007 04:33:15 -0500
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:45874 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965620AbXAZJdO convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jan 2007 04:33:14 -0500
+Date: Fri, 26 Jan 2007 10:32:08 +0100
+From: =?ISO-8859-1?Q?S=E9bastien_Dugu=E9?= <sebastien.dugue@bull.net>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Zach Brown <zach.brown@oracle.com>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Benjamin LaHaise <bcrl@kvack.org>, Ulrich Drepper <drepper@redhat.com>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org
+Subject: Re: + make-good_sigevent-non-static.patch added to -mm tree
+Message-ID: <20070126103208.78c4937f@frecb000686>
+In-Reply-To: <20070125154324.GA183@tv-sign.ru>
+References: <20070125154324.GA183@tv-sign.ru>
+X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070124124538.GA14917@linux-mips.org>
-User-Agent: Mutt/1.5.9i
+X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 26/01/2007 10:34:00,
+	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 26/01/2007 10:34:01,
+	Serialize complete at 26/01/2007 10:34:01
+Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Thu, 25 Jan 2007 18:43:24 +0300 Oleg Nesterov <oleg@tv-sign.ru> wrote:
 
-> Signed-off-by: Ralf Baechle <ralf@linux-mips.org>
+> SИbastien DuguИ wrote:
+> >
+> > +struct task_struct *good_sigevent(sigevent_t *event)
+> > +{
+> > +	struct task_struct *task = current->group_leader;
+> > +
+> > +	if ((event->sigev_notify & SIGEV_THREAD_ID) == SIGEV_THREAD_ID) {
+> > +		task = find_task_by_pid(event->sigev_notify_thread_id);
+> > +
+> > +		if (!task || task->tgid != current->tgid)
+> > +			return NULL;
+> > +	} else if (event->sigev_notify == SIGEV_SIGNAL) {
 > 
->  arch/arm/Kconfig               |   29 ++----------------
->  arch/arm/common/sharpsl_pm.c   |    2 -
->  arch/arm/kernel/Makefile       |    1 
->  arch/arm/mach-pxa/corgi_pm.c   |    2 -
->  arch/arm/mach-pxa/sharpsl_pm.c |    2 -
->  arch/arm/mach-pxa/spitz_pm.c   |    2 -
->  include/asm-arm/apm.h          |   64 -----------------------------------------
->  7 files changed, 8 insertions(+), 94 deletions(-)
+> No, no, we can't use "else" here,
+> 
+> > +		if (event->sigev_signo <= 0 || event->sigev_signo > SIGRTMAX)
+> 
+> because we skip the check above in SIGEV_THREAD_ID case.
 
-Maybe you should delete apm.c, too?
-							Pavel
+  Right, will fix this.
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+> 
+> This way any user can crash the kernel with a minimal effort.
+
+  Well I tried, no crash, just the signal failing to be delivered.
+
+  Thanks,
+
+  Sébastien.
