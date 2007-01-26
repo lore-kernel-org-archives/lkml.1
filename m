@@ -1,78 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752081AbXAZMkL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965308AbXAZNAr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752081AbXAZMkL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jan 2007 07:40:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752111AbXAZMkK
+	id S965308AbXAZNAr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jan 2007 08:00:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752128AbXAZNAr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jan 2007 07:40:10 -0500
-Received: from mailhub.sw.ru ([195.214.233.200]:4172 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752081AbXAZMkI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jan 2007 07:40:08 -0500
-Message-ID: <45B9F939.8070701@openvz.org>
-Date: Fri, 26 Jan 2007 15:51:05 +0300
-From: Kirill Korotaev <dev@openvz.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.13) Gecko/20060417
-X-Accept-Language: en-us, en, ru
+	Fri, 26 Jan 2007 08:00:47 -0500
+Received: from py-out-1112.google.com ([64.233.166.183]:61165 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752126AbXAZNAq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jan 2007 08:00:46 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=MOpmmDWvHGzfm/kKu39uE7N3GDILrpPfOoVIX5BJbal/DcNiyh5jsf+WR5lhv4QYecILLrf8KhNHGoHvsVvLHxaUQ1zLlS1XB7XLYR5KJlfLE9wzLUbqxUMnnq+mschftb1jvEEw9GIW70umgof6Mn+U6yaZEU57mkjJFj//SQQ=
+Message-ID: <a37929f0701260500x68cf6bb0i8a5ef603794a861f@mail.gmail.com>
+Date: Fri, 26 Jan 2007 14:00:45 +0100
+From: "mirek kratochvil" <exa.exa@gmail.com>
+To: "Jiri Kosina" <jikos@jikos.cz>
+Subject: Re: r8169 problems on x86_64 (transmit timeout & crash)
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-To: Jeff Layton <jlayton@redhat.com>
-CC: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/3] have pipefs ensure i_ino uniqueness by calling iunique
- and hashing the inode
-References: <200612291911.kBTJBLvx019107@dantu.rdu.redhat.com>
-In-Reply-To: <200612291911.kBTJBLvx019107@dantu.rdu.redhat.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff,
+>
+> In case you have BIOS 04.., try to upgrade to 06.. version. Also, does it
+> help when you boot with acpi=off kernel commandline parameter? (do you
+> compile kernel with both acpi and apic support?).
+>
+> Jiri Kosina
+>
 
-is 100% uniqeness is so much required for pipe inode numbers?
-AFAIU, it is not that critical for pipefs (unlike smb, nfs etc.)
+Upgraded to bios 0802,  but still the same problem. I think it's
+definitely something
+about the r8169 driver. acpi=off doesn't help. turning on/off apic
+also doesn't matter.
 
-Thanks,
-Kirill
+What exactly means msg "Netdev watchdog: Transmit timed out" ? I hope
+the broblem
+is just about that tx (dying when transmitting...), because otherwise
+I'd start suspecting
+hardware. (note: full-speed receive doesn't crash anything)
 
-> This converts pipefs to use the new scheme. Here we're calling iunique to get
-> a unique i_ino value for the new inode, and then hashing it afterward. We
-> call iunique with a max_reserved value of 1 to avoid collision with the root
-> inode.  Since the inode is now hashed, we need to take care that we end up in
-> generic_delete_inode rather than generic_forget_inode or we'll create a nasty
-> leak, so we clear_nlink when we destroy the pipe info.
-> 
-> I'm not certain that this is the right place to add the clear_nlink, though
-> it does seem to work. I'm open to suggestions on a better place to put
-> this, or of a better way to make sure that we end up with i_nlink == 0 at
-> iput time.
-> 
-> Signed-off-by: Jeff Layton <jlayton@redhat.com>
-> 
-> diff --git a/fs/pipe.c b/fs/pipe.c
-> index 68090e8..1d44ff0 100644
-> --- a/fs/pipe.c
-> +++ b/fs/pipe.c
-> @@ -825,6 +825,7 @@ void free_pipe_info(struct inode *inode)
->  {
->  	__free_pipe_info(inode->i_pipe);
->  	inode->i_pipe = NULL;
-> +	clear_nlink(inode);
->  }
->  
->  static struct vfsmount *pipe_mnt __read_mostly;
-> @@ -871,6 +872,8 @@ static struct inode * get_pipe_inode(void)
->  	inode->i_uid = current->fsuid;
->  	inode->i_gid = current->fsgid;
->  	inode->i_atime = inode->i_mtime = inode->i_ctime = CURRENT_TIME;
-> +	inode->i_ino = iunique(pipe_mnt->mnt_sb, 1);
-> +	insert_inode_hash(inode);
->  
->  	return inode;
->  
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+one thing more - have confirmed that the bug is reproducible on *any*
+laptop with 8168,
+not only Asus. I guess the disk-usage-crash was some other bug.
 
+I'm gonna ask some other people with 8168Realtek NICs to test this, hope some of
+them can reproduce this and get better view of what's going on...
+
+thanks
+mirek kratochvil
