@@ -1,174 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751687AbXAZXWK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751770AbXAZXgG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751687AbXAZXWK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jan 2007 18:22:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751737AbXAZXWK
+	id S1751770AbXAZXgG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jan 2007 18:36:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751771AbXAZXgF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jan 2007 18:22:10 -0500
-Received: from mga03.intel.com ([143.182.124.21]:12074 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752182AbXAZXWH convert rfc822-to-8bit (ORCPT
+	Fri, 26 Jan 2007 18:36:05 -0500
+Received: from moutng.kundenserver.de ([212.227.126.186]:65111 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751770AbXAZXgE convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jan 2007 18:22:07 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.13,244,1167638400"; 
-   d="scan'208"; a="173497405:sNHT24428831"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Fri, 26 Jan 2007 18:36:04 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH 1/3] lutimesat: simplify utime(2)
+Date: Sat, 27 Jan 2007 00:35:42 +0100
+User-Agent: KMail/1.9.5
+Cc: Alexey Dobriyan <adobriyan@openvz.org>, devel@openvz.org,
+       linux-kernel@vger.kernel.org
+References: <20070126112142.GA11128@localhost.sw.ru> <20070126124120.f8f78623.akpm@osdl.org>
+In-Reply-To: <20070126124120.f8f78623.akpm@osdl.org>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="us-ascii"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH 1/1] -  increase acpi owner_id max
-Date: Fri, 26 Jan 2007 15:21:30 -0800
-Message-ID: <B28E9812BAF6E2498B7EC5C427F293A401C68471@orsmsx415.amr.corp.intel.com>
-In-Reply-To: <20070126224004.21202.43805.sendpatchset@attica.americas.sgi.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 1/1] -  increase acpi owner_id max
-Thread-Index: AcdBm4H7FqDpCSP9T/qiZfOSjgQDrgABLWpQ
-From: "Moore, Robert" <robert.moore@intel.com>
-To: "John Keller" <jpk@sgi.com>, <linux-acpi@vger.kernel.org>
-Cc: <ayoung@sgi.com>, <linux-ia64@vger.kernel.org>,
-       <linux-kernel@vger.kernel.org>,
-       "Alexey Starikovskiy" <alexey.y.starikovskiy@linux.intel.com>,
-       "Brown, Len" <len.brown@intel.com>
-X-OriginalArrivalTime: 26 Jan 2007 23:22:04.0997 (UTC) FILETIME=[CA6B9750:01C741A0]
+Content-Disposition: inline
+Message-Id: <200701270035.42323.arnd@arndb.de>
+X-Provags-ID: kundenserver.de abuse@kundenserver.de login:c48f057754fc1b1a557605ab9fa6da41
+X-Provags-ID2: V01U2FsdGVkX1+Krwq45yIq/sapyUhbZtZsqp94lyT+NgcDIl9Yn69GLFeWIznlTpBNUz2ndd28MP1LxhimjlTaSl4+Z/zlA9LAqVvs7wi7ltjiKxKMoXjGww==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The OwnerId field within a namespace node is 8 bits, and this is the
-main constraint on the maximum OwnerId. You can't simply bump up the
-number of owner ids without changing this field.
+On Friday 26 January 2007 21:41, Andrew Morton wrote:
+> I'm somewhat surprised that this wasn't done earlier.  I wonder if there's
+> some subtle reason why this won't work.   How well tested is this?
 
-If we need more than 255 owner Ids, the width of this field will have to
-be increased, or we will need to use a pointer for the field in order to
-maintain a linked list of all nodes owned by a particular owner.
+http://www.opengroup.org/onlinepubs/000095399/functions/utimes.html
+lists a slight difference between utime and utimes in the handling
+of EPERM/EACCESS:
 
-Bob
-
-> -----Original Message-----
-> From: linux-acpi-owner@vger.kernel.org [mailto:linux-acpi-
-> owner@vger.kernel.org] On Behalf Of John Keller
-> Sent: Friday, January 26, 2007 2:40 PM
-> To: linux-acpi@vger.kernel.org
-> Cc: ayoung@sgi.com; linux-ia64@vger.kernel.org; linux-
-> kernel@vger.kernel.org; John Keller
-> Subject: [PATCH 1/1] - increase acpi owner_id max
-> 
-> To support systems with large IO configurations,
-> this patch increases the number of available ACPI
-> owner ids to 1023.
-> 
-> On SN platforms, we represent every populated root
-> bus slot with an ACPI SSDT table containing info
-> for every device and PPB attached to the slot.
-> Each SSDT requires a unique ACPI owner id.
-> 
-> Signed-off-by: John Keller <jpk@sgi.com>
-> ---
-> 
->  drivers/acpi/utilities/utmisc.c |    6 +++---
->  include/acpi/acconfig.h         |    4 ++--
->  include/acpi/aclocal.h          |    4 ++--
->  3 files changed, 7 insertions(+), 7 deletions(-)
-> 
-> 
-> Index: linux/drivers/acpi/utilities/utmisc.c
-> ===================================================================
-> --- linux.orig/drivers/acpi/utilities/utmisc.c	2007-01-25
-> 11:27:25.509259412 -0600
-> +++ linux/drivers/acpi/utilities/utmisc.c	2007-01-26
-13:16:09.551081284 -
-> 0600
-> @@ -147,7 +147,7 @@ acpi_status acpi_ut_allocate_owner_id(ac
->  				/*
->  				 * Construct encoded ID from the index
-and bit
-> position
->  				 *
-> -				 * Note: Last [j].k (bit 255) is never
-used and is
-> marked
-> +				 * Note: Last [j].k (bit 1023) is never
-used and
-> is marked
->  				 * permanently allocated (prevents +1
-overflow)
->  				 */
->  				*owner_id =
-> @@ -175,7 +175,7 @@ acpi_status acpi_ut_allocate_owner_id(ac
->  	 */
->  	status = AE_OWNER_ID_LIMIT;
->  	ACPI_ERROR((AE_INFO,
-> -		    "Could not allocate new OwnerId (255 max),
-> AE_OWNER_ID_LIMIT"));
-> +		    "Could not allocate new OwnerId (1023 max),
-> AE_OWNER_ID_LIMIT"));
-> 
->        exit:
->  	(void)acpi_ut_release_mutex(ACPI_MTX_CACHES);
-> @@ -192,7 +192,7 @@ acpi_status acpi_ut_allocate_owner_id(ac
->   *              control method or unloading a table. Either way, we
-would
->   *              ignore any error anyway.
->   *
-> - * DESCRIPTION: Release a table or method owner ID.  Valid IDs are 1
--
-> 255
-> + * DESCRIPTION: Release a table or method owner ID.  Valid IDs are 1
--
-> 1023
->   *
-> 
+> The utimes() function shall fail if:
+> [EACCES] Search permission is denied by a component of the path prefix;
+>  or the times argument is a null pointer and the effective user ID of the
+>  process does not match the owner of the file and write access is denied.
+> [EPERM] The times argument is not a null pointer and the calling process'
+>  effective user ID has write access to the file but does not match the
+>  owner of the file and the calling process does not have the appropriate
+>  privileges.
 >
-************************************************************************
-**
-> ****/
-> 
-> Index: linux/include/acpi/acconfig.h
-> ===================================================================
-> --- linux.orig/include/acpi/acconfig.h	2007-01-25
-11:27:25.577267818 -
-> 0600
-> +++ linux/include/acpi/acconfig.h	2007-01-26 13:17:14.111002597
--0600
-> @@ -111,9 +111,9 @@
-> 
->  #define ACPI_SYSMEM_REGION_WINDOW_SIZE  4096
-> 
-> -/* owner_id tracking. 8 entries allows for 255 owner_ids */
-> +/* owner_id tracking. 32 entries allow for 1023 owner_ids */
-> 
-> -#define ACPI_NUM_OWNERID_MASKS          8
-> +#define ACPI_NUM_OWNERID_MASKS		32
-> 
-> 
->
-/***********************************************************************
-**
-> *****
->   *
-> Index: linux/include/acpi/aclocal.h
-> ===================================================================
-> --- linux.orig/include/acpi/aclocal.h	2007-01-25 11:27:25.585268807 -
-> 0600
-> +++ linux/include/acpi/aclocal.h	2007-01-26 13:20:06.148115848
--0600
-> @@ -122,8 +122,8 @@ static char *acpi_gbl_mutex_names[ACPI_N
-> 
->  /* Owner IDs are used to track namespace nodes for selective deletion
-*/
-> 
-> -typedef u8 acpi_owner_id;
-> -#define ACPI_OWNER_ID_MAX               0xFF
-> +typedef u16 acpi_owner_id;
-> +#define ACPI_OWNER_ID_MAX               0x3FF
-> 
->  /* This Thread ID means that the mutex is not in use (unlocked) */
-> 
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-acpi"
-in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> The utime() function shall fail if:
+> [EACCES]  Search permission is denied by a component of the path prefix;
+>  or the times argument is a null pointer and the effective user ID of the
+>  process does not match the owner of the file, the process does not have
+>  write permission for the file, and the process does not have appropriate
+>  privileges.
+> [EPERM] The times argument is not a null pointer and the calling process'
+>  effective user ID does not match the owner of the file and the calling
+>  process does not have the appropriate privileges.
+
+I don't really understand how that should be implemented in different
+ways, but it might be the reason that we have separate functions.
+
+	Arnd <><
