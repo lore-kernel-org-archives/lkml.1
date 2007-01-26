@@ -1,48 +1,169 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161072AbXAZRyL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161093AbXAZRz5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161072AbXAZRyL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jan 2007 12:54:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161108AbXAZRyK
+	id S1161093AbXAZRz5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jan 2007 12:55:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161108AbXAZRz5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jan 2007 12:54:10 -0500
-Received: from terminus.zytor.com ([192.83.249.54]:50060 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161072AbXAZRyH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jan 2007 12:54:07 -0500
-Message-ID: <45BA3F42.3020006@zytor.com>
-Date: Fri, 26 Jan 2007 09:49:54 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
+	Fri, 26 Jan 2007 12:55:57 -0500
+Received: from mail.gmx.net ([213.165.64.20]:49250 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1161093AbXAZRz4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jan 2007 12:55:56 -0500
+X-Authenticated: #14842415
+From: Alessandro Di Marco <dmr@gmx.it>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: linux-kernel@vger.kernel.org, vojtech@suse.cz
+Subject: Re: [ANNOUNCE] System Inactivity Monitor v1.0
+References: <877ivkrv5s.fsf@gmx.it> <20070119101103.GA5730@ucw.cz>
+	<877ivfi60i.fsf@gmx.it> <20070123094114.GE6033@ucw.cz>
+	<87wt3dhlte.fsf@gmx.it> <20070123163442.GA18662@elf.ucw.cz>
+	<87lkjthdmd.fsf@gmx.it> <20070123184432.GE18662@elf.ucw.cz>
+	<873b61cf1v.fsf@gmx.it> <20070126171536.GB964@elf.ucw.cz>
+Date: Fri, 26 Jan 2007 18:55:53 +0100
+In-Reply-To: <20070126171536.GB964@elf.ucw.cz> (Pavel Machek's message of "Fri\, 26 Jan 2007 18\:15\:36 +0100")
+Message-ID: <878xfpoeom.fsf@gmx.it>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.92 (gnu/linux)
 MIME-Version: 1.0
-To: eranian@hpl.hp.com
-CC: linux-kernel@vger.kernel.org
-Subject: Re: i386 and x86-64 bitops function prototypes differ
-References: <20070126143555.GL11525@frankl.hpl.hp.com>
-In-Reply-To: <20070126143555.GL11525@frankl.hpl.hp.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="=-=-="
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephane Eranian wrote:
-> Hello,
-> 
-> I ran into compiler warnings with the perfmon code when I tried
-> using test() and __set_bit() on i386. 
-> 
-> For some reason, the i386 bitops functions use unsigned long * for
-> the address whereas x86-64/ia64 use void *.
-> 
-> I do not quite understand why such difference?
-> Is this just for historical reasons?
-> 
-> Thanks.
-> 
+--=-=-=
 
-Arguably void * is the right thing for a littleendian architecture.  For 
-bigendian architectures it unfortunately matters what the chunk size is, 
-regardless of if the chunks are numbered in bigendian (reverse) or 
-littleendian (forward) order.
+Pavel Machek <pavel@ucw.cz> writes:
 
-	-hpa
+   Well, I do not think your kernel code is mergeable. But bits to enable
+   similar functionality in userspace probably would be mergeable.
+
+You said it :-)
+
+This patch exports to the user space the inactivity time (in msecs) of a given
+input device. Example follows:
+
+<0> $ cat /proc/bus/input/activity
+0011 0001 0001 ab41     1
+0011 0002 0008 0000     3160799
+0011 0002 0008 7321     549991
+0019 0000 0005 0000     3160799
+0019 0000 0001 0000     3454901
+0010 104d 0000 0000     3160799
+0010 104d 0000 0000     2162833
+
+The device ordering matches the /proc/bus/input/devices one, anyway I reported
+also vendor, product, etc. Now the daemon is trivial...
+
+Bye
+
+Ah, the interesting column is the fifth ;-)
+
+
+--=-=-=
+Content-Type: text/x-patch
+Content-Disposition: inline; filename=input-activity.patch
+
+diff -ur OLD/drivers/input/input.c NEW/drivers/input/input.c
+--- OLD/drivers/input/input.c	2007-01-26 16:59:36.000000000 +0100
++++ NEW/drivers/input/input.c	2007-01-26 17:04:38.000000000 +0100
+@@ -49,6 +49,8 @@
+ {
+ 	struct input_handle *handle;
+ 
++	dev->last_activity = jiffies;
++
+ 	if (type > EV_MAX || !test_bit(type, dev->evbit))
+ 		return;
+ 
+@@ -482,6 +484,30 @@
+ 	return seq_open(file, &input_devices_seq_ops);
+ }
+ 
++static int input_activity_seq_show(struct seq_file *seq, void *v)
++{
++	struct input_dev *dev = container_of(v, struct input_dev, node);
++
++	seq_printf(seq, "%04x %04x %04x %04x\t%u\n",
++		   dev->id.bustype, dev->id.vendor,
++		   dev->id.product, dev->id.version,
++		   jiffies_to_msecs((long) jiffies - (long) dev->last_activity));
++
++	return 0;
++}
++
++static struct seq_operations input_activity_seq_ops = {
++	.start	= input_devices_seq_start,
++	.next	= input_devices_seq_next,
++	.stop	= input_devices_seq_stop,
++	.show	= input_activity_seq_show,
++};
++
++static int input_proc_activity_open(struct inode *inode, struct file *file)
++{
++	return seq_open(file, &input_activity_seq_ops);
++}
++
+ static struct file_operations input_devices_fileops = {
+ 	.owner		= THIS_MODULE,
+ 	.open		= input_proc_devices_open,
+@@ -491,6 +517,15 @@
+ 	.release	= seq_release,
+ };
+ 
++static struct file_operations input_activity_fileops = {
++	.owner		= THIS_MODULE,
++	.open		= input_proc_activity_open,
++	.poll		= input_proc_devices_poll,
++	.read		= seq_read,
++	.llseek		= seq_lseek,
++	.release	= seq_release,
++};
++
+ static void *input_handlers_seq_start(struct seq_file *seq, loff_t *pos)
+ {
+ 	/* acquire lock here ... Yes, we do need locking, I knowi, I know... */
+@@ -558,15 +593,23 @@
+ 	entry->owner = THIS_MODULE;
+ 	entry->proc_fops = &input_devices_fileops;
+ 
+-	entry = create_proc_entry("handlers", 0, proc_bus_input_dir);
++	entry = create_proc_entry("activity", 0, proc_bus_input_dir);
+ 	if (!entry)
+ 		goto fail2;
+ 
+ 	entry->owner = THIS_MODULE;
++	entry->proc_fops = &input_activity_fileops;
++
++	entry = create_proc_entry("handlers", 0, proc_bus_input_dir);
++	if (!entry)
++		goto fail3;
++
++	entry->owner = THIS_MODULE;
+ 	entry->proc_fops = &input_handlers_fileops;
+ 
+ 	return 0;
+ 
++ fail3:	remove_proc_entry("activity", proc_bus_input_dir);
+  fail2:	remove_proc_entry("devices", proc_bus_input_dir);
+  fail1: remove_proc_entry("input", proc_bus);
+ 	return -ENOMEM;
+diff -ur OLD/include/linux/input.h NEW/include/linux/input.h
+--- OLD/include/linux/input.h	2007-01-26 16:59:38.000000000 +0100
++++ NEW/include/linux/input.h	2007-01-26 17:31:29.000000000 +0100
+@@ -949,6 +949,8 @@
+ 	const char *uniq;
+ 	struct input_id id;
+ 
++	unsigned long last_activity;
++	
+ 	unsigned long evbit[NBITS(EV_MAX)];
+ 	unsigned long keybit[NBITS(KEY_MAX)];
+ 	unsigned long relbit[NBITS(REL_MAX)];
+
+--=-=-=
+
+
+-- 
+I don't think anyone should write their autobiography until after they're
+dead. - Samuel Goldwyn
+
+--=-=-=--
