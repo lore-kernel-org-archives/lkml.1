@@ -1,70 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161092AbXAZRsx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161104AbXAZRtX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161092AbXAZRsx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jan 2007 12:48:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161093AbXAZRsx
+	id S1161104AbXAZRtX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jan 2007 12:49:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161100AbXAZRtW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jan 2007 12:48:53 -0500
-Received: from ug-out-1314.google.com ([66.249.92.173]:22841 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161092AbXAZRsw (ORCPT
+	Fri, 26 Jan 2007 12:49:22 -0500
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:37026 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1161098AbXAZRtV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jan 2007 12:48:52 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding:from;
-        b=sqOIm3TYd/N6c+WtwJI2DLRT+i1dPPlotiNZCQLMmYkawftxxxyEzygJNX429wbDrB5Kh7qf79tD2z7o7rwXTZo017mbYabvfl1yaC9zm30cmfLPTW5ZlQQptBv2X/YMcUAW9swHY9+H9lBaVsutHb2dc3RrdsWYi4tasq7AmNI=
-Message-ID: <45BA3EF3.2070309@googlemail.com>
-Date: Fri, 26 Jan 2007 18:48:35 +0100
-User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
+	Fri, 26 Jan 2007 12:49:21 -0500
+Date: Fri, 26 Jan 2007 18:49:28 +0100
+From: Adrian Bunk <bunk@stusta.de>
+To: Justin Piszcz <jpiszcz@lucidpixels.com>
+Cc: thunder7@xs4all.nl, Avuton Olrich <avuton@gmail.com>,
+       linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
+Subject: Re: 2.6.19.2, cp 18gb_file 18gb_file.2 = OOM killer, 100% reproducible
+Message-ID: <20070126174928.GL17836@stusta.de>
+References: <Pine.LNX.4.64.0701201516450.3684@p34.internal.lan> <3aa654a40701201245s72b2f76hc70ddd94b70ba99c@mail.gmail.com> <Pine.LNX.4.64.0701201602570.4910@p34.internal.lan> <20070121155219.GA7413@amd64.of.nowhere> <Pine.LNX.4.64.0701211053370.15334@p34.internal.lan>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: Andrew Morton <akpm@osdl.org>, Gautham R Shenoy <ego@in.ibm.com>
-Subject: Re: mm snapshot broken-out-2007-01-26-00-36.tar.gz uploaded
-References: <200701260837.l0Q8blBr011622@shell0.pdx.osdl.net>
-In-Reply-To: <200701260837.l0Q8blBr011622@shell0.pdx.osdl.net>
-X-Enigmail-Version: 0.94.1.1
-Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: 8bit
-From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0701211053370.15334@p34.internal.lan>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-akpm@osdl.org napisa³(a):
-> The mm snapshot broken-out-2007-01-26-00-36.tar.gz has been uploaded to
+On Sun, Jan 21, 2007 at 10:54:09AM -0500, Justin Piszcz wrote:
+> On Sun, 21 Jan 2007, thunder7@xs4all.nl wrote:
 > 
->    ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/mm/broken-out-2007-01-26-00-36.tar.gz
+> > From: Justin Piszcz <jpiszcz@lucidpixels.com>
+> > Date: Sat, Jan 20, 2007 at 04:03:42PM -0500
+> > > 
+> > > 
+> > > My swap is on, 2GB ram and 2GB of swap on this machine.  I can't go back 
+> > > to 2.6.17.13 as it does not recognize the NICs in my machine correctly and 
+> > > the Alsa Intel HD Audio driver has bugs etc, I guess I am stuck with 
+> > > 2.6.19.2 :(
+> > > 
+> > Well, if you can't go back, you could always test 2.6.20-rc5. That's why
+> > it's out there :-) It can't be any worse!
+> > 
+> > Good luck,
+> > Jurriaan
+> > -- 
+> > It might look like I'm doing nothing, but at the cellular level I'm really
+> > quite busy.
+> > 	Hans Haas
+> > Debian (Unstable) GNU/Linux 2.6.20-rc5 2x2011 bogomips load 1.97
+> > the Jack Vance Integral Edition: http://www.integralarchive.org
+> > -
+> > To unsubscribe from this list: send the line "unsubscribe linux-raid" in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > 
 > 
-
-kernel/sys.c:359: error: conflicting types for '__blocking_notifier_call_chain'
-include/linux/notifier.h:140: error: previous declaration of '__blocking_notifier_call_chain' was here
-kernel/sys.c:375: error: conflicting types for '__blocking_notifier_call_chain'
-include/linux/notifier.h:140: error: previous declaration of '__blocking_notifier_call_chain' was here
-make[1]: *** [kernel/sys.o] Error 1
-make: *** [kernel] Error 2
-
-Possible fix.
-
-Regards,
-Michal
-
---
-Michal K. K. Piotrowski
-LTG - Linux Testers Group
-(http://www.stardust.webpages.pl/ltg/)
-
-Signed-off-by: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-
---- linux-work-clean/kernel/sys.c	2007-01-26 16:47:56.000000000 +0100
-+++ linux-work/kernel/sys.c	2007-01-26 18:40:30.000000000 +0100
-@@ -355,7 +355,7 @@ EXPORT_SYMBOL_GPL(blocking_notifier_chai
-
- int __blocking_notifier_call_chain(struct blocking_notifier_head *nh,
- 				   unsigned long val, void *v,
--				   int nr_to_call, unsigned int *nr_calls)
-+				   int nr_to_call, int *nr_calls)
- {
- 	int ret = NOTIFY_DONE;
+> It is worse-- NAT doesn't work and HDDTEMP doesn't work anymore either.
 
 
+Do I understand it correctly from the further emails in this thread that 
+the NAT problem was the known netfilter options mess when upgrading from 
+2.6.19 to 2.6.20, and enabling some more netfilter options fixed it?
+
+
+hddtemp has a known bug:
+
+Subject    : `hddtemp' no longer works
+References : http://lkml.org/lkml/2006/12/14/272
+             http://bugzilla.kernel.org/show_bug.cgi?id=7581
+Submitter  : Alistair John Strachan <s0348365@sms.ed.ac.uk>
+             Nicolas Mailhot <Nicolas.Mailhot@LaPoste.net>
+Handled-By : Jens Axboe <jens.axboe@oracle.com>
+Status     : bug in hddtemp: http://bugzilla.kernel.org/show_bug.cgi?id=7581
+
+
+> Justin.
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
