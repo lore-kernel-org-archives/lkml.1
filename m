@@ -1,55 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030787AbXAZUiD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030789AbXAZUjP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030787AbXAZUiD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jan 2007 15:38:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030793AbXAZUiC
+	id S1030789AbXAZUjP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jan 2007 15:39:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030793AbXAZUjP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jan 2007 15:38:02 -0500
-Received: from calculon.skynet.ie ([193.1.99.88]:44312 "EHLO
-	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030787AbXAZUiB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jan 2007 15:38:01 -0500
-Date: Fri, 26 Jan 2007 20:37:59 +0000 (GMT)
-From: Mel Gorman <mel@csn.ul.ie>
-X-X-Sender: mel@skynet.skynet.ie
-To: Christoph Lameter <clameter@sgi.com>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/8] Allow huge page allocations to use GFP_HIGH_MOVABLE
-In-Reply-To: <Pine.LNX.4.64.0701261019210.7848@schroedinger.engr.sgi.com>
-Message-ID: <Pine.LNX.4.64.0701262036200.23091@skynet.skynet.ie>
-References: <20070125234458.28809.5412.sendpatchset@skynet.skynet.ie>
- <20070125234558.28809.21103.sendpatchset@skynet.skynet.ie>
- <Pine.LNX.4.64.0701260832260.6141@schroedinger.engr.sgi.com>
- <Pine.LNX.4.64.0701261649040.23091@skynet.skynet.ie>
- <Pine.LNX.4.64.0701260903110.6966@schroedinger.engr.sgi.com>
- <Pine.LNX.4.64.0701261720120.23091@skynet.skynet.ie>
- <Pine.LNX.4.64.0701260921310.7301@schroedinger.engr.sgi.com>
- <Pine.LNX.4.64.0701261727400.23091@skynet.skynet.ie>
- <Pine.LNX.4.64.0701260944270.7457@schroedinger.engr.sgi.com>
- <Pine.LNX.4.64.0701261747290.23091@skynet.skynet.ie>
- <Pine.LNX.4.64.0701261019210.7848@schroedinger.engr.sgi.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Fri, 26 Jan 2007 15:39:15 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:53939 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030789AbXAZUjO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jan 2007 15:39:14 -0500
+Date: Fri, 26 Jan 2007 12:39:03 -0800
+From: Andrew Morton <akpm@osdl.org>
+To: Alexey Dobriyan <adobriyan@openvz.org>
+Cc: devel@openvz.org, linux-kernel@vger.kernel.org,
+       Ulrich Drepper <drepper@redhat.com>
+Subject: Re: [PATCH 3/3] lutimesat: actual syscall and wire-up on i386
+Message-Id: <20070126123903.046aaa5e.akpm@osdl.org>
+In-Reply-To: <20070126112345.GC11128@localhost.sw.ru>
+References: <20070126112345.GC11128@localhost.sw.ru>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 26 Jan 2007, Christoph Lameter wrote:
+On Fri, 26 Jan 2007 14:23:45 +0300
+Alexey Dobriyan <adobriyan@openvz.org> wrote:
 
-> On Fri, 26 Jan 2007, Mel Gorman wrote:
->
->> The zone-based approach does nothing to help jumbo frame allocations. It only
->> helps hugepage allocations at runtime and potentially memory hot-remove.
->
-> Sounds like the max order based approach is better in many ways.
+> lutimesat(2) does everything futimesat(2) does except it doesn't follow
+> symlinks.
+> 
+> It could be used by tar(1) and cp(1).
+> 
+> FreeBSD and NetBSD have lutimes(2) which can be emulated by C library:
+> 
+> 	lutimesat(AT_FDCWD, filename, utimes)
+> 
+> Closes http://bugme.osdl.org/show_bug.cgi?id=4433
+> 
+efine __ARCH_WANT_IPC_PARSE_VERSION
+>  #define __ARCH_WANT_OLD_READDIR
 
-I agree but too many people are not pleased with the main allocator path 
-being affected and wanted to see zones, so here we are :)
-
-> Also avoids modifications to vmstat.c/.h ;-)
->
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+OK, but I don't recall having seeing a demand for lutimes().  Opinions
+are sought?
