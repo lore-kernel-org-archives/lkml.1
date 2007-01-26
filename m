@@ -1,69 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752134AbXAZUpd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752137AbXAZUuA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752134AbXAZUpd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jan 2007 15:45:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752141AbXAZUpd
+	id S1752137AbXAZUuA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jan 2007 15:50:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752139AbXAZUt7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jan 2007 15:45:33 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:45887 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752134AbXAZUpb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jan 2007 15:45:31 -0500
-Message-ID: <45BA6860.6040007@redhat.com>
-Date: Fri, 26 Jan 2007 12:45:20 -0800
-From: Ulrich Drepper <drepper@redhat.com>
-Organization: Red Hat, Inc.
-User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
+	Fri, 26 Jan 2007 15:49:59 -0500
+Received: from terminus.zytor.com ([192.83.249.54]:38944 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752137AbXAZUt7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jan 2007 15:49:59 -0500
+Message-ID: <45BA6961.2060307@zytor.com>
+Date: Fri, 26 Jan 2007 12:49:37 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070102)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@osdl.org>
-CC: Alexey Dobriyan <adobriyan@openvz.org>, devel@openvz.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/3] lutimesat: actual syscall and wire-up on i386
-References: <20070126112345.GC11128@localhost.sw.ru> <20070126123903.046aaa5e.akpm@osdl.org>
-In-Reply-To: <20070126123903.046aaa5e.akpm@osdl.org>
-X-Enigmail-Version: 0.94.1.2.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigDD50FF3089ACBF9F18024878"
+To: Khai Doan <khai@genius.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: How to create a fixed length character/block device/file ?
+References: <45BA6018.5040406@genius.com>
+In-Reply-To: <45BA6018.5040406@genius.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigDD50FF3089ACBF9F18024878
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Khai Doan wrote:
+> Sorry if this is the wrong list.  I've search google, but have not found 
+> solution to my problem.
+> 
+> I have a long running application which split out lots of debugging 
+> information.  I can't redirect the output to a regular file because that 
+> file would grow and eat up all the diskspace.  I can't redirect to 
+> /dev/null.  What I want is the last 1MB of the output before my 
+> application terminated.  So I need to create a special file / device on 
+> the system.  Please tell me if  there is an existing device that I can 
+> use, or point me in the right direction so that I can role my own device.
+> 
 
-Andrew Morton wrote:
-> OK, but I don't recall having seeing a demand for lutimes().  Opinions
-> are sought?
+Create a FIFO (see "man mkfifo"), and write a program that reads the 
+FIFO and retains the information you're interested in.
 
-It's an interface which has been available on other platforms forever
-(lutimes, not lutimesat).  If it can be implemented correctly on the
-interesting file systems I'd say "go ahead", it can only be useful and
-have more benefits than the probably small cost of implementing it.
-
-If on the other hand important filesystems cannot support lutimes then
-I'd wait with introducing the syscall at least until the support is
-added.  It much easier to cope with unavailable syscalls then it is with
-partially working ones.
-
---=20
-=E2=9E=A7 Ulrich Drepper =E2=9E=A7 Red Hat, Inc. =E2=9E=A7 444 Castro St =
-=E2=9E=A7 Mountain View, CA =E2=9D=96
-
-
---------------enigDD50FF3089ACBF9F18024878
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-Comment: Using GnuPG with Fedora - http://enigmail.mozdev.org
-
-iD8DBQFFumhg2ijCOnn/RHQRAlTjAJ4vcVD7oysFh2Lbfbjf9N0RvtfEcACaA7WA
-Y57md4F3Hv4WBfZSnxOFjKY=
-=aR91
------END PGP SIGNATURE-----
-
---------------enigDD50FF3089ACBF9F18024878--
+	-hpa
