@@ -1,78 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030769AbXAZGMd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030772AbXAZGNs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030769AbXAZGMd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jan 2007 01:12:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030772AbXAZGMd
+	id S1030772AbXAZGNs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jan 2007 01:13:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030775AbXAZGNs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jan 2007 01:12:33 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:47655 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030769AbXAZGMc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jan 2007 01:12:32 -0500
-Date: Thu, 25 Jan 2007 22:09:16 -0800
-From: Andrew Morton <akpm@osdl.org>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       lkml <linux-kernel@vger.kernel.org>, containers@lists.osdl.org,
-       Sukadev Bhattiprolu <sukadev@us.ibm.com>
-Subject: Re: [PATCH 7/8] user ns: handle file sigio
-Message-Id: <20070125220916.3d112f24.akpm@osdl.org>
-In-Reply-To: <20070126053808.GA30017@sergelap.austin.ibm.com>
-References: <20061219225902.GA25904@sergelap.austin.ibm.com>
-	<20061219230127.GH25904@sergelap.austin.ibm.com>
-	<m1zm881gq4.fsf@ebiederm.dsl.xmission.com>
-	<20070124185845.GA597@sergelap.austin.ibm.com>
-	<20070125001253.75f899d6.akpm@osdl.org>
-	<20070125153239.GA17904@sergelap.austin.ibm.com>
-	<20070126053808.GA30017@sergelap.austin.ibm.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 26 Jan 2007 01:13:48 -0500
+Received: from mail2.sea5.speakeasy.net ([69.17.117.4]:56743 "EHLO
+	mail2.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030772AbXAZGNr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jan 2007 01:13:47 -0500
+Message-ID: <45B99C19.9010703@kernel.org>
+Date: Thu, 25 Jan 2007 22:13:45 -0800
+From: Josh Triplett <josh@kernel.org>
+User-Agent: Icedove 1.5.0.9 (X11/20061220)
+MIME-Version: 1.0
+To: paulmck@linux.vnet.ibm.com
+CC: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de,
+       dipankar@in.ibm.com, tytso@us.ibm.com, dvhltc@us.ibm.com,
+       oleg@tv-sign.ru, twoerner.k@gmail.com, billh@gnuppy.monkey.org,
+       nielsen.esben@googlemail.com, corbet@lwn.net
+Subject: Re: [RFC PATCH -rt 1/2] RCU priority boosting that survives semi-vicious
+ testing
+References: <20070125021101.GA23428@linux.vnet.ibm.com> <20070125021444.GA22540@linux.vnet.ibm.com> <45B87873.3080207@freedesktop.org> <20070125195816.GH1705@linux.vnet.ibm.com> <20070126014711.GA28014@linux.vnet.ibm.com>
+In-Reply-To: <20070126014711.GA28014@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 25 Jan 2007 23:38:08 -0600
-"Serge E. Hallyn" <serue@us.ibm.com> wrote:
+Paul E. McKenney wrote:
+> On Thu, Jan 25, 2007 at 11:58:16AM -0800, Paul E. McKenney wrote:
+>> On Thu, Jan 25, 2007 at 01:29:23AM -0800, Josh Triplett wrote:
+>>> Overall, this code looks sensible to me.  Some comments on the patch below.
+> 
+> [ . . . ]
+> 
+>> Thank you again for the careful and thorough review!!!
+>>
+>> I will test these changes and send out an update.
+>
+> And here is the updated RCU priority-boost patch.
 
->  fs/fcntl.c            |    3 +--
->  include/linux/sched.h |    4 +---
->  2 files changed, 2 insertions(+), 5 deletions(-)
+Thanks for integrating my changes, and so quickly! :)
 
-My confidence in this lot:
+> Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 
-introduce-and-use-get_task_mnt_ns.patch
-introduce-and-use-get_task_mnt_ns-tweaks.patch
-nsproxy-externalizes-exit_task_namespaces.patch
-user-namespace-add-the-framework.patch
-user-namespace-add-the-framework-fix.patch
-user-namespace-add-the-framework-fixes.patch
-user-ns-add-user_namespace-ptr-to-vfsmount.patch
-user-ns-add-user_namespace-ptr-to-vfsmount-fixes.patch
-# user-ns-hook-permission.patch: Eric no like
-user-ns-hook-permission.patch
-user-ns-prepare-copy_tree-copy_mnt-and-their-callers-to-handle-errs.patch
-user-ns-prepare-copy_tree-copy_mnt-and-their-callers-to-handle-errs-fix.patch
-user-ns-implement-shared-mounts.patch
-user-ns-implement-shared-mounts-fixes.patch
-# user_ns-handle-file-sigio.patch: Eric no like
-user_ns-handle-file-sigio.patch
-user_ns-handle-file-sigio-fix.patch
-user_ns-handle-file-sigio-fix-2.patch
-user-ns-implement-user-ns-unshare.patch
-user-ns-implement-user-ns-unshare-tidy.patch
-#
-rename-attach_pid-to-find_attach_pid.patch
-attach_pid-with-struct-pid-parameter.patch
-remove-find_attach_pid.patch
-statically-initialize-struct-pid-for-swapper.patch
-explicitly-set-pgid-sid-of-init.patch
-#
-uts-namespace-remove-config_uts_ns.patch
-ipc-namespace-remove-config_ipc_ns.patch
+Acked-by: Josh Triplett <josh@kernel.org>
 
-is very low.  If I can by some miracle get all this gunk to compile and
-boot a bit, I'd ask that we all very carefully review the patches which
-landed and make sure that we're all happy with it.
-
-That's still a couple of days away, I expect.
+- Josh Triplett
