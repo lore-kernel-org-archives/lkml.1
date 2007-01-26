@@ -1,75 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030352AbXAZQp5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030759AbXAZQqX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030352AbXAZQp5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jan 2007 11:45:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030642AbXAZQp5
+	id S1030759AbXAZQqX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jan 2007 11:46:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030758AbXAZQqW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jan 2007 11:45:57 -0500
-Received: from lmv.inov.pt ([146.193.64.2]:42303 "EHLO lmv.inov.pt"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030352AbXAZQp4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jan 2007 11:45:56 -0500
-X-Greylist: delayed 2890 seconds by postgrey-1.27 at vger.kernel.org; Fri, 26 Jan 2007 11:45:55 EST
-Message-ID: <45BA2341.40008@inov.pt>
-Date: Fri, 26 Jan 2007 15:50:25 +0000
-From: Jose Goncalves <jose.goncalves@inov.pt>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070111)
+	Fri, 26 Jan 2007 11:46:22 -0500
+Received: from mtagate2.de.ibm.com ([195.212.29.151]:25411 "EHLO
+	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030642AbXAZQqV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jan 2007 11:46:21 -0500
+Date: Fri, 26 Jan 2007 17:46:13 +0100
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
+Cc: heiko.carstens@de.ibm.com
+Subject: [S390] Move init_irq_proc to the other irq related functions.
+Message-ID: <20070126164613.GA11609@skybase>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
-X-INOV-EmailServer-Information: Please contact the Email service provider for more information
-X-INOV-EmailServer: Found to be clean
-X-INOV-EmailServer-From: jose.goncalves@inov.pt
-Subject: Oops on serial access on kernel 2.6.16.38
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
 
-I'm having a problem with the latest 2.6.16 kernel (I've found the
-problem on 2.6.16.37 and 2.6.16.38). I have a application that retreives
-data from a GPS connected on a serial port. From time to time a get a
-kernel Oops, like this:
+[S390] Move init_irq_proc to the other irq related functions.
 
-[15423.488491] Unable to handle kernel NULL pointer dereference at
-virtual address 00000000
-[15423.496682] printing eip:
-[15423.504660] 00000000
-[15423.504689] *pde = 00000000
-[15423.512622] Oops: 0000 [#1]
-[15423.520551] Modules linked in:
-[15423.528445] CPU: 0
-[15423.528461] EIP: 0060:[] Not tainted VLI
-[15423.528477] EFLAGS: 00010202 (2.6.16.38-mtm4-debug #1)
-[15423.553076] EIP is at rest_init+0x3feffdc0/0x1e
-[15423.561877] eax: 00000060 ebx: 00000000 ecx: 00000000 edx: 000002fd
-[15423.571312] esi: 00000000 edi: 00000040 ebp: 00000202 esp: c7613e4c
-[15423.580941] ds: 007b es: 007b ss: 0068
-[15423.590833] Process gp_position (pid: 4421, threadinfo=c7612000
-task=c1240a90)
-[15423.591608] Stack: c02fae70 00000005 c74304e0 c02fae70 c128d5e4
-c7a69a80 c01ba49a c02fae70
-[15423.613257] c128d5e4 00000000 c7a69a80 c7a69a80 c01bbaa0 c128d5e4
-00000000 ffffffed
-[15423.625736] c7a69a80 00000100 00400041 c01a9e67 c7627800 c7a69a80
-01022e04 c7627800
-[15423.638428] Call Trace:
-[15423.650518] [] uart_startup+0x63/0xf4
-[15423.663192] [] uart_open+0xaa/0xec
-[15423.675954] [] tty_open+0x16c/0x270
-[15423.688792] [] chrdev_open+0xd7/0xf0
-[15423.701750] [] chrdev_open+0x0/0xf0
-[15423.714647] [] __dentry_open+0xb4/0x180
-[15423.727850] [] nameidata_to_filp+0x1f/0x31
-[15423.741067] [] do_filp_open+0x37/0x3f
-[15423.754480] [] strncpy_from_user+0x2e/0x4c
-[15423.768075] [] get_unused_fd+0x4c/0x91
-[15423.781757] [] do_sys_open+0x40/0xb5
-[15423.795659] [] sys_open+0x13/0x17
-[15423.809685] [] syscall_call+0x7/0xb
-[15423.823902] Code: Bad EIP value.
+Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+---
 
-Regards,
-José Gonçalves
+ arch/s390/kernel/Makefile  |    2 +-
+ arch/s390/kernel/irq.c     |   15 ++++++++++++---
+ arch/s390/kernel/profile.c |   20 --------------------
+ 3 files changed, 13 insertions(+), 24 deletions(-)
 
+diff -urpN linux-2.6/arch/s390/kernel/irq.c linux-2.6-patched/arch/s390/kernel/irq.c
+--- linux-2.6/arch/s390/kernel/irq.c	2006-11-29 22:57:37.000000000 +0100
++++ linux-2.6-patched/arch/s390/kernel/irq.c	2007-01-26 17:27:45.000000000 +0100
+@@ -1,9 +1,9 @@
+ /*
+  *  arch/s390/kernel/irq.c
+  *
+- *  S390 version
+- *    Copyright (C) 2004 IBM Deutschland Entwicklung GmbH, IBM Corporation
++ *    Copyright IBM Corp. 2004,2007
+  *    Author(s): Martin Schwidefsky (schwidefsky@de.ibm.com),
++ *		 Thomas Spatzier (tspat@de.ibm.com)
+  *
+  * This file contains interrupt related functions.
+  */
+@@ -14,6 +14,8 @@
+ #include <linux/interrupt.h>
+ #include <linux/seq_file.h>
+ #include <linux/cpu.h>
++#include <linux/proc_fs.h>
++#include <linux/profile.h>
+ 
+ /*
+  * show_interrupts is needed by /proc/interrupts.
+@@ -93,5 +95,12 @@ asmlinkage void do_softirq(void)
+ 
+ 	local_irq_restore(flags);
+ }
+-
+ EXPORT_SYMBOL(do_softirq);
++
++void init_irq_proc(void)
++{
++	struct proc_dir_entry *root_irq_dir;
++
++	root_irq_dir = proc_mkdir("irq", NULL);
++	create_prof_cpu_mask(root_irq_dir);
++}
+diff -urpN linux-2.6/arch/s390/kernel/Makefile linux-2.6-patched/arch/s390/kernel/Makefile
+--- linux-2.6/arch/s390/kernel/Makefile	2007-01-26 17:27:27.000000000 +0100
++++ linux-2.6-patched/arch/s390/kernel/Makefile	2007-01-26 17:27:45.000000000 +0100
+@@ -6,7 +6,7 @@ EXTRA_AFLAGS	:= -traditional
+ 
+ obj-y	:=  bitmap.o traps.o time.o process.o reset.o \
+             setup.o sys_s390.o ptrace.o signal.o cpcmd.o ebcdic.o \
+-	    semaphore.o s390_ext.o debug.o profile.o irq.o ipl.o
++	    semaphore.o s390_ext.o debug.o irq.o ipl.o
+ 
+ obj-y	+= $(if $(CONFIG_64BIT),entry64.o,entry.o)
+ obj-y	+= $(if $(CONFIG_64BIT),reipl64.o,reipl.o)
+diff -urpN linux-2.6/arch/s390/kernel/profile.c linux-2.6-patched/arch/s390/kernel/profile.c
+--- linux-2.6/arch/s390/kernel/profile.c	2006-11-29 22:57:37.000000000 +0100
++++ linux-2.6-patched/arch/s390/kernel/profile.c	1970-01-01 01:00:00.000000000 +0100
+@@ -1,20 +0,0 @@
+-/*
+- * arch/s390/kernel/profile.c
+- *
+- * Copyright (C) 2003 IBM Deutschland Entwicklung GmbH, IBM Corporation
+- * Author(s): Thomas Spatzier (tspat@de.ibm.com)
+- *
+- */
+-#include <linux/proc_fs.h>
+-#include <linux/profile.h>
+-
+-static struct proc_dir_entry * root_irq_dir;
+-
+-void init_irq_proc(void)
+-{
+-	/* create /proc/irq */
+-	root_irq_dir = proc_mkdir("irq", NULL);
+-
+-	/* create /proc/irq/prof_cpu_mask */
+-	create_prof_cpu_mask(root_irq_dir);
+-}
