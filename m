@@ -1,23 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030793AbXAZUl1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030845AbXAZUmB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030793AbXAZUl1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jan 2007 15:41:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030834AbXAZUl1
+	id S1030845AbXAZUmB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jan 2007 15:42:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030834AbXAZUmB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jan 2007 15:41:27 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:54066 "EHLO smtp.osdl.org"
+	Fri, 26 Jan 2007 15:42:01 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:54084 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030793AbXAZUl0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jan 2007 15:41:26 -0500
-Date: Fri, 26 Jan 2007 12:41:20 -0800
+	id S1030845AbXAZUmA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jan 2007 15:42:00 -0500
+Date: Fri, 26 Jan 2007 12:17:39 -0800
 From: Andrew Morton <akpm@osdl.org>
-To: Alexey Dobriyan <adobriyan@openvz.org>
-Cc: devel@openvz.org, linux-kernel@vger.kernel.org,
-       Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH 1/3] lutimesat: simplify utime(2)
-Message-Id: <20070126124120.f8f78623.akpm@osdl.org>
-In-Reply-To: <20070126112142.GA11128@localhost.sw.ru>
-References: <20070126112142.GA11128@localhost.sw.ru>
+To: dipankar@in.ibm.com
+Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Gautham Shenoy <ego@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: Fw: Re: [mm PATCH 4/6] RCU: (now) CPU hotplug
+Message-Id: <20070126121739.be3e072a.akpm@osdl.org>
+In-Reply-To: <20070126194622.GA17134@in.ibm.com>
+References: <20070124011519.GG1613@linux.vnet.ibm.com>
+	<20070124090111.GC27221@in.ibm.com>
+	<20070124161559.GA1762@linux.vnet.ibm.com>
+	<20070124210645.GA19650@in.ibm.com>
+	<20070126191113.GA14770@in.ibm.com>
+	<20070126112837.059502fc.akpm@osdl.org>
+	<20070126194622.GA17134@in.ibm.com>
 X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -25,79 +32,25 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 26 Jan 2007 14:21:42 +0300
-Alexey Dobriyan <adobriyan@openvz.org> wrote:
+On Sat, 27 Jan 2007 01:16:22 +0530
+Dipankar Sarma <dipankar@in.ibm.com> wrote:
 
-> Rewrite via do_utimes() like compat_sys_utime().
+> > The plan is, I hope, to rip it all out and do freeze_processes() on the
+> > hotplug side, so nobody else needs to worry about cpu hotplug any more. 
+> > But at present everyone seems to be in hiding.
 > 
-> Signed-off-by: Alexey Dobriyan <adobriyan@openvz.org>
-> ---
-> 
->  fs/utimes.c |   50 +++++++-------------------------------------------
->  1 file changed, 7 insertions(+), 43 deletions(-)
-> 
-> --- a/fs/utimes.c
-> +++ b/fs/utimes.c
-> @@ -22,52 +22,16 @@ #ifdef __ARCH_WANT_SYS_UTIME
->   */
->  asmlinkage long sys_utime(char __user * filename, struct utimbuf __user * times)
->  {
-> -	int error;
-> -	struct nameidata nd;
-> -	struct inode * inode;
-> -	struct iattr newattrs;
-> +	struct timeval tv[2];
->  
-> -	error = user_path_walk(filename, &nd);
-> -	if (error)
-> -		goto out;
-> -	inode = nd.dentry->d_inode;
-> -
-> -	error = -EROFS;
-> -	if (IS_RDONLY(inode))
-> -		goto dput_and_out;
-> -
-> -	/* Don't worry, the checks are done in inode_change_ok() */
-> -	newattrs.ia_valid = ATTR_CTIME | ATTR_MTIME | ATTR_ATIME;
->  	if (times) {
-> -		error = -EPERM;
-> -		if (IS_APPEND(inode) || IS_IMMUTABLE(inode))
-> -			goto dput_and_out;
-> -
-> -		error = get_user(newattrs.ia_atime.tv_sec, &times->actime);
-> -		newattrs.ia_atime.tv_nsec = 0;
-> -		if (!error)
-> -			error = get_user(newattrs.ia_mtime.tv_sec, &times->modtime);
-> -		newattrs.ia_mtime.tv_nsec = 0;
-> -		if (error)
-> -			goto dput_and_out;
-> -
-> -		newattrs.ia_valid |= ATTR_ATIME_SET | ATTR_MTIME_SET;
-> -	} else {
-> -                error = -EACCES;
-> -                if (IS_IMMUTABLE(inode))
-> -                        goto dput_and_out;
-> -
-> -		if (current->fsuid != inode->i_uid &&
-> -		    (error = vfs_permission(&nd, MAY_WRITE)) != 0)
-> -			goto dput_and_out;
-> +		if (get_user(tv[0].tv_sec, &times->actime) ||
-> +		    get_user(tv[1].tv_sec, &times->modtime))
-> +			return -EFAULT;
-> +		tv[0].tv_usec = 0;
-> +		tv[1].tv_usec = 0;
->  	}
-> -	mutex_lock(&inode->i_mutex);
-> -	error = notify_change(nd.dentry, &newattrs);
-> -	mutex_unlock(&inode->i_mutex);
-> -dput_and_out:
-> -	path_release(&nd);
-> -out:
-> -	return error;
-> +	return do_utimes(AT_FDCWD, filename, times ? tv : NULL);
->  }
->  
->  #endif
+> This would be ideal. However, we don't seem to have any momentum
+> on this.
 
-I'm somewhat surprised that this wasn't done earlier.  I wonder if there's
-some subtle reason why this won't work.   How well tested is this?
+There's no point in expending effort on a fancy new lock until this option
+has been eliminated, so yeah, things are stuck.
+
+> The other thing we would need to do in this case is to
+> check if all the users of cpu hotplug can tolerate a very slow
+> hotplug step if there are 10s of thousands of processes and threads.
+
+Yes, that needs evaluation.  If it's a problem then we might need to
+introduce a more sophisticated user interface which enables userspace to
+take multiple CPUs online and offline in a single step, rather than
+one-at-a-time.  I expect that'd be fairly straightforward.
+
