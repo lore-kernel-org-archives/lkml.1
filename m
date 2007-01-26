@@ -1,47 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030889AbXAZQxd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030886AbXAZQyE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030889AbXAZQxd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jan 2007 11:53:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030875AbXAZQw6
+	id S1030886AbXAZQyE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jan 2007 11:54:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030875AbXAZQxh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jan 2007 11:52:58 -0500
-Received: from mx27.mail.ru ([194.67.23.64]:23134 "EHLO mx27.mail.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030882AbXAZQwU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jan 2007 11:52:20 -0500
-Message-ID: <45BA31B3.2020203@inbox.ru>
-Date: Fri, 26 Jan 2007 19:52:03 +0300
-From: Viktor <vvp01@inbox.ru>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20060212 Fedora/1.7.12-5
-X-Accept-Language: en-us, ru, en
+	Fri, 26 Jan 2007 11:53:37 -0500
+Received: from mtagate3.de.ibm.com ([195.212.29.152]:59408 "EHLO
+	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030886AbXAZQxJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jan 2007 11:53:09 -0500
+Date: Fri, 26 Jan 2007 17:53:00 +0100
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
+Cc: heiko.carstens@de.ibm.com
+Subject: [S390] Fix kprobes breakpoint handling.
+Message-ID: <20070126165300.GS11609@skybase>
 MIME-Version: 1.0
-To: Mark Lord <lkml@rtr.ca>
-CC: Denis Vlasenko <vda.linux@googlemail.com>,
-       Michael Tokarev <mjt@tls.msk.ru>, Phillip Susi <psusi@cfl.rr.com>,
-       Linus Torvalds <torvalds@osdl.org>, Aubrey <aubreylee@gmail.com>,
-       Hua Zhong <hzhong@gmail.com>, Hugh Dickins <hugh@veritas.com>,
-       linux-kernel@vger.kernel.org, hch@infradead.org
-Subject: Re: O_DIRECT question
-References: <6d6a94c50701101857v2af1e097xde69e592135e54ae@mail.gmail.com> <45B90D19.60106@cfl.rr.com> <45B916F2.4070906@tls.msk.ru> <200701252211.39017.vda.linux@googlemail.com> <45BA2628.4030502@rtr.ca>
-In-Reply-To: <45BA2628.4030502@rtr.ca>
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Lord wrote:
-> You guys need to backup in this thread.
-> 
-> Every example of O_DIRECT here could be replaced with
-> calls to mmap(), msync(), and madvise() (or posix_fadvise).
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
 
-No. How about handling IO errors? There is no practical way for it with
-mmap().
+[S390] Fix kprobes breakpoint handling.
 
-> In addition to being at least as fast as O_DIRECT,
-> these have the added benefit of using the page cache 
-> (avoiding reads for data already present, handling multiple
-> users of the same data, etc..).
-> 
-> 
+In case of an illegal op the die notifier gets called with DIE_TRAP
+instead of DIE_BPT first.
 
+Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+---
+
+ arch/s390/kernel/traps.c |   11 +++++++++--
+ 1 files changed, 9 insertions(+), 2 deletions(-)
+
+diff -urpN linux-2.6/arch/s390/kernel/traps.c linux-2.6-patched/arch/s390/kernel/traps.c
+--- linux-2.6/arch/s390/kernel/traps.c	2007-01-26 17:27:47.000000000 +0100
++++ linux-2.6-patched/arch/s390/kernel/traps.c	2007-01-26 17:28:05.000000000 +0100
+@@ -490,8 +490,15 @@ static void illegal_op(struct pt_regs * 
+ #endif
+ 		} else
+ 			signal = SIGILL;
+-	} else
+-		signal = SIGILL;
++	} else {
++		/*
++		 * If we get an illegal op in kernel mode, send it through the
++		 * kprobes notifier. If kprobes doesn't pick it up, SIGILL
++		 */
++		if (notify_die(DIE_BPT, "bpt", regs, interruption_code,
++			       3, SIGTRAP) != NOTIFY_STOP)
++			signal = SIGILL;
++	}
+ 
+ #ifdef CONFIG_MATHEMU
+         if (signal == SIGFPE)
