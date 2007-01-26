@@ -1,104 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752168AbXAZW71@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751757AbXAZXPj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752168AbXAZW71 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jan 2007 17:59:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752181AbXAZW71
+	id S1751757AbXAZXPj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jan 2007 18:15:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752176AbXAZXPj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jan 2007 17:59:27 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:59019 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752171AbXAZW7Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jan 2007 17:59:25 -0500
-Date: Fri, 26 Jan 2007 14:59:09 -0800
-From: Andrew Morton <akpm@osdl.org>
-To: Andi Kleen <ak@suse.de>
-Cc: linux-kernel@vger.kernel.org,
-       "bugme-daemon@kernel-bugs.osdl.org" 
-	<bugme-daemon@bugzilla.kernel.org>,
-       joerg@hydrops.han.de
-Subject: Re: [Bugme-new] [Bug 7891] New: vdso page is no longer mapped for
- a.out binaries in kernel 2.6.18
-Message-Id: <20070126145909.4f7d1cda.akpm@osdl.org>
-In-Reply-To: <200701262240.l0QMe9aG019624@fire-2.osdl.org>
-References: <200701262240.l0QMe9aG019624@fire-2.osdl.org>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 26 Jan 2007 18:15:39 -0500
+Received: from cavan.codon.org.uk ([217.147.92.49]:57498 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751757AbXAZXPi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jan 2007 18:15:38 -0500
+Date: Fri, 26 Jan 2007 23:15:21 +0000
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: David Brownell <david-b@pacbell.net>
+Cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org, akpm@osdl.org
+Message-ID: <20070126231521.GA12370@srcf.ucam.org>
+References: <20061219185223.GA13256@srcf.ucam.org> <20070125050009.GA8672@srcf.ucam.org> <20070126204140.GA8407@suse.de> <200701261356.42171.david-b@pacbell.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200701261356.42171.david-b@pacbell.net>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+Subject: Re: [PATCH] Fix /sys/device/.../power/state regression
+X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
+X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Jan 26, 2007 at 01:56:41PM -0800, David Brownell wrote:
 
-(Please respond via reply-to-all, not via the bugzilla web interface)
+> I thought the resolution was that fixing a few of those drivers
+> should solve the problem Matthew needed resolved, and that in
+> the meanwhile "rmmod drivername" should suffice.  There also seemed
+> to be agreement that power management for wireless devices needed
+> more work; there might need to be a state between "down/off" and
+> "configured and able to talk IP".
 
-On Fri, 26 Jan 2007 14:40:09 -0800
-bugme-daemon@bugzilla.kernel.org wrote:
+It's certainly the case that fixing those drivers would result in a 
+better long-term situation - however, nobody currently seems to have any 
+interest in doing so, and I've only got access to a subset of the 
+hardware and approximately none of the documentation. It's likely that 
+I'll end up spending time on that, but right now I'm afraid that other 
+things are taking a higher priority.
 
-> http://bugzilla.kernel.org/show_bug.cgi?id=7891
-> 
->            Summary: vdso page is no longer mapped for a.out binaries in
->                     kernel 2.6.18
->     Kernel Version: 2.6.18 and later
->             Status: NEW
->           Severity: normal
->              Owner: process_other@kernel-bugs.osdl.org
->          Submitter: joerg@hydrops.han.de
-> 
-> 
-> Most recent kernel where this bug did *NOT* occur: 2.6.17.14
-> Distribution: vanilla kernel
-> Hardware Environment: x86-32
-> Software Environment: gentoo
-> Problem Description: this is a 2.6.18 regression bug.
-> 
-> In kernel 2.6.18 the vdso page is no longer mapped for a.out binaries.
-> For instance a program using sleep will sigsegv on delivery of SIGALRM (to be
-> precise: on return from signal handling). I tested this using a static a.out
-> binary. This program does work in 2.6.17 . 
-> 
-> cat /proc/pid/smaps does show that vdso is not mapped in 2.6.18 for an a.out
-> binary. I had a look at fs/binfmt_elf.c and found that the vdso pages is mapped
-> using arch_setup_additional_pages from arch/i386/kernel/sysenter.c for elf.
-> 
-> I did a test calling arch_setup_additional_pages from fs/binfmt_aout.c with
-> positive result. 
-> 
-> As arch_setup_additional_pages is defined in arch/i368-asm/elf.h only, I see no
-> clean way to provide a patch for fs/binfmt_aout.c. 
-> 
-> Steps to reproduce:
-> Compile a simple program using sleep() to a.out binary and execute it. It will
-> sigsegv on delivery of SIGALRM.
-> 
+I'm not sure what you mean by using rmmod instead. Most drivers don't 
+explicitly set the power state when unbinding, and I can't see anywhere 
+in the generic PCI code that will do it.
 
-OK, who was it this time?  Andi?
+As I've said before, I think it's unreasonable to cripple interfaces for 
+(mostly) aesthetic reasons without ensuring that equivalent 
+functionality already exists. This patch restores useful functionality 
+without breaking the extra sanity checks that you've added. I appreciate 
+that it's not an interface that you want to support in the long term 
+(well, even the short term...), and that suggesting its removal provides 
+a useful incentive to fix things properly in the long term. But it would 
+be nice if we didn't make it impossible to do this until the right thing 
+is implemented.
 
-If a.out indeed needs to call arch_setup_additional_pages() then the
-correct way to fix this is to rip the festering dungpile which we have now
-and:
-
-- Give i386, x86_64, powerpc and sh a new
-  CONFIG_ARCH_HAS_SETUP_ADDITIONAL_PAGES
-
-- Create a new include/linux/interp.h which has:
-
-	struct linux_binprm;
-	#ifdef CONFIG_ARCH_HAS_SETUP_ADDITIONAL_PAGES
-	extern int arch_setup_additional_pages(struct linux_binprm *bprm,
-                                       int executable_stack);
-	#else
-	static inline int arch_setup_additional_pages(struct linux_binprm *bprm,
-                                       int executable_stack)
-	{
-		return 0;
-	}
-	#endif
-
-- include <linux/interp.h> from binfmt_elf.c and binfmt_aout.c and from
-  all the files which implement arch_setup_additional_pages().  
-
-- Remove the #ifdef ARCH_HAS_SETUP_ADDITIONAL_PAGES from binfmt_elf.c
-
-- Add the call to arch_setup_additional_pages() in binfmt_aout.h.
-
-
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
