@@ -1,88 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161086AbXAZRrs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161092AbXAZRsx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161086AbXAZRrs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jan 2007 12:47:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161092AbXAZRrs
+	id S1161092AbXAZRsx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jan 2007 12:48:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161093AbXAZRsx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jan 2007 12:47:48 -0500
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:57131
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161086AbXAZRrr (ORCPT
+	Fri, 26 Jan 2007 12:48:53 -0500
+Received: from ug-out-1314.google.com ([66.249.92.173]:22841 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161092AbXAZRsw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jan 2007 12:47:47 -0500
-From: Rob Landley <rob@landley.net>
-To: Oleg Verych <olecom@flower.upol.cz>
-Subject: Re: sed _s_gnu_alternatives_ (Re: [rft] (g)awk substitution)
-Date: Fri, 26 Jan 2007 12:47:20 -0500
-User-Agent: KMail/1.9.1
-Cc: Andrew Morton <akpm@osdl.org>, Sam Ravnborg <sam@ravnborg.org>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <200701151624.18033.rob@landley.net> <200701251438.03213.rob@landley.net> <20070125211802.GC10907@flower.upol.cz>
-In-Reply-To: <20070125211802.GC10907@flower.upol.cz>
+	Fri, 26 Jan 2007 12:48:52 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding:from;
+        b=sqOIm3TYd/N6c+WtwJI2DLRT+i1dPPlotiNZCQLMmYkawftxxxyEzygJNX429wbDrB5Kh7qf79tD2z7o7rwXTZo017mbYabvfl1yaC9zm30cmfLPTW5ZlQQptBv2X/YMcUAW9swHY9+H9lBaVsutHb2dc3RrdsWYi4tasq7AmNI=
+Message-ID: <45BA3EF3.2070309@googlemail.com>
+Date: Fri, 26 Jan 2007 18:48:35 +0100
+User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200701261247.22374.rob@landley.net>
+To: linux-kernel@vger.kernel.org
+CC: Andrew Morton <akpm@osdl.org>, Gautham R Shenoy <ego@in.ibm.com>
+Subject: Re: mm snapshot broken-out-2007-01-26-00-36.tar.gz uploaded
+References: <200701260837.l0Q8blBr011622@shell0.pdx.osdl.net>
+In-Reply-To: <200701260837.l0Q8blBr011622@shell0.pdx.osdl.net>
+X-Enigmail-Version: 0.94.1.1
+Content-Type: text/plain; charset=ISO-8859-2
+Content-Transfer-Encoding: 8bit
+From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 25 January 2007 4:18 pm, Oleg Verych wrote:
-
-> > As I said, I'm not particularly interested in a more intrusive solution 
-> > solving a problem I haven't actually seen.  I don't see any obvious reason 
-> > why it wouldn't work, and yes it would probably also solve my problem, but
-> > I still don't see why you think it's "better" than the three byte fix.
+akpm@osdl.org napisa³(a):
+> The mm snapshot broken-out-2007-01-26-00-36.tar.gz has been uploaded to
 > 
-> Ehhh. "I'm not guilty" issue. Well, fine ;)
+>    ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/mm/broken-out-2007-01-26-00-36.tar.gz
+> 
 
-"guilty"?
+kernel/sys.c:359: error: conflicting types for '__blocking_notifier_call_chain'
+include/linux/notifier.h:140: error: previous declaration of '__blocking_notifier_call_chain' was here
+kernel/sys.c:375: error: conflicting types for '__blocking_notifier_call_chain'
+include/linux/notifier.h:140: error: previous declaration of '__blocking_notifier_call_chain' was here
+make[1]: *** [kernel/sys.o] Error 1
+make: *** [kernel] Error 2
 
-You attempted to hijack my simple observation ("awk is the standard name, gawk 
-is not") into an attempt to replace susv3 standard utilities with extra shell 
-script.  This is a separate agenda, and I have _no_ idea why you think I'm 
-obligated to pursue it for you.
+Possible fix.
 
-The motivation for my patch is taht circa 2.6.12 I didn't need gawk on my 
-system to build; the need for it cropped up fairly recently.  This is A) an 
-artificial requirement, B) a regression, C) trivial to fix.
+Regards,
+Michal
 
-I could also teach busybox awk to be called as "gawk", but awk is the standard 
-name and gawk is not, and gawk can already be called as awk.  The _clean_ 
-thing to do is send a patch to get Linux to use the standard name, which I 
-did.  This is the minimally intrusive change, and since gawk's install 
-creates an awk symlink it shouldn't affect any existing systems.
+--
+Michal K. K. Piotrowski
+LTG - Linux Testers Group
+(http://www.stardust.webpages.pl/ltg/)
 
-That's what I did.  I am simply not interested in your attempts to do 
-something else, in hopes of fixing a problem I haven't seen and which I'm not 
-convinced actually exists.
+Signed-off-by: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
 
-> If your current system is IA-32, or you have access to one, would you
-> like to test scripts/makelst for me, as i'm seeing `bc' there. But my 
-> system have not one, i would like to replace it with shell or awk or
-> whatever. TIA.
+--- linux-work-clean/kernel/sys.c	2007-01-26 16:47:56.000000000 +0100
++++ linux-work/kernel/sys.c	2007-01-26 18:40:30.000000000 +0100
+@@ -355,7 +355,7 @@ EXPORT_SYMBOL_GPL(blocking_notifier_chai
 
-According to Posix and SUSv3, a development environment can be expected to 
-have bc:
-http://www.opengroup.org/onlinepubs/009695399/utilities/bc.html
+ int __blocking_notifier_call_chain(struct blocking_notifier_head *nh,
+ 				   unsigned long val, void *v,
+-				   int nr_to_call, unsigned int *nr_calls)
++				   int nr_to_call, int *nr_calls)
+ {
+ 	int ret = NOTIFY_DONE;
 
-Would you like to try the one in busybox?
 
-The minimal development environment I can build a working system in is 7 
-packages: linux, gcc, binutils, make, busybox, uClibc, bash.  This is not 
-theoretical: I have actually done this, and I was building systems under this 
-as far back as 2003.  (I became busybox maintainer after spending 2 years 
-upgrading busybox to make this _work_.  I started by rewriting sed.  I didn't 
-_know_ sed at the time, but binutils ./configure used some rather advanced 
-sed scripts to build, so I fixed it.  It works now.)
 
-I'm using this to get a minimal native environment on non-x86 target 
-platforms, to minimize the amount of cross compiling I have to do when 
-bootstrapping a new platform.  (I submitted an OLS tutorial proposal on this, 
-although I dunno if they're interested.)
-
-Rob
--- 
-"Perfection is reached, not when there is no longer anything to add, but
-when there is no longer anything to take away." - Antoine de Saint-Exupery
