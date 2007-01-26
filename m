@@ -1,81 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030713AbXAZCyq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030716AbXAZC55@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030713AbXAZCyq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jan 2007 21:54:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030714AbXAZCyq
+	id S1030716AbXAZC55 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jan 2007 21:57:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030717AbXAZC55
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jan 2007 21:54:46 -0500
-Received: from bc.sympatico.ca ([209.226.175.184]:40663 "EHLO
-	tomts22-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1030713AbXAZCyp (ORCPT
+	Thu, 25 Jan 2007 21:57:57 -0500
+Received: from mailout1.vmware.com ([65.113.40.130]:44284 "EHLO
+	mailout1.vmware.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030716AbXAZC54 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jan 2007 21:54:45 -0500
-Date: Thu, 25 Jan 2007 21:54:41 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: linux-kernel@vger.kernel.org
-Cc: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
-       Ingo Molnar <mingo@redhat.com>, Greg Kroah-Hartman <gregkh@suse.de>,
-       Christoph Hellwig <hch@infradead.org>, ltt-dev@shafik.org,
-       systemtap@sources.redhat.com, Douglas Niehaus <niehaus@eecs.ku.edu>,
-       "Martin J. Bligh" <mbligh@mbligh.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH 02/09] atomic.h : Complete atomic_long operations in asm-generic
-Message-ID: <20070126025441.GA13004@Krystal>
-References: <11697417541743-git-send-email-mathieu.desnoyers@polymtl.ca> <1169741754354-git-send-email-mathieu.desnoyers@polymtl.ca>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <1169741754354-git-send-email-mathieu.desnoyers@polymtl.ca>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.4.32-grsec (i686)
-X-Uptime: 21:52:32 up 155 days, 23:59,  4 users,  load average: 0.31, 0.37, 0.40
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Thu, 25 Jan 2007 21:57:56 -0500
+Message-ID: <45B96E33.1080400@vmware.com>
+Date: Thu, 25 Jan 2007 18:57:55 -0800
+From: Zachary Amsden <zach@vmware.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20061206)
+MIME-Version: 1.0
+To: Andi Kleen <ak@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jim Mattson <jmattson@vmware.com>
+Subject: [PATCH] x86_64 - Fix FS/GS registers for VT execution
+Content-Type: multipart/mixed;
+ boundary="------------070706090907000509050102"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-As Joe Perches pointed out, 4 casts to (long) are unneeded here.
+This is a multi-part message in MIME format.
+--------------070706090907000509050102
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-The *_test functions only return integers, never a long.
+Hi Andi, as we discussed, FS/GS segment state doesn't allow VT execution 
+during boot.  Patch fixes this problem.  Please apply.  I will be 
+sending for -stable review when upstream.
 
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Thanks,
 
---- a/include/asm-generic/atomic.h
-+++ b/include/asm-generic/atomic.h
-@@ -70,28 +70,28 @@ static inline int atomic_long_sub_and_test(long i, atomic_long_t *l)
- {
- 	atomic64_t *v = (atomic64_t *)l;
- 	
--	return (long)atomic64_sub_and_test(i, v);
-+	return atomic64_sub_and_test(i, v);
- }
+Zach
+
+--------------070706090907000509050102
+Content-Type: text/plain;
+ name="fs-gs-clear"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="fs-gs-clear"
+
+Initialize FS and GS to __KERNEL_DS as well.  The actual value of them is not
+important, but it is important to reload them in protected mode.  At this time,
+they still retain the real mode values from initial boot.  VT disallows
+execution of code under such conditions, which means hardware virtualization
+can not be used to boot the kernel on Intel platforms, making the boot time
+painfully slow.
+
+This requires moving the GS load before the load of GS_BASE, so just move
+all the segments loads there to keep them together in the code.
+
+Signed-off-by: Zachary Amsden <zach@vmware.com>
+
+Index: linux-2.6.19/arch/x86_64/kernel/head.S
+===================================================================
+--- linux-2.6.19.orig/arch/x86_64/kernel/head.S	2006-11-29 13:57:37.000000000 -0800
++++ linux-2.6.19/arch/x86_64/kernel/head.S	2007-01-11 16:57:24.000000000 -0800
+@@ -163,6 +163,20 @@ startup_64:
+ 	 */
+ 	lgdt	cpu_gdt_descr
  
- static inline int atomic_long_dec_and_test(atomic_long_t *l)
- {
- 	atomic64_t *v = (atomic64_t *)l;
- 	
--	return (long)atomic64_dec_and_test(v);
-+	return atomic64_dec_and_test(v);
- }
++	/* set up data segments. actually 0 would do too */
++	movl $__KERNEL_DS,%eax
++	movl %eax,%ds	
++	movl %eax,%ss
++	movl %eax,%es
++
++	/*
++	 * We don't really need to load %fs or %gs, but load them anyway
++	 * to kill any stale realmode selectors.  This allows execution
++	 * under VT hardware.
++	 */
++	movl %eax,%fs
++	movl %eax,%gs
++			
+ 	/* 
+ 	 * Setup up a dummy PDA. this is just for some early bootup code
+ 	 * that does in_interrupt() 
+@@ -173,12 +187,6 @@ startup_64:
+ 	shrq	$32,%rdx
+ 	wrmsr	
  
- static inline int atomic_long_inc_and_test(atomic_long_t *l)
- {
- 	atomic64_t *v = (atomic64_t *)l;
- 	
--	return (long)atomic64_inc_and_test(v);
-+	return atomic64_inc_and_test(v);
- }
- 
- static inline int atomic_long_add_negative(long i, atomic_long_t *l)
- {
- 	atomic64_t *v = (atomic64_t *)l;
- 	
--	return (long)atomic64_add_negative(i, v);
-+	return atomic64_add_negative(i, v);
- }
- 
- static inline long atomic_long_add_return(long i, atomic_long_t *l)
--- 
-OpenPGP public key:              http://krystal.dyndns.org:8080/key/compudj.gpg
-Key fingerprint:     8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68 
+-	/* set up data segments. actually 0 would do too */
+-	movl $__KERNEL_DS,%eax
+-	movl %eax,%ds	
+-	movl %eax,%ss
+-	movl %eax,%es
+-			
+ 	/* esi is pointer to real mode structure with interesting info.
+ 	   pass it to C */
+ 	movl	%esi, %edi
+
+--------------070706090907000509050102--
