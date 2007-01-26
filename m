@@ -1,65 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751620AbXAZVoi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751651AbXAZVrU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751620AbXAZVoi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jan 2007 16:44:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751659AbXAZVoh
+	id S1751651AbXAZVrU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jan 2007 16:47:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751665AbXAZVrU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jan 2007 16:44:37 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:56513 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751620AbXAZVoh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jan 2007 16:44:37 -0500
-Date: Fri, 26 Jan 2007 13:25:45 -0800
-From: Andrew Morton <akpm@osdl.org>
-To: dipankar@in.ibm.com
-Cc: Ingo Molnar <mingo@elte.hu>, Paul E McKenney <paulmck@linux.vnet.ibm.com>,
+	Fri, 26 Jan 2007 16:47:20 -0500
+Received: from terminus.zytor.com ([192.83.249.54]:47012 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751650AbXAZVrT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jan 2007 16:47:19 -0500
+Message-ID: <45BA76CA.3080808@zytor.com>
+Date: Fri, 26 Jan 2007 13:46:50 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070102)
+MIME-Version: 1.0
+To: Alan Cox <alan@redhat.com>
+CC: Scott Preece <sepreece@gmail.com>, Martin Bligh <mbligh@mbligh.org>,
+       Theodore Tso <tytso@mit.edu>, Sunil Naidu <akula2.shark@gmail.com>,
+       Josh Boyer <jwboyer@gmail.com>, James Morris <jmorris@namei.org>,
+       Christoph Hellwig <hch@lst.de>, ksummit-2006-discuss@thunk.org,
        linux-kernel@vger.kernel.org
-Subject: Re: [mm PATCH 4/6] RCU: preemptible RCU
-Message-Id: <20070126132545.722c787c.akpm@osdl.org>
-In-Reply-To: <20070126210017.GC17134@in.ibm.com>
-References: <20070115191909.GA32238@in.ibm.com>
-	<20070115192858.GE32238@in.ibm.com>
-	<20070123163259.0d1d5ffc.akpm@osdl.org>
-	<20070126210017.GC17134@in.ibm.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Subject: Re: [Ksummit-2006-discuss] 2007 Linux Kernel Summit
+References: <20070122110711.GA5917@lst.de> <20070122124502.GC30124@devserv.devel.redhat.com> <8355959a0701231152n1b4238f8ob54ea1792f299ca5@mail.gmail.com> <Pine.LNX.4.64.0701231622260.29810@d.namei> <625fc13d0701231339j523306b6w923c695a3ed0493e@mail.gmail.com> <8355959a0701231511o4f53796ewd5e403b640a4975c@mail.gmail.com> <20070124014223.GA26186@thunk.org> <8f3aa8d60701241018o6d4d8c37jb20ddb49f47e3eec@mail.gmail.com> <8f3aa8d60701241027p6674915avbc0f9b37383cce32@mail.gmail.com> <7b69d1470701241147m6b3f905erca392c3a4761c4e8@mail.gmail.com> <20070124212649.GA12410@devserv.devel.redhat.com>
+In-Reply-To: <20070124212649.GA12410@devserv.devel.redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 27 Jan 2007 02:30:17 +0530
-Dipankar Sarma <dipankar@in.ibm.com> wrote:
-
-> > > As a consequence of keeping track of RCU readers, the readers
-> > > have a slight overhead (optimizations in the paper).
-> > > This implementation co-exists with the "classic" RCU
-> > > implementations and can be switched to at compiler.
-> > 
-> > That's yet another question we need to ask people when their kernel dies,
-> > and yet another deviation between the kernels which we all test, causing
-> > more dilution of testing efforts.  It would be much better if we could
-> > remove classic RCU.  You say this would incur extra cost, but the magnitude
-> > of that cost is not clear.  Please help us make that decision.
+Alan Cox wrote:
+> On Wed, Jan 24, 2007 at 01:47:45PM -0600, Scott Preece wrote:
+>> Hmm - Sounds like it needs to go to Halifax! [I was going to suggest
+>> Reykjavik, but was surprised to see it was in the same time zone as
+>> the UK.]
 > 
-> See the Table 2, page 10 of the paper mentioned above.
+> Reykjavik is a fantastic place with some truely wonderful Linux folks. As to
+> the timezone, well winter is mostly dark, summer is mostly light so time 
+> zones don't matter 8)
 
-argh.
+Reykjavik is also quite easy to travel to from USA and Europe.  From 
+elsewhere, it generally means going through one of those locales.
 
-Seems I have to wade through half the paper to understand Table 2.
+One major benny is that Icelandair lets you treat up to a week in 
+Iceland as a "stopover" of a longer trip.
 
-> There is a
-> ~100ns cost per read-side critical section involved in the preemptible
-> version of RCU at the moment. Until, we are sure that we don't have
-> an impact on common workloads, we need to keep the "classic" 
-> implementation around.
-
-Ratios, please..  that 100ns appears to be a 100% increase.  ie 100ns -> 200ns.
-
-There are a couple of ways of working out how much that really matters: a)
-run a workload or b) instrument a kernel, work out how many times/sec the
-kernel runs rcu_read_lock().  I suspect b) would be more useful and
-informative.
-
-Either way, please always prepare such info up-front and summarise in the
-changelog?  It's kinda important...
+	-hpa
