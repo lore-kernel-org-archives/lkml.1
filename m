@@ -1,197 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161109AbXAZSAo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161080AbXAZSDn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161109AbXAZSAo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jan 2007 13:00:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161110AbXAZSAo
+	id S1161080AbXAZSDn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jan 2007 13:03:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161111AbXAZSDn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jan 2007 13:00:44 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:33142 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161109AbXAZSAn (ORCPT
+	Fri, 26 Jan 2007 13:03:43 -0500
+Received: from nz-out-0506.google.com ([64.233.162.231]:55752 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161080AbXAZSDm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jan 2007 13:00:43 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Fri, 26 Jan 2007 19:00:29 +0100 (CET)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [RFT PATCH] ieee1394: ohci1394: serialize reset requests and irq
- handler
-To: linux1394-devel@lists.sourceforge.net
-cc: Robert Crocombe <rcrocomb@ieee.org>, linux-kernel@vger.kernel.org
-Message-ID: <tkrat.5ef766da36a4a03a@s5r6.in-berlin.de>
+	Fri, 26 Jan 2007 13:03:42 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=jBXPRucDObSTg3VSPaNeT/spuFtTalRNL7S7zgfXccaEsTd3D/YrbXWtcpcmEAiWYxNKj6VYId8H/Ug6EGYwIXpdrjiaO5NluL96aFob7GFwyym18ZANTc6YxgWCgRGlpZLAHokLgPm4JqdD14jNpTSSaFdSJNmBlCMa2jq1kPw=
+Message-ID: <806dafc20701261003s1790ada8xbec94c914424c86f@mail.gmail.com>
+Date: Fri, 26 Jan 2007 13:03:41 -0500
+From: xiphmont@xiph.org
+To: "Greg KH" <greg@kroah.com>
+Subject: Re: [Alsa-devel] [PATCH] alsa: correct nonsensical sysfs device symlinks
+Cc: "Takashi Iwai" <tiwai@suse.de>, "Pierre Ossman" <drzeus@drzeus.cx>,
+       fedora-desktop-list@redhat.com, alsa-devel@alsa-project.org,
+       jrb@redhat.com, linux-kernel@vger.kernel.org, mclasen@redhat.com,
+       "Lennart Poettering" <lennart@poettering.net>, perex@suse.cz
+In-Reply-To: <20070125215943.GC3126@kroah.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <806dafc20701250903p6b67d176wf00dd2a9d92d899f@mail.gmail.com>
+	 <s5h7ivbuhg1.wl%tiwai@suse.de>
+	 <806dafc20701251007n69bc9b3cse023b51369501d42@mail.gmail.com>
+	 <s5h4pqfufs8.wl%tiwai@suse.de>
+	 <806dafc20701251034l59fc5be7ta881606046eb819a@mail.gmail.com>
+	 <s5h1wljuf2f.wl%tiwai@suse.de>
+	 <806dafc20701251051p2750cb34sab88a38282020497@mail.gmail.com>
+	 <20070125194933.GA27857@kroah.com>
+	 <806dafc20701251240t70335055l74c47ecdd09d1944@mail.gmail.com>
+	 <20070125215943.GC3126@kroah.com>
+X-Google-Sender-Auth: 4761d23a4318b5b9
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ohci1394 has basically no protection against concurrent access to
-registers.  I suspect this as a reason for bug "Host disappears on 1394
-bus reset". http://bugzilla.kernel.org/show_bug.cgi?id=7569
+Before I get to the less focused rant below, I wanted to mention that
+the HELP text for 'Create deprecated sysfs files' does not make it
+clear that one is opting for old in exclusion of new.
 
-The following changes are done here:
-  - Use the ohci->event_lock to serialize the trigger for software-
-    enforced bus resets against a large portion of the IRQ handler.
-  - To accomplish this, cover much more regions of ohci_irq_handler
-    by event_lock.  Needless to say, this has to be tested for a lot
-    of scenarios.
-  - Use spin_lock instead of spin_lock_irqsave in ohci_irq_handler.
+On 1/25/07, Greg KH <greg@kroah.com> wrote:
 
-It is somehow disturbing to see how the event_lock was originally taken
-and released without discernable reason.
+> There is no such thing as a "stable release update" series anymore, you
+> should know that :)
 
-Todo:
-  - Test.
-  - Audit *all* of ohci1394's register accesses for the need of
-    serialization by spinlocks + mmiowb.
-  - Look into unifying ohci1394's internal locking to a single lock
-    per host.
-  - Audit the selfID complete event handling, including what happens
-    higher up in ieee1394 core, for the possibility to move workload
-    into tasklets or workqueue jobs.
+To the detriment of the users, yes.  Subminor release update and
+*bam*, audio doesn't work and it takes a kernel hacker to figure out
+why, and because of a small but inevitable error (error is inevitable
+in change). If this was a Windows service pack or a MacOS subminor
+update, it would be front page news in industry trade mags.  The fact
+that it isn't is because it's Linux and we're frankly still the
+retarded foster child adopted for tax purposes, at least as far as the
+desktop goes.
 
-Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
----
+I'm not saying change is bad, I'm saying this was a subtle, large
+change and no one has explained the functional benefit beyond 'it's
+cleaner' to outweigh 'many users want to strangle us'.
 
-Robert, does this do anything for your setup?  So far I only did a quick
-test with a UP PC (kernel configured for SMP PREEMPT) and a FireWire HDD
-and at least it didn't lock up...
+> Well, as this HALD issue is the only thing that I have had reported, and
+> these patches have been in the -mm tree for quite some time, yes, I
+> think it is the only thing that has broken.
 
+Plenty of people spotted it, several bugs got filed, and the fact that
+you're only hearing about it from me at least two months after
+introduction is mildly worrisome.  (I am already worried that *I*
+didn't hear about it till recently as I attempted to push out Pulse in
+fc rawhide and found it magically no longer worked.  At all.)
 
- drivers/ieee1394/ohci1394.c |   51 ++++++++++++++++--------------------
- 1 file changed, 23 insertions(+), 28 deletions(-)
+If the hald developers were caught unprepared (so unprepared, in fact,
+they've all ben inaccessable due to holiday + conference + vacation
+for over a month and we can't push an update out), what is the average
+user to do?  Not to mention the fact that it's just a little
+embarrassing that sysfs was invented for 2.6 and the original version
+has already been declared deprecated, still in 2.6.  There's change,
+and then there's churn.
 
+> In short, it's a bug, I messed up somehow.  And I'm trying to fix it
+> now, I don't think there's more that I can do, do you?
 
-Index: linux-2.6.20-rc6/drivers/ieee1394/ohci1394.c
-===================================================================
---- linux-2.6.20-rc6.orig/drivers/ieee1394/ohci1394.c	2007-01-26 16:59:45.000000000 +0100
-+++ linux-2.6.20-rc6/drivers/ieee1394/ohci1394.c	2007-01-26 18:21:01.000000000 +0100
-@@ -943,6 +943,7 @@ static int ohci_devctl(struct hpsb_host 
- 
- 	switch (cmd) {
- 	case RESET_BUS:
-+		spin_lock_irqsave(&ohci->event_lock, flags);
- 		switch (arg) {
- 		case SHORT_RESET:
- 			phy_reg = get_phy_reg(ohci, 5);
-@@ -990,6 +991,8 @@ static int ohci_devctl(struct hpsb_host 
- 		default:
- 			retval = -1;
- 		}
-+		mmiowb();
-+		spin_unlock_irqrestore(&ohci->event_lock, flags);
- 		break;
- 
- 	case GET_CYCLE_COUNTER:
-@@ -2304,27 +2307,21 @@ static irqreturn_t ohci_irq_handler(int 
- 	quadlet_t event, node_id;
- 	struct ti_ohci *ohci = (struct ti_ohci *)dev_id;
- 	struct hpsb_host *host = ohci->host;
--	int phyid = -1, isroot = 0;
--	unsigned long flags;
-+	int phyid = -1, isroot = 0, call_selfid_complete = 0;
- 
--	/* Read and clear the interrupt event register.  Don't clear
--	 * the busReset event, though. This is done when we get the
--	 * selfIDComplete interrupt. */
--	spin_lock_irqsave(&ohci->event_lock, flags);
--	event = reg_read(ohci, OHCI1394_IntEventClear);
--	reg_write(ohci, OHCI1394_IntEventClear, event & ~OHCI1394_busReset);
--	spin_unlock_irqrestore(&ohci->event_lock, flags);
--
--	if (!event)
--		return IRQ_NONE;
-+	spin_lock(&ohci->event_lock);
- 
--	/* If event is ~(u32)0 cardbus card was ejected.  In this case
--	 * we just return, and clean up in the ohci1394_pci_remove
--	 * function. */
--	if (event == ~(u32) 0) {
--		DBGMSG("Device removed.");
-+	/* Read and clear the interrupt event register.  Don't clear the
-+	 * busReset event though.  This is done when we get the selfIDComplete
-+	 * interrupt.
-+	 * If event is ~0, the CardBus card was ejected.  In this case we just
-+	 * return and clean up in ohci1394_pci_remove. */
-+	event = reg_read(ohci, OHCI1394_IntEventClear);
-+	if (!event || !~event) {
-+		spin_unlock(&ohci->event_lock);
- 		return IRQ_NONE;
- 	}
-+	reg_write(ohci, OHCI1394_IntEventClear, event & ~OHCI1394_busReset);
- 
- 	DBGMSG("IntEvent: %08x", event);
- 
-@@ -2399,20 +2396,17 @@ static irqreturn_t ohci_irq_handler(int 
- 		/* The busReset event bit can't be cleared during the
- 		 * selfID phase, so we disable busReset interrupts, to
- 		 * avoid burying the cpu in interrupt requests. */
--		spin_lock_irqsave(&ohci->event_lock, flags);
- 		reg_write(ohci, OHCI1394_IntMaskClear, OHCI1394_busReset);
- 
- 		if (ohci->check_busreset) {
- 			int loop_count = 0;
- 
-+			/* Remember kids: Don't do this at home. */
-+			spin_unlock(&ohci->event_lock);
- 			udelay(10);
--
- 			while (reg_read(ohci, OHCI1394_IntEventSet) & OHCI1394_busReset) {
- 				reg_write(ohci, OHCI1394_IntEventClear, OHCI1394_busReset);
--
--				spin_unlock_irqrestore(&ohci->event_lock, flags);
- 				udelay(10);
--				spin_lock_irqsave(&ohci->event_lock, flags);
- 
- 				/* The loop counter check is to prevent the driver
- 				 * from remaining in this state forever. For the
-@@ -2428,8 +2422,8 @@ static irqreturn_t ohci_irq_handler(int 
- 
- 				loop_count++;
- 			}
-+			spin_lock(&ohci->event_lock);
- 		}
--		spin_unlock_irqrestore(&ohci->event_lock, flags);
- 		if (!host->in_bus_reset) {
- 			DBGMSG("irq_handler: Bus reset requested");
- 
-@@ -2520,10 +2514,8 @@ static irqreturn_t ohci_irq_handler(int 
- 
- 			/* Clear the bus reset event and re-enable the
- 			 * busReset interrupt.  */
--			spin_lock_irqsave(&ohci->event_lock, flags);
- 			reg_write(ohci, OHCI1394_IntEventClear, OHCI1394_busReset);
- 			reg_write(ohci, OHCI1394_IntMaskSet, OHCI1394_busReset);
--			spin_unlock_irqrestore(&ohci->event_lock, flags);
- 
- 			/* Turn on phys dma reception.
- 			 *
-@@ -2540,7 +2532,7 @@ static irqreturn_t ohci_irq_handler(int 
- 			       reg_read(ohci, OHCI1394_PhyReqFilterHiSet),
- 			       reg_read(ohci, OHCI1394_PhyReqFilterLoSet));
- 
--			hpsb_selfid_complete(host, phyid, isroot);
-+			call_selfid_complete = 1;
- 		} else
- 			PRINT(KERN_ERR,
- 			      "SelfID received outside of bus reset sequence");
-@@ -2552,9 +2544,12 @@ selfid_not_valid:
- 	/* Make sure we handle everything, just in case we accidentally
- 	 * enabled an interrupt that we didn't write a handler for.  */
- 	if (event)
--		PRINT(KERN_ERR, "Unhandled interrupt(s) 0x%08x",
--		      event);
-+		PRINT(KERN_ERR, "Unhandled interrupt(s) 0x%08x", event);
- 
-+	mmiowb();
-+	spin_unlock(&ohci->event_lock);
-+	if (call_selfid_complete)
-+		hpsb_selfid_complete(host, phyid, isroot);
- 	return IRQ_HANDLED;
- }
- 
+No.  I'm not pushing back against you, I'm pushing back against the
+budding 'stable APIs are for boring losers' culture.  There's a reason
+I refuse to update my personal machines more often than once every
+year or two-- they spend the next few weeks completely dysfunctional
+each time.  To be fair, the kernel is usually far better than userland
+[excepting ALSA, GRRRR], but let's not go pissing away that relative
+lead :-)
 
--- 
-Stefan Richter
--=====-=-=== ---= ==-=-
-http://arcgraph.de/sr/
-
+Monty
