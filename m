@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030881AbXAZQwV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030884AbXAZQwz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030881AbXAZQwV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jan 2007 11:52:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030874AbXAZQwH
+	id S1030884AbXAZQwz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jan 2007 11:52:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030854AbXAZQwY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jan 2007 11:52:07 -0500
-Received: from mtagate3.de.ibm.com ([195.212.29.152]:59387 "EHLO
-	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030876AbXAZQwB (ORCPT
+	Fri, 26 Jan 2007 11:52:24 -0500
+Received: from mtagate6.de.ibm.com ([195.212.29.155]:35555 "EHLO
+	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030876AbXAZQwU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jan 2007 11:52:01 -0500
-Date: Fri, 26 Jan 2007 17:51:58 +0100
+	Fri, 26 Jan 2007 11:52:20 -0500
+Date: Fri, 26 Jan 2007 17:52:17 +0100
 From: Martin Schwidefsky <schwidefsky@de.ibm.com>
 To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
 Cc: horst.hummel@de.ibm.com
-Subject: [S390] Remove dasd_ccw_log function.
-Message-ID: <20070126165158.GP11609@skybase>
+Subject: [S390] dasd: fix unconditional reserve handling.
+Message-ID: <20070126165217.GQ11609@skybase>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -25,130 +25,71 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Horst Hummel <horst.hummel@de.ibm.com>
 
-[S390] Remove dasd_ccw_log function.
+[S390] dasd: fix unconditional reserve handling.
 
-Logging of relevant information is already done by disciplines
-dump_sense function.
+The reserve/release IOCTLs sometimes do not work. If second system
+does a 'steal lock' the pending unit check (Format 3 Msg F) is
+delivered. Since ERP is disabled for reserve/release, the IOCTL call
+fails. We have to allow basic ERP (retries) for reserve/release IOCTLs.
 
 Signed-off-by: Horst Hummel <horst.hummel@de.ibm.com>
 Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
 ---
 
- drivers/s390/block/dasd_3990_erp.c |    5 ---
- drivers/s390/block/dasd_erp.c      |   61 -------------------------------------
- drivers/s390/block/dasd_int.h      |    1 
- 3 files changed, 67 deletions(-)
+ drivers/s390/block/dasd.c      |    6 +++---
+ drivers/s390/block/dasd_eckd.c |    6 +++---
+ 2 files changed, 6 insertions(+), 6 deletions(-)
 
-diff -urpN linux-2.6/drivers/s390/block/dasd_3990_erp.c linux-2.6-patched/drivers/s390/block/dasd_3990_erp.c
---- linux-2.6/drivers/s390/block/dasd_3990_erp.c	2007-01-26 17:27:33.000000000 +0100
-+++ linux-2.6-patched/drivers/s390/block/dasd_3990_erp.c	2007-01-26 17:28:02.000000000 +0100
-@@ -170,7 +170,6 @@ dasd_3990_erp_examine(struct dasd_ccw_re
- 	/* log the erp chain if fatal error occurred */
- 	if ((era == dasd_era_fatal) && (device->state >= DASD_STATE_READY)) {
- 		dasd_log_sense(cqr, irb);
--		dasd_log_ccw(cqr, 0, irb->scsw.cpa);
- 	}
- 
- 	return era;
-@@ -2640,7 +2639,6 @@ dasd_3990_erp_action(struct dasd_ccw_req
- 
- 	struct dasd_ccw_req *erp = NULL;
- 	struct dasd_device *device = cqr->device;
--	__u32 cpa = cqr->irb.scsw.cpa;
- 	struct dasd_ccw_req *temp_erp = NULL;
- 
- 	if (device->features & DASD_FEATURE_ERPLOG) {
-@@ -2706,9 +2704,6 @@ dasd_3990_erp_action(struct dasd_ccw_req
- 		}
- 	}
- 
--	if (erp->status == DASD_CQR_FAILED)
--		dasd_log_ccw(erp, 1, cpa);
--
- 	/* enqueue added ERP request */
- 	if (erp->status == DASD_CQR_FILLED) {
- 		erp->status = DASD_CQR_QUEUED;
-diff -urpN linux-2.6/drivers/s390/block/dasd_erp.c linux-2.6-patched/drivers/s390/block/dasd_erp.c
---- linux-2.6/drivers/s390/block/dasd_erp.c	2006-11-29 22:57:37.000000000 +0100
-+++ linux-2.6-patched/drivers/s390/block/dasd_erp.c	2007-01-26 17:28:02.000000000 +0100
-@@ -182,69 +182,8 @@ dasd_log_sense(struct dasd_ccw_req *cqr,
- 		device->discipline->dump_sense(device, cqr, irb);
- }
- 
--void
--dasd_log_ccw(struct dasd_ccw_req * cqr, int caller, __u32 cpa)
--{
--	struct dasd_device *device;
--	struct dasd_ccw_req *lcqr;
--	struct ccw1 *ccw;
--	int cplength;
--
--	device = cqr->device;
--	/* log the channel program */
--	for (lcqr = cqr; lcqr != NULL; lcqr = lcqr->refers) {
--		DEV_MESSAGE(KERN_ERR, device,
--			    "(%s) ERP chain report for req: %p",
--			    caller == 0 ? "EXAMINE" : "ACTION", lcqr);
--		hex_dump_memory(device, lcqr, sizeof(struct dasd_ccw_req));
--
--		cplength = 1;
--		ccw = lcqr->cpaddr;
--		while (ccw++->flags & (CCW_FLAG_DC | CCW_FLAG_CC))
--			cplength++;
--
--		if (cplength > 40) {	/* log only parts of the CP */
--			DEV_MESSAGE(KERN_ERR, device, "%s",
--				    "Start of channel program:");
--			hex_dump_memory(device, lcqr->cpaddr,
--					40*sizeof(struct ccw1));
--
--			DEV_MESSAGE(KERN_ERR, device, "%s",
--				    "End of channel program:");
--			hex_dump_memory(device, lcqr->cpaddr + cplength - 10,
--					10*sizeof(struct ccw1));
--		} else {	/* log the whole CP */
--			DEV_MESSAGE(KERN_ERR, device, "%s",
--				    "Channel program (complete):");
--			hex_dump_memory(device, lcqr->cpaddr,
--					cplength*sizeof(struct ccw1));
--		}
--
--		if (lcqr != cqr)
--			continue;
--
--		/*
--		 * Log bytes arround failed CCW but only if we did
--		 * not log the whole CP of the CCW is outside the
--		 * logged CP.
--		 */
--		if (cplength > 40 ||
--		    ((addr_t) cpa < (addr_t) lcqr->cpaddr &&
--		     (addr_t) cpa > (addr_t) (lcqr->cpaddr + cplength + 4))) {
--
--			DEV_MESSAGE(KERN_ERR, device,
--				    "Failed CCW (%p) (area):",
--				    (void *) (long) cpa);
--			hex_dump_memory(device, cqr->cpaddr - 10,
--					20*sizeof(struct ccw1));
--		}
--	}
--
--}				/* end log_erp_chain */
--
- EXPORT_SYMBOL(dasd_default_erp_action);
- EXPORT_SYMBOL(dasd_default_erp_postaction);
- EXPORT_SYMBOL(dasd_alloc_erp_request);
- EXPORT_SYMBOL(dasd_free_erp_request);
- EXPORT_SYMBOL(dasd_log_sense);
--EXPORT_SYMBOL(dasd_log_ccw);
-diff -urpN linux-2.6/drivers/s390/block/dasd_int.h linux-2.6-patched/drivers/s390/block/dasd_int.h
---- linux-2.6/drivers/s390/block/dasd_int.h	2007-01-26 17:27:33.000000000 +0100
-+++ linux-2.6-patched/drivers/s390/block/dasd_int.h	2007-01-26 17:28:02.000000000 +0100
-@@ -559,7 +559,6 @@ struct dasd_ccw_req *dasd_alloc_erp_requ
- 					    struct dasd_device *);
- void dasd_free_erp_request(struct dasd_ccw_req *, struct dasd_device *);
- void dasd_log_sense(struct dasd_ccw_req *, struct irb *);
--void dasd_log_ccw(struct dasd_ccw_req *, int, __u32);
- 
- /* externals in dasd_3370_erp.c */
- dasd_era_t dasd_3370_erp_examine(struct dasd_ccw_req *, struct irb *);
+diff -urpN linux-2.6/drivers/s390/block/dasd.c linux-2.6-patched/drivers/s390/block/dasd.c
+--- linux-2.6/drivers/s390/block/dasd.c	2007-01-26 17:27:47.000000000 +0100
++++ linux-2.6-patched/drivers/s390/block/dasd.c	2007-01-26 17:28:03.000000000 +0100
+@@ -1022,8 +1022,6 @@ dasd_int_handler(struct ccw_device *cdev
+ 		 irb->scsw.cstat == 0 &&
+ 		 !irb->esw.esw0.erw.cons)
+ 		era = dasd_era_none;
+-	else if (!test_bit(DASD_CQR_FLAGS_USE_ERP, &cqr->flags))
+- 	        era = dasd_era_fatal; /* don't recover this request */
+ 	else if (irb->esw.esw0.erw.cons)
+ 		era = device->discipline->examine_error(cqr, irb);
+ 	else
+@@ -1127,7 +1125,9 @@ restart:
+ 				cqr->status = DASD_CQR_FAILED;
+ 				cqr->stopclk = get_clock();
+ 			} else {
+-				if (cqr->irb.esw.esw0.erw.cons) {
++				if (cqr->irb.esw.esw0.erw.cons &&
++				    test_bit(DASD_CQR_FLAGS_USE_ERP,
++					     &cqr->flags)) {
+ 					erp_fn = device->discipline->
+ 						erp_action(cqr);
+ 					erp_fn(cqr);
+diff -urpN linux-2.6/drivers/s390/block/dasd_eckd.c linux-2.6-patched/drivers/s390/block/dasd_eckd.c
+--- linux-2.6/drivers/s390/block/dasd_eckd.c	2007-01-26 17:27:47.000000000 +0100
++++ linux-2.6-patched/drivers/s390/block/dasd_eckd.c	2007-01-26 17:28:03.000000000 +0100
+@@ -1380,7 +1380,7 @@ dasd_eckd_release(struct dasd_device *de
+ 	cqr->device = device;
+ 	clear_bit(DASD_CQR_FLAGS_USE_ERP, &cqr->flags);
+ 	set_bit(DASD_CQR_FLAGS_FAILFAST, &cqr->flags);
+-	cqr->retries = 0;
++	cqr->retries = 2;	/* set retry counter to enable basic ERP */
+ 	cqr->expires = 2 * HZ;
+ 	cqr->buildclk = get_clock();
+ 	cqr->status = DASD_CQR_FILLED;
+@@ -1420,7 +1420,7 @@ dasd_eckd_reserve(struct dasd_device *de
+ 	cqr->device = device;
+ 	clear_bit(DASD_CQR_FLAGS_USE_ERP, &cqr->flags);
+ 	set_bit(DASD_CQR_FLAGS_FAILFAST, &cqr->flags);
+-	cqr->retries = 0;
++	cqr->retries = 2;	/* set retry counter to enable basic ERP */
+ 	cqr->expires = 2 * HZ;
+ 	cqr->buildclk = get_clock();
+ 	cqr->status = DASD_CQR_FILLED;
+@@ -1459,7 +1459,7 @@ dasd_eckd_steal_lock(struct dasd_device 
+ 	cqr->device = device;
+ 	clear_bit(DASD_CQR_FLAGS_USE_ERP, &cqr->flags);
+ 	set_bit(DASD_CQR_FLAGS_FAILFAST, &cqr->flags);
+-	cqr->retries = 0;
++	cqr->retries = 2;	/* set retry counter to enable basic ERP */
+ 	cqr->expires = 2 * HZ;
+ 	cqr->buildclk = get_clock();
+ 	cqr->status = DASD_CQR_FILLED;
