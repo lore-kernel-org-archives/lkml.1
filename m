@@ -1,118 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030736AbXAZEHp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030199AbXAZETc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030736AbXAZEHp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jan 2007 23:07:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030737AbXAZEHp
+	id S1030199AbXAZETc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jan 2007 23:19:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030647AbXAZETc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jan 2007 23:07:45 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:42548 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030736AbXAZEHo convert rfc822-to-8bit (ORCPT
+	Thu, 25 Jan 2007 23:19:32 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:51281 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030199AbXAZETb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jan 2007 23:07:44 -0500
-Message-ID: <45B97D28.1090404@redhat.com>
-Date: Thu, 25 Jan 2007 23:01:44 -0500
-From: =?ISO-8859-1?Q?Kristian_H=F8gsberg?= <krh@redhat.com>
-User-Agent: Thunderbird 1.5.0.5 (X11/20060803)
-MIME-Version: 1.0
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-CC: Pete Zaitcev <zaitcev@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: Juju
-References: <20070124223745.33278eb4.zaitcev@redhat.com>	<45B91EAB.9080004@redhat.com> <20070125153824.8d7f50c5.zaitcev@redhat.com> <45B968E7.1070402@s5r6.in-berlin.de>
-In-Reply-To: <45B968E7.1070402@s5r6.in-berlin.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8BIT
+	Thu, 25 Jan 2007 23:19:31 -0500
+Subject: Re: [PATCH] libata-sff: Don't call bmdma_stop on non DMA capable
+	controllers
+From: David Woodhouse <dwmw2@infradead.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Alan <alan@lxorguk.ukuu.org.uk>, Jeff Garzik <jgarzik@pobox.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0701251932250.25027@woody.linux-foundation.org>
+References: <20070125150905.652f9ce2@localhost.localdomain>
+	 <1169741658.3593.98.camel@shinybook.infradead.org>
+	 <20070125172739.0c990a9a@localhost.localdomain>
+	 <Pine.LNX.4.64.0701250940220.25027@woody.linux-foundation.org>
+	 <1169770985.3593.146.camel@shinybook.infradead.org>
+	 <Pine.LNX.4.64.0701251703570.25027@woody.linux-foundation.org>
+	 <1169778239.3593.195.camel@shinybook.infradead.org>
+	 <Pine.LNX.4.64.0701251832040.25027@woody.linux-foundation.org>
+	 <1169782107.3593.219.camel@shinybook.infradead.org>
+	 <Pine.LNX.4.64.0701251932250.25027@woody.linux-foundation.org>
+Content-Type: text/plain
+Date: Fri, 26 Jan 2007 12:19:10 +0800
+Message-Id: <1169785150.3593.231.camel@shinybook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6.dwmw2.1) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stefan Richter wrote:
-> Pete Zaitcev wrote:
->> On Thu, 25 Jan 2007 16:18:35 -0500, Kristian Høgsberg <krh@redhat.com> wrote:
-> ...
->>> will do a status write to the status address specified in the ORB, at which 
->>> point the SBP-2 transaction is complete.
->> You know, I wanted to use this picture for a long time:
->>  http://www.flickr.com/photos/zaitcev/369269557/
+On Thu, 2007-01-25 at 20:00 -0800, Linus Torvalds wrote:
+> The resource code really is totally agnostic, and you're barking up the 
+> wrong tree there. In many ways, the resource code isn't even about "IO 
+> resources", it could do other things too. 
 
-Haha, sure :)
+Of course it could, but then again why shouldn't we special-case zero in
+_all_ of those use cases, just to make life easier for those poor driver
+authors who presumably can't manage to write userspace code using stdin
+or open() either.
 
-> The fundamental thing about SBP-2 is that ORBs ( = SCSI command blocks
-> plus SBP-2 header) and data buffers all reside in the memory of the
-> initiator (or of a 3rd party on the FireWire bus). The target peeks and
-> pokes them when and how it sees fit. The initiator pushes only tiny
-> notifications about availability of new ORBs to the target. The target
-> eventually completes SCSI commands in-order or out-of-order and signals
-> so by pushing a status block per one or more completed commands.
-> 
-> (Juju's fw-sbp2 gives only one command at a time to the target.
-> Mainline's sbp2 can optionally give more commands in a row, but the
-> implementation is subtly broken in several ways and therefore disabled
-> by default until I fix it right after hell froze over.)
-> 
-> Another important thing to know in order to understand fw-sbp2 and sbp2
-> is that they currently rely on OHCI-1394's physical DMA feature, which
-> I'll not explain here. It means two things: 1. FireWire bus addresses of
-> ORBs and buffers are directly derived from the DMA mapped address.
-> (FireWire bus addresses are the addresses used in communication between
-> SBP-2 initiator and target.) 2. Almost all of the transfers done by the
-> target do not generate interrupts. (Just the status write generates an
-> interrupt.)
+I've already _said_ I think it's barking up the wrong tree; I think we
+should just fix the driver code. But you disagree, so I'm trying to
+understand what _you_ think the answer is here -- how the architecture
+code should cope with this new decree that PIO address zero is invalid
+even though it's actually always been OK in the past.
 
-Another thing that probably makes my explanation a little confusing is that 
-there are two types of transactions: FireWire transactions which consists of a 
-  request followed by a response and are pretty much the smallest interaction 
-you can have with a remote device.  Then there are SBP-2 transactions, which 
-are a higer level sequence layered on top of FireWire transactions.  An SBP-2 
-transaction consists of a sequence of FireWire transactions, the first of 
-which is initiated by the initiator.  This is the FireWire transaction that 
-complete_transaction handles.  When this first FireWire transaction finishes 
-succesfully, we know that the SBP-2 transaction has been started and we sit 
-back and wait for the target to do it's part.  If that initial FireWire 
-transaction fails, we need to fail the SBP-2 transaction we we're trying to start.
+On this particular platform I believe that the PCI I/O resources are
+allocated by firmware before we boot, and they look something like
+this...
 
-> ...
->> Now that you drew my attention to sbp2_status_write(), this looks wrong:
->>
->>         /* Lookup the orb corresponding to this status write. */
->>         spin_lock_irqsave(&card->lock, flags);
->>         list_for_each_entry(orb, &sd->orb_list, link) {
->>                 if (status_get_orb_high(status) == 0 &&
->>                     status_get_orb_low(status) == orb->request_bus) {
->>                         list_del(&orb->link);
->>                         break;
->>                 }
->>         }
->>         spin_unlock_irqrestore(&card->lock, flags);
->>
->> Why is it that fw_request can't carry a pointer?
-> 
-> The target wrote an SBP-2 status block into our memory. The status block
-> contains the FireWire bus address of the ORB to which it belongs. Juju's
-> fw-sbp2 does the same as mainline's sbp2: Looking through the pile of
-> unfinished ORBs for one with the same FireWire bus address, which was
-> previously derived from the DMA mapped address.
+00000000-007fffff : /pci@f2000000
+  00000000-0000000f : pcmcia_socket0    (the CF card at zero)
+  00001000-000011ff : PCI CardBus #11
+  00001400-000015ff : PCI CardBus #11
+00802000-01001fff : /pci@f0000000
+  00802400-008024ff : 0000:00:10.0
+ff7fe000-ffffdfff : /pci@f4000000
 
-But the status write actually does carry the address of the ORB it signals the 
-completion of.  So in theory, we could just read out the ORB address from the 
-status write packet and map that back to kernel virtual memory and do an 
-appropriate container_of() call and we should have the struct sbp2_orb 
-pointer.  The reason I still search through the list is of course that this is 
-way to much trust to put into hardware as buggy as external storage devices. 
-Blindly dereferencing a pointer returned by storage driver firmware is 
-probably a very bad idea.
+Since you don't like the idea that the resource code should special-case
+zero, are you instead suggesting that we should _reassign_ the
+already-assigned PCI resources when we boot, just to make sure that
+driver authors don't have to deal with zeroes (at least, not until they
+start to think about DMA)? Or are you thinking of some other solution?
 
-One thing I want to do (though very low priority) is to allocate the ORBs out 
-of a preallocated circular buffer.  We can then check that the ORB pointer 
-returned in the status write points into this buffer and that it's a multiple 
-of the ORB size, at which point it should be safe to dereference it.
-
- > Since there aren't many
-> mapped ORBs per target, a linked list is a reasonable data structure to
-> search over. That said --- Kristian, doesn't fw-sbp2 have at most 1 ORB
-> in sd->orb_list?
-
-Yes, there is only ever one pending ORB in the list, so looking through the 
-list is not exactly a time sink :)
-
-Kristian
+-- 
+dwmw2
 
