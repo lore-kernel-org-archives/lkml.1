@@ -1,72 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965650AbXAZNHc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965654AbXAZNGw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965650AbXAZNHc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jan 2007 08:07:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965655AbXAZNHc
+	id S965654AbXAZNGw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jan 2007 08:06:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965660AbXAZNGw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jan 2007 08:07:32 -0500
-Received: from wx-out-0506.google.com ([66.249.82.239]:36634 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965650AbXAZNHa (ORCPT
+	Fri, 26 Jan 2007 08:06:52 -0500
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:38086 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965654AbXAZNGu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jan 2007 08:07:30 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=GXigIJV3ISsMMYcwbLDLDZa1Kjy3S1LjrPraBfC7Hx1+SzbRXQtQQr1Lgdzp35FEBhCxmCbCA83kD+IfxRxDoZQMk0WfTo0WXDQ5TFNMnPItBzvdkIrqHYR4lTQY1au18vEA+cP1M+hV2FCAKlOwFaSJ2CPND5LfyjPK7Lx6GXs=
-Message-ID: <e6babb600701260507m51674894r5884f9a7fafa4f84@mail.gmail.com>
-Date: Fri, 26 Jan 2007 06:07:29 -0700
-From: "Robert Crocombe" <rcrocomb@gmail.com>
-To: linux1394-devel@lists.sourceforge.net,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: In-tree version of new FireWire drivers available
-In-Reply-To: <45B88088.4020505@joow.be>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 26 Jan 2007 08:06:50 -0500
+Date: Fri, 26 Jan 2007 14:05:46 +0100
+From: =?ISO-8859-1?Q?S=E9bastien_Dugu=E9?= <sebastien.dugue@bull.net>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Laurent Vivier <laurent.vivier@bull.net>,
+       Zach Brown <zach.brown@oracle.com>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Benjamin LaHaise <bcrl@kvack.org>, Ulrich Drepper <drepper@redhat.com>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org
+Subject: Re: + aio-completion-signal-notification.patch added to -mm tree
+Message-ID: <20070126140546.48f17ed0@frecb000686>
+In-Reply-To: <20070126115233.GA142@tv-sign.ru>
+References: <20070125162141.GA226@tv-sign.ru>
+	<20070126121407.1437928a@frecb000686>
+	<20070126115233.GA142@tv-sign.ru>
+X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 26/01/2007 14:07:39,
+	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 26/01/2007 14:07:40,
+	Serialize complete at 26/01/2007 14:07:40
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <59ad55d30701231948u5f1e02d8x3d06553cb373e5be@mail.gmail.com>
-	 <45B75FDB.1000004@joow.be>
-	 <59ad55d30701241245l7671af23w3e19a83621c6fb51@mail.gmail.com>
-	 <45B88088.4020505@joow.be>
+Content-Type: text/plain; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 1/25/07, Pieter Palmers <pieterp@joow.be> wrote:
-> I'd like to make one note here:
-> We should have a way to use smaller DMA buffers than one page size. If I
-> remember correctly, the page size on my system is 4096 bytes, being 1024
-> quadlets. If we assume a 4 channel audio stream, this corresponds to 256
-> audio samples. This means that the controller generates an interrupt
-> every 256 samples, making that we can achieve a latency of 512 samples
-> at best. This is unacceptable in a pro-audio environment.
->
-> The current stack exhibits this problem, and I solve it by recalculating
-> the max packet size, based upon the stream composition (i.e. expected
-> packet size) and the requested audio buffer size, such that the
-> interrupts are generated at a high enough frequency.
->
-> I'm not a kernel hacker, but when looking through the code I had the
-> impression that smaller DMA buffers were possible (aren't smaller
-> buffers used in packet-per-buffer mode?).
+On Fri, 26 Jan 2007 14:52:33 +0300 Oleg Nesterov <oleg@tv-sign.ru> wrote:
 
-I am using isochronous receive in RAW1394_DMA_PACKET_PER_BUFFER mode
-because I am closing a simulation loop around the data that is
-received/transmitted.  Just for giggles I cranked up a test
-isochronous stream from a bus analyzer at 1kB per packet at 8kHz at
-the S400 rate (i.e., one packet on each cycle start: 8MBps ), set the
-machine up to listen, and was able to maintain 8kHz interrupts at ~12%
-CPU utilization on a 2.8GHz Opteron.
+> On 01/26, S?bastien Dugu? wrote:
+> >
+> > On Thu, 25 Jan 2007 19:21:41 +0300 Oleg Nesterov <oleg@tv-sign.ru> wrote:
+> > 
+> > > > +	target = good_sigevent(&event);
+> > > > +
+> > > > +	if (unlikely(!target || (target->flags & PF_EXITING)))
+> > > > +		goto out_unlock;
+> > > 
+> > > PF_EXITING check is racy and unneded. In fact, it is wrong. If the main
+> > > thread is already died, we can only use SIGEV_THREAD_ID signals, because
+> > > otherwise good_sigevent() returns ->group_leader.
+> > 
+> >   Care to explain here please, I'm not following you.
+> 
+> My apologies, I was unclear.
+> 
+> This check is racy, the condition could be changed right after the check.
+> 
+> It is unneeded, it is ok to do send_sigqueue(tsk) if if that task is already
+> dead. (we hold the reference to task_struct).
+> 
+> Now suppose that the main thread (->group_leader) already exited. This is
+> normal, the thread group is still alive, it should be ok to send a signal to
+> it via send_group_sigqueue(). But we can't: without SIGEV_THREAD_ID in
+> ->sigev_notify good_event() returns ->group_leader, and it has PF_EXITING.
 
-   1744719 interrupts int 218.112 seconds is 7999.193 ints/sec
+  Thanks, I understand the problem now. I will fix this.
 
-I wasn't doing anything with the data for this test, but I have had
-the aforementioned sim running steady at a somewhat lower rate.  This
-test ran under 2.6.20-rc5-rt10, but the more "productiony" system is
-on 2.6.16-rt29.
+> 
+> Yes, kernel/posix-timers.c needs a cleanup too. But please note that it does
+> this check for another reason (according to the comment). This reason is not
+> valid now, the callsite for exit_itimers() was moved from __exit_signal() to
+> do_exit().
+> 
+> > > > +	if (iocb->ki_notify.notify != SIGEV_NONE) {
+> > > > +		ret = aio_send_signal(&iocb->ki_notify);
+> > > > +
+> > > > +		/* If signal generation failed, release the sigqueue */
+> > > > +		if (ret)
+> > > > +			sigqueue_free(iocb->ki_notify.sigq);
+> > > 
+> > > We should not use sigqueue_free() here. It takes current->sighand->siglock
+> > > to remove sigqueue from "struct sigpending". But current is just a "random"
+> > > process here.
+> > > 
+> > > Yes, if I understand this patch correctly, it is not possible that this
+> > > sigqueue is pending, but still this is bad imho.
+> > 
+> >  Yes, in fact the sigqueue is used for a single signal delivery and then
+> > free. In fact I could have used directly __sigqueue_free() instead here
+> > except for the fact that it's private to signal.c and I'm reluctant
+> > to export it to other subsystems.
+> 
+> I personally think it is better to export __sigqueue_free() even if sigqueue_free()
+> happens to work. It is to fragile imho to reference current->sighand. At least
+> we need a fat comment.
 
-So hopefully you can get markedly lower latencies.  Myself, I'm
-tickled pink by the performance that can be achieved.
+  OK.
 
--- 
-Robert Crocombe
+> 
+> > > >  static void __sigqueue_free(struct sigqueue *q)
+> > > >  {
+> > > > -	if (q->flags & SIGQUEUE_PREALLOC)
+> > > > +	if (q->flags & SIGQUEUE_PREALLOC && q->info.si_code != SI_ASYNCIO)
+> > > >  		return;
+> > > 
+> > > Oh, this is not nice. Could we change send_sigqueue/send_group_sigqueue
+> > > instead ?
+> > 
+> >   Yep, that's the other solution.
+> > 
+> > > 
+> > > -	BUG_ON(!(q->flags & SIGQUEUE_PREALLOC));
+> > > +	BUG_ON(!(q->flags & SIGQUEUE_PREALLOC) && q->info.si_code != SI_ASYNCIO);
+> > > 
+> > > This way aio can use __sigqueue_alloc/__sigqueue_free directly and forget
+> > > about SIGQUEUE_PREALLOC.
+> > 
+> >   Well, I don't think it's cleaner. The aio error path calls sigqueue_free()
+> > directly whereas in case of success sigqueue_free() is called from the signal
+> > delivery path.
+> 
+> Hmm... now I don't understand you. Of course, the aio error path should use
+> __sigqueue_free() if we don't use SIGQUEUE_PREALLOC (and imho we should not).
+> 
+> And the signal delivery path uses __sigqueue_free() too.
+> 
+> ?
+> 
+> > > I'd suggest to not use this interface. Just use group_send_sig_info() or
+> > > specific_send_sig_info(). Yes, this way we will do GFP_ATOMIC allocation
+> > > of sigqueue in interrupt context, but is this so bad in this case?
+> > 
+> >   Well, the thihere is that in the past we used group_send_sig_info()
+> > and specific_send_sig_info() for notification but Zach Brown raised
+> > the question about reliable signal delivery. IOW an aio submission
+> > should not succeed if signal delivery is going to fail. Hence the
+> > use of the preallocated sigqueue.
+> 
+> Ok, I see, thanks.
+> 
+> Oleg.
+> 
