@@ -1,41 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030794AbXAZHsy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030799AbXAZHzn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030794AbXAZHsy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jan 2007 02:48:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030793AbXAZHsy
+	id S1030799AbXAZHzn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jan 2007 02:55:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030838AbXAZHzn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jan 2007 02:48:54 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:43464 "EHLO mail.dvmed.net"
+	Fri, 26 Jan 2007 02:55:43 -0500
+Received: from otho.nurk.org ([207.109.251.115]:48905 "EHLO otho.nurk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030786AbXAZHsx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jan 2007 02:48:53 -0500
-Message-ID: <45B9B263.8060409@garzik.org>
-Date: Fri, 26 Jan 2007 02:48:51 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
+	id S1030799AbXAZHzl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jan 2007 02:55:41 -0500
+X-Greylist: delayed 1584 seconds by postgrey-1.27 at vger.kernel.org; Fri, 26 Jan 2007 02:55:41 EST
+To: linux-kernel@vger.kernel.org
+Subject: (no subject)
+X-PHP-Script: nurk.org/rcmail/index.php for 63.135.209.106
 MIME-Version: 1.0
-To: linux-ide@vger.kernel.org
-CC: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v1] sata_mv: conversion to new EH
-References: <20070126070632.GA17323@havoc.gtf.org>
-In-Reply-To: <20070126070632.GA17323@havoc.gtf.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.7 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Date: Thu, 25 Jan 2007 23:29:16 -0800
+From: orig <orig@nurk.org>
+Message-ID: <1aa22028addfb6a88da41860dca4e950@localhost>
+User-Agent: RoundCube Webmail/0.1b
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
-> This is the first cut at converting sata_mv to new EH.
-> 
-> It builds, but is untested.
-> 
-> Done:
-> - freeze, thaw
-> - hardreset
-> - prereset, software: intentionally not implemented
 
-s/software/softreset/
+subscribe linux-kernel
 
