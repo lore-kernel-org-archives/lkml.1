@@ -1,80 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933195AbXAZLaL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933200AbXAZLb1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933195AbXAZLaL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jan 2007 06:30:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933200AbXAZLaL
+	id S933200AbXAZLb1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jan 2007 06:31:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933202AbXAZLb1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jan 2007 06:30:11 -0500
-Received: from hp3.statik.TU-Cottbus.De ([141.43.120.68]:48763 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933195AbXAZLaK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jan 2007 06:30:10 -0500
-Message-ID: <45B9E640.4040400@s5r6.in-berlin.de>
-Date: Fri, 26 Jan 2007 12:30:08 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.0.8) Gecko/20061030 SeaMonkey/1.0.6
+	Fri, 26 Jan 2007 06:31:27 -0500
+Received: from ns2.uludag.org.tr ([193.140.100.220]:47115 "EHLO uludag.org.tr"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S933200AbXAZLb0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jan 2007 06:31:26 -0500
+From: Ismail =?utf-8?q?D=C3=B6nmez?= <ismail@pardus.org.tr>
+Organization: TUBITAK/UEKAE
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: ipw2200 problem with 2.6.20-rc6
+Date: Fri, 26 Jan 2007 13:31:21 +0200
+User-Agent: KMail/1.9.6
 MIME-Version: 1.0
-To: =?ISO-8859-1?Q?Kristian_H=F8gsberg?= <krh@redhat.com>
-CC: Pete Zaitcev <zaitcev@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: Juju
-References: <20070124223745.33278eb4.zaitcev@redhat.com>	<45B91EAB.9080004@redhat.com> <20070125153824.8d7f50c5.zaitcev@redhat.com> <45B968E7.1070402@s5r6.in-berlin.de> <45B97D28.1090404@redhat.com>
-In-Reply-To: <45B97D28.1090404@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200701261331.22054.ismail@pardus.org.tr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kristian Høgsberg wrote:
-> Another thing that probably makes my explanation a little confusing is that 
-> there are two types of transactions: FireWire transactions which consists of a 
->   request followed by a response and are pretty much the smallest interaction 
-> you can have with a remote device.  Then there are SBP-2 transactions, which 
-> are a higer level sequence layered on top of FireWire transactions.
-[...]
+Hi,
 
-Exactly. One SBP-2 transaction is one SCSI task's request and completion
-and contains
-  1. one 1394 write transaction, requested by initiator node,
-  2. one 1394 read transaction, requested by the target node,
-  3. zero to many 1394 read or write transactions, requested by the
-     target node,
-  4. one 1394 write transaction, requested by the target node
-(if everything goes well and if we don't have dynamically appended ORB
-lists). So it might be less confusing if we only speak of "1394
-transactions" and "SCSI tasks".
+I recently saw this in dmesg after the wireless network suddenly stopped 
+working and after some time it worked again:
 
-BTW, SBP-3 allows to wrap step 2 into step 1. I read that some SBP-2
-targets support this SBP-3 feature.
+ipw2200/0: page allocation failure. order:0, mode:0x20
+ [<c0140996>] __alloc_pages+0x27b/0x28c
+ [<c015397a>] cache_alloc_refill+0x292/0x46f
+ [<c0153b9c>] __kmalloc+0x45/0x51
+ [<c02d47c5>] __alloc_skb+0x47/0x102
+ [<e05c5153>] ipw_rx_queue_replenish+0x52/0xf0 [ipw2200]
+ [<c032c69b>] __sched_text_start+0x4c3/0x560
+ [<e05c520f>] ipw_bg_rx_queue_replenish+0x1e/0x27 [ipw2200]
+ [<c01226b0>] run_workqueue+0x8f/0x14b
+ [<e05c51f1>] ipw_bg_rx_queue_replenish+0x0/0x27 [ipw2200]
+ [<c0122c6d>] worker_thread+0x108/0x132
+ [<c0111efa>] default_wake_function+0x0/0xc
+ [<c0122b65>] worker_thread+0x0/0x132
+ [<c0125198>] kthread+0xa0/0xc8
+ [<c01250f8>] kthread+0x0/0xc8
+ [<c0103003>] kernel_thread_helper+0x7/0x10
+ =======================
+Mem-info:
+DMA per-cpu:
+CPU    0: Hot: hi:    0, btch:   1 usd:   0   Cold: hi:    0, btch:   1 usd:   
+0
+Normal per-cpu:
+CPU    0: Hot: hi:  186, btch:  31 usd:  30   Cold: hi:   62, btch:  15 usd:  
+56
+Active:96632 inactive:5235 dirty:3532 writeback:4 unstable:0 free:730 
+slab:7772 mapped:23842 pagetables:958
+DMA free:1968kB min:88kB low:108kB high:132kB active:10068kB inactive:0kB 
+present:16256kB pages_scanned:247 all_unreclaimable? no
+lowmem_reserve[]: 0 483 483
+Normal free:952kB min:2764kB low:3452kB high:4144kB active:376460kB 
+inactive:20940kB present:494668kB pages_scanned:0 all_unreclaimable? no
+lowmem_reserve[]: 0 0 0
+DMA: 0*4kB 0*8kB 1*16kB 1*32kB 0*64kB 1*128kB 1*256kB 1*512kB 1*1024kB 
+0*2048kB 0*4096kB = 1968kB
+Normal: 0*4kB 1*8kB 1*16kB 1*32kB 0*64kB 1*128kB 1*256kB 1*512kB 0*1024kB 
+0*2048kB 0*4096kB = 952kB
+Swap cache: add 57, delete 57, find 0/0, race 0+0
+Free swap  = 614164kB
+Total swap = 614392kB
+Free swap:       614164kB
+128736 pages of RAM
+0 pages of HIGHMEM
+2010 reserved pages
+127625 pages shared
+0 pages swap cached
+3532 pages dirty
+4 pages writeback
+23842 pages mapped
+7772 pages slab
+958 pages pagetables
+eth2: Can not allocate SKB buffers.
 
-[...]
->> The target wrote an SBP-2 status block into our memory. The status block
->> contains the FireWire bus address of the ORB to which it belongs. Juju's
->> fw-sbp2 does the same as mainline's sbp2: Looking through the pile of
->> unfinished ORBs for one with the same FireWire bus address, which was
->> previously derived from the DMA mapped address.
-> 
-> But the status write actually does carry the address of the ORB it signals the 
-> completion of.  So in theory, we could just read out the ORB address from the 
-> status write packet and map that back to kernel virtual memory
-
-"Map back to virtual memory" is exactly what we do already, although in
-a rather dumb fashion. It would be easier if there was a portable
-bus_to_virt() which would do the job for us. This is much more of an
-issue if we want to work without OHCI-1394 physical DMA: Then we have to
-do this inverse DMA mapping also for arbitrary pieces of all scatter
-gather elements of the SCSI data buffer.
-
-[...]
-> One thing I want to do (though very low priority) is to allocate the ORBs out 
-> of a preallocated circular buffer.
-
-Incidentally, one thing I want to do (though at low priority) is to use
-a circular ORB buffer... Well, linux1394 has a number of more serious
-issues pending at bugzilla.kernel.org, and meanwhile people are eager to
-run things like FreeBob or Kino on Juju --- thus it remains to be seen
-who of us gets to it first. :-)
--- 
-Stefan Richter
--=====-=-=== ---= ==-=-
-http://arcgraph.de/sr/
+Regards,
+ismail
