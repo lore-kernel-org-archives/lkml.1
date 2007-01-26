@@ -1,125 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030617AbXAZCYP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030708AbXAZCff@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030617AbXAZCYP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jan 2007 21:24:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030708AbXAZCYP
+	id S1030708AbXAZCff (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jan 2007 21:35:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030710AbXAZCff
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jan 2007 21:24:15 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:60149 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030617AbXAZCYO (ORCPT
+	Thu, 25 Jan 2007 21:35:35 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:50401 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030708AbXAZCfe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jan 2007 21:24:14 -0500
-Subject: Re: [PATCH] libata-sff: Don't call bmdma_stop on non DMA capable
-	controllers
-From: David Woodhouse <dwmw2@infradead.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Alan <alan@lxorguk.ukuu.org.uk>, Jeff Garzik <jgarzik@pobox.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0701251703570.25027@woody.linux-foundation.org>
-References: <20070125150905.652f9ce2@localhost.localdomain>
-	 <1169741658.3593.98.camel@shinybook.infradead.org>
-	 <20070125172739.0c990a9a@localhost.localdomain>
-	 <Pine.LNX.4.64.0701250940220.25027@woody.linux-foundation.org>
-	 <1169770985.3593.146.camel@shinybook.infradead.org>
-	 <Pine.LNX.4.64.0701251703570.25027@woody.linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8
-Date: Fri, 26 Jan 2007 10:23:58 +0800
-Message-Id: <1169778239.3593.195.camel@shinybook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6.dwmw2.1) 
+	Thu, 25 Jan 2007 21:35:34 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <45B968E7.1070402@s5r6.in-berlin.de>
+Date: Fri, 26 Jan 2007 03:35:19 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.9) Gecko/20070121 SeaMonkey/1.0.7
+MIME-Version: 1.0
+To: Pete Zaitcev <zaitcev@redhat.com>
+CC: =?ISO-8859-1?Q?Kristian_H=F8gsberg?= <krh@redhat.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Juju
+References: <20070124223745.33278eb4.zaitcev@redhat.com>	<45B91EAB.9080004@redhat.com> <20070125153824.8d7f50c5.zaitcev@redhat.com>
+In-Reply-To: <20070125153824.8d7f50c5.zaitcev@redhat.com>
+X-Enigmail-Version: 0.94.1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 8bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-01-25 at 17:28 -0800, Linus Torvalds wrote:
+Pete Zaitcev wrote:
+> On Thu, 25 Jan 2007 16:18:35 -0500, Kristian H�gsberg <krh@redhat.com> wrote:
+...
+>> will do a status write to the status address specified in the ORB, at which 
+>> point the SBP-2 transaction is complete.
 > 
-> On Fri, 26 Jan 2007, David Woodhouse wrote:
-> > 
-> > You're thinking of MMIO, while the case we were discussing was PIO. My
-> > laptop is perfectly happy to assign PIO resources from zero.
+> You know, I wanted to use this picture for a long time:
+>  http://www.flickr.com/photos/zaitcev/369269557/
+
+The fundamental thing about SBP-2 is that ORBs ( = SCSI command blocks
+plus SBP-2 header) and data buffers all reside in the memory of the
+initiator (or of a 3rd party on the FireWire bus). The target peeks and
+pokes them when and how it sees fit. The initiator pushes only tiny
+notifications about availability of new ORBs to the target. The target
+eventually completes SCSI commands in-order or out-of-order and signals
+so by pushing a status block per one or more completed commands.
+
+(Juju's fw-sbp2 gives only one command at a time to the target.
+Mainline's sbp2 can optionally give more commands in a row, but the
+implementation is subtly broken in several ways and therefore disabled
+by default until I fix it right after hell froze over.)
+
+Another important thing to know in order to understand fw-sbp2 and sbp2
+is that they currently rely on OHCI-1394's physical DMA feature, which
+I'll not explain here. It means two things: 1. FireWire bus addresses of
+ORBs and buffers are directly derived from the DMA mapped address.
+(FireWire bus addresses are the addresses used in communication between
+SBP-2 initiator and target.) 2. Almost all of the transfers done by the
+target do not generate interrupts. (Just the status write generates an
+interrupt.)
+
+...
+> Now that you drew my attention to sbp2_status_write(), this looks wrong:
 > 
-> I was indeed thinking MMIO, but I really think it should extend to PIO 
-> also. It certainly is (again) true on PC's, where the low IO space is 
-> special and reserved for motherboard/system devices.
-
-As you wish. 
-
-There's a trade-off to be made. I happen to disagree with your choice --
-you seem to want to introduce special cases and new layers of
-'translation', and in some (admittedly, non-PC and relatively rare)
-cases reduce functionality just to account for the fact that Linux
-driver authors are fairly incompetent, and I think that's the wrong
-choice.
-
-So although I've mostly given up on interrupts¹, I reserve the right to
-object if the "zero is not a real number" fallacy extends itself into
-new areas. The thing about PIO addresses is an example of that. The
-ide-cs and pata_pcmcia drivers (and indeed most other drivers AFAICT;
-certainly all PCMCIA drivers I've used in my laptop) work _fine_ with
-their main PIO address being zero. This thread started when I noticed
-pata_pcmcia getting it wrong if its _BMDMA_ I/O range is zero.
-
-Certainly, the resource code does not know about this newly-invented
-special case for PIO address zero and is happy to assign it.
-
-> > It doesn't need to be per-architecture; it can just be -1.
+>         /* Lookup the orb corresponding to this status write. */
+>         spin_lock_irqsave(&card->lock, flags);
+>         list_for_each_entry(orb, &sd->orb_list, link) {
+>                 if (status_get_orb_high(status) == 0 &&
+>                     status_get_orb_low(status) == orb->request_bus) {
+>                         list_del(&orb->link);
+>                         break;
+>                 }
+>         }
+>         spin_unlock_irqrestore(&card->lock, flags);
 > 
-> Bollocks. People tried that. People tried to force this idiotic notion of 
-> "NO_IRQ" down my throat for several years. I even accepted it.
-> 
-> And then, after several years, when it was clear that it still didn't 
-> work, and drivers just weren't getting updated, it was time to just face 
-> reality: if the choice is between 0 and -1, 0 is simply much easier for 
-> the bulk of the code.
+> Why is it that fw_request can't carry a pointer?
 
-The quality of our drivers is low; I'm fully aware that trying to
-improve driver quality is a quixotic task. But where do we draw the
-line? Should we abandon the dma-mapping stuff too? Declare that page
-zero is a special case and you can't DMA to it? Should we try to make
-every PCI write also do a read in order to flush posted writes, because
-people can't cope with the real world?
-
-> Live with it, or don't. I really don't care what you do on your hardware. 
-> But if you can't face that
-> 
-> 	if (!dev->irq)
-> 		..
-> 
-> is simpler for people to write, and that it's what we've done for a long 
-> time, then that really is YOUR problem.
-
-Even userspace people seem to cope with it in the case of file
-descriptors. Kernel people have to cope too, for stuff like DMA
-addresses.
-
-> And I bet there are PIO devices out there that consider address zero to be 
-> disabled. For EXACTLY the same reason.
-
-> (And yes, hardware actually tends to do the same thing. For PCI irq 
-> routing registers, an irq value of 0 pretty much universally means 
-> "disabled". In fact, even your lovely Cardbus example actually is an 
-> example of exactly this: the very IO limit registers are DEFINED IN 
-> HARDWARE to special-case address zero - so that making the base/limit 
-> registers be zero actually disables the IO window, rather than making it 
-> mean "four IO bytes at address zero").
-
-My example was 16-bit PCMCIA (actually CompactFlash), and it's
-_certainly_ not true in that case. Devices often don't bother to decode
-address lines higher than the two or three they need to tell which of
-their registers is being accessed; they let the socket do the equivalent
-of the 'chip select' decode.
-
+The target wrote an SBP-2 status block into our memory. The status block
+contains the FireWire bus address of the ORB to which it belongs. Juju's
+fw-sbp2 does the same as mainline's sbp2: Looking through the pile of
+unfinished ORBs for one with the same FireWire bus address, which was
+previously derived from the DMA mapped address. Since there aren't many
+mapped ORBs per target, a linked list is a reasonable data structure to
+search over. That said --- Kristian, doesn't fw-sbp2 have at most 1 ORB
+in sd->orb_list?
 -- 
-dwmw2
-
-¹ Mostly. I still wonder occasionally if we could use _pointers_ in the
-generic code, and let drivers deal with a (struct irq_desc *) instead of
-just a number. Since the old system of ISA IRQ numbering is fairly out
-of date now and we're starting to recognise the fact that IRQs are a 
-_tree_, we might get away with it. And it would let us preserve the special
-case for NULL -- but I haven't had time to fully work through the
-implications. 
-
+Stefan Richter
+-=====-=-=== ---= ==-=-
+http://arcgraph.de/sr/
