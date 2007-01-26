@@ -1,53 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030790AbXAZGaz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030792AbXAZGbg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030790AbXAZGaz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jan 2007 01:30:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030796AbXAZGaz
+	id S1030792AbXAZGbg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jan 2007 01:31:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030795AbXAZGbg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jan 2007 01:30:55 -0500
-Received: from smtp107.mail.mud.yahoo.com ([209.191.85.217]:33125 "HELO
-	smtp107.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1030790AbXAZGay (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jan 2007 01:30:54 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=p4gEyZxqBs8+i+rHDwCnGuHXkA7dwdmmsUAiPdy525E2n0/+uTOeA3bDZjPz6uZbfS05Ua0NTRX3pd2XIqK6CLMDFRHvTj3Ms7dOkiRvpjowDkLkCrm7DEpiJeVJhfij2ApQVkS1yHDzsoY8R6gxAji8DdAsfvx+0cDCZlqBRJo=  ;
-X-YMail-OSG: ozvk53wVM1m7.xSnETD_n8BCKZDpQndEHq27532GYG5rg8EwGFzwAOm6rAR16DUjgkJd6eUhYok4rWMMUXqBgys8GfpJ.dt10tf.AvuE4A7og4r4W7w-
-Message-ID: <45B9A00C.4040701@yahoo.com.au>
-Date: Fri, 26 Jan 2007 17:30:36 +1100
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
-MIME-Version: 1.0
-To: Christoph Lameter <clameter@sgi.com>
-CC: linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC] Track mlock()ed pages
-References: <Pine.LNX.4.64.0701252141570.10629@schroedinger.engr.sgi.com>
-In-Reply-To: <Pine.LNX.4.64.0701252141570.10629@schroedinger.engr.sgi.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Fri, 26 Jan 2007 01:31:36 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:48130 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030792AbXAZGbf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jan 2007 01:31:35 -0500
+Date: Thu, 25 Jan 2007 22:30:56 -0800
+From: Andrew Morton <akpm@osdl.org>
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>,
+       Oleg Nesterov <oleg@tv-sign.ru>, Cedric Le Goater <clg@fr.ibm.com>,
+       Daniel Hokka Zakrisson <daniel@hozac.com>, herbert@13thfloor.at,
+       trond.myklebust@fys.uio.no,
+       Linux Containers <containers@lists.osdl.org>
+Subject: Re: [PATCH] namespaces: fix exit race by splitting exit
+Message-Id: <20070125223056.c77b0e97.akpm@osdl.org>
+In-Reply-To: <20070126052659.GA23250@sergelap.austin.ibm.com>
+References: <20070126052659.GA23250@sergelap.austin.ibm.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter wrote:
-> Add NR_MLOCK
+On Thu, 25 Jan 2007 23:26:59 -0600
+"Serge E. Hallyn" <serue@us.ibm.com> wrote:
+
+> Fix exit race by splitting the nsproxy putting into two pieces.
+> First piece reduces the nsproxy refcount.  If we dropped the last
+> reference, then it puts the mnt_ns, and returns the nsproxy as a
+> hint to the caller.  Else it returns NULL.  The second piece of
+> exiting task namespaces sets tsk->nsproxy to NULL, and drops the
+> references to other namespaces and frees the nsproxy only if an
+> nsproxy was passed in.
 > 
-> Track mlocked pages via a ZVC
+> A little awkward and should probably be reworked, but hopefully
+> it fixes the NFS oops.
 
-I think it is not quite right. You are tracking the number of ptes
-that point to mlocked pages, which can be >= the actual number of pages.
+I'm a bit worried about jamming something like this into 2.6.20.  Could the
+usual culprits please review this carefully with some urgency?
 
-Also, page_add_anon_rmap still needs to be balanced with page_remove_rmap.
-
-I can't think of an easy way to do this without per-page state. ie.
-another page flag.
-
-> 
-> Signed-off-by: Christoph Lameter <clameter@sgi.com>
-> 
-
--- 
-SUSE Labs, Novell Inc.
-Send instant messages to your online friends http://au.messenger.yahoo.com 
+And Daniel, if you can find time to runtime test it please?
