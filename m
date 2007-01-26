@@ -1,55 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161186AbXAZTFz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161184AbXAZTHn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161186AbXAZTFz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jan 2007 14:05:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161191AbXAZTFz
+	id S1161184AbXAZTHn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jan 2007 14:07:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161181AbXAZTHn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jan 2007 14:05:55 -0500
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:37149 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1161186AbXAZTFy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jan 2007 14:05:54 -0500
-Date: Fri, 26 Jan 2007 20:06:01 +0100
-From: Adrian Bunk <bunk@stusta.de>
-To: trond.myklebust@fys.uio.no, neilb@cse.unsw.edu.au
-Cc: nfs@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] fs/lockd/clntlock.c: add missing newlines to dprintk's
-Message-ID: <20070126190601.GQ17836@stusta.de>
+	Fri, 26 Jan 2007 14:07:43 -0500
+Received: from mx2.suse.de ([195.135.220.15]:50650 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161180AbXAZTHm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jan 2007 14:07:42 -0500
+Date: Fri, 26 Jan 2007 11:06:38 -0800
+From: Greg KH <greg@kroah.com>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: xiphmont@xiph.org, Pierre Ossman <drzeus@drzeus.cx>,
+       fedora-desktop-list@redhat.com, alsa-devel@alsa-project.org,
+       jrb@redhat.com, linux-kernel@vger.kernel.org, mclasen@redhat.com,
+       Lennart Poettering <lennart@poettering.net>, perex@suse.cz
+Subject: Re: [Alsa-devel] [PATCH] alsa: correct nonsensical sysfs device symlinks
+Message-ID: <20070126190638.GA31453@kroah.com>
+References: <806dafc20701251034l59fc5be7ta881606046eb819a@mail.gmail.com> <s5h1wljuf2f.wl%tiwai@suse.de> <806dafc20701251051p2750cb34sab88a38282020497@mail.gmail.com> <20070125194933.GA27857@kroah.com> <806dafc20701251240t70335055l74c47ecdd09d1944@mail.gmail.com> <20070125215943.GC3126@kroah.com> <806dafc20701260253r145fee43kc6db1ca6de1ab3e6@mail.gmail.com> <s5hejpivwwg.wl%tiwai@suse.de> <20070126180457.GA29543@kroah.com> <s5hd5511w81.wl%tiwai@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <s5hd5511w81.wl%tiwai@suse.de>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds missing newlines to dprintk's.
+On Fri, Jan 26, 2007 at 07:25:34PM +0100, Takashi Iwai wrote:
+> Greg, feel free to pick it up to your tree for pushing.   Since this
+> patch conflicts with the development tree of ALSA mm branch, it'd be
+> even harder to push from ALSA tree, unfortuantely...
+> 
+> Of course, it'd be safer after confirming that the patch works indeed.
+> (My brief tests show good results, though.)
 
-Signed-off-by: Adrian Bunk <bunk@stusta.de>
+Ok, I'll do it through my trees, but I'll wait for Monty to finish
+building and testing.
 
----
+/me hands Monty a copy of distcc and ccache :)
 
- fs/lockd/clntlock.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+thanks,
 
---- linux-2.6.20-rc4-mm1/fs/lockd/clntlock.c.old	2007-01-26 19:31:43.000000000 +0100
-+++ linux-2.6.20-rc4-mm1/fs/lockd/clntlock.c	2007-01-26 19:32:01.000000000 +0100
-@@ -176,7 +176,7 @@
- 	lock_kernel();
- 	lockd_up(0); /* note: this cannot fail as lockd is already running */
- 
--	dprintk("lockd: reclaiming locks for host %s", host->h_name);
-+	dprintk("lockd: reclaiming locks for host %s\n", host->h_name);
- 
- restart:
- 	nsmstate = host->h_nsmstate;
-@@ -206,7 +206,7 @@
- 
- 	host->h_reclaiming = 0;
- 	up_write(&host->h_rwsem);
--	dprintk("NLM: done reclaiming locks for host %s", host->h_name);
-+	dprintk("NLM: done reclaiming locks for host %s\n", host->h_name);
- 
- 	/* Now, wake up all processes that sleep on a blocked lock */
- 	list_for_each_entry(block, &nlm_blocked, b_list) {
-
+greg k-h
