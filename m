@@ -1,53 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965692AbXAZPz3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965559AbXAZP40@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965692AbXAZPz3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jan 2007 10:55:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965697AbXAZPz3
+	id S965559AbXAZP40 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jan 2007 10:56:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965704AbXAZP4Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jan 2007 10:55:29 -0500
-Received: from mtiwmhc13.worldnet.att.net ([204.127.131.117]:42272 "EHLO
-	mtiwmhc13.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S965692AbXAZPz2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jan 2007 10:55:28 -0500
-Message-ID: <45BA246B.6030505@lwfinger.net>
-Date: Fri, 26 Jan 2007 09:55:23 -0600
-From: Larry Finger <larry.finger@lwfinger.net>
-User-Agent: Thunderbird 1.5.0.9 (X11/20060911)
+	Fri, 26 Jan 2007 10:56:25 -0500
+Received: from omx2-ext.sgi.com ([192.48.171.19]:35767 "EHLO omx2.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S965559AbXAZP4Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jan 2007 10:56:24 -0500
+Date: Fri, 26 Jan 2007 07:56:09 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+To: Andrew Morton <akpm@osdl.org>
+cc: Mel Gorman <mel@csn.ul.ie>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Christoph Lameter <clameter@engr.sgi.com>
+Subject: Re: [PATCH 0/8] Create ZONE_MOVABLE to partition memory between
+ movable and non-movable pages
+In-Reply-To: <20070126030753.03529e7a.akpm@osdl.org>
+Message-ID: <Pine.LNX.4.64.0701260751230.6141@schroedinger.engr.sgi.com>
+References: <20070125234458.28809.5412.sendpatchset@skynet.skynet.ie>
+ <20070126030753.03529e7a.akpm@osdl.org>
 MIME-Version: 1.0
-To: roucaries bastien <roucaries.bastien@gmail.com>
-CC: LKML <linux-kernel@vger.kernel.org>,
-       bcm43xx devel <Bcm43xx-dev@lists.berlios.de>
-Subject: Re: Bcm43xx oops after suspend to disk
-References: <45B92488.6090908@lwfinger.net> <45B92536.2080909@lwfinger.net> <195c7a900701251530m409878a8id301c7cada76f342@mail.gmail.com>
-In-Reply-To: <195c7a900701251530m409878a8id301c7cada76f342@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-roucaries bastien wrote:
->> Do you have the log stuff that precedes this part? In particular, was
->> there a assertion that failed?
->>
-> It is oops on resume and no asseertion failled this boot. However I
-> have usually a lot of
-> bcm43xx: ASSERTION FAILED (radio_attenuation < 10) at:
-> drivers/net/wireless/bcm43xx/bcm43xx_phy.c:1496:bcm43xx_find_lopair()
+On Fri, 26 Jan 2007, Andrew Morton wrote:
 
-Those are well known and do not affect this problem.
+> - They add zillions of ifdefs
 
-> Moreover after the first oops I have a second oops (Surelly a
-> consequence of the first).
+They just add a few for ZONE_DMA where we alreaday have similar ifdefs for 
+ZONE_DMA32 and ZONE_HIGHMEM.
 
-I think that is right.
+> - They make the VM's behaviour diverge between different platforms and
+>   between differen configs on the same platforms, and hence degrade
+>   maintainability and increase complexity.
 
-Unfortunately, I cannot test for this problem on my system as it doesn't suspend at all.
+They avoid unecessary complexity on platforms. They could be made to work 
+on more platforms with measures to deal with what ZONE_DMA 
+provides in different ways. There are 6 or so platforms that do not need 
+ZONE_DMA at all.
 
-Does this oops happen every time, or is it intermittent? I'm looking at the code to find places to
-insert debugging statements. At present, I don't understand how it gets to the shutdown code while
-resuming!
+> - We kicked around some quite different ways of implementing the same
+>   things, but nothing came of it.  iirc, one was to remove the hard-coded
+>   zones altogether and rework all the MM to operate in terms of
+> 
+> 	for (idx = 0; idx < NUMBER_OF_ZONES; idx++)
+> 		...
 
-Larry
+Hmmm.. How would that be simpler?
 
+> - I haven't seen any hard numbers to justify the change.
+
+I have send you numbers showing significant reductions in code size.
 
