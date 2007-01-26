@@ -1,64 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965695AbXAZPzW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965692AbXAZPz3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965695AbXAZPzW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jan 2007 10:55:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965692AbXAZPzW
+	id S965692AbXAZPz3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jan 2007 10:55:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965697AbXAZPz3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jan 2007 10:55:22 -0500
-Received: from main.gmane.org ([80.91.229.2]:46981 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965695AbXAZPzU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jan 2007 10:55:20 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Bill Davidsen <davidsen@tmr.com>
-Subject: Re: O_DIRECT question
-Date: Fri, 26 Jan 2007 10:53:43 -0500
-Message-ID: <45BA2407.1000003@tmr.com>
-References: <6d6a94c50701101857v2af1e097xde69e592135e54ae@mail.gmail.com> <200701210005.36274.vda.linux@googlemail.com> <45B3580F.7040407@tls.msk.ru> <200701212102.43028.vda.linux@googlemail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 26 Jan 2007 10:55:29 -0500
+Received: from mtiwmhc13.worldnet.att.net ([204.127.131.117]:42272 "EHLO
+	mtiwmhc13.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S965692AbXAZPz2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jan 2007 10:55:28 -0500
+Message-ID: <45BA246B.6030505@lwfinger.net>
+Date: Fri, 26 Jan 2007 09:55:23 -0600
+From: Larry Finger <larry.finger@lwfinger.net>
+User-Agent: Thunderbird 1.5.0.9 (X11/20060911)
+MIME-Version: 1.0
+To: roucaries bastien <roucaries.bastien@gmail.com>
+CC: LKML <linux-kernel@vger.kernel.org>,
+       bcm43xx devel <Bcm43xx-dev@lists.berlios.de>
+Subject: Re: Bcm43xx oops after suspend to disk
+References: <45B92488.6090908@lwfinger.net> <45B92536.2080909@lwfinger.net> <195c7a900701251530m409878a8id301c7cada76f342@mail.gmail.com>
+In-Reply-To: <195c7a900701251530m409878a8id301c7cada76f342@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@sea.gmane.org
-Cc: Linus Torvalds <torvalds@osdl.org>, Viktor <vvp01@inbox.ru>,
-       Aubrey <aubreylee@gmail.com>, Hua Zhong <hzhong@gmail.com>,
-       Hugh Dickins <hugh@veritas.com>, linux-kernel@vger.kernel.org,
-       hch@infradead.org, kenneth.w.chen@intel.com, akpm@osdl.org
-X-Gmane-NNTP-Posting-Host: mail.tmr.com
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
-In-Reply-To: <200701212102.43028.vda.linux@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Denis Vlasenko wrote:
+roucaries bastien wrote:
+>> Do you have the log stuff that precedes this part? In particular, was
+>> there a assertion that failed?
+>>
+> It is oops on resume and no asseertion failled this boot. However I
+> have usually a lot of
+> bcm43xx: ASSERTION FAILED (radio_attenuation < 10) at:
+> drivers/net/wireless/bcm43xx/bcm43xx_phy.c:1496:bcm43xx_find_lopair()
 
-> Well, I too currently work with Oracle.
-> Apparently people who wrote damn thing have very, eh, Oracle-centric
-> world-view. "We want direct writes to the disk. Period." Why? Does it
-> makes sense? Are there better ways? - nothing. They think they know better.
-> 
-I fear you are taking the Windows approach, that the computer is there 
-to serve the o/s and applications have to do things the way the o/s 
-wants. As opposed to the UNIX way, where you can either be clever or 
-stupid, the o/s is there to allow you to use the hardware, not be your 
-mother.
+Those are well known and do not affect this problem.
 
-Currently applications have the option of letting the o/s make decisions 
-  via open/read/write, or let the o/s make decisions and tell the 
-application via aio, or using O_DIRECT and having full control over the 
-process. And that's exactly as it should be. It's not up to the o/s to 
-be mother.
+> Moreover after the first oops I have a second oops (Surelly a
+> consequence of the first).
 
-> (And let's not even start on why oracle ignores SIGTERM. Apparently Unix
-> rules aren't for them. They're too big to play by rules.)
+I think that is right.
 
-Any process can ignore SIGTERM, or do a significant amount of cleanup 
-before exit()ing. Complex operations need to be completed or unwound. 
-Why select Oracle? Other applications may also do that, with more or 
-less valid reasons.
+Unfortunately, I cannot test for this problem on my system as it doesn't suspend at all.
 
--- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+Does this oops happen every time, or is it intermittent? I'm looking at the code to find places to
+insert debugging statements. At present, I don't understand how it gets to the shutdown code while
+resuming!
+
+Larry
+
 
