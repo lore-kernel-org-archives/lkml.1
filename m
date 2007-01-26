@@ -1,63 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161228AbXAZTxO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161250AbXAZT5t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161228AbXAZTxO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jan 2007 14:53:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161244AbXAZTxO
+	id S1161250AbXAZT5t (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jan 2007 14:57:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161251AbXAZT5t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jan 2007 14:53:14 -0500
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:37199 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1161228AbXAZTxO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jan 2007 14:53:14 -0500
-Date: Fri, 26 Jan 2007 20:53:21 +0100
-From: Adrian Bunk <bunk@stusta.de>
-To: Mark Fasheh <mark.fasheh@oracle.com>
-Cc: Eyal Lebedinsky <eyal@eyal.emu.id.au>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       kurt.hackel@oracle.com, ocfs2-devel@oss.oracle.com
-Subject: Re: [2.6 patch] fix OCFS2 compile error
-Message-ID: <20070126195321.GT17836@stusta.de>
-References: <Pine.LNX.4.64.0701241847360.25027@woody.linux-foundation.org> <45B89008.9000809@eyal.emu.id.au> <45B965EA.20106@eyal.emu.id.au> <20070126184942.GP17836@stusta.de> <20070126194713.GB8176@ca-server1.us.oracle.com>
+	Fri, 26 Jan 2007 14:57:49 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:57950 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161250AbXAZT5s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jan 2007 14:57:48 -0500
+Message-ID: <45BA5BBE.7060709@redhat.com>
+Date: Fri, 26 Jan 2007 14:51:26 -0500
+From: =?UTF-8?B?S3Jpc3RpYW4gSMO4Z3NiZXJn?= <krh@redhat.com>
+User-Agent: Thunderbird 1.5.0.5 (X11/20060803)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070126194713.GB8176@ca-server1.us.oracle.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Greg KH <greg@kroah.com>
+CC: Pete Zaitcev <zaitcev@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: Juju
+References: <20070124223745.33278eb4.zaitcev@redhat.com> <45B91EAB.9080004@redhat.com> <20070125153824.8d7f50c5.zaitcev@redhat.com> <20070126064701.GA21892@kroah.com>
+In-Reply-To: <20070126064701.GA21892@kroah.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 26, 2007 at 11:47:13AM -0800, Mark Fasheh wrote:
-> On Fri, Jan 26, 2007 at 07:49:42PM +0100, Adrian Bunk wrote:
-> > I don't know why gcc 3.3 generates this now since ocfs2_backup_super_blkno()
-> > seems to be unused, but there is a bug for 32 bit systems that should be 
-> > fixed:
-> > 
-> > Commit 50af94b14c98f5769860a282a397c6f3b135c8a8 adds:
-> >   offset /= sb->s_blocksize;
-> > 
-> > That is:
-> >   u64 = u64 / long
-> > 
-> > Not a problem on 64bit architectures, but obviously a problem on 32 bit 
-> > architectures.
-> > 
-> > This patch fixes it by using sb->s_blocksize_bits instead of sb->s_blocksize.
+Greg KH wrote:
+> On Thu, Jan 25, 2007 at 03:38:24PM -0800, Pete Zaitcev wrote:
+>> On Thu, 25 Jan 2007 16:18:35 -0500, Kristian H??gsberg <krh@redhat.com> wrote:
+>>
+>>>> I see that ORBs are always allocated with a call (like SKB) and not
+>>>> embedded into drivers (like URBs). It's great, keep it up. Also,
+>>>> never allow drivers to pass DMA-mapped buffers into fw_send_request
+>>>> and friends. We made both of these mistakes in USB, and it hurts.
+>>> Oh, the ORBs are SBP-2 specific data structures, struct fw_transaction is 
+>>> probably what corresponds to USB URBs.  This struct is defined in 
+>>> fw-transaction.h and is available for embedding into other structs, such as 
+>>> struct sbp2_orb in fw-sbp2.  Is that what you're suggesting against, and what 
+>>> are the problems with this approach?
+>> Fortunately we do not care about out-of-tree drivers, which are most
+>> affected, you may even call it a feature ^_^. My main problem is,
+>> we can't refcount URBs, so usbmon can't tap them and must copy.
 > 
-> Thanks Adrian... I think we both hit upon this at about the same time :) My
-> patch made it into ocfs2.git first (for obvious reasons)...
+> urbs are reference counted, it's just that not all drivers who create
+> them use them that way :(
+> 
+> Perhaps you can inforce this in the new codebase...
 
-That's unfair.  ;-)
+It's a small change to make the fw_transaction struct opaque and ref-counted, 
+and it's definitely still doable.  But the nice thing about embedding the 
+struct is that you have one memory allocation failure path less to worry 
+about.  And I haven't yet, and don't expect to see a use case that will need 
+ref-counted struct fw_transaction, the ownership is always clearly defined. 
+But I can go either way on this and if there is a good reason to ref count 
+them it's a pretty small change.
 
-> 	--Mark
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+cheers,
+Kristian
