@@ -1,59 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752097AbXAZMic@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752081AbXAZMkL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752097AbXAZMic (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jan 2007 07:38:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752081AbXAZMic
+	id S1752081AbXAZMkL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jan 2007 07:40:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752111AbXAZMkK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jan 2007 07:38:32 -0500
-Received: from main.gmane.org ([80.91.229.2]:59529 "EHLO ciao.gmane.org"
+	Fri, 26 Jan 2007 07:40:10 -0500
+Received: from mailhub.sw.ru ([195.214.233.200]:4172 "EHLO relay.sw.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752097AbXAZMib (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jan 2007 07:38:31 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: =?iso-8859-1?Q?Bj=F8rn_Mork?= <bmork@dod.no>
-Subject: Re: [Ksummit-2006-discuss] 2007 Linux Kernel Summit
-Date: Fri, 26 Jan 2007 13:38:08 +0100
-Organization: Doorknobs of Discotheques
-Message-ID: <873b5yt13j.fsf@obelix.mork.no>
-References: <20070123.095756.30177490.davem@davemloft.net>
-	<C1DDFD3E.8658%dirk.hohndel@intel.com>
-	<20070125.125121.98861775.davem@davemloft.net>
-	<1169814220.5759.54.camel@areia>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-X-Complaints-To: usenet@sea.gmane.org
-X-Gmane-NNTP-Posting-Host: obelix.mork.no
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-Cancel-Lock: sha1:V4Nywy2GArD+VLX3BR4s1k9gE0M=
+	id S1752081AbXAZMkI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jan 2007 07:40:08 -0500
+Message-ID: <45B9F939.8070701@openvz.org>
+Date: Fri, 26 Jan 2007 15:51:05 +0300
+From: Kirill Korotaev <dev@openvz.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.13) Gecko/20060417
+X-Accept-Language: en-us, en, ru
+MIME-Version: 1.0
+To: Jeff Layton <jlayton@redhat.com>
+CC: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/3] have pipefs ensure i_ino uniqueness by calling iunique
+ and hashing the inode
+References: <200612291911.kBTJBLvx019107@dantu.rdu.redhat.com>
+In-Reply-To: <200612291911.kBTJBLvx019107@dantu.rdu.redhat.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mauro Carvalho Chehab <mchehab@infradead.org> writes:
+Jeff,
 
-> The company I work hold last year an ETSI internal meeting about IMS in
-> Brasília. It were a very interesting experience. The meeting were closed
-> to ETSI members and some people invited. After the meeting, there were
-> two days of an open event.
->
-> It should be noticed that about 99.9% of the attendants came from
-> Europe, with travelling costs covered by their companies. The Brazilian
-> company organized the event and covered some local costs (like
-> lunch/dinner/cocktail/event hostage).
+is 100% uniqeness is so much required for pipe inode numbers?
+AFAIU, it is not that critical for pipefs (unlike smb, nfs etc.)
 
-Well, FWIW, some years ago we (I was working for the Norwegian
-regulatory body at the time) tried to host an ETSI working group
-meeting in Longyearbyen ( http://en.wikipedia.org/wiki/Longyearbyen ).
-Despite this actually being in Europe, there were quite a few
-complaints. Some of the regular participants had problems with the
-additional travelling expenses, but the most common complaint was the
-wast of time.  And that was nowhere near an intercontinental flight...
+Thanks,
+Kirill
 
-We ended up having the meeting in Oslo, as usual.
-
-
-Bjørn
--- 
-I mean, it's well known that the oceans are full of dirty fish.
+> This converts pipefs to use the new scheme. Here we're calling iunique to get
+> a unique i_ino value for the new inode, and then hashing it afterward. We
+> call iunique with a max_reserved value of 1 to avoid collision with the root
+> inode.  Since the inode is now hashed, we need to take care that we end up in
+> generic_delete_inode rather than generic_forget_inode or we'll create a nasty
+> leak, so we clear_nlink when we destroy the pipe info.
+> 
+> I'm not certain that this is the right place to add the clear_nlink, though
+> it does seem to work. I'm open to suggestions on a better place to put
+> this, or of a better way to make sure that we end up with i_nlink == 0 at
+> iput time.
+> 
+> Signed-off-by: Jeff Layton <jlayton@redhat.com>
+> 
+> diff --git a/fs/pipe.c b/fs/pipe.c
+> index 68090e8..1d44ff0 100644
+> --- a/fs/pipe.c
+> +++ b/fs/pipe.c
+> @@ -825,6 +825,7 @@ void free_pipe_info(struct inode *inode)
+>  {
+>  	__free_pipe_info(inode->i_pipe);
+>  	inode->i_pipe = NULL;
+> +	clear_nlink(inode);
+>  }
+>  
+>  static struct vfsmount *pipe_mnt __read_mostly;
+> @@ -871,6 +872,8 @@ static struct inode * get_pipe_inode(void)
+>  	inode->i_uid = current->fsuid;
+>  	inode->i_gid = current->fsgid;
+>  	inode->i_atime = inode->i_mtime = inode->i_ctime = CURRENT_TIME;
+> +	inode->i_ino = iunique(pipe_mnt->mnt_sb, 1);
+> +	insert_inode_hash(inode);
+>  
+>  	return inode;
+>  
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
 
