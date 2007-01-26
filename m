@@ -1,44 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161232AbXAZTsP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161238AbXAZTud@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161232AbXAZTsP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jan 2007 14:48:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161234AbXAZTsP
+	id S1161238AbXAZTud (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jan 2007 14:50:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161247AbXAZTud
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jan 2007 14:48:15 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:52099 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161232AbXAZTsO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jan 2007 14:48:14 -0500
-Date: Fri, 26 Jan 2007 11:48:05 -0800
-From: Andrew Morton <akpm@osdl.org>
-To: "Matthew Kirk" <mkirk01@rcn.com>
-Cc: <linux-kernel@vger.kernel.org>
-Subject: Re: fsync occasionally very slow
-Message-Id: <20070126114805.628f1351.akpm@osdl.org>
-In-Reply-To: <000c01c74180$dfe71070$6600a8c0@charm>
-References: <001a01c74136$0028ecf0$6600a8c0@charm>
-	<20070126031654.a41fe374.akpm@osdl.org>
-	<000c01c74180$dfe71070$6600a8c0@charm>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 26 Jan 2007 14:50:33 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:49694 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161238AbXAZTuc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jan 2007 14:50:32 -0500
+X-Greylist: delayed 3601 seconds by postgrey-1.27 at vger.kernel.org; Fri, 26 Jan 2007 14:50:32 EST
+Date: Fri, 26 Jan 2007 11:47:13 -0800
+From: Mark Fasheh <mark.fasheh@oracle.com>
+To: Adrian Bunk <bunk@stusta.de>
+Cc: Eyal Lebedinsky <eyal@eyal.emu.id.au>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       kurt.hackel@oracle.com, ocfs2-devel@oss.oracle.com
+Subject: Re: [2.6 patch] fix OCFS2 compile error
+Message-ID: <20070126194713.GB8176@ca-server1.us.oracle.com>
+Reply-To: Mark Fasheh <mark.fasheh@oracle.com>
+References: <Pine.LNX.4.64.0701241847360.25027@woody.linux-foundation.org> <45B89008.9000809@eyal.emu.id.au> <45B965EA.20106@eyal.emu.id.au> <20070126184942.GP17836@stusta.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070126184942.GP17836@stusta.de>
+Organization: Oracle Corporation
+User-Agent: Mutt/1.5.11
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 26 Jan 2007 14:33:36 -0500
-"Matthew Kirk" <mkirk01@rcn.com> wrote:
-
-> Sorry, this will show my ignorance...  my system is lacking
-> /proc/sysrq-trigger.  I can find how to build a kernel with the magic sysrq
-> key (CONFIG_MAGIC_SYSRQ=y), and have done so, but I still don't have
-> /proc/sysrq-* and cannot seem to find how to build in sysrq functionality
-> itself - assuming that's what's missing.  Presumably it's something in
-> .config I'm just not seeing?
+On Fri, Jan 26, 2007 at 07:49:42PM +0100, Adrian Bunk wrote:
+> I don't know why gcc 3.3 generates this now since ocfs2_backup_super_blkno()
+> seems to be unused, but there is a bug for 32 bit systems that should be 
+> fixed:
 > 
+> Commit 50af94b14c98f5769860a282a397c6f3b135c8a8 adds:
+>   offset /= sb->s_blocksize;
+> 
+> That is:
+>   u64 = u64 / long
+> 
+> Not a problem on 64bit architectures, but obviously a problem on 32 bit 
+> architectures.
+> 
+> This patch fixes it by using sb->s_blocksize_bits instead of sb->s_blocksize.
 
-I think you're running a prehistoric kernel which might predate
-/proc/sysrq-trigger?
+Thanks Adrian... I think we both hit upon this at about the same time :) My
+patch made it into ocfs2.git first (for obvious reasons)...
+	--Mark
 
-You can get the same effect by typing alt-sysrq-t at the right time (or
-whatever the combination is on that machine).
+--
+Mark Fasheh
+Senior Software Developer, Oracle
+mark.fasheh@oracle.com
