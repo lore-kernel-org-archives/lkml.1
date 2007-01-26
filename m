@@ -1,169 +1,197 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161093AbXAZRz5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161109AbXAZSAo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161093AbXAZRz5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jan 2007 12:55:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161108AbXAZRz5
+	id S1161109AbXAZSAo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jan 2007 13:00:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161110AbXAZSAo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jan 2007 12:55:57 -0500
-Received: from mail.gmx.net ([213.165.64.20]:49250 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1161093AbXAZRz4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jan 2007 12:55:56 -0500
-X-Authenticated: #14842415
-From: Alessandro Di Marco <dmr@gmx.it>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: linux-kernel@vger.kernel.org, vojtech@suse.cz
-Subject: Re: [ANNOUNCE] System Inactivity Monitor v1.0
-References: <877ivkrv5s.fsf@gmx.it> <20070119101103.GA5730@ucw.cz>
-	<877ivfi60i.fsf@gmx.it> <20070123094114.GE6033@ucw.cz>
-	<87wt3dhlte.fsf@gmx.it> <20070123163442.GA18662@elf.ucw.cz>
-	<87lkjthdmd.fsf@gmx.it> <20070123184432.GE18662@elf.ucw.cz>
-	<873b61cf1v.fsf@gmx.it> <20070126171536.GB964@elf.ucw.cz>
-Date: Fri, 26 Jan 2007 18:55:53 +0100
-In-Reply-To: <20070126171536.GB964@elf.ucw.cz> (Pavel Machek's message of "Fri\, 26 Jan 2007 18\:15\:36 +0100")
-Message-ID: <878xfpoeom.fsf@gmx.it>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.92 (gnu/linux)
+	Fri, 26 Jan 2007 13:00:44 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:33142 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161109AbXAZSAn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jan 2007 13:00:43 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Fri, 26 Jan 2007 19:00:29 +0100 (CET)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [RFT PATCH] ieee1394: ohci1394: serialize reset requests and irq
+ handler
+To: linux1394-devel@lists.sourceforge.net
+cc: Robert Crocombe <rcrocomb@ieee.org>, linux-kernel@vger.kernel.org
+Message-ID: <tkrat.5ef766da36a4a03a@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="=-=-="
-X-Y-GMX-Trusted: 0
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---=-=-=
+ohci1394 has basically no protection against concurrent access to
+registers.  I suspect this as a reason for bug "Host disappears on 1394
+bus reset". http://bugzilla.kernel.org/show_bug.cgi?id=7569
 
-Pavel Machek <pavel@ucw.cz> writes:
+The following changes are done here:
+  - Use the ohci->event_lock to serialize the trigger for software-
+    enforced bus resets against a large portion of the IRQ handler.
+  - To accomplish this, cover much more regions of ohci_irq_handler
+    by event_lock.  Needless to say, this has to be tested for a lot
+    of scenarios.
+  - Use spin_lock instead of spin_lock_irqsave in ohci_irq_handler.
 
-   Well, I do not think your kernel code is mergeable. But bits to enable
-   similar functionality in userspace probably would be mergeable.
+It is somehow disturbing to see how the event_lock was originally taken
+and released without discernable reason.
 
-You said it :-)
+Todo:
+  - Test.
+  - Audit *all* of ohci1394's register accesses for the need of
+    serialization by spinlocks + mmiowb.
+  - Look into unifying ohci1394's internal locking to a single lock
+    per host.
+  - Audit the selfID complete event handling, including what happens
+    higher up in ieee1394 core, for the possibility to move workload
+    into tasklets or workqueue jobs.
 
-This patch exports to the user space the inactivity time (in msecs) of a given
-input device. Example follows:
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+---
 
-<0> $ cat /proc/bus/input/activity
-0011 0001 0001 ab41     1
-0011 0002 0008 0000     3160799
-0011 0002 0008 7321     549991
-0019 0000 0005 0000     3160799
-0019 0000 0001 0000     3454901
-0010 104d 0000 0000     3160799
-0010 104d 0000 0000     2162833
-
-The device ordering matches the /proc/bus/input/devices one, anyway I reported
-also vendor, product, etc. Now the daemon is trivial...
-
-Bye
-
-Ah, the interesting column is the fifth ;-)
+Robert, does this do anything for your setup?  So far I only did a quick
+test with a UP PC (kernel configured for SMP PREEMPT) and a FireWire HDD
+and at least it didn't lock up...
 
 
---=-=-=
-Content-Type: text/x-patch
-Content-Disposition: inline; filename=input-activity.patch
+ drivers/ieee1394/ohci1394.c |   51 ++++++++++++++++--------------------
+ 1 file changed, 23 insertions(+), 28 deletions(-)
 
-diff -ur OLD/drivers/input/input.c NEW/drivers/input/input.c
---- OLD/drivers/input/input.c	2007-01-26 16:59:36.000000000 +0100
-+++ NEW/drivers/input/input.c	2007-01-26 17:04:38.000000000 +0100
-@@ -49,6 +49,8 @@
- {
- 	struct input_handle *handle;
+
+Index: linux-2.6.20-rc6/drivers/ieee1394/ohci1394.c
+===================================================================
+--- linux-2.6.20-rc6.orig/drivers/ieee1394/ohci1394.c	2007-01-26 16:59:45.000000000 +0100
++++ linux-2.6.20-rc6/drivers/ieee1394/ohci1394.c	2007-01-26 18:21:01.000000000 +0100
+@@ -943,6 +943,7 @@ static int ohci_devctl(struct hpsb_host 
  
-+	dev->last_activity = jiffies;
-+
- 	if (type > EV_MAX || !test_bit(type, dev->evbit))
- 		return;
+ 	switch (cmd) {
+ 	case RESET_BUS:
++		spin_lock_irqsave(&ohci->event_lock, flags);
+ 		switch (arg) {
+ 		case SHORT_RESET:
+ 			phy_reg = get_phy_reg(ohci, 5);
+@@ -990,6 +991,8 @@ static int ohci_devctl(struct hpsb_host 
+ 		default:
+ 			retval = -1;
+ 		}
++		mmiowb();
++		spin_unlock_irqrestore(&ohci->event_lock, flags);
+ 		break;
  
-@@ -482,6 +484,30 @@
- 	return seq_open(file, &input_devices_seq_ops);
+ 	case GET_CYCLE_COUNTER:
+@@ -2304,27 +2307,21 @@ static irqreturn_t ohci_irq_handler(int 
+ 	quadlet_t event, node_id;
+ 	struct ti_ohci *ohci = (struct ti_ohci *)dev_id;
+ 	struct hpsb_host *host = ohci->host;
+-	int phyid = -1, isroot = 0;
+-	unsigned long flags;
++	int phyid = -1, isroot = 0, call_selfid_complete = 0;
+ 
+-	/* Read and clear the interrupt event register.  Don't clear
+-	 * the busReset event, though. This is done when we get the
+-	 * selfIDComplete interrupt. */
+-	spin_lock_irqsave(&ohci->event_lock, flags);
+-	event = reg_read(ohci, OHCI1394_IntEventClear);
+-	reg_write(ohci, OHCI1394_IntEventClear, event & ~OHCI1394_busReset);
+-	spin_unlock_irqrestore(&ohci->event_lock, flags);
+-
+-	if (!event)
+-		return IRQ_NONE;
++	spin_lock(&ohci->event_lock);
+ 
+-	/* If event is ~(u32)0 cardbus card was ejected.  In this case
+-	 * we just return, and clean up in the ohci1394_pci_remove
+-	 * function. */
+-	if (event == ~(u32) 0) {
+-		DBGMSG("Device removed.");
++	/* Read and clear the interrupt event register.  Don't clear the
++	 * busReset event though.  This is done when we get the selfIDComplete
++	 * interrupt.
++	 * If event is ~0, the CardBus card was ejected.  In this case we just
++	 * return and clean up in ohci1394_pci_remove. */
++	event = reg_read(ohci, OHCI1394_IntEventClear);
++	if (!event || !~event) {
++		spin_unlock(&ohci->event_lock);
+ 		return IRQ_NONE;
+ 	}
++	reg_write(ohci, OHCI1394_IntEventClear, event & ~OHCI1394_busReset);
+ 
+ 	DBGMSG("IntEvent: %08x", event);
+ 
+@@ -2399,20 +2396,17 @@ static irqreturn_t ohci_irq_handler(int 
+ 		/* The busReset event bit can't be cleared during the
+ 		 * selfID phase, so we disable busReset interrupts, to
+ 		 * avoid burying the cpu in interrupt requests. */
+-		spin_lock_irqsave(&ohci->event_lock, flags);
+ 		reg_write(ohci, OHCI1394_IntMaskClear, OHCI1394_busReset);
+ 
+ 		if (ohci->check_busreset) {
+ 			int loop_count = 0;
+ 
++			/* Remember kids: Don't do this at home. */
++			spin_unlock(&ohci->event_lock);
+ 			udelay(10);
+-
+ 			while (reg_read(ohci, OHCI1394_IntEventSet) & OHCI1394_busReset) {
+ 				reg_write(ohci, OHCI1394_IntEventClear, OHCI1394_busReset);
+-
+-				spin_unlock_irqrestore(&ohci->event_lock, flags);
+ 				udelay(10);
+-				spin_lock_irqsave(&ohci->event_lock, flags);
+ 
+ 				/* The loop counter check is to prevent the driver
+ 				 * from remaining in this state forever. For the
+@@ -2428,8 +2422,8 @@ static irqreturn_t ohci_irq_handler(int 
+ 
+ 				loop_count++;
+ 			}
++			spin_lock(&ohci->event_lock);
+ 		}
+-		spin_unlock_irqrestore(&ohci->event_lock, flags);
+ 		if (!host->in_bus_reset) {
+ 			DBGMSG("irq_handler: Bus reset requested");
+ 
+@@ -2520,10 +2514,8 @@ static irqreturn_t ohci_irq_handler(int 
+ 
+ 			/* Clear the bus reset event and re-enable the
+ 			 * busReset interrupt.  */
+-			spin_lock_irqsave(&ohci->event_lock, flags);
+ 			reg_write(ohci, OHCI1394_IntEventClear, OHCI1394_busReset);
+ 			reg_write(ohci, OHCI1394_IntMaskSet, OHCI1394_busReset);
+-			spin_unlock_irqrestore(&ohci->event_lock, flags);
+ 
+ 			/* Turn on phys dma reception.
+ 			 *
+@@ -2540,7 +2532,7 @@ static irqreturn_t ohci_irq_handler(int 
+ 			       reg_read(ohci, OHCI1394_PhyReqFilterHiSet),
+ 			       reg_read(ohci, OHCI1394_PhyReqFilterLoSet));
+ 
+-			hpsb_selfid_complete(host, phyid, isroot);
++			call_selfid_complete = 1;
+ 		} else
+ 			PRINT(KERN_ERR,
+ 			      "SelfID received outside of bus reset sequence");
+@@ -2552,9 +2544,12 @@ selfid_not_valid:
+ 	/* Make sure we handle everything, just in case we accidentally
+ 	 * enabled an interrupt that we didn't write a handler for.  */
+ 	if (event)
+-		PRINT(KERN_ERR, "Unhandled interrupt(s) 0x%08x",
+-		      event);
++		PRINT(KERN_ERR, "Unhandled interrupt(s) 0x%08x", event);
+ 
++	mmiowb();
++	spin_unlock(&ohci->event_lock);
++	if (call_selfid_complete)
++		hpsb_selfid_complete(host, phyid, isroot);
+ 	return IRQ_HANDLED;
  }
  
-+static int input_activity_seq_show(struct seq_file *seq, void *v)
-+{
-+	struct input_dev *dev = container_of(v, struct input_dev, node);
-+
-+	seq_printf(seq, "%04x %04x %04x %04x\t%u\n",
-+		   dev->id.bustype, dev->id.vendor,
-+		   dev->id.product, dev->id.version,
-+		   jiffies_to_msecs((long) jiffies - (long) dev->last_activity));
-+
-+	return 0;
-+}
-+
-+static struct seq_operations input_activity_seq_ops = {
-+	.start	= input_devices_seq_start,
-+	.next	= input_devices_seq_next,
-+	.stop	= input_devices_seq_stop,
-+	.show	= input_activity_seq_show,
-+};
-+
-+static int input_proc_activity_open(struct inode *inode, struct file *file)
-+{
-+	return seq_open(file, &input_activity_seq_ops);
-+}
-+
- static struct file_operations input_devices_fileops = {
- 	.owner		= THIS_MODULE,
- 	.open		= input_proc_devices_open,
-@@ -491,6 +517,15 @@
- 	.release	= seq_release,
- };
- 
-+static struct file_operations input_activity_fileops = {
-+	.owner		= THIS_MODULE,
-+	.open		= input_proc_activity_open,
-+	.poll		= input_proc_devices_poll,
-+	.read		= seq_read,
-+	.llseek		= seq_lseek,
-+	.release	= seq_release,
-+};
-+
- static void *input_handlers_seq_start(struct seq_file *seq, loff_t *pos)
- {
- 	/* acquire lock here ... Yes, we do need locking, I knowi, I know... */
-@@ -558,15 +593,23 @@
- 	entry->owner = THIS_MODULE;
- 	entry->proc_fops = &input_devices_fileops;
- 
--	entry = create_proc_entry("handlers", 0, proc_bus_input_dir);
-+	entry = create_proc_entry("activity", 0, proc_bus_input_dir);
- 	if (!entry)
- 		goto fail2;
- 
- 	entry->owner = THIS_MODULE;
-+	entry->proc_fops = &input_activity_fileops;
-+
-+	entry = create_proc_entry("handlers", 0, proc_bus_input_dir);
-+	if (!entry)
-+		goto fail3;
-+
-+	entry->owner = THIS_MODULE;
- 	entry->proc_fops = &input_handlers_fileops;
- 
- 	return 0;
- 
-+ fail3:	remove_proc_entry("activity", proc_bus_input_dir);
-  fail2:	remove_proc_entry("devices", proc_bus_input_dir);
-  fail1: remove_proc_entry("input", proc_bus);
- 	return -ENOMEM;
-diff -ur OLD/include/linux/input.h NEW/include/linux/input.h
---- OLD/include/linux/input.h	2007-01-26 16:59:38.000000000 +0100
-+++ NEW/include/linux/input.h	2007-01-26 17:31:29.000000000 +0100
-@@ -949,6 +949,8 @@
- 	const char *uniq;
- 	struct input_id id;
- 
-+	unsigned long last_activity;
-+	
- 	unsigned long evbit[NBITS(EV_MAX)];
- 	unsigned long keybit[NBITS(KEY_MAX)];
- 	unsigned long relbit[NBITS(REL_MAX)];
-
---=-=-=
-
 
 -- 
-I don't think anyone should write their autobiography until after they're
-dead. - Samuel Goldwyn
+Stefan Richter
+-=====-=-=== ---= ==-=-
+http://arcgraph.de/sr/
 
---=-=-=--
