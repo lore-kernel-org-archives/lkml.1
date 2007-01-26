@@ -1,116 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030791AbXAZGaE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030790AbXAZGaz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030791AbXAZGaE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jan 2007 01:30:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030792AbXAZGaE
+	id S1030790AbXAZGaz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jan 2007 01:30:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030796AbXAZGaz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jan 2007 01:30:04 -0500
-Received: from mail7.sea5.speakeasy.net ([69.17.117.9]:60845 "EHLO
-	mail7.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030791AbXAZGaA (ORCPT
+	Fri, 26 Jan 2007 01:30:55 -0500
+Received: from smtp107.mail.mud.yahoo.com ([209.191.85.217]:33125 "HELO
+	smtp107.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1030790AbXAZGay (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jan 2007 01:30:00 -0500
-Message-ID: <45B99FDA.7050404@kernel.org>
-Date: Thu, 25 Jan 2007 22:29:46 -0800
-From: Josh Triplett <josh@kernel.org>
-User-Agent: Icedove 1.5.0.9 (X11/20061220)
+	Fri, 26 Jan 2007 01:30:54 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=p4gEyZxqBs8+i+rHDwCnGuHXkA7dwdmmsUAiPdy525E2n0/+uTOeA3bDZjPz6uZbfS05Ua0NTRX3pd2XIqK6CLMDFRHvTj3Ms7dOkiRvpjowDkLkCrm7DEpiJeVJhfij2ApQVkS1yHDzsoY8R6gxAji8DdAsfvx+0cDCZlqBRJo=  ;
+X-YMail-OSG: ozvk53wVM1m7.xSnETD_n8BCKZDpQndEHq27532GYG5rg8EwGFzwAOm6rAR16DUjgkJd6eUhYok4rWMMUXqBgys8GfpJ.dt10tf.AvuE4A7og4r4W7w-
+Message-ID: <45B9A00C.4040701@yahoo.com.au>
+Date: Fri, 26 Jan 2007 17:30:36 +1100
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
 MIME-Version: 1.0
-To: paulmck@linux.vnet.ibm.com
-CC: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linuxtronix.de,
-       dipankar@in.ibm.com, tytso@us.ibm.com, dvhltc@us.ibm.com,
-       oleg@tv-sign.ru, twoerner.k@gmail.com, billh@gnuppy.monkey.org,
-       nielsen.esben@googlemail.com, corbet@lwn.net
-Subject: Re: [RFC PATCH -rt 2/2] RCU priority boosting additions to rcutorture
-References: <20070125021101.GA23428@linux.vnet.ibm.com> <20070125021444.GA22540@linux.vnet.ibm.com> <20070125022338.GB22540@linux.vnet.ibm.com> <45B86E88.6020209@kernel.org> <20070125180158.GC1705@linux.vnet.ibm.com> <45B8FFBB.4090307@kernel.org> <20070126015212.GI1705@linux.vnet.ibm.com>
-In-Reply-To: <20070126015212.GI1705@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Christoph Lameter <clameter@sgi.com>
+CC: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC] Track mlock()ed pages
+References: <Pine.LNX.4.64.0701252141570.10629@schroedinger.engr.sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0701252141570.10629@schroedinger.engr.sgi.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul E. McKenney wrote:
-> On Thu, Jan 25, 2007 at 11:06:35AM -0800, Josh Triplett wrote:
->> Paul E. McKenney wrote:
->>> On Thu, Jan 25, 2007 at 12:47:04AM -0800, Josh Triplett wrote:
->>>> One major item: this new test feature really needs a new module parameter to
->>>> enable or disable it.
->>> CONFIG_PREEMPT_RCU_BOOST is the parameter -- if not set, then no test.
->>> This parameter is provided by the accompanying RCU-boost patch.
->> It seems useful for rcutorture to use or not use the preempting thread
->> independently of CONFIG_PREEMPT_RCU_BOOST.  That would bring you from two
->> cases to four, and the two new cases both make sense:
->>
->> * CONFIG_PREEMPT_RCU_BOOST=n, but run rcutorture with the preempting thread.
->>   This configuration allows you to demonstrate the need for
->>   CONFIG_PREEMPT_RCU_BOOST, by showing what happens when you need it and don't
->>   have it.
->>
->> * CONFIG_PREEMPT_RCU_BOOST=y, but run rcutorture without the preempting
->>   thread.  This configuration allows you to test with rcutorture while running
->>   a *real* real-time workload rather than the simple preempting thread, or
->>   just test basic RCU functionality.
->>
->> A simple boolean module_param would work here.
+Christoph Lameter wrote:
+> Add NR_MLOCK
 > 
-> OK, sold!  I will add this.  Perhaps CONFIG_PREEMPT_RCU_TORTURE.
+> Track mlocked pages via a ZVC
 
-Why a config option?  Why not a module parameter, settable at module load time?
+I think it is not quite right. You are tracking the number of ptes
+that point to mlocked pages, which can be >= the actual number of pages.
 
-static int enable_preempter;
-...
-module_param(enable_preempter, bool, 0);
-MODULE_PARM_DESC(enable_preempter, "Enable preempting thread, to test RCU priority boosting");
-...
-rcu_torture_cleanup(void)
-{
-...
-	if (enable_preempter && cur_ops->preemptend)
-		cur_ops->preemptend();
-...
-	if (enable_preempter && cur_ops->preemptstart)
-		cur_ops->preemptstart();
+Also, page_add_anon_rmap still needs to be balanced with page_remove_rmap.
 
-Then just remove the #ifdef CONFIG_PREEMPT_RCU_BOOST from rcutorture entirely,
-and always supply the preempter functions.  rcutorture then doesn't depend on
-CONFIG_PREEMPT_RCU_BOOST at all, and the module parameter determines whether
-to run the preempter thread.
+I can't think of an easy way to do this without per-page state. ie.
+another page flag.
 
->>>> Paul E. McKenney wrote:
->>>>> diff -urpNa -X dontdiff linux-2.6.20-rc4-rt1/kernel/rcutorture.c linux-2.6.20-rc4-rt1-rcubtorture/kernel/rcutorture.c
->>>>> --- linux-2.6.20-rc4-rt1/kernel/rcutorture.c	2007-01-09 10:59:54.000000000 -0800
->>>>> +++ linux-2.6.20-rc4-rt1-rcubtorture/kernel/rcutorture.c	2007-01-23 11:27:49.000000000 -0800
->>>>> +static int rcu_torture_preempt(void *arg)
->>>>> +{
->>>>> +	int completedstart;
->>>>> +	time_t gcstart;
->>>>> +	struct sched_param sp;
->>>>> +
->>>>> +	sp.sched_priority = MAX_RT_PRIO - 1;
->>>>> +	sched_setscheduler(current, SCHED_RR, &sp);
->>>>> +	current->flags |= PF_NOFREEZE;
->>>>> +
->>>>> +	do {
->>>>> +		completedstart = rcu_torture_completed();
->>>>> +		gcstart = xtime.tv_sec;
->>>>> +		while ((xtime.tv_sec - gcstart < 10) &&
->>>>> +		       (rcu_torture_completed() == completedstart))
->>>>> +			cond_resched();
->>>>> +		if (rcu_torture_completed() == completedstart)
->>>>> +			rcu_torture_preempt_errors++;
->>>>> +		schedule_timeout_interruptible(shuffle_interval * HZ);
->>>> Why call schedule_timeout_interruptible here without actually handling
->>>> interruptions?  So that you can send it a signal to cause the shuffle early?
->>> It allows you to kill the process in order to get the module unload to
->>> happen more quickly in case someone specified an overly long interval.
->> I didn't actually know that you could kill a kthread from userspace. :)
->>
->> That rationale makes sense.
 > 
-> It won't actually die, but if I understand correctly (a big "if") the
-> signal would cause schedule_timeout_interruptible() to return, allowing
-> the kthread_should_stop() check to happen.
+> Signed-off-by: Christoph Lameter <clameter@sgi.com>
+> 
 
-Ah, that makes much more sense; thanks.
-
-- Josh Triplett
-
+-- 
+SUSE Labs, Novell Inc.
+Send instant messages to your online friends http://au.messenger.yahoo.com 
