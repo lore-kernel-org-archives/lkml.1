@@ -1,45 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030795AbXAZGgV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030800AbXAZGgj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030795AbXAZGgV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jan 2007 01:36:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030796AbXAZGgV
+	id S1030800AbXAZGgj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jan 2007 01:36:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030803AbXAZGgj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jan 2007 01:36:21 -0500
-Received: from omx1-ext.sgi.com ([192.48.179.11]:40527 "EHLO omx1.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1030795AbXAZGgU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jan 2007 01:36:20 -0500
-Date: Thu, 25 Jan 2007 22:36:17 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC] Track mlock()ed pages
-In-Reply-To: <45B9A00C.4040701@yahoo.com.au>
-Message-ID: <Pine.LNX.4.64.0701252234490.11230@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0701252141570.10629@schroedinger.engr.sgi.com>
- <45B9A00C.4040701@yahoo.com.au>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 26 Jan 2007 01:36:39 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:48264 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030800AbXAZGgh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jan 2007 01:36:37 -0500
+Date: Thu, 25 Jan 2007 22:36:09 -0800
+From: Andrew Morton <akpm@osdl.org>
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>,
+       Oleg Nesterov <oleg@tv-sign.ru>, Cedric Le Goater <clg@fr.ibm.com>,
+       Daniel Hokka Zakrisson <daniel@hozac.com>, herbert@13thfloor.at,
+       trond.myklebust@fys.uio.no,
+       Linux Containers <containers@lists.osdl.org>
+Subject: Re: [PATCH] namespaces: fix exit race by splitting exit
+Message-Id: <20070125223609.0fbdc3b6.akpm@osdl.org>
+In-Reply-To: <20070126052659.GA23250@sergelap.austin.ibm.com>
+References: <20070126052659.GA23250@sergelap.austin.ibm.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 26 Jan 2007, Nick Piggin wrote:
+On Thu, 25 Jan 2007 23:26:59 -0600
+"Serge E. Hallyn" <serue@us.ibm.com> wrote:
 
-> Christoph Lameter wrote:
-> > Add NR_MLOCK
-> > 
-> > Track mlocked pages via a ZVC
-> 
-> I think it is not quite right. You are tracking the number of ptes
-> that point to mlocked pages, which can be >= the actual number of pages.
+> Fix exit race by splitting the nsproxy putting into two pieces.
+> First piece reduces the nsproxy refcount.
 
-Mlocked pages are not inherited. I would expect sharing to be very rare.
- 
-> Also, page_add_anon_rmap still needs to be balanced with page_remove_rmap.
+This broke
 
-Hmmm.... 
- 
-> I can't think of an easy way to do this without per-page state. ie.
-> another page flag.
+	introduce-and-use-get_task_mnt_ns.patch
+	nsproxy-externalizes-exit_task_namespaces.patch
+	user-namespace-add-the-framework.patch
+	user-ns-implement-user-ns-unshare.patch
 
-Thats what I am trying to avoid.
+which I repaired.  Please check the result...
