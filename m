@@ -1,115 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030843AbXAZRSX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161047AbXAZRUL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030843AbXAZRSX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jan 2007 12:18:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030878AbXAZRSX
+	id S1161047AbXAZRUL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jan 2007 12:20:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161049AbXAZRUL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jan 2007 12:18:23 -0500
-Received: from kepler.fjfi.cvut.cz ([147.32.6.11]:54064 "EHLO
-	kepler.fjfi.cvut.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030843AbXAZRSW (ORCPT
+	Fri, 26 Jan 2007 12:20:11 -0500
+Received: from calculon.skynet.ie ([193.1.99.88]:41001 "EHLO
+	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161047AbXAZRUJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jan 2007 12:18:22 -0500
-Date: Fri, 26 Jan 2007 18:18:19 +0100 (CET)
-From: Martin Drab <drab@kepler.fjfi.cvut.cz>
-To: Luming Yu <luming.yu@gmail.com>
-cc: Oleg Verych <olecom@flower.upol.cz>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Intel PCI-E bridge ACPI resources and possibly related SATA
- unstability problems on ASUS A8Js
-In-Reply-To: <3877989d0701260703q37bd586awabdeb172f63a8018@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0701261805031.8105@kepler.fjfi.cvut.cz>
-References: <Pine.LNX.4.64.0701250142180.14408@kepler.fjfi.cvut.cz> 
- <E1HA1Se-0002Y3-VQ@flower>  <Pine.LNX.4.64.0701251325250.20484@kepler.fjfi.cvut.cz>
-  <20070125135813.GB9917@flower.upol.cz>  <Pine.LNX.4.64.0701261320260.6213@kepler.fjfi.cvut.cz>
- <3877989d0701260703q37bd586awabdeb172f63a8018@mail.gmail.com>
+	Fri, 26 Jan 2007 12:20:09 -0500
+Date: Fri, 26 Jan 2007 17:20:07 +0000 (GMT)
+From: Mel Gorman <mel@csn.ul.ie>
+X-X-Sender: mel@skynet.skynet.ie
+To: Christoph Lameter <clameter@sgi.com>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/8] Create ZONE_MOVABLE to partition memory between
+ movable and non-movable pages
+In-Reply-To: <Pine.LNX.4.64.0701260855560.6966@schroedinger.engr.sgi.com>
+Message-ID: <Pine.LNX.4.64.0701261703200.23091@skynet.skynet.ie>
+References: <20070125234458.28809.5412.sendpatchset@skynet.skynet.ie>
+ <Pine.LNX.4.64.0701260812150.6141@schroedinger.engr.sgi.com>
+ <Pine.LNX.4.64.0701261629050.23091@skynet.skynet.ie>
+ <Pine.LNX.4.64.0701260855560.6966@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 26 Jan 2007, Luming Yu wrote:
+On Fri, 26 Jan 2007, Christoph Lameter wrote:
 
-> On 1/26/07, Martin Drab <drab@kepler.fjfi.cvut.cz> wrote:
-> > On Thu, 25 Jan 2007, Oleg Verych wrote:
-> > 
-> > > On Thu, Jan 25, 2007 at 01:28:56PM +0100, Martin Drab wrote:
-> > > > On Thu, 25 Jan 2007, Oleg Verych wrote:
-> > > >
-> > > > > gmane.linux.kernel:
-> > > > > > recently I got my hands on an ASUS A8Js notebook (Core 2 Duo T7200,
-> > > > > > Intel 945 PM PCI-E Chipset, for details see attached log). After
-> > booting
-> > > > > > the latest 2.6.20-rc5-git3 kernel (but the same behaviour occurs
-> > also with
-> > > > > > the 2.6.19.2, didn't try any other), some strange behaviour can be
-> > > > > > observed.
-> > > > >
-> > > > > There were disscussions about mmconfig and what nightmare it brought
-> > to
-> > > > > PCI(E) configuration in scope of BIOS, chip bugs. Here's (one of)
-> > such:
-> > > > > <http://marc.theaimsgroup.com/?l=linux-kernel&m=116007091004503&w=2>
-> > > > >
-> > > > > > At first the following messages appear in the log:
-> > > > > >
-> > > > > > ...
-> > >       [   40.303154] PCI: BIOS *Bug*: MCFG area at e0000000 is not
-> > E820-reserved
-> > > > > > [   40.303157] PCI: Not using MMCONFIG.
-> > > > > >
-> > > > > > (not sure whether this is really a problem)
-> > > > >
-> > > > > I think it may be the major problem.
-> > > >
-> > > > Hmm, it may be. Was there suggested any solution (or at least proposal)
-> > > > that I may try?
-> > >
-> > > Try fix BIOS bugs: <http://permalink.gmane.org/gmane.linux.kernel/462632>
-> > 
-> > ASUS refused to help fixing the BIOS with words that ASUS notebooks do not
-> > support Linux. So if we do not workaround this somehow, Linux would really
-> > be unusable on this HW. :(
-> > 
-> Does pci=nommconf work for you. Also why not use memmap=exactmap  ...
-> boot command line to workaround this bios bug?
+> On Fri, 26 Jan 2007, Mel Gorman wrote:
+>
+>>> For arches that do not have HIGHMEM other zones would be okay too it
+>>> seems.
+>> It would, but it'd obscure the code to take advantage of that.
+>
+> No MOVABLE memory for 64 bit platforms that do not have HIGHMEM right now?
+>
 
-pci=nommconf causes the two above-mentioned messages regarding MMCONFIG 
-disapear, but otherwise everything behaves the same. Which makes me think 
-whether the problem isn't somewhere else. Isn't it possible that it really 
-is some other bug in the libata? Is anybody successfully using the 
-sata_sil24 with SiI3132 and/or ata_piix with i945PM or simillar?
+err, no, I misinterpreted what you meant by "other zones would be ok..". I 
+though you were suggesting the reuse of zone names for some reason.
 
-What exactly do messages like these mean?
+The zone used to for ZONE_MOVABLE is the highest populated zone on the 
+architecture. On some architectures, that will be ZONE_HIGHMEM. On others, 
+it will be ZONE_DMA. See the function find_usable_zone_for_movable()
 
------------
-[  231.828794] ata3.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2
-[  231.849673] ata3.00: (irq_stat 0x00020002, device error via D2H FIS)
-[  231.871059] ata3.00: cmd c8/00:00:08:00:00/00:00:00:00:00/e0 tag 0 cdb 0x0 data 131072 in
-[  231.871061]          res 51/84:00:08:00:00/00:00:00:00:00/e0 Emask 0x10 (ATA bus error)
-[  232.217493] ata3: soft resetting port
-[  232.318609] ata3: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
-[  232.319782] ata3.00: configured for UDMA/100
-[  232.319792] ata3: EH complete
------------
+ZONE_MOVABLE never spans zones. For example, it will not use some 
+ZONE_HIGHMEM and some ZONE_NORMAL memory.
 
-Couldn't it be a problem somewhere else? Because strange is that it also 
-apears for the ata_piix disk, which isn't (I think) on that PCI-E 
-controller that fails to allocate the resources (the one that the 
-ExpressCard uses). Or is it?
+>> The anti-fragmentation code could potentially be used to have subzone groups
+>> that kept movable and unmovable allocations as far apart as possible and at
+>> opposite ends of a zone. That approach has been kicked a few times because of
+>> complexity.
+>
+> Hmm... But his patch also introduces additional complexity plus its
+> difficult to handle for the end user.
+>
 
+It's harder for the user to setup all right. But it works within limits 
+that are known well in advance and doesn't add additional code to the main 
+allocator path. Once it's setup, it acts like any other zone and zone 
+behavior is better understood than anti-fragmentations behavior.
 
-When I try memmap=exactmap kernel panics at immediatelly booting like 
-this:
+>>> There are some NUMA architectures that are not that
+>>> symmetric.
+>> I know, it's why find_zone_movable_pfns_for_nodes() is as complex as it is.
+>> The mechanism spreads the unmovable memory evenly throughout all nodes. In the
+>> event some nodes are too small to hold their share, the remaining unmovable
+>> memory is divided between the nodes that are larger.
+>
+> I would have expected a percentage of a node. If equal amounts of
+> unmovable memory are assigned to all nodes at first then there will be
+> large disparities in the amount of movable memories f.e. between a node
+> with 8G memory compared to a node with 1GB memory.
+>
 
------------
-Decompressing Linux...done.
-Booting the kernel.
-Kernel alive
-PANIC: early exception rip ffffffff8027a4f0 error 0 cr2 ffffffffff5fd030
+On the other hand, percentages make it harder for the administrator to 
+know in advance how much unmovable memory will be available when the 
+system starts even if the machine changes configuration. The absolute 
+figure is easier to understand. If there was a requirement, an alternative 
+configuration option could be made available that takes a fixed percentage 
+of each node with memory.
 
------------
+> How do you handle headless nodes? I.e. memory nodes with no processors?
 
-and that's it. Can anybody explain me this panic?
+The code only cares about memory, not processors.
 
-Martin
+> Those may be particularly large compared to the rest but these are mainly
+> used for movable pages since unmovable things like device drivers buffers
+> have to be kept near the processors that take the interrupt.
+>
+
+Then what I'd do is specify kernelcore to be
+
+(number_of_nodes_with_processors * largest_amount_of_memory_on_node_with_processors)
+
+That would have all memory near processors available as unmovable memory 
+(that movable allocations will still use so they don't always go remote) 
+while keeping a large amount of memory on the headless nodes for movable 
+allocations only.
+
+If requirements demanded, a configuration option could be made that allows 
+the administrator to specify exactly how much unmovable memory he wants on 
+a specific node.
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
