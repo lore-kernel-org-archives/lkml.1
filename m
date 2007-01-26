@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030875AbXAZQyX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161054AbXAZQyx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030875AbXAZQyX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jan 2007 11:54:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030892AbXAZQyM
+	id S1161054AbXAZQyx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jan 2007 11:54:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030900AbXAZQyb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jan 2007 11:54:12 -0500
-Received: from mtagate3.de.ibm.com ([195.212.29.152]:59426 "EHLO
-	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030891AbXAZQxo (ORCPT
+	Fri, 26 Jan 2007 11:54:31 -0500
+Received: from mtagate6.de.ibm.com ([195.212.29.155]:35622 "EHLO
+	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030897AbXAZQyN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jan 2007 11:53:44 -0500
-Date: Fri, 26 Jan 2007 17:53:40 +0100
+	Fri, 26 Jan 2007 11:54:13 -0500
+Date: Fri, 26 Jan 2007 17:54:09 +0100
 From: Martin Schwidefsky <schwidefsky@de.ibm.com>
 To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
-Cc: jan.glauber@de.ibm.com
-Subject: [S390] move crypto options and some cleanup.
-Message-ID: <20070126165340.GU11609@skybase>
+Cc: geraldsc@de.ibm.com
+Subject: [S390] noexec protection
+Message-ID: <20070126165409.GV11609@skybase>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -23,967 +23,1725 @@ User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jan Glauber <jan.glauber@de.ibm.com>
+From: Gerald Schaefer <geraldsc@de.ibm.com>
 
-[S390] move crypto options and some cleanup.
+[S390] noexec protection
 
-This patch moves the config options for the s390 crypto instructions
-to the standard "Hardware crypto devices" menu. In addition some
-cleanup has been done: use a flag for supported keylengths, add a
-warning about machien limitation, return ENOTSUPP in case the
-hardware has no support, remove superfluous printks and update
-email addresses.
+This provides a noexec protection on s390 hardware. Our hardware does
+not have any bits left in the pte for a hw noexec bit, so this is a
+different approach using shadow page tables and a special addressing
+mode that allows separate address spaces for code and data.
 
-Signed-off-by: Jan Glauber <jan.glauber@de.ibm.com>
+As a special feature of our "secondary-space" addressing mode, separate
+page tables can be specified for the translation of data addresses
+(storage operands) and instruction addresses. The shadow page table is
+used for the instruction addresses and the standard page table for the
+data addresses.
+The shadow page table is linked to the standard page table by a pointer
+in page->lru.next of the struct page corresponding to the page that
+contains the standard page table (since page->private is not really
+private with the pte_lock and the page table pages are not in the LRU
+list).
+Depending on the software bits of a pte, it is either inserted into
+both page tables or just into the standard (data) page table. Pages of
+a vma that does not have the VM_EXEC bit set get mapped only in the
+data address space. Any try to execute code on such a page will cause a
+page translation exception. The standard reaction to this is a SIGSEGV
+with two exceptions: the two system call opcodes 0x0a77 (sys_sigreturn)
+and 0x0aad (sys_rt_sigreturn) are allowed. They are stored by the
+kernel to the signal stack frame. Unfortunately, the signal return
+mechanism cannot be modified to use an SA_RESTORER because the
+exception unwinding code depends on the system call opcode stored
+behind the signal stack frame.
+
+This feature requires that user space is executed in secondary-space
+mode and the kernel in home-space mode, which means that the addressing
+modes need to be switched and that the noexec protection only works
+for user space.
+After switching the addressing modes, we cannot use the mvcp/mvcs
+instructions anymore to copy between kernel and user space. A new
+mvcos instruction has been added to the z9 EC/BC hardware which allows
+to copy between arbitrary address spaces, but on older hardware the
+page tables need to be walked manually.
+
+Signed-off-by: Gerald Schaefer <geraldsc@de.ibm.com>
 Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
 ---
 
- arch/s390/crypto/Kconfig            |   60 +++++++
- arch/s390/crypto/aes_s390.c         |   47 ++----
- arch/s390/crypto/crypt_s390.h       |  280 +++++++++++++++++-------------------
- arch/s390/crypto/crypt_s390_query.c |    3 
- arch/s390/crypto/des_check_key.c    |    3 
- arch/s390/crypto/des_s390.c         |    8 -
- arch/s390/crypto/sha1_s390.c        |   81 ++++------
- arch/s390/crypto/sha256_s390.c      |    9 -
- arch/s390/defconfig                 |    8 -
- crypto/Kconfig                      |   49 ------
- 10 files changed, 271 insertions(+), 277 deletions(-)
+ arch/s390/Kconfig                |   25 +++
+ arch/s390/defconfig              |    2 
+ arch/s390/kernel/compat_linux.c  |    6 
+ arch/s390/kernel/compat_linux.h  |   31 ---
+ arch/s390/kernel/compat_signal.c |    2 
+ arch/s390/kernel/ipl.c           |    4 
+ arch/s390/kernel/process.c       |    4 
+ arch/s390/kernel/ptrace.c        |   10 -
+ arch/s390/kernel/setup.c         |   98 +++++++++++
+ arch/s390/kernel/signal.c        |    2 
+ arch/s390/kernel/smp.c           |    2 
+ arch/s390/lib/uaccess_mvcos.c    |   53 ++++++
+ arch/s390/lib/uaccess_pt.c       |  320 ++++++++++++++++++++++++++++++++++++++-
+ arch/s390/mm/fault.c             |   88 ++++++++++
+ arch/s390/mm/init.c              |    6 
+ arch/s390/mm/vmem.c              |   14 -
+ include/asm-s390/compat.h        |   28 +++
+ include/asm-s390/lowcore.h       |    6 
+ include/asm-s390/mmu_context.h   |   50 ++++--
+ include/asm-s390/pgalloc.h       |   87 +++++++++-
+ include/asm-s390/pgtable.h       |  146 +++++++++++++++--
+ include/asm-s390/processor.h     |    6 
+ include/asm-s390/ptrace.h        |   11 -
+ include/asm-s390/setup.h         |   12 +
+ include/asm-s390/smp.h           |    2 
+ include/asm-s390/system.h        |    4 
+ include/asm-s390/tlbflush.h      |    9 +
+ include/asm-s390/uaccess.h       |    2 
+ 28 files changed, 914 insertions(+), 116 deletions(-)
 
-diff -urpN linux-2.6/arch/s390/crypto/aes_s390.c linux-2.6-patched/arch/s390/crypto/aes_s390.c
---- linux-2.6/arch/s390/crypto/aes_s390.c	2007-01-26 17:27:47.000000000 +0100
-+++ linux-2.6-patched/arch/s390/crypto/aes_s390.c	2007-01-26 17:29:28.000000000 +0100
-@@ -4,7 +4,7 @@
-  * s390 implementation of the AES Cipher Algorithm.
-  *
-  * s390 Version:
-- *   Copyright (C) 2005 IBM Deutschland GmbH, IBM Corporation
-+ *   Copyright (C) 2005-2007 IBM Deutschland GmbH, IBM Corporation
-  *   Author(s): Jan Glauber (jang@de.ibm.com)
-  *
-  * Derived from "crypto/aes.c"
-@@ -27,9 +27,11 @@
- /* data block size for all key lengths */
- #define AES_BLOCK_SIZE		16
+diff -urpN linux-2.6/arch/s390/defconfig linux-2.6-patched/arch/s390/defconfig
+--- linux-2.6/arch/s390/defconfig	2007-01-26 17:29:29.000000000 +0100
++++ linux-2.6-patched/arch/s390/defconfig	2007-01-26 17:29:29.000000000 +0100
+@@ -108,6 +108,8 @@ CONFIG_DEFAULT_MIGRATION_COST=1000000
+ CONFIG_COMPAT=y
+ CONFIG_SYSVIPC_COMPAT=y
+ CONFIG_AUDIT_ARCH=y
++CONFIG_S390_SWITCH_AMODE=y
++CONFIG_S390_EXEC_PROTECT=y
  
--static int has_aes_128 = 0;
--static int has_aes_192 = 0;
--static int has_aes_256 = 0;
-+#define AES_KEYLEN_128		1
-+#define AES_KEYLEN_192		2
-+#define AES_KEYLEN_256		4
+ #
+ # Code generation options
+diff -urpN linux-2.6/arch/s390/Kconfig linux-2.6-patched/arch/s390/Kconfig
+--- linux-2.6/arch/s390/Kconfig	2007-01-26 17:27:27.000000000 +0100
++++ linux-2.6-patched/arch/s390/Kconfig	2007-01-26 17:29:29.000000000 +0100
+@@ -134,6 +134,31 @@ config AUDIT_ARCH
+ 	bool
+ 	default y
+ 
++config S390_SWITCH_AMODE
++	bool "Switch kernel/user addressing modes"
++	help
++	  This option allows to switch the addressing modes of kernel and user
++	  space. The kernel parameter switch_amode=on will enable this feature,
++	  default is disabled. Enabling this (via kernel parameter) on machines
++	  earlier than IBM System z9-109 EC/BC will reduce system performance.
 +
-+static char keylen_flag = 0;
- 
- struct s390_aes_ctx {
- 	u8 iv[AES_BLOCK_SIZE];
-@@ -47,20 +49,19 @@ static int aes_set_key(struct crypto_tfm
- 
- 	switch (key_len) {
- 	case 16:
--		if (!has_aes_128)
-+		if (!(keylen_flag & AES_KEYLEN_128))
- 			goto fail;
- 		break;
- 	case 24:
--		if (!has_aes_192)
-+		if (!(keylen_flag & AES_KEYLEN_192))
- 			goto fail;
- 
- 		break;
- 	case 32:
--		if (!has_aes_256)
-+		if (!(keylen_flag & AES_KEYLEN_256))
- 			goto fail;
- 		break;
- 	default:
--		/* invalid key length */
- 		goto fail;
- 		break;
- 	}
-@@ -322,34 +323,32 @@ static int __init aes_init(void)
- 	int ret;
- 
- 	if (crypt_s390_func_available(KM_AES_128_ENCRYPT))
--		has_aes_128 = 1;
-+		keylen_flag |= AES_KEYLEN_128;
- 	if (crypt_s390_func_available(KM_AES_192_ENCRYPT))
--		has_aes_192 = 1;
-+		keylen_flag |= AES_KEYLEN_192;
- 	if (crypt_s390_func_available(KM_AES_256_ENCRYPT))
--		has_aes_256 = 1;
-+		keylen_flag |= AES_KEYLEN_256;
++	  Note that this option will also be selected by selecting the execute
++	  protection option below. Enabling the execute protection via the
++	  noexec kernel parameter will also switch the addressing modes,
++	  independent of the switch_amode kernel parameter.
 +
-+	if (!keylen_flag)
-+		return -ENOTSUPP;
++
++config S390_EXEC_PROTECT
++	bool "Data execute protection"
++	select S390_SWITCH_AMODE
++	help
++	  This option allows to enable a buffer overflow protection for user
++	  space programs and it also selects the addressing mode option above.
++	  The kernel parameter noexec=on will enable this feature and also
++	  switch the addressing modes, default is disabled. Enabling this (via
++	  kernel parameter) on machines earlier than IBM System z9-109 EC/BC
++	  will reduce system performance.
++
+ comment "Code generation options"
  
--	if (!has_aes_128 && !has_aes_192 && !has_aes_256)
--		return -ENOSYS;
-+	/* z9 109 and z9 BC/EC only support 128 bit key length */
-+	if (keylen_flag == AES_KEYLEN_128)
-+		printk(KERN_INFO
-+		       "aes_s390: hardware acceleration only available for"
-+		       "128 bit keys\n");
+ choice
+diff -urpN linux-2.6/arch/s390/kernel/compat_linux.c linux-2.6-patched/arch/s390/kernel/compat_linux.c
+--- linux-2.6/arch/s390/kernel/compat_linux.c	2007-01-26 17:27:47.000000000 +0100
++++ linux-2.6-patched/arch/s390/kernel/compat_linux.c	2007-01-26 17:29:29.000000000 +0100
+@@ -69,6 +69,12 @@
  
- 	ret = crypto_register_alg(&aes_alg);
--	if (ret != 0) {
--		printk(KERN_INFO "crypt_s390: aes-s390 couldn't be loaded.\n");
-+	if (ret)
- 		goto aes_err;
--	}
+ #include "compat_linux.h"
  
- 	ret = crypto_register_alg(&ecb_aes_alg);
--	if (ret != 0) {
--		printk(KERN_INFO
--		       "crypt_s390: ecb-aes-s390 couldn't be loaded.\n");
-+	if (ret)
- 		goto ecb_aes_err;
--	}
++long psw_user32_bits	= (PSW_BASE32_BITS | PSW_MASK_DAT | PSW_ASC_HOME |
++			   PSW_MASK_IO | PSW_MASK_EXT | PSW_MASK_MCHECK |
++			   PSW_MASK_PSTATE | PSW_DEFAULT_KEY);
++long psw32_user_bits	= (PSW32_BASE_BITS | PSW32_MASK_DAT | PSW32_ASC_HOME |
++			   PSW32_MASK_IO | PSW32_MASK_EXT | PSW32_MASK_MCHECK |
++			   PSW32_MASK_PSTATE);
+  
+ /* For this source file, we want overflow handling. */
  
- 	ret = crypto_register_alg(&cbc_aes_alg);
--	if (ret != 0) {
--		printk(KERN_INFO
--		       "crypt_s390: cbc-aes-s390 couldn't be loaded.\n");
-+	if (ret)
- 		goto cbc_aes_err;
--	}
+diff -urpN linux-2.6/arch/s390/kernel/compat_linux.h linux-2.6-patched/arch/s390/kernel/compat_linux.h
+--- linux-2.6/arch/s390/kernel/compat_linux.h	2006-11-29 22:57:37.000000000 +0100
++++ linux-2.6-patched/arch/s390/kernel/compat_linux.h	2007-01-26 17:29:29.000000000 +0100
+@@ -115,37 +115,6 @@ typedef struct 
+         __u32	addr;
+ } _psw_t32 __attribute__ ((aligned(8)));
  
- out:
- 	return ret;
-diff -urpN linux-2.6/arch/s390/crypto/crypt_s390.h linux-2.6-patched/arch/s390/crypto/crypt_s390.h
---- linux-2.6/arch/s390/crypto/crypt_s390.h	2006-11-29 22:57:37.000000000 +0100
-+++ linux-2.6-patched/arch/s390/crypto/crypt_s390.h	2007-01-26 17:29:28.000000000 +0100
-@@ -3,8 +3,9 @@
-  *
-  * Support for s390 cryptographic instructions.
-  *
-- *   Copyright (C) 2003 IBM Deutschland GmbH, IBM Corporation
-- *   Author(s): Thomas Spatzier (tspat@de.ibm.com)
-+ *   Copyright (C) 2003-2007 IBM Deutschland GmbH, IBM Corporation
-+ *   Author(s): Thomas Spatzier
-+ *		Jan Glauber (jan.glauber@de.ibm.com)
-  *
-  * This program is free software; you can redistribute it and/or modify it
-  * under the terms of the GNU General Public License as published by the Free
-@@ -32,7 +33,8 @@ enum crypt_s390_operations {
- 	CRYPT_S390_KMAC = 0x0500
- };
- 
--/* function codes for KM (CIPHER MESSAGE) instruction
-+/*
-+ * function codes for KM (CIPHER MESSAGE) instruction
-  * 0x80 is the decipher modifier bit
-  */
- enum crypt_s390_km_func {
-@@ -51,7 +53,8 @@ enum crypt_s390_km_func {
- 	KM_AES_256_DECRYPT  = CRYPT_S390_KM | 0x14 | 0x80,
- };
- 
--/* function codes for KMC (CIPHER MESSAGE WITH CHAINING)
-+/*
-+ * function codes for KMC (CIPHER MESSAGE WITH CHAINING)
-  * instruction
-  */
- enum crypt_s390_kmc_func {
-@@ -70,7 +73,8 @@ enum crypt_s390_kmc_func {
- 	KMC_AES_256_DECRYPT  = CRYPT_S390_KMC | 0x14 | 0x80,
- };
- 
--/* function codes for KIMD (COMPUTE INTERMEDIATE MESSAGE DIGEST)
-+/*
-+ * function codes for KIMD (COMPUTE INTERMEDIATE MESSAGE DIGEST)
-  * instruction
-  */
- enum crypt_s390_kimd_func {
-@@ -79,7 +83,8 @@ enum crypt_s390_kimd_func {
- 	KIMD_SHA_256 = CRYPT_S390_KIMD | 2,
- };
- 
--/* function codes for KLMD (COMPUTE LAST MESSAGE DIGEST)
-+/*
-+ * function codes for KLMD (COMPUTE LAST MESSAGE DIGEST)
-  * instruction
-  */
- enum crypt_s390_klmd_func {
-@@ -88,7 +93,8 @@ enum crypt_s390_klmd_func {
- 	KLMD_SHA_256 = CRYPT_S390_KLMD | 2,
- };
- 
--/* function codes for KMAC (COMPUTE MESSAGE AUTHENTICATION CODE)
-+/*
-+ * function codes for KMAC (COMPUTE MESSAGE AUTHENTICATION CODE)
-  * instruction
-  */
- enum crypt_s390_kmac_func {
-@@ -98,229 +104,219 @@ enum crypt_s390_kmac_func {
- 	KMAC_TDEA_192 = CRYPT_S390_KMAC | 3
- };
- 
--/* status word for s390 crypto instructions' QUERY functions */
--struct crypt_s390_query_status {
--	u64 high;
--	u64 low;
--};
+-#define PSW32_MASK_PER		0x40000000UL
+-#define PSW32_MASK_DAT		0x04000000UL
+-#define PSW32_MASK_IO		0x02000000UL
+-#define PSW32_MASK_EXT		0x01000000UL
+-#define PSW32_MASK_KEY		0x00F00000UL
+-#define PSW32_MASK_MCHECK	0x00040000UL
+-#define PSW32_MASK_WAIT		0x00020000UL
+-#define PSW32_MASK_PSTATE	0x00010000UL
+-#define PSW32_MASK_ASC		0x0000C000UL
+-#define PSW32_MASK_CC		0x00003000UL
+-#define PSW32_MASK_PM		0x00000f00UL
 -
--/*
-+/**
-+ * crypt_s390_km:
-+ * @func: the function code passed to KM; see crypt_s390_km_func
-+ * @param: address of parameter block; see POP for details on each func
-+ * @dest: address of destination memory area
-+ * @src: address of source memory area
-+ * @src_len: length of src operand in bytes
-+ *
-  * Executes the KM (CIPHER MESSAGE) operation of the CPU.
-- * @param func: the function code passed to KM; see crypt_s390_km_func
-- * @param param: address of parameter block; see POP for details on each func
-- * @param dest: address of destination memory area
-- * @param src: address of source memory area
-- * @param src_len: length of src operand in bytes
-- * @returns < zero for failure, 0 for the query func, number of processed bytes
-- * 	for encryption/decryption funcs
-+ *
-+ * Returns -1 for failure, 0 for the query func, number of processed
-+ * bytes for encryption/decryption funcs
-  */
--static inline int
--crypt_s390_km(long func, void* param, u8* dest, const u8* src, long src_len)
-+static inline int crypt_s390_km(long func, void *param,
-+				u8 *dest, const u8 *src, long src_len)
+-#define PSW32_ADDR_AMODE31	0x80000000UL
+-#define PSW32_ADDR_INSN		0x7FFFFFFFUL
+-
+-#define PSW32_BASE_BITS		0x00080000UL
+-
+-#define PSW32_ASC_PRIMARY	0x00000000UL
+-#define PSW32_ASC_ACCREG	0x00004000UL
+-#define PSW32_ASC_SECONDARY	0x00008000UL
+-#define PSW32_ASC_HOME		0x0000C000UL
+-
+-#define PSW32_USER_BITS	(PSW32_BASE_BITS | PSW32_MASK_DAT | PSW32_ASC_HOME | \
+-			 PSW32_MASK_IO | PSW32_MASK_EXT | PSW32_MASK_MCHECK | \
+-			 PSW32_MASK_PSTATE)
+-
+-#define PSW32_MASK_MERGE(CURRENT,NEW) \
+-        (((CURRENT) & ~(PSW32_MASK_CC|PSW32_MASK_PM)) | \
+-         ((NEW) & (PSW32_MASK_CC|PSW32_MASK_PM)))
+-
+-
+ typedef struct
  {
- 	register long __func asm("0") = func & CRYPT_S390_FUNC_MASK;
--	register void* __param asm("1") = param;
--	register const u8* __src asm("2") = src;
-+	register void *__param asm("1") = param;
-+	register const u8 *__src asm("2") = src;
- 	register long __src_len asm("3") = src_len;
--	register u8* __dest asm("4") = dest;
-+	register u8 *__dest asm("4") = dest;
- 	int ret;
+ 	_psw_t32	psw;
+diff -urpN linux-2.6/arch/s390/kernel/compat_signal.c linux-2.6-patched/arch/s390/kernel/compat_signal.c
+--- linux-2.6/arch/s390/kernel/compat_signal.c	2007-01-26 17:27:47.000000000 +0100
++++ linux-2.6-patched/arch/s390/kernel/compat_signal.c	2007-01-26 17:29:29.000000000 +0100
+@@ -298,7 +298,7 @@ static int save_sigregs32(struct pt_regs
+ 	_s390_regs_common32 regs32;
+ 	int err, i;
  
- 	asm volatile(
- 		"0:	.insn	rre,0xb92e0000,%3,%1 \n" /* KM opcode */
- 		"1:	brc	1,0b \n" /* handle partial completion */
--		"	ahi	%0,%h7\n"
--		"2:	ahi	%0,%h8\n"
--		"3:\n"
--		EX_TABLE(0b,3b) EX_TABLE(1b,2b)
-+		"	la	%0,0\n"
-+		"2:\n"
-+		EX_TABLE(0b,2b) EX_TABLE(1b,2b)
- 		: "=d" (ret), "+a" (__src), "+d" (__src_len), "+a" (__dest)
--		: "d" (__func), "a" (__param), "0" (-EFAULT),
--		  "K" (ENOSYS), "K" (-ENOSYS + EFAULT) : "cc", "memory");
-+		: "d" (__func), "a" (__param), "0" (-1) : "cc", "memory");
- 	if (ret < 0)
- 		return ret;
- 	return (func & CRYPT_S390_FUNC_MASK) ? src_len - __src_len : __src_len;
+-	regs32.psw.mask = PSW32_MASK_MERGE(PSW32_USER_BITS,
++	regs32.psw.mask = PSW32_MASK_MERGE(psw32_user_bits,
+ 					   (__u32)(regs->psw.mask >> 32));
+ 	regs32.psw.addr = PSW32_ADDR_AMODE31 | (__u32) regs->psw.addr;
+ 	for (i = 0; i < NUM_GPRS; i++)
+diff -urpN linux-2.6/arch/s390/kernel/ipl.c linux-2.6-patched/arch/s390/kernel/ipl.c
+--- linux-2.6/arch/s390/kernel/ipl.c	2007-01-26 17:27:27.000000000 +0100
++++ linux-2.6-patched/arch/s390/kernel/ipl.c	2007-01-26 17:29:29.000000000 +0100
+@@ -1016,12 +1016,12 @@ void s390_reset_system(void)
+ 	__ctl_clear_bit(0,28);
+ 
+ 	/* Set new machine check handler */
+-	S390_lowcore.mcck_new_psw.mask = PSW_KERNEL_BITS & ~PSW_MASK_MCHECK;
++	S390_lowcore.mcck_new_psw.mask = psw_kernel_bits & ~PSW_MASK_MCHECK;
+ 	S390_lowcore.mcck_new_psw.addr =
+ 		PSW_ADDR_AMODE | (unsigned long) &reset_mcck_handler;
+ 
+ 	/* Set new program check handler */
+-	S390_lowcore.program_new_psw.mask = PSW_KERNEL_BITS & ~PSW_MASK_MCHECK;
++	S390_lowcore.program_new_psw.mask = psw_kernel_bits & ~PSW_MASK_MCHECK;
+ 	S390_lowcore.program_new_psw.addr =
+ 		PSW_ADDR_AMODE | (unsigned long) &reset_pgm_handler;
+ 
+diff -urpN linux-2.6/arch/s390/kernel/process.c linux-2.6-patched/arch/s390/kernel/process.c
+--- linux-2.6/arch/s390/kernel/process.c	2006-11-29 22:57:37.000000000 +0100
++++ linux-2.6-patched/arch/s390/kernel/process.c	2007-01-26 17:29:29.000000000 +0100
+@@ -144,7 +144,7 @@ static void default_idle(void)
+ 
+ 	trace_hardirqs_on();
+ 	/* Wait for external, I/O or machine check interrupt. */
+-	__load_psw_mask(PSW_KERNEL_BITS | PSW_MASK_WAIT |
++	__load_psw_mask(psw_kernel_bits | PSW_MASK_WAIT |
+ 			PSW_MASK_IO | PSW_MASK_EXT);
  }
  
--/*
-+/**
-+ * crypt_s390_kmc:
-+ * @func: the function code passed to KM; see crypt_s390_kmc_func
-+ * @param: address of parameter block; see POP for details on each func
-+ * @dest: address of destination memory area
-+ * @src: address of source memory area
-+ * @src_len: length of src operand in bytes
-+ *
-  * Executes the KMC (CIPHER MESSAGE WITH CHAINING) operation of the CPU.
-- * @param func: the function code passed to KM; see crypt_s390_kmc_func
-- * @param param: address of parameter block; see POP for details on each func
-- * @param dest: address of destination memory area
-- * @param src: address of source memory area
-- * @param src_len: length of src operand in bytes
-- * @returns < zero for failure, 0 for the query func, number of processed bytes
-- * 	for encryption/decryption funcs
-+ *
-+ * Returns -1 for failure, 0 for the query func, number of processed
-+ * bytes for encryption/decryption funcs
-  */
--static inline int
--crypt_s390_kmc(long func, void* param, u8* dest, const u8* src, long src_len)
-+static inline int crypt_s390_kmc(long func, void *param,
-+				 u8 *dest, const u8 *src, long src_len)
- {
- 	register long __func asm("0") = func & CRYPT_S390_FUNC_MASK;
--	register void* __param asm("1") = param;
--	register const u8* __src asm("2") = src;
-+	register void *__param asm("1") = param;
-+	register const u8 *__src asm("2") = src;
- 	register long __src_len asm("3") = src_len;
--	register u8* __dest asm("4") = dest;
-+	register u8 *__dest asm("4") = dest;
- 	int ret;
+@@ -190,7 +190,7 @@ int kernel_thread(int (*fn)(void *), voi
+ 	struct pt_regs regs;
  
- 	asm volatile(
- 		"0:	.insn	rre,0xb92f0000,%3,%1 \n" /* KMC opcode */
- 		"1:	brc	1,0b \n" /* handle partial completion */
--		"	ahi	%0,%h7\n"
--		"2:	ahi	%0,%h8\n"
--		"3:\n"
--		EX_TABLE(0b,3b) EX_TABLE(1b,2b)
-+		"	la	%0,0\n"
-+		"2:\n"
-+		EX_TABLE(0b,2b) EX_TABLE(1b,2b)
- 		: "=d" (ret), "+a" (__src), "+d" (__src_len), "+a" (__dest)
--		: "d" (__func), "a" (__param), "0" (-EFAULT),
--		  "K" (ENOSYS), "K" (-ENOSYS + EFAULT) : "cc", "memory");
-+		: "d" (__func), "a" (__param), "0" (-1) : "cc", "memory");
- 	if (ret < 0)
- 		return ret;
- 	return (func & CRYPT_S390_FUNC_MASK) ? src_len - __src_len : __src_len;
+ 	memset(&regs, 0, sizeof(regs));
+-	regs.psw.mask = PSW_KERNEL_BITS | PSW_MASK_IO | PSW_MASK_EXT;
++	regs.psw.mask = psw_kernel_bits | PSW_MASK_IO | PSW_MASK_EXT;
+ 	regs.psw.addr = (unsigned long) kernel_thread_starter | PSW_ADDR_AMODE;
+ 	regs.gprs[9] = (unsigned long) fn;
+ 	regs.gprs[10] = (unsigned long) arg;
+diff -urpN linux-2.6/arch/s390/kernel/ptrace.c linux-2.6-patched/arch/s390/kernel/ptrace.c
+--- linux-2.6/arch/s390/kernel/ptrace.c	2007-01-26 17:27:47.000000000 +0100
++++ linux-2.6-patched/arch/s390/kernel/ptrace.c	2007-01-26 17:29:29.000000000 +0100
+@@ -230,9 +230,9 @@ poke_user(struct task_struct *child, add
+ 		 */
+ 		if (addr == (addr_t) &dummy->regs.psw.mask &&
+ #ifdef CONFIG_COMPAT
+-		    data != PSW_MASK_MERGE(PSW_USER32_BITS, data) &&
++		    data != PSW_MASK_MERGE(psw_user32_bits, data) &&
+ #endif
+-		    data != PSW_MASK_MERGE(PSW_USER_BITS, data))
++		    data != PSW_MASK_MERGE(psw_user_bits, data))
+ 			/* Invalid psw mask. */
+ 			return -EINVAL;
+ #ifndef CONFIG_64BIT
+@@ -393,7 +393,7 @@ peek_user_emu31(struct task_struct *chil
+ 		if (addr == (addr_t) &dummy32->regs.psw.mask) {
+ 			/* Fake a 31 bit psw mask. */
+ 			tmp = (__u32)(task_pt_regs(child)->psw.mask >> 32);
+-			tmp = PSW32_MASK_MERGE(PSW32_USER_BITS, tmp);
++			tmp = PSW32_MASK_MERGE(psw32_user_bits, tmp);
+ 		} else if (addr == (addr_t) &dummy32->regs.psw.addr) {
+ 			/* Fake a 31 bit psw address. */
+ 			tmp = (__u32) task_pt_regs(child)->psw.addr |
+@@ -468,11 +468,11 @@ poke_user_emu31(struct task_struct *chil
+ 		 */
+ 		if (addr == (addr_t) &dummy32->regs.psw.mask) {
+ 			/* Build a 64 bit psw mask from 31 bit mask. */
+-			if (tmp != PSW32_MASK_MERGE(PSW32_USER_BITS, tmp))
++			if (tmp != PSW32_MASK_MERGE(psw32_user_bits, tmp))
+ 				/* Invalid psw mask. */
+ 				return -EINVAL;
+ 			task_pt_regs(child)->psw.mask =
+-				PSW_MASK_MERGE(PSW_USER32_BITS, (__u64) tmp << 32);
++				PSW_MASK_MERGE(psw_user32_bits, (__u64) tmp << 32);
+ 		} else if (addr == (addr_t) &dummy32->regs.psw.addr) {
+ 			/* Build a 64 bit psw address from 31 bit address. */
+ 			task_pt_regs(child)->psw.addr =
+diff -urpN linux-2.6/arch/s390/kernel/setup.c linux-2.6-patched/arch/s390/kernel/setup.c
+--- linux-2.6/arch/s390/kernel/setup.c	2007-01-26 17:27:50.000000000 +0100
++++ linux-2.6-patched/arch/s390/kernel/setup.c	2007-01-26 17:29:29.000000000 +0100
+@@ -50,6 +50,13 @@
+ #include <asm/page.h>
+ #include <asm/ptrace.h>
+ #include <asm/sections.h>
++#include <asm/compat.h>
++
++long psw_kernel_bits	= (PSW_BASE_BITS | PSW_MASK_DAT | PSW_ASC_PRIMARY |
++			   PSW_MASK_MCHECK | PSW_DEFAULT_KEY);
++long psw_user_bits	= (PSW_BASE_BITS | PSW_MASK_DAT | PSW_ASC_HOME |
++			   PSW_MASK_IO | PSW_MASK_EXT | PSW_MASK_MCHECK |
++			   PSW_MASK_PSTATE | PSW_DEFAULT_KEY);
+ 
+ /*
+  * User copy operations.
+@@ -383,6 +390,84 @@ static int __init early_parse_ipldelay(c
+ }
+ early_param("ipldelay", early_parse_ipldelay);
+ 
++#ifdef CONFIG_S390_SWITCH_AMODE
++unsigned int switch_amode = 0;
++EXPORT_SYMBOL_GPL(switch_amode);
++
++static inline void set_amode_and_uaccess(unsigned long user_amode,
++					 unsigned long user32_amode)
++{
++	psw_user_bits = PSW_BASE_BITS | PSW_MASK_DAT | user_amode |
++			PSW_MASK_IO | PSW_MASK_EXT | PSW_MASK_MCHECK |
++			PSW_MASK_PSTATE | PSW_DEFAULT_KEY;
++#ifdef CONFIG_COMPAT
++	psw_user32_bits = PSW_BASE32_BITS | PSW_MASK_DAT | user_amode |
++			  PSW_MASK_IO | PSW_MASK_EXT | PSW_MASK_MCHECK |
++			  PSW_MASK_PSTATE | PSW_DEFAULT_KEY;
++	psw32_user_bits = PSW32_BASE_BITS | PSW32_MASK_DAT | user32_amode |
++			  PSW32_MASK_IO | PSW32_MASK_EXT | PSW32_MASK_MCHECK |
++			  PSW32_MASK_PSTATE;
++#endif
++	psw_kernel_bits = PSW_BASE_BITS | PSW_MASK_DAT | PSW_ASC_HOME |
++			  PSW_MASK_MCHECK | PSW_DEFAULT_KEY;
++
++	if (MACHINE_HAS_MVCOS) {
++		printk("mvcos available.\n");
++		memcpy(&uaccess, &uaccess_mvcos_switch, sizeof(uaccess));
++	} else {
++		printk("mvcos not available.\n");
++		memcpy(&uaccess, &uaccess_pt, sizeof(uaccess));
++	}
++}
++
++/*
++ * Switch kernel/user addressing modes?
++ */
++static int __init early_parse_switch_amode(char *p)
++{
++	switch_amode = 1;
++	return 0;
++}
++early_param("switch_amode", early_parse_switch_amode);
++
++#else /* CONFIG_S390_SWITCH_AMODE */
++static inline void set_amode_and_uaccess(unsigned long user_amode,
++					 unsigned long user32_amode)
++{
++}
++#endif /* CONFIG_S390_SWITCH_AMODE */
++
++#ifdef CONFIG_S390_EXEC_PROTECT
++unsigned int s390_noexec = 0;
++EXPORT_SYMBOL_GPL(s390_noexec);
++
++/*
++ * Enable execute protection?
++ */
++static int __init early_parse_noexec(char *p)
++{
++	if (!strncmp(p, "off", 3))
++		return 0;
++	switch_amode = 1;
++	s390_noexec = 1;
++	return 0;
++}
++early_param("noexec", early_parse_noexec);
++#endif /* CONFIG_S390_EXEC_PROTECT */
++
++static void setup_addressing_mode(void)
++{
++	if (s390_noexec) {
++		printk("S390 execute protection active, ");
++		set_amode_and_uaccess(PSW_ASC_SECONDARY, PSW32_ASC_SECONDARY);
++		return;
++	}
++	if (switch_amode) {
++		printk("S390 address spaces switched, ");
++		set_amode_and_uaccess(PSW_ASC_PRIMARY, PSW32_ASC_PRIMARY);
++	}
++}
++
+ static void __init
+ setup_lowcore(void)
+ {
+@@ -399,19 +484,21 @@ setup_lowcore(void)
+ 	lc->restart_psw.mask = PSW_BASE_BITS | PSW_DEFAULT_KEY;
+ 	lc->restart_psw.addr =
+ 		PSW_ADDR_AMODE | (unsigned long) restart_int_handler;
+-	lc->external_new_psw.mask = PSW_KERNEL_BITS;
++	if (switch_amode)
++		lc->restart_psw.mask |= PSW_ASC_HOME;
++	lc->external_new_psw.mask = psw_kernel_bits;
+ 	lc->external_new_psw.addr =
+ 		PSW_ADDR_AMODE | (unsigned long) ext_int_handler;
+-	lc->svc_new_psw.mask = PSW_KERNEL_BITS | PSW_MASK_IO | PSW_MASK_EXT;
++	lc->svc_new_psw.mask = psw_kernel_bits | PSW_MASK_IO | PSW_MASK_EXT;
+ 	lc->svc_new_psw.addr = PSW_ADDR_AMODE | (unsigned long) system_call;
+-	lc->program_new_psw.mask = PSW_KERNEL_BITS;
++	lc->program_new_psw.mask = psw_kernel_bits;
+ 	lc->program_new_psw.addr =
+ 		PSW_ADDR_AMODE | (unsigned long)pgm_check_handler;
+ 	lc->mcck_new_psw.mask =
+-		PSW_KERNEL_BITS & ~PSW_MASK_MCHECK & ~PSW_MASK_DAT;
++		psw_kernel_bits & ~PSW_MASK_MCHECK & ~PSW_MASK_DAT;
+ 	lc->mcck_new_psw.addr =
+ 		PSW_ADDR_AMODE | (unsigned long) mcck_int_handler;
+-	lc->io_new_psw.mask = PSW_KERNEL_BITS;
++	lc->io_new_psw.mask = psw_kernel_bits;
+ 	lc->io_new_psw.addr = PSW_ADDR_AMODE | (unsigned long) io_int_handler;
+ 	lc->ipl_device = S390_lowcore.ipl_device;
+ 	lc->jiffy_timer = -1LL;
+@@ -645,6 +732,7 @@ setup_arch(char **cmdline_p)
+ 	parse_early_param();
+ 
+ 	setup_memory_end();
++	setup_addressing_mode();
+ 	setup_memory();
+ 	setup_resources();
+ 	setup_lowcore();
+diff -urpN linux-2.6/arch/s390/kernel/signal.c linux-2.6-patched/arch/s390/kernel/signal.c
+--- linux-2.6/arch/s390/kernel/signal.c	2006-11-29 22:57:37.000000000 +0100
++++ linux-2.6-patched/arch/s390/kernel/signal.c	2007-01-26 17:29:29.000000000 +0100
+@@ -119,7 +119,7 @@ static int save_sigregs(struct pt_regs *
+ 
+ 	/* Copy a 'clean' PSW mask to the user to avoid leaking
+ 	   information about whether PER is currently on.  */
+-	user_sregs.regs.psw.mask = PSW_MASK_MERGE(PSW_USER_BITS, regs->psw.mask);
++	user_sregs.regs.psw.mask = PSW_MASK_MERGE(psw_user_bits, regs->psw.mask);
+ 	user_sregs.regs.psw.addr = regs->psw.addr;
+ 	memcpy(&user_sregs.regs.gprs, &regs->gprs, sizeof(sregs->regs.gprs));
+ 	memcpy(&user_sregs.regs.acrs, current->thread.acrs,
+diff -urpN linux-2.6/arch/s390/kernel/smp.c linux-2.6-patched/arch/s390/kernel/smp.c
+--- linux-2.6/arch/s390/kernel/smp.c	2007-01-26 17:27:47.000000000 +0100
++++ linux-2.6-patched/arch/s390/kernel/smp.c	2007-01-26 17:29:29.000000000 +0100
+@@ -244,7 +244,7 @@ static inline void do_wait_for_stop(void
+ void smp_send_stop(void)
+ {
+ 	/* Disable all interrupts/machine checks */
+-	__load_psw_mask(PSW_KERNEL_BITS & ~PSW_MASK_MCHECK);
++	__load_psw_mask(psw_kernel_bits & ~PSW_MASK_MCHECK);
+ 
+         /* write magic number to zero page (absolute 0) */
+ 	lowcore_ptr[smp_processor_id()]->panic_magic = __PANIC_MAGIC;
+diff -urpN linux-2.6/arch/s390/lib/uaccess_mvcos.c linux-2.6-patched/arch/s390/lib/uaccess_mvcos.c
+--- linux-2.6/arch/s390/lib/uaccess_mvcos.c	2007-01-26 17:27:47.000000000 +0100
++++ linux-2.6-patched/arch/s390/lib/uaccess_mvcos.c	2007-01-26 17:29:29.000000000 +0100
+@@ -162,6 +162,44 @@ static size_t clear_user_mvcos(size_t si
+ 	return size;
  }
  
--/*
-+/**
-+ * crypt_s390_kimd:
-+ * @func: the function code passed to KM; see crypt_s390_kimd_func
-+ * @param: address of parameter block; see POP for details on each func
-+ * @src: address of source memory area
-+ * @src_len: length of src operand in bytes
-+ *
-  * Executes the KIMD (COMPUTE INTERMEDIATE MESSAGE DIGEST) operation
-  * of the CPU.
-- * @param func: the function code passed to KM; see crypt_s390_kimd_func
-- * @param param: address of parameter block; see POP for details on each func
-- * @param src: address of source memory area
-- * @param src_len: length of src operand in bytes
-- * @returns < zero for failure, 0 for the query func, number of processed bytes
-- * 	for digest funcs
-+ *
-+ * Returns -1 for failure, 0 for the query func, number of processed
-+ * bytes for digest funcs
-  */
--static inline int
--crypt_s390_kimd(long func, void* param, const u8* src, long src_len)
-+static inline int crypt_s390_kimd(long func, void *param,
-+				  const u8 *src, long src_len)
- {
- 	register long __func asm("0") = func & CRYPT_S390_FUNC_MASK;
--	register void* __param asm("1") = param;
--	register const u8* __src asm("2") = src;
-+	register void *__param asm("1") = param;
-+	register const u8 *__src asm("2") = src;
- 	register long __src_len asm("3") = src_len;
- 	int ret;
- 
- 	asm volatile(
- 		"0:	.insn	rre,0xb93e0000,%1,%1 \n" /* KIMD opcode */
- 		"1:	brc	1,0b \n" /* handle partial completion */
--		"	ahi	%0,%h6\n"
--		"2:	ahi	%0,%h7\n"
--		"3:\n"
--		EX_TABLE(0b,3b) EX_TABLE(1b,2b)
-+		"	la	%0,0\n"
-+		"2:\n"
-+		EX_TABLE(0b,2b) EX_TABLE(1b,2b)
- 		: "=d" (ret), "+a" (__src), "+d" (__src_len)
--		: "d" (__func), "a" (__param), "0" (-EFAULT),
--		  "K" (ENOSYS), "K" (-ENOSYS + EFAULT) : "cc", "memory");
-+		: "d" (__func), "a" (__param), "0" (-1) : "cc", "memory");
- 	if (ret < 0)
- 		return ret;
- 	return (func & CRYPT_S390_FUNC_MASK) ? src_len - __src_len : __src_len;
++static size_t strnlen_user_mvcos(size_t count, const char __user *src)
++{
++	char buf[256];
++	int rc;
++	size_t done, len, len_str;
++
++	done = 0;
++	do {
++		len = min(count - done, (size_t) 256);
++		rc = uaccess.copy_from_user(len, src + done, buf);
++		if (unlikely(rc == len))
++			return 0;
++		len -= rc;
++		len_str = strnlen(buf, len);
++		done += len_str;
++	} while ((len_str == len) && (done < count));
++	return done + 1;
++}
++
++static size_t strncpy_from_user_mvcos(size_t count, const char __user *src,
++				      char *dst)
++{
++	int rc;
++	size_t done, len, len_str;
++
++	done = 0;
++	do {
++		len = min(count - done, (size_t) 4096);
++		rc = uaccess.copy_from_user(len, src + done, dst);
++		if (unlikely(rc == len))
++			return -EFAULT;
++		len -= rc;
++		len_str = strnlen(dst, len);
++		done += len_str;
++	} while ((len_str == len) && (done < count));
++	return done;
++}
++
+ struct uaccess_ops uaccess_mvcos = {
+ 	.copy_from_user = copy_from_user_mvcos_check,
+ 	.copy_from_user_small = copy_from_user_std,
+@@ -174,3 +212,18 @@ struct uaccess_ops uaccess_mvcos = {
+ 	.futex_atomic_op = futex_atomic_op_std,
+ 	.futex_atomic_cmpxchg = futex_atomic_cmpxchg_std,
+ };
++
++#ifdef CONFIG_S390_SWITCH_AMODE
++struct uaccess_ops uaccess_mvcos_switch = {
++	.copy_from_user = copy_from_user_mvcos,
++	.copy_from_user_small = copy_from_user_mvcos,
++	.copy_to_user = copy_to_user_mvcos,
++	.copy_to_user_small = copy_to_user_mvcos,
++	.copy_in_user = copy_in_user_mvcos,
++	.clear_user = clear_user_mvcos,
++	.strnlen_user = strnlen_user_mvcos,
++	.strncpy_from_user = strncpy_from_user_mvcos,
++	.futex_atomic_op = futex_atomic_op_pt,
++	.futex_atomic_cmpxchg = futex_atomic_cmpxchg_pt,
++};
++#endif
+diff -urpN linux-2.6/arch/s390/lib/uaccess_pt.c linux-2.6-patched/arch/s390/lib/uaccess_pt.c
+--- linux-2.6/arch/s390/lib/uaccess_pt.c	2007-01-26 17:27:47.000000000 +0100
++++ linux-2.6-patched/arch/s390/lib/uaccess_pt.c	2007-01-26 17:29:29.000000000 +0100
+@@ -1,7 +1,8 @@
+ /*
+  *  arch/s390/lib/uaccess_pt.c
+  *
+- *  User access functions based on page table walks.
++ *  User access functions based on page table walks for enhanced
++ *  system layout without hardware support.
+  *
+  *    Copyright IBM Corp. 2006
+  *    Author(s): Gerald Schaefer (gerald.schaefer@de.ibm.com)
+@@ -134,6 +135,49 @@ fault:
+ 	goto retry;
  }
  
--/*
-+/**
-+ * crypt_s390_klmd:
-+ * @func: the function code passed to KM; see crypt_s390_klmd_func
-+ * @param: address of parameter block; see POP for details on each func
-+ * @src: address of source memory area
-+ * @src_len: length of src operand in bytes
-+ *
-  * Executes the KLMD (COMPUTE LAST MESSAGE DIGEST) operation of the CPU.
-- * @param func: the function code passed to KM; see crypt_s390_klmd_func
-- * @param param: address of parameter block; see POP for details on each func
-- * @param src: address of source memory area
-- * @param src_len: length of src operand in bytes
-- * @returns < zero for failure, 0 for the query func, number of processed bytes
-- * 	for digest funcs
-+ *
-+ * Returns -1 for failure, 0 for the query func, number of processed
-+ * bytes for digest funcs
-  */
--static inline int
--crypt_s390_klmd(long func, void* param, const u8* src, long src_len)
-+static inline int crypt_s390_klmd(long func, void *param,
-+				  const u8 *src, long src_len)
++/*
++ * Do DAT for user address by page table walk, return kernel address.
++ * This function needs to be called with current->mm->page_table_lock held.
++ */
++static inline unsigned long __dat_user_addr(unsigned long uaddr)
++{
++	struct mm_struct *mm = current->mm;
++	unsigned long pfn, ret;
++	pgd_t *pgd;
++	pmd_t *pmd;
++	pte_t *pte;
++	int rc;
++
++	ret = 0;
++retry:
++	pgd = pgd_offset(mm, uaddr);
++	if (pgd_none(*pgd) || unlikely(pgd_bad(*pgd)))
++		goto fault;
++
++	pmd = pmd_offset(pgd, uaddr);
++	if (pmd_none(*pmd) || unlikely(pmd_bad(*pmd)))
++		goto fault;
++
++	pte = pte_offset_map(pmd, uaddr);
++	if (!pte || !pte_present(*pte))
++		goto fault;
++
++	pfn = pte_pfn(*pte);
++	if (!pfn_valid(pfn))
++		goto out;
++
++	ret = (pfn << PAGE_SHIFT) + (uaddr & (PAGE_SIZE - 1));
++out:
++	return ret;
++fault:
++	spin_unlock(&mm->page_table_lock);
++	rc = __handle_fault(mm, uaddr, 0);
++	spin_lock(&mm->page_table_lock);
++	if (rc)
++		goto out;
++	goto retry;
++}
++
+ size_t copy_from_user_pt(size_t n, const void __user *from, void *to)
  {
- 	register long __func asm("0") = func & CRYPT_S390_FUNC_MASK;
--	register void* __param asm("1") = param;
--	register const u8* __src asm("2") = src;
-+	register void *__param asm("1") = param;
-+	register const u8 *__src asm("2") = src;
- 	register long __src_len asm("3") = src_len;
- 	int ret;
- 
- 	asm volatile(
- 		"0:	.insn	rre,0xb93f0000,%1,%1 \n" /* KLMD opcode */
- 		"1:	brc	1,0b \n" /* handle partial completion */
--		"	ahi	%0,%h6\n"
--		"2:	ahi	%0,%h7\n"
--		"3:\n"
--		EX_TABLE(0b,3b) EX_TABLE(1b,2b)
-+		"	la	%0,0\n"
-+		"2:\n"
-+		EX_TABLE(0b,2b) EX_TABLE(1b,2b)
- 		: "=d" (ret), "+a" (__src), "+d" (__src_len)
--		: "d" (__func), "a" (__param), "0" (-EFAULT),
--		  "K" (ENOSYS), "K" (-ENOSYS + EFAULT) : "cc", "memory");
-+		: "d" (__func), "a" (__param), "0" (-1) : "cc", "memory");
- 	if (ret < 0)
- 		return ret;
- 	return (func & CRYPT_S390_FUNC_MASK) ? src_len - __src_len : __src_len;
+ 	size_t rc;
+@@ -156,3 +200,277 @@ size_t copy_to_user_pt(size_t n, void __
+ 	}
+ 	return __user_copy_pt((unsigned long) to, (void *) from, n, 1);
  }
- 
--/*
-+/**
-+ * crypt_s390_kmac:
-+ * @func: the function code passed to KM; see crypt_s390_klmd_func
-+ * @param: address of parameter block; see POP for details on each func
-+ * @src: address of source memory area
-+ * @src_len: length of src operand in bytes
-+ *
-  * Executes the KMAC (COMPUTE MESSAGE AUTHENTICATION CODE) operation
-  * of the CPU.
-- * @param func: the function code passed to KM; see crypt_s390_klmd_func
-- * @param param: address of parameter block; see POP for details on each func
-- * @param src: address of source memory area
-- * @param src_len: length of src operand in bytes
-- * @returns < zero for failure, 0 for the query func, number of processed bytes
-- * 	for digest funcs
-+ *
-+ * Returns -1 for failure, 0 for the query func, number of processed
-+ * bytes for digest funcs
-  */
--static inline int
--crypt_s390_kmac(long func, void* param, const u8* src, long src_len)
-+static inline int crypt_s390_kmac(long func, void *param,
-+				  const u8 *src, long src_len)
- {
- 	register long __func asm("0") = func & CRYPT_S390_FUNC_MASK;
--	register void* __param asm("1") = param;
--	register const u8* __src asm("2") = src;
-+	register void *__param asm("1") = param;
-+	register const u8 *__src asm("2") = src;
- 	register long __src_len asm("3") = src_len;
- 	int ret;
- 
- 	asm volatile(
- 		"0:	.insn	rre,0xb91e0000,%1,%1 \n" /* KLAC opcode */
- 		"1:	brc	1,0b \n" /* handle partial completion */
--		"	ahi	%0,%h6\n"
--		"2:	ahi	%0,%h7\n"
--		"3:\n"
--		EX_TABLE(0b,3b) EX_TABLE(1b,2b)
-+		"	la	%0,0\n"
-+		"2:\n"
-+		EX_TABLE(0b,2b) EX_TABLE(1b,2b)
- 		: "=d" (ret), "+a" (__src), "+d" (__src_len)
--		: "d" (__func), "a" (__param), "0" (-EFAULT),
--		  "K" (ENOSYS), "K" (-ENOSYS + EFAULT) : "cc", "memory");
-+		: "d" (__func), "a" (__param), "0" (-1) : "cc", "memory");
- 	if (ret < 0)
- 		return ret;
- 	return (func & CRYPT_S390_FUNC_MASK) ? src_len - __src_len : __src_len;
- }
- 
- /**
-+ * crypt_s390_func_available:
-+ * @func: the function code of the specific function; 0 if op in general
-+ *
-  * Tests if a specific crypto function is implemented on the machine.
-- * @param func:	the function code of the specific function; 0 if op in general
-- * @return	1 if func available; 0 if func or op in general not available
-+ *
-+ * Returns 1 if func available; 0 if func or op in general not available
-  */
--static inline int
--crypt_s390_func_available(int func)
-+static inline int crypt_s390_func_available(int func)
- {
-+	unsigned char status[16];
- 	int ret;
- 
--	struct crypt_s390_query_status status = {
--		.high = 0,
--		.low = 0
--	};
--	switch (func & CRYPT_S390_OP_MASK){
--		case CRYPT_S390_KM:
--			ret = crypt_s390_km(KM_QUERY, &status, NULL, NULL, 0);
--			break;
--		case CRYPT_S390_KMC:
--			ret = crypt_s390_kmc(KMC_QUERY, &status, NULL, NULL, 0);
--			break;
--		case CRYPT_S390_KIMD:
--			ret = crypt_s390_kimd(KIMD_QUERY, &status, NULL, 0);
--			break;
--		case CRYPT_S390_KLMD:
--			ret = crypt_s390_klmd(KLMD_QUERY, &status, NULL, 0);
--			break;
--		case CRYPT_S390_KMAC:
--			ret = crypt_s390_kmac(KMAC_QUERY, &status, NULL, 0);
--			break;
--		default:
--			ret = 0;
--			return ret;
--	}
--	if (ret >= 0){
--		func &= CRYPT_S390_FUNC_MASK;
--		func &= 0x7f; //mask modifier bit
--		if (func < 64){
--			ret = (status.high >> (64 - func - 1)) & 0x1;
--		} else {
--			ret = (status.low >> (128 - func - 1)) & 0x1;
--		}
--	} else {
--		ret = 0;
-+	switch (func & CRYPT_S390_OP_MASK) {
-+	case CRYPT_S390_KM:
-+		ret = crypt_s390_km(KM_QUERY, &status, NULL, NULL, 0);
++
++static size_t clear_user_pt(size_t n, void __user *to)
++{
++	long done, size, ret;
++
++	if (segment_eq(get_fs(), KERNEL_DS)) {
++		memset((void __kernel __force *) to, 0, n);
++		return 0;
++	}
++	done = 0;
++	do {
++		if (n - done > PAGE_SIZE)
++			size = PAGE_SIZE;
++		else
++			size = n - done;
++		ret = __user_copy_pt((unsigned long) to + done,
++				      &empty_zero_page, size, 1);
++		done += size;
++		if (ret)
++			return ret + n - done;
++	} while (done < n);
++	return 0;
++}
++
++static size_t strnlen_user_pt(size_t count, const char __user *src)
++{
++	char *addr;
++	unsigned long uaddr = (unsigned long) src;
++	struct mm_struct *mm = current->mm;
++	unsigned long offset, pfn, done, len;
++	pgd_t *pgd;
++	pmd_t *pmd;
++	pte_t *pte;
++	size_t len_str;
++
++	if (segment_eq(get_fs(), KERNEL_DS))
++		return strnlen((const char __kernel __force *) src, count) + 1;
++	done = 0;
++retry:
++	spin_lock(&mm->page_table_lock);
++	do {
++		pgd = pgd_offset(mm, uaddr);
++		if (pgd_none(*pgd) || unlikely(pgd_bad(*pgd)))
++			goto fault;
++
++		pmd = pmd_offset(pgd, uaddr);
++		if (pmd_none(*pmd) || unlikely(pmd_bad(*pmd)))
++			goto fault;
++
++		pte = pte_offset_map(pmd, uaddr);
++		if (!pte || !pte_present(*pte))
++			goto fault;
++
++		pfn = pte_pfn(*pte);
++		if (!pfn_valid(pfn)) {
++			done = -1;
++			goto out;
++		}
++
++		offset = uaddr & (PAGE_SIZE-1);
++		addr = (char *)(pfn << PAGE_SHIFT) + offset;
++		len = min(count - done, PAGE_SIZE - offset);
++		len_str = strnlen(addr, len);
++		done += len_str;
++		uaddr += len_str;
++	} while ((len_str == len) && (done < count));
++out:
++	spin_unlock(&mm->page_table_lock);
++	return done + 1;
++fault:
++	spin_unlock(&mm->page_table_lock);
++	if (__handle_fault(mm, uaddr, 0)) {
++		return 0;
++	}
++	goto retry;
++}
++
++static size_t strncpy_from_user_pt(size_t count, const char __user *src,
++				   char *dst)
++{
++	size_t n = strnlen_user_pt(count, src);
++
++	if (!n)
++		return -EFAULT;
++	if (n > count)
++		n = count;
++	if (segment_eq(get_fs(), KERNEL_DS)) {
++		memcpy(dst, (const char __kernel __force *) src, n);
++		if (dst[n-1] == '\0')
++			return n-1;
++		else
++			return n;
++	}
++	if (__user_copy_pt((unsigned long) src, dst, n, 0))
++		return -EFAULT;
++	if (dst[n-1] == '\0')
++		return n-1;
++	else
++		return n;
++}
++
++static size_t copy_in_user_pt(size_t n, void __user *to,
++			      const void __user *from)
++{
++	struct mm_struct *mm = current->mm;
++	unsigned long offset_from, offset_to, offset_max, pfn_from, pfn_to,
++		      uaddr, done, size;
++	unsigned long uaddr_from = (unsigned long) from;
++	unsigned long uaddr_to = (unsigned long) to;
++	pgd_t *pgd_from, *pgd_to;
++	pmd_t *pmd_from, *pmd_to;
++	pte_t *pte_from, *pte_to;
++	int write_user;
++
++	done = 0;
++retry:
++	spin_lock(&mm->page_table_lock);
++	do {
++		pgd_from = pgd_offset(mm, uaddr_from);
++		if (pgd_none(*pgd_from) || unlikely(pgd_bad(*pgd_from))) {
++			uaddr = uaddr_from;
++			write_user = 0;
++			goto fault;
++		}
++		pgd_to = pgd_offset(mm, uaddr_to);
++		if (pgd_none(*pgd_to) || unlikely(pgd_bad(*pgd_to))) {
++			uaddr = uaddr_to;
++			write_user = 1;
++			goto fault;
++		}
++
++		pmd_from = pmd_offset(pgd_from, uaddr_from);
++		if (pmd_none(*pmd_from) || unlikely(pmd_bad(*pmd_from))) {
++			uaddr = uaddr_from;
++			write_user = 0;
++			goto fault;
++		}
++		pmd_to = pmd_offset(pgd_to, uaddr_to);
++		if (pmd_none(*pmd_to) || unlikely(pmd_bad(*pmd_to))) {
++			uaddr = uaddr_to;
++			write_user = 1;
++			goto fault;
++		}
++
++		pte_from = pte_offset_map(pmd_from, uaddr_from);
++		if (!pte_from || !pte_present(*pte_from)) {
++			uaddr = uaddr_from;
++			write_user = 0;
++			goto fault;
++		}
++		pte_to = pte_offset_map(pmd_to, uaddr_to);
++		if (!pte_to || !pte_present(*pte_to) || !pte_write(*pte_to)) {
++			uaddr = uaddr_to;
++			write_user = 1;
++			goto fault;
++		}
++
++		pfn_from = pte_pfn(*pte_from);
++		if (!pfn_valid(pfn_from))
++			goto out;
++		pfn_to = pte_pfn(*pte_to);
++		if (!pfn_valid(pfn_to))
++			goto out;
++
++		offset_from = uaddr_from & (PAGE_SIZE-1);
++		offset_to = uaddr_from & (PAGE_SIZE-1);
++		offset_max = max(offset_from, offset_to);
++		size = min(n - done, PAGE_SIZE - offset_max);
++
++		memcpy((void *)(pfn_to << PAGE_SHIFT) + offset_to,
++		       (void *)(pfn_from << PAGE_SHIFT) + offset_from, size);
++		done += size;
++		uaddr_from += size;
++		uaddr_to += size;
++	} while (done < n);
++out:
++	spin_unlock(&mm->page_table_lock);
++	return n - done;
++fault:
++	spin_unlock(&mm->page_table_lock);
++	if (__handle_fault(mm, uaddr, write_user))
++		return n - done;
++	goto retry;
++}
++
++#define __futex_atomic_op(insn, ret, oldval, newval, uaddr, oparg)	\
++	asm volatile("0: l   %1,0(%6)\n"				\
++		     "1: " insn						\
++		     "2: cs  %1,%2,0(%6)\n"				\
++		     "3: jl  1b\n"					\
++		     "   lhi %0,0\n"					\
++		     "4:\n"						\
++		     EX_TABLE(0b,4b) EX_TABLE(2b,4b) EX_TABLE(3b,4b)	\
++		     : "=d" (ret), "=&d" (oldval), "=&d" (newval),	\
++		       "=m" (*uaddr)					\
++		     : "0" (-EFAULT), "d" (oparg), "a" (uaddr),		\
++		       "m" (*uaddr) : "cc" );
++
++int futex_atomic_op_pt(int op, int __user *uaddr, int oparg, int *old)
++{
++	int oldval = 0, newval, ret;
++
++	spin_lock(&current->mm->page_table_lock);
++	uaddr = (int __user *) __dat_user_addr((unsigned long) uaddr);
++	if (!uaddr) {
++		spin_unlock(&current->mm->page_table_lock);
++		return -EFAULT;
++	}
++	get_page(virt_to_page(uaddr));
++	spin_unlock(&current->mm->page_table_lock);
++	switch (op) {
++	case FUTEX_OP_SET:
++		__futex_atomic_op("lr %2,%5\n",
++				  ret, oldval, newval, uaddr, oparg);
 +		break;
-+	case CRYPT_S390_KMC:
-+		ret = crypt_s390_kmc(KMC_QUERY, &status, NULL, NULL, 0);
++	case FUTEX_OP_ADD:
++		__futex_atomic_op("lr %2,%1\nar %2,%5\n",
++				  ret, oldval, newval, uaddr, oparg);
 +		break;
-+	case CRYPT_S390_KIMD:
-+		ret = crypt_s390_kimd(KIMD_QUERY, &status, NULL, 0);
++	case FUTEX_OP_OR:
++		__futex_atomic_op("lr %2,%1\nor %2,%5\n",
++				  ret, oldval, newval, uaddr, oparg);
 +		break;
-+	case CRYPT_S390_KLMD:
-+		ret = crypt_s390_klmd(KLMD_QUERY, &status, NULL, 0);
++	case FUTEX_OP_ANDN:
++		__futex_atomic_op("lr %2,%1\nnr %2,%5\n",
++				  ret, oldval, newval, uaddr, oparg);
 +		break;
-+	case CRYPT_S390_KMAC:
-+		ret = crypt_s390_kmac(KMAC_QUERY, &status, NULL, 0);
++	case FUTEX_OP_XOR:
++		__futex_atomic_op("lr %2,%1\nxr %2,%5\n",
++				  ret, oldval, newval, uaddr, oparg);
 +		break;
 +	default:
-+		return 0;
- 	}
--	return ret;
-+	if (ret < 0)
-+		return 0;
-+	func &= CRYPT_S390_FUNC_MASK;
-+	func &= 0x7f;		/* mask modifier bit */
-+	return (status[func >> 3] & (0x80 >> (func & 7))) != 0;
- }
++		ret = -ENOSYS;
++	}
++	put_page(virt_to_page(uaddr));
++	*old = oldval;
++	return ret;
++}
++
++int futex_atomic_cmpxchg_pt(int __user *uaddr, int oldval, int newval)
++{
++	int ret;
++
++	spin_lock(&current->mm->page_table_lock);
++	uaddr = (int __user *) __dat_user_addr((unsigned long) uaddr);
++	if (!uaddr) {
++		spin_unlock(&current->mm->page_table_lock);
++		return -EFAULT;
++	}
++	get_page(virt_to_page(uaddr));
++	spin_unlock(&current->mm->page_table_lock);
++	asm volatile("   cs   %1,%4,0(%5)\n"
++		     "0: lr   %0,%1\n"
++		     "1:\n"
++		     EX_TABLE(0b,1b)
++		     : "=d" (ret), "+d" (oldval), "=m" (*uaddr)
++		     : "0" (-EFAULT), "d" (newval), "a" (uaddr), "m" (*uaddr)
++		     : "cc", "memory" );
++	put_page(virt_to_page(uaddr));
++	return ret;
++}
++
++struct uaccess_ops uaccess_pt = {
++	.copy_from_user		= copy_from_user_pt,
++	.copy_from_user_small	= copy_from_user_pt,
++	.copy_to_user		= copy_to_user_pt,
++	.copy_to_user_small	= copy_to_user_pt,
++	.copy_in_user		= copy_in_user_pt,
++	.clear_user		= clear_user_pt,
++	.strnlen_user		= strnlen_user_pt,
++	.strncpy_from_user	= strncpy_from_user_pt,
++	.futex_atomic_op	= futex_atomic_op_pt,
++	.futex_atomic_cmpxchg	= futex_atomic_cmpxchg_pt,
++};
+diff -urpN linux-2.6/arch/s390/mm/fault.c linux-2.6-patched/arch/s390/mm/fault.c
+--- linux-2.6/arch/s390/mm/fault.c	2007-01-26 17:27:47.000000000 +0100
++++ linux-2.6-patched/arch/s390/mm/fault.c	2007-01-26 17:29:29.000000000 +0100
+@@ -137,7 +137,9 @@ static int __check_access_register(struc
  
--#endif // _CRYPTO_ARCH_S390_CRYPT_S390_H
-+#endif	/* _CRYPTO_ARCH_S390_CRYPT_S390_H */
-diff -urpN linux-2.6/arch/s390/crypto/crypt_s390_query.c linux-2.6-patched/arch/s390/crypto/crypt_s390_query.c
---- linux-2.6/arch/s390/crypto/crypt_s390_query.c	2006-11-29 22:57:37.000000000 +0100
-+++ linux-2.6-patched/arch/s390/crypto/crypt_s390_query.c	2007-01-26 17:29:28.000000000 +0100
-@@ -5,7 +5,8 @@
-  * Testing module for querying processor crypto capabilities.
-  *
-  * Copyright (c) 2003 IBM Deutschland Entwicklung GmbH, IBM Corporation
-- * Author(s): Thomas Spatzier (tspat@de.ibm.com)
-+ * Author(s): Thomas Spatzier
-+ *	      Jan Glauber (jan.glauber@de.ibm.com)
-  *
-  * This program is free software; you can redistribute it and/or modify it
-  * under the terms of the GNU General Public License as published by the Free
-diff -urpN linux-2.6/arch/s390/crypto/des_check_key.c linux-2.6-patched/arch/s390/crypto/des_check_key.c
---- linux-2.6/arch/s390/crypto/des_check_key.c	2007-01-26 17:27:47.000000000 +0100
-+++ linux-2.6-patched/arch/s390/crypto/des_check_key.c	2007-01-26 17:29:28.000000000 +0100
-@@ -11,7 +11,8 @@
-  *
-  * s390 Version:
-  *   Copyright (C) 2003 IBM Deutschland GmbH, IBM Corporation
-- *   Author(s): Thomas Spatzier (tspat@de.ibm.com)
-+ *   Author(s): Thomas Spatzier
-+ *		Jan Glauber (jan.glauber@de.ibm.com)
-  *
-  * Derived from "crypto/des.c"
-  *   Copyright (c) 1992 Dana L. How.
-diff -urpN linux-2.6/arch/s390/crypto/des_s390.c linux-2.6-patched/arch/s390/crypto/des_s390.c
---- linux-2.6/arch/s390/crypto/des_s390.c	2006-11-29 22:57:37.000000000 +0100
-+++ linux-2.6-patched/arch/s390/crypto/des_s390.c	2007-01-26 17:29:28.000000000 +0100
-@@ -3,9 +3,9 @@
-  *
-  * s390 implementation of the DES Cipher Algorithm.
-  *
-- * Copyright (c) 2003 IBM Deutschland Entwicklung GmbH, IBM Corporation
-- * Author(s): Thomas Spatzier (tspat@de.ibm.com)
-- *
-+ * Copyright (c) 2003,2007 IBM Deutschland Entwicklung GmbH, IBM Corporation
-+ * Author(s): Thomas Spatzier
-+ *	      Jan Glauber (jan.glauber@de.ibm.com)
-  *
-  * This program is free software; you can redistribute it and/or modify
-  * it under the terms of the GNU General Public License as published by
-@@ -557,7 +557,7 @@ static int init(void)
- 	if (!crypt_s390_func_available(KM_DEA_ENCRYPT) ||
- 	    !crypt_s390_func_available(KM_TDEA_128_ENCRYPT) ||
- 	    !crypt_s390_func_available(KM_TDEA_192_ENCRYPT))
--		return -ENOSYS;
-+		return -ENOTSUPP;
- 
- 	ret = crypto_register_alg(&des_alg);
- 	if (ret)
-diff -urpN linux-2.6/arch/s390/crypto/Kconfig linux-2.6-patched/arch/s390/crypto/Kconfig
---- linux-2.6/arch/s390/crypto/Kconfig	1970-01-01 01:00:00.000000000 +0100
-+++ linux-2.6-patched/arch/s390/crypto/Kconfig	2007-01-26 17:29:28.000000000 +0100
-@@ -0,0 +1,60 @@
-+config CRYPTO_SHA1_S390
-+	tristate "SHA1 digest algorithm"
-+	depends on S390
-+	select CRYPTO_ALGAPI
-+	help
-+	  This is the s390 hardware accelerated implementation of the
-+	  SHA-1 secure hash standard (FIPS 180-1/DFIPS 180-2).
-+
-+config CRYPTO_SHA256_S390
-+	tristate "SHA256 digest algorithm"
-+	depends on S390
-+	select CRYPTO_ALGAPI
-+	help
-+	  This is the s390 hardware accelerated implementation of the
-+	  SHA256 secure hash standard (DFIPS 180-2).
-+
-+	  This version of SHA implements a 256 bit hash with 128 bits of
-+	  security against collision attacks.
-+
-+config CRYPTO_DES_S390
-+	tristate "DES and Triple DES cipher algorithms"
-+	depends on S390
-+	select CRYPTO_ALGAPI
-+	select CRYPTO_BLKCIPHER
-+	help
-+	  This us the s390 hardware accelerated implementation of the
-+	  DES cipher algorithm (FIPS 46-2), and Triple DES EDE (FIPS 46-3).
-+
-+config CRYPTO_AES_S390
-+	tristate "AES cipher algorithms"
-+	depends on S390
-+	select CRYPTO_ALGAPI
-+	select CRYPTO_BLKCIPHER
-+	help
-+	  This is the s390 hardware accelerated implementation of the
-+	  AES cipher algorithms (FIPS-197). AES uses the Rijndael
-+	  algorithm.
-+
-+	  Rijndael appears to be consistently a very good performer in
-+	  both hardware and software across a wide range of computing
-+	  environments regardless of its use in feedback or non-feedback
-+	  modes. Its key setup time is excellent, and its key agility is
-+	  good. Rijndael's very low memory requirements make it very well
-+	  suited for restricted-space environments, in which it also
-+	  demonstrates excellent performance. Rijndael's operations are
-+	  among the easiest to defend against power and timing attacks.
-+
-+	  On s390 the System z9-109 currently only supports the key size
-+	  of 128 bit.
-+
-+config S390_PRNG
-+	tristate "Pseudo random number generator device driver"
-+	depends on S390
-+	default "m"
-+	help
-+	  Select this option if you want to use the s390 pseudo random number
-+	  generator. The PRNG is part of the cryptograhic processor functions
-+	  and uses triple-DES to generate secure random numbers like the
-+	  ANSI X9.17 standard. The PRNG is usable via the char device
-+	  /dev/prandom.
-diff -urpN linux-2.6/arch/s390/crypto/sha1_s390.c linux-2.6-patched/arch/s390/crypto/sha1_s390.c
---- linux-2.6/arch/s390/crypto/sha1_s390.c	2006-11-29 22:57:37.000000000 +0100
-+++ linux-2.6-patched/arch/s390/crypto/sha1_s390.c	2007-01-26 17:29:28.000000000 +0100
-@@ -9,7 +9,8 @@
-  *
-  * s390 Version:
-  *   Copyright (C) 2003 IBM Deutschland GmbH, IBM Corporation
-- *   Author(s): Thomas Spatzier (tspat@de.ibm.com)
-+ *   Author(s): Thomas Spatzier
-+ *		Jan Glauber (jan.glauber@de.ibm.com)
-  *
-  * Derived from "crypto/sha1.c"
-  *   Copyright (c) Alan Smithee.
-@@ -43,16 +44,14 @@ struct crypt_s390_sha1_ctx {
- static void sha1_init(struct crypto_tfm *tfm)
+ /*
+  * Check which address space the address belongs to.
+- * Returns 1 for user space and 0 for kernel space.
++ * May return 1 or 2 for user space and 0 for kernel space.
++ * Returns 2 for user space in primary addressing mode with
++ * CONFIG_S390_EXEC_PROTECT on and kernel parameter noexec=on.
+  */
+ static inline int check_user_space(struct pt_regs *regs, int error_code)
  {
- 	struct crypt_s390_sha1_ctx *ctx = crypto_tfm_ctx(tfm);
--	static const u32 initstate[5] = {
--		0x67452301,
--		0xEFCDAB89,
--		0x98BADCFE,
--		0x10325476,
--		0xC3D2E1F0
--	};
-+
-+	ctx->state[0] = 0x67452301;
-+	ctx->state[1] =	0xEFCDAB89;
-+	ctx->state[2] =	0x98BADCFE;
-+	ctx->state[3] = 0x10325476;
-+	ctx->state[4] =	0xC3D2E1F0;
- 
- 	ctx->count = 0;
--	memcpy(ctx->state, &initstate, sizeof(initstate));
- 	ctx->buf_len = 0;
+@@ -154,7 +156,7 @@ static inline int check_user_space(struc
+ 		return __check_access_register(regs, error_code);
+ 	if (descriptor == 2)
+ 		return current->thread.mm_segment.ar4;
+-	return descriptor != 0;
++	return ((descriptor != 0) ^ (switch_amode)) << s390_noexec;
  }
  
-@@ -63,13 +62,13 @@ static void sha1_update(struct crypto_tf
- 	long imd_len;
+ /*
+@@ -183,6 +185,77 @@ static void do_sigsegv(struct pt_regs *r
+ 	force_sig_info(SIGSEGV, &si, current);
+ }
  
- 	sctx = crypto_tfm_ctx(tfm);
--	sctx->count += len * 8; //message bit length
-+	sctx->count += len * 8; /* message bit length */
- 
--	//anything in buffer yet? -> must be completed
-+	/* anything in buffer yet? -> must be completed */
- 	if (sctx->buf_len && (sctx->buf_len + len) >= SHA1_BLOCK_SIZE) {
--		//complete full block and hash
-+		/* complete full block and hash */
- 		memcpy(sctx->buffer + sctx->buf_len, data,
--				SHA1_BLOCK_SIZE - sctx->buf_len);
-+		       SHA1_BLOCK_SIZE - sctx->buf_len);
- 		crypt_s390_kimd(KIMD_SHA_1, sctx->state, sctx->buffer,
- 				SHA1_BLOCK_SIZE);
- 		data += SHA1_BLOCK_SIZE - sctx->buf_len;
-@@ -77,37 +76,36 @@ static void sha1_update(struct crypto_tf
- 		sctx->buf_len = 0;
- 	}
- 
--	//rest of data contains full blocks?
-+	/* rest of data contains full blocks? */
- 	imd_len = len & ~0x3ful;
--	if (imd_len){
-+	if (imd_len) {
- 		crypt_s390_kimd(KIMD_SHA_1, sctx->state, data, imd_len);
- 		data += imd_len;
- 		len -= imd_len;
- 	}
--	//anything left? store in buffer
--	if (len){
-+	/* anything left? store in buffer */
-+	if (len) {
- 		memcpy(sctx->buffer + sctx->buf_len , data, len);
- 		sctx->buf_len += len;
++#ifdef CONFIG_S390_EXEC_PROTECT
++extern long sys_sigreturn(struct pt_regs *regs);
++extern long sys_rt_sigreturn(struct pt_regs *regs);
++extern long sys32_sigreturn(struct pt_regs *regs);
++extern long sys32_rt_sigreturn(struct pt_regs *regs);
++
++static inline void do_sigreturn(struct mm_struct *mm, struct pt_regs *regs,
++				int rt)
++{
++	up_read(&mm->mmap_sem);
++	clear_tsk_thread_flag(current, TIF_SINGLE_STEP);
++#ifdef CONFIG_COMPAT
++	if (test_tsk_thread_flag(current, TIF_31BIT)) {
++		if (rt)
++			sys32_rt_sigreturn(regs);
++		else
++			sys32_sigreturn(regs);
++		return;
++	}
++#endif /* CONFIG_COMPAT */
++	if (rt)
++		sys_rt_sigreturn(regs);
++	else
++		sys_sigreturn(regs);
++	return;
++}
++
++static int signal_return(struct mm_struct *mm, struct pt_regs *regs,
++			 unsigned long address, unsigned long error_code)
++{
++	pgd_t *pgd;
++	pmd_t *pmd;
++	pte_t *pte;
++	u16 *instruction;
++	unsigned long pfn, uaddr = regs->psw.addr;
++
++	spin_lock(&mm->page_table_lock);
++	pgd = pgd_offset(mm, uaddr);
++	if (pgd_none(*pgd) || unlikely(pgd_bad(*pgd)))
++		goto out_fault;
++	pmd = pmd_offset(pgd, uaddr);
++	if (pmd_none(*pmd) || unlikely(pmd_bad(*pmd)))
++		goto out_fault;
++	pte = pte_offset_map(pmd_offset(pgd_offset(mm, uaddr), uaddr), uaddr);
++	if (!pte || !pte_present(*pte))
++		goto out_fault;
++	pfn = pte_pfn(*pte);
++	if (!pfn_valid(pfn))
++		goto out_fault;
++	spin_unlock(&mm->page_table_lock);
++
++	instruction = (u16 *) ((pfn << PAGE_SHIFT) + (uaddr & (PAGE_SIZE-1)));
++	if (*instruction == 0x0a77)
++		do_sigreturn(mm, regs, 0);
++	else if (*instruction == 0x0aad)
++		do_sigreturn(mm, regs, 1);
++	else {
++		printk("- XXX - do_exception: task = %s, primary, NO EXEC "
++		       "-> SIGSEGV\n", current->comm);
++		up_read(&mm->mmap_sem);
++		current->thread.prot_addr = address;
++		current->thread.trap_no = error_code;
++		do_sigsegv(regs, error_code, SEGV_MAPERR, address);
++	}
++	return 0;
++out_fault:
++	spin_unlock(&mm->page_table_lock);
++	return -EFAULT;
++}
++#endif /* CONFIG_S390_EXEC_PROTECT */
++
+ /*
+  * This routine handles page faults.  It determines the address,
+  * and the problem, and then passes it off to one of the appropriate
+@@ -260,6 +333,17 @@ do_exception(struct pt_regs *regs, unsig
+         vma = find_vma(mm, address);
+         if (!vma)
+                 goto bad_area;
++
++#ifdef CONFIG_S390_EXEC_PROTECT
++	if (unlikely((user_address == 2) && !(vma->vm_flags & VM_EXEC)))
++		if (!signal_return(mm, regs, address, error_code))
++			/*
++			 * signal_return() has done an up_read(&mm->mmap_sem)
++			 * if it returns 0.
++			 */
++			return;
++#endif
++
+         if (vma->vm_start <= address) 
+                 goto good_area;
+         if (!(vma->vm_flags & VM_GROWSDOWN))
+diff -urpN linux-2.6/arch/s390/mm/init.c linux-2.6-patched/arch/s390/mm/init.c
+--- linux-2.6/arch/s390/mm/init.c	2007-01-26 17:27:50.000000000 +0100
++++ linux-2.6-patched/arch/s390/mm/init.c	2007-01-26 17:29:29.000000000 +0100
+@@ -104,7 +104,7 @@ static void __init setup_ro_region(void)
+ 		pmd = pmd_offset(pgd, address);
+ 		pte = pte_offset_kernel(pmd, address);
+ 		new_pte = mk_pte_phys(address, __pgprot(_PAGE_RO));
+-		set_pte(pte, new_pte);
++		*pte = new_pte;
  	}
  }
  
- 
--static void
--pad_message(struct crypt_s390_sha1_ctx* sctx)
-+static void pad_message(struct crypt_s390_sha1_ctx* sctx)
- {
- 	int index;
- 
- 	index = sctx->buf_len;
--	sctx->buf_len = (sctx->buf_len < 56)?
--		SHA1_BLOCK_SIZE:2 * SHA1_BLOCK_SIZE;
--	//start pad with 1
-+	sctx->buf_len = (sctx->buf_len < 56) ?
-+			 SHA1_BLOCK_SIZE:2 * SHA1_BLOCK_SIZE;
-+	/* start pad with 1 */
- 	sctx->buffer[index] = 0x80;
--	//pad with zeros
-+	/* pad with zeros */
- 	index++;
- 	memset(sctx->buffer + index, 0x00, sctx->buf_len - index);
--	//append length
-+	/* append length */
- 	memcpy(sctx->buffer + sctx->buf_len - 8, &sctx->count,
--			sizeof sctx->count);
-+	       sizeof sctx->count);
+@@ -124,11 +124,11 @@ void __init paging_init(void)
+ #ifdef CONFIG_64BIT
+ 	pgdir_k = (__pa(swapper_pg_dir) & PAGE_MASK) | _KERN_REGION_TABLE;
+ 	for (i = 0; i < PTRS_PER_PGD; i++)
+-		pgd_clear(pg_dir + i);
++		pgd_clear_kernel(pg_dir + i);
+ #else
+ 	pgdir_k = (__pa(swapper_pg_dir) & PAGE_MASK) | _KERNSEG_TABLE;
+ 	for (i = 0; i < PTRS_PER_PGD; i++)
+-		pmd_clear((pmd_t *)(pg_dir + i));
++		pmd_clear_kernel((pmd_t *)(pg_dir + i));
+ #endif
+ 	vmem_map_init();
+ 	setup_ro_region();
+diff -urpN linux-2.6/arch/s390/mm/vmem.c linux-2.6-patched/arch/s390/mm/vmem.c
+--- linux-2.6/arch/s390/mm/vmem.c	2007-01-26 17:27:27.000000000 +0100
++++ linux-2.6-patched/arch/s390/mm/vmem.c	2007-01-26 17:29:29.000000000 +0100
+@@ -82,7 +82,7 @@ static inline pmd_t *vmem_pmd_alloc(void
+ 	if (!pmd)
+ 		return NULL;
+ 	for (i = 0; i < PTRS_PER_PMD; i++)
+-		pmd_clear(pmd + i);
++		pmd_clear_kernel(pmd + i);
+ 	return pmd;
  }
  
- /* Add padding and return the message digest. */
-@@ -115,47 +113,40 @@ static void sha1_final(struct crypto_tfm
- {
- 	struct crypt_s390_sha1_ctx *sctx = crypto_tfm_ctx(tfm);
- 
--	//must perform manual padding
-+	/* must perform manual padding */
- 	pad_message(sctx);
- 	crypt_s390_kimd(KIMD_SHA_1, sctx->state, sctx->buffer, sctx->buf_len);
--	//copy digest to out
-+	/* copy digest to out */
- 	memcpy(out, sctx->state, SHA1_DIGEST_SIZE);
--	/* Wipe context */
-+	/* wipe context */
- 	memset(sctx, 0, sizeof *sctx);
+@@ -97,7 +97,7 @@ static inline pte_t *vmem_pte_alloc(void
+ 		return NULL;
+ 	pte_val(empty_pte) = _PAGE_TYPE_EMPTY;
+ 	for (i = 0; i < PTRS_PER_PTE; i++)
+-		set_pte(pte + i, empty_pte);
++		pte[i] = empty_pte;
+ 	return pte;
  }
  
- static struct crypto_alg alg = {
- 	.cra_name	=	"sha1",
--	.cra_driver_name =	"sha1-s390",
-+	.cra_driver_name=	"sha1-s390",
- 	.cra_priority	=	CRYPT_S390_PRIORITY,
- 	.cra_flags	=	CRYPTO_ALG_TYPE_DIGEST,
- 	.cra_blocksize	=	SHA1_BLOCK_SIZE,
- 	.cra_ctxsize	=	sizeof(struct crypt_s390_sha1_ctx),
- 	.cra_module	=	THIS_MODULE,
--	.cra_list       =       LIST_HEAD_INIT(alg.cra_list),
-+	.cra_list	=	LIST_HEAD_INIT(alg.cra_list),
- 	.cra_u		=	{ .digest = {
- 	.dia_digestsize	=	SHA1_DIGEST_SIZE,
--	.dia_init   	= 	sha1_init,
--	.dia_update 	=	sha1_update,
--	.dia_final  	=	sha1_final } }
-+	.dia_init	=	sha1_init,
-+	.dia_update	=	sha1_update,
-+	.dia_final	=	sha1_final } }
- };
+@@ -119,7 +119,7 @@ static int vmem_add_range(unsigned long 
+ 			pm_dir = vmem_pmd_alloc();
+ 			if (!pm_dir)
+ 				goto out;
+-			pgd_populate(&init_mm, pg_dir, pm_dir);
++			pgd_populate_kernel(&init_mm, pg_dir, pm_dir);
+ 		}
  
--static int
--init(void)
-+static int __init init(void)
+ 		pm_dir = pmd_offset(pg_dir, address);
+@@ -132,7 +132,7 @@ static int vmem_add_range(unsigned long 
+ 
+ 		pt_dir = pte_offset_kernel(pm_dir, address);
+ 		pte = pfn_pte(address >> PAGE_SHIFT, PAGE_KERNEL);
+-		set_pte(pt_dir, pte);
++		*pt_dir = pte;
+ 	}
+ 	ret = 0;
+ out:
+@@ -161,7 +161,7 @@ static void vmem_remove_range(unsigned l
+ 		if (pmd_none(*pm_dir))
+ 			continue;
+ 		pt_dir = pte_offset_kernel(pm_dir, address);
+-		set_pte(pt_dir, pte);
++		*pt_dir = pte;
+ 	}
+ 	flush_tlb_kernel_range(start, start + size);
+ }
+@@ -191,7 +191,7 @@ static int vmem_add_mem_map(unsigned lon
+ 			pm_dir = vmem_pmd_alloc();
+ 			if (!pm_dir)
+ 				goto out;
+-			pgd_populate(&init_mm, pg_dir, pm_dir);
++			pgd_populate_kernel(&init_mm, pg_dir, pm_dir);
+ 		}
+ 
+ 		pm_dir = pmd_offset(pg_dir, address);
+@@ -210,7 +210,7 @@ static int vmem_add_mem_map(unsigned lon
+ 			if (!new_page)
+ 				goto out;
+ 			pte = pfn_pte(new_page >> PAGE_SHIFT, PAGE_KERNEL);
+-			set_pte(pt_dir, pte);
++			*pt_dir = pte;
+ 		}
+ 	}
+ 	ret = 0;
+diff -urpN linux-2.6/include/asm-s390/compat.h linux-2.6-patched/include/asm-s390/compat.h
+--- linux-2.6/include/asm-s390/compat.h	2006-11-29 22:57:37.000000000 +0100
++++ linux-2.6-patched/include/asm-s390/compat.h	2007-01-26 17:29:29.000000000 +0100
+@@ -6,6 +6,34 @@
+ #include <linux/types.h>
+ #include <linux/sched.h>
+ 
++#define PSW32_MASK_PER		0x40000000UL
++#define PSW32_MASK_DAT		0x04000000UL
++#define PSW32_MASK_IO		0x02000000UL
++#define PSW32_MASK_EXT		0x01000000UL
++#define PSW32_MASK_KEY		0x00F00000UL
++#define PSW32_MASK_MCHECK	0x00040000UL
++#define PSW32_MASK_WAIT		0x00020000UL
++#define PSW32_MASK_PSTATE	0x00010000UL
++#define PSW32_MASK_ASC		0x0000C000UL
++#define PSW32_MASK_CC		0x00003000UL
++#define PSW32_MASK_PM		0x00000f00UL
++
++#define PSW32_ADDR_AMODE31	0x80000000UL
++#define PSW32_ADDR_INSN		0x7FFFFFFFUL
++
++#define PSW32_BASE_BITS		0x00080000UL
++
++#define PSW32_ASC_PRIMARY	0x00000000UL
++#define PSW32_ASC_ACCREG	0x00004000UL
++#define PSW32_ASC_SECONDARY	0x00008000UL
++#define PSW32_ASC_HOME		0x0000C000UL
++
++#define PSW32_MASK_MERGE(CURRENT,NEW) \
++	(((CURRENT) & ~(PSW32_MASK_CC|PSW32_MASK_PM)) | \
++	 ((NEW) & (PSW32_MASK_CC|PSW32_MASK_PM)))
++
++extern long psw32_user_bits;
++
+ #define COMPAT_USER_HZ	100
+ 
+ typedef u32		compat_size_t;
+diff -urpN linux-2.6/include/asm-s390/lowcore.h linux-2.6-patched/include/asm-s390/lowcore.h
+--- linux-2.6/include/asm-s390/lowcore.h	2007-01-26 17:27:36.000000000 +0100
++++ linux-2.6-patched/include/asm-s390/lowcore.h	2007-01-26 17:29:29.000000000 +0100
+@@ -220,7 +220,8 @@ struct _lowcore
+ 	__u32        kernel_asce;              /* 0xc4c */
+ 	__u32        user_asce;                /* 0xc50 */
+ 	__u32        panic_stack;              /* 0xc54 */
+-	__u8         pad10[0xc60-0xc58];       /* 0xc58 */
++	__u32	     user_exec_asce;	       /* 0xc58 */
++	__u8	     pad10[0xc60-0xc5c];       /* 0xc5c */
+ 	/* entry.S sensitive area start */
+ 	struct       cpuinfo_S390 cpu_data;    /* 0xc60 */
+ 	__u32        ipl_device;               /* 0xc7c */
+@@ -310,7 +311,8 @@ struct _lowcore
+ 	__u64        kernel_asce;              /* 0xd58 */
+ 	__u64        user_asce;                /* 0xd60 */
+ 	__u64        panic_stack;              /* 0xd68 */
+-	__u8         pad10[0xd80-0xd70];       /* 0xd70 */
++	__u64	     user_exec_asce;	       /* 0xd70 */
++	__u8	     pad10[0xd80-0xd78];       /* 0xd78 */
+ 	/* entry.S sensitive area start */
+ 	struct       cpuinfo_S390 cpu_data;    /* 0xd80 */
+ 	__u32        ipl_device;               /* 0xdb8 */
+diff -urpN linux-2.6/include/asm-s390/mmu_context.h linux-2.6-patched/include/asm-s390/mmu_context.h
+--- linux-2.6/include/asm-s390/mmu_context.h	2006-11-29 22:57:37.000000000 +0100
++++ linux-2.6-patched/include/asm-s390/mmu_context.h	2007-01-26 17:29:29.000000000 +0100
+@@ -9,6 +9,7 @@
+ #ifndef __S390_MMU_CONTEXT_H
+ #define __S390_MMU_CONTEXT_H
+ 
++#include <asm/pgalloc.h>
+ /*
+  * get a new mmu context.. S390 don't know about contexts.
+  */
+@@ -16,29 +17,44 @@
+ 
+ #define destroy_context(mm)             do { } while (0)
+ 
++#ifndef __s390x__
++#define LCTL_OPCODE "lctl"
++#define PGTABLE_BITS (_SEGMENT_TABLE|USER_STD_MASK)
++#else
++#define LCTL_OPCODE "lctlg"
++#define PGTABLE_BITS (_REGION_TABLE|USER_STD_MASK)
++#endif
++
+ static inline void enter_lazy_tlb(struct mm_struct *mm,
+                                   struct task_struct *tsk)
  {
--	int ret = -ENOSYS;
-+	if (!crypt_s390_func_available(KIMD_SHA_1))
-+		return -ENOTSUPP;
- 
--	if (crypt_s390_func_available(KIMD_SHA_1)){
--		ret = crypto_register_alg(&alg);
--		if (ret == 0){
--			printk(KERN_INFO "crypt_s390: sha1_s390 loaded.\n");
--		}
--	}
--	return ret;
-+	return crypto_register_alg(&alg);
  }
  
--static void __exit
--fini(void)
-+static void __exit fini(void)
+ static inline void switch_mm(struct mm_struct *prev, struct mm_struct *next,
+-                             struct task_struct *tsk)
++			     struct task_struct *tsk)
  {
- 	crypto_unregister_alg(&alg);
+-        if (prev != next) {
+-#ifndef __s390x__
+-	        S390_lowcore.user_asce = (__pa(next->pgd)&PAGE_MASK) |
+-                      (_SEGMENT_TABLE|USER_STD_MASK);
+-                /* Load home space page table origin. */
+-                asm volatile("lctl  13,13,%0"
+-			     : : "m" (S390_lowcore.user_asce) );
+-#else /* __s390x__ */
+-                S390_lowcore.user_asce = (__pa(next->pgd) & PAGE_MASK) |
+-			(_REGION_TABLE|USER_STD_MASK);
+-		/* Load home space page table origin. */
+-		asm volatile("lctlg  13,13,%0"
+-			     : : "m" (S390_lowcore.user_asce) );
+-#endif /* __s390x__ */
+-        }
++	pgd_t *shadow_pgd = get_shadow_pgd(next->pgd);
++
++	if (prev != next) {
++		S390_lowcore.user_asce = (__pa(next->pgd) & PAGE_MASK) |
++					 PGTABLE_BITS;
++		if (shadow_pgd) {
++			/* Load primary/secondary space page table origin. */
++			S390_lowcore.user_exec_asce =
++				(__pa(shadow_pgd) & PAGE_MASK) | PGTABLE_BITS;
++			asm volatile(LCTL_OPCODE" 1,1,%0\n"
++				     LCTL_OPCODE" 7,7,%1"
++				     : : "m" (S390_lowcore.user_exec_asce),
++					 "m" (S390_lowcore.user_asce) );
++		} else if (switch_amode) {
++			/* Load primary space page table origin. */
++			asm volatile(LCTL_OPCODE" 1,1,%0"
++				     : : "m" (S390_lowcore.user_asce) );
++		} else
++			/* Load home space page table origin. */
++			asm volatile(LCTL_OPCODE" 13,13,%0"
++				     : : "m" (S390_lowcore.user_asce) );
++	}
+ 	cpu_set(smp_processor_id(), next->cpu_vm_mask);
  }
-diff -urpN linux-2.6/arch/s390/crypto/sha256_s390.c linux-2.6-patched/arch/s390/crypto/sha256_s390.c
---- linux-2.6/arch/s390/crypto/sha256_s390.c	2006-11-29 22:57:37.000000000 +0100
-+++ linux-2.6-patched/arch/s390/crypto/sha256_s390.c	2007-01-26 17:29:28.000000000 +0100
-@@ -143,15 +143,10 @@ static struct crypto_alg alg = {
  
- static int init(void)
+@@ -51,4 +67,4 @@ static inline void activate_mm(struct mm
+ 	set_fs(current->thread.mm_segment);
+ }
+ 
+-#endif
++#endif /* __S390_MMU_CONTEXT_H */
+diff -urpN linux-2.6/include/asm-s390/pgalloc.h linux-2.6-patched/include/asm-s390/pgalloc.h
+--- linux-2.6/include/asm-s390/pgalloc.h	2007-01-26 17:27:36.000000000 +0100
++++ linux-2.6-patched/include/asm-s390/pgalloc.h	2007-01-26 17:29:29.000000000 +0100
+@@ -47,6 +47,17 @@ static inline pgd_t *pgd_alloc(struct mm
+ 
+ 	if (!pgd)
+ 		return NULL;
++	if (s390_noexec) {
++		pgd_t *shadow_pgd = (pgd_t *)
++			__get_free_pages(GFP_KERNEL, PGD_ALLOC_ORDER);
++		struct page *page = virt_to_page(pgd);
++
++		if (!shadow_pgd) {
++			free_pages((unsigned long) pgd, PGD_ALLOC_ORDER);
++			return NULL;
++		}
++		page->lru.next = (void *) shadow_pgd;
++	}
+ 	for (i = 0; i < PTRS_PER_PGD; i++)
+ #ifndef __s390x__
+ 		pmd_clear(pmd_offset(pgd + i, i*PGDIR_SIZE));
+@@ -58,6 +69,10 @@ static inline pgd_t *pgd_alloc(struct mm
+ 
+ static inline void pgd_free(pgd_t *pgd)
  {
--	int ret;
--
- 	if (!crypt_s390_func_available(KIMD_SHA_256))
--		return -ENOSYS;
-+		return -ENOTSUPP;
- 
--	ret = crypto_register_alg(&alg);
--	if (ret != 0)
--		printk(KERN_INFO "crypt_s390: sha256_s390 couldn't be loaded.");
--	return ret;
-+	return crypto_register_alg(&alg);
++	pgd_t *shadow_pgd = get_shadow_pgd(pgd);
++
++	if (shadow_pgd)
++		free_pages((unsigned long) shadow_pgd, PGD_ALLOC_ORDER);
+ 	free_pages((unsigned long) pgd, PGD_ALLOC_ORDER);
  }
  
- static void __exit fini(void)
-diff -urpN linux-2.6/arch/s390/defconfig linux-2.6-patched/arch/s390/defconfig
---- linux-2.6/arch/s390/defconfig	2007-01-26 17:27:45.000000000 +0100
-+++ linux-2.6-patched/arch/s390/defconfig	2007-01-26 17:29:28.000000000 +0100
-@@ -723,9 +723,7 @@ CONFIG_CRYPTO_MANAGER=y
- # CONFIG_CRYPTO_MD4 is not set
- # CONFIG_CRYPTO_MD5 is not set
- # CONFIG_CRYPTO_SHA1 is not set
--# CONFIG_CRYPTO_SHA1_S390 is not set
- # CONFIG_CRYPTO_SHA256 is not set
--# CONFIG_CRYPTO_SHA256_S390 is not set
- # CONFIG_CRYPTO_SHA512 is not set
- # CONFIG_CRYPTO_WP512 is not set
- # CONFIG_CRYPTO_TGR192 is not set
-@@ -734,12 +732,10 @@ CONFIG_CRYPTO_ECB=m
- CONFIG_CRYPTO_CBC=y
- # CONFIG_CRYPTO_LRW is not set
- # CONFIG_CRYPTO_DES is not set
--# CONFIG_CRYPTO_DES_S390 is not set
- # CONFIG_CRYPTO_BLOWFISH is not set
- # CONFIG_CRYPTO_TWOFISH is not set
- # CONFIG_CRYPTO_SERPENT is not set
- # CONFIG_CRYPTO_AES is not set
--# CONFIG_CRYPTO_AES_S390 is not set
- # CONFIG_CRYPTO_CAST5 is not set
- # CONFIG_CRYPTO_CAST6 is not set
- # CONFIG_CRYPTO_TEA is not set
-@@ -754,6 +750,10 @@ CONFIG_CRYPTO_CBC=y
- #
- # Hardware crypto devices
- #
-+# CONFIG_CRYPTO_SHA1_S390 is not set
-+# CONFIG_CRYPTO_SHA256_S390 is not set
-+# CONFIG_CRYPTO_DES_S390 is not set
-+# CONFIG_CRYPTO_AES_S390 is not set
+@@ -71,6 +86,7 @@ static inline void pgd_free(pgd_t *pgd)
+ #define pmd_free(x)                     do { } while (0)
+ #define __pmd_free_tlb(tlb,x)		do { } while (0)
+ #define pgd_populate(mm, pmd, pte)      BUG()
++#define pgd_populate_kernel(mm, pmd, pte)	BUG()
+ #else /* __s390x__ */
+ static inline pmd_t * pmd_alloc_one(struct mm_struct *mm, unsigned long vmaddr)
+ {
+@@ -79,6 +95,17 @@ static inline pmd_t * pmd_alloc_one(stru
  
- #
- # Library routines
-diff -urpN linux-2.6/crypto/Kconfig linux-2.6-patched/crypto/Kconfig
---- linux-2.6/crypto/Kconfig	2007-01-26 17:27:27.000000000 +0100
-+++ linux-2.6-patched/crypto/Kconfig	2007-01-26 17:29:28.000000000 +0100
-@@ -74,14 +74,6 @@ config CRYPTO_SHA1
- 	help
- 	  SHA-1 secure hash standard (FIPS 180-1/DFIPS 180-2).
+ 	if (!pmd)
+ 		return NULL;
++	if (s390_noexec) {
++		pmd_t *shadow_pmd = (pmd_t *)
++			__get_free_pages(GFP_KERNEL, PMD_ALLOC_ORDER);
++		struct page *page = virt_to_page(pmd);
++
++		if (!shadow_pmd) {
++			free_pages((unsigned long) pmd, PMD_ALLOC_ORDER);
++			return NULL;
++		}
++		page->lru.next = (void *) shadow_pmd;
++	}
+ 	for (i=0; i < PTRS_PER_PMD; i++)
+ 		pmd_clear(pmd + i);
+ 	return pmd;
+@@ -86,6 +113,10 @@ static inline pmd_t * pmd_alloc_one(stru
  
--config CRYPTO_SHA1_S390
--	tristate "SHA1 digest algorithm (s390)"
--	depends on S390
--	select CRYPTO_ALGAPI
--	help
--	  This is the s390 hardware accelerated implementation of the
--	  SHA-1 secure hash standard (FIPS 180-1/DFIPS 180-2).
--
- config CRYPTO_SHA256
- 	tristate "SHA256 digest algorithm"
- 	select CRYPTO_ALGAPI
-@@ -91,17 +83,6 @@ config CRYPTO_SHA256
- 	  This version of SHA implements a 256 bit hash with 128 bits of
- 	  security against collision attacks.
+ static inline void pmd_free (pmd_t *pmd)
+ {
++	pmd_t *shadow_pmd = get_shadow_pmd(pmd);
++
++	if (shadow_pmd)
++		free_pages((unsigned long) shadow_pmd, PMD_ALLOC_ORDER);
+ 	free_pages((unsigned long) pmd, PMD_ALLOC_ORDER);
+ }
  
--config CRYPTO_SHA256_S390
--	tristate "SHA256 digest algorithm (s390)"
--	depends on S390
--	select CRYPTO_ALGAPI
--	help
--	  This is the s390 hardware accelerated implementation of the
--	  SHA256 secure hash standard (DFIPS 180-2).
--
--	  This version of SHA implements a 256 bit hash with 128 bits of
--	  security against collision attacks.
--
- config CRYPTO_SHA512
- 	tristate "SHA384 and SHA512 digest algorithms"
- 	select CRYPTO_ALGAPI
-@@ -187,14 +168,6 @@ config CRYPTO_DES
- 	help
- 	  DES cipher algorithm (FIPS 46-2), and Triple DES EDE (FIPS 46-3).
+@@ -95,11 +126,22 @@ static inline void pmd_free (pmd_t *pmd)
+ 		pmd_free(pmd);			\
+ 	 } while (0)
  
--config CRYPTO_DES_S390
--	tristate "DES and Triple DES cipher algorithms (s390)"
--	depends on S390
--	select CRYPTO_ALGAPI
--	select CRYPTO_BLKCIPHER
--	help
--	  DES cipher algorithm (FIPS 46-2), and Triple DES EDE (FIPS 46-3).
--
- config CRYPTO_BLOWFISH
- 	tristate "Blowfish cipher algorithm"
- 	select CRYPTO_ALGAPI
-@@ -336,28 +309,6 @@ config CRYPTO_AES_X86_64
+-static inline void pgd_populate(struct mm_struct *mm, pgd_t *pgd, pmd_t *pmd)
++static inline void
++pgd_populate_kernel(struct mm_struct *mm, pgd_t *pgd, pmd_t *pmd)
+ {
+ 	pgd_val(*pgd) = _PGD_ENTRY | __pa(pmd);
+ }
  
- 	  See <http://csrc.nist.gov/encryption/aes/> for more information.
++static inline void pgd_populate(struct mm_struct *mm, pgd_t *pgd, pmd_t *pmd)
++{
++	pgd_t *shadow_pgd = get_shadow_pgd(pgd);
++	pmd_t *shadow_pmd = get_shadow_pmd(pmd);
++
++	if (shadow_pgd && shadow_pmd)
++		pgd_populate_kernel(mm, shadow_pgd, shadow_pmd);
++	pgd_populate_kernel(mm, pgd, pmd);
++}
++
+ #endif /* __s390x__ */
  
--config CRYPTO_AES_S390
--	tristate "AES cipher algorithms (s390)"
--	depends on S390
--	select CRYPTO_ALGAPI
--	select CRYPTO_BLKCIPHER
--	help
--	  This is the s390 hardware accelerated implementation of the
--	  AES cipher algorithms (FIPS-197). AES uses the Rijndael
--	  algorithm.
--
--	  Rijndael appears to be consistently a very good performer in
--	  both hardware and software across a wide range of computing
--	  environments regardless of its use in feedback or non-feedback
--	  modes. Its key setup time is excellent, and its key agility is
--	  good. Rijndael's very low memory requirements make it very well
--	  suited for restricted-space environments, in which it also
--	  demonstrates excellent performance. Rijndael's operations are
--	  among the easiest to defend against power and timing attacks.
--
--	  On s390 the System z9-109 currently only supports the key size
--	  of 128 bit.
--
- config CRYPTO_CAST5
- 	tristate "CAST5 (CAST-128) cipher algorithm"
- 	select CRYPTO_ALGAPI
+ static inline void 
+@@ -119,7 +161,13 @@ pmd_populate_kernel(struct mm_struct *mm
+ static inline void
+ pmd_populate(struct mm_struct *mm, pmd_t *pmd, struct page *page)
+ {
+-	pmd_populate_kernel(mm, pmd, (pte_t *)page_to_phys(page));
++	pte_t *pte = (pte_t *)page_to_phys(page);
++	pmd_t *shadow_pmd = get_shadow_pmd(pmd);
++	pte_t *shadow_pte = get_shadow_pte(pte);
++
++	pmd_populate_kernel(mm, pmd, pte);
++	if (shadow_pmd && shadow_pte)
++		pmd_populate_kernel(mm, shadow_pmd, shadow_pte);
+ }
+ 
+ /*
+@@ -133,6 +181,17 @@ pte_alloc_one_kernel(struct mm_struct *m
+ 
+ 	if (!pte)
+ 		return NULL;
++	if (s390_noexec) {
++		pte_t *shadow_pte = (pte_t *)
++			__get_free_page(GFP_KERNEL|__GFP_REPEAT);
++		struct page *page = virt_to_page(pte);
++
++		if (!shadow_pte) {
++			free_page((unsigned long) pte);
++			return NULL;
++		}
++		page->lru.next = (void *) shadow_pte;
++	}
+ 	for (i=0; i < PTRS_PER_PTE; i++) {
+ 		pte_clear(mm, vmaddr, pte + i);
+ 		vmaddr += PAGE_SIZE;
+@@ -151,14 +210,30 @@ pte_alloc_one(struct mm_struct *mm, unsi
+ 
+ static inline void pte_free_kernel(pte_t *pte)
+ {
+-        free_page((unsigned long) pte);
++	pte_t *shadow_pte = get_shadow_pte(pte);
++
++	if (shadow_pte)
++		free_page((unsigned long) shadow_pte);
++	free_page((unsigned long) pte);
+ }
+ 
+ static inline void pte_free(struct page *pte)
+ {
+-        __free_page(pte);
+-}
++	struct page *shadow_page = get_shadow_page(pte);
+ 
+-#define __pte_free_tlb(tlb,pte) tlb_remove_page(tlb,pte)
++	if (shadow_page)
++		__free_page(shadow_page);
++	__free_page(pte);
++}
++
++#define __pte_free_tlb(tlb, pte)					\
++({									\
++	struct mmu_gather *__tlb = (tlb);				\
++	struct page *__pte = (pte);					\
++	struct page *shadow_page = get_shadow_page(__pte);		\
++	if (shadow_page)						\
++		tlb_remove_page(__tlb, shadow_page);			\
++	tlb_remove_page(__tlb, __pte);					\
++})
+ 
+ #endif /* _S390_PGALLOC_H */
+diff -urpN linux-2.6/include/asm-s390/pgtable.h linux-2.6-patched/include/asm-s390/pgtable.h
+--- linux-2.6/include/asm-s390/pgtable.h	2007-01-26 17:27:47.000000000 +0100
++++ linux-2.6-patched/include/asm-s390/pgtable.h	2007-01-26 17:29:29.000000000 +0100
+@@ -224,6 +224,8 @@ extern unsigned long vmalloc_end;
+ #define _PAGE_TYPE_FILE		0x601	/* bit 0x002 is used for offset !! */
+ #define _PAGE_TYPE_RO		0x200
+ #define _PAGE_TYPE_RW		0x000
++#define _PAGE_TYPE_EX_RO	0x202
++#define _PAGE_TYPE_EX_RW	0x002
+ 
+ /*
+  * PTE type bits are rather complicated. handle_pte_fault uses pte_present,
+@@ -244,11 +246,13 @@ extern unsigned long vmalloc_end;
+  * _PAGE_TYPE_FILE	11?1   ->   11?1
+  * _PAGE_TYPE_RO	0100   ->   1100
+  * _PAGE_TYPE_RW	0000   ->   1000
++ * _PAGE_TYPE_EX_RO	0110   ->   1110
++ * _PAGE_TYPE_EX_RW	0010   ->   1010
+  *
+- * pte_none is true for bits combinations 1000, 1100
++ * pte_none is true for bits combinations 1000, 1010, 1100, 1110
+  * pte_present is true for bits combinations 0000, 0010, 0100, 0110, 1001
+  * pte_file is true for bits combinations 1101, 1111
+- * swap pte is 1011 and 0001, 0011, 0101, 0111, 1010 and 1110 are invalid.
++ * swap pte is 1011 and 0001, 0011, 0101, 0111 are invalid.
+  */
+ 
+ #ifndef __s390x__
+@@ -313,33 +317,100 @@ extern unsigned long vmalloc_end;
+ #define PAGE_NONE	__pgprot(_PAGE_TYPE_NONE)
+ #define PAGE_RO		__pgprot(_PAGE_TYPE_RO)
+ #define PAGE_RW		__pgprot(_PAGE_TYPE_RW)
++#define PAGE_EX_RO	__pgprot(_PAGE_TYPE_EX_RO)
++#define PAGE_EX_RW	__pgprot(_PAGE_TYPE_EX_RW)
+ 
+ #define PAGE_KERNEL	PAGE_RW
+ #define PAGE_COPY	PAGE_RO
+ 
+ /*
+- * The S390 can't do page protection for execute, and considers that the
+- * same are read. Also, write permissions imply read permissions. This is
+- * the closest we can get..
++ * Dependent on the EXEC_PROTECT option s390 can do execute protection.
++ * Write permission always implies read permission. In theory with a
++ * primary/secondary page table execute only can be implemented but
++ * it would cost an additional bit in the pte to distinguish all the
++ * different pte types. To avoid that execute permission currently
++ * implies read permission as well.
+  */
+          /*xwr*/
+ #define __P000	PAGE_NONE
+ #define __P001	PAGE_RO
+ #define __P010	PAGE_RO
+ #define __P011	PAGE_RO
+-#define __P100	PAGE_RO
+-#define __P101	PAGE_RO
+-#define __P110	PAGE_RO
+-#define __P111	PAGE_RO
++#define __P100	PAGE_EX_RO
++#define __P101	PAGE_EX_RO
++#define __P110	PAGE_EX_RO
++#define __P111	PAGE_EX_RO
+ 
+ #define __S000	PAGE_NONE
+ #define __S001	PAGE_RO
+ #define __S010	PAGE_RW
+ #define __S011	PAGE_RW
+-#define __S100	PAGE_RO
+-#define __S101	PAGE_RO
+-#define __S110	PAGE_RW
+-#define __S111	PAGE_RW
++#define __S100	PAGE_EX_RO
++#define __S101	PAGE_EX_RO
++#define __S110	PAGE_EX_RW
++#define __S111	PAGE_EX_RW
++
++#ifndef __s390x__
++# define PMD_SHADOW_SHIFT	1
++# define PGD_SHADOW_SHIFT	1
++#else /* __s390x__ */
++# define PMD_SHADOW_SHIFT	2
++# define PGD_SHADOW_SHIFT	2
++#endif /* __s390x__ */
++
++static inline struct page *get_shadow_page(struct page *page)
++{
++	if (s390_noexec && !list_empty(&page->lru))
++		return virt_to_page(page->lru.next);
++	return NULL;
++}
++
++static inline pte_t *get_shadow_pte(pte_t *ptep)
++{
++	unsigned long pteptr = (unsigned long) (ptep);
++
++	if (s390_noexec) {
++		unsigned long offset = pteptr & (PAGE_SIZE - 1);
++		void *addr = (void *) (pteptr ^ offset);
++		struct page *page = virt_to_page(addr);
++		if (!list_empty(&page->lru))
++			return (pte_t *) ((unsigned long) page->lru.next |
++								offset);
++	}
++	return NULL;
++}
++
++static inline pmd_t *get_shadow_pmd(pmd_t *pmdp)
++{
++	unsigned long pmdptr = (unsigned long) (pmdp);
++
++	if (s390_noexec) {
++		unsigned long offset = pmdptr &
++				((PAGE_SIZE << PMD_SHADOW_SHIFT) - 1);
++		void *addr = (void *) (pmdptr ^ offset);
++		struct page *page = virt_to_page(addr);
++		if (!list_empty(&page->lru))
++			return (pmd_t *) ((unsigned long) page->lru.next |
++								offset);
++	}
++	return NULL;
++}
++
++static inline pgd_t *get_shadow_pgd(pgd_t *pgdp)
++{
++	unsigned long pgdptr = (unsigned long) (pgdp);
++
++	if (s390_noexec) {
++		unsigned long offset = pgdptr &
++				((PAGE_SIZE << PGD_SHADOW_SHIFT) - 1);
++		void *addr = (void *) (pgdptr ^ offset);
++		struct page *page = virt_to_page(addr);
++		if (!list_empty(&page->lru))
++			return (pgd_t *) ((unsigned long) page->lru.next |
++								offset);
++	}
++	return NULL;
++}
+ 
+ /*
+  * Certain architectures need to do special things when PTEs
+@@ -348,7 +419,16 @@ extern unsigned long vmalloc_end;
+  */
+ static inline void set_pte(pte_t *pteptr, pte_t pteval)
+ {
++	pte_t *shadow_pte = get_shadow_pte(pteptr);
++
+ 	*pteptr = pteval;
++	if (shadow_pte) {
++		if (!(pte_val(pteval) & _PAGE_INVALID) &&
++		    (pte_val(pteval) & _PAGE_SWX))
++			pte_val(*shadow_pte) = pte_val(pteval) | _PAGE_RO;
++		else
++			pte_val(*shadow_pte) = _PAGE_TYPE_EMPTY;
++	}
+ }
+ #define set_pte_at(mm,addr,ptep,pteval) set_pte(ptep,pteval)
+ 
+@@ -466,7 +546,7 @@ static inline int pte_read(pte_t pte)
+ 
+ static inline void pgd_clear(pgd_t * pgdp)      { }
+ 
+-static inline void pmd_clear(pmd_t * pmdp)
++static inline void pmd_clear_kernel(pmd_t * pmdp)
+ {
+ 	pmd_val(pmdp[0]) = _PAGE_TABLE_INV;
+ 	pmd_val(pmdp[1]) = _PAGE_TABLE_INV;
+@@ -474,24 +554,55 @@ static inline void pmd_clear(pmd_t * pmd
+ 	pmd_val(pmdp[3]) = _PAGE_TABLE_INV;
+ }
+ 
++static inline void pmd_clear(pmd_t * pmdp)
++{
++	pmd_t *shadow_pmd = get_shadow_pmd(pmdp);
++
++	pmd_clear_kernel(pmdp);
++	if (shadow_pmd)
++		pmd_clear_kernel(shadow_pmd);
++}
++
+ #else /* __s390x__ */
+ 
+-static inline void pgd_clear(pgd_t * pgdp)
++static inline void pgd_clear_kernel(pgd_t * pgdp)
+ {
+ 	pgd_val(*pgdp) = _PGD_ENTRY_INV | _PGD_ENTRY;
+ }
+ 
+-static inline void pmd_clear(pmd_t * pmdp)
++static inline void pgd_clear(pgd_t * pgdp)
++{
++	pgd_t *shadow_pgd = get_shadow_pgd(pgdp);
++
++	pgd_clear_kernel(pgdp);
++	if (shadow_pgd)
++		pgd_clear_kernel(shadow_pgd);
++}
++
++static inline void pmd_clear_kernel(pmd_t * pmdp)
+ {
+ 	pmd_val(*pmdp) = _PMD_ENTRY_INV | _PMD_ENTRY;
+ 	pmd_val1(*pmdp) = _PMD_ENTRY_INV | _PMD_ENTRY;
+ }
+ 
++static inline void pmd_clear(pmd_t * pmdp)
++{
++	pmd_t *shadow_pmd = get_shadow_pmd(pmdp);
++
++	pmd_clear_kernel(pmdp);
++	if (shadow_pmd)
++		pmd_clear_kernel(shadow_pmd);
++}
++
+ #endif /* __s390x__ */
+ 
+ static inline void pte_clear(struct mm_struct *mm, unsigned long addr, pte_t *ptep)
+ {
++	pte_t *shadow_pte = get_shadow_pte(ptep);
++
+ 	pte_val(*ptep) = _PAGE_TYPE_EMPTY;
++	if (shadow_pte)
++		pte_val(*shadow_pte) = _PAGE_TYPE_EMPTY;
+ }
+ 
+ /*
+@@ -609,8 +720,11 @@ ptep_clear_flush(struct vm_area_struct *
+ 		 unsigned long address, pte_t *ptep)
+ {
+ 	pte_t pte = *ptep;
++	pte_t *shadow_pte = get_shadow_pte(ptep);
+ 
+ 	__ptep_ipte(address, ptep);
++	if (shadow_pte)
++		__ptep_ipte(address, shadow_pte);
+ 	return pte;
+ }
+ 
+diff -urpN linux-2.6/include/asm-s390/processor.h linux-2.6-patched/include/asm-s390/processor.h
+--- linux-2.6/include/asm-s390/processor.h	2007-01-26 17:28:02.000000000 +0100
++++ linux-2.6-patched/include/asm-s390/processor.h	2007-01-26 17:29:29.000000000 +0100
+@@ -144,7 +144,7 @@ struct stack_frame {
+ #ifndef __s390x__
+ 
+ #define start_thread(regs, new_psw, new_stackp) do {            \
+-        regs->psw.mask  = PSW_USER_BITS;                        \
++	regs->psw.mask	= psw_user_bits;			\
+         regs->psw.addr  = new_psw | PSW_ADDR_AMODE;             \
+         regs->gprs[15]  = new_stackp ;                          \
+ } while (0)
+@@ -152,13 +152,13 @@ struct stack_frame {
+ #else /* __s390x__ */
+ 
+ #define start_thread(regs, new_psw, new_stackp) do {            \
+-        regs->psw.mask  = PSW_USER_BITS;                        \
++	regs->psw.mask	= psw_user_bits;			\
+         regs->psw.addr  = new_psw;                              \
+         regs->gprs[15]  = new_stackp;                           \
+ } while (0)
+ 
+ #define start_thread31(regs, new_psw, new_stackp) do {          \
+-	regs->psw.mask  = PSW_USER32_BITS;			\
++	regs->psw.mask	= psw_user32_bits;			\
+         regs->psw.addr  = new_psw;                              \
+         regs->gprs[15]  = new_stackp;                           \
+ } while (0)
+diff -urpN linux-2.6/include/asm-s390/ptrace.h linux-2.6-patched/include/asm-s390/ptrace.h
+--- linux-2.6/include/asm-s390/ptrace.h	2006-11-29 22:57:37.000000000 +0100
++++ linux-2.6-patched/include/asm-s390/ptrace.h	2007-01-26 17:29:29.000000000 +0100
+@@ -266,17 +266,12 @@ typedef struct 
+ #define PSW_ASC_SECONDARY	0x0000800000000000UL
+ #define PSW_ASC_HOME		0x0000C00000000000UL
+ 
+-#define PSW_USER32_BITS (PSW_BASE32_BITS | PSW_MASK_DAT | PSW_ASC_HOME | \
+-			 PSW_MASK_IO | PSW_MASK_EXT | PSW_MASK_MCHECK | \
+-			 PSW_MASK_PSTATE | PSW_DEFAULT_KEY)
++extern long psw_user32_bits;
+ 
+ #endif /* __s390x__ */
+ 
+-#define PSW_KERNEL_BITS	(PSW_BASE_BITS | PSW_MASK_DAT | PSW_ASC_PRIMARY | \
+-			 PSW_MASK_MCHECK | PSW_DEFAULT_KEY)
+-#define PSW_USER_BITS	(PSW_BASE_BITS | PSW_MASK_DAT | PSW_ASC_HOME | \
+-			 PSW_MASK_IO | PSW_MASK_EXT | PSW_MASK_MCHECK | \
+-			 PSW_MASK_PSTATE | PSW_DEFAULT_KEY)
++extern long psw_kernel_bits;
++extern long psw_user_bits;
+ 
+ /* This macro merges a NEW PSW mask specified by the user into
+    the currently active PSW mask CURRENT, modifying only those
+diff -urpN linux-2.6/include/asm-s390/setup.h linux-2.6-patched/include/asm-s390/setup.h
+--- linux-2.6/include/asm-s390/setup.h	2007-01-26 17:27:47.000000000 +0100
++++ linux-2.6-patched/include/asm-s390/setup.h	2007-01-26 17:29:29.000000000 +0100
+@@ -42,6 +42,18 @@ struct mem_chunk {
+ 
+ extern struct mem_chunk memory_chunk[];
+ 
++#ifdef CONFIG_S390_SWITCH_AMODE
++extern unsigned int switch_amode;
++#else
++#define switch_amode	(0)
++#endif
++
++#ifdef CONFIG_S390_EXEC_PROTECT
++extern unsigned int s390_noexec;
++#else
++#define s390_noexec	(0)
++#endif
++
+ /*
+  * Machine features detected in head.S
+  */
+diff -urpN linux-2.6/include/asm-s390/smp.h linux-2.6-patched/include/asm-s390/smp.h
+--- linux-2.6/include/asm-s390/smp.h	2007-01-26 17:27:47.000000000 +0100
++++ linux-2.6-patched/include/asm-s390/smp.h	2007-01-26 17:29:30.000000000 +0100
+@@ -110,7 +110,7 @@ smp_call_function_on(void (*func) (void 
+ static inline void smp_send_stop(void)
+ {
+ 	/* Disable all interrupts/machine checks */
+-	__load_psw_mask(PSW_KERNEL_BITS & ~PSW_MASK_MCHECK);
++	__load_psw_mask(psw_kernel_bits & ~PSW_MASK_MCHECK);
+ }
+ 
+ #define smp_cpu_not_running(cpu)	1
+diff -urpN linux-2.6/include/asm-s390/system.h linux-2.6-patched/include/asm-s390/system.h
+--- linux-2.6/include/asm-s390/system.h	2007-01-26 17:27:36.000000000 +0100
++++ linux-2.6-patched/include/asm-s390/system.h	2007-01-26 17:29:30.000000000 +0100
+@@ -373,8 +373,8 @@ __set_psw_mask(unsigned long mask)
+ 	__load_psw_mask(mask | (__raw_local_irq_stosm(0x00) & ~(-1UL >> 8)));
+ }
+ 
+-#define local_mcck_enable()  __set_psw_mask(PSW_KERNEL_BITS)
+-#define local_mcck_disable() __set_psw_mask(PSW_KERNEL_BITS & ~PSW_MASK_MCHECK)
++#define local_mcck_enable()  __set_psw_mask(psw_kernel_bits)
++#define local_mcck_disable() __set_psw_mask(psw_kernel_bits & ~PSW_MASK_MCHECK)
+ 
+ #ifdef CONFIG_SMP
+ 
+diff -urpN linux-2.6/include/asm-s390/tlbflush.h linux-2.6-patched/include/asm-s390/tlbflush.h
+--- linux-2.6/include/asm-s390/tlbflush.h	2006-11-29 22:57:37.000000000 +0100
++++ linux-2.6-patched/include/asm-s390/tlbflush.h	2007-01-26 17:29:30.000000000 +0100
+@@ -3,6 +3,7 @@
+ 
+ #include <linux/mm.h>
+ #include <asm/processor.h>
++#include <asm/pgalloc.h>
+ 
+ /*
+  * TLB flushing:
+@@ -102,6 +103,14 @@ static inline void __flush_tlb_mm(struct
+ 	if (unlikely(cpus_empty(mm->cpu_vm_mask)))
+ 		return;
+ 	if (MACHINE_HAS_IDTE) {
++		pgd_t *shadow_pgd = get_shadow_pgd(mm->pgd);
++
++		if (shadow_pgd) {
++			asm volatile(
++				"	.insn	rrf,0xb98e0000,0,%0,%1,0"
++				: : "a" (2048),
++				"a" (__pa(shadow_pgd) & PAGE_MASK) : "cc" );
++		}
+ 		asm volatile(
+ 			"	.insn	rrf,0xb98e0000,0,%0,%1,0"
+ 			: : "a" (2048), "a" (__pa(mm->pgd)&PAGE_MASK) : "cc");
+diff -urpN linux-2.6/include/asm-s390/uaccess.h linux-2.6-patched/include/asm-s390/uaccess.h
+--- linux-2.6/include/asm-s390/uaccess.h	2007-01-26 17:27:36.000000000 +0100
++++ linux-2.6-patched/include/asm-s390/uaccess.h	2007-01-26 17:29:30.000000000 +0100
+@@ -90,6 +90,8 @@ struct uaccess_ops {
+ extern struct uaccess_ops uaccess;
+ extern struct uaccess_ops uaccess_std;
+ extern struct uaccess_ops uaccess_mvcos;
++extern struct uaccess_ops uaccess_mvcos_switch;
++extern struct uaccess_ops uaccess_pt;
+ 
+ static inline int __put_user_fn(size_t size, void __user *ptr, void *x)
+ {
