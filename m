@@ -1,80 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161111AbXAZSEL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161114AbXAZSE5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161111AbXAZSEL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jan 2007 13:04:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161116AbXAZSEK
+	id S1161114AbXAZSE5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jan 2007 13:04:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161117AbXAZSE5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jan 2007 13:04:10 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:44072 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161111AbXAZSEJ (ORCPT
+	Fri, 26 Jan 2007 13:04:57 -0500
+Received: from ug-out-1314.google.com ([66.249.92.168]:42499 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161114AbXAZSE4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jan 2007 13:04:09 -0500
-Date: Sat, 27 Jan 2007 03:01:43 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Andrew Morton <akpm@osdl.org>
-Cc: clameter@sgi.com, aubreylee@gmail.com, svaidy@linux.vnet.ibm.com,
-       nickpiggin@yahoo.com.au, rgetz@blackfin.uclinux.org,
-       Michael.Hennerich@analog.com, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC] Limit the size of the pagecache
-Message-Id: <20070127030143.3059dbb0.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20070126022955.f9b6b11f.akpm@osdl.org>
-References: <Pine.LNX.4.64.0701231645260.5239@schroedinger.engr.sgi.com>
-	<20070124121318.6874f003.kamezawa.hiroyu@jp.fujitsu.com>
-	<Pine.LNX.4.64.0701232028520.6820@schroedinger.engr.sgi.com>
-	<20070124141510.7775829c.kamezawa.hiroyu@jp.fujitsu.com>
-	<20070126022955.f9b6b11f.akpm@osdl.org>
-Organization: Fujitsu
-X-Mailer: Sylpheed version 2.2.0 (GTK+ 2.6.10; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 26 Jan 2007 13:04:56 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding:from;
+        b=ogvSEX2VbPGc6KHQ4QFOghRmQS9A9bWh1M5yfCEv4SFfUmlpZ1sfIdHRZKBFa+tb6HommffMLdMl8C68dQByl7S6qq2OuSmI7rHiPYKVPX/KsSQQcg1d+0Cy2i5PO58qMotgOSy6NhdOMm+AzoZn5QP/q/fzliJWfYIBCFQCdAs=
+Message-ID: <45BA42B9.7020203@googlemail.com>
+Date: Fri, 26 Jan 2007 19:04:41 +0100
+User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+CC: Andrew Morton <akpm@osdl.org>, Christoph Lameter <clameter@sgi.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>
+Subject: Re: mm snapshot broken-out-2007-01-26-00-36.tar.gz uploaded
+References: <200701260837.l0Q8blBr011622@shell0.pdx.osdl.net>
+In-Reply-To: <200701260837.l0Q8blBr011622@shell0.pdx.osdl.net>
+X-Enigmail-Version: 0.94.1.1
+Content-Type: text/plain; charset=ISO-8859-2
+Content-Transfer-Encoding: 8bit
+From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 26 Jan 2007 02:29:55 -0800
-Andrew Morton <akpm@osdl.org> wrote:
+Hi Christoph,
 
-> On Wed, 24 Jan 2007 14:15:10 +0900
-> KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+akpm@osdl.org napisa³(a):
+> The mm snapshot broken-out-2007-01-26-00-36.tar.gz has been uploaded to
 > 
-> > - One for stability
-> >   When a customer constructs their detabase(Oracle), the system often goes to oom.
-> >   This is because that the system cannot allocate DMA_ZOME memory for 32bit device.
-> >   (USB or e100)
-> >   Not allowing to use almost all pages as page cache (for temporal use) will be some help.
-> >   (Note: construction DB on ext3....so all writes are serialized and the system couldn't
-> >    free page cache.)
+>    ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/mm/broken-out-2007-01-26-00-36.tar.gz
 > 
-> I'm surprised that any reasonable driver has a dependency on ZONE_DMA.  Are
-> you sure?  Send full oom-killer output, please.
-> 
-> 
-Our ia64 server's USB/e100 device uses 32bit-PCI, so sometimes OOM happens on DMA zone.
-(ia64's ZONE_DMA is 0-4G area.)
 
-But very sorry....I was confused.
+use-zvc-for-free_pages.patch
+breaks swsusp
 
-I looked the issue above again and found ZONE_NORMAL/x86 was exhausted.
+kernel/power/swsusp.c: In function 'swsusp_shrink_memory':
+kernel/power/swsusp.c:233: error: 'struct zone' has no member named 'free_pages'
+kernel/power/swsusp.c:235: error: 'struct zone' has no member named 'free_pages'
+make[2]: *** [kernel/power/swsusp.o] Error 1
+make[1]: *** [kernel/power] Error 2
+make: *** [kernel] Error 2
 
-This was interesiting incident,
+Regards,
+Michal
 
-Constructing DB on 4Gb system has no problem.
-Constructing DB on 8Gb system always causes OOM.
-
-I asked the users to change DB's parameter. (this happened on RHEL4/linux-2.6.9 series)
-
-
-> >   And...some customers want to keep memory Free as much as possible.
-> >   99% memory usage makes insecure them ;)
-> 
-> Tell them to do "echo 3 > /proc/sys/vm/drop_caches", then wait three minutes?
-
-Ah, maybe we can use it on RHEL5. We'll test it. thank you.
-
-Thanks,
--Kamezawa
-
-
-
+-- 
+Michal K. K. Piotrowski
+LTG - Linux Testers Group
+(http://www.stardust.webpages.pl/ltg/)
