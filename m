@@ -1,143 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030494AbXAZO3s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030534AbXAZOcO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030494AbXAZO3s (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jan 2007 09:29:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030499AbXAZO3r
+	id S1030534AbXAZOcO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jan 2007 09:32:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030533AbXAZOcO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jan 2007 09:29:47 -0500
-Received: from calculon.skynet.ie ([193.1.99.88]:37428 "EHLO
-	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030494AbXAZO3q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jan 2007 09:29:46 -0500
-Date: Fri, 26 Jan 2007 14:29:44 +0000 (GMT)
-From: Mel Gorman <mel@csn.ul.ie>
-X-X-Sender: mel@skynet.skynet.ie
-To: Andrew Morton <akpm@osdl.org>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       Christoph Lameter <clameter@engr.sgi.com>
-Subject: Re: [PATCH 0/8] Create ZONE_MOVABLE to partition memory between
- movable and non-movable pages
-In-Reply-To: <20070126030753.03529e7a.akpm@osdl.org>
-Message-ID: <Pine.LNX.4.64.0701261334240.19245@skynet.skynet.ie>
-References: <20070125234458.28809.5412.sendpatchset@skynet.skynet.ie>
- <20070126030753.03529e7a.akpm@osdl.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Fri, 26 Jan 2007 09:32:14 -0500
+Received: from nic2.axis.se ([193.13.178.10]:34090 "EHLO krynn.se.axis.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030606AbXAZOcN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jan 2007 09:32:13 -0500
+Date: Fri, 26 Jan 2007 15:31:49 +0100
+Message-Id: <200701261431.l0QEVnbL003112@ignucius.se.axis.com>
+From: Hans-Peter Nilsson <hans-peter.nilsson@axis.com>
+To: david-b@pacbell.net
+CC: hans-peter.nilsson@axis.com, linux-kernel@vger.kernel.org,
+       mikael.starvik@axis.com, spi-devel-general@lists.sourceforge.net
+In-reply-to: <200701250459.37728.david-b@pacbell.net> (message from David
+	Brownell on Thu, 25 Jan 2007 04:59:37 -0800)
+Subject: Re: 5 patches: updates to SPI and mmc_spi, kernel 2.6.19
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 26 Jan 2007, Andrew Morton wrote:
+> From: David Brownell <david-b@pacbell.net>
+> Date: Thu, 25 Jan 2007 04:59:37 -0800
 
-> On Thu, 25 Jan 2007 23:44:58 +0000 (GMT)
-> Mel Gorman <mel@csn.ul.ie> wrote:
->
->> The following 8 patches against 2.6.20-rc4-mm1 create a zone called
->> ZONE_MOVABLE
->
-> Argh.  These surely get all tangled up with the
-> make-zones-optional-by-adding-zillions-of-ifdef patches:
->
+> So to summarize ... you now have MMC-over-SPI working on CRIS
+> hardware, with these patches?
 
-There may be some entertainment there all right. I didn't see any obvious 
-way of avoiding collisions with those patches but for what it's worth, 
-ZONE_MOVABLE could also be made optional.
+Yes.  FWIW, we'll ship with our ETRAX FS developer boards, soon
+enough (in a week or so, knock-on-wood).
 
-In this patchset, I made no assumptions about the number of zones other 
-than the value of MAX_NR_ZONES. There should be no critical collisions but 
-I'll look through this patch list and see what I can spot.
+>   Can you yet run filesystem
+> stress tests with ext3 on such an MMC card,
 
-> deal-with-cases-of-zone_dma-meaning-the-first-zone.patch
+I'd have to configure it in, but I guess I could, if you're not
+happy with just vfat.  I just copied (tarred both to file, and
+separately copied the tree through tar) 174 MeB from a USB stick
+to separately a 512 MeB SDcard and a 2 GiB MMC card and they
+both read out correctly from an (USB) SDcard reader connected to
+my PC.  Is there a specific test you have in mind?
 
-This patch looks ok and looks like it stands on it's own.
+(I finally hashed out the "DMA" problems I've had.  I mistakenly
+thought that a wait_for_completion_timeout return of 0 meant
+that the completion didn't happen, grr!  Buggy or just confusing
+API?  Kind-of the same problem as with your scanbyte timeout!
+Looks like this kind of bug is elsewhere in the kernel too.)
 
-> introduce-config_zone_dma.patch
+> or is this more at
+> the level of everything working with light/early test loads,
+> so it's time to see if other folk can reproduce your results?
 
-ok, no collisions here but obviously this patch does not stand on it's 
-own.
+What's the difference? :-)  (Don't forget, it's considered ok to
+include experimental drivers on developer boards.)
 
-> optional-zone_dma-in-the-vm.patch
-
-There are collisions here with the __ZONE_COUNT stuff but it's not 
-difficult to work around.
-
-> optional-zone_dma-in-the-vm-no-gfp_dma-check-in-the-slab-if-no-config_zone_dma-is-set.patch
-> optional-zone_dma-in-the-vm-no-gfp_dma-check-in-the-slab-if-no-config_zone_dma-is-set-reduce-config_zone_dma-ifdefs.patch
-
-There is no cross-over here with the ZONE_MOVABLE patches. They are 
-messing around with slab
-
-> optional-zone_dma-for-ia64.patch
-
-No collision here
-
-> remove-zone_dma-remains-from-parisc.patch
-> remove-zone_dma-remains-from-sh-sh64.patch
-
-No collisions here either. I see that there were discussions about Power 
-potentially doing something similar.
-
-> set-config_zone_dma-for-arches-with-generic_isa_dma.patch
-
-No collisions
-
-> zoneid-fix-up-calculations-for-zoneid_pgshift.patch
->
-
-Fun, but no collisions.
-
-To my suprise, I only spotted one major conflict point with 
-optional-zone_dma-in-the-vm.patch and that should be easy enough to 
-resolve. What I could do is break up one of my patches into 
-most-of-the-patch and the-part-that-may-conflict-with-optional-dma-zone . 
-The smaller part would then change depending on whether the optional DMA 
-zone work is present. Would that be any help?
-
-> My objections to those patches:
->
-> - They add zillions of ifdefs
->
-> - They make the VM's behaviour diverge between different platforms and
->  between differen configs on the same platforms, and hence degrade
->  maintainability and increase complexity.
->
-
-I haven't thought about it much so I probably am missing something. The 
-major difference I see is when only one zone is present. In that case, a 
-number of loops presumably get optimised away and the behavior is very 
-different (presumably better although you point out no figures exist to 
-prove it). Where there are two or more zones, the code paths should be 
-similar whether there are 2, 3 or 4 zones present.
-
-As the common platforms will always have more than one zone, it'll be 
-heavily tested and I'm guessing that distros are always going to have to 
-ship kernels with ZONE_DMA for the devices that require it. The only 
-platform I see that may have problems at the moment is IA64 which looks 
-like the only platform that can have one and only one zone. I am guessing 
-that Christoph will catch problems here fairly quickly although a 
-non-optional ZONE_MOVABLE would throw a spanner into the works somewhat.
-
-> - We kicked around some quite different ways of implementing the same
->  things, but nothing came of it.  iirc, one was to remove the hard-coded
->  zones altogether and rework all the MM to operate in terms of
->
-> 	for (idx = 0; idx < NUMBER_OF_ZONES; idx++)
-> 		...
->
-
-hmm. Assuming the aim is to have a situation where all zone-related loops 
-are optimised away at compile-time, it's hard to see an alternative that 
-works. Any dynamic way of creating zone at boot time will not have the 
-compile-time optimizations and any API that is page-range aware will 
-eventually hit the problems zones were made to solve (i.e. unmovable pages 
-locked in the lower address ranges).
-
-> - I haven't seen any hard numbers to justify the change.
->
-> So I want to drop them all.
->
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+brgds, H-P
