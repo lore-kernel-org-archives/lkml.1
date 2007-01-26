@@ -1,74 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752125AbXAZRx1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161058AbXAZRyH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752125AbXAZRx1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jan 2007 12:53:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752130AbXAZRx1
+	id S1161058AbXAZRyH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jan 2007 12:54:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161099AbXAZRyG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jan 2007 12:53:27 -0500
-Received: from calculon.skynet.ie ([193.1.99.88]:41786 "EHLO
-	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752128AbXAZRx0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jan 2007 12:53:26 -0500
-Date: Fri, 26 Jan 2007 17:53:24 +0000 (GMT)
-From: Mel Gorman <mel@csn.ul.ie>
-X-X-Sender: mel@skynet.skynet.ie
-To: Christoph Lameter <clameter@sgi.com>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/8] Allow huge page allocations to use GFP_HIGH_MOVABLE
-In-Reply-To: <Pine.LNX.4.64.0701260944270.7457@schroedinger.engr.sgi.com>
-Message-ID: <Pine.LNX.4.64.0701261747290.23091@skynet.skynet.ie>
-References: <20070125234458.28809.5412.sendpatchset@skynet.skynet.ie>
- <20070125234558.28809.21103.sendpatchset@skynet.skynet.ie>
- <Pine.LNX.4.64.0701260832260.6141@schroedinger.engr.sgi.com>
- <Pine.LNX.4.64.0701261649040.23091@skynet.skynet.ie>
- <Pine.LNX.4.64.0701260903110.6966@schroedinger.engr.sgi.com>
- <Pine.LNX.4.64.0701261720120.23091@skynet.skynet.ie>
- <Pine.LNX.4.64.0701260921310.7301@schroedinger.engr.sgi.com>
- <Pine.LNX.4.64.0701261727400.23091@skynet.skynet.ie>
- <Pine.LNX.4.64.0701260944270.7457@schroedinger.engr.sgi.com>
+	Fri, 26 Jan 2007 12:54:06 -0500
+Received: from lucidpixels.com ([75.144.35.66]:37526 "EHLO lucidpixels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161058AbXAZRyF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jan 2007 12:54:05 -0500
+Date: Fri, 26 Jan 2007 12:54:02 -0500 (EST)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+X-X-Sender: jpiszcz@p34.internal.lan
+To: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
+cc: Alan Piszcz <ap@solarrain.com>
+Subject: Kernel 2.6.19.2: Belkin UPS on Serial vs. USB
+Message-ID: <Pine.LNX.4.64.0701261250470.12467@p34.internal.lan>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 26 Jan 2007, Christoph Lameter wrote:
+When I disconnect my UPS from the wall, I have to wait 15-30 seconds 
+before the USB drier 'polls' this information and tells me that the UPS is 
+on battery power (via knutclient or syslog via nut):
 
-> On Fri, 26 Jan 2007, Mel Gorman wrote:
->
->> It's come up a few times and the converation is always fairly similar although
->> the thread http://lkml.org/lkml/2006/9/22/44 has interesting information on
->> the topic. There has been no serious discussion on whether anti-fragmentation
->> would help it or not. I think it would if atomic allocations were clustered
->> together because then jumbo frame allocations would cluster together in the
->> same MAX_ORDER blocks and tend to keep other allocations away.
->
-> They are clustered in both schemes together with other non movable allocs
-> right?
+ups@p34 POWER ALERT on Fri Jan 26 12:49:29 EST 2007
 
-For the jumbo frame problem, only the antifragmentation approach of 
-clustering types of pages together in MAX_ORDER blocks has any chance of 
-helping.
+With a serial connection, I would get the alerts IMMEDIATELY (0.5-1 
+seconds) after disconnecting the UPS.  My new machine does not have a 
+serial port built-in, only a serial header, and of course does not come 
+with an included cable, so I chose to use USB.
 
-> The problem is to defrag while atomic?
+My question is, how do I change the polling time for the USB subsystem to 
+match that of the serial port, or would I not want to do that for other 
+reasons?
 
-Worse, the problem is to have high order contiguous blocks free at the 
-time of allocation without reclaim or migration. If the allocations were 
-not atomic, anti-fragmentation as it is today would be enough.
+The reason I'd like to is I am not going to see any power alerts for 
+unless there is a power outage for longer than 15-30 seconds.
 
-By clustering atomic allocations together though, I would expect the jumbo 
-frames to be allocated and freed within the same area without interference 
-from other allocation types as long as min_free_kbytes was also set higher 
-than default. I lack the hardware to prove/disprove the idea though.
-
-> How is the zone based
-> concept different in that area from the max order block based one?
-
-The zone-based approach does nothing to help jumbo frame allocations. It 
-only helps hugepage allocations at runtime and potentially memory 
-hot-remove.
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Justin.
