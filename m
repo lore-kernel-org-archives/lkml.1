@@ -1,75 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030832AbXAZIvi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030838AbXAZJC1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030832AbXAZIvi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jan 2007 03:51:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030831AbXAZIvh
+	id S1030838AbXAZJC1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jan 2007 04:02:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030841AbXAZJC1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jan 2007 03:51:37 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:51980 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030832AbXAZIvg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jan 2007 03:51:36 -0500
-Date: Fri, 26 Jan 2007 00:51:17 -0800
-From: Andrew Morton <akpm@osdl.org>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+	Fri, 26 Jan 2007 04:02:27 -0500
+Received: from amsfep17-int.chello.nl ([213.46.243.15]:26248 "EHLO
+	amsfep13-int.chello.nl" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1030838AbXAZJC0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jan 2007 04:02:26 -0500
+Subject: Re: [PATCH] nfs: fix congestion control -v4
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Andrew Morton <akpm@osdl.org>
 Cc: Christoph Lameter <clameter@sgi.com>,
        Trond Myklebust <trond.myklebust@fys.uio.no>,
        linux-kernel@vger.kernel.org, linux-mm@kvack.org, pj@sgi.com
-Subject: Re: [PATCH] nfs: fix congestion control -v4
-Message-Id: <20070126005117.5e376c16.akpm@osdl.org>
-In-Reply-To: <1169798617.6189.83.camel@twins>
+In-Reply-To: <20070126005117.5e376c16.akpm@osdl.org>
 References: <20070116054743.15358.77287.sendpatchset@schroedinger.engr.sgi.com>
-	<20070116135325.3441f62b.akpm@osdl.org>
-	<1168985323.5975.53.camel@lappy>
-	<Pine.LNX.4.64.0701171158290.7397@schroedinger.engr.sgi.com>
-	<1169070763.5975.70.camel@lappy>
-	<1169070886.6523.8.camel@lade.trondhjem.org>
-	<1169126868.6197.55.camel@twins>
-	<1169135375.6105.15.camel@lade.trondhjem.org>
-	<1169199234.6197.129.camel@twins>
-	<1169212022.6197.148.camel@twins>
-	<Pine.LNX.4.64.0701190912540.14617@schroedinger.engr.sgi.com>
-	<1169229461.6197.154.camel@twins>
-	<1169231212.5775.29.camel@lade.trondhjem.org>
-	<1169276500.6197.159.camel@twins>
-	<1169482343.6083.7.camel@lade.trondhjem.org>
-	<1169739148.6189.68.camel@twins>
-	<20070125210950.bcdaa7f6.akpm@osdl.org>
-	<Pine.LNX.4.64.0701252130500.7147@schroedinger.engr.sgi.com>
-	<20070125220457.a761ae6a.akpm@osdl.org>
-	<1169798617.6189.83.camel@twins>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	 <20070116135325.3441f62b.akpm@osdl.org> <1168985323.5975.53.camel@lappy>
+	 <Pine.LNX.4.64.0701171158290.7397@schroedinger.engr.sgi.com>
+	 <1169070763.5975.70.camel@lappy>
+	 <1169070886.6523.8.camel@lade.trondhjem.org>
+	 <1169126868.6197.55.camel@twins>
+	 <1169135375.6105.15.camel@lade.trondhjem.org>
+	 <1169199234.6197.129.camel@twins> <1169212022.6197.148.camel@twins>
+	 <Pine.LNX.4.64.0701190912540.14617@schroedinger.engr.sgi.com>
+	 <1169229461.6197.154.camel@twins>
+	 <1169231212.5775.29.camel@lade.trondhjem.org>
+	 <1169276500.6197.159.camel@twins>
+	 <1169482343.6083.7.camel@lade.trondhjem.org>
+	 <1169739148.6189.68.camel@twins> <20070125210950.bcdaa7f6.akpm@osdl.org>
+	 <Pine.LNX.4.64.0701252130500.7147@schroedinger.engr.sgi.com>
+	 <20070125220457.a761ae6a.akpm@osdl.org> <1169798617.6189.83.camel@twins>
+	 <20070126005117.5e376c16.akpm@osdl.org>
+Content-Type: text/plain
+Date: Fri, 26 Jan 2007 10:01:47 +0100
+Message-Id: <1169802107.6189.90.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.8.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 26 Jan 2007 09:03:37 +0100
-Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+On Fri, 2007-01-26 at 00:51 -0800, Andrew Morton wrote:
 
-> On Thu, 2007-01-25 at 22:04 -0800, Andrew Morton wrote:
-> > On Thu, 25 Jan 2007 21:31:43 -0800 (PST)
-> > Christoph Lameter <clameter@sgi.com> wrote:
-> > 
-> > > On Thu, 25 Jan 2007, Andrew Morton wrote:
-> > > 
-> > > > atomic_t is 32-bit.  Put 16TB of memory under writeback and blam.
-> > > 
-> > > We have systems with 8TB main memory and are able to get to 16TB.
-> > 
-> > But I bet you don't use 4k pages on 'em ;)
-> > 
-> > > Better change it now.
-> > 
-> > yup.
+> A patch against next -mm would suit, thanks.
 > 
-> I can change to atomic_long_t but that would make this patch depend on
-> Mathieu Desnoyers' atomic.h patch series.
-> 
-> Do I send out a -v5 with this, or should I send an incremental patch
-> once that hits your tree?
+> (But we already use atomic_long_t in generic code?)
 
-A patch against next -mm would suit, thanks.
+but there is currently no atomic_long_{inc,dec}_return, or any
+atomic_long_*_return function for that matter.
 
-(But we already use atomic_long_t in generic code?)
+Mathieu adds these missing functions.
+
