@@ -1,69 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965602AbXAZJg6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161003AbXAZJh7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965602AbXAZJg6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jan 2007 04:36:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965618AbXAZJg6
+	id S1161003AbXAZJh7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jan 2007 04:37:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161006AbXAZJh6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jan 2007 04:36:58 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:3674 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S965602AbXAZJg5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jan 2007 04:36:57 -0500
-Date: Fri, 26 Jan 2007 09:36:43 +0000
-From: Pavel Machek <pavel@ucw.cz>
-To: Greg KH <gregkh@suse.de>
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@osdl.org>,
-       linux-kernel@vger.kernel.org, Linus Torvalds <torvalds@osdl.org>,
-       linux-pm@lists.osdl.org
-Subject: Re: [patch] suspend/resume debugging: device filter
-Message-ID: <20070126093643.GA4627@ucw.cz>
-References: <20070125110501.GA25151@elte.hu> <20070126015536.GA14917@suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070126015536.GA14917@suse.de>
-User-Agent: Mutt/1.5.9i
+	Fri, 26 Jan 2007 04:37:58 -0500
+Received: from lucidpixels.com ([75.144.35.66]:50669 "EHLO lucidpixels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161005AbXAZJh5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jan 2007 04:37:57 -0500
+Date: Fri, 26 Jan 2007 04:37:55 -0500 (EST)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+X-X-Sender: jpiszcz@p34.internal.lan
+To: Andrew Morton <akpm@osdl.org>
+cc: Chuck Ebbert <cebbert@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-raid@vger.kernel.org, xfs@oss.sgi.com, Neil Brown <neilb@suse.de>
+Subject: Re: Kernel 2.6.19.2 New RAID 5 Bug (oops when writing Samba -> RAID5)
+In-Reply-To: <20070126012505.d8cb07f2.akpm@osdl.org>
+Message-ID: <Pine.LNX.4.64.0701260437090.11888@p34.internal.lan>
+References: <Pine.LNX.4.64.0701200718290.29223@p34.internal.lan>
+ <45B5261B.1050104@redhat.com> <Pine.LNX.4.64.0701241836590.2930@p34.internal.lan>
+ <20070126012505.d8cb07f2.akpm@osdl.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
 
-> > it might be better to do this centrally in sysfs, via a per-device 
-> > attribute, to individually enable suspend and resume on a per device 
-> > basis, but my sysfs-fu is not strong enough for that now ;-)
+
+On Fri, 26 Jan 2007, Andrew Morton wrote:
+
+> On Wed, 24 Jan 2007 18:37:15 -0500 (EST)
+> Justin Piszcz <jpiszcz@lucidpixels.com> wrote:
 > 
-> Here's a (compile tested only) patch that does this on a per-device
-> basis, which is smaller, and should work just as well as your patch.
+> > > Without digging too deeply, I'd say you've hit the same bug Sami Farin and
+> > > others
+> > > have reported starting with 2.6.19: pages mapped with kmap_atomic() become
+> > > unmapped
+> > > during memcpy() or similar operations.  Try disabling preempt -- that seems to
+> > > be the
+> > > common factor.
+> > > 
+> > > 
+> > > -
+> > > To unsubscribe from this list: send the line "unsubscribe linux-raid" in
+> > > the body of a message to majordomo@vger.kernel.org
+> > > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > > 
+> > > 
+> > 
+> > After I run some other tests, I am going to re-run this test and see if it 
+> > OOPSes again with PREEMPT off.
 > 
-> It creates a new file in the power/ directory for every device called
-> "can_suspend".  Write a '0' to it to prevent that device from being
-> suspended.
-
-Maybe we could just introduce debug_flags?
-
-> +static ssize_t can_suspend_store(struct device *dev,
-> +				 struct device_attribute *attr,
-> +				 const char *buf, size_t n)
-> +{
-> +	if (!n)
-> +		return -EINVAL;
+> Strange.  The below debug patch might catch it - please run with this
+> applied.  
+> 
+> 
+> --- a/arch/i386/mm/highmem.c~kmap_atomic-debugging
+> +++ a/arch/i386/mm/highmem.c
+> @@ -30,7 +30,43 @@ void *kmap_atomic(struct page *page, enu
+>  {
+>  	enum fixed_addresses idx;
+>  	unsigned long vaddr;
+> +	static unsigned warn_count = 10;
+>  
+> +	if (unlikely(warn_count == 0))
+> +		goto skip;
 > +
-> +	switch (buf[0]) {
-> +	case 'y':
-> +	case 'Y':
-> +	case '1':
-> +		dev->no_suspend = 0;
-> +		break;
-> +	case 'n':
-> +	case 'N':
-> +	case '0':
-> +		dev->no_suspend = 1;
-> +		break;
+> +	if (unlikely(in_interrupt())) {
+> +		if (in_irq()) {
+> +			if (type != KM_IRQ0 && type != KM_IRQ1 &&
+> +			    type != KM_BIO_SRC_IRQ && type != KM_BIO_DST_IRQ &&
+> +			    type != KM_BOUNCE_READ) {
+> +				WARN_ON(1);
+> +				warn_count--;
+> +			}
+> +		} else if (!irqs_disabled()) {	/* softirq */
+> +			if (type != KM_IRQ0 && type != KM_IRQ1 &&
+> +			    type != KM_SOFTIRQ0 && type != KM_SOFTIRQ1 &&
+> +			    type != KM_SKB_SUNRPC_DATA &&
+> +			    type != KM_SKB_DATA_SOFTIRQ &&
+> +			    type != KM_BOUNCE_READ) {
+> +				WARN_ON(1);
+> +				warn_count--;
+> +			}
+> +		}
+> +	}
+> +
+> +	if (type == KM_IRQ0 || type == KM_IRQ1 || type == KM_BOUNCE_READ) {
+> +		if (!irqs_disabled()) {
+> +			WARN_ON(1);
+> +			warn_count--;
+> +		}
+> +	} else if (type == KM_SOFTIRQ0 || type == KM_SOFTIRQ1) {
+> +		if (irq_count() == 0 && !irqs_disabled()) {
+> +			WARN_ON(1);
+> +			warn_count--;
+> +		}
+> +	}
+> +skip:
+>  	/* even !CONFIG_PREEMPT needs this, for in_atomic in do_page_fault */
+>  	pagefault_disable();
+>  	if (!PageHighMem(page))
+> _
+> 
+> 
 
-default: return -EINVAL ?
+The RAID5 bug may be hard to trigger, I have only made it happen once so 
+far (but only tried it once, don't like locking up the raid :)), I will 
+re-run the test after applying this patch.
 
-							Pavel
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Justin.
