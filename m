@@ -1,53 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030723AbXAZEuT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030738AbXAZExZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030723AbXAZEuT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jan 2007 23:50:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030737AbXAZEuT
+	id S1030738AbXAZExZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jan 2007 23:53:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030739AbXAZExZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jan 2007 23:50:19 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:49870 "EHLO mx1.redhat.com"
+	Thu, 25 Jan 2007 23:53:25 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:42548 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030723AbXAZEuR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jan 2007 23:50:17 -0500
-Date: Thu, 25 Jan 2007 20:47:33 -0800
-From: Pete Zaitcev <zaitcev@redhat.com>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: Kristian =?UTF-8?B?SMO4Z3NiZXJn?= <krh@redhat.com>,
-       linux-kernel@vger.kernel.org, zaitcev@redhat.com
-Subject: Re: Juju
-Message-Id: <20070125204733.1ae70031.zaitcev@redhat.com>
-In-Reply-To: <45B968E7.1070402@s5r6.in-berlin.de>
-References: <20070124223745.33278eb4.zaitcev@redhat.com>
-	<45B91EAB.9080004@redhat.com>
-	<20070125153824.8d7f50c5.zaitcev@redhat.com>
-	<45B968E7.1070402@s5r6.in-berlin.de>
-Organization: Red Hat, Inc.
-X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.10.6; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1030738AbXAZExY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jan 2007 23:53:24 -0500
+Message-ID: <45B98932.5010006@pobox.com>
+Date: Thu, 25 Jan 2007 23:53:06 -0500
+From: Jeff Garzik <jgarzik@pobox.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
+MIME-Version: 1.0
+To: David Woodhouse <dwmw2@infradead.org>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Alan <alan@lxorguk.ukuu.org.uk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] libata-sff: Don't call bmdma_stop on non DMA capable
+ controllers
+References: <20070125150905.652f9ce2@localhost.localdomain> <1169741658.3593.98.camel@shinybook.infradead.org> <20070125172739.0c990a9a@localhost.localdomain> <Pine.LNX.4.64.0701250940220.25027@woody.linux-foundation.org> <1169770985.3593.146.camel@shinybook.infradead.org> <Pine.LNX.4.64.0701251703570.25027@woody.linux-foundation.org> <1169778239.3593.195.camel@shinybook.infradead.org> <Pine.LNX.4.64.0701251832040.25027@woody.linux-foundation.org> <1169782107.3593.219.camel@shinybook.infradead.org>
+In-Reply-To: <1169782107.3593.219.camel@shinybook.infradead.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.7 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 26 Jan 2007 03:35:19 +0100, Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
+David Woodhouse wrote:
+> When I eventually get to go home, which will hopefully still be some
+> time this month, I'll give some more coherent thought to the idea of
+> just using a (struct irq_desc *) directly instead of an integer. Then
 
-> The fundamental thing about SBP-2 is that ORBs ( = SCSI command blocks
-> plus SBP-2 header) and data buffers all reside in the memory of the
-> initiator (or of a 3rd party on the FireWire bus).
+Tejun beat you to it with devres.  devres makes all sorts of resource 
+allocation and tracking loads easier.
 
-I recognize the concept, I worked with SRP in Infiniband a bit.
+Learn it, love it, lick it.
 
-> The target wrote an SBP-2 status block into our memory. The status block
-> contains the FireWire bus address of the ORB to which it belongs. [...]
+:)
 
-I see. SRP has a more flexible tag which can be used to look up
-the just completed command more effectively. But if we only submit
-one, it's a moot point of course.
+	Jeff
 
-> [...] Since there aren't many
-> mapped ORBs per target, a linked list is a reasonable data structure to
-> search over.
 
-Righto. I'm used to having thousands of oustanding commands in arrays.
-
--- Pete
