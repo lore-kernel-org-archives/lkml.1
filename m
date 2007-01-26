@@ -1,93 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751201AbXAZKkK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932608AbXAZKoF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751201AbXAZKkK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jan 2007 05:40:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932566AbXAZKkK
+	id S932608AbXAZKoF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jan 2007 05:44:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752022AbXAZKoF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jan 2007 05:40:10 -0500
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:45990 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751201AbXAZKkI convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jan 2007 05:40:08 -0500
-Date: Fri, 26 Jan 2007 11:39:06 +0100
-From: =?ISO-8859-1?Q?S=E9bastien_Dugu=E9?= <sebastien.dugue@bull.net>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Zach Brown <zach.brown@oracle.com>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Benjamin LaHaise <bcrl@kvack.org>, Ulrich Drepper <drepper@redhat.com>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org
-Subject: Re: + make-good_sigevent-non-static.patch added to -mm tree
-Message-ID: <20070126113906.0505a734@frecb000686>
-In-Reply-To: <20070126100801.GA94@tv-sign.ru>
-References: <20070125154324.GA183@tv-sign.ru>
-	<20070126103208.78c4937f@frecb000686>
-	<20070126100801.GA94@tv-sign.ru>
-X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 26/01/2007 11:40:58,
-	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 26/01/2007 11:40:58,
-	Serialize complete at 26/01/2007 11:40:58
-Content-Transfer-Encoding: 8BIT
-Content-Type: text/plain; charset=UTF-8
+	Fri, 26 Jan 2007 05:44:05 -0500
+Received: from [217.111.56.2] ([217.111.56.2]:58813 "EHLO semtex.sncag.com"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752016AbXAZKoD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jan 2007 05:44:03 -0500
+To: Greg KH <greg@kroah.com>
+Cc: Rainer Weikusat <rweikusat@sncag.com>, torvalds@linux-foundation.org,
+       bunk@stusta.de, linux-kernel@vger.kernel.org
+Subject: Re: unfixed regression in 2.6.20-rc6 (since 2.6.19)
+In-Reply-To: <20070125185101.GA26279@kroah.com> (Greg KH's message of "Thu, 25 Jan 2007 10:51:01 -0800")
+References: <877ivb2kvc.fsf@semtex.sncag.com>
+	<20070125185101.GA26279@kroah.com>
+From: Rainer Weikusat <rainer.weikusat@sncag.com>
+Date: Fri, 26 Jan 2007 11:43:22 +0100
+Message-ID: <87y7nq131x.fsf@semtex.sncag.com>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 26 Jan 2007 13:08:01 +0300 Oleg Nesterov <oleg@tv-sign.ru> wrote:
+Greg KH <greg@kroah.com> writes:
+> On Thu, Jan 25, 2007 at 04:20:55PM +0100, Rainer Weikusat wrote:
+>> 2.6.19 introduced changes to the UHCI handling of interrupt URBs that
+>> caused at least some keyspan USB-to-serial converters to fail,
 
-> On 01/26, S?bastien Dugu? wrote:
-> >
-> > On Thu, 25 Jan 2007 18:43:24 +0300 Oleg Nesterov <oleg@tv-sign.ru> wrote:
-> > 
-> > > SИbastien DuguИ wrote:
-> > > >
-> > > > +struct task_struct *good_sigevent(sigevent_t *event)
-> > > > +{
-> > > > +	struct task_struct *task = current->group_leader;
-> > > > +
-> > > > +	if ((event->sigev_notify & SIGEV_THREAD_ID) == SIGEV_THREAD_ID) {
-> > > > +		task = find_task_by_pid(event->sigev_notify_thread_id);
-> > > > +
-> > > > +		if (!task || task->tgid != current->tgid)
-> > > > +			return NULL;
-> > > > +	} else if (event->sigev_notify == SIGEV_SIGNAL) {
-> > > 
-> > > No, no, we can't use "else" here,
-> > > 
-> > > > +		if (event->sigev_signo <= 0 || event->sigev_signo > SIGRTMAX)
-> > > 
-> > > because we skip the check above in SIGEV_THREAD_ID case.
-> > 
-> >   Right, will fix this.
-> > 
-> > > 
-> > > This way any user can crash the kernel with a minimal effort.
-> > 
-> >   Well I tried, no crash, just the signal failing to be delivered.
-> 
-> 	sigaddset:
-> 
-> 		set->sig[sig / _NSIG_BPW] |= 1UL << (sig % _NSIG_BPW);
-> 
-> This writes to ->sig[event->sigev_signo / _NSIG_BPW] location, so we can
-> corrupt the memory if ->sigev_signo > _NSIG.
+[...]
 
-  Gawd, right.
+> I copied you when this patch was added to my tree,
 
-> 
-> Btw, since you are exporting this function, may I suggest to rename it?
-> No, I can't suggest a better name :) But "good_sigevent" is a bit confusing
-> imho.
+The only thing I received was a 'this patch has been dropped from
+the MM-tree because something happened' message.
 
-  I agree, there was a discussion concerning this a while back but nothing came
-out of it and I left it as is.
+> as I had reworked it to be a bit more acceptable (no pointer
+> arithmatic, proper coding style, use the newer macros for endpoint
+> detection, etc.),
 
-  I will try to find something more suggestive.
+You have basically done a couple of (functionally) totally pointless
+changes, like
 
-  Thanks,
+	- not using iterator-style array traversals, but indexed ones
+          instead
 
-  Sébastien.
+	- doing the calculation to determine the endpoint type in
+          three different places instead of in one place, because the
+          somewhat silly endpoint classification interfaces enforces
+          this
 
+	- not using a single switch-statement but an if-else-cascade,
+          again due to limitations of that interface
+
+	- replacing the while-loop with an identical for-loop
+
+The net effect of these changes is that an optimizing compiler will
+have to work somewhat more to remove all the redundant stuff that
+was added. As for 'proper coding style', the code conforms to what is
+documented as 'proper kernel coding style'. If this assumption of mine
+is incorrect, I'd be happy to hear about reasons why this would be so,
+to take them into account for eventual future patches.
+
+> I this patch does not work, please let me know, and I will be glad
+> to work to fix it.
+
+I think I'll just resend the working one in this case. But the logic
+appears to be identical, so I do not so a reason why it shouldn't.
