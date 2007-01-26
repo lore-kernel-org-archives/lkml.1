@@ -1,47 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030518AbXAZAJR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030661AbXAZAL0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030518AbXAZAJR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jan 2007 19:09:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030661AbXAZAJR
+	id S1030661AbXAZAL0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jan 2007 19:11:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030662AbXAZALZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jan 2007 19:09:17 -0500
-Received: from sigma957.CIS.McMaster.CA ([130.113.64.83]:36628 "EHLO
-	sigma957.cis.mcmaster.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030660AbXAZAJQ (ORCPT
+	Thu, 25 Jan 2007 19:11:25 -0500
+Received: from nic.NetDirect.CA ([216.16.235.2]:36597 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030661AbXAZALZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jan 2007 19:09:16 -0500
-X-Greylist: delayed 5573 seconds by postgrey-1.27 at vger.kernel.org; Thu, 25 Jan 2007 19:09:16 EST
-Date: Thu, 25 Jan 2007 17:34:31 -0500 (EST)
-From: Mark Hahn <hahn@mcmaster.ca>
-X-X-Sender: hahn@coffee.psychology.mcmaster.ca
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-cc: Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org,
-       linux-raid@vger.kernel.org, xfs@oss.sgi.com
-Subject: Re: 2.6.20-rc5: cp 18gb 18gb.2 = OOM killer, reproducible just like
- 2.16.19.2
-In-Reply-To: <Pine.LNX.4.64.0701250407590.3673@p34.internal.lan>
-Message-ID: <Pine.LNX.4.64.0701251731160.20455@coffee.psychology.mcmaster.ca>
-References: <Pine.LNX.4.64.0701211424170.2552@p34.internal.lan>
- <20070122133735.GB4493@ucw.cz> <Pine.LNX.4.64.0701221348020.11525@p34.internal.lan>
- <Pine.LNX.4.64.0701241837550.2930@p34.internal.lan> <20070125003242.GA23343@elf.ucw.cz>
- <Pine.LNX.4.64.0701250407590.3673@p34.internal.lan>
+	Thu, 25 Jan 2007 19:11:25 -0500
+X-Originating-Ip: 74.109.98.130
+Date: Thu, 25 Jan 2007 19:10:52 -0500 (EST)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@CPE00045a9c397f-CM001225dbafb6
+To: Linux kernel mailing list <linux-kernel@vger.kernel.org>
+cc: Andrew Morton <akpm@osdl.org>, Paul Mackerras <paulus@samba.org>
+Subject: [PATCH] Fix apparent typo "CONFIG_SERIAL_CPM_SMC".
+Message-ID: <Pine.LNX.4.64.0701251908001.16270@CPE00045a9c397f-CM001225dbafb6>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-X-PMX-Version-Mac: 4.7.1.128075, Antispam-Engine: 2.4.0.264935, Antispam-Data: 2007.1.25.140433
-X-PerlMx-Spam: Gauge=IIIIIII, Probability=7%, Report='__CT 0, __CT_TEXT_PLAIN 0, __HAS_MSGID 0, __MIME_TEXT_ONLY 0, __MIME_VERSION 0, __SANE_MSGID 0'
-X-Spam-Flag: NO
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, UPPERCASE_25_50 0.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Something is seriously wrong with that OOM killer.
 
-do you know you don't have to operate in OOM-slaughter mode?
+  Replace an apparent typo of CONFIG_SERIAL_CPM_SMC with
+CONFIG_SERIAL_CPM_SMC2.
 
-"vm.overcommit_memory = 2" in your /etc/sysctl.conf puts you 
-into a mode where the kernel tracks your "committed" memory 
-needs, and will eventually cause some allocations to fail.
-this is often much nicer than the default random OOM slaughter.
-(you probably also need to adjust vm.overcommit_ratio with 
-some knowlege of your MemTotal and SwapTotal.)
+Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
 
-regards, mark hahn.
+---
+
+diff --git a/arch/ppc/platforms/mpc866ads_setup.c b/arch/ppc/platforms/mpc866ads_setup.c
+index 8a0c07e..5b05d4b 100644
+--- a/arch/ppc/platforms/mpc866ads_setup.c
++++ b/arch/ppc/platforms/mpc866ads_setup.c
+@@ -369,7 +369,7 @@ int __init mpc866ads_init(void)
+ 	ppc_sys_device_setfunc(MPC8xx_CPM_SMC1, PPC_SYS_FUNC_UART);
+ #endif
+
+-#ifdef CONFIG_SERIAL_CPM_SMC
++#ifdef CONFIG_SERIAL_CPM_SMC2
+ 	ppc_sys_device_enable(MPC8xx_CPM_SMC2);
+ 	ppc_sys_device_setfunc(MPC8xx_CPM_SMC2, PPC_SYS_FUNC_UART);
+ #endif
+
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://www.fsdev.dreamhosters.com/wiki/index.php?title=Main_Page
+========================================================================
