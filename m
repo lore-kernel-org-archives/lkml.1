@@ -1,50 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161187AbXAZTDK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161202AbXAZTEq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161187AbXAZTDK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jan 2007 14:03:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161180AbXAZTDK
+	id S1161202AbXAZTEq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jan 2007 14:04:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161197AbXAZTEn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jan 2007 14:03:10 -0500
-Received: from terminus.zytor.com ([192.83.249.54]:41179 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161187AbXAZTDJ (ORCPT
+	Fri, 26 Jan 2007 14:04:43 -0500
+Received: from ug-out-1314.google.com ([66.249.92.168]:50049 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161189AbXAZTEk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jan 2007 14:03:09 -0500
-Message-ID: <45BA5053.1070005@zytor.com>
-Date: Fri, 26 Jan 2007 11:02:43 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070102)
+	Fri, 26 Jan 2007 14:04:40 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding:from;
+        b=fh8TmvrYFEuQvcD2MU2B8v7QX0gyQ5nTr49JrPxonFLPHgCh6sO/A2S4EaHmr/pMh7kazWJ7Mz0PRpLJXsDf30aKnUQIPU+fZal/APWtGUR0oFX2j4GPpuzaKCcjQji8yKGcZRp15ZwKzz2fKAHLowCrof37d4DILR5pYS0rESg=
+Message-ID: <45BA50B7.1070205@googlemail.com>
+Date: Fri, 26 Jan 2007 20:04:23 +0100
+User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
 MIME-Version: 1.0
-To: Matt Mackall <mpm@selenic.com>
-CC: Tim Bird <tim.bird@am.sony.com>, Andrew Morton <akpm@osdl.org>,
-       Paul Mundt <lethal@linux-sh.org>,
-       linux kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] init: support preset lpj value as config option
-References: <45B7F5E2.4070800@am.sony.com> <20070125021847.GA7609@linux-sh.org> <45B8F5FB.6090704@am.sony.com> <20070126024411.4d4b6c2e.akpm@osdl.org> <45BA4884.4020205@am.sony.com> <20070126184628.GY10108@waste.org>
-In-Reply-To: <20070126184628.GY10108@waste.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+To: Adrian Bunk <bunk@stusta.de>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Uwe Bugla <uwe.bugla@gmx.de>, B.Zolnierkiewicz@elka.pw.edu.pl,
+       linux-ide@vger.kernel.org, alan@lxorguk.ukuu.org.uk,
+       Gerhard Dirschl <gd@spherenet.de>, Christoph Hellwig <hch@lst.de>,
+       petero2@telia.com, Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Venkat Yekkirala <vyekkirala@TrustedCS.com>,
+       David Miller <davem@davemloft.net>, sds@tycho.nsa.gov,
+       jmorris@namei.org, netdev@vger.kernel.org,
+       Livio Soares <livio@eecg.toronto.edu>,
+       Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org,
+       Cijoml Cijomlovic Cijomlov <cijoml@volny.cz>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, ttb@tentacle.dhs.org,
+       rml@novell.com, =?UTF-8?B?TWFsdGUgU2NocsO2ZGVy?= <MalteSch@gmx.de>,
+       "Vladimir V. Saveliev" <vs@namesys.com>, reiserfs-dev@namesys.com,
+       Sami Farin <7atbggg02@sneakemail.com>, David Chinner <dgc@sgi.com>,
+       xfs-masters@oss.sgi.com
+Subject: Re: 2.6.20-rc6: known unfixed regressions (part 2)
+References: <Pine.LNX.4.64.0701241847360.25027@woody.linux-foundation.org> <20070126181132.GN17836@stusta.de>
+In-Reply-To: <20070126181132.GN17836@stusta.de>
+X-Enigmail-Version: 0.94.1.1
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matt Mackall wrote:
+Hi,
+
+Adrian Bunk napisał(a):
+> This email lists some known regressions in 2.6.20-rc6 compared to 2.6.19
+> that are not yet fixed in Linus' tree.
 > 
-> The idea was to allow putting something like "%s" in the built-in
-> command line and expanding that with the provided command line. This
-> allows you to append/prepend/ignore the provided command line as you
-> desire.
+> If you find your name in the Cc header, you are either submitter of one
+> of the bugs, maintainer of an affectected subsystem or driver, a patch
+> of you caused a breakage or I'm considering you in any other way possibly
+> involved with one or more of these issues.
 > 
-> This is a fair bit more complicated than what the existing
-> implementations of CONFIG_CMDLINE are doing and details like
-> early_cmdline handling don't help matters. Haven't yet come up with an
-> implementation I'm happy with.
+> Due to the huge amount of recipients, please trim the Cc when answering.
+> 
+> 
+> Subject    : SELinux compile error with CONFIG_XFRM=n
+> References : http://lkml.org/lkml/2007/1/25/233
+> Submitter  : Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+> Caused-By  : Venkat Yekkirala <vyekkirala@TrustedCS.com>
+>              commit 334c85569b8adeaa820c0f2fab3c8f0a9dc8b92e
+> Handled-By : Venkat Yekkirala <vyekkirala@TrustedCS.com>
+>              David Miller <davem@davemloft.net>
+> Status     : problem is being discussed
 > 
 
-Yes, and it's worth noting that with the edd stuff we actually parse the 
-command line from real mode as well.
+Venkat Yekkirala has sent me a patch that fixed this build problem.
 
-One way to do it would be to construct the command line in real mode 
-code.  It's not really all that hard, but wouldn't work for those that 
-jump directly to the PM entrypoint.
+Thanks!
 
-	-hpa
+Regards,
+Michal
+
+-- 
+Michal K. K. Piotrowski
+LTG - Linux Testers Group
+(http://www.stardust.webpages.pl/ltg/)
