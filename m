@@ -1,98 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751595AbXAZVez@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751606AbXAZVhN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751595AbXAZVez (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jan 2007 16:34:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751606AbXAZVez
+	id S1751606AbXAZVhN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jan 2007 16:37:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751612AbXAZVhN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jan 2007 16:34:55 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:56191 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751568AbXAZVey (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jan 2007 16:34:54 -0500
-Date: Fri, 26 Jan 2007 13:29:49 -0800
-From: Andrew Morton <akpm@osdl.org>
-To: dipankar@in.ibm.com
-Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Gautham Shenoy <ego@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: Fw: Re: [mm PATCH 4/6] RCU: (now) CPU hotplug
-Message-Id: <20070126132949.50544e90.akpm@osdl.org>
-In-Reply-To: <20070126204406.GB17134@in.ibm.com>
-References: <20070124011519.GG1613@linux.vnet.ibm.com>
-	<20070124090111.GC27221@in.ibm.com>
-	<20070124161559.GA1762@linux.vnet.ibm.com>
-	<20070124210645.GA19650@in.ibm.com>
-	<20070126191113.GA14770@in.ibm.com>
-	<20070126112837.059502fc.akpm@osdl.org>
-	<20070126194622.GA17134@in.ibm.com>
-	<20070126121739.be3e072a.akpm@osdl.org>
-	<20070126204406.GB17134@in.ibm.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 26 Jan 2007 16:37:13 -0500
+Received: from zcars04e.nortel.com ([47.129.242.56]:41756 "EHLO
+	zcars04e.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751606AbXAZVhM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jan 2007 16:37:12 -0500
+Message-ID: <45BA747F.8040005@nortel.com>
+Date: Fri, 26 Jan 2007 15:37:03 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
+X-Accept-Language: en-us, en
+MIME-Version: 1.0
+To: Mel Gorman <mel@csn.ul.ie>
+CC: Christoph Lameter <clameter@sgi.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/8] Allow huge page allocations to use GFP_HIGH_MOVABLE
+References: <20070125234458.28809.5412.sendpatchset@skynet.skynet.ie> <20070125234558.28809.21103.sendpatchset@skynet.skynet.ie> <Pine.LNX.4.64.0701260832260.6141@schroedinger.engr.sgi.com> <Pine.LNX.4.64.0701261649040.23091@skynet.skynet.ie> <Pine.LNX.4.64.0701260903110.6966@schroedinger.engr.sgi.com> <Pine.LNX.4.64.0701261720120.23091@skynet.skynet.ie> <Pine.LNX.4.64.0701260921310.7301@schroedinger.engr.sgi.com> <Pine.LNX.4.64.0701261727400.23091@skynet.skynet.ie> <Pine.LNX.4.64.0701260944270.7457@schroedinger.engr.sgi.com> <Pine.LNX.4.64.0701261747290.23091@skynet.skynet.ie> <45BA49F2.2000804@nortel.com> <Pine.LNX.4.64.0701262038120.23091@skynet.skynet.ie>
+In-Reply-To: <Pine.LNX.4.64.0701262038120.23091@skynet.skynet.ie>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 26 Jan 2007 21:37:07.0770 (UTC) FILETIME=[20FB01A0:01C74192]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 27 Jan 2007 02:14:06 +0530
-Dipankar Sarma <dipankar@in.ibm.com> wrote:
+Mel Gorman wrote:
+> On Fri, 26 Jan 2007, Chris Friesen wrote:
 
-> On Fri, Jan 26, 2007 at 12:17:39PM -0800, Andrew Morton wrote:
-> > On Sat, 27 Jan 2007 01:16:22 +0530
-> > Dipankar Sarma <dipankar@in.ibm.com> wrote:
-> > > > The plan is, I hope, to rip it all out and do freeze_processes() on the
-> > > > hotplug side, so nobody else needs to worry about cpu hotplug any more. 
-> > > > But at present everyone seems to be in hiding.
-> > > 
-> > > This would be ideal. However, we don't seem to have any momentum
-> > > on this.
-> > 
-> > There's no point in expending effort on a fancy new lock until this option
-> > has been eliminated, so yeah, things are stuck.
-> 
-> The new lock (scalable refcount) is almost already there. 
-> This http://lkml.org/lkml/2006/10/26/65 can be used to implement
-> get_cpu_hotplug()/put_cpu_hotplug(). The unfairness issue
-> can be fixed. I am going to play with these patches and
-> see if I can come up with something useful quickly.
+>> We currently see this issue on our systems, as we have older e1000 
+>> hardware with 9KB jumbo frames.  After a while we just fail to 
+>> allocate buffers and the system goes belly-up.
 
-You're forgetting the large, unknown number of places in the kernel which
-are presently buggy in the presence of CPU hotplug.  With your proposal, we
-still need to hunt them all down and put magic locks around them, and we need to
-continue to do that as the kernel evolves.
+> Can you describe a reliable way of triggering this problem? At best, I 
+> hear "on our undescribed workload, we sometimes see this problem" but 
+> not much in the way of details.
 
-If we use the process freezer, these bugs all get automatically fixed, and we get
-to remove the existing locking, and we don't need to think about it any
-more.
+I work on embedded server applications.  One of our blades is a 
+dual-Xeon with 8GB of RAM and 6 e1000 cards.  The hardware is 32-bit 
+only, so we're using the i386 kernel with HIGHMEM64G enabled.
 
-> > > The other thing we would need to do in this case is to
-> > > check if all the users of cpu hotplug can tolerate a very slow
-> > > hotplug step if there are 10s of thousands of processes and threads.
-> > 
-> > Yes, that needs evaluation.  If it's a problem then we might need to
-> 
-> I will check with the dynamic LPAR people to see if they
-> have any requirements in this regard. I have also heard
-> about some people wanting to disable additional threads
-> in processors (running 1 h/w thread per core) using cpu hotplug 
-> for some type of applications. I will check with those
-> folks as well.
+This blade acts essentially as storage for other blades in the shelf. 
+Basically all disk and network I/O.  After being up for a month or two 
+it starts getting e1000 allocation failures.  In some of the cases at 
+least it appears that the page cache has hundreds of megs of freeable 
+memory, but it can't get at that memory to fulfill an atomic allocation.
 
-OK.
+I should point out that we haven't yet tried tuning 
+/proc/sys/vm/min_free_kbytes.  The default value on this system is 3831.
 
-> > introduce a more sophisticated user interface which enables userspace to
-> > take multiple CPUs online and offline in a single step, rather than
-> > one-at-a-time.  I expect that'd be fairly straightforward.
-> 
-> The worry I have is that all of this is a complete rewrite of
-> existing CPU hotplug and it took us 1+ years to get a decent
-> CPU hotplug implementation. Rusty and Vatsa can probably vouch
-> for how difficult it was to get it right. I don't think
-> it is a good idea to keep CPU hotplug broken until this
-> rewrite happens. Can't we just go with something that is
-> already there and works correctly for us without waiting
-> for the perfect solution ?
-
-Who said it's complete rewrite?  Nobody's even started to look at it afaik.
-It might be quite simple.
+Chris
 
