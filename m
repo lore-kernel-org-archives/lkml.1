@@ -1,65 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932832AbXAZKxk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932860AbXAZKxr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932832AbXAZKxk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jan 2007 05:53:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932838AbXAZKxk
+	id S932860AbXAZKxr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jan 2007 05:53:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932846AbXAZKxr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jan 2007 05:53:40 -0500
-Received: from nz-out-0506.google.com ([64.233.162.229]:27059 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932832AbXAZKxj (ORCPT
+	Fri, 26 Jan 2007 05:53:47 -0500
+Received: from hp3.statik.TU-Cottbus.De ([141.43.120.68]:48611 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932860AbXAZKxq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jan 2007 05:53:39 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=LydC6PGLQdP19lqmz9M270Q9M3kjg52JUBnqXDXIYKut+4e/TRevxbIwZMErhM6Lbf76XrrSOdC67Nau2Y+tkvO3jP15qS3SKke21dIXfxH8VYtNGHiTBzTx3NcsqLtR0axNeRKlJThiDvaFKUoE3hFDPyaRR0W2uAxLcXA7E84=
-Message-ID: <806dafc20701260253r145fee43kc6db1ca6de1ab3e6@mail.gmail.com>
-Date: Fri, 26 Jan 2007 05:53:36 -0500
-From: xiphmont@xiph.org
-To: "Greg KH" <greg@kroah.com>
-Subject: Re: [Alsa-devel] [PATCH] alsa: correct nonsensical sysfs device symlinks
-Cc: "Takashi Iwai" <tiwai@suse.de>, "Pierre Ossman" <drzeus@drzeus.cx>,
-       fedora-desktop-list@redhat.com, alsa-devel@alsa-project.org,
-       jrb@redhat.com, linux-kernel@vger.kernel.org, mclasen@redhat.com,
-       "Lennart Poettering" <lennart@poettering.net>, perex@suse.cz
-In-Reply-To: <20070125215943.GC3126@kroah.com>
+	Fri, 26 Jan 2007 05:53:46 -0500
+Message-ID: <45B9DDB8.8010000@s5r6.in-berlin.de>
+Date: Fri, 26 Jan 2007 11:53:44 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.0.8) Gecko/20061030 SeaMonkey/1.0.6
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Pete Zaitcev <zaitcev@redhat.com>
+CC: =?ISO-8859-1?Q?Kristian_H=F8gsberg?= <krh@redhat.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Juju
+References: <20070124223745.33278eb4.zaitcev@redhat.com>	<45B91EAB.9080004@redhat.com>	<20070125153824.8d7f50c5.zaitcev@redhat.com>	<45B968E7.1070402@s5r6.in-berlin.de> <20070125204733.1ae70031.zaitcev@redhat.com>
+In-Reply-To: <20070125204733.1ae70031.zaitcev@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <806dafc20701250903p6b67d176wf00dd2a9d92d899f@mail.gmail.com>
-	 <s5h7ivbuhg1.wl%tiwai@suse.de>
-	 <806dafc20701251007n69bc9b3cse023b51369501d42@mail.gmail.com>
-	 <s5h4pqfufs8.wl%tiwai@suse.de>
-	 <806dafc20701251034l59fc5be7ta881606046eb819a@mail.gmail.com>
-	 <s5h1wljuf2f.wl%tiwai@suse.de>
-	 <806dafc20701251051p2750cb34sab88a38282020497@mail.gmail.com>
-	 <20070125194933.GA27857@kroah.com>
-	 <806dafc20701251240t70335055l74c47ecdd09d1944@mail.gmail.com>
-	 <20070125215943.GC3126@kroah.com>
-X-Google-Sender-Auth: 76bccf1408ff79e3
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 1/25/07, Greg KH <greg@kroah.com> wrote:
+Pete Zaitcev wrote:
+> On Fri, 26 Jan 2007 03:35:19 +0100, Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
+>> The target wrote an SBP-2 status block into our memory. The status block
+>> contains the FireWire bus address of the ORB to which it belongs. [...]
+> 
+> I see. SRP has a more flexible tag which can be used to look up
+> the just completed command more effectively. But if we only submit
+> one, it's a moot point of course.
 
-I want to do just a little more testing here (Takashi reminded me I
-have a bit more testing of my own to do).
+And indeed, in the SBP-2 realm the ORB's address is actually the tag of
+the SCSI task.
 
-> Can you give me the 'tree /sys/class/sound' output?
-Once I verify it's 'all good' (actually, I'm stalling; not in front of
-the machine with the patches right now.
+>> [...] Since there aren't many
+>> mapped ORBs per target, a linked list is a reasonable data structure to
+>> search over.
+> 
+> Righto. I'm used to having thousands of oustanding commands in arrays.
 
-> Does it work properly with old versions of hald now?
-
-Yes.  I still need to make doubly sure I didn't break the new sysfs tree though.
-
-> Is there anything else left to fix?
-
-Once that testing is done, no.  But don't trust the two patches I sent
-yet, I'll resumbit the patch resulting from more thorough testing in a
-few hours (much thanks to Takashi for giving me the parent device
-feedback I was trolling for).
-
-Monty
+If I ever get to fix sbp2's handling of dynamically appended ORB lists,
+the next step would be to measure which queue depth is optimal for
+different hardware and different workloads. (Certainly much less than
+thousands for typical SBP-2 target(s)+initiator(s) setups.)
+-- 
+Stefan Richter
+-=====-=-=== ---= ==-=-
+http://arcgraph.de/sr/
