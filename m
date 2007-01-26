@@ -1,98 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161105AbXAZRur@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752125AbXAZRx1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161105AbXAZRur (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jan 2007 12:50:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161099AbXAZRur
+	id S1752125AbXAZRx1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jan 2007 12:53:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752130AbXAZRx1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jan 2007 12:50:47 -0500
-Received: from lucidpixels.com ([75.144.35.66]:52310 "EHLO lucidpixels.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752131AbXAZRuq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jan 2007 12:50:46 -0500
-Date: Fri, 26 Jan 2007 12:50:45 -0500 (EST)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-X-X-Sender: jpiszcz@p34.internal.lan
-To: Adrian Bunk <bunk@stusta.de>
-cc: thunder7@xs4all.nl, Avuton Olrich <avuton@gmail.com>,
-       linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
-Subject: Re: 2.6.19.2, cp 18gb_file 18gb_file.2 = OOM killer, 100% reproducible
-In-Reply-To: <20070126174928.GL17836@stusta.de>
-Message-ID: <Pine.LNX.4.64.0701261250240.12467@p34.internal.lan>
-References: <Pine.LNX.4.64.0701201516450.3684@p34.internal.lan>
- <3aa654a40701201245s72b2f76hc70ddd94b70ba99c@mail.gmail.com>
- <Pine.LNX.4.64.0701201602570.4910@p34.internal.lan> <20070121155219.GA7413@amd64.of.nowhere>
- <Pine.LNX.4.64.0701211053370.15334@p34.internal.lan> <20070126174928.GL17836@stusta.de>
+	Fri, 26 Jan 2007 12:53:27 -0500
+Received: from calculon.skynet.ie ([193.1.99.88]:41786 "EHLO
+	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752128AbXAZRx0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jan 2007 12:53:26 -0500
+Date: Fri, 26 Jan 2007 17:53:24 +0000 (GMT)
+From: Mel Gorman <mel@csn.ul.ie>
+X-X-Sender: mel@skynet.skynet.ie
+To: Christoph Lameter <clameter@sgi.com>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/8] Allow huge page allocations to use GFP_HIGH_MOVABLE
+In-Reply-To: <Pine.LNX.4.64.0701260944270.7457@schroedinger.engr.sgi.com>
+Message-ID: <Pine.LNX.4.64.0701261747290.23091@skynet.skynet.ie>
+References: <20070125234458.28809.5412.sendpatchset@skynet.skynet.ie>
+ <20070125234558.28809.21103.sendpatchset@skynet.skynet.ie>
+ <Pine.LNX.4.64.0701260832260.6141@schroedinger.engr.sgi.com>
+ <Pine.LNX.4.64.0701261649040.23091@skynet.skynet.ie>
+ <Pine.LNX.4.64.0701260903110.6966@schroedinger.engr.sgi.com>
+ <Pine.LNX.4.64.0701261720120.23091@skynet.skynet.ie>
+ <Pine.LNX.4.64.0701260921310.7301@schroedinger.engr.sgi.com>
+ <Pine.LNX.4.64.0701261727400.23091@skynet.skynet.ie>
+ <Pine.LNX.4.64.0701260944270.7457@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 26 Jan 2007, Christoph Lameter wrote:
 
+> On Fri, 26 Jan 2007, Mel Gorman wrote:
+>
+>> It's come up a few times and the converation is always fairly similar although
+>> the thread http://lkml.org/lkml/2006/9/22/44 has interesting information on
+>> the topic. There has been no serious discussion on whether anti-fragmentation
+>> would help it or not. I think it would if atomic allocations were clustered
+>> together because then jumbo frame allocations would cluster together in the
+>> same MAX_ORDER blocks and tend to keep other allocations away.
+>
+> They are clustered in both schemes together with other non movable allocs
+> right?
 
-On Fri, 26 Jan 2007, Adrian Bunk wrote:
+For the jumbo frame problem, only the antifragmentation approach of 
+clustering types of pages together in MAX_ORDER blocks has any chance of 
+helping.
 
-> On Sun, Jan 21, 2007 at 10:54:09AM -0500, Justin Piszcz wrote:
-> > On Sun, 21 Jan 2007, thunder7@xs4all.nl wrote:
-> > 
-> > > From: Justin Piszcz <jpiszcz@lucidpixels.com>
-> > > Date: Sat, Jan 20, 2007 at 04:03:42PM -0500
-> > > > 
-> > > > 
-> > > > My swap is on, 2GB ram and 2GB of swap on this machine.  I can't go back 
-> > > > to 2.6.17.13 as it does not recognize the NICs in my machine correctly and 
-> > > > the Alsa Intel HD Audio driver has bugs etc, I guess I am stuck with 
-> > > > 2.6.19.2 :(
-> > > > 
-> > > Well, if you can't go back, you could always test 2.6.20-rc5. That's why
-> > > it's out there :-) It can't be any worse!
-> > > 
-> > > Good luck,
-> > > Jurriaan
-> > > -- 
-> > > It might look like I'm doing nothing, but at the cellular level I'm really
-> > > quite busy.
-> > > 	Hans Haas
-> > > Debian (Unstable) GNU/Linux 2.6.20-rc5 2x2011 bogomips load 1.97
-> > > the Jack Vance Integral Edition: http://www.integralarchive.org
-> > > -
-> > > To unsubscribe from this list: send the line "unsubscribe linux-raid" in
-> > > the body of a message to majordomo@vger.kernel.org
-> > > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > > 
-> > 
-> > It is worse-- NAT doesn't work and HDDTEMP doesn't work anymore either.
-> 
-> 
-> Do I understand it correctly from the further emails in this thread that 
-> the NAT problem was the known netfilter options mess when upgrading from 
-> 2.6.19 to 2.6.20, and enabling some more netfilter options fixed it?
-> 
-> 
-> hddtemp has a known bug:
-> 
-> Subject    : `hddtemp' no longer works
-> References : http://lkml.org/lkml/2006/12/14/272
->              http://bugzilla.kernel.org/show_bug.cgi?id=7581
-> Submitter  : Alistair John Strachan <s0348365@sms.ed.ac.uk>
->              Nicolas Mailhot <Nicolas.Mailhot@LaPoste.net>
-> Handled-By : Jens Axboe <jens.axboe@oracle.com>
-> Status     : bug in hddtemp: http://bugzilla.kernel.org/show_bug.cgi?id=7581
-> 
-> 
-> > Justin.
-> 
-> cu
-> Adrian
-> 
-> -- 
-> 
->        "Is there not promise of rain?" Ling Tan asked suddenly out
->         of the darkness. There had been need of rain for many days.
->        "Only a promise," Lao Er said.
->                                        Pearl S. Buck - Dragon Seed
-> 
+> The problem is to defrag while atomic?
 
-Yes, it was because the options changed positions/places, it is working 
-now.
+Worse, the problem is to have high order contiguous blocks free at the 
+time of allocation without reclaim or migration. If the allocations were 
+not atomic, anti-fragmentation as it is today would be enough.
 
-Justin.
+By clustering atomic allocations together though, I would expect the jumbo 
+frames to be allocated and freed within the same area without interference 
+from other allocation types as long as min_free_kbytes was also set higher 
+than default. I lack the hardware to prove/disprove the idea though.
+
+> How is the zone based
+> concept different in that area from the max order block based one?
+
+The zone-based approach does nothing to help jumbo frame allocations. It 
+only helps hugepage allocations at runtime and potentially memory 
+hot-remove.
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
