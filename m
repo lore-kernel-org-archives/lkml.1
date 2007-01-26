@@ -1,42 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161058AbXAZRyH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161072AbXAZRyL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161058AbXAZRyH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jan 2007 12:54:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161099AbXAZRyG
+	id S1161072AbXAZRyL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jan 2007 12:54:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161108AbXAZRyK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jan 2007 12:54:06 -0500
-Received: from lucidpixels.com ([75.144.35.66]:37526 "EHLO lucidpixels.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161058AbXAZRyF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jan 2007 12:54:05 -0500
-Date: Fri, 26 Jan 2007 12:54:02 -0500 (EST)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-X-X-Sender: jpiszcz@p34.internal.lan
-To: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
-cc: Alan Piszcz <ap@solarrain.com>
-Subject: Kernel 2.6.19.2: Belkin UPS on Serial vs. USB
-Message-ID: <Pine.LNX.4.64.0701261250470.12467@p34.internal.lan>
+	Fri, 26 Jan 2007 12:54:10 -0500
+Received: from terminus.zytor.com ([192.83.249.54]:50060 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161072AbXAZRyH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jan 2007 12:54:07 -0500
+Message-ID: <45BA3F42.3020006@zytor.com>
+Date: Fri, 26 Jan 2007 09:49:54 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: eranian@hpl.hp.com
+CC: linux-kernel@vger.kernel.org
+Subject: Re: i386 and x86-64 bitops function prototypes differ
+References: <20070126143555.GL11525@frankl.hpl.hp.com>
+In-Reply-To: <20070126143555.GL11525@frankl.hpl.hp.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When I disconnect my UPS from the wall, I have to wait 15-30 seconds 
-before the USB drier 'polls' this information and tells me that the UPS is 
-on battery power (via knutclient or syslog via nut):
+Stephane Eranian wrote:
+> Hello,
+> 
+> I ran into compiler warnings with the perfmon code when I tried
+> using test() and __set_bit() on i386. 
+> 
+> For some reason, the i386 bitops functions use unsigned long * for
+> the address whereas x86-64/ia64 use void *.
+> 
+> I do not quite understand why such difference?
+> Is this just for historical reasons?
+> 
+> Thanks.
+> 
 
-ups@p34 POWER ALERT on Fri Jan 26 12:49:29 EST 2007
+Arguably void * is the right thing for a littleendian architecture.  For 
+bigendian architectures it unfortunately matters what the chunk size is, 
+regardless of if the chunks are numbered in bigendian (reverse) or 
+littleendian (forward) order.
 
-With a serial connection, I would get the alerts IMMEDIATELY (0.5-1 
-seconds) after disconnecting the UPS.  My new machine does not have a 
-serial port built-in, only a serial header, and of course does not come 
-with an included cable, so I chose to use USB.
-
-My question is, how do I change the polling time for the USB subsystem to 
-match that of the serial port, or would I not want to do that for other 
-reasons?
-
-The reason I'd like to is I am not going to see any power alerts for 
-unless there is a power outage for longer than 15-30 seconds.
-
-Justin.
+	-hpa
