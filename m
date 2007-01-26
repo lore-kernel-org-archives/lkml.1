@@ -1,56 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965559AbXAZP40@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965696AbXAZP5t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965559AbXAZP40 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jan 2007 10:56:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965704AbXAZP4Z
+	id S965696AbXAZP5t (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jan 2007 10:57:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965708AbXAZP5s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jan 2007 10:56:25 -0500
-Received: from omx2-ext.sgi.com ([192.48.171.19]:35767 "EHLO omx2.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S965559AbXAZP4Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jan 2007 10:56:24 -0500
-Date: Fri, 26 Jan 2007 07:56:09 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-To: Andrew Morton <akpm@osdl.org>
-cc: Mel Gorman <mel@csn.ul.ie>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Christoph Lameter <clameter@engr.sgi.com>
-Subject: Re: [PATCH 0/8] Create ZONE_MOVABLE to partition memory between
- movable and non-movable pages
-In-Reply-To: <20070126030753.03529e7a.akpm@osdl.org>
-Message-ID: <Pine.LNX.4.64.0701260751230.6141@schroedinger.engr.sgi.com>
-References: <20070125234458.28809.5412.sendpatchset@skynet.skynet.ie>
- <20070126030753.03529e7a.akpm@osdl.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 26 Jan 2007 10:57:48 -0500
+Received: from smtpout.mac.com ([17.250.248.178]:59155 "EHLO smtpout.mac.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965696AbXAZP5s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jan 2007 10:57:48 -0500
+In-Reply-To: <Pine.LNX.4.64.0701260219040.17773@CPE00045a9c397f-CM001225dbafb6>
+References: <Pine.LNX.4.64.0701250426400.7715@CPE00045a9c397f-CM001225dbafb6> <20070125192044.c9c2a093.akpm@osdl.org> <Pine.LNX.4.64.0701260219040.17773@CPE00045a9c397f-CM001225dbafb6>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <0A70B252-C11C-4A5C-93B3-AEF820C9D284@mac.com>
+Cc: Andrew Morton <akpm@osdl.org>,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       dhowells@redhat.com
+Content-Transfer-Encoding: 7bit
+From: Kyle Moffett <mrmacman_g4@mac.com>
+Subject: Re: [PATCH] Add a rounddown_pow_of_two() macro to log2.h.
+Date: Fri, 26 Jan 2007 10:57:30 -0500
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+X-Mailer: Apple Mail (2.752.2)
+X-Brightmail-Tracker: AAAAAA==
+X-Brightmail-scanned: yes
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 26 Jan 2007, Andrew Morton wrote:
+On Jan 26, 2007, at 02:24:35, Robert P. J. Day wrote:
+> On Thu, 25 Jan 2007, Andrew Morton wrote:
+>> On Thu, 25 Jan 2007 04:32:12 -0500 (EST)
+>> "Robert P. J. Day" <rpjday@mindspring.com> wrote:
+>>> +/*
+>>> + * round down to nearest power of two
+>>> + */
+>>> +static inline __attribute__((const))
+>>> +unsigned long __rounddown_pow_of_two(unsigned long n)
+>>> +{
+>>> +	return 1UL << (fls_long(n) - 1);
+>>> +}
+>>
+>> So __rounddown_pow_of_two(16) returns 8?
+>
+> it does?  but if that was true, so would 17, and 18, and 19 ...  i  
+> didn't actually test this since it seemed so straightforward.  
+> doesn't fls_long() return the most significant bit?  oh, wait ...  
+> reading further ...
 
-> - They add zillions of ifdefs
+The way that "ilog2" is defined this should be really  
+straightforward, I dunno why those functions seem so
+overly complicated:
+   roundup_pow_of_two(x) := 1 << ilog2(2*x - 1)
+   rounddown_pow_of_two(x) := 1 << ilog2(x)
 
-They just add a few for ZONE_DMA where we alreaday have similar ifdefs for 
-ZONE_DMA32 and ZONE_HIGHMEM.
+Where ilog2(x) simply returns the first bit set in the word:
+   ilog2(0) => undefined or -1 or something
+   ilog2(1) => 0
+   ilog2(2) => 1
+   ilog2(3) => 1
+   ilog2(4) => 2
+   [...]
 
-> - They make the VM's behaviour diverge between different platforms and
->   between differen configs on the same platforms, and hence degrade
->   maintainability and increase complexity.
+The results:
+   roundup_pow_of_two(1) = 1    rounddown_pow_of_two(1) = 1
+   roundup_pow_of_two(2) = 2    rounddown_pow_of_two(2) = 2
+   roundup_pow_of_two(3) = 4    rounddown_pow_of_two(3) = 2
+   roundup_pow_of_two(4) = 4    rounddown_pow_of_two(4) = 4
+   roundup_pow_of_two(5) = 8    rounddown_pow_of_two(5) = 4
+   [...]
 
-They avoid unecessary complexity on platforms. They could be made to work 
-on more platforms with measures to deal with what ZONE_DMA 
-provides in different ways. There are 6 or so platforms that do not need 
-ZONE_DMA at all.
-
-> - We kicked around some quite different ways of implementing the same
->   things, but nothing came of it.  iirc, one was to remove the hard-coded
->   zones altogether and rework all the MM to operate in terms of
-> 
-> 	for (idx = 0; idx < NUMBER_OF_ZONES; idx++)
-> 		...
-
-Hmmm.. How would that be simpler?
-
-> - I haven't seen any hard numbers to justify the change.
-
-I have send you numbers showing significant reductions in code size.
+Cheers,
+Kyle Moffett
 
