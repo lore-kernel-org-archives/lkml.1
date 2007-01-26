@@ -1,66 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161057AbXAZQ60@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161071AbXAZQ65@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161057AbXAZQ60 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jan 2007 11:58:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161064AbXAZQ6V
+	id S1161071AbXAZQ65 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jan 2007 11:58:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161066AbXAZQ64
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jan 2007 11:58:21 -0500
-Received: from nf-out-0910.google.com ([64.233.182.186]:16896 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030893AbXAZQ50 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jan 2007 11:57:26 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding:from;
-        b=QCThHXsBrdpHky+hqvngHDc/vJVhSzLomF+u5BiVIttpKSzJ/dvXbc8L2wpDvxbG+7cRM3Wq7x96QOS0l0vxMEQNuCnMnVVsEIZXvSY/nSdi11cG/BFJZdcPeobIWjkIfCvc3zpFQU/msVzzWcUJ33Nu4vWXhCuIhpe5G8E6O9Q=
-Message-ID: <45BA32E7.9060703@googlemail.com>
-Date: Fri, 26 Jan 2007 17:57:11 +0100
-User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
+	Fri, 26 Jan 2007 11:58:56 -0500
+Received: from iriserv.iradimed.com ([69.44.168.233]:27669 "EHLO iradimed.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1161071AbXAZQ6v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jan 2007 11:58:51 -0500
+Message-ID: <45BA3343.8070703@cfl.rr.com>
+Date: Fri, 26 Jan 2007 11:58:43 -0500
+From: Phillip Susi <psusi@cfl.rr.com>
+User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: Andrew Morton <akpm@osdl.org>
-Subject: Re: mm snapshot broken-out-2007-01-26-00-36.tar.gz uploaded
-References: <200701260837.l0Q8blBr011622@shell0.pdx.osdl.net>
-In-Reply-To: <200701260837.l0Q8blBr011622@shell0.pdx.osdl.net>
-X-Enigmail-Version: 0.94.1.1
-Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: 8bit
-From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+To: Mark Lord <lkml@rtr.ca>
+CC: Denis Vlasenko <vda.linux@googlemail.com>,
+       Michael Tokarev <mjt@tls.msk.ru>, Linus Torvalds <torvalds@osdl.org>,
+       Viktor <vvp01@inbox.ru>, Aubrey <aubreylee@gmail.com>,
+       Hua Zhong <hzhong@gmail.com>, Hugh Dickins <hugh@veritas.com>,
+       linux-kernel@vger.kernel.org, hch@vger.kernel.org
+Subject: Re: O_DIRECT question
+References: <6d6a94c50701101857v2af1e097xde69e592135e54ae@mail.gmail.com> <45B90D19.60106@cfl.rr.com> <45B916F2.4070906@tls.msk.ru> <200701252211.39017.vda.linux@googlemail.com> <45BA2628.4030502@rtr.ca>
+In-Reply-To: <45BA2628.4030502@rtr.ca>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 26 Jan 2007 16:59:00.0391 (UTC) FILETIME=[46870B70:01C7416B]
+X-TM-AS-Product-Ver: SMEX-7.2.0.1122-3.6.1039-14958.003
+X-TM-AS-Result: No--4.771400-5.000000-31
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-akpm@osdl.org napisa³(a):
-> The mm snapshot broken-out-2007-01-26-00-36.tar.gz has been uploaded to
+Mark Lord wrote:
+> You guys need to backup in this thread.
 > 
->    ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/mm/broken-out-2007-01-26-00-36.tar.gz
+> Every example of O_DIRECT here could be replaced with
+> calls to mmap(), msync(), and madvise() (or posix_fadvise).
 > 
+> In addition to being at least as fast as O_DIRECT,
+> these have the added benefit of using the page cache (avoiding reads for 
+> data already present, handling multiple
+> users of the same data, etc..).
 
-kernel/sched.c: In function 'init_sched_domain_sysctl':
-kernel/sched.c:5465: error: too many arguments to function 'register_sysctl_table'
-make[1]: *** [kernel/sched.o] Error 1
-make: *** [kernel] Error 2
+Please actually _read_ the thread.  In every one of my posts I have 
+shown why this is not the case.
 
-Possible fix
+To briefly rehash the core of the argument, there is no way to 
+asynchronously manage IO with mmap, msync, madvise -- instead you take 
+page faults or otherwise block, thus stalling the pipeline.
 
-Regards,
-Michal
-
---
-Michal K. K. Piotrowski
-LTG - Linux Testers Group
-(http://www.stardust.webpages.pl/ltg/)
-
-Signed-off-by: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-
---- linux-work-clean/kernel/sched.c	2007-01-26 16:47:55.000000000 +0100
-+++ linux-work/kernel/sched.c	2007-01-26 17:51:23.000000000 +0100
-@@ -5462,7 +5462,7 @@ static void init_sched_domain_sysctl(voi
- 		entry->mode = 0755;
- 		entry->child = sd_alloc_ctl_cpu_table(i);
- 	}
--	sd_sysctl_header = register_sysctl_table(sd_ctl_root, 0);
-+	sd_sysctl_header = register_sysctl_table(sd_ctl_root);
- }
- #else
- static void init_sched_domain_sysctl(void)
