@@ -1,51 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030772AbXAZGNs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030765AbXAZGSM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030772AbXAZGNs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jan 2007 01:13:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030775AbXAZGNs
+	id S1030765AbXAZGSM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jan 2007 01:18:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030780AbXAZGSM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jan 2007 01:13:48 -0500
-Received: from mail2.sea5.speakeasy.net ([69.17.117.4]:56743 "EHLO
-	mail2.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030772AbXAZGNr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jan 2007 01:13:47 -0500
-Message-ID: <45B99C19.9010703@kernel.org>
-Date: Thu, 25 Jan 2007 22:13:45 -0800
-From: Josh Triplett <josh@kernel.org>
-User-Agent: Icedove 1.5.0.9 (X11/20061220)
+	Fri, 26 Jan 2007 01:18:12 -0500
+Received: from mail.kroah.org ([69.55.234.183]:52167 "EHLO perch.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030765AbXAZGSL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jan 2007 01:18:11 -0500
+Date: Thu, 25 Jan 2007 22:17:56 -0800
+From: Greg KH <greg@kroah.com>
+To: Theodore Tso <tytso@mit.edu>, Sunil Naidu <akula2.shark@gmail.com>,
+       dirk.hohndel@intel.com, linux-kernel@vger.kernel.org, alan@redhat.com,
+       ksummit-2006-discuss@thunk.org, David Miller <davem@davemloft.net>
+Subject: Re: [Ksummit-2006-discuss] 2007 Linux Kernel Summit
+Message-ID: <20070126061756.GA20264@kroah.com>
+References: <20070123.095756.30177490.davem@davemloft.net> <C1DDFD3E.8658%dirk.hohndel@intel.com> <20070125.125121.98861775.davem@davemloft.net> <8355959a0701251646t4b7db48cj862268aad52e8e24@mail.gmail.com> <20070126032849.GB5589@thunk.org>
 MIME-Version: 1.0
-To: paulmck@linux.vnet.ibm.com
-CC: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de,
-       dipankar@in.ibm.com, tytso@us.ibm.com, dvhltc@us.ibm.com,
-       oleg@tv-sign.ru, twoerner.k@gmail.com, billh@gnuppy.monkey.org,
-       nielsen.esben@googlemail.com, corbet@lwn.net
-Subject: Re: [RFC PATCH -rt 1/2] RCU priority boosting that survives semi-vicious
- testing
-References: <20070125021101.GA23428@linux.vnet.ibm.com> <20070125021444.GA22540@linux.vnet.ibm.com> <45B87873.3080207@freedesktop.org> <20070125195816.GH1705@linux.vnet.ibm.com> <20070126014711.GA28014@linux.vnet.ibm.com>
-In-Reply-To: <20070126014711.GA28014@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070126032849.GB5589@thunk.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul E. McKenney wrote:
-> On Thu, Jan 25, 2007 at 11:58:16AM -0800, Paul E. McKenney wrote:
->> On Thu, Jan 25, 2007 at 01:29:23AM -0800, Josh Triplett wrote:
->>> Overall, this code looks sensible to me.  Some comments on the patch below.
+On Thu, Jan 25, 2007 at 10:28:49PM -0500, Theodore Tso wrote:
+> On Fri, Jan 26, 2007 at 06:16:13AM +0530, Sunil Naidu wrote:
+> > Good thoughts ;-)  I too believe in this - Where there is a Will,
+> > there is a Way! That's the reason why I have proposed India as the
+> > location for KS 2007, am still awaiting for the response from Theodore
+> > Tso.
 > 
-> [ . . . ]
-> 
->> Thank you again for the careful and thorough review!!!
->>
->> I will test these changes and send out an update.
->
-> And here is the updated RCU priority-boost patch.
+> I did give you a response.  Find a way to pay for 80+ kernel summit
+> invitees to travel to India (preferably in business class :-), and
+> we'll talk.  That's not realistic?  Well, then perhaps having the
+> concept of holding Kernel Summit in India is not realistic.
 
-Thanks for integrating my changes, and so quickly! :)
+Does this mean that the attendees of the 2007 summit in England all get
+business class tickets to travel to it?
 
-> Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+Sounds good to me!
 
-Acked-by: Josh Triplett <josh@kernel.org>
+thanks,
 
-- Josh Triplett
+greg k-h
