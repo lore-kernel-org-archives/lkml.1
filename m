@@ -1,50 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965527AbXAZNCP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965642AbXAZNE7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965527AbXAZNCP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jan 2007 08:02:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965619AbXAZNCP
+	id S965642AbXAZNE7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jan 2007 08:04:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965649AbXAZNE7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jan 2007 08:02:15 -0500
-Received: from web52914.mail.yahoo.com ([206.190.49.24]:21263 "HELO
-	web52914.mail.yahoo.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S965623AbXAZNCO (ORCPT
+	Fri, 26 Jan 2007 08:04:59 -0500
+Received: from ftp.linux-mips.org ([194.74.144.162]:44200 "EHLO
+	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965642AbXAZNE6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jan 2007 08:02:14 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=Message-ID:X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding;
-  b=Xvf+oTsA1cIF+xZf2lcLOa0AeyVKkSbfctQrP5drtbX+o3/bvLeslSTIwo3QOYpaVWmRo02jTekbkHJ+TTidTajQqcbnlku1cAlnLPRZeTNn4XnsykOu9ttBFn62I3tOfiTMwGXBQC3cJ9BM37LoGEHwrrcF3Q4bgIGVnxSgY4A=  ;
-Message-ID: <20070126130213.50355.qmail@web52914.mail.yahoo.com>
-X-YMail-OSG: 3XrbX7oVM1kZ1KIydn2IX279.Fo1EN6jTc8APIBaAmYXsytsRFTmYrpEjJaJrX_o05psGC.JB42_3Y_F79Dp9erYOKrMpCdcYGufwJDCtMwgrCDzQHjzP4WfPkLv_Q4AlKhkyN9p7SPlJYvRrZK_ZjSuv9Y5ZBkOZp9df8oAcMWSgcowHFXZiIeCMGSY
-Date: Fri, 26 Jan 2007 13:02:13 +0000 (GMT)
-From: Chris Rankin <rankincj@yahoo.com>
-Subject: Re: 2.6.18-stable release plans?
-To: Ken Moffat <zarniwhoop@ntlworld.com>
-Cc: Alan <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
-In-Reply-To: <20070125193644.GA12624@deepthought>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
+	Fri, 26 Jan 2007 08:04:58 -0500
+Date: Fri, 26 Jan 2007 13:04:55 +0000
+From: Ralf Baechle <ralf@linux-mips.org>
+To: Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@osdl.org>
+Cc: Paul Mundt <lethal@linux-sh.org>, Alexey Dobriyan <adobriyan@gmail.com>,
+       linux-kernel@vger.kernel.org, rmk@arm.linux.org.uk
+Subject: Re: [PATCH 2/3] ARM: Convert to use shared APM emulation.
+Message-ID: <20070126130454.GA21675@linux-mips.org>
+References: <20070115205935.GA5010@martell.zuzino.mipt.ru> <20070123164541.42faf54e.akpm@osdl.org> <20070124071337.GA21110@linux-sh.org> <20070124124422.GA14757@linux-mips.org> <20070124124538.GA14917@linux-mips.org> <20070124175050.GB3953@ucw.cz>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070124175050.GB3953@ucw.cz>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---- Ken Moffat <zarniwhoop@ntlworld.com> wrote:
->  I can't, but Dave Jones had a similar problem earlier this month,
-> archived at http://uwsg.iu.edu/hypermail/linux/kernel/0701.0/1822.html
-> which I think is a followup from
-> http://www.mail-archive.com/linux-kernel@vger.kernel.org/msg105370.html
->  - and seems to be a possible hardware failure (bulging capacitors)
-> becoming apparent under load.
+On Wed, Jan 24, 2007 at 05:50:51PM +0000, Pavel Machek wrote:
 
-Interesting, although I don't believe I have a hardware fault. The box is perfectly stable under
-2.6.18.x. Anyway, my particular problem happened very quickly last time so I am hoping that
-recompiling xine from scratch will trigger something again. This time, however, I have built a
-2.6.19.x kernel with a few memory debugging options turned on.
+> >  arch/arm/Kconfig               |   29 ++----------------
+> >  arch/arm/common/sharpsl_pm.c   |    2 -
+> >  arch/arm/kernel/Makefile       |    1 
+> >  arch/arm/mach-pxa/corgi_pm.c   |    2 -
+> >  arch/arm/mach-pxa/sharpsl_pm.c |    2 -
+> >  arch/arm/mach-pxa/spitz_pm.c   |    2 -
+> >  include/asm-arm/apm.h          |   64 -----------------------------------------
+> >  7 files changed, 8 insertions(+), 94 deletions(-)
+> 
+> Maybe you should delete apm.c, too?
 
-Cheers,
-Chris
+Indeed ...  New patch in reply to this email.
 
+Thanks,
 
-		
-___________________________________________________________ 
-Copy addresses and emails from any email account to Yahoo! Mail - quick, easy and free. http://uk.docs.yahoo.com/trueswitch2.html
+  Ralf
