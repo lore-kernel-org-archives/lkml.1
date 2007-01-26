@@ -1,66 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030776AbXAZQqo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030817AbXAZQra@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030776AbXAZQqo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jan 2007 11:46:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030789AbXAZQqn
+	id S1030817AbXAZQra (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jan 2007 11:47:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030834AbXAZQra
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jan 2007 11:46:43 -0500
-Received: from ug-out-1314.google.com ([66.249.92.170]:5825 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030776AbXAZQqj (ORCPT
+	Fri, 26 Jan 2007 11:47:30 -0500
+Received: from mtagate1.de.ibm.com ([195.212.29.150]:19046 "EHLO
+	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030817AbXAZQr3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jan 2007 11:46:39 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding:from;
-        b=SU+X+AJgWQ9UByQ8Di7PsMxVcuOyQVqzcSgaULD8tF3dAHcX2w+HZXxYWnlEm4hK4GevUTf39OLiDmuZvKhNxsvsloS4+cFEFWcVWK/3XbcMHGx05d4QO6AI4TONrrvGZ26BM82amlRCWO6NNTcj6Hl9HmGk3g7Vi4iDIzTyd18=
-Message-ID: <45BA3060.3060007@googlemail.com>
-Date: Fri, 26 Jan 2007 17:46:24 +0100
-User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
+	Fri, 26 Jan 2007 11:47:29 -0500
+Date: Fri, 26 Jan 2007 17:47:21 +0100
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
+Cc: akinobu.mita@gmail.com
+Subject: [S390] Check the return value of kthread_run().
+Message-ID: <20070126164721.GC11609@skybase>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: Andrew Morton <akpm@osdl.org>
-Subject: Re: mm snapshot broken-out-2007-01-26-00-36.tar.gz uploaded
-References: <200701260837.l0Q8blBr011622@shell0.pdx.osdl.net>
-In-Reply-To: <200701260837.l0Q8blBr011622@shell0.pdx.osdl.net>
-X-Enigmail-Version: 0.94.1.1
-Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: 8bit
-From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-akpm@osdl.org napisa³(a):
-> The mm snapshot broken-out-2007-01-26-00-36.tar.gz has been uploaded to
-> 
->    ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/mm/broken-out-2007-01-26-00-36.tar.gz
-> 
+From: Akinobu Mita <akinobu.mita@gmail.com>
 
-Yet another build error
+[S390] Check the return value of kthread_run().
 
-In file included from arch/i386/kernel/process.c:56:
-include/asm/debugreg.h:84: error: expected identifier or '(' before '{' token
-make[1]: *** [arch/i386/kernel/process.o] Error 1
-make: *** [arch/i386/kernel] Error 2
+Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
+Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
 
-Regards,
-Michal
+---
 
--- 
-Michal K. K. Piotrowski
-LTG - Linux Testers Group
-(http://www.stardust.webpages.pl/ltg/)
+ drivers/s390/s390mach.c |    6 +++++-
+ 1 files changed, 5 insertions(+), 1 deletion(-)
 
-Signed-off-by: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-
---- linux-work-clean/include/asm-i386/debugreg.h	2007-01-26 16:47:41.000000000 +0100
-+++ linux-work/include/asm-i386/debugreg.h	2007-01-26 17:39:58.000000000 +0100
-@@ -80,7 +80,7 @@ extern int enable_debugreg(unsigned long
-
- #else
-
--static inline void set_process_debugreg7(unsigned long new_dr7);
-+static inline void set_process_debugreg7(unsigned long new_dr7)
+diff -urpN linux-2.6/drivers/s390/s390mach.c linux-2.6-patched/drivers/s390/s390mach.c
+--- linux-2.6/drivers/s390/s390mach.c	2007-01-26 17:27:47.000000000 +0100
++++ linux-2.6-patched/drivers/s390/s390mach.c	2007-01-26 17:27:47.000000000 +0100
+@@ -525,7 +525,11 @@ arch_initcall(machine_check_init);
+ static int __init
+ machine_check_crw_init (void)
  {
- 	set_debugreg(new_dr7, 7);
+-	kthread_run(s390_collect_crw_info, &m_sem, "kmcheck");
++	struct task_struct *task;
++
++	task = kthread_run(s390_collect_crw_info, &m_sem, "kmcheck");
++	if (IS_ERR(task))
++		return PTR_ERR(task);
+ 	ctl_set_bit(14, 28);	/* enable channel report MCH */
+ 	return 0;
  }
