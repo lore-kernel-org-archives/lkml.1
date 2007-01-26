@@ -1,67 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030783AbXAZGSh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030762AbXAZGSu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030783AbXAZGSh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jan 2007 01:18:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030784AbXAZGSh
+	id S1030762AbXAZGSu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jan 2007 01:18:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030785AbXAZGSu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jan 2007 01:18:37 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:47763 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030783AbXAZGSg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jan 2007 01:18:36 -0500
-Date: Thu, 25 Jan 2007 22:18:21 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: David Woodhouse <dwmw2@infradead.org>
-cc: Alan <alan@lxorguk.ukuu.org.uk>, Jeff Garzik <jgarzik@pobox.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: Re: [PATCH] libata-sff: Don't call bmdma_stop on non DMA capable
- controllers
-In-Reply-To: <Pine.LNX.4.64.0701252125280.25027@woody.linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0701252208050.25027@woody.linux-foundation.org>
-References: <20070125150905.652f9ce2@localhost.localdomain> 
- <1169741658.3593.98.camel@shinybook.infradead.org> 
- <20070125172739.0c990a9a@localhost.localdomain> 
- <Pine.LNX.4.64.0701250940220.25027@woody.linux-foundation.org> 
- <1169770985.3593.146.camel@shinybook.infradead.org> 
- <Pine.LNX.4.64.0701251703570.25027@woody.linux-foundation.org> 
- <1169778239.3593.195.camel@shinybook.infradead.org> 
- <Pine.LNX.4.64.0701251832040.25027@woody.linux-foundation.org> 
- <1169782107.3593.219.camel@shinybook.infradead.org> 
- <Pine.LNX.4.64.0701251932250.25027@woody.linux-foundation.org> 
- <1169785150.3593.231.camel@shinybook.infradead.org> 
- <Pine.LNX.4.64.0701252029570.25027@woody.linux-foundation.org>
- <1169788181.3593.250.camel@shinybook.infradead.org>
- <Pine.LNX.4.64.0701252125280.25027@woody.linux-foundation.org>
+	Fri, 26 Jan 2007 01:18:50 -0500
+Received: from nf-out-0910.google.com ([64.233.182.188]:26961 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030762AbXAZGSt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jan 2007 01:18:49 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=RqTk0ph+QlBE6OHaaZ9Mv3/pqyPskzWmfMl1WPrymSv5Hq9k2HF4RiBDmhhwgxBGRWzJZDJBdNCiLYG1az5io+mTLLk8gKNkDhlvKtXNj43ZVoFFwEDtZpcviVLsvICFqjB5S4XKEA87rHnRGrDaBiPExziQKMKBlpooNo7kYtQ=
+Message-ID: <a71293c20701252218y326c392ehb7ee5127436d29bd@mail.gmail.com>
+Date: Fri, 26 Jan 2007 01:18:47 -0500
+From: "Stephen Evanchik" <evanchsa@gmail.com>
+To: "Luming Yu" <luming.yu@gmail.com>
+Subject: Re: SATA ahci Bug in 2.6.19.x
+Cc: "Stefan Priebe - FH" <studium@profihost.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <3877989d0701252122s7e5ad92fo5496daf566fd9f97@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <45B46FA0.2060901@profihost.com>
+	 <a71293c20701220600v426f0efdyc23dd945852f71c0@mail.gmail.com>
+	 <3877989d0701251925i8bbc09emd8dcad8d098195d2@mail.gmail.com>
+	 <a71293c20701252046o73fabcb9v611dedbb6f6b90e3@mail.gmail.com>
+	 <3877989d0701252122s7e5ad92fo5496daf566fd9f97@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 1/26/07, Luming Yu <luming.yu@gmail.com> wrote:
+> >
+> Is there any difference in dmesg with acpi=off?
+> what is your sata driver?
 
+The only difference is that I don't see the "ACPI: PCI Interrupt
+0000:00:0f.0[B] -> GSI
+21 (level, low) -> IRQ 19" printk. The driver is AHCI but the device
+is a VIA chip.
 
-On Thu, 25 Jan 2007, Linus Torvalds wrote:
-> 
-> Have you noticed that the resource-allocation code _already_ never returns 
-> zero on sparc64?
+I'll get a caputre of the boot log when I find my serial cable. This
+could be related to the VIA PIC quirks that was changed by Alan.
 
-Btw, that was a rhetorical question, and I'm not actually sure what the 
-heck sparc64 will _really_ do ;)
-
-I picked sparc64 as an example, because I _think_ that sparc64 actually is 
-an example of an architecture that sets up a separate root resource for 
-each PCI domain, and they are actually set up so that the ioport regions 
-are literally offset to match the hardware bases (and there are several 
-different kinds of PCI domain controllers that sparc supports, so those 
-bases will depend on that too).
-
-So on sparc64, "ioport_resource" really is just a container for the actual 
-per-domain resource buckets that the hardware (within that domain) will 
-then do the resource allocation from. Afaik.
-
-But you should actaully verify that with somebody like Davem if you 
-_really_ care.  I cc'd him in case he wants to pipe up and perhaps prove 
-me wrong.
-
-
-			Linus
+Stephen
