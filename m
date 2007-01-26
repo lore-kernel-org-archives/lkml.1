@@ -1,77 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751464AbXAZUot@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752134AbXAZUpd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751464AbXAZUot (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jan 2007 15:44:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751539AbXAZUot
+	id S1752134AbXAZUpd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jan 2007 15:45:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752141AbXAZUpd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jan 2007 15:44:49 -0500
-Received: from e35.co.us.ibm.com ([32.97.110.153]:35678 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751464AbXAZUos (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jan 2007 15:44:48 -0500
-Date: Sat, 27 Jan 2007 02:14:06 +0530
-From: Dipankar Sarma <dipankar@in.ibm.com>
+	Fri, 26 Jan 2007 15:45:33 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:45887 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752134AbXAZUpb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jan 2007 15:45:31 -0500
+Message-ID: <45BA6860.6040007@redhat.com>
+Date: Fri, 26 Jan 2007 12:45:20 -0800
+From: Ulrich Drepper <drepper@redhat.com>
+Organization: Red Hat, Inc.
+User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
+MIME-Version: 1.0
 To: Andrew Morton <akpm@osdl.org>
-Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Gautham Shenoy <ego@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: Fw: Re: [mm PATCH 4/6] RCU: (now) CPU hotplug
-Message-ID: <20070126204406.GB17134@in.ibm.com>
-Reply-To: dipankar@in.ibm.com
-References: <20070124011519.GG1613@linux.vnet.ibm.com> <20070124090111.GC27221@in.ibm.com> <20070124161559.GA1762@linux.vnet.ibm.com> <20070124210645.GA19650@in.ibm.com> <20070126191113.GA14770@in.ibm.com> <20070126112837.059502fc.akpm@osdl.org> <20070126194622.GA17134@in.ibm.com> <20070126121739.be3e072a.akpm@osdl.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070126121739.be3e072a.akpm@osdl.org>
-User-Agent: Mutt/1.5.11
+CC: Alexey Dobriyan <adobriyan@openvz.org>, devel@openvz.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/3] lutimesat: actual syscall and wire-up on i386
+References: <20070126112345.GC11128@localhost.sw.ru> <20070126123903.046aaa5e.akpm@osdl.org>
+In-Reply-To: <20070126123903.046aaa5e.akpm@osdl.org>
+X-Enigmail-Version: 0.94.1.2.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigDD50FF3089ACBF9F18024878"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 26, 2007 at 12:17:39PM -0800, Andrew Morton wrote:
-> On Sat, 27 Jan 2007 01:16:22 +0530
-> Dipankar Sarma <dipankar@in.ibm.com> wrote:
-> > > The plan is, I hope, to rip it all out and do freeze_processes() on the
-> > > hotplug side, so nobody else needs to worry about cpu hotplug any more. 
-> > > But at present everyone seems to be in hiding.
-> > 
-> > This would be ideal. However, we don't seem to have any momentum
-> > on this.
-> 
-> There's no point in expending effort on a fancy new lock until this option
-> has been eliminated, so yeah, things are stuck.
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigDD50FF3089ACBF9F18024878
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-The new lock (scalable refcount) is almost already there. 
-This http://lkml.org/lkml/2006/10/26/65 can be used to implement
-get_cpu_hotplug()/put_cpu_hotplug(). The unfairness issue
-can be fixed. I am going to play with these patches and
-see if I can come up with something useful quickly.
+Andrew Morton wrote:
+> OK, but I don't recall having seeing a demand for lutimes().  Opinions
+> are sought?
 
-> > The other thing we would need to do in this case is to
-> > check if all the users of cpu hotplug can tolerate a very slow
-> > hotplug step if there are 10s of thousands of processes and threads.
-> 
-> Yes, that needs evaluation.  If it's a problem then we might need to
+It's an interface which has been available on other platforms forever
+(lutimes, not lutimesat).  If it can be implemented correctly on the
+interesting file systems I'd say "go ahead", it can only be useful and
+have more benefits than the probably small cost of implementing it.
 
-I will check with the dynamic LPAR people to see if they
-have any requirements in this regard. I have also heard
-about some people wanting to disable additional threads
-in processors (running 1 h/w thread per core) using cpu hotplug 
-for some type of applications. I will check with those
-folks as well.
+If on the other hand important filesystems cannot support lutimes then
+I'd wait with introducing the syscall at least until the support is
+added.  It much easier to cope with unavailable syscalls then it is with
+partially working ones.
 
-> introduce a more sophisticated user interface which enables userspace to
-> take multiple CPUs online and offline in a single step, rather than
-> one-at-a-time.  I expect that'd be fairly straightforward.
+--=20
+=E2=9E=A7 Ulrich Drepper =E2=9E=A7 Red Hat, Inc. =E2=9E=A7 444 Castro St =
+=E2=9E=A7 Mountain View, CA =E2=9D=96
 
-The worry I have is that all of this is a complete rewrite of
-existing CPU hotplug and it took us 1+ years to get a decent
-CPU hotplug implementation. Rusty and Vatsa can probably vouch
-for how difficult it was to get it right. I don't think
-it is a good idea to keep CPU hotplug broken until this
-rewrite happens. Can't we just go with something that is
-already there and works correctly for us without waiting
-for the perfect solution ?
 
-Thanks
-Dipankar
+--------------enigDD50FF3089ACBF9F18024878
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+Comment: Using GnuPG with Fedora - http://enigmail.mozdev.org
+
+iD8DBQFFumhg2ijCOnn/RHQRAlTjAJ4vcVD7oysFh2Lbfbjf9N0RvtfEcACaA7WA
+Y57md4F3Hv4WBfZSnxOFjKY=
+=aR91
+-----END PGP SIGNATURE-----
+
+--------------enigDD50FF3089ACBF9F18024878--
