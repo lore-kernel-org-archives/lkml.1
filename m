@@ -1,41 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030693AbXAZA70@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030525AbXAZBEe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030693AbXAZA70 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jan 2007 19:59:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030694AbXAZA70
+	id S1030525AbXAZBEe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jan 2007 20:04:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030553AbXAZBEe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jan 2007 19:59:26 -0500
-Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:56530 "EHLO
-	pd4mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030693AbXAZA7Z (ORCPT
+	Thu, 25 Jan 2007 20:04:34 -0500
+Received: from mail1.webmaster.com ([216.152.64.169]:4452 "EHLO
+	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030525AbXAZBEd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jan 2007 19:59:25 -0500
-Date: Thu, 25 Jan 2007 18:57:55 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: linux i386 kernel 2.4.16 2.4.22 scheduling issue?
-In-reply-to: <fa.vvOWc9w2lXOSM85ZYU7DBK5SiSI@ifi.uio.no>
-To: Fei Liu <feiliu@aepnetworks.com>
-Cc: linux-kernel@vger.kernel.org
-Message-id: <45B95213.5060202@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.vvOWc9w2lXOSM85ZYU7DBK5SiSI@ifi.uio.no>
-User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
+	Thu, 25 Jan 2007 20:04:33 -0500
+From: "David Schwartz" <davids@webmaster.com>
+To: "linux-kernel" <linux-kernel@vger.kernel.org>
+Subject: RE: Excessive printks increase top mem usage?
+Date: Thu, 25 Jan 2007 17:03:56 -0800
+Message-ID: <MDEHLPKNGKAHNMBLJOLKKEFLBCAC.davids@webmaster.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+X-Priority: 3 (Normal)
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
+In-Reply-To: <b681c62b0701250523w14f0d0efl78b1ab3be7693c31@mail.gmail.com>
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
+Importance: Normal
+X-Authenticated-Sender: joelkatz@webmaster.com
+X-Spam-Processed: mail1.webmaster.com, Fri, 26 Jan 2007 17:04:08 -0800
+	(not processed: message from trusted or authenticated source)
+X-MDRemoteIP: 206.171.168.138
+X-Return-Path: davids@webmaster.com
+X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
+Reply-To: davids@webmaster.com
+X-MDAV-Processed: mail1.webmaster.com, Fri, 26 Jan 2007 17:04:10 -0800
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fei Liu wrote:
-> Hello group, I have some concern about scheduling issue with 2.4.16 and 
-> 2.4.22 i386 kernel where I see 1200+ interrupts and context switches per 
-> second through vmstat when machine is under load. Is this behavior 
-> normal? Is there any know scheduling issue with the above mentioned 
-> kernel versions?
 
-That number doesn't seem too unusual..
+> On 1/25/07, yogeshwar sonawane <yogyas@gmail.com> wrote:
+> > Hi all,
+> > I am running a user application which will just open/close my driver
+> > (simple one, empty functions with only printks) infinitely.
+> > A massive use of printk can slow down the system noticeably OR it can
+> > affect some time calculations.
+> > Apart from this, it was increasing top mem usage also. After closing
+> > the application, the memory consumption was not coming down(not
+> > freeing mem). Is this the expected behaviour? OR i am missing
+> > something?
+> >
+> > Can anybody help me in guiding the reason for this? Any help/links plz.
+> >
+> > Thanks in advance,
+> > Yogeshwar
 
--- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
+What does "increased top mem usage" mean? You have given no reason to
+suggest that there's anything unusual about this.
+
+Here's one theory: Some program is writing these kernel messages to a file.
+Because some other process might come and read that file later, the kernel
+keeps copies of the file data in memory.
+
+The kernel sees no advantage in having memory free. Free memory is memory
+that's not doing any good. Better to keep data in memory that might be
+useful later. We can always free the memory later if (and only if) we have
+something better to do with it.
+
+DS
+
 
