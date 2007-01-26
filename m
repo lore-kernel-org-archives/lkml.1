@@ -1,49 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030826AbXAZIqS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030824AbXAZIvS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030826AbXAZIqS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jan 2007 03:46:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030827AbXAZIqR
+	id S1030824AbXAZIvS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jan 2007 03:51:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030830AbXAZIvS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jan 2007 03:46:17 -0500
-Received: from smtp-105-friday.noc.nerim.net ([62.4.17.105]:4097 "EHLO
-	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1030826AbXAZIqR (ORCPT
+	Fri, 26 Jan 2007 03:51:18 -0500
+Received: from amsfep17-int.chello.nl ([213.46.243.15]:45045 "EHLO
+	amsfep12-int.chello.nl" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1030824AbXAZIvS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jan 2007 03:46:17 -0500
-Date: Fri, 26 Jan 2007 09:46:44 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Jonathan McDowell <noodles@earth.li>
-Cc: i2c@lm-sensors.org, linux-kernel@vger.kernel.org
-Subject: Re: [i2c] [PATCH] Add support for OneForAll remote JP1 parallel
- port interface
-Message-Id: <20070126094644.805702c6.khali@linux-fr.org>
-In-Reply-To: <20070125184139.GV27092@earth.li>
-References: <20070125184139.GV27092@earth.li>
-X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.8.20; i686-pc-linux-gnu)
+	Fri, 26 Jan 2007 03:51:18 -0500
+Subject: Re: [PATCH] nfs: fix congestion control -v4
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Andrew Morton <akpm@osdl.org>
+Cc: Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, pj@sgi.com
+In-Reply-To: <1169798412.6189.79.camel@twins>
+References: <20070116054743.15358.77287.sendpatchset@schroedinger.engr.sgi.com>
+	 <20070116135325.3441f62b.akpm@osdl.org> <1168985323.5975.53.camel@lappy>
+	 <Pine.LNX.4.64.0701171158290.7397@schroedinger.engr.sgi.com>
+	 <1169070763.5975.70.camel@lappy>
+	 <1169070886.6523.8.camel@lade.trondhjem.org>
+	 <1169126868.6197.55.camel@twins>
+	 <1169135375.6105.15.camel@lade.trondhjem.org>
+	 <1169199234.6197.129.camel@twins> <1169212022.6197.148.camel@twins>
+	 <Pine.LNX.4.64.0701190912540.14617@schroedinger.engr.sgi.com>
+	 <1169229461.6197.154.camel@twins>
+	 <1169231212.5775.29.camel@lade.trondhjem.org>
+	 <1169276500.6197.159.camel@twins>
+	 <1169482343.6083.7.camel@lade.trondhjem.org>
+	 <1169739148.6189.68.camel@twins>  <20070125210245.3fb0e30e.akpm@osdl.org>
+	 <1169798412.6189.79.camel@twins>
+Content-Type: text/plain
+Date: Fri, 26 Jan 2007 09:50:34 +0100
+Message-Id: <1169801434.6189.85.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.8.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jonathan,
-
-On Thu, 25 Jan 2007 18:41:39 +0000, Jonathan McDowell wrote:
-> This simple patch adds support to i2c-parport for the OneForAll remote
-> JP1 parallel port interfaces which can be found detailed at:
+On Fri, 2007-01-26 at 09:00 +0100, Peter Zijlstra wrote:
+> On Thu, 2007-01-25 at 21:02 -0800, Andrew Morton wrote:
+> > On Thu, 25 Jan 2007 16:32:28 +0100
+> > Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+> > 
+> > > +long congestion_wait_interruptible(int rw, long timeout)
+> > > +{
+> > > +	long ret;
+> > > +	DEFINE_WAIT(wait);
+> > > +	wait_queue_head_t *wqh = &congestion_wqh[rw];
+> > > +
+> > > +	prepare_to_wait(wqh, &wait, TASK_INTERRUPTIBLE);
+> > > +	if (signal_pending(current))
+> > > +		ret = -ERESTARTSYS;
+> > > +	else
+> > > +		ret = io_schedule_timeout(timeout);
+> > > +	finish_wait(wqh, &wait);
+> > > +	return ret;
+> > > +}
+> > > +EXPORT_SYMBOL(congestion_wait_interruptible);
+> > 
+> > I think this can share code with congestion_wait()?
+> > 
+> > static long __congestion_wait(int rw, long timeout, int state)
+> > {
+> > 	long ret;
+> > 	DEFINE_WAIT(wait);
+> > 	wait_queue_head_t *wqh = &congestion_wqh[rw];
+> > 
+> > 	prepare_to_wait(wqh, &wait, state);
+> > 	ret = io_schedule_timeout(timeout);
+> > 	finish_wait(wqh, &wait);
+> > 	return ret;
+> > }
+> > 
+> > long congestion_wait_interruptible(int rw, long timeout)
+> > {
+> > 	long ret = __congestion_wait(rw, timeout);
+> > 
+> > 	if (signal_pending(current))
+> > 		ret = -ERESTARTSYS;
+> > 	return ret;
+> > }
+> > 
+> > it's only infinitesimally less efficient..
 > 
-> http://www.hifi-remote.com/jp1/hardware.shtml
+> All the other _interruptible functions check signal_pending before
+> calling schedule. Which seems to make sense since its called in a loop
+> anyway, and if the loop condition turns false when interrupted you might
+> as well just finish up instead of bailing out.
 > 
-> These allow access to the internal configuration EEPROM on various
-> remote controls and there are a variety of Windows tools that make use
-> of this hardware. I have tested this patch with the "simple" parallel
-> port device and a OneForAll URC-7562 and confirmed that the data read
-> using the eeprom i2c driver matches that returned by the Windows "IR"
-> JP1 tool.
-> 
-> Signed-Off-By: Jonathan McDowell <noodles@earth.li>
+> However if you'd rather see your version, who am I to object ;-)
 
-Patch applied, thanks.
+ok, first wake up, then reply to emails :-)
 
--- 
-Jean Delvare
+How about this:
+
+long congestion_wait_interruptible(int rw, long timeout)
+{
+	long ret;
+
+	if (signal_pending(current))
+		ret = -ERESTARTSYS;
+	else
+		ret = congestion_wait(rw, timeout);
+	return ret;
+}
+EXPORT_SYMBOL(congestion_wait_interruptible);
+
+
