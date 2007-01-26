@@ -1,146 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752157AbXA0AnB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965653AbXA0And@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752157AbXA0AnB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jan 2007 19:43:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752162AbXA0AnA
+	id S965653AbXA0And (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jan 2007 19:43:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965582AbXA0AnE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jan 2007 19:43:00 -0500
-Received: from smtp102.sbc.mail.mud.yahoo.com ([68.142.198.201]:23604 "HELO
+	Fri, 26 Jan 2007 19:43:04 -0500
+Received: from smtp102.sbc.mail.mud.yahoo.com ([68.142.198.201]:23629 "HELO
 	smtp102.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752157AbXA0Am7 (ORCPT
+	by vger.kernel.org with SMTP id S1752165AbXA0AnB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jan 2007 19:42:59 -0500
+	Fri, 26 Jan 2007 19:43:01 -0500
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
   s=s1024; d=pacbell.net;
   h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=xIWj1auRQ0hQ5+3bVrVia+BOmcvn2JPVOG9KU7xCpjX+gPsdWT0r+NkzYds9mYsB5g70W/7maMHNv/Lp9n3vrgJxo3SFsH+bEM9rOdAHyxjux/Ye8uOtGEGBqt6OHIXY/py2CrNVAeSZh43ItbZnV/ak3tsJvSomGyAL2sIFlQ4=  ;
-X-YMail-OSG: Z26AE4wVM1mo7ORBtA7wH_mEeWR5w9qfpsSmV9UBcOxJ7DoYQGoeU_KX.o6NGmS7mcZ6E0ypzmyy66hEsarVvH7UVe5KdBuAw0K1Rb00vyoRo4pp83mVGAgpxntBibNnM_.bxwYHXZlwNBh1.m2HheZvut_zDAXmvXpwoyFQ_wtPtCAPVob2zuW8x33C
+  b=qLsueolZu63HIkmOH+ynSTtr7p5DtODoqB4xK7KAD8J1G+P1trlV7XOpDtcZVbcTyItr4BDeapYVk7eZ4L83h5zdtPH7xJ+hdEwWhCjr5AxsE2f7ahvt2HhPBpgh4dn2FC7dUXIwgbR0u69LDineFr5iHpGSImuqNXpezirFBZs=  ;
+X-YMail-OSG: l3.PNf4VM1nXja.TZpXFeKdm8gqWcbOJqYx7rsKCYOsLRzWqJ7BpJXsN9.cag.YQQf90aJQ0tHo2hHU6aBMJ7rR03Ze14UlsbUFjFGT1luZrmUQacrTeETjqDjCW3xMCrPmZhjYuakhy8BB.PGx4PmanJZMCrqmY
 From: David Brownell <david-b@pacbell.net>
 To: Hans-Peter Nilsson <hans-peter.nilsson@axis.com>
-Subject: Re: [PATCH 1/2] take 2: (was-kind-of: 3/5 SPI tx_default) 2.6.20-rc6
-Date: Fri, 26 Jan 2007 15:21:15 -0800
+Subject: Re: 2/5: Updates to SPI and mmc_spi: clock with cs inactive, kernel 2.6.19
+Date: Fri, 26 Jan 2007 15:31:10 -0800
 User-Agent: KMail/1.7.1
 Cc: linux-kernel@vger.kernel.org, mikael.starvik@axis.com,
        spi-devel-general@lists.sourceforge.net
-References: <200701261046.l0QAkIdt032408@ignucius.se.axis.com>
-In-Reply-To: <200701261046.l0QAkIdt032408@ignucius.se.axis.com>
+References: <200701261521.l0QFLjlv003816@ignucius.se.axis.com>
+In-Reply-To: <200701261521.l0QFLjlv003816@ignucius.se.axis.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200701261521.15844.david-b@pacbell.net>
+Message-Id: <200701261531.11141.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 26 January 2007 2:46 am, Hans-Peter Nilsson wrote:
+On Friday 26 January 2007 7:21 am, Hans-Peter Nilsson wrote:
 > > From: David Brownell <david-b@pacbell.net>
-> > Date: Thu, 25 Jan 2007 05:02:56 -0800
-> 
-> > On Wednesday 24 January 2007 8:52 pm, Hans-Peter Nilsson wrote:
-> > > (Please CC me on replies, I'm not subscribed to LKML or the SPI list.  Thanks.)
-> > > 
-> > > The SD/MMC SPI-based protocol isn't really duplex.  In the
-> > > normal case there's either information transmitted or received,
-> > > not both simultaneously.  The unused data is always 0xff; ones.
-> > > Unfortunately, the SPI framework leaves outgoing data for a
-> > > left-out tx_buf just as "undefined"
+
+> > Just so we don't lose count here:  this is the *third* example of
+> > an SPI protocol tweaking option that seems to be needed just to
+> > support an MMC-over-SPI stack:
 > > 
-> > In current kernels that's actually changed.  The value to be shifted
-> > out is now specified ... as all-zeroes, which is what various chips
-> > need to receive, and various (half-duplex/Microwire) controllers seem
-> > to be doing in any case.
-> > 
-> > If that's an issue -- and MMC-over-SPI needs to specify some other
-> > value --
+> >  - Claiming the SPI bus so that chipselect can stay high even
+> >    between spi_message interactions (although you seemed not to
+> >    run into that one);
 > 
-> Well, it *is* specified as ones (0xff). 
-
-Fair enough; I don't recall that I actually saw a spec saying that.
-
-
-> > I think a better way to package this would be to define a new
-> > flag for spi->mode, since controller drivers are already supposed
-> > to be checking that to make sure they handle all the options which
-> > have been specified.
+> You mentioned this is the reason for the spi_get_exclusive-patch
+> you sent privately (thanks).  I hadn't seen that, and from my
+> reading of the standard I read "bus transaction" (their wording
+> for what's between cs deactivation) as a single byte or at least
+> send and reply part of a command as separate "bus transactions".
+> Yeah, there's only one SPI device on my bus.  To simulate other
+> devices on the bus, chatting along when the SD/MMC SPI device
+> has chip-select inactive, I experimented with sending "random"
+> stuff while in the chip-select function like so:
 > 
-> But it's unspecified what the controller drivers should do with
-> flags don't recognize (should they refuse? warn? ignore? - I see
-> they all ignore)
-
-They should refuse.
-
-
->   if (spi->mode & ~(SPI_CPHA | SPI_CPOL | SPI_CS_HIGH | SPI_LSB_FIRST))
-> 	return -EINVAL;
+> ...
 > 
-> (I think I'll do exactly that with the drivers I wrote.)
+> ... and *now* I see it. ;-) No card works.  Hm.  Modulo bugs in
+> the above, I agree you need that claim-stuff if there's more
+> than one device.  Still, I guess that's actually a rare
+> configuration.
 
-Something like that, yes.  It might be nice to have a KERN_DEBUG message
-saying which flags were troublesome; production systems will of course
-never trigger those failures, so there's no point in having a message
-that's not automagically compiled-out.
+The issue is generic.  It shows up with JTAG (which you can
+view as an application of SPI) as well as various other tools
+I've seen.  As for rare ... hard to say.  I don't design boards,
+and the ones where I look at SPI support have real MMC hardware
+so they don't need mmc-over-spi.
+
+
+> >  - Efficiency in the routine "poll for status" operation, where
+> >    data must be read over MISO (CS high) until 0xff bytes stop;
+> 
+> That's for read.  For write, it's until the 0x0 bytes stop.  But
+> this is a performance feature, not critical for basic function.
+
+Right.
 
  
-> >  That flag could work in conjunction with a byte
+> >  - This issue, where a deselected device must be clocked.
 > 
-> Or why not a 32-bit word!
+> I retract this patch and suggestion, given your later
+> suggestion.  (Not worthwhile as a feature.)
 
-If a driver wants a repeating 32-bit pattern, they should just
-provide a properly initialized tx buffer.
-
-
-> FWIW, I defined it as a single bit in that patch, because that's
-> what my HW can do when the transmitter is disabled - and because
-> MOSI *is* a single-valued signal. ;-) 
-
-I wouldn't mind a single bit flag either, saying whether to shift
-out all ones or all zeroes.  The controller driver would morph it
-to something appropriate ... 0xff, 0xffffffff, etc.
-
-
-> While I was looking, I noticed that the memory-layout of
-> non-8-bit words for SPI is a bit unclear. 
-
-The SPI_LSB_FIRST flag describes bit order on the wire.
-
-In-memory bit ordering should be native/CPU bit order
-(which may be slightly unclear).  So the confusion is
-not for 8, 16, or 32 bit words ... but 9, 12, 20, and
-other sample sizes.
-
-
-> The endianness of 
-> data shifted out doesn't really define endianness in memory or
-> whether 24-bit words bytes are in order {hi, med, low, pad} or
-> indeed {pad, low, med, hi or whatever combination.  For a LE
-> architecture, storing data as LE in memory makes sense, and both
-> with and without padding makes sense too.  Perhaps best to just
-> document that it's undefined?
-
-No, the point is to alow portable drivers.  So that must be
-specified.  What I'm writing up is that it must be right
-justified, so its the MSBs that are undefined (for RX) or
-ignored (TX).
-
-
-> > then please re-issue this patch against 2.6.20, including
-> > the update to the bitbang driver ("reference implementation").
-> 
-> I used patch-2.6.20-rc6; I see not too many SPI things changed
-> besides defining the previously undefined as 0.  I didn't find a
-> reason to introduce a mode-flag; it should always be enough to
-> look at the word.  A flag is redundant with default_tx_word != 0
-> (in 2.6.20 semantics).  So, I just added that word and adjusted
-> the bitbang-driver.  As a courtesy, I also added simple bail-out
-> code for the other drivers (not compiled and submitted
-> separately).
-
-OK.
+OK, fine.  Temporary toggling of chipselect polarity ... that
+doesn't _quite_ feel like a hack!
 
  
-> Here's an updated patch for 2.6.20-rc6. 
+> > There's no "chip select" feature in the API.  It's only part of
+> > the protocol described by messages delivered to the controller
+> > driver.  Don't confuse the "bitbang" framework (which works with
+> > more than just bitbanged hardware, of course) with the API; it's
+> > just an implementation aid, and not one that all implementors
+> > would choose to use.
+> 
+> Let me rephrase: some controllers (yes, they are using the
+> bitbang framework but that's beside the point) do not deactivate
+> chip-select; they may not have that signal programmable.
 
-Thanks, I'll eyeball it and merge some version.
+I think those controllers are best viewed as not talking SPI.
+
+Or alternatively, as being so bare-bones that they expect to
+have chipselects managed outside the controller.  (Which is not
+a bad approach after all.)
 
 - Dave
+
