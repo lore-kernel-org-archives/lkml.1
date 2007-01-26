@@ -1,51 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161071AbXAZQ65@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161085AbXAZQ7g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161071AbXAZQ65 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jan 2007 11:58:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161066AbXAZQ64
+	id S1161085AbXAZQ7g (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jan 2007 11:59:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161089AbXAZQ7f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jan 2007 11:58:56 -0500
-Received: from iriserv.iradimed.com ([69.44.168.233]:27669 "EHLO iradimed.com"
+	Fri, 26 Jan 2007 11:59:35 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:59672 "EHLO amd.ucw.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1161071AbXAZQ6v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jan 2007 11:58:51 -0500
-Message-ID: <45BA3343.8070703@cfl.rr.com>
-Date: Fri, 26 Jan 2007 11:58:43 -0500
-From: Phillip Susi <psusi@cfl.rr.com>
-User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
+	id S1161085AbXAZQ73 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jan 2007 11:59:29 -0500
+Date: Fri, 26 Jan 2007 17:58:47 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: "Kawai, Hidehiro" <hidehiro.kawai.ez@hitachi.com>
+Cc: kernel list <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>
+Subject: Re: [Fwd: [PATCH 4/4] coredump: documentation for proc and sysctl]
+Message-ID: <20070126165847.GB1269@elf.ucw.cz>
+References: <45BA0E41.2080204@hitachi.com>
 MIME-Version: 1.0
-To: Mark Lord <lkml@rtr.ca>
-CC: Denis Vlasenko <vda.linux@googlemail.com>,
-       Michael Tokarev <mjt@tls.msk.ru>, Linus Torvalds <torvalds@osdl.org>,
-       Viktor <vvp01@inbox.ru>, Aubrey <aubreylee@gmail.com>,
-       Hua Zhong <hzhong@gmail.com>, Hugh Dickins <hugh@veritas.com>,
-       linux-kernel@vger.kernel.org, hch@vger.kernel.org
-Subject: Re: O_DIRECT question
-References: <6d6a94c50701101857v2af1e097xde69e592135e54ae@mail.gmail.com> <45B90D19.60106@cfl.rr.com> <45B916F2.4070906@tls.msk.ru> <200701252211.39017.vda.linux@googlemail.com> <45BA2628.4030502@rtr.ca>
-In-Reply-To: <45BA2628.4030502@rtr.ca>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 26 Jan 2007 16:59:00.0391 (UTC) FILETIME=[46870B70:01C7416B]
-X-TM-AS-Product-Ver: SMEX-7.2.0.1122-3.6.1039-14958.003
-X-TM-AS-Result: No--4.771400-5.000000-31
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <45BA0E41.2080204@hitachi.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Lord wrote:
-> You guys need to backup in this thread.
-> 
-> Every example of O_DIRECT here could be replaced with
-> calls to mmap(), msync(), and madvise() (or posix_fadvise).
-> 
-> In addition to being at least as fast as O_DIRECT,
-> these have the added benefit of using the page cache (avoiding reads for 
-> data already present, handling multiple
-> users of the same data, etc..).
+Hi!
 
-Please actually _read_ the thread.  In every one of my posts I have 
-shown why this is not the case.
 
-To briefly rehash the core of the argument, there is no way to 
-asynchronously manage IO with mmap, msync, madvise -- instead you take 
-page faults or otherwise block, thus stalling the pipeline.
+> This patch adds the documentation for the following parameters:
+>   /proc/<pid>/core_flags
+>   /proc/sys/kernel/core_flags_enable
 
+Sysctl seems really strange to me. Either the feature is safe to use,
+or it is not. Users can already ulimit -c 0, and we do not have
+"/proc/sys/kernel/allow_users_to_disable_their_core_dumps".
+
+Plus, this is pretty analogical to ulimit -c, so I believe it should
+be implemented like that one. You'll need less locking that way.
+
+> +2.14 /proc/<pid>/core_flags - Core dump control flags
+> +---------------------------------------------------------------------
+> +When a process is dumped, all anonymous memory is written to a core file as
+> +long as the size of the core file isn't limited. But sometimes we don't want
+> +to dump some memory segments, for example, huge shared memory.
+> +
+> +The /proc/<pid>/core_flags file enables you to omit some anonymous memory from
+> +a core file when it is generated. The content of the proc file is bitmask of
+> +memory segment types you don't want to dump. When the <pid> process is dumped,
+> +the core dump routine decides whether a given memory segment should be dumped
+> +into a core file or not, based on the type of the memory segment and bitmask.
+> +
+> +Currently, only valid bit is bit 0. If bit 0 is set, anonymous `shared' memory
+> +segments are not dumped. There are three types of anonymous shared memory:
+> +
+> +  - IPC shared memory
+> +  - the memory segments created by mmap(2) with MAP_ANONYMOUS and MAP_SHARED
+> +    flags
+> +  - the memory segments created by mmap(2) with MAP_SHARED flag, and the
+> +    mapped file has already been unlinked
+> +
+> +Because current core dump routine doesn't distinguish these segments, you can
+> +only choose either dumping all anonymous shared memory segments or not.
+> +
+> +If you don't want to dump all shared memory segments attached to pid 1234, set
+> +the bit 0 of the process's core_flags to 1:
+> +
+> +  $ echo 1 > /proc/1234/core_flags
+> +
+> +Additionally, you can check its hexadecimal value by reading the file:
+> +
+> +  $ cat /proc/1234/core_flags
+> +  00000001
+> +
+> +When a new process is created, the process inherits the core_flags setting
+> +from its parent. It is useful to set the core_flags before the program runs.
+> +For example:
+> +
+> +  $ echo 1 > /proc/self/core_flags
+> +  $ ./some_program
+> +
+
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
