@@ -1,72 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030601AbXAZQLa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030630AbXAZQWE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030601AbXAZQLa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jan 2007 11:11:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030620AbXAZQLa
+	id S1030630AbXAZQWE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jan 2007 11:22:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030709AbXAZQWE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jan 2007 11:11:30 -0500
-Received: from ms-smtp-03.nyroc.rr.com ([24.24.2.57]:48283 "EHLO
-	ms-smtp-03.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030601AbXAZQL3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jan 2007 11:11:29 -0500
-Subject: Re: mutex ownership (was: Re: [PATCH 19/24] Unionfs: Helper
-	macros/inlines)
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Oliver Neukum <oliver@neukum.org>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Andrew Morton <akpm@osdl.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       arjan <arjan@infradead.org>
-In-Reply-To: <200701091009.30063.oliver@neukum.org>
-References: <1168229596580-git-send-email-jsipek@cs.sunysb.edu>
-	 <20070108132817.5c9a30d6.akpm@osdl.org> <1168333376.12503.22.camel@twins>
-	 <200701091009.30063.oliver@neukum.org>
-Content-Type: text/plain
-Date: Fri, 26 Jan 2007 11:10:36 -0500
-Message-Id: <1169827836.26770.20.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 
-Content-Transfer-Encoding: 7bit
+	Fri, 26 Jan 2007 11:22:04 -0500
+Received: from omx1-ext.sgi.com ([192.48.179.11]:59235 "EHLO omx1.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1030630AbXAZQWC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jan 2007 11:22:02 -0500
+Date: Fri, 26 Jan 2007 08:21:52 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+To: Mel Gorman <mel@csn.ul.ie>
+cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/8] Create ZONE_MOVABLE to partition memory between
+ movable and non-movable pages
+In-Reply-To: <20070125234458.28809.5412.sendpatchset@skynet.skynet.ie>
+Message-ID: <Pine.LNX.4.64.0701260812150.6141@schroedinger.engr.sgi.com>
+References: <20070125234458.28809.5412.sendpatchset@skynet.skynet.ie>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-01-09 at 10:09 +0100, Oliver Neukum wrote:
-> Am Dienstag, 9. Januar 2007 10:02 schrieb Peter Zijlstra:
+On Thu, 25 Jan 2007, Mel Gorman wrote:
 
-> > Its a fundamental property of a mutex, not a shortcoming. A mutex has an
-> > owner, the one that takes and releases the resource. This allows things
-> > such as Priority Inheritance to boost owners.
-> > 
-> > 'fixing' this takes away much of what a mutex is.
-> > 
-> > That said, it seems some folks really want this to happen, weird as it
-> > may be. I'm not sure if all these cases are because of wrong designs. A
-> > possible extension to the mutex interface might be something like this:
-> > 
-> >   mutex_pass_owner(struct task_struct *task);
-> > 
-> > which would be an atomic unlock/lock pair where the current task
-> > releases the resource and the indicated task gains it. However it must
-> > be understood that from the POV of 'current' this should be treated as
-> > an unlock action.
-> 
-> This won't help if I want to release from an interrupt handler or tasklet.
+> The following 8 patches against 2.6.20-rc4-mm1 create a zone called
+> ZONE_MOVABLE that is only usable by allocations that specify both __GFP_HIGHMEM
+> and __GFP_MOVABLE. This has the effect of keeping all non-movable pages
+> within a single memory partition while allowing movable allocations to be
+> satisified from either partition.
 
-Then that shouldn't use a mutex. A mutex is for "mutual exclusion", and
-not "shared exclusion".  Peter is right that the fundamental property of
-a mutex, is that it is for a single thread.  And it should never be
-released by a separate thread than the one that grabbed it.
+For arches that do not have HIGHMEM other zones would be okay too it 
+seems.
 
-A semaphore can be used as a mutex, but not the other way around.
+> The size of the zone is determined by a kernelcore= parameter specified at
+> boot-time. This specifies how much memory is usable by non-movable allocations
+> and the remainder is used for ZONE_MOVABLE. Any range of pages within
+> ZONE_MOVABLE can be released by migrating the pages or by reclaiming.
 
-I wouldn't even recommend doing the mutex_pass_owner().  To do so, the
-process calling this must be the owner, and the parameter must be a
-thread waiting on the mutex. If it is not, then that could introduce
-some really nasty races and bugs.
+The user has to manually fiddle around with the size of the unmovable 
+partition until it works?
 
-The mutex_unlock_dont_warn_if_a_different_task_did_it() is also a bad
-idea.
+> When selecting a zone to take pages from for ZONE_MOVABLE, there are two
+> things to consider. First, only memory from the highest populated zone is
+> used for ZONE_MOVABLE. On the x86, this is probably going to be ZONE_HIGHMEM
+> but it would be ZONE_DMA on ppc64 or possibly ZONE_DMA32 on x86_64. Second,
+> the amount of memory usable by the kernel will be spreadly evenly throughout
+> NUMA nodes where possible. If the nodes are not of equal size, the amount
+> of memory usable by the kernel on some nodes may be greater than others.
 
--- Steve
+So how is the amount of movable memory on a node calculated? Evenly 
+distributed? There are some NUMA architectures that are not that 
+symmetric.
 
+> By default, the zone is not as useful for hugetlb allocations because they
+> are pinned and non-migratable (currently at least). A sysctl is provided that
+> allows huge pages to be allocated from that zone. This means that the huge
+> page pool can be resized to the size of ZONE_MOVABLE during the lifetime of
+> the system assuming that pages are not mlocked. Despite huge pages being
+> non-movable, we do not introduce additional external fragmentation of note
+> as huge pages are always the largest contiguous block we care about.
+
+The user already has to specify the partitioning of the system at bootup 
+and could take the huge page sizes into account.
+
+Also huge pages may have variable sizes that can be specified on bootup 
+for IA64. The assumption that a huge page is always the largest 
+contiguous block is *not true*.
+
+The huge page sizes on i386 and x86_64 platforms are contigent on 
+their page table structure. This can be completely different on other 
+platforms.
