@@ -1,74 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752092AbXAZMbm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752109AbXAZMbx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752092AbXAZMbm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jan 2007 07:31:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752081AbXAZMbm
+	id S1752109AbXAZMbx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jan 2007 07:31:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752097AbXAZMbx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jan 2007 07:31:42 -0500
-Received: from mailhub.sw.ru ([195.214.233.200]:45127 "EHLO relay.sw.ru"
+	Fri, 26 Jan 2007 07:31:53 -0500
+Received: from lucidpixels.com ([75.144.35.66]:57692 "EHLO lucidpixels.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752017AbXAZMbl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jan 2007 07:31:41 -0500
-Message-ID: <45B9F73C.4070700@openvz.org>
-Date: Fri, 26 Jan 2007 15:42:36 +0300
-From: Kirill Korotaev <dev@openvz.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.13) Gecko/20060417
-X-Accept-Language: en-us, en, ru
+	id S1752022AbXAZMbw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jan 2007 07:31:52 -0500
+Date: Fri, 26 Jan 2007 07:31:50 -0500 (EST)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+X-X-Sender: jpiszcz@p34.internal.lan
+To: Andrew Morton <akpm@osdl.org>
+cc: Chuck Ebbert <cebbert@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-raid@vger.kernel.org, xfs@oss.sgi.com, Neil Brown <neilb@suse.de>
+Subject: Re: Kernel 2.6.19.2 New RAID 5 Bug (oops when writing Samba -> RAID5)
+In-Reply-To: <20070126012505.d8cb07f2.akpm@osdl.org>
+Message-ID: <Pine.LNX.4.64.0701260731200.9593@p34.internal.lan>
+References: <Pine.LNX.4.64.0701200718290.29223@p34.internal.lan>
+ <45B5261B.1050104@redhat.com> <Pine.LNX.4.64.0701241836590.2930@p34.internal.lan>
+ <20070126012505.d8cb07f2.akpm@osdl.org>
 MIME-Version: 1.0
-To: Jeff Layton <jlayton@redhat.com>
-CC: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] make static counters in new_inode and iunique be
- 32 bits
-References: <200612291911.kBTJB5dO019099@dantu.rdu.redhat.com>
-In-Reply-To: <200612291911.kBTJB5dO019099@dantu.rdu.redhat.com>
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Acked-By: Kirill Korotaev <dev@openvz.org>
+Just re-ran the test 4-5 times, could not reproduce this one, but I'll 
+keep running this kernel w/patch for a while and see if it happens again.
 
-hit it today as well :/
+On Fri, 26 Jan 2007, Andrew Morton wrote:
 
-> When a 32-bit program that was not compiled with large file offsets does a
-> stat and gets a st_ino value back that won't fit in the 32 bit field, glibc
-> (correctly) generates an EOVERFLOW error. We can't do anything about fs's
-> with larger permanent inode numbers, but when we generate them on the fly,
-> we ought to try and have them fit within a 32 bit field.
+> On Wed, 24 Jan 2007 18:37:15 -0500 (EST)
+> Justin Piszcz <jpiszcz@lucidpixels.com> wrote:
 > 
-> This patch takes the first step toward this by making the static counters in
-> these two functions be 32 bits.
+> > > Without digging too deeply, I'd say you've hit the same bug Sami Farin and
+> > > others
+> > > have reported starting with 2.6.19: pages mapped with kmap_atomic() become
+> > > unmapped
+> > > during memcpy() or similar operations.  Try disabling preempt -- that seems to
+> > > be the
+> > > common factor.
+> > > 
+> > > 
+> > > -
+> > > To unsubscribe from this list: send the line "unsubscribe linux-raid" in
+> > > the body of a message to majordomo@vger.kernel.org
+> > > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > > 
+> > > 
+> > 
+> > After I run some other tests, I am going to re-run this test and see if it 
+> > OOPSes again with PREEMPT off.
 > 
-> Signed-off-by: Jeff Layton <jlayton@redhat.com>
+> Strange.  The below debug patch might catch it - please run with this
+> applied.  
 > 
-> diff --git a/fs/inode.c b/fs/inode.c
-> index bf21dc6..23fc1fd 100644
-> --- a/fs/inode.c
-> +++ b/fs/inode.c
-> @@ -524,7 +524,8 @@ repeat:
->   */
->  struct inode *new_inode(struct super_block *sb)
+> 
+> --- a/arch/i386/mm/highmem.c~kmap_atomic-debugging
+> +++ a/arch/i386/mm/highmem.c
+> @@ -30,7 +30,43 @@ void *kmap_atomic(struct page *page, enu
 >  {
-> -	static unsigned long last_ino;
-> +	/* 32 bits for compatability mode stat calls */
-> +	static unsigned int last_ino;
->  	struct inode * inode;
+>  	enum fixed_addresses idx;
+>  	unsigned long vaddr;
+> +	static unsigned warn_count = 10;
 >  
->  	spin_lock_prefetch(&inode_lock);
-> @@ -683,7 +684,8 @@ static unsigned long hash(struct super_block *sb, unsigned long hashval)
->   */
->  ino_t iunique(struct super_block *sb, ino_t max_reserved)
->  {
-> -	static ino_t counter;
-> +	/* 32 bits for compatability mode stat calls */
-> +	static unsigned int counter;
->  	struct inode *inode;
->  	struct hlist_head * head;
->  	ino_t res;
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> +	if (unlikely(warn_count == 0))
+> +		goto skip;
+> +
+> +	if (unlikely(in_interrupt())) {
+> +		if (in_irq()) {
+> +			if (type != KM_IRQ0 && type != KM_IRQ1 &&
+> +			    type != KM_BIO_SRC_IRQ && type != KM_BIO_DST_IRQ &&
+> +			    type != KM_BOUNCE_READ) {
+> +				WARN_ON(1);
+> +				warn_count--;
+> +			}
+> +		} else if (!irqs_disabled()) {	/* softirq */
+> +			if (type != KM_IRQ0 && type != KM_IRQ1 &&
+> +			    type != KM_SOFTIRQ0 && type != KM_SOFTIRQ1 &&
+> +			    type != KM_SKB_SUNRPC_DATA &&
+> +			    type != KM_SKB_DATA_SOFTIRQ &&
+> +			    type != KM_BOUNCE_READ) {
+> +				WARN_ON(1);
+> +				warn_count--;
+> +			}
+> +		}
+> +	}
+> +
+> +	if (type == KM_IRQ0 || type == KM_IRQ1 || type == KM_BOUNCE_READ) {
+> +		if (!irqs_disabled()) {
+> +			WARN_ON(1);
+> +			warn_count--;
+> +		}
+> +	} else if (type == KM_SOFTIRQ0 || type == KM_SOFTIRQ1) {
+> +		if (irq_count() == 0 && !irqs_disabled()) {
+> +			WARN_ON(1);
+> +			warn_count--;
+> +		}
+> +	}
+> +skip:
+>  	/* even !CONFIG_PREEMPT needs this, for in_atomic in do_page_fault */
+>  	pagefault_disable();
+>  	if (!PageHighMem(page))
+> _
 > 
-
