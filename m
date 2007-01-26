@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030871AbXAZQ4I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030868AbXAZQ4M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030871AbXAZQ4I (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jan 2007 11:56:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030756AbXAZQzl
+	id S1030868AbXAZQ4M (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jan 2007 11:56:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030887AbXAZQ4J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jan 2007 11:55:41 -0500
-Received: from mtagate3.de.ibm.com ([195.212.29.152]:59478 "EHLO
-	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030910AbXAZQz2 (ORCPT
+	Fri, 26 Jan 2007 11:56:09 -0500
+Received: from mtagate2.de.ibm.com ([195.212.29.151]:25728 "EHLO
+	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030868AbXAZQ4C (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jan 2007 11:55:28 -0500
-Date: Fri, 26 Jan 2007 17:55:21 +0100
+	Fri, 26 Jan 2007 11:56:02 -0500
+Date: Fri, 26 Jan 2007 17:55:58 +0100
 From: Martin Schwidefsky <schwidefsky@de.ibm.com>
 To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
-Cc: hongjie@us.ibm.com
-Subject: [S390] boot from NSS support
-Message-ID: <20070126165521.GY11609@skybase>
+Cc: holzheu@de.ibm.com
+Subject: [S390] Hypervisor filesystem (s390_hypfs) for z/VM
+Message-ID: <20070126165558.GA11609@skybase>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -23,619 +23,381 @@ User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Hongjie Yang <hongjie@us.ibm.com>
+From: Michael Holzheu <holzheu@de.ibm.com>
 
-[S390] boot from NSS support
+[S390] Hypervisor filesystem (s390_hypfs) for z/VM
 
-Add support to boot from a named saved segment (NSS).
+This is an extension of the already existing hypfs for LPAR (DIAG 204).
+Data returned by DIAG 2fc is exported using the s390_hypfs when Linux
+is running under z/VM. Information about cpus and memory is provided.
+Data is put into different virtual files which can be accessed from user
+space. All values are represented as ASCII strings
 
-Signed-off-by: Hongjie Yang <hongjie@us.ibm.com>
+Signed-off-by: Michael Holzheu <holzheu@de.ibm.com>
 Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
 ---
 
- arch/s390/kernel/head31.S      |   34 +------
- arch/s390/kernel/head64.S      |   30 +-----
- arch/s390/kernel/ipl.c         |   87 ++++++++++++++++++++
- arch/s390/kernel/setup.c       |  178 +++++++++++++++++++++++++++++++++++++++--
- arch/s390/kernel/vmlinux.lds.S |   10 +-
- include/asm-s390/setup.h       |    8 +
- 6 files changed, 282 insertions(+), 65 deletions(-)
+ arch/s390/hypfs/Makefile     |    2 
+ arch/s390/hypfs/hypfs.h      |    9 +
+ arch/s390/hypfs/hypfs_diag.h |   16 --
+ arch/s390/hypfs/hypfs_vm.c   |  231 +++++++++++++++++++++++++++++++++++++++++++
+ arch/s390/hypfs/inode.c      |   31 +++--
+ 5 files changed, 262 insertions(+), 27 deletions(-)
 
-diff -urpN linux-2.6/arch/s390/kernel/head31.S linux-2.6-patched/arch/s390/kernel/head31.S
---- linux-2.6/arch/s390/kernel/head31.S	2007-01-26 17:27:27.000000000 +0100
-+++ linux-2.6-patched/arch/s390/kernel/head31.S	2007-01-26 17:29:33.000000000 +0100
-@@ -51,20 +51,12 @@ startup_continue:
- 	st	%r15,__LC_KERNEL_STACK	# set end of kernel stack
- 	ahi	%r15,-96
- 	xc	__SF_BACKCHAIN(4,%r15),__SF_BACKCHAIN(%r15) # clear backchain
+diff -urpN linux-2.6/arch/s390/hypfs/hypfs_diag.h linux-2.6-patched/arch/s390/hypfs/hypfs_diag.h
+--- linux-2.6/arch/s390/hypfs/hypfs_diag.h	2006-11-29 22:57:37.000000000 +0100
++++ linux-2.6-patched/arch/s390/hypfs/hypfs_diag.h	1970-01-01 01:00:00.000000000 +0100
+@@ -1,16 +0,0 @@
+-/*
+- *  arch/s390/hypfs_diag.h
+- *    Hypervisor filesystem for Linux on s390.
+- *
+- *    Copyright (C) IBM Corp. 2006
+- *    Author(s): Michael Holzheu <holzheu@de.ibm.com>
+- */
 -
--	l	%r14,.Lipl_save_parameters-.LPG1(%r13)
--	basr	%r14,%r14
- #
--# clear bss memory
-+# Save ipl parameters, clear bss memory, initialize storage key for kernel pages,
-+# and create a kernel NSS if the SAVESYS= parm is defined
- #
--	l	%r2,.Lbss_bgn-.LPG1(%r13) # start of bss
--	l	%r3,.Lbss_end-.LPG1(%r13) # end of bss
--	sr	%r3,%r2			# length of bss
--	sr	%r4,%r4
--	sr	%r5,%r5			# set src,length and pad to zero
--	sr	%r0,%r0
--	mvcle	%r2,%r4,0		# clear mem
--	jo	.-4			# branch back, if not finish
-+	l	%r14,.Lstartup_init-.LPG1(%r13)
-+	basr	%r14,%r14
- 
- 	l	%r2,.Lrcp-.LPG1(%r13)	# Read SCP forced command word
- .Lservicecall:
-@@ -125,10 +117,10 @@ startup_continue:
- 	b	.Lfchunk-.LPG1(%r13)
- 
- 	.align 4
--.Lipl_save_parameters:
--	.long	ipl_save_parameters
- .Linittu:
- 	.long	init_thread_union
-+.Lstartup_init:
-+	.long	startup_init
- .Lpmask:
- 	.byte	0
- 	.align	8
-@@ -207,20 +199,6 @@ startup_continue:
- .Ldonemem:
- 	l	%r12,.Lmflags-.LPG1(%r13) # get address of machine_flags
- #
--# find out if we are running under VM
--#
--	stidp	__LC_CPUID		# store cpuid
--	tm	__LC_CPUID,0xff		# running under VM ?
--	bno	.Lnovm-.LPG1(%r13)
--	oi	3(%r12),1		# set VM flag
--.Lnovm:
--	lh	%r0,__LC_CPUID+4	# get cpu version
--	chi	%r0,0x7490		# running on a P/390 ?
--	bne	.Lnop390-.LPG1(%r13)
--	oi	3(%r12),4		# set P/390 flag
--.Lnop390:
+-#ifndef _HYPFS_DIAG_H_
+-#define _HYPFS_DIAG_H_
 -
--#
- # find out if we have an IEEE fpu
- #
- 	mvc	__LC_PGM_NEW_PSW(8),.Lpcfpu-.LPG1(%r13)
-diff -urpN linux-2.6/arch/s390/kernel/head64.S linux-2.6-patched/arch/s390/kernel/head64.S
---- linux-2.6/arch/s390/kernel/head64.S	2007-01-26 17:27:56.000000000 +0100
-+++ linux-2.6-patched/arch/s390/kernel/head64.S	2007-01-26 17:29:33.000000000 +0100
-@@ -58,18 +58,11 @@ startup_continue:
- 	stg	%r15,__LC_KERNEL_STACK	# set end of kernel stack
- 	aghi	%r15,-160
- 	xc	__SF_BACKCHAIN(4,%r15),__SF_BACKCHAIN(%r15) # clear backchain
+-extern int hypfs_diag_init(void);
+-extern void hypfs_diag_exit(void);
+-extern int hypfs_diag_create_files(struct super_block *sb, struct dentry *root);
 -
--	brasl	%r14,ipl_save_parameters
- #
--# clear bss memory
-+# Save ipl parameters, clear bss memory, initialize storage key for kernel pages,
-+# and create a kernel NSS if the SAVESYS= parm is defined
- #
--	larl	%r2,__bss_start 	# start of bss segment
--	larl	%r3,_end		# end of bss segment
--	sgr	%r3,%r2 		# length of bss
--	sgr	%r4,%r4 		#
--	sgr	%r5,%r5 		# set src,length and pad to zero
--	mvcle	%r2,%r4,0		# clear mem
--	jo	.-4			# branch back, if not finish
-+	brasl	%r14,startup_init
- 					# set program check new psw mask
- 	mvc	__LC_PGM_NEW_PSW(8),.Lpcmsk-.LPG1(%r13)
- 	larl	%r1,.Lslowmemdetect	# set program check address
-@@ -78,6 +71,10 @@ startup_continue:
- 	diag	%r0,%r1,0x260		# get memory size of virtual machine
- 	cgr	%r0,%r1			# different? -> old detection routine
- 	jne	.Lslowmemdetect
-+	larl	%r3,ipl_flags
-+	llgt	%r3,0(%r3)
-+	chi	%r3,4			# ipled from an kernel NSS
-+	je	.Lslowmemdetect
- 	aghi	%r1,1			# size is one more than end
- 	larl	%r2,memory_chunk
- 	stg	%r1,8(%r2)		# store size of chunk
-@@ -226,19 +223,6 @@ startup_continue:
+-#endif /* _HYPFS_DIAG_H_ */
+diff -urpN linux-2.6/arch/s390/hypfs/hypfs.h linux-2.6-patched/arch/s390/hypfs/hypfs.h
+--- linux-2.6/arch/s390/hypfs/hypfs.h	2006-11-29 22:57:37.000000000 +0100
++++ linux-2.6-patched/arch/s390/hypfs/hypfs.h	2007-01-26 17:29:36.000000000 +0100
+@@ -27,4 +27,13 @@ extern struct dentry *hypfs_create_str(s
+ 				       struct dentry *dir, const char *name,
+ 				       char *string);
  
- 	larl	%r12,machine_flags
- #
--# find out if we are running under VM
--#
--	stidp	__LC_CPUID		# store cpuid
--	tm	__LC_CPUID,0xff 	# running under VM ?
--	bno	0f-.LPG1(%r13)
--	oi	7(%r12),1		# set VM flag
--0:	lh	%r0,__LC_CPUID+4	# get cpu version
--	chi	%r0,0x7490		# running on a P/390 ?
--	bne	1f-.LPG1(%r13)
--	oi	7(%r12),4		# set P/390 flag
--1:
--
--#
- # find out if we have the MVPG instruction
- #
- 	la	%r1,0f-.LPG1(%r13)	# set program check address
-diff -urpN linux-2.6/arch/s390/kernel/ipl.c linux-2.6-patched/arch/s390/kernel/ipl.c
---- linux-2.6/arch/s390/kernel/ipl.c	2007-01-26 17:29:31.000000000 +0100
-+++ linux-2.6-patched/arch/s390/kernel/ipl.c	2007-01-26 17:29:33.000000000 +0100
-@@ -34,12 +34,14 @@ enum ipl_type {
- 	IPL_TYPE_UNKNOWN = 2,
- 	IPL_TYPE_CCW	 = 4,
- 	IPL_TYPE_FCP	 = 8,
-+	IPL_TYPE_NSS	 = 16,
- };
- 
- #define IPL_NONE_STR	 "none"
- #define IPL_UNKNOWN_STR  "unknown"
- #define IPL_CCW_STR	 "ccw"
- #define IPL_FCP_STR	 "fcp"
-+#define IPL_NSS_STR	 "nss"
- 
- static char *ipl_type_str(enum ipl_type type)
- {
-@@ -50,6 +52,8 @@ static char *ipl_type_str(enum ipl_type 
- 		return IPL_CCW_STR;
- 	case IPL_TYPE_FCP:
- 		return IPL_FCP_STR;
-+	case IPL_TYPE_NSS:
-+		return IPL_NSS_STR;
- 	case IPL_TYPE_UNKNOWN:
- 	default:
- 		return IPL_UNKNOWN_STR;
-@@ -64,6 +68,7 @@ enum ipl_method {
- 	IPL_METHOD_FCP_RO_DIAG,
- 	IPL_METHOD_FCP_RW_DIAG,
- 	IPL_METHOD_FCP_RO_VM,
-+	IPL_METHOD_NSS,
- };
- 
- enum shutdown_action {
-@@ -114,11 +119,14 @@ enum diag308_rc {
- static int diag308_set_works = 0;
- 
- static int reipl_capabilities = IPL_TYPE_UNKNOWN;
++/* LPAR Hypervisor */
++extern int hypfs_diag_init(void);
++extern void hypfs_diag_exit(void);
++extern int hypfs_diag_create_files(struct super_block *sb, struct dentry *root);
 +
- static enum ipl_type reipl_type = IPL_TYPE_UNKNOWN;
- static enum ipl_method reipl_method = IPL_METHOD_NONE;
- static struct ipl_parameter_block *reipl_block_fcp;
- static struct ipl_parameter_block *reipl_block_ccw;
- 
-+static char reipl_nss_name[NSS_NAME_SIZE + 1];
++/* VM Hypervisor */
++extern int hypfs_vm_init(void);
++extern int hypfs_vm_create_files(struct super_block *sb, struct dentry *root);
 +
- static int dump_capabilities = IPL_TYPE_NONE;
- static enum ipl_type dump_type = IPL_TYPE_NONE;
- static enum ipl_method dump_method = IPL_METHOD_NONE;
-@@ -173,6 +181,24 @@ static struct subsys_attribute sys_##_pr
- 			sys_##_prefix##_##_name##_show,			\
- 			sys_##_prefix##_##_name##_store);
- 
-+#define DEFINE_IPL_ATTR_STR_RW(_prefix, _name, _fmt_out, _fmt_in, _value)\
-+static ssize_t sys_##_prefix##_##_name##_show(struct subsystem *subsys,	\
-+		char *page)						\
-+{									\
-+	return sprintf(page, _fmt_out, _value);				\
-+}									\
-+static ssize_t sys_##_prefix##_##_name##_store(struct subsystem *subsys,\
-+		const char *buf, size_t len)				\
-+{									\
-+	if (sscanf(buf, _fmt_in, _value) != 1)				\
-+		return -EINVAL;						\
-+	return len;							\
-+}									\
-+static struct subsys_attribute sys_##_prefix##_##_name##_attr =		\
-+	__ATTR(_name,(S_IRUGO | S_IWUSR),				\
-+			sys_##_prefix##_##_name##_show,			\
-+			sys_##_prefix##_##_name##_store);
+ #endif /* _HYPFS_H_ */
+diff -urpN linux-2.6/arch/s390/hypfs/hypfs_vm.c linux-2.6-patched/arch/s390/hypfs/hypfs_vm.c
+--- linux-2.6/arch/s390/hypfs/hypfs_vm.c	1970-01-01 01:00:00.000000000 +0100
++++ linux-2.6-patched/arch/s390/hypfs/hypfs_vm.c	2007-01-26 17:29:36.000000000 +0100
+@@ -0,0 +1,231 @@
++/*
++ *    Hypervisor filesystem for Linux on s390. z/VM implementation.
++ *
++ *    Copyright (C) IBM Corp. 2006
++ *    Author(s): Michael Holzheu <holzheu@de.ibm.com>
++ */
 +
- static void make_attrs_ro(struct attribute **attrs)
- {
- 	while (*attrs) {
-@@ -189,6 +215,8 @@ static enum ipl_type ipl_get_type(void)
- {
- 	struct ipl_parameter_block *ipl = IPL_PARMBLOCK_START;
- 
-+	if (ipl_flags & IPL_NSS_VALID)
-+		return IPL_TYPE_NSS;
- 	if (!(ipl_flags & IPL_DEVNO_VALID))
- 		return IPL_TYPE_UNKNOWN;
- 	if (!(ipl_flags & IPL_PARMBLOCK_VALID))
-@@ -324,6 +352,20 @@ static struct attribute_group ipl_ccw_at
- 	.attrs = ipl_ccw_attrs,
- };
- 
-+/* NSS ipl device attributes */
++#include <linux/types.h>
++#include <linux/errno.h>
++#include <linux/string.h>
++#include <linux/vmalloc.h>
++#include <asm/ebcdic.h>
++#include "hypfs.h"
 +
-+DEFINE_IPL_ATTR_RO(ipl_nss, name, "%s\n", kernel_nss_name);
++#define NAME_LEN 8
 +
-+static struct attribute *ipl_nss_attrs[] = {
-+	&sys_ipl_type_attr.attr,
-+	&sys_ipl_nss_name_attr.attr,
-+	NULL,
++static char local_guest[] = "        ";
++static char all_guests[] = "*       ";
++static char *guest_query;
++
++struct diag2fc_data {
++	__u32 version;
++	__u32 flags;
++	__u64 used_cpu;
++	__u64 el_time;
++	__u64 mem_min_kb;
++	__u64 mem_max_kb;
++	__u64 mem_share_kb;
++	__u64 mem_used_kb;
++	__u32 pcpus;
++	__u32 lcpus;
++	__u32 vcpus;
++	__u32 cpu_min;
++	__u32 cpu_max;
++	__u32 cpu_shares;
++	__u32 cpu_use_samp;
++	__u32 cpu_delay_samp;
++	__u32 page_wait_samp;
++	__u32 idle_samp;
++	__u32 other_samp;
++	__u32 total_samp;
++	char  guest_name[NAME_LEN];
 +};
 +
-+static struct attribute_group ipl_nss_attr_group = {
-+	.attrs = ipl_nss_attrs,
++struct diag2fc_parm_list {
++	char userid[NAME_LEN];
++	char aci_grp[NAME_LEN];
++	__u64 addr;
++	__u32 size;
++	__u32 fmt;
 +};
 +
- /* UNKNOWN ipl device attributes */
- 
- static struct attribute *ipl_unknown_attrs[] = {
-@@ -432,6 +474,21 @@ static struct attribute_group reipl_ccw_
- 	.attrs = reipl_ccw_attrs,
- };
- 
-+
-+/* NSS reipl device attributes */
-+
-+DEFINE_IPL_ATTR_STR_RW(reipl_nss, name, "%s\n", "%s\n", reipl_nss_name);
-+
-+static struct attribute *reipl_nss_attrs[] = {
-+	&sys_reipl_nss_name_attr.attr,
-+	NULL,
-+};
-+
-+static struct attribute_group reipl_nss_attr_group = {
-+	.name  = IPL_NSS_STR,
-+	.attrs = reipl_nss_attrs,
-+};
-+
- /* reipl type */
- 
- static int reipl_set_type(enum ipl_type type)
-@@ -454,6 +511,9 @@ static int reipl_set_type(enum ipl_type 
- 		else
- 			reipl_method = IPL_METHOD_FCP_RO_DIAG;
- 		break;
-+	case IPL_TYPE_NSS:
-+		reipl_method = IPL_METHOD_NSS;
-+		break;
- 	default:
- 		reipl_method = IPL_METHOD_NONE;
- 	}
-@@ -475,6 +535,8 @@ static ssize_t reipl_type_store(struct s
- 		rc = reipl_set_type(IPL_TYPE_CCW);
- 	else if (strncmp(buf, IPL_FCP_STR, strlen(IPL_FCP_STR)) == 0)
- 		rc = reipl_set_type(IPL_TYPE_FCP);
-+	else if (strncmp(buf, IPL_NSS_STR, strlen(IPL_NSS_STR)) == 0)
-+		rc = reipl_set_type(IPL_TYPE_NSS);
- 	return (rc != 0) ? rc : len;
- }
- 
-@@ -647,6 +709,10 @@ void do_reipl(void)
- 	case IPL_METHOD_FCP_RO_VM:
- 		__cpcmd("IPL", NULL, 0, NULL);
- 		break;
-+	case IPL_METHOD_NSS:
-+		sprintf(buf, "IPL %s", reipl_nss_name);
-+		__cpcmd(buf, NULL, 0, NULL);
-+		break;
- 	case IPL_METHOD_NONE:
- 	default:
- 		if (MACHINE_IS_VM)
-@@ -733,6 +799,10 @@ static int __init ipl_init(void)
- 	case IPL_TYPE_FCP:
- 		rc = ipl_register_fcp_files();
- 		break;
-+	case IPL_TYPE_NSS:
-+		rc = sysfs_create_group(&ipl_subsys.kset.kobj,
-+					&ipl_nss_attr_group);
-+		break;
- 	default:
- 		rc = sysfs_create_group(&ipl_subsys.kset.kobj,
- 					&ipl_unknown_attr_group);
-@@ -755,6 +825,20 @@ static void __init reipl_probe(void)
- 	free_page((unsigned long)buffer);
- }
- 
-+static int __init reipl_nss_init(void)
++static int diag2fc(int size, char* query, void *addr)
 +{
-+	int rc;
++	unsigned long residual_cnt;
++	unsigned long rc;
++	struct diag2fc_parm_list parm_list;
 +
-+	if (!MACHINE_IS_VM)
-+		return 0;
-+	rc = sysfs_create_group(&reipl_subsys.kset.kobj, &reipl_nss_attr_group);
-+	if (rc)
++	memcpy(parm_list.userid, query, NAME_LEN);
++	ASCEBC(parm_list.userid, NAME_LEN);
++	parm_list.addr = (unsigned long) addr ;
++	parm_list.size = size;
++	parm_list.fmt = 0x02;
++	memset(parm_list.aci_grp, 0x40, NAME_LEN);
++	rc = -1;
++
++	asm volatile(
++		"	diag    %0,%1,0x2fc\n"
++		"0:\n"
++		EX_TABLE(0b,0b)
++		: "=d" (residual_cnt), "+d" (rc) : "0" (&parm_list) : "memory");
++
++	if ((rc != 0 ) && (rc != -2))
 +		return rc;
-+	strncpy(reipl_nss_name, kernel_nss_name, NSS_NAME_SIZE + 1);
-+	reipl_capabilities |= IPL_TYPE_NSS;
++	else
++		return -residual_cnt;
++}
++
++static struct diag2fc_data *diag2fc_store(char *query, int *count)
++{
++	int size;
++	struct diag2fc_data *data;
++
++	do {
++		size = diag2fc(0, query, NULL);
++		if (size < 0)
++			return ERR_PTR(-EACCES);
++		data = vmalloc(size);
++		if (!data)
++			return ERR_PTR(-ENOMEM);
++		if (diag2fc(size, query, data) == 0)
++			break;
++		vfree(data);
++	} while (1);
++	*count = (size / sizeof(*data));
++
++	return data;
++}
++
++static void diag2fc_free(void *data)
++{
++	vfree(data);
++}
++
++#define ATTRIBUTE(sb, dir, name, member) \
++do { \
++	void *rc; \
++	rc = hypfs_create_u64(sb, dir, name, member); \
++	if (IS_ERR(rc)) \
++		return PTR_ERR(rc); \
++} while(0)
++
++static int hpyfs_vm_create_guest(struct super_block *sb,
++				 struct dentry *systems_dir,
++				 struct diag2fc_data *data)
++{
++	char guest_name[NAME_LEN + 1] = {};
++	struct dentry *guest_dir, *cpus_dir, *samples_dir, *mem_dir;
++	int dedicated_flag, capped_value;
++
++	capped_value = (data->flags & 0x00000006) >> 1;
++	dedicated_flag = (data->flags & 0x00000008) >> 3;
++
++	/* guest dir */
++	memcpy(guest_name, data->guest_name, NAME_LEN);
++	EBCASC(guest_name, NAME_LEN);
++	strstrip(guest_name);
++	guest_dir = hypfs_mkdir(sb, systems_dir, guest_name);
++	if (IS_ERR(guest_dir))
++		return PTR_ERR(guest_dir);
++	ATTRIBUTE(sb, guest_dir, "onlinetime_us", data->el_time);
++
++	/* logical cpu information */
++	cpus_dir = hypfs_mkdir(sb, guest_dir, "cpus");
++	if (IS_ERR(cpus_dir))
++		return PTR_ERR(cpus_dir);
++	ATTRIBUTE(sb, cpus_dir, "cputime_us", data->used_cpu);
++	ATTRIBUTE(sb, cpus_dir, "capped", capped_value);
++	ATTRIBUTE(sb, cpus_dir, "dedicated", dedicated_flag);
++	ATTRIBUTE(sb, cpus_dir, "count", data->vcpus);
++	ATTRIBUTE(sb, cpus_dir, "weight_min", data->cpu_min);
++	ATTRIBUTE(sb, cpus_dir, "weight_max", data->cpu_max);
++	ATTRIBUTE(sb, cpus_dir, "weight_cur", data->cpu_shares);
++
++	/* memory information */
++	mem_dir = hypfs_mkdir(sb, guest_dir, "mem");
++	if (IS_ERR(mem_dir))
++		return PTR_ERR(mem_dir);
++	ATTRIBUTE(sb, mem_dir, "min_KiB", data->mem_min_kb);
++	ATTRIBUTE(sb, mem_dir, "max_KiB", data->mem_max_kb);
++	ATTRIBUTE(sb, mem_dir, "used_KiB", data->mem_used_kb);
++	ATTRIBUTE(sb, mem_dir, "share_KiB", data->mem_share_kb);
++
++	/* samples */
++	samples_dir = hypfs_mkdir(sb, guest_dir, "samples");
++	if (IS_ERR(samples_dir))
++		return PTR_ERR(samples_dir);
++	ATTRIBUTE(sb, samples_dir, "cpu_using", data->cpu_use_samp);
++	ATTRIBUTE(sb, samples_dir, "cpu_delay", data->cpu_delay_samp);
++	ATTRIBUTE(sb, samples_dir, "mem_delay", data->page_wait_samp);
++	ATTRIBUTE(sb, samples_dir, "idle", data->idle_samp);
++	ATTRIBUTE(sb, samples_dir, "other", data->other_samp);
++	ATTRIBUTE(sb, samples_dir, "total", data->total_samp);
 +	return 0;
 +}
 +
- static int __init reipl_ccw_init(void)
++int hypfs_vm_create_files(struct super_block *sb, struct dentry *root)
++{
++	struct dentry *dir, *file;
++	struct diag2fc_data *data;
++	int rc, i, count = 0;
++
++	data = diag2fc_store(guest_query, &count);
++	if (IS_ERR(data))
++		return PTR_ERR(data);
++
++	/* Hpervisor Info */
++	dir = hypfs_mkdir(sb, root, "hyp");
++	if (IS_ERR(dir)) {
++		rc = PTR_ERR(dir);
++		goto failed;
++	}
++	file = hypfs_create_str(sb, dir, "type", "z/VM Hypervisor");
++	if (IS_ERR(file)) {
++		rc = PTR_ERR(file);
++		goto failed;
++	}
++
++	/* physical cpus */
++	dir = hypfs_mkdir(sb, root, "cpus");
++	if (IS_ERR(dir)) {
++		rc = PTR_ERR(dir);
++		goto failed;
++	}
++	file = hypfs_create_u64(sb, dir, "count", data->lcpus);
++	if (IS_ERR(file)) {
++		rc = PTR_ERR(file);
++		goto failed;
++	}
++
++	/* guests */
++	dir = hypfs_mkdir(sb, root, "systems");
++	if (IS_ERR(dir)) {
++		rc = PTR_ERR(dir);
++		goto failed;
++	}
++
++	for (i = 0; i < count; i++) {
++		rc = hpyfs_vm_create_guest(sb, dir, &(data[i]));
++		if (rc)
++			goto failed;
++	}
++	diag2fc_free(data);
++	return 0;
++
++failed:
++	diag2fc_free(data);
++	return rc;
++}
++
++int hypfs_vm_init(void)
++{
++	if (diag2fc(0, all_guests, NULL) > 0)
++		guest_query = all_guests;
++	else if (diag2fc(0, local_guest, NULL) > 0)
++		guest_query = local_guest;
++	else
++		return -EACCES;
++
++	return 0;
++}
+diff -urpN linux-2.6/arch/s390/hypfs/inode.c linux-2.6-patched/arch/s390/hypfs/inode.c
+--- linux-2.6/arch/s390/hypfs/inode.c	2007-01-26 17:27:27.000000000 +0100
++++ linux-2.6-patched/arch/s390/hypfs/inode.c	2007-01-26 17:29:36.000000000 +0100
+@@ -19,7 +19,6 @@
+ #include <linux/module.h>
+ #include <asm/ebcdic.h>
+ #include "hypfs.h"
+-#include "hypfs_diag.h"
+ 
+ #define HYPFS_MAGIC 0x687970	/* ASCII 'hyp' */
+ #define TMP_SIZE 64		/* size of temporary buffers */
+@@ -192,7 +191,10 @@ static ssize_t hypfs_aio_write(struct ki
+ 		goto out;
+ 	}
+ 	hypfs_delete_tree(sb->s_root);
+-	rc = hypfs_diag_create_files(sb, sb->s_root);
++	if (MACHINE_IS_VM)
++		rc = hypfs_vm_create_files(sb, sb->s_root);
++	else
++		rc = hypfs_diag_create_files(sb, sb->s_root);
+ 	if (rc) {
+ 		printk(KERN_ERR "hypfs: Update failed\n");
+ 		hypfs_delete_tree(sb->s_root);
+@@ -289,7 +291,10 @@ static int hypfs_fill_super(struct super
+ 		rc = -ENOMEM;
+ 		goto err_alloc;
+ 	}
+-	rc = hypfs_diag_create_files(sb, root_dentry);
++	if (MACHINE_IS_VM)
++		rc = hypfs_vm_create_files(sb, root_dentry);
++	else
++		rc = hypfs_diag_create_files(sb, root_dentry);
+ 	if (rc)
+ 		goto err_tree;
+ 	sbi->update_file = hypfs_create_update_file(sb, root_dentry);
+@@ -462,11 +467,15 @@ static int __init hypfs_init(void)
  {
  	int rc;
-@@ -837,6 +921,9 @@ static int __init reipl_init(void)
- 	rc = reipl_fcp_init();
- 	if (rc)
- 		return rc;
-+	rc = reipl_nss_init();
-+	if (rc)
-+		return rc;
- 	rc = reipl_set_type(ipl_get_type());
- 	if (rc)
- 		return rc;
-diff -urpN linux-2.6/arch/s390/kernel/setup.c linux-2.6-patched/arch/s390/kernel/setup.c
---- linux-2.6/arch/s390/kernel/setup.c	2007-01-26 17:29:31.000000000 +0100
-+++ linux-2.6-patched/arch/s390/kernel/setup.c	2007-01-26 17:29:33.000000000 +0100
-@@ -38,6 +38,7 @@
- #include <linux/device.h>
- #include <linux/notifier.h>
- #include <linux/pfn.h>
-+#include <linux/ctype.h>
- #include <linux/reboot.h>
  
- #include <asm/uaccess.h>
-@@ -50,6 +51,7 @@
- #include <asm/page.h>
- #include <asm/ptrace.h>
- #include <asm/sections.h>
-+#include <asm/ebcdic.h>
- #include <asm/compat.h>
- 
- long psw_kernel_bits	= (PSW_BASE_BITS | PSW_MASK_DAT | PSW_ASC_PRIMARY |
-@@ -282,6 +284,140 @@ static void __init conmode_default(void)
+-	if (MACHINE_IS_VM)
+-		return -ENODATA;
+-	if (hypfs_diag_init()) {
+-		rc = -ENODATA;
+-		goto fail_diag;
++	if (MACHINE_IS_VM) {
++		if (hypfs_vm_init())
++			/* no diag 2fc, just exit */
++			return -ENODATA;
++	} else {
++		if (hypfs_diag_init()) {
++			rc = -ENODATA;
++			goto fail_diag;
++		}
  	}
- }
- 
-+/*
-+ * Create a Kernel NSS if the SAVESYS= parameter is defined
-+*/
-+#define DEFSYS_CMD_SIZE	96
-+#define SAVESYS_CMD_SIZE	32
-+
-+extern int _eshared;
-+char kernel_nss_name[NSS_NAME_SIZE + 1];
-+
-+#ifdef CONFIG_SHARED_KERNEL
-+static __init void create_kernel_nss(void)
-+{
-+	unsigned int i, stext_pfn, eshared_pfn, end_pfn, min_size;
-+#ifdef CONFIG_BLK_DEV_INITRD
-+	unsigned int sinitrd_pfn, einitrd_pfn;
-+#endif
-+	int response;
-+	char *savesys_ptr;
-+	char upper_command_line[COMMAND_LINE_SIZE];
-+	char defsys_cmd[DEFSYS_CMD_SIZE];
-+	char savesys_cmd[SAVESYS_CMD_SIZE];
-+
-+	/* Do nothing if we are not running under VM */
+ 	kset_set_kset_s(&s390_subsys, hypervisor_subsys);
+ 	rc = subsystem_register(&s390_subsys);
+@@ -480,7 +489,8 @@ static int __init hypfs_init(void)
+ fail_filesystem:
+ 	subsystem_unregister(&s390_subsys);
+ fail_sysfs:
+-	hypfs_diag_exit();
 +	if (!MACHINE_IS_VM)
-+		return;
-+
-+	/* Convert COMMAND_LINE to upper case */
-+	for (i = 0; i < strlen(COMMAND_LINE); i++)
-+		upper_command_line[i] = toupper(COMMAND_LINE[i]);
-+
-+	savesys_ptr = strstr(upper_command_line, "SAVESYS=");
-+
-+	if (!savesys_ptr)
-+		return;
-+
-+	savesys_ptr += 8;    /* Point to the beginning of the NSS name */
-+	for (i = 0; i < NSS_NAME_SIZE; i++) {
-+		if (savesys_ptr[i] == ' ' || savesys_ptr[i] == '\0')
-+			break;
-+		kernel_nss_name[i] = savesys_ptr[i];
-+	}
-+
-+	stext_pfn = PFN_DOWN(__pa(&_stext));
-+	eshared_pfn = PFN_DOWN(__pa(&_eshared));
-+	end_pfn = PFN_UP(__pa(&_end));
-+	min_size = end_pfn << 2;
-+
-+	sprintf(defsys_cmd, "DEFSYS %s 00000-%.5X EW %.5X-%.5X SR %.5X-%.5X",
-+		kernel_nss_name, stext_pfn - 1, stext_pfn, eshared_pfn - 1,
-+		eshared_pfn, end_pfn);
-+
-+#ifdef CONFIG_BLK_DEV_INITRD
-+	if (INITRD_START && INITRD_SIZE) {
-+		sinitrd_pfn = PFN_DOWN(__pa(INITRD_START));
-+		einitrd_pfn = PFN_UP(__pa(INITRD_START + INITRD_SIZE));
-+		min_size = einitrd_pfn << 2;
-+		sprintf(defsys_cmd, "%s EW %.5X-%.5X", defsys_cmd,
-+		sinitrd_pfn, einitrd_pfn);
-+	}
-+#endif
-+
-+	sprintf(defsys_cmd, "%s EW MINSIZE=%.7iK", defsys_cmd, min_size);
-+	sprintf(savesys_cmd, "SAVESYS %s \n IPL %s",
-+		kernel_nss_name, kernel_nss_name);
-+
-+	__cpcmd(defsys_cmd, NULL, 0, &response);
-+
-+	if (response != 0)
-+		return;
-+
-+	__cpcmd(savesys_cmd, NULL, 0, &response);
-+
-+	if (response != strlen(savesys_cmd))
-+		return;
-+
-+	ipl_flags = IPL_NSS_VALID;
-+}
-+
-+#else /* CONFIG_SHARED_KERNEL */
-+
-+static inline void create_kernel_nss(void) { }
-+
-+#endif /* CONFIG_SHARED_KERNEL */
-+
-+/*
-+ * Clear bss memory
-+ */
-+static __init void clear_bss_section(void)
-+{
-+	memset(__bss_start, 0, _end - __bss_start);
-+}
-+
-+/*
-+ * Initialize storage key for kernel pages
-+ */
-+static __init void init_kernel_storage_key(void)
-+{
-+	unsigned long end_pfn, init_pfn;
-+
-+	end_pfn = PFN_UP(__pa(&_end));
-+
-+	for (init_pfn = 0 ; init_pfn < end_pfn; init_pfn++)
-+		page_set_storage_key(init_pfn << PAGE_SHIFT, PAGE_DEFAULT_KEY);
-+}
-+
-+static __init void detect_machine_type(void)
-+{
-+	struct cpuinfo_S390 *cpuinfo = &S390_lowcore.cpu_data;
-+
-+	asm volatile("stidp %0" : "=m" (S390_lowcore.cpu_data.cpu_id));
-+
-+	/* Running under z/VM ? */
-+	if (cpuinfo->cpu_id.version == 0xff)
-+		machine_flags |= 1;
-+
-+	/* Running on a P/390 ? */
-+	if (cpuinfo->cpu_id.machine == 0x7490)
-+		machine_flags |= 4;
-+}
-+
-+/*
-+ * Save ipl parameters, clear bss memory, initialize storage keys
-+ * and create a kernel NSS at startup if the SAVESYS= parm is defined
-+ */
-+void __init startup_init(void)
-+{
-+	ipl_save_parameters();
-+	clear_bss_section();
-+	init_kernel_storage_key();
-+	lockdep_init();
-+	detect_machine_type();
-+	create_kernel_nss();
-+}
-+
- #ifdef CONFIG_SMP
- void (*_machine_restart)(char *command) = machine_restart_smp;
- void (*_machine_halt)(void) = machine_halt_smp;
-@@ -523,7 +659,7 @@ setup_lowcore(void)
- static void __init
- setup_resources(void)
- {
--	struct resource *res;
-+	struct resource *res, *sub_res;
- 	int i;
++		hypfs_diag_exit();
+ fail_diag:
+ 	printk(KERN_ERR "hypfs: Initialization failed with rc = %i.\n", rc);
+ 	return rc;
+@@ -488,7 +498,8 @@ fail_diag:
  
- 	code_resource.start = (unsigned long) &_text;
-@@ -548,8 +684,38 @@ setup_resources(void)
- 		res->start = memory_chunk[i].addr;
- 		res->end = memory_chunk[i].addr +  memory_chunk[i].size - 1;
- 		request_resource(&iomem_resource, res);
--		request_resource(res, &code_resource);
--		request_resource(res, &data_resource);
-+
-+		if (code_resource.start >= res->start  &&
-+			code_resource.start <= res->end &&
-+			code_resource.end > res->end) {
-+			sub_res = alloc_bootmem_low(sizeof(struct resource));
-+			memcpy(sub_res, &code_resource,
-+				sizeof(struct resource));
-+			sub_res->end = res->end;
-+			code_resource.start = res->end + 1;
-+			request_resource(res, sub_res);
-+		}
-+
-+		if (code_resource.start >= res->start &&
-+			code_resource.start <= res->end &&
-+			code_resource.end <= res->end)
-+			request_resource(res, &code_resource);
-+
-+		if (data_resource.start >= res->start &&
-+			data_resource.start <= res->end &&
-+			data_resource.end > res->end) {
-+			sub_res = alloc_bootmem_low(sizeof(struct resource));
-+			memcpy(sub_res, &data_resource,
-+				sizeof(struct resource));
-+			sub_res->end = res->end;
-+			data_resource.start = res->end + 1;
-+			request_resource(res, sub_res);
-+		}
-+
-+		if (data_resource.start >= res->start &&
-+			data_resource.start <= res->end &&
-+			data_resource.end <= res->end)
-+			request_resource(res, &data_resource);
- 	}
+ static void __exit hypfs_exit(void)
+ {
+-	hypfs_diag_exit();
++	if (!MACHINE_IS_VM)
++		hypfs_diag_exit();
+ 	unregister_filesystem(&hypfs_type);
+ 	subsystem_unregister(&s390_subsys);
  }
+diff -urpN linux-2.6/arch/s390/hypfs/Makefile linux-2.6-patched/arch/s390/hypfs/Makefile
+--- linux-2.6/arch/s390/hypfs/Makefile	2006-11-29 22:57:37.000000000 +0100
++++ linux-2.6-patched/arch/s390/hypfs/Makefile	2007-01-26 17:29:36.000000000 +0100
+@@ -4,4 +4,4 @@
  
-@@ -585,7 +751,7 @@ static void __init
- setup_memory(void)
- {
-         unsigned long bootmap_size;
--	unsigned long start_pfn, end_pfn, init_pfn;
-+	unsigned long start_pfn, end_pfn;
- 	int i;
+ obj-$(CONFIG_S390_HYPFS_FS) += s390_hypfs.o
  
- 	/*
-@@ -595,10 +761,6 @@ setup_memory(void)
- 	start_pfn = PFN_UP(__pa(&_end));
- 	end_pfn = max_pfn = PFN_DOWN(memory_end);
- 
--	/* Initialize storage key for kernel pages */
--	for (init_pfn = 0 ; init_pfn < start_pfn; init_pfn++)
--		page_set_storage_key(init_pfn << PAGE_SHIFT, PAGE_DEFAULT_KEY);
--
- #ifdef CONFIG_BLK_DEV_INITRD
- 	/*
- 	 * Move the initrd in case the bitmap of the bootmem allocater
-diff -urpN linux-2.6/arch/s390/kernel/vmlinux.lds.S linux-2.6-patched/arch/s390/kernel/vmlinux.lds.S
---- linux-2.6/arch/s390/kernel/vmlinux.lds.S	2006-11-29 22:57:37.000000000 +0100
-+++ linux-2.6-patched/arch/s390/kernel/vmlinux.lds.S	2007-01-26 17:29:33.000000000 +0100
-@@ -31,11 +31,6 @@ SECTIONS
- 
-   _etext = .;			/* End of text section */
- 
--  . = ALIGN(16);		/* Exception table */
--  __start___ex_table = .;
--  __ex_table : { *(__ex_table) }
--  __stop___ex_table = .;
--
-   RODATA
- 
- #ifdef CONFIG_SHARED_KERNEL
-@@ -44,6 +39,11 @@ SECTIONS
-   _eshared = .;			/* End of shareable data */
- #endif
- 
-+  . = ALIGN(16);		/* Exception table */
-+  __start___ex_table = .;
-+  __ex_table : { *(__ex_table) }
-+  __stop___ex_table = .;
-+
-   .data : {			/* Data */
- 	*(.data)
- 	CONSTRUCTORS
-diff -urpN linux-2.6/include/asm-s390/setup.h linux-2.6-patched/include/asm-s390/setup.h
---- linux-2.6/include/asm-s390/setup.h	2007-01-26 17:29:31.000000000 +0100
-+++ linux-2.6-patched/include/asm-s390/setup.h	2007-01-26 17:29:33.000000000 +0100
-@@ -156,13 +156,19 @@ struct ipl_parameter_block {
- extern u32 ipl_flags;
- extern u16 ipl_devno;
- 
--void do_reipl(void);
-+extern void do_reipl(void);
-+extern void ipl_save_parameters(void);
- 
- enum {
- 	IPL_DEVNO_VALID	= 1,
- 	IPL_PARMBLOCK_VALID = 2,
-+	IPL_NSS_VALID = 4,
- };
- 
-+#define NSS_NAME_SIZE	8
-+
-+extern char kernel_nss_name[];
-+
- #define IPL_PARMBLOCK_START	((struct ipl_parameter_block *) \
- 				 IPL_PARMBLOCK_ORIGIN)
- #define IPL_PARMBLOCK_SIZE	(IPL_PARMBLOCK_START->hdr.len)
+-s390_hypfs-objs := inode.o hypfs_diag.o
++s390_hypfs-objs := inode.o hypfs_diag.o hypfs_vm.o
