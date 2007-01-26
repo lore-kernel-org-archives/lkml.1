@@ -1,45 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965638AbXAZNgW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965641AbXAZNgl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965638AbXAZNgW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jan 2007 08:36:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965640AbXAZNgW
+	id S965641AbXAZNgl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jan 2007 08:36:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965651AbXAZNgl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jan 2007 08:36:22 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:51277 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S965638AbXAZNgV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jan 2007 08:36:21 -0500
-Date: Fri, 26 Jan 2007 13:45:22 +0000
-From: Alan <alan@lxorguk.ukuu.org.uk>
-To: Ralf Baechle <ralf@linux-mips.org>
-Cc: Mauro Carvalho Chehab <mchehab@infradead.org>,
-       David Miller <davem@davemloft.net>, ksummit-2006-discuss@thunk.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [Ksummit-2006-discuss] 2007 Linux Kernel Summit
-Message-ID: <20070126134522.541d504b@localhost.localdomain>
-In-Reply-To: <20070126132348.GA23501@linux-mips.org>
-References: <20070123.095756.30177490.davem@davemloft.net>
-	<C1DDFD3E.8658%dirk.hohndel@intel.com>
-	<20070125.125121.98861775.davem@davemloft.net>
-	<1169814220.5759.54.camel@areia>
-	<20070126132348.GA23501@linux-mips.org>
-X-Mailer: Claws Mail 2.7.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 26 Jan 2007 08:36:41 -0500
+Received: from twin.jikos.cz ([213.151.79.26]:44375 "EHLO twin.jikos.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965641AbXAZNgk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jan 2007 08:36:40 -0500
+Date: Fri, 26 Jan 2007 14:35:31 +0100 (CET)
+From: Jiri Kosina <jikos@jikos.cz>
+To: mirek kratochvil <exa.exa@gmail.com>
+cc: linux-kernel@vger.kernel.org, Francois Romieu <romieu@fr.zoreil.com>,
+       netdev@vger.kernel.org
+Subject: Re: r8169 problems on x86_64 (transmit timeout & crash)
+In-Reply-To: <a37929f0701260500x68cf6bb0i8a5ef603794a861f@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0701261429200.1889@twin.jikos.cz>
+References: <a37929f0701260500x68cf6bb0i8a5ef603794a861f@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> And since the cost of travel keeps being raised - in the past my tickets
-> to Brazil (To Curitiba which from either Zuerich or Frankfurt had exactly
-> same price) were typically 10-20% less than a ticket to the US west coast
-> and well below the cost of getting to Ottawa.  Cost for food, a bus or
-> similar is often virtually free comparing to Cambridge.
+On Fri, 26 Jan 2007, mirek kratochvil wrote:
 
-Ditto my experience because there are monopolies on most of the flight
-routes to Ottawa. Indeed if I remember the numbers on the ticket roughly
-right it wasn't much different to .AU and more than Bangalore.
+> > In case you have BIOS 04.., try to upgrade to 06.. version. Also, does 
+> > it help when you boot with acpi=off kernel commandline parameter? (do 
+> > you compile kernel with both acpi and apic support?).
+> Upgraded to bios 0802, but still the same problem. I think it's 
+> definitely something about the r8169 driver. acpi=off doesn't help. 
+> turning on/off apic also doesn't matter.
 
-Alan
+Added some relevant CCs; the thread started in lkml at 
+http://lkml.org/lkml/2007/1/25/268
 
+> one thing more - have confirmed that the bug is reproducible on *any* 
+> laptop with 8168, not only Asus. I guess the disk-usage-crash was some 
+> other bug.
+
+Confusing ... the other day you stated that r1000 has the exactly same 
+problem?
+
+Thanks,
+
+-- 
+Jiri Kosina
+SUSE Labs
