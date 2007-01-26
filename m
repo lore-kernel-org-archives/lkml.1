@@ -1,188 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751666AbXAZWjS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752136AbXAZWkJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751666AbXAZWjS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jan 2007 17:39:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752136AbXAZWjS
+	id S1752136AbXAZWkJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jan 2007 17:40:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751693AbXAZWkI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jan 2007 17:39:18 -0500
-Received: from e32.co.us.ibm.com ([32.97.110.150]:56225 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751732AbXAZWjQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jan 2007 17:39:16 -0500
-Message-ID: <45BA8310.6020809@us.ibm.com>
-Date: Fri, 26 Jan 2007 16:39:12 -0600
-From: Maynard Johnson <maynardj@us.ibm.com>
-Reply-To: maynardj@us.ibm.com
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.7.3) Gecko/20040910
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: Maynard Johnson <maynardj@us.ibm.com>
-CC: Christoph Hellwig <hch@lst.de>, cbe-oss-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       Arnd Bergmann <arnd.bergmann@de.ibm.com>
-Subject: Re: [Cbe-oss-dev] [PATCH] Cell SPU task notification - repost of
- patch with updates
-References: <45A805A0.2080000@us.ibm.com> <20070117003018.GA17955@lst.de> <45AE471C.8040909@us.ibm.com>
-In-Reply-To: <45AE471C.8040909@us.ibm.com>
-Content-Type: multipart/mixed;
- boundary="------------010206080901080700090209"
+	Fri, 26 Jan 2007 17:40:08 -0500
+Received: from omx2-ext.sgi.com ([192.48.171.19]:49171 "EHLO omx2.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751735AbXAZWkG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jan 2007 17:40:06 -0500
+From: John Keller <jpk@sgi.com>
+To: linux-acpi@vger.kernel.org
+Cc: ayoung@sgi.com, linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org,
+       John Keller <jpk@sgi.com>
+Date: Fri, 26 Jan 2007 16:40:04 -0600
+Message-Id: <20070126224004.21202.43805.sendpatchset@attica.americas.sgi.com>
+Subject: [PATCH 1/1] -  increase acpi owner_id max
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------010206080901080700090209
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+To support systems with large IO configurations,
+this patch increases the number of available ACPI
+owner ids to 1023.
 
-This patch makes all the changes suggested by Christopher, with the 
-exception of the suggestion to use the sched_flags field versus a new 
-member to the spu_context struct to signal the need to "notify already 
-active".  I don't have the sched_flags change in my 2.6.20-rc1 tree.  I 
-can send another patch later if/when the sched_flags changes appears in 
-the kernel version we end up picking for final oprofile-spu development.
+On SN platforms, we represent every populated root
+bus slot with an ACPI SSDT table containing info
+for every device and PPB attached to the slot.
+Each SSDT requires a unique ACPI owner id.
 
-Comments welcome.  Thanks.
+Signed-off-by: John Keller <jpk@sgi.com>
+---
 
--Maynard
-
---------------010206080901080700090209
-Content-Type: text/x-diff;
- name="spu-notifier.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="spu-notifier.patch"
-
-Subject: Enable SPU switch notification to detect currently active SPU tasks.
-
-From: Maynard Johnson <maynardj@us.ibm.com>
-
-This patch adds to the capability of spu_switch_event_register so that the
-caller is also notified of currently active SPU tasks.  It also exports
-spu_switch_event_register and spu_switch_event_unregister.
-
-Signed-off-by: Maynard Johnson <mpjohn@us.ibm.com>
+ drivers/acpi/utilities/utmisc.c |    6 +++---
+ include/acpi/acconfig.h         |    4 ++--
+ include/acpi/aclocal.h          |    4 ++--
+ 3 files changed, 7 insertions(+), 7 deletions(-)
 
 
-Index: linux-2.6.20-rc1/arch/powerpc/platforms/cell/spufs/sched.c
+Index: linux/drivers/acpi/utilities/utmisc.c
 ===================================================================
---- linux-2.6.20-rc1.orig/arch/powerpc/platforms/cell/spufs/sched.c	2007-01-18 16:43:14.324526032 -0600
-+++ linux-2.6.20-rc1/arch/powerpc/platforms/cell/spufs/sched.c	2007-01-26 16:16:35.219668640 -0600
-@@ -78,21 +78,46 @@
+--- linux.orig/drivers/acpi/utilities/utmisc.c	2007-01-25 11:27:25.509259412 -0600
++++ linux/drivers/acpi/utilities/utmisc.c	2007-01-26 13:16:09.551081284 -0600
+@@ -147,7 +147,7 @@ acpi_status acpi_ut_allocate_owner_id(ac
+ 				/*
+ 				 * Construct encoded ID from the index and bit position
+ 				 *
+-				 * Note: Last [j].k (bit 255) is never used and is marked
++				 * Note: Last [j].k (bit 1023) is never used and is marked
+ 				 * permanently allocated (prevents +1 overflow)
+ 				 */
+ 				*owner_id =
+@@ -175,7 +175,7 @@ acpi_status acpi_ut_allocate_owner_id(ac
+ 	 */
+ 	status = AE_OWNER_ID_LIMIT;
+ 	ACPI_ERROR((AE_INFO,
+-		    "Could not allocate new OwnerId (255 max), AE_OWNER_ID_LIMIT"));
++		    "Could not allocate new OwnerId (1023 max), AE_OWNER_ID_LIMIT"));
  
- static BLOCKING_NOTIFIER_HEAD(spu_switch_notifier);
+       exit:
+ 	(void)acpi_ut_release_mutex(ACPI_MTX_CACHES);
+@@ -192,7 +192,7 @@ acpi_status acpi_ut_allocate_owner_id(ac
+  *              control method or unloading a table. Either way, we would
+  *              ignore any error anyway.
+  *
+- * DESCRIPTION: Release a table or method owner ID.  Valid IDs are 1 - 255
++ * DESCRIPTION: Release a table or method owner ID.  Valid IDs are 1 - 1023
+  *
+  ******************************************************************************/
  
--static void spu_switch_notify(struct spu *spu, struct spu_context *ctx)
-+void spu_switch_notify(struct spu *spu, struct spu_context *ctx)
- {
- 	blocking_notifier_call_chain(&spu_switch_notifier,
- 			    ctx ? ctx->object_id : 0, spu);
- }
- 
-+static void notify_spus_active(void)
-+{
-+       int node;
-+	/* Wake up the active spu_contexts. When the awakened processes 
-+	 * sees their notify_active flag is set, they will call
-+	 * spu_switch_notify();
-+	 */
-+	for (node = 0; node < MAX_NUMNODES; node++) {
-+		struct spu *spu;
-+		mutex_lock(&spu_prio->active_mutex[node]);
-+                list_for_each_entry(spu, &spu_prio->active_list[node], list) {
-+			struct spu_context *ctx = spu->ctx;
-+			spu->notify_active = 1;
-+			wake_up_all(&ctx->stop_wq);
-+		}
-+                mutex_unlock(&spu_prio->active_mutex[node]);
-+	}
-+}
-+
- int spu_switch_event_register(struct notifier_block * n)
- {
--	return blocking_notifier_chain_register(&spu_switch_notifier, n);
-+	int ret;
-+	ret = blocking_notifier_chain_register(&spu_switch_notifier, n);
-+	if (!ret)
-+		notify_spus_active();
-+	return ret;
- }
-+EXPORT_SYMBOL_GPL(spu_switch_event_register);
- 
- int spu_switch_event_unregister(struct notifier_block * n)
- {
- 	return blocking_notifier_chain_unregister(&spu_switch_notifier, n);
- }
-+EXPORT_SYMBOL_GPL(spu_switch_event_unregister);
- 
- 
- static inline void bind_context(struct spu *spu, struct spu_context *ctx)
-Index: linux-2.6.20-rc1/arch/powerpc/platforms/cell/spufs/spufs.h
+Index: linux/include/acpi/acconfig.h
 ===================================================================
---- linux-2.6.20-rc1.orig/arch/powerpc/platforms/cell/spufs/spufs.h	2007-01-18 16:43:14.340523600 -0600
-+++ linux-2.6.20-rc1/arch/powerpc/platforms/cell/spufs/spufs.h	2007-01-26 16:26:49.733703448 -0600
-@@ -180,6 +180,7 @@
- int spu_activate(struct spu_context *ctx, u64 flags);
- void spu_deactivate(struct spu_context *ctx);
- void spu_yield(struct spu_context *ctx);
-+void spu_switch_notify(struct spu *spu, struct spu_context *ctx);
- int __init spu_sched_init(void);
- void __exit spu_sched_exit(void);
+--- linux.orig/include/acpi/acconfig.h	2007-01-25 11:27:25.577267818 -0600
++++ linux/include/acpi/acconfig.h	2007-01-26 13:17:14.111002597 -0600
+@@ -111,9 +111,9 @@
  
-Index: linux-2.6.20-rc1/arch/powerpc/platforms/cell/spufs/run.c
+ #define ACPI_SYSMEM_REGION_WINDOW_SIZE  4096
+ 
+-/* owner_id tracking. 8 entries allows for 255 owner_ids */
++/* owner_id tracking. 32 entries allow for 1023 owner_ids */
+ 
+-#define ACPI_NUM_OWNERID_MASKS          8
++#define ACPI_NUM_OWNERID_MASKS		32
+ 
+ /******************************************************************************
+  *
+Index: linux/include/acpi/aclocal.h
 ===================================================================
---- linux-2.6.20-rc1.orig/arch/powerpc/platforms/cell/spufs/run.c	2007-01-18 16:43:14.340523600 -0600
-+++ linux-2.6.20-rc1/arch/powerpc/platforms/cell/spufs/run.c	2007-01-26 16:24:38.979744856 -0600
-@@ -45,9 +45,10 @@
- 	u64 pte_fault;
+--- linux.orig/include/acpi/aclocal.h	2007-01-25 11:27:25.585268807 -0600
++++ linux/include/acpi/aclocal.h	2007-01-26 13:20:06.148115848 -0600
+@@ -122,8 +122,8 @@ static char *acpi_gbl_mutex_names[ACPI_N
  
- 	*stat = ctx->ops->status_read(ctx);
--	if (ctx->state != SPU_STATE_RUNNABLE)
--		return 1;
-+
- 	spu = ctx->spu;
-+	if (ctx->state != SPU_STATE_RUNNABLE || spu->notify_active)
-+		return 1;
- 	pte_fault = spu->dsisr &
- 	    (MFC_DSISR_PTE_NOT_FOUND | MFC_DSISR_ACCESS_DENIED);
- 	return (!(*stat & 0x1) || pte_fault || spu->class_0_pending) ? 1 : 0;
-@@ -305,6 +306,7 @@
- 		   u32 *npc, u32 *event)
- {
- 	int ret;
-+	struct spu * spu;
- 	u32 status;
+ /* Owner IDs are used to track namespace nodes for selective deletion */
  
- 	if (down_interruptible(&ctx->run_sema))
-@@ -318,8 +320,16 @@
+-typedef u8 acpi_owner_id;
+-#define ACPI_OWNER_ID_MAX               0xFF
++typedef u16 acpi_owner_id;
++#define ACPI_OWNER_ID_MAX               0x3FF
  
- 	do {
- 		ret = spufs_wait(ctx->stop_wq, spu_stopped(ctx, &status));
-+		spu = ctx->spu;
- 		if (unlikely(ret))
- 			break;
-+		if (unlikely(spu->notify_active)) {
-+			spu->notify_active = 0;
-+			if (!(status & SPU_STATUS_STOPPED_BY_STOP)) {
-+				spu_switch_notify(spu, ctx);
-+				continue;
-+			}
-+		}
- 		if ((status & SPU_STATUS_STOPPED_BY_STOP) &&
- 		    (status >> SPU_STOP_STATUS_SHIFT == 0x2104)) {
- 			ret = spu_process_callback(ctx);
-Index: linux-2.6.20-rc1/include/asm-powerpc/spu.h
-===================================================================
---- linux-2.6.20-rc1.orig/include/asm-powerpc/spu.h	2007-01-18 16:43:19.932605072 -0600
-+++ linux-2.6.20-rc1/include/asm-powerpc/spu.h	2007-01-24 12:17:30.209676992 -0600
-@@ -144,6 +144,7 @@
+ /* This Thread ID means that the mutex is not in use (unlocked) */
  
- 	void* pdata; /* platform private data */
- 	struct sys_device sysdev;
-+	int notify_active;
- };
- 
- struct spu *spu_alloc(void);
-
---------------010206080901080700090209--
-
