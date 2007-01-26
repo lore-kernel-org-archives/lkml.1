@@ -1,52 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030803AbXAZGrM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030807AbXAZGyK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030803AbXAZGrM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jan 2007 01:47:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030805AbXAZGrM
+	id S1030807AbXAZGyK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jan 2007 01:54:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030808AbXAZGyK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jan 2007 01:47:12 -0500
-Received: from mail.kroah.org ([69.55.234.183]:54621 "EHLO perch.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030803AbXAZGrM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jan 2007 01:47:12 -0500
-Date: Thu, 25 Jan 2007 22:47:01 -0800
-From: Greg KH <greg@kroah.com>
-To: Pete Zaitcev <zaitcev@redhat.com>
-Cc: Kristian H??gsberg <krh@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: Juju
-Message-ID: <20070126064701.GA21892@kroah.com>
-References: <20070124223745.33278eb4.zaitcev@redhat.com> <45B91EAB.9080004@redhat.com> <20070125153824.8d7f50c5.zaitcev@redhat.com>
+	Fri, 26 Jan 2007 01:54:10 -0500
+Received: from omx1-ext.sgi.com ([192.48.179.11]:40945 "EHLO omx1.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1030807AbXAZGyG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jan 2007 01:54:06 -0500
+Date: Thu, 25 Jan 2007 22:53:44 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+To: Andrew Morton <akpm@osdl.org>
+cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org, pj@sgi.com
+Subject: Re: [PATCH] nfs: fix congestion control -v4
+In-Reply-To: <20070125220457.a761ae6a.akpm@osdl.org>
+Message-ID: <Pine.LNX.4.64.0701252251450.11726@schroedinger.engr.sgi.com>
+References: <20070116054743.15358.77287.sendpatchset@schroedinger.engr.sgi.com>
+ <20070116135325.3441f62b.akpm@osdl.org> <1168985323.5975.53.camel@lappy>
+ <Pine.LNX.4.64.0701171158290.7397@schroedinger.engr.sgi.com>
+ <1169070763.5975.70.camel@lappy> <1169070886.6523.8.camel@lade.trondhjem.org>
+ <1169126868.6197.55.camel@twins> <1169135375.6105.15.camel@lade.trondhjem.org>
+ <1169199234.6197.129.camel@twins> <1169212022.6197.148.camel@twins>
+ <Pine.LNX.4.64.0701190912540.14617@schroedinger.engr.sgi.com>
+ <1169229461.6197.154.camel@twins> <1169231212.5775.29.camel@lade.trondhjem.org>
+ <1169276500.6197.159.camel@twins> <1169482343.6083.7.camel@lade.trondhjem.org>
+ <1169739148.6189.68.camel@twins> <20070125210950.bcdaa7f6.akpm@osdl.org>
+ <Pine.LNX.4.64.0701252130500.7147@schroedinger.engr.sgi.com>
+ <20070125220457.a761ae6a.akpm@osdl.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070125153824.8d7f50c5.zaitcev@redhat.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 25, 2007 at 03:38:24PM -0800, Pete Zaitcev wrote:
-> On Thu, 25 Jan 2007 16:18:35 -0500, Kristian H??gsberg <krh@redhat.com> wrote:
+On Thu, 25 Jan 2007, Andrew Morton wrote:
+
+> > We have systems with 8TB main memory and are able to get to 16TB.
 > 
-> > > I see that ORBs are always allocated with a call (like SKB) and not
-> > > embedded into drivers (like URBs). It's great, keep it up. Also,
-> > > never allow drivers to pass DMA-mapped buffers into fw_send_request
-> > > and friends. We made both of these mistakes in USB, and it hurts.
-> > 
-> > Oh, the ORBs are SBP-2 specific data structures, struct fw_transaction is 
-> > probably what corresponds to USB URBs.  This struct is defined in 
-> > fw-transaction.h and is available for embedding into other structs, such as 
-> > struct sbp2_orb in fw-sbp2.  Is that what you're suggesting against, and what 
-> > are the problems with this approach?
-> 
-> Fortunately we do not care about out-of-tree drivers, which are most
-> affected, you may even call it a feature ^_^. My main problem is,
-> we can't refcount URBs, so usbmon can't tap them and must copy.
+> But I bet you don't use 4k pages on 'em ;)
 
-urbs are reference counted, it's just that not all drivers who create
-them use them that way :(
-
-Perhaps you can inforce this in the new codebase...
-
-thanks,
-
-greg k-h
+IA64 can be configured for 4k pagesize but yes 16k is the default. There 
+are plans to go much higher though. Plus there may be other reaons that 
+will force us to 4k pagesize on some configurations.
