@@ -1,62 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161147AbXAZSWW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161139AbXAZSXv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161147AbXAZSWW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jan 2007 13:22:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161150AbXAZSWW
+	id S1161139AbXAZSXv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jan 2007 13:23:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161149AbXAZSXu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jan 2007 13:22:22 -0500
-Received: from wr-out-0506.google.com ([64.233.184.225]:1619 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161147AbXAZSWV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jan 2007 13:22:21 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=upBEsQiT19kOytcsBRDWfGnEXbDMMRkCpQPl3qI/oJPtPSE8iyxCjw9E6ohowupsH59Of66CdumtVBdxa2cMsXD+tnzrrBoReaUDFqo9JraM1Kvpnx/zrkbfPRJt10bXB/6Q2muyvXZB8+wqL1FCdXOlYSL8VAuCVZhcNLIIjQg=
-Message-ID: <6bffcb0e0701261022m5996540cyb75a2214328116fe@mail.gmail.com>
-Date: Fri, 26 Jan 2007 19:22:18 +0100
-From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Subject: Re: mm snapshot broken-out-2007-01-26-00-36.tar.gz uploaded
-Cc: linux-kernel@vger.kernel.org, "Andrew Morton" <akpm@osdl.org>,
-       clg@fr.ibm.com, herbert@13thfloor.at, oleg@tv-sign.ru, daniel@hozac.com
-In-Reply-To: <20070126181437.GA28927@sergelap.austin.ibm.com>
+	Fri, 26 Jan 2007 13:23:50 -0500
+Received: from omx1-ext.sgi.com ([192.48.179.11]:34680 "EHLO omx1.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1161139AbXAZSXt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jan 2007 13:23:49 -0500
+Date: Fri, 26 Jan 2007 10:23:44 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+To: Andrew Morton <akpm@osdl.org>
+cc: Nick Piggin <nickpiggin@yahoo.com.au>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC] Track mlock()ed pages
+In-Reply-To: <20070126101027.90bf3e63.akpm@osdl.org>
+Message-ID: <Pine.LNX.4.64.0701261021200.7848@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0701252141570.10629@schroedinger.engr.sgi.com>
+ <45B9A00C.4040701@yahoo.com.au> <Pine.LNX.4.64.0701252234490.11230@schroedinger.engr.sgi.com>
+ <20070126031300.59f75b06.akpm@osdl.org> <Pine.LNX.4.64.0701260742340.6141@schroedinger.engr.sgi.com>
+ <20070126101027.90bf3e63.akpm@osdl.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200701260837.l0Q8blBr011622@shell0.pdx.osdl.net>
-	 <45BA3A8C.5020802@googlemail.com>
-	 <20070126181437.GA28927@sergelap.austin.ibm.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 26/01/07, Serge E. Hallyn <serue@us.ibm.com> wrote:
-> Can you send me your series file for broken-out-2007-01-26-00-36.tar.gz,
-> and I'll try to iron these out?  This is due to an older patch of
-> Cedric's being applied at the same time as the preexit_task_namespaces
-> one, and I just need to properly integrate them.
+On Fri, 26 Jan 2007, Andrew Morton wrote:
 
-ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/mm/broken-out-2007-01-26-00-36.tar.gz
+> > Large amounts of mlocked pages may be a problem for 
+> > 
+> > 1. Reclaim behavior.
+> > 
+> > 2. Defragmentation
+> > 
+> 
+> We know that.  What has that to do with this patch?
 
-Series file is in the archive, but not in broken-out dir as usually.
+Knowing how much mlocked pages are where is necessary to solve these 
+issues.
 
-$ tar zxvf broken-out-2007-01-26-00-36.tar.gz
-$ ls
-broken-out  broken-out-2007-01-26-00-36.tar.gz series
+> > > You could perhaps go for a walk across all the other vmas which presently
+> > > map this page.  If any of them have VM_LOCKED, don't increment the counter.
+> > > Similar on removal: only decrement the counter when the final mlocked VMA
+> > > is dropping the pte.
+> > 
+> > For that we would need an additional refcount for vmlocked maps in the 
+> > page struct.
+> 
+> No you don't.  The refcount is already there.  It is "the sum of the VM_LOCKED
+> VMAs which map this page".
+> 
+> It might be impractical or expensive to calculate it, but it's there.
 
-http://www.stardust.webpages.pl/files/tbf/euridica/mm-snapshot-2007-01-26/series
+Correct. Its so expensive that it cannot be used to build vm stats for 
+mlocked pages. F.e. Determination of the final mlocked VMA dropping the 
+page would require a scan over all vmas mapping the page.
 
->
-> thanks,
-> -serge
->
-
-Regards,
-Michal
-
--- 
-Michal K. K. Piotrowski
-LTG - Linux Testers Group
-(http://www.stardust.webpages.pl/ltg/)
