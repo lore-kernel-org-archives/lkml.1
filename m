@@ -1,48 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751651AbXAZVrU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751669AbXAZVyX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751651AbXAZVrU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jan 2007 16:47:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751665AbXAZVrU
+	id S1751669AbXAZVyX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jan 2007 16:54:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751677AbXAZVyX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jan 2007 16:47:20 -0500
-Received: from terminus.zytor.com ([192.83.249.54]:47012 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751650AbXAZVrT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jan 2007 16:47:19 -0500
-Message-ID: <45BA76CA.3080808@zytor.com>
-Date: Fri, 26 Jan 2007 13:46:50 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070102)
+	Fri, 26 Jan 2007 16:54:23 -0500
+Received: from imap.vc.cvut.cz ([147.32.240.222]:36883 "EHLO imap.vc.cvut.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751669AbXAZVyW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jan 2007 16:54:22 -0500
+X-Greylist: delayed 1847 seconds by postgrey-1.27 at vger.kernel.org; Fri, 26 Jan 2007 16:54:22 EST
+Message-ID: <1169846450.45ba70b2698c2@imap.vc.cvut.cz>
+Date: Fri, 26 Jan 2007 22:20:50 +0100
+From: vandrove@vc.cvut.cz
+To: Pierre Ossman <drzeus-list@drzeus.cx>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: ncpfs and TCP vs UDP
+References: <45BA2437.4000803@drzeus.cx>
+In-Reply-To: <45BA2437.4000803@drzeus.cx>
 MIME-Version: 1.0
-To: Alan Cox <alan@redhat.com>
-CC: Scott Preece <sepreece@gmail.com>, Martin Bligh <mbligh@mbligh.org>,
-       Theodore Tso <tytso@mit.edu>, Sunil Naidu <akula2.shark@gmail.com>,
-       Josh Boyer <jwboyer@gmail.com>, James Morris <jmorris@namei.org>,
-       Christoph Hellwig <hch@lst.de>, ksummit-2006-discuss@thunk.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [Ksummit-2006-discuss] 2007 Linux Kernel Summit
-References: <20070122110711.GA5917@lst.de> <20070122124502.GC30124@devserv.devel.redhat.com> <8355959a0701231152n1b4238f8ob54ea1792f299ca5@mail.gmail.com> <Pine.LNX.4.64.0701231622260.29810@d.namei> <625fc13d0701231339j523306b6w923c695a3ed0493e@mail.gmail.com> <8355959a0701231511o4f53796ewd5e403b640a4975c@mail.gmail.com> <20070124014223.GA26186@thunk.org> <8f3aa8d60701241018o6d4d8c37jb20ddb49f47e3eec@mail.gmail.com> <8f3aa8d60701241027p6674915avbc0f9b37383cce32@mail.gmail.com> <7b69d1470701241147m6b3f905erca392c3a4761c4e8@mail.gmail.com> <20070124212649.GA12410@devserv.devel.redhat.com>
-In-Reply-To: <20070124212649.GA12410@devserv.devel.redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+User-Agent: Internet Messaging Program (IMP) 3.0
+X-Originating-IP: 65.113.40.130
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
-> On Wed, Jan 24, 2007 at 01:47:45PM -0600, Scott Preece wrote:
->> Hmm - Sounds like it needs to go to Halifax! [I was going to suggest
->> Reykjavik, but was surprised to see it was in the same time zone as
->> the UK.]
-> 
-> Reykjavik is a fantastic place with some truely wonderful Linux folks. As to
-> the timezone, well winter is mostly dark, summer is mostly light so time 
-> zones don't matter 8)
+Quoting Pierre Ossman <drzeus-list@drzeus.cx>:
 
-Reykjavik is also quite easy to travel to from USA and Europe.  From 
-elsewhere, it generally means going through one of those locales.
+> Hi Petr,
 
-One major benny is that Icelandair lets you treat up to a week in 
-Iceland as a "stopover" of a longer trip.
+Hello,
 
-	-hpa
+> I was hoping you could give me some input on another concern I have.
+> Which of TCP and UDP is the preferred transport for NCP? The client for
+> Windows seems to use TCP, which would suggest that that is the most
+> tested dialect. I also did a quick test with bonnie++:
+
+TCP is definitely preferred.  There are couple of reasons why you should prefer TCP:
+
+(1) There is server configuration option to disable NCP/UDP.  You cannot disable
+NCP/TCP that easily.
+
+(2) TCP (NCP over TCP) retransmits only missing data, and it can ask for
+retransmit much sooner as it knows what link latency is.  NCP/UDP can only ask
+for complete packet retransmission, and it has no good idea what's link latency
+because there is no ACK from server when it receives request - you can only
+resend after usual link latency + time for process request, so you'll wait
+longer for retransmit, and on retransmit you need to send again complete request
+(which can be 64KB of data if you use 64KB buffer size...)
+
+(3) To avoid problems with retransmits ncpfs uses default buffer size 60KB for
+TCP (SOCK_STREAM), while 1KB for UDP/IPX (it must be multiple of sector size, so
+using 1.4KB is not an option).  So if you read 1 page, you get 1 request/reply
+when using TCP, but 4 requests/replies in UDP/IPX.  And as all this is fully
+synchronous, and for today's link latency is dominating factor, it will take 4
+times longer...
+
+(4) Theoretically with TCP you should never need retransmits as TCP takes care
+of that.  Unfortunately due to server implementation you still cannot have more
+than one request in flight (at least with NW5 - I never tried it with NW6 as
+spec says I should not do that, and NW5 implementation agreed with spec).
+
+> Machine Size K/sec %CP K/sec %CP K/sec %CP K/sec %CP K/sec %CP  /sec %CP
+>         500M  1569  19  1714  10   826   9  1414  18  1569   9  65.2   3
+>              ------Sequential Create------ --------Random Create--------
+>              -Create-- --Read--- -Delete-- -Create-- --Read--- -Delete--
+>        files  /sec %CP  /sec %CP  /sec %CP  /sec %CP  /sec %CP  /sec %CP
+>           16   460  14   897  16   556  15   491  15  1131  13   320   6
+
+What was 'Block' size ?  For 1KB block size you should get more or less same
+speed for TCP and UDP.  If you have link with big latency and big throughput,
+then for 2KB block TCP should be 2 times faster, for 60KB block 60 times faster,
+and above 60KB block difference should stay on 1:60.
+
+You can try bumping NCP/UDP block size to 60KB as well, but my exprience with
+switches and NetWare is that in such cases you can get into situation with
+deterministic packet loss - like that from 40 UDP packets sent back to back to
+server every 12th gets lost - and if you resend, again 12th packet gets lost,
+again and again until you have some luck, or until client decides that server is
+dead.
+                                                          Petr
+
