@@ -1,55 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965065AbXAZLqZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965092AbXAZLtL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965065AbXAZLqZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jan 2007 06:46:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933205AbXAZLqZ
+	id S965092AbXAZLtL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jan 2007 06:49:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965158AbXAZLtK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jan 2007 06:46:25 -0500
-Received: from smtp107.mail.mud.yahoo.com ([209.191.85.217]:28301 "HELO
-	smtp107.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S933206AbXAZLqY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jan 2007 06:46:24 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=gUq1QA594tJAuveSEO0fZNoP3sjf6p4GPmbR8c2P12PUePIjSiDlonu4/2rnhbc0+Iq0/AyfZCvt9w0tCFBJVEcXSk6po0YHqARpP6sSTJU7+YcDksyvdqL5MyM0wj4M8SSANLdIh/246qJWdUf9gXBRKtMX/N22KB+7nGh9aiE=  ;
-X-YMail-OSG: wbjifGwVM1lbmNtxMimQjeWrFK7CJKnHMMdk8RPWQp6PhOyv9pYw.05XxjtD2za6POsZJh9WZg--
-Message-ID: <45B9EA01.7010204@yahoo.com.au>
-Date: Fri, 26 Jan 2007 22:46:09 +1100
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
-MIME-Version: 1.0
-To: Christoph Lameter <clameter@sgi.com>
-CC: linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC] Track mlock()ed pages
-References: <Pine.LNX.4.64.0701252141570.10629@schroedinger.engr.sgi.com> <45B9A00C.4040701@yahoo.com.au> <Pine.LNX.4.64.0701252234490.11230@schroedinger.engr.sgi.com>
-In-Reply-To: <Pine.LNX.4.64.0701252234490.11230@schroedinger.engr.sgi.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Fri, 26 Jan 2007 06:49:10 -0500
+Received: from smtp.aaisp.net.uk ([81.187.81.51]:44312 "EHLO smtp.aaisp.net.uk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965092AbXAZLtJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jan 2007 06:49:09 -0500
+X-Greylist: delayed 2147 seconds by postgrey-1.27 at vger.kernel.org; Fri, 26 Jan 2007 06:49:09 EST
+Date: Fri, 26 Jan 2007 11:13:09 +0000
+From: Andrew Clayton <andrew@digital-domain.net>
+To: Adrian Bunk <bunk@stusta.de>
+Cc: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       gd@spherenet.de, petero2@telia.com, jgarzik@pobox.com,
+       linux-ide@vger.kernel.org, Uwe Bugla <uwe.bugla@gmx.de>,
+       alan@lxorguk.ukuu.org.uk, Cijoml Cijomlovic Cijomlov <cijoml@volny.cz>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, ttb@tentacle.dhs.org,
+       rml@novell.com, Livio Soares <livio@eecg.toronto.edu>,
+       Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org,
+       Malte =?UTF-8?B?U2NocsO2ZGVy?= <MalteSch@gmx.de>,
+       "Vladimir V. Saveliev" <vs@namesys.com>, reiserfs-dev@namesys.com,
+       Sami Farin <7atbggg02@sneakemail.com>, David Chinner <dgc@sgi.com>,
+       xfs-masters@oss.sgi.com,
+       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+       takada <takada@mbf.nifty.com>, Jordan Crouse <jordan.crouse@amd.com>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>
+Subject: Re: 2.6.20-rc5: known unfixed regressions (v3) (part 2)
+Message-ID: <20070126111309.1732d727@zeus.pccl.info>
+In-Reply-To: <20070124154725.GK17836@stusta.de>
+References: <Pine.LNX.4.64.0701121424520.11200@woody.osdl.org>
+	<20070124154725.GK17836@stusta.de>
+X-Mailer: Claws Mail 2.7.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter wrote:
-> On Fri, 26 Jan 2007, Nick Piggin wrote:
-> 
-> 
->>Christoph Lameter wrote:
->>
->>>Add NR_MLOCK
->>>
->>>Track mlocked pages via a ZVC
->>
->>I think it is not quite right. You are tracking the number of ptes
->>that point to mlocked pages, which can be >= the actual number of pages.
-> 
-> 
-> Mlocked pages are not inherited. I would expect sharing to be very rare.
+On Wed, 24 Jan 2007 16:47:25 +0100, Adrian Bunk wrote:
 
-Things like library and application text could easily have a lot of
-sharing.
+> 
+> 
+> Subject    : NFS triggers WARN_ON() in invalidate_inode_pages2_range()
+> References : http://bugzilla.kernel.org/show_bug.cgi?id=7826
+> Submitter  : Andrew Clayton <andrew@digital-domain.net>
+> Caused-By  : Andrew Morton <akpm@osdl.org>
+>              commit 8258d4a574d3a8c01f0ef68aa26b969398a0e140
+> Handled-By : Trond Myklebust <trond.myklebust@fys.uio.no>
+> Status     : Trond: the WARN_ON() needs to be thrown out
+> 
 
--- 
-SUSE Labs, Novell Inc.
-Send instant messages to your online friends http://au.messenger.yahoo.com 
+Still present in -rc6
+
