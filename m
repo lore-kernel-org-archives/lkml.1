@@ -1,40 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751648AbXA0QI3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751813AbXA0QOV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751648AbXA0QI3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Jan 2007 11:08:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751747AbXA0QI3
+	id S1751813AbXA0QOV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Jan 2007 11:14:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751812AbXA0QOV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Jan 2007 11:08:29 -0500
-Received: from tmailer.gwdg.de ([134.76.10.23]:35537 "EHLO tmailer.gwdg.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751634AbXA0QI2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Jan 2007 11:08:28 -0500
-Date: Sat, 27 Jan 2007 17:06:57 +0100 (MET)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: Pierre Ossman <drzeus-list@drzeus.cx>
-cc: vandrove@vc.cvut.cz, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: ncpfs and TCP vs UDP
-In-Reply-To: <45BB69BE.5060403@drzeus.cx>
-Message-ID: <Pine.LNX.4.61.0701271706230.22295@yvahk01.tjqt.qr>
-References: <45BA2437.4000803@drzeus.cx> <1169846450.45ba70b2698c2@imap.vc.cvut.cz>
- <Pine.LNX.4.61.0701271550210.22295@yvahk01.tjqt.qr> <45BB69BE.5060403@drzeus.cx>
+	Sat, 27 Jan 2007 11:14:21 -0500
+Received: from ug-out-1314.google.com ([66.249.92.174]:41367 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751839AbXA0QOU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Jan 2007 11:14:20 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding:from;
+        b=QJE54SD82ONLO7QGqyCJyJiCwghnIkSA4jp7o/cukWeAY3G9I1gC3fEh4Jz0NUl3y80I+gD7mmSUE5K1/3zKGjqeh3ehknDAo3iXX/wvCNDnfaOpQBqPQA1i3x7jUrYojuzaIcD6jsphgMxFZFRekpYWLu8bnAzhIHVfrQ1n8Rs=
+Message-ID: <45BB7A50.6050504@googlemail.com>
+Date: Sat, 27 Jan 2007 17:14:08 +0100
+User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+To: linux-kernel@vger.kernel.org
+CC: Andrew Morton <akpm@osdl.org>, Claas Langbehn <claas@rootdir.de>,
+       Dave Airlie <airlied@linux.ie>, Dave Jones <davej@codemonkey.org.uk>
+Subject: Re: mm snapshot broken-out-2007-01-26-00-36.tar.gz uploaded
+References: <200701260837.l0Q8blBr011622@shell0.pdx.osdl.net>
+In-Reply-To: <200701260837.l0Q8blBr011622@shell0.pdx.osdl.net>
+X-Enigmail-Version: 0.94.1.1
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Claas,
 
->> Well, probably the same reason as NFS over UDP is discouraged. See nfs(5)
->> section WARNINGS (in short: IP fragment ID can wrap quite fast on Gigabit)
->
->I have no such warning in my nfs(5), but I am aware of this yes.
->Somewhat amusing that both nfs and ncpfs tend to default to using udp
->with this in mind. ;)
+akpm@osdl.org napisał(a):
+> The mm snapshot broken-out-2007-01-26-00-36.tar.gz has been uploaded to
+> 
+>    ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/mm/broken-out-2007-01-26-00-36.tar.gz
+> 
 
-nfs has already been "fixed" to prefer tcp over udp (i.e. the default is tcp)
+$ quilt patches drivers/char/drm/via_3d_reg.h
+patches/updates-to-via-dri.patch
 
+drivers/char/drm/via_verifier.c: In function ‘via_parse_header2’:
+drivers/char/drm/via_verifier.c:737: error: ‘HC_REG_TRANS_SPACE’ undeclared (first use in this function)
+drivers/char/drm/via_verifier.c:737: error: (Each undeclared identifier is reported only once
+drivers/char/drm/via_verifier.c:737: error: for each function it appears in.)
+drivers/char/drm/via_verifier.c:754: error: ‘VIA_VIDEOMASK’ undeclared (first use in this function)
+drivers/char/drm/via_verifier.c:754: error: ‘VIA_VIDEO_HEADER5’ undeclared (first use in this function)
+drivers/char/drm/via_verifier.c:755: error: ‘VIA_VIDEO_HEADER6’ undeclared (first use in this function)
+drivers/char/drm/via_verifier.c: In function ‘via_check_vheader5’:
+drivers/char/drm/via_verifier.c:866: error: ‘VIA_VIDEOMASK’ undeclared (first use in this function)
+drivers/char/drm/via_verifier.c: In function ‘via_parse_vheader5’:
+drivers/char/drm/via_verifier.c:895: error: ‘VIA_VIDEOMASK’ undeclared (first use in this function)
+drivers/char/drm/via_verifier.c: In function ‘via_verify_command_stream’:
+drivers/char/drm/via_verifier.c:1013: error: ‘VIA_VIDEOMASK’ undeclared (first use in this function)
+drivers/char/drm/via_verifier.c:1013: error: ‘VIA_VIDEO_HEADER5’ undeclared (first use in this function)
+drivers/char/drm/via_verifier.c:1016: error: ‘VIA_VIDEO_HEADER6’ undeclared (first use in this function)
+drivers/char/drm/via_verifier.c: In function ‘via_parse_command_stream’:
+drivers/char/drm/via_verifier.c:1074: error: ‘VIA_VIDEOMASK’ undeclared (first use in this function)
+drivers/char/drm/via_verifier.c:1074: error: ‘VIA_VIDEO_HEADER5’ undeclared (first use in this function)
+drivers/char/drm/via_verifier.c:1076: error: ‘VIA_VIDEO_HEADER6’ undeclared (first use in this function)
+make[3]: *** [drivers/char/drm/via_verifier.o] Błąd 1
+make[2]: *** [drivers/char/drm] Błąd 2
+make[1]: *** [drivers/char] Błąd 2
+make: *** [drivers] Błąd 2
 
-	-`J'
+Please fix this driver.
+
+Regards,
+Michal
+
 -- 
+Michal K. K. Piotrowski
+LTG - Linux Testers Group
+(http://www.stardust.webpages.pl/ltg/)
