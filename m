@@ -1,41 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932089AbXA0VEz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932098AbXA0VON@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932089AbXA0VEz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Jan 2007 16:04:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932098AbXA0VEz
+	id S932098AbXA0VON (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Jan 2007 16:14:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932099AbXA0VON
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Jan 2007 16:04:55 -0500
-Received: from twin.jikos.cz ([213.151.79.26]:40564 "EHLO twin.jikos.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932089AbXA0VEy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Jan 2007 16:04:54 -0500
-Date: Sat, 27 Jan 2007 22:04:29 +0100 (CET)
-From: Jiri Kosina <jikos@jikos.cz>
-To: Lee Revell <rlrevell@joe-job.com>,
-       Gianluca Alberici <gianluca@abinetworks.biz>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: Nozmi status ?
-In-Reply-To: <75b66ecd0701271218q428e958cvc8cda7c356c315e3@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0701272149320.9448@twin.jikos.cz>
-References: <45BB3FFF.1090806@abinetworks.biz>
- <75b66ecd0701271218q428e958cvc8cda7c356c315e3@mail.gmail.com>
+	Sat, 27 Jan 2007 16:14:13 -0500
+Received: from nic.NetDirect.CA ([216.16.235.2]:35500 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932098AbXA0VOM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Jan 2007 16:14:12 -0500
+X-Originating-Ip: 74.109.98.130
+Date: Sat, 27 Jan 2007 16:13:28 -0500 (EST)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@CPE00045a9c397f-CM001225dbafb6
+To: Linux kernel mailing list <linux-kernel@vger.kernel.org>
+cc: Andrew Morton <akpm@osdl.org>, Karsten Keil <kkeil@suse.de>
+Subject: [PATCH] ISDN: Fix typo "CONFIG_HISAX_QUADRO" -> "CONFIG_HISAX_SCT_QUADRO".
+Message-ID: <Pine.LNX.4.64.0701271607380.10953@CPE00045a9c397f-CM001225dbafb6>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, UPPERCASE_25_50 0.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 27 Jan 2007, Lee Revell wrote:
 
-> > What is the status of the HSDPA driver after 2.6.19.1 ? Is it part of 
-> > the kernel tree or not yet ? If not is there any version of ther 
-> > nozomi pack which is gonna compile under ker > 2.6.18 (the original 
-> > one is not compiling anymore after 2.6.18).
-> It's up to the vendor to fix the driver to work with newer kernels
-> and/or submit the driver for inclusion in the kernel.  Do you know
-> whether they've done that?
+  Replace misspelled CONFIG_HISAX_QUADRO with CONFIG_HISAX_SCT_QUADRO.
 
-There is a nozomi HSDPA driver in recent -mm kernels which compiles 
-(gregkh-driver-nozomi.patch).
+Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
+
+---
+
+diff --git a/drivers/isdn/hisax/config.c b/drivers/isdn/hisax/config.c
+index 17ec0b7..29e98f7 100644
+--- a/drivers/isdn/hisax/config.c
++++ b/drivers/isdn/hisax/config.c
+@@ -1881,7 +1881,7 @@ static struct pci_device_id hisax_pci_tbl[] __devinitdata = {
+ 	{PCI_VENDOR_ID_PLX,      PCI_DEVICE_ID_PLX_DJINN_ITOO,   PCI_ANY_ID, PCI_ANY_ID},
+ 	{PCI_VENDOR_ID_PLX,      PCI_DEVICE_ID_PLX_OLITEC,       PCI_ANY_ID, PCI_ANY_ID},
+ #endif
+-#ifdef CONFIG_HISAX_QUADRO
++#ifdef CONFIG_HISAX_SCT_QUADRO
+ 	{PCI_VENDOR_ID_PLX,      PCI_DEVICE_ID_PLX_9050,         PCI_ANY_ID, PCI_ANY_ID},
+ #endif
+ #ifdef CONFIG_HISAX_NICCY
 
 -- 
-Jiri Kosina
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://www.fsdev.dreamhosters.com/wiki/index.php?title=Main_Page
+========================================================================
