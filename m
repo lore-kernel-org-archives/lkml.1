@@ -1,55 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752315AbXA0SLW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752317AbXA0SMt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752315AbXA0SLW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Jan 2007 13:11:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752317AbXA0SLW
+	id S1752317AbXA0SMt (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Jan 2007 13:12:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752316AbXA0SMs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Jan 2007 13:11:22 -0500
-Received: from tomts43-srv.bellnexxia.net ([209.226.175.110]:63826 "EHLO
-	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752314AbXA0SLV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Jan 2007 13:11:21 -0500
-Date: Sat, 27 Jan 2007 13:11:16 -0500
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: Andrew Morton <akpm@osdl.org>
-Cc: Ingo@maccavity.nachtwache.org, Christoph@maccavity.nachtwache.org,
-       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       "Martin J. Bligh" <mbligh@mbligh.org>, Hellwig <hch@infradead.org>,
-       Linus Torvalds <torvalds@osdl.org>, Molnar <mingo@redhat.com>,
-       ltt-dev@shafik.org, systemtap@sources.redhat.com,
-       Paul Mackerras <paulus@samba.org>, Thomas Gleixner <tglx@linutronix.de>,
-       Douglas Niehaus <niehaus@eecs.ku.edu>
-Subject: Re: [Ltt-dev] [PATCH 00/09] atomic.h : standardizing atomic primitives
-Message-ID: <20070127181116.GA5158@Krystal>
-References: <11697417541743-git-send-email-mathieu.desnoyers@polymtl.ca> <20070127021834.e26e955d.akpm@osdl.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 27 Jan 2007 13:12:48 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:40444 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752314AbXA0SMs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Jan 2007 13:12:48 -0500
+Message-ID: <45BB96B4.30907@redhat.com>
+Date: Sat, 27 Jan 2007 16:15:16 -0200
+From: Arnaldo Carvalho de Melo <acme@redhat.com>
+Organization: Red Hat Inc.
+User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
+MIME-Version: 1.0
+To: Sam Ravnborg <sam@ravnborg.org>
+CC: linux-kernel@vger.kernel.org
+Subject: External module Makefile with generated C file
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20070127021834.e26e955d.akpm@osdl.org>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.4.32-grsec (i686)
-X-Uptime: 13:10:02 up 157 days, 15:17,  3 users,  load average: 1.04, 0.63, 0.55
-User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Andrew Morton (akpm@osdl.org) wrote:
-> I'm giving up.  Someone should publish a suite of cross-compilers for us
-> so stuff like this doesn't need to happen.
+Sam,
 
-Hi Andrew,
+      I'm trying to create a external module that involves generating 
+one of the source files needed for
+the module, I'm using this Makefile:
 
-I am currently trying crosstool by Dan Kegel, it looks promising.
-http://www.kegel.com/crosstool/
+[acme@filo ctracer_example]$ cat Makefile
+obj-m := ctracer.o
 
-I will let you know more when my cross compiler chain is set up.
+ctracer-y := ctracer_methods.o ctracer_jprobe.o
 
-Mathieu
+CLASS=sock
+KDIR := /lib/modules/$(shell uname -r)/build
+PWD := $(shell pwd)
 
+default:
+        $(MAKE) -C $(KDIR) SUBDIRS=$(PWD) modules
+clean:
+        rm -f *.mod.c *.ko *.o ctracer_methods.c
 
--- 
-OpenPGP public key:              http://krystal.dyndns.org:8080/key/compudj.gpg
-Key fingerprint:     8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68 
+# Files generated that shall be removed upon make clean
+clean-files := ctracer_methods.c
+
+ctracer_methods.o: ctracer_methods.c
+
+ctracer_methods.c:
+        ctracer /usr/lib/debug/lib/modules/$(shell uname -r)/vmlinux 
+$(CLASS) > ctracer_methods.c
+
+[acme@filo ctracer_example]$
+
+But I get this as the result:
+
+[acme@filo ctracer_example]$ make
+make -C /lib/modules/2.6.19-1.2895.fc6/build 
+SUBDIRS=/home/acme/git/pahole/ctracer_example modules
+make[1]: Entering directory `/usr/src/kernels/2.6.19-1.2895.fc6-i686'
+make[2]: *** No rule to make target 
+`/home/acme/git/pahole/ctracer_example/ctracer_methods.o', needed by 
+`/home/acme/git/pahole/ctracer_example/ctracer.o'.  Stop.
+make[1]: *** [_module_/home/acme/git/pahole/ctracer_example] Error 2
+make[1]: Leaving directory `/usr/src/kernels/2.6.19-1.2895.fc6-i686'
+make: *** [default] Error 2
+[acme@filo ctracer_example]$
+
+What is the stupid thing I'm doing? :-)
+
+- Arnaldo
