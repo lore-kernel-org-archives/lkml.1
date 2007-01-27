@@ -1,85 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932101AbXA0VZG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932106AbXA0Vax@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932101AbXA0VZG (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Jan 2007 16:25:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932106AbXA0VZG
+	id S932106AbXA0Vax (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Jan 2007 16:30:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932107AbXA0Vaw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Jan 2007 16:25:06 -0500
-Received: from out4.smtp.messagingengine.com ([66.111.4.28]:42637 "EHLO
-	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932101AbXA0VZE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Jan 2007 16:25:04 -0500
-X-Sasl-enc: Dbym5ITdltpcVVpVpR3Ca4ZEWtzkVc+V69vk4wAcfvst 1169933102
-Message-ID: <45BBC444.8090109@imap.cc>
-Date: Sat, 27 Jan 2007 22:29:40 +0100
-From: Tilman Schmidt <tilman@imap.cc>
-Organization: me - organized??
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; de-AT; rv:1.8.0.9) Gecko/20061211 SeaMonkey/1.0.7 Mnenhy/0.7.4.666
+	Sat, 27 Jan 2007 16:30:52 -0500
+Received: from ns2.uludag.org.tr ([193.140.100.220]:42810 "EHLO uludag.org.tr"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S932106AbXA0Vaw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Jan 2007 16:30:52 -0500
+From: "=?utf-8?q?S=2E=C3=87a=C4=9Flar?= Onur" <caglar@pardus.org.tr>
+Reply-To: caglar@pardus.org.tr
+Organization: =?utf-8?q?T=C3=9CB=C4=B0TAK_/?= UEKAE
+To: Avi Kivity <avi@qumranet.com>
+Subject: Re: [PATCH] KVM: 'asm' operand has impossible constraints
+Date: Sat, 27 Jan 2007 23:28:27 +0200
+User-Agent: KMail/1.9.6
+Cc: lkml <linux-kernel@vger.kernel.org>, kvm-devel@lists.sourceforge.net
+References: <200701260140.47760.caglar@pardus.org.tr> <45BB15F1.6020600@qumranet.com>
+In-Reply-To: <45BB15F1.6020600@qumranet.com>
 MIME-Version: 1.0
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-CC: linux-kernel@vger.kernel.org, Andrew Morton <akpm@osdl.org>,
-       Hansjoerg Lipp <hjlipp@web.de>
-Subject: Re: mm snapshot broken-out-2007-01-26-00-36.tar.gz uploaded
-References: <200701260837.l0Q8blBr011622@shell0.pdx.osdl.net> <6bffcb0e0701270837i1ec40560l6e61e8876177e9da@mail.gmail.com>
-In-Reply-To: <6bffcb0e0701270837i1ec40560l6e61e8876177e9da@mail.gmail.com>
-X-Enigmail-Version: 0.94.1.2
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig32957911300B03F24DB735F5"
+Content-Type: multipart/signed;
+  boundary="nextPart1589010.rve24a4AKo";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200701272328.31532.caglar@pardus.org.tr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig32957911300B03F24DB735F5
-Content-Type: text/plain; charset=ISO-8859-2
+--nextPart1589010.rve24a4AKo
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Am 27.01.2007 17:37 schrieb Michal Piotrowski:
-> On 26/01/07, akpm@osdl.org <akpm@osdl.org> wrote:
->> The mm snapshot broken-out-2007-01-26-00-36.tar.gz has been uploaded t=
-o
->>
->>    ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/mm/broken-out-200=
-7-01-26-00-36.tar.gz
->>
->=20
-> It's probably not mm snapshot related. This driver is just broken.
+27 Oca 2007 Cts tarihinde, Avi Kivity =C5=9Funlar=C4=B1 yazm=C4=B1=C5=9Ft=
+=C4=B1:=20
+> The patch looks correct, but I don't understand the gcc error message.
+> Are we sure this isn't a gcc 4.2 bug?
+>
+> "g" appears to be equivalent to "rmi", if "i" is impossible, gcc is free
+> to use "r" or "m", no?
 
-It probably *is* mm snapshot related. This driver compiles and works
-just fine in 2.6.19.2, 2.6.20-rc6 and 2.6.20-rc4-mm1.
+Accorgind to GCC devs. its not a bug=20
+(http://gcc.gnu.org/bugzilla/show_bug.cgi?id=3D29808), on comment #5 the=20
+problem described like;
 
-> drivers/isdn/gigaset/bas-gigaset.c: In function 'dump_urb':
-> drivers/isdn/gigaset/bas-gigaset.c:258: error: 'struct urb' has no
-> member named 'bandwidth'
+"g" means "r"+"i" so the register allocator in the -O0 case is selecting "r=
+"=20
+while in the optimize case is selecting "i"
 
-In current stable and mm releases, 'struct urb' *does* have a member
-named 'bandwidth'. If some mm patch removes that member then it is
-the responsibility of that patch to adapt all users of that structure
-accordingly.
+=2D-=20
+S.=C3=87a=C4=9Flar Onur <caglar@pardus.org.tr>
+http://cekirdek.pardus.org.tr/~caglar/
 
-HTH
-Tilman
+Linux is like living in a teepee. No Windows, no Gates and an Apache in hou=
+se!
 
---=20
-Tilman Schmidt                          E-Mail: tilman@imap.cc
-Bonn, Germany
-Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
-Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
-
-
---------------enig32957911300B03F24DB735F5
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+--nextPart1589010.rve24a4AKo
+Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3rc1 (MingW32)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+Version: GnuPG v2.0.1 (GNU/Linux)
 
-iD4DBQFFu8RMMdB4Whm86/kRAl9aAJigZPCq782hI048NJYpXPCoM6tFAJ9o6iGY
-uUO/OEZOa+wNAX0pz1GTZA==
-=DCzV
+iD8DBQBFu8P/y7E6i0LKo6YRAuIgAJ0QXWk9UJN77TxGoK+4psFzBBTj2QCgmr6/
++MEbU+VgTSvhmGSJxiq6JHw=
+=pfL0
 -----END PGP SIGNATURE-----
 
---------------enig32957911300B03F24DB735F5--
+--nextPart1589010.rve24a4AKo--
