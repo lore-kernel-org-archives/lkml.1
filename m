@@ -1,39 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751125AbXA0KLV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752226AbXA0KTj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751125AbXA0KLV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Jan 2007 05:11:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751194AbXA0KLV
+	id S1752226AbXA0KTj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Jan 2007 05:19:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752240AbXA0KTi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Jan 2007 05:11:21 -0500
-Received: from nic2.axis.se ([193.13.178.10]:36641 "EHLO krynn.se.axis.com"
+	Sat, 27 Jan 2007 05:19:38 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:47622 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751125AbXA0KLU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Jan 2007 05:11:20 -0500
-Date: Sat, 27 Jan 2007 11:11:03 +0100
-Message-Id: <200701271011.l0RAB3MD018814@ignucius.se.axis.com>
-From: Hans-Peter Nilsson <hans-peter.nilsson@axis.com>
-To: david-b@pacbell.net
-CC: hans-peter.nilsson@axis.com, linux-kernel@vger.kernel.org,
-       mikael.starvik@axis.com, spi-devel-general@lists.sourceforge.net
-In-reply-to: <200701261521.15844.david-b@pacbell.net> (message from David
-	Brownell on Fri, 26 Jan 2007 15:21:15 -0800)
-Subject: Re: [PATCH 1/2] take 2: (was-kind-of: 3/5 SPI tx_default) 2.6.20-rc6
+	id S1751438AbXA0KTh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Jan 2007 05:19:37 -0500
+Date: Sat, 27 Jan 2007 02:18:34 -0800
+From: Andrew Morton <akpm@osdl.org>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: linux-kernel@vger.kernel.org, Linus Torvalds <torvalds@osdl.org>,
+       Ingo Molnar <mingo@redhat.com>, Greg Kroah-Hartman <gregkh@suse.de>,
+       Christoph Hellwig <hch@infradead.org>, ltt-dev@shafik.org,
+       systemtap@sources.redhat.com, Douglas Niehaus <niehaus@eecs.ku.edu>,
+       "Martin J. Bligh" <mbligh@mbligh.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH 00/09] atomic.h : standardizing atomic primitives
+Message-Id: <20070127021834.e26e955d.akpm@osdl.org>
+In-Reply-To: <11697417541743-git-send-email-mathieu.desnoyers@polymtl.ca>
+References: <11697417541743-git-send-email-mathieu.desnoyers@polymtl.ca>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> From: David Brownell <david-b@pacbell.net>
-> Date: Fri, 26 Jan 2007 15:21:15 -0800
+On Thu, 25 Jan 2007 11:15:45 -0500
+Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
 
-> > >  That flag could work in conjunction with a byte
-> > 
-> > Or why not a 32-bit word!
-> 
-> If a driver wants a repeating 32-bit pattern, they should just
-> provide a properly initialized tx buffer.
+> It mainly adds support for missing 64 bits cmpxchg and 64 bits atomic add
+> unless. Therefore, principally 64 bits architectures are targeted by these
+> patches. It also adds the complete list of atomic operations on the atomic_long
+> type.
 
-I'm suggesting the default_tx_word be able to fill out "common"
-values of bits_per_word when > 8, else it'd be useless as a
-1-filler for larger sizes than byte.  Making it a single bit
-then wouldn't cater to your debug-with-scope use-case.
+OK, I fixed eight separate compile errors in this patch series and
+now powerpc is being very ugly with a twisty maze of include dependencies.
 
-brgds, H-P
+I'm giving up.  Someone should publish a suite of cross-compilers for us
+so stuff like this doesn't need to happen.
