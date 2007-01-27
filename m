@@ -1,125 +1,325 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752379AbXA0UGM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752387AbXA0UHH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752379AbXA0UGM (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Jan 2007 15:06:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752372AbXA0UGM
+	id S1752387AbXA0UHH (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Jan 2007 15:07:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752389AbXA0UHH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Jan 2007 15:06:12 -0500
-Received: from mga03.intel.com ([143.182.124.21]:21857 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752375AbXA0UGJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Jan 2007 15:06:09 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.13,246,1167638400"; 
-   d="scan'208"; a="173738121:sNHT22388632"
-Message-ID: <45BBB0AF.4040709@intel.com>
-Date: Sat, 27 Jan 2007 12:06:07 -0800
-From: Auke Kok <auke-jan.h.kok@intel.com>
-User-Agent: Mail/News 1.5.0.9 (X11/20061228)
+	Sat, 27 Jan 2007 15:07:07 -0500
+Received: from ns1.mvista.com ([63.81.120.158]:57361 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1752382AbXA0UHE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Jan 2007 15:07:04 -0500
+Message-ID: <45BBB097.1090207@mvista.com>
+Date: Sat, 27 Jan 2007 10:05:43 -1000
+From: akuster <akuster@mvista.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
 MIME-Version: 1.0
 To: Andrew Morton <akpm@osdl.org>
-CC: Jeff Garzik <jgarzik@pobox.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       NetDev <netdev@vger.kernel.org>,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>,
-       cramerj <cramerj@intel.com>
-Subject: [PATCH -MM]: updated e1000  - new hardware initialization code (replacement
- patch)
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH 1/2] PM: fast power off - core 
+Content-Type: multipart/mixed;
+ boundary="------------020200030200090205040905"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is a multi-part message in MIME format.
+--------------020200030200090205040905
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Andrew,
+My apologies, I cc'd the wrong list the first time around.
 
-Please pull:
-
-git-pull git://lost.foo-projects.org/~ahkok/git/netdev-2.6 upstream-mm
-
-to receive an updated version of the new e1000 hardware initialization code. 
-This version incorporates both previously sent patches and replaces them, as 
-well as adding some minor extra kdoc headers.
-
-The patch applies cleanly against jgarzik's netdev-2.6 #upstream commit 
-5ad0d383ddbf0d2fce43b8aac267a6c299fd2dff.
-
-the patch is also available in monolithic form over http:
-http://foo-projects.org/~sofar/e1000_git_new_device_init_code.patch.bz2 (166kb)
-or http://foo-projects.org/~sofar/e1000_git_new_device_init_code.patch (1.2mb)
-
-Cheers,
-
-Auke
-
-
+- Armin
 
 ---
 
+--------------020200030200090205040905
+Content-Type: text/x-patch;
+ name="fastpoweroff-1.0.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="fastpoweroff-1.0.patch"
 
-e1000: New device initialization code, fixes
+Fastpoweroff  allows a user to power down the system without using rc kill
+scripts. This is used in the advent of a battery operated device about to lose
+power.  The user interface is vis sysfs /sys/power/fastpoweroff. A simple cat of
+the fastpoweroff will list any registered profiles.  To invoke
+the profile sequence, echo {profile name} > /sys/power/fastpoweroff.
 
-From: Jeb Cramer <cramerj@intel.com>
+This is the core code for fastpoweroff profile support, it includes a
+register/unregister and default profile callbacks.
 
-This rewrite of the hardware initialization code splits up the driver
-low-level initialization code per chipset family. Several families exist
-with different initialization code per chipset, revision, and this allows
-us later to select only enable certain devices in the driver. The current
-code enables all previous drivers and thus doesn't change anything to the
-user, but is radically different internally.
-
-Mac and phy layers are also split, and everything is grouped in an API
-layer that the driver uses to interface the hardware.
-
-Support was added for a PCI-e 4-port Fibre version of the PRO/1000 PT quad
-port adapter (device 0x10a5). MTU changes on a downed interface require
-a phy commit to enact the new size immediately.
-
-Replace hard coded RAR numbers with constant. Add several function
-description and fix some small copy+paste errors in others. Fix link
-speed detection on PCI adapters showing wrong PCI bus speed. Fix laa
-detection. Rewrite tbi static for 82543. Fix mta list overflow. Don't
-unmap skb's twice in occasions, but set dma=0. Flatten dhcp generic
-function for readability. Change force phy speed duplex setup to be
-void and static.
-
-Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
-Signed-off-by: Jeb Cramer <cramerj@intel.com>
-Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Signed-off-by: Auke Kok <auke-jan.h.kok@intel.com>
+Signed-off-by: Armin Kuster <AKuster@mvista.com>
 ---
+ fs/super.c                    |    6 +
+ kernel/power/Kconfig          |    2 
+ kernel/power/Makefile         |    2 
+ kernel/power/fastoff/Kconfig  |   13 +++
+ kernel/power/fastoff/Makefile |    8 ++
+ kernel/power/fastoff/fpo.c    |  155 ++++++++++++++++++++++++++++++++++++++++++
+ kernel/power/fastoff/fpo.h    |   27 +++++++
+ 7 files changed, 213 insertions(+)
 
-  drivers/net/e1000/Makefile            |   19
-  drivers/net/e1000/e1000.h             |   97
-  drivers/net/e1000/e1000_80003es2lan.c | 1377 +++++
-  drivers/net/e1000/e1000_80003es2lan.h |   89
-  drivers/net/e1000/e1000_82540.c       |  670 ++
-  drivers/net/e1000/e1000_82541.c       | 1305 +++++
-  drivers/net/e1000/e1000_82541.h       |   86
-  drivers/net/e1000/e1000_82542.c       |  551 ++
-  drivers/net/e1000/e1000_82543.c       | 1643 ++++++
-  drivers/net/e1000/e1000_82543.h       |   45
-  drivers/net/e1000/e1000_82571.c       | 1127 ++++
-  drivers/net/e1000/e1000_82571.h       |   42
-  drivers/net/e1000/e1000_api.c         | 1174 ++++
-  drivers/net/e1000/e1000_api.h         |  161 +
-  drivers/net/e1000/e1000_defines.h     | 1297 +++++
-  drivers/net/e1000/e1000_ethtool.c     |  470 +-
-  drivers/net/e1000/e1000_hw.c          | 9038 ---------------------------------
-  drivers/net/e1000/e1000_hw.h          | 3859 ++------------
-  drivers/net/e1000/e1000_ich8lan.c     | 2427 +++++++++
-  drivers/net/e1000/e1000_ich8lan.h     |  110
-  drivers/net/e1000/e1000_mac.c         | 1939 +++++++
-  drivers/net/e1000/e1000_mac.h         |   84
-  drivers/net/e1000/e1000_main.c        |  936 ++-
-  drivers/net/e1000/e1000_manage.c      |  388 +
-  drivers/net/e1000/e1000_manage.h      |   83
-  drivers/net/e1000/e1000_nvm.c         |  859 +++
-  drivers/net/e1000/e1000_nvm.h         |   61
-  drivers/net/e1000/e1000_osdep.h       |   57
-  drivers/net/e1000/e1000_param.c       |  100
-  drivers/net/e1000/e1000_phy.c         | 1932 +++++++
-  drivers/net/e1000/e1000_phy.h         |  159 +
-  drivers/net/e1000/e1000_regs.h        |  236 +
-  32 files changed, 19321 insertions(+), 13100 deletions(-)
+Index: linux-2.6_dev/kernel/power/Kconfig
+===================================================================
+--- linux-2.6_dev.orig/kernel/power/Kconfig
++++ linux-2.6_dev/kernel/power/Kconfig
+@@ -131,3 +131,5 @@ config SUSPEND_SMP
+ 	bool
+ 	depends on HOTPLUG_CPU && X86 && PM
+ 	default y
++
++source "kernel/power/fastoff/Kconfig"
+Index: linux-2.6_dev/kernel/power/Makefile
+===================================================================
+--- linux-2.6_dev.orig/kernel/power/Makefile
++++ linux-2.6_dev/kernel/power/Makefile
+@@ -8,3 +8,5 @@ obj-$(CONFIG_PM_LEGACY)		+= pm.o
+ obj-$(CONFIG_SOFTWARE_SUSPEND)	+= swsusp.o disk.o snapshot.o swap.o user.o
+ 
+ obj-$(CONFIG_MAGIC_SYSRQ)	+= poweroff.o
++
++obj-$(CONFIG_FAST_POWER_OFF)	+= fastoff/
+Index: linux-2.6_dev/kernel/power/fastoff/Kconfig
+===================================================================
+--- /dev/null
++++ linux-2.6_dev/kernel/power/fastoff/Kconfig
+@@ -0,0 +1,13 @@
++#
++# Fast power off configuration
++#
++menu "Fast Power off"
++
++config FAST_POWER_OFF
++	bool "Fast power off support"
++	default y
++	depends on PM && SYSFS
++	---help---
++	  Say yes if you want core support for sysfs/power/fastoff
++
++endmenu
+Index: linux-2.6_dev/kernel/power/fastoff/Makefile
+===================================================================
+--- /dev/null
++++ linux-2.6_dev/kernel/power/fastoff/Makefile
+@@ -0,0 +1,8 @@
++#
++# Makefile for Fast Power off
++#
++# 15 Jan. 2007 Armin Kuster <akuster@mvista.com>
++#
++
++obj-$(CONFIG_FAST_POWER_OFF)	:= fpo.o
++
+Index: linux-2.6_dev/kernel/power/fastoff/fpo.h
+===================================================================
+--- /dev/null
++++ linux-2.6_dev/kernel/power/fastoff/fpo.h
+@@ -0,0 +1,27 @@
++#ifndef __FASTOFF_H__
++#define __FASTOFF_H__
++/*
++ * kernel/power/fastoff/fpo.h
++ *
++ * Author: Armin Kuster <AKuster@mvista.com, or source@mvista.com>
++ *
++ * 2006, 2007  (c) MontaVista Software, Inc. This file is licensed under
++ * the terms of the GNU General Public License version 2. This program
++ * is licensed "as is" without any warranty of any kind, whether express
++ * or implied.
++ */
++
++#define FPO_NAME_LEN 16
++
++struct fpo_driver {
++	char name[FPO_NAME_LEN];
++	int (*policy) (void);
++	struct list_head fpo_list;
++};
++
++extern int fastpoweroff_register(struct fpo_driver *fpo);
++extern void fastpoweroff_unregister(struct fpo_driver *fpo);
++extern void fastpoweroff_prepare(void);
++extern void fastpoweroff(void);
++extern void fastpoweroff_standby(void);
++#endif	/* __FASTOFF_H__ */
+Index: linux-2.6_dev/kernel/power/fastoff/fpo.c
+===================================================================
+--- /dev/null
++++ linux-2.6_dev/kernel/power/fastoff/fpo.c
+@@ -0,0 +1,155 @@
++/*
++ * kernel/power/fastoff/fpo.c
++ *
++ * This provides a sysfs interface that allows the user to
++ * bypass running rc kill scripts in the advent the user
++ * needed to power down as fast as possible. A moduler scheme
++ * has been implimented so that a user can define how they want to
++ * shutdown.
++ *
++ * Author: Armin Kuster <AKuster@mvista.com, or source@mvista.com>
++ *
++ * 2006, 2007  (c) MontaVista Software, Inc. This file is licensed under
++ * the terms of the GNU General Public License version 2. This program
++ * is licensed "as is" without any warranty of any kind, whether express
++ * or implied.
++ */
++
++#include <linux/init.h>
++#include <linux/module.h>
++#include <linux/string.h>
++#include <linux/errno.h>
++#include <linux/pm.h>
++#include <linux/fs.h>
++#include <linux/reboot.h>
++#include <linux/freezer.h>
++#include <linux/mutex.h>
++#include <linux/list.h>
++
++#include "../power.h"
++#include "fpo.h"
++
++static LIST_HEAD(fastpoweroff_list);
++static DEFINE_MUTEX(fpo_mutex);
++
++extern void suspend_emergency_remount(void);
++
++static struct fpo_driver *__find_fastpoweroff(const char *name)
++{
++	struct fpo_driver *f;
++
++  	list_for_each_entry(f, &fastpoweroff_list, fpo_list) {
++		if (!strnicmp(name, f->name, strlen(f->name))) {
++			return f;
++		}
++	}
++	return NULL;
++}
++
++int fastpoweroff_register(struct fpo_driver *fpo)
++{
++	int ret;
++
++	if (!fpo || !fpo->name || !fpo->policy)
++		return -EINVAL;
++
++	mutex_lock(&fpo_mutex);
++	ret = -EBUSY;
++	if (__find_fastpoweroff(fpo->name) == NULL) {
++		ret = 0;
++		list_add_tail(&fpo->fpo_list, &fastpoweroff_list);
++	}
++	mutex_unlock(&fpo_mutex);
++	return ret;
++}
++
++EXPORT_SYMBOL_GPL(fastpoweroff_register);
++
++void fastpoweroff_unregister(struct fpo_driver *fpo)
++{
++	if (!fpo)
++		return;
++	mutex_lock(&fpo_mutex);
++	list_del(&fpo->fpo_list);
++	mutex_unlock(&fpo_mutex);
++}
++
++EXPORT_SYMBOL_GPL(fastpoweroff_unregister);
++
++void fastpoweroff_prepare(void)
++{
++	freeze_processes();
++	suspend_emergency_remount();
++}
++EXPORT_SYMBOL_GPL(fastpoweroff_prepare);
++
++void fastpoweroff(void)
++{
++	kernel_power_off();
++	printk(KERN_INFO "machine_power_off  not impliemented\n");
++}
++EXPORT_SYMBOL_GPL(fastpoweroff);
++
++void fastpoweroff_standby(void)
++{
++	/*
++	 * Power off not implemented on this platform.  Do the best we can
++	 * by powering off all devices and entering standby mode, re-entering
++	 * each time awoken.
++	 */
++	printk(KERN_INFO "Fallback plan...suspend devices\n");
++	device_power_down(PMSG_SUSPEND);
++	while (1)
++		pm_ops && pm_ops->enter(PM_SUSPEND_STANDBY);
++}
++EXPORT_SYMBOL_GPL(fastpoweroff_standby);
++
++/* sysfs setup */
++static ssize_t fastpoweroff_show(struct subsystem *subsys, char *buf)
++{
++	char *s = buf;
++	struct fpo_driver *f;
++
++  	list_for_each_entry(f, &fastpoweroff_list, fpo_list) {
++		s += sprintf(s, "%s ", f->name);
++	}
++	s += sprintf(s, "\n");
++	return (s - buf);
++}
++
++static ssize_t fastpoweroff_store(struct subsystem *subsys, const char *buf,
++				size_t n)
++{
++	struct fpo_driver *fpo;
++
++
++	if (n > FPO_NAME_LEN)
++		return -EINVAL;
++
++	if ((fpo = __find_fastpoweroff(buf)) == NULL) {
++		printk(KERN_ERR "PM: fastpoweroff: not a valid profile\n");
++		return -EINVAL;
++	}
++
++	if (fpo->policy)
++		fpo->policy();
++
++	return n;
++}
++
++power_attr(fastpoweroff);
++
++static int __init fastpoweroff_init(void)
++{
++	int error;
++	printk(KERN_INFO "PM: Fastpoweoff 1.0\n");
++	error = subsys_create_file(&power_subsys, &fastpoweroff_attr);
++	if (error)
++		printk(KERN_ERR
++		       "PM: Fastpoweoff -  Sysfs attribute export failed with error %d.\n",
++		       error);
++	return error;
++}
++
++core_initcall(fastpoweroff_init);
++
+Index: linux-2.6_dev/fs/super.c
+===================================================================
+--- linux-2.6_dev.orig/fs/super.c
++++ linux-2.6_dev/fs/super.c
+@@ -649,6 +649,12 @@ void emergency_remount(void)
+ 	pdflush_operation(do_emergency_remount, 0);
+ }
+ 
++#ifdef CONFIG_FAST_POWER_OFF
++void suspend_emergency_remount(void)
++{
++	do_emergency_remount(0);
++}
++#endif
+ /*
+  * Unnamed block devices are dummy devices used by virtual
+  * filesystems which don't use real block-devices.  -- jrs
+
+--------------020200030200090205040905--
