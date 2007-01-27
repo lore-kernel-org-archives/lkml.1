@@ -1,25 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932078AbXA0Wiu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932096AbXA0WkT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932078AbXA0Wiu (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Jan 2007 17:38:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752060AbXA0Wiu
+	id S932096AbXA0WkT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Jan 2007 17:40:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932107AbXA0WkS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Jan 2007 17:38:50 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:55395 "EHLO mail.dvmed.net"
+	Sat, 27 Jan 2007 17:40:18 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:55414 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751954AbXA0Wit (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Jan 2007 17:38:49 -0500
-Message-ID: <45BBD475.4050101@garzik.org>
-Date: Sat, 27 Jan 2007 17:38:45 -0500
+	id S932096AbXA0WkR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Jan 2007 17:40:17 -0500
+Message-ID: <45BBD4CA.70303@garzik.org>
+Date: Sat, 27 Jan 2007 17:40:10 -0500
 From: Jeff Garzik <jeff@garzik.org>
 User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
 MIME-Version: 1.0
-To: Jay Cliburn <jacliburn@bellsouth.net>
-CC: csnook@redhat.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       atl1-devel@lists.sourceforge.net
-Subject: Re: [PATCH 4/4] atl1: Ancillary C files for Attansic L1 driver
-References: <20070121210737.GE2702@osprey.hogchain.net> <20070121183151.4be61ebf.randy.dunlap@oracle.com> <45B43093.6060500@bellsouth.net> <20070122200004.GA12553@dreamland.darkstar.lan> <20070123112522.65aac61b@freekitty> <20070123211917.GA22109@dreamland.darkstar.lan> <45BBBDD0.7030809@bellsouth.net> <45BBC10C.5010103@garzik.org> <45BBCCA2.4090902@bellsouth.net>
-In-Reply-To: <45BBCCA2.4090902@bellsouth.net>
+To: tglx@linutronix.de
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: Linux 2.6.20-rc6 - suspend / resume ata_piix
+References: <Pine.LNX.4.64.0701241847360.25027@woody.linux-foundation.org> <1169935901.17469.159.camel@localhost.localdomain>
+In-Reply-To: <1169935901.17469.159.camel@localhost.localdomain>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 X-Spam-Score: -4.3 (----)
@@ -28,36 +29,26 @@ X-Spam-Report: SpamAssassin version 3.1.7 on srv5.dvmed.net summary:
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jay Cliburn wrote:
-> Jeff Garzik wrote:
->> As a driver maintainer, you need to patch sets, and submit them in a 
->> timely fashion to me.  Note I said patch set, not patch, in following 
->> with Rule #3 from Documentation/SubmittingPatches.  Also make sure to 
->> review http://linux.yyz.us/patch-format.html
+Thomas Gleixner wrote:
+> On Wed, 2007-01-24 at 18:58 -0800, Linus Torvalds wrote:
+>> It's been more than a week since -rc5, but I blame everybody (including 
+>> me) being away for Linux.conf.au and then me waiting for a few days 
+>> afterwards to let everybody sync up.
 > 
-> Understood.  Both references reviewed.  Thanks.
+> ata_piix survives exactly one suspend resume cylce. After resuming the
+> second time the disk is not longer usable.
 > 
-> Sorry, but one last question...  These two patches generated overnight 
-> by Andrew:
+> After the first resume a simple "emacs -nw bla.txt" takes already ~45sec
+> to launch, but there are no kernel messages.
 > 
-> Message-Id: <200701270710.l0R7AhLj004217@shell0.pdx.osdl.net>
-> Subject: + git-netdev-all-atl1-pm-fix.patch added to -mm tree
+> During the second resume the ATA interrupt gets disabled due to an
+> unhandled interrupt.
 > 
-> and
-> 
-> Message-Id: <200701270708.l0R78Q0o004191@shell0.pdx.osdl.net>
-> Subject: + git-netdev-all-atl1-build-fix.patch added to -mm tree
-> 
-> Do I include these in my patch set that I submit to you, or do you apply 
-> them to netdev directly?
+> This is 100% reproducible. So I can provide as much info as needed.
 
-There is no hard and fast rule.  If the patch is obvious and submitted 
-in correct form (Andrew's notifications are not in such a form), then I 
-might go ahead and apply it.  But I usually reply to the patch with 
-"applied" if so.
+Is this a regression, or behavior that's always been present?
 
-In general, you can answer this question yourself.  Look at 
-netdev-2.6.git#atl1 and see what's in there.
+If its a regression, what changeset caused the problem?
 
 	Jeff
 
