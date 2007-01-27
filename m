@@ -1,65 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752282AbXA0Rb3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752294AbXA0Rbz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752282AbXA0Rb3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Jan 2007 12:31:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752283AbXA0Rb3
+	id S1752294AbXA0Rbz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Jan 2007 12:31:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752290AbXA0Rbz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Jan 2007 12:31:29 -0500
-Received: from tomts16-srv.bellnexxia.net ([209.226.175.4]:53759 "EHLO
-	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752280AbXA0Rb2 (ORCPT
+	Sat, 27 Jan 2007 12:31:55 -0500
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:39633 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752291AbXA0Rby (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Jan 2007 12:31:28 -0500
-Date: Sat, 27 Jan 2007 12:31:24 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Andrew Morton <akpm@osdl.org>
-Cc: linux-kernel@vger.kernel.org, Linus Torvalds <torvalds@osdl.org>,
-       Ingo Molnar <mingo@redhat.com>, Greg Kroah-Hartman <gregkh@suse.de>,
-       Christoph Hellwig <hch@infradead.org>, ltt-dev@shafik.org,
-       systemtap@sources.redhat.com, Douglas Niehaus <niehaus@eecs.ku.edu>,
-       "Martin J. Bligh" <mbligh@mbligh.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH 00/09] atomic.h : standardizing atomic primitives
-Message-ID: <20070127173124.GA25282@Krystal>
-References: <11697417541743-git-send-email-mathieu.desnoyers@polymtl.ca> <20070127021834.e26e955d.akpm@osdl.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Sat, 27 Jan 2007 12:31:54 -0500
+Date: Sat, 27 Jan 2007 18:32:00 +0100
+From: Adrian Bunk <bunk@stusta.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@osdl.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Vasquez <andrew.vasquez@qlogic.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Berthold Cogel <cogel@rrz.uni-koeln.de>,
+       =?utf-8?B?RnJhbsOnb2lz?= Valenduc <francois.valenduc@skynet.be>,
+       Alan Stern <stern@rowland.harvard.edu>, greg@kroah.com,
+       linux-usb-devel@lists.sourceforge.net,
+       Prakash Punnoor <prakash@punnoor.de>, Oliver Neukum <oliver@neukum.org>,
+       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+       takada <takada@mbf.nifty.com>, Jordan Crouse <jordan.crouse@amd.com>
+Subject: 2.6.20-rc6: known unfixed regressions (v2) (part 1)
+Message-ID: <20070127173200.GL6017@stusta.de>
+References: <Pine.LNX.4.64.0701241847360.25027@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20070127021834.e26e955d.akpm@osdl.org>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.4.32-grsec (i686)
-X-Uptime: 12:30:00 up 157 days, 14:37,  2 users,  load average: 0.24, 0.43, 0.42
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <Pine.LNX.4.64.0701241847360.25027@woody.linux-foundation.org>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Andrew Morton (akpm@osdl.org) wrote:
-> On Thu, 25 Jan 2007 11:15:45 -0500
-> Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
-> 
-> > It mainly adds support for missing 64 bits cmpxchg and 64 bits atomic add
-> > unless. Therefore, principally 64 bits architectures are targeted by these
-> > patches. It also adds the complete list of atomic operations on the atomic_long
-> > type.
-> 
-> OK, I fixed eight separate compile errors in this patch series and
-> now powerpc is being very ugly with a twisty maze of include dependencies.
-> 
-> I'm giving up.  Someone should publish a suite of cross-compilers for us
-> so stuff like this doesn't need to happen.
+This email lists some known regressions in 2.6.20-rc6 compared to 2.6.19
+that are not yet fixed in Linus' tree.
 
-Hi Andrew,
+If you find your name in the Cc header, you are either submitter of one
+of the bugs, maintainer of an affectected subsystem or driver, a patch
+of you caused a breakage or I'm considering you in any other way possibly
+involved with one or more of these issues.
 
-This seems to be caused by the fact that I use inline functions for
-atomic_long_cmpxchg and atomic_long_xchg. I could simply use macros and
-this problem would fade away.
+Due to the huge amount of recipients, please trim the Cc when answering.
 
-I agree about the cross-compiler suite, it would be very useful here.
 
-Mathieu
+Subject    : NULL pointer dereference at as_move_to_dispatch()
+References : http://lkml.org/lkml/2007/1/22/141
+Submitter  : Andrew Vasquez <andrew.vasquez@qlogic.com>
+Status     : unknown
 
--- 
-OpenPGP public key:              http://krystal.dyndns.org:8080/key/compudj.gpg
-Key fingerprint:     8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68 
+
+Subject    : reboot instead of powerdown  (CONFIG_USB_SUSPEND)
+References : http://lkml.org/lkml/2006/12/25/40
+             http://bugzilla.kernel.org/show_bug.cgi?id=7828
+Submitter  : Berthold Cogel <cogel@rrz.uni-koeln.de>
+             François Valenduc <francois.valenduc@skynet.be>
+Handled-By : Alan Stern <stern@rowland.harvard.edu>
+Status     : problem is being debugged
+
+
+Subject    : usb somehow broken  (CONFIG_USB_SUSPEND)
+References : http://lkml.org/lkml/2007/1/11/146
+Submitter  : Prakash Punnoor <prakash@punnoor.de>
+Handled-By : Oliver Neukum <oliver@neukum.org>
+             Alan Stern <stern@rowland.harvard.edu>
+Status     : problem is being debugged
+
+
+Subject    : fix geode_configure()
+References : http://lkml.org/lkml/2007/1/9/216
+Submitter  : Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+Caused-By  : takada <takada@mbf.nifty.com>
+             commit e4f0ae0ea63caceff37a13f281a72652b7ea71ba
+Handled-By : takada <takada@mbf.nifty.com>
+             Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+Status     : patches are being discussed
+
