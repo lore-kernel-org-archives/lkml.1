@@ -1,48 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751878AbXA0PaI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750840AbXA0P7F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751878AbXA0PaI (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Jan 2007 10:30:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751887AbXA0PaI
+	id S1750840AbXA0P7F (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Jan 2007 10:59:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751039AbXA0P7F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Jan 2007 10:30:08 -0500
-Received: from mailhost.tue.nl ([131.155.2.19]:60979 "EHLO mailhost.tue.nl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751878AbXA0PaG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Jan 2007 10:30:06 -0500
-X-Greylist: delayed 1411 seconds by postgrey-1.27 at vger.kernel.org; Sat, 27 Jan 2007 10:30:06 EST
-Date: Sat, 27 Jan 2007 16:06:32 +0100
-From: Andries Brouwer <aebr@win.tue.nl>
-To: =?utf-8?B?TWljaGHFgiBLdWTFgmE=?= <michal.kudla@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: PROBLEM: KB->KiB, MB -> MiB, ... (IEC 60027-2)
-Message-ID: <20070127150632.GA12688@win.tue.nl>
-References: <200701200908.47654.Michal.Kudla@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	Sat, 27 Jan 2007 10:59:05 -0500
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:39440 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751519AbXA0P7E (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Jan 2007 10:59:04 -0500
+Date: Sat, 27 Jan 2007 16:59:12 +0100
+From: Adrian Bunk <bunk@stusta.de>
+To: linux-kernel@vger.kernel.org
+Subject: git/cogito/stgit interaction problem
+Message-ID: <20070127155912.GJ6017@stusta.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200701200908.47654.Michal.Kudla@gmail.com>
-User-Agent: Mutt/1.4.2i
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jan 20, 2007 at 09:08:47AM +0100, Michał Kudła wrote:
-> Hello,
+I often run into the following annoying problem when working on the 
+2.6.16 and trivial trees:
 
-> after 
-> ...
-> hdb: max request size: 512KiB
-> hdb: 488397168 sectors (250059 MB) w/8192KiB Cache, CHS=30401/255/63, 
-> 
-> Should be everywere KiB, MiB, GiB, ... according to IEC 60027-2 
+I want to change or delete the x-th commit from the top under the 
+following prerequisites:
+- the last x commits don't contain merges
+- the last x commits aren't pushed anywhere else
 
-You are mistaken. The MB here are actual megabytes (million bytes), not MiB.
-Read the code, or do the computation: 488397168*512 = 250059350016.
+The only tool I know that helps me doing this conveniently is stgit.
 
-(Precisely what one wants - the kernel gives the correct size,
-just like the disk manufacturers, and there is no discrepancy.
-Binary abuse for decimal prefixes is a sloppiness that might be
-acceptable for stuff that naturally comes in powers of two.
-It is long ago that that was true for disks.)
 
-Andries
+Testcase:
+
+$ cg-push  #  everything is pushed in this testcase
+$ vi Makefile
+$ cg-commit 
+Committed as 94b13e5b0f46ba38ee6fd8f47b418d8a18eded52
+$ stg init
+$ stg uncommit -n 1  #  uncommit x-1 commits
+Uncommitting 1 patches... done
+$ stg pop -a
+Popping patch "asdf"... done
+No patches applied
+$ #  in real use cases, that's the point where I'm using 
+$ #  cg-admin-uncommit (plus perhaps later cg-commit) on the x-th commit
+$ stg push -a
+Fast-forwarded patch "asdf"
+Now at patch "asdf"
+$ stg commit
+Committing 1 patches... done
+$ cg-admin-uncommit -t
+Rewinding 94b13e5b0f46ba38ee6fd8f47b418d8a18eded52 (HEAD) -> 08ceda6f8c5d68108308cf01fc5c3ec35775baa9
+$ cg-push  # should work (and report that the tree is unchanged in this testcase)
+bunk@master.kernel.org's password: 
+error: src refspec master matches more than one.
+fatal: unexpected EOF
+$ cat .git/refs/bases/master 
+94b13e5b0f46ba38ee6fd8f47b418d8a18eded52
+$ rm -r .git/refs/bases  #  workaround found using Google
+$ cg-push  # works fine
+bunk@master.kernel.org's password: 
+Everything up-to-date
+$ 
+
+
+Versions:
+git 1.4.4.4
+cogito 0.18.2
+stgit 0.11
+
+
+Any hints on whom to blame for this?
+Or if these tools aren't expected to work together in this way, what is 
+the official way for getting the same functionality?
+
+
+TIA
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
