@@ -1,62 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752285AbXA0RjA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752286AbXA0RmX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752285AbXA0RjA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Jan 2007 12:39:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752286AbXA0Ri7
+	id S1752286AbXA0RmX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Jan 2007 12:42:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752291AbXA0RmX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Jan 2007 12:38:59 -0500
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:39685 "EHLO
+	Sat, 27 Jan 2007 12:42:23 -0500
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:39694 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752275AbXA0Ri7 (ORCPT
+	with ESMTP id S1752286AbXA0RmW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Jan 2007 12:38:59 -0500
-Date: Sat, 27 Jan 2007 18:39:07 +0100
+	Sat, 27 Jan 2007 12:42:22 -0500
+Date: Sat, 27 Jan 2007 18:42:30 +0100
 From: Adrian Bunk <bunk@stusta.de>
-To: Malte =?utf-8?B?U2NocsO2ZGVy?= <MalteSch@gmx.de>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       "Vladimir V. Saveliev" <vs@namesys.com>, reiserfs-dev@namesys.com
-Subject: Re: 2.6.20-rc6: known unfixed regressions (part 2)
-Message-ID: <20070127173907.GM6017@stusta.de>
-References: <Pine.LNX.4.64.0701241847360.25027@woody.linux-foundation.org> <20070126181132.GN17836@stusta.de> <200701261916.29805.MalteSch@gmx.de> <20070127172801.GK6017@stusta.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@osdl.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Uwe Bugla <uwe.bugla@gmx.de>, B.Zolnierkiewicz@elka.pw.edu.pl,
+       linux-ide@vger.kernel.org, alan@lxorguk.ukuu.org.uk,
+       Gerhard Dirschl <gd@spherenet.de>, Christoph Hellwig <hch@lst.de>,
+       petero2@telia.com, Livio Soares <livio@eecg.toronto.edu>,
+       Paul Mackerras <paulus@samba.org>, anton@samba.org,
+       linuxppc-dev@ozlabs.org, Cijoml Cijomlovic Cijomlov <cijoml@volny.cz>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, ttb@tentacle.dhs.org,
+       rml@novell.com
+Subject: 2.6.20-rc6: known unfixed regressions (v2) (part 2)
+Message-ID: <20070127174230.GN6017@stusta.de>
+References: <Pine.LNX.4.64.0701241847360.25027@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070127172801.GK6017@stusta.de>
+In-Reply-To: <Pine.LNX.4.64.0701241847360.25027@woody.linux-foundation.org>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jan 27, 2007 at 06:28:01PM +0100, Adrian Bunk wrote:
-> On Fri, Jan 26, 2007 at 07:16:25PM +0100, Malte Schröder wrote:
-> > On Friday 26 January 2007 19:11, Adrian Bunk wrote:
-> > > Subject    : BUG: at mm/truncate.c:60 cancel_dirty_page()  (reiserfs)
-> > > References : http://lkml.org/lkml/2007/1/7/117
-> > >              http://lkml.org/lkml/2007/1/10/202
-> > > Submitter  : Malte Schröder <MalteSch@gmx.de>
-> > > Handled-By : Vladimir V. Saveliev <vs@namesys.com>
-> > >              Nick Piggin <nickpiggin@yahoo.com.au>
-> > > Patch      : http://lkml.org/lkml/2007/1/10/202
-> > > Status     : problem is being discussed
-> > 
-> > This did not happen again.
-> 
-> Unless I misunderstand this issue, we want this fixed before 2.6.20 
-> because otherwise many people might see this BUG message.
+This email lists some known regressions in 2.6.20-rc6 compared to 2.6.19
+that are not yet fixed in Linus' tree.
 
-/me looks:
-The warning was already removed post -rc6.
+If you find your name in the Cc header, you are either submitter of one
+of the bugs, maintainer of an affectected subsystem or driver, a patch
+of you caused a breakage or I'm considering you in any other way possibly
+involved with one or more of these issues.
 
-cu
-Adrian
+Due to the huge amount of recipients, please trim the Cc when answering.
 
--- 
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+Subject    : problems with CD burning
+References : http://www.spinics.net/lists/linux-ide/msg06545.html
+Submitter  : Uwe Bugla <uwe.bugla@gmx.de>
+Status     : unknown
+
+
+Subject    : pktcdvd fails with pata_amd
+References : http://bugzilla.kernel.org/show_bug.cgi?id=7810
+             http://lkml.org/lkml/2007/1/25/128
+Submitter  : Gerhard Dirschl <gd@spherenet.de>
+Caused-By  : Christoph Hellwig <hch@lst.de>
+             commit 3b00315799d78f76531b71435fbc2643cd71ae4c
+             commit 406c9b605cbc45151c03ac9a3f95e9acf050808c
+Status     : problem is being debugged
+
+
+Subject    : powerpc64: performance monitor exception
+References : http://ozlabs.org/pipermail/linuxppc-dev/2007-January/030045.html
+Submitter  : Livio Soares <livio@eecg.toronto.edu>
+Caused-By  : Paul Mackerras <paulus@samba.org>
+             commit d04c56f73c30a5e593202ecfcf25ed43d42363a2
+Status     : problem is being discussed
+
+
+Subject    : BUG: at fs/inotify.c:172 set_dentry_child_flags()
+References : http://bugzilla.kernel.org/show_bug.cgi?id=7785
+Submitter  : Cijoml Cijomlovic Cijomlov <cijoml@volny.cz>
+Handled-By : Nick Piggin <nickpiggin@yahoo.com.au>
+Status     : problem is being debugged
+
 
