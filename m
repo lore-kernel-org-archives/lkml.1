@@ -1,90 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750840AbXA0P7F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751454AbXA0QDe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750840AbXA0P7F (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Jan 2007 10:59:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751039AbXA0P7F
+	id S1751454AbXA0QDe (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Jan 2007 11:03:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751519AbXA0QDe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Jan 2007 10:59:05 -0500
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:39440 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751519AbXA0P7E (ORCPT
+	Sat, 27 Jan 2007 11:03:34 -0500
+Received: from ug-out-1314.google.com ([66.249.92.169]:32631 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751039AbXA0QDd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Jan 2007 10:59:04 -0500
-Date: Sat, 27 Jan 2007 16:59:12 +0100
-From: Adrian Bunk <bunk@stusta.de>
-To: linux-kernel@vger.kernel.org
-Subject: git/cogito/stgit interaction problem
-Message-ID: <20070127155912.GJ6017@stusta.de>
+	Sat, 27 Jan 2007 11:03:33 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding:from;
+        b=H9sIJ/K3N053xqbMnEA69/OoI78zg6C0dabo7pBho1s6w1DM+SKwqa4nSvFZWr18FGtrbunb2mXVGg9qMKW8k3iBPcbr4cxeKvFir4vlRAsMovhmEiOej63g/48ENN22GOWPAab7kSThyqhwgzV4C7gdtKHuRpgnOry1sUKgmXM=
+Message-ID: <45BB77C7.5090202@googlemail.com>
+Date: Sat, 27 Jan 2007 17:03:19 +0100
+User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: linux-kernel@vger.kernel.org
+CC: Andrew Morton <akpm@osdl.org>, Tejun Heo <teheo@novell.com>,
+       Jeff Garzik <jeff@garzik.org>, linux-ide@vger.kernel.org
+Subject: Re: mm snapshot broken-out-2007-01-26-00-36.tar.gz uploaded
+References: <200701260837.l0Q8blBr011622@shell0.pdx.osdl.net>
+In-Reply-To: <200701260837.l0Q8blBr011622@shell0.pdx.osdl.net>
+X-Enigmail-Version: 0.94.1.1
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I often run into the following annoying problem when working on the 
-2.6.16 and trivial trees:
+akpm@osdl.org napisał(a):
+> The mm snapshot broken-out-2007-01-26-00-36.tar.gz has been uploaded to
+> 
+>    ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/mm/broken-out-2007-01-26-00-36.tar.gz
+> 
 
-I want to change or delete the x-th commit from the top under the 
-following prerequisites:
-- the last x commits don't contain merges
-- the last x commits aren't pushed anywhere else
+drivers/ata/sata_inic162x.c: In function ‘inic_pci_device_resume’:
+drivers/ata/sata_inic162x.c:652: warning: ignoring return value of ‘ata_pci_device_do_resume’, declared with attribute warn_unused_result
+drivers/ata/sata_inic162x.c: In function ‘inic_init_one’:
+drivers/ata/sata_inic162x.c:727: error: ‘SA_SHIRQ’ undeclared (first use in this function)
+drivers/ata/sata_inic162x.c:727: error: (Each undeclared identifier is reported only once
+drivers/ata/sata_inic162x.c:727: error: for each function it appears in.)
+make[2]: *** [drivers/ata/sata_inic162x.o] Błąd 1
+make[1]: *** [drivers/ata] Błąd 2
+make: *** [drivers] Błąd 2
 
-The only tool I know that helps me doing this conveniently is stgit.
+SA_SHIRQ was removed. IRQF_SHARED should be used instead?
 
+Regards,
+Michal
 
-Testcase:
+--
+Michal K. K. Piotrowski
+LTG - Linux Testers Group
+(http://www.stardust.webpages.pl/ltg/)
 
-$ cg-push  #  everything is pushed in this testcase
-$ vi Makefile
-$ cg-commit 
-Committed as 94b13e5b0f46ba38ee6fd8f47b418d8a18eded52
-$ stg init
-$ stg uncommit -n 1  #  uncommit x-1 commits
-Uncommitting 1 patches... done
-$ stg pop -a
-Popping patch "asdf"... done
-No patches applied
-$ #  in real use cases, that's the point where I'm using 
-$ #  cg-admin-uncommit (plus perhaps later cg-commit) on the x-th commit
-$ stg push -a
-Fast-forwarded patch "asdf"
-Now at patch "asdf"
-$ stg commit
-Committing 1 patches... done
-$ cg-admin-uncommit -t
-Rewinding 94b13e5b0f46ba38ee6fd8f47b418d8a18eded52 (HEAD) -> 08ceda6f8c5d68108308cf01fc5c3ec35775baa9
-$ cg-push  # should work (and report that the tree is unchanged in this testcase)
-bunk@master.kernel.org's password: 
-error: src refspec master matches more than one.
-fatal: unexpected EOF
-$ cat .git/refs/bases/master 
-94b13e5b0f46ba38ee6fd8f47b418d8a18eded52
-$ rm -r .git/refs/bases  #  workaround found using Google
-$ cg-push  # works fine
-bunk@master.kernel.org's password: 
-Everything up-to-date
-$ 
+Signed-off-by: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
 
+--- linux-work-clean/drivers/ata/sata_inic162x.c	2007-01-26 16:47:31.000000000 +0100
++++ linux-work/drivers/ata/sata_inic162x.c	2007-01-27 16:53:26.000000000 +0100
+@@ -724,7 +724,7 @@ static int inic_init_one(struct pci_dev
+ 	probe_ent->n_ports		= NR_PORTS;
 
-Versions:
-git 1.4.4.4
-cogito 0.18.2
-stgit 0.11
+ 	probe_ent->irq = pdev->irq;
+-	probe_ent->irq_flags = SA_SHIRQ;
++	probe_ent->irq_flags = IRQF_SHARED;
 
-
-Any hints on whom to blame for this?
-Or if these tools aren't expected to work together in this way, what is 
-the official way for getting the same functionality?
-
-
-TIA
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+ 	probe_ent->mmio_base = mmio_base;
 
