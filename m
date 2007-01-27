@@ -1,42 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751909AbXA0Qq1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751654AbXA0Q4Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751909AbXA0Qq1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Jan 2007 11:46:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751914AbXA0Qq0
+	id S1751654AbXA0Q4Q (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Jan 2007 11:56:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751870AbXA0Q4Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Jan 2007 11:46:26 -0500
-Received: from nf-out-0910.google.com ([64.233.182.187]:11487 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751909AbXA0Qq0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Jan 2007 11:46:26 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=g1m/0O/ijpQW3BFzldHyNqV38uIjkc+trzDD8d5R1X6xxs3u97+VziA39g+dgboxCgVyAYU5EWn3uU549Ei2NOrlMD0hJ0ivguFYFE2h82XZ5PtaEpyetu+cfNHAPHVrdpxUGSL06YLshAIg5oADIowZmJldghB73+TuPUq9E8o=
-Message-ID: <625fc13d0701270846n710e833cnb1926e9fd51d8b59@mail.gmail.com>
-Date: Sat, 27 Jan 2007 10:46:21 -0600
-From: "Josh Boyer" <jwboyer@gmail.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: git.kernel.org move (finally)... estimated week of Feb 5
-Cc: "Git Mailing List" <git@vger.kernel.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <45BAA82B.6000105@zytor.com>
+	Sat, 27 Jan 2007 11:56:16 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:53645 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751634AbXA0Q4P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Jan 2007 11:56:15 -0500
+Message-ID: <45BB842C.4030303@garzik.org>
+Date: Sat, 27 Jan 2007 11:56:12 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
 MIME-Version: 1.0
+To: Alan <alan@lxorguk.ukuu.org.uk>
+CC: linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] ahci: Marvell 6145 SATA support (preliminary)
+References: <20070127034023.GA25959@havoc.gtf.org> <20070127134346.71d8ecf4@localhost.localdomain>
+In-Reply-To: <20070127134346.71d8ecf4@localhost.localdomain>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <45BAA82B.6000105@zytor.com>
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.7 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 1/26/07, H. Peter Anvin <hpa@zytor.com> wrote:
-> Just for everyone's information...
->
-> The git performance issues (especially) on kernel.org has been very
-> frustrating, obviously.  We're putting a dedicated git server in place
-> hopefully the week of February 5.
+Alan wrote:
+>> Were it not for the PATA and interrupt storm bits, I would say that
+>> Marvell 6145 works with a simple PCI ID addition.
+> 
+> 
+> The 6101 driver should drive the 6145 pata port via the legacy registers
 
-For the hardware geeks out there, do you know what kind of machine it will be?
+They cannot co-exist, unfortunately.
 
-josh
+	Jeff
+
+
+
