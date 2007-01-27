@@ -1,53 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752325AbXA0Sck@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752324AbXA0SeP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752325AbXA0Sck (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Jan 2007 13:32:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752332AbXA0Sck
+	id S1752324AbXA0SeP (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Jan 2007 13:34:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752327AbXA0SeP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Jan 2007 13:32:40 -0500
-Received: from tmailer.gwdg.de ([134.76.10.23]:49457 "EHLO tmailer.gwdg.de"
+	Sat, 27 Jan 2007 13:34:15 -0500
+Received: from mout0.freenet.de ([194.97.50.131]:51163 "EHLO mout0.freenet.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752325AbXA0Scj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Jan 2007 13:32:39 -0500
-Date: Sat, 27 Jan 2007 19:32:19 +0100 (MET)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: Marc Perkel <mperkel@yahoo.com>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: Raid 10 question/problem [ot]
-In-Reply-To: <593246.19408.qm@web52505.mail.yahoo.com>
-Message-ID: <Pine.LNX.4.61.0701271931260.22295@yvahk01.tjqt.qr>
-References: <593246.19408.qm@web52505.mail.yahoo.com>
+	id S1752324AbXA0SeO convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Jan 2007 13:34:14 -0500
+From: Karsten Wiese <fzu@wemgehoertderstaat.de>
+To: Frieder =?utf-8?q?B=C3=BCrzele?= <linux-stuff@arcor.de>
+Subject: Re: 2.6.20-rc6-rt2 compile error on x86 -- undefined reference to `send_IPI_mask_bitmask'
+Date: Sat, 27 Jan 2007 19:34:42 +0100
+User-Agent: KMail/1.9.5
+Cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+References: <45BB3753.9050301@arcor.de>
+In-Reply-To: <45BB3753.9050301@arcor.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200701271934.43015.fzu@wemgehoertderstaat.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Am Samstag, 27. Januar 2007 12:28 schrieb Frieder Bürzele:
+> Hi,
+> 
+> I got the follow while trying to compile 2.6.20-rc6-rt2
+> .config attached
+> 
+> Greetz Frieder
+> 
+> please CC me
+> 
+> 
+>   CHK     include/linux/version.h
+>   CHK     include/linux/utsrelease.h
+>   CHK     include/linux/compile.h
+>   UPD     include/linux/compile.h
+>   CC      init/version.o
+>   LD      init/built-in.o
+>   GZIP    kernel/config_data.gz
+>   IKCFG   kernel/config_data.h
+>   CC      kernel/configs.o
+>   LD      kernel/built-in.o
+>   GEN     .version
+>   CHK     include/linux/compile.h
+>   UPD     include/linux/compile.h
+>   CC      init/version.o
+>   LD      init/built-in.o
+>   LD      .tmp_vmlinux1
+> arch/i386/kernel/built-in.o: In function 
+> `lapic_timer_broadcast':apic.c:(.text+0xccc8): undefined reference to 
+> `send_IPI_mask_bitmask'
+> make: *** [.tmp_vmlinux1] Error 1
 
-On Jan 27 2007 10:31, Marc Perkel wrote:
->--- Jan Engelhardt <jengelh@linux01.gwdg.de> wrote:
->> 
->> >I'm a little stumped trying to set up raid 10. I
->> set
->> >it up and it worked but after a reboot it forgets
->> my
->> >raid setup.
->> 
->> Now, let's hear the name of the distribution you
->> use.
->> 
->> BTW, is md1 also disappearing?
->
->Sorry about that. I'm using Fedora Core 6. /dev/md0
->and /dev/md1, buth of which are raid 1 arrays survive
->the reboot. But when I make a raid 0 out of those two
->raid arrays that's what is vanishing.
+Enabling CONFIG_SMP works around that.
 
-That's interesting. I am using Aurora Corona, and all but md0 vanishes.
-(Reason for that is that udev does not create the nodes md1-md31 on
-boot, so mdadm cannot assemble the arrays.)
-
-
-	-`J'
--- 
+      Karsten
