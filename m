@@ -1,59 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752392AbXA0VlV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932080AbXA0VqV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752392AbXA0VlV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Jan 2007 16:41:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752391AbXA0VlV
+	id S932080AbXA0VqV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Jan 2007 16:46:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752391AbXA0VqV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Jan 2007 16:41:21 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:35426 "EHLO smtp.osdl.org"
+	Sat, 27 Jan 2007 16:46:21 -0500
+Received: from mail.enter.net ([216.193.128.40]:50867 "EHLO mmail.enter.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751981AbXA0VlU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Jan 2007 16:41:20 -0500
-Date: Sat, 27 Jan 2007 13:41:16 -0800
-From: Andrew Morton <akpm@osdl.org>
-To: Tilman Schmidt <tilman@imap.cc>
-Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       linux-kernel@vger.kernel.org, Hansjoerg Lipp <hjlipp@web.de>
-Subject: Re: mm snapshot broken-out-2007-01-26-00-36.tar.gz uploaded
-Message-Id: <20070127134116.06bdadd8.akpm@osdl.org>
-In-Reply-To: <45BBC444.8090109@imap.cc>
-References: <200701260837.l0Q8blBr011622@shell0.pdx.osdl.net>
-	<6bffcb0e0701270837i1ec40560l6e61e8876177e9da@mail.gmail.com>
-	<45BBC444.8090109@imap.cc>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1751796AbXA0VqV convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Jan 2007 16:46:21 -0500
+From: "D. Hazelton" <dhazelton@enter.net>
+To: caglar@pardus.org.tr
+Subject: Re: [PATCH] KVM: 'asm' operand has impossible constraints
+Date: Sat, 27 Jan 2007 16:46:18 -0500
+User-Agent: KMail/1.9.5
+Cc: Avi Kivity <avi@qumranet.com>, lkml <linux-kernel@vger.kernel.org>,
+       kvm-devel@lists.sourceforge.net
+References: <200701260140.47760.caglar@pardus.org.tr> <45BB15F1.6020600@qumranet.com> <200701272328.31532.caglar@pardus.org.tr>
+In-Reply-To: <200701272328.31532.caglar@pardus.org.tr>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200701271646.19067.dhazelton@enter.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 27 Jan 2007 22:29:40 +0100
-Tilman Schmidt <tilman@imap.cc> wrote:
+On Saturday 27 January 2007 16:28, S.Çağlar Onur wrote:
+> 27 Oca 2007 Cts tarihinde, Avi Kivity şunları yazmıştı:
+> > The patch looks correct, but I don't understand the gcc error message.
+> > Are we sure this isn't a gcc 4.2 bug?
+> >
+> > "g" appears to be equivalent to "rmi", if "i" is impossible, gcc is free
+> > to use "r" or "m", no?
+>
+> Accorgind to GCC devs. its not a bug
+> (http://gcc.gnu.org/bugzilla/show_bug.cgi?id=29808), on comment #5 the
+> problem described like;
+>
+> "g" means "r"+"i" so the register allocator in the -O0 case is selecting
+> "r" while in the optimize case is selecting "i"
 
-> Am 27.01.2007 17:37 schrieb Michal Piotrowski:
-> > On 26/01/07, akpm@osdl.org <akpm@osdl.org> wrote:
-> >> The mm snapshot broken-out-2007-01-26-00-36.tar.gz has been uploaded to
-> >>
-> >>    ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/mm/broken-out-2007-01-26-00-36.tar.gz
-> >>
-> > 
-> > It's probably not mm snapshot related. This driver is just broken.
-> 
-> It probably *is* mm snapshot related. This driver compiles and works
-> just fine in 2.6.19.2, 2.6.20-rc6 and 2.6.20-rc4-mm1.
-> 
-> > drivers/isdn/gigaset/bas-gigaset.c: In function 'dump_urb':
-> > drivers/isdn/gigaset/bas-gigaset.c:258: error: 'struct urb' has no
-> > member named 'bandwidth'
-> 
-> In current stable and mm releases, 'struct urb' *does* have a member
-> named 'bandwidth'. If some mm patch removes that member then it is
-> the responsibility of that patch to adapt all users of that structure
-> accordingly.
-> 
+Sounds like a bug to me! After all, shouldn't the different sections of code 
+be selecting the *same* bits ?
 
-yup, there's a patch in Greg's USB tree which removes the bandwidth field. 
-Mostly.  I fixed it up.
-
-I have everything compiling now, mostly.  The number of fixes which were
-needed was just extraordinary.  I'm thinking about making changes...
+DRH
