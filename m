@@ -1,50 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752223AbXA0IoS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752218AbXA0Io3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752223AbXA0IoS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Jan 2007 03:44:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752218AbXA0IoR
+	id S1752218AbXA0Io3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Jan 2007 03:44:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752225AbXA0Io3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Jan 2007 03:44:17 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:45440 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750729AbXA0IoQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Jan 2007 03:44:16 -0500
-Date: Sat, 27 Jan 2007 00:44:11 -0800
-From: Andrew Morton <akpm@osdl.org>
-To: "Alon Bar-Lev" <alon.barlev@gmail.com>
-Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "H. Peter Anvin" <hpa@zytor.com>, "Bernhard Walle" <bwalle@suse.de>
-Subject: Re: [PATCH 10/26] Dynamic kernel command-line - ia64
-Message-Id: <20070127004411.b0d5872e.akpm@osdl.org>
-In-Reply-To: <9e0cf0bf0701270034w491ff69dnb6019b4dd30f6d54@mail.gmail.com>
-References: <200701230010.34323.alon.barlev@gmail.com>
-	<200701230014.06793.alon.barlev@gmail.com>
-	<20070127002453.57b1e071.akpm@osdl.org>
-	<9e0cf0bf0701270034w491ff69dnb6019b4dd30f6d54@mail.gmail.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 27 Jan 2007 03:44:29 -0500
+Received: from weequay.is.scarlet.be ([193.74.71.24]:58818 "EHLO
+	weequay.is.scarlet.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752218AbXA0Io2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Jan 2007 03:44:28 -0500
+Message-ID: <45BB106E.706@joow.be>
+Date: Sat, 27 Jan 2007 09:42:22 +0100
+From: Pieter Palmers <pieterp@joow.be>
+User-Agent: Thunderbird 1.5.0.2 (X11/20060501)
+MIME-Version: 1.0
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+CC: linux-kernel <linux-kernel@vger.kernel.org>,
+       Linux1394-Devel <linux1394-devel@lists.sourceforge.net>
+Subject: Re: 2.6.20-rc6-rt2: kernel oops when ejecting cardbus firewire card
+References: <45BA743B.2080401@joow.be> <45BA85A1.1030707@s5r6.in-berlin.de>
+In-Reply-To: <45BA85A1.1030707@s5r6.in-berlin.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-DCC-scarlet.be-Metrics: weequay 20001; Body=3 Fuz1=3 Fuz2=3
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 27 Jan 2007 10:34:27 +0200
-"Alon Bar-Lev" <alon.barlev@gmail.com> wrote:
-
-> > Please.  Go through the entire patchset, yank all those wrong private
-> > declarations of boot_command_line[] and put a *single, kernel-wide*
-> > declaration into a single, shared header file.
+Stefan Richter wrote:
+> Pieter Palmers wrote:
+>> cc'ing linux1394-devel because it seems to be a problem in the ieee1394 
+>> stack.
 > 
-> I thought of this, while I was making the patch, I could not understand why
-> the maintainer did not simply #include <linux/init.h>
+> Yes, this bug is in stock Linux 2.6 too. Ever has been.
+> http://bugzilla.kernel.org/show_bug.cgi?id=7121
+Oops, missed that. Sorry for the noise.
 
-"ooh, I'll get in trouble if I edit a non-arch file, and it's a hassle to
-add another file to my changeset and I can't be assed testing other
-architectures and nobody's looking so I'll just sneak it in there".
-
-> I can add this to any module which declares this by-itself but because
-> I cannot test all arch, I am afraid it will cause more problems.
-> 
-> Preparing a patch... :)
-
-Against next -mm, please.
+Pieter
