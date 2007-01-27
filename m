@@ -1,46 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752216AbXA0L3V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751692AbXA0MFi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752216AbXA0L3V (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Jan 2007 06:29:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752222AbXA0L3V
+	id S1751692AbXA0MFi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Jan 2007 07:05:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751697AbXA0MFi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Jan 2007 06:29:21 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:49357 "EHLO smtp.osdl.org"
+	Sat, 27 Jan 2007 07:05:38 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:37500 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751580AbXA0L3U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Jan 2007 06:29:20 -0500
-Date: Sat, 27 Jan 2007 03:29:12 -0800
-From: Andrew Morton <akpm@osdl.org>
-To: "Alon Bar-Lev" <alon.barlev@gmail.com>
-Cc: davem@davemloft.net, "kernel list" <linux-kernel@vger.kernel.org>
-Subject: Re: + dynamic-kernel-command-line-sparc64-fix.patch added to -mm
- tree
-Message-Id: <20070127032912.d155e66c.akpm@osdl.org>
-In-Reply-To: <9e0cf0bf0701270314t3369dc7fke7fe8589be1d5bd7@mail.gmail.com>
-References: <200701271103.l0RB32ES007734@shell0.pdx.osdl.net>
-	<9e0cf0bf0701270314t3369dc7fke7fe8589be1d5bd7@mail.gmail.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	id S1751690AbXA0MFh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Jan 2007 07:05:37 -0500
+Subject: Re: Hidden SSID's
+From: Dan Williams <dcbw@redhat.com>
+To: Larry Finger <Larry.Finger@lwfinger.net>
+Cc: netdev <netdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <45BACB71.2080107@lwfinger.net>
+References: <45BACB71.2080107@lwfinger.net>
+Content-Type: text/plain
+Date: Sat, 27 Jan 2007 07:08:09 -0500
+Message-Id: <1169899689.25670.3.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 27 Jan 2007 13:14:57 +0200
-"Alon Bar-Lev" <alon.barlev@gmail.com> wrote:
-
-> I don't know why saved_command_line cannot be resolved and
-> boot_command_line can be.
-> They are both located in linux/init.h
+On Fri, 2007-01-26 at 21:48 -0600, Larry Finger wrote:
+> Is there a convention regarding the information that a wireless MAC layer should provide when
+> reporting scan data from an AP with a hidden SSID?
 > 
-> extern char __initdata boot_command_line[];
-> extern char *saved_command_line;
+> In ieee80211, the software inserts the string "<hidden>" for such an AP, which seems to give
+> wpa_supplicant fits because it rejects the SSID before even looking at the encryption data. Is this
+> the normal convention?
+
+No.  It's wrong.  It is not normal convention.  The one and only
+_correct_ way of reporting a hidden SSID is to not report the SSID at
+all.  The only item that needs to be reported with WEXT is the BSSID,
+and the client app assumes that if the SSID is not received for a given
+scan result, that the driver doesn't have an SSID for that BSSID.
+
+I really, really don't know why ieee80211 uses <hidden>, but it's a pain
+in the ass and should NOT be done for d80211.  I don't know if we can
+ever remove it from ieee80211 though for backwards compat reasons.
+
+Dan
+
+> Thanks,
 > 
-> And the drivers/sbus/char/openprom.c do include it and I assume
-> __ASSEMBLY__ is not defined.
+> Larry
+> 
+> 
+> -
+> To unsubscribe from this list: send the line "unsubscribe netdev" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
-hm.  It went away.  Maybe I dreamed it.
-
-y'know, I've been plugging away at this crappile for over twelve hours,
-have applied 55 distinct compile fixes so far and it's still not there.
-Tomorrow I get to try to make it all run.  That should be amusing.
