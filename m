@@ -1,65 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752324AbXA0SeP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752327AbXA0Sjy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752324AbXA0SeP (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Jan 2007 13:34:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752327AbXA0SeP
+	id S1752327AbXA0Sjy (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Jan 2007 13:39:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752329AbXA0Sjy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Jan 2007 13:34:15 -0500
-Received: from mout0.freenet.de ([194.97.50.131]:51163 "EHLO mout0.freenet.de"
+	Sat, 27 Jan 2007 13:39:54 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:43840 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752324AbXA0SeO convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Jan 2007 13:34:14 -0500
-From: Karsten Wiese <fzu@wemgehoertderstaat.de>
-To: Frieder =?utf-8?q?B=C3=BCrzele?= <linux-stuff@arcor.de>
-Subject: Re: 2.6.20-rc6-rt2 compile error on x86 -- undefined reference to `send_IPI_mask_bitmask'
-Date: Sat, 27 Jan 2007 19:34:42 +0100
-User-Agent: KMail/1.9.5
-Cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-References: <45BB3753.9050301@arcor.de>
-In-Reply-To: <45BB3753.9050301@arcor.de>
+	id S1752327AbXA0Sjx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Jan 2007 13:39:53 -0500
+Message-ID: <45BB9D17.50902@redhat.com>
+Date: Sat, 27 Jan 2007 16:42:31 -0200
+From: Arnaldo Carvalho de Melo <acme@redhat.com>
+Organization: Red Hat Inc.
+User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200701271934.43015.fzu@wemgehoertderstaat.de>
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>
+CC: Sam Ravnborg <sam@ravnborg.org>, linux-kernel@vger.kernel.org
+Subject: Re: External module Makefile with generated C file
+References: <45BB96B4.30907@redhat.com> <Pine.LNX.4.61.0701271929220.22295@yvahk01.tjqt.qr>
+In-Reply-To: <Pine.LNX.4.61.0701271929220.22295@yvahk01.tjqt.qr>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Samstag, 27. Januar 2007 12:28 schrieb Frieder Bürzele:
-> Hi,
-> 
-> I got the follow while trying to compile 2.6.20-rc6-rt2
-> .config attached
-> 
-> Greetz Frieder
-> 
-> please CC me
-> 
-> 
->   CHK     include/linux/version.h
->   CHK     include/linux/utsrelease.h
->   CHK     include/linux/compile.h
->   UPD     include/linux/compile.h
->   CC      init/version.o
->   LD      init/built-in.o
->   GZIP    kernel/config_data.gz
->   IKCFG   kernel/config_data.h
->   CC      kernel/configs.o
->   LD      kernel/built-in.o
->   GEN     .version
->   CHK     include/linux/compile.h
->   UPD     include/linux/compile.h
->   CC      init/version.o
->   LD      init/built-in.o
->   LD      .tmp_vmlinux1
-> arch/i386/kernel/built-in.o: In function 
-> `lapic_timer_broadcast':apic.c:(.text+0xccc8): undefined reference to 
-> `send_IPI_mask_bitmask'
-> make: *** [.tmp_vmlinux1] Error 1
+Jan Engelhardt wrote:
+>> ctracer_methods.o: ctracer_methods.c
+>>     
+>
+> $(obj)/ctracer_methods.o: $(src)/ctracer_methods.c
+>
+> $(src)/ctracer_methods.c:
+>   ...
+>
+>
+>
+> I don't know if $(obj) or $(src) is the right thing, but something along
+> these lines is required for OOT.
+>   
 
-Enabling CONFIG_SMP works around that.
+Thanks, that did the trick, resulting Makefile:
 
-      Karsten
+obj-m := ctracer.o
+
+ctracer-y := ctracer_methods.o ctracer_jprobe.o
+
+# Files generated that shall be removed upon make clean
+clean-files := ctracer_methods.c
+
+CLASS=sock
+KDIR := /lib/modules/$(shell uname -r)/build
+PWD := $(shell pwd)
+
+default:
+        $(MAKE) -C $(KDIR) SUBDIRS=$(PWD) modules
+clean:
+        rm -f *.mod.c *.ko *.o ctracer_methods.c
+
+$(obj)/ctracer_methods.o: ctracer_methods.c
+
+$(src)/ctracer_methods.c:
+        ctracer /usr/lib/debug/lib/modules/$(shell uname -r)/vmlinux 
+$(CLASS) > $@
+
+- Arnaldo
+
+
