@@ -1,60 +1,175 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751771AbXAZXhs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752190AbXA0ADe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751771AbXAZXhs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jan 2007 18:37:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751778AbXAZXhs
+	id S1752190AbXA0ADe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jan 2007 19:03:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752192AbXA0ADe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jan 2007 18:37:48 -0500
-Received: from ug-out-1314.google.com ([66.249.92.174]:17137 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751771AbXAZXhr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jan 2007 18:37:47 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=FCPAa5lhAk4HI1kEihJRkQQgcRCSE5EcGeKWFeBByn0GkApm4Cw3trsjE1t/dlnkR0sg56HMP8kWWZ8PoyDiOp4tyDtRdlSTC6r1Q3vtkTCn1RHiOVMWDn5hL96E/7OXd3NVoDS64OuOaSmAmj9QYnQ0hpuFbmXcQs37QiwmtLw=
-From: Denis Vlasenko <vda.linux@googlemail.com>
-To: Bill Davidsen <davidsen@tmr.com>
-Subject: Re: O_DIRECT question
-Date: Sat, 27 Jan 2007 00:35:31 +0100
-User-Agent: KMail/1.8.2
-Cc: Michael Tokarev <mjt@tls.msk.ru>, Phillip Susi <psusi@cfl.rr.com>,
-       Linus Torvalds <torvalds@osdl.org>, Viktor <vvp01@inbox.ru>,
-       Aubrey <aubreylee@gmail.com>, Hua Zhong <hzhong@gmail.com>,
-       Hugh Dickins <hugh@veritas.com>, linux-kernel@vger.kernel.org,
-       hch@infradead.org, kenneth.w.chen@in
-References: <6d6a94c50701101857v2af1e097xde69e592135e54ae@mail.gmail.com> <200701252211.39017.vda.linux@googlemail.com> <45BA4720.5010406@tmr.com>
-In-Reply-To: <45BA4720.5010406@tmr.com>
+	Fri, 26 Jan 2007 19:03:34 -0500
+Received: from omx2-ext.sgi.com ([192.48.171.19]:51498 "EHLO omx2.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751799AbXA0ADb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jan 2007 19:03:31 -0500
+From: Aaron Young <ayoung@google.engr.sgi.com>
+Message-Id: <200701270003.QAA67218@google.engr.sgi.com>
+Subject: Re: [PATCH 1/1] -  increase acpi owner_id max
+To: robert.moore@intel.com (Moore, Robert)
+Date: Fri, 26 Jan 2007 16:03:29 -0800 (PST)
+Cc: jpk@sgi.com (John Keller), linux-acpi@vger.kernel.org, ayoung@sgi.com,
+       linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org,
+       alexey.y.starikovskiy@linux.intel.com (Alexey Starikovskiy),
+       len.brown@intel.com (Brown Len)
+In-Reply-To: <B28E9812BAF6E2498B7EC5C427F293A401C68471@orsmsx415.amr.corp.intel.com> from "Moore, Robert" at Jan 26, 2007 03:21:30 PM
+X-Mailer: ELM [version 2.5 PL6]
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200701270035.31285.vda.linux@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 26 January 2007 19:23, Bill Davidsen wrote:
-> Denis Vlasenko wrote:
-> > On Thursday 25 January 2007 21:45, Michael Tokarev wrote:
-> >> Phillip Susi wrote:
-> >>> Denis Vlasenko wrote:
-> >>>> You mean "You can use aio_write" ?
-> >>> Exactly.  You generally don't use O_DIRECT without aio.  Combining the
-> >>> two is what gives the big win.
-> >> Well, it's not only aio.  Multithreaded I/O also helps alot -- all this,
-> >> say, to utilize a raid array with many spindles.
-> >>
-> >> But even single-threaded I/O but in large quantities benefits from O_DIRECT
-> >> significantly, and I pointed this out before.
-> > 
-> > Which shouldn't be true. There is no fundamental reason why
-> > ordinary writes should be slower than O_DIRECT.
-> > 
-> Other than the copy to buffer taking CPU and memory resources.
+> 
+> The OwnerId field within a namespace node is 8 bits, and this is the
+> main constraint on the maximum OwnerId. You can't simply bump up the
+> number of owner ids without changing this field.
 
-It is not required by any standard that I know. Kernel can be smarter
-and avoid that if it can.
---
-vda
+  Isn't this accomplished with the mod to aclocal.h below - i.e.
+  by making a acpi_owner_id a u16 instead of a u8?: 
+
+ -typedef u8 acpi_owner_id;
+ -#define ACPI_OWNER_ID_MAX               0xFF
+ +typedef u16 acpi_owner_id;
+ +#define ACPI_OWNER_ID_MAX               0x3FF
+
+> 
+> If we need more than 255 owner Ids, the width of this field will have to
+> be increased, or we will need to use a pointer for the field in order to
+> maintain a linked list of all nodes owned by a particular owner.
+> 
+> Bob
+> 
+> > -----Original Message-----
+> > From: linux-acpi-owner@vger.kernel.org [mailto:linux-acpi-
+> > owner@vger.kernel.org] On Behalf Of John Keller
+> > Sent: Friday, January 26, 2007 2:40 PM
+> > To: linux-acpi@vger.kernel.org
+> > Cc: ayoung@sgi.com; linux-ia64@vger.kernel.org; linux-
+> > kernel@vger.kernel.org; John Keller
+> > Subject: [PATCH 1/1] - increase acpi owner_id max
+> > 
+> > To support systems with large IO configurations,
+> > this patch increases the number of available ACPI
+> > owner ids to 1023.
+> > 
+> > On SN platforms, we represent every populated root
+> > bus slot with an ACPI SSDT table containing info
+> > for every device and PPB attached to the slot.
+> > Each SSDT requires a unique ACPI owner id.
+> > 
+> > Signed-off-by: John Keller <jpk@sgi.com>
+> > ---
+> > 
+> >  drivers/acpi/utilities/utmisc.c |    6 +++---
+> >  include/acpi/acconfig.h         |    4 ++--
+> >  include/acpi/aclocal.h          |    4 ++--
+> >  3 files changed, 7 insertions(+), 7 deletions(-)
+> > 
+> > 
+> > Index: linux/drivers/acpi/utilities/utmisc.c
+> > ===================================================================
+> > --- linux.orig/drivers/acpi/utilities/utmisc.c	2007-01-25
+> > 11:27:25.509259412 -0600
+> > +++ linux/drivers/acpi/utilities/utmisc.c	2007-01-26
+> 13:16:09.551081284 -
+> > 0600
+> > @@ -147,7 +147,7 @@ acpi_status acpi_ut_allocate_owner_id(ac
+> >  				/*
+> >  				 * Construct encoded ID from the index
+> and bit
+> > position
+> >  				 *
+> > -				 * Note: Last [j].k (bit 255) is never
+> used and is
+> > marked
+> > +				 * Note: Last [j].k (bit 1023) is never
+> used and
+> > is marked
+> >  				 * permanently allocated (prevents +1
+> overflow)
+> >  				 */
+> >  				*owner_id =
+> > @@ -175,7 +175,7 @@ acpi_status acpi_ut_allocate_owner_id(ac
+> >  	 */
+> >  	status = AE_OWNER_ID_LIMIT;
+> >  	ACPI_ERROR((AE_INFO,
+> > -		    "Could not allocate new OwnerId (255 max),
+> > AE_OWNER_ID_LIMIT"));
+> > +		    "Could not allocate new OwnerId (1023 max),
+> > AE_OWNER_ID_LIMIT"));
+> > 
+> >        exit:
+> >  	(void)acpi_ut_release_mutex(ACPI_MTX_CACHES);
+> > @@ -192,7 +192,7 @@ acpi_status acpi_ut_allocate_owner_id(ac
+> >   *              control method or unloading a table. Either way, we
+> would
+> >   *              ignore any error anyway.
+> >   *
+> > - * DESCRIPTION: Release a table or method owner ID.  Valid IDs are 1
+> -
+> > 255
+> > + * DESCRIPTION: Release a table or method owner ID.  Valid IDs are 1
+> -
+> > 1023
+> >   *
+> > 
+> >
+> ************************************************************************
+> **
+> > ****/
+> > 
+> > Index: linux/include/acpi/acconfig.h
+> > ===================================================================
+> > --- linux.orig/include/acpi/acconfig.h	2007-01-25
+> 11:27:25.577267818 -
+> > 0600
+> > +++ linux/include/acpi/acconfig.h	2007-01-26 13:17:14.111002597
+> -0600
+> > @@ -111,9 +111,9 @@
+> > 
+> >  #define ACPI_SYSMEM_REGION_WINDOW_SIZE  4096
+> > 
+> > -/* owner_id tracking. 8 entries allows for 255 owner_ids */
+> > +/* owner_id tracking. 32 entries allow for 1023 owner_ids */
+> > 
+> > -#define ACPI_NUM_OWNERID_MASKS          8
+> > +#define ACPI_NUM_OWNERID_MASKS		32
+> > 
+> > 
+> >
+> /***********************************************************************
+> **
+> > *****
+> >   *
+> > Index: linux/include/acpi/aclocal.h
+> > ===================================================================
+> > --- linux.orig/include/acpi/aclocal.h	2007-01-25 11:27:25.585268807 -
+> > 0600
+> > +++ linux/include/acpi/aclocal.h	2007-01-26 13:20:06.148115848
+> -0600
+> > @@ -122,8 +122,8 @@ static char *acpi_gbl_mutex_names[ACPI_N
+> > 
+> >  /* Owner IDs are used to track namespace nodes for selective deletion
+> */
+> > 
+> > -typedef u8 acpi_owner_id;
+> > -#define ACPI_OWNER_ID_MAX               0xFF
+> > +typedef u16 acpi_owner_id;
+> > +#define ACPI_OWNER_ID_MAX               0x3FF
+> > 
+> >  /* This Thread ID means that the mutex is not in use (unlocked) */
+> > 
+> > -
+> > To unsubscribe from this list: send the line "unsubscribe linux-acpi"
+> in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
+
