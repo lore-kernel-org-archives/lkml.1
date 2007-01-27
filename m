@@ -1,44 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932111AbXA0WDF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752391AbXA0WF0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932111AbXA0WDF (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Jan 2007 17:03:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932095AbXA0WDF
+	id S1752391AbXA0WF0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Jan 2007 17:05:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932119AbXA0WFZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Jan 2007 17:03:05 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:35886 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751851AbXA0WDD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Jan 2007 17:03:03 -0500
-Date: Sat, 27 Jan 2007 14:02:33 -0800
-From: Andrew Morton <akpm@osdl.org>
-To: "Parag Warudkar" <parag.warudkar@gmail.com>
-Cc: dsd@gentoo.org, joerg@hydrops.han.de, ak@suse.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: [Bugme-new] [Bug 7891] New: vdso page is no longer mapped for
-Message-Id: <20070127140233.203ef7d3.akpm@osdl.org>
-In-Reply-To: <82e4877d0701271201n3aa5bdf6v7c5fb8e41ee98c80@mail.gmail.com>
-References: <82e4877d0701271201n3aa5bdf6v7c5fb8e41ee98c80@mail.gmail.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 27 Jan 2007 17:05:25 -0500
+Received: from imf25aec.mail.bellsouth.net ([205.152.59.73]:33596 "EHLO
+	imf25aec.mail.bellsouth.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751851AbXA0WFY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Jan 2007 17:05:24 -0500
+Message-ID: <45BBCCA2.4090902@bellsouth.net>
+Date: Sat, 27 Jan 2007 16:05:22 -0600
+From: Jay Cliburn <jacliburn@bellsouth.net>
+User-Agent: Thunderbird 1.5.0.9 (X11/20061223)
+MIME-Version: 1.0
+To: Jeff Garzik <jeff@garzik.org>
+CC: csnook@redhat.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       atl1-devel@lists.sourceforge.net
+Subject: Re: [PATCH 4/4] atl1: Ancillary C files for Attansic L1 driver
+References: <20070121210737.GE2702@osprey.hogchain.net> <20070121183151.4be61ebf.randy.dunlap@oracle.com> <45B43093.6060500@bellsouth.net> <20070122200004.GA12553@dreamland.darkstar.lan> <20070123112522.65aac61b@freekitty> <20070123211917.GA22109@dreamland.darkstar.lan> <45BBBDD0.7030809@bellsouth.net> <45BBC10C.5010103@garzik.org>
+In-Reply-To: <45BBC10C.5010103@garzik.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 27 Jan 2007 15:01:51 -0500
-"Parag Warudkar" <parag.warudkar@gmail.com> wrote:
+Jeff Garzik wrote:
+> As a driver maintainer, you need to patch sets, and submit them in a 
+> timely fashion to me.  Note I said patch set, not patch, in following 
+> with Rule #3 from Documentation/SubmittingPatches.  Also make sure to 
+> review http://linux.yyz.us/patch-format.html
 
-> Here is a patch that does what Andrew Morton suggested (plus some more
-> as explained below) .
-> Patch inline below and also attached in case there is whitespace
-> damage. Compile tested on i386 with make defconfig; make. If anyone
-> can test on other arches and provide feedback that'd be great.
+Understood.  Both references reviewed.  Thanks.
 
-Thanks - I can test elf on powerpc.  Does anyone remember how to
-create a.out executables?
+Sorry, but one last question...  These two patches generated overnight 
+by Andrew:
 
-Assuming this works, I'm not surew what to do with it.  Jam it into
-2.6.20, I guess.  The lateness*largeness product is somewhat high though.
+Message-Id: <200701270710.l0R7AhLj004217@shell0.pdx.osdl.net>
+Subject: + git-netdev-all-atl1-pm-fix.patch added to -mm tree
 
-You appear to have generated this patch against an oldish kernel - there are
-CONFIG_COMPAT_VDSO changes in there which might muck things up.  I'll see...
+and
+
+Message-Id: <200701270708.l0R78Q0o004191@shell0.pdx.osdl.net>
+Subject: + git-netdev-all-atl1-build-fix.patch added to -mm tree
+
+Do I include these in my patch set that I submit to you, or do you apply 
+them to netdev directly?
+
+Jay
+
+
