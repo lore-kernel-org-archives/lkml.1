@@ -1,216 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751871AbXA0CBD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751865AbXA0CkW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751871AbXA0CBD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jan 2007 21:01:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752208AbXA0CBB
+	id S1751865AbXA0CkW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jan 2007 21:40:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751877AbXA0CkW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jan 2007 21:01:01 -0500
-Received: from gepetto.dc.ltu.se ([130.240.42.40]:34694 "EHLO
-	gepetto.dc.ltu.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751871AbXA0CBA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jan 2007 21:01:00 -0500
-Date: Sat, 27 Jan 2007 03:00:27 +0100 (MET)
-From: Richard Knutsson <ricknu-0@student.ltu.se>
-To: kai.germaschewski@gmx.de, kkeil@suse.de
-Cc: isdn4linux@listserv.isdn4linux.de, linux-kernel@vger.kernel.org,
-       Richard Knutsson <ricknu-0@student.ltu.se>
-Message-Id: <20070127020235.12590.91019.sendpatchset@thinktank.campus.ltu.se>
-Subject: [PATCH] drivers/isdn/hisax/: Convert to generic boolean-values
+	Fri, 26 Jan 2007 21:40:22 -0500
+Received: from smtp102.sbc.mail.mud.yahoo.com ([68.142.198.201]:44327 "HELO
+	smtp102.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751865AbXA0CkV convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jan 2007 21:40:21 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=wq+ZFhtT9udU21ACigPpuEf1NsW63DmBGo6oVISeGjPCtH/p9qI2lSuwNcgPi8qt8s5tOLiJhrN0djWcleY9xvKxQKC4OTVvB2s/2RrOTAd0gMqlabl1JxAcZPT7iykhTVgbGAWvpRG8h5PcjNACSGpxTyXl4rJ5T5cvkqOK274=  ;
+X-YMail-OSG: _yMFl5gVM1lZeP4xx0DUPaAooioOFNaTxbmBa6cyRBv.1wLpA.BKAO8K5.dplAqJJ.95YBlu5Ad7PTWLB5dPjEIzpWUEJKx1KgPhmdE8Fs.pz0PgNeq4SjVFVQ1Ozlo-
+From: David Brownell <david-b@pacbell.net>
+To: Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH] Fix /sys/device/.../power/state regression
+Date: Fri, 26 Jan 2007 18:40:16 -0800
+User-Agent: KMail/1.7.1
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Greg KH <gregkh@suse.de>,
+       linux-kernel@vger.kernel.org
+References: <20061219185223.GA13256@srcf.ucam.org> <200701261642.56896.david-b@pacbell.net> <20070126165657.663358ab.akpm@osdl.org>
+In-Reply-To: <20070126165657.663358ab.akpm@osdl.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200701261840.17194.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Richard Knutsson <ricknu-0@student.ltu.se>
----
-Compile-tested with "allyes", "allmod" & "allno" on i386
+> > > It's certainly the case that fixing those drivers would result in a 
+> > > better long-term situation - however, nobody currently seems to have any 
+> > > interest in doing so...
+> > 
+> > And the way these things work, unfortunately, is that merging your patch
+> > would ensure nobody ever gets such interest.  Removing that "state" file
+> > (and its bogus infrastructure) has already taken a few years too long.
+> 
+> No, we shouldn't just break stuff for our users in the hope that said
+> breakage will force some other developer to come in and fix things later.
 
- hfc_usb.c |   40 ++++++++++++++++++++--------------------
- hfc_usb.h |    3 ---
- 2 files changed, 20 insertions(+), 23 deletions(-)
+That's not what happened though.  From my perspective, what I see is some
+software which chose to START using an interface that's been on its way
+out for a few years now.  (And deservedly so; nobody has been able to
+demonstrate that it's not been broken-as-designed since day one.)  That
+broke the process which had been working to finally get rid of that broken
+interface.
+
+Don't the people writing such software have responsibilities too?  Like,
+to not start using undocumented and unstable interfaces that have been
+acknowledged as broken and on-the-way-out?  Joining some of the Linux PM
+mailing list discussions over the past few years would have been good too,
+especially ones where userspace-driven PM was the topic.  (I kept asking
+for real world examples, and nobody had any.  Which, among other things,
+suggests that tool Matthew is concerned with isn't at all well known...)
+
+(Plus, keep in mind that this is not "breakage" in any conventional
+sense of something not working.  There's no oopsing or slowdown.)
 
 
-diff --git a/drivers/isdn/hisax/hfc_usb.c b/drivers/isdn/hisax/hfc_usb.c
-index 5a6989f..aaa6b88 100644
---- a/drivers/isdn/hisax/hfc_usb.c
-+++ b/drivers/isdn/hisax/hfc_usb.c
-@@ -183,7 +183,7 @@ typedef struct hfcusb_data {
- 	int vend_idx;		/* vendor found */
- 	int b_mode[2];		/* B-channel mode */
- 	int l1_activated;	/* layer 1 activated */
--	int disc_flag;		/* TRUE if device was disonnected to avoid some USB actions */
-+	int disc_flag;		/* 'true' if device was disonnected to avoid some USB actions */
- 	int packet_size, iso_packet_size;
- 
- 	/* control pipe background handling */
-@@ -392,7 +392,7 @@ l1_timer_expire_t3(hfcusb_data * hfc)
- 	DBG(ISDN_DBG,
- 	    "HFC-S USB: PH_DEACTIVATE | INDICATION sent (T3 expire)");
- #endif
--	hfc->l1_activated = FALSE;
-+	hfc->l1_activated = false;
- 	handle_led(hfc, LED_S0_OFF);
- 	/* deactivate : */
- 	queue_control_request(hfc, HFCUSB_STATES, 0x10, 1);
-@@ -411,7 +411,7 @@ l1_timer_expire_t4(hfcusb_data * hfc)
- 	DBG(ISDN_DBG,
- 	    "HFC-S USB: PH_DEACTIVATE | INDICATION sent (T4 expire)");
- #endif
--	hfc->l1_activated = FALSE;
-+	hfc->l1_activated = false;
- 	handle_led(hfc, LED_S0_OFF);
- }
- 
-@@ -452,7 +452,7 @@ state_handler(hfcusb_data * hfc, __u8 state)
- #ifdef CONFIG_HISAX_DEBUG
- 		DBG(ISDN_DBG, "HFC-S USB: PH_ACTIVATE | INDICATION sent");
- #endif
--		hfc->l1_activated = TRUE;
-+		hfc->l1_activated = true;
- 		handle_led(hfc, LED_S0_ON);
- 	} else if (state <= 3 /* && activated */ ) {
- 		if (old_state == 7 || old_state == 8) {
-@@ -472,7 +472,7 @@ state_handler(hfcusb_data * hfc, __u8 state)
- 			DBG(ISDN_DBG,
- 			    "HFC-S USB: PH_DEACTIVATE | INDICATION sent");
- #endif
--			hfc->l1_activated = FALSE;
-+			hfc->l1_activated = false;
- 			handle_led(hfc, LED_S0_OFF);
- 		}
- 	}
-@@ -622,7 +622,7 @@ tx_iso_complete(struct urb *urb)
- 	if (fifo->active && !status) {
- 		transp_mode = 0;
- 		if (fifon < 4 && hfc->b_mode[fifon / 2] == L1_MODE_TRANS)
--			transp_mode = TRUE;
-+			transp_mode = true;
- 
- 		/* is FifoFull-threshold set for our channel? */
- 		threshbit = threshtable[fifon] & hfc->threshold_mask;
-@@ -640,7 +640,7 @@ tx_iso_complete(struct urb *urb)
- 			      tx_iso_complete, urb->context);
- 		memset(context_iso_urb->buffer, 0,
- 		       sizeof(context_iso_urb->buffer));
--		frame_complete = FALSE;
-+		frame_complete = false;
- 		/* Generate next Iso Packets */
- 		for (k = 0; k < num_isoc_packets; ++k) {
- 			if (fifo->skbuff) {
-@@ -666,7 +666,7 @@ tx_iso_complete(struct urb *urb)
- 						/* add 2 byte flags and 16bit CRC at end of ISDN frame */
- 						fifo->bit_line += 32;
- 					}
--					frame_complete = TRUE;
-+					frame_complete = true;
- 				}
- 
- 				memcpy(context_iso_urb->buffer +
-@@ -693,7 +693,7 @@ tx_iso_complete(struct urb *urb)
- 			}
- 
- 			if (frame_complete) {
--				fifo->delete_flg = TRUE;
-+				fifo->delete_flg = true;
- 				fifo->hif->l1l2(fifo->hif,
- 						PH_DATA | CONFIRM,
- 						(void *) (unsigned long) fifo->skbuff->
-@@ -701,9 +701,9 @@ tx_iso_complete(struct urb *urb)
- 				if (fifo->skbuff && fifo->delete_flg) {
- 					dev_kfree_skb_any(fifo->skbuff);
- 					fifo->skbuff = NULL;
--					fifo->delete_flg = FALSE;
-+					fifo->delete_flg = false;
- 				}
--				frame_complete = FALSE;
-+				frame_complete = false;
- 			}
- 		}
- 		errcode = usb_submit_urb(urb, GFP_ATOMIC);
-@@ -837,7 +837,7 @@ collect_rx_frame(usb_fifo * fifo, __u8 * data, int len, int finish)
- 	fifon = fifo->fifonum;
- 	transp_mode = 0;
- 	if (fifon < 4 && hfc->b_mode[fifon / 2] == L1_MODE_TRANS)
--		transp_mode = TRUE;
-+		transp_mode = true;
- 
- 	if (!fifo->skbuff) {
- 		fifo->skbuff = dev_alloc_skb(fifo->max_size + 3);
-@@ -1176,7 +1176,7 @@ hfc_usb_l2l1(struct hisax_if *my_hisax_if, int pr, void *arg)
- 			if (fifo->skbuff && fifo->delete_flg) {
- 				dev_kfree_skb_any(fifo->skbuff);
- 				fifo->skbuff = NULL;
--				fifo->delete_flg = FALSE;
-+				fifo->delete_flg = false;
- 			}
- 			fifo->skbuff = arg;	/* we have a new buffer */
- 			break;
-@@ -1262,8 +1262,8 @@ usb_init(hfcusb_data * hfc)
- 	hfc->b_mode[0] = L1_MODE_NULL;
- 	hfc->b_mode[1] = L1_MODE_NULL;
- 
--	hfc->l1_activated = FALSE;
--	hfc->disc_flag = FALSE;
-+	hfc->l1_activated = false;
-+	hfc->disc_flag = false;
- 	hfc->led_state = 0;
- 	hfc->led_new_data = 0;
- 	hfc->old_led_state = 0;
-@@ -1404,7 +1404,7 @@ hfc_usb_probe(struct usb_interface *intf, const struct usb_device_id *id)
- 
- 			/* check for config EOL element */
- 			while (validconf[cfg_used][0]) {
--				cfg_found = TRUE;
-+				cfg_found = true;
- 				vcf = validconf[cfg_used];
- 				/* first endpoint descriptor */
- 				ep = iface->endpoint;
-@@ -1426,7 +1426,7 @@ hfc_usb_probe(struct usb_interface *intf, const struct usb_device_id *id)
- 						idx++;
- 					attr = ep->desc.bmAttributes;
- 					if (cmptbl[idx] == EP_NUL) {
--						cfg_found = FALSE;
-+						cfg_found = false;
- 					}
- 					if (attr == USB_ENDPOINT_XFER_INT
- 					    && cmptbl[idx] == EP_INT)
-@@ -1448,7 +1448,7 @@ hfc_usb_probe(struct usb_interface *intf, const struct usb_device_id *id)
- 							    "HFC-S USB: Interrupt Endpoint interval < %d found - skipping config",
- 							    vcf[17]);
- #endif
--						cfg_found = FALSE;
-+						cfg_found = false;
- 					}
- 					ep++;
- 				}
-@@ -1456,7 +1456,7 @@ hfc_usb_probe(struct usb_interface *intf, const struct usb_device_id *id)
- 					/* all entries must be EP_NOP or EP_NUL for a valid config */
- 					if (cmptbl[i] != EP_NOP
- 					    && cmptbl[i] != EP_NUL)
--						cfg_found = FALSE;
-+						cfg_found = false;
- 				}
- 				if (cfg_found) {
- 					if (cfg_used < small_match) {
-@@ -1656,7 +1656,7 @@ hfc_usb_disconnect(struct usb_interface
- 	hfcusb_data *context = usb_get_intfdata(intf);
- 	int i;
- 	printk(KERN_INFO "HFC-S USB: device disconnect\n");
--	context->disc_flag = TRUE;
-+	context->disc_flag = true;
- 	usb_set_intfdata(intf, NULL);
- 	if (!context)
- 		return;
-diff --git a/drivers/isdn/hisax/hfc_usb.h b/drivers/isdn/hisax/hfc_usb.h
-index 6349367..471f235 100644
---- a/drivers/isdn/hisax/hfc_usb.h
-+++ b/drivers/isdn/hisax/hfc_usb.h
-@@ -12,9 +12,6 @@
- 
- #define VERBOSE_USB_DEBUG
- 
--#define TRUE  1
--#define FALSE 0
--
- 
- /***********/
- /* defines */
+> We should revert the breakage-causing patch, with the expectation that its
+> submitter will ensure that all prerequisites are in place before it is
+> reapplied.
+
+Well, Linus is the one who submitted the original patch to add the
+late_suspend()/early_resume() mechanism ... and there have been a few
+other patches fixing issues turned up by that patch.  Matthew objected
+to one side effect of that.  The "bypass layers" part of his patch is
+as clean a workaround as can be had, I suppose.
+
+
+> > > As I've said before, I think it's unreasonable to cripple interfaces for 
+> > > (mostly) aesthetic reasons without ensuring that equivalent 
+> > > functionality already exists.
+> > 
+> > I don't recall anyone raising aesthetic concerns.  And bug-equivalence
+> > has never been a goal of Linux.
+> > 
+> 
+> Not breaking things for end-users is a goal.  Prime directive, indeed.
+
+With limitations.  Any time a bug gets fixed, it will break software
+that relies on that bug.  Like, hmm, this case...
+
+We **STILL** haven't gotten solid information on the software that
+broke.  From what I've heard on this list it would seem to be used
+on certain Ubuntu systems, but even the _name_ of the utility has
+never been mentioned.  When we asked for more details, what came
+back was the information that the problem was really a handful of
+wireless drivers.
+
+
+> > > This patch restores useful functionality  
+> > > without breaking the extra sanity checks that you've added. I appreciate 
+> > > that it's not an interface that you want to support in the long term 
+> > > (well, even the short term...),
+> > 
+> > You imply that it _was_ once supported, which is not true.  Like any
+> > other bug (in this case "design bug"), it was there and could be abused.
+> > And like some other bugs, fixing it can trigger complaints from (ab)users.
+> 
+> Could someone please explain in easy-to-understand terms what the
+> real-world impact of this bug is upon our users?  How many are affected,
+> and under what circumstances, and with what effects?
+
+>From what I can see, a small subset of Ubuntu users will notice that
+battery life on some laptops isn't as long as it might be.  Most of
+that issue can be resolved by "rmmod $WLAN_DRIVER", a workaround with
+a long and successful history in Linux.
+
+- Dave
+
