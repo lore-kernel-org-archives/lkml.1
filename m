@@ -1,48 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751701AbXA0MMA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751145AbXA0MhL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751701AbXA0MMA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Jan 2007 07:12:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751724AbXA0MMA
+	id S1751145AbXA0MhL (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Jan 2007 07:37:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751736AbXA0MhL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Jan 2007 07:12:00 -0500
-Received: from fizeau.zen.co.uk ([212.23.8.67]:57205 "EHLO fizeau.zen.co.uk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751672AbXA0ML7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Jan 2007 07:11:59 -0500
-X-Greylist: delayed 163449 seconds by postgrey-1.27 at vger.kernel.org; Sat, 27 Jan 2007 07:11:59 EST
-From: David Johnson <dj@david-web.co.uk>
-Reply-To: linux-kernel <linux-kernel@vger.kernel.org>
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: what kernel version embeds r1000 (RTL8168 Eth NICs)
-Date: Thu, 25 Jan 2007 14:45:51 +0000
-User-Agent: KMail/1.9.5
-References: <1169689006.26353.23.camel@asus.rktmb.org> <20070125093653.GA3070@strauss.suse.de>
-In-Reply-To: <20070125093653.GA3070@strauss.suse.de>
-Cc: "Mihamina Rakotomandimby (R12y)" 
-	<mihamina.rakotomandimby@etu.univ-orleans.fr>
+	Sat, 27 Jan 2007 07:37:11 -0500
+Received: from adsl-ull-184-161.41-151.net24.it ([151.41.161.184]:10001 "EHLO
+	zeus.abinetworks.biz" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751145AbXA0MhK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Jan 2007 07:37:10 -0500
+X-Greylist: delayed 1591 seconds by postgrey-1.27 at vger.kernel.org; Sat, 27 Jan 2007 07:37:10 EST
+Message-ID: <45BB3FFF.1090806@abinetworks.biz>
+Date: Sat, 27 Jan 2007 13:05:19 +0100
+From: Gianluca Alberici <gianluca@abinetworks.biz>
+User-Agent: Mozilla Thunderbird 0.8 (X11/20041022)
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+To: linux-kernel@vger.kernel.org
+Subject: Nozmi status ?
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200701251445.51783.dj@david-web.co.uk>
-X-Originating-Rutherford-IP: [82.69.29.67]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 25 January 2007 09:36, Bernhard Walle wrote:
->
-> The r8169 driver which is in the kernel should have the same
-> functionality.
->
+Hello,
 
-It does indeed, but I think this support was only added recently; I believe 
-the first kernel version to support it was 2.6.19. Support is certainly in 
-the 2.6.20-rc kernels, as I'm using it.
+What is the status of the HSDPA driver after 2.6.19.1 ? Is it part of 
+the kernel tree or not yet ?
+If not is there any version of ther nozomi pack which is gonna compile 
+under ker > 2.6.18 (the original one is not compiling anymore after 2.6.18).
 
-Regards,
-David.
+Thanks,
 
--- 
-David Johnson
-www.david-web.co.uk
+Gianluca
