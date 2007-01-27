@@ -1,151 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752173AbXA0HGJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752161AbXA0HGc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752173AbXA0HGJ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Jan 2007 02:06:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752161AbXA0HGJ
+	id S1752161AbXA0HGc (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Jan 2007 02:06:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752177AbXA0HGc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Jan 2007 02:06:09 -0500
-Received: from hera.kernel.org ([140.211.167.34]:51569 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751920AbXA0HGG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Jan 2007 02:06:06 -0500
-From: Len Brown <lenb@kernel.org>
-Organization: Intel Open Source Technology Center
-To: Andrew Morton <akpm@osdl.org>
-Subject: [PATCH 1/3] - ACPICA: reduce conflicts with Altix patch series
-Date: Sat, 27 Jan 2007 01:57:43 -0500
-User-Agent: KMail/1.9.5
-Cc: John Keller <jpk@sgi.com>, linux-acpi@vger.kernel.org, tony.luck@intel.com,
-       linux-ia64@vger.kernel.org, pcihpd-discuss@lists.sourceforge.net,
-       gregkh@suse.de, linux-kernel@vger.kernel.org, ayoung@sgi.com,
-       jes@sgi.com,
-       "Starikovskiy, Alexey" <alexey.y.starikovskiy@linux.intel.com>
-References: <20061115152454.6047.64973.sendpatchset@attica.americas.sgi.com> <20070126171048.5f0bf293.akpm@osdl.org> <200701270155.18596.lenb@kernel.org>
-In-Reply-To: <200701270155.18596.lenb@kernel.org>
+	Sat, 27 Jan 2007 02:06:32 -0500
+Received: from nic.NetDirect.CA ([216.16.235.2]:41485 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752161AbXA0HGa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Jan 2007 02:06:30 -0500
+X-Originating-Ip: 74.109.98.130
+Date: Sat, 27 Jan 2007 01:55:18 -0500 (EST)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@CPE00045a9c397f-CM001225dbafb6
+To: Linux kernel mailing list <linux-kernel@vger.kernel.org>
+cc: Andrew Morton <akpm@osdl.org>, len.brown@intel.com
+Subject: [PATCH] ACPI: Correct apparent typo "CONFIG_ACPI_DEBUG_OUTPUT".
+Message-ID: <Pine.LNX.4.64.0701270145540.32670@CPE00045a9c397f-CM001225dbafb6>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200701270157.43631.lenb@kernel.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Syntax only -- no functional changes.
 
-Signed-off-by: Len Brown <len.brown@intel.com
+  Replace the apparent typo CONFIG_ACPI_DEBUG_OUTPUT with
+the non-Kconfig conditional ACPI_DEBUG_OUTPUT, which is what every
+other file uses.
+
+Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
+
 ---
- arch/ia64/sn/kernel/io_common.c |   10 ++++++----
- arch/ia64/sn/kernel/iomv.c      |    5 ++---
- include/asm-ia64/sn/acpi.h      |   18 ++++++++++++++++++
- 3 files changed, 26 insertions(+), 7 deletions(-)
 
-Index: acpi/arch/ia64/sn/kernel/io_common.c
-===================================================================
---- acpi.orig/arch/ia64/sn/kernel/io_common.c
-+++ acpi/arch/ia64/sn/kernel/io_common.c
-@@ -25,6 +25,7 @@
- #include "xtalk/xwidgetdev.h"
- #include <linux/acpi.h>
- #include <asm/sn/sn2/sn_hwperf.h>
-+#include <asm/sn/acpi.h>
- 
- extern void sn_init_cpei_timer(void);
- extern void register_sn_procfs(void);
-@@ -36,6 +37,7 @@ extern void sn_legacy_pci_window_fixup(s
- extern void sn_io_acpi_init(void);
- extern void sn_io_init(void);
- 
-+
- static struct list_head sn_sysdata_list;
- 
- /* sysdata list struct */
-@@ -48,7 +50,7 @@ int sn_ioif_inited;		/* SN I/O infrastru
- 
- struct sn_pcibus_provider *sn_pci_provider[PCIIO_ASIC_MAX_TYPES];	/* indexed by asic type */
- 
--int sn_acpi_base_support()
-+int sn_acpi_base_support(void)
+diff --git a/drivers/acpi/scan.c b/drivers/acpi/scan.c
+index 698a154..d65142a 100644
+--- a/drivers/acpi/scan.c
++++ b/drivers/acpi/scan.c
+@@ -891,7 +891,7 @@ static int acpi_device_set_context(struct acpi_device *device, int type)
+ static void acpi_device_get_debug_info(struct acpi_device *device,
+ 				       acpi_handle handle, int type)
  {
- 	struct acpi_table_header *header;
- 	(void)acpi_get_table_by_index(ACPI_TABLE_INDEX_DSDT, &header);
-@@ -293,7 +295,7 @@ void sn_pci_fixup_slot(struct pci_dev *d
- 	list_add_tail(&pcidev_info->pdi_list,
- 		      &(SN_PLATFORM_DATA(dev->bus)->pcidev_info));
- 
--	if (sn_acpi_base_support())
-+	if (SN_ACPI_BASE_SUPPORT())
- 		sn_acpi_slot_fixup(dev, pcidev_info);
- 	else
- 		sn_more_slot_fixup(dev, pcidev_info);
-@@ -505,7 +507,7 @@ void __devinit
- sn_pci_fixup_bus(struct pci_bus *bus)
- {
- 
--	if (sn_acpi_base_support())
-+	if (SN_ACPI_BASE_SUPPORT())
- 		sn_acpi_bus_fixup(bus);
- 	else
- 		sn_bus_fixup(bus);
-@@ -557,7 +559,7 @@ sn_io_early_init(void)
- 		printk(KERN_INFO "ACPI  DSDT OEM Rev 0x%x\n",
- 			header->oem_revision);
+-#ifdef CONFIG_ACPI_DEBUG_OUTPUT
++#ifdef ACPI_DEBUG_OUTPUT
+ 	char *type_string = NULL;
+ 	char name[80] = { '?', '\0' };
+ 	struct acpi_buffer buffer = { sizeof(name), name };
+@@ -928,7 +928,7 @@ static void acpi_device_get_debug_info(struct acpi_device *device,
  	}
--	if (sn_acpi_base_support())
-+	if (SN_ACPI_BASE_SUPPORT())
- 		sn_io_acpi_init();
- 	else
- 		sn_io_init();
-Index: acpi/arch/ia64/sn/kernel/iomv.c
-===================================================================
---- acpi.orig/arch/ia64/sn/kernel/iomv.c
-+++ acpi/arch/ia64/sn/kernel/iomv.c
-@@ -16,6 +16,7 @@
- #include <asm/sn/pda.h>
- #include <asm/sn/sn_cpuid.h>
- #include <asm/sn/shub_mmr.h>
-+#include <asm/sn/acpi.h>
- 
- #define IS_LEGACY_VGA_IOPORT(p) \
- 	(((p) >= 0x3b0 && (p) <= 0x3bb) || ((p) >= 0x3c0 && (p) <= 0x3df))
-@@ -29,8 +30,6 @@
-  * SN i/o address.  Used by sn_in*() and sn_out*().
-  */
- 
--extern int sn_acpi_base_support();
--
- void *sn_io_addr(unsigned long port)
- {
- 	if (!IS_RUNNING_ON_SIMULATOR()) {
-@@ -39,7 +38,7 @@ void *sn_io_addr(unsigned long port)
- 		/* On sn2, legacy I/O ports don't point at anything */
- 		if (port < (64 * 1024))
- 			return NULL;
--		if (sn_acpi_base_support())
-+		if (SN_ACPI_BASE_SUPPORT())
- 			return (__ia64_mk_io_addr(port));
- 		else
- 			return ((void *)(port | __IA64_UNCACHED_OFFSET));
-Index: acpi/include/asm-ia64/sn/acpi.h
-===================================================================
---- /dev/null
-+++ acpi/include/asm-ia64/sn/acpi.h
-@@ -0,0 +1,18 @@
-+/*
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License.  See the file "COPYING" in the main directory of this archive
-+ * for more details.
-+ *
-+ * Copyright (C) 2006 Silicon Graphics, Inc. All rights reserved.
-+ */
-+
-+#ifndef _ASM_IA64_SN_ACPI_H
-+#define _ASM_IA64_SN_ACPI_H
-+
-+#include "acpi/acglobal.h"
-+
-+#define SN_ACPI_BASE_SUPPORT()   sn_acpi_base_support()
-+
-+extern int sn_acpi_base_support(void);
-+
-+#endif /* _ASM_IA64_SN_ACPI_H */
+
+ 	printk(KERN_DEBUG "Found %s %s [%p]\n", type_string, name, handle);
+-#endif				/*CONFIG_ACPI_DEBUG_OUTPUT */
++#endif				/* ACPI_DEBUG_OUTPUT */
+ }
+
+ static int acpi_bus_remove(struct acpi_device *dev, int rmdevice)
+
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://www.fsdev.dreamhosters.com/wiki/index.php?title=Main_Page
+========================================================================
