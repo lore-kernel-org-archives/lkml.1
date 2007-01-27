@@ -1,40 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751864AbXA0HjX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750741AbXA0IUU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751864AbXA0HjX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Jan 2007 02:39:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751898AbXA0HjX
+	id S1750741AbXA0IUU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Jan 2007 03:20:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750821AbXA0IUU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Jan 2007 02:39:23 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:44103 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751864AbXA0HjW convert rfc822-to-8bit (ORCPT
+	Sat, 27 Jan 2007 03:20:20 -0500
+Received: from nic.NetDirect.CA ([216.16.235.2]:43816 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750741AbXA0IUS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Jan 2007 02:39:22 -0500
-Date: Fri, 26 Jan 2007 23:39:11 -0800
-From: Andrew Morton <akpm@osdl.org>
-To: "Kristian =?ISO-8859-1?B?SPhnc2Jlcmci?= <krh@bitplanet.net>"@osdl.org
-Cc: linux-kernel@vger.kernel.org, linux1394-devel@lists.sourceforge.net,
-       "Stefan Richter" <stefanr@s5r6.in-berlin.de>
-Subject: Re: In-tree version of new FireWire drivers available
-Message-Id: <20070126233911.7ebf96ac.akpm@osdl.org>
-In-Reply-To: <59ad55d30701231948u5f1e02d8x3d06553cb373e5be@mail.gmail.com>
-References: <59ad55d30701231948u5f1e02d8x3d06553cb373e5be@mail.gmail.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Sat, 27 Jan 2007 03:20:18 -0500
+X-Originating-Ip: 74.109.98.130
+Date: Sat, 27 Jan 2007 03:19:41 -0500 (EST)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@CPE00045a9c397f-CM001225dbafb6
+To: Linux kernel mailing list <linux-kernel@vger.kernel.org>
+cc: Andrew Morton <akpm@osdl.org>
+Subject: [PATCH] Fix apparent typo CONFIG_LOCKDEP_DEBUG.
+Message-ID: <Pine.LNX.4.64.0701270317430.857@CPE00045a9c397f-CM001225dbafb6>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 23 Jan 2007 22:48:15 -0500
-"Kristian Høgsberg" <krh@bitplanet.net> wrote:
 
-> I've moved the new FireWire stack to an in-tree git repository and
-> moved over the missing patches from my out-of-tree version.
+  Replace the apparent typo CONFIG_LOCKDEP_DEBUG with the correct
+CONFIG_DEBUG_LOCKDEP.
 
-arm:
+Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
 
-drivers/firewire/fw-device.c: In function `fw_device_init':
-drivers/firewire/fw-device.c:495: warning: implicit declaration of function `cmpxchg'                                                                           
+---
 
-We can't use cmpxchg in generic code.
+diff --git a/kernel/lockdep_proc.c b/kernel/lockdep_proc.c
+index b554b40..78381a6 100644
+--- a/kernel/lockdep_proc.c
++++ b/kernel/lockdep_proc.c
+@@ -227,7 +227,7 @@ static int lockdep_stats_show(struct seq_file *m, void *v)
+
+ 		sum_forward_deps += count_forward_deps(class);
+ 	}
+-#ifdef CONFIG_LOCKDEP_DEBUG
++#ifdef CONFIG_DEBUG_LOCKDEP
+ 	DEBUG_LOCKS_WARN_ON(debug_atomic_read(&nr_unused_locks) != nr_unused);
+ #endif
+ 	seq_printf(m, " lock-classes:                  %11lu [max: %lu]\n",
+
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://www.fsdev.dreamhosters.com/wiki/index.php?title=Main_Page
+========================================================================
