@@ -1,50 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752368AbXA0UGJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752379AbXA0UGM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752368AbXA0UGJ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Jan 2007 15:06:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752372AbXA0UGJ
+	id S1752379AbXA0UGM (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Jan 2007 15:06:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752372AbXA0UGM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Jan 2007 15:06:09 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:33381 "EHLO smtp.osdl.org"
+	Sat, 27 Jan 2007 15:06:12 -0500
+Received: from mga03.intel.com ([143.182.124.21]:21857 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752368AbXA0UGI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Jan 2007 15:06:08 -0500
-Date: Sat, 27 Jan 2007 12:05:12 -0800
-From: Andrew Morton <akpm@osdl.org>
-To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-Cc: Ingo@maccavity.nachtwache.org, Christoph@maccavity.nachtwache.org,
-       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       "Martin J. Bligh" <mbligh@mbligh.org>, Hellwig <hch@infradead.org>,
-       Linus Torvalds <torvalds@osdl.org>, Molnar <mingo@redhat.com>,
-       ltt-dev@shafik.org, systemtap@sources.redhat.com,
-       Paul Mackerras <paulus@samba.org>, Thomas Gleixner <tglx@linutronix.de>,
-       Douglas Niehaus <niehaus@eecs.ku.edu>
-Subject: Re: [Ltt-dev] [PATCH 00/09] atomic.h : standardizing atomic
- primitives
-Message-Id: <20070127120512.04a98fcd.akpm@osdl.org>
-In-Reply-To: <20070127181116.GA5158@Krystal>
-References: <11697417541743-git-send-email-mathieu.desnoyers@polymtl.ca>
-	<20070127021834.e26e955d.akpm@osdl.org>
-	<20070127181116.GA5158@Krystal>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1752375AbXA0UGJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Jan 2007 15:06:09 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: i="4.13,246,1167638400"; 
+   d="scan'208"; a="173738121:sNHT22388632"
+Message-ID: <45BBB0AF.4040709@intel.com>
+Date: Sat, 27 Jan 2007 12:06:07 -0800
+From: Auke Kok <auke-jan.h.kok@intel.com>
+User-Agent: Mail/News 1.5.0.9 (X11/20061228)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@osdl.org>
+CC: Jeff Garzik <jgarzik@pobox.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       NetDev <netdev@vger.kernel.org>,
+       Jesse Brandeburg <jesse.brandeburg@intel.com>,
+       cramerj <cramerj@intel.com>
+Subject: [PATCH -MM]: updated e1000  - new hardware initialization code (replacement
+ patch)
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 27 Jan 2007 13:11:16 -0500
-Mathieu Desnoyers <compudj@krystal.dyndns.org> wrote:
 
-> I am currently trying crosstool by Dan Kegel, it looks promising.
-> http://www.kegel.com/crosstool/
+Andrew,
 
-Yeah, I spent a frustrating two days with crosstool, managed to eke a
-number of cross-compilers out of it, but it took a *lot* of experimentation
-with gcc, glibc and binutils versions to get combinations which actually
-work.  Good luck ;)
+Please pull:
 
-There used to be someone who had a full suite, and who regularly published
-cross-compile results, but he stopped 6-12 months ago and I forget who that
-clever person was?
+git-pull git://lost.foo-projects.org/~ahkok/git/netdev-2.6 upstream-mm
 
+to receive an updated version of the new e1000 hardware initialization code. 
+This version incorporates both previously sent patches and replaces them, as 
+well as adding some minor extra kdoc headers.
+
+The patch applies cleanly against jgarzik's netdev-2.6 #upstream commit 
+5ad0d383ddbf0d2fce43b8aac267a6c299fd2dff.
+
+the patch is also available in monolithic form over http:
+http://foo-projects.org/~sofar/e1000_git_new_device_init_code.patch.bz2 (166kb)
+or http://foo-projects.org/~sofar/e1000_git_new_device_init_code.patch (1.2mb)
+
+Cheers,
+
+Auke
+
+
+
+---
+
+
+e1000: New device initialization code, fixes
+
+From: Jeb Cramer <cramerj@intel.com>
+
+This rewrite of the hardware initialization code splits up the driver
+low-level initialization code per chipset family. Several families exist
+with different initialization code per chipset, revision, and this allows
+us later to select only enable certain devices in the driver. The current
+code enables all previous drivers and thus doesn't change anything to the
+user, but is radically different internally.
+
+Mac and phy layers are also split, and everything is grouped in an API
+layer that the driver uses to interface the hardware.
+
+Support was added for a PCI-e 4-port Fibre version of the PRO/1000 PT quad
+port adapter (device 0x10a5). MTU changes on a downed interface require
+a phy commit to enact the new size immediately.
+
+Replace hard coded RAR numbers with constant. Add several function
+description and fix some small copy+paste errors in others. Fix link
+speed detection on PCI adapters showing wrong PCI bus speed. Fix laa
+detection. Rewrite tbi static for 82543. Fix mta list overflow. Don't
+unmap skb's twice in occasions, but set dma=0. Flatten dhcp generic
+function for readability. Change force phy speed duplex setup to be
+void and static.
+
+Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
+Signed-off-by: Jeb Cramer <cramerj@intel.com>
+Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Signed-off-by: Auke Kok <auke-jan.h.kok@intel.com>
+---
+
+  drivers/net/e1000/Makefile            |   19
+  drivers/net/e1000/e1000.h             |   97
+  drivers/net/e1000/e1000_80003es2lan.c | 1377 +++++
+  drivers/net/e1000/e1000_80003es2lan.h |   89
+  drivers/net/e1000/e1000_82540.c       |  670 ++
+  drivers/net/e1000/e1000_82541.c       | 1305 +++++
+  drivers/net/e1000/e1000_82541.h       |   86
+  drivers/net/e1000/e1000_82542.c       |  551 ++
+  drivers/net/e1000/e1000_82543.c       | 1643 ++++++
+  drivers/net/e1000/e1000_82543.h       |   45
+  drivers/net/e1000/e1000_82571.c       | 1127 ++++
+  drivers/net/e1000/e1000_82571.h       |   42
+  drivers/net/e1000/e1000_api.c         | 1174 ++++
+  drivers/net/e1000/e1000_api.h         |  161 +
+  drivers/net/e1000/e1000_defines.h     | 1297 +++++
+  drivers/net/e1000/e1000_ethtool.c     |  470 +-
+  drivers/net/e1000/e1000_hw.c          | 9038 ---------------------------------
+  drivers/net/e1000/e1000_hw.h          | 3859 ++------------
+  drivers/net/e1000/e1000_ich8lan.c     | 2427 +++++++++
+  drivers/net/e1000/e1000_ich8lan.h     |  110
+  drivers/net/e1000/e1000_mac.c         | 1939 +++++++
+  drivers/net/e1000/e1000_mac.h         |   84
+  drivers/net/e1000/e1000_main.c        |  936 ++-
+  drivers/net/e1000/e1000_manage.c      |  388 +
+  drivers/net/e1000/e1000_manage.h      |   83
+  drivers/net/e1000/e1000_nvm.c         |  859 +++
+  drivers/net/e1000/e1000_nvm.h         |   61
+  drivers/net/e1000/e1000_osdep.h       |   57
+  drivers/net/e1000/e1000_param.c       |  100
+  drivers/net/e1000/e1000_phy.c         | 1932 +++++++
+  drivers/net/e1000/e1000_phy.h         |  159 +
+  drivers/net/e1000/e1000_regs.h        |  236 +
+  32 files changed, 19321 insertions(+), 13100 deletions(-)
