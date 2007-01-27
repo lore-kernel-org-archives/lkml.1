@@ -1,46 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752210AbXA0IY7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750837AbXA0Ib2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752210AbXA0IY7 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Jan 2007 03:24:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751057AbXA0IYb
+	id S1750837AbXA0Ib2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Jan 2007 03:31:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750847AbXA0Ib2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Jan 2007 03:24:31 -0500
-Received: from smtp.ustc.edu.cn ([202.38.64.16]:34891 "HELO ustc.edu.cn"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1751263AbXA0IY0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Jan 2007 03:24:26 -0500
-Message-ID: <369886264.20106@ustc.edu.cn>
-X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
-Message-Id: <20070127082529.796556490@mail.ustc.edu.cn>
-References: <20070127080219.161473179@mail.ustc.edu.cn>
-User-Agent: quilt/0.45-1
-Date: Sat, 27 Jan 2007 16:02:24 +0800
-From: Fengguang Wu <wfg@mail.ustc.edu.cn>
-To: Andrew Morton <akpm@osdl.org>
-Cc: Martin Peschke <mp3@de.ibm.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH 5/8] readahead: initial method: user recommended size: rename to read_ahead_initial_kb
-Content-Disposition: inline; filename=readahead-initial-method-user-recommended-size-rename-to-read_ahead_initial_kb.patch
+	Sat, 27 Jan 2007 03:31:28 -0500
+Received: from nic.NetDirect.CA ([216.16.235.2]:44365 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750837AbXA0Ib1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Jan 2007 03:31:27 -0500
+X-Originating-Ip: 74.109.98.130
+Date: Sat, 27 Jan 2007 03:31:02 -0500 (EST)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@CPE00045a9c397f-CM001225dbafb6
+To: Linux kernel mailing list <linux-kernel@vger.kernel.org>
+Subject: definite OMAP1610_IR-related typo
+Message-ID: <Pine.LNX.4.64.0701270326550.1000@CPE00045a9c397f-CM001225dbafb6>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.723, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, TW_NF 0.08)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rename the sysfs parameter initial_ra_kb to read_ahead_initial_kb,
-which hopefully is a more consistent and user friendly name.
 
-Signed-off-by: Fengguang Wu <wfg@mail.ustc.edu.cn>
----
- block/ll_rw_blk.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+  not sure what to do with this, it's all yours:
 
---- linux-2.6.20-rc4-mm1.orig/block/ll_rw_blk.c
-+++ linux-2.6.20-rc4-mm1/block/ll_rw_blk.c
-@@ -3992,7 +3992,7 @@ static struct queue_sysfs_entry queue_ra
- };
- 
- static struct queue_sysfs_entry queue_initial_ra_entry = {
--	.attr = {.name = "initial_ra_kb", .mode = S_IRUGO | S_IWUSR },
-+	.attr = {.name = "read_ahead_initial_kb", .mode = S_IRUGO | S_IWUSR },
- 	.show = queue_initial_ra_show,
- 	.store = queue_initial_ra_store,
- };
+========== OMAP1610_IR ==========
+./arch/arm/mach-omap1/devices.c:#if     defined(CONFIG_OMAP1610_IR) || defined(CONFIG_OMAP161O_IR_MODULE)
+========== OMAP161O_IR ==========
+./arch/arm/mach-omap1/devices.c:#if     defined(CONFIG_OMAP1610_IR) || defined(CONFIG_OMAP161O_IR_MODULE)
 
---
+  note first that one of those config vars has an "oh" while the other
+has a *zero*.  i'm pretty sure that's bad.
+
+  in any event, there's no such config variable of *either* spelling
+in any Kconfig file, but there *is* a more all-encompassing
+CONFIG_OMAP16XX confguration setting.
+
+-- 
+
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://www.fsdev.dreamhosters.com/wiki/index.php?title=Main_Page
+========================================================================
