@@ -1,42 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751887AbXA0Qg4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751909AbXA0Qq1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751887AbXA0Qg4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Jan 2007 11:36:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751891AbXA0Qg4
+	id S1751909AbXA0Qq1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Jan 2007 11:46:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751914AbXA0Qq0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Jan 2007 11:36:56 -0500
-Received: from agmk.net ([87.236.194.20]:2379 "EHLO mail.agmk.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751887AbXA0Qgz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Jan 2007 11:36:55 -0500
-From: =?utf-8?q?Pawe=C5=82_Sikora?= <pluto@agmk.net>
-To: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] KVM: 'asm' operand has impossible constraints
-Date: Sat, 27 Jan 2007 17:36:30 +0100
-User-Agent: KMail/1.9.6
-Cc: Avi Kivity <avi@qumranet.com>, caglar@pardus.org.tr,
-       kvm-devel@lists.sourceforge.net
-References: <200701260140.47760.caglar@pardus.org.tr> <45BB15F1.6020600@qumranet.com>
-In-Reply-To: <45BB15F1.6020600@qumranet.com>
+	Sat, 27 Jan 2007 11:46:26 -0500
+Received: from nf-out-0910.google.com ([64.233.182.187]:11487 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751909AbXA0Qq0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Jan 2007 11:46:26 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=g1m/0O/ijpQW3BFzldHyNqV38uIjkc+trzDD8d5R1X6xxs3u97+VziA39g+dgboxCgVyAYU5EWn3uU549Ei2NOrlMD0hJ0ivguFYFE2h82XZ5PtaEpyetu+cfNHAPHVrdpxUGSL06YLshAIg5oADIowZmJldghB73+TuPUq9E8o=
+Message-ID: <625fc13d0701270846n710e833cnb1926e9fd51d8b59@mail.gmail.com>
+Date: Sat, 27 Jan 2007 10:46:21 -0600
+From: "Josh Boyer" <jwboyer@gmail.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: git.kernel.org move (finally)... estimated week of Feb 5
+Cc: "Git Mailing List" <git@vger.kernel.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <45BAA82B.6000105@zytor.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200701271736.30271.pluto@agmk.net>
+References: <45BAA82B.6000105@zytor.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 27 of January 2007 10:05:53 Avi Kivity wrote:
+On 1/26/07, H. Peter Anvin <hpa@zytor.com> wrote:
+> Just for everyone's information...
+>
+> The git performance issues (especially) on kernel.org has been very
+> frustrating, obviously.  We're putting a dedicated git server in place
+> hopefully the week of February 5.
 
-> "g" appears to be equivalent to "rmi", if "i" is impossible, gcc is free
-> to use "r" or "m", no?
+For the hardware geeks out there, do you know what kind of machine it will be?
 
-`r'
-     A register operand is allowed provided that it is in a general
-     register.
-`g'
-     Any register, memory or immediate integer operand is allowed,
-     except for registers that are not general registers.
-
-so, it looks like g == !r for registers ( not general vs. general regs ).
+josh
