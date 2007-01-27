@@ -1,70 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932071AbXA0VAT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932082AbXA0VCN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932071AbXA0VAT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Jan 2007 16:00:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932074AbXA0VAT
+	id S932082AbXA0VCN (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Jan 2007 16:02:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932080AbXA0VCN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Jan 2007 16:00:19 -0500
-Received: from tmailer.gwdg.de ([134.76.10.23]:54001 "EHLO tmailer.gwdg.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932071AbXA0VAR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Jan 2007 16:00:17 -0500
-Date: Sat, 27 Jan 2007 21:59:57 +0100 (MET)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: Marc Perkel <mperkel@yahoo.com>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: Raid 10 question/problem [ot]
-In-Reply-To: <197171.96132.qm@web52509.mail.yahoo.com>
-Message-ID: <Pine.LNX.4.61.0701272138030.22295@yvahk01.tjqt.qr>
-References: <197171.96132.qm@web52509.mail.yahoo.com>
+	Sat, 27 Jan 2007 16:02:13 -0500
+Received: from imf21aec.mail.bellsouth.net ([205.152.59.69]:59256 "EHLO
+	imf21aec.mail.bellsouth.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932074AbXA0VCL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Jan 2007 16:02:11 -0500
+Message-ID: <45BBBDD0.7030809@bellsouth.net>
+Date: Sat, 27 Jan 2007 15:02:08 -0600
+From: Jay Cliburn <jacliburn@bellsouth.net>
+User-Agent: Thunderbird 1.5.0.9 (X11/20061223)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+To: jeff@garzik.org
+CC: Luca Tettamanti <kronos.it@gmail.com>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>, csnook@redhat.com,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       atl1-devel@lists.sourceforge.net
+Subject: Re: [PATCH 4/4] atl1: Ancillary C files for Attansic L1 driver
+References: <20070121210737.GE2702@osprey.hogchain.net> <20070121183151.4be61ebf.randy.dunlap@oracle.com> <45B43093.6060500@bellsouth.net> <20070122200004.GA12553@dreamland.darkstar.lan> <20070123112522.65aac61b@freekitty> <20070123211917.GA22109@dreamland.darkstar.lan>
+In-Reply-To: <20070123211917.GA22109@dreamland.darkstar.lan>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Luca Tettamanti wrote:
+[snip]
+> 
+> Anyway...
+> 
+> Unconditionally enable MSI in atl1 driver. Also remove some useless
+> #ifdef since pci_{en,dis}able_msi() are no-op when MSI support is not
+> configured in.
+> 
+> Signed-off-by: Luca Tettamanti <kronos.it@gmail.com>
 
-On Jan 27 2007 10:42, Marc Perkel wrote:
->> >
->> >I'm using Fedora Core 6. /dev/md0 and /dev/md1, buth of which are raid
->> >1 arrays survive the reboot. But when I make a raid 0 out of those two
->> >raid arrays that's what is vanishing.
->> 
->> That's interesting. I am using Aurora Corona [FC6+RHide], and all but
->> md0 vanishes. (Reason for that is that udev does not create the nodes
->> md1-md31 on boot, so mdadm cannot assemble the arrays.)
->
->What do you have to do to get UDEV to create /dev/md2? Is there a config
->file for that?
+Acked-by: Jay Cliburn <jacliburn@bellsouth.net>
 
-That's the big question. On openSUSE 10.2, all the md devices get created
-automatically. I suppose that happens as part of udev processing all the
-queued kernel events at bootup.
+I tested this patch today.  Works fine on my Asus M2V mainboard (Via 
+K8T890).
 
-On default FC6 install (i.e. without any raid), only /dev/md0 is present
-(like in Aurora). That alone, and that you got md1 there, and I don't, is
-strange.
+Here are the eth0 entries in /proc/interrupts before and after the patch.
 
-I think I found it. udev does not do md at all, for some reason.
-This line in /etc/rc.d/rc.sysinit is quite "offending":
+BEFORE:    36:   93   322091   IO-APIC-fasteoi   eth0
+AFTER:   2298:   85     7289   PCI-MSI-edge      eth0
 
-[ -x /sbin/nash ] && echo "raidautorun /dev/md0" | nash --quiet
+Jeff, shall I add this to the larger patch I'm working on for submittal 
+later this weekend, or do you just add it directly to netdev?  (I prefer 
+to do the former if it's okay with you.)
 
-Starting a init=/bin/bash prompt and doing "/usr/sbin/udevmonitor &" 
-there reveals:
+Jay
 
-bash-3.1# echo raidautorun /dev/md0 | /sbin/nash --quiet
-UEVENT[1169934663.372139] add@/block/md0
-bash-3.1# echo raidautorun /dev/md1 | /sbin/nash --quiet
-UEVENT[1169934667.601027] add@/block/md1
-
-No sign of md1. (Wtf here!) I can see why it's broken, but to nash every 
-md device sounds like the worst solution around. I'd say the Fedora boot 
-process is severely broken wrt. md. Well, what's your rc.sysinit looking 
-like, since you seem to be having a md1 floating around?
-
-
-
-	-`J'
--- 
+> ---
+>  Patch against current netdev tree.
+> 
+>  drivers/net/atl1/atl1.h       |    1 -
+>  drivers/net/atl1/atl1_main.c  |   22 +++++++---------------
+>  drivers/net/atl1/atl1_param.c |   13 -------------
+>  3 files changed, 7 insertions(+), 29 deletions(-)
+> 
+> diff --git a/drivers/net/atl1/atl1.h b/drivers/net/atl1/atl1.h
+> index 1d13e8f..0b30e1c 100644
+> --- a/drivers/net/atl1/atl1.h
+> +++ b/drivers/net/atl1/atl1.h
+> @@ -281,7 +281,6 @@ struct atl1_adapter {
+>  	struct atl1_smb smb;
+>  	struct atl1_cmb cmb;
+>  
+> -	int enable_msi;
+>  	u32 pci_state[16];
+>  };
+>  
+> diff --git a/drivers/net/atl1/atl1_main.c b/drivers/net/atl1/atl1_main.c
+> index c0b1555..68e6cd1 100644
+> --- a/drivers/net/atl1/atl1_main.c
+> +++ b/drivers/net/atl1/atl1_main.c
+> @@ -1793,18 +1793,12 @@ s32 atl1_up(struct atl1_adapter *adapter)
+>  		goto err_up;
+>  	}
+>  
+> -#ifdef CONFIG_PCI_MSI
+> -	if (adapter->enable_msi) {
+> -		err = pci_enable_msi(adapter->pdev);
+> -		if (err) {
+> -			dev_info(&adapter->pdev->dev, "Unable to enable MSI: %d\n", err);
+> -			adapter->enable_msi = 0;
+> -		}
+> -	}
+> -#endif
+> -	if (!adapter->enable_msi)
+> +	err = pci_enable_msi(adapter->pdev);
+> +	if (err) {
+> +		dev_info(&adapter->pdev->dev, "Unable to enable MSI: %d\n", err);
+>  		irq_flags |= IRQF_SHARED;
+> -
+> +	}
+> +	
+>  	err = request_irq(adapter->pdev->irq, &atl1_intr, irq_flags,
+>  			netdev->name, netdev);
+>  	if (unlikely(err))
+> @@ -1821,6 +1815,7 @@ s32 atl1_up(struct atl1_adapter *adapter)
+>  	free_irq(adapter->pdev->irq, netdev);
+>  
+>  err_up:
+> +	pci_disable_msi(adapter->pdev);
+>  	/* free rx_buffers */
+>  	atl1_clean_rx_ring(adapter);
+>  	return err;
+> @@ -1836,10 +1831,7 @@ void atl1_down(struct atl1_adapter *adapter)
+>  
+>  	atl1_irq_disable(adapter);
+>  	free_irq(adapter->pdev->irq, netdev);
+> -#ifdef CONFIG_PCI_MSI
+> -	if (adapter->enable_msi)
+> -		pci_disable_msi(adapter->pdev);
+> -#endif
+> +	pci_disable_msi(adapter->pdev);
+>  	atl1_reset_hw(&adapter->hw);
+>  	adapter->cmb.cmb->int_stats = 0;
+>  
+> diff --git a/drivers/net/atl1/atl1_param.c b/drivers/net/atl1/atl1_param.c
+> index 4732f43..caa2d83 100644
+> --- a/drivers/net/atl1/atl1_param.c
+> +++ b/drivers/net/atl1/atl1_param.c
+> @@ -68,10 +68,6 @@ static int num_flash_vendor = 0;
+>  module_param_array_named(flash_vendor, flash_vendor, int, &num_flash_vendor, 0);
+>  MODULE_PARM_DESC(flash_vendor, "SPI flash vendor");
+>  
+> -int enable_msi;
+> -module_param(enable_msi, int, 0444);
+> -MODULE_PARM_DESC(enable_msi, "Enable PCI MSI");
+> -
+>  #define DEFAULT_INT_MOD_CNT	100	/* 200us */
+>  #define MAX_INT_MOD_CNT		65000
+>  #define MIN_INT_MOD_CNT		50
+> @@ -211,13 +207,4 @@ void __devinit atl1_check_options(struct atl1_adapter *adapter)
+>  			adapter->hw.flash_vendor = (u8) (opt.def);
+>  		}
+>  	}
+> -
+> -	{			/* PCI MSI usage */
+> -
+> -#ifdef CONFIG_PCI_MSI
+> -		adapter->enable_msi = enable_msi;
+> -#else
+> -		adapter->enable_msi = 0;
+> -#endif
+> -	}
+>  }
