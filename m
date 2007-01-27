@@ -1,64 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751848AbXA0B0k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751831AbXA0BwJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751848AbXA0B0k (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jan 2007 20:26:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752160AbXA0B0k
+	id S1751831AbXA0BwJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jan 2007 20:52:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752267AbXA0BwJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jan 2007 20:26:40 -0500
-Received: from cavan.codon.org.uk ([217.147.92.49]:39618 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751848AbXA0B0j (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jan 2007 20:26:39 -0500
-Date: Sat, 27 Jan 2007 01:26:23 +0000
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Greg KH <gregkh@suse.de>
-Cc: Andrew Morton <akpm@osdl.org>, David Brownell <david-b@pacbell.net>,
-       linux-kernel@vger.kernel.org
-Message-ID: <20070127012623.GB13534@srcf.ucam.org>
-References: <20061219185223.GA13256@srcf.ucam.org> <200612201318.06976.david-b@pacbell.net> <20061221012924.GC32625@srcf.ucam.org> <200612201904.28681.david-b@pacbell.net> <20061221040648.GA1499@srcf.ucam.org> <20070125050009.GA8672@srcf.ucam.org> <20070126115905.66940ac9.akpm@osdl.org> <20070126204226.GB8407@suse.de>
+	Fri, 26 Jan 2007 20:52:09 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:39559 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752266AbXA0BwI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jan 2007 20:52:08 -0500
+Date: Fri, 26 Jan 2007 17:51:04 -0800
+From: Greg KH <greg@kroah.com>
+To: Justin Piszcz <jpiszcz@lucidpixels.com>
+Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
+       Alan Piszcz <ap@solarrain.com>
+Subject: Re: Kernel 2.6.19.2: Belkin UPS on Serial vs. USB
+Message-ID: <20070127015104.GA11553@kroah.com>
+References: <Pine.LNX.4.64.0701261250470.12467@p34.internal.lan>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070126204226.GB8407@suse.de>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-Subject: Re: [PATCH] Fix /sys/device/.../power/state regression
-X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
-X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
+In-Reply-To: <Pine.LNX.4.64.0701261250470.12467@p34.internal.lan>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 26, 2007 at 12:42:26PM -0800, Greg KH wrote:
+On Fri, Jan 26, 2007 at 12:54:02PM -0500, Justin Piszcz wrote:
+> When I disconnect my UPS from the wall, I have to wait 15-30 seconds 
+> before the USB drier 'polls' this information and tells me that the UPS is 
+> on battery power (via knutclient or syslog via nut):
+> 
+> ups@p34 POWER ALERT on Fri Jan 26 12:49:29 EST 2007
+> 
+> With a serial connection, I would get the alerts IMMEDIATELY (0.5-1 
+> seconds) after disconnecting the UPS.  My new machine does not have a 
+> serial port built-in, only a serial header, and of course does not come 
+> with an included cable, so I chose to use USB.
+> 
+> My question is, how do I change the polling time for the USB subsystem to 
+> match that of the serial port, or would I not want to do that for other 
+> reasons?
+> 
+> The reason I'd like to is I am not going to see any power alerts for 
+> unless there is a power outage for longer than 15-30 seconds.
 
-> No, it's not stable material, as drivers would have to be modified to
-> support it, and that is adding new stuff.  See my other comment about
-> why this was changed because it was broken...
+I think this is a userspace issue, as it's a userspace program that is
+doing the polling, right?  Try asking the developers of it about this.
 
-Which drivers? The current code simply bails if the bus (not the device) 
-supports the late_suspend method. In the PCI core, that function simply 
-calls the device's late_suspend method and does nothing else. My patch 
-simply alters the check so that the bus can veto the request if the 
-driver has such a method, and allow it to pass if it doesn't. To 
-summarise:
+I think you will find it is a FAQ...
 
-2.6.18 situation:
+thanks,
 
-/sys/devices/.../power/state call will succeed for all PCI devices, even 
-if the device suspend method must be called with interrupts disabled
-
-2.6.19 situation:
-
-/sys/devices/.../power/state call will fail for all PCI devices, even if 
-the PCI bus's suspend_late function is effectively a noop for that 
-device
-
-2.6.19+my patch situation:
-
-/sys/devices/.../power/state call will fail for PCI devices that 
-implement a suspend_late method, and succeed for other PCI devices
-
-Surely the latter of these is the closest to the expected behaviour?
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+greg k-h
