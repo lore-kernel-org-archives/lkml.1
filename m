@@ -1,68 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751943AbXA0RVU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752279AbXA0R1y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751943AbXA0RVU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Jan 2007 12:21:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751949AbXA0RVU
+	id S1752279AbXA0R1y (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Jan 2007 12:27:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752280AbXA0R1y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Jan 2007 12:21:20 -0500
-Received: from ug-out-1314.google.com ([66.249.92.169]:33717 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751943AbXA0RVT (ORCPT
+	Sat, 27 Jan 2007 12:27:54 -0500
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:39620 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752278AbXA0R1x (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Jan 2007 12:21:19 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding:from;
-        b=iTvDlQQBAC229PP2cxLXkzqmkhqx52LY+vCrdHR0dclTvJc44RN0VE5gTJyybRZY25/V3clOeNecrKE2/ZI0BNw7R6nMuiAkBFLc1MdY9JsUntl3kDYWu3874IvmgmS63tHFDYIeVSRIOdJp7O3OLB5E+S+++Atb5GQmr89VbvE=
-Message-ID: <45BB89FB.5000104@googlemail.com>
-Date: Sat, 27 Jan 2007 18:20:59 +0100
-User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
+	Sat, 27 Jan 2007 12:27:53 -0500
+Date: Sat, 27 Jan 2007 18:28:01 +0100
+From: Adrian Bunk <bunk@stusta.de>
+To: Malte =?utf-8?B?U2NocsO2ZGVy?= <MalteSch@gmx.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       "Vladimir V. Saveliev" <vs@namesys.com>, reiserfs-dev@namesys.com
+Subject: Re: 2.6.20-rc6: known unfixed regressions (part 2)
+Message-ID: <20070127172801.GK6017@stusta.de>
+References: <Pine.LNX.4.64.0701241847360.25027@woody.linux-foundation.org> <20070126181132.GN17836@stusta.de> <200701261916.29805.MalteSch@gmx.de>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: Andrew Morton <akpm@osdl.org>,
-       James Bottomley <James.Bottomley@SteelEye.com>
-Subject: Re: mm snapshot broken-out-2007-01-26-00-36.tar.gz uploaded
-References: <200701260837.l0Q8blBr011622@shell0.pdx.osdl.net>
-In-Reply-To: <200701260837.l0Q8blBr011622@shell0.pdx.osdl.net>
-X-Enigmail-Version: 0.94.1.1
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+In-Reply-To: <200701261916.29805.MalteSch@gmx.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-akpm@osdl.org napisał(a):
-> The mm snapshot broken-out-2007-01-26-00-36.tar.gz has been uploaded to
+On Fri, Jan 26, 2007 at 07:16:25PM +0100, Malte Schröder wrote:
+> On Friday 26 January 2007 19:11, Adrian Bunk wrote:
+> > Subject    : BUG: at mm/truncate.c:60 cancel_dirty_page()  (reiserfs)
+> > References : http://lkml.org/lkml/2007/1/7/117
+> >              http://lkml.org/lkml/2007/1/10/202
+> > Submitter  : Malte Schröder <MalteSch@gmx.de>
+> > Handled-By : Vladimir V. Saveliev <vs@namesys.com>
+> >              Nick Piggin <nickpiggin@yahoo.com.au>
+> > Patch      : http://lkml.org/lkml/2007/1/10/202
+> > Status     : problem is being discussed
 > 
->    ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/mm/broken-out-2007-01-26-00-36.tar.gz
-> 
+> This did not happen again.
 
-git-scsi-misc.patch typo fix.
+Unless I misunderstand this issue, we want this fixed before 2.6.20 
+because otherwise many people might see this BUG message.
 
-drivers/scsi/NCR_D700.c: In function ‘NCR_D700_probe_one’:
-drivers/scsi/NCR_D700.c:203: error: ‘struct NCR_700_Host_Parameters’ has no member named ‘busrt_length’
-make[2]: *** [drivers/scsi/NCR_D700.o] Błąd 1
-make[1]: *** [drivers/scsi] Błąd 2
-make: *** [drivers] Błąd 2
+cu
+Adrian
 
-Regards,
-Michal
+-- 
 
---
-Michal K. K. Piotrowski
-LTG - Linux Testers Group
-(http://www.stardust.webpages.pl/ltg/)
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
-Signed-off-by: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-
---- linux-work-clean/drivers/scsi/NCR_D700.c	2007-01-26 16:47:36.000000000 +0100
-+++ linux-work/drivers/scsi/NCR_D700.c	2007-01-27 18:13:42.000000000 +0100
-@@ -200,7 +200,7 @@ NCR_D700_probe_one(struct NCR_D700_priva
- 	hostdata->base = ioport_map(region, 64);
- 	hostdata->differential = (((1<<siop) & differential) != 0);
- 	hostdata->clock = NCR_D700_CLOCK_MHZ;
--	hostdata->busrt_length = 8;
-+	hostdata->burst_length = 8;
-
- 	/* and register the siop */
- 	host = NCR_700_detect(&NCR_D700_driver_template, hostdata, p->dev);
