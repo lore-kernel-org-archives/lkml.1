@@ -1,36 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751145AbXA0MhL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751580AbXA0Mtx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751145AbXA0MhL (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Jan 2007 07:37:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751736AbXA0MhL
+	id S1751580AbXA0Mtx (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Jan 2007 07:49:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751685AbXA0Mtx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Jan 2007 07:37:11 -0500
-Received: from adsl-ull-184-161.41-151.net24.it ([151.41.161.184]:10001 "EHLO
-	zeus.abinetworks.biz" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751145AbXA0MhK (ORCPT
+	Sat, 27 Jan 2007 07:49:53 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:41941 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751564AbXA0Mtx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Jan 2007 07:37:10 -0500
-X-Greylist: delayed 1591 seconds by postgrey-1.27 at vger.kernel.org; Sat, 27 Jan 2007 07:37:10 EST
-Message-ID: <45BB3FFF.1090806@abinetworks.biz>
-Date: Sat, 27 Jan 2007 13:05:19 +0100
-From: Gianluca Alberici <gianluca@abinetworks.biz>
-User-Agent: Mozilla Thunderbird 0.8 (X11/20041022)
-X-Accept-Language: en-us, en
+	Sat, 27 Jan 2007 07:49:53 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <45BB4A33.4070206@s5r6.in-berlin.de>
+Date: Sat, 27 Jan 2007 13:48:51 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.9) Gecko/20070121 SeaMonkey/1.0.7
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Nozmi status ?
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Pieter Palmers <pieterp@joow.be>
+CC: linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [RFC] cycle timer read extension for raw1394/libraw1394
+References: <45BA5CFD.6070900@joow.be> <45BB27AF.7030007@s5r6.in-berlin.de> <45BB2D67.7030608@joow.be>
+In-Reply-To: <45BB2D67.7030608@joow.be>
+X-Enigmail-Version: 0.94.1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Pieter Palmers wrote:
+> Stefan Richter wrote:
+>> Thus?
+>>     preempt_disable();
+>>     local_irq_save(flags);
+>>
+>>     read_cycle_timer;
+>>     read_time_of_day;
+>>
+>>     local_irq_restore(flags);
+>>     preempt_enable();
+>>
+>> in hpsb_read_cycle_timer.
+> My main issue was that I still had to figure out how to do this... I'm a
+>  very occasional kernel space programmer.
 
-What is the status of the HSDPA driver after 2.6.19.1 ? Is it part of 
-the kernel tree or not yet ?
-If not is there any version of ther nozomi pack which is gonna compile 
-under ker > 2.6.18 (the original one is not compiling anymore after 2.6.18).
+Unfortunately me too, and the level of ieee1394 driver maintenance shows it.
 
-Thanks,
+> Thanks for the hint, I'll do it like this.
+> 
+> I still have to check if I don't introduce a too long non-preemptible
+> path though.
 
-Gianluca
+It's a simple MMIO read (readl) and the do_gettimeofday, which should be
+fine.
+-- 
+Stefan Richter
+-=====-=-=== ---= ==-==
+http://arcgraph.de/sr/
