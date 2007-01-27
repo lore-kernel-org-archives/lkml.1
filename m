@@ -1,307 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751333AbXA0KsN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751517AbXA0K4l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751333AbXA0KsN (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Jan 2007 05:48:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751433AbXA0KsN
+	id S1751517AbXA0K4l (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Jan 2007 05:56:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751433AbXA0K4k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Jan 2007 05:48:13 -0500
-Received: from oola.is.scarlet.be ([193.74.71.23]:38029 "EHLO
-	oola.is.scarlet.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751333AbXA0KsM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Jan 2007 05:48:12 -0500
-Message-ID: <45BB2D67.7030608@joow.be>
-Date: Sat, 27 Jan 2007 11:45:59 +0100
-From: Pieter Palmers <pieterp@joow.be>
-User-Agent: Thunderbird 1.5.0.2 (X11/20060501)
-MIME-Version: 1.0
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-CC: linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [RFC] cycle timer read extension for raw1394/libraw1394
-References: <45BA5CFD.6070900@joow.be> <45BB27AF.7030007@s5r6.in-berlin.de>
-In-Reply-To: <45BB27AF.7030007@s5r6.in-berlin.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sat, 27 Jan 2007 05:56:40 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:48660 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751448AbXA0K4i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Jan 2007 05:56:38 -0500
+Date: Sat, 27 Jan 2007 02:51:37 -0800
+From: Andrew Morton <akpm@osdl.org>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: <linux-kernel@vger.kernel.org>, <containers@lists.osdl.org>,
+       <netdev@vger.kernel.org>, xfs-masters@oss.sgi.com, xfs@oss.sgi.com,
+       linux-scsi@vger.kernel.org, James.Bottomley@SteelEye.com,
+       minyard@acm.org, openipmi-developer@lists.sourceforge.net,
+       <tony.luck@intel.com>, linux-mips@linux-mips.org, ralf@linux-mips.org,
+       schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com, linux390@de.ibm.com,
+       linux-390@vm.marist.edu, paulus@samba.org, linuxppc-dev@ozlabs.org,
+       lethal@linux-sh.org, linuxsh-shmedia-dev@lists.sourceforge.net,
+       <ak@suse.de>, vojtech@suse.cz, clemens@ladisch.de, a.zummo@towertech.it,
+       rtc-linux@googlegroups.com, linux-parport@lists.infradead.org,
+       andrea@suse.de, tim@cyberelk.net, philb@gnu.org, aharkes@cs.cmu.edu,
+       coda@cs.cmu.edu, codalist@TELEMANN.coda.cs.cmu.edu, aia21@cantab.net,
+       linux-ntfs-dev@lists.sourceforge.net, mark.fasheh@oracle.com,
+       kurt.hackel@oracle.com
+Subject: Re: [PATCH 49/59] sysctl: Move init_irq_proc into init/main where
+ it belongs
+Message-Id: <20070127025137.9a2c65bb.akpm@osdl.org>
+In-Reply-To: <1168965684147-git-send-email-ebiederm@xmission.com>
+References: <m1ac0jc4no.fsf@ebiederm.dsl.xmission.com>
+	<1168965684147-git-send-email-ebiederm@xmission.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-DCC-scarlet.be-Metrics: oola 20001; Body=3 Fuz1=3 Fuz2=3
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stefan Richter wrote:
-> (Cc lkml)
-> 
-> Pieter Palmers wrote to linux1394-devel:
->> Attached are two patches containing an extension to libraw1394 and the
->> kernel stack, implementing the simultaneous read of the isochronous
->> cycle timer and the system clock (in usecs). This implements what has
->> been requested before on the list.
->>
->> There is one issue left, namely that I didn't disable preemption when
->> doing the timer reads. In order to have a reliable simultaneous read of
->> both values, I think IRQ's and preemption should be disabled while
->> reading them.
-> 
-> Thus?
-> 	preempt_disable();
-> 	local_irq_save(flags);
-> 
-> 	read_cycle_timer;
-> 	read_time_of_day;
-> 
-> 	local_irq_restore(flags);
-> 	preempt_enable();
-> 
-> in hpsb_read_cycle_timer.
-My main issue was that I still had to figure out how to do this... I'm a 
-  very occasional kernel space programmer. Thanks for the hint, I'll do 
-it like this.
+On Tue, 16 Jan 2007 09:39:54 -0700
+"Eric W. Biederman" <ebiederm@xmission.com> wrote:
 
-I still have to check if I don't introduce a too long non-preemptible 
-path though.
+> From: Eric W. Biederman <ebiederm@xmission.com> - unquoted
+> 
+> Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+> ---
+>  init/main.c     |    3 +++
+>  kernel/sysctl.c |    3 ---
+>  2 files changed, 3 insertions(+), 3 deletions(-)
+> 
+> diff --git a/init/main.c b/init/main.c
+> index 8b4a7d7..8af5c6e 100644
+> --- a/init/main.c
+> +++ b/init/main.c
+> @@ -691,6 +691,9 @@ static void __init do_basic_setup(void)
+>  #ifdef CONFIG_SYSCTL
+>  	sysctl_init();
+>  #endif
+> +#ifdef CONFIG_PROC_FS
+> +	init_irq_proc();
+> +#endif
+>  
+>  	do_initcalls();
+>  }
+> diff --git a/kernel/sysctl.c b/kernel/sysctl.c
+> index 600b333..7420761 100644
+> --- a/kernel/sysctl.c
+> +++ b/kernel/sysctl.c
+> @@ -1172,8 +1172,6 @@ static ctl_table dev_table[] = {
+>  	{ .ctl_name = 0 }
+>  };
+>  
+> -extern void init_irq_proc (void);
+> -
+>  static DEFINE_SPINLOCK(sysctl_lock);
+>  
+>  /* called under sysctl_lock */
+> @@ -1219,7 +1217,6 @@ void __init sysctl_init(void)
+>  {
+>  #ifdef CONFIG_PROC_SYSCTL
+>  	register_proc_table(root_table, proc_sys_root, &root_table_header);
+> -	init_irq_proc();
+>  #endif
+>  }
 
-> 
->> Kernel patch applies against 2.6.20-rc6.
->> libraw1394 patch applies against SVN.
->>
->> Please comment.
->>
->> Greets,
->>
->> Pieter Palmers
->>
->>
->> ------------------------------------------------------------------------
->>
->> diff -u ../linux-2.6/drivers/ieee1394/ieee1394_core.c ieee1394-2.6.20/ieee1394_core.c
->> --- ../linux-2.6/drivers/ieee1394/ieee1394_core.c	2007-01-26 18:29:07.000000000 +0100
->> +++ ieee1394-2.6.20/ieee1394_core.c	2007-01-26 18:37:16.000000000 +0100
->> @@ -34,6 +34,8 @@
->>  #include <linux/suspend.h>
->>  #include <linux/kthread.h>
->>  
->> +#include <linux/time.h>
->> +
->>  #include <asm/byteorder.h>
->>  
->>  #include "ieee1394_types.h"
-> 
-> No empty line necessary above #include <linux/time.h>.
-> 
->> @@ -940,6 +942,13 @@
->>  	}
->>  }
->>  
->> +void hpsb_read_cycle_timer(struct hpsb_host *host, u32 *ctr, u64 *local_time)
->> +{
->> +	struct timeval tv;
-> 
-> Empty line would be OK here.
-> 
->> +	*ctr = host->driver->devctl(host, GET_CYCLE_COUNTER, 0);
->> +	do_gettimeofday(&tv);
->> +	*local_time=tv.tv_sec*1000000+tv.tv_usec;
->> +}
-> 
-> Couldn't this overflow?
-> 	*local_time = tv.tv_sec * 1000000L + tv.tv_usec;
-> or
-> 	*local_time = tv.tv_sec * USEC_PER_SEC + tv.tv_usec;
-Indeed. thx.
+sparc64:
 
-> 
->>  static void abort_requests(struct hpsb_host *host)
->>  {
->> @@ -1209,6 +1218,7 @@
->>  EXPORT_SYMBOL(hpsb_read);
->>  EXPORT_SYMBOL(hpsb_write);
->>  EXPORT_SYMBOL(hpsb_packet_success);
->> +EXPORT_SYMBOL(hpsb_read_cycle_timer);
->>  
->>  /** highlevel.c **/
->>  EXPORT_SYMBOL(hpsb_register_highlevel);
->> diff -u ../linux-2.6/drivers/ieee1394/ieee1394_core.h ieee1394-2.6.20/ieee1394_core.h
->> --- ../linux-2.6/drivers/ieee1394/ieee1394_core.h	2007-01-26 18:11:17.000000000 +0100
->> +++ ieee1394-2.6.20/ieee1394_core.h	2007-01-26 18:37:16.000000000 +0100
->> @@ -227,4 +227,8 @@
->>  extern struct class hpsb_host_class;
->>  extern struct class *hpsb_protocol_class;
->>  
->> +/* Reads the cycle timer, and the local time at which it was read.
->> + */
->> +void hpsb_read_cycle_timer(struct hpsb_host *host, u32 *ctr, u64 *local_time);
->> +
->>  #endif /* _IEEE1394_CORE_H */
-> 
-> (This reminds me that many of ieee1394's exported symbols lack kerneldoc
-> comments.)
-I'll change this one into proper kerneldoc format.
+init/main.c: In function `do_basic_setup':
+init/main.c:707: warning: implicit declaration of function `init_irq_proc'
 
-> 
-> Alas I can't comment on the design & implementation of the userspace
-> ABI, that's out of my league.
-> 
->> diff -u ../linux-2.6/drivers/ieee1394/ieee1394-ioctl.h ieee1394-2.6.20/ieee1394-ioctl.h
->> --- ../linux-2.6/drivers/ieee1394/ieee1394-ioctl.h	2007-01-26 18:11:17.000000000 +0100
->> +++ ieee1394-2.6.20/ieee1394-ioctl.h	2007-01-26 18:40:04.000000000 +0100
->> @@ -100,5 +100,6 @@
->>  	_IO  ('#', 0x28)
->>  #define RAW1394_IOC_ISO_RECV_FLUSH		\
->>  	_IO  ('#', 0x29)
->> -
->> +#define RAW1394_IOC_GET_CYCLE_TIMER		\
->> +	_IOR ('#', 0x30, struct _raw1394_cycle_timer)
->>  #endif /* __IEEE1394_IOCTL_H */
->> diff -u ../linux-2.6/drivers/ieee1394/raw1394.c ieee1394-2.6.20/raw1394.c
->> --- ../linux-2.6/drivers/ieee1394/raw1394.c	2007-01-26 18:11:17.000000000 +0100
->> +++ ieee1394-2.6.20/raw1394.c	2007-01-26 18:37:16.000000000 +0100
->> @@ -2675,7 +2675,22 @@
->>  	return dma_region_mmap(&fi->iso_handle->data_buf, file, vma);
->>  }
->>  
->> -/* ioctl is only used for rawiso operations */
->> +/* read the Isochronous Cycle Counter along with the cpu time */
->> +static int raw1394_read_cycle_timer(struct file_info *fi, void __user * uaddr)
->> +{
->> +	struct _raw1394_cycle_timer ctr;
->> +	struct hpsb_host *host = fi->host;
->> +
->> +	hpsb_read_cycle_timer(host, &ctr.cycle_timer, &ctr.local_time);
->> +	if (copy_to_user(uaddr, &ctr, sizeof(ctr)))
->> +		return -EFAULT;
->> +
->> +	return 0;
->> +}
->> +
->> +/* ioctl is only used for rawiso operations,
->> + * and to read the cycle timer
->> + */
->>  static int raw1394_ioctl(struct inode *inode, struct file *file,
->>  			 unsigned int cmd, unsigned long arg)
->>  {
->> @@ -2772,6 +2787,13 @@
->>  		break;
->>  	}
->>  
->> +	switch(cmd) {
->> +		case RAW1394_IOC_GET_CYCLE_TIMER:
->> +			return raw1394_read_cycle_timer(fi, argp);
->> +		default:
->> +		break;
->> +	}
->> +
->>  	return -EINVAL;
->>  }
->>  
->> diff -u ../linux-2.6/drivers/ieee1394/raw1394.h ieee1394-2.6.20/raw1394.h
->> --- ../linux-2.6/drivers/ieee1394/raw1394.h	2007-01-26 13:15:58.000000000 +0100
->> +++ ieee1394-2.6.20/raw1394.h	2007-01-26 18:37:16.000000000 +0100
->> @@ -178,4 +178,11 @@
->>  	__s16 xmit_cycle;
->>  };
->>  
->> +/* Simultanous Isochronous Cycle Timer read and local clock read */
->> +struct _raw1394_cycle_timer {
->> +	__u32 cycle_timer;
->> +
->> +	/* local time in microseconds */
->> +	__u64 local_time;
->> +};
->>  #endif /* IEEE1394_RAW1394_H */
->>
->>
->> ------------------------------------------------------------------------
->>
->> Index: src/ieee1394-ioctl.h
->> ===================================================================
->> --- src/ieee1394-ioctl.h	(revision 168)
->> +++ src/ieee1394-ioctl.h	(working copy)
->> @@ -106,6 +106,6 @@
->>  	_IO  ('#', 0x28)
->>  #define RAW1394_IOC_ISO_RECV_FLUSH              \
->>  	_IO  ('#', 0x29)
->> -
->> -
->> +#define RAW1394_IOC_GET_CYCLE_TIMER		\
->> +	_IOR ('#', 0x30, struct _raw1394_cycle_timer)
->>  #endif /* __IEEE1394_IOCTL_H */
->> Index: src/raw1394.h
->> ===================================================================
->> --- src/raw1394.h	(revision 168)
->> +++ src/raw1394.h	(working copy)
->> @@ -118,7 +118,14 @@
->>  	RAW1394_MODIFY_FREE
->>  };
->>  
->> +/* Simultanous Isochronous Cycle Timer read and local clock read */
->> +struct raw1394_cycle_timer {
->> +	u_int32_t cycle_timer;
->>  
->> +	/* local time in microseconds */
->> +	u_int64_t local_time;
->> +};
->> +
->>  #ifdef __cplusplus
->>  extern "C" {
->>  #endif
->> @@ -328,6 +335,18 @@
->>   **/
->>  void raw1394_iso_shutdown(raw1394handle_t handle);
->>  
->> +/**
->> + * raw1394_get_cycle_timer - get the current value of the cycle timer
->> + * @handle: libraw1394 handle
->> + * @ctr: pointer to the target raw1394_cycle_timer struct
->> + *
->> + * Reads the cycle timer register, together with the system clock. It returns
->> + * a reasonable estimate of the system time the cycle timer was read.
->> + *
->> + * Returns: the error code of the ioctl, or 0 if successful.
->> + **/
-> 
-> The comment on accuracy could be dropped if preemption and IRQs are
-> disabled, right?
-> 
->> +int raw1394_read_cycle_timer(raw1394handle_t handle, struct raw1394_cycle_timer *ctr);
->> +
->>  typedef int raw1394_errcode_t;
->>  #define raw1394_make_errcode(ack, rcode) (((ack) << 16) | rcode)
->>  #define raw1394_internal_err(errcode) ((errcode) < 0)
->> Index: src/main.c
->> ===================================================================
->> --- src/main.c	(revision 168)
->> +++ src/main.c	(working copy)
->> @@ -478,3 +478,15 @@
->>          return 0;
->>  }
->>  
->> +int raw1394_read_cycle_timer(raw1394handle_t handle, struct raw1394_cycle_timer *ctr) 
->> +{
->> +	int err;
->> +
->> +	err = ioctl(handle->fd, RAW1394_IOC_GET_CYCLE_TIMER, ctr);
->> +	if(err != 0) {
->> +		return err;
->> +	}
->> +
->> +    return 0;
->> +}
->> +
->> Index: src/kernel-raw1394.h
->> ===================================================================
->> --- src/kernel-raw1394.h	(revision 168)
->> +++ src/kernel-raw1394.h	(working copy)
->> @@ -177,4 +177,11 @@
->>  	__s16 xmit_cycle;
->>  };
->>  
->> +/* Simultanous Isochronous Cycle Timer read and local clock read */
->> +struct _raw1394_cycle_timer {
->> +	__u32 cycle_timer;
->> +
->> +	/* local time in microseconds */
->> +	__u64 local_time;
->> +};
->>  #endif /* IEEE1394_RAW1394_H */
->>
->>
-> 
-
+I couldn't be bothered working out how init/main.c is supposed to get at
+its declaration of init_irq_proc().  It's not allowed to include
+linux/irq.h.
