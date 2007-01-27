@@ -1,46 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751295AbXA0JqM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750698AbXA0JtN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751295AbXA0JqM (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Jan 2007 04:46:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751125AbXA0JqL
+	id S1750698AbXA0JtN (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Jan 2007 04:49:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751125AbXA0JtM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Jan 2007 04:46:11 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:34649 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751295AbXA0JqK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Jan 2007 04:46:10 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <45BB1F42.4000404@s5r6.in-berlin.de>
-Date: Sat, 27 Jan 2007 10:45:38 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.9) Gecko/20070121 SeaMonkey/1.0.7
-MIME-Version: 1.0
-To: Pieter Palmers <pieterp@joow.be>
-CC: linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.20-rc6-rt2: kernel oops when ejecting cardbus firewire card
-References: <45BA743B.2080401@joow.be> <45BA85A1.1030707@s5r6.in-berlin.de>	<45BB106E.706@joow.be> <45BB14A7.6040400@s5r6.in-berlin.de> <45BB18DE.1090802@joow.be>
-In-Reply-To: <45BB18DE.1090802@joow.be>
-X-Enigmail-Version: 0.94.1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 27 Jan 2007 04:49:12 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:46852 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750698AbXA0JtL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Jan 2007 04:49:11 -0500
+Date: Sat, 27 Jan 2007 01:48:04 -0800
+From: Andrew Morton <akpm@osdl.org>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: linux-kernel@vger.kernel.org, Linus Torvalds <torvalds@osdl.org>,
+       Ingo Molnar <mingo@redhat.com>, Greg Kroah-Hartman <gregkh@suse.de>,
+       Christoph Hellwig <hch@infradead.org>, ltt-dev@shafik.org,
+       systemtap@sources.redhat.com, Douglas Niehaus <niehaus@eecs.ku.edu>,
+       "Martin J. Bligh" <mbligh@mbligh.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH 00/09] atomic.h : standardizing atomic primitives
+Message-Id: <20070127014804.5de71da2.akpm@osdl.org>
+In-Reply-To: <11697417541743-git-send-email-mathieu.desnoyers@polymtl.ca>
+References: <11697417541743-git-send-email-mathieu.desnoyers@polymtl.ca>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pieter Palmers wrote:
-> OTOH, dv1394 is scheduled for removal. Not that we should tolerate bugs
-> in the Linux kernel ;), but it lowers priority I guess.
+On Thu, 25 Jan 2007 11:15:45 -0500
+Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
 
-It does. (Plus I didn't have a Linux box with CardBus slot in operation
-for a while, but now I have.)
+> It mainly adds support for missing 64 bits cmpxchg and 64 bits atomic add
+> unless. Therefore, principally 64 bits architectures are targeted by these
+> patches. It also adds the complete list of atomic operations on the atomic_long
+> type.
 
-> For me the solution is simple: I don't need dv1394, so I just don't
-> build it anymore. It has the annoying tendency to auto-load when raw1394
-> is loaded.
-
-This is a correlation but not a causality. dv1394's and raw1394's
-_device_id tables for driver matching both match AV/C devices.
--- 
-Stefan Richter
--=====-=-=== ---= ==-==
-http://arcgraph.de/sr/
+Can you do s390 please?
