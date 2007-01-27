@@ -1,46 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932123AbXA0Wmd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932138AbXA0Wnb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932123AbXA0Wmd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Jan 2007 17:42:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932138AbXA0Wmd
+	id S932138AbXA0Wnb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Jan 2007 17:43:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932142AbXA0Wnb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Jan 2007 17:42:33 -0500
-Received: from cavan.codon.org.uk ([217.147.92.49]:41800 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932123AbXA0Wmc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Jan 2007 17:42:32 -0500
-Date: Sat, 27 Jan 2007 22:42:06 +0000
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Andrew Morton <akpm@osdl.org>, David Brownell <david-b@pacbell.net>,
-       Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org
-Message-ID: <20070127224206.GA26241@srcf.ucam.org>
-References: <20061219185223.GA13256@srcf.ucam.org> <200701261356.42171.david-b@pacbell.net> <20070126231521.GA12370@srcf.ucam.org> <200701261642.56896.david-b@pacbell.net> <20070126165657.663358ab.akpm@osdl.org> <20070127173804.GD3942@ucw.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070127173804.GD3942@ucw.cz>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-Subject: Re: [PATCH] Fix /sys/device/.../power/state regression
-X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
-X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
+	Sat, 27 Jan 2007 17:43:31 -0500
+Received: from www.osadl.org ([213.239.205.134]:55505 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S932138AbXA0Wna (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Jan 2007 17:43:30 -0500
+Subject: Re: Linux 2.6.20-rc6 - suspend / resume ata_piix
+From: Thomas Gleixner <tglx@linutronix.de>
+Reply-To: tglx@linutronix.de
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+In-Reply-To: <45BBD4CA.70303@garzik.org>
+References: <Pine.LNX.4.64.0701241847360.25027@woody.linux-foundation.org>
+	 <1169935901.17469.159.camel@localhost.localdomain>
+	 <45BBD4CA.70303@garzik.org>
+Content-Type: text/plain
+Date: Sat, 27 Jan 2007 23:44:02 +0100
+Message-Id: <1169937843.17469.163.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jan 27, 2007 at 05:38:04PM +0000, Pavel Machek wrote:
+On Sat, 2007-01-27 at 17:40 -0500, Jeff Garzik wrote:
+> > During the second resume the ATA interrupt gets disabled due to an
+> > unhandled interrupt.
+> > 
+> > This is 100% reproducible. So I can provide as much info as needed.
+> 
+> Is this a regression, or behavior that's always been present?
 
-> Change breaking that was 'introduce suspend early to fix suspend on
-> mac mini', by Linus, IIRC. So no, it is not easy to revert this one.
+No, that's new. Something post 2.6.19
 
-But it's easy to fix it. Either drivers need suspend routines that are 
-called without interrupts enabled, or they don't. The current situation 
-is that the interface is broken regardless of which is the case - the 
-situation with the patch is that the interface only stops working for 
-drivers that need the suspend routine to be called with disabled 
-interrupts. 
+> If its a regression, what changeset caused the problem?
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Hey. I just discovered that crap. I'm going to bisect tomorrow. Bed time
+here in good old Europe. :)
+
+	tglx
+
+
