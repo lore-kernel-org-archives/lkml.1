@@ -1,60 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752320AbXA0SbK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752323AbXA0Sbl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752320AbXA0SbK (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Jan 2007 13:31:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752321AbXA0SbK
+	id S1752323AbXA0Sbl (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Jan 2007 13:31:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752322AbXA0Sbl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Jan 2007 13:31:10 -0500
-Received: from web52505.mail.yahoo.com ([206.190.48.188]:32786 "HELO
-	web52505.mail.yahoo.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752319AbXA0SbJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Jan 2007 13:31:09 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=KI7Cthe3Gi8iP71YZ2yJWTltUPF/+1LCUW3yZlGS5Xt21Y56Oaza+wcpt+Sp+5GJRXZ/22iyn1LJEEgMgtNq8F7pBMGIZsMiTHUSxRiFj+0XxCqAZ802Tw3zsA/rxW6ikgiuxE1+6VqQb6pE3McWU/hCLJECtcOk0U0DkfYH3CA=;
-X-YMail-OSG: Frc9SjsVM1kfs_mL9h.vT3LfhIlOks.uNgjbv9Gf6qwpHCvwrrhMJAPclIlnRmvhXg--
-Date: Sat, 27 Jan 2007 10:31:06 -0800 (PST)
-From: Marc Perkel <mperkel@yahoo.com>
-Subject: Re: Raid 10 question/problem [ot]
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.61.0701271909060.22295@yvahk01.tjqt.qr>
+	Sat, 27 Jan 2007 13:31:41 -0500
+Received: from tmailer.gwdg.de ([134.76.10.23]:49000 "EHLO tmailer.gwdg.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752319AbXA0Sbk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Jan 2007 13:31:40 -0500
+Date: Sat, 27 Jan 2007 19:30:48 +0100 (MET)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: Arnaldo Carvalho de Melo <acme@redhat.com>
+cc: Sam Ravnborg <sam@ravnborg.org>, linux-kernel@vger.kernel.org
+Subject: Re: External module Makefile with generated C file
+In-Reply-To: <45BB96B4.30907@redhat.com>
+Message-ID: <Pine.LNX.4.61.0701271929220.22295@yvahk01.tjqt.qr>
+References: <45BB96B4.30907@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <593246.19408.qm@web52505.mail.yahoo.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---- Jan Engelhardt <jengelh@linux01.gwdg.de> wrote:
+> ctracer_methods.o: ctracer_methods.c
 
-> 
-> >I'm a little stumped trying to set up raid 10. I
-> set
-> >it up and it worked but after a reboot it forgets
-> my
-> >raid setup.
-> 
-> Now, let's hear the name of the distribution you
-> use.
-> 
-> BTW, is md1 also disappearing?
-> 
+$(obj)/ctracer_methods.o: $(src)/ctracer_methods.c
 
-Sorry about that. I'm using Fedora Core 6. /dev/md0
-and /dev/md1, buth of which are raid 1 arrays survive
-the reboot. But when I make a raid 0 out of those two
-raid arrays that's what is vanishing.
-
-Thanks for your help.
+$(src)/ctracer_methods.c:
+  ...
 
 
 
- 
-____________________________________________________________________________________
-Finding fabulous fares is fun.  
-Let Yahoo! FareChase search your favorite travel sites to find flight and hotel bargains.
-http://farechase.yahoo.com/promo-generic-14795097
+I don't know if $(obj) or $(src) is the right thing, but something along
+these lines is required for OOT.
+
+	-`J'
+-- 
