@@ -1,73 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752317AbXA0SMt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752320AbXA0SbK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752317AbXA0SMt (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Jan 2007 13:12:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752316AbXA0SMs
+	id S1752320AbXA0SbK (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Jan 2007 13:31:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752321AbXA0SbK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Jan 2007 13:12:48 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:40444 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752314AbXA0SMs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Jan 2007 13:12:48 -0500
-Message-ID: <45BB96B4.30907@redhat.com>
-Date: Sat, 27 Jan 2007 16:15:16 -0200
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
-Organization: Red Hat Inc.
-User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
+	Sat, 27 Jan 2007 13:31:10 -0500
+Received: from web52505.mail.yahoo.com ([206.190.48.188]:32786 "HELO
+	web52505.mail.yahoo.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752319AbXA0SbJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Jan 2007 13:31:09 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=KI7Cthe3Gi8iP71YZ2yJWTltUPF/+1LCUW3yZlGS5Xt21Y56Oaza+wcpt+Sp+5GJRXZ/22iyn1LJEEgMgtNq8F7pBMGIZsMiTHUSxRiFj+0XxCqAZ802Tw3zsA/rxW6ikgiuxE1+6VqQb6pE3McWU/hCLJECtcOk0U0DkfYH3CA=;
+X-YMail-OSG: Frc9SjsVM1kfs_mL9h.vT3LfhIlOks.uNgjbv9Gf6qwpHCvwrrhMJAPclIlnRmvhXg--
+Date: Sat, 27 Jan 2007 10:31:06 -0800 (PST)
+From: Marc Perkel <mperkel@yahoo.com>
+Subject: Re: Raid 10 question/problem [ot]
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.61.0701271909060.22295@yvahk01.tjqt.qr>
 MIME-Version: 1.0
-To: Sam Ravnborg <sam@ravnborg.org>
-CC: linux-kernel@vger.kernel.org
-Subject: External module Makefile with generated C file
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <593246.19408.qm@web52505.mail.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sam,
 
-      I'm trying to create a external module that involves generating 
-one of the source files needed for
-the module, I'm using this Makefile:
+--- Jan Engelhardt <jengelh@linux01.gwdg.de> wrote:
 
-[acme@filo ctracer_example]$ cat Makefile
-obj-m := ctracer.o
+> 
+> >I'm a little stumped trying to set up raid 10. I
+> set
+> >it up and it worked but after a reboot it forgets
+> my
+> >raid setup.
+> 
+> Now, let's hear the name of the distribution you
+> use.
+> 
+> BTW, is md1 also disappearing?
+> 
 
-ctracer-y := ctracer_methods.o ctracer_jprobe.o
+Sorry about that. I'm using Fedora Core 6. /dev/md0
+and /dev/md1, buth of which are raid 1 arrays survive
+the reboot. But when I make a raid 0 out of those two
+raid arrays that's what is vanishing.
 
-CLASS=sock
-KDIR := /lib/modules/$(shell uname -r)/build
-PWD := $(shell pwd)
+Thanks for your help.
 
-default:
-        $(MAKE) -C $(KDIR) SUBDIRS=$(PWD) modules
-clean:
-        rm -f *.mod.c *.ko *.o ctracer_methods.c
 
-# Files generated that shall be removed upon make clean
-clean-files := ctracer_methods.c
 
-ctracer_methods.o: ctracer_methods.c
-
-ctracer_methods.c:
-        ctracer /usr/lib/debug/lib/modules/$(shell uname -r)/vmlinux 
-$(CLASS) > ctracer_methods.c
-
-[acme@filo ctracer_example]$
-
-But I get this as the result:
-
-[acme@filo ctracer_example]$ make
-make -C /lib/modules/2.6.19-1.2895.fc6/build 
-SUBDIRS=/home/acme/git/pahole/ctracer_example modules
-make[1]: Entering directory `/usr/src/kernels/2.6.19-1.2895.fc6-i686'
-make[2]: *** No rule to make target 
-`/home/acme/git/pahole/ctracer_example/ctracer_methods.o', needed by 
-`/home/acme/git/pahole/ctracer_example/ctracer.o'.  Stop.
-make[1]: *** [_module_/home/acme/git/pahole/ctracer_example] Error 2
-make[1]: Leaving directory `/usr/src/kernels/2.6.19-1.2895.fc6-i686'
-make: *** [default] Error 2
-[acme@filo ctracer_example]$
-
-What is the stupid thing I'm doing? :-)
-
-- Arnaldo
+ 
+____________________________________________________________________________________
+Finding fabulous fares is fun.  
+Let Yahoo! FareChase search your favorite travel sites to find flight and hotel bargains.
+http://farechase.yahoo.com/promo-generic-14795097
