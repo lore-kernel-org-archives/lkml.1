@@ -1,186 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751708AbXA0A2V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752144AbXA0A3Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751708AbXA0A2V (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jan 2007 19:28:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751741AbXA0A2V
+	id S1752144AbXA0A3Z (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jan 2007 19:29:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751735AbXA0A3Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jan 2007 19:28:21 -0500
-Received: from father.pmc-sierra.com ([216.241.224.13]:61500 "HELO
-	father.pmc-sierra.bc.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751708AbXA0A2U (ORCPT
+	Fri, 26 Jan 2007 19:29:25 -0500
+Received: from ug-out-1314.google.com ([66.249.92.170]:60798 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752144AbXA0A3Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jan 2007 19:28:20 -0500
-Message-ID: <45BA9C9D.7060302@pmc-sierra.com>
-From: Marc St-Jean <Marc_St-Jean@pmc-sierra.com>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Cc: linux-mips@linux-mips.org, linux-serial@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] serial driver PMC MSP71xx, kernel linux-mips.git mast
-	 er
-Date: Fri, 26 Jan 2007 16:28:13 -0800
+	Fri, 26 Jan 2007 19:29:24 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=s5/VEaf9k0Vp8PoSCPx+hcXD4qSpoR0Al/Wrjxa428zxdA67pWatyAAKi05WB9+g2UoDbDuu4RrpIoR9CeFQZqcOWJCqDlUHjHeqYiVF9AKos+GZ6W8MAKyjSPo7dF9yfROQHWPJeVh4+QR3L0b8vBU1VFUsC7NfnrcInlPp4Es=
+Message-ID: <6bffcb0e0701261629v254ed84h62ea86001c5ebeee@mail.gmail.com>
+Date: Sat, 27 Jan 2007 01:29:22 +0100
+From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: mm snapshot broken-out-2007-01-26-00-36.tar.gz uploaded
+Cc: "Andrew Morton" <akpm@osdl.org>
+In-Reply-To: <200701260837.l0Q8blBr011622@shell0.pdx.osdl.net>
 MIME-Version: 1.0
-X-Mailer: Internet Mail Service (5.5.2657.72)
-x-originalarrivaltime: 27 Jan 2007 00:28:13.0800 (UTC) FILETIME=[0802DE80:01C741AA]
-user-agent: Thunderbird 1.5.0.9 (X11/20061206)
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200701260837.l0Q8blBr011622@shell0.pdx.osdl.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 26/01/07, akpm@osdl.org <akpm@osdl.org> wrote:
+> The mm snapshot broken-out-2007-01-26-00-36.tar.gz has been uploaded to
+>
+>    ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/mm/broken-out-2007-01-26-00-36.tar.gz
 
+It almost work :)
 
-Sergei Shtylyov wrote:
-> Hello.
-> 
-> Marc St-Jean wrote:
-> 
->  >> > Index: linux_2_6/drivers/serial/8250.c
->  >> > ===================================================================
->  >> > RCS file: linux_2_6/drivers/serial/8250.c,v
->  >> > retrieving revision 1.1.1.7
->  >> > diff -u -r1.1.1.7 8250.c
->  >> > --- linux_2_6/drivers/serial/8250.c   19 Oct 2006 21:00:58 -0000     
->  >>1.1.1.7
->  >> > +++ linux_2_6/drivers/serial/8250.c   24 Jan 2007 23:55:27 -0000
->  >>[...]
->  >> > @@ -333,6 +334,8 @@
->  >> >   static void
->  >> >   serial_out(struct uart_8250_port *up, int offset, int value)
-> 
->  >>   Your patch is clearly garbled again, something added an extra space
->  >>to all
->  >>lines stating with space... :-/
-> 
->  > I see that but was under the impression cvs diff did that so all lines
->  > lineup correctly whether they have a +, -, or neither.
-> 
->     Yes. And your mailer has probably added another space to lines already
-> begginign with space. Some mailers tend to do it, don't know sure why... 
-> :-/
+I'm getting a lot of
 
-I'll look into it for the next patch.
+BUG: sleeping function called from invalid context at mm/slab.c:3038
+in_atomic():0, irqs_disabled():1
+no locks held by swapper/1.
+irq event stamp: 537144
+hardirqs last  enabled at (537143): [<c0167c31>] mod_zone_page_state+0x55/0x67
+hardirqs last disabled at (537144): [<c0179569>] cache_alloc_refill+0x361/0x640
+softirqs last  enabled at (536600): [<c012a38a>] __do_softirq+0xd9/0xde
+softirqs last disabled at (536595): [<c012a3d9>] do_softirq+0x4a/0x7a
+ [<c010544a>] show_trace_log_lvl+0x1a/0x2f
+ [<c0105b63>] show_trace+0x12/0x14
+ [<c0105c25>] dump_stack+0x16/0x18
+ [<c011e2c0>] __might_sleep+0xe5/0xeb
+ [<c0179c09>] kmem_cache_alloc+0x28/0xe4
+ [<c0179601>] cache_alloc_refill+0x3f9/0x640
+ [<c0179c79>] kmem_cache_alloc+0x98/0xe4
+ [<c011b2a3>] pgd_alloc+0x12/0x14
+ [<c0122c07>] mm_init+0xa3/0xf5
+ [<c0124229>] mm_alloc+0x2b/0x2e
+ [<c0182ac3>] do_execve+0x81/0x210
+ [<c01026a0>] sys_execve+0x3f/0x8a
+ [<c01043f0>] syscall_call+0x7/0xb
+ =======================
 
+http://www.stardust.webpages.pl/files/tbf/euridica/mm-snapshot-2007-01-26/mm-dmesg
+http://www.stardust.webpages.pl/files/tbf/euridica/mm-snapshot-2007-01-26/mm-config
 
->  > It doesn't affect applying the patches for me, did you try?
-> 
->     I hadn't but I had no doubts it'll fail... just tried, not a single 
-> hunk
-> applied. :-]
-> 
->  >> >   {
->  >> > +     /* Save the offset before it's remapped */
->  >> > +     int save_offset = offset;
-> 
->  >>    Is there real need to save this? What regshift equals for this UART?
-> 
->  > Yes, we have a regshift of 2 on this SoC and it could be different on 
-> other
->  > SoCs which reuse the UART IP.
-> 
->     Agreed then (though still seems avoidable).
-> 
->  >> >       offset = map_8250_out_reg(up, offset) << up->port.regshift;
-> 
->  >> >       switch (up->port.iotype) {
->  >> > @@ -359,6 +362,19 @@
->  >> >                       writeb(value, up->port.membase + offset);
->  >> >               break;
->  >> >
->  >> > +     case UPIO_DWAPB:
->  >> > +             /* Save the LCR value so it can be re-written when a
->  >> > +              * Busy Detect interrupt occurs. */
->  >> > +             if (save_offset == UART_LCR)
->  >> > +                     up->lcr = value;
->  >> > +             writeb(value, up->port.membase + offset);
->  >> > +             /* Read the IER to ensure any interrupt is cleared 
-> before
->  >> > +              * returning from ISR. */
->  >> > +             if ((save_offset == UART_TX || save_offset == 
-> UART_IER) &&
-> 
->  >>    Not sure how an IER read ensures that...
-> 
->  > It's just a dummy read to ensure that any writes which clear 
-> interrupts have
->  > reached the device before returning from the IRQ.
-> 
->     Hm, isn't it CPU write buffer flush? Shouldn't this be handled more
-> generically?
+Regards,
+Michal
 
-No because this peripheral is across an internal SoC bus. Only a read
-accessing it will ensure the write is complete. We must insure the
-interrupt source is cleared to avoid spurious interrupts.
-
-
-> [...]
->  >> > Index: linux_2_6/drivers/serial/8250_early.c
->  >> > ===================================================================
->  >> > RCS file: linux_2_6/drivers/serial/8250_early.c,v
->  >> > retrieving revision 1.1.1.3
->  >> > diff -u -r1.1.1.3 8250_early.c
->  >> > --- linux_2_6/drivers/serial/8250_early.c     19 Oct 2006 20:08:20
->  >>-0000      1.1.1.3
->  >> > +++ linux_2_6/drivers/serial/8250_early.c     24 Jan 2007 23:55:27 
-> -0000
->  >> > @@ -46,7 +46,7 @@
->  >> >
->  >> >   static unsigned int __init serial_in(struct uart_port *port, int
->  >>offset)
->  >> >   {
->  >> > -     if (port->iotype == UPIO_MEM)
->  >> > +     if (port->iotype == UPIO_MEM || port->iotype == UPIO_DWAPB)
->  >> >               return readb(port->membase + offset);
->  >> >       else
->  >> >               return inb(port->iobase + offset);
->  >> > @@ -54,7 +54,7 @@
->  >> >
->  >> >   static void __init serial_out(struct uart_port *port, int offset,
->  >>int value)
->  >> >   {
->  >> > -     if (port->iotype == UPIO_MEM)
->  >> > +     if (port->iotype == UPIO_MEM || port->iotype == UPIO_DWAPB)
->  >> >               writeb(value, port->membase + offset);
->  >> >       else
->  >> >               outb(value, port->iobase + offset);
->  >> > @@ -233,7 +233,7 @@
->  >> >               return 0;
->  >> >
->  >> >       /* Try to start the normal driver on a matching line.  */
->  >> > -     mmio = (port->iotype == UPIO_MEM);
->  >> > +     mmio = (port->iotype == UPIO_MEM || port->iotype == 
-> UPIO_DWAPB);
->  >> >       line = serial8250_start_console(port, device->options);
->  >> >       if (line < 0)
->  >> >               printk("No ttyS device at %s 0x%lx for console\n",
-> 
->  >>    From your 8250_eraly.c changes I can conclude regshift == 1 (it 
-> doesn't
->  >>currently support other cases). So, serial_pot() doesn't need
->  >>save_offset. :-)
-> 
->  > Our regshift is definitely 2 on this SoC and we don't have any 
-> problems with
->  > console output before the serial driver opens. So assuming it's using
->  > 8250_early.c for initial console output I can only conclude that it 
-> works
-> 
->     It comes into action only if you specify console=uart,... kernel option
-> for the eraly console support.  The "plain" 8250 console driver is 
-> containded
-> within 8250.c itself.
-> 
->  > because UART_TX is offset 0 and the port was left configured from our
->  > ROM monitor.
-> 
->     Well, this part of the patch can't be considered complete then (how LSR
-> polling is going to work?), so should either be removed or the proper 
-> regshift
-> support added.
-
-Since we don't require it I will drop the 8250_early.c changes from the patch.
-
-I've tested the "mm tree" patch for the backup timer and it works, although
-the output seems a little choppy at times. I'll drop the UART_BUG_DWTHRE flag
-and associated code.
-
-Marc
+-- 
+Michal K. K. Piotrowski
+LTG - Linux Testers Group
+(http://www.stardust.webpages.pl/ltg/)
