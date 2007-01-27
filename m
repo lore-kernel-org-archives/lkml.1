@@ -1,49 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932080AbXA0VqV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932111AbXA0WDF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932080AbXA0VqV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Jan 2007 16:46:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752391AbXA0VqV
+	id S932111AbXA0WDF (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Jan 2007 17:03:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932095AbXA0WDF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Jan 2007 16:46:21 -0500
-Received: from mail.enter.net ([216.193.128.40]:50867 "EHLO mmail.enter.net"
+	Sat, 27 Jan 2007 17:03:05 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:35886 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751796AbXA0VqV convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Jan 2007 16:46:21 -0500
-From: "D. Hazelton" <dhazelton@enter.net>
-To: caglar@pardus.org.tr
-Subject: Re: [PATCH] KVM: 'asm' operand has impossible constraints
-Date: Sat, 27 Jan 2007 16:46:18 -0500
-User-Agent: KMail/1.9.5
-Cc: Avi Kivity <avi@qumranet.com>, lkml <linux-kernel@vger.kernel.org>,
-       kvm-devel@lists.sourceforge.net
-References: <200701260140.47760.caglar@pardus.org.tr> <45BB15F1.6020600@qumranet.com> <200701272328.31532.caglar@pardus.org.tr>
-In-Reply-To: <200701272328.31532.caglar@pardus.org.tr>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200701271646.19067.dhazelton@enter.net>
+	id S1751851AbXA0WDD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Jan 2007 17:03:03 -0500
+Date: Sat, 27 Jan 2007 14:02:33 -0800
+From: Andrew Morton <akpm@osdl.org>
+To: "Parag Warudkar" <parag.warudkar@gmail.com>
+Cc: dsd@gentoo.org, joerg@hydrops.han.de, ak@suse.de,
+       linux-kernel@vger.kernel.org
+Subject: Re: [Bugme-new] [Bug 7891] New: vdso page is no longer mapped for
+Message-Id: <20070127140233.203ef7d3.akpm@osdl.org>
+In-Reply-To: <82e4877d0701271201n3aa5bdf6v7c5fb8e41ee98c80@mail.gmail.com>
+References: <82e4877d0701271201n3aa5bdf6v7c5fb8e41ee98c80@mail.gmail.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 27 January 2007 16:28, S.Çağlar Onur wrote:
-> 27 Oca 2007 Cts tarihinde, Avi Kivity şunları yazmıştı:
-> > The patch looks correct, but I don't understand the gcc error message.
-> > Are we sure this isn't a gcc 4.2 bug?
-> >
-> > "g" appears to be equivalent to "rmi", if "i" is impossible, gcc is free
-> > to use "r" or "m", no?
->
-> Accorgind to GCC devs. its not a bug
-> (http://gcc.gnu.org/bugzilla/show_bug.cgi?id=29808), on comment #5 the
-> problem described like;
->
-> "g" means "r"+"i" so the register allocator in the -O0 case is selecting
-> "r" while in the optimize case is selecting "i"
+On Sat, 27 Jan 2007 15:01:51 -0500
+"Parag Warudkar" <parag.warudkar@gmail.com> wrote:
 
-Sounds like a bug to me! After all, shouldn't the different sections of code 
-be selecting the *same* bits ?
+> Here is a patch that does what Andrew Morton suggested (plus some more
+> as explained below) .
+> Patch inline below and also attached in case there is whitespace
+> damage. Compile tested on i386 with make defconfig; make. If anyone
+> can test on other arches and provide feedback that'd be great.
 
-DRH
+Thanks - I can test elf on powerpc.  Does anyone remember how to
+create a.out executables?
+
+Assuming this works, I'm not surew what to do with it.  Jam it into
+2.6.20, I guess.  The lateness*largeness product is somewhat high though.
+
+You appear to have generated this patch against an oldish kernel - there are
+CONFIG_COMPAT_VDSO changes in there which might muck things up.  I'll see...
