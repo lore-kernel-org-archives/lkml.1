@@ -1,155 +1,179 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932082AbXA0VCN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932077AbXA0VEf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932082AbXA0VCN (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Jan 2007 16:02:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932080AbXA0VCN
+	id S932077AbXA0VEf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Jan 2007 16:04:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932089AbXA0VEf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Jan 2007 16:02:13 -0500
-Received: from imf21aec.mail.bellsouth.net ([205.152.59.69]:59256 "EHLO
-	imf21aec.mail.bellsouth.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932074AbXA0VCL (ORCPT
+	Sat, 27 Jan 2007 16:04:35 -0500
+Received: from nic.NetDirect.CA ([216.16.235.2]:35249 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932077AbXA0VEe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Jan 2007 16:02:11 -0500
-Message-ID: <45BBBDD0.7030809@bellsouth.net>
-Date: Sat, 27 Jan 2007 15:02:08 -0600
-From: Jay Cliburn <jacliburn@bellsouth.net>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061223)
+	Sat, 27 Jan 2007 16:04:34 -0500
+X-Originating-Ip: 74.109.98.130
+Date: Sat, 27 Jan 2007 16:03:58 -0500 (EST)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@CPE00045a9c397f-CM001225dbafb6
+To: Linux kernel mailing list <linux-kernel@vger.kernel.org>
+cc: kkeil@suse.de
+Subject: [PATCH] ISDN: Rename some debugging macros to not resemble CONFIG
+ options.
+Message-ID: <Pine.LNX.4.64.0701271600150.10901@CPE00045a9c397f-CM001225dbafb6>
 MIME-Version: 1.0
-To: jeff@garzik.org
-CC: Luca Tettamanti <kronos.it@gmail.com>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>, csnook@redhat.com,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       atl1-devel@lists.sourceforge.net
-Subject: Re: [PATCH 4/4] atl1: Ancillary C files for Attansic L1 driver
-References: <20070121210737.GE2702@osprey.hogchain.net> <20070121183151.4be61ebf.randy.dunlap@oracle.com> <45B43093.6060500@bellsouth.net> <20070122200004.GA12553@dreamland.darkstar.lan> <20070123112522.65aac61b@freekitty> <20070123211917.GA22109@dreamland.darkstar.lan>
-In-Reply-To: <20070123211917.GA22109@dreamland.darkstar.lan>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.723, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, TW_TX 0.08)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Luca Tettamanti wrote:
-[snip]
-> 
-> Anyway...
-> 
-> Unconditionally enable MSI in atl1 driver. Also remove some useless
-> #ifdef since pci_{en,dis}able_msi() are no-op when MSI support is not
-> configured in.
-> 
-> Signed-off-by: Luca Tettamanti <kronos.it@gmail.com>
 
-Acked-by: Jay Cliburn <jacliburn@bellsouth.net>
+  Rename some of the debugging macros for ISDN AVM so that they don't
+resemble kernel config settings, as they're primarily for author
+debugging instead.
 
-I tested this patch today.  Works fine on my Asus M2V mainboard (Via 
-K8T890).
+Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
 
-Here are the eth0 entries in /proc/interrupts before and after the patch.
+---
 
-BEFORE:    36:   93   322091   IO-APIC-fasteoi   eth0
-AFTER:   2298:   85     7289   PCI-MSI-edge      eth0
+  Replace the "CONFIG_" prefix with an "AVM_" prefix so that the macro
+name is still relatively meaningful.
 
-Jeff, shall I add this to the larger patch I'm working on for submittal 
-later this weekend, or do you just add it directly to netdev?  (I prefer 
-to do the former if it's okay with you.)
 
-Jay
+ drivers/isdn/hardware/avm/b1dma.c |   14 +++++++-------
+ drivers/isdn/hardware/avm/c4.c    |   16 ++++++++--------
+ 2 files changed, 15 insertions(+), 15 deletions(-)
 
-> ---
->  Patch against current netdev tree.
-> 
->  drivers/net/atl1/atl1.h       |    1 -
->  drivers/net/atl1/atl1_main.c  |   22 +++++++---------------
->  drivers/net/atl1/atl1_param.c |   13 -------------
->  3 files changed, 7 insertions(+), 29 deletions(-)
-> 
-> diff --git a/drivers/net/atl1/atl1.h b/drivers/net/atl1/atl1.h
-> index 1d13e8f..0b30e1c 100644
-> --- a/drivers/net/atl1/atl1.h
-> +++ b/drivers/net/atl1/atl1.h
-> @@ -281,7 +281,6 @@ struct atl1_adapter {
->  	struct atl1_smb smb;
->  	struct atl1_cmb cmb;
->  
-> -	int enable_msi;
->  	u32 pci_state[16];
->  };
->  
-> diff --git a/drivers/net/atl1/atl1_main.c b/drivers/net/atl1/atl1_main.c
-> index c0b1555..68e6cd1 100644
-> --- a/drivers/net/atl1/atl1_main.c
-> +++ b/drivers/net/atl1/atl1_main.c
-> @@ -1793,18 +1793,12 @@ s32 atl1_up(struct atl1_adapter *adapter)
->  		goto err_up;
->  	}
->  
-> -#ifdef CONFIG_PCI_MSI
-> -	if (adapter->enable_msi) {
-> -		err = pci_enable_msi(adapter->pdev);
-> -		if (err) {
-> -			dev_info(&adapter->pdev->dev, "Unable to enable MSI: %d\n", err);
-> -			adapter->enable_msi = 0;
-> -		}
-> -	}
-> -#endif
-> -	if (!adapter->enable_msi)
-> +	err = pci_enable_msi(adapter->pdev);
-> +	if (err) {
-> +		dev_info(&adapter->pdev->dev, "Unable to enable MSI: %d\n", err);
->  		irq_flags |= IRQF_SHARED;
-> -
-> +	}
-> +	
->  	err = request_irq(adapter->pdev->irq, &atl1_intr, irq_flags,
->  			netdev->name, netdev);
->  	if (unlikely(err))
-> @@ -1821,6 +1815,7 @@ s32 atl1_up(struct atl1_adapter *adapter)
->  	free_irq(adapter->pdev->irq, netdev);
->  
->  err_up:
-> +	pci_disable_msi(adapter->pdev);
->  	/* free rx_buffers */
->  	atl1_clean_rx_ring(adapter);
->  	return err;
-> @@ -1836,10 +1831,7 @@ void atl1_down(struct atl1_adapter *adapter)
->  
->  	atl1_irq_disable(adapter);
->  	free_irq(adapter->pdev->irq, netdev);
-> -#ifdef CONFIG_PCI_MSI
-> -	if (adapter->enable_msi)
-> -		pci_disable_msi(adapter->pdev);
-> -#endif
-> +	pci_disable_msi(adapter->pdev);
->  	atl1_reset_hw(&adapter->hw);
->  	adapter->cmb.cmb->int_stats = 0;
->  
-> diff --git a/drivers/net/atl1/atl1_param.c b/drivers/net/atl1/atl1_param.c
-> index 4732f43..caa2d83 100644
-> --- a/drivers/net/atl1/atl1_param.c
-> +++ b/drivers/net/atl1/atl1_param.c
-> @@ -68,10 +68,6 @@ static int num_flash_vendor = 0;
->  module_param_array_named(flash_vendor, flash_vendor, int, &num_flash_vendor, 0);
->  MODULE_PARM_DESC(flash_vendor, "SPI flash vendor");
->  
-> -int enable_msi;
-> -module_param(enable_msi, int, 0444);
-> -MODULE_PARM_DESC(enable_msi, "Enable PCI MSI");
-> -
->  #define DEFAULT_INT_MOD_CNT	100	/* 200us */
->  #define MAX_INT_MOD_CNT		65000
->  #define MIN_INT_MOD_CNT		50
-> @@ -211,13 +207,4 @@ void __devinit atl1_check_options(struct atl1_adapter *adapter)
->  			adapter->hw.flash_vendor = (u8) (opt.def);
->  		}
->  	}
-> -
-> -	{			/* PCI MSI usage */
-> -
-> -#ifdef CONFIG_PCI_MSI
-> -		adapter->enable_msi = enable_msi;
-> -#else
-> -		adapter->enable_msi = 0;
-> -#endif
-> -	}
->  }
+diff --git a/drivers/isdn/hardware/avm/b1dma.c b/drivers/isdn/hardware/avm/b1dma.c
+index ddd47cd..1e2d38e 100644
+--- a/drivers/isdn/hardware/avm/b1dma.c
++++ b/drivers/isdn/hardware/avm/b1dma.c
+@@ -29,7 +29,7 @@
+
+ static char *revision = "$Revision: 1.1.2.3 $";
+
+-#undef CONFIG_B1DMA_DEBUG
++#undef AVM_B1DMA_DEBUG
+
+ /* ------------------------------------------------------------- */
+
+@@ -391,16 +391,16 @@ static void b1dma_dispatch_tx(avmcard *card)
+ 			_put_slice(&p, skb->data, len);
+ 		}
+ 		txlen = (u8 *)p - (u8 *)dma->sendbuf.dmabuf;
+-#ifdef CONFIG_B1DMA_DEBUG
++#ifdef AVM_B1DMA_DEBUG
+ 		printk(KERN_DEBUG "tx: put msg len=%d\n", txlen);
+ #endif
+ 	} else {
+ 		txlen = skb->len-2;
+-#ifdef CONFIG_B1DMA_POLLDEBUG
++#ifdef AVM_B1DMA_POLLDEBUG
+ 		if (skb->data[2] == SEND_POLLACK)
+ 			printk(KERN_INFO "%s: send ack\n", card->name);
+ #endif
+-#ifdef CONFIG_B1DMA_DEBUG
++#ifdef AVM_B1DMA_DEBUG
+ 		printk(KERN_DEBUG "tx: put 0x%x len=%d\n",
+ 		       skb->data[2], txlen);
+ #endif
+@@ -450,7 +450,7 @@ static void b1dma_handle_rx(avmcard *card)
+ 	u32 ApplId, MsgLen, DataB3Len, NCCI, WindowSize;
+ 	u8 b1cmd =  _get_byte(&p);
+
+-#ifdef CONFIG_B1DMA_DEBUG
++#ifdef AVM_B1DMA_DEBUG
+ 	printk(KERN_DEBUG "rx: 0x%x %lu\n", b1cmd, (unsigned long)dma->recvlen);
+ #endif
+
+@@ -515,7 +515,7 @@ static void b1dma_handle_rx(avmcard *card)
+ 		break;
+
+ 	case RECEIVE_START:
+-#ifdef CONFIG_B1DMA_POLLDEBUG
++#ifdef AVM_B1DMA_POLLDEBUG
+ 		printk(KERN_INFO "%s: receive poll\n", card->name);
+ #endif
+ 		if (!suppress_pollack)
+@@ -601,7 +601,7 @@ static void b1dma_handle_interrupt(avmcard *card)
+ 				rxlen = (dma->recvlen + 3) & ~3;
+ 				b1dma_writel(card, dma->recvbuf.dmaaddr+4, AMCC_RXPTR);
+ 				b1dma_writel(card, rxlen, AMCC_RXLEN);
+-#ifdef CONFIG_B1DMA_DEBUG
++#ifdef AVM_B1DMA_DEBUG
+ 			} else {
+ 				printk(KERN_ERR "%s: rx not complete (%d).\n",
+ 					card->name, rxlen);
+diff --git a/drivers/isdn/hardware/avm/c4.c b/drivers/isdn/hardware/avm/c4.c
+index 2a3eb38..6f5efa8 100644
+--- a/drivers/isdn/hardware/avm/c4.c
++++ b/drivers/isdn/hardware/avm/c4.c
+@@ -28,8 +28,8 @@
+ #include <linux/isdn/capilli.h>
+ #include "avmcard.h"
+
+-#undef CONFIG_C4_DEBUG
+-#undef CONFIG_C4_POLLDEBUG
++#undef AVM_C4_DEBUG
++#undef AVM_C4_POLLDEBUG
+
+ /* ------------------------------------------------------------- */
+
+@@ -420,7 +420,7 @@ static void c4_dispatch_tx(avmcard *card)
+
+ 	skb = skb_dequeue(&dma->send_queue);
+ 	if (!skb) {
+-#ifdef CONFIG_C4_DEBUG
++#ifdef AVM_C4_DEBUG
+ 		printk(KERN_DEBUG "%s: tx underrun\n", card->name);
+ #endif
+ 		return;
+@@ -444,16 +444,16 @@ static void c4_dispatch_tx(avmcard *card)
+ 			_put_slice(&p, skb->data, len);
+ 		}
+ 		txlen = (u8 *)p - (u8 *)dma->sendbuf.dmabuf;
+-#ifdef CONFIG_C4_DEBUG
++#ifdef AVM_C4_DEBUG
+ 		printk(KERN_DEBUG "%s: tx put msg len=%d\n", card->name, txlen);
+ #endif
+ 	} else {
+ 		txlen = skb->len-2;
+-#ifdef CONFIG_C4_POLLDEBUG
++#ifdef AVM_C4_POLLDEBUG
+ 		if (skb->data[2] == SEND_POLLACK)
+ 			printk(KERN_INFO "%s: ack to c4\n", card->name);
+ #endif
+-#ifdef CONFIG_C4_DEBUG
++#ifdef AVM_C4_DEBUG
+ 		printk(KERN_DEBUG "%s: tx put 0x%x len=%d\n",
+ 				card->name, skb->data[2], txlen);
+ #endif
+@@ -508,7 +508,7 @@ static void c4_handle_rx(avmcard *card)
+ 	u32 cidx;
+
+
+-#ifdef CONFIG_C4_DEBUG
++#ifdef AVM_C4_DEBUG
+ 	printk(KERN_DEBUG "%s: rx 0x%x len=%lu\n", card->name,
+ 				b1cmd, (unsigned long)dma->recvlen);
+ #endif
+@@ -586,7 +586,7 @@ static void c4_handle_rx(avmcard *card)
+ 		break;
+
+ 	case RECEIVE_START:
+-#ifdef CONFIG_C4_POLLDEBUG
++#ifdef AVM_C4_POLLDEBUG
+ 		printk(KERN_INFO "%s: poll from c4\n", card->name);
+ #endif
+ 		if (!suppress_pollack)
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://www.fsdev.dreamhosters.com/wiki/index.php?title=Main_Page
+========================================================================
