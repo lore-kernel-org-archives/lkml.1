@@ -1,160 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751970AbXA0UrH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752385AbXA0Urg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751970AbXA0UrH (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Jan 2007 15:47:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752169AbXA0UrH
+	id S1752385AbXA0Urg (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Jan 2007 15:47:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752389AbXA0Urg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Jan 2007 15:47:07 -0500
-Received: from www.osadl.org ([213.239.205.134]:55958 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751970AbXA0UrG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Jan 2007 15:47:06 -0500
-Subject: Re: Linux 2.6.20-rc6 - supend lockdep warning
-From: Thomas Gleixner <tglx@linutronix.de>
-Reply-To: tglx@linutronix.de
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>
-In-Reply-To: <Pine.LNX.4.64.0701241847360.25027@woody.linux-foundation.org>
-References: <Pine.LNX.4.64.0701241847360.25027@woody.linux-foundation.org>
-Content-Type: text/plain
-Date: Sat, 27 Jan 2007 21:47:34 +0100
-Message-Id: <1169930854.17469.114.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+	Sat, 27 Jan 2007 15:47:36 -0500
+Received: from ug-out-1314.google.com ([66.249.92.170]:3471 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752385AbXA0Urf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Jan 2007 15:47:35 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=k9K92HNRRCIGPRgaQtz+V6DhmAHmrOWTR0Yf7c4jjPomWfXXBNo/G+2VkDX3FKfyKImUUcVarXCvUC7rfY504+/fErX2hedzHCIX5dcgdlQcU10i/jJ8YFhes6ES47hgrdZrsfLOFWSvBPY5Uhbi/c3H7w+OhA59IrZkF1nl2WE=
+From: Alon Bar-Lev <alon.barlev@gmail.com>
+To: Andrew Morton <akpm@osdl.org>
+Subject: [PATCH] Dynamic kernel command-line - fixups
+Date: Sat, 27 Jan 2007 22:49:26 +0200
+User-Agent: KMail/1.9.6
+Cc: linux-kernel@vger.kernel.org, "Bernhard Walle" <bwalle@suse.de>,
+       Jeff Dike <jdike@addtoit.com>
+References: <200701230010.34323.alon.barlev@gmail.com> <9e0cf0bf0701270034w491ff69dnb6019b4dd30f6d54@mail.gmail.com> <20070127004411.b0d5872e.akpm@osdl.org>
+In-Reply-To: <20070127004411.b0d5872e.akpm@osdl.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200701272249.28163.alon.barlev@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-01-24 at 18:58 -0800, Linus Torvalds wrote:
-> It's been more than a week since -rc5, but I blame everybody (including 
-> me) being away for Linux.conf.au and then me waiting for a few days 
-> afterwards to let everybody sync up.
 
-2.6.20-rc6-git (today) on a dual core laptop:
+Remove in-source externs, linux/init.h is included in all cases.
+This is a fixups for "Dynamic kernel command-line" patch.
 
-PM: Preparing system for mem sleep
-Disabling non-boot CPUs ...
+It includes the ia64 fixup already added.
+It also includes some uml __init fixups so that we can __initdata also its command_line.
 
-=======================================================
-[ INFO: possible circular locking dependency detected ]
-2.6.20-rc6 #3
--------------------------------------------------------
-pm-suspend/3601 is trying to acquire lock:
- (cpu_bitmask_lock){--..}, at: [<c032cd2b>] mutex_lock+0x1c/0x1f
+[[[  I will resubmit it to next mm version as you requested,
+I don't mean to bother you. if you find this simple
+enough you have an option to include this. ]]]
 
-but task is already holding lock:
- (workqueue_mutex){--..}, at: [<c032cd2b>] mutex_lock+0x1c/0x1f
+Signed-off-by: Alon Bar-Lev <alon.barlev@gmail.com>
 
-which lock already depends on the new lock.
+---
 
-the existing dependency chain (in reverse order) is:
-
--> #3 (workqueue_mutex){--..}:
-       [<c0140880>] __lock_acquire+0x8dd/0xa04
-       [<c0140c90>] lock_acquire+0x56/0x6f
-       [<c032cb80>] __mutex_lock_slowpath+0xe5/0x274
-       [<c032cd2b>] mutex_lock+0x1c/0x1f
-       [<c0136d14>] __create_workqueue+0x61/0x136
-       [<f8bfe62e>] cpufreq_governor_dbs+0xa1/0x30e [cpufreq_ondemand]
-       [<c02b2c3c>] __cpufreq_governor+0x9e/0xd2
-       [<c02b2df7>] __cpufreq_set_policy+0x187/0x209
-       [<c02b3056>] store_scaling_governor+0x164/0x1b1
-       [<c02b24f9>] store+0x37/0x48
-       [<c01aeb8d>] sysfs_write_file+0xb3/0xdb
-       [<c0175e0f>] vfs_write+0xaf/0x163
-       [<c017645d>] sys_write+0x3d/0x61
-       [<c0103f8c>] sysenter_past_esp+0x5d/0x99
-       [<ffffffff>] 0xffffffff
-
--> #2 (dbs_mutex){--..}:
-       [<c0140880>] __lock_acquire+0x8dd/0xa04
-       [<c0140c90>] lock_acquire+0x56/0x6f
-       [<c032cb80>] __mutex_lock_slowpath+0xe5/0x274
-       [<c032cd2b>] mutex_lock+0x1c/0x1f
-       [<f8bfe612>] cpufreq_governor_dbs+0x85/0x30e [cpufreq_ondemand]
-       [<c02b2c3c>] __cpufreq_governor+0x9e/0xd2
-       [<c02b2df7>] __cpufreq_set_policy+0x187/0x209
-       [<c02b3056>] store_scaling_governor+0x164/0x1b1
-       [<c02b24f9>] store+0x37/0x48
-       [<c01aeb8d>] sysfs_write_file+0xb3/0xdb
-       [<c0175e0f>] vfs_write+0xaf/0x163
-       [<c017645d>] sys_write+0x3d/0x61
-       [<c0103f8c>] sysenter_past_esp+0x5d/0x99
-       [<ffffffff>] 0xffffffff
-
--> #1 (&policy->lock){--..}:
-       [<c0140880>] __lock_acquire+0x8dd/0xa04
-       [<c0140c90>] lock_acquire+0x56/0x6f
-       [<c032cb80>] __mutex_lock_slowpath+0xe5/0x274
-       [<c032cd2b>] mutex_lock+0x1c/0x1f
-       [<c02b2ea2>] cpufreq_set_policy+0x29/0x79
-       [<c02b3804>] cpufreq_add_dev+0x342/0x48a
-       [<c025a799>] sysdev_driver_register+0x5f/0xa9
-       [<c02b2ad5>] cpufreq_register_driver+0xac/0x175
-       [<c046fd3f>] centrino_init+0x9b/0xa2
-       [<c01004c4>] init+0x11b/0x2c8
-       [<c0104c87>] kernel_thread_helper+0x7/0x10
-       [<ffffffff>] 0xffffffff
-
--> #0 (cpu_bitmask_lock){--..}:
-       [<c0140781>] __lock_acquire+0x7de/0xa04
-       [<c0140c90>] lock_acquire+0x56/0x6f
-       [<c032cb80>] __mutex_lock_slowpath+0xe5/0x274
-       [<c032cd2b>] mutex_lock+0x1c/0x1f
-       [<c0144840>] lock_cpu_hotplug+0x6c/0x78
-       [<c02b3264>] cpufreq_driver_target+0x28/0x5e
-       [<c02b398e>] cpufreq_cpu_callback+0x42/0x52
-       [<c0133cd3>] notifier_call_chain+0x20/0x31
-       [<c0133d00>] raw_notifier_call_chain+0x8/0xa
-       [<c014452e>] _cpu_down+0x47/0x1fb
-       [<c01448c7>] disable_nonboot_cpus+0x7b/0x100
-       [<c014853f>] enter_state+0x91/0x1bb
-       [<c01486ef>] state_store+0x86/0x9c
-       [<c01ae8e8>] subsys_attr_store+0x20/0x25
-       [<c01aeb8d>] sysfs_write_file+0xb3/0xdb
-       [<c0175e0f>] vfs_write+0xaf/0x163
-       [<c017645d>] sys_write+0x3d/0x61
-       [<c0103f8c>] sysenter_past_esp+0x5d/0x99
-       [<ffffffff>] 0xffffffff
-
-other info that might help us debug this:
-
-4 locks held by pm-suspend/3601:
- #0:  (pm_mutex){--..}, at: [<c01484ee>] enter_state+0x40/0x1bb
- #1:  (cpu_add_remove_lock){--..}, at: [<c032cd2b>] mutex_lock+0x1c/0x1f
- #2:  (cache_chain_mutex){--..}, at: [<c032cd2b>] mutex_lock+0x1c/0x1f
- #3:  (workqueue_mutex){--..}, at: [<c032cd2b>] mutex_lock+0x1c/0x1f
-
-stack backtrace:
- [<c0104ff6>] show_trace_log_lvl+0x1a/0x2f
- [<c01056af>] show_trace+0x12/0x14
- [<c0105761>] dump_stack+0x16/0x18
- [<c013f101>] print_circular_bug_tail+0x5f/0x68
- [<c0140781>] __lock_acquire+0x7de/0xa04
- [<c0140c90>] lock_acquire+0x56/0x6f
- [<c032cb80>] __mutex_lock_slowpath+0xe5/0x274
- [<c032cd2b>] mutex_lock+0x1c/0x1f
- [<c0144840>] lock_cpu_hotplug+0x6c/0x78
- [<c02b3264>] cpufreq_driver_target+0x28/0x5e
- [<c02b398e>] cpufreq_cpu_callback+0x42/0x52
- [<c0133cd3>] notifier_call_chain+0x20/0x31
- [<c0133d00>] raw_notifier_call_chain+0x8/0xa
- [<c014452e>] _cpu_down+0x47/0x1fb
- [<c01448c7>] disable_nonboot_cpus+0x7b/0x100
- [<c014853f>] enter_state+0x91/0x1bb
- [<c01486ef>] state_store+0x86/0x9c
- [<c01ae8e8>] subsys_attr_store+0x20/0x25
- [<c01aeb8d>] sysfs_write_file+0xb3/0xdb
- [<c0175e0f>] vfs_write+0xaf/0x163
- [<c017645d>] sys_write+0x3d/0x61
- [<c0103f8c>] sysenter_past_esp+0x5d/0x99
- =======================
-Breaking affinity for irq 1
-Breaking affinity for irq 12
-Breaking affinity for irq 21
-Breaking affinity for irq 22
-Breaking affinity for irq 219
-CPU 1 is now offline
-
-
+diff -urNp linux-2.6.20-rc4-mm1.dyn-cmdline/arch/ia64/kernel/efi.c linux-2.6.20-rc4-mm1.dyn-cmdline.fixups/arch/ia64/kernel/efi.c
+--- linux-2.6.20-rc4-mm1.dyn-cmdline/arch/ia64/kernel/efi.c	2007-01-22 23:32:30.000000000 +0200
++++ linux-2.6.20-rc4-mm1.dyn-cmdline.fixups/arch/ia64/kernel/efi.c	2007-01-27 21:56:07.000000000 +0200
+@@ -413,7 +413,6 @@ efi_init (void)
+ 	efi_char16_t *c16;
+ 	u64 efi_desc_size;
+ 	char *cp, vendor[100] = "unknown";
+-	extern char __initdata boot_command_line[];
+ 	int i;
+ 
+ 	/* it's too early to be able to use the standard kernel command line support... */
+diff -urNp linux-2.6.20-rc4-mm1.dyn-cmdline/arch/ia64/kernel/sal.c linux-2.6.20-rc4-mm1.dyn-cmdline.fixups/arch/ia64/kernel/sal.c
+--- linux-2.6.20-rc4-mm1.dyn-cmdline/arch/ia64/kernel/sal.c	2007-01-22 23:32:30.000000000 +0200
++++ linux-2.6.20-rc4-mm1.dyn-cmdline.fixups/arch/ia64/kernel/sal.c	2007-01-27 21:57:07.000000000 +0200
+@@ -194,7 +194,6 @@ static void __init
+ chk_nointroute_opt(void)
+ {
+ 	char *cp;
+-	extern char __initdata boot_command_line[];
+ 
+ 	for (cp = boot_command_line; *cp; ) {
+ 		if (memcmp(cp, "nointroute", 10) == 0) {
+diff -urNp linux-2.6.20-rc4-mm1.dyn-cmdline/arch/parisc/mm/init.c linux-2.6.20-rc4-mm1.dyn-cmdline.fixups/arch/parisc/mm/init.c
+--- linux-2.6.20-rc4-mm1.dyn-cmdline/arch/parisc/mm/init.c	2007-01-22 23:32:30.000000000 +0200
++++ linux-2.6.20-rc4-mm1.dyn-cmdline.fixups/arch/parisc/mm/init.c	2007-01-27 22:06:51.000000000 +0200
+@@ -77,7 +77,6 @@ static void __init mem_limit_func(void)
+ {
+ 	char *cp, *end;
+ 	unsigned long limit;
+-	extern char __initdata boot_command_line[];
+ 
+ 	/* We need this before __setup() functions are called */
+ 
+diff -urNp linux-2.6.20-rc4-mm1.dyn-cmdline/arch/um/include/user_util.h linux-2.6.20-rc4-mm1.dyn-cmdline.fixups/arch/um/include/user_util.h
+--- linux-2.6.20-rc4-mm1.dyn-cmdline/arch/um/include/user_util.h	2007-01-22 23:32:31.000000000 +0200
++++ linux-2.6.20-rc4-mm1.dyn-cmdline.fixups/arch/um/include/user_util.h	2007-01-27 21:57:41.000000000 +0200
+@@ -38,8 +38,6 @@ extern unsigned long long highmem;
+ 
+ extern char host_info[];
+ 
+-extern char __initdata boot_command_line[];
+-
+ extern unsigned long _stext, _etext, _sdata, _edata, __bss_start, _end;
+ extern unsigned long _unprotected_end;
+ extern unsigned long brk_start;
+diff -urNp linux-2.6.20-rc4-mm1.dyn-cmdline/arch/um/kernel/um_arch.c linux-2.6.20-rc4-mm1.dyn-cmdline.fixups/arch/um/kernel/um_arch.c
+--- linux-2.6.20-rc4-mm1.dyn-cmdline/arch/um/kernel/um_arch.c	2007-01-22 23:32:31.000000000 +0200
++++ linux-2.6.20-rc4-mm1.dyn-cmdline.fixups/arch/um/kernel/um_arch.c	2007-01-27 22:28:48.000000000 +0200
+@@ -44,9 +44,9 @@
+ #define DEFAULT_COMMAND_LINE "root=98:0"
+ 
+ /* Changed in linux_main and setup_arch, which run before SMP is started */
+-static char command_line[COMMAND_LINE_SIZE] = { 0 };
++static char __initdata command_line[COMMAND_LINE_SIZE] = { 0 };
+ 
+-static void add_arg(char *arg)
++static void __init add_arg(char *arg)
+ {
+ 	if (strlen(command_line) + strlen(arg) + 1 > COMMAND_LINE_SIZE) {
+ 		printf("add_arg: Too many command line arguments!\n");
+@@ -331,7 +331,7 @@ EXPORT_SYMBOL(end_iomem);
+ 
+ extern char __binary_start;
+ 
+-int linux_main(int argc, char **argv)
++int __init linux_main(int argc, char **argv)
+ {
+ 	unsigned long avail, diff;
+ 	unsigned long virtmem_size, max_physmem;
+diff -urNp linux-2.6.20-rc4-mm1.dyn-cmdline/arch/x86_64/kernel/head64.c linux-2.6.20-rc4-mm1.dyn-cmdline.fixups/arch/x86_64/kernel/head64.c
+--- linux-2.6.20-rc4-mm1.dyn-cmdline/arch/x86_64/kernel/head64.c	2007-01-22 23:32:31.000000000 +0200
++++ linux-2.6.20-rc4-mm1.dyn-cmdline.fixups/arch/x86_64/kernel/head64.c	2007-01-27 21:57:26.000000000 +0200
+@@ -34,8 +34,6 @@ static void __init clear_bss(void)
+ #define OLD_CL_BASE_ADDR        0x90000
+ #define OLD_CL_OFFSET           0x90022
+ 
+-extern char __initdata boot_command_line[];
+-
+ static void __init copy_bootdata(char *real_mode_data)
+ {
+ 	int new_data;
