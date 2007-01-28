@@ -1,105 +1,164 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932601AbXA1NeS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932545AbXA1Nft@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932601AbXA1NeS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jan 2007 08:34:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932630AbXA1NeR
+	id S932545AbXA1Nft (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jan 2007 08:35:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932585AbXA1Nfs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jan 2007 08:34:17 -0500
-Received: from mail.gmx.net ([213.165.64.20]:41284 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S932603AbXA1Ndq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jan 2007 08:33:46 -0500
-Cc: rml@novell.com, ttb@tentacle.dhs.org, nickpiggin@yahoo.com.au,
-       cijoml@volny.cz, linuxppc-dev@ozlabs.org, anton@samba.org,
-       paulus@samba.org, livio@eecg.toronto.edu, petero2@telia.com, hch@lst.de,
-       gd@spherenet.de, alan@lxorguk.ukuu.org.uk, linux-ide@vger.kernel.org,
-       B.Zolnierkiewicz@elka.pw.edu.pl, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="utf-8"
-Date: Sun, 28 Jan 2007 14:33:44 +0100
-From: "Uwe Bugla" <uwe.bugla@gmx.de>
-In-Reply-To: <20070127174230.GN6017@stusta.de>
-Message-ID: <20070128133344.214070@gmx.net>
+	Sun, 28 Jan 2007 08:35:48 -0500
+Received: from [217.111.56.2] ([217.111.56.2]:55140 "EHLO semtex.sncag.com"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S932545AbXA1Nfr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Jan 2007 08:35:47 -0500
+To: Greg KH <greg@kroah.com>
+Cc: Rainer Weikusat <rweikusat@sncag.com>, torvalds@linux-foundation.org,
+       bunk@stusta.de, linux-kernel@vger.kernel.org
+Subject: Re: unfixed regression in 2.6.20-rc6 (since 2.6.19)
+In-Reply-To: <20070126174828.GA28890@kroah.com> (Greg KH's message of "Fri, 26 Jan 2007 09:48:28 -0800")
+References: <877ivb2kvc.fsf@semtex.sncag.com>
+	<20070125185101.GA26279@kroah.com> <87y7nq131x.fsf@semtex.sncag.com>
+	<20070126174828.GA28890@kroah.com>
+From: Rainer Weikusat <rainer.weikusat@sncag.com>
+Date: Sun, 28 Jan 2007 14:34:56 +0100
+Message-ID: <87d54z1dhb.fsf@semtex.sncag.com>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-References: <Pine.LNX.4.64.0701241847360.25027@woody.linux-foundation.org>
- <20070127174230.GN6017@stusta.de>
-Subject: Re: 2.6.20-rc6: known unfixed regressions (v2) (part 2)
-To: Adrian Bunk <bunk@stusta.de>, akpm@osdl.org, torvalds@linux-foundation.org
-X-Authenticated: #8359428
-X-Flags: 0001
-X-Mailer: WWW-Mail 6100 (Global Message Exchange)
-X-Priority: 3
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Greg KH <greg@kroah.com> writes:
+> On Fri, Jan 26, 2007 at 11:43:22AM +0100, Rainer Weikusat wrote:
+>> Greg KH <greg@kroah.com> writes:
+>> > On Thu, Jan 25, 2007 at 04:20:55PM +0100, Rainer Weikusat wrote:
+>> >> 2.6.19 introduced changes to the UHCI handling of interrupt URBs that
+>> >> caused at least some keyspan USB-to-serial converters to fail,
+>> 
+>> [...]
+>> 
+>> > I copied you when this patch was added to my tree,
+>> 
+>> The only thing I received was a 'this patch has been dropped from
+>> the MM-tree because something happened' message.
+>
+> You were also copied on the patch when it was added to my tree.  Email
+> was sent to your rweikusat@sncag.com address.
 
--------- Original-Nachricht --------
-Datum: Sat, 27 Jan 2007 18:42:30 +0100
-Von: Adrian Bunk <bunk@stusta.de>
-An: Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@osdl.org>
-Betreff: 2.6.20-rc6: known unfixed regressions (v2) (part 2)
+It certainly never arrived at the MTA running on my working machine.
 
-> This email lists some known regressions in 2.6.20-rc6 compared to 2.6.19
-> that are not yet fixed in Linus' tree.
-> 
-> If you find your name in the Cc header, you are either submitter of one
-> of the bugs, maintainer of an affectected subsystem or driver, a patch
-> of you caused a breakage or I'm considering you in any other way possibly
-> involved with one or more of these issues.
-> 
-> Due to the huge amount of recipients, please trim the Cc when answering.
-> 
-> 
-> Subject    : problems with CD burning
-> References : http://www.spinics.net/lists/linux-ide/msg06545.html
-> Submitter  : Uwe Bugla <uwe.bugla@gmx.de>
-> Status     : unknown
-> 
-> 
-> Subject    : pktcdvd fails with pata_amd
-> References : http://bugzilla.kernel.org/show_bug.cgi?id=7810
->              http://lkml.org/lkml/2007/1/25/128
-> Submitter  : Gerhard Dirschl <gd@spherenet.de>
-> Caused-By  : Christoph Hellwig <hch@lst.de>
->              commit 3b00315799d78f76531b71435fbc2643cd71ae4c
->              commit 406c9b605cbc45151c03ac9a3f95e9acf050808c
-> Status     : problem is being debugged
-> 
-> 
-> Subject    : powerpc64: performance monitor exception
-> References :
-> http://ozlabs.org/pipermail/linuxppc-dev/2007-January/030045.html
-> Submitter  : Livio Soares <livio@eecg.toronto.edu>
-> Caused-By  : Paul Mackerras <paulus@samba.org>
->              commit d04c56f73c30a5e593202ecfcf25ed43d42363a2
-> Status     : problem is being discussed
-> 
-> 
-> Subject    : BUG: at fs/inotify.c:172 set_dentry_child_flags()
-> References : http://bugzilla.kernel.org/show_bug.cgi?id=7785
-> Submitter  : Cijoml Cijomlovic Cijomlov <cijoml@volny.cz>
-> Handled-By : Nick Piggin <nickpiggin@yahoo.com.au>
-> Status     : problem is being debugged
-> 
+>> > as I had reworked it to be a bit more acceptable (no pointer
+>> > arithmatic, proper coding style, use the newer macros for endpoint
+>> > detection, etc.),
+>> 
+>> You have basically done a couple of (functionally) totally pointless
+>> changes, like
+>> 
+>> 	- not using iterator-style array traversals, but indexed ones
+>>           instead
+>
+> Which is the better way to document exactly how you are walking through
+> all of the endpoints.
 
-Hi everybody,
-the problem I already reported for earlier release candidates of kernel 2.6.20
-(rc1 – 5) unfortunately stills persists.
+But the code does not walk trough the endpoints anymore, that's what
+it did before the change. Now, it is walking through a certain subset
+of the set of integral numbers, using the numbers from those set as
+offset to indirectly address something. Additionally, it is harder to
+read because it contains more 'noise characters' that are not
+pronouncable. Arguing about this is not really reasonable, though,
+because this is mostly a matter of aesthetics and a decent compiler
+will generate identical code for both, ie remove the indexing
+automatically again. A sensible way to enforce regulations of code
+aesthetic would be to document them.
 
-The regression has become more extreme: While in earlier release candidates nerolinux recognized my burning devices at least after the first start and then never again after all following starts the situation in rc6 is different from that:
+>> 	- doing the calculation to determine the endpoint type in
+>>           three different places instead of in one place, because the
+>>           somewhat silly endpoint classification interfaces enforces
+>>           this
+>
+> 3 places?  You mean in the if call?
 
-The CD and DVD burning devices aren´t recognized even once and the drive seek errors I already reported are still there.
+Exactly. The 'interface' that is used here does not provide a way to
+ask for the type, only to ask if the type is type X. At the source
+level, this means
 
-nerolinux runs excellently with kernel 2.6.19.2, but only shows an “image recorder” (i. e. no burning device at all) in kernel 2.6.20-rc6.
+	if ((value & mask) == x) {
+        	.
+                .
+                .
+	} else if ((value & mask) == y) {
+        	.
+                .
+                .
+	else printf("%u\n", values & mask);
 
-Still hope that this terrible bug will not be part of the final version of 2.6.20!
+A decent compiler will again probably catch this and do CSE-removal,
+but this doesn't make the algorithm more sensible as it is written
+down (C is not 'math', and C-expressions don't represent equal states,
+like equations would do, but request that the CPU performs certain
+calcluations).
 
-Regards
+>> 	- not using a single switch-statement but an if-else-cascade,
+>>           again due to limitations of that interface
+>
+> This really isn't a problem.
 
-Uwe
+It did not claim this was 'a problem' (except insofar 'clumsiness' can
+be construed to be one). It is just a code change for the sake of
+having changed the code.
 
-P. S.: I already reported that 2.6.20-rc4-mm1 is not bootable at all.
+>> 	- replacing the while-loop with an identical for-loop
+>
+> Again, this is the better way to walk through all of the endpoints for a
+> device.
 
--- 
-Der GMX SmartSurfer hilft bis zu 70% Ihrer Onlinekosten zu sparen! 
-Ideal für Modem und ISDN: http://www.gmx.net/de/go/smartsurfer
+This may be the way you happen to like more and a lot of people will
+probably agree with that. But the device does not care and they are
+both functionally identical, only the 'textual complexity' of using
+for is higher.
+
+>> The net effect of these changes is that an optimizing compiler will
+>> have to work somewhat more to remove all the redundant stuff that
+>> was added.
+>
+> This is initialization code, it's better to be obvious as to what you
+> are trying to do here than trying to do the compiler's job for it.
+
+The claim that the meaning of something with a lower signal-to-noise
+ratio is more obvious in itself is somewhat absurd: If I have to
+understand the code, I have to read it and think about it and I may
+reach the conclusion that certain calculations are actually
+meaningless, but I still need to understand them first.
+
+[...]
+
+> The _main_ coding style difference is that it was not obvious as to what
+> you were doing while walking the list of endpoints in the device.
+
+That is not 'a coding style difference'. It basically just means that
+you didn't understand a text not written by yourself without reading
+it first.
+
+[...]
+
+>> > I this patch does not work, please let me know, and I will be glad
+>> > to work to fix it.
+>> 
+>> I think I'll just resend the working one in this case. But the logic
+>> appears to be identical, so I do not so a reason why it shouldn't.
+>
+> Please work to see what is wrong with the existing patch.  Is there
+> anything that I can do to help you out?
+
+This thing has consumed something like sixteen hours of my life in
+total, with a gain-to-be-expected of exactly zero (I don't need to run
+'current' kernels on my work machine, I have just grown into the habit
+of doing so) and those sixteen hours cannot come back (and I even have
+had these type of discussions around 'should it rather look like math
+or rather like text' in sufficent quantities :->), so, except that I
+would be very much obliged to you if a fix for this issue could go
+into the 'official' tree rather sooner than later, no.
+
+Apart from that, I make a (fairly miserable) living by adapting open
+source code to be usable in specific situations (ie adding or
+modifying features, fixing bugs, writing drivers etc) and I
+ocassionally have dreams in C (this is not a joke :-), ie understand
+it fairly well, no matter who was the author.
