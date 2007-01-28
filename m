@@ -1,113 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932739AbXA1TEV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932752AbXA1TPy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932739AbXA1TEV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jan 2007 14:04:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932736AbXA1TEV
+	id S932752AbXA1TPy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jan 2007 14:15:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932754AbXA1TPy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jan 2007 14:04:21 -0500
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:42022 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932437AbXA1TEU (ORCPT
+	Sun, 28 Jan 2007 14:15:54 -0500
+Received: from rgminet01.oracle.com ([148.87.113.118]:42312 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932752AbXA1TPx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jan 2007 14:04:20 -0500
-Date: Sun, 28 Jan 2007 20:04:26 +0100
-From: Adrian Bunk <bunk@stusta.de>
-To: Andrew Morton <akpm@osdl.org>, jgarzik@pobox.com
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: [-mm patch] fix CONFIG_SATA_SIS=y compile error
-Message-ID: <20070128190426.GU6017@stusta.de>
-References: <20070127234928.64d8e437.akpm@osdl.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070127234928.64d8e437.akpm@osdl.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Sun, 28 Jan 2007 14:15:53 -0500
+Date: Sun, 28 Jan 2007 11:11:04 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: 7eggert@gmx.de
+Cc: Fengguang Wu <wfg@mail.ustc.edu.cn>, Andrew Morton <akpm@osdl.org>,
+       Martin Peschke <mp3@de.ibm.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/8] readahead: state based method routines: explicitly
+ embed class_new/class_old inside flags
+Message-Id: <20070128111104.789cbd07.randy.dunlap@oracle.com>
+In-Reply-To: <E1HAmF2-0000cV-Ux@be1.lrz>
+References: <7HR6P-3Wm-3@gated-at.bofh.it>
+	<7HR6S-3Wm-13@gated-at.bofh.it>
+	<E1HAmF2-0000cV-Ux@be1.lrz>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.0 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jan 27, 2007 at 11:49:28PM -0800, Andrew Morton wrote:
->...
-> Changes since 2.6.20-rc4-mm1:
->...
->  git-libata-all.patch
->...
->  git trees.
->...
+On Sat, 27 Jan 2007 13:01:08 +0100 Bodo Eggert wrote:
 
-Static code shouldn't be used from other modules.
+> Fengguang Wu <wfg@mail.ustc.edu.cn> wrote:
+> 
+> > The new/old ra class were implicitly stored in low bits of
+> > file_ra_state.flags. Now make the data structure obvious, and remove the
+> > coding tricks.
+> 
+> > +++ linux-2.6.20-rc4-mm1/include/linux/fs.h
+> 
+> > -     unsigned long flags;    /* RA_FLAG_xxx | ra_class_old | ra_class_new */
+> > +     union {
+> > +             unsigned long   flags;  /* RA_FLAG_xxx | class_old | class_new */
+> > +             struct {
+> > +                     u8      class_new;
+> > +                     u8      class_old;
+> 
+> This doesn't work on big endiam machines, does it?
+> 
+> IMO you should use a bitfield instead.
 
-This patch fixes the following compile error:
+Or "use bit masks instead" since
 
-<--  snip  -->
-
-...
-  LD      .tmp_vmlinux1
-drivers/built-in.o: In function `sis_init_one':
-sata_sis.c:(.text+0x7634cd): undefined reference to `sis_info133'
-sata_sis.c:(.text+0x7634d6): undefined reference to `sis_info133'
-make[1]: *** [.tmp_vmlinux1] Error 1
-
-<--  snip  -->
-
-While I was at it, I also moved the prototype of this struct to a header
-file.
-
-Signed-off-by: Adrian Bunk <bunk@stusta.de>
+"The order of allocation of bit-fields within a unit (high-order to
+low-order or low-order to high-order) is implementation-defined."
 
 ---
-
- drivers/ata/libata.h   |    3 +++
- drivers/ata/pata_sis.c |    3 ++-
- drivers/ata/sata_sis.c |    4 +---
- 3 files changed, 6 insertions(+), 4 deletions(-)
-
---- linux-2.6.20-rc6-mm1/drivers/ata/libata.h.old	2007-01-28 16:01:41.000000000 +0100
-+++ linux-2.6.20-rc6-mm1/drivers/ata/libata.h	2007-01-28 16:02:10.000000000 +0100
-@@ -151,4 +151,7 @@
- /* libata-sff.c */
- extern u8 ata_irq_on(struct ata_port *ap);
- 
-+/* pata_sis.c */
-+extern struct ata_port_info sis_info133;
-+
- #endif /* __LIBATA_H__ */
---- linux-2.6.20-rc6-mm1/drivers/ata/pata_sis.c.old	2007-01-28 16:08:26.000000000 +0100
-+++ linux-2.6.20-rc6-mm1/drivers/ata/pata_sis.c	2007-01-28 16:02:51.000000000 +0100
-@@ -32,6 +32,7 @@
- #include <scsi/scsi_host.h>
- #include <linux/libata.h>
- #include <linux/ata.h>
-+#include "libata.h"
- 
- #define DRV_NAME	"pata_sis"
- #define DRV_VERSION	"0.4.5"
-@@ -781,7 +782,7 @@
- 	.pio_mask	= 0x1f,	/* pio0-4 */
- 	.port_ops	= &sis_66_ops,
- };
--static struct ata_port_info sis_info133 = {
-+struct ata_port_info sis_info133 = {
- 	.sht		= &sis_sht,
- 	.flags		= ATA_FLAG_SLAVE_POSS | ATA_FLAG_SRST,
- 	.pio_mask	= 0x1f,	/* pio0-4 */
---- linux-2.6.20-rc6-mm1/drivers/ata/sata_sis.c.old	2007-01-28 16:05:31.000000000 +0100
-+++ linux-2.6.20-rc6-mm1/drivers/ata/sata_sis.c	2007-01-28 16:05:49.000000000 +0100
-@@ -40,6 +40,7 @@
- #include <linux/device.h>
- #include <scsi/scsi_host.h>
- #include <linux/libata.h>
-+#include "libata.h"
- 
- #define DRV_NAME	"sata_sis"
- #define DRV_VERSION	"0.7"
-@@ -254,9 +255,6 @@
- 
- static int sis_init_one (struct pci_dev *pdev, const struct pci_device_id *ent)
- {
--	/* Provided by the PATA driver */
--	extern struct ata_port_info sis_info133;
--
- 	static int printed_version;
- 	struct ata_probe_ent *probe_ent = NULL;
- 	int rc;
-
+~Randy
