@@ -1,69 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932803AbXA1UXs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932815AbXA1UY2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932803AbXA1UXs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jan 2007 15:23:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932815AbXA1UXr
+	id S932815AbXA1UY2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jan 2007 15:24:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932834AbXA1UY1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jan 2007 15:23:47 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:58531 "EHLO mx1.redhat.com"
+	Sun, 28 Jan 2007 15:24:27 -0500
+Received: from gate.crashing.org ([63.228.1.57]:56105 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932803AbXA1UXr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jan 2007 15:23:47 -0500
-Date: Sun, 28 Jan 2007 15:23:37 -0500
-From: Dave Jones <davej@redhat.com>
-To: jmoyer@redhat.com
-Cc: Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Steven Fernandez <sfernand@redhat.com>, Andrew Morton <akpm@osdl.org>
-Subject: Re: [patch] raw: don't allow the creation of a raw device with minor number 0
-Message-ID: <20070128202336.GA23903@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>, jmoyer@redhat.com,
-	Jan Engelhardt <jengelh@linux01.gwdg.de>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Steven Fernandez <sfernand@redhat.com>,
-	Andrew Morton <akpm@osdl.org>
-References: <x49bql48aus.fsf@segfault.boston.devel.redhat.com> <Pine.LNX.4.61.0701122341030.19224@yvahk01.tjqt.qr> <m38xg73l9a.fsf@redhat.com>
+	id S932815AbXA1UY1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Jan 2007 15:24:27 -0500
+Subject: Re: [PATCH 0/6] MSI portability cleanups
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Greg Kroah-Hartman <greg@kroah.com>, Tony Luck <tony.luck@intel.com>,
+       Grant Grundler <grundler@parisc-linux.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Kyle McMartin <kyle@parisc-linux.org>,
+       linuxppc-dev@ozlabs.org, Brice Goglin <brice@myri.com>,
+       shaohua.li@intel.com, linux-pci@atrey.karlin.mff.cuni.cz,
+       "David S. Miller" <davem@davemloft.net>
+In-Reply-To: <m1hcubq6re.fsf@ebiederm.dsl.xmission.com>
+References: <1169714047.65693.647693675533.qpush@cradle>
+	 <m1hcubq6re.fsf@ebiederm.dsl.xmission.com>
+Content-Type: text/plain
+Date: Mon, 29 Jan 2007 07:23:25 +1100
+Message-Id: <1170015805.26655.15.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m38xg73l9a.fsf@redhat.com>
-User-Agent: Mutt/1.4.2.2i
+X-Mailer: Evolution 2.8.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 12, 2007 at 05:58:41PM -0500, jmoyer@redhat.com wrote:
- > ==> Regarding Re: [patch] raw: don't allow the creation of a raw device with minor number 0; Jan Engelhardt <jengelh@linux01.gwdg.de> adds:
- > 
- > jengelh> On Jan 12 2007 11:32, Jeff Moyer wrote:
- > 
- > >> Minor number 0 (under the raw major) is reserved for the rawctl device
- > >> file, which is used to query, set, and unset raw device bindings.
- > >> However, the ioctl interface does not protect the user from specifying
- > >> a raw device with minor number 0:
- > 
- > jengelh> No idea what to say about this... probably:
- > 
- > jengelh>   What:   RAW driver (CONFIG_RAW_DRIVER)
- > jengelh>   When:   December 2005
- > jengelh>   Why:    declared obsolete since kernel 2.6.3
- > jengelh>           O_DIRECT can be used instead
- > jengelh>   Who:    Adrian Bunk <bunk@stusta.de>
- > 
- > It's still present, still used, and so would benefit from being fixed, in
- > my opinion.
 
-Given the tirade against O_DIRECT on linux-kernel earlier this month,
-it has me wondering about the validity of this entry.
+> The other big change is that I added a field to irq_desc to point
+> at the msi_desc.  This removes the conflicts with the existing pointer
+> fields and makes the irq -> msi_desc mapping useable outside of msi.c
 
-Every time we've tried to deprecate this driver in Fedora/RHEL, we've
-had enough people complain that we've ended up having to turn it back on.
-(And I'm fairly sure other distros have been in the same position).
-Some vendors seem way too attached to the older semantics than having
-to rewrite their apps to use O_DIRECT, and unnecessarily breaking them
-so that we can throw away a 306 line driver in the name of cleanliness
-seems a bit gratuitous.
+I'm not even sure we would have needed that with Michael's mecanism in
+fact. One other reason why I prefer it.
 
-		Dave
+Basically, backends like MPIC etc... don't need it. The irq chip
+operations are normal MPIC operations and don't need to know they are
+done on an MSI nor what MSI etc... and thus we don't need it. Same with
+RTAS.
 
--- 
-http://www.codemonkey.org.uk
+On the other hand, x86 needs it, but then, x86 uses it's own MSI
+specific irq_chip, in which case it can use irq_desc->chip_data as long
+as it does it within the backend.
+
+So I may have missed a case where a given backend might need both that
+irq -> msi_desc mapping -and- use irq_desc->chip_data for other things,
+but that's one thing I was hoping we could avoid with Michael's code.
+
+> The only architecture problem that isn't solvable in this context is
+> the problem of supporting the crazy hypervisor on the ppc RTAS, which
+> asks us to drive the hardware but does not give us access to the
+> hardware registers.
+
+So you are saying that we should use your model while admitting that it
+can't solve our problems...
+
+I really don't understand why you seem so totally opposed to Michael's
+approach which definitely looks to me like the sane thing to do. Note
+that in the end, Michael's approach isn't -that- different from yours,
+just a bit more abstracted.
+
+Ben.
+
+
