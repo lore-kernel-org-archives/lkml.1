@@ -1,57 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932258AbXA1FeL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932268AbXA1Ffv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932258AbXA1FeL (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jan 2007 00:34:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932268AbXA1FeL
+	id S932268AbXA1Ffv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jan 2007 00:35:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932410AbXA1Ffv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jan 2007 00:34:11 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:46661 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932258AbXA1FeJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jan 2007 00:34:09 -0500
-Date: Sat, 27 Jan 2007 21:34:04 -0800
-From: Andrew Morton <akpm@osdl.org>
-To: Rob Landley <rob@landley.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: The mbox format archives of linux-kernel are gone.
-Message-Id: <20070127213404.123e96b3.akpm@osdl.org>
-In-Reply-To: <200701272036.31592.rob@landley.net>
-References: <200701272036.31592.rob@landley.net>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 28 Jan 2007 00:35:51 -0500
+Received: from nf-out-0910.google.com ([64.233.182.190]:44769 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932268AbXA1Ffu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Jan 2007 00:35:50 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=VFbSpOhPZimymdihl05LPWmx+CMPhZBH6u7v//4EJ+ZN3Wp4PMtf7bPPZ7JpjS4ADnNisI8vyVDGzYP6NuU3Ak0oSSTZsCprpBQXFu4c7L2ryR1hseBb8JJJIWMCRxFYw2jVBiSFs1sQJGqPNOcF5FolvfuZF26wEYnK3EI99h4=
+Message-ID: <8355959a0701272135p150bb95dkf62dbfc07c0cdccc@mail.gmail.com>
+Date: Sun, 28 Jan 2007 11:05:48 +0530
+From: "Sunil Naidu" <akula2.shark@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: 2.6.20-rc6-rt2 - SMP/x86 -- questions about .config selection
+Cc: "Linux kernel mailing list" <linux-kernel@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 27 Jan 2007 20:36:31 -0500
-Rob Landley <rob@landley.net> wrote:
+Hi Ingo,
 
-> I would like to find the history of linux-kernel in mbox format.  I thought it 
-> was under http://kernel.org/pub but apparently not.
-> 
-> Rooting around at http://vger.kernel.org/vger-lists.html#linux-kernel points 
-> to a bunch of stale links.  (The alaska archive is gone, the helsinki one 
-> stopped in 2004, the indiana one mbox link is 404...)
-> 
-> The linux-kernel faq's archives entry points to web archives, where I can look 
-> up one post at a time.  I could do that through google groups.  I used to be 
-> able to see "month at a time" indexes at lists.insecure.org, but that took 
-> its' linux-kernel archive down last year.
-> 
-> I found Zach Brown asking for them and getting them anonymously sent to him, 
-> but no download link and one reason I want them is Kernel Traffic stopped 
-> updating in 2005 and I've fallen behind on the list again.
-> 
-> This link:
-> http://mailman.linuxchix.org/pipermail/techtalk/2005-February/019865.html
-> 
-> Suggests that mbox files may be found on lkml.org, which doesn't seem to be 
-> true (not on their current main page, nor archive.org, nor any browsing 
-> around I've managed to do...)
-> 
-> Does anyone have any suggestions?  Google is being unhelpful...
+I did boot with (almost) no problems. Here is ps ax info:-
 
-I have them going back to October 2000.  I guess I can upload them
-after various bandwidth-using offspring have finished playing counterstrike
-and WoW.
+ PID TTY      STAT   TIME COMMAND
+    1 ?        Ss     0:00 init [5]
+    2 ?        S      0:00 [migration/0]
+    3 ?        S      0:00 [posix_cpu_timer]
+    4 ?        S      0:00 [softirq-high/0]
+    5 ?        S      0:00 [softirq-timer/0]
+    6 ?        S      0:00 [softirq-net-tx/]
+    7 ?        S      0:00 [softirq-net-rx/]
+    8 ?        S      0:00 [softirq-block/0]
+    9 ?        S      0:00 [softirq-tasklet]
+   10 ?        S      0:00 [softirq-sched/0]
+   11 ?        S      0:00 [softirq-hrtimer]
+   12 ?        S      0:00 [softirq-rcu/0]
+   13 ?        S<     0:00 [desched/0]
+   14 ?        S      0:00 [migration/1]
+   15 ?        S      0:00 [posix_cpu_timer]
+   16 ?        S      0:00 [softirq-high/1]
+   17 ?        S      0:00 [softirq-timer/1]
+   18 ?        S      0:00 [softirq-net-tx/]
+   19 ?        S      0:00 [softirq-net-rx/]
+   20 ?        S      0:00 [softirq-block/1]
+   21 ?        S      0:00 [softirq-tasklet]
+   22 ?        S      0:00 [softirq-sched/1]
+   23 ?        S      0:00 [softirq-hrtimer]
+   24 ?        S      0:00 [softirq-rcu/1]
+   .........
+   .........
+
+Here is the interrupt info:-
+
+           CPU0       CPU1
+  0:        354          0   IO-APIC-edge      timer
+  1:        361          0   IO-APIC-edge      i8042
+  8:          1          0   IO-APIC-edge      rtc
+  9:          0          0   IO-APIC-fasteoi   acpi
+ 12:          7          0   IO-APIC-edge      i8042
+ 14:       1985          0   IO-APIC-edge      ide0
+ 16:      13042          0   IO-APIC-fasteoi   uhci_hcd:usb4, HDA
+Intel, i915@pci:0000:00:02.0
+ 18:          0          0   IO-APIC-fasteoi   uhci_hcd:usb3
+ 19:      11520          0   IO-APIC-fasteoi   uhci_hcd:usb2, libata
+ 20:          2          0   IO-APIC-fasteoi   uhci_hcd:usb1, ehci_hcd:usb5
+ 21:        515          0   IO-APIC-fasteoi   eth0
+NMI:          0          0
+LOC:      23573      24545
+ERR:          0
+MIS:          0
+
+
+I did get REMINDER, the following debugging options are turned on in
+your .config:
+
+        CONFIG_CRITICAL_IRQSOFF_TIMING
+        CONFIG_FUNCTION_TRACE
+
+This I have understood, no issues here.
+
+There is some confusion for me while configuring a rt kernel &
+proceeding for experiments. I did choose the following:-
+
+NO_HZ=y
+HIGH_RES_TIMERS=y
+SMP=y
+PREEMPT_VOLUNTARY=y
+PREEMPT_SOFTIRQS=y
+PREEMPT_HARDIRQS=y
+SPINLOCK_BKL=y
+CLASSIC_RCU=y
+SCHED_SMT=y
+IRQBALANCE=y
+HZ_1000=y
+
+
+#1 Is this correct to say PREEMPT_VOLUNTARY=y  for rt on this desktop PC?
+#2 I am not clear about IRQ config selection (which one should be
+enable/disable for a PC, I did select all as shown in the above
+config). Any suggestion?
+#3 Any other parameter(s) I need to enable/disable to get better
+results? (did disable APM)
+
+
+Thanks,
+
+~Su37
