@@ -1,78 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932917AbXA1WMt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932498AbXA1WSI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932917AbXA1WMt (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jan 2007 17:12:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932919AbXA1WMt
+	id S932498AbXA1WSI (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jan 2007 17:18:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932091AbXA1WSH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jan 2007 17:12:49 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:36093 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932917AbXA1WMs (ORCPT
+	Sun, 28 Jan 2007 17:18:07 -0500
+Received: from mtiwmhc12.worldnet.att.net ([204.127.131.116]:45019 "EHLO
+	mtiwmhc12.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932498AbXA1WSG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jan 2007 17:12:48 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Greg Kroah-Hartman <greg@kroah.com>, Tony Luck <tony.luck@intel.com>,
-       Grant Grundler <grundler@parisc-linux.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Kyle McMartin <kyle@parisc-linux.org>,
-       linuxppc-dev@ozlabs.org, Brice Goglin <brice@myri.com>,
-       shaohua.li@intel.com, linux-pci@atrey.karlin.mff.cuni.cz,
-       "David S. Miller" <davem@davemloft.net>
-Subject: Re: [PATCH 0/6] MSI portability cleanups
-References: <1169714047.65693.647693675533.qpush@cradle>
-	<m1hcubq6re.fsf@ebiederm.dsl.xmission.com>
-	<1170015805.26655.15.camel@localhost.localdomain>
-	<45BD0BDC.40205@garzik.org>
-Date: Sun, 28 Jan 2007 15:11:34 -0700
-In-Reply-To: <45BD0BDC.40205@garzik.org> (Jeff Garzik's message of "Sun, 28
-	Jan 2007 15:47:24 -0500")
-Message-ID: <m1y7nmol7t.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Sun, 28 Jan 2007 17:18:06 -0500
+Message-ID: <45BD2119.2000209@lwfinger.net>
+Date: Sun, 28 Jan 2007 16:18:01 -0600
+From: Larry Finger <larry.finger@lwfinger.net>
+User-Agent: Thunderbird 1.5.0.9 (X11/20060911)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Dan Williams <dcbw@redhat.com>
+CC: netdev <netdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+       Paul Marks <pmarks@purdue.edu>
+Subject: Re: Hidden SSID's
+References: <45BACB71.2080107@lwfinger.net> <1169899689.25670.3.camel@localhost.localdomain>
+In-Reply-To: <1169899689.25670.3.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik <jeff@garzik.org> writes:
+Dan Williams wrote:
+> On Fri, 2007-01-26 at 21:48 -0600, Larry Finger wrote:
+>> Is there a convention regarding the information that a wireless MAC layer should provide when
+>> reporting scan data from an AP with a hidden SSID?
+>>
+>> In ieee80211, the software inserts the string "<hidden>" for such an AP, which seems to give
+>> wpa_supplicant fits because it rejects the SSID before even looking at the encryption data. Is this
+>> the normal convention?
+> 
+> No.  It's wrong.  It is not normal convention.  The one and only
+> _correct_ way of reporting a hidden SSID is to not report the SSID at
+> all.  The only item that needs to be reported with WEXT is the BSSID,
+> and the client app assumes that if the SSID is not received for a given
+> scan result, that the driver doesn't have an SSID for that BSSID.
+> 
+> I really, really don't know why ieee80211 uses <hidden>, but it's a pain
+> in the ass and should NOT be done for d80211.  I don't know if we can
+> ever remove it from ieee80211 though for backwards compat reasons.
 
-> I think the high-level ops approach makes more sense.  It's more future proof,
-> in addition to covering all existing implementations.
+Is there something funny about Cisco APs with hidden SSID? I made a patch for ieee80211 and softmac
+that works on my AP when its SSID is hidden. It also works for Paul Marks on his personal AP, but
+fails for the Cisco units at Purdue. His interface is a 4311 and there may be a signal strength
+issue, but we are not sure.
 
-To be precise in Michaels implementation one of the parameters passed is
-a type parameter so that the architecture has to know about each different
-type of msi implementation.   In my implementation that field does not exist,
-because it is unnecessary.  So as long as the message on the bus is a msi
-message my implementation can be adapted to support it without any architecture
-changes.
+My patch fixes ieee80211 without breaking the previous behavior.
 
-Being future proof is about getting the abstraction correct, and exposing
-those details that matter, and removing those detail that don't.
-
-It is a minor nit, not a fundamental flaw in the operations concept.  But
-one of the reasons I am opposed to throwing out the current working code.
-Evolutionary change ensures that things only the code remembers don't get
-left behind.
-
-I guess that is the other part of the discussion that shows up here
-is, as long as the change is an evolutionary change from what is
-working today.  I don't have any fundamental problems with it, but I
-am completely against a revolutionary change.
-
-Meanwhile because Michael has proposed operations my position has been
-perceived as against operations.  While I have a lot of technical nits
-to pick with the Michaels operations approach, I'm not fundamentally
-against it.  I just don't want to loose the information that only
-the code remembers.
-
-Most of my technical objections have been formed by looking at what
-the code does today, looking at what Michaels code is doing and seeing
-details he missed.  If we just start with the current code base and
-fix it the whole approach is much easier.
-
-Anyway last I heard Michael was working on starting with the current
-msi.c and making his patch set work, and I am hoping that my work
-will make that patchset cleaner, and easier to do.  Even if we do
-conflict at the moment :)
-
-Eric
+Larry
