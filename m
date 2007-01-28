@@ -1,83 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932806AbXA1Ui7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932847AbXA1UsI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932806AbXA1Ui7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jan 2007 15:38:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932820AbXA1Ui7
+	id S932847AbXA1UsI (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jan 2007 15:48:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932846AbXA1UsI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jan 2007 15:38:59 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:47169 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932806AbXA1Ui6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jan 2007 15:38:58 -0500
-Date: Sun, 28 Jan 2007 20:38:41 +0000
-From: Christoph Hellwig <hch@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Christoph Hellwig <hch@infradead.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/7] breaking the global file_list_lock
-Message-ID: <20070128203841.GA27397@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Ingo Molnar <mingo@elte.hu>,
-	Peter Zijlstra <a.p.zijlstra@chello.nl>,
-	Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
-	linux-kernel@vger.kernel.org
-References: <20070128115118.837777000@programming.kicks-ass.net> <20070128144325.GB16552@infradead.org> <20070128184116.GA12150@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070128184116.GA12150@elte.hu>
-User-Agent: Mutt/1.4.2.2i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sun, 28 Jan 2007 15:48:08 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:59841 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932847AbXA1UsH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Jan 2007 15:48:07 -0500
+Message-ID: <45BD0BDC.40205@garzik.org>
+Date: Sun, 28 Jan 2007 15:47:24 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
+MIME-Version: 1.0
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+CC: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Greg Kroah-Hartman <greg@kroah.com>, Tony Luck <tony.luck@intel.com>,
+       Grant Grundler <grundler@parisc-linux.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Kyle McMartin <kyle@parisc-linux.org>,
+       linuxppc-dev@ozlabs.org, Brice Goglin <brice@myri.com>,
+       shaohua.li@intel.com, linux-pci@atrey.karlin.mff.cuni.cz,
+       "David S. Miller" <davem@davemloft.net>
+Subject: Re: [PATCH 0/6] MSI portability cleanups
+References: <1169714047.65693.647693675533.qpush@cradle> <m1hcubq6re.fsf@ebiederm.dsl.xmission.com> <1170015805.26655.15.camel@localhost.localdomain>
+In-Reply-To: <1170015805.26655.15.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.7 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 28, 2007 at 07:41:16PM +0100, Ingo Molnar wrote:
-> starts one process per CPU and open()s/close()s a file all over again, 
-> simulating an open/close-intense workload. This pattern is quite typical 
-> of several key Linux applications.
+Benjamin Herrenschmidt wrote:
+>> The only architecture problem that isn't solvable in this context is
+>> the problem of supporting the crazy hypervisor on the ppc RTAS, which
+>> asks us to drive the hardware but does not give us access to the
+>> hardware registers.
 > 
-> Using Peter's s_files patchset the following scalability improvement can 
-> be measured (lower numbers are better):
+> So you are saying that we should use your model while admitting that it
+> can't solve our problems...
 > 
->  ----------------------------------------------------------------------
->                   v2.6.20-rc6     |   v2.6.20-rc6+Peter's s_files queue
->  ----------------------------------------------------------------------
->  dual-core:       2.11 usecs/op   |   1.51 usecs/op     (  +39.7% win )
->  8-socket:        6.30 usecs/op   |   2.70 usecs/op     ( +233.3% win )
-
-Thanks for having some numbers to start with.
-
-> Now could you please tell me why i had to waste 3.5 hours on measuring 
-> and profiling this /again/, while a tiny little bit of goodwill from 
-> your side could have avoided this? I told you that we lock-profiled this 
-> under -rt, and that it's an accurate measurement of such things - as the 
-> numbers above prove it too. Would it have been so hard to say something 
-> like: "Cool Peter! That lock had been in our way of good open()/close() 
-> scalability for such a long time and it's an obviously good idea to 
-> eliminate it. Now here's a couple of suggestions of how to do it even 
-> simpler: [...]." Why did you have to in essence piss on his patchset? 
-> Any rational explanation?
-
-Can we please stop this stupid pissing contest.  I'm totally fine to admit
-yours is bigger than mine in public, so let's get back to the facts.
+> I really don't understand why you seem so totally opposed to Michael's
+> approach which definitely looks to me like the sane thing to do. Note
+> that in the end, Michael's approach isn't -that- different from yours,
+> just a bit more abstracted.
 
 
-The patchkit we're discussing here introduces a lot of complexity:
+I think the high-level ops approach makes more sense.  It's more future 
+proof, in addition to covering all existing implementations.
 
- - a new type of implicitly locked linked lists
- - a new synchronization primitive
- - a new locking scheme that utilizes the previous two items, aswell
-   as rcu.
+	Jeff
 
-I think we definitly we want some numbers (which you finally provided)
-to justify this.
 
-Then going on to the implementation I don't like trying to "fix" a problem
-with this big hammer approach.  I've outlined some alternate ways that
-actually simplify both the underlying data structures and locking that
-should help towards this problem instead of making the code more complex
-and really hard to understand.
