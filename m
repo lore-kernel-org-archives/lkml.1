@@ -1,98 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932528AbXA1KeP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932523AbXA1KzK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932528AbXA1KeP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jan 2007 05:34:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932526AbXA1KeP
+	id S932523AbXA1KzK (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jan 2007 05:55:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932543AbXA1KzK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jan 2007 05:34:15 -0500
-Received: from moutng.kundenserver.de ([212.227.126.177]:64882 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932523AbXA1KeO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jan 2007 05:34:14 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: jgarzik@pobox.com
-Subject: [PATCH] libata: add a dummy set_mode() in pata_pcmcia
-Date: Sun, 28 Jan 2007 11:34:01 +0100
-User-Agent: KMail/1.9.5
-Cc: wkl@informatik.uni-kiel.de, alan@lxorguk.ukuu.org.uk,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200701281134.02218.arnd@arndb.de>
-X-Provags-ID: kundenserver.de abuse@kundenserver.de login:c48f057754fc1b1a557605ab9fa6da41
-X-Provags-ID2: V01U2FsdGVkX1+Tyep176GCLE+WjQAVmeKzJlOORRd55/OVlEUGhZG1sp55Tn+Lk0GKfQm9LwDj90AQAhMUSLE02+WJaVY2cFxCCUbu35mB+ErqAXSJg1angA==
+	Sun, 28 Jan 2007 05:55:10 -0500
+Received: from main.gmane.org ([80.91.229.2]:54147 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932523AbXA1KzI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Jan 2007 05:55:08 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Giuseppe Bilotta <giuseppe.bilotta@gmail.com>
+Subject: [PATCH] nvidiafb: allow ignoring EDID info
+Date: Sun, 28 Jan 2007 11:48:59 +0100
+Message-ID: <ephv35$4i3$1@sea.gmane.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7Bit
+X-Complaints-To: usenet@sea.gmane.org
+X-Gmane-NNTP-Posting-Host: host-84-221-15-3.cust-adsl.tiscali.it
+User-Agent: KNode/0.10.4
+X-Face: ::w9}R^l{WGM\{y)C0QF@4^U,',W3Mk^X0HP)=:bKM^Z]A9+6bY6fe3}O*]fH{l<j1/9RTp  `KR0idy]Im#9^%}P5Dga'>AViT_'?&>&ufo2_X5Vs3C^tPO@drZRuu&6iK}x}~9`F\-dNZ>(p|V7`4
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-CompactFlash cards in a passive PCMCIA adapter don't seem
-to like the ATA_CMD_SET_FEATURES command, which causes
-libata device probing to fail.
+From: Giuseppe Bilotta <giuseppe.bilotta@gmail.com>
 
-Since PCMCIA only allows PIO mode 0 anyway, there is no
-point in ever setting a higher speed. Adding the dummy
-function seems to do the right thing.
+Some nVidia video cards have broken EDID information. Using nvidiafb
+with CONFIG_FB_NVIDIA_I2C enabled on these systems causes the console
+framebuffer to use wrong timing information, causing the display to be
+extremely 'snowy'. Since most distribution kernels are compiled with
+CONFIG_FB_NVIDIA_I2C enabled, this prevents usage of the nvidia
+framebuffer on said broken system without recompiling the kernel
+(or at least the nvidiafb module).
 
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Solve the issue by introducing a new boolean module parameter (useedid)
+which can be set to 0 to prevent the driver from using the EDID
+information.
+
+Signed-off-by: Giuseppe Bilotta <giuseppe.bilotta@gmail.com>
 
 ---
 
-This bug was reported earlier in 
-http://bugzilla.kernel.org/show_bug.cgi?id=7711 by 
-wkl@informatik.uni-kiel.de.
+If this patch is accepted, we can probably get rid of CONFIG_FB_NVIDIA_I2C
+altogether.
 
-I have not been able to find out _why_ all my CF cards reject
-the SETFEATURES_XFER command, but I have verified that the
-same happens when trying to use hdparm with ide_cs.
 
-Note that none of my cards are CF-4.0 compliant, so they
-also don't do UDMA modes. The highest mode claimed to be
-supported by one of my cards is PIO-4, but I can't set
-it into any of the modes it likes.
-
-diff --git a/drivers/ata/pata_pcmcia.c b/drivers/ata/pata_pcmcia.c
-index 9ed7f58..642753c 100644
---- a/drivers/ata/pata_pcmcia.c
-+++ b/drivers/ata/pata_pcmcia.c
-@@ -44,6 +44,30 @@
- #define DRV_NAME "pata_pcmcia"
- #define DRV_VERSION "0.2.11"
+diff --git a/drivers/video/nvidia/nv_i2c.c b/drivers/video/nvidia/nv_i2c.c
+index 8454adf..6387f2b 100644
+--- a/drivers/video/nvidia/nv_i2c.c
++++ b/drivers/video/nvidia/nv_i2c.c
+@@ -25,6 +25,8 @@
  
-+/**
-+ *	legacy_set_mode		-	mode setting
-+ *	@ap: IDE interface
-+ *
-+ *	Use a non standard set_mode function. We don't want to be tuned.
-+ *
-+ *	PCMCIA support only PIO0 transfers and cards may return an error
-+ *	if you attempt to set that explicitly.
-+ */
-+
-+static void pcmcia_set_mode(struct ata_port *ap)
-+{
-+	int i;
-+
-+	for (i = 0; i < ATA_MAX_DEVICES; i++) {
-+		struct ata_device *dev = &ap->device[i];
-+		if (ata_dev_enabled(dev)) {
-+			dev->pio_mode = XFER_PIO_0;
-+			dev->xfer_mode = XFER_PIO_0;
-+			dev->xfer_shift = ATA_SHIFT_PIO;
-+			dev->flags |= ATA_DFLAG_PIO;
-+		}
-+	}
-+}
- /*
-  *	Private data structure to glue stuff together
-  */
-@@ -79,6 +103,7 @@ static struct ata_port_operations pcmcia_port_ops = {
- 	.check_status 	= ata_check_status,
- 	.exec_command	= ata_exec_command,
- 	.dev_select 	= ata_std_dev_select,
-+	.set_mode	= pcmcia_set_mode,
+ #include "../edid.h"
  
- 	.freeze		= ata_bmdma_freeze,
- 	.thaw		= ata_bmdma_thaw,
++extern int useedid;
++
+ static void nvidia_gpio_setscl(void *data, int state)
+ {
+        struct nvidia_i2c_chan *chan = data;
+@@ -128,6 +130,9 @@ static int nvidia_setup_i2c_bus(struct nvidia_i2c_chan *chan, const char *name)
+ 
+ void nvidia_create_i2c_busses(struct nvidia_par *par)
+ {
++       if (!useedid)
++               return;
++
+        par->bus = 3;
+ 
+        par->chan[0].par = par;
+@@ -146,6 +151,9 @@ void nvidia_create_i2c_busses(struct nvidia_par *par)
+ 
+ void nvidia_delete_i2c_busses(struct nvidia_par *par)
+ {
++       if (!useedid)
++               return;
++
+        if (par->chan[0].par)
+                i2c_del_adapter(&par->chan[0].adapter);
+        par->chan[0].par = NULL;
+@@ -195,6 +203,9 @@ static u8 *nvidia_do_probe_i2c_edid(struct nvidia_i2c_chan *chan)
+ 
+ int nvidia_probe_i2c_connector(struct fb_info *info, int conn, u8 **out_edid)
+ {
++       if (!useedid)
++               return -1;
++
+        struct nvidia_par *par = info->par;
+        u8 *edid = NULL;
+        int i;
+diff --git a/drivers/video/nvidia/nvidia.c b/drivers/video/nvidia/nvidia.c
+index 538e947..179fd67 100644
+--- a/drivers/video/nvidia/nvidia.c
++++ b/drivers/video/nvidia/nvidia.c
+@@ -83,6 +83,9 @@ static int bpp __devinitdata = 8;
+ #ifdef CONFIG_MTRR
+ static int nomtrr __devinitdata = 0;
+ #endif
++#ifdef CONFIG_FB_NVIDIA_I2C
++int useedid __devinitdata = 1;
++#endif
+ 
+ static char *mode_option __devinitdata = NULL;
+ 
+@@ -1506,6 +1509,11 @@ module_param(nomtrr, bool, 0);
+ MODULE_PARM_DESC(nomtrr, "Disables MTRR support (0 or 1=disabled) "
+                 "(default=0)");
+ #endif
++#ifdef CONFIG_FB_NVIDIA_I2C
++module_param(useedid, bool, 0);
++MODULE_PARM_DESC(useedid, "Use EDID to detect video modes (0 or 1) "
++                "(default=1, use EDID)");
++#endif
+ 
+ MODULE_AUTHOR("Antonino Daplas");
+ MODULE_DESCRIPTION("Framebuffer driver for nVidia graphics chipset");
+
+
+
+
+-- 
+Giuseppe "Oblomov" Bilotta
+
