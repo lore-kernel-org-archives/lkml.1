@@ -1,63 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932752AbXA1TPy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752459AbXA1TWo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932752AbXA1TPy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jan 2007 14:15:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932754AbXA1TPy
+	id S1752459AbXA1TWo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jan 2007 14:22:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752476AbXA1TWn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jan 2007 14:15:54 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:42312 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932752AbXA1TPx (ORCPT
+	Sun, 28 Jan 2007 14:22:43 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:35211 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752459AbXA1TWn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jan 2007 14:15:53 -0500
-Date: Sun, 28 Jan 2007 11:11:04 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: 7eggert@gmx.de
-Cc: Fengguang Wu <wfg@mail.ustc.edu.cn>, Andrew Morton <akpm@osdl.org>,
-       Martin Peschke <mp3@de.ibm.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/8] readahead: state based method routines: explicitly
- embed class_new/class_old inside flags
-Message-Id: <20070128111104.789cbd07.randy.dunlap@oracle.com>
-In-Reply-To: <E1HAmF2-0000cV-Ux@be1.lrz>
-References: <7HR6P-3Wm-3@gated-at.bofh.it>
-	<7HR6S-3Wm-13@gated-at.bofh.it>
-	<E1HAmF2-0000cV-Ux@be1.lrz>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.0 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+	Sun, 28 Jan 2007 14:22:43 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Andrew Morton <akpm@osdl.org>
+Cc: Ingo Molnar <mingo@elte.hu>, tglx@linutronix.de,
+       <linux-kernel@vger.kernel.org>, selinux@tycho.nsa.gov,
+       sds@tycho.nsa.gov, jmorris@namei.org
+Subject: [PATCH] sysctl selinux: Don't look at table->de
+References: <200701280106.l0S16CG3019873@shell0.pdx.osdl.net>
+	<20070127172410.2b041952.akpm@osdl.org>
+	<1169972718.17469.164.camel@localhost.localdomain>
+	<20070128003549.2ca38dc8.akpm@osdl.org>
+	<20070128093358.GA2071@elte.hu> <20070128095712.GA6485@elte.hu>
+	<20070128100627.GA8416@elte.hu>
+	<20070128104548.a835d859.akpm@osdl.org>
+Date: Sun, 28 Jan 2007 12:21:24 -0700
+In-Reply-To: <20070128104548.a835d859.akpm@osdl.org> (Andrew Morton's message
+	of "Sun, 28 Jan 2007 10:45:48 -0800")
+Message-ID: <m1r6tfq7nv.fsf_-_@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 27 Jan 2007 13:01:08 +0100 Bodo Eggert wrote:
 
-> Fengguang Wu <wfg@mail.ustc.edu.cn> wrote:
-> 
-> > The new/old ra class were implicitly stored in low bits of
-> > file_ra_state.flags. Now make the data structure obvious, and remove the
-> > coding tricks.
-> 
-> > +++ linux-2.6.20-rc4-mm1/include/linux/fs.h
-> 
-> > -     unsigned long flags;    /* RA_FLAG_xxx | ra_class_old | ra_class_new */
-> > +     union {
-> > +             unsigned long   flags;  /* RA_FLAG_xxx | class_old | class_new */
-> > +             struct {
-> > +                     u8      class_new;
-> > +                     u8      class_old;
-> 
-> This doesn't work on big endiam machines, does it?
-> 
-> IMO you should use a bitfield instead.
+With the sysctl cleanups sysctl is not really a part of proc
+it just shows up there, and any path based approach will not
+adequately describe the data as sysctl is essentially a
+union mount underneath the covers.  As designed this mechanism
+is viewer dependent so trying to be path based gets even worse.
 
-Or "use bit masks instead" since
+However the permissions in sys_sysctl are currently immutable
+and going through proc does not change the permission checks
+when accessing sysctl.  So we might as well stick with the well
+defined sysctl sid, as that is what selinux uses when proc is
+not compiled in.
 
-"The order of allocation of bit-fields within a unit (high-order to
-low-order or low-order to high-order) is implementation-defined."
+I.e.  I see no hope for salvaging the selinux_proc_get_sid call
+in selinux_sysctl so I'm removing it.
 
+Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 ---
-~Randy
+ security/selinux/hooks.c |    8 ++------
+ 1 files changed, 2 insertions(+), 6 deletions(-)
+
+diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
+index 7b38372..3a36057 100644
+--- a/security/selinux/hooks.c
++++ b/security/selinux/hooks.c
+@@ -1438,12 +1438,8 @@ static int selinux_sysctl(ctl_table *table, int op)
+ 
+ 	tsec = current->security;
+ 
+-	rc = selinux_proc_get_sid(table->de, (op == 001) ?
+-	                          SECCLASS_DIR : SECCLASS_FILE, &tsid);
+-	if (rc) {
+-		/* Default to the well-defined sysctl SID. */
+-		tsid = SECINITSID_SYSCTL;
+-	}
++	/* Use the well-defined sysctl SID. */
++	tsid = SECINITSID_SYSCTL;
+ 
+ 	/* The op values are "defined" in sysctl.c, thereby creating
+ 	 * a bad coupling between this module and sysctl.c */
+-- 
+1.4.4.1.g278f
+
