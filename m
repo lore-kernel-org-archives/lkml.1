@@ -1,479 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752427AbXA1MLj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751914AbXA1MMF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752427AbXA1MLj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jan 2007 07:11:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752422AbXA1MLj
+	id S1751914AbXA1MMF (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jan 2007 07:12:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751927AbXA1MLl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jan 2007 07:11:39 -0500
+	Sun, 28 Jan 2007 07:11:41 -0500
 Received: from amsfep17-int.chello.nl ([213.46.243.15]:10126 "EHLO
 	amsfep18-int.chello.nl" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751927AbXA1MLa (ORCPT
+	by vger.kernel.org with ESMTP id S1752417AbXA1ML2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jan 2007 07:11:30 -0500
-Message-Id: <20070128120510.090289000@programming.kicks-ass.net>
+	Sun, 28 Jan 2007 07:11:28 -0500
+Message-Id: <20070128120509.719287000@programming.kicks-ass.net>
 References: <20070128115118.837777000@programming.kicks-ass.net>
 User-Agent: quilt/0.45-1
-Date: Sun, 28 Jan 2007 12:51:22 +0100
+Date: Sun, 28 Jan 2007 12:51:21 +0100
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [PATCH 4/7] fs: break the file_list_lock for sb->s_files
-Content-Disposition: inline; filename=s_files.patch
+Subject: [PATCH 3/7] barrier: a scalable synchonisation barrier
+Content-Disposition: inline; filename=barrier.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Break the protection of sb->s_files out from under the global file_list_lock.
-
-sb->s_files is converted to a lock_list. furthermore to prevent the 
-lock_list_head of getting too contended with concurrent add operations
-the add is buffered in per cpu filevecs.
-
-This would ordinarily require a flush before a delete operation - to ensure
-the to be deleted entry is indeed added to the list. This is avoided by 
-storing a pointer to the filevec location in the not yet used list_head.
-This pointer can then be used to clear the filevec entry before its actually
-added.
-
-The file_flag mess is a bit unfortunate - this can be removed by also
-converting tty->tty_files to a lock_list (TODO).
+This barrier thing is constructed so that it will not write in the sync()
+condition (the hot path) when there are no active lock sections; thus avoiding
+cacheline bouncing. -- I'm just not sure how this will work out in relation to
+PI. We might track those in the barrier scope and boost those by the max prio
+of the blockers.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- fs/dquot.c                   |   10 +-
- fs/file_table.c              |  170 +++++++++++++++++++++++++++++++++++++++----
- fs/open.c                    |    2 
- fs/proc/generic.c            |    8 --
- fs/super.c                   |    7 -
- include/linux/fs.h           |   23 +++++
- mm/readahead.c               |    2 
- security/selinux/selinuxfs.c |    9 +-
- 8 files changed, 194 insertions(+), 37 deletions(-)
+ include/linux/barrier.h |   65 ++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 65 insertions(+)
 
-Index: linux-2.6/fs/dquot.c
+Index: linux/include/linux/barrier.h
 ===================================================================
---- linux-2.6.orig/fs/dquot.c	2007-01-13 21:04:07.000000000 +0100
-+++ linux-2.6/fs/dquot.c	2007-01-27 21:07:44.000000000 +0100
-@@ -688,23 +688,21 @@ static int dqinit_needed(struct inode *i
- /* This routine is guarded by dqonoff_mutex mutex */
- static void add_dquot_ref(struct super_block *sb, int type)
- {
--	struct list_head *p;
-+	struct file *filp;
- 
- restart:
--	file_list_lock();
--	list_for_each(p, &sb->s_files) {
--		struct file *filp = list_entry(p, struct file, f_u.fu_list);
-+	filevec_add_drain_all();
-+	lock_list_for_each_entry(filp, &sb->s_files, f_u.fu_llist) {
- 		struct inode *inode = filp->f_path.dentry->d_inode;
- 		if (filp->f_mode & FMODE_WRITE && dqinit_needed(inode, type)) {
- 			struct dentry *dentry = dget(filp->f_path.dentry);
--			file_list_unlock();
-+			lock_list_for_each_entry_stop(filp, f_u.fu_llist);
- 			sb->dq_op->initialize(inode, type);
- 			dput(dentry);
- 			/* As we may have blocked we had better restart... */
- 			goto restart;
- 		}
- 	}
--	file_list_unlock();
- }
- 
- /* Return 0 if dqput() won't block (note that 1 doesn't necessarily mean blocking) */
-Index: linux-2.6/fs/file_table.c
-===================================================================
---- linux-2.6.orig/fs/file_table.c	2007-01-13 21:04:07.000000000 +0100
-+++ linux-2.6/fs/file_table.c	2007-01-27 21:07:44.000000000 +0100
-@@ -113,7 +113,7 @@ struct file *get_empty_filp(void)
- 		goto fail_sec;
- 
- 	tsk = current;
--	INIT_LIST_HEAD(&f->f_u.fu_list);
-+	INIT_LOCK_LIST_HEAD(&f->f_u.fu_llist);
- 	atomic_set(&f->f_count, 1);
- 	rwlock_init(&f->f_owner.lock);
- 	f->f_uid = tsk->fsuid;
-@@ -245,32 +245,175 @@ void put_filp(struct file *file)
- 	}
- }
- 
--void file_move(struct file *file, struct list_head *list)
-+enum {
-+	FILEVEC_SIZE = 15
-+};
-+
-+struct filevec {
-+	unsigned long nr;
-+	struct file *files[FILEVEC_SIZE];
-+};
-+
-+static DEFINE_PER_CPU(struct filevec, sb_fvec);
-+
-+static inline unsigned int filevec_size(struct filevec *fvec)
- {
--	if (!list)
--		return;
--	file_list_lock();
--	list_move(&file->f_u.fu_list, list);
--	file_list_unlock();
-+	return FILEVEC_SIZE - fvec->nr;
-+}
-+
-+static inline unsigned int filevec_count(struct filevec *fvec)
-+{
-+	return fvec->nr;
-+}
-+
-+static inline void filevec_reinit(struct filevec *fvec)
-+{
-+	fvec->nr = 0;
-+}
-+
-+static inline unsigned int filevec_add(struct filevec *fvec, struct file *filp)
-+{
-+	rcu_assign_pointer(fvec->files[fvec->nr], filp);
-+
-+	/*
-+	 * Here we do icky stuff in order to avoid flushing the per cpu filevec
-+	 * on list removal.
-+	 *
-+	 * We store the location on the per cpu filevec in the as of yet unused
-+	 * fu_llist.next field and toggle bit 0 to indicate we done so. This
-+	 * allows the removal code to set the filevec entry to NULL, thereby
-+	 * avoiding the list add.
-+	 *
-+	 * Abuse the fu_llist.lock for protection.
-+	 */
-+	spin_lock(&filp->f_u.fu_llist.lock);
-+	filp->f_u.fu_llist.next = (void *)&fvec->files[fvec->nr];
-+	__set_bit(0, (void *)&filp->f_u.fu_llist.next);
-+	spin_unlock(&filp->f_u.fu_llist.lock);
-+
-+	fvec->nr++;
-+	return filevec_size(fvec);
-+}
-+
-+static void __filevec_add(struct filevec *fvec)
-+{
-+	int i;
-+
-+	for (i = 0; i < filevec_count(fvec); i++) {
-+		struct file *filp;
-+
-+		/*
-+		 * see the comment in filevec_add();
-+		 * need RCU because a concurrent remove might have deleted
-+		 * the entry from under us.
-+		 */
-+		rcu_read_lock();
-+		filp = rcu_dereference(fvec->files[i]);
-+		/*
-+		 * the simple case, its gone - NEXT!
-+		 */
-+		if (!filp) {
-+			rcu_read_unlock();
-+			continue;
-+		}
-+
-+		spin_lock(&filp->f_u.fu_llist.lock);
-+		/*
-+		 * If the entry really is still there, add it!
-+		 */
-+		if (rcu_dereference(fvec->files[i])) {
-+			struct super_block *sb =
-+				filp->f_mapping->host->i_sb;
-+
-+			__lock_list_add(&filp->f_u.fu_llist, &sb->s_files);
-+		}
-+		spin_unlock(&filp->f_u.fu_llist.lock);
-+		rcu_read_unlock();
-+	}
-+	filevec_reinit(fvec);
-+}
-+
-+static void filevec_add_drain(void)
-+{
-+	struct filevec *fvec = &get_cpu_var(sb_fvec);
-+	if (filevec_count(fvec))
-+		__filevec_add(fvec);
-+	put_cpu_var(sb_fvec);
- }
- 
-+static void filevec_add_drain_per_cpu(struct work_struct *dummy)
-+{
-+	filevec_add_drain();
-+}
-+
-+int filevec_add_drain_all(void)
-+{
-+	return schedule_on_each_cpu(filevec_add_drain_per_cpu);
-+}
-+EXPORT_SYMBOL_GPL(filevec_add_drain_all);
-+
- void file_kill(struct file *file)
- {
--	if (!list_empty(&file->f_u.fu_list)) {
-+	if (file_flag(file, F_SUPERBLOCK)) {
-+		void **ptr;
-+
-+		file_flag_clear(file, F_SUPERBLOCK);
-+
-+		/*
-+		 * If bit 0 of the fu_llist.next pointer is set we're still
-+		 * enqueued on a per cpu filevec, in that case clear the entry
-+		 * and we're done.
-+		 */
-+		spin_lock(&file->f_u.fu_llist.lock);
-+		ptr = (void **)file->f_u.fu_llist.next;
-+		if (__test_and_clear_bit(0, (void *)&ptr)) {
-+			rcu_assign_pointer(*ptr, NULL);
-+			INIT_LIST_HEAD(&file->f_u.fu_llist.head);
-+			spin_unlock(&file->f_u.fu_llist.lock);
-+			return;
-+		}
-+		spin_unlock(&file->f_u.fu_llist.lock);
-+
-+		if (!list_empty(&file->f_u.fu_list))
-+			lock_list_del_init(&file->f_u.fu_llist);
-+
-+	} else if (!list_empty(&file->f_u.fu_list)) {
- 		file_list_lock();
- 		list_del_init(&file->f_u.fu_list);
- 		file_list_unlock();
- 	}
- }
- 
-+void file_move(struct file *file, struct list_head *list)
-+{
-+	struct super_block *sb;
-+
-+	if (!list)
-+		return;
-+
-+	file_kill(file);
-+
-+	sb = file->f_mapping->host->i_sb;
-+	if (list == &sb->s_files.head) {
-+		struct filevec *fvec = &get_cpu_var(sb_fvec);
-+		file_flag_set(file, F_SUPERBLOCK);
-+		if (!filevec_add(fvec, file))
-+			__filevec_add(fvec);
-+		put_cpu_var(sb_fvec);
-+	} else {
-+		file_list_lock();
-+		list_add(&file->f_u.fu_list, list);
-+		file_list_unlock();
-+	}
-+}
-+
- int fs_may_remount_ro(struct super_block *sb)
- {
--	struct list_head *p;
-+	struct file *file;
- 
- 	/* Check that no files are currently opened for writing. */
--	file_list_lock();
--	list_for_each(p, &sb->s_files) {
--		struct file *file = list_entry(p, struct file, f_u.fu_list);
-+	filevec_add_drain_all();
-+	lock_list_for_each_entry(file, &sb->s_files, f_u.fu_llist) {
- 		struct inode *inode = file->f_path.dentry->d_inode;
- 
- 		/* File with pending delete? */
-@@ -281,10 +424,9 @@ int fs_may_remount_ro(struct super_block
- 		if (S_ISREG(inode->i_mode) && (file->f_mode & FMODE_WRITE))
- 			goto too_bad;
- 	}
--	file_list_unlock();
- 	return 1; /* Tis' cool bro. */
- too_bad:
--	file_list_unlock();
-+	lock_list_for_each_entry_stop(file, f_u.fu_llist);
- 	return 0;
- }
- 
-Index: linux-2.6/fs/open.c
-===================================================================
---- linux-2.6.orig/fs/open.c	2007-01-13 21:04:07.000000000 +0100
-+++ linux-2.6/fs/open.c	2007-01-27 21:07:44.000000000 +0100
-@@ -692,7 +692,7 @@ static struct file *__dentry_open(struct
- 	f->f_path.mnt = mnt;
- 	f->f_pos = 0;
- 	f->f_op = fops_get(inode->i_fop);
--	file_move(f, &inode->i_sb->s_files);
-+	file_move(f, &inode->i_sb->s_files.head);
- 
- 	if (!open && f->f_op)
- 		open = f->f_op->open;
-Index: linux-2.6/fs/proc/generic.c
-===================================================================
---- linux-2.6.orig/fs/proc/generic.c	2007-01-13 21:04:07.000000000 +0100
-+++ linux-2.6/fs/proc/generic.c	2007-01-27 21:07:44.000000000 +0100
-@@ -549,15 +549,14 @@ static int proc_register(struct proc_dir
-  */
- static void proc_kill_inodes(struct proc_dir_entry *de)
- {
--	struct list_head *p;
-+	struct file *filp;
- 	struct super_block *sb = proc_mnt->mnt_sb;
- 
- 	/*
- 	 * Actually it's a partial revoke().
- 	 */
--	file_list_lock();
--	list_for_each(p, &sb->s_files) {
--		struct file * filp = list_entry(p, struct file, f_u.fu_list);
-+	filevec_add_drain_all();
-+	lock_list_for_each_entry(filp, &sb->s_files, f_u.fu_llist) {
- 		struct dentry * dentry = filp->f_path.dentry;
- 		struct inode * inode;
- 		const struct file_operations *fops;
-@@ -571,7 +570,6 @@ static void proc_kill_inodes(struct proc
- 		filp->f_op = NULL;
- 		fops_put(fops);
- 	}
--	file_list_unlock();
- }
- 
- static struct proc_dir_entry *proc_create(struct proc_dir_entry **parent,
-Index: linux-2.6/fs/super.c
-===================================================================
---- linux-2.6.orig/fs/super.c	2007-01-13 21:04:07.000000000 +0100
-+++ linux-2.6/fs/super.c	2007-01-27 21:07:44.000000000 +0100
-@@ -67,7 +67,7 @@ static struct super_block *alloc_super(s
- 		}
- 		INIT_LIST_HEAD(&s->s_dirty);
- 		INIT_LIST_HEAD(&s->s_io);
--		INIT_LIST_HEAD(&s->s_files);
-+		INIT_LOCK_LIST_HEAD(&s->s_files);
- 		INIT_LIST_HEAD(&s->s_instances);
- 		INIT_HLIST_HEAD(&s->s_anon);
- 		INIT_LIST_HEAD(&s->s_inodes);
-@@ -568,12 +568,11 @@ static void mark_files_ro(struct super_b
- {
- 	struct file *f;
- 
--	file_list_lock();
--	list_for_each_entry(f, &sb->s_files, f_u.fu_list) {
-+	filevec_add_drain_all();
-+	lock_list_for_each_entry(f, &sb->s_files, f_u.fu_llist) {
- 		if (S_ISREG(f->f_path.dentry->d_inode->i_mode) && file_count(f))
- 			f->f_mode &= ~FMODE_WRITE;
- 	}
--	file_list_unlock();
- }
- 
- /**
-Index: linux-2.6/include/linux/fs.h
-===================================================================
---- linux-2.6.orig/include/linux/fs.h	2007-01-22 22:43:28.000000000 +0100
-+++ linux-2.6/include/linux/fs.h	2007-01-27 21:07:44.000000000 +0100
-@@ -275,6 +275,7 @@ extern int dir_notify_enable;
- #include <linux/cache.h>
- #include <linux/kobject.h>
- #include <linux/list.h>
-+#include <linux/lock_list.h>
- #include <linux/radix-tree.h>
- #include <linux/prio_tree.h>
- #include <linux/init.h>
-@@ -709,9 +710,13 @@ struct file {
- 	/*
- 	 * fu_list becomes invalid after file_free is called and queued via
- 	 * fu_rcuhead for RCU freeing
-+	 * fu_llist is used for the superblock s_files list; its crucial that
-+	 * the spinlock contained therein is not clobbered by other uses of
-+	 * the union.
- 	 */
- 	union {
- 		struct list_head	fu_list;
-+		struct lock_list_head	fu_llist;
- 		struct rcu_head 	fu_rcuhead;
- 	} f_u;
- 	struct path		f_path;
-@@ -744,9 +749,25 @@ extern spinlock_t files_lock;
- #define file_list_lock() spin_lock(&files_lock);
- #define file_list_unlock() spin_unlock(&files_lock);
- 
+--- /dev/null
++++ linux/include/linux/barrier.h
+@@ -0,0 +1,65 @@
 +/*
-+ * steal the upper 8 bits from the read-a-head flags
++ * Copyright (C) 2006, Red Hat, Inc., Peter Zijlstra <pzijlstr@redhat.com>
++ * Licenced under the GPLv2.
++ *
++ * simple synchonisation barrier
++ *
++ * The sync() operation will wait for completion of all lock sections if any.
++ *
++ * The lock sections are intended to be rare and the sync operation frequent.
++ * This construct is created to be scalable and does only 1 read in the fast
++ * path (sync), hence avoiding cacheline bounces.
++ *
++ * NOTE: it _synchronisation_ only, so if there are serialisation requirements
++ * those must be met by something external to this construct.
 + */
-+#define F_SHIFT		24
++#ifndef _LINUX_BARRIER_H
++#define _LINUX_BARRIER_H
 +
-+#define F_SUPERBLOCK	0
++#ifdef __KERNEL__
 +
-+#define file_flag_set(file, flag)	\
-+	__set_bit((flag) + F_SHIFT, &(file)->f_ra.flags)
-+#define file_flag_clear(file, flag)	\
-+	__clear_bit((flag) + F_SHIFT, &(file)->f_ra.flags)
-+#define file_flag(file, flag)		\
-+	test_bit((flag) + F_SHIFT, &(file)->f_ra.flags)
++#include <linux/wait.h>
++#include <linux/sched.h>
++#include <asm/atomic.h>
 +
- #define get_file(x)	atomic_inc(&(x)->f_count)
- #define file_count(x)	atomic_read(&(x)->f_count)
- 
-+extern int filevec_add_drain_all(void);
++struct barrier {
++	atomic_t count;
++	wait_queue_head_t wait;
++};
 +
- #define	MAX_NON_LFS	((1UL<<31) - 1)
- 
- /* Page cache limit. The filesystems should put that into their s_maxbytes 
-@@ -928,7 +949,7 @@ struct super_block {
- 	struct list_head	s_dirty;	/* dirty inodes */
- 	struct list_head	s_io;		/* parked for writeback */
- 	struct hlist_head	s_anon;		/* anonymous dentries for (nfs) exporting */
--	struct list_head	s_files;
-+	struct lock_list_head	s_files;
- 
- 	struct block_device	*s_bdev;
- 	struct list_head	s_instances;
-Index: linux-2.6/mm/readahead.c
-===================================================================
---- linux-2.6.orig/mm/readahead.c	2007-01-22 22:43:29.000000000 +0100
-+++ linux-2.6/mm/readahead.c	2007-01-27 21:07:44.000000000 +0100
-@@ -69,7 +69,7 @@ static inline void reset_ahead_window(st
- static inline void ra_off(struct file_ra_state *ra)
- {
- 	ra->start = 0;
--	ra->flags = 0;
-+	ra->flags &= (~0UL) << F_SHIFT;
- 	ra->size = 0;
- 	reset_ahead_window(ra);
- 	return;
-Index: linux-2.6/security/selinux/selinuxfs.c
-===================================================================
---- linux-2.6.orig/security/selinux/selinuxfs.c	2007-01-13 21:04:19.000000000 +0100
-+++ linux-2.6/security/selinux/selinuxfs.c	2007-01-27 21:10:48.000000000 +0100
-@@ -940,7 +940,8 @@ static struct file_operations sel_commit
-  * fs/proc/generic.c proc_kill_inodes */
- static void sel_remove_bools(struct dentry *de)
- {
--	struct list_head *p, *node;
-+	struct list_head *node;
-+	struct file *filp;
- 	struct super_block *sb = de->d_sb;
- 
- 	spin_lock(&dcache_lock);
-@@ -962,9 +963,8 @@ static void sel_remove_bools(struct dent
- 
- 	spin_unlock(&dcache_lock);
- 
--	file_list_lock();
--	list_for_each(p, &sb->s_files) {
--		struct file * filp = list_entry(p, struct file, f_u.fu_list);
-+	filevec_add_drain_all();
-+	lock_list_for_each_entry(filp, &sb->s_files, f_u.fu_llist) {
- 		struct dentry * dentry = filp->f_path.dentry;
- 
- 		if (dentry->d_parent != de) {
-@@ -972,7 +972,6 @@ static void sel_remove_bools(struct dent
- 		}
- 		filp->f_op = NULL;
- 	}
--	file_list_unlock();
- }
- 
- #define BOOL_DIR_NAME "booleans"
++static inline void init_barrier(struct barrier *b)
++{
++	atomic_set(&b->count, 0);
++	init_waitqueue_head(&b->wait);
++	__acquire(b);
++}
++
++static inline void barrier_lock(struct barrier *b)
++{
++	__release(b);
++	atomic_inc(&b->count);
++	smp_wmb();
++}
++
++static inline void barrier_unlock(struct barrier *b)
++{
++	smp_wmb();
++	if (atomic_dec_and_test(&b->count))
++		__wake_up(&b->wait, TASK_INTERRUPTIBLE|TASK_UNINTERRUPTIBLE, 0, b);
++}
++
++static inline void barrier_sync(struct barrier *b)
++{
++	might_sleep();
++
++	if (unlikely(atomic_read(&b->count))) {
++		DEFINE_WAIT(wait);
++		prepare_to_wait(&b->wait, &wait, TASK_UNINTERRUPTIBLE);
++		while (atomic_read(&b->count))
++			schedule();
++		finish_wait(&b->wait, &wait);
++	}
++}
++
++#endif /* __KERNEL__ */
++#endif /* _LINUX_BARRIER_H */
 
 --
 
