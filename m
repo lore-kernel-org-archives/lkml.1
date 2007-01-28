@@ -1,93 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752424AbXA1MXS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752432AbXA1Mkg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752424AbXA1MXS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jan 2007 07:23:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752425AbXA1MXS
+	id S1752432AbXA1Mkg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jan 2007 07:40:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752431AbXA1Mkg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jan 2007 07:23:18 -0500
-Received: from smtp.gentoo.org ([140.211.166.183]:37205 "EHLO smtp.gentoo.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752423AbXA1MXS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jan 2007 07:23:18 -0500
-From: Mike Frysinger <vapier@gentoo.org>
-Organization: wh0rd.org
-To: linux-usb-devel@lists.sourceforge.net
-Subject: [patch] use __u32 rather than u32 in userspace ioctls in usbdevice_fs.h
-Date: Sun, 28 Jan 2007 07:23:57 -0500
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_dXJvF+F1t7iE6ZQ"
-Message-Id: <200701280723.57741.vapier@gentoo.org>
+	Sun, 28 Jan 2007 07:40:36 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:43509 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751927AbXA1Mkf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Jan 2007 07:40:35 -0500
+Date: Sun, 28 Jan 2007 12:51:48 +0000
+From: Alan <alan@lxorguk.ukuu.org.uk>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: jgarzik@pobox.com, wkl@informatik.uni-kiel.de, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] libata: add a dummy set_mode() in pata_pcmcia
+Message-ID: <20070128125148.2dfc1973@localhost.localdomain>
+In-Reply-To: <200701281134.02218.arnd@arndb.de>
+References: <200701281134.02218.arnd@arndb.de>
+X-Mailer: Claws Mail 2.7.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Boundary-00=_dXJvF+F1t7iE6ZQ
-Content-Type: multipart/signed;
-  boundary="nextPart3272878.t29gGdagJp";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
+On Sun, 28 Jan 2007 11:34:01 +0100
+Arnd Bergmann <arnd@arndb.de> wrote:
 
---nextPart3272878.t29gGdagJp
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+> CompactFlash cards in a passive PCMCIA adapter don't seem
+> to like the ATA_CMD_SET_FEATURES command, which causes
+> libata device probing to fail.
+> 
+> Since PCMCIA only allows PIO mode 0 anyway, there is no
+> point in ever setting a higher speed. Adding the dummy
+> function seems to do the right thing.
+> 
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 
-the trivial attached patch fixes ioctl defines in usbdevice_fs.h that are=20
-exported to userspace to use __u32 rather than u32
-=2Dmike
+NAK
 
---nextPart3272878.t29gGdagJp
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.1 (GNU/Linux)
-
-iQIVAwUARbyV3UFjO5/oN/WBAQIR0Q//W3KFFjReRdQ9nlTOptHRYiirkK7kqaTx
-6bXUJQhCY198qct8bBnuzyEuKhwJvlHa+i7UgTaqbp4bJwIkxatiXoIxnM3bZl4g
-txaoXmgXsMh+J3wAf/H2v+/3h2F6otKleuzLE2QHIuMv+fUnoYdZlTXiLOMPR9ds
-wcX1NUnZj/HJRk+uoMZ+MzTvZYt+4+m5dVaIv2qNhaasGAl3WjhQ74kPAUqU/XJF
-i1Yly7QsO03Wcbo5V2V8E8MLXKgRzhHxTNhTJVvQQ3B1nVkRFCiaMGcI8luNMlpc
-UZYhwPt30DqYIp3vUCvLd43YXPU3vC74t98eAXXkcqOqyaPtT+qYi8dr9sNHtb3w
-gL+dRVwAyl4K1pOFzb06OVmnD3APeeHMizQoelIaplbCofCssweEJ6nZpGjoIEKC
-3aiQwCF7YaHGrGqcQAp7IgHnBYlFeV7/RCMBRGvTyxU+STMkB9AcH+Z5yFmyv2Ak
-t+ms/E9Rm038KqaJ1LDkdSH6XVngLsgrlKfyIoalflf+3BbVVyfzD8lYEYdr1z+2
-zodbMMrOZYwtT1In34ERHHBUWZC3/0jDHQbRlrodWPX6kKVzVL3vRR5DT2dpso50
-p82G3u8qWGS5rwmyFvY4PIZ86oo+r5pn9GlpsdfzpCV6SDF+UqAkJ9/pkTAzg9TS
-DruUXx8qN78=
-=u5Bs
------END PGP SIGNATURE-----
-
---nextPart3272878.t29gGdagJp--
-
---Boundary-00=_dXJvF+F1t7iE6ZQ
-Content-Type: text/x-diff;
-  charset="us-ascii";
-  name="linux-use-__-types-in-usbdevice-fs-header.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
-	filename="linux-use-__-types-in-usbdevice-fs-header.patch"
-
-Use __u32 rather than u32 in userspace ioctl defines.
-
-Signed-off-by: Mike Frysinger <vapier@gentoo.org>
-
---- a/include/linux/usbdevice_fs.h
-+++ b/include/linux/usbdevice_fs.h
-@@ -159,9 +159,9 @@ struct usbdevfs_ioctl32 {
- #define USBDEVFS_SUBMITURB32       _IOR('U', 10, struct usbdevfs_urb32)
- #define USBDEVFS_DISCARDURB        _IO('U', 11)
- #define USBDEVFS_REAPURB           _IOW('U', 12, void *)
--#define USBDEVFS_REAPURB32         _IOW('U', 12, u32)
-+#define USBDEVFS_REAPURB32         _IOW('U', 12, __u32)
- #define USBDEVFS_REAPURBNDELAY     _IOW('U', 13, void *)
--#define USBDEVFS_REAPURBNDELAY32   _IOW('U', 13, u32)
-+#define USBDEVFS_REAPURBNDELAY32   _IOW('U', 13, __u32)
- #define USBDEVFS_DISCSIGNAL        _IOR('U', 14, struct usbdevfs_disconnectsignal)
- #define USBDEVFS_CLAIMINTERFACE    _IOR('U', 15, unsigned int)
- #define USBDEVFS_RELEASEINTERFACE  _IOR('U', 16, unsigned int)
-
---Boundary-00=_dXJvF+F1t7iE6ZQ--
+See the update in bug #7711
