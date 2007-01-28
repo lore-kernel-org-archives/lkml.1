@@ -1,56 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932847AbXA1UsI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932855AbXA1VBV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932847AbXA1UsI (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jan 2007 15:48:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932846AbXA1UsI
+	id S932855AbXA1VBV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jan 2007 16:01:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932857AbXA1VBV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jan 2007 15:48:08 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:59841 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932847AbXA1UsH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jan 2007 15:48:07 -0500
-Message-ID: <45BD0BDC.40205@garzik.org>
-Date: Sun, 28 Jan 2007 15:47:24 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
+	Sun, 28 Jan 2007 16:01:21 -0500
+Received: from nic.NetDirect.CA ([216.16.235.2]:33271 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932855AbXA1VBU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Jan 2007 16:01:20 -0500
+X-Originating-Ip: 74.109.98.130
+Date: Sun, 28 Jan 2007 16:00:37 -0500 (EST)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@CPE00045a9c397f-CM001225dbafb6
+To: Linux kernel mailing list <linux-kernel@vger.kernel.org>
+cc: xfs-masters@oss.sgi.com, Andrew Morton <akpm@osdl.org>, dgc@sgi.com
+Subject: [PATCH} XFS: Remove placeholders for unimplemented functionality.
+Message-ID: <Pine.LNX.4.64.0701281557410.11046@CPE00045a9c397f-CM001225dbafb6>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-CC: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Greg Kroah-Hartman <greg@kroah.com>, Tony Luck <tony.luck@intel.com>,
-       Grant Grundler <grundler@parisc-linux.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Kyle McMartin <kyle@parisc-linux.org>,
-       linuxppc-dev@ozlabs.org, Brice Goglin <brice@myri.com>,
-       shaohua.li@intel.com, linux-pci@atrey.karlin.mff.cuni.cz,
-       "David S. Miller" <davem@davemloft.net>
-Subject: Re: [PATCH 0/6] MSI portability cleanups
-References: <1169714047.65693.647693675533.qpush@cradle> <m1hcubq6re.fsf@ebiederm.dsl.xmission.com> <1170015805.26655.15.camel@localhost.localdomain>
-In-Reply-To: <1170015805.26655.15.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.7 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.723, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, TW_BH 0.08)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Benjamin Herrenschmidt wrote:
->> The only architecture problem that isn't solvable in this context is
->> the problem of supporting the crazy hypervisor on the ppc RTAS, which
->> asks us to drive the hardware but does not give us access to the
->> hardware registers.
-> 
-> So you are saying that we should use your model while admitting that it
-> can't solve our problems...
-> 
-> I really don't understand why you seem so totally opposed to Michael's
-> approach which definitely looks to me like the sane thing to do. Note
-> that in the end, Michael's approach isn't -that- different from yours,
-> just a bit more abstracted.
+
+  Remove a couple kernel config variables (FS_POSIX_CAP and
+FS_POSIX_MAC) that represent placeholders for unimplemented
+functionality.
+
+Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
+
+---
+
+  compile-tested on i386.
 
 
-I think the high-level ops approach makes more sense.  It's more future 
-proof, in addition to covering all existing implementations.
+ fs/xfs/xfs_cap.h |   15 ---------------
+ fs/xfs/xfs_mac.h |   17 -----------------
+ 2 files changed, 32 deletions(-)
 
-	Jeff
+diff --git a/fs/xfs/xfs_cap.h b/fs/xfs/xfs_cap.h
+index 7a0e482..cfedfd1 100644
+--- a/fs/xfs/xfs_cap.h
++++ b/fs/xfs/xfs_cap.h
+@@ -45,25 +45,10 @@ typedef struct xfs_cap_set {
 
+ #ifdef __KERNEL__
 
+-#ifdef CONFIG_FS_POSIX_CAP
+-
+-#include <linux/posix_cap_xattr.h>
+-
+-struct bhv_vnode;
+-
+-extern int xfs_cap_vhascap(struct bhv_vnode *);
+-extern int xfs_cap_vset(struct bhv_vnode *, void *, size_t);
+-extern int xfs_cap_vget(struct bhv_vnode *, void *, size_t);
+-extern int xfs_cap_vremove(struct bhv_vnode *);
+-
+-#define _CAP_EXISTS		xfs_cap_vhascap
+-
+-#else
+ #define xfs_cap_vset(v,p,sz)	(-EOPNOTSUPP)
+ #define xfs_cap_vget(v,p,sz)	(-EOPNOTSUPP)
+ #define xfs_cap_vremove(v)	(-EOPNOTSUPP)
+ #define _CAP_EXISTS		(NULL)
+-#endif
+
+ #endif	/* __KERNEL__ */
+
+diff --git a/fs/xfs/xfs_mac.h b/fs/xfs/xfs_mac.h
+index 18e0e98..a3f7eaf 100644
+--- a/fs/xfs/xfs_mac.h
++++ b/fs/xfs/xfs_mac.h
+@@ -80,26 +80,9 @@ typedef struct xfs_mac_label {
+
+ #ifdef __KERNEL__
+
+-#ifdef CONFIG_FS_POSIX_MAC
+-
+-/* NOT YET IMPLEMENTED */
+-
+-#define MACEXEC		00100
+-#define MACWRITE	00200
+-#define MACREAD		00400
+-
+-struct xfs_inode;
+-extern int  xfs_mac_iaccess(struct xfs_inode *, mode_t, cred_t *);
+-
+-#define _MAC_XFS_IACCESS(i,m,c) (xfs_mac_iaccess(i,m,c))
+-#define _MAC_VACCESS(v,c,m)	(xfs_mac_vaccess(v,c,m))
+-#define _MAC_EXISTS		xfs_mac_vhaslabel
+-
+-#else
+ #define _MAC_XFS_IACCESS(i,m,c)	(0)
+ #define _MAC_VACCESS(v,c,m)	(0)
+ #define _MAC_EXISTS		(NULL)
+-#endif
+
+ #endif	/* __KERNEL__ */
+
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://www.fsdev.dreamhosters.com/wiki/index.php?title=Main_Page
+========================================================================
