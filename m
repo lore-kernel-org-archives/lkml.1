@@ -1,67 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932389AbXA1HIn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932414AbXA1HNI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932389AbXA1HIn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jan 2007 02:08:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932414AbXA1HIn
+	id S932414AbXA1HNI (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jan 2007 02:13:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932417AbXA1HNI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jan 2007 02:08:43 -0500
-Received: from ausmtp05.au.ibm.com ([202.81.18.154]:36805 "EHLO
-	ausmtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932389AbXA1HIm (ORCPT
+	Sun, 28 Jan 2007 02:13:08 -0500
+Received: from nf-out-0910.google.com ([64.233.182.185]:4700 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932414AbXA1HNH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jan 2007 02:08:42 -0500
-Message-ID: <45BC4BEF.3040303@linux.vnet.ibm.com>
-Date: Sun, 28 Jan 2007 12:38:31 +0530
-From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Organization: IBM
-User-Agent: Thunderbird 1.5.0.5 (X11/20060728)
+	Sun, 28 Jan 2007 02:13:07 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:user-agent:x-accept-language:mime-version:to:cc:subject:content-type:content-transfer-encoding;
+        b=ey6UcrbFz2t9CB0yGSw1eLgQ3XUnEx55/a/t3bZSx/Jkrb8zddykMV+qA9vMNFVThAInsNBqpaVtSJ2l8aWmY7Tl8jxnaOgGIL0/ScoVu4M1Gqb1V8/on6z5iwDuxZ/MihDdYWIcEMJoTWg0kybISUnxadwCAxFk4Z0jkPEhGTs=
+Message-ID: <45BC4CFE.7050602@googlemail.com>
+Date: Sun, 28 Jan 2007 08:13:02 +0100
+From: Dirk Behme <dirk.behme@googlemail.com>
+User-Agent: Mozilla Thunderbird 1.0.7 (X11/20050923)
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-CC: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] drop page cache of a single file
-References: <1167275845.15989.153.camel@ymzhang>
-In-Reply-To: <1167275845.15989.153.camel@ymzhang>
-Content-Type: text/plain; charset=utf-8
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+CC: linux-omap-open-source@linux.omap.com,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>
+Subject: Re: definite OMAP1610_IR-related typo
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Robert P. J. Day wrote at LKML:
+ > not sure what to do with this, it's all yours:
+ >
+ > ========== OMAP1610_IR ==========
+ > ./arch/arm/mach-omap1/devices.c:#if 
+defined(CONFIG_OMAP1610_IR) ||
+ > defined(CONFIG_OMAP161O_IR_MODULE)
+ > ========== OMAP161O_IR ==========
+ > ./arch/arm/mach-omap1/devices.c:#if 
+defined(CONFIG_OMAP1610_IR) ||
+ > defined(CONFIG_OMAP161O_IR_MODULE)
+ >
+ > note first that one of those config vars has an "oh" 
+while the other
+ > has a *zero*. i'm pretty sure that's bad.
+ >
+ > in any event, there's no such config variable of *either* 
+spelling
+ > in any Kconfig file, but there *is* a more all-encompassing
+ > CONFIG_OMAP16XX confguration setting.
 
+This is fixed in recent OMAP git tree and OMAP patches we 
+prepared for upstream. Can you try OMAP patches 4113, 4114, 
+4115 and 4116 to be found in RMKs patch system [1]? Or, even 
+better, use current OMAP git [2]?
 
-Zhang, Yanmin wrote:
-> Currently, by /proc/sys/vm/drop_caches, applications could drop pagecache,
-> slab(dentries and inodes), or both, but applications couldn't choose to
-> just drop the page cache of one file. An user of VOD (Video-On-Demand)
-> needs this capability to have more detailed control on page cache release.
-> 
-> Below patch against 2.6.19 implements it.
-> 
-> Signed-off-by: Zhang Yanmin <yanmin.zhang@intel.com>
-> 
-> ---
-> 
-> diff -Nraup linux-2.6.19/Documentation/filesystems/proc.txt linux-2.6.19_dropcache/Documentation/filesystems/proc.txt
-> --- linux-2.6.19/Documentation/filesystems/proc.txt	2006-12-08 15:32:44.000000000 +0800
-> +++ linux-2.6.19_dropcache/Documentation/filesystems/proc.txt	2006-12-28 10:20:39.000000000 +0800
-> @@ -1320,6 +1320,8 @@ To free dentries and inodes:
->  	echo 2 > /proc/sys/vm/drop_caches
->  To free pagecache, dentries and inodes:
->  	echo 3 > /proc/sys/vm/drop_caches
-> +To free the pagecache of one file:
-> +	echo "4 /path/to/filename" > /proc/sys/vm/drop_caches
-> 
->  As this is a non-destructive operation and dirty objects are not freeable, the
->  user should run `sync' first.
+Regards
 
-"sync" is the most time consuming operation.  Clean pagecache pages
-are immediately reclaimable... they are actually free pages.  Writing
-out dirty pages consumes time.
+Dirk
 
-Hence this approach may not provide the required performance benefits
-since only clean pagecache pages are marked free.  fadvise approach
-would provide similar behavior.
+P.S. #1: Would be nice to CC OMAP list [3] next time as well.
 
---Vaidy
+P.S. #2: Sorry if mail references are wrong, I'm currently 
+not subscribed to LKML.
 
-[snip]
+[1] 
+http://www.arm.linux.org.uk/developer/patches/section.php?section=0
+
+[2] 
+http://source.mvista.com/git/gitweb.cgi?p=linux-omap-2.6.git;a=summary
+
+[3] 
+http://linux.omap.com/mailman/listinfo/linux-omap-open-source
+
 
