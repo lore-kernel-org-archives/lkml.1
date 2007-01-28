@@ -1,59 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932252AbXA1JFS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932471AbXA1JMn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932252AbXA1JFS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jan 2007 04:05:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932463AbXA1JFR
+	id S932471AbXA1JMn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jan 2007 04:12:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932474AbXA1JMm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jan 2007 04:05:17 -0500
-Received: from hobbit.corpit.ru ([81.13.94.6]:20353 "EHLO hobbit.corpit.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932252AbXA1JFK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jan 2007 04:05:10 -0500
-Message-ID: <45BC6740.1000606@tls.msk.ru>
-Date: Sun, 28 Jan 2007 12:05:04 +0300
-From: Michael Tokarev <mjt@tls.msk.ru>
-Organization: Telecom Service, JSC
-User-Agent: Icedove 1.5.0.9 (X11/20061220)
-MIME-Version: 1.0
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-CC: Marc Perkel <mperkel@yahoo.com>, linux-kernel@vger.kernel.org
-Subject: Re: Raid 10 question/problem [ot]
-References: <593246.19408.qm@web52505.mail.yahoo.com> <Pine.LNX.4.61.0701271931260.22295@yvahk01.tjqt.qr>
-In-Reply-To: <Pine.LNX.4.61.0701271931260.22295@yvahk01.tjqt.qr>
-X-Enigmail-Version: 0.94.1.0
-OpenPGP: id=4F9CF57E
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sun, 28 Jan 2007 04:12:42 -0500
+Received: from postfix2-g20.free.fr ([212.27.60.43]:36659 "EHLO
+	postfix2-g20.free.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932471AbXA1JMm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Jan 2007 04:12:42 -0500
+To: linux-kernel@vger.kernel.org
+Subject: [Q] Prefered suspend to ram or disk method ?
+X-Mailer: MH-E 8.0.2; nmh 1.2; GNU Emacs 22.0.51
+Date: Sun, 28 Jan 2007 10:09:16 +0100
+Message-ID: <23972.1169975356@localhost>
+From: Xavier Maillard <zedek@gnu.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Engelhardt wrote:
-> On Jan 27 2007 10:31, Marc Perkel wrote:
-[]
->> Sorry about that. I'm using Fedora Core 6. /dev/md0
->> and /dev/md1, buth of which are raid 1 arrays survive
->> the reboot. But when I make a raid 0 out of those two
->> raid arrays that's what is vanishing.
-> 
-> That's interesting. I am using Aurora Corona, and all but md0 vanishes.
-> (Reason for that is that udev does not create the nodes md1-md31 on
-> boot, so mdadm cannot assemble the arrays.)
+Hi there,
 
-This is nonsense.
+Just a quick and easy question for you.
 
-Mdadm creates those nodes automa[tg]ically - man mdadm, search for --auto.
-Udev has exactly nothing to do with mdX nodes.
+I am aware of three ways to make my laptop suspend/hibernate:
 
-In order for an md array to be started up on boot, it has to be specified
-in /etc/mdadm.conf.  With proper DEVICE line in there.  That's all.
+1. suspend
+2. ususpend
+3. suspend2
 
-If you're using raid0 on top of two raid1s (as opposed to using raid10
-directly - which is more efficient and flexible), the DEVICE line in
-mdadm.conf should be either `partitions' (usually preferred way), or -
-in case direct device list is specified - should contain both real
-disks AND the raid1 arrays.
+The first two are directly part of the official linux
+distribution and the third one is easy to install into it.
 
-But in any case, this has exactly nothing to do with kernel.
-It's 100% userspace issues, I'd say distribution-specific issues.
+Here is my question: what is the recommended method ? How does
+suspend compare to ususpend/suspend2 ? Is there any chance to see
+suspend2 be part of the official linux distribution in a near
+future or not ?
 
-/mjt
+Regards,
+
+Xavier
