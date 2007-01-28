@@ -1,55 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932108AbXA0X10@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932158AbXA1AKK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932108AbXA0X10 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Jan 2007 18:27:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932152AbXA0X10
+	id S932158AbXA1AKK (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Jan 2007 19:10:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932155AbXA1AKJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Jan 2007 18:27:26 -0500
-Received: from ug-out-1314.google.com ([66.249.92.168]:44574 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932108AbXA0X1Z (ORCPT
+	Sat, 27 Jan 2007 19:10:09 -0500
+Received: from imf21aec.mail.bellsouth.net ([205.152.59.69]:58288 "EHLO
+	imf21aec.mail.bellsouth.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932154AbXA1AKH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Jan 2007 18:27:25 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=gH4j3iLYfWAARh7CynW7DtDuVjn5R5AQukXwTPFrU1EOEX484t7Q/yeJMdty18AYxxR4wvETigomWevDzNS1JDhB3eMS+d0MuM8r3k3Ftf25SbDFQssANn5EFpvkS1cGl0R0LNOB4Yy0LE1iMiiUmnYju7bXBnOzncfplmp2ne4=
-Message-ID: <6bffcb0e0701271527o32bfe59exf0bde348d10328f1@mail.gmail.com>
-Date: Sun, 28 Jan 2007 00:27:17 +0100
-From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-To: "Tilman Schmidt" <tilman@imap.cc>
-Subject: Re: mm snapshot broken-out-2007-01-26-00-36.tar.gz uploaded
-Cc: "Andrew Morton" <akpm@osdl.org>, linux-kernel@vger.kernel.org,
-       "Hansjoerg Lipp" <hjlipp@web.de>
-In-Reply-To: <45BBDF84.4020403@imap.cc>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sat, 27 Jan 2007 19:10:07 -0500
+Date: Sat, 27 Jan 2007 18:10:04 -0600
+From: Jay Cliburn <jacliburn@bellsouth.net>
+To: jeff@garzik.org
+Cc: csnook@redhat.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       atl1-devel@lists.sourceforge.net, randy.dunlap@oracle.com,
+       kronos.it@gmail.com
+Subject: [PATCH 2.6.20-rc5 1/4] atl1: unconditionally enable MSI
+Message-ID: <20070128001004.GA10269@osprey.hogchain.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <200701260837.l0Q8blBr011622@shell0.pdx.osdl.net>
-	 <6bffcb0e0701270837i1ec40560l6e61e8876177e9da@mail.gmail.com>
-	 <45BBC444.8090109@imap.cc> <20070127134116.06bdadd8.akpm@osdl.org>
-	 <45BBDF84.4020403@imap.cc>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 28/01/07, Tilman Schmidt <tilman@imap.cc> wrote:
-> >>> On 26/01/07, akpm@osdl.org <akpm@osdl.org> wrote:
-> >>>> The mm snapshot broken-out-2007-01-26-00-36.tar.gz has been uploaded to
-> >>>>
-> >>>>    ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/mm/broken-out-2007-01-26-00-36.tar.gz
->
-> Btw, I never received that original message, nor do I find it in
-> the LKML archive on lkml.org.
 
-There is a mm-commits mailing list.
+From: Luca Tettamanti <kronos.it@gmail.com>
 
-http://vger.kernel.org/vger-lists.html#mm-commits
+Unconditionally enable MSI in atl1 driver. Also remove some useless
+#ifdef since pci_{en,dis}able_msi() are no-op when MSI support is not
+configured in.
 
-Regards,
-Michal
+Signed-off-by: Luca Tettamanti <kronos.it@gmail.com>
+Signed-off-by: Jay Cliburn <jacliburn@bellsouth.net>
+---
 
+ drivers/net/atl1/atl1.h       |    1 -
+ drivers/net/atl1/atl1_main.c  |   22 +++++++---------------
+ drivers/net/atl1/atl1_param.c |   13 -------------
+ 3 files changed, 7 insertions(+), 29 deletions(-)
+
+diff --git a/drivers/net/atl1/atl1.h b/drivers/net/atl1/atl1.h
+index 1d13e8f..0b30e1c 100644
+--- a/drivers/net/atl1/atl1.h
++++ b/drivers/net/atl1/atl1.h
+@@ -281,7 +281,6 @@ struct atl1_adapter {
+ 	struct atl1_smb smb;
+ 	struct atl1_cmb cmb;
+ 
+-	int enable_msi;
+ 	u32 pci_state[16];
+ };
+ 
+diff --git a/drivers/net/atl1/atl1_main.c b/drivers/net/atl1/atl1_main.c
+index c0b1555..68e6cd1 100644
+--- a/drivers/net/atl1/atl1_main.c
++++ b/drivers/net/atl1/atl1_main.c
+@@ -1793,18 +1793,12 @@ s32 atl1_up(struct atl1_adapter *adapter)
+ 		goto err_up;
+ 	}
+ 
+-#ifdef CONFIG_PCI_MSI
+-	if (adapter->enable_msi) {
+-		err = pci_enable_msi(adapter->pdev);
+-		if (err) {
+-			dev_info(&adapter->pdev->dev, "Unable to enable MSI: %d\n", err);
+-			adapter->enable_msi = 0;
+-		}
+-	}
+-#endif
+-	if (!adapter->enable_msi)
++	err = pci_enable_msi(adapter->pdev);
++	if (err) {
++		dev_info(&adapter->pdev->dev, "Unable to enable MSI: %d\n", err);
+ 		irq_flags |= IRQF_SHARED;
+-
++	}
++	
+ 	err = request_irq(adapter->pdev->irq, &atl1_intr, irq_flags,
+ 			netdev->name, netdev);
+ 	if (unlikely(err))
+@@ -1821,6 +1815,7 @@ s32 atl1_up(struct atl1_adapter *adapter)
+ 	free_irq(adapter->pdev->irq, netdev);
+ 
+ err_up:
++	pci_disable_msi(adapter->pdev);
+ 	/* free rx_buffers */
+ 	atl1_clean_rx_ring(adapter);
+ 	return err;
+@@ -1836,10 +1831,7 @@ void atl1_down(struct atl1_adapter *adapter)
+ 
+ 	atl1_irq_disable(adapter);
+ 	free_irq(adapter->pdev->irq, netdev);
+-#ifdef CONFIG_PCI_MSI
+-	if (adapter->enable_msi)
+-		pci_disable_msi(adapter->pdev);
+-#endif
++	pci_disable_msi(adapter->pdev);
+ 	atl1_reset_hw(&adapter->hw);
+ 	adapter->cmb.cmb->int_stats = 0;
+ 
+diff --git a/drivers/net/atl1/atl1_param.c b/drivers/net/atl1/atl1_param.c
+index 4732f43..caa2d83 100644
+--- a/drivers/net/atl1/atl1_param.c
++++ b/drivers/net/atl1/atl1_param.c
+@@ -68,10 +68,6 @@ static int num_flash_vendor = 0;
+ module_param_array_named(flash_vendor, flash_vendor, int, &num_flash_vendor, 0);
+ MODULE_PARM_DESC(flash_vendor, "SPI flash vendor");
+ 
+-int enable_msi;
+-module_param(enable_msi, int, 0444);
+-MODULE_PARM_DESC(enable_msi, "Enable PCI MSI");
+-
+ #define DEFAULT_INT_MOD_CNT	100	/* 200us */
+ #define MAX_INT_MOD_CNT		65000
+ #define MIN_INT_MOD_CNT		50
+@@ -211,13 +207,4 @@ void __devinit atl1_check_options(struct atl1_adapter *adapter)
+ 			adapter->hw.flash_vendor = (u8) (opt.def);
+ 		}
+ 	}
+-
+-	{			/* PCI MSI usage */
+-
+-#ifdef CONFIG_PCI_MSI
+-		adapter->enable_msi = enable_msi;
+-#else
+-		adapter->enable_msi = 0;
+-#endif
+-	}
+ }
+
+
+
+Luca
 -- 
-Michal K. K. Piotrowski
-LTG - Linux Testers Group
-(http://www.stardust.webpages.pl/ltg/)
+Inquietudine sintetica
+Solo, davanti all'ignoto
+Tienimi stretto a te
