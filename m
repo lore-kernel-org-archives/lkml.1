@@ -1,288 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932583AbXA1Ndo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932601AbXA1NeS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932583AbXA1Ndo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jan 2007 08:33:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932601AbXA1Nah
+	id S932601AbXA1NeS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jan 2007 08:34:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932630AbXA1NeR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jan 2007 08:30:37 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:34757 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932588AbXA1N3c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jan 2007 08:29:32 -0500
-Message-Id: <20070128132435.066077000@programming.kicks-ass.net>
-References: <20070128131343.628722000@programming.kicks-ass.net>
-User-Agent: quilt/0.45-1
-Date: Sun, 28 Jan 2007 14:13:48 +0100
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Cc: Andrew Morton <akpm@osdl.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Christoph Lameter <clameter@sgi.com>, Ingo Molnar <mingo@elte.hu>,
-       Rik van Riel <riel@redhat.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Nick Piggin <npiggin@suse.de>
-Subject: [PATCH 05/14] mm: lockless pagecache lookups
-Content-Disposition: inline; filename=mm-lockless-pagecache-lookups.patch
+	Sun, 28 Jan 2007 08:34:17 -0500
+Received: from mail.gmx.net ([213.165.64.20]:41284 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S932603AbXA1Ndq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Jan 2007 08:33:46 -0500
+Cc: rml@novell.com, ttb@tentacle.dhs.org, nickpiggin@yahoo.com.au,
+       cijoml@volny.cz, linuxppc-dev@ozlabs.org, anton@samba.org,
+       paulus@samba.org, livio@eecg.toronto.edu, petero2@telia.com, hch@lst.de,
+       gd@spherenet.de, alan@lxorguk.ukuu.org.uk, linux-ide@vger.kernel.org,
+       B.Zolnierkiewicz@elka.pw.edu.pl, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Date: Sun, 28 Jan 2007 14:33:44 +0100
+From: "Uwe Bugla" <uwe.bugla@gmx.de>
+In-Reply-To: <20070127174230.GN6017@stusta.de>
+Message-ID: <20070128133344.214070@gmx.net>
+MIME-Version: 1.0
+References: <Pine.LNX.4.64.0701241847360.25027@woody.linux-foundation.org>
+ <20070127174230.GN6017@stusta.de>
+Subject: Re: 2.6.20-rc6: known unfixed regressions (v2) (part 2)
+To: Adrian Bunk <bunk@stusta.de>, akpm@osdl.org, torvalds@linux-foundation.org
+X-Authenticated: #8359428
+X-Flags: 0001
+X-Mailer: WWW-Mail 6100 (Global Message Exchange)
+X-Priority: 3
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Nick Piggin <npiggin@suse.de>
 
-Combine page_cache_get_speculative with lockless radix tree lookups to
-introduce lockless page cache lookups (ie. no mapping->tree_lock on
-the read-side).
+-------- Original-Nachricht --------
+Datum: Sat, 27 Jan 2007 18:42:30 +0100
+Von: Adrian Bunk <bunk@stusta.de>
+An: Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@osdl.org>
+Betreff: 2.6.20-rc6: known unfixed regressions (v2) (part 2)
 
-The only atomicity changes this introduces is that the gang pagecache
-lookup functions now behave as if they are implemented with multiple
-find_get_page calls, rather than operating on a snapshot of the pages.
-In practice, this atomicity guarantee is not used anyway, and it is
-difficult to see how it could be. Gang pagecache lookups are designed
-to replace individual lookups, so these semantics are natural.
+> This email lists some known regressions in 2.6.20-rc6 compared to 2.6.19
+> that are not yet fixed in Linus' tree.
+> 
+> If you find your name in the Cc header, you are either submitter of one
+> of the bugs, maintainer of an affectected subsystem or driver, a patch
+> of you caused a breakage or I'm considering you in any other way possibly
+> involved with one or more of these issues.
+> 
+> Due to the huge amount of recipients, please trim the Cc when answering.
+> 
+> 
+> Subject    : problems with CD burning
+> References : http://www.spinics.net/lists/linux-ide/msg06545.html
+> Submitter  : Uwe Bugla <uwe.bugla@gmx.de>
+> Status     : unknown
+> 
+> 
+> Subject    : pktcdvd fails with pata_amd
+> References : http://bugzilla.kernel.org/show_bug.cgi?id=7810
+>              http://lkml.org/lkml/2007/1/25/128
+> Submitter  : Gerhard Dirschl <gd@spherenet.de>
+> Caused-By  : Christoph Hellwig <hch@lst.de>
+>              commit 3b00315799d78f76531b71435fbc2643cd71ae4c
+>              commit 406c9b605cbc45151c03ac9a3f95e9acf050808c
+> Status     : problem is being debugged
+> 
+> 
+> Subject    : powerpc64: performance monitor exception
+> References :
+> http://ozlabs.org/pipermail/linuxppc-dev/2007-January/030045.html
+> Submitter  : Livio Soares <livio@eecg.toronto.edu>
+> Caused-By  : Paul Mackerras <paulus@samba.org>
+>              commit d04c56f73c30a5e593202ecfcf25ed43d42363a2
+> Status     : problem is being discussed
+> 
+> 
+> Subject    : BUG: at fs/inotify.c:172 set_dentry_child_flags()
+> References : http://bugzilla.kernel.org/show_bug.cgi?id=7785
+> Submitter  : Cijoml Cijomlovic Cijomlov <cijoml@volny.cz>
+> Handled-By : Nick Piggin <nickpiggin@yahoo.com.au>
+> Status     : problem is being debugged
+> 
 
-Signed-off-by: Nick Piggin <npiggin@suse.de>
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
- mm/filemap.c        |  133 +++++++++++++++++++++++++++++++++++++---------------
- mm/page-writeback.c |    5 -
- mm/readahead.c      |    6 --
- 3 files changed, 101 insertions(+), 43 deletions(-)
+Hi everybody,
+the problem I already reported for earlier release candidates of kernel 2.6.20
+(rc1 – 5) unfortunately stills persists.
 
-Index: linux-2.6/mm/filemap.c
-===================================================================
---- linux-2.6.orig/mm/filemap.c	2007-01-22 20:10:30.000000000 +0100
-+++ linux-2.6/mm/filemap.c	2007-01-22 20:11:03.000000000 +0100
-@@ -596,15 +596,31 @@ void fastcall __lock_page_nosync(struct 
-  * Is there a pagecache struct page at the given (mapping, offset) tuple?
-  * If yes, increment its refcount and return it; if no, return NULL.
-  */
--struct page * find_get_page(struct address_space *mapping, unsigned long offset)
-+struct page *find_get_page(struct address_space *mapping, unsigned long offset)
- {
-+	void **pagep;
- 	struct page *page;
- 
--	read_lock_irq(&mapping->tree_lock);
--	page = radix_tree_lookup(&mapping->page_tree, offset);
--	if (page)
--		page_cache_get(page);
--	read_unlock_irq(&mapping->tree_lock);
-+	rcu_read_lock();
-+repeat:
-+	page = NULL;
-+	pagep = radix_tree_lookup_slot(&mapping->page_tree, offset);
-+	if (pagep) {
-+		page = radix_tree_deref_slot(pagep);
-+		if (unlikely(!page || page == RADIX_TREE_RETRY))
-+			goto repeat;
-+
-+		if (!page_cache_get_speculative(page))
-+			goto repeat;
-+
-+		/* Has the page moved? */
-+		if (unlikely(page != *pagep)) {
-+			page_cache_release(page);
-+			goto repeat;
-+		}
-+	}
-+	rcu_read_unlock();
-+
- 	return page;
- }
- EXPORT_SYMBOL(find_get_page);
-@@ -644,26 +660,19 @@ struct page *find_lock_page(struct addre
- {
- 	struct page *page;
- 
--	read_lock_irq(&mapping->tree_lock);
- repeat:
--	page = radix_tree_lookup(&mapping->page_tree, offset);
-+	page = find_get_page(mapping, offset);
- 	if (page) {
--		page_cache_get(page);
--		if (TestSetPageLocked(page)) {
--			read_unlock_irq(&mapping->tree_lock);
--			__lock_page(page);
--			read_lock_irq(&mapping->tree_lock);
--
--			/* Has the page been truncated while we slept? */
--			if (unlikely(page->mapping != mapping ||
--				     page->index != offset)) {
--				unlock_page(page);
--				page_cache_release(page);
--				goto repeat;
--			}
-+		lock_page(page);
-+		/* Has the page been truncated? */
-+		if (unlikely(page->mapping != mapping
-+				|| page->index != offset)) {
-+			unlock_page(page);
-+			page_cache_release(page);
-+			goto repeat;
- 		}
- 	}
--	read_unlock_irq(&mapping->tree_lock);
-+
- 	return page;
- }
- EXPORT_SYMBOL(find_lock_page);
-@@ -733,13 +742,39 @@ unsigned find_get_pages(struct address_s
- {
- 	unsigned int i;
- 	unsigned int ret;
-+	unsigned int nr_found;
- 
--	read_lock_irq(&mapping->tree_lock);
--	ret = radix_tree_gang_lookup(&mapping->page_tree,
--				(void **)pages, start, nr_pages);
--	for (i = 0; i < ret; i++)
--		page_cache_get(pages[i]);
--	read_unlock_irq(&mapping->tree_lock);
-+	rcu_read_lock();
-+restart:
-+	nr_found = radix_tree_gang_lookup_slot(&mapping->page_tree,
-+				(void ***)pages, start, nr_pages);
-+	ret = 0;
-+	for (i = 0; i < nr_found; i++) {
-+		struct page *page;
-+repeat:
-+		page = radix_tree_deref_slot((void **)pages[i]);
-+		if (unlikely(!page))
-+			continue;
-+		/*
-+		 * this can only trigger if nr_found == 1, making livelock
-+		 * a non issue.
-+		 */
-+		if (unlikely(page == RADIX_TREE_RETRY))
-+			goto restart;
-+
-+		if (!page_cache_get_speculative(page))
-+			goto repeat;
-+
-+		/* Has the page moved? */
-+		if (unlikely(page != *((void **)pages[i]))) {
-+			page_cache_release(page);
-+			goto repeat;
-+		}
-+
-+		pages[ret] = page;
-+		ret++;
-+	}
-+	rcu_read_unlock();
- 	return ret;
- }
- 
-@@ -760,19 +795,44 @@ unsigned find_get_pages_contig(struct ad
- {
- 	unsigned int i;
- 	unsigned int ret;
-+	unsigned int nr_found;
- 
--	read_lock_irq(&mapping->tree_lock);
--	ret = radix_tree_gang_lookup(&mapping->page_tree,
--				(void **)pages, index, nr_pages);
--	for (i = 0; i < ret; i++) {
--		if (pages[i]->mapping == NULL || pages[i]->index != index)
-+	rcu_read_lock();
-+restart:
-+	nr_found = radix_tree_gang_lookup_slot(&mapping->page_tree,
-+				(void ***)pages, index, nr_pages);
-+	ret = 0;
-+	for (i = 0; i < nr_found; i++) {
-+		struct page *page;
-+repeat:
-+		page = radix_tree_deref_slot((void **)pages[i]);
-+		if (unlikely(!page))
-+			continue;
-+		/*
-+		 * this can only trigger if nr_found == 1, making livelock
-+		 * a non issue.
-+		 */
-+		if (unlikely(page == RADIX_TREE_RETRY))
-+			goto restart;
-+
-+		if (page->mapping == NULL || page->index != index)
- 			break;
- 
--		page_cache_get(pages[i]);
-+		if (!page_cache_get_speculative(page))
-+			goto repeat;
-+
-+		/* Has the page moved? */
-+		if (unlikely(page != *((void **)pages[i]))) {
-+			page_cache_release(page);
-+			goto repeat;
-+		}
-+
-+		pages[ret] = page;
-+		ret++;
- 		index++;
- 	}
--	read_unlock_irq(&mapping->tree_lock);
--	return i;
-+	rcu_read_unlock();
-+	return ret;
- }
- 
- /**
-@@ -793,6 +853,7 @@ unsigned find_get_pages_tag(struct addre
- 	unsigned int ret;
- 
- 	read_lock_irq(&mapping->tree_lock);
-+	/* TODO: implement lookup_tag_slot and make this lockless */
- 	ret = radix_tree_gang_lookup_tag(&mapping->page_tree,
- 				(void **)pages, *index, nr_pages, tag);
- 	for (i = 0; i < ret; i++)
-Index: linux-2.6/mm/readahead.c
-===================================================================
---- linux-2.6.orig/mm/readahead.c	2007-01-13 21:04:13.000000000 +0100
-+++ linux-2.6/mm/readahead.c	2007-01-22 20:11:03.000000000 +0100
-@@ -281,27 +281,25 @@ __do_page_cache_readahead(struct address
- 	/*
- 	 * Preallocate as many pages as we will need.
- 	 */
--	read_lock_irq(&mapping->tree_lock);
- 	for (page_idx = 0; page_idx < nr_to_read; page_idx++) {
- 		pgoff_t page_offset = offset + page_idx;
- 		
- 		if (page_offset > end_index)
- 			break;
- 
-+		rcu_read_lock();
- 		page = radix_tree_lookup(&mapping->page_tree, page_offset);
-+		rcu_read_unlock();
- 		if (page)
- 			continue;
- 
--		read_unlock_irq(&mapping->tree_lock);
- 		page = page_cache_alloc_cold(mapping);
--		read_lock_irq(&mapping->tree_lock);
- 		if (!page)
- 			break;
- 		page->index = page_offset;
- 		list_add(&page->lru, &page_pool);
- 		ret++;
- 	}
--	read_unlock_irq(&mapping->tree_lock);
- 
- 	/*
- 	 * Now start the IO.  We ignore I/O errors - if the page is not
-Index: linux-2.6/mm/page-writeback.c
-===================================================================
---- linux-2.6.orig/mm/page-writeback.c	2007-01-22 17:29:38.000000000 +0100
-+++ linux-2.6/mm/page-writeback.c	2007-01-22 20:11:03.000000000 +0100
-@@ -959,12 +959,11 @@ EXPORT_SYMBOL(test_set_page_writeback);
-  */
- int mapping_tagged(struct address_space *mapping, int tag)
- {
--	unsigned long flags;
- 	int ret;
- 
--	read_lock_irqsave(&mapping->tree_lock, flags);
-+	rcu_read_lock();
- 	ret = radix_tree_tagged(&mapping->page_tree, tag);
--	read_unlock_irqrestore(&mapping->tree_lock, flags);
-+	rcu_read_unlock();
- 	return ret;
- }
- EXPORT_SYMBOL(mapping_tagged);
+The regression has become more extreme: While in earlier release candidates nerolinux recognized my burning devices at least after the first start and then never again after all following starts the situation in rc6 is different from that:
 
---
+The CD and DVD burning devices aren´t recognized even once and the drive seek errors I already reported are still there.
 
+nerolinux runs excellently with kernel 2.6.19.2, but only shows an “image recorder” (i. e. no burning device at all) in kernel 2.6.20-rc6.
+
+Still hope that this terrible bug will not be part of the final version of 2.6.20!
+
+Regards
+
+Uwe
+
+P. S.: I already reported that 2.6.20-rc4-mm1 is not bootable at all.
+
+-- 
+Der GMX SmartSurfer hilft bis zu 70% Ihrer Onlinekosten zu sparen! 
+Ideal für Modem und ISDN: http://www.gmx.net/de/go/smartsurfer
