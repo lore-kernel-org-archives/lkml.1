@@ -1,116 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932855AbXA1VBV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932837AbXA1VCo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932855AbXA1VBV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jan 2007 16:01:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932857AbXA1VBV
+	id S932837AbXA1VCo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jan 2007 16:02:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932846AbXA1VCn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jan 2007 16:01:21 -0500
-Received: from nic.NetDirect.CA ([216.16.235.2]:33271 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932855AbXA1VBU (ORCPT
+	Sun, 28 Jan 2007 16:02:43 -0500
+Received: from nigel.suspend2.net ([203.171.70.205]:50104 "EHLO
+	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932837AbXA1VCn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jan 2007 16:01:20 -0500
-X-Originating-Ip: 74.109.98.130
-Date: Sun, 28 Jan 2007 16:00:37 -0500 (EST)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@CPE00045a9c397f-CM001225dbafb6
-To: Linux kernel mailing list <linux-kernel@vger.kernel.org>
-cc: xfs-masters@oss.sgi.com, Andrew Morton <akpm@osdl.org>, dgc@sgi.com
-Subject: [PATCH} XFS: Remove placeholders for unimplemented functionality.
-Message-ID: <Pine.LNX.4.64.0701281557410.11046@CPE00045a9c397f-CM001225dbafb6>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.723, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, TW_BH 0.08)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+	Sun, 28 Jan 2007 16:02:43 -0500
+Subject: Re: [Q] Prefered suspend to ram or disk method ?
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
+Reply-To: nigel@nigel.suspend2.net
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Xavier Maillard <zedek@gnu.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <200701282114.02539.rjw@sisk.pl>
+References: <23972.1169975356@localhost> <200701282047.39997.rjw@sisk.pl>
+	 <1170014258.25406.10.camel@nigel.suspend2.net>
+	 <200701282114.02539.rjw@sisk.pl>
+Content-Type: text/plain
+Date: Mon, 29 Jan 2007 08:02:40 +1100
+Message-Id: <1170018160.25406.30.camel@nigel.suspend2.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi.
 
-  Remove a couple kernel config variables (FS_POSIX_CAP and
-FS_POSIX_MAC) that represent placeholders for unimplemented
-functionality.
+On Sun, 2007-01-28 at 21:14 +0100, Rafael J. Wysocki wrote:
+> > Regarding the assumptions (about LRU pages not changing), I have that in
+> > progress. The content of the LRU list definitely doesn't change, but by
+> > calculating MD5 checksums of the changes before and after saving those
+> > pages, we've seen some (up to 20) pages change on a few computers. I
+> > need (obviously) to put time into finding the cause of those changes.
+> 
+> Do I understand correctly that you:
+> - save the LRU,
+> - copy data into them,
+> - compute MD5 checksums of their contents,
+> - save the image,
+> - suspend,
+> - resume,
+> - load the image,
+> - compute MD5 checksums of the loaded data,
+> and the sums computed before saving the image and after loading it may differ
+> for up to 20 pages?
 
-Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
+No.
 
----
+At the moment, I have an option that modifies the codepath so that prior
+to saving the LRU, I calculate MD5 checksums for the LRU pages, then
+prior to do the atomic copy (ie after saving them), calculate the
+checksums again and compare. If the checksum varies, the relevant pages
+are also resaved in the atomic copy and not restored from the LRU copy
+when we reload the LRU pages at resume time. 
 
-  compile-tested on i386.
+I want to put time into finding what changes the pages. I assume it's
+filesystem or raid related because raid users also occasionally report
+that raid code is submitting I/O after we've started saving LRU pages
+(haven't had such reports from non-raid users).
 
+Regards,
 
- fs/xfs/xfs_cap.h |   15 ---------------
- fs/xfs/xfs_mac.h |   17 -----------------
- 2 files changed, 32 deletions(-)
+Nigel
 
-diff --git a/fs/xfs/xfs_cap.h b/fs/xfs/xfs_cap.h
-index 7a0e482..cfedfd1 100644
---- a/fs/xfs/xfs_cap.h
-+++ b/fs/xfs/xfs_cap.h
-@@ -45,25 +45,10 @@ typedef struct xfs_cap_set {
-
- #ifdef __KERNEL__
-
--#ifdef CONFIG_FS_POSIX_CAP
--
--#include <linux/posix_cap_xattr.h>
--
--struct bhv_vnode;
--
--extern int xfs_cap_vhascap(struct bhv_vnode *);
--extern int xfs_cap_vset(struct bhv_vnode *, void *, size_t);
--extern int xfs_cap_vget(struct bhv_vnode *, void *, size_t);
--extern int xfs_cap_vremove(struct bhv_vnode *);
--
--#define _CAP_EXISTS		xfs_cap_vhascap
--
--#else
- #define xfs_cap_vset(v,p,sz)	(-EOPNOTSUPP)
- #define xfs_cap_vget(v,p,sz)	(-EOPNOTSUPP)
- #define xfs_cap_vremove(v)	(-EOPNOTSUPP)
- #define _CAP_EXISTS		(NULL)
--#endif
-
- #endif	/* __KERNEL__ */
-
-diff --git a/fs/xfs/xfs_mac.h b/fs/xfs/xfs_mac.h
-index 18e0e98..a3f7eaf 100644
---- a/fs/xfs/xfs_mac.h
-+++ b/fs/xfs/xfs_mac.h
-@@ -80,26 +80,9 @@ typedef struct xfs_mac_label {
-
- #ifdef __KERNEL__
-
--#ifdef CONFIG_FS_POSIX_MAC
--
--/* NOT YET IMPLEMENTED */
--
--#define MACEXEC		00100
--#define MACWRITE	00200
--#define MACREAD		00400
--
--struct xfs_inode;
--extern int  xfs_mac_iaccess(struct xfs_inode *, mode_t, cred_t *);
--
--#define _MAC_XFS_IACCESS(i,m,c) (xfs_mac_iaccess(i,m,c))
--#define _MAC_VACCESS(v,c,m)	(xfs_mac_vaccess(v,c,m))
--#define _MAC_EXISTS		xfs_mac_vhaslabel
--
--#else
- #define _MAC_XFS_IACCESS(i,m,c)	(0)
- #define _MAC_VACCESS(v,c,m)	(0)
- #define _MAC_EXISTS		(NULL)
--#endif
-
- #endif	/* __KERNEL__ */
-
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://www.fsdev.dreamhosters.com/wiki/index.php?title=Main_Page
-========================================================================
