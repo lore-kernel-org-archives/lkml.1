@@ -1,88 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752461AbXA1SnB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752479AbXA1SxB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752461AbXA1SnB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jan 2007 13:43:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752476AbXA1SnB
+	id S1752479AbXA1SxB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jan 2007 13:53:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752480AbXA1SxB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jan 2007 13:43:01 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:56841 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752461AbXA1SnB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jan 2007 13:43:01 -0500
-Date: Sun, 28 Jan 2007 19:41:16 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Christoph Hellwig <hch@infradead.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
+	Sun, 28 Jan 2007 13:53:01 -0500
+Received: from wavehammer.waldi.eu.org ([82.139.201.20]:39169 "EHLO
+	wavehammer.waldi.eu.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752479AbXA1SxA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Jan 2007 13:53:00 -0500
+Date: Sun, 28 Jan 2007 19:52:58 +0100
+From: Bastian Blank <bastian@waldi.eu.org>
+To: stgt-devel@lists.berlios.de, linux-aio@kvack.org,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/7] breaking the global file_list_lock
-Message-ID: <20070128184116.GA12150@elte.hu>
-References: <20070128115118.837777000@programming.kicks-ass.net> <20070128144325.GB16552@infradead.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Cc: Andrew Morton <akpm@osdl.org>, Linus Torvalds <torvalds@osdl.org>,
+       David Miller <davem@davemloft.net>
+Subject: ibmvstgt/aio broken with 2.6.20-rc6 powerpc
+Message-ID: <20070128185258.GA18860@wavehammer.waldi.eu.org>
+Mail-Followup-To: Bastian Blank <bastian@waldi.eu.org>,
+	stgt-devel@lists.berlios.de, linux-aio@kvack.org,
+	linux-kernel@vger.kernel.org, Andrew Morton <akpm@osdl.org>,
+	Linus Torvalds <torvalds@osdl.org>,
+	David Miller <davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20070128144325.GB16552@infradead.org>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -4.3
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-4.3 required=5.9 tests=ALL_TRUSTED,BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-3.3 ALL_TRUSTED            Did not pass through any untrusted hosts
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi folks
 
-* Christoph Hellwig <hch@infradead.org> wrote:
+I'm not really sure if this is a ibmvstgt or a generic aio problem.
 
-> On Sun, Jan 28, 2007 at 12:51:18PM +0100, Peter Zijlstra wrote:
-> > This patch-set breaks up the global file_list_lock which was found to be a
-> > severe contention point under basically any filesystem intensive workload.
-> 
-> Benchmarks, please.  Where exactly do you see contention for this?
+I tried ibmvstgt on my openpower and the kernel shows the following
+warning several times:
+| Jan 28 15:11:15 waldi kernel: Badness at arch/powerpc/mm/slb.c:95
+| Jan 28 15:11:15 waldi kernel: Call Trace:
+| Jan 28 15:11:15 waldi kernel: [C00000000282B750] [C00000000000EC94] .show_stack+0x68/0x1b0 (unreliable)
+| Jan 28 15:11:15 waldi kernel: [C00000000282B7F0] [C00000000015ED64] .report_bug+0x94/0xe8
+| Jan 28 15:11:15 waldi kernel: [C00000000282B880] [C0000000000228DC] .program_check_exception+0x140/0x54c
+| Jan 28 15:11:15 waldi kernel: [C00000000282B920] [C000000000004774] program_check_common+0xf4/0x100
+| Jan 28 15:11:15 waldi kernel: --- Exception: 700 at .slb_flush_and_rebolt+0xc/0xe0
+| Jan 28 15:11:15 waldi kernel:     LR = .switch_slb+0xac/0x1a0
+| Jan 28 15:11:15 waldi kernel: [C00000000282BC10] [FFFFFFFFFFFFFFFF] 0xffffffffffffffff (unreliable)
+| Jan 28 15:11:15 waldi kernel: [C00000000282BCB0] [C0000000000E1750] .aio_kick_handler+0x128/0x278
+| Jan 28 15:11:15 waldi kernel: [C00000000282BD60] [C000000000066380] .run_workqueue+0xec/0x1d4
+| Jan 28 15:11:15 waldi kernel: [C00000000282BE00] [C000000000066F2C] .worker_thread+0x164/0x1bc
+| Jan 28 15:11:15 waldi kernel: [C00000000282BEE0] [C00000000006B6E8] .kthread+0x120/0x170
+| Jan 28 15:11:15 waldi kernel: [C00000000282BF90] [C000000000024204] .kernel_thread+0x4c/0x68
 
-the following very simple workload:
+One possibility:
+aio_kick_handler calls use_mm. use_mm calls switch_mm. It seems that
+90aef12e6dd609e1ad7fb70044eedc78ca55ee5e changed that from activate_mm.
 
-   http://redhat.com/~mingo/file-ops-test/file-ops-test.c
+activate_mm on powerpc disables interupts and calls swtich_mm. So
+switch_mm is now called with interrupts enabled and runs into the
+WARN_ON.
 
-starts one process per CPU and open()s/close()s a file all over again, 
-simulating an open/close-intense workload. This pattern is quite typical 
-of several key Linux applications.
+Bastian
 
-Using Peter's s_files patchset the following scalability improvement can 
-be measured (lower numbers are better):
-
- ----------------------------------------------------------------------
-                  v2.6.20-rc6     |   v2.6.20-rc6+Peter's s_files queue
- ----------------------------------------------------------------------
- dual-core:       2.11 usecs/op   |   1.51 usecs/op     (  +39.7% win )
- 8-socket:        6.30 usecs/op   |   2.70 usecs/op     ( +233.3% win )
-
-[ i'd expect something a 64-way box to improve its open/close 
-  scalability dramatically, factor 10x or 20x better. On a 1024-CPU (or 
-  4096-CPU) system the effects are very likely even more dramatic. ]
-
-Why does this patch make such a difference? Not because the critical 
-section is in any way contended - it isnt, we only do a simple list 
-operation there. But this lock is touched in every sys_open() and 
-sys_close() system-call, so it is a high-frequency accessed cacheline. 
-The cost is there due to the global cacheline ping-pong of files_lock. 
-Furthermore, in this very important VFS codepath this is the 'last' 
-global cacheline that got eliminated, hence all the scalability benefits 
-(of previous improvements) get reaped all at once.
-
-Now could you please tell me why i had to waste 3.5 hours on measuring 
-and profiling this /again/, while a tiny little bit of goodwill from 
-your side could have avoided this? I told you that we lock-profiled this 
-under -rt, and that it's an accurate measurement of such things - as the 
-numbers above prove it too. Would it have been so hard to say something 
-like: "Cool Peter! That lock had been in our way of good open()/close() 
-scalability for such a long time and it's an obviously good idea to 
-eliminate it. Now here's a couple of suggestions of how to do it even 
-simpler: [...]." Why did you have to in essence piss on his patchset? 
-Any rational explanation?
-
-	Ingo
+-- 
+She won' go Warp 7, Cap'n!  The batteries are dead!
