@@ -1,49 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932435AbXA1HwX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932443AbXA1Hy0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932435AbXA1HwX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jan 2007 02:52:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932436AbXA1HwW
+	id S932443AbXA1Hy0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jan 2007 02:54:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932436AbXA1Hy0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jan 2007 02:52:22 -0500
-Received: from nf-out-0910.google.com ([64.233.182.189]:40362 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932435AbXA1HwW (ORCPT
+	Sun, 28 Jan 2007 02:54:26 -0500
+Received: from terminus.zytor.com ([192.83.249.54]:40835 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932443AbXA1HyZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jan 2007 02:52:22 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:message-id:date:from:user-agent:x-accept-language:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=ulk8S2c3dp39zm3nO7VGrWZ4t8MptLADJ3UokqWSw9ANCkND8unT7qyrloroYWx5q2jo1Qpv8OWIDA/SdJKZ26YatKrSbfYCYcOMLImJyos6OwF9vgNo1duz2pf+AZbtM5V3C4tBigYVAEhON/dHXPVCM/LK4/nr6CzbMvq5PVo=
-Message-ID: <45BC5632.7010207@googlemail.com>
-Date: Sun, 28 Jan 2007 08:52:18 +0100
-From: Dirk Behme <dirk.behme@googlemail.com>
-User-Agent: Mozilla Thunderbird 1.0.7 (X11/20050923)
-X-Accept-Language: en-us, en
+	Sun, 28 Jan 2007 02:54:25 -0500
+Message-ID: <45BC56A0.1000906@zytor.com>
+Date: Sat, 27 Jan 2007 23:54:08 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@osdl.org>
-CC: Linux kernel mailing list <linux-kernel@vger.kernel.org>
-Subject: Re: The mbox format archives of linux-kernel are gone.
-References: <45BC54D3.2010706@lycosxxl.de>
-In-Reply-To: <45BC54D3.2010706@lycosxxl.de>
+To: Mikael Pettersson <mikpe@it.uu.se>
+CC: linux-kernel@vger.kernel.org, thomas@tungstengraphics.com
+Subject: Re: Support for i386 PATs
+References: <200701271059.l0RAxxP5018994@harpo.it.uu.se>
+In-Reply-To: <200701271059.l0RAxxP5018994@harpo.it.uu.se>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Sat, 27 Jan 2007 20:36:31 -0500
-> Rob Landley <rob@xxxxxxxxxxx> wrote:
+Mikael Pettersson wrote:
 > 
->  > I would like to find the history of linux-kernel in mbox format. 
-...
-> I have them going back to October 2000. I guess I can upload them
-> after various bandwidth-using offspring have finished playing counterstrike
-> and WoW.
+> 3) Many Intel processors, including at least most P6s and probably
+> also some P4s, have an erratum which effectively halves the number
+> of available PAT entries, forcing an OS to make the low 4 and upper
+> 4 PAT entries identical.
+> 
+> I don't know if 4 PAT types suffice for the kinds of uses people
+> have in mind. But support for PAT would either have to restrict
+> itself to only 4 PAT types, or ensure that it is only enabled on
+> new enough processors where it actually works.
+> 
+> You will need to read all available Intel errata sheets (spec updates)
+> to determine which processors are affected and which are OK.
+> 
 
-Any chance to have anything like an auto-update mbox archive 
-of LKML? Would be nice for people not permanently subscribed 
-to LKML.
+There aren't really that many useful caching types, so it probably 
+doesn't matter all that much.
 
-Regards
+The types that matters most are WB, WC, and UC.  The fourth one could be 
+WT, or it could be UC- (however, UC- can *always* be emulated by simply 
+having the kernel being aware of the MTRR settings.)
 
-Dirk
+	-hpa
+
