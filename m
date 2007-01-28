@@ -1,44 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752456AbXA1Q56@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752458AbXA1RCa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752456AbXA1Q56 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jan 2007 11:57:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752457AbXA1Q56
+	id S1752458AbXA1RCa (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jan 2007 12:02:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752457AbXA1RCa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jan 2007 11:57:58 -0500
-Received: from main.gmane.org ([80.91.229.2]:57467 "EHLO ciao.gmane.org"
+	Sun, 28 Jan 2007 12:02:30 -0500
+Received: from dvhart.com ([64.146.134.43]:42142 "EHLO dvhart.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752456AbXA1Q55 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jan 2007 11:57:57 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Benny Amorsen <benny+usenet@amorsen.dk>
-Subject: Re: The mbox format archives of linux-kernel are gone.
-Date: 28 Jan 2007 17:59:48 +0100
-Message-ID: <m3lkjnw0hn.fsf@ursa.amorsen.dk>
-References: <45BC54D3.2010706@lycosxxl.de> <45BC5632.7010207@googlemail.com> <m3zm83wlwm.fsf@ursa.amorsen.dk> <1170001840.4965.4.camel@kleikamp.austin.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Complaints-To: usenet@sea.gmane.org
-X-Gmane-NNTP-Posting-Host: 10.8.185.213.dk-amb.res.sta.perspektivbredband.net
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.4
+	id S1752458AbXA1RCa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Jan 2007 12:02:30 -0500
+Message-ID: <45BCD713.5020806@mbligh.org>
+Date: Sun, 28 Jan 2007 09:02:11 -0800
+From: "Martin J. Bligh" <mbligh@mbligh.org>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070104)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@osdl.org>
+Cc: linux-kernel@vger.kernel.org, Andy Whitcroft <apw@shadowen.org>
+Subject: Re: 2.6.20-rc6-mm1
+References: <20070127234928.64d8e437.akpm@osdl.org>
+In-Reply-To: <20070127234928.64d8e437.akpm@osdl.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>>> "DK" == Dave Kleikamp <shaggy@linux.vnet.ibm.com> writes:
+> - It seems that people have been busy creating the need for this.  I had to
+>   apply over sixty patches to this tree to fix post-2.6.20-rc4-mm1 compilation
+>   errors.  And a number of patches were dropped due to no-compile or to
+>   runtime errors.  Heaven knows how many runtime bugs were added.
 
-DK> On Sun, 2007-01-28 at 10:17 +0100, Benny Amorsen wrote:
->>  Perhaps nntp://news.gmane.org/gmane.linux.kernel can help, even if
->> it isn't exactly what you asked for.
+Build failure:
 
-DK> I like to read the mailing list this way, but it's not a good
-DK> method if you want to reply to an email. You're email was only
-DK> sent to the list and not to the Dirk, who you were replying to.
+fs/built-in.o: In function `load_elf_binary':
+binfmt_elf.c:(.text+0x32cc0): undefined reference to 
+`arch_setup_additional_pages'
 
-True. There has been a few flame wars over whether it is good
-netiquette to send both to the list and to the person though -- and
-some newsreaders can be told to send courtesy copies by email.
-
-
-/Benny
-
-
+config:
+http://test.kernel.org/abat/68517/build/dotconfig
