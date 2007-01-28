@@ -1,83 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932785AbXA1Tqm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932786AbXA1TrP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932785AbXA1Tqm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jan 2007 14:46:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932786AbXA1Tql
+	id S932786AbXA1TrP (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jan 2007 14:47:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932787AbXA1TrP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jan 2007 14:46:41 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:50814 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932785AbXA1Tqk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jan 2007 14:46:40 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Greg Kroah-Hartman <greg@kroah.com>
-Cc: linux-pci@atrey.karlin.mff.cuni.cz,
-       "David S. Miller" <davem@davemloft.net>,
-       Kyle McMartin <kyle@parisc-linux.org>, <linuxppc-dev@ozlabs.org>,
-       Brice Goglin <brice@myri.com>, <shaohua.li@intel.com>,
-       Michael Ellerman <michael@ellerman.id.au>,
-       Grant Grundler <grundler@parisc-linux.org>,
-       Tony Luck <tony.luck@intel.com>, <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: [PATCH 3/6] msi: Fix msi_remove_pci_irq_vectors.
-References: <1169714047.65693.647693675533.qpush@cradle>
-	<m1hcubq6re.fsf@ebiederm.dsl.xmission.com>
-	<m1d54zq6o3.fsf_-_@ebiederm.dsl.xmission.com>
-	<m18xfnq6lm.fsf_-_@ebiederm.dsl.xmission.com>
-Date: Sun, 28 Jan 2007 12:45:54 -0700
-In-Reply-To: <m18xfnq6lm.fsf_-_@ebiederm.dsl.xmission.com> (Eric
-	W. Biederman's message of "Sun, 28 Jan 2007 12:44:21 -0700")
-Message-ID: <m14pqbq6j1.fsf_-_@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Sun, 28 Jan 2007 14:47:15 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:59742 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932786AbXA1TrN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Jan 2007 14:47:13 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Xavier Maillard <zedek@gnu.org>
+Subject: Re: [Q] Prefered suspend to ram or disk method ?
+Date: Sun, 28 Jan 2007 20:47:39 +0100
+User-Agent: KMail/1.9.1
+Cc: linux-kernel@vger.kernel.org
+References: <23972.1169975356@localhost>
+In-Reply-To: <23972.1169975356@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200701282047.39997.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-Since msi_remove_pci_irq_vectors is designed to be called during
-hotplug remove it is actively wrong to query the hardware and expect
-meaningful results back. 
+On Sunday, 28 January 2007 10:09, Xavier Maillard wrote:
+> Hi there,
+> 
+> Just a quick and easy question for you.
+> 
+> I am aware of three ways to make my laptop suspend/hibernate:
+> 
+> 1. suspend
+> 2. ususpend
+> 3. suspend2
+> 
+> The first two are directly part of the official linux
+> distribution and the third one is easy to install into it.
+> 
+> Here is my question: what is the recommended method ?
 
-To that end remove the pci_find_capability calls.  Testing
-dev->msi_enabled and dev->msix_enabled gives us all of the information
-we need.
+Well, that depends on who you ask. ;-)
 
-Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
----
- drivers/pci/msi.c |    8 ++------
- 1 files changed, 2 insertions(+), 6 deletions(-)
+> How does suspend compare to ususpend/suspend2 ?
 
-diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c
-index 5e7a187..db9c1d7 100644
---- a/drivers/pci/msi.c
-+++ b/drivers/pci/msi.c
-@@ -865,13 +865,10 @@ void pci_disable_msix(struct pci_dev* dev)
-  **/
- void msi_remove_pci_irq_vectors(struct pci_dev* dev)
- {
--	int pos;
--
- 	if (!pci_msi_enable || !dev)
-  		return;
- 
--	pos = pci_find_capability(dev, PCI_CAP_ID_MSI);
--	if (pos > 0 && dev->msi_enabled) {
-+	if (dev->msi_enabled) {
- 		if (irq_has_action(dev->first_msi_irq)) {
- 			printk(KERN_WARNING "PCI: %s: msi_remove_pci_irq_vectors() "
- 			       "called without free_irq() on MSI irq %d\n",
-@@ -880,8 +877,7 @@ void msi_remove_pci_irq_vectors(struct pci_dev* dev)
- 		} else /* Release MSI irq assigned to this device */
- 			msi_free_irq(dev, dev->first_msi_irq);
- 	}
--	pos = pci_find_capability(dev, PCI_CAP_ID_MSIX);
--	if (pos > 0 && dev->msix_enabled) {
-+	if (dev->msix_enabled) {
- 		int irq, head, tail = 0, warning = 0;
- 		void __iomem *base = NULL;
- 
+swsusp and ususpend use the same low-level kernel code, so if one of them
+works for you, the other should as well.  The difference is mainly that with
+swsusp the kernel saves the image into a swap, while with usupend the image
+is saved (and loaded on resume) by a userland process.  Additionally, ususpend
+can compress and/or encrypt the image, supports suspend-to-disk-and-RAM,
+splash-based progress meters and some such.  Gerenally, it adds the features
+that, in the opinion of its authors, are better implemented in the userland.
+Plus IMHO ususpend's resume is a bit more convenient for calling from within
+initrd images.
+
+suspend2 uses some different low-level code, but as far as the stopping of
+tasks and handling devices are concerned, it should be equivalent to swsusp
+and ususpend.  It generally allows you to create bigger suspend images (the
+images created by swsusp and ususpend are at most as large as 50% of RAM),
+but it makes some strong assumptions regarding memory management which are
+not proven to be always satisfied, although there's no evidence showing
+otherwise.  It also implements approximately the same set of additional
+features as ususpend, but in the kernel.
+
+> Is there any chance to see suspend2 be part of the official linux
+> distribution in a near future or not ?
+
+That's a delicate matter ...
+
+Greetings,
+Rafael
+
+
 -- 
-1.4.4.1.g278f
-
+If you don't have the time to read,
+you don't have the time or the tools to write.
+		- Stephen King
