@@ -1,83 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932572AbXA1NdB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932564AbXA1Ndo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932572AbXA1NdB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jan 2007 08:33:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932637AbXA1Nam
+	id S932564AbXA1Ndo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jan 2007 08:33:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932588AbXA1Nak
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jan 2007 08:30:42 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:34748 "EHLO mx1.redhat.com"
+	Sun, 28 Jan 2007 08:30:40 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:34755 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932547AbXA1N3b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jan 2007 08:29:31 -0500
-Message-Id: <20070128132434.324731000@programming.kicks-ass.net>
+	id S932587AbXA1N3c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Jan 2007 08:29:32 -0500
+Message-Id: <20070128132433.951715000@programming.kicks-ass.net>
 References: <20070128131343.628722000@programming.kicks-ass.net>
 User-Agent: quilt/0.45-1
-Date: Sun, 28 Jan 2007 14:13:46 +0100
+Date: Sun, 28 Jan 2007 14:13:45 +0100
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: linux-kernel@vger.kernel.org, linux-mm@kvack.org
 Cc: Andrew Morton <akpm@osdl.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
        Christoph Lameter <clameter@sgi.com>, Ingo Molnar <mingo@elte.hu>,
-       Rik van Riel <riel@redhat.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [PATCH 03/14] radix-tree: gang_lookup_tag_slot
-Content-Disposition: inline; filename=radix-tree-gang_lookup_tag_slot.patch
+       Rik van Riel <riel@redhat.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Nick Piggin <npiggin@suse.de>
+Subject: [PATCH 02/14] radix-tree: gang_lookup_slot
+Content-Disposition: inline; filename=radix-tree-gang_lookup_slot.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Simple implementation of radix_tree_gang_lookup_tag_slot()
+From: Nick Piggin <npiggin@suse.de>
 
+Introduce a gang_lookup_slot function which is used by lockless pagecache.
+
+Signed-off-by: Nick Piggin <npiggin@suse.de>
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- include/linux/radix-tree.h |    5 ++
- lib/radix-tree.c           |   81 ++++++++++++++++++++++++++++++++++++++++++---
- 2 files changed, 82 insertions(+), 4 deletions(-)
+ include/linux/radix-tree.h |    7 +++
+ lib/radix-tree.c           |   86 +++++++++++++++++++++++++++++++++++++++------
+ 2 files changed, 82 insertions(+), 11 deletions(-)
 
-Index: linux-2.6/include/linux/radix-tree.h
+Index: linux-2.6-git2/include/linux/radix-tree.h
 ===================================================================
---- linux-2.6.orig/include/linux/radix-tree.h	2007-01-22 20:10:00.000000000 +0100
-+++ linux-2.6/include/linux/radix-tree.h	2007-01-22 20:10:02.000000000 +0100
-@@ -104,6 +104,7 @@ do {									\
+--- linux-2.6-git2.orig/include/linux/radix-tree.h	2006-12-20 22:26:03.000000000 +0100
++++ linux-2.6-git2/include/linux/radix-tree.h	2006-12-20 22:26:20.000000000 +0100
+@@ -99,12 +99,14 @@ do {									\
+  *
+  * The notable exceptions to this rule are the following functions:
+  * radix_tree_lookup
++ * radix_tree_lookup_slot
+  * radix_tree_tag_get
   * radix_tree_gang_lookup
-  * radix_tree_gang_lookup_slot
++ * radix_tree_gang_lookup_slot
   * radix_tree_gang_lookup_tag
-+ * radix_tree_gang_lookup_tag_slot
   * radix_tree_tagged
   *
-  * The first 6 functions are able to be called locklessly, using RCU. The
-@@ -176,6 +177,10 @@ unsigned int
- radix_tree_gang_lookup_tag(struct radix_tree_root *root, void **results,
- 		unsigned long first_index, unsigned int max_items,
- 		unsigned int tag);
+- * The first 4 functions are able to be called locklessly, using RCU. The
++ * The first 6 functions are able to be called locklessly, using RCU. The
+  * caller must ensure calls to these functions are made within rcu_read_lock()
+  * regions. Other readers (lock-free or otherwise) and modifications may be
+  * running concurrently.
+@@ -159,6 +161,9 @@ void *radix_tree_delete(struct radix_tre
+ unsigned int
+ radix_tree_gang_lookup(struct radix_tree_root *root, void **results,
+ 			unsigned long first_index, unsigned int max_items);
 +unsigned int
-+radix_tree_gang_lookup_tag_slot(struct radix_tree_root *root, void ***results,
-+		unsigned long first_index, unsigned int max_items,
-+		unsigned int tag);
- int radix_tree_tagged(struct radix_tree_root *root, unsigned int tag);
- 
- static inline void radix_tree_preload_end(void)
-Index: linux-2.6/lib/radix-tree.c
++radix_tree_gang_lookup_slot(struct radix_tree_root *root, void ***results,
++			unsigned long first_index, unsigned int max_items);
+ int radix_tree_preload(gfp_t gfp_mask);
+ void radix_tree_init(void);
+ void *radix_tree_tag_set(struct radix_tree_root *root,
+Index: linux-2.6-git2/lib/radix-tree.c
 ===================================================================
---- linux-2.6.orig/lib/radix-tree.c	2007-01-22 20:10:00.000000000 +0100
-+++ linux-2.6/lib/radix-tree.c	2007-01-22 20:10:02.000000000 +0100
-@@ -785,7 +785,7 @@ EXPORT_SYMBOL(radix_tree_gang_lookup_slo
-  * open-coding the search.
+--- linux-2.6-git2.orig/lib/radix-tree.c	2006-12-20 22:26:03.000000000 +0100
++++ linux-2.6-git2/lib/radix-tree.c	2006-12-20 22:26:07.000000000 +0100
+@@ -337,18 +337,17 @@ EXPORT_SYMBOL(radix_tree_insert);
+  *	Returns:  the slot corresponding to the position @index in the
+  *	radix tree @root. This is useful for update-if-exists operations.
+  *
+- *	This function cannot be called under rcu_read_lock, it must be
+- *	excluded from writers, as must the returned slot for subsequent
+- *	use by radix_tree_deref_slot() and radix_tree_replace slot.
+- *	Caller must hold tree write locked across slot lookup and
+- *	replace.
++ *	This function can be called under rcu_read_lock iff the slot is not
++ *	modified by radix_tree_replace_slot, otherwise it must be called
++ *	exclusive from other writers. Any dereference of the slot must be done
++ *	using radix_tree_deref_slot.
   */
+ void **radix_tree_lookup_slot(struct radix_tree_root *root, unsigned long index)
+ {
+ 	unsigned int height, shift;
+ 	struct radix_tree_node *node, **slot;
+ 
+-	node = root->rnode;
++	node = rcu_dereference(root->rnode);
+ 	if (node == NULL)
+ 		return NULL;
+ 
+@@ -368,7 +367,7 @@ void **radix_tree_lookup_slot(struct rad
+ 	do {
+ 		slot = (struct radix_tree_node **)
+ 			(node->slots + ((index>>shift) & RADIX_TREE_MAP_MASK));
+-		node = *slot;
++		node = rcu_dereference(*slot);
+ 		if (node == NULL)
+ 			return NULL;
+ 
+@@ -605,7 +604,7 @@ EXPORT_SYMBOL(radix_tree_tag_get);
+ #endif
+ 
  static unsigned int
--__lookup_tag(struct radix_tree_node *slot, void **results, unsigned long index,
-+__lookup_tag(struct radix_tree_node *slot, void ***results, unsigned long index,
- 	unsigned int max_items, unsigned long *next_index, unsigned int tag)
+-__lookup(struct radix_tree_node *slot, void **results, unsigned long index,
++__lookup(struct radix_tree_node *slot, void ***results, unsigned long index,
+ 	unsigned int max_items, unsigned long *next_index)
  {
  	unsigned int nr_found = 0;
-@@ -831,8 +831,7 @@ __lookup_tag(struct radix_tree_node *slo
- 				 * rely on its value remaining the same).
- 				 */
- 				if (node) {
--					node = rcu_dereference(node);
--					results[nr_found++] = node;
-+					results[nr_found++] = &(slot->slots[j]);
- 					if (nr_found == max_items)
- 						goto out;
- 				}
-@@ -891,6 +890,80 @@ radix_tree_gang_lookup_tag(struct radix_
+@@ -643,7 +642,7 @@ __lookup(struct radix_tree_node *slot, v
+ 		index++;
+ 		node = slot->slots[i];
+ 		if (node) {
+-			results[nr_found++] = rcu_dereference(node);
++			results[nr_found++] = &(slot->slots[i]);
+ 			if (nr_found == max_items)
+ 				goto out;
+ 		}
+@@ -697,6 +696,73 @@ radix_tree_gang_lookup(struct radix_tree
  
  	ret = 0;
  	while (ret < max_items) {
@@ -86,8 +129,8 @@ Index: linux-2.6/lib/radix-tree.c
 +
 +		if (cur_index > max_index)
 +			break;
-+		nr_found = __lookup_tag(node, (void ***)results + ret, cur_index,
-+					max_items - ret, &next_index, tag);
++		nr_found = __lookup(node, (void ***)results + ret, cur_index,
++					max_items - ret, &next_index);
 +		for (i = j = 0; i < nr_found; i++) {
 +			struct radix_tree_node *slot;
 +			slot = rcu_dereference(*(((void ***)results)[ret + i]));
@@ -104,40 +147,33 @@ Index: linux-2.6/lib/radix-tree.c
 +
 +	return ret;
 +}
-+EXPORT_SYMBOL(radix_tree_gang_lookup_tag);
++EXPORT_SYMBOL(radix_tree_gang_lookup);
 +
 +/**
-+ *	radix_tree_gang_lookup_tag_slot - perform multiple slot lookup on a
-+ *	                                  radix tree based on a tag
++ *	radix_tree_gang_lookup_slot - perform multiple slot lookup on radix tree
 + *	@root:		radix tree root
 + *	@results:	where the results of the lookup are placed
 + *	@first_index:	start the lookup from this key
 + *	@max_items:	place up to this many items at *results
-+ *	@tag:		the tag index (< RADIX_TREE_MAX_TAGS)
 + *
-+ *	Performs an index-ascending scan of the tree for present items which
-+ *	have the tag indexed by @tag set.  Places their slots at *@results and
-+ *	returns the number of items which were placed at *@results.
++ *	Performs an index-ascending scan of the tree for present items.  Places
++ *	their slots at *@results and returns the number of items which were
++ *	placed at *@results.
 + *
 + *	The implementation is naive.
 + *
-+ *	Like radix_tree_gang_lookup_tag as far as RCU and locking goes. Slots
-+ *	must be dereferenced with radix_tree_deref_slot, and if using only RCU
++ *	Like radix_tree_gang_lookup as far as RCU and locking goes. Slots must
++ *	be dereferenced with radix_tree_deref_slot, and if using only RCU
 + *	protection, radix_tree_deref_slot may fail requiring a retry.
 + */
 +unsigned int
-+radix_tree_gang_lookup_tag_slot(struct radix_tree_root *root, void ***results,
-+		unsigned long first_index, unsigned int max_items,
-+		unsigned int tag)
++radix_tree_gang_lookup_slot(struct radix_tree_root *root, void ***results,
++			unsigned long first_index, unsigned int max_items)
 +{
-+	struct radix_tree_node *node;
 +	unsigned long max_index;
++	struct radix_tree_node *node;
 +	unsigned long cur_index = first_index;
 +	unsigned int ret;
-+
-+	/* check the root's tag bit */
-+	if (!root_tag_get(root, tag))
-+		return 0;
 +
 +	node = rcu_dereference(root->rnode);
 +	if (!node)
@@ -146,7 +182,7 @@ Index: linux-2.6/lib/radix-tree.c
 +	if (!radix_tree_is_indirect_ptr(node)) {
 +		if (first_index > 0)
 +			return 0;
-+		results[0] = node;
++		results[0] = (void **)&root->rnode;
 +		return 1;
 +	}
 +	node = radix_tree_indirect_to_ptr(node);
@@ -158,15 +194,15 @@ Index: linux-2.6/lib/radix-tree.c
  		unsigned int nr_found;
  		unsigned long next_index;	/* Index of next search */
  
-@@ -906,7 +979,7 @@ radix_tree_gang_lookup_tag(struct radix_
+@@ -712,7 +778,7 @@ radix_tree_gang_lookup(struct radix_tree
  
  	return ret;
  }
--EXPORT_SYMBOL(radix_tree_gang_lookup_tag);
-+EXPORT_SYMBOL(radix_tree_gang_lookup_tag_slot);
+-EXPORT_SYMBOL(radix_tree_gang_lookup);
++EXPORT_SYMBOL(radix_tree_gang_lookup_slot);
  
- /**
-  *	radix_tree_shrink    -    shrink height of a radix tree to minimal
+ /*
+  * FIXME: the two tag_get()s here should use find_next_bit() instead of
 
 --
 
