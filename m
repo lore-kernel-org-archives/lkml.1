@@ -1,68 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751953AbXA1PTt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752431AbXA1PWk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751953AbXA1PTt (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jan 2007 10:19:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751986AbXA1PTs
+	id S1752431AbXA1PWk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jan 2007 10:22:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932666AbXA1PWj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jan 2007 10:19:48 -0500
-Received: from main.gmane.org ([80.91.229.2]:58273 "EHLO ciao.gmane.org"
+	Sun, 28 Jan 2007 10:22:39 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:33601 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751953AbXA1PTr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jan 2007 10:19:47 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Bill Davidsen <davidsen@tmr.com>
-Subject: Re: O_DIRECT question
-Date: Sun, 28 Jan 2007 10:18:38 -0500
-Message-ID: <45BCBECE.4080405@tmr.com>
-References: <6d6a94c50701101857v2af1e097xde69e592135e54ae@mail.gmail.com> <200701252211.39017.vda.linux@googlemail.com> <45BA4720.5010406@tmr.com> <200701270035.31285.vda.linux@googlemail.com>
+	id S1752431AbXA1PWj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Jan 2007 10:22:39 -0500
+Date: Sun, 28 Jan 2007 16:21:06 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Christoph Hellwig <hch@infradead.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Andrew Morton <akpm@osdl.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 4/7] fs: break the file_list_lock for sb->s_files
+Message-ID: <20070128152106.GA9196@elte.hu>
+References: <20070128115118.837777000@programming.kicks-ass.net> <20070128120510.090289000@programming.kicks-ass.net> <20070128144358.GC16552@infradead.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@sea.gmane.org
-Cc: Michael Tokarev <mjt@tls.msk.ru>, Phillip Susi <psusi@cfl.rr.com>,
-       Linus Torvalds <torvalds@osdl.org>, Viktor <vvp01@inbox.ru>,
-       Aubrey <aubreylee@gmail.com>, Hua Zhong <hzhong@gmail.com>,
-       Hugh Dickins <hugh@veritas.com>, linux-kernel@vger.kernel.org,
-       hch@infradead.org, kenneth.w.chen@in
-X-Gmane-NNTP-Posting-Host: mail.tmr.com
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
-In-Reply-To: <200701270035.31285.vda.linux@googlemail.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070128144358.GC16552@infradead.org>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.8
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.8 required=5.9 tests=ALL_TRUSTED,BAYES_50 autolearn=no SpamAssassin version=3.0.3
+	-3.3 ALL_TRUSTED            Did not pass through any untrusted hosts
+	0.5 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
+	[score: 0.4861]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Denis Vlasenko wrote:
-> On Friday 26 January 2007 19:23, Bill Davidsen wrote:
->> Denis Vlasenko wrote:
->>> On Thursday 25 January 2007 21:45, Michael Tokarev wrote:
->>>> Phillip Susi wrote:
 
-	[...]
+* Christoph Hellwig <hch@infradead.org> wrote:
 
->>>> But even single-threaded I/O but in large quantities benefits from O_DIRECT
->>>> significantly, and I pointed this out before.
->>> Which shouldn't be true. There is no fundamental reason why
->>> ordinary writes should be slower than O_DIRECT.
->>>
->> Other than the copy to buffer taking CPU and memory resources.
+> On Sun, Jan 28, 2007 at 12:51:22PM +0100, Peter Zijlstra wrote:
+> > Break the protection of sb->s_files out from under the global file_list_lock.
+> > 
+> > sb->s_files is converted to a lock_list. furthermore to prevent the 
+> > lock_list_head of getting too contended with concurrent add 
+> > operations the add is buffered in per cpu filevecs.
 > 
-> It is not required by any standard that I know. Kernel can be smarter
-> and avoid that if it can.
+> NACK.  Please don't start using lockdep internals in core code.
 
-Actually, no, the whole idea of page cache is that overall system i/o 
-can be faster if data sit in the page cache for a while. But the real 
-problem is that the application write is now disconnected from the 
-physical write, both in time and order.
+what do you mean by that?
 
-No standard says the kernel couldn't do direct DMA, but since having 
-that required is needed to guarantee write order and error status linked 
-to the actual application i/o, what a kernel "might do" is irrelevant.
-
-It's much easier to do O_DIRECT by actually doing the direct i/o than to 
-try to catch all the corner cases which arise in faking it.
-
--- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
-
+	Ingo
