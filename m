@@ -1,70 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932923AbXA1WYB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932919AbXA1W3i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932923AbXA1WYB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jan 2007 17:24:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932925AbXA1WYB
+	id S932919AbXA1W3i (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jan 2007 17:29:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932925AbXA1W3i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jan 2007 17:24:01 -0500
-Received: from smtp.gentoo.org ([140.211.166.183]:42645 "EHLO smtp.gentoo.org"
+	Sun, 28 Jan 2007 17:29:38 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:40101 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932923AbXA1WYA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jan 2007 17:24:00 -0500
-From: Mike Frysinger <vapier@gentoo.org>
-Organization: wh0rd.org
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: [patch] use __u32 rather than u32 in userspace ioctls in usbdevice_fs.h
-Date: Sun, 28 Jan 2007 17:24:39 -0500
-User-Agent: KMail/1.9.5
-Cc: linux-usb-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-References: <200701280723.57741.vapier@gentoo.org> <20070128094252.bc19261a.randy.dunlap@oracle.com>
-In-Reply-To: <20070128094252.bc19261a.randy.dunlap@oracle.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart2036048.XFcjSQ1KpJ";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+	id S932919AbXA1W3h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Jan 2007 17:29:37 -0500
+Date: Sun, 28 Jan 2007 14:29:25 -0800
+From: Andrew Morton <akpm@osdl.org>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] mm: remove global locks from mm/highmem.c
+Message-Id: <20070128142925.df2f4dce.akpm@osdl.org>
+In-Reply-To: <1169993494.10987.23.camel@lappy>
+References: <1169993494.10987.23.camel@lappy>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <200701281724.40585.vapier@gentoo.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart2036048.XFcjSQ1KpJ
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Sun, 28 Jan 2007 15:11:34 +0100
+Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
 
-On Sunday 28 January 2007 12:42, Randy Dunlap wrote:
-> Have you now audited all ioctls (and sent patches) for this misbehavior?
+> Eradicate global locks.
+> 
+>  - kmap_lock is removed by extensive use of atomic_t, a new flush
+>    scheme and modifying set_page_address to only allow NULL<->virt
+>    transitions.
+> 
+> A count of 0 is an exclusive state acting as an entry lock. This is done
+> using inc_not_zero and cmpxchg. The restriction on changing the virtual
+> address closes the gap with concurrent additions of the same entry.
+> 
+>  - pool_lock is removed by using the pkmap index for the
+>    page_address_maps.
+> 
+> By using the pkmap index for the hash entries it is no longer needed to
+> keep a free list.
+> 
+> This patch has been in -rt for a while but should also help regular
+> highmem machines with multiple cores/cpus.
 
-my audit involved grepping the headers for '\<[us](8|16|32|64)\>' and sendi=
-ng=20
-patches for the headers that came up
+I really don't recall any performance problems being reported out of that
+code in recent years.
 
-ive sent patches for all except for asm-parisc/statfs.h ... but i'll do tha=
-t=20
-shortly once i finish pulling the parisc git tree
-=2Dmike
+As Christoph says, it's very much preferred that code be migrated over to
+kmap_atomic().  Partly because kmap() is deadlockable in situations where a
+large number of threads are trying to take two kmaps at the same time and
+we run out.  This happened in the past, but incidences have gone away,
+probably because of kmap->kmap_atomic conversions.
 
---nextPart2036048.XFcjSQ1KpJ
-Content-Type: application/pgp-signature
+>From which callsite have you measured problems?
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.1 (GNU/Linux)
+> Index: linux/include/linux/mm.h
+> ===================================================================
+> --- linux.orig/include/linux/mm.h
+> +++ linux/include/linux/mm.h
+> @@ -543,23 +543,39 @@ static __always_inline void *lowmem_page
+>  #endif
+>  
+>  #if defined(WANT_PAGE_VIRTUAL)
+> -#define page_address(page) ((page)->virtual)
+> -#define set_page_address(page, address)			\
+> -	do {						\
+> -		(page)->virtual = (address);		\
+> -	} while(0)
+> -#define page_address_init()  do { } while(0)
+> +/*
+> + * wrap page->virtual so it is safe to set/read locklessly
+> + */
+> +#define page_address(page) \
+> +	({ typeof((page)->virtual) v = (page)->virtual; \
+> +	 smp_read_barrier_depends(); \
+> +	 v; })
+> +
+> +static inline int set_page_address(struct page *page, void *address)
+> +{
+> +	if (address)
+> +		return cmpxchg(&page->virtual, NULL, address) == NULL;
+> +	else {
+> +		/*
+> +		 * cmpxchg is a bit abused because it is not guaranteed
+> +		 * safe wrt direct assignment on all platforms.
+> +		 */
+> +		void *virt = page->virtual;
+> +		return cmpxchg(&page->vitrual, virt, NULL) == virt;
+> +	}
+> +}
 
-iQIVAwUARb0iqEFjO5/oN/WBAQL2XBAAqA/jYqlrxtPG31Byh4rgRFKWEMXgm1F6
-5j6eTxmQXuWzZCQDCGl0imE29lXP3sHMOlaGsps05aSZE4swX6N8Pu2p6l1rovds
-YJwdvCqf/fmULSkxrzVGzMuH5NIvOpiSduJtsBLKDBLMI/uIQc0bPtbHOoMBn02a
-FfDGWLhcNDewnl0i6ZyORosyC6cBFOQV9rLNuwfVOXo4pTIdRMLR9JzMT88e9jgR
-Q+kEDrgMb9fm+Bv805E0t3StIay/CJwdu/GRJzH/PAYcCXZhN91BcE34nKfo08Nq
-ulObE1VC8z4Z6zt5xBKCbYIIPQ1jhyfSR0kAXOv3fJElEWdQ0kWg/96iiDKVZf2Z
-AHDqeGLu7fVtKKMwar2J2i86+r3IwU+Lb1q7dsMxixIcRWNiscXbJpIgIkW6zNwf
-dkyx6f4vaQfifnzHyVqectonigcNgTu47c/ULQPgF7bMHxeg+CSX5gREtT0KczE8
-3O4X8sgPNHi1N7DX2ZMpeRMpmBlpUni3gATe21MGZvVlQ+gEX3UXKwztH4WXtUos
-qLJFCb9NJXHNkcF51DVn3kFkEmTvOAb1KJiRXRvf1s/n+V0zpU8tFv2CteaMcM1/
-GSn8WLQvMhztqZ3TSX+JtLZyzi7ILBUZUPs019uibE/VdJAVZHYSGZRy7ZYgGfp5
-mzmdfcUouFE=
-=T5yC
------END PGP SIGNATURE-----
+Have you verified that all architectures which can implement
+WANT_PAGE_VIRTUAL also implement cmpxchg?
 
---nextPart2036048.XFcjSQ1KpJ--
+Have you verified that sufficient headers are included for this to compile
+correctly on all WANT_PAGE_VIRTUAL-enabling architectures on all configs? 
+I don't see asm/system.h being included in mm.h and if I get yet another
+damned it-wont-compile patch I might do something irreversible.
+
+> +static int pkmap_get_free(void)
+>  {
+> -	unsigned long vaddr;
+> -	int count;
+> +	int i, pos, flush;
+> +	DECLARE_WAITQUEUE(wait, current);
+>  
+> -start:
+> -	count = LAST_PKMAP;
+> -	/* Find an empty entry */
+> -	for (;;) {
+> -		last_pkmap_nr = (last_pkmap_nr + 1) & LAST_PKMAP_MASK;
+
+The old code used masking.
+
+> -		if (!last_pkmap_nr) {
+> -			flush_all_zero_pkmaps();
+> -			count = LAST_PKMAP;
+> -		}
+> -		if (!pkmap_count[last_pkmap_nr])
+> -			break;	/* Found a usable entry */
+> -		if (--count)
+> -			continue;
+> +restart:
+> +	for (i = 0; i < LAST_PKMAP; i++) {
+> +		pos = atomic_inc_return(&pkmap_hand) % LAST_PKMAP;
+
+The new code does more-expensive modulus.  Necessary?
+
+> +		flush = pkmap_try_free(pos);
+> +		if (flush >= 0)
+> +			goto got_one;
+> +	}
+> +
+> +	/*
+> +	 * wait for somebody else to unmap their entries
+> +	 */
+> +	__set_current_state(TASK_UNINTERRUPTIBLE);
+> +	add_wait_queue(&pkmap_map_wait, &wait);
+> +	schedule();
+> +	remove_wait_queue(&pkmap_map_wait, &wait);
+
+This looks wrong.  What happens if everyone else does their unmap between
+the __set_current_state() and the add_wait_queue()?
+
+
