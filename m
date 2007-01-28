@@ -1,57 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932968AbXA1XKr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932960AbXA1XLk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932968AbXA1XKr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jan 2007 18:10:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932960AbXA1XKr
+	id S932960AbXA1XLk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jan 2007 18:11:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932969AbXA1XLk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jan 2007 18:10:47 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:40983 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932957AbXA1XKq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jan 2007 18:10:46 -0500
-Date: Sun, 28 Jan 2007 15:10:39 -0800
-From: Andrew Morton <akpm@osdl.org>
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       Patrick McHardy <kaber@trash.net>
-Subject: Re: 2.6.20-rc6-mm1
-Message-Id: <20070128151039.636b3680.akpm@osdl.org>
-In-Reply-To: <45BD2424.7020604@googlemail.com>
-References: <20070127234928.64d8e437.akpm@osdl.org>
-	<45BD2424.7020604@googlemail.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 28 Jan 2007 18:11:40 -0500
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:42668 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932970AbXA1XLj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Jan 2007 18:11:39 -0500
+Date: Mon, 29 Jan 2007 00:11:47 +0100
+From: Adrian Bunk <bunk@stusta.de>
+To: Patrick Ale <patrick.ale@gmail.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       jgarzik@pobox.com
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Re: Boot problems with pata_via driver
+Message-ID: <20070128231147.GA6017@stusta.de>
+References: <8d158e1f0701280347l1d778528la0d69647726485d6@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <8d158e1f0701280347l1d778528la0d69647726485d6@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 28 Jan 2007 23:31:00 +0100
-Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
+On Sun, Jan 28, 2007 at 12:47:18PM +0100, Patrick Ale wrote:
 
-> Jan 28 22:58:29 euridica kernel: BUG: using smp_processor_id() in preemptible [00000001] code: yum-updatesd/2846
-> Jan 28 22:58:29 euridica kernel: caller is nf_conntrack_in+0x363/0x47f [nf_conntrack]
+> Hi,
 
-I'll plug that with this:
+Hi Patrick,
 
+> With kernel 2.6.19 I was able to boot using the pata_via driver
+> I tried to compile 2.6.20-rc6 and now I get a "unknown device: sda3"
+> error when I try to boot.
+> 
+> I compiled 2.6.20-rc6 by copying over the .config from the 2.6.19 tree
+> and running a make oldconfig && make
+> 
+> Am I doing something wrong?
 
-diff -puN include/net/netfilter/nf_conntrack.h~netfilter-warning-fix include/net/netfilter/nf_conntrack.h
---- a/include/net/netfilter/nf_conntrack.h~netfilter-warning-fix
-+++ a/include/net/netfilter/nf_conntrack.h
-@@ -254,7 +254,12 @@ extern atomic_t nf_conntrack_count;
- extern int nf_conntrack_max;
- 
- DECLARE_PER_CPU(struct ip_conntrack_stat, nf_conntrack_stat);
--#define NF_CT_STAT_INC(count) (__get_cpu_var(nf_conntrack_stat).count++)
-+#define NF_CT_STAT_INC(count)						\
-+	do {								\
-+		preempt_disable();					\
-+		__get_cpu_var(nf_conntrack_stat).count++;		\
-+		preempt_enable();					\
-+	} while (0);
- 
- /* no helper, no nat */
- #define	NF_CT_F_BASIC	0
-_
+Both kernels are self-compiled or is 2.6.19 a distribution kernel?
 
-and will let others worry about what the real fix (for 2.6.20, please) is.
+It could be that 2.6.20-rc6 has a bug and therefore no longer is able to 
+use your controller.
+It's also possible that the enumeration changed (e.g. sda is now an 
+external hard disk).
+
+During boot, there should be some messages prefixed with ata: and sda: 
+describing what your kernel found and how it enumerated them.
+What do they print with 2.6.20-rc6?
+
+> Patrick
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
