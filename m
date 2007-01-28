@@ -1,52 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752449AbXA1Q0E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752451AbXA1Qar@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752449AbXA1Q0E (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jan 2007 11:26:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752451AbXA1Q0E
+	id S1752451AbXA1Qar (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jan 2007 11:30:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752452AbXA1Qar
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jan 2007 11:26:04 -0500
-Received: from adsl-69-232-92-238.dsl.sndg02.pacbell.net ([69.232.92.238]:39491
-	"EHLO gnuppy.monkey.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752449AbXA1Q0D (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jan 2007 11:26:03 -0500
-Date: Sun, 28 Jan 2007 08:25:43 -0800
-To: Christoph Hellwig <hch@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Andrew Morton <akpm@osdl.org>,
-       linux-kernel@vger.kernel.org
-Cc: "Bill Huey (hui)" <billh@gnuppy.monkey.org>
-Subject: Re: [PATCH 4/7] fs: break the file_list_lock for sb->s_files
-Message-ID: <20070128162543.GA718@gnuppy.monkey.org>
-References: <20070128115118.837777000@programming.kicks-ass.net> <20070128120510.090289000@programming.kicks-ass.net> <20070128144358.GC16552@infradead.org> <20070128152106.GA9196@elte.hu> <20070128153006.GB23410@infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070128153006.GB23410@infradead.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Bill Huey (hui) <billh@gnuppy.monkey.org>
+	Sun, 28 Jan 2007 11:30:47 -0500
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:38662 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752451AbXA1Qaq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Jan 2007 11:30:46 -0500
+Subject: Re: The mbox format archives of linux-kernel are gone.
+From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+To: Benny Amorsen <benny+usenet@amorsen.dk>
+Cc: linux-kernel@vger.kernel.org, Dirk Behme <dirk.behme@googlemail.com>,
+       Rob Landley <rob@landley.net>, Andrew Morton <akpm@osdl.org>
+In-Reply-To: <m3zm83wlwm.fsf@ursa.amorsen.dk>
+References: <45BC54D3.2010706@lycosxxl.de>
+	 <45BC5632.7010207@googlemail.com>   <m3zm83wlwm.fsf@ursa.amorsen.dk>
+Content-Type: text/plain
+Date: Sun, 28 Jan 2007 10:30:39 -0600
+Message-Id: <1170001840.4965.4.camel@kleikamp.austin.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 28, 2007 at 03:30:06PM +0000, Christoph Hellwig wrote:
-> On Sun, Jan 28, 2007 at 04:21:06PM +0100, Ingo Molnar wrote:
-> > > > sb->s_files is converted to a lock_list. furthermore to prevent the 
-> > > > lock_list_head of getting too contended with concurrent add 
-> > > > operations the add is buffered in per cpu filevecs.
-> > > 
-> > > NACK.  Please don't start using lockdep internals in core code.
-> > 
-> > what do you mean by that?
+On Sun, 2007-01-28 at 10:17 +0100, Benny Amorsen wrote:
+> >>>>> "DB" == Dirk Behme <dirk.behme@googlemail.com> writes:
 > 
-> struct lock_list is an lockdep implementation detail and should not
-> leak out and be used anywhere else.   If we want something similar it
-> should be given a proper name and a header of it's own, but I don't
-> think it's a valueable abstraction for the core kernel.
+> DB> Any chance to have anything like an auto-update mbox archive of
+> DB> LKML? Would be nice for people not permanently subscribed to LKML.
+> 
+> Perhaps nntp://news.gmane.org/gmane.linux.kernel can help, even if it
+> isn't exactly what you asked for.
 
-Christoph,
+I like to read the mailing list this way, but it's not a good method if
+you want to reply to an email.  You're email was only sent to the list
+and not to the Dirk, who you were replying to.
 
-"lock list" has nothing to do with lockdep. It's a relatively new
-data type used to construct concurrent linked lists using a spinlock
-per entry.
-
-bill
+Shaggy
+-- 
+David Kleikamp
+IBM Linux Technology Center
 
