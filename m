@@ -1,68 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932521AbXA1KZo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932528AbXA1KeP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932521AbXA1KZo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jan 2007 05:25:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932522AbXA1KZo
+	id S932528AbXA1KeP (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jan 2007 05:34:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932526AbXA1KeP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jan 2007 05:25:44 -0500
-Received: from cacti.profiwh.com ([85.93.165.66]:47417 "EHLO cacti.profiwh.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932521AbXA1KZn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jan 2007 05:25:43 -0500
-Message-ID: <45BC7A26.1080303@gmail.com>
-Date: Sun, 28 Jan 2007 11:25:42 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0b2 (X11/20070116)
+	Sun, 28 Jan 2007 05:34:15 -0500
+Received: from moutng.kundenserver.de ([212.227.126.177]:64882 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932523AbXA1KeO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Jan 2007 05:34:14 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: jgarzik@pobox.com
+Subject: [PATCH] libata: add a dummy set_mode() in pata_pcmcia
+Date: Sun, 28 Jan 2007 11:34:01 +0100
+User-Agent: KMail/1.9.5
+Cc: wkl@informatik.uni-kiel.de, alan@lxorguk.ukuu.org.uk,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-To: Andrew Morton <akpm@osdl.org>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Miles Lane <miles.lane@gmail.com>
-Subject: Re: 2.6.20-rc6-mm1
-References: <20070127234928.64d8e437.akpm@osdl.org>
-In-Reply-To: <20070127234928.64d8e437.akpm@osdl.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200701281134.02218.arnd@arndb.de>
+X-Provags-ID: kundenserver.de abuse@kundenserver.de login:c48f057754fc1b1a557605ab9fa6da41
+X-Provags-ID2: V01U2FsdGVkX1+Tyep176GCLE+WjQAVmeKzJlOORRd55/OVlEUGhZG1sp55Tn+Lk0GKfQm9LwDj90AQAhMUSLE02+WJaVY2cFxCCUbu35mB+ErqAXSJg1angA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton napsal(a):
-> Temporarily at
-> 
-> 	http://userweb.kernel.org/~akpm/2.6.20-rc6-mm1/
+CompactFlash cards in a passive PCMCIA adapter don't seem
+to like the ATA_CMD_SET_FEATURES command, which causes
+libata device probing to fail.
 
-I'm still seeing this during bootup:
-BUG: at /home/l/latest/xxx/arch/i386/mm/highmem.c:52 kmap_atomic()
-  [<c0104ffb>] show_trace_log_lvl+0x1a/0x30
-  [<c01056b5>] show_trace+0x12/0x14
-  [<c010573c>] dump_stack+0x16/0x18
-  [<c011b24f>] kmap_atomic+0x16c/0x20e
-  [<c01b279e>] ntfs_end_buffer_async_read+0x18e/0x2ed
-  [<c0183352>] end_bio_bh_io_sync+0x26/0x3f
-  [<c0184dd4>] bio_endio+0x37/0x62
-  [<c01cda43>] __end_that_request_first+0x224/0x444
-  [<c01cdc6b>] end_that_request_chunk+0x8/0xa
-  [<c024507d>] scsi_end_request+0x1f/0xc7
-  [<c02451e6>] scsi_io_completion+0x7b/0x33a
-  [<c024aa5d>] sd_rw_intr+0x23/0x1ab
-  [<c02415ed>] scsi_finish_command+0x42/0x47
-  [<c0245a38>] scsi_softirq_done+0x64/0xcf
-  [<c01cf9e6>] blk_done_softirq+0x54/0x62
-  [<c0127bc5>] __do_softirq+0x75/0xde
-  [<c0127c69>] do_softirq+0x3b/0x3d
-  [<c0127ee6>] irq_exit+0x3b/0x3d
-  [<c0106804>] do_IRQ+0x51/0x8d
-  [<c0104a5f>] common_interrupt+0x23/0x28
-  [<c010241a>] cpu_idle+0x80/0xc3
-  [<c010140d>] rest_init+0x23/0x36
-  [<c045ea59>] start_kernel+0x3a5/0x43c
-  [<00000000>] 0x0
-  =======================
+Since PCMCIA only allows PIO mode 0 anyway, there is no
+point in ever setting a higher speed. Adding the dummy
+function seems to do the right thing.
 
-I.e. KM_BIO_SRC_IRQ through softirq path.
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 
-reagrds,
--- 
-http://www.fi.muni.cz/~xslaby/            Jiri Slaby
-faculty of informatics, masaryk university, brno, cz
-e-mail: jirislaby gmail com, gpg pubkey fingerprint:
-B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
+---
+
+This bug was reported earlier in 
+http://bugzilla.kernel.org/show_bug.cgi?id=7711 by 
+wkl@informatik.uni-kiel.de.
+
+I have not been able to find out _why_ all my CF cards reject
+the SETFEATURES_XFER command, but I have verified that the
+same happens when trying to use hdparm with ide_cs.
+
+Note that none of my cards are CF-4.0 compliant, so they
+also don't do UDMA modes. The highest mode claimed to be
+supported by one of my cards is PIO-4, but I can't set
+it into any of the modes it likes.
+
+diff --git a/drivers/ata/pata_pcmcia.c b/drivers/ata/pata_pcmcia.c
+index 9ed7f58..642753c 100644
+--- a/drivers/ata/pata_pcmcia.c
++++ b/drivers/ata/pata_pcmcia.c
+@@ -44,6 +44,30 @@
+ #define DRV_NAME "pata_pcmcia"
+ #define DRV_VERSION "0.2.11"
+ 
++/**
++ *	legacy_set_mode		-	mode setting
++ *	@ap: IDE interface
++ *
++ *	Use a non standard set_mode function. We don't want to be tuned.
++ *
++ *	PCMCIA support only PIO0 transfers and cards may return an error
++ *	if you attempt to set that explicitly.
++ */
++
++static void pcmcia_set_mode(struct ata_port *ap)
++{
++	int i;
++
++	for (i = 0; i < ATA_MAX_DEVICES; i++) {
++		struct ata_device *dev = &ap->device[i];
++		if (ata_dev_enabled(dev)) {
++			dev->pio_mode = XFER_PIO_0;
++			dev->xfer_mode = XFER_PIO_0;
++			dev->xfer_shift = ATA_SHIFT_PIO;
++			dev->flags |= ATA_DFLAG_PIO;
++		}
++	}
++}
+ /*
+  *	Private data structure to glue stuff together
+  */
+@@ -79,6 +103,7 @@ static struct ata_port_operations pcmcia_port_ops = {
+ 	.check_status 	= ata_check_status,
+ 	.exec_command	= ata_exec_command,
+ 	.dev_select 	= ata_std_dev_select,
++	.set_mode	= pcmcia_set_mode,
+ 
+ 	.freeze		= ata_bmdma_freeze,
+ 	.thaw		= ata_bmdma_thaw,
