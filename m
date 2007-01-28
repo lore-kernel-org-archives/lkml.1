@@ -1,45 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932828AbXA1UZi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932830AbXA1U2H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932828AbXA1UZi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jan 2007 15:25:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932830AbXA1UZi
+	id S932830AbXA1U2H (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jan 2007 15:28:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932834AbXA1U2H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jan 2007 15:25:38 -0500
-Received: from dvhart.com ([64.146.134.43]:44874 "EHLO dvhart.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932828AbXA1UZh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jan 2007 15:25:37 -0500
-Message-ID: <45BD06AC.1080008@mbligh.org>
-Date: Sun, 28 Jan 2007 12:25:16 -0800
-From: "Martin J. Bligh" <mbligh@mbligh.org>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070104)
+	Sun, 28 Jan 2007 15:28:07 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:63374 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932830AbXA1U2G (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Jan 2007 15:28:06 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=LIqZU24yLxZhJ7IxCOpA8fsGyG0M0w2Qr0tZrLjNi2g2XIOiop2x4l0KSmwX+5DG6
+	ZAbqsSX16VdHPO2aJfbDw==
+Message-ID: <b040c32a0701281227r11fe02eblba07df7aa7400787@mail.gmail.com>
+Date: Sun, 28 Jan 2007 12:27:48 -0800
+From: "Ken Chen" <kenchen@google.com>
+To: "Hugh Dickins" <hugh@veritas.com>
+Subject: Re: [PATCH] Don't allow the stack to grow into hugetlb reserved regions
+Cc: "Adam Litke" <agl@us.ibm.com>, "Andrew Morton" <akpm@osdl.org>,
+       "William Irwin" <wli@holomorphy.com>,
+       "David Gibson" <david@gibson.dropbear.id.au>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0701270904360.15686@blonde.wat.veritas.com>
 MIME-Version: 1.0
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@osdl.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: Bug report : reproducible memory allocator bug in 2.6.19.2
-References: <20070128200917.GA16571@Krystal>
-In-Reply-To: <20070128200917.GA16571@Krystal>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070125214052.22841.33449.stgit@localhost.localdomain>
+	 <Pine.LNX.4.64.0701262025590.22196@blonde.wat.veritas.com>
+	 <b040c32a0701261448k122f5cc7q5368b3b16ee1dc1f@mail.gmail.com>
+	 <Pine.LNX.4.64.0701270904360.15686@blonde.wat.veritas.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mathieu Desnoyers wrote:
-> Hi,
-> 
-> Trying to build cross-compilers (or kernels) on a 2-way x86_64 (amd64) with
-> make -j3 triggers the following OOPS after about 30 minutes on
-> 2.6.19.2. Due to the amount of time and the heavy load it takes before it
-> happens, I suspect a race condition. Memtest86 tests passed ok. The
-> amount of swap used when the condition happens is about 52k and stable
-> (only ~800MB/1GB are used).
-> 
-> I am going to give it a look, but I suspect you might help narrowing it
-> down more quickly. Any insight would be appreciated.
+On 1/27/07, Hugh Dickins <hugh@veritas.com> wrote:
+> Thanks, that's reassuring for the hugetlb case, and therefore Adam's
+> patch should not be delayed.  But it does leave open the question I
+> was raising in the text you've snipped: if ia64 needs those stringent
+> REGION checks in its ia64_do_page_fault path, don't we need to add
+> them some(messy)how in the get_user_pages find_extend_vma path?
 
-Mmm. that's going to be messy to debug ... but didn't we already know
-that kernel was racy? Or is 2.6.19.2 after that fix already? Does 20-rc6
-still break?
+I left it out because I need more time to digest what you said. After
+looked through ia64's page fault and get_user_pages, I've concluded
+that the bug scenario Adam described is impossible to trigger on ia64
+due to various constrains and how the virtual address is laid out.
 
-M.
+For ia64, the hugetlb address region is reserved at the top of user
+space address.  Stacks are below that region.  Throw in the mix, we
+have two stacks, one memory stack that grows down and one register
+stack backing store that grows up.  These two stacks are always in
+pair and grow towards each other. And lastly, we have virtual address
+holes in between regions.  It's just impossible to grow any of these
+two stacks into hugetlb region no matter how I played it.
+
+So, AFAICS this bug doesn't apply to ia64 (and certainly not x86). The
+new check of is_hugepage_only_range() is really a noop for both arches.
+
+    - Ken
