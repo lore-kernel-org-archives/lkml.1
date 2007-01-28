@@ -1,69 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932896AbXA1V20@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932908AbXA1VfY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932896AbXA1V20 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jan 2007 16:28:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932899AbXA1V20
+	id S932908AbXA1VfY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jan 2007 16:35:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932907AbXA1VfY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jan 2007 16:28:26 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:47776 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932896AbXA1V2Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jan 2007 16:28:25 -0500
-Date: Sun, 28 Jan 2007 22:26:18 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Jeff Garzik <jeff@garzik.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Greg Kroah-Hartman <greg@kroah.com>, Tony Luck <tony.luck@intel.com>,
-       Grant Grundler <grundler@parisc-linux.org>,
+	Sun, 28 Jan 2007 16:35:24 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:58093 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932908AbXA1VfX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Jan 2007 16:35:23 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Greg Kroah-Hartman <greg@kroah.com>, Tony Luck <tony.luck@intel.com>,
+       Grant Grundler <grundler@parisc-linux.org>, Ingo Molnar <mingo@elte.hu>,
        linux-kernel@vger.kernel.org, Kyle McMartin <kyle@parisc-linux.org>,
        linuxppc-dev@ozlabs.org, Brice Goglin <brice@myri.com>,
        shaohua.li@intel.com, linux-pci@atrey.karlin.mff.cuni.cz,
        "David S. Miller" <davem@davemloft.net>
 Subject: Re: [PATCH 0/6] MSI portability cleanups
-Message-ID: <20070128212618.GA11547@elte.hu>
-References: <1169714047.65693.647693675533.qpush@cradle> <m1hcubq6re.fsf@ebiederm.dsl.xmission.com> <1170015805.26655.15.camel@localhost.localdomain> <45BD0BDC.40205@garzik.org> <m1bqkiq25v.fsf@ebiederm.dsl.xmission.com>
-Mime-Version: 1.0
+References: <1169714047.65693.647693675533.qpush@cradle>
+	<m1hcubq6re.fsf@ebiederm.dsl.xmission.com>
+	<1170015805.26655.15.camel@localhost.localdomain>
+Date: Sun, 28 Jan 2007 14:34:00 -0700
+In-Reply-To: <1170015805.26655.15.camel@localhost.localdomain> (Benjamin
+	Herrenschmidt's message of "Mon, 29 Jan 2007 07:23:25 +1100")
+Message-ID: <m164aqq1iv.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m1bqkiq25v.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -4.3
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-4.3 required=5.9 tests=ALL_TRUSTED,BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-3.3 ALL_TRUSTED            Did not pass through any untrusted hosts
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
 
-* Eric W. Biederman <ebiederm@xmission.com> wrote:
+>> The other big change is that I added a field to irq_desc to point
+>> at the msi_desc.  This removes the conflicts with the existing pointer
+>> fields and makes the irq -> msi_desc mapping useable outside of msi.c
+>
+> I'm not even sure we would have needed that with Michael's mecanism in
+> fact. One other reason why I prefer it.
+>
+> Basically, backends like MPIC etc... don't need it. The irq chip
+> operations are normal MPIC operations and don't need to know they are
+> done on an MSI nor what MSI etc... and thus we don't need it. Same with
+> RTAS.
 
-> I'm not arguing against an operations based approach.  I'm arguing for 
-> simple obviously correct steps, and not throwing the baby out with the 
-> bath water.
-> 
-> My patches should be a precursor to an operations based approach
-> because they are simple step from where we are now.
+If you get rid of the bass ackwards setup_msi_msg operation they do,
+so you can support at least one write_msi_msg call.
 
-yeah. I'd say your approach is to go from A to B:
+> On the other hand, x86 needs it, but then, x86 uses it's own MSI
+> specific irq_chip, in which case it can use irq_desc->chip_data as long
+> as it does it within the backend.
 
-  [A] -----------------------------------------------------> [B]
-                                                              |
-                                                             [C]
+Most of the uses are within msi.c as the code is currently structured
+which means you can't use it that way.
 
-while there might be some other arguments that "no, lets go to C 
-instead", i say lets not throw away the already implemented and already 
-working and nicely layered [A]->[B] transition, just because there's an 
-argument whether the end result should be 'B' or 'C'. Unless someone who 
-wants to see 'C' produces a patchset that walks the whole way i dont see 
-any reason to not go with your patchset. It clearly removes alot of 
-cruft.
+> So I may have missed a case where a given backend might need both that
+> irq -> msi_desc mapping -and- use irq_desc->chip_data for other things,
+> but that's one thing I was hoping we could avoid with Michael's code.
 
-Acked-by: Ingo Molnar <mingo@elte.hu>
+That is where we are today.  Find a way to remove the code that uses it
+and it can go away.
 
-	Ingo
+>> The only architecture problem that isn't solvable in this context is
+>> the problem of supporting the crazy hypervisor on the ppc RTAS, which
+>> asks us to drive the hardware but does not give us access to the
+>> hardware registers.
+>
+> So you are saying that we should use your model while admitting that it
+> can't solve our problems...
+
+My approach can solve your problems with a few tweaks just like Michaels
+approach would have needed to solve mine.
+
+> I really don't understand why you seem so totally opposed to Michael's
+> approach which definitely looks to me like the sane thing to do. Note
+> that in the end, Michael's approach isn't -that- different from yours,
+> just a bit more abstracted.
+
+1) Because every one tells me it is the greatest thing since sliced bread,
+   and when I look it simply doesn't work, and my feeling would be it would
+   be a complete retesting effort of all currently supported architectures
+   to make Michaels code work.
+
+2) Because it was scrap and replace, which is a horrible way to deal with
+   a problem when we have 3 architectures working already.
+
+Honestly I think Michael and I can get along but all of the cheer leaders seem
+to be exacerbating the situation.
+
+I do agree Michael's approach isn't that different than mine and I think we
+can converge on a single implementation.  To a large extent that is what
+my patchset is about.  Moving the current code far enough it is usable,
+and a reasonable basis for more work.
+
+I don't write the current code but since I touched it and started cleaning
+it up I seem to be stuck with it.  So I will be happy to take care of it
+until we get a version that all architectures can use.
+
+Eric
