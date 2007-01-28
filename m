@@ -1,741 +1,516 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932560AbXA1N33@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932614AbXA1N3x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932560AbXA1N33 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jan 2007 08:29:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932572AbXA1N33
+	id S932614AbXA1N3x (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jan 2007 08:29:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932597AbXA1N3d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jan 2007 08:29:29 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:34727 "EHLO mx1.redhat.com"
+	Sun, 28 Jan 2007 08:29:33 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:34726 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932560AbXA1N30 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S932549AbXA1N30 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 28 Jan 2007 08:29:26 -0500
-Message-Id: <20070128132436.925766000@programming.kicks-ass.net>
+Message-Id: <20070128132437.676822000@programming.kicks-ass.net>
 References: <20070128131343.628722000@programming.kicks-ass.net>
 User-Agent: quilt/0.45-1
-Date: Sun, 28 Jan 2007 14:13:53 +0100
+Date: Sun, 28 Jan 2007 14:13:55 +0100
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: linux-kernel@vger.kernel.org, linux-mm@kvack.org
 Cc: Andrew Morton <akpm@osdl.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
        Christoph Lameter <clameter@sgi.com>, Ingo Molnar <mingo@elte.hu>,
        Rik van Riel <riel@redhat.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [PATCH 10/14] radix-tree: concurrent write side support
-Content-Disposition: inline; filename=radix-tree-concurrent.patch
+Subject: [PATCH 12/14] mm/fs: abstract address_space::nrpages
+Content-Disposition: inline; filename=mapping_nrpages.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Provide support for concurrent write side operations without changing the API
-for all current uses.
-
-Concurrency is realized by means of two locking models; the simple one is 
-ladder locking, the more complex one is path locking.
-
-Ladder locking is like walking down a ladder, you place your foot on a spoke
-below the one your other foot finds support etc.. There is no walking with both
-feet in the air. Likewise with walking a tree, you lock a node below the 
-current node before releasing it.
-
-This allows other modifying operations to start as soon as you release the
-lock on the root node and even complete before you if they walk another path
-downward.
-
-The modifying operations: insert, lookup_slot and set_tag, use this simple
-method.
-
-The more complex path locking method is needed for operations that need to
-walk upwards again after they walked down, those are: tag_clear and delete.
-
-These lock their whole path downwards and release whole sections at points
-where it can be determined the walk upwards will stop, thus also allowing
-concurrency.
-
-Finding the conditions for the terminated walk upwards while doing the downward
-walk is the 'interesting' part of this approach.
-
-The remaining - unmodified - operations will have exclusive locking (since
-they're unmodified, they never move the lock downwards from the root node).
-
-The API for this looks like:
-
-  DECLARE_RADIX_TREE_CONTEXT(ctx, &mapping->page_tree)
-
-  radix_tree_lock(&ctx)
-  ... do _1_ modifying operation ...
-  radix_tree_unlock(&ctx)
-
-Note that before the radix operation the root node is held and will provide
-exclusive locking, after the operation the held lock might only be enough to
-protect a single item.
+Currently the tree_lock protects mapping->nrpages, this will not be
+possible much longer. Hence abstract the access to this variable so that
+it can be easily replaced by an atomic_ulong_t.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- include/linux/radix-tree.h |   87 ++++++++++++-
- init/Kconfig               |    4 
- lib/radix-tree.c           |  282 +++++++++++++++++++++++++++++++++++----------
- 3 files changed, 310 insertions(+), 63 deletions(-)
+ arch/sh64/lib/dbg.c          |    2 +-
+ fs/block_dev.c               |    2 +-
+ fs/buffer.c                  |    2 +-
+ fs/gfs2/glock.c              |    2 +-
+ fs/gfs2/glops.c              |    6 +++---
+ fs/gfs2/meta_io.c            |    2 +-
+ fs/hugetlbfs/inode.c         |    2 +-
+ fs/inode.c                   |   10 +++++-----
+ fs/jffs/inode-v23.c          |    2 +-
+ fs/jffs2/dir.c               |    4 ++--
+ fs/jffs2/fs.c                |    2 +-
+ fs/libfs.c                   |    2 +-
+ fs/nfs/inode.c               |    6 +++---
+ fs/xfs/linux-2.6/xfs_vnode.h |    2 +-
+ include/linux/fs.h           |   22 +++++++++++++++++++++-
+ include/linux/swap.h         |    2 +-
+ ipc/shm.c                    |    4 ++--
+ mm/filemap.c                 |   12 ++++++------
+ mm/shmem.c                   |    8 ++++----
+ mm/swap_state.c              |    4 ++--
+ mm/truncate.c                |    2 +-
+ 21 files changed, 60 insertions(+), 40 deletions(-)
 
-Index: linux-2.6/include/linux/radix-tree.h
+Index: linux-2.6/arch/sh64/lib/dbg.c
 ===================================================================
---- linux-2.6.orig/include/linux/radix-tree.h
-+++ linux-2.6/include/linux/radix-tree.h
-@@ -62,23 +62,73 @@ struct radix_tree_root {
- 	unsigned int		height;
- 	gfp_t			gfp_mask;
- 	struct radix_tree_node	*rnode;
-+	spinlock_t		lock;
-+#ifdef CONFIG_RADIX_TREE_CONCURRENT
-+	struct radix_tree_context *context;
-+	struct task_struct	*owner;
-+#endif
- };
+--- linux-2.6.orig/arch/sh64/lib/dbg.c	2007-01-22 22:43:26.000000000 +0100
++++ linux-2.6/arch/sh64/lib/dbg.c	2007-01-28 14:02:36.000000000 +0100
+@@ -424,6 +424,6 @@ void print_page(struct page *page)
+ 	printk("  page[%p] -> index 0x%lx,  count 0x%x,  flags 0x%lx\n",
+ 	       page, page->index, page_count(page), page->flags);
+ 	printk("       address_space = %p, pages =%ld\n", page->mapping,
+-	       page->mapping->nrpages);
++	       mapping_nrpages(page->mapping));
  
-+#ifdef CONFIG_RADIX_TREE_CONCURRENT
-+#define __RADIX_TREE_CONCURRENT_INIT					\
-+	.context = NULL,						\
-+	.owner = NULL,
-+#else
-+#define __RADIX_TREE_CONCURRENT_INIT
-+#endif
-+
- #define RADIX_TREE_INIT(mask)	{					\
- 	.height = 0,							\
- 	.gfp_mask = (mask),						\
- 	.rnode = NULL,							\
-+	.lock = __SPIN_LOCK_UNLOCKED(radix_tree_root.lock),		\
-+	__RADIX_TREE_CONCURRENT_INIT					\
  }
- 
- #define RADIX_TREE(name, mask) \
- 	struct radix_tree_root name = RADIX_TREE_INIT(mask)
- 
--#define INIT_RADIX_TREE(root, mask)					\
--do {									\
--	(root)->height = 0;						\
--	(root)->gfp_mask = (mask);					\
--	(root)->rnode = NULL;						\
--} while (0)
-+static inline void INIT_RADIX_TREE(struct radix_tree_root *root, gfp_t gfp_mask)
-+{
-+	root->height = 0;
-+	root->gfp_mask = gfp_mask;
-+	root->rnode = NULL;
-+	spin_lock_init(&root->lock);
-+#ifdef CONFIG_RADIX_TREE_CONCURRENT
-+	root->context = NULL;
-+	root->owner = NULL;
-+#endif
-+}
-+
-+struct radix_tree_context {
-+	struct radix_tree_root	*root;
-+#ifdef CONFIG_RADIX_TREE_CONCURRENT
-+	spinlock_t		*locked;
-+#endif
-+};
-+
-+#ifdef CONFIG_RADIX_TREE_CONCURRENT
-+#define __RADIX_TREE_CONTEXT_INIT					\
-+		.locked = NULL,
-+#else
-+#define __RADIX_TREE_CONTEXT_INIT
-+#endif
-+
-+#define DECLARE_RADIX_TREE_CONTEXT(context, tree) 			\
-+	struct radix_tree_context context = { 				\
-+		.root = (tree), 					\
-+		__RADIX_TREE_CONTEXT_INIT				\
-+       	}
-+
-+static inline void
-+init_radix_tree_context(struct radix_tree_context *wctx,
-+		struct radix_tree_root *root)
-+{
-+	wctx->root = root;
-+#ifdef CONFIG_RADIX_TREE_CONCURRENT
-+	wctx->locked = NULL;
-+#endif
-+}
- 
- /**
-  * Radix-tree synchronization
-@@ -155,6 +205,31 @@ static inline void radix_tree_replace_sl
- 	rcu_assign_pointer(*pslot, item);
- }
- 
-+static inline void radix_tree_lock(struct radix_tree_context *context)
-+{
-+	struct radix_tree_root *root = context->root;
-+	rcu_read_lock();
-+	spin_lock(&root->lock);
-+#ifdef CONFIG_RADIX_TREE_CONCURRENT
-+	BUG_ON(context->locked);
-+	context->locked = &root->lock;
-+	root->owner = current;
-+	root->context = context;
-+#endif
-+}
-+
-+static inline void radix_tree_unlock(struct radix_tree_context *context)
-+{
-+#ifdef CONFIG_RADIX_TREE_CONCURRENT
-+	BUG_ON(!context->locked);
-+	spin_unlock(context->locked);
-+	context->locked = NULL;
-+#else
-+	spin_unlock(&context->root->lock);
-+#endif
-+	rcu_read_unlock();
-+}
-+
- int radix_tree_insert(struct radix_tree_root *, unsigned long, void *);
- void *radix_tree_lookup(struct radix_tree_root *, unsigned long);
- void **radix_tree_lookup_slot(struct radix_tree_root *, unsigned long);
-Index: linux-2.6/lib/radix-tree.c
+Index: linux-2.6/fs/block_dev.c
 ===================================================================
---- linux-2.6.orig/lib/radix-tree.c
-+++ linux-2.6/lib/radix-tree.c
-@@ -32,6 +32,7 @@
- #include <linux/string.h>
- #include <linux/bitops.h>
- #include <linux/rcupdate.h>
-+#include <linux/spinlock.h>
- 
- 
- #ifdef __KERNEL__
-@@ -52,11 +53,17 @@ struct radix_tree_node {
- 	struct rcu_head	rcu_head;
- 	void		*slots[RADIX_TREE_MAP_SIZE];
- 	unsigned long	tags[RADIX_TREE_MAX_TAGS][RADIX_TREE_TAG_LONGS];
-+#ifdef CONFIG_RADIX_TREE_CONCURRENT
-+	spinlock_t	lock;
-+#endif
- };
- 
- struct radix_tree_path {
- 	struct radix_tree_node *node;
- 	int offset;
-+#ifdef CONFIG_RADIX_TREE_CONCURRENT
-+	spinlock_t *locked;
-+#endif
- };
- 
- #define RADIX_TREE_INDEX_BITS  (8 /* CHAR_BIT */ * sizeof(unsigned long))
-@@ -64,6 +71,10 @@ struct radix_tree_path {
- 
- static unsigned long height_to_maxindex[RADIX_TREE_MAX_PATH] __read_mostly;
- 
-+#ifdef CONFIG_RADIX_TREE_CONCURRENT
-+static struct lock_class_key radix_node_class[RADIX_TREE_MAX_PATH];
-+#endif
-+
- /*
-  * Radix tree node cache.
-  */
-@@ -88,7 +99,7 @@ static inline gfp_t root_gfp_mask(struct
-  * that the caller has pinned this thread of control to the current CPU.
-  */
- static struct radix_tree_node *
--radix_tree_node_alloc(struct radix_tree_root *root)
-+radix_tree_node_alloc(struct radix_tree_root *root, int height)
- {
- 	struct radix_tree_node *ret;
- 	gfp_t gfp_mask = root_gfp_mask(root);
-@@ -105,6 +116,11 @@ radix_tree_node_alloc(struct radix_tree_
- 		}
+--- linux-2.6.orig/fs/block_dev.c	2007-01-27 20:36:02.000000000 +0100
++++ linux-2.6/fs/block_dev.c	2007-01-28 14:02:36.000000000 +0100
+@@ -554,7 +554,7 @@ long nr_blockdev_pages(void)
+ 	list_for_each(p, &all_bdevs) {
+ 		struct block_device *bdev;
+ 		bdev = list_entry(p, struct block_device, bd_list);
+-		ret += bdev->bd_inode->i_mapping->nrpages;
++		ret += mapping_nrpages(bdev->bd_inode->i_mapping);
  	}
- 	BUG_ON(radix_tree_is_indirect_ptr(ret));
-+#ifdef CONFIG_RADIX_TREE_CONCURRENT
-+	spin_lock_init(&ret->lock);
-+	lockdep_set_class(&ret->lock, &radix_node_class[height]);
-+#endif
-+	ret->height = height;
+ 	spin_unlock(&bdev_lock);
  	return ret;
- }
- 
-@@ -205,6 +221,22 @@ static inline int any_tag_set(struct rad
- 	return 0;
- }
- 
-+static inline int any_tag_set_but(struct radix_tree_node *node,
-+		unsigned int tag, int offset)
-+{
-+	int idx;
-+	int offset_idx = offset / BITS_PER_LONG;
-+	unsigned long offset_mask = ~(1UL << (offset % BITS_PER_LONG));
-+	for (idx = 0; idx < RADIX_TREE_TAG_LONGS; idx++) {
-+		unsigned long mask = ~0UL;
-+		if (idx == offset_idx)
-+			mask = offset_mask;
-+		if (node->tags[tag][idx] & mask)
-+			return 1;
-+	}
-+	return 0;
-+}
-+
- /*
-  *	Return the maximum key which can be store into a
-  *	radix tree with height HEIGHT.
-@@ -234,8 +266,8 @@ static int radix_tree_extend(struct radi
- 	}
- 
- 	do {
--		unsigned int newheight;
--		if (!(node = radix_tree_node_alloc(root)))
-+		unsigned int newheight = root->height + 1;
-+		if (!(node = radix_tree_node_alloc(root, newheight)))
- 			return -ENOMEM;
- 
- 		/* Increase the height.  */
-@@ -247,8 +279,6 @@ static int radix_tree_extend(struct radi
- 				tag_set(node, tag, 0);
- 		}
- 
--		newheight = root->height+1;
--		node->height = newheight;
- 		node->count = 1;
- 		node = radix_tree_ptr_to_indirect(node);
- 		rcu_assign_pointer(root->rnode, node);
-@@ -258,6 +288,77 @@ out:
- 	return 0;
- }
- 
-+#ifdef CONFIG_RADIX_TREE_CONCURRENT
-+static inline struct radix_tree_context *
-+radix_tree_get_context(struct radix_tree_root *root)
-+{
-+	struct radix_tree_context *context = NULL;
-+
-+	if (root->owner == current && root->context) {
-+		context = root->context;
-+		root->context = NULL;
-+	}
-+	return context;
-+}
-+
-+#define RADIX_TREE_CONTEXT(context, root) \
-+	struct radix_tree_context *context = radix_tree_get_context(root)
-+
-+static inline spinlock_t *radix_node_lock(struct radix_tree_root *root,
-+		struct radix_tree_node *node)
-+{
-+	spinlock_t *locked = &node->lock;
-+	spin_lock(locked);
-+	return locked;
-+}
-+
-+static inline void radix_ladder_lock(struct radix_tree_context *context,
-+		struct radix_tree_node *node)
-+{
-+	if (context) {
-+		struct radix_tree_root *root = context->root;
-+		spinlock_t *locked = radix_node_lock(root, node);
-+		if (locked) {
-+			spin_unlock(context->locked);
-+			context->locked = locked;
-+		}
-+	}
-+}
-+
-+static inline void radix_path_init(struct radix_tree_context *context,
-+		struct radix_tree_path *pathp)
-+{
-+	pathp->locked = context ? context->locked : NULL;
-+}
-+
-+static inline void radix_path_lock(struct radix_tree_context *context,
-+		struct radix_tree_path *pathp, struct radix_tree_node *node)
-+{
-+	if (context) {
-+		struct radix_tree_root *root = context->root;
-+		spinlock_t *locked = radix_node_lock(root, node);
-+		if (locked)
-+			context->locked = locked;
-+		pathp->locked = locked;
-+	} else
-+		pathp->locked = NULL;
-+}
-+
-+static inline void radix_path_unlock(struct radix_tree_context *context,
-+		struct radix_tree_path *punlock)
-+{
-+	if (context && punlock->locked &&
-+			context->locked != punlock->locked)
-+		spin_unlock(punlock->locked);
-+}
-+#else
-+#define RADIX_TREE_CONTEXT(context, root) do { } while (0)
-+#define radix_ladder_lock(context, node) do { } while (0)
-+#define radix_path_init(context, pathp) do { } while (0)
-+#define radix_path_lock(context, pathp, node) do { } while (0)
-+#define radix_path_unlock(context, punlock) do { } while (0)
-+#endif
-+
- /**
-  *	radix_tree_insert    -    insert into a radix tree
-  *	@root:		radix tree root
-@@ -273,6 +374,8 @@ int radix_tree_insert(struct radix_tree_
- 	unsigned int height, shift;
- 	int offset;
- 	int error;
-+	int tag;
-+	RADIX_TREE_CONTEXT(context, root);
- 
- 	BUG_ON(radix_tree_is_indirect_ptr(item));
- 
-@@ -292,9 +395,8 @@ int radix_tree_insert(struct radix_tree_
- 	while (height > 0) {
- 		if (slot == NULL) {
- 			/* Have to add a child node.  */
--			if (!(slot = radix_tree_node_alloc(root)))
-+			if (!(slot = radix_tree_node_alloc(root, height)))
- 				return -ENOMEM;
--			slot->height = height;
- 			if (node) {
- 				rcu_assign_pointer(node->slots[offset], slot);
- 				node->count++;
-@@ -306,6 +408,9 @@ int radix_tree_insert(struct radix_tree_
- 		/* Go a level down */
- 		offset = (index >> shift) & RADIX_TREE_MAP_MASK;
- 		node = slot;
-+
-+		radix_ladder_lock(context, node);
-+
- 		slot = node->slots[offset];
- 		shift -= RADIX_TREE_MAP_SHIFT;
- 		height--;
-@@ -317,12 +422,12 @@ int radix_tree_insert(struct radix_tree_
- 	if (node) {
- 		node->count++;
- 		rcu_assign_pointer(node->slots[offset], item);
--		BUG_ON(tag_get(node, 0, offset));
--		BUG_ON(tag_get(node, 1, offset));
-+		for (tag = 0; tag < RADIX_TREE_MAX_TAGS; tag++)
-+			BUG_ON(tag_get(node, tag, offset));
- 	} else {
- 		rcu_assign_pointer(root->rnode, item);
--		BUG_ON(root_tag_get(root, 0));
--		BUG_ON(root_tag_get(root, 1));
-+		for (tag = 0; tag < RADIX_TREE_MAX_TAGS; tag++)
-+			BUG_ON(root_tag_get(root, tag));
- 	}
- 
- 	return 0;
-@@ -346,6 +451,7 @@ void **radix_tree_lookup_slot(struct rad
- {
- 	unsigned int height, shift;
- 	struct radix_tree_node *node, **slot;
-+	RADIX_TREE_CONTEXT(context, root);
- 
- 	node = rcu_dereference(root->rnode);
- 	if (node == NULL)
-@@ -371,6 +477,8 @@ void **radix_tree_lookup_slot(struct rad
- 		if (node == NULL)
- 			return NULL;
- 
-+		radix_ladder_lock(context, node);
-+
- 		shift -= RADIX_TREE_MAP_SHIFT;
- 		height--;
- 	} while (height > 0);
-@@ -446,6 +554,7 @@ void *radix_tree_tag_set(struct radix_tr
- {
- 	unsigned int height, shift;
- 	struct radix_tree_node *slot;
-+	RADIX_TREE_CONTEXT(context, root);
- 
- 	height = root->height;
- 	BUG_ON(index > radix_tree_maxindex(height));
-@@ -453,9 +562,15 @@ void *radix_tree_tag_set(struct radix_tr
- 	slot = radix_tree_indirect_to_ptr(root->rnode);
- 	shift = (height - 1) * RADIX_TREE_MAP_SHIFT;
- 
-+	/* set the root's tag bit */
-+	if (slot && !root_tag_get(root, tag))
-+		root_tag_set(root, tag);
-+
- 	while (height > 0) {
- 		int offset;
- 
-+		radix_ladder_lock(context, slot);
-+
- 		offset = (index >> shift) & RADIX_TREE_MAP_MASK;
- 		if (!tag_get(slot, tag, offset))
- 			tag_set(slot, tag, offset);
-@@ -465,14 +580,24 @@ void *radix_tree_tag_set(struct radix_tr
- 		height--;
- 	}
- 
--	/* set the root's tag bit */
--	if (slot && !root_tag_get(root, tag))
--		root_tag_set(root, tag);
--
- 	return slot;
- }
- EXPORT_SYMBOL(radix_tree_tag_set);
- 
-+/*
-+ * the change can never propagate upwards from here.
-+ */
-+static inline int radix_tree_unlock_tag(struct radix_tree_root *root,
-+		struct radix_tree_path *pathp, int tag)
-+{
-+	int this, other;
-+
-+	this = tag_get(pathp->node, tag, pathp->offset);
-+	other = any_tag_set_but(pathp->node, tag, pathp->offset);
-+
-+	return !this || other;
-+}
-+
- /**
-  *	radix_tree_tag_clear - clear a tag on a radix tree node
-  *	@root:		radix tree root
-@@ -491,15 +616,19 @@ void *radix_tree_tag_clear(struct radix_
- 			unsigned long index, unsigned int tag)
- {
- 	struct radix_tree_path path[RADIX_TREE_MAX_PATH], *pathp = path;
-+	struct radix_tree_path *punlock = path, *piter;
- 	struct radix_tree_node *slot = NULL;
- 	unsigned int height, shift;
-+	RADIX_TREE_CONTEXT(context, root);
-+
-+	pathp->node = NULL;
-+	radix_path_init(context, pathp);
- 
- 	height = root->height;
- 	if (index > radix_tree_maxindex(height))
- 		goto out;
- 
- 	shift = (height - 1) * RADIX_TREE_MAP_SHIFT;
--	pathp->node = NULL;
- 	slot = radix_tree_indirect_to_ptr(root->rnode);
- 
- 	while (height > 0) {
-@@ -509,10 +638,17 @@ void *radix_tree_tag_clear(struct radix_
- 			goto out;
- 
- 		offset = (index >> shift) & RADIX_TREE_MAP_MASK;
--		pathp[1].offset = offset;
--		pathp[1].node = slot;
--		slot = slot->slots[offset];
- 		pathp++;
-+		pathp->offset = offset;
-+		pathp->node = slot;
-+		radix_path_lock(context, pathp, slot);
-+
-+		if (radix_tree_unlock_tag(root, pathp, tag)) {
-+			for (; punlock < pathp; punlock++)
-+				radix_path_unlock(context, punlock);
-+		}
-+
-+		slot = slot->slots[offset];
- 		shift -= RADIX_TREE_MAP_SHIFT;
- 		height--;
- 	}
-@@ -520,20 +656,22 @@ void *radix_tree_tag_clear(struct radix_
- 	if (slot == NULL)
- 		goto out;
- 
--	while (pathp->node) {
--		if (!tag_get(pathp->node, tag, pathp->offset))
--			goto out;
--		tag_clear(pathp->node, tag, pathp->offset);
--		if (any_tag_set(pathp->node, tag))
--			goto out;
--		pathp--;
-+	for (piter = pathp; piter >= punlock; piter--) {
-+		if (piter->node) {
-+			if (!tag_get(piter->node, tag, piter->offset))
-+				break;
-+			tag_clear(piter->node, tag, piter->offset);
-+			if (any_tag_set(piter->node, tag))
-+				break;
-+		} else {
-+			if (root_tag_get(root, tag))
-+				root_tag_clear(root, tag);
-+		}
- 	}
- 
--	/* clear the root's tag bit */
--	if (root_tag_get(root, tag))
--		root_tag_clear(root, tag);
--
- out:
-+	for (; punlock < pathp; punlock++)
-+		radix_path_unlock(context, punlock);
- 	return slot;
- }
- EXPORT_SYMBOL(radix_tree_tag_clear);
-@@ -955,7 +1093,7 @@ radix_tree_gang_lookup_tag_slot(struct r
- 	if (!radix_tree_is_indirect_ptr(node)) {
- 		if (first_index > 0)
- 			return 0;
--		results[0] = node;
-+		results[0] = (void **)&root->rnode;
- 		return 1;
- 	}
- 	node = radix_tree_indirect_to_ptr(node);
-@@ -991,6 +1129,7 @@ static inline void radix_tree_shrink(str
- 	while (root->height > 0) {
- 		struct radix_tree_node *to_free = root->rnode;
- 		void *newptr;
-+		int tag;
- 
- 		BUG_ON(!radix_tree_is_indirect_ptr(to_free));
- 		to_free = radix_tree_indirect_to_ptr(to_free);
-@@ -1017,14 +1156,29 @@ static inline void radix_tree_shrink(str
- 		root->rnode = newptr;
- 		root->height--;
- 		/* must only free zeroed nodes into the slab */
--		tag_clear(to_free, 0, 0);
--		tag_clear(to_free, 1, 0);
-+		for (tag = 0; tag < RADIX_TREE_MAX_TAGS; tag++)
-+			tag_clear(to_free, tag, 0);
- 		to_free->slots[0] = NULL;
- 		to_free->count = 0;
--		radix_tree_node_free(to_free);
- 	}
- }
- 
-+static inline int radix_tree_unlock_all(struct radix_tree_root *root,
-+		struct radix_tree_path *pathp)
-+{
-+	int tag;
-+	int unlock = 1;
-+
-+	for (tag = 0; tag < RADIX_TREE_MAX_TAGS; tag++) {
-+		if (!radix_tree_unlock_tag(root, pathp, tag)) {
-+			unlock = 0;
-+			break;
-+		}
-+	}
-+
-+	return unlock;
-+}
-+
- /**
-  *	radix_tree_delete    -    delete an item from a radix tree
-  *	@root:		radix tree root
-@@ -1037,11 +1191,15 @@ static inline void radix_tree_shrink(str
- void *radix_tree_delete(struct radix_tree_root *root, unsigned long index)
- {
- 	struct radix_tree_path path[RADIX_TREE_MAX_PATH], *pathp = path;
-+	struct radix_tree_path *punlock = path, *piter;
- 	struct radix_tree_node *slot = NULL;
--	struct radix_tree_node *to_free;
- 	unsigned int height, shift;
- 	int tag;
- 	int offset;
-+	RADIX_TREE_CONTEXT(context, root);
-+
-+	pathp->node = NULL;
-+	radix_path_init(context, pathp);
- 
- 	height = root->height;
- 	if (index > radix_tree_maxindex(height))
-@@ -1056,7 +1214,6 @@ void *radix_tree_delete(struct radix_tre
- 	slot = radix_tree_indirect_to_ptr(slot);
- 
- 	shift = (height - 1) * RADIX_TREE_MAP_SHIFT;
--	pathp->node = NULL;
- 
- 	do {
- 		if (slot == NULL)
-@@ -1066,6 +1223,13 @@ void *radix_tree_delete(struct radix_tre
- 		offset = (index >> shift) & RADIX_TREE_MAP_MASK;
- 		pathp->offset = offset;
- 		pathp->node = slot;
-+		radix_path_lock(context, pathp, slot);
-+
-+		if (slot->count > 2 && radix_tree_unlock_all(root, pathp)) {
-+			for (; punlock < pathp; punlock++)
-+				radix_path_unlock(context, punlock);
-+		}
-+
- 		slot = slot->slots[offset];
- 		shift -= RADIX_TREE_MAP_SHIFT;
- 		height--;
-@@ -1078,41 +1242,45 @@ void *radix_tree_delete(struct radix_tre
- 	 * Clear all tags associated with the just-deleted item
- 	 */
- 	for (tag = 0; tag < RADIX_TREE_MAX_TAGS; tag++) {
--		if (tag_get(pathp->node, tag, pathp->offset))
--			radix_tree_tag_clear(root, index, tag);
-+		for (piter = pathp; piter >= punlock; piter--) {
-+			if (piter->node) {
-+				if (!tag_get(piter->node, tag, piter->offset))
-+					break;
-+				tag_clear(piter->node, tag, piter->offset);
-+				if (any_tag_set(piter->node, tag))
-+					break;
-+			} else {
-+				if (root_tag_get(root, tag))
-+					root_tag_clear(root, tag);
-+			}
-+		}
- 	}
- 
--	to_free = NULL;
--	/* Now free the nodes we do not need anymore */
--	while (pathp->node) {
--		pathp->node->slots[pathp->offset] = NULL;
--		pathp->node->count--;
--		/*
--		 * Queue the node for deferred freeing after the
--		 * last reference to it disappears (set NULL, above).
--		 */
--		if (to_free)
--			radix_tree_node_free(to_free);
-+	/* Now unhook the nodes we do not need anymore */
-+	for (piter = pathp; piter >= punlock && piter->node; piter--) {
-+		piter->node->slots[piter->offset] = NULL;
-+		piter->node->count--;
- 
--		if (pathp->node->count) {
--			if (pathp->node ==
-+		if (piter->node->count) {
-+			if (piter->node ==
- 					radix_tree_indirect_to_ptr(root->rnode))
- 				radix_tree_shrink(root);
- 			goto out;
- 		}
-+	}
- 
--		/* Node with zero slots in use so free it */
--		to_free = pathp->node;
--		pathp--;
-+	BUG_ON(piter->node);
- 
--	}
- 	root_tag_clear_all(root);
- 	root->height = 0;
- 	root->rnode = NULL;
--	if (to_free)
--		radix_tree_node_free(to_free);
- 
- out:
-+	for (; punlock <= pathp; punlock++) {
-+		radix_path_unlock(context, punlock);
-+		if (punlock->node && punlock->node->count == 0)
-+			radix_tree_node_free(punlock->node);
-+	}
- 	return slot;
- }
- EXPORT_SYMBOL(radix_tree_delete);
-Index: linux-2.6/init/Kconfig
+Index: linux-2.6/fs/buffer.c
 ===================================================================
---- linux-2.6.orig/init/Kconfig
-+++ linux-2.6/init/Kconfig
-@@ -316,6 +316,10 @@ config TASK_IO_ACCOUNTING
- config SYSCTL
- 	bool
+--- linux-2.6.orig/fs/buffer.c	2007-01-28 13:59:24.000000000 +0100
++++ linux-2.6/fs/buffer.c	2007-01-28 14:02:36.000000000 +0100
+@@ -336,7 +336,7 @@ void invalidate_bdev(struct block_device
+ {
+ 	struct address_space *mapping = bdev->bd_inode->i_mapping;
  
-+config RADIX_TREE_CONCURRENT
-+	bool "Enable concurrent radix tree operations (EXPERIMENTAL)"
-+	default y if SMP
+-	if (mapping->nrpages == 0)
++	if (mapping_nrpages(mapping) == 0)
+ 		return;
+ 
+ 	invalidate_bh_lrus();
+Index: linux-2.6/fs/gfs2/glock.c
+===================================================================
+--- linux-2.6.orig/fs/gfs2/glock.c	2007-01-22 22:43:26.000000000 +0100
++++ linux-2.6/fs/gfs2/glock.c	2007-01-28 14:02:36.000000000 +0100
+@@ -2110,7 +2110,7 @@ static int dump_glock(struct gfs2_glock 
+ 		    (list_empty(&gl->gl_reclaim)) ? "no" : "yes");
+ 	if (gl->gl_aspace)
+ 		printk(KERN_INFO "  aspace = 0x%p nrpages = %lu\n", gl->gl_aspace,
+-		       gl->gl_aspace->i_mapping->nrpages);
++		       mapping_nrpages(gl->gl_aspace->i_mapping));
+ 	else
+ 		printk(KERN_INFO "  aspace = no\n");
+ 	printk(KERN_INFO "  ail = %d\n", atomic_read(&gl->gl_ail_count));
+Index: linux-2.6/fs/gfs2/glops.c
+===================================================================
+--- linux-2.6.orig/fs/gfs2/glops.c	2007-01-22 22:43:26.000000000 +0100
++++ linux-2.6/fs/gfs2/glops.c	2007-01-28 14:02:36.000000000 +0100
+@@ -243,7 +243,7 @@ static void inode_go_inval(struct gfs2_g
+ 
+ 	if (ip && S_ISREG(ip->i_inode.i_mode)) {
+ 		truncate_inode_pages(ip->i_inode.i_mapping, 0);
+-		gfs2_assert_withdraw(GFS2_SB(&ip->i_inode), !ip->i_inode.i_mapping->nrpages);
++		gfs2_assert_withdraw(GFS2_SB(&ip->i_inode), !mapping_nrpages(ip->i_inode.i_mapping));
+ 		clear_bit(GIF_PAGED, &ip->i_flags);
+ 	}
+ }
+@@ -260,7 +260,7 @@ static int inode_go_demote_ok(struct gfs
+ 	struct gfs2_sbd *sdp = gl->gl_sbd;
+ 	int demote = 0;
+ 
+-	if (!gl->gl_object && !gl->gl_aspace->i_mapping->nrpages)
++	if (!gl->gl_object && !mapping_nrpages(gl->gl_aspace->i_mapping))
+ 		demote = 1;
+ 	else if (!sdp->sd_args.ar_localcaching &&
+ 		 time_after_eq(jiffies, gl->gl_stamp +
+@@ -360,7 +360,7 @@ static void inode_greedy(struct gfs2_glo
+ 
+ static int rgrp_go_demote_ok(struct gfs2_glock *gl)
+ {
+-	return !gl->gl_aspace->i_mapping->nrpages;
++	return !mapping_nrpages(gl->gl_aspace->i_mapping);
+ }
+ 
+ /**
+Index: linux-2.6/fs/gfs2/meta_io.c
+===================================================================
+--- linux-2.6.orig/fs/gfs2/meta_io.c	2007-01-22 22:43:26.000000000 +0100
++++ linux-2.6/fs/gfs2/meta_io.c	2007-01-28 14:02:36.000000000 +0100
+@@ -104,7 +104,7 @@ void gfs2_meta_inval(struct gfs2_glock *
+ 	truncate_inode_pages(mapping, 0);
+ 	atomic_dec(&aspace->i_writecount);
+ 
+-	gfs2_assert_withdraw(sdp, !mapping->nrpages);
++	gfs2_assert_withdraw(sdp, !mapping_nrpages(mapping));
+ }
+ 
+ /**
+Index: linux-2.6/fs/hugetlbfs/inode.c
+===================================================================
+--- linux-2.6.orig/fs/hugetlbfs/inode.c	2007-01-22 22:43:26.000000000 +0100
++++ linux-2.6/fs/hugetlbfs/inode.c	2007-01-28 14:02:36.000000000 +0100
+@@ -214,7 +214,7 @@ static void truncate_hugepages(struct in
+ 		}
+ 		huge_pagevec_release(&pvec);
+ 	}
+-	BUG_ON(!lstart && mapping->nrpages);
++	BUG_ON(!lstart && mapping_nrpages(mapping));
+ 	hugetlb_unreserve_pages(inode, start, freed);
+ }
+ 
+Index: linux-2.6/fs/jffs/inode-v23.c
+===================================================================
+--- linux-2.6.orig/fs/jffs/inode-v23.c	2007-01-22 22:43:26.000000000 +0100
++++ linux-2.6/fs/jffs/inode-v23.c	2007-01-28 14:02:36.000000000 +0100
+@@ -1352,7 +1352,7 @@ jffs_create(struct inode *dir, struct de
+ 	inode->i_op = &jffs_file_inode_operations;
+ 	inode->i_fop = &jffs_file_operations;
+ 	inode->i_mapping->a_ops = &jffs_address_operations;
+-	inode->i_mapping->nrpages = 0;
++	mapping_nrpages_init(inode->i_mapping);
+ 
+ 	d_instantiate(dentry, inode);
+  jffs_create_end:
+Index: linux-2.6/fs/jffs2/dir.c
+===================================================================
+--- linux-2.6.orig/fs/jffs2/dir.c	2007-01-22 22:43:26.000000000 +0100
++++ linux-2.6/fs/jffs2/dir.c	2007-01-28 14:02:36.000000000 +0100
+@@ -206,7 +206,7 @@ static int jffs2_create(struct inode *di
+ 	inode->i_op = &jffs2_file_inode_operations;
+ 	inode->i_fop = &jffs2_file_operations;
+ 	inode->i_mapping->a_ops = &jffs2_file_address_operations;
+-	inode->i_mapping->nrpages = 0;
++	mapping_nrpages_init(inode->i_mapping);
+ 
+ 	f = JFFS2_INODE_INFO(inode);
+ 	dir_f = JFFS2_INODE_INFO(dir_i);
+@@ -230,7 +230,7 @@ static int jffs2_create(struct inode *di
+ 	d_instantiate(dentry, inode);
+ 
+ 	D1(printk(KERN_DEBUG "jffs2_create: Created ino #%lu with mode %o, nlink %d(%d). nrpages %ld\n",
+-		  inode->i_ino, inode->i_mode, inode->i_nlink, f->inocache->nlink, inode->i_mapping->nrpages));
++		  inode->i_ino, inode->i_mode, inode->i_nlink, f->inocache->nlink, mapping_nrpages(inode->i_mapping)));
+ 	return 0;
+ 
+  fail:
+Index: linux-2.6/fs/jffs2/fs.c
+===================================================================
+--- linux-2.6.orig/fs/jffs2/fs.c	2007-01-27 20:36:02.000000000 +0100
++++ linux-2.6/fs/jffs2/fs.c	2007-01-28 14:02:36.000000000 +0100
+@@ -293,7 +293,7 @@ void jffs2_read_inode (struct inode *ino
+ 		inode->i_op = &jffs2_file_inode_operations;
+ 		inode->i_fop = &jffs2_file_operations;
+ 		inode->i_mapping->a_ops = &jffs2_file_address_operations;
+-		inode->i_mapping->nrpages = 0;
++		mapping_nrpages_init(inode->i_mapping);
+ 		break;
+ 
+ 	case S_IFBLK:
+Index: linux-2.6/fs/libfs.c
+===================================================================
+--- linux-2.6.orig/fs/libfs.c	2007-01-22 22:43:26.000000000 +0100
++++ linux-2.6/fs/libfs.c	2007-01-28 14:02:36.000000000 +0100
+@@ -16,7 +16,7 @@ int simple_getattr(struct vfsmount *mnt,
+ {
+ 	struct inode *inode = dentry->d_inode;
+ 	generic_fillattr(inode, stat);
+-	stat->blocks = inode->i_mapping->nrpages << (PAGE_CACHE_SHIFT - 9);
++	stat->blocks = mapping_nrpages(inode->i_mapping) << (PAGE_CACHE_SHIFT - 9);
+ 	return 0;
+ }
+ 
+Index: linux-2.6/fs/nfs/inode.c
+===================================================================
+--- linux-2.6.orig/fs/nfs/inode.c	2007-01-27 20:36:03.000000000 +0100
++++ linux-2.6/fs/nfs/inode.c	2007-01-28 14:03:13.000000000 +0100
+@@ -93,7 +93,7 @@ int nfs_sync_mapping(struct address_spac
+ {
+ 	int ret;
+ 
+-	if (mapping->nrpages == 0)
++	if (mapping_nrpages(mapping) == 0)
+ 		return 0;
+ 	unmap_mapping_range(mapping, 0, 0, 0);
+ 	ret = filemap_write_and_wait(mapping);
+@@ -133,7 +133,7 @@ void nfs_zap_caches(struct inode *inode)
+ 
+ void nfs_zap_mapping(struct inode *inode, struct address_space *mapping)
+ {
+-	if (mapping->nrpages != 0) {
++	if (mapping_nrpages(mapping) != 0) {
+ 		spin_lock(&inode->i_lock);
+ 		NFS_I(inode)->cache_validity |= NFS_INO_INVALID_DATA;
+ 		spin_unlock(&inode->i_lock);
+@@ -669,7 +669,7 @@ static int nfs_invalidate_mapping_nolock
+ {
+ 	struct nfs_inode *nfsi = NFS_I(inode);
+ 	
+-	if (mapping->nrpages != 0) {
++	if (mapping_nrpages(mapping) != 0) {
+ 		int ret = invalidate_inode_pages2(mapping);
+ 		if (ret < 0)
+ 			return ret;
+Index: linux-2.6/fs/xfs/linux-2.6/xfs_vnode.h
+===================================================================
+--- linux-2.6.orig/fs/xfs/linux-2.6/xfs_vnode.h	2007-01-22 22:43:26.000000000 +0100
++++ linux-2.6/fs/xfs/linux-2.6/xfs_vnode.h	2007-01-28 14:02:36.000000000 +0100
+@@ -548,7 +548,7 @@ static inline void vn_atime_to_time_t(bh
+  * Some useful predicates.
+  */
+ #define VN_MAPPED(vp)	mapping_mapped(vn_to_inode(vp)->i_mapping)
+-#define VN_CACHED(vp)	(vn_to_inode(vp)->i_mapping->nrpages)
++#define VN_CACHED(vp)	mapping_nrpages(vn_to_inode(vp)->i_mapping)
+ #define VN_DIRTY(vp)	mapping_tagged(vn_to_inode(vp)->i_mapping, \
+ 					PAGECACHE_TAG_DIRTY)
+ #define VN_TRUNC(vp)	((vp)->v_flag & VTRUNCATED)
+Index: linux-2.6/include/linux/fs.h
+===================================================================
+--- linux-2.6.orig/include/linux/fs.h	2007-01-28 13:59:24.000000000 +0100
++++ linux-2.6/include/linux/fs.h	2007-01-28 14:02:36.000000000 +0100
+@@ -439,7 +439,7 @@ struct address_space {
+ 	struct list_head	i_mmap_nonlinear;/*list VM_NONLINEAR mappings */
+ 	spinlock_t		i_mmap_lock;	/* protect tree, count, list */
+ 	unsigned int		truncate_count;	/* Cover race condition with truncate */
+-	unsigned long		nrpages;	/* number of total pages */
++	unsigned long		__nrpages;	/* number of total pages */
+ 	pgoff_t			writeback_index;/* writeback starts here */
+ 	const struct address_space_operations *a_ops;	/* methods */
+ 	unsigned long		flags;		/* error bits/gfp mask */
+@@ -454,6 +454,26 @@ struct address_space {
+ 	 * of struct page's "mapping" pointer be used for PAGE_MAPPING_ANON.
+ 	 */
+ 
++static inline void mapping_nrpages_init(struct address_space *mapping)
++{
++	mapping->__nrpages = 0;
++}
 +
- menuconfig EMBEDDED
- 	bool "Configure standard kernel features (for small systems)"
- 	help
++static inline unsigned long mapping_nrpages(struct address_space *mapping)
++{
++	return mapping->__nrpages;
++}
++
++static inline void mapping_nrpages_inc(struct address_space *mapping)
++{
++	mapping->__nrpages++;
++}
++
++static inline void mapping_nrpages_dec(struct address_space *mapping)
++{
++	mapping->__nrpages--;
++}
++
+ struct block_device {
+ 	dev_t			bd_dev;  /* not a kdev_t - it's a search key */
+ 	struct inode *		bd_inode;	/* will die */
+Index: linux-2.6/ipc/shm.c
+===================================================================
+--- linux-2.6.orig/ipc/shm.c	2007-01-27 20:36:03.000000000 +0100
++++ linux-2.6/ipc/shm.c	2007-01-28 14:02:36.000000000 +0100
+@@ -499,11 +499,11 @@ static void shm_get_stat(struct ipc_name
+ 
+ 		if (is_file_hugepages(shp->shm_file)) {
+ 			struct address_space *mapping = inode->i_mapping;
+-			*rss += (HPAGE_SIZE/PAGE_SIZE)*mapping->nrpages;
++			*rss += (HPAGE_SIZE/PAGE_SIZE)*mapping_nrpages(mapping);
+ 		} else {
+ 			struct shmem_inode_info *info = SHMEM_I(inode);
+ 			spin_lock(&info->lock);
+-			*rss += inode->i_mapping->nrpages;
++			*rss += mapping_nrpages(inode->i_mapping);
+ 			*swp += info->swapped;
+ 			spin_unlock(&info->lock);
+ 		}
+Index: linux-2.6/mm/filemap.c
+===================================================================
+--- linux-2.6.orig/mm/filemap.c	2007-01-28 13:59:24.000000000 +0100
++++ linux-2.6/mm/filemap.c	2007-01-28 14:02:36.000000000 +0100
+@@ -118,7 +118,7 @@ void __remove_from_page_cache(struct pag
+ 
+ 	radix_tree_delete(&mapping->page_tree, page->index);
+ 	page->mapping = NULL;
+-	mapping->nrpages--;
++	mapping_nrpages_dec(mapping);
+ 	__dec_zone_page_state(page, NR_FILE_PAGES);
+ }
+ 
+@@ -190,7 +190,7 @@ int __filemap_fdatawrite_range(struct ad
+ 	int ret;
+ 	struct writeback_control wbc = {
+ 		.sync_mode = sync_mode,
+-		.nr_to_write = mapping->nrpages * 2,
++		.nr_to_write = mapping_nrpages(mapping) * 2,
+ 		.range_start = start,
+ 		.range_end = end,
+ 	};
+@@ -372,7 +372,7 @@ int filemap_write_and_wait(struct addres
+ {
+ 	int err = 0;
+ 
+-	if (mapping->nrpages) {
++	if (mapping_nrpages(mapping)) {
+ 		err = filemap_fdatawrite(mapping);
+ 		/*
+ 		 * Even if the above returned error, the pages may be
+@@ -406,7 +406,7 @@ int filemap_write_and_wait_range(struct 
+ {
+ 	int err = 0;
+ 
+-	if (mapping->nrpages) {
++	if (mapping_nrpages(mapping)) {
+ 		err = __filemap_fdatawrite_range(mapping, lstart, lend,
+ 						 WB_SYNC_ALL);
+ 		/* See comment of filemap_write_and_wait() */
+@@ -448,7 +448,7 @@ int add_to_page_cache(struct page *page,
+ 			SetPageLocked(page);
+ 			page->mapping = mapping;
+ 			page->index = offset;
+-			mapping->nrpages++;
++			mapping_nrpages_inc(mapping);
+ 			__inc_zone_page_state(page, NR_FILE_PAGES);
+ 		}
+ 		spin_unlock_irq(&mapping->tree_lock);
+@@ -2477,7 +2477,7 @@ generic_file_direct_IO(int rw, struct ki
+ 	if (retval == 0) {
+ 		retval = mapping->a_ops->direct_IO(rw, iocb, iov,
+ 						offset, nr_segs);
+-		if (rw == WRITE && mapping->nrpages) {
++		if (rw == WRITE && mapping_nrpages(mapping)) {
+ 			pgoff_t end = (offset + write_len - 1)
+ 						>> PAGE_CACHE_SHIFT;
+ 			int err = invalidate_inode_pages2_range(mapping,
+Index: linux-2.6/mm/shmem.c
+===================================================================
+--- linux-2.6.orig/mm/shmem.c	2007-01-22 22:43:27.000000000 +0100
++++ linux-2.6/mm/shmem.c	2007-01-28 14:02:36.000000000 +0100
+@@ -211,8 +211,8 @@ static void shmem_free_blocks(struct ino
+  * We have to calculate the free blocks since the mm can drop
+  * undirtied hole pages behind our back.
+  *
+- * But normally   info->alloced == inode->i_mapping->nrpages + info->swapped
+- * So mm freed is info->alloced - (inode->i_mapping->nrpages + info->swapped)
++ * But normally   info->alloced == mapping_nrpages(inode->i_mapping) + info->swapped
++ * So mm freed is info->alloced - (mapping_nrpages(inode->i_mapping) + info->swapped)
+  *
+  * It has to be called with the spinlock held.
+  */
+@@ -221,7 +221,7 @@ static void shmem_recalc_inode(struct in
+ 	struct shmem_inode_info *info = SHMEM_I(inode);
+ 	long freed;
+ 
+-	freed = info->alloced - info->swapped - inode->i_mapping->nrpages;
++	freed = info->alloced - info->swapped - mapping_nrpages(inode->i_mapping);
+ 	if (freed > 0) {
+ 		info->alloced -= freed;
+ 		shmem_unacct_blocks(info->flags, freed);
+@@ -607,7 +607,7 @@ static void shmem_truncate_range(struct 
+ done1:
+ 	shmem_dir_unmap(dir);
+ done2:
+-	if (inode->i_mapping->nrpages && (info->flags & SHMEM_PAGEIN)) {
++	if (mapping_nrpages(inode->i_mapping) && (info->flags & SHMEM_PAGEIN)) {
+ 		/*
+ 		 * Call truncate_inode_pages again: racing shmem_unuse_inode
+ 		 * may have swizzled a page in from swap since vmtruncate or
+Index: linux-2.6/mm/swap_state.c
+===================================================================
+--- linux-2.6.orig/mm/swap_state.c	2007-01-28 13:59:24.000000000 +0100
++++ linux-2.6/mm/swap_state.c	2007-01-28 14:02:36.000000000 +0100
+@@ -87,7 +87,7 @@ static int __add_to_swap_cache(struct pa
+ 			SetPageLocked(page);
+ 			SetPageSwapCache(page);
+ 			set_page_private(page, entry.val);
+-			total_swapcache_pages++;
++			mapping_nrpages_inc(&swapper_space);
+ 			__inc_zone_page_state(page, NR_FILE_PAGES);
+ 		}
+ 		spin_unlock_irq(&swapper_space.tree_lock);
+@@ -133,7 +133,7 @@ void __delete_from_swap_cache(struct pag
+ 	radix_tree_delete(&swapper_space.page_tree, page_private(page));
+ 	set_page_private(page, 0);
+ 	ClearPageSwapCache(page);
+-	total_swapcache_pages--;
++	mapping_nrpages_dec(&swapper_space);
+ 	__dec_zone_page_state(page, NR_FILE_PAGES);
+ 	INC_CACHE_INFO(del_total);
+ }
+Index: linux-2.6/mm/truncate.c
+===================================================================
+--- linux-2.6.orig/mm/truncate.c	2007-01-28 13:59:24.000000000 +0100
++++ linux-2.6/mm/truncate.c	2007-01-28 14:02:36.000000000 +0100
+@@ -163,7 +163,7 @@ void truncate_inode_pages_range(struct a
+ 	pgoff_t next;
+ 	int i;
+ 
+-	if (mapping->nrpages == 0)
++	if (mapping_nrpages(mapping) == 0)
+ 		return;
+ 
+ 	BUG_ON((lend & (PAGE_CACHE_SIZE - 1)) != (PAGE_CACHE_SIZE - 1));
+Index: linux-2.6/include/linux/swap.h
+===================================================================
+--- linux-2.6.orig/include/linux/swap.h	2007-01-22 22:43:26.000000000 +0100
++++ linux-2.6/include/linux/swap.h	2007-01-28 14:02:36.000000000 +0100
+@@ -222,7 +222,7 @@ extern int end_swap_bio_read(struct bio 
+ 
+ /* linux/mm/swap_state.c */
+ extern struct address_space swapper_space;
+-#define total_swapcache_pages  swapper_space.nrpages
++#define total_swapcache_pages  mapping_nrpages(&swapper_space)
+ extern void show_swap_cache_info(void);
+ extern int add_to_swap(struct page *, gfp_t);
+ extern void __delete_from_swap_cache(struct page *);
+Index: linux-2.6/fs/inode.c
+===================================================================
+--- linux-2.6.orig/fs/inode.c	2007-01-28 13:59:24.000000000 +0100
++++ linux-2.6/fs/inode.c	2007-01-28 14:02:36.000000000 +0100
+@@ -246,7 +246,7 @@ void clear_inode(struct inode *inode)
+ 	might_sleep();
+ 	invalidate_inode_buffers(inode);
+        
+-	BUG_ON(inode->i_data.nrpages);
++	BUG_ON(mapping_nrpages(&inode->i_data));
+ 	BUG_ON(!(inode->i_state & I_FREEING));
+ 	BUG_ON(inode->i_state & I_CLEAR);
+ 	wait_on_inode(inode);
+@@ -279,7 +279,7 @@ static void dispose_list(struct list_hea
+ 		inode = list_entry(head->next, struct inode, i_list);
+ 		list_del(&inode->i_list);
+ 
+-		if (inode->i_data.nrpages)
++		if (mapping_nrpages(&inode->i_data))
+ 			truncate_inode_pages(&inode->i_data, 0);
+ 		clear_inode(inode);
+ 
+@@ -371,7 +371,7 @@ static int can_unuse(struct inode *inode
+ 		return 0;
+ 	if (atomic_read(&inode->i_count))
+ 		return 0;
+-	if (inode->i_data.nrpages)
++	if (mapping_nrpages(&inode->i_data))
+ 		return 0;
+ 	return 1;
+ }
+@@ -410,7 +410,7 @@ static void prune_icache(int nr_to_scan)
+ 			list_move(&inode->i_list, &inode_unused);
+ 			continue;
+ 		}
+-		if (inode_has_buffers(inode) || inode->i_data.nrpages) {
++		if (inode_has_buffers(inode) || mapping_nrpages(&inode->i_data)) {
+ 			__iget(inode);
+ 			spin_unlock(&inode_lock);
+ 			if (remove_inode_buffers(inode))
+@@ -1057,7 +1057,7 @@ static void generic_forget_inode(struct 
+ 	inode->i_state |= I_FREEING;
+ 	inodes_stat.nr_inodes--;
+ 	spin_unlock(&inode_lock);
+-	if (inode->i_data.nrpages)
++	if (mapping_nrpages(&inode->i_data))
+ 		truncate_inode_pages(&inode->i_data, 0);
+ 	clear_inode(inode);
+ 	wake_up_inode(inode);
 
 --
 
