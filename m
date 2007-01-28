@@ -1,83 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932667AbXAaHCe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752198AbXAaHGO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932667AbXAaHCe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Jan 2007 02:02:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752196AbXAaHCe
+	id S1752198AbXAaHGO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Jan 2007 02:06:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752199AbXAaHGO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Jan 2007 02:02:34 -0500
-Received: from raven.upol.cz ([158.194.120.4]:65292 "EHLO raven.upol.cz"
+	Wed, 31 Jan 2007 02:06:14 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:56173 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752183AbXAaHCd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Jan 2007 02:02:33 -0500
-Date: Wed, 31 Jan 2007 07:11:04 +0000
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Roman Zippel <zippel@linux-m68k.org>, Bastian Blank <bastian@waldi.eu.org>,
-       Sam Ravnborg <sam@ravnborg.org>, Andrew Morton <akpm@osdl.org>
-Subject: [patch] kbuild: correctly skip tilded backups in localversion files
-Message-ID: <20070131071103.GA3295@flower.upol.cz>
+	id S1752198AbXAaHGM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Jan 2007 02:06:12 -0500
+To: akuster <akuster@mvista.com>
+Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] PM: fast power off - driver
+References: <45BBB09C.7020509@mvista.com>
+From: Andi Kleen <ak@suse.de>
+Date: 28 Jan 2007 04:20:14 +0100
+In-Reply-To: <45BBB09C.7020509@mvista.com>
+Message-ID: <p7364aron0x.fsf@bingen.suse.de>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Organization: Palacky University in Olomouc, experimental physics department.
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Oleg Verych <olecom@flower.upol.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-kbuild: correctly skip tilded backups in localversion files
+akuster <akuster@mvista.com> writes:
 
- Tildes as in path as in filenames are handled correctly now.
+> My apologies, I cc'd the wrong list the first time around.
+> 
+> - Armin
+> ---
+> 
+> Fastpoweroff default profile driver
 
- Definition of `space' was removed, scripts/Kbuild.include has one.
- This definition was taken right from GNU make manual, while Kbuild's
- version is original.
+Why don't you just call the existing reboot(2)? I've had a simple 
+C program that does a very fast poweroff (or reboot) forever
+and it works just fine. It won't kill all processes,
+but if you really want to do that you can use killall -r .* first.
 
-Cc: Roman Zippel <zippel@linux-m68k.org>
-Cc: Bastian Blank <bastian@waldi.eu.org>
-Cc: Sam Ravnborg <sam@ravnborg.org>
-Signed-off-by: Oleg Verych <olecom@flower.upol.cz>
----
-Another try.
+-Andi
 
-Original report and fix by Bastian Blank:
-
- The following patch fixes the problem that localversion files where
- ignored if the tree lives in a path which contains a ~. It changes the
- test to apply to the filename only.
- 
- Debian allows versions which contains ~ in it. The upstream part of the
- version is in the directory name of the build tree and we got weird
- results because the localversion files was just got ignored in this
- case.
-
- Makefile |   15 +++++----------
- 1 file changed, 5 insertions(+), 10 deletions(-)
-
---- linux-2.6.20-rc6/Makefile~4tilde-backups~	2007-01-30 23:33:45.781462750 +0100
-+++ linux-2.6.20-rc6/Makefile	2007-01-31 07:46:18.696404500 +0100
-@@ -777,5 +777,5 @@ $(vmlinux-dirs): prepare scripts
- #	$(localver-full)
- #	  $(localver)
--#	    localversion*		(all localversion* files)
-+#	    localversion*		(files, without backups containing '~')
- #	    $(CONFIG_LOCALVERSION)	(from kernel config setting)
- #	  $(localver-auto)		(only if CONFIG_LOCALVERSION_AUTO is set)
-@@ -788,14 +788,9 @@ $(vmlinux-dirs): prepare scripts
- # scripts/setlocalversion and add the appropriate checks as needed.
- 
--nullstring :=
--space      := $(nullstring) # end of line
--
--___localver = $(objtree)/localversion* $(srctree)/localversion*
--__localver  = $(sort $(wildcard $(___localver)))
--# skip backup files (containing '~')
--_localver = $(foreach f, $(__localver), $(if $(findstring ~, $(f)),,$(f)))
--
-+localversion = $(objtree)/localversion	    $(srctree)/localversion
-+ext_versions = $(objtree)/localversion[^~]* $(srctree)/localversion[!~]*
-+versions = $(localversion) $(ext_versions)
- localver = $(subst $(space),, \
--	   $(shell cat /dev/null $(_localver)) \
-+	   $(shell cat /dev/null $(sort $(wildcard $(versions)))) \
- 	   $(patsubst "%",%,$(CONFIG_LOCALVERSION)))
- 
