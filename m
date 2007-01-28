@@ -1,100 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933010AbXA1Xrq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933019AbXA1Xxv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933010AbXA1Xrq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jan 2007 18:47:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933012AbXA1Xrq
+	id S933019AbXA1Xxv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jan 2007 18:53:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933018AbXA1Xxu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jan 2007 18:47:46 -0500
-Received: from smtp.gentoo.org ([140.211.166.183]:51062 "EHLO smtp.gentoo.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933010AbXA1Xro (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jan 2007 18:47:44 -0500
-From: Mike Frysinger <vapier@gentoo.org>
-Organization: wh0rd.org
-To: parisc-linux@lists.parisc-linux.org
-Subject: [patch] use __u64 rather than u64 in parisc statfs structs
-Date: Sun, 28 Jan 2007 18:48:26 -0500
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_KZTvFOfaSFWYpfE"
-Message-Id: <200701281848.26804.vapier@gentoo.org>
+	Sun, 28 Jan 2007 18:53:50 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:46376
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S933015AbXA1Xxu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Jan 2007 18:53:50 -0500
+Date: Sun, 28 Jan 2007 15:53:48 -0800 (PST)
+Message-Id: <20070128.155348.39160134.davem@davemloft.net>
+To: bunk@stusta.de
+Cc: randy.dunlap@oracle.com, akpm@osdl.org, linux-kernel@vger.kernel.org,
+       netfilter@lists.netfilter.org, netdev@vger.kernel.org
+Subject: Re: [2.6 patch] NF_CONNTRACK_H323 must depend on (IPV6 || IPV6=n)
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20070128222136.GZ6017@stusta.de>
+References: <20070127234928.64d8e437.akpm@osdl.org>
+	<20070128114148.b8067721.randy.dunlap@oracle.com>
+	<20070128222136.GZ6017@stusta.de>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Boundary-00=_KZTvFOfaSFWYpfE
-Content-Type: multipart/signed;
-  boundary="nextPart4081510.OzWm5YsbKY";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
+From: Adrian Bunk <bunk@stusta.de>
+Date: Sun, 28 Jan 2007 23:21:37 +0100
 
---nextPart4081510.OzWm5YsbKY
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+> On Sun, Jan 28, 2007 at 11:41:48AM -0800, Randy Dunlap wrote:
+> >...
+> > net/built-in.o: In function `q931_help':
+> > nf_conntrack_h323_main.c:(.text.q931_help+0x6ad): undefined reference to `ip6_route_output'
+> > nf_conntrack_h323_main.c:(.text.q931_help+0x6c3): undefined reference to `ip6_route_output'
+> >...
+> 
+> You didn't send your .config, but it seems you had CONFIG_IPV6=m and
+> CONFIG_NF_CONNTRACK_H323=y.
+> 
+> In this case, the untested patch below should fix it.
+> 
+> > ~Randy
+> 
+> cu
+> Adrian
+> 
+> 
+> <--  snip  -->
+> 
+> 
+> CONFIG_IPV6=m, CONFIG_NF_CONNTRACK_H323=y results in a compile error.
+> 
+> Fix this by letting NF_CONNTRACK_H323 depend on (IPV6 || IPV6=n).
+> 
+> Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
-the statfs header exports some structs to userspace ... the parisc statfs64=
-=20
-struct currently uses u64 so the trivial attached patch fixes it to use __u=
-64
-=2Dmike
-
---nextPart4081510.OzWm5YsbKY
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.1 (GNU/Linux)
-
-iQIVAwUARb02SkFjO5/oN/WBAQJIbxAAjBDD8IL5Oj0mu1fc+0IPx5DbyMqtgTsk
-bBNPwiu1tYEHOuo37HcTXU7dfZgLA3IQJH2QadY3N453LJg0GuHRu8d6kNaMd2bQ
-4ihf0alVPKZwo5Q2TXMf9E8caIV4up+BmlT9zfeK/vxnQSfeGskOqszTJ6sV0hNi
-BCk2jEB6QmS5GcMhmvNlcvrAQUSJoktGcjn9+TBaohg//CI0tgqJnvS6vcZlyM/Z
-jPLPqMqvGVzj79AzAlsaejdx4sUEq23Sc7Msx0yMifmD95SLEOb80bDppTlVMYaG
-WzokN4IrGoX7bWHI3bTboRFF80K5zOviK4jHIKlwkHKG44pkVv8mmu5z5Vp6p/GI
-kqRQPJhNvT+RwIeKU2ZueqgVW35nTLfJe0IKAxpy83HZ7gMWgGlXjZNxZLkEfX+J
-X1wRH9rn5+KjyHOshenYx38QzJys6FSj1uVaGIDTxJ5y0otqm7al3rOGC/yQwNrd
-wTCR1tgl5Z5KNgGHBah0WHZNczvFRK/G1QDj0+6gcHUKMQOwPIvz7xOXLnWTJd1Y
-WEoCVTlvBeatGQhDY76t0Ywdm0CV17sN1YMyRz6d/k8KJXnM96mRtZ0he5G9NIQQ
-3wQVQSk1yspSpfXtISjuceLJ29F8EHXEXWHgC+q3X++sDzL50Sbc1oLeEZeRM3lb
-l0TuGNvwdh0=
-=8G4Z
------END PGP SIGNATURE-----
-
---nextPart4081510.OzWm5YsbKY--
-
---Boundary-00=_KZTvFOfaSFWYpfE
-Content-Type: text/x-diff;
-  charset="us-ascii";
-  name="linux-use-__-types-in-parisc-statfs.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
-	filename="linux-use-__-types-in-parisc-statfs.patch"
-
-Use __u64 rather than u64 in the struct statfs64 exported to userspace.
-
-Signed-off-by: Mike Frysinger <vapier@gentoo.org>
-
---- a/include/asm-parisc/statfs.h
-+++ b/include/asm-parisc/statfs.h
-@@ -30,11 +30,11 @@ struct statfs {
- struct statfs64 {
- 	long f_type;
- 	long f_bsize;
--	u64 f_blocks;
--	u64 f_bfree;
--	u64 f_bavail;
--	u64 f_files;
--	u64 f_ffree;
-+	__u64 f_blocks;
-+	__u64 f_bfree;
-+	__u64 f_bavail;
-+	__u64 f_files;
-+	__u64 f_ffree;
- 	__kernel_fsid_t f_fsid;
- 	long f_namelen;
- 	long f_frsize;
-
---Boundary-00=_KZTvFOfaSFWYpfE--
+Adrian is this the correct way to constrain the selection between
+"n" and "m" in this kind of situation?  I thought doing something
+like "depends on IPV6" is sufficient to achieve that?
