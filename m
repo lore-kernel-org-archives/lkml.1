@@ -1,45 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751468AbXA2OEj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751449AbXA2OIQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751468AbXA2OEj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 09:04:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751462AbXA2OEj
+	id S1751449AbXA2OIQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 09:08:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751462AbXA2OIQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 09:04:39 -0500
-Received: from cavan.codon.org.uk ([217.147.92.49]:32862 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751468AbXA2OEi (ORCPT
+	Mon, 29 Jan 2007 09:08:16 -0500
+Received: from build.arklinux.osuosl.org ([140.211.166.26]:60221 "EHLO
+	mail.arklinux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751449AbXA2OIP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 09:04:38 -0500
-Date: Mon, 29 Jan 2007 14:04:08 +0000
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: roucaries bastien <roucaries.bastien@gmail.com>
-Cc: Pavel Machek <pavel@ucw.cz>, Larry Finger <larry.finger@lwfinger.net>,
-       LKML <linux-kernel@vger.kernel.org>,
-       bcm43xx devel <Bcm43xx-dev@lists.berlios.de>
-Message-ID: <20070129140408.GA19379@srcf.ucam.org>
-References: <45B92488.6090908@lwfinger.net> <45B92536.2080909@lwfinger.net> <195c7a900701251530m409878a8id301c7cada76f342@mail.gmail.com> <45BA246B.6030505@lwfinger.net> <20070129115842.GA4928@ucw.cz> <195c7a900701290455o3ff9fc15k305637f8ced24caf@mail.gmail.com>
+	Mon, 29 Jan 2007 09:08:15 -0500
+X-Greylist: delayed 2016 seconds by postgrey-1.27 at vger.kernel.org; Mon, 29 Jan 2007 09:08:15 EST
+From: Bernhard Rosenkraenzer <bero@arklinux.org>
+To: linux-kernel@vger.kernel.org, akpm@osdl.org
+Subject: [PATCH] 2.6.20-rc6-mm1: Fix compile if PREEMPT_RCU is set, but RCU_TRACE isn't
+Date: Sun, 28 Jan 2007 23:44:30 +0100
+User-Agent: KMail/1.9.5
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <195c7a900701290455o3ff9fc15k305637f8ced24caf@mail.gmail.com>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-Subject: Re: Bcm43xx oops after suspend to disk
-X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
-X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
+Message-Id: <200701282344.30539.bero@arklinux.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 29, 2007 at 01:55:41PM +0100, roucaries bastien wrote:
-> -       return 0;
-> +       return bcm43xx_init_one(pdev, NULL);
-> }
+2.6.20-rc6-mm1 fails to compile if CONFIG_PREEMPT_RCU is set and
+CONFIG_RCU_TRACE isn' -- the fix is fairly obvious.
 
-While this may well work (it's basically equivalent to unloading and 
-reloading the module), it's not a long-term fix - userspace is going to 
-notice the interface vanishing and reappearing. Larry, I guess you just 
-mean this as a test patch?
+Signed-off-by: Bernhard Rosenkraenzer <bero@arklinux.org>
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+---
+
+--- linux-2.6.19/kernel/rcupreempt.c.ark	2007-01-28 23:38:07.000000000 +0100
++++ linux-2.6.19/kernel/rcupreempt.c	2007-01-28 23:38:12.000000000 +0100
+@@ -619,7 +619,7 @@
+ 	synchronize_rcu();
+ }
+ 
+-#ifdef RCU_TRACE
++#ifdef CONFIG_RCU_TRACE
+ int *rcupreempt_flipctr(int cpu)
+ {
+ 	return &per_cpu(rcu_flipctr, cpu)[0];
