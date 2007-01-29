@@ -1,69 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752064AbXA2SDp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751996AbXA2SH1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752064AbXA2SDp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 13:03:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752527AbXA2SDp
+	id S1751996AbXA2SH1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 13:07:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752061AbXA2SH1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 13:03:45 -0500
-Received: from calculon.skynet.ie ([193.1.99.88]:44966 "EHLO
-	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752064AbXA2SDo (ORCPT
+	Mon, 29 Jan 2007 13:07:27 -0500
+Received: from amsfep20-int.chello.nl ([62.179.120.15]:42936 "EHLO
+	amsfep20-int.chello.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751996AbXA2SH0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 13:03:44 -0500
-X-Greylist: delayed 1946 seconds by postgrey-1.27 at vger.kernel.org; Mon, 29 Jan 2007 13:03:43 EST
-Date: Mon, 29 Jan 2007 17:31:16 +0000
+	Mon, 29 Jan 2007 13:07:26 -0500
+Subject: Re: [PATCH 00/14] Concurrent Page Cache
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: Christoph Lameter <clameter@sgi.com>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/8] Create the ZONE_MOVABLE zone
-Message-ID: <20070129173116.GA19568@skynet.ie>
-References: <20070125234458.28809.5412.sendpatchset@skynet.skynet.ie> <20070125234538.28809.24662.sendpatchset@skynet.skynet.ie> <Pine.LNX.4.64.0701260915390.7209@schroedinger.engr.sgi.com>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Andrew Morton <akpm@osdl.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Ingo Molnar <mingo@elte.hu>, Rik van Riel <riel@redhat.com>
+In-Reply-To: <Pine.LNX.4.64.0701290918260.28330@schroedinger.engr.sgi.com>
+References: <20070128131343.628722000@programming.kicks-ass.net>
+	 <Pine.LNX.4.64.0701290918260.28330@schroedinger.engr.sgi.com>
+Content-Type: text/plain
+Date: Mon, 29 Jan 2007 19:05:44 +0100
+Message-Id: <1170093944.6189.192.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0701260915390.7209@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.5.9i
-From: mel@skynet.ie (Mel Gorman)
+X-Mailer: Evolution 2.8.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (26/01/07 09:16), Christoph Lameter didst pronounce:
-> I do not see any updates of vmstat.c and vmstat.h. This 
-> means that VM statistics are not kept / considered for ZONE_MOVABLE.
+On Mon, 2007-01-29 at 09:20 -0800, Christoph Lameter wrote:
+> On Sun, 28 Jan 2007, Peter Zijlstra wrote:
+> 
+> > With Nick leading the way to getting rid of the read side of the tree_lock,
+> > this work continues by breaking the write side of said lock.
+> 
+> Could we get the read side in separately from the write side?
 
-Based on searching around for ZONE_DMA32, the following patch appears to be
-all that is required;
+Sure, apply patches 1 through 9. 10 and up are the write side.
 
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.20-rc4-mm1-009_backout_zonecount/include/linux/vmstat.h linux-2.6.20-rc4-mm1-010_update_zonecounters/include/linux/vmstat.h
---- linux-2.6.20-rc4-mm1-009_backout_zonecount/include/linux/vmstat.h	2007-01-17 17:08:36.000000000 +0000
-+++ linux-2.6.20-rc4-mm1-010_update_zonecounters/include/linux/vmstat.h	2007-01-29 16:52:42.000000000 +0000
-@@ -24,7 +24,7 @@
- #define HIGHMEM_ZONE(xx)
- #endif
- 
--#define FOR_ALL_ZONES(xx) DMA_ZONE(xx) DMA32_ZONE(xx) xx##_NORMAL HIGHMEM_ZONE(xx)
-+#define FOR_ALL_ZONES(xx) DMA_ZONE(xx) DMA32_ZONE(xx) xx##_NORMAL HIGHMEM_ZONE(xx) , xx##_MOVABLE
- 
- enum vm_event_item { PGPGIN, PGPGOUT, PSWPIN, PSWPOUT,
- 		FOR_ALL_ZONES(PGALLOC),
-@@ -171,7 +171,8 @@ static inline unsigned long node_page_st
- #ifdef CONFIG_HIGHMEM
- 		zone_page_state(&zones[ZONE_HIGHMEM], item) +
- #endif
--		zone_page_state(&zones[ZONE_NORMAL], item);
-+		zone_page_state(&zones[ZONE_NORMAL], item) +
-+		zone_page_state(&zones[ZONE_MOVABLE], item);
- }
- 
- extern void zone_statistics(struct zonelist *, struct zone *);
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.20-rc4-mm1-009_backout_zonecount/mm/vmstat.c linux-2.6.20-rc4-mm1-010_update_zonecounters/mm/vmstat.c
---- linux-2.6.20-rc4-mm1-009_backout_zonecount/mm/vmstat.c	2007-01-17 17:08:39.000000000 +0000
-+++ linux-2.6.20-rc4-mm1-010_update_zonecounters/mm/vmstat.c	2007-01-29 16:52:42.000000000 +0000
-@@ -456,7 +456,7 @@ const struct seq_operations fragmentatio
- #endif
- 
- #define TEXTS_FOR_ZONES(xx) TEXT_FOR_DMA(xx) TEXT_FOR_DMA32(xx) xx "_normal", \
--					TEXT_FOR_HIGHMEM(xx)
-+					TEXT_FOR_HIGHMEM(xx) xx "_movable",
- 
- static const char * const vmstat_text[] = {
- 	/* Zoned VM counters */
+>  I think I 
+> get the read side but the write side still looks scary to me and 
+> introduces new ways of locking. Ladder locking?
+
+Its all quite simple really; imagine locking the whole tree path
+beginning at the root node. This obviously doesn't provide concurrency
+since holing the root node locked will avoid all other operations from
+starting.
+
+However, as soon as you've locked a node on the next level and can
+determine that you will never need to traverse the tree path upwards
+from this point, you can drop the lock(s) on the previous level.
+
+In the trivial case where you will never traverse up again, this reduces
+to ladder locking.
+
+Perhaps it is best illustrated with a picture (forgive the ASCII art)
+
+                          A0
+                  B0              B1
+              C0      C1      C2      C3
+            D0  D1  D2  D3  D4  D5  D6  D7
+
+Say we need D5, which yield the path: A0, B1, C2, D5.
+
+Ladder locking would end up:
+
+lock A0
+lock B1
+unlock A0 -> a new operation can start
+lock C2
+unlock B1
+lock D5
+unlock C2
+** we do stuff to D5
+unlock D5
+
+For path locking, this would end up being something like this:
+(say we can determine we'll never cross C2 back up)
+
+lock A0
+lock B1
+lock C2
+unlock A0 -> a new operation can start
+unlock B1
+lock D5
+** we do stuff to D5 and walk back up to C2
+unlock C2
+unlock D5
+
+> > Aside from breaking MTD this version of the concurrent page cache seems
+> > rock solid on my dual core x86_64 box.
+> 
+> What exactly is the MTD doing 
+
+drivers/mtd/devices/block2mtd.c - fudges with the pagecache, haven't
+spend any time in converting that. Shouldn't be hard.
+
+> and how does it break?
+
+Doesn't compile anymore.
+
+(could use atomic_long_t for mapping::nr_pages I guess)
+
