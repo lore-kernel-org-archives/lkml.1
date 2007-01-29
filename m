@@ -1,39 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752574AbXA2VoL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752087AbXA2VpW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752574AbXA2VoL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 16:44:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752610AbXA2VoL
+	id S1752087AbXA2VpW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 16:45:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752089AbXA2VpW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 16:44:11 -0500
-Received: from omx1-ext.sgi.com ([192.48.179.11]:48408 "EHLO omx1.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752574AbXA2VoJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 16:44:09 -0500
-Date: Mon, 29 Jan 2007 13:44:02 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
+	Mon, 29 Jan 2007 16:45:22 -0500
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:54848 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752087AbXA2VpU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jan 2007 16:45:20 -0500
+Subject: Re: [patch 00/46] High resolution timer / dynamic tick update
+From: john stultz <johnstul@us.ibm.com>
 To: Andrew Morton <akpm@osdl.org>
-cc: Jeff Dike <jdike@addtoit.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] slab.c ifdef reduction breaks build
-In-Reply-To: <20070129125630.dfba64a4.akpm@osdl.org>
-Message-ID: <Pine.LNX.4.64.0701291343180.548@schroedinger.engr.sgi.com>
-References: <20070129200517.GA6229@ccure.user-mode-linux.org>
- <Pine.LNX.4.64.0701291214060.32740@schroedinger.engr.sgi.com>
- <Pine.LNX.4.64.0701291240020.401@schroedinger.engr.sgi.com>
- <20070129125630.dfba64a4.akpm@osdl.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Arjan van de Veen <arjan@infradead.org>,
+       Roman Zippel <zippel@linux-m68k.org>
+In-Reply-To: <1170106290.1296.22.camel@localhost>
+References: <20070123211159.178138000@localhost.localdomain>
+	 <20070127181759.eb7fe5e8.akpm@osdl.org>
+	 <1170106290.1296.22.camel@localhost>
+Content-Type: text/plain
+Date: Mon, 29 Jan 2007 13:45:15 -0800
+Message-Id: <1170107115.1296.23.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 29 Jan 2007, Andrew Morton wrote:
+On Mon, 2007-01-29 at 13:31 -0800, john stultz wrote:
+> Should I just revive the old 2.6.20-rc4-mm1 patches against your current
+> tree and re-submit? Or should the HRT bits get settled first?
 
-> On Mon, 29 Jan 2007 12:41:33 -0800 (PST)
-> Christoph Lameter <clameter@sgi.com> wrote:
-> 
-> > +#ifdef CONFIG_ZONE_DMA
-> >  		if (CONFIG_ZONE_DMA_FLAG)
-> 
-> We don't need the `if (CONFIG_ZONE_DMA_FLAG)' any more, do we?
+Thomas just pointed out that I had missed that the bits are back in
+-mm2.
 
-Correct.
+Sorry for the noise.
+-john
+
 
