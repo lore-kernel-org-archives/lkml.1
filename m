@@ -1,50 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752511AbXA2QoI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751510AbXA2QzR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752511AbXA2QoI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 11:44:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752519AbXA2QoH
+	id S1751510AbXA2QzR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 11:55:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751553AbXA2QzR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 11:44:07 -0500
-Received: from ku-gbr.de ([81.3.11.18]:43284 "EHLO ku-gbr.de"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752511AbXA2QoG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 11:44:06 -0500
-Date: Mon, 29 Jan 2007 17:43:30 +0100
-From: Konstantin Kletschke <lists@ku-gbr.de>
-To: linux-kernel@vger.kernel.org
-Cc: s.hauer@pengutronix.de, ppisa4lists@pikron.com
-Subject: Re: ARM i.MX serial: fix tx buffer overflows
-Message-ID: <20070129164330.GA4006@synertronixx3>
-Mail-Followup-To: linux-kernel@vger.kernel.org, s.hauer@pengutronix.de,
-	ppisa4lists@pikron.com
-References: <20070105155144.GD5838@localhost.localdomain> <200701051901.52486.ppisa4lists@pikron.com> <20070129144758.GA2760@synertronixx3> <20070129153725.GA6602@flint.arm.linux.org.uk>
+	Mon, 29 Jan 2007 11:55:17 -0500
+Received: from omx2-ext.sgi.com ([192.48.171.19]:34878 "EHLO omx2.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751510AbXA2QzQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jan 2007 11:55:16 -0500
+Date: Mon, 29 Jan 2007 08:54:36 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+cc: Ingo Molnar <mingo@elte.hu>, Srivatsa Vaddagiri <vatsa@in.ibm.com>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Gautham shenoy <ego@in.ibm.com>, Andrew Morton <akpm@osdl.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: slab: start_cpu_timer/cache_reap CONFIG_HOTPLUG_CPU problems
+In-Reply-To: <20070129011301.GA844@tv-sign.ru>
+Message-ID: <Pine.LNX.4.64.0701290852390.28200@schroedinger.engr.sgi.com>
+References: <20070129011301.GA844@tv-sign.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070129153725.GA6602@flint.arm.linux.org.uk>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am 2007-01-29 15:37 +0000 schrieb Russell King:
+On Mon, 29 Jan 2007, Oleg Nesterov wrote:
 
-> Is it really worth adding additional code to shut up this (imho) silly
-> warning?  It's just adding needless complexity to drivers.
+> Now,
+> 	static void __devinit start_cpu_timer(int cpu)
+> 	{
+> 		struct delayed_work *reap_work = &per_cpu(reap_work, cpu);
+> 
+> 		if (keventd_up() && reap_work->work.func == NULL) {
+> 			init_reap_node(cpu);
+> 			INIT_DELAYED_WORK(reap_work, cache_reap);
+> 			schedule_delayed_work_on(cpu, reap_work,
+> 						__round_jiffies_relative(HZ, cpu));
+> 		}
+> 	}
+> 
+> This is wrong. Suppose we have a CPU_UP,CPU_DOWN,CPU_UP sequence. The last
+> CPU_UP will not restart a per-cpu "cache_reap timer".
 
-As I pointed out in 
-http://lists.arm.linux.org.uk/pipermail/linux-arm-kernel/2006-November/037192.html
-the console gets flooded with this "warning" to unusable state sometimes.
+Why?
 
-> What happens if a driver is used on multiple platforms, some of which
-> support trigger setting and others which don't?  Are we going to end
-> up with a large #ifdef in every driver?
+> With or without recent changes, it is possible that work->func() will run on
+> another CPU (not that to which it was submitted) if CPU goes down. In fact,
+> this can happen while work->func() is running, so even smp_processor_id()
+> is not safe to use in work->func().
 
-I don't know exactly. But in addition to the fact, that this warning
-floods my console to unusable state I am used to sell software without
-warnings. If there are warnings my boss some things are broken.
+But the work func was scheduled by schedule_delayed_work_on(). Isnt that a 
+general problem with schedule_delayed_work_on() and keventd?
 
-Konsti
+> However, cache_reap() seems to wrongly assume that smp_processor_id() is stable,
+> this is the second problem.
+> 
+> Is my understanding correct?
 
--- 
-GPG KeyID EF62FCEF
-Fingerprint: 13C9 B16B 9844 EC15 CC2E  A080 1E69 3FDA EF62 FCEF
+cache_reap assumes that the processor id is stable based on the kevent 
+thread being pinned to a processor.
