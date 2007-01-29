@@ -1,86 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933204AbXA2GIs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933218AbXA2G0R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933204AbXA2GIs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 01:08:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933197AbXA2GIs
+	id S933218AbXA2G0R (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 01:26:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933222AbXA2G0R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 01:08:48 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:53856 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933204AbXA2GIr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 01:08:47 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Valdis.Kletnieks@vt.edu
-Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org
-Subject: Re: mm snapshot broken-out-2007-01-26-00-36.tar.gz uploaded
-References: <200701260837.l0Q8blBr011622@shell0.pdx.osdl.net>
-	<6bffcb0e0701270837i1ec40560l6e61e8876177e9da@mail.gmail.com>
-	<45BBC444.8090109@imap.cc> <20070127134116.06bdadd8.akpm@osdl.org>
-	<200701280241.l0S2f2ga015847@turing-police.cc.vt.edu>
-	<200701290249.l0T2nZt8003676@turing-police.cc.vt.edu>
-Date: Sun, 28 Jan 2007 23:08:17 -0700
-In-Reply-To: <200701290249.l0T2nZt8003676@turing-police.cc.vt.edu> (Valdis
-	Kletnieks's message of "Sun, 28 Jan 2007 21:49:35 -0500")
-Message-ID: <m1d54ymkku.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 29 Jan 2007 01:26:17 -0500
+Received: from mail.gmx.net ([213.165.64.20]:50796 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S933218AbXA2G0Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jan 2007 01:26:16 -0500
+X-Authenticated: #14349625
+Subject: Re: 2.6.20-rc6: known unfixed regressions (v2) (part 2)
+From: Mike Galbraith <efault@gmx.de>
+To: Uwe Bugla <uwe.bugla@gmx.de>
+Cc: Adrian Bunk <bunk@stusta.de>, akpm@osdl.org, torvalds@linux-foundation.org,
+       rml@novell.com, ttb@tentacle.dhs.org, nickpiggin@yahoo.com.au,
+       cijoml@volny.cz, linuxppc-dev@ozlabs.org, anton@samba.org,
+       paulus@samba.org, livio@eecg.toronto.edu, petero2@telia.com, hch@lst.de,
+       gd@spherenet.de, alan@lxorguk.ukuu.org.uk, linux-ide@vger.kernel.org,
+       B.Zolnierkiewicz@elka.pw.edu.pl, linux-kernel@vger.kernel.org
+In-Reply-To: <20070128133344.214070@gmx.net>
+References: <Pine.LNX.4.64.0701241847360.25027@woody.linux-foundation.org>
+	 <20070127174230.GN6017@stusta.de>  <20070128133344.214070@gmx.net>
+Content-Type: text/plain; charset=UTF-8
+Date: Mon, 29 Jan 2007 07:26:03 +0100
+Message-Id: <1170051963.6454.7.camel@Homer.simpson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2 
+Content-Transfer-Encoding: 8bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Valdis.Kletnieks@vt.edu writes:
+On Sun, 2007-01-28 at 14:33 +0100, Uwe Bugla wrote:
+> -------- Original-Nachricht --------
+> Datum: Sat, 27 Jan 2007 18:42:30 +0100
+> Von: Adrian Bunk <bunk@stusta.de>
+> An: Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@osdl.org>
+> Betreff: 2.6.20-rc6: known unfixed regressions (v2) (part 2)
+> 
+> > This email lists some known regressions in 2.6.20-rc6 compared to 2.6.19
+> > that are not yet fixed in Linus' tree.
+> > 
+> > If you find your name in the Cc header, you are either submitter of one
+> > of the bugs, maintainer of an affectected subsystem or driver, a patch
+> > of you caused a breakage or I'm considering you in any other way possibly
+> > involved with one or more of these issues.
+> > 
+> > Due to the huge amount of recipients, please trim the Cc when answering.
+> > 
+> > 
+> > Subject    : problems with CD burning
+> > References : http://www.spinics.net/lists/linux-ide/msg06545.html
+> > Submitter  : Uwe Bugla <uwe.bugla@gmx.de>
+> > Status     : unknown
+ 
+<snip>
 
-> On Sat, 27 Jan 2007 13:41:16 PST, Andrew Morton said:
->> > > >> The mm snapshot broken-out-2007-01-26-00-36.tar.gz has been uploaded to
->> > > >>
-> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/mm/broken-out-2007-01-26-00-36.tar.gz
->> 
->> > I have everything compiling now, mostly.  The number of fixes which were
->> > needed was just extraordinary.  I'm thinking about making changes...
->
-> Aliens ate my brain, part 1:
->
-> I tried building an out-of-tree ipfilters (ipt_osf) that worked fine under
-> 2.6.20-rc4-mm1.  After much scratching my head and adding debugging info,
-> I discovered that this code was failing:
->
->         p = create_proc_entry("sys/net/ipv4/osf", S_IFREG | 0644, NULL);
->         if (!p) {
->                 ipt_unregister_match(&osf_match);
->                 return -ENXIO;
->         }
->
-> After much *more* head-scratching, and adding of printk's, I tracked it down
-> into fs/proc/generic.c, in xlate_proc_name:
->
->                 len = next - cp;
->                 for (de = de->subdir; de ; de = de->next) {
->                         if (proc_match(len, cp, de))
->                                 break;
->                 }
->                 if (!de) {
->                         rtn = -ENOENT;
->                         goto out;
->
-> It appears that syssctl-reimplement-the-sysctl-proc-support.patch doesn't
-> bother setting the de->subdir, so xlate_proc_name isn't able to find sys/net.
+> Hi everybody,
+> the problem I already reported for earlier release candidates of kernel 2.6.20
+> (rc1 – 5) unfortunately stills persists.
+> 
+> The regression has become more extreme: While in earlier release candidates nerolinux recognized my burning devices at least after the first start and then never again after all following starts the situation in rc6 is different from that:
+> 
+> The CD and DVD burning devices aren´t recognized even once and the drive seek errors I already reported are still there.
+> 
+> nerolinux runs excellently with kernel 2.6.19.2, but only shows an “image recorder” (i. e. no burning device at all) in kernel 2.6.20-rc6.
+> 
+> Still hope that this terrible bug will not be part of the final version of 2.6.20!
+> 
+> Regards
+> 
+> Uwe
 
-Does it find sys?  If so perhaps I should do something even more significant.
-I guess if I get many complaints about this I will figure out how to print
-out an appropriate error message.
+FWIW, I just tried it with 2.6.20-rc6, and can confirm.  Once nero is
+run, the kernel never gives up retrying whatever command failed, so I
+get...
 
-> What's the intended semantics of create_proc_entry and xlate_proc_name in
-> this new regime of no subdir pointers? Or am I just (yet again) one of the
-> first to trip over a bug?
+[ 4362.972995] hdd: status error: status=0x58 { DriveReady SeekComplete
+DataRequest }
+[ 4362.981475] ide: failed opcode was: unknown
+[ 4362.986183] hdd: drive not ready for command
 
-It is supposed to fail in this instance.  If you want something under /proc/sys
-you are supposed to use register_sysctl like everyone else.  If it's not a
-sysctl it should not show up under /proc/sys.
+endlessly.
 
-I think I fixed the one in tree instance of this behavior.
+	-Mike
 
-I'm glad to see my cleanup uncovering more bugs, I'm sorry you were the one
-who had to find it.  I will you well fixing your out of tree ipfilter module.
-
-Eric
