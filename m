@@ -1,64 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933167AbXA2GFe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933169AbXA2GHF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933167AbXA2GFe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 01:05:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933166AbXA2GFe
+	id S933169AbXA2GHF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 01:07:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933171AbXA2GHE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 01:05:34 -0500
-Received: from mail7.sea5.speakeasy.net ([69.17.117.9]:44830 "EHLO
-	mail7.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933167AbXA2GFd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 01:05:33 -0500
-Message-ID: <45BD8EAA.7020804@kernel.org>
-Date: Sun, 28 Jan 2007 22:05:30 -0800
-From: Josh Triplett <josh@kernel.org>
-User-Agent: Icedove 1.5.0.9 (X11/20061220)
-MIME-Version: 1.0
-To: paulmck@linux.vnet.ibm.com
-CC: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linuxtronix.de,
-       dipankar@in.ibm.com, tytso@us.ibm.com, dvhltc@us.ibm.com,
-       oleg@tv-sign.ru, twoerner.k@gmail.com, billh@gnuppy.monkey.org,
-       nielsen.esben@googlemail.com, corbet@lwn.net
-Subject: Re: [RFC PATCH -rt 2/2] RCU priority boosting additions to rcutorture
-References: <20070125021101.GA23428@linux.vnet.ibm.com> <20070125021444.GA22540@linux.vnet.ibm.com> <20070125022338.GB22540@linux.vnet.ibm.com> <45B86E88.6020209@kernel.org> <20070125180158.GC1705@linux.vnet.ibm.com> <45B8FFBB.4090307@kernel.org> <20070129021126.GA8417@linux.vnet.ibm.com>
-In-Reply-To: <20070129021126.GA8417@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 29 Jan 2007 01:07:04 -0500
+Received: from gate.crashing.org ([63.228.1.57]:35750 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933169AbXA2GHC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jan 2007 01:07:02 -0500
+Subject: Re: [PATCH 0/6] MSI portability cleanups
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: David Miller <davem@davemloft.net>
+Cc: ebiederm@xmission.com, jeff@garzik.org, greg@kroah.com,
+       tony.luck@intel.com, grundler@parisc-linux.org, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, kyle@parisc-linux.org,
+       linuxppc-dev@ozlabs.org, brice@myri.com, shaohua.li@intel.com,
+       linux-pci@atrey.karlin.mff.cuni.cz
+In-Reply-To: <20070128.212554.23015561.davem@davemloft.net>
+References: <m1hcuaohqj.fsf@ebiederm.dsl.xmission.com>
+	 <20070128.153707.30184351.davem@davemloft.net>
+	 <m1tzyammv0.fsf@ebiederm.dsl.xmission.com>
+	 <20070128.212554.23015561.davem@davemloft.net>
+Content-Type: text/plain
+Date: Mon, 29 Jan 2007 17:05:37 +1100
+Message-Id: <1170050737.26655.233.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul E. McKenney wrote:
-> On Thu, Jan 25, 2007 at 11:06:35AM -0800, Josh Triplett wrote:
->> Paul E. McKenney wrote:
->>> On Thu, Jan 25, 2007 at 12:47:04AM -0800, Josh Triplett wrote:
->>>> One major item: this new test feature really needs a new module parameter to
->>>> enable or disable it.
->>> CONFIG_PREEMPT_RCU_BOOST is the parameter -- if not set, then no test.
->>> This parameter is provided by the accompanying RCU-boost patch.
->> It seems useful for rcutorture to use or not use the preempting thread
->> independently of CONFIG_PREEMPT_RCU_BOOST.  That would bring you from two
->> cases to four, and the two new cases both make sense:
->>
->> * CONFIG_PREEMPT_RCU_BOOST=n, but run rcutorture with the preempting thread.
->>   This configuration allows you to demonstrate the need for
->>   CONFIG_PREEMPT_RCU_BOOST, by showing what happens when you need it and don't
->>   have it.
->>
->> * CONFIG_PREEMPT_RCU_BOOST=y, but run rcutorture without the preempting
->>   thread.  This configuration allows you to test with rcutorture while running
->>   a *real* real-time workload rather than the simple preempting thread, or
->>   just test basic RCU functionality.
->>
->> A simple boolean module_param would work here.
+On Sun, 2007-01-28 at 21:25 -0800, David Miller wrote:
+> From: ebiederm@xmission.com (Eric W. Biederman)
+> Date: Sun, 28 Jan 2007 22:18:59 -0700
 > 
-> OK, am finally with you.  See below for updated patch.
+> > Regardless of my opinion on the sanity of the hypervisor architects.
+> > I have not seen anything that indicates it will be hard to support
+> > the hypervisor doing everything or most of everything for us, so
+> > I see no valid technical objection to it.  Nor have I ever.
+> > 
+> > So I have no problem with additional patches in that direction.
+> 
+> Ok, that's great to hear.
+> 
+> I know your bi-directional approach isn't exactly what Ben
+> wants but he can support his machines with it.  Maybe after
+> some time we can agree to move from that more towards the
+> totally abstracted scheme.
 
-Looks good to me.
+It can support my machines without HV with trivial changes I reckon: I
+need an ops struct to indirect eric's 2 remaining arch hooks
+(setup/teardown) but that can be done inline within asm-powerpc. I need
+to double check of course and probably actually port the MPIC backend
+and possibly go write the Cell Axon one while at it to verify everything
+is allright, but the base design seems sound enough.
 
-> Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+For the ones with HV (RTAS stuff), we still need to agree on how to
+approach it. We can either:
 
-Signed-off-by: Josh Triplett <josh@kernel.org>
+Option 1
+--------
 
-- Josh Triplett
+Do a hook -above- Eric stuff, by having the toplevel APIs themselves be
+arch hooks that can either go toward the RTAS implementation or toward
+Eric's code. That is, eric code would define those (pick better names if
+you are good at it):
+
+	pci_generic_enable_msi
+	pci_generic_disable_msi
+	pci_generic_enable_msix
+	pci_generic_disable_msix
+	pci_generic_save_msi_state
+	pci_generic_restore_msi_state
+
+Then we can have asm-i386/msi.h & friends do something like
+
+#define pci_enable_msi	pci_generic_enable_msi
+#define pci_disable_msi	pci_generic_disable_msi
+   etc...
+
+And we can have asm-powerpc/msi.h hook then via ppc_md:
+
+static inline int pci_enable_msi(xxx...)
+{
+	return ppc_md.pci_enable_msi(xxx...);
+}
+etc...
+
+(ppc_md is our per-platform global hook structure filled at boot when we
+discover on what machine type we are running on) so that pSeries can use
+it's own RTAS callbacks, and others can just re-hook those to Eric's
+code.
+
+
+Option 2
+--------
+
+That is to make Eric's code itself cope with the HV case. I'm a bit at
+loss right now as how precisely to do it. I need to spend more time
+staring at the code after Eric latest patches rather than the patches
+themselves I suppose :-) (Eric, they don't apply out of the box on
+current git, they are against -mm ?).
+
+Some of the main issues here, more/less following the order in which
+Eric code calls things:
+
+ - The number of vectors for MSI-X is obtained from config space (at
+least for sanity checking the requested argument). On RTAS, it should
+come from an OF property (we are really not supposed to go read the
+config space even if we can). I -suppose- we can survive for now with
+just reading it, but we might well run into trouble with some "special"
+devices shared accross partitions or if the IBM magic bridges themselves
+ever start sending MSI-X on their own (unlikely but who knows...).
+Michael's code handled that by having a callback ->check() do the sanity
+checking of the nvec, and then just use the nvec passed in as an
+argument once it's sane.
+
+So for that I would propose adding an arch_check_msi(pdev, type, nvec)
+or something like that. Note the biggest issue at this point anyway.
+
+ - The real big one: For MSI-X, Eric's code tries to "hide" the fact
+that those are MSI-X by allocating the msi-x entry array, then iterating
+through them calling arch_setup_msi_irq() for each of them.
+
+For that to work for us, it would need to be different, possibly
+pre-allocating the array, and having -one- call taking an array and a
+nvec. That's one of the reasons why I liked Michael's approach as
+instead of making MSI-X look like MSI, it made MSI look like MSI-X by
+passing a 1 entry array in the MSI case. Both approaches can probably be
+made to handle multiple MSIs if we ever want to handle them.
+
+The same issue is present for teardown of course.
+
+ - We need HV hooks for suspend/resume at one point. Nothing urgent
+there as our HV machines don't do suspend/resume just yet :-) But if we
+ever implement something like suspend-to-disk, they'll definitely need
+something as we are likely to get different vectors back from the
+firmware so we need to re-map them to the same linux IRQ numbers.
+
+I need to have a second look at Eric's code after I manage to find the
+right combination of kernel for his patches to apply to check if I
+missed anything important.
+
+Cheers,
+Ben.
+
 
