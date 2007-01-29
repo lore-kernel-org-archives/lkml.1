@@ -1,62 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751510AbXA2QzR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751934AbXA2Qzt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751510AbXA2QzR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 11:55:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751553AbXA2QzR
+	id S1751934AbXA2Qzt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 11:55:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752522AbXA2Qzt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 11:55:17 -0500
-Received: from omx2-ext.sgi.com ([192.48.171.19]:34878 "EHLO omx2.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751510AbXA2QzQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 11:55:16 -0500
-Date: Mon, 29 Jan 2007 08:54:36 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-cc: Ingo Molnar <mingo@elte.hu>, Srivatsa Vaddagiri <vatsa@in.ibm.com>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       Gautham shenoy <ego@in.ibm.com>, Andrew Morton <akpm@osdl.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: slab: start_cpu_timer/cache_reap CONFIG_HOTPLUG_CPU problems
-In-Reply-To: <20070129011301.GA844@tv-sign.ru>
-Message-ID: <Pine.LNX.4.64.0701290852390.28200@schroedinger.engr.sgi.com>
-References: <20070129011301.GA844@tv-sign.ru>
+	Mon, 29 Jan 2007 11:55:49 -0500
+Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:45340 "EHLO
+	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751934AbXA2Qzs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jan 2007 11:55:48 -0500
+Message-ID: <45BE2709.4050209@gmail.com>
+Date: Mon, 29 Jan 2007 17:55:37 +0100
+From: Rene Herman <rene.herman@gmail.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20061206)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: akpm@osdl.org
+CC: ak@suse.de, jeremy@goop.org, rusty@rustcorp.com.au, zach@vmware.com,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Martin Murray <murrayma@citi.umich.edu>
+Subject: Re: [PATCH] x86_64: sync up probe_roms() with i386
+References: <200701102244.l0AMiWIA010198@shell0.pdx.osdl.net> <45BDFAB5.40606@gmail.com>
+In-Reply-To: <45BDFAB5.40606@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
+X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 29 Jan 2007, Oleg Nesterov wrote:
+On 01/29/2007 02:46 PM, Rene Herman wrote:
 
-> Now,
-> 	static void __devinit start_cpu_timer(int cpu)
-> 	{
-> 		struct delayed_work *reap_work = &per_cpu(reap_work, cpu);
+> This syncs up the x86_64 probe_roms() with the i386 version as just 
+> submitted.
 > 
-> 		if (keventd_up() && reap_work->work.func == NULL) {
-> 			init_reap_node(cpu);
-> 			INIT_DELAYED_WORK(reap_work, cache_reap);
-> 			schedule_delayed_work_on(cpu, reap_work,
-> 						__round_jiffies_relative(HZ, cpu));
-> 		}
-> 	}
+> ===
+> Sync up with i386. Specifically, be careful about touching the
+> legacy ROMs; in virtualized environments they may not be mapped.
 > 
-> This is wrong. Suppose we have a CPU_UP,CPU_DOWN,CPU_UP sequence. The last
-> CPU_UP will not restart a per-cpu "cache_reap timer".
-
-Why?
-
-> With or without recent changes, it is possible that work->func() will run on
-> another CPU (not that to which it was submitted) if CPU goes down. In fact,
-> this can happen while work->func() is running, so even smp_processor_id()
-> is not safe to use in work->func().
-
-But the work func was scheduled by schedule_delayed_work_on(). Isnt that a 
-general problem with schedule_delayed_work_on() and keventd?
-
-> However, cache_reap() seems to wrongly assume that smp_processor_id() is stable,
-> this is the second problem.
+> Crosscompiled, but not booted due to lack of hardware.
 > 
-> Is my understanding correct?
+> Signed-off-by: Rene Herman <rene.herman@gmail.com>
+> ===
 
-cache_reap assumes that the processor id is stable based on the kevent 
-thread being pinned to a processor.
+In the meantime tested by Martin Murray on x86_64 native and inside 
+vmware (thanks much!) who told me I could add his sob:
+
+Signed-off-by:  Martin Murray <murrayma@citi.umich.edu>
+
+Rene.
