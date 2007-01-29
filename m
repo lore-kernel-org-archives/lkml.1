@@ -1,135 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933032AbXA2BVi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933039AbXA2BWs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933032AbXA2BVi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jan 2007 20:21:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933053AbXA2BVi
+	id S933039AbXA2BWs (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jan 2007 20:22:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933040AbXA2BWs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jan 2007 20:21:38 -0500
-Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:49179 "EHLO
-	pd4mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933032AbXA2BVg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jan 2007 20:21:36 -0500
-Date: Sun, 28 Jan 2007 19:20:38 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: [PATCH -mm] sata_nv: use ADMA for NODATA commands
-To: linux-kernel <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
-       Jeff Garzik <jeff@garzik.org>, Andrew Morton <akpm@osdl.org>
-Message-id: <45BD4BE6.3010109@shaw.ca>
-MIME-version: 1.0
-Content-type: multipart/mixed; boundary=------------060507030002050506000108
-User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
+	Sun, 28 Jan 2007 20:22:48 -0500
+Received: from main.gmane.org ([80.91.229.2]:57753 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933039AbXA2BWr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Jan 2007 20:22:47 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Oleg Verych <olecom@flower.upol.cz>
+Subject: Re: unfixed regression in 2.6.20-rc6 (since 2.6.19)
+Date: Mon, 29 Jan 2007 01:22:22 +0000 (UTC)
+Organization: Palacky University in Olomouc, experimental physics department.
+Message-ID: <slrnerqjit.f71.olecom@flower.upol.cz>
+References: <877ivb2kvc.fsf@semtex.sncag.com> <20070125185101.GA26279@kroah.com> <87y7nq131x.fsf@semtex.sncag.com> <20070126174828.GA28890@kroah.com> <87d54z1dhb.fsf@semtex.sncag.com>
+X-Complaints-To: usenet@sea.gmane.org
+X-Gmane-NNTP-Posting-Host: flower.upol.cz
+Mail-Followup-To: LKML <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>, Rainer Weikusat <rainer.weikusat@sncag.com>, Oleg Verych <olecom@flower.upol.cz>, Linus Torvalds <torvalds@linux-foundation.org>, Adrian Bunk <bunk@stusta.de>
+User-Agent: slrn/0.9.8.1pl1 (Debian)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------060507030002050506000108
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+> From: Rainer Weikusat
+> Newsgroups: gmane.linux.kernel
+> Subject: Re: unfixed regression in 2.6.20-rc6 (since 2.6.19)
+> Date: Sun, 28 Jan 2007 14:34:56 +0100
 
-Patch is against 2.6.20-rc6-mm1, though will also apply to 2.6.20-rc6 if 
-sata_nv-cleanup-adma-error-handling-v2.patch and 
-sata_nv-cleanup-adma-error-handling-v2-cleanup.patch from -mm are 
-applied first. Testing from those who experienced the previous cache 
-flush timeout problem, in particular, would be appreciated.
+Hallo.
 
----
+> Greg KH <greg@kroah.com> writes:
+[]
+>> Please work to see what is wrong with the existing patch.  Is there
+>> anything that I can do to help you out?
+>
+> This thing has consumed something like sixteen hours of my life in
+> total, with a gain-to-be-expected of exactly zero (I don't need to run
+> 'current' kernels on my work machine, I have just grown into the habit
+> of doing so) and those sixteen hours cannot come back (and I even have
+> had these type of discussions around 'should it rather look like math
+> or rather like text' in sufficent quantities :->), so, except that I
+> would be very much obliged to you if a fix for this issue could go
+> into the 'official' tree rather sooner than later, no.
 
-Some problems showed up recently with cache flush commands timing out on 
-sata_nv. Previously these commands were always handled by transitioning 
-to legacy mode from ADMA mode first. The timeout problem was worked 
-around already by a change to the interrupt handling code for legacy 
-mode, but for non-data commands like these it appears we can handle them 
-in ADMA mode, so the switch to legacy mode is not needed.
+It's hot here.
 
-This patch changes the behavior so that we use ADMA mode to submit 
-interrupt-driven commands with ATA_PROT_NODATA protocol. In addition to 
-avoiding the problem mentioned above entirely, this avoids the overhead 
-of switching to legacy mode and back to ADMA mode for handling cache 
-flushes. When handling non-DMA-mapped commands, we leave the APRD blank 
-and clear the NV_CPB_CTL_APRD_VALID field in the CPB so the controller 
-does not attempt to read it.
+I'm in similar situation (even *usb-serial* driver [TI USB] led me there;)
 
-Signed-off-by: Robert Hancock <hancockr@shaw.ca>
+In short, it turned, that usb drivers aren't drivers at all, they are
+just "USB interface drivers", i.e. managers of the particular USB
+interface *in* the device.
 
--- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
+Problem is: after changing ti-usb-serial's firmware, it is being reset
+and apears with new device ID. It's OK so far, but even this may be
+better (from USB hardware implementation point of view). Then this
+device, after being caught with new ID by the same "driver" requires
+seting USB configuration #2, in order to be usb-serial converter. Day was
+lost to make this happen _inside_ driver (kernel 2.6.18). It turned, that
+only way to do so is SYSFS, that set up by udev, and
+"usb_set_configuration()" function is being used for that.
 
+1. Why it's not called "sysfs_usb_set_configuration()"?
 
---------------060507030002050506000108
-Content-Type: text/plain;
- name="sata_nv-use-adma-for-nodata-commands.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="sata_nv-use-adma-for-nodata-commands.patch"
+2. Why
 
---- linux-2.6.20-rc6nv/drivers/ata/sata_nv.c	2007-01-28 17:05:27.000000000 -0600
-+++ linux-2.6.20-rc6nvedit/drivers/ata/sata_nv.c	2007-01-28 17:20:11.000000000 -0600
-@@ -1172,16 +1172,31 @@ static void nv_adma_fill_sg(struct ata_q
- 		cpb->next_aprd = cpu_to_le64(((u64)(pp->aprd_dma + NV_ADMA_SGTBL_SZ * qc->tag)));
- }
- 
-+static int nv_adma_use_reg_mode(struct ata_queued_cmd *qc)
-+{
-+	struct nv_adma_port_priv *pp = qc->ap->private_data;
-+	
-+	/* ADMA engine can only be used for non-ATAPI DMA commands,
-+	   or interrupt-driven no-data commands. */
-+	if((pp->flags & NV_ADMA_ATAPI_SETUP_COMPLETE) ||
-+	   (qc->tf.flags & ATA_TFLAG_POLLING))
-+		return 1;
-+
-+	if((qc->flags & ATA_QCFLAG_DMAMAP) ||
-+	   (qc->tf.protocol == ATA_PROT_NODATA))
-+		return 0;
-+	
-+	return 1;
-+}
-+
- static void nv_adma_qc_prep(struct ata_queued_cmd *qc)
- {
- 	struct nv_adma_port_priv *pp = qc->ap->private_data;
- 	struct nv_adma_cpb *cpb = &pp->cpb[qc->tag];
- 	u8 ctl_flags = NV_CPB_CTL_CPB_VALID |
--		       NV_CPB_CTL_APRD_VALID |
- 		       NV_CPB_CTL_IEN;
- 
--	if (!(qc->flags & ATA_QCFLAG_DMAMAP) ||
--	     (pp->flags & NV_ADMA_ATAPI_SETUP_COMPLETE)) {
-+	if (nv_adma_use_reg_mode(qc)) {
- 		nv_adma_register_mode(qc->ap);
- 		ata_qc_prep(qc);
- 		return;
-@@ -1200,8 +1215,12 @@ static void nv_adma_qc_prep(struct ata_q
- 	VPRINTK("qc->flags = 0x%lx\n", qc->flags);
- 
- 	nv_adma_tf_to_cpb(&qc->tf, cpb->tf);
--
--	nv_adma_fill_sg(qc, cpb);
-+	
-+	if(qc->flags & ATA_QCFLAG_DMAMAP) {
-+		nv_adma_fill_sg(qc, cpb);
-+		ctl_flags |= NV_CPB_CTL_APRD_VALID;
-+	} else
-+		memset(&cpb->aprd[0], 0, sizeof(struct nv_adma_prd) * 5);
- 
- 	/* Be paranoid and don't let the device see NV_CPB_CTL_CPB_VALID until we are
- 	   finished filling in all of the contents */
-@@ -1216,10 +1235,9 @@ static unsigned int nv_adma_qc_issue(str
- 
- 	VPRINTK("ENTER\n");
- 
--	if (!(qc->flags & ATA_QCFLAG_DMAMAP) ||
--	     (pp->flags & NV_ADMA_ATAPI_SETUP_COMPLETE)) {
-+	if (nv_adma_use_reg_mode(qc)) {
- 		/* use ATA register mode */
--		VPRINTK("no dmamap or ATAPI, using ATA register mode: 0x%lx\n", qc->flags);
-+		VPRINTK("using ATA register mode: 0x%lx\n", qc->flags);
- 		nv_adma_register_mode(qc->ap);
- 		return ata_qc_issue_prot(qc);
- 	} else
+   [USB device view]: vID:dID -- bNumConfigurations -- bNumInterfaces
 
---------------060507030002050506000108--
+is being only device IDs tables in usb drivers?
+
+3. Where's configuration and/or interfaces choosing? Yes, this may be not
+so wide used, but hey, it's design issue! There's a big cave in device
+setup and configuration chain!
+
+Look at 2.6.19 with "usb_driver_set_configuration()" to see it.
+
+And don't say, USB device requires userspace to setup (external
+firmware is another question). I can be young and stupid, and this is
+very wired only for my understanding. Simple NULL by default or set
+table of {num_usb_conf, num_interface} for "drivers" will be enough.
+
+> Apart from that, I make a (fairly miserable) living by adapting open
+> source code to be usable in specific situations (ie adding or
+> modifying features, fixing bugs, writing drivers etc)
+
+So and i. I wanted to adopt request_firmware() for TI USB serial, but
+i became very confused and upset.
+
+--
+-o--=O`C
+ #oo'L O
+<___=E M
 
