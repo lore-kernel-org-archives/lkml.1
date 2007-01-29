@@ -1,77 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932814AbXA2XFz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932829AbXA2XGB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932814AbXA2XFz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 18:05:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752628AbXA2XFy
+	id S932829AbXA2XGB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 18:06:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752628AbXA2XGB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 18:05:54 -0500
-Received: from ozlabs.org ([203.10.76.45]:39440 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752626AbXA2XFy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 18:05:54 -0500
+	Mon, 29 Jan 2007 18:06:01 -0500
+Received: from ug-out-1314.google.com ([66.249.92.174]:44022 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752626AbXA2XGA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jan 2007 18:06:00 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:sender;
+        b=GWnQNkdSvJy+FEFUWTok+PnOHDAlCntsR+8ucNbWOtJNYQ+IVI/uImE+0LhiMc+tPvex3OYlqgVzcCvvaH9hl7W9Ze5DW5LBWfwWc12dY1ZiXYqnMCqBrEIzpQw7hxFKGolQkk4N8qgpmx0kswS5Rv6mg3Z6pELcd22NWoZGdZU=
+Date: Mon, 29 Jan 2007 23:05:52 +0000
+From: Frederik Deweerdt <deweerdt@free.fr>
+To: Tomasz Kvarsin <kvarsin@gmail.com>
+Cc: Andrew Morton <akpm@osdl.org>, linux-kernel <linux-kernel@vger.kernel.org>,
+       paulmck@in.ibm.com, dipankar@in.ibm.com
+Subject: [-mm patch] rcu_trace build fix (was Re: 2.6.20-rc6-mm2 build failure)
+Message-ID: <20070129230552.GB10257@slug>
+References: <5157576d0701291231j17c5c73we8aa4419d22c01b9@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <17854.32201.131104.928581@cargo.ozlabs.ibm.com>
-Date: Tue, 30 Jan 2007 10:05:45 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: tony.luck@intel.com, grundler@parisc-linux.org, jeff@garzik.org,
-       greg@kroah.com, linux-kernel@vger.kernel.org, kyle@parisc-linux.org,
-       linuxppc-dev@ozlabs.org, linux-pci@atrey.karlin.mff.cuni.cz,
-       brice@myri.com, shaohua.li@intel.com, mingo@elte.hu,
-       David Miller <davem@davemloft.net>
-Subject: Re: [PATCH 0/6] MSI portability cleanups
-In-Reply-To: <1170102158.26655.273.camel@localhost.localdomain>
-References: <m1hcuaohqj.fsf@ebiederm.dsl.xmission.com>
-	<20070128.153707.30184351.davem@davemloft.net>
-	<m1tzyammv0.fsf@ebiederm.dsl.xmission.com>
-	<20070128.212554.23015561.davem@davemloft.net>
-	<1170050737.26655.233.camel@localhost.localdomain>
-	<m1sldukxwm.fsf@ebiederm.dsl.xmission.com>
-	<1170102158.26655.273.camel@localhost.localdomain>
-X-Mailer: VM 7.19 under Emacs 21.4.1
+Content-Disposition: inline
+In-Reply-To: <5157576d0701291231j17c5c73we8aa4419d22c01b9@mail.gmail.com>
+User-Agent: mutt-ng/devel-r804 (Linux)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Benjamin Herrenschmidt writes:
-
-> > I'd hate to hit a different Hypervisor that did something close but
-> > not quite the same and have the code fail then.  So definitely
-> > avoiding touching pci config space at all in the calls seems to make a
-> > lot of sense.  This includes avoiding pci_find_capability right?
+On Mon, Jan 29, 2007 at 11:31:08PM +0300, Tomasz Kvarsin wrote:
+> I try to compile and got:
 > 
-> Quite possibly yes. I'm pretty sure it will work on IBM HV but we aren't
-> really supposed to use it...
+>  CHK     include/linux/version.h
+>  CHK     include/linux/utsrelease.h
+>  CHK     include/linux/compile.h
+>  CC      kernel/rcupreempt.o
+> kernel/rcupreempt.c: In function 'rcupreempt_try_flip_state_name':
+> kernel/rcupreempt.c:641: error: 'rcu_try_flip_state_names' undeclared
+> (first use in this function)
+> kernel/rcupreempt.c:641: error: (Each undeclared identifier is
+> reported only once
+> kernel/rcupreempt.c:641: error: for each function it appears in.)
+> kernel/rcupreempt.c: In function 'rcupreempt_trace':
+> kernel/rcupreempt.c:645: error: 'struct rcu_data' has no member named 'trace'
+> kernel/rcupreempt.c:646: warning: control reaches end of non-void function
+> kernel/rcupreempt.c: In function 'rcupreempt_try_flip_state_name':
+> kernel/rcupreempt.c:642: warning: control reaches end of non-void function
+> 
+Hi,
 
-Actually, I don't know of any reason why we can't use
-pci_find_capability.  We are supposed to avoid trying to touch config
-space of devices (in fact, functions) that aren't assigned to our
-partition, but we're not talking about that here.
+It looks like a typo there, thanks for reporting. The attached patch
+"s/RCU_TRACE/CONFIG_RCU_TRACE/" did the trick for me.
 
-I just got an answer from the hypervisor architects.  It turns out
-that the hardware _does_ prevent the device from sending MSI messages
-to another partition.  The OS _can_ write whatever it likes to the MSI
-address and data registers.  It can potentially lose interrupts (or, I
-expect, get the device isolated by EEH) but it can't disrupt another
-partition.
-
-I think the reason why the hypervisor call writes the values straight
-into the MSI/MSI-X registers in the device is (a) that's convenient
-for AIX, since it saves it from immediately having to do more calls
-into the hypervisor to write those values to the device, and (b) there
-are some ABI complications in returning a lot of values, so the device
-registers provide a convenient place to return those values.
-
-So it would be possible, although gross, to do the hypervisor call,
-read the values from config space and return them to the generic code,
-then let the generic code write them to config space for us. :P
-
-The remaining point of difference then seems to be that for MSI-X, we
-really want to know up-front how many interrupts the device driver is
-asking for, rather than having a series of alloc requests dribble in
-one at a time.
+Btw, shouldn't the RCU_TRACE macro be defined to "do {} while(0)" in the
+!CONFIG_RCU_TRACE case?
 
 Regards,
-Paul.
+Frederik
+
+Signed-off-by: Frederik Deweerdt <frederik.deweerdt@gmail.com>
+
+diff --git a/kernel/rcupreempt.c b/kernel/rcupreempt.c
+index f8962a7..9b7d66b 100644
+--- a/kernel/rcupreempt.c
++++ b/kernel/rcupreempt.c
+@@ -619,7 +619,7 @@ void synchronize_kernel(void)
+ 	synchronize_rcu();
+ }
+ 
+-#ifdef RCU_TRACE
++#ifdef CONFIG_RCU_TRACE
+ int *rcupreempt_flipctr(int cpu)
+ {
+ 	return &per_cpu(rcu_flipctr, cpu)[0];
+@@ -649,7 +649,7 @@ EXPORT_SYMBOL_GPL(rcupreempt_data_completed);
+ EXPORT_SYMBOL_GPL(rcupreempt_flip_flag);
+ EXPORT_SYMBOL_GPL(rcupreempt_mb_flag);
+ EXPORT_SYMBOL_GPL(rcupreempt_try_flip_state_name);
+-#endif /* #ifdef RCU_TRACE */
++#endif /* #ifdef CONFIG_RCU_TRACE */
+ 
+ EXPORT_SYMBOL_GPL(call_rcu);
+ EXPORT_SYMBOL_GPL(rcu_batches_completed);
