@@ -1,57 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933084AbXA2CAs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933089AbXA2CGW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933084AbXA2CAs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jan 2007 21:00:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933089AbXA2CAs
+	id S933089AbXA2CGW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jan 2007 21:06:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933090AbXA2CGW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jan 2007 21:00:48 -0500
-Received: from gepetto.dc.ltu.se ([130.240.42.40]:42035 "EHLO
-	gepetto.dc.ltu.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933084AbXA2CAs (ORCPT
+	Sun, 28 Jan 2007 21:06:22 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:46781 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933089AbXA2CGW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jan 2007 21:00:48 -0500
-Message-ID: <45BD5543.5020704@student.ltu.se>
-Date: Mon, 29 Jan 2007 03:00:35 +0100
-From: Richard Knutsson <ricknu-0@student.ltu.se>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
-MIME-Version: 1.0
-To: Oleg Verych <olecom@flower.upol.cz>
-CC: Andrew Morton <akpm@osdl.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [SCRIPT] Remove "space damage" from patches
-References: <45BD177D.6060907@student.ltu.se> <slrnerqapg.f71.olecom@flower.upol.cz> <45BD3AF7.4070902@student.ltu.se> <slrnerqgj0.f71.olecom@flower.upol.cz> <45BD4D2C.2010306@student.ltu.se> <20070129014327.GA25271@flower.upol.cz>
-In-Reply-To: <20070129014327.GA25271@flower.upol.cz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sun, 28 Jan 2007 21:06:22 -0500
+Date: Sun, 28 Jan 2007 17:55:19 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Adrian Bunk <bunk@stusta.de>
+Cc: Jiri Slaby <jirislaby@gmail.com>, swhiteho@redhat.com,
+       Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
+       cluster-devel@redhat.com
+Subject: Re: [-mm patch] fix GFS2 circular dependency
+Message-Id: <20070128175519.60fb522c.randy.dunlap@oracle.com>
+In-Reply-To: <20070128161950.GS6017@stusta.de>
+References: <20070127234928.64d8e437.akpm@osdl.org>
+	<45BC7612.30701@gmail.com>
+	<20070128161950.GS6017@stusta.de>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.0 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oleg Verych wrote:
-> On Mon, Jan 29, 2007 at 02:26:04AM +0100, Richard Knutsson wrote:
-> []
->   
->> I also guess you saw that the script is _not_ for cleaning up 
->> source-files (can be intrusive and is better to be fixed when fixing 
->> something else), but patches.
->>     
->
-> IMHO it's dealing with consequences, not cause, and it's even worse.
->   
-How many patches is not to fix bugs, it is worse then some strayed 
-whitespace but it is due to reality.
-The best is, of course, if neither happened but the next best thing is 
-to fix it. And if it can be automated, even better (imho).
->> So if a maintainer does not have anything to easily fix those, they
->> might want a simple script to do the work (otherwise I believe they
->> just deleted my mail ;) ).
->>     
->
-> I would like to discuss, would you?
->   
-I like to discuss but I am not sure what the result would be. Force 
-people to use the editors of our choice?
-As long people uses valid e-mail-clients when sending patches (or they 
-use the script "sendpatchset"), I'm think we have to be satisfied.
-But if you have any ideas, I'm listening.
+On Sun, 28 Jan 2007 17:19:50 +0100 Adrian Bunk wrote:
 
-Richard Knutsson
+> <--  snip  -->
+> 
+> 
+> This patch fixes a circular dependency by letting GFS2_FS_LOCKING_DLM 
+> and DLM depend on instead of select SYSFS.
+> 
+> Since SYSFS depends on EMBEDDED this change shouldn't cause any problems 
+> for users.
+> 
+> Signed-off-by: Adrian Bunk <bunk@stusta.de>
+
+Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
+
+Thanks.  Sorry about that.
+
+
+> ---
+> 
+>  fs/dlm/Kconfig  |    3 +--
+>  fs/gfs2/Kconfig |    3 +--
+>  2 files changed, 2 insertions(+), 4 deletions(-)
+> 
+> --- linux-2.6.20-rc6-mm1/fs/gfs2/Kconfig.old	2007-01-28 16:44:17.000000000 +0100
+> +++ linux-2.6.20-rc6-mm1/fs/gfs2/Kconfig	2007-01-28 16:44:59.000000000 +0100
+> @@ -34,11 +34,10 @@
+>  
+>  config GFS2_FS_LOCKING_DLM
+>  	tristate "GFS2 DLM locking module"
+> -	depends on GFS2_FS && NET && INET && (IPV6 || IPV6=n)
+> +	depends on GFS2_FS && SYSFS && NET && INET && (IPV6 || IPV6=n)
+>  	select IP_SCTP if DLM_SCTP
+>  	select CONFIGFS_FS
+>  	select DLM
+> -	select SYSFS
+>  	help
+>  	Multiple node locking module for GFS2
+>  
+> --- linux-2.6.20-rc6-mm1/fs/dlm/Kconfig.old	2007-01-28 16:56:57.000000000 +0100
+> +++ linux-2.6.20-rc6-mm1/fs/dlm/Kconfig	2007-01-28 16:57:16.000000000 +0100
+> @@ -3,9 +3,8 @@
+>  
+>  config DLM
+>  	tristate "Distributed Lock Manager (DLM)"
+> -	depends on IPV6 || IPV6=n
+> +	depends on SYSFS && (IPV6 || IPV6=n)
+>  	select CONFIGFS_FS
+> -	select SYSFS
+>  	select IP_SCTP if DLM_SCTP
+>  	help
+>  	A general purpose distributed lock manager for kernel or userspace
+> 
+> -
 
