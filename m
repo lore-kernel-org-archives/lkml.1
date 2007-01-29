@@ -1,50 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752014AbXA2ToB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750959AbXA2TpZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752014AbXA2ToB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 14:44:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752544AbXA2ToB
+	id S1750959AbXA2TpZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 14:45:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751001AbXA2TpY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 14:44:01 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:54539 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752014AbXA2ToA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 14:44:00 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Auke Kok <auke-jan.h.kok@intel.com>,
-       linux-pci maillist <linux-pci@atrey.karlin.mff.cuni.cz>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, Linus Torvalds <torvalds@osdl.org>,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>
-Subject: Re: Possible regression: MSI vector leakage since 2.6.18-rc5ish (Unable to repeatedly allocate/free MSI interrupt)
-References: <45BA82DA.6050201@intel.com>
-	<m1bqkku8bp.fsf@ebiederm.dsl.xmission.com>
-	<45BE443B.3080407@intel.com>
-	<Pine.LNX.4.64.0701291135080.3611@woody.linux-foundation.org>
-Date: Mon, 29 Jan 2007 12:42:47 -0700
-In-Reply-To: <Pine.LNX.4.64.0701291135080.3611@woody.linux-foundation.org>
-	(Linus Torvalds's message of "Mon, 29 Jan 2007 11:36:22 -0800 (PST)")
-Message-ID: <m1zm81ipqg.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Mon, 29 Jan 2007 14:45:24 -0500
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:50468 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750959AbXA2TpX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jan 2007 14:45:23 -0500
+Message-ID: <45BE4ED0.5030808@us.ibm.com>
+Date: Mon, 29 Jan 2007 13:45:20 -0600
+From: Maynard Johnson <maynardj@us.ibm.com>
+Reply-To: maynardj@us.ibm.com
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.7.3) Gecko/20040910
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: cbe-oss-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, oprofile-list@lists.sourceforge.net
+Subject: [RFC, PATCH 0/4] Add support to OProfile for profiling Cell BE SPUs
+  -- update
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds <torvalds@linux-foundation.org> writes:
+On December 14, 2006, I posted a patch that added support to the 
+OProfile kernel driver for profiling Cell SPUs.  There have been some 
+changes/fixes to this patch since the original posting (including 
+forward porting from 2.6.18-based kernel to 2.6.20-rc1), so I am 
+reposting the patch for review now.  This patch relies upon the 
+following patches that have not been accepted yet:
+   1. oprofile cleanup patch (submitted on Nov 27)
+   2. Fix for PPU profiling (not submitted yet, since it depends on #1)
+   3. SPU task notification patch (last submitted on Jan 26)
 
-> On Mon, 29 Jan 2007, Auke Kok wrote:
->> 
->> Yes. A few hundred cycles of loading/unloading snd_hda_intel with enable_msi=1
->> didn't break it on i386.
->> 
->> I sure hope this can get into 2.6.20!
->
-> Eric, can you write an explanation, add your sign-off, Auke's ACK, and 
-> send out the result? The patch looked ok to me, but I do want the more 
-> deeper explanation too (and sign-off, of course).
+For those who may want to apply and build the oprofile SPU support 
+patch, it would be necessary to first apply the above patches.  For 
+convenience, I will post all three of the above patches, along with the 
+oprofile SPU support patch.
 
-Sure.  Give me a couple of minutes.
+Comments appreciated.
 
-Eric
+Thank you.
+
+Maynard Johnson
+IBM LTC Toolchain
+
