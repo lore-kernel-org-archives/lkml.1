@@ -1,43 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751252AbXA2Mop@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751298AbXA2MrJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751252AbXA2Mop (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 07:44:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751298AbXA2Mop
+	id S1751298AbXA2MrJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 07:47:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751303AbXA2MrJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 07:44:45 -0500
-Received: from mo-p00-ob.rzone.de ([81.169.146.160]:53656 "EHLO
-	mo-p00-ob.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751252AbXA2Moo (ORCPT
+	Mon, 29 Jan 2007 07:47:09 -0500
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:62640 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751298AbXA2MrI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 07:44:44 -0500
-Date: Mon, 29 Jan 2007 13:44:42 +0100 (MET)
-From: Oliver Neukum <oliver@neukum.name>
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-Subject: Re: blacklist kernel boot option
-User-Agent: KMail/1.9.1
-Cc: Gerd Hoffmann <kraxel@suse.de>, linux-kernel@vger.kernel.org
-References: <200701270222.36060.mista.tapas@gmx.net>
- <45BDD9C2.1020309@suse.de>
- <Pine.LNX.4.61.0701291331060.32356@yvahk01.tjqt.qr>
-In-Reply-To: <Pine.LNX.4.61.0701291331060.32356@yvahk01.tjqt.qr>
+	Mon, 29 Jan 2007 07:47:08 -0500
+Date: Mon, 29 Jan 2007 13:47:01 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Sam Ravnborg <sam@ravnborg.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@osdl.org>
+cc: Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: [PATCH] `make help' in build tree doesn't show headers_* targets
+Message-ID: <Pine.LNX.4.62.0701291346210.17426@pademelon.sonytel.be>
 MIME-Version: 1.0
-Content-Type: text/plain;  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200701291344.45299.oliver@neukum.name>
-X-RZG-AUTH: kN+qSWxTQH+Xqix8Cni7tCsVYhPCm1GP
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Montag, 29. Januar 2007 13:40 schrieb Jan Engelhardt:
-> >Is that an real-live issue, with distro kernels being shipped with
-> >almost everything compiled as module these days?
-> 
-> For me it was. FC6 has at least CONFIG_MD=y, and SUSE also has some =y that
-> could be =m with the help of module autoload rules, and some =y that could
-> truly be =m. Those being =y cannot be blacklisted.
+`make help' in the build tree doesn't show the help texts about the
+`headers_install' and `headers_check' targets because it looks for
+include/asm-$(ARCH)/Kbuild in the wrong place.
+Add the missing `$(srctree)' prefixes to fix this.
+Also move the printing of the default install path for the headers inside the
+`if/fi', where it belongs.
 
-What use is it to modularly compile something that almost everybody needs?
+Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+---
+ Makefile |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-	Regards
-		Oliver
+--- ps3-linux-src-2.6.20-rc6.orig/Makefile
++++ ps3-linux-src-2.6.20-rc6/Makefile
+@@ -1116,15 +1116,15 @@ help:
+ 	@echo  '  cscope	  - Generate cscope index'
+ 	@echo  '  kernelrelease	  - Output the release version string'
+ 	@echo  '  kernelversion	  - Output the version stored in Makefile'
+-	@if [ -r include/asm-$(ARCH)/Kbuild ]; then \
++	@if [ -r $(srctree)/include/asm-$(ARCH)/Kbuild ]; then \
+ 	 echo  '  headers_install - Install sanitised kernel headers to INSTALL_HDR_PATH'; \
++	 echo  '                    (default: $(INSTALL_HDR_PATH))'; \
+ 	 fi
+-	@echo  '                    (default: $(INSTALL_HDR_PATH))'
+ 	@echo  ''
+ 	@echo  'Static analysers'
+ 	@echo  '  checkstack      - Generate a list of stack hogs'
+ 	@echo  '  namespacecheck  - Name space analysis on compiled kernel'
+-	@if [ -r include/asm-$(ARCH)/Kbuild ]; then \
++	@if [ -r $(srctree)/include/asm-$(ARCH)/Kbuild ]; then \
+ 	 echo  '  headers_check   - Sanity check on exported headers'; \
+ 	 fi
+ 	@echo  ''
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
+Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
+Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
