@@ -1,44 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750896AbXA2KlN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932417AbXA2Kzx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750896AbXA2KlN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 05:41:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932758AbXA2KlN
+	id S932417AbXA2Kzx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 05:55:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932834AbXA2Kzx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 05:41:13 -0500
-Received: from twin.jikos.cz ([213.151.79.26]:48118 "EHLO twin.jikos.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750896AbXA2KlM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 05:41:12 -0500
-Date: Mon, 29 Jan 2007 11:40:57 +0100 (CET)
-From: Jiri Kosina <jikos@jikos.cz>
-To: Soeren Sonnenburg <kernel@nn7.de>
-cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+	Mon, 29 Jan 2007 05:55:53 -0500
+Received: from mivlgu.ru ([81.18.140.87]:35406 "EHLO master.mivlgu.local"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S932417AbXA2Kzw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jan 2007 05:55:52 -0500
+X-Greylist: delayed 1748 seconds by postgrey-1.27 at vger.kernel.org; Mon, 29 Jan 2007 05:55:51 EST
+Date: Mon, 29 Jan 2007 13:26:41 +0300
+From: Sergey Vlasov <vsu@altlinux.ru>
+To: Jiri Kosina <jikos@jikos.cz>
+Cc: Soeren Sonnenburg <kernel@nn7.de>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
        linux-usb-devel <linux-usb-devel@lists.sourceforge.net>
-Subject: Re: 2.6.20-rc6 pb_fnmode regression
-In-Reply-To: <1170066737.13904.12.camel@localhost>
-Message-ID: <Pine.LNX.4.64.0701291138260.9448@twin.jikos.cz>
-References: <1169904555.2462.10.camel@localhost>  <Pine.LNX.4.64.0701291049190.9448@twin.jikos.cz>
- <1170066737.13904.12.camel@localhost>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Subject: Re: [linux-usb-devel] 2.6.20-rc6 pb_fnmode regression
+Message-ID: <20070129102641.GC3375@master.mivlgu.local>
+Mail-Followup-To: Jiri Kosina <jikos@jikos.cz>,
+	Soeren Sonnenburg <kernel@nn7.de>,
+	Linux Kernel <linux-kernel@vger.kernel.org>,
+	linux-usb-devel <linux-usb-devel@lists.sourceforge.net>
+References: <1169904555.2462.10.camel@localhost> <Pine.LNX.4.64.0701291049190.9448@twin.jikos.cz>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="tqI+Z3u+9OQ7kwn0"
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0701291049190.9448@twin.jikos.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 29 Jan 2007, Soeren Sonnenburg wrote:
 
-> Well I need in-kernel usbhid and the way this was implemented in 2.6.19 
-> (and before) one could change pb_fnmode on-the-fly. This is mentioned in 
-> all the power/i/mac/book tutorials and everyone is used to switching 
-> modes this way. I can happily patch the kernel to use the pb_fnmode but 
-> nonetheless this is a regression to pre 2.6.20* and will confuse others 
-> too...
+--tqI+Z3u+9OQ7kwn0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Ah, now I see. The problem is that in pre-2.6.20-rc1 the pb_fnmode was 
-setting global variable, but after the HID layer rework, this is a per-hid 
-variable, which is of course not updated when write to sysfs triggers.
+On Mon, Jan 29, 2007 at 10:55:48AM +0100, Jiri Kosina wrote:
+> Changing module parameter values through sysfs is not a very nice idea,=
+=20
+> because the change of the value is indeed silent - the driver is not=20
+> notified in any way, that the value has changed. So the driver should tak=
+e=20
+> care of it by itself, which is not a nice thing.
 
-I will try to fix this before I send 2.6.20-rc6 updates to Linus, thanks 
-for pointing this out.
+There is module_param_call() - used at least by drivers/md/md.c:
 
--- 
-Jiri Kosina
+static int get_ro(char *buffer, struct kernel_param *kp)
+=2E..
+static int set_ro(const char *val, struct kernel_param *kp)
+=2E..
+module_param_call(start_ro, set_ro, get_ro, NULL, S_IRUSR|S_IWUSR);
+
+--tqI+Z3u+9OQ7kwn0
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.4 (GNU/Linux)
+
+iD8DBQFFvcvhW82GfkQfsqIRAq/0AJ40A/Wfpas3BaBwROM+Z0ysKDbxMgCcD/7L
+Hxw+f5j+PKRcGx+WxyD0Tno=
+=Awbf
+-----END PGP SIGNATURE-----
+
+--tqI+Z3u+9OQ7kwn0--
