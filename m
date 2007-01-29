@@ -1,77 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932472AbXA2WOd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932477AbXA2WVh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932472AbXA2WOd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 17:14:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932477AbXA2WOd
+	id S932477AbXA2WVh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 17:21:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752620AbXA2WVh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 17:14:33 -0500
-Received: from mail.screens.ru ([213.234.233.54]:56194 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932472AbXA2WOc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 17:14:32 -0500
-Date: Tue, 30 Jan 2007 01:14:08 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Srivatsa Vaddagiri <vatsa@in.ibm.com>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       Gautham shenoy <ego@in.ibm.com>, Andrew Morton <akpm@osdl.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: slab: start_cpu_timer/cache_reap CONFIG_HOTPLUG_CPU problems
-Message-ID: <20070129221408.GA269@tv-sign.ru>
-References: <20070129011301.GA844@tv-sign.ru> <Pine.LNX.4.64.0701290852390.28200@schroedinger.engr.sgi.com> <20070129171923.GA138@tv-sign.ru> <Pine.LNX.4.64.0701290922390.28330@schroedinger.engr.sgi.com> <20070129182742.GA158@tv-sign.ru> <Pine.LNX.4.64.0701291109310.29254@schroedinger.engr.sgi.com> <20070129194938.GB233@tv-sign.ru> <Pine.LNX.4.64.0701291224340.32740@schroedinger.engr.sgi.com> <20070129210550.GA247@tv-sign.ru> <Pine.LNX.4.64.0701291346110.548@schroedinger.engr.sgi.com>
+	Mon, 29 Jan 2007 17:21:37 -0500
+Received: from nf-out-0910.google.com ([64.233.182.185]:22650 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752619AbXA2WVg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jan 2007 17:21:36 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=MFKcVqyngauAlwaubsrgglPD1diljWSbUHUbHXb8ezNKzugxUCLvJiYqSfXKM7PjtNM7AXCdDLi2UHhWQ4eHQkGfurZxmMwZ+c07f/yVNcUOvnpDOnSfYUQKR8LPeZ61Fw/4GCY6SwzLcuZ9PKVeP3AXicE89dCQATo3o2w6EvM=
+Subject: Re: i965 testers wanted (Re: intel-agp PM experiences)
+From: =?ISO-8859-1?Q?Fr=E9d=E9ric?= Riss <frederic.riss@gmail.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: andi@lisas.de, davej@codemonkey.org.uk,
+       kernel list <linux-kernel@vger.kernel.org>, seife@suse.de,
+       Wang Zhenyu <zhenyu.z.wang@intel.com>
+In-Reply-To: <20070129221006.GC17199@elf.ucw.cz>
+References: <d120d5000701160608t73db4405n5d157db43899776a@mail.gmail.com>
+	 <20070116142432.GA6171@elf.ucw.cz>
+	 <d120d5000701161325h112a9299w944763b7f1032a61@mail.gmail.com>
+	 <20070117004012.GA11140@rhlx01.hs-esslingen.de>
+	 <20070117005755.GB6270@elf.ucw.cz>
+	 <20070118115105.GA28233@rhlx01.hs-esslingen.de>
+	 <20070118231650.GA5352@ucw.cz>
+	 <20070122044519.GA24398@zhen-devel.sh.intel.com>
+	 <20070123094456.GG6033@ucw.cz> <1170108330.21603.5.camel@funkylaptop>
+	 <20070129221006.GC17199@elf.ucw.cz>
+Content-Type: text/plain; charset=utf-8
+Date: Mon, 29 Jan 2007 23:21:31 +0100
+Message-Id: <1170109291.21603.15.camel@funkylaptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0701291346110.548@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.5.11
+X-Mailer: Evolution 2.8.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/29, Christoph Lameter wrote:
->
-> On Tue, 30 Jan 2007, Oleg Nesterov wrote:
+Le lundi 29 janvier 2007 à 23:10 +0100, Pavel Machek a écrit :
+> > > Ok, I guess we'd like some testing here... so that in can be fixed in
+> > > mainline...
+> > 
+> > I can confirm that this patch is needed for my Intel Mac Mini to resume
+> > correctly when used without BIOS emulation (EFI mode). Here're the
+> > relevant lspci lines:
 > 
-> > Now we have 2 additional events, CPU_LOCK_ACQUIRE/CPU_LOCK_RELEASE,
-> > so cpuup_callback() can use them to lock/unlock cache_chain_mutex,
-> > but this is not related.
-> 
-> Then we wont need to do the mutex_lock/unlock in CPU_DOWN_XX 
-> anymore, right? Which brings us to this form of the patch:
+> Can you attach the patch you tested (there was link above, but it did
+> not work for me), and try pushing it through maintainers?
 
-Yes, if CPU_LOCK_ACQUIRE takes cache_chain_mutex, we don't need to do so
-on CPU_DOWN_PREPARE. I didn't know cpuup_callback() was already converted,
-sorry for the confusion!
+I inlined the patch I used below. If I'm not mistaken, the maintainer is
+Davej which is already in the Cc: list. I think it's exactly the same as
+was submitted in http://lkml.org/lkml/2007/1/16/297 (I may have hand
+copied it though, can't remember). The above link is more complete as it
+contains the Signed-off-by and a description.
 
-Note: with the patch below we are doing cancel_rearming_delayed_work()
-under cache_chain_mutex. This is ok since cache_reap() does mutex_trylock(),
-so deadlock is not possible. However, this means that mutex_trylock() becomes
-mandatory for cache_reap(), probably a little comment will be good.
+diff --git a/drivers/char/agp/intel-agp.c b/drivers/char/agp/intel-agp.c
+index ab0a9c0..f64a115 100644
+--- a/drivers/char/agp/intel-agp.c
++++ b/drivers/char/agp/intel-agp.c
+@@ -1955,6 +1955,15 @@ static int agp_intel_resume(struct pci_d
+ 
+ 	pci_restore_state(pdev);
+ 
++	/* We should restore our graphics device's config space,
++	 * as host bridge (00:00) resumes before graphics device (02:00),
++	 * then our access to its pci space can work right. 
++	 */
++	if (intel_i810_private.i810_dev)
++		pci_restore_state(intel_i810_private.i810_dev);
++	if (intel_i830_private.i830_dev)
++		pci_restore_state(intel_i830_private.i830_dev);
++
+ 	if (bridge->driver == &intel_generic_driver)
+ 		intel_configure();
+ 	else if (bridge->driver == &intel_850_driver)
 
-> Shutdown cache_reaper when cpu goes down
-> 
-> Shutdown the cache_reaper in slab.c if the cpu is brought down
-> and set the cache_reap.func to NULL. Otherwise hotplug shuts
-> down the reaper for good.
-> 
-> Signed-off-by: Christoph Lameter <clameter@sgi.com>
-> 
-> Index: linux-2.6.20-rc6-mm2/mm/slab.c
-> ===================================================================
-> --- linux-2.6.20-rc6-mm2.orig/mm/slab.c	2007-01-29 14:27:34.199229828 -0600
-> +++ linux-2.6.20-rc6-mm2/mm/slab.c	2007-01-29 15:47:18.293962726 -0600
-> @@ -1271,6 +1271,14 @@ static int __cpuinit cpuup_callback(stru
->  		start_cpu_timer(cpu);
->  		break;
->  #ifdef CONFIG_HOTPLUG_CPU
-> +  	case CPU_DOWN_PREPARE:
-> +		/* Shutdown cache reaper */
-> +		cancel_rearming_delayed_work(&per_cpu(reap_work, cpu));
-> +		per_cpu(reap_work, cpu).work.func = NULL;
-> +  		break;
-> +  	case CPU_DOWN_FAILED:
-> +		start_cpu_timer(cpu);
-> +  		break;
->  	case CPU_DEAD:
->  		/*
->  		 * Even if all the cpus of a node are down, we don't free the
 
