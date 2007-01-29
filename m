@@ -1,50 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933170AbXA2GIE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933204AbXA2GIs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933170AbXA2GIE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 01:08:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933185AbXA2GID
+	id S933204AbXA2GIs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 01:08:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933197AbXA2GIs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 01:08:03 -0500
-Received: from lixom.net ([66.141.50.11]:46058 "EHLO mail.lixom.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933170AbXA2GIC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 01:08:02 -0500
-Date: Mon, 29 Jan 2007 00:14:24 -0600
-To: akpm@osdl.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] Add PA Semi PCI vendor id
-Message-ID: <20070129061424.GB7814@lixom.net>
+	Mon, 29 Jan 2007 01:08:48 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:53856 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933204AbXA2GIr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jan 2007 01:08:47 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Valdis.Kletnieks@vt.edu
+Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org
+Subject: Re: mm snapshot broken-out-2007-01-26-00-36.tar.gz uploaded
+References: <200701260837.l0Q8blBr011622@shell0.pdx.osdl.net>
+	<6bffcb0e0701270837i1ec40560l6e61e8876177e9da@mail.gmail.com>
+	<45BBC444.8090109@imap.cc> <20070127134116.06bdadd8.akpm@osdl.org>
+	<200701280241.l0S2f2ga015847@turing-police.cc.vt.edu>
+	<200701290249.l0T2nZt8003676@turing-police.cc.vt.edu>
+Date: Sun, 28 Jan 2007 23:08:17 -0700
+In-Reply-To: <200701290249.l0T2nZt8003676@turing-police.cc.vt.edu> (Valdis
+	Kletnieks's message of "Sun, 28 Jan 2007 21:49:35 -0500")
+Message-ID: <m1d54ymkku.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Olof Johansson <olof@lixom.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add PA Semi's PCI vendor ID (0x1959).
+Valdis.Kletnieks@vt.edu writes:
 
+> On Sat, 27 Jan 2007 13:41:16 PST, Andrew Morton said:
+>> > > >> The mm snapshot broken-out-2007-01-26-00-36.tar.gz has been uploaded to
+>> > > >>
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/mm/broken-out-2007-01-26-00-36.tar.gz
+>> 
+>> > I have everything compiling now, mostly.  The number of fixes which were
+>> > needed was just extraordinary.  I'm thinking about making changes...
+>
+> Aliens ate my brain, part 1:
+>
+> I tried building an out-of-tree ipfilters (ipt_osf) that worked fine under
+> 2.6.20-rc4-mm1.  After much scratching my head and adding debugging info,
+> I discovered that this code was failing:
+>
+>         p = create_proc_entry("sys/net/ipv4/osf", S_IFREG | 0644, NULL);
+>         if (!p) {
+>                 ipt_unregister_match(&osf_match);
+>                 return -ENXIO;
+>         }
+>
+> After much *more* head-scratching, and adding of printk's, I tracked it down
+> into fs/proc/generic.c, in xlate_proc_name:
+>
+>                 len = next - cp;
+>                 for (de = de->subdir; de ; de = de->next) {
+>                         if (proc_match(len, cp, de))
+>                                 break;
+>                 }
+>                 if (!de) {
+>                         rtn = -ENOENT;
+>                         goto out;
+>
+> It appears that syssctl-reimplement-the-sysctl-proc-support.patch doesn't
+> bother setting the de->subdir, so xlate_proc_name isn't able to find sys/net.
 
-Signed-off-by: Olof Johansson <olof@lixom.net>
+Does it find sys?  If so perhaps I should do something even more significant.
+I guess if I get many complaints about this I will figure out how to print
+out an appropriate error message.
 
----
+> What's the intended semantics of create_proc_entry and xlate_proc_name in
+> this new regime of no subdir pointers? Or am I just (yet again) one of the
+> first to trip over a bug?
 
-Submitting this separately -- several drivers that have recently been
-posted could make use of it. I didn't want to include it in each of them
-and have patch conflicts when they're combined upstream.
+It is supposed to fail in this instance.  If you want something under /proc/sys
+you are supposed to use register_sysctl like everyone else.  If it's not a
+sysctl it should not show up under /proc/sys.
 
+I think I fixed the one in tree instance of this behavior.
 
+I'm glad to see my cleanup uncovering more bugs, I'm sorry you were the one
+who had to find it.  I will you well fixing your out of tree ipfilter module.
 
-Index: merge/include/linux/pci_ids.h
-===================================================================
---- merge.orig/include/linux/pci_ids.h
-+++ merge/include/linux/pci_ids.h
-@@ -2078,6 +2078,8 @@
- #define PCI_VENDOR_ID_TDI               0x192E
- #define PCI_DEVICE_ID_TDI_EHCI          0x0101
- 
-+#define PCI_VENDOR_ID_PASEMI		0x1959
-+
- #define PCI_VENDOR_ID_JMICRON		0x197B
- #define PCI_DEVICE_ID_JMICRON_JMB360	0x2360
- #define PCI_DEVICE_ID_JMICRON_JMB361	0x2361
+Eric
