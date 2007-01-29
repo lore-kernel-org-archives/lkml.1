@@ -1,144 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750778AbXA2JwA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750816AbXA2Jz6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750778AbXA2JwA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 04:52:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750816AbXA2JwA
+	id S1750816AbXA2Jz6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 04:55:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752486AbXA2Jz6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 04:52:00 -0500
-Received: from mailhub.sw.ru ([195.214.233.200]:47543 "EHLO relay.sw.ru"
+	Mon, 29 Jan 2007 04:55:58 -0500
+Received: from twin.jikos.cz ([213.151.79.26]:46063 "EHLO twin.jikos.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750778AbXA2Jv7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 04:51:59 -0500
-Date: Mon, 29 Jan 2007 12:58:52 +0300
-From: Alexey Dobriyan <adobriyan@openvz.org>
-To: "H. Peter Anvin" <hpa@zytor.com>, akpm@osdl.org
-Cc: devel@openvz.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 3/3] lutimesat: actual syscall and wire-up on i386
-Message-ID: <20070129095852.GA6017@localhost.sw.ru>
-References: <20070126112345.GC11128@localhost.sw.ru> <45BC57FB.4010209@zytor.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <45BC57FB.4010209@zytor.com>
-User-Agent: Mutt/1.5.11
+	id S1750816AbXA2Jz6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jan 2007 04:55:58 -0500
+Date: Mon, 29 Jan 2007 10:55:48 +0100 (CET)
+From: Jiri Kosina <jikos@jikos.cz>
+To: Soeren Sonnenburg <kernel@nn7.de>
+cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       linux-usb-devel <linux-usb-devel@lists.sourceforge.net>
+Subject: Re: 2.6.20-rc6 pb_fnmode regression
+In-Reply-To: <1169904555.2462.10.camel@localhost>
+Message-ID: <Pine.LNX.4.64.0701291049190.9448@twin.jikos.cz>
+References: <1169904555.2462.10.camel@localhost>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jan 27, 2007 at 11:59:55PM -0800, H. Peter Anvin wrote:
-> Alexey Dobriyan wrote:
-> >+asmlinkage long sys_lutimesat(int dfd, char __user *filename, struct
-> >timeval __user *utimes)
->
-> Could we get these to take struct timespec instead of struct timeval?
->
-> Right now we have a real problem in that the interfaces that *set* times
-> take struct timeval (microsecond granularity) but the interfaces that
-> *get* times return struct timespec (nanosecond granularity), which means
-> information loss on any setting operations.
+On Sat, 27 Jan 2007, Soeren Sonnenburg wrote:
 
-OK. XFS could use it.
----------------------
+> I realized that any setting to /sys/module/usbhid/parameters/pb_fnmode 
+> is just ignored until the machine does a suspend-resume cycle.
 
-[PATCH 3/3] lutimesat: actual syscall and wire-up on i386
+Hi Soeren,
 
-lutimesat(2) does everything futimesat(2) does except it doesn't follow
-symlinks. It could be used by tar(1) and cp(1).
+I would probably not call this a regression, as this has been always 
+there, as far as I can see.
 
-FreeBSD and NetBSD have lutimes(2) which can be emulated by C library.
+> I've added a printk in drivers/usb/input/hid-core.c (which is the only 
+> place where hid->pb_fnmode is set) and indeed only on module load ( in 
+> my case usbhid is compiled into the kernel - so on kernel boot) any 
+> change to hid>pb_fnmode is done. Adding a printk to hidinput_pb_event() 
+> in drivers/hid/hid-input.c says the same: hid->pb_fnmode cannot be 
+> changed on the fly anymore... HOWEVER: If I s2ram the machine 
+> hid->pb_fnmode is initialized with the value I put into 
+> /sys/module/usbhid/parameters/pb_fnmode . As I have no idea how/whether 
+> sysfs works/is possible I now hope someone more knowledgable than me can 
+> resolve this issue!
 
-lutimesat(2) accepts "struct timespec" which means timestamps with nanosecond
-granularity. Tested on XFS which has nanosecond timestamps on-disk.
+Changing module parameter values through sysfs is not a very nice idea, 
+because the change of the value is indeed silent - the driver is not 
+notified in any way, that the value has changed. So the driver should take 
+care of it by itself, which is not a nice thing.
 
-Changes to do_utimes() which is used by all existing utime* syscalls pass
-LTP utime tests.
+The fact that during suspend/resume cycle it works is caused by the fact 
+that all the hid devices are reinitialized, and therefore the 
+hid->pb_fnmode is reassigned a new value, which has eventually been 
+changed through sysfs.
 
-Closes http://bugme.osdl.org/show_bug.cgi?id=4433
+I would rather be inclined to just make the 
+/sys/module/usbhid/parameters/pb_fnmode read-only (which is what most of 
+the drivers do anyway), to avoid this kind of confusion.
 
-Signed-off-by: Alexey Dobriyan <adobriyan@openvz.org>
----
+Do you have really any strong use-case, when setting the parameter during 
+runtime would be much more useful than just do it during modprobe or 
+rmmod/modprobe cycle?
 
- arch/i386/kernel/syscall_table.S |    1 +
- fs/utimes.c                      |   30 +++++++++++++++++++++++++-----
- include/asm-i386/unistd.h        |    4 ++--
- 3 files changed, 28 insertions(+), 7 deletions(-)
+Thanks,
 
---- a/arch/i386/kernel/syscall_table.S
-+++ b/arch/i386/kernel/syscall_table.S
-@@ -319,3 +319,4 @@ ENTRY(sys_call_table)
- 	.long sys_move_pages
- 	.long sys_getcpu
- 	.long sys_epoll_pwait
-+	.long sys_lutimesat		/* 320 */
---- a/fs/utimes.c
-+++ b/fs/utimes.c
-@@ -40,7 +40,7 @@ #endif
-  * must be owner or have write permission.
-  * Else, update from *times, must be owner or super user.
-  */
--long do_utimes(int dfd, char __user *filename, struct timeval *times, int flags)
-+static long do_utimes_nsec(int dfd, char __user *filename, struct timespec *times, int flags)
- {
- 	int error = -EINVAL;
- 	struct nameidata nd;
-@@ -69,10 +69,8 @@ long do_utimes(int dfd, char __user *fil
-                 if (IS_APPEND(inode) || IS_IMMUTABLE(inode))
-                         goto dput_and_out;
- 
--		newattrs.ia_atime.tv_sec = times[0].tv_sec;
--		newattrs.ia_atime.tv_nsec = times[0].tv_usec * 1000;
--		newattrs.ia_mtime.tv_sec = times[1].tv_sec;
--		newattrs.ia_mtime.tv_nsec = times[1].tv_usec * 1000;
-+		newattrs.ia_atime = times[0];
-+		newattrs.ia_mtime = times[1];
- 		newattrs.ia_valid |= ATTR_ATIME_SET | ATTR_MTIME_SET;
- 	} else {
- 		error = -EACCES;
-@@ -92,6 +90,19 @@ out:
- 	return error;
- }
- 
-+long do_utimes(int dfd, char __user *filename, struct timeval *times, int flags)
-+{
-+	struct timespec ts[2];
-+
-+	if (times) {
-+		ts[0].tv_sec = times[0].tv_sec;
-+		ts[0].tv_nsec = times[0].tv_usec * 1000;
-+		ts[1].tv_sec = times[1].tv_sec;
-+		ts[1].tv_nsec = times[1].tv_usec * 1000;
-+	}
-+	return do_utimes_nsec(dfd, filename, times ? ts : NULL, flags);
-+}
-+
- asmlinkage long sys_futimesat(int dfd, char __user *filename, struct timeval __user *utimes)
- {
- 	struct timeval times[2];
-@@ -105,3 +116,12 @@ asmlinkage long sys_utimes(char __user *
- {
- 	return sys_futimesat(AT_FDCWD, filename, utimes);
- }
-+
-+asmlinkage long sys_lutimesat(int dfd, char __user *filename, struct timespec __user *utimes)
-+{
-+	struct timespec times[2];
-+
-+	if (utimes && copy_from_user(&times, utimes, sizeof(times)))
-+		return -EFAULT;
-+	return do_utimes_nsec(dfd, filename, utimes ? times : NULL, AT_SYMLINK_NOFOLLOW);
-+}
---- a/include/asm-i386/unistd.h
-+++ b/include/asm-i386/unistd.h
-@@ -325,10 +325,11 @@ #define __NR_vmsplice		316
- #define __NR_move_pages		317
- #define __NR_getcpu		318
- #define __NR_epoll_pwait	319
-+#define __NR_lutimesat		320
- 
- #ifdef __KERNEL__
- 
--#define NR_syscalls 320
-+#define NR_syscalls 321
- 
- #define __ARCH_WANT_IPC_PARSE_VERSION
- #define __ARCH_WANT_OLD_READDIR
-
+-- 
+Jiri Kosina
