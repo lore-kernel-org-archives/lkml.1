@@ -1,68 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752091AbXA2WuR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932821AbXA2WvE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752091AbXA2WuR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 17:50:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932821AbXA2WuR
+	id S932821AbXA2WvE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 17:51:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752617AbXA2WvE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 17:50:17 -0500
-Received: from caramon.arm.linux.org.uk ([217.147.92.249]:4733 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752091AbXA2WuP (ORCPT
+	Mon, 29 Jan 2007 17:51:04 -0500
+Received: from nf-out-0910.google.com ([64.233.182.191]:52302 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932821AbXA2WvB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 17:50:15 -0500
-Date: Mon, 29 Jan 2007 22:50:01 +0000
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Andrew Morton <akpm@osdl.org>, Mel Gorman <mel@csn.ul.ie>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       Christoph Lameter <clameter@engr.sgi.com>
-Subject: Re: [PATCH 0/8] Create ZONE_MOVABLE to partition memory between movable and non-movable pages
-Message-ID: <20070129225000.GG6602@flint.arm.linux.org.uk>
-Mail-Followup-To: Christoph Lameter <clameter@sgi.com>,
-	Andrew Morton <akpm@osdl.org>, Mel Gorman <mel@csn.ul.ie>,
-	linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-	Christoph Lameter <clameter@engr.sgi.com>
-References: <20070125234458.28809.5412.sendpatchset@skynet.skynet.ie> <20070126030753.03529e7a.akpm@osdl.org> <Pine.LNX.4.64.0701260751230.6141@schroedinger.engr.sgi.com> <20070126114615.5aa9e213.akpm@osdl.org> <Pine.LNX.4.64.0701261147300.15394@schroedinger.engr.sgi.com> <20070126122747.dde74c97.akpm@osdl.org> <Pine.LNX.4.64.0701291349450.548@schroedinger.engr.sgi.com> <20070129143654.27fcd4a4.akpm@osdl.org> <Pine.LNX.4.64.0701291441260.1102@schroedinger.engr.sgi.com>
+	Mon, 29 Jan 2007 17:51:01 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=lXK3DyX1KheXgq5WajqITAycRskn96K5UIaQNwlwHRy5tst113fMSRtgSMDJW4Hr8Q3KVX9wGIrDCk+6Eqgc6JmI5fWbGYkgBI8xxDlfgyIRD7+VsV2xIcjG5r0zDlR6oEncIWvXDQ7Q6Ufdi/7B1VTIdedvLNBZEsh2Jdm16Zk=
+Subject: Re: Linux 2.6.20-rc6 - sky2 resume breakage
+From: =?ISO-8859-1?Q?Fr=E9d=E9ric?= Riss <frederic.riss@gmail.com>
+To: tglx@linutronix.de
+Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jeff Garzik <jeff@garzik.org>
+In-Reply-To: <1170110732.29240.59.camel@localhost.localdomain>
+References: <Pine.LNX.4.64.0701241847360.25027@woody.linux-foundation.org>
+	 <1169931333.17469.125.camel@localhost.localdomain>
+	 <20070129113159.7ad22e4c@freekitty>
+	 <1170101430.29240.34.camel@localhost.localdomain>
+	 <20070129133849.1b523226@freekitty>
+	 <1170109401.29240.49.camel@localhost.localdomain>
+	 <1170110318.21603.25.camel@funkylaptop>
+	 <1170110732.29240.59.camel@localhost.localdomain>
+Content-Type: text/plain; charset=utf-8
+Date: Mon, 29 Jan 2007 23:50:56 +0100
+Message-Id: <1170111056.21603.30.camel@funkylaptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0701291441260.1102@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.8.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 29, 2007 at 02:45:06PM -0800, Christoph Lameter wrote:
-> On Mon, 29 Jan 2007, Andrew Morton wrote:
-> 
-> > > All 64 bit machine will only have a single zone if we have such a range 
-> > > alloc mechanism. The 32bit ones with HIGHMEM wont be able to avoid it, 
-> > > true. But all arches that do not need gymnastics to access their memory 
-> > > will be able run with a single zone.
+Le lundi 29 janvier 2007 à 23:45 +0100, Thomas Gleixner a écrit :
+> On Mon, 2007-01-29 at 23:38 +0100, Frédéric Riss wrote:
+> > I see the same symptoms on my Intel Mac Mini, and reverting the commit
+> > also allows the driver to seemingly resume correctly. 
 > > 
-> > What is "such a range alloc mechanism"?
+> > However after coming out of sleep I need to reconfigure the network
+> > interface. No need to rmmod/insmod, just ifdown/ifup is sufficient (but
+> > of course shouldn't be necessary, should it?). If I don't reconfigure
+> > it, ping from/to the box will work, but nothing more complicated like
+> > ssh will go through.
 > 
-> As I mentioned above: A function that allows an allocation to specify 
-> which physical memory ranges are permitted.
-> 
-> > So please stop telling me what a wonderful world it is to not have multiple
-> > zones.  It just isn't going to happen for a long long time.  The
-> > multiple-zone kernel is the case we need to care about most by a very large
-> > margin indeed.  Single-zone is an infinitesimal corner-case.
-> 
-> We can still reduce the number of zones for those that require highmem to 
-> two which may allows us to avoid ZONE_DMA/DMA32 issues  and allow dma 
-> devices to avoid bunce buffers that can do I/O to memory ranges not 
-> compatible with the current boundaries of DMA/DMA32. And I am also 
-> repeating myself.
+> That's probably a userspace problem. Are you using DHCP ?
 
-This sounds like it could help ARM where we have some weird DMA areas.
+Yep DHCP. Is that a known issue? I never had to reconfigure with older
+kernels.
 
-What will help even more is if the block layer can also be persuaded that
-a device dma mask is precisely that - a mask - and not a set of leading
-ones followed by a set of zeros, then we could eliminate the really ugly
-dmabounce code.
+Fred.
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
