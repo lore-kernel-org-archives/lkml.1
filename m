@@ -1,62 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752557AbXA2SjK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752571AbXA2SkA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752557AbXA2SjK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 13:39:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752570AbXA2SjJ
+	id S1752571AbXA2SkA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 13:40:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752570AbXA2Sj7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 13:39:09 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:51795 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752557AbXA2SjI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 13:39:08 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
-	message-id:references:mime-version:content-type:sender;
-	b=ShPW6D8XrFd1bGLtA8PCK3J+9MQWi2C7yYIuAgvnHQ06SrtDxnLGkNboOsRWfRq4L
-	ggFq/y9x1hbZcU4GH7hjA==
-Date: Mon, 29 Jan 2007 10:38:45 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@hadoop0.corp.google.com
-To: Andi Kleen <ak@suse.de>
-cc: Andrew Morton <akpm@osdl.org>, Rohit Seth <rohitseth@google.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch -mm 3/5] x86_64: fixed-size remaining fake nodes
-In-Reply-To: <200701291436.59930.ak@suse.de>
-Message-ID: <Pine.LNX.4.56.0701291032160.26116@hadoop0.corp.google.com>
-References: <Pine.LNX.4.64N.0701251332280.13206@attu4.cs.washington.edu>
- <Pine.LNX.4.64N.0701251333470.13206@attu4.cs.washington.edu>
- <Pine.LNX.4.64N.0701251334280.13206@attu4.cs.washington.edu>
- <200701291436.59930.ak@suse.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 29 Jan 2007 13:39:59 -0500
+Received: from tim.rpsys.net ([194.106.48.114]:42298 "EHLO tim.rpsys.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752571AbXA2Sj6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jan 2007 13:39:58 -0500
+Subject: Re: [Ltt-dev] [PATCH 00/09] atomic.h : standardizing atomic
+	primitives
+From: Richard Purdie <rpurdie@rpsys.net>
+To: Andrew Morton <akpm@osdl.org>
+Cc: Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       Thomas@maccavity.nachtwache.org, Christoph@maccavity.nachtwache.org,
+       Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       Greg@maccavity.nachtwache.org, "Martin J. Bligh" <mbligh@mbligh.org>,
+       Hellwig <hch@infradead.org>, Linus Torvalds <torvalds@osdl.org>,
+       Ingo@maccavity.nachtwache.org, ltt-dev@shafik.org,
+       systemtap@sources.redhat.com, Paul Mackerras <paulus@samba.org>,
+       Gleixner <tglx@linutronix.de>, Douglas Niehaus <niehaus@eecs.ku.edu>,
+       Molnar <mingo@redhat.com>
+In-Reply-To: <20070127120512.04a98fcd.akpm@osdl.org>
+References: <11697417541743-git-send-email-mathieu.desnoyers@polymtl.ca>
+	 <20070127021834.e26e955d.akpm@osdl.org> <20070127181116.GA5158@Krystal>
+	 <20070127120512.04a98fcd.akpm@osdl.org>
+Content-Type: text/plain
+Date: Mon, 29 Jan 2007 18:36:49 +0000
+Message-Id: <1170095809.5833.72.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 29 Jan 2007, Andi Kleen wrote:
-
-> On Thursday 25 January 2007 22:37, David Rientjes wrote:
-> > Any leftover memory is allocated
-> > to a final node unless the command-line ends with a comma.
+On Sat, 2007-01-27 at 12:05 -0800, Andrew Morton wrote:
+> On Sat, 27 Jan 2007 13:11:16 -0500
+> Mathieu Desnoyers <compudj@krystal.dyndns.org> wrote:
 > 
-> That sounds like syntactical vinegar and a nasty trap. Remember 
-> that venus probe that got lost because of a wrong comma.
-> Can you find some nicer syntax for that please? 
+> > I am currently trying crosstool by Dan Kegel, it looks promising.
+> > http://www.kegel.com/crosstool/
 > 
+> Yeah, I spent a frustrating two days with crosstool, managed to eke a
+> number of cross-compilers out of it, but it took a *lot* of experimentation
+> with gcc, glibc and binutils versions to get combinations which actually
+> work.  Good luck ;)
 
-The only other appropriate syntax that comes to mind is perhaps a 
-command-line that ends with a 0.  For example, numa=fake=2*512,0 would 
-allocate two 512M nodes and nothing for the remaining RAM.
+FWIW, OpenEmbedded (http://www.openembedded.org/) is a very capable
+toolchain builder amongst other things. I built an ARM toolchain for
+Andrew a while back with it. I'm personally not sure of its support
+outside ARM/i386 since I don't have hardware to test any other output
+but others use it for a variety of targets and new ones are simple to
+add due to its design.
 
-> Also it's pretty complex. Are there use cases for all of this? 
-> 
+I could probably arrange to share an ARM toolchain if there was
+demand...
 
-There are.  Configurable node sizes (i.e. 'numa=fake=512,4*128', etc) are 
-the major concept and help to avoid the overhead associated with something 
-like 64 nodes of 64M each on a 4G machine.  We've seen some inefficiencies 
-with scanning through so many zone lists on page_alloc when we encounter a 
-full node.  Additional support such as 'numa=fake=2*512,*128' are used 
-more for machines where you're unsure of their total system RAM in the 
-first place but want to make sure you have the node sizes you need.
+Richard
 
-		David
+
+
+
+
