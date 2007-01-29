@@ -1,49 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933008AbXA2AEo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932975AbXA2AIh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933008AbXA2AEo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jan 2007 19:04:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933007AbXA2AEo
+	id S932975AbXA2AIh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jan 2007 19:08:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932991AbXA2AIh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jan 2007 19:04:44 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:54825
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S933001AbXA2AEn (ORCPT
+	Sun, 28 Jan 2007 19:08:37 -0500
+Received: from gepetto.dc.ltu.se ([130.240.42.40]:41055 "EHLO
+	gepetto.dc.ltu.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932975AbXA2AIg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jan 2007 19:04:43 -0500
-Date: Sun, 28 Jan 2007 16:04:42 -0800 (PST)
-Message-Id: <20070128.160442.48527586.davem@davemloft.net>
-To: bunk@stusta.de
-Cc: randy.dunlap@oracle.com, akpm@osdl.org, linux-kernel@vger.kernel.org,
-       netfilter@lists.netfilter.org, netdev@vger.kernel.org, kaber@trash.net
-Subject: Re: [2.6 patch] NF_CONNTRACK_H323 must depend on (IPV6 || IPV6=n)
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20070129000011.GB6017@stusta.de>
-References: <20070128222136.GZ6017@stusta.de>
-	<20070128.155348.39160134.davem@davemloft.net>
-	<20070129000011.GB6017@stusta.de>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Sun, 28 Jan 2007 19:08:36 -0500
+Message-ID: <45BD3AF7.4070902@student.ltu.se>
+Date: Mon, 29 Jan 2007 01:08:23 +0100
+From: Richard Knutsson <ricknu-0@student.ltu.se>
+User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
+MIME-Version: 1.0
+To: LKML <linux-kernel@vger.kernel.org>, Oleg Verych <olecom@flower.upol.cz>,
+       Andrew Morton <akpm@osdl.org>
+Subject: Re: [SCRIPT] Remove "space damage" from patches
+References: <45BD177D.6060907@student.ltu.se> <slrnerqapg.f71.olecom@flower.upol.cz>
+In-Reply-To: <slrnerqapg.f71.olecom@flower.upol.cz>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Adrian Bunk <bunk@stusta.de>
-Date: Mon, 29 Jan 2007 01:00:11 +0100
+Oleg Verych wrote:
+>> From: Richard Knutsson
+>> Newsgroups: gmane.linux.kernel
+>> Subject: [SCRIPT] Remove "space damage" from patches
+>> Date: Sun, 28 Jan 2007 22:37:01 +0100
+>>     
+>
+>   
+>> Hello Andrew and all
+>>     
+>
+> Hallo.
+>
+>   
+>> I recently tried "git-apply" on the 2.6.20-rc6-mm1 patch and found it to complain about white-spaces.
+>> So as a mean to (hopefully) cut down on these nasty white-spaces (and sometimes tabs) I wrote this
+>> little script. All it does is checking (lines that are going to be added) for spaces before tabs
+>> and trailing spaces/tabs. I tried it on 2.6.20-rc6-mm1 and it seem to work well
+>>
+>> If there is someone interested, _please_ take it. Any suggestion are welcomed :)
+>>
+>> Richard Knutsson
+>>     
+>
+> Nack, big and fat. It's userspace problem.
+>
+> If our "developers" can't use or update their every-day-tools, it's a
+> shame. And this is not trolling: i'm using Jed and GNU Emacs, both are
+> ok with whitespace "production".
+Oh, I hope I didn't give the impression I wanted it in the kernel (that 
+is why i labeled it as SCRIPT and not PATCH), as you said it is a 
+userspace problem. I just thought a simple script to remove those 
+whitespace could help in an imperfect world. I prefer kate since then 
+you can see where the tabs begins (and other features).
 
-> On Sun, Jan 28, 2007 at 03:53:48PM -0800, David Miller wrote:
-> > Adrian is this the correct way to constrain the selection between
-> > "n" and "m" in this kind of situation?  I thought doing something
-> > like "depends on IPV6" is sufficient to achieve that?
-> 
-> "depends on IPV6" would fix the bug - but it would also make 
-> NF_CONNTRACK_H323 unavailable for all people without IPV6 support in 
-> their kernel.
+Richard Knutsson
 
-Yes, that is an issue.
-
-I guess with some slightly ugly ifdefs we could support the
-whole matrix of possibilities.  But perhaps that's undesirable
-for another reason.
-
-Patrick?
