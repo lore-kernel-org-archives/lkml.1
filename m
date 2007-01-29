@@ -1,75 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964786AbXA2Xrt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964972AbXA2XxR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964786AbXA2Xrt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 18:47:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964845AbXA2Xrt
+	id S964972AbXA2XxR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 18:53:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964937AbXA2XxR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 18:47:49 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:34067 "EHLO smtp.osdl.org"
+	Mon, 29 Jan 2007 18:53:17 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:34320 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964786AbXA2Xrs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 18:47:48 -0500
-Date: Mon, 29 Jan 2007 15:45:18 -0800
+	id S964934AbXA2XxQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jan 2007 18:53:16 -0500
+Date: Mon, 29 Jan 2007 15:50:43 -0800
 From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
+Cc: =?UTF-8?B?RnLDqWTDqXJpYw==?= Riss <frederic.riss@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jeff Garzik <jeff@garzik.org>
-Subject: Re: Linux 2.6.20-rc6 - sky2 resume breakage
-Message-ID: <20070129154518.40b0b3d3@freekitty>
-In-Reply-To: <Pine.LNX.4.64.0701291501180.3611@woody.linux-foundation.org>
+       Jeff Garzik <jeff@garzik.org>, netdev@vger.kernel.org
+Subject: [PATCH] block MSI on Sony
+Message-ID: <20070129155043.56a1c577@freekitty>
+In-Reply-To: <1170113879.29240.79.camel@localhost.localdomain>
 References: <Pine.LNX.4.64.0701241847360.25027@woody.linux-foundation.org>
 	<1169931333.17469.125.camel@localhost.localdomain>
 	<20070129113159.7ad22e4c@freekitty>
 	<1170101430.29240.34.camel@localhost.localdomain>
 	<20070129133849.1b523226@freekitty>
 	<1170109401.29240.49.camel@localhost.localdomain>
-	<Pine.LNX.4.64.0701291431320.3611@woody.linux-foundation.org>
-	<20070129144055.151cfe52@freekitty>
-	<Pine.LNX.4.64.0701291501180.3611@woody.linux-foundation.org>
+	<1170110318.21603.25.camel@funkylaptop>
+	<1170110732.29240.59.camel@localhost.localdomain>
+	<1170111056.21603.30.camel@funkylaptop>
+	<1170111464.29240.63.camel@localhost.localdomain>
+	<1170113200.21603.41.camel@funkylaptop>
+	<1170113879.29240.79.camel@localhost.localdomain>
 Organization: Linux Foundation
 X-Mailer: Sylpheed-Claws 2.5.0-rc3 (GTK+ 2.10.6; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 29 Jan 2007 15:04:06 -0800 (PST)
-Linus Torvalds <torvalds@linux-foundation.org> wrote:
+The Sony VAIO BIOS resets to INTx on resume. This happens
+after device resume, so device irq's get misrouted.
 
-> 
-> 
-> On Mon, 29 Jan 2007, Stephen Hemminger wrote:
-> > 
-> > MSI works fine for almost all systems (except AMD systems where
-> > MSI is broken for ALL devices).
-> 
-> Why do you ignore reality?
-> 
-> MSI does *not* work fine, exactly because the firmware screws it up.
-> 
-> The fact that on a "hardware level" it may work is totally irrelevant. The 
-> *only* thing that matters is what people actually see.
-> 
-> "Positivism" may not be a hot philosophy these days any more, but dang, it 
-> certainly is better than what you seem to espouse: "in theory things work 
-> fine".
-> 
-> And if you don't like positivism, how about just simple scientific method: 
-> a theory is *proven*wrong* by a single observation to the opposite. And we 
-> have several people standing up saying that your theory is wrong.
-> 
-> 		Linus
+This hack turns off MSI on this laptop, until power management
+initialization order is fixed.
 
-Why do you insist on maintaining the wrong initialization order
-on resume? When I raised the issue, Len brought up that the resume
-order did not match spec, but then there has been slow progress
-in fixing it (it's buried in -mm tree).
+Signed-off-by: Stephen Hemminger <shemminger@linux-foundation.org>
 
+---
+ drivers/pci/quirks.c |   32 ++++++++++++++++++++++++++++++++
+ 1 files changed, 32 insertions(+), 0 deletions(-)
 
-
-
-
+diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
+index ef882a8..9a64179 100644
+--- a/drivers/pci/quirks.c
++++ b/drivers/pci/quirks.c
+@@ -21,6 +21,7 @@ #include <linux/pci.h>
+ #include <linux/init.h>
+ #include <linux/delay.h>
+ #include <linux/acpi.h>
++#include <linux/dmi.h>
+ #include "pci.h"
+ 
+ /* The Mellanox Tavor device gives false positive parity errors
+@@ -1779,6 +1780,37 @@ static void __devinit quirk_nvidia_ck804
+ }
+ DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_CK804_PCIE,
+ 			quirk_nvidia_ck804_msi_ht_cap);
++
++/* On Sony VAIO laptop, BIOS resets MSI during resume. */
++static __initdata struct dmi_system_id sony_dmi_table[] = {
++	{
++		.ident = "Sony Vaio",
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "Sony Corporation"),
++			DMI_MATCH(DMI_PRODUCT_NAME, "PCG-"),
++		},
++	},
++	{
++		.ident = "Sony Vaio",
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "Sony Corporation"),
++			DMI_MATCH(DMI_PRODUCT_NAME, "VGN-"),
++		},
++	},
++	{ }
++};
++
++static void __init quirk_sony_msi(struct pci_dev *dev)
++{
++	if (!dmi_check_system(sony_dmi_table))
++		return;
++
++	pci_msi_quirk = 1;
++	printk(KERN_WARNING "PCI: MSI sony quirk detected. pci_msi_quirk set.\n");
++}
++DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82801BA_6,
++			quirk_sony_msi);
++
+ #endif /* CONFIG_PCI_MSI */
+ 
+ EXPORT_SYMBOL(pcie_mch_quirk);
 -- 
-Stephen Hemminger <shemminger@linux-foundation.org>
+1.4.1
+
