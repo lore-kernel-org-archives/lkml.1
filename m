@@ -1,61 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751886AbXA2PHW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751598AbXA2PKE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751886AbXA2PHW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 10:07:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751598AbXA2PHW
+	id S1751598AbXA2PKE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 10:10:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751879AbXA2PKE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 10:07:22 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:43106 "EHLO mx1.redhat.com"
+	Mon, 29 Jan 2007 10:10:04 -0500
+Received: from ns1.suse.de ([195.135.220.2]:39194 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751879AbXA2PHV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 10:07:21 -0500
-Message-ID: <45BE0D98.7020005@redhat.com>
-Date: Mon, 29 Jan 2007 07:07:04 -0800
-From: Ulrich Drepper <drepper@redhat.com>
-Organization: Red Hat, Inc.
-User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
-MIME-Version: 1.0
-To: Alexey Dobriyan <adobriyan@openvz.org>
-CC: Andrew Morton <akpm@osdl.org>, devel@openvz.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/3] lutimesat: actual syscall and wire-up on i386
-References: <20070126112345.GC11128@localhost.sw.ru> <20070126123903.046aaa5e.akpm@osdl.org> <45BA6860.6040007@redhat.com> <20070129110509.GA13096@localhost.sw.ru>
-In-Reply-To: <20070129110509.GA13096@localhost.sw.ru>
-X-Enigmail-Version: 0.94.1.2.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig465D7568B1038B4E09D962BB"
+	id S1751598AbXA2PKB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jan 2007 10:10:01 -0500
+Date: Mon, 29 Jan 2007 16:12:18 +0100
+From: Andrea Arcangeli <andrea@suse.de>
+To: Andrea Gelmini <gelma@gelma.net>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org
+Subject: Re: VM: Fix nasty and subtle race in shared mmap'ed page writeback
+Message-ID: <20070129151218.GH8030@opteron.random>
+References: <Pine.LNX.4.64.0701032031400.3661@woody.osdl.org> <20070103214121.997be3e6.akpm@osdl.org> <459C98BF.5080409@yahoo.com.au> <20070104131612.GC28470@gelma.net> <459DE3C6.20302@yahoo.com.au> <20070110135453.GH7947@gelma.net> <1168507298.26496.18.camel@twins> <20070112003955.GH4553@gelma.net> <1169457039.2639.17.camel@taijtu> <20070129140844.GE8271@gelma.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070129140844.GE8271@gelma.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig465D7568B1038B4E09D962BB
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+On Mon, Jan 29, 2007 at 03:08:44PM +0100, Andrea Gelmini wrote:
+> On Mon, Jan 22, 2007 at 10:10:39AM +0100, Peter Zijlstra wrote:
+> > On Fri, 2007-01-12 at 01:39 +0100, Andrea Gelmini wrote:
+> > > Hi,
+> > > 	I can't do the test 'till next week.
+> > > 
+> > > Thanks a lot for your time,
+> > > Gelma
+> > 
+> > Have you ever gotten around to testing this?
+> 
+> well, I spent some time doing more deeply test.
+> DB corruption happens anyway, even with the kernel that seems to work
+> (I say seems because it needs much more effort to get corruption).
+> I'm trying to understand it.
+> I will work more over it next week.
 
-Alexey Dobriyan wrote:
-> What do you mean by "filesystems cannot support lutimes"? Filesystems
-> that don't have on-disk timestamps for symlinks?
+I'm a bit skeptical that bdb would really be the only thing able to
+reproduce a longstanding MAP_SHARED corruption. bdb may be using mmap
+a lot but there are tons of other apps using MAP_SHARED a lot too, so
+while not impossible I rate it not very probable that a vm race is to
+blame for bdb troubles.
 
-Yes.
+bdb is quite a complex piece of code (I once almost fallen in the trap
+of depending on it myself), and if you use threads you exercise even
+more of its complexity (more than you probably should). So if you're
+using threads, the first thing I'd be looking at would be locking bugs
+in userland. Also make sure it's properly linked with NPTL at compile
+time (compile it yourself if you have no other way to make sure), and
+that the locking is working right. If really this is a kernel issue
+with 2.6.18 and previous (just ignore the 2.6.19 release), perhaps we
+should look at the futex instead of the dirty bits ;).
 
---=20
-=E2=9E=A7 Ulrich Drepper =E2=9E=A7 Red Hat, Inc. =E2=9E=A7 444 Castro St =
-=E2=9E=A7 Mountain View, CA =E2=9D=96
-
-
---------------enig465D7568B1038B4E09D962BB
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-Comment: Using GnuPG with Fedora - http://enigmail.mozdev.org
-
-iD8DBQFFvg2Z2ijCOnn/RHQRAqxgAJ9INW8gWbOxGwpxZqr6C2/iBGBiPgCeP3jJ
-R3jTCZj0fMnlQfIaBw4dajU=
-=7268
------END PGP SIGNATURE-----
-
---------------enig465D7568B1038B4E09D962BB--
+Not very helpful I know, but just sharing my feelings on the bdb
+troubles mentioned here.
