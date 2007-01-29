@@ -1,61 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932432AbXA2Ukm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932118AbXA2UmK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932432AbXA2Ukm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 15:40:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932333AbXA2Ukm
+	id S932118AbXA2UmK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 15:42:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932477AbXA2UmJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 15:40:42 -0500
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:50491 "EHLO
-	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932432AbXA2Ukl (ORCPT
+	Mon, 29 Jan 2007 15:42:09 -0500
+Received: from ppsw-0.csi.cam.ac.uk ([131.111.8.130]:57874 "EHLO
+	ppsw-0.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932118AbXA2UmH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 15:40:41 -0500
-Date: Mon, 29 Jan 2007 15:40:01 -0500
-From: Josef Sipek <jsipek@fsl.cs.sunysb.edu>
-To: "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org, akpm@osdl.org
-Subject: Re: [PATCH 4/4] fs/unionfs/: Don't duplicate the struct nameidata
-Message-ID: <20070129204000.GC1715@filer.fsl.cs.sunysb.edu>
-References: <11701030631109-git-send-email-jsipek@cs.sunysb.edu> <11701030642806-git-send-email-jsipek@cs.sunysb.edu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <11701030642806-git-send-email-jsipek@cs.sunysb.edu>
-User-Agent: Mutt/1.4.1i
+	Mon, 29 Jan 2007 15:42:07 -0500
+X-Cam-SpamDetails: Not scanned
+X-Cam-AntiVirus: No virus found
+X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
+Date: Mon, 29 Jan 2007 20:41:43 +0000 (GMT)
+From: Anton Altaparmakov <aia21@cam.ac.uk>
+To: Hugh Dickins <hugh@veritas.com>
+cc: Nick Piggin <nickpiggin@yahoo.com.au>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Linux Memory Management <linux-mm@kvack.org>,
+       David Howells <dhowells@redhat.com>, Andrew Morton <akpm@osdl.org>
+Subject: Re: page_mkwrite caller is racy?
+In-Reply-To: <Pine.LNX.4.64.0701291521540.24726@blonde.wat.veritas.com>
+Message-ID: <Pine.LNX.4.64.0701292037040.32539@hermes-1.csi.cam.ac.uk>
+References: <45BDCA8A.4050809@yahoo.com.au> <Pine.LNX.4.64.0701291521540.24726@blonde.wat.veritas.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 29, 2007 at 03:37:43PM -0500, Josef 'Jeff' Sipek wrote:
-> Josef 'Jeff' Sipek (3):
->       fs/unionfs/: Remove stale_inode.c
->       fs/unionfs/: Andrew Morton's comments
->       fs/unionfs/: Don't duplicate the struct nameidata
+On Mon, 29 Jan 2007, Hugh Dickins wrote:
+> On Mon, 29 Jan 2007, Nick Piggin wrote:
+> > After do_wp_page calls page_mkwrite on its target (old_page), it then drops
+> > the reference to the page before locking the ptl and verifying that the pte
+> > points to old_page.
+> > 
+> > Unfortunately, old_page may have been truncated and freed, or reclaimed, then
+> > re-allocated and used again for the same pagecache position and faulted in
+> > read-only into the same pte by another thread. Then you will have a situation
+> > where page_mkwrite succeeds but the page we use is actually a readonly one.
 > 
->  fs/unionfs/branchman.c   |    4 +-
->  fs/unionfs/commonfops.c  |   54 +++++++++++-----------
->  fs/unionfs/copyup.c      |   67 +++++++++++++++------------
->  fs/unionfs/dentry.c      |   19 +++-----
->  fs/unionfs/fanout.h      |   51 +++++++++++++++++----
->  fs/unionfs/file.c        |   17 +++-----
->  fs/unionfs/inode.c       |   69 +++++++++++++++-------------
->  fs/unionfs/lookup.c      |  113 +++++++++++++++++++++++-----------------------
->  fs/unionfs/main.c        |   32 +++++++-------
->  fs/unionfs/rdstate.c     |    2 +-
->  fs/unionfs/rename.c      |    8 ++--
->  fs/unionfs/sioq.c        |   19 ++++----
->  fs/unionfs/sioq.h        |    1 -
->  fs/unionfs/stale_inode.c |  112 ---------------------------------------------
->  fs/unionfs/subr.c        |   65 +++++++++++++++++++++++++-
->  fs/unionfs/super.c       |    7 +--
->  fs/unionfs/union.h       |   84 +++-------------------------------
->  fs/unionfs/unlink.c      |    8 ++--
->  fs/unionfs/xattr.c       |   16 +++---
->  19 files changed, 330 insertions(+), 418 deletions(-)
+> You're right.  Well observed.  It was I who originally added that
+> page_cache_release/page_cache_get, and the page_cache_get certainly
+> followed getting the page_table_lock when I first added them.
+> 
+> Looks like amidst all the intervening versions, with the patch going
+> into and getting dropped from -mm from time to time, those positions
+> became reversed without us noticing (almost certainly when the lock
+> and the pte_offset_map got merged into the pte_offset_map_lock).
+> 
+> > 
+> > Moving page_cache_release(old_page) to below the next statement
+> > will fix that problem.
+> 
+> Yes.  I'm reluctant to steal your credit, but also reluctant to go
+> back and forth too much over this: please insert your Signed-off-by
+> _before_ mine in the patch below (substituting your own comment if
+> you prefer) and send it Andrew.
+> 
+> Not a priority for 2.6.20 or -stable: aside from the unlikelihood,
+> we don't seem to have any page_mkwrite users yet, as you point out.
+> 
+> > But it is sad that this thing got merged without any callers to even
+> > know how it is intended to work.
+> 
+> I'm rather to blame for that: I pushed Peter to rearranging his work
+> on top of what David had, since they were dabbling in related issues,
+> and we'd already solved a number of them in relation to page_mkwrite;
+> so then when dirty tracking was wanted in, page_mkwrite came with it.
+> 
+> At the time I believed that AntonA was on the point of using it in
+> NTFS, but apparently not yet.
 
-Not sure why this was sent. The other 4/4 email is the correct one.
+Other things got more important...  I still am on the virge of using it 
+but I have to finish off other work first so the "virge" may be a little 
+wihle off still.
 
-Josef "Jeff" Sipek.
+> > Must it be able to sleep?
+> 
+> Not as David was using it: that was something I felt strongly it
+> should be allowd to do.  For example, in order to allocate backing
+> store for the mmap'ed page to be written (that need has been talked
+> about off and on for years).
 
+Yes this is exactly what I need it in NTFS for.  And also I need to be 
+able to perform a mmap'ed write into a non-initialized region, i.e. a 
+region which has disk allocation but has not been zeroed yet so in a total 
+worst case scenario I could have a huge file that is all allocated on disk 
+but completely not initialized yet and a single byte write towards the end 
+of the file would require me to zero the entirety of that file up to the 
+written byte at least so the one byte write may trigger a multi gigabyte 
+(or terrabyte!) write operation which from ->writepage would be bad news 
+but from page_mkwrite is much better.
+
+Best regards,
+
+	Anton
+
+> 
+> Hugh
+> 
+> 
+> After do_wp_page has tested page_mkwrite, it must release old_page after
+> acquiring page table lock, not before: at some stage that ordering got
+> reversed, leaving a (very unlikely) window in which old_page might be
+> truncated, freed, and reused in the same position.
+> 
+> Signed-off-by: Hugh Dickins <hugh@veritas.com>
+> ---
+> 
+>  mm/memory.c |    3 +--
+>  1 file changed, 1 insertion(+), 2 deletions(-)
+> 
+> --- 2.6.20-rc6/mm/memory.c	2007-01-25 08:25:27.000000000 +0000
+> +++ linux/mm/memory.c	2007-01-29 15:35:56.000000000 +0000
+> @@ -1531,8 +1531,6 @@ static int do_wp_page(struct mm_struct *
+>  			if (vma->vm_ops->page_mkwrite(vma, old_page) < 0)
+>  				goto unwritable_page;
+>  
+> -			page_cache_release(old_page);
+> -
+>  			/*
+>  			 * Since we dropped the lock we need to revalidate
+>  			 * the PTE as someone else may have changed it.  If
+> @@ -1541,6 +1539,7 @@ static int do_wp_page(struct mm_struct *
+>  			 */
+>  			page_table = pte_offset_map_lock(mm, pmd, address,
+>  							 &ptl);
+> +			page_cache_release(old_page);
+>  			if (!pte_same(*page_table, orig_pte))
+>  				goto unlock;
+>  		}
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+
+Best regards,
+
+	Anton
 -- 
-Bad pun of the week: The formula 1 control computer suffered from a race
-condition
+Anton Altaparmakov <aia21 at cam.ac.uk> (replace at with @)
+Unix Support, Computing Service, University of Cambridge, CB2 3QH, UK
+Linux NTFS maintainer, http://www.linux-ntfs.org/
