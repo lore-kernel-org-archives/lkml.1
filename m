@@ -1,55 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750875AbXA2KVP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752498AbXA2KWq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750875AbXA2KVP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 05:21:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752492AbXA2KVO
+	id S1752498AbXA2KWq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 05:22:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752494AbXA2KWq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 05:21:14 -0500
-Received: from smtp109.mail.mud.yahoo.com ([209.191.85.219]:35469 "HELO
-	smtp109.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750875AbXA2KVO (ORCPT
+	Mon, 29 Jan 2007 05:22:46 -0500
+Received: from amsfep17-int.chello.nl ([213.46.243.15]:4744 "EHLO
+	amsfep14-int.chello.nl" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752485AbXA2KWq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 05:21:14 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:Subject:Content-Type:Content-Transfer-Encoding;
-  b=QgaoZHamm17cgDfauQno29qXbCy7TSxBvMpsUfphv+RmF0jyfgYAoESA9dtKr6VNMCWLsPIzbx+UbzlwHfIH7fce0B4BnqCb8UPNqb8VvwwG6CCm+rRiSmFzXBHKGnaGxkQNUteJjBTh/TD9u32Mbvngq4PyYr7kHuqvBgkXQxQ=  ;
-X-YMail-OSG: AATuJlkVM1mtTd.UmQJt14Gh0BsbwA8y3bCaUAcgFm.v6.F1HtM3vgMlPWcdanL.D0W3i_goeHBhJCvWQCEKAMAe4DbBXKOOXBrmJLZL16wYxDM73rFbfyZnvu5pIzXQBhSDzLe1dDISdIE-
-Message-ID: <45BDCA8A.4050809@yahoo.com.au>
-Date: Mon, 29 Jan 2007 21:20:58 +1100
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
-MIME-Version: 1.0
-To: linux-kernel <linux-kernel@vger.kernel.org>,
-       Linux Memory Management <linux-mm@kvack.org>,
-       David Howells <dhowells@redhat.com>, Hugh Dickins <hugh@veritas.com>,
-       Andrew Morton <akpm@osdl.org>
-Subject: page_mkwrite caller is racy?
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Mon, 29 Jan 2007 05:22:46 -0500
+Subject: Re: [Fwd: [PATCH 2/7] lock_list: a fine grain locked double linked
+	list]
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20070128172027.GA4913@infradead.org>
+References: <1169999597.10987.33.camel@lappy>
+	 <20070128172027.GA4913@infradead.org>
+Content-Type: text/plain
+Date: Mon, 29 Jan 2007 11:20:40 +0100
+Message-Id: <1170066040.6189.128.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Sun, 2007-01-28 at 17:20 +0000, Christoph Hellwig wrote:
+> > Provide a simple fine grain locked double link list.
+> > 
+> > It is build upon the regular double linked list primitives, spinlocks and RCU.
+> > 
+> > Locking is peculiar in that edges are locked, this avoid the circular lock
+> > dependancy created by the fact that the regular linked lists are circular.
+> > 
+> > Item deletion requires that both surrounding elements are locked, however since
+> > the locking rules dictate that we lock elements in a single direction we have
+> > to lock the previous element while it might be deleted under us. Hence the
+> > requirement that all elements are RCU freed.
+> 
+> I think implicitly locked data structures are very bad for code readability
+> and debugability.  What's even worse here is that we have a requirement that
+> all members are RCU freed.
+> 
+> Note that we also have another implicitly locked (and refcounted) list
+> implementation in klist.[ch] - if we find consensus that we want implicitly
+> locked list we should figure out whether we want lock_list or klist semantics
+> and stick to one of them.
 
-After do_wp_page calls page_mkwrite on its target (old_page), it then drops the
-reference to the page before locking the ptl and verifying that the pte points
-to old_page.
+klist is quite different in that it locks the whole list. The proposed
+data structure locks each edge, that is it will allow concurrent
+deletion of elements as long as they don't share neighbours.
 
-Unfortunately, old_page may have been truncated and freed, or reclaimed, then
-re-allocated and used again for the same pagecache position and faulted in
-read-only into the same pte by another thread. Then you will have a situation
-where page_mkwrite succeeds but the page we use is actually a readonly one.
+> What uses do you have planned for this data structure?  In general I think
+> we'd be better off to simplify the data structures as in my files_list_lock
+> proposal instead of complicating the locking.
 
-Moving page_cache_release(old_page) to below the next statement will fix that
-problem.
+Getting rid of the s_files list like you proposed would of course be a
+much better solution, and I'll look into that.
 
-But it is sad that this thing got merged without any callers to even know how it
-is intended to work. Must it be able to sleep?
+Not having the VFS knowledge you do I just smashed the lock and kept
+current semantics.
 
-Nick
-
--- 
-SUSE Labs, Novell Inc.
-Send instant messages to your online friends http://au.messenger.yahoo.com 
