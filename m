@@ -1,90 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751393AbXA2Ngl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751419AbXA2NiY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751393AbXA2Ngl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 08:36:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751399AbXA2Ngl
+	id S1751419AbXA2NiY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 08:38:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752489AbXA2NiY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 08:36:41 -0500
-Received: from mummy.ncsc.mil ([144.51.88.129]:56529 "EHLO jazzhorn.ncsc.mil"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751393AbXA2Ngk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 08:36:40 -0500
-Subject: Re: [PATCH 0/7] breaking the global file_list_lock
-From: Stephen Smalley <sds@tycho.nsa.gov>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Andrew Morton <akpm@osdl.org>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       James Morris <jmorris@namei.org>, Eric Paris <eparis@parisplace.org>
-In-Reply-To: <20070128151122.GA21159@infradead.org>
-References: <20070128115118.837777000@programming.kicks-ass.net>
-	 <20070128144325.GB16552@infradead.org>
-	 <20070128151122.GA21159@infradead.org>
-Content-Type: text/plain
-Organization: National Security Agency
-Date: Mon, 29 Jan 2007 08:32:53 -0500
-Message-Id: <1170077573.8720.30.camel@moss-spartans.epoch.ncsc.mil>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
+	Mon, 29 Jan 2007 08:38:24 -0500
+Received: from mo-p00-ob.rzone.de ([81.169.146.162]:43521 "EHLO
+	mo-p00-ob.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751419AbXA2NiY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jan 2007 08:38:24 -0500
+Date: Mon, 29 Jan 2007 14:38:22 +0100 (MET)
+From: Oliver Neukum <oliver@neukum.name>
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>
+Subject: Re: blacklist kernel boot option
+User-Agent: KMail/1.9.1
+Cc: Gerd Hoffmann <kraxel@suse.de>, linux-kernel@vger.kernel.org
+References: <200701270222.36060.mista.tapas@gmx.net>
+ <200701291344.45299.oliver@neukum.name>
+ <Pine.LNX.4.61.0701291412300.5077@yvahk01.tjqt.qr>
+In-Reply-To: <Pine.LNX.4.61.0701291412300.5077@yvahk01.tjqt.qr>
+MIME-Version: 1.0
+Content-Type: text/plain;  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200701291438.25400.oliver@neukum.name>
+X-RZG-AUTH: kN+qSWxTQH+Xqix8Cni7tCsVYhPCm1GP
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-01-28 at 15:11 +0000, Christoph Hellwig wrote:
-> On Sun, Jan 28, 2007 at 02:43:25PM +0000, Christoph Hellwig wrote:
-> > On Sun, Jan 28, 2007 at 12:51:18PM +0100, Peter Zijlstra wrote:
-> > > This patch-set breaks up the global file_list_lock which was found to be a
-> > > severe contention point under basically any filesystem intensive workload.
-> > 
-> > Benchmarks, please.  Where exactly do you see contention for this?
-> > 
-> > 
-> > filesystem intensive workload apparently means namespace operation heavy
-> > workload, right?  The biggest bottleneck I've seen with those is dcache lock.
-> > 
-> > Even if this is becoming a real problem there must be simpler ways to fix
-> > this than introducing various new locking primitives and all kinds of
-> > complexity.
+Am Montag, 29. Januar 2007 14:23 schrieb Jan Engelhardt:
 > 
-> One good way to fix scalability without all this braindamage is
-> to get rid of sb->s_files.  Current uses are:
-> 
->  - fs/dquot.c:add_dquot_ref()
-> 
-> 	This performs it's actual operation on inodes.  We should
-> 	be able to check inode->i_writecount to see which inodes
-> 	need quota initialization.
-> 
->  - fs/file_table.c:fs_may_remount_ro()
-> 
-> 	This one is gone in Dave Hansens per-mountpoint r/o patchkit
-> 
->  - fs/proc/generic.c:proc_kill_inodes()
-> 
-> 	This can be done with a list inside procfs.
-> 
->  - fs/super.c:mark_files_ro()
-> 
-> 	This one is only used for do_emergency_remount(), which is
-> 	and utter hack.  It might be much better to just deny any
-> 	kind of write access through a superblock flag here.
-> 
->  - fs/selinuxfs.c:sel_remove_bools()
-> 
-> 	Utter madness.  I have no idea how this ever got merged.
-> 	Maybe the selinux folks can explain what crack they were
-> 	on when writing this.  The problem would go away with
-> 	a generic rewoke infrastructure.
+> On Jan 29 2007 13:44, Oliver Neukum wrote:
 
-It was modeled after proc_kill_inodes(), as noted in the comments.  So
-if you have a suitable replacement for proc_kill_inodes(), you can apply
-the same approach to sel_remove_bools().
-
+> >What use is it to modularly compile something that almost everybody needs?
 > 
-> Once sb->s_files is gone we can also kill of fu_list entirely and
-> replace it by a list head entirely in the tty code and make the lock
-> for it per-tty.
+> [correction: meant CONFIG_BLK_DEV_MD, because CONFIG_MD itself does
+> not generate any code]
+> 
+> So just because almost everyone needs CONFIG_SCSI (SATA, usb_storage,
+> you name it), you're going to compile that in as well? It's just
+> another 180 KB [BLK_DEV_MD: ~100K] so let's compile it in!
 
--- 
-Stephen Smalley
-National Security Agency
+For every module you waste PAGE_SIZE/2. In my system
+oliver@valisk:~/Desktop/linux-2.6.20-6-greg> lsmod|wc
+     46     158    1827
+that's 92K. There is a point where the number of people who don't
+need it grows too small to justify that.
 
+> There is a reason initramfs exists, and it's not only for firmware
+> loading or running custom scripts.
+
+But shrinking the statically compiled kernel isn't one of them. You need
+to look at the actual memory footprint.
+
+	Regards
+		Oliver
