@@ -1,33 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751165AbXA2Py5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751287AbXA2P4A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751165AbXA2Py5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 10:54:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751171AbXA2Py5
+	id S1751287AbXA2P4A (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 10:56:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751293AbXA2P4A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 10:54:57 -0500
-Received: from iriserv.iradimed.com ([69.44.168.233]:56218 "EHLO iradimed.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751165AbXA2Py5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 10:54:57 -0500
-Message-ID: <45BE18C9.6080200@cfl.rr.com>
-Date: Mon, 29 Jan 2007 10:54:49 -0500
-From: Phillip Susi <psusi@cfl.rr.com>
-User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
-MIME-Version: 1.0
-To: Linux-kernel <linux-kernel@vger.kernel.org>
-Subject: vger truncating CC lists
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 29 Jan 2007 15:55:06.0051 (UTC) FILETIME=[D8527130:01C743BD]
-X-TM-AS-Product-Ver: SMEX-7.2.0.1122-3.6.1039-14964.003
-X-TM-AS-Result: No--6.599100-5.000000-31
+	Mon, 29 Jan 2007 10:56:00 -0500
+Received: from mailhub.sw.ru ([195.214.233.200]:24983 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751287AbXA2Pz7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jan 2007 10:55:59 -0500
+Date: Mon, 29 Jan 2007 19:02:50 +0300
+From: Alexey Dobriyan <adobriyan@openvz.org>
+To: Ulrich Drepper <drepper@redhat.com>
+Cc: Andrew Morton <akpm@osdl.org>, devel@openvz.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/3] lutimesat: actual syscall and wire-up on i386
+Message-ID: <20070129160250.GA6021@localhost.sw.ru>
+References: <20070126112345.GC11128@localhost.sw.ru> <20070126123903.046aaa5e.akpm@osdl.org> <45BA6860.6040007@redhat.com> <20070129110509.GA13096@localhost.sw.ru> <45BE0D98.7020005@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <45BE0D98.7020005@redhat.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I have noticed that vger seems to be truncating Cc lists lately, often 
-resulting in broken partial email addresses in the Cc list causing 
-people that reply to have copies of the message bounced back instead of 
-being delivered to the intended recipients.  It seems that it munges 
-long, multi line Cc headers into one line, and truncates that line to a 
-maximum length.  Who is the list admin again?  And can they look into this?
+On Mon, Jan 29, 2007 at 07:07:04AM -0800, Ulrich Drepper wrote:
+> Alexey Dobriyan wrote:
+> > What do you mean by "filesystems cannot support lutimes"? Filesystems
+> > that don't have on-disk timestamps for symlinks?
+> 
+> Yes.
+
+Checked to be sure, on ext2, ext3, reiserfs, XFS symlink timestamps
+stick across mounts/umounts.
+
+Also, looking at disk inode structures of UFS, SysV, JFFS2, GFS2, EFS, I
+think they should handle lutimesat(2) just fine.
 
