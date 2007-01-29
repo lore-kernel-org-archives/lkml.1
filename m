@@ -1,61 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752522AbXA2RtZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752535AbXA2Ru4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752522AbXA2RtZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 12:49:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752527AbXA2RtZ
+	id S1752535AbXA2Ru4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 12:50:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752527AbXA2Ru4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 12:49:25 -0500
-Received: from hanoi.cronyx.ru ([144.206.181.53]:64250 "EHLO hanoi.cronyx.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752522AbXA2RtZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 12:49:25 -0500
-X-Greylist: delayed 360 seconds by postgrey-1.27 at vger.kernel.org; Mon, 29 Jan 2007 12:49:24 EST
-Date: Mon, 29 Jan 2007 20:38:18 +0300
-From: Leo Yuriev <ly@hanoi.cronyx.ru>
-X-Mailer: The Bat! (v3.95.6) Professional
-Reply-To: Leo Yuriev <ly@hanoi.cronyx.ru>
-Organization: Cronyx Engineering
-X-Priority: 3 (Normal)
-Message-ID: <1833199799.20070129203818@hanoi.cronyx.ru>
-To: linux-kernel@vger.kernel.org
-Subject: 2.6.19 + VIA EPIA = very mysterious RESET-problem :(
+	Mon, 29 Jan 2007 12:50:56 -0500
+Received: from omx1-ext.sgi.com ([192.48.179.11]:42580 "EHLO omx1.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752535AbXA2Ruz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jan 2007 12:50:55 -0500
+Date: Mon, 29 Jan 2007 09:49:50 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+To: Andrew Morton <akpm@osdl.org>
+cc: Frederik Deweerdt <deweerdt@free.fr>, linux-kernel@vger.kernel.org,
+       trond.myklebust@fys.uio.no, Christoph Lameter <clameter@engr.sgi.com>
+Subject: Re: [-mm patch] BUG at net/sunrpc/svc.c:128 (was Re: 2.6.20-rc6-mm2)
+In-Reply-To: <20070129093247.54ba43c9.akpm@osdl.org>
+Message-ID: <Pine.LNX.4.64.0701290948090.28644@schroedinger.engr.sgi.com>
+References: <20070129001207.71ea3470.akpm@osdl.org> <20070129112141.GC2990@slug>
+ <20070129093247.54ba43c9.akpm@osdl.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=windows-1251
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from quoted-printable to 8bit by hanoi.cronyx.ru id l0THcNti000687
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Good day.
+On Mon, 29 Jan 2007, Andrew Morton wrote:
 
-I have a really big trouble with VIA-EPIA mainboards under Linux
-2.6.19. After loading kernel Linux the RESET-circuit ceases to work
-correctly.
+> >  static int
+> >  svc_pool_map_init_percpu(struct svc_pool_map *m)
+> >  {
+> > -	unsigned int maxpools = nr_node_ids;
+> > +	unsigned int maxpools = num_online_cpus();
+> >  	unsigned int pidx = 0;
+> >  	unsigned int cpu;
+> >  	int err;
+> 
+> Thanks.
 
-At reset (by RESET-button or by Watchdog) the system begins to be
-restarted, but hangs before occurrence of any BIOS-messages. Only a
-power-off and then power-up can help. The problem has been reproduced
-confidently and constantly, I has checked up about 20 mainboards (EPIA-
-EN/C7 and EPIA-PD/C3).
+Patch has the wrong solution as detailed in another message.
 
-I am sure, this is not a Linux-related problem, but error in hardware
-design or BIOS-code. Because RESET-circuit must work always and be
-independent from a running software.
+The line should be reverted to what it was before:
 
-VIA's support doesn't give any usable response. But now I just need
-some workaround...
-
-Does somebody has ideas?
-I can make some tests or perform deep-debugging, but currently I don't
-know where I could start from.
-
-Thank in advance.
-
---
- С уважением, / Best regards,
- Леонид Юрьев / Leo Yuriev
-   КБ Кроникс / Cronyx Engineering
-
- mailto:ly@hanoi.cronyx.ru
+  unsigned int maxpools = highest_possible_processor_id()+1;
 
 
+ 
+> Christoph, can you pleeeeeze be more careful?  A few seconds inattention
+> and a dopey copy-n-paste bug leads to large amounts of wasted time for
+> other people.
+
+Looks like I need to add another nr_cpu_ids? I did not realize that the 
+same weird thing was done for cpus, sigh.
