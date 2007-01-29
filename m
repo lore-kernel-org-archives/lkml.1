@@ -1,239 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932920AbXA2Kex@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750896AbXA2KlN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932920AbXA2Kex (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 05:34:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752547AbXA2Keu
+	id S1750896AbXA2KlN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 05:41:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932758AbXA2KlN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 05:34:50 -0500
-Received: from mx2.suse.de ([195.135.220.15]:34830 "EHLO mx2.suse.de"
+	Mon, 29 Jan 2007 05:41:13 -0500
+Received: from twin.jikos.cz ([213.151.79.26]:48118 "EHLO twin.jikos.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752520AbXA2KdI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 05:33:08 -0500
-From: Nick Piggin <npiggin@suse.de>
-To: Andrew Morton <akpm@osdl.org>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Linux Filesystems <linux-fsdevel@vger.kernel.org>,
-       Nick Piggin <npiggin@suse.de>,
-       Linux Memory Management <linux-mm@kvack.org>
-Message-Id: <20070129082020.23584.76646.sendpatchset@linux.site>
-In-Reply-To: <20070129081905.23584.97878.sendpatchset@linux.site>
-References: <20070129081905.23584.97878.sendpatchset@linux.site>
-Subject: [patch 8/9] mm: generic_file_buffered_write iovec cleanup
-Date: Mon, 29 Jan 2007 11:32:53 +0100 (CET)
+	id S1750896AbXA2KlM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jan 2007 05:41:12 -0500
+Date: Mon, 29 Jan 2007 11:40:57 +0100 (CET)
+From: Jiri Kosina <jikos@jikos.cz>
+To: Soeren Sonnenburg <kernel@nn7.de>
+cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       linux-usb-devel <linux-usb-devel@lists.sourceforge.net>
+Subject: Re: 2.6.20-rc6 pb_fnmode regression
+In-Reply-To: <1170066737.13904.12.camel@localhost>
+Message-ID: <Pine.LNX.4.64.0701291138260.9448@twin.jikos.cz>
+References: <1169904555.2462.10.camel@localhost>  <Pine.LNX.4.64.0701291049190.9448@twin.jikos.cz>
+ <1170066737.13904.12.camel@localhost>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hide some of the open-coded nr_segs tests into the iovec helpers. This is
-all to simplify generic_file_buffered_write, because that gets more complex
-in the next patch.
+On Mon, 29 Jan 2007, Soeren Sonnenburg wrote:
 
-Signed-off-by: Nick Piggin <npiggin@suse.de>
+> Well I need in-kernel usbhid and the way this was implemented in 2.6.19 
+> (and before) one could change pb_fnmode on-the-fly. This is mentioned in 
+> all the power/i/mac/book tutorials and everyone is used to switching 
+> modes this way. I can happily patch the kernel to use the pb_fnmode but 
+> nonetheless this is a regression to pre 2.6.20* and will confuse others 
+> too...
 
-Index: linux-2.6/mm/filemap.h
-===================================================================
---- linux-2.6.orig/mm/filemap.h
-+++ linux-2.6/mm/filemap.h
-@@ -22,82 +22,82 @@ __filemap_copy_from_user_iovec_inatomic(
- 
- /*
-  * Copy as much as we can into the page and return the number of bytes which
-- * were sucessfully copied.  If a fault is encountered then clear the page
-- * out to (offset+bytes) and return the number of bytes which were copied.
-- *
-- * NOTE: For this to work reliably we really want copy_from_user_inatomic_nocache
-- * to *NOT* zero any tail of the buffer that it failed to copy.  If it does,
-- * and if the following non-atomic copy succeeds, then there is a small window
-- * where the target page contains neither the data before the write, nor the
-- * data after the write (it contains zero).  A read at this time will see
-- * data that is inconsistent with any ordering of the read and the write.
-- * (This has been detected in practice).
-+ * were sucessfully copied.  If a fault is encountered then return the number of
-+ * bytes which were copied.
-  */
- static inline size_t
--filemap_copy_from_user(struct page *page, unsigned long offset,
--			const char __user *buf, unsigned bytes)
-+filemap_copy_from_user_atomic(struct page *page, unsigned long offset,
-+			const struct iovec *iov, unsigned long nr_segs,
-+			size_t base, size_t bytes)
- {
- 	char *kaddr;
--	int left;
-+	size_t copied;
- 
- 	kaddr = kmap_atomic(page, KM_USER0);
--	left = __copy_from_user_inatomic_nocache(kaddr + offset, buf, bytes);
-+	if (likely(nr_segs == 1)) {
-+		int left;
-+		char __user *buf = iov->iov_base + base;
-+		left = __copy_from_user_inatomic_nocache(kaddr + offset,
-+							buf, bytes);
-+		copied = bytes - left;
-+	} else {
-+		copied = __filemap_copy_from_user_iovec_inatomic(kaddr + offset,
-+							iov, base, bytes);
-+	}
- 	kunmap_atomic(kaddr, KM_USER0);
- 
--	if (left != 0) {
--		/* Do it the slow way */
--		kaddr = kmap(page);
--		left = __copy_from_user_nocache(kaddr + offset, buf, bytes);
--		kunmap(page);
--	}
--	return bytes - left;
-+	return copied;
- }
- 
- /*
-- * This has the same sideeffects and return value as filemap_copy_from_user().
-- * The difference is that on a fault we need to memset the remainder of the
-- * page (out to offset+bytes), to emulate filemap_copy_from_user()'s
-- * single-segment behaviour.
-+ * This has the same sideeffects and return value as
-+ * filemap_copy_from_user_atomic().
-+ * The difference is that it attempts to resolve faults.
-  */
- static inline size_t
--filemap_copy_from_user_iovec(struct page *page, unsigned long offset,
--			const struct iovec *iov, size_t base, size_t bytes)
-+filemap_copy_from_user(struct page *page, unsigned long offset,
-+			const struct iovec *iov, unsigned long nr_segs,
-+			 size_t base, size_t bytes)
- {
- 	char *kaddr;
- 	size_t copied;
- 
--	kaddr = kmap_atomic(page, KM_USER0);
--	copied = __filemap_copy_from_user_iovec_inatomic(kaddr + offset, iov,
--							 base, bytes);
--	kunmap_atomic(kaddr, KM_USER0);
--	if (copied != bytes) {
--		kaddr = kmap(page);
--		copied = __filemap_copy_from_user_iovec_inatomic(kaddr + offset, iov,
--								 base, bytes);
--		if (bytes - copied)
--			memset(kaddr + offset + copied, 0, bytes - copied);
--		kunmap(page);
-+	kaddr = kmap(page);
-+	if (likely(nr_segs == 1)) {
-+		int left;
-+		char __user *buf = iov->iov_base + base;
-+		left = __copy_from_user_nocache(kaddr + offset, buf, bytes);
-+		copied = bytes - left;
-+	} else {
-+		copied = __filemap_copy_from_user_iovec_inatomic(kaddr + offset,
-+							iov, base, bytes);
- 	}
-+	kunmap(page);
- 	return copied;
- }
- 
- static inline void
--filemap_set_next_iovec(const struct iovec **iovp, size_t *basep, size_t bytes)
-+filemap_set_next_iovec(const struct iovec **iovp, unsigned long nr_segs,
-+						 size_t *basep, size_t bytes)
- {
--	const struct iovec *iov = *iovp;
--	size_t base = *basep;
--
--	while (bytes) {
--		int copy = min(bytes, iov->iov_len - base);
--
--		bytes -= copy;
--		base += copy;
--		if (iov->iov_len == base) {
--			iov++;
--			base = 0;
-+	if (likely(nr_segs == 1)) {
-+		*basep += bytes;
-+	} else {
-+		const struct iovec *iov = *iovp;
-+		size_t base = *basep;
-+
-+		while (bytes) {
-+			int copy = min(bytes, iov->iov_len - base);
-+
-+			bytes -= copy;
-+			base += copy;
-+			if (iov->iov_len == base) {
-+				iov++;
-+				base = 0;
-+			}
- 		}
-+		*iovp = iov;
-+		*basep = base;
- 	}
--	*iovp = iov;
--	*basep = base;
- }
- #endif
-Index: linux-2.6/mm/filemap.c
-===================================================================
---- linux-2.6.orig/mm/filemap.c
-+++ linux-2.6/mm/filemap.c
-@@ -1840,12 +1840,7 @@ generic_file_buffered_write(struct kiocb
- 	/*
- 	 * handle partial DIO write.  Adjust cur_iov if needed.
- 	 */
--	if (likely(nr_segs == 1))
--		buf = iov->iov_base + written;
--	else {
--		filemap_set_next_iovec(&cur_iov, &iov_offset, written);
--		buf = cur_iov->iov_base + iov_offset;
--	}
-+	filemap_set_next_iovec(&cur_iov, nr_segs, &iov_offset, written);
- 
- 	do {
- 		struct page *page;
-@@ -1855,6 +1850,7 @@ generic_file_buffered_write(struct kiocb
- 		size_t bytes;		/* Bytes to write to page */
- 		size_t copied;		/* Bytes copied from user */
- 
-+		buf = cur_iov->iov_base + iov_offset;
- 		offset = (pos & (PAGE_CACHE_SIZE - 1));
- 		index = pos >> PAGE_CACHE_SHIFT;
- 		bytes = PAGE_CACHE_SIZE - offset;
-@@ -1886,13 +1882,10 @@ generic_file_buffered_write(struct kiocb
- 		if (unlikely(status))
- 			goto fs_write_aop_error;
- 
--		if (likely(nr_segs == 1))
--			copied = filemap_copy_from_user(page, offset,
--							buf, bytes);
--		else
--			copied = filemap_copy_from_user_iovec(page, offset,
--						cur_iov, iov_offset, bytes);
-+		copied = filemap_copy_from_user(page, offset,
-+					cur_iov, nr_segs, iov_offset, bytes);
- 		flush_dcache_page(page);
-+
- 		status = a_ops->commit_write(file, page, offset, offset+bytes);
- 		if (unlikely(status < 0))
- 			goto fs_write_aop_error;
-@@ -1903,20 +1896,11 @@ generic_file_buffered_write(struct kiocb
- 		if (unlikely(status > 0)) /* filesystem did partial write */
- 			copied = status;
- 
--		if (likely(copied > 0)) {
--			written += copied;
--			count -= copied;
--			pos += copied;
--			buf += copied;
--			if (unlikely(nr_segs > 1)) {
--				filemap_set_next_iovec(&cur_iov,
--						&iov_offset, copied);
--				if (count)
--					buf = cur_iov->iov_base + iov_offset;
--			} else {
--				iov_offset += copied;
--			}
--		}
-+		written += copied;
-+		count -= copied;
-+		pos += copied;
-+		filemap_set_next_iovec(&cur_iov, nr_segs, &iov_offset, copied);
-+
- 		unlock_page(page);
- 		mark_page_accessed(page);
- 		page_cache_release(page);
+Ah, now I see. The problem is that in pre-2.6.20-rc1 the pb_fnmode was 
+setting global variable, but after the HID layer rework, this is a per-hid 
+variable, which is of course not updated when write to sysfs triggers.
+
+I will try to fix this before I send 2.6.20-rc6 updates to Linus, thanks 
+for pointing this out.
+
+-- 
+Jiri Kosina
