@@ -1,70 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752043AbXA2R2J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752513AbXA2R2l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752043AbXA2R2J (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 12:28:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752047AbXA2R2I
+	id S1752513AbXA2R2l (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 12:28:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752515AbXA2R2l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 12:28:08 -0500
-Received: from omx2-ext.sgi.com ([192.48.171.19]:36048 "EHLO omx2.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752043AbXA2R2F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 12:28:05 -0500
-Date: Mon, 29 Jan 2007 09:27:18 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-cc: Ingo Molnar <mingo@elte.hu>, Srivatsa Vaddagiri <vatsa@in.ibm.com>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       Gautham shenoy <ego@in.ibm.com>, Andrew Morton <akpm@osdl.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: slab: start_cpu_timer/cache_reap CONFIG_HOTPLUG_CPU problems
-In-Reply-To: <20070129171923.GA138@tv-sign.ru>
-Message-ID: <Pine.LNX.4.64.0701290922390.28330@schroedinger.engr.sgi.com>
-References: <20070129011301.GA844@tv-sign.ru>
- <Pine.LNX.4.64.0701290852390.28200@schroedinger.engr.sgi.com>
- <20070129171923.GA138@tv-sign.ru>
+	Mon, 29 Jan 2007 12:28:41 -0500
+Received: from calculon.skynet.ie ([193.1.99.88]:44103 "EHLO
+	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752513AbXA2R2k (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jan 2007 12:28:40 -0500
+Date: Mon, 29 Jan 2007 17:28:39 +0000 (GMT)
+From: Mel Gorman <mel@csn.ul.ie>
+X-X-Sender: mel@skynet.skynet.ie
+To: Christoph Lameter <clameter@sgi.com>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/8] Create the ZONE_MOVABLE zone
+In-Reply-To: <Pine.LNX.4.64.0701260822510.6141@schroedinger.engr.sgi.com>
+Message-ID: <Pine.LNX.4.64.0701291727500.15953@skynet.skynet.ie>
+References: <20070125234458.28809.5412.sendpatchset@skynet.skynet.ie>
+ <20070125234538.28809.24662.sendpatchset@skynet.skynet.ie>
+ <Pine.LNX.4.64.0701260822510.6141@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 29 Jan 2007, Oleg Nesterov wrote:
+On Fri, 26 Jan 2007, Christoph Lameter wrote:
 
-> > > This is wrong. Suppose we have a CPU_UP,CPU_DOWN,CPU_UP sequence. The last
-> > > CPU_UP will not restart a per-cpu "cache_reap timer".
-> > 
-> > Why?
-> 
-> Because the last CPU_UP calls start_cpu_timer(), but since ->work.func != NULL
-> we don't do schedule_delayed_work_on(). I think (if I am right) this is a slab's
-> bug.
+> On Thu, 25 Jan 2007, Mel Gorman wrote:
+>
+>> @@ -166,6 +168,8 @@ enum zone_type {
+>>  #define ZONES_SHIFT 1
+>>  #elif __ZONE_COUNT <= 4
+>>  #define ZONES_SHIFT 2
+>> +#elif __ZONE_COUNT <= 8
+>> +#define ZONES_SHIFT 3
+>>  #else
+>
+> You do not need a shift of 3. Even with ZONE_MOVABLE the maximum
+> number of zones is still 4.
+>
 
-The CPU_DOWN would need to set work.func == NULL for this to work. But 
-then the slab does not shut down the work queues for the processor. Isnt 
-this another issue with workqueues? The slab would need a notification 
-that the workqueue for a processor was shutdown in order to set work.func 
-= NULL.
+Yep, this is correct. If it's ever wrong, there is an additional check for 
+__ZONE_COUNT that will print out the appropriate warning.
 
-> I think cache_reap() is not alone, and this is not its fault.
-> 
-> But please note another minor problem,
-> 
-> 	void cache_reap(struct work_struct *unused)
-> 	{
-> 		...
-> 
-> 		schedule_delayed_work(&__get_cpu_var(reap_work), ...);
-> 	}
-> 
-> Even if smp_processor_id() was stable during the execution of cache_reap(),
-> this work_struct can be moved to another CPU if CPU_DEAD happens. We can't
-> avoid this, and this is correct.
+Thanks
 
-Uhh.... This may not be correct in terms of how the slab operates.
- 
-> This means that __get_cpu_var(reap_work) returns a "wrong" struct delayed_work.
-> This is absolutely harmless right now, but may be it's better to use
-> container_of(unused, struct delayed_work, work).
-
-Well seems that we have a set of unresolved issues with workqueues and cpu 
-hotplug.
-
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
