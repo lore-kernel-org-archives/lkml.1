@@ -1,63 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752609AbXA2VBe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932156AbXA2VDn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752609AbXA2VBe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 16:01:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752611AbXA2VBd
+	id S932156AbXA2VDn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 16:03:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752613AbXA2VDn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 16:01:33 -0500
-Received: from an-out-0708.google.com ([209.85.132.246]:62510 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752609AbXA2VBd (ORCPT
+	Mon, 29 Jan 2007 16:03:43 -0500
+Received: from smtp-out001.kontent.com ([81.88.40.215]:44639 "EHLO
+	smtp-out.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752612AbXA2VDn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 16:01:33 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=BEopTrsqF8+kzA8ueHuWV56JT168q65ztaGm6RhPCknJxSbym2DMXYgkPQlViPwX7iu/lpp2kJ2pFR4t9br8wgDWzQC1oG9Mc3CcsdC2jJkgIhSxDw/Bs4c2G9RyG5wbDtMGp8/hNSrwnNS6st/7WRhdaUiUZ1E3GWhu3qDGKFE=
-Message-ID: <8d158e1f0701291301q18040b76t162bf09cca16660b@mail.gmail.com>
-Date: Mon, 29 Jan 2007 22:01:32 +0100
-From: "Patrick Ale" <patrick.ale@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: Boot problems with pata_via driver
-In-Reply-To: <8d158e1f0701291253u38607480m597d32815143c5e6@mail.gmail.com>
+	Mon, 29 Jan 2007 16:03:43 -0500
+From: Oliver Neukum <oliver@neukum.org>
+To: nigel@nigel.suspend2.net
+Subject: Re: question on resume()
+Date: Mon, 29 Jan 2007 22:04:32 +0100
+User-Agent: KMail/1.8
+Cc: linux-kernel@vger.kernel.org
+References: <200701291206.39637.oneukum@suse.de> <200701291234.59706.oliver@neukum.name> <1170101660.15820.18.camel@nigel.suspend2.net>
+In-Reply-To: <1170101660.15820.18.camel@nigel.suspend2.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <8d158e1f0701280347l1d778528la0d69647726485d6@mail.gmail.com>
-	 <20070128231147.GA6017@stusta.de>
-	 <8d158e1f0701282330o3591a226lb664644ffdb025f0@mail.gmail.com>
-	 <8d158e1f0701282332m3e22a649s621abc258c6103d5@mail.gmail.com>
-	 <8d158e1f0701291253u38607480m597d32815143c5e6@mail.gmail.com>
+Message-Id: <200701292204.33112.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 1/29/07, Patrick Ale <patrick.ale@gmail.com> wrote:
-> Okay so, I unplugged the keyboard the moment I selected a kernel to boot.
-> The last thing i see on my screen, regarding SCSI is:
->
-> scsi 0:0:0:0: Direct-Access       ATA      WDC WD2000JB-00G 08.0 PQ: 0 ANSI: 5
-> scsi 1:0:0:0 CD-ROM               AOPEN DUW1608/ARR         A060 PW: 0 ANSI: 5
+Am Montag, 29. Januar 2007 21:14 schrieb Nigel Cunningham:
+> Hi.
+> 
+> On Mon, 2007-01-29 at 12:34 +0100, Oliver Neukum wrote:
+> > Am Montag, 29. Januar 2007 12:24 schrieb Nigel Cunningham:
+> > > Hi.
+> > > 
+> > > On Mon, 2007-01-29 at 12:06 +0100, Oliver Neukum wrote:
+> > > > Hi,
+> > > > 
+> > > > may a driver call wake_up() while doing resume() ?
+> > > 
+> > > I assume you mean waking a userspace process from drivers_resume(). If
+> > > so, the answer is no - processes will still be frozen at the point. In
+> > > the case of Suspend2, the LRU pages will still not have been read
+> > > either, so Suspend2 users would hate you for making hibernation crash
+> > > and burn :)
+> > 
+> > If so, how do I notify tasks presumably about to be thawed that their
+> > IO failed?
+> 
+> Do you mean I/O to disk? If so, it won't fail. All pending I/O gets
+> processed like normal either before or after suspending and resuming.
+> 
+> If you mean something like a packet being transmitted over the network,
+> you should be using the normal paths for recording success/failure.
 
-Funny, when I look at my dmesg log when I boot the 2.6.19 kernel (which works)
-then I seem to miss something in the kernel output when I boot the
-2.6.20 kernel.
+I am talking about a character device that puts requests onto a queue.
+If the queue is restarted after resumption the normal error path is waking
+up the waiting tasks.
 
-When I boot 2.6.19 I see:
-scsi 0:0:0:0: Direct-Access     ATA      WDC WD2000JB-00G 08.0 PQ: 0 ANSI: 5
-SCSI device sda: 390721968 512-byte hdwr sectors (200050 MB)
-sda: Write Protect is off
-sda: Mode Sense: 00 3a 00 00
-SCSI device sda: drive cache: write back
-SCSI device sda: 390721968 512-byte hdwr sectors (200050 MB)
-sda: Write Protect is off
-sda: Mode Sense: 00 3a 00 00
-SCSI device sda: drive cache: write back
- sda: sda1 sda2 sda3 sda4 < sda5 sda6 >
-sd 0:0:0:0: Attached scsi disk sda
-sd 0:0:0:0: Attached scsi generic sg0 type 0
-
-Does 2.6.20 see my IDE bus but it doesnt probe for drives?
-
-
-Patrick
+	Regards
+		Oliver
