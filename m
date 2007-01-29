@@ -1,69 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933033AbXA2BN1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933035AbXA2BS5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933033AbXA2BN1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jan 2007 20:13:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933032AbXA2BN1
+	id S933035AbXA2BS5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jan 2007 20:18:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933036AbXA2BS5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jan 2007 20:13:27 -0500
-Received: from mail.screens.ru ([213.234.233.54]:35176 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933033AbXA2BN0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jan 2007 20:13:26 -0500
-Date: Mon, 29 Jan 2007 04:13:01 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Christoph Lameter <clameter@sgi.com>, Ingo Molnar <mingo@elte.hu>
-Cc: Srivatsa Vaddagiri <vatsa@in.ibm.com>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       Gautham shenoy <ego@in.ibm.com>, Andrew Morton <akpm@osdl.org>,
+	Sun, 28 Jan 2007 20:18:57 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:56070 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933035AbXA2BS4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Jan 2007 20:18:56 -0500
+Subject: Re: [PATCH 1/2] Define the EF_AS_NO_RANDOM e_flag bit
+From: Arjan van de Ven <arjan@infradead.org>
+To: Samium Gromoff <_deepfire@feelingofgreen.ru>
+Cc: Alan <alan@lxorguk.ukuu.org.uk>, Pavel Machek <pavel@ucw.cz>,
+       Valdis.Kletnieks@vt.edu, David Wagner <daw@cs.berkeley.edu>,
        linux-kernel@vger.kernel.org
-Subject: slab: start_cpu_timer/cache_reap CONFIG_HOTPLUG_CPU problems
-Message-ID: <20070129011301.GA844@tv-sign.ru>
+In-Reply-To: <877ivd8p42.wl@betelheise.deep.net>
+References: <87r6toufpp.wl@betelheise.deep.net>
+	 <200701221520.l0MFKLdK032645@turing-police.cc.vt.edu>
+	 <871wlnq7ue.wl@betelheise.deep.net> <20070123084805.GB5560@ucw.cz>
+	 <87mz4996wg.wl@betelheise.deep.net>
+	 <20070123154127.57059632@localhost.localdomain>
+	 <877ivd8p42.wl@betelheise.deep.net>
+Content-Type: text/plain
+Organization: Intel International BV
+Date: Mon, 29 Jan 2007 09:18:12 +0800
+Message-Id: <1170033494.3054.5.camel@laptopd505.fenrus.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+X-Mailer: Evolution 2.8.2.1 (2.8.2.1-2.fc6) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-For the beginning, about another (but related) minor problem,
+On Tue, 2007-01-23 at 23:28 +0300, Samium Gromoff wrote:
+> Author: Samium Gromoff <deepfire@betelheise.deep.net>
+> Date:   Tue Jan 23 22:31:13 2007 +0300
+> 
+>     Define the ELF binary header flag EF_AS_NO_RANDOM
+>     
+>     EF_AS_NO_RANDOM should mean that the binary requests to not apply
+>     randomisation to address spaces of its processes.
 
-	debug_smp_processor_id:
+sounds like it's not the right approach; better to follow the
+PT_GNU_STACK example and do it that way.....
 
-		/*
-		 * Kernel threads bound to a single CPU can safely use
-		 * smp_processor_id():
-		 */
-
-This is only true without CONFIG_HOTPLUG_CPU. Otherwise CPU can go away when
-the task takes a preemption or sleeps. I think we need #ifndef here.
-
-
-Now,
-	static void __devinit start_cpu_timer(int cpu)
-	{
-		struct delayed_work *reap_work = &per_cpu(reap_work, cpu);
-
-		if (keventd_up() && reap_work->work.func == NULL) {
-			init_reap_node(cpu);
-			INIT_DELAYED_WORK(reap_work, cache_reap);
-			schedule_delayed_work_on(cpu, reap_work,
-						__round_jiffies_relative(HZ, cpu));
-		}
-	}
-
-This is wrong. Suppose we have a CPU_UP,CPU_DOWN,CPU_UP sequence. The last
-CPU_UP will not restart a per-cpu "cache_reap timer".
-
-
-With or without recent changes, it is possible that work->func() will run on
-another CPU (not that to which it was submitted) if CPU goes down. In fact,
-this can happen while work->func() is running, so even smp_processor_id()
-is not safe to use in work->func().
-
-However, cache_reap() seems to wrongly assume that smp_processor_id() is stable,
-this is the second problem.
-
-Is my understanding correct?
-
-Oleg.
+(assuming you even need it... I personally consider every binary that
+would need this flag as broken)
 
