@@ -1,147 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932118AbXA2UmK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932333AbXA2UmO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932118AbXA2UmK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 15:42:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932477AbXA2UmJ
+	id S932333AbXA2UmO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 15:42:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932518AbXA2UmO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 15:42:09 -0500
-Received: from ppsw-0.csi.cam.ac.uk ([131.111.8.130]:57874 "EHLO
-	ppsw-0.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932118AbXA2UmH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 15:42:07 -0500
-X-Cam-SpamDetails: Not scanned
-X-Cam-AntiVirus: No virus found
-X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
-Date: Mon, 29 Jan 2007 20:41:43 +0000 (GMT)
-From: Anton Altaparmakov <aia21@cam.ac.uk>
-To: Hugh Dickins <hugh@veritas.com>
-cc: Nick Piggin <nickpiggin@yahoo.com.au>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Linux Memory Management <linux-mm@kvack.org>,
-       David Howells <dhowells@redhat.com>, Andrew Morton <akpm@osdl.org>
-Subject: Re: page_mkwrite caller is racy?
-In-Reply-To: <Pine.LNX.4.64.0701291521540.24726@blonde.wat.veritas.com>
-Message-ID: <Pine.LNX.4.64.0701292037040.32539@hermes-1.csi.cam.ac.uk>
-References: <45BDCA8A.4050809@yahoo.com.au> <Pine.LNX.4.64.0701291521540.24726@blonde.wat.veritas.com>
+	Mon, 29 Jan 2007 15:42:14 -0500
+Received: from omx1-ext.sgi.com ([192.48.179.11]:46919 "EHLO omx1.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S932333AbXA2UmK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jan 2007 15:42:10 -0500
+Date: Mon, 29 Jan 2007 12:41:33 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+To: Jeff Dike <jdike@addtoit.com>
+cc: akpm@osdl.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] slab.c ifdef reduction breaks build
+In-Reply-To: <Pine.LNX.4.64.0701291214060.32740@schroedinger.engr.sgi.com>
+Message-ID: <Pine.LNX.4.64.0701291240020.401@schroedinger.engr.sgi.com>
+References: <20070129200517.GA6229@ccure.user-mode-linux.org>
+ <Pine.LNX.4.64.0701291214060.32740@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 29 Jan 2007, Hugh Dickins wrote:
-> On Mon, 29 Jan 2007, Nick Piggin wrote:
-> > After do_wp_page calls page_mkwrite on its target (old_page), it then drops
-> > the reference to the page before locking the ptl and verifying that the pte
-> > points to old_page.
-> > 
-> > Unfortunately, old_page may have been truncated and freed, or reclaimed, then
-> > re-allocated and used again for the same pagecache position and faulted in
-> > read-only into the same pte by another thread. Then you will have a situation
-> > where page_mkwrite succeeds but the page we use is actually a readonly one.
-> 
-> You're right.  Well observed.  It was I who originally added that
-> page_cache_release/page_cache_get, and the page_cache_get certainly
-> followed getting the page_table_lock when I first added them.
-> 
-> Looks like amidst all the intervening versions, with the patch going
-> into and getting dropped from -mm from time to time, those positions
-> became reversed without us noticing (almost certainly when the lock
-> and the pte_offset_map got merged into the pte_offset_map_lock).
-> 
-> > 
-> > Moving page_cache_release(old_page) to below the next statement
-> > will fix that problem.
-> 
-> Yes.  I'm reluctant to steal your credit, but also reluctant to go
-> back and forth too much over this: please insert your Signed-off-by
-> _before_ mine in the patch below (substituting your own comment if
-> you prefer) and send it Andrew.
-> 
-> Not a priority for 2.6.20 or -stable: aside from the unlikelihood,
-> we don't seem to have any page_mkwrite users yet, as you point out.
-> 
-> > But it is sad that this thing got merged without any callers to even
-> > know how it is intended to work.
-> 
-> I'm rather to blame for that: I pushed Peter to rearranging his work
-> on top of what David had, since they were dabbling in related issues,
-> and we'd already solved a number of them in relation to page_mkwrite;
-> so then when dirty tracking was wanted in, page_mkwrite came with it.
-> 
-> At the time I believed that AntonA was on the point of using it in
-> NTFS, but apparently not yet.
+I also hit the same issue. Here is the patch:
 
-Other things got more important...  I still am on the virge of using it 
-but I have to finish off other work first so the "virge" may be a little 
-wihle off still.
 
-> > Must it be able to sleep?
-> 
-> Not as David was using it: that was something I felt strongly it
-> should be allowd to do.  For example, in order to allocate backing
-> store for the mmap'ed page to be written (that need has been talked
-> about off and on for years).
+Fix slab build failure if !CONFIG_ZONE_DMA
 
-Yes this is exactly what I need it in NTFS for.  And also I need to be 
-able to perform a mmap'ed write into a non-initialized region, i.e. a 
-region which has disk allocation but has not been zeroed yet so in a total 
-worst case scenario I could have a huge file that is all allocated on disk 
-but completely not initialized yet and a single byte write towards the end 
-of the file would require me to zero the entirety of that file up to the 
-written byte at least so the one byte write may trigger a multi gigabyte 
-(or terrabyte!) write operation which from ->writepage would be bad news 
-but from page_mkwrite is much better.
+I also needed this to get 2.6.20-rc6-mm2 to build. Fixes the fix by the
+complainer about the fixes. #ifdef cannot be avoided since cs_dmacachep
+is no longer defined.
 
-Best regards,
+Signed-off-by: Christoph Lameter <clameter@sgi.com>
 
-	Anton
-
-> 
-> Hugh
-> 
-> 
-> After do_wp_page has tested page_mkwrite, it must release old_page after
-> acquiring page table lock, not before: at some stage that ordering got
-> reversed, leaving a (very unlikely) window in which old_page might be
-> truncated, freed, and reused in the same position.
-> 
-> Signed-off-by: Hugh Dickins <hugh@veritas.com>
-> ---
-> 
->  mm/memory.c |    3 +--
->  1 file changed, 1 insertion(+), 2 deletions(-)
-> 
-> --- 2.6.20-rc6/mm/memory.c	2007-01-25 08:25:27.000000000 +0000
-> +++ linux/mm/memory.c	2007-01-29 15:35:56.000000000 +0000
-> @@ -1531,8 +1531,6 @@ static int do_wp_page(struct mm_struct *
->  			if (vma->vm_ops->page_mkwrite(vma, old_page) < 0)
->  				goto unwritable_page;
->  
-> -			page_cache_release(old_page);
-> -
->  			/*
->  			 * Since we dropped the lock we need to revalidate
->  			 * the PTE as someone else may have changed it.  If
-> @@ -1541,6 +1539,7 @@ static int do_wp_page(struct mm_struct *
->  			 */
->  			page_table = pte_offset_map_lock(mm, pmd, address,
->  							 &ptl);
-> +			page_cache_release(old_page);
->  			if (!pte_same(*page_table, orig_pte))
->  				goto unlock;
->  		}
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
-
-Best regards,
-
-	Anton
--- 
-Anton Altaparmakov <aia21 at cam.ac.uk> (replace at with @)
-Unix Support, Computing Service, University of Cambridge, CB2 3QH, UK
-Linux NTFS maintainer, http://www.linux-ntfs.org/
+Index: linux-2.6.20-rc6-mm2/mm/slab.c
+===================================================================
+--- linux-2.6.20-rc6-mm2.orig/mm/slab.c	2007-01-29 14:27:58.000000000 -0600
++++ linux-2.6.20-rc6-mm2/mm/slab.c	2007-01-29 14:33:04.270329009 -0600
+@@ -1503,6 +1503,7 @@ void __init kmem_cache_init(void)
+ 					ARCH_KMALLOC_FLAGS|SLAB_PANIC,
+ 					NULL, NULL);
+ 		}
++#ifdef CONFIG_ZONE_DMA
+ 		if (CONFIG_ZONE_DMA_FLAG)
+ 			sizes->cs_dmacachep = kmem_cache_create(
+ 					names->name_dma,
+@@ -1511,6 +1512,7 @@ void __init kmem_cache_init(void)
+ 					ARCH_KMALLOC_FLAGS|SLAB_CACHE_DMA|
+ 						SLAB_PANIC,
+ 					NULL, NULL);
++#endif
+ 		sizes++;
+ 		names++;
+ 	}
