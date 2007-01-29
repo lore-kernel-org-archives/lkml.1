@@ -1,107 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964857AbXA2XmO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752631AbXA2Xou@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964857AbXA2XmO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 18:42:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964783AbXA2XmO
+	id S1752631AbXA2Xou (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 18:44:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752629AbXA2Xot
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 18:42:14 -0500
-Received: from www.osadl.org ([213.239.205.134]:34999 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S964928AbXA2XmN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 18:42:13 -0500
-Subject: [PATCH] sky2: fix MSI related resume breakage
-From: Thomas Gleixner <tglx@linutronix.de>
-Reply-To: tglx@linutronix.de
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jeff Garzik <jeff@garzik.org>
-In-Reply-To: <Pine.LNX.4.64.0701291431320.3611@woody.linux-foundation.org>
-References: <Pine.LNX.4.64.0701241847360.25027@woody.linux-foundation.org>
-	 <1169931333.17469.125.camel@localhost.localdomain>
-	 <20070129113159.7ad22e4c@freekitty>
-	 <1170101430.29240.34.camel@localhost.localdomain>
-	 <20070129133849.1b523226@freekitty>
-	 <1170109401.29240.49.camel@localhost.localdomain>
-	 <Pine.LNX.4.64.0701291431320.3611@woody.linux-foundation.org>
-Content-Type: text/plain
-Date: Tue, 30 Jan 2007 00:42:55 +0100
-Message-Id: <1170114175.29240.86.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 29 Jan 2007 18:44:49 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:52439 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S964937AbXA2Xoq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jan 2007 18:44:46 -0500
+Date: Mon, 29 Jan 2007 15:43:40 -0800
+From: Greg KH <greg@kroah.com>
+To: LKML <linux-kernel@vger.kernel.org>,
+       Rainer Weikusat <rainer.weikusat@sncag.com>,
+       Oleg Verych <olecom@flower.upol.cz>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Adrian Bunk <bunk@stusta.de>
+Subject: Re: unfixed regression in 2.6.20-rc6 (since 2.6.19)
+Message-ID: <20070129234340.GA6881@kroah.com>
+References: <877ivb2kvc.fsf@semtex.sncag.com> <20070125185101.GA26279@kroah.com> <87y7nq131x.fsf@semtex.sncag.com> <20070126174828.GA28890@kroah.com> <87d54z1dhb.fsf@semtex.sncag.com> <slrnerqjit.f71.olecom@flower.upol.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <slrnerqjit.f71.olecom@flower.upol.cz>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-commmit 44ade178249fe53d055fd92113eaa271e06acddd breaks sane
-MSI/ACPI/BIOS combinations. It's impossible to keep broken and sane
-MSI/ACPI/BIOSes happy at the same time.
+On Mon, Jan 29, 2007 at 01:31:09AM +0000, Oleg Verych wrote:
+> 
+> > From: Rainer Weikusat
+> > Newsgroups: gmane.linux.kernel
+> > Subject: Re: unfixed regression in 2.6.20-rc6 (since 2.6.19)
+> > Date: Sun, 28 Jan 2007 14:34:56 +0100
+> 
+> Hallo.
+> 
+> > Greg KH <greg@kroah.com> writes:
+> []
+> >> Please work to see what is wrong with the existing patch.  Is there
+> >> anything that I can do to help you out?
+> >
+> > This thing has consumed something like sixteen hours of my life in
+> > total, with a gain-to-be-expected of exactly zero (I don't need to run
+> > 'current' kernels on my work machine, I have just grown into the habit
+> > of doing so) and those sixteen hours cannot come back (and I even have
+> > had these type of discussions around 'should it rather look like math
+> > or rather like text' in sufficent quantities :->), so, except that I
+> > would be very much obliged to you if a fix for this issue could go
+> > into the 'official' tree rather sooner than later, no.
+> 
+> It's hot here.
+> 
+> I'm in similar situation (even *usb-serial* driver [TI USB] led me there;)
 
-Revert the patch and disable MSI for sky2 when CONFIG_PM is enabled.
+No, not at all.  Your situation is you object to the current way the USB
+subsystem binds devices to drivers (well, interfaces), and wish to rip
+the firmware out of a usb-serial driver that is working just fine right
+now.
 
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+I still don't understand why you wish to take the firmware out and move
+it to userspace, why do you want to do this?
 
-diff --git a/drivers/net/sky2.c b/drivers/net/sky2.c
-index a2e804d..420fef7 100644
---- a/drivers/net/sky2.c
-+++ b/drivers/net/sky2.c
-@@ -91,7 +91,11 @@ static int copybreak __read_mostly = 128;
- module_param(copybreak, int, 0);
- MODULE_PARM_DESC(copybreak, "Receive copy threshold");
- 
-+#ifdef CONFIG_PM
-+static int disable_msi = 1;
-+#else
- static int disable_msi = 0;
-+#endif
- module_param(disable_msi, int, 0);
- MODULE_PARM_DESC(disable_msi, "Disable Message Signaled Interrupt (MSI)");
- 
-@@ -3601,6 +3605,7 @@ static int sky2_suspend(struct pci_dev *pdev, pm_message_t state)
- 	sky2_write32(hw, B0_IMSK, 0);
- 	pci_save_state(pdev);
- 	sky2_set_power_state(hw, pstate);
-+
- 	return 0;
- }
- 
-@@ -3640,28 +3645,6 @@ out:
- 	return err;
- }
- 
--/* BIOS resume runs after device (it's a bug in PM)
-- * as a temporary workaround on suspend/resume leave MSI disabled
-- */
--static int sky2_suspend_late(struct pci_dev *pdev, pm_message_t state)
--{
--	struct sky2_hw *hw = pci_get_drvdata(pdev);
--
--	free_irq(pdev->irq, hw);
--	if (hw->msi) {
--		pci_disable_msi(pdev);
--		hw->msi = 0;
--	}
--	return 0;
--}
--
--static int sky2_resume_early(struct pci_dev *pdev)
--{
--	struct sky2_hw *hw = pci_get_drvdata(pdev);
--	struct net_device *dev = hw->dev[0];
--
--	return request_irq(pdev->irq, sky2_intr, IRQF_SHARED, dev->name, hw);
--}
- #endif
- 
- static struct pci_driver sky2_driver = {
-@@ -3672,8 +3655,6 @@ static struct pci_driver sky2_driver = {
- #ifdef CONFIG_PM
- 	.suspend = sky2_suspend,
- 	.resume = sky2_resume,
--	.suspend_late = sky2_suspend_late,
--	.resume_early = sky2_resume_early,
- #endif
- };
- 
+Rainer's problem is a real bug in the USB driver code, which we need to
+work on getting fixed, vastly different from your objections.
 
+thanks,
 
+greg k-h
