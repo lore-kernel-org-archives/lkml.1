@@ -1,59 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752582AbXA2UIT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751649AbXA2UJu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752582AbXA2UIT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 15:08:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752586AbXA2UIS
+	id S1751649AbXA2UJu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 15:09:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752585AbXA2UJu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 15:08:18 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:47877 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752585AbXA2UIR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 15:08:17 -0500
-Date: Mon, 29 Jan 2007 21:06:48 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@osdl.org>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH] mm: remove global locks from mm/highmem.c
-Message-ID: <20070129200648.GA26694@elte.hu>
-References: <1169993494.10987.23.camel@lappy> <20070128142925.df2f4dce.akpm@osdl.org> <20070129190806.GA14353@elte.hu>
+	Mon, 29 Jan 2007 15:09:50 -0500
+Received: from www.osadl.org ([213.239.205.134]:37843 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751649AbXA2UJt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jan 2007 15:09:49 -0500
+Subject: Re: Linux 2.6.20-rc6 - sky2 resume breakage
+From: Thomas Gleixner <tglx@linutronix.de>
+Reply-To: tglx@linutronix.de
+To: Stephen Hemminger <shemminger@linux-foundation.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Stephen Hemminger <shemminger@osdl.org>, Jeff Garzik <jeff@garzik.org>
+In-Reply-To: <20070129113159.7ad22e4c@freekitty>
+References: <Pine.LNX.4.64.0701241847360.25027@woody.linux-foundation.org>
+	 <1169931333.17469.125.camel@localhost.localdomain>
+	 <20070129113159.7ad22e4c@freekitty>
+Content-Type: text/plain
+Date: Mon, 29 Jan 2007 21:10:30 +0100
+Message-Id: <1170101430.29240.34.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070129190806.GA14353@elte.hu>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -4.3
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-4.3 required=5.9 tests=ALL_TRUSTED,BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-3.3 ALL_TRUSTED            Did not pass through any untrusted hosts
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 2007-01-29 at 11:31 -0800, Stephen Hemminger wrote:
+> Does this fix it?
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+Don't know.
 
-> Here are the numbers that i think changes the picture:
+> --- sky2-2.6.orig/drivers/net/sky2.c	2007-01-29 10:05:12.000000000 -0800
+> +++ sky2-2.6/drivers/net/sky2.c	2007-01-29 10:29:56.000000000 -0800
+> @@ -3675,6 +3675,12 @@
+>  	sky2_write32(hw, B0_IMSK, 0);
+>  	sky2_power_aux(hw);
+>  
 
-i forgot to explain them:
+patching file drivers/net/sky2.c
+Hunk #1 FAILED at 3675.
+Hunk #2 succeeded at 3625 (offset -81 lines).
+Hunk #3 succeeded at 3738 with fuzz 1 (offset -1 lines).
+Hunk #4 succeeded at 3668 with fuzz 2 (offset -110 lines).
+1 out of 4 hunks FAILED -- saving rejects to file drivers/net/sky2.c.rej
 
-current (estimated) total installed base of 32-bit (i686) Fedora:
+# grep -c sky2_power_aux drivers/net/sky2.c
+0
 
->  http://www.fedoraproject.org/awstats/stats/updates-released-fc6-i386.total
+Shrug.
 
-current (estimated) total installed base of 64-bit (x86_64) Fedora:
+	tglx
 
->  http://www.fedoraproject.org/awstats/stats/updates-released-fc6-x86_64.total
 
-current (estimated) total installed base of PPC(64) Fedora:
-
->  http://www.fedoraproject.org/awstats/stats/updates-released-fc6-ppc.total
-
-these are updated daily i think. The counters started late October 2006, 
-when FC6 was released.
-
-	Ingo
