@@ -1,45 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752072AbXA2SQF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752101AbXA2SQO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752072AbXA2SQF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 13:16:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752069AbXA2SQF
+	id S1752101AbXA2SQO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 13:16:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752539AbXA2SQO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 13:16:05 -0500
-Received: from nf-out-0910.google.com ([64.233.182.191]:15564 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752072AbXA2SQD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 13:16:03 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=G8yPo8KzrBsIaMD++w/aOaZhVmUIXTSR6dqzrwImxVj5+6Z68rlrZmDSsUhuWP0LMIXBO5yNiXNguuOyxzuxAePmHWFnZ1A2cLYcxUFkZSxOcmjRE5AS3ZIzuKpri1d3VEcg7BMNm8pxp5/ZV32vUD4I+MBhGOQ1zOsBFBzrKbs=
-Date: Mon, 29 Jan 2007 21:15:48 +0300
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Andi Kleen <ak@suse.de>
-Cc: Andrew Morton <akpm@osdl.org>, Parag Warudkar <parag.warudkar@gmail.com>,
-       dsd@gentoo.org, joerg@hydrops.han.de, linux-kernel@vger.kernel.org
-Subject: Re: [Bugme-new] [Bug 7891] New: vdso page is no longer mapped for
-Message-ID: <20070129181548.GD5546@martell.zuzino.mipt.ru>
-References: <82e4877d0701271201n3aa5bdf6v7c5fb8e41ee98c80@mail.gmail.com> <20070127140233.203ef7d3.akpm@osdl.org> <200701290410.29427.ak@suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200701290410.29427.ak@suse.de>
-User-Agent: Mutt/1.5.11
+	Mon, 29 Jan 2007 13:16:14 -0500
+Received: from omx1-ext.sgi.com ([192.48.179.11]:43256 "EHLO omx1.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752101AbXA2SQM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jan 2007 13:16:12 -0500
+Date: Mon, 29 Jan 2007 10:15:54 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Andrew Morton <akpm@osdl.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Ingo Molnar <mingo@elte.hu>, Rik van Riel <riel@redhat.com>
+Subject: Re: [PATCH 00/14] Concurrent Page Cache
+In-Reply-To: <1170093944.6189.192.camel@twins>
+Message-ID: <Pine.LNX.4.64.0701291013530.29254@schroedinger.engr.sgi.com>
+References: <20070128131343.628722000@programming.kicks-ass.net> 
+ <Pine.LNX.4.64.0701290918260.28330@schroedinger.engr.sgi.com>
+ <1170093944.6189.192.camel@twins>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 29, 2007 at 04:10:29AM +0100, Andi Kleen wrote:
-> Don't require the vDSO for handling a.out signals
+On Mon, 29 Jan 2007, Peter Zijlstra wrote:
 
-> --- linux.orig/include/linux/binfmts.h
-> +++ linux/include/linux/binfmts.h
-> @@ -59,6 +59,7 @@ struct linux_binfmt {
->  	int (*load_shlib)(struct file *);
->  	int (*core_dump)(long signr, struct pt_regs * regs, struct file * file);
->  	unsigned long min_coredump;	/* minimal dump size */
-> +	int hasvdso;
+> Ladder locking would end up:
+> 
+> lock A0
+> lock B1
+> unlock A0 -> a new operation can start
+> lock C2
+> unlock B1
+> lock D5
+> unlock C2
+> ** we do stuff to D5
+> unlock D5
+> 
 
-nit: has_vdso, please.
+Instead of taking one lock we would need to take 4? Wont doing so cause 
+significant locking overhead? We probably would want to run some 
+benchmarks. Maybe disable the scheme for systems with a small number of 
+processors?
+
 
