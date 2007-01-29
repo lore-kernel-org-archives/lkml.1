@@ -1,72 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933150AbXA2F7w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933167AbXA2GFe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933150AbXA2F7w (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 00:59:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933158AbXA2F7v
+	id S933167AbXA2GFe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 01:05:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933166AbXA2GFe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 00:59:51 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:33024 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933150AbXA2F7u (ORCPT
+	Mon, 29 Jan 2007 01:05:34 -0500
+Received: from mail7.sea5.speakeasy.net ([69.17.117.9]:44830 "EHLO
+	mail7.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933167AbXA2GFd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 00:59:50 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: David Miller <davem@davemloft.net>
-Cc: benh@kernel.crashing.org, jeff@garzik.org, greg@kroah.com,
-       tony.luck@intel.com, grundler@parisc-linux.org, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, kyle@parisc-linux.org,
-       linuxppc-dev@ozlabs.org, brice@myri.com, shaohua.li@intel.com,
-       linux-pci@atrey.karlin.mff.cuni.cz
-Subject: Re: [PATCH 0/6] MSI portability cleanups
-References: <m1hcuaohqj.fsf@ebiederm.dsl.xmission.com>
-	<20070128.153707.30184351.davem@davemloft.net>
-	<m1tzyammv0.fsf@ebiederm.dsl.xmission.com>
-	<20070128.212554.23015561.davem@davemloft.net>
-Date: Sun, 28 Jan 2007 22:58:28 -0700
-In-Reply-To: <20070128.212554.23015561.davem@davemloft.net> (David Miller's
-	message of "Sun, 28 Jan 2007 21:25:54 -0800 (PST)")
-Message-ID: <m1hcuaml17.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Mon, 29 Jan 2007 01:05:33 -0500
+Message-ID: <45BD8EAA.7020804@kernel.org>
+Date: Sun, 28 Jan 2007 22:05:30 -0800
+From: Josh Triplett <josh@kernel.org>
+User-Agent: Icedove 1.5.0.9 (X11/20061220)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: paulmck@linux.vnet.ibm.com
+CC: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linuxtronix.de,
+       dipankar@in.ibm.com, tytso@us.ibm.com, dvhltc@us.ibm.com,
+       oleg@tv-sign.ru, twoerner.k@gmail.com, billh@gnuppy.monkey.org,
+       nielsen.esben@googlemail.com, corbet@lwn.net
+Subject: Re: [RFC PATCH -rt 2/2] RCU priority boosting additions to rcutorture
+References: <20070125021101.GA23428@linux.vnet.ibm.com> <20070125021444.GA22540@linux.vnet.ibm.com> <20070125022338.GB22540@linux.vnet.ibm.com> <45B86E88.6020209@kernel.org> <20070125180158.GC1705@linux.vnet.ibm.com> <45B8FFBB.4090307@kernel.org> <20070129021126.GA8417@linux.vnet.ibm.com>
+In-Reply-To: <20070129021126.GA8417@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller <davem@davemloft.net> writes:
+Paul E. McKenney wrote:
+> On Thu, Jan 25, 2007 at 11:06:35AM -0800, Josh Triplett wrote:
+>> Paul E. McKenney wrote:
+>>> On Thu, Jan 25, 2007 at 12:47:04AM -0800, Josh Triplett wrote:
+>>>> One major item: this new test feature really needs a new module parameter to
+>>>> enable or disable it.
+>>> CONFIG_PREEMPT_RCU_BOOST is the parameter -- if not set, then no test.
+>>> This parameter is provided by the accompanying RCU-boost patch.
+>> It seems useful for rcutorture to use or not use the preempting thread
+>> independently of CONFIG_PREEMPT_RCU_BOOST.  That would bring you from two
+>> cases to four, and the two new cases both make sense:
+>>
+>> * CONFIG_PREEMPT_RCU_BOOST=n, but run rcutorture with the preempting thread.
+>>   This configuration allows you to demonstrate the need for
+>>   CONFIG_PREEMPT_RCU_BOOST, by showing what happens when you need it and don't
+>>   have it.
+>>
+>> * CONFIG_PREEMPT_RCU_BOOST=y, but run rcutorture without the preempting
+>>   thread.  This configuration allows you to test with rcutorture while running
+>>   a *real* real-time workload rather than the simple preempting thread, or
+>>   just test basic RCU functionality.
+>>
+>> A simple boolean module_param would work here.
+> 
+> OK, am finally with you.  See below for updated patch.
 
-> From: ebiederm@xmission.com (Eric W. Biederman)
-> Date: Sun, 28 Jan 2007 22:18:59 -0700
->
->> Regardless of my opinion on the sanity of the hypervisor architects.
->> I have not seen anything that indicates it will be hard to support
->> the hypervisor doing everything or most of everything for us, so
->> I see no valid technical objection to it.  Nor have I ever.
->> 
->> So I have no problem with additional patches in that direction.
->
-> Ok, that's great to hear.
->
-> I know your bi-directional approach isn't exactly what Ben
-> wants but he can support his machines with it.  Maybe after
-> some time we can agree to move from that more towards the
-> totally abstracted scheme.
+Looks good to me.
 
-Moving farther has been my intention the entire time, even
-while writing those patches.  I'm just not prepared to do it in
-one giant patch where bug hunting becomes impossible.
+> Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 
-I think I have moved msi.c to the point it won't be a horror to
-work with, so we can start seriously looking at what it will
-take to support hypervisors that do this.
+Signed-off-by: Josh Triplett <josh@kernel.org>
 
-I don't believe there is anything generic we can do in the general
-hypervisor case, so we need a way for the architecture code in
-the case where it is inappropriate to write directly to the msi
-and msi-x registers to have a completely different implementation of:
-pci_enable_msi, pci_disable_msi, pci_enable_msix, psi_disable_msix,
-and whatever other driver interface bits we have in there.
-
-One small step at a time and we should get there soon.
-
-Eric
+- Josh Triplett
 
