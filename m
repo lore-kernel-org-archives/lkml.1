@@ -1,46 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933040AbXA2Bof@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933099AbXA2BsO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933040AbXA2Bof (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jan 2007 20:44:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933084AbXA2Bof
+	id S933099AbXA2BsO (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jan 2007 20:48:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933091AbXA2BsO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jan 2007 20:44:35 -0500
-Received: from raven.upol.cz ([158.194.120.4]:61337 "EHLO raven.upol.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933040AbXA2Boe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jan 2007 20:44:34 -0500
-Date: Mon, 29 Jan 2007 01:52:35 +0000
-To: Andrew Morton <akpm@osdl.org>
-Cc: Andrey Borzenkov <arvidjaar@mail.ru>,
-       Dirk Behme <dirk.behme@googlemail.com>, Rob Landley <rob@landley.net>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: The mbox format archives of linux-kernel are gone.
-Message-ID: <20070129015235.GA25299@flower.upol.cz>
-References: <45BC54D3.2010706@lycosxxl.de> <45BC5632.7010207@googlemail.com> <m3zm83wlwm.fsf@ursa.amorsen.dk> <1170001840.4965.4.camel@kleikamp.austin.ibm.com> <m3lkjnw0hn.fsf@ursa.amorsen.dk> <20070128172444.E5D4C55735C@chen.mtu.ru> <slrnerq9u8.f71.olecom@flower.upol.cz> <20070128151706.8d2d1841.akpm@osdl.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070128151706.8d2d1841.akpm@osdl.org>
-Organization: Palacky University in Olomouc, experimental physics department.
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Oleg Verych <olecom@flower.upol.cz>
+	Sun, 28 Jan 2007 20:48:14 -0500
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:54220 "EHLO
+	pd2mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933090AbXA2BsN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Jan 2007 20:48:13 -0500
+Date: Sun, 28 Jan 2007 19:47:27 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: [PATCH RFC] sd: spin down disks on removal or power-down
+To: linux-kernel <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+Message-id: <45BD522F.3070706@shaw.ca>
+MIME-version: 1.0
+Content-type: multipart/mixed; boundary=------------010202060101020305060103
+User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 28, 2007 at 03:17:06PM -0800, Andrew Morton wrote:
-> On Sun, 28 Jan 2007 22:46:32 +0000
-> Oleg Verych <olecom@flower.upol.cz> wrote:
-> 
-> > If somebody will get lkml mbox archive, can you import it into gmane,
-> > please.
-> 
-> http://userweb.kernel.org/~akpm/lkml-mbox-archives/
+This is a multi-part message in MIME format.
+--------------010202060101020305060103
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-I think, whole set, possibly from most active start years, say 1993, 1994
-or so, must be collected, then i can contact Lars to try to import all
-this into Gmane with current web links being preserved.
+Here's a patch for sd.c I've cooked up which issues a START STOP UNIT
+command to stop the drive when the SCSI disk is removed or the machine
+is powered down. The rationale behind this is that apparently on many
+drives, simply cutting power to the spinning disk forces it to do an
+emergency head park/unload which creates more wear on the drive then a
+controlled park/unload with power still applied. This change ensures
+that the drive will be spun down if the user shuts down the machine or
+if they are about to hot-unplug the drive and have done "scsiadd -r" first.
 
-BTW, donwloading (big) sets of archives _from_ Gmane is strongly
-discouraged.
+The main potential concern I have about this implementation is that if
+the drive is used in a multi-initiator, iSCSI, etc. environment,
+stopping the drive may be undesirable as another initiator may still be
+accessing it. I'm not familiar enough with these setups to know if this
+problem is likely to come up or not. For this and other reasons we may
+want to make this behavior controllable - I'm open to suggestions on how
+to do this or whether it's needed.
 
-____
+I've tested that this does work on SATA disks through libata (with my
+patch "libata: fix translation for START STOP UNIT" applied). I also
+tested with some external USB-to-IDE drive enclosures. The support for
+START STOP UNIT on those seems rather poor though, on one enclosure with
+a Genesys bridge chip it returned a check condition with "Invalid field
+in CDB", and on another with a JMicron chip the request succeeded but it
+didn't actually spin the drive down.
+
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
+
+
+
+
+
+--------------010202060101020305060103
+Content-Type: text/plain;
+ name="sd-stop-unit-on-shutdown.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="sd-stop-unit-on-shutdown.patch"
+
+--- linux-2.6.20-rc6nv/drivers/scsi/sd.c	2007-01-28 17:00:00.000000000 -0600
++++ linux-2.6.20-rc6nvedit/drivers/scsi/sd.c	2007-01-28 18:08:53.000000000 -0600
+@@ -821,6 +821,39 @@ static int sd_sync_cache(struct scsi_dev
+ 	return res;
+ }
+ 
++static int sd_stop_unit(struct scsi_device *sdp, struct scsi_disk* sdkp)
++{
++	int res;
++	struct scsi_sense_hdr sshdr;
++	unsigned char cmd[10] = { 0 };
++
++	if (!scsi_device_online(sdp))
++		return -ENODEV;
++
++	cmd[0] = START_STOP;
++	/*
++	 * Leave the rest of the command zero to indicate
++	 * transition to stopped power condition and return
++	 * on completion.
++	 */
++	printk(KERN_NOTICE "Stopping SCSI disk %s\n",
++		sdkp->disk->disk_name);
++	res = scsi_execute_req(sdp, cmd, DMA_NONE, NULL, 0, &sshdr,
++			       SD_TIMEOUT, SD_MAX_RETRIES);
++
++	if (res) {
++		printk(KERN_WARNING "sd stop failed: status = %x, message = %02x, "
++				    "host = %d, driver = %02x\n",
++				    status_byte(res), msg_byte(res),
++				    host_byte(res), driver_byte(res));
++		if (driver_byte(res) & DRIVER_SENSE)
++			scsi_print_sense_hdr("sd", &sshdr);
++	}
++	
++	return res;
++}
++
++
+ static int sd_issue_flush(struct device *dev, sector_t *error_sector)
+ {
+ 	int ret = 0;
+@@ -1727,11 +1760,13 @@ static int sd_probe(struct device *dev)
+  **/
+ static int sd_remove(struct device *dev)
+ {
++	struct scsi_device *sdp = to_scsi_device(dev);
+ 	struct scsi_disk *sdkp = dev_get_drvdata(dev);
+ 
+ 	class_device_del(&sdkp->cdev);
+ 	del_gendisk(sdkp->disk);
+ 	sd_shutdown(dev);
++	sd_stop_unit(sdp,sdkp);
+ 
+ 	mutex_lock(&sd_ref_mutex);
+ 	dev_set_drvdata(dev, NULL);
+@@ -1784,6 +1819,9 @@ static void sd_shutdown(struct device *d
+ 				sdkp->disk->disk_name);
+ 		sd_sync_cache(sdp);
+ 	}
++	if(system_state == SYSTEM_POWER_OFF)
++		sd_stop_unit(sdp,sdkp);
++		
+ 	scsi_disk_put(sdkp);
+ }
+ 
+
+
+
+--------------010202060101020305060103--
+
