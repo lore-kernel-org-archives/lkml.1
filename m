@@ -1,59 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932821AbXA2WvE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752617AbXA2Wvy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932821AbXA2WvE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 17:51:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752617AbXA2WvE
+	id S1752617AbXA2Wvy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 17:51:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932827AbXA2Wvy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 17:51:04 -0500
-Received: from nf-out-0910.google.com ([64.233.182.191]:52302 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932821AbXA2WvB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 17:51:01 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=lXK3DyX1KheXgq5WajqITAycRskn96K5UIaQNwlwHRy5tst113fMSRtgSMDJW4Hr8Q3KVX9wGIrDCk+6Eqgc6JmI5fWbGYkgBI8xxDlfgyIRD7+VsV2xIcjG5r0zDlR6oEncIWvXDQ7Q6Ufdi/7B1VTIdedvLNBZEsh2Jdm16Zk=
-Subject: Re: Linux 2.6.20-rc6 - sky2 resume breakage
-From: =?ISO-8859-1?Q?Fr=E9d=E9ric?= Riss <frederic.riss@gmail.com>
-To: tglx@linutronix.de
-Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jeff Garzik <jeff@garzik.org>
-In-Reply-To: <1170110732.29240.59.camel@localhost.localdomain>
-References: <Pine.LNX.4.64.0701241847360.25027@woody.linux-foundation.org>
-	 <1169931333.17469.125.camel@localhost.localdomain>
-	 <20070129113159.7ad22e4c@freekitty>
-	 <1170101430.29240.34.camel@localhost.localdomain>
-	 <20070129133849.1b523226@freekitty>
-	 <1170109401.29240.49.camel@localhost.localdomain>
-	 <1170110318.21603.25.camel@funkylaptop>
-	 <1170110732.29240.59.camel@localhost.localdomain>
-Content-Type: text/plain; charset=utf-8
-Date: Mon, 29 Jan 2007 23:50:56 +0100
-Message-Id: <1170111056.21603.30.camel@funkylaptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
-Content-Transfer-Encoding: 8bit
+	Mon, 29 Jan 2007 17:51:54 -0500
+Received: from ns1.suse.de ([195.135.220.2]:45220 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752617AbXA2Wvx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jan 2007 17:51:53 -0500
+Date: Mon, 29 Jan 2007 14:50:55 -0800
+From: Greg KH <gregkh@suse.de>
+To: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>
+Cc: linux-kernel@vger.kernel.org, Takashi Iwai <tiwai@suse.de>, perex@suse.cz,
+       alsa-devel@alsa-project.org
+Subject: [GIT PATCH] ALSA core fix for 2.6.20-rc5
+Message-ID: <20070129225055.GA4796@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Le lundi 29 janvier 2007 à 23:45 +0100, Thomas Gleixner a écrit :
-> On Mon, 2007-01-29 at 23:38 +0100, Frédéric Riss wrote:
-> > I see the same symptoms on my Intel Mac Mini, and reverting the commit
-> > also allows the driver to seemingly resume correctly. 
-> > 
-> > However after coming out of sleep I need to reconfigure the network
-> > interface. No need to rmmod/insmod, just ifdown/ifup is sufficient (but
-> > of course shouldn't be necessary, should it?). If I don't reconfigure
-> > it, ping from/to the box will work, but nothing more complicated like
-> > ssh will go through.
-> 
-> That's probably a userspace problem. Are you using DHCP ?
+Takashi asked me to send you this single patch as it conflicted with his
+current tree and it is needed before 2.6.20 comes out to fix a userspace
+ABI breakage that I caused earlier.
 
-Yep DHCP. Is that a known issue? I never had to reconfigure with older
-kernels.
+This patch fixes a bug with the sound core when CONFIG_SYSFS_DEPRECATED
+is enabled.  More details can be found in the patch itself, which will
+follow as a reply to this message.
 
-Fred.
+Please pull from:
+	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/driver-2.6.git/
+
+thanks,
+
+greg k-h
+
+
+ include/sound/core.h   |   18 +++++++++++++++---
+ sound/core/init.c      |   18 +++++++++++-------
+ sound/core/sound.c     |    4 +---
+ sound/core/sound_oss.c |    4 +---
+ 4 files changed, 28 insertions(+), 16 deletions(-)
+
+---------------
+
+Takashi Iwai (1):
+      ALSA: Fix sysfs breakage
 
