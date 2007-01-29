@@ -1,92 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751733AbXA2PGH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751886AbXA2PHW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751733AbXA2PGH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 10:06:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751872AbXA2PGG
+	id S1751886AbXA2PHW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 10:07:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751598AbXA2PHW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 10:06:06 -0500
-Received: from lmv.inov.pt ([146.193.64.2]:32892 "EHLO lmv.inov.pt"
+	Mon, 29 Jan 2007 10:07:22 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:43106 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751733AbXA2PGF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 10:06:05 -0500
-Message-ID: <45BE0D44.1080309@inov.pt>
-Date: Mon, 29 Jan 2007 15:05:40 +0000
-From: Jose Goncalves <jose.goncalves@inov.pt>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070111)
+	id S1751879AbXA2PHV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jan 2007 10:07:21 -0500
+Message-ID: <45BE0D98.7020005@redhat.com>
+Date: Mon, 29 Jan 2007 07:07:04 -0800
+From: Ulrich Drepper <drepper@redhat.com>
+Organization: Red Hat, Inc.
+User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
 MIME-Version: 1.0
-To: Frederik Deweerdt <deweerdt@free.fr>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Oops on serial access on kernel 2.6.16.38
-References: <45BA2341.40008@inov.pt> <20061226201003.GA2990@slug> <45BA459F.7060604@inov.pt> <20070126212203.GB2990@slug>
-In-Reply-To: <20070126212203.GB2990@slug>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
-X-INOV-EmailServer-Information: Please contact the Email service provider for more information
-X-INOV-EmailServer: Found to be clean
-X-INOV-EmailServer-From: jose.goncalves@inov.pt
+To: Alexey Dobriyan <adobriyan@openvz.org>
+CC: Andrew Morton <akpm@osdl.org>, devel@openvz.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/3] lutimesat: actual syscall and wire-up on i386
+References: <20070126112345.GC11128@localhost.sw.ru> <20070126123903.046aaa5e.akpm@osdl.org> <45BA6860.6040007@redhat.com> <20070129110509.GA13096@localhost.sw.ru>
+In-Reply-To: <20070129110509.GA13096@localhost.sw.ru>
+X-Enigmail-Version: 0.94.1.2.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig465D7568B1038B4E09D962BB"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Frederik Deweerdt wrote:
-> On Fri, Jan 26, 2007 at 06:17:03PM +0000, Jose Goncalves wrote:
->   
->> Frederik Deweerdt wrote:
->>     
->>> On Fri, Jan 26, 2007 at 03:50:25PM +0000, Jose Goncalves wrote:
->>>   
->>>       
->>>> I'm having a problem with the latest 2.6.16 kernel (I've found the
->>>> problem on 2.6.16.37 and 2.6.16.38). I have a application that retreives
->>>> data from a GPS connected on a serial port. From time to time a get a
->>>> kernel Oops, like this:
->>>>
->>>>     
->>>>         
->>> Could you send your .config?
->>>   
->>>       
->> Here it goes...
->>
->>     
-> Thanks. It looks like something is wrong with port->ops->startup() in
-> uart_startup(), could you apply the following patch and report the
-> results? And btw, you're using a plain 8250 serial port, isn't it?
->   
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig465D7568B1038B4E09D962BB
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-OK. I've applied the patch and I'm now waiting for the kernel Oops...
-sometimes it takes two days until it happens.
-I'm using a standard 16550A serial controller found on my hardware, that
-is a PC/104 SBC:
+Alexey Dobriyan wrote:
+> What do you mean by "filesystems cannot support lutimes"? Filesystems
+> that don't have on-disk timestamps for symlinks?
 
- http://www.icop.com.tw/products_detail.asp?ProductID=70
+Yes.
 
-We have a custom hardware that has another serial controller (TL16C554A)
-with 4 extra serial ports (also, 16550A type), and the problem happens
-in a test program that is retreiving data from ttyS0 (from the SBC) and
-ttyS3 (from our custom hardware).
-The serial ports initialization, as reported by the kernel:
+--=20
+=E2=9E=A7 Ulrich Drepper =E2=9E=A7 Red Hat, Inc. =E2=9E=A7 444 Castro St =
+=E2=9E=A7 Mountain View, CA =E2=9D=96
 
-[   15.216847] Serial: 8250/16550 driver $Revision: 1.90 $ 6 ports, IRQ
-sharing disabled
-[   15.219517] serial8250: ttyS0 at I/O 0x3f8 (irq = 4) is a 16550A
-[   15.221963] serial8250: ttyS1 at I/O 0x2f8 (irq = 3) is a 16550A
-[   15.223907] serial8250: ttyS2 at I/O 0x3e8 (irq = 5) is a 16550A
-[   15.225757] serial8250: ttyS3 at I/O 0x2e8 (irq = 5) is a 16550A
-[   15.227644] serial8250: ttyS4 at I/O 0x1a0 (irq = 6) is a 16550A
-[   15.229656] serial8250: ttyS5 at I/O 0x1a8 (irq = 6) is a 16550A
 
-With your patch I'm now getting the following for each iteration of my
-test program:
+--------------enig465D7568B1038B4E09D962BB
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
-<4>[  298.918962] type is 4
-<4>[  298.919011] ops is c0292f00
-<4>[  298.919033] ops->startup is c01bd777
-<4>[  299.436980] type is 4
-<4>[  299.437030] ops is c0292f00
-<4>[  299.437051] ops->startup is c01bd777
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+Comment: Using GnuPG with Fedora - http://enigmail.mozdev.org
 
-I don't know if it's relevant or not but the kernel is running in
-NFS-Root mode.
+iD8DBQFFvg2Z2ijCOnn/RHQRAqxgAJ9INW8gWbOxGwpxZqr6C2/iBGBiPgCeP3jJ
+R3jTCZj0fMnlQfIaBw4dajU=
+=7268
+-----END PGP SIGNATURE-----
 
-Best regards,
-José Gonçalves
+--------------enig465D7568B1038B4E09D962BB--
