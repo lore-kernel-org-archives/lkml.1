@@ -1,94 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964830AbXA2XKO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964881AbXA2XWe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964830AbXA2XKO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 18:10:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964852AbXA2XKO
+	id S964881AbXA2XWe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 18:22:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964894AbXA2XWe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 18:10:14 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:36155 "EHLO ogre.sisk.pl"
+	Mon, 29 Jan 2007 18:22:34 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:33238 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964830AbXA2XKM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 18:10:12 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: nigel@nigel.suspend2.net
-Subject: Re: question on resume()
-Date: Tue, 30 Jan 2007 00:10:37 +0100
-User-Agent: KMail/1.9.1
-Cc: Oliver Neukum <oliver@neukum.org>, linux-kernel@vger.kernel.org
-References: <200701291206.39637.oneukum@suse.de> <200701292204.33112.oliver@neukum.org> <1170105665.15820.29.camel@nigel.suspend2.net>
-In-Reply-To: <1170105665.15820.29.camel@nigel.suspend2.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+	id S964881AbXA2XWe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jan 2007 18:22:34 -0500
+Date: Mon, 29 Jan 2007 15:22:27 -0800
+From: Andrew Morton <akpm@osdl.org>
+To: "Matthew Kirk" <mkirk01@rcn.com>
+Cc: <linux-kernel@vger.kernel.org>
+Subject: Re: fsync occasionally very slow
+Message-Id: <20070129152227.cb417f69.akpm@osdl.org>
+In-Reply-To: <002701c743f1$2271c850$6600a8c0@charm>
+References: <001a01c74136$0028ecf0$6600a8c0@charm>
+	<20070126031654.a41fe374.akpm@osdl.org>
+	<002701c743f1$2271c850$6600a8c0@charm>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200701300010.38538.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Mon, 29 Jan 2007 17:02:14 -0500
+"Matthew Kirk" <mkirk01@rcn.com> wrote:
 
-On Monday, 29 January 2007 22:21, Nigel Cunningham wrote:
-> Hi.
+> Regarding the long fsyncs, here's a trace...
 > 
-> On Mon, 2007-01-29 at 22:04 +0100, Oliver Neukum wrote:
-> > Am Montag, 29. Januar 2007 21:14 schrieb Nigel Cunningham:
-> > > Hi.
-> > > 
-> > > On Mon, 2007-01-29 at 12:34 +0100, Oliver Neukum wrote:
-> > > > Am Montag, 29. Januar 2007 12:24 schrieb Nigel Cunningham:
-> > > > > Hi.
-> > > > > 
-> > > > > On Mon, 2007-01-29 at 12:06 +0100, Oliver Neukum wrote:
-> > > > > > Hi,
-> > > > > > 
-> > > > > > may a driver call wake_up() while doing resume() ?
-> > > > > 
-> > > > > I assume you mean waking a userspace process from drivers_resume(). If
-> > > > > so, the answer is no - processes will still be frozen at the point. In
-> > > > > the case of Suspend2, the LRU pages will still not have been read
-> > > > > either, so Suspend2 users would hate you for making hibernation crash
-> > > > > and burn :)
-> > > > 
-> > > > If so, how do I notify tasks presumably about to be thawed that their
-> > > > IO failed?
-> > > 
-> > > Do you mean I/O to disk? If so, it won't fail. All pending I/O gets
-> > > processed like normal either before or after suspending and resuming.
-> > > 
-> > > If you mean something like a packet being transmitted over the network,
-> > > you should be using the normal paths for recording success/failure.
-> > 
-> > I am talking about a character device that puts requests onto a queue.
-> > If the queue is restarted after resumption the normal error path is waking
-> > up the waiting tasks.
+> I upgraded to a more recent kernel - 2.6.18.6 - and ran it on a workstation.
+> This particular box has In this case the elevator is CFQ.
 > 
-> Ok. In that case, you'd want to delay trying to wake them until resuming
-> is completed.
-> 
-> Unless there's something I've forgotten, we don't currently have an easy
-> way for you to determine when processes are thawed.
+> This sample came from a stall that lasted about 2.5 minutes(!) - the longest
+> one I've seen yet.  The box is a bit more memory constrained than the
+> original system but exhibits similar behavior.  It doesn't page.  Also,
+> there is no raid card - simply striped PATA drives.
 
-That's correct.
+Using your little test app, the longest fsync() stall I can demonstrate on
+2.6.20-rc4-mm1 on plain-old-sata-disk is 1.2 seconds.
 
-> Perhaps this indicates a need for us to have a notifier chain for the end of
-> a cycle?
+What's the max stall you're able to see with the test app?
 
-Probably.  Well, I have no strong opinion about that.
- 
-> You could create a freezeable workqueue and schedule work from your
-> device_resume call (assuming that's doesn't raised atomicity issues),
-> but I wonder if that approach would be too heavy handed for what you're
-> after. I'll explicitly cc Rafael and see what he thinks.
+Perhaps the file is just super-fragmented.  If your production app does
+something like: 
 
-Hm, this way or another, the notification of tasks should be deferred until
-they are thawed.  The freezeable workqueue idea seems sensible to me.
+	for (a lot) {
+		fd = open(name);
+		write(fd, a little bit);
+		close(fd);
+	}
 
-Greetings,
-Rafael
+in multiple threads, or against a lot of different files then you might be
+fragmenting the files a lot.  This is because ext3 discards its in-core
+anti-fragmentation data structures on close().  So
+
+- Please check your app, see whether or not it is frequently opening and
+  closing the output files.
+
+- Using `bmap' from
+  http://www.zip.com.au/~akpm/linux/patches/stuff/ext3-tools.tar.gz,
+  determine whether the offending files are highly fragmented.
+
+- Tell us how much dirty data is being written out by these fsyncs?
+
+- Try mounting the filesystem with `-o data=writeback'.  Probably won't
+  help much if it's also demonstrable on ext2.
+
+- Can you reproduce the stalls on a plain-old-disk?  Get RAID out of the
+  picture?
+
+- You've seen the stalls with both CFQ and AS.  I guess you could try
+  deadline and no-op, but it sounds like that won't help.
 
 
--- 
-If you don't have the time to read,
-you don't have the time or the tools to write.
-		- Stephen King
