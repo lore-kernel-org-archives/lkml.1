@@ -1,79 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933117AbXA2FJN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933129AbXA2FRw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933117AbXA2FJN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 00:09:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933122AbXA2FJN
+	id S933129AbXA2FRw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 00:17:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933125AbXA2FRw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 00:09:13 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:49471 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933117AbXA2FJM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 00:09:12 -0500
-From: Neil Brown <neilb@suse.de>
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-Date: Mon, 29 Jan 2007 16:08:44 +1100
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <17853.33116.113629.65031@notabene.brown>
-Cc: Jesper Juhl <jesper.juhl@gmail.com>, nfs@lists.sourceforge.net,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [NFS] 2.6.17.8 - do_vfs_lock: VFS is out of sync with lock
-	manager!
-In-Reply-To: message from Trond Myklebust on Monday August 21
-References: <9a8748490608080739w2e14e5ceg44a7bf0a3b475704@mail.gmail.com>
-	<17636.4462.975774.528003@cse.unsw.edu.au>
-	<9a8748490608170258s32df0272r60c8c540e5871485@mail.gmail.com>
-	<17641.10665.116168.867041@cse.unsw.edu.au>
-	<1156190098.6158.109.camel@localhost>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+	Mon, 29 Jan 2007 00:17:52 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:3606 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S933122AbXA2FRv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jan 2007 00:17:51 -0500
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: michal.k.k.piotrowski@gmail.com (Michal Piotrowski)
+Subject: Re: 2.6.20-rc6-mm1
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Organization: Core
+In-Reply-To: <45BD2424.7020604@googlemail.com>
+X-Newsgroups: apana.lists.os.linux.kernel,apana.lists.os.linux.netdev
+User-Agent: tin/1.7.4-20040225 ("Benbecula") (UNIX) (Linux/2.6.17-rc4 (i686))
+Message-Id: <E1HBOtk-0007dS-00@gondolin.me.apana.org.au>
+Date: Mon, 29 Jan 2007 16:17:44 +1100
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday August 21, trond.myklebust@fys.uio.no wrote:
-> 
-> Could we instead replace it with a dprintk() that returns the value of
-> "res"? That will keep it useful for debugging purposes.
+Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
 
-(only 5 months later...)
+> Jan 28 22:58:29 euridica kernel: BUG: using smp_processor_id() in preemptible [00000001] code: yum-updatesd/2846
+> Jan 28 22:58:29 euridica kernel: caller is nf_conntrack_in+0x363/0x47f [nf_conntrack]
+> Jan 28 22:58:29 euridica kernel:  [<c01053c6>] show_trace_log_lvl+0x1a/0x2f
+> Jan 28 22:58:29 euridica kernel:  [<c0105ad6>] show_trace+0x12/0x14
+> Jan 28 22:58:29 euridica kernel:  [<c0105b98>] dump_stack+0x16/0x18
+> Jan 28 22:58:29 euridica kernel:  [<c0207803>] debug_smp_processor_id+0xb3/0xc8
+> Jan 28 22:58:29 euridica kernel:  [<fdbf8ad0>] nf_conntrack_in+0x363/0x47f [nf_conntrack]
+> Jan 28 22:58:29 euridica kernel:  [<fd9c32c4>] ipv4_conntrack_local+0x53/0x5b [nf_conntrack_ipv4]
+> Jan 28 22:58:29 euridica kernel:  [<c02f2286>] nf_iterate+0x36/0x67
+> Jan 28 22:58:29 euridica kernel:  [<c02f241b>] nf_hook_slow+0x52/0xbe
 
-Sure, how about this?
+This shouldn't have happened.  nf_hook_slow calls nf_iterate and
+therefore everything under it with preemption disabled.  So something
+must've reenabled it before hitting nf_conntrack_in.
 
-Thanks,
-NeilBrown
-
-
-Remove warning: VFS is out of sync with lock manager.
-
-But keep it as a dprintk
-
-The message can be generated in a quite normal situation:
- If a 'lock' request is interrupted, then the lock client needs to
-  record that the server has the lock, incase it does.
- When we come the unlock, the server might say it doesn't, even
-  though we think it does (or might) and this generates the message.
-
-Signed-off-by: Neil Brown <neilb@suse.de>
-
-### Diffstat output
- ./fs/nfs/file.c |    5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
-
-diff .prev/fs/nfs/file.c ./fs/nfs/file.c
---- .prev/fs/nfs/file.c	2007-01-29 16:04:09.000000000 +1100
-+++ ./fs/nfs/file.c	2007-01-29 16:04:45.000000000 +1100
-@@ -434,8 +434,9 @@ static int do_vfs_lock(struct file *file
- 			BUG();
- 	}
- 	if (res < 0)
--		printk(KERN_WARNING "%s: VFS is out of sync with lock manager!\n",
--				__FUNCTION__);
-+		dprintk(KERN_WARNING "%s: VFS is out of sync with lock manager"
-+			" - error %d!\n",
-+				__FUNCTION__, res);
- 	return res;
- }
- 
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
