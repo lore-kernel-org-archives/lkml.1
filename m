@@ -1,104 +1,196 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751996AbXA2SH1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752021AbXA2SMl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751996AbXA2SH1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 13:07:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752061AbXA2SH1
+	id S1752021AbXA2SMl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 13:12:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752061AbXA2SMl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 13:07:27 -0500
-Received: from amsfep20-int.chello.nl ([62.179.120.15]:42936 "EHLO
-	amsfep20-int.chello.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751996AbXA2SH0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 13:07:26 -0500
-Subject: Re: [PATCH 00/14] Concurrent Page Cache
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Andrew Morton <akpm@osdl.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Ingo Molnar <mingo@elte.hu>, Rik van Riel <riel@redhat.com>
-In-Reply-To: <Pine.LNX.4.64.0701290918260.28330@schroedinger.engr.sgi.com>
-References: <20070128131343.628722000@programming.kicks-ass.net>
-	 <Pine.LNX.4.64.0701290918260.28330@schroedinger.engr.sgi.com>
-Content-Type: text/plain
-Date: Mon, 29 Jan 2007 19:05:44 +0100
-Message-Id: <1170093944.6189.192.camel@twins>
+	Mon, 29 Jan 2007 13:12:41 -0500
+Received: from verein.lst.de ([213.95.11.210]:41593 "EHLO mail.lst.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752021AbXA2SMk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jan 2007 13:12:40 -0500
+Date: Mon, 29 Jan 2007 19:12:35 +0100
+From: Christoph Hellwig <hch@lst.de>
+To: Alan Cox <alan@redhat.com>
+Cc: Christoph Hellwig <hch@lst.de>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] tty: cleanup release_mem
+Message-ID: <20070129181235.GA9063@lst.de>
+References: <20070128171244.GA21378@lst.de> <20070129120100.GA4338@devserv.devel.redhat.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070129120100.GA4338@devserv.devel.redhat.com>
+User-Agent: Mutt/1.3.28i
+X-Spam-Score: 0 () 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-01-29 at 09:20 -0800, Christoph Lameter wrote:
-> On Sun, 28 Jan 2007, Peter Zijlstra wrote:
+On Mon, Jan 29, 2007 at 07:01:00AM -0500, Alan Cox wrote:
+> On Sun, Jan 28, 2007 at 06:12:44PM +0100, Christoph Hellwig wrote:
+> > release_mem contains two copies of exactly the same code.  Refactor
+> > these into a new helper, release_tty.  The only change in behaviour
+> > is that the driver reference count is now decremented after the
+> > master tty has been freed instead of before.
+> > 
+> > 
+> > Signed-off-by: Christoph Hellwig <hch@lst.de>
 > 
-> > With Nick leading the way to getting rid of the read side of the tree_lock,
-> > this work continues by breaking the write side of said lock.
+> Acked-by: Alan Cox <alan@redhat.com>
 > 
-> Could we get the read side in separately from the write side?
+> Please propogate the mutex_ FIXME comment to both functions as it may
+> well need to cover tty->link
 
-Sure, apply patches 1 through 9. 10 and up are the write side.
+Okay.  Now that we get into the details I've also added some renaming,
+release_mem becomes release_tty and the new factored out function is
+release_one_tty.  The difference is documented in the kdoc comments.
 
->  I think I 
-> get the read side but the write side still looks scary to me and 
-> introduces new ways of locking. Ladder locking?
 
-Its all quite simple really; imagine locking the whole tree path
-beginning at the root node. This obviously doesn't provide concurrency
-since holing the root node locked will avoid all other operations from
-starting.
+Signed-off-by: Christoph Hellwig <hch@lst.de>
 
-However, as soon as you've locked a node on the next level and can
-determine that you will never need to traverse the tree path upwards
-from this point, you can drop the lock(s) on the previous level.
-
-In the trivial case where you will never traverse up again, this reduces
-to ladder locking.
-
-Perhaps it is best illustrated with a picture (forgive the ASCII art)
-
-                          A0
-                  B0              B1
-              C0      C1      C2      C3
-            D0  D1  D2  D3  D4  D5  D6  D7
-
-Say we need D5, which yield the path: A0, B1, C2, D5.
-
-Ladder locking would end up:
-
-lock A0
-lock B1
-unlock A0 -> a new operation can start
-lock C2
-unlock B1
-lock D5
-unlock C2
-** we do stuff to D5
-unlock D5
-
-For path locking, this would end up being something like this:
-(say we can determine we'll never cross C2 back up)
-
-lock A0
-lock B1
-lock C2
-unlock A0 -> a new operation can start
-unlock B1
-lock D5
-** we do stuff to D5 and walk back up to C2
-unlock C2
-unlock D5
-
-> > Aside from breaking MTD this version of the concurrent page cache seems
-> > rock solid on my dual core x86_64 box.
-> 
-> What exactly is the MTD doing 
-
-drivers/mtd/devices/block2mtd.c - fudges with the pagecache, haven't
-spend any time in converting that. Shouldn't be hard.
-
-> and how does it break?
-
-Doesn't compile anymore.
-
-(could use atomic_long_t for mapping::nr_pages I guess)
-
+Index: linux-2.6/drivers/char/tty_io.c
+===================================================================
+--- linux-2.6.orig/drivers/char/tty_io.c	2007-01-29 10:01:46.000000000 +0100
++++ linux-2.6/drivers/char/tty_io.c	2007-01-29 19:08:06.000000000 +0100
+@@ -154,7 +154,7 @@
+ int tty_ioctl(struct inode * inode, struct file * file,
+ 	      unsigned int cmd, unsigned long arg);
+ static int tty_fasync(int fd, struct file * filp, int on);
+-static void release_mem(struct tty_struct *tty, int idx);
++static void release_tty(struct tty_struct *tty, int idx);
+ 
+ /**
+  *	alloc_tty_struct	-	allocate a tty object
+@@ -2003,7 +2003,7 @@
+ 
+ 	/* 
+ 	 * All structures have been allocated, so now we install them.
+-	 * Failures after this point use release_mem to clean up, so 
++	 * Failures after this point use release_tty to clean up, so 
+ 	 * there's no need to null out the local pointers.
+ 	 */
+ 	if (!(driver->flags & TTY_DRIVER_DEVPTS_MEM)) {
+@@ -2024,8 +2024,8 @@
+ 
+ 	/* 
+ 	 * Structures all installed ... call the ldisc open routines.
+-	 * If we fail here just call release_mem to clean up.  No need
+-	 * to decrement the use counts, as release_mem doesn't care.
++	 * If we fail here just call release_tty to clean up.  No need
++	 * to decrement the use counts, as release_tty doesn't care.
+ 	 */
+ 
+ 	if (tty->ldisc.open) {
+@@ -2095,17 +2095,17 @@
+ 	retval = -ENOMEM;
+ 	goto end_init;
+ 
+-	/* call the tty release_mem routine to clean out this slot */
++	/* call the tty release_tty routine to clean out this slot */
+ release_mem_out:
+ 	if (printk_ratelimit())
+ 		printk(KERN_INFO "init_dev: ldisc open failed, "
+ 				 "clearing slot %d\n", idx);
+-	release_mem(tty, idx);
++	release_tty(tty, idx);
+ 	goto end_init;
+ }
+ 
+ /**
+- *	release_mem		-	release tty structure memory
++ *	release_one_tty		-	release tty structure memory
+  *
+  *	Releases memory associated with a tty structure, and clears out the
+  *	driver table slots. This function is called when a device is no longer
+@@ -2117,37 +2117,14 @@
+  *	of ttys that the driver keeps.
+  *		FIXME: should we require tty_mutex is held here ??
+  */
+-
+-static void release_mem(struct tty_struct *tty, int idx)
++static void release_one_tty(struct tty_struct *tty, int idx)
+ {
+-	struct tty_struct *o_tty;
+-	struct ktermios *tp;
+ 	int devpts = tty->driver->flags & TTY_DRIVER_DEVPTS_MEM;
+-
+-	if ((o_tty = tty->link) != NULL) {
+-		if (!devpts)
+-			o_tty->driver->ttys[idx] = NULL;
+-		if (o_tty->driver->flags & TTY_DRIVER_RESET_TERMIOS) {
+-			tp = o_tty->termios;
+-			if (!devpts)
+-				o_tty->driver->termios[idx] = NULL;
+-			kfree(tp);
+-
+-			tp = o_tty->termios_locked;
+-			if (!devpts)
+-				o_tty->driver->termios_locked[idx] = NULL;
+-			kfree(tp);
+-		}
+-		o_tty->magic = 0;
+-		o_tty->driver->refcount--;
+-		file_list_lock();
+-		list_del_init(&o_tty->tty_files);
+-		file_list_unlock();
+-		free_tty_struct(o_tty);
+-	}
++	struct ktermios *tp;
+ 
+ 	if (!devpts)
+ 		tty->driver->ttys[idx] = NULL;
++
+ 	if (tty->driver->flags & TTY_DRIVER_RESET_TERMIOS) {
+ 		tp = tty->termios;
+ 		if (!devpts)
+@@ -2160,15 +2137,37 @@
+ 		kfree(tp);
+ 	}
+ 
++
+ 	tty->magic = 0;
+ 	tty->driver->refcount--;
++
+ 	file_list_lock();
+ 	list_del_init(&tty->tty_files);
+ 	file_list_unlock();
+-	module_put(tty->driver->owner);
++
+ 	free_tty_struct(tty);
+ }
+ 
++/**
++ *	release_one_tty		-	release tty structure memory
++ *
++ *	Release both @tty and a possible linked partner (think pty pair),
++ *	and decrement the refcount of the backing module.
++ *
++ *	Locking:
++ *		tty_mutex - sometimes only
++ *		takes the file list lock internally when working on the list
++ *	of ttys that the driver keeps.
++ *		FIXME: should we require tty_mutex is held here ??
++ */
++static void release_tty(struct tty_struct *tty, int idx)
++{
++	if (tty->link)
++		release_one_tty(tty->link, idx);
++	release_one_tty(tty, idx);
++	module_put(tty->driver->owner);
++}
++
+ /*
+  * Even releasing the tty structures is a tricky business.. We have
+  * to be very careful that the structures are all released at the
+@@ -2436,10 +2435,10 @@
+ 		tty_set_termios_ldisc(o_tty,N_TTY); 
+ 	}
+ 	/*
+-	 * The release_mem function takes care of the details of clearing
++	 * The release_tty function takes care of the details of clearing
+ 	 * the slots and preserving the termios structure.
+ 	 */
+-	release_mem(tty, idx);
++	release_tty(tty, idx);
+ 
+ #ifdef CONFIG_UNIX98_PTYS
+ 	/* Make this pty number available for reallocation */
