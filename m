@@ -1,70 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933228AbXA2G3K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933225AbXA2Gpi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933228AbXA2G3K (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 01:29:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933229AbXA2G3J
+	id S933225AbXA2Gpi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 01:45:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933241AbXA2Gpi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 01:29:09 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:38008 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933228AbXA2G3I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 01:29:08 -0500
-Date: Mon, 29 Jan 2007 01:28:26 -0500
-From: Dave Jones <davej@redhat.com>
-To: Rob Landley <rob@landley.net>
-Cc: Oleg Verych <olecom@flower.upol.cz>, Andrew Morton <akpm@osdl.org>,
-       Dirk Behme <dirk.behme@googlemail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: The mbox format archives of linux-kernel are gone.
-Message-ID: <20070129062826.GB28496@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Rob Landley <rob@landley.net>, Oleg Verych <olecom@flower.upol.cz>,
-	Andrew Morton <akpm@osdl.org>,
-	Dirk Behme <dirk.behme@googlemail.com>,
-	LKML <linux-kernel@vger.kernel.org>
-References: <45BC54D3.2010706@lycosxxl.de> <20070128151706.8d2d1841.akpm@osdl.org> <20070129015235.GA25299@flower.upol.cz> <200701290059.28098.rob@landley.net>
+	Mon, 29 Jan 2007 01:45:38 -0500
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:41048 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933225AbXA2Gph (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jan 2007 01:45:37 -0500
+Message-Id: <200701290645.l0T6jX0S030597@turing-police.cc.vt.edu>
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: ebiederm@xmission.com (Eric W. Biederman)
+Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org
+Subject: Re: mm snapshot broken-out-2007-01-26-00-36.tar.gz uploaded
+In-Reply-To: Your message of "Sun, 28 Jan 2007 23:08:17 MST."
+             <m1d54ymkku.fsf@ebiederm.dsl.xmission.com>
+From: Valdis.Kletnieks@vt.edu
+References: <200701260837.l0Q8blBr011622@shell0.pdx.osdl.net> <6bffcb0e0701270837i1ec40560l6e61e8876177e9da@mail.gmail.com> <45BBC444.8090109@imap.cc> <20070127134116.06bdadd8.akpm@osdl.org> <200701280241.l0S2f2ga015847@turing-police.cc.vt.edu> <200701290249.l0T2nZt8003676@turing-police.cc.vt.edu>
+            <m1d54ymkku.fsf@ebiederm.dsl.xmission.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200701290059.28098.rob@landley.net>
-User-Agent: Mutt/1.4.2.2i
+Content-Type: multipart/signed; boundary="==_Exmh_1170053133_8444P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Mon, 29 Jan 2007 01:45:33 -0500
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 29, 2007 at 12:59:27AM -0500, Rob Landley wrote:
- > On Sunday 28 January 2007 8:52 pm, Oleg Verych wrote:
- > > On Sun, Jan 28, 2007 at 03:17:06PM -0800, Andrew Morton wrote:
- > > > On Sun, 28 Jan 2007 22:46:32 +0000
- > > > Oleg Verych <olecom@flower.upol.cz> wrote:
- > > > 
- > > > > If somebody will get lkml mbox archive, can you import it into gmane,
- > > > > please.
- > > > 
- > > > http://userweb.kernel.org/~akpm/lkml-mbox-archives/
- > > 
- > > I think, whole set, possibly from most active start years, say 1993, 1994
- > > or so, must be collected, then i can contact Lars to try to import all
- > > this into Gmane with current web links being preserved.
- > > 
- > > BTW, donwloading (big) sets of archives _from_ Gmane is strongly
- > > discouraged.
- > 
- > The very early archives are available on the web:
- > http://www.kclug.org/old_archives/linux-activists/
- > 
- > And I'm under the impression that Alan Cox once collected a complete set of 
- > mbox archives, but this is a vague an unfocused recollection of something 
- > going by years ago.  (I also thought the result was downloadable under 
- > kernel.org/pub somewhere.  This would not appear to be the case.)
+--==_Exmh_1170053133_8444P
+Content-Type: text/plain; charset=us-ascii
 
-ftp://ftp.linux.org.uk/pub/linux/history/funet-archive/
-ftp://ftp.linux.org.uk/pub/linux/alan/Kernel/Documents/Old-Funet-Lists
-has some of the really early stuff.
+On Sun, 28 Jan 2007 23:08:17 MST, Eric W. Biederman said:
+> Valdis.Kletnieks@vt.edu writes:
 
-Until recently I had a bunch of mid 90s to early 2000's in mboxes too,
-but a disk accident seems to have eaten the only copies I had.
+> Does it find sys?  If so perhaps I should do something even more significant.
+> I guess if I get many complaints about this I will figure out how to print
+> out an appropriate error message.
 
-		Dave
+It found sys, and then the second iteration in in xlate_proc_name it failed
+to find net because the de->subdir for sys/net wasn't set.
 
--- 
-http://www.codemonkey.org.uk
+> > What's the intended semantics of create_proc_entry and xlate_proc_name in
+> > this new regime of no subdir pointers? Or am I just (yet again) one of the
+> > first to trip over a bug?
+> 
+> It is supposed to fail in this instance.  If you want something under /proc/sys
+> you are supposed to use register_sysctl like everyone else.  If it's not a
+> sysctl it should not show up under /proc/sys.
+
+Wasn't my code originally - I think the original author thought that since
+all the *other* config stuff for ipv4 was down under /proc/sys/net/ipv4, this
+one should be as well because that's where sysadmins would look for it, and
+wasn't thinking so much about whether it was a sysctl or not.
+
+> I'm glad to see my cleanup uncovering more bugs, I'm sorry you were the one
+> who had to find it.  I will you well fixing your out of tree ipfilter module.
+
+It's easy enough to move the entry under /proc/net or someplace instead.
+
+What's the current advice on what kernel interface to use for this scenario:
+
+In userspace, we do something like this:
+
+(while read foo; do echo $foo > /proc/my_file; done) < /etc/bunch_of_lines
+
+and we want to catch, parse, and save each line as it enters the kernel, and
+we end up with several dozen entries saved.
+
+If we do a 'cat /proc/my_file', we iterate across the list of saved lines
+and dump them all out.
+
+
+
+--==_Exmh_1170053133_8444P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFFvZgNcC3lWbTT17ARAvlnAJ9oSvcBj5QrFE1X0APsK1bfNXMvpwCgtYzY
+IcHm4UOUSDBsneXskPo9kwI=
+=dd1R
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1170053133_8444P--
