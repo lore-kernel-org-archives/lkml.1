@@ -1,49 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751154AbXA2Qha@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752500AbXA2Qky@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751154AbXA2Qha (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 11:37:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751457AbXA2Qha
+	id S1752500AbXA2Qky (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 11:40:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752511AbXA2Qky
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 11:37:30 -0500
-Received: from www.osadl.org ([213.239.205.134]:48410 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751154AbXA2Qh3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 11:37:29 -0500
-Subject: Re: 2.6.20-rc6-mm2
-From: Thomas Gleixner <tglx@linutronix.de>
-Reply-To: tglx@linutronix.de
-To: Karsten Wiese <fzu@wemgehoertderstaat.de>
-Cc: Andrew Morton <akpm@osdl.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <200701291722.41705.fzu@wemgehoertderstaat.de>
-References: <20070129001207.71ea3470.akpm@osdl.org>
-	 <200701291722.41705.fzu@wemgehoertderstaat.de>
-Content-Type: text/plain
-Date: Mon, 29 Jan 2007 17:38:08 +0100
-Message-Id: <1170088688.29240.5.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+	Mon, 29 Jan 2007 11:40:54 -0500
+Received: from zcars04e.nortel.com ([47.129.242.56]:37033 "EHLO
+	zcars04e.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752500AbXA2Qkx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jan 2007 11:40:53 -0500
+Message-ID: <45BE238A.9060103@nortel.com>
+Date: Mon, 29 Jan 2007 10:40:42 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
+X-Accept-Language: en-us, en
+MIME-Version: 1.0
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+CC: linux-kernel@vger.kernel.org, libc-hacker@sources.redhat.com,
+       libc-alpha@sources.redhat.com
+Subject: Re: [ANN] Userspace M-on-N threading model implementation. Alpha
+ release.
+References: <20070129145227.GA10524@2ka.mipt.ru>
+In-Reply-To: <20070129145227.GA10524@2ka.mipt.ru>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 29 Jan 2007 16:40:46.0539 (UTC) FILETIME=[39C7B9B0:01C743C4]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-01-29 at 17:22 +0100, Karsten Wiese wrote:
-> Hi,
+Evgeniy Polyakov wrote:
+> Hello.
 > 
-> with dynticks and highres_timers enabled, cpufreq_ondemand makes mess here on
-> an AMD64 UP.
-> cpufreq_ondemand assumes that jiffies advance at exactly the same pace as the
-> sum of all kstat_cpu(cpu).cpustat.* members.
-> This isn't the case here as dmesg output from patch below shows.
-> 
-> Is cpufreq_ondemand correct assuming
->  "jiffies advance at exactly the same pace as the
->   sum of all kstat_cpu(cpu).cpustat.* members"?
-> Or is "dynticks and highres_timers"'s behaviour of incrementing the
-> sum of  kstat_cpu(cpu).cpustat.* members faster than jiffies?
+> I'm pleased to announce initial userspace M-on-N threading model
+> implementation (for hackers) called NTL. 
 
-No it should not. /me investigates.
+If you haven't already, I suggest you look into the story of NGPT and 
+also read the NPTL white paper 
+(http://people.redhat.com/drepper/nptl-design.pdf) especially section 
+5.1 describing why they went with a 1:1 model.
 
-	tglx
-
-
+Chris
