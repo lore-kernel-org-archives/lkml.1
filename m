@@ -1,110 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752543AbXA2T0F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752537AbXA2T1N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752543AbXA2T0F (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 14:26:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752537AbXA2T0F
+	id S1752537AbXA2T1N (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 14:27:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752539AbXA2T1N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 14:26:05 -0500
-Received: from omx1-ext.sgi.com ([192.48.179.11]:45024 "EHLO omx1.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752543AbXA2T0E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 14:26:04 -0500
-Date: Mon, 29 Jan 2007 11:25:26 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-cc: Ingo Molnar <mingo@elte.hu>, Srivatsa Vaddagiri <vatsa@in.ibm.com>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       Gautham shenoy <ego@in.ibm.com>, Andrew Morton <akpm@osdl.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: slab: start_cpu_timer/cache_reap CONFIG_HOTPLUG_CPU problems
-In-Reply-To: <20070129182742.GA158@tv-sign.ru>
-Message-ID: <Pine.LNX.4.64.0701291109310.29254@schroedinger.engr.sgi.com>
-References: <20070129011301.GA844@tv-sign.ru>
- <Pine.LNX.4.64.0701290852390.28200@schroedinger.engr.sgi.com>
- <20070129171923.GA138@tv-sign.ru> <Pine.LNX.4.64.0701290922390.28330@schroedinger.engr.sgi.com>
- <20070129182742.GA158@tv-sign.ru>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 29 Jan 2007 14:27:13 -0500
+Received: from caffeine.uwaterloo.ca ([129.97.134.17]:58385 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752537AbXA2T1M (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jan 2007 14:27:12 -0500
+Date: Mon, 29 Jan 2007 14:27:07 -0500
+To: Paul Fulghum <paulkf@microgate.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Strange problem with tty layer
+Message-ID: <20070129192707.GE7584@csclub.uwaterloo.ca>
+References: <20070124204009.GA7584@csclub.uwaterloo.ca> <45B7CDB5.7020909@microgate.com> <20070125151639.GH7582@csclub.uwaterloo.ca> <20070126142041.GD7584@csclub.uwaterloo.ca> <45BA1556.8080808@microgate.com> <20070126145608.GK7582@csclub.uwaterloo.ca> <45BA190C.5040300@microgate.com> <20070126160842.GM7582@csclub.uwaterloo.ca>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070126160842.GM7582@csclub.uwaterloo.ca>
+User-Agent: Mutt/1.5.9i
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 29 Jan 2007, Oleg Nesterov wrote:
-
-> > > Even if smp_processor_id() was stable during the execution of cache_reap(),
-> > > this work_struct can be moved to another CPU if CPU_DEAD happens. We can't
-> > > avoid this, and this is correct.
-> > 
-> > Uhh.... This may not be correct in terms of how the slab operates.
+On Fri, Jan 26, 2007 at 11:08:42AM -0500, Lennart Sorensen wrote:
+> OK, the tty settings according to stty that I am using are:
+> # stty -F /dev/ttyn0 -a
+> speed 230400 baud; rows 0; columns 0; line = 0;
+> intr = ^C; quit = ^\; erase = ^?; kill = ^U; eof = ^D; eol = <undef>; eol2 = <undef>; start = ^Q; stop = ^S; susp = ^Z; rprnt = ^R;
+> werase = ^W; lnext = ^V; flush = ^O; min = 1; time = 0;
+> -parenb -parodd cs8 hupcl -cstopb cread clocal -crtscts
+> -ignbrk -brkint -ignpar -parmrk -inpck -istrip -inlcr -igncr icrnl -ixon -ixoff -iuclc -ixany -imaxbel
+> -opost -olcuc -ocrnl onlcr -onocr -onlret -ofill -ofdel nl0 cr0 tab0 bs0 vt0 ff0
+> -isig -icanon iexten -echo -echoe echok -echonl -noflsh -xcase -tostop -echoprt echoctl echoke
 > 
-> But this is practically impossible to avoid. We can't delay CPU_DOWN until all
-> workqueues flush their cwq->worklist. This is livelockable, the work can re-queue
-> itself, and new works can be added since the dying CPU is still on cpu_online_map.
-> This means that some pending works will be processed on another CPU.
+> So min and time seems good.  I am not explicitly setting those in my
+> test program (unless one of the other settings implies it).  I will add
+> it explicitly just in case too.
 
-But we could delay CPU_DOWN in the handler for the slab until we know that 
-the cache_reaper is no longer running?
+I have run some tests with 8 patches from Linus's 2.6 tree on top of the
+2.6.16.25 along with a bit of debug code in the n_tty.c, which ran
+perfectly for 3 days.  I now removed the debug code to see if it will
+still run perfectly with those 8 patches.  The patches I applied in
+order are:
 
-> > > This means that __get_cpu_var(reap_work) returns a "wrong" struct delayed_work.
-> > > This is absolutely harmless right now, but may be it's better to use
-> > > container_of(unused, struct delayed_work, work).
+commit 70522e121a521aa09bd0f4e62e1aa68708b798e1
+commit 41c28ff1635e71af072c4711ff5fadd5855d48e7
+commit 1aef821a6b3aeca8c19d06aee012ed9db617d1e3
+commit ee37df7877eeaa16d7761cce64854110a7c17ad9
+commit e1a2509023785bd3199ac068ab80155aeba01265
+commit 817d6d3bceaf34c99f5343820f9b9e6021f0655c
+commit 2c3bb20f46709a0adfa7ea408013edbcab945d5a
+commit 33b37a33c242542fac2980b8ccd90977388b7a8d
 
-There is more where that is coming from. cache_reap determines the current 
-cpu in order to find the correct per cpu cache and also determines the 
-current node. If you move cache_reap to another processor / node then it 
-will just clean that one and not do anything for the processor that you 
-wanted it to run for. If we change processors in the middle of the run
-then it may do some actions on one cpu and some on another....
+Hopefully it will stay working, and actually be a solution to my tty
+problem in 2.6.16.25.
 
-Having said that here is the patch that insures that makes cache_reap no 
-longer use per_cpu to access the work structure. This may be a cleanup on
-its own but it will not address your issues.
+2.6.18.2 (Debian 2.6.18-4) on the other hand was still broken, but I am
+not sure which if any of the above commits are not in that version (the
+date ranges made me think they all should be, but maybe I got the date
+of 2.6.18 wrong, or not all commits in the linux-2.6 tree are actually
+part of a given release.  I am still figuring out git).
 
-
-
-Use parameter passed to cache_reap to determine pointer to work structure
-
-Use the pointer passed to cache_reap to determine the work
-pointer and consolidate exit paths.
-
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
-
-Index: linux-2.6.20-rc6/mm/slab.c
-===================================================================
---- linux-2.6.20-rc6.orig/mm/slab.c	2007-01-29 13:08:05.000000000 -0600
-+++ linux-2.6.20-rc6/mm/slab.c	2007-01-29 13:17:01.695680898 -0600
-@@ -4021,18 +4021,17 @@ void drain_array(struct kmem_cache *cach
-  * If we cannot acquire the cache chain mutex then just give up - we'll try
-  * again on the next iteration.
-  */
--static void cache_reap(struct work_struct *unused)
-+static void cache_reap(struct work_struct *w)
- {
- 	struct kmem_cache *searchp;
- 	struct kmem_list3 *l3;
- 	int node = numa_node_id();
-+	struct delayed_work *work =
-+		container_of(w, struct delayed_work, work);
- 
--	if (!mutex_trylock(&cache_chain_mutex)) {
-+	if (!mutex_trylock(&cache_chain_mutex))
- 		/* Give up. Setup the next iteration. */
--		schedule_delayed_work(&__get_cpu_var(reap_work),
--				      round_jiffies_relative(REAPTIMEOUT_CPUC));
--		return;
--	}
-+		goto out;
- 
- 	list_for_each_entry(searchp, &cache_chain, next) {
- 		check_irq_on();
-@@ -4075,9 +4074,9 @@ next:
- 	mutex_unlock(&cache_chain_mutex);
- 	next_reap_node();
- 	refresh_cpu_vm_stats(smp_processor_id());
-+out:
- 	/* Set up the next iteration */
--	schedule_delayed_work(&__get_cpu_var(reap_work),
--		round_jiffies_relative(REAPTIMEOUT_CPUC));
-+	schedule_delayed_work(work, round_jiffies_relative(REAPTIMEOUT_CPUC));
- }
- 
- #ifdef CONFIG_PROC_FS
+--
+Len Sorensen
