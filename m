@@ -1,94 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752055AbXA2SPk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752072AbXA2SQF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752055AbXA2SPk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 13:15:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752061AbXA2SPk
+	id S1752072AbXA2SQF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 13:16:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752069AbXA2SQF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 13:15:40 -0500
-Received: from noname.neutralserver.com ([70.84.186.210]:21079 "EHLO
-	noname.neutralserver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752055AbXA2SPj (ORCPT
+	Mon, 29 Jan 2007 13:16:05 -0500
+Received: from nf-out-0910.google.com ([64.233.182.191]:15564 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752072AbXA2SQD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 13:15:39 -0500
-Date: Mon, 29 Jan 2007 20:15:23 +0200
-From: Dan Aloni <da-x@monatomic.org>
-To: Linux Kernel List <linux-kernel@vger.kernel.org>
-Cc: Chris Leech <christopher.leech@intel.com>
-Subject: [PATCH] fix I/OAT for kexec
-Message-ID: <20070129181522.GA17362@localdomain>
-MIME-Version: 1.0
+	Mon, 29 Jan 2007 13:16:03 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=G8yPo8KzrBsIaMD++w/aOaZhVmUIXTSR6dqzrwImxVj5+6Z68rlrZmDSsUhuWP0LMIXBO5yNiXNguuOyxzuxAePmHWFnZ1A2cLYcxUFkZSxOcmjRE5AS3ZIzuKpri1d3VEcg7BMNm8pxp5/ZV32vUD4I+MBhGOQ1zOsBFBzrKbs=
+Date: Mon, 29 Jan 2007 21:15:48 +0300
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Andi Kleen <ak@suse.de>
+Cc: Andrew Morton <akpm@osdl.org>, Parag Warudkar <parag.warudkar@gmail.com>,
+       dsd@gentoo.org, joerg@hydrops.han.de, linux-kernel@vger.kernel.org
+Subject: Re: [Bugme-new] [Bug 7891] New: vdso page is no longer mapped for
+Message-ID: <20070129181548.GD5546@martell.zuzino.mipt.ru>
+References: <82e4877d0701271201n3aa5bdf6v7c5fb8e41ee98c80@mail.gmail.com> <20070127140233.203ef7d3.akpm@osdl.org> <200701290410.29427.ak@suse.de>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-PopBeforeSMTPSenders: da-x@monatomic.org
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - noname.neutralserver.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - monatomic.org
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+In-Reply-To: <200701290410.29427.ak@suse.de>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Mon, Jan 29, 2007 at 04:10:29AM +0100, Andi Kleen wrote:
+> Don't require the vDSO for handling a.out signals
 
-Under kexec, I/OAT initialization breaks over busy resources
-because the previous kernel did not release them.
+> --- linux.orig/include/linux/binfmts.h
+> +++ linux/include/linux/binfmts.h
+> @@ -59,6 +59,7 @@ struct linux_binfmt {
+>  	int (*load_shlib)(struct file *);
+>  	int (*core_dump)(long signr, struct pt_regs * regs, struct file * file);
+>  	unsigned long min_coredump;	/* minimal dump size */
+> +	int hasvdso;
 
-I'm not sure this fix can be considered a complete one but 
-it works for me. I guess something similar to the *_remove
-method should occur there..
+nit: has_vdso, please.
 
-
-Signed-off-by: Dan Aloni <da-x@monatomic.org>
-
-diff --git a/drivers/dma/ioatdma.c b/drivers/dma/ioatdma.c
-index 8e87261..9a50701 100644
---- a/drivers/dma/ioatdma.c
-+++ b/drivers/dma/ioatdma.c
-@@ -42,6 +42,7 @@ #define to_ioat_desc(lh) container_of(lh
- 
- /* internal functions */
- static int __devinit ioat_probe(struct pci_dev *pdev, const struct pci_device_id *ent);
-+static void ioat_shutdown(struct pci_dev *pdev);
- static void __devexit ioat_remove(struct pci_dev *pdev);
- 
- static int enumerate_dma_channels(struct ioat_device *device)
-@@ -560,6 +561,7 @@ static struct pci_driver ioat_pci_drv = 
- 	.name 	= "ioatdma",
- 	.id_table = ioat_pci_tbl,
- 	.probe	= ioat_probe,
-+	.shutdown = ioat_shutdown,
- 	.remove	= __devexit_p(ioat_remove),
- };
- 
-@@ -787,9 +789,20 @@ err_request_regions:
- err_set_dma_mask:
- 	pci_disable_device(pdev);
- err_enable_device:
-+
-+	printk(KERN_ERR "Intel(R) I/OAT DMA Engine initialization failed\n");
-+
- 	return err;
- }
- 
-+static void ioat_shutdown(struct pci_dev *pdev)
-+{
-+	struct ioat_device *device;
-+	device = pci_get_drvdata(pdev);
-+
-+	dma_async_device_unregister(&device->common);
-+}
-+
- static void __devexit ioat_remove(struct pci_dev *pdev)
- {
- 	struct ioat_device *device;
-
-
-
--- 
-Dan Aloni
-XIV LTD, http://www.xivstorage.com
-da-x (at) monatomic.org, dan (at) xiv.co.il
