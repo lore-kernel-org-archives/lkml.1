@@ -1,64 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933031AbXA2B0S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933063AbXA2Ba2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933031AbXA2B0S (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jan 2007 20:26:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933040AbXA2B0S
+	id S933063AbXA2Ba2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jan 2007 20:30:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933040AbXA2Ba1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jan 2007 20:26:18 -0500
-Received: from gepetto.dc.ltu.se ([130.240.42.40]:41753 "EHLO
-	gepetto.dc.ltu.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933031AbXA2B0R (ORCPT
+	Sun, 28 Jan 2007 20:30:27 -0500
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:46287 "EHLO
+	pd3mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932997AbXA2Ba0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jan 2007 20:26:17 -0500
-Message-ID: <45BD4D2C.2010306@student.ltu.se>
-Date: Mon, 29 Jan 2007 02:26:04 +0100
-From: Richard Knutsson <ricknu-0@student.ltu.se>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
-MIME-Version: 1.0
-To: Oleg Verych <olecom@flower.upol.cz>, Andrew Morton <akpm@osdl.org>
-CC: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [SCRIPT] Remove "space damage" from patches
-References: <45BD177D.6060907@student.ltu.se> <slrnerqapg.f71.olecom@flower.upol.cz> <45BD3AF7.4070902@student.ltu.se> <slrnerqgj0.f71.olecom@flower.upol.cz>
-In-Reply-To: <slrnerqgj0.f71.olecom@flower.upol.cz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sun, 28 Jan 2007 20:30:26 -0500
+Date: Sun, 28 Jan 2007 19:29:46 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: [PATCH] libata: fix translation for START STOP UNIT
+To: linux-kernel <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
+       Jeff Garzik <jeff@garzik.org>
+Message-id: <45BD4E0A.7060501@shaw.ca>
+MIME-version: 1.0
+Content-type: multipart/mixed; boundary=------------080408040500080807070707
+User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oleg Verych wrote:
-> 29-01-2007, Richard Knutsson:
->   
->> Oleg Verych wrote:
->>     
->>> Nack, big and fat. It's userspace problem.
->>>
->>> If our "developers" can't use or update their every-day-tools, it's a
->>> shame. And this is not trolling: i'm using Jed and GNU Emacs, both are
->>> ok with whitespace "production".
->>>       
->> Oh, I hope I didn't give the impression I wanted it in the kernel (that 
->> is why i labeled it as SCRIPT and not PATCH), as you said it is a 
->> userspace problem. I just thought a simple script to remove those 
->> whitespace could help in an imperfect world. I prefer kate since then 
->> you can see where the tabs begins (and other features).
->>     
->
-> Just to give you idea, how imperfect it is:
-> <http://marc.theaimsgroup.com/?l=linux-mm-commits&m=116198944205036&w=2>
->
-> Anyway, i still think programmers *must* take care of it, if they think
-> they _are_ Programmers. IMHO LKML already gives obligation to be one
-Then I hope you don't mind me asking, why is there (L)indent? Everyone 
-can make a mistake and if your editor does not auto-format then there 
-may be a whitespace straying.
-I also guess you saw that the script is _not_ for cleaning up 
-source-files (can be intrusive and is better to be fixed when fixing 
-something else), but patches. So if a maintainer does not have anything 
-to easily fix those, they might want a simple script to do the work 
-(otherwise I believe they just deleted my mail ;) ).
+This is a multi-part message in MIME format.
+--------------080408040500080807070707
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-As I said in the posting, it is just if someone is interested in it, 
-otherwise you have a Del-button.
+Applies to 2.6.20-rc6.
 
-Richard Knutsson
+---
+
+libata's SCSI translation for the SCSI START STOP UNIT command with the 
+START bit clear (i.e. stopping the drive) appears to be incorrect. It 
+sends an ATA STANDBY command with the time period set to 0, which the 
+code comment says means "now", but the ATA standard says this means 
+disable the standby timer, which effectively does nothing. Change this 
+to issue a STANDBY IMMEDIATE command which will actually spin the drive 
+down. The SAT (SCSI/ATA Translation) standard revision 9 concurs with 
+this choice.
+
+Signed-off-by: Robert Hancock <hancockr@shaw.ca>
+
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
+
+
+
+--------------080408040500080807070707
+Content-Type: text/plain;
+ name="libata-fix-start-stop-unit-translation.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="libata-fix-start-stop-unit-translation.patch"
+
+--- linux-2.6.20-rc6nv/drivers/ata/libata-scsi.c	2007-01-28 16:59:58.000000000 -0600
++++ linux-2.6.20-rc6nvedit/drivers/ata/libata-scsi.c	2007-01-28 17:30:12.000000000 -0600
+@@ -983,11 +983,10 @@ static unsigned int ata_scsi_start_stop_
+ 		}
+ 
+ 		tf->command = ATA_CMD_VERIFY;	/* READ VERIFY */
+-	} else {
+-		tf->nsect = 0;	/* time period value (0 implies now) */
+-		tf->command = ATA_CMD_STANDBY;
+-		/* Consider: ATA STANDBY IMMEDIATE command */
+-	}
++	} else
++		/* Issue ATA STANDBY IMMEDIATE command */
++		tf->command = ATA_CMD_STANDBYNOW1;
++
+ 	/*
+ 	 * Standby and Idle condition timers could be implemented but that
+ 	 * would require libata to implement the Power condition mode page
+
+--------------080408040500080807070707--
 
