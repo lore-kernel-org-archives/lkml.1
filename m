@@ -1,43 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751229AbXA2Ls4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751242AbXA2L6z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751229AbXA2Ls4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 06:48:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751232AbXA2Lsz
+	id S1751242AbXA2L6z (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 06:58:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751246AbXA2L6z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 06:48:55 -0500
-Received: from ns2.suse.de ([195.135.220.15]:38539 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751229AbXA2Lsz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 06:48:55 -0500
-Date: Mon, 29 Jan 2007 09:24:30 +0100
-From: Stefan Seyfried <seife@suse.de>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Alessandro Di Marco <dmr@gmx.it>, linux-kernel@vger.kernel.org,
-       vojtech@suse.cz
-Subject: Re: [ANNOUNCE] System Inactivity Monitor v1.0
-Message-ID: <20070129082430.GA6101@suse.de>
-References: <877ivfi60i.fsf@gmx.it> <20070123094114.GE6033@ucw.cz> <87wt3dhlte.fsf@gmx.it> <20070123163442.GA18662@elf.ucw.cz> <87lkjthdmd.fsf@gmx.it> <20070123184432.GE18662@elf.ucw.cz> <873b61cf1v.fsf@gmx.it> <20070126171536.GB964@elf.ucw.cz> <878xfpoeom.fsf@gmx.it> <20070127174525.GA4787@ucw.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Mon, 29 Jan 2007 06:58:55 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4769 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751242AbXA2L6y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jan 2007 06:58:54 -0500
+Date: Mon, 29 Jan 2007 11:58:42 +0000
+From: Pavel Machek <pavel@ucw.cz>
+To: Larry Finger <larry.finger@lwfinger.net>
+Cc: roucaries bastien <roucaries.bastien@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       bcm43xx devel <Bcm43xx-dev@lists.berlios.de>
+Subject: Re: Bcm43xx oops after suspend to disk
+Message-ID: <20070129115842.GA4928@ucw.cz>
+References: <45B92488.6090908@lwfinger.net> <45B92536.2080909@lwfinger.net> <195c7a900701251530m409878a8id301c7cada76f342@mail.gmail.com> <45BA246B.6030505@lwfinger.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070127174525.GA4787@ucw.cz>
-X-Operating-System: openSUSE 10.2 (i586), Kernel 2.6.18.2-34-default
-User-Agent: mutt-ng/devel-r804 (Linux)
+In-Reply-To: <45BA246B.6030505@lwfinger.net>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jan 27, 2007 at 05:45:25PM +0000, Pavel Machek wrote:
-> > This patch exports to the user space the inactivity time (in msecs) of a given
-> > input device. Example follows:
+Hi!
+
+> >> Do you have the log stuff that precedes this part? In particular, was
+> >> there a assertion that failed?
+> >>
+> > It is oops on resume and no asseertion failled this boot. However I
+> > have usually a lot of
+> > bcm43xx: ASSERTION FAILED (radio_attenuation < 10) at:
+> > drivers/net/wireless/bcm43xx/bcm43xx_phy.c:1496:bcm43xx_find_lopair()
 > 
-> Looks okay to me. I guess you should sign it off, and ask Dmitry
-> (input maintainer) for a merge?
+> Those are well known and do not affect this problem.
+> 
+> > Moreover after the first oops I have a second oops (Surelly a
+> > consequence of the first).
+> 
+> I think that is right.
+> 
+> Unfortunately, I cannot test for this problem on my system as it doesn't suspend at all.
 
-Hey, come on, "no new proc files", please ;-)
+Can you try to debug that? swsusp is very easy to get going these
+days. And with minimum drivers, it tends to work very reliably. Any
+help I can provide?
 
-> > <0> $ cat /proc/bus/input/activity
 -- 
-Stefan Seyfried
-QA / R&D Team Mobile Devices        |              "Any ideas, John?"
-SUSE LINUX Products GmbH, Nürnberg  | "Well, surrounding them's out." 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
