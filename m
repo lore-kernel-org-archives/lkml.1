@@ -1,68 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932417AbXA2Kzx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932758AbXA2K6W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932417AbXA2Kzx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 05:55:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932834AbXA2Kzx
+	id S932758AbXA2K6W (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 05:58:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932921AbXA2K6W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 05:55:53 -0500
-Received: from mivlgu.ru ([81.18.140.87]:35406 "EHLO master.mivlgu.local"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932417AbXA2Kzw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 05:55:52 -0500
-X-Greylist: delayed 1748 seconds by postgrey-1.27 at vger.kernel.org; Mon, 29 Jan 2007 05:55:51 EST
-Date: Mon, 29 Jan 2007 13:26:41 +0300
-From: Sergey Vlasov <vsu@altlinux.ru>
-To: Jiri Kosina <jikos@jikos.cz>
-Cc: Soeren Sonnenburg <kernel@nn7.de>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       linux-usb-devel <linux-usb-devel@lists.sourceforge.net>
-Subject: Re: [linux-usb-devel] 2.6.20-rc6 pb_fnmode regression
-Message-ID: <20070129102641.GC3375@master.mivlgu.local>
-Mail-Followup-To: Jiri Kosina <jikos@jikos.cz>,
-	Soeren Sonnenburg <kernel@nn7.de>,
-	Linux Kernel <linux-kernel@vger.kernel.org>,
-	linux-usb-devel <linux-usb-devel@lists.sourceforge.net>
-References: <1169904555.2462.10.camel@localhost> <Pine.LNX.4.64.0701291049190.9448@twin.jikos.cz>
+	Mon, 29 Jan 2007 05:58:22 -0500
+Received: from mailhub.sw.ru ([195.214.233.200]:43260 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932834AbXA2K6V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jan 2007 05:58:21 -0500
+Date: Mon, 29 Jan 2007 14:05:09 +0300
+From: Alexey Dobriyan <adobriyan@openvz.org>
+To: Ulrich Drepper <drepper@redhat.com>
+Cc: Andrew Morton <akpm@osdl.org>, devel@openvz.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/3] lutimesat: actual syscall and wire-up on i386
+Message-ID: <20070129110509.GA13096@localhost.sw.ru>
+References: <20070126112345.GC11128@localhost.sw.ru> <20070126123903.046aaa5e.akpm@osdl.org> <45BA6860.6040007@redhat.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="tqI+Z3u+9OQ7kwn0"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0701291049190.9448@twin.jikos.cz>
+In-Reply-To: <45BA6860.6040007@redhat.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Jan 26, 2007 at 12:45:20PM -0800, Ulrich Drepper wrote:
+> Andrew Morton wrote:
+> > OK, but I don't recall having seeing a demand for lutimes().  Opinions
+> > are sought?
+>
+> It's an interface which has been available on other platforms forever
+> (lutimes, not lutimesat).  If it can be implemented correctly on the
+> interesting file systems I'd say "go ahead", it can only be useful and
+> have more benefits than the probably small cost of implementing it.
+>
+> If on the other hand important filesystems cannot support lutimes then
+> I'd wait with introducing the syscall at least until the support is
+> added.
 
---tqI+Z3u+9OQ7kwn0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+What do you mean by "filesystems cannot support lutimes"? Filesystems
+that don't have on-disk timestamps for symlinks?
 
-On Mon, Jan 29, 2007 at 10:55:48AM +0100, Jiri Kosina wrote:
-> Changing module parameter values through sysfs is not a very nice idea,=
-=20
-> because the change of the value is indeed silent - the driver is not=20
-> notified in any way, that the value has changed. So the driver should tak=
-e=20
-> care of it by itself, which is not a nice thing.
-
-There is module_param_call() - used at least by drivers/md/md.c:
-
-static int get_ro(char *buffer, struct kernel_param *kp)
-=2E..
-static int set_ro(const char *val, struct kernel_param *kp)
-=2E..
-module_param_call(start_ro, set_ro, get_ro, NULL, S_IRUSR|S_IWUSR);
-
---tqI+Z3u+9OQ7kwn0
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.4 (GNU/Linux)
-
-iD8DBQFFvcvhW82GfkQfsqIRAq/0AJ40A/Wfpas3BaBwROM+Z0ysKDbxMgCcD/7L
-Hxw+f5j+PKRcGx+WxyD0Tno=
-=Awbf
------END PGP SIGNATURE-----
-
---tqI+Z3u+9OQ7kwn0--
