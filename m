@@ -1,46 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752510AbXA2Pnf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752516AbXA2Pn5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752510AbXA2Pnf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 10:43:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752511AbXA2Pnf
+	id S1752516AbXA2Pn5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 10:43:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752513AbXA2Pn5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 10:43:35 -0500
-Received: from iriserv.iradimed.com ([69.44.168.233]:56139 "EHLO iradimed.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752510AbXA2Pne (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 10:43:34 -0500
-Message-ID: <45BE161A.2000504@cfl.rr.com>
-Date: Mon, 29 Jan 2007 10:43:22 -0500
-From: Phillip Susi <psusi@cfl.rr.com>
-User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
+	Mon, 29 Jan 2007 10:43:57 -0500
+Received: from mtiwmhc12.worldnet.att.net ([204.127.131.116]:50034 "EHLO
+	mtiwmhc12.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752511AbXA2Pn4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jan 2007 10:43:56 -0500
+Message-ID: <45BE1639.6040106@lwfinger.net>
+Date: Mon, 29 Jan 2007 09:43:53 -0600
+From: Larry Finger <larry.finger@lwfinger.net>
+User-Agent: Thunderbird 1.5.0.9 (X11/20060911)
 MIME-Version: 1.0
-To: Denis Vlasenko <vda.linux@googlemail.com>
-CC: Bill Davidsen <davidsen@tmr.com>, Michael Tokarev <mjt@tls.msk.ru>,
-       Linus Torvalds <torvalds@osdl.org>, Viktor <vvp01@inbox.ru>,
-       Aubrey <aubreylee@gmail.com>, Hua Zhong <hzhong@gmail.com>,
-       Hugh Dickins <hugh@veritas.com>, linux-kernel@vger.kernel.org,
-       hch@infradead.org
-Subject: Re: O_DIRECT question
-References: <6d6a94c50701101857v2af1e097xde69e592135e54ae@mail.gmail.com> <200701270035.31285.vda.linux@googlemail.com> <45BCBECE.4080405@tmr.com> <200701281803.08201.vda.linux@googlemail.com>
-In-Reply-To: <200701281803.08201.vda.linux@googlemail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+CC: roucaries bastien <roucaries.bastien@gmail.com>,
+       bcm43xx devel <Bcm43xx-dev@lists.berlios.de>,
+       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
+Subject: Re: Bcm43xx oops after suspend to disk
+References: <45B92488.6090908@lwfinger.net> <45B92536.2080909@lwfinger.net>	<195c7a900701251530m409878a8id301c7cada76f342@mail.gmail.com>	<45BA246B.6030505@lwfinger.net> <20070129115842.GA4928@ucw.cz>	<195c7a900701290455o3ff9fc15k305637f8ced24caf@mail.gmail.com> <20070129140408.GA19379@srcf.ucam.org>
+In-Reply-To: <20070129140408.GA19379@srcf.ucam.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 29 Jan 2007 15:43:38.0953 (UTC) FILETIME=[3EC79B90:01C743BC]
-X-TM-AS-Product-Ver: SMEX-7.2.0.1122-3.6.1039-14964.003
-X-TM-AS-Result: No--1.365200-5.000000-31
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Denis Vlasenko wrote:
-> I still don't see much difference between O_SYNC and O_DIRECT write
-> semantic.
+Matthew Garrett wrote:
+> On Mon, Jan 29, 2007 at 01:55:41PM +0100, roucaries bastien wrote:
+>> -       return 0;
+>> +       return bcm43xx_init_one(pdev, NULL);
+>> }
+> 
+> While this may well work (it's basically equivalent to unloading and 
+> reloading the module), it's not a long-term fix - userspace is going to 
+> notice the interface vanishing and reappearing. Larry, I guess you just 
+> mean this as a test patch?
+> 
 
-Yes, if you change the normal io paths to properly support playing 
-vmsplice games ( which have a number of corner cases ) to get the zero 
-copy, and support madvise() and O_SYNC to control caching behavior, and 
-fix all the error handling corner cases, then you may be able to do away 
-with O_DIRECT.
+Yes. If this doesn't work, then we have real problems. If it does, then I try to find the part that
+is missing in the current code.
 
-I believe that doing all that will be much more complex than O_DIRECT 
-however.
+Larry
 
