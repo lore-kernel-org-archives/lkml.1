@@ -1,54 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751977AbXA2Tyx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752544AbXA2T6P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751977AbXA2Tyx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 14:54:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752587AbXA2Tyx
+	id S1752544AbXA2T6P (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 14:58:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752578AbXA2T6P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 14:54:53 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:42357 "EHLO mx2.mail.elte.hu"
+	Mon, 29 Jan 2007 14:58:15 -0500
+Received: from smtp.gentoo.org ([140.211.166.183]:47128 "EHLO smtp.gentoo.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751977AbXA2Tyw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 14:54:52 -0500
-Date: Mon, 29 Jan 2007 20:53:07 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Andrew Morton <akpm@osdl.org>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH] mm: remove global locks from mm/highmem.c
-Message-ID: <20070129195307.GA24434@elte.hu>
-References: <1169993494.10987.23.camel@lappy> <20070128142925.df2f4dce.akpm@osdl.org> <20070129190806.GA14353@elte.hu> <Pine.LNX.4.64.0701291916420.10401@blonde.wat.veritas.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0701291916420.10401@blonde.wat.veritas.com>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.3
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.3 required=5.9 tests=ALL_TRUSTED,BAYES_40 autolearn=no SpamAssassin version=3.0.3
-	-3.3 ALL_TRUSTED            Did not pass through any untrusted hosts
-	1.0 BAYES_40               BODY: Bayesian spam probability is 20 to 40%
-	[score: 0.3559]
+	id S1752544AbXA2T6P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jan 2007 14:58:15 -0500
+From: Mike Frysinger <vapier@gentoo.org>
+Organization: wh0rd.org
+To: akpm@osdl.org
+Subject: [patch] translate dashes in filenames for headers install
+Date: Mon, 29 Jan 2007 14:58:59 -0500
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-00=_EIlvFr/p+UvSXo3"
+Message-Id: <200701291459.00493.vapier@gentoo.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--Boundary-00=_EIlvFr/p+UvSXo3
+Content-Type: multipart/signed;
+  boundary="nextPart10179547.8WxpbZO3dJ";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
 
-* Hugh Dickins <hugh@veritas.com> wrote:
+--nextPart10179547.8WxpbZO3dJ
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-> > For every 64-bit Fedora box there's more than seven 32-bit boxes. I 
-> > think 32-bit is going to live with us far longer than many thought, 
-> > so we might as well make it work better. Both HIGHMEM and HIGHPTE is 
-> > the default on many distro kernels, which pushes the kmap 
-> > infrastructure quite a bit.
-> 
-> But HIGHPTE uses kmap_atomic (in mainline: does -rt use kmap there?)
+the current filename->define translation does not scrub dashes so when=20
+creating stub defines for like asm-x86_64/ptrace-abi.h, we get:
+#define __ASM_STUB_PTRACE-ABI_H
 
-The contention i saw was on mainline and in the pagecache uses of 
-kmap(). With HIGHPTE i only meant that typically every available highmem 
-option is enabled on 32-bit distro kernel rpms, to make it work on as 
-wide selection of hardware as possible. Sometimes PAE is split into a 
-separate rpm, but mostly there's just one 32-bit kernel.
+gcc just hates that sort of thing :)
 
-	Ingo
+trivial attached patch adds - to the tr list to scrub it to _
+=2Dmike
+
+--nextPart10179547.8WxpbZO3dJ
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.1 (GNU/Linux)
+
+iQIVAwUARb5SBEFjO5/oN/WBAQL+aw/+Kk6qBfgeeLYmW9kJqBD9e2jfD2RORiga
+W+MuOr/kEaUXJ1KT45jWaZ3kl2WOBRNCfrmMfRYR7wMRquyKYxcrd5kB62oX17nD
+E0QtM0LRxR+8UNQtLiRbRddoJjlL/THBhlGTxWt46LUDfYys3mcER5VwX5dZWolm
+bUlWtcbqe4KTEDY87Mea1sF+pmInwc3SnOm/vm9SZM/UXax95HlkVABBYXLXuiYr
+ivUZ6Wqbu3HhOFbaEFyNG11wt462sQM6e6Hioy2Fr4bnQ7hLfH4r0AT35Y3QTHXH
+Ol/jkjm8RWf5agw/SoevttN7put4Pd3MDLH8n+OHe5/vbxrIhErtYHF/j7/8oqKL
+OHFRUWPcuyzAjhADsK9Cwsl4HOEVeMudJ3duUkVs9KIOIyHxQLgPvVfgSqNHdxr0
+/0pZPsFkeGYi3XdOwoB+fn7zwNTBGBj8qEq5FOcWHnIHxU5hwavWIqLmFTRcW11r
+tvSblxZRUIEBnS3dL4jd9Nr0g2Hx3+eyTvWNsjbuVHc9tkEduN4sCXRqr5U0MTL2
+gbB2o58FDx1iEiaUJ+xSR9n/2r6yYTUHwV6Lu3fod9EBhotKD/qdwKK1i2NqNd/G
+0gRCJMp2knEK5v7Kwk198wTXc7juGHP4WxJvcDW+wFQY0qO8HMKyx5JopnwOVrOX
+8+/AOpPdi78=
+=htxo
+-----END PGP SIGNATURE-----
+
+--nextPart10179547.8WxpbZO3dJ--
+
+--Boundary-00=_EIlvFr/p+UvSXo3
+Content-Type: text/x-diff;
+  charset="us-ascii";
+  name="linux-headersinst-translate-dash.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+	filename="linux-headersinst-translate-dash.patch"
+
+Make sure we translate dashes in file names to underscores for use as defines.
+
+Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+
+--- a/scripts/Makefile.headersinst
++++ b/scripts/Makefile.headersinst
+@@ -109,7 +109,7 @@ quiet_cmd_mkdir		  = MKDIR   $(patsubst $(INSTALL_HDR_PATH)/%,%,$@)
+ quiet_cmd_gen		  = GEN     $(patsubst $(INSTALL_HDR_PATH)/%,%,$@)
+       cmd_gen		  = \
+ FNAME=$(patsubst $(INSTALL_HDR_PATH)/$(_dst)/%,%,$@)			\
+-STUBDEF=__ASM_STUB_`echo $$FNAME | tr a-z. A-Z_`;			\
++STUBDEF=__ASM_STUB_`echo $$FNAME | tr a-z.- A-Z__`;			\
+ (echo "/* File autogenerated by 'make headers_install' */" ;		\
+ echo "\#ifndef $$STUBDEF" ;						\
+ echo "\#define $$STUBDEF" ;						\
+
+--Boundary-00=_EIlvFr/p+UvSXo3--
