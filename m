@@ -1,88 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933218AbXA2G0R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933228AbXA2G3K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933218AbXA2G0R (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 01:26:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933222AbXA2G0R
+	id S933228AbXA2G3K (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 01:29:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933229AbXA2G3J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 01:26:17 -0500
-Received: from mail.gmx.net ([213.165.64.20]:50796 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S933218AbXA2G0Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 01:26:16 -0500
-X-Authenticated: #14349625
-Subject: Re: 2.6.20-rc6: known unfixed regressions (v2) (part 2)
-From: Mike Galbraith <efault@gmx.de>
-To: Uwe Bugla <uwe.bugla@gmx.de>
-Cc: Adrian Bunk <bunk@stusta.de>, akpm@osdl.org, torvalds@linux-foundation.org,
-       rml@novell.com, ttb@tentacle.dhs.org, nickpiggin@yahoo.com.au,
-       cijoml@volny.cz, linuxppc-dev@ozlabs.org, anton@samba.org,
-       paulus@samba.org, livio@eecg.toronto.edu, petero2@telia.com, hch@lst.de,
-       gd@spherenet.de, alan@lxorguk.ukuu.org.uk, linux-ide@vger.kernel.org,
-       B.Zolnierkiewicz@elka.pw.edu.pl, linux-kernel@vger.kernel.org
-In-Reply-To: <20070128133344.214070@gmx.net>
-References: <Pine.LNX.4.64.0701241847360.25027@woody.linux-foundation.org>
-	 <20070127174230.GN6017@stusta.de>  <20070128133344.214070@gmx.net>
-Content-Type: text/plain; charset=UTF-8
-Date: Mon, 29 Jan 2007 07:26:03 +0100
-Message-Id: <1170051963.6454.7.camel@Homer.simpson.net>
+	Mon, 29 Jan 2007 01:29:09 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:38008 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933228AbXA2G3I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jan 2007 01:29:08 -0500
+Date: Mon, 29 Jan 2007 01:28:26 -0500
+From: Dave Jones <davej@redhat.com>
+To: Rob Landley <rob@landley.net>
+Cc: Oleg Verych <olecom@flower.upol.cz>, Andrew Morton <akpm@osdl.org>,
+       Dirk Behme <dirk.behme@googlemail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: The mbox format archives of linux-kernel are gone.
+Message-ID: <20070129062826.GB28496@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Rob Landley <rob@landley.net>, Oleg Verych <olecom@flower.upol.cz>,
+	Andrew Morton <akpm@osdl.org>,
+	Dirk Behme <dirk.behme@googlemail.com>,
+	LKML <linux-kernel@vger.kernel.org>
+References: <45BC54D3.2010706@lycosxxl.de> <20070128151706.8d2d1841.akpm@osdl.org> <20070129015235.GA25299@flower.upol.cz> <200701290059.28098.rob@landley.net>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
-Content-Transfer-Encoding: 8bit
-X-Y-GMX-Trusted: 0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200701290059.28098.rob@landley.net>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-01-28 at 14:33 +0100, Uwe Bugla wrote:
-> -------- Original-Nachricht --------
-> Datum: Sat, 27 Jan 2007 18:42:30 +0100
-> Von: Adrian Bunk <bunk@stusta.de>
-> An: Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@osdl.org>
-> Betreff: 2.6.20-rc6: known unfixed regressions (v2) (part 2)
-> 
-> > This email lists some known regressions in 2.6.20-rc6 compared to 2.6.19
-> > that are not yet fixed in Linus' tree.
-> > 
-> > If you find your name in the Cc header, you are either submitter of one
-> > of the bugs, maintainer of an affectected subsystem or driver, a patch
-> > of you caused a breakage or I'm considering you in any other way possibly
-> > involved with one or more of these issues.
-> > 
-> > Due to the huge amount of recipients, please trim the Cc when answering.
-> > 
-> > 
-> > Subject    : problems with CD burning
-> > References : http://www.spinics.net/lists/linux-ide/msg06545.html
-> > Submitter  : Uwe Bugla <uwe.bugla@gmx.de>
-> > Status     : unknown
- 
-<snip>
+On Mon, Jan 29, 2007 at 12:59:27AM -0500, Rob Landley wrote:
+ > On Sunday 28 January 2007 8:52 pm, Oleg Verych wrote:
+ > > On Sun, Jan 28, 2007 at 03:17:06PM -0800, Andrew Morton wrote:
+ > > > On Sun, 28 Jan 2007 22:46:32 +0000
+ > > > Oleg Verych <olecom@flower.upol.cz> wrote:
+ > > > 
+ > > > > If somebody will get lkml mbox archive, can you import it into gmane,
+ > > > > please.
+ > > > 
+ > > > http://userweb.kernel.org/~akpm/lkml-mbox-archives/
+ > > 
+ > > I think, whole set, possibly from most active start years, say 1993, 1994
+ > > or so, must be collected, then i can contact Lars to try to import all
+ > > this into Gmane with current web links being preserved.
+ > > 
+ > > BTW, donwloading (big) sets of archives _from_ Gmane is strongly
+ > > discouraged.
+ > 
+ > The very early archives are available on the web:
+ > http://www.kclug.org/old_archives/linux-activists/
+ > 
+ > And I'm under the impression that Alan Cox once collected a complete set of 
+ > mbox archives, but this is a vague an unfocused recollection of something 
+ > going by years ago.  (I also thought the result was downloadable under 
+ > kernel.org/pub somewhere.  This would not appear to be the case.)
 
-> Hi everybody,
-> the problem I already reported for earlier release candidates of kernel 2.6.20
-> (rc1 – 5) unfortunately stills persists.
-> 
-> The regression has become more extreme: While in earlier release candidates nerolinux recognized my burning devices at least after the first start and then never again after all following starts the situation in rc6 is different from that:
-> 
-> The CD and DVD burning devices aren´t recognized even once and the drive seek errors I already reported are still there.
-> 
-> nerolinux runs excellently with kernel 2.6.19.2, but only shows an “image recorder” (i. e. no burning device at all) in kernel 2.6.20-rc6.
-> 
-> Still hope that this terrible bug will not be part of the final version of 2.6.20!
-> 
-> Regards
-> 
-> Uwe
+ftp://ftp.linux.org.uk/pub/linux/history/funet-archive/
+ftp://ftp.linux.org.uk/pub/linux/alan/Kernel/Documents/Old-Funet-Lists
+has some of the really early stuff.
 
-FWIW, I just tried it with 2.6.20-rc6, and can confirm.  Once nero is
-run, the kernel never gives up retrying whatever command failed, so I
-get...
+Until recently I had a bunch of mid 90s to early 2000's in mboxes too,
+but a disk accident seems to have eaten the only copies I had.
 
-[ 4362.972995] hdd: status error: status=0x58 { DriveReady SeekComplete
-DataRequest }
-[ 4362.981475] ide: failed opcode was: unknown
-[ 4362.986183] hdd: drive not ready for command
+		Dave
 
-endlessly.
-
-	-Mike
-
+-- 
+http://www.codemonkey.org.uk
