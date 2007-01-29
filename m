@@ -1,192 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751600AbXA2PDM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751733AbXA2PGH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751600AbXA2PDM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 10:03:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751733AbXA2PDM
+	id S1751733AbXA2PGH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 10:06:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751872AbXA2PGG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 10:03:12 -0500
-Received: from cantor.suse.de ([195.135.220.2]:38805 "EHLO mx1.suse.de"
+	Mon, 29 Jan 2007 10:06:06 -0500
+Received: from lmv.inov.pt ([146.193.64.2]:32892 "EHLO lmv.inov.pt"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751600AbXA2PDL convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 10:03:11 -0500
-From: Jean Delvare <jdelvare@suse.de>
-Organization: SuSE Linux
-To: Nick Piggin <nickpiggin@yahoo.com.au>, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: via irq quirk breakage
-Date: Mon, 29 Jan 2007 16:00:32 +0100
-User-Agent: KMail/1.9.1
-Cc: Daniel Drake <dsd@reactivated.net>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@stusta.de>
-References: <45B6A94A.3010006@yahoo.com.au>
-In-Reply-To: <45B6A94A.3010006@yahoo.com.au>
+	id S1751733AbXA2PGF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jan 2007 10:06:05 -0500
+Message-ID: <45BE0D44.1080309@inov.pt>
+Date: Mon, 29 Jan 2007 15:05:40 +0000
+From: Jose Goncalves <jose.goncalves@inov.pt>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070111)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200701291600.32580.jdelvare@suse.de>
+To: Frederik Deweerdt <deweerdt@free.fr>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Oops on serial access on kernel 2.6.16.38
+References: <45BA2341.40008@inov.pt> <20061226201003.GA2990@slug> <45BA459F.7060604@inov.pt> <20070126212203.GB2990@slug>
+In-Reply-To: <20070126212203.GB2990@slug>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
+X-INOV-EmailServer-Information: Please contact the Email service provider for more information
+X-INOV-EmailServer: Found to be clean
+X-INOV-EmailServer-From: jose.goncalves@inov.pt
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ni Nick, Alan,
+Frederik Deweerdt wrote:
+> On Fri, Jan 26, 2007 at 06:17:03PM +0000, Jose Goncalves wrote:
+>   
+>> Frederik Deweerdt wrote:
+>>     
+>>> On Fri, Jan 26, 2007 at 03:50:25PM +0000, Jose Goncalves wrote:
+>>>   
+>>>       
+>>>> I'm having a problem with the latest 2.6.16 kernel (I've found the
+>>>> problem on 2.6.16.37 and 2.6.16.38). I have a application that retreives
+>>>> data from a GPS connected on a serial port. From time to time a get a
+>>>> kernel Oops, like this:
+>>>>
+>>>>     
+>>>>         
+>>> Could you send your .config?
+>>>   
+>>>       
+>> Here it goes...
+>>
+>>     
+> Thanks. It looks like something is wrong with port->ops->startup() in
+> uart_startup(), could you apply the following patch and report the
+> results? And btw, you're using a plain 8250 serial port, isn't it?
+>   
 
-Le Mercredi 24 Janvier 2007 01:33, Nick Piggin a écrit :
-> Recently updated an old box to a new kernel, and the USB mouse stops
-> working. Well it sort of works, but stutters and is very unresponsive. This
-> happens now and again when the IRQ routing for my board gets broken.
->
-> Attached a dmesg from a bad 2.6.20-rc5, and a quick hack that gets
-> everything working again, and a diff between good and bad dmesg, and lspci.
+OK. I've applied the patch and I'm now waiting for the kernel Oops...
+sometimes it takes two days until it happens.
+I'm using a standard 16550A serial controller found on my hardware, that
+is a PC/104 SBC:
 
-Your hack seems quite broken to me, I suspect it works somewhat by
-accident and would probably do bad things on other machines.
+ http://www.icop.com.tw/products_detail.asp?ProductID=70
 
-> I can test patches or send any other info needed.
+We have a custom hardware that has another serial controller (TL16C554A)
+with 4 extra serial ports (also, 16550A type), and the problem happens
+in a test program that is retreiving data from ttyS0 (from the SBC) and
+ttyS3 (from our custom hardware).
+The serial ports initialization, as reported by the kernel:
 
-The same bug was reported to me by someone else, and my investigation
-led me to the conclusion that pci_find_present() doesn't work yet at
-the moment the quirks are run. Am I right? Which makes me wonder if
-this VIA quirks update was ever tested. Alan?
+[   15.216847] Serial: 8250/16550 driver $Revision: 1.90 $ 6 ports, IRQ
+sharing disabled
+[   15.219517] serial8250: ttyS0 at I/O 0x3f8 (irq = 4) is a 16550A
+[   15.221963] serial8250: ttyS1 at I/O 0x2f8 (irq = 3) is a 16550A
+[   15.223907] serial8250: ttyS2 at I/O 0x3e8 (irq = 5) is a 16550A
+[   15.225757] serial8250: ttyS3 at I/O 0x2e8 (irq = 5) is a 16550A
+[   15.227644] serial8250: ttyS4 at I/O 0x1a0 (irq = 6) is a 16550A
+[   15.229656] serial8250: ttyS5 at I/O 0x1a8 (irq = 6) is a 16550A
 
-Here is the patch I have come up with. It might not qualify as elegant,
-but at least it appears to solve the issue. Nick, can you please give it
-a try and confirm it works for you as well?
+With your patch I'm now getting the following for each iteration of my
+test program:
 
-Note: I'm not sure if the quirk will survive suspend/resume or not, testers
-and comments are welcome.
+<4>[  298.918962] type is 4
+<4>[  298.919011] ops is c0292f00
+<4>[  298.919033] ops->startup is c01bd777
+<4>[  299.436980] type is 4
+<4>[  299.437030] ops is c0292f00
+<4>[  299.437051] ops->startup is c01bd777
 
-I expect lots of complaints from users if we release 2.6.20 with the VIA
-quirks broken.
+I don't know if it's relevant or not but the kernel is running in
+NFS-Root mode.
 
-* * * * *
-
-Fix VIA quirks that were recently broken by Alan Cox in the upstream
-kernel (commit 1597cacbe39802d86656d1f2e6329895bd2ef531).
-
-My understanding is that pci_find_present() doesn't work yet at the
-time the quirks are run. So I used a two-step quirk as is done for
-some other quirks already. First we detect the VIA south bridges
-and set the right low and high device limits, then we are ready to
-actually run the quirks on the affected devices.
-
-Signed-off-by: Jean Delvare <jdelvare@suse.de>
----
- drivers/pci/quirks.c |   78 ++++++++++++++++++++++++++------------------------
- 1 files changed, 42 insertions(+), 36 deletions(-)
-
---- linux-2.6.20-rc6.orig/drivers/pci/quirks.c	2007-01-26 09:08:14.000000000 +0100
-+++ linux-2.6.20-rc6/drivers/pci/quirks.c	2007-01-29 15:33:30.000000000 +0100
-@@ -654,19 +654,40 @@
-  *	VIA bridges which have VLink
-  */
- 
--static const struct pci_device_id via_vlink_fixup_tbl[] = {
--	/* Internal devices need IRQ line routing, pre VLink */
--	{ PCI_VDEVICE(VIA, PCI_DEVICE_ID_VIA_82C686), 0 },
--	{ PCI_VDEVICE(VIA, PCI_DEVICE_ID_VIA_8231), 17 },
--	/* Devices with VLink */
--	{ PCI_VDEVICE(VIA, PCI_DEVICE_ID_VIA_8233_0), 17},
--	{ PCI_VDEVICE(VIA, PCI_DEVICE_ID_VIA_8233A), 17 },
--	{ PCI_VDEVICE(VIA, PCI_DEVICE_ID_VIA_8233C_0), 17 },
--	{ PCI_VDEVICE(VIA, PCI_DEVICE_ID_VIA_8235), 16 },
--	{ PCI_VDEVICE(VIA, PCI_DEVICE_ID_VIA_8237), 15 },
--	{ PCI_VDEVICE(VIA, PCI_DEVICE_ID_VIA_8237A), 15 },
--	{ 0, },
--};
-+static int via_vlink_dev_lo = -1, via_vlink_dev_hi = 18;
-+
-+static void quirk_via_bridge(struct pci_dev *dev)
-+{
-+	/* See what bridge we have and find the device ranges */
-+	switch (dev->device) {
-+	case PCI_DEVICE_ID_VIA_82C686:
-+		/* 82C686 is special */
-+		via_vlink_dev_lo = 0;
-+		via_vlink_dev_hi = 0;
-+		break;
-+	case PCI_DEVICE_ID_VIA_8237:
-+	case PCI_DEVICE_ID_VIA_8237A:
-+		via_vlink_dev_lo = 15;
-+		break;
-+	case PCI_DEVICE_ID_VIA_8235:
-+		via_vlink_dev_lo = 16;
-+		break;
-+	case PCI_DEVICE_ID_VIA_8231:
-+	case PCI_DEVICE_ID_VIA_8233_0:
-+	case PCI_DEVICE_ID_VIA_8233A:
-+	case PCI_DEVICE_ID_VIA_8233C_0:
-+		via_vlink_dev_lo = 17;
-+		break;
-+	}
-+}
-+DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_VIA,	PCI_DEVICE_ID_VIA_82C686,	quirk_via_bridge);
-+DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_VIA,	PCI_DEVICE_ID_VIA_8231,		quirk_via_bridge);
-+DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_VIA,	PCI_DEVICE_ID_VIA_8233_0,	quirk_via_bridge);
-+DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_VIA,	PCI_DEVICE_ID_VIA_8233A,	quirk_via_bridge);
-+DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_VIA,	PCI_DEVICE_ID_VIA_8233C_0,	quirk_via_bridge);
-+DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_VIA,	PCI_DEVICE_ID_VIA_8235,		quirk_via_bridge);
-+DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_VIA,	PCI_DEVICE_ID_VIA_8237,		quirk_via_bridge);
-+DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_VIA,	PCI_DEVICE_ID_VIA_8237A,	quirk_via_bridge);
- 
- /**
-  *	quirk_via_vlink		-	VIA VLink IRQ number update
-@@ -675,35 +696,20 @@
-  *	If the device we are dealing with is on a PIC IRQ we need to
-  *	ensure that the IRQ line register which usually is not relevant
-  *	for PCI cards, is actually written so that interrupts get sent
-- *	to the right place
-+ *	to the right place.
-+ *	We only do this on systems where a VIA south bridge was detected,
-+ *	and only for VIA devices on the motherboard (see quirk_via_bridge
-+ *	above).
-  */
- 
- static void quirk_via_vlink(struct pci_dev *dev)
- {
--	const struct pci_device_id *via_vlink_fixup;
--	static int dev_lo = -1, dev_hi = 18;
- 	u8 irq, new_irq;
- 
--	/* Check if we have VLink and cache the result */
--
--	/* Checked already - no */
--	if (dev_lo == -2)
-+	/* Check if we have VLink at all */
-+	if (via_vlink_dev_lo == -1)
- 		return;
- 
--	/* Not checked - see what bridge we have and find the device
--	   ranges */
--
--	if (dev_lo == -1) {
--		via_vlink_fixup = pci_find_present(via_vlink_fixup_tbl);
--		if (via_vlink_fixup == NULL) {
--			dev_lo = -2;
--			return;
--		}
--		dev_lo = via_vlink_fixup->driver_data;
--		/* 82C686 is special - 0/0 */
--		if (dev_lo == 0)
--			dev_hi = 0;
--	}
- 	new_irq = dev->irq;
- 
- 	/* Don't quirk interrupts outside the legacy IRQ range */
-@@ -711,8 +717,8 @@
- 		return;
- 
- 	/* Internal device ? */
--	if (dev->bus->number != 0 || PCI_SLOT(dev->devfn) > dev_hi ||
--		PCI_SLOT(dev->devfn) < dev_lo)
-+	if (dev->bus->number != 0 || PCI_SLOT(dev->devfn) > via_vlink_dev_hi ||
-+	    PCI_SLOT(dev->devfn) < via_vlink_dev_lo)
- 		return;
- 
- 	/* This is an internal VLink device on a PIC interrupt. The BIOS
-
-
--- 
-Jean Delvare
-Suse L3
+Best regards,
+José Gonçalves
