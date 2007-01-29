@@ -1,76 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751960AbXA2U13@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752579AbXA2UaH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751960AbXA2U13 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 15:27:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752579AbXA2U12
+	id S1752579AbXA2UaH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 15:30:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752588AbXA2UaH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 15:27:28 -0500
-Received: from gate.crashing.org ([63.228.1.57]:43384 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751960AbXA2U12 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 15:27:28 -0500
-Subject: Re: [PATCH 0/6] MSI portability cleanups
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: David Miller <davem@davemloft.net>, jeff@garzik.org, greg@kroah.com,
-       tony.luck@intel.com, grundler@parisc-linux.org, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, kyle@parisc-linux.org,
-       linuxppc-dev@ozlabs.org, brice@myri.com, shaohua.li@intel.com,
-       linux-pci@atrey.karlin.mff.cuni.cz
-In-Reply-To: <m1sldukxwm.fsf@ebiederm.dsl.xmission.com>
-References: <m1hcuaohqj.fsf@ebiederm.dsl.xmission.com>
-	 <20070128.153707.30184351.davem@davemloft.net>
-	 <m1tzyammv0.fsf@ebiederm.dsl.xmission.com>
-	 <20070128.212554.23015561.davem@davemloft.net>
-	 <1170050737.26655.233.camel@localhost.localdomain>
-	 <m1sldukxwm.fsf@ebiederm.dsl.xmission.com>
-Content-Type: text/plain
-Date: Tue, 30 Jan 2007 07:22:38 +1100
-Message-Id: <1170102158.26655.273.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 29 Jan 2007 15:30:07 -0500
+Received: from omx2-ext.sgi.com ([192.48.171.19]:43775 "EHLO omx2.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752579AbXA2UaF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jan 2007 15:30:05 -0500
+Date: Mon, 29 Jan 2007 12:29:15 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+cc: Ingo Molnar <mingo@elte.hu>, Srivatsa Vaddagiri <vatsa@in.ibm.com>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Gautham shenoy <ego@in.ibm.com>, Andrew Morton <akpm@osdl.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: slab: start_cpu_timer/cache_reap CONFIG_HOTPLUG_CPU problems
+In-Reply-To: <20070129194938.GB233@tv-sign.ru>
+Message-ID: <Pine.LNX.4.64.0701291224340.32740@schroedinger.engr.sgi.com>
+References: <20070129011301.GA844@tv-sign.ru>
+ <Pine.LNX.4.64.0701290852390.28200@schroedinger.engr.sgi.com>
+ <20070129171923.GA138@tv-sign.ru> <Pine.LNX.4.64.0701290922390.28330@schroedinger.engr.sgi.com>
+ <20070129182742.GA158@tv-sign.ru> <Pine.LNX.4.64.0701291109310.29254@schroedinger.engr.sgi.com>
+ <20070129194938.GB233@tv-sign.ru>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 29 Jan 2007, Oleg Nesterov wrote:
 
-> This is the most straight forward and handles machines with really
-> weird msi setups, so I lean in this direction.
+> > But we could delay CPU_DOWN in the handler for the slab until we know that 
+> > the cache_reaper is no longer running?
 > 
-> The question is there anything at all we can do generically?
-> 
-> I can't see a case where ppc_md would not wind up with the hooks
-> that decide if it is a hypervisor or not.  Even if we came up
-> with a better set of functions you need to hook.
+> Hmm... I don't undestand this. We can delay CPU_DOWN if we cancel cache_reaper
+> like you did in the previous patch. Did you mean this? If yes - then yes :)
 
-Sure, but with Michael's approach, the only hook was get_msi_ops(pdev) 
+Yes sure.
 
-Anyway, there isn't -that- much that can be done generically in the HV
-case. Mostly some argument sanity checking, the logic for saving &
-restoring pdev->irq for MSIs, that sort of thing.
+> Worse, we can have 2 handlers running in parallel on the same CPU. But this
+> is fixed by your previous patch, I believe.
 
-> Ok. I think I get the point of check.  I believe I need to look at your
-> code a little more and see what you are doing to see if there is anything
-> generic worth doing, that we can always do outside of architecture code
-> no matter how much of the job the Hypervisor wants to do for us.
+Good.
 
-I understand.
+Here is the patch against 2.6.20-rc6-mm2. CPU_DOWN_PREPARE and
+CPU_DOWN_FAILED somehow vanished in mm?
 
-> I'd hate to hit a different Hypervisor that did something close but
-> not quite the same and have the code fail then.  So definitely
-> avoiding touching pci config space at all in the calls seems to make a
-> lot of sense.  This includes avoiding pci_find_capability right?
 
-Quite possibly yes. I'm pretty sure it will work on IBM HV but we aren't
-really supposed to use it...
 
-> Off the top of my head the only things we can do generically are
-> some data structure things and flags like dev->msi_enabled or
-> dev->msix_enabled.
 
-That and the saving & restoring of pdev->irq. That is not very much.
 
-> Anyway have a nice night and more in the morning.
+Shutdown cache_reaper when cpu goes down
 
-Ben.
+Shutdown the cache_reaper in slab.c if the cpu is brought down
+and set the cache_reap.func to NULL. Otherwise hotplug shuts
+down the reaper for good.
 
+Signed-off-by: Christoph Lameter <clameter@sgi.com>
+
+Index: linux-2.6.20-rc6-mm1/mm/slab.c
+===================================================================
+--- linux-2.6.20-rc6-mm1.orig/mm/slab.c	2007-01-29 14:18:37.000000000 -0600
++++ linux-2.6.20-rc6-mm1/mm/slab.c	2007-01-29 14:21:18.119155877 -0600
+@@ -1271,6 +1271,17 @@ static int __cpuinit cpuup_callback(stru
+ 		start_cpu_timer(cpu);
+ 		break;
+ #ifdef CONFIG_HOTPLUG_CPU
++  	case CPU_DOWN_PREPARE:
++		/* Shutdown cache reaper */
++		cancel_rearming_delayed_work(&per_cpu(reap_work, cpu));
++		per_cpu(reap_work, cpu).work.func = NULL;
++
++  		mutex_lock(&cache_chain_mutex);
++  		break;
++  	case CPU_DOWN_FAILED:
++  		mutex_unlock(&cache_chain_mutex);
++		start_cpu_timer(cpu);
++  		break;
+ 	case CPU_DEAD:
+ 		/*
+ 		 * Even if all the cpus of a node are down, we don't free the
