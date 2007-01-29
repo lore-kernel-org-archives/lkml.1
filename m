@@ -1,50 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965034AbXA2XiJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964777AbXA2XlU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965034AbXA2XiJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 18:38:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965032AbXA2XiI
+	id S964777AbXA2XlU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 18:41:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964783AbXA2XlT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 18:38:08 -0500
-Received: from omx1-ext.sgi.com ([192.48.179.11]:50894 "EHLO omx1.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S965014AbXA2XiH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 18:38:07 -0500
-Date: Mon, 29 Jan 2007 15:37:29 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-To: Russell King <rmk+lkml@arm.linux.org.uk>
-cc: Andrew Morton <akpm@osdl.org>, Mel Gorman <mel@csn.ul.ie>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       Christoph Lameter <clameter@engr.sgi.com>
-Subject: Re: [PATCH 0/8] Create ZONE_MOVABLE to partition memory between
- movable and non-movable pages
-In-Reply-To: <20070129225000.GG6602@flint.arm.linux.org.uk>
-Message-ID: <Pine.LNX.4.64.0701291533500.1169@schroedinger.engr.sgi.com>
-References: <20070125234458.28809.5412.sendpatchset@skynet.skynet.ie>
- <20070126030753.03529e7a.akpm@osdl.org> <Pine.LNX.4.64.0701260751230.6141@schroedinger.engr.sgi.com>
- <20070126114615.5aa9e213.akpm@osdl.org> <Pine.LNX.4.64.0701261147300.15394@schroedinger.engr.sgi.com>
- <20070126122747.dde74c97.akpm@osdl.org> <Pine.LNX.4.64.0701291349450.548@schroedinger.engr.sgi.com>
- <20070129143654.27fcd4a4.akpm@osdl.org> <Pine.LNX.4.64.0701291441260.1102@schroedinger.engr.sgi.com>
- <20070129225000.GG6602@flint.arm.linux.org.uk>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 29 Jan 2007 18:41:19 -0500
+Received: from gate.crashing.org ([63.228.1.57]:60602 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S964777AbXA2XlT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jan 2007 18:41:19 -0500
+Subject: Re: [PATCH 0/6] MSI portability cleanups
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Paul Mackerras <paulus@samba.org>
+Cc: michael@ellerman.id.au, tony.luck@intel.com, grundler@parisc-linux.org,
+       jeff@garzik.org, David Miller <davem@davemloft.net>, greg@kroah.com,
+       linux-kernel@vger.kernel.org, kyle@parisc-linux.org,
+       linuxppc-dev@ozlabs.org, "Eric W. Biederman" <ebiederm@xmission.com>,
+       shaohua.li@intel.com, linux-pci@atrey.karlin.mff.cuni.cz, mingo@elte.hu,
+       brice@myri.com
+In-Reply-To: <17854.33603.655565.110084@cargo.ozlabs.ibm.com>
+References: <m1hcuaohqj.fsf@ebiederm.dsl.xmission.com>
+	 <20070128.153707.30184351.davem@davemloft.net>
+	 <m1tzyammv0.fsf@ebiederm.dsl.xmission.com>
+	 <20070128.212554.23015561.davem@davemloft.net>
+	 <1170050737.26655.233.camel@localhost.localdomain>
+	 <m1sldukxwm.fsf@ebiederm.dsl.xmission.com>
+	 <1170065487.19887.91.camel@concordia.ozlabs.ibm.com>
+	 <17854.33603.655565.110084@cargo.ozlabs.ibm.com>
+Content-Type: text/plain
+Date: Tue, 30 Jan 2007 10:40:03 +1100
+Message-Id: <1170114003.26655.291.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 29 Jan 2007, Russell King wrote:
 
-> This sounds like it could help ARM where we have some weird DMA areas.
+> It's possible that the device can do MSI(X), but that using MSI(X)
+> requires other platform resources (e.g. interrupt source numbers) and
+> there are none free.  I believe the platform guarantees a minimum
+> number of MSI(X) interrupts per function, but a pci_enable_msix() call
+> may not be able to give the driver as many MSI-X interrupts as it is
+> requesting even if the function can handle that many.
 
-Some ARM platforms have no need for a ZONE_DMA. The code in mm allows you 
-to not compile ZONE_DMA support into these kernels.
+However, the ibm,req#msi(-x) properties contain the number as requested
+by the device, and thus I expect them to be identical to the config
+space value. So if you are confident enough that our HV won't play any
+tricks there in the future, reading the config space is as good as
+hooking that check() callback, though it might not be vs. some other HV
+for some other platform that might be more strict.
 
-> What will help even more is if the block layer can also be persuaded that
-> a device dma mask is precisely that - a mask - and not a set of leading
-> ones followed by a set of zeros, then we could eliminate the really ugly
-> dmabounce code.
+We cannot know in advance how much max the HV will give us without
+actually trying ibm,change-msi and see the result code for it
+unfortunately.
 
-With a alloc_pages_range() one would be able to specify upper and lower 
-boundaries. The device dma mask can be translated to a fitting boundary. 
-Maybe we can then also get rid of the device mask and specify a boundary 
-there. There is a lot of ugly code all around that circumvents the 
-existing issues with dma masks. That would all go away.
+Ben.
+
 
