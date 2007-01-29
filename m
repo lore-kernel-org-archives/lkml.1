@@ -1,70 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751068AbXA2TaY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751410AbXA2Teg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751068AbXA2TaY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 14:30:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751401AbXA2TaY
+	id S1751410AbXA2Teg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 14:34:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751977AbXA2Teg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 14:30:24 -0500
-Received: from mail.screens.ru ([213.234.233.54]:34348 "EHLO mail.screens.ru"
+	Mon, 29 Jan 2007 14:34:36 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:52694 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751068AbXA2TaX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 14:30:23 -0500
-Date: Mon, 29 Jan 2007 22:29:57 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Srivatsa Vaddagiri <vatsa@in.ibm.com>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       Gautham shenoy <ego@in.ibm.com>, Andrew Morton <akpm@osdl.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: slab: start_cpu_timer/cache_reap CONFIG_HOTPLUG_CPU problems
-Message-ID: <20070129192957.GA233@tv-sign.ru>
-References: <20070129011301.GA844@tv-sign.ru> <Pine.LNX.4.64.0701290852390.28200@schroedinger.engr.sgi.com> <20070129171923.GA138@tv-sign.ru> <Pine.LNX.4.64.0701290922390.28330@schroedinger.engr.sgi.com> <20070129182742.GA158@tv-sign.ru> <Pine.LNX.4.64.0701291102240.29254@schroedinger.engr.sgi.com>
+	id S1751410AbXA2Teg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jan 2007 14:34:36 -0500
+Date: Mon, 29 Jan 2007 11:31:59 -0800
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+To: tglx@linutronix.de
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Stephen Hemminger <shemminger@osdl.org>, Jeff Garzik <jeff@garzik.org>
+Subject: Re: Linux 2.6.20-rc6 - sky2 resume breakage
+Message-ID: <20070129113159.7ad22e4c@freekitty>
+In-Reply-To: <1169931333.17469.125.camel@localhost.localdomain>
+References: <Pine.LNX.4.64.0701241847360.25027@woody.linux-foundation.org>
+	<1169931333.17469.125.camel@localhost.localdomain>
+Organization: Linux Foundation
+X-Mailer: Sylpheed-Claws 2.5.0-rc3 (GTK+ 2.10.6; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0701291102240.29254@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.5.11
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/29, Christoph Lameter wrote:
->
-> On Mon, 29 Jan 2007, Oleg Nesterov wrote:
-> 
-> > >                                      The slab would need a notification 
-> > > that the workqueue for a processor was shutdown in order to set work.func 
-> > > = NULL.
-> > 
-> > The slab has a notification: CPU_XXX events. It should cancel a pending per
-> > cpu "reap_work timer".
-> 
-> Ahh. Okay then the following patch would fix it?
-> 
-> Shutdown cache_reaper when cpu goes down
-> 
-> Shutdown the cache_reaper in slab.c if the cpu is brought down
-> and set the cache_reap.func to NULL. Otherwise hotplug shuts
-> down the reaper for good.
-> 
-> Signed-off-by: Christoph Lameter <clameter@sgi.com>
-> 
-> Index: linux-2.6.20-rc6/mm/slab.c
-> ===================================================================
-> --- linux-2.6.20-rc6.orig/mm/slab.c	2007-01-24 20:19:28.000000000 -0600
-> +++ linux-2.6.20-rc6/mm/slab.c	2007-01-29 13:08:05.773928988 -0600
-> @@ -1269,6 +1269,10 @@ static int __cpuinit cpuup_callback(stru
->  		break;
->  #ifdef CONFIG_HOTPLUG_CPU
->  	case CPU_DOWN_PREPARE:
-> +		/* Shutdown cache reaper */
-> +		cancel_rearming_delayed_work(&per_cpu(reap_work, cpu));
-> +		per_cpu(reap_work, cpu).work.func = NULL;
-> +
->  		mutex_lock(&cache_chain_mutex);
->  		break;
->  	case CPU_DOWN_FAILED:
+Does this fix it?
+---
+ drivers/net/sky2.c |   43 ++++++++++++++++++-------------------------
+ 1 file changed, 18 insertions(+), 25 deletions(-)
 
-Then CPU_DOWN_FAILED should do start_cpu_timer(cpu).
-
-Oleg.
-
+--- sky2-2.6.orig/drivers/net/sky2.c	2007-01-29 10:05:12.000000000 -0800
++++ sky2-2.6/drivers/net/sky2.c	2007-01-29 10:29:56.000000000 -0800
+@@ -3675,6 +3675,12 @@
+ 	sky2_write32(hw, B0_IMSK, 0);
+ 	sky2_power_aux(hw);
+ 
++	/* Turn off IRQ to avoid power management bug (see resume) */
++	if (hw->msi) {
++		free_irq(pdev->irq, hw);
++		pci_disable_msi(pdev);
++	}
++
+ 	pci_save_state(pdev);
+ 	pci_enable_wake(pdev, pci_choose_state(pdev, state), wol);
+ 	pci_set_power_state(pdev, pci_choose_state(pdev, state));
+@@ -3700,6 +3706,18 @@
+ 
+ 	sky2_write32(hw, B0_IMSK, Y2_IS_BASE);
+ 
++	/* Can't re-enable MSI because kernel resume ordering is broken
++	 * and calls device resume before ACPI (BIOS) is called.
++	 * BIOS then resets device to INTx!
++	 */
++	if (hw->msi) {
++		err = request_irq(pdev->irq, sky2_intr, IRQF_SHARED,
++				  hw->dev[0]->name, hw);
++		if (err)
++			goto out;
++		hw->msi = 0;
++	}
++
+ 	for (i = 0; i < hw->ports; i++) {
+ 		struct net_device *dev = hw->dev[i];
+ 		if (netif_running(dev)) {
+@@ -3721,29 +3739,6 @@
+ 	pci_disable_device(pdev);
+ 	return err;
+ }
+-
+-/* BIOS resume runs after device (it's a bug in PM)
+- * as a temporary workaround on suspend/resume leave MSI disabled
+- */
+-static int sky2_suspend_late(struct pci_dev *pdev, pm_message_t state)
+-{
+-	struct sky2_hw *hw = pci_get_drvdata(pdev);
+-
+-	free_irq(pdev->irq, hw);
+-	if (hw->msi) {
+-		pci_disable_msi(pdev);
+-		hw->msi = 0;
+-	}
+-	return 0;
+-}
+-
+-static int sky2_resume_early(struct pci_dev *pdev)
+-{
+-	struct sky2_hw *hw = pci_get_drvdata(pdev);
+-	struct net_device *dev = hw->dev[0];
+-
+-	return request_irq(pdev->irq, sky2_intr, IRQF_SHARED, dev->name, hw);
+-}
+ #endif
+ 
+ static void sky2_shutdown(struct pci_dev *pdev)
+@@ -3783,8 +3778,6 @@
+ #ifdef CONFIG_PM
+ 	.suspend = sky2_suspend,
+ 	.resume = sky2_resume,
+-	.suspend_late = sky2_suspend_late,
+-	.resume_early = sky2_resume_early,
+ #endif
+ 	.shutdown = sky2_shutdown,
+ };
