@@ -1,61 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933141AbXA2FaG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933144AbXA2FqF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933141AbXA2FaG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 00:30:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933142AbXA2FaF
+	id S933144AbXA2FqF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 00:46:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933138AbXA2FqF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 00:30:05 -0500
-Received: from nf-out-0910.google.com ([64.233.182.187]:20579 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933141AbXA2FaA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 00:30:00 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=knGPRY9h8N49RgblxuG58fLboh8qaP0b8MjTF8bj1OqpJ6yt/MHPWz04UF4abHyDznQI25cE36e02T7MuFsD45ExLPzu8BclmlQon54CACruXL+0SiukTxC7RwC0kJCiFX6mvbMPodicJ2MkMVBEaMP3rRYptqMtw9hKm1c2sdE=
-Message-ID: <4df04b840701282129h2334375ev74400a691f4d3a06@mail.gmail.com>
-Date: Mon, 29 Jan 2007 13:29:58 +0800
-From: "yunfeng zhang" <zyf.zeroos@gmail.com>
-To: "Hugh Dickins" <hugh@veritas.com>
-Subject: Re: [PATCH 2.6.20-rc5 1/1] MM: enhance Linux swap subsystem
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0701242015090.1770@blonde.wat.veritas.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 29 Jan 2007 00:46:05 -0500
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:34048 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933144AbXA2FqE (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jan 2007 00:46:04 -0500
+Message-Id: <200701290546.l0T5k08I016171@turing-police.cc.vt.edu>
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org
+Subject: Re: mm snapshot broken-out-2007-01-26-00-36.tar.gz uploaded
+In-Reply-To: Your message of "Sun, 28 Jan 2007 21:58:26 EST."
+             <200701290258.l0T2wQjU003810@turing-police.cc.vt.edu>
+From: Valdis.Kletnieks@vt.edu
+References: <200701260837.l0Q8blBr011622@shell0.pdx.osdl.net> <6bffcb0e0701270837i1ec40560l6e61e8876177e9da@mail.gmail.com> <45BBC444.8090109@imap.cc> <20070127134116.06bdadd8.akpm@osdl.org> <200701280241.l0S2f2ga015847@turing-police.cc.vt.edu>
+            <200701290258.l0T2wQjU003810@turing-police.cc.vt.edu>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1170049560_8444P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <4df04b840701212309l2a283357jbdaa88794e5208a7@mail.gmail.com>
-	 <200701222300.41960.a1426z@gawab.com>
-	 <4df04b840701222021w5e1aaab2if2ba7fc38d06d64b@mail.gmail.com>
-	 <4df04b840701222108o6992933bied5fff8a525413@mail.gmail.com>
-	 <Pine.LNX.4.64.0701242015090.1770@blonde.wat.veritas.com>
+Date: Mon, 29 Jan 2007 00:46:00 -0500
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> You have an interesting idea of "simplifies", given
->  16 files changed, 997 insertions(+), 25 deletions(-)
-> (omitting your Documentation), and over 7k more code.
-> You'll have to be much more persuasive (with good performance
-> results) to get us to welcome your added layer of complexity.
+--==_Exmh_1170049560_8444P
+Content-Type: text/plain; charset=us-ascii
 
-If the whole idea is deployed on Linux, following core objects should be erased
-1) anon_vma.
-2) pgdata::active/inactive list and relatted methods -- mark_page_accessed etc.
-3) PrivatePage::count and mapcount. If core need to share the page, add PG_kmap
-   flag. In fact, page::lru_list can safetly be erased too.
-4) All cases should be from up to down, especially simplifies debug.
+On Sun, 28 Jan 2007 21:58:26 EST, Valdis.Kletnieks@vt.edu said:
+> --==_Exmh_1170039506_3335P
+> Content-Type: text/plain; charset=us-ascii
+> 
+> On 26/01/07, akpm@osdl.org <akpm@osdl.org> wrote:
+> > The mm snapshot broken-out-2007-01-26-00-36.tar.gz has been uploaded to
+> >    ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/mm/broken-out-2007-01-26-00-36.tar.gz
+> 
+> Aliens ate my brain, part 2:
+> 
+> My IPv6 configuration evaporated, totally, out of my .config.  I tracked it
+> down to wierdness with net/Kconfig:
 
-> Please make an effort to support at least i386 3level pagetables:
-> you don't actually need >4GB of memory to test CONFIG_HIGHMEM64G.
-> HIGHMEM testing shows you're missing a couple of pte_unmap()s,
-> in pps_swapoff_scan_ptes() and in shrink_pvma_scan_ptes().
+Trying again with the official -rc6-mm1 tarball...
 
-Yes, it's my fault.
+The aliens regurgitated my brain - after I did a 'make oldconfig' against my
+-rc4-mm1 config, I did a 'make menuconfig' and all the IPv6 stuff showed up
+as 'NEW'.  Not sure why it didn't carry over the the -rc4-mm1 values, but
+at least I was able to re-set them.
 
-> It would be nice if you could support at least x86_64 too
-> (you have pte_low code peculiar to i386 in vmscan.c, which is
-> preventing that), but that's harder if you don't have the hardware.
+--==_Exmh_1170049560_8444P
+Content-Type: application/pgp-signature
 
-Um! Data cmpxchged should include access bit. And I have only x86 PC, memory <
-1G. 3level pagetable code copied from Linux other functions.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFFvYoYcC3lWbTT17ARAuCnAJ9JnB95wzmzYSn8F76iytuA1TZmVACg92UF
+npt0NJvr6/FsMLKkY0UNkzY=
+=bdCe
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1170049560_8444P--
