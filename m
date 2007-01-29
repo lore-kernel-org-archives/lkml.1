@@ -1,89 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751487AbXA2ORM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751569AbXA2Oag@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751487AbXA2ORM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 09:17:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752500AbXA2ORM
+	id S1751569AbXA2Oag (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 09:30:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751575AbXA2Oag
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 09:17:12 -0500
-Received: from pat.uio.no ([129.240.10.15]:52590 "EHLO pat.uio.no"
+	Mon, 29 Jan 2007 09:30:36 -0500
+Received: from main.gmane.org ([80.91.229.2]:60042 "EHLO ciao.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751487AbXA2ORL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 09:17:11 -0500
-Subject: Re: [NFS] 2.6.17.8 - do_vfs_lock: VFS is out of sync with lock
-	manager!
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Neil Brown <neilb@suse.de>
-Cc: Jesper Juhl <jesper.juhl@gmail.com>, nfs@lists.sourceforge.net,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <17853.33116.113629.65031@notabene.brown>
-References: <9a8748490608080739w2e14e5ceg44a7bf0a3b475704@mail.gmail.com>
-	 <17636.4462.975774.528003@cse.unsw.edu.au>
-	 <9a8748490608170258s32df0272r60c8c540e5871485@mail.gmail.com>
-	 <17641.10665.116168.867041@cse.unsw.edu.au>
-	 <1156190098.6158.109.camel@localhost>
-	 <17853.33116.113629.65031@notabene.brown>
-Content-Type: text/plain
-Date: Mon, 29 Jan 2007 09:16:50 -0500
-Message-Id: <1170080210.5757.6.camel@lade.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
-Content-Transfer-Encoding: 7bit
-X-UiO-Resend: resent
-X-UiO-Spam-info: not spam, SpamAssassin (score=0.0, required=12.0, autolearn=disabled, none)
-X-UiO-Scanned: D72AA3BBBFF1FCC036E93ACA56C88EE2CD206071
-X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 572 total 144598 max/h 1952 blacklist 0 greylist 0 ratelimit 0
+	id S1751566AbXA2Oag (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jan 2007 09:30:36 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Oleg Verych <olecom@flower.upol.cz>
+Subject: Re: [PATCH] `make help' in build tree doesn't show headers_* targets
+Date: Mon, 29 Jan 2007 14:30:17 +0000 (UTC)
+Organization: Palacky University in Olomouc, experimental physics department.
+Message-ID: <slrners1o9.f71.olecom@flower.upol.cz>
+References: <Pine.LNX.4.62.0701291346210.17426@pademelon.sonytel.be>
+X-Complaints-To: usenet@sea.gmane.org
+X-Gmane-NNTP-Posting-Host: flower.upol.cz
+Mail-Followup-To: LKML <linux-kernel@vger.kernel.org>, Oleg Verych <olecom@flower.upol.cz>, Andrew Morton <akpm@osdl.org>, Linus Torvalds <torvalds@linux-foundation.org>, Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>, Sam Ravnborg <sam@ravnborg.org>
+User-Agent: slrn/0.9.8.1pl1 (Debian)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-01-29 at 16:08 +1100, Neil Brown wrote:
-> On Monday August 21, trond.myklebust@fys.uio.no wrote:
-> > 
-> > Could we instead replace it with a dprintk() that returns the value of
-> > "res"? That will keep it useful for debugging purposes.
-> 
-> (only 5 months later...)
-> 
-> Sure, how about this?
-> 
-> Thanks,
-> NeilBrown
 
-ACKed.
+> From: Geert Uytterhoeven
+> Newsgroups: gmane.linux.kernel
+> Subject: [PATCH] `make help' in build tree doesn't show headers_* targets
+> Date: Mon, 29 Jan 2007 13:47:01 +0100 (CET)
 
-Thanks Neil!
+> `make help' in the build tree doesn't show the help texts about the
+> `headers_install' and `headers_check' targets because it looks for
+> include/asm-$(ARCH)/Kbuild in the wrong place.
+> Add the missing `$(srctree)' prefixes to fix this.
+> Also move the printing of the default install path for the headers inside the
+> `if/fi', where it belongs.
+>
+> Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+> ---
+>  Makefile |    6 +++---
+>  1 files changed, 3 insertions(+), 3 deletions(-)
 
-Trond
+Acked-by: Oleg Verych <olecom@flower.upol.cz>
 
-> 
-> Remove warning: VFS is out of sync with lock manager.
-> 
-> But keep it as a dprintk
-> 
-> The message can be generated in a quite normal situation:
->  If a 'lock' request is interrupted, then the lock client needs to
->   record that the server has the lock, incase it does.
->  When we come the unlock, the server might say it doesn't, even
->   though we think it does (or might) and this generates the message.
-> 
-> Signed-off-by: Neil Brown <neilb@suse.de>
-> 
-> ### Diffstat output
->  ./fs/nfs/file.c |    5 +++--
->  1 file changed, 3 insertions(+), 2 deletions(-)
-> 
-> diff .prev/fs/nfs/file.c ./fs/nfs/file.c
-> --- .prev/fs/nfs/file.c	2007-01-29 16:04:09.000000000 +1100
-> +++ ./fs/nfs/file.c	2007-01-29 16:04:45.000000000 +1100
-> @@ -434,8 +434,9 @@ static int do_vfs_lock(struct file *file
->  			BUG();
->  	}
->  	if (res < 0)
-> -		printk(KERN_WARNING "%s: VFS is out of sync with lock manager!\n",
-> -				__FUNCTION__);
-> +		dprintk(KERN_WARNING "%s: VFS is out of sync with lock manager"
-> +			" - error %d!\n",
-> +				__FUNCTION__, res);
->  	return res;
->  }
->  
+
+> --- ps3-linux-src-2.6.20-rc6.orig/Makefile
+> +++ ps3-linux-src-2.6.20-rc6/Makefile
+> @@ -1116,15 +1116,15 @@ help:
+>  	@echo  '  cscope	  - Generate cscope index'
+>  	@echo  '  kernelrelease	  - Output the release version string'
+>  	@echo  '  kernelversion	  - Output the version stored in Makefile'
+> -	@if [ -r include/asm-$(ARCH)/Kbuild ]; then \
+> +	@if [ -r $(srctree)/include/asm-$(ARCH)/Kbuild ]; then \
+>  	 echo  '  headers_install - Install sanitised kernel headers to INSTALL_HDR_PATH'; \
+> +	 echo  '                    (default: $(INSTALL_HDR_PATH))'; \
+>  	 fi
+> -	@echo  '                    (default: $(INSTALL_HDR_PATH))'
+>  	@echo  ''
+>  	@echo  'Static analysers'
+>  	@echo  '  checkstack      - Generate a list of stack hogs'
+>  	@echo  '  namespacecheck  - Name space analysis on compiled kernel'
+> -	@if [ -r include/asm-$(ARCH)/Kbuild ]; then \
+> +	@if [ -r $(srctree)/include/asm-$(ARCH)/Kbuild ]; then \
+>  	 echo  '  headers_check   - Sanity check on exported headers'; \
+>  	 fi
+>  	@echo  ''
+>
+> Gr{oetje,eeting}s,
+>
+> 						Geert
+>
+> --
+> Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
+> Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
+> Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
 
