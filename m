@@ -1,86 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932829AbXA2XGB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964830AbXA2XKO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932829AbXA2XGB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 18:06:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752628AbXA2XGB
+	id S964830AbXA2XKO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 18:10:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964852AbXA2XKO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 18:06:01 -0500
-Received: from ug-out-1314.google.com ([66.249.92.174]:44022 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752626AbXA2XGA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 18:06:00 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:sender;
-        b=GWnQNkdSvJy+FEFUWTok+PnOHDAlCntsR+8ucNbWOtJNYQ+IVI/uImE+0LhiMc+tPvex3OYlqgVzcCvvaH9hl7W9Ze5DW5LBWfwWc12dY1ZiXYqnMCqBrEIzpQw7hxFKGolQkk4N8qgpmx0kswS5Rv6mg3Z6pELcd22NWoZGdZU=
-Date: Mon, 29 Jan 2007 23:05:52 +0000
-From: Frederik Deweerdt <deweerdt@free.fr>
-To: Tomasz Kvarsin <kvarsin@gmail.com>
-Cc: Andrew Morton <akpm@osdl.org>, linux-kernel <linux-kernel@vger.kernel.org>,
-       paulmck@in.ibm.com, dipankar@in.ibm.com
-Subject: [-mm patch] rcu_trace build fix (was Re: 2.6.20-rc6-mm2 build failure)
-Message-ID: <20070129230552.GB10257@slug>
-References: <5157576d0701291231j17c5c73we8aa4419d22c01b9@mail.gmail.com>
+	Mon, 29 Jan 2007 18:10:14 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:36155 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S964830AbXA2XKM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jan 2007 18:10:12 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: nigel@nigel.suspend2.net
+Subject: Re: question on resume()
+Date: Tue, 30 Jan 2007 00:10:37 +0100
+User-Agent: KMail/1.9.1
+Cc: Oliver Neukum <oliver@neukum.org>, linux-kernel@vger.kernel.org
+References: <200701291206.39637.oneukum@suse.de> <200701292204.33112.oliver@neukum.org> <1170105665.15820.29.camel@nigel.suspend2.net>
+In-Reply-To: <1170105665.15820.29.camel@nigel.suspend2.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <5157576d0701291231j17c5c73we8aa4419d22c01b9@mail.gmail.com>
-User-Agent: mutt-ng/devel-r804 (Linux)
+Message-Id: <200701300010.38538.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 29, 2007 at 11:31:08PM +0300, Tomasz Kvarsin wrote:
-> I try to compile and got:
-> 
->  CHK     include/linux/version.h
->  CHK     include/linux/utsrelease.h
->  CHK     include/linux/compile.h
->  CC      kernel/rcupreempt.o
-> kernel/rcupreempt.c: In function 'rcupreempt_try_flip_state_name':
-> kernel/rcupreempt.c:641: error: 'rcu_try_flip_state_names' undeclared
-> (first use in this function)
-> kernel/rcupreempt.c:641: error: (Each undeclared identifier is
-> reported only once
-> kernel/rcupreempt.c:641: error: for each function it appears in.)
-> kernel/rcupreempt.c: In function 'rcupreempt_trace':
-> kernel/rcupreempt.c:645: error: 'struct rcu_data' has no member named 'trace'
-> kernel/rcupreempt.c:646: warning: control reaches end of non-void function
-> kernel/rcupreempt.c: In function 'rcupreempt_try_flip_state_name':
-> kernel/rcupreempt.c:642: warning: control reaches end of non-void function
-> 
 Hi,
 
-It looks like a typo there, thanks for reporting. The attached patch
-"s/RCU_TRACE/CONFIG_RCU_TRACE/" did the trick for me.
+On Monday, 29 January 2007 22:21, Nigel Cunningham wrote:
+> Hi.
+> 
+> On Mon, 2007-01-29 at 22:04 +0100, Oliver Neukum wrote:
+> > Am Montag, 29. Januar 2007 21:14 schrieb Nigel Cunningham:
+> > > Hi.
+> > > 
+> > > On Mon, 2007-01-29 at 12:34 +0100, Oliver Neukum wrote:
+> > > > Am Montag, 29. Januar 2007 12:24 schrieb Nigel Cunningham:
+> > > > > Hi.
+> > > > > 
+> > > > > On Mon, 2007-01-29 at 12:06 +0100, Oliver Neukum wrote:
+> > > > > > Hi,
+> > > > > > 
+> > > > > > may a driver call wake_up() while doing resume() ?
+> > > > > 
+> > > > > I assume you mean waking a userspace process from drivers_resume(). If
+> > > > > so, the answer is no - processes will still be frozen at the point. In
+> > > > > the case of Suspend2, the LRU pages will still not have been read
+> > > > > either, so Suspend2 users would hate you for making hibernation crash
+> > > > > and burn :)
+> > > > 
+> > > > If so, how do I notify tasks presumably about to be thawed that their
+> > > > IO failed?
+> > > 
+> > > Do you mean I/O to disk? If so, it won't fail. All pending I/O gets
+> > > processed like normal either before or after suspending and resuming.
+> > > 
+> > > If you mean something like a packet being transmitted over the network,
+> > > you should be using the normal paths for recording success/failure.
+> > 
+> > I am talking about a character device that puts requests onto a queue.
+> > If the queue is restarted after resumption the normal error path is waking
+> > up the waiting tasks.
+> 
+> Ok. In that case, you'd want to delay trying to wake them until resuming
+> is completed.
+> 
+> Unless there's something I've forgotten, we don't currently have an easy
+> way for you to determine when processes are thawed.
 
-Btw, shouldn't the RCU_TRACE macro be defined to "do {} while(0)" in the
-!CONFIG_RCU_TRACE case?
+That's correct.
 
-Regards,
-Frederik
+> Perhaps this indicates a need for us to have a notifier chain for the end of
+> a cycle?
 
-Signed-off-by: Frederik Deweerdt <frederik.deweerdt@gmail.com>
-
-diff --git a/kernel/rcupreempt.c b/kernel/rcupreempt.c
-index f8962a7..9b7d66b 100644
---- a/kernel/rcupreempt.c
-+++ b/kernel/rcupreempt.c
-@@ -619,7 +619,7 @@ void synchronize_kernel(void)
- 	synchronize_rcu();
- }
+Probably.  Well, I have no strong opinion about that.
  
--#ifdef RCU_TRACE
-+#ifdef CONFIG_RCU_TRACE
- int *rcupreempt_flipctr(int cpu)
- {
- 	return &per_cpu(rcu_flipctr, cpu)[0];
-@@ -649,7 +649,7 @@ EXPORT_SYMBOL_GPL(rcupreempt_data_completed);
- EXPORT_SYMBOL_GPL(rcupreempt_flip_flag);
- EXPORT_SYMBOL_GPL(rcupreempt_mb_flag);
- EXPORT_SYMBOL_GPL(rcupreempt_try_flip_state_name);
--#endif /* #ifdef RCU_TRACE */
-+#endif /* #ifdef CONFIG_RCU_TRACE */
- 
- EXPORT_SYMBOL_GPL(call_rcu);
- EXPORT_SYMBOL_GPL(rcu_batches_completed);
+> You could create a freezeable workqueue and schedule work from your
+> device_resume call (assuming that's doesn't raised atomicity issues),
+> but I wonder if that approach would be too heavy handed for what you're
+> after. I'll explicitly cc Rafael and see what he thinks.
+
+Hm, this way or another, the notification of tasks should be deferred until
+they are thawed.  The freezeable workqueue idea seems sensible to me.
+
+Greetings,
+Rafael
+
+
+-- 
+If you don't have the time to read,
+you don't have the time or the tools to write.
+		- Stephen King
