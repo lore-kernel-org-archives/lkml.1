@@ -1,43 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933271AbXA2IrP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933272AbXA2IrS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933271AbXA2IrP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 03:47:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933272AbXA2IrO
+	id S933272AbXA2IrS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 03:47:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933274AbXA2IrS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 03:47:14 -0500
-Received: from mail.suse.de ([195.135.220.2]:43109 "EHLO mx1.suse.de"
+	Mon, 29 Jan 2007 03:47:18 -0500
+Received: from ns2.suse.de ([195.135.220.15]:57601 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933271AbXA2IrO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 03:47:14 -0500
+	id S933272AbXA2IrR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jan 2007 03:47:17 -0500
 From: Andi Kleen <ak@suse.de>
-To: "Parag Warudkar" <parag.warudkar@gmail.com>
-Subject: Re: 2.6.20-rc6-mm1: linker error with arch_setup_additional_pages
-Date: Mon, 29 Jan 2007 03:51:54 +0100
+To: Chuck Ebbert <cebbert@redhat.com>
+Subject: Re: [patch] i386: add option to show more code in oops reports
+Date: Mon, 29 Jan 2007 04:44:21 +0100
 User-Agent: KMail/1.9.1
-Cc: thunder7@xs4all.nl, "akpm@osdl.org" <akpm@osdl.org>,
-       linux-kernel@vger.kernel.org
-References: <82e4877d0701280834n75d3d0d3ja7a35d5ea0e7fa4f@mail.gmail.com> <82e4877d0701281444h333c581fr66d60cca9d03749d@mail.gmail.com>
-In-Reply-To: <82e4877d0701281444h333c581fr66d60cca9d03749d@mail.gmail.com>
+Cc: Andrew Morton <akpm@osdl.org>, linux-kernel <linux-kernel@vger.kernel.org>
+References: <45B7C019.1040209@redhat.com> <20070125145504.c8c0a98a.akpm@osdl.org> <45B943B7.8070500@redhat.com>
+In-Reply-To: <45B943B7.8070500@redhat.com>
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200701290351.54270.ak@suse.de>
 Content-Type: text/plain;
-  charset="utf-8"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200701290444.21861.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Friday 26 January 2007 00:56, Chuck Ebbert wrote:
 
-> I think the easy and correct fix for this situation is defining
-> CONFIG_ARCH_HAS_SETUP_ADDITIONAL_PAGES on x86_64 only if
-> IA32_EMULATION is defined. (Because x86_64 proper doesn't seem to
-> require arch_setup_additional_pages() only IA32 emulation requires
-> it.)
->
-> The patch below should fix it. (Please use attachment - less chance of
-> whitespace issues. Sorry no control over mail client atm)
+> Can't think of a way to word the justification, but I've wanted to see more
+> code a few times.
 
-A more elegant solution would be to do away with the CONFIG
-and switch to a weak function in the caller.
+Hmm, not sure I see the point. The Code line is just that you can
+make sense of random mailing list oopses where you don't
+have a vmlinux. But as long as you don't make the option
+the default you would need to ask people to set it for you -- and when you
+ask you could always as well ask about the vmlinux and get
+as much code as you ever wanted.
+
+So unless it's default it's likely useless and I don't think
+it is a good idea to make it default because oops screen estate
+is so precious.
 
 -Andi
+
