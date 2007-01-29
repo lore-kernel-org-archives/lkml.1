@@ -1,66 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933144AbXA2FqF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933183AbXA2F7s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933144AbXA2FqF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 00:46:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933138AbXA2FqF
+	id S933183AbXA2F7s (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 00:59:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933204AbXA2F7s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 00:46:05 -0500
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:34048 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933144AbXA2FqE (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 00:46:04 -0500
-Message-Id: <200701290546.l0T5k08I016171@turing-police.cc.vt.edu>
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org
-Subject: Re: mm snapshot broken-out-2007-01-26-00-36.tar.gz uploaded
-In-Reply-To: Your message of "Sun, 28 Jan 2007 21:58:26 EST."
-             <200701290258.l0T2wQjU003810@turing-police.cc.vt.edu>
-From: Valdis.Kletnieks@vt.edu
-References: <200701260837.l0Q8blBr011622@shell0.pdx.osdl.net> <6bffcb0e0701270837i1ec40560l6e61e8876177e9da@mail.gmail.com> <45BBC444.8090109@imap.cc> <20070127134116.06bdadd8.akpm@osdl.org> <200701280241.l0S2f2ga015847@turing-police.cc.vt.edu>
-            <200701290258.l0T2wQjU003810@turing-police.cc.vt.edu>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1170049560_8444P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+	Mon, 29 Jan 2007 00:59:48 -0500
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:60366
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933150AbXA2F7p (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jan 2007 00:59:45 -0500
+From: Rob Landley <rob@landley.net>
+To: Oleg Verych <olecom@flower.upol.cz>
+Subject: Re: The mbox format archives of linux-kernel are gone.
+Date: Mon, 29 Jan 2007 00:59:27 -0500
+User-Agent: KMail/1.9.1
+Cc: Andrew Morton <akpm@osdl.org>, Dirk Behme <dirk.behme@googlemail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+References: <45BC54D3.2010706@lycosxxl.de> <20070128151706.8d2d1841.akpm@osdl.org> <20070129015235.GA25299@flower.upol.cz>
+In-Reply-To: <20070129015235.GA25299@flower.upol.cz>
+MIME-Version: 1.0
+Content-Disposition: inline
+Message-Id: <200701290059.28098.rob@landley.net>
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Date: Mon, 29 Jan 2007 00:46:00 -0500
-To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1170049560_8444P
-Content-Type: text/plain; charset=us-ascii
-
-On Sun, 28 Jan 2007 21:58:26 EST, Valdis.Kletnieks@vt.edu said:
-> --==_Exmh_1170039506_3335P
-> Content-Type: text/plain; charset=us-ascii
+On Sunday 28 January 2007 8:52 pm, Oleg Verych wrote:
+> On Sun, Jan 28, 2007 at 03:17:06PM -0800, Andrew Morton wrote:
+> > On Sun, 28 Jan 2007 22:46:32 +0000
+> > Oleg Verych <olecom@flower.upol.cz> wrote:
+> > 
+> > > If somebody will get lkml mbox archive, can you import it into gmane,
+> > > please.
+> > 
+> > http://userweb.kernel.org/~akpm/lkml-mbox-archives/
 > 
-> On 26/01/07, akpm@osdl.org <akpm@osdl.org> wrote:
-> > The mm snapshot broken-out-2007-01-26-00-36.tar.gz has been uploaded to
-> >    ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/mm/broken-out-2007-01-26-00-36.tar.gz
+> I think, whole set, possibly from most active start years, say 1993, 1994
+> or so, must be collected, then i can contact Lars to try to import all
+> this into Gmane with current web links being preserved.
 > 
-> Aliens ate my brain, part 2:
-> 
-> My IPv6 configuration evaporated, totally, out of my .config.  I tracked it
-> down to wierdness with net/Kconfig:
+> BTW, donwloading (big) sets of archives _from_ Gmane is strongly
+> discouraged.
 
-Trying again with the official -rc6-mm1 tarball...
+The very early archives are available on the web:
+http://www.kclug.org/old_archives/linux-activists/
 
-The aliens regurgitated my brain - after I did a 'make oldconfig' against my
--rc4-mm1 config, I did a 'make menuconfig' and all the IPv6 stuff showed up
-as 'NEW'.  Not sure why it didn't carry over the the -rc4-mm1 values, but
-at least I was able to re-set them.
+And I'm under the impression that Alan Cox once collected a complete set of 
+mbox archives, but this is a vague an unfocused recollection of something 
+going by years ago.  (I also thought the result was downloadable under 
+kernel.org/pub somewhere.  This would not appear to be the case.)
 
---==_Exmh_1170049560_8444P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFFvYoYcC3lWbTT17ARAuCnAJ9JnB95wzmzYSn8F76iytuA1TZmVACg92UF
-npt0NJvr6/FsMLKkY0UNkzY=
-=bdCe
------END PGP SIGNATURE-----
-
---==_Exmh_1170049560_8444P--
+Rob
+-- 
+"Perfection is reached, not when there is no longer anything to add, but
+when there is no longer anything to take away." - Antoine de Saint-Exupery
