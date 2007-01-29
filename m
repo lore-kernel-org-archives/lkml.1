@@ -1,70 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752631AbXA2Xou@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964784AbXA2XrL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752631AbXA2Xou (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 18:44:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752629AbXA2Xot
+	id S964784AbXA2XrL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 18:47:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752632AbXA2XrK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 18:44:49 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:52439 "EHLO mx2.suse.de"
+	Mon, 29 Jan 2007 18:47:10 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:34048 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964937AbXA2Xoq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 18:44:46 -0500
-Date: Mon, 29 Jan 2007 15:43:40 -0800
-From: Greg KH <greg@kroah.com>
-To: LKML <linux-kernel@vger.kernel.org>,
-       Rainer Weikusat <rainer.weikusat@sncag.com>,
-       Oleg Verych <olecom@flower.upol.cz>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Adrian Bunk <bunk@stusta.de>
-Subject: Re: unfixed regression in 2.6.20-rc6 (since 2.6.19)
-Message-ID: <20070129234340.GA6881@kroah.com>
-References: <877ivb2kvc.fsf@semtex.sncag.com> <20070125185101.GA26279@kroah.com> <87y7nq131x.fsf@semtex.sncag.com> <20070126174828.GA28890@kroah.com> <87d54z1dhb.fsf@semtex.sncag.com> <slrnerqjit.f71.olecom@flower.upol.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <slrnerqjit.f71.olecom@flower.upol.cz>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	id S1750786AbXA2XrI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jan 2007 18:47:08 -0500
+Date: Mon, 29 Jan 2007 15:47:06 -0800
+From: Andrew Morton <akpm@osdl.org>
+To: Robert Hancock <hancockr@shaw.ca>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+Subject: Re: [PATCH RFC] sd: spin down disks on removal or power-down
+Message-Id: <20070129154706.dfb3edab.akpm@osdl.org>
+In-Reply-To: <45BD522F.3070706@shaw.ca>
+References: <45BD522F.3070706@shaw.ca>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 29, 2007 at 01:31:09AM +0000, Oleg Verych wrote:
-> 
-> > From: Rainer Weikusat
-> > Newsgroups: gmane.linux.kernel
-> > Subject: Re: unfixed regression in 2.6.20-rc6 (since 2.6.19)
-> > Date: Sun, 28 Jan 2007 14:34:56 +0100
-> 
-> Hallo.
-> 
-> > Greg KH <greg@kroah.com> writes:
-> []
-> >> Please work to see what is wrong with the existing patch.  Is there
-> >> anything that I can do to help you out?
-> >
-> > This thing has consumed something like sixteen hours of my life in
-> > total, with a gain-to-be-expected of exactly zero (I don't need to run
-> > 'current' kernels on my work machine, I have just grown into the habit
-> > of doing so) and those sixteen hours cannot come back (and I even have
-> > had these type of discussions around 'should it rather look like math
-> > or rather like text' in sufficent quantities :->), so, except that I
-> > would be very much obliged to you if a fix for this issue could go
-> > into the 'official' tree rather sooner than later, no.
-> 
-> It's hot here.
-> 
-> I'm in similar situation (even *usb-serial* driver [TI USB] led me there;)
+On Sun, 28 Jan 2007 19:47:27 -0600
+Robert Hancock <hancockr@shaw.ca> wrote:
 
-No, not at all.  Your situation is you object to the current way the USB
-subsystem binds devices to drivers (well, interfaces), and wish to rip
-the firmware out of a usb-serial driver that is working just fine right
-now.
+> Here's a patch for sd.c I've cooked up which issues a START STOP UNIT
+> command to stop the drive when the SCSI disk is removed or the machine
+> is powered down. The rationale behind this is that apparently on many
+> drives, simply cutting power to the spinning disk forces it to do an
+> emergency head park/unload which creates more wear on the drive then a
+> controlled park/unload with power still applied. This change ensures
+> that the drive will be spun down if the user shuts down the machine or
+> if they are about to hot-unplug the drive and have done "scsiadd -r" first.
+> 
+> The main potential concern I have about this implementation is that if
+> the drive is used in a multi-initiator, iSCSI, etc. environment,
+> stopping the drive may be undesirable as another initiator may still be
+> accessing it. I'm not familiar enough with these setups to know if this
+> problem is likely to come up or not. For this and other reasons we may
+> want to make this behavior controllable - I'm open to suggestions on how
+> to do this or whether it's needed.
+> 
+> I've tested that this does work on SATA disks through libata (with my
+> patch "libata: fix translation for START STOP UNIT" applied). I also
+> tested with some external USB-to-IDE drive enclosures. The support for
+> START STOP UNIT on those seems rather poor though, on one enclosure with
+> a Genesys bridge chip it returned a check condition with "Invalid field
+> in CDB", and on another with a JMicron chip the request succeeded but it
+> didn't actually spin the drive down.
+> 
 
-I still don't understand why you wish to take the firmware out and move
-it to userspace, why do you want to do this?
+What we don't want to happen is for those disks to spin down during a reboot.
+It seems that this is OK with this patch.
 
-Rainer's problem is a real bug in the USB driver code, which we need to
-work on getting fixed, vastly different from your objections.
+Also, we probably don't want them to be spun down during a kexec_load, but
+I expect that's OK too.
 
-thanks,
+triviata:
 
-greg k-h
+> --- linux-2.6.20-rc6nv/drivers/scsi/sd.c	2007-01-28 17:00:00.000000000 -0600
+> +++ linux-2.6.20-rc6nvedit/drivers/scsi/sd.c	2007-01-28 18:08:53.000000000 -0600
+> @@ -821,6 +821,39 @@ static int sd_sync_cache(struct scsi_dev
+>  	return res;
+>  }
+>  
+> +static int sd_stop_unit(struct scsi_device *sdp, struct scsi_disk* sdkp)
+
+s/* / */
+
+> +{
+> +	int res;
+> +	struct scsi_sense_hdr sshdr;
+> +	unsigned char cmd[10] = { 0 };
+
+I don't think this initialisation-to-all-zeroes is needed, is it?
+
+> +	if (!scsi_device_online(sdp))
+> +		return -ENODEV;
+> +
+> +	cmd[0] = START_STOP;
+> +	/*
+> +	 * Leave the rest of the command zero to indicate
+> +	 * transition to stopped power condition and return
+> +	 * on completion.
+> +	 */
+> +	printk(KERN_NOTICE "Stopping SCSI disk %s\n",
+> +		sdkp->disk->disk_name);
+> +	res = scsi_execute_req(sdp, cmd, DMA_NONE, NULL, 0, &sshdr,
+> +			       SD_TIMEOUT, SD_MAX_RETRIES);
+> +
+> +	if (res) {
+> +		printk(KERN_WARNING "sd stop failed: status = %x, message = %02x, "
+> +				    "host = %d, driver = %02x\n",
+> +				    status_byte(res), msg_byte(res),
+> +				    host_byte(res), driver_byte(res));
+> +		if (driver_byte(res) & DRIVER_SENSE)
+> +			scsi_print_sense_hdr("sd", &sshdr);
+> +	}
+> +	
+> +	return res;
+> +}
+> +
+> +
+>  static int sd_issue_flush(struct device *dev, sector_t *error_sector)
+>  {
+>  	int ret = 0;
+> @@ -1727,11 +1760,13 @@ static int sd_probe(struct device *dev)
+>   **/
+>  static int sd_remove(struct device *dev)
+>  {
+> +	struct scsi_device *sdp = to_scsi_device(dev);
+>  	struct scsi_disk *sdkp = dev_get_drvdata(dev);
+>  
+>  	class_device_del(&sdkp->cdev);
+>  	del_gendisk(sdkp->disk);
+>  	sd_shutdown(dev);
+> +	sd_stop_unit(sdp,sdkp);
+>  
+>  	mutex_lock(&sd_ref_mutex);
+>  	dev_set_drvdata(dev, NULL);
+> @@ -1784,6 +1819,9 @@ static void sd_shutdown(struct device *d
+>  				sdkp->disk->disk_name);
+>  		sd_sync_cache(sdp);
+>  	}
+> +	if(system_state == SYSTEM_POWER_OFF)
+
+s/if(/if (/
+
+> +		sd_stop_unit(sdp,sdkp);
+> +		
+>  	scsi_disk_put(sdkp);
+>  }
+>  
+> 
+> 
+> 
+> 
+> 
