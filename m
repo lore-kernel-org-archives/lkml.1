@@ -1,74 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751258AbXA2L7y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751246AbXA2MBH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751258AbXA2L7y (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 06:59:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751250AbXA2L7y
+	id S1751246AbXA2MBH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 07:01:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751250AbXA2MBG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 06:59:54 -0500
-Received: from mail2.domainserver.de ([213.83.41.143]:2735 "EHLO
-	smtp.domainserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751252AbXA2L7x (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 06:59:53 -0500
-Envelope-to: linux-kernel@vger.kernel.org
-Delivery-date: Mon, 29 Jan 2007 12:59:53 +0100
-From: Daniel Kabs <dkabs@mobotix.com>
-Organization: MOBOTIX AG
-To: linux-kernel@vger.kernel.org
-Subject: Problem with unix sockets: SOCK_DGRAM ignores MSG_TRUNC
-Date: Mon, 29 Jan 2007 12:59:49 +0100
-User-Agent: KMail/1.7.2
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Mon, 29 Jan 2007 07:01:06 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:49694 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751246AbXA2MBF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jan 2007 07:01:05 -0500
+Date: Mon, 29 Jan 2007 07:01:00 -0500
+From: Alan Cox <alan@redhat.com>
+To: Christoph Hellwig <hch@lst.de>
+Cc: alan@redhat.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] tty: cleanup release_mem
+Message-ID: <20070129120100.GA4338@devserv.devel.redhat.com>
+References: <20070128171244.GA21378@lst.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200701291259.50155.dkabs@mobotix.com>
-X-AUTH: - 
+In-Reply-To: <20070128171244.GA21378@lst.de>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Sun, Jan 28, 2007 at 06:12:44PM +0100, Christoph Hellwig wrote:
+> release_mem contains two copies of exactly the same code.  Refactor
+> these into a new helper, release_tty.  The only change in behaviour
+> is that the driver reference count is now decremented after the
+> master tty has been freed instead of before.
+> 
+> 
+> Signed-off-by: Christoph Hellwig <hch@lst.de>
 
-I use unix domain datagram sockets for IPC, e.g. I receive messages by 
-calling recv().
+Acked-by: Alan Cox <alan@redhat.com>
 
-"man 2 recv" tells me about the flags argument to a recv() call, namely:
+Please propogate the mutex_ FIXME comment to both functions as it may
+well need to cover tty->link
 
- MSG_TRUNC
-      Return  the  real  length of the packet, even when it was longer
-      than the passed buffer. Only valid for packet sockets.
-
-Thus I used recv() with flags MSG_TRUNC|MSG_PEEK in order to detect 
-message truncation due to insufficient buffer size.
-
-Strangely enough, MSG_TRUNC seems to get ignored by the kernel: If the 
-message received is larger than the receive buffer I supplied, the 
-function returns the size of the buffer. I think, the function should 
-return the real message length instead (at least according to the manual 
-page).
-
-To work around this problem, I now use the ioctl FIONREAD instead.
-
-On the other hand, in this mailing list, I found an old bug report 
-describing the same problem using UDP sockets:
-
-http://groups.google.com/group/fa.linux.kernel/browse_frm/thread/fb6acbb527507e26/ad0b2ba33b6b66fa
-
-UDP sockets seem to have been patched by now. From linux/net/ipv4/udp.c:
- udp_recvmsg()
-  ...
-        err = copied;
-        if (flags & MSG_TRUNC)
-                err = skb->len - sizeof(struct udphdr);
-   ...
-
-Why doesn't unix_dgram_recvmsg() in linux/net/unix/af_unix.c contain code 
-to this effect? Is this a feature or a bug? What is the correct semantics 
-of MSG_TRUNC when used for unix sockets?
-
-Cheers
-Daniel Kabs
-
-PS: According to some lkml archives, my previous mail did not come 
-through, so I reposted it.
