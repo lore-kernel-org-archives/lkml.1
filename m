@@ -1,145 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750725AbXA2Jpo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750778AbXA2JwA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750725AbXA2Jpo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 04:45:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750773AbXA2Jpo
+	id S1750778AbXA2JwA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 04:52:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750816AbXA2JwA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 04:45:44 -0500
-Received: from amsfep17-int.chello.nl ([213.46.243.15]:26875 "EHLO
-	amsfep13-int.chello.nl" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1750725AbXA2Jpn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 04:45:43 -0500
-Subject: Re: [PATCH] mm: remove global locks from mm/highmem.c
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Andrew Morton <akpm@osdl.org>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <20070128142925.df2f4dce.akpm@osdl.org>
-References: <1169993494.10987.23.camel@lappy>
-	 <20070128142925.df2f4dce.akpm@osdl.org>
-Content-Type: text/plain
-Date: Mon, 29 Jan 2007 10:44:08 +0100
-Message-Id: <1170063848.6189.121.camel@twins>
+	Mon, 29 Jan 2007 04:52:00 -0500
+Received: from mailhub.sw.ru ([195.214.233.200]:47543 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750778AbXA2Jv7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jan 2007 04:51:59 -0500
+Date: Mon, 29 Jan 2007 12:58:52 +0300
+From: Alexey Dobriyan <adobriyan@openvz.org>
+To: "H. Peter Anvin" <hpa@zytor.com>, akpm@osdl.org
+Cc: devel@openvz.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 3/3] lutimesat: actual syscall and wire-up on i386
+Message-ID: <20070129095852.GA6017@localhost.sw.ru>
+References: <20070126112345.GC11128@localhost.sw.ru> <45BC57FB.4010209@zytor.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <45BC57FB.4010209@zytor.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-01-28 at 14:29 -0800, Andrew Morton wrote:
+On Sat, Jan 27, 2007 at 11:59:55PM -0800, H. Peter Anvin wrote:
+> Alexey Dobriyan wrote:
+> >+asmlinkage long sys_lutimesat(int dfd, char __user *filename, struct
+> >timeval __user *utimes)
+>
+> Could we get these to take struct timespec instead of struct timeval?
+>
+> Right now we have a real problem in that the interfaces that *set* times
+> take struct timeval (microsecond granularity) but the interfaces that
+> *get* times return struct timespec (nanosecond granularity), which means
+> information loss on any setting operations.
 
-> As Christoph says, it's very much preferred that code be migrated over to
-> kmap_atomic().  Partly because kmap() is deadlockable in situations where a
-> large number of threads are trying to take two kmaps at the same time and
-> we run out.  This happened in the past, but incidences have gone away,
-> probably because of kmap->kmap_atomic conversions.
+OK. XFS could use it.
+---------------------
 
-> From which callsite have you measured problems?
+[PATCH 3/3] lutimesat: actual syscall and wire-up on i386
 
-CONFIG_HIGHPTE code in -rt was horrid. I'll do some measurements on
-mainline.
+lutimesat(2) does everything futimesat(2) does except it doesn't follow
+symlinks. It could be used by tar(1) and cp(1).
 
-> > Index: linux/include/linux/mm.h
-> > ===================================================================
-> > --- linux.orig/include/linux/mm.h
-> > +++ linux/include/linux/mm.h
-> > @@ -543,23 +543,39 @@ static __always_inline void *lowmem_page
-> >  #endif
-> >  
-> >  #if defined(WANT_PAGE_VIRTUAL)
-> > -#define page_address(page) ((page)->virtual)
-> > -#define set_page_address(page, address)			\
-> > -	do {						\
-> > -		(page)->virtual = (address);		\
-> > -	} while(0)
-> > -#define page_address_init()  do { } while(0)
-> > +/*
-> > + * wrap page->virtual so it is safe to set/read locklessly
-> > + */
-> > +#define page_address(page) \
-> > +	({ typeof((page)->virtual) v = (page)->virtual; \
-> > +	 smp_read_barrier_depends(); \
-> > +	 v; })
-> > +
-> > +static inline int set_page_address(struct page *page, void *address)
-> > +{
-> > +	if (address)
-> > +		return cmpxchg(&page->virtual, NULL, address) == NULL;
-> > +	else {
-> > +		/*
-> > +		 * cmpxchg is a bit abused because it is not guaranteed
-> > +		 * safe wrt direct assignment on all platforms.
-> > +		 */
-> > +		void *virt = page->virtual;
-> > +		return cmpxchg(&page->vitrual, virt, NULL) == virt;
-> > +	}
-> > +}
-> 
-> Have you verified that all architectures which can implement
-> WANT_PAGE_VIRTUAL also implement cmpxchg?
+FreeBSD and NetBSD have lutimes(2) which can be emulated by C library.
 
-It might have been my mistaken in understanding the latest cmpxchg
-thread. My understanding was that since LL/SC is not exposable as a low
-level primitive all platforms should implement a cmpxchg where some
-would not be save against direct assignment.
+lutimesat(2) accepts "struct timespec" which means timestamps with nanosecond
+granularity. Tested on XFS which has nanosecond timestamps on-disk.
 
-Anyway, I'll do as Nick says and replace it with atomic_long_cmpxchg.
+Changes to do_utimes() which is used by all existing utime* syscalls pass
+LTP utime tests.
 
-> Have you verified that sufficient headers are included for this to compile
-> correctly on all WANT_PAGE_VIRTUAL-enabling architectures on all configs? 
-> I don't see asm/system.h being included in mm.h and if I get yet another
-> damned it-wont-compile patch I might do something irreversible.
+Closes http://bugme.osdl.org/show_bug.cgi?id=4433
 
-Point taken.
+Signed-off-by: Alexey Dobriyan <adobriyan@openvz.org>
+---
 
-> > +static int pkmap_get_free(void)
-> >  {
-> > -	unsigned long vaddr;
-> > -	int count;
-> > +	int i, pos, flush;
-> > +	DECLARE_WAITQUEUE(wait, current);
-> >  
-> > -start:
-> > -	count = LAST_PKMAP;
-> > -	/* Find an empty entry */
-> > -	for (;;) {
-> > -		last_pkmap_nr = (last_pkmap_nr + 1) & LAST_PKMAP_MASK;
-> 
-> The old code used masking.
-> 
-> > -		if (!last_pkmap_nr) {
-> > -			flush_all_zero_pkmaps();
-> > -			count = LAST_PKMAP;
-> > -		}
-> > -		if (!pkmap_count[last_pkmap_nr])
-> > -			break;	/* Found a usable entry */
-> > -		if (--count)
-> > -			continue;
-> > +restart:
-> > +	for (i = 0; i < LAST_PKMAP; i++) {
-> > +		pos = atomic_inc_return(&pkmap_hand) % LAST_PKMAP;
-> 
-> The new code does more-expensive modulus.  Necessary?
+ arch/i386/kernel/syscall_table.S |    1 +
+ fs/utimes.c                      |   30 +++++++++++++++++++++++++-----
+ include/asm-i386/unistd.h        |    4 ++--
+ 3 files changed, 28 insertions(+), 7 deletions(-)
 
-I thought GCC would automagically use masking when presented with a
-power-of-two constant. Can make it more explicit though.
-
-> > +		flush = pkmap_try_free(pos);
-> > +		if (flush >= 0)
-> > +			goto got_one;
-> > +	}
-> > +
-> > +	/*
-> > +	 * wait for somebody else to unmap their entries
-> > +	 */
-> > +	__set_current_state(TASK_UNINTERRUPTIBLE);
-> > +	add_wait_queue(&pkmap_map_wait, &wait);
-> > +	schedule();
-> > +	remove_wait_queue(&pkmap_map_wait, &wait);
-> 
-> This looks wrong.  What happens if everyone else does their unmap between
-> the __set_current_state() and the add_wait_queue()?
-
-Eek, you are quite right.
+--- a/arch/i386/kernel/syscall_table.S
++++ b/arch/i386/kernel/syscall_table.S
+@@ -319,3 +319,4 @@ ENTRY(sys_call_table)
+ 	.long sys_move_pages
+ 	.long sys_getcpu
+ 	.long sys_epoll_pwait
++	.long sys_lutimesat		/* 320 */
+--- a/fs/utimes.c
++++ b/fs/utimes.c
+@@ -40,7 +40,7 @@ #endif
+  * must be owner or have write permission.
+  * Else, update from *times, must be owner or super user.
+  */
+-long do_utimes(int dfd, char __user *filename, struct timeval *times, int flags)
++static long do_utimes_nsec(int dfd, char __user *filename, struct timespec *times, int flags)
+ {
+ 	int error = -EINVAL;
+ 	struct nameidata nd;
+@@ -69,10 +69,8 @@ long do_utimes(int dfd, char __user *fil
+                 if (IS_APPEND(inode) || IS_IMMUTABLE(inode))
+                         goto dput_and_out;
+ 
+-		newattrs.ia_atime.tv_sec = times[0].tv_sec;
+-		newattrs.ia_atime.tv_nsec = times[0].tv_usec * 1000;
+-		newattrs.ia_mtime.tv_sec = times[1].tv_sec;
+-		newattrs.ia_mtime.tv_nsec = times[1].tv_usec * 1000;
++		newattrs.ia_atime = times[0];
++		newattrs.ia_mtime = times[1];
+ 		newattrs.ia_valid |= ATTR_ATIME_SET | ATTR_MTIME_SET;
+ 	} else {
+ 		error = -EACCES;
+@@ -92,6 +90,19 @@ out:
+ 	return error;
+ }
+ 
++long do_utimes(int dfd, char __user *filename, struct timeval *times, int flags)
++{
++	struct timespec ts[2];
++
++	if (times) {
++		ts[0].tv_sec = times[0].tv_sec;
++		ts[0].tv_nsec = times[0].tv_usec * 1000;
++		ts[1].tv_sec = times[1].tv_sec;
++		ts[1].tv_nsec = times[1].tv_usec * 1000;
++	}
++	return do_utimes_nsec(dfd, filename, times ? ts : NULL, flags);
++}
++
+ asmlinkage long sys_futimesat(int dfd, char __user *filename, struct timeval __user *utimes)
+ {
+ 	struct timeval times[2];
+@@ -105,3 +116,12 @@ asmlinkage long sys_utimes(char __user *
+ {
+ 	return sys_futimesat(AT_FDCWD, filename, utimes);
+ }
++
++asmlinkage long sys_lutimesat(int dfd, char __user *filename, struct timespec __user *utimes)
++{
++	struct timespec times[2];
++
++	if (utimes && copy_from_user(&times, utimes, sizeof(times)))
++		return -EFAULT;
++	return do_utimes_nsec(dfd, filename, utimes ? times : NULL, AT_SYMLINK_NOFOLLOW);
++}
+--- a/include/asm-i386/unistd.h
++++ b/include/asm-i386/unistd.h
+@@ -325,10 +325,11 @@ #define __NR_vmsplice		316
+ #define __NR_move_pages		317
+ #define __NR_getcpu		318
+ #define __NR_epoll_pwait	319
++#define __NR_lutimesat		320
+ 
+ #ifdef __KERNEL__
+ 
+-#define NR_syscalls 320
++#define NR_syscalls 321
+ 
+ #define __ARCH_WANT_IPC_PARSE_VERSION
+ #define __ARCH_WANT_OLD_READDIR
 
