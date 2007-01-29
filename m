@@ -1,55 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933256AbXA2HWs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933247AbXA2HYM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933256AbXA2HWs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 02:22:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933247AbXA2HWs
+	id S933247AbXA2HYM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 02:24:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933258AbXA2HYM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 02:22:48 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:3956 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S933181AbXA2HWr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 02:22:47 -0500
-Date: Mon, 29 Jan 2007 18:21:46 +1100
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Andrew Morton <akpm@osdl.org>, Ingo Molnar <mingo@elte.hu>,
-       "David S. Miller" <davem@davemloft.net>
-Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       Dipankar Sarma <dipankar@in.ibm.com>,
-       "Paul E. McKenney" <paulmck@us.ibm.com>
-Subject: Re: 2.6.20-rc6-mm1
-Message-ID: <20070129072146.GA30334@gondor.apana.org.au>
-References: <45BD2424.7020604@googlemail.com> <E1HBOtk-0007dS-00@gondolin.me.apana.org.au> <20070129052929.GA29456@gondor.apana.org.au> <20070128224312.50f89360.akpm@osdl.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070128224312.50f89360.akpm@osdl.org>
-User-Agent: Mutt/1.5.9i
+	Mon, 29 Jan 2007 02:24:12 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:52285 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933247AbXA2HYK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jan 2007 02:24:10 -0500
+Date: Sun, 28 Jan 2007 23:13:09 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Mike Galbraith <efault@gmx.de>
+cc: Andrew Morton <akpm@osdl.org>, Uwe Bugla <uwe.bugla@gmx.de>,
+       Adrian Bunk <bunk@stusta.de>, rml@novell.com, ttb@tentacle.dhs.org,
+       nickpiggin@yahoo.com.au, cijoml@volny.cz, linuxppc-dev@ozlabs.org,
+       anton@samba.org, paulus@samba.org, livio@eecg.toronto.edu,
+       petero2@telia.com, hch@lst.de, gd@spherenet.de,
+       alan@lxorguk.ukuu.org.uk, linux-ide@vger.kernel.org,
+       B.Zolnierkiewicz@elka.pw.edu.pl, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.20-rc6: known unfixed regressions (v2) (part 2)
+In-Reply-To: <1170054495.6521.1.camel@Homer.simpson.net>
+Message-ID: <Pine.LNX.4.64.0701282310120.3611@woody.linux-foundation.org>
+References: <Pine.LNX.4.64.0701241847360.25027@woody.linux-foundation.org> 
+ <20070127174230.GN6017@stusta.de> <20070128133344.214070@gmx.net> 
+ <1170051963.6454.7.camel@Homer.simpson.net>  <20070128224834.37482553.akpm@osdl.org>
+ <1170054495.6521.1.camel@Homer.simpson.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 28, 2007 at 10:43:12PM -0800, Andrew Morton wrote:
->
-> > IIRC Ingo had made fixes for the networking stack in his rt tree since
-> > the networking code assumes in lots of places that rcu_read_lock
-> > disables preemption.
+
+
+On Mon, 29 Jan 2007, Mike Galbraith wrote:
 > 
-> oh.  We'd better find those fixes then.  I wonder what other code made that
-> (rather hacky) assumption?  I guess we have enough debug stuff in there to
-> find out..
+> Unfortunately, I'm git impaired.  I am rummaging as we speak though.
 
-Actually, maybe I was confusing this with the fixes Ingo had for
-local_bh_disable vs. preemption in the -rt tree.  Ingo, do you
-have preemptible RCU support in your -rt tree and if so did you
-have to fix the networking stack to behave correctly with it?
+Ok, I'm personally heading to bed, but it rally should be as simple as
 
-It could also be that the fixes for local_bh_disable also masked
-any problems that would trigger under preemptible RCU.
+ - get the git tree in the first place
+ - do
 
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+	git bisect good v2.6.19
+	git bisect bad v2.6.20-rc2
+	.. it will pick a point for you to try ..
+	.. compile, boot, test ..
+
+	"git bisect {good|bad}" depending on results
+
+ - until (found)
+
+(Of course, you should check that -rc2 really is bad to make sure. I think 
+that's what Uwe reported, though. And I don't think we've done anything 
+after -rc2 that could impact this, so I don't doubt it).
+
+		Linus
