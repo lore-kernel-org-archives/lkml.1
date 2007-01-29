@@ -1,50 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751093AbXA2UB3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751465AbXA2UFP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751093AbXA2UB3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 15:01:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751465AbXA2UB3
+	id S1751465AbXA2UFP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 15:05:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751649AbXA2UFO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 15:01:29 -0500
-Received: from mail1.sea5.speakeasy.net ([69.17.117.3]:43115 "EHLO
-	mail1.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751093AbXA2UB2 (ORCPT
+	Mon, 29 Jan 2007 15:05:14 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:13462 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751465AbXA2UFN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 15:01:28 -0500
-Message-ID: <45BE5297.4070608@kernel.org>
-Date: Mon, 29 Jan 2007 12:01:27 -0800
-From: Josh Triplett <josh@kernel.org>
-User-Agent: Icedove 1.5.0.9 (X11/20061220)
+	Mon, 29 Jan 2007 15:05:13 -0500
+Date: Mon, 29 Jan 2007 12:04:59 -0800
+From: Mark Fasheh <mark.fasheh@oracle.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@osdl.org>, ocfs2-devel@oss.oracle.com,
+       linux-kernel@vger.kernel.org
+Subject: [git patches] ocfs2 fixes
+Message-ID: <20070129200459.GD8176@ca-server1.us.oracle.com>
+Reply-To: Mark Fasheh <mark.fasheh@oracle.com>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: Andrew Morton <akpm@osdl.org>
-Subject: [PATCH] cdev.h needs struct inode; add forward declaration
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Organization: Oracle Corporation
+User-Agent: Mutt/1.5.11
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-include/linux/cdev.h defines cd_forget to take a struct inode *, but does not
-pull in any definition or declaration for struct inode.  This generates a
-compiler warning if a source file pulls in cdev.h without first pulling in
-fs.h.  Add a forward declaration of struct inode to cdev.h, to eliminate the
-compiler warning and preserve the ability to include headers in any arbitrary
-order.
+Hi Linus,
+	I made a silly error in my last upstream push. This patch makes
+ocfs2 build again.
+	--Mark
 
-Signed-off-by: Josh Triplett <josh@kernel.org>
----
- include/linux/cdev.h |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+Please pull from 'upstream-linus' branch of
+git://git.kernel.org/pub/scm/linux/kernel/git/mfasheh/ocfs2.git upstream-linus
 
-diff --git a/include/linux/cdev.h b/include/linux/cdev.h
-index f309b00..4281e80 100644
---- a/include/linux/cdev.h
-+++ b/include/linux/cdev.h
-@@ -6,6 +6,8 @@
- #include <linux/kdev_t.h>
- #include <linux/list.h>
+to receive the following updates:
+
+ fs/ocfs2/ocfs2_fs.h |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+Mark Fasheh:
+      ocfs2: fix thinko in ocfs2_backup_super_blkno()
+
+diff --git a/fs/ocfs2/ocfs2_fs.h b/fs/ocfs2/ocfs2_fs.h
+index c99e905..e61e218 100644
+--- a/fs/ocfs2/ocfs2_fs.h
++++ b/fs/ocfs2/ocfs2_fs.h
+@@ -587,7 +587,7 @@ static inline u64 ocfs2_backup_super_blk
  
-+struct inode;
-+
- struct cdev {
- 	struct kobject kobj;
- 	struct module *owner;
+ 	if (index >= 0 && index < OCFS2_MAX_BACKUP_SUPERBLOCKS) {
+ 		offset <<= (2 * index);
+-		offset /= sb->s_blocksize;
++		offset >>= sb->s_blocksize_bits;
+ 		return offset;
+ 	}
+ 
