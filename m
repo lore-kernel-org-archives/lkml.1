@@ -1,53 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752502AbXA2M5w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751346AbXA2NFu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752502AbXA2M5w (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 07:57:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752500AbXA2M5w
+	id S1751346AbXA2NFu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 08:05:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751387AbXA2NFt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 07:57:52 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:35888 "EHLO mx1.redhat.com"
+	Mon, 29 Jan 2007 08:05:49 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:37848 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752488AbXA2M5v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 07:57:51 -0500
-Subject: Re: Hidden SSID's
-From: Dan Williams <dcbw@redhat.com>
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: Larry Finger <Larry.Finger@lwfinger.net>, netdev <netdev@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1170019717.30318.0.camel@johannes.berg>
-References: <45BACB71.2080107@lwfinger.net>
-	 <1169899689.25670.3.camel@localhost.localdomain>
-	 <1170019717.30318.0.camel@johannes.berg>
-Content-Type: text/plain
-Date: Mon, 29 Jan 2007 08:00:11 -0500
-Message-Id: <1170075611.2895.2.camel@localhost.localdomain>
+	id S1751346AbXA2NFr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jan 2007 08:05:47 -0500
+Date: Mon, 29 Jan 2007 07:58:55 -0500
+From: Dave Jones <davej@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Adrian Bunk <bunk@stusta.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Duncan <1i5t5.duncan@cox.net>, Neil Brown <neilb@suse.de>,
+       mingo@redhat.com, linux-raid@vger.kernel.org,
+       cpufreq@lists.linux.org.uk, lenb@kernel.org, linux-acpi@vger.kernel.org,
+       Jan Altenberg <jan@linutronix.de>, Ralf Baechle <ralf@linux-mips.org>,
+       linux-mips@linux-mips.org, Andrew Clayton <andrew@digital-domain.net>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>
+Subject: Re: 2.6.20-rc6: known regressions with patches
+Message-ID: <20070129125855.GA30599@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Ingo Molnar <mingo@elte.hu>, Adrian Bunk <bunk@stusta.de>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Andrew Morton <akpm@osdl.org>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Duncan <1i5t5.duncan@cox.net>, Neil Brown <neilb@suse.de>,
+	mingo@redhat.com, linux-raid@vger.kernel.org,
+	cpufreq@lists.linux.org.uk, lenb@kernel.org,
+	linux-acpi@vger.kernel.org, Jan Altenberg <jan@linutronix.de>,
+	Ralf Baechle <ralf@linux-mips.org>, linux-mips@linux-mips.org,
+	Andrew Clayton <andrew@digital-domain.net>,
+	Trond Myklebust <trond.myklebust@fys.uio.no>
+References: <Pine.LNX.4.64.0701241847360.25027@woody.linux-foundation.org> <20070126181853.GO17836@stusta.de> <20070129084548.GA10578@elte.hu>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070129084548.GA10578@elte.hu>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-01-28 at 22:28 +0100, Johannes Berg wrote:
-> On Sat, 2007-01-27 at 07:08 -0500, Dan Williams wrote:
-> 
-> > I really, really don't know why ieee80211 uses <hidden>, but it's a pain
-> > in the ass and should NOT be done for d80211.  I don't know if we can
-> > ever remove it from ieee80211 though for backwards compat reasons.
-> 
-> Ugh. /me makes a note for the cfg80211/we compat layer. This is a
-> mess :(
+On Mon, Jan 29, 2007 at 09:45:48AM +0100, Ingo Molnar wrote:
+ > 
+ > * Adrian Bunk <bunk@stusta.de> wrote:
+ > 
+ > > Subject    : ACPI: fix cpufreq regression
+ > > References : http://lkml.org/lkml/2007/1/16/120
+ > > Submitter  : Ingo Molnar <mingo@elte.hu>
+ > > Caused-By  : Dave Jones <davej@redhat.com>
+ > >              commit 0916bd3ebb7cefdd0f432e8491abe24f4b5a101e
+ > > Handled-By : Ingo Molnar <mingo@elte.hu>
+ > > Patch      : http://lkml.org/lkml/2007/1/16/120
+ > > Status     : patch available
+ > 
+ > this is commit e4233dec749a3519069d9390561b5636a75c7579 meanwhile.
 
-Well, there's no way a userspace program could depend on all hidden SSID
-APs having the <hidden> tag, since if you stick in another,
-non-ieee80211-stack card it won't be like that.  So I don't think we
-should care about <hidden> in d80211, but I don't think we can remove it
-from ieee80211 either.  The only case where we'll care about it is if we
-move to common scan-result processing code, and there we may have to put
-a compat flag in that the driver can set or something.  But we should
-definitely _not_ use <hidden> in d80211 or cfg80211, because any program
-depending on <hidden> just won't work with anything other than an ipw
-card.
+Thanks for pushing this on in my absense btw.
+FWIW, it has my belated ACK :)
+I've asked for it to be in 19.3 too as the same bug exists there.
 
-Dan
+		Dave
 
-
+-- 
+http://www.codemonkey.org.uk
