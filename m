@@ -1,54 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752512AbXA2K1O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750973AbXA2Kbe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752512AbXA2K1O (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 05:27:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750925AbXA2K1N
+	id S1750973AbXA2Kbe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 05:31:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750925AbXA2Kbe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 05:27:13 -0500
-Received: from adsl-69-232-92-238.dsl.sndg02.pacbell.net ([69.232.92.238]:60685
-	"EHLO gnuppy.monkey.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752506AbXA2K1N (ORCPT
+	Mon, 29 Jan 2007 05:31:34 -0500
+Received: from tama55.ecl.ntt.co.jp ([129.60.39.103]:61696 "EHLO
+	tama55.ecl.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752485AbXA2Kbc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 05:27:13 -0500
-Date: Mon, 29 Jan 2007 02:26:51 -0800
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "Martin J. Bligh" <mbligh@mbligh.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Andrew Morton <akpm@osdl.org>,
-       linux-kernel@vger.kernel.org, Dipankar Sarma <dipankar@hill9.org>,
-       "Bill Huey (hui)" <billh@gnuppy.monkey.org>
-Subject: Re: lockmeter
-Message-ID: <20070129102651.GA6943@gnuppy.monkey.org>
-References: <20070128115118.837777000@programming.kicks-ass.net> <20070128144325.GB16552@infradead.org> <20070128152404.GB9196@elte.hu> <45BCD4C9.2030302@mbligh.org> <20070128170407.GA1526@infradead.org> <45BCDF88.2020504@mbligh.org> <20070128180132.GA1647@gnuppy.monkey.org> <20070128211705.GA9596@elte.hu> <20070129052745.GA5218@gnuppy.monkey.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070129052745.GA5218@gnuppy.monkey.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Bill Huey (hui) <billh@gnuppy.monkey.org>
+	Mon, 29 Jan 2007 05:31:32 -0500
+X-Greylist: delayed 8650 seconds by postgrey-1.27 at vger.kernel.org; Mon, 29 Jan 2007 05:31:32 EST
+To: bastian@waldi.eu.org
+Cc: stgt-devel@lists.berlios.de, linux-aio@kvack.org,
+       linux-kernel@vger.kernel.org, akpm@osdl.org, torvalds@osdl.org,
+       davem@davemloft.net
+Subject: Re: ibmvstgt/aio broken with 2.6.20-rc6 powerpc
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20070128185258.GA18860@wavehammer.waldi.eu.org>
+References: <20070128185258.GA18860@wavehammer.waldi.eu.org>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20070129170740O.fujita.tomonori@lab.ntt.co.jp>
+Date: Mon, 29 Jan 2007 17:07:40 +0900
+X-Dispatcher: imput version 20040704(IM147)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 28, 2007 at 09:27:45PM -0800, Bill Huey wrote:
-> On Sun, Jan 28, 2007 at 10:17:05PM +0100, Ingo Molnar wrote:
-> > btw., while my plan is to prototype your lock-stat patch in -rt 
-> > initially, it should be doable to extend it to be usable with the 
-> > upstream kernel as well.
-...
-> Fantastic. I'm going to try and finish up your suggested changes tonight
-> and get it to work with CONFIG_LOCK_STAT off. It's been challenging to
-> find time to do Linux these days, so I don't mind handing it off to you
-> after this point so that you and tweek it to your heart's content.
+From: Bastian Blank <bastian@waldi.eu.org>
+Subject: ibmvstgt/aio broken with 2.6.20-rc6 powerpc
+Date: Sun, 28 Jan 2007 19:52:58 +0100
 
-Ingo,
+> I'm not really sure if this is a ibmvstgt or a generic aio problem.
 
-Got it.
-	http://mmlinux.sourceforge.net/public/patch-2.6.20-rc6-rt2.1.lock_stat.patch
+You use 2.6.20-rc6 with the aio-epoll-wait patch, right?
 
-This compiles and runs with the CONFIG_LOCK_STAT option turned off now
-and I believe addresses all of your forementioned concern that you
-mentioned. I could have missed a detail here and there, but I think
-it's in pretty good shape now.
+I think that this is due to the aio-epoll-wait patch because without
+using ibmvstgt target driver, simple aio workload crashes 2.6.20-rc6
+with the aio-epoll-wait patch on my POWER box. I cannot recall since
+when the patch doesn't work on POWER.
 
-bill
+If you are interested in only ibmvstgt target driver, use the
+following patch. It uses epoll instead of AIO for event
+notification. ibmvstgt target driver (and most of the kernel-space
+target drivers) uses mmapped I/O and does not need AIO. The user-space
+target drivers (like iSCSI) need the aio-epoll-wait patch though.
 
+
+Index: usr/tgtd.c
+===================================================================
+--- usr/tgtd.c	(revision 771)
++++ usr/tgtd.c	(working copy)
+@@ -202,9 +202,6 @@
+ 	int nevent, i, err;
+ 	struct epoll_event events[1024];
+ 	struct tgt_event *tev;
+-	struct iocb iocbs[1], *iocb;
+-	struct io_event aioevents[2048];
+-	struct timespec timeout = {1, 0};
+ 
+ 	err = io_queue_init(2048, &ctx);
+ 	if (err) {
+@@ -212,13 +209,8 @@
+ 		return;
+ 	}
+ 
+-	iocb = iocbs;
+-	io_prep_epoll_wait(iocb, ep_fd, events, ARRAY_SIZE(events), -1);
+-	err = io_submit(ctx, 1, &iocb);
+-
+ retry:
+-	nevent = io_getevents(ctx, 1, ARRAY_SIZE(aioevents), aioevents, &timeout);
+-
++	nevent = epoll_wait(ep_fd, events, ARRAY_SIZE(events), -1);
+ 	if (nevent < 0) {
+ 		if (errno != EINTR) {
+ 			eprintf("%m\n");
+@@ -226,18 +218,8 @@
+ 		}
+ 	} else if (nevent) {
+ 		for (i = 0; i < nevent; i++) {
+-			if (iocb == aioevents[i].obj) {
+-				int j;
+-				for (j = 0; j < aioevents[i].res; j++) {
+-					tev = (struct tgt_event *) events[j].data.ptr;
+-					tev->handler(tev->fd, events[j].events, tev->data);
+-				}
+-
+-				err = io_submit(ctx, 1, &iocb);
+-			} else {
+-				/* FIXME */
+-				target_cmd_io_done(aioevents[i].data, 0);
+-			}
++			tev = (struct tgt_event *) events[i].data.ptr;
++			tev->handler(tev->fd, events[i].events, tev->data);
+ 		}
+ 	} else
+ 		schedule();
