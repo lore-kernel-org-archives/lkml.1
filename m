@@ -1,52 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750977AbXA2Pjk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751641AbXA2Pj6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750977AbXA2Pjk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 10:39:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751604AbXA2Pjk
+	id S1751641AbXA2Pj6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 10:39:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751959AbXA2Pj6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 10:39:40 -0500
-Received: from www.osadl.org ([213.239.205.134]:45403 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750957AbXA2Pjj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 10:39:39 -0500
-Subject: Re: 2.6.20-rc6-mm2
-From: Thomas Gleixner <tglx@linutronix.de>
-Reply-To: tglx@linutronix.de
-To: Jiri Kosina <jikos@jikos.cz>
-Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <Pine.LNX.4.64.0701291122570.9448@twin.jikos.cz>
-References: <20070129001207.71ea3470.akpm@osdl.org>
-	 <Pine.LNX.4.64.0701291122570.9448@twin.jikos.cz>
-Content-Type: text/plain
-Date: Mon, 29 Jan 2007 16:40:18 +0100
-Message-Id: <1170085218.29240.1.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+	Mon, 29 Jan 2007 10:39:58 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:51672 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751664AbXA2Pj5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jan 2007 10:39:57 -0500
+Message-ID: <45BE1561.6000303@redhat.com>
+Date: Mon, 29 Jan 2007 10:40:17 -0500
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
+MIME-Version: 1.0
+To: Andi Kleen <ak@suse.de>
+CC: Andrew Morton <akpm@osdl.org>, linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [patch] i386: add option to show more code in oops reports
+References: <45B7C019.1040209@redhat.com> <20070125145504.c8c0a98a.akpm@osdl.org> <45B943B7.8070500@redhat.com> <200701290444.21861.ak@suse.de>
+In-Reply-To: <200701290444.21861.ak@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-01-29 at 12:02 +0100, Jiri Kosina wrote:
+Andi Kleen wrote:
+> On Friday 26 January 2007 00:56, Chuck Ebbert wrote:
 >
-> I guess that it's caused by some timer changes (added Thomas and Ingo to 
-> CC), which confuse the softlockup detector sense of time? 
+>   
+>> Can't think of a way to word the justification, but I've wanted to see more
+>> code a few times.
+>>     
+>
+> Hmm, not sure I see the point. The Code line is just that you can
+> make sense of random mailing list oopses where you don't
+> have a vmlinux. But as long as you don't make the option
+> the default you would need to ask people to set it for you -- and when you
+> ask you could always as well ask about the vmlinux and get
+> as much code as you ever wanted.
+>   
+This was patch inspired by my finding out that code in the running
+kernel might have
+been modified at runtime by some strange bug, and looking at vmlinux
+might not be
+helpful.
 
-Does the patch below fix this ?
-
-	tglx
-
-Index: linux-2.6.20-rc6-mm/kernel/time/tick-common.c
-===================================================================
---- linux-2.6.20-rc6-mm.orig/kernel/time/tick-common.c
-+++ linux-2.6.20-rc6-mm/kernel/time/tick-common.c
-@@ -320,6 +320,7 @@ static int tick_notify(struct notifier_b
- 
- 	case CLOCK_EVT_NOTIFY_RESUME:
- 		tick_resume_jiffy_update();
-+		touch_softlockup_watchdog();
- 		break;
- 
- 	case CLOCK_EVT_NOTIFY_CPU_DEAD:
-
-
+See:
+    http://lkml.org/lkml/2007/1/24/143
+> So unless it's default it's likely useless and I don't think
+> it is a good idea to make it default because oops screen estate
+> is so precious.
+>   
+Yeah, there's no way it could be the default. But I'd like to see if
+Alistair John Strachan's
+running kernel matches the vmlinux he posted with that strange
+unexplained oops.
