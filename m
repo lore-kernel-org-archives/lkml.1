@@ -1,54 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750919AbXA2KPW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750875AbXA2KVP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750919AbXA2KPW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 05:15:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752494AbXA2KPW
+	id S1750875AbXA2KVP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 05:21:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752492AbXA2KVO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 05:15:22 -0500
-Received: from ug-out-1314.google.com ([66.249.92.173]:60114 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750919AbXA2KPU (ORCPT
+	Mon, 29 Jan 2007 05:21:14 -0500
+Received: from smtp109.mail.mud.yahoo.com ([209.191.85.219]:35469 "HELO
+	smtp109.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750875AbXA2KVO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 05:15:20 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:user-agent:mime-version:to:subject:x-enigmail-version:content-type:content-transfer-encoding:from;
-        b=bB+Rskv+gy5RhTZoNSXL4kxfNsdDALby7p39N1SfYDZ2KiKblHfbIKxH+pqayRtR2mFc1Yah0lu75b4LKeDQQLYAe3XMPGEmnPoFg47pIQQJjw8uiSgrR8GffgIrpqk7WV1msRCndMkilQrjUrDs5ewnUUIrwcWjPg4UNayfBE8=
-Message-ID: <45BDC927.3040804@googlemail.com>
-Date: Mon, 29 Jan 2007 11:15:03 +0100
-User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
+	Mon, 29 Jan 2007 05:21:14 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:Subject:Content-Type:Content-Transfer-Encoding;
+  b=QgaoZHamm17cgDfauQno29qXbCy7TSxBvMpsUfphv+RmF0jyfgYAoESA9dtKr6VNMCWLsPIzbx+UbzlwHfIH7fce0B4BnqCb8UPNqb8VvwwG6CCm+rRiSmFzXBHKGnaGxkQNUteJjBTh/TD9u32Mbvngq4PyYr7kHuqvBgkXQxQ=  ;
+X-YMail-OSG: AATuJlkVM1mtTd.UmQJt14Gh0BsbwA8y3bCaUAcgFm.v6.F1HtM3vgMlPWcdanL.D0W3i_goeHBhJCvWQCEKAMAe4DbBXKOOXBrmJLZL16wYxDM73rFbfyZnvu5pIzXQBhSDzLe1dDISdIE-
+Message-ID: <45BDCA8A.4050809@yahoo.com.au>
+Date: Mon, 29 Jan 2007 21:20:58 +1100
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
 MIME-Version: 1.0
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: script that import patches from local mm-commits mbox and adds them
- to local -mm tree
-X-Enigmail-Version: 0.94.1.1
-Content-Type: text/plain; charset=ISO-8859-2
+To: linux-kernel <linux-kernel@vger.kernel.org>,
+       Linux Memory Management <linux-mm@kvack.org>,
+       David Howells <dhowells@redhat.com>, Hugh Dickins <hugh@veritas.com>,
+       Andrew Morton <akpm@osdl.org>
+Subject: page_mkwrite caller is racy?
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
-From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi,
 
-At first, change this variable
-path_to_mbox_file = '/home/michal/.thunderbird/uyw4at28.default/Mail/Local\ Folders/mm_new2'
-Copy to a new mbox patches that appeared after 2.6.20-rc6-mm2, get 2.6.20-rc6-mm2
-http://userweb.kernel.org/~akpm/2.6.20-rc6-mm2/2.6.20-rc6-mm2-broken-out.tar.gz
-and run witcher inside source tree.
+After do_wp_page calls page_mkwrite on its target (old_page), it then drops the
+reference to the page before locking the ptl and verifying that the pte points
+to old_page.
 
-http://www.stardust.webpages.pl/ltg/files/tools/witcher/witcher.py
+Unfortunately, old_page may have been truncated and freed, or reclaimed, then
+re-allocated and used again for the same pagecache position and faulted in
+read-only into the same pte by another thread. Then you will have a situation
+where page_mkwrite succeeds but the page we use is actually a readonly one.
 
-example series diff
-http://www.stardust.webpages.pl/ltg/files/tools/witcher/witcher-series
-(it's not perfect, but should work)
+Moving page_cache_release(old_page) to below the next statement will fix that
+problem.
 
-Happy testing.
+But it is sad that this thing got merged without any callers to even know how it
+is intended to work. Must it be able to sleep?
 
-Regards,
-Michal
+Nick
 
 -- 
-Michal K. K. Piotrowski
-LTG - Linux Testers Group
-(http://www.stardust.webpages.pl/ltg/)
-
+SUSE Labs, Novell Inc.
+Send instant messages to your online friends http://au.messenger.yahoo.com 
