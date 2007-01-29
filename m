@@ -1,83 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933002AbXA2WhJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752622AbXA2WhP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933002AbXA2WhJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 17:37:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752623AbXA2WhJ
+	id S1752622AbXA2WhP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 17:37:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933012AbXA2WhP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 17:37:09 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:59855 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752622AbXA2WhH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 17:37:07 -0500
-Date: Mon, 29 Jan 2007 14:36:54 -0800
-From: Andrew Morton <akpm@osdl.org>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Mel Gorman <mel@csn.ul.ie>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Christoph Lameter <clameter@engr.sgi.com>
-Subject: Re: [PATCH 0/8] Create ZONE_MOVABLE to partition memory between
- movable and non-movable pages
-Message-Id: <20070129143654.27fcd4a4.akpm@osdl.org>
-In-Reply-To: <Pine.LNX.4.64.0701291349450.548@schroedinger.engr.sgi.com>
-References: <20070125234458.28809.5412.sendpatchset@skynet.skynet.ie>
-	<20070126030753.03529e7a.akpm@osdl.org>
-	<Pine.LNX.4.64.0701260751230.6141@schroedinger.engr.sgi.com>
-	<20070126114615.5aa9e213.akpm@osdl.org>
-	<Pine.LNX.4.64.0701261147300.15394@schroedinger.engr.sgi.com>
-	<20070126122747.dde74c97.akpm@osdl.org>
-	<Pine.LNX.4.64.0701291349450.548@schroedinger.engr.sgi.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 29 Jan 2007 17:37:15 -0500
+Received: from paragon.brong.net ([66.232.154.163]:53338 "EHLO
+	paragon.brong.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752623AbXA2WhN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jan 2007 17:37:13 -0500
+X-Greylist: delayed 1441 seconds by postgrey-1.27 at vger.kernel.org; Mon, 29 Jan 2007 17:37:13 EST
+Date: Tue, 30 Jan 2007 09:13:00 +1100
+From: Bron Gondwana <brong@fastmail.fm>
+To: Mike Houston <mikeserv@bmts.com>
+Cc: Chuck Ebbert <cebbert@redhat.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@stusta.de>
+Subject: Re: How many people are using 2.6.16?
+Message-ID: <20070129221300.GC19422@brong.net>
+References: <45BE5948.6060403@redhat.com> <20070129160448.65fc63f3.mikeserv@bmts.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070129160448.65fc63f3.mikeserv@bmts.com>
+Organization: brong.net
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 29 Jan 2007 13:54:38 -0800 (PST)
-Christoph Lameter <clameter@sgi.com> wrote:
-
-> On Fri, 26 Jan 2007, Andrew Morton wrote:
+On Mon, Jan 29, 2007 at 04:04:48PM -0500, Mike Houston wrote:
+> On Mon, 29 Jan 2007 15:30:00 -0500
+> Chuck Ebbert <cebbert@redhat.com> wrote:
 > 
-> > > The main benefit is a significant simplification of the VM, leading to 
-> > > robust and reliable operations and a reduction of the maintenance 
-> > > headaches coming with the additional zones.
-> > > 
-> > > If we would introduce the ability of allocating from a range of 
-> > > physical addresses then the need for DMA zones would go away allowing 
-> > > flexibility for device driver DMA allocations and at the same time we get 
-> > > rid of special casing in the VM.
+> > Is there any way to estimate the size of the user base for 2.6.16?
 > > 
-> > None of this is valid.  The great majority of machines out there will
-> > continue to have the same number of zones.  Nothing changes.
+> > e.g. how many downloads does it get?
 > 
-> All 64 bit machine will only have a single zone if we have such a range 
-> alloc mechanism. The 32bit ones with HIGHMEM wont be able to avoid it, 
-> true. But all arches that do not need gymnastics to access their memory 
-> will be able run with a single zone.
+> I've often wondered that myself, as I'm concerned for it to continue
+> to be maintained. I'm very appreciative of what Adrian is doing with
+> it. (Thanks!)
 
-What is "such a range alloc mechanism"?
+We're still running 2.6.16 kernels on a bunch of machines, though 2.6.19
+has been looking pretty nice on the couple of machines that are testing
+it.  2.6.17 and 2.6.18 felt less stable.
 
-> > That's all a real cost, so we need to see *good* benefits to outweigh that
-> > cost.  Thus far I don't think we've seen that.
-> 
-> The real savings is the simplicity of VM design, robustness and 
-> efficiency. We loose on all these fronts if we keep or add useless zones. 
-> 
-> The main reason for the recent problems with dirty handling seem to be due 
-> to exactly such a multizone balancing issues involving ZONE_NORMAL and 
-> HIGHMEM. Those problems cannot occur on single ZONE arches (this means 
-> right now on a series of embedded arches, UML and IA64). 
-> 
-> Multiple ZONES are a recipie for VM fragility and result in complexity 
-> that is difficult to manage.
+We do a lot of Cyrus which does a lot of MMAP - and we also use the 
+Areca driver - which are both strong reasons to move to 2.6.19.2, but
+if the MMAP fix was ported back to 2.6.16 we might consider staying
+there instead.
 
-Why do I have to keep repeating myself?  90% of known FC6-running machines
-are x86-32.  90% of vendor-shipped kernels need all three zones.  And the
-remaining 10% ship with multiple nodes as well.
-
-So please stop telling me what a wonderful world it is to not have multiple
-zones.  It just isn't going to happen for a long long time.  The
-multiple-zone kernel is the case we need to care about most by a very large
-margin indeed.  Single-zone is an infinitesimal corner-case.
-
-
-
+Bron.
