@@ -1,56 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750696AbXA2PXp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750886AbXA2Pe2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750696AbXA2PXp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 10:23:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751959AbXA2PXp
+	id S1750886AbXA2Pe2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 10:34:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750942AbXA2Pe2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 10:23:45 -0500
-Received: from mail7.sea5.speakeasy.net ([69.17.117.9]:42421 "EHLO
-	mail7.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750696AbXA2PXo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 10:23:44 -0500
-Date: Mon, 29 Jan 2007 10:23:41 -0500 (EST)
-From: James Morris <jmorris@namei.org>
-X-X-Sender: jmorris@d.namei
-To: Stephen Smalley <sds@tycho.nsa.gov>
-cc: "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@osdl.org>,
-       Ingo Molnar <mingo@elte.hu>, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov,
-       Eric Paris <eparis@parisplace.org>
-Subject: Re: [PATCH] sysctl selinux: Don't look at table->de
-In-Reply-To: <1170075866.8720.15.camel@moss-spartans.epoch.ncsc.mil>
-Message-ID: <Pine.LNX.4.64.0701291017520.11801@d.namei>
-References: <200701280106.l0S16CG3019873@shell0.pdx.osdl.net> 
- <20070127172410.2b041952.akpm@osdl.org>  <1169972718.17469.164.camel@localhost.localdomain>
-  <20070128003549.2ca38dc8.akpm@osdl.org> <20070128093358.GA2071@elte.hu> 
- <20070128095712.GA6485@elte.hu> <20070128100627.GA8416@elte.hu> 
- <20070128104548.a835d859.akpm@osdl.org>  <m1r6tfq7nv.fsf_-_@ebiederm.dsl.xmission.com>
- <1170075866.8720.15.camel@moss-spartans.epoch.ncsc.mil>
+	Mon, 29 Jan 2007 10:34:28 -0500
+Received: from ku-gbr.de ([81.3.11.18]:54940 "EHLO ku-gbr.de"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750886AbXA2Pe1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jan 2007 10:34:27 -0500
+X-Greylist: delayed 2755 seconds by postgrey-1.27 at vger.kernel.org; Mon, 29 Jan 2007 10:34:27 EST
+Date: Mon, 29 Jan 2007 15:47:59 +0100
+From: Konstantin Kletschke <lists@ku-gbr.de>
+To: linux-kernel@vger.kernel.org
+Cc: s.hauer@pengutronix.de, ppisa4lists@pikron.com
+Subject: Re: ARM i.MX serial: fix tx buffer overflows
+Message-ID: <20070129144758.GA2760@synertronixx3>
+Mail-Followup-To: linux-kernel@vger.kernel.org, s.hauer@pengutronix.de,
+	ppisa4lists@pikron.com
+References: <20070105155144.GD5838@localhost.localdomain> <200701051901.52486.ppisa4lists@pikron.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200701051901.52486.ppisa4lists@pikron.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 29 Jan 2007, Stephen Smalley wrote:
+Am 2007-01-05 19:01 +0100 schrieb Pavel Pisa:
 
-> NAK.  Mapping all sysctls to a single security label prevents any kind
-> of fine-grained security on sysctls, and current policies already make
-> use of the current distinctions to limit access to particular sets of
-> sysctls to particular processes.  As is, I'd expect breakage of current
-> systems running SELinux from this patch, because (confined) processes
-> that formerly only required access to specific sysctl labels will
-> suddenly run into denials on the generic fallback label.
+> It applies only for interrupts going through GPIO layer.
+> The problem has been noticed by Konstantin Kletschke
+> some time ago.
+> 
+>   No IRQF_TRIGGER set_type function for IRQ 26 (MPU)
 
-Agreed, 100% NACK.
+Yes. I reported this also.
 
-Please don't just simply remove long-researched & analyzed MAC security 
-which has been in the kernel for years, which is being used in the field 
-for high assurance systems, because you neglected to consider it during a 
-code cleanup.
+>  drivers/serial/imx.c |    3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+> 
+> Index: linux-2.6.19-rt/drivers/serial/imx.c
+> ===================================================================
+> +++ linux-2.6.19-rt/drivers/serial/imx.c
+> @@ -403,7 +403,8 @@ static int imx_startup(struct uart_port 
+>  	if (retval) goto error_out2;
+>  
+>  	retval = request_irq(sport->rtsirq, imx_rtsint,
+> -			     IRQF_TRIGGER_FALLING | IRQF_TRIGGER_RISING,
+> +			     (sport->rtsirq < IMX_IRQS) ? 0 :
+> +			       IRQF_TRIGGER_FALLING | IRQF_TRIGGER_RISING,
+>  			     DRIVER_NAME, sport);
+>  	if (retval) goto error_out3;
 
 
-- James
+Okay, this indeed fixes my
+
+No IRQF_TRIGGER set_type function for IRQ 26 (MPU)
+
+here!
+
+Regards, Konsti
+
 -- 
-James Morris
-<jmorris@namei.org>
+GPG KeyID EF62FCEF
+Fingerprint: 13C9 B16B 9844 EC15 CC2E  A080 1E69 3FDA EF62 FCEF
