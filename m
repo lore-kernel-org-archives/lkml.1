@@ -1,62 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933104AbXA2CkR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933105AbXA2Cun@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933104AbXA2CkR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jan 2007 21:40:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933105AbXA2CkR
+	id S933105AbXA2Cun (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jan 2007 21:50:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933109AbXA2Cun
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jan 2007 21:40:17 -0500
-Received: from pool-71-111-65-226.ptldor.dsl-w.verizon.net ([71.111.65.226]:11969
-	"EHLO IBM-8EC8B5596CA.beaverton.ibm.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S933104AbXA2CkQ (ORCPT
+	Sun, 28 Jan 2007 21:50:43 -0500
+Received: from outbound0.mx.meer.net ([209.157.153.23]:3018 "EHLO
+	outbound0.sv.meer.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933105AbXA2Cum (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jan 2007 21:40:16 -0500
-Date: Sun, 28 Jan 2007 18:40:26 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+	Sun, 28 Jan 2007 21:50:42 -0500
 To: Andrew Morton <akpm@osdl.org>
-Cc: dipankar@in.ibm.com, Gautham Shenoy <ego@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
-Subject: Re: Fw: Re: [mm PATCH 4/6] RCU: (now) CPU hotplug
-Message-ID: <20070129024026.GI4908@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20070124161559.GA1762@linux.vnet.ibm.com> <20070124210645.GA19650@in.ibm.com> <20070126191113.GA14770@in.ibm.com> <20070126112837.059502fc.akpm@osdl.org> <20070126194622.GA17134@in.ibm.com> <20070126121739.be3e072a.akpm@osdl.org> <20070126204406.GB17134@in.ibm.com> <20070126132949.50544e90.akpm@osdl.org> <20070128224756.GA7672@linux.vnet.ibm.com> <20070128153005.f320b834.akpm@osdl.org>
-Mime-Version: 1.0
+Cc: linux-kernel@vger.kernel.org, gregkh@suse.de
+Subject: [PATCH -mm] fix DocBook build
+References: <20070127234928.64d8e437.akpm@osdl.org>
+From: Don Mullis <dwm@meer.net>
+Date: Sun, 28 Jan 2007 18:50:25 -0800
+In-Reply-To: <20070127234928.64d8e437.akpm@osdl.org> (Andrew Morton's message of "Sat\, 27 Jan 2007 23\:49\:28 -0800")
+Message-ID: <m31wleczri.fsf@meer.net>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.92 (gnu/linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070128153005.f320b834.akpm@osdl.org>
-User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 28, 2007 at 03:30:05PM -0800, Andrew Morton wrote:
-> On Sun, 28 Jan 2007 14:47:56 -0800
-> "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
-> 
-> > > If we use the process freezer, these bugs all get automatically fixed,
-> > > and we get to remove the existing locking, and we don't need to think
-> > > about it any more.
-> > 
-> > The idea being to essentially suspend the system to RAM, remove the
-> > CPU and then unsuspend it?  Seems like quite high overhead -- or am
-> > I misunderstanding the proposal?
-> 
-> The process freezer basically wakes up all threads in the machine and makes
-> them go to sleep in a specific place, so they're all in a known state. 
-> kernel threads are also captured, via their open-coded polling call to
-> try_to_freeze().
-> 
-> The machine suspend code uses the process freezer, as does kprobes.  The
-> freezer isn't tied to suspend or to power management.
-> 
-> The freezer does have potential to be expensive if used frequently and if
-> there are many threads.  But I don't think anyone has looked at optimising
-> it.  For example, there are certain places in the kernel where threads
-> commonly sleep (eg, select()).  We know that this is a safe place to sleep
-> wrt (at least) CPU hotplug, so there's not really a need to wake those
-> processes up.  Perhaps something could be done with that observation...
-> 
-> But first we'd need to demonstrate that we actually have a problem.
+Fix DocBook build.
+Regression was introduced by
+gregkh-usb-usb-linux-usb_ch9h-becomes-linux-usb-ch9h.patch
 
-Fair enough -- though if it is a goal to remove CPUs from systems with
-realtime workloads, I can assure you that we do have a problem.
+Tested by `make htmldocs`.
 
-						Thanx, Paul
+Signed-off-by: Don Mullis <dwm@meer.net>
+Cc: gregkh@suse.de
+---
+ Documentation/DocBook/gadget.tmpl |    4 ++--
+ Documentation/DocBook/usb.tmpl    |    6 +++---
+ 2 files changed, 5 insertions(+), 5 deletions(-)
+
+Index: linux-2.6.19/Documentation/DocBook/gadget.tmpl
+===================================================================
+--- linux-2.6.19.orig/Documentation/DocBook/gadget.tmpl
++++ linux-2.6.19/Documentation/DocBook/gadget.tmpl
+@@ -482,13 +482,13 @@ slightly.
+ <para>Gadget drivers
+ rely on common USB structures and constants
+ defined in the
+-<filename>&lt;linux/usb_ch9.h&gt;</filename>
++<filename>&lt;linux/usb/ch9.h&gt;</filename>
+ header file, which is standard in Linux 2.6 kernels.
+ These are the same types and constants used by host
+ side drivers (and usbcore).
+ </para>
+ 
+-!Iinclude/linux/usb_ch9.h
++!Iinclude/linux/usb/ch9.h
+ </sect1>
+ 
+ <sect1 id="core"><title>Core Objects and Methods</title>
+Index: linux-2.6.19/Documentation/DocBook/usb.tmpl
+===================================================================
+--- linux-2.6.19.orig/Documentation/DocBook/usb.tmpl
++++ linux-2.6.19/Documentation/DocBook/usb.tmpl
+@@ -187,13 +187,13 @@
+ 
+ <chapter><title>USB-Standard Types</title>
+ 
+-    <para>In <filename>&lt;linux/usb_ch9.h&gt;</filename> you will find
++    <para>In <filename>&lt;linux/usb/ch9.h&gt;</filename> you will find
+     the USB data types defined in chapter 9 of the USB specification.
+     These data types are used throughout USB, and in APIs including
+     this host side API, gadget APIs, and usbfs.
+     </para>
+ 
+-!Iinclude/linux/usb_ch9.h
++!Iinclude/linux/usb/ch9.h
+ 
+     </chapter>
+ 
+@@ -574,7 +574,7 @@ for (;;) {
+ #include &lt;asm/byteorder.h&gt;</programlisting>
+ 	    The standard USB device model requests, from "Chapter 9" of
+ 	    the USB 2.0 specification, are automatically included from
+-	    the <filename>&lt;linux/usb_ch9.h&gt;</filename> header.
++	    the <filename>&lt;linux/usb/ch9.h&gt;</filename> header.
+ 	    </para>
+ 
+ 	    <para>Unless noted otherwise, the ioctl requests
