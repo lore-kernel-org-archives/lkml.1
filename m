@@ -1,43 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752500AbXA2Qky@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752511AbXA2QoI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752500AbXA2Qky (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 11:40:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752511AbXA2Qky
+	id S1752511AbXA2QoI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 11:44:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752519AbXA2QoH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 11:40:54 -0500
-Received: from zcars04e.nortel.com ([47.129.242.56]:37033 "EHLO
-	zcars04e.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752500AbXA2Qkx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 11:40:53 -0500
-Message-ID: <45BE238A.9060103@nortel.com>
-Date: Mon, 29 Jan 2007 10:40:42 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
-X-Accept-Language: en-us, en
+	Mon, 29 Jan 2007 11:44:07 -0500
+Received: from ku-gbr.de ([81.3.11.18]:43284 "EHLO ku-gbr.de"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752511AbXA2QoG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jan 2007 11:44:06 -0500
+Date: Mon, 29 Jan 2007 17:43:30 +0100
+From: Konstantin Kletschke <lists@ku-gbr.de>
+To: linux-kernel@vger.kernel.org
+Cc: s.hauer@pengutronix.de, ppisa4lists@pikron.com
+Subject: Re: ARM i.MX serial: fix tx buffer overflows
+Message-ID: <20070129164330.GA4006@synertronixx3>
+Mail-Followup-To: linux-kernel@vger.kernel.org, s.hauer@pengutronix.de,
+	ppisa4lists@pikron.com
+References: <20070105155144.GD5838@localhost.localdomain> <200701051901.52486.ppisa4lists@pikron.com> <20070129144758.GA2760@synertronixx3> <20070129153725.GA6602@flint.arm.linux.org.uk>
 MIME-Version: 1.0
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-CC: linux-kernel@vger.kernel.org, libc-hacker@sources.redhat.com,
-       libc-alpha@sources.redhat.com
-Subject: Re: [ANN] Userspace M-on-N threading model implementation. Alpha
- release.
-References: <20070129145227.GA10524@2ka.mipt.ru>
-In-Reply-To: <20070129145227.GA10524@2ka.mipt.ru>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 29 Jan 2007 16:40:46.0539 (UTC) FILETIME=[39C7B9B0:01C743C4]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070129153725.GA6602@flint.arm.linux.org.uk>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Evgeniy Polyakov wrote:
-> Hello.
-> 
-> I'm pleased to announce initial userspace M-on-N threading model
-> implementation (for hackers) called NTL. 
+Am 2007-01-29 15:37 +0000 schrieb Russell King:
 
-If you haven't already, I suggest you look into the story of NGPT and 
-also read the NPTL white paper 
-(http://people.redhat.com/drepper/nptl-design.pdf) especially section 
-5.1 describing why they went with a 1:1 model.
+> Is it really worth adding additional code to shut up this (imho) silly
+> warning?  It's just adding needless complexity to drivers.
 
-Chris
+As I pointed out in 
+http://lists.arm.linux.org.uk/pipermail/linux-arm-kernel/2006-November/037192.html
+the console gets flooded with this "warning" to unusable state sometimes.
+
+> What happens if a driver is used on multiple platforms, some of which
+> support trigger setting and others which don't?  Are we going to end
+> up with a large #ifdef in every driver?
+
+I don't know exactly. But in addition to the fact, that this warning
+floods my console to unusable state I am used to sell software without
+warnings. If there are warnings my boss some things are broken.
+
+Konsti
+
+-- 
+GPG KeyID EF62FCEF
+Fingerprint: 13C9 B16B 9844 EC15 CC2E  A080 1E69 3FDA EF62 FCEF
