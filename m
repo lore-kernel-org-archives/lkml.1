@@ -1,50 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932510AbXA2Vve@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932240AbXA2Vyv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932510AbXA2Vve (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 16:51:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932472AbXA2Vve
+	id S932240AbXA2Vyv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 16:54:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932662AbXA2Vyv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 16:51:34 -0500
-Received: from nicole.bmts.com ([216.183.128.225]:53574 "EHLO nicole.bmts.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932510AbXA2Vvd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 16:51:33 -0500
-X-Greylist: delayed 2406 seconds by postgrey-1.27 at vger.kernel.org; Mon, 29 Jan 2007 16:51:33 EST
-Date: Mon, 29 Jan 2007 16:04:48 -0500
-From: Mike Houston <mikeserv@bmts.com>
-To: Chuck Ebbert <cebbert@redhat.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@stusta.de>
-Subject: Re: How many people are using 2.6.16?
-Message-Id: <20070129160448.65fc63f3.mikeserv@bmts.com>
-In-Reply-To: <45BE5948.6060403@redhat.com>
-References: <45BE5948.6060403@redhat.com>
-X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-brucetelecom.com-MailScanner-Information: Please contact Bruce Telecom 519.368.2000 for more information
-X-brucetelecom.com-MailScanner: Found to be clean
-X-brucetelecom.com-MailScanner-From: mikeserv@bmts.com
+	Mon, 29 Jan 2007 16:54:51 -0500
+Received: from omx2-ext.sgi.com ([192.48.171.19]:48087 "EHLO omx2.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S932472AbXA2Vyt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jan 2007 16:54:49 -0500
+Date: Mon, 29 Jan 2007 13:54:38 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+To: Andrew Morton <akpm@osdl.org>
+cc: Mel Gorman <mel@csn.ul.ie>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Christoph Lameter <clameter@engr.sgi.com>
+Subject: Re: [PATCH 0/8] Create ZONE_MOVABLE to partition memory between
+ movable and non-movable pages
+In-Reply-To: <20070126122747.dde74c97.akpm@osdl.org>
+Message-ID: <Pine.LNX.4.64.0701291349450.548@schroedinger.engr.sgi.com>
+References: <20070125234458.28809.5412.sendpatchset@skynet.skynet.ie>
+ <20070126030753.03529e7a.akpm@osdl.org> <Pine.LNX.4.64.0701260751230.6141@schroedinger.engr.sgi.com>
+ <20070126114615.5aa9e213.akpm@osdl.org> <Pine.LNX.4.64.0701261147300.15394@schroedinger.engr.sgi.com>
+ <20070126122747.dde74c97.akpm@osdl.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 29 Jan 2007 15:30:00 -0500
-Chuck Ebbert <cebbert@redhat.com> wrote:
+On Fri, 26 Jan 2007, Andrew Morton wrote:
 
-> Is there any way to estimate the size of the user base for 2.6.16?
+> > The main benefit is a significant simplification of the VM, leading to 
+> > robust and reliable operations and a reduction of the maintenance 
+> > headaches coming with the additional zones.
+> > 
+> > If we would introduce the ability of allocating from a range of 
+> > physical addresses then the need for DMA zones would go away allowing 
+> > flexibility for device driver DMA allocations and at the same time we get 
+> > rid of special casing in the VM.
 > 
-> e.g. how many downloads does it get?
+> None of this is valid.  The great majority of machines out there will
+> continue to have the same number of zones.  Nothing changes.
 
-I've often wondered that myself, as I'm concerned for it to continue
-to be maintained. I'm very appreciative of what Adrian is doing with
-it. (Thanks!)
+All 64 bit machine will only have a single zone if we have such a range 
+alloc mechanism. The 32bit ones with HIGHMEM wont be able to avoid it, 
+true. But all arches that do not need gymnastics to access their memory 
+will be able run with a single zone.
+ 
+> That's all a real cost, so we need to see *good* benefits to outweigh that
+> cost.  Thus far I don't think we've seen that.
 
-I've been using Adrian's 2.6.16 kernel releases on two internet
-servers that I look after remotely. One of them is RHEL 4 the other
-is Fedora Core 2 (Ensim Webppliance). I'm especially wary of breaking
-RHEL 4, and the 2.6.16.xx kernels work perfectly except for the
-hald not starting (but that doesn't matter on that server). The stock
-RHEL 4 kernels exhibit some awful VM behaviour, with crippling iowait
-on that system (mainly php/mysql workload)
+The real savings is the simplicity of VM design, robustness and 
+efficiency. We loose on all these fronts if we keep or add useless zones. 
 
-Mike Houston
+The main reason for the recent problems with dirty handling seem to be due 
+to exactly such a multizone balancing issues involving ZONE_NORMAL and 
+HIGHMEM. Those problems cannot occur on single ZONE arches (this means 
+right now on a series of embedded arches, UML and IA64). 
+
+Multiple ZONES are a recipie for VM fragility and result in complexity 
+that is difficult to manage.
