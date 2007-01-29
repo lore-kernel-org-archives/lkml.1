@@ -1,184 +1,450 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932085AbXA2Uiw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932224AbXA2UjS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932085AbXA2Uiw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 15:38:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752599AbXA2Uia
+	id S932224AbXA2UjS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 15:39:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752613AbXA2UjR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 15:38:30 -0500
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:50410 "EHLO
+	Mon, 29 Jan 2007 15:39:17 -0500
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:50449 "EHLO
 	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752602AbXA2UiI (ORCPT
+	with ESMTP id S1752607AbXA2UjO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 15:38:08 -0500
+	Mon, 29 Jan 2007 15:39:14 -0500
 From: "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
 To: linux-kernel@vger.kernel.org
-Cc: linux-fsdevel@vger.kernel.org, akpm@osdl.org,
+Cc: linux-fsdevel@vger.kernel.org, akpm@osdl.org, Adrian Bunk <bunk@stusta.de>,
        "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
-Subject: [PATCH 1/4] fs/unionfs/: Remove stale_inode.c
-Date: Mon, 29 Jan 2007 15:37:39 -0500
-Message-Id: <11701030632165-git-send-email-jsipek@cs.sunysb.edu>
+Subject: [PATCH 2/4] fs/unionfs/: possible cleanups
+Date: Mon, 29 Jan 2007 15:37:40 -0500
+Message-Id: <1170103064130-git-send-email-jsipek@cs.sunysb.edu>
 X-Mailer: git-send-email 1.5.0.rc1.g5355
 In-Reply-To: <11701030631109-git-send-email-jsipek@cs.sunysb.edu>
 References: <11701030631109-git-send-email-jsipek@cs.sunysb.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The stale inode operations were heavily based on bad inode operations. This
-patch removes stale_inode.c and converts all users of stale_inode_ops to
-bad_inode_ops as there seems to be no reason to return ESTALE instead of
-EIO.
+From: Adrian Bunk <bunk@stusta.de> - unquoted
 
-This is the more appropriate than porting the bad_inode.c fix (commit
-be6aab0e9fa6d3c6d75aa1e38ac972d8b4ee82b8) to stale_inode.c.
+This patch contains the following possible cleanups:
+- every function should #include the headers containing the prototypes
+  of it's global functions
+- static functions in C files shouldn't be marked "inline", gcc should
+  know best when to inline them
+- make needlessly global code static
+- #if 0 the following unused global function:
+  - stale_inode.c: is_stale_inode()
 
+Signed-off-by: Adrian Bunk <bunk@stusta.de>
+[removed stale inode related fixes as stale_inode.c is gone]
 Signed-off-by: Josef 'Jeff' Sipek <jsipek@cs.sunysb.edu>
 ---
- fs/unionfs/dentry.c      |    2 +-
- fs/unionfs/stale_inode.c |  112 ----------------------------------------------
- fs/unionfs/union.h       |    1 -
- 3 files changed, 1 insertions(+), 114 deletions(-)
- delete mode 100644 fs/unionfs/stale_inode.c
+ fs/unionfs/commonfops.c |    6 ++--
+ fs/unionfs/copyup.c     |   59 +++++++++++++++++++++++++---------------------
+ fs/unionfs/dentry.c     |   11 ++------
+ fs/unionfs/file.c       |   17 ++++--------
+ fs/unionfs/inode.c      |   19 +++++---------
+ fs/unionfs/main.c       |    4 +-
+ fs/unionfs/rdstate.c    |    2 +-
+ fs/unionfs/sioq.c       |    2 +-
+ fs/unionfs/sioq.h       |    1 -
+ fs/unionfs/union.h      |   13 ----------
+ 10 files changed, 55 insertions(+), 79 deletions(-)
 
+diff --git a/fs/unionfs/commonfops.c b/fs/unionfs/commonfops.c
+index 6226a34..1806acf 100644
+--- a/fs/unionfs/commonfops.c
++++ b/fs/unionfs/commonfops.c
+@@ -292,7 +292,7 @@ out:
+ }
+ 
+ /* unionfs_open helper function: open a directory */
+-static inline int __open_dir(struct inode *inode, struct file *file)
++static int __open_dir(struct inode *inode, struct file *file)
+ {
+ 	struct dentry *hidden_dentry;
+ 	struct file *hidden_file;
+@@ -326,7 +326,7 @@ static inline int __open_dir(struct inode *inode, struct file *file)
+ }
+ 
+ /* unionfs_open helper function: open a file */
+-static inline int __open_file(struct inode *inode, struct file *file)
++static int __open_file(struct inode *inode, struct file *file)
+ {
+ 	struct dentry *hidden_dentry;
+ 	struct file *hidden_file;
+@@ -493,7 +493,7 @@ int unionfs_file_release(struct inode *inode, struct file *file)
+ }
+ 
+ /* pass the ioctl to the lower fs */
+-static inline long do_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
++static long do_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
+ {
+ 	struct file *hidden_file;
+ 	int err;
+diff --git a/fs/unionfs/copyup.c b/fs/unionfs/copyup.c
+index 97ab571..1ef8baf 100644
+--- a/fs/unionfs/copyup.c
++++ b/fs/unionfs/copyup.c
+@@ -18,6 +18,14 @@
+ 
+ #include "union.h"
+ 
++static int copyup_named_dentry(struct inode *dir, struct dentry *dentry,
++			       int bstart, int new_bindex, const char *name,
++			       int namelen, struct file **copyup_file,
++			       loff_t len);
++static struct dentry *create_parents_named(struct inode *dir,
++					   struct dentry *dentry,
++					   const char *name, int bindex);
++
+ #ifdef CONFIG_UNION_FS_XATTR
+ /* copyup all extended attrs for a given dentry */
+ static int copyup_xattrs(struct dentry *old_hidden_dentry,
+@@ -129,10 +137,10 @@ int copyup_dentry(struct inode *dir, struct dentry *dentry,
+  * if the object being copied up is a regular file, the file is only created,
+  * the contents have to be copied up separately
+  */
+-static inline int __copyup_ndentry(struct dentry *old_hidden_dentry,
+-				   struct dentry *new_hidden_dentry,
+-				   struct dentry *new_hidden_parent_dentry,
+-				   char *symbuf)
++static int __copyup_ndentry(struct dentry *old_hidden_dentry,
++			    struct dentry *new_hidden_dentry,
++			    struct dentry *new_hidden_parent_dentry,
++			    char *symbuf)
+ {
+ 	int err = 0;
+ 	umode_t old_mode = old_hidden_dentry->d_inode->i_mode;
+@@ -179,13 +187,10 @@ static inline int __copyup_ndentry(struct dentry *old_hidden_dentry,
+ 	return err;
+ }
+ 
+-static inline int __copyup_reg_data(struct dentry *dentry,
+-				    struct dentry *new_hidden_dentry,
+-				    int new_bindex,
+-				    struct dentry *old_hidden_dentry,
+-				    int old_bindex,
+-				    struct file **copyup_file,
+-				    loff_t len)
++static int __copyup_reg_data(struct dentry *dentry,
++			     struct dentry *new_hidden_dentry, int new_bindex,
++			     struct dentry *old_hidden_dentry, int old_bindex,
++			     struct file **copyup_file, loff_t len)
+ {
+ 	struct super_block *sb = dentry->d_sb;
+ 	struct file *input_file;
+@@ -300,11 +305,9 @@ out:
+ /* dput the lower references for old and new dentry & clear a lower dentry
+  * pointer
+  */
+-static inline void __clear(struct dentry *dentry,
+-			   struct dentry *old_hidden_dentry,
+-			   int old_bstart, int old_bend,
+-			   struct dentry *new_hidden_dentry,
+-			   int new_bindex)
++static void __clear(struct dentry *dentry, struct dentry *old_hidden_dentry,
++		    int old_bstart, int old_bend,
++		    struct dentry *new_hidden_dentry, int new_bindex)
+ {
+ 	/* get rid of the hidden dentry and all its traces */
+ 	unionfs_set_lower_dentry_idx(dentry, new_bindex, NULL);
+@@ -316,9 +319,10 @@ static inline void __clear(struct dentry *dentry,
+ }
+ 
+ /* copy up a dentry to a file of specified name */
+-int copyup_named_dentry(struct inode *dir, struct dentry *dentry,
+-			int bstart, int new_bindex, const char *name,
+-			int namelen, struct file **copyup_file, loff_t len)
++static int copyup_named_dentry(struct inode *dir, struct dentry *dentry,
++			       int bstart, int new_bindex, const char *name,
++			       int namelen, struct file **copyup_file,
++			       loff_t len)
+ {
+ 	struct dentry *new_hidden_dentry;
+ 	struct dentry *old_hidden_dentry = NULL;
+@@ -510,8 +514,8 @@ struct dentry *create_parents(struct inode *dir, struct dentry *dentry,
+ 	return create_parents_named(dir, dentry, dentry->d_name.name, bindex);
+ }
+ 
+-static inline void __cleanup_dentry(struct dentry * dentry, int bindex,
+-					int old_bstart, int old_bend)
++static void __cleanup_dentry(struct dentry * dentry, int bindex,
++			     int old_bstart, int old_bend)
+ {
+ 	int loop_start;
+ 	int loop_end;
+@@ -557,8 +561,8 @@ static inline void __cleanup_dentry(struct dentry * dentry, int bindex,
+ }
+ 
+ /* set lower inode ptr and update bstart & bend if necessary */
+-static inline void __set_inode(struct dentry * upper, struct dentry * lower,
+-				int bindex)
++static void __set_inode(struct dentry * upper, struct dentry * lower,
++			int bindex)
+ {
+ 	unionfs_set_lower_inode_idx(upper->d_inode, bindex,
+ 			igrab(lower->d_inode));
+@@ -570,8 +574,8 @@ static inline void __set_inode(struct dentry * upper, struct dentry * lower,
+ }
+ 
+ /* set lower dentry ptr and update bstart & bend if necessary */
+-static inline void __set_dentry(struct dentry * upper, struct dentry * lower,
+-				int bindex)
++static void __set_dentry(struct dentry * upper, struct dentry * lower,
++			 int bindex)
+ {
+ 	unionfs_set_lower_dentry_idx(upper, bindex, lower);
+ 	if (likely(dbstart(upper) > bindex))
+@@ -583,8 +587,9 @@ static inline void __set_dentry(struct dentry * upper, struct dentry * lower,
+ /* This function replicates the directory structure upto given dentry
+  * in the bindex branch.
+  */
+-struct dentry *create_parents_named(struct inode *dir, struct dentry *dentry,
+-				    const char *name, int bindex)
++static struct dentry *create_parents_named(struct inode *dir,
++					   struct dentry *dentry,
++					   const char *name, int bindex)
+ {
+ 	int err;
+ 	struct dentry *child_dentry;
 diff --git a/fs/unionfs/dentry.c b/fs/unionfs/dentry.c
-index 78de9c9..0b002d1 100644
+index 0b002d1..d7193cc 100644
 --- a/fs/unionfs/dentry.c
 +++ b/fs/unionfs/dentry.c
-@@ -141,7 +141,7 @@ restart:
- 		}
+@@ -18,12 +18,6 @@
  
- 		if (positive && UNIONFS_I(dentry->d_inode)->stale) {
--			make_stale_inode(dentry->d_inode);
-+			make_bad_inode(dentry->d_inode);
- 			d_drop(dentry);
- 			valid = 0;
- 			goto out;
-diff --git a/fs/unionfs/stale_inode.c b/fs/unionfs/stale_inode.c
-deleted file mode 100644
-index bce938d..0000000
---- a/fs/unionfs/stale_inode.c
-+++ /dev/null
-@@ -1,112 +0,0 @@
--/*
-- *  Adpated from linux/fs/bad_inode.c
-- *
-- *  Copyright (C) 1997, Stephen Tweedie
-- *
-- *  Provide stub functions for "stale" inodes, a bit friendlier than the
-- *  -EIO that bad_inode.c does.
-- */
+ #include "union.h"
+ 
+-/* declarations added for "sparse" */
+-extern int unionfs_d_revalidate_wrap(struct dentry *dentry,
+-				     struct nameidata *nd);
+-extern void unionfs_d_release(struct dentry *dentry);
+-extern void unionfs_d_iput(struct dentry *dentry, struct inode *inode);
 -
--#include <linux/version.h>
+ /*
+  * returns 1 if valid, 0 otherwise.
+  */
+@@ -180,7 +174,8 @@ out:
+ 	return valid;
+ }
+ 
+-int unionfs_d_revalidate_wrap(struct dentry *dentry, struct nameidata *nd)
++static int unionfs_d_revalidate_wrap(struct dentry *dentry,
++				     struct nameidata *nd)
+ {
+ 	int err;
+ 
+@@ -191,7 +186,7 @@ int unionfs_d_revalidate_wrap(struct dentry *dentry, struct nameidata *nd)
+ 	return err;
+ }
+ 
+-void unionfs_d_release(struct dentry *dentry)
++static void unionfs_d_release(struct dentry *dentry)
+ {
+ 	int bindex, bstart, bend;
+ 
+diff --git a/fs/unionfs/file.c b/fs/unionfs/file.c
+index d056e4f..9ce092d 100644
+--- a/fs/unionfs/file.c
++++ b/fs/unionfs/file.c
+@@ -18,11 +18,6 @@
+ 
+ #include "union.h"
+ 
+-/* declarations for sparse */
+-extern ssize_t unionfs_read(struct file *, char __user *, size_t, loff_t *);
+-extern ssize_t unionfs_write(struct file *, const char __user *, size_t,
+-			     loff_t *);
 -
--#include <linux/fs.h>
--#include <linux/stat.h>
--#include <linux/sched.h>
+ /*******************
+  * File Operations *
+  *******************/
+@@ -56,8 +51,8 @@ out:
+ 	return err;
+ }
+ 
+-ssize_t unionfs_read(struct file * file, char __user * buf, size_t count,
+-		     loff_t * ppos)
++static ssize_t unionfs_read(struct file * file, char __user * buf,
++			    size_t count, loff_t * ppos)
+ {
+ 	struct file *hidden_file;
+ 	loff_t pos = *ppos;
+@@ -78,8 +73,8 @@ out:
+ 	return err;
+ }
+ 
+-ssize_t __unionfs_write(struct file * file, const char __user * buf,
+-			size_t count, loff_t * ppos)
++static ssize_t __unionfs_write(struct file * file, const char __user * buf,
++			       size_t count, loff_t * ppos)
+ {
+ 	int err = -EINVAL;
+ 	struct file *hidden_file = NULL;
+@@ -123,8 +118,8 @@ out:
+ 	return err;
+ }
+ 
+-ssize_t unionfs_write(struct file * file, const char __user * buf, size_t count,
+-		      loff_t * ppos)
++static ssize_t unionfs_write(struct file * file, const char __user * buf,
++			     size_t count, loff_t * ppos)
+ {
+ 	int err = 0;
+ 
+diff --git a/fs/unionfs/inode.c b/fs/unionfs/inode.c
+index 8246d15..1adb83c 100644
+--- a/fs/unionfs/inode.c
++++ b/fs/unionfs/inode.c
+@@ -18,14 +18,6 @@
+ 
+ #include "union.h"
+ 
+-/* declarations added for "sparse" */
+-extern struct dentry *unionfs_lookup(struct inode *, struct dentry *,
+-				     struct nameidata *);
+-extern int unionfs_readlink(struct dentry *dentry, char __user * buf,
+-			    int bufsiz);
+-extern void unionfs_put_link(struct dentry *dentry, struct nameidata *nd,
+-			     void *cookie);
 -
--static struct address_space_operations unionfs_stale_aops;
--
--/* declarations for "sparse */
--extern struct inode_operations stale_inode_ops;
--
--/*
-- * The follow_link operation is special: it must behave as a no-op
-- * so that a stale root inode can at least be unmounted. To do this
-- * we must dput() the base and return the dentry with a dget().
-- */
--static void *stale_follow_link(struct dentry *dent, struct nameidata *nd)
--{
--	return ERR_PTR(vfs_follow_link(nd, ERR_PTR(-ESTALE)));
--}
--
--static int return_ESTALE(void)
--{
--	return -ESTALE;
--}
--
--#define ESTALE_ERROR ((void *) (return_ESTALE))
--
--static struct file_operations stale_file_ops = {
--	.llseek		= ESTALE_ERROR,
--	.read		= ESTALE_ERROR,
--	.write		= ESTALE_ERROR,
--	.readdir	= ESTALE_ERROR,
--	.poll		= ESTALE_ERROR,
--	.ioctl		= ESTALE_ERROR,
--	.mmap		= ESTALE_ERROR,
--	.open		= ESTALE_ERROR,
--	.flush		= ESTALE_ERROR,
--	.release	= ESTALE_ERROR,
--	.fsync		= ESTALE_ERROR,
--	.fasync		= ESTALE_ERROR,
--	.lock		= ESTALE_ERROR,
--};
--
--struct inode_operations stale_inode_ops = {
--	.create		= ESTALE_ERROR,
--	.lookup		= ESTALE_ERROR,
--	.link		= ESTALE_ERROR,
--	.unlink		= ESTALE_ERROR,
--	.symlink	= ESTALE_ERROR,
--	.mkdir		= ESTALE_ERROR,
--	.rmdir		= ESTALE_ERROR,
--	.mknod		= ESTALE_ERROR,
--	.rename		= ESTALE_ERROR,
--	.readlink	= ESTALE_ERROR,
--	.follow_link	= stale_follow_link,
--	.truncate	= ESTALE_ERROR,
--	.permission	= ESTALE_ERROR,
--};
--
--/*
-- * When a filesystem is unable to read an inode due to an I/O error in
-- * its read_inode() function, it can call make_stale_inode() to return a
-- * set of stubs which will return ESTALE errors as required.
-- *
-- * We only need to do limited initialisation: all other fields are
-- * preinitialised to zero automatically.
-- */
--
--/**
-- * make_stale_inode - mark an inode stale due to an I/O error
-- * @inode: Inode to mark stale
-- *
-- * When an inode cannot be read due to a media or remote network
-- * failure this function makes the inode "stale" and causes I/O operations
-- * on it to fail from this point on.
-- */
--void make_stale_inode(struct inode *inode)
--{
--	inode->i_mode = S_IFREG;
--	inode->i_atime = inode->i_mtime = inode->i_ctime = CURRENT_TIME;
--	inode->i_op = &stale_inode_ops;
--	inode->i_fop = &stale_file_ops;
--	inode->i_mapping->a_ops = &unionfs_stale_aops;
--}
--
--/*
-- * This tests whether an inode has been flagged as stale. The test uses
-- * &stale_inode_ops to cover the case of invalidated inodes as well as
-- * those created by make_stale_inode() above.
-- */
--
--/**
-- * is_stale_inode - is an inode errored
-- * @inode: inode to test
-- *
-- * Returns true if the inode in question has been marked as stale.
-- */
--int is_stale_inode(struct inode *inode)
--{
--	return (inode->i_op == &stale_inode_ops);
--}
--
+ static int unionfs_create(struct inode *parent, struct dentry *dentry,
+ 			  int mode, struct nameidata *nd)
+ {
+@@ -195,8 +187,9 @@ out:
+ 	return err;
+ }
+ 
+-struct dentry *unionfs_lookup(struct inode *parent, struct dentry *dentry,
+-			      struct nameidata *nd)
++static struct dentry *unionfs_lookup(struct inode *parent,
++				     struct dentry *dentry,
++				     struct nameidata *nd)
+ {
+ 	struct nameidata lowernd; /* TODO: be gentler to the stack */
+ 
+@@ -688,7 +681,8 @@ out:
+ 	return err;
+ }
+ 
+-int unionfs_readlink(struct dentry *dentry, char __user * buf, int bufsiz)
++static int unionfs_readlink(struct dentry *dentry, char __user * buf,
++			    int bufsiz)
+ {
+ 	int err;
+ 	struct dentry *hidden_dentry;
+@@ -743,7 +737,8 @@ out:
+ 	return ERR_PTR(err);
+ }
+ 
+-void unionfs_put_link(struct dentry *dentry, struct nameidata *nd, void *cookie)
++static void unionfs_put_link(struct dentry *dentry, struct nameidata *nd,
++			     void *cookie)
+ {
+ 	kfree(nd_get_link(nd));
+ }
+diff --git a/fs/unionfs/main.c b/fs/unionfs/main.c
+index ae0a148..033eb7c 100644
+--- a/fs/unionfs/main.c
++++ b/fs/unionfs/main.c
+@@ -188,7 +188,7 @@ void unionfs_reinterpose(struct dentry *dentry)
+  * 2) it exists
+  * 3) is a directory
+  */
+-int check_branch(struct nameidata *nd)
++static int check_branch(struct nameidata *nd)
+ {
+ 	if (!strcmp(nd->dentry->d_sb->s_type->name, "unionfs"))
+ 		return -EINVAL;
+@@ -200,7 +200,7 @@ int check_branch(struct nameidata *nd)
+ }
+ 
+ /* checks if two hidden_dentries have overlapping branches */
+-int is_branch_overlap(struct dentry *dent1, struct dentry *dent2)
++static int is_branch_overlap(struct dentry *dent1, struct dentry *dent2)
+ {
+ 	struct dentry *dent = NULL;
+ 
+diff --git a/fs/unionfs/rdstate.c b/fs/unionfs/rdstate.c
+index 7f11ae2..16ce1bf 100644
+--- a/fs/unionfs/rdstate.c
++++ b/fs/unionfs/rdstate.c
+@@ -232,7 +232,7 @@ struct filldir_node *find_filldir_node(struct unionfs_dir_state *rdstate,
+ 	return cursor;
+ }
+ 
+-inline struct filldir_node *alloc_filldir_node(const char *name, int namelen,
++static struct filldir_node *alloc_filldir_node(const char *name, int namelen,
+ 					       unsigned int hash, int bindex)
+ {
+ 	return kmem_cache_alloc(unionfs_filldir_cachep, GFP_KERNEL);
+diff --git a/fs/unionfs/sioq.c b/fs/unionfs/sioq.c
+index a8bc493..3225f5b 100644
+--- a/fs/unionfs/sioq.c
++++ b/fs/unionfs/sioq.c
+@@ -24,7 +24,7 @@
+  * whiteouts).
+  */
+ 
+-struct workqueue_struct *sioq;
++static struct workqueue_struct *sioq;
+ 
+ int __init init_sioq(void)
+ {
+diff --git a/fs/unionfs/sioq.h b/fs/unionfs/sioq.h
+index 5a93414..20e3b0c 100644
+--- a/fs/unionfs/sioq.h
++++ b/fs/unionfs/sioq.h
+@@ -61,7 +61,6 @@ struct sioq_args {
+ 	};
+ };
+ 
+-extern struct workqueue_struct *sioq;
+ extern int __init init_sioq(void);
+ extern __exit void stop_sioq(void);
+ extern void run_sioq(work_func_t func, struct sioq_args *args);
 diff --git a/fs/unionfs/union.h b/fs/unionfs/union.h
-index b6e03ff..637f9f0 100644
+index 637f9f0..0c61f80 100644
 --- a/fs/unionfs/union.h
 +++ b/fs/unionfs/union.h
-@@ -396,7 +396,6 @@ static inline int unionfs_get_nlinks(struct inode *inode)
+@@ -241,11 +241,6 @@ void update_bstart(struct dentry *dentry);
+ /* replicates the directory structure upto given dentry in given branch */
+ extern struct dentry *create_parents(struct inode *dir, struct dentry *dentry,
+ 				     int bindex);
+-struct dentry *create_parents_named(struct inode *dir, struct dentry *dentry,
+-				    const char *name, int bindex);
+-
+-/* check if two branches overlap */
+-extern int is_branch_overlap(struct dentry *dent1, struct dentry *dent2);
+ 
+ /* partial lookup */
+ extern int unionfs_partial_lookup(struct dentry *dentry);
+@@ -265,10 +260,6 @@ extern int copyup_named_file(struct inode *dir, struct file *file,
+ /* copies a dentry from dbstart to newbindex branch */
+ extern int copyup_dentry(struct inode *dir, struct dentry *dentry, int bstart,
+ 			 int new_bindex, struct file **copyup_file, loff_t len);
+-extern int copyup_named_dentry(struct inode *dir, struct dentry *dentry,
+-			       int bstart, int new_bindex, const char *name,
+-			       int namelen, struct file **copyup_file,
+-			       loff_t len);
+ 
+ extern int remove_whiteouts(struct dentry *dentry, struct dentry *hidden_dentry,
+ 			    int bindex);
+@@ -325,9 +316,6 @@ int unionfs_ioctl_incgen(struct file *file, unsigned int cmd,
+ int unionfs_ioctl_queryfile(struct file *file, unsigned int cmd,
+ 			    unsigned long arg);
+ 
+-/* Verify that a branch is valid. */
+-int check_branch(struct nameidata *nd);
+-
+ #ifdef CONFIG_UNION_FS_XATTR
+ /* Extended attribute functions. */
+ extern void *unionfs_xattr_alloc(size_t size, size_t limit);
+@@ -395,7 +383,6 @@ static inline int unionfs_get_nlinks(struct inode *inode)
+ }
  
  struct dentry *unionfs_lookup_backend(struct dentry *dentry, struct nameidata *nd, int lookupmode);
- int is_stale_inode(struct inode *inode);
--void make_stale_inode(struct inode *inode);
+-int is_stale_inode(struct inode *inode);
  
  #define IS_SET(sb, check_flag) ((check_flag) & MOUNT_FLAG(sb))
  
