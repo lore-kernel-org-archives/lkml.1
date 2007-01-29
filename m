@@ -1,61 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932379AbXA2E6z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933115AbXA2FG0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932379AbXA2E6z (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jan 2007 23:58:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933115AbXA2E6z
+	id S933115AbXA2FG0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 00:06:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933117AbXA2FG0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jan 2007 23:58:55 -0500
-Received: from sandeen.net ([209.173.210.139]:24800 "EHLO sandeen.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932379AbXA2E6y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jan 2007 23:58:54 -0500
-Message-ID: <45BD7F0A.1000004@sandeen.net>
-Date: Sun, 28 Jan 2007 22:58:50 -0600
-From: Eric Sandeen <sandeen@sandeen.net>
-User-Agent: Thunderbird 1.5.0.9 (Macintosh/20061207)
-MIME-Version: 1.0
-To: xfs-masters@oss.sgi.com
-CC: Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, dgc@sgi.com
-Subject: Re: [xfs-masters] [PATCH} XFS: Remove placeholders for unimplemented
- functionality.
-References: <Pine.LNX.4.64.0701281557410.11046@CPE00045a9c397f-CM001225dbafb6>
-In-Reply-To: <Pine.LNX.4.64.0701281557410.11046@CPE00045a9c397f-CM001225dbafb6>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 29 Jan 2007 00:06:26 -0500
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:37113 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933115AbXA2FGZ (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jan 2007 00:06:25 -0500
+Message-Id: <200701290249.l0T2nZt8003676@turing-police.cc.vt.edu>
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Andrew Morton <akpm@osdl.org>, "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: mm snapshot broken-out-2007-01-26-00-36.tar.gz uploaded
+In-Reply-To: Your message of "Sat, 27 Jan 2007 21:41:02 EST."
+             <200701280241.l0S2f2ga015847@turing-police.cc.vt.edu>
+From: Valdis.Kletnieks@vt.edu
+References: <200701260837.l0Q8blBr011622@shell0.pdx.osdl.net> <6bffcb0e0701270837i1ec40560l6e61e8876177e9da@mail.gmail.com> <45BBC444.8090109@imap.cc> <20070127134116.06bdadd8.akpm@osdl.org>
+            <200701280241.l0S2f2ga015847@turing-police.cc.vt.edu>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1170038975_3335P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
+Date: Sun, 28 Jan 2007 21:49:35 -0500
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert P. J. Day wrote:
->   Remove a couple kernel config variables (FS_POSIX_CAP and
-> FS_POSIX_MAC) that represent placeholders for unimplemented
-> functionality.
+--==_Exmh_1170038975_3335P
+Content-Type: text/plain; charset=us-ascii
+
+On Sat, 27 Jan 2007 13:41:16 PST, Andrew Morton said:
+> > > >> The mm snapshot broken-out-2007-01-26-00-36.tar.gz has been uploaded to
+> > > >>    ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/mm/broken-out-2007-01-26-00-36.tar.gz
 > 
-> Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
-> 
-> ---
+> > I have everything compiling now, mostly.  The number of fixes which were
+> > needed was just extraordinary.  I'm thinking about making changes...
 
-...
+Aliens ate my brain, part 1:
 
-> diff --git a/fs/xfs/xfs_cap.h b/fs/xfs/xfs_cap.h
-> index 7a0e482..cfedfd1 100644
-> --- a/fs/xfs/xfs_cap.h
-> +++ b/fs/xfs/xfs_cap.h
+I tried building an out-of-tree ipfilters (ipt_osf) that worked fine under
+2.6.20-rc4-mm1.  After much scratching my head and adding debugging info,
+I discovered that this code was failing:
 
-...
+        p = create_proc_entry("sys/net/ipv4/osf", S_IFREG | 0644, NULL);
+        if (!p) {
+                ipt_unregister_match(&osf_match);
+                return -ENXIO;
+        }
 
-> -#else
->  #define xfs_cap_vset(v,p,sz)	(-EOPNOTSUPP)
->  #define xfs_cap_vget(v,p,sz)	(-EOPNOTSUPP)
->  #define xfs_cap_vremove(v)	(-EOPNOTSUPP)
->  #define _CAP_EXISTS		(NULL)
-> -#endif
-> 
->  #endif	/* __KERNEL__ */
+After much *more* head-scratching, and adding of printk's, I tracked it down
+into fs/proc/generic.c, in xlate_proc_name:
 
-By the time you do this, probably may as well remove the whole file; the 
-leftover 4 definitions never seem to be used.
+                len = next - cp;
+                for (de = de->subdir; de ; de = de->next) {
+                        if (proc_match(len, cp, de))
+                                break;
+                }
+                if (!de) {
+                        rtn = -ENOENT;
+                        goto out;
 
-The same may go for xfs_mac.h.
+It appears that syssctl-reimplement-the-sysctl-proc-support.patch doesn't
+bother setting the de->subdir, so xlate_proc_name isn't able to find sys/net.
 
--Eric
+What's the intended semantics of create_proc_entry and xlate_proc_name in
+this new regime of no subdir pointers? Or am I just (yet again) one of the
+first to trip over a bug?
+
+
+--==_Exmh_1170038975_3335P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFFvWC/cC3lWbTT17ARAgoSAKDen2ynr4/rHTW7gu4cw2UFISRPJgCfffur
+GLwS/m87OuZkt5TPtpoqSzo=
+=LzZa
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1170038975_3335P--
