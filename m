@@ -1,68 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752537AbXA2T1N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750975AbXA2TaT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752537AbXA2T1N (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 14:27:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752539AbXA2T1N
+	id S1750975AbXA2TaT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 14:30:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751351AbXA2TaS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 14:27:13 -0500
-Received: from caffeine.uwaterloo.ca ([129.97.134.17]:58385 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752537AbXA2T1M (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 14:27:12 -0500
-Date: Mon, 29 Jan 2007 14:27:07 -0500
-To: Paul Fulghum <paulkf@microgate.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Strange problem with tty layer
-Message-ID: <20070129192707.GE7584@csclub.uwaterloo.ca>
-References: <20070124204009.GA7584@csclub.uwaterloo.ca> <45B7CDB5.7020909@microgate.com> <20070125151639.GH7582@csclub.uwaterloo.ca> <20070126142041.GD7584@csclub.uwaterloo.ca> <45BA1556.8080808@microgate.com> <20070126145608.GK7582@csclub.uwaterloo.ca> <45BA190C.5040300@microgate.com> <20070126160842.GM7582@csclub.uwaterloo.ca>
+	Mon, 29 Jan 2007 14:30:18 -0500
+Received: from mummy.ncsc.mil ([144.51.88.129]:43257 "EHLO jazzhorn.ncsc.mil"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750975AbXA2TaR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jan 2007 14:30:17 -0500
+Subject: Re: [PATCH] sysctl selinux: Don't look at table->de
+From: Stephen Smalley <sds@tycho.nsa.gov>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: James Morris <jmorris@namei.org>, Andrew Morton <akpm@osdl.org>,
+       Ingo Molnar <mingo@elte.hu>, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov
+In-Reply-To: <m14pq9lntk.fsf@ebiederm.dsl.xmission.com>
+References: <200701280106.l0S16CG3019873@shell0.pdx.osdl.net>
+	 <20070127172410.2b041952.akpm@osdl.org>
+	 <1169972718.17469.164.camel@localhost.localdomain>
+	 <20070128003549.2ca38dc8.akpm@osdl.org> <20070128093358.GA2071@elte.hu>
+	 <20070128095712.GA6485@elte.hu> <20070128100627.GA8416@elte.hu>
+	 <20070128104548.a835d859.akpm@osdl.org>
+	 <m1r6tfq7nv.fsf_-_@ebiederm.dsl.xmission.com>
+	 <1170075866.8720.15.camel@moss-spartans.epoch.ncsc.mil>
+	 <Pine.LNX.4.64.0701291017520.11801@d.namei>
+	 <m14pq9lntk.fsf@ebiederm.dsl.xmission.com>
+Content-Type: text/plain
+Organization: National Security Agency
+Date: Mon, 29 Jan 2007 14:26:43 -0500
+Message-Id: <1170098803.8720.143.camel@moss-spartans.epoch.ncsc.mil>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070126160842.GM7582@csclub.uwaterloo.ca>
-User-Agent: Mutt/1.5.9i
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 26, 2007 at 11:08:42AM -0500, Lennart Sorensen wrote:
-> OK, the tty settings according to stty that I am using are:
-> # stty -F /dev/ttyn0 -a
-> speed 230400 baud; rows 0; columns 0; line = 0;
-> intr = ^C; quit = ^\; erase = ^?; kill = ^U; eof = ^D; eol = <undef>; eol2 = <undef>; start = ^Q; stop = ^S; susp = ^Z; rprnt = ^R;
-> werase = ^W; lnext = ^V; flush = ^O; min = 1; time = 0;
-> -parenb -parodd cs8 hupcl -cstopb cread clocal -crtscts
-> -ignbrk -brkint -ignpar -parmrk -inpck -istrip -inlcr -igncr icrnl -ixon -ixoff -iuclc -ixany -imaxbel
-> -opost -olcuc -ocrnl onlcr -onocr -onlret -ofill -ofdel nl0 cr0 tab0 bs0 vt0 ff0
-> -isig -icanon iexten -echo -echoe echok -echonl -noflsh -xcase -tostop -echoprt echoctl echoke
+On Mon, 2007-01-29 at 10:55 -0700, Eric W. Biederman wrote:
+> James Morris <jmorris@namei.org> writes:
 > 
-> So min and time seems good.  I am not explicitly setting those in my
-> test program (unless one of the other settings implies it).  I will add
-> it explicitly just in case too.
+> > On Mon, 29 Jan 2007, Stephen Smalley wrote:
+> >
+> >> NAK.  Mapping all sysctls to a single security label prevents any kind
+> >> of fine-grained security on sysctls, and current policies already make
+> >> use of the current distinctions to limit access to particular sets of
+> >> sysctls to particular processes.  As is, I'd expect breakage of current
+> >> systems running SELinux from this patch, because (confined) processes
+> >> that formerly only required access to specific sysctl labels will
+> >> suddenly run into denials on the generic fallback label.
+> >
+> > Agreed, 100% NACK.
+> >
+> > Please don't just simply remove long-researched & analyzed MAC security 
+> > which has been in the kernel for years, which is being used in the field 
+> > for high assurance systems, because you neglected to consider it during a 
+> > code cleanup.
+> 
+> Please don't shoot the messenger when a weakness is found in your code.
 
-I have run some tests with 8 patches from Linus's 2.6 tree on top of the
-2.6.16.25 along with a bit of debug code in the n_tty.c, which ran
-perfectly for 3 days.  I now removed the debug code to see if it will
-still run perfectly with those 8 patches.  The patches I applied in
-order are:
+I'm not sure how breaking our code with your set of patches qualifies as
+finding a weakness.  I will agree that the current handling of sysctl in
+selinux is fragile and can be improved, but it did work (prior to your
+patches).
 
-commit 70522e121a521aa09bd0f4e62e1aa68708b798e1
-commit 41c28ff1635e71af072c4711ff5fadd5855d48e7
-commit 1aef821a6b3aeca8c19d06aee012ed9db617d1e3
-commit ee37df7877eeaa16d7761cce64854110a7c17ad9
-commit e1a2509023785bd3199ac068ab80155aeba01265
-commit 817d6d3bceaf34c99f5343820f9b9e6021f0655c
-commit 2c3bb20f46709a0adfa7ea408013edbcab945d5a
-commit 33b37a33c242542fac2980b8ccd90977388b7a8d
+> Systems that increase security without worry that their implementation
+> is correct do not impress me, but I do understand that security has
+> little to do with correctness and everything to do with making it
+> _expensive_ for the other guy to do what he isn't supposed to.
 
-Hopefully it will stay working, and actually be a solution to my tty
-problem in 2.6.16.25.
+I think you misunderstand; we are concerned about the correctness of our
+implementation.  I think that possibly you are misunderstanding one of
+the SELinux FAQ answers outside of its historical context (the initial
+release of a proof-of-concept implementation of flexible MAC in Dec
+2000).
 
-2.6.18.2 (Debian 2.6.18-4) on the other hand was still broken, but I am
-not sure which if any of the above commits are not in that version (the
-date ranges made me think they all should be, but maybe I got the date
-of 2.6.18 wrong, or not all commits in the linux-2.6 tree are actually
-part of a given release.  I am still figuring out git).
+> This code path was always in the selinux code for when /proc was
+> compiled out.  I could see no way to preserve it so I removed
+> it.
+> 
+> Not knowing if it was a problem, or if we needed to do something more
+> I copied the people who did, at the first available opportunity.
+> Before this code makes it's way into peoples production systems.
 
---
-Len Sorensen
+Which we appreciate, although it would be nice if you tried building
+with selinux (and ideally testing with it) in the first place.
+
+> Of course after all of the rants against path based security I was
+> amazed to find a code path that was using exactly that in selinux.
+
+To clarify, in this case, the pathname (relative to the root of proc) is
+derived from the proc_dir_entry hierarchy and is thus not ambiguous or
+mutable by userspace, unlike the pathname-based approaches that we have
+criticized.  There is a difference.  But we are open to improving the
+approach via explicit marking of the ctl_table entries with sufficient
+information.
+
+> I'm trying to make things correct, and simple and will be happy to
+> work with you in a way to achieve what you need in a way that does
+> not conflict with the rest of the kernel.
+
+Good.
+
+-- 
+Stephen Smalley
+National Security Agency
+
