@@ -1,27 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933242AbXA2GxA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933251AbXA2HAa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933242AbXA2GxA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 01:53:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933244AbXA2GxA
+	id S933251AbXA2HAa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 02:00:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933248AbXA2HAa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 01:53:00 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:51734 "EHLO smtp.osdl.org"
+	Mon, 29 Jan 2007 02:00:30 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:51913 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933242AbXA2Gw7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 01:52:59 -0500
-Date: Sun, 28 Jan 2007 22:43:12 -0800
+	id S933247AbXA2HA3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jan 2007 02:00:29 -0500
+Date: Sun, 28 Jan 2007 22:48:34 -0800
 From: Andrew Morton <akpm@osdl.org>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       Dipankar Sarma <dipankar@in.ibm.com>,
-       "Paul E. McKenney" <paulmck@us.ibm.com>
-Subject: Re: 2.6.20-rc6-mm1
-Message-Id: <20070128224312.50f89360.akpm@osdl.org>
-In-Reply-To: <20070129052929.GA29456@gondor.apana.org.au>
-References: <45BD2424.7020604@googlemail.com>
-	<E1HBOtk-0007dS-00@gondolin.me.apana.org.au>
-	<20070129052929.GA29456@gondor.apana.org.au>
+To: Mike Galbraith <efault@gmx.de>
+Cc: Uwe Bugla <uwe.bugla@gmx.de>, Adrian Bunk <bunk@stusta.de>,
+       torvalds@linux-foundation.org, rml@novell.com, ttb@tentacle.dhs.org,
+       nickpiggin@yahoo.com.au, cijoml@volny.cz, linuxppc-dev@ozlabs.org,
+       anton@samba.org, paulus@samba.org, livio@eecg.toronto.edu,
+       petero2@telia.com, hch@lst.de, gd@spherenet.de,
+       alan@lxorguk.ukuu.org.uk, linux-ide@vger.kernel.org,
+       B.Zolnierkiewicz@elka.pw.edu.pl, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.20-rc6: known unfixed regressions (v2) (part 2)
+Message-Id: <20070128224834.37482553.akpm@osdl.org>
+In-Reply-To: <1170051963.6454.7.camel@Homer.simpson.net>
+References: <Pine.LNX.4.64.0701241847360.25027@woody.linux-foundation.org>
+	<20070127174230.GN6017@stusta.de>
+	<20070128133344.214070@gmx.net>
+	<1170051963.6454.7.camel@Homer.simpson.net>
 X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -29,36 +33,18 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 29 Jan 2007 16:29:29 +1100
-Herbert Xu <herbert@gondor.apana.org.au> wrote:
+On Mon, 29 Jan 2007 07:26:03 +0100
+Mike Galbraith <efault@gmx.de> wrote:
 
-> On Mon, Jan 29, 2007 at 04:17:44PM +1100, Herbert Xu wrote:
-> > Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
-> > 
-> > > Jan 28 22:58:29 euridica kernel: BUG: using smp_processor_id() in preemptible [00000001] code: yum-updatesd/2846
-> > > Jan 28 22:58:29 euridica kernel: caller is nf_conntrack_in+0x363/0x47f [nf_conntrack]
-> > > Jan 28 22:58:29 euridica kernel:  [<c01053c6>] show_trace_log_lvl+0x1a/0x2f
-> > > Jan 28 22:58:29 euridica kernel:  [<c0105ad6>] show_trace+0x12/0x14
-> > > Jan 28 22:58:29 euridica kernel:  [<c0105b98>] dump_stack+0x16/0x18
-> > > Jan 28 22:58:29 euridica kernel:  [<c0207803>] debug_smp_processor_id+0xb3/0xc8
-> > > Jan 28 22:58:29 euridica kernel:  [<fdbf8ad0>] nf_conntrack_in+0x363/0x47f [nf_conntrack]
-> > > Jan 28 22:58:29 euridica kernel:  [<fd9c32c4>] ipv4_conntrack_local+0x53/0x5b [nf_conntrack_ipv4]
-> > > Jan 28 22:58:29 euridica kernel:  [<c02f2286>] nf_iterate+0x36/0x67
-> > > Jan 28 22:58:29 euridica kernel:  [<c02f241b>] nf_hook_slow+0x52/0xbe
-> > 
-> > This shouldn't have happened.  nf_hook_slow calls nf_iterate and
-> > therefore everything under it with preemption disabled.  So something
-> > must've reenabled it before hitting nf_conntrack_in.
+> FWIW, I just tried it with 2.6.20-rc6, and can confirm.  Once nero is
+> run, the kernel never gives up retrying whatever command failed, so I
+> get...
 > 
-> Does mm now have the preemptible RCU stuff? If so that would certainly
-> explain this.
+> [ 4362.972995] hdd: status error: status=0x58 { DriveReady SeekComplete
+> DataRequest }
+> [ 4362.981475] ide: failed opcode was: unknown
+> [ 4362.986183] hdd: drive not ready for command
+> 
+> endlessly.
 
-It does,
-
-> IIRC Ingo had made fixes for the networking stack in his rt tree since
-> the networking code assumes in lots of places that rcu_read_lock
-> disables preemption.
-
-oh.  We'd better find those fixes then.  I wonder what other code made that
-(rather hacky) assumption?  I guess we have enough debug stuff in there to
-find out..
+Do you have time to bisect it?
