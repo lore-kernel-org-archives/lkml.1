@@ -1,73 +1,187 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752602AbXA2Uid@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932085AbXA2Uiw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752602AbXA2Uid (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 15:38:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752609AbXA2Uic
+	id S932085AbXA2Uiw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 15:38:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752599AbXA2Uia
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 15:38:32 -0500
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:50403 "EHLO
+	Mon, 29 Jan 2007 15:38:30 -0500
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:50410 "EHLO
 	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752598AbXA2Uhz (ORCPT
+	with ESMTP id S1752602AbXA2UiI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 15:37:55 -0500
+	Mon, 29 Jan 2007 15:38:08 -0500
 From: "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
 To: linux-kernel@vger.kernel.org
 Cc: linux-fsdevel@vger.kernel.org, akpm@osdl.org,
        "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
-Subject: [PATCH 4/4] fs/unionfs/: Don't duplicate the struct nameidata
-Date: Mon, 29 Jan 2007 15:37:42 -0500
-Message-Id: <11701030643398-git-send-email-jsipek@cs.sunysb.edu>
+Subject: [PATCH 1/4] fs/unionfs/: Remove stale_inode.c
+Date: Mon, 29 Jan 2007 15:37:39 -0500
+Message-Id: <11701030632165-git-send-email-jsipek@cs.sunysb.edu>
 X-Mailer: git-send-email 1.5.0.rc1.g5355
 In-Reply-To: <11701030631109-git-send-email-jsipek@cs.sunysb.edu>
 References: <11701030631109-git-send-email-jsipek@cs.sunysb.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The only fields that we have to watch out for are the dentry and vfsmount.
-Additionally, this makes Unionfs gentler on the stack as nameidata is rather
-large.
+The stale inode operations were heavily based on bad inode operations. This
+patch removes stale_inode.c and converts all users of stale_inode_ops to
+bad_inode_ops as there seems to be no reason to return ESTALE instead of
+EIO.
+
+This is the more appropriate than porting the bad_inode.c fix (commit
+be6aab0e9fa6d3c6d75aa1e38ac972d8b4ee82b8) to stale_inode.c.
 
 Signed-off-by: Josef 'Jeff' Sipek <jsipek@cs.sunysb.edu>
 ---
- fs/unionfs/inode.c |   22 ++++++++++++++++------
- 1 files changed, 16 insertions(+), 6 deletions(-)
+ fs/unionfs/dentry.c      |    2 +-
+ fs/unionfs/stale_inode.c |  112 ----------------------------------------------
+ fs/unionfs/union.h       |    1 -
+ 3 files changed, 1 insertions(+), 114 deletions(-)
+ delete mode 100644 fs/unionfs/stale_inode.c
 
-diff --git a/fs/unionfs/inode.c b/fs/unionfs/inode.c
-index 3b4a388..1b2e8a8 100644
---- a/fs/unionfs/inode.c
-+++ b/fs/unionfs/inode.c
-@@ -191,15 +191,25 @@ static struct dentry *unionfs_lookup(struct inode *parent,
- 				     struct dentry *dentry,
- 				     struct nameidata *nd)
- {
--	struct nameidata lowernd; /* TODO: be gentler to the stack */
-+	struct path path_save;
-+	struct dentry *ret;
+diff --git a/fs/unionfs/dentry.c b/fs/unionfs/dentry.c
+index 78de9c9..0b002d1 100644
+--- a/fs/unionfs/dentry.c
++++ b/fs/unionfs/dentry.c
+@@ -141,7 +141,7 @@ restart:
+ 		}
  
--	if (nd)
--		memcpy(&lowernd, nd, sizeof(struct nameidata));
--	else
--		memset(&lowernd, 0, sizeof(struct nameidata));
-+	/* save the dentry & vfsmnt from namei */
-+	if (nd) {
-+		path_save.dentry = nd->dentry;
-+		path_save.mnt = nd->mnt;
-+	}
+ 		if (positive && UNIONFS_I(dentry->d_inode)->stale) {
+-			make_stale_inode(dentry->d_inode);
++			make_bad_inode(dentry->d_inode);
+ 			d_drop(dentry);
+ 			valid = 0;
+ 			goto out;
+diff --git a/fs/unionfs/stale_inode.c b/fs/unionfs/stale_inode.c
+deleted file mode 100644
+index bce938d..0000000
+--- a/fs/unionfs/stale_inode.c
++++ /dev/null
+@@ -1,112 +0,0 @@
+-/*
+- *  Adpated from linux/fs/bad_inode.c
+- *
+- *  Copyright (C) 1997, Stephen Tweedie
+- *
+- *  Provide stub functions for "stale" inodes, a bit friendlier than the
+- *  -EIO that bad_inode.c does.
+- */
+-
+-#include <linux/version.h>
+-
+-#include <linux/fs.h>
+-#include <linux/stat.h>
+-#include <linux/sched.h>
+-
+-static struct address_space_operations unionfs_stale_aops;
+-
+-/* declarations for "sparse */
+-extern struct inode_operations stale_inode_ops;
+-
+-/*
+- * The follow_link operation is special: it must behave as a no-op
+- * so that a stale root inode can at least be unmounted. To do this
+- * we must dput() the base and return the dentry with a dget().
+- */
+-static void *stale_follow_link(struct dentry *dent, struct nameidata *nd)
+-{
+-	return ERR_PTR(vfs_follow_link(nd, ERR_PTR(-ESTALE)));
+-}
+-
+-static int return_ESTALE(void)
+-{
+-	return -ESTALE;
+-}
+-
+-#define ESTALE_ERROR ((void *) (return_ESTALE))
+-
+-static struct file_operations stale_file_ops = {
+-	.llseek		= ESTALE_ERROR,
+-	.read		= ESTALE_ERROR,
+-	.write		= ESTALE_ERROR,
+-	.readdir	= ESTALE_ERROR,
+-	.poll		= ESTALE_ERROR,
+-	.ioctl		= ESTALE_ERROR,
+-	.mmap		= ESTALE_ERROR,
+-	.open		= ESTALE_ERROR,
+-	.flush		= ESTALE_ERROR,
+-	.release	= ESTALE_ERROR,
+-	.fsync		= ESTALE_ERROR,
+-	.fasync		= ESTALE_ERROR,
+-	.lock		= ESTALE_ERROR,
+-};
+-
+-struct inode_operations stale_inode_ops = {
+-	.create		= ESTALE_ERROR,
+-	.lookup		= ESTALE_ERROR,
+-	.link		= ESTALE_ERROR,
+-	.unlink		= ESTALE_ERROR,
+-	.symlink	= ESTALE_ERROR,
+-	.mkdir		= ESTALE_ERROR,
+-	.rmdir		= ESTALE_ERROR,
+-	.mknod		= ESTALE_ERROR,
+-	.rename		= ESTALE_ERROR,
+-	.readlink	= ESTALE_ERROR,
+-	.follow_link	= stale_follow_link,
+-	.truncate	= ESTALE_ERROR,
+-	.permission	= ESTALE_ERROR,
+-};
+-
+-/*
+- * When a filesystem is unable to read an inode due to an I/O error in
+- * its read_inode() function, it can call make_stale_inode() to return a
+- * set of stubs which will return ESTALE errors as required.
+- *
+- * We only need to do limited initialisation: all other fields are
+- * preinitialised to zero automatically.
+- */
+-
+-/**
+- * make_stale_inode - mark an inode stale due to an I/O error
+- * @inode: Inode to mark stale
+- *
+- * When an inode cannot be read due to a media or remote network
+- * failure this function makes the inode "stale" and causes I/O operations
+- * on it to fail from this point on.
+- */
+-void make_stale_inode(struct inode *inode)
+-{
+-	inode->i_mode = S_IFREG;
+-	inode->i_atime = inode->i_mtime = inode->i_ctime = CURRENT_TIME;
+-	inode->i_op = &stale_inode_ops;
+-	inode->i_fop = &stale_file_ops;
+-	inode->i_mapping->a_ops = &unionfs_stale_aops;
+-}
+-
+-/*
+- * This tests whether an inode has been flagged as stale. The test uses
+- * &stale_inode_ops to cover the case of invalidated inodes as well as
+- * those created by make_stale_inode() above.
+- */
+-
+-/**
+- * is_stale_inode - is an inode errored
+- * @inode: inode to test
+- *
+- * Returns true if the inode in question has been marked as stale.
+- */
+-int is_stale_inode(struct inode *inode)
+-{
+-	return (inode->i_op == &stale_inode_ops);
+-}
+-
+diff --git a/fs/unionfs/union.h b/fs/unionfs/union.h
+index b6e03ff..637f9f0 100644
+--- a/fs/unionfs/union.h
++++ b/fs/unionfs/union.h
+@@ -396,7 +396,6 @@ static inline int unionfs_get_nlinks(struct inode *inode)
  
- 	/* The locking is done by unionfs_lookup_backend. */
--	return unionfs_lookup_backend(dentry, &lowernd, INTERPOSE_LOOKUP);
-+	ret = unionfs_lookup_backend(dentry, nd, INTERPOSE_LOOKUP);
-+
-+	/* restore the dentry & vfsmnt in namei */
-+	if (nd) {
-+		nd->dentry = path_save.dentry;
-+		nd->mnt = path_save.mnt;
-+	}
-+
-+	return ret;
- }
+ struct dentry *unionfs_lookup_backend(struct dentry *dentry, struct nameidata *nd, int lookupmode);
+ int is_stale_inode(struct inode *inode);
+-void make_stale_inode(struct inode *inode);
  
- static int unionfs_link(struct dentry *old_dentry, struct inode *dir,
+ #define IS_SET(sb, check_flag) ((check_flag) & MOUNT_FLAG(sb))
+ 
 -- 
 1.5.0.rc1.g5355
 
