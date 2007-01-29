@@ -1,166 +1,220 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751197AbXA2MXR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751276AbXA2MYm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751197AbXA2MXR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 07:23:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751252AbXA2MXR
+	id S1751276AbXA2MYm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 07:24:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751283AbXA2MYm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 07:23:17 -0500
-Received: from mailhub.sw.ru ([195.214.233.200]:22503 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751197AbXA2MXQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 07:23:16 -0500
-Date: Mon, 29 Jan 2007 15:29:41 +0300
-From: Alexey Dobriyan <adobriyan@openvz.org>
-To: akpm@osdl.org
-Cc: linux-kernel@vger.kernel.org, devel@openvz.org, viro@ftp.linux.org.uk
-Subject: [PATCH -mm] sn2: use static ->proc_fops
-Message-ID: <20070129122941.GB13096@localhost.sw.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+	Mon, 29 Jan 2007 07:24:42 -0500
+Received: from hellhawk.shadowen.org ([80.68.90.175]:3453 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751276AbXA2MYl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jan 2007 07:24:41 -0500
+Message-ID: <45BDE76E.6020109@shadowen.org>
+Date: Mon, 29 Jan 2007 12:24:14 +0000
+From: Andy Whitcroft <apw@shadowen.org>
+User-Agent: Icedove 1.5.0.9 (X11/20061220)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@osdl.org>
+CC: linux-mm@kvack.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Mel Gorman <mel@csn.ul.ie>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/4] Lumpy Reclaim V3
+References: <exportbomb.1165424343@pinky> <20061211152907.f44cdd94.akpm@osdl.org>
+In-Reply-To: <20061211152907.f44cdd94.akpm@osdl.org>
+X-Enigmail-Version: 0.94.1.0
+OpenPGP: url=http://www.shadowen.org/~apw/public-key
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-fix-rmmod-read-write-races-in-proc-entries.patch doesn't want dynamically
-allocated ->proc_fops, because it will set it to NULL at module unload time.
+Andrew Morton wrote:
+> On Wed, 6 Dec 2006 16:59:04 +0000
+> Andy Whitcroft <apw@shadowen.org> wrote:
+>
+>> This is a repost of the lumpy reclaim patch set.  This is
+>> basically unchanged from the last post, other than being rebased
+>> to 2.6.19-rc2-mm2.
+>
+> The patch sequencing appeared to be designed to make the code hard to
+> review, so I clumped them all into a single diff:
+>
+>>
+>>  /*
+>> + * Attempt to remove the specified page from its LRU.  Only take this
+>> + * page if it is of the appropriate PageActive status.  Pages which
+>> + * are being freed elsewhere are also ignored.
+>> + *
+>> + * @page:	page to consider
+>> + * @active:	active/inactive flag only take pages of this type
+>
+> I dunno who started adding these @'s into non-kernel-doc comments.  I'll
+> un-add them.
+>
+>> + * returns 0 on success, -ve errno on failure.
+>> + */
+>> +int __isolate_lru_page(struct page *page, int active)
+>> +{
+>> +	int ret = -EINVAL;
+>> +
+>> +	if (PageLRU(page) && (PageActive(page) == active)) {
+>
+> We hope that all architectures remember that test_bit returns 0 or
+> 1.  We got that wrong a few years back.  What we do now is rather
+> un-C-like.  And potentially inefficient.  Hopefully the compiler usually
+> sorts it out though.
 
-Regardless of module status, switch to statically allocated ->proc_fops which
-leads to simpler code without wrappers.
+With the code as it is in this patch this is safe as there is an
+uncommented assumption that the active parameter is actually also the
+return from a call to PageActive and therefore should be comparible
+regardless of value.  However, as you also point out elsewhere we are in
+fact looking that active value up every time we spin the search loop,
+firstly doing it loads more than required, and second potentially when
+unlucky actually picking the wrong value from a page in transition and
+doing bad things.  Thus we will be moving to being explicit at the
+isolate_lru_pages level, at which point there will be risk here.  We
+will need to coax each of these to booleans before comparison.
 
-AFAICS, also fix the following bug: "sn_force_interrupt" proc entry set
-->write for itself, but was created with 0444 permissions. Change to 0644.
+>
+>
+>> +		ret = -EBUSY;
+>> +		if (likely(get_page_unless_zero(page))) {
+>> +			/*
+>> +			 * Be careful not to clear PageLRU until after we're
+>> +			 * sure the page is not being freed elsewhere -- the
+>> +			 * page release code relies on it.
+>> +			 */
+>> +			ClearPageLRU(page);
+>> +			ret = 0;
+>> +		}
+>> +	}
+>> +
+>> +	return ret;
+>> +}
+>> +
+>> +/*
+>>   * zone->lru_lock is heavily contended.  Some of the functions that
+>>   * shrink the lists perform better by taking out a batch of pages
+>>   * and working on them outside the LRU lock.
+>> @@ -621,33 +653,71 @@ keep:
+>>   */
+>>  static unsigned long isolate_lru_pages(unsigned long nr_to_scan,
+>>  		struct list_head *src, struct list_head *dst,
+>> -		unsigned long *scanned)
+>> +		unsigned long *scanned, int order)
+>>  {
+>>  	unsigned long nr_taken = 0;
+>> -	struct page *page;
+>> -	unsigned long scan;
+>> +	struct page *page, *tmp;
+>
+> "tmp" isn't a very good identifier.
+>
+>> +	unsigned long scan, pfn, end_pfn, page_pfn;
+>
+> One declaration per line is preferred.  This gives you room for a brief
+> comment, where appropriate.
 
-Signed-off-by: Alexey Dobriyan <adobriyan@openvz.org>
----
+All true, I've folded your cleanups into the base code, they are clearly
+better.
 
- arch/ia64/sn/kernel/sn2/sn_proc_fs.c |  105 ++++++++++++++++++++---------------
- 1 file changed, 62 insertions(+), 43 deletions(-)
+>
+>
+>> +		/*
+>> +		 * Attempt to take all pages in the order aligned region
+>> +		 * surrounding the tag page.  Only take those pages of
+>> +		 * the same active state as that tag page.
+>> +		 */
+>> +		zone_id = page_zone_id(page);
+>> +		page_pfn = __page_to_pfn(page);
+>> +		pfn = page_pfn & ~((1 << order) - 1);
+>
+> Is this always true?  It assumes that the absolute value of the starting
+> pfn of each zone is a multiple of MAX_ORDER (doesn't it?) I don't see any
+> reason per-se why that has to be true (although it might be).
 
---- a/arch/ia64/sn/kernel/sn2/sn_proc_fs.c
-+++ b/arch/ia64/sn/kernel/sn2/sn_proc_fs.c
-@@ -89,61 +89,80 @@ static int coherence_id_open(struct inod
- 	return single_open(file, coherence_id_show, NULL);
- }
- 
--static struct proc_dir_entry
--*sn_procfs_create_entry(const char *name, struct proc_dir_entry *parent,
--			int (*openfunc)(struct inode *, struct file *),
--	int (*releasefunc)(struct inode *, struct file *),
--	ssize_t (*write) (struct file *, const char __user *, size_t, loff_t *))
--{
--	struct proc_dir_entry *e = create_proc_entry(name, 0444, parent);
--
--	if (e) {
--		struct file_operations *f;
--
--		f = kzalloc(sizeof(*f), GFP_KERNEL);
--		if (f) {
--			f->open = openfunc;
--			f->read = seq_read;
--			f->llseek = seq_lseek;
--			f->release = releasefunc;
--			f->write = write;
--			e->proc_fops = f;
--		}
--	}
--
--	return e;
--}
--
- /* /proc/sgi_sn/sn_topology uses seq_file, see sn_hwperf.c */
- extern int sn_topology_open(struct inode *, struct file *);
- extern int sn_topology_release(struct inode *, struct file *);
- 
-+static const struct file_operations proc_partition_id_fops = {
-+	.open		= partition_id_open,
-+	.read		= seq_read,
-+	.llseek		= seq_lseek,
-+	.release	= single_release,
-+};
-+
-+static const struct file_operations proc_system_sn_fops = {
-+	.open		= system_serial_number_open,
-+	.read		= seq_read,
-+	.llseek		= seq_lseek,
-+	.release	= single_release,
-+};
-+
-+static const struct file_operations proc_license_id_fops = {
-+	.open		= licenseID_open,
-+	.read		= seq_read,
-+	.llseek		= seq_lseek,
-+	.release	= single_release,
-+};
-+
-+static const struct file_operations proc_sn_force_intr_fops = {
-+	.open		= sn_force_interrupt_open,
-+	.read		= seq_read,
-+	.write		= sn_force_interrupt_write_proc,
-+	.llseek		= seq_lseek,
-+	.release	= single_release,
-+};
-+
-+static const struct file_operations proc_coherence_id_fops = {
-+	.open		= coherence_id_open,
-+	.read		= seq_read,
-+	.llseek		= seq_lseek,
-+	.release	= single_release,
-+};
-+
-+static const struct file_operations proc_sn_topo_fops = {
-+	.open		= sn_topology_open,
-+	.read		= seq_read,
-+	.llseek		= seq_lseek,
-+	.release	= sn_topology_release,
-+};
-+
- void register_sn_procfs(void)
- {
- 	static struct proc_dir_entry *sgi_proc_dir = NULL;
-+	struct proc_dir_entry *pde;
- 
- 	BUG_ON(sgi_proc_dir != NULL);
- 	if (!(sgi_proc_dir = proc_mkdir("sgi_sn", NULL)))
- 		return;
- 
--	sn_procfs_create_entry("partition_id", sgi_proc_dir,
--		partition_id_open, single_release, NULL);
--
--	sn_procfs_create_entry("system_serial_number", sgi_proc_dir,
--		system_serial_number_open, single_release, NULL);
--
--	sn_procfs_create_entry("licenseID", sgi_proc_dir, 
--		licenseID_open, single_release, NULL);
--
--	sn_procfs_create_entry("sn_force_interrupt", sgi_proc_dir,
--		sn_force_interrupt_open, single_release,
--		sn_force_interrupt_write_proc);
--
--	sn_procfs_create_entry("coherence_id", sgi_proc_dir, 
--		coherence_id_open, single_release, NULL);
--	
--	sn_procfs_create_entry("sn_topology", sgi_proc_dir,
--		sn_topology_open, sn_topology_release, NULL);
-+	pde = create_proc_entry("partition_id", 0444, sgi_proc_dir);
-+	if (pde)
-+		pde->proc_fops = &proc_partition_id_fops;
-+	pde = create_proc_entry("system_serial_number", 0444, sgi_proc_dir);
-+	if (pde)
-+		pde->proc_fops = &proc_system_sn_fops;
-+	pde = create_proc_entry("licenseID", 0444, sgi_proc_dir);
-+	if (pde)
-+		pde->proc_fops = &proc_license_id_fops;
-+	pde = create_proc_entry("sn_force_interrupt", 0644, sgi_proc_dir);
-+	if (pde)
-+		pde->proc_fops = &proc_sn_force_intr_fops;
-+	pde = create_proc_entry("coherence_id", 0444, sgi_proc_dir);
-+	if (pde)
-+		pde->proc_fops = &proc_coherence_id_fops;
-+	pde = create_proc_entry("sn_topology", 0444, sgi_proc_dir);
-+	if (pde)
-+		pde->proc_fops = &proc_sn_topo_fops;
- }
- 
- #endif /* CONFIG_PROC_FS */
+Yes this is always true, the buddy guarentees that the struct pages are
+valid and present out to MAX_ORDER around any known valid page.  The
+zone boundary _may_ (rarely) not be MAX_ORDER aligned, but thats ok as
+we will detect that below when we check for the page_zone_id matching
+the cursor page's zone_id; should it not bail.
 
+I've added some commentary about the assumptions on which we are relying
+here.
+
+> hm, I guess it has to be true, else hugetlb pages wouldn't work too well.
+
+Well its mostly true, but if you remember the zone rounding patches we
+decided the check was so cheap as we can simply can compare the zone ids
+on the pages which is in the page_flags which we are touching anyhow.
+
+The code below (.+9) maintains this check for this situation.  I've
+added commentry to the code to say what its for.
+
+>
+>> +		end_pfn = pfn + (1 << order);
+>> +		for (; pfn < end_pfn; pfn++) {
+>> +			if (unlikely(pfn == page_pfn))
+>> +				continue;
+>> +			if (unlikely(!pfn_valid(pfn)))
+>> +				break;
+>> +
+>> +			tmp = __pfn_to_page(pfn);
+>> +			if (unlikely(page_zone_id(tmp) != zone_id))
+>> +				continue;
+>> +			scan++;
+>> +			switch (__isolate_lru_page(tmp, active)) {
+>> +			case 0:
+>> +				list_move(&tmp->lru, dst);
+>> +				nr_taken++;
+>> +				break;
+>> +
+>> +			case -EBUSY:
+>> +				/* else it is being freed elsewhere */
+>> +				list_move(&tmp->lru, src);
+>> +			default:
+>> +				break;
+>> +			}
+>> +		}
+>
+> I think each of those
+>
+> 			if (expr)
+> 				continue;
+>
+> statements would benefit from a nice comment explaining why.
+
+Yes, I've added commentary for each of these, they seem obvious the day
+you write them, and not a month later.
+
+>
+>
+> This physical-scan part of the function will skip pages which happen to be
+> on *src.  I guess that won't matter much, once the sytem has been up for a
+> while and the LRU is nicely scrambled.
+>
+>
+> If this function is passed a list of 32 pages, and order=4, I think it
+will
+> go and give us as many as 512 pages on *dst?  A check of nr_taken might be
+> needed.
+
+If we ask to scan 32 pages we may scan more pages should 1<<order be
+greater than 32.  However, if we are not going to scan at least 1 block
+at the order we requested then there is no point even in starting.  We
+would not be in direct reclaim (which is the only way order may be
+non-0) so we really do want any scan to be at least 1 block else its a
+no-op and should be stopped early -- at least that seems sane?
+
+> The patch is pretty simple, isn't it?
+>
+> I guess a shortcoming is that it doesn't address the situation where
+> GFP_ATOMIC network rx is trying to allocate order-2 pages for large skbs,
+> but kswapd doesn't know that.  AFACIT nobody will actually run the
+nice new
+> code in this quite common scenario.
+>
+
+That is an issue.  Will see what we can do about that.
+
+-apw
