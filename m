@@ -1,124 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752501AbXA2Kc3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932261AbXA2KdG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752501AbXA2Kc3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 05:32:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752533AbXA2Kc1
+	id S932261AbXA2KdG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 05:33:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752519AbXA2Kch
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 05:32:27 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:34763 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750936AbXA2KcY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 05:32:24 -0500
-From: Nick Piggin <npiggin@suse.de>
-To: Andrew Morton <akpm@osdl.org>
+	Mon, 29 Jan 2007 05:32:37 -0500
+Received: from mail.first.fraunhofer.de ([194.95.169.2]:52219 "EHLO
+	mail.first.fraunhofer.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752529AbXA2Kc0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jan 2007 05:32:26 -0500
+Subject: Re: 2.6.20-rc6 pb_fnmode regression
+From: Soeren Sonnenburg <kernel@nn7.de>
+To: Jiri Kosina <jikos@jikos.cz>
 Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Linux Filesystems <linux-fsdevel@vger.kernel.org>,
-       Nick Piggin <npiggin@suse.de>,
-       Linux Memory Management <linux-mm@kvack.org>
-Message-Id: <20070129081942.23584.6374.sendpatchset@linux.site>
-In-Reply-To: <20070129081905.23584.97878.sendpatchset@linux.site>
-References: <20070129081905.23584.97878.sendpatchset@linux.site>
-Subject: [patch 4/9] mm: generic_file_buffered_write cleanup
-Date: Mon, 29 Jan 2007 11:32:14 +0100 (CET)
+       linux-usb-devel <linux-usb-devel@lists.sourceforge.net>
+In-Reply-To: <Pine.LNX.4.64.0701291049190.9448@twin.jikos.cz>
+References: <1169904555.2462.10.camel@localhost>
+	 <Pine.LNX.4.64.0701291049190.9448@twin.jikos.cz>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Mon, 29 Jan 2007 11:32:17 +0100
+Message-Id: <1170066737.13904.12.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andrew Morton <akpm@osdl.org>
+On Mon, 2007-01-29 at 10:55 +0100, Jiri Kosina wrote:
+> On Sat, 27 Jan 2007, Soeren Sonnenburg wrote:
+> 
+> > I realized that any setting to /sys/module/usbhid/parameters/pb_fnmode 
+> > is just ignored until the machine does a suspend-resume cycle.
+[...]
+> I would rather be inclined to just make the 
+> /sys/module/usbhid/parameters/pb_fnmode read-only (which is what most of 
+> the drivers do anyway), to avoid this kind of confusion.
+> 
+> Do you have really any strong use-case, when setting the parameter during 
+> runtime would be much more useful than just do it during modprobe or 
+> rmmod/modprobe cycle?
 
-Clean up buffered write code. Rename some variables and fix some types.
+Well I need in-kernel usbhid and the way this was implemented in 2.6.19
+(and before) one could change pb_fnmode on-the-fly. This is mentioned in
+all the power/i/mac/book tutorials and everyone is used to switching
+modes this way.
 
-Signed-off-by: Andrew Morton <akpm@osdl.org>
-Signed-off-by: Nick Piggin <npiggin@suse.de>
+I can happily patch the kernel to use the pb_fnmode but nonetheless this
+is a regression to pre 2.6.20* and will confuse others too...
 
-Index: linux-2.6/mm/filemap.c
-===================================================================
---- linux-2.6.orig/mm/filemap.c
-+++ linux-2.6/mm/filemap.c
-@@ -1854,16 +1854,15 @@ generic_file_buffered_write(struct kiocb
- 		size_t count, ssize_t written)
- {
- 	struct file *file = iocb->ki_filp;
--	struct address_space * mapping = file->f_mapping;
-+	struct address_space *mapping = file->f_mapping;
- 	const struct address_space_operations *a_ops = mapping->a_ops;
- 	struct inode 	*inode = mapping->host;
- 	long		status = 0;
- 	struct page	*page;
- 	struct page	*cached_page = NULL;
--	size_t		bytes;
- 	struct pagevec	lru_pvec;
- 	const struct iovec *cur_iov = iov; /* current iovec */
--	size_t		iov_base = 0;	   /* offset in the current iovec */
-+	size_t		iov_offset = 0;	   /* offset in the current iovec */
- 	char __user	*buf;
- 
- 	pagevec_init(&lru_pvec, 0);
-@@ -1874,31 +1873,33 @@ generic_file_buffered_write(struct kiocb
- 	if (likely(nr_segs == 1))
- 		buf = iov->iov_base + written;
- 	else {
--		filemap_set_next_iovec(&cur_iov, &iov_base, written);
--		buf = cur_iov->iov_base + iov_base;
-+		filemap_set_next_iovec(&cur_iov, &iov_offset, written);
-+		buf = cur_iov->iov_base + iov_offset;
- 	}
- 
- 	do {
--		unsigned long index;
--		unsigned long offset;
--		unsigned long maxlen;
--		size_t copied;
-+		pgoff_t index;		/* Pagecache index for current page */
-+		unsigned long offset;	/* Offset into pagecache page */
-+		unsigned long maxlen;	/* Bytes remaining in current iovec */
-+		size_t bytes;		/* Bytes to write to page */
-+		size_t copied;		/* Bytes copied from user */
- 
--		offset = (pos & (PAGE_CACHE_SIZE -1)); /* Within page */
-+		offset = (pos & (PAGE_CACHE_SIZE - 1));
- 		index = pos >> PAGE_CACHE_SHIFT;
- 		bytes = PAGE_CACHE_SIZE - offset;
- 		if (bytes > count)
- 			bytes = count;
- 
-+		maxlen = cur_iov->iov_len - iov_offset;
-+		if (maxlen > bytes)
-+			maxlen = bytes;
-+
- 		/*
- 		 * Bring in the user page that we will copy from _first_.
- 		 * Otherwise there's a nasty deadlock on copying from the
- 		 * same page as we're writing to, without it being marked
- 		 * up-to-date.
- 		 */
--		maxlen = cur_iov->iov_len - iov_base;
--		if (maxlen > bytes)
--			maxlen = bytes;
- 		fault_in_pages_readable(buf, maxlen);
- 
- 		page = __grab_cache_page(mapping,index,&cached_page,&lru_pvec);
-@@ -1929,7 +1930,7 @@ generic_file_buffered_write(struct kiocb
- 							buf, bytes);
- 		else
- 			copied = filemap_copy_from_user_iovec(page, offset,
--						cur_iov, iov_base, bytes);
-+						cur_iov, iov_offset, bytes);
- 		flush_dcache_page(page);
- 		status = a_ops->commit_write(file, page, offset, offset+bytes);
- 		if (status == AOP_TRUNCATED_PAGE) {
-@@ -1947,12 +1948,12 @@ generic_file_buffered_write(struct kiocb
- 				buf += status;
- 				if (unlikely(nr_segs > 1)) {
- 					filemap_set_next_iovec(&cur_iov,
--							&iov_base, status);
-+							&iov_offset, status);
- 					if (count)
- 						buf = cur_iov->iov_base +
--							iov_base;
-+							iov_offset;
- 				} else {
--					iov_base += status;
-+					iov_offset += status;
- 				}
- 			}
- 		}
+Soeren
+-- 
+Sometimes, there's a moment as you're waking, when you become aware of
+the real world around you, but you're still dreaming.
