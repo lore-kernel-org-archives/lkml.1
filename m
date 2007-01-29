@@ -1,55 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932261AbXA2KdG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932957AbXA2KdH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932261AbXA2KdG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 05:33:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752519AbXA2Kch
+	id S932957AbXA2KdH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 05:33:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752530AbXA2KcX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 05:32:37 -0500
-Received: from mail.first.fraunhofer.de ([194.95.169.2]:52219 "EHLO
-	mail.first.fraunhofer.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752529AbXA2Kc0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 05:32:26 -0500
-Subject: Re: 2.6.20-rc6 pb_fnmode regression
-From: Soeren Sonnenburg <kernel@nn7.de>
-To: Jiri Kosina <jikos@jikos.cz>
+	Mon, 29 Jan 2007 05:32:23 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:34751 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752519AbXA2KcM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jan 2007 05:32:12 -0500
+From: Nick Piggin <npiggin@suse.de>
+To: Andrew Morton <akpm@osdl.org>
 Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       linux-usb-devel <linux-usb-devel@lists.sourceforge.net>
-In-Reply-To: <Pine.LNX.4.64.0701291049190.9448@twin.jikos.cz>
-References: <1169904555.2462.10.camel@localhost>
-	 <Pine.LNX.4.64.0701291049190.9448@twin.jikos.cz>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Mon, 29 Jan 2007 11:32:17 +0100
-Message-Id: <1170066737.13904.12.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 
+       Linux Filesystems <linux-fsdevel@vger.kernel.org>,
+       Nick Piggin <npiggin@suse.de>,
+       Linux Memory Management <linux-mm@kvack.org>
+Message-Id: <20070129081932.23584.11817.sendpatchset@linux.site>
+In-Reply-To: <20070129081905.23584.97878.sendpatchset@linux.site>
+References: <20070129081905.23584.97878.sendpatchset@linux.site>
+Subject: [patch 3/9] mm: revert "generic_file_buffered_write(): deadlock on vectored write"
+Date: Mon, 29 Jan 2007 11:32:05 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-01-29 at 10:55 +0100, Jiri Kosina wrote:
-> On Sat, 27 Jan 2007, Soeren Sonnenburg wrote:
-> 
-> > I realized that any setting to /sys/module/usbhid/parameters/pb_fnmode 
-> > is just ignored until the machine does a suspend-resume cycle.
-[...]
-> I would rather be inclined to just make the 
-> /sys/module/usbhid/parameters/pb_fnmode read-only (which is what most of 
-> the drivers do anyway), to avoid this kind of confusion.
-> 
-> Do you have really any strong use-case, when setting the parameter during 
-> runtime would be much more useful than just do it during modprobe or 
-> rmmod/modprobe cycle?
+From: Andrew Morton <akpm@osdl.org>
 
-Well I need in-kernel usbhid and the way this was implemented in 2.6.19
-(and before) one could change pb_fnmode on-the-fly. This is mentioned in
-all the power/i/mac/book tutorials and everyone is used to switching
-modes this way.
+Revert 6527c2bdf1f833cc18e8f42bd97973d583e4aa83
 
-I can happily patch the kernel to use the pb_fnmode but nonetheless this
-is a regression to pre 2.6.20* and will confuse others too...
+This patch fixed the following bug:
 
-Soeren
--- 
-Sometimes, there's a moment as you're waking, when you become aware of
-the real world around you, but you're still dreaming.
+  When prefaulting in the pages in generic_file_buffered_write(), we only
+  faulted in the pages for the firts segment of the iovec.  If the second of
+  successive segment described a mmapping of the page into which we're
+  write()ing, and that page is not up-to-date, the fault handler tries to lock
+  the already-locked page (to bring it up to date) and deadlocks.
+
+  An exploit for this bug is in writev-deadlock-demo.c, in
+  http://www.zip.com.au/~akpm/linux/patches/stuff/ext3-tools.tar.gz.
+
+  (These demos assume blocksize < PAGE_CACHE_SIZE).
+
+The problem with this fix is that it takes the kernel back to doing a single
+prepare_write()/commit_write() per iovec segment.  So in the worst case we'll
+run prepare_write+commit_write 1024 times where we previously would have run
+it once. The other problem with the fix is that it fix all the locking problems.
+
+
+<insert numbers obtained via ext3-tools's writev-speed.c here>
+
+And apparently this change killed NFS overwrite performance, because, I
+suppose, it talks to the server for each prepare_write+commit_write.
+
+So just back that patch out - we'll be fixing the deadlock by other means.
+
+Signed-off-by: Andrew Morton <akpm@osdl.org>
+
+Nick says: also it only ever actually papered over the bug, because after
+faulting in the pages, they might be unmapped or reclaimed.
+
+Signed-off-by: Nick Piggin <npiggin@suse.de>
+
+Index: linux-2.6/mm/filemap.c
+===================================================================
+--- linux-2.6.orig/mm/filemap.c
++++ linux-2.6/mm/filemap.c
+@@ -1881,21 +1881,14 @@ generic_file_buffered_write(struct kiocb
+ 	do {
+ 		unsigned long index;
+ 		unsigned long offset;
++		unsigned long maxlen;
+ 		size_t copied;
+ 
+ 		offset = (pos & (PAGE_CACHE_SIZE -1)); /* Within page */
+ 		index = pos >> PAGE_CACHE_SHIFT;
+ 		bytes = PAGE_CACHE_SIZE - offset;
+-
+-		/* Limit the size of the copy to the caller's write size */
+-		bytes = min(bytes, count);
+-
+-		/*
+-		 * Limit the size of the copy to that of the current segment,
+-		 * because fault_in_pages_readable() doesn't know how to walk
+-		 * segments.
+-		 */
+-		bytes = min(bytes, cur_iov->iov_len - iov_base);
++		if (bytes > count)
++			bytes = count;
+ 
+ 		/*
+ 		 * Bring in the user page that we will copy from _first_.
+@@ -1903,7 +1896,10 @@ generic_file_buffered_write(struct kiocb
+ 		 * same page as we're writing to, without it being marked
+ 		 * up-to-date.
+ 		 */
+-		fault_in_pages_readable(buf, bytes);
++		maxlen = cur_iov->iov_len - iov_base;
++		if (maxlen > bytes)
++			maxlen = bytes;
++		fault_in_pages_readable(buf, maxlen);
+ 
+ 		page = __grab_cache_page(mapping,index,&cached_page,&lru_pvec);
+ 		if (!page) {
