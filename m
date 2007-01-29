@@ -1,90 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752547AbXA2TuM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751977AbXA2Tyx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752547AbXA2TuM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 14:50:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752544AbXA2TuL
+	id S1751977AbXA2Tyx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 14:54:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752587AbXA2Tyx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 14:50:11 -0500
-Received: from mail.screens.ru ([213.234.233.54]:52601 "EHLO mail.screens.ru"
+	Mon, 29 Jan 2007 14:54:53 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:42357 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752547AbXA2TuK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 14:50:10 -0500
-Date: Mon, 29 Jan 2007 22:49:38 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Srivatsa Vaddagiri <vatsa@in.ibm.com>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       Gautham shenoy <ego@in.ibm.com>, Andrew Morton <akpm@osdl.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: slab: start_cpu_timer/cache_reap CONFIG_HOTPLUG_CPU problems
-Message-ID: <20070129194938.GB233@tv-sign.ru>
-References: <20070129011301.GA844@tv-sign.ru> <Pine.LNX.4.64.0701290852390.28200@schroedinger.engr.sgi.com> <20070129171923.GA138@tv-sign.ru> <Pine.LNX.4.64.0701290922390.28330@schroedinger.engr.sgi.com> <20070129182742.GA158@tv-sign.ru> <Pine.LNX.4.64.0701291109310.29254@schroedinger.engr.sgi.com>
+	id S1751977AbXA2Tyw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jan 2007 14:54:52 -0500
+Date: Mon, 29 Jan 2007 20:53:07 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: Andrew Morton <akpm@osdl.org>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH] mm: remove global locks from mm/highmem.c
+Message-ID: <20070129195307.GA24434@elte.hu>
+References: <1169993494.10987.23.camel@lappy> <20070128142925.df2f4dce.akpm@osdl.org> <20070129190806.GA14353@elte.hu> <Pine.LNX.4.64.0701291916420.10401@blonde.wat.veritas.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0701291109310.29254@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <Pine.LNX.4.64.0701291916420.10401@blonde.wat.veritas.com>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.3
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.3 required=5.9 tests=ALL_TRUSTED,BAYES_40 autolearn=no SpamAssassin version=3.0.3
+	-3.3 ALL_TRUSTED            Did not pass through any untrusted hosts
+	1.0 BAYES_40               BODY: Bayesian spam probability is 20 to 40%
+	[score: 0.3559]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/29, Christoph Lameter wrote:
->
-> On Mon, 29 Jan 2007, Oleg Nesterov wrote:
+
+* Hugh Dickins <hugh@veritas.com> wrote:
+
+> > For every 64-bit Fedora box there's more than seven 32-bit boxes. I 
+> > think 32-bit is going to live with us far longer than many thought, 
+> > so we might as well make it work better. Both HIGHMEM and HIGHPTE is 
+> > the default on many distro kernels, which pushes the kmap 
+> > infrastructure quite a bit.
 > 
-> > > > Even if smp_processor_id() was stable during the execution of cache_reap(),
-> > > > this work_struct can be moved to another CPU if CPU_DEAD happens. We can't
-> > > > avoid this, and this is correct.
-> > > 
-> > > Uhh.... This may not be correct in terms of how the slab operates.
-> > 
-> > But this is practically impossible to avoid. We can't delay CPU_DOWN until all
-> > workqueues flush their cwq->worklist. This is livelockable, the work can re-queue
-> > itself, and new works can be added since the dying CPU is still on cpu_online_map.
-> > This means that some pending works will be processed on another CPU.
-> 
-> But we could delay CPU_DOWN in the handler for the slab until we know that 
-> the cache_reaper is no longer running?
+> But HIGHPTE uses kmap_atomic (in mainline: does -rt use kmap there?)
 
-Hmm... I don't undestand this. We can delay CPU_DOWN if we cancel cache_reaper
-like you did in the previous patch. Did you mean this? If yes - then yes :)
+The contention i saw was on mainline and in the pagecache uses of 
+kmap(). With HIGHPTE i only meant that typically every available highmem 
+option is enabled on 32-bit distro kernel rpms, to make it work on as 
+wide selection of hardware as possible. Sometimes PAE is split into a 
+separate rpm, but mostly there's just one 32-bit kernel.
 
-> > > > This means that __get_cpu_var(reap_work) returns a "wrong" struct delayed_work.
-> > > > This is absolutely harmless right now, but may be it's better to use
-> > > > container_of(unused, struct delayed_work, work).
-> 
-> There is more where that is coming from. cache_reap determines the current 
-> cpu in order to find the correct per cpu cache and also determines the 
-> current node. If you move cache_reap to another processor / node then it 
-> will just clean that one and not do anything for the processor that you 
-> wanted it to run for.
-
-Worse, we can have 2 handlers running in parallel on the same CPU. But this
-is fixed by your previous patch, I believe.
-
->                        If we change processors in the middle of the run
-> then it may do some actions on one cpu and some on another....
-
-Yep. For example, next_reap_node() will not be happy if we change CPU in
-the middle. But this is _extremely_ unlikely, can only happen on CPU_DOWN,
-and cache_reap() should not care about this.
-
-> -static void cache_reap(struct work_struct *unused)
-> +static void cache_reap(struct work_struct *w)
->  {
->  	struct kmem_cache *searchp;
->  	struct kmem_list3 *l3;
->  	int node = numa_node_id();
-> +	struct delayed_work *work =
-> +		container_of(w, struct delayed_work, work);
->
-> ...
->
-> +	schedule_delayed_work(work, round_jiffies_relative(REAPTIMEOUT_CPUC));
-
-Actually, I was wrong. Yes, this should work, but only with your previous
-patch. Otherwise, if the handler runs on the "wrong" CPU (this is not possible
-since you added cancel_delayed_work()), we are in fact starting a second reaper
-on the same CPU, not good.
-
-Oleg.
-
+	Ingo
