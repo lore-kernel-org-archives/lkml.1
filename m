@@ -1,146 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752606AbXA3BN3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752640AbXA3BOk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752606AbXA3BN3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 20:13:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932671AbXA3BMS
+	id S1752640AbXA3BOk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 20:14:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752645AbXA3BOk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 20:12:18 -0500
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:47393 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752635AbXA3BLv (ORCPT
+	Mon, 29 Jan 2007 20:14:40 -0500
+Received: from smtp107.mail.mud.yahoo.com ([209.191.85.217]:27747 "HELO
+	smtp107.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752640AbXA3BOj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 20:11:51 -0500
-Date: Tue, 30 Jan 2007 02:11:59 +0100
-From: Adrian Bunk <bunk@stusta.de>
-To: Andrew Morton <akpm@osdl.org>, Jiri Kosina <jkosina@suse.cz>
-Cc: linux-kernel@vger.kernel.org
-Subject: [-mm patch] drivers/char/pcmcia/ipwireless_cs_*: possible cleanups
-Message-ID: <20070130011159.GE3754@stusta.de>
-References: <20070127234928.64d8e437.akpm@osdl.org>
+	Mon, 29 Jan 2007 20:14:39 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=FS6z1SWoPpd3saUWzZjZofSzMjBxJ9TdZlwJ6rRtxxJ88nEdeST8Zz3TcjM70zdpmjzWLfkSyZzWf/2z5WL1GKBQW9KcyXSsuxGqh1bniNsNgYvDOLr6DSZSOScgqjhSy3Pu0Mf2mBdjUVERfJaUVsX1OavdnWHo2Gej/MtGjZs=  ;
+X-YMail-OSG: 2Y0MlTkVM1npaQTv8CA5iFctsWjQxt7M18iXl5z9U.3Saj7WhR6i1PNrYx1XY3XeORJwIXP5aCS.HJ4MOf66mIHFYDt1vaiDcIffLn3tXxXe2uds3WQ-
+Message-ID: <45BE9BF0.10202@yahoo.com.au>
+Date: Tue, 30 Jan 2007 12:14:24 +1100
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070127234928.64d8e437.akpm@osdl.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Hugh Dickins <hugh@veritas.com>
+CC: linux-kernel <linux-kernel@vger.kernel.org>,
+       Linux Memory Management <linux-mm@kvack.org>,
+       David Howells <dhowells@redhat.com>, Andrew Morton <akpm@osdl.org>,
+       Anton Altaparmakov <aia21@cam.ac.uk>,
+       Mark Fasheh <mark.fasheh@oracle.com>
+Subject: Re: page_mkwrite caller is racy?
+References: <45BDCA8A.4050809@yahoo.com.au> <Pine.LNX.4.64.0701291521540.24726@blonde.wat.veritas.com>
+In-Reply-To: <Pine.LNX.4.64.0701291521540.24726@blonde.wat.veritas.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jan 27, 2007 at 11:49:28PM -0800, Andrew Morton wrote:
->...
-> Changes since 2.6.20-rc4-mm1:
->...
->  git-ipwireless_cs.patch
->...
->  git trees.
->...
+Hugh Dickins wrote:
+> On Mon, 29 Jan 2007, Nick Piggin wrote:
 
-This patch contains the following possible cleanups:
-- proper prototypes for global functions in header files
-- make the following needlessly global function static:
-  - ipwireless_cs_hardware.c: data_type()
-- make the following needlessly global struct static:
-  - ipwireless_cs_tty.c: ipw_tty_driver
-- #if 0 the following unused global functions:
-  - ipwireless_cs_hardware.c: ipwireless_get_config()
-  - ipwireless_cs_tty.c: ipw_flush_buffer()
+>>Moving page_cache_release(old_page) to below the next statement
+>>will fix that problem.
+> 
+> 
+> Yes.  I'm reluctant to steal your credit, but also reluctant to go
+> back and forth too much over this: please insert your Signed-off-by
+> _before_ mine in the patch below (substituting your own comment if
+> you prefer) and send it Andrew.
+> 
+> Not a priority for 2.6.20 or -stable: aside from the unlikelihood,
+> we don't seem to have any page_mkwrite users yet, as you point out.
 
-Signed-off-by: Adrian Bunk <bunk@stusta.de>
+Agreed. Thanks for doing the patch.
 
----
+>>But it is sad that this thing got merged without any callers to even
+>>know how it is intended to work.
+> 
+> 
+> I'm rather to blame for that: I pushed Peter to rearranging his work
+> on top of what David had, since they were dabbling in related issues,
+> and we'd already solved a number of them in relation to page_mkwrite;
+> so then when dirty tracking was wanted in, page_mkwrite came with it.
 
- drivers/char/pcmcia/ipwireless_cs_hardware.c |    4 +++-
- drivers/char/pcmcia/ipwireless_cs_hardware.h |    5 ++---
- drivers/char/pcmcia/ipwireless_cs_network.h  |    2 ++
- drivers/char/pcmcia/ipwireless_cs_tty.c      |   10 +++-------
- 4 files changed, 10 insertions(+), 11 deletions(-)
+Well its not a big problem -- I knew there were several people lined
+up who wanted it. XFS is another one IIRC.
 
---- linux-2.6.20-rc6-mm1/drivers/char/pcmcia/ipwireless_cs_network.h.old	2007-01-29 00:17:28.000000000 +0100
-+++ linux-2.6.20-rc6-mm1/drivers/char/pcmcia/ipwireless_cs_network.h	2007-01-29 00:17:56.000000000 +0100
-@@ -43,4 +43,6 @@
- int ipwireless_ppp_channel_index(struct ipw_network_t *);
- int ipwireless_ppp_unit_number(struct ipw_network_t *);
- 
-+int ipwireless_dump_network_state(char *p, struct ipw_network_t *network);
-+
- #endif
---- linux-2.6.20-rc6-mm1/drivers/char/pcmcia/ipwireless_cs_hardware.h.old	2007-01-29 00:20:14.000000000 +0100
-+++ linux-2.6.20-rc6-mm1/drivers/char/pcmcia/ipwireless_cs_hardware.h	2007-01-29 00:16:54.000000000 +0100
-@@ -43,9 +43,6 @@
- 			    unsigned int, ipw_packet_sent_callback_t,
- 			    void *);
- 
--/* Get the configuration settings for this modem instance. */
--struct ipw_config_t *ipwireless_get_config(struct ipw_hardware_t *);
--
- /* Associate the specified network with this hardware */
- void ipwireless_associate_network(struct ipw_hardware_t *, struct ipw_network_t *);
- 
-@@ -64,4 +61,6 @@
- 
- void ipwireless_sleep(u_int tenths);
- 
-+int ipwireless_dump_hardware_state(char *p, struct ipw_hardware_t *hw);
-+
- #endif
---- linux-2.6.20-rc6-mm1/drivers/char/pcmcia/ipwireless_cs_hardware.c.old	2007-01-28 23:34:55.000000000 +0100
-+++ linux-2.6.20-rc6-mm1/drivers/char/pcmcia/ipwireless_cs_hardware.c	2007-01-28 23:36:26.000000000 +0100
-@@ -375,7 +375,7 @@
- 
- 
- 
--char *data_type(const u_char * buf, unsigned length)
-+static char *data_type(const u_char * buf, unsigned length)
- {
- 	NLPacketHeader *hdr = (NLPacketHeader *) buf;
- 	if (length == 0)
-@@ -1592,10 +1592,12 @@
- 	kfree(hw);
- }
- 
-+#if 0
- ipw_config_t *ipwireless_get_config(struct ipw_hardware_t *hw)
- {
- 	return &hw->config;
- }
-+#endif  /*  0  */
- 
- /* Associate the specified network with this hardware, so it will receive events
-  * from it. */
---- linux-2.6.20-rc6-mm1/drivers/char/pcmcia/ipwireless_cs_tty.c.old	2007-01-28 23:36:46.000000000 +0100
-+++ linux-2.6.20-rc6-mm1/drivers/char/pcmcia/ipwireless_cs_tty.c	2007-01-29 00:18:02.000000000 +0100
-@@ -463,10 +463,12 @@
- 	return ppp_ioctl(linux_tty, file, cmd, arg);
- }
- 
-+#if 0
- void ipw_flush_buffer(struct tty_struct *tty)
- {
- 	wake_up_interruptible(&tty->write_wait);
- }
-+#endif  /*  0  */
- 
- static void add_tty(int first, int *j, dev_node_t ** nodesp,
- 		    struct pcmcia_device *link,
-@@ -578,7 +580,7 @@
- 	.tiocmset = ipw_tiocmset,
- };
- 
--struct tty_driver *ipw_tty_driver;
-+static struct tty_driver *ipw_tty_driver;
- 
- static int proc_read(char *page, char **start, off_t off, int count,
- 		     int *eof, void *data)
-@@ -586,12 +588,6 @@
- 	int i, j;
- 	char *p = page;
- 	int len;
--#ifdef IPWIRELESS_STATE_DEBUG
--	int ipwireless_dump_hardware_state(char *p,
--					   struct ipw_hardware_t *hw);
--	int ipwireless_dump_network_state(char *p,
--					  struct ipw_network_t *network);
--#endif
- 
- 	if (off == 0) {
- 		p += sprintf(p, "driver: %s\nversion: %s\n\n",
+>>Must it be able to sleep?
+> 
+> 
+> Not as David was using it: that was something I felt strongly it
+> should be allowd to do.  For example, in order to allocate backing
+> store for the mmap'ed page to be written (that need has been talked
+> about off and on for years).
 
+Fine, and Mark and Anton confirm it (cc'ed, thanks guys).
+
+This is another discussion, but do we want the page locked here? Or
+are the filesystems happy to exclude truncate themselves?
+
+
+> After do_wp_page has tested page_mkwrite, it must release old_page after
+> acquiring page table lock, not before: at some stage that ordering got
+> reversed, leaving a (very unlikely) window in which old_page might be
+> truncated, freed, and reused in the same position.
+
+Andrew please apply.
+
+Signed-off-by: Nick Piggin <npiggin@suse.de>
+
+> Signed-off-by: Hugh Dickins <hugh@veritas.com>
+> ---
+> 
+>  mm/memory.c |    3 +--
+>  1 file changed, 1 insertion(+), 2 deletions(-)
+> 
+> --- 2.6.20-rc6/mm/memory.c	2007-01-25 08:25:27.000000000 +0000
+> +++ linux/mm/memory.c	2007-01-29 15:35:56.000000000 +0000
+> @@ -1531,8 +1531,6 @@ static int do_wp_page(struct mm_struct *
+>  			if (vma->vm_ops->page_mkwrite(vma, old_page) < 0)
+>  				goto unwritable_page;
+>  
+> -			page_cache_release(old_page);
+> -
+>  			/*
+>  			 * Since we dropped the lock we need to revalidate
+>  			 * the PTE as someone else may have changed it.  If
+> @@ -1541,6 +1539,7 @@ static int do_wp_page(struct mm_struct *
+>  			 */
+>  			page_table = pte_offset_map_lock(mm, pmd, address,
+>  							 &ptl);
+> +			page_cache_release(old_page);
+>  			if (!pte_same(*page_table, orig_pte))
+>  				goto unlock;
+>  		}
+> 
+
+
+-- 
+SUSE Labs, Novell Inc.
+Send instant messages to your online friends http://au.messenger.yahoo.com 
