@@ -1,537 +1,308 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932662AbXA3K1Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933015AbXA3K16@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932662AbXA3K1Y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 05:27:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932578AbXA3K0u
+	id S933015AbXA3K16 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 05:27:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933151AbXA3K11
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 05:26:50 -0500
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:39418 "EHLO
+	Tue, 30 Jan 2007 05:27:27 -0500
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:39398 "EHLO
 	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932662AbXA3K0Z (ORCPT
+	with ESMTP id S932795AbXA3K0W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 05:26:25 -0500
-Message-Id: <20070130102911.103873000@bull.net>
+	Tue, 30 Jan 2007 05:26:22 -0500
+Message-Id: <20070130102910.237262000@bull.net>
 References: <20070130101143.296619000@bull.net>
 User-Agent: quilt/0.45-1
-Date: Tue, 30 Jan 2007 11:11:49 +0100
+Date: Tue, 30 Jan 2007 11:11:47 +0100
 From: Nadia.Derbey@bull.net
 To: akpm@osdl.org, randy.dunlap@oracle.com
 Cc: linux-kernel@vger.kernel.org, Nadia Derbey <Nadia.Derbey@bull.net>
-Subject: [PATCH 6/6] AKT - automatic tuning applied to some kernel components
-Content-Disposition: inline; filename=auto_tune_applied.patch
+Subject: [PATCH 4/6] AKT - min and max kobjects
+Content-Disposition: inline; filename=tunable_min_max_kobjects.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[PATCH 06/06]
+[PATCH 04/06]
 
 
-The following kernel components register a tunable structure and call the
-auto-tuning routine:
-  . file system
-  . shared memory (per namespace)
-  . semaphore (per namespace)
-  . message queues (per namespace)
+Introduces the kobjects associated to each tunable min and max value
 
 
 Signed-off-by: Nadia Derbey <Nadia.Derbey@bull.net>
 
 
 ---
- fs/file_table.c     |   82 ++++++++++++++++++++++++++++++++++++++++++++++++++++
- include/linux/akt.h |    1 
- include/linux/ipc.h |    6 +++
- init/main.c         |    1 
- ipc/msg.c           |   20 ++++++++++++
- ipc/sem.c           |   43 +++++++++++++++++++++++++++
- ipc/shm.c           |   76 +++++++++++++++++++++++++++++++++++++++++++++---
- 7 files changed, 224 insertions(+), 5 deletions(-)
+ include/linux/akt.h         |   14 ++++
+ kernel/autotune/akt.c       |  148 ++++++++++++++++++++++++++++++++++++++++++++
+ kernel/autotune/akt_sysfs.c |   16 ++++
+ 3 files changed, 177 insertions(+), 1 deletion(-)
 
 Index: linux-2.6.20-rc4/include/linux/akt.h
 ===================================================================
---- linux-2.6.20-rc4.orig/include/linux/akt.h	2007-01-29 15:57:59.000000000 +0100
-+++ linux-2.6.20-rc4/include/linux/akt.h	2007-01-29 16:05:58.000000000 +0100
-@@ -262,5 +262,6 @@ static inline void init_auto_tuning(void
- #endif	/* CONFIG_AKT */
- 
- extern void fork_late_init(void);
-+extern void files_late_init(void);
- 
- #endif /* AKT_H */
-Index: linux-2.6.20-rc4/include/linux/ipc.h
-===================================================================
---- linux-2.6.20-rc4.orig/include/linux/ipc.h	2007-01-29 12:39:30.000000000 +0100
-+++ linux-2.6.20-rc4/include/linux/ipc.h	2007-01-29 16:07:37.000000000 +0100
-@@ -52,6 +52,7 @@ struct ipc_perm
- #ifdef __KERNEL__
- 
- #include <linux/kref.h>
-+#include <linux/akt.h>
- 
- #define IPCMNI 32768  /* <= MAX_INT limit for ipc arrays (including sysctl changes) */
- 
-@@ -77,15 +78,20 @@ struct ipc_namespace {
- 
- 	int		sem_ctls[4];
- 	int		used_sems;
-+	DECLARE_TUNABLE(semmni_akt);
-+	DECLARE_TUNABLE(semmns_akt);
- 
- 	int		msg_ctlmax;
- 	int		msg_ctlmnb;
- 	int		msg_ctlmni;
-+	DECLARE_TUNABLE(msgmni_akt);
- 
- 	size_t		shm_ctlmax;
- 	size_t		shm_ctlall;
- 	int		shm_ctlmni;
- 	int		shm_tot;
-+	DECLARE_TUNABLE(shmmni_akt);
-+	DECLARE_TUNABLE(shmall_akt);
+--- linux-2.6.20-rc4.orig/include/linux/akt.h	2007-01-29 15:32:48.000000000 +0100
++++ linux-2.6.20-rc4/include/linux/akt.h	2007-01-29 15:47:40.000000000 +0100
+@@ -60,9 +60,15 @@ struct tunable_kobject {
+ /*
+  * Structure used to describe the min / max values for a tunable inside the
+  * auto_tune structure.
++ * The abs_value field is used to check that we are not:
++ *   . falling under the very 1st min value when updating the min value
++ *     through sysfs
++ *   . going over the very 1st max value when updating the max value
++ *     through sysfs
+  */
+ struct tunable_limit {
+ 	ulong value;
++	ulong abs_value;
  };
  
- extern struct ipc_namespace init_ipc_ns;
-Index: linux-2.6.20-rc4/init/main.c
+ 
+@@ -153,9 +159,11 @@ static inline int is_tunable_registered(
+ 		.threshold	= (_thresh),				\
+ 		.min	= {						\
+ 			.value		= (_min),			\
++			.abs_value	= (_min),			\
+ 		},							\
+ 		.max	= {						\
+ 			.value		= (_max),			\
++			.abs_value	= (_max),			\
+ 		},							\
+ 		.tun_kobj	= { .tun = NULL, },			\
+ 		.tunable	= (_tun),				\
+@@ -169,7 +177,9 @@ static inline int is_tunable_registered(
+ #define set_tunable_min_max(s, _min, _max)	\
+ 	do {					\
+ 		(s).min.value = _min;		\
++		(s).min.abs_value = _min;	\
+ 		(s).max.value = _max;		\
++		(s).max.abs_value = _max;	\
+ 	} while (0)
+ 
+ 
+@@ -217,6 +227,10 @@ extern int unregister_tunable(struct aut
+ extern int tunable_sysfs_setup(struct auto_tune *);
+ extern ssize_t show_tuning_mode(struct auto_tune *, char *);
+ extern ssize_t store_tuning_mode(struct auto_tune *, const char *, size_t);
++extern ssize_t show_tunable_min(struct auto_tune *, char *);
++extern ssize_t store_tunable_min(struct auto_tune *, const char *, size_t);
++extern ssize_t show_tunable_max(struct auto_tune *, char *);
++extern ssize_t store_tunable_max(struct auto_tune *, const char *, size_t);
+ 
+ 
+ #else	/* CONFIG_AKT */
+Index: linux-2.6.20-rc4/kernel/autotune/akt.c
 ===================================================================
---- linux-2.6.20-rc4.orig/init/main.c	2007-01-29 15:33:43.000000000 +0100
-+++ linux-2.6.20-rc4/init/main.c	2007-01-29 16:08:31.000000000 +0100
-@@ -616,6 +616,7 @@ asmlinkage void __init start_kernel(void
- 	page_writeback_init();
- 	init_auto_tuning();
- 	fork_late_init();
-+	files_late_init();
- #ifdef CONFIG_PROC_FS
- 	proc_root_init();
- #endif
-Index: linux-2.6.20-rc4/fs/file_table.c
-===================================================================
---- linux-2.6.20-rc4.orig/fs/file_table.c	2007-01-29 12:39:30.000000000 +0100
-+++ linux-2.6.20-rc4/fs/file_table.c	2007-01-29 16:10:37.000000000 +0100
-@@ -21,6 +21,8 @@
- #include <linux/fsnotify.h>
- #include <linux/sysctl.h>
- #include <linux/percpu_counter.h>
-+#include <linux/akt.h>
-+#include <linux/akt_ops.h>
+--- linux-2.6.20-rc4.orig/kernel/autotune/akt.c	2007-01-29 15:42:55.000000000 +0100
++++ linux-2.6.20-rc4/kernel/autotune/akt.c	2007-01-29 15:50:31.000000000 +0100
+@@ -28,6 +28,10 @@
+  *              unregister_tunable         (exported)
+  *              show_tuning_mode           (exported)
+  *              store_tuning_mode          (exported)
++ *              show_tunable_min           (exported)
++ *              store_tunable_min          (exported)
++ *              show_tunable_max           (exported)
++ *              store_tunable_max          (exported)
+  */
  
- #include <asm/atomic.h>
+ #include <linux/init.h>
+@@ -206,3 +210,147 @@ ssize_t store_tuning_mode(struct auto_tu
  
-@@ -34,6 +36,71 @@ __cacheline_aligned_in_smp DEFINE_SPINLO
- 
- static struct percpu_counter nr_files __cacheline_aligned_in_smp;
- 
-+#ifdef CONFIG_AKT
+ 	return strnlen(buffer, PAGE_SIZE);
+ }
 +
-+static int get_nr_files(void);
 +
-+/********** automatic tuning **********/
-+#define FILPTHRESH 80		/* threshold = 80% */
-+
-+/*
-+ * FUNCTION:    This is the routine called to accomplish auto tuning for the
-+ *              max_files tunable.
++/**
++ * show_tunable_min - Outputs the minimum value of a given tunable
++ * @tun_addr:	registered tunable structure to check
++ * @buf:	output buffer
 + *
-+ *              Upwards adjustment:
-+ *                  Adjustment is needed if nr_files has reached
-+ *                  (threshold / 100 * max_files)
-+ *                  In that case, max_files is set to
-+ *                  (tunable + max_files * (100 - threshold) / 100)
++ * This is the get operation called by tunable_attr_show (i.e. when the file
++ * /sys/tunables/<tunable>/min is displayed).
++ * Outputs the current tunable minimum value
 + *
-+ *              Downards adjustment:
-+ *                   Adjustment is needed if nr_files has fallen under
-+ *                   (threshold / 100 * max_files previous value)
-+ *                   In that case max_files is set back to its previous value,
-+ *                   i.e. to (max_files * 100 / (200 - threshold))
-+ *
-+ * PARAMETERS:  cmd: controls the adjustment direction (up / down)
-+ *              params: pointer to the registered tunable structure
-+ *
-+ * EXECUTION ENVIRONMENT: This routine should be called with the
-+ *                        params->tunable_lck lock held
-+ *
-+ * RETURN VALUE: 1 if tunable has been adjusted
-+ *               0 else
++ * Returns:	>0 - output string length (including the '\0')
++ *		<0 - failure
 + */
-+static inline int maxfiles_auto_tuning(int cmd, struct auto_tune *params)
++ssize_t show_tunable_min(struct auto_tune *tun_addr, char *buf)
 +{
-+	int thr = params->threshold;
-+	int min = params->min.value;
-+	int max = params->max.value;
-+	int tun = files_stat.max_files;
++	ssize_t rc;
 +
-+	if (cmd == AKT_UP) {
-+		if (get_nr_files() >= tun * thr / 100 && tun < max) {
-+			int new = tun * (200 - thr) / 100;
-+
-+			files_stat.max_files = min(max, new);
-+			return 1;
-+		} else
-+			return 0;
++	if (tun_addr == NULL) {
++		printk(KERN_ERR "AKT: tunable address is invalid\n");
++		return -EINVAL;
 +	}
 +
-+	if (get_nr_files() < tun * thr / (200 - thr) && tun > min) {
-+		int new = tun * 100 / (200 - thr);
++	spin_lock(&tun_addr->tunable_lck);
 +
-+		files_stat.max_files = max(min, new);
-+		return 1;
-+	} else
-+		return 0;
++	rc = snprintf(buf, PAGE_SIZE, "%lu\n", tun_addr->min.value);
++
++	spin_unlock(&tun_addr->tunable_lck);
++
++	return rc;
 +}
 +
-+#endif /* CONFIG_AKT */
 +
-+/* The maximum value will be known later on */
-+DEFINE_TUNABLE(maxfiles_akt, FILPTHRESH, 0, 0, &files_stat.max_files,
-+		&nr_files, int);
-+
-+
- static inline void file_free_rcu(struct rcu_head *head)
- {
- 	struct file *f =  container_of(head, struct file, f_u.fu_rcuhead);
-@@ -44,6 +111,8 @@ static inline void file_free(struct file
- {
- 	percpu_counter_dec(&nr_files);
- 	call_rcu(&f->f_u.fu_rcuhead, file_free_rcu);
-+
-+	activate_auto_tuning(AKT_DOWN, &maxfiles_akt);
- }
- 
- /*
-@@ -91,6 +160,8 @@ struct file *get_empty_filp(void)
- 	static int old_max;
- 	struct file * f;
- 
-+	activate_auto_tuning(AKT_UP, &maxfiles_akt);
-+
- 	/*
- 	 * Privileged users can go above max_files
- 	 */
-@@ -299,6 +370,17 @@ void __init files_init(unsigned long mem
- 	files_stat.max_files = n; 
- 	if (files_stat.max_files < NR_FILE)
- 		files_stat.max_files = NR_FILE;
-+
-+	set_tunable_min_max(maxfiles_akt, n, n * 2);
-+	set_autotuning_routine(&maxfiles_akt, maxfiles_auto_tuning);
-+
- 	files_defer_init();
- 	percpu_counter_init(&nr_files, 0);
- } 
-+
-+void __init files_late_init(void)
++/**
++ * store_tunable_min - Sets the minimum value of a given tunable
++ * @tun_addr:	registered tunable structure to set
++ * @buf:	input buffer
++ * @count:	input buffer length (including the '\0')
++ *
++ * This is the set operation called by tunable_attr_store (i.e. when a string
++ * is stored into /sys/tunables/<tunable>/min).
++ *
++ * Returns:	>0 - number of characters used from the input buffer
++ *		<0 - failure
++ */
++ssize_t store_tunable_min(struct auto_tune *tun_addr, const char *buf,
++			size_t count)
 +{
-+	if (register_tunable(&maxfiles_akt))
-+		printk(KERN_WARNING
-+			"AKT: Failed registering tunable file-max\n");
-+}
-Index: linux-2.6.20-rc4/ipc/msg.c
-===================================================================
---- linux-2.6.20-rc4.orig/ipc/msg.c	2007-01-29 12:39:30.000000000 +0100
-+++ linux-2.6.20-rc4/ipc/msg.c	2007-01-29 16:11:57.000000000 +0100
-@@ -36,6 +36,8 @@
- #include <linux/seq_file.h>
- #include <linux/mutex.h>
- #include <linux/nsproxy.h>
-+#include <linux/akt.h>
-+#include <linux/akt_ops.h>
- 
- #include <asm/current.h>
- #include <asm/uaccess.h>
-@@ -94,6 +96,11 @@ static void __ipc_init __msg_init_ns(str
- 	ns->msg_ctlmnb = MSGMNB;
- 	ns->msg_ctlmni = MSGMNI;
- 	ipc_init_ids(ids, ns->msg_ctlmni);
++	ssize_t rc;
++	ulong new_value;
 +
-+#define MSGTHRESH 80
++	if (sscanf(buf, "%lu", &new_value) != 1)
++		return -EINVAL;
 +
-+	init_tunable_ipcns(ns, msgmni_akt, MSGTHRESH, MSGMNI, IPCMNI,
-+		&ns->msg_ctlmni, &ids->in_use, int);
- }
- 
- #ifdef CONFIG_IPC_NS
-@@ -133,6 +140,11 @@ void msg_exit_ns(struct ipc_namespace *n
- void __init msg_init(void)
- {
- 	__msg_init_ns(&init_ipc_ns, &init_msg_ids);
-+
-+	if (register_tunable(&init_ipc_ns.msgmni_akt))
-+		printk(KERN_WARNING
-+			"AKT: Failed registering tunable msgmni\n");
-+
- 	ipc_init_proc_interface("sysvipc/msg",
- 				"       key      msqid perms      cbytes       qnum lspid lrpid   uid   gid  cuid  cgid      stime      rtime      ctime\n",
- 				IPC_MSG_IDS, sysvipc_msg_proc_show);
-@@ -262,6 +274,8 @@ asmlinkage long sys_msgget(key_t key, in
- 
- 	ns = current->nsproxy->ipc_ns;
- 	
-+	activate_auto_tuning(AKT_UP, &ns->msgmni_akt);
-+
- 	mutex_lock(&msg_ids(ns).mutex);
- 	if (key == IPC_PRIVATE) 
- 		ret = newque(ns, key, msgflg);
-@@ -391,6 +405,7 @@ asmlinkage long sys_msgctl(int msqid, in
- 	struct msg_queue *msq;
- 	int err, version;
- 	struct ipc_namespace *ns;
-+	int destroyed = 0;
- 
- 	if (msqid < 0 || cmd < 0)
- 		return -EINVAL;
-@@ -555,11 +570,16 @@ asmlinkage long sys_msgctl(int msqid, in
- 	}
- 	case IPC_RMID:
- 		freeque(ns, msq, msqid);
-+		destroyed = 1;
- 		break;
- 	}
- 	err = 0;
- out_up:
- 	mutex_unlock(&msg_ids(ns).mutex);
-+
-+	if (destroyed)
-+		activate_auto_tuning(AKT_DOWN, &ns->msgmni_akt);
-+
- 	return err;
- out_unlock_up:
- 	msg_unlock(msq);
-Index: linux-2.6.20-rc4/ipc/shm.c
-===================================================================
---- linux-2.6.20-rc4.orig/ipc/shm.c	2007-01-29 12:39:30.000000000 +0100
-+++ linux-2.6.20-rc4/ipc/shm.c	2007-01-29 16:12:22.000000000 +0100
-@@ -37,6 +37,8 @@
- #include <linux/seq_file.h>
- #include <linux/mutex.h>
- #include <linux/nsproxy.h>
-+#include <linux/akt.h>
-+#include <linux/akt_ops.h>
- 
- #include <asm/uaccess.h>
- 
-@@ -75,17 +77,27 @@ static void __ipc_init __shm_init_ns(str
- 	ns->shm_ctlmni = SHMMNI;
- 	ns->shm_tot = 0;
- 	ipc_init_ids(ids, 1);
-+
-+#define SHMTHRESH 80
-+	init_tunable_ipcns(ns, shmmni_akt, SHMTHRESH, SHMMNI, IPCMNI,
-+		&ns->shm_ctlmni, &ids->in_use, int);
-+	init_tunable_ipcns(ns, shmall_akt, SHMTHRESH, SHMALL,
-+		SHMMAX / PAGE_SIZE * (IPCMNI / 16), &ns->shm_ctlall,
-+		&ns->shm_tot, size_t);
- }
- 
--static void do_shm_rmid(struct ipc_namespace *ns, struct shmid_kernel *shp)
-+static int do_shm_rmid(struct ipc_namespace *ns, struct shmid_kernel *shp)
- {
- 	if (shp->shm_nattch){
- 		shp->shm_perm.mode |= SHM_DEST;
- 		/* Do not find it any more */
- 		shp->shm_perm.key = IPC_PRIVATE;
- 		shm_unlock(shp);
--	} else
-+		return 0;
-+	} else {
- 		shm_destroy(ns, shp);
-+		return 1;
++	if (tun_addr == NULL) {
++		printk(KERN_ERR "AKT: tunable address is invalid\n");
++		return -EINVAL;
 +	}
- }
- 
- #ifdef CONFIG_IPC_NS
-@@ -125,6 +137,15 @@ void shm_exit_ns(struct ipc_namespace *n
- void __init shm_init (void)
- {
- 	__shm_init_ns(&init_ipc_ns, &init_shm_ids);
 +
-+	if (register_tunable(&init_ipc_ns.shmmni_akt))
-+		printk(KERN_WARNING
-+			"AKT: Failed registering tunable shmmni\n");
++	spin_lock(&tun_addr->tunable_lck);
 +
-+	if (register_tunable(&init_ipc_ns.shmall_akt))
-+		printk(KERN_WARNING
-+			"AKT: Failed registering tunable shmall\n");
-+
- 	ipc_init_proc_interface("sysvipc/shm",
- 				"       key      shmid perms       size  cpid  lpid nattch   uid   gid  cuid  cgid      atime      dtime      ctime\n",
- 				IPC_SHM_IDS, sysvipc_shm_proc_show);
-@@ -206,6 +227,7 @@ static void shm_close (struct vm_area_st
- 	int id = file->f_path.dentry->d_inode->i_ino;
- 	struct shmid_kernel *shp;
- 	struct ipc_namespace *ns;
-+	int destroyed = 0;
- 
- 	ns = shm_file_ns(file);
- 
-@@ -217,11 +239,27 @@ static void shm_close (struct vm_area_st
- 	shp->shm_dtim = get_seconds();
- 	shp->shm_nattch--;
- 	if(shp->shm_nattch == 0 &&
--	   shp->shm_perm.mode & SHM_DEST)
-+	   shp->shm_perm.mode & SHM_DEST) {
- 		shm_destroy(ns, shp);
--	else
-+		destroyed = 1;
++	if (new_value >= tun_addr->min.abs_value &&
++					new_value < tun_addr->max.value) {
++		tun_addr->min.value = new_value;
++		rc = strnlen(buf, PAGE_SIZE);
 +	} else
- 		shm_unlock(shp);
- 	mutex_unlock(&shm_ids(ns).mutex);
++		rc = -EINVAL;
 +
-+	if (destroyed) {
-+		int rc;
++	spin_unlock(&tun_addr->tunable_lck);
 +
-+		rc = activate_auto_tuning(AKT_DOWN, &ns->shmmni_akt);
-+		if (rc)
-+			/*
-+			 * shm_ctlmni has been adjusted == > change
-+			 * shm_ctlall value
-+			 */
-+			ns->shm_ctlall = ns->shm_ctlmax / PAGE_SIZE *
-+				(ns->shm_ctlmni / 16);
++	return rc;
++}
 +
-+		activate_auto_tuning(AKT_DOWN, &ns->shmall_akt);
++
++/**
++ * show_tunable_max - Outputs the maximum value of a given tunable
++ * @tun_addr:	registered tunable structure to check
++ * @buf:	output buffer
++ *
++ * This is the get operation called by tunable_attr_show (i.e. when the file
++ * /sys/tunables/<tunable>/max is displayed).
++ * Outputs the current tunable maximum value
++ *
++ * Returns:	>0 - output string length (including the '\0')
++ *		<0 - failure
++ */
++ssize_t show_tunable_max(struct auto_tune *tun_addr, char *buf)
++{
++	ssize_t rc;
++
++	if (tun_addr == NULL) {
++		printk(KERN_ERR "AKT: tunable address is invalid\n");
++		return -EINVAL;
 +	}
- }
- 
- static int shm_mmap(struct file * file, struct vm_area_struct * vma)
-@@ -355,9 +393,20 @@ asmlinkage long sys_shmget (key_t key, s
- 	struct shmid_kernel *shp;
- 	int err, id = 0;
- 	struct ipc_namespace *ns;
-+	int rc;
- 
- 	ns = current->nsproxy->ipc_ns;
- 
-+	rc = activate_auto_tuning(AKT_UP, &ns->shmmni_akt);
-+	if (rc)
-+		/*
-+		 * shm_ctlmni has been adjusted == > change shm_ctlall value
-+		 */
-+		ns->shm_ctlall = ns->shm_ctlmax / PAGE_SIZE
-+				* (ns->shm_ctlmni / 16);
 +
-+	activate_auto_tuning(AKT_UP, &ns->shmall_akt);
++	spin_lock(&tun_addr->tunable_lck);
 +
- 	mutex_lock(&shm_ids(ns).mutex);
- 	if (key == IPC_PRIVATE) {
- 		err = newseg(ns, key, shmflg, size);
-@@ -516,6 +565,7 @@ asmlinkage long sys_shmctl (int shmid, i
- 	struct shmid_kernel *shp;
- 	int err, version;
- 	struct ipc_namespace *ns;
-+	int destroyed;
- 
- 	if (cmd < 0 || shmid < 0) {
- 		err = -EINVAL;
-@@ -701,8 +751,24 @@ asmlinkage long sys_shmctl (int shmid, i
- 		if (err)
- 			goto out_unlock_up;
- 
--		do_shm_rmid(ns, shp);
-+		destroyed = do_shm_rmid(ns, shp);
- 		mutex_unlock(&shm_ids(ns).mutex);
++	rc = snprintf(buf, PAGE_SIZE, "%lu\n", tun_addr->max.value);
 +
-+		if (destroyed) {
-+			int rc;
++	spin_unlock(&tun_addr->tunable_lck);
 +
-+			rc = activate_auto_tuning(AKT_DOWN, &ns->shmmni_akt);
-+			if (rc)
-+				/*
-+				 * shm_ctlmni has been adjusted == > change
-+				 * shm_ctlall value
-+				 */
-+				ns->shm_ctlall = ns->shm_ctlmax / PAGE_SIZE *
-+					(ns->shm_ctlmni / 16);
++	return rc;
++}
 +
-+			activate_auto_tuning(AKT_DOWN, &ns->shmall_akt);
-+		}
 +
- 		goto out;
- 	}
- 
-Index: linux-2.6.20-rc4/ipc/sem.c
++/**
++ * store_tunable_max - Sets the maximum value of a given tunable
++ * @tun_addr:	registered tunable structure to set
++ * @buf:	input buffer
++ * @count:	input buffer length (including the '\0')
++ *
++ * This is the set operation called by tunable_attr_store (i.e. when a string
++ * is stored into /sys/tunables/<tunable>/max).
++ *
++ * Returns:	>0 - number of characters used from the input buffer
++ *		<0 - failure
++ */
++ssize_t store_tunable_max(struct auto_tune *tun_addr, const char *buf,
++			size_t count)
++{
++	ssize_t rc;
++	ulong new_value;
++
++	if (sscanf(buf, "%lu", &new_value) != 1)
++		return -EINVAL;
++
++	if (tun_addr == NULL) {
++		printk(KERN_ERR "AKT: tunable address is invalid\n");
++		return -EINVAL;
++	}
++
++	spin_lock(&tun_addr->tunable_lck);
++
++	if (new_value <= tun_addr->max.abs_value &&
++					new_value > tun_addr->min.value) {
++		tun_addr->max.value = new_value;
++		rc = strnlen(buf, PAGE_SIZE);
++	} else
++		rc = -EINVAL;
++
++	spin_unlock(&tun_addr->tunable_lck);
++
++	return rc;
++}
+Index: linux-2.6.20-rc4/kernel/autotune/akt_sysfs.c
 ===================================================================
---- linux-2.6.20-rc4.orig/ipc/sem.c	2007-01-29 12:39:30.000000000 +0100
-+++ linux-2.6.20-rc4/ipc/sem.c	2007-01-29 16:12:47.000000000 +0100
-@@ -83,6 +83,8 @@
- #include <linux/seq_file.h>
- #include <linux/mutex.h>
- #include <linux/nsproxy.h>
-+#include <linux/akt.h>
-+#include <linux/akt_ops.h>
+--- linux-2.6.20-rc4.orig/kernel/autotune/akt_sysfs.c	2007-01-29 15:39:05.000000000 +0100
++++ linux-2.6.20-rc4/kernel/autotune/akt_sysfs.c	2007-01-29 15:52:09.000000000 +0100
+@@ -54,8 +54,16 @@ struct tunable_attribute tun_attr_##_nam
+ static TUNABLE_ATTR(autotune, S_IWUSR | S_IRUGO, show_tuning_mode,
+ 		store_tuning_mode);
  
- #include <asm/uaccess.h>
- #include "util.h"
-@@ -131,6 +133,12 @@ static void __ipc_init __sem_init_ns(str
- 	ns->sc_semmni = SEMMNI;
- 	ns->used_sems = 0;
- 	ipc_init_ids(ids, ns->sc_semmni);
++static TUNABLE_ATTR(min, S_IWUSR | S_IRUGO, show_tunable_min,
++		store_tunable_min);
 +
-+#define SEMTHRESH 80
-+	init_tunable_ipcns(ns, semmni_akt, SEMTHRESH, SEMMNI, IPCMNI,
-+		&(ns->sc_semmni), &ids->in_use, int);
-+	init_tunable_ipcns(ns, semmns_akt, SEMTHRESH, SEMMNS,
-+		IPCMNI * SEMMSL, &(ns->sc_semmns), &ns->used_sems, int);
- }
++static TUNABLE_ATTR(max, S_IWUSR | S_IRUGO, show_tunable_max,
++		store_tunable_max);
++
+ static struct tunable_attribute *tunable_sysfs_attrs[] = {
+ 	&tun_attr_autotune,	/* to (de)activate auto tuning */
++	&tun_attr_min,		/* to play with the tunable min value */
++	&tun_attr_max,		/* to play with the tunable max value */
+ 	NULL,
+ };
  
- #ifdef CONFIG_IPC_NS
-@@ -170,6 +178,15 @@ void sem_exit_ns(struct ipc_namespace *n
- void __init sem_init (void)
- {
- 	__sem_init_ns(&init_ipc_ns, &init_sem_ids);
-+
-+	if (register_tunable(&init_ipc_ns.semmni_akt))
-+		printk(KERN_WARNING
-+			"AKT: Failed registering tunable semmni\n");
-+
-+	if (register_tunable(&init_ipc_ns.semmns_akt))
-+		printk(KERN_WARNING
-+			"AKT: Failed registering tunable semmns\n");
-+
- 	ipc_init_proc_interface("sysvipc/sem",
- 				"       key      semid perms      nsems   uid   gid  cuid  cgid      otime      ctime\n",
- 				IPC_SEM_IDS, sysvipc_sem_proc_show);
-@@ -263,11 +280,22 @@ asmlinkage long sys_semget (key_t key, i
- 	int id, err = -EINVAL;
- 	struct sem_array *sma;
- 	struct ipc_namespace *ns;
-+	int rc;
- 
- 	ns = current->nsproxy->ipc_ns;
- 
- 	if (nsems < 0 || nsems > ns->sc_semmsl)
- 		return -EINVAL;
-+
-+	rc = activate_auto_tuning(AKT_UP, &ns->semmni_akt);
-+	if (rc)
-+		/*
-+		 * sc_semmni has been adjusted == > change sc_semmns value
-+		 */
-+		ns->sc_semmns = ns->sc_semmni * ns->sc_semmsl;
-+
-+	activate_auto_tuning(AKT_UP, &ns->semmns_akt);
-+
- 	mutex_lock(&sem_ids(ns).mutex);
- 	
- 	if (key == IPC_PRIVATE) {
-@@ -899,6 +927,21 @@ static int semctl_down(struct ipc_namesp
- 	case IPC_RMID:
- 		freeary(ns, sma, semid);
- 		err = 0;
-+
-+		{
-+			int rc;
-+
-+			rc = activate_auto_tuning(AKT_DOWN, &ns->semmni_akt);
-+			if (rc)
-+				/*
-+				 * sc_semmni has been adjusted ==>
-+				 * change sc_semmns value
-+				 */
-+				ns->sc_semmns = ns->sc_semmni * ns->sc_semmsl;
-+
-+			activate_auto_tuning(AKT_DOWN, &ns->semmns_akt);
-+		}
-+
- 		break;
- 	case IPC_SET:
- 		ipcp->uid = setbuf.uid;
+@@ -75,6 +83,8 @@ static int add_tunable_attrs(struct auto
+  * @kobj:	tunable associated kobject
+  * @attr:	tunable attribute to read. Can be one of:
+  *			tun_attr_autotune
++ *			tun_attr_min
++ *			tun_attr_max
+  * @buf:	output buffer
+  *
+  * Forwards any read call to the show method of the owning attribute
+@@ -102,6 +112,8 @@ static ssize_t tunable_attr_show(struct 
+  * @kobj:	tunable associated kobject
+  * @attr:	tunable attribute to update. Can be one of:
+  *			tun_attr_autotune
++ *			tun_attr_min
++ *			tun_attr_max
+  * @buf:	input buffer
+  * @count:	input buffer length (including the '\0')
+  *
+@@ -145,8 +157,10 @@ decl_subsys(tunables, &tunables_ktype, N
+  * @tunable:	tunable structure to be registered
+  *
+  * Called by register_tunable()
+- * The tunable is a kobject with 1 attributes:
++ * The tunable is a kobject with 3 attributes:
+  *	autotune (rw): enables to (de)activate the auto tuning for the tunable
++ *	min (rw): enables to play with the min tunable value
++ *	max (rw): enables to play with the max tunable value
+  *
+  * Returns:	0 - successful
+  *		<0 - failure
 
 --
