@@ -1,48 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965483AbXA3Jmg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965481AbXA3Jow@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965483AbXA3Jmg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 04:42:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965478AbXA3Jmg
+	id S965481AbXA3Jow (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 04:44:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965498AbXA3Jow
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 04:42:36 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:40639 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965477AbXA3Jmf (ORCPT
+	Tue, 30 Jan 2007 04:44:52 -0500
+Received: from ug-out-1314.google.com ([66.249.92.168]:39811 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965490AbXA3Jov (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 04:42:35 -0500
-Date: Tue, 30 Jan 2007 09:42:33 +0000
-From: Christoph Hellwig <hch@infradead.org>
-To: "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org, akpm@osdl.org
-Subject: Re: [PATCH 4/4] fs/unionfs/: Don't duplicate the struct nameidata
-Message-ID: <20070130094233.GA6972@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Josef 'Jeff' Sipek <jsipek@cs.sunysb.edu>,
-	linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-	akpm@osdl.org
-References: <11701030631109-git-send-email-jsipek@cs.sunysb.edu> <11701030643398-git-send-email-jsipek@cs.sunysb.edu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 30 Jan 2007 04:44:51 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=lAWLy21OHz5ascLNaVt6qPagwQ47fHwxjtKvQmu4HmbUEmGODRPUKuyDeJzusiD+nVH47AGHMUkdIUkb3OJogJUPp2/+c71LIstidn0mirlzBAsutZ34muJYMJfrLiBkMj16oGy5dz7992cHZz9Ofbww3gm6HSYYYgYbtCxf3A4=
+Message-ID: <21d7e9970701300144j33f5264dh932848ae81a89252@mail.gmail.com>
+Date: Tue, 30 Jan 2007 20:44:49 +1100
+From: "Dave Airlie" <airlied@gmail.com>
+To: "Theodore Tso" <tytso@mit.edu>, "Sunil Naidu" <akula2.shark@gmail.com>,
+       dirk.hohndel@intel.com, linux-kernel@vger.kernel.org, alan@redhat.com,
+       ksummit-2007-discuss@thunk.org, "David Miller" <davem@davemloft.net>
+Subject: Re: [Ksummit-2007-discuss] 2007 Linux Kernel Summit
+In-Reply-To: <slrneru3aq.f71.olecom@flower.upol.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <11701030643398-git-send-email-jsipek@cs.sunysb.edu>
-User-Agent: Mutt/1.4.2.2i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+References: <20070123.095756.30177490.davem@davemloft.net>
+	 <C1DDFD3E.8658%dirk.hohndel@intel.com>
+	 <20070125.125121.98861775.davem@davemloft.net>
+	 <8355959a0701251646t4b7db48cj862268aad52e8e24@mail.gmail.com>
+	 <20070126032849.GB5589@thunk.org>
+	 <slrneru3aq.f71.olecom@flower.upol.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 29, 2007 at 03:37:42PM -0500, Josef 'Jeff' Sipek wrote:
-> The only fields that we have to watch out for are the dentry and vfsmount.
-> Additionally, this makes Unionfs gentler on the stack as nameidata is rather
-> large.
+> Rather, than "business class ;-)", i whould like to see comments about
+> good quality video coverage of the KS, which (KS) is that, as you
+> described here:
+>
 
-That's onviously not true at all.  To handle any filesystems using intents
-(e.g. NFSv4) you need to do much more.  Then again doing things correctly
-doesn't seem to be interesting to the stackable filesystems crowd an this
-problem has been constantly ignored over the last year, including merging
-ecryptfs which has been broken in the same way.
+KS isn't a conference that lends itself to recording ppl a lot of
+people seem to think it is like a mini-OLS or mini-LCA, it is more
+discussion based (or at least should be...), it isn't held in a
+lecture theatre, people aren't meant to do slides beyond talking
+points....
 
-Folks, if you want your stackable filesystem toys taken seriously you
-need to fix these kind of issues instead of talking them away.  And yes,
-this will involve some surgery to the VFS.
+It mainly involves ppl sitting around tables talking about stuff with
+some mics... I think we could hold KS as an open non-invite event if
+it wasn't attached to a major conference and was held somewhere no-one
+wants to go :-)
 
+Dave.
