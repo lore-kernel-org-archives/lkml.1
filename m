@@ -1,57 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965645AbXA3Rkp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965647AbXA3Rl4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965645AbXA3Rkp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 12:40:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965647AbXA3Rkp
+	id S965647AbXA3Rl4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 12:41:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965648AbXA3Rl4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 12:40:45 -0500
-Received: from [217.111.56.2] ([217.111.56.2]:23961 "EHLO semtex.sncag.com"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S965646AbXA3Rko (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 12:40:44 -0500
-To: Greg KH <greg@kroah.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Rainer Weikusat <rweikusat@sncag.com>,
-       Oleg Verych <olecom@flower.upol.cz>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Adrian Bunk <bunk@stusta.de>
-Subject: Re: unfixed regression in 2.6.20-rc6 (since 2.6.19)
-In-Reply-To: <20070129234340.GA6881@kroah.com> (Greg KH's message of "Mon, 29 Jan 2007 15:43:40 -0800")
-References: <877ivb2kvc.fsf@semtex.sncag.com>
-	<20070125185101.GA26279@kroah.com> <87y7nq131x.fsf@semtex.sncag.com>
-	<20070126174828.GA28890@kroah.com> <87d54z1dhb.fsf@semtex.sncag.com>
-	<slrnerqjit.f71.olecom@flower.upol.cz>
-	<20070129234340.GA6881@kroah.com>
-From: Rainer Weikusat <rainer.weikusat@sncag.com>
-Date: Tue, 30 Jan 2007 18:40:10 +0100
-Message-ID: <87k5z4za4l.fsf@semtex.sncag.com>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.4 (gnu/linux)
+	Tue, 30 Jan 2007 12:41:56 -0500
+Received: from smtp102.sbc.mail.mud.yahoo.com ([68.142.198.201]:43866 "HELO
+	smtp102.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S965647AbXA3Rlz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jan 2007 12:41:55 -0500
+X-YMail-OSG: iyAHHJwVM1ll8EXcM.qSBHYv6TdK3MF1ODOu9KG3jXHsWOvVWhyExO5oCmKGx9YT5wA-
+Message-ID: <45BF81CF.2060801@dogpad.net>
+Date: Tue, 30 Jan 2007 11:35:11 -0600
+From: Joe Harvell <jharvell+lists.linux-kernel@dogpad.net>
+User-Agent: Thunderbird 1.5.0.9 (X11/20061230)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: linux-kernel@vger.kernel.org
+Subject: ACPI C and P states on Conroe
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH <greg@kroah.com> writes:
+I am trying to enable all the power saving features I can on my Conroe
+E6600.  After much searching on the web, I am a little confused about
+the Linux kernel support for ACPI on the Conroe.
 
-[...]
+Here is my setup:
+Intel Core2 Duo E6600
+Asus P5-B Deluxe board (Intel P965).
+I am running a Gentoo kernel based on 2.6.19.4.
 
-> Rainer's problem is a real bug in the USB driver code, which we need to
-> work on getting fixed,
+I have managed to enable EIST using cpufreq with the speedstep-centrino
+driver.  But my understanding from browsing the ACPI spec is that this
+is still within C0, i.e. not much power savings.
 
-[...]
+Here are my questions:
 
-To clarify this: My 'problem' was that my USB-to-serial converter
-stopped working with the 2.6.19 release end of November 2007. It
-wasn't until end of December that I could spend some time apart from
-my day job, whose main occupation has been kernel programming since October,
-albeit for the 2.4 kernels used in the devices I am responsible for, to
-track this down (took around a workday, because I had never seen the
-respective code before) and to implement a fix that I am using since
-then.
+1) For P states, which cpufreq driver should I be using?  I've heard
+speedstep-centrino is deprecated (but only some aspects of it) that are
+being moved into acpi-cpufreq.  But I can't get acpi-cpufreq to load in
+my kernel version.  Also, I would have thought speedstep-ich would be
+the driver, just based on the name.  How do I know (other than trying
+all modules to see which one loads) which one I should be using?
+2) What kind of support for C1-C3 does the Conroe have?  The ACPI spec
+says C2 and C3 require chipset support on the motherboard.  Does P965
+have that.  Does it matter between boards (e.g. P5B)?
+3) What versions of the kernel support C1-C3 states?  What kernel
+options are germane to this?  What libraries/tools are involved?
 
-While I would prefer to not have to maintain private patchsets for
-kernels I just want to use, this has never really been possible since
-1998 or so, when a well-meaning person dropped 'rst provoking' from
-the dynip support code without me noticing it before it had costed me
-some 500 DM in additional telephone costs, meaning, except that the necessity
-for this makes me 'philosophically unhappy', I can use my device
-again and there is no 'problem' anymore.
+---
+Joe Harvell
+
