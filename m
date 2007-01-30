@@ -1,67 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750969AbXA3Dco@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932579AbXA3DeV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750969AbXA3Dco (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 22:32:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752532AbXA3Dco
+	id S932579AbXA3DeV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 22:34:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932948AbXA3DeU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 22:32:44 -0500
-Received: from tomts5-srv.bellnexxia.net ([209.226.175.25]:64992 "EHLO
-	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750969AbXA3Dcn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 22:32:43 -0500
-Date: Mon, 29 Jan 2007 22:27:35 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: "Martin J. Bligh" <mbligh@mbligh.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@osdl.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: Bug report : reproducible memory bug (hardware failure, sorry)
-Message-ID: <20070130032734.GA28701@Krystal>
-References: <20070128200917.GA16571@Krystal> <45BD06AC.1080008@mbligh.org>
+	Mon, 29 Jan 2007 22:34:20 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:38241 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932579AbXA3DeT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jan 2007 22:34:19 -0500
+Subject: Re: Hidden SSID's
+From: Dan Williams <dcbw@redhat.com>
+To: Jouni Malinen <jkmaline@cc.hut.fi>
+Cc: Johannes Berg <johannes@sipsolutions.net>,
+       Larry Finger <Larry.Finger@lwfinger.net>,
+       netdev <netdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070130030911.GA6637@jm.kir.nu>
+References: <45BACB71.2080107@lwfinger.net>
+	 <1169899689.25670.3.camel@localhost.localdomain>
+	 <1170019717.30318.0.camel@johannes.berg>
+	 <1170075611.2895.2.camel@localhost.localdomain>
+	 <20070130030911.GA6637@jm.kir.nu>
+Content-Type: text/plain
+Date: Mon, 29 Jan 2007 22:36:48 -0500
+Message-Id: <1170128208.3448.6.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <45BD06AC.1080008@mbligh.org>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.4.32-grsec (i686)
-X-Uptime: 22:21:18 up 160 days, 28 min,  2 users,  load average: 0.58, 0.80, 0.62
-User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Martin J. Bligh (mbligh@mbligh.org) wrote:
-> Mathieu Desnoyers wrote:
-> >Hi,
-> >
-> >Trying to build cross-compilers (or kernels) on a 2-way x86_64 (amd64) with
-> >make -j3 triggers the following OOPS after about 30 minutes on
-> >2.6.19.2. Due to the amount of time and the heavy load it takes before it
-> >happens, I suspect a race condition. Memtest86 tests passed ok. The
-> >amount of swap used when the condition happens is about 52k and stable
-> >(only ~800MB/1GB are used).
-> >
-> >I am going to give it a look, but I suspect you might help narrowing it
-> >down more quickly. Any insight would be appreciated.
+On Mon, 2007-01-29 at 19:09 -0800, Jouni Malinen wrote:
+> On Mon, Jan 29, 2007 at 08:00:11AM -0500, Dan Williams wrote:
 > 
-> Mmm. that's going to be messy to debug ... but didn't we already know
-> that kernel was racy? Or is 2.6.19.2 after that fix already? Does 20-rc6
-> still break?
+> > Well, there's no way a userspace program could depend on all hidden SSID
+> > APs having the <hidden> tag, since if you stick in another,
+> > non-ieee80211-stack card it won't be like that.  So I don't think we
+> > should care about <hidden> in d80211, but I don't think we can remove it
+> > from ieee80211 either.
+> 
+> Use of '<hidden>' is just not acceptable. IMHO, it should be removed
+> from everywhere, including net/ieee80211. The sooner this is done, the
+> better.
 
-Hi Martin,
+You're probably right.  Lets just pull it out of ieee80211 and be done.
 
-I finally re-ran memtest86 on the machine since it began to have too
-many different kind of errors (GPF, invalid instruction...). It turned
-out that one of the memory modules was bad. I guess my brand new 
-list_debug race condition debugger will be useful in the future, but not
-now. :)
+dan
 
-I'll remember to let memtest86 run a few hours more on my new machines
-next time.
 
-Mathieu
 
--- 
-OpenPGP public key:              http://krystal.dyndns.org:8080/key/compudj.gpg
-Key fingerprint:     8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68 
