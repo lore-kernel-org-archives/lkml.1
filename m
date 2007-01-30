@@ -1,55 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751384AbXA3Ubk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751399AbXA3UgF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751384AbXA3Ubk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 15:31:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751385AbXA3Ubk
+	id S1751399AbXA3UgF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 15:36:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751409AbXA3UgF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 15:31:40 -0500
-Received: from ns2.suse.de ([195.135.220.15]:56519 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751384AbXA3Ubk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 15:31:40 -0500
-Date: Tue, 30 Jan 2007 12:30:39 -0800
-From: Greg KH <greg@kroah.com>
-To: Andrew Lyon <andrew.lyon@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Free Linux Driver Development!
-Message-ID: <20070130203039.GA23370@kroah.com>
-References: <20070130012904.GA9617@kroah.com> <f4527be0701301215q11924e3fnaaa5f33e6b6c5b36@mail.gmail.com>
+	Tue, 30 Jan 2007 15:36:05 -0500
+Received: from nf-out-0910.google.com ([64.233.182.185]:27617 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751399AbXA3UgD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jan 2007 15:36:03 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=KplEvXQP+IPYQ74Nf1CvR+A4TTEDeHUCTvB+R8XrLsYVnBh+MqQUTZRYWJFA1vpPjm3nt4niDq7rkhr2/YliAGmxqbI1lafEAW4JoiG7DD6E0zTxLXPvnOAQn95WwG4FY66ub/IRxlZKRclOsIZo+VbkR3ckc4bajuxlaD0r7Gk=
+Date: Tue, 30 Jan 2007 21:36:01 +0100
+From: Luca Tettamanti <kronos.it@gmail.com>
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>
+Cc: Peter Osterlund <petero2@telia.com>, linux-kernel@vger.kernel.org
+Subject: Re: [2.6.20-rc6] pktcdvd doesn't work
+Message-ID: <20070130203601.GB15067@dreamland.darkstar.lan>
+References: <20070130195319.GA10994@dreamland.darkstar.lan> <Pine.LNX.4.61.0701302100370.13737@yvahk01.tjqt.qr>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <f4527be0701301215q11924e3fnaaa5f33e6b6c5b36@mail.gmail.com>
+In-Reply-To: <Pine.LNX.4.61.0701302100370.13737@yvahk01.tjqt.qr>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 30, 2007 at 08:15:11PM +0000, Andrew Lyon wrote:
+Il Tue, Jan 30, 2007 at 09:02:20PM +0100, Jan Engelhardt ha scritto: 
 > 
-> How about a kernel driver for the m-cubed tbalancer bigNG ?
+> On Jan 30 2007 20:53, Luca Tettamanti wrote:
+> >Hi,
+> >pktcdvd on kernel 2.6.20-rc6 is not working as expected. Any file that
 > 
-> http://www.t-balancer.com/english/bng.htm  (see support section of site)
+> Did it work previously?
+
+Yup, It used to work but since I rarely use it I don't remember which
+kernel version worked for me.
+
 > 
-> Complete documentation is available, and devs are friendly (see
-> forums), there is already a userspace utility that works well but a
-> kernel driver would be even better, especially for something that
-> controls system cooling!
+> >is written to the device is lost after umount.
+> >I rarely use pktcdvd but at some point it used to work on my system.
+> >
+> >This is what I'm doing:
+> >
+> >root@dreamland:/tmp# cdrwtool -d /dev/scd0 -q
+> >scsi 8:0:0:0: CD-ROM            HL-DT-ST DVDRAM GSA-4167B DL13 PQ: 0 ANSI: 5
+> 
+> In case you are using ide-scsi: try without.
 
-Why would a userspace driver not work out for this.  We already can
-saturate the USB bus with a userspace program, and since it requires a
-userspace interaction to do something with the data, I don't really see
-what a kernel driver could do to help thing out.
+It's libata jmicron driver. Shall I try the "old" PATA driver on the
+next reboot?
 
-That being said, perhaps it would fit with the other USB data
-acquisition drivers that we already have.  Feel free to take this up
-with me off-list if you want to.
-
-Hm, wait, in looking at the specs for the device, it uses a
-usb-to-serial chip that we already support quite well (with the
-pl2303.ko driver.)  So all you need to do is write some userspace
-software that interacts with the device properly.  No new kernel driver
-is needed at all, as Linux already supports this hardware :)
-
-thanks,
-
-greg k-h
+Luca
+-- 
+"Chi parla in tono cortese, ma continua a prepararsi, potra` andare avanti;
+ chi parla in tono bellicoso e avanza rapidamente dovra` ritirarsi" 
+Sun Tzu -- L'arte della guerra
