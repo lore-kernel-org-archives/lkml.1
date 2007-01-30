@@ -1,50 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965574AbXA3QMS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751129AbXA3QNJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965574AbXA3QMS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 11:12:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965578AbXA3QMS
+	id S1751129AbXA3QNJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 11:13:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752092AbXA3QNJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 11:12:18 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:58581 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S965574AbXA3QMR (ORCPT
+	Tue, 30 Jan 2007 11:13:09 -0500
+Received: from mo-p00-ob.rzone.de ([81.169.146.161]:48056 "EHLO
+	mo-p00-ob.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751020AbXA3QNH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 11:12:17 -0500
-Date: Tue, 30 Jan 2007 16:21:51 +0000
-From: Alan <alan@lxorguk.ukuu.org.uk>
-To: Jean Delvare <jdelvare@suse.de>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>, Sergey Vlasov <vsu@altlinux.ru>,
-       Daniel Drake <dsd@reactivated.net>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@osdl.org>
-Subject: Re: [PATCH] VIA IRQ quirk breakage fix
-Message-ID: <20070130162151.2a0e8bf1@localhost.localdomain>
-In-Reply-To: <200701301449.52147.jdelvare@suse.de>
-References: <45B6A94A.3010006@yahoo.com.au>
-	<200701301325.58843.jdelvare@suse.de>
-	<45BF4A3A.2040001@yahoo.com.au>
-	<200701301449.52147.jdelvare@suse.de>
-X-Mailer: Claws Mail 2.7.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 30 Jan 2007 11:13:07 -0500
+Date: Tue, 30 Jan 2007 17:12:57 +0100 (MET)
+From: Oliver Neukum <oliver@neukum.name>
+To: Marcel Holtmann <marcel@holtmann.org>
+Subject: Re: [Bluez-devel] trouble with sysfs and bluetooth
+User-Agent: KMail/1.9.1
+Cc: BlueZ development <bluez-devel@lists.sourceforge.net>,
+       linux-kernel@vger.kernel.org, maxk@qualcomm.com
+References: <200701301135.53178.oliver@neukum.name>
+ <1170154328.27519.27.camel@violet>
+In-Reply-To: <1170154328.27519.27.camel@violet>
+MIME-Version: 1.0
+Content-Type: text/plain;  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200701301713.01942.oliver@neukum.name>
+X-RZG-AUTH: kN+qSWxTQH+Xqix8Cni7tCsVYhPCm1GP
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 30 Jan 2007 14:49:51 +0100
-Jean Delvare <jdelvare@suse.de> wrote:
-> I do believe this is 2.6.20 material. Given that Alan's version doesn't work 
-> _at all_, my patch can only help. The real regression is between 2.6.19 and 
-> the current Linus tree (with Alan's quirk.)
 
-I believe my version works for all but the 686B
+> do you see them also with the plain vanilla 2.6.20-rc6 kernel or are
+> these only coming up in Greg's tree?
 
-> > Andrew, can you pick up this patch in place of the old one you got
-> > (fix-via-irq-quirk-breakage.patch). It was sent to lkml just now.
-> 
-> Yes, please. And possibly send it over to Linus while you're there, if 
-> everyone's happy with this version.
+Hi,
 
-Agreed.
+they are limited to Greg's tree.
 
-Alan
+	Regards
+		Oliver
