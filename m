@@ -1,142 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965110AbXA3Lct@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964923AbXA3LeK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965110AbXA3Lct (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 06:32:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965114AbXA3Lct
+	id S964923AbXA3LeK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 06:34:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965114AbXA3LeJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 06:32:49 -0500
-Received: from nic.NetDirect.CA ([216.16.235.2]:51268 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965110AbXA3Lcs (ORCPT
+	Tue, 30 Jan 2007 06:34:09 -0500
+Received: from smtp102.mail.mud.yahoo.com ([209.191.85.212]:48349 "HELO
+	smtp102.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S964923AbXA3LeI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 06:32:48 -0500
-X-Originating-Ip: 74.109.98.130
-Date: Tue, 30 Jan 2007 06:06:00 -0500 (EST)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@CPE00045a9c397f-CM001225dbafb6
-To: Linux kernel mailing list <linux-kernel@vger.kernel.org>
-cc: Andrew Morton <akpm@osdl.org>, Paul Mackerras <paulus@samba.org>,
-       dhowells@redhat.com, galak@kernel.crashing.org
-Subject: [PATCH] Add "is_power_of_2" checking to log2.h.
-Message-ID: <Pine.LNX.4.64.0701300543420.17991@CPE00045a9c397f-CM001225dbafb6>
+	Tue, 30 Jan 2007 06:34:08 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=1+9b8lMtlye3JlgVeEHfXBc4YcX50Brvy/0hZzl6hGJAu3eKoD+BjQgfMZ2jbu9q6qHqX3D/27s0p5IvFbdEbq7kE9Myl5TyYxcQ85sznxY6dnSq3inWJLQipnxu9HCqNuYm19m0WP4J0WKmm3FHRN2hFSBP94JCoNBiYnfNiyQ=  ;
+X-YMail-OSG: ttLxPZwVM1nN02nVo5OBw48i010GjEOw1bbCwCPCJF3V6DvkF1skvQ.basLZLNz8nuphZLTb5IpqWXFziEvqHewHGf3oEJ3R2vzjYRaiDc1FosIDc9GEyHMXrnEwI_GfGNMBUDW2IqYjB5Q-
+Message-ID: <45BF2D1E.3020207@yahoo.com.au>
+Date: Tue, 30 Jan 2007 22:33:50 +1100
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (cached,
-	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+To: Christoph Hellwig <hch@infradead.org>
+CC: Howard Chu <hyc@symas.com>, linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-mm@kvack.org
+Subject: Re: swap map
+References: <45BF2823.2090005@symas.com> <20070130112024.GA18705@infradead.org>
+In-Reply-To: <20070130112024.GA18705@infradead.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Christoph Hellwig wrote:
+> On Tue, Jan 30, 2007 at 03:12:35AM -0800, Howard Chu wrote:
+> 
+>>In the it-would-be-nice department... While I was twiddling with swappiness 
+>>and benchmarking some code, I thought it would be pretty cool if there was 
+>>a node in /proc/<pid> that would show which pages of a process are resident 
+>>or nonresident. I'm not sure that it would be useful very often, but I was 
+>>thinking one could get a snapshot of that, correlated with traces from a 
+>>malloc profiler, to show what portions of a program's memory usage was in 
+>>active use vs idle.
+> 
+> 
+> That's be a remote mincore().  This should be more or less trivial,
+> do_mincore would need a mm_struct argument instead of always using
+> current->mm and we'd need a simple seq_file interface iterating over it.
+> 
+> Any volunteers?
 
-  Add the inline function "is_power_of_2()" to log2.h, where the value
-zero is *not* considered to be a power of two.
+Well the first thing needed is an mincore that actually works for anonymous
+memory!
 
-Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
+I've implemented some fixups in that department, which should get merged
+into 2.6.21. That reminds me: I'll send the patch to linux-mm for review...
 
----
+We cannot get real atomic snapshots in general, but I don't think that would
+be a problem if you are just doing some profiling.
 
-  while people are coming up with more and more clever ways to do
-rounding, we can at least add the check for power-of-2 now, so we can
-start the cleanup.
-
-
- arch/powerpc/mm/pgtable_32.c  |    5 +----
- arch/ppc/mm/pgtable.c         |    5 +----
- arch/ppc/syslib/ppc85xx_rio.c |    2 --
- drivers/net/gianfar_ethtool.c |    2 --
- include/linux/log2.h          |   11 +++++++++++
- 5 files changed, 13 insertions(+), 12 deletions(-)
-
-diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
-index 1891dbe..bd02272 100644
---- a/arch/powerpc/mm/pgtable_32.c
-+++ b/arch/powerpc/mm/pgtable_32.c
-@@ -294,11 +294,8 @@ void __init mapin_ram(void)
- 	}
- }
-
--/* is x a power of 2? */
--#define is_power_of_2(x)	((x) != 0 && (((x) & ((x) - 1)) == 0))
--
- /* is x a power of 4? */
--#define is_power_of_4(x)	((x) != 0 && (((x) & (x-1)) == 0) && (ffs(x) & 1))
-+#define is_power_of_4(x)	is_power_of_2(x) && (ffs(x) & 1))
-
- /*
-  * Set up a mapping for a block of I/O.
-diff --git a/arch/ppc/mm/pgtable.c b/arch/ppc/mm/pgtable.c
-index 354a940..82b06a1 100644
---- a/arch/ppc/mm/pgtable.c
-+++ b/arch/ppc/mm/pgtable.c
-@@ -313,11 +313,8 @@ void __init mapin_ram(void)
- 	}
- }
-
--/* is x a power of 2? */
--#define is_power_of_2(x)	((x) != 0 && (((x) & ((x) - 1)) == 0))
--
- /* is x a power of 4? */
--#define is_power_of_4(x)	((x) != 0 && (((x) & (x-1)) == 0) && (ffs(x) & 1))
-+#define is_power_of_4(x)	is_power_of_2(x) && (ffs(x) & 1))
-
- /*
-  * Set up a mapping for a block of I/O.
-diff --git a/arch/ppc/syslib/ppc85xx_rio.c b/arch/ppc/syslib/ppc85xx_rio.c
-index 05b0e94..2b09780 100644
---- a/arch/ppc/syslib/ppc85xx_rio.c
-+++ b/arch/ppc/syslib/ppc85xx_rio.c
-@@ -59,8 +59,6 @@
- #define DBELL_TID(x)		(*(u8 *)(x + DOORBELL_TID_OFFSET))
- #define DBELL_INF(x)		(*(u16 *)(x + DOORBELL_INFO_OFFSET))
-
--#define is_power_of_2(x)	(((x) & ((x) - 1)) == 0)
--
- struct rio_atmu_regs {
- 	u32 rowtar;
- 	u32 pad1;
-diff --git a/drivers/net/gianfar_ethtool.c b/drivers/net/gianfar_ethtool.c
-index 6d71bea..0d6943d 100644
---- a/drivers/net/gianfar_ethtool.c
-+++ b/drivers/net/gianfar_ethtool.c
-@@ -42,8 +42,6 @@
-
- #include "gianfar.h"
-
--#define is_power_of_2(x)        ((x) != 0 && (((x) & ((x) - 1)) == 0))
--
- extern void gfar_start(struct net_device *dev);
- extern int gfar_clean_rx_ring(struct net_device *dev, int rx_work_limit);
-
-diff --git a/include/linux/log2.h b/include/linux/log2.h
-index d02e1a5..99922be 100644
---- a/include/linux/log2.h
-+++ b/include/linux/log2.h
-@@ -44,6 +44,17 @@ int __ilog2_u64(u64 n)
- #endif
-
- /*
-+ *  Determine whether some value is a power of two, where zero is
-+ * *not* considered a power of two.
-+ */
-+
-+static inline __attribute__((const))
-+bool is_power_of_2(unsigned long n)
-+{
-+	return (n != 0 && ((n & (n - 1)) == 0));
-+}
-+
-+/*
-  * round up to nearest power of two
-  */
- static inline __attribute__((const))
 -- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://www.fsdev.dreamhosters.com/wiki/index.php?title=Main_Page
-========================================================================
+SUSE Labs, Novell Inc.
+Send instant messages to your online friends http://au.messenger.yahoo.com 
