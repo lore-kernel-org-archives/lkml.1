@@ -1,95 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965559AbXA3QCy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965140AbXA3QLt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965559AbXA3QCy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 11:02:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965550AbXA3QCy
+	id S965140AbXA3QLt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 11:11:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965565AbXA3QLs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 11:02:54 -0500
-Received: from e31.co.us.ibm.com ([32.97.110.149]:56100 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965286AbXA3QCw (ORCPT
+	Tue, 30 Jan 2007 11:11:48 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:22401 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965140AbXA3QLs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 11:02:52 -0500
-Date: Tue, 30 Jan 2007 08:02:44 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andrew Morton <akpm@osdl.org>, dipankar@in.ibm.com,
-       Gautham Shenoy <ego@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org
-Subject: Re: Fw: Re: [mm PATCH 4/6] RCU: (now) CPU hotplug
-Message-ID: <20070130160244.GB2092@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20070126112837.059502fc.akpm@osdl.org> <20070126194622.GA17134@in.ibm.com> <20070126121739.be3e072a.akpm@osdl.org> <20070126204406.GB17134@in.ibm.com> <20070126132949.50544e90.akpm@osdl.org> <20070128224756.GA7672@linux.vnet.ibm.com> <20070128153005.f320b834.akpm@osdl.org> <20070129191241.GB14353@elte.hu> <20070130024549.GL1923@linux.vnet.ibm.com> <20070130073340.GC30160@elte.hu>
+	Tue, 30 Jan 2007 11:11:48 -0500
+Date: Tue, 30 Jan 2007 08:08:15 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: "Philippe Dhont  \(Sea-ro\)" <philippe.dhont@searo.be>
+Cc: <linux-kernel@vger.kernel.org>
+Subject: Re: init/Kconfig:263: can't open file "usr/Kconfig" ==> when trying
+ to configure new kernel
+Message-Id: <20070130080815.9b393ec3.randy.dunlap@oracle.com>
+In-Reply-To: <EB998357DB660742877807C9BD7D251B9BD145@SRVR1.searo.local>
+References: <EB998357DB660742877807C9BD7D251B9BD145@SRVR1.searo.local>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.0 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070130073340.GC30160@elte.hu>
-User-Agent: Mutt/1.4.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 30, 2007 at 08:33:40AM +0100, Ingo Molnar wrote:
-> 
-> * Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
-> 
-> > > in fact (new) kprobes uses the freezer, and it's far more 
-> > > performance sensitive than the handling of CPU hotplug events.
-> > 
-> > Outside of realtime workloads, I agree that performance should not be 
-> > a problem.  And I don't know of any reason why realtime systems need 
-> > to be able to do hotplug CPU.  Yet, anyway.  ;-)
-> 
-> even for -rt it's not really an issue: the hotplug locks are so 
-> all-encompassing and so unbound at the moment that there's no realistic 
-> expectation for them to ever become deterministic. So we might as well 
-> make them encompass "everything" - without any noticeable effect.
-> 
-> > So the thought is to make _cpu_down() and _cpu_up() do something like 
-> > the following (untested, probably does not even compile), perhaps with 
-> > suitable adjustments elsewhere as well?
-> > 
-> > 	static int _cpu_down(unsigned int cpu)
-> > 	{
-> > 		int err;
-> > 		struct task_struct *p;
-> > 		cpumask_t old_allowed, tmp;
-> > 
-> > 		if (num_online_cpus() == 1)
-> > 			return -EBUSY;
-> > 
-> > 		if (!cpu_online(cpu))
-> > 			return -EINVAL;
-> > 
-> > 		if (freeze_processes()) {
-> > 			err = -EBUSY;
-> > 			goto out_freeze_notify_failed;
-> > 		}
-> > 		err = raw_notifier_call_chain(&cpu_chain, CPU_DOWN_PREPARE,
-> > 							(void *)(long)cpu);
-> 
-> yeah. This all looks so nice that i almost cannot believe it's true :-) 
+On Tue, 30 Jan 2007 14:49:46 +0100 Philippe Dhont  \(Sea-ro\) wrote:
 
-Well, it turns out that maybe it is in fact untrue.  :-/
+> hello,
+>  
+> i have a 2.6.8.-3-686 etch debian system.
+> i want to manually download and install a new kernel because of some
+> errors when installing vmware for linux.
+> so i downloaded the new kernel 2.6.19.2 and when i do a "make
+> menuconfig", i get:
+>  
+> ca-phlinux:/usr/src/linux-2.6.19.2# make menuconfig
+> scripts/kconfig/mconf arch/i386/Kconfig
+> init/Kconfig:263: can't open file "usr/Kconfig"
+> make[1]: *** [menuconfig] Error 1
+> make: *** [menuconfig] Error 2
+> ca-phlinux:/usr/src/linux-2.6.19.2# uname -a Linux ca-phlinux
+> 2.6.18-3-686 #1 SMP Mon Dec 4 16:41:14 UTC 2006 i686 GNU/Linux
+> ca-phlinux:/usr/src/linux-2.6.19.2#
+>  
+>  
+> i already tried:
+>  
+> ca-phlinux:/usr/src/linux-2.6.19.2# make-kpkg clean exec make -f
+> /usr/share/kernel-package/ruleset/minimal.mk clean
+> /usr/share/kernel-package/ruleset/minimal.mk:53: No .config file found
+> ====== making target minimal_clean [new prereqs: ]====== Cleaning.
+> test ! -f .config || cp -pf .config config.precious test ! -e
+> stamp-building || rm -f stamp-building test ! -f Makefile || \
+>             make    ARCH=i386 distclean
+> make[1]: Entering directory `/usr/src/linux-2.6.19.2'
+> scripts/Makefile.clean:17: /usr/src/linux-2.6.19.2/sound/usb/Makefile:
+> No such file or directory
+> make[3]: *** No rule to make target
+> `/usr/src/linux-2.6.19.2/sound/usb/Makefile'.  Stop.
+> make[2]: *** [sound/usb] Error 2
+> make[1]: *** [_clean_sound] Error 2
+> make[1]: Leaving directory `/usr/src/linux-2.6.19.2'
+> make: *** [minimal_clean] Error 2
+>  
+>  
+> also:
+>  
+> ca-phlinux:/usr/src/linux-2.6.19.2# make mrproper
+> scripts/Makefile.clean:17: /usr/src/linux-2.6.19.2/sound/usb/Makefile:
+> No such file or directory
+> make[2]: *** No rule to make target
+> `/usr/src/linux-2.6.19.2/sound/usb/Makefile'.  Stop.
+> make[1]: *** [sound/usb] Error 2
+> make: *** [_clean_sound] Error 2
 
-I need to look at all uses of PF_NOFREEZE -- as I understand the
-code, processes marked PF_NOFREEZE will continue running, potentially
-interfering with the hotplug operation.  :-(
+If you are really missing these files:
+	usr/Kconfig
+	sound/usb/Makefile
+then something is wrong with your tree or your download.
 
-I will pass my findings on to this list.
-
-> This would allow us to rip out all the cpu-hotplug locking: wow! If only
-> someone would volunteer to try to pull this off and then to touch so
-> many subsystems ;-)
-
-Hey, just ending the debates on how to do CPU-hotplug locking would be
-worth something!  ;-)
-
-> i fully agree that the opposite notifications should be traversed in 
-> inverse order [but this is an orthogonal improvement]. Too bad the 
-> notifier list is a single linked list.
-
-:-(
-
-But there can't be -that- many elements in that list...  But agreed,
-separate issue.
-
-							Thanx, Paul
+---
+~Randy
