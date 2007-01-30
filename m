@@ -1,57 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750912AbXA3Szz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750942AbXA3S4v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750912AbXA3Szz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 13:55:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750896AbXA3Szz
+	id S1750942AbXA3S4v (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 13:56:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750944AbXA3S4v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 13:55:55 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:42664 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750919AbXA3Szy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 13:55:54 -0500
-Date: Tue, 30 Jan 2007 10:27:18 -0800
-From: Andrew Morton <akpm@osdl.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: paulmck@linux.vnet.ibm.com, Ingo Molnar <mingo@elte.hu>,
-       dipankar@in.ibm.com, Gautham Shenoy <ego@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Fw: Re: [mm PATCH 4/6] RCU: (now) CPU hotplug
-Message-Id: <20070130102718.f03f37d8.akpm@osdl.org>
-In-Reply-To: <200701301744.48601.rjw@sisk.pl>
-References: <20070126112837.059502fc.akpm@osdl.org>
-	<20070130073340.GC30160@elte.hu>
-	<20070130160244.GB2092@linux.vnet.ibm.com>
-	<200701301744.48601.rjw@sisk.pl>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 30 Jan 2007 13:56:51 -0500
+Received: from nf-out-0910.google.com ([64.233.182.191]:44849 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750936AbXA3S4u (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jan 2007 13:56:50 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=aYW4LALeNJDUThu1MQf3ck+OsfGUOob9x8qUveheUzOWYDswR9LI4aIUUrB8lCfL1SIvDd7ALAl2RtpmRSJms1gxY17zP/bp6kYzEW/2M9iF0Y549hvMxyQCRZAvxemOsMpX3u6YpfiTMZ6+QfdyE/VHujg2IRjAsbc0moU/2n0=
+Message-ID: <671c20540701301056l6ff1d876xb8df0d9d83ea2c8a@mail.gmail.com>
+Date: Tue, 30 Jan 2007 13:56:48 -0500
+From: "Tom Burns" <tom.i.burns@gmail.com>
+To: "Tim Schmielau" <tim@physik3.uni-rostock.de>
+Subject: Re: Bug: 2.6.15 Process accounting fails to account for small time slice loads (still)
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.63.0701301840470.14441@gockel.physik3.uni-rostock.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <671c20540701300824p54dad7dbw43fe916bc8c98d45@mail.gmail.com>
+	 <Pine.LNX.4.63.0701301840470.14441@gockel.physik3.uni-rostock.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 30 Jan 2007 17:44:47 +0100
-"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+Hi Tim.
 
-> > I need to look at all uses of PF_NOFREEZE -- as I understand the
-> > code, processes marked PF_NOFREEZE will continue running, potentially
-> > interfering with the hotplug operation.  :-(
-> > 
-> > I will pass my findings on to this list.
-> 
-> Well, I did it some time ago, although not very thoroughly.
-> 
-> AFAICS there are not so many, but one that stands out is the worker threads.
-> We needed two of them to actually go to sleep, so now it's possible to create
-> a "freezeable workqueue" the worker thread of which will not set PF_NOFREEZE,
-> but currently this is only used by XFS.
+That would be great if you could find that patch - I can worry about
+porting it to the current kernel.  We're having an issue where our
+device, while routing large amounts of network traffic, reports 0% CPU
+utilisation when it cannot be the case, and I think this is the cause.
 
-Or we can create a variant of freeze_processes which ignores PF_NOFREEZE.
+Cheers,
+Tom Burns
 
-As I said eariler, we might need to change the freezer code for this
-application.  In fact we should do so: that sys_sync() call in there is
-quite inappropriate, as is, I suppose, the two-pass freeze attempt.  As are
-the nice printks, come to that.
-
-
-Pretty simple stuff though.
-
+On 1/30/07, Tim Schmielau <tim@physik3.uni-rostock.de> wrote:
+> On Tue, 30 Jan 2007, Tom Burns wrote:
+>
+> > The bug described back in 2004 in the following message still seems to exist:
+> >
+> > http://linux.derkeiler.com/Mailing-Lists/Kernel/2004-05/4313.html
+> >
+> > Essentially, it appears that if a process sleeps before it uses up a
+> > complete jiffy then no charge is made to its process accounting table.
+>
+> That's not a bug, it's a feature. ;-)
+>
+> More seriously, it's a design decision. The benefit of exactly correct
+> micro bookkeeping does not seem to warrant the extra cost in terms of cpu
+> cycles spent in the accounting code.
+>
+> IIRC there was a patch for that some years ago, if you are interested I
+> will try to find it. No idea how much work it would be to port it to
+> current kernels, though.
+>
+> Tim
+>
