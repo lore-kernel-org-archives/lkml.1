@@ -1,85 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965310AbXA3NCx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965315AbXA3NF1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965310AbXA3NCx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 08:02:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965333AbXA3NCx
+	id S965315AbXA3NF1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 08:05:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965341AbXA3NF1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 08:02:53 -0500
-Received: from main.gmane.org ([80.91.229.2]:58656 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965310AbXA3NCw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 08:02:52 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Oleg Verych <olecom@flower.upol.cz>
-Subject: Re: [Ksummit-2007-discuss] 2007 Linux Kernel Summit
-Date: Tue, 30 Jan 2007 13:02:37 +0000 (UTC)
-Organization: Palacky University in Olomouc, experimental physics department.
-Message-ID: <slrnerugvv.f71.olecom@flower.upol.cz>
-References: <20070123.095756.30177490.davem@davemloft.net> <C1DDFD3E.8658%dirk.hohndel@intel.com> <20070125.125121.98861775.davem@davemloft.net> <8355959a0701251646t4b7db48cj862268aad52e8e24@mail.gmail.com> <20070126032849.GB5589@thunk.org> <slrneru3aq.f71.olecom@flower.upol.cz> <21d7e9970701300144j33f5264dh932848ae81a89252@mail.gmail.com>
-X-Complaints-To: usenet@sea.gmane.org
-X-Gmane-NNTP-Posting-Host: flower.upol.cz
-Mail-Followup-To: "Dave Airlie" <airlied@gmail.com>, "Theodore Tso" <tytso@mit.edu>, "Sunil Naidu" <akula2.shark@gmail.com>, dirk.hohndel@intel.com, linux-kernel@vger.kernel.org, alan@redhat.com, ksummit-2007-discuss@thunk.org, "David Miller" <davem@davemloft.net>
-User-Agent: slrn/0.9.8.1pl1 (Debian)
+	Tue, 30 Jan 2007 08:05:27 -0500
+Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:57992 "EHLO
+	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965315AbXA3NF0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jan 2007 08:05:26 -0500
+Date: Tue, 30 Jan 2007 14:05:24 +0100
+From: Andreas Mohr <andi@rhlx01.fht-esslingen.de>
+To: Andreas Mohr <andi@rhlx01.fht-esslingen.de>, Pavel Machek <pavel@ucw.cz>,
+       andi@lisas.de, davej@codemonkey.org.uk,
+       kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: intel-agp PM experiences (was: 2.6.20-rc5: usb mouse breaks suspend to ram)
+Message-ID: <20070130130524.GA21811@rhlx01.hs-esslingen.de>
+References: <d120d5000701160608t73db4405n5d157db43899776a@mail.gmail.com> <20070116142432.GA6171@elf.ucw.cz> <d120d5000701161325h112a9299w944763b7f1032a61@mail.gmail.com> <20070117004012.GA11140@rhlx01.hs-esslingen.de> <20070117005755.GB6270@elf.ucw.cz> <20070118115105.GA28233@rhlx01.hs-esslingen.de> <20070118231650.GA5352@ucw.cz> <20070122044519.GA24398@zhen-devel.sh.intel.com> <20070129213053.GA14881@rhlx01.hs-esslingen.de> <20070130123632.GA28177@zhen-devel.sh.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070130123632.GA28177@zhen-devel.sh.intel.com>
+User-Agent: Mutt/1.4.2.2i
+X-Priority: none
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> From: "Dave Airlie"
-> Newsgroups: gmane.linux.kernel
-> Subject: Re: [Ksummit-2007-discuss] 2007 Linux Kernel Summit
-> Date: Tue, 30 Jan 2007 20:44:49 +1100
-[]
->> Rather, than "business class ;-)", i whould like to see comments about
->> good quality video coverage of the KS, which (KS) is that, as you
->> described here:
->>
->
-> KS isn't a conference that lends itself to recording ppl a lot of
-> people seem to think it is like a mini-OLS or mini-LCA, it is more
-> discussion based (or at least should be...), it isn't held in a
-> lecture theatre, people aren't meant to do slides beyond talking
-> points....
+Hi,
 
-1. To setup quality coverage, is hard and (i think) expensive (news media
-company needed). Hackers with webcams, where nothing can be seen and
-heard, isn't that i expect in the 21th century, the century of the
-telecommunication.
+On Tue, Jan 30, 2007 at 08:36:32PM +0800, Wang Zhenyu wrote:
+> On 2007.01.29 22:30:53 +0000, Andreas Mohr wrote:
+> Sorry I don't have 815G board nowadays, this board seems has two
+> pci devs, one for AGP bridge, another for integrated gfx card if no add-in card.
+> So have you tried both cases? 
 
-2. It's believed to be "high bandwidth" discussion, and i think it's much
-better, than slides, talk, (?wtf was in)Q/(here's your)A. Because this
-may obligate you to think fast, to think what you (invited person) say,
-and say what you think.
+Does this mean that it has builtin i815 video, too?
+How would I be able to "try both cases", then?
+I somehow would have to configure it to boot with builtin graphics and
+thus show 0x1130 and 0x1132 PCI IDs, right? Help, I'm confused...
 
-3. As for everyone, who listen English speech only in Hollywood
-movies (yea, that's me, and i'm writing this to you now ;), such kind of
-conversation with fights, debates, etc. is a worth material. (I don't
-want to compare this to _some_ scientific confs, where people reading
-their mouney-has-been-spent-OK reports).
+> ok, just see the AGP tables bits definition for intel_i815_driver,
+> /* Intel registers */
+> #define INTEL_APSIZE    0xb4
+> #define INTEL_ATTBASE   0xb8
+> #define INTEL_AGPCTRL   0xb0
+> ...
+> And this could explain why your patch can make X come back to live on
+> i815, as default suspend saves 64bytes. We need suspend func to handle
+> this, but for now mainline intel integrated gfx, this's not needed. 
+> Would you send out a cleanup patch later?
 
-> It mainly involves ppl sitting around tables talking about stuff with
-> some mics... I think we could hold KS as an open non-invite event if
-> it wasn't attached to a major conference and was held somewhere no-one
-> wants to go :-)
+OK, I'll keep working on this (trying a backup specific to those registers
+above).
 
-4. If there will be good ideas and real items for TODOs, technical
-details, fun, etc. why not to share it? Do you have something to hide, or
-you think, after seeng that, some employer will shrink somebody's travel
-budget (:?
+I suspect that your patch might actually additionally help in my case, too,
+but of course I first need my enhanced PCI space backup to prevent it
+from locking up.
+IOW, your patch might then enable me to skip vbetool hackery entirely
+since graphics mode appearance would already be correct.
+I'll verify this.
 
-I think Linux Kernel has just became mature, as its long-time developers
-have. And i think, mini/maxi conferences must become more mature ether.
+How to transform all this newly-gained knowledge into a *clean* generic
+intel-agp driver layer is a different question, though.
+Specifically, I'm unsure about all those xxx_configure() calls in the resume
+function, this sounds rather unclean to me...
+("let's just yank it all back into a clean default state, that will somehow
+magically make everything work again after resume")
 
-And donig paper work here, like slides, abstracts, articles, isn't a
-first requirement (again, after the end of the Cold War, cheap PC,
-Microsoft Word in the Windows, the most scientific work had finallt
-became A Paper Work (patent pending)). AFAIK Linus doen't like this
-either, rather than to (verbally) discuss things.
-
-Maybe [1] isn't that companies, like Red Hat, will like to do,
-because, this is part of their paid business, but [2]-[4] may have
-more weight against this.
-
-> Dave.
-
-____
-
+Andreas Mohr
