@@ -1,73 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965518AbXA3OjF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965521AbXA3OkF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965518AbXA3OjF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 09:39:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965525AbXA3OjE
+	id S965521AbXA3OkF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 09:40:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965525AbXA3OkE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 09:39:04 -0500
-Received: from il.qumranet.com ([62.219.232.206]:53216 "EHLO il.qumranet.com"
+	Tue, 30 Jan 2007 09:40:04 -0500
+Received: from il.qumranet.com ([62.219.232.206]:53250 "EHLO il.qumranet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965518AbXA3OjB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 09:39:01 -0500
-Subject: [PATCH 3/11] KVM: Fix gva_to_gpa()
+	id S965372AbXA3OkB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jan 2007 09:40:01 -0500
+Subject: [PATCH 4/11] KVM: vmx: handle triple faults by returning
+	EXIT_REASON_SHUTDOWN to userspace
 From: Avi Kivity <avi@qumranet.com>
-Date: Tue, 30 Jan 2007 14:39:00 -0000
+Date: Tue, 30 Jan 2007 14:40:00 -0000
 To: kvm-devel@lists.sourceforge.net
 Cc: linux-kernel@vger.kernel.org, akpm@osdl.org, mingo@elte.hu
 References: <45BF57C9.7000103@qumranet.com>
 In-Reply-To: <45BF57C9.7000103@qumranet.com>
-Message-Id: <20070130143900.1597AA0014@il.qumranet.com>
+Message-Id: <20070130144000.1F6DFA0014@il.qumranet.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-gva_to_gpa() needs to be updated to the new walk_addr() calling convention,
-otherwise it may oops under some circumstances.
-
-Use the opportunity to remove all the code duplication in gva_to_gpa(), which
-essentially repeats the calculations in walk_addr().
+Just like svm.
 
 Signed-off-by: Avi Kivity <avi@qumranet.com>
 
-Index: linux-2.6/drivers/kvm/paging_tmpl.h
+Index: linux-2.6/drivers/kvm/vmx.c
 ===================================================================
---- linux-2.6.orig/drivers/kvm/paging_tmpl.h
-+++ linux-2.6/drivers/kvm/paging_tmpl.h
-@@ -443,31 +443,17 @@ static int FNAME(page_fault)(struct kvm_
- static gpa_t FNAME(gva_to_gpa)(struct kvm_vcpu *vcpu, gva_t vaddr)
- {
- 	struct guest_walker walker;
--	pt_element_t guest_pte;
--	gpa_t gpa;
-+	gpa_t gpa = UNMAPPED_GVA;
-+	int r;
- 
--	FNAME(walk_addr)(&walker, vcpu, vaddr, 0, 0, 0);
--	guest_pte = *walker.ptep;
--	FNAME(release_walker)(&walker);
--
--	if (!is_present_pte(guest_pte))
--		return UNMAPPED_GVA;
--
--	if (walker.level == PT_DIRECTORY_LEVEL) {
--		ASSERT((guest_pte & PT_PAGE_SIZE_MASK));
--		ASSERT(PTTYPE == 64 || is_pse(vcpu));
-+	r = FNAME(walk_addr)(&walker, vcpu, vaddr, 0, 0, 0);
- 
--		gpa = (guest_pte & PT_DIR_BASE_ADDR_MASK) | (vaddr &
--			(PT_LEVEL_MASK(PT_PAGE_TABLE_LEVEL) | ~PAGE_MASK));
--
--		if (PTTYPE == 32 && is_cpuid_PSE36())
--			gpa |= (guest_pte & PT32_DIR_PSE36_MASK) <<
--					(32 - PT32_DIR_PSE36_SHIFT);
--	} else {
--		gpa = (guest_pte & PT_BASE_ADDR_MASK);
--		gpa |= (vaddr & ~PAGE_MASK);
-+	if (r) {
-+		gpa = (gpa_t)walker.gfn << PAGE_SHIFT;
-+		gpa |= vaddr & ~PAGE_MASK;
- 	}
- 
-+	FNAME(release_walker)(&walker);
- 	return gpa;
+--- linux-2.6.orig/drivers/kvm/vmx.c
++++ linux-2.6/drivers/kvm/vmx.c
+@@ -1373,6 +1373,11 @@ static int handle_external_interrupt(str
+ 	return 1;
  }
+ 
++static int handle_triple_fault(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
++{
++	kvm_run->exit_reason = KVM_EXIT_SHUTDOWN;
++	return 0;
++}
+ 
+ static int get_io_count(struct kvm_vcpu *vcpu, u64 *count)
+ {
+@@ -1633,6 +1638,7 @@ static int (*kvm_vmx_exit_handlers[])(st
+ 				      struct kvm_run *kvm_run) = {
+ 	[EXIT_REASON_EXCEPTION_NMI]           = handle_exception,
+ 	[EXIT_REASON_EXTERNAL_INTERRUPT]      = handle_external_interrupt,
++	[EXIT_REASON_TRIPLE_FAULT]            = handle_triple_fault,
+ 	[EXIT_REASON_IO_INSTRUCTION]          = handle_io,
+ 	[EXIT_REASON_CR_ACCESS]               = handle_cr,
+ 	[EXIT_REASON_DR_ACCESS]               = handle_dr,
+Index: linux-2.6/drivers/kvm/vmx.h
+===================================================================
+--- linux-2.6.orig/drivers/kvm/vmx.h
++++ linux-2.6/drivers/kvm/vmx.h
+@@ -180,6 +180,7 @@ enum vmcs_field {
+ 
+ #define EXIT_REASON_EXCEPTION_NMI       0
+ #define EXIT_REASON_EXTERNAL_INTERRUPT  1
++#define EXIT_REASON_TRIPLE_FAULT        2
+ 
+ #define EXIT_REASON_PENDING_INTERRUPT   7
  
