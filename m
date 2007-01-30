@@ -1,77 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965675AbXA3SIX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965679AbXA3SKs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965675AbXA3SIX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 13:08:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965674AbXA3SIX
+	id S965679AbXA3SKs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 13:10:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965678AbXA3SKs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 13:08:23 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:39785 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S965675AbXA3SIW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 13:08:22 -0500
-Date: Tue, 30 Jan 2007 13:08:19 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Soeren Sonnenburg <kernel@nn7.de>
-cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       linux-usb-devel <linux-usb-devel@lists.sourceforge.net>
-Subject: Re: [linux-usb-devel] 2.6.20-rc6 SCSI error: I/O error - trouble
- with mass storage devices ?!
-In-Reply-To: <1169909796.2462.56.camel@localhost>
-Message-ID: <Pine.LNX.4.44L0.0701301300050.7522-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 30 Jan 2007 13:10:48 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:54329 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965676AbXA3SKr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jan 2007 13:10:47 -0500
+Date: Tue, 30 Jan 2007 13:09:59 -0500
+Message-Id: <200701301809.l0UI9xfn028590@dantu.rdu.redhat.com>
+From: Jeff Layton <jlayton@redhat.com>
+To: akpm@osdl.org
+Cc: dev@sw.ru, linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: [PATCH] revert changes to pipefs for i_ino uniqueness
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 27 Jan 2007, Soeren Sonnenburg wrote:
+Since posting that patch to add i_ino uniqueness to pipefs, I've gotten some
+comments that have convinced me that we should probably leave it as is for
+now (at least until someone we a good reason).
 
-> Dear all,
-> 
-> I am trying to use a P990 phone in via mass storage under linux. I was
-> able to copy data to/from the phone without trouble under winxp but
-> receive millions of I/O errors (see below (*), basically on any sector).
-> As this was also happening on a casio camera (and working on winxp) I
-> tried a couple of things to nail this down:
+So, please back out that patch from -mm.
 
-...
+The patch below should revert pipefs to its original state.
 
-> 4) I enabled usb mass storage verbose debug output and collected 2 runs
-> of I/O once with the sandisk and one with the P990 (attached as sandisk
-> and p990)
+Thanks,
 
-...
+Signed-off-by: Jeff Layton <jlayton@redhat.com>
 
-> Now I am clueless what could have gone wrong (as I *think* this was all
-> working at some point at least before firmware updates) and what the
-> difference between these mass storage devices is.
-
-The log revealed that the phone's firmware returns garbage values in the 
-Residue field for some WRITEs.  This patch should take care of it.
-
-Alan Stern
-
-
-
-Index: usb-2.6/drivers/usb/storage/unusual_devs.h
-===================================================================
---- usb-2.6.orig/drivers/usb/storage/unusual_devs.h
-+++ usb-2.6/drivers/usb/storage/unusual_devs.h
-@@ -1318,12 +1318,13 @@ UNUSUAL_DEV(  0x0fce, 0xe031, 0x0000, 0x
- 		US_SC_DEVICE, US_PR_DEVICE, NULL,
- 		US_FL_FIX_CAPACITY ),
+diff --git a/fs/pipe.c b/fs/pipe.c
+index 9b3cb34..68090e8 100644
+--- a/fs/pipe.c
++++ b/fs/pipe.c
+@@ -871,8 +871,6 @@ static struct inode * get_pipe_inode(void)
+ 	inode->i_uid = current->fsuid;
+ 	inode->i_gid = current->fsgid;
+ 	inode->i_atime = inode->i_mtime = inode->i_ctime = CURRENT_TIME;
+-	inode->i_ino = iunique(pipe_mnt->mnt_sb, 1);
+-	insert_inode_hash(inode);
  
--/* Reported by Jan Mate <mate@fiit.stuba.sk> */
-+/* Reported by Jan Mate <mate@fiit.stuba.sk>
-+ * and by Soeren Sonnenburg <kernel@nn7.de> */
- UNUSUAL_DEV(  0x0fce, 0xe030, 0x0000, 0x0000,
- 		"Sony Ericsson",
- 		"P990i",
- 		US_SC_DEVICE, US_PR_DEVICE, NULL,
--		US_FL_FIX_CAPACITY ),
-+		US_FL_FIX_CAPACITY | US_FL_IGNORE_RESIDUE ),
+ 	return inode;
  
- /* Reported by Kevin Cernekee <kpc-usbdev@gelato.uiuc.edu>
-  * Tested on hardware version 1.10.
-
+@@ -1005,11 +1003,6 @@ int do_pipe(int *fd)
+ 	return error;
+ }
+ 
+-static struct super_operations pipefs_sops = {
+-	.statfs		= simple_statfs,
+-	.drop_inode	= generic_delete_inode,
+-};
+-
+ /*
+  * pipefs should _never_ be mounted by userland - too much of security hassle,
+  * no real gain from having the whole whorehouse mounted. So we don't need
+@@ -1020,7 +1013,7 @@ static int pipefs_get_sb(struct file_system_type *fs_type,
+ 			 int flags, const char *dev_name, void *data,
+ 			 struct vfsmount *mnt)
+ {
+-	return get_sb_pseudo(fs_type, "pipe:", &pipefs_sops, PIPEFS_MAGIC, mnt);
++	return get_sb_pseudo(fs_type, "pipe:", NULL, PIPEFS_MAGIC, mnt);
+ }
+ 
+ static struct file_system_type pipe_fs_type = {
