@@ -1,223 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751464AbXA3VXk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751454AbXA3VY4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751464AbXA3VXk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 16:23:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751465AbXA3VXk
+	id S1751454AbXA3VY4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 16:24:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751465AbXA3VY4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 16:23:40 -0500
-Received: from smtp.nokia.com ([131.228.20.170]:47986 "EHLO
-	mgw-ext11.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751464AbXA3VXj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 16:23:39 -0500
-Message-ID: <45BFB818.3020908@indt.org.br>
-Date: Tue, 30 Jan 2007 17:26:48 -0400
-From: Anderson Briglia <anderson.briglia@indt.org.br>
-User-Agent: Icedove 1.5.0.8 (X11/20061128)
+	Tue, 30 Jan 2007 16:24:56 -0500
+Received: from omx2-ext.sgi.com ([192.48.171.19]:43862 "EHLO omx2.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751454AbXA3VYz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jan 2007 16:24:55 -0500
+Message-ID: <45BFB785.5090302@sgi.com>
+Date: Tue, 30 Jan 2007 22:24:21 +0100
+From: Jes Sorensen <jes@sgi.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070103)
 MIME-Version: 1.0
-To: ext Pierre Ossman <drzeus-list@drzeus.cx>
-CC: Russell King <rmk+lkml@arm.linux.org.uk>,
-       "Lizardo Anderson (EXT-INdT/Manaus)" <anderson.lizardo@indt.org.br>,
-       linux-kernel@vger.kernel.org,
-       "Aguiar Carlos (EXT-INdT/Manaus)" <carlos.aguiar@indt.org.br>,
-       Tony Lindgren <tony@atomide.com>,
-       ext David Brownell <david-b@pacbell.net>
-Subject: Re: [PATCH 4/4] Add MMC Password Protection (lock/unlock) support
- V9: mmc_sysfs.diff
-References: <4582F007.7030100@indt.org.br> <459B9C4E.3020406@indt.org.br> <45A021B2.4090104@drzeus.cx> <45BE3E70.9050505@indt.org.br> <45BF8A28.5010605@drzeus.cx>
-In-Reply-To: <45BF8A28.5010605@drzeus.cx>
-X-Enigmail-Version: 0.94.1.2
-Content-Type: multipart/mixed;
- boundary="------------050504060001050200090701"
-X-OriginalArrivalTime: 30 Jan 2007 21:20:29.0841 (UTC) FILETIME=[77D22010:01C744B4]
-X-Nokia-AV: Clean
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: linux-kernel@vger.kernel.org, alan@redhat.com,
+       ksummit-2007-discuss@thunk.org
+Subject: Re: [Ksummit-2007-discuss] Re: [Ksummit-2006-discuss] 2007 Linux
+ Kernel Summit
+References: <20070123.095756.30177490.davem@davemloft.net>	 <C1DDFD3E.8658%dirk.hohndel@intel.com>	 <20070125.125121.98861775.davem@davemloft.net>	 <8355959a0701251646t4b7db48cj862268aad52e8e24@mail.gmail.com>	 <20070126032849.GB5589@thunk.org>	 <8355959a0701260704x6aea8141s3d0581fa33c74cf2@mail.gmail.com>	 <20070126195024.GE14759@thunk.org> <45BE8BF9.6020204@sgi.com>	 <1170118042.3378.45.camel@mulgrave.il.steeleye.com>	 <45BEF0C5.7090401@sgi.com> <1170177057.3420.32.camel@mulgrave.il.steeleye.com>
+In-Reply-To: <1170177057.3420.32.camel@mulgrave.il.steeleye.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------050504060001050200090701
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-
-Hi Pierre,
-
-How about now? Is better?
-
-Regards,
-
-Anderson Briglia
-
-ext Pierre Ossman wrote:
-> Anderson Briglia wrote:
->> Hi Pierre,
->>
->> Sorry about the delay.
->> I changed a bit the code to align with your latest suggestions.
->>
->>   
+James Bottomley wrote:
+> On Tue, 2007-01-30 at 08:16 +0100, Jes Sorensen wrote:
+>> I don't have an issue with the fact there are sponsors, however I think
+>> KS is important enough and sponsors are aware of this, that selling
+>> seats to sponsors shouldn't be necessary.
 > 
-> Nice, but the locking is broken again.
-> 
->> I believe now the number of goto's is ok.
->>
->>   
-> 
-> Actually, the ones you have left are completely useless. So you can just
-> remove the last bunch aswell.
-> 
-> Rgds
-> 
+> So SGI will undertake to step up and sponsor KS this year without a
+> guaranteed slot?
 
+I didn't realize that all your postings to this list were the official
+views of Steeleye?
 
---------------050504060001050200090701
-Content-Type: text/plain;
- name="mmc_sysfs.diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="mmc_sysfs.diff"
+I can't say what SGI will do on this, I'm an engineer not a manager,
+I can however suggest to them that they do. As Willy said, if it was
+an even playing field it would probably be a lot more likely they would,
+compared to how it is today.
 
-Implement MMC password force erase, remove password, change password,
-unlock card and assign password operations. It uses the sysfs mechanism
-to send commands to the MMC subsystem. 
-
-Signed-off-by: Carlos Eduardo Aguiar <carlos.aguiar@indt.org.br>
-Signed-off-by: Anderson Lizardo <anderson.lizardo@indt.org.br>
-Signed-off-by: Anderson Briglia <anderson.briglia@indt.org.br>
-
-Index: linux-linus-2.6/drivers/mmc/mmc_sysfs.c
-===================================================================
---- linux-linus-2.6.orig/drivers/mmc/mmc_sysfs.c	2007-01-30 16:28:38.000000000 -0400
-+++ linux-linus-2.6/drivers/mmc/mmc_sysfs.c	2007-01-30 16:28:42.000000000 -0400
-@@ -17,6 +17,7 @@
- #include <linux/idr.h>
- #include <linux/workqueue.h>
- #include <linux/key.h>
-+#include <linux/err.h>
- 
- #include <linux/mmc/card.h>
- #include <linux/mmc/host.h>
-@@ -65,6 +66,100 @@ static struct device_attribute mmc_dev_a
- 
- static struct device_attribute mmc_dev_attr_scr = MMC_ATTR_RO(scr);
- 
-+#ifdef	CONFIG_MMC_PASSWORDS
-+
-+static ssize_t
-+mmc_lockable_show(struct device *dev, struct device_attribute *att, char *buf)
-+{
-+	struct mmc_card *card = dev_to_mmc_card(dev);
-+
-+	if (!mmc_card_lockable(card))
-+		return sprintf(buf, "unsupported\n");
-+	else
-+		return sprintf(buf, "%slocked\n", mmc_card_locked(card) ?
-+			"" : "un");
-+}
-+
-+/*
-+ * implement MMC password functions: force erase, remove password, change
-+ * password, unlock card and assign password.
-+ */
-+static ssize_t
-+mmc_lockable_store(struct device *dev, struct device_attribute *att,
-+	const char *data, size_t len)
-+{
-+	struct mmc_card *card = dev_to_mmc_card(dev);
-+	int ret;
-+
-+	if(!mmc_card_lockable(card))
-+		return -EINVAL;
-+
-+	ret = mmc_card_claim_host(card);
-+	if (ret != MMC_ERR_NONE)
-+		return -EINVAL;
-+
-+	ret = -EINVAL;
-+	if (mmc_card_locked(card) && !strncmp(data, "erase", 5)) {
-+		/* forced erase only works while card is locked */
-+		mmc_lock_unlock(card, NULL, MMC_LOCK_MODE_ERASE);
-+		ret = len;
-+	} else if (!mmc_card_locked(card) && !strncmp(data, "remove", 6)) {
-+		/* remove password only works while card is unlocked */
-+		struct key *mmc_key = request_key(&mmc_key_type, "mmc:key", "remove");
-+
-+		if (!IS_ERR(mmc_key)) {
-+			ret =  mmc_lock_unlock(card, mmc_key, MMC_LOCK_MODE_CLR_PWD);
-+			if (!ret)
-+				ret = len;
-+		} else
-+			dev_dbg(&card->dev, "request_key returned error %ld\n", PTR_ERR(mmc_key));
-+	} else if (!mmc_card_locked(card) && ((!strncmp(data, "assign", 6)) ||
-+					      (!strncmp(data, "change", 6)))) {
-+		/* assign or change */
-+		struct key *mmc_key;
-+
-+		if(!(strncmp(data, "assign", 6)))
-+			mmc_key = request_key(&mmc_key_type, "mmc:key", "assign");
-+		else
-+			mmc_key = request_key(&mmc_key_type, "mmc:key", "change");
-+
-+		if (!IS_ERR(mmc_key)) {
-+			ret =  mmc_lock_unlock(card, mmc_key, MMC_LOCK_MODE_SET_PWD);
-+			if (!ret)
-+				ret = len;
-+		} else
-+			dev_dbg(&card->dev, "request_key returned error %ld\n", PTR_ERR(mmc_key));
-+	} else if (mmc_card_locked(card) && !strncmp(data, "unlock", 6)) {
-+		/* unlock */
-+		struct key *mmc_key = request_key(&mmc_key_type, "mmc:key", "unlock");
-+		if (!IS_ERR(mmc_key)) {
-+			ret = mmc_lock_unlock(card, mmc_key, MMC_LOCK_MODE_UNLOCK);
-+			if (ret) {
-+				dev_dbg(&card->dev, "Wrong password\n");
-+				ret = -EINVAL;
-+			}
-+			else {
-+				mmc_card_release_host(card);
-+				device_release_driver(dev);
-+				ret = device_attach(dev);
-+				if(!ret)
-+					return -EINVAL;
-+				else
-+					return len;
-+			}
-+		} else
-+			dev_dbg(&card->dev, "request_key returned error %ld\n", PTR_ERR(mmc_key));
-+	}
-+
-+	mmc_card_release_host(card);
-+	return ret;
-+}
-+
-+static struct device_attribute mmc_dev_attr_lockable =
-+	__ATTR(lockable, S_IWUSR | S_IRUGO,
-+		 mmc_lockable_show, mmc_lockable_store);
-+
-+#endif
- 
- static void mmc_release_card(struct device *dev)
- {
-@@ -234,6 +329,11 @@ int mmc_register_card(struct mmc_card *c
- 			if (ret)
- 				device_del(&card->dev);
- 		}
-+#ifdef CONFIG_MMC_PASSWORDS
-+		ret = device_create_file(&card->dev, &mmc_dev_attr_lockable);
-+		if (ret)
-+			device_del(&card->dev);
-+#endif
- 	}
- 	return ret;
- }
-@@ -248,6 +348,9 @@ void mmc_remove_card(struct mmc_card *ca
- 		if (mmc_card_sd(card))
- 			device_remove_file(&card->dev, &mmc_dev_attr_scr);
- 
-+#ifdef CONFIG_MMC_PASSWORDS
-+		device_remove_file(&card->dev, &mmc_dev_attr_lockable);
-+#endif
- 		device_del(&card->dev);
- 	}
- 
-
---------------050504060001050200090701--
+Cheers,
+Jes
