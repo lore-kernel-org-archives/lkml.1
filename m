@@ -1,62 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750959AbXA3UnV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751446AbXA3Uo1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750959AbXA3UnV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 15:43:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751441AbXA3UnV
+	id S1751446AbXA3Uo1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 15:44:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751454AbXA3Uo1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 15:43:21 -0500
-Received: from tmailer.gwdg.de ([134.76.10.23]:60100 "EHLO tmailer.gwdg.de"
+	Tue, 30 Jan 2007 15:44:27 -0500
+Received: from jack.tiscali.it ([213.205.33.53]:38028 "EHLO jack.tiscali.it"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750977AbXA3UnU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 15:43:20 -0500
-Date: Tue, 30 Jan 2007 21:42:34 +0100 (MET)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: Luca Tettamanti <kronos.it@gmail.com>
-cc: Peter Osterlund <petero2@telia.com>, linux-kernel@vger.kernel.org
-Subject: Re: [2.6.20-rc6] pktcdvd doesn't work
-In-Reply-To: <20070130203601.GB15067@dreamland.darkstar.lan>
-Message-ID: <Pine.LNX.4.61.0701302141420.13737@yvahk01.tjqt.qr>
-References: <20070130195319.GA10994@dreamland.darkstar.lan>
- <Pine.LNX.4.61.0701302100370.13737@yvahk01.tjqt.qr>
- <20070130203601.GB15067@dreamland.darkstar.lan>
+	id S1751446AbXA3Uo0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jan 2007 15:44:26 -0500
+X-Greylist: delayed 359 seconds by postgrey-1.27 at vger.kernel.org; Tue, 30 Jan 2007 15:44:26 EST
+Date: Tue, 30 Jan 2007 21:33:01 +0100
+From: Luca Tettamanti <kronos@people.it>
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: Dave Airlie <airlied@gmail.com>, Andrew Morton <akpm@osdl.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [Linux-fbdev-devel] [PATCH] nvidiafb: allow ignoring EDID info
+Message-ID: <20070130203301.GA15067@dreamland.darkstar.lan>
+References: <ephv35$4i3$1@sea.gmane.org> <20070128160831.fb51347f.akpm@osdl.org> <21d7e9970701281612q56b694edp6efd1a5556dea3fe@mail.gmail.com> <20070128162907.370f5476.akpm@osdl.org> <21d7e9970701281639w57edc2efw4ba620d4c1bdcee7@mail.gmail.com> <cb7bb73a0701290637q2ce0ff16t28f82d0c0339a2ba@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <cb7bb73a0701290637q2ce0ff16t28f82d0c0339a2ba@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Il Mon, Jan 29, 2007 at 03:37:22PM +0100, Giuseppe Bilotta ha scritto: 
+> On 1/29/07, Dave Airlie <airlied@gmail.com> wrote:
+> > > > > Because most users won't even be aware of the module option: they'll just
+> > > > > know that their card doesn't work right.
+> > > >
+> > > > This isn't a card problem this is a monitor problem, the card just
+> > > > passes through the edid data from the monitor... or else the
+> > > > programming of the card registers from edid is wrong..
+> > >
+> > > In which case the same problem would occur with different video cards, so
+> > > this patch should be some generic thing, available to all drivers, no?
+> >
+> > It should be in the fb layer not card specific.. as it may happen on any card...
+> 
+> Although solving the problem at the fb layer level is probably the
+> correct/best way to do it, I am not aware of people having problems
+> with broken EDIDs and non-nVidia cards. By contrast, workarounds for
+> nVidia and broken EDIDs is a very common thing to do even on Windows.
 
-On Jan 30 2007 21:36, Luca Tettamanti wrote:
->Il Tue, Jan 30, 2007 at 09:02:20PM +0100, Jan Engelhardt ha scritto: 
->> 
->> On Jan 30 2007 20:53, Luca Tettamanti wrote:
->> >Hi,
->> >pktcdvd on kernel 2.6.20-rc6 is not working as expected. Any file that
->> 
->> Did it work previously?
->
->Yup, It used to work but since I rarely use it I don't remember which
->kernel version worked for me.
+Not all drivers have support for reading EDID information, so in many
+cases it just "works". My old monitor had garbage in the EDID eeprom and
+I had to pass "ignore_edid" to radeonfb (before I reprogrammed the
+eeprom that is :P).
 
-Hm, maybe you can take a guess.
+> Plus, providing an fb-layer-level solution is way beyond my kernel
+> programming experience :)
 
->> >is written to the device is lost after umount.
->> >I rarely use pktcdvd but at some point it used to work on my system.
->> >
->> >This is what I'm doing:
->> >
->> >root@dreamland:/tmp# cdrwtool -d /dev/scd0 -q
->> >scsi 8:0:0:0: CD-ROM            HL-DT-ST DVDRAM GSA-4167B DL13 PQ: 0 ANSI: 5
->> 
->> In case you are using ide-scsi: try without.
->
->It's libata jmicron driver. Shall I try the "old" PATA driver on the
->next reboot?
+I'll try to code something in the weekend.
 
-If you have lots of CDRs/DVDRs to spare (or a CDRW/DVDRW), every test is
-welcome.
-
-
-Jan
+Luca
 -- 
+Do, or do not. There is no try.
