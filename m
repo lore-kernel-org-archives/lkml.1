@@ -1,42 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933111AbXA3GdV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933127AbXA3GnR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933111AbXA3GdV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 01:33:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933116AbXA3GdV
+	id S933127AbXA3GnR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 01:43:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933114AbXA3GnR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 01:33:21 -0500
-Received: from ug-out-1314.google.com ([66.249.92.175]:38715 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933111AbXA3GdU (ORCPT
+	Tue, 30 Jan 2007 01:43:17 -0500
+Received: from mtagate3.de.ibm.com ([195.212.29.152]:60868 "EHLO
+	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933127AbXA3GnQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 01:33:20 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=RMR8P7/nc9Xn1l0V5cDEHjvYeo7HHv93BQ7wKRtc9F1KXk1IRe9c+cLOB/kq92xX+Hi0HsVuHdjPzqS/JuUP7KL5VzSY063tEDhxUEnQIWt1YY4ISFGILh92cYvWQqpcIpioRBTi5o5GCOXzBjHa8acSyzeCPnDtSUu6jsBVfZ0=
-Message-ID: <84144f020701292233x636f3c87if09df48416182f3c@mail.gmail.com>
-Date: Tue, 30 Jan 2007 08:33:18 +0200
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Andrew Morton" <akpm@osdl.org>
-Subject: Re: [PATCH] tty: cleanup release_mem
-Cc: "Alan Cox" <alan@redhat.com>, "Christoph Hellwig" <hch@lst.de>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20070129195605.f5d50302.akpm@osdl.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 30 Jan 2007 01:43:16 -0500
+Date: Tue, 30 Jan 2007 08:43:12 +0200
+From: Muli Ben-Yehuda <muli@il.ibm.com>
+To: Jes Sorensen <jes@sgi.com>
+Cc: Andi Kleen <ak@suse.de>, David Miller <davem@davemloft.net>,
+       linux-kernel@vger.kernel.org, alan@redhat.com,
+       ksummit-2007-discuss@thunk.org, Sunil Naidu <akula2.shark@gmail.com>
+Subject: Re: [Ksummit-2007-discuss] Re: [Ksummit-2006-discuss] 2007 Linux Kernel Summit
+Message-ID: <20070130064312.GP3619@rhun.ibm.com>
+References: <20070123.095756.30177490.davem@davemloft.net> <20070126195024.GE14759@thunk.org> <45BE8BF9.6020204@sgi.com> <200701300603.14004.ak@suse.de> <45BEDCF7.7070503@sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20070128171244.GA21378@lst.de>
-	 <20070129120100.GA4338@devserv.devel.redhat.com>
-	 <20070129181235.GA9063@lst.de>
-	 <20070129190604.GA20564@devserv.devel.redhat.com>
-	 <20070129195605.f5d50302.akpm@osdl.org>
-X-Google-Sender-Auth: ed2acb915443b772
+In-Reply-To: <45BEDCF7.7070503@sgi.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 1/30/07, Andrew Morton <akpm@osdl.org> wrote:
-> BUG: unable to handle kernel paging request at virtual address 6b6b6bdf
+On Tue, Jan 30, 2007 at 06:51:51AM +0100, Jes Sorensen wrote:
 
-Use after free. The new code does module_put() _after_
-free_tty_struct() which is obviously wrong.
+> Last year the subject of DMA engines was put up, however most of the
+> people interested in the subject weren't even invited. In that case
+> there's really little concrete that can come out of the discussion.
+
+Likewise IOMMUs.
+
+I think Andrew's suggestion of adding a CFP phase to KS is excellent -
+get some new blood in the room and spice up the discussion.
+
+Cheers,
+Muli
