@@ -1,47 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965427AbXA3IOX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965428AbXA3IQ5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965427AbXA3IOX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 03:14:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965428AbXA3IOW
+	id S965428AbXA3IQ5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 03:16:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965429AbXA3IQ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 03:14:22 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:48094 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965427AbXA3IOW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 03:14:22 -0500
-Date: Tue, 30 Jan 2007 09:13:02 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Andrew Morton <akpm@osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.20-rc6 - sky2 resume breakage
-Message-ID: <20070130081302.GA5671@elte.hu>
-References: <Pine.LNX.4.64.0701291501180.3611@woody.linux-foundation.org> <20070129154518.40b0b3d3@freekitty> <Pine.LNX.4.64.0701291609180.3611@woody.linux-foundation.org> <20070129161626.33277eb1@freekitty> <Pine.LNX.4.64.0701291623360.3611@woody.linux-foundation.org> <20070130065457.GA23390@elte.hu> <45BEF61F.7000400@garzik.org> <20070130075325.GA591@elte.hu> <45BEFBB2.8090402@garzik.org> <20070130080830.GC2840@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 30 Jan 2007 03:16:57 -0500
+Received: from nf-out-0910.google.com ([64.233.182.188]:64781 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965428AbXA3IQ4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jan 2007 03:16:56 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=c4ORRlQ4akclZx9zQmwSHk15jd9vvaKWb1vw/ZVYkOxkiuvohWwc1D0jepPkKackCRgN1zKjarfkZZ9S784Hwx09mscebScZMWQesn4rO95HinMJ5mROJGPYcJ+YvfyZbvajlTh+8QvT0DHc9vB23PRwWk6QiztKDCEghUMpHuM=
+Message-ID: <8355959a0701300016k7c835fb3v31b4424edde3741c@mail.gmail.com>
+Date: Tue, 30 Jan 2007 13:46:54 +0530
+From: "Sunil Naidu" <akula2.shark@gmail.com>
+To: "Andrew Morton" <akpm@osdl.org>
+Subject: Re: 2.6.20-rc6-mm3
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20070129204528.eb8d695e.akpm@osdl.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070130080830.GC2840@elte.hu>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -3.3
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-3.3 required=5.9 tests=ALL_TRUSTED autolearn=no SpamAssassin version=3.0.3
-	-3.3 ALL_TRUSTED            Did not pass through any untrusted hosts
+References: <20070129204528.eb8d695e.akpm@osdl.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 1/30/07, Andrew Morton <akpm@osdl.org> wrote:
+>
+> - If you hit a bug in -mm and it is not obvious which patch caused it, it is
+>   most valuable if you can perform a bisection search to identify which patch
+>   introduced the bug.  Instructions for this process are at
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+I am hit with a compile error! Here is the info:-
 
-> I /think/ my two patches should automatically avoid the 'cap themselves' 
-                                                            ^--crap
-> effect you outlined: the absolutely worst case should be that we'll 
-> have twice the IRQ rate of the optimal one - but no irq storm nor lost 
-> interrupts should happen due to irq trigger type mismatches, ever - as 
-> long as the basic mapping of device to IRQ is correct. [ I tried to 
-> push to include this in v2.6.20 but i lost that argument ;-) ]
+  CC [M]  drivers/net/chelsio/cxgb2.o
+  CC [M]  drivers/net/chelsio/espi.o
+  CC [M]  drivers/net/chelsio/tp.o
+  CC [M]  drivers/net/chelsio/pm3393.o
+  CC [M]  drivers/net/chelsio/sge.o
+drivers/net/chelsio/sge.c: In function 't1_interrupt':
+drivers/net/chelsio/sge.c:1705: error: expected ')' before 'work_done'
+drivers/net/chelsio/sge.c:1722: error: expected expression before '}' token
+drivers/net/chelsio/sge.c:1697: warning: unused variable 'work_done'
+drivers/net/chelsio/sge.c:1722: warning: no return statement in
+function returning non-void
+make[3]: *** [drivers/net/chelsio/sge.o] Error 1
+make[2]: *** [drivers/net/chelsio] Error 2
+make[1]: *** [drivers/net] Error 2
+make: *** [drivers] Error 2
 
+
+~Akula2
