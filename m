@@ -1,70 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965612AbXA3QyA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965620AbXA3QyX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965612AbXA3QyA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 11:54:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965614AbXA3QyA
+	id S965620AbXA3QyX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 11:54:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965630AbXA3QyW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 11:54:00 -0500
-Received: from [198.99.130.12] ([198.99.130.12]:57602 "EHLO
-	saraswathi.solana.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S965612AbXA3Qx7 (ORCPT
+	Tue, 30 Jan 2007 11:54:22 -0500
+Received: from nf-out-0910.google.com ([64.233.182.184]:30501 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965620AbXA3QyV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 11:53:59 -0500
-Message-Id: <200701301646.l0UGkXd6005828@ccure.user-mode-linux.org>
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.0.4
-To: akpm@osdl.org, stable@vger.kernel.org
-cc: linux-kernel@vger.kernel.org, user-mode-linux-devel@lists.sourceforge.net
-Subject: [PATCH] UML - Fix signal frame alignment
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Date: Tue, 30 Jan 2007 11:46:32 -0500
-From: Jeff Dike <jdike@addtoit.com>
+	Tue, 30 Jan 2007 11:54:21 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=lxIhWfZyLuidvOSVXk8VM4VYTS0qPEtfgN2AP+5cuEqGGuzGSAcXmZObUvCinKHJirgJV84Gt4+oMlitl3f/739pOIxNyWk8ObzNO0O7tFJJ7GQLBslxvX8Jv3Va9KR3JLL8WCq5CJt15ybqU8StQ/f7wugXR6d6qj8EjpwMG/Y=
+Message-ID: <671c20540701300854o4cc0da13s797290c066d1b96b@mail.gmail.com>
+Date: Tue, 30 Jan 2007 11:54:19 -0500
+From: "Tom Burns" <tom.i.burns@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: Bug: 2.6.15 Process accounting fails to account for small time slice loads (still)
+In-Reply-To: <671c20540701300824p54dad7dbw43fe916bc8c98d45@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <671c20540701300824p54dad7dbw43fe916bc8c98d45@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is both 2.6.20 and -stable material.
+Problem also verified to exist on kernel:
+2.6.17-5mdv #1 SMP Wed Sep 13 14:28:02 EDT 2006 x86_64 Intel(R)
+Core(TM)2 CPU          6400  @ 2.13GHz GNU/Linux
 
-Use the same signal frame alignment calculations as the underlying
-architecture.  x86_64 appeared to do this, but the "- 8" was really
-subtracting 8 * sizeof(struct rt_sigframe) rather than 8 bytes.
+Cheers,
+Tom Burns
 
-UML/i386 might have been OK, but I changed the calculation to match
-i386 just to be sure.
-
-Signed-off-by: Jeff Dike <jdike@addtoit.com>
---
- arch/um/sys-i386/signal.c   |    3 ++-
- arch/um/sys-x86_64/signal.c |    5 +++--
- 2 files changed, 5 insertions(+), 3 deletions(-)
-
-Index: linux-2.6.18-mm/arch/um/sys-x86_64/signal.c
-===================================================================
---- linux-2.6.18-mm.orig/arch/um/sys-x86_64/signal.c	2007-01-29 14:20:57.000000000 -0500
-+++ linux-2.6.18-mm/arch/um/sys-x86_64/signal.c	2007-01-30 11:46:38.000000000 -0500
-@@ -191,8 +191,9 @@ int setup_signal_stack_si(unsigned long 
- 	struct task_struct *me = current;
- 
- 	frame = (struct rt_sigframe __user *)
--		round_down(stack_top - sizeof(struct rt_sigframe), 16) - 8;
--        frame = (struct rt_sigframe __user *) ((unsigned long) frame - 128);
-+		round_down(stack_top - sizeof(struct rt_sigframe), 16);
-+	/* Subtract 128 for a red zone and 8 for proper alignment */
-+        frame = (struct rt_sigframe __user *) ((unsigned long) frame - 128 - 8);
- 
- 	if (!access_ok(VERIFY_WRITE, fp, sizeof(struct _fpstate)))
- 		goto out;
-Index: linux-2.6.18-mm/arch/um/sys-i386/signal.c
-===================================================================
---- linux-2.6.18-mm.orig/arch/um/sys-i386/signal.c	2007-01-17 06:02:52.000000000 -0500
-+++ linux-2.6.18-mm/arch/um/sys-i386/signal.c	2007-01-30 11:39:10.000000000 -0500
-@@ -219,7 +219,8 @@ int setup_signal_stack_sc(unsigned long 
- 	unsigned long save_sp = PT_REGS_SP(regs);
- 	int err = 0;
- 
--	stack_top &= -8UL;
-+	/* This is the same calculation as i386 - ((sp + 4) & 15) == 0 */
-+	stack_top = ((stack_top + 4) & -16UL) - 4;
- 	frame = (struct sigframe __user *) stack_top - 1;
- 	if (!access_ok(VERIFY_WRITE, frame, sizeof(*frame)))
- 		return 1;
-
+On 1/30/07, Tom Burns <tom.i.burns@gmail.com> wrote:
+> The bug described back in 2004 in the following message still seems to exist:
+>
+> http://linux.derkeiler.com/Mailing-Lists/Kernel/2004-05/4313.html
+>
+> .. snipped..
