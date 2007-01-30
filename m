@@ -1,89 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965140AbXA3QLt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965574AbXA3QMS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965140AbXA3QLt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 11:11:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965565AbXA3QLs
+	id S965574AbXA3QMS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 11:12:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965578AbXA3QMS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 11:11:48 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:22401 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965140AbXA3QLs (ORCPT
+	Tue, 30 Jan 2007 11:12:18 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:58581 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S965574AbXA3QMR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 11:11:48 -0500
-Date: Tue, 30 Jan 2007 08:08:15 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: "Philippe Dhont  \(Sea-ro\)" <philippe.dhont@searo.be>
-Cc: <linux-kernel@vger.kernel.org>
-Subject: Re: init/Kconfig:263: can't open file "usr/Kconfig" ==> when trying
- to configure new kernel
-Message-Id: <20070130080815.9b393ec3.randy.dunlap@oracle.com>
-In-Reply-To: <EB998357DB660742877807C9BD7D251B9BD145@SRVR1.searo.local>
-References: <EB998357DB660742877807C9BD7D251B9BD145@SRVR1.searo.local>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.0 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+	Tue, 30 Jan 2007 11:12:17 -0500
+Date: Tue, 30 Jan 2007 16:21:51 +0000
+From: Alan <alan@lxorguk.ukuu.org.uk>
+To: Jean Delvare <jdelvare@suse.de>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>, Sergey Vlasov <vsu@altlinux.ru>,
+       Daniel Drake <dsd@reactivated.net>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH] VIA IRQ quirk breakage fix
+Message-ID: <20070130162151.2a0e8bf1@localhost.localdomain>
+In-Reply-To: <200701301449.52147.jdelvare@suse.de>
+References: <45B6A94A.3010006@yahoo.com.au>
+	<200701301325.58843.jdelvare@suse.de>
+	<45BF4A3A.2040001@yahoo.com.au>
+	<200701301449.52147.jdelvare@suse.de>
+X-Mailer: Claws Mail 2.7.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 30 Jan 2007 14:49:46 +0100 Philippe Dhont  \(Sea-ro\) wrote:
+On Tue, 30 Jan 2007 14:49:51 +0100
+Jean Delvare <jdelvare@suse.de> wrote:
+> I do believe this is 2.6.20 material. Given that Alan's version doesn't work 
+> _at all_, my patch can only help. The real regression is between 2.6.19 and 
+> the current Linus tree (with Alan's quirk.)
 
-> hello,
->  
-> i have a 2.6.8.-3-686 etch debian system.
-> i want to manually download and install a new kernel because of some
-> errors when installing vmware for linux.
-> so i downloaded the new kernel 2.6.19.2 and when i do a "make
-> menuconfig", i get:
->  
-> ca-phlinux:/usr/src/linux-2.6.19.2# make menuconfig
-> scripts/kconfig/mconf arch/i386/Kconfig
-> init/Kconfig:263: can't open file "usr/Kconfig"
-> make[1]: *** [menuconfig] Error 1
-> make: *** [menuconfig] Error 2
-> ca-phlinux:/usr/src/linux-2.6.19.2# uname -a Linux ca-phlinux
-> 2.6.18-3-686 #1 SMP Mon Dec 4 16:41:14 UTC 2006 i686 GNU/Linux
-> ca-phlinux:/usr/src/linux-2.6.19.2#
->  
->  
-> i already tried:
->  
-> ca-phlinux:/usr/src/linux-2.6.19.2# make-kpkg clean exec make -f
-> /usr/share/kernel-package/ruleset/minimal.mk clean
-> /usr/share/kernel-package/ruleset/minimal.mk:53: No .config file found
-> ====== making target minimal_clean [new prereqs: ]====== Cleaning.
-> test ! -f .config || cp -pf .config config.precious test ! -e
-> stamp-building || rm -f stamp-building test ! -f Makefile || \
->             make    ARCH=i386 distclean
-> make[1]: Entering directory `/usr/src/linux-2.6.19.2'
-> scripts/Makefile.clean:17: /usr/src/linux-2.6.19.2/sound/usb/Makefile:
-> No such file or directory
-> make[3]: *** No rule to make target
-> `/usr/src/linux-2.6.19.2/sound/usb/Makefile'.  Stop.
-> make[2]: *** [sound/usb] Error 2
-> make[1]: *** [_clean_sound] Error 2
-> make[1]: Leaving directory `/usr/src/linux-2.6.19.2'
-> make: *** [minimal_clean] Error 2
->  
->  
-> also:
->  
-> ca-phlinux:/usr/src/linux-2.6.19.2# make mrproper
-> scripts/Makefile.clean:17: /usr/src/linux-2.6.19.2/sound/usb/Makefile:
-> No such file or directory
-> make[2]: *** No rule to make target
-> `/usr/src/linux-2.6.19.2/sound/usb/Makefile'.  Stop.
-> make[1]: *** [sound/usb] Error 2
-> make: *** [_clean_sound] Error 2
+I believe my version works for all but the 686B
 
-If you are really missing these files:
-	usr/Kconfig
-	sound/usb/Makefile
-then something is wrong with your tree or your download.
+> > Andrew, can you pick up this patch in place of the old one you got
+> > (fix-via-irq-quirk-breakage.patch). It was sent to lkml just now.
+> 
+> Yes, please. And possibly send it over to Linus while you're there, if 
+> everyone's happy with this version.
 
----
-~Randy
+Agreed.
+
+Alan
