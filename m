@@ -1,44 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965281AbXA3JHl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965389AbXA3JJr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965281AbXA3JHl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 04:07:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965393AbXA3JHl
+	id S965389AbXA3JJr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 04:09:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965429AbXA3JJq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 04:07:41 -0500
-Received: from tmailer.gwdg.de ([134.76.10.23]:52590 "EHLO tmailer.gwdg.de"
+	Tue, 30 Jan 2007 04:09:46 -0500
+Received: from main.gmane.org ([80.91.229.2]:41885 "EHLO ciao.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965389AbXA3JHk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 04:07:40 -0500
-Date: Tue, 30 Jan 2007 10:07:12 +0100 (MET)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: pradeep <pradeep.sawlani@celunite.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Multiple ip= boot arguments?
-In-Reply-To: <45BE73C8.5010005@celunite.com>
-Message-ID: <Pine.LNX.4.61.0701301005420.23321@yvahk01.tjqt.qr>
-References: <e4fa6c610701291036r7ff384e4u78d3995ab3d042d8@mail.gmail.com>
- <Pine.LNX.4.61.0701292146470.5077@yvahk01.tjqt.qr> <45BE73C8.5010005@celunite.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+	id S965389AbXA3JJp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jan 2007 04:09:45 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Oleg Verych <olecom@flower.upol.cz>
+Subject: Re: [Ksummit-2007-discuss] 2007 Linux Kernel Summit
+Date: Tue, 30 Jan 2007 09:09:28 +0000 (UTC)
+Organization: Palacky University in Olomouc, experimental physics department.
+Message-ID: <slrneru3aq.f71.olecom@flower.upol.cz>
+References: <20070123.095756.30177490.davem@davemloft.net> <C1DDFD3E.8658%dirk.hohndel@intel.com> <20070125.125121.98861775.davem@davemloft.net> <8355959a0701251646t4b7db48cj862268aad52e8e24@mail.gmail.com> <20070126032849.GB5589@thunk.org>
+X-Complaints-To: usenet@sea.gmane.org
+X-Gmane-NNTP-Posting-Host: flower.upol.cz
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>, Sunil Naidu <akula2.shark@gmail.com>, dirk.hohndel@intel.com, linux-kernel@vger.kernel.org, alan@redhat.com, ksummit-2007-discuss@thunk.org, David Miller <davem@davemloft.net>
+User-Agent: slrn/0.9.8.1pl1 (Debian)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> From: Theodore Tso
+> Newsgroups: gmane.linux.kernel
+> Subject: Re: [Ksummit-2006-discuss] 2007 Linux Kernel Summit
+> Date: Thu, 25 Jan 2007 22:28:49 -0500
 
-On Jan 30 2007 03:53, pradeep wrote:
-> Jan Engelhardt wrote:
->> On Jan 29 2007 12:36, Kevin Nicoll wrote:
->> 
->> > or if I'm supposed to use a startup script instead.
->> 
->> This is the preffered way nowadays. One day, hopefully,
->> CONFIG_IP_PNP can go away.
->> 
-> CONFIG_IP_PNP is required while mounting rootfs on NFS.
+[]
+> I did give you a response.  Find a way to pay for 80+ kernel summit
+> invitees to travel to India (preferably in business class :-), and
+> we'll talk.  That's not realistic?  Well, then perhaps having the
+> concept of holding Kernel Summit in India is not realistic.
 
-It is definitely not.
+Rather, than "business class ;-)", i whould like to see comments about
+good quality video coverage of the KS, which (KS) is that, as you
+described here:
 
+> As Dirk has pointed out, the Kernel Summit is a little unusual
+> compared to events such as FOSDEM or FISL, where there are 4000-5000
+> attendees, and the emphasis is on the power of a large number of
+> people in the OSS community.  The Kernel Summit is a very different
+> event, in that it is by-invitation with less than 100 people.  The
+> whole point is to get the top contributors together to be able to talk
+> amongst themselves in a high bandwidth environment.  You can't do that
+> amongst a crowd of 800, never mind 2000 or 4000.
 
-	-`J'
--- 
+Even if dot.coms days are over and money aren't falling from skies
+(growing on trees), this would be the best thing to do in first place.
+
+Even for your memory, IMHO, as have read this thread below.
+
+I wish you will care about this, wherever you will meet this time.
+
+Thanks.
+
+____
+
