@@ -1,61 +1,226 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751399AbXA3UgF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751385AbXA3Uit@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751399AbXA3UgF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 15:36:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751409AbXA3UgF
+	id S1751385AbXA3Uit (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 15:38:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751422AbXA3Uit
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 15:36:05 -0500
-Received: from nf-out-0910.google.com ([64.233.182.185]:27617 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751399AbXA3UgD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 15:36:03 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=KplEvXQP+IPYQ74Nf1CvR+A4TTEDeHUCTvB+R8XrLsYVnBh+MqQUTZRYWJFA1vpPjm3nt4niDq7rkhr2/YliAGmxqbI1lafEAW4JoiG7DD6E0zTxLXPvnOAQn95WwG4FY66ub/IRxlZKRclOsIZo+VbkR3ckc4bajuxlaD0r7Gk=
-Date: Tue, 30 Jan 2007 21:36:01 +0100
-From: Luca Tettamanti <kronos.it@gmail.com>
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-Cc: Peter Osterlund <petero2@telia.com>, linux-kernel@vger.kernel.org
-Subject: Re: [2.6.20-rc6] pktcdvd doesn't work
-Message-ID: <20070130203601.GB15067@dreamland.darkstar.lan>
-References: <20070130195319.GA10994@dreamland.darkstar.lan> <Pine.LNX.4.61.0701302100370.13737@yvahk01.tjqt.qr>
+	Tue, 30 Jan 2007 15:38:49 -0500
+Received: from omx2-ext.sgi.com ([192.48.171.19]:42609 "EHLO omx2.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751419AbXA3Uir (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jan 2007 15:38:47 -0500
+From: Aaron Young <ayoung@google.engr.sgi.com>
+Message-Id: <200701302038.MAA58771@google.engr.sgi.com>
+Subject: Re: [PATCH 1/1] -  increase acpi owner_id max
+To: robert.moore@intel.com (Moore, Robert)
+Date: Tue, 30 Jan 2007 12:38:41 -0800 (PST)
+Cc: jpk@sgi.com (John Keller), linux-acpi@vger.kernel.org, ayoung@sgi.com,
+       linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org,
+       alexey.y.starikovskiy@linux.intel.com (Alexey Starikovskiy),
+       len.brown@intel.com (Brown Len)
+In-Reply-To: <B28E9812BAF6E2498B7EC5C427F293A401CA541E@orsmsx415.amr.corp.intel.com> from "Moore, Robert" at Jan 30, 2007 12:02:57 PM
+X-Mailer: ELM [version 2.5 PL6]
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.61.0701302100370.13737@yvahk01.tjqt.qr>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Il Tue, Jan 30, 2007 at 09:02:20PM +0100, Jan Engelhardt ha scritto: 
 > 
-> On Jan 30 2007 20:53, Luca Tettamanti wrote:
-> >Hi,
-> >pktcdvd on kernel 2.6.20-rc6 is not working as expected. Any file that
+> OK, I missed that.
 > 
-> Did it work previously?
+> Can you give us some idea of just how many SSDTs this machine loads?
 
-Yup, It used to work but since I rarely use it I don't remember which
-kernel version worked for me.
+  It depends. SGI SN configs can vary dramatically. We create a unique
+  SSDT for each populated PCI slot. The previous 255 SSDT id maximum
+  could theoretically be surpassed on machines with huge amounts of IO -
+  although configs with that much IO are extremely rare. We were
+  just trying to avoid any (future) configuration limitations.
 
 > 
-> >is written to the device is lost after umount.
-> >I rarely use pktcdvd but at some point it used to work on my system.
-> >
-> >This is what I'm doing:
-> >
-> >root@dreamland:/tmp# cdrwtool -d /dev/scd0 -q
-> >scsi 8:0:0:0: CD-ROM            HL-DT-ST DVDRAM GSA-4167B DL13 PQ: 0 ANSI: 5
+> Does it dynamically delete SSDTs also?
+
+  Yes. Our SN hotplug driver will add or remove SSDTs from the system
+  upon hotplugs/hotunplugs.
+
 > 
-> In case you are using ide-scsi: try without.
+> Thanks,
+> Bob
+> 
+> 
+> > -----Original Message-----
+> > From: Aaron Young [mailto:ayoung@google.engr.sgi.com]
+> > Sent: Friday, January 26, 2007 4:03 PM
+> > To: Moore, Robert
+> > Cc: John Keller; linux-acpi@vger.kernel.org; ayoung@sgi.com; linux-
+> > ia64@vger.kernel.org; linux-kernel@vger.kernel.org; Alexey
+> Starikovskiy;
+> > Brown, Len
+> > Subject: Re: [PATCH 1/1] - increase acpi owner_id max
+> > 
+> > >
+> > > The OwnerId field within a namespace node is 8 bits, and this is the
+> > > main constraint on the maximum OwnerId. You can't simply bump up the
+> > > number of owner ids without changing this field.
+> > 
+> >   Isn't this accomplished with the mod to aclocal.h below - i.e.
+> >   by making a acpi_owner_id a u16 instead of a u8?:
+> > 
+> >  -typedef u8 acpi_owner_id;
+> >  -#define ACPI_OWNER_ID_MAX               0xFF
+> >  +typedef u16 acpi_owner_id;
+> >  +#define ACPI_OWNER_ID_MAX               0x3FF
+> > 
+> > >
+> > > If we need more than 255 owner Ids, the width of this field will
+> have to
+> > > be increased, or we will need to use a pointer for the field in
+> order to
+> > > maintain a linked list of all nodes owned by a particular owner.
+> > >
+> > > Bob
+> > >
+> > > > -----Original Message-----
+> > > > From: linux-acpi-owner@vger.kernel.org [mailto:linux-acpi-
+> > > > owner@vger.kernel.org] On Behalf Of John Keller
+> > > > Sent: Friday, January 26, 2007 2:40 PM
+> > > > To: linux-acpi@vger.kernel.org
+> > > > Cc: ayoung@sgi.com; linux-ia64@vger.kernel.org; linux-
+> > > > kernel@vger.kernel.org; John Keller
+> > > > Subject: [PATCH 1/1] - increase acpi owner_id max
+> > > >
+> > > > To support systems with large IO configurations,
+> > > > this patch increases the number of available ACPI
+> > > > owner ids to 1023.
+> > > >
+> > > > On SN platforms, we represent every populated root
+> > > > bus slot with an ACPI SSDT table containing info
+> > > > for every device and PPB attached to the slot.
+> > > > Each SSDT requires a unique ACPI owner id.
+> > > >
+> > > > Signed-off-by: John Keller <jpk@sgi.com>
+> > > > ---
+> > > >
+> > > >  drivers/acpi/utilities/utmisc.c |    6 +++---
+> > > >  include/acpi/acconfig.h         |    4 ++--
+> > > >  include/acpi/aclocal.h          |    4 ++--
+> > > >  3 files changed, 7 insertions(+), 7 deletions(-)
+> > > >
+> > > >
+> > > > Index: linux/drivers/acpi/utilities/utmisc.c
+> > > >
+> ===================================================================
+> > > > --- linux.orig/drivers/acpi/utilities/utmisc.c	2007-01-25
+> > > > 11:27:25.509259412 -0600
+> > > > +++ linux/drivers/acpi/utilities/utmisc.c	2007-01-26
+> > > 13:16:09.551081284 -
+> > > > 0600
+> > > > @@ -147,7 +147,7 @@ acpi_status acpi_ut_allocate_owner_id(ac
+> > > >  				/*
+> > > >  				 * Construct encoded ID from the index
+> > > and bit
+> > > > position
+> > > >  				 *
+> > > > -				 * Note: Last [j].k (bit 255) is never
+> > > used and is
+> > > > marked
+> > > > +				 * Note: Last [j].k (bit 1023) is never
+> > > used and
+> > > > is marked
+> > > >  				 * permanently allocated (prevents +1
+> > > overflow)
+> > > >  				 */
+> > > >  				*owner_id =
+> > > > @@ -175,7 +175,7 @@ acpi_status acpi_ut_allocate_owner_id(ac
+> > > >  	 */
+> > > >  	status = AE_OWNER_ID_LIMIT;
+> > > >  	ACPI_ERROR((AE_INFO,
+> > > > -		    "Could not allocate new OwnerId (255 max),
+> > > > AE_OWNER_ID_LIMIT"));
+> > > > +		    "Could not allocate new OwnerId (1023 max),
+> > > > AE_OWNER_ID_LIMIT"));
+> > > >
+> > > >        exit:
+> > > >  	(void)acpi_ut_release_mutex(ACPI_MTX_CACHES);
+> > > > @@ -192,7 +192,7 @@ acpi_status acpi_ut_allocate_owner_id(ac
+> > > >   *              control method or unloading a table. Either way,
+> we
+> > > would
+> > > >   *              ignore any error anyway.
+> > > >   *
+> > > > - * DESCRIPTION: Release a table or method owner ID.  Valid IDs
+> are 1
+> > > -
+> > > > 255
+> > > > + * DESCRIPTION: Release a table or method owner ID.  Valid IDs
+> are 1
+> > > -
+> > > > 1023
+> > > >   *
+> > > >
+> > > >
+> > >
+> ************************************************************************
+> > > **
+> > > > ****/
+> > > >
+> > > > Index: linux/include/acpi/acconfig.h
+> > > >
+> ===================================================================
+> > > > --- linux.orig/include/acpi/acconfig.h	2007-01-25
+> > > 11:27:25.577267818 -
+> > > > 0600
+> > > > +++ linux/include/acpi/acconfig.h	2007-01-26 13:17:14.111002597
+> > > -0600
+> > > > @@ -111,9 +111,9 @@
+> > > >
+> > > >  #define ACPI_SYSMEM_REGION_WINDOW_SIZE  4096
+> > > >
+> > > > -/* owner_id tracking. 8 entries allows for 255 owner_ids */
+> > > > +/* owner_id tracking. 32 entries allow for 1023 owner_ids */
+> > > >
+> > > > -#define ACPI_NUM_OWNERID_MASKS          8
+> > > > +#define ACPI_NUM_OWNERID_MASKS		32
+> > > >
+> > > >
+> > > >
+> > >
+> /***********************************************************************
+> > > **
+> > > > *****
+> > > >   *
+> > > > Index: linux/include/acpi/aclocal.h
+> > > >
+> ===================================================================
+> > > > --- linux.orig/include/acpi/aclocal.h	2007-01-25
+> 11:27:25.585268807 -
+> > > > 0600
+> > > > +++ linux/include/acpi/aclocal.h	2007-01-26 13:20:06.148115848
+> > > -0600
+> > > > @@ -122,8 +122,8 @@ static char *acpi_gbl_mutex_names[ACPI_N
+> > > >
+> > > >  /* Owner IDs are used to track namespace nodes for selective
+> deletion
+> > > */
+> > > >
+> > > > -typedef u8 acpi_owner_id;
+> > > > -#define ACPI_OWNER_ID_MAX               0xFF
+> > > > +typedef u16 acpi_owner_id;
+> > > > +#define ACPI_OWNER_ID_MAX               0x3FF
+> > > >
+> > > >  /* This Thread ID means that the mutex is not in use (unlocked)
+> */
+> > > >
+> > > > -
+> > > > To unsubscribe from this list: send the line "unsubscribe
+> linux-acpi"
+> > > in
+> > > > the body of a message to majordomo@vger.kernel.org
+> > > > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > >
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
 
-It's libata jmicron driver. Shall I try the "old" PATA driver on the
-next reboot?
-
-Luca
--- 
-"Chi parla in tono cortese, ma continua a prepararsi, potra` andare avanti;
- chi parla in tono bellicoso e avanza rapidamente dovra` ritirarsi" 
-Sun Tzu -- L'arte della guerra
