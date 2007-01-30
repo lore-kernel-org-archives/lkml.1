@@ -1,52 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751909AbXA3Wlf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751927AbXA3Wlk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751909AbXA3Wlf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 17:41:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751927AbXA3Wlf
+	id S1751927AbXA3Wlk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 17:41:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751923AbXA3Wlj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 17:41:35 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:51222 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751909AbXA3Wle (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 17:41:34 -0500
-Message-ID: <45BFC99A.8040805@garzik.org>
-Date: Tue, 30 Jan 2007 17:41:30 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
+	Tue, 30 Jan 2007 17:41:39 -0500
+Received: from moutng.kundenserver.de ([212.227.126.174]:64471 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751927AbXA3Wli (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jan 2007 17:41:38 -0500
+Date: Tue, 30 Jan 2007 23:40:35 +0100 (CET)
+From: Bodo Eggert <7eggert@gmx.de>
+To: akpm@osdl.org, Jeff Layton <jlayton@redhat.com>, dev@sw.ru,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       torvalds@osdl.org
+Subject: [PATCH] pipefs unique inode numbers
+Message-ID: <Pine.LNX.4.58.0701302314210.2203@be1.lrz>
 MIME-Version: 1.0
-To: Trent Waddington <trent.waddington@gmail.com>
-CC: Dave Airlie <airlied@gmail.com>, Roland Dreier <rdreier@cisco.com>,
-       Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org
-Subject: Re: Free Linux Driver Development!
-References: <20070130012904.GA9617@kroah.com> <ada8xfks90x.fsf@cisco.com>	 <20070130191020.GF20642@kroah.com> <adaodogqpmx.fsf@cisco.com>	 <45BFA087.6020905@garzik.org> <ada4pq8qjpd.fsf@cisco.com>	 <20070130214759.GA12477@kroah.com> <adar6tcp43r.fsf@cisco.com>	 <21d7e9970701301414s251b584mbee85ecd6909febf@mail.gmail.com> <3d57814d0701301424m67d22cdbg7afc0a1dab29c152@mail.gmail.com>
-In-Reply-To: <3d57814d0701301424m67d22cdbg7afc0a1dab29c152@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.7 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
+X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
+X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
+X-Provags-ID: kundenserver.de abuse@kundenserver.de login:9b3b2cc444a07783f194c895a09f1de9
+X-Provags-ID2: V01U2FsdGVkX1/HqB2Rfur3GFQQtrl2Ipd0zXgpESjD0xGspdvwQ0f9t80kWfMp1vBlCjRZfgV6mHzEHQwVzDxGsuJhiyPZ3nDlOh3+reO4RUhPcnCfJpNaEA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Trent Waddington wrote:
-> All this sounds like a lack of organisation on the side of the
-> community to me.  Greg saying that he and others are twiddling their
-> thumbs because they don't know what hardware needs drivers says that
-> too.  Where is the list of hardware-without-drivers?  Until recently
-> there hasn't even been a list of hardware-with-binary-only-drivers
-> [1].  So anyone who has the necessary skills and thinks gee, I might
-> have a go at writing a linux kernel driver, has no idea where to go or
-> what to do.  I wonder how many vendors have a policy of just ignoring
-> emails from hackers asking for specifications because they have
-> already given the specifications to Redhat or someone else, but
-> hackers just keep asking them again and again.
+change pipefs to use a unique inode number equal to the memory
+address unless it would be truncated.
 
+Signed-Off-By: Bodo Eggert <7eggert@gmx.de>
+---
+Tested on i386.
 
-I think this is a quite fair criticism, and I would love to see someone 
-step up and help with this sort of organization.
-
-For example, I didn't know that XGI graphics specs were available at 
-all, otherwise it might have been something fun to tackle.
-
-	Jeff
-
+--- 2.6.19/fs/pipe.c.ori	2007-01-30 22:02:46.000000000 +0100
++++ 2.6.19/fs/pipe.c	2007-01-30 23:22:27.000000000 +0100
+@@ -864,6 +864,10 @@ static struct inode * get_pipe_inode(voi
+ 	inode->i_uid = current->fsuid;
+ 	inode->i_gid = current->fsgid;
+ 	inode->i_atime = inode->i_mtime = inode->i_ctime = CURRENT_TIME;
++	/* The address of *inode is unique, so we'll get an unique inode number.
++	 * Off cause this will not work for 32 bit inodes on 64 bit systems. */
++	if (sizeof(inode->i_ino) >= sizeof(struct inode*))
++		inode->i_ino = (unsigned int) inode;
+ 
+ 	return inode;
+ 
