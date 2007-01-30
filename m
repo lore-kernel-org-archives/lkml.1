@@ -1,61 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965464AbXA3JmH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965483AbXA3Jmg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965464AbXA3JmH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 04:42:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965475AbXA3JmH
+	id S965483AbXA3Jmg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 04:42:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965478AbXA3Jmg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 04:42:07 -0500
-Received: from styx.suse.cz ([82.119.242.94]:53526 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S965464AbXA3JmF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 04:42:05 -0500
-Date: Tue, 30 Jan 2007 10:42:05 +0100
-From: Vojtech Pavlik <vojtech@suse.cz>
-To: Alessandro Di Marco <dmr@gmx.it>
-Cc: Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org
-Subject: Re: [ANNOUNCE] System Inactivity Monitor v1.0
-Message-ID: <20070130094205.GA2888@suse.cz>
-References: <87lkjthdmd.fsf@gmx.it> <20070123184432.GE18662@elf.ucw.cz> <873b61cf1v.fsf@gmx.it> <20070126171536.GB964@elf.ucw.cz> <878xfpoeom.fsf@gmx.it> <20070127174525.GA4787@ucw.cz> <20070127192034.GA17652@suse.cz> <874pqanddd.fsf@gmx.it> <20070129222833.GB17330@elf.ucw.cz> <87odoho3pb.fsf@gmx.it>
-MIME-Version: 1.0
+	Tue, 30 Jan 2007 04:42:36 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:40639 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965477AbXA3Jmf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jan 2007 04:42:35 -0500
+Date: Tue, 30 Jan 2007 09:42:33 +0000
+From: Christoph Hellwig <hch@infradead.org>
+To: "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org, akpm@osdl.org
+Subject: Re: [PATCH 4/4] fs/unionfs/: Don't duplicate the struct nameidata
+Message-ID: <20070130094233.GA6972@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Josef 'Jeff' Sipek <jsipek@cs.sunysb.edu>,
+	linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+	akpm@osdl.org
+References: <11701030631109-git-send-email-jsipek@cs.sunysb.edu> <11701030643398-git-send-email-jsipek@cs.sunysb.edu>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <87odoho3pb.fsf@gmx.it>
-X-Bounce-Cookie: It's a lemon tree, dear Watson!
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <11701030643398-git-send-email-jsipek@cs.sunysb.edu>
+User-Agent: Mutt/1.4.2.2i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 29, 2007 at 11:42:08PM +0100, Alessandro Di Marco wrote:
-> Pavel Machek <pavel@ucw.cz> writes:
-> 
->    Hi!
-> 
->    >    The /proc/bus/input/devices has an extensible structure. You can just
->    >    add an "A:" line (for Activity) instead of adding a new proc file.
->    > 
->    > I know, but IMO there is too much stuff to parse in there. Activity counters
->    > are frequently accessed by daemons, and four or five concurrent daemons are the
->    > norm in a typical X11 linux box...
-> 
->    Syscalls are fast enough, and the file is _very_ easy (=> fast) to parse.
-> 
->    >    Also, the activity counters should IMO coincide with the event times
->    >    passed through /dev/input/event, and should not be jiffies based.
->    >    Ideally, both should be based on clock_gettime(CLOCK_MONOTONIC).
->    > 
->    > In evdev.c do_gettimeofday() is used. Anyway I just need of a monotonic
->    > counter, so get_jiffies_64() wouldn't be better? It isn't affected by wrapping
->    > issues and it is probably faster than do_gtod().
-> 
->    Just use same time source rest of inputs already do...
-> 
-> OK, but what about the time-warp problem?. To fix it I need to know when the
-> system goes to sleep/resumes. In SIN I've solved via the platform driver,
-> introducing suspend() resume() callbacks...
- 
-Well, you just need to make sure that a resume() actually is a visible
-event ...
+On Mon, Jan 29, 2007 at 03:37:42PM -0500, Josef 'Jeff' Sipek wrote:
+> The only fields that we have to watch out for are the dentry and vfsmount.
+> Additionally, this makes Unionfs gentler on the stack as nameidata is rather
+> large.
 
--- 
-Vojtech Pavlik
-Director SuSE Labs
+That's onviously not true at all.  To handle any filesystems using intents
+(e.g. NFSv4) you need to do much more.  Then again doing things correctly
+doesn't seem to be interesting to the stackable filesystems crowd an this
+problem has been constantly ignored over the last year, including merging
+ecryptfs which has been broken in the same way.
+
+Folks, if you want your stackable filesystem toys taken seriously you
+need to fix these kind of issues instead of talking them away.  And yes,
+this will involve some surgery to the VFS.
+
