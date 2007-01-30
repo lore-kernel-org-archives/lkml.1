@@ -1,84 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752064AbXAaASk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752073AbXAaAW3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752064AbXAaASk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 19:18:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752065AbXAaASj
+	id S1752073AbXAaAW3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 19:22:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752086AbXAaAW3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 19:18:39 -0500
-Received: from smtp113.sbc.mail.mud.yahoo.com ([68.142.198.212]:30696 "HELO
-	smtp113.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752064AbXAaASj (ORCPT
+	Tue, 30 Jan 2007 19:22:29 -0500
+Received: from 87-194-8-112.bethere.co.uk ([87.194.8.112]:60074 "EHLO
+	bloch.verdurin.priv" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752073AbXAaAW2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 19:18:39 -0500
-X-YMail-OSG: EBmj7oEVM1myazo6UK83CteV3oWgZdvU05RpqgzaUXZYfbUE
-Message-ID: <45BFE04A.60004@dogpad.net>
-Date: Tue, 30 Jan 2007 18:18:18 -0600
-From: Joe Harvell <jharvell+lists.linux-kernel@dogpad.net>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061230)
-MIME-Version: 1.0
-To: Robert Hancock <hancockr@shaw.ca>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: ACPI C and P states on Conroe
-References: <fa.kcyyw0/u0jusCdUVaHf0ecFyj0E@ifi.uio.no> <45BFD025.10902@shaw.ca>
-In-Reply-To: <45BFD025.10902@shaw.ca>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 30 Jan 2007 19:22:28 -0500
+X-Greylist: delayed 3123 seconds by postgrey-1.27 at vger.kernel.org; Tue, 30 Jan 2007 19:22:27 EST
+Date: Tue, 30 Jan 2007 23:30:21 +0000
+From: bloch@verdurin.com
+To: linux-kernel@vger.kernel.org
+Cc: Alex Dubov <oakad@yahoo.com>
+Subject: MMC: tifm_7xx1 driver detects card but does not make it mountable
+Message-ID: <20070130233021.GN14953@bloch.config>
+Mail-Followup-To: linux-kernel@vger.kernel.org,
+	Alex Dubov <oakad@yahoo.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.6i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert Hancock wrote:
-> Joe Harvell wrote:
->
->>
->> Here are my questions:
->>
->> 1) For P states, which cpufreq driver should I be using?  I've heard 
->> speedstep-centrino is deprecated (but only some aspects of it) that are 
->
-> Right.
->
->> being moved into acpi-cpufreq.  But I can't get acpi-cpufreq to load 
->> in my kernel version.  Also, I would have thought speedstep-ich would be 
->
-> Are you sure? Are you getting error messages?
->
->
-I forget what the output from modprobe said.  But I had 
-cpufreq.debug=7.  Here are the logs:
+Running recent kernels the insertion of a MemoryStick into the card
+reader of a Sony Vaio VGNSZ3XWP is detected but the card does not seem
+to be probed for partitions and hence is not made available to
+userspace.
 
-Jan 29 09:10:38 [kernel] acpi-cpufreq: acpi_cpufreq_init
-Jan 29 09:10:38 [kernel] acpi-cpufreq: acpi_cpufreq_early_init
-Jan 29 09:10:38 [kernel] cpufreq-core: trying to register driver 
-acpi-cpufreq
-Jan 29 09:10:38 [kernel] cpufreq-core: adding CPU 0
-Jan 29 09:10:38 [kernel] acpi-cpufreq: acpi_cpufreq_cpu_init
-Jan 29 09:10:38 [kernel] acpi-cpufreq: Unsupported address space [127, 127]
-Jan 29 09:10:38 [kernel] cpufreq-core: initialization failed
-Jan 29 09:10:38 [kernel] cpufreq-core: adding CPU 1
-Jan 29 09:10:38 [kernel] acpi-cpufreq: acpi_cpufreq_cpu_init
-Jan 29 09:10:38 [kernel] acpi-cpufreq: Unsupported address space [127, 127]
-Jan 29 09:10:38 [kernel] cpufreq-core: initialization failed
-Jan 29 09:10:38 [kernel] cpufreq-core: no CPU initialized for driver 
-acpi-cpufreq
-Jan 29 09:10:38 [kernel] cpufreq-core: unregistering CPU 0
-Jan 29 09:10:38 [kernel] cpufreq-core: unregistering CPU 1
+Here is the message upon card insertion:
 
->
->> 2) What kind of support for C1-C3 does the Conroe have?  The ACPI 
->> spec says C2 and C3 require chipset support on the motherboard.  Does 
->> P965 have that.  Does it matter between boards (e.g. P5B)?
->
-> The kernel will only use C2 and C3 if the motherboard exports support 
-> for it through ACPI. Most desktop boards don't, this is normally only 
-> found on laptops.
->
-Okay.  I understand the distinction between what the processor supports 
-and what the motherboard exports via the ACPI tables.  I do still want 
-to know what C states the E6600 supports.  Does anyone know?  Also, I've 
-heard the it's possible to modify the DSDT on boards to add interfaces 
-to processor features that the board does not provide.  Of course this 
-is a dead end if E6600 doesn't support these low power states to begin 
-with.  Assuming it does, does anyone know if it's possible to get them 
-working on the Asus P5B Deluxe?
+tifm_7xx1: ms card detected in socket 0
+
+lspci:
+
+00:00.0 Host bridge: Intel Corporation Mobile 945GM/PM/GMS/940GML and
+945GT Express Memory Controller Hub (rev 03)
+00:02.0 VGA compatible controller: Intel Corporation Mobile
+945GM/GMS/940GML Express Integrated Graphics Controller (rev 03)
+00:02.1 Display controller: Intel Corporation Mobile 945GM/GMS/940GML
+Express Integrated Graphics Controller (rev 03)
+00:1b.0 Audio device: Intel Corporation 82801G (ICH7 Family) High
+Definition Audio Controller (rev 02)
+00:1c.0 PCI bridge: Intel Corporation 82801G (ICH7 Family) PCI Express
+Port 1 (rev 02)
+00:1c.1 PCI bridge: Intel Corporation 82801G (ICH7 Family) PCI Express
+Port 2 (rev 02)
+00:1c.2 PCI bridge: Intel Corporation 82801G (ICH7 Family) PCI Express
+Port 3 (rev 02)
+00:1c.3 PCI bridge: Intel Corporation 82801G (ICH7 Family) PCI Express
+Port 4 (rev 02)
+00:1d.0 USB Controller: Intel Corporation 82801G (ICH7 Family) USB UHCI
+#1 (rev 02)
+00:1d.1 USB Controller: Intel Corporation 82801G (ICH7 Family) USB UHCI
+#2 (rev 02)
+00:1d.2 USB Controller: Intel Corporation 82801G (ICH7 Family) USB UHCI
+#3 (rev 02)
+00:1d.3 USB Controller: Intel Corporation 82801G (ICH7 Family) USB UHCI
+#4 (rev 02)
+00:1d.7 USB Controller: Intel Corporation 82801G (ICH7 Family) USB2 EHCI
+Controller (rev 02)
+00:1e.0 PCI bridge: Intel Corporation 82801 Mobile PCI Bridge (rev e2)
+00:1f.0 ISA bridge: Intel Corporation 82801GBM (ICH7-M) LPC Interface
+Bridge (rev 02)
+00:1f.1 IDE interface: Intel Corporation 82801G (ICH7 Family) IDE
+Controller (rev 02)
+00:1f.2 IDE interface: Intel Corporation 82801GBM/GHM (ICH7 Family)
+Serial ATA Storage Controller IDE (rev 02)
+00:1f.3 SMBus: Intel Corporation 82801G (ICH7 Family) SMBus Controller
+(rev 02)
+06:00.0 Network controller: Intel Corporation PRO/Wireless 3945ABG
+Network Connection (rev 02)
+07:00.0 Ethernet controller: Marvell Technology Group Ltd. 88E8036 PCI-E
+Fast Ethernet Controller (rev 15)
+09:04.0 CardBus bridge: Texas Instruments PCIxx12 Cardbus Controller
+09:04.1 FireWire (IEEE 1394): Texas Instruments PCIxx12 OHCI Compliant
+IEEE 1394 Host Controller
+09:04.2 Mass storage controller: Texas Instruments 5-in-1 Multimedia
+Card Reader (SD/MMC/MS/MS PRO/xD)
+
+lsusb:
+
+Bus 004 Device 001: ID 0000:0000  
+Bus 004 Device 002: ID 044e:300c Alps Electric Co., Ltd 
+Bus 003 Device 002: ID 0483:2016 SGS Thomson Microelectronics
+Fingerprint Reader
+Bus 003 Device 001: ID 0000:0000  
+Bus 001 Device 001: ID 0000:0000  
+Bus 005 Device 001: ID 0000:0000  
+Bus 005 Device 004: ID 05ca:1830 Ricoh Co., Ltd 
+Bus 005 Device 002: ID 054c:0281 Sony Corp. 
+Bus 002 Device 001: ID 0000:0000  
 
 
+Adam
