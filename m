@@ -1,53 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965600AbXA3RHE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965629AbXA3RMy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965600AbXA3RHE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 12:07:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965611AbXA3RHE
+	id S965629AbXA3RMy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 12:12:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965631AbXA3RMy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 12:07:04 -0500
-Received: from mailhub.sw.ru ([195.214.233.200]:14130 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965600AbXA3RHB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 12:07:01 -0500
-Message-ID: <45BF7DBD.8000606@sw.ru>
-Date: Tue, 30 Jan 2007 20:17:49 +0300
-From: Kirill Korotaev <dev@sw.ru>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.13) Gecko/20060417
-X-Accept-Language: en-us, en, ru
-MIME-Version: 1.0
-To: Jeff Layton <jlayton@redhat.com>
-CC: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       dada1@cosmosbay.com, dev@openvz.org
-Subject: Re: [PATCH 1/2] add lazy_getattr and lazy_readdir patches that defer
- i_ino assignment
-References: <200701301538.l0UFcGNX027715@dantu.rdu.redhat.com> <45BF7499.1000805@sw.ru> <45BF754A.1030307@redhat.com>
-In-Reply-To: <45BF754A.1030307@redhat.com>
-Content-Type: text/plain; charset=us-ascii
+	Tue, 30 Jan 2007 12:12:54 -0500
+Received: from accolon.hansenpartnership.com ([64.109.89.108]:59010 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S965629AbXA3RMx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jan 2007 12:12:53 -0500
+Subject: Re: [Ksummit-2007-discuss] Re: [Ksummit-2006-discuss] 2007 Linux
+	Kernel Summit
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Randy Dunlap <rdunlap@xenotime.net>
+Cc: linux-kernel@vger.kernel.org, Christoph Hellwig <hch@infradead.org>,
+       ksummit-2007-discuss@thunk.org
+In-Reply-To: <20070130085305.d86196e8.rdunlap@xenotime.net>
+References: <20070126032849.GB5589@thunk.org>
+	 <8355959a0701260704x6aea8141s3d0581fa33c74cf2@mail.gmail.com>
+	 <20070126195024.GE14759@thunk.org> <45BE8BF9.6020204@sgi.com>
+	 <20070130030430.GA21772@redhat.com> <45BEBBF0.3050102@snapgear.com>
+	 <20070130034111.GB21772@redhat.com> <45BEC303.2040205@securecomputing.com>
+	 <20070130040826.GA19362@linux-sh.org> <20070130043421.GE21772@redhat.com>
+	 <20070130103044.GB10526@infradead.org>
+	 <1170175725.3420.15.camel@mulgrave.il.steeleye.com>
+	 <20070130085305.d86196e8.rdunlap@xenotime.net>
+Content-Type: text/plain
+Date: Tue, 30 Jan 2007 11:12:51 -0600
+Message-Id: <1170177171.3420.36.camel@mulgrave.il.steeleye.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>Jeff,
->>
->>taking into account the discussion about unawarness/uncertainty
->>of whether *unique* inode number is needed at all on pipe fds and such
->>do we need this at all?
->>
->>Thanks,
->>Kirill
->>
-> 
-> 
-> Fair enough, perhaps we should just not worry about it, and assume that there 
-> might be collisions.
-> 
-> If so, I should probably just have Andrew withdraw the patch I submitted earlier 
-> to hash the inodes for pipefs. I'll look at other callers of new_inode and fix 
-> up any of the ones that need fixing.
-> 
-> Does that seem like the most reasonable approach?
-yep!
+On Tue, 2007-01-30 at 08:53 -0800, Randy Dunlap wrote:
+> As usual, "it depends" on the content.  Can we provide them with
+> sufficient instructions/guidance so that the listeners get the content
+> that is desired instead of just some pseudo-marketing or requirements
+> list?  Any of those panels (Customer or CPU) could have been good or
+> bad.
 
-Thanks,
-Kirill
+This is a really nasty problem.  By and large, only organisations who
+are active participants in the Linux community are happy sending their
+technical architects ungaurded to a developer summit (like we get for
+the CPU panel).  The objective is always to get technical (not
+marketing) people who haven't been frightened into silence by their
+legal department and, if people want chipsets, that's what we'll try to
+do ... it just takes a lot of persuasion, so the earlier we start ...
+
+James
+
 
