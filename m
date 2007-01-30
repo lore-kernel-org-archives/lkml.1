@@ -1,39 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751154AbXA3T4z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751167AbXA3T7Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751154AbXA3T4z (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 14:56:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751165AbXA3T4z
+	id S1751167AbXA3T7Z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 14:59:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751171AbXA3T7Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 14:56:55 -0500
-Received: from ns2.suse.de ([195.135.220.15]:54625 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751154AbXA3T4y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 14:56:54 -0500
-Date: Tue, 30 Jan 2007 11:55:56 -0800
-From: Greg KH <greg@kroah.com>
-To: Bill Davidsen <davidsen@tmr.com>
-Cc: Manu Abraham <abraham.manu@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: Free Linux Driver Development!
-Message-ID: <20070130195556.GF22022@kroah.com>
-References: <20070130012904.GA9617@kroah.com> <1a297b360701300930m90a09bbp30bed58c9c9bf456@mail.gmail.com> <45BF9D6D.1040403@tmr.com>
+	Tue, 30 Jan 2007 14:59:25 -0500
+Received: from omx2-ext.sgi.com ([192.48.171.19]:41533 "EHLO omx2.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751167AbXA3T7Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jan 2007 14:59:24 -0500
+Date: Tue, 30 Jan 2007 11:59:16 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+To: Andrew Morton <akpm@osdl.org>
+cc: Jeff Dike <jdike@addtoit.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] slab.c ifdef reduction breaks build
+In-Reply-To: <Pine.LNX.4.64.0701291343180.548@schroedinger.engr.sgi.com>
+Message-ID: <Pine.LNX.4.64.0701301158320.12100@schroedinger.engr.sgi.com>
+References: <20070129200517.GA6229@ccure.user-mode-linux.org>
+ <Pine.LNX.4.64.0701291214060.32740@schroedinger.engr.sgi.com>
+ <Pine.LNX.4.64.0701291240020.401@schroedinger.engr.sgi.com>
+ <20070129125630.dfba64a4.akpm@osdl.org> <Pine.LNX.4.64.0701291343180.548@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <45BF9D6D.1040403@tmr.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 30, 2007 at 02:33:01PM -0500, Bill Davidsen wrote:
+On Mon, 29 Jan 2007, Christoph Lameter wrote:
+
+> On Mon, 29 Jan 2007, Andrew Morton wrote:
 > 
-> Greg, did this go to the "announce" group as well? It should, some 
-> people read that even if they can't cope with LKML volume.
+> > On Mon, 29 Jan 2007 12:41:33 -0800 (PST)
+> > Christoph Lameter <clameter@sgi.com> wrote:
+> > 
+> > > +#ifdef CONFIG_ZONE_DMA
+> > >  		if (CONFIG_ZONE_DMA_FLAG)
+> > 
+> > We don't need the `if (CONFIG_ZONE_DMA_FLAG)' any more, do we?
+> 
+> Correct.
+> 
 
-What "announce" group?
+Here is the modified patch:
 
-I noticed it hit /., so it is now being spread to a group wider than
-lkml.
 
-thanks,
+Fix slab build failure if !CONFIG_ZONE_DMA
 
-greg k-h
+I also needed this to get 2.6.20-rc6-mm2 to build. Fixes the fix of the
+complainer about the fixes.
+
+Signed-off-by: Christoph Lameter <clameter@sgi.com>
+
+Index: linux-2.6.20-rc6-mm2/mm/slab.c
+===================================================================
+--- linux-2.6.20-rc6-mm2.orig/mm/slab.c	2007-01-30 13:56:10.683074081 -0600
++++ linux-2.6.20-rc6-mm2/mm/slab.c	2007-01-30 13:57:13.152420752 -0600
+@@ -1504,14 +1504,15 @@ void __init kmem_cache_init(void)
+ 					ARCH_KMALLOC_FLAGS|SLAB_PANIC,
+ 					NULL, NULL);
+ 		}
+-		if (CONFIG_ZONE_DMA_FLAG)
+-			sizes->cs_dmacachep = kmem_cache_create(
++#ifdef CONFIG_ZONE_DMA
++		sizes->cs_dmacachep = kmem_cache_create(
+ 					names->name_dma,
+ 					sizes->cs_size,
+ 					ARCH_KMALLOC_MINALIGN,
+ 					ARCH_KMALLOC_FLAGS|SLAB_CACHE_DMA|
+ 						SLAB_PANIC,
+ 					NULL, NULL);
++#endif
+ 		sizes++;
+ 		names++;
+ 	}
