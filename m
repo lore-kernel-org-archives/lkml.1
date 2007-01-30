@@ -1,23 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965496AbXA3OWF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965477AbXA3OXc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965496AbXA3OWF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 09:22:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965472AbXA3OWE
+	id S965477AbXA3OXc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 09:23:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965472AbXA3OXc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 09:22:04 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:46884 "EHLO
+	Tue, 30 Jan 2007 09:23:32 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:46896 "EHLO
 	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S965468AbXA3OWC (ORCPT
+	with ESMTP id S965477AbXA3OXb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 09:22:02 -0500
-Date: Tue, 30 Jan 2007 14:31:56 +0000
+	Tue, 30 Jan 2007 09:23:31 -0500
+Date: Tue, 30 Jan 2007 14:35:12 +0000
 From: Alan <alan@lxorguk.ukuu.org.uk>
-To: ethanhsiao@jmicron.com
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org, alan@redhat.com
-Subject: Re: [PATCH -mm] jmicron: 40/80pin primary detection
-Message-ID: <20070130143156.41480254@localhost.localdomain>
-In-Reply-To: <OF59067410.11A20F48-ON48257273.00150F04@jmicron.com>
-References: <OF59067410.11A20F48-ON48257273.00150F04@jmicron.com>
+To: Dave Jones <davej@redhat.com>
+Cc: Paul Mundt <lethal@linux-sh.org>,
+       Greg Ungerer <greg_ungerer@securecomputing.com>,
+       linux-kernel@vger.kernel.org, ksummit-2007-discuss@thunk.org
+Subject: Re: [Ksummit-2007-discuss] Re: [Ksummit-2006-discuss] 2007 Linux
+ Kernel Summit
+Message-ID: <20070130143512.0e7cfd85@localhost.localdomain>
+In-Reply-To: <20070130043421.GE21772@redhat.com>
+References: <8355959a0701251646t4b7db48cj862268aad52e8e24@mail.gmail.com>
+	<20070126032849.GB5589@thunk.org>
+	<8355959a0701260704x6aea8141s3d0581fa33c74cf2@mail.gmail.com>
+	<20070126195024.GE14759@thunk.org>
+	<45BE8BF9.6020204@sgi.com>
+	<20070130030430.GA21772@redhat.com>
+	<45BEBBF0.3050102@snapgear.com>
+	<20070130034111.GB21772@redhat.com>
+	<45BEC303.2040205@securecomputing.com>
+	<20070130040826.GA19362@linux-sh.org>
+	<20070130043421.GE21772@redhat.com>
 X-Mailer: Claws Mail 2.7.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -25,32 +38,9 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->  	case PORT_PATA0:
->  		if (control & (1 << 3))	/* 40/80 pin primary */
-> -			return 1;
-> -		return 0;
-> +			return 0;
-> +		return 1;
+> Don't:
+> - Waffle about process shrink roadmaps.
 
-Ack
+Buy a graphics company, continue blocking 2D support and expect anyone to
+even care about your hardware ... ?
 
-> @@ -205,11 +205,11 @@
->  }
->  
->  static struct pci_device_id jmicron_pci_tbl[] = {
-> -	{ PCI_DEVICE(PCI_VENDOR_ID_JMICRON, PCI_DEVICE_ID_JMICRON_JMB361), 0},
-> -	{ PCI_DEVICE(PCI_VENDOR_ID_JMICRON, PCI_DEVICE_ID_JMICRON_JMB363), 1},
-> -	{ PCI_DEVICE(PCI_VENDOR_ID_JMICRON, PCI_DEVICE_ID_JMICRON_JMB365), 2},
-> -	{ PCI_DEVICE(PCI_VENDOR_ID_JMICRON, PCI_DEVICE_ID_JMICRON_JMB366), 3},
-> -	{ PCI_DEVICE(PCI_VENDOR_ID_JMICRON, PCI_DEVICE_ID_JMICRON_JMB368), 4},
-> +	{ PCI_VENDOR_ID_JMICRON, PCI_DEVICE_ID_JMICRON_JMB361, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
-> +	{ PCI_VENDOR_ID_JMICRON, PCI_DEVICE_ID_JMICRON_JMB363, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 1},
-> +	{ PCI_VENDOR_ID_JMICRON, PCI_DEVICE_ID_JMICRON_JMB365, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 2},
-> +	{ PCI_VENDOR_ID_JMICRON, PCI_DEVICE_ID_JMICRON_JMB366, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 3},
-> +	{ PCI_VENDOR_ID_JMICRON, PCI_DEVICE_ID_JMICRON_JMB368, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 4},
->  	{ 0, },
-
-That should have been fixed a while ago with the others that had that
-same bug. Must have escaped somewhere.
-
-Acked-by: Alan Cox <alan@redhat.com>
