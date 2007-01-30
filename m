@@ -1,100 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751690AbXA3TYF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751698AbXA3TZ5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751690AbXA3TYF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 14:24:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751697AbXA3TYF
+	id S1751698AbXA3TZ5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 14:25:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751700AbXA3TZ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 14:24:05 -0500
-Received: from fe01.tochka.ru ([62.5.255.21]:46369 "EHLO umail.ru"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751690AbXA3TYE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 14:24:04 -0500
-X-Greylist: delayed 901 seconds by postgrey-1.27 at vger.kernel.org; Tue, 30 Jan 2007 14:24:04 EST
-Message-ID: <45BF97C6.5090800@auriga.ru>
-Date: Tue, 30 Jan 2007 22:08:54 +0300
-From: Dmitri Vorobiev <dmitri.vorobiev@auriga.ru>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070104)
-MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org
-Subject: Re: Free Linux Driver Development!
-References: <20070130012904.GA9617@kroah.com>
-In-Reply-To: <20070130012904.GA9617@kroah.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+	Tue, 30 Jan 2007 14:25:57 -0500
+Received: from de01egw01.freescale.net ([192.88.165.102]:44231 "EHLO
+	de01egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751688AbXA3TZ4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jan 2007 14:25:56 -0500
+Date: Tue, 30 Jan 2007 13:25:27 -0600
+From: Kim Phillips <kim.phillips@freescale.com>
+To: olof@lixom.net (Olof Johansson)
+Cc: galak@kernel.crashing.org, trini@kernel.crashing.org,
+       linuxppc-dev@ozlabs.org, paulus@samba.org,
+       Scott Wood <scottwood@freescale.com>, david-b@pacbell.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] generic RTC support for PPC
+Message-Id: <20070130132527.0ee3e9ea.kim.phillips@freescale.com>
+In-Reply-To: <20070130160340.GA25443@lixom.net>
+References: <20070125073754.GA10004@lixom.net>
+	<20070130051736.GH28746@smtp.west.cox.net>
+	<0747B3CD-F875-4A28-8199-1A7FF3666301@kernel.crashing.org>
+	<20070130160340.GA25443@lixom.net>
+Organization: Freescale Semiconductor
+X-Mailer: Sylpheed version 1.0.6 (GTK+ 1.2.10; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH пишет:
-> Free Linux Driver Development!
+On Tue, 30 Jan 2007 10:03:40 -0600
+olof@lixom.net (Olof Johansson) wrote:
 
-Just curious, it is a coincidence or a thoughtful action that this offer 
-(which is undoubtedly very attractive and will definitely help the Linux 
-user base grow) is published on the very same day when a well-known 
-software giant releases a new Major Version of their closed-source 
-operating system?
+> On Tue, Jan 30, 2007 at 12:37:12AM -0600, Kumar Gala wrote:
+> > 
+> > On Jan 29, 2007, at 11:17 PM, Tom Rini wrote:
+> > 
+> > >On Thu, Jan 25, 2007 at 01:37:54AM -0600, Olof Johansson wrote:
+> > >
+> > >>Make the PPC RTC functions use the generic RTC infrastructure if they
+> > >>are not already defined (and an RTC is registered in the system).
+> > >>
+> > >>This should make it possible to remove the hideous direct access used
+> > >>in some of the 83xx platforms.
+> > >
+> > >Now, I know I'm a bit late, and I've been quiet of late, but, um,  
+> > >why is
+> > >there anything other than the RTC class stuff being used?  I know
+> > >drivers/char/genrtc.c isn't gone yet, but really, it should be in the
+> > >process of being phased out.  IMHO, it should depend on !POWERPC (or
+> > >whatever the magic is to allow arch/ppc && !arch/powerpc).
+> > 
+> > I think the problem was calling the RTC class code from the place's  
+> > we use rtc in ppc had locking issues or something like that.
+> 
+> Yes, and it does a direct call into the driver instead of using the
+> subsystem, exporting the symbol from the driver. Not a very pretty
+> solution but it's possible that the genrtc stuff wasn't available when
+> it was first implemented.
+> 
+that's probably true.
 
-Thanks,
+afaict, this powerpc platform <--> RTC class code glue is totally unnecessary; RTC class sets things up fine on 83xx based boards that have rtc chips supported in RTC class (e.g., the ITX).  I'm referring to the third bullet point here:
 
-Dmitri
+http://marc.theaimsgroup.com/?l=linux-kernel&m=116387226902131&w=2
 
-> 
-> Yes, that's right, the Linux kernel community is offering all companies
-> free Linux driver development.  No longer do you have to suffer through
-> all of the different examples in the Linux Device Driver Kit, or pick
-> through the thousands of example drivers in the Linux kernel source
-> tree trying to determine which one is the closest to what you need to
-> do.
-> 
-> All that is needed is some kind of specification that describes how your
-> device works, or the email address of an engineer that is willing to
-> answer questions every once in a while.  A few sample devices might be
-> good to have so that debugging doesn't have to be done by email, but if
-> necessary, that can be done.
-> 
-> In return, you will receive a complete and working Linux driver that is
-> added to the main Linux kernel source tree.  The driver will be written
-> by some of the members of the Linux kernel developer community (over
-> 1500 strong and growing).  This driver will then be automatically
-> included in all Linux distributions, including the "enterprise" ones.
-> It will be automatically kept up to date and working through all Linux
-> kernel API changes.  This driver will work with all[1] of the different
-> CPU types supported by Linux, the largest number of CPU types supported
-> by any operating system ever before in the history of computing.
-> 
-> As for support, the driver will be supported through email by the
-> original developers, when they can help out, and by the "enterprise"
-> Linux distributors as part of their service agreements with their
-> customers.
-> 
-> If your company is worried about NDA issues surrounding your device's
-> specifications, we have arranged a program with OSDL/TLF's Tech Board to
-> provide the legal framework where a company can interact with a member
-> of the kernel community in order to properly assure that all needed NDA
-> requirements are fulfilled.
-> 
-> Now your developers will have more time to work on drivers for all of
-> the other operating systems out there, and you can add "supported on
-> Linux" to your product's marketing material.
-> 
-> This offer is in affect for all different types of devices, from USB
-> toys to PCI video devices to high-speed networking cards.  If you build
-> it, we can get Linux drivers working for it.
-> 
-> For any questions about this program, please feel free to respond to
-> this email, or contact me directly at greg@kroah.com.  I will also be
-> available at FreedomHEC 2007 <http://freedomhec.pbwiki.com/> held
-> adjacent to WinHEC, if anyone wants to bring devices and work
-> face-to-face.
-> 
-> thanks,
-> 
-> greg k-h
-> 
-> [1] for the CPUs that support the bus types that your device works on.
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+For the MDS boards, which use the ds1374, I'd rather fix the problem properly and add a ds1374 driver to the RTC class.  While Scott Wood (cc'd) has already done the port, I believe his patches are pending some patches by David Brownell.
 
+Kim
