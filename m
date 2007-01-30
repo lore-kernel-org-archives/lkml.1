@@ -1,56 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965351AbXA3NJh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965355AbXA3NX2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965351AbXA3NJh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 08:09:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965345AbXA3NJh
+	id S965355AbXA3NX2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 08:23:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965362AbXA3NX2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 08:09:37 -0500
-Received: from styx.suse.cz ([82.119.242.94]:57900 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S965351AbXA3NJg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 08:09:36 -0500
-Date: Tue, 30 Jan 2007 14:09:36 +0100
-From: Vojtech Pavlik <vojtech@suse.cz>
-To: Alessandro Di Marco <dmr@gmx.it>
-Cc: Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org
-Subject: Re: [ANNOUNCE] System Inactivity Monitor v1.0
-Message-ID: <20070130130936.GB4242@suse.cz>
-References: <873b61cf1v.fsf@gmx.it> <20070126171536.GB964@elf.ucw.cz> <878xfpoeom.fsf@gmx.it> <20070127174525.GA4787@ucw.cz> <20070127192034.GA17652@suse.cz> <874pqanddd.fsf@gmx.it> <20070129222833.GB17330@elf.ucw.cz> <87odoho3pb.fsf@gmx.it> <20070130094205.GA2888@suse.cz> <87ireowv7d.fsf@gmx.it>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87ireowv7d.fsf@gmx.it>
-X-Bounce-Cookie: It's a lemon tree, dear Watson!
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Tue, 30 Jan 2007 08:23:28 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:41142 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965355AbXA3NX1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jan 2007 08:23:27 -0500
+To: torvalds@linux-foundation.org
+Subject: [PATCH] missing exports of pm_power_off() on alpha and sparc32
+Cc: linux-kernel@vger.kernel.org
+Message-Id: <E1HBsxJ-0002M4-U3@ZenIV.linux.org.uk>
+From: Al Viro <viro@ftp.linux.org.uk>
+Date: Tue, 30 Jan 2007 13:23:25 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 30, 2007 at 01:33:10PM +0100, Alessandro Di Marco wrote:
-> Vojtech Pavlik <vojtech@suse.cz> writes:
-> 
->    On Mon, Jan 29, 2007 at 11:42:08PM +0100, Alessandro Di Marco wrote:
-> 
->    > OK, but what about the time-warp problem?. To fix it I need to know when the
->    > system goes to sleep/resumes. In SIN I've solved via the platform driver,
->    > introducing suspend() resume() callbacks...
-> 
->    Well, you just need to make sure that a resume() actually is a visible
->    event ...
-> 
-> Sorry, but I don't see the point. Visible to what? 
 
-Counted as activity.
+Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+---
+ arch/alpha/kernel/process.c |    1 +
+ arch/sparc/kernel/process.c |    1 +
+ 2 files changed, 2 insertions(+), 0 deletions(-)
 
-> Mine problem here is that the input device doesn't care about suspend/resume
-> cycles (it is a straight char driver), probably because it doesn't need to (so
-> far.) Low-level drivers (kbd & co) on the contrary are all bus or platform
-> drivers, hooking directly into suspend/resume callbacks.
-> 
-> Do you mean that I should back-propagate a suspend/resume event from the
-> low-level drivers to the input one?
+diff --git a/arch/alpha/kernel/process.c b/arch/alpha/kernel/process.c
+index 3370e6f..c151863 100644
+--- a/arch/alpha/kernel/process.c
++++ b/arch/alpha/kernel/process.c
+@@ -47,6 +47,7 @@
+  * Power off function, if any
+  */
+ void (*pm_power_off)(void) = machine_power_off;
++EXPORT_SYMBOL(pm_power_off);
  
-Yes, but not as a callback, but instead as an input event. 
-
+ void
+ cpu_idle(void)
+diff --git a/arch/sparc/kernel/process.c b/arch/sparc/kernel/process.c
+index 89a28cc..113bd48 100644
+--- a/arch/sparc/kernel/process.c
++++ b/arch/sparc/kernel/process.c
+@@ -54,6 +54,7 @@ void (*pm_idle)(void);
+  * handler when auxio is not present-- unused for now...
+  */
+ void (*pm_power_off)(void) = machine_power_off;
++EXPORT_SYMBOL(pm_power_off);
+ 
+ /*
+  * sysctl - toggle power-off restriction for serial console 
 -- 
-Vojtech Pavlik
-Director SuSE Labs
+1.5.0-rc2.GIT
+
+
