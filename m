@@ -1,83 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965411AbXA3H2B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965415AbXA3H3r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965411AbXA3H2B (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 02:28:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965413AbXA3H2A
+	id S965415AbXA3H3r (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 02:29:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965414AbXA3H3r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 02:28:00 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:46371 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965411AbXA3H2A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 02:28:00 -0500
-Date: Mon, 29 Jan 2007 23:27:27 -0800
-From: Andrew Morton <akpm@osdl.org>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Miles Lane <miles.lane@gmail.com>,
-       Anton Altaparmakov <aia21@cantab.net>
-Subject: Re: 2.6.20-rc6-mm1
-Message-Id: <20070129232727.96e580ac.akpm@osdl.org>
-In-Reply-To: <45BC7A26.1080303@gmail.com>
-References: <20070127234928.64d8e437.akpm@osdl.org>
-	<45BC7A26.1080303@gmail.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Tue, 30 Jan 2007 02:29:47 -0500
+Received: from mtagate7.uk.ibm.com ([195.212.29.140]:17246 "EHLO
+	mtagate7.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965417AbXA3H3q (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jan 2007 02:29:46 -0500
+Date: Tue, 30 Jan 2007 09:29:42 +0200
+From: Muli Ben-Yehuda <muli@il.ibm.com>
+To: Dave Jones <davej@redhat.com>
+Cc: Jes Sorensen <jes@sgi.com>, David Miller <davem@davemloft.net>,
+       linux-kernel@vger.kernel.org, alan@redhat.com,
+       ksummit-2007-discuss@thunk.org, Sunil Naidu <akula2.shark@gmail.com>
+Subject: Re: [Ksummit-2007-discuss] Re: [Ksummit-2006-discuss] 2007 Linux Kernel Summit
+Message-ID: <20070130072942.GR3619@rhun.ibm.com>
+References: <20070123.095756.30177490.davem@davemloft.net> <20070126195024.GE14759@thunk.org> <45BE8BF9.6020204@sgi.com> <200701300603.14004.ak@suse.de> <45BEDCF7.7070503@sgi.com> <20070130064312.GP3619@rhun.ibm.com> <20070130071815.GC32549@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070130071815.GC32549@redhat.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 28 Jan 2007 11:25:42 +0100
-Jiri Slaby <jirislaby@gmail.com> wrote:
+On Tue, Jan 30, 2007 at 02:18:16AM -0500, Dave Jones wrote:
 
-> Andrew Morton napsal(a):
-> > Temporarily at
-> > 
-> > 	http://userweb.kernel.org/~akpm/2.6.20-rc6-mm1/
-> 
-> I'm still seeing this during bootup:
-> BUG: at /home/l/latest/xxx/arch/i386/mm/highmem.c:52 kmap_atomic()
->   [<c0104ffb>] show_trace_log_lvl+0x1a/0x30
->   [<c01056b5>] show_trace+0x12/0x14
->   [<c010573c>] dump_stack+0x16/0x18
->   [<c011b24f>] kmap_atomic+0x16c/0x20e
->   [<c01b279e>] ntfs_end_buffer_async_read+0x18e/0x2ed
->   [<c0183352>] end_bio_bh_io_sync+0x26/0x3f
->   [<c0184dd4>] bio_endio+0x37/0x62
->   [<c01cda43>] __end_that_request_first+0x224/0x444
->   [<c01cdc6b>] end_that_request_chunk+0x8/0xa
->   [<c024507d>] scsi_end_request+0x1f/0xc7
->   [<c02451e6>] scsi_io_completion+0x7b/0x33a
->   [<c024aa5d>] sd_rw_intr+0x23/0x1ab
->   [<c02415ed>] scsi_finish_command+0x42/0x47
->   [<c0245a38>] scsi_softirq_done+0x64/0xcf
->   [<c01cf9e6>] blk_done_softirq+0x54/0x62
->   [<c0127bc5>] __do_softirq+0x75/0xde
->   [<c0127c69>] do_softirq+0x3b/0x3d
->   [<c0127ee6>] irq_exit+0x3b/0x3d
->   [<c0106804>] do_IRQ+0x51/0x8d
->   [<c0104a5f>] common_interrupt+0x23/0x28
->   [<c010241a>] cpu_idle+0x80/0xc3
->   [<c010140d>] rest_init+0x23/0x36
->   [<c045ea59>] start_kernel+0x3a5/0x43c
->   [<00000000>] 0x0
->   =======================
-> 
-> I.e. KM_BIO_SRC_IRQ through softirq path.
-> 
+>  > Likewise IOMMUs.
+>  
+> There were a number of people there last year who understood IOMMUs
+> and could easily talk at length about them if able to do so.  iirc,
+> you were also invited, but were unable to travel due to bad things
+> falling from the sky in Israel at the time ?
 
-argh.
+That was OLS, not KS. Also, that's not the impression I got from
+reading the lwn.net summary (and I know several IOMMU people such as
+Olof were not invited... I think it was just jejb and ak?).
 
-ntfs_end_buffer_async_read() doesn't know whether it will be called from
-hardirq or from softirq context: it depends upon the underlying driver.
+Cheers,
+Muli
 
-In this case, if the CPU running ntfs_end_buffer_async_read() is
-interrupted by IO completion against a different disk controller and that
-completion handler uses KM_BIO_SRC_IRQ (as it is allowed to do), it will
-trash ntfs_end_buffer_async_read()'s atomic kmap and unpleasing things will
-ensue.
 
-I guess a suitable fix here is to protect that kmap with
-local_irq_save/restore.
-
-I wonder where else we have that bug?
