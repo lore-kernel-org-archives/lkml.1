@@ -1,53 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752526AbXA3D0G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750969AbXA3Dco@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752526AbXA3D0G (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 22:26:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932954AbXA3D0G
+	id S1750969AbXA3Dco (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 22:32:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752532AbXA3Dco
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 22:26:06 -0500
-Received: from dvhart.com ([64.146.134.43]:41260 "EHLO dvhart.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752526AbXA3D0E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 22:26:04 -0500
-Message-ID: <45BEBAC9.6020809@mbligh.org>
-Date: Mon, 29 Jan 2007 19:26:01 -0800
-From: Martin Bligh <mbligh@mbligh.org>
-User-Agent: Thunderbird 1.5.0.8 (X11/20061117)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@osdl.org>
-Cc: suparna@in.ibm.com, linux-kernel@vger.kernel.org,
-       Jens Axboe <axboe@kernel.dk>,
-       =?ISO-8859-1?Q?=22S=E9bastien_Dugu=E9_=40qubit=2Ein=2Eibm=2Ecom=22?= 
-	<sebastien.dugue@bull.net>
-Subject: Re: 2.6.20-rc6-mm1
-References: <20070127234928.64d8e437.akpm@osdl.org>	<45BCD5A8.4090400@mbligh.org>	<20070128150133.b4c9b093.akpm@osdl.org>	<20070130024231.GA9497@in.ibm.com> <20070129184228.49fd48e7.akpm@osdl.org>
-In-Reply-To: <20070129184228.49fd48e7.akpm@osdl.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 29 Jan 2007 22:32:44 -0500
+Received: from tomts5-srv.bellnexxia.net ([209.226.175.25]:64992 "EHLO
+	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750969AbXA3Dcn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jan 2007 22:32:43 -0500
+Date: Mon, 29 Jan 2007 22:27:35 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: "Martin J. Bligh" <mbligh@mbligh.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@osdl.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: Bug report : reproducible memory bug (hardware failure, sorry)
+Message-ID: <20070130032734.GA28701@Krystal>
+References: <20070128200917.GA16571@Krystal> <45BD06AC.1080008@mbligh.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <45BD06AC.1080008@mbligh.org>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.4.32-grsec (i686)
+X-Uptime: 22:21:18 up 160 days, 28 min,  2 users,  load average: 0.58, 0.80, 0.62
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Tue, 30 Jan 2007 08:12:31 +0530
-> Suparna Bhattacharya <suparna@in.ibm.com> wrote:
+* Martin J. Bligh (mbligh@mbligh.org) wrote:
+> Mathieu Desnoyers wrote:
+> >Hi,
+> >
+> >Trying to build cross-compilers (or kernels) on a 2-way x86_64 (amd64) with
+> >make -j3 triggers the following OOPS after about 30 minutes on
+> >2.6.19.2. Due to the amount of time and the heavy load it takes before it
+> >happens, I suspect a race condition. Memtest86 tests passed ok. The
+> >amount of swap used when the condition happens is about 52k and stable
+> >(only ~800MB/1GB are used).
+> >
+> >I am going to give it a look, but I suspect you might help narrowing it
+> >down more quickly. Any insight would be appreciated.
 > 
->> On Sun, Jan 28, 2007 at 03:01:33PM -0800, Andrew Morton wrote:
->>> On Sun, 28 Jan 2007 08:56:08 -0800
->>> "Martin J. Bligh" <mbligh@mbligh.org> wrote:
->>>
->>>>> - It seems that people have been busy creating the need for this.  I had to
->>>>>   apply over sixty patches to this tree to fix post-2.6.20-rc4-mm1 compilation
->>>>>   errors.  And a number of patches were dropped due to no-compile or to
->>>>>   runtime errors.  Heaven knows how many runtime bugs were added.
->>>> dbench seems to panic on xfs / cfq ?
->>> OK, I'll dump git-block.patch.  That means that the fsaio patches get
->>> temporarily dropped as well as they depend on git-block changes somewhat.
->> Would you like me to rework these back again to not depend on git-block ?
-> 
-> Is OK thanks, I now have a git-block minus CFQ changes, so I have restored the fsaio
-> patches.
+> Mmm. that's going to be messy to debug ... but didn't we already know
+> that kernel was racy? Or is 2.6.19.2 after that fix already? Does 20-rc6
+> still break?
 
-On a happy note - mm2 seems to pass testing much better ;-)
+Hi Martin,
 
-M.
+I finally re-ran memtest86 on the machine since it began to have too
+many different kind of errors (GPF, invalid instruction...). It turned
+out that one of the memory modules was bad. I guess my brand new 
+list_debug race condition debugger will be useful in the future, but not
+now. :)
 
+I'll remember to let memtest86 run a few hours more on my new machines
+next time.
+
+Mathieu
+
+-- 
+OpenPGP public key:              http://krystal.dyndns.org:8080/key/compudj.gpg
+Key fingerprint:     8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68 
