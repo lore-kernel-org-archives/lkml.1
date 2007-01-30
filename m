@@ -1,47 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964982AbXA3EJ0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965056AbXA3EKP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964982AbXA3EJ0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 23:09:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965056AbXA3EJ0
+	id S965056AbXA3EKP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 23:10:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965085AbXA3EKP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 23:09:26 -0500
-Received: from moutng.kundenserver.de ([212.227.126.174]:59237 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964982AbXA3EJZ convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 23:09:25 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: cbe-oss-dev@ozlabs.org, maynardj@us.ibm.com
-Subject: Re: [Cbe-oss-dev] [RFC, PATCH 2/4] Add support to OProfile for profiling Cell BE SPUs -- update
-Date: Tue, 30 Jan 2007 05:08:56 +0100
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       oprofile-list@lists.sourceforge.net
-References: <45BE4ED0.5030808@us.ibm.com> <45BE4F55.8070801@us.ibm.com>
-In-Reply-To: <45BE4F55.8070801@us.ibm.com>
+	Mon, 29 Jan 2007 23:10:15 -0500
+Received: from smtp.ocgnet.org ([64.20.243.3]:38687 "EHLO smtp.ocgnet.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965056AbXA3EKN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jan 2007 23:10:13 -0500
+Date: Tue, 30 Jan 2007 13:08:26 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Greg Ungerer <greg_ungerer@securecomputing.com>
+Cc: Dave Jones <davej@redhat.com>, linux-kernel@vger.kernel.org,
+       ksummit-2007-discuss@thunk.org
+Subject: Re: [Ksummit-2007-discuss] Re: [Ksummit-2006-discuss] 2007 Linux Kernel Summit
+Message-ID: <20070130040826.GA19362@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Greg Ungerer <greg_ungerer@securecomputing.com>,
+	Dave Jones <davej@redhat.com>, linux-kernel@vger.kernel.org,
+	ksummit-2007-discuss@thunk.org
+References: <20070125.125121.98861775.davem@davemloft.net> <8355959a0701251646t4b7db48cj862268aad52e8e24@mail.gmail.com> <20070126032849.GB5589@thunk.org> <8355959a0701260704x6aea8141s3d0581fa33c74cf2@mail.gmail.com> <20070126195024.GE14759@thunk.org> <45BE8BF9.6020204@sgi.com> <20070130030430.GA21772@redhat.com> <45BEBBF0.3050102@snapgear.com> <20070130034111.GB21772@redhat.com> <45BEC303.2040205@securecomputing.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200701300508.56467.arnd@arndb.de>
-X-Provags-ID: kundenserver.de abuse@kundenserver.de login:c48f057754fc1b1a557605ab9fa6da41
-X-Provags-ID2: V01U2FsdGVkX1+9XGf+xR+y2Gdk20Lp9h4mHpmp13tl4QszEjCxczomRJGnJWIOhBVbY+ug5hy8yXW+UcMQ+ljqE832/3aO81AlnuINax37Otbt0Df6A/t11w==
+In-Reply-To: <45BEC303.2040205@securecomputing.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 29 January 2007 20:47, Maynard Johnson wrote:
->   The code was setting up the debug bus for group 21 when profiling on the 
-> event PPU CYCLES.  The debug bus is not actually used by the hardware 
-> performance counters when counting PPU CYCLES.  Setting up the debug bus
-> for PPU CYCLES causes signal routing conflicts on the debug bus when 
-> profiling PPU cycles and another PPU event.  This patch fixes the code to 
-> only setup the debug bus to route the performance signals for the non
-> PPU CYCLE events.
+On Tue, Jan 30, 2007 at 02:01:07PM +1000, Greg Ungerer wrote:
+> Dave Jones wrote:
+> >Right, other than during the CPU architects panel, I don't remember
+> >any non x86/ia64/ppc stuff being brought up at all.
 > 
-> Signed-off-by: Maynard Johnson <mpjohn@us.ibm.com>
-> Signed-off-by: Carl Love <carll@us.ibm.com>
-
-Acked-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
-
-Any suggestion for a one-line patch title?
+> Yep. IIRC the CPU architects panel was all x86/x86_64/ppc too wasn't it?
+> 
+Similarly, it would be nice if we could avoid marketing oriented CPU
+roadmap presentations this year, before any other vendors start
+getting ideas..
