@@ -1,85 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965369AbXA3Ra0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965632AbXA3Rcf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965369AbXA3Ra0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 12:30:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965361AbXA3Ra0
+	id S965632AbXA3Rcf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 12:32:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965641AbXA3Rcf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 12:30:26 -0500
-Received: from nf-out-0910.google.com ([64.233.182.184]:10072 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965369AbXA3Ra0 (ORCPT
+	Tue, 30 Jan 2007 12:32:35 -0500
+Received: from pne-smtpout3-sn2.hy.skanova.net ([81.228.8.111]:45166 "EHLO
+	pne-smtpout3-sn2.hy.skanova.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S965632AbXA3Rce (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 12:30:26 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=htU/XrTbT9ENe3BLwJzgr3+AUvqvBvp0MfDZuVjipmzNb03ojfMasR6Lhgu6RAcKgTGOG5nTgKpvu71nP5N4E9v5tL8PqsqUl0rr4Xx7D6esHuD/N5hLWMWahXMNIIzARPNTJ1Z/HTGbMt8FoMhhxvnAXioXiZ8ZgHfLN6thpBU=
-Message-ID: <1a297b360701300930m90a09bbp30bed58c9c9bf456@mail.gmail.com>
-Date: Tue, 30 Jan 2007 21:30:23 +0400
-From: "Manu Abraham" <abraham.manu@gmail.com>
-To: "Greg KH" <greg@kroah.com>
-Subject: Re: Free Linux Driver Development!
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20070130012904.GA9617@kroah.com>
+	Tue, 30 Jan 2007 12:32:34 -0500
+Date: Tue, 30 Jan 2007 19:32:27 +0200
+From: Sami Farin <safari-xfs@safari.iki.fi>
+To: XFS Mailing List <xfs@oss.sgi.com>
+Cc: linux-kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: XFS internal error xfs_da_do_buf
+Message-ID: <20070130173227.GA6017@m.safari.iki.fi>
+Mail-Followup-To: XFS Mailing List <xfs@oss.sgi.com>,
+	linux-kernel Mailing List <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20070130012904.GA9617@kroah.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 1/30/07, Greg KH <greg@kroah.com> wrote:
-> Free Linux Driver Development!
->
-> Yes, that's right, the Linux kernel community is offering all companies
-> free Linux driver development.  No longer do you have to suffer through
-> all of the different examples in the Linux Device Driver Kit, or pick
-> through the thousands of example drivers in the Linux kernel source
-> tree trying to determine which one is the closest to what you need to
-> do.
->
-> All that is needed is some kind of specification that describes how your
-> device works, or the email address of an engineer that is willing to
-> answer questions every once in a while.  A few sample devices might be
-> good to have so that debugging doesn't have to be done by email, but if
-> necessary, that can be done.
->
-> In return, you will receive a complete and working Linux driver that is
-> added to the main Linux kernel source tree.  The driver will be written
-> by some of the members of the Linux kernel developer community (over
-> 1500 strong and growing).  This driver will then be automatically
-> included in all Linux distributions, including the "enterprise" ones.
-> It will be automatically kept up to date and working through all Linux
-> kernel API changes.  This driver will work with all[1] of the different
-> CPU types supported by Linux, the largest number of CPU types supported
-> by any operating system ever before in the history of computing.
->
-> As for support, the driver will be supported through email by the
-> original developers, when they can help out, and by the "enterprise"
-> Linux distributors as part of their service agreements with their
-> customers.
->
-> If your company is worried about NDA issues surrounding your device's
-> specifications, we have arranged a program with OSDL/TLF's Tech Board to
-> provide the legal framework where a company can interact with a member
-> of the kernel community in order to properly assure that all needed NDA
-> requirements are fulfilled.
+I setup namespace for /tmp and /var/tmp 
+( pam_namespace.so into /etc/pam.d/{su,login} )
+and something did not like something I did:
 
+[322593.844838] 0x0: 00 00 00 00 2b 00 00 11 20 21 00 00 00 68 ff ff 
+[322593.844854] Filesystem "sda8": XFS internal error xfs_da_do_buf(2) at line 2087 of file fs/xfs/xfs_da_btree.c.  Caller 0xc0230808
+[322593.844997]  [<c0103cff>] dump_trace+0x215/0x21a
+[322593.845024]  [<c0103da7>] show_trace_log_lvl+0x1a/0x30
+[322593.845044]  [<c0103dcf>] show_trace+0x12/0x14
+[322593.845062]  [<c0103ecc>] dump_stack+0x19/0x1b
+[322593.845080]  [<c023a3a3>] xfs_error_report+0x55/0x5b
+[322593.845430]  [<c023a4c6>] xfs_corruption_error+0x3f/0x59
+[322593.845780]  [<c02306f9>] xfs_da_do_buf+0x716/0x7c1
+[322593.846124]  [<c0230808>] xfs_da_read_buf+0x2f/0x35
+[322593.846464]  [<c02162bc>] xfs_attr_leaf_get+0x3c/0xa3
+[322593.846798]  [<c0214d08>] xfs_attr_fetch+0xb0/0xfe
+[322593.847127]  [<c020e56a>] xfs_acl_iaccess+0x59/0xc2
+[322593.847451]  [<c02457af>] xfs_iaccess+0x14b/0x189
+[322593.847806]  [<c025fb3b>] xfs_access+0x34/0x53
+[322593.848182]  [<c026ceea>] xfs_vn_permission+0x12/0x17
+[322593.848564]  [<c0175438>] permission+0xe4/0xe6
+[322593.848755]  [<c0175449>] vfs_permission+0xf/0x11
+[322593.848942]  [<c016d0cf>] sys_faccessat+0xa6/0x144
+[322593.849120]  [<c016d18d>] sys_access+0x20/0x22
+[322593.849292]  [<c0102e77>] syscall_call+0x7/0xb
+[322593.849310]  [<00f4f410>] 0xf4f410
+[322593.849334]  =======================
+[322593.849358] 0x0: 00 00 00 00 2b 00 00 11 20 21 00 00 00 68 ff ff 
+[322593.849364] Filesystem "sda8": XFS internal error xfs_da_do_buf(2) at line 2087 of file fs/xfs/xfs_da_btree.c.  Caller 0xc0230808
+[322593.849484]  [<c0103cff>] dump_trace+0x215/0x21a
+[322593.849512]  [<c0103da7>] show_trace_log_lvl+0x1a/0x30
+[322593.849530]  [<c0103dcf>] show_trace+0x12/0x14
+[322593.849548]  [<c0103ecc>] dump_stack+0x19/0x1b
+[322593.849573]  [<c023a3a3>] xfs_error_report+0x55/0x5b
+[322593.849913]  [<c023a4c6>] xfs_corruption_error+0x3f/0x59
+[322593.850258]  [<c02306f9>] xfs_da_do_buf+0x716/0x7c1
+[322593.850598]  [<c0230808>] xfs_da_read_buf+0x2f/0x35
+[322593.850936]  [<c02162bc>] xfs_attr_leaf_get+0x3c/0xa3
+[322593.851266]  [<c0214d08>] xfs_attr_fetch+0xb0/0xfe
+[322593.851593]  [<c020e56a>] xfs_acl_iaccess+0x59/0xc2
+[322593.851917]  [<c02457af>] xfs_iaccess+0x14b/0x189
+[322593.852268]  [<c025fb3b>] xfs_access+0x34/0x53
+[322593.852638]  [<c026ceea>] xfs_vn_permission+0x12/0x17
+[322593.853018]  [<c0175438>] permission+0xe4/0xe6
+[322593.853204]  [<c0175449>] vfs_permission+0xf/0x11
+[322593.853387]  [<c016d0cf>] sys_faccessat+0xa6/0x144
+[322593.853562]  [<c016d18d>] sys_access+0x20/0x22
+[322593.853734]  [<c0102e77>] syscall_call+0x7/0xb
+[322593.853753]  [<00f4f410>] 0xf4f410
+[322593.853759]  =======================
 
-Sounds very nice indeed. Just happened to do a driver in a similar
-status, where the vendor did not want to make the specs and other
-stuff open, but was in a position to support an OSS driver for the
-STB0899 demodulator driver from ST Microelectronics
+sda8 is /usr , I haven't played with mount --bind or namespaces
+at /usr (AFAIK).
 
-I think many vendors will be ready to jump in.
+My sda hard disk is not broken and I have SMP kernel 2.6.19.2 + Pentium D.
+I have got no other BUGs or xfs errors and I can access /usr and other
+partitions OK.
 
-the STB0899 demodulator driver is now available at
+-- 
+Do what you love because life is too short for anything else.
 
-http://linuxtv.org/hg/~manu/stb0899-c5
-
-It needs some fixes with regards to our DVB API. (bumping it up to 3.2
-from 3.1) It's almost ready to rock now, with new delivery systems.
-
-regards,
-manu
