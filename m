@@ -1,45 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965260AbXA3FLl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965402AbXA3FMF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965260AbXA3FLl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 00:11:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965398AbXA3FLl
+	id S965402AbXA3FMF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 00:12:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965406AbXA3FME
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 00:11:41 -0500
-Received: from mx1.suse.de ([195.135.220.2]:34849 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965260AbXA3FLk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 00:11:40 -0500
-From: Andi Kleen <ak@suse.de>
-To: ksummit-2007-discuss@thunk.org
-Subject: Re: [Ksummit-2007-discuss] Re: [Ksummit-2006-discuss] 2007 Linux Kernel Summit
-Date: Tue, 30 Jan 2007 06:11:18 +0100
-User-Agent: KMail/1.9.5
-Cc: Dave Jones <davej@redhat.com>, Greg Ungerer <gerg@snapgear.com>,
-       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       alan@redhat.com, Sunil Naidu <akula2.shark@gmail.com>
-References: <20070123.095756.30177490.davem@davemloft.net> <45BEBBF0.3050102@snapgear.com> <20070130034111.GB21772@redhat.com>
-In-Reply-To: <20070130034111.GB21772@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Tue, 30 Jan 2007 00:12:04 -0500
+Received: from accolon.hansenpartnership.com ([64.109.89.108]:53186 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S965402AbXA3FMB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jan 2007 00:12:01 -0500
+Subject: Re: [Ksummit-2007-discuss] Re: [Ksummit-2006-discuss] 2007 Linux
+	Kernel Summit
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Jes Sorensen <jes@sgi.com>
+Cc: Dave Jones <davej@redhat.com>, Theodore Tso <tytso@mit.edu>,
+       Sunil Naidu <akula2.shark@gmail.com>, linux-kernel@vger.kernel.org,
+       dirk.hohndel@intel.com, alan@redhat.com, ksummit-2007-discuss@thunk.org,
+       David Miller <davem@davemloft.net>
+In-Reply-To: <45BECEB4.6060905@sgi.com>
+References: <20070123.095756.30177490.davem@davemloft.net>
+	 <C1DDFD3E.8658%dirk.hohndel@intel.com>
+	 <20070125.125121.98861775.davem@davemloft.net>
+	 <8355959a0701251646t4b7db48cj862268aad52e8e24@mail.gmail.com>
+	 <20070126032849.GB5589@thunk.org>
+	 <8355959a0701260704x6aea8141s3d0581fa33c74cf2@mail.gmail.com>
+	 <20070126195024.GE14759@thunk.org> <45BE8BF9.6020204@sgi.com>
+	 <20070130030430.GA21772@redhat.com>  <45BECEB4.6060905@sgi.com>
+Content-Type: text/plain
+Date: Mon, 29 Jan 2007 23:11:54 -0600
+Message-Id: <1170133914.3378.55.camel@mulgrave.il.steeleye.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200701300611.18409.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 30 January 2007 04:41, Dave Jones wrote:
+On Tue, 2007-01-30 at 05:51 +0100, Jes Sorensen wrote:
+> > So far though, there's been nothing proposed at all, so feel free
+> > to throw your hat in the ring, if nothing else, it'll kickstart
+> > the process.
+> 
+> Actually I'm in the process of investigating launching a mini summit
+> cabal, which I think would cover most of my current issues :)
 
-> Right, other than during the CPU architects panel, I don't remember
-> any non x86/ia64/ppc stuff being brought up at all.
+Actually, perhaps we should track these more closely.  At the moment we
+have mini summits in
 
-No IA64 stuff that I can remember. And there was a presentation on PPC.
+Networking
+Wireless
+Filesystems
+Storage
+Power Management
 
-But that was planned to be differently with more focus on embedded, 
-unfortunately the comittee didn't manage to find more embedded CPU 
-people in time.
+And probably several others I can't remember.  Right at the moment, the
+organisation and funding for all of these is completely ad-hoc, so if
+mini summits are the way to go, it would certainly be better to move
+them on to a more templated basis (so anyone wishing to organise one
+would know whom to go to for these things).
 
-My personal preference would be to go for a chipset panel this year
-instead. Chipsets seem to impact kernels much more than CPUs.
+James
 
--Andi
+
