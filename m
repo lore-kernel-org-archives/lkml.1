@@ -1,36 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964932AbXA3Dsp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964930AbXA3DyI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964932AbXA3Dsp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 22:48:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964982AbXA3Dsp
+	id S964930AbXA3DyI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 22:54:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964982AbXA3DyI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 22:48:45 -0500
-Received: from old-tantale.fifi.org ([64.81.251.130]:33688 "EHLO
-	tantale.fifi.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964932AbXA3Dso (ORCPT
+	Mon, 29 Jan 2007 22:54:08 -0500
+Received: from rex.snapgear.com ([203.143.235.140]:43350 "EHLO
+	cyberguard.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S964930AbXA3DyH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 22:48:44 -0500
-X-Greylist: delayed 469 seconds by postgrey-1.27 at vger.kernel.org; Mon, 29 Jan 2007 22:48:43 EST
-To: "Yakov Lerner" <iler.ml@gmail.com>
-Cc: "Kernel Linux" <linux-kernel@vger.kernel.org>
-Subject: Re: software read-only flag for rw partition or disk ?
-References: <f36b08ee0701290102kd5c4ab1hef861cb3de9f042d@mail.gmail.com>
-Mail-Copies-To: nobody
-From: Philippe Troin <phil@fifi.org>
-Date: 29 Jan 2007 19:44:15 -0800
-In-Reply-To: <f36b08ee0701290102kd5c4ab1hef861cb3de9f042d@mail.gmail.com>
-Message-ID: <877iv5uqk0.fsf@tantale.fifi.org>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.2
+	Mon, 29 Jan 2007 22:54:07 -0500
+X-Greylist: delayed 1376 seconds by postgrey-1.27 at vger.kernel.org; Mon, 29 Jan 2007 22:54:07 EST
+Message-ID: <45BEBBF0.3050102@snapgear.com>
+Date: Tue, 30 Jan 2007 13:30:56 +1000
+From: Greg Ungerer <gerg@snapgear.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070102)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Dave Jones <davej@redhat.com>, Jes Sorensen <jes@sgi.com>,
+       Theodore Tso <tytso@mit.edu>, Sunil Naidu <akula2.shark@gmail.com>,
+       linux-kernel@vger.kernel.org, dirk.hohndel@intel.com, alan@redhat.com,
+       ksummit-2007-discuss@thunk.org, David Miller <davem@davemloft.net>
+Subject: Re: [Ksummit-2007-discuss] Re: [Ksummit-2006-discuss] 2007 Linux
+ Kernel Summit
+References: <20070123.095756.30177490.davem@davemloft.net>	<C1DDFD3E.8658%dirk.hohndel@intel.com>	<20070125.125121.98861775.davem@davemloft.net>	<8355959a0701251646t4b7db48cj862268aad52e8e24@mail.gmail.com>	<20070126032849.GB5589@thunk.org>	<8355959a0701260704x6aea8141s3d0581fa33c74cf2@mail.gmail.com>	<20070126195024.GE14759@thunk.org> <45BE8BF9.6020204@sgi.com> <20070130030430.GA21772@redhat.com>
+In-Reply-To: <20070130030430.GA21772@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Yakov Lerner" <iler.ml@gmail.com> writes:
 
-> Does /proc have any entries to flip the "software read-only flag"
-> for a partition or disk (which are physically read-write) ?
+Dave Jones wrote:
+> On Tue, Jan 30, 2007 at 01:06:17AM +0100, Jes Sorensen wrote:
+>  > Then there is the issue of architectures, at least in my book KS should
+>  > focus on the ones that are really live and not in maintenance mode.
+>  > x86_64, x86_32, PPC, ia64, ARM seems to be the driving ones these days,
+>  > m68k, Sparc32, and others, somewhat less so .....
+> 
+> Again, I don't recall us spending any time at all discussing m68k, or
+> sparc, whilst the others you mention were well represented.
 
-No, but you can use blockdev --setro /dev/hdXX
+Well, others where represented, I was there looking after non-mmu m68k
+for example (and other general non-mmu stuff). There just wasn't much
+contentious stuff in that space that needed wider discussion.
 
-Phil.
+Regards
+Greg
+
+
+
+------------------------------------------------------------------------
+Greg Ungerer  --  Chief Software Dude       EMAIL:     gerg@snapgear.com
+SnapGear -- a Secure Computing Company      PHONE:       +61 7 3435 2888
+825 Stanley St,                             FAX:         +61 7 3891 3630
+Woolloongabba, QLD, 4102, Australia         WEB: http://www.SnapGear.com
