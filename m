@@ -1,40 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965537AbXA3OpF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965534AbXA3OpR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965537AbXA3OpF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 09:45:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965535AbXA3OpE
+	id S965534AbXA3OpR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 09:45:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965532AbXA3OpR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 09:45:04 -0500
-Received: from il.qumranet.com ([62.219.232.206]:52757 "EHLO il.qumranet.com"
+	Tue, 30 Jan 2007 09:45:17 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:60363 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965538AbXA3OpB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 09:45:01 -0500
-Subject: [PATCH 9/11] KVM: VMX: Reload ds and es even in 64-bit mode
-From: Avi Kivity <avi@qumranet.com>
-Date: Tue, 30 Jan 2007 14:45:00 -0000
-To: kvm-devel@lists.sourceforge.net
-Cc: linux-kernel@vger.kernel.org, akpm@osdl.org, mingo@elte.hu
-References: <45BF57C9.7000103@qumranet.com>
-In-Reply-To: <45BF57C9.7000103@qumranet.com>
-Message-Id: <20070130144500.3CE2AA0014@il.qumranet.com>
+	id S965535AbXA3OpP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jan 2007 09:45:15 -0500
+Message-ID: <45BF59ED.3090203@stud.feec.vutbr.cz>
+Date: Tue, 30 Jan 2007 15:45:01 +0100
+From: Michal Schmidt <xschmi00@stud.feec.vutbr.cz>
+User-Agent: Icedove 1.5.0.9 (X11/20061220)
+MIME-Version: 1.0
+To: linux@bohmer.net
+CC: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [OOPS] on 2.6.20-rc5-rt10
+References: <3efb10970701300630w3c235233ic7613e8f74a7b4f2@mail.gmail.com>
+In-Reply-To: <3efb10970701300630w3c235233ic7613e8f74a7b4f2@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Or 32-bit userspace will get confused.
+Remy Bohmer wrote:
+> Hello All,
+> 
+> Once in a while we see the following stacktrace.
+> We do not know yet the exact condition that generates this, but is
+> there anyone that recognises this oops?
+> 
+> Kind Regards,
+> 
+> Remy Bohmer
+> 
+> [...]
+> Jan 30 14:09:20 localhost kernel: Modules linked in: cap_over
+> commoncap i2c_dev uhci_hcd i2c_i801 i2c_core ehci_hcd
 
-Signed-off-by: Avi Kivity <avi@qumranet.com>
-
-Index: linux-2.6/drivers/kvm/vmx.c
-===================================================================
---- linux-2.6.orig/drivers/kvm/vmx.c
-+++ linux-2.6/drivers/kvm/vmx.c
-@@ -1863,9 +1863,7 @@ again:
- 	fx_restore(vcpu->host_fx_image);
- 	vcpu->interrupt_window_open = (vmcs_read32(GUEST_INTERRUPTIBILITY_INFO) & 3) == 0;
- 
--#ifndef CONFIG_X86_64
- 	asm ("mov %0, %%ds; mov %0, %%es" : : "r"(__USER_DS));
--#endif
- 
- 	/*
- 	 * Profile KVM exit RIPs:
+What's the cap_over module? I can't find it in my kernel anywhere.
+Michal
