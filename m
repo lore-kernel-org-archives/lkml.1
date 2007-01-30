@@ -1,48 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751651AbXA3TQ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751672AbXA3TQs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751651AbXA3TQ2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 14:16:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751669AbXA3TQ2
+	id S1751672AbXA3TQs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 14:16:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751677AbXA3TQs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 14:16:28 -0500
-Received: from nf-out-0910.google.com ([64.233.182.187]:2824 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751649AbXA3TQ1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 14:16:27 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=gpbwD4Epe6hAxSyvhyb/itwwM8zxidsqgslu6SEBtOU9K/xky/5KN7NR2urCmWS2+O2V84xmsqHF/mFIpnYMaKkfAuG2dkJngmARu4fd5oyCQNM/2pyY4ic3eEF+UOgiRT3Tujy98DP+aaidkAjqX4tLLMI02F9KlxjPtUsnrn0=
-Subject: Re: [PATCH] EFI x86: pass firmware call parameters on the stack
-From: =?ISO-8859-1?Q?Fr=E9d=E9ric?= Riss <frederic.riss@gmail.com>
-To: Andrew Morton <akpm@osdl.org>
-Cc: Matt Domsch <Matt_Domsch@dell.com>, linux-kernel@vger.kernel.org,
-       artiom.myaskouvskey@intel.com, bjorn.helgaas@hp.com,
-       Linus Torvalds <torvalds@linux-foundation.org>
-In-Reply-To: <20070130111058.db191e07.akpm@osdl.org>
-References: <1170183678.21603.73.camel@funkylaptop>
-	 <20070130111058.db191e07.akpm@osdl.org>
-Content-Type: text/plain; charset=utf-8
-Date: Tue, 30 Jan 2007 20:16:22 +0100
-Message-Id: <1170184582.21603.76.camel@funkylaptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
-Content-Transfer-Encoding: 8bit
+	Tue, 30 Jan 2007 14:16:48 -0500
+Received: from ns2.suse.de ([195.135.220.15]:52023 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751672AbXA3TQr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jan 2007 14:16:47 -0500
+Date: Tue, 30 Jan 2007 11:15:49 -0800
+From: Greg KH <greg@kroah.com>
+To: Bauke Jan Douma <bjdouma@xs4all.nl>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Free Linux Driver Development!
+Message-ID: <20070130191549.GJ20642@kroah.com>
+References: <20070130012904.GA9617@kroah.com> <45BEF4B0.1090203@xs4all.nl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <45BEF4B0.1090203@xs4all.nl>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Le mardi 30 janvier 2007 à 11:10 -0800, Andrew Morton a écrit :
-> > This patch fixes the issue for x86, but the file is also used by IA64. I
-> > would have used asmlinkage to force arguments on the stack, but it has a
-> > special meaning on IA64, thus I used a raw regparm(0) GCC attribute.
-> > This attribute is documented only for x86, I hope it has no side effect
-> > on other archs.
+On Tue, Jan 30, 2007 at 08:33:04AM +0100, Bauke Jan Douma wrote:
+> Greg KH wrote on 30-01-07 02:29:
+> An offer they can't refuse.
 > 
-> hm, this sounds like a fairly serious problem.  Has this been runtime
-> tested on ia64 and x86_64>
+> >This offer is in affect for all different types of devices, from USB
+> >toys to PCI video devices to high-speed networking cards.  If you build
+> >it, we can get Linux drivers working for it.
+> 
+> s/affect/effect/
+> 
+> and maybe
+> 
+> s/build/manufacture/ ??
 
-Not by me, the only EFI box I've access to is my Mac Mini.
+Heh, gotta love the grammer police (you were not the only one to point
+these mistakes out by a long shot...)
 
-Fred.
+thanks,
 
+greg k-h
