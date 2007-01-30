@@ -1,46 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965450AbXA3JXD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965467AbXA3JbL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965450AbXA3JXD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 04:23:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965464AbXA3JXD
+	id S965467AbXA3JbL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 04:31:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965468AbXA3JbL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 04:23:03 -0500
-Received: from main.gmane.org ([80.91.229.2]:36586 "EHLO ciao.gmane.org"
+	Tue, 30 Jan 2007 04:31:11 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:50479 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965450AbXA3JXB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 04:23:01 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Oleg Verych <olecom@flower.upol.cz>
-Subject: hunting on open source developers (Re: [Ksummit-2006-discuss] 2007 Linux Kernel Summit)
-Date: Tue, 30 Jan 2007 09:22:34 +0000 (UTC)
-Organization: Palacky University in Olomouc, experimental physics department
-Message-ID: <slrneru43c.f71.olecom@flower.upol.cz>
-References: <20070123.095756.30177490.davem@davemloft.net> <C1DDFD3E.8658%dirk.hohndel@intel.com> <20070125.125121.98861775.davem@davemloft.net> <8355959a0701251646t4b7db48cj862268aad52e8e24@mail.gmail.com> <20070126032849.GB5589@thunk.org>
-X-Complaints-To: usenet@sea.gmane.org
-X-Gmane-NNTP-Posting-Host: flower.upol.cz
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>, Sunil Naidu <akula2.shark@gmail.com>, dirk.hohndel@intel.com, linux-kernel@vger.kernel.org, alan@redhat.com, ksummit-2007-discuss@thunk.org, David Miller <davem@davemloft.net>
-User-Agent: slrn/0.9.8.1pl1 (Debian)
+	id S965467AbXA3JbJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jan 2007 04:31:09 -0500
+Date: Tue, 30 Jan 2007 01:26:31 -0800
+From: Andrew Morton <akpm@osdl.org>
+To: Olivier Galibert <galibert@pobox.com>
+Cc: linux-kernel@vger.kernel.org, Len Brown <lenb@kernel.org>,
+       Andi Kleen <ak@suse.de>
+Subject: Re: 2.6.20-rc6-mm3
+Message-Id: <20070130012631.8bb86c76.akpm@osdl.org>
+In-Reply-To: <20070130090645.GC11823@dspnet.fr.eu.org>
+References: <20070129204528.eb8d695e.akpm@osdl.org>
+	<20070130090645.GC11823@dspnet.fr.eu.org>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> From: Theodore Tso
-> Newsgroups: gmane.linux.kernel
-> Subject: Re: [Ksummit-2006-discuss] 2007 Linux Kernel Summit
-> Date: Thu, 25 Jan 2007 22:28:49 -0500
-[]
-> (Unless perhaps in some conspiracy theory scenario where Microsoft pays
-> $$$ to some VC company to sponsor an event in Moskow, and then
-> contracts out to the KGB to fill the meeting room with an aerosolized
-> powder of Polonium 210 to kill off all of the top Linux developers in
-> one fell swoop.  But that sort of thing only happens in spy novels.
-> :-)
+On Tue, 30 Jan 2007 10:06:45 +0100
+Olivier Galibert <galibert@pobox.com> wrote:
 
-BTW, after some information was published here
+> On Mon, Jan 29, 2007 at 08:45:28PM -0800, Andrew Morton wrote:
+> > -x86_64-mm-share-whats-shareable.patch
+> > -x86_64-mm-only-call-unreachable_devices-when-type-1-is-available.patch
+> > -x86_64-mm-only-map-whats-necessary.patch
+> > -x86_64-mm-detect-and-support-the-e7520-and-the-945g-gz-p-pl.patch
+> > -x86_64-mm-reserve-resources-but-only-when-were-sure-about-them.patch
+> 
+> Want me to update these?  And maybe the other mmconfig related ones if
+> I can find them.
+> 
 
-                    <http://www.iowaconsumercase.org/>
+Thanks.  That depends upon which of Andi or Len merges first.
 
-i don't think it's funny or "only happens in spy novels"...
+If Andi goes first, then Len has rather a bit of hackwork to do.
 
-____
+If Len goes first then things are probably simpler, but that ACPI codedrop
+is very new and might have problems.  We wouldn't want to hold the x86
+merge back because of it.
+
+For now, I guess we sit back while Len and Andi sort out what they're going
+to do.
+
+Len, what was in that merge anyway?  Lots of renaming and shuffling things
+around - the sorts of things which are safe as long as they compile OK.  But
+was there much substantive material in there as well?
 
