@@ -1,61 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751737AbXA3TgW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751761AbXA3Thf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751737AbXA3TgW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 14:36:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751759AbXA3TgV
+	id S1751761AbXA3Thf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 14:37:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751760AbXA3The
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 14:36:21 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:49709 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751737AbXA3TgV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 14:36:21 -0500
-Message-ID: <45BF9E32.60309@garzik.org>
-Date: Tue, 30 Jan 2007 14:36:18 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
+	Tue, 30 Jan 2007 14:37:34 -0500
+Received: from mta11.adelphia.net ([68.168.78.205]:63549 "EHLO
+	mta11.adelphia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751761AbXA3The (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jan 2007 14:37:34 -0500
+Date: Tue, 30 Jan 2007 13:37:31 -0600
+From: Corey Minyard <minyard@acm.org>
+To: Andrew Morton <akpm@osdl.org>, Linux Kernel <linux-kernel@vger.kernel.org>
+Cc: David Barksdale <amatus@ocgnet.org>
+Subject: [PATCH] IPMI: fix timeout list handling
+Message-ID: <20070130193731.GA12130@localdomain>
+Reply-To: minyard@acm.org
 MIME-Version: 1.0
-To: Roland Dreier <rdreier@cisco.com>
-CC: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org
-Subject: Re: Free Linux Driver Development!
-References: <20070130012904.GA9617@kroah.com> <ada8xfks90x.fsf@cisco.com>	<45BF8C57.1020500@garzik.org> <adasldsqqvz.fsf@cisco.com>
-In-Reply-To: <adasldsqqvz.fsf@cisco.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.7 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roland Dreier wrote:
-> What are our standards for maintenance?  How can we tell in advance if
-> something is going to be maintained (cf. drivers/net/chelsio)?
-> 
-> I don't think you can seriously argue that just posting documentation
-> is going to guarantee that a device is going to get a high-quality
-> driver that runs on all architectures and that enterprise distros will
-> support.
+From: David Barksdale <amatus@ocgnet.org>
 
-Look up from infiniband once in and while, and... surprise... that's 
-what is actually happening.  It sure seems to me like the drivers 
-maintained by hardware vendors directly is in the distinct minority, 
-illuminating irrefutable evidence that hardware vendors do in fact 
-receive high quality drivers in exchange for documentation (and 
-hardware) availability.  IMO the drivers of the highest quality are 
-usually in the this category.
+This patch against the 2.6.20-rc6 kernel fixes a dangling pointer bug in
+ipmi_timeout_handler. A list of timedout messages is not re-initialized
+before reuse, causing the head of the list to point to freed memory.
 
-
-> And I don't think it's a good strategy to try convince
-> vendors to open docs by using happy talk about an idealized fantasy world.
-
-Agreed.  That's why Greg was describing the real world of Linux kernel 
-development, rather than an idealized fantasy world.
-
-How do you think you got all these highly portable ATA, USB, network, 
-and sound drivers, hmmm?  The vast majority was just documentation and 
-hardware access.  That's been the Linux way since 1993 (1991?).
-
-	Jeff
-
-
+Signed-off-by: David Barksdale <amatus@ocgnet.org>
+Signed-off-by: Corey Minyard <minyard@acm.org>
+---
+diff -ruNp linux-2.6.git.orig/drivers/char/ipmi/ipmi_msghandler.c linux-2.6.git/drivers/char/ipmi/ipmi_msghandler.c
+--- linux-2.6.git.orig/drivers/char/ipmi/ipmi_msghandler.c	2007-01-30 10:32:14.000000000 -0600
++++ linux-2.6.git/drivers/char/ipmi/ipmi_msghandler.c	2007-01-30 10:33:50.000000000 -0600
+@@ -3649,8 +3649,6 @@ static void ipmi_timeout_handler(long ti
+ 	unsigned long        flags;
+ 	int                  i;
+ 
+-	INIT_LIST_HEAD(&timeouts);
+-
+ 	rcu_read_lock();
+ 	list_for_each_entry_rcu(intf, &ipmi_interfaces, link) {
+ 		/* See if any waiting messages need to be processed. */
+@@ -3671,6 +3669,7 @@ static void ipmi_timeout_handler(long ti
+ 		/* Go through the seq table and find any messages that
+ 		   have timed out, putting them in the timeouts
+ 		   list. */
++		INIT_LIST_HEAD(&timeouts);
+ 		spin_lock_irqsave(&intf->seq_lock, flags);
+ 		for (i = 0; i < IPMI_IPMB_NUM_SEQ; i++)
+ 			check_msg_timeout(intf, &(intf->seq_table[i]),
 
