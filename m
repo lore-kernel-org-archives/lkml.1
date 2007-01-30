@@ -1,49 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750975AbXA3TsR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750990AbXA3Ttd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750975AbXA3TsR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 14:48:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750977AbXA3TsR
+	id S1750990AbXA3Ttd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 14:49:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750997AbXA3Ttd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 14:48:17 -0500
-Received: from ns1.suse.de ([195.135.220.2]:59835 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750973AbXA3TsQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 14:48:16 -0500
-Date: Tue, 30 Jan 2007 11:47:18 -0800
-From: Greg KH <greg@kroah.com>
-To: Florian Weimer <fw@deneb.enyo.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Free Linux Driver Development!
-Message-ID: <20070130194718.GC22022@kroah.com>
-References: <20070130012904.GA9617@kroah.com> <877iv4ljai.fsf@mid.deneb.enyo.de> <20070130191231.GH20642@kroah.com> <87ejpce21x.fsf@mid.deneb.enyo.de>
+	Tue, 30 Jan 2007 14:49:33 -0500
+Received: from ug-out-1314.google.com ([66.249.92.168]:38392 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750990AbXA3Ttc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jan 2007 14:49:32 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=G2HTW/n/s9IdcDW5Ag6EfwoUPYK+OSap8tACx/p3dDVdjj0nJ7nQOzNvBDHxQb9PmNa6jYfDAMjRpCuJZI2DHrD2bYW3+g2Kxt7mOle6LfIM3B0PpJsijfJ/ToEAu1qS8f85FR5KI8eg2GxrsQLU3zSm4xy2kh6lkGMvfxuwXkA=
+Message-ID: <21d7e9970701301149r788c4053s2cea2c539e53bb99@mail.gmail.com>
+Date: Wed, 31 Jan 2007 06:49:31 +1100
+From: "Dave Airlie" <airlied@gmail.com>
+To: "Paul Collins" <paul@briny.ondioline.org>
+Subject: Re: gpu sharing layer for kernel
+Cc: airlied@linux.ie, benh@kernel.crashing.org, linux-kernel@vger.kernel.org
+In-Reply-To: <87k5zbsfnu.fsf@briny.internal.ondioline.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <87ejpce21x.fsf@mid.deneb.enyo.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <1169637623985-git-send-email-airlied@linux.ie>
+	 <87k5zbsfnu.fsf@briny.internal.ondioline.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 30, 2007 at 08:40:10PM +0100, Florian Weimer wrote:
-> * Greg KH:
-> 
-> >> This reminds of the the utterly broken dl2k network driver (which has
-> >> got interrupt handling problems and doesn't properly synchronize with
-> >> DMA transfers, IIRC).  Hardware specs are available, and I guess I
-> >> could even provide a hardware sample, maybe even two.  (If the
-> >> community provides driver support, it shouldn't matter if the vendor
-> >> actually supports development.)
-> >
-> > Have you tried contacting the network driver developers to work these
-> > issues out?
-> 
-> Yes, sort of: <http://article.gmane.org/gmane.linux.kernel/448446>
-> There weren't any replies, unfortunately.  Do you think a repost would
-> make sense?
+>
+> airlied@linux.ie writes:
+>
+> > This patch series contains the gpu sharing layer for kernel that
+> > I've mentioned before. It should apply against Linus's git tree.
+>
+> I gave the patches a go on my PowerBook.  I had to make a few changes
+> to get it to compile.  Works fine so far: I switched between VTs and X
+> with an accelerated GLX client active a few times, no problems.
+>
+> When I did a sleep/resume cycle it wedged on resume, but I expect this
+> is due to my hacking up radeonfb_early_resume(), as seen in the last
+> hunk below, which was just aimed at just getting it to compile.
+>
 
-Try sending it to the netdev mailing list instead.  Not all of the
-network driver developers read the whole lkml firehose.
+Hi Paul,
 
-thanks,
+I suspected some problem on PPC alright as I didn't have a radeon
+based one to test on, I'll incorporate your changes and I'll fix the
+suspend/resume to work properly :-)
 
-greg k-h
+Dave.
