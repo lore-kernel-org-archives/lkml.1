@@ -1,63 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751837AbXA3XqE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751879AbXA3XqY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751837AbXA3XqE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 18:46:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751841AbXA3XqD
+	id S1751879AbXA3XqY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 18:46:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752064AbXA3XqY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 18:46:03 -0500
-Received: from hu-out-0506.google.com ([72.14.214.230]:36782 "EHLO
-	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751837AbXA3XqB (ORCPT
+	Tue, 30 Jan 2007 18:46:24 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:50194 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751879AbXA3XqU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 18:46:01 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=CirzUxngOAF1isLraBZwtqS0xNUbfRg7qyy5dJYoMqXyz8q86gnOFykazxuvCb2relIyf6S3gKuyhzqDMeBwhC4OmgLTCxw9wSqdroCuf+ZlRLkzbm/eQm/bffi7+aWQ/eNdRx90U9KJJFygTaTOojBndZIqadbG3cVTHMbSh7k=
-Message-ID: <1a297b360701301545o2608edf5i618b9ff26bf1b4a3@mail.gmail.com>
-Date: Wed, 31 Jan 2007 03:45:59 +0400
-From: "Manu Abraham" <abraham.manu@gmail.com>
-To: "Roland Dreier" <rdreier@cisco.com>
-Subject: Re: Free Linux Driver Development!
-Cc: "Jeff Garzik" <jeff@garzik.org>, "Greg KH" <greg@kroah.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <adaps8wnlfl.fsf@cisco.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 30 Jan 2007 18:46:20 -0500
+In-Reply-To: <Pine.LNX.4.64.0701301448320.3611@woody.linux-foundation.org>
+References: <patchbomb.1170193181@tetsuo.zabbo.net> <Pine.LNX.4.64.0701301345060.3611@woody.linux-foundation.org> <0E1E87C3-954C-4297-9D6C-E98BC79D68C3@oracle.com> <Pine.LNX.4.64.0701301448320.3611@woody.linux-foundation.org>
+Mime-Version: 1.0 (Apple Message framework v752.3)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <00CAB6CF-640D-4449-9CBA-7E52FE9BEC37@oracle.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-aio@kvack.org, Suparna Bhattacharya <suparna@in.ibm.com>,
+       Benjamin LaHaise <bcrl@kvack.org>, Ingo Molnar <mingo@elte.hu>
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070130012904.GA9617@kroah.com> <ada8xfks90x.fsf@cisco.com>
-	 <20070130191020.GF20642@kroah.com> <adaodogqpmx.fsf@cisco.com>
-	 <20070130195445.GE22022@kroah.com> <adazm80p4qp.fsf@cisco.com>
-	 <45BFC7F2.7090209@garzik.org> <adaac00p1rq.fsf@cisco.com>
-	 <45BFD03F.4020003@garzik.org> <adaps8wnlfl.fsf@cisco.com>
+From: Zach Brown <zach.brown@oracle.com>
+Subject: Re: [PATCH 0 of 4] Generic AIO by scheduling stacks
+Date: Tue, 30 Jan 2007 15:45:45 -0800
+To: Linus Torvalds <torvalds@linux-foundation.org>
+X-Mailer: Apple Mail (2.752.3)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 1/31/07, Roland Dreier <rdreier@cisco.com> wrote:
+> Btw, I noticed that you didn't Cc Ingo. Definitely worth doing. Not  
+> just
+> because he's basically the normal scheduler maintainer, but also  
+> because
+> he's historically been involved in things like the async filename  
+> lookup
+> that the in-kernel web server thing used.
 
-> To me, it's clear that historically the community hasn't delivered on
-> this.  So I don't like promising something that we haven't been able
-> to follow through on in the past.  If a vendor takes Greg's offer, and
-> then the community, for whatever reason, fails to deliver on
-> everything, then that makes us all (including me!) look bad just
-> because of Greg's hyperbolic promises.
+Yeah, that was dumb.  I had him in the cc: initially, then thought it  
+was too large and lobbed a bunch off.  My mistake.
 
+Ingo, I'm interested in your reaction to the i386-specific mechanics  
+here (the thread_info copies terrify me) and the general notion of  
+how to tie this cleanly into the scheduler.
 
-I can't talk for every subsystem, but what we have under the DVB
-subsystem, for the devices that we have access to specs we have well
-behaved drivers, many have even complimented that they work much
-better than their windows counterparts.
-
-I have even received mails from some vendors that some of the Linux
-drivers behave better than their own windows drivers.
-
-We can't count on reverse eng 'd drivers (or even drivers written with
-a lot of guess work due to lack of specifications), they don't behave
-nice. So at least if the vendors were to provide some specs in that
-direction, it would help to make those drivers better.
-
-So i think to a certain as to what i can say, probably you are wrong.
-
-regards,
-manu
+- z
