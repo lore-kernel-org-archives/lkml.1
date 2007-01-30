@@ -1,59 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932868AbXA3Fwf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933012AbXA3F4K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932868AbXA3Fwf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 00:52:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932954AbXA3Fwf
+	id S933012AbXA3F4K (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 00:56:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932954AbXA3F4K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 00:52:35 -0500
-Received: from omx2-ext.sgi.com ([192.48.171.19]:60242 "EHLO omx2.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932868AbXA3Fwe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 00:52:34 -0500
-Message-ID: <45BEDCF7.7070503@sgi.com>
-Date: Tue, 30 Jan 2007 06:51:51 +0100
-From: Jes Sorensen <jes@sgi.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070103)
-MIME-Version: 1.0
-To: Andi Kleen <ak@suse.de>
-Cc: ksummit-2007-discuss@thunk.org, Theodore Tso <tytso@mit.edu>,
-       Sunil Naidu <akula2.shark@gmail.com>, linux-kernel@vger.kernel.org,
-       dirk.hohndel@intel.com, alan@redhat.com,
-       David Miller <davem@davemloft.net>
-Subject: Re: [Ksummit-2007-discuss] Re: [Ksummit-2006-discuss] 2007 Linux
- Kernel Summit
-References: <20070123.095756.30177490.davem@davemloft.net> <20070126195024.GE14759@thunk.org> <45BE8BF9.6020204@sgi.com> <200701300603.14004.ak@suse.de>
-In-Reply-To: <200701300603.14004.ak@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 30 Jan 2007 00:56:10 -0500
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:52815 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933012AbXA3F4J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jan 2007 00:56:09 -0500
+Date: Tue, 30 Jan 2007 11:25:56 +0530
+From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@osdl.org>,
+       prasanna@in.ibm.com, anil.s.keshavamurthy@intel.com,
+       davem@davemloft.net, Paul Mackerras <paulus@samba.org>,
+       masami.hiramatsu.pt@hitachi.com
+Subject: Re: [PATCH] kprobes: Fix compiler warning
+Message-ID: <20070130055556.GA20699@in.ibm.com>
+Reply-To: ananth@in.ibm.com
+References: <Pine.LNX.4.64.0701292341070.32393@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0701292341070.32393@localhost.localdomain>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
->> Next is the issue of subjects. Last year the final list came out a few
->> days before the summit started, making it impossible for people who were
->> not attending the summit to prepare material for those attending to
->> present/include on their behalf.
+On Mon, Jan 29, 2007 at 11:43:33PM -0600, Kumar Gala wrote:
+> On ppc the compiler gripes about:
 > 
-> I think you completely miss the point of KS here. It is not the venue for someone
-> presenting long material on something and "selling" it, but for free
-> discussion on specific topics.  That is why the invitee list is so
-> closely controlled to make sure these productions are productive.
+> kernel/kprobes.c: In function 'collect_garbage_slots':
+> kernel/kprobes.c:215: warning: comparison is always false due to limited 
+> range of data type
+> 
+> The compiler ends up optimizing away the test since char's are unsigned on 
+> ppc.
 
-Last year the subject of DMA engines was put up, however most of the
-people interested in the subject weren't even invited. In that case
-there's really little concrete that can come out of the discussion.
+Kumar,
 
-Expecting everyone to sit down and get the full picture of a subject
-in 5 minutes is unrealistic and will not lead to very useful outcome.
+Masami fixed this last week:
 
-> If there are any presentations they should be very short and merely be a 
-> quick intro -- anything elaborate is not really welcome. That's quite different 
-> from other conferences.
+http://marc.theaimsgroup.com/?l=linux-kernel&m=116968723823366&w=2
 
-Of course, thats why I suggested more like an abstract published in
-advance, like why is this subject worthy and what would the person
-like to achieve by having it discussed. Hopefully with some technical
-ideas included.
+Patch currently in -mm.
 
-Cheers,
-Jes
+Thanks,
+Ananth
+
+> 
+> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+> 
+> ---
+> commit 1ee2dc5300b1c454f92eeea82da300f72db1b26f
+> tree c73cdacb43e154292708d967e11b1cbf7ab4904f
+> parent c0d4d573feed199b16094c072e7cb07afb01c598
+> author Kumar Gala <galak@kernel.crashing.org> Mon, 29 Jan 2007 23:38:11 
+> -0600
+> committer Kumar Gala <galak@kernel.crashing.org> Mon, 29 Jan 2007 23:38:11 
+> -0600
+> 
+>  kernel/kprobes.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/kernel/kprobes.c b/kernel/kprobes.c
+> index 17ec4af..514276f 100644
+> --- a/kernel/kprobes.c
+> +++ b/kernel/kprobes.c
+> @@ -212,7 +212,7 @@ static int __kprobes collect_garbage_slots(void)
+>  			continue;
+>  		kip->ngarbage = 0;	/* we will collect all garbages */
+>  		for (i = 0; i < INSNS_PER_PAGE; i++) {
+> -			if (kip->slot_used[i] == -1 &&
+> +			if (kip->slot_used[i] == (char)-1 &&
+>  			    collect_one_slot(kip, i))
+>  				break;
+>  		}
