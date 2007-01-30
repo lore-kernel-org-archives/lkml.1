@@ -1,109 +1,186 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752036AbXA3X3J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752043AbXA3XbN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752036AbXA3X3J (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 18:29:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752037AbXA3X3J
+	id S1752043AbXA3XbN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 18:31:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752044AbXA3XbN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 18:29:09 -0500
-Received: from sj-iport-1-in.cisco.com ([171.71.176.70]:3279 "EHLO
-	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752036AbXA3X3H (ORCPT
+	Tue, 30 Jan 2007 18:31:13 -0500
+Received: from e36.co.us.ibm.com ([32.97.110.154]:46014 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752043AbXA3XbM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 18:29:07 -0500
-X-IronPort-AV: i="4.13,259,1167638400"; 
-   d="scan'208"; a="761102632:sNHT47262068"
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org
-Subject: Re: Free Linux Driver Development!
-X-Message-Flag: Warning: May contain useful information
-References: <20070130012904.GA9617@kroah.com> <ada8xfks90x.fsf@cisco.com>
-	<20070130191020.GF20642@kroah.com> <adaodogqpmx.fsf@cisco.com>
-	<20070130195445.GE22022@kroah.com> <adazm80p4qp.fsf@cisco.com>
-	<45BFC7F2.7090209@garzik.org> <adaac00p1rq.fsf@cisco.com>
-	<45BFD03F.4020003@garzik.org>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Tue, 30 Jan 2007 15:29:02 -0800
-In-Reply-To: <45BFD03F.4020003@garzik.org> (Jeff Garzik's message of "Tue, 30 Jan 2007 18:09:51 -0500")
-Message-ID: <adaps8wnlfl.fsf@cisco.com>
-User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.19 (linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 30 Jan 2007 23:29:02.0804 (UTC) FILETIME=[6D1AE140:01C744C6]
-Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim2002 verified; ); 
+	Tue, 30 Jan 2007 18:31:12 -0500
+Subject: Re: [Cbe-oss-dev] [RFC, PATCH 4/4] Add support to OProfile for
+	profiling Cell BE SPUs -- update
+From: Carl Love <cel@us.ibm.com>
+To: maynardj@us.ibm.com
+Cc: Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@ozlabs.org,
+       cbe-oss-dev@ozlabs.org, oprofile-list@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <45BFBB78.7060907@us.ibm.com>
+References: <45BE4ED0.5030808@us.ibm.com> <45BE4FA4.9020105@us.ibm.com>
+	 <200701300839.05144.arnd@arndb.de>  <45BFBB78.7060907@us.ibm.com>
+Content-Type: text/plain
+Date: Tue, 30 Jan 2007 15:31:09 -0800
+Message-Id: <1170199869.5235.38.camel@dyn9047021078.beaverton.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.0.4 (2.0.4-2) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > You were complaining about drivers that work on only one
- > platform. Thus, I asked for list of said drivers, drivers that break
- > Greg's pledge.
+On Tue, 2007-01-30 at 15:41 -0600, Maynard Johnson wrote:
+[snip
+> [snip]
+> >>+       // process the collected SPU PC for each node
+> >>+       for_each_online_cpu(cpu) {
+> >>+               if (cbe_get_hw_thread_id(cpu))
+> >>+                       continue;
+> >>+
+> >>+               node = cbe_cpu_to_node(cpu);
+> >>+               node_factor = node * SPUS_PER_NODE;
+> >>+                /* number of valid entries for this node */
+> >>+               entry = 0;
+> >>+
+> >>+               trace_addr = cbe_read_pm(cpu, trace_address);
+> >>+               while ((trace_addr & CBE_PM_TRACE_BUF_EMPTY) != 0x400)
+> >>+               {
+> >>+                       /* there is data in the trace buffer to process */
+> >>+                       cbe_read_trace_buffer(cpu, trace_buffer);  
+> >>+                       spu_mask = 0xFFFF000000000000;
+> >>+
+> >>+                       /* Each SPU PC is 16 bits; hence, four spus in each of 
+> >>+                        * the two 64-bit buffer entries that make up the
+> >>+                        * 128-bit trace_buffer entry.  Process the upper and
+> >>+                        * lower 64-bit values simultaneously.
+> >>+                        */
+> >>+                       for (spu = 0; spu < SPUS_PER_TB_ENTRY; spu++) {
+> >>+                               spu_pc_lower = spu_mask & trace_buffer[0];
+> >>+                               spu_pc_lower = spu_pc_lower >> (NUM_SPU_BITS_TRBUF
+> >>+                                                               * (SPUS_PER_TB_ENTRY-spu-1));
+> >>+
+> >>+                               spu_pc_upper = spu_mask & trace_buffer[1];
+> >>+                               spu_pc_upper = spu_pc_upper >> (NUM_SPU_BITS_TRBUF
+> >>+                                                               * (SPUS_PER_TB_ENTRY-spu-1));
+> >>+
+> >>+                               spu_mask = spu_mask >> NUM_SPU_BITS_TRBUF;
+> >>+
+> >>+                               /* spu PC trace entry is upper 16 bits of the
+> >>+                                * 18 bit SPU program counter 
+> >>+                                */
+> >>+                               spu_pc_lower = spu_pc_lower << 2;
+> >>+                               spu_pc_upper = spu_pc_upper << 2;
+> >>+
+> >>+                               samples[((node_factor + spu) * TRACE_ARRAY_SIZE) + entry]
+> >>+                                       = (u32) spu_pc_lower;
+> >>+                               samples[((node_factor + spu + SPUS_PER_TB_ENTRY) * TRACE_ARRAY_SIZE) + entry]
+> >>+                                       = (u32) spu_pc_upper;
+> >>+                       }
+> >>+
+> >>+                       entry++;
+> >>+
+> >>+                       if (entry >= TRACE_ARRAY_SIZE) 
+> >>+                               /* spu_samples is full */
+> >>+                               break;
+> >>+
+> >>+                       trace_addr = cbe_read_pm(cpu, trace_address);
+> >>+               }
+> >>+               samples_per_node[node] = entry;
+> >>+       }
+> >>+}
+> > 
+> > 
+> > While I can't see anything technically wrong with this function, it would be
+> > good to split it into smaller functions. Since you are nesting three
+> > loops, it should be possible to make a separate function from one of the
+> > inner loops without changing the actual logic behind it.
+> Will do.
+> > 
+> > 
+> >>+
+> >>+static int profile_spus(struct hrtimer * timer)
+> >>+{
+> >>+       ktime_t kt;
+> >>+        int cpu, node, k, num_samples, spu_num;
+> > 
+> > 
+> > whitespace damage
+> fixed
+> > 
+> > 
+> >>+       
+> >>+       if (!spu_prof_running)
+> >>+               goto STOP;
+> >>+
+> >>+       cell_spu_pc_collection();
+> >>+       for_each_online_cpu(cpu) {
+> >>+               if (cbe_get_hw_thread_id(cpu))
+> >>+                       continue;
+> > 
+> > 
+> > Here, you enter the same top-level loop again, why not make it
+> > 	for_each_online_cpu(cpu) {
+> > 		if (cbe_get_hw_thread_id(cpu))
+> >                          continue;
+> > 		num_samples = cell_spu_pc_collection(cpu);
+> > 		...
+> Yes, good suggestion.
+I believe what you are asking here is why can't the
+cell_spu_pc_collection() function put the data in to the samples array
+for a given node, in the loop that then processes the samples array for
+that node.  Yes, I believe that this can be done.  The only restriction
+is that cell_spu_pc_collection() will have to extract the SPU program
+counter data for all SPUs on that node.  This is due to the fact the
+data for the 8 SPUs are all stored in a single entry of the hardware
+trace buffer.  Once the hardware trace buffer is read, the hardware
+advances the read pointer so there is no way to go back and re-read the
+entry.
 
-When did I ever say "one platform"?  If I did, it was an error -- I've
-tried to consistently talk about not every platform.
+[snip]
 
- > I'm betting they are uniformly ancient ISA or m68k or whatnot drivers.
 
-So what?  Greg didn't restrict his offer to "mainstream" devices.  And
-Greg said "[the driver] will be automatically kept up to date and
-working through all Linux kernel API changes."  Not "we'll maintain
-the driver until we lose interest."  And anyway, if I dig for a few
-minutes I find modern mainstream stuff like ipw2200 that is seemingly
-x86-only.  (Although of course ipw2200 is straight from Intel)
+[snip]
+> >>+static int calculate_lfsr(int n)
+> >>+{
+> >>+#define size 24
+> >>+       int i;
+> >>+       unsigned int newlfsr0;
+> >>+       unsigned int lfsr = 0xFFFFFF;
+> >>+       unsigned int howmany = lfsr - n;
+> >>+
+> >>+       for (i = 2; i < howmany + 2; i++) {
+> >>+               newlfsr0 = (((lfsr >> (size - 1 - 0)) & 1) ^
+> >>+                           ((lfsr >> (size - 1 - 1)) & 1) ^
+> >>+                           (((lfsr >> (size - 1 - 6)) & 1) ^
+> >>+                            ((lfsr >> (size - 1 - 23)) & 1)));
+> >>+
+> >>+               lfsr >>= 1;
+> >>+               lfsr = lfsr | (newlfsr0 << (size - 1));
+> >>+       }
+> >>+       return lfsr;
+> >>+
+> >>+}
+> > 
+> > 
+> > I don't have the slightest idea what this code is about, but
+> Me neither.  Carl, can you comment?
+> > it certainly looks inefficient to loop 16 million times to
+> > compute a constant. Could you use a faster algorithm instead,
+> > or at least add a comment about why you do it this way?
+> > 
+> > 
 
- > And hooray for shifting arguments.  If this is your summary of the
- > thread, do you now concede that Greg was not being disingenuous?  Open
- > specs was not the sum toto of Greg's piece.
+An LFSR sequence is similar to a pseudo random number sequence. For a 24
+bit LFSR sequence each number between 0 and 2^24 will occur once in the
+sequence but not in a normal counting order.  The hardware uses the LFSR
+sequence to count to since it is much simpler to implement in hardware
+then a normal counter.  Unfortunately, the only way we know how to
+figure out what the LFSR value that corresponds to the number in the
+sequence that is N before the last value (0xFFFFFF) is to calculate the
+previous value N times.  It is like trying to ask what is the pseudo
+random number that is N before this pseudo random number?
 
-Perhaps "disingenous" was the wrong choice of word, though, since you
-and Greg seem to sincerely believe that a spec dump is all that a
-vendor needs to do.  I'll concede that maybe I should have used the
-word "naive" instead.  But I absolutely feel that Greg should not be
-making promises on behalf of "the Linux kernel community."
+I will add a short comment to the code that will summarize the above
+paragraph.
+[snip]
 
-Go back and reread Greg's original email.  He said:
-
- > All that is needed is some kind of specification that describes how
- > your device works, or the email address of an engineer that is willing
- > to answer questions every once in a while. A few sample devices might
- > be good to have so that debugging doesn't have to be done by email,
- > but if necessary, that can be done.
-
-Let me repeat Greg's words one more time: "All that is needed is some
-kind of specification."  So I honestly don't know what you mean by
-"open specs was not the sum toto of Greg's piece."
-
-Here is what he promised once that spec is released:
-
- > In return, you will receive a complete and working Linux driver that
- > is added to the main Linux kernel source tree.
-
-...
-
- > This driver will then be automatically included in all Linux
- > distributions, including the "enterprise" ones. It will be
- > automatically kept up to date and working through all Linux kernel
- > API changes. This driver will work with all of the different CPU
- > types supported by Linux, the largest number of CPU types supported
- > by any operating system ever before in the history of computing.
-
-...
-
- > As for support, the driver will be supported through email by the
- > original developers, when they can help out, and by the
- > "enterprise" Linux distributors as part of their service agreements
- > with their customers.
-
-...
-
- > This offer is in effect for all different types of devices, from USB
- > toys to PCI video devices to high-speed networking cards. If you
- > manufacture it, we can get Linux drivers working for it.
-
-To me, it's clear that historically the community hasn't delivered on
-this.  So I don't like promising something that we haven't been able
-to follow through on in the past.  If a vendor takes Greg's offer, and
-then the community, for whatever reason, fails to deliver on
-everything, then that makes us all (including me!) look bad just
-because of Greg's hyperbolic promises.
-
- - R.
