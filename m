@@ -1,71 +1,209 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752533AbXA3Evp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752534AbXA3Ewc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752533AbXA3Evp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 23:51:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752534AbXA3Evo
+	id S1752534AbXA3Ewc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 23:52:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965021AbXA3Ewc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 23:51:44 -0500
-Received: from omx2-ext.sgi.com ([192.48.171.19]:58856 "EHLO omx2.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752533AbXA3Evo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 23:51:44 -0500
-Message-ID: <45BECEB4.6060905@sgi.com>
-Date: Tue, 30 Jan 2007 05:51:00 +0100
-From: Jes Sorensen <jes@sgi.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070103)
+	Mon, 29 Jan 2007 23:52:32 -0500
+Received: from mtiwmhc11.worldnet.att.net ([204.127.131.115]:39023 "EHLO
+	mtiwmhc11.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752534AbXA3Ewa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jan 2007 23:52:30 -0500
+Message-ID: <45BECF04.3070904@lwfinger.net>
+Date: Mon, 29 Jan 2007 22:52:20 -0600
+From: Larry Finger <larry.finger@lwfinger.net>
+User-Agent: Thunderbird 1.5.0.9 (X11/20060911)
 MIME-Version: 1.0
-To: Dave Jones <davej@redhat.com>, Jes Sorensen <jes@sgi.com>,
-       Theodore Tso <tytso@mit.edu>, Sunil Naidu <akula2.shark@gmail.com>,
-       linux-kernel@vger.kernel.org, dirk.hohndel@intel.com, alan@redhat.com,
-       ksummit-2007-discuss@thunk.org, David Miller <davem@davemloft.net>
-Subject: Re: [Ksummit-2007-discuss] Re: [Ksummit-2006-discuss] 2007 Linux
- Kernel Summit
-References: <20070123.095756.30177490.davem@davemloft.net> <C1DDFD3E.8658%dirk.hohndel@intel.com> <20070125.125121.98861775.davem@davemloft.net> <8355959a0701251646t4b7db48cj862268aad52e8e24@mail.gmail.com> <20070126032849.GB5589@thunk.org> <8355959a0701260704x6aea8141s3d0581fa33c74cf2@mail.gmail.com> <20070126195024.GE14759@thunk.org> <45BE8BF9.6020204@sgi.com> <20070130030430.GA21772@redhat.com>
-In-Reply-To: <20070130030430.GA21772@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Dan Williams <dcbw@redhat.com>
+CC: Jouni Malinen <jkmaline@cc.hut.fi>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       netdev <netdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Hidden SSID's
+References: <45BACB71.2080107@lwfinger.net>	 <1169899689.25670.3.camel@localhost.localdomain>	 <1170019717.30318.0.camel@johannes.berg>	 <1170075611.2895.2.camel@localhost.localdomain>	 <20070130030911.GA6637@jm.kir.nu> <1170128208.3448.6.camel@localhost.localdomain>
+In-Reply-To: <1170128208.3448.6.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Jones wrote:
->  > Then there is the issue of architectures, at least in my book KS should
->  > focus on the ones that are really live and not in maintenance mode.
->  > x86_64, x86_32, PPC, ia64, ARM seems to be the driving ones these days,
->  > m68k, Sparc32, and others, somewhat less so .....
+Dan Williams wrote:
+> On Mon, 2007-01-29 at 19:09 -0800, Jouni Malinen wrote:
+>> On Mon, Jan 29, 2007 at 08:00:11AM -0500, Dan Williams wrote:
+>>
+>>> Well, there's no way a userspace program could depend on all hidden SSID
+>>> APs having the <hidden> tag, since if you stick in another,
+>>> non-ieee80211-stack card it won't be like that.  So I don't think we
+>>> should care about <hidden> in d80211, but I don't think we can remove it
+>>> from ieee80211 either.
+>> Use of '<hidden>' is just not acceptable. IMHO, it should be removed
+>> from everywhere, including net/ieee80211. The sooner this is done, the
+>> better.
 > 
-> Again, I don't recall us spending any time at all discussing m68k, or
-> sparc, whilst the others you mention were well represented.
+> You're probably right.  Lets just pull it out of ieee80211 and be done.
+Before it gets pulled, please look at this patch.
 
-Hi Dave,
+Larry
 
-I'm not too bothered about the subjects, but rather the issue that we
-keep seeing this strict "only this small group, which defines the most
-important people in the community" thing. Thats where I think the
-current model fails, even if someone has done a lot of work all over
-Linux for years, doesn't mean said people are the ones driving things
-this year.
+=======================================
 
-Personally I think Andrew's suggestion is really good, turning it more
-towards the traditional conference means people who have something they
-want to say are more likely to push for things. If one doesn't have
-something to say, then going to the KS is probably not the right thing.
 
-> One of the problems with this approach is sometimes we don't know about
-> subjects that become important to us all until the last minute, and
-> others that seem important now will become moot by the time the summit comes around.
 
-Thats true, and there should certainly be space for new subjects coming
-in on short notice. However, I would suggest that at least a significant
-portion of the summit applies this requirement. Most of the more
-important issues are architectural and it's often not something that
-shows up last minute.
+When an AP has a hidden SSID, ieee80211 fails, at least with wpa_supplicant,
+which searches through the scan data looking for a particular ssid. Because
+ieee80211 has substituted a false ssid, namely "<hidden>", wpa_supplicant
+cannot authenticate. This behavior is fixed by adding a new argument to
+ieee80211_translate_scan that contains the expected ssid. A new routine,
+ieee80211_wx_get_scan_essid, has an additional argument that contains the essid
+of the AP that wpa_supplicant is trying to find. The existing routine,
+ieee80211_wx_get_scan, calls the new one with the false ssid. The code in
+ieee80211softmac is also modified to use the new routine and has been tested
+with bcm43xx.
 
-> So far though, there's been nothing proposed at all, so feel free
-> to throw your hat in the ring, if nothing else, it'll kickstart
-> the process.
+Signed-off-by: Larry Finger <Larry.Finger@lwfinger.net>
+---
 
-Actually I'm in the process of investigating launching a mini summit
-cabal, which I think would cover most of my current issues :)
+Index: linux-2.6/include/net/ieee80211.h
+===================================================================
+--- linux-2.6.orig/include/net/ieee80211.h
++++ linux-2.6/include/net/ieee80211.h
+@@ -946,6 +946,11 @@ struct ieee80211_network {
+ 	struct list_head list;
+ };
 
-Cheers,
-Jes
++struct ieee80211_essid {
++	u8 len;
++	char data[IW_ESSID_MAX_SIZE];
++};
++
+ enum ieee80211_state {
+ 	IEEE80211_UNINITIALIZED = 0,
+ 	IEEE80211_INITIALIZED,
+@@ -1296,6 +1301,10 @@ extern const struct ieee80211_channel *i
+ extern int ieee80211_wx_get_scan(struct ieee80211_device *ieee,
+ 				 struct iw_request_info *info,
+ 				 union iwreq_data *wrqu, char *key);
++extern int ieee80211_wx_get_scan_essid(struct ieee80211_device *ieee,
++				 struct iw_request_info *info,
++				 union iwreq_data *wrqu, char *key,
++				 struct ieee80211_essid *essid);
+ extern int ieee80211_wx_set_encode(struct ieee80211_device *ieee,
+ 				   struct iw_request_info *info,
+ 				   union iwreq_data *wrqu, char *key);
+Index: linux-2.6/net/ieee80211/ieee80211_wx.c
+===================================================================
+--- linux-2.6.orig/net/ieee80211/ieee80211_wx.c
++++ linux-2.6/net/ieee80211/ieee80211_wx.c
+@@ -44,7 +44,8 @@ static const char *ieee80211_modes[] = {
+ #define MAX_CUSTOM_LEN 64
+ static char *ieee80211_translate_scan(struct ieee80211_device *ieee,
+ 					   char *start, char *stop,
+-					   struct ieee80211_network *network)
++					   struct ieee80211_network *network,
++					   struct ieee80211_essid *essid)
+ {
+ 	char custom[MAX_CUSTOM_LEN];
+ 	char *p;
+@@ -65,10 +66,10 @@ static char *ieee80211_translate_scan(st
+ 	iwe.cmd = SIOCGIWESSID;
+ 	iwe.u.data.flags = 1;
+ 	if (network->flags & NETWORK_EMPTY_ESSID) {
+-		iwe.u.data.length = sizeof("<hidden>");
+-		start = iwe_stream_add_point(start, stop, &iwe, "<hidden>");
++		iwe.u.data.length = min(essid->len, (u8) IW_ESSID_MAX_SIZE);
++		start = iwe_stream_add_point(start, stop, &iwe, essid->data);
+ 	} else {
+-		iwe.u.data.length = min(network->ssid_len, (u8) 32);
++		iwe.u.data.length = min(network->ssid_len, (u8) IW_ESSID_MAX_SIZE);
+ 		start = iwe_stream_add_point(start, stop, &iwe, network->ssid);
+ 	}
+
+@@ -247,9 +248,15 @@ static char *ieee80211_translate_scan(st
+
+ #define SCAN_ITEM_SIZE 128
+
+-int ieee80211_wx_get_scan(struct ieee80211_device *ieee,
++static struct ieee80211_essid hidden_essid = {
++	.len  = sizeof ("<hidden>"),
++	.data = {"<hidden>"},
++};
++
++int ieee80211_wx_get_scan_essid(struct ieee80211_device *ieee,
+ 			  struct iw_request_info *info,
+-			  union iwreq_data *wrqu, char *extra)
++			  union iwreq_data *wrqu, char *extra,
++			  struct ieee80211_essid *essid)
+ {
+ 	struct ieee80211_network *network;
+ 	unsigned long flags;
+@@ -272,7 +279,7 @@ int ieee80211_wx_get_scan(struct ieee802
+
+ 		if (ieee->scan_age == 0 ||
+ 		    time_after(network->last_scanned + ieee->scan_age, jiffies))
+-			ev = ieee80211_translate_scan(ieee, ev, stop, network);
++			ev = ieee80211_translate_scan(ieee, ev, stop, network, essid);
+ 		else
+ 			IEEE80211_DEBUG_SCAN("Not showing network '%s ("
+ 					     MAC_FMT ")' due to age (%dms).\n",
+@@ -294,6 +301,13 @@ int ieee80211_wx_get_scan(struct ieee802
+ 	return err;
+ }
+
++int ieee80211_wx_get_scan(struct ieee80211_device *ieee,
++			  struct iw_request_info *info,
++			  union iwreq_data *wrqu, char *extra)
++{
++	return ieee80211_wx_get_scan_essid(ieee, info, wrqu, extra,  &hidden_essid);
++}
++
+ int ieee80211_wx_set_encode(struct ieee80211_device *ieee,
+ 			    struct iw_request_info *info,
+ 			    union iwreq_data *wrqu, char *keybuf)
+@@ -834,6 +848,7 @@ EXPORT_SYMBOL(ieee80211_wx_set_encodeext
+ EXPORT_SYMBOL(ieee80211_wx_get_encodeext);
+
+ EXPORT_SYMBOL(ieee80211_wx_get_scan);
++EXPORT_SYMBOL(ieee80211_wx_get_scan_essid);
+ EXPORT_SYMBOL(ieee80211_wx_set_encode);
+ EXPORT_SYMBOL(ieee80211_wx_get_encode);
+
+Index: linux-2.6/net/ieee80211/softmac/ieee80211softmac_wx.c
+===================================================================
+--- linux-2.6.orig/net/ieee80211/softmac/ieee80211softmac_wx.c
++++ linux-2.6/net/ieee80211/softmac/ieee80211softmac_wx.c
+@@ -37,6 +37,10 @@ ieee80211softmac_wx_trigger_scan(struct
+ 				 char *extra)
+ {
+ 	struct ieee80211softmac_device *sm = ieee80211_priv(net_dev);
++	struct iw_scan_req *req = (struct iw_scan_req *) extra;
++
++	sm->scan_essid.len = req->essid_len;
++	memcpy(sm->scan_essid.data, req->essid, req->essid_len);
+ 	return ieee80211softmac_start_scan(sm);
+ }
+ EXPORT_SYMBOL_GPL(ieee80211softmac_wx_trigger_scan);
+@@ -59,7 +63,7 @@ ieee80211softmac_wx_get_scan_results(str
+ 		return -EAGAIN;
+ 	}
+ 	spin_unlock_irqrestore(&sm->lock, flags);
+-	return ieee80211_wx_get_scan(sm->ieee, info, data, extra);
++	return ieee80211_wx_get_scan_essid(sm->ieee, info, data, extra, &sm->scan_essid);
+ }
+ EXPORT_SYMBOL_GPL(ieee80211softmac_wx_get_scan_results);
+
+Index: linux-2.6/include/net/ieee80211softmac.h
+===================================================================
+--- linux-2.6.orig/include/net/ieee80211softmac.h
++++ linux-2.6/include/net/ieee80211softmac.h
+@@ -209,6 +209,10 @@ struct ieee80211softmac_device {
+
+ 	/* we'll need something about beacons here too, for AP or ad-hoc modes */
+
++	/* keep track of the essid for scanning so that we can associate with
++	 * APs that are hidden */
++	struct ieee80211_essid scan_essid;
++
+ 	/* Transmission rates to be used by the driver.
+ 	 * The SoftMAC figures out the best possible rates.
+ 	 * The driver just needs to read them.
+
