@@ -1,55 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965490AbXA3J5T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965492AbXA3J5k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965490AbXA3J5T (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 04:57:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965485AbXA3J5T
+	id S965492AbXA3J5k (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 04:57:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965497AbXA3J5k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 04:57:19 -0500
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:53252 "EHLO 2ka.mipt.ru"
+	Tue, 30 Jan 2007 04:57:40 -0500
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:53256 "EHLO 2ka.mipt.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965490AbXA3J5S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 04:57:18 -0500
-Date: Tue, 30 Jan 2007 12:53:16 +0300
+	id S965492AbXA3J5j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jan 2007 04:57:39 -0500
+Date: Tue, 30 Jan 2007 12:56:59 +0300
 From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Samuel Thibault <samuel.thibault@labri.fr>, linux-kernel@vger.kernel.org,
-       libc-hacker@sources.redhat.com, libc-alpha@sources.redhat.com
-Subject: Re: [ANN] Userspace M-on-N threading model implementation. Alpha release.
-Message-ID: <20070130095316.GD2455@2ka.mipt.ru>
-References: <20070129145227.GA10524@2ka.mipt.ru> <40f323d00701290747y68c8e27ege824694bfa378f58@mail.gmail.com> <20070130011817.GI3541@interface.residence.ens-lyon.fr>
+To: Andrew Morton <akpm@osdl.org>
+Cc: Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.20-rc6-mm3
+Message-ID: <20070130095659.GE2455@2ka.mipt.ru>
+References: <20070129204528.eb8d695e.akpm@osdl.org> <45BECEAB.4090201@garzik.org> <20070129211139.8d584d89.akpm@osdl.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=koi8-r
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070130011817.GI3541@interface.residence.ens-lyon.fr>
+In-Reply-To: <20070129211139.8d584d89.akpm@osdl.org>
 User-Agent: Mutt/1.5.9i
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.7.5 (2ka.mipt.ru [0.0.0.0]); Tue, 30 Jan 2007 12:53:25 +0300 (MSK)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.7.5 (2ka.mipt.ru [0.0.0.0]); Tue, 30 Jan 2007 12:57:00 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 30, 2007 at 02:18:17AM +0100, Samuel Thibault (samuel.thibault@labri.fr) wrote:
-> Hi,
+On Mon, Jan 29, 2007 at 09:11:39PM -0800, Andrew Morton (akpm@osdl.org) wrote:
+> > Now that kevent work has settled down, would you be open to including it 
+> > in -mm?
+> > 
 > 
-> Evgenity, le Mon 29 Jan 2007 16:47:36 +0100, a écrit :
-> > Userspace M-on-N threading model is based on the idea, that when signal
-> > is delivered, kernel saves all information related to previous context
-> > in stack, so it is possible to find it and replace.
+> I just haven't had the bandwidth to track what's been happening there
+> lately.  The two main things which need to be done are
 > 
-> You may want to have a look at some existing implementations:
+> -  a detailed line-by-line review
+> 
+> - for someone to gain a full understanding of the delta between <these
+>   patches> and <ulrich> and to explain these differences to mortals and to
+>   convince themselves and the rest of us that we're all OK.
 
-I saw most of them.
-As far as I recall, only PTL (is not shown here) has preemptible
-scheduler. NTL has it too, but is based on different approach.
+This requires either mind-reading machine, or some feedback from Ulrich.
+Last main from him about kevent was related to 25 release.
 
-> - Good old `FSU Pthreads' http://moss.csc.ncsu.edu/~mueller/pthreads/
-> - fully POSIX-compliant `GnuPth' http://www.gnu.org/software/pth/
-> - server-targetted `Capriccio'
-> www.cs.berkeley.edu/~jcondit/capriccio-sosp-2003.pdf
-> - efficient `ELiTE/Erlangen'
-> http://www4.informatik.uni-erlangen.de/Projects/FORTWIHR/ELiTE/
-> - and our portable, flexible, efficient `Marcel'
-> http://runtime.futurs.inria.fr/marcel/
-> 
-> Samuel
+As far as I can see, only questionable parts are signal mask in
+syscalls, but nature of kevent signal delivering does not require it,
+since mask of pending signals is not updated if special flag is set,
+and exceeded functionality (like hrtimers accessible through kevent
+interface and as POSIX addon).
 
 -- 
 	Evgeniy Polyakov
