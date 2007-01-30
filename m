@@ -1,73 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965484AbXA3Jzj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965490AbXA3J5T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965484AbXA3Jzj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 04:55:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965490AbXA3Jzi
+	id S965490AbXA3J5T (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 04:57:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965485AbXA3J5T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 04:55:38 -0500
-Received: from amsfep16-int.chello.nl ([62.179.120.11]:41201 "EHLO
-	amsfep16-int.chello.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965484AbXA3Jzh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 04:55:37 -0500
-Subject: Re: [PATCH 0/8] Create ZONE_MOVABLE to partition memory between
-	movable and non-movable pages
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Andrew Morton <akpm@osdl.org>
-Cc: Christoph Lameter <clameter@sgi.com>,
-       Russell King <rmk+lkml@arm.linux.org.uk>, Mel Gorman <mel@csn.ul.ie>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       Christoph Lameter <clameter@engr.sgi.com>
-In-Reply-To: <20070129160921.7b362c8d.akpm@osdl.org>
-References: <20070125234458.28809.5412.sendpatchset@skynet.skynet.ie>
-	 <20070126030753.03529e7a.akpm@osdl.org>
-	 <Pine.LNX.4.64.0701260751230.6141@schroedinger.engr.sgi.com>
-	 <20070126114615.5aa9e213.akpm@osdl.org>
-	 <Pine.LNX.4.64.0701261147300.15394@schroedinger.engr.sgi.com>
-	 <20070126122747.dde74c97.akpm@osdl.org>
-	 <Pine.LNX.4.64.0701291349450.548@schroedinger.engr.sgi.com>
-	 <20070129143654.27fcd4a4.akpm@osdl.org>
-	 <Pine.LNX.4.64.0701291441260.1102@schroedinger.engr.sgi.com>
-	 <20070129225000.GG6602@flint.arm.linux.org.uk>
-	 <Pine.LNX.4.64.0701291533500.1169@schroedinger.engr.sgi.com>
-	 <20070129160921.7b362c8d.akpm@osdl.org>
-Content-Type: text/plain
-Date: Tue, 30 Jan 2007 10:53:43 +0100
-Message-Id: <1170150823.6189.203.camel@twins>
+	Tue, 30 Jan 2007 04:57:19 -0500
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:53252 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965490AbXA3J5S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jan 2007 04:57:18 -0500
+Date: Tue, 30 Jan 2007 12:53:16 +0300
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Samuel Thibault <samuel.thibault@labri.fr>, linux-kernel@vger.kernel.org,
+       libc-hacker@sources.redhat.com, libc-alpha@sources.redhat.com
+Subject: Re: [ANN] Userspace M-on-N threading model implementation. Alpha release.
+Message-ID: <20070130095316.GD2455@2ka.mipt.ru>
+References: <20070129145227.GA10524@2ka.mipt.ru> <40f323d00701290747y68c8e27ege824694bfa378f58@mail.gmail.com> <20070130011817.GI3541@interface.residence.ens-lyon.fr>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070130011817.GI3541@interface.residence.ens-lyon.fr>
+User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.7.5 (2ka.mipt.ru [0.0.0.0]); Tue, 30 Jan 2007 12:53:25 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-01-29 at 16:09 -0800, Andrew Morton wrote:
-> On Mon, 29 Jan 2007 15:37:29 -0800 (PST)
-> Christoph Lameter <clameter@sgi.com> wrote:
+On Tue, Jan 30, 2007 at 02:18:17AM +0100, Samuel Thibault (samuel.thibault@labri.fr) wrote:
+> Hi,
 > 
-> > With a alloc_pages_range() one would be able to specify upper and lower 
-> > boundaries.
+> Evgenity, le Mon 29 Jan 2007 16:47:36 +0100, a écrit :
+> > Userspace M-on-N threading model is based on the idea, that when signal
+> > is delivered, kernel saves all information related to previous context
+> > in stack, so it is possible to find it and replace.
 > 
-> Is there a proposal anywhere regarding how this would be implemented?
+> You may want to have a look at some existing implementations:
 
-I'm guessing this will involve page migration.
+I saw most of them.
+As far as I recall, only PTL (is not shown here) has preemptible
+scheduler. NTL has it too, but is based on different approach.
 
-Still, would we need to place bounds on non movable pages, or will it be
-a best effort? It seems the current zone approach is a best effort too,
-although it does try to keep allocations away from the lower zones as
-much as possible.
+> - Good old `FSU Pthreads' http://moss.csc.ncsu.edu/~mueller/pthreads/
+> - fully POSIX-compliant `GnuPth' http://www.gnu.org/software/pth/
+> - server-targetted `Capriccio'
+> www.cs.berkeley.edu/~jcondit/capriccio-sosp-2003.pdf
+> - efficient `ELiTE/Erlangen'
+> http://www4.informatik.uni-erlangen.de/Projects/FORTWIHR/ELiTE/
+> - and our portable, flexible, efficient `Marcel'
+> http://runtime.futurs.inria.fr/marcel/
+> 
+> Samuel
 
-But I guess we could make a single zone allocator prefer high addresses
-too.
-
-So then we'd end up with a single zone, and each allocation would give a
-range. Try and pick a free page with as high an address as possible in
-the given range. If no pages available in the given range try and move
-some movable pages out of it.
-
-This does of course involve finding free pages in a given range, and
-identifying pages as movable.
-
-And a gazillion trivial but tedious things I've forgotten. Christoph, is
-this what you were getting at?
-
-
+-- 
+	Evgeniy Polyakov
