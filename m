@@ -1,46 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965415AbXA3H3r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965420AbXA3HdQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965415AbXA3H3r (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 02:29:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965414AbXA3H3r
+	id S965420AbXA3HdQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 02:33:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965421AbXA3HdQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 02:29:47 -0500
-Received: from mtagate7.uk.ibm.com ([195.212.29.140]:17246 "EHLO
-	mtagate7.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965417AbXA3H3q (ORCPT
+	Tue, 30 Jan 2007 02:33:16 -0500
+Received: from smtp-vbr12.xs4all.nl ([194.109.24.32]:4873 "EHLO
+	smtp-vbr12.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965420AbXA3HdP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 02:29:46 -0500
-Date: Tue, 30 Jan 2007 09:29:42 +0200
-From: Muli Ben-Yehuda <muli@il.ibm.com>
-To: Dave Jones <davej@redhat.com>
-Cc: Jes Sorensen <jes@sgi.com>, David Miller <davem@davemloft.net>,
-       linux-kernel@vger.kernel.org, alan@redhat.com,
-       ksummit-2007-discuss@thunk.org, Sunil Naidu <akula2.shark@gmail.com>
-Subject: Re: [Ksummit-2007-discuss] Re: [Ksummit-2006-discuss] 2007 Linux Kernel Summit
-Message-ID: <20070130072942.GR3619@rhun.ibm.com>
-References: <20070123.095756.30177490.davem@davemloft.net> <20070126195024.GE14759@thunk.org> <45BE8BF9.6020204@sgi.com> <200701300603.14004.ak@suse.de> <45BEDCF7.7070503@sgi.com> <20070130064312.GP3619@rhun.ibm.com> <20070130071815.GC32549@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070130071815.GC32549@redhat.com>
-User-Agent: Mutt/1.5.11
+	Tue, 30 Jan 2007 02:33:15 -0500
+Message-ID: <45BEF4B0.1090203@xs4all.nl>
+Date: Tue, 30 Jan 2007 08:33:04 +0100
+From: Bauke Jan Douma <bjdouma@xs4all.nl>
+Reply-To: bjdouma@xs4all.nl
+Organization: a training zoo
+User-Agent: Thunderbird 1.5.0.9 (X11/20061206)
+MIME-Version: 1.0
+To: Greg KH <greg@kroah.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Free Linux Driver Development!
+References: <20070130012904.GA9617@kroah.com>
+In-Reply-To: <20070130012904.GA9617@kroah.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 30, 2007 at 02:18:16AM -0500, Dave Jones wrote:
+Greg KH wrote on 30-01-07 02:29:
+An offer they can't refuse.
 
->  > Likewise IOMMUs.
->  
-> There were a number of people there last year who understood IOMMUs
-> and could easily talk at length about them if able to do so.  iirc,
-> you were also invited, but were unable to travel due to bad things
-> falling from the sky in Israel at the time ?
+> This offer is in affect for all different types of devices, from USB
+> toys to PCI video devices to high-speed networking cards.  If you build
+> it, we can get Linux drivers working for it.
 
-That was OLS, not KS. Also, that's not the impression I got from
-reading the lwn.net summary (and I know several IOMMU people such as
-Olof were not invited... I think it was just jejb and ak?).
+s/affect/effect/
 
-Cheers,
-Muli
+and maybe
+
+s/build/manufacture/ ??
+
+bjd
 
 
