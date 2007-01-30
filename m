@@ -1,46 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965477AbXA3OXc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965499AbXA3OYl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965477AbXA3OXc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 09:23:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965472AbXA3OXc
+	id S965499AbXA3OYl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 09:24:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965497AbXA3OYl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 09:23:32 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:46896 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S965477AbXA3OXb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 09:23:31 -0500
-Date: Tue, 30 Jan 2007 14:35:12 +0000
-From: Alan <alan@lxorguk.ukuu.org.uk>
-To: Dave Jones <davej@redhat.com>
-Cc: Paul Mundt <lethal@linux-sh.org>,
-       Greg Ungerer <greg_ungerer@securecomputing.com>,
-       linux-kernel@vger.kernel.org, ksummit-2007-discuss@thunk.org
-Subject: Re: [Ksummit-2007-discuss] Re: [Ksummit-2006-discuss] 2007 Linux
- Kernel Summit
-Message-ID: <20070130143512.0e7cfd85@localhost.localdomain>
-In-Reply-To: <20070130043421.GE21772@redhat.com>
-References: <8355959a0701251646t4b7db48cj862268aad52e8e24@mail.gmail.com>
-	<20070126032849.GB5589@thunk.org>
-	<8355959a0701260704x6aea8141s3d0581fa33c74cf2@mail.gmail.com>
-	<20070126195024.GE14759@thunk.org>
-	<45BE8BF9.6020204@sgi.com>
-	<20070130030430.GA21772@redhat.com>
-	<45BEBBF0.3050102@snapgear.com>
-	<20070130034111.GB21772@redhat.com>
-	<45BEC303.2040205@securecomputing.com>
-	<20070130040826.GA19362@linux-sh.org>
-	<20070130043421.GE21772@redhat.com>
-X-Mailer: Claws Mail 2.7.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 30 Jan 2007 09:24:41 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:45966 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965472AbXA3OYj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jan 2007 09:24:39 -0500
+Message-ID: <45BF5525.5040709@garzik.org>
+Date: Tue, 30 Jan 2007 09:24:37 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
+MIME-Version: 1.0
+To: Robert Hancock <hancockr@shaw.ca>
+CC: linux-kernel <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org
+Subject: Re: [PATCH] libata: fix translation for START STOP UNIT
+References: <45BD4E0A.7060501@shaw.ca>
+In-Reply-To: <45BD4E0A.7060501@shaw.ca>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.7 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Don't:
-> - Waffle about process shrink roadmaps.
+Robert Hancock wrote:
+> Applies to 2.6.20-rc6.
+> 
+> ---
+> 
+> libata's SCSI translation for the SCSI START STOP UNIT command with the 
+> START bit clear (i.e. stopping the drive) appears to be incorrect. It 
+> sends an ATA STANDBY command with the time period set to 0, which the 
+> code comment says means "now", but the ATA standard says this means 
+> disable the standby timer, which effectively does nothing. Change this 
+> to issue a STANDBY IMMEDIATE command which will actually spin the drive 
+> down. The SAT (SCSI/ATA Translation) standard revision 9 concurs with 
+> this choice.
+> 
+> Signed-off-by: Robert Hancock <hancockr@shaw.ca>
 
-Buy a graphics company, continue blocking 2D support and expect anyone to
-even care about your hardware ... ?
+FWIW, I am having to apply Andrew Morton's version of your patches, 
+because your patch form isn't quite right.  Review 
+Documentation/SubmittingPatches and http://linux.yyz.us/patch-format.html
+
+Most notably:
+
+* Your patch description follows the "---" terminator, which is 
+precisely the opposite of what should happen.  In the correct form, any 
+comments such as "Applies to 2.6.20-rc6" should follow the "---" 
+terminator, which in turn follows the patch description and signoff.
+
+* Include the patch inline rather than as an attachment.  Even a 
+text/plain attachment is very difficult to review and quote in popular 
+email programs.
+
+	Jeff
+
 
