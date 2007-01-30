@@ -1,44 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752056AbXA3IcF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752088AbXA3IcT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752056AbXA3IcF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 03:32:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752088AbXA3IcF
+	id S1752088AbXA3IcT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 03:32:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752550AbXA3IcT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 03:32:05 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:45157 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752056AbXA3IcE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 03:32:04 -0500
-Date: Tue, 30 Jan 2007 09:30:46 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@osdl.org>
-Cc: Tomasz Kvarsin <kvarsin@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [BUG] 2.6.20-rc3-mm1: can not mount root
-Message-ID: <20070130083046.GA9498@elte.hu>
-References: <5157576d0701050620l14fd0a6emdf5793c5214931a8@mail.gmail.com> <20070130001209.b716c14a.akpm@osdl.org> <20070130082244.GA5942@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070130082244.GA5942@elte.hu>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.3
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.3 required=5.9 tests=ALL_TRUSTED,BAYES_40 autolearn=no SpamAssassin version=3.0.3
-	-3.3 ALL_TRUSTED            Did not pass through any untrusted hosts
-	1.0 BAYES_40               BODY: Bayesian spam probability is 20 to 40%
-	[score: 0.3720]
+	Tue, 30 Jan 2007 03:32:19 -0500
+Received: from smtp104.mail.mud.yahoo.com ([209.191.85.214]:36196 "HELO
+	smtp104.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752088AbXA3IcS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jan 2007 03:32:18 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=mut79F61fuu6Gl8hO90gax3FBVGbqkQR+QKNsLbO+Wtg2/heisZR9mMpY1e5t/gsZ7f7A447SPDciWwIeTfsysF0XX0Oos0patGa/kkZH3aIBxo3pZ5u5/0c2cbpBZkF2srQerUYoJNclUEsN8jgkYHc29sojYk/2QpRXaC28fo=  ;
+X-YMail-OSG: HGKwzfwVM1mApes02RPEXfFh1gyjRkxTcGzgLsnVC9yCVFKdJgdGlIhWx73J4oajIr8377Iq7Q--
+Message-ID: <45BF0281.2020102@yahoo.com.au>
+Date: Tue, 30 Jan 2007 19:32:01 +1100
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
+MIME-Version: 1.0
+To: Jean Delvare <jdelvare@suse.de>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, Daniel Drake <dsd@reactivated.net>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@stusta.de>
+Subject: Re: via irq quirk breakage
+References: <45B6A94A.3010006@yahoo.com.au> <200701291600.32580.jdelvare@suse.de> <45BEAEE3.9080003@yahoo.com.au> <200701300854.06083.jdelvare@suse.de>
+In-Reply-To: <200701300854.06083.jdelvare@suse.de>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Jean,
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+Jean Delvare wrote:
 
-> I'll try to reproduce this.
+> You have an old VT82C686 south bridge, which was tagged as "special" by
+> Alan. For this chip, Alan's code only allows devices 00:00.x to be quirked.
+> As my code was merely a reimplementation of Alan's idea, it does the same.
+> Your USB controllers are at 00:07.x, so I'm not surprised they weren't
+> quirked.
+> 
+> Alan, why were dev_lo and dev_hi both set to 0 for the VT82C868 in your
+> implementation? Is it a typo, or...?
+> 
+> Nick, I guess the following patch would work better for you? I've listed
+> devices 00:07.x as quirkable for the VT82C686.
+> 
+> * * * * *
+> 
+> Fix VIA quirks that were recently broken by Alan Cox in the upstream
+> kernel (commit 1597cacbe39802d86656d1f2e6329895bd2ef531).
 
-cannot see the crash in qemu - i suspect it's .config dependent. Tomasz, 
-could you send me the .config you used?
+Thanks for making the patch, it works like a charm now. The quirk
+gets applied to both USB controllers.
 
-	Ingo
+> My understanding is that pci_find_present() doesn't work yet at the
+> time the quirks are run. So I used a two-step quirk as is done for
+> some other quirks already. First we detect the VIA south bridges
+> and set the right low and high device limits, then we are ready to
+> actually run the quirks on the affected devices.
+
+-- 
+SUSE Labs, Novell Inc.
+Send instant messages to your online friends http://au.messenger.yahoo.com 
