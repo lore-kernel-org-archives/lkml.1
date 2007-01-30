@@ -1,58 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965396AbXA3FIy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965260AbXA3FLl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965396AbXA3FIy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 00:08:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965260AbXA3FIy
+	id S965260AbXA3FLl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 00:11:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965398AbXA3FLl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 00:08:54 -0500
-Received: from mail2.genealogia.fi ([194.100.116.229]:57532 "EHLO
-	mail2.genealogia.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965246AbXA3FIx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 00:08:53 -0500
-Date: Mon, 29 Jan 2007 21:08:41 -0800
-From: Jouni Malinen <jkmaline@cc.hut.fi>
-To: Larry Finger <larry.finger@lwfinger.net>
-Cc: Dan Williams <dcbw@redhat.com>, Johannes Berg <johannes@sipsolutions.net>,
-       netdev <netdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Hidden SSID's
-Message-ID: <20070130050841.GC6637@jm.kir.nu>
-References: <45BACB71.2080107@lwfinger.net> <1169899689.25670.3.camel@localhost.localdomain> <1170019717.30318.0.camel@johannes.berg> <1170075611.2895.2.camel@localhost.localdomain> <20070130030911.GA6637@jm.kir.nu> <1170128208.3448.6.camel@localhost.localdomain> <45BECF04.3070904@lwfinger.net>
+	Tue, 30 Jan 2007 00:11:41 -0500
+Received: from mx1.suse.de ([195.135.220.2]:34849 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965260AbXA3FLk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jan 2007 00:11:40 -0500
+From: Andi Kleen <ak@suse.de>
+To: ksummit-2007-discuss@thunk.org
+Subject: Re: [Ksummit-2007-discuss] Re: [Ksummit-2006-discuss] 2007 Linux Kernel Summit
+Date: Tue, 30 Jan 2007 06:11:18 +0100
+User-Agent: KMail/1.9.5
+Cc: Dave Jones <davej@redhat.com>, Greg Ungerer <gerg@snapgear.com>,
+       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       alan@redhat.com, Sunil Naidu <akula2.shark@gmail.com>
+References: <20070123.095756.30177490.davem@davemloft.net> <45BEBBF0.3050102@snapgear.com> <20070130034111.GB21772@redhat.com>
+In-Reply-To: <20070130034111.GB21772@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <45BECF04.3070904@lwfinger.net>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-Spam-Score: -2.6 (--)
+Message-Id: <200701300611.18409.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 29, 2007 at 10:52:20PM -0600, Larry Finger wrote:
+On Tuesday 30 January 2007 04:41, Dave Jones wrote:
 
-> When an AP has a hidden SSID, ieee80211 fails, at least with wpa_supplicant,
-> which searches through the scan data looking for a particular ssid. Because
-> ieee80211 has substituted a false ssid, namely "<hidden>", wpa_supplicant
-> cannot authenticate. This behavior is fixed by adding a new argument to
-> ieee80211_translate_scan that contains the expected ssid.
+> Right, other than during the CPU architects panel, I don't remember
+> any non x86/ia64/ppc stuff being brought up at all.
 
-Would this be replacing the SSID of all BSSes in scan results with the
-SSID for which the latest per-SSID scan was issued? If yes, this does
-not sound any better than the current behavior. The driver/802.11 code
-should not replace the SSID value with anything else than the value
-received from the AP.
+No IA64 stuff that I can remember. And there was a presentation on PPC.
 
-In case of hidden SSIDs, the 802.11 implementation should maintain a
-list of BSSes found during the scan(s) and update the SSID (in most
-cases, by creating a new BSS entry) with the SSID from Probe Response
-frames. In other words, if the scan is done for a specific SSID (Probe
-Request includes that SSID), the AP that is using hidden SSIDs will
-likely include the SSID in Probe Response and data from that Probe
-Response can be used to fill in the missing pieces for the <BSSID,SSID>
-pair.
+But that was planned to be differently with more focus on embedded, 
+unfortunately the comittee didn't manage to find more embedded CPU 
+people in time.
 
-Generating false scan results by locally guessing what the SSID
-could be is just plain wrong. The scan results need to be based on real
-frames from the APs.
+My personal preference would be to go for a chipset panel this year
+instead. Chipsets seem to impact kernels much more than CPUs.
 
--- 
-Jouni Malinen                                            PGP id EFC895FA
+-Andi
