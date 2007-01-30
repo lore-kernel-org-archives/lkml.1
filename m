@@ -1,83 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965589AbXA3PWe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965593AbXA3PXu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965589AbXA3PWe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 10:22:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965593AbXA3PWd
+	id S965593AbXA3PXu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 10:23:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965600AbXA3PXu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 10:22:33 -0500
-Received: from mail.gmx.net ([213.165.64.20]:44750 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S965589AbXA3PWd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 10:22:33 -0500
-X-Authenticated: #14842415
-From: Alessandro Di Marco <dmr@gmx.it>
-To: Vojtech Pavlik <vojtech@suse.cz>
-Cc: Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org
-Subject: Re: [ANNOUNCE] System Inactivity Monitor v1.0
-References: <873b61cf1v.fsf@gmx.it> <20070126171536.GB964@elf.ucw.cz>
-	<878xfpoeom.fsf@gmx.it> <20070127174525.GA4787@ucw.cz>
-	<20070127192034.GA17652@suse.cz> <874pqanddd.fsf@gmx.it>
-	<20070129222833.GB17330@elf.ucw.cz> <87odoho3pb.fsf@gmx.it>
-	<20070130094205.GA2888@suse.cz> <87ireowv7d.fsf@gmx.it>
-	<20070130130936.GB4242@suse.cz>
-Date: Tue, 30 Jan 2007 16:22:29 +0100
-Message-ID: <877iv4letm.fsf@gmx.it>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.93 (gnu/linux)
+	Tue, 30 Jan 2007 10:23:50 -0500
+Received: from mx-serv.inrialpes.fr ([194.199.18.100]:43081 "EHLO
+	mx-serv.inrialpes.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965594AbXA3PXs convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jan 2007 10:23:48 -0500
+X-Greylist: delayed 1479 seconds by postgrey-1.27 at vger.kernel.org; Tue, 30 Jan 2007 10:23:47 EST
+From: "Nicolas Turro" <Nicolas.Turro@inrialpes.fr>
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "sebastien.rougeaux@anu.edu.au" <sebastien.rougeaux@anu.edu.au>,
+       "GordPeters@smarttech.com" <GordPeters@smarttech.com>
+Subject: rmmod ohci1394 -> BUG
+Date: Tue, 30 Jan 2007 15:56:08 +0100
+Message-ID: <20070130155608615.00000003564@rodal>
+X-Mailer: Oracle Connector for Outlook 10.1.2.0.7 80425 (11.0.6359)
+X-Accept-Language: fr-fr, fr
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Y-GMX-Trusted: 0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-2.0.2 (mx-serv.inrialpes.fr [194.199.18.100]); Tue, 30 Jan 2007 15:58:09 +0100 (MET)
+X-mx-serv-inrialpes-fr-MailScanner-Information: Please contact postmaster@inrialpes.fr for more information
+X-mx-serv-inrialpes-fr-MailScanner: Found to be clean
+X-mx-serv-inrialpes-fr-MailScanner-SpamCheck: n'est pas un polluriel,
+	SpamAssassin (score=0, requis 5)
+X-mx-serv-inrialpes-fr-MailScanner-From: nicolas.turro@inrialpes.fr
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vojtech Pavlik <vojtech@suse.cz> writes:
+Setup :
+64 bit dual core Xeon bi-processor, Fedora kernels
 
-   > Mine problem here is that the input device doesn't care about suspend/resume
-   > cycles (it is a straight char driver), probably because it doesn't need to (so
-   > far.) Low-level drivers (kbd & co) on the contrary are all bus or platform
-   > drivers, hooking directly into suspend/resume callbacks.
-   > 
-   > Do you mean that I should back-propagate a suspend/resume event from the
-   > low-level drivers to the input one?
+Bug :
+Rmmoding ohci1394 produces ce following bug : 
 
-   Yes, but not as a callback, but instead as an input event. 
 
-Hum. Usually I'm not so dumb, really.
+List corruption. prev->next should be ffff810138d46e40, but was ffffffff882b9000
+----------- [cut here ] --------- [please bite here ] ---------
+Kernel BUG at include/linux/list.h:180
+invalid opcode: 0000 [1] SMP
+last sysfs file: /class/ieee1394_protocol/raw1394/dev
+CPU 2
+Modules linked in: parport_pc lp parport autofs4 rfcomm l2cap bluetooth sunrpc dm_mod video button battery acpi_mem
+hotplug ac ipv6 ohci1394 ieee1394 uhci_hcd ehci_hcd hw_random i2c_i801 i2c_core snd_hda_intel snd_hda_codec snd_seq
+_dummy snd_seq_oss snd_seq_midi_event snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss snd_pcm snd_timer snd soundc
+ore snd_page_alloc tg3 mptsas mptscsih scsi_transport_sas mptbase ahci libata sd_mod scsi_mod
+Pid: 3841, comm: rmmod Not tainted 2.6.17-1.2142_FC4smp #1
+RIP: 0010:[<ffffffff88256f37>] <ffffffff88256f37>{:ieee1394:__delete_addr+35}
+RSP: 0018:ffff81012c4e9d98  EFLAGS: 00010092
+RAX: 0000000000000054 RBX: ffff810138d46e40 RCX: ffffffff805524b8
+RDX: 0000000000000000 RSI: 0000000000000046 RDI: ffffffff805524a0
+RBP: ffff81013931c000 R08: ffffffff805524b8 R09: 0000000000000001
+R10: ffff81012c4e99f8 R11: 0000000000000002 R12: ffffffff882939c0
+R13: 0000000000000282 R14: 0000000000000000 R15: 0000000000000880
+FS:  00002aaaaaabe3c0(0000) GS:ffff81013b8d1d40(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+CR2: 0000003a012928f0 CR3: 000000012c69e000 CR4: 00000000000006e0
+Process rmmod (pid: 3841, threadinfo ffff81012c4e8000, task ffff8101356ae820)
+Stack: ffffffff88293a18 ffff810138d46e10 ffff81013931c000 ffffffff88257049
+       ffffffff882939c0 ffff81013931c000 ffff81013931ebf0 ffff81013b632100
+       ffffffff882c4778 ffffffff882570ec
+Call Trace: <ffffffff88257049>{:ieee1394:__unregister_host+71}
+       <ffffffff882570ec>{:ieee1394:highlevel_remove_host+62}
+       <ffffffff88256373>{:ieee1394:hpsb_remove_host+60} <ffffffff882be227>{:ohci1394:ohci1394_pci_remove+75}
+       <ffffffff8033f83f>{pci_device_remove+33} <ffffffff8039b45d>{__device_release_driver+120}
+       <ffffffff8039b80c>{driver_detach+202} <ffffffff8039ae6d>{bus_remove_driver+111}
+       <ffffffff8039ba8b>{driver_unregister+13} <ffffffff8033f724>{pci_unregister_driver+26}
+       <ffffffff802a403f>{sys_delete_module+406} <ffffffff80262485>{tracesys+209}
 
-Problem) I need to know when the system goes to sleep in
-drivers/input/input.c. For example, as a consequence of 'echo mem
->/sys/power/state'.
+Code: 0f 0b 68 98 fa 25 88 c2 b4 00 48 8b 03 48 8b 50 08 48 39 da
+RIP <ffffffff88256f37>{:ieee1394:__delete_addr+35} RSP <ffff81012c4e9d98>
+ <3>BUG: sleeping function called from invalid context at include/linux/rwsem.h:43
+in_atomic():0, irqs_disabled():1
 
-Solution 1) My ideal input layer model would be:
+Call Trace: <ffffffff80299b11>{blocking_notifier_call_chain+31}
+       <ffffffff80215bb0>{do_exit+34} <ffffffff8027000a>{kernel_math_error+0}
+       <ffffffff80270485>{do_invalid_op+173} <ffffffff88256f37>{:ieee1394:__delete_addr+35}
+       <ffffffff80278680>{__smp_call_function+98} <ffffffff802784cc>{do_flush_tlb_all+0}
+       <ffffffff80290415>{printk+84} <ffffffff802631e9>{error_exit+0}
+       <ffffffff88256f37>{:ieee1394:__delete_addr+35} <ffffffff88256f37>{:ieee1394:__delete_addr+35}
+       <ffffffff88257049>{:ieee1394:__unregister_host+71} <ffffffff882570ec>{:ieee1394:highlevel_remove_host+62}
+       <ffffffff88256373>{:ieee1394:hpsb_remove_host+60} <ffffffff882be227>{:ohci1394:ohci1394_pci_remove+75}
+       <ffffffff8033f83f>{pci_device_remove+33} <ffffffff8039b45d>{__device_release_driver+120}
+       <ffffffff8039b80c>{driver_detach+202} <ffffffff8039ae6d>{bus_remove_driver+111}
+       <ffffffff8039ba8b>{driver_unregister+13} <ffffffff8033f724>{pci_unregister_driver+26}
+       <ffffffff802a403f>{sys_delete_module+406} <ffffffff80262485>{tracesys+209}
 
-               | SUBSYSTEM INPUT DEVICE* |
-                   ^  ^      ^       ^
-            +------+  |      +----+  +------+ events 
-            |         |           |         |
-        |KEYBOARD| |MOUSE | |TOUCHSCREEN| |MISC  |
-        |DEVICE  | |DEVICE| |DEVICE     | |DEVICE|
 
-               | SUBSYSTEM INPUT DEVICE* |
-                   |  |      |       |
-            +------+  |      +----+  +------+ suspend()/resume() callbacks
-            v         v           v         v
-        |KEYBOARD| |MOUSE | |TOUCHSCREEN| |MISC  |
-        |DEVICE  | |DEVICE| |DEVICE     | |DEVICE|
+Any idea ? (if any, please cc Nicolas.Turro@inrialpes.fr since i didn't subscribe to LKML)
 
-Solution 2) On the contrary, you are suggesting to do this:
+Nicolas
 
-               |          INPUT DEVICE          |
-                   ^     ^      ^           ^
-            +------+     |      +----+      +------+ events plus
-            |            |           |             | suspend/resume
-        |KEYBOARD | |MOUSE    | |TOUCHSCREEN| |MISC      |
-        |SUBSYSTEM| |SUBSYSTEM| |SUBSYSTEM  | |SUBSYSTEM |
-        |DEVICE*  | |DEVICE*  | |DEVICE*    | |DEVICE*   |
-
-Right?
-
-* or whatever provides suspend/resume callbacks
-
--- 
->From their experience or from the recorded experience of others (history), men
-learn only what their passions and their metaphysical prejudices allow them to
-learn. - Aldous Huxley
