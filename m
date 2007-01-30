@@ -1,45 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933100AbXA3DiY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964860AbXA3Dli@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933100AbXA3DiY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 22:38:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933093AbXA3DiY
+	id S964860AbXA3Dli (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 22:41:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964930AbXA3Dli
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 22:38:24 -0500
-Received: from mail2.genealogia.fi ([194.100.116.229]:56990 "EHLO
-	mail2.genealogia.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933015AbXA3DiX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 22:38:23 -0500
-X-Greylist: delayed 1732 seconds by postgrey-1.27 at vger.kernel.org; Mon, 29 Jan 2007 22:38:23 EST
-Date: Mon, 29 Jan 2007 19:09:11 -0800
-From: Jouni Malinen <jkmaline@cc.hut.fi>
-To: Dan Williams <dcbw@redhat.com>
-Cc: Johannes Berg <johannes@sipsolutions.net>,
-       Larry Finger <Larry.Finger@lwfinger.net>,
-       netdev <netdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Hidden SSID's
-Message-ID: <20070130030911.GA6637@jm.kir.nu>
-References: <45BACB71.2080107@lwfinger.net> <1169899689.25670.3.camel@localhost.localdomain> <1170019717.30318.0.camel@johannes.berg> <1170075611.2895.2.camel@localhost.localdomain>
-MIME-Version: 1.0
+	Mon, 29 Jan 2007 22:41:38 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:39712 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S964860AbXA3Dlh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jan 2007 22:41:37 -0500
+Date: Mon, 29 Jan 2007 22:41:11 -0500
+From: Dave Jones <davej@redhat.com>
+To: Greg Ungerer <gerg@snapgear.com>
+Cc: Jes Sorensen <jes@sgi.com>, Theodore Tso <tytso@mit.edu>,
+       Sunil Naidu <akula2.shark@gmail.com>, linux-kernel@vger.kernel.org,
+       dirk.hohndel@intel.com, alan@redhat.com, ksummit-2007-discuss@thunk.org,
+       David Miller <davem@davemloft.net>
+Subject: Re: [Ksummit-2007-discuss] Re: [Ksummit-2006-discuss] 2007 Linux Kernel Summit
+Message-ID: <20070130034111.GB21772@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Greg Ungerer <gerg@snapgear.com>, Jes Sorensen <jes@sgi.com>,
+	Theodore Tso <tytso@mit.edu>, Sunil Naidu <akula2.shark@gmail.com>,
+	linux-kernel@vger.kernel.org, dirk.hohndel@intel.com,
+	alan@redhat.com, ksummit-2007-discuss@thunk.org,
+	David Miller <davem@davemloft.net>
+References: <20070123.095756.30177490.davem@davemloft.net> <C1DDFD3E.8658%dirk.hohndel@intel.com> <20070125.125121.98861775.davem@davemloft.net> <8355959a0701251646t4b7db48cj862268aad52e8e24@mail.gmail.com> <20070126032849.GB5589@thunk.org> <8355959a0701260704x6aea8141s3d0581fa33c74cf2@mail.gmail.com> <20070126195024.GE14759@thunk.org> <45BE8BF9.6020204@sgi.com> <20070130030430.GA21772@redhat.com> <45BEBBF0.3050102@snapgear.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1170075611.2895.2.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-Spam-Score: -2.6 (--)
+In-Reply-To: <45BEBBF0.3050102@snapgear.com>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 29, 2007 at 08:00:11AM -0500, Dan Williams wrote:
+On Tue, Jan 30, 2007 at 01:30:56PM +1000, Greg Ungerer wrote:
+ > 
+ > Dave Jones wrote:
+ > > On Tue, Jan 30, 2007 at 01:06:17AM +0100, Jes Sorensen wrote:
+ > >  > Then there is the issue of architectures, at least in my book KS should
+ > >  > focus on the ones that are really live and not in maintenance mode.
+ > >  > x86_64, x86_32, PPC, ia64, ARM seems to be the driving ones these days,
+ > >  > m68k, Sparc32, and others, somewhat less so .....
+ > > 
+ > > Again, I don't recall us spending any time at all discussing m68k, or
+ > > sparc, whilst the others you mention were well represented.
+ > 
+ > Well, others where represented, I was there looking after non-mmu m68k
+ > for example (and other general non-mmu stuff). There just wasn't much
+ > contentious stuff in that space that needed wider discussion.
 
-> Well, there's no way a userspace program could depend on all hidden SSID
-> APs having the <hidden> tag, since if you stick in another,
-> non-ieee80211-stack card it won't be like that.  So I don't think we
-> should care about <hidden> in d80211, but I don't think we can remove it
-> from ieee80211 either.
+Right, other than during the CPU architects panel, I don't remember
+any non x86/ia64/ppc stuff being brought up at all.
 
-Use of '<hidden>' is just not acceptable. IMHO, it should be removed
-from everywhere, including net/ieee80211. The sooner this is done, the
-better.
+		Dave
 
 -- 
-Jouni Malinen                                            PGP id EFC895FA
+http://www.codemonkey.org.uk
