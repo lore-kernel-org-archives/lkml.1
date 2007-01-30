@@ -1,101 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964933AbXA3AYW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965118AbXA3AY2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964933AbXA3AYW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 19:24:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965015AbXA3AYW
+	id S965118AbXA3AY2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 19:24:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965101AbXA3AY2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 19:24:22 -0500
-Received: from smtp.gentoo.org ([140.211.166.183]:45071 "EHLO smtp.gentoo.org"
+	Mon, 29 Jan 2007 19:24:28 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:34976 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964933AbXA3AYV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 19:24:21 -0500
-From: Mike Frysinger <vapier@gentoo.org>
-Organization: wh0rd.org
-To: ak@suse.de
-Subject: [patch] use __u32 in asm-x86_64/msr.h
-Date: Mon, 29 Jan 2007 19:25:08 -0500
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_kBpvFVEbcu47uzB"
-Message-Id: <200701291925.08670.vapier@gentoo.org>
+	id S965015AbXA3AY0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jan 2007 19:24:26 -0500
+Date: Mon, 29 Jan 2007 16:21:53 -0800
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+To: tglx@linutronix.de
+Cc: =?UTF-8?B?RnLDqWTDqXJpYw==?= Riss <frederic.riss@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jeff Garzik <jeff@garzik.org>, netdev@vger.kernel.org
+Subject: Re: [PATCH] block MSI on Sony
+Message-ID: <20070129162153.6b3b5eff@freekitty>
+In-Reply-To: <1170116575.29240.114.camel@localhost.localdomain>
+References: <Pine.LNX.4.64.0701241847360.25027@woody.linux-foundation.org>
+	<1169931333.17469.125.camel@localhost.localdomain>
+	<20070129113159.7ad22e4c@freekitty>
+	<1170101430.29240.34.camel@localhost.localdomain>
+	<20070129133849.1b523226@freekitty>
+	<1170109401.29240.49.camel@localhost.localdomain>
+	<1170110318.21603.25.camel@funkylaptop>
+	<1170110732.29240.59.camel@localhost.localdomain>
+	<1170111056.21603.30.camel@funkylaptop>
+	<1170111464.29240.63.camel@localhost.localdomain>
+	<1170113200.21603.41.camel@funkylaptop>
+	<1170113879.29240.79.camel@localhost.localdomain>
+	<20070129155043.56a1c577@freekitty>
+	<1170116575.29240.114.camel@localhost.localdomain>
+Organization: Linux Foundation
+X-Mailer: Sylpheed-Claws 2.5.0-rc3 (GTK+ 2.10.6; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Boundary-00=_kBpvFVEbcu47uzB
-Content-Type: multipart/signed;
-  boundary="nextPart9291398.Lti1WEfqaC";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
+On Tue, 30 Jan 2007 01:22:54 +0100
+Thomas Gleixner <tglx@linutronix.de> wrote:
 
---nextPart9291398.Lti1WEfqaC
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+> On Mon, 2007-01-29 at 15:50 -0800, Stephen Hemminger wrote:
+> > The Sony VAIO BIOS resets to INTx on resume. This happens
+> > after device resume, so device irq's get misrouted.
+> 
+> Err? My Sony VAIO does _NOT_ do that. It works fine without that. 
+> It's just the sky2 hackery which fucked up things.
+> 
 
-the checking_wrmsrl() macro in asm-x86_64/msr.h which is exported to usersp=
-ace=20
-utilizes the u32 type instead of __u32 ... trivial attached patch fixes that
-=2Dmike
+What machine and BIOS version?
 
---nextPart9291398.Lti1WEfqaC
-Content-Type: application/pgp-signature
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.1 (GNU/Linux)
-
-iQIVAwUARb6QZEFjO5/oN/WBAQLuew//RaMb9VfSYRaKk6bE65Yz2VzFbA4WqtBp
-c3lTOcpkGig4bjsTKX7v2vmib3Eode58JEHAvt9nlaXKYBpE7rnV6GzW7cSUGREI
-lilQTsP+0CGo2vSagOU6EFGwkDQDJ7Q0q0NcP0d5eLjOSh7EiIZel7TOHPhYxTef
-QhVILmmtB9iHjwDqrvuigIfUfBBodjJe2H+1v31YPAx7+ST0Jd77o+OHualy6yKb
-OqPVT8w8TgGf64m/SdSaPg0A/LsVUt4FIRWq7qEy1zMFlyYzKsAnyCXLHwklBWEO
-2anYmbPr7VE9E3mwhM/w2OGbuTe91P48LCpFruZB9OGRqDjzcZ5kMpAn0yhLyn3q
-ydlkpCwCf/1hQ7hsLTdFKamfnHHp6HxXWwkNMLRLCtn42e0PJsYQVBFw7iAS/lZx
-KkcU6YZbYgldbikp+893ra5+BuJD3W094x2076tzCQqW0bla5QEoUtE7adhG+Eoc
-O6fcoYtvQ5MZJHV+zViR8TNAZ6TIQg7bDrkebxa6cjKmUP77LTcicQJOawB7er9H
-y+GeEYnrfSzXoVo5J6VbIloZkUH0aTRNxSa75TnC11DbZfHg7qZqZTbG5PzSNTH0
-d6sK4ctVt6K3JE305JVhigeBdAt67AstbvcMB4aAVUCXBDCWuvf2a+PseDOYktOE
-iLhkkuRor2g=
-=mg/9
------END PGP SIGNATURE-----
-
---nextPart9291398.Lti1WEfqaC--
-
---Boundary-00=_kBpvFVEbcu47uzB
-Content-Type: text/x-diff;
-  charset="us-ascii";
-  name="linux-use-__-types-in-x86-64-msr.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
-	filename="linux-use-__-types-in-x86-64-msr.patch"
-
-Use __u32 rather than u32 in checking_wrmsrl() exported to userspace.
-
-Signed-off-by: Mike Frysinger <vapier@gentoo.org>
-
---- a/include/asm-x86_64/msr.h
-+++ b/include/asm-x86_64/msr.h
-@@ -2,6 +2,9 @@
- #define X86_64_MSR_H 1
- 
- #ifndef __ASSEMBLY__
-+
-+#include <linux/types.h>
-+
- /*
-  * Access to machine-specific registers (available on 586 and better only)
-  * Note: the rd* operations modify the parameters directly (without using
-@@ -43,7 +46,7 @@
- 		     : "c" (msr), "0" (a), "d" (b), "i" (-EFAULT)); \
- 	ret__; })
- 
--#define checking_wrmsrl(msr,val) wrmsr_safe(msr,(u32)(val),(u32)((val)>>32))
-+#define checking_wrmsrl(msr,val) wrmsr_safe(msr,(__u32)(val),(__u32)((val)>>32))
- 
- #define rdmsr_safe(msr,a,b) \
- 	({ int ret__;						\
-
---Boundary-00=_kBpvFVEbcu47uzB--
+-- 
+Stephen Hemminger <shemminger@linux-foundation.org>
