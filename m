@@ -1,52 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965492AbXA3J5k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752650AbXA3KYA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965492AbXA3J5k (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 04:57:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965497AbXA3J5k
+	id S1752650AbXA3KYA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 05:24:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752651AbXA3KYA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 04:57:40 -0500
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:53256 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965492AbXA3J5j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 04:57:39 -0500
-Date: Tue, 30 Jan 2007 12:56:59 +0300
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Andrew Morton <akpm@osdl.org>
-Cc: Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.20-rc6-mm3
-Message-ID: <20070130095659.GE2455@2ka.mipt.ru>
-References: <20070129204528.eb8d695e.akpm@osdl.org> <45BECEAB.4090201@garzik.org> <20070129211139.8d584d89.akpm@osdl.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=koi8-r
-Content-Disposition: inline
-In-Reply-To: <20070129211139.8d584d89.akpm@osdl.org>
-User-Agent: Mutt/1.5.9i
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.7.5 (2ka.mipt.ru [0.0.0.0]); Tue, 30 Jan 2007 12:57:00 +0300 (MSK)
+	Tue, 30 Jan 2007 05:24:00 -0500
+Received: from highlandsun.propagation.net ([66.221.212.168]:4247 "EHLO
+	highlandsun.propagation.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752650AbXA3KX7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jan 2007 05:23:59 -0500
+X-Greylist: delayed 1240 seconds by postgrey-1.27 at vger.kernel.org; Tue, 30 Jan 2007 05:23:59 EST
+Message-ID: <45BF1CBE.4040201@symas.com>
+Date: Tue, 30 Jan 2007 02:23:58 -0800
+From: Howard Chu <hyc@symas.com>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9a2pre) Gecko/20070128 Netscape/7.2 (ax) Firefox/1.5 SeaMonkey/1.5a
+MIME-Version: 1.0
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Why active list and inactive list?
+References: <7Gpmk-5fN-21@gated-at.bofh.it>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 29, 2007 at 09:11:39PM -0800, Andrew Morton (akpm@osdl.org) wrote:
-> > Now that kevent work has settled down, would you be open to including it 
-> > in -mm?
-> > 
+Peter Zijlstra <a.p.zijls...@chello.nl> said:
+> I'm still torn between CLOCK-Pro and CART. 
 > 
-> I just haven't had the bandwidth to track what's been happening there
-> lately.  The two main things which need to be done are
-> 
-> -  a detailed line-by-line review
-> 
-> - for someone to gain a full understanding of the delta between <these
->   patches> and <ulrich> and to explain these differences to mortals and to
->   convince themselves and the rest of us that we're all OK.
+> CLOCK-Pro is still vulnerable to the cyclic scan use case, since at that
+> time all pages will have equal distance.
 
-This requires either mind-reading machine, or some feedback from Ulrich.
-Last main from him about kevent was related to 25 release.
+I was recently testing CLOCK-Pro for the entry cache in OpenLDAP, with this 
+cyclic scan case. I've set it aside for now, but if anyone is interested in 
+playing with a user-level version as opposed to these kernel adaptations, an 
+early version of mine is at
+http://www.openldap.org/its/index.cgi/Software%20Enhancements?id=4807
 
-As far as I can see, only questionable parts are signal mask in
-syscalls, but nature of kevent signal delivering does not require it,
-since mask of pending signals is not updated if special flag is set,
-and exceeded functionality (like hrtimers accessible through kevent
-interface and as POSIX addon).
+I found that although it managed to allow some cached pages to be reused, it 
+also forced several full sweeps of the clock in each scan. Overall it 
+performed more slowly than regular CLOCK due to these extra sweeps. (In our 
+case, moving the hands required some expensive lock manipulation. Possibly if 
+I found a better locking strategy there the performance cost would come down.)
 
 -- 
-	Evgeniy Polyakov
+   -- Howard Chu
+   Chief Architect, Symas Corp.  http://www.symas.com
+   Director, Highland Sun        http://highlandsun.com/hyc
+   OpenLDAP Core Team            http://www.openldap.org/project/
