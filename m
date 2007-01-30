@@ -1,54 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750990AbXA3Ttd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750978AbXA3TuK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750990AbXA3Ttd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 14:49:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750997AbXA3Ttd
+	id S1750978AbXA3TuK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 14:50:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750999AbXA3TuJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 14:49:33 -0500
-Received: from ug-out-1314.google.com ([66.249.92.168]:38392 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750990AbXA3Ttc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 14:49:32 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=G2HTW/n/s9IdcDW5Ag6EfwoUPYK+OSap8tACx/p3dDVdjj0nJ7nQOzNvBDHxQb9PmNa6jYfDAMjRpCuJZI2DHrD2bYW3+g2Kxt7mOle6LfIM3B0PpJsijfJ/ToEAu1qS8f85FR5KI8eg2GxrsQLU3zSm4xy2kh6lkGMvfxuwXkA=
-Message-ID: <21d7e9970701301149r788c4053s2cea2c539e53bb99@mail.gmail.com>
-Date: Wed, 31 Jan 2007 06:49:31 +1100
-From: "Dave Airlie" <airlied@gmail.com>
-To: "Paul Collins" <paul@briny.ondioline.org>
-Subject: Re: gpu sharing layer for kernel
-Cc: airlied@linux.ie, benh@kernel.crashing.org, linux-kernel@vger.kernel.org
-In-Reply-To: <87k5zbsfnu.fsf@briny.internal.ondioline.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 30 Jan 2007 14:50:09 -0500
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:53195 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750965AbXA3TuG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jan 2007 14:50:06 -0500
+Date: Tue, 30 Jan 2007 11:49:40 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Andrew Morton <akpm@osdl.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Ingo Molnar <mingo@elte.hu>,
+       dipankar@in.ibm.com, Gautham Shenoy <ego@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Fw: Re: [mm PATCH 4/6] RCU: (now) CPU hotplug
+Message-ID: <20070130194940.GI2092@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20070126112837.059502fc.akpm@osdl.org> <20070130073340.GC30160@elte.hu> <20070130160244.GB2092@linux.vnet.ibm.com> <200701301744.48601.rjw@sisk.pl> <20070130102718.f03f37d8.akpm@osdl.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <1169637623985-git-send-email-airlied@linux.ie>
-	 <87k5zbsfnu.fsf@briny.internal.ondioline.org>
+In-Reply-To: <20070130102718.f03f37d8.akpm@osdl.org>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->
-> airlied@linux.ie writes:
->
-> > This patch series contains the gpu sharing layer for kernel that
-> > I've mentioned before. It should apply against Linus's git tree.
->
-> I gave the patches a go on my PowerBook.  I had to make a few changes
-> to get it to compile.  Works fine so far: I switched between VTs and X
-> with an accelerated GLX client active a few times, no problems.
->
-> When I did a sleep/resume cycle it wedged on resume, but I expect this
-> is due to my hacking up radeonfb_early_resume(), as seen in the last
-> hunk below, which was just aimed at just getting it to compile.
->
+On Tue, Jan 30, 2007 at 10:27:18AM -0800, Andrew Morton wrote:
+> On Tue, 30 Jan 2007 17:44:47 +0100
+> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> 
+> > > I need to look at all uses of PF_NOFREEZE -- as I understand the
+> > > code, processes marked PF_NOFREEZE will continue running, potentially
+> > > interfering with the hotplug operation.  :-(
+> > > 
+> > > I will pass my findings on to this list.
+> > 
+> > Well, I did it some time ago, although not very thoroughly.
+> > 
+> > AFAICS there are not so many, but one that stands out is the worker threads.
+> > We needed two of them to actually go to sleep, so now it's possible to create
+> > a "freezeable workqueue" the worker thread of which will not set PF_NOFREEZE,
+> > but currently this is only used by XFS.
+> 
+> Or we can create a variant of freeze_processes which ignores PF_NOFREEZE.
+> 
+> As I said eariler, we might need to change the freezer code for this
+> application.  In fact we should do so: that sys_sync() call in there is
+> quite inappropriate, as is, I suppose, the two-pass freeze attempt.  As are
+> the nice printks, come to that.
+> 
+> Pretty simple stuff though.
 
-Hi Paul,
+And we might need to change some of the processes that currently set
+PF_NOFREEZE so that they periodically go somewhere that the freezer can
+find them -- if I remember correctly, at least some of the PF_NOFREEZE
+tasks were so marked in order to prevent suspend hangs.
 
-I suspected some problem on PPC alright as I didn't have a radeon
-based one to test on, I'll incorporate your changes and I'll fix the
-suspend/resume to work properly :-)
+Part of what I need to look at.  ;-)
 
-Dave.
+							Thanx, Paul
