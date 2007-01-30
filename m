@@ -1,56 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965224AbXA3EWt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965201AbXA3EYm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965224AbXA3EWt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 23:22:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965201AbXA3EWt
+	id S965201AbXA3EYm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 23:24:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965220AbXA3EYm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 23:22:49 -0500
-Received: from rex.snapgear.com ([203.143.235.140]:44704 "EHLO
-	cyberguard.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S965224AbXA3EWt (ORCPT
+	Mon, 29 Jan 2007 23:24:42 -0500
+Received: from moutng.kundenserver.de ([212.227.126.187]:58608 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965201AbXA3EYl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 23:22:49 -0500
-Message-ID: <45BEC811.8070209@securecomputing.com>
-Date: Tue, 30 Jan 2007 14:22:41 +1000
-From: Greg Ungerer <greg_ungerer@securecomputing.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070102)
+	Mon, 29 Jan 2007 23:24:41 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: cbe-oss-dev@ozlabs.org, maynardj@us.ibm.com
+Subject: Re: [Cbe-oss-dev] [RFC, PATCH 3/4] Add support to OProfile for profiling Cell BE SPUs -- update
+Date: Tue, 30 Jan 2007 05:24:32 +0100
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       oprofile-list@lists.sourceforge.net
+References: <45BE4ED0.5030808@us.ibm.com> <45BE4F78.6080705@us.ibm.com>
+In-Reply-To: <45BE4F78.6080705@us.ibm.com>
 MIME-Version: 1.0
-To: Dave Jones <davej@redhat.com>, linux-kernel@vger.kernel.org,
-       ksummit-2007-discuss@thunk.org
-Subject: Re: [Ksummit-2007-discuss] Re: [Ksummit-2006-discuss] 2007 Linux
- Kernel Summit
-References: <20070125.125121.98861775.davem@davemloft.net> <8355959a0701251646t4b7db48cj862268aad52e8e24@mail.gmail.com> <20070126032849.GB5589@thunk.org> <8355959a0701260704x6aea8141s3d0581fa33c74cf2@mail.gmail.com> <20070126195024.GE14759@thunk.org> <45BE8BF9.6020204@sgi.com> <20070130030430.GA21772@redhat.com> <45BEBBF0.3050102@snapgear.com> <20070130034111.GB21772@redhat.com> <45BEC303.2040205@securecomputing.com> <20070130041021.GD21772@redhat.com>
-In-Reply-To: <20070130041021.GD21772@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200701300524.32556.arnd@arndb.de>
+X-Provags-ID: kundenserver.de abuse@kundenserver.de login:c48f057754fc1b1a557605ab9fa6da41
+X-Provags-ID2: V01U2FsdGVkX197ulibmhN8JP5NkTVuY5MoYZZqougdPabHkW4idPKWbx0tMvA8+rEWha3qOkp/lenXCssLR8FBammfI1uqF2l4VJGd5Nm09POCrs4qIZAzZA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-Dave Jones wrote:
-> On Tue, Jan 30, 2007 at 02:01:07PM +1000, Greg Ungerer wrote:
->  
->  > >  > > Again, I don't recall us spending any time at all discussing m68k, or
->  > >  > > sparc, whilst the others you mention were well represented.
->  > >  > 
->  > >  > Well, others where represented, I was there looking after non-mmu m68k
->  > >  > for example (and other general non-mmu stuff). There just wasn't much
->  > >  > contentious stuff in that space that needed wider discussion.
->  > > 
->  > > Right, other than during the CPU architects panel, I don't remember
->  > > any non x86/ia64/ppc stuff being brought up at all.
->  > 
->  > Yep. IIRC the CPU architects panel was all x86/x86_64/ppc too wasn't it?
+On Monday 29 January 2007 20:48, Maynard Johnson wrote:
+> Subject: Enable SPU switch notification to detect currently active SPU tasks.
 > 
-> I thought there was coldfire mentioned too, or maybe my memory is
-> playing tricks on me.  Maybe I'm misremembering the ppc bit.
+> From: Maynard Johnson <maynardj@us.ibm.com>
+> 
+> This patch adds to the capability of spu_switch_event_register so that the
+> caller is also notified of currently active SPU tasks.  It also exports
+> spu_switch_event_register and spu_switch_event_unregister.
+> 
+> Signed-off-by: Maynard Johnson <mpjohn@us.ibm.com>
 
-Your right, the person from Freescale did mention it.
+I looked through it again, and think I found a serious bug, but that
+should be easy enough to solve:
 
+> +static void notify_spus_active(void)
+> +{
+> +       int node;
+> +       /* Wake up the active spu_contexts. When the awakened processes 
+> +        * sees their notify_active flag is set, they will call
+> +        * spu_switch_notify();
+> +        */
+> +       for (node = 0; node < MAX_NUMNODES; node++) {
+> +               struct spu *spu;
+> +               mutex_lock(&spu_prio->active_mutex[node]);
+> +                list_for_each_entry(spu, &spu_prio->active_list[node], list) {
+> +                       struct spu_context *ctx = spu->ctx;
 
+[side note]
+There is a small whitespace breakage in here, please make sure you always
+use tabs for indenting, not space characters.
+[/side note]
 
-------------------------------------------------------------------------
-Greg Ungerer  --  Chief Software Dude       EMAIL:     gerg@snapgear.com
-SnapGear -- a Secure Computing Company      PHONE:       +61 7 3435 2888
-825 Stanley St,                             FAX:         +61 7 3891 3630
-Woolloongabba, QLD, 4102, Australia         WEB: http://www.SnapGear.com
+> @@ -45,9 +45,10 @@
+>         u64 pte_fault;
+>  
+>         *stat = ctx->ops->status_read(ctx);
+> -       if (ctx->state != SPU_STATE_RUNNABLE)
+> -               return 1;
+> +
+>         spu = ctx->spu;
+> +       if (ctx->state != SPU_STATE_RUNNABLE || spu->notify_active)
+> +               return 1;
+>         pte_fault = spu->dsisr &
+>             (MFC_DSISR_PTE_NOT_FOUND | MFC_DSISR_ACCESS_DENIED);
+>         return (!(*stat & 0x1) || pte_fault || spu->class_0_pending) ? 1 : 0;
+> @@ -305,6 +306,7 @@
+>                    u32 *npc, u32 *event)
+>  {
+>         int ret;
+> +       struct spu * spu;
+>         u32 status;
+>  
+>         if (down_interruptible(&ctx->run_sema))
+> @@ -318,8 +320,16 @@
+>  
+>         do {
+>                 ret = spufs_wait(ctx->stop_wq, spu_stopped(ctx, &status));
+> +               spu = ctx->spu;
+>                 if (unlikely(ret))
+>                         break;
+> +               if (unlikely(spu->notify_active)) {
+> +                       spu->notify_active = 0;
+> +                       if (!(status & SPU_STATUS_STOPPED_BY_STOP)) {
+> +                               spu_switch_notify(spu, ctx);
+> +                               continue;
+> +                       }
+> +               }
+
+This is before spu_reacquire_runnable, so in case the spu got
+preempted at the same time when oprofile was enabled, ctx->spu
+is NULL, and you can't load the notify_active flag from it.
+
+On solution would be to move the notify_active flag from ctx->spu
+into ctx itself, but maybe there are other ways to solve this.
+
+Thanks,
+
+	Arnd <><
