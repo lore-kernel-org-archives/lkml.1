@@ -1,89 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751865AbXA3Xjh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751869AbXA3Xmp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751865AbXA3Xjh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 18:39:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751848AbXA3Xjh
+	id S1751869AbXA3Xmp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 18:42:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751879AbXA3Xmp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 18:39:37 -0500
-Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:46648 "EHLO
-	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751865AbXA3Xjg (ORCPT
+	Tue, 30 Jan 2007 18:42:45 -0500
+Received: from wx-out-0506.google.com ([66.249.82.232]:28736 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751869AbXA3Xmo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 18:39:36 -0500
-Date: Wed, 31 Jan 2007 00:39:35 +0100
-From: Andreas Mohr <andi@rhlx01.fht-esslingen.de>
-To: Andreas Mohr <andi@rhlx01.fht-esslingen.de>, Pavel Machek <pavel@ucw.cz>,
-       andi@lisas.de, davej@codemonkey.org.uk,
-       kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: intel-agp PM experiences (was: 2.6.20-rc5: usb mouse breaks suspend to ram)
-Message-ID: <20070130233935.GA31689@rhlx01.hs-esslingen.de>
-References: <d120d5000701160608t73db4405n5d157db43899776a@mail.gmail.com> <20070116142432.GA6171@elf.ucw.cz> <d120d5000701161325h112a9299w944763b7f1032a61@mail.gmail.com> <20070117004012.GA11140@rhlx01.hs-esslingen.de> <20070117005755.GB6270@elf.ucw.cz> <20070118115105.GA28233@rhlx01.hs-esslingen.de> <20070118231650.GA5352@ucw.cz> <20070122044519.GA24398@zhen-devel.sh.intel.com> <20070129213053.GA14881@rhlx01.hs-esslingen.de> <20070130123632.GA28177@zhen-devel.sh.intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 30 Jan 2007 18:42:44 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=o1fIhCmEOouRq0NCad7VgNnlYrjZQ6lBcBsN/1nfLu/sThfUxHYdq624p6C2qNBa1lWbFAhk0SVG+lL8PAMd1wT6mv2abDRjJzqF9OfsK5XjMkJLwXWuiISCuD/Rbr7P8seBtABMdMvv94wHkPTYmwXMUwFNSazPe+8yZIEjHkw=
+Message-ID: <9a8748490701301542r33317ca7id9deb63fca2fb2dc@mail.gmail.com>
+Date: Wed, 31 Jan 2007 00:42:43 +0100
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: "Trond Myklebust" <trond.myklebust@fys.uio.no>
+Subject: Re: [NFS] 2.6.17.8 - do_vfs_lock: VFS is out of sync with lock manager!
+Cc: "Neil Brown" <neilb@suse.de>, nfs@lists.sourceforge.net,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <1170080210.5757.6.camel@lade.trondhjem.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070130123632.GA28177@zhen-devel.sh.intel.com>
-User-Agent: Mutt/1.4.2.2i
-X-Priority: none
+References: <9a8748490608080739w2e14e5ceg44a7bf0a3b475704@mail.gmail.com>
+	 <17636.4462.975774.528003@cse.unsw.edu.au>
+	 <9a8748490608170258s32df0272r60c8c540e5871485@mail.gmail.com>
+	 <17641.10665.116168.867041@cse.unsw.edu.au>
+	 <1156190098.6158.109.camel@localhost>
+	 <17853.33116.113629.65031@notabene.brown>
+	 <1170080210.5757.6.camel@lade.trondhjem.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On 29/01/07, Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
+> On Mon, 2007-01-29 at 16:08 +1100, Neil Brown wrote:
+> > On Monday August 21, trond.myklebust@fys.uio.no wrote:
+> > >
+> > > Could we instead replace it with a dprintk() that returns the value of
+> > > "res"? That will keep it useful for debugging purposes.
+> >
+> > (only 5 months later...)
+> >
+> > Sure, how about this?
+> >
+> > Thanks,
+> > NeilBrown
+>
+> ACKed.
+>
+> Thanks Neil!
+>
 
-On Tue, Jan 30, 2007 at 08:36:32PM +0800, Wang Zhenyu wrote:
-> ok, just see the AGP tables bits definition for intel_i815_driver,
-> /* Intel registers */
-> #define INTEL_APSIZE    0xb4
-> #define INTEL_ATTBASE   0xb8
-> #define INTEL_AGPCTRL   0xb0
-> ...
-> And this could explain why your patch can make X come back to live on
-> i815, as default suspend saves 64bytes. We need suspend func to handle
-> this, but for now mainline intel integrated gfx, this's not needed. 
-> Would you send out a cleanup patch later?
+Finally getting that in will be sooooo nice :-)  Thank you.
 
-OK, I just spent an entire evening on this tiresome procedure
-of trying, not quite successful, machine killed, rebooting, adapting,
-trying, hang, ...
+Btw: any reason why not to include the
+  fl->fl_flags &= ~FL_SLEEP;
+bit as well?  As in http://lkml.org/lkml/2006/11/27/41  ??
 
-My conclusions:
-- never forget about stup@#$@#$% PCI posting! (hours wasted
-  due to register values NOT restored after resume...)
-- those 3 registers above are not sufficient, since AGP status is
-  completely broken, not even such basic things as 4x mode or sideband
-  addressing bits get restored, so these need proper care as well.
-- backing up about 10 registers properly (all those that have
-  different state after resume) makes it work fine without going
-  over the whole extended PCI register range needlessly
 
-I'm going to spend more time on this, so...:
-
-Questions (in order of fine-grainedness):
-- is intel-agp the right place to reinit such things, or should
-  something be changed in a more global way? Would other drivers
-  be responsible for that instead? x.org?
-- should we have infrastructure available which records AGP state
-  in all its nicety in various variables, with chipset-specific
-  access functions (AGP mode, memory setup, ...)?
-  That way we'd be able to implement one chipset-agnostic
-  suspend/resume, which could be a heavenly thing
-  considering the amount of different chipsets...
-  (IOW, we should perhaps focus on maintaining an abstract device state
-   tracking, not blindly push those I/O instructions out to the
-   device and forget about actual device state)
-- should we just implement a plain'n stupid I/O register array
-  for each chipset which denotes the registers that need resume
-  maintenance and also records their pre-suspend values? (DUMB)
-- or even (shudder) simply always recover the entire PCI I/O space
-  no matter which chipset it is?
-
-I really want to get this improved, so any ideas how it should
-best be updated to get a nice clean generic suspend/resume functionality
-for all chipsets? (at least Intel, or even better for all types)
-
-And it would be very useful to add a generic function for those
-repeated agp_bridge->dev->device == PCI_DEVICE_... checks
-which takes a PCI ID array input... (inline or real function, doesn't matter).
-
-Thanks!
-
-Andreas Mohr
+-- 
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
