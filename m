@@ -1,38 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965626AbXA3RB5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965600AbXA3RHE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965626AbXA3RB5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 12:01:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965628AbXA3RB5
+	id S965600AbXA3RHE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 12:07:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965611AbXA3RHE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 12:01:57 -0500
-Received: from [198.99.130.12] ([198.99.130.12]:57649 "EHLO
-	saraswathi.solana.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S965626AbXA3RB5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 12:01:57 -0500
-Date: Tue, 30 Jan 2007 11:54:41 -0500
-From: Jeff Dike <jdike@addtoit.com>
-To: Al Viro <viro@ftp.linux.org.uk>
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] fix indentation-related breakage in Kconfig.i386
-Message-ID: <20070130165441.GA5835@ccure.user-mode-linux.org>
-References: <E1HBsxY-0002NE-Uo@ZenIV.linux.org.uk>
-Mime-Version: 1.0
+	Tue, 30 Jan 2007 12:07:04 -0500
+Received: from mailhub.sw.ru ([195.214.233.200]:14130 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965600AbXA3RHB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jan 2007 12:07:01 -0500
+Message-ID: <45BF7DBD.8000606@sw.ru>
+Date: Tue, 30 Jan 2007 20:17:49 +0300
+From: Kirill Korotaev <dev@sw.ru>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.13) Gecko/20060417
+X-Accept-Language: en-us, en, ru
+MIME-Version: 1.0
+To: Jeff Layton <jlayton@redhat.com>
+CC: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       dada1@cosmosbay.com, dev@openvz.org
+Subject: Re: [PATCH 1/2] add lazy_getattr and lazy_readdir patches that defer
+ i_ino assignment
+References: <200701301538.l0UFcGNX027715@dantu.rdu.redhat.com> <45BF7499.1000805@sw.ru> <45BF754A.1030307@redhat.com>
+In-Reply-To: <45BF754A.1030307@redhat.com>
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <E1HBsxY-0002NE-Uo@ZenIV.linux.org.uk>
-User-Agent: Mutt/1.4.2.1i
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 30, 2007 at 01:23:40PM +0000, Al Viro wrote:
-> Kconfig recognizes the end of help text by receding indentation depth.
-> Recent patch had broken HOST_VMSPLIT_... choice in arch/um/Kconfig.i386 -
-> all alternatives are interpreted as part of help text now.
+>>Jeff,
+>>
+>>taking into account the discussion about unawarness/uncertainty
+>>of whether *unique* inode number is needed at all on pipe fds and such
+>>do we need this at all?
+>>
+>>Thanks,
+>>Kirill
+>>
+> 
+> 
+> Fair enough, perhaps we should just not worry about it, and assume that there 
+> might be collisions.
+> 
+> If so, I should probably just have Andrew withdraw the patch I submitted earlier 
+> to hash the inodes for pipefs. I'll look at other callers of new_inode and fix 
+> up any of the ones that need fixing.
+> 
+> Does that seem like the most reasonable approach?
+yep!
 
-Thanks - I was trying to figure out what Kconfig was moaning about there...
+Thanks,
+Kirill
 
-				Jeff
-
--- 
-Work email - jdike at linux dot intel dot com
