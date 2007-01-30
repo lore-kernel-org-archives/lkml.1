@@ -1,58 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030183AbXA3SK4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965579AbXA3SUN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030183AbXA3SK4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 13:10:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030188AbXA3SKz
+	id S965579AbXA3SUN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 13:20:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965634AbXA3SUN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 13:10:55 -0500
-Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:57262 "EHLO
-	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030183AbXA3SKy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 13:10:54 -0500
-Message-ID: <45BF8A28.5010605@drzeus.cx>
-Date: Tue, 30 Jan 2007 19:10:48 +0100
-From: Pierre Ossman <drzeus-list@drzeus.cx>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061223)
+	Tue, 30 Jan 2007 13:20:13 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:48713 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965579AbXA3SUM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jan 2007 13:20:12 -0500
+Message-ID: <45BF8C57.1020500@garzik.org>
+Date: Tue, 30 Jan 2007 13:20:07 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
 MIME-Version: 1.0
-To: Anderson Briglia <anderson.briglia@indt.org.br>
-CC: Russell King <rmk+lkml@arm.linux.org.uk>,
-       "Lizardo Anderson (EXT-INdT/Manaus)" <anderson.lizardo@indt.org.br>,
-       linux-kernel@vger.kernel.org,
-       "Aguiar Carlos (EXT-INdT/Manaus)" <carlos.aguiar@indt.org.br>,
-       Tony Lindgren <tony@atomide.com>,
-       ext David Brownell <david-b@pacbell.net>
-Subject: Re: [PATCH 4/4] Add MMC Password Protection (lock/unlock) support
- V9: mmc_sysfs.diff
-References: <4582F007.7030100@indt.org.br> <459B9C4E.3020406@indt.org.br> <45A021B2.4090104@drzeus.cx> <45BE3E70.9050505@indt.org.br>
-In-Reply-To: <45BE3E70.9050505@indt.org.br>
-Content-Type: text/plain; charset=windows-1252
+To: Roland Dreier <rdreier@cisco.com>
+CC: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org
+Subject: Re: Free Linux Driver Development!
+References: <20070130012904.GA9617@kroah.com> <ada8xfks90x.fsf@cisco.com>
+In-Reply-To: <ada8xfks90x.fsf@cisco.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.7 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Anderson Briglia wrote:
-> Hi Pierre,
->
-> Sorry about the delay.
-> I changed a bit the code to align with your latest suggestions.
->
->   
+Roland Dreier wrote:
+> Just look at the in-tree drivers: there are tons of them that don't
+> work on big-endian platforms, or have 64-bit problems, or have no SMP
+> support.  And that doesn't even count drivers that are so bitrotted
+> they won't even build any more.
 
-Nice, but the locking is broken again.
+The vast majority of these were submitted ages ago.  Standards for 
+acceptance and maintenance have risen since the days of ISA drivers and 
+floppy tape drives.
 
-> I believe now the number of goto's is ok.
->
->   
+I think it's quite disingenuous to imply that a few bad apples are a 
+representative sample.
 
-Actually, the ones you have left are completely useless. So you can just
-remove the last bunch aswell.
+	Jeff
 
-Rgds
-
--- 
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  PulseAudio, core developer          http://pulseaudio.org
-  rdesktop, core developer          http://www.rdesktop.org
 
