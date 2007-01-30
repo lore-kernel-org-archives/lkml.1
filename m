@@ -1,54 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965005AbXA3AWP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964937AbXA3AWU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965005AbXA3AWP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 19:22:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964933AbXA3AWP
+	id S964937AbXA3AWU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 19:22:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965085AbXA3AWU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 19:22:15 -0500
-Received: from www.osadl.org ([213.239.205.134]:55377 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S964851AbXA3AWO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 19:22:14 -0500
-Subject: Re: [PATCH] block MSI on Sony
-From: Thomas Gleixner <tglx@linutronix.de>
-Reply-To: tglx@linutronix.de
-To: Stephen Hemminger <shemminger@linux-foundation.org>
-Cc: =?ISO-8859-1?Q?Fr=E9d=E9ric?= Riss <frederic.riss@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jeff Garzik <jeff@garzik.org>, netdev@vger.kernel.org
-In-Reply-To: <20070129155043.56a1c577@freekitty>
-References: <Pine.LNX.4.64.0701241847360.25027@woody.linux-foundation.org>
-	 <1169931333.17469.125.camel@localhost.localdomain>
-	 <20070129113159.7ad22e4c@freekitty>
-	 <1170101430.29240.34.camel@localhost.localdomain>
-	 <20070129133849.1b523226@freekitty>
-	 <1170109401.29240.49.camel@localhost.localdomain>
-	 <1170110318.21603.25.camel@funkylaptop>
-	 <1170110732.29240.59.camel@localhost.localdomain>
-	 <1170111056.21603.30.camel@funkylaptop>
-	 <1170111464.29240.63.camel@localhost.localdomain>
-	 <1170113200.21603.41.camel@funkylaptop>
-	 <1170113879.29240.79.camel@localhost.localdomain>
-	 <20070129155043.56a1c577@freekitty>
-Content-Type: text/plain
-Date: Tue, 30 Jan 2007 01:22:54 +0100
-Message-Id: <1170116575.29240.114.camel@localhost.localdomain>
+	Mon, 29 Jan 2007 19:22:20 -0500
+Received: from main.gmane.org ([80.91.229.2]:49685 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S964937AbXA3AWS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jan 2007 19:22:18 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Ben Pfaff <blp@cs.stanford.edu>
+Subject: slow module build--what am I doing wrong?
+Date: Mon, 29 Jan 2007 16:22:26 -0800
+Message-ID: <87ps8xicsd.fsf@blp.benpfaff.org>
+Reply-To: blp@cs.stanford.edu
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-Complaints-To: usenet@sea.gmane.org
+X-Gmane-NNTP-Posting-Host: c-24-7-50-23.hsd1.ca.comcast.net
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+Cancel-Lock: sha1:59ddnJJOiCBET91XsNWb55lK5MI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-01-29 at 15:50 -0800, Stephen Hemminger wrote:
-> The Sony VAIO BIOS resets to INTx on resume. This happens
-> after device resume, so device irq's get misrouted.
+When I modify a source file or two that belong to a particular
+module, and then rebuild just that module with "make
+dir1/dir/module.ko" (e.g.), the build system spends a couple of
+minutes grinding away on "MODPOST" operations.  Am I doing
+something wrong?  Is there a way to avoid this?  It slows down my
+build-and-test cycle quite a bit.
 
-Err? My Sony VAIO does _NOT_ do that. It works fine without that. 
-It's just the sky2 hackery which fucked up things.
-
-	tglx
-
-
-	
+Thanks!
+-- 
+Ben Pfaff 
+blp@cs.stanford.edu
+http://benpfaff.org
 
