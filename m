@@ -1,55 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751940AbXA3Xec@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752026AbXA3XgD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751940AbXA3Xec (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 18:34:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752037AbXA3Xec
+	id S1752026AbXA3XgD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 18:36:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752037AbXA3XgB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 18:34:32 -0500
-Received: from gate.crashing.org ([63.228.1.57]:55851 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751940AbXA3Xeb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 18:34:31 -0500
-Subject: Re: [Cbe-oss-dev] [RFC, PATCH 4/4] Add support to OProfile for
-	profiling Cell BE SPUs -- update
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: maynardj@us.ibm.com
-Cc: linuxppc-dev@ozlabs.org, oprofile-list@lists.sourceforge.net,
-       cbe-oss-dev@ozlabs.org, Arnd Bergmann <arnd@arndb.de>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <45BFCC8E.4000008@us.ibm.com>
-References: <45BE4ED0.5030808@us.ibm.com> <45BE4FA4.9020105@us.ibm.com>
-	 <200701300839.05144.arnd@arndb.de> <45BFBB78.7060907@us.ibm.com>
-	 <45BFCC8E.4000008@us.ibm.com>
-Content-Type: text/plain
-Date: Wed, 31 Jan 2007 10:34:03 +1100
-Message-Id: <1170200044.26655.349.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 30 Jan 2007 18:36:01 -0500
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:54019 "EHLO
+	pd3mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752026AbXA3XgA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jan 2007 18:36:00 -0500
+Date: Tue, 30 Jan 2007 17:35:43 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: Free Linux Driver Development!
+In-reply-to: <fa.T1Mpk9x9o81uajHKj9J8RE8yM2c@ifi.uio.no>
+To: Jeff Garzik <jeff@garzik.org>, linux-kernel <linux-kernel@vger.kernel.org>
+Cc: Roland Dreier <rdreier@cisco.com>
+Message-id: <45BFD64F.806@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.vy0GBdNvEFvgi9ipVzdiBp0FpjI@ifi.uio.no>
+ <fa.INRmyia9BGp5I+SBT3+o7eNe+vo@ifi.uio.no>
+ <fa.JOovioFiqyKNIa9g0QxNLn/pldw@ifi.uio.no>
+ <fa.f1ctPsEcBEc59B+Sd5oTTUfDmIs@ifi.uio.no>
+ <fa.OyKqe20gDjwobkBZicjVmJ5DPp8@ifi.uio.no>
+ <fa.T1Mpk9x9o81uajHKj9J8RE8yM2c@ifi.uio.no>
+User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-> I've given this some more thought, and I'm coming to the conclusion that 
-> a pure array-based implementation for holding cached_info (getting rid 
-> of the lists) would work well for the vast majority of cases in which 
-> OProfile will be used.  Yes, it is true that the mapping of an SPU 
-> context to a phsyical spu-numbered array location cannot be guaranteed 
-> to stay valid, and that's why I discard the cached_info at that array 
-> location when the SPU task is switched out.  Yes, it would be terribly 
-> inefficient if the same SPU task gets switched back in later and we 
-> would have to recreate the cached_info.  However, I contend that 
-> OProfile users are interested in profiling one application at a time. 
-> They are not going to want to muddy the waters with multiple SPU apps 
-> running at the same time.  I can't think of any reason why someone would 
-> conscisouly choose to do that.
+Jeff Garzik wrote:
+>> I guess Nvidia ADMA is pretty much
+>> done now.
 > 
-> Any thoughts from the general community, especially OProfile users?
+> Yep.  Without docs, even.  And its supported by enterprise distros.
 
-Well, it's my understanding that quite a few typical usage scenario
-involve different tasks running on different SPUs passing each other
-data around.
+Well, the "docs" I was using was a half-finished, broken version of the 
+driver released by NVidia which had to be significantly revised, and the 
+public ADMA spec which the hardware was vaguely based on and which a few 
+things could be inferred from. If NVidia had just released the docs it 
+would have been much easier, I would have gladly written it from 
+scratch. There are still things in the driver that could likely be 
+improved if we had the actual hardware documents, registers that we 
+don't know what half the bits are for, etc.
 
-Ben.
+Having the vendor release a driver without hardware information is fine, 
+as long as it works perfectly or they maintain it when bugs are found. 
+Otherwise, anyone else trying to fix it will end up with an exercise in 
+"why was it doing this? should it be doing this instead?"
 
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
 
