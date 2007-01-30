@@ -1,53 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932812AbXA3BtQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752656AbXA3Bw1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932812AbXA3BtQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 20:49:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752656AbXA3BtQ
+	id S1752656AbXA3Bw1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 20:52:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932854AbXA3Bw1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 20:49:16 -0500
-Received: from dvhart.com ([64.146.134.43]:40205 "EHLO dvhart.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752666AbXA3BtP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 20:49:15 -0500
-Message-ID: <45BEA41A.6020209@mbligh.org>
-Date: Mon, 29 Jan 2007 17:49:14 -0800
-From: "Martin J. Bligh" <mbligh@mbligh.org>
-User-Agent: Thunderbird 1.5.0.5 (X11/20060728)
+	Mon, 29 Jan 2007 20:52:27 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:51982 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752656AbXA3Bw1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jan 2007 20:52:27 -0500
+Date: Mon, 29 Jan 2007 17:51:59 -0800
+From: Mark Fasheh <mark.fasheh@oracle.com>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Hugh Dickins <hugh@veritas.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Linux Memory Management <linux-mm@kvack.org>,
+       David Howells <dhowells@redhat.com>, Andrew Morton <akpm@osdl.org>,
+       Anton Altaparmakov <aia21@cam.ac.uk>
+Subject: Re: page_mkwrite caller is racy?
+Message-ID: <20070130015159.GA14799@ca-server1.us.oracle.com>
+Reply-To: Mark Fasheh <mark.fasheh@oracle.com>
+References: <45BDCA8A.4050809@yahoo.com.au> <Pine.LNX.4.64.0701291521540.24726@blonde.wat.veritas.com> <45BE9BF0.10202@yahoo.com.au>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@osdl.org>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] mm: remove global locks from mm/highmem.c
-References: <1169993494.10987.23.camel@lappy>	<20070128142925.df2f4dce.akpm@osdl.org>	<1170063848.6189.121.camel@twins>	<45BE9FE8.4080603@mbligh.org> <20070129174118.0e922ab3.akpm@osdl.org>
-In-Reply-To: <20070129174118.0e922ab3.akpm@osdl.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <45BE9BF0.10202@yahoo.com.au>
+Organization: Oracle Corporation
+User-Agent: Mutt/1.5.11
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Mon, 29 Jan 2007 17:31:20 -0800
-> "Martin J. Bligh" <mbligh@mbligh.org> wrote:
-> 
->> Peter Zijlstra wrote:
->>> On Sun, 2007-01-28 at 14:29 -0800, Andrew Morton wrote:
->>>
->>>> As Christoph says, it's very much preferred that code be migrated over to
->>>> kmap_atomic().  Partly because kmap() is deadlockable in situations where a
->>>> large number of threads are trying to take two kmaps at the same time and
->>>> we run out.  This happened in the past, but incidences have gone away,
->>>> probably because of kmap->kmap_atomic conversions.
->>>> From which callsite have you measured problems?
->>> CONFIG_HIGHPTE code in -rt was horrid. I'll do some measurements on
->>> mainline.
->>>
->> CONFIG_HIGHPTE is always horrid -we've known that for years.
-> 
-> We have?  What's wrong with it?  <looks around for bug reports>
+On Tue, Jan 30, 2007 at 12:14:24PM +1100, Nick Piggin wrote:
+> This is another discussion, but do we want the page locked here? Or
+> are the filesystems happy to exclude truncate themselves?
 
-http://www.ussg.iu.edu/hypermail/linux/kernel/0307.0/0463.html
+No page lock please. Generally, Ocfs2 wants to order cluster locks outside
+of page locks. Also, the sparse b-tree support I'm working on right now will
+need to be able to allocate in ->page_mkwrite() which would become very
+nasty if we came in with the page lock - aside from the additional cluster
+locks taken, ocfs2 will want to zero some adjacent pages (because we support
+atomic allocation up to 1 meg).
 
-July 2003.
+Thanks,
+	--Mark
 
-
-M.
+--
+Mark Fasheh
+Senior Software Developer, Oracle
+mark.fasheh@oracle.com
