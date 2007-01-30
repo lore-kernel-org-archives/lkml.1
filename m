@@ -1,57 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752026AbXA3XgD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751819AbXA3Xj0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752026AbXA3XgD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 18:36:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752037AbXA3XgB
+	id S1751819AbXA3Xj0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 18:39:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751848AbXA3Xj0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 18:36:01 -0500
-Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:54019 "EHLO
-	pd3mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752026AbXA3XgA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 18:36:00 -0500
-Date: Tue, 30 Jan 2007 17:35:43 -0600
-From: Robert Hancock <hancockr@shaw.ca>
+	Tue, 30 Jan 2007 18:39:26 -0500
+Received: from ra.tuxdriver.com ([70.61.120.52]:2448 "EHLO ra.tuxdriver.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751819AbXA3XjZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jan 2007 18:39:25 -0500
+Date: Tue, 30 Jan 2007 17:39:08 -0500
+From: "John W. Linville" <linville@tuxdriver.com>
+To: Roland Dreier <rdreier@cisco.com>
+Cc: Jeff Garzik <jeff@garzik.org>, Greg KH <greg@kroah.com>,
+       linux-kernel@vger.kernel.org
 Subject: Re: Free Linux Driver Development!
-In-reply-to: <fa.T1Mpk9x9o81uajHKj9J8RE8yM2c@ifi.uio.no>
-To: Jeff Garzik <jeff@garzik.org>, linux-kernel <linux-kernel@vger.kernel.org>
-Cc: Roland Dreier <rdreier@cisco.com>
-Message-id: <45BFD64F.806@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.vy0GBdNvEFvgi9ipVzdiBp0FpjI@ifi.uio.no>
- <fa.INRmyia9BGp5I+SBT3+o7eNe+vo@ifi.uio.no>
- <fa.JOovioFiqyKNIa9g0QxNLn/pldw@ifi.uio.no>
- <fa.f1ctPsEcBEc59B+Sd5oTTUfDmIs@ifi.uio.no>
- <fa.OyKqe20gDjwobkBZicjVmJ5DPp8@ifi.uio.no>
- <fa.T1Mpk9x9o81uajHKj9J8RE8yM2c@ifi.uio.no>
-User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
+Message-ID: <20070130223908.GA13185@tuxdriver.com>
+References: <20070130012904.GA9617@kroah.com> <ada8xfks90x.fsf@cisco.com> <20070130191020.GF20642@kroah.com> <adaodogqpmx.fsf@cisco.com> <45BFA087.6020905@garzik.org> <ada4pq8qjpd.fsf@cisco.com> <20070130214759.GA12477@kroah.com> <adar6tcp43r.fsf@cisco.com> <45BFC2CF.8010603@garzik.org> <adaireop383.fsf@cisco.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <adaireop383.fsf@cisco.com>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
->> I guess Nvidia ADMA is pretty much
->> done now.
+On Tue, Jan 30, 2007 at 02:19:24PM -0800, Roland Dreier wrote:
+>  > You mean the bcm43xx wireless driver that's been upstream for months?
 > 
-> Yep.  Without docs, even.  And its supported by enterprise distros.
+> Sorry, yes.  For some reason I thought it was blocked on the dscape
+> merge but obviously I was wrong.  So a reverse-engineered driver got
+> upstream WAY FASTER than a driver where the vendor published specs and
+> GPLed source.
+> 
+> Why did that happen?  I would argue that it was because way more
+> people cared about the broadcom driver (since the chip was in apple
+> laptops and the wrt54g among other things).  That developer and user
+> interest is more important than the info provided by the vendor.
 
-Well, the "docs" I was using was a half-finished, broken version of the 
-driver released by NVidia which had to be significantly revised, and the 
-public ADMA spec which the hardware was vaguely based on and which a few 
-things could be inferred from. If NVidia had just released the docs it 
-would have been much easier, I would have gladly written it from 
-scratch. There are still things in the driver that could likely be 
-improved if we had the actual hardware documents, registers that we 
-don't know what half the bits are for, etc.
+That may be partially true. But the main reason is that the rt2x00
+team chose to depend upon the heretofore unmergeable devicescape stack.
+In contrast, the bcm43xx driver had a port for the ieee80211+softmac
+stack that was ready for merge much earlier.  This is more a result
+of confusion in one area of kernel development than an indictment of
+Linux drivers in general.
 
-Having the vendor release a driver without hardware information is fine, 
-as long as it works perfectly or they maintain it when bugs are found. 
-Otherwise, anyone else trying to fix it will end up with an exercise in 
-"why was it doing this? should it be doing this instead?"
+FWIW, we are closing-in on a merge for the devicescape stack.
+(No, really!)  So, hopefully wireless will soon cease to be such a
+fertile ground for bad examples...
 
+Thanks,
+
+John
 -- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
-
+John W. Linville
+linville@tuxdriver.com
