@@ -1,40 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751246AbXA3UDf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751242AbXA3UKS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751246AbXA3UDf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 15:03:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751258AbXA3UDf
+	id S1751242AbXA3UKS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 15:10:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751252AbXA3UKS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 15:03:35 -0500
-Received: from ns2.suse.de ([195.135.220.15]:54915 "EHLO mx2.suse.de"
+	Tue, 30 Jan 2007 15:10:18 -0500
+Received: from cacti.profiwh.com ([85.93.165.66]:34230 "EHLO cacti.profiwh.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751246AbXA3UDb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 15:03:31 -0500
-Date: Tue, 30 Jan 2007 21:06:12 +0100
-From: Andrea Arcangeli <andrea@suse.de>
-To: Phillip Susi <psusi@cfl.rr.com>
-Cc: Denis Vlasenko <vda.linux@googlemail.com>,
-       Bill Davidsen <davidsen@tmr.com>, Michael Tokarev <mjt@tls.msk.ru>,
-       Linus Torvalds <torvalds@osdl.org>, Viktor <vvp01@inbox.ru>,
-       Aubrey <aubreylee@gmail.com>, Hua Zhong <hzhong@gmail.com>,
-       Hugh Dickins <hugh@veritas.com>,
-       Linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: O_DIRECT question
-Message-ID: <20070130200612.GS8030@opteron.random>
-References: <200701270035.31285.vda.linux@googlemail.com> <45BCBECE.4080405@tmr.com> <200701281803.08201.vda.linux@googlemail.com> <20070129170056.GJ8030@opteron.random> <45BE7D99.70200@cfl.rr.com> <20070130023056.GN8030@opteron.random> <45BF65E3.6070102@cfl.rr.com> <20070130164806.GQ8030@opteron.random> <45BF9381.8010108@cfl.rr.com> <20070130195720.GR8030@opteron.random>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070130195720.GR8030@opteron.random>
+	id S1751242AbXA3UKR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jan 2007 15:10:17 -0500
+Message-ID: <45BFA624.4040400@gmail.com>
+Date: Tue, 30 Jan 2007 21:10:12 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0b2 (X11/20070116)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@osdl.org>
+Cc: Jiri Slaby <jirislaby@gmail.com>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Miles Lane <miles.lane@gmail.com>,
+       Anton Altaparmakov <aia21@cantab.net>, Pierre Ossman <drzeus@drzeus.cx>,
+       linux-scsi@vger.kernel.org,
+       James Bottomley <James.Bottomley@steeleye.com>,
+       Jens Axboe <axboe@kernel.dk>
+Subject: Re: 2.6.20-rc6-mm1
+References: <20070127234928.64d8e437.akpm@osdl.org>	<45BC7A26.1080303@gmail.com>	<20070129232727.96e580ac.akpm@osdl.org> <20070130113055.431ad91a.akpm@osdl.org>
+In-Reply-To: <20070130113055.431ad91a.akpm@osdl.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 30, 2007 at 08:57:20PM +0100, Andrea Arcangeli wrote:
-> Please try yourself, it's simple enough:
+Andrew Morton napsal(a):
+> On Mon, 29 Jan 2007 23:27:27 -0800
+> Andrew Morton <akpm@osdl.org> wrote:
 > 
->        time dd if=/dev/hda of=/dev/null bs=16M count=100
->        time dd if=/dev/hda of=/dev/null bs=16M count=100 iflag=sync
+>> On Sun, 28 Jan 2007 11:25:42 +0100
+>> Jiri Slaby <jirislaby@gmail.com> wrote:
+>>
+>>> Andrew Morton napsal(a):
+>>>> Temporarily at
+>>>>
+>>>> 	http://userweb.kernel.org/~akpm/2.6.20-rc6-mm1/
+>>> I'm still seeing this during bootup:
+>>> BUG: at /home/l/latest/xxx/arch/i386/mm/highmem.c:52 kmap_atomic()
+>>>   [<c0104ffb>] show_trace_log_lvl+0x1a/0x30
+>>>   [<c01056b5>] show_trace+0x12/0x14
+>>>   [<c010573c>] dump_stack+0x16/0x18
+>>>   [<c011b24f>] kmap_atomic+0x16c/0x20e
+>>>   [<c01b279e>] ntfs_end_buffer_async_read+0x18e/0x2ed
+>>>   [<c0183352>] end_bio_bh_io_sync+0x26/0x3f
+>>>   [<c0184dd4>] bio_endio+0x37/0x62
+>>>   [<c01cda43>] __end_that_request_first+0x224/0x444
+>>>   [<c01cdc6b>] end_that_request_chunk+0x8/0xa
+>>>   [<c024507d>] scsi_end_request+0x1f/0xc7
+>>>   [<c02451e6>] scsi_io_completion+0x7b/0x33a
+>>>   [<c024aa5d>] sd_rw_intr+0x23/0x1ab
+>>>   [<c02415ed>] scsi_finish_command+0x42/0x47
+>>>   [<c0245a38>] scsi_softirq_done+0x64/0xcf
+>>>   [<c01cf9e6>] blk_done_softirq+0x54/0x62
+>>>   [<c0127bc5>] __do_softirq+0x75/0xde
+>>>   [<c0127c69>] do_softirq+0x3b/0x3d
+>>>   [<c0127ee6>] irq_exit+0x3b/0x3d
+>>>   [<c0106804>] do_IRQ+0x51/0x8d
+>>>   [<c0104a5f>] common_interrupt+0x23/0x28
+>>>   [<c010241a>] cpu_idle+0x80/0xc3
+>>>   [<c010140d>] rest_init+0x23/0x36
+>>>   [<c045ea59>] start_kernel+0x3a5/0x43c
+>>>   [<00000000>] 0x0
+>>>   =======================
+>>>
+>>> I.e. KM_BIO_SRC_IRQ through softirq path.
+[...]
+> Actually, this isn't related to softirq-vs-hardirq.  Most interrupt
 
-sorry, reading won't help much to exercise sync ;). But the direct
-line is enough to show the effect of I/O pipeline stall. To
-effectively test sync of course you want to write to a file instead
-(unless you want to wipe out /dev/hda ;)
+I meant that hardirq path was fixed (by adding KM_BIO_SRC_IRQ to kmap_atomic
+"type !=" test in arch/i386/mm/highmem.c) and softirq was not yet.
+
+> handlers are interruptible, so the rule is simply that KM_BIO_SRC_IRQ must
+> always be taken under local_irq_disable().
+> 
+> A quick scan indicates that the following files might be buggy in this
+> regard:
+> 
+> drivers/mmc/wbsd.c
+> drivers/mmc/at91_mci.c
+> drivers/mmc/sdhci.c
+> drivers/scsi/scsi_lib.c when called from stex.c
+> fs/ntfs/aops.c
+> 
+> Happily, KM_BIO_DST_IRQ has no users and can presumably be removed.
+> 
+> 
+> Fixes for stex and ntfs follow.
+
+Clean boot now.
+
+thanks,
+-- 
+http://www.fi.muni.cz/~xslaby/            Jiri Slaby
+faculty of informatics, masaryk university, brno, cz
+e-mail: jirislaby gmail com, gpg pubkey fingerprint:
+B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
+
