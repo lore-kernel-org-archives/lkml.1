@@ -1,59 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965118AbXA3AY2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965121AbXA3AZr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965118AbXA3AY2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 19:24:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965101AbXA3AY2
+	id S965121AbXA3AZr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 19:25:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965120AbXA3AZr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 19:24:28 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:34976 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965015AbXA3AY0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 19:24:26 -0500
-Date: Mon, 29 Jan 2007 16:21:53 -0800
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: tglx@linutronix.de
-Cc: =?UTF-8?B?RnLDqWTDqXJpYw==?= Riss <frederic.riss@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jeff Garzik <jeff@garzik.org>, netdev@vger.kernel.org
-Subject: Re: [PATCH] block MSI on Sony
-Message-ID: <20070129162153.6b3b5eff@freekitty>
-In-Reply-To: <1170116575.29240.114.camel@localhost.localdomain>
-References: <Pine.LNX.4.64.0701241847360.25027@woody.linux-foundation.org>
-	<1169931333.17469.125.camel@localhost.localdomain>
-	<20070129113159.7ad22e4c@freekitty>
-	<1170101430.29240.34.camel@localhost.localdomain>
-	<20070129133849.1b523226@freekitty>
-	<1170109401.29240.49.camel@localhost.localdomain>
-	<1170110318.21603.25.camel@funkylaptop>
-	<1170110732.29240.59.camel@localhost.localdomain>
-	<1170111056.21603.30.camel@funkylaptop>
-	<1170111464.29240.63.camel@localhost.localdomain>
-	<1170113200.21603.41.camel@funkylaptop>
-	<1170113879.29240.79.camel@localhost.localdomain>
-	<20070129155043.56a1c577@freekitty>
-	<1170116575.29240.114.camel@localhost.localdomain>
-Organization: Linux Foundation
-X-Mailer: Sylpheed-Claws 2.5.0-rc3 (GTK+ 2.10.6; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 29 Jan 2007 19:25:47 -0500
+Received: from zrtps0kn.nortel.com ([47.140.192.55]:50850 "EHLO
+	zrtps0kn.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965128AbXA3AZq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jan 2007 19:25:46 -0500
+Message-ID: <45BE9043.5020508@nortel.com>
+Date: Mon, 29 Jan 2007 18:24:35 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
+X-Accept-Language: en-us, en
+MIME-Version: 1.0
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       Kevin Nicoll <blort128@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: Multiple ip= boot arguments?
+References: <e4fa6c610701291036r7ff384e4u78d3995ab3d042d8@mail.gmail.com> <Pine.LNX.4.61.0701292146470.5077@yvahk01.tjqt.qr> <45BE8AAA.9020308@zytor.com>
+In-Reply-To: <45BE8AAA.9020308@zytor.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 30 Jan 2007 00:24:38.0521 (UTC) FILETIME=[06EF2690:01C74405]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 30 Jan 2007 01:22:54 +0100
-Thomas Gleixner <tglx@linutronix.de> wrote:
+H. Peter Anvin wrote:
+> Jan Engelhardt wrote:
+>>
+>>> or if I'm supposed to use a startup script instead.
+>>
+>> This is the preffered way nowadays. One day, hopefully,
+>> CONFIG_IP_PNP can go away.
+>>
+> It could be done reasonably easy, you know... :-/
 
-> On Mon, 2007-01-29 at 15:50 -0800, Stephen Hemminger wrote:
-> > The Sony VAIO BIOS resets to INTx on resume. This happens
-> > after device resume, so device irq's get misrouted.
-> 
-> Err? My Sony VAIO does _NOT_ do that. It works fine without that. 
-> It's just the sky2 hackery which fucked up things.
-> 
-
-What machine and BIOS version?
+If CONFIG_IP_PNP is going to go away, what is the proposed mechanism for 
+netboot devices to determine the proper source address to use when 
+searching for a rootfs to use?
 
 
--- 
-Stephen Hemminger <shemminger@linux-foundation.org>
+Chris
