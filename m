@@ -1,56 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751761AbXA3Thf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751760AbXA3Tka@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751761AbXA3Thf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 14:37:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751760AbXA3The
+	id S1751760AbXA3Tka (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 14:40:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751769AbXA3Tka
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 14:37:34 -0500
-Received: from mta11.adelphia.net ([68.168.78.205]:63549 "EHLO
-	mta11.adelphia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751761AbXA3The (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 14:37:34 -0500
-Date: Tue, 30 Jan 2007 13:37:31 -0600
-From: Corey Minyard <minyard@acm.org>
-To: Andrew Morton <akpm@osdl.org>, Linux Kernel <linux-kernel@vger.kernel.org>
-Cc: David Barksdale <amatus@ocgnet.org>
-Subject: [PATCH] IPMI: fix timeout list handling
-Message-ID: <20070130193731.GA12130@localdomain>
-Reply-To: minyard@acm.org
+	Tue, 30 Jan 2007 14:40:30 -0500
+Received: from mail.enyo.de ([212.9.189.167]:4905 "EHLO mail.enyo.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751760AbXA3Tka (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jan 2007 14:40:30 -0500
+From: Florian Weimer <fw@deneb.enyo.de>
+To: Greg KH <greg@kroah.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Free Linux Driver Development!
+References: <20070130012904.GA9617@kroah.com>
+	<877iv4ljai.fsf@mid.deneb.enyo.de> <20070130191231.GH20642@kroah.com>
+Date: Tue, 30 Jan 2007 20:40:10 +0100
+In-Reply-To: <20070130191231.GH20642@kroah.com> (Greg KH's message of "Tue, 30
+	Jan 2007 11:12:31 -0800")
+Message-ID: <87ejpce21x.fsf@mid.deneb.enyo.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Barksdale <amatus@ocgnet.org>
+* Greg KH:
 
-This patch against the 2.6.20-rc6 kernel fixes a dangling pointer bug in
-ipmi_timeout_handler. A list of timedout messages is not re-initialized
-before reuse, causing the head of the list to point to freed memory.
+>> This reminds of the the utterly broken dl2k network driver (which has
+>> got interrupt handling problems and doesn't properly synchronize with
+>> DMA transfers, IIRC).  Hardware specs are available, and I guess I
+>> could even provide a hardware sample, maybe even two.  (If the
+>> community provides driver support, it shouldn't matter if the vendor
+>> actually supports development.)
+>
+> Have you tried contacting the network driver developers to work these
+> issues out?
 
-Signed-off-by: David Barksdale <amatus@ocgnet.org>
-Signed-off-by: Corey Minyard <minyard@acm.org>
----
-diff -ruNp linux-2.6.git.orig/drivers/char/ipmi/ipmi_msghandler.c linux-2.6.git/drivers/char/ipmi/ipmi_msghandler.c
---- linux-2.6.git.orig/drivers/char/ipmi/ipmi_msghandler.c	2007-01-30 10:32:14.000000000 -0600
-+++ linux-2.6.git/drivers/char/ipmi/ipmi_msghandler.c	2007-01-30 10:33:50.000000000 -0600
-@@ -3649,8 +3649,6 @@ static void ipmi_timeout_handler(long ti
- 	unsigned long        flags;
- 	int                  i;
- 
--	INIT_LIST_HEAD(&timeouts);
--
- 	rcu_read_lock();
- 	list_for_each_entry_rcu(intf, &ipmi_interfaces, link) {
- 		/* See if any waiting messages need to be processed. */
-@@ -3671,6 +3669,7 @@ static void ipmi_timeout_handler(long ti
- 		/* Go through the seq table and find any messages that
- 		   have timed out, putting them in the timeouts
- 		   list. */
-+		INIT_LIST_HEAD(&timeouts);
- 		spin_lock_irqsave(&intf->seq_lock, flags);
- 		for (i = 0; i < IPMI_IPMB_NUM_SEQ; i++)
- 			check_msg_timeout(intf, &(intf->seq_table[i]),
+Yes, sort of: <http://article.gmane.org/gmane.linux.kernel/448446>
+There weren't any replies, unfortunately.  Do you think a repost would
+make sense?
 
+Our subsequent debugging revealed that either all the cards in our
+sample were simply broken (but they seemed to work just fine with the
+driver from FreeBSD-current), or something related to the DMA handling
+in the driver was not quite right.  It looked as if the kernel and the
+NIC couldn't agree on the contents of the ring buffer.
