@@ -1,220 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751083AbXA3UDE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751197AbXA3UDJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751083AbXA3UDE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 15:03:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751197AbXA3UDE
+	id S1751197AbXA3UDJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 15:03:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751225AbXA3UDJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 15:03:04 -0500
-Received: from mga03.intel.com ([143.182.124.21]:37626 "EHLO mga03.intel.com"
+	Tue, 30 Jan 2007 15:03:09 -0500
+Received: from tmailer.gwdg.de ([134.76.10.23]:36406 "EHLO tmailer.gwdg.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751083AbXA3UDA convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 15:03:00 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.13,259,1167638400"; 
-   d="scan'208"; a="174917816:sNHT25053154"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	id S1751197AbXA3UDH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jan 2007 15:03:07 -0500
+Date: Tue, 30 Jan 2007 21:02:20 +0100 (MET)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: Luca Tettamanti <kronos.it@gmail.com>
+cc: Peter Osterlund <petero2@telia.com>, linux-kernel@vger.kernel.org
+Subject: Re: [2.6.20-rc6] pktcdvd doesn't work
+In-Reply-To: <20070130195319.GA10994@dreamland.darkstar.lan>
+Message-ID: <Pine.LNX.4.61.0701302100370.13737@yvahk01.tjqt.qr>
+References: <20070130195319.GA10994@dreamland.darkstar.lan>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH 1/1] -  increase acpi owner_id max
-Date: Tue, 30 Jan 2007 12:02:57 -0800
-Message-ID: <B28E9812BAF6E2498B7EC5C427F293A401CA541E@orsmsx415.amr.corp.intel.com>
-In-Reply-To: <200701270003.QAA67218@google.engr.sgi.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 1/1] -  increase acpi owner_id max
-Thread-Index: AcdBppVolYV5mYItQr6xBuGkvGCAcgDAuHTw
-From: "Moore, Robert" <robert.moore@intel.com>
-To: "Aaron Young" <ayoung@google.engr.sgi.com>
-Cc: "John Keller" <jpk@sgi.com>, <linux-acpi@vger.kernel.org>,
-       <ayoung@sgi.com>, <linux-ia64@vger.kernel.org>,
-       <linux-kernel@vger.kernel.org>,
-       "Alexey Starikovskiy" <alexey.y.starikovskiy@linux.intel.com>,
-       "Brown, Len" <len.brown@intel.com>
-X-OriginalArrivalTime: 30 Jan 2007 20:02:58.0641 (UTC) FILETIME=[A37D5410:01C744A9]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-OK, I missed that.
 
-Can you give us some idea of just how many SSDTs this machine loads?
+On Jan 30 2007 20:53, Luca Tettamanti wrote:
+>Hi,
+>pktcdvd on kernel 2.6.20-rc6 is not working as expected. Any file that
 
-Does it dynamically delete SSDTs also?
+Did it work previously?
 
-Thanks,
-Bob
+>is written to the device is lost after umount.
+>I rarely use pktcdvd but at some point it used to work on my system.
+>
+>This is what I'm doing:
+>
+>root@dreamland:/tmp# cdrwtool -d /dev/scd0 -q
+>scsi 8:0:0:0: CD-ROM            HL-DT-ST DVDRAM GSA-4167B DL13 PQ: 0 ANSI: 5
+
+In case you are using ide-scsi: try without.
 
 
-> -----Original Message-----
-> From: Aaron Young [mailto:ayoung@google.engr.sgi.com]
-> Sent: Friday, January 26, 2007 4:03 PM
-> To: Moore, Robert
-> Cc: John Keller; linux-acpi@vger.kernel.org; ayoung@sgi.com; linux-
-> ia64@vger.kernel.org; linux-kernel@vger.kernel.org; Alexey
-Starikovskiy;
-> Brown, Len
-> Subject: Re: [PATCH 1/1] - increase acpi owner_id max
-> 
-> >
-> > The OwnerId field within a namespace node is 8 bits, and this is the
-> > main constraint on the maximum OwnerId. You can't simply bump up the
-> > number of owner ids without changing this field.
-> 
->   Isn't this accomplished with the mod to aclocal.h below - i.e.
->   by making a acpi_owner_id a u16 instead of a u8?:
-> 
->  -typedef u8 acpi_owner_id;
->  -#define ACPI_OWNER_ID_MAX               0xFF
->  +typedef u16 acpi_owner_id;
->  +#define ACPI_OWNER_ID_MAX               0x3FF
-> 
-> >
-> > If we need more than 255 owner Ids, the width of this field will
-have to
-> > be increased, or we will need to use a pointer for the field in
-order to
-> > maintain a linked list of all nodes owned by a particular owner.
-> >
-> > Bob
-> >
-> > > -----Original Message-----
-> > > From: linux-acpi-owner@vger.kernel.org [mailto:linux-acpi-
-> > > owner@vger.kernel.org] On Behalf Of John Keller
-> > > Sent: Friday, January 26, 2007 2:40 PM
-> > > To: linux-acpi@vger.kernel.org
-> > > Cc: ayoung@sgi.com; linux-ia64@vger.kernel.org; linux-
-> > > kernel@vger.kernel.org; John Keller
-> > > Subject: [PATCH 1/1] - increase acpi owner_id max
-> > >
-> > > To support systems with large IO configurations,
-> > > this patch increases the number of available ACPI
-> > > owner ids to 1023.
-> > >
-> > > On SN platforms, we represent every populated root
-> > > bus slot with an ACPI SSDT table containing info
-> > > for every device and PPB attached to the slot.
-> > > Each SSDT requires a unique ACPI owner id.
-> > >
-> > > Signed-off-by: John Keller <jpk@sgi.com>
-> > > ---
-> > >
-> > >  drivers/acpi/utilities/utmisc.c |    6 +++---
-> > >  include/acpi/acconfig.h         |    4 ++--
-> > >  include/acpi/aclocal.h          |    4 ++--
-> > >  3 files changed, 7 insertions(+), 7 deletions(-)
-> > >
-> > >
-> > > Index: linux/drivers/acpi/utilities/utmisc.c
-> > >
-===================================================================
-> > > --- linux.orig/drivers/acpi/utilities/utmisc.c	2007-01-25
-> > > 11:27:25.509259412 -0600
-> > > +++ linux/drivers/acpi/utilities/utmisc.c	2007-01-26
-> > 13:16:09.551081284 -
-> > > 0600
-> > > @@ -147,7 +147,7 @@ acpi_status acpi_ut_allocate_owner_id(ac
-> > >  				/*
-> > >  				 * Construct encoded ID from the index
-> > and bit
-> > > position
-> > >  				 *
-> > > -				 * Note: Last [j].k (bit 255) is never
-> > used and is
-> > > marked
-> > > +				 * Note: Last [j].k (bit 1023) is never
-> > used and
-> > > is marked
-> > >  				 * permanently allocated (prevents +1
-> > overflow)
-> > >  				 */
-> > >  				*owner_id =
-> > > @@ -175,7 +175,7 @@ acpi_status acpi_ut_allocate_owner_id(ac
-> > >  	 */
-> > >  	status = AE_OWNER_ID_LIMIT;
-> > >  	ACPI_ERROR((AE_INFO,
-> > > -		    "Could not allocate new OwnerId (255 max),
-> > > AE_OWNER_ID_LIMIT"));
-> > > +		    "Could not allocate new OwnerId (1023 max),
-> > > AE_OWNER_ID_LIMIT"));
-> > >
-> > >        exit:
-> > >  	(void)acpi_ut_release_mutex(ACPI_MTX_CACHES);
-> > > @@ -192,7 +192,7 @@ acpi_status acpi_ut_allocate_owner_id(ac
-> > >   *              control method or unloading a table. Either way,
-we
-> > would
-> > >   *              ignore any error anyway.
-> > >   *
-> > > - * DESCRIPTION: Release a table or method owner ID.  Valid IDs
-are 1
-> > -
-> > > 255
-> > > + * DESCRIPTION: Release a table or method owner ID.  Valid IDs
-are 1
-> > -
-> > > 1023
-> > >   *
-> > >
-> > >
-> >
-************************************************************************
-> > **
-> > > ****/
-> > >
-> > > Index: linux/include/acpi/acconfig.h
-> > >
-===================================================================
-> > > --- linux.orig/include/acpi/acconfig.h	2007-01-25
-> > 11:27:25.577267818 -
-> > > 0600
-> > > +++ linux/include/acpi/acconfig.h	2007-01-26 13:17:14.111002597
-> > -0600
-> > > @@ -111,9 +111,9 @@
-> > >
-> > >  #define ACPI_SYSMEM_REGION_WINDOW_SIZE  4096
-> > >
-> > > -/* owner_id tracking. 8 entries allows for 255 owner_ids */
-> > > +/* owner_id tracking. 32 entries allow for 1023 owner_ids */
-> > >
-> > > -#define ACPI_NUM_OWNERID_MASKS          8
-> > > +#define ACPI_NUM_OWNERID_MASKS		32
-> > >
-> > >
-> > >
-> >
-/***********************************************************************
-> > **
-> > > *****
-> > >   *
-> > > Index: linux/include/acpi/aclocal.h
-> > >
-===================================================================
-> > > --- linux.orig/include/acpi/aclocal.h	2007-01-25
-11:27:25.585268807 -
-> > > 0600
-> > > +++ linux/include/acpi/aclocal.h	2007-01-26 13:20:06.148115848
-> > -0600
-> > > @@ -122,8 +122,8 @@ static char *acpi_gbl_mutex_names[ACPI_N
-> > >
-> > >  /* Owner IDs are used to track namespace nodes for selective
-deletion
-> > */
-> > >
-> > > -typedef u8 acpi_owner_id;
-> > > -#define ACPI_OWNER_ID_MAX               0xFF
-> > > +typedef u16 acpi_owner_id;
-> > > +#define ACPI_OWNER_ID_MAX               0x3FF
-> > >
-> > >  /* This Thread ID means that the mutex is not in use (unlocked)
-*/
-> > >
-> > > -
-> > > To unsubscribe from this list: send the line "unsubscribe
-linux-acpi"
-> > in
-> > > the body of a message to majordomo@vger.kernel.org
-> > > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> >
+Jan
+-- 
