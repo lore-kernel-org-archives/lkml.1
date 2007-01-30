@@ -1,55 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965629AbXA3RMy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965638AbXA3RNy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965629AbXA3RMy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 12:12:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965631AbXA3RMy
+	id S965638AbXA3RNy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 12:13:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965635AbXA3RNy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 12:12:54 -0500
-Received: from accolon.hansenpartnership.com ([64.109.89.108]:59010 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S965629AbXA3RMx (ORCPT
+	Tue, 30 Jan 2007 12:13:54 -0500
+Received: from stinky.trash.net ([213.144.137.162]:37317 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965634AbXA3RNx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 12:12:53 -0500
-Subject: Re: [Ksummit-2007-discuss] Re: [Ksummit-2006-discuss] 2007 Linux
-	Kernel Summit
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Randy Dunlap <rdunlap@xenotime.net>
-Cc: linux-kernel@vger.kernel.org, Christoph Hellwig <hch@infradead.org>,
-       ksummit-2007-discuss@thunk.org
-In-Reply-To: <20070130085305.d86196e8.rdunlap@xenotime.net>
-References: <20070126032849.GB5589@thunk.org>
-	 <8355959a0701260704x6aea8141s3d0581fa33c74cf2@mail.gmail.com>
-	 <20070126195024.GE14759@thunk.org> <45BE8BF9.6020204@sgi.com>
-	 <20070130030430.GA21772@redhat.com> <45BEBBF0.3050102@snapgear.com>
-	 <20070130034111.GB21772@redhat.com> <45BEC303.2040205@securecomputing.com>
-	 <20070130040826.GA19362@linux-sh.org> <20070130043421.GE21772@redhat.com>
-	 <20070130103044.GB10526@infradead.org>
-	 <1170175725.3420.15.camel@mulgrave.il.steeleye.com>
-	 <20070130085305.d86196e8.rdunlap@xenotime.net>
-Content-Type: text/plain
-Date: Tue, 30 Jan 2007 11:12:51 -0600
-Message-Id: <1170177171.3420.36.camel@mulgrave.il.steeleye.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
+	Tue, 30 Jan 2007 12:13:53 -0500
+Message-ID: <45BF7CCC.9080306@trash.net>
+Date: Tue, 30 Jan 2007 18:13:48 +0100
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Debian Thunderbird 1.0.7 (X11/20051019)
+X-Accept-Language: en-us, en
+MIME-Version: 1.0
+To: Adrian Bunk <bunk@stusta.de>
+CC: David Miller <davem@davemloft.net>, randy.dunlap@oracle.com, akpm@osdl.org,
+       linux-kernel@vger.kernel.org, netfilter@lists.netfilter.org,
+       netdev@vger.kernel.org
+Subject: Re: [2.6 patch] NF_CONNTRACK_H323 must depend on (IPV6 || IPV6=n)
+References: <20070128222136.GZ6017@stusta.de> <20070128.155348.39160134.davem@davemloft.net> <20070129000011.GB6017@stusta.de> <20070128.160442.48527586.davem@davemloft.net> <20070129002108.GC6017@stusta.de>
+In-Reply-To: <20070129002108.GC6017@stusta.de>
+X-Enigmail-Version: 0.93.0.0
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-01-30 at 08:53 -0800, Randy Dunlap wrote:
-> As usual, "it depends" on the content.  Can we provide them with
-> sufficient instructions/guidance so that the listeners get the content
-> that is desired instead of just some pseudo-marketing or requirements
-> list?  Any of those panels (Customer or CPU) could have been good or
-> bad.
+Adrian Bunk wrote:
+> On Sun, Jan 28, 2007 at 04:04:42PM -0800, David Miller wrote:
+> 
+>>From: Adrian Bunk <bunk@stusta.de>
+>>Date: Mon, 29 Jan 2007 01:00:11 +0100
+>>
+>>>"depends on IPV6" would fix the bug - but it would also make 
+>>>NF_CONNTRACK_H323 unavailable for all people without IPV6 support in 
+>>>their kernel.
+>>
+>>Yes, that is an issue.
+>>
+>>I guess with some slightly ugly ifdefs we could support the
+>>whole matrix of possibilities.  But perhaps that's undesirable
+>>for another reason.
+>>...
+> 
+> 
+> This depends on what NF_CONNTRACK_H323=y, IPV6=m is supposed to be:
+> - not allowed (NF_CONNTRACK_H323 must be modular) or
+> - NF_CONNTRACK_H323 can only be used for IPV4
+> 
+> My patch implements the first case.
 
-This is a really nasty problem.  By and large, only organisations who
-are active participants in the Linux community are happy sending their
-technical architects ungaurded to a developer summit (like we get for
-the CPU panel).  The objective is always to get technical (not
-marketing) people who haven't been frightened into silence by their
-legal department and, if people want chipsets, that's what we'll try to
-do ... it just takes a lot of persuasion, so the earlier we start ...
 
-James
+Unfortunately a few ifdefs aren't enough to support IPV6=m,
+NF_CONNTRACK_H323=y. For now I think Adrian's patch is the
+best solution (IPV6=m isn't that useful anyway since it will
+normally get loaded automatically when the first program
+attempts to open an AF_INET6 socket and can't be unloaded),
+but I'll look into moving the route lookup to the netfilter
+AF ops in 2.6.21 so we can also support that configuration.
 
 
+Acked-by: Patrick McHardy <kaber@trash.net>
