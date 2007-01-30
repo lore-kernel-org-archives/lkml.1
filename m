@@ -1,67 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965282AbXA3MXx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965171AbXA3M0L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965282AbXA3MXx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 07:23:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965171AbXA3MXx
+	id S965171AbXA3M0L (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 07:26:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965290AbXA3M0L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 07:23:53 -0500
-Received: from mtagate2.de.ibm.com ([195.212.29.151]:46311 "EHLO
-	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965282AbXA3MXw (ORCPT
+	Tue, 30 Jan 2007 07:26:11 -0500
+Received: from smtp105.mail.mud.yahoo.com ([209.191.85.215]:44055 "HELO
+	smtp105.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S965171AbXA3M0K (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 07:23:52 -0500
-Subject: Re: + mm-search_binary_handler-mem-limit-fix.patch added to -mm
-	tree
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Reply-To: schwidefsky@de.ibm.com
-To: Dmitriy Monakhov <dmonakhov@sw.ru>
-Cc: Andrew Morton <akpm@osdl.org>, Heiko Carstens <heiko.carstens@de.ibm.com>,
-       linux-kernel@vger.kernel.org, dmonakhov@openvz.org
-In-Reply-To: <87veipxeac.fsf@sw.ru>
-References: <200701240909.l0O99IwK013495@shell0.pdx.osdl.net>
-	 <20070129113328.GA9941@osiris.boeblingen.de.ibm.com>
-	 <20070129135958.GB9941@osiris.boeblingen.de.ibm.com>
-	 <20070129093751.a1637a68.akpm@osdl.org>
-	 <1170094705.17738.11.camel@localhost>  <87veipxeac.fsf@sw.ru>
-Content-Type: text/plain
-Organization: IBM Corporation
-Date: Tue, 30 Jan 2007 13:23:49 +0100
-Message-Id: <1170159829.22550.2.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 
+	Tue, 30 Jan 2007 07:26:10 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=hZlFGP9BS0rKVhTlN4CvE710ThdRYmfiq5o4yaHyYl372SXA64xTzKiA16E2bxCk9QCxzWo4v/j5Uf+yJ8X9QLAQpqh5iiAJ0icMIXTeFhlswWb8LOJYNSlcgLhuvr6D09L5e5Ta01/j27JbWZZncUD6GkNk+9900qDHb95O54E=  ;
+X-YMail-OSG: i765lqMVM1maLrOe4sqK3tq3L4R5et4Qx08w285tXWhX4e0TGK3t49iMAzxl_S9YInhC2EQbysK4.dMV4VD8IIyCgfV0vsdNDk_HJkzVp2eQ06H2SAtFOeAcAApNedYR7yydktmwH4yk2cSo63sqRBSWB9TbTRr6
+Message-ID: <45BF3954.8050106@yahoo.com.au>
+Date: Tue, 30 Jan 2007 23:25:56 +1100
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
+MIME-Version: 1.0
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+CC: Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, Paul Mackerras <paulus@samba.org>,
+       dhowells@redhat.com, galak@kernel.crashing.org
+Subject: Re: [PATCH] Add "is_power_of_2" checking to log2.h.
+References: <Pine.LNX.4.64.0701300543420.17991@CPE00045a9c397f-CM001225dbafb6>
+In-Reply-To: <Pine.LNX.4.64.0701300543420.17991@CPE00045a9c397f-CM001225dbafb6>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-01-30 at 08:40 +0300, Dmitriy Monakhov wrote:
-> > > > The function changes mem limit to USER_DS before possible modprobe, but
-> > > > never restored it again.
-> Truly. The road to hell is paved with good intentions.
+Robert P. J. Day wrote:
+>   Add the inline function "is_power_of_2()" to log2.h, where the value
+> zero is *not* considered to be a power of two.
 
-:-)
+> 
+> Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
+> 
+>  /*
+> + *  Determine whether some value is a power of two, where zero is
+> + * *not* considered a power of two.
+> + */
 
-> > For architectures with a split address space there has to be a call
-> > set_fs(USER_DS) that switches from KERNEL_DS to USER_DS for the init
-> > process. So far this has been done in search_binary_handler and
-> > traditionally the kernel starts with KERNEL_DS to make the early
-> > copy_from_user calls work.
-> > So, what is wrong with always setting USER_DS? We are starting a user
-> > space process after all.
-> May be add some comment to prevent future attempts to make this place 
-> more "correct"?
+Why the qualifier? Zero *is* not a power of 2, is it?
 
-The use of set_fs(USER_DS) in search_binary_handler is certainly
-different compared to the rest. It probably is the only one that is not
-paired with a set_fs(KERNEL_DS) or set_fs(old_fs). A comment won't hurt.
+> +
+> +static inline __attribute__((const))
+> +bool is_power_of_2(unsigned long n)
+> +{
+> +	return (n != 0 && ((n & (n - 1)) == 0));
+> +}
+> +
+> +/*
+>   * round up to nearest power of two
+>   */
+>  static inline __attribute__((const))
+
 
 -- 
-blue skies,
-  Martin.
-
-Martin Schwidefsky
-Linux for zSeries Development & Services
-IBM Deutschland Entwicklung GmbH
-
-"Reality continues to ruin my life." - Calvin.
-
-
+SUSE Labs, Novell Inc.
+Send instant messages to your online friends http://au.messenger.yahoo.com 
