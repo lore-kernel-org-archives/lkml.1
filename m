@@ -1,58 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751517AbXA3V2O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751528AbXA3Vad@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751517AbXA3V2O (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 16:28:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751564AbXA3V2O
+	id S1751528AbXA3Vad (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 16:30:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751533AbXA3Vad
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 16:28:14 -0500
-Received: from nigel.suspend2.net ([203.171.70.205]:49876 "EHLO
-	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751517AbXA3V2N (ORCPT
+	Tue, 30 Jan 2007 16:30:33 -0500
+Received: from mail.zeugmasystems.com ([192.139.122.66]:46838 "EHLO
+	zeugmasystems.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751519AbXA3Vac convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 16:28:13 -0500
-Subject: Re: Linux 2.6.20-rc6 - sky2 resume breakage
-From: Nigel Cunningham <nigel@nigel.suspend2.net>
-Reply-To: nigel@nigel.suspend2.net
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Len Brown <lenb@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jeff Garzik <jeff@garzik.org>
-In-Reply-To: <200701301701.41079.rjw@sisk.pl>
-References: <Pine.LNX.4.64.0701241847360.25027@woody.linux-foundation.org>
-	 <Pine.LNX.4.64.0701291609180.3611@woody.linux-foundation.org>
-	 <200701300357.34304.lenb@kernel.org>  <200701301701.41079.rjw@sisk.pl>
-Content-Type: text/plain
-Date: Wed, 31 Jan 2007 08:28:11 +1100
-Message-Id: <1170192491.4308.20.camel@nigel.suspend2.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 30 Jan 2007 16:30:32 -0500
+X-Greylist: delayed 848 seconds by postgrey-1.27 at vger.kernel.org; Tue, 30 Jan 2007 16:30:32 EST
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [ANN] Userspace M-on-N threading model implementation. Alpha release.
+Date: Tue, 30 Jan 2007 13:16:22 -0800
+Message-ID: <66910A579C9312469A7DF9ADB54A8B7D5C2B90@exchange.ZeugmaSystems.local>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [ANN] Userspace M-on-N threading model implementation. Alpha release.
+Thread-Index: AcdEU5fz6KG1BYrCSi+g+HVeA9AbYwAW2p/g
+From: "Kaz Kylheku" <kaz@zeugmasystems.com>
+To: "Evgeniy Polyakov" <johnpol@2ka.mipt.ru>,
+       "Chris Friesen" <cfriesen@nortel.com>
+Cc: <linux-kernel@vger.kernel.org>, <libc-hacker@sources.redhat.com>,
+       <libc-alpha@sources.redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+Evgeniy Polyakov wrote:
+> I described in details why and how M:N model better, and its drawbacks
+> include all issues mentioned by Ulrich Drepper, but nevertheless its
+> advantages are far too superiour than those which can be
+> provided by 1:1
+> model.
 
-On Tue, 2007-01-30 at 17:01 +0100, Rafael J. Wysocki wrote:
-> The freezer in 2.6.20-rc6 should be SMP-safe and the patches to change
-> the suspend-resume code ordering are in -mm:
-> 
-> pm-change-code-ordering-in-mainc.patch
-> swsusp-change-code-ordering-in-diskc.patch
-> swsusp-change-code-order-in-diskc-fix.patch
-> swsusp-change-code-ordering-in-userc.patch
-> swsusp-change-code-ordering-in-userc-sanity.patch
-> swsusp-change-pm_ops-handling-by-userland-interface.patch
-> 
-> I have no problems whatsoever with these patches on SMP boxes and if anyone
-> has, please let me know.
+M:N threading is an unnecessary performance hack that's needed by people
+who are living in a C or C++ exile away from some language that has
+lexical closures, generators or first-class continuations. Not having
+these niceties, they resort to emulating them with threads. The proper
+thing to do is to rewrite the code to use state machines which can be
+driven by any available thread. Or else, write yourself a
+source-to-source transformer that will give C the lexical closure,
+generator, or continuation features that you need to express the
+solution that way.
 
-I've been running an SMP box here with the matching changes for
-Suspend2, with no problems. I believe the algorithm looks good.
+There is no need to retain any vestiges of a user space threading
+implementation when you have the real thing.
 
-Regards,
-
-Nigel
-
+Programs which appear to benefit from that model are badly optimized or
+badly designed. A smartly written program uses an available thread to do
+as much work as possible, until that thread happens to block or its time
+slice burns up.
