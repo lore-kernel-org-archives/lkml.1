@@ -1,109 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752523AbXA3DAq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752526AbXA3D0G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752523AbXA3DAq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 22:00:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752532AbXA3DAq
+	id S1752526AbXA3D0G (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 22:26:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932954AbXA3D0G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 22:00:46 -0500
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:38409 "EHLO e4.ny.us.ibm.com"
+	Mon, 29 Jan 2007 22:26:06 -0500
+Received: from dvhart.com ([64.146.134.43]:41260 "EHLO dvhart.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752523AbXA3DAp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 22:00:45 -0500
-Date: Mon, 29 Jan 2007 21:00:39 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Andrew Morton <akpm@osdl.org>, "Serge E. Hallyn" <serue@us.ibm.com>,
-       linux-kernel@vger.kernel.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Oleg Nesterov <oleg@tv-sign.ru>, Cedric Le Goater <clg@fr.ibm.com>,
-       Daniel Hokka Zakrisson <daniel@hozac.com>, trond.myklebust@fys.uio.no,
-       Linux Containers <containers@lists.osdl.org>
-Subject: Re: [PATCH] namespaces: fix exit race by splitting exit
-Message-ID: <20070130030039.GB21829@sergelap.austin.ibm.com>
-References: <20070126052659.GA23250@sergelap.austin.ibm.com> <20070125223056.c77b0e97.akpm@osdl.org> <20070130024228.GE5062@MAIL.13thfloor.at>
+	id S1752526AbXA3D0E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jan 2007 22:26:04 -0500
+Message-ID: <45BEBAC9.6020809@mbligh.org>
+Date: Mon, 29 Jan 2007 19:26:01 -0800
+From: Martin Bligh <mbligh@mbligh.org>
+User-Agent: Thunderbird 1.5.0.8 (X11/20061117)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070130024228.GE5062@MAIL.13thfloor.at>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Andrew Morton <akpm@osdl.org>
+Cc: suparna@in.ibm.com, linux-kernel@vger.kernel.org,
+       Jens Axboe <axboe@kernel.dk>,
+       =?ISO-8859-1?Q?=22S=E9bastien_Dugu=E9_=40qubit=2Ein=2Eibm=2Ecom=22?= 
+	<sebastien.dugue@bull.net>
+Subject: Re: 2.6.20-rc6-mm1
+References: <20070127234928.64d8e437.akpm@osdl.org>	<45BCD5A8.4090400@mbligh.org>	<20070128150133.b4c9b093.akpm@osdl.org>	<20070130024231.GA9497@in.ibm.com> <20070129184228.49fd48e7.akpm@osdl.org>
+In-Reply-To: <20070129184228.49fd48e7.akpm@osdl.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Herbert Poetzl (herbert@13thfloor.at):
-> On Thu, Jan 25, 2007 at 10:30:56PM -0800, Andrew Morton wrote:
-> > On Thu, 25 Jan 2007 23:26:59 -0600
-> > "Serge E. Hallyn" <serue@us.ibm.com> wrote:
-> > 
-> > > Fix exit race by splitting the nsproxy putting into two pieces.
-> > > First piece reduces the nsproxy refcount.  If we dropped the last
-> > > reference, then it puts the mnt_ns, and returns the nsproxy as a
-> > > hint to the caller.  Else it returns NULL.  The second piece of
-> > > exiting task namespaces sets tsk->nsproxy to NULL, and drops the
-> > > references to other namespaces and frees the nsproxy only if an
-> > > nsproxy was passed in.
-> > > 
-> > > A little awkward and should probably be reworked, but hopefully
-> > > it fixes the NFS oops.
-> > 
-> > I'm a bit worried about jamming something like this into 2.6.20.
-> > Could the usual culprits please review this carefully with 
-> > some urgency?
+Andrew Morton wrote:
+> On Tue, 30 Jan 2007 08:12:31 +0530
+> Suparna Bhattacharya <suparna@in.ibm.com> wrote:
 > 
-> okay, after integrating this into two Linux-VServer
-> branches and some testing, I can confirm that it 
-> _seems_ to fix the nfs and related issues, but still, 
-> I do not like it :)
-
-I don't either  :)
-
-> here my issues with this approach:
+>> On Sun, Jan 28, 2007 at 03:01:33PM -0800, Andrew Morton wrote:
+>>> On Sun, 28 Jan 2007 08:56:08 -0800
+>>> "Martin J. Bligh" <mbligh@mbligh.org> wrote:
+>>>
+>>>>> - It seems that people have been busy creating the need for this.  I had to
+>>>>>   apply over sixty patches to this tree to fix post-2.6.20-rc4-mm1 compilation
+>>>>>   errors.  And a number of patches were dropped due to no-compile or to
+>>>>>   runtime errors.  Heaven knows how many runtime bugs were added.
+>>>> dbench seems to panic on xfs / cfq ?
+>>> OK, I'll dump git-block.patch.  That means that the fsaio patches get
+>>> temporarily dropped as well as they depend on git-block changes somewhat.
+>> Would you like me to rework these back again to not depend on git-block ?
 > 
->  - the code is quite hard to read and can easily
->    lead to unexpected issues when spaces are
->    manipulated
+> Is OK thanks, I now have a git-block minus CFQ changes, so I have restored the fsaio
+> patches.
 
-Yes, but I do think fixing the naming will help that.
+On a happy note - mm2 seems to pass testing much better ;-)
 
->  - it breaks the basic get/put refcounting for
->    nsproxy references outside the task struct
->    i.e. we had to add a vs_put_nsproxy() which
->    does what the put_nsproxy() did before, to
->    keep and handle a reference to the nsproxy 
->    from the context structure
+M.
 
-Was the put_and_finalize_nsproxy() not sufficient?
-
->  - the following scenario might become a problem
->    for future spaces (especially the pid space?)
-> 
->             A                       B
-> 
->  exit_task_namespaces_early()
-> 			exit_task_namespaces_early()
-> 			exit_notify()
-> 			exit_task_namespaces()
->  ---------------------------------------------------
->  exit_notify()
->  exit_task_namespaces()
-
-Confounded, you're right, the exit_task_namespaces() in B
-would see that B had reduced the nsproxy->count to 0, and
-free the nsproxy, so that exit_notify() in A would oops.
-And that should be triggerable right now.
-
-I'm afraid adding an extra refcount for the mounts is
-unavoidable.
-
-> note: I still consider it the best available fix
-> for this issues, especially as 2.6.20 is in a 
-> late rc stage ... but IMHO the nfs threads should
-> be modified to handle the nsproxy disposal properly
-
-That *would* lead to much more readable code.
-
-> > And Daniel, if you can find time to runtime test it please?
-> 
-> he did, looks like it works fine with vanilla too
-> (even when stressing the described cornercase)
-> 
-> best,
-> Herbert
