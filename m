@@ -1,59 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751851AbXA3Wbp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751828AbXA3Wea@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751851AbXA3Wbp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 17:31:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751866AbXA3Wbp
+	id S1751828AbXA3Wea (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 17:34:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751865AbXA3We3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 17:31:45 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:40765 "EHLO ogre.sisk.pl"
+	Tue, 30 Jan 2007 17:34:29 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:51153 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751851AbXA3Wbn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 17:31:43 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Oliver Neukum <oliver@neukum.name>
-Subject: Re: question on resume()
-Date: Tue, 30 Jan 2007 23:32:25 +0100
-User-Agent: KMail/1.9.1
-Cc: linux-kernel@vger.kernel.org, nigel@nigel.suspend2.net,
-       pm list <linux-pm@lists.osdl.org>
-References: <200701291206.39637.oneukum@suse.de> <200701301732.56444.rjw@sisk.pl> <200701301750.48196.oliver@neukum.name>
-In-Reply-To: <200701301750.48196.oliver@neukum.name>
+	id S1751828AbXA3We3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jan 2007 17:34:29 -0500
+Message-ID: <45BFC7F2.7090209@garzik.org>
+Date: Tue, 30 Jan 2007 17:34:26 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+To: Roland Dreier <rdreier@cisco.com>
+CC: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org
+Subject: Re: Free Linux Driver Development!
+References: <20070130012904.GA9617@kroah.com> <ada8xfks90x.fsf@cisco.com>	<20070130191020.GF20642@kroah.com> <adaodogqpmx.fsf@cisco.com>	<20070130195445.GE22022@kroah.com> <adazm80p4qp.fsf@cisco.com>
+In-Reply-To: <adazm80p4qp.fsf@cisco.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200701302332.26063.rjw@sisk.pl>
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.7 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Added linux-pm to the Cc list, because I'm going to talk about things that
-I know only from reading the code.]
-
-On Tuesday, 30 January 2007 17:50, Oliver Neukum wrote:
-> Am Dienstag, 30. Januar 2007 17:32 schrieb Rafael J. Wysocki:
-> > However, you can always inspect the PF_FROZEN flag of the tasks in question
-> > if that's practicable.
-> 
-> What would I do with that information? Ignore completion of IO?
-
-I probably should say "that depends", but that wouldn't be very helpful.
-
-Getting back to your initial question, which is if wake_up() may be called
-from a driver's .resume() routine, I think the answer is no, it may not,
-because in that case the "notified" tasks would be removed from the wait
-queue, but the refrigerator() would (wrongly) restore their states as
-TASK_UNINTERRUPTIBLE (or TASK_INTERRUPTIBLE for wake_up_interruptible()).
-
-Generally, you are safe if your driver only calls wake_up() from a process
-context, but not from .resume() or .suspend() routines (or from an
-unfreezeable kernel thread).
-
-Greetings,
-Rafael
+Roland Dreier wrote:
+> I disagree -- Linux today gets drivers not just from volunteers
+> writing drivers from specs, but also from vendors writing drivers and
+> volunteers writing drivers via reverse engineering.  And many of those
+> drivers don't work on every platform and aren't supported by
+> enterprise distros.  And when the community loses interest, drivers
+> are left to bitrot.
 
 
--- 
-If you don't have the time to read,
-you don't have the time or the tools to write.
-		- Stephen King
+Which of these actively maintained and supported drivers work on only 
+one platform[1], and are excluded from enterprise distros?  Can we truly 
+count them as "many", as you repeatedly claim?
+
+	Jeff
+
+
+
+[1] obviously excluding drivers for hardware where its only possible to 
+occur on one platform, like SoC devices
+
