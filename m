@@ -1,44 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752109AbXA3QVr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752118AbXA3QYP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752109AbXA3QVr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 11:21:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752118AbXA3QVq
+	id S1752118AbXA3QYP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 11:24:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752125AbXA3QYP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 11:21:46 -0500
-Received: from coyote.holtmann.net ([217.160.111.169]:34445 "EHLO
-	mail.holtmann.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752109AbXA3QVq (ORCPT
+	Tue, 30 Jan 2007 11:24:15 -0500
+Received: from ug-out-1314.google.com ([66.249.92.174]:53365 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752118AbXA3QYO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 11:21:46 -0500
-Subject: Re: [Bluez-devel] trouble with sysfs and bluetooth
-From: Marcel Holtmann <marcel@holtmann.org>
-To: Oliver Neukum <oliver@neukum.name>
-Cc: BlueZ development <bluez-devel@lists.sourceforge.net>,
-       linux-kernel@vger.kernel.org, maxk@qualcomm.com
-In-Reply-To: <200701301713.01942.oliver@neukum.name>
-References: <200701301135.53178.oliver@neukum.name>
-	 <1170154328.27519.27.camel@violet>  <200701301713.01942.oliver@neukum.name>
-Content-Type: text/plain
-Date: Tue, 30 Jan 2007 17:21:09 +0100
-Message-Id: <1170174069.27519.67.camel@violet>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.9.6 
+	Tue, 30 Jan 2007 11:24:14 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=rwibha4okkKGsRKf5UFHVxGZ8jwAExj5jfHDatrl58nabKxgRMe7g1qT+9mOzj6y/Og2nuLug0A+UMhx0f7Rgw6Xi9UzpuBXBt9F29zBw2lG7Um4J8MJ5Gg6U4jzU/KWYSj/NhlKsieY58HhTadY+zBOzfFMd9R4hSA8kB78txY=
+Message-ID: <671c20540701300824p54dad7dbw43fe916bc8c98d45@mail.gmail.com>
+Date: Tue, 30 Jan 2007 11:24:12 -0500
+From: "Tom Burns" <tom.i.burns@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Bug: 2.6.15 Process accounting fails to account for small time slice loads (still)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Oliver,
+The bug described back in 2004 in the following message still seems to exist:
 
-> > do you see them also with the plain vanilla 2.6.20-rc6 kernel or are
-> > these only coming up in Greg's tree?
-> 
-> they are limited to Greg's tree.
+http://linux.derkeiler.com/Mailing-Lists/Kernel/2004-05/4313.html
 
-my first guess would that there is something wrong with Greg's tree or
-that one of this patches changes some behavior of the driver model.
+Essentially, it appears that if a process sleeps before it uses up a
+complete jiffy then no charge is made to its process accounting table.
 
-Regards
+This problem still exists in the same manner in kernel:
 
-Marcel
+ 2.6.15-1.2054_FC5smp #1 SMP Tue Mar 14 16:05:46 EST 2006 i686 i686
+i386 GNU/Linux
 
+The linked message above contains the necessary code to easily test
+for the problem.  It compiles cleanly, just be sure to include -lrt on
+the command line.
 
+Cheers,
+Tom Burns
