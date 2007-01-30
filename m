@@ -1,64 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964923AbXA3LeK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751034AbXA3LrP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964923AbXA3LeK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 06:34:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965114AbXA3LeJ
+	id S1751034AbXA3LrP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 06:47:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751062AbXA3LrP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 06:34:09 -0500
-Received: from smtp102.mail.mud.yahoo.com ([209.191.85.212]:48349 "HELO
-	smtp102.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S964923AbXA3LeI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 06:34:08 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=1+9b8lMtlye3JlgVeEHfXBc4YcX50Brvy/0hZzl6hGJAu3eKoD+BjQgfMZ2jbu9q6qHqX3D/27s0p5IvFbdEbq7kE9Myl5TyYxcQ85sznxY6dnSq3inWJLQipnxu9HCqNuYm19m0WP4J0WKmm3FHRN2hFSBP94JCoNBiYnfNiyQ=  ;
-X-YMail-OSG: ttLxPZwVM1nN02nVo5OBw48i010GjEOw1bbCwCPCJF3V6DvkF1skvQ.basLZLNz8nuphZLTb5IpqWXFziEvqHewHGf3oEJ3R2vzjYRaiDc1FosIDc9GEyHMXrnEwI_GfGNMBUDW2IqYjB5Q-
-Message-ID: <45BF2D1E.3020207@yahoo.com.au>
-Date: Tue, 30 Jan 2007 22:33:50 +1100
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
-MIME-Version: 1.0
-To: Christoph Hellwig <hch@infradead.org>
-CC: Howard Chu <hyc@symas.com>, linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-mm@kvack.org
-Subject: Re: swap map
-References: <45BF2823.2090005@symas.com> <20070130112024.GA18705@infradead.org>
-In-Reply-To: <20070130112024.GA18705@infradead.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 30 Jan 2007 06:47:15 -0500
+Received: from mivlgu.ru ([81.18.140.87]:35054 "EHLO mail.mivlgu.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750853AbXA3LrO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jan 2007 06:47:14 -0500
+Date: Tue, 30 Jan 2007 14:47:01 +0300
+From: Sergey Vlasov <vsu@altlinux.ru>
+To: Jean Delvare <jdelvare@suse.de>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Daniel Drake <dsd@reactivated.net>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@stusta.de>
+Subject: Re: via irq quirk breakage
+Message-Id: <20070130144701.e793c222.vsu@altlinux.ru>
+In-Reply-To: <200701300854.06083.jdelvare@suse.de>
+References: <45B6A94A.3010006@yahoo.com.au>
+	<200701291600.32580.jdelvare@suse.de>
+	<45BEAEE3.9080003@yahoo.com.au>
+	<200701300854.06083.jdelvare@suse.de>
+X-Mailer: Sylpheed version 2.2.9 (GTK+ 2.10.2; i586-alt-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__30_Jan_2007_14_47_01_+0300_xlfckaTm9UJ.4Y9S"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Hellwig wrote:
-> On Tue, Jan 30, 2007 at 03:12:35AM -0800, Howard Chu wrote:
-> 
->>In the it-would-be-nice department... While I was twiddling with swappiness 
->>and benchmarking some code, I thought it would be pretty cool if there was 
->>a node in /proc/<pid> that would show which pages of a process are resident 
->>or nonresident. I'm not sure that it would be useful very often, but I was 
->>thinking one could get a snapshot of that, correlated with traces from a 
->>malloc profiler, to show what portions of a program's memory usage was in 
->>active use vs idle.
-> 
-> 
-> That's be a remote mincore().  This should be more or less trivial,
-> do_mincore would need a mm_struct argument instead of always using
-> current->mm and we'd need a simple seq_file interface iterating over it.
-> 
-> Any volunteers?
+--Signature=_Tue__30_Jan_2007_14_47_01_+0300_xlfckaTm9UJ.4Y9S
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 
-Well the first thing needed is an mincore that actually works for anonymous
-memory!
+On Tue, 30 Jan 2007 08:54:05 +0100 Jean Delvare wrote:
 
-I've implemented some fixups in that department, which should get merged
-into 2.6.21. That reminds me: I'll send the patch to linux-mm for review...
+> You have an old VT82C686 south bridge, which was tagged as "special" by
+> Alan. For this chip, Alan's code only allows devices 00:00.x to be quirked.
+> As my code was merely a reimplementation of Alan's idea, it does the same.
+> Your USB controllers are at 00:07.x, so I'm not surprised they weren't
+> quirked.
+>
+> Alan, why were dev_lo and dev_hi both set to 0 for the VT82C868 in your
+> implementation? Is it a typo, or...?
+>
+> Nick, I guess the following patch would work better for you? I've listed
+> devices 00:07.x as quirkable for the VT82C686.
 
-We cannot get real atomic snapshots in general, but I don't think that would
-be a problem if you are just doing some profiling.
+The VT82C686 is very different from other devices, because it is
+a PCI chip, and its device number is determined by IDSEL wiring.
+Google shows that several different assignments are in use:
 
--- 
-SUSE Labs, Novell Inc.
-Send instant messages to your online friends http://au.messenger.yahoo.com 
+00:01.0:
+http://ozlabs.org/pipermail/linuxppc-embedded/2005-January/016642.html
+(but that's PPC)
+
+00:04.0: http://www.cs.helsinki.fi/linux/linux-kernel/2001-36/0083.html
+00:05.0: http://lkml.org/lkml/2003/12/11/78
+00:07.0: this example and lots of other links
+00:14.0: http://forum.freespire.org/showthread.php?t=2998
+
+> +static void quirk_via_bridge(struct pci_dev *dev)
+> +{
+> +	/* See what bridge we have and find the device ranges */
+> +	switch (dev->device) {
+> +	case PCI_DEVICE_ID_VIA_82C686:
+> +		/* 82C686 is special */
+> +		via_vlink_dev_lo = 7;
+> +		via_vlink_dev_hi = 7;
+
+So this should probably be:
+
+		/*
+		 * 82C686 attaches to PCI and can have any device number, but
+		 * all its subdevices are functions of that single device.
+		 */
+		via_vlink_dev_lo = via_vlink_dev_hi = PCI_SLOT(dev->devfn);
+
+--Signature=_Tue__30_Jan_2007_14_47_01_+0300_xlfckaTm9UJ.4Y9S
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFFvzA4W82GfkQfsqIRAn1pAJ0RU+3YlEcYcCnZFX2HDgjiGImFZgCfVIAd
+MgV0kIFd4KZD5NPME+7XV3A=
+=3ZHI
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__30_Jan_2007_14_47_01_+0300_xlfckaTm9UJ.4Y9S--
