@@ -1,68 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752088AbXA3IcT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752561AbXA3IdA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752088AbXA3IcT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 03:32:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752550AbXA3IcT
+	id S1752561AbXA3IdA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 03:33:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752649AbXA3IdA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 03:32:19 -0500
-Received: from smtp104.mail.mud.yahoo.com ([209.191.85.214]:36196 "HELO
-	smtp104.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752088AbXA3IcS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 03:32:18 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=mut79F61fuu6Gl8hO90gax3FBVGbqkQR+QKNsLbO+Wtg2/heisZR9mMpY1e5t/gsZ7f7A447SPDciWwIeTfsysF0XX0Oos0patGa/kkZH3aIBxo3pZ5u5/0c2cbpBZkF2srQerUYoJNclUEsN8jgkYHc29sojYk/2QpRXaC28fo=  ;
-X-YMail-OSG: HGKwzfwVM1mApes02RPEXfFh1gyjRkxTcGzgLsnVC9yCVFKdJgdGlIhWx73J4oajIr8377Iq7Q--
-Message-ID: <45BF0281.2020102@yahoo.com.au>
-Date: Tue, 30 Jan 2007 19:32:01 +1100
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
-MIME-Version: 1.0
-To: Jean Delvare <jdelvare@suse.de>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, Daniel Drake <dsd@reactivated.net>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@stusta.de>
-Subject: Re: via irq quirk breakage
-References: <45B6A94A.3010006@yahoo.com.au> <200701291600.32580.jdelvare@suse.de> <45BEAEE3.9080003@yahoo.com.au> <200701300854.06083.jdelvare@suse.de>
-In-Reply-To: <200701300854.06083.jdelvare@suse.de>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Tue, 30 Jan 2007 03:33:00 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:48560 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752561AbXA3Ic7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jan 2007 03:32:59 -0500
+Date: Tue, 30 Jan 2007 00:32:57 -0800
+From: Andrew Morton <akpm@osdl.org>
+To: "Sunil Naidu" <akula2.shark@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.20-rc6-mm3
+Message-Id: <20070130003257.1745273c.akpm@osdl.org>
+In-Reply-To: <8355959a0701300016k7c835fb3v31b4424edde3741c@mail.gmail.com>
+References: <20070129204528.eb8d695e.akpm@osdl.org>
+	<8355959a0701300016k7c835fb3v31b4424edde3741c@mail.gmail.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jean,
+On Tue, 30 Jan 2007 13:46:54 +0530
+"Sunil Naidu" <akula2.shark@gmail.com> wrote:
 
-Jean Delvare wrote:
-
-> You have an old VT82C686 south bridge, which was tagged as "special" by
-> Alan. For this chip, Alan's code only allows devices 00:00.x to be quirked.
-> As my code was merely a reimplementation of Alan's idea, it does the same.
-> Your USB controllers are at 00:07.x, so I'm not surprised they weren't
-> quirked.
+> On 1/30/07, Andrew Morton <akpm@osdl.org> wrote:
+> >
+> > - If you hit a bug in -mm and it is not obvious which patch caused it, it is
+> >   most valuable if you can perform a bisection search to identify which patch
+> >   introduced the bug.  Instructions for this process are at
 > 
-> Alan, why were dev_lo and dev_hi both set to 0 for the VT82C868 in your
-> implementation? Is it a typo, or...?
+> I am hit with a compile error! Here is the info:-
 > 
-> Nick, I guess the following patch would work better for you? I've listed
-> devices 00:07.x as quirkable for the VT82C686.
-> 
-> * * * * *
-> 
-> Fix VIA quirks that were recently broken by Alan Cox in the upstream
-> kernel (commit 1597cacbe39802d86656d1f2e6329895bd2ef531).
+>   CC [M]  drivers/net/chelsio/cxgb2.o
+>   CC [M]  drivers/net/chelsio/espi.o
+>   CC [M]  drivers/net/chelsio/tp.o
+>   CC [M]  drivers/net/chelsio/pm3393.o
+>   CC [M]  drivers/net/chelsio/sge.o
+> drivers/net/chelsio/sge.c: In function 't1_interrupt':
+> drivers/net/chelsio/sge.c:1705: error: expected ')' before 'work_done'
+> drivers/net/chelsio/sge.c:1722: error: expected expression before '}' token
+> drivers/net/chelsio/sge.c:1697: warning: unused variable 'work_done'
+> drivers/net/chelsio/sge.c:1722: warning: no return statement in
+> function returning non-void
+> make[3]: *** [drivers/net/chelsio/sge.o] Error 1
+> make[2]: *** [drivers/net/chelsio] Error 2
+> make[1]: *** [drivers/net] Error 2
+> make: *** [drivers] Error 2
 
-Thanks for making the patch, it works like a charm now. The quirk
-gets applied to both USB controllers.
+--- a/drivers/net/chelsio/sge.c~git-netdev-all-chelsio-fix
++++ a/drivers/net/chelsio/sge.c
+@@ -1701,7 +1701,7 @@ irqreturn_t t1_interrupt(int irq, void *
+ 
+ 	writel(F_PL_INTR_SGE_DATA, adapter->regs + A_PL_CAUSE);
+ 
+-	if (likely(responses_pending(adapter))
++	if (likely(responses_pending(adapter)))
+ 		work_done = process_responses(adapter, -1);
+ 	else
+ 		work_done = t1_slow_intr_handler(adapter);
+_
 
-> My understanding is that pci_find_present() doesn't work yet at the
-> time the quirks are run. So I used a two-step quirk as is done for
-> some other quirks already. First we detect the VIA south bridges
-> and set the right low and high device limits, then we are ready to
-> actually run the quirks on the affected devices.
-
--- 
-SUSE Labs, Novell Inc.
-Send instant messages to your online friends http://au.messenger.yahoo.com 
