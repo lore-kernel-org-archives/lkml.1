@@ -1,68 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751869AbXA3Xmp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751837AbXA3XqE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751869AbXA3Xmp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 18:42:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751879AbXA3Xmp
+	id S1751837AbXA3XqE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 18:46:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751841AbXA3XqD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 18:42:45 -0500
-Received: from wx-out-0506.google.com ([66.249.82.232]:28736 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751869AbXA3Xmo (ORCPT
+	Tue, 30 Jan 2007 18:46:03 -0500
+Received: from hu-out-0506.google.com ([72.14.214.230]:36782 "EHLO
+	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751837AbXA3XqB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 18:42:44 -0500
+	Tue, 30 Jan 2007 18:46:01 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=o1fIhCmEOouRq0NCad7VgNnlYrjZQ6lBcBsN/1nfLu/sThfUxHYdq624p6C2qNBa1lWbFAhk0SVG+lL8PAMd1wT6mv2abDRjJzqF9OfsK5XjMkJLwXWuiISCuD/Rbr7P8seBtABMdMvv94wHkPTYmwXMUwFNSazPe+8yZIEjHkw=
-Message-ID: <9a8748490701301542r33317ca7id9deb63fca2fb2dc@mail.gmail.com>
-Date: Wed, 31 Jan 2007 00:42:43 +0100
-From: "Jesper Juhl" <jesper.juhl@gmail.com>
-To: "Trond Myklebust" <trond.myklebust@fys.uio.no>
-Subject: Re: [NFS] 2.6.17.8 - do_vfs_lock: VFS is out of sync with lock manager!
-Cc: "Neil Brown" <neilb@suse.de>, nfs@lists.sourceforge.net,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <1170080210.5757.6.camel@lade.trondhjem.org>
+        b=CirzUxngOAF1isLraBZwtqS0xNUbfRg7qyy5dJYoMqXyz8q86gnOFykazxuvCb2relIyf6S3gKuyhzqDMeBwhC4OmgLTCxw9wSqdroCuf+ZlRLkzbm/eQm/bffi7+aWQ/eNdRx90U9KJJFygTaTOojBndZIqadbG3cVTHMbSh7k=
+Message-ID: <1a297b360701301545o2608edf5i618b9ff26bf1b4a3@mail.gmail.com>
+Date: Wed, 31 Jan 2007 03:45:59 +0400
+From: "Manu Abraham" <abraham.manu@gmail.com>
+To: "Roland Dreier" <rdreier@cisco.com>
+Subject: Re: Free Linux Driver Development!
+Cc: "Jeff Garzik" <jeff@garzik.org>, "Greg KH" <greg@kroah.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <adaps8wnlfl.fsf@cisco.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <9a8748490608080739w2e14e5ceg44a7bf0a3b475704@mail.gmail.com>
-	 <17636.4462.975774.528003@cse.unsw.edu.au>
-	 <9a8748490608170258s32df0272r60c8c540e5871485@mail.gmail.com>
-	 <17641.10665.116168.867041@cse.unsw.edu.au>
-	 <1156190098.6158.109.camel@localhost>
-	 <17853.33116.113629.65031@notabene.brown>
-	 <1170080210.5757.6.camel@lade.trondhjem.org>
+References: <20070130012904.GA9617@kroah.com> <ada8xfks90x.fsf@cisco.com>
+	 <20070130191020.GF20642@kroah.com> <adaodogqpmx.fsf@cisco.com>
+	 <20070130195445.GE22022@kroah.com> <adazm80p4qp.fsf@cisco.com>
+	 <45BFC7F2.7090209@garzik.org> <adaac00p1rq.fsf@cisco.com>
+	 <45BFD03F.4020003@garzik.org> <adaps8wnlfl.fsf@cisco.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 29/01/07, Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
-> On Mon, 2007-01-29 at 16:08 +1100, Neil Brown wrote:
-> > On Monday August 21, trond.myklebust@fys.uio.no wrote:
-> > >
-> > > Could we instead replace it with a dprintk() that returns the value of
-> > > "res"? That will keep it useful for debugging purposes.
-> >
-> > (only 5 months later...)
-> >
-> > Sure, how about this?
-> >
-> > Thanks,
-> > NeilBrown
->
-> ACKed.
->
-> Thanks Neil!
->
+On 1/31/07, Roland Dreier <rdreier@cisco.com> wrote:
 
-Finally getting that in will be sooooo nice :-)  Thank you.
-
-Btw: any reason why not to include the
-  fl->fl_flags &= ~FL_SLEEP;
-bit as well?  As in http://lkml.org/lkml/2006/11/27/41  ??
+> To me, it's clear that historically the community hasn't delivered on
+> this.  So I don't like promising something that we haven't been able
+> to follow through on in the past.  If a vendor takes Greg's offer, and
+> then the community, for whatever reason, fails to deliver on
+> everything, then that makes us all (including me!) look bad just
+> because of Greg's hyperbolic promises.
 
 
--- 
-Jesper Juhl <jesper.juhl@gmail.com>
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please      http://www.expita.com/nomime.html
+I can't talk for every subsystem, but what we have under the DVB
+subsystem, for the devices that we have access to specs we have well
+behaved drivers, many have even complimented that they work much
+better than their windows counterparts.
+
+I have even received mails from some vendors that some of the Linux
+drivers behave better than their own windows drivers.
+
+We can't count on reverse eng 'd drivers (or even drivers written with
+a lot of guess work due to lack of specifications), they don't behave
+nice. So at least if the vendors were to provide some specs in that
+direction, it would help to make those drivers better.
+
+So i think to a certain as to what i can say, probably you are wrong.
+
+regards,
+manu
