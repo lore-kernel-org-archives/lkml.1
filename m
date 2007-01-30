@@ -1,56 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751896AbXA3Wm6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751932AbXA3Wre@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751896AbXA3Wm6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 17:42:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751923AbXA3Wm5
+	id S1751932AbXA3Wre (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 17:47:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751923AbXA3Wre
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 17:42:57 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:51251 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751896AbXA3Wm5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 17:42:57 -0500
-Message-ID: <45BFC9EF.4060506@garzik.org>
-Date: Tue, 30 Jan 2007 17:42:55 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
-MIME-Version: 1.0
-To: Matthieu CASTET <castet.matthieu@free.fr>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Free Linux Driver Development!
-References: <20070130012904.GA9617@kroah.com> <ada8xfks90x.fsf@cisco.com>	<20070130191020.GF20642@kroah.com> <adaodogqpmx.fsf@cisco.com> <45BFA087.6020905@garzik.org> <loom.20070130T231421-484@post.gmane.org>
-In-Reply-To: <loom.20070130T231421-484@post.gmane.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 30 Jan 2007 17:47:34 -0500
+Received: from agminet02.oracle.com ([141.146.126.229]:35753 "EHLO
+	agminet02.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751932AbXA3Wrd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jan 2007 17:47:33 -0500
+In-Reply-To: <Pine.LNX.4.64.0701301345060.3611@woody.linux-foundation.org>
+References: <patchbomb.1170193181@tetsuo.zabbo.net> <Pine.LNX.4.64.0701301345060.3611@woody.linux-foundation.org>
+Mime-Version: 1.0 (Apple Message framework v752.3)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <0E1E87C3-954C-4297-9D6C-E98BC79D68C3@oracle.com>
+Cc: linux-kernel@vger.kernel.org, linux-aio@kvack.org,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Benjamin LaHaise <bcrl@kvack.org>
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.7 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+From: Zach Brown <zach.brown@oracle.com>
+Subject: Re: [PATCH 0 of 4] Generic AIO by scheduling stacks
+Date: Tue, 30 Jan 2007 14:40:49 -0800
+To: Linus Torvalds <torvalds@linux-foundation.org>
+X-Mailer: Apple Mail (2.752.3)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matthieu CASTET wrote:
-> Jeff Garzik <jeff <at> garzik.org> writes:
-> 
->>> And I seem to recall there's more SATA chipset documentation than Jeff
->>> Garzik has time to implement support for.
->> I seriously doubt you can come up with even a single concrete example here.
->>
->> Regardless, libata has 55+ drivers and counting, all for the price of 
->> documentation and hardware.  Another quite strong counter example.
->>
-> On another side, some PATA drivers are incomplete or missing.
+> I looked at this approach a long time ago, and basically gave up  
+> because
+> it looked like too much work.
 
-Which ones are incomplete?
+Indeed, your mention of it in that thread.. a year ago?.. is what got  
+this notion sitting in the back of my head.  I didn't like it at  
+first, but it grew on me.
 
-I know a few non-x86 drivers are missing.
+> I heartily approve, although I only gave the actual patches a very  
+> cursory
+> glance. I think the approach is the proper one, but the devil is in  
+> the
+> details. It might be that the stack allocation overhead or some other
+> subtle fundamental problem ends up making this impractical in the  
+> end, but
+> I would _really_ like for this to basically go in.
 
+As for efficiency and overhead, I hope to get some time with the team  
+that work on the Giant Database Software Whose Name We Shall Not  
+Speak.  That'll give us some non-trival loads to profile.
 
-> When we switch to PATA and drop old ide stack, what will happen ?
-> Will all driver be ported and full-feature, or some will be obsoleted ?
+> It won't matter at all for a certain class of calls (a lot of the  
+> people
+> who want to do AIO really end up doing non-interruptible things, and
+> signalling is a non-issue), but not only is it going to matter for  
+> some
+> others, we will almost certainly want to have a way to not just  
+> signal a
+> task, but a single "fibril" (and let me say that I'm not convinced  
+> about
+> your naming, but I don't hate it either ;)
 
-All drivers for which we can find users will be ported.  If any features 
-disappear that's a bug.
+Yeah, no doubt.  I'm wildly open to discussion here.  (and yeah, me  
+either, but I don't care much about the name.  I got tired of  
+qualifying overloaded uses of 'stack' or 'thread', that's all :)).
 
-	Jeff
+> But from a quick overview of the patches, I really don't see anything
+> fundamentally wrong. It needs some error checking and some limiting (I
+> _really_ don't think we want a regular user starting a thousand  
+> fibrils
+> concurrently), but it actually looks much less invasive than I  
+> thought it
+> would be.
 
+I think we'll also want to flesh out the submission and completion  
+interface so that we don't find ourselves frustrated with it in  
+another 5 years.  What's there now is just scaffolding to support the  
+interesting kernel-internal part.  No doubt the kevent thread will  
+come into play here.
 
-
+- z
