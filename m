@@ -1,285 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751871AbXA3VrT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751840AbXA3VsO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751871AbXA3VrT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 16:47:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751872AbXA3VrS
+	id S1751840AbXA3VsO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 16:48:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751821AbXA3VsO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 16:47:18 -0500
-Received: from mga03.intel.com ([143.182.124.21]:44112 "EHLO mga03.intel.com"
+	Tue, 30 Jan 2007 16:48:14 -0500
+Received: from mail.kroah.org ([69.55.234.183]:41659 "EHLO perch.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751864AbXA3VrP convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 16:47:15 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.13,259,1167638400"; 
-   d="scan'208"; a="174960788:sNHT23800931"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	id S1751827AbXA3VsN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jan 2007 16:48:13 -0500
+Date: Tue, 30 Jan 2007 13:47:59 -0800
+From: Greg KH <greg@kroah.com>
+To: Roland Dreier <rdreier@cisco.com>
+Cc: Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org
+Subject: Re: Free Linux Driver Development!
+Message-ID: <20070130214759.GA12477@kroah.com>
+References: <20070130012904.GA9617@kroah.com> <ada8xfks90x.fsf@cisco.com> <20070130191020.GF20642@kroah.com> <adaodogqpmx.fsf@cisco.com> <45BFA087.6020905@garzik.org> <ada4pq8qjpd.fsf@cisco.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH 1/1] -  increase acpi owner_id max
-Date: Tue, 30 Jan 2007 13:46:54 -0800
-Message-ID: <B28E9812BAF6E2498B7EC5C427F293A401CD3AEB@orsmsx415.amr.corp.intel.com>
-In-Reply-To: <200701302038.MAA58771@google.engr.sgi.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 1/1] -  increase acpi owner_id max
-Thread-Index: AcdErqShGmsIPLQPSuOFTAh+11cWVgACHV9w
-From: "Moore, Robert" <robert.moore@intel.com>
-To: "Aaron Young" <ayoung@google.engr.sgi.com>
-Cc: "John Keller" <jpk@sgi.com>, <linux-acpi@vger.kernel.org>,
-       <ayoung@sgi.com>, <linux-ia64@vger.kernel.org>,
-       <linux-kernel@vger.kernel.org>,
-       "Alexey Starikovskiy" <alexey.y.starikovskiy@linux.intel.com>,
-       "Brown, Len" <len.brown@intel.com>
-X-OriginalArrivalTime: 30 Jan 2007 21:46:59.0247 (UTC) FILETIME=[2B2E3BF0:01C744B8]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <ada4pq8qjpd.fsf@cisco.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm not sure that it is a great idea to increase the number of owner IDs
-"just in case", rather than in response to the needs of a specific
-machine.
-
-Increasing the size of this field increases the size of every namespace
-node in the namespace. Remember, there can be thousands of namespace
-nodes, so this size increase may not be trivial.  Also, the existing
-namespace node has been optimized for alignment and size such that
-increasing the size by 8 bits probably increases it by 32 bits as far as
-the memory manager is concerned (at least on some operating systems.)
-
-Our feeling (the ACPICA team) has been that the existing 8-bit owner ID
-is sufficient for current machines; If and when this becomes truly
-insufficient, we are prepared to go to a linked list model to track
-namespace nodes owned by a particular table or control method.
-
-Bob
-
-
-> -----Original Message-----
-> From: Aaron Young [mailto:ayoung@google.engr.sgi.com]
-> Sent: Tuesday, January 30, 2007 12:39 PM
-> To: Moore, Robert
-> Cc: John Keller; linux-acpi@vger.kernel.org; ayoung@sgi.com; linux-
-> ia64@vger.kernel.org; linux-kernel@vger.kernel.org; Alexey
-Starikovskiy;
-> Brown, Len
-> Subject: Re: [PATCH 1/1] - increase acpi owner_id max
+On Tue, Jan 30, 2007 at 01:38:06PM -0800, Roland Dreier wrote:
+>  > > OK, but why isn't your army of volunteers fixing them?
+>  > 
+>  > Because nobody has hardware for them?
 > 
-> >
-> > OK, I missed that.
-> >
-> > Can you give us some idea of just how many SSDTs this machine loads?
-> 
->   It depends. SGI SN configs can vary dramatically. We create a unique
->   SSDT for each populated PCI slot. The previous 255 SSDT id maximum
->   could theoretically be surpassed on machines with huge amounts of IO
--
->   although configs with that much IO are extremely rare. We were
->   just trying to avoid any (future) configuration limitations.
-> 
-> >
-> > Does it dynamically delete SSDTs also?
-> 
->   Yes. Our SN hotplug driver will add or remove SSDTs from the system
->   upon hotplugs/hotunplugs.
-> 
-> >
-> > Thanks,
-> > Bob
-> >
-> >
-> > > -----Original Message-----
-> > > From: Aaron Young [mailto:ayoung@google.engr.sgi.com]
-> > > Sent: Friday, January 26, 2007 4:03 PM
-> > > To: Moore, Robert
-> > > Cc: John Keller; linux-acpi@vger.kernel.org; ayoung@sgi.com;
-linux-
-> > > ia64@vger.kernel.org; linux-kernel@vger.kernel.org; Alexey
-> > Starikovskiy;
-> > > Brown, Len
-> > > Subject: Re: [PATCH 1/1] - increase acpi owner_id max
-> > >
-> > > >
-> > > > The OwnerId field within a namespace node is 8 bits, and this is
-the
-> > > > main constraint on the maximum OwnerId. You can't simply bump up
-the
-> > > > number of owner ids without changing this field.
-> > >
-> > >   Isn't this accomplished with the mod to aclocal.h below - i.e.
-> > >   by making a acpi_owner_id a u16 instead of a u8?:
-> > >
-> > >  -typedef u8 acpi_owner_id;
-> > >  -#define ACPI_OWNER_ID_MAX               0xFF
-> > >  +typedef u16 acpi_owner_id;
-> > >  +#define ACPI_OWNER_ID_MAX               0x3FF
-> > >
-> > > >
-> > > > If we need more than 255 owner Ids, the width of this field will
-> > have to
-> > > > be increased, or we will need to use a pointer for the field in
-> > order to
-> > > > maintain a linked list of all nodes owned by a particular owner.
-> > > >
-> > > > Bob
-> > > >
-> > > > > -----Original Message-----
-> > > > > From: linux-acpi-owner@vger.kernel.org [mailto:linux-acpi-
-> > > > > owner@vger.kernel.org] On Behalf Of John Keller
-> > > > > Sent: Friday, January 26, 2007 2:40 PM
-> > > > > To: linux-acpi@vger.kernel.org
-> > > > > Cc: ayoung@sgi.com; linux-ia64@vger.kernel.org; linux-
-> > > > > kernel@vger.kernel.org; John Keller
-> > > > > Subject: [PATCH 1/1] - increase acpi owner_id max
-> > > > >
-> > > > > To support systems with large IO configurations,
-> > > > > this patch increases the number of available ACPI
-> > > > > owner ids to 1023.
-> > > > >
-> > > > > On SN platforms, we represent every populated root
-> > > > > bus slot with an ACPI SSDT table containing info
-> > > > > for every device and PPB attached to the slot.
-> > > > > Each SSDT requires a unique ACPI owner id.
-> > > > >
-> > > > > Signed-off-by: John Keller <jpk@sgi.com>
-> > > > > ---
-> > > > >
-> > > > >  drivers/acpi/utilities/utmisc.c |    6 +++---
-> > > > >  include/acpi/acconfig.h         |    4 ++--
-> > > > >  include/acpi/aclocal.h          |    4 ++--
-> > > > >  3 files changed, 7 insertions(+), 7 deletions(-)
-> > > > >
-> > > > >
-> > > > > Index: linux/drivers/acpi/utilities/utmisc.c
-> > > > >
-> > ===================================================================
-> > > > > --- linux.orig/drivers/acpi/utilities/utmisc.c
-2007-01-25
-> > > > > 11:27:25.509259412 -0600
-> > > > > +++ linux/drivers/acpi/utilities/utmisc.c	2007-01-26
-> > > > 13:16:09.551081284 -
-> > > > > 0600
-> > > > > @@ -147,7 +147,7 @@ acpi_status acpi_ut_allocate_owner_id(ac
-> > > > >  				/*
-> > > > >  				 * Construct encoded ID from the
-index
-> > > > and bit
-> > > > > position
-> > > > >  				 *
-> > > > > -				 * Note: Last [j].k (bit 255) is
-never
-> > > > used and is
-> > > > > marked
-> > > > > +				 * Note: Last [j].k (bit 1023)
-is never
-> > > > used and
-> > > > > is marked
-> > > > >  				 * permanently allocated
-(prevents +1
-> > > > overflow)
-> > > > >  				 */
-> > > > >  				*owner_id =
-> > > > > @@ -175,7 +175,7 @@ acpi_status acpi_ut_allocate_owner_id(ac
-> > > > >  	 */
-> > > > >  	status = AE_OWNER_ID_LIMIT;
-> > > > >  	ACPI_ERROR((AE_INFO,
-> > > > > -		    "Could not allocate new OwnerId (255 max),
-> > > > > AE_OWNER_ID_LIMIT"));
-> > > > > +		    "Could not allocate new OwnerId (1023 max),
-> > > > > AE_OWNER_ID_LIMIT"));
-> > > > >
-> > > > >        exit:
-> > > > >  	(void)acpi_ut_release_mutex(ACPI_MTX_CACHES);
-> > > > > @@ -192,7 +192,7 @@ acpi_status acpi_ut_allocate_owner_id(ac
-> > > > >   *              control method or unloading a table. Either
-way,
-> > we
-> > > > would
-> > > > >   *              ignore any error anyway.
-> > > > >   *
-> > > > > - * DESCRIPTION: Release a table or method owner ID.  Valid
-IDs
-> > are 1
-> > > > -
-> > > > > 255
-> > > > > + * DESCRIPTION: Release a table or method owner ID.  Valid
-IDs
-> > are 1
-> > > > -
-> > > > > 1023
-> > > > >   *
-> > > > >
-> > > > >
-> > > >
-> >
-************************************************************************
-> > > > **
-> > > > > ****/
-> > > > >
-> > > > > Index: linux/include/acpi/acconfig.h
-> > > > >
-> > ===================================================================
-> > > > > --- linux.orig/include/acpi/acconfig.h	2007-01-25
-> > > > 11:27:25.577267818 -
-> > > > > 0600
-> > > > > +++ linux/include/acpi/acconfig.h	2007-01-26
-13:17:14.111002597
-> > > > -0600
-> > > > > @@ -111,9 +111,9 @@
-> > > > >
-> > > > >  #define ACPI_SYSMEM_REGION_WINDOW_SIZE  4096
-> > > > >
-> > > > > -/* owner_id tracking. 8 entries allows for 255 owner_ids */
-> > > > > +/* owner_id tracking. 32 entries allow for 1023 owner_ids */
-> > > > >
-> > > > > -#define ACPI_NUM_OWNERID_MASKS          8
-> > > > > +#define ACPI_NUM_OWNERID_MASKS		32
-> > > > >
-> > > > >
-> > > > >
-> > > >
-> >
-/***********************************************************************
-> > > > **
-> > > > > *****
-> > > > >   *
-> > > > > Index: linux/include/acpi/aclocal.h
-> > > > >
-> > ===================================================================
-> > > > > --- linux.orig/include/acpi/aclocal.h	2007-01-25
-> > 11:27:25.585268807 -
-> > > > > 0600
-> > > > > +++ linux/include/acpi/aclocal.h	2007-01-26
-13:20:06.148115848
-> > > > -0600
-> > > > > @@ -122,8 +122,8 @@ static char *acpi_gbl_mutex_names[ACPI_N
-> > > > >
-> > > > >  /* Owner IDs are used to track namespace nodes for selective
-> > deletion
-> > > > */
-> > > > >
-> > > > > -typedef u8 acpi_owner_id;
-> > > > > -#define ACPI_OWNER_ID_MAX               0xFF
-> > > > > +typedef u16 acpi_owner_id;
-> > > > > +#define ACPI_OWNER_ID_MAX               0x3FF
-> > > > >
-> > > > >  /* This Thread ID means that the mutex is not in use
-(unlocked)
-> > */
-> > > > >
-> > > > > -
-> > > > > To unsubscribe from this list: send the line "unsubscribe
-> > linux-acpi"
-> > > > in
-> > > > > the body of a message to majordomo@vger.kernel.org
-> > > > > More majordomo info at
-http://vger.kernel.org/majordomo-info.html
-> > > >
-> > -
-> > To unsubscribe from this list: send the line "unsubscribe
-linux-acpi" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> >
+> Greg said hardware wasn't necessary...
+
+Someone has to have the hardware to test with.  Hence my "debug by
+email" comment.
+
+> Sure, popular hardware support is pretty good.  But there are still
+> pretty serious gaps, for example Ralink wireless drivers are still not
+> upstream even with the vendor trying to help (and I think Ralink
+> wireless is a good example of how we can't really keep the promises
+> Greg is making).
+
+The Ralink wireless drivers are working to get their stuff upstream.  I
+think there is only some wireless infrastructure needed to complete
+before it gets into mainline, but you will have to ask them about this.
+
+There was a wireless-mini-summit a week or so ago, so those developers
+all know what is going on in that space right now.  They are facing a
+number of different regulatory issues, combined with lack of
+specifications from some vendors.  I don't think that the developers who
+actually have specs are complaining about anything right now.
+
+> And there's plenty of stuff in-tree with lots of users that's in
+> pretty dire shape, like ISDN (and the fact that we still
+> CONFIG_ISDN_I4L).  OK, it's not "modern" but Greg is also promising
+> that we'll keep everything up-to-date with any upstream kernel
+> changes, and there's obviously large chunks of the driver tree where
+> that doesn't happen.
+
+The ISDN maintainer has a large rewrite almost done, and anyone is
+welcome to help him out if they are still using and needing that old
+hardware.  As almost no one objects to the current code, I'm guessing
+that there is no such real need :)
+
+thanks,
+
+greg k-h
