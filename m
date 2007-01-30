@@ -1,68 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965407AbXA3Fky@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932231AbXA3Fp5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965407AbXA3Fky (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 00:40:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965410AbXA3Fky
+	id S932231AbXA3Fp5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 00:45:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932600AbXA3Fp5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 00:40:54 -0500
-Received: from mailhub.sw.ru ([195.214.233.200]:18830 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965407AbXA3Fky (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 00:40:54 -0500
-To: schwidefsky@de.ibm.com
-Cc: Andrew Morton <akpm@osdl.org>, Heiko Carstens <heiko.carstens@de.ibm.com>,
-       linux-kernel@vger.kernel.org, dmonakhov@openvz.org
-Subject: Re: + mm-search_binary_handler-mem-limit-fix.patch added to -mm tree
-References: <200701240909.l0O99IwK013495@shell0.pdx.osdl.net>
-	<20070129113328.GA9941@osiris.boeblingen.de.ibm.com>
-	<20070129135958.GB9941@osiris.boeblingen.de.ibm.com>
-	<20070129093751.a1637a68.akpm@osdl.org>
-	<1170094705.17738.11.camel@localhost>
-From: Dmitriy Monakhov <dmonakhov@sw.ru>
-Date: Tue, 30 Jan 2007 08:40:59 +0300
-In-Reply-To: <1170094705.17738.11.camel@localhost> (Martin Schwidefsky's message of "Mon, 29 Jan 2007 19:18:25 +0100")
-Message-ID: <87veipxeac.fsf@sw.ru>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.4 (gnu/linux)
+	Tue, 30 Jan 2007 00:45:57 -0500
+Received: from nommos.sslcatacombnetworking.com ([67.18.224.114]:58445 "EHLO
+	nommos.sslcatacombnetworking.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932231AbXA3Fp4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jan 2007 00:45:56 -0500
+Date: Mon, 29 Jan 2007 23:43:33 -0600 (CST)
+From: Kumar Gala <galak@kernel.crashing.org>
+X-X-Sender: galak@localhost.localdomain
+To: linux-kernel@vger.kernel.org
+cc: Andrew Morton <akpm@osdl.org>, prasanna@in.ibm.com, ananth@in.ibm.com,
+       anil.s.keshavamurthy@intel.com, davem@davemloft.net,
+       Paul Mackerras <paulus@samba.org>
+Subject: [PATCH] kprobes: Fix compiler warning
+Message-ID: <Pine.LNX.4.64.0701292341070.32393@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+X-PopBeforeSMTPSenders: kumar-chaos@kgala.com,kumar-statements@kgala.com,kumar@kgala.com
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - nommos.sslcatacombnetworking.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - kernel.crashing.org
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > > The function changes mem limit to USER_DS before possible modprobe, but
-> > > never restored it again.
-Truly. The road to hell is paved with good intentions.
+On ppc the compiler gripes about:
 
-Martin Schwidefsky <schwidefsky@de.ibm.com> writes:
-> On Mon, 2007-01-29 at 09:37 -0800, Andrew Morton wrote:
->> hm, thanks for testing - I'll drop it.
->> 
->> I don't really understand what's wrong with it though.  Maybe it's settng
->> USER_DS on kernel threads?
->
-> For architectures with a split address space there has to be a call
-> set_fs(USER_DS) that switches from KERNEL_DS to USER_DS for the init
-> process. So far this has been done in search_binary_handler and
-> traditionally the kernel starts with KERNEL_DS to make the early
-> copy_from_user calls work.
-> So, what is wrong with always setting USER_DS? We are starting a user
-> space process after all.
-May be add some comment to prevent future attempts to make this place 
-more "correct"?
->
-> -- 
-> blue skies,
->   Martin.
->
-> Martin Schwidefsky
-> Linux for zSeries Development & Services
-> IBM Deutschland Entwicklung GmbH
->
-> "Reality continues to ruin my life." - Calvin.
->
->
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+kernel/kprobes.c: In function 'collect_garbage_slots':
+kernel/kprobes.c:215: warning: comparison is always false due to limited range of data type
 
+The compiler ends up optimizing away the test since char's are unsigned on ppc.
+
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+
+---
+commit 1ee2dc5300b1c454f92eeea82da300f72db1b26f
+tree c73cdacb43e154292708d967e11b1cbf7ab4904f
+parent c0d4d573feed199b16094c072e7cb07afb01c598
+author Kumar Gala <galak@kernel.crashing.org> Mon, 29 Jan 2007 23:38:11 -0600
+committer Kumar Gala <galak@kernel.crashing.org> Mon, 29 Jan 2007 23:38:11 -0600
+
+  kernel/kprobes.c |    2 +-
+  1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/kernel/kprobes.c b/kernel/kprobes.c
+index 17ec4af..514276f 100644
+--- a/kernel/kprobes.c
++++ b/kernel/kprobes.c
+@@ -212,7 +212,7 @@ static int __kprobes collect_garbage_slots(void)
+  			continue;
+  		kip->ngarbage = 0;	/* we will collect all garbages */
+  		for (i = 0; i < INSNS_PER_PAGE; i++) {
+-			if (kip->slot_used[i] == -1 &&
++			if (kip->slot_used[i] == (char)-1 &&
+  			    collect_one_slot(kip, i))
+  				break;
+  		}
