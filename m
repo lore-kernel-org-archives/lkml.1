@@ -1,77 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965114AbXA3MKs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965282AbXA3MXx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965114AbXA3MKs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 07:10:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965282AbXA3MKs
+	id S965282AbXA3MXx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 07:23:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965171AbXA3MXx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 07:10:48 -0500
-Received: from nz-out-0506.google.com ([64.233.162.233]:23839 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965114AbXA3MKr (ORCPT
+	Tue, 30 Jan 2007 07:23:53 -0500
+Received: from mtagate2.de.ibm.com ([195.212.29.151]:46311 "EHLO
+	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965282AbXA3MXw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 07:10:47 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=J5zaFXgRnjSDdQF/spvgB3bSs6+M+1Gad1j+J2uV3+8lma06sI+ZplsrrGgY34RRAXcRWPrLPpls8lyMRznxyIfaamviU4Q/Q++YNa41Hkyze2D03IPTry7+6z1xiaF1ycIwKDXnAEmGrUZR/jrQHF6pDzU/lt3OlgTnpnphJHo=
-Message-ID: <e9f486400701300410l479cde02jc916ccde81163f8c@mail.gmail.com>
-Date: Tue, 30 Jan 2007 13:10:46 +0100
-From: "Henri Hunnekens" <henrihunnekens@gmail.com>
-Subject: [ OOPS ] at do_futex with 2.6.20-RC5-RT10
-Cc: linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 30 Jan 2007 07:23:52 -0500
+Subject: Re: + mm-search_binary_handler-mem-limit-fix.patch added to -mm
+	tree
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Reply-To: schwidefsky@de.ibm.com
+To: Dmitriy Monakhov <dmonakhov@sw.ru>
+Cc: Andrew Morton <akpm@osdl.org>, Heiko Carstens <heiko.carstens@de.ibm.com>,
+       linux-kernel@vger.kernel.org, dmonakhov@openvz.org
+In-Reply-To: <87veipxeac.fsf@sw.ru>
+References: <200701240909.l0O99IwK013495@shell0.pdx.osdl.net>
+	 <20070129113328.GA9941@osiris.boeblingen.de.ibm.com>
+	 <20070129135958.GB9941@osiris.boeblingen.de.ibm.com>
+	 <20070129093751.a1637a68.akpm@osdl.org>
+	 <1170094705.17738.11.camel@localhost>  <87veipxeac.fsf@sw.ru>
+Content-Type: text/plain
+Organization: IBM Corporation
+Date: Tue, 30 Jan 2007 13:23:49 +0100
+Message-Id: <1170159829.22550.2.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.3 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear Ingo,
+On Tue, 2007-01-30 at 08:40 +0300, Dmitriy Monakhov wrote:
+> > > > The function changes mem limit to USER_DS before possible modprobe, but
+> > > > never restored it again.
+> Truly. The road to hell is paved with good intentions.
 
-I've an made an application which causes an OOPS using kernel version
-2.6.20-RC5-RT10 ( also seen with older verison 2.6.19.1-rt15 ) + FC6
-userland.
+:-)
 
-The application periodically calls the libc system() routine. The
-system() routine just calls a simple external bash script. The
-application is a SCHED_OTHER application with PI mutexes. I think that
-the problem is caused by the system() routine.
+> > For architectures with a split address space there has to be a call
+> > set_fs(USER_DS) that switches from KERNEL_DS to USER_DS for the init
+> > process. So far this has been done in search_binary_handler and
+> > traditionally the kernel starts with KERNEL_DS to make the early
+> > copy_from_user calls work.
+> > So, what is wrong with always setting USER_DS? We are starting a user
+> > space process after all.
+> May be add some comment to prevent future attempts to make this place 
+> more "correct"?
 
-The following is a dump of the stdout made with kernel version
-2.6.19.1-rt15. But 2.6.20-RC5-RT10 has the same problem.
+The use of set_fs(USER_DS) in search_binary_handler is certainly
+different compared to the rest. It probably is the only one that is not
+paired with a set_fs(KERNEL_DS) or set_fs(old_fs). A comment won't hurt.
+
+-- 
+blue skies,
+  Martin.
+
+Martin Schwidefsky
+Linux for zSeries Development & Services
+IBM Deutschland Entwicklung GmbH
+
+"Reality continues to ruin my life." - Calvin.
 
 
-Oops: 0003 [#1]
-PREEMPT SMP
-Modules linked in: cap_over commoncap i2c_dev uhci_hcd i2c_i801 i2c_core ehci_hc
-d
-CPU:    0
-EIP:    0060:[<c0141d9c>]    Not tainted VLI
-EFLAGS: 00010246   (2.6.19.1-rt15 #1)
-EIP is at do_futex+0x8ec/0xfb0
-eax: 0000081f   ebx: 0000081f   ecx: 08511a28   edx: 00000000
-esi: 8000081f   edi: dc3e7fa0   ebp: dc3e7f7c   esp: dc3e7e38
-ds: 007b   es: 007b   ss: 0068   preempt: 00000002
-Process SSL_Linux (pid: 2079, ti=dc3e6000 task=df6bd000 task.ti=dc3e6000)
-Stack: dc3e7eac c05a6570 00000278 00000001 6e6a32ae 00000000 c05a74e0 00000000
-       15c1f019 00000277 0000086f 00000000 c16ecaa0 04000001 c05a7360 00000000
-       c16ecaa0 00000086 df6ad550 dc3e6000 00000000 fffffff2 c05a7de0 df6ad550
-Call Trace:
- [<c01054e6>] show_trace_log_lvl+0x26/0x40
- [<c01055b1>] show_stack_log_lvl+0xb1/0xe0
- [<c01059ef>] show_registers+0x1cf/0x280
- [<c0105bdf>] die+0x13f/0x320
- [<c0119a7c>] do_page_fault+0x21c/0x660
- [<c04252e9>] error_code+0x39/0x40
- [<c01424ff>] sys_futex+0x9f/0xd0
- [<c01047ad>] sysenter_past_esp+0x56/0x79
- =======================
-Code: 08 8b 9a b0 00 00 00 83 c1 04 19 d2 39 48 18 83 da 00 85 d2 b9 01 00 00 00
- c7 85 10 ff ff ff f2 ff ff ff 75 17 89 d8 8b 4d 08 90 <0f> b1 11 31 c9 83 f8 f2
- 89 85 10 ff ff ff 0f 94 c1 89 e0 25 00
-
-Do you have any idea what causes this problem or how to find out?
-
-Best regards,
-Henri Hunnekens
