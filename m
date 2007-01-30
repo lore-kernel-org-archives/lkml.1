@@ -1,49 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752626AbXA3A1X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752629AbXA3A3b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752626AbXA3A1X (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 19:27:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752633AbXA3A1W
+	id S1752629AbXA3A3b (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 19:29:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752632AbXA3A3b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 19:27:22 -0500
-Received: from terminus.zytor.com ([192.83.249.54]:55303 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752626AbXA3A1V (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 19:27:21 -0500
-Message-ID: <45BE90D4.1030506@zytor.com>
-Date: Mon, 29 Jan 2007 16:27:00 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070102)
-MIME-Version: 1.0
-To: Chris Friesen <cfriesen@nortel.com>
-CC: Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       Kevin Nicoll <blort128@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: Multiple ip= boot arguments?
-References: <e4fa6c610701291036r7ff384e4u78d3995ab3d042d8@mail.gmail.com> <Pine.LNX.4.61.0701292146470.5077@yvahk01.tjqt.qr> <45BE8AAA.9020308@zytor.com> <45BE9043.5020508@nortel.com>
-In-Reply-To: <45BE9043.5020508@nortel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 29 Jan 2007 19:29:31 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:35122 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752629AbXA3A3a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jan 2007 19:29:30 -0500
+Date: Mon, 29 Jan 2007 16:26:58 -0800
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jeff Garzik <jeff@garzik.org>
+Subject: Re: Linux 2.6.20-rc6 - sky2 resume breakage
+Message-ID: <20070129162658.798c2e6a@freekitty>
+In-Reply-To: <Pine.LNX.4.64.0701291623360.3611@woody.linux-foundation.org>
+References: <Pine.LNX.4.64.0701241847360.25027@woody.linux-foundation.org>
+	<1169931333.17469.125.camel@localhost.localdomain>
+	<20070129113159.7ad22e4c@freekitty>
+	<1170101430.29240.34.camel@localhost.localdomain>
+	<20070129133849.1b523226@freekitty>
+	<1170109401.29240.49.camel@localhost.localdomain>
+	<Pine.LNX.4.64.0701291431320.3611@woody.linux-foundation.org>
+	<20070129144055.151cfe52@freekitty>
+	<Pine.LNX.4.64.0701291501180.3611@woody.linux-foundation.org>
+	<20070129154518.40b0b3d3@freekitty>
+	<Pine.LNX.4.64.0701291609180.3611@woody.linux-foundation.org>
+	<20070129161626.33277eb1@freekitty>
+	<Pine.LNX.4.64.0701291623360.3611@woody.linux-foundation.org>
+Organization: Linux Foundation
+X-Mailer: Sylpheed-Claws 2.5.0-rc3 (GTK+ 2.10.6; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Friesen wrote:
-> H. Peter Anvin wrote:
->> Jan Engelhardt wrote:
->>>
->>>> or if I'm supposed to use a startup script instead.
->>>
->>> This is the preffered way nowadays. One day, hopefully,
->>> CONFIG_IP_PNP can go away.
->>>
->> It could be done reasonably easy, you know... :-/
+On Mon, 29 Jan 2007 16:25:48 -0800 (PST)
+Linus Torvalds <torvalds@linux-foundation.org> wrote:
+
 > 
-> If CONFIG_IP_PNP is going to go away, what is the proposed mechanism for 
-> netboot devices to determine the proper source address to use when 
-> searching for a rootfs to use?
+> 
+> On Mon, 29 Jan 2007, Stephen Hemminger wrote:
+> > 
+> > On one and only one platform. It works fine on others. Don't blame the
+> > driver, stop it in PCI.
+> 
+> How sure are you that it's only those Sony laptops?
+> 
 
-My quip was mostly that it could replaced with the existing klibc 
-implementation, which runs in userspace.
+I do not underestimate the ability of BIOS writers to
+screw things up.
 
-The other option, of course, is the distribution-specific initramfs route.
-
-	-hpa
+-- 
+Stephen Hemminger <shemminger@linux-foundation.org>
