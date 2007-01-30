@@ -1,51 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965515AbXA3Ogj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965514AbXA3OhE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965515AbXA3Ogj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 09:36:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965513AbXA3Ogj
+	id S965514AbXA3OhE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 09:37:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965513AbXA3OhE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 09:36:39 -0500
-Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:40884 "EHLO
-	pd3mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965515AbXA3Ogh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 09:36:37 -0500
-Date: Tue, 30 Jan 2007 08:36:26 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: [PATCH] libata: fix translation for START STOP UNIT
-In-reply-to: <45BF5525.5040709@garzik.org>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org
-Message-id: <45BF57EA.6060201@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <45BD4E0A.7060501@shaw.ca> <45BF5525.5040709@garzik.org>
-User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
+	Tue, 30 Jan 2007 09:37:04 -0500
+Received: from il.qumranet.com ([62.219.232.206]:39324 "EHLO il.qumranet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965518AbXA3OhB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jan 2007 09:37:01 -0500
+Subject: [PATCH 1/11] KVM: optimize inline assembly
+From: Avi Kivity <avi@qumranet.com>
+Date: Tue, 30 Jan 2007 14:37:00 -0000
+To: kvm-devel@lists.sourceforge.net
+Cc: linux-kernel@vger.kernel.org, akpm@osdl.org, mingo@elte.hu
+References: <45BF57C9.7000103@qumranet.com>
+In-Reply-To: <45BF57C9.7000103@qumranet.com>
+Message-Id: <20070130143700.0BB04A0014@il.qumranet.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
-> * Include the patch inline rather than as an attachment.  Even a 
-> text/plain attachment is very difficult to review and quote in popular 
-> email programs.
-> 
->     Jeff
+From: Ingo Molnar <mingo@elte.hu>
 
-I'd love to, but unfortunately nobody seems to have come up with a way 
-of doing this in Thunderbird that keeps it from mangling whitespace 
-without a ton of hassle. I was able to get it to cooperate once (sort 
-of, anyway, I think it may have still damaged something on the first 
-try), but it required mangling a bunch of settings that made using it 
-for normal mail impossible.
+forms like "0(%rsp)" generate an instruction with an unnecessary one byte
+displacement under certain circumstances.  replace with the equivalent 
+"(%rsp)".
 
-The last time I looked, the main "how-to" page I found had an addendum 
-that "I gave up on this, it's too hard, I just attach the patches". If 
-anyone has gotten any new insight..
+Signed-off-by: Avi Kivity <avi@qumranet.com>
 
--- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
-
-
+Index: linux-2.6/drivers/kvm/vmx.c
+===================================================================
+--- linux-2.6.orig/drivers/kvm/vmx.c
++++ linux-2.6/drivers/kvm/vmx.c
+@@ -1784,10 +1784,10 @@ again:
+ 		"kvm_vmx_return: "
+ 		/* Save guest registers, load host registers, keep flags */
+ #ifdef CONFIG_X86_64
+-		"xchg %3,     0(%%rsp) \n\t"
++		"xchg %3,     (%%rsp) \n\t"
+ 		"mov %%rax, %c[rax](%3) \n\t"
+ 		"mov %%rbx, %c[rbx](%3) \n\t"
+-		"pushq 0(%%rsp); popq %c[rcx](%3) \n\t"
++		"pushq (%%rsp); popq %c[rcx](%3) \n\t"
+ 		"mov %%rdx, %c[rdx](%3) \n\t"
+ 		"mov %%rsi, %c[rsi](%3) \n\t"
+ 		"mov %%rdi, %c[rdi](%3) \n\t"
+@@ -1802,24 +1802,24 @@ again:
+ 		"mov %%r15, %c[r15](%3) \n\t"
+ 		"mov %%cr2, %%rax   \n\t"
+ 		"mov %%rax, %c[cr2](%3) \n\t"
+-		"mov 0(%%rsp), %3 \n\t"
++		"mov (%%rsp), %3 \n\t"
+ 
+ 		"pop  %%rcx; pop  %%r15; pop  %%r14; pop  %%r13; pop  %%r12;"
+ 		"pop  %%r11; pop  %%r10; pop  %%r9;  pop  %%r8;"
+ 		"pop  %%rbp; pop  %%rdi; pop  %%rsi;"
+ 		"pop  %%rdx; pop  %%rbx; pop  %%rax \n\t"
+ #else
+-		"xchg %3, 0(%%esp) \n\t"
++		"xchg %3, (%%esp) \n\t"
+ 		"mov %%eax, %c[rax](%3) \n\t"
+ 		"mov %%ebx, %c[rbx](%3) \n\t"
+-		"pushl 0(%%esp); popl %c[rcx](%3) \n\t"
++		"pushl (%%esp); popl %c[rcx](%3) \n\t"
+ 		"mov %%edx, %c[rdx](%3) \n\t"
+ 		"mov %%esi, %c[rsi](%3) \n\t"
+ 		"mov %%edi, %c[rdi](%3) \n\t"
+ 		"mov %%ebp, %c[rbp](%3) \n\t"
+ 		"mov %%cr2, %%eax  \n\t"
+ 		"mov %%eax, %c[cr2](%3) \n\t"
+-		"mov 0(%%esp), %3 \n\t"
++		"mov (%%esp), %3 \n\t"
+ 
+ 		"pop %%ecx; popa \n\t"
+ #endif
