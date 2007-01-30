@@ -1,66 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964851AbXA3HIf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965242AbXA3HNO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964851AbXA3HIf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 02:08:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964934AbXA3HIe
+	id S965242AbXA3HNO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 02:13:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965253AbXA3HNO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 02:08:34 -0500
-Received: from mtiwmhc13.worldnet.att.net ([204.127.131.117]:61081 "EHLO
-	mtiwmhc13.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S964851AbXA3HIe (ORCPT
+	Tue, 30 Jan 2007 02:13:14 -0500
+Received: from nommos.sslcatacombnetworking.com ([67.18.224.114]:60271 "EHLO
+	nommos.sslcatacombnetworking.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S965242AbXA3HNN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 02:08:34 -0500
-Message-ID: <45BEEEED.9010702@lwfinger.net>
-Date: Tue, 30 Jan 2007 01:08:29 -0600
-From: Larry Finger <larry.finger@lwfinger.net>
-User-Agent: Thunderbird 1.5.0.9 (X11/20060911)
-MIME-Version: 1.0
-To: Jouni Malinen <jkmaline@cc.hut.fi>
-CC: Dan Williams <dcbw@redhat.com>, Johannes Berg <johannes@sipsolutions.net>,
-       netdev <netdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Hidden SSID's
-References: <45BACB71.2080107@lwfinger.net> <1169899689.25670.3.camel@localhost.localdomain> <1170019717.30318.0.camel@johannes.berg> <1170075611.2895.2.camel@localhost.localdomain> <20070130030911.GA6637@jm.kir.nu> <1170128208.3448.6.camel@localhost.localdomain> <45BECF04.3070904@lwfinger.net> <20070130050841.GC6637@jm.kir.nu>
-In-Reply-To: <20070130050841.GC6637@jm.kir.nu>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 30 Jan 2007 02:13:13 -0500
+In-Reply-To: <8DAAF0FE-E76A-4C1F-94B7-36BE839EA6BE@kernel.crashing.org>
+References: <Pine.LNX.4.64.0701292341070.32393@localhost.localdomain> <20070130055556.GA20699@in.ibm.com> <8DAAF0FE-E76A-4C1F-94B7-36BE839EA6BE@kernel.crashing.org>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <112DEBE1-0765-40DC-B8FD-75DE7336312A@kernel.crashing.org>
+Cc: ananth@in.ibm.com, Linux Kernel list <linux-kernel@vger.kernel.org>,
+       prasanna@in.ibm.com, anil.s.keshavamurthy@intel.com,
+       "David S. Miller" <davem@davemloft.net>,
+       Paul Mackerras <paulus@samba.org>, masami.hiramatsu.pt@hitachi.com
 Content-Transfer-Encoding: 7bit
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] kprobes: Fix compiler warning
+Date: Tue, 30 Jan 2007 01:12:17 -0600
+To: Andrew Morton <akpm@osdl.org>
+X-Mailer: Apple Mail (2.752.2)
+X-PopBeforeSMTPSenders: kumar-chaos@kgala.com,kumar-statements@kgala.com,kumar@kgala.com
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - nommos.sslcatacombnetworking.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - kernel.crashing.org
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jouni Malinen wrote:
-> On Mon, Jan 29, 2007 at 10:52:20PM -0600, Larry Finger wrote:
-> 
->> When an AP has a hidden SSID, ieee80211 fails, at least with wpa_supplicant,
->> which searches through the scan data looking for a particular ssid. Because
->> ieee80211 has substituted a false ssid, namely "<hidden>", wpa_supplicant
->> cannot authenticate. This behavior is fixed by adding a new argument to
->> ieee80211_translate_scan that contains the expected ssid.
-> 
-> Would this be replacing the SSID of all BSSes in scan results with the
-> SSID for which the latest per-SSID scan was issued? If yes, this does
-> not sound any better than the current behavior. The driver/802.11 code
-> should not replace the SSID value with anything else than the value
-> received from the AP.
 
-Any AP with a hidden SSID will only respond to probe requests that specify its SSID, and will ignore
-any other probes. In addition, the response will have an empty SSID field. These responses are the
-only ones in which a substitution would occur. These are the same responses where the current code
-sends back the "<hidden>" pseudo-SSID. My change would put the correct one there.
+On Jan 30, 2007, at 1:05 AM, Kumar Gala wrote:
 
-> In case of hidden SSIDs, the 802.11 implementation should maintain a
-> list of BSSes found during the scan(s) and update the SSID (in most
-> cases, by creating a new BSS entry) with the SSID from Probe Response
-> frames. In other words, if the scan is done for a specific SSID (Probe
-> Request includes that SSID), the AP that is using hidden SSIDs will
-> likely include the SSID in Probe Response and data from that Probe
-> Response can be used to fill in the missing pieces for the <BSSID,SSID>
-> pair.
-> 
-> Generating false scan results by locally guessing what the SSID
-> could be is just plain wrong. The scan results need to be based on real
-> frames from the APs.
+>
+> On Jan 29, 2007, at 11:55 PM, Ananth N Mavinakayanahalli wrote:
+>
+>> On Mon, Jan 29, 2007 at 11:43:33PM -0600, Kumar Gala wrote:
+>>> On ppc the compiler gripes about:
+>>>
+>>> kernel/kprobes.c: In function 'collect_garbage_slots':
+>>> kernel/kprobes.c:215: warning: comparison is always false due to  
+>>> limited
+>>> range of data type
+>>>
+>>> The compiler ends up optimizing away the test since char's are  
+>>> unsigned on
+>>> ppc.
+>>
+>> Kumar,
+>>
+>> Masami fixed this last week:
+>>
+>> http://marc.theaimsgroup.com/?l=linux-kernel&m=116968723823366&w=2
+>>
+>> Patch currently in -mm.
+>>
+>> Thanks,
+>> Ananth
+>
+> Cool, Masami's patch looks far more complete.
 
-We aren't guessing. The response frame with the empty SSID field must have come from the AP with the
-SSID we want. Filling in the expected value is just making it easier for the user-space tools.
+Andrew,
 
-Larry
+What are your thoughts on forward Masami patch to Linus for 2.6.20  
+since it fixes a real bug on PPC?
 
+- k
