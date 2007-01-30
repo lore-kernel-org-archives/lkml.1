@@ -1,56 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965444AbXA3IJw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965446AbXA3IMY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965444AbXA3IJw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 03:09:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965449AbXA3IJw
+	id S965446AbXA3IMY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 03:12:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965447AbXA3IMY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 03:09:52 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:40257 "EHLO mx2.mail.elte.hu"
+	Tue, 30 Jan 2007 03:12:24 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:47785 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965444AbXA3IJv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 03:09:51 -0500
-Date: Tue, 30 Jan 2007 09:08:30 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Andrew Morton <akpm@osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.20-rc6 - sky2 resume breakage
-Message-ID: <20070130080830.GC2840@elte.hu>
-References: <20070129144055.151cfe52@freekitty> <Pine.LNX.4.64.0701291501180.3611@woody.linux-foundation.org> <20070129154518.40b0b3d3@freekitty> <Pine.LNX.4.64.0701291609180.3611@woody.linux-foundation.org> <20070129161626.33277eb1@freekitty> <Pine.LNX.4.64.0701291623360.3611@woody.linux-foundation.org> <20070130065457.GA23390@elte.hu> <45BEF61F.7000400@garzik.org> <20070130075325.GA591@elte.hu> <45BEFBB2.8090402@garzik.org>
+	id S965446AbXA3IMX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jan 2007 03:12:23 -0500
+Date: Tue, 30 Jan 2007 00:12:09 -0800
+From: Andrew Morton <akpm@osdl.org>
+To: "Tomasz Kvarsin" <kvarsin@gmail.com>
+Cc: "Ingo Molnar" <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Subject: Re: [BUG] 2.6.20-rc3-mm1: can not mount root
+Message-Id: <20070130001209.b716c14a.akpm@osdl.org>
+In-Reply-To: <5157576d0701050620l14fd0a6emdf5793c5214931a8@mail.gmail.com>
+References: <5157576d0701050620l14fd0a6emdf5793c5214931a8@mail.gmail.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <45BEFBB2.8090402@garzik.org>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -3.3
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-3.3 required=5.9 tests=ALL_TRUSTED autolearn=no SpamAssassin version=3.0.3
-	-3.3 ALL_TRUSTED            Did not pass through any untrusted hosts
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 5 Jan 2007 17:20:38 +0300
+"Tomasz Kvarsin" <kvarsin@gmail.com> wrote:
 
-* Jeff Garzik <jeff@garzik.org> wrote:
+> I can not boot machine with 2.6.20-rc3-mm1 and  2.6.20-rc2-mm1.
+> I made binary search, patch bellow cause this bug:
+> $quilt top
+> patches/sched-improve-sched_clock-on-i686.patch
+> 
+> backtrace which I got by connecting "gdb" to machine:
+> 
+> _raw_spin_lock (lock=0xc06c0c60) at lib/spinlock_debug.c:108
+> 108                     for (i = 0; i < loops; i++) {
+> (gdb) bt
+> #0  _raw_spin_lock (lock=0xc06c0c60) at lib/spinlock_debug.c:108
+> #1  0xc056ac42 in _spin_lock (lock=0xc06c0c60) at kernel/spinlock.c:182
+> #2  0xc011c3bb in vprintk (fmt=0xc0649c00 "<0>BUG: spinlock %s on
+> CPU#%d, %s/%d\n",
+>     args=0xc1167a84 "") at kernel/printk.c:534
+> #3  0xc011c6c7 in printk (fmt=0xc0649c00 "<0>BUG: spinlock %s on
+> CPU#%d, %s/%d\n")
+>     at kernel/printk.c:508
+> #4  0xc027be42 in spin_bug (lock=0xc06c0c60, msg=0xc065fc00
+> "recursion") at lib/spinlock_debug.c:61
+> #5  0xc027c178 in _raw_spin_lock (lock=0xc06c0c60) at lib/spinlock_debug.c:79
+> #6  0xc056ac42 in _spin_lock (lock=0xc06c0c60) at kernel/spinlock.c:182
+> #7  0xc011c3bb in vprintk (fmt=0xc0626ed0 "<1>BUG: unable to handle
+> kernel paging request",
+>     args=0xc1167b8c "") at kernel/printk.c:534
+> #8  0xc011c6c7 in printk (fmt=0xc0626ed0 "<1>BUG: unable to handle
+> kernel paging request")
+>     at kernel/printk.c:508
+> #9  0xc0116de4 in do_page_fault (regs=0xc1167bcc, error_code=0) at
+> arch/i386/mm/fault.c:555
+> #10 0xc056b11c in page_fault ()
+> #11 0xc0808160 in ?? ()
+> #12 0xc0626ed0 in kallsyms_token_index ()
+> #13 0xc1167cac in ?? ()
+> #14 0x00000001 in ?? ()
+> #15 0xc0808163 in printk_buf.19225 ()
+> #16 0xc1167c0c in ?? ()
+> #17 0x00000000 in ?? ()
 
-> Easy to name an example, as they are pretty generic.  When sharing 
-> irqs -- usually ATA is configured to PCI native (IO-APIC-fasteoi) -- 
-> any interrupt storm causes the other devices sharing that irq to crap 
-> themselves (kernel turns off irq, suggests irqpoll, etc.)
+Tomasz, is this still happening in 2.6.20-rc6-mm3?
 
-ok. Can you suggest any way for me to reproduce such a bug artificially 
-on a test system? [i have both old and new systems, so if you can think 
-of a way for me to trigger this i'd be happy to try]
+err.  We merged that patch.  So perhaps 2.6.20-rc6 now crashes in the same
+manner?
 
-I /think/ my two patches should automatically avoid the 'cap themselves' 
-effect you outlined: the absolutely worst case should be that we'll have 
-twice the IRQ rate of the optimal one - but no irq storm nor lost 
-interrupts should happen due to irq trigger type mismatches, ever - as 
-long as the basic mapping of device to IRQ is correct. [ I tried to push 
-to include this in v2.6.20 but i lost that argument ;-) ]
-
-	Ingo
