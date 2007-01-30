@@ -1,47 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751454AbXA3VY4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751465AbXA3V1W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751454AbXA3VY4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 16:24:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751465AbXA3VY4
+	id S1751465AbXA3V1W (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 16:27:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751468AbXA3V1W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 16:24:56 -0500
-Received: from omx2-ext.sgi.com ([192.48.171.19]:43862 "EHLO omx2.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751454AbXA3VYz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 16:24:55 -0500
-Message-ID: <45BFB785.5090302@sgi.com>
-Date: Tue, 30 Jan 2007 22:24:21 +0100
-From: Jes Sorensen <jes@sgi.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070103)
+	Tue, 30 Jan 2007 16:27:22 -0500
+Received: from proxima.lp0.eu ([85.158.45.36]:40758 "EHLO proxima.lp0.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751465AbXA3V1V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jan 2007 16:27:21 -0500
+X-Greylist: delayed 321 seconds by postgrey-1.27 at vger.kernel.org; Tue, 30 Jan 2007 16:27:21 EST
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=exim; d=thunder.lp0.eu;
+	h=Received:Message-ID:Date:From:User-Agent:MIME-Version:To:Subject:X-Enigmail-Version:OpenPGP:Content-Type:Content-Transfer-Encoding:Sender:Reply-To;
+	b=uhv7SoKF1BONgSdk0qeNnXd0SrlPJ+jQC5hd/z8Pr77jX1aJfbUDrnRfjCnlPO8NMalgdMX+ai3RfYJWdsKGVli3XN41/5ctSgJE3TLnu77C6tJFXyqUpNmLu6S8+T/0;
+Message-ID: <45BFB6F1.2070303@simon.arlott.org.uk>
+Date: Tue, 30 Jan 2007 21:21:53 +0000
+From: Simon Arlott <simon@arlott.org>
+User-Agent: Thunderbird 1.5.0.5 (X11/20060819)
 MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: linux-kernel@vger.kernel.org, alan@redhat.com,
-       ksummit-2007-discuss@thunk.org
-Subject: Re: [Ksummit-2007-discuss] Re: [Ksummit-2006-discuss] 2007 Linux
- Kernel Summit
-References: <20070123.095756.30177490.davem@davemloft.net>	 <C1DDFD3E.8658%dirk.hohndel@intel.com>	 <20070125.125121.98861775.davem@davemloft.net>	 <8355959a0701251646t4b7db48cj862268aad52e8e24@mail.gmail.com>	 <20070126032849.GB5589@thunk.org>	 <8355959a0701260704x6aea8141s3d0581fa33c74cf2@mail.gmail.com>	 <20070126195024.GE14759@thunk.org> <45BE8BF9.6020204@sgi.com>	 <1170118042.3378.45.camel@mulgrave.il.steeleye.com>	 <45BEF0C5.7090401@sgi.com> <1170177057.3420.32.camel@mulgrave.il.steeleye.com>
-In-Reply-To: <1170177057.3420.32.camel@mulgrave.il.steeleye.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 1/3] usbatm: Allow sub-drivers to handle calls to atm_proc_read.
+X-Enigmail-Version: 0.94.1.2
+OpenPGP: id=89C93563
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Reply-To: Simon Arlott <601753fa5bab1585521hc0qm0003olph@thunder.lp0.eu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Bottomley wrote:
-> On Tue, 2007-01-30 at 08:16 +0100, Jes Sorensen wrote:
->> I don't have an issue with the fact there are sponsors, however I think
->> KS is important enough and sponsors are aware of this, that selling
->> seats to sponsors shouldn't be necessary.
-> 
-> So SGI will undertake to step up and sponsor KS this year without a
-> guaranteed slot?
+usbatm only outputs basic information via the per-device /proc/net/atm/ file, this patch allows the device specific USB ATM drivers to replace the atm_proc_read function with their own.
 
-I didn't realize that all your postings to this list were the official
-views of Steeleye?
+Signed-off-by: Simon Arlott <simon@fire.lp0.eu>
 
-I can't say what SGI will do on this, I'm an engineer not a manager,
-I can however suggest to them that they do. As Willy said, if it was
-an even playing field it would probably be a lot more likely they would,
-compared to how it is today.
+---
+ drivers/usb/atm/usbatm.c |    3 +++
+ drivers/usb/atm/usbatm.h |    3 +++
+ 2 files changed, 6 insertions(+), 0 deletions(-)
 
-Cheers,
-Jes
+diff --git a/drivers/usb/atm/usbatm.c b/drivers/usb/atm/usbatm.c
+index ec63b0e..d91ed11 100644
+--- a/drivers/usb/atm/usbatm.c
++++ b/drivers/usb/atm/usbatm.c
+@@ -761,6 +761,9 @@ static int usbatm_atm_proc_read(struct a
+ 		return -ENODEV;
+ 	}
+ 
++	if (instance->driver->proc_read != NULL)
++		return instance->driver->proc_read(instance, atm_dev, pos, page);
++
+ 	if (!left--)
+ 		return sprintf(page, "%s\n", instance->description);
+ 
+diff --git a/drivers/usb/atm/usbatm.h b/drivers/usb/atm/usbatm.h
+index ff8551e..d3c0ee4 100644
+--- a/drivers/usb/atm/usbatm.h
++++ b/drivers/usb/atm/usbatm.h
+@@ -121,6 +121,9 @@ struct usbatm_driver {
+ 	/* cleanup ATM device ... can sleep, but can't fail */
+ 	void (*atm_stop) (struct usbatm_data *, struct atm_dev *);
+ 
++	/* called when the proc file is read */
++	int (*proc_read) (struct usbatm_data *, struct atm_dev *, loff_t * pos, char *page);
++
+         int bulk_in;	/* bulk rx endpoint */
+         int isoc_in;	/* isochronous rx endpoint */
+         int bulk_out;	/* bulk tx endpoint */
+-- 
+1.4.3.1
+
+
+-- 
+Simon Arlott (subscribed to lkml, don't CC)
