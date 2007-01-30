@@ -1,54 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965481AbXA3Jow@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965474AbXA3JrD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965481AbXA3Jow (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 04:44:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965498AbXA3Jow
+	id S965474AbXA3JrD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 04:47:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965475AbXA3JrD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 04:44:52 -0500
-Received: from ug-out-1314.google.com ([66.249.92.168]:39811 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965490AbXA3Jov (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 04:44:51 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=lAWLy21OHz5ascLNaVt6qPagwQ47fHwxjtKvQmu4HmbUEmGODRPUKuyDeJzusiD+nVH47AGHMUkdIUkb3OJogJUPp2/+c71LIstidn0mirlzBAsutZ34muJYMJfrLiBkMj16oGy5dz7992cHZz9Ofbww3gm6HSYYYgYbtCxf3A4=
-Message-ID: <21d7e9970701300144j33f5264dh932848ae81a89252@mail.gmail.com>
-Date: Tue, 30 Jan 2007 20:44:49 +1100
-From: "Dave Airlie" <airlied@gmail.com>
-To: "Theodore Tso" <tytso@mit.edu>, "Sunil Naidu" <akula2.shark@gmail.com>,
-       dirk.hohndel@intel.com, linux-kernel@vger.kernel.org, alan@redhat.com,
-       ksummit-2007-discuss@thunk.org, "David Miller" <davem@davemloft.net>
-Subject: Re: [Ksummit-2007-discuss] 2007 Linux Kernel Summit
-In-Reply-To: <slrneru3aq.f71.olecom@flower.upol.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 30 Jan 2007 04:47:03 -0500
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:43740 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965474AbXA3JrB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jan 2007 04:47:01 -0500
+Date: Tue, 30 Jan 2007 12:46:09 +0300
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Chris Friesen <cfriesen@nortel.com>
+Cc: linux-kernel@vger.kernel.org, libc-hacker@sources.redhat.com,
+       libc-alpha@sources.redhat.com
+Subject: Re: [ANN] Userspace M-on-N threading model implementation. Alpha release.
+Message-ID: <20070130094609.GB2455@2ka.mipt.ru>
+References: <20070129145227.GA10524@2ka.mipt.ru> <45BE238A.9060103@nortel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=koi8-r
 Content-Disposition: inline
-References: <20070123.095756.30177490.davem@davemloft.net>
-	 <C1DDFD3E.8658%dirk.hohndel@intel.com>
-	 <20070125.125121.98861775.davem@davemloft.net>
-	 <8355959a0701251646t4b7db48cj862268aad52e8e24@mail.gmail.com>
-	 <20070126032849.GB5589@thunk.org>
-	 <slrneru3aq.f71.olecom@flower.upol.cz>
+In-Reply-To: <45BE238A.9060103@nortel.com>
+User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.7.5 (2ka.mipt.ru [0.0.0.0]); Tue, 30 Jan 2007 12:46:15 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Rather, than "business class ;-)", i whould like to see comments about
-> good quality video coverage of the KS, which (KS) is that, as you
-> described here:
->
+On Mon, Jan 29, 2007 at 10:40:42AM -0600, Chris Friesen (cfriesen@nortel.com) wrote:
+> Evgeniy Polyakov wrote:
+> >Hello.
+> >
+> >I'm pleased to announce initial userspace M-on-N threading model
+> >implementation (for hackers) called NTL. 
+> 
+> If you haven't already, I suggest you look into the story of NGPT and 
+> also read the NPTL white paper 
+> (http://people.redhat.com/drepper/nptl-design.pdf) especially section 
+> 5.1 describing why they went with a 1:1 model.
 
-KS isn't a conference that lends itself to recording ppl a lot of
-people seem to think it is like a mini-OLS or mini-LCA, it is more
-discussion based (or at least should be...), it isn't held in a
-lecture theatre, people aren't meant to do slides beyond talking
-points....
+Of course I read this, but it does not change anything.
 
-It mainly involves ppl sitting around tables talking about stuff with
-some mics... I think we could hold KS as an open non-invite event if
-it wasn't attached to a major conference and was held somewhere no-one
-wants to go :-)
+NGPT had 2 times slower start time than NPTL, and NTL has 2-20 times
+faster than NPTL, so I think NGPT had too major problems to get it 
+into comparison.
 
-Dave.
+I described in details why and how M:N model better, and its drawbacks
+include all issues mentioned by Ulrich Drepper, but nevertheless its
+advantages are far too superiour than those which can be provided by 1:1
+model.
+
+> Chris
+
+-- 
+	Evgeniy Polyakov
