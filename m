@@ -1,61 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932617AbXA3PqO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965065AbXA3Pu3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932617AbXA3PqO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 10:46:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965038AbXA3PqO
+	id S965065AbXA3Pu3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 10:50:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965092AbXA3Pu3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 10:46:14 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:56761 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932623AbXA3PqM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 10:46:12 -0500
-Date: Tue, 30 Jan 2007 10:45:54 -0500
-From: Jeffrey Layton <jlayton@redhat.com>
-Message-Id: <200701301545.l0UFjsCw027749@dantu.rdu.redhat.com>
-Subject: [PATCH] make iunique use a do/while loop rather than its obscure goto loop
-To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: hch@infradead.org
+	Tue, 30 Jan 2007 10:50:29 -0500
+Received: from ug-out-1314.google.com ([66.249.92.175]:2310 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965065AbXA3Pu2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jan 2007 10:50:28 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:reply-to:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=KH6TmRzzRLA1ezkWYhZpsS17vddz6mrntYLKH8FuyeQmMaaQwOX9ughnKBd2qpak/0Kod45Am6YirI2jSLspEM1atiwVX51zghPhttFtI8NH823QAEMfK/RIfh6ol79eNasyoeILMZGvIE1bP0pYSCoJM5L79miJ33qD4a3neV0=
+Message-ID: <3efb10970701300750m22519ab1w30f2e6f468468431@mail.gmail.com>
+Date: Tue, 30 Jan 2007 16:50:22 +0100
+From: "Remy Bohmer" <l.pinguin@gmail.com>
+Reply-To: linux@bohmer.net
+To: linux-kernel@vger.kernel.org
+Subject: Fwd: [OOPS] on 2.6.20-rc5-rt10
+In-Reply-To: <3efb10970701300749h68f868eew37b115ad2719c9f@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <3efb10970701300630w3c235233ic7613e8f74a7b4f2@mail.gmail.com>
+	 <45BF59ED.3090203@stud.feec.vutbr.cz>
+	 <3efb10970701300749h68f868eew37b115ad2719c9f@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-While working on a case, Christoph mentioned that he thought that iunique
-ought to be cleaned up to use a more conventional loop construct. This patch
-does that, turning the strange goto loop into a do/while.
+---------- Forwarded message ----------
+From: Remy Bohmer <l.pinguin@gmail.com>
+Date: 30 jan 2007 16:49
+Subject: Re: [OOPS] on 2.6.20-rc5-rt10
+To: Michal Schmidt <xschmi00@stud.feec.vutbr.cz>
 
-Signed-off-by: Jeff Layton <jlayton@redhat.com>
 
-diff --git a/fs/inode.c b/fs/inode.c
-index 23fc1fd..90e7587 100644
---- a/fs/inode.c
-+++ b/fs/inode.c
-@@ -689,21 +689,18 @@ ino_t iunique(struct super_block *sb, ino_t max_reserved)
- 	struct inode *inode;
- 	struct hlist_head * head;
- 	ino_t res;
-+
- 	spin_lock(&inode_lock);
--retry:
--	if (counter > max_reserved) {
--		head = inode_hashtable + hash(sb,counter);
-+	do {
-+		if (counter <= max_reserved)
-+			counter = max_reserved + 1;
- 		res = counter++;
-+		head = inode_hashtable + hash(sb, res);
- 		inode = find_inode_fast(sb, head, res);
--		if (!inode) {
--			spin_unlock(&inode_lock);
--			return res;
--		}
--	} else {
--		counter = max_reserved + 1;
--	}
--	goto retry;
--	
-+	} while (inode != NULL);
-+	spin_unlock(&inode_lock);
-+
-+	return res;
- }
- 
- EXPORT_SYMBOL(iunique);
+Hello Michal,
+
+This cap_over driver is a capability driver to give certain processes
+extra capabilities, this makes it possible to run them under a normal
+user account. It is an inheritance from the time we used a
+distribution that did not have support for SE-Linux.
+
+You can find it at: http://www.randombit.net/projects/cap_over/
+
+But, I do not think it is a nice solution, and I will replace it soon
+by the default SELinux implementation of FC6.
+
+Kind Regards,
+
+Remy Bohmer
+
+
+2007/1/30, Michal Schmidt <xschmi00@stud.feec.vutbr.cz>:
+> Remy Bohmer wrote:
+> > Hello All,
+> >
+> > Once in a while we see the following stacktrace.
+> > We do not know yet the exact condition that generates this, but is
+> > there anyone that recognises this oops?
+> >
+> > Kind Regards,
+> >
+> > Remy Bohmer
+> >
+> > [...]
+> > Jan 30 14:09:20 localhost kernel: Modules linked in: cap_over
+> > commoncap i2c_dev uhci_hcd i2c_i801 i2c_core ehci_hcd
+>
+> What's the cap_over module? I can't find it in my kernel anywhere.
+> Michal
+>
+>
