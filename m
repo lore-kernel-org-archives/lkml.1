@@ -1,39 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965067AbXA3JGr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965281AbXA3JHl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965067AbXA3JGr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 04:06:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965281AbXA3JGr
+	id S965281AbXA3JHl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 04:07:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965393AbXA3JHl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 04:06:47 -0500
-Received: from dspnet.fr.eu.org ([213.186.44.138]:1638 "EHLO dspnet.fr.eu.org"
+	Tue, 30 Jan 2007 04:07:41 -0500
+Received: from tmailer.gwdg.de ([134.76.10.23]:52590 "EHLO tmailer.gwdg.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965067AbXA3JGq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 04:06:46 -0500
-Date: Tue, 30 Jan 2007 10:06:45 +0100
-From: Olivier Galibert <galibert@pobox.com>
-To: Andrew Morton <akpm@osdl.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.20-rc6-mm3
-Message-ID: <20070130090645.GC11823@dspnet.fr.eu.org>
-Mail-Followup-To: Olivier Galibert <galibert@pobox.com>,
-	Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org
-References: <20070129204528.eb8d695e.akpm@osdl.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070129204528.eb8d695e.akpm@osdl.org>
-User-Agent: Mutt/1.4.2.2i
+	id S965389AbXA3JHk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jan 2007 04:07:40 -0500
+Date: Tue, 30 Jan 2007 10:07:12 +0100 (MET)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: pradeep <pradeep.sawlani@celunite.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Multiple ip= boot arguments?
+In-Reply-To: <45BE73C8.5010005@celunite.com>
+Message-ID: <Pine.LNX.4.61.0701301005420.23321@yvahk01.tjqt.qr>
+References: <e4fa6c610701291036r7ff384e4u78d3995ab3d042d8@mail.gmail.com>
+ <Pine.LNX.4.61.0701292146470.5077@yvahk01.tjqt.qr> <45BE73C8.5010005@celunite.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 29, 2007 at 08:45:28PM -0800, Andrew Morton wrote:
-> -x86_64-mm-share-whats-shareable.patch
-> -x86_64-mm-only-call-unreachable_devices-when-type-1-is-available.patch
-> -x86_64-mm-only-map-whats-necessary.patch
-> -x86_64-mm-detect-and-support-the-e7520-and-the-945g-gz-p-pl.patch
-> -x86_64-mm-reserve-resources-but-only-when-were-sure-about-them.patch
 
-Want me to update these?  And maybe the other mmconfig related ones if
-I can find them.
+On Jan 30 2007 03:53, pradeep wrote:
+> Jan Engelhardt wrote:
+>> On Jan 29 2007 12:36, Kevin Nicoll wrote:
+>> 
+>> > or if I'm supposed to use a startup script instead.
+>> 
+>> This is the preffered way nowadays. One day, hopefully,
+>> CONFIG_IP_PNP can go away.
+>> 
+> CONFIG_IP_PNP is required while mounting rootfs on NFS.
 
-  OG.
+It is definitely not.
+
+
+	-`J'
+-- 
