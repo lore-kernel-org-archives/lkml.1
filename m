@@ -1,52 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751917AbXA3WTa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751959AbXA3WT4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751917AbXA3WTa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 17:19:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751971AbXA3WT3
+	id S1751959AbXA3WT4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 17:19:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751977AbXA3WT4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 17:19:29 -0500
-Received: from sj-iport-1-in.cisco.com ([171.71.176.70]:21551 "EHLO
-	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751740AbXA3WT0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 17:19:26 -0500
-X-IronPort-AV: i="4.13,259,1167638400"; 
-   d="scan'208"; a="761088689:sNHT42930168"
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org
+	Tue, 30 Jan 2007 17:19:56 -0500
+Received: from main.gmane.org ([80.91.229.2]:43743 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751971AbXA3WTz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jan 2007 17:19:55 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Matthieu CASTET <castet.matthieu@free.fr>
 Subject: Re: Free Linux Driver Development!
-X-Message-Flag: Warning: May contain useful information
-References: <20070130012904.GA9617@kroah.com> <ada8xfks90x.fsf@cisco.com>
-	<20070130191020.GF20642@kroah.com> <adaodogqpmx.fsf@cisco.com>
-	<45BFA087.6020905@garzik.org> <ada4pq8qjpd.fsf@cisco.com>
-	<20070130214759.GA12477@kroah.com> <adar6tcp43r.fsf@cisco.com>
-	<45BFC2CF.8010603@garzik.org>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Tue, 30 Jan 2007 14:19:24 -0800
-In-Reply-To: <45BFC2CF.8010603@garzik.org> (Jeff Garzik's message of "Tue, 30 Jan 2007 17:12:31 -0500")
-Message-ID: <adaireop383.fsf@cisco.com>
-User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.19 (linux)
-MIME-Version: 1.0
+Date: Tue, 30 Jan 2007 22:19:32 +0000 (UTC)
+Message-ID: <loom.20070130T231421-484@post.gmane.org>
+References: <20070130012904.GA9617@kroah.com> <ada8xfks90x.fsf@cisco.com>	<20070130191020.GF20642@kroah.com> <adaodogqpmx.fsf@cisco.com> <45BFA087.6020905@garzik.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 30 Jan 2007 22:19:24.0999 (UTC) FILETIME=[B2F06D70:01C744BC]
-Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim1004 verified; ); 
+Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@sea.gmane.org
+X-Gmane-NNTP-Posting-Host: main.gmane.org
+User-Agent: Loom/3.14 (http://gmane.org/)
+X-Loom-IP: 81.57.151.96 (Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.9) Gecko/20061219 Iceape/1.0.7 (Debian-1.0.7-2))
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > You mean the bcm43xx wireless driver that's been upstream for months?
+Jeff Garzik <jeff <at> garzik.org> writes:
 
-Sorry, yes.  For some reason I thought it was blocked on the dscape
-merge but obviously I was wrong.  So a reverse-engineered driver got
-upstream WAY FASTER than a driver where the vendor published specs and
-GPLed source.
+> > And I seem to recall there's more SATA chipset documentation than Jeff
+> > Garzik has time to implement support for.
+> 
+> I seriously doubt you can come up with even a single concrete example here.
+> 
+> Regardless, libata has 55+ drivers and counting, all for the price of 
+> documentation and hardware.  Another quite strong counter example.
+> 
+On another side, some PATA drivers are incomplete or missing.
 
-Why did that happen?  I would argue that it was because way more
-people cared about the broadcom driver (since the chip was in apple
-laptops and the wrt54g among other things).  That developer and user
-interest is more important than the info provided by the vendor.
+When we switch to PATA and drop old ide stack, what will happen ?
+Will all driver be ported and full-feature, or some will be obsoleted ?
 
-Anyway, I broke my first promise to drop this thread, but I'll make
-the promise again now...
 
- - R.
+Matthieu
+
