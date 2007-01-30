@@ -1,41 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965519AbXA3OlE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965526AbXA3Oln@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965519AbXA3OlE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 09:41:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965525AbXA3OlE
+	id S965526AbXA3Oln (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 09:41:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965525AbXA3Oln
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 09:41:04 -0500
-Received: from il.qumranet.com ([62.219.232.206]:53281 "EHLO il.qumranet.com"
+	Tue, 30 Jan 2007 09:41:43 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:46219 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965519AbXA3OlB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 09:41:01 -0500
-Subject: [PATCH 5/11] KVM: fix what looks like an obvious typo in the file
-	drivers/kvm/svm.c
-From: Avi Kivity <avi@qumranet.com>
-Date: Tue, 30 Jan 2007 14:41:00 -0000
-To: kvm-devel@lists.sourceforge.net
-Cc: linux-kernel@vger.kernel.org, akpm@osdl.org, mingo@elte.hu
-References: <45BF57C9.7000103@qumranet.com>
-In-Reply-To: <45BF57C9.7000103@qumranet.com>
-Message-Id: <20070130144100.23B48A0014@il.qumranet.com>
+	id S965372AbXA3Oll (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jan 2007 09:41:41 -0500
+Message-ID: <45BF591C.20701@garzik.org>
+Date: Tue, 30 Jan 2007 09:41:32 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
+MIME-Version: 1.0
+To: Jay Cliburn <jacliburn@bellsouth.net>
+CC: csnook@redhat.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       atl1-devel@lists.sourceforge.net, randy.dunlap@oracle.com,
+       kronos.it@gmail.com
+Subject: Re: [PATCH 2.6.20-rc5 1/4] atl1: unconditionally enable MSI
+References: <20070128001004.GA10269@osprey.hogchain.net>
+In-Reply-To: <20070128001004.GA10269@osprey.hogchain.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.7 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Robert P. J. Day <rpjday@mindspring.com>
+Jay Cliburn wrote:
+> From: Luca Tettamanti <kronos.it@gmail.com>
+> 
+> Unconditionally enable MSI in atl1 driver. Also remove some useless
+> #ifdef since pci_{en,dis}able_msi() are no-op when MSI support is not
+> configured in.
+> 
+> Signed-off-by: Luca Tettamanti <kronos.it@gmail.com>
+> Signed-off-by: Jay Cliburn <jacliburn@bellsouth.net>
 
-Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
-Signed-off-by: Avi Kivity <avi@qumranet.com>
+applied patches 1-4 to #atl1
 
-Index: linux-2.6/drivers/kvm/svm.c
-===================================================================
---- linux-2.6.orig/drivers/kvm/svm.c
-+++ linux-2.6/drivers/kvm/svm.c
-@@ -1163,7 +1163,7 @@ static int svm_set_msr(struct kvm_vcpu *
- 	case MSR_K6_STAR:
- 		vcpu->svm->vmcb->save.star = data;
- 		break;
--#ifdef CONFIG_X86_64_
-+#ifdef CONFIG_X86_64
- 	case MSR_LSTAR:
- 		vcpu->svm->vmcb->save.lstar = data;
- 		break;
+The only remaining problem with your patches is that they added trailing 
+whitespace:
+
+
+[jgarzik@pretzel netdev-2.6]$ git-am --signoff --utf8 /g/tmp/mbox
+
+Applying 'atl1: unconditionally enable MSI'
+
+Adds trailing whitespace.
+.dotest/patch:44:
+warning: 1 line adds trailing whitespaces.
+Wrote tree dc738e9c0b8becc628dc3bdbbcb02988b671065a
+Committed: ab248491d6e576228710950e3d21ea0731aa2de4
+
+Applying 'atl1: add missing include dma-mapping.h'
+
+Wrote tree 5fb3cad9771ccb59d7e3610367bb69bb33b3b45d
+Committed: 13b6ae2c23523e808530681e16998220150c881c
+
+Applying 'atl1: properly use CONFIG_PM'
+
+Wrote tree 9fb334ce776443d59039aaedcd6a5a09790a3d67
+Committed: 01e8d5606f0732222baf9ec8664d1e833ac428ca
+
+Applying 'atl1: incorporate reviewer comments'
+
+Adds trailing whitespace.
+.dotest/patch:197:static int atl1_get_settings(struct net_device *netdev,
+Adds trailing whitespace.
+.dotest/patch:230:static int atl1_set_settings(struct net_device *netdev,
+Adds trailing whitespace.
+.dotest/patch:240:              printk(KERN_DEBUG "%s: ethtool shutting 
+down adapter\n",
+Adds trailing whitespace.
+.dotest/patch:258:                      } else
+Adds trailing whitespace.
+.dotest/patch:292:
+warning: squelched 10 whitespace errors
+warning: 15 lines add trailing whitespaces.
+Wrote tree 75ab9e0e86a96951c542b1f6e7557c917ca6799b
+Committed: 37e12a2bd50cb62add05b97fc6661d21782f232b
+
