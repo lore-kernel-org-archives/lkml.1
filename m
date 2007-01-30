@@ -1,63 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751914AbXA3WV5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751740AbXA3WXZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751914AbXA3WV5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 17:21:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751740AbXA3WV5
+	id S1751740AbXA3WXZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 17:23:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751806AbXA3WXZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 17:21:57 -0500
-Received: from hu-out-0506.google.com ([72.14.214.230]:17204 "EHLO
-	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751914AbXA3WV4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 17:21:56 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=YMhnj0XY1fC+4sRIyI+CzlscwRT/ips7tPlEurJdEQyzbyTZvV9uyTazJxyNQouLNJPeCld6FIpEH8V5ZlR9fD+KCI2zqe8Y7mzRbvz3mfORxX2XPChOZeyC2FGbaaaHWuuRAHYz01gBr79exfsPhYrI6X1ESSkASN61Ca+rdVE=
-Message-ID: <1a297b360701301421t7472771fxfd93db5ae80d4839@mail.gmail.com>
-Date: Wed, 31 Jan 2007 02:21:53 +0400
-From: "Manu Abraham" <abraham.manu@gmail.com>
-To: "Greg KH" <greg@kroah.com>
-Subject: Re: Free Linux Driver Development!
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20070130191117.GG20642@kroah.com>
+	Tue, 30 Jan 2007 17:23:25 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:54389 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751740AbXA3WXY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jan 2007 17:23:24 -0500
+Date: Tue, 30 Jan 2007 14:23:10 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Zach Brown <zach.brown@oracle.com>
+cc: linux-kernel@vger.kernel.org, linux-aio@kvack.org,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Benjamin LaHaise <bcrl@kvack.org>
+Subject: Re: [PATCH 0 of 4] Generic AIO by scheduling stacks
+In-Reply-To: <Pine.LNX.4.64.0701301345060.3611@woody.linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0701301416250.3611@woody.linux-foundation.org>
+References: <patchbomb.1170193181@tetsuo.zabbo.net>
+ <Pine.LNX.4.64.0701301345060.3611@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070130012904.GA9617@kroah.com>
-	 <1a297b360701300930m90a09bbp30bed58c9c9bf456@mail.gmail.com>
-	 <20070130191117.GG20642@kroah.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 1/30/07, Greg KH <greg@kroah.com> wrote:
-> On Tue, Jan 30, 2007 at 09:30:23PM +0400, Manu Abraham wrote:
-> >
-> > Sounds very nice indeed. Just happened to do a driver in a similar
-> > status, where the vendor did not want to make the specs and other
-> > stuff open, but was in a position to support an OSS driver for the
-> > STB0899 demodulator driver from ST Microelectronics
-> >
-> > I think many vendors will be ready to jump in.
->
-> Based on the initial response so far, a number of them seem very
-> willing.
->
-> > the STB0899 demodulator driver is now available at
-> >
-> > http://linuxtv.org/hg/~manu/stb0899-c5
-> >
-> > It needs some fixes with regards to our DVB API. (bumping it up to 3.2
-> > from 3.1) It's almost ready to rock now, with new delivery systems.
->
-> Glad to see that we are getting more device support :)
->
-
-Not only that, we will be adding in even more delivery systems like
-DVB-S2, DVB-H, DSS and other than that, we will be having algorithm
-based tuning rather than dumb tuning.
 
 
-regards,
-manu
+On Tue, 30 Jan 2007, Linus Torvalds wrote:
+> 
+> But from a quick overview of the patches, I really don't see anything 
+> fundamentally wrong. It needs some error checking and some limiting (I 
+> _really_ don't think we want a regular user starting a thousand fibrils 
+> concurrently), but it actually looks much less invasive than I thought it 
+> would be.
+
+Side note (and maybe this was obvious to people already): I would suggest 
+that the "limiting" not be done the way fork() is limited ("return EAGAIN 
+if you go over a limit") but be done as a per-task counting semaphore 
+(down() on submit, up() on fibril exit).
+
+So we should limit these to basically have some maximum concurrency 
+factor, but rather than consider it an error to go over it, we'd just cap 
+the concurrency by default, so that people can freely use asynchronous 
+interfaces without having to always worry about what happens if their 
+resources run out..
+
+However, that also implies that we should probably add a "flags" parameter 
+to "async_submit()" and have a FIBRIL_IMMEDIATE flag (or a timeout) or 
+something to tell the kernel to rather return EAGAIN than wait. Sometimes 
+you don't want to block just because you already have too much work.
+
+Hmm?
+
+		Linus
