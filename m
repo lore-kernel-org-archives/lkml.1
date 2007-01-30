@@ -1,60 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750922AbXA3XvK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750910AbXA3XwK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750922AbXA3XvK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 18:51:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750910AbXA3XvK
+	id S1750910AbXA3XwK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 18:52:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751263AbXA3XwK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 18:51:10 -0500
-Received: from e31.co.us.ibm.com ([32.97.110.149]:36410 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750922AbXA3XvJ (ORCPT
+	Tue, 30 Jan 2007 18:52:10 -0500
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:51421 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750910AbXA3XwI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 18:51:09 -0500
-Subject: Re: [Cbe-oss-dev] [RFC, PATCH 2/4] Add support to OProfile for
-	profiling Cell BE SPUs -- update
-From: Carl Love <cel@us.ibm.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: cbe-oss-dev@ozlabs.org, maynardj@us.ibm.com, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org, oprofile-list@lists.sourceforge.net
-In-Reply-To: <200701300508.56467.arnd@arndb.de>
-References: <45BE4ED0.5030808@us.ibm.com> <45BE4F55.8070801@us.ibm.com>
-	 <200701300508.56467.arnd@arndb.de>
-Content-Type: text/plain
-Date: Tue, 30 Jan 2007 15:51:05 -0800
-Message-Id: <1170201065.5235.43.camel@dyn9047021078.beaverton.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.0.4 (2.0.4-2) 
-Content-Transfer-Encoding: 7bit
+	Tue, 30 Jan 2007 18:52:08 -0500
+Date: Wed, 31 Jan 2007 00:52:15 +0100
+From: Adrian Bunk <bunk@stusta.de>
+To: Mike Houston <mikeserv@bmts.com>
+Cc: Chuck Ebbert <cebbert@redhat.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: How many people are using 2.6.16?
+Message-ID: <20070130235215.GN3754@stusta.de>
+References: <45BE5948.6060403@redhat.com> <20070129160448.65fc63f3.mikeserv@bmts.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070129160448.65fc63f3.mikeserv@bmts.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arnd:
-
-Well most of the patch is simply cleaning up the
-pm_rtas_activate_signals() routine.  I would be think
-"pm_rtas_activat_signals routine cleanup" would be good.
-
-                   Carl Love
-
-
-On Tue, 2007-01-30 at 05:08 +0100, Arnd Bergmann wrote:
-> On Monday 29 January 2007 20:47, Maynard Johnson wrote:
-> >   The code was setting up the debug bus for group 21 when profiling on the 
-> > event PPU CYCLES.  The debug bus is not actually used by the hardware 
-> > performance counters when counting PPU CYCLES.  Setting up the debug bus
-> > for PPU CYCLES causes signal routing conflicts on the debug bus when 
-> > profiling PPU cycles and another PPU event.  This patch fixes the code to 
-> > only setup the debug bus to route the performance signals for the non
-> > PPU CYCLE events.
+On Mon, Jan 29, 2007 at 04:04:48PM -0500, Mike Houston wrote:
+> On Mon, 29 Jan 2007 15:30:00 -0500
+> Chuck Ebbert <cebbert@redhat.com> wrote:
+> 
+> > Is there any way to estimate the size of the user base for 2.6.16?
 > > 
-> > Signed-off-by: Maynard Johnson <mpjohn@us.ibm.com>
-> > Signed-off-by: Carl Love <carll@us.ibm.com>
+> > e.g. how many downloads does it get?
 > 
-> Acked-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
+> I've often wondered that myself, as I'm concerned for it to continue
+> to be maintained. I'm very appreciative of what Adrian is doing with
+> it. (Thanks!)
 > 
-> Any suggestion for a one-line patch title?
-> _______________________________________________
-> cbe-oss-dev mailing list
-> cbe-oss-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/cbe-oss-dev
+> I've been using Adrian's 2.6.16 kernel releases on two internet
+> servers that I look after remotely. One of them is RHEL 4 the other
+> is Fedora Core 2 (Ensim Webppliance). I'm especially wary of breaking
+> RHEL 4, and the 2.6.16.xx kernels work perfectly except for the
+> hald not starting (but that doesn't matter on that server).
+>...
+
+I haven't heard of this before, and in a quick test hald from
+HAL 0.5.8.1 starts fine here.
+
+Are there any error messages?
+
+> Mike Houston
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
