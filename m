@@ -1,67 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964928AbXA3ADz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965068AbXA3AH5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964928AbXA3ADz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 19:03:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965015AbXA3ADz
+	id S965068AbXA3AH5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 19:07:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965080AbXA3AH5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 19:03:55 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:55909 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S964928AbXA3ADy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 19:03:54 -0500
-Date: Tue, 30 Jan 2007 01:03:41 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Alessandro Di Marco <dmr@gmx.it>
-Cc: Vojtech Pavlik <vojtech@suse.cz>, linux-kernel@vger.kernel.org
-Subject: Re: [ANNOUNCE] System Inactivity Monitor v1.0
-Message-ID: <20070130000341.GA17483@elf.ucw.cz>
-References: <87lkjthdmd.fsf@gmx.it> <20070123184432.GE18662@elf.ucw.cz> <873b61cf1v.fsf@gmx.it> <20070126171536.GB964@elf.ucw.cz> <878xfpoeom.fsf@gmx.it> <20070127174525.GA4787@ucw.cz> <20070127192034.GA17652@suse.cz> <874pqanddd.fsf@gmx.it> <20070129222833.GB17330@elf.ucw.cz> <87odoho3pb.fsf@gmx.it>
+	Mon, 29 Jan 2007 19:07:57 -0500
+Received: from ug-out-1314.google.com ([66.249.92.175]:47906 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965068AbXA3AH4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jan 2007 19:07:56 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=QnYHohSLhVXmDmGkojO9lx6wjnCMfWg1UKW+f+dWvoKjj/R8aoR7rSx7VitXU1naULUOaPe8pcqvKt6hvHfPxZ185azPbVK5lKJiHevIb0e5y/EDEFeW5Y2tRo08XsBiGDX/50XAph9eVCh0zjvCN1ii/Z3FXmTUIfNuq+yPGLE=
+From: Denis Vlasenko <vda.linux@googlemail.com>
+To: Andrea Arcangeli <andrea@suse.de>
+Subject: Re: O_DIRECT question
+Date: Tue, 30 Jan 2007 01:05:28 +0100
+User-Agent: KMail/1.8.2
+Cc: Bill Davidsen <davidsen@tmr.com>, Michael Tokarev <mjt@tls.msk.ru>,
+       Phillip Susi <psusi@cfl.rr.com>, Linus Torvalds <torvalds@osdl.org>,
+       Viktor <vvp01@inbox.ru>, Aubrey <aubreylee@gmail.com>,
+       Hua Zhong <hzhong@gmail.com>, Hugh Dickins <hugh@veritas.com>,
+       linux-kernel@vger.kernel.org, hch@infradead.org, kenneth.w.chen@suse.de
+References: <6d6a94c50701101857v2af1e097xde69e592135e54ae@mail.gmail.com> <200701281803.08201.vda.linux@googlemail.com> <20070129170056.GJ8030@opteron.random>
+In-Reply-To: <20070129170056.GJ8030@opteron.random>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <87odoho3pb.fsf@gmx.it>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+Message-Id: <200701300105.28849.vda.linux@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
->    >    The /proc/bus/input/devices has an extensible structure. You can just
->    >    add an "A:" line (for Activity) instead of adding a new proc file.
->    > 
->    > I know, but IMO there is too much stuff to parse in there. Activity counters
->    > are frequently accessed by daemons, and four or five concurrent daemons are the
->    > norm in a typical X11 linux box...
+On Monday 29 January 2007 18:00, Andrea Arcangeli wrote:
+> On Sun, Jan 28, 2007 at 06:03:08PM +0100, Denis Vlasenko wrote:
+> > I still don't see much difference between O_SYNC and O_DIRECT write
+> > semantic.
 > 
->    Syscalls are fast enough, and the file is _very_ easy (=> fast) to parse.
-> 
->    >    Also, the activity counters should IMO coincide with the event times
->    >    passed through /dev/input/event, and should not be jiffies based.
->    >    Ideally, both should be based on clock_gettime(CLOCK_MONOTONIC).
->    > 
->    > In evdev.c do_gettimeofday() is used. Anyway I just need of a monotonic
->    > counter, so get_jiffies_64() wouldn't be better? It isn't affected by wrapping
->    > issues and it is probably faster than do_gtod().
-> 
->    Just use same time source rest of inputs already do...
-> 
-> OK, but what about the time-warp problem?. To fix it I need to know when the
-> system goes to sleep/resumes. In SIN I've solved via the platform driver,
-> introducing suspend() resume() callbacks...
+> O_DIRECT is about avoiding the copy_user between cache and userland,
+> when working with devices that runs faster than ram (think >=100M/sec,
+> quite standard hardware unless you've only a desktop or you cannot
+> afford raid).
 
-input drivers will already have suspend() resume() callbacks... could
-you reuse those?
+Yes, I know that, but O_DIRECT is also "overloaded" with
+O_SYNC-like semantic too ("write doesnt return until data hits
+physical media"). To have two ortogonal things "mixed together"
+in one flag feels "not Unixy" to me. So I am trying to formulate
+saner semantic. So far I think that this looks good:
 
-...hmm, I see no easy place where to hook these. You could reuse your
-platform device trick, I guess... but maybe there's a better way?
+O_SYNC - usual meaning
+O_STREAM - do not try hard to cache me. This includes "if you can
+	(buffer is sufficiently aligned, yadda, yadda), do not
+	copy_user into pagecache but just DMA from userspace
+	pages" - exactly because user told us that he is not
+	interested in caching!
 
-Vojtech, do we have some "global" hooks for input suspend/resume? This
-code is global to all the devices, but still needs to know about
-suspend/resume...
+Then O_DIRECT is approximately = O_SYNC + O_STREAM, and I think
+maybe Linus will not hate this "new" O_DIRECT - it doesn't
+bypass pagecache.
 
-Or we could create notifier list, where interested parties would be
-informed of suspend/resume...
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+> O_SYNC is about working around buggy or underperforming VM growing the
+> dirty levels beyond optimal levels, or to open logfiles that you want
+> to save to disk ASAP (most other journaling usages are better done
+> with fsync instead).
+
+I've got a feeling that db people use O_DIRECT (its O_SYNCy behaviour)
+as a poor man's write barrier when they must be sure that their redo
+logs have hit storage before they start to modify datafiles.
+Another reason why they want sync writes is write error detection.
+They cannot afford delaying it.
+--
+vda
