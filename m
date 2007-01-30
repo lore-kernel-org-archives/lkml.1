@@ -1,26 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965081AbXA3D5X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965069AbXA3EBN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965081AbXA3D5X (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jan 2007 22:57:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965021AbXA3D5X
+	id S965069AbXA3EBN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jan 2007 23:01:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965082AbXA3EBN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jan 2007 22:57:23 -0500
-Received: from rex.snapgear.com ([203.143.235.140]:43480 "EHLO
+	Mon, 29 Jan 2007 23:01:13 -0500
+Received: from rex.snapgear.com ([203.143.235.140]:43650 "EHLO
 	cyberguard.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S965081AbXA3D5W (ORCPT
+	with ESMTP id S965069AbXA3EBN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jan 2007 22:57:22 -0500
-X-Greylist: delayed 1236 seconds by postgrey-1.27 at vger.kernel.org; Mon, 29 Jan 2007 22:57:21 EST
-Message-ID: <45BEC21C.2000402@securecomputing.com>
-Date: Tue, 30 Jan 2007 13:57:16 +1000
+	Mon, 29 Jan 2007 23:01:13 -0500
+Message-ID: <45BEC303.2040205@securecomputing.com>
+Date: Tue, 30 Jan 2007 14:01:07 +1000
 From: Greg Ungerer <greg_ungerer@securecomputing.com>
 User-Agent: Thunderbird 1.5.0.9 (X11/20070102)
 MIME-Version: 1.0
-To: Dave Jones <davej@redhat.com>, Greg Ungerer <gerg@snapgear.com>,
-       Jes Sorensen <jes@sgi.com>, Theodore Tso <tytso@mit.edu>,
-       Sunil Naidu <akula2.shark@gmail.com>, linux-kernel@vger.kernel.org,
-       dirk.hohndel@intel.com, alan@redhat.com, ksummit-2007-discuss@thunk.org,
-       David Miller <davem@davemloft.net>
+To: Dave Jones <davej@redhat.com>, linux-kernel@vger.kernel.org,
+       ksummit-2007-discuss@thunk.org
 Subject: Re: [Ksummit-2007-discuss] Re: [Ksummit-2006-discuss] 2007 Linux
  Kernel Summit
 References: <20070123.095756.30177490.davem@davemloft.net>	<C1DDFD3E.8658%dirk.hohndel@intel.com>	<20070125.125121.98861775.davem@davemloft.net>	<8355959a0701251646t4b7db48cj862268aad52e8e24@mail.gmail.com>	<20070126032849.GB5589@thunk.org>	<8355959a0701260704x6aea8141s3d0581fa33c74cf2@mail.gmail.com>	<20070126195024.GE14759@thunk.org> <45BE8BF9.6020204@sgi.com>	<20070130030430.GA21772@redhat.com> <45BEBBF0.3050102@snapgear.com> <20070130034111.GB21772@redhat.com>
@@ -59,3 +55,4 @@ Greg Ungerer  --  Chief Software Dude       EMAIL:     gerg@snapgear.com
 SnapGear -- a Secure Computing Company      PHONE:       +61 7 3435 2888
 825 Stanley St,                             FAX:         +61 7 3891 3630
 Woolloongabba, QLD, 4102, Australia         WEB: http://www.SnapGear.com
+
