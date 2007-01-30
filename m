@@ -1,49 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752650AbXA3KYA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752653AbXA3KZX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752650AbXA3KYA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 05:24:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752651AbXA3KYA
+	id S1752653AbXA3KZX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 05:25:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752651AbXA3KZX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 05:24:00 -0500
-Received: from highlandsun.propagation.net ([66.221.212.168]:4247 "EHLO
-	highlandsun.propagation.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752650AbXA3KX7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 05:23:59 -0500
-X-Greylist: delayed 1240 seconds by postgrey-1.27 at vger.kernel.org; Tue, 30 Jan 2007 05:23:59 EST
-Message-ID: <45BF1CBE.4040201@symas.com>
-Date: Tue, 30 Jan 2007 02:23:58 -0800
-From: Howard Chu <hyc@symas.com>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9a2pre) Gecko/20070128 Netscape/7.2 (ax) Firefox/1.5 SeaMonkey/1.5a
-MIME-Version: 1.0
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Why active list and inactive list?
-References: <7Gpmk-5fN-21@gated-at.bofh.it>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 30 Jan 2007 05:25:23 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:52242 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752653AbXA3KZV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jan 2007 05:25:21 -0500
+Date: Tue, 30 Jan 2007 02:24:57 -0800
+From: Andrew Morton <akpm@osdl.org>
+To: Michael Tokarev <mjt@tls.msk.ru>
+Cc: Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Oleg Nesterov <oleg@tv-sign.ru>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: bug reading /proc/sys/kernel/*: only first byte read.
+Message-Id: <20070130022457.d0159eba.akpm@osdl.org>
+In-Reply-To: <4538C47B.9060808@tls.msk.ru>
+References: <4538C47B.9060808@tls.msk.ru>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra <a.p.zijls...@chello.nl> said:
-> I'm still torn between CLOCK-Pro and CART. 
+On Fri, 20 Oct 2006 16:43:39 +0400
+Michael Tokarev <mjt@tls.msk.ru> wrote:
+
+> I were debugging a weird problem with busybox, and come across
+> this chunk of strace output:
 > 
-> CLOCK-Pro is still vulnerable to the cyclic scan use case, since at that
-> time all pages will have equal distance.
+> open("/proc/sys/kernel/osrelease", O_RDONLY) = 3
+> read(3, "2", 1)                         = 1
+> read(3, "", 1)                          = 0
+> close(3)                                = 0
+> 
+> As you can see, after reading one byte from /proc/sys/kernel/osrelease,
+> next read() returns 0, which is treated as end-of-file by an application.
+> 
+> Why busybox does this single-byte reads is another question (many
+> shells does that, in order to be able to stop reading at newline).
+> 
+> But this is definitely a bug in kernel, and should be fixed....
+> 
+> It exists in 2.6.17 and 2.6.18
+> 
 
-I was recently testing CLOCK-Pro for the entry cache in OpenLDAP, with this 
-cyclic scan case. I've set it aside for now, but if anyone is interested in 
-playing with a user-level version as opposed to these kernel adaptations, an 
-early version of mine is at
-http://www.openldap.org/its/index.cgi/Software%20Enhancements?id=4807
+Well this nearly killed me.  kernel-side proc handlers are ghastly things.
 
-I found that although it managed to allow some cached pages to be reused, it 
-also forced several full sweeps of the clock in each scan. Overall it 
-performed more slowly than regular CLOCK due to these extra sweeps. (In our 
-case, moving the hands required some expensive lock manipulation. Possibly if 
-I found a better locking strategy there the performance cost would come down.)
+Could I have this reviewed please?  It surely has a hole in it somewhere.
 
--- 
-   -- Howard Chu
-   Chief Architect, Symas Corp.  http://www.symas.com
-   Director, Highland Sun        http://highlandsun.com/hyc
-   OpenLDAP Core Team            http://www.openldap.org/project/
+
+From: Andrew Morton <akpm@osdl.org>
+
+If you try to read things like /proc/sys/kernel/osrelease with single-byte
+reads, you get just one byte and then EOF.  This is because _proc_do_string()
+assumes that the caller is read()ing into a buffer which is large enough to
+fit the whole string in a single hit.
+
+Fix.
+
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Oleg Nesterov <oleg@tv-sign.ru>
+Signed-off-by: Andrew Morton <akpm@osdl.org>
+---
+
+ kernel/sysctl.c |   37 ++++++++++++++++++++++++++++---------
+ 1 file changed, 28 insertions(+), 9 deletions(-)
+
+diff -puN kernel/sysctl.c~_proc_do_string-fix-short-reads kernel/sysctl.c
+--- a/kernel/sysctl.c~_proc_do_string-fix-short-reads
++++ a/kernel/sysctl.c
+@@ -1682,8 +1682,7 @@ static int _proc_do_string(void* data, i
+ 	char __user *p;
+ 	char c;
+ 	
+-	if (!data || !maxlen || !*lenp ||
+-	    (*ppos && !write)) {
++	if (!data || !maxlen || !*lenp) {
+ 		*lenp = 0;
+ 		return 0;
+ 	}
+@@ -1705,18 +1704,38 @@ static int _proc_do_string(void* data, i
+ 		((char *) data)[len] = 0;
+ 		*ppos += *lenp;
+ 	} else {
+-		len = strlen(data);
++		loff_t pos = *ppos;
++		const size_t slen = strlen(data);
++
++		/*
++		 * len is the amount of data to copy, and becomes the amount of
++		 * data which was copied
++		 */
++		len = slen;
++		if (pos > len) {
++			*lenp = 0;
++			return 0;
++		}
+ 		if (len > maxlen)
+ 			len = maxlen;
+ 		if (len > *lenp)
+ 			len = *lenp;
+-		if (len)
+-			if(copy_to_user(buffer, data, len))
+-				return -EFAULT;
+-		if (len < *lenp) {
+-			if(put_user('\n', ((char __user *) buffer) + len))
++		/* Don't copy past the end of the string */
++		if (len > slen - pos)
++			len = slen - pos;
++		data += pos;
++		/* Copy as much of the string as we can */
++		if (len) {
++			if (copy_to_user(buffer, data, len))
+ 				return -EFAULT;
+-			len++;
++		}
++		/* If we copied the whole string, now write a \n */
++		if (len + pos == slen) {
++			if (len + pos < maxlen) {
++				if (put_user('\n', (char __user *)buffer + len))
++					return -EFAULT;
++				len++;
++			}
+ 		}
+ 		*lenp = len;
+ 		*ppos += len;
+_
+
