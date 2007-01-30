@@ -1,49 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751927AbXA3Wlk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751896AbXA3Wm6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751927AbXA3Wlk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 17:41:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751923AbXA3Wlj
+	id S1751896AbXA3Wm6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 17:42:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751923AbXA3Wm5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 17:41:39 -0500
-Received: from moutng.kundenserver.de ([212.227.126.174]:64471 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751927AbXA3Wli (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 17:41:38 -0500
-Date: Tue, 30 Jan 2007 23:40:35 +0100 (CET)
-From: Bodo Eggert <7eggert@gmx.de>
-To: akpm@osdl.org, Jeff Layton <jlayton@redhat.com>, dev@sw.ru,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       torvalds@osdl.org
-Subject: [PATCH] pipefs unique inode numbers
-Message-ID: <Pine.LNX.4.58.0701302314210.2203@be1.lrz>
+	Tue, 30 Jan 2007 17:42:57 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:51251 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751896AbXA3Wm5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jan 2007 17:42:57 -0500
+Message-ID: <45BFC9EF.4060506@garzik.org>
+Date: Tue, 30 Jan 2007 17:42:55 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
-X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
-X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
-X-Provags-ID: kundenserver.de abuse@kundenserver.de login:9b3b2cc444a07783f194c895a09f1de9
-X-Provags-ID2: V01U2FsdGVkX1/HqB2Rfur3GFQQtrl2Ipd0zXgpESjD0xGspdvwQ0f9t80kWfMp1vBlCjRZfgV6mHzEHQwVzDxGsuJhiyPZ3nDlOh3+reO4RUhPcnCfJpNaEA==
+To: Matthieu CASTET <castet.matthieu@free.fr>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Free Linux Driver Development!
+References: <20070130012904.GA9617@kroah.com> <ada8xfks90x.fsf@cisco.com>	<20070130191020.GF20642@kroah.com> <adaodogqpmx.fsf@cisco.com> <45BFA087.6020905@garzik.org> <loom.20070130T231421-484@post.gmane.org>
+In-Reply-To: <loom.20070130T231421-484@post.gmane.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.7 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-change pipefs to use a unique inode number equal to the memory
-address unless it would be truncated.
+Matthieu CASTET wrote:
+> Jeff Garzik <jeff <at> garzik.org> writes:
+> 
+>>> And I seem to recall there's more SATA chipset documentation than Jeff
+>>> Garzik has time to implement support for.
+>> I seriously doubt you can come up with even a single concrete example here.
+>>
+>> Regardless, libata has 55+ drivers and counting, all for the price of 
+>> documentation and hardware.  Another quite strong counter example.
+>>
+> On another side, some PATA drivers are incomplete or missing.
 
-Signed-Off-By: Bodo Eggert <7eggert@gmx.de>
----
-Tested on i386.
+Which ones are incomplete?
 
---- 2.6.19/fs/pipe.c.ori	2007-01-30 22:02:46.000000000 +0100
-+++ 2.6.19/fs/pipe.c	2007-01-30 23:22:27.000000000 +0100
-@@ -864,6 +864,10 @@ static struct inode * get_pipe_inode(voi
- 	inode->i_uid = current->fsuid;
- 	inode->i_gid = current->fsgid;
- 	inode->i_atime = inode->i_mtime = inode->i_ctime = CURRENT_TIME;
-+	/* The address of *inode is unique, so we'll get an unique inode number.
-+	 * Off cause this will not work for 32 bit inodes on 64 bit systems. */
-+	if (sizeof(inode->i_ino) >= sizeof(struct inode*))
-+		inode->i_ino = (unsigned int) inode;
- 
- 	return inode;
- 
+I know a few non-x86 drivers are missing.
+
+
+> When we switch to PATA and drop old ide stack, what will happen ?
+> Will all driver be ported and full-feature, or some will be obsoleted ?
+
+All drivers for which we can find users will be ported.  If any features 
+disappear that's a bug.
+
+	Jeff
+
+
+
