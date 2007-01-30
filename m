@@ -1,55 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752664AbXA3QcE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752668AbXA3QcN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752664AbXA3QcE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 11:32:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752665AbXA3QcE
+	id S1752668AbXA3QcN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 11:32:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752666AbXA3QcL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 11:32:04 -0500
-Received: from moutng.kundenserver.de ([212.227.126.183]:57333 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752661AbXA3QcB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 11:32:01 -0500
-From: Bodo Eggert <7eggert@gmx.de>
-Subject: Re: [PATCH 2/2] make pipefs do lazy i_ino assignment and hashing
-To: Jeff Layton <jlayton@redhat.com>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, dada1@cosmosbay.com, dev@openvz.org
-Reply-To: 7eggert@gmx.de
-Date: Tue, 30 Jan 2007 17:31:16 +0100
-References: <7J3fA-Tk-11@gated-at.bofh.it>
-User-Agent: KNode/0.7.2
+	Tue, 30 Jan 2007 11:32:11 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:39680 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965565AbXA3QcK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jan 2007 11:32:10 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: nigel@nigel.suspend2.net
+Subject: Re: question on resume()
+Date: Tue, 30 Jan 2007 17:32:55 +0100
+User-Agent: KMail/1.9.1
+Cc: Oliver Neukum <oliver@neukum.org>, linux-kernel@vger.kernel.org
+References: <200701291206.39637.oneukum@suse.de> <1170105665.15820.29.camel@nigel.suspend2.net> <200701300010.38538.rjw@sisk.pl>
+In-Reply-To: <200701300010.38538.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7Bit
-Message-Id: <E1HBvt7-00018P-1c@be1.lrz>
-X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
-X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
-X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
-X-Provags-ID: kundenserver.de abuse@kundenserver.de login:9b3b2cc444a07783f194c895a09f1de9
-X-Provags-ID2: V01U2FsdGVkX1+kKhhSzAG9pYTfEYhqgwD9X8xNgHyBiZXgo++CVxoRXoZYd3CQbpNM+j6Jq/vuqCZUucZa+7uJKyRh2aWHGTh/PZwulcPm289W4T5+0Hxo0Q==
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200701301732.56444.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Layton <jlayton@redhat.com> wrote:
-
-> This patch updates pipefs to do defer assigning an i_ino value to its inodes
-> until someone actually tries to stat it. This allows us to have unique i_ino
-> values for the inodes here, without the performance impact for anyone who
-> doesn't actually care about it.
+On Tuesday, 30 January 2007 00:10, Rafael J. Wysocki wrote:
+> Hi,
 > 
-> Since we don't have an i_ino value at pipe creation time, we need something
-> else to stuff into the dentry name. Here, I'm using the pointer address of
-> the inode xor'ed with a random value. There are certainly better hashing
-> schemes, so if someone wants to propose a better way to do this, then I'm
-> open to looking at it (maybe halfmd4?).
+> On Monday, 29 January 2007 22:21, Nigel Cunningham wrote:
+> > Hi.
+> > 
+> > On Mon, 2007-01-29 at 22:04 +0100, Oliver Neukum wrote:
+> > > Am Montag, 29. Januar 2007 21:14 schrieb Nigel Cunningham:
+> > > > Hi.
+> > > > 
+> > > > On Mon, 2007-01-29 at 12:34 +0100, Oliver Neukum wrote:
+> > > > > Am Montag, 29. Januar 2007 12:24 schrieb Nigel Cunningham:
+> > > > > > Hi.
+> > > > > > 
+> > > > > > On Mon, 2007-01-29 at 12:06 +0100, Oliver Neukum wrote:
+> > > > > > > Hi,
+> > > > > > > 
+> > > > > > > may a driver call wake_up() while doing resume() ?
+> > > > > > 
+> > > > > > I assume you mean waking a userspace process from drivers_resume(). If
+> > > > > > so, the answer is no - processes will still be frozen at the point. In
+> > > > > > the case of Suspend2, the LRU pages will still not have been read
+> > > > > > either, so Suspend2 users would hate you for making hibernation crash
+> > > > > > and burn :)
+> > > > > 
+> > > > > If so, how do I notify tasks presumably about to be thawed that their
+> > > > > IO failed?
+> > > > 
+> > > > Do you mean I/O to disk? If so, it won't fail. All pending I/O gets
+> > > > processed like normal either before or after suspending and resuming.
+> > > > 
+> > > > If you mean something like a packet being transmitted over the network,
+> > > > you should be using the normal paths for recording success/failure.
+> > > 
+> > > I am talking about a character device that puts requests onto a queue.
+> > > If the queue is restarted after resumption the normal error path is waking
+> > > up the waiting tasks.
+> > 
+> > Ok. In that case, you'd want to delay trying to wake them until resuming
+> > is completed.
+> > 
+> > Unless there's something I've forgotten, we don't currently have an easy
+> > way for you to determine when processes are thawed.
+> 
+> That's correct.
 
-Why XOR? To pretend a non-existent level of security?
-Either you can't use the address, or you can read the obfusicator value, too.
+However, you can always inspect the PF_FROZEN flag of the tasks in question
+if that's practicable.
 
-OTOH, if sizeof(void*) <= sieof(ino_t), using the address will result in a
-unique inode number without need for expensive hashing algorithms.
+So, while we do not have a mechanism for checking if all tasks have been
+thawed, we can do it on a per-task basis quite easily.
+
+Greetings,
+Rafael
+
+
 -- 
-Why did the hacker cross the road? To get to the other side.
-Why did the cracker cross the road? To get what was on the other side.
-The difference is small, but important.
-        -- Gandalf Parker
+If you don't have the time to read,
+you don't have the time or the tools to write.
+		- Stephen King
