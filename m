@@ -1,48 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965542AbXA3OqY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965544AbXA3Oqg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965542AbXA3OqY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 09:46:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965545AbXA3OqX
+	id S965544AbXA3Oqg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 09:46:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965545AbXA3Oq0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 09:46:23 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:37577 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S965542AbXA3OqV (ORCPT
+	Tue, 30 Jan 2007 09:46:26 -0500
+Received: from nic.NetDirect.CA ([216.16.235.2]:58414 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965544AbXA3OqX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 09:46:21 -0500
-Date: Tue, 30 Jan 2007 14:56:29 +0000
-From: Alan <alan@lxorguk.ukuu.org.uk>
-To: Jean Delvare <jdelvare@suse.de>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>, Daniel Drake <dsd@reactivated.net>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@stusta.de>
-Subject: Re: via irq quirk breakage
-Message-ID: <20070130145629.7e40deac@localhost.localdomain>
-In-Reply-To: <200701300854.06083.jdelvare@suse.de>
-References: <45B6A94A.3010006@yahoo.com.au>
-	<200701291600.32580.jdelvare@suse.de>
-	<45BEAEE3.9080003@yahoo.com.au>
-	<200701300854.06083.jdelvare@suse.de>
-X-Mailer: Claws Mail 2.7.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 30 Jan 2007 09:46:23 -0500
+X-Originating-Ip: 74.109.98.130
+Date: Tue, 30 Jan 2007 09:45:14 -0500 (EST)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@CPE00045a9c397f-CM001225dbafb6
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>
+cc: Nick Piggin <nickpiggin@yahoo.com.au>,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, Paul Mackerras <paulus@samba.org>,
+       dhowells@redhat.com, galak@kernel.crashing.org
+Subject: Re: [PATCH] Add "is_power_of_2" checking to log2.h.
+In-Reply-To: <Pine.LNX.4.61.0701301512200.1147@yvahk01.tjqt.qr>
+Message-ID: <Pine.LNX.4.64.0701300938580.24147@CPE00045a9c397f-CM001225dbafb6>
+References: <Pine.LNX.4.64.0701300543420.17991@CPE00045a9c397f-CM001225dbafb6>
+ <45BF3954.8050106@yahoo.com.au> <Pine.LNX.4.64.0701300753170.23302@CPE00045a9c397f-CM001225dbafb6>
+ <Pine.LNX.4.61.0701301512200.1147@yvahk01.tjqt.qr>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> You have an old VT82C686 south bridge, which was tagged as "special" by
-> Alan. For this chip, Alan's code only allows devices 00:00.x to be quirked.
-> As my code was merely a reimplementation of Alan's idea, it does the same.
-> Your USB controllers are at 00:07.x, so I'm not surprised they weren't
-> quirked.
-> 
-> Alan, why were dev_lo and dev_hi both set to 0 for the VT82C868 in your
-> implementation? Is it a typo, or...?
+On Tue, 30 Jan 2007, Jan Engelhardt wrote:
 
-According to the documentation the VT82C686 has the following devices on
-the internal bus: bus 0 dev ? fn 0-6.  dev ? being the device of the
-bridge itself. Re-reading the docs unlike the other the PCI idents aren't
-fixed so my assumption of dev 0 is actually unsafe. I can't see anything
-in the doc which guarantees 7 either.
+>
+> >> Why the qualifier? Zero *is* not a power of 2, is it?
+>
+> No, it is not:
+>
+> 	In[1]:= Solve[2^n == 0, n]
+>
+> 	Out[1]= {}
+>
+> So says Mathematica5.
 
-Alan
+oooookay, that's kind of like taking a sandblaster to a soup cracker.
+
+seriously, though, there is the potential of breaking something with
+this change since you can see how there is some inconsistency in how
+it's done *now* just for powerpc which, in some places, defines its
+own versions of this:
+
+./arch/ppc/mm/pgtable.c:
+	#define is_power_of_2(x) ((x) != 0 && (((x) & ((x) - 1)) == 0))
+./arch/ppc/syslib/ppc85xx_rio.c:
+	#define is_power_of_2(x) (((x) & ((x) - 1)) == 0)
+./arch/powerpc/mm/pgtable_32.c:
+	#define is_power_of_2(x) ((x) != 0 && (((x) & ((x) - 1)) == 0))
+
+note how the first and third macros *won't* consider zero a power of
+two, while the second one *will*.  hence the need for a single
+standard for all of this, just to play it safe.
+
+rday
+
+p.s.  in case you missed it, that was a not-so-subtle plea to please
+just apply this patch so we can move on.
+
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://www.fsdev.dreamhosters.com/wiki/index.php?title=Main_Page
+========================================================================
