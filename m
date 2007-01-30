@@ -1,65 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965592AbXA3PTh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965589AbXA3PWe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965592AbXA3PTh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 10:19:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965598AbXA3PTh
+	id S965589AbXA3PWe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 10:22:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965593AbXA3PWd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 10:19:37 -0500
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:44641 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965592AbXA3PTg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 10:19:36 -0500
-Date: Tue, 30 Jan 2007 20:47:54 +0530
-From: Dipankar Sarma <dipankar@in.ibm.com>
-To: Frederik Deweerdt <deweerdt@free.fr>
-Cc: Tomasz Kvarsin <kvarsin@gmail.com>, Andrew Morton <akpm@osdl.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>, paulmck@in.ibm.com
-Subject: Re: [-mm patch] rcu_trace build fix (was Re: 2.6.20-rc6-mm2 build failure)
-Message-ID: <20070130151754.GA2197@in.ibm.com>
-Reply-To: dipankar@in.ibm.com
-References: <5157576d0701291231j17c5c73we8aa4419d22c01b9@mail.gmail.com> <20070129230552.GB10257@slug>
-Mime-Version: 1.0
+	Tue, 30 Jan 2007 10:22:33 -0500
+Received: from mail.gmx.net ([213.165.64.20]:44750 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S965589AbXA3PWd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jan 2007 10:22:33 -0500
+X-Authenticated: #14842415
+From: Alessandro Di Marco <dmr@gmx.it>
+To: Vojtech Pavlik <vojtech@suse.cz>
+Cc: Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org
+Subject: Re: [ANNOUNCE] System Inactivity Monitor v1.0
+References: <873b61cf1v.fsf@gmx.it> <20070126171536.GB964@elf.ucw.cz>
+	<878xfpoeom.fsf@gmx.it> <20070127174525.GA4787@ucw.cz>
+	<20070127192034.GA17652@suse.cz> <874pqanddd.fsf@gmx.it>
+	<20070129222833.GB17330@elf.ucw.cz> <87odoho3pb.fsf@gmx.it>
+	<20070130094205.GA2888@suse.cz> <87ireowv7d.fsf@gmx.it>
+	<20070130130936.GB4242@suse.cz>
+Date: Tue, 30 Jan 2007 16:22:29 +0100
+Message-ID: <877iv4letm.fsf@gmx.it>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.93 (gnu/linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070129230552.GB10257@slug>
-User-Agent: Mutt/1.5.11
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 29, 2007 at 11:05:52PM +0000, Frederik Deweerdt wrote:
-> On Mon, Jan 29, 2007 at 11:31:08PM +0300, Tomasz Kvarsin wrote:
-> > I try to compile and got:
-> Frederik
-> 
-> Signed-off-by: Frederik Deweerdt <frederik.deweerdt@gmail.com>
-> 
-> diff --git a/kernel/rcupreempt.c b/kernel/rcupreempt.c
-> index f8962a7..9b7d66b 100644
-> --- a/kernel/rcupreempt.c
-> +++ b/kernel/rcupreempt.c
-> @@ -619,7 +619,7 @@ void synchronize_kernel(void)
->  	synchronize_rcu();
->  }
-> 
-> -#ifdef RCU_TRACE
-> +#ifdef CONFIG_RCU_TRACE
->  int *rcupreempt_flipctr(int cpu)
->  {
->  	return &per_cpu(rcu_flipctr, cpu)[0];
-> @@ -649,7 +649,7 @@ EXPORT_SYMBOL_GPL(rcupreempt_data_completed);
->  EXPORT_SYMBOL_GPL(rcupreempt_flip_flag);
->  EXPORT_SYMBOL_GPL(rcupreempt_mb_flag);
->  EXPORT_SYMBOL_GPL(rcupreempt_try_flip_state_name);
-> -#endif /* #ifdef RCU_TRACE */
-> +#endif /* #ifdef CONFIG_RCU_TRACE */
-> 
->  EXPORT_SYMBOL_GPL(call_rcu);
->  EXPORT_SYMBOL_GPL(rcu_batches_completed);
+Vojtech Pavlik <vojtech@suse.cz> writes:
 
-Looks good. Sorry about missing this and the late response. I am
-online only periodically while I am out of town (until 10th Feb).
+   > Mine problem here is that the input device doesn't care about suspend/resume
+   > cycles (it is a straight char driver), probably because it doesn't need to (so
+   > far.) Low-level drivers (kbd & co) on the contrary are all bus or platform
+   > drivers, hooking directly into suspend/resume callbacks.
+   > 
+   > Do you mean that I should back-propagate a suspend/resume event from the
+   > low-level drivers to the input one?
 
-Acked-by : Dipankar Sarma <dipankar@in.ibm.com>
+   Yes, but not as a callback, but instead as an input event. 
 
-Thanks
-Dipankar
+Hum. Usually I'm not so dumb, really.
+
+Problem) I need to know when the system goes to sleep in
+drivers/input/input.c. For example, as a consequence of 'echo mem
+>/sys/power/state'.
+
+Solution 1) My ideal input layer model would be:
+
+               | SUBSYSTEM INPUT DEVICE* |
+                   ^  ^      ^       ^
+            +------+  |      +----+  +------+ events 
+            |         |           |         |
+        |KEYBOARD| |MOUSE | |TOUCHSCREEN| |MISC  |
+        |DEVICE  | |DEVICE| |DEVICE     | |DEVICE|
+
+               | SUBSYSTEM INPUT DEVICE* |
+                   |  |      |       |
+            +------+  |      +----+  +------+ suspend()/resume() callbacks
+            v         v           v         v
+        |KEYBOARD| |MOUSE | |TOUCHSCREEN| |MISC  |
+        |DEVICE  | |DEVICE| |DEVICE     | |DEVICE|
+
+Solution 2) On the contrary, you are suggesting to do this:
+
+               |          INPUT DEVICE          |
+                   ^     ^      ^           ^
+            +------+     |      +----+      +------+ events plus
+            |            |           |             | suspend/resume
+        |KEYBOARD | |MOUSE    | |TOUCHSCREEN| |MISC      |
+        |SUBSYSTEM| |SUBSYSTEM| |SUBSYSTEM  | |SUBSYSTEM |
+        |DEVICE*  | |DEVICE*  | |DEVICE*    | |DEVICE*   |
+
+Right?
+
+* or whatever provides suspend/resume callbacks
+
+-- 
+>From their experience or from the recorded experience of others (history), men
+learn only what their passions and their metaphysical prejudices allow them to
+learn. - Aldous Huxley
