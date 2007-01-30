@@ -1,71 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750725AbXA3SnZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750857AbXA3SrF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750725AbXA3SnZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 13:43:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750778AbXA3SnZ
+	id S1750857AbXA3SrF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 13:47:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750875AbXA3SrE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 13:43:25 -0500
-Received: from vulpecula.futurs.inria.fr ([195.83.212.5]:34212 "EHLO
-	vulpecula.futurs.inria.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750725AbXA3SnY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 13:43:24 -0500
-Message-ID: <45BF91CA.9030609@tremplin-utc.net>
-Date: Tue, 30 Jan 2007 19:43:22 +0100
-From: Eric Piel <Eric.Piel@tremplin-utc.net>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070105)
-MIME-Version: 1.0
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>,
-       David Brownell <david-b@pacbell.net>, linux-kernel@vger.kernel.org,
-       gregkh@suse.de
-Subject: Re: [PATCH] Fix /sys/device/.../power/state regression
-References: <20061219185223.GA13256@srcf.ucam.org> <200612201318.06976.david-b@pacbell.net> <20061221012924.GC32625@srcf.ucam.org> <200612201904.28681.david-b@pacbell.net> <20061221040648.GA1499@srcf.ucam.org> <20070125050009.GA8672@srcf.ucam.org> <20070127131728.GB3942@ucw.cz>
-In-Reply-To: <20070127131728.GB3942@ucw.cz>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+	Tue, 30 Jan 2007 13:47:04 -0500
+Received: from dspnet.fr.eu.org ([213.186.44.138]:1850 "EHLO dspnet.fr.eu.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750857AbXA3SrD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jan 2007 13:47:03 -0500
+Date: Tue, 30 Jan 2007 19:47:00 +0100
+From: Olivier Galibert <galibert@pobox.com>
+To: Andrew Morton <akpm@osdl.org>
+Cc: linux-kernel@vger.kernel.org, Len Brown <lenb@kernel.org>,
+       Andi Kleen <ak@suse.de>
+Subject: Re: 2.6.20-rc6-mm3
+Message-ID: <20070130184700.GA67320@dspnet.fr.eu.org>
+Mail-Followup-To: Olivier Galibert <galibert@pobox.com>,
+	Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
+	Len Brown <lenb@kernel.org>, Andi Kleen <ak@suse.de>
+References: <20070129204528.eb8d695e.akpm@osdl.org> <20070130090645.GC11823@dspnet.fr.eu.org> <20070130012631.8bb86c76.akpm@osdl.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070130012631.8bb86c76.akpm@osdl.org>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-01/27/2007 02:17 PM, Pavel Machek wrote/a écrit:
-> Hi!
-> 
->> In 2.6.19, support for splitting driver suspend and resume callbacks 
->> into interrupt and non-interrupt contexts was added. Unfortunately, this 
->> broke /sys/device/.../power/state support for all devices. In the long 
->> run, this should be obsoleted by power management support in the 
->> individual drivers - however, in the case of network drivers (for 
->> example), currently only three drivers implement any sort of useful 
->> run-time power management.
-> 
-> Well... solution seems to be 'implement useful pm for more drivers'
-> not 'discourage people from doing so by re-enabling broken interface'.
-> 
->> --- a/Documentation/feature-removal-schedule.txt
->> +++ b/Documentation/feature-removal-schedule.txt
->> @@ -9,7 +9,8 @@ be removed from this file.
->>  What:	/sys/devices/.../power/state
->>  	dev->power.power_state
->>  	dpm_runtime_{suspend,resume)()
->> -When:	July 2007
->> +	bus->pm_has_noirq_stage()
->> +When:	Once alternative functionality has been implemented
-> 
-> .../power/state never worked properly. You have been warned and it is
-> going to be removed. It oopses kernels... while 'only' providing power
-> savings. If you are interested in power savings, please help doing
-> them right.
+On Tue, Jan 30, 2007 at 01:26:31AM -0800, Andrew Morton wrote:
+> Len, what was in that merge anyway?  Lots of renaming and shuffling things
+> around - the sorts of things which are safe as long as they compile OK.  But
+> was there much substantive material in there as well?
 
-Hi,
-I realize that I'm arriving just far too late on this thread to bring 
-any meaning, so that's just for the info...
+It seems heavy in general, but the intersection with mmconfig looks
+rather limited:
+- s/acpi_table_mcfg_config/acpi_mcfg_allocation/
+- s/base_address/address/
+- s/pci_segment_group_number/pci_segment/
+- address is now 64 bits
 
-I have been using this interface for a _long_ time (before june 2005, cf 
-http://marc.theaimsgroup.com/?l=linux-usb-devel&m=111869558800526&w=2) 
-and for different things than power saving: I can turn off my (usb) 
-optical mouse when watching a movie or going to bed.
+The last point is both good and bad.  The i965 needs it (good), I
+don't know if the mapping functions can handle actual 64bits addresses
+(maybe bad), especially on i386.
 
-Is there any hardware independent alternative to turn off USB devices?
+  OG.
 
-See you,
-Eric
