@@ -1,46 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932879AbXA3LU3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965033AbXA3L1u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932879AbXA3LU3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 06:20:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933191AbXA3LU2
+	id S965033AbXA3L1u (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 06:27:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964983AbXA3L1t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 06:20:28 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:51698 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932879AbXA3LU2 (ORCPT
+	Tue, 30 Jan 2007 06:27:49 -0500
+Received: from smtp2.netcabo.pt ([212.113.174.29]:37607 "EHLO
+	exch01smtp09.hdi.tvcabo" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S964865AbXA3L1s (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 06:20:28 -0500
-Date: Tue, 30 Jan 2007 11:20:24 +0000
-From: Christoph Hellwig <hch@infradead.org>
-To: Howard Chu <hyc@symas.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
-Subject: Re: swap map
-Message-ID: <20070130112024.GA18705@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Howard Chu <hyc@symas.com>,
-	linux-kernel <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
-References: <45BF2823.2090005@symas.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <45BF2823.2090005@symas.com>
-User-Agent: Mutt/1.4.2.2i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Tue, 30 Jan 2007 06:27:48 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ao8CABa6vkVZmGJA/2dsb2JhbAA
+Message-ID: <23932.213.58.131.130.1170156409.squirrel@www.rncbc.org>
+Date: Tue, 30 Jan 2007 11:26:49 -0000 (WET)
+Subject: 2.6.20-rc6-rt4 register_cpu_notification undefined
+From: "Rui Nuno Capela" <rncbc@rncbc.org>
+To: "Ingo Molnar" <mingo@elte.hu>
+Cc: linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org
+User-Agent: SquirrelMail/1.5.1
+MIME-Version: 1.0
+Content-Type: multipart/mixed;boundary="----=_20070130112649_50732"
+X-OriginalArrivalTime: 30 Jan 2007 11:27:46.0531 (UTC) FILETIME=[AA6FAB30:01C74461]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 30, 2007 at 03:12:35AM -0800, Howard Chu wrote:
-> In the it-would-be-nice department... While I was twiddling with swappiness 
-> and benchmarking some code, I thought it would be pretty cool if there was 
-> a node in /proc/<pid> that would show which pages of a process are resident 
-> or nonresident. I'm not sure that it would be useful very often, but I was 
-> thinking one could get a snapshot of that, correlated with traces from a 
-> malloc profiler, to show what portions of a program's memory usage was in 
-> active use vs idle.
+------=_20070130112649_50732
+Content-Type: text/plain; charset="iso-8859-15"
+Content-Transfer-Encoding: 8bit
 
-That's be a remote mincore().  This should be more or less trivial,
-do_mincore would need a mm_struct argument instead of always using
-current->mm and we'd need a simple seq_file interface iterating over it.
+Hi,
 
-Any volunteers?
+Just to let you know that this my simple patch solves the
+'register_cpu_notifier' being undefined when SMP is set but not
+HOTPLUG_CPU.
+
+Dunno if its the right thing, tho.
+
+Cheers
+-- 
+rncbc aka Rui Nuno Capela
+rncbc@rncbc.org
+------=_20070130112649_50732
+Content-Type: application/octet-stream;
+      name="linux-2.6.20-rc6-rt4-cpu.patch"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="linux-2.6.20-rc6-rt4-cpu.patch"
+
+LS0tIGxpbnV4L2tlcm5lbC9jcHUuYy5vcmlnCTIwMDctMDEtMjUgMDI6MTk6MjguMDAwMDAwMDAw
+ICswMDAwCisrKyBsaW51eC9rZXJuZWwvY3B1LmMJMjAwNy0wMS0zMCAwOTo0MzoyMi4wMDAwMDAw
+MDAgKzAwMDAKQEAgLTc1LDEwICs3NSwxMCBAQAogCXJldHVybiByZXQ7CiB9CiAKLSNpZmRlZiBD
+T05GSUdfSE9UUExVR19DUFUKLQogRVhQT1JUX1NZTUJPTChyZWdpc3Rlcl9jcHVfbm90aWZpZXIp
+OwogCisjaWZkZWYgQ09ORklHX0hPVFBMVUdfQ1BVCisKIHZvaWQgdW5yZWdpc3Rlcl9jcHVfbm90
+aWZpZXIoc3RydWN0IG5vdGlmaWVyX2Jsb2NrICpuYikKIHsKIAltdXRleF9sb2NrKCZjcHVfYWRk
+X3JlbW92ZV9sb2NrKTsK
+------=_20070130112649_50732--
+
