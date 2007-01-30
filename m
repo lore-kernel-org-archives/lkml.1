@@ -1,47 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751879AbXA3XqY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750922AbXA3XvK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751879AbXA3XqY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 18:46:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752064AbXA3XqY
+	id S1750922AbXA3XvK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 18:51:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750910AbXA3XvK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 18:46:24 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:50194 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751879AbXA3XqU (ORCPT
+	Tue, 30 Jan 2007 18:51:10 -0500
+Received: from e31.co.us.ibm.com ([32.97.110.149]:36410 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750922AbXA3XvJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 18:46:20 -0500
-In-Reply-To: <Pine.LNX.4.64.0701301448320.3611@woody.linux-foundation.org>
-References: <patchbomb.1170193181@tetsuo.zabbo.net> <Pine.LNX.4.64.0701301345060.3611@woody.linux-foundation.org> <0E1E87C3-954C-4297-9D6C-E98BC79D68C3@oracle.com> <Pine.LNX.4.64.0701301448320.3611@woody.linux-foundation.org>
-Mime-Version: 1.0 (Apple Message framework v752.3)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <00CAB6CF-640D-4449-9CBA-7E52FE9BEC37@oracle.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-aio@kvack.org, Suparna Bhattacharya <suparna@in.ibm.com>,
-       Benjamin LaHaise <bcrl@kvack.org>, Ingo Molnar <mingo@elte.hu>
+	Tue, 30 Jan 2007 18:51:09 -0500
+Subject: Re: [Cbe-oss-dev] [RFC, PATCH 2/4] Add support to OProfile for
+	profiling Cell BE SPUs -- update
+From: Carl Love <cel@us.ibm.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: cbe-oss-dev@ozlabs.org, maynardj@us.ibm.com, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org, oprofile-list@lists.sourceforge.net
+In-Reply-To: <200701300508.56467.arnd@arndb.de>
+References: <45BE4ED0.5030808@us.ibm.com> <45BE4F55.8070801@us.ibm.com>
+	 <200701300508.56467.arnd@arndb.de>
+Content-Type: text/plain
+Date: Tue, 30 Jan 2007 15:51:05 -0800
+Message-Id: <1170201065.5235.43.camel@dyn9047021078.beaverton.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.0.4 (2.0.4-2) 
 Content-Transfer-Encoding: 7bit
-From: Zach Brown <zach.brown@oracle.com>
-Subject: Re: [PATCH 0 of 4] Generic AIO by scheduling stacks
-Date: Tue, 30 Jan 2007 15:45:45 -0800
-To: Linus Torvalds <torvalds@linux-foundation.org>
-X-Mailer: Apple Mail (2.752.3)
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Btw, I noticed that you didn't Cc Ingo. Definitely worth doing. Not  
-> just
-> because he's basically the normal scheduler maintainer, but also  
-> because
-> he's historically been involved in things like the async filename  
-> lookup
-> that the in-kernel web server thing used.
+Arnd:
 
-Yeah, that was dumb.  I had him in the cc: initially, then thought it  
-was too large and lobbed a bunch off.  My mistake.
+Well most of the patch is simply cleaning up the
+pm_rtas_activate_signals() routine.  I would be think
+"pm_rtas_activat_signals routine cleanup" would be good.
 
-Ingo, I'm interested in your reaction to the i386-specific mechanics  
-here (the thread_info copies terrify me) and the general notion of  
-how to tie this cleanly into the scheduler.
+                   Carl Love
 
-- z
+
+On Tue, 2007-01-30 at 05:08 +0100, Arnd Bergmann wrote:
+> On Monday 29 January 2007 20:47, Maynard Johnson wrote:
+> >   The code was setting up the debug bus for group 21 when profiling on the 
+> > event PPU CYCLES.  The debug bus is not actually used by the hardware 
+> > performance counters when counting PPU CYCLES.  Setting up the debug bus
+> > for PPU CYCLES causes signal routing conflicts on the debug bus when 
+> > profiling PPU cycles and another PPU event.  This patch fixes the code to 
+> > only setup the debug bus to route the performance signals for the non
+> > PPU CYCLE events.
+> > 
+> > Signed-off-by: Maynard Johnson <mpjohn@us.ibm.com>
+> > Signed-off-by: Carl Love <carll@us.ibm.com>
+> 
+> Acked-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
+> 
+> Any suggestion for a one-line patch title?
+> _______________________________________________
+> cbe-oss-dev mailing list
+> cbe-oss-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/cbe-oss-dev
+
