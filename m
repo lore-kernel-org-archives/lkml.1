@@ -1,108 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965540AbXA3O5T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965573AbXA3PAG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965540AbXA3O5T (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 09:57:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965573AbXA3O5T
+	id S965573AbXA3PAG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 10:00:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965575AbXA3PAG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 09:57:19 -0500
-Received: from il.qumranet.com ([62.219.232.206]:51231 "EHLO il.qumranet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965540AbXA3O5S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 09:57:18 -0500
-Subject: [PATCH 5/5] KVM: Host suspend/resume support
-From: Avi Kivity <avi@qumranet.com>
-Date: Tue, 30 Jan 2007 14:57:17 -0000
-To: kvm-devel@lists.sourceforge.net
-Cc: linux-kernel@vger.kernel.org, akpm@osdl.org, mingo@elte.hu
-References: <45BF5B96.1070007@qumranet.com>
-In-Reply-To: <45BF5B96.1070007@qumranet.com>
-Message-Id: <20070130145717.00D1BA0014@il.qumranet.com>
+	Tue, 30 Jan 2007 10:00:06 -0500
+Received: from ppsw-9.csi.cam.ac.uk ([131.111.8.139]:42499 "EHLO
+	ppsw-9.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965573AbXA3PAE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jan 2007 10:00:04 -0500
+X-Cam-SpamDetails: Not scanned
+X-Cam-AntiVirus: No virus found
+X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
+Date: Tue, 30 Jan 2007 14:58:50 +0000 (GMT)
+From: Anton Altaparmakov <aia21@cam.ac.uk>
+To: Mark Fasheh <mark.fasheh@oracle.com>
+cc: Nick Piggin <nickpiggin@yahoo.com.au>, Hugh Dickins <hugh@veritas.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Linux Memory Management <linux-mm@kvack.org>,
+       David Howells <dhowells@redhat.com>, Andrew Morton <akpm@osdl.org>
+Subject: Re: page_mkwrite caller is racy?
+In-Reply-To: <20070130015159.GA14799@ca-server1.us.oracle.com>
+Message-ID: <Pine.LNX.4.64.0701301456250.6541@hermes-1.csi.cam.ac.uk>
+References: <45BDCA8A.4050809@yahoo.com.au> <Pine.LNX.4.64.0701291521540.24726@blonde.wat.veritas.com>
+ <45BE9BF0.10202@yahoo.com.au> <20070130015159.GA14799@ca-server1.us.oracle.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add the necessary callbacks to suspend and resume a host running kvm.  This
-is just a repeat of the cpu hotplug/unplug work.
+On Mon, 29 Jan 2007, Mark Fasheh wrote:
+> On Tue, Jan 30, 2007 at 12:14:24PM +1100, Nick Piggin wrote:
+> > This is another discussion, but do we want the page locked here? Or
+> > are the filesystems happy to exclude truncate themselves?
+> 
+> No page lock please. Generally, Ocfs2 wants to order cluster locks outside
+> of page locks. Also, the sparse b-tree support I'm working on right now will
+> need to be able to allocate in ->page_mkwrite() which would become very
+> nasty if we came in with the page lock - aside from the additional cluster
+> locks taken, ocfs2 will want to zero some adjacent pages (because we support
+> atomic allocation up to 1 meg).
 
-Signed-off-by: Avi Kivity <avi@qumranet.com>
+Ditto for NTFS.  I will need to lock pages on both sides of the page for 
+large volume cluster sizes thus I will have to drop the page lock if it is 
+already taken so it might as well not be...  Although I do not feel 
+strongly about it.  If the page is locked I will just drop the lock and 
+then take it again.  If possible to not have the page locked that would 
+make my code a little easier/more efficient I expect...
 
-Index: linux-2.6/drivers/kvm/kvm_main.c
-===================================================================
---- linux-2.6.orig/drivers/kvm/kvm_main.c
-+++ linux-2.6/drivers/kvm/kvm_main.c
-@@ -34,6 +34,7 @@
- #include <linux/highmem.h>
- #include <linux/file.h>
- #include <asm/desc.h>
-+#include <linux/sysdev.h>
- #include <linux/cpu.h>
- 
- #include "x86_emulate.h"
-@@ -2116,6 +2117,30 @@ static void kvm_exit_debug(void)
- 	debugfs_remove(debugfs_dir);
- }
- 
-+static int kvm_suspend(struct sys_device *dev, pm_message_t state)
-+{
-+	decache_vcpus_on_cpu(raw_smp_processor_id());
-+	on_each_cpu(kvm_arch_ops->hardware_disable, 0, 0, 1);
-+	return 0;
-+}
-+
-+static int kvm_resume(struct sys_device *dev)
-+{
-+	on_each_cpu(kvm_arch_ops->hardware_enable, 0, 0, 1);
-+	return 0;
-+}
-+
-+static struct sysdev_class kvm_sysdev_class = {
-+	set_kset_name("kvm"),
-+	.suspend = kvm_suspend,
-+	.resume = kvm_resume,
-+};
-+
-+static struct sys_device kvm_sysdev = {
-+	.id = 0,
-+	.cls = &kvm_sysdev_class,
-+};
-+
- hpa_t bad_page_address;
- 
- int kvm_init_arch(struct kvm_arch_ops *ops, struct module *module)
-@@ -2148,6 +2173,14 @@ int kvm_init_arch(struct kvm_arch_ops *o
- 		goto out_free_1;
- 	register_reboot_notifier(&kvm_reboot_notifier);
- 
-+	r = sysdev_class_register(&kvm_sysdev_class);
-+	if (r)
-+		goto out_free_2;
-+
-+	r = sysdev_register(&kvm_sysdev);
-+	if (r)
-+		goto out_free_3;
-+
- 	kvm_chardev_ops.owner = module;
- 
- 	r = misc_register(&kvm_dev);
-@@ -2159,6 +2192,10 @@ int kvm_init_arch(struct kvm_arch_ops *o
- 	return r;
- 
- out_free:
-+	sysdev_unregister(&kvm_sysdev);
-+out_free_3:
-+	sysdev_class_unregister(&kvm_sysdev_class);
-+out_free_2:
- 	unregister_reboot_notifier(&kvm_reboot_notifier);
- 	unregister_cpu_notifier(&kvm_cpu_notifier);
- out_free_1:
-@@ -2170,8 +2207,10 @@ out_free_1:
- void kvm_exit_arch(void)
- {
- 	misc_deregister(&kvm_dev);
--
-+	sysdev_unregister(&kvm_sysdev);
-+	sysdev_class_unregister(&kvm_sysdev_class);
- 	unregister_reboot_notifier(&kvm_reboot_notifier);
-+	unregister_cpu_notifier(&kvm_cpu_notifier);
- 	on_each_cpu(kvm_arch_ops->hardware_disable, 0, 0, 1);
- 	kvm_arch_ops->hardware_unsetup();
- 	kvm_arch_ops = NULL;
+Best regards,
+
+	Anton
+-- 
+Anton Altaparmakov <aia21 at cam.ac.uk> (replace at with @)
+Unix Support, Computing Service, University of Cambridge, CB2 3QH, UK
+Linux NTFS maintainer, http://www.linux-ntfs.org/
