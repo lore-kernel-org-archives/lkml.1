@@ -1,42 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933127AbXA3GnR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965321AbXA3GsF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933127AbXA3GnR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 01:43:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933114AbXA3GnR
+	id S965321AbXA3GsF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 01:48:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965361AbXA3GsF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 01:43:17 -0500
-Received: from mtagate3.de.ibm.com ([195.212.29.152]:60868 "EHLO
-	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933127AbXA3GnQ (ORCPT
+	Tue, 30 Jan 2007 01:48:05 -0500
+Received: from fencepost.gnu.org ([199.232.76.164]:36786 "EHLO
+	fencepost.gnu.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965321AbXA3GsC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 01:43:16 -0500
-Date: Tue, 30 Jan 2007 08:43:12 +0200
-From: Muli Ben-Yehuda <muli@il.ibm.com>
-To: Jes Sorensen <jes@sgi.com>
-Cc: Andi Kleen <ak@suse.de>, David Miller <davem@davemloft.net>,
-       linux-kernel@vger.kernel.org, alan@redhat.com,
-       ksummit-2007-discuss@thunk.org, Sunil Naidu <akula2.shark@gmail.com>
-Subject: Re: [Ksummit-2007-discuss] Re: [Ksummit-2006-discuss] 2007 Linux Kernel Summit
-Message-ID: <20070130064312.GP3619@rhun.ibm.com>
-References: <20070123.095756.30177490.davem@davemloft.net> <20070126195024.GE14759@thunk.org> <45BE8BF9.6020204@sgi.com> <200701300603.14004.ak@suse.de> <45BEDCF7.7070503@sgi.com>
+	Tue, 30 Jan 2007 01:48:02 -0500
+Subject: [PATCH] Fix sparse annotation of spin unlock macros in one case
+From: Pavel Roskin <proski@gnu.org>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Tue, 30 Jan 2007 01:48:00 -0500
+Message-Id: <1170139680.8587.7.camel@dv>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <45BEDCF7.7070503@sgi.com>
-User-Agent: Mutt/1.5.11
+X-Mailer: Evolution 2.8.0 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 30, 2007 at 06:51:51AM +0100, Jes Sorensen wrote:
+From: Pavel Roskin <proski@gnu.org>
 
-> Last year the subject of DMA engines was put up, however most of the
-> people interested in the subject weren't even invited. In that case
-> there's really little concrete that can come out of the discussion.
+SMP systems without preemption and spinlock debugging enabled use unlock
+macros that don't tell sparse that the lock is being released.  Add
+sparse annotations in this case.
 
-Likewise IOMMUs.
+Signed-off-by: Pavel Roskin <proski@gnu.org>
+---
 
-I think Andrew's suggestion of adding a CFP phase to KS is excellent -
-get some new blood in the room and spice up the discussion.
+ include/linux/spinlock.h |   33 ++++++++++++++++++++++++---------
+ 1 files changed, 24 insertions(+), 9 deletions(-)
 
-Cheers,
-Muli
+diff --git a/include/linux/spinlock.h b/include/linux/spinlock.h
+index 94b767d..d3b6397 100644
+--- a/include/linux/spinlock.h
++++ b/include/linux/spinlock.h
+@@ -228,15 +228,30 @@ do {								\
+ # define read_unlock_irq(lock)		_read_unlock_irq(lock)
+ # define write_unlock_irq(lock)		_write_unlock_irq(lock)
+ #else
+-# define spin_unlock(lock)		__raw_spin_unlock(&(lock)->raw_lock)
+-# define read_unlock(lock)		__raw_read_unlock(&(lock)->raw_lock)
+-# define write_unlock(lock)		__raw_write_unlock(&(lock)->raw_lock)
+-# define spin_unlock_irq(lock) \
+-    do { __raw_spin_unlock(&(lock)->raw_lock); local_irq_enable(); } while (0)
+-# define read_unlock_irq(lock) \
+-    do { __raw_read_unlock(&(lock)->raw_lock); local_irq_enable(); } while (0)
+-# define write_unlock_irq(lock) \
+-    do { __raw_write_unlock(&(lock)->raw_lock); local_irq_enable(); } while (0)
++# define spin_unlock(lock) \
++    do {__raw_spin_unlock(&(lock)->raw_lock); __release(lock); } while (0)
++# define read_unlock(lock) \
++    do {__raw_read_unlock(&(lock)->raw_lock); __release(lock); } while (0)
++# define write_unlock(lock) \
++    do {__raw_write_unlock(&(lock)->raw_lock); __release(lock); } while (0)
++# define spin_unlock_irq(lock)			\
++do {						\
++	__raw_spin_unlock(&(lock)->raw_lock);	\
++	local_irq_enable();			\
++	__release(lock);			\
++} while (0)
++# define read_unlock_irq(lock)			\
++do {						\
++	__raw_read_unlock(&(lock)->raw_lock);	\
++	local_irq_enable();			\
++	__release(lock);			\
++} while (0)
++# define write_unlock_irq(lock)			\
++do {						\
++	__raw_write_unlock(&(lock)->raw_lock);	\
++	local_irq_enable();			\
++	__release(lock);			\
++} while (0)
+ #endif
+ 
+ #define spin_unlock_irqrestore(lock, flags) \
+
+
+-- 
+Regards,
+Pavel Roskin
+
+
