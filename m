@@ -1,47 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965128AbXAaPNZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965125AbXAaPOp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965128AbXAaPNZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Jan 2007 10:13:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965125AbXAaPNZ
+	id S965125AbXAaPOp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Jan 2007 10:14:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965161AbXAaPOp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Jan 2007 10:13:25 -0500
-Received: from rtr.ca ([64.26.128.89]:3573 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965007AbXAaPNX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Jan 2007 10:13:23 -0500
-Message-ID: <45C0B211.2030305@rtr.ca>
-Date: Wed, 31 Jan 2007 10:13:21 -0500
-From: Mark Lord <liml@rtr.ca>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061206)
-MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Ric Wheeler <ric@emc.com>, "Eric D. Mudama" <edmudama@gmail.com>,
-       linux-kernel@vger.kernel.org,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>, dougg@torque.net
-Subject: Re: [PATCH] scsi_lib.c: continue after MEDIUM_ERROR
-References: <200701301947.08478.liml@rtr.ca>	 <1170206199.10890.13.camel@mulgrave.il.steeleye.com>	 <311601c90701301725n53d25a74g652b7ca3bfc64c56@mail.gmail.com>	 <45BFF3D6.9050605@rtr.ca>  <45C00AEE.1090708@emc.com> <1170217288.10890.37.camel@mulgrave.il.steeleye.com>
-In-Reply-To: <1170217288.10890.37.camel@mulgrave.il.steeleye.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 31 Jan 2007 10:14:45 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.158]:14441 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965038AbXAaPOn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Jan 2007 10:14:43 -0500
+Subject: Re: [PATCH 08/23] clocksource: drop duplicate register checking
+From: Daniel Walker <dwalker@mvista.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, johnstul@us.ibm.com,
+       Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <20070131095935.GA22377@elte.hu>
+References: <20070131033710.420168478@mvista.com>
+	 <20070131033805.498958666@mvista.com>  <20070131095935.GA22377@elte.hu>
+Content-Type: text/plain
+Date: Wed, 31 Jan 2007 07:13:13 -0800
+Message-Id: <1170256393.9781.23.camel@imap.mvista.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Bottomley wrote:
->
-> For the MD case, this is what REQ_FAILFAST is for.
+On Wed, 2007-01-31 at 10:59 +0100, Ingo Molnar wrote:
+> * Daniel Walker <dwalker@mvista.com> wrote:
+> 
+> > This is something Thomas already dropped, [...]
+> 
+> (i think you forgot to Cc: Thomas here, nor is this something that 
+> Thomas' change dropped.)
 
-I cannot find where SCSI honours that flag.  James?
+Yes your right .
 
-And for that matter, even when I patch SCSI so that it *does* honour it,
-I don't actually see the flag making it into the SCSI layer from above.
+> > [...] and I'm just sticking with that .. If you register your 
+> > clocksource _twice_ your kernel will likely not work correctly (and 
+> > might crash).
+> 
+> this is a quite bad change. John's original clocksource code protects 
+> against double registry:
+> 
+>          if (is_registered_source(c)) {
+>                  printk("register_clocksource: Cannot register %s. "
+>                         "Already registered!", c->name);
+>                  ret = -EBUSY;
+> 
+> and Thomas' change keeps that property, but doesnt printk. Your change 
+> makes double registry possible, potentially crashing the kernel later 
+> on! (And this isnt theoretical, double registry did happen in practice 
+> when i debugged suspend problems on my SMP laptop.)
 
-And I don't see where/how the block layer takes care when considering
-merge FAILFAST/READA requests with non FAILFAST/READA requests.
-To me, it looks perfectly happy to add non-FAILFAST/READA bios
-to a FAILFAST request, risking data loss if a lower-layer decides
-to honour the FAILFAST/READA flags.
+My original patch set makes the duplicate register checking better
+(which I dropped) .. I'll be happy to reintroduce that part of it..
 
-So it's a pretty Good Thing(tm) that SCSI doesn't currently honour it. ;)
- 
+Daniel
 
