@@ -1,58 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932749AbXAaJ1M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932789AbXAaJat@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932749AbXAaJ1M (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Jan 2007 04:27:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932788AbXAaJ1L
+	id S932789AbXAaJat (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Jan 2007 04:30:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932813AbXAaJat
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Jan 2007 04:27:11 -0500
-Received: from raven.upol.cz ([158.194.120.4]:40666 "EHLO raven.upol.cz"
+	Wed, 31 Jan 2007 04:30:49 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:55111 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932749AbXAaJ1K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Jan 2007 04:27:10 -0500
-Date: Wed, 31 Jan 2007 09:35:42 +0000
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Roman Zippel <zippel@linux-m68k.org>, Bastian Blank <bastian@waldi.eu.org>,
-       Sam Ravnborg <sam@ravnborg.org>, Andrew Morton <akpm@osdl.org>
-Subject: [patch] update for (kbuild: correctly skip tilded backups in localversion files)
-Message-ID: <20070131093542.GA3471@flower.upol.cz>
-References: <20070131071103.GA3295@flower.upol.cz>
+	id S932789AbXAaJar (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Jan 2007 04:30:47 -0500
+Message-ID: <45C061C3.8030006@garzik.org>
+Date: Wed, 31 Jan 2007 04:30:43 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070131071103.GA3295@flower.upol.cz>
-Organization: Palacky University in Olomouc, experimental physics department.
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Oleg Verych <olecom@flower.upol.cz>
+To: Mark Lord <liml@rtr.ca>, "Eric D. Mudama" <edmudama@gmail.com>
+CC: James Bottomley <James.Bottomley@hansenpartnership.com>,
+       linux-kernel@vger.kernel.org,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>
+Subject: Re: [PATCH] scsi_lib.c: continue after MEDIUM_ERROR
+References: <200701301947.08478.liml@rtr.ca>	 <1170206199.10890.13.camel@mulgrave.il.steeleye.com> <311601c90701301725n53d25a74g652b7ca3bfc64c56@mail.gmail.com> <45BFF3D6.9050605@rtr.ca>
+In-Reply-To: <45BFF3D6.9050605@rtr.ca>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.7 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-kbuild: finally correctly skip tilded backups in localversion files
+Mark Lord wrote:
+> Eric D. Mudama wrote:
+>>
+>> Actually, it's possibly worse, since each failure in libata will 
+>> generate 3-4 retries.  With existing ATA error recovery in the drives, 
+>> that's about 3 seconds per retry on average, or 12 seconds per 
+>> failure.  Multiply that by the number of blocks past the error to 
+>> complete the request..
+> 
+> It really beats the alternative of a forced reboot
+> due to, say, superblock I/O failing because it happened
+> to get merged with an unrelated I/O which then failed..
+> Etc..
 
 
-Signed-off-by: Oleg Verych <olecom@flower.upol.cz>
----
+FWIW -- speaking generally -- I think there are inevitable areas where 
+libata error handling combined with SCSI error handling results in 
+suboptimal error handling.
 
- Final addition. Why i want to maximize usage of shell, rather, than
- `make'? Just because i think, it's more portable, clear way.
+Just creating a list of "<this behavior> should be handled <this way>, 
+but in reality is handled in <this silly way>" would be very helpful.
 
- Thanks.
+Error handling is tough to get right, because the code is exercised so 
+infrequently.  Tejun has actually done an above-average job here, by 
+making device probe, hotplug and other "exceptions" go through the 
+libata EH code, thereby exercising the EH code more than one might 
+normally assume.
 
---- linux-2.6.20-rc6/Makefile~4tilde-backups~	2007-01-31 07:46:18.696404500 +0100
-+++ linux-2.6.20-rc6/Makefile	2007-01-31 10:19:18.406100500 +0100
-@@ -788,10 +788,10 @@ $(vmlinux-dirs): prepare scripts
- # scripts/setlocalversion and add the appropriate checks as needed.
- 
--localversion = $(objtree)/localversion	    $(srctree)/localversion
--ext_versions = $(objtree)/localversion[^~]* $(srctree)/localversion[!~]*
--versions = $(localversion) $(ext_versions)
--localver = $(subst $(space),, \
--	   $(shell cat /dev/null $(sort $(wildcard $(versions)))) \
--	   $(patsubst "%",%,$(CONFIG_LOCALVERSION)))
-+pattern = ".*/localversion[^~]*"
-+string  = $(shell cat /dev/null \
-+	   `find $(objtree) $(srctree) -maxdepth 1 -regex $(pattern) | sort`)
-+
-+localver = $(subst $(space),, $(string) \
-+			      $(patsubst "%",%,$(CONFIG_LOCALVERSION)))
- 
- # If CONFIG_LOCALVERSION_AUTO is set scripts/setlocalversion is called
+Some errors in libata probably should not be retried more than once, 
+when we have a definitive diagnosis.  Suggestions for improvements are 
+welcome.
+
+	Jeff
+
+
