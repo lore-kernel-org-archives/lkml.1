@@ -1,118 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030586AbXAaVsd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161050AbXAaVtE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030586AbXAaVsd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Jan 2007 16:48:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030582AbXAaVsd
+	id S1161050AbXAaVtE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Jan 2007 16:49:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161053AbXAaVtE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Jan 2007 16:48:33 -0500
-Received: from amsfep19-int.chello.nl ([213.46.243.16]:51765 "EHLO
-	amsfep11-int.chello.nl" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1030586AbXAaVsc (ORCPT
+	Wed, 31 Jan 2007 16:49:04 -0500
+Received: from wr-out-0506.google.com ([64.233.184.238]:60841 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161050AbXAaVtB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Jan 2007 16:48:32 -0500
-Subject: Re: [PATCH 3/7] barrier: a scalable synchonisation barrier
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>, Christoph Hellwig <hch@infradead.org>,
-       Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <20070131211340.GA171@tv-sign.ru>
-References: <20070128115118.837777000@programming.kicks-ass.net>
-	 <20070128120509.719287000@programming.kicks-ass.net>
-	 <20070128143941.GA16552@infradead.org> <20070128152435.GC9196@elte.hu>
-	 <20070131191215.GK2574@linux.vnet.ibm.com>
-	 <20070131211340.GA171@tv-sign.ru>
-Content-Type: text/plain
-Date: Wed, 31 Jan 2007 22:48:21 +0100
-Message-Id: <1170280101.10924.36.camel@lappy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
+	Wed, 31 Jan 2007 16:49:01 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=pnysktKn+rxOJUfrxZBHazRadlR69eI0yMhoa+8tIsvfaoeE9D5Ly7D47W/0G52gxjy4l4EmABBw67hciQocNzKwdG14fE6ZuB7jji+CtZRCQmc8z6RlUNND8INpH18/pRsDAB7E7g39gfZjjtPvy526GNt0tDSguBFv8dxE0Ik=
+Message-ID: <3d57814d0701311348u4e465540of77f3eed054e01c6@mail.gmail.com>
+Date: Thu, 1 Feb 2007 07:48:59 +1000
+From: "Trent Waddington" <trent.waddington@gmail.com>
+To: "Jan Engelhardt" <jengelh@linux01.gwdg.de>
+Subject: Re: Free Linux Driver Development!
+Cc: "Auke Kok" <auke-jan.h.kok@intel.com>,
+       "Francois Romieu" <romieu@fr.zoreil.com>,
+       "Nicolas Mailhot" <nicolas.mailhot@laposte.net>, greg@kroah.com,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.61.0701312231120.13737@yvahk01.tjqt.qr>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <32793.192.54.193.51.1170248792.squirrel@rousalka.dyndns.org>
+	 <20070131192918.GA12495@electric-eye.fr.zoreil.com>
+	 <45C0F3DD.6060703@intel.com>
+	 <Pine.LNX.4.61.0701312231120.13737@yvahk01.tjqt.qr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-02-01 at 00:13 +0300, Oleg Nesterov wrote:
-> On 01/31, Paul E. McKenney wrote:
-> >
-> > On Sun, Jan 28, 2007 at 04:24:35PM +0100, Ingo Molnar wrote:
-> > > 
-> > > * Christoph Hellwig <hch@infradead.org> wrote:
-> > > 
-> > > > On Sun, Jan 28, 2007 at 12:51:21PM +0100, Peter Zijlstra wrote:
-> > > > > This barrier thing is constructed so that it will not write in the 
-> > > > > sync() condition (the hot path) when there are no active lock 
-> > > > > sections; thus avoiding cacheline bouncing. -- I'm just not sure how 
-> > > > > this will work out in relation to PI. We might track those in the 
-> > > > > barrier scope and boost those by the max prio of the blockers.
-> > > > 
-> > > > Is this really needed?  We seem to grow new funky locking algorithms 
-> > > > exponentially, while people already have a hard time understanding the 
-> > > > existing ones.
-> > > 
-> > > yes, it's needed.
-> > 
-> > Would it be possible to come up with something common between this primitive
-> > and the one that Oleg Nesterov put together for Jens Axboe?
-> > 
-> > 	http://lkml.org/lkml/2006/11/29/330
-> > 
-> > Oleg's approach acquires a lock on the update side, which Peter would
-> > not want in the uncontended case -- but perhaps there is some way to
-> > make Oleg's approach be able to safely test both counters so as to
-> > avoid acquiring the lock if there are no readers.
-> > 
-> > Oleg, any chance of this working?  I believe it does, but have not
-> > thought it through fully.
-> 
-> I think no. From the quick reading, barrier_sync() and qrcu/srcu are
-> quite different. Consider:
-> 
-> barrier_lock()
-> 
-> 				barrier_sync();
-> 
-> barrier_unlock();
-> 				... wake up ...
-> 							barrier_lock();
-> 
-> 				schedule again
-> 
-> The last "schedule again" would be a BUG for qrcu/srcu, but probably
-> it is ok for barrier_sync().
+On 2/1/07, Jan Engelhardt <jengelh@linux01.gwdg.de> wrote:
+> That lists seems really outdata.
+>
+> - RaLink has gpl drivers (SerialMonkey maintains a better version),
+> - Cisco IPSEC can be replaced by the userspace tool vpnc (as far as the VPN
+>   Concentrators I have to deal with),
 
-Yes, that would be ok.
+It's a wiki[1], I invite everyone to fix the current information and
+add any new binary-only modules they are aware of.
 
->  It looks like barrier_sync() is more a
-> rw semaphore biased to readers.
+Trent
 
-Indeed, the locked sections are designed to be the rare case.
-
-> A couple of minor off-topic notes,
-> 
-> +static inline void barrier_unlock(struct barrier *b)
-> +{
-> +       smp_wmb();
-> +       if (atomic_dec_and_test(&b->count))
-> +               __wake_up(&b->wait, TASK_INTERRUPTIBLE|TASK_UNINTERRUPTIBLE, 0, b);
-> 
-> This is wake_up_all(&b->wait), yes? I don't undestans why key == b, it could be NULL.
-> 
-> +static inline void barrier_sync(struct barrier *b)
-> +{
-> +       might_sleep();
-> +
-> +       if (unlikely(atomic_read(&b->count))) {
-> +               DEFINE_WAIT(wait);
-> +               prepare_to_wait(&b->wait, &wait, TASK_UNINTERRUPTIBLE);
-> +               while (atomic_read(&b->count))
-> +                       schedule();
-> +               finish_wait(&b->wait, &wait);
-> +       }
-> +}
-> 
-> This should be open-coded wait_event(), but wrong! With the scenario above this
-> can hang forever! because the first wake_up removes the task from the &b->wait.
-
-This would be me struggling with the waitqueue API, its all a tad
-confusing at first look.
-
+[1] that url again,
+http://developer.osdl.org/dev/opendrivers/wiki/index.php/Binary_Kernel_Modules_List
