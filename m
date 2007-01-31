@@ -1,62 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932926AbXAaKBM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932938AbXAaKRO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932926AbXAaKBM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Jan 2007 05:01:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932927AbXAaKBL
+	id S932938AbXAaKRO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Jan 2007 05:17:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932940AbXAaKRO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Jan 2007 05:01:11 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:40322 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932926AbXAaKBL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Jan 2007 05:01:11 -0500
-Date: Wed, 31 Jan 2007 10:59:35 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Daniel Walker <dwalker@mvista.com>
-Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, johnstul@us.ibm.com,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 08/23] clocksource: drop duplicate register checking
-Message-ID: <20070131095935.GA22377@elte.hu>
-References: <20070131033710.420168478@mvista.com> <20070131033805.498958666@mvista.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 31 Jan 2007 05:17:14 -0500
+Received: from ug-out-1314.google.com ([66.249.92.168]:4932 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932938AbXAaKRN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Jan 2007 05:17:13 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=RsHBZyFXmrTcGYK1I7oflXrnCDQzqlL7hbLaRclW6Mi13X/bwpzEUDEpHqk97dv4iPDCLdqH5yDaIU+GjZcwY/TxW2NsQtWHys19hOzC8hLXkENJmDwfjfC7QvCzq4zT1Mhmg8thOzrUrH4u2223fSSrCBtUJn14ha6GM291KoU=
+From: Jesper Juhl <jesper.juhl@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [PATCH][Trivial] Remove duplicate listing of Cris arch from README
+Date: Wed, 31 Jan 2007 11:16:59 +0100
+User-Agent: KMail/1.9.6
+Cc: Mikael Pettersson <mikpe@it.uu.se>, linux-kernel@vger.kernel.org,
+       Trivial Patch Monkey <trivial@kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070131033805.498958666@mvista.com>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -4.3
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-4.3 required=5.9 tests=ALL_TRUSTED,BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-3.3 ALL_TRUSTED            Did not pass through any untrusted hosts
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200701311116.59262.jesper.juhl@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Daniel Walker <dwalker@mvista.com> wrote:
+Hi Linus,
 
-> This is something Thomas already dropped, [...]
+Mikael Pettersson pointed out to me that a recent patch of mine (commit
+620034c84d1d939717bdfbe02c51a3fee43541c3), that made some corrections to the
+README file, accidentally listed the Cris architecture twice.  Whoops.
 
-(i think you forgot to Cc: Thomas here, nor is this something that 
-Thomas' change dropped.)
+This removes the duplicate. 
+Patch against current git tree.
 
-> [...] and I'm just sticking with that .. If you register your 
-> clocksource _twice_ your kernel will likely not work correctly (and 
-> might crash).
 
-this is a quite bad change. John's original clocksource code protects 
-against double registry:
+Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
+---
 
-         if (is_registered_source(c)) {
-                 printk("register_clocksource: Cannot register %s. "
-                        "Already registered!", c->name);
-                 ret = -EBUSY;
+ README |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-and Thomas' change keeps that property, but doesnt printk. Your change 
-makes double registry possible, potentially crashing the kernel later 
-on! (And this isnt theoretical, double registry did happen in practice 
-when i debugged suspend problems on my SMP laptop.)
+diff --git a/README b/README
+index 46a66c6..159912c 100644
+--- a/README
++++ b/README
+@@ -24,7 +24,7 @@ ON WHAT HARDWARE DOES IT RUN?
+   today Linux also runs on (at least) the Compaq Alpha AXP, Sun SPARC and
+   UltraSPARC, Motorola 68000, PowerPC, PowerPC64, ARM, Hitachi SuperH, Cell,
+   IBM S/390, MIPS, HP PA-RISC, Intel IA-64, DEC VAX, AMD x86-64, AXIS CRIS,
+-  Cris, Xtensa, AVR32 and Renesas M32R architectures.
++  Xtensa, AVR32 and Renesas M32R architectures.
+ 
+   Linux is easily portable to most general-purpose 32- or 64-bit architectures
+   as long as they have a paged memory management unit (PMMU) and a port of the
 
-	Ingo
+
+
