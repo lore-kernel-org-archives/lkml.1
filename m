@@ -1,64 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933039AbXAaRsT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933174AbXAaRta@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933039AbXAaRsT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Jan 2007 12:48:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932955AbXAaRsT
+	id S933174AbXAaRta (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Jan 2007 12:49:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933204AbXAaRt3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Jan 2007 12:48:19 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:48659 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933039AbXAaRsT (ORCPT
+	Wed, 31 Jan 2007 12:49:29 -0500
+Received: from morgan.checkgiant.com ([72.9.244.66]:51854 "EHLO
+	morgan.cashnetusa.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933174AbXAaRt3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Jan 2007 12:48:19 -0500
-In-Reply-To: <Pine.LNX.4.64.0701301838110.3611@woody.linux-foundation.org>
-References: <patchbomb.1170193181@tetsuo.zabbo.net> <1170209044.26655.364.camel@localhost.localdomain> <Pine.LNX.4.64.0701301838110.3611@woody.linux-foundation.org>
-Mime-Version: 1.0 (Apple Message framework v752.3)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <1FB0094B-4B45-4749-8855-5AFD1A26085D@oracle.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-aio@kvack.org, Suparna Bhattacharya <suparna@in.ibm.com>,
-       Benjamin LaHaise <bcrl@kvack.org>, Ingo Molnar <mingo@elte.hu>
+	Wed, 31 Jan 2007 12:49:29 -0500
+X-Greylist: delayed 1139 seconds by postgrey-1.27 at vger.kernel.org; Wed, 31 Jan 2007 12:49:29 EST
+Subject: Unidentified Intel wifi network card
+From: Scott Lockwood <lkml@lrsehosting.com>
+Reply-To: wsl3@lrsehosting.com
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: alan@redhat.com
+Content-Type: text/plain
+Organization: LRSE Hosting
+Date: Wed, 31 Jan 2007 11:30:23 -0600
+Message-Id: <1170264624.5569.15.camel@scott-640m>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
 Content-Transfer-Encoding: 7bit
-From: Zach Brown <zach.brown@oracle.com>
-Subject: Re: [PATCH 0 of 4] Generic AIO by scheduling stacks
-Date: Wed, 31 Jan 2007 09:47:42 -0800
-To: Linus Torvalds <torvalds@linux-foundation.org>
-X-Mailer: Apple Mail (2.752.3)
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Does that mean that we might not have some cases where we'd need to  
-> make
-> sure we do things differently? Of course not. Something migt show up.
+I'm looking for assistance with a wifi device I can't find a driver for,
+the Intel Wireless 3945.
 
-Might, and has.  For a good time, take journal_info out of  
-per_call_chain() in the patch set and watch it helpfully and loudly  
-wet itself.  There really really are bits of thread_struct which are  
-strictly thread-local-storage, of a sort, for a kernel call path.    
-Sharing them, even only through cooperate scheduling, is fatal.   
-link_count is another obvious one.
+I"m getting this:
 
-They're also the only ones I've bothered to discover so far :).
+0000:0c:00.0 Network controller: Intel Corporation: Unknown device 4222
+(rev 02)
 
-> But
-> this actually makes it very clear what the difference between "struct
-> thread_struct" and "struct task_struct" are. One is shared between
-> fibrils, the other isn't.
+on a new Dell Latitude D820. Anyone know if there will be an open source
+driver for this any time soon, or if there is one now?
 
-Indeed.
+I'm using the latest vendor supplied kernel, so my apologies if this has
+already been done and I'm late to the party. I wasn't able to find much,
+other than 'use the NDIS wrapper' which I really don't want to do.
 
-Right now the per-fibril uses of task_struct members are left inline  
-in task_struct and are copied on fibril switches.
+Thanks for any assistance, at all,
+Scott
 
-We *could* put them in thread_info, at the cost of stack pressure, or  
-hang them off task_struct in their own struct to avoid the copies, at  
-the cost of indirection.  I didn't like imposing a cost on paths that  
-don't use fibrils, though, so I left them inline.
-
-(I think you know all this.  I'm clarifying for the peanut gallery, I  
-hope.)
-
-- z
