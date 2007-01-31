@@ -1,131 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933241AbXAaNTH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933254AbXAaNYq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933241AbXAaNTH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Jan 2007 08:19:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933248AbXAaNTH
+	id S933254AbXAaNYq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Jan 2007 08:24:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933253AbXAaNYq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Jan 2007 08:19:07 -0500
-Received: from smtp02.lnh.mail.rcn.net ([207.172.157.102]:20736 "EHLO
-	smtp02.lnh.mail.rcn.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933241AbXAaNTF convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Jan 2007 08:19:05 -0500
-X-IronPort-AV: i="4.13,262,1167627600"; 
-   d="scan'208"; a="400928023:sNHT28029020"
-From: "Matthew Kirk" <mkirk01@rcn.com>
-To: "'Andrew Morton'" <akpm@osdl.org>
-Cc: <linux-kernel@vger.kernel.org>
-References: <001a01c74136$0028ecf0$6600a8c0@charm><20070126031654.a41fe374.akpm@osdl.org><000c01c74180$dfe71070$6600a8c0@charm> <20070126114805.628f1351.akpm@osdl.org>
-Subject: RE: fsync occasionally very slow
-Date: Wed, 31 Jan 2007 08:18:41 -0500
-Message-ID: <000c01c7453a$53b94920$6600a8c0@charm>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="windows-1250"
-Content-Transfer-Encoding: 8BIT
-X-Mailer: Microsoft Office Outlook 11
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
-In-Reply-To: <20070126114805.628f1351.akpm@osdl.org>
-Thread-Index: AcdBgvEb5ONQhTnCRnK0kbJyzKwlKQDtpCxQ
-X-Junkmail-Status: score=10/50, host=mr08.lnh.mail.rcn.net
-X-Junkmail-SD-Raw: score=unknown,
-	refid=str=0001.0A090202.45C09743.0121,ss=1,fgs=0,
-	ip=207.172.4.11,
-	so=2006-05-09 23:27:51,
-	dmn=5.2.125/2006-10-10
+	Wed, 31 Jan 2007 08:24:46 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:54434 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933251AbXAaNYo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Jan 2007 08:24:44 -0500
+Date: Wed, 31 Jan 2007 14:22:45 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Karsten Wiese <fzu@wemgehoertderstaat.de>
+Cc: Andrew Morton <akpm@osdl.org>, Maciej Rutecki <maciej.rutecki@gmail.com>,
+       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
+Subject: Re: 2.6.20-rc6-mm3
+Message-ID: <20070131132245.GA26066@elte.hu>
+References: <20070129204528.eb8d695e.akpm@osdl.org> <45BFC442.5000903@gmail.com> <20070130142714.9f8dd5da.akpm@osdl.org> <200701310155.05474.fzu@wemgehoertderstaat.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200701310155.05474.fzu@wemgehoertderstaat.de>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -4.3
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-4.3 required=5.9 tests=ALL_TRUSTED,BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-3.3 ALL_TRUSTED            Did not pass through any untrusted hosts
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> Regarding the long fsyncs, here's a trace...
->>> 
->>> I upgraded to a more recent kernel - 2.6.18.6 - and ran it on a
->>workstation.
->>> This particular box has In this case the elevator is CFQ.
->>> 
->>> This sample came from a stall that lasted about 2.5 minutes(!) - the
-longest
->>> one I've seen yet.  The box is a bit more memory constrained than the
->>> original system but exhibits similar behavior.  It doesn't page.  Also,
->>> there is no raid card - simply striped PATA drives.
 
->>Using your little test app, the longest fsync() stall I can >>demonstrate
-on 2.6.20-rc4-mm1 on plain-old-sata-disk is 1.2 seconds.
->> What's the max stall you're able to see with the test app?
+* Karsten Wiese <fzu@wemgehoertderstaat.de> wrote:
 
-I have had that spike last up to about 4 seconds.  The pattern is that once
-fsync starts taking time (e.g. there’s data to flush) the times will all be
-in the milliseconds, except for one spike in the middle.  .  The times that
-are in the milliseconds are all in a gradually increasing slope.
+> Similar weirdness here on rc6-mm2 and rc6-rt*: resume from disk waits 
+> unduly long.
 
-The stall I get from the real app is usually from a couple seconds to 25 or
-so seconds.  
+i'm wondering whether the jiffies update fix from Thomas fixes this bug 
+for you.
 
-I’m not entirely sure that my test app demonstrates the same issue.
+If not then do you have a serial console enabled?
 
+> Some waiting times from rc6-rt6 from memory:
+> 
+> Config		| HZ			| NO_HZ + HRESTIMERS
+> cmos clock unchanged	| 2s			| 6s
+> cmos clock += 10min	| 			| 2 minutes
+> cmos clock += 2 month	| 20s			| > 4minutes, test interrupted
 
->>Perhaps the file is just super-fragmented.  If your production app >>does
-something like: 
+i've seen something like this on -rt (and incorrectly attributed it to 
+-rt) when running on a system which has a serial port and which has a 
+kernel console on that serial port. What happens is that after resume 
+(and straight after console suspend) every serial character printed 
+takes /alot/ of time - and resume does print a number of kernel messages 
+to the console. I didnt get any further in debugging this though, but 
+disabling the serial console made the problem go away.
 
->>	for (a lot) {
->>		fd = open(name);
->>		write(fd, a little bit);
->>		close(fd);
->>	}
->>in multiple threads, or against a lot of different files then you >>might
-be fragmenting the files a lot.  This is because ext3 discards >>its in-core
-anti-fragmentation data structures on close().  So
+a possibly related thing: the serial code is sensitive to jiffies 
+updates and timers, i saw that during early revisions of the dynticks 
+code - but the specifics escape me.
 
->> - Please check your app, see whether or not it is frequently opening >>
-and closing the output files.
+the slowdown could also be something like the kernel somehow wrapping 
+around jiffies and thus doing /alot/ of jiffy ticks? Or it could be a 
+miscalculation in the amount of jiffies that need updating, resulting in 
+a similar number of loops in the jiffy update code.
 
-The app opens each file for write exactly once, except for log files, which
-get written infrequently.  A file may be opened for read, but that’s
-infrequent.  Files are either 1K long or more than 10M long, in roughly
-equal numbers.  Each file is created/opened, written sequentially in one or
-more chunks of from 100K to 10M (as data is received over a network),
-fsync-ed, closed, and then renamed into its final name (same directory). The
-entire sequence for an individual file takes place in one thread. The
-directory containing the file is then fsynced.  (probably irrelevant – when
-we open files for read we always read the entire file sequentially, then
-close it, and we always call posix_fadvise(willneed)).
+(i'll try to figure out this regression - but wanted to describe to you 
+the known things so far, maybe you'll figure it out faster than me.)
 
-There are usually about 10-15 large files open for write at a time.
-
-
->> - Using `bmap' from
-  http://www.zip.com.au/~akpm/linux/patches/stuff/ext3-tools.tar.gz,
-  determine whether the offending files are highly fragmented.
-
-I’ll get back to you on this today.
-
->> - Tell us how much dirty data is being written out by these fsyncs?
-
-Each of these fsyncs is used to flush an entire new file that’s either 1K
-long or larger than 10MB (but usually about 10MB).
-
->> - Try mounting the filesystem with `-o data=writeback'.  Probably won't
-help much if it's also demonstrable on ext2.
-
-I’ll try that…
-
->> - Can you reproduce the stalls on a plain-old-disk?  Get RAID out of >>
-the picture?
-
-Using my test app I reproduced the behaviour on my home PC, which is a
-pathetic little thing with an IDE drive.  I’ve also reproduced it in the
-regular software using both hardware RAID and software RAID and will try
-just a plain PATA drive later today.
-
->> - You've seen the stalls with both CFQ and AS.  I guess you could try
-deadline and no-op, but it sounds like that won't help.
-
-Deadline does it too.  I'll try noop later today..
-
-Thanks
-
--- 
-No virus found in this outgoing message.
-Checked by AVG Free Edition.
-Version: 7.5.432 / Virus Database: 268.17.16/660 - Release Date: 1/30/2007
-5:04 PM
- 
+	Ingo
