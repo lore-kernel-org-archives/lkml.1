@@ -1,85 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933025AbXAaLEl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932981AbXAaLJB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933025AbXAaLEl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Jan 2007 06:04:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933028AbXAaLEl
+	id S932981AbXAaLJB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Jan 2007 06:09:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932989AbXAaLJB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Jan 2007 06:04:41 -0500
-Received: from il.qumranet.com ([62.219.232.206]:50206 "EHLO il.qumranet.com"
+	Wed, 31 Jan 2007 06:09:01 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:39846 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933025AbXAaLEk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Jan 2007 06:04:40 -0500
-Message-ID: <45C077C4.3070607@qumranet.com>
-Date: Wed, 31 Jan 2007 13:04:36 +0200
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Andrew Morton <akpm@osdl.org>, kvm-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 4/5] KVM: cpu hotplug support
-References: <45BF5B96.1070007@qumranet.com> <20070130145616.EFD52A0014@il.qumranet.com> <20070130164829.ce7f2f90.akpm@osdl.org> <20070131085039.GA17141@elte.hu>
-In-Reply-To: <20070131085039.GA17141@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S932981AbXAaLJA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Jan 2007 06:09:00 -0500
+Date: Wed, 31 Jan 2007 12:07:23 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Daniel Walker <dwalker@mvista.com>
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, johnstul@us.ibm.com
+Subject: Re: [PATCH 11/23] clocksource: atomic signals
+Message-ID: <20070131110722.GA1847@elte.hu>
+References: <20070131033710.420168478@mvista.com> <20070131033806.468210824@mvista.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070131033806.468210824@mvista.com>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -4.3
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-4.3 required=5.9 tests=ALL_TRUSTED,BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-3.3 ALL_TRUSTED            Did not pass through any untrusted hosts
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Andrew Morton <akpm@osdl.org> wrote:
->
->   
->> On Tue, 30 Jan 2007 14:56:16 -0000
->> Avi Kivity <avi@qumranet.com> wrote:
->>
->>     
->>> +static void decache_vcpus_on_cpu(int cpu)
->>> +{
->>> +	struct kvm *vm;
->>> +	struct kvm_vcpu *vcpu;
->>> +	int i;
->>> +
->>> +	spin_lock(&kvm_lock);
->>> +	list_for_each_entry(vm, &vm_list, vm_list)
->>> +		for (i = 0; i < KVM_MAX_VCPUS; ++i) {
->>> +			vcpu = &vm->vcpus[i];
->>> +			/*
->>> +			 * If the vcpu is locked, then it is running on some
->>> +			 * other cpu and therefore it is not cached on the
->>> +			 * cpu in question.
->>> +			 *
->>> +			 * If it's not locked, check the last cpu it executed
->>> +			 * on.
->>> +			 */
->>> +			if (mutex_trylock(&vcpu->mutex)) {
->>> +				if (vcpu->cpu == cpu) {
->>> +					kvm_arch_ops->vcpu_decache(vcpu);
->>> +					vcpu->cpu = -1;
->>> +				}
->>> +				mutex_unlock(&vcpu->mutex);
->>> +			}
->>> +		}
->>> +	spin_unlock(&kvm_lock);
->>> +}
->>>       
->> The trylock is unpleasing.  Perhaps kvm_lock should be a mutex or 
->> something?
->>     
->
-> this is a special case. The vcpu->mutex acts as a 'this vcpu is running 
-> right now' flag as well - hence the trylock signals: is it running right 
-> now or not - if it's not running we do not have to 'decache' it. But i 
-> agree and i already suggested to Avi to change kvm_lock to be a mutex - 
-> but this wont change the trylock.
->   
 
-To elaborate a little: replacing mutex_trylock() with mutex_lock() will 
-cause unbounded latency as we wait for the vcpu to be descheduled.  In 
-this case, we're only interested in descheduled vcpus, so there's no 
-need to wait.
+* Daniel Walker <dwalker@mvista.com> wrote:
 
-kvm is a bit funny in how it likes to pin cpus.
+> Modifies the way clocks are switched to in the timekeeping code. The 
+> original code would constantly monitor the clocksource list checking 
+> for newly added clocksources. I modified this by using atomic types to 
+> signal when a new clock is added. This allows the operation to be used 
+> only when it's needed.
 
--- 
-error compiling committee.c: too many arguments to function
+I see little difference between your and John's code: both poll 
+something - you poll an atomic "did a new clocksource arrive" flag in 
+the timer interrupt, John takes the clocksource_lock spinlock and checks 
+a "did a new clocksource arrive" variable. Both are global atomic 
+variables in essence.
 
+what i'd see as a real cleanup here would be to get away from this 'poll 
+whether there's any clocksource update' model, and to just ensure that a 
+running timer irq will always see the latest clocksource. I.e. to run 
+the change_clocksource() logic (and the following updates) when a new 
+clock source is selected - not when the next timer interrupt runs. That 
+would propagate all effects of a new clock source immediately.
+
+	Ingo
