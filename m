@@ -1,46 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030465AbXAaRlS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933194AbXAaRow@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030465AbXAaRlS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Jan 2007 12:41:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030464AbXAaRlS
+	id S933194AbXAaRow (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Jan 2007 12:44:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933204AbXAaRow
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Jan 2007 12:41:18 -0500
-Received: from javad.com ([216.122.176.236]:2633 "EHLO javad.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030460AbXAaRlR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Jan 2007 12:41:17 -0500
-From: Sergei Organov <osv@javad.com>
-To: Greg KH <greg@kroah.com>
+	Wed, 31 Jan 2007 12:44:52 -0500
+Received: from saraswathi.solana.com ([198.99.130.12]:34149 "EHLO
+	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933194AbXAaRov (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Jan 2007 12:44:51 -0500
+Date: Wed, 31 Jan 2007 12:38:06 -0500
+From: Jeff Dike <jdike@addtoit.com>
 Cc: linux-kernel@vger.kernel.org
-Subject: Re: Free Linux Driver Development!
-References: <20070130012904.GA9617@kroah.com> <ada8xfks90x.fsf@cisco.com>
-	<20070130191020.GF20642@kroah.com>
-Date: Wed, 31 Jan 2007 20:41:03 +0300
-In-Reply-To: <20070130191020.GF20642@kroah.com> (Greg KH's message of "Tue,
- 30
-	Jan 2007 11:10:20 -0800")
-Message-ID: <87fy9r2ixc.fsf@javad.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) XEmacs/21.4.19 (linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Subject: mm-search_binary_handler-mem-limit-fix is horribly broken
+Message-ID: <20070131173656.GA5789@ccure.user-mode-linux.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.1i
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH <greg@kroah.com> writes:
-[...]
->> And there are plenty of documented devices that no one cares enough
->> about to submit a driver for.
->
-> Any specific examples?  I have a long list of people who wish to write
-> new drivers but just don't know which hardware is not yet supported.
+It works on i386 only by accident, and doesn't work at all with UML.
 
-Maybe not entirely a new driver, as there already exist out-of-kernel
-vendor GPL driver, but if somebody is willing to resolve the issue
-described here:
+start_thread, which is called from inside the set_fs(USER_DS) -
+set_fs(oldfs) does set_fs(USER_DS).  That is then blown away by the
+set_fs(oldfs).
 
-<http://article.gmane.org/gmane.linux.serial/1221>
+A one-line fix might be
 
-please contact me, and I'll be willing to help in testing as I have the
-hardware.
+Index: linux-2.6.17/fs/exec.c
+===================================================================
+--- linux-2.6.17.orig/fs/exec.c 2007-01-31 12:10:08.000000000 -0500
++++ linux-2.6.17/fs/exec.c      2007-01-31 12:41:15.000000000 -0500
+@@ -1079,6 +1079,7 @@ int search_binary_handler(struct linux_b
+                                continue;
+                        read_unlock(&binfmt_lock);
+                        retval = fn(bprm, regs);
++                       oldfs = get_fs();
+                        if (retval >= 0) {
+                                put_binfmt(fmt);
+                                allow_write_access(bprm->file);
 
--- Sergei.
+but this seems like it's pasting one kludge on top of another.
+
+				Jeff
+
+-- 
+Work email - jdike at linux dot intel dot com
