@@ -1,68 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932952AbXAaKer@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932957AbXAaKfI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932952AbXAaKer (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Jan 2007 05:34:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932955AbXAaKer
+	id S932957AbXAaKfI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Jan 2007 05:35:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932960AbXAaKfI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Jan 2007 05:34:47 -0500
-Received: from s4.cableone.net ([24.116.0.230]:49221 "EHLO S4.cableone.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932952AbXAaKeq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Jan 2007 05:34:46 -0500
-X-Greylist: delayed 904 seconds by postgrey-1.27 at vger.kernel.org; Wed, 31 Jan 2007 05:34:46 EST
-Message-ID: <36577.129.240.220.12.1170238420.squirrel@peltkore.net>
-In-Reply-To: <Pine.LNX.4.61.0701301512200.1147@yvahk01.tjqt.qr>
-References: <Pine.LNX.4.64.0701300543420.17991@CPE00045a9c397f-CM001225dbafb6>
-    <45BF3954.8050106@yahoo.com.au>
-    <Pine.LNX.4.64.0701300753170.23302@CPE00045a9c397f-CM001225dbafb6>
-    <Pine.LNX.4.61.0701301512200.1147@yvahk01.tjqt.qr>
-Date: Wed, 31 Jan 2007 11:13:40 +0100 (CET)
-Subject: Re: [PATCH] Add "is_power_of_2" checking to log2.h.
-From: "Vegard Nossum" <vegard@peltkore.net>
-To: "Jan Engelhardt" <jengelh@linux01.gwdg.de>
-Cc: "Robert P. J. Day" <rpjday@mindspring.com>,
-       "Nick Piggin" <nickpiggin@yahoo.com.au>,
-       "Linux kernel mailing list" <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@osdl.org>, "Paul Mackerras" <paulus@samba.org>,
-       dhowells@redhat.com, galak@kernel.crashing.org
-User-Agent: SquirrelMail/1.4.8
+	Wed, 31 Jan 2007 05:35:08 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:49170 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S932957AbXAaKfF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Jan 2007 05:35:05 -0500
+Date: Wed, 31 Jan 2007 11:34:48 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: Andrew Morton <akpm@osdl.org>, David Brownell <david-b@pacbell.net>,
+       Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Fix /sys/device/.../power/state regression
+Message-ID: <20070131103448.GB19640@elf.ucw.cz>
+References: <20061219185223.GA13256@srcf.ucam.org> <200701261356.42171.david-b@pacbell.net> <20070126231521.GA12370@srcf.ucam.org> <200701261642.56896.david-b@pacbell.net> <20070126165657.663358ab.akpm@osdl.org> <20070127173804.GD3942@ucw.cz> <20070127224206.GA26241@srcf.ucam.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
-X-IP-stats: Incoming Last 0, First 78, in=788, out=0, spam=0
-X-External-IP: 69.92.239.151
-X-Abuse-Info: Send abuse complaints to abuse@cableone.net
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070127224206.GA26241@srcf.ucam.org>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, January 30, 2007 3:12 pm, Jan Engelhardt wrote:
->
->>> Why the qualifier? Zero *is* not a power of 2, is it?
->
-> No, it is not:
->
-> 	In[1]:= Solve[2^n == 0, n]
->
-> 	Out[1]= {}
->
-> So says Mathematica5.
+Hi!
 
-As a side note, I would just like to point out that Mathematica does not
-deal with modular arithmetic by default (which programmers very much do).
-In fact, in modular arithmetic, zero IS a power of two.
+> > Change breaking that was 'introduce suspend early to fix suspend on
+> > mac mini', by Linus, IIRC. So no, it is not easy to revert this one.
+> 
+> But it's easy to fix it. Either drivers need suspend routines that
 
-2^n = 0 (mod 2^n)
+Yes, that's right. It is easy to fix, but not as easy as "just revert".
 
-To see if it holds for bytes, substitute n = 8, and you get 2^8 = 0 (mod
-256). In other words: Zero is the eighth power of two modulo 256.
+> called without interrupts enabled, or they don't. The current situation 
+> is that the interface is broken regardless of which is the case - the 
+> situation with the patch is that the interface only stops working for 
+> drivers that need the suspend routine to be called with disabled 
+> interrupts. 
 
-Modular arithmetic is, however, very often a source of errors in
-programming (unchecked-for overflows and underflows), and it is
-questionable whether the programmer would really want 0 reported as a
-power of two.
+...unfortunately that patch was pretty ugly, and it still does not
+solve the "will it oops when I try to use it" part of problem.
 
-
-Vegard
-
+(Thanks for your ipw2100 runtime pm work, btw).
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
