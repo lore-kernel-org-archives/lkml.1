@@ -1,54 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751652AbXAaAF5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751864AbXAaAKE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751652AbXAaAF5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 19:05:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751647AbXAaAF5
+	id S1751864AbXAaAKE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 19:10:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751960AbXAaAKE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 19:05:57 -0500
-Received: from nommos.sslcatacombnetworking.com ([67.18.224.114]:24570 "EHLO
-	nommos.sslcatacombnetworking.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751650AbXAaAF4 (ORCPT
+	Tue, 30 Jan 2007 19:10:04 -0500
+Received: from rex.snapgear.com ([203.143.235.140]:49223 "EHLO
+	cyberguard.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751864AbXAaAKD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 19:05:56 -0500
-In-Reply-To: <20070129234139.2443391b.akpm@osdl.org>
-References: <Pine.LNX.4.64.0701292341070.32393@localhost.localdomain> <20070130055556.GA20699@in.ibm.com> <8DAAF0FE-E76A-4C1F-94B7-36BE839EA6BE@kernel.crashing.org> <112DEBE1-0765-40DC-B8FD-75DE7336312A@kernel.crashing.org> <20070129234139.2443391b.akpm@osdl.org>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <28D7E684-12A5-43C0-AA2C-2D4E02409984@kernel.crashing.org>
-Cc: ananth@in.ibm.com, Linux Kernel list <linux-kernel@vger.kernel.org>,
-       prasanna@in.ibm.com, anil.s.keshavamurthy@intel.com,
-       "David S. Miller" <davem@davemloft.net>,
-       Paul Mackerras <paulus@samba.org>, masami.hiramatsu.pt@hitachi.com
+	Tue, 30 Jan 2007 19:10:03 -0500
+Message-ID: <45BFDE54.1040805@securecomputing.com>
+Date: Wed, 31 Jan 2007 10:09:56 +1000
+From: Greg Ungerer <greg_ungerer@securecomputing.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070102)
+MIME-Version: 1.0
+To: Jes Sorensen <jes@sgi.com>
+Cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       alan@redhat.com, ksummit-2007-discuss@thunk.org,
+       Sunil Naidu <akula2.shark@gmail.com>
+Subject: Re: [Ksummit-2007-discuss] Re: [Ksummit-2006-discuss] 2007 Linux
+ Kernel Summit
+References: <20070123.095756.30177490.davem@davemloft.net>	<C1DDFD3E.8658%dirk.hohndel@intel.com>	<20070125.125121.98861775.davem@davemloft.net>	<8355959a0701251646t4b7db48cj862268aad52e8e24@mail.gmail.com>	<20070126032849.GB5589@thunk.org>	<8355959a0701260704x6aea8141s3d0581fa33c74cf2@mail.gmail.com>	<20070126195024.GE14759@thunk.org>	<45BE8BF9.6020204@sgi.com> <20070130030430.GA21772@redhat.com>	<45BEBBF0.3050102@snapgear.com> <45BED029.8080100@sgi.com>
+In-Reply-To: <45BED029.8080100@sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] kprobes: Fix compiler warning
-Date: Tue, 30 Jan 2007 18:04:52 -0600
-To: Andrew Morton <akpm@osdl.org>
-X-Mailer: Apple Mail (2.752.2)
-X-PopBeforeSMTPSenders: kumar-chaos@kgala.com,kumar-statements@kgala.com,kumar@kgala.com
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - nommos.sslcatacombnetworking.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [0 0] / [47 12]
-X-AntiAbuse: Sender Address Domain - kernel.crashing.org
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Jan 30, 2007, at 1:41 AM, Andrew Morton wrote:
+Jes Sorensen wrote:
+> Greg Ungerer wrote:
+>> Dave Jones wrote:
+>>> Again, I don't recall us spending any time at all discussing m68k, or
+>>> sparc, whilst the others you mention were well represented.
+>>
+>> Well, others where represented, I was there looking after non-mmu m68k
+>> for example (and other general non-mmu stuff). There just wasn't much
+>> contentious stuff in that space that needed wider discussion.
+> 
+> Which is good, provided that non-mmu work is actively driving some of
+> the decisions in mainline. Given that I don't follow the non-mmu work
+> at all, I don't have a feel for whether that is the case, but I could
+> imagine that it would have some impact that needs to be taken into
+> account at times.
 
-> On Tue, 30 Jan 2007 01:12:17 -0600
-> Kumar Gala <galak@kernel.crashing.org> wrote:
->
->> What are your thoughts on forward Masami patch to Linus for 2.6.20
->> since it fixes a real bug on PPC?
->
-> I bumped it up into the for-2.6.20 slot.
+Exactly.
 
-thanks.
 
-- k
+> My worry is for spending time and slots on things /
+> people dealing with classic architectures which are no longer being
+> manufactured and are only being maintained in catch-up mode.
+
+Agreed, but I haven't seen that in the past. The CPU panel at least
+has always covered current (and future) hardware.
+
+Regards
+Greg
+
 
