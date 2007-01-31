@@ -1,105 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030532AbXAaVOo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030585AbXAaVP2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030532AbXAaVOo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Jan 2007 16:14:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030538AbXAaVOo
+	id S1030585AbXAaVP2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Jan 2007 16:15:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030584AbXAaVP2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Jan 2007 16:14:44 -0500
-Received: from mail.screens.ru ([213.234.233.54]:52018 "EHLO mail.screens.ru"
+	Wed, 31 Jan 2007 16:15:28 -0500
+Received: from mx.laposte.net ([81.255.54.11]:14681 "EHLO mx.laposte.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030532AbXAaVOn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Jan 2007 16:14:43 -0500
-Date: Thu, 1 Feb 2007 00:13:40 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Christoph Hellwig <hch@infradead.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Andrew Morton <akpm@osdl.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/7] barrier: a scalable synchonisation barrier
-Message-ID: <20070131211340.GA171@tv-sign.ru>
-References: <20070128115118.837777000@programming.kicks-ass.net> <20070128120509.719287000@programming.kicks-ass.net> <20070128143941.GA16552@infradead.org> <20070128152435.GC9196@elte.hu> <20070131191215.GK2574@linux.vnet.ibm.com>
+	id S1030582AbXAaVP1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Jan 2007 16:15:27 -0500
+Subject: Re: Free Linux Driver Development!
+From: Nicolas Mailhot <nicolas.mailhot@laposte.net>
+To: Greg KH <greg@kroah.com>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20070131201258.GB15128@kroah.com>
+References: <32793.192.54.193.51.1170248792.squirrel@rousalka.dyndns.org>
+	 <20070131201258.GB15128@kroah.com>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-AqXPGp7VbNoz8odH3LxF"
+Organization: Adresse perso
+Date: Wed, 31 Jan 2007 22:15:20 +0100
+Message-Id: <1170278120.21878.48.camel@rousalka.dyndns.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070131191215.GK2574@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.11
+X-Mailer: Evolution 2.9.5 (2.9.5-2.fc7) 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/31, Paul E. McKenney wrote:
->
-> On Sun, Jan 28, 2007 at 04:24:35PM +0100, Ingo Molnar wrote:
-> > 
-> > * Christoph Hellwig <hch@infradead.org> wrote:
-> > 
-> > > On Sun, Jan 28, 2007 at 12:51:21PM +0100, Peter Zijlstra wrote:
-> > > > This barrier thing is constructed so that it will not write in the 
-> > > > sync() condition (the hot path) when there are no active lock 
-> > > > sections; thus avoiding cacheline bouncing. -- I'm just not sure how 
-> > > > this will work out in relation to PI. We might track those in the 
-> > > > barrier scope and boost those by the max prio of the blockers.
-> > > 
-> > > Is this really needed?  We seem to grow new funky locking algorithms 
-> > > exponentially, while people already have a hard time understanding the 
-> > > existing ones.
-> > 
-> > yes, it's needed.
-> 
-> Would it be possible to come up with something common between this primitive
-> and the one that Oleg Nesterov put together for Jens Axboe?
-> 
-> 	http://lkml.org/lkml/2006/11/29/330
-> 
-> Oleg's approach acquires a lock on the update side, which Peter would
-> not want in the uncontended case -- but perhaps there is some way to
-> make Oleg's approach be able to safely test both counters so as to
-> avoid acquiring the lock if there are no readers.
-> 
-> Oleg, any chance of this working?  I believe it does, but have not
-> thought it through fully.
 
-I think no. From the quick reading, barrier_sync() and qrcu/srcu are
-quite different. Consider:
+--=-AqXPGp7VbNoz8odH3LxF
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-barrier_lock()
+Le mercredi 31 janvier 2007 =C3=A0 12:12 -0800, Greg KH a =C3=A9crit :
+> On Wed, Jan 31, 2007 at 02:06:32PM +0100, Nicolas Mailhot wrote:
 
-				barrier_sync();
+[Reordering for the sake of argument]
 
-barrier_unlock();
-				... wake up ...
-							barrier_lock();
+> > There are many out-of-tree drivers (ivtv, lirc, various webcam=20
+> > drivers,
+> > enhanced USB keyboard handlers...) with merging not planified or taking
+> > ages.
+>=20
+> See my above comment about lirc.  As for the others, everyone knows
+> where we are at, and what the critera is for getting their code into the
+> tree, so it's not like we are hiding anywhere :)
 
-				schedule again
+The perception of many out-of-tree projects is "if I try to get in-tree
+I'll be submitted to vicious review, and I'll have to fix the code my
+myself, and that's assuming someone bothers to review it at all". What
+you've just wrote is no different:
 
-The last "schedule again" would be a BUG for qrcu/srcu, but probably
-it is ok for barrier_sync(). It looks like barrier_sync() is more a
-rw semaphore biased to readers.
+> we will gladly take any
+> currently out-of-the-tree drivers into mainline, as long as they follow
+> our rules and coding style issues, please do so.
 
-A couple of minor off-topic notes,
+In other words, getting an out-of-tree driver in is a major unrewarding
+work commitment for its author (especially considering that if he was
+familiar with good kernel coding, chances are he'd have worked in-tree
+from the start, with an experimental driver)
 
-+static inline void barrier_unlock(struct barrier *b)
-+{
-+       smp_wmb();
-+       if (atomic_dec_and_test(&b->count))
-+               __wake_up(&b->wait, TASK_INTERRUPTIBLE|TASK_UNINTERRUPTIBLE, 0, b);
+Contrast it with "give us a partial NDAed spec and we'll write a driver
+from scratch for you".
 
-This is wake_up_all(&b->wait), yes? I don't undestans why key == b, it could be NULL.
+You're asking way more of people that have a lot less resources than
+hardware manufacturers. Many of those projects did try to get in-tree at
+least once before giving up.
 
-+static inline void barrier_sync(struct barrier *b)
-+{
-+       might_sleep();
-+
-+       if (unlikely(atomic_read(&b->count))) {
-+               DEFINE_WAIT(wait);
-+               prepare_to_wait(&b->wait, &wait, TASK_UNINTERRUPTIBLE);
-+               while (atomic_read(&b->count))
-+                       schedule();
-+               finish_wait(&b->wait, &wait);
-+       }
-+}
+> > I'd really love if the same offer was extended to GPL out-of-tree drive=
+r
+> > trees.
+>=20
+> This kind of offer has _always_ been there for out-of-tree GPL drivers.
+> I have contacted many different groups and driver authors over the years
+> to offer my help in trying to get their code into the mainline kernel.
+>=20
+> Some take me up on the offer, others ignore it, and still others activly
+> refuse to do so, saying they want to stay out-of-the tree (lirc is one
+> of these examples...)
 
-This should be open-coded wait_event(), but wrong! With the scenario above this
-can hang forever! because the first wake_up removes the task from the &b->wait.
+And when resources were scarce respecting this kind of decision was the
+right thing. But if there are enough resources for your offer, I
+question letting whole classes of drivers we have documentation for (in
+the form of code) out-of-tree (even if that means some less-than-amiable
+forking).
 
-Oleg.
+Both the OLPC and the N800 have toy (webcam) video capabilities. The
+logical next spec (next hardware generation) is stronger video with
+remoting (someone will probably sell remote add-ons before).
 
+Are they going to lack in-tree support just because the reference
+framework is out-of-tree, and we respect its authors' wishes so much
+nothing can happen till they change their mind ?
+
+(And that's assuming they're dead-set on being out-of-tree. Like I wrote
+before they're not getting the same deal you're offering to hardware
+manufacturers)
+
+Meanwhile you're asking for specs of hardware no Linux user has, because
+no form of Linux support ever existed. This is a strange use of
+resources.
+
+Regards,
+
+--=20
+Nicolas Mailhot
+
+--=-AqXPGp7VbNoz8odH3LxF
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: Ceci est une partie de message
+	=?ISO-8859-1?Q?num=E9riquement?= =?ISO-8859-1?Q?_sign=E9e?=
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iEYEABECAAYFAkXBBugACgkQI2bVKDsp8g1ZIQCgiPdE9ekny7TRy/AMM5rGVVd0
+ymAAoONbYmoz0hAcpg3jKH9rK/mOqXrV
+=U3aH
+-----END PGP SIGNATURE-----
+
+--=-AqXPGp7VbNoz8odH3LxF--
