@@ -1,490 +1,293 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932772AbXAaDsL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932711AbXAaDt0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932772AbXAaDsL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 22:48:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932711AbXAaDrq
+	id S932711AbXAaDt0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 22:49:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932803AbXAaDt0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 22:47:46 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.158]:1518 "EHLO
+	Tue, 30 Jan 2007 22:49:26 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.158]:1670 "EHLO
 	localhost.localdomain" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932846AbXAaDrn (ORCPT
+	with ESMTP id S932711AbXAaDtY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 22:47:43 -0500
-Message-Id: <20070131033807.107454281@mvista.com>
+	Tue, 30 Jan 2007 22:49:24 -0500
+Message-Id: <20070131033807.427331295@mvista.com>
 References: <20070131033710.420168478@mvista.com>
 User-Agent: quilt/0.46.mv-1
-Date: Tue, 30 Jan 2007 19:37:23 -0800
+Date: Tue, 30 Jan 2007 19:37:24 -0800
 From: Daniel Walker <dwalker@mvista.com>
 To: akpm@osdl.org
 Cc: linux-kernel@vger.kernel.org, johnstul@us.ibm.com
-Subject: [PATCH 13/23] timekeeping: move sysfs layer/drop API calls
-Content-Disposition: inline; filename=timekeeping_move_sysfs_layer.patch
+Subject: [PATCH 14/23] clocksource: increase initcall priority
+Content-Disposition: inline; filename=clocksource_init_call.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This moves the timekeeping sysfs override layer into timekeeping.c and
-removes the get_next_clocksource and select_clocksource functions, and 
-their component variables, since they are no longer used.
+
+Normal systems often have almost everything registered in
+device_initcall() . Most drivers are registered there, and usually if
+people add code that needs an initcall they will either use
+device_initcall() or module_init() which both result in the same
+initcall..
+
+When John created the clocksource interface he did what most people
+would do , and he made the clocksource registration happen in  
+device_initcall with most everything else .. The effect of doing this
+was the addition of the following code,
+
+/* clocksource_done_booting - Called near the end of bootup
+ *
+ * Hack to avoid lots of clocksource churn at boot time
+ */
+static int __init clocksource_done_booting(void)
+{
+        finished_booting = 1;
+        return 0;
+}
+
+late_initcall(clocksource_done_booting);
+
+This is one of two initcalls in the clocksource interface , the other
+one is device_initcall(init_clocksource_sysfs); ..
+
+If I leave the clocksource initcall alone then anything that uses a
+clocksource in the future would need at least one late_initcall().
+Since the clocksources aren't all fully register until after 
+device_initcall. 
+
+The reason behind changing that is because it doesn't fit the usually
+development flow of initialization functions which , as I said earlier,
+almost always end up into device_initcall .
+
+This change certainly isn't mandatory . I feel it would reduce the
+likely hood of developers that use the clocksource interface from adding
+multiple initcalls (one late_initcall, and one device_initcall). It also
+better fits developers tendencies to put almost everything into
+device_initcall() ..
+
+In addition,
+
+This patch removes a small amount of code in time keeping which existed to
+detect the end of the initcall sequence then selected a clock.
+
+As a note, arm and mips both register their clocksources during time_init()
+instead of using initcalls.
 
 Signed-Off-By: Daniel Walker <dwalker@mvista.com>
 
 ---
- include/linux/clocksource.h |    5 -
- kernel/time/clocksource.c   |  169 --------------------------------------------
- kernel/time/timekeeping.c   |  131 +++++++++++++++++++++++++++++++++-
- 3 files changed, 134 insertions(+), 171 deletions(-)
+ arch/i386/kernel/hpet.c          |    2 +-
+ arch/i386/kernel/i8253.c         |    2 +-
+ arch/i386/kernel/tsc.c           |    2 +-
+ arch/x86_64/kernel/hpet.c        |    2 +-
+ arch/x86_64/kernel/tsc.c         |    3 +--
+ drivers/clocksource/acpi_pm.c    |    8 +++++++-
+ drivers/clocksource/cyclone.c    |    2 +-
+ drivers/clocksource/scx200_hrt.c |    2 +-
+ include/linux/clocksource.h      |    6 ++++++
+ kernel/time/clocksource.c        |   13 -------------
+ kernel/time/jiffies.c            |    2 +-
+ kernel/time/tick-sched.c         |    8 ++++++++
+ kernel/time/timekeeping.c        |   15 +++++++--------
+ 13 files changed, 36 insertions(+), 31 deletions(-)
 
+Index: linux-2.6.19/arch/i386/kernel/hpet.c
+===================================================================
+--- linux-2.6.19.orig/arch/i386/kernel/hpet.c
++++ linux-2.6.19/arch/i386/kernel/hpet.c
+@@ -315,7 +315,7 @@ static int __init init_hpet_clocksource(
+ 	return clocksource_register(&clocksource_hpet);
+ }
+ 
+-module_init(init_hpet_clocksource);
++clocksource_initcall(init_hpet_clocksource);
+ 
+ #ifdef CONFIG_HPET_EMULATE_RTC
+ 
+Index: linux-2.6.19/arch/i386/kernel/i8253.c
+===================================================================
+--- linux-2.6.19.orig/arch/i386/kernel/i8253.c
++++ linux-2.6.19/arch/i386/kernel/i8253.c
+@@ -195,4 +195,4 @@ static int __init init_pit_clocksource(v
+ 	clocksource_pit.mult = clocksource_hz2mult(CLOCK_TICK_RATE, 20);
+ 	return clocksource_register(&clocksource_pit);
+ }
+-module_init(init_pit_clocksource);
++clocksource_initcall(init_pit_clocksource);
+Index: linux-2.6.19/arch/i386/kernel/tsc.c
+===================================================================
+--- linux-2.6.19.orig/arch/i386/kernel/tsc.c
++++ linux-2.6.19/arch/i386/kernel/tsc.c
+@@ -458,4 +458,4 @@ static int __init init_tsc_clocksource(v
+ 	return 0;
+ }
+ 
+-module_init(init_tsc_clocksource);
++clocksource_initcall(init_tsc_clocksource);
+Index: linux-2.6.19/arch/x86_64/kernel/hpet.c
+===================================================================
+--- linux-2.6.19.orig/arch/x86_64/kernel/hpet.c
++++ linux-2.6.19/arch/x86_64/kernel/hpet.c
+@@ -508,4 +508,4 @@ static int __init init_hpet_clocksource(
+ 	return clocksource_register(&clocksource_hpet);
+ }
+ 
+-module_init(init_hpet_clocksource);
++clocksource_initcall(init_hpet_clocksource);
+Index: linux-2.6.19/arch/x86_64/kernel/tsc.c
+===================================================================
+--- linux-2.6.19.orig/arch/x86_64/kernel/tsc.c
++++ linux-2.6.19/arch/x86_64/kernel/tsc.c
+@@ -224,5 +224,4 @@ static int __init init_tsc_clocksource(v
+ 	}
+ 	return 0;
+ }
+-
+-module_init(init_tsc_clocksource);
++clocksource_initcall(init_tsc_clocksource);
+Index: linux-2.6.19/drivers/clocksource/acpi_pm.c
+===================================================================
+--- linux-2.6.19.orig/drivers/clocksource/acpi_pm.c
++++ linux-2.6.19/drivers/clocksource/acpi_pm.c
+@@ -214,4 +214,10 @@ pm_good:
+ 	return clocksource_register(&clocksource_acpi_pm);
+ }
+ 
+-module_init(init_acpi_pm_clocksource);
++/*
++ * This clocksource is removed from the clocksource_initcall
++ * macro since it's mandatory for it to be in fs_initcall as the
++ * highest initcall level, or else it doesn't work properly with
++ * it's PCI fix ups.
++ */
++fs_initcall(init_acpi_pm_clocksource);
+Index: linux-2.6.19/drivers/clocksource/cyclone.c
+===================================================================
+--- linux-2.6.19.orig/drivers/clocksource/cyclone.c
++++ linux-2.6.19/drivers/clocksource/cyclone.c
+@@ -116,4 +116,4 @@ static int __init init_cyclone_clocksour
+ 	return clocksource_register(&clocksource_cyclone);
+ }
+ 
+-module_init(init_cyclone_clocksource);
++clocksource_initcall(init_cyclone_clocksource);
+Index: linux-2.6.19/drivers/clocksource/scx200_hrt.c
+===================================================================
+--- linux-2.6.19.orig/drivers/clocksource/scx200_hrt.c
++++ linux-2.6.19/drivers/clocksource/scx200_hrt.c
+@@ -94,7 +94,7 @@ static int __init init_hrt_clocksource(v
+ 	return clocksource_register(&cs_hrt);
+ }
+ 
+-module_init(init_hrt_clocksource);
++clocksource_initcall(init_hrt_clocksource);
+ 
+ MODULE_AUTHOR("Jim Cromie <jim.cromie@gmail.com>");
+ MODULE_DESCRIPTION("clocksource on SCx200 HiRes Timer");
 Index: linux-2.6.19/include/linux/clocksource.h
 ===================================================================
 --- linux-2.6.19.orig/include/linux/clocksource.h
 +++ linux-2.6.19/include/linux/clocksource.h
-@@ -25,9 +25,9 @@ typedef u64 cycle_t;
- extern struct clocksource clocksource_jiffies;
+@@ -41,6 +41,12 @@ extern struct atomic_notifier_head clock
+ #define CLOCKSOURCE_NOTIFY_RATING	2
+ #define CLOCKSOURCE_NOTIFY_FREQ		4
  
- /*
-- * Atomic signal that is specific to timekeeping.
-+ * Sysfs device extern, for registering clocksources under the same sysfs dir.
-  */
--extern atomic_t clock_check;
-+extern struct sys_device clocksource_sys_device;
- 
- /*
-  * Allows inlined calling for notifier routines.
-@@ -231,7 +231,6 @@ static inline void clocksource_calculate
- 
- 
- /* used to install a new clocksource */
--extern struct clocksource *clocksource_get_next(void);
- extern int clocksource_register(struct clocksource*);
- extern void clocksource_rating_change(struct clocksource*);
- extern struct clocksource * clocksource_get_clock(char*);
++/*
++ * Defined so the initcall can be changes without touching
++ * every clocksource in the system.
++ */
++#define clocksource_initcall(x)		fs_initcall(x)
++
+ /**
+  * clocksource_notifier_register - Registers a list change notifier
+  * @nb:		pointer to a notifier block
 Index: linux-2.6.19/kernel/time/clocksource.c
 ===================================================================
 --- linux-2.6.19.orig/kernel/time/clocksource.c
 +++ linux-2.6.19/kernel/time/clocksource.c
-@@ -30,27 +30,17 @@
- #include <linux/module.h>
- 
- /*[Clocksource internal variables]---------
-- * curr_clocksource:
-- *	currently selected clocksource. Initialized to clocksource_jiffies.
-- * next_clocksource:
-- *	pending next selected clocksource.
-  * clocksource_list:
-  *	rating sorted linked list with the registered clocksources
-  * clocksource_lock:
-  *	protects manipulations to curr_clocksource and next_clocksource
-  *	and the clocksource_list
-- * override_name:
-- *	Name of the user-specified clocksource.
+@@ -38,22 +38,9 @@
   */
--static struct clocksource *curr_clocksource = &clocksource_jiffies;
--static struct clocksource *next_clocksource;
  static LIST_HEAD(clocksource_list);
  static DEFINE_SPINLOCK(clocksource_lock);
--static char override_name[32];
- static int finished_booting;
+-static int finished_booting;
  
  ATOMIC_NOTIFIER_HEAD(clocksource_list_notifier);
--atomic_t clock_check = ATOMIC_INIT(0);
  
- /* clocksource_done_booting - Called near the end of bootup
-  *
-@@ -59,32 +49,12 @@ atomic_t clock_check = ATOMIC_INIT(0);
- static int __init clocksource_done_booting(void)
- {
- 	finished_booting = 1;
--	/* Check for a new clock now */
--	atomic_inc(&clock_check);
- 	return 0;
- }
- 
- late_initcall(clocksource_done_booting);
- 
- /**
-- * clocksource_get_next - Returns the selected clocksource
+-/* clocksource_done_booting - Called near the end of bootup
 - *
+- * Hack to avoid lots of clocksource churn at boot time
 - */
--struct clocksource *clocksource_get_next(void)
+-static int __init clocksource_done_booting(void)
 -{
--	unsigned long flags;
--
--	spin_lock_irqsave(&clocksource_lock, flags);
--	if (next_clocksource && finished_booting) {
--		curr_clocksource = next_clocksource;
--		next_clocksource = NULL;
--	}
--	spin_unlock_irqrestore(&clocksource_lock, flags);
--
--	return curr_clocksource;
+-	finished_booting = 1;
+-	return 0;
 -}
 -
--/**
+-late_initcall(clocksource_done_booting);
+-
+ /**
   * __is_registered - Returns a clocksource if it's registered
   * @name:		name of the clocksource to return
-  *
-@@ -148,25 +118,6 @@ struct clocksource * clocksource_get_clo
- 	return ret;
+Index: linux-2.6.19/kernel/time/jiffies.c
+===================================================================
+--- linux-2.6.19.orig/kernel/time/jiffies.c
++++ linux-2.6.19/kernel/time/jiffies.c
+@@ -69,4 +69,4 @@ static int __init init_jiffies_clocksour
+ 	return clocksource_register(&clocksource_jiffies);
  }
  
--
--/**
-- * select_clocksource - Finds the best registered clocksource.
-- *
-- * Private function. Must hold clocksource_lock when called.
-- *
-- * Looks through the list of registered clocksources, returning
-- * the one with the highest rating value. If there is a clocksource
-- * name that matches the override string, it returns that clocksource.
-- */
--static struct clocksource *select_clocksource(void)
--{
--	if (!*override_name)
--		return list_entry(clocksource_list.next,
--				  struct clocksource, list);
--
--	return __get_clock(override_name);
--}
--
- /*
-  * __sorted_list_add - Sorted clocksource add
-  * @c:			clocksource to add
-@@ -210,11 +161,6 @@ int clocksource_register(struct clocksou
+-module_init(init_jiffies_clocksource);
++clocksource_initcall(init_jiffies_clocksource);
+Index: linux-2.6.19/kernel/time/tick-sched.c
+===================================================================
+--- linux-2.6.19.orig/kernel/time/tick-sched.c
++++ linux-2.6.19/kernel/time/tick-sched.c
+@@ -540,6 +540,14 @@ int tick_check_oneshot_change(int allow_
+ {
+ 	struct tick_sched *ts = &__get_cpu_var(tick_cpu_sched);
  
- 	spin_lock_irqsave(&clocksource_lock, flags);
-  	__sorted_list_add(c);
--
--	/*
--	 * scan the registered clocksources, and pick the best one
--	 */
--	next_clocksource = select_clocksource();
- 	spin_unlock_irqrestore(&clocksource_lock, flags);
++	/*
++	 * HRT or Dynamic tick can't be started during init, but it's possible
++	 * for generic time to switch to a good clock during init. So
++	 * explicitly check that we are't still booting here.
++	 */
++	if (system_state == SYSTEM_BOOTING)
++		return 0;
++
+ 	if (!test_and_clear_bit(0, &ts->check_clocks))
+ 		return 0;
  
- 	atomic_notifier_call_chain(&clocksource_list_notifier,
-@@ -243,7 +189,6 @@ void clocksource_rating_change(struct cl
- 	list_del_init(&c->list);
- 	__sorted_list_add(c);
- 
--	next_clocksource = select_clocksource();
- 	spin_unlock_irqrestore(&clocksource_lock, flags);
- 
- 	atomic_notifier_call_chain(&clocksource_list_notifier,
-@@ -254,67 +199,6 @@ EXPORT_SYMBOL(clocksource_rating_change)
- 
- #ifdef CONFIG_SYSFS
- /**
-- * sysfs_show_current_clocksources - sysfs interface for current clocksource
-- * @dev:	unused
-- * @buf:	char buffer to be filled with clocksource list
-- *
-- * Provides sysfs interface for listing current clocksource.
-- */
--static ssize_t
--sysfs_show_current_clocksources(struct sys_device *dev, char *buf)
--{
--	char *curr = buf;
--
--	spin_lock_irq(&clocksource_lock);
--	curr += sprintf(curr, "%s ", curr_clocksource->name);
--	spin_unlock_irq(&clocksource_lock);
--
--	curr += sprintf(curr, "\n");
--
--	return curr - buf;
--}
--
--/**
-- * sysfs_override_clocksource - interface for manually overriding clocksource
-- * @dev:	unused
-- * @buf:	name of override clocksource
-- * @count:	length of buffer
-- *
-- * Takes input from sysfs interface for manually overriding the default
-- * clocksource selction.
-- */
--static ssize_t sysfs_override_clocksource(struct sys_device *dev,
--					  const char *buf, size_t count)
--{
--	size_t ret = count;
--	/* strings from sysfs write are not 0 terminated! */
--	if (count >= sizeof(override_name))
--		return -EINVAL;
--
--	/* strip of \n: */
--	if (buf[count-1] == '\n')
--		count--;
--	if (count < 1)
--		return -EINVAL;
--
--	spin_lock_irq(&clocksource_lock);
--
--	/* copy the name given: */
--	memcpy(override_name, buf, count);
--	override_name[count] = 0;
--
--	/* try to select it: */
--	next_clocksource = select_clocksource();
--
--	/* Signal that there is a new clocksource */
--	atomic_inc(&clock_check);
--
--	spin_unlock_irq(&clocksource_lock);
--
--	return ret;
--}
--
--/**
-  * sysfs_show_available_clocksources - sysfs interface for listing clocksource
-  * @dev:	unused
-  * @buf:	char buffer to be filled with clocksource list
-@@ -345,9 +229,6 @@ sysfs_show_available_clocksources(struct
- /*
-  * Sysfs setup bits:
-  */
--static SYSDEV_ATTR(current_clocksource, 0600, sysfs_show_current_clocksources,
--		   sysfs_override_clocksource);
--
- static SYSDEV_ATTR(available_clocksource, 0600,
- 		   sysfs_show_available_clocksources, NULL);
- 
-@@ -355,7 +236,7 @@ static struct sysdev_class clocksource_s
- 	set_kset_name("clocksource"),
- };
- 
--static struct sys_device device_clocksource = {
-+struct sys_device clocksource_sys_device = {
- 	.id	= 0,
- 	.cls	= &clocksource_sysclass,
- };
-@@ -365,57 +246,13 @@ static int __init init_clocksource_sysfs
- 	int error = sysdev_class_register(&clocksource_sysclass);
- 
- 	if (!error)
--		error = sysdev_register(&device_clocksource);
-+		error = sysdev_register(&clocksource_sys_device);
- 	if (!error)
- 		error = sysdev_create_file(
--				&device_clocksource,
--				&attr_current_clocksource);
--	if (!error)
--		error = sysdev_create_file(
--				&device_clocksource,
-+				&clocksource_sys_device,
- 				&attr_available_clocksource);
- 	return error;
- }
- 
- device_initcall(init_clocksource_sysfs);
- #endif /* CONFIG_SYSFS */
--
--/**
-- * boot_override_clocksource - boot clock override
-- * @str:	override name
-- *
-- * Takes a clocksource= boot argument and uses it
-- * as the clocksource override name.
-- */
--static int __init boot_override_clocksource(char* str)
--{
--	unsigned long flags;
--	spin_lock_irqsave(&clocksource_lock, flags);
--	if (str)
--		strlcpy(override_name, str, sizeof(override_name));
--	spin_unlock_irqrestore(&clocksource_lock, flags);
--	return 1;
--}
--
--__setup("clocksource=", boot_override_clocksource);
--
--/**
-- * boot_override_clock - Compatibility layer for deprecated boot option
-- * @str:	override name
-- *
-- * DEPRECATED! Takes a clock= boot argument and uses it
-- * as the clocksource override name
-- */
--static int __init boot_override_clock(char* str)
--{
--	if (!strcmp(str, "pmtmr")) {
--		printk("Warning: clock=pmtmr is deprecated. "
--			"Use clocksource=acpi_pm.\n");
--		return boot_override_clocksource("acpi_pm");
--	}
--	printk("Warning! clock= boot option is deprecated. "
--		"Use clocksource=xyz\n");
--	return boot_override_clocksource(str);
--}
--
--__setup("clock=", boot_override_clock);
 Index: linux-2.6.19/kernel/time/timekeeping.c
 ===================================================================
 --- linux-2.6.19.orig/kernel/time/timekeeping.c
 +++ linux-2.6.19/kernel/time/timekeeping.c
-@@ -12,6 +12,7 @@
- #include <linux/timex.h>
- #include <linux/hrtimer.h>
- #include <linux/tick.h>
-+#include <linux/sysdev.h>
+@@ -318,14 +318,6 @@ static __init int timekeeping_init_sysfs
+ device_initcall(timekeeping_init_sysfs);
+ #endif /* CONFIG_SYSFS */
  
- /*
-  * The current time
-@@ -42,6 +43,17 @@ static unsigned long timekeeping_suspend
- struct clocksource *clock = &clocksource_jiffies;
- 
- #ifdef CONFIG_GENERIC_TIME
-+
-+/*
-+ * Signals to check the current clock in the timer interrupt.
-+ */
-+static atomic_t clock_check = ATOMIC_INIT(0);
-+
-+/*
-+ * Holds the override name if one is given
-+ */
-+static char override_name[32];
-+
+-static int __init timekeeping_early_clockswitch(void)
+-{
+-	atomic_inc(&clock_check);
+-	return 0;
+-}
+-
+-late_initcall(timekeeping_early_clockswitch);
+-
  /**
-  * __get_nsec_offset - Returns nanoseconds since last call to periodic_hook
-  *
-@@ -167,7 +179,12 @@ static void timekeeping_change_clocksour
- 	struct clocksource *new;
- 	cycle_t now;
- 	u64 nsec;
--	new = clocksource_get_next();
+  * boot_override_clocksource - boot clock override
+  * @str:	override name
+@@ -471,6 +463,13 @@ static int __init timekeeping_init_devic
+ 	if (!error)
+ 		error = sysdev_register(&device_timer);
+ 
++#ifdef CONFIG_GENERIC_TIME
++	/*
++	 * Now we signal to switch to a high-res clock.
++	 */
++	atomic_inc(&clock_check);
++#endif
 +
-+	if (!*override_name)
-+		new = clocksource_get_clock(NULL);
-+	else
-+		new = clocksource_get_clock(override_name);
-+
- 	if (clock != new) {
- 		now = clocksource_read(new);
- 		nsec =  __get_nsec_offset();
-@@ -233,6 +250,117 @@ void __init timekeeping_init_notifier(vo
- 	 */
- 	clocksource_notifier_register(&clocksource_nb);
+ 	return error;
  }
-+
-+#ifdef CONFIG_SYSFS
-+/**
-+ * sysfs_show_current_clocksources - sysfs interface for current clocksource
-+ * @dev:	unused
-+ * @buf:	char buffer to be filled with clocksource list
-+ *
-+ * Provides sysfs interface for listing current clocksource.
-+ */
-+static ssize_t
-+timekeeping_sysfs_show_current_clocksources(struct sys_device *dev, char *buf)
-+{
-+	char *curr = buf;
-+
-+	curr += sprintf(curr, "%s \n", clock->name);
-+
-+	return curr - buf;
-+}
-+
-+/**
-+ * sysfs_override_clocksource - interface for manually overriding clocksource
-+ * @dev:	unused
-+ * @buf:	name of override clocksource
-+ * @count:	length of buffer
-+ *
-+ * Takes input from sysfs interface for manually overriding the default
-+ * clocksource selction.
-+ */
-+static ssize_t
-+timekeeping_sysfs_override_clocksource(struct sys_device *dev,
-+				       const char *buf, size_t count)
-+{
-+	size_t ret = count;
-+	/* strings from sysfs write are not 0 terminated! */
-+	if (count >= sizeof(override_name))
-+		return -EINVAL;
-+
-+	/* strip of \n: */
-+	if (buf[count-1] == '\n')
-+		count--;
-+	if (count < 1)
-+		return -EINVAL;
-+
-+	/* copy the name given: */
-+	memcpy(override_name, buf, count);
-+	override_name[count] = 0;
-+
-+	/* Signal that there is a new clocksource */
-+	atomic_inc(&clock_check);
-+
-+	return ret;
-+}
-+
-+static SYSDEV_ATTR(current_clocksource, 0600,
-+		   timekeeping_sysfs_show_current_clocksources,
-+		   timekeeping_sysfs_override_clocksource);
-+
-+static __init int timekeeping_init_sysfs(void)
-+{
-+	int error;
-+
-+	error = sysdev_create_file(&clocksource_sys_device,
-+				   &attr_current_clocksource);
-+	return error;
-+}
-+device_initcall(timekeeping_init_sysfs);
-+#endif /* CONFIG_SYSFS */
-+
-+static int __init timekeeping_early_clockswitch(void)
-+{
-+	atomic_inc(&clock_check);
-+	return 0;
-+}
-+
-+late_initcall(timekeeping_early_clockswitch);
-+
-+/**
-+ * boot_override_clocksource - boot clock override
-+ * @str:	override name
-+ *
-+ * Takes a clocksource= boot argument and uses it
-+ * as the clocksource override name.
-+ */
-+static int __init boot_override_clocksource(char* str)
-+{
-+	if (str)
-+		strlcpy(override_name, str, sizeof(override_name));
-+	return 1;
-+}
-+__setup("clocksource=", boot_override_clocksource);
-+
-+/**
-+ * boot_override_clock - Compatibility layer for deprecated boot option
-+ * @str:	override name
-+ *
-+ * DEPRECATED! Takes a clock= boot argument and uses it
-+ * as the clocksource override name
-+ */
-+static int __init boot_override_clock(char* str)
-+{
-+	if (!strcmp(str, "pmtmr")) {
-+		printk("Warning: clock=pmtmr is deprecated. "
-+			"Use clocksource=acpi_pm.\n");
-+		return boot_override_clocksource("acpi_pm");
-+	}
-+	printk("Warning! clock= boot option is deprecated. "
-+		"Use clocksource=xyz\n");
-+	return boot_override_clocksource(str);
-+}
-+__setup("clock=", boot_override_clock);
-+
- #endif /* CONFIG_GENERIC_TIME */
- 
- /**
-@@ -261,7 +389,6 @@ void __init timekeeping_init(void)
- 
- 	ntp_clear();
- 
--	clock = clocksource_get_next();
- 	clocksource_calculate_interval(clock, NTP_INTERVAL_LENGTH);
- 	clock->cycle_last = clocksource_read(clock);
  
 
 -- 
