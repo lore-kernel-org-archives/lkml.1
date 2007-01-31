@@ -1,42 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933204AbXAaRw3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933269AbXAaRwv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933204AbXAaRw3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Jan 2007 12:52:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933253AbXAaRw3
+	id S933269AbXAaRwv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Jan 2007 12:52:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933253AbXAaRwv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Jan 2007 12:52:29 -0500
-Received: from tmailer.gwdg.de ([134.76.10.23]:49636 "EHLO tmailer.gwdg.de"
+	Wed, 31 Jan 2007 12:52:51 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:59177 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933204AbXAaRw2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Jan 2007 12:52:28 -0500
-Date: Wed, 31 Jan 2007 18:50:37 +0100 (MET)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: Roland Dreier <rdreier@cisco.com>
-cc: Greg KH <greg@kroah.com>, Jeff Garzik <jeff@garzik.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Free Linux Driver Development!
-In-Reply-To: <adar6tcp43r.fsf@cisco.com>
-Message-ID: <Pine.LNX.4.61.0701311849490.13737@yvahk01.tjqt.qr>
-References: <20070130012904.GA9617@kroah.com> <ada8xfks90x.fsf@cisco.com>
- <20070130191020.GF20642@kroah.com> <adaodogqpmx.fsf@cisco.com>
- <45BFA087.6020905@garzik.org> <ada4pq8qjpd.fsf@cisco.com>
- <20070130214759.GA12477@kroah.com> <adar6tcp43r.fsf@cisco.com>
+	id S933269AbXAaRwt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Jan 2007 12:52:49 -0500
+Message-ID: <45C0D765.4010709@garzik.org>
+Date: Wed, 31 Jan 2007 12:52:37 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+To: Ingo Molnar <mingo@elte.hu>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Andrew Morton <akpm@osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.20-rc6 - sky2 resume breakage
+References: <20070129154518.40b0b3d3@freekitty> <Pine.LNX.4.64.0701291609180.3611@woody.linux-foundation.org> <20070129161626.33277eb1@freekitty> <Pine.LNX.4.64.0701291623360.3611@woody.linux-foundation.org> <20070130065457.GA23390@elte.hu> <45BEF61F.7000400@garzik.org> <20070130075325.GA591@elte.hu> <45BEFBB2.8090402@garzik.org> <20070130080830.GC2840@elte.hu> <45C0B570.4000000@garzik.org> <20070131173832.GA13653@elte.hu>
+In-Reply-To: <20070131173832.GA13653@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.7 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Ingo Molnar wrote:
+>  19:    2413090          0   IO-APIC-fasteoi   uhci_hcd:usb2, libata
 
-On Jan 30 2007 14:00, Roland Dreier wrote:
->
->An uncharitable vendor might decide it's not worth publishing specs,
->since the Linux guys can reverse engineer the Windows driver just as
->fast anyway.
+Yep, that's a good candidate for such experiments :)
 
-And ndiswrapper gives fire to just releasing the Windows one :(
+	Jeff
 
 
-Jan
--- 
+
