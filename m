@@ -1,71 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030584AbXAaVYl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933305AbXAaVbL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030584AbXAaVYl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Jan 2007 16:24:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030586AbXAaVYl
+	id S933305AbXAaVbL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Jan 2007 16:31:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933253AbXAaVbL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Jan 2007 16:24:41 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:52028 "EHLO smtp.osdl.org"
+	Wed, 31 Jan 2007 16:31:11 -0500
+Received: from mail.screens.ru ([213.234.233.54]:51610 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030584AbXAaVYk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Jan 2007 16:24:40 -0500
-Date: Wed, 31 Jan 2007 13:24:32 -0800
-From: Andrew Morton <akpm@osdl.org>
-To: "Tomasz Kvarsin" <kvarsin@gmail.com>
-Cc: dcb314@hotmail.com, linux-kernel@vger.kernel.org,
-       Evgeniy Dushistov <dushistov@mail.ru>
-Subject: Re: fs/ufs/inode.c:817: warning: array subscript is above array
- bounds
-Message-Id: <20070131132432.e2dc4058.akpm@osdl.org>
-In-Reply-To: <5157576d0701311210j737a3f40h63cef509dadc170f@mail.gmail.com>
-References: <5157576d0701311210j737a3f40h63cef509dadc170f@mail.gmail.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+	id S933305AbXAaVbK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Jan 2007 16:31:10 -0500
+Date: Thu, 1 Feb 2007 00:30:42 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Christoph Hellwig <hch@infradead.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Andrew Morton <akpm@osdl.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/7] barrier: a scalable synchonisation barrier
+Message-ID: <20070131213042.GA185@tv-sign.ru>
+References: <20070128115118.837777000@programming.kicks-ass.net> <20070128120509.719287000@programming.kicks-ass.net> <20070128143941.GA16552@infradead.org> <20070128152435.GC9196@elte.hu> <20070131191215.GK2574@linux.vnet.ibm.com> <20070131211340.GA171@tv-sign.ru>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070131211340.GA171@tv-sign.ru>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 31 Jan 2007 23:10:57 +0300
-"Tomasz Kvarsin" <kvarsin@gmail.com> wrote:
-
-> d binderman wrote:
-> >Hello there,
-> >
-> >I just tried to compile Linux kernel 2.6.19.2 with the
-> >new GNU C compiler version 4.3 snapshot 20070126.
-> >
-> >The compiler said
-> >
-> >fs/ufs/inode.c:817: warning: array subscript is above array bounds
-> >
-> >The source code is
-> >
-> >        for (i = 0; i < (UFS_NDADDR + UFS_NINDIR); i++)
-> >            ufs_inode->ui_u2.ui_addr.ui_db[i] = ufsi->i_u1.i_data[i];
-> >
-> >but
-> >
-> >./include/linux/ufs_fs.h:                       __fs32  ui_db[UFS_NDADDR];/*
-> >0x28 data blocks */
-> >./include/linux/ufs_fs.h:                       __fs64
-> >ui_db[UFS_NDADDR]; /* 112: Direct disk blocks. */
-> >
-> >and
-> >
-> >        __fs32  i_data[15];
-> >
-> >and
-> >
-> >#define UFS_NDADDR 12
-> >#define UFS_NINDIR 3
-> >
-> >so the kernel seems to be trying to write fifteen bytes into an array only
-> >twelve
-> >bytes in size. Suggest code rework.
+On 02/01, Oleg Nesterov wrote:
 > 
+> +static inline void barrier_sync(struct barrier *b)
+> +{
+> +       might_sleep();
+> +
+> +       if (unlikely(atomic_read(&b->count))) {
+> +               DEFINE_WAIT(wait);
+> +               prepare_to_wait(&b->wait, &wait, TASK_UNINTERRUPTIBLE);
+> +               while (atomic_read(&b->count))
+> +                       schedule();
+> +               finish_wait(&b->wait, &wait);
+> +       }
+> +}
 > 
-> As I see, linux-kernel is very high volume(noise?) list,
-> may better wil be resend to relevant mantainer(Andrew Morton?)
+> This should be open-coded wait_event(), but wrong! With the scenario above this
+> can hang forever! because the first wake_up removes the task from the &b->wait.
 
-Evgeniy, please consider raising a patch against ./MAINTAINERS ;)
+I am afraid I was not clear (as usual :). prepare_to_wait means autoremove_wake_function.
+So, if barrier_unlock() wakes up the caller of barrier_sync(), it will be removed
+from b->wait. If it goes to schedule() because another barrier_lock() incremented
+b->count, we can't wake it via __wake_up(&b->wait, ...).
+
+Oleg.
+
