@@ -1,73 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932880AbXAaGHS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932908AbXAaGNx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932880AbXAaGHS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Jan 2007 01:07:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932896AbXAaGHS
+	id S932908AbXAaGNx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Jan 2007 01:13:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932911AbXAaGNx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Jan 2007 01:07:18 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:39880 "EHLO smtp.osdl.org"
+	Wed, 31 Jan 2007 01:13:53 -0500
+Received: from mx1.suse.de ([195.135.220.2]:37770 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932880AbXAaGHQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Jan 2007 01:07:16 -0500
-Date: Tue, 30 Jan 2007 22:06:48 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Zach Brown <zach.brown@oracle.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-aio@kvack.org, Suparna Bhattacharya <suparna@in.ibm.com>,
-       Benjamin LaHaise <bcrl@kvack.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH 0 of 4] Generic AIO by scheduling stacks
-In-Reply-To: <45C02AFA.4080501@yahoo.com.au>
-Message-ID: <Pine.LNX.4.64.0701302153520.3611@woody.linux-foundation.org>
-References: <patchbomb.1170193181@tetsuo.zabbo.net>
- <1170209044.26655.364.camel@localhost.localdomain>
- <Pine.LNX.4.64.0701301838110.3611@woody.linux-foundation.org>
- <45C02AFA.4080501@yahoo.com.au>
+	id S932908AbXAaGNw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Jan 2007 01:13:52 -0500
+Date: Tue, 30 Jan 2007 22:12:53 -0800
+From: Greg KH <greg@kroah.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
+       linux-pci@atrey.karlin.mff.cuni.cz
+Subject: Re: Reducing warning output from pci_get_subsys()
+Message-ID: <20070131061253.GA2638@kroah.com>
+References: <Pine.LNX.4.64.0701302251520.5644@localhost.localdomain> <20070130211153.4ca1aaa7.akpm@osdl.org> <6543410C-B60C-4706-AB4E-FA64C4E592F5@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <6543410C-B60C-4706-AB4E-FA64C4E592F5@kernel.crashing.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Wed, 31 Jan 2007, Nick Piggin wrote:
+On Tue, Jan 30, 2007 at 11:18:21PM -0600, Kumar Gala wrote:
 > 
-> I always thought that the AIO people didn't do this because they wanted
-> to avoid context switch overhead.
+> On Jan 30, 2007, at 11:11 PM, Andrew Morton wrote:
+> 
+> >On Tue, 30 Jan 2007 22:55:38 -0600 (CST)
+> >Kumar Gala <galak@kernel.crashing.org> wrote:
+> >
+> >>Greg,
+> >>
+> >>There was some code added to warn if pci_get_subsys() is called  
+> >>and the
+> >>pci_devices is empty.
+> >>
+> >>I'm wondering if there is some point at which we know its ok for the
+> >>pci_devices list be empty if there are no devices on the bus so we  
+> >>can
+> >>stop printing the message.
+> >>
+> >>On an embedded PPC reference system I see this message 6 times  
+> >>when I've
+> >>got no cards in the PCI slots.
+> >>
+> >
+> >I'd suggest we just remove the warning.  Also the one in  
+> >pci_find_subsys().
+> >
+> >I let them go through because I was curious to know what would  
+> >cause it to
+> >trigger - it might be an indication of other bugs.  But nothing very
+> >interesting happened and they're of no use.
+> 
+> Works for me.
 
-I don't think that scheduling overhead was ever a really the reason, at 
-least not the primary one, and at least not on Linux. Sure, we can 
-probably make cooperative thread switching a bit faster than even 
-VM-sharing thread switching (maybe), but it's not going to be *that* big 
-an issue.
+No objection from me either.
 
-Ifaik, the bigger issues were about setup costs (but also purely semantic 
-- it was hard to do AIO semantics with threads).
+thanks,
 
-And memory costs. The "one stack page per outstanding AIO" may end up 
-still being too expensive, but threads were even more so.
-
-[ Of course, that used to also be the claim by all the people who thought 
-  we couldn't do native kernel threads for "normal" threading either, and 
-  should go with the n*m setup. Shows how much they knew ;^]
-
-But I've certainly _personally_ always wanted to do AIO with threads. I 
-wanted to do it with regular threads (ie the "clone()" kind). It didn't 
-fly. But I think we can possibly lower both the setup costs and the memory 
-costs with the cooperative approach, to the point where maybe this one is 
-more palatable and workable.
-
-And maybe it also solves some of the scalability worries (threads have ID 
-space and scheduling setup things that essentially go away by just not 
-doing them - which is what the fibrils simply wouldn't have).
-
-(Sadly, some of the people who really _use_ AIO are the database people, 
-and they really only care about a particularly stupid and trivial case: 
-pure reads and writes. A lot of other loads care about much more complex 
-things: filename lookups etc, that traditional AIO cannot do at all, and 
-that you really want something more thread-like for. But those other loads 
-get kind of swamped by the DB needs, which are might tighter and trivial 
-enough that you don't "need" a real thread for them).
-
-		Linus
+greg k-h
