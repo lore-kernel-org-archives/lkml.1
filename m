@@ -1,71 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932089AbXAaBQL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932095AbXAaBQo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932089AbXAaBQL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 20:16:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932095AbXAaBQL
+	id S932095AbXAaBQo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 20:16:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932098AbXAaBQo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 20:16:11 -0500
-Received: from out4.smtp.messagingengine.com ([66.111.4.28]:35993 "EHLO
-	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932089AbXAaBQK (ORCPT
+	Tue, 30 Jan 2007 20:16:44 -0500
+Received: from accolon.hansenpartnership.com ([64.109.89.108]:42188 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932095AbXAaBQn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 20:16:10 -0500
-X-Sasl-enc: tGcsK1o0xOGeQm+aG5eFb6Sz8zt7COXMyQbxRd9uEXAT 1170206169
-Message-ID: <45BFEDFB.6000500@imap.cc>
-Date: Wed, 31 Jan 2007 02:16:43 +0100
-From: Tilman Schmidt <tilman@imap.cc>
-Organization: me - organized??
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; de-AT; rv:1.8.0.9) Gecko/20061211 SeaMonkey/1.0.7 Mnenhy/0.7.4.666
-MIME-Version: 1.0
-To: Maciej Rutecki <maciej.rutecki@gmail.com>
-CC: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.20-rc6-mm3
-References: <20070129204528.eb8d695e.akpm@osdl.org> <45BFC442.5000903@gmail.com>
-In-Reply-To: <45BFC442.5000903@gmail.com>
-X-Enigmail-Version: 0.94.1.2
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig56586288F7F546E21462FB14"
+	Tue, 30 Jan 2007 20:16:43 -0500
+Subject: Re: [PATCH] scsi_lib.c: continue after MEDIUM_ERROR
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Mark Lord <liml@rtr.ca>
+Cc: linux-kernel@vger.kernel.org,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>
+In-Reply-To: <200701301947.08478.liml@rtr.ca>
+References: <200701301947.08478.liml@rtr.ca>
+Content-Type: text/plain
+Date: Tue, 30 Jan 2007 19:16:39 -0600
+Message-Id: <1170206199.10890.13.camel@mulgrave.il.steeleye.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig56586288F7F546E21462FB14
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+First off, please send SCSI patches to the SCSI list:
+<linux-scsi@vger.kernel.org>
 
-Am 30.01.2007 23:18 schrieb Maciej Rutecki:
-> Second problem, power button doesn't work. When I pressed it, I has thi=
-s
-> error:
->=20
-> ACPI Error (evevent-0305): No installed handler for fixed event
-> [00000002] [20070126]
+On Tue, 2007-01-30 at 19:47 -0500, Mark Lord wrote:
+> In ancient kernels, the SCSI disk code used to continue after
+> encountering a MEDIUM_ERROR.  It would "complete" the good
+> sectors before the error, fail the bad sector/block, and then
+> continue with the rest of the request.
+> 
+> Kernels since about 2.6.16 or so have been broken in this regard.
+> They "complete" the good sectors before the error,
+> and then fail the entire remaining portions of the request.
 
-Same here, minus the message. (Or perhaps I just don't know where to look=
-=2E)
-Problem also exists in 2.6.20-rc6-mm2. With 2.6.20-rc6-git1 the power
-button of this machine works fine.
+What was the commit that introduced the change? ... I have a vague
+memory of it being deliberate.
 
---=20
-Tilman Schmidt                          E-Mail: tilman@imap.cc
-Bonn, Germany
-Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
-Unge=C3=B6ffnet mindestens haltbar bis: (siehe R=C3=BCckseite)
+> This is very risky behaviour, as a request is often a merge
+> of several bios, and just because one application hits a bad sector
+> is no reason to pretend that (for example) an adjacent directly lookup also failed.
+> 
+> This patch fixes the behaviour to be similar to what we had originally.
+> 
+> When a bad sector is encounted, SCSI will now work around it again,
+> failing *only* the bad sector itself.
 
+Erm, but the corollary is that if we get a large read failure because of
+a bad track, you're going to try and chunk up it a sector at a time
+forcing an individual error for each sector is going to annoy some
+people ... particularly removable medium ones which return this error if
+the medium isn't present ... Are you sure this is really what we want to
+do?
 
---------------enig56586288F7F546E21462FB14
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+> Signed-off-by:  Mark Lord <mlord@pobox.com>
+> ---
+> diff -u --recursive --new-file --exclude-from=linux_17//Documentation/dontdiff old/drivers/scsi/scsi_lib.c linux/drivers/scsi/scsi_lib.c
+> --- old/drivers/scsi/scsi_lib.c	2007-01-30 13:58:05.000000000 -0500
+> +++ linux/drivers/scsi/scsi_lib.c	2007-01-30 18:30:01.000000000 -0500
+> @@ -865,6 +865,12 @@
+>  	 */
+>  	if (sense_valid && !sense_deferred) {
+>  		switch (sshdr.sense_key) {
+> +		case MEDIUM_ERROR:
+> +			// Bad sector.  Fail it, and then continue the rest of the request:
+> +			if (scsi_end_request(cmd, 0, cmd->device->sector_size, 1) == NULL) {
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3rc1 (MingW32)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+The sense key may have come with additional information  I think we want
+to parse that (if it exists) rather than just blindly failing the first
+sector of the request.
 
-iD8DBQFFv+37MdB4Whm86/kRAgNqAJsHf4pibTCqpq8K6yVjwM1TX3jjLACcC1mc
-wMgpPGZ9aQblGlPkzPHOPvw=
-=pXCq
------END PGP SIGNATURE-----
+> +				cmd->retries = 0;	// go around again..
+> +				return;
+> +			}
 
---------------enig56586288F7F546E21462FB14--
+This would drop through to the UNIT_ATTENTION case if scsi_end_request()
+fails ... I don't think that's correct.
+
+>  		case UNIT_ATTENTION:
+>  			if (cmd->device->removable) {
+>  				/* Detected disc change.  Set a bit
+
