@@ -1,60 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932096AbXAaBNh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932089AbXAaBQL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932096AbXAaBNh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 20:13:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932095AbXAaBNh
+	id S932089AbXAaBQL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 20:16:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932095AbXAaBQL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 20:13:37 -0500
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:51556 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932082AbXAaBNg (ORCPT
+	Tue, 30 Jan 2007 20:16:11 -0500
+Received: from out4.smtp.messagingengine.com ([66.111.4.28]:35993 "EHLO
+	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932089AbXAaBQK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 20:13:36 -0500
-Date: Wed, 31 Jan 2007 02:13:40 +0100
-From: Adrian Bunk <bunk@stusta.de>
-To: Greg KH <greg@kroah.com>
-Cc: Roland Dreier <rdreier@cisco.com>, linux-kernel@vger.kernel.org
-Subject: Re: Free Linux Driver Development!
-Message-ID: <20070131011340.GP3754@stusta.de>
-References: <20070130012904.GA9617@kroah.com> <ada8xfks90x.fsf@cisco.com> <20070130191020.GF20642@kroah.com>
+	Tue, 30 Jan 2007 20:16:10 -0500
+X-Sasl-enc: tGcsK1o0xOGeQm+aG5eFb6Sz8zt7COXMyQbxRd9uEXAT 1170206169
+Message-ID: <45BFEDFB.6000500@imap.cc>
+Date: Wed, 31 Jan 2007 02:16:43 +0100
+From: Tilman Schmidt <tilman@imap.cc>
+Organization: me - organized??
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; de-AT; rv:1.8.0.9) Gecko/20061211 SeaMonkey/1.0.7 Mnenhy/0.7.4.666
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070130191020.GF20642@kroah.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Maciej Rutecki <maciej.rutecki@gmail.com>
+CC: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.20-rc6-mm3
+References: <20070129204528.eb8d695e.akpm@osdl.org> <45BFC442.5000903@gmail.com>
+In-Reply-To: <45BFC442.5000903@gmail.com>
+X-Enigmail-Version: 0.94.1.2
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig56586288F7F546E21462FB14"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 30, 2007 at 11:10:20AM -0800, Greg KH wrote:
-> On Tue, Jan 30, 2007 at 09:45:50AM -0800, Roland Dreier wrote:
->...
-> > And there are plenty of documented devices that no one cares enough
-> > about to submit a driver for.
-> 
-> Any specific examples?  I have a long list of people who wish to write
-> new drivers but just don't know which hardware is not yet supported.
->...
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig56586288F7F546E21462FB14
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-Wrinting a driver for shiny new hardware is cool.
+Am 30.01.2007 23:18 schrieb Maciej Rutecki:
+> Second problem, power button doesn't work. When I pressed it, I has thi=
+s
+> error:
+>=20
+> ACPI Error (evevent-0305): No installed handler for fixed event
+> [00000002] [20070126]
 
-But understanding and maintaining an already existing driver and working 
-on bug reports for this driver is something not-so-cool that would be 
-required in many areas of the kernel.
+Same here, minus the message. (Or perhaps I just don't know where to look=
+=2E)
+Problem also exists in 2.6.20-rc6-mm2. With 2.6.20-rc6-git1 the power
+button of this machine works fine.
 
-Would someone from your long list of people e.g. be willing to maintain 
-drivers/block/floppy.c ?
+--=20
+Tilman Schmidt                          E-Mail: tilman@imap.cc
+Bonn, Germany
+Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
+Unge=C3=B6ffnet mindestens haltbar bis: (siehe R=C3=BCckseite)
 
-> thanks,
-> 
-> greg k-h
 
-cu
-Adrian
+--------------enig56586288F7F546E21462FB14
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
--- 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.3rc1 (MingW32)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+iD8DBQFFv+37MdB4Whm86/kRAgNqAJsHf4pibTCqpq8K6yVjwM1TX3jjLACcC1mc
+wMgpPGZ9aQblGlPkzPHOPvw=
+=pXCq
+-----END PGP SIGNATURE-----
 
+--------------enig56586288F7F546E21462FB14--
