@@ -1,106 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932983AbXAaKsY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932999AbXAaKsn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932983AbXAaKsY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Jan 2007 05:48:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932994AbXAaKsY
+	id S932999AbXAaKsn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Jan 2007 05:48:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932994AbXAaKsm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Jan 2007 05:48:24 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:53512 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932983AbXAaKsY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Jan 2007 05:48:24 -0500
-Date: Wed, 31 Jan 2007 11:46:10 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Daniel Walker <dwalker@mvista.com>
-Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, johnstul@us.ibm.com,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 10/23] clocksource: remove update_callback
-Message-ID: <20070131104610.GA740@elte.hu>
-References: <20070131033710.420168478@mvista.com> <20070131033806.127340327@mvista.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070131033806.127340327@mvista.com>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.3
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.3 required=5.9 tests=ALL_TRUSTED,BAYES_40 autolearn=no SpamAssassin version=3.0.3
-	-3.3 ALL_TRUSTED            Did not pass through any untrusted hosts
-	1.0 BAYES_40               BODY: Bayesian spam probability is 20 to 40%
-	[score: 0.3700]
+	Wed, 31 Jan 2007 05:48:42 -0500
+Received: from nic.NetDirect.CA ([216.16.235.2]:57954 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932998AbXAaKsl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Jan 2007 05:48:41 -0500
+X-Originating-Ip: 74.109.98.130
+Date: Wed, 31 Jan 2007 05:47:13 -0500 (EST)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@CPE00045a9c397f-CM001225dbafb6
+To: Vegard Nossum <vegard@peltkore.net>
+cc: Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, Paul Mackerras <paulus@samba.org>,
+       dhowells@redhat.com, galak@kernel.crashing.org
+Subject: Re: [PATCH] Add "is_power_of_2" checking to log2.h.
+In-Reply-To: <36577.129.240.220.12.1170238420.squirrel@peltkore.net>
+Message-ID: <Pine.LNX.4.64.0701310537040.31696@CPE00045a9c397f-CM001225dbafb6>
+References: <Pine.LNX.4.64.0701300543420.17991@CPE00045a9c397f-CM001225dbafb6>
+    <45BF3954.8050106@yahoo.com.au>    <Pine.LNX.4.64.0701300753170.23302@CPE00045a9c397f-CM001225dbafb6>
+    <Pine.LNX.4.61.0701301512200.1147@yvahk01.tjqt.qr>
+ <36577.129.240.220.12.1170238420.squirrel@peltkore.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 31 Jan 2007, Vegard Nossum wrote:
 
-* Daniel Walker <dwalker@mvista.com> wrote:
+> On Tue, January 30, 2007 3:12 pm, Jan Engelhardt wrote:
+> >
+> >>> Why the qualifier? Zero *is* not a power of 2, is it?
+> >
+> > No, it is not:
+> >
+> > 	In[1]:= Solve[2^n == 0, n]
+> >
+> > 	Out[1]= {}
+> >
+> > So says Mathematica5.
+>
+> As a side note, I would just like to point out that Mathematica does
+> not deal with modular arithmetic by default (which programmers very
+> much do). In fact, in modular arithmetic, zero IS a power of two.
+>
+> 2^n = 0 (mod 2^n)
+>
+> To see if it holds for bytes, substitute n = 8, and you get 2^8 = 0
+> (mod 256). In other words: Zero is the eighth power of two modulo
+> 256.
 
-> Uses the block notifier to replace the functionality of 
-> update_callback(). update_callback() was a special case specifically 
-> for the tsc, but including it in the clocksource structure duplicated 
-> it needlessly for other clocks.
+that's a bit esoteric but, yes, you make a good point.
 
-Firstly, it think it should be mentioned that Thomas' queue already does 
-this, in clocksource-remove-the-update-callback.patch (hence he should 
-have been Cc:-ed). Your queue 'drops' Thomas' patch then redoes it here 
-without mentioning that this is another version of what is in Thomas's 
-queue. So we get this situation:
+> Modular arithmetic is, however, very often a source of errors in
+> programming (unchecked-for overflows and underflows), and it is
+> questionable whether the programmer would really want 0 reported as
+> a power of two.
 
-   clocksource-remove-the-update-callback.patch
-   drop-clocksource-remove-the-update-callback.patch
-   clocksource_remove_update_callback.patch
+precisely.   given the definition of "is_power_of_2()" that's been
+published, some people will (quite correctly) point out that using
+that macro in place of the test "(n & (n - 1))" isn't quite the same
+thing.  and they would be correct.
 
-that all flip-flops the same thing.
+but one wonders how many programmers have been using that very test
+"((n & (n - 1))" without realizing that it would accept zero, and that
+it has been accepting zero all this time, perhaps leading to weird and
+inexplicable errors.
 
-Secondly, your patch seems to do other changes as well:
+rewriting that test as "is_power_of_2()" may, in fact, cause some
+things to suddenly break, but perhaps those are things that should
+have been *forced* to break anyway, to identify where the condition
+check was incorrect all this time, and someone's just been lucky, or
+something like that.
 
-> @@ -179,6 +172,7 @@ int recalibrate_cpu_khz(void)
->  	if (cpu_has_tsc) {
->  		cpu_khz = calculate_cpu_khz();
->  		tsc_khz = cpu_khz;
-> +		mark_tsc_unstable();
->  		cpu_data[0].loops_per_jiffy =
->  			cpufreq_scale(cpu_data[0].loops_per_jiffy,
->  					cpu_khz_old, cpu_khz);
+***NOTE***:  and that's why i suggested that the individual
+maintainers might want to make this substitution themselves, to make
+sure everything continues to work.  because if you leave it as a
+project for the kernel janitors, they might not realize what you had
+in mind.  so it's in your best interest to start cleaning this up on
+your own.
 
-this adds a new event to a place that didnt have it before. (If this is 
-fixing up an initialization artifact then that needs a comment at 
-least.)
+just my $0.02 (Cdn.)
 
-plus:
+rday
 
->  struct clocksource *clock = &clocksource_jiffies;
-> +atomic_t clock_recalc_interval = ATOMIC_INIT(0);
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
 
-is not mentioned in the changelog. It's also needlessly global. 
-Furthermore, it seems to be a rather unclean method of passing 
-information from clocksource_callback() into change_clocksource():
-
-> @@ -176,8 +177,9 @@ static int change_clocksource(void)
->  		printk(KERN_INFO "Time: %s clocksource has been installed.\n",
->  		       clock->name);
->  		return 1;
-> -	} else if (clock->update_callback) {
-> -		return clock->update_callback();
-> +	} else if (unlikely(atomic_read(&clock_recalc_interval))) {
-> +		atomic_set(&clock_recalc_interval, 0);
-> +		return 1;
-
-that's quite bad: you lost an information passing facility by going to a 
-notifier, and you try to work it around via a global atomic variable. 
-Which also looks quite racy as well.
-
-The clean solution is i think what Thomas did: he calls straight into 
-clocksource_change_rating(). And look at Thomas' patch:
-
- 3 files changed, 17 insertions(+), 37 deletions(-)
-
-versus yours:
-
- 5 files changed, 45 insertions(+), 42 deletions(-)
-
-Thomas' looks definitely simpler to me.
-
-	ingo
+http://www.fsdev.dreamhosters.com/wiki/index.php?title=Main_Page
+========================================================================
