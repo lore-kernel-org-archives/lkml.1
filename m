@@ -1,100 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965320AbXAaPSN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965368AbXAaPSc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965320AbXAaPSN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Jan 2007 10:18:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965273AbXAaPSN
+	id S965368AbXAaPSc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Jan 2007 10:18:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965408AbXAaPSc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Jan 2007 10:18:13 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:56086 "EHLO
+	Wed, 31 Jan 2007 10:18:32 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:56109 "EHLO
 	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965344AbXAaPSL (ORCPT
+	with ESMTP id S965368AbXAaPSY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Jan 2007 10:18:11 -0500
+	Wed, 31 Jan 2007 10:18:24 -0500
 DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
 	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
 	message-id:references:mime-version:content-type;
-	b=dFQ1wV5c0ENSwZtF6xSBIndMzMOaamEa/Gi27wMlAiH3Q7HYKttKU/hbLqRuwvmQr
-	n1Eg3iwTiUG7bB1d0ZFVQ==
-Date: Wed, 31 Jan 2007 07:17:59 -0800 (PST)
+	b=C4sln0xtj6R/dhqBJhhD/zy/0Lq9/oI1TAbIXTwdcy8mW6eIILeirNJvVqRHTd/Zg
+	mMgCFsb7HGT69snvDbxaQ==
+Date: Wed, 31 Jan 2007 07:18:09 -0800 (PST)
 From: David Rientjes <rientjes@google.com>
 X-X-Sender: rientjes@chino.kir.corp.google.com
 To: Andrew Morton <akpm@osdl.org>
 cc: Andi Kleen <ak@suse.de>, Rohit Seth <rohitseth@google.com>,
        linux-kernel@vger.kernel.org
-Subject: [patch -mm 2/7] x86_64: split remaining fake nodes equally
-In-Reply-To: <Pine.LNX.4.64.0701302223230.23653@chino.kir.corp.google.com>
-Message-ID: <Pine.LNX.4.64.0701302224300.23658@chino.kir.corp.google.com>
+Subject: [patch -mm 4/7] x86_64: fake numa for cpusets document
+In-Reply-To: <Pine.LNX.4.64.0701302224550.23658@chino.kir.corp.google.com>
+Message-ID: <Pine.LNX.4.64.0701302225200.23658@chino.kir.corp.google.com>
 References: <Pine.LNX.4.64.0701302223230.23653@chino.kir.corp.google.com>
+ <Pine.LNX.4.64.0701302224300.23658@chino.kir.corp.google.com>
+ <Pine.LNX.4.64.0701302224550.23658@chino.kir.corp.google.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Extends the numa=fake x86_64 command-line option to split the remaining
-system memory into equal-sized nodes.
+Create a document to explain how to use numa=fake in conjunction with
+cpusets for coarse memory resource management.
 
-For example:
-numa=fake=2*512,4*	gives two 512M nodes and the remaining system
-			memory is split into four approximately equal
-			chunks.
-
-This is beneficial for systems where the exact size of RAM is unknown or
-not necessarily relevant, but the granularity with which nodes shall be
-allocated is known.
+An attempt to get more awareness and testing for this feature.
 
 Cc: Andi Kleen <ak@suse.de>
 Signed-off-by: David Rientjes <rientjes@google.com>
 ---
- Documentation/x86_64/boot-options.txt |    4 +++-
- arch/x86_64/mm/numa.c                 |   22 ++++++++++++++++++----
- 2 files changed, 21 insertions(+), 5 deletions(-)
+ Documentation/x86_64/fake-numa-for-cpusets |   66 ++++++++++++++++++++++++++++
+ 1 files changed, 66 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/x86_64/fake-numa-for-cpusets
 
-diff --git a/Documentation/x86_64/boot-options.txt b/Documentation/x86_64/boot-options.txt
-index 87f4279..01dfec9 100644
---- a/Documentation/x86_64/boot-options.txt
-+++ b/Documentation/x86_64/boot-options.txt
-@@ -155,7 +155,9 @@ NUMA
- 		depending on the sizes and coefficients listed.  For example:
- 			numa=fake=2*512,1024,4*256
- 		gives two 512M nodes, a 1024M node, and four 256M nodes.  The
--		remaining system RAM is allocated to an additional node.
-+		remaining system RAM is allocated to an additional node.  If
-+		the last character of CMDLINE is a *, the remaining system RAM
-+		is instead divided up equally among its coefficient.
- 
-   numa=hotadd=percent
- 		Only allow hotadd memory to preallocate page structures upto
-diff --git a/arch/x86_64/mm/numa.c b/arch/x86_64/mm/numa.c
-index a5bda07..6c4b45f 100644
---- a/arch/x86_64/mm/numa.c
-+++ b/arch/x86_64/mm/numa.c
-@@ -421,11 +421,25 @@ static int __init numa_emulation(unsigned long start_pfn, unsigned long end_pfn)
- done:
- 	if (!num_nodes)
- 		return -1;
--	/* Fill remainder of system RAM with a final node, if appropriate. */
-+	/* Fill remainder of system RAM, if appropriate. */
- 	if (addr < max_addr) {
--		setup_node_range(num_nodes, nodes, &addr, max_addr - addr,
--				 max_addr);
--		num_nodes++;
-+		switch (*(cmdline - 1)) {
-+		case '*':
-+			/* Split remaining nodes into coeff chunks */
-+			if (coeff <= 0)
-+				break;
-+			num_nodes += split_nodes_equally(nodes, &addr, max_addr,
-+							 num_nodes, coeff);
-+			break;
-+		case ',':
-+			/* Do not allocate remaining system RAM */
-+			break;
-+		default:
-+			/* Give one final node */
-+			setup_node_range(num_nodes, nodes, &addr,
-+					 max_addr - addr, max_addr);
-+			num_nodes++;
-+		}
- 	}
- out:
- 	memnode_shift = compute_hash_shift(nodes, num_nodes);
+diff --git a/Documentation/x86_64/fake-numa-for-cpusets b/Documentation/x86_64/fake-numa-for-cpusets
+new file mode 100644
+index 0000000..d1a985c
+--- /dev/null
++++ b/Documentation/x86_64/fake-numa-for-cpusets
+@@ -0,0 +1,66 @@
++Using numa=fake and CPUSets for Resource Management
++Written by David Rientjes <rientjes@cs.washington.edu>
++
++This document describes how the numa=fake x86_64 command-line option can be used
++in conjunction with cpusets for coarse memory management.  Using this feature,
++you can create fake NUMA nodes that represent contiguous chunks of memory and
++assign them to cpusets and their attached tasks.  This is a way of limiting the
++amount of system memory that are available to a certain class of tasks.
++
++For more information on the features of cpusets, see Documentation/cpusets.txt.
++There are a number of different configurations you can use for your needs.  For
++more information on the numa=fake command line option and its various ways of
++configuring fake nodes, see Documentation/x86_64/boot-options.txt.
++
++For the purposes of this introduction, we'll assume a very primitive NUMA
++emulation setup of "numa=fake=4*512,".  This will split our system memory into
++four equal chunks of 512M each that we can now use to assign to cpusets.  As
++you become more familiar with using this combination for resource control,
++you'll determine a better setup to minimize the number of nodes you have to deal
++with.
++
++A machine may be split as follows with "numa=fake=4*512," as reported by dmesg:
++
++	Faking node 0 at 0000000000000000-0000000020000000 (512MB)
++	Faking node 1 at 0000000020000000-0000000040000000 (512MB)
++	Faking node 2 at 0000000040000000-0000000060000000 (512MB)
++	Faking node 3 at 0000000060000000-0000000080000000 (512MB)
++	...
++	On node 0 totalpages: 130975
++	On node 1 totalpages: 131072
++	On node 2 totalpages: 131072
++	On node 3 totalpages: 131072
++
++Now following the instructions for mounting the cpusets filesystem from
++Documentation/cpusets.txt, you can assign fake nodes (i.e. contiguous memory
++address spaces) to individual cpusets:
++
++	[root@xroads /]# mkdir exampleset
++	[root@xroads /]# mount -t cpuset none exampleset
++	[root@xroads /]# mkdir exampleset/ddset
++	[root@xroads /]# cd exampleset/ddset
++	[root@xroads /exampleset/ddset]# echo 0-1 > cpus
++	[root@xroads /exampleset/ddset]# echo 0-1 > mems
++
++Now this cpuset, 'ddset', will only allowed access to fake nodes 0 and 1 for
++memory allocations (1G).
++
++You can now assign tasks to these cpusets to limit the memory resources
++available to them according to the fake nodes assigned as mems:
++
++	[root@xroads /exampleset/ddset]# echo $$ > tasks
++	[root@xroads /exampleset/ddset]# dd if=/dev/zero of=tmp bs=1024 count=1G
++	[1] 13425
++
++Notice the difference between the system memory usage as reported by
++/proc/meminfo between the restricted cpuset case above and the unrestricted
++case (i.e. running the same 'dd' command without assigning it to a fake NUMA
++cpuset):
++				Unrestricted	Restricted
++	MemTotal:		3091900 kB	3091900 kB
++	MemFree:		  42113 kB	1513236 kB
++
++This allows for coarse memory management for the tasks you assign to particular
++cpusets.  Since cpusets can form a hierarchy, you can create some pretty
++interesting combinations of use-cases for various classes of tasks for your
++memory management needs.
