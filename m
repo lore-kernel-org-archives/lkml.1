@@ -1,78 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932939AbXAaPsl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030195AbXAaPt3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932939AbXAaPsl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Jan 2007 10:48:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932936AbXAaPsl
+	id S1030195AbXAaPt3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Jan 2007 10:49:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030211AbXAaPt3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Jan 2007 10:48:41 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:49390 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S932950AbXAaPsk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Jan 2007 10:48:40 -0500
-Date: Wed, 31 Jan 2007 10:48:38 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Oliver Neukum <oliver@neukum.name>, pm list <linux-pm@lists.osdl.org>,
-       <linux-kernel@vger.kernel.org>
-Subject: Re: [linux-pm] question on resume()
-In-Reply-To: <200701310933.29443.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.44L0.0701311042340.3803-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 31 Jan 2007 10:49:29 -0500
+Received: from mailhub.sw.ru ([195.214.233.200]:23990 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030195AbXAaPt2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Jan 2007 10:49:28 -0500
+Date: Wed, 31 Jan 2007 18:56:15 +0300
+From: Alexey Dobriyan <adobriyan@openvz.org>
+To: ak@suse.de, akpm@osdl.org
+Cc: linux-kernel@vger.kernel.org, devel@openvz.org, davej@redhat.com
+Subject: [PATCH 2/2] p4-clockmod: use rdmsr_on_cpu(), wrmsr_on_cpu()
+Message-ID: <20070131155615.GC6022@localhost.sw.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 31 Jan 2007, Rafael J. Wysocki wrote:
+Dances with cpu masks go away.
 
-> On Tuesday, 30 January 2007 23:32, Rafael J. Wysocki wrote:
-> > [Added linux-pm to the Cc list, because I'm going to talk about things that
-> > I know only from reading the code.]
-> > 
-> > On Tuesday, 30 January 2007 17:50, Oliver Neukum wrote:
-> > > Am Dienstag, 30. Januar 2007 17:32 schrieb Rafael J. Wysocki:
-> > > > However, you can always inspect the PF_FROZEN flag of the tasks in question
-> > > > if that's practicable.
-> > > 
-> > > What would I do with that information? Ignore completion of IO?
-> > 
-> > I probably should say "that depends", but that wouldn't be very helpful.
-> > 
-> > Getting back to your initial question, which is if wake_up() may be called
-> > from a driver's .resume() routine, I think the answer is no, it may not,
-> > because in that case the "notified" tasks would be removed from the wait
-> > queue, but the refrigerator() would (wrongly) restore their states as
-> > TASK_UNINTERRUPTIBLE (or TASK_INTERRUPTIBLE for wake_up_interruptible()).
+Signed-off-by: Alexey Dobriyan <adobriyan@openvz.org>
+---
 
-Even though I'm late to this thread, here are some additional thoughts...
+ arch/i386/kernel/cpu/cpufreq/p4-clockmod.c |   30 +++++------------------------
+ 1 file changed, 6 insertions(+), 24 deletions(-)
 
-Rafael is wrong; wake_up() doesn't remove a task from a wait queue.  It 
-makes the task runnable, and then the task removes itself from the wait 
-queue after verifying that the necessary condition has been satisfied.
-
-Thus calling wake_up() on a task in the refrigerator will accomplish 
-nothing -- no good and no harm.  The task will remain frozen, and when it 
-is unfrozen it will realize that the condition has been satisfied and will 
-remove itself from the wait queue.
-
-> > Generally, you are safe if your driver only calls wake_up() from a process
-> > context, but not from .resume() or .suspend() routines (or from an
-> > unfreezeable kernel thread).
-> 
-> Ah, sorry, I've just realized I was wrong.  Processes in TASK_UNINTERRUPTIBLE
-> cannot be frozen!  So, the above only applies to wake_up_interruptible().
-> 
-> You don't need to call wake_up() from .resume(), because there are no tasks
-> to be notified this way and you shouldn't call wake_up_interruptible() from
-> there.
-
-While it's true that one doesn't need to call wake_up() from .resume(),
-you are overlooking the point of Oliver's question.  .resume() can start
-up an I/O operation which can then complete before the tasks are
-defrosted.  The I/O's completion routine generally _will_ end up calling
-wake_up() on some still-frozen task.  That's just as bad as calling it 
-yourself from within the resume routine.
-
-Alan Stern
+--- a/arch/i386/kernel/cpu/cpufreq/p4-clockmod.c
++++ b/arch/i386/kernel/cpu/cpufreq/p4-clockmod.c
+@@ -62,7 +62,7 @@ static int cpufreq_p4_setdc(unsigned int
+ 	if (!cpu_online(cpu) || (newstate > DC_DISABLE) || (newstate == DC_RESV))
+ 		return -EINVAL;
+ 
+-	rdmsr(MSR_IA32_THERM_STATUS, l, h);
++	rdmsr_on_cpu(cpu, MSR_IA32_THERM_STATUS, &l, &h);
+ 
+ 	if (l & 0x01)
+ 		dprintk("CPU#%d currently thermal throttled\n", cpu);
+@@ -70,10 +70,10 @@ static int cpufreq_p4_setdc(unsigned int
+ 	if (has_N44_O17_errata[cpu] && (newstate == DC_25PT || newstate == DC_DFLT))
+ 		newstate = DC_38PT;
+ 
+-	rdmsr(MSR_IA32_THERM_CONTROL, l, h);
++	rdmsr_on_cpu(cpu, MSR_IA32_THERM_CONTROL, &l, &h);
+ 	if (newstate == DC_DISABLE) {
+ 		dprintk("CPU#%d disabling modulation\n", cpu);
+-		wrmsr(MSR_IA32_THERM_CONTROL, l & ~(1<<4), h);
++		wrmsr_on_cpu(cpu, MSR_IA32_THERM_CONTROL, l & ~(1<<4), h);
+ 	} else {
+ 		dprintk("CPU#%d setting duty cycle to %d%%\n",
+ 			cpu, ((125 * newstate) / 10));
+@@ -84,7 +84,7 @@ static int cpufreq_p4_setdc(unsigned int
+ 		 */
+ 		l = (l & ~14);
+ 		l = l | (1<<4) | ((newstate & 0x7)<<1);
+-		wrmsr(MSR_IA32_THERM_CONTROL, l, h);
++		wrmsr_on_cpu(cpu, MSR_IA32_THERM_CONTROL, l, h);
+ 	}
+ 
+ 	return 0;
+@@ -111,7 +111,6 @@ static int cpufreq_p4_target(struct cpuf
+ {
+ 	unsigned int    newstate = DC_RESV;
+ 	struct cpufreq_freqs freqs;
+-	cpumask_t cpus_allowed;
+ 	int i;
+ 
+ 	if (cpufreq_frequency_table_target(policy, &p4clockmod_table[0], target_freq, relation, &newstate))
+@@ -132,17 +131,8 @@ static int cpufreq_p4_target(struct cpuf
+ 	/* run on each logical CPU, see section 13.15.3 of IA32 Intel Architecture Software
+ 	 * Developer's Manual, Volume 3
+ 	 */
+-	cpus_allowed = current->cpus_allowed;
+-
+-	for_each_cpu_mask(i, policy->cpus) {
+-		cpumask_t this_cpu = cpumask_of_cpu(i);
+-
+-		set_cpus_allowed(current, this_cpu);
+-		BUG_ON(smp_processor_id() != i);
+-
++	for_each_cpu_mask(i, policy->cpus)
+ 		cpufreq_p4_setdc(i, p4clockmod_table[newstate].index);
+-	}
+-	set_cpus_allowed(current, cpus_allowed);
+ 
+ 	/* notifiers */
+ 	for_each_cpu_mask(i, policy->cpus) {
+@@ -256,17 +246,9 @@ static int cpufreq_p4_cpu_exit(struct cp
+ 
+ static unsigned int cpufreq_p4_get(unsigned int cpu)
+ {
+-	cpumask_t cpus_allowed;
+ 	u32 l, h;
+ 
+-	cpus_allowed = current->cpus_allowed;
+-
+-	set_cpus_allowed(current, cpumask_of_cpu(cpu));
+-	BUG_ON(smp_processor_id() != cpu);
+-
+-	rdmsr(MSR_IA32_THERM_CONTROL, l, h);
+-
+-	set_cpus_allowed(current, cpus_allowed);
++	rdmsr_on_cpu(cpu, MSR_IA32_THERM_CONTROL, &l, &h);
+ 
+ 	if (l & 0x10) {
+ 		l = l >> 1;
 
