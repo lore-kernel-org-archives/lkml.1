@@ -1,63 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161102AbXAaXp5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161064AbXAaXtW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161102AbXAaXp5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Jan 2007 18:45:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161104AbXAaXp5
+	id S1161064AbXAaXtW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Jan 2007 18:49:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161104AbXAaXtW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Jan 2007 18:45:57 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:58396 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161102AbXAaXp4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Jan 2007 18:45:56 -0500
-Date: Wed, 31 Jan 2007 15:44:50 -0800
-From: Greg KH <greg@kroah.com>
-To: Theodore Tso <tytso@mit.edu>,
-       Nicolas Mailhot <nicolas.mailhot@laposte.net>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Free Linux Driver Development!
-Message-ID: <20070131234450.GB32078@kroah.com>
-References: <32793.192.54.193.51.1170248792.squirrel@rousalka.dyndns.org> <20070131201258.GB15128@kroah.com> <20070131230014.GD20514@thunk.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070131230014.GD20514@thunk.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 31 Jan 2007 18:49:22 -0500
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:21373 "EHLO
+	pd2mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161022AbXAaXtU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Jan 2007 18:49:20 -0500
+Date: Wed, 31 Jan 2007 17:45:41 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: [PATCH RFC] sd: spin down disks on removal or power-down
+In-reply-to: <45C0FA3B.5030508@s5r6.in-berlin.de>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: James Bottomley <James.Bottomley@SteelEye.com>,
+       Andrew Morton <akpm@osdl.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
+       linux-scsi@vger.kernel.org, htejun@gmail.com
+Message-id: <45C12A25.8080805@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <45BD522F.3070706@shaw.ca> <20070129154706.dfb3edab.akpm@osdl.org>
+ <1170116201.3378.29.camel@mulgrave.il.steeleye.com> <45BE9252.3040108@shaw.ca>
+ <45C0FA3B.5030508@s5r6.in-berlin.de>
+User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 31, 2007 at 06:00:15PM -0500, Theodore Tso wrote:
-> On Wed, Jan 31, 2007 at 12:12:58PM -0800, Greg KH wrote:
-> > 
-> > This kind of offer has _always_ been there for out-of-tree GPL drivers.
-> > I have contacted many different groups and driver authors over the years
-> > to offer my help in trying to get their code into the mainline kernel.
-> > 
-> > Some take me up on the offer, others ignore it, and still others activly
-> > refuse to do so, saying they want to stay out-of-the tree (lirc is one
-> > of these examples...)
+Stefan Richter wrote:
+> Robert Hancock wrote:
+>>> http://marc.theaimsgroup.com/?t=116922621200002
+>> It looks like Tejun's patch essentially does the same thing as mine with
+>> the addition of the control from userspace. There is one exception
+>> though, my patch also does the stop on removal of the SCSI disk (i.e.
+>> writing 1 to its "delete" file in sysfs, what scsiadd -r does).
 > 
-> I think the point is that if we are offering free development effort
-> to write a driver which goes into mainline, maybe we should provide
-> more than "providing rules and guidelines" so that people can spend
-> engineering $$$ to get the driver into mainline.   
+> Isn't sd_shutdown called at this occasion?
 
-I do that a lot for a lot of different drivers and companies today.  So
-do other people in the community.
+Ah, indeed it is. I was thinking of the way I had written my patch, 
+where it only does the spindown if the system state is SYSTEM_POWER_OFF 
+so I needed an extra call to force this on removal. Tejun's patch just 
+checks for not SYSTEM_RESTART, so it should happen on removal as well.
 
-But again, if you wish to publicize this, that's great, but it wasn't
-the main goal of my announcement.
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
 
-> More specifically, Dave said that it "seemed rude" to just take the
-> driver and send updates, but maybe the best way of dealing with
-> out-of-tree drivers like lirc is to treat the out-of-tree drivers as a
-> kind of spec release, and just have someone in the community forcibly
-> take the code, fix it up, and then get it merged.  Maybe it's being
-> "rude", but so is not responding to requests to get it merged.
-
-No, I'm going by Linus's rule here, if a person doesn't want their code
-in the kernel tree, then I'm not going to forcefully put it there.
-That's just being rude.
-
-thanks,
-
-greg k-h
