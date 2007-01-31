@@ -1,56 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932597AbXAaDro@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932757AbXAaDsL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932597AbXAaDro (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 22:47:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932752AbXAaDoU
+	id S932757AbXAaDsL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 22:48:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932772AbXAaDro
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 22:44:20 -0500
-Received: from stargate.chelsio.com ([12.22.49.110]:7721 "EHLO
-	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932597AbXAaDoI (ORCPT
+	Tue, 30 Jan 2007 22:47:44 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.158]:1504 "EHLO
+	localhost.localdomain" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932839AbXAaDrd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 22:44:08 -0500
-From: Divy Le Ray <None@chelsio.com>
-Subject: [PATCH 4/10] cxgb3 - bogus status error string
-Date: Tue, 30 Jan 2007 19:44:01 -0800
-To: jeff@garzik.org
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       swise@opengridcomputing.com
-Message-Id: <20070131034401.8607.33239.stgit@localhost.localdomain>
-Content-Type: text/plain; charset=utf-8; format=fixed
-Content-Transfer-Encoding: 8bit
-User-Agent: StGIT/0.11
+	Tue, 30 Jan 2007 22:47:33 -0500
+Message-Id: <20070131033710.420168478@mvista.com>
+User-Agent: quilt/0.46.mv-1
+Date: Tue, 30 Jan 2007 19:37:10 -0800
+From: Daniel Walker <dwalker@mvista.com>
+To: akpm@osdl.org
+Cc: linux-kernel@vger.kernel.org, johnstul@us.ibm.com
+Subject: [PATCH 00/23] clocksource update v12
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Divy Le Ray <divy@chelsio.com>
+This tree is mostly cleanups . I move timekeeping code into it's own 
+file, and I modify the clocksource interface to provide a more robust
+API.
 
-Remove a status error string from the pci-x context 
-and add it where it belongs - the pci-e context. 
+I've dropped some duplication off the hrt/dynamic tick patch set which
+is all new to that tree and new to -mm. This is an -mm patch set , it's
+not meant to go on 2.6.20-rc6 at all .. I'm modifying code only
+included in -mm.
 
-Signed-off-by: Divy Le Ray <divy@chelsio.com>
----
+I boot tested x86_64 smp, and i386 smp, and compile tested for ARM
+(!GENERIC_TIME). This set should be bisect-able for at least i386 and
+likely x86_64.
 
- drivers/net/cxgb3/t3_hw.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+It's also available at,
 
-diff --git a/drivers/net/cxgb3/t3_hw.c b/drivers/net/cxgb3/t3_hw.c
-index 4545acb..2215400 100644
---- a/drivers/net/cxgb3/t3_hw.c
-+++ b/drivers/net/cxgb3/t3_hw.c
-@@ -1181,7 +1181,6 @@ static int t3_handle_intr_status(struct
- static void pci_intr_handler(struct adapter *adapter)
- {
- 	static const struct intr_info pcix1_intr_info[] = {
--		{ F_PEXERR, "PCI PEX error", -1, 1 },
- 		{F_MSTDETPARERR, "PCI master detected parity error", -1, 1},
- 		{F_SIGTARABT, "PCI signaled target abort", -1, 1},
- 		{F_RCVTARABT, "PCI received target abort", -1, 1},
-@@ -1218,6 +1217,7 @@ static void pci_intr_handler(struct adap
- static void pcie_intr_handler(struct adapter *adapter)
- {
- 	static const struct intr_info pcie_intr_info[] = {
-+		{F_PEXERR, "PCI PEX error", -1, 1},
- 		{F_UNXSPLCPLERRR,
- 		 "PCI unexpected split completion DMA read error", -1, 1},
- 		{F_UNXSPLCPLERRC,
+ftp://source.mvista.com/pub/dwalker/clocksource/clocksource-v12/
+
+Daniel
+-- 
