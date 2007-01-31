@@ -1,87 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933320AbXAaXVm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933343AbXAaXV7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933320AbXAaXVm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Jan 2007 18:21:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933352AbXAaXVm
+	id S933343AbXAaXV7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Jan 2007 18:21:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161036AbXAaXV6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Jan 2007 18:21:42 -0500
-Received: from aa011msr.fastwebnet.it ([85.18.95.71]:36931 "EHLO
-	aa011msr.fastwebnet.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933320AbXAaXVl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Jan 2007 18:21:41 -0500
-Date: Thu, 1 Feb 2007 00:21:30 +0100
-From: Mattia Dongili <malattia@linux.it>
-To: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
-       mingo@redhat.com, tglx@linutronix.de
-Subject: Re: 2.6.20-rc6-mm3
-Message-ID: <20070131232130.GC4137@inferi.kami.home>
-Mail-Followup-To: Andrew Morton <akpm@osdl.org>,
-	linux-kernel@vger.kernel.org, mingo@redhat.com, tglx@linutronix.de
-References: <20070129204528.eb8d695e.akpm@osdl.org> <20070131215241.GB2890@inferi.kami.home>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070131215241.GB2890@inferi.kami.home>
-X-Message-Flag: Cranky? Try Free Software instead!
-X-Operating-System: Linux 2.6.20-rc6-mm3-2 i686
-X-Editor: Vim http://www.vim.org/
-X-Disclaimer: Buh!
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 31 Jan 2007 18:21:58 -0500
+Received: from mga09.intel.com ([134.134.136.24]:34995 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1160998AbXAaXV4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Jan 2007 18:21:56 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: i="4.13,264,1167638400"; 
+   d="scan'208"; a="41704573:sNHT19628658"
+Date: Wed, 31 Jan 2007 15:21:36 -0800
+From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Peer Chen <pchen@nvidia.com>, Christoph Hellwig <hch@infradead.org>,
+       Prakash Punnoor <prakash@punnoor.de>, Andrew Morton <akpm@osdl.org>,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       Kuan Luo <kluo@nvidia.com>
+Subject: Re: [PATCH] SCSI: Add the SGPIO support for sata_nv.c
+Message-Id: <20070131152136.7d0a05ff.kristen.c.accardi@intel.com>
+In-Reply-To: <455DF9AE.3000406@garzik.org>
+References: <15F501D1A78BD343BE8F4D8DB854566B0CEB90E0@hkemmail01.nvidia.com>
+	<455DF9AE.3000406@garzik.org>
+X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.8.20; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 31, 2007 at 10:52:41PM +0100, Mattia Dongili wrote:
-> On Mon, Jan 29, 2007 at 08:45:28PM -0800, Andrew Morton wrote:
-> > 
-> > Temporarily at
-> > 
-> > 	http://userweb.kernel.org/~akpm/2.6.20-rc6-mm3/
-> > 
-> > Will appear later at
-> > 
-> > 	ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.20-rc6/2.6.20-rc6-mm3/
-> 
-> I jumped from rc2-mm1 to rc6-mm3 and tried dynticks for the first time:
-> 
-> ...
-> Time: acpi_pm clocksource has been installed.
-> Clocksource tsc unstable (delta = -275154141 ns)
-> BUG: soft lockup detected on CPU#1!
->  [<c0104dac>] show_trace_log_lvl+0x1a/0x2f
->  [<c010540b>] show_trace+0x12/0x14
->  [<c010548f>] dump_stack+0x16/0x18
->  [<c0146e50>] softlockup_tick+0xa7/0xb6
->  [<c01286c0>] run_local_timers+0x12/0x14
->  [<c0128a61>] update_process_times+0x3e/0x63
->  [<c01374c5>] tick_nohz_handler+0x7d/0xe3
->  [<c01137c2>] smp_apic_timer_interrupt+0x71/0x83
->  [<c01048f4>] apic_timer_interrupt+0x28/0x30
->  [<c013709e>] tick_broadcast_oneshot_control+0x12/0xc8
->  [<c0136a58>] tick_notify+0x1cd/0x241
->  [<c012bd4e>] notifier_call_chain+0x2b/0x55
->  [<c012bde2>] __raw_notifier_call_chain+0x19/0x1e
->  [<c012be01>] raw_notifier_call_chain+0x1a/0x1c
->  [<c01364ea>] clockevents_do_notify+0x11/0x13
->  [<c013672d>] clockevents_notify+0x1c/0x53
->  [<f8f7b5cb>] acpi_state_timer_broadcast+0x2e/0x31 [processor]
->  [<f8f7c12f>] acpi_processor_idle+0x276/0x40b [processor]
->  [<c0102435>] cpu_idle+0xad/0xd3
->  [<c0112975>] start_secondary+0x32b/0x333
->  [<00000000>] run_init_process+0x3fefed10/0x19
->  =======================
-> 
-> Full dmesg and config:
-> http://oioio.altervista.org/linux/nohz_soft-lockup.dmesg
-> http://oioio.altervista.org/linux/config-2.6.20-rc6-mm3-1
-> 
-> As a side note the process becomes slower and slower as it proceeds,
-> it's definitely noticeable during my iptables rules setup (nothing that
-> complex, just default policies and subnet/lan accept rules).
-> Building with NO_HZ=n right now.
+On Fri, 17 Nov 2006 13:04:30 -0500
+Jeff Garzik <jeff@garzik.org> wrote:
 
-yes, slowness is gone. Any useful information I can provide?
+> Peer Chen wrote:
+> > I didn't get any comment from you guys for new patch, does someone take
+> > care this patch, do we still need some modification upon it? Or do we
+> > need re-submit it in other thread?
+> 
+> For my part, it's in my queue of things to review.  I need to figure out 
+> the best way to export this support.
+> 
+> 	Jeff
 
--- 
-mattia
-:wq!
+Adding SGPIO support directly into an individual SATA driver seems to be
+a very bad idea since SGPIO is a) a protocol that can be used by many 
+different SATA controllers and is not nvidia specific and b) can also
+be used by SAS.
