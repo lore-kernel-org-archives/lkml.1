@@ -1,100 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933167AbXAaM3e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933169AbXAaMau@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933167AbXAaM3e (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Jan 2007 07:29:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933170AbXAaM3e
+	id S933169AbXAaMau (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Jan 2007 07:30:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933143AbXAaMau
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Jan 2007 07:29:34 -0500
-Received: from mga06.intel.com ([134.134.136.21]:8532 "EHLO
-	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S933169AbXAaM3c (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Jan 2007 07:29:32 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.13,262,1167638400"; 
-   d="scan'208"; a="191082936:sNHT24778656"
-Message-ID: <45C08BA6.5000209@linux.intel.com>
-Date: Wed, 31 Jan 2007 15:29:26 +0300
-From: Alexey Starikovskiy <alexey.y.starikovskiy@linux.intel.com>
-User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
+	Wed, 31 Jan 2007 07:30:50 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:56368 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933170AbXAaMat (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Jan 2007 07:30:49 -0500
+Message-ID: <45C08BF7.4000605@garzik.org>
+Date: Wed, 31 Jan 2007 07:30:47 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
 MIME-Version: 1.0
-To: Tilman Schmidt <tilman@imap.cc>
-CC: Andrew Morton <akpm@osdl.org>, Maciej Rutecki <maciej.rutecki@gmail.com>,
-       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
-Subject: Re: 2.6.20-rc6-mm3
-References: <20070129204528.eb8d695e.akpm@osdl.org>	<45BFC442.5000903@gmail.com>	<45BFEDFB.6000500@imap.cc> <20070130172525.f32fb9ea.akpm@osdl.org> <45C07FBF.3080000@imap.cc>
-In-Reply-To: <45C07FBF.3080000@imap.cc>
-Content-Type: multipart/mixed;
- boundary="------------030202070304010503020206"
+To: James Ray <j.ray@qmul.ac.uk>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: PROBLEM: ahci SATA with Intel ESB2 on 2.6.20-rc6
+References: <45C0708C.3000609@qmul.ac.uk>
+In-Reply-To: <45C0708C.3000609@qmul.ac.uk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.7 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------030202070304010503020206
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+James Ray wrote:
+> [2.] Full description of the problem/report:
+> 	Been having problems with the AHCI driver for this new server for quite
+> some time now, it slowly seems to be getting better as the version
+> numbers increase (2.6.15 seemed fine, though I didn't test much,
+> 2.6.1[7-8] was unusable, 2.6.20-rc6 seems nearly perfect) but I still
+> see some errors appearing on the system. I have swapped disks in the
+> system and I see the problem with 3 different systems (all identical)
+> and 3 different sets of disks.
 
-Tilman Schmidt wrote:
-> On Tue, 30 Jan 2007 17:25:25 -0800, Andrew Morton wrote:
->   
->> On Wed, 31 Jan 2007 02:16:43 +0100
->> Tilman Schmidt <tilman@imap.cc> wrote:
->>
->>     
->>> Am 30.01.2007 23:18 schrieb Maciej Rutecki:
->>>       
->>>> Second problem, power button doesn't work. When I pressed it, I has this
->>>> error:
->>>>
->>>> ACPI Error (evevent-0305): No installed handler for fixed event
->>>> [00000002] [20070126]
->>>>         
->>> Same here, minus the message. (Or perhaps I just don't know where to look.)
->>> Problem also exists in 2.6.20-rc6-mm2. With 2.6.20-rc6-git1 the power
->>> button of this machine works fine.
->>>       
->> That's significant - in your case at least the 2.6.20-rc6-mm3 ACPI update
->> isn't the cause.
->>     
->
-> Is there anything specific I should test, or Big Bisect time?
->
->   
-This patch should fix the issue...
+Good to hear that we suck less, over time, I suppose :)
 
-Regards,
-    Alex.
+> This is the error message that appears:
+> Jan 31 10:01:50 termite kernel: ata2.00: exception Emask 0x10 SAct
+> 0x7fffffff SErr 0x80002 action 0x2 frozen
+> Jan 31 10:01:50 termite kernel: ata2.00: (irq_stat 0x08000000, interface
+> fatal error)
+> Jan 31 10:01:50 termite kernel: ata2.00: cmd
+> 61/00:00:51:8f:ab/04:00:02:00:00/40 tag 0 cdb 0x0 data 524288 out
+> Jan 31 10:01:50 termite kernel:          res
+> 40/00:4c:51:9b:ab/00:00:02:00:00/40 Emask 0x10 (ATA bus error)
+> Jan 31 10:01:50 termite kernel: ata2.00: cmd
+> 61/00:08:39:47:ab/04:00:02:00:00/40 tag 1 cdb 0x0 data 524288 out
+> Jan 31 10:01:50 termite kernel:          res
+> 40/00:4c:51:9b:ab/00:00:02:00:00/40 Emask 0x10 (ATA bus error)
+> Jan 31 10:01:50 termite kernel: ata2.00: cmd
+> 61/00:10:51:93:ab/04:00:02:00:00/40 tag 2 cdb 0x0 data 524288 out
+> Jan 31 10:01:50 termite kernel:          res
+> 40/00:4c:51:9b:ab/00:00:02:00:00/40 Emask 0x10 (ATA bus error)
+> Jan 31 10:01:50 termite kernel: ata2.00: cmd
+> 61/00:18:39:43:ab/04:00:02:00:00/40 tag 3 cdb 0x0 data 524288 out
+> Jan 31 10:01:50 termite kernel:          res
+> 40/00:4c:51:9b:ab/00:00:02:00:00/40 Emask 0x10 (ATA bus error)
 
---------------030202070304010503020206
-Content-Type: text/plain;
- name="fix-button_c.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="fix-button_c.patch"
+This really looks like some sort of cable or power problem, or some 
+other hardware problem.
 
-Correct id for fixed buttons.
-ACPI_BUTTON_HID_POWERF was changed, but this change was not propogated to button.c,
-thus breaking detection of fixed power and sleep buttons.
-From: Alexey Starikovskiy <alexey.y.starikovskiy@linux.intel.com>
+HOWEVER...  once thing you might try is disabling NCQ 
+(http://linux-ata.org/faq.html#ncq) in case its a device with a buggy 
+NCQ implementation.
+
+	Jeff
 
 
----
-
- drivers/acpi/button.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/acpi/button.c b/drivers/acpi/button.c
-index ac86058..c726612 100644
---- a/drivers/acpi/button.c
-+++ b/drivers/acpi/button.c
-@@ -75,7 +75,7 @@ static int acpi_button_state_open_fs(str
- static struct acpi_driver acpi_button_driver = {
- 	.name = ACPI_BUTTON_DRIVER_NAME,
- 	.class = ACPI_BUTTON_CLASS,
--	.ids = "ACPI_FPB,ACPI_FSB,PNP0C0D,PNP0C0C,PNP0C0E",
-+	.ids = "button_power,button_sleep,PNP0C0D,PNP0C0C,PNP0C0E",
- 	.ops = {
- 		.add = acpi_button_add,
- 		.remove = acpi_button_remove,
-
---------------030202070304010503020206--
