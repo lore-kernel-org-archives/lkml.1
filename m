@@ -1,54 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161058AbXAaWGO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161059AbXAaWH3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161058AbXAaWGO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Jan 2007 17:06:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161059AbXAaWGN
+	id S1161059AbXAaWH3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Jan 2007 17:07:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161063AbXAaWH3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Jan 2007 17:06:13 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:53911 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161058AbXAaWGN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Jan 2007 17:06:13 -0500
-Date: Wed, 31 Jan 2007 17:06:07 -0500
-From: Dave Jones <davej@redhat.com>
-To: Greg KH <greg@kroah.com>
-Cc: Nicolas Mailhot <nicolas.mailhot@laposte.net>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Free Linux Driver Development!
-Message-ID: <20070131220607.GB20157@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>, Greg KH <greg@kroah.com>,
-	Nicolas Mailhot <nicolas.mailhot@laposte.net>,
-	linux-kernel@vger.kernel.org
-References: <32793.192.54.193.51.1170248792.squirrel@rousalka.dyndns.org> <20070131201258.GB15128@kroah.com>
+	Wed, 31 Jan 2007 17:07:29 -0500
+Received: from caramon.arm.linux.org.uk ([217.147.92.249]:4544 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161059AbXAaWH2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Jan 2007 17:07:28 -0500
+Date: Wed, 31 Jan 2007 22:07:14 +0000
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: ak@suse.de, Andrew Morton <akpm@osdl.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86-64: define dma noncoherent API functions
+Message-ID: <20070131220714.GB8999@flint.arm.linux.org.uk>
+Mail-Followup-To: Jeff Garzik <jeff@garzik.org>, ak@suse.de,
+	Andrew Morton <akpm@osdl.org>, LKML <linux-kernel@vger.kernel.org>
+References: <20070131124107.GA4884@havoc.gtf.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070131201258.GB15128@kroah.com>
-User-Agent: Mutt/1.4.2.2i
+In-Reply-To: <20070131124107.GA4884@havoc.gtf.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 31, 2007 at 12:12:58PM -0800, Greg Kroah-Hartman wrote:
+On Wed, Jan 31, 2007 at 07:41:07AM -0500, Jeff Garzik wrote:
+> x86-64 is missing these:
+> 
+> Signed-off-by: Jeff Garzik <jeff@garzik.org>
+> 
+> diff --git a/include/asm-x86_64/dma-mapping.h b/include/asm-x86_64/dma-mapping.h
+> index be9ec68..49dbab0 100644
+> --- a/include/asm-x86_64/dma-mapping.h
+> +++ b/include/asm-x86_64/dma-mapping.h
+> @@ -63,6 +63,9 @@ static inline int dma_mapping_error(dma_addr_t dma_addr)
+>  	return (dma_addr == bad_dma_address);
+>  }
+>  
+> +#define dma_alloc_noncoherent(d, s, h, f) dma_alloc_coherent(d, s, h, f)
+> +#define dma_free_noncoherent(d, s, v, h) dma_free_coherent(d, s, v, h)
+> +
 
- > > There are many out-of-tree drivers (ivtv, lirc, various webcam drivers,
- > > enhanced USB keyboard handlers...) with merging not planified or taking
- > > ages.
- > 
- > See my above comment about lirc.  As for the others, everyone knows
- > where we are at, and what the critera is for getting their code into the
- > tree, so it's not like we are hiding anywhere :)
+What are these, and why haven't they been discussed in such places as
+linux-arch so that architecture maintainers can comment on them ?
 
-The webcam situation has bugged me a few times.  I regularly get reports
-from our users that they buy some new ov5xx based camera, and the in-tree
-driver doesn't work.  The out of tree one is a huge delta, and even
-begat a separate driver for the later chips iirc.
-
-I contacted the upstream author a number of times to find out why he
-stopped sending updates. No replies.   Just taking his driver and
-sending updates myself seemed kinda rude, but at the same time,
-users are losing out.
-
-		Dave
+Ditto for the recently added dma_sync_range_whatever functions ?
 
 -- 
-http://www.codemonkey.org.uk
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
