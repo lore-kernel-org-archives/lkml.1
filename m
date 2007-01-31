@@ -1,50 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751209AbXAaH6D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751315AbXAaIC3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751209AbXAaH6D (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Jan 2007 02:58:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751314AbXAaH6C
+	id S1751315AbXAaIC3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Jan 2007 03:02:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751319AbXAaIC2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Jan 2007 02:58:02 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:58273 "EHLO mx2.suse.de"
+	Wed, 31 Jan 2007 03:02:28 -0500
+Received: from hera.kernel.org ([140.211.167.34]:39916 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751209AbXAaH6A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Jan 2007 02:58:00 -0500
-To: Zach Brown <zach.brown@oracle.com>
-Cc: linux-kernel@vger.kernel.org, linux-aio@kvack.org,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Benjamin LaHaise <bcrl@kvack.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH 4 of 4] Introduce aio system call submission and completion system calls
-References: <patchbomb.1170193181@tetsuo.zabbo.net>
-	<5bdda0f7bef20427f7e1.1170193185@tetsuo.zabbo.net>
-From: Andi Kleen <ak@suse.de>
-Date: 31 Jan 2007 09:58:38 +0100
-In-Reply-To: <5bdda0f7bef20427f7e1.1170193185@tetsuo.zabbo.net>
-Message-ID: <p73abzzpo75.fsf@bingen.suse.de>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+	id S1751315AbXAaIC2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Jan 2007 03:02:28 -0500
+From: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
+To: Andrew Morton <akpm@osdl.org>
+Subject: Re: 2.6.20-rc6-mm3
+Date: Wed, 31 Jan 2007 02:57:33 -0500
+User-Agent: KMail/1.9.5
+Cc: Olivier Galibert <galibert@pobox.com>, linux-kernel@vger.kernel.org,
+       Andi Kleen <ak@suse.de>
+References: <20070129204528.eb8d695e.akpm@osdl.org> <20070130090645.GC11823@dspnet.fr.eu.org> <20070130012631.8bb86c76.akpm@osdl.org>
+In-Reply-To: <20070130012631.8bb86c76.akpm@osdl.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200701310257.33888.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Zach Brown <zach.brown@oracle.com> writes:
+On Tuesday 30 January 2007 04:26, Andrew Morton wrote:
 
-> This finally does something useful with the notion of being able to schedule
-> stacks as fibrils under a task_struct.  Again, i386-specific and in need of
-> proper layering with archs.
-> 
-> sys_asys_submit() is added to let userspace submit asynchronous system calls.
-> It specifies the system call number and arguments.  A fibril is constructed for
-> each call.  Each starts with a stack which executes the given system call
-> handler and then returns to a function which records the return code of the
-> system call handler.  sys_asys_await_completion() then lets userspace collect
-> these results.
+> Len, what was in that merge anyway?  Lots of renaming and shuffling things
+> around - the sorts of things which are safe as long as they compile OK.  But
+> was there much substantive material in there as well?
 
-Do you have any numbers how this compares cycle wise to just doing
-clone+syscall+exit in user space? 
+The big thing was the new table manager.
+Linux used to have multiple copies of the ACPI tables -- sometimes inconsistent.
+Now, we use a single copy of each table.
+Indeed, with the exception of the FADT -- where we need to convert multiple
+versions into a single version, we map the tables directly where the BIOS
+gives them to us and thus don't allocate any memory for them at all.
 
-If the difference is not too big might it be easier to fix
-clone+syscall to be more efficient than teach all the rest
-of the kernel about fibrils? 
-
--Andi
+cheers,
+-Len
