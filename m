@@ -1,62 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751716AbXAaWte@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751720AbXAaWwq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751716AbXAaWte (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Jan 2007 17:49:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751717AbXAaWte
+	id S1751720AbXAaWwq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Jan 2007 17:52:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751721AbXAaWwq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Jan 2007 17:49:34 -0500
-Received: from omx2-ext.sgi.com ([192.48.171.19]:52081 "EHLO omx2.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751715AbXAaWtd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Jan 2007 17:49:33 -0500
-Message-ID: <45C11CE7.5070804@sgi.com>
-Date: Wed, 31 Jan 2007 23:49:11 +0100
-From: Jes Sorensen <jes@sgi.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070103)
-MIME-Version: 1.0
-To: Dave Jones <davej@redhat.com>, Jes Sorensen <jes@sgi.com>,
-       Matt Domsch <Matt_Domsch@dell.com>, Randy Dunlap <rdunlap@xenotime.net>,
-       linux-kernel@vger.kernel.org, ksummit-2007-discuss@thunk.org,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       alan@redhat.com
-Subject: Re: [Ksummit-2007-discuss] Re: [Ksummit-2006-discuss] 2007 Linux
- Kernel Summit
-References: <8355959a0701251646t4b7db48cj862268aad52e8e24@mail.gmail.com> <20070126032849.GB5589@thunk.org> <8355959a0701260704x6aea8141s3d0581fa33c74cf2@mail.gmail.com> <20070126195024.GE14759@thunk.org> <45BE8BF9.6020204@sgi.com> <1170118042.3378.45.camel@mulgrave.il.steeleye.com> <45BEF0C5.7090401@sgi.com> <20070130083025.1332a6ea.rdunlap@xenotime.net> <20070131005218.GB30457@lists.us.dell.com> <45BFFD2F.3000004@sgi.com> <20070131201433.GC6186@redhat.com>
-In-Reply-To: <20070131201433.GC6186@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 31 Jan 2007 17:52:46 -0500
+Received: from saraswathi.solana.com ([198.99.130.12]:35352 "EHLO
+	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751720AbXAaWwp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Jan 2007 17:52:45 -0500
+Date: Wed, 31 Jan 2007 17:45:04 -0500
+From: Jeff Dike <jdike@addtoit.com>
+To: akpm@osdl.org, ak@suse.de
+Cc: linux-kernel@vger.kernel.org, user-mode-linux-devel@lists.sourceforge.net
+Subject: [PATCH] x86_64 32-bit ptrace mangles sixth system call argument
+Message-ID: <20070131224504.GA7698@ccure.user-mode-linux.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Jones wrote:
-> If it makes you feel better, I'll stand down as a PC member, and
-> attempt attendance on merit.   I'm seriously tired of the allegations
-> that there's underhand things going on.
+[ This is -mm only until Andi acks it ]
 
-Dave,
+The 32-bit sysenter entry point mangles the sixth system call argument
+for both 32-bit and 64-bit ptrace.  In both cases, strace shows the
+frame pointer (ebp) as the sixth argument.
 
-I'm sorry you feel that way, that is not the intention of it. I raise
-the issue of the number of members, and particularly the fact that seats
-are sold off to sponsors to the level they are. If we didn't
-continuously get touted that this has to be restricted to death to the
-point of being constructive this wouldn't be a problem, but thats where
-it is.
+Here's a snippet of a 64-bit strace of a 32-bit test program which
+calls mmap through sysenter:
 
-Gerrit mentioned that half the committee shows up to be dead weight when
-it comes down to the crunch at the end, so if this is the case, does it
-really make sense to keep said members on the committee? LCA had how
-many proposals? they handled it with a 7-8 member group I believe, and
-yes I know Rusty did bitch about having to read a couple of hundred
-papers, but they did pretty darn well.
+mmap2(NULL, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0xfff00fcc) = 0xfffffffff7f7a000
+fstat64(0x1, 0xfff008d8)                = 0
+mmap2(NULL, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0xfff0089c) = 0xfffffffff7f79000
+write(1, "mmap returns 0xf7f7a000\n", 24mmap returns 0xf7f7a000
+) = 24
 
-> All the PC committee members last year were on the same voting sheet
-> as everyone else. Theoretically, I could have given low votes to
-> Andi, Ted and everyone else on the PC, but that would be ridiculous
-> given the work they do, and the value they've added to previous summits.
+Here's a 32-bit strace of the same program:
 
-If a person on the committee qualifies under the technical requirements
-decided upon by the committee, then obviously that person should be
-invited too.
+mmap2(NULL, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0xffc224ec) = 0xf7fcb000
+fstat64(1, {st_mode=S_IFCHR|0620, st_rdev=makedev(136, 1), ...}) = 0
+mmap2(NULL, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0xffc21dbc) = 0xf7fca000
+write(1, "mmap returns 0xf7fcb000\n", 24mmap returns 0xf7fcb000
+) = 24
 
-Cheers,
-Jes
+The first mmap is the one made by the test - its final argument (the
+offset) is 0, but strace shows 0xfff00fcc, which is the value of ebp.
+The second is a guilty bystander which is also showing the bug.
+
+The patch below copies %r9 (where the sixth argument has been
+stashed) into the RBP slot of pt_regs before syscall_trace_enter is
+called.  This fixes ptrace.
+
+To allow a successful return to userspace, the original value of rbp
+must be restored.  This is done by storing the current value of rbp
+into the RBP slot of pt_regs before the RESTORE_REST.
+
+With this patch, the straces now look like this:
+
+64-bit:
+
+mmap2(NULL, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xfffffffff7f5a000
+fstat64(0x1, 0xff926ee8)                = 0
+mmap2(NULL, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xfffffffff7f59000
+write(1, "mmap returns 0xf7f5a000\n", 24mmap returns 0xf7f5a000
+) = 24
+
+32-bit:
+
+mmap2(NULL, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xf7fa9000
+fstat64(1, {st_mode=S_IFCHR|0620, st_rdev=makedev(136, 1), ...}) = 0
+mmap2(NULL, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xf7fa8000
+write(1, "mmap returns 0xf7fa9000\n", 24mmap returns 0xf7fa9000
+) = 24
+
+Signed-off-by: Jeff Dike <jdike@addtoit.com>
+--
+ arch/x86_64/ia32/ia32entry.S |   12 ++++++++++++
+ 1 file changed, 12 insertions(+)
+
+Index: linux-2.6/arch/x86_64/ia32/ia32entry.S
+===================================================================
+--- linux-2.6.orig/arch/x86_64/ia32/ia32entry.S
++++ linux-2.6/arch/x86_64/ia32/ia32entry.S
+@@ -148,11 +148,23 @@ sysenter_do_call:	
+ sysenter_tracesys:
+ 	CFI_RESTORE_STATE
+ 	SAVE_REST
++	/* 
++	 * We need the 6th system call argument to be in regs->rbp at
++	 * this point so that ptrace will see it.  It's in r9 now, so copy
++	 * it to the rbp slot now.
++	 */
++	movq	%r9, RBP(%rsp)
+ 	CLEAR_RREGS
+ 	movq	$-ENOSYS,RAX(%rsp)	/* really needed? */
+ 	movq	%rsp,%rdi        /* &pt_regs -> arg1 */
+ 	call	syscall_trace_enter
+ 	LOAD_ARGS ARGOFFSET  /* reload args from stack in case ptrace changed it */
++	/* 
++	 * Now, we need the correct value of rbp to be restored.  It
++	 * was never munged, so we can save it to the rbp slot and
++	 * just have it restored.
++	 */
++	movq	%rbp, RBP(%rsp)
+ 	RESTORE_REST
+ 	movl	%ebp, %ebp
+ 	/* no need to do an access_ok check here because rbp has been
+
+-- 
+Work email - jdike at linux dot intel dot com
