@@ -1,56 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932653AbXAaJUo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932697AbXAaJW0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932653AbXAaJUo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Jan 2007 04:20:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932697AbXAaJUo
+	id S932697AbXAaJW0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Jan 2007 04:22:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932736AbXAaJW0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Jan 2007 04:20:44 -0500
-Received: from wr-out-0506.google.com ([64.233.184.237]:63036 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932653AbXAaJUn (ORCPT
+	Wed, 31 Jan 2007 04:22:26 -0500
+Received: from bay0-omc3-s2.bay0.hotmail.com ([65.54.246.202]:40961 "EHLO
+	bay0-omc3-s2.bay0.hotmail.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932697AbXAaJWZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Jan 2007 04:20:43 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=XUDsCcxcssEzYUuBAJe+oAkO7mg9hDlh6aOIOWr8zNhN7wXjofTdb7HiAQ9j/bNUtnqDfPFHV9h6DRHMYPbs0J1wQ0eN9N0whcyy4UGlA7+4gHoHniWchtvw4NKpYhkEjt9RCwyMbXzy2eAzNjz/WmrmxZAZDgygpQ5ldSgmfbs=
-Message-ID: <9a8748490701310120u54274d12gcaaa035bcc746fd9@mail.gmail.com>
-Date: Wed, 31 Jan 2007 10:20:42 +0100
-From: "Jesper Juhl" <jesper.juhl@gmail.com>
-To: "Andi Kleen" <ak@suse.de>
-Subject: Re: Rewriting floppy.c was Re: Free Linux Driver Development!
-Cc: "Greg KH" <greg@kroah.com>, "Adrian Bunk" <bunk@stusta.de>,
-       "Roland Dreier" <rdreier@cisco.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <p7364anpkz5.fsf_-_@bingen.suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070130012904.GA9617@kroah.com> <ada8xfks90x.fsf@cisco.com>
-	 <20070130191020.GF20642@kroah.com> <20070131011340.GP3754@stusta.de>
-	 <20070131012428.GA31759@kroah.com> <p7364anpkz5.fsf_-_@bingen.suse.de>
+	Wed, 31 Jan 2007 04:22:25 -0500
+X-Greylist: delayed 847 seconds by postgrey-1.27 at vger.kernel.org; Wed, 31 Jan 2007 04:22:25 EST
+Message-ID: <BAY107-F3272D792DE490F17CD72169CA50@phx.gbl>
+X-Originating-IP: [87.81.120.187]
+X-Originating-Email: [dcb314@hotmail.com]
+From: "d binderman" <dcb314@hotmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: fs/ufs/inode.c:817: warning: array subscript is above array bounds
+Date: Wed, 31 Jan 2007 09:08:16 +0000
+Mime-Version: 1.0
+Content-Type: text/plain; format=flowed
+X-OriginalArrivalTime: 31 Jan 2007 09:08:18.0267 (UTC) FILETIME=[58F9AAB0:01C74517]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 31 Jan 2007 11:08:14 +0100, Andi Kleen <ak@suse.de> wrote:
-> Greg KH <greg@kroah.com> writes:
-> >
-> > What?  Throw a fresh-faced newbie instantly into the tar-pit of despair
-> > that floppy.c is?  Do you want everyone just to run screaming from
-> > kernel development never to be seen again?
->
-> Doing a from-scratch rewrite of floppy.c only supporting new
-> hardware and no obscure formats ("newfloppy.c") would be an excellent
-> newbie project imho.  This means for someone who is still pretty
-> new, but wants to get their fingers wet with more complicated changes.
->
-> Then over time (old-)floppy.c could be phased out.
->
-> If anybody is interested...? (non newbies would be welcome too of course)
->
-Sounds like a fun little project. I'll bite.
 
--- 
-Jesper Juhl <jesper.juhl@gmail.com>
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please      http://www.expita.com/nomime.html
+Hello there,
+
+I just tried to compile Linux kernel 2.6.19.2 with the
+new GNU C compiler version 4.3 snapshot 20070126.
+
+The compiler said
+
+fs/ufs/inode.c:817: warning: array subscript is above array bounds
+
+The source code is
+
+        for (i = 0; i < (UFS_NDADDR + UFS_NINDIR); i++)
+            ufs_inode->ui_u2.ui_addr.ui_db[i] = ufsi->i_u1.i_data[i];
+
+but
+
+./include/linux/ufs_fs.h:                       __fs32  ui_db[UFS_NDADDR];/* 
+0x28 data blocks */
+./include/linux/ufs_fs.h:                       __fs64     
+ui_db[UFS_NDADDR]; /* 112: Direct disk blocks. */
+
+and
+
+        __fs32  i_data[15];
+
+and
+
+#define UFS_NDADDR 12
+#define UFS_NINDIR 3
+
+so the kernel seems to be trying to write fifteen bytes into an array only 
+twelve
+bytes in size. Suggest code rework.
+
+
+Regards
+
+David Binderman
+
+_________________________________________________________________
+Find Love This New Year With match.com! http://msnuk.match.com
+
