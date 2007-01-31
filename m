@@ -1,82 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161017AbXAaUUp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161030AbXAaUVp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161017AbXAaUUp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Jan 2007 15:20:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161020AbXAaUUp
+	id S1161030AbXAaUVp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Jan 2007 15:21:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161033AbXAaUVo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Jan 2007 15:20:45 -0500
-Received: from rgminet02.oracle.com ([148.87.113.119]:64179 "EHLO
-	rgminet02.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161017AbXAaUUo (ORCPT
+	Wed, 31 Jan 2007 15:21:44 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:51998 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161025AbXAaUVn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Jan 2007 15:20:44 -0500
-Date: Wed, 31 Jan 2007 12:13:45 -0800
-From: Joel Becker <Joel.Becker@oracle.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Zach Brown <zach.brown@oracle.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-aio@kvack.org, Suparna Bhattacharya <suparna@in.ibm.com>,
-       Benjamin LaHaise <bcrl@kvack.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH 0 of 4] Generic AIO by scheduling stacks
-Message-ID: <20070131201345.GJ32307@ca-server1.us.oracle.com>
-Mail-Followup-To: Linus Torvalds <torvalds@linux-foundation.org>,
-	Nick Piggin <nickpiggin@yahoo.com.au>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Zach Brown <zach.brown@oracle.com>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	linux-aio@kvack.org, Suparna Bhattacharya <suparna@in.ibm.com>,
-	Benjamin LaHaise <bcrl@kvack.org>, Ingo Molnar <mingo@elte.hu>
-References: <patchbomb.1170193181@tetsuo.zabbo.net> <1170209044.26655.364.camel@localhost.localdomain> <Pine.LNX.4.64.0701301838110.3611@woody.linux-foundation.org> <45C02AFA.4080501@yahoo.com.au> <Pine.LNX.4.64.0701302153520.3611@woody.linux-foundation.org>
+	Wed, 31 Jan 2007 15:21:43 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <45C0FA3B.5030508@s5r6.in-berlin.de>
+Date: Wed, 31 Jan 2007 21:21:15 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.9) Gecko/20070121 SeaMonkey/1.0.7
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0701302153520.3611@woody.linux-foundation.org>
-X-Burt-Line: Trees are cool.
-X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever come to perfection.
-User-Agent: Mutt/1.5.11
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+To: Robert Hancock <hancockr@shaw.ca>
+CC: James Bottomley <James.Bottomley@SteelEye.com>,
+       Andrew Morton <akpm@osdl.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
+       linux-scsi@vger.kernel.org, htejun@gmail.com
+Subject: Re: [PATCH RFC] sd: spin down disks on removal or power-down
+References: <45BD522F.3070706@shaw.ca> <20070129154706.dfb3edab.akpm@osdl.org> <1170116201.3378.29.camel@mulgrave.il.steeleye.com> <45BE9252.3040108@shaw.ca>
+In-Reply-To: <45BE9252.3040108@shaw.ca>
+X-Enigmail-Version: 0.94.1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 30, 2007 at 10:06:48PM -0800, Linus Torvalds wrote:
-> (Sadly, some of the people who really _use_ AIO are the database people, 
-> and they really only care about a particularly stupid and trivial case: 
-> pure reads and writes. A lot of other loads care about much more complex 
-> things: filename lookups etc, that traditional AIO cannot do at all, and 
-> that you really want something more thread-like for. But those other loads 
-> get kind of swamped by the DB needs, which are might tighter and trivial 
-> enough that you don't "need" a real thread for them).
+Robert Hancock wrote:
+>> http://marc.theaimsgroup.com/?t=116922621200002
+> 
+> It looks like Tejun's patch essentially does the same thing as mine with
+> the addition of the control from userspace. There is one exception
+> though, my patch also does the stop on removal of the SCSI disk (i.e.
+> writing 1 to its "delete" file in sysfs, what scsiadd -r does).
 
-	While certainly not an exhaustive list, DB people love their
-reads and writes, but are pining for network reads and writes.  They
-also are very excited about async poll(), connect(), and accept().  One
-of the big problems today is that you can either sleep for your I/O in
-io_getevents() or for your connect()/accept() in poll()/epoll(), but
-there is nowhere you can sleep for all of them at once.  That's why the
-aio list continually proposes aio_poll() or returning aio events
-via epoll().
-	Fibril based syscalls would allow async connect()/accept() and
-the rest of networking, plus one stop shopping for completions.
-
-Joel
-
-
+Isn't sd_shutdown called at this occasion?
 -- 
-
-"Born under a bad sign.
- I been down since I began to crawl.
- If it wasn't for bad luck,
- I wouldn't have no luck at all."
-
-Joel Becker
-Principal Software Developer
-Oracle
-E-mail: joel.becker@oracle.com
-Phone: (650) 506-8127
+Stefan Richter
+-=====-=-=== ---= =====
+http://arcgraph.de/sr/
