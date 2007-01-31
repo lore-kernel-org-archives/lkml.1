@@ -1,38 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933308AbXAaOoZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933301AbXAaOsQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933308AbXAaOoZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Jan 2007 09:44:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933309AbXAaOoZ
+	id S933301AbXAaOsQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Jan 2007 09:48:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933309AbXAaOsQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Jan 2007 09:44:25 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:33946 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933308AbXAaOoY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Jan 2007 09:44:24 -0500
-Date: Wed, 31 Jan 2007 14:44:23 +0000
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Eddie Pettis <pettis.eddie@gmail.com>
+	Wed, 31 Jan 2007 09:48:16 -0500
+Received: from smtp7-g19.free.fr ([212.27.42.64]:51865 "EHLO smtp7-g19.free.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933301AbXAaOsP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Jan 2007 09:48:15 -0500
+From: Duncan Sands <duncan.sands@math.u-psud.fr>
+To: Simon Arlott <601753fa5bab1585521hc0qm0003olph@thunder.lp0.eu>
+Subject: Re: [PATCH 1/3] usbatm: Allow sub-drivers to handle calls to atm_proc_read.
+Date: Wed, 31 Jan 2007 15:48:12 +0100
+User-Agent: KMail/1.9.6
 Cc: linux-kernel@vger.kernel.org
-Subject: Re: How to locate struct file * from a bio?
-Message-ID: <20070131144423.GB10050@ftp.linux.org.uk>
-References: <d66e87630701310634s385db5adwa82e2194188efa81@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+References: <45BFB6F1.2070303@simon.arlott.org.uk>
+In-Reply-To: <45BFB6F1.2070303@simon.arlott.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <d66e87630701310634s385db5adwa82e2194188efa81@mail.gmail.com>
-User-Agent: Mutt/1.4.1i
+Message-Id: <200701311548.13076.duncan.sands@math.u-psud.fr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 31, 2007 at 09:34:54AM -0500, Eddie Pettis wrote:
-> Short question:  Is it possible to locate the struct file * associated
-> with a bio?  If so, how?
- 
-Obviously impossible.  For one thing, there might very well be no inode,
-let alone struct file, associated with bio in question (e.g. for any
-filesystem metadata).  Moreover, the same on-disk object may get IO
-without any stuct file at all (e.g. a directory) or with many struct
-file (e.g. any file independently opened by several processes; no matter
-how many of them do reads, we'll get stuff pulled into page cache the
-same way (and once, not once per struct file).
+> usbatm only outputs basic information via the per-device /proc/net/atm/ file,
+> this patch allows the device specific USB ATM drivers to replace the
+> atm_proc_read function with their own.  
+
+I'm still meditating on this.  The reason I didn't do this originally is
+because of potential problems with modem disconnection and/or module
+unloading (the cxacru module can be unloaded at any time - it's the usbatm
+module that can't be unloaded when a connection is open - so you've got to
+be careful that no-one can call into cxacru after or while it's being
+destroyed).  I think it will be OK as long as usbatm calls unbind after
+shutting down the ATM layer (since otherwise your read method could be
+called after you've freed your cxacru private data) which is not the case
+right now, but should be easy to arrange.  Horrible things may happen
+if proc_read can still be running after atm_dev_deregister has returned,
+but, if so, horrible things can already happen right now.  I don't understand
+why this is impossible; maybe it is possible.  The worst that will happen
+(given that none of the proc_read methods sleeps) is that freed memory will
+be accessed and the contents spat out in the proc file (if proc_read sleeps,
+that could result in trying to run code inside a destroyed module).
+
+Ciao,
+
+Duncan.
