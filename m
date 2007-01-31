@@ -1,100 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030505AbXAaS14@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030513AbXAaS2H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030505AbXAaS14 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Jan 2007 13:27:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030513AbXAaS1z
+	id S1030513AbXAaS2H (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Jan 2007 13:28:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030511AbXAaS2H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Jan 2007 13:27:55 -0500
-Received: from out4.smtp.messagingengine.com ([66.111.4.28]:38204 "EHLO
-	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1030511AbXAaS1y (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Jan 2007 13:27:54 -0500
-X-Sasl-enc: OwKPVX2B3Hhdhn/PNKsm5fkH2RccrH+6EFyUCwyp0x7P 1170268071
-Message-ID: <45C0DFCA.4000506@imap.cc>
-Date: Wed, 31 Jan 2007 19:28:26 +0100
-From: Tilman Schmidt <tilman@imap.cc>
-Organization: me - organized??
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; de-AT; rv:1.8.0.9) Gecko/20061211 SeaMonkey/1.0.7 Mnenhy/0.7.4.666
+	Wed, 31 Jan 2007 13:28:07 -0500
+Received: from tmailer.gwdg.de ([134.76.10.23]:49768 "EHLO tmailer.gwdg.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030513AbXAaS2F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Jan 2007 13:28:05 -0500
+Date: Wed, 31 Jan 2007 19:24:54 +0100 (MET)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: Adrian Bunk <bunk@stusta.de>
+cc: Andi Kleen <ak@suse.de>, Greg KH <greg@kroah.com>,
+       Roland Dreier <rdreier@cisco.com>, linux-kernel@vger.kernel.org
+Subject: Re: Rewriting floppy.c was Re: Free Linux Driver Development!
+In-Reply-To: <20070131172410.GV3754@stusta.de>
+Message-ID: <Pine.LNX.4.61.0701311920110.13737@yvahk01.tjqt.qr>
+References: <20070130012904.GA9617@kroah.com> <ada8xfks90x.fsf@cisco.com>
+ <20070130191020.GF20642@kroah.com> <20070131011340.GP3754@stusta.de>
+ <20070131012428.GA31759@kroah.com> <p7364anpkz5.fsf_-_@bingen.suse.de>
+ <20070131172410.GV3754@stusta.de>
 MIME-Version: 1.0
-To: Alexey Starikovskiy <alexey.y.starikovskiy@linux.intel.com>
-CC: Andrew Morton <akpm@osdl.org>, Maciej Rutecki <maciej.rutecki@gmail.com>,
-       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
-Subject: Re: 2.6.20-rc6-mm3
-References: <20070129204528.eb8d695e.akpm@osdl.org>	<45BFC442.5000903@gmail.com>	<45BFEDFB.6000500@imap.cc> <20070130172525.f32fb9ea.akpm@osdl.org> <45C07FBF.3080000@imap.cc> <45C08BA6.5000209@linux.intel.com>
-In-Reply-To: <45C08BA6.5000209@linux.intel.com>
-X-Enigmail-Version: 0.94.1.2
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigA624CCD95100E2DCBF92D15A"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigA624CCD95100E2DCBF92D15A
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
 
-Am 31.01.2007 13:29 schrieb Alexey Starikovskiy:
-[...]
->>>>> Second problem, power button doesn't work.
-[...]
-> This patch should fix the issue...
+On Jan 31 2007 18:24, Adrian Bunk wrote:
+>On Wed, Jan 31, 2007 at 11:08:14AM +0100, Andi Kleen wrote:
+>> Greg KH <greg@kroah.com> writes:
+>> > 
+>> > What?  Throw a fresh-faced newbie instantly into the tar-pit of despair
+>> > that floppy.c is?  Do you want everyone just to run screaming from
+>> > kernel development never to be seen again?
+>> 
+>> Doing a from-scratch rewrite of floppy.c only supporting new
+>> hardware and no obscure formats ("newfloppy.c") would be an excellent 
+>> newbie project imho.  This means for someone who is still pretty
+>> new, but wants to get their fingers wet with more complicated changes.
+>> 
+>> Then over time (old-)floppy.c could be phased out.
+>>...
+>
+>Considering how widespread floppies are, these two sentences are
+>contradictions.
+>
+>If the goal is to phase out the old floppy driver, a new driver will 
+>have to gain support for more or less all hardware the old driver 
+>supports...
 
-It does. Power button works again.
+How much different hardware does the (old)floppy.c do? I imagine that
+today, where floppies phase out, there will be, in descending order:
 
-Thanks,
-Tilman
+ * USB floppy drives (atm handled by sd.c, could be better to have sf.c)
+ * FDCs on mainboards
+ * 1.44M drives
+ * 1.2M drives
 
-> -----------------------------------------------------------------------=
--
->=20
-> Correct id for fixed buttons.
-> ACPI_BUTTON_HID_POWERF was changed, but this change was not propogated =
-to button.c,
-> thus breaking detection of fixed power and sleep buttons.
-> From: Alexey Starikovskiy <alexey.y.starikovskiy@linux.intel.com>
->=20
->=20
-> ---
->=20
->  drivers/acpi/button.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
->=20
-> diff --git a/drivers/acpi/button.c b/drivers/acpi/button.c
-> index ac86058..c726612 100644
-> --- a/drivers/acpi/button.c
-> +++ b/drivers/acpi/button.c
-> @@ -75,7 +75,7 @@ static int acpi_button_state_open_fs(str
->  static struct acpi_driver acpi_button_driver =3D {
->  	.name =3D ACPI_BUTTON_DRIVER_NAME,
->  	.class =3D ACPI_BUTTON_CLASS,
-> -	.ids =3D "ACPI_FPB,ACPI_FSB,PNP0C0D,PNP0C0C,PNP0C0E",
-> +	.ids =3D "button_power,button_sleep,PNP0C0D,PNP0C0C,PNP0C0E",
->  	.ops =3D {
->  		.add =3D acpi_button_add,
->  		.remove =3D acpi_button_remove,
+Even a working 2.88M, as cool as it sounds, never landed in my hands ever
+since I've been into computing. Perhaps the oldest, smallest disk I once
+had was a 360K 5.25", but the B floppy drive to read it was already
+multi-compliant that read up to 1.2M disks.
 
 
---=20
-Tilman Schmidt                          E-Mail: tilman@imap.cc
-Bonn, Germany
-Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
-Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
-
-
---------------enigA624CCD95100E2DCBF92D15A
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3rc1 (MingW32)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iD8DBQFFwN/SMdB4Whm86/kRAiMAAKCCkkW3WBBQDcZYVMjtFYcR7q5PWwCfbDx4
-pGuCNVP4WXy+jDnFT4lSbuE=
-=axTH
------END PGP SIGNATURE-----
-
---------------enigA624CCD95100E2DCBF92D15A--
+Jan
+-- 
+ft: http://freshmeat.net/p/chaostables/
