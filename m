@@ -1,72 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932805AbXAaJga@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932854AbXAaJhH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932805AbXAaJga (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Jan 2007 04:36:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932846AbXAaJg3
+	id S932854AbXAaJhH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Jan 2007 04:37:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932857AbXAaJhH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Jan 2007 04:36:29 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:33941 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932805AbXAaJg2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Jan 2007 04:36:28 -0500
-Date: Wed, 31 Jan 2007 10:34:14 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Daniel Walker <dwalker@mvista.com>
-Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, johnstul@us.ibm.com,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 07/23] clocksource: rating sorted list
-Message-ID: <20070131093414.GA21335@elte.hu>
-References: <20070131033710.420168478@mvista.com> <20070131033805.183466048@mvista.com>
-Mime-Version: 1.0
+	Wed, 31 Jan 2007 04:37:07 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:59326 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S932854AbXAaJhF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Jan 2007 04:37:05 -0500
+Date: Wed, 31 Jan 2007 10:36:53 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Oliver Neukum <oneukum@suse.de>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Alan Stern <stern@rowland.harvard.edu>,
+       Oliver Neukum <oliver@neukum.name>, pm list <linux-pm@lists.osdl.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [linux-pm] question on resume()
+Message-ID: <20070131093653.GA19643@elf.ucw.cz>
+References: <200701291206.39637.oneukum@suse.de> <200701310940.26040.oliver@neukum.name> <200701310949.04110.rjw@sisk.pl> <200701311004.19477.oneukum@suse.de>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070131033805.183466048@mvista.com>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.3
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.3 required=5.9 tests=ALL_TRUSTED,BAYES_40 autolearn=no SpamAssassin version=3.0.3
-	-3.3 ALL_TRUSTED            Did not pass through any untrusted hosts
-	1.0 BAYES_40               BODY: Bayesian spam probability is 20 to 40%
-	[score: 0.3685]
+In-Reply-To: <200701311004.19477.oneukum@suse.de>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi!
 
-* Daniel Walker <dwalker@mvista.com> wrote:
+> > Yes, it will.  The process freezer can only return success if there are no more
+> > TASK_UNINTERRUPTIBLE tasks.  Otherwise it fails (after a timeout).
+> 
+> So, this means, on suspend():
+> 
+> 1. Don't worry about TASK_UNINTERRUPTIBLE
+> 2. Do worry about TASK_INTERRUPTIBLE
+> We have to cease IO and must not call wake_up_interruptible()
 
-> Converts the original plain list into a sorted list based on the clock 
-> rating. Later in my tree this allows some of the variables to be 
-> dropped since the highest rated clock is always at the front of the 
-> list. This also does some other nice things like allow the sysfs files 
-> to print the clocks in a more interesting order. It's forward looking.
+"cease IO"? No, I believe it is enough not to start new I/O. Userspace
+is frozen at that point, it can't ask you to do I/O.
 
-Unfortunately this seems to be a step backwards to me. Please consider:
+> Isn't that a race until suspend() is called?
 
->  	if (clocksource_tsc.rating != 0 && check_tsc_unstable()) {
->  		clocksource_tsc.rating = 0;
-> -		clocksource_reselect();
-> +		clocksource_rating_change(&clocksource_tsc);
->  		change = 1;
+I do not think so.
 
-this should be the following API:
+> On resume():
+> 
+> 1. Don't worry about TASK_UNINTERRUPTIBLE
+> 2. Do not restart IO that may call wake_up_interruptible()
+> 
+> When do we restart such IO?
 
-	clocksource_rating_change(&clocksource_tsc, 0);
+We reuse signal handling code to do that for us. It is same situation
+as when someone signals task doing I/O.
 
-a rating change can occur due to other things as well, not only due to 
-'tsc unstable' events. So keeping an API around that changes the rating 
-(and propagates all related changes), makes more sense to me.
-
-also, a pure function call is the most natural (and most flexible) API, 
-for a centrally registered resource like a clock source driver. And a 
-rating change should imply a reselect too, obviously. That way we 
-replace 2 lines with 1 line - that's a real API improvement and a real 
-cleanup patch.
-
-and that's precisely what Thomas' patch in -mm that your queue undoes 
-implements. (see: simplify-the-registration-of-clocksources.patch in 
--mm) Have you considered Thomas' change when you dropped it?
-
-	Ingo
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
