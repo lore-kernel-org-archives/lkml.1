@@ -1,46 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933309AbXAaRza@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933314AbXAaR4Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933309AbXAaRza (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Jan 2007 12:55:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933317AbXAaRza
+	id S933314AbXAaR4Q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Jan 2007 12:56:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933318AbXAaR4Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Jan 2007 12:55:30 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:59222 "EHLO mail.dvmed.net"
+	Wed, 31 Jan 2007 12:56:16 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:48143 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933309AbXAaRz3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Jan 2007 12:55:29 -0500
-Message-ID: <45C0D80D.2010404@garzik.org>
-Date: Wed, 31 Jan 2007 12:55:25 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
-MIME-Version: 1.0
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-CC: Roland Dreier <rdreier@cisco.com>, Greg KH <greg@kroah.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Free Linux Driver Development!
-References: <20070130012904.GA9617@kroah.com> <ada8xfks90x.fsf@cisco.com> <20070130191020.GF20642@kroah.com> <adaodogqpmx.fsf@cisco.com> <45BFA087.6020905@garzik.org> <ada4pq8qjpd.fsf@cisco.com> <20070130214759.GA12477@kroah.com> <adar6tcp43r.fsf@cisco.com> <Pine.LNX.4.61.0701311849490.13737@yvahk01.tjqt.qr>
-In-Reply-To: <Pine.LNX.4.61.0701311849490.13737@yvahk01.tjqt.qr>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.7 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+	id S933314AbXAaR4P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Jan 2007 12:56:15 -0500
+Date: Wed, 31 Jan 2007 12:56:12 -0500
+From: Alan Cox <alan@redhat.com>
+To: wsl3@lrsehosting.com
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, alan@redhat.com
+Subject: Re: Unidentified Intel wifi network card
+Message-ID: <20070131175612.GD16252@devserv.devel.redhat.com>
+References: <1170264624.5569.15.camel@scott-640m>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1170264624.5569.15.camel@scott-640m>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Engelhardt wrote:
-> On Jan 30 2007 14:00, Roland Dreier wrote:
->> An uncharitable vendor might decide it's not worth publishing specs,
->> since the Linux guys can reverse engineer the Windows driver just as
->> fast anyway.
-> 
-> And ndiswrapper gives fire to just releasing the Windows one :(
+On Wed, Jan 31, 2007 at 11:30:23AM -0600, Scott Lockwood wrote:
+> on a new Dell Latitude D820. Anyone know if there will be an open source
+> driver for this any time soon, or if there is one now?
 
-Logically this makes sense from a user perspective, but I tend to doubt 
-ndiswrapper is really a motivator for a vendor?  One would think that 
-vendors would rather not have a crash-y solution for their hardware.
-
-	Jeff
-
-
-
+Intel have a mix of open source kernel module and binary daemon for 
+some bits. Hopefully we'll get a properly open one soon, until then the
+bits you need should be on intel.com somewhere 
