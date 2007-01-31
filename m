@@ -1,66 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161047AbXAaVro@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030586AbXAaVsd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161047AbXAaVro (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Jan 2007 16:47:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161049AbXAaVro
+	id S1030586AbXAaVsd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Jan 2007 16:48:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030582AbXAaVsd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Jan 2007 16:47:44 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:14545 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161047AbXAaVrn (ORCPT
+	Wed, 31 Jan 2007 16:48:33 -0500
+Received: from amsfep19-int.chello.nl ([213.46.243.16]:51765 "EHLO
+	amsfep11-int.chello.nl" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1030586AbXAaVsc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Jan 2007 16:47:43 -0500
-Date: Wed, 31 Jan 2007 13:40:06 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Chuck Ebbert <cebbert@redhat.com>
-Cc: "Robert P. J. Day" <rpjday@mindspring.com>,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, Ralf Baechle <ralf@linux-mips.org>
-Subject: Re: [PATCH] Fix apparent typo of "CONFIG_MT_SMP".
-Message-Id: <20070131134006.03b8b89c.randy.dunlap@oracle.com>
-In-Reply-To: <45C10B68.4050002@redhat.com>
-References: <Pine.LNX.4.64.0701251839140.15699@CPE00045a9c397f-CM001225dbafb6>
-	<45C10B68.4050002@redhat.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.0 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+	Wed, 31 Jan 2007 16:48:32 -0500
+Subject: Re: [PATCH 3/7] barrier: a scalable synchonisation barrier
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>, Christoph Hellwig <hch@infradead.org>,
+       Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <20070131211340.GA171@tv-sign.ru>
+References: <20070128115118.837777000@programming.kicks-ass.net>
+	 <20070128120509.719287000@programming.kicks-ass.net>
+	 <20070128143941.GA16552@infradead.org> <20070128152435.GC9196@elte.hu>
+	 <20070131191215.GK2574@linux.vnet.ibm.com>
+	 <20070131211340.GA171@tv-sign.ru>
+Content-Type: text/plain
+Date: Wed, 31 Jan 2007 22:48:21 +0100
+Message-Id: <1170280101.10924.36.camel@lappy>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.8.1 
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 31 Jan 2007 16:34:32 -0500 Chuck Ebbert wrote:
+On Thu, 2007-02-01 at 00:13 +0300, Oleg Nesterov wrote:
+> On 01/31, Paul E. McKenney wrote:
+> >
+> > On Sun, Jan 28, 2007 at 04:24:35PM +0100, Ingo Molnar wrote:
+> > > 
+> > > * Christoph Hellwig <hch@infradead.org> wrote:
+> > > 
+> > > > On Sun, Jan 28, 2007 at 12:51:21PM +0100, Peter Zijlstra wrote:
+> > > > > This barrier thing is constructed so that it will not write in the 
+> > > > > sync() condition (the hot path) when there are no active lock 
+> > > > > sections; thus avoiding cacheline bouncing. -- I'm just not sure how 
+> > > > > this will work out in relation to PI. We might track those in the 
+> > > > > barrier scope and boost those by the max prio of the blockers.
+> > > > 
+> > > > Is this really needed?  We seem to grow new funky locking algorithms 
+> > > > exponentially, while people already have a hard time understanding the 
+> > > > existing ones.
+> > > 
+> > > yes, it's needed.
+> > 
+> > Would it be possible to come up with something common between this primitive
+> > and the one that Oleg Nesterov put together for Jens Axboe?
+> > 
+> > 	http://lkml.org/lkml/2006/11/29/330
+> > 
+> > Oleg's approach acquires a lock on the update side, which Peter would
+> > not want in the uncontended case -- but perhaps there is some way to
+> > make Oleg's approach be able to safely test both counters so as to
+> > avoid acquiring the lock if there are no readers.
+> > 
+> > Oleg, any chance of this working?  I believe it does, but have not
+> > thought it through fully.
+> 
+> I think no. From the quick reading, barrier_sync() and qrcu/srcu are
+> quite different. Consider:
+> 
+> barrier_lock()
+> 
+> 				barrier_sync();
+> 
+> barrier_unlock();
+> 				... wake up ...
+> 							barrier_lock();
+> 
+> 				schedule again
+> 
+> The last "schedule again" would be a BUG for qrcu/srcu, but probably
+> it is ok for barrier_sync().
 
-> Robert P. J. Day wrote:
-> >   Replace apparent typo of CONFIG_MT_SMP with CONFIG_MIPS_MT_SMP.
-> >
-> > Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
-> >
-> > ---
-> >
-> > diff --git a/arch/mips/mips-boards/sim/sim_setup.c b/arch/mips/mips-boards/sim/sim_setup.c
-> > index 2659c1c..ea2066c 100644
-> > --- a/arch/mips/mips-boards/sim/sim_setup.c
-> > +++ b/arch/mips/mips-boards/sim/sim_setup.c
-> > @@ -57,7 +57,7 @@ void __init plat_mem_setup(void)
-> >  	board_time_init = sim_time_init;
-> >  	prom_printf("Linux started...\n");
-> >
-> > -#ifdef CONFIG_MT_SMP
-> > +#ifdef CONFIG_MIPS_MT_SMP
-> >  	sanitize_tlb_entries();
-> >  #endif
-> >  }
-> >
-> >   
-> Have you posted the latest version of your scripts for finding these?
+Yes, that would be ok.
 
-It's here:
-  http://www.fsdev.dreamhosters.com/wiki/index.php?title=Dead_CONFIG_variables
+>  It looks like barrier_sync() is more a
+> rw semaphore biased to readers.
 
----
-~Randy
+Indeed, the locked sections are designed to be the rare case.
+
+> A couple of minor off-topic notes,
+> 
+> +static inline void barrier_unlock(struct barrier *b)
+> +{
+> +       smp_wmb();
+> +       if (atomic_dec_and_test(&b->count))
+> +               __wake_up(&b->wait, TASK_INTERRUPTIBLE|TASK_UNINTERRUPTIBLE, 0, b);
+> 
+> This is wake_up_all(&b->wait), yes? I don't undestans why key == b, it could be NULL.
+> 
+> +static inline void barrier_sync(struct barrier *b)
+> +{
+> +       might_sleep();
+> +
+> +       if (unlikely(atomic_read(&b->count))) {
+> +               DEFINE_WAIT(wait);
+> +               prepare_to_wait(&b->wait, &wait, TASK_UNINTERRUPTIBLE);
+> +               while (atomic_read(&b->count))
+> +                       schedule();
+> +               finish_wait(&b->wait, &wait);
+> +       }
+> +}
+> 
+> This should be open-coded wait_event(), but wrong! With the scenario above this
+> can hang forever! because the first wake_up removes the task from the &b->wait.
+
+This would be me struggling with the waitqueue API, its all a tad
+confusing at first look.
+
