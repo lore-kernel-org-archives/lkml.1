@@ -1,58 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030251AbXAaQfg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030245AbXAaQgL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030251AbXAaQfg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Jan 2007 11:35:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030247AbXAaQfg
+	id S1030245AbXAaQgL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Jan 2007 11:36:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030248AbXAaQgL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Jan 2007 11:35:36 -0500
-Received: from mexforward.lss.emc.com ([128.222.32.20]:41616 "EHLO
-	mexforward.lss.emc.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030243AbXAaQfe (ORCPT
+	Wed, 31 Jan 2007 11:36:11 -0500
+Received: from amsfep20-int.chello.nl ([62.179.120.15]:43306 "EHLO
+	amsfep20-int.chello.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030245AbXAaQgK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Jan 2007 11:35:34 -0500
-Message-ID: <45C0C542.2090609@emc.com>
-Date: Wed, 31 Jan 2007 11:35:14 -0500
-From: Ric Wheeler <ric@emc.com>
-Reply-To: ric@emc.com
-User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
-MIME-Version: 1.0
-To: Alan <alan@lxorguk.ukuu.org.uk>
-CC: Mark Lord <liml@rtr.ca>, "Eric D. Mudama" <edmudama@gmail.com>,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
-       linux-kernel@vger.kernel.org,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>, dougg@torque.net
-Subject: Re: [PATCH] scsi_lib.c: continue after MEDIUM_ERROR
-References: <200701301947.08478.liml@rtr.ca>	<1170206199.10890.13.camel@mulgrave.il.steeleye.com>	<311601c90701301725n53d25a74g652b7ca3bfc64c56@mail.gmail.com>	<45BFF3D6.9050605@rtr.ca>	<45C00AEE.1090708@emc.com>	<45C0B0DC.8030501@rtr.ca> <20070131152301.19a8a5ac@localhost.localdomain>
-In-Reply-To: <20070131152301.19a8a5ac@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 31 Jan 2007 11:36:10 -0500
+Subject: Re: [PATCH] atomic.h : standardizing atomic primitives
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: linux-kernel@vger.kernel.org, Linus Torvalds <torvalds@osdl.org>,
+       Andrew Morton <akpm@osdl.org>, Ingo Molnar <mingo@redhat.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Christoph Hellwig <hch@infradead.org>, ltt-dev@shafik.org,
+       systemtap@sources.redhat.com, Douglas Niehaus <niehaus@eecs.ku.edu>,
+       "Martin J. Bligh" <mbligh@mbligh.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <20070131162539.GA31985@Krystal>
+References: <11685657414033-git-send-email-mathieu.desnoyers@polymtl.ca>
+	 <1170257321.9516.42.camel@twins>  <20070131162539.GA31985@Krystal>
+Content-Type: text/plain
+Date: Wed, 31 Jan 2007 17:36:03 +0100
+Message-Id: <1170261363.9516.50.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
 Content-Transfer-Encoding: 7bit
-X-PMX-Version: 4.7.1.128075, Antispam-Engine: 2.5.0.283055, Antispam-Data: 2007.1.31.80434
-X-PerlMx-Spam: Gauge=, SPAM=2%, Reason='EMC_FROM_0+ -2, __CT 0, __CTE 0, __CT_TEXT_PLAIN 0, __HAS_MSGID 0, __MIME_TEXT_ONLY 0, __MIME_VERSION 0, __SANE_MSGID 0, __USER_AGENT 0'
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-Alan wrote:
->> When libata reports a MEDIUM_ERROR to us, we *know* it's non-recoverable,
->> as the drive itself has already done internal retries (libata uses the
->> "with retry" ATA opcodes for this).
+On Wed, 2007-01-31 at 11:25 -0500, Mathieu Desnoyers wrote:
+> Hi Peter,
 > 
-> This depends on the firmware. Some of the "raid firmware" drives don't
-> appear to do retries in firmware.
+> Thanks for testing Andrew's fixes.
 
-I think that even for these devices, the actual drives behind the controller 
-will do retries. In any case, it would be reasonable to be able to set this 
-retry/no-retry via /sys to handle exceptional cases...
+I haven't actually taken any from him. I just started afresh.
 
+>  I am wondering about what happened to
+> the Powerpc recursive include problems Andrew experienced. Quoting him :
 > 
->> But meanwhile, we still have the original issue too, where a single stray
->> bad sector can blow a system out of the water, because the mid-layer
->> currently aborts everything after it from a large merged request.
->>
->> Thus the original patch from this thread.  :)
+> "OK, I fixed eight separate compile errors in this patch series and
+> now powerpc is being very ugly with a twisty maze of include
+> dependencies.
 > 
-> Agreed
+> I'm giving up.  Someone should publish a suite of cross-compilers for us
+> so stuff like this doesn't need to happen."
+> 
+> I see that you have removed the include <asm/atomic.h> from bitops.h and
+> system.h in powerpc. If it compiles on every architectures, then it's a
+> good approach.
+
+Yeah, I fiddled around with those powerpc headers a bit until it stopped
+whining. Maybe the powerpc folks ought to eyeball it a bit, but it build
+a kernel image here.
+
+> I planned to post a new patch which uses macros for cmpxchg and xchg in
+> asm-generic/atomic.h instead of inline functions. It would remove the
+> dependency on system.h. However, if your modifications work well on
+> every architecture, my fix might not be needed. Anyone has a preferred
+> solution ? I have not been able to setup my cross-compiler test bench
+> yet due to some hardware issues and waited for it before I released
+> further fixes, but if you want to try my macro-based fix, I could post
+> it.
+
+Whatever people want; inlines are generally preferred due to the extra
+type checking.
+
+I just needed atomic_long_cmpxchg to work so I kicked your patches about
+till they compiled.
+
+> And about the alpha build, Does the assembler errors also happen without
+> this patch ?
+
+Yes. Something fishy going on there... gcc-4.1.1 + binutils-2.17
+Compiler seems to build fine, but kernel code makes it go belly up.
 
 
