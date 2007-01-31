@@ -1,54 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030189AbXAaPVE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030181AbXAaPWK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030189AbXAaPVE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Jan 2007 10:21:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030188AbXAaPVD
+	id S1030181AbXAaPWK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Jan 2007 10:22:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965434AbXAaPWJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Jan 2007 10:21:03 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:44076 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1030182AbXAaPVA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Jan 2007 10:21:00 -0500
-Date: Wed, 31 Jan 2007 10:20:58 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Robert Hancock <hancockr@shaw.ca>
-cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       Soeren Sonnenburg <kernel@nn7.de>
-Subject: Re: [linux-usb-devel] 2.6.20-rc6 SCSI error: I/O error - trouble
- with mass storage devices ?!
-In-Reply-To: <45BFD0F6.9040201@shaw.ca>
-Message-ID: <Pine.LNX.4.44L0.0701311015160.3702-100000@iolanthe.rowland.org>
+	Wed, 31 Jan 2007 10:22:09 -0500
+Received: from rtr.ca ([64.26.128.89]:4948 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965408AbXAaPWG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Jan 2007 10:22:06 -0500
+Message-ID: <45C0B41C.4030608@rtr.ca>
+Date: Wed, 31 Jan 2007 10:22:04 -0500
+From: Mark Lord <liml@rtr.ca>
+User-Agent: Thunderbird 1.5.0.9 (X11/20061206)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Ric Wheeler <ric@emc.com>, "Eric D. Mudama" <edmudama@gmail.com>,
+       linux-kernel@vger.kernel.org,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>, dougg@torque.net
+Subject: Re: [PATCH] scsi_lib.c: continue after MEDIUM_ERROR
+References: <200701301947.08478.liml@rtr.ca>	 <1170206199.10890.13.camel@mulgrave.il.steeleye.com>	 <311601c90701301725n53d25a74g652b7ca3bfc64c56@mail.gmail.com>	 <45BFF3D6.9050605@rtr.ca>  <45C00AEE.1090708@emc.com> <1170217288.10890.37.camel@mulgrave.il.steeleye.com> <45C0B211.2030305@rtr.ca>
+In-Reply-To: <45C0B211.2030305@rtr.ca>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 30 Jan 2007, Robert Hancock wrote:
-
-> Alan Stern wrote:
+Mark Lord wrote:
+> James Bottomley wrote:
+>>
+>> For the MD case, this is what REQ_FAILFAST is for.
 > 
-> > The log revealed that the phone's firmware returns garbage values in the 
-> > Residue field for some WRITEs.  This patch should take care of it.
-> > 
-> > Alan Stern
-> 
-> Is it just me, or should some of these device quirk entries that keep 
-> being added be made unconditional? Adding entries for every single 
-> device that shows up with these problems seems like not a very scalable 
-> approach. These devices obviously work in Windows, can't we just emulate 
-> its behavior here?
+> I cannot find where SCSI honours that flag.  James?
 
-I have had the same thought...
+Scratch that thought.. SCSI honours it in scsi_end_request().
 
-Just because Windows (and a bunch of clueless firmware writers) does
-something wrong shouldn't mean that we do it too.  The fact is, these
-devices are in violation of the appropriate SCSI and USB specifications.
+But I'm not certain that the block layer handles it correctly,
+at least not in the 2.6.16/2.6.18 kernel that I'm working with today.
 
-Ignoring the residue value can actually lead to undiscovered errors.  
-According to the spec, it's perfectly legal for a device to return an
-error indication there and nowhere else.
-
-Alan Stern
-
+Cheers
