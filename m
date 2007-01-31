@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932794AbXAaDpH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932780AbXAaDpT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932794AbXAaDpH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 22:45:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932803AbXAaDoe
+	id S932780AbXAaDpT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 22:45:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932801AbXAaDpQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 22:44:34 -0500
-Received: from stargate.chelsio.com ([12.22.49.110]:28881 "EHLO
+	Tue, 30 Jan 2007 22:45:16 -0500
+Received: from stargate.chelsio.com ([12.22.49.110]:10381 "EHLO
 	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932584AbXAaDoY (ORCPT
+	with ESMTP id S932597AbXAaDob (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 22:44:24 -0500
+	Tue, 30 Jan 2007 22:44:31 -0500
 From: Divy Le Ray <None@chelsio.com>
-Subject: [PATCH 7/10] cxgb3 - Remove BUG_ON from t3b_intr_napi
-Date: Tue, 30 Jan 2007 19:44:18 -0800
+Subject: [PATCH 8/10] cxgb3 - Unmap offload packets when they are freed.
+Date: Tue, 30 Jan 2007 19:44:24 -0800
 To: jeff@garzik.org
 Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
        swise@opengridcomputing.com
-Message-Id: <20070131034418.8640.29593.stgit@localhost.localdomain>
+Message-Id: <20070131034424.8651.4713.stgit@localhost.localdomain>
 Content-Type: text/plain; charset=utf-8; format=fixed
 Content-Transfer-Encoding: 8bit
 User-Agent: StGIT/0.11
@@ -25,33 +25,112 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Divy Le Ray <divy@chelsio.com>
 
-In some cases, SG_DATA_INTR won't clear on read and the following 
-interrupt may cause us to assert because NAPI is already scheduled. 
-Remove the assertion, NAPI can handle attempts to rearm it while
-it's already scheduled.
+Offload packets may be DMAed long after their SGE Tx descriptors are done
+so they must remain mapped until they are freed rather than until their
+descriptors are freed.  Unmap such packets through an skb destructor.
 
 Signed-off-by: Divy Le Ray <divy@chelsio.com>
 ---
 
- drivers/net/cxgb3/sge.c |    2 --
- 1 files changed, 0 insertions(+), 2 deletions(-)
+ drivers/net/cxgb3/sge.c |   63 ++++++++++++++++++++++++++++++++++++++++++++++-
+ 1 files changed, 61 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/net/cxgb3/sge.c b/drivers/net/cxgb3/sge.c
-index 8b3c824..daef7fd 100644
+index daef7fd..d563f7a 100644
 --- a/drivers/net/cxgb3/sge.c
 +++ b/drivers/net/cxgb3/sge.c
-@@ -2199,14 +2199,12 @@ static irqreturn_t t3b_intr_napi(int irq
- 	if (likely(map & 1)) {
- 		dev = adap->sge.qs[0].netdev;
+@@ -85,6 +85,15 @@ struct unmap_info {		/* packet unmapping
+ };
  
--		BUG_ON(napi_is_scheduled(dev));
- 		if (likely(__netif_rx_schedule_prep(dev)))
- 			__netif_rx_schedule(dev);
- 	}
- 	if (map & 2) {
- 		dev = adap->sge.qs[1].netdev;
+ /*
++ * Holds unmapping information for Tx packets that need deferred unmapping.
++ * This structure lives at skb->head and must be allocated by callers.
++ */
++struct deferred_unmap_info {
++	struct pci_dev *pdev;
++	dma_addr_t addr[MAX_SKB_FRAGS + 1];
++};
++
++/*
+  * Maps a number of flits to the number of Tx descriptors that can hold them.
+  * The formula is
+  *
+@@ -232,10 +241,13 @@ static void free_tx_desc(struct adapter
+ 	struct pci_dev *pdev = adapter->pdev;
+ 	unsigned int cidx = q->cidx;
  
--		BUG_ON(napi_is_scheduled(dev));
- 		if (likely(__netif_rx_schedule_prep(dev)))
- 			__netif_rx_schedule(dev);
- 	}
++	const int need_unmap = need_skb_unmap() &&
++			       q->cntxt_id >= FW_TUNNEL_SGEEC_START;
++
+ 	d = &q->sdesc[cidx];
+ 	while (n--) {
+ 		if (d->skb) {	/* an SGL is present */
+-			if (need_skb_unmap())
++			if (need_unmap)
+ 				unmap_skb(d->skb, q, cidx, pdev);
+ 			if (d->skb->priority == cidx)
+ 				kfree_skb(d->skb);
+@@ -1207,6 +1219,50 @@ int t3_mgmt_tx(struct adapter *adap, str
+ }
+ 
+ /**
++ *	deferred_unmap_destructor - unmap a packet when it is freed
++ *	@skb: the packet
++ *
++ *	This is the packet destructor used for Tx packets that need to remain
++ *	mapped until they are freed rather than until their Tx descriptors are
++ *	freed.
++ */
++static void deferred_unmap_destructor(struct sk_buff *skb)
++{
++	int i;
++	const dma_addr_t *p;
++	const struct skb_shared_info *si;
++	const struct deferred_unmap_info *dui;
++	const struct unmap_info *ui = (struct unmap_info *)skb->cb;
++
++	dui = (struct deferred_unmap_info *)skb->head;
++	p = dui->addr;
++
++	if (ui->len)
++		pci_unmap_single(dui->pdev, *p++, ui->len, PCI_DMA_TODEVICE);
++
++	si = skb_shinfo(skb);
++	for (i = 0; i < si->nr_frags; i++)
++		pci_unmap_page(dui->pdev, *p++, si->frags[i].size,
++			       PCI_DMA_TODEVICE);
++}
++
++static void setup_deferred_unmapping(struct sk_buff *skb, struct pci_dev *pdev,
++				     const struct sg_ent *sgl, int sgl_flits)
++{
++	dma_addr_t *p;
++	struct deferred_unmap_info *dui;
++
++	dui = (struct deferred_unmap_info *)skb->head;
++	dui->pdev = pdev;
++	for (p = dui->addr; sgl_flits >= 3; sgl++, sgl_flits -= 3) {
++		*p++ = be64_to_cpu(sgl->addr[0]);
++		*p++ = be64_to_cpu(sgl->addr[1]);
++	}
++	if (sgl_flits)
++		*p = be64_to_cpu(sgl->addr[0]);
++}
++
++/**
+  *	write_ofld_wr - write an offload work request
+  *	@adap: the adapter
+  *	@skb: the packet to send
+@@ -1242,8 +1298,11 @@ static void write_ofld_wr(struct adapter
+ 	sgp = ndesc == 1 ? (struct sg_ent *)&d->flit[flits] : sgl;
+ 	sgl_flits = make_sgl(skb, sgp, skb->h.raw, skb->tail - skb->h.raw,
+ 			     adap->pdev);
+-	if (need_skb_unmap())
++	if (need_skb_unmap()) {
++		setup_deferred_unmapping(skb, adap->pdev, sgp, sgl_flits);
++		skb->destructor = deferred_unmap_destructor;
+ 		((struct unmap_info *)skb->cb)->len = skb->tail - skb->h.raw;
++	}
+ 
+ 	write_wr_hdr_sgl(ndesc, skb, d, pidx, q, sgl, flits, sgl_flits,
+ 			 gen, from->wr_hi, from->wr_lo);
