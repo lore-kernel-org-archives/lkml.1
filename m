@@ -1,133 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161081AbXAaXcm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161079AbXAaXid@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161081AbXAaXcm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Jan 2007 18:32:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161080AbXAaXcl
+	id S1161079AbXAaXid (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Jan 2007 18:38:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161086AbXAaXic
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Jan 2007 18:32:41 -0500
-Received: from e33.co.us.ibm.com ([32.97.110.151]:60687 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161081AbXAaXck (ORCPT
+	Wed, 31 Jan 2007 18:38:32 -0500
+Received: from nf-out-0910.google.com ([64.233.182.186]:23675 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161082AbXAaXib (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Jan 2007 18:32:40 -0500
-Date: Wed, 31 Jan 2007 15:32:30 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Oleg Nesterov <oleg@tv-sign.ru>, Ingo Molnar <mingo@elte.hu>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@osdl.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/7] barrier: a scalable synchonisation barrier
-Message-ID: <20070131233229.GP2574@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20070128115118.837777000@programming.kicks-ass.net> <20070128120509.719287000@programming.kicks-ass.net> <20070128143941.GA16552@infradead.org> <20070128152435.GC9196@elte.hu> <20070131191215.GK2574@linux.vnet.ibm.com> <20070131211340.GA171@tv-sign.ru> <1170280101.10924.36.camel@lappy>
-Mime-Version: 1.0
+	Wed, 31 Jan 2007 18:38:31 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=YAtHwTvPWDPgMZNDcR67sm19GdAjU3fRCqKUQgGpH7flWysq0Pdwq+otILnIEkuVIspzxMIgzK8OgPzprvWWwntYsJ2zLTHeoh2fLcFK24muJi0mD/UPSPIHZHjENvZoHc8dIT2WO2ISC7PqFMi6cEXbHqHWI3wKm9xBWZbJadY=
+Date: Thu, 1 Feb 2007 00:38:31 +0100
+From: Luca Tettamanti <kronos.it@gmail.com>
+To: Adrian Bunk <bunk@stusta.de>
+Cc: Jeff Garzik <jgarzik@pobox.com>, Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       Peter Osterlund <petero2@telia.com>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, justin@jmicron.com,
+       Christoph Hellwig <hch@lst.de>
+Subject: Re: [2.6.20-rc6] pktcdvd doesn't work
+Message-ID: <20070131233831.GA15328@dreamland.darkstar.lan>
+References: <20070130195319.GA10994@dreamland.darkstar.lan> <Pine.LNX.4.61.0701302100370.13737@yvahk01.tjqt.qr> <20070130203601.GB15067@dreamland.darkstar.lan> <Pine.LNX.4.61.0701302141420.13737@yvahk01.tjqt.qr> <20070130231623.GA7648@dreamland.darkstar.lan> <45C0764B.8060906@pobox.com> <20070131231013.GW3754@stusta.de>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1170280101.10924.36.camel@lappy>
-User-Agent: Mutt/1.4.1i
+In-Reply-To: <20070131231013.GW3754@stusta.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 31, 2007 at 10:48:21PM +0100, Peter Zijlstra wrote:
-> On Thu, 2007-02-01 at 00:13 +0300, Oleg Nesterov wrote:
-> > On 01/31, Paul E. McKenney wrote:
-> > > On Sun, Jan 28, 2007 at 04:24:35PM +0100, Ingo Molnar wrote:
-> > > > * Christoph Hellwig <hch@infradead.org> wrote:
-> > > > > On Sun, Jan 28, 2007 at 12:51:21PM +0100, Peter Zijlstra wrote:
-> > > > > > This barrier thing is constructed so that it will not write in the 
-> > > > > > sync() condition (the hot path) when there are no active lock 
-> > > > > > sections; thus avoiding cacheline bouncing. -- I'm just not sure how 
-> > > > > > this will work out in relation to PI. We might track those in the 
-> > > > > > barrier scope and boost those by the max prio of the blockers.
-> > > > > 
-> > > > > Is this really needed?  We seem to grow new funky locking algorithms 
-> > > > > exponentially, while people already have a hard time understanding the 
-> > > > > existing ones.
-> > > > 
-> > > > yes, it's needed.
+Hi Adrian,
+
+Il Thu, Feb 01, 2007 at 12:10:13AM +0100, Adrian Bunk ha scritto: 
+> On Wed, Jan 31, 2007 at 05:58:19AM -0500, Jeff Garzik wrote:
+> > Luca Tettamanti wrote:
+> > >Hi Jeff, linux-ide,
+> > >I'm having troubles with libata and UDF on RW media. See below.
+> > >
+> > >Il Tue, Jan 30, 2007 at 09:42:34PM +0100, Jan Engelhardt ha scritto: 
+> > >>On Jan 30 2007 21:36, Luca Tettamanti wrote:
+> > >>>Il Tue, Jan 30, 2007 at 09:02:20PM +0100, Jan Engelhardt ha scritto: 
+> > >>>>On Jan 30 2007 20:53, Luca Tettamanti wrote:
+> > >>>>>Hi,
+> > >>>>>pktcdvd on kernel 2.6.20-rc6 is not working as expected. Any file that
+> > >>>>Did it work previously?
+> > >>>Yup, It used to work but since I rarely use it I don't remember which
+> > >>>kernel version worked for me.
+> > >>Hm, maybe you can take a guess.
+> > >
+> > >I can bisect pktcdvd.c if necessary, but it seems that it's innocent.
 > > > 
-> > > Would it be possible to come up with something common between this primitive
-> > > and the one that Oleg Nesterov put together for Jens Axboe?
-> > > 
-> > > 	http://lkml.org/lkml/2006/11/29/330
-> > > 
-> > > Oleg's approach acquires a lock on the update side, which Peter would
-> > > not want in the uncontended case -- but perhaps there is some way to
-> > > make Oleg's approach be able to safely test both counters so as to
-> > > avoid acquiring the lock if there are no readers.
-> > > 
-> > > Oleg, any chance of this working?  I believe it does, but have not
-> > > thought it through fully.
+> > >>>>>is written to the device is lost after umount.
+> > >>>>>I rarely use pktcdvd but at some point it used to work on my system.
+> > >>>>>
+> > >>>>>This is what I'm doing:
+> > >>>>>
+> > >>>>>root@dreamland:/tmp# cdrwtool -d /dev/scd0 -q
+> > >>>>>scsi 8:0:0:0: CD-ROM            HL-DT-ST DVDRAM GSA-4167B DL13 PQ: 0 
+> > >>>>>ANSI: 5
+> > >>>>In case you are using ide-scsi: try without.
+> > >>>It's libata jmicron driver. Shall I try the "old" PATA driver on the
+> > >>>next reboot?
+> > >>If you have lots of CDRs/DVDRs to spare (or a CDRW/DVDRW), every test is
+> > >>welcome.
+> > >
+> > >With the legacy IDE driver it works fine.
+> > >The unit is DVD-RAM capable so the firmware should handle random writes
+> > >fine; I've tried mounting /dev/scd0 rw *without* pktcdvd and I still
+> > >lose files. So I guess it has something to do with libata.
+> > >
+> > >So to recap, after formatting the disk with UDF:
+> > >
+> > >* libata
+> > >  - mount with pktcdvd: all files are lost upon umount
+> > >  - mount scd0 w/out pktcdvd: all files are lost upon umount
+> > >  - write the disk with cdrecord: OK
+> > >
+> > >  pktcdvd reports wrong capacity:
+> > >  
+> > >  pktcdvd: Fixed packets, 32 blocks, Mode-2 disc
+> > >  pktcdvd: Max. media speed: 4
+> > >  pktcdvd: write speed 4x
+> > >  pktcdvd: 0kB available on disc
+> > >  UDF-fs INFO UDF 0.9.8.1 (2004/29/09) Mounting volume 'LinuxUDF', 
+> > >  timestamp 2007/01/30 18:18 (103c)
+> > >
+> > >* legacy IDE driver
+> > >  - mount with pktcdvd: OK
+> > >  - mount hda w/out pktcdvd: corrupts FS (duh)
+> > >  - write the disk with cdrecord: OK
+> > >
+> > >  pktcdvd reports correct capacity:
+> > >  
+> > >  pktcdvd: writer pktcdvd0 mapped to hda
+> > >  pktcdvd: Fixed packets, 32 blocks, Mode-2 disc
+> > >  pktcdvd: Max. media speed: 4
+> > >  pktcdvd: write speed 4x
+> > >  pktcdvd: 551232kB available on disc
+> > >  UDF-fs INFO UDF 0.9.8.1 (2004/29/09) Mounting volume 'LinuxUDF', 
+> > >  timestamp 2007/01/30 22:19 (103c)
+> > >
+> > >The HW is a JMicron controller:
+> > >02:00.0 IDE interface: JMicron Technologies, Inc. JMicron 20360/20363 AHCI 
+> > >Controller (rev 02)
+> > >02:00.1 IDE interface: JMicron Technologies, Inc. JMicron 20360/20363 AHCI 
+> > >Controller (rev 02)
 > > 
-> > I think no. From the quick reading, barrier_sync() and qrcu/srcu are
-> > quite different. Consider:
+> > hmmm, definitely interesting behavior.
 > > 
-> > barrier_lock()
-> > 
-> > 				barrier_sync();
-> > 
-> > barrier_unlock();
-> > 				... wake up ...
-> > 							barrier_lock();
-> > 
-> > 				schedule again
-> > 
-> > The last "schedule again" would be a BUG for qrcu/srcu, but probably
-> > it is ok for barrier_sync().
+> > Would you mind putting this info into a bugzilla.kernel.org report, so 
+> > that it is not lost?  This bug will likely go into a heavy ATAPI 
+> > debugging session that is coming in a few weeks, but not immediately :/
 > 
-> Yes, that would be ok.
+> Is this related to #7810 (which is caused by Christoph's patches) or is 
+> this issue another 2.6.20-rc pktcdvd regression?
 
-The wakeup in barrier_sync() would mean that the counter was zero
-at some point in the past.  The counter would then be rechecked, and
-if it were still zero, barrier_sync() would invoke finish_wait() and
-then return -- but the counter might well become non-zero in the
-meantime, right?
+To me it looks unrelated to #7810. In my case files are "written" to the
+disk but they disappear after umount, I don't get any OOPS (nothing at
+all in the log).
+I'm not sure it's a regression either. As I said I rarely use pktcdvd,
+it's possible that the last time I used it I still had the old
+motherboard with VIA IDE controller.
 
-So given that barrier_sync() is permitted to return after the counter
-becomes non-zero, why can't it just rely on the fact that barrier_unlock()
-saw it as zero not long in the past?
-
-> >  It looks like barrier_sync() is more a
-> > rw semaphore biased to readers.
-> 
-> Indeed, the locked sections are designed to be the rare case.
-
-OK -- but barrier_sync() just waits for readers, it doesn't exclude them.
-
-If all barrier_sync() needs to do is to wait until all pre-existing
-barrier_lock()/barrier_unlock() pairs to complete, it seems to me to
-be compatible with qrcu's semantics.
-
-So what am I missing here?
-
-							Thanx, Paul
-
-> > A couple of minor off-topic notes,
-> > 
-> > +static inline void barrier_unlock(struct barrier *b)
-> > +{
-> > +       smp_wmb();
-> > +       if (atomic_dec_and_test(&b->count))
-> > +               __wake_up(&b->wait, TASK_INTERRUPTIBLE|TASK_UNINTERRUPTIBLE, 0, b);
-> > 
-> > This is wake_up_all(&b->wait), yes? I don't undestans why key == b, it could be NULL.
-> > 
-> > +static inline void barrier_sync(struct barrier *b)
-> > +{
-> > +       might_sleep();
-> > +
-> > +       if (unlikely(atomic_read(&b->count))) {
-> > +               DEFINE_WAIT(wait);
-> > +               prepare_to_wait(&b->wait, &wait, TASK_UNINTERRUPTIBLE);
-> > +               while (atomic_read(&b->count))
-> > +                       schedule();
-> > +               finish_wait(&b->wait, &wait);
-> > +       }
-> > +}
-> > 
-> > This should be open-coded wait_event(), but wrong! With the scenario above this
-> > can hang forever! because the first wake_up removes the task from the &b->wait.
-> 
-> This would be me struggling with the waitqueue API, its all a tad
-> confusing at first look.
-> 
+Luca
+-- 
+Software is like sex; it's better when it's free.
+Linus Torvalds
