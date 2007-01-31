@@ -1,106 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932572AbXAaDiu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932583AbXAaDjX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932572AbXAaDiu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 22:38:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932584AbXAaDit
+	id S932583AbXAaDjX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 22:39:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932587AbXAaDi5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 22:38:49 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.158]:65208 "EHLO
+	Tue, 30 Jan 2007 22:38:57 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.158]:65251 "EHLO
 	localhost.localdomain" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932572AbXAaDi1 (ORCPT
+	with ESMTP id S932585AbXAaDis (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 22:38:27 -0500
-Message-Id: <20070131033804.231844793@mvista.com>
+	Tue, 30 Jan 2007 22:38:48 -0500
+Message-Id: <20070131033805.498958666@mvista.com>
 References: <20070131033710.420168478@mvista.com>
 User-Agent: quilt/0.46.mv-1
-Date: Tue, 30 Jan 2007 19:37:14 -0800
+Date: Tue, 30 Jan 2007 19:37:18 -0800
 From: Daniel Walker <dwalker@mvista.com>
 To: akpm@osdl.org
-Cc: linux-kernel@vger.kernel.org, johnstul@us.ibm.com, tglx@linutronix.de,
-       mingo@elte.hu
-Subject: [PATCH 04/23] clocksource: drop time-x86_64-tsc-fixup-clocksource-changes.patch
-Content-Disposition: inline; filename=drop-time-x86_64-tsc-fixup-clocksource-changes.patch
+Cc: linux-kernel@vger.kernel.org, johnstul@us.ibm.com
+Subject: [PATCH 08/23] clocksource: drop duplicate register checking
+Content-Disposition: inline; filename=clocksource_list_init.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Drop.
+This is something Thomas already dropped, and I'm just sticking
+with that .. If you register your clocksource _twice_ your kernel will
+likely not work correctly (and might crash).
 
 Signed-Off-By: Daniel Walker <dwalker@mvista.com>
 
 ---
- arch/x86_64/kernel/tsc.c |   31 +++++++++++++++++++++----------
- 1 file changed, 21 insertions(+), 10 deletions(-)
+ kernel/time/clocksource.c |   19 ++++++-------------
+ 1 file changed, 6 insertions(+), 13 deletions(-)
 
-Index: linux-2.6.19/arch/x86_64/kernel/tsc.c
+Index: linux-2.6.19/kernel/time/clocksource.c
 ===================================================================
---- linux-2.6.19.orig/arch/x86_64/kernel/tsc.c
-+++ linux-2.6.19/arch/x86_64/kernel/tsc.c
-@@ -46,6 +46,13 @@ static inline int check_tsc_unstable(voi
- {
- 	return tsc_unstable;
+--- linux-2.6.19.orig/kernel/time/clocksource.c
++++ linux-2.6.19/kernel/time/clocksource.c
+@@ -186,16 +186,12 @@ int clocksource_register(struct clocksou
+ 	unsigned long flags;
+ 
+ 	spin_lock_irqsave(&clocksource_lock, flags);
+-	if (unlikely(!list_empty(&c->list) && __is_registered(c->name))) {
+-		printk("register_clocksource: Cannot register %s clocksource. "
+-		       "Already registered!", c->name);
+-		ret = -EBUSY;
+-	} else {
+-		INIT_LIST_HEAD(&c->list);
+- 		__sorted_list_add(c);
+-		/* scan the registered clocksources, and pick the best one */
+-		next_clocksource = select_clocksource();
+-	}
++ 	__sorted_list_add(c);
++
++	/*
++	 * scan the registered clocksources, and pick the best one
++	 */
++	next_clocksource = select_clocksource();
+ 	spin_unlock_irqrestore(&clocksource_lock, flags);
+ 	return ret;
  }
-+
-+void mark_tsc_unstable(void)
-+{
-+	tsc_unstable = 1;
-+}
-+EXPORT_SYMBOL_GPL(mark_tsc_unstable);
-+
- #ifdef CONFIG_CPU_FREQ
- 
- /* Frequency scaling support. Adjust the TSC based timer when the cpu frequency
-@@ -174,6 +181,9 @@ __setup("notsc", notsc_setup);
- 
- 
- /* clock source code: */
-+
-+static int tsc_update_callback(void);
-+
- static cycle_t read_tsc(void)
+@@ -212,9 +208,6 @@ void clocksource_rating_change(struct cl
  {
- 	cycle_t ret = (cycle_t)get_cycles_sync();
-@@ -192,23 +202,24 @@ static struct clocksource clocksource_ts
- 	.read			= read_tsc,
- 	.mask			= CLOCKSOURCE_MASK(64),
- 	.shift			= 22,
-+	.update_callback	= tsc_update_callback,
- 	.flags			= CLOCK_SOURCE_IS_CONTINUOUS |
- 				  CLOCK_SOURCE_MUST_VERIFY,
- 	.vread			= vread_tsc,
- };
+ 	unsigned long flags;
  
--void mark_tsc_unstable(void)
-+static int tsc_update_callback(void)
- {
--	if (!tsc_unstable) {
--		tsc_unstable = 1;
--		/* Change only the rating, when not registered */
--		if (clocksource_tsc.mult)
--			clocksource_change_rating(&clocksource_tsc, 0);
--		else
--			clocksource_tsc.rating = 0;
-+	int change = 0;
-+
-+	/* check to see if we should switch to the safe clocksource: */
-+	if (clocksource_tsc.rating != 50 && check_tsc_unstable()) {
-+		clocksource_tsc.rating = 50;
-+		clocksource_reselect();
-+		change = 1;
- 	}
-+	return change;
- }
--EXPORT_SYMBOL_GPL(mark_tsc_unstable);
+-	if (unlikely(list_empty(&c->list)))
+-		return;
+-
+   	spin_lock_irqsave(&clocksource_lock, flags);
  
- static int __init init_tsc_clocksource(void)
- {
-@@ -216,7 +227,7 @@ static int __init init_tsc_clocksource(v
- 		clocksource_tsc.mult = clocksource_khz2mult(cpu_khz,
- 							clocksource_tsc.shift);
- 		if (check_tsc_unstable())
--			clocksource_tsc.rating = 0;
-+			clocksource_tsc.rating = 50;
- 
- 		return clocksource_register(&clocksource_tsc);
- 	}
+ 	/*
 
 -- 
