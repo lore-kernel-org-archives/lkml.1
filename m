@@ -1,49 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932846AbXAaJh2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932588AbXAaJsL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932846AbXAaJh2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Jan 2007 04:37:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932861AbXAaJh2
+	id S932588AbXAaJsL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Jan 2007 04:48:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932820AbXAaJsL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Jan 2007 04:37:28 -0500
-Received: from hobbit.corpit.ru ([81.13.94.6]:21709 "EHLO hobbit.corpit.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932846AbXAaJh0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Jan 2007 04:37:26 -0500
-Message-ID: <45C06351.4070704@tls.msk.ru>
-Date: Wed, 31 Jan 2007 12:37:21 +0300
-From: Michael Tokarev <mjt@tls.msk.ru>
-Organization: Telecom Service, JSC
-User-Agent: Icedove 1.5.0.9 (X11/20061220)
+	Wed, 31 Jan 2007 04:48:11 -0500
+Received: from wr-out-0506.google.com ([64.233.184.234]:8450 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932588AbXAaJsJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Jan 2007 04:48:09 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=GZ+7konMMUAg+ybZqpUie/OMgx3jH01JG+WtE8zY1MGo9xaE8HcFlnNsDtoVzsYJ6Fc8AWyhc//pxCM82VmIZyc1cnkQDQjFoN1Za7ZRlzl/NZalzCx8y1s9l28VgKXMOhXPMz8OSvBBT59GQ+jk+TqQQ4oR0vdrMM+iz5xMrMg=
+Message-ID: <9a8748490701310148n559effcev2fa2833657ced259@mail.gmail.com>
+Date: Wed, 31 Jan 2007 10:48:09 +0100
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: xen-devel@lists.xensource.com
+Subject: BUG: soft lockup on 2.6.16-xenU kernel
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-To: Phillip Susi <psusi@cfl.rr.com>
-CC: Andrea Arcangeli <andrea@suse.de>,
-       Denis Vlasenko <vda.linux@googlemail.com>,
-       Bill Davidsen <davidsen@tmr.com>, Linus Torvalds <torvalds@osdl.org>,
-       Viktor <vvp01@inbox.ru>, Aubrey <aubreylee@gmail.com>,
-       Hua Zhong <hzhong@gmail.com>, Hugh Dickins <hugh@veritas.com>,
-       Linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: O_DIRECT question
-References: <6d6a94c50701101857v2af1e097xde69e592135e54ae@mail.gmail.com> <200701270035.31285.vda.linux@googlemail.com> <45BCBECE.4080405@tmr.com> <200701281803.08201.vda.linux@googlemail.com> <20070129170056.GJ8030@opteron.random> <45BE7D99.70200@cfl.rr.com> <20070130023056.GN8030@opteron.random> <45BF65E3.6070102@cfl.rr.com> <20070130164806.GQ8030@opteron.random> <45BF9381.8010108@cfl.rr.com> <20070130195720.GR8030@opteron.random> <45BFCFA2.6000701@cfl.rr.com>
-In-Reply-To: <45BFCFA2.6000701@cfl.rr.com>
-X-Enigmail-Version: 0.94.1.0
-OpenPGP: id=4F9CF57E
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Phillip Susi wrote:
-[]
-> You seem to have missed the point of this thread.  Denis Vlasenko's
-> message that you replied to simply pointed out that they are
-> semantically equivalent, so O_DIRECT can be dropped provided that O_SYNC
-> + madvise could be fixed to perform as well.  Several people including
-> Linus seem to like this idea and think it is quite possible.
+Just a little mail for your information.
 
-By the way, IF O_SYNC+madvise could be "fixed", can't O_DIRECT be implemented
-internally using them?
+Just got this from a kernel running in a Xen virtual machine :
 
-I mean, during open(O_DIRECT), do open(O_SYNC) instead and call madvise()
-appropriately....
+BUG: soft lockup detected on CPU#0!
 
-/mjt
+Pid: 0, comm:              swapper
+EIP: 0061:[<c01013a7>] CPU: 0
+EIP is at 0xc01013a7
+ EFLAGS: 00000246    Not tainted  (2.6.16-xenU-ibmx #2)
+EAX: 00000000 EBX: 00000001 ECX: 00000000 EDX: 00082847
+ESI: 00000000 EDI: c03ac000 EBP: c03adfac DS: 007b ES: 007b
+CR0: 8005003b CR2: 083c2414 CR3: 1d65a000 CR4: 00000640
+ [<c0105162>] show_trace+0x20/0x24
+ [<c0102e79>] show_regs+0x193/0x1be
+ [<c0134acc>] softlockup_tick+0x7d/0x86
+ [<c01247c4>] do_timer+0x47/0xd1
+ [<c010876b>] timer_interrupt+0x1ab/0x5f7
+ [<c0134d31>] handle_IRQ_event+0x4e/0xa2
+ [<c0134e10>] __do_IRQ+0x8b/0xf3
+ [<c01066c6>] do_IRQ+0x1d/0x29
+ [<c027b120>] evtchn_do_upcall+0x92/0xca
+ [<c0104ea8>] hypervisor_callback+0x2c/0x34
+ [<c0102b44>] cpu_idle+0x7a/0xd1
+ [<c0102031>] rest_init+0x31/0x35
+ [<c03ae855>] start_kernel+0x178/0x199
+ [<c010006f>] 0xc010006f
+
+The physical hardware is an IBM eserver xSeries 335 with 2.8GHz Xeon
+processor (ht enabled).
+
+-- 
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
