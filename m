@@ -1,61 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932157AbXAaBbX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932252AbXAaBcH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932157AbXAaBbX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 20:31:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932248AbXAaBbX
+	id S932252AbXAaBcH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 20:32:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932268AbXAaBcG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 20:31:23 -0500
-Received: from mail.suse.de ([195.135.220.2]:52924 "EHLO mx1.suse.de"
+	Tue, 30 Jan 2007 20:32:06 -0500
+Received: from mail.suse.de ([195.135.220.2]:52946 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932157AbXAaBbW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 20:31:22 -0500
-Date: Tue, 30 Jan 2007 17:30:24 -0800
-From: Greg KH <greg@kroah.com>
-To: Roland Dreier <rdreier@cisco.com>
-Cc: Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org
-Subject: Re: Free Linux Driver Development!
-Message-ID: <20070131013024.GC31759@kroah.com>
-References: <20070130191020.GF20642@kroah.com> <adaodogqpmx.fsf@cisco.com> <20070130195445.GE22022@kroah.com> <adazm80p4qp.fsf@cisco.com> <45BFC7F2.7090209@garzik.org> <adaac00p1rq.fsf@cisco.com> <45BFD03F.4020003@garzik.org> <adaps8wnlfl.fsf@cisco.com> <45BFDFE7.3000101@garzik.org> <adaejpcnguq.fsf@cisco.com>
-MIME-Version: 1.0
+	id S932252AbXAaBcD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jan 2007 20:32:03 -0500
+Date: Wed, 31 Jan 2007 02:31:58 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Andrew Morton <akpm@osdl.org>
+Cc: Hugh Dickins <hugh@veritas.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Linux Filesystems <linux-fsdevel@vger.kernel.org>,
+       Linux Memory Management <linux-mm@kvack.org>
+Subject: Re: [patch 0/9] buffered write deadlock fix
+Message-ID: <20070131013157.GA21285@wotan.suse.de>
+References: <20070129081905.23584.97878.sendpatchset@linux.site> <20070130125558.ae9119b0.akpm@osdl.org> <20070130152119.e0a18e58.akpm@osdl.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <adaejpcnguq.fsf@cisco.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20070130152119.e0a18e58.akpm@osdl.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 30, 2007 at 05:07:57PM -0800, Roland Dreier wrote:
->  > > To me, it's clear that historically the community hasn't delivered on
->  > 
->  > How is that clear?  As noted in the specific examples I provided, that
->  > is how a large number of popular drivers and subsystems have been
->  > developed.
+On Tue, Jan 30, 2007 at 03:21:19PM -0800, Andrew Morton wrote:
+> On Tue, 30 Jan 2007 12:55:58 -0800
+> Andrew Morton <akpm@osdl.org> wrote:
 > 
-> Yes, I agree that it often works.  What I'm arguing is that it doesn't
-> ALWAYS work.  And Greg is promising (in effect, on my behalf) that "If
-> you give us specs, then we WILL have drivers."  As I've said several
-> times, I'm all for encouraging vendors to open specs.  The only thing
-> I don't like is marketing open specs by making promises that we may
-> not be able to keep.
+> > y'know, four or five years back I fixed this bug by doing
+> > 
+> > 	current->locked_page = page;
+> > 
+> > in the write() code, and then teaching the pagefault code to avoid locking
+> > the same page.  Patch below.
+> > 
+> > But then evil mean Hugh pointed out that the patch is still vulnerable to
+> > ab/ba deadlocking so I dropped it.
+> 
+> And he was right, of course.  Task A holds file a's i_mutex and takes a
+> fault against file b's page.  Task B holds file b's i_mutex and takes a
+> fault against file a's page.  Drat.
+> 
+> I wonder if there's a sane way of preventing that.
 
-I really think we can keep these promises.  A number of us have been
-doing just that for many years now, and I don't see any reason why we
-would stop doing that now.
+If you want to go down the path of carrying state around in task_struct,
+you can take the mmap_sem and set a flag, then get_user_pages the source
+page and lock both source and destination in ascending order, then your
+page fault handler checks the flag and skips mmap_sem, and the rest of
+your fault path checks both the page locks you're holding.
 
-I would _love_ to be inundated with specs, so many that we run out of
-developers to work on the devices.  But I really don't see that
-happening any time soon, as there's not that many devices that Linux
-doesn't already support.
+At which point you arrive at a horrible mess :)
 
-And if such a situation does happen, perhaps I will be able to convince
-some distro companies to pony up the development man-power to help us
-from going back on our promise...  I know quite a few companies would
-love to help out just a "problem" as it is in their best interest to
-have Linux support as many devices as possible.
-
-So please, don't be so down on the offer, you don't have to do any work
-if you don't want to :)
-
-thanks,
-
-greg k-h
