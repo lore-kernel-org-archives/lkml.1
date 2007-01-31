@@ -1,62 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751960AbXAaAQm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752064AbXAaASk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751960AbXAaAQm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 19:16:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752064AbXAaAQm
+	id S1752064AbXAaASk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 19:18:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752065AbXAaASj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 19:16:42 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:51933 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751960AbXAaAQm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 19:16:42 -0500
-Message-ID: <45BFDFE7.3000101@garzik.org>
-Date: Tue, 30 Jan 2007 19:16:39 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
+	Tue, 30 Jan 2007 19:18:39 -0500
+Received: from smtp113.sbc.mail.mud.yahoo.com ([68.142.198.212]:30696 "HELO
+	smtp113.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752064AbXAaASj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jan 2007 19:18:39 -0500
+X-YMail-OSG: EBmj7oEVM1myazo6UK83CteV3oWgZdvU05RpqgzaUXZYfbUE
+Message-ID: <45BFE04A.60004@dogpad.net>
+Date: Tue, 30 Jan 2007 18:18:18 -0600
+From: Joe Harvell <jharvell+lists.linux-kernel@dogpad.net>
+User-Agent: Thunderbird 1.5.0.9 (X11/20061230)
 MIME-Version: 1.0
-To: Roland Dreier <rdreier@cisco.com>
-CC: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org
-Subject: Re: Free Linux Driver Development!
-References: <20070130012904.GA9617@kroah.com> <ada8xfks90x.fsf@cisco.com>	<20070130191020.GF20642@kroah.com> <adaodogqpmx.fsf@cisco.com>	<20070130195445.GE22022@kroah.com> <adazm80p4qp.fsf@cisco.com>	<45BFC7F2.7090209@garzik.org> <adaac00p1rq.fsf@cisco.com>	<45BFD03F.4020003@garzik.org> <adaps8wnlfl.fsf@cisco.com>
-In-Reply-To: <adaps8wnlfl.fsf@cisco.com>
+To: Robert Hancock <hancockr@shaw.ca>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: ACPI C and P states on Conroe
+References: <fa.kcyyw0/u0jusCdUVaHf0ecFyj0E@ifi.uio.no> <45BFD025.10902@shaw.ca>
+In-Reply-To: <45BFD025.10902@shaw.ca>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.7 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roland Dreier wrote:
-> To me, it's clear that historically the community hasn't delivered on
+Robert Hancock wrote:
+> Joe Harvell wrote:
+>
+>>
+>> Here are my questions:
+>>
+>> 1) For P states, which cpufreq driver should I be using?  I've heard 
+>> speedstep-centrino is deprecated (but only some aspects of it) that are 
+>
+> Right.
+>
+>> being moved into acpi-cpufreq.  But I can't get acpi-cpufreq to load 
+>> in my kernel version.  Also, I would have thought speedstep-ich would be 
+>
+> Are you sure? Are you getting error messages?
+>
+>
+I forget what the output from modprobe said.  But I had 
+cpufreq.debug=7.  Here are the logs:
 
-How is that clear?  As noted in the specific examples I provided, that 
-is how a large number of popular drivers and subsystems have been developed.
+Jan 29 09:10:38 [kernel] acpi-cpufreq: acpi_cpufreq_init
+Jan 29 09:10:38 [kernel] acpi-cpufreq: acpi_cpufreq_early_init
+Jan 29 09:10:38 [kernel] cpufreq-core: trying to register driver 
+acpi-cpufreq
+Jan 29 09:10:38 [kernel] cpufreq-core: adding CPU 0
+Jan 29 09:10:38 [kernel] acpi-cpufreq: acpi_cpufreq_cpu_init
+Jan 29 09:10:38 [kernel] acpi-cpufreq: Unsupported address space [127, 127]
+Jan 29 09:10:38 [kernel] cpufreq-core: initialization failed
+Jan 29 09:10:38 [kernel] cpufreq-core: adding CPU 1
+Jan 29 09:10:38 [kernel] acpi-cpufreq: acpi_cpufreq_cpu_init
+Jan 29 09:10:38 [kernel] acpi-cpufreq: Unsupported address space [127, 127]
+Jan 29 09:10:38 [kernel] cpufreq-core: initialization failed
+Jan 29 09:10:38 [kernel] cpufreq-core: no CPU initialized for driver 
+acpi-cpufreq
+Jan 29 09:10:38 [kernel] cpufreq-core: unregistering CPU 0
+Jan 29 09:10:38 [kernel] cpufreq-core: unregistering CPU 1
 
-
-> this.  So I don't like promising something that we haven't been able
-> to follow through on in the past.  If a vendor takes Greg's offer, and
-
-It's a good thing we've delivered on this, throughout Linux's history, then.
-
-
-> then the community, for whatever reason, fails to deliver on
-> everything, then that makes us all (including me!) look bad just
-> because of Greg's hyperbolic promises.
-
-The only difference between Greg's offer and offers made by other 
-developers to vendors is that his was public on LKML, and the subject 
-line concluded with an exclamation point.
-
-I tell hardware vendors the same thing all the time -- just get the 
-specs to me or another capable developer, and we'll work with you to get 
-Linux support going.
-
-So far, we have ATA, USB, ethernet, audio, and several other positive 
-examples of this working in the real world.  And your counter-examples? 
-  Ancient ISA drivers.
-
-	Jeff
-
+>
+>> 2) What kind of support for C1-C3 does the Conroe have?  The ACPI 
+>> spec says C2 and C3 require chipset support on the motherboard.  Does 
+>> P965 have that.  Does it matter between boards (e.g. P5B)?
+>
+> The kernel will only use C2 and C3 if the motherboard exports support 
+> for it through ACPI. Most desktop boards don't, this is normally only 
+> found on laptops.
+>
+Okay.  I understand the distinction between what the processor supports 
+and what the motherboard exports via the ACPI tables.  I do still want 
+to know what C states the E6600 supports.  Does anyone know?  Also, I've 
+heard the it's possible to modify the DSDT on boards to add interfaces 
+to processor features that the board does not provide.  Of course this 
+is a dead end if E6600 doesn't support these low power states to begin 
+with.  Assuming it does, does anyone know if it's possible to get them 
+working on the Asus P5B Deluxe?
 
 
