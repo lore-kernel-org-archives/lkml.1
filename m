@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932755AbXAaDqt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932830AbXAaDqt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932755AbXAaDqt (ORCPT <rfc822;w@1wt.eu>);
+	id S932830AbXAaDqt (ORCPT <rfc822;w@1wt.eu>);
 	Tue, 30 Jan 2007 22:46:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932781AbXAaDo2
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932787AbXAaDob
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 22:44:28 -0500
-Received: from stargate.chelsio.com ([12.22.49.110]:26243 "EHLO
+	Tue, 30 Jan 2007 22:44:31 -0500
+Received: from stargate.chelsio.com ([12.22.49.110]:11294 "EHLO
 	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932755AbXAaDoT (ORCPT
+	with ESMTP id S932675AbXAaDnw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 22:44:19 -0500
+	Tue, 30 Jan 2007 22:43:52 -0500
 From: Divy Le Ray <None@chelsio.com>
-Subject: [PATCH 6/10] cxgb3 - white space to tabs
-Date: Tue, 30 Jan 2007 19:44:13 -0800
+Subject: [PATCH 1/10] cxgb3 - FW versioning
+Date: Tue, 30 Jan 2007 19:43:45 -0800
 To: jeff@garzik.org
 Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
        swise@opengridcomputing.com
-Message-Id: <20070131034413.8629.55529.stgit@localhost.localdomain>
+Message-Id: <20070131034345.8574.21031.stgit@localhost.localdomain>
 Content-Type: text/plain; charset=utf-8; format=fixed
 Content-Transfer-Encoding: 8bit
 User-Agent: StGIT/0.11
@@ -25,52 +25,128 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Divy Le Ray <divy@chelsio.com>
 
-Use tabs in comments.
+Clean up FW version checking.
+The supported FW version is now 3.1.
 
 Signed-off-by: Divy Le Ray <divy@chelsio.com>
 ---
 
- drivers/net/cxgb3/t3_hw.c |   30 +++++++++++++++---------------
- 1 files changed, 15 insertions(+), 15 deletions(-)
+ drivers/net/cxgb3/cxgb3_main.c       |   15 ++++++++-------
+ drivers/net/cxgb3/firmware_exports.h |   27 +++++++++++++++++++++++++++
+ drivers/net/cxgb3/t3_hw.c            |   17 ++++++++++++-----
+ 3 files changed, 47 insertions(+), 12 deletions(-)
 
+diff --git a/drivers/net/cxgb3/cxgb3_main.c b/drivers/net/cxgb3/cxgb3_main.c
+index 54c49ac..8044146 100644
+--- a/drivers/net/cxgb3/cxgb3_main.c
++++ b/drivers/net/cxgb3/cxgb3_main.c
+@@ -665,11 +665,8 @@ static int cxgb_up(struct adapter *adap)
+ 
+ 	if (!(adap->flags & FULL_INIT_DONE)) {
+ 		err = t3_check_fw_version(adap);
+-		if (err) {
+-			dev_err(&adap->pdev->dev,
+-				"adapter FW is not compatible with driver\n");
++		if (err)
+ 			goto out;
+-		}
+ 
+ 		err = init_dummy_netdevs(adap);
+ 		if (err)
+@@ -1002,10 +999,14 @@ static void get_drvinfo(struct net_devic
+ 	strcpy(info->bus_info, pci_name(adapter->pdev));
+ 	if (!fw_vers)
+ 		strcpy(info->fw_version, "N/A");
+-	else
++	else {
+ 		snprintf(info->fw_version, sizeof(info->fw_version),
+-			 "%s %u.%u", (fw_vers >> 24) ? "T" : "N",
+-			 (fw_vers >> 12) & 0xfff, fw_vers & 0xfff);
++			 "%s %u.%u.%u",
++			 G_FW_VERSION_TYPE(fw_vers) ? "T" : "N",
++			 G_FW_VERSION_MAJOR(fw_vers),
++			 G_FW_VERSION_MINOR(fw_vers),
++			 G_FW_VERSION_MICRO(fw_vers));
++	}
+ }
+ 
+ static void get_strings(struct net_device *dev, u32 stringset, u8 * data)
+diff --git a/drivers/net/cxgb3/firmware_exports.h b/drivers/net/cxgb3/firmware_exports.h
+index 3565f48..eea7d89 100644
+--- a/drivers/net/cxgb3/firmware_exports.h
++++ b/drivers/net/cxgb3/firmware_exports.h
+@@ -141,4 +141,31 @@
+ #define FW_WRC_NUM			\
+     (65536 + FW_TUNNEL_NUM + FW_CTRL_NUM + FW_RI_NUM + FW_RX_PKT_NUM)
+ 
++/*
++ * FW type and version.
++ */
++#define S_FW_VERSION_TYPE		28
++#define M_FW_VERSION_TYPE		0xF
++#define V_FW_VERSION_TYPE(x)		((x) << S_FW_VERSION_TYPE)
++#define G_FW_VERSION_TYPE(x)		\
++    (((x) >> S_FW_VERSION_TYPE) & M_FW_VERSION_TYPE)
++
++#define S_FW_VERSION_MAJOR		16
++#define M_FW_VERSION_MAJOR		0xFFF
++#define V_FW_VERSION_MAJOR(x)		((x) << S_FW_VERSION_MAJOR)
++#define G_FW_VERSION_MAJOR(x)		\
++    (((x) >> S_FW_VERSION_MAJOR) & M_FW_VERSION_MAJOR)
++
++#define S_FW_VERSION_MINOR		8
++#define M_FW_VERSION_MINOR		0xFF
++#define V_FW_VERSION_MINOR(x)		((x) << S_FW_VERSION_MINOR)
++#define G_FW_VERSION_MINOR(x)		\
++    (((x) >> S_FW_VERSION_MINOR) & M_FW_VERSION_MINOR)
++
++#define S_FW_VERSION_MICRO		0
++#define M_FW_VERSION_MICRO		0xFF
++#define V_FW_VERSION_MICRO(x)		((x) << S_FW_VERSION_MICRO)
++#define G_FW_VERSION_MICRO(x)		\
++    (((x) >> S_FW_VERSION_MICRO) & M_FW_VERSION_MICRO)
++
+ #endif				/* _FIRMWARE_EXPORTS_H_ */
 diff --git a/drivers/net/cxgb3/t3_hw.c b/drivers/net/cxgb3/t3_hw.c
-index 7112bac..35a7fab 100644
+index a4e2e57..4545acb 100644
 --- a/drivers/net/cxgb3/t3_hw.c
 +++ b/drivers/net/cxgb3/t3_hw.c
-@@ -14,21 +14,21 @@
- #include "sge_defs.h"
- #include "firmware_exports.h"
+@@ -826,6 +826,11 @@ static int t3_write_flash(struct adapter
+ 	return 0;
+ }
  
-- /**
--  *	t3_wait_op_done_val - wait until an operation is completed
--  *	@adapter: the adapter performing the operation
--  *	@reg: the register to check for completion
--  *	@mask: a single-bit field within @reg that indicates completion
--  *	@polarity: the value of the field when the operation is completed
--  *	@attempts: number of check iterations
--  *	@delay: delay in usecs between iterations
--  *	@valp: where to store the value of the register at completion time
--  *
--  *	Wait until an operation is completed by checking a bit in a register
--  *	up to @attempts times.  If @valp is not NULL the value of the register
--  *	at the time it indicated completion is stored there.  Returns 0 if the
--  *	operation completes and -EAGAIN otherwise.
--  */
-+/**
-+ *	t3_wait_op_done_val - wait until an operation is completed
-+ *	@adapter: the adapter performing the operation
-+ *	@reg: the register to check for completion
-+ *	@mask: a single-bit field within @reg that indicates completion
-+ *	@polarity: the value of the field when the operation is completed
-+ *	@attempts: number of check iterations
-+ *	@delay: delay in usecs between iterations
-+ *	@valp: where to store the value of the register at completion time
-+ *
-+ *	Wait until an operation is completed by checking a bit in a register
-+ *	up to @attempts times.  If @valp is not NULL the value of the register
-+ *	at the time it indicated completion is stored there.  Returns 0 if the
-+ *	operation completes and -EAGAIN otherwise.
-+ */
++enum fw_version_type {
++	FW_VERSION_N3,
++	FW_VERSION_T3
++};
++
+ /**
+  *	t3_get_fw_version - read the firmware version
+  *	@adapter: the adapter
+@@ -849,19 +854,21 @@ int t3_check_fw_version(struct adapter *
+ {
+ 	int ret;
+ 	u32 vers;
++	unsigned int type, major, minor;
  
- int t3_wait_op_done_val(struct adapter *adapter, int reg, u32 mask,
- 			int polarity, int attempts, int delay, u32 *valp)
+ 	ret = t3_get_fw_version(adapter, &vers);
+ 	if (ret)
+ 		return ret;
+ 
+-	/* Minor 0xfff means the FW is an internal development-only version. */
+-	if ((vers & 0xfff) == 0xfff)
+-		return 0;
++	type = G_FW_VERSION_TYPE(vers);
++	major = G_FW_VERSION_MAJOR(vers);
++	minor = G_FW_VERSION_MINOR(vers);
+ 
+-	if (vers == 0x1002009)
++	if (type == FW_VERSION_T3 && major == 3 && minor == 1)
+ 		return 0;
+ 
+-	CH_ERR(adapter, "found wrong FW version, driver needs version 2.9\n");
++	CH_ERR(adapter, "found wrong FW version(%u.%u), "
++	       "driver needs version 3.1\n", major, minor);
+ 	return -EINVAL;
+ }
+ 
