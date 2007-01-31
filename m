@@ -1,59 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932112AbXAaIWi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932119AbXAaIdD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932112AbXAaIWi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Jan 2007 03:22:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932117AbXAaIWi
+	id S932119AbXAaIdD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Jan 2007 03:33:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932189AbXAaIdD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Jan 2007 03:22:38 -0500
-Received: from dvhart.com ([64.146.134.43]:37222 "EHLO dvhart.com"
+	Wed, 31 Jan 2007 03:33:03 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:42338 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932112AbXAaIWh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Jan 2007 03:22:37 -0500
-Message-ID: <45C051AC.6060107@mbligh.org>
-Date: Wed, 31 Jan 2007 00:22:04 -0800
-From: "Martin J. Bligh" <mbligh@mbligh.org>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070104)
+	id S932119AbXAaIdA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Jan 2007 03:33:00 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Oliver Neukum <oliver@neukum.name>
+Subject: Re: question on resume()
+Date: Wed, 31 Jan 2007 09:33:28 +0100
+User-Agent: KMail/1.9.1
+Cc: linux-kernel@vger.kernel.org, nigel@nigel.suspend2.net,
+       pm list <linux-pm@lists.osdl.org>
+References: <200701291206.39637.oneukum@suse.de> <200701301750.48196.oliver@neukum.name> <200701302332.26063.rjw@sisk.pl>
+In-Reply-To: <200701302332.26063.rjw@sisk.pl>
 MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Robert Hancock <hancockr@shaw.ca>,
-       linux-kernel <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
-       Andrew Morton <akpm@osdl.org>
-Subject: Re: [PATCH] libata: fix translation for START STOP UNIT
-References: <45BD4E0A.7060501@shaw.ca> <45BF5525.5040709@garzik.org> <45BF57EA.6060201@shaw.ca> <45BF5984.1030508@garzik.org>
-In-Reply-To: <45BF5984.1030508@garzik.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200701310933.29443.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
-> Robert Hancock wrote:
->> Jeff Garzik wrote:
->>> * Include the patch inline rather than as an attachment.  Even a 
->>> text/plain attachment is very difficult to review and quote in 
->>> popular email programs.
->>>
->>>     Jeff
->>
->> I'd love to, but unfortunately nobody seems to have come up with a way 
->> of doing this in Thunderbird that keeps it from mangling whitespace 
->> without a ton of hassle. I was able to get it to cooperate once (sort 
->> of, anyway, I think it may have still damaged something on the first 
->> try), but it required mangling a bunch of settings that made using it 
->> for normal mail impossible.
->>
->> The last time I looked, the main "how-to" page I found had an addendum 
->> that "I gave up on this, it's too hard, I just attach the patches". If 
->> anyone has gotten any new insight..
+On Tuesday, 30 January 2007 23:32, Rafael J. Wysocki wrote:
+> [Added linux-pm to the Cc list, because I'm going to talk about things that
+> I know only from reading the code.]
 > 
-> Just use "cat mail | sendmail -t" or git-send-email, Thunderbird will 
-> never get this stuff right.
+> On Tuesday, 30 January 2007 17:50, Oliver Neukum wrote:
+> > Am Dienstag, 30. Januar 2007 17:32 schrieb Rafael J. Wysocki:
+> > > However, you can always inspect the PF_FROZEN flag of the tasks in question
+> > > if that's practicable.
+> > 
+> > What would I do with that information? Ignore completion of IO?
 > 
-> I'm fighting Thunderbird right this second, in fact, because it randomly 
-> decided to stop supporting drag-n-drop to sub-folders in Fedora Core 6 :(
+> I probably should say "that depends", but that wouldn't be very helpful.
+> 
+> Getting back to your initial question, which is if wake_up() may be called
+> from a driver's .resume() routine, I think the answer is no, it may not,
+> because in that case the "notified" tasks would be removed from the wait
+> queue, but the refrigerator() would (wrongly) restore their states as
+> TASK_UNINTERRUPTIBLE (or TASK_INTERRUPTIBLE for wake_up_interruptible()).
+> 
+> Generally, you are safe if your driver only calls wake_up() from a process
+> context, but not from .resume() or .suspend() routines (or from an
+> unfreezeable kernel thread).
 
-http://mbligh.org/linuxdocs/Email/Clients/Thunderbird
+Ah, sorry, I've just realized I was wrong.  Processes in TASK_UNINTERRUPTIBLE
+cannot be frozen!  So, the above only applies to wake_up_interruptible().
 
-Describes how to fix this.
+You don't need to call wake_up() from .resume(), because there are no tasks
+to be notified this way and you shouldn't call wake_up_interruptible() from
+there.
 
-M.
+Greetings,
+Rafael
+
+
+-- 
+If you don't have the time to read,
+you don't have the time or the tools to write.
+		- Stephen King
