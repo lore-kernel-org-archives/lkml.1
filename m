@@ -1,101 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752175AbXAaBIB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752162AbXAaBLu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752175AbXAaBIB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 20:08:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752178AbXAaBIB
+	id S1752162AbXAaBLu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 20:11:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752173AbXAaBLu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 20:08:01 -0500
-Received: from sj-iport-2-in.cisco.com ([171.71.176.71]:39149 "EHLO
-	sj-iport-2.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752175AbXAaBIA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 20:08:00 -0500
-X-IronPort-AV: i="4.13,259,1167638400"; 
-   d="scan'208"; a="358569884:sNHT49987352"
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org
-Subject: Re: Free Linux Driver Development!
-X-Message-Flag: Warning: May contain useful information
-References: <20070130012904.GA9617@kroah.com> <ada8xfks90x.fsf@cisco.com>
-	<20070130191020.GF20642@kroah.com> <adaodogqpmx.fsf@cisco.com>
-	<20070130195445.GE22022@kroah.com> <adazm80p4qp.fsf@cisco.com>
-	<45BFC7F2.7090209@garzik.org> <adaac00p1rq.fsf@cisco.com>
-	<45BFD03F.4020003@garzik.org> <adaps8wnlfl.fsf@cisco.com>
-	<45BFDFE7.3000101@garzik.org>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Tue, 30 Jan 2007 17:07:57 -0800
-In-Reply-To: <45BFDFE7.3000101@garzik.org> (Jeff Garzik's message of "Tue, 30 Jan 2007 19:16:39 -0500")
-Message-ID: <adaejpcnguq.fsf@cisco.com>
-User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.19 (linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 31 Jan 2007 01:07:58.0400 (UTC) FILETIME=[3EFEF400:01C744D4]
-Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim4002 verified; ); 
+	Tue, 30 Jan 2007 20:11:50 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:60583 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752162AbXAaBLt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jan 2007 20:11:49 -0500
+Date: Tue, 30 Jan 2007 17:11:32 -0800
+From: Andrew Morton <akpm@osdl.org>
+To: David Chinner <dgc@sgi.com>
+Cc: "Martin J. Bligh" <mbligh@mbligh.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] mm: remove global locks from mm/highmem.c
+Message-Id: <20070130171132.7be3b054.akpm@osdl.org>
+In-Reply-To: <20070131004436.GS44411608@melbourne.sgi.com>
+References: <1169993494.10987.23.camel@lappy>
+	<20070128142925.df2f4dce.akpm@osdl.org>
+	<1170063848.6189.121.camel@twins>
+	<45BE9FE8.4080603@mbligh.org>
+	<20070129174118.0e922ab3.akpm@osdl.org>
+	<45BEA41A.6020209@mbligh.org>
+	<20070129181557.d4d17dd0.akpm@osdl.org>
+	<20070131004436.GS44411608@melbourne.sgi.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > > To me, it's clear that historically the community hasn't delivered on
- > 
- > How is that clear?  As noted in the specific examples I provided, that
- > is how a large number of popular drivers and subsystems have been
- > developed.
+On Wed, 31 Jan 2007 11:44:36 +1100
+David Chinner <dgc@sgi.com> wrote:
 
-Yes, I agree that it often works.  What I'm arguing is that it doesn't
-ALWAYS work.  And Greg is promising (in effect, on my behalf) that "If
-you give us specs, then we WILL have drivers."  As I've said several
-times, I'm all for encouraging vendors to open specs.  The only thing
-I don't like is marketing open specs by making promises that we may
-not be able to keep.
+> On Mon, Jan 29, 2007 at 06:15:57PM -0800, Andrew Morton wrote:
+> > We still don't know what is the source of kmap() activity which
+> > necessitated this patch btw.  AFAIK the busiest source is ext2 directories,
+> > but perhaps NFS under certain conditions?
+> > 
+> > <looks at xfs_iozero>
+> > 
+> > ->prepare_write no longer requires that the caller kmap the page.
+> 
+> Agreed, but don't we (xfs_iozero) have to map it first to zero it?
+> 
+> I think what you are saying here, Andrew, is that we can
+> do something like:
+> 
+> 	page = grab_cache_page
+> 	->prepare_write(page)
+> 	kaddr = kmap_atomic(page, KM_USER0)
+> 	memset(kaddr+offset, 0, bytes)
+> 	flush_dcache_page(page)
+> 	kunmap_atomic(kaddr, KM_USER0)
+> 	->commit_write(page)
+> 
+> to avoid using kmap() altogether?
+> 
 
- > The only difference between Greg's offer and offers made by other
- > developers to vendors is that his was public on LKML, and the subject
- > line concluded with an exclamation point.
- > 
- > I tell hardware vendors the same thing all the time -- just get the
- > specs to me or another capable developer, and we'll work with you to
- > get Linux support going.
-
-There's a big difference, because Greg's offer goes to every vendor,
-present and future, and promises a perfect driver in return for a spec
-dump.  I have no problem with what you're telling vendors.  And I
-think it's worth noting that you say, "we'll work with you to get
-Linux support going."  You don't say, "all we need is specs to get
-your driver into enterprise distros" -- you say that vendors need to
-"work" with us, not just dump specs.
-
- > So far, we have ATA, USB, ethernet, audio, and several other positive
- > examples of this working in the real world.  And your
- > counter-examples? Ancient ISA drivers.
-
-I think that's somewhat of a misrepresentation.  So far in this
-thread, I've also raised Ralink wireless (stuck out-of-tree until
-after the HW is EOLed) and USB Video Class (apparently also stuck out
-of tree, in spite of vendor support from Logitech).  And Dave Airlie
-mentioned XGI 3d HW.
-
-Again, yes, I admit that releasing specs usually is the best way to
-get Linux support.  Just don't promise (on my behalf) a perfectly
-portable driver that will be maintained forever if only a vendor will
-release specs.  Sometimes it works -- heck, usually it works -- as
-long as there's a developer interested.
-
-I think the message we should be sending is something more like:
-
-  There are lots of people who are happy to write Linux drivers, given
-  specs.  Releasing specs is the best, easiest way to get Linux
-  support written at minimal cost.  The advantages to this for a
-  hardware vendor are:
-   - the driver is likely to be merged upstream, which has several
-     benefits (continuing maintenance, distro inclusion, etc).
-   - the driver is likely to be portable to any platform where the
-     device physically has a chance at working.
-
-  And we even have this new mechanism for managing specs that you can
-  only release under NDA.
-
-And that that last NDA management bit really is the big news, which
-gets lost in the way Greg phrased things.  (I've buried the lede in my
-message too -- someone with more marketing savvy should rewrite it)
-
- - R.
+Yup.  Even better, use clear_highpage().
