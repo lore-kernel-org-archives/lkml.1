@@ -1,62 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030351AbXAaRYI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030331AbXAaRZh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030351AbXAaRYI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Jan 2007 12:24:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030377AbXAaRYH
+	id S1030331AbXAaRZh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Jan 2007 12:25:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030377AbXAaRZh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Jan 2007 12:24:07 -0500
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:53436 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1030351AbXAaRYE (ORCPT
+	Wed, 31 Jan 2007 12:25:37 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:51420 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1030331AbXAaRZg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Jan 2007 12:24:04 -0500
-Date: Wed, 31 Jan 2007 18:24:10 +0100
-From: Adrian Bunk <bunk@stusta.de>
-To: Andi Kleen <ak@suse.de>
-Cc: Greg KH <greg@kroah.com>, Roland Dreier <rdreier@cisco.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Rewriting floppy.c was Re: Free Linux Driver Development!
-Message-ID: <20070131172410.GV3754@stusta.de>
-References: <20070130012904.GA9617@kroah.com> <ada8xfks90x.fsf@cisco.com> <20070130191020.GF20642@kroah.com> <20070131011340.GP3754@stusta.de> <20070131012428.GA31759@kroah.com> <p7364anpkz5.fsf_-_@bingen.suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <p7364anpkz5.fsf_-_@bingen.suse.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 31 Jan 2007 12:25:36 -0500
+Date: Wed, 31 Jan 2007 17:37:46 +0000
+From: Alan <alan@lxorguk.ukuu.org.uk>
+To: akpm@osdl.org, linux-kernel@vger.kernel.org, jeff@garzik.org
+Subject: [PATCH]: SiS warning fixes
+Message-ID: <20070131173746.4285ec68@localhost.localdomain>
+X-Mailer: Claws Mail 2.7.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 31, 2007 at 11:08:14AM +0100, Andi Kleen wrote:
-> Greg KH <greg@kroah.com> writes:
-> > 
-> > What?  Throw a fresh-faced newbie instantly into the tar-pit of despair
-> > that floppy.c is?  Do you want everyone just to run screaming from
-> > kernel development never to be seen again?
-> 
-> Doing a from-scratch rewrite of floppy.c only supporting new
-> hardware and no obscure formats ("newfloppy.c") would be an excellent 
-> newbie project imho.  This means for someone who is still pretty
-> new, but wants to get their fingers wet with more complicated changes.
-> 
-> Then over time (old-)floppy.c could be phased out.
->...
+Somehow the sis_info133 external definition ended up in libata.h and that
+was included by both drivers. However libata.h contains libata-* specific
+internals and clashing defines like DRV_NAME so this makes a mess. Move
+the extern into the C file and remove the warnings
 
-Considering how widespread floppies are, these two sentences are
-contradictions.
+Signed-off-by: Alan Cox <alan@redhat.com>
 
-If the goal is to phase out the old floppy driver, a new driver will 
-have to gain support for more or less all hardware the old driver 
-supports...
-
-> -Andi
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.20-rc6-mm3/drivers/ata/libata.h linux-2.6.20-rc6-mm3/drivers/ata/libata.h
+--- linux.vanilla-2.6.20-rc6-mm3/drivers/ata/libata.h	2007-01-31 14:20:39.000000000 +0000
++++ linux-2.6.20-rc6-mm3/drivers/ata/libata.h	2007-01-31 15:04:24.000000000 +0000
+@@ -151,7 +151,5 @@
+ /* libata-sff.c */
+ extern u8 ata_irq_on(struct ata_port *ap);
+ 
+-/* pata_sis.c */
+-extern struct ata_port_info sis_info133;
+ 
+ #endif /* __LIBATA_H__ */
+diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.20-rc6-mm3/drivers/ata/pata_sis.c linux-2.6.20-rc6-mm3/drivers/ata/pata_sis.c
+--- linux.vanilla-2.6.20-rc6-mm3/drivers/ata/pata_sis.c	2007-01-31 14:20:39.000000000 +0000
++++ linux-2.6.20-rc6-mm3/drivers/ata/pata_sis.c	2007-01-31 15:05:42.000000000 +0000
+@@ -32,7 +32,6 @@
+ #include <scsi/scsi_host.h>
+ #include <linux/libata.h>
+ #include <linux/ata.h>
+-#include "libata.h"
+ 
+ #define DRV_NAME	"pata_sis"
+ #define DRV_VERSION	"0.4.5"
+diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.20-rc6-mm3/drivers/ata/sata_sis.c linux-2.6.20-rc6-mm3/drivers/ata/sata_sis.c
+--- linux.vanilla-2.6.20-rc6-mm3/drivers/ata/sata_sis.c	2007-01-31 14:20:39.000000000 +0000
++++ linux-2.6.20-rc6-mm3/drivers/ata/sata_sis.c	2007-01-31 15:04:23.000000000 +0000
+@@ -40,11 +40,13 @@
+ #include <linux/device.h>
+ #include <scsi/scsi_host.h>
+ #include <linux/libata.h>
+-#include "libata.h"
+ 
+ #define DRV_NAME	"sata_sis"
+ #define DRV_VERSION	"0.7"
+ 
++/* pata_sis.c */
++extern struct ata_port_info sis_info133;
++
+ enum {
+ 	sis_180			= 0,
+ 	SIS_SCR_PCI_BAR		= 5,
