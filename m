@@ -1,62 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030453AbXAaRip@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030447AbXAaRkR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030453AbXAaRip (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Jan 2007 12:38:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030455AbXAaRio
+	id S1030447AbXAaRkR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Jan 2007 12:40:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030456AbXAaRkR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Jan 2007 12:38:44 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:43799 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030447AbXAaRio (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Jan 2007 12:38:44 -0500
-In-Reply-To: <1170209044.26655.364.camel@localhost.localdomain>
-References: <patchbomb.1170193181@tetsuo.zabbo.net> <1170209044.26655.364.camel@localhost.localdomain>
-Mime-Version: 1.0 (Apple Message framework v752.3)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <6CDD5D9D-E031-499D-9A8A-5A8522C66D37@oracle.com>
-Cc: linux-kernel@vger.kernel.org, linux-aio@kvack.org,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Benjamin LaHaise <bcrl@kvack.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Content-Transfer-Encoding: 7bit
-From: Zach Brown <zach.brown@oracle.com>
-Subject: Re: [PATCH 0 of 4] Generic AIO by scheduling stacks
-Date: Wed, 31 Jan 2007 09:38:11 -0800
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-X-Mailer: Apple Mail (2.752.3)
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
+	Wed, 31 Jan 2007 12:40:17 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:58738 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030447AbXAaRkP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Jan 2007 12:40:15 -0500
+Date: Wed, 31 Jan 2007 18:38:32 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Andrew Morton <akpm@osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.20-rc6 - sky2 resume breakage
+Message-ID: <20070131173832.GA13653@elte.hu>
+References: <20070129154518.40b0b3d3@freekitty> <Pine.LNX.4.64.0701291609180.3611@woody.linux-foundation.org> <20070129161626.33277eb1@freekitty> <Pine.LNX.4.64.0701291623360.3611@woody.linux-foundation.org> <20070130065457.GA23390@elte.hu> <45BEF61F.7000400@garzik.org> <20070130075325.GA591@elte.hu> <45BEFBB2.8090402@garzik.org> <20070130080830.GC2840@elte.hu> <45C0B570.4000000@garzik.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <45C0B570.4000000@garzik.org>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -4.3
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-4.3 required=5.9 tests=ALL_TRUSTED,BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-3.3 ALL_TRUSTED            Did not pass through any untrusted hosts
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0027]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> - We would now have some measure of task_struct concurrency.  Read  
->> that twice,
->> it's scary.
 
-> That's the one scaring me in fact ... Maybe it will end up being an  
-> easy
-> one but I don't feel too comfortable...
+* Jeff Garzik <jeff@garzik.org> wrote:
 
-Indeed, that was my first reaction too.  I dismissed the idea for a  
-good six months after initially realizing that it implied sharing  
-journal_info, etc.
+> >ok. Can you suggest any way for me to reproduce such a bug 
+> >artificially on a test system? [i have both old and new systems, so 
+> >if you can think of a way for me to trigger this i'd be happy to try]
+> 
+> Should be pretty easy.  With either the old-IDE driver or libata, 
+> complete a command without acknowledging an interrupt.  For libata, 
+> that means poking around in ata_host_intr() and avoiding well-built 
+> hardware like AHCI.  Anything that uses ata_piix driver, basically all 
+> Intel machines, should be applicable in the "not well built" 
+> category... :)
 
-But when I finally sat down and started digging through the  
-task_struct members and, after quickly dismissing involuntary  
-preemption of the fibrils, it didn't seem so bad.  I haven't done an  
-exhaustive audit yet (and I won't advocate merging until I have) but  
-I haven't seen any train wrecks.
+ok, here's one victi^H^H^H^H testbox that seems to match your 
+description:
 
-> we didn't create fibril-like
-> things for threads, instead, we share PIDs between tasks. I wonder if
-> the sane approach would be to actually create task structs (or have a
-> pool of them pre-created sitting there for performances) and add a way
-> to share the necessary bits so that syscalls can be run on those
-> spin-offs.
+ 18:          3          0   IO-APIC-fasteoi   uhci_hcd:usb3, ohci1394
+ 19:    2413090          0   IO-APIC-fasteoi   uhci_hcd:usb2, libata
+ 22:        168          0   IO-APIC-fasteoi   HDA Intel
+ 23:          0          0   IO-APIC-fasteoi   uhci_hcd:usb1, ehci_hcd:usb5
 
-Maybe, if it comes to that.  I have some hopes that sharing by  
-default and explicitly marking the bits that we shouldn't share will  
-be good enough.
+so i should try to generate some missing ACK [this meaning a missing 
+driver-level ack, right?] on IRQ#19's libata handler - and i should 
+expect a screaming interrupt? Or non-working USB? Or both?
 
-- z
+[ i can hunt for other hardware if this doesnt look broken enough to you
+  :-) ]
+
+	Ingo
