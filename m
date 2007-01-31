@@ -1,89 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932095AbXAaBQo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932101AbXAaBTK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932095AbXAaBQo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 20:16:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932098AbXAaBQo
+	id S932101AbXAaBTK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 20:19:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932098AbXAaBTJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 20:16:44 -0500
-Received: from accolon.hansenpartnership.com ([64.109.89.108]:42188 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932095AbXAaBQn (ORCPT
+	Tue, 30 Jan 2007 20:19:09 -0500
+Received: from smtp109.mail.mud.yahoo.com ([209.191.85.219]:31573 "HELO
+	smtp109.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S932106AbXAaBTI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 20:16:43 -0500
-Subject: Re: [PATCH] scsi_lib.c: continue after MEDIUM_ERROR
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Mark Lord <liml@rtr.ca>
-Cc: linux-kernel@vger.kernel.org,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>
-In-Reply-To: <200701301947.08478.liml@rtr.ca>
-References: <200701301947.08478.liml@rtr.ca>
-Content-Type: text/plain
-Date: Tue, 30 Jan 2007 19:16:39 -0600
-Message-Id: <1170206199.10890.13.camel@mulgrave.il.steeleye.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
+	Tue, 30 Jan 2007 20:19:08 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=E6B8llXvcn+b8rct32UwO4peb37IpxnUAX4LLLTNRpR5BJpVcUJi9Iom/6KF+1xNYY9vgLuFJFbWyDsdc4m+Hv+8vds1k9HQ3gSv02MpgwIjTkuKDTPYr426RPQB/r/2ToSoMcZOORjdRAPiXYVgAaNjpHVYCYeMINoj0w+G7Tk=  ;
+X-YMail-OSG: lBzyxhsVM1mh9xe2vIvEtN6RFAOokuKlp1Kyiu.ohC4bFgUaRYkcDQgC5_SONCtrol80O1bYBw--
+Message-ID: <45BFEE7D.7060509@yahoo.com.au>
+Date: Wed, 31 Jan 2007 12:18:53 +1100
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
+MIME-Version: 1.0
+To: Anton Altaparmakov <aia21@cam.ac.uk>
+CC: Mark Fasheh <mark.fasheh@oracle.com>, Hugh Dickins <hugh@veritas.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Linux Memory Management <linux-mm@kvack.org>,
+       David Howells <dhowells@redhat.com>, Andrew Morton <akpm@osdl.org>
+Subject: Re: page_mkwrite caller is racy?
+References: <45BDCA8A.4050809@yahoo.com.au> <Pine.LNX.4.64.0701291521540.24726@blonde.wat.veritas.com> <45BE9BF0.10202@yahoo.com.au> <20070130015159.GA14799@ca-server1.us.oracle.com> <Pine.LNX.4.64.0701301456250.6541@hermes-1.csi.cam.ac.uk>
+In-Reply-To: <Pine.LNX.4.64.0701301456250.6541@hermes-1.csi.cam.ac.uk>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-First off, please send SCSI patches to the SCSI list:
-<linux-scsi@vger.kernel.org>
-
-On Tue, 2007-01-30 at 19:47 -0500, Mark Lord wrote:
-> In ancient kernels, the SCSI disk code used to continue after
-> encountering a MEDIUM_ERROR.  It would "complete" the good
-> sectors before the error, fail the bad sector/block, and then
-> continue with the rest of the request.
+Anton Altaparmakov wrote:
+> On Mon, 29 Jan 2007, Mark Fasheh wrote:
 > 
-> Kernels since about 2.6.16 or so have been broken in this regard.
-> They "complete" the good sectors before the error,
-> and then fail the entire remaining portions of the request.
-
-What was the commit that introduced the change? ... I have a vague
-memory of it being deliberate.
-
-> This is very risky behaviour, as a request is often a merge
-> of several bios, and just because one application hits a bad sector
-> is no reason to pretend that (for example) an adjacent directly lookup also failed.
+>>
+>>No page lock please. Generally, Ocfs2 wants to order cluster locks outside
+>>of page locks. Also, the sparse b-tree support I'm working on right now will
+>>need to be able to allocate in ->page_mkwrite() which would become very
+>>nasty if we came in with the page lock - aside from the additional cluster
+>>locks taken, ocfs2 will want to zero some adjacent pages (because we support
+>>atomic allocation up to 1 meg).
 > 
-> This patch fixes the behaviour to be similar to what we had originally.
 > 
-> When a bad sector is encounted, SCSI will now work around it again,
-> failing *only* the bad sector itself.
+> Ditto for NTFS.  I will need to lock pages on both sides of the page for 
+> large volume cluster sizes thus I will have to drop the page lock if it is 
+> already taken so it might as well not be...  Although I do not feel 
+> strongly about it.  If the page is locked I will just drop the lock and 
+> then take it again.  If possible to not have the page locked that would 
+> make my code a little easier/more efficient I expect...
 
-Erm, but the corollary is that if we get a large read failure because of
-a bad track, you're going to try and chunk up it a sector at a time
-forcing an individual error for each sector is going to annoy some
-people ... particularly removable medium ones which return this error if
-the medium isn't present ... Are you sure this is really what we want to
-do?
+OK, that makes sense. Thanks to you both.
 
-> Signed-off-by:  Mark Lord <mlord@pobox.com>
-> ---
-> diff -u --recursive --new-file --exclude-from=linux_17//Documentation/dontdiff old/drivers/scsi/scsi_lib.c linux/drivers/scsi/scsi_lib.c
-> --- old/drivers/scsi/scsi_lib.c	2007-01-30 13:58:05.000000000 -0500
-> +++ linux/drivers/scsi/scsi_lib.c	2007-01-30 18:30:01.000000000 -0500
-> @@ -865,6 +865,12 @@
->  	 */
->  	if (sense_valid && !sense_deferred) {
->  		switch (sshdr.sense_key) {
-> +		case MEDIUM_ERROR:
-> +			// Bad sector.  Fail it, and then continue the rest of the request:
-> +			if (scsi_end_request(cmd, 0, cmd->device->sector_size, 1) == NULL) {
-
-The sense key may have come with additional information  I think we want
-to parse that (if it exists) rather than just blindly failing the first
-sector of the request.
-
-> +				cmd->retries = 0;	// go around again..
-> +				return;
-> +			}
-
-This would drop through to the UNIT_ATTENTION case if scsi_end_request()
-fails ... I don't think that's correct.
-
->  		case UNIT_ATTENTION:
->  			if (cmd->device->removable) {
->  				/* Detected disc change.  Set a bit
-
+-- 
+SUSE Labs, Novell Inc.
+Send instant messages to your online friends http://au.messenger.yahoo.com 
