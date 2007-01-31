@@ -1,78 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030202AbXAaXRu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161009AbXAaXUx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030202AbXAaXRu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Jan 2007 18:17:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1160994AbXAaXRu
+	id S1161009AbXAaXUx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Jan 2007 18:20:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030464AbXAaXUx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Jan 2007 18:17:50 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:58318 "EHLO smtp.osdl.org"
+	Wed, 31 Jan 2007 18:20:53 -0500
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:59879 "EHLO e2.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030202AbXAaXRt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Jan 2007 18:17:49 -0500
-Date: Wed, 31 Jan 2007 15:13:38 -0800
-From: Andrew Morton <akpm@osdl.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: =?ISO-8859-1?Q?Pawe=C5?= Sikora <pluto@agmk.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Christoph Hellwig <hch@lst.de>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       Martin Peschke <mp3@de.ibm.com>, Adrian Bunk <bunk@stusta.de>,
-       Andi Kleen <ak@suse.de>
-Subject: Re: Linux 2.6.20-rc7
-Message-Id: <20070131151338.04bd200a.akpm@osdl.org>
-In-Reply-To: <Pine.LNX.4.64.0701310748450.3632@woody.linux-foundation.org>
-References: <Pine.LNX.4.64.0701302019530.11095@woody.linux-foundation.org>
-	<45C05150.6000802@agmk.net>
-	<Pine.LNX.4.64.0701310748450.3632@woody.linux-foundation.org>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1030446AbXAaXUw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Jan 2007 18:20:52 -0500
+To: Jes Sorensen <jes@sgi.com>
+cc: Dave Jones <davej@redhat.com>, Matt Domsch <Matt_Domsch@dell.com>,
+       Randy Dunlap <rdunlap@xenotime.net>, linux-kernel@vger.kernel.org,
+       ksummit-2007-discuss@thunk.org,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       alan@redhat.com
+Reply-To: Gerrit Huizenga <gh@us.ibm.com>
+From: Gerrit Huizenga <gh@us.ibm.com>
+Subject: Re: [Ksummit-2007-discuss] Re: [Ksummit-2006-discuss] 2007 Linux Kernel Summit 
+In-reply-to: Your message of Wed, 31 Jan 2007 23:49:11 +0100.
+             <45C11CE7.5070804@sgi.com> 
+Date: Wed, 31 Jan 2007 15:20:40 -0800
+Message-Id: <E1HCOkq-00074y-7L@w-gerrit.beaverton.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 31 Jan 2007 08:04:29 -0800 (PST)
-Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
+On Wed, 31 Jan 2007 23:49:11 +0100, Jes Sorensen wrote:
 > 
-> 
-> On Wed, 31 Jan 2007, Pawe__ Sikora wrote:
-> > 
-> > The 2.6.20-rcX have the same nasty bug as 2.6.19.x.
-> > 
-> > [ an oops inside kmem_get_pages ]
-> > http://bugzilla.kernel.org/show_bug.cgi?id=7889
-> 
-> Pabel, can you detail more exactly which kernels don't work, and which do?
-> 
-> >From bugzilla:
-> 
->  - 2.6.18.x does work
->  - 2.6.19.2 doesn't work.
->  - what about plain 2.6.19?
->  - can you please test some of the 2.6.19-rcX kernels? Especially 
->    2.6.19-rc1 would be good to test.
-> 
-> Since it apparently already happens in 2.6.19 (but it would be really good 
-> to know exactly when it starts), and considering _where_ it happens, I'd 
-> be inclined to blame commit d2e7b7d0: "fix potential stack overflow in 
-> mm/slab.c" by Suresh. 
-> 
-> When do_tune_cpucache() is called at bootup, I'm not sure how safe it is 
-> to do the kzalloc() thing.
-> 
-> I've added a number of hopefully appropriate people to the Cc. Guys? 
-> Apparently it only happens with MEMORY_HOTPLUG (and possibly with just an 
-> SMP kernel on UP), which probably explains why it's been around without 
-> people really complaining very loudly. 
-> 
+> Gerrit mentioned that half the committee shows up to be dead weight when
+> it comes down to the crunch at the end, so if this is the case, does it
+> really make sense to keep said members on the committee? LCA had how
+> many proposals? they handled it with a 7-8 member group I believe, and
+> yes I know Rusty did bitch about having to read a couple of hundred
+> papers, but they did pretty darn well.
 
-I discussed this with Yasunori Goto <y-goto@jp.fujitsu.com> (memory
-  hot-add developer):
+I believe in that same post, I pointed out that throughout the prep
+period, all members *did* have a valuable contribution.  Don't use half
+the info to make a point, please.
 
- "But this config uses CONFIG_MEMORY_HOTPLUG_RESERVE which is made by
-  Andi Kleen-san and I don't know very well around here.  And, I couldn't
-  reproduce this trouble on my box."
+And for paper & proposal reviews, also having been on the OLS program
+committee for several years, I can guarantee you that these are two different
+birds.  Paper proposals are more static, have a more or less intrinsic
+value that you can assess at a single reading.  KS is *much* more dynamic,
+and would be just another conference if it weren't.  KS is about current
+issues, and actions to address those issues.  The *actions* part is a lot
+harder than the paper reading portion.  Don't confused KS with a conference;
+it is a workshop for a very, very large, very very active project.
 
-I cannot reproduce it with Pawel's config either.
-
+gerrit
