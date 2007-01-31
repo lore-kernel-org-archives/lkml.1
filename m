@@ -1,81 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933231AbXAaOAE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933289AbXAaOUA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933231AbXAaOAE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Jan 2007 09:00:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933275AbXAaOAE
+	id S933289AbXAaOUA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Jan 2007 09:20:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933291AbXAaOUA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Jan 2007 09:00:04 -0500
-Received: from an-out-0708.google.com ([209.85.132.250]:56325 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933231AbXAaOAC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Jan 2007 09:00:02 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=DMZmTWNJenzq3RUmEqH67FwabFYUzdf0XTwWeu1ZTzVPxEgYB1/fqECWNpeZkmCSt2UZLpENi4FkTNlawYipkAJM5Q7GC+ysivV+ALLOvYIsHpDXFXCmOsCqa88aus0QhncAEdTg5fhoj8tu0wO6YJSfCd53mlMVbNbrSuJeVPE=
-Message-ID: <6bffcb0e0701310600s192f462aw18c96dce5630fe25@mail.gmail.com>
-Date: Wed, 31 Jan 2007 15:00:00 +0100
-From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-Subject: Re: [PATCH] Centralize the selection for debugging semaphores.
-Cc: "Linux kernel mailing list" <linux-kernel@vger.kernel.org>,
-       dhowells@redhat.com, rth@twiddle.net
-In-Reply-To: <Pine.LNX.4.64.0701310852460.4816@CPE00045a9c397f-CM001225dbafb6>
+	Wed, 31 Jan 2007 09:20:00 -0500
+Received: from smtp5-g19.free.fr ([212.27.42.35]:36893 "EHLO smtp5-g19.free.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933289AbXAaOT7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Jan 2007 09:19:59 -0500
+X-Greylist: delayed 12324 seconds by postgrey-1.27 at vger.kernel.org; Wed, 31 Jan 2007 09:19:59 EST
+From: Duncan Sands <duncan.sands@math.u-psud.fr>
+To: Simon Arlott <e5d74fcd64729b17de1hc0yh0003aeoo@thunder.lp0.eu>
+Subject: Re: [PATCH 3/3] cxacru: Store all device status information and report it when atm_proc_read is called.
+Date: Wed, 31 Jan 2007 15:19:51 +0100
+User-Agent: KMail/1.9.6
+Cc: linux-kernel@vger.kernel.org
+References: <45BFB8F5.5010607@simon.arlott.org.uk>
+In-Reply-To: <45BFB8F5.5010607@simon.arlott.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <Pine.LNX.4.64.0701310825500.4627@CPE00045a9c397f-CM001225dbafb6>
-	 <6bffcb0e0701310544w474810cfh83fbfa539e1c0573@mail.gmail.com>
-	 <Pine.LNX.4.64.0701310852460.4816@CPE00045a9c397f-CM001225dbafb6>
+Message-Id: <200701311519.52023.duncan.sands@math.u-psud.fr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 31/01/07, Robert P. J. Day <rpjday@mindspring.com> wrote:
-> On Wed, 31 Jan 2007, Michal Piotrowski wrote:
->
-> > On 31/01/07, Robert P. J. Day <rpjday@mindspring.com> wrote:
-> > >
-> > >   Centralize the kernel config option for debugging semaphores and
-> > > modify the macro for frv to use that config option instead.
-> > >
-> > > Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
-> > [..]
-> > > +config DEBUG_SEMAPHORE
-> > > +       bool "Semaphore debugging"
-> > > +       depends on DEBUG_KERNEL
-> > > +       default n
-> > > +       help
-> > > +         If you say Y here then semaphore processing will issue lots of
-> > > +         verbose debugging messages.  If you suspect a semaphore problem or
-> > > a
-> > > +         kernel hacker asks for this option then say Y.  Otherwise say N.
-> > > +
-> > > +         At the moment, this is implemented only by alpha and frv.
-> >
-> > IMHO this option should stay in arch/{alpha,frv}/Kconfig.debug
->
-> any particular reason?
+Hi Simon,
 
-Only this
-"At the moment, this is implemented only by alpha and frv."
+> +static int cxacru_proc_read(struct usbatm_data *usbatm_instance,
+> +	struct atm_dev *atm_dev, loff_t * pos, char *page)
+> +{
+> +	struct cxacru_data *instance = usbatm_instance->driver_data;
+> +	u32 *cxinf = instance->cxinf_status;
+> +	int left = *pos;
 
-It depends on architecture.
+if there was no successfull call to cxacru_poll_status before this,
+then you will output junk.  Please initialize cxinf_status to something
+sensible in cxacru_bind.
 
-> and note that it's currently *not* in
-> arch/frv/Kconfig.debug -- it's hard-coded with a macro name that's not
-> the same as the config option, and i don't really see the advantage of
-> having each architecture implement precisely the same feature in
-> different and incompatible ways.  but i'm willing to be convinced
-> otherwise.
->
-> rday
+> +       if (!left--)
+> +               return sprintf(page, "MAC=%02x:%02x:%02x:%02x:%02x:%02x\n",
+> +                                       atm_dev->esi[0], atm_dev->esi[1],
+> +                                       atm_dev->esi[2], atm_dev->esi[3],
+> +                                       atm_dev->esi[4], atm_dev->esi[5]);
 
-Regards,
-Michal
+Rather than duplicating code in usbatm, I think it would be better to
+split the various output bits in usbatm_atm_proc_read into their own
+functions, and export them, so they can be called from both
+usbatm_atm_proc_read and cxacru_proc_read.
 
--- 
-Michal K. K. Piotrowski
-LTG - Linux Testers Group
-(http://www.stardust.webpages.pl/ltg/)
+Best wishes,
+
+Duncan.
