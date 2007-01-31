@@ -1,87 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030518AbXAaSfP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030525AbXAaShZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030518AbXAaSfP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Jan 2007 13:35:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030526AbXAaSfP
+	id S1030525AbXAaShZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Jan 2007 13:37:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030526AbXAaShZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Jan 2007 13:35:15 -0500
-Received: from main.gmane.org ([80.91.229.2]:48087 "EHLO ciao.gmane.org"
+	Wed, 31 Jan 2007 13:37:25 -0500
+Received: from mx5.mail.ru ([194.67.23.25]:9424 "EHLO mx5.mail.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030518AbXAaSfN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Jan 2007 13:35:13 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: "Matthias Urlichs" <matthias@urlichs.de>
-Subject: Re: [PATCH] scsi: megaraid_{mm,mbox} init fix for kdump
-Date: Wed, 31 Jan 2007 17:49:30 +0000 (UTC)
-Message-ID: <epqkra$9bg$1@sea.gmane.org>
-References: <1168009809.4188.10.camel@dumbo> 
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Complaints-To: usenet@sea.gmane.org
-X-Gmane-NNTP-Posting-Host: smurf.noris.de
-User-Agent: pan 0.109 (Beable)
-Cc: linux-scsi@vger.kernel.org
+	id S1030525AbXAaShZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Jan 2007 13:37:25 -0500
+From: Andrey Borzenkov <arvidjaar@mail.ru>
+To: Alan <alan@lxorguk.ukuu.org.uk>
+Subject: Re: Free Linux Driver Development!
+Date: Wed, 31 Jan 2007 21:37:21 +0300
+User-Agent: KMail/1.9.5
+Cc: Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org
+References: <20070130012904.GA9617@kroah.com> <20070131040212.6057239B568@muan.mtu.ru> <20070131124933.6b32c4ff@localhost.localdomain>
+In-Reply-To: <20070131124933.6b32c4ff@localhost.localdomain>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200701312137.22324.arvidjaar@mail.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 05 Jan 2007 07:10:09 -0800, Sumant Patro wrote:
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
->         This command clears the pending commands in the adapter
->         and re-initialize its internal RAID structure.
->         Without this change, megaraid driver either panics or fails to
->         initialize the adapter during kdump's second kernel boot
->         if there are pending commands or interrupts from other devices
->         sharing the same IRQ.
+On Wednesday 31 January 2007 15:49, Alan wrote:
+> > Well, I have a long standing issue with pata_ali not detecting CD-ROM in
+> > DMA mode. When I rarely watch DVD I rather boot into legacy IDE kernel
+> > ...
+>
+> There is a general problem with some ATAPI devices and the probe logic
+> currently. The old IDE code has some workarounds that the new libata
+> layer doesn't yet do.
+>
 
-Nice. Is there a chance that this patch will also fix the regression I've
-noticed (today, unfortunately) on (at least one) Dell server?
+OK I hope to get chance to test new code someday ...
 
-FWIW, here's the relevant LSPCI output and kernel logs:
+- -andrey
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
 
-0d:0e.0 RAID bus controller: LSI Logic / Symbios Logic MegaRAID (rev 07)
-        Subsystem: Dell Unknown device 0002
-        Flags: bus master, stepping, 66MHz, medium devsel, latency 64, IRQ 18
-        Memory at d80f0000 (32-bit, prefetchable) [size=64K]
-        Memory at fc4c0000 (32-bit, non-prefetchable) [size=256K]
-        Expansion ROM at fc500000 [disabled] [size=128K]
-        Capabilities: [c0] Power Management version 2
-        Capabilities: [d0] Message Signalled Interrupts: Mask- 64bit+ Queue=0/1 Enable-
-        Capabilities: [e0] PCI-X non-bridge device
-
-Jan 31 14:41:34 kernel: [ 232.873327] megaraid cmm: 2.20.2.7 (Release Date: Sun Jul 16 00:01:03 EST 2006)
-Jan 31 14:41:34 kernel: [ 232.877616] SCSI subsystem initialized
-Jan 31 14:41:34 kernel: [ 232.888779] megaraid: 2.20.4.9 (Release Date: Sun Jul 16 12:27:22 EST 2006)
-Jan 31 14:41:34 kernel: [ 232.889835] megasas: 00.00.03.05 Mon Oct 02 11:21:32 PDT 2006
-Jan 31 14:41:34 kernel: [ 233.513659] megasas: 0x1028:0x0015:0x1028:0x1f03: <6>megaraid: probe new device 0x1000:0x0408:0x1028:0x0002: bus 13:slot 14:func 0
-Jan 31 14:41:34 kernel: [ 233.514770] megasas: FW now in Ready state
-Jan 31 14:41:34 kernel: [ 233.528893] megaraid: fw version:[522A] bios version:[H430]
-Jan 31 14:41:34 kernel: [ 233.554778] scsi2 : LSI Logic SAS based MegaRAID driver
-Jan 31 14:41:34 kernel: [ 233.555536] scsi 2:0:0:0: Direct-Access MAXTOR ATLAS10K5_073SAS BP00 PQ: 0 ANSI: 5
-Jan 31 14:41:34 kernel: [ 233.556173] scsi 2:0:1:0: Direct-Access MAXTOR ATLAS10K5_073SAS BP00 PQ: 0 ANSI: 5
-Jan 31 14:41:34 kernel: [ 233.569337] scsi3 : LSI Logic MegaRAID driver
-Jan 31 14:41:34 kernel: [ 233.569550] scsi[3]: scanning scsi channel 0 [Phy 0] for non-raid devices
-Jan 31 14:41:34 kernel: [ 233.604522] scsi 2:0:8:0: Enclosure DP BACKPLANE 1.00 PQ: 0 ANSI: 5
-Jan 31 14:41:41 kernel: [ 243.115199] megaraid: aborting-16 cmd=12 <c=0 t=12 l=0>
-Jan 31 14:41:41 kernel: [ 243.115206] megaraid abort: 16:0[0:12], fw owner
-Jan 31 14:41:41 kernel: [ 243.115217] megaraid: 1 outstanding commands. Max wait 300 sec
-Jan 31 14:41:41 kernel: [ 243.115221] megaraid mbox: Wait for 1 commands to complete:300
-Jan 31 14:41:46 kernel: [ 248.125812] megaraid mbox: Wait for 1 commands to complete:295
-Jan 31 14:41:48 kernel: [ 250.134075] megaraid mbox: reset sequence completed sucessfully
-Jan 31 14:41:58 kernel: [ 260.117201] megaraid: aborting-16 cmd=0 <c=0 t=12 l=0>Jan 31 14:41:58 kernel: [ 260.117207] megaraid abort: 16:0[0:12], fw owner
-Jan 31 14:41:58 kernel: [ 260.117217] megaraid: 1 outstanding commands. Max wait 300 sec
-Jan 31 14:41:58 kernel: [ 260.117223] megaraid mbox: Wait for 1 commands to complete:300
-Jan 31 14:42:03 kernel: [ 265.127417] megaraid mbox: Wait for 1 commands to complete:295
-Jan 31 14:42:08 kernel: [ 270.140211] megaraid mbox: Wait for 1 commands to complete:290
-Jan 31 14:42:12 kernel: [ 274.146803] megaraid mbox: reset sequence completed sucessfully
-[ nothing else that appears relevant ]
-
-
--- 
-Matthias Urlichs   |   {M:U} IT Design @ m-u-it.de   |  smurf@smurf.noris.de
-Disclaimer: The quote was selected randomly. Really. | http://smurf.noris.de
- - -
-Those who welcome death have only tried it from the ears up.
-					-- Wilson Mizner
-
+iD8DBQFFwOHiR6LMutpd94wRAltRAJ9eGY+ory798QPzPKvlMsiyy3iVZQCdHbJ7
+BtUwkgxuPbi2jwwNqF46fMQ=
+=ihjL
+-----END PGP SIGNATURE-----
