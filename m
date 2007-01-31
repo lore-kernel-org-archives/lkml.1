@@ -1,105 +1,168 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932933AbXAaPnh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932934AbXAaPsj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932933AbXAaPnh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Jan 2007 10:43:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932934AbXAaPnh
+	id S932934AbXAaPsj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Jan 2007 10:48:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932939AbXAaPsj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Jan 2007 10:43:37 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.158]:18679 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932933AbXAaPng (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Jan 2007 10:43:36 -0500
-Subject: Re: [PATCH 10/23] clocksource: remove update_callback
-From: Daniel Walker <dwalker@mvista.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, johnstul@us.ibm.com,
-       Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <20070131104610.GA740@elte.hu>
-References: <20070131033710.420168478@mvista.com>
-	 <20070131033806.127340327@mvista.com>  <20070131104610.GA740@elte.hu>
-Content-Type: text/plain
-Date: Wed, 31 Jan 2007 07:42:05 -0800
-Message-Id: <1170258125.9781.50.camel@imap.mvista.com>
+	Wed, 31 Jan 2007 10:48:39 -0500
+Received: from mailhub.sw.ru ([195.214.233.200]:21206 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932934AbXAaPsi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Jan 2007 10:48:38 -0500
+Date: Wed, 31 Jan 2007 18:55:14 +0300
+From: Alexey Dobriyan <adobriyan@openvz.org>
+To: ak@suse.de, akpm@osdl.org
+Cc: linux-kernel@vger.kernel.org, devel@openvz.org, davej@redhat.com
+Subject: [PATCH 1/2] rdmsr_on_cpu, wrmsr_on_cpu
+Message-ID: <20070131155514.GB6022@localhost.sw.ru>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-01-31 at 11:46 +0100, Ingo Molnar wrote:
-> * Daniel Walker <dwalker@mvista.com> wrote:
-> 
-> > Uses the block notifier to replace the functionality of 
-> > update_callback(). update_callback() was a special case specifically 
-> > for the tsc, but including it in the clocksource structure duplicated 
-> > it needlessly for other clocks.
-> 
-> Firstly, it think it should be mentioned that Thomas' queue already does 
-> this, in clocksource-remove-the-update-callback.patch (hence he should 
-> have been Cc:-ed). Your queue 'drops' Thomas' patch then redoes it here 
-> without mentioning that this is another version of what is in Thomas's 
-> queue. So we get this situation:
-> 
->    clocksource-remove-the-update-callback.patch
->    drop-clocksource-remove-the-update-callback.patch
->    clocksource_remove_update_callback.patch
-> 
-> that all flip-flops the same thing.
+There was OpenVZ specific bug rendering some cpufreq drivers unusable
+on SMP. In short, when cpufreq code thinks it confined itself to
+needed cpu by means of set_cpus_allowed() to execute rdmsr, some
+"virtual cpu" feature can migrate process to anywhere. This triggers
+bugons and does wrong things in general.
 
-To be clear this change has exists for a very long time, long before
-Thomas implemented it .. 
+This got fixed by introducing rdmsr_on_cpu and wrmsr_on_cpu executing
+rdmsr and wrmsr on given physical cpu by means of
+smp_call_function_single().
 
-> Secondly, your patch seems to do other changes as well:
-> 
-> > @@ -179,6 +172,7 @@ int recalibrate_cpu_khz(void)
-> >  	if (cpu_has_tsc) {
-> >  		cpu_khz = calculate_cpu_khz();
-> >  		tsc_khz = cpu_khz;
-> > +		mark_tsc_unstable();
-> >  		cpu_data[0].loops_per_jiffy =
-> >  			cpufreq_scale(cpu_data[0].loops_per_jiffy,
-> >  					cpu_khz_old, cpu_khz);
-> 
-> this adds a new event to a place that didnt have it before. (If this is 
-> fixing up an initialization artifact then that needs a comment at 
-> least.)
+Dave Jones mentioned cpufreq might be not only user of rdmsr_on_cpu()
+and wrmsr_on_cpu(), so I'm putting them into arch/{i386,x86_64}/lib/ .
 
-Alright .. Later on I talk about clock frequency recalculation which
-pertains to this change .. 
+Signed-off-by: Alexey Dobriyan <adobriyan@openvz.org>
+---
 
-> plus:
-> 
-> >  struct clocksource *clock = &clocksource_jiffies;
-> > +atomic_t clock_recalc_interval = ATOMIC_INIT(0);
-> 
-> is not mentioned in the changelog. It's also needlessly global. 
-> Furthermore, it seems to be a rather unclean method of passing 
-> information from clocksource_callback() into change_clocksource():
+ arch/i386/lib/Makefile       |    2 +
+ arch/i386/lib/msr-on-cpu.c   |   70 +++++++++++++++++++++++++++++++++++++++++++
+ arch/x86_64/lib/Makefile     |    2 -
+ arch/x86_64/lib/msr-on-cpu.c |    1 
+ include/asm-i386/msr.h       |    3 +
+ include/asm-x86_64/msr.h     |    2 +
+ 6 files changed, 79 insertions(+), 1 deletion(-)
 
-It's a bisect artifact .. It's eventually dropped in a latter patch .
-
-> > @@ -176,8 +177,9 @@ static int change_clocksource(void)
-> >  		printk(KERN_INFO "Time: %s clocksource has been installed.\n",
-> >  		       clock->name);
-> >  		return 1;
-> > -	} else if (clock->update_callback) {
-> > -		return clock->update_callback();
-> > +	} else if (unlikely(atomic_read(&clock_recalc_interval))) {
-> > +		atomic_set(&clock_recalc_interval, 0);
-> > +		return 1;
-> 
-> that's quite bad: you lost an information passing facility by going to a 
-> notifier, and you try to work it around via a global atomic variable. 
-> Which also looks quite racy as well.
-> 
-> The clean solution is i think what Thomas did: he calls straight into 
-> clocksource_change_rating(). And look at Thomas' patch:
-
-The information passing was purposefully dropped .. It was used (in
-part) to recalculate the frequency of a clock , but after discussing it
-with John he suggested we drop the frequency recalculation entirely. So
-the information passing should no longer be needed.
-
-Daniel
+--- a/arch/i386/lib/Makefile
++++ b/arch/i386/lib/Makefile
+@@ -7,3 +7,5 @@ lib-y = checksum.o delay.o usercopy.o ge
+ 	bitops.o semaphore.o
+ 
+ lib-$(CONFIG_X86_USE_3DNOW) += mmx.o
++
++obj-y = msr-on-cpu.o
+--- /dev/null
++++ b/arch/i386/lib/msr-on-cpu.c
+@@ -0,0 +1,70 @@
++#include <linux/module.h>
++#include <linux/preempt.h>
++#include <linux/smp.h>
++#include <asm/msr.h>
++
++#ifdef CONFIG_SMP
++struct msr_info {
++	u32 msr_no;
++	u32 l, h;
++};
++
++static void __rdmsr_on_cpu(void *info)
++{
++	struct msr_info *rv = info;
++
++	rdmsr(rv->msr_no, rv->l, rv->h);
++}
++
++void rdmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 *l, u32 *h)
++{
++	preempt_disable();
++	if (smp_processor_id() == cpu)
++		rdmsr(msr_no, *l, *h);
++	else {
++		struct msr_info rv;
++
++		rv.msr_no = msr_no;
++		smp_call_function_single(cpu, __rdmsr_on_cpu, &rv, 0, 1);
++		*l = rv.l;
++		*h = rv.h;
++	}
++	preempt_enable();
++}
++
++static void __wrmsr_on_cpu(void *info)
++{
++	struct msr_info *rv = info;
++
++	wrmsr(rv->msr_no, rv->l, rv->h);
++}
++
++void wrmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 l, u32 h)
++{
++	preempt_disable();
++	if (smp_processor_id() == cpu)
++		wrmsr(msr_no, l, h);
++	else {
++		struct msr_info rv;
++
++		rv.msr_no = msr_no;
++		rv.l = l;
++		rv.h = h;
++		smp_call_function_single(cpu, __wrmsr_on_cpu, &rv, 0, 1);
++	}
++	preempt_enable();
++}
++#else
++void rdmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 *l, u32 *h)
++{
++	rdmsr(msr_no, *l, *h);
++}
++
++void wrmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 l, u32 h)
++{
++	wrmsr(msr_no, l, h);
++}
++#endif
++
++EXPORT_SYMBOL(rdmsr_on_cpu);
++EXPORT_SYMBOL(wrmsr_on_cpu);
+--- a/arch/x86_64/lib/Makefile
++++ b/arch/x86_64/lib/Makefile
+@@ -4,7 +4,7 @@ #
+ 
+ CFLAGS_csum-partial.o := -funroll-loops
+ 
+-obj-y := io.o iomap_copy.o
++obj-y := io.o iomap_copy.o msr-on-cpu.o
+ 
+ lib-y := csum-partial.o csum-copy.o csum-wrappers.o delay.o \
+ 	usercopy.o getuser.o putuser.o  \
+--- /dev/null
++++ b/arch/x86_64/lib/msr-on-cpu.c
+@@ -0,0 +1 @@
++#include "../../i386/lib/msr-on-cpu.c"
+--- a/include/asm-i386/msr.h
++++ b/include/asm-i386/msr.h
+@@ -83,6 +83,9 @@ #define rdpmc(counter,low,high) \
+ 			  : "c" (counter))
+ #endif	/* !CONFIG_PARAVIRT */
+ 
++void rdmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 *l, u32 *h);
++void wrmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 l, u32 h);
++
+ /* symbolic names for some interesting MSRs */
+ /* Intel defined MSRs. */
+ #define MSR_IA32_P5_MC_ADDR		0
+--- a/include/asm-x86_64/msr.h
++++ b/include/asm-x86_64/msr.h
+@@ -160,6 +160,8 @@ static inline unsigned int cpuid_edx(uns
+ #define MSR_IA32_UCODE_WRITE		0x79
+ #define MSR_IA32_UCODE_REV		0x8b
+ 
++void rdmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 *l, u32 *h);
++void wrmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 l, u32 h);
+ 
+ #endif
+ 
 
