@@ -1,172 +1,453 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965417AbXAaPSl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965406AbXAaPTH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965417AbXAaPSl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Jan 2007 10:18:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965344AbXAaPSf
+	id S965406AbXAaPTH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Jan 2007 10:19:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965273AbXAaPSp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Jan 2007 10:18:35 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:56097 "EHLO
+	Wed, 31 Jan 2007 10:18:45 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:56133 "EHLO
 	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965273AbXAaPSP (ORCPT
+	with ESMTP id S965406AbXAaPSf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Jan 2007 10:18:15 -0500
+	Wed, 31 Jan 2007 10:18:35 -0500
 DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
 	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
 	message-id:references:mime-version:content-type;
-	b=DhFbmgd59y0kF+Jz02mFff9Bk8BJG3s613oSPnztsFWG7Q/L0mKsBu1J2NjAabHfA
-	aNddtOzKkw2166j9z5RpA==
-Date: Wed, 31 Jan 2007 07:18:04 -0800 (PST)
+	b=T4XezYi1/gYGaotbKnmE4F5WCCBDFkZ+Fh8jj+7JjWQQLbuC8+NR8qU4OQY6W71cE
+	3JNSxS6C79a1Yd+Ps+W7g==
+Date: Wed, 31 Jan 2007 07:18:19 -0800 (PST)
 From: David Rientjes <rientjes@google.com>
 X-X-Sender: rientjes@chino.kir.corp.google.com
 To: Andrew Morton <akpm@osdl.org>
 cc: Andi Kleen <ak@suse.de>, Rohit Seth <rohitseth@google.com>,
        linux-kernel@vger.kernel.org
-Subject: [patch -mm 3/7] x86_64: fixed-size remaining fake nodes
-In-Reply-To: <Pine.LNX.4.64.0701302224300.23658@chino.kir.corp.google.com>
-Message-ID: <Pine.LNX.4.64.0701302224550.23658@chino.kir.corp.google.com>
+Subject: [patch -mm 5/7] x86_64: map fake nodes to real nodes
+In-Reply-To: <Pine.LNX.4.64.0701302225200.23658@chino.kir.corp.google.com>
+Message-ID: <Pine.LNX.4.64.0701302225390.23658@chino.kir.corp.google.com>
 References: <Pine.LNX.4.64.0701302223230.23653@chino.kir.corp.google.com>
  <Pine.LNX.4.64.0701302224300.23658@chino.kir.corp.google.com>
+ <Pine.LNX.4.64.0701302224550.23658@chino.kir.corp.google.com>
+ <Pine.LNX.4.64.0701302225200.23658@chino.kir.corp.google.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Extends the numa=fake x86_64 command-line option to split the remaining
-system memory into nodes of fixed size.  Any leftover memory is allocated
-to a final node unless the command-line ends with a comma.
+Exports the struct bootnode array globally so that the physical mapping
+can be saved when NUMA emulation is used.  This is then copied and stored
+for later reference so that there exists a mapping between fake nodes and
+the real nodes they reside on through the get_phys_node() function.
 
-For example:
-  numa=fake=2*512,*128	gives two 512M nodes and the remaining system
-			memory is split into nodes of 128M each.
+physical_node_map is a new struct bootnode array that is used to save the
+physical mapping in the emulation case.  The is no effect when
+CONFIG_NUMA_EMU is disabled or numa=fake=off.
 
-This is beneficial for systems where the exact size of RAM is unknown or
-not necessarily relevant, but the size of the remaining nodes to be
-allocated is known based on their capacity for resource management.
+The emulation case is handled after K8 and ACPI so that the physical
+mapping can be saved later.
+
+__node_distance() is modified to use the physical node that corresponds to
+the fake node for measurement.
 
 Cc: Andi Kleen <ak@suse.de>
+Signed-off-by: Rohit Seth <rohitseth@google.com>
 Signed-off-by: David Rientjes <rientjes@google.com>
 ---
- Documentation/x86_64/boot-options.txt |   14 ++++++---
- arch/x86_64/mm/numa.c                 |   47 ++++++++++++++++++++++++++-------
- 2 files changed, 46 insertions(+), 15 deletions(-)
+ arch/x86_64/mm/k8topology.c   |   23 +++++---
+ arch/x86_64/mm/numa.c         |  113 +++++++++++++++++++++++++++--------------
+ arch/x86_64/mm/srat.c         |    9 +++-
+ include/asm-x86_64/numa.h     |    4 +-
+ include/asm-x86_64/proto.h    |    2 +-
+ include/asm-x86_64/topology.h |    1 +
+ 6 files changed, 100 insertions(+), 52 deletions(-)
 
-diff --git a/Documentation/x86_64/boot-options.txt b/Documentation/x86_64/boot-options.txt
-index 01dfec9..bc0269f 100644
---- a/Documentation/x86_64/boot-options.txt
-+++ b/Documentation/x86_64/boot-options.txt
-@@ -153,11 +153,15 @@ NUMA
- 		If a number, fakes CMDLINE nodes and ignores NUMA setup of the
- 		actual machine.  Otherwise, system memory is configured
- 		depending on the sizes and coefficients listed.  For example:
--			numa=fake=2*512,1024,4*256
--		gives two 512M nodes, a 1024M node, and four 256M nodes.  The
--		remaining system RAM is allocated to an additional node.  If
--		the last character of CMDLINE is a *, the remaining system RAM
--		is instead divided up equally among its coefficient.
-+			numa=fake=2*512,1024,4*256,*128
-+		gives two 512M nodes, a 1024M node, four 256M nodes, and the
-+		rest split into 128M chunks.  If the last character of CMDLINE
-+		is a *, the remaining memory is divided up equally among its
-+		coefficient:
-+			numa=fake=2*512,2*
-+		gives two 512M nodes and the rest split into two nodes.
-+		Otherwise, the remaining system RAM is allocated to an
-+		additional node.
- 
-   numa=hotadd=percent
- 		Only allow hotadd memory to preallocate page structures upto
-diff --git a/arch/x86_64/mm/numa.c b/arch/x86_64/mm/numa.c
-index 6c4b45f..5634d3f 100644
---- a/arch/x86_64/mm/numa.c
-+++ b/arch/x86_64/mm/numa.c
-@@ -365,6 +365,21 @@ static int __init split_nodes_equally(struct bootnode *nodes, u64 *addr,
+diff --git a/arch/x86_64/mm/k8topology.c b/arch/x86_64/mm/k8topology.c
+index b5b8dba..bcad062 100644
+--- a/arch/x86_64/mm/k8topology.c
++++ b/arch/x86_64/mm/k8topology.c
+@@ -40,10 +40,9 @@ static __init int find_northbridge(void)
+ 	return -1; 	
  }
  
- /*
-+ * Splits the remaining system RAM into chunks of size.  The remaining memory is
-+ * always assigned to a final node and can be asymmetric.  Returns the number of
-+ * nodes split.
-+ */
-+static int __init split_nodes_by_size(struct bootnode *nodes, u64 *addr,
-+				      u64 max_addr, int node_start, u64 size)
-+{
-+	int i = node_start;
-+	size = (size << 20) & FAKE_NODE_MIN_HASH_MASK;
-+	while (!setup_node_range(i++, nodes, addr, size, max_addr))
-+		;
-+	return i - node_start;
-+}
+-int __init k8_scan_nodes(unsigned long start, unsigned long end)
++int __init k8_scan_nodes(unsigned long start, unsigned long end, int fake)
+ { 
+ 	unsigned long prevbase;
+-	struct bootnode nodes[8];
+ 	int nodeid, i, nb; 
+ 	unsigned char nodeids[8];
+ 	int found = 0;
+@@ -161,19 +160,25 @@ int __init k8_scan_nodes(unsigned long start, unsigned long end)
+ 	if (!found)
+ 		return -1; 
+ 
+-	memnode_shift = compute_hash_shift(nodes, 8);
+-	if (memnode_shift < 0) { 
+-		printk(KERN_ERR "No NUMA node hash function found. Contact maintainer\n"); 
+-		return -1; 
+-	} 
+-	printk(KERN_INFO "Using node hash shift of %d\n", memnode_shift); 
++	if (!fake) {
++		memnode_shift = compute_hash_shift(8);
++		if (memnode_shift < 0) {
++			printk(KERN_ERR "No NUMA node hash function found. "
++					"Contact maintainer\n");
++			return -1;
++		}
++		printk(KERN_INFO "Using node hash shift of %d\n",
++		       memnode_shift);
++	}
+ 
+ 	for (i = 0; i < 8; i++) {
+ 		if (nodes[i].start != nodes[i].end) { 
+ 			nodeid = nodeids[i];
+ 			apicid_to_node[nodeid << dualcore] = i;
+ 			apicid_to_node[(nodeid << dualcore) + dualcore] = i;
+-			setup_node_bootmem(i, nodes[i].start, nodes[i].end); 
++			if (!fake)
++				setup_node_bootmem(i, nodes[i].start,
++						   nodes[i].end);
+ 		} 
+ 	}
+ 
+diff --git a/arch/x86_64/mm/numa.c b/arch/x86_64/mm/numa.c
+index 015271a..97b7be4 100644
+--- a/arch/x86_64/mm/numa.c
++++ b/arch/x86_64/mm/numa.c
+@@ -34,6 +34,7 @@ unsigned char apicid_to_node[MAX_LOCAL_APIC] __cpuinitdata = {
+  	[0 ... MAX_LOCAL_APIC-1] = NUMA_NO_NODE
+ };
+ cpumask_t node_to_cpumask[MAX_NUMNODES] __read_mostly;
++struct bootnode nodes[MAX_NUMNODES] __read_mostly;
+ 
+ int numa_off __initdata;
+ unsigned long __initdata nodemap_addr;
+@@ -47,8 +48,7 @@ unsigned long __initdata nodemap_size;
+  * 0 if memnodmap[] too small (of shift too small)
+  * -1 if node overlap or lost ram (shift too big)
+  */
+-static int __init
+-populate_memnodemap(const struct bootnode *nodes, int numnodes, int shift)
++static int __init populate_memnodemap(int numnodes, int shift)
+ {
+ 	int i; 
+ 	int res = -1;
+@@ -104,8 +104,7 @@ static int __init allocate_cachealigned_memnodemap(void)
+  * The LSB of all start and end addresses in the node map is the value of the
+  * maximum possible shift.
+  */
+-static int __init
+-extract_lsb_from_nodes (const struct bootnode *nodes, int numnodes)
++static int __init extract_lsb_from_nodes(int numnodes)
+ {
+ 	int i, nodes_used = 0;
+ 	unsigned long start, end;
+@@ -129,17 +128,17 @@ extract_lsb_from_nodes (const struct bootnode *nodes, int numnodes)
+ 	return i;
+ }
+ 
+-int __init compute_hash_shift(struct bootnode *nodes, int numnodes)
++int __init compute_hash_shift(int numnodes)
+ {
+ 	int shift;
+ 
+-	shift = extract_lsb_from_nodes(nodes, numnodes);
++	shift = extract_lsb_from_nodes(numnodes);
+ 	if (allocate_cachealigned_memnodemap())
+ 		return -1;
+ 	printk(KERN_DEBUG "NUMA: Using %d for the hash shift.\n",
+ 		shift);
+ 
+-	if (populate_memnodemap(nodes, numnodes, shift) != 1) {
++	if (populate_memnodemap(numnodes, shift) != 1) {
+ 		printk(KERN_INFO
+ 	"Your memory is not aligned you need to rebuild your kernel "
+ 	"with a bigger NODEMAPSIZE shift=%d\n",
+@@ -279,7 +278,37 @@ void __init numa_init_array(void)
+ #define E820_ADDR_HOLE_SIZE(start, end)					\
+ 	(e820_hole_size((start) >> PAGE_SHIFT, (end) >> PAGE_SHIFT) <<	\
+ 	PAGE_SHIFT)
++
++static struct bootnode physical_node_map[MAX_NUMNODES];
+ char *cmdline __initdata;
++int numa_emu;
 +
 +/*
-  * Sets up the system RAM area from start_pfn to end_pfn according to the
-  * numa=fake command-line option.
++ * Returns the physical NUMA node that fake node nid resides on.  If NUMA
++ * emulation is disabled, then this is the same as nid.
++ */
++int get_phys_node(int nid)
++{
++	pg_data_t *pgdat;
++	u64 node_start_addr;
++	unsigned int i;
++	int ret = 0;
++
++	if (!numa_emu)
++		return nid;
++
++	pgdat = NODE_DATA(nid);
++	node_start_addr = pgdat->node_start_pfn << PAGE_SHIFT;
++
++	for (i = 0; i < MAX_NUMNODES; i++)
++		if (node_start_addr >= physical_node_map[i].start &&
++		    node_start_addr < physical_node_map[i].end) {
++			ret = i;
++			break;
++		}
++
++	return ret;
++}
+ 
+ /*
+  * Setups up nid to range from addr to addr + size.  If the end boundary is
+@@ -287,8 +316,7 @@ char *cmdline __initdata;
+  * if there is additional memory left for allocation past addr and -1 otherwise.
+  * addr is adjusted to be at the end of the node.
   */
-@@ -373,9 +388,10 @@ static int __init numa_emulation(unsigned long start_pfn, unsigned long end_pfn)
- 	struct bootnode nodes[MAX_NUMNODES];
+-static int __init setup_node_range(int nid, struct bootnode *nodes, u64 *addr,
+-				   u64 size, u64 max_addr)
++static int __init setup_node_range(int nid, u64 *addr, u64 size, u64 max_addr)
+ {
+ 	int ret = 0;
+ 	nodes[nid].start = *addr;
+@@ -310,8 +338,7 @@ static int __init setup_node_range(int nid, struct bootnode *nodes, u64 *addr,
+  * is the number of nodes split up and addr is adjusted to be at the end of the
+  * last node allocated.
+  */
+-static int __init split_nodes_equally(struct bootnode *nodes, u64 *addr,
+-				      u64 max_addr, int node_start,
++static int __init split_nodes_equally(u64 *addr, u64 max_addr, int node_start,
+ 				      int num_nodes)
+ {
+ 	unsigned int big;
+@@ -358,7 +385,7 @@ static int __init split_nodes_equally(struct bootnode *nodes, u64 *addr,
+ 					break;
+ 				}
+ 			}
+-		if (setup_node_range(i, nodes, addr, end - *addr, max_addr) < 0)
++		if (setup_node_range(i, addr, end - *addr, max_addr) < 0)
+ 			break;
+ 	}
+ 	return i - node_start + 1;
+@@ -369,12 +396,12 @@ static int __init split_nodes_equally(struct bootnode *nodes, u64 *addr,
+  * always assigned to a final node and can be asymmetric.  Returns the number of
+  * nodes split.
+  */
+-static int __init split_nodes_by_size(struct bootnode *nodes, u64 *addr,
+-				      u64 max_addr, int node_start, u64 size)
++static int __init split_nodes_by_size(u64 *addr, u64 max_addr, int node_start,
++				      u64 size)
+ {
+ 	int i = node_start;
+ 	size = (size << 20) & FAKE_NODE_MIN_HASH_MASK;
+-	while (!setup_node_range(i++, nodes, addr, size, max_addr))
++	while (!setup_node_range(i++, addr, size, max_addr))
+ 		;
+ 	return i - node_start;
+ }
+@@ -385,7 +412,6 @@ static int __init split_nodes_by_size(struct bootnode *nodes, u64 *addr,
+  */
+ static int __init numa_emulation(unsigned long start_pfn, unsigned long end_pfn)
+ {
+-	struct bootnode nodes[MAX_NUMNODES];
  	u64 addr = start_pfn << PAGE_SHIFT;
  	u64 max_addr = end_pfn << PAGE_SHIFT;
--	unsigned int coeff;
--	unsigned int num = 0;
  	int num_nodes = 0;
-+	int coeff_flag;
-+	int coeff = -1;
-+	int num = 0;
+@@ -395,13 +421,18 @@ static int __init numa_emulation(unsigned long start_pfn, unsigned long end_pfn)
  	u64 size;
  	int i;
  
-@@ -393,29 +409,34 @@ static int __init numa_emulation(unsigned long start_pfn, unsigned long end_pfn)
++	/*
++	 * Map the existing real NUMA toplogy to physical_node_map before the
++	 * information is cleared.
++	 */
++	memcpy(physical_node_map, nodes, sizeof(nodes));
+ 	memset(&nodes, 0, sizeof(nodes));
+ 	/*
+ 	 * If the numa=fake command-line is just a single number N, split the
+ 	 * system RAM into N fake nodes.
+ 	 */
+ 	if (!strchr(cmdline, '*') && !strchr(cmdline, ',')) {
+-		num_nodes = split_nodes_equally(nodes, &addr, max_addr, 0,
++		num_nodes = split_nodes_equally(&addr, max_addr, 0,
+ 						simple_strtol(cmdline, NULL, 0));
+ 		if (num_nodes < 0)
+ 			return num_nodes;
+@@ -429,8 +460,8 @@ static int __init numa_emulation(unsigned long start_pfn, unsigned long end_pfn)
+ 			size = ((u64)num << 20) & FAKE_NODE_MIN_HASH_MASK;
+ 			if (size)
+ 				for (i = 0; i < coeff; i++, num_nodes++)
+-					if (setup_node_range(num_nodes, nodes,
+-						&addr, size, max_addr) < 0)
++					if (setup_node_range(num_nodes, &addr,
++						size, max_addr) < 0)
+ 						goto done;
+ 			if (!*cmdline)
+ 				break;
+@@ -446,7 +477,7 @@ done:
+ 	if (addr < max_addr) {
+ 		if (coeff_flag && coeff < 0) {
+ 			/* Split remaining nodes into num-sized chunks */
+-			num_nodes += split_nodes_by_size(nodes, &addr, max_addr,
++			num_nodes += split_nodes_by_size(&addr, max_addr,
+ 							 num_nodes, num);
+ 			goto out;
+ 		}
+@@ -455,7 +486,7 @@ done:
+ 			/* Split remaining nodes into coeff chunks */
+ 			if (coeff <= 0)
+ 				break;
+-			num_nodes += split_nodes_equally(nodes, &addr, max_addr,
++			num_nodes += split_nodes_equally(&addr, max_addr,
+ 							 num_nodes, coeff);
+ 			break;
+ 		case ',':
+@@ -463,13 +494,13 @@ done:
+ 			break;
+ 		default:
+ 			/* Give one final node */
+-			setup_node_range(num_nodes, nodes, &addr,
+-					 max_addr - addr, max_addr);
++			setup_node_range(num_nodes, &addr, max_addr - addr,
++					 max_addr);
+ 			num_nodes++;
+ 		}
+ 	}
+ out:
+-	memnode_shift = compute_hash_shift(nodes, num_nodes);
++	memnode_shift = compute_hash_shift(num_nodes);
+ 	if (memnode_shift < 0) {
+ 		memnode_shift = 0;
+ 		printk(KERN_ERR "No NUMA hash function found.  NUMA emulation "
+@@ -489,30 +520,36 @@ out:
+ 
+ void __init numa_initmem_init(unsigned long start_pfn, unsigned long end_pfn)
+ { 
++	unsigned long start_addr = start_pfn << PAGE_SHIFT;
++	unsigned long end_addr = end_pfn << PAGE_SHIFT;
+ 	int i;
+ 
+-#ifdef CONFIG_NUMA_EMU
+-	if (cmdline && !numa_emulation(start_pfn, end_pfn))
+- 		return;
+-#endif
+-
+ #ifdef CONFIG_ACPI_NUMA
+-	if (!numa_off && !acpi_scan_nodes(start_pfn << PAGE_SHIFT,
+-					  end_pfn << PAGE_SHIFT))
++	if (!numa_off && !cmdline && !acpi_scan_nodes(start_addr, end_addr))
+  		return;
+ #endif
+ 
+ #ifdef CONFIG_K8_NUMA
+-	if (!numa_off && !k8_scan_nodes(start_pfn<<PAGE_SHIFT, end_pfn<<PAGE_SHIFT))
+-		return;
++	if (!numa_off && !k8_scan_nodes(start_addr, end_addr, cmdline != 0))
++		if (cmdline == 0)
++			return;
++#endif
++
++#ifdef CONFIG_NUMA_EMU
++	if (cmdline)
++	{
++		numa_emu = !numa_emulation(start_pfn, end_pfn);
++		if (numa_emu)
++			return;
++	}
+ #endif
++
+ 	printk(KERN_INFO "%s\n",
+ 	       numa_off ? "NUMA turned off" : "No NUMA configuration found");
+ 
+-	printk(KERN_INFO "Faking a node at %016lx-%016lx\n", 
+-	       start_pfn << PAGE_SHIFT,
+-	       end_pfn << PAGE_SHIFT); 
+-		/* setup dummy node covering all memory */ 
++	printk(KERN_INFO "Faking a node at %016lx-%016lx\n", start_addr,
++	       end_addr);
++	/* setup dummy node covering all memory */
+ 	memnode_shift = 63; 
+ 	memnodemap = memnode.embedded_map;
+ 	memnodemap[0] = 0;
+@@ -522,7 +559,7 @@ void __init numa_initmem_init(unsigned long start_pfn, unsigned long end_pfn)
+ 		numa_set_node(i, 0);
+ 	node_to_cpumask[0] = cpumask_of_cpu(0);
+ 	e820_register_active_regions(0, start_pfn, end_pfn);
+-	setup_node_bootmem(0, start_pfn << PAGE_SHIFT, end_pfn << PAGE_SHIFT);
++	setup_node_bootmem(0, start_addr, end_addr);
+ }
+ 
+ __cpuinit void numa_add_cpu(int cpu)
+diff --git a/arch/x86_64/mm/srat.c b/arch/x86_64/mm/srat.c
+index 1087e15..8eb6aed 100644
+--- a/arch/x86_64/mm/srat.c
++++ b/arch/x86_64/mm/srat.c
+@@ -26,7 +26,6 @@ int acpi_numa __initdata;
+ static struct acpi_table_slit *acpi_slit;
+ 
+ static nodemask_t nodes_parsed __initdata;
+-static struct bootnode nodes[MAX_NUMNODES] __initdata;
+ static struct bootnode nodes_add[MAX_NUMNODES];
+ static int found_add_area __initdata;
+ int hotadd_percent __initdata = 0;
+@@ -409,7 +408,7 @@ int __init acpi_scan_nodes(unsigned long start, unsigned long end)
+ 		return -1;
  	}
  
- 	/* Parse the command line. */
--	for (coeff = 1; ; cmdline++) {
-+	for (coeff_flag = 0; ; cmdline++) {
- 		if (*cmdline && isdigit(*cmdline)) {
- 			num = num * 10 + *cmdline - '0';
- 			continue;
- 		}
--		if (*cmdline == '*')
--			coeff = num;
-+		if (*cmdline == '*') {
-+			if (num > 0)
-+				coeff = num;
-+			coeff_flag = 1;
-+		}
- 		if (!*cmdline || *cmdline == ',') {
-+			if (!coeff_flag)
-+				coeff = 1;
- 			/*
- 			 * Round down to the nearest FAKE_NODE_MIN_SIZE.
- 			 * Command-line coefficients are in megabytes.
- 			 */
- 			size = ((u64)num << 20) & FAKE_NODE_MIN_HASH_MASK;
--			if (size) {
-+			if (size)
- 				for (i = 0; i < coeff; i++, num_nodes++)
- 					if (setup_node_range(num_nodes, nodes,
- 						&addr, size, max_addr) < 0)
- 						goto done;
--				coeff = 1;
--			}
-+			if (!*cmdline)
-+				break;
-+			coeff_flag = 0;
-+			coeff = -1;
- 		}
--		if (!*cmdline)
--			break;
- 		num = 0;
- 	}
- done:
-@@ -423,6 +444,12 @@ done:
- 		return -1;
- 	/* Fill remainder of system RAM, if appropriate. */
- 	if (addr < max_addr) {
-+		if (coeff_flag && coeff < 0) {
-+			/* Split remaining nodes into num-sized chunks */
-+			num_nodes += split_nodes_by_size(nodes, &addr, max_addr,
-+							 num_nodes, num);
-+			goto out;
-+		}
- 		switch (*(cmdline - 1)) {
- 		case '*':
- 			/* Split remaining nodes into coeff chunks */
+-	memnode_shift = compute_hash_shift(nodes, MAX_NUMNODES);
++	memnode_shift = compute_hash_shift(MAX_NUMNODES);
+ 	if (memnode_shift < 0) {
+ 		printk(KERN_ERR
+ 		     "SRAT: No NUMA node hash function found. Contact maintainer\n");
+@@ -459,6 +458,12 @@ int __node_distance(int a, int b)
+ {
+ 	int index;
+ 
++#ifdef CONFIG_NUMA_EMU
++	/* In fake NUMA, the physical node is used for node distance. */
++	a = get_phys_node(a);
++	b = get_phys_node(b);
++#endif
++
+ 	if (!acpi_slit)
+ 		return a == b ? 10 : 20;
+ 	index = acpi_slit->localities * node_to_pxm(a);
+diff --git a/include/asm-x86_64/numa.h b/include/asm-x86_64/numa.h
+index 933ff11..111b72c 100644
+--- a/include/asm-x86_64/numa.h
++++ b/include/asm-x86_64/numa.h
+@@ -6,8 +6,8 @@
+ struct bootnode {
+ 	u64 start,end; 
+ };
+-
+-extern int compute_hash_shift(struct bootnode *nodes, int numnodes);
++extern struct bootnode nodes[MAX_NUMNODES];
++extern int compute_hash_shift(int numnodes);
+ 
+ #define ZONE_ALIGN (1UL << (MAX_ORDER+PAGE_SHIFT))
+ 
+diff --git a/include/asm-x86_64/proto.h b/include/asm-x86_64/proto.h
+index 4760b5b..6411fd9 100644
+--- a/include/asm-x86_64/proto.h
++++ b/include/asm-x86_64/proto.h
+@@ -51,7 +51,7 @@ extern void early_printk(const char *fmt, ...) __attribute__((format(printf,1,2)
+ 
+ extern void early_identify_cpu(struct cpuinfo_x86 *c);
+ 
+-extern int k8_scan_nodes(unsigned long start, unsigned long end);
++extern int k8_scan_nodes(unsigned long start, unsigned long end, int fake);
+ 
+ extern void numa_initmem_init(unsigned long start_pfn, unsigned long end_pfn);
+ extern unsigned long numa_free_all_bootmem(void);
+diff --git a/include/asm-x86_64/topology.h b/include/asm-x86_64/topology.h
+index 440b0ca..8270b0d 100644
+--- a/include/asm-x86_64/topology.h
++++ b/include/asm-x86_64/topology.h
+@@ -68,5 +68,6 @@ extern int __node_distance(int, int);
+ #include <asm-generic/topology.h>
+ 
+ extern cpumask_t cpu_coregroup_map(int cpu);
++extern int get_phys_node(int nid);
+ 
+ #endif
