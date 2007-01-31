@@ -1,82 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030306AbXAaRM2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030309AbXAaRNp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030306AbXAaRM2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Jan 2007 12:12:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030307AbXAaRM2
+	id S1030309AbXAaRNp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Jan 2007 12:13:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030307AbXAaRNp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Jan 2007 12:12:28 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:54405 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030306AbXAaRM1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Jan 2007 12:12:27 -0500
-Date: Wed, 31 Jan 2007 18:10:42 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Daniel Walker <dwalker@mvista.com>
-Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, johnstul@us.ibm.com,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 14/23] clocksource: increase initcall priority
-Message-ID: <20070131171042.GB4468@elte.hu>
-References: <20070131033710.420168478@mvista.com> <20070131033807.427331295@mvista.com> <20070131115055.GD1847@elte.hu> <1170261775.9781.100.camel@imap.mvista.com>
+	Wed, 31 Jan 2007 12:13:45 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:41422 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1030302AbXAaRNo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Jan 2007 12:13:44 -0500
+Date: Wed, 31 Jan 2007 17:26:05 +0000
+From: Alan <alan@lxorguk.ukuu.org.uk>
+To: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: [PATCH] libata: Fix (hopefully) all the remaining problems with
+ devices failing setup/identify
+Message-ID: <20070131172605.2c5dfc78@localhost.localdomain>
+X-Mailer: Claws Mail 2.7.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1170261775.9781.100.camel@imap.mvista.com>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -4.3
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-4.3 required=5.9 tests=ALL_TRUSTED,BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-3.3 ALL_TRUSTED            Did not pass through any untrusted hosts
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Two fixes in this test patch. One of them allows old CF cards to refuse
+pio mode setting, and one to wait for the drive to settle after a set
+features changes the speed settings, which is based upon the workarounds
+used by drivers/ide.
 
-* Daniel Walker <dwalker@mvista.com> wrote:
+Please test and report back if you have an afflicted system. This patch
+isn't for merging just testing.
 
-> On Wed, 2007-01-31 at 12:50 +0100, Ingo Molnar wrote:
-> > * Daniel Walker <dwalker@mvista.com> wrote:
-> > 
-> > > -module_init(init_acpi_pm_clocksource);
-> > > +/*
-> > > + * This clocksource is removed from the clocksource_initcall
-> > > + * macro since it's mandatory for it to be in fs_initcall as the
-> > > + * highest initcall level, or else it doesn't work properly with
-> > > + * it's PCI fix ups.
-> > > + */
-> > > +fs_initcall(init_acpi_pm_clocksource);
-> > 
-> > ugh - this bit looks quite interesting.
-> > 
-> > what's the purpose of this patch? Switching to high-res timers 
-> > should be done late in the bootup - in case there's a problem it's 
-> > more debuggable, etc.
-> 
-> The timekeeping code, and hrt/dynamic tick both wait till after boot 
-> up to switch to high res mode ..
+The CF card fix will still display errors when the card works (got fixes
+for that once I know the cure works) but should then be found/usable.
 
-again, let me repeat the question: what's the purpose of this (whole!) 
-patch. Not just of this chunk - the whole patch. You change around 
-initcall levels - why? It makes no sense to me. The explanation in the 
-patch header makes no sense to me.
+Not signed off by anyone, not for merging
 
-Please if possible try to build clear arguments: first outlining "this 
-is how it worked before: <X>", then outlining "this is how it will work 
-after my change: <Y>", and then maybe a small blurb about "Y is better 
-than X, because: <Z>". That X, Y, Z analysis is what is needed to accept 
-a patch.
-
-> The specific code block you commented on above was added cause acpi_pm 
-> has special pci fixups that don't function properly earlier in boot 
-> up. So it can't be arbitrarily raised to order in the initcall 
-> sequence ..
-
-i think you misunderstood my comment. In the chunk above you used 
-fs_initcall() initcall instead of clocksource_initcall(). (Which is 
-funny even ignoring the bad hack that clocksource_initcall is defined to 
-fs_initcall.)
-
-	Ingo
+diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.20-rc6-mm3/drivers/ata/libata-core.c linux-2.6.20-rc6-mm3/drivers/ata/libata-core.c
+--- linux.vanilla-2.6.20-rc6-mm3/drivers/ata/libata-core.c	2007-01-31 14:20:39.000000000 +0000
++++ linux-2.6.20-rc6-mm3/drivers/ata/libata-core.c	2007-01-31 16:25:43.000000000 +0000
+@@ -2404,6 +2418,10 @@
+ 		dev->flags |= ATA_DFLAG_PIO;
+ 
+ 	err_mask = ata_dev_set_xfermode(dev);
++	/* Old CFA may refuse this command, which is just fine */
++	if (dev->xfer_shift == ATA_SHIFT_PIO && ata_id_is_cfa(dev->id))
++        	err_mask &= ~AC_ERR_DEV;
++
+ 	if (err_mask) {
+ 		ata_dev_printk(dev, KERN_ERR, "failed to set xfermode "
+ 			       "(err_mask=0x%x)\n", err_mask);
+@@ -5088,6 +5119,7 @@
+ {
+ 	struct ata_eh_info *ehi = &ap->eh_info;
+ 	u8 status, host_stat = 0;
++	int i;
+ 
+ 	VPRINTK("ata%u: protocol %d task_state %d\n",
+ 		ap->id, qc->tf.protocol, ap->hsm_task_state);
+@@ -5142,6 +5174,20 @@
+ 	status = ata_chk_status(ap);
+ 	if (unlikely(status & ATA_BUSY))
+ 		goto idle_irq;
++		
++	if (unlikely(qc->tf.command == ATA_CMD_SET_FEATURES && 
++			qc->tf.feature == SETFEATURES_XFER)) {
++		/* Let the timings change settle and the drive catch up as
++		   some hardware needs up to 10uS to get its brain back in
++		   gear. Taken from the workarounds in drivers/ide done by
++		   Matthew Faupel/Niccolo Rigacci */
++		for (i = 0; i < 10; i++) {
++			if ((status & (ATA_BUSY | ATA_DRQ | ATA_ERR)) == 0)
++				break;
++			udelay(1);
++			status = ata_chk_status(ap);
++		}
++	}
+ 
+ 	/* ack bmdma irq events */
+ 	ap->ops->irq_clear(ap);
