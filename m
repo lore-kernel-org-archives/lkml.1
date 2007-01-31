@@ -1,41 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752142AbXAaAr4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752139AbXAaAtE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752142AbXAaAr4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 19:47:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752140AbXAaAr4
+	id S1752139AbXAaAtE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 19:49:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752137AbXAaAtD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 19:47:56 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:41941 "EHLO mx2.suse.de"
+	Tue, 30 Jan 2007 19:49:03 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:59491 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752142AbXAaArz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 19:47:55 -0500
-Date: Tue, 30 Jan 2007 16:46:56 -0800
-From: Greg KH <greg@kroah.com>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Roland Dreier <rdreier@cisco.com>, linux-kernel@vger.kernel.org
-Subject: Re: Free Linux Driver Development!
-Message-ID: <20070131004656.GA30349@kroah.com>
-References: <ada8xfks90x.fsf@cisco.com> <20070130191020.GF20642@kroah.com> <adaodogqpmx.fsf@cisco.com> <20070130195445.GE22022@kroah.com> <adazm80p4qp.fsf@cisco.com> <45BFC7F2.7090209@garzik.org> <adaac00p1rq.fsf@cisco.com> <45BFD03F.4020003@garzik.org> <adaps8wnlfl.fsf@cisco.com> <45BFDFE7.3000101@garzik.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <45BFDFE7.3000101@garzik.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	id S1752139AbXAaAtB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jan 2007 19:49:01 -0500
+Date: Tue, 30 Jan 2007 16:48:29 -0800
+From: Andrew Morton <akpm@osdl.org>
+To: Avi Kivity <avi@qumranet.com>
+Cc: kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       mingo@elte.hu
+Subject: Re: [PATCH 4/5] KVM: cpu hotplug support
+Message-Id: <20070130164829.ce7f2f90.akpm@osdl.org>
+In-Reply-To: <20070130145616.EFD52A0014@il.qumranet.com>
+References: <45BF5B96.1070007@qumranet.com>
+	<20070130145616.EFD52A0014@il.qumranet.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 30, 2007 at 07:16:39PM -0500, Jeff Garzik wrote:
-> 
-> The only difference between Greg's offer and offers made by other 
-> developers to vendors is that his was public on LKML, and the subject 
-> line concluded with an exclamation point.
+On Tue, 30 Jan 2007 14:56:16 -0000
+Avi Kivity <avi@qumranet.com> wrote:
 
-Heh, never underestimate a well-placed ! :)
+> +static void decache_vcpus_on_cpu(int cpu)
+> +{
+> +	struct kvm *vm;
+> +	struct kvm_vcpu *vcpu;
+> +	int i;
+> +
+> +	spin_lock(&kvm_lock);
+> +	list_for_each_entry(vm, &vm_list, vm_list)
+> +		for (i = 0; i < KVM_MAX_VCPUS; ++i) {
+> +			vcpu = &vm->vcpus[i];
+> +			/*
+> +			 * If the vcpu is locked, then it is running on some
+> +			 * other cpu and therefore it is not cached on the
+> +			 * cpu in question.
+> +			 *
+> +			 * If it's not locked, check the last cpu it executed
+> +			 * on.
+> +			 */
+> +			if (mutex_trylock(&vcpu->mutex)) {
+> +				if (vcpu->cpu == cpu) {
+> +					kvm_arch_ops->vcpu_decache(vcpu);
+> +					vcpu->cpu = -1;
+> +				}
+> +				mutex_unlock(&vcpu->mutex);
+> +			}
+> +		}
+> +	spin_unlock(&kvm_lock);
+> +}
 
-Also, one big and new portion is the fact that we now have in place a
-system to handle NDAs for those companies that do not wish to provide
-specs to the whole world.
 
-thanks,
+The trylock is unpleasing.  Perhaps kvm_lock should be a mutex or something?
 
-greg k-h
