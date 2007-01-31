@@ -1,57 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030212AbXAaREJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030286AbXAaRGz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030212AbXAaREJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Jan 2007 12:04:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030277AbXAaREI
+	id S1030286AbXAaRGz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Jan 2007 12:06:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030289AbXAaRGz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Jan 2007 12:04:08 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.158]:34138 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030212AbXAaREH (ORCPT
+	Wed, 31 Jan 2007 12:06:55 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:58456 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030286AbXAaRGy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Jan 2007 12:04:07 -0500
-Subject: Re: [PATCH 23/23] clocksource tsc: add verify routine
-From: Daniel Walker <dwalker@mvista.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, johnstul@us.ibm.com,
-       Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <20070131124300.GG1847@elte.hu>
-References: <20070131033710.420168478@mvista.com>
-	 <20070131033810.319576375@mvista.com>  <20070131124300.GG1847@elte.hu>
+	Wed, 31 Jan 2007 12:06:54 -0500
+Subject: Re: [PATCH] ubi:  int versus size_t printk warnings
+From: David Woodhouse <dwmw2@infradead.org>
+To: Alan <alan@lxorguk.ukuu.org.uk>
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, dedekind@infradead.org
+In-Reply-To: <20070131170257.79ca59b7@localhost.localdomain>
+References: <20070131170257.79ca59b7@localhost.localdomain>
 Content-Type: text/plain
-Date: Wed, 31 Jan 2007 09:02:35 -0800
-Message-Id: <1170262956.9781.117.camel@imap.mvista.com>
+Date: Wed, 31 Jan 2007 17:06:51 +0000
+Message-Id: <1170263211.29759.334.camel@pmac.infradead.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
+X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6.dwmw2.1) 
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-01-31 at 13:43 +0100, Ingo Molnar wrote:
-> * Daniel Walker <dwalker@mvista.com> wrote:
-> 
-> > I've included this as another user of the clocksource interface. I 
-> > don't see a usage for this across all achitectures. So a fully generic 
-> > version isn't needed.
-> 
-> well, this implementation is buggy in at least two ways:
-> 
-> firstly, it allows a circular verification dependency in highres+dyntick 
-> mode between the jiffies and tsc clocksources.
+On Wed, 2007-01-31 at 17:02 +0000, Alan wrote:
+> Another mtd driver, another set of 32bit assumptions. Please compile mtd
+> stuff on 64bit now and then, or if stuff is for 32bit only systems then
+> add the right CONFIG rules.
 
-In the current implementation, it's only happens if the only clocks that
-exist are "tsc" and "jiffies" which makes verification impossible
-anyway .. It's unlikely, but it is possible , the fix is not that
-complex.
+We've been building MTD stuff on 64-bit machines since about 1999, when
+I first put a DiskOnChip in an ISA eval board in an Alpha. 
 
-> secondly, verification is not done while the system is booting up:
+The _problematic_ 32-bit assumption in MTD code is the fact that device
+size is limited to 4GiB. That used to be "insanely large" in the context
+of flash chips, but it's not so any more. We'll have to deal with that
+soon enough.
 
-Do you know that this is needed ? The current implementation
-(clocksource watchdog) doesn't fully settle until after
-device_initcall() .. So boot-up is about 99% complete ..
+> +               ubi_err("error %d while reading %Zd bytes from PEB %d:%d, "
 
-It's trivial to make my version do verification during most of
-device_initcall() ..
+Nak. %Zd is a gratuitous GNUism. In C, we use %zd.
 
-Daniel
+Artem (dedekind) is the correct person to deal with UBI stuff. I've
+added him to Cc.
+
+-- 
+dwmw2
 
