@@ -1,47 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932435AbXAaCkQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932436AbXAaCk3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932435AbXAaCkQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 21:40:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932436AbXAaCkQ
+	id S932436AbXAaCk3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 21:40:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932438AbXAaCk3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 21:40:16 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:34330 "EHLO smtp.osdl.org"
+	Tue, 30 Jan 2007 21:40:29 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:34337 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932435AbXAaCkP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 21:40:15 -0500
-Date: Tue, 30 Jan 2007 18:36:48 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Mark Lord <lkml@rtr.ca>
-cc: Adrian Bunk <bunk@stusta.de>, Bron Gondwana <brong@fastmail.fm>,
-       Mike Houston <mikeserv@bmts.com>, Chuck Ebbert <cebbert@redhat.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: How many people are using 2.6.16?
-In-Reply-To: <45BFF1F4.3060401@rtr.ca>
-Message-ID: <Pine.LNX.4.64.0701301748230.3611@woody.linux-foundation.org>
-References: <45BE5948.6060403@redhat.com> <20070129160448.65fc63f3.mikeserv@bmts.com>
- <20070129221300.GC19422@brong.net> <20070130203933.GJ3754@stusta.de>
- <45BFF1F4.3060401@rtr.ca>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S932436AbXAaCk2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jan 2007 21:40:28 -0500
+Date: Tue, 30 Jan 2007 18:37:06 -0800
+From: Andrew Morton <akpm@osdl.org>
+To: Jean Delvare <jdelvare@suse.de>
+Cc: Sergey Vlasov <vsu@altlinux.ru>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Daniel Drake <dsd@reactivated.net>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@stusta.de>
+Subject: Re: [PATCH] VIA IRQ quirk breakage fix
+Message-Id: <20070130183706.f0d93103.akpm@osdl.org>
+In-Reply-To: <200701301325.58843.jdelvare@suse.de>
+References: <45B6A94A.3010006@yahoo.com.au>
+	<200701300854.06083.jdelvare@suse.de>
+	<20070130144701.e793c222.vsu@altlinux.ru>
+	<200701301325.58843.jdelvare@suse.de>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 30 Jan 2007 13:25:58 +0100
+Jean Delvare <jdelvare@suse.de> wrote:
+
+> So here comes the third
+> (and hopefully last) iteration of the patch:
+
+argh, it looks like I sent v2 to Linus.
+
+Here's the missing bit.  Please confirm that we want it?
 
 
-On Tue, 30 Jan 2007, Mark Lord wrote:
-> 
-> I believe our featherless leader said he though it was an ancient bug,
-> exasperated by something that went into 2.6.19.
-> 
-> If Linus's opinion is correct (still?), then the bug exists in all
-> kernels since somewhere back in the 2.4.xx days.
+From: Jean Delvare <jdelvare@suse.de>
 
-The issue was somewhat confused by people certainly *reporting* it for 
-older kernels. Also, as part of the dirty bit cleanups and sanity 
-checkingwe did actually seem to fix a long-standing CIFS corruption (and 
-apparently reisertfs/XFS problems too).
+Add special handling for the VT82C686.
 
-But the *common* case was actually introduced with 2.6.19, and 2.6.16 
-wouldn't be affected. 
+Signed-off-by: Jean Delvare <jdelvare@suse.de>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>
+Signed-off-by: Andrew Morton <akpm@osdl.org>
+---
 
-			Linus
+ drivers/pci/quirks.c |    8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
+
+diff -puN drivers/pci/quirks.c~via-quirk-fix-update drivers/pci/quirks.c
+--- a/drivers/pci/quirks.c~via-quirk-fix-update
++++ a/drivers/pci/quirks.c
+@@ -661,9 +661,11 @@ static void quirk_via_bridge(struct pci_
+ 	/* See what bridge we have and find the device ranges */
+ 	switch (dev->device) {
+ 	case PCI_DEVICE_ID_VIA_82C686:
+-		/* 82C686 is special */
+-		via_vlink_dev_lo = 7;
+-		via_vlink_dev_hi = 7;
++		/* The VT82C686 is special, it attaches to PCI and can have
++		   any device number. All its subdevices are functions of
++		   that single device. */
++		via_vlink_dev_lo = PCI_SLOT(dev->devfn);
++		via_vlink_dev_hi = PCI_SLOT(dev->devfn);
+ 		break;
+ 	case PCI_DEVICE_ID_VIA_8237:
+ 	case PCI_DEVICE_ID_VIA_8237A:
+_
+
