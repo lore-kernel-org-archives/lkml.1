@@ -1,50 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932522AbXAaJfA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932805AbXAaJga@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932522AbXAaJfA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Jan 2007 04:35:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932805AbXAaJfA
+	id S932805AbXAaJga (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Jan 2007 04:36:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932846AbXAaJg3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Jan 2007 04:35:00 -0500
-Received: from wr-out-0506.google.com ([64.233.184.238]:3728 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932522AbXAaJe7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Jan 2007 04:34:59 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=tGospKn3L/N/1zPerML8+/oguii5+rjXYx8Ws+QF1V24K0th0A6b3jY+cmyuaQIGDthZOe5DvYTjBswKYa58Be9ZEgMDkoPurXLVr6H7eI9yard/EYduYYAZtP3fxL/ZMaq7inus+Q8eCtJs84mLHToq6murXLBclFi2WaYKels=
-Message-ID: <9a8748490701310134p12a2a286if823ba267221b118@mail.gmail.com>
-Date: Wed, 31 Jan 2007 10:34:58 +0100
-From: "Jesper Juhl" <jesper.juhl@gmail.com>
-To: "Trent Waddington" <trent.waddington@gmail.com>
-Subject: Re: Rewriting floppy.c was Re: Free Linux Driver Development!
-Cc: "Andi Kleen" <ak@suse.de>, "Greg KH" <greg@kroah.com>,
-       "Adrian Bunk" <bunk@stusta.de>, "Roland Dreier" <rdreier@cisco.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <3d57814d0701310132y6f7e037di55842e664ea7315d@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 31 Jan 2007 04:36:29 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:33941 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932805AbXAaJg2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Jan 2007 04:36:28 -0500
+Date: Wed, 31 Jan 2007 10:34:14 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Daniel Walker <dwalker@mvista.com>
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, johnstul@us.ibm.com,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 07/23] clocksource: rating sorted list
+Message-ID: <20070131093414.GA21335@elte.hu>
+References: <20070131033710.420168478@mvista.com> <20070131033805.183466048@mvista.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20070130012904.GA9617@kroah.com> <ada8xfks90x.fsf@cisco.com>
-	 <20070130191020.GF20642@kroah.com> <20070131011340.GP3754@stusta.de>
-	 <20070131012428.GA31759@kroah.com> <p7364anpkz5.fsf_-_@bingen.suse.de>
-	 <9a8748490701310120u54274d12gcaaa035bcc746fd9@mail.gmail.com>
-	 <3d57814d0701310132y6f7e037di55842e664ea7315d@mail.gmail.com>
+In-Reply-To: <20070131033805.183466048@mvista.com>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.3
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.3 required=5.9 tests=ALL_TRUSTED,BAYES_40 autolearn=no SpamAssassin version=3.0.3
+	-3.3 ALL_TRUSTED            Did not pass through any untrusted hosts
+	1.0 BAYES_40               BODY: Bayesian spam probability is 20 to 40%
+	[score: 0.3685]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 31/01/07, Trent Waddington <trent.waddington@gmail.com> wrote:
-> On 1/31/07, Jesper Juhl <jesper.juhl@gmail.com> wrote:
-> > Sounds like a fun little project. I'll bite.
->
-> Let me know when you have something and I'll go buy those floppies,
-> test it and fix a bug or two if I find 'em.
->
-Sure. Will do. Thanks.
 
--- 
-Jesper Juhl <jesper.juhl@gmail.com>
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please      http://www.expita.com/nomime.html
+* Daniel Walker <dwalker@mvista.com> wrote:
+
+> Converts the original plain list into a sorted list based on the clock 
+> rating. Later in my tree this allows some of the variables to be 
+> dropped since the highest rated clock is always at the front of the 
+> list. This also does some other nice things like allow the sysfs files 
+> to print the clocks in a more interesting order. It's forward looking.
+
+Unfortunately this seems to be a step backwards to me. Please consider:
+
+>  	if (clocksource_tsc.rating != 0 && check_tsc_unstable()) {
+>  		clocksource_tsc.rating = 0;
+> -		clocksource_reselect();
+> +		clocksource_rating_change(&clocksource_tsc);
+>  		change = 1;
+
+this should be the following API:
+
+	clocksource_rating_change(&clocksource_tsc, 0);
+
+a rating change can occur due to other things as well, not only due to 
+'tsc unstable' events. So keeping an API around that changes the rating 
+(and propagates all related changes), makes more sense to me.
+
+also, a pure function call is the most natural (and most flexible) API, 
+for a centrally registered resource like a clock source driver. And a 
+rating change should imply a reselect too, obviously. That way we 
+replace 2 lines with 1 line - that's a real API improvement and a real 
+cleanup patch.
+
+and that's precisely what Thomas' patch in -mm that your queue undoes 
+implements. (see: simplify-the-registration-of-clocksources.patch in 
+-mm) Have you considered Thomas' change when you dropped it?
+
+	Ingo
