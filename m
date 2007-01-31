@@ -1,75 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932195AbXAaIkJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932247AbXAaIkZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932195AbXAaIkJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Jan 2007 03:40:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932255AbXAaIkJ
+	id S932247AbXAaIkZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Jan 2007 03:40:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932257AbXAaIkZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Jan 2007 03:40:09 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:34453 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932195AbXAaIkH (ORCPT
+	Wed, 31 Jan 2007 03:40:25 -0500
+Received: from mo-p00-ob.rzone.de ([81.169.146.160]:14814 "EHLO
+	mo-p00-ob.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932247AbXAaIkY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Jan 2007 03:40:07 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: <luigi.genoni@pirelli.com>
-Cc: <akpm@osdl.org>, <linux-kernel@vger.kernel.org>
-Subject: Re: System crash after "No irq handler for vector" linux 2.6.19
-References: <200701221116.13154.luigi.genoni@pirelli.com>
-	<m1ps973rxh.fsf@ebiederm.dsl.xmission.com>
-	<200701231051.32945.luigi.genoni@pirelli.com>
-	<m1y7nu2axr.fsf@ebiederm.dsl.xmission.com>
-	<Pine.LNX.4.64.0701232052330.32111@baldios.it.pirelli.com>
-Date: Wed, 31 Jan 2007 01:39:26 -0700
-In-Reply-To: <Pine.LNX.4.64.0701232052330.32111@baldios.it.pirelli.com> (luigi
-	genoni's message of "Tue, 23 Jan 2007 21:16:28 +0100 (CET)")
-Message-ID: <m1bqkfbnep.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Wed, 31 Jan 2007 03:40:24 -0500
+Date: Wed, 31 Jan 2007 09:40:14 +0100 (MET)
+From: Oliver Neukum <oliver@neukum.name>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: question on resume()
+User-Agent: KMail/1.9.1
+Cc: linux-kernel@vger.kernel.org, nigel@nigel.suspend2.net,
+       pm list <linux-pm@lists.osdl.org>
+References: <200701291206.39637.oneukum@suse.de>
+ <200701302332.26063.rjw@sisk.pl> <200701310933.29443.rjw@sisk.pl>
+In-Reply-To: <200701310933.29443.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200701310940.26040.oliver@neukum.name>
+X-RZG-AUTH: kN+qSWxTQH+Xqix8Cni7tCsVYhPCm1GP
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-<luigi.genoni@pirelli.com> writes:
+Am Mittwoch, 31. Januar 2007 09:33 schrieb Rafael J. Wysocki:
+> On Tuesday, 30 January 2007 23:32, Rafael J. Wysocki wrote:
 
-> I have in interesting update, at less I suppose I have.
+> > Generally, you are safe if your driver only calls wake_up() from a process
+> > context, but not from .resume() or .suspend() routines (or from an
+> > unfreezeable kernel thread).
+> 
+> Ah, sorry, I've just realized I was wrong.  Processes in TASK_UNINTERRUPTIBLE
+> cannot be frozen!  So, the above only applies to wake_up_interruptible().
 
-It was, at least as another data point.
+So the kernel will wait for tasks in TASK_UNINTERRUPTIBLE to finish IO
+before it calls suspend()? I am confused.
 
-> I do not know very well what happens with irq stuff migrating shared irq, but I
-> suppose this has something to do with this crash.
-
-The fact the irq was shared should have no bearing on this crash scenario.
-A shared irq is not at all helpful in a performance sense, but this problem
-is low enough that a shared irq should have made not difference at all, except
-for the frequency the interrupt fired, and was migrated.  And a high interrupt
-frequency, and a high migration rate tend to cause this problem.
-
-> Right now I stopped irqbalance and puff! load average is back to normal, and
-> under the same workload notthing similar is happening for the moment.
-
-Yes.  That sounds like a good work around until this problem is sorted out.
-
-> Lesson number one I learnt: avoid shared IRQ on this systems (but to reconfigure
-> HW cabling right now is not so easy).
-
-Right.   Because the only sharing should be because the traces on the
-motherboard are shared.
-
-> I hope this helps
-
-It has all helped.
-
-I have been tracking some easier problems, keeping this one on my back burner.
-The good/bad news is that by restricting my set of vectors I can choose from
-in the kernel, and running ping -f to another machine.  And migrating the
-single irq for my NIC.  I have been able to reproduce this in about 5 minutes.
-
-I haven't root caused it yet, but the fact I can reproduce this on dual socket
-motherboard suggest the reason it took you an hour to reproduce the problem is
-simply because you had so few irqs on your system, and that the extreme
-latency of 8-socket Opterons is not to blame.
-
-Hopefully now that I can reproduce this I will be able to root cause
-this and then fix this bug.
-
-Eric
+	Regards
+		Oliver
