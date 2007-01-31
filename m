@@ -1,54 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750949AbXAaP2A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751539AbXAaP3I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750949AbXAaP2A (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Jan 2007 10:28:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751401AbXAaP2A
+	id S1751539AbXAaP3I (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Jan 2007 10:29:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751529AbXAaP3F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Jan 2007 10:28:00 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:57689 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750949AbXAaP17 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Jan 2007 10:27:59 -0500
-Message-ID: <45C0B570.4000000@garzik.org>
-Date: Wed, 31 Jan 2007 10:27:44 -0500
-From: Jeff Garzik <jeff@garzik.org>
+	Wed, 31 Jan 2007 10:29:05 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:35368 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750937AbXAaP3B (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Jan 2007 10:29:01 -0500
+Message-ID: <45C0B5A1.8000506@torque.net>
+Date: Wed, 31 Jan 2007 10:28:33 -0500
+From: Douglas Gilbert <dougg@torque.net>
+Reply-To: dougg@torque.net
 User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Andrew Morton <akpm@osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.20-rc6 - sky2 resume breakage
-References: <20070129144055.151cfe52@freekitty> <Pine.LNX.4.64.0701291501180.3611@woody.linux-foundation.org> <20070129154518.40b0b3d3@freekitty> <Pine.LNX.4.64.0701291609180.3611@woody.linux-foundation.org> <20070129161626.33277eb1@freekitty> <Pine.LNX.4.64.0701291623360.3611@woody.linux-foundation.org> <20070130065457.GA23390@elte.hu> <45BEF61F.7000400@garzik.org> <20070130075325.GA591@elte.hu> <45BEFBB2.8090402@garzik.org> <20070130080830.GC2840@elte.hu>
-In-Reply-To: <20070130080830.GC2840@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: ric@emc.com
+CC: Jeff Garzik <jeff@garzik.org>, Mark Lord <liml@rtr.ca>,
+       "Eric D. Mudama" <edmudama@gmail.com>,
+       James Bottomley <James.Bottomley@hansenpartnership.com>,
+       linux-kernel@vger.kernel.org,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>
+Subject: Re: [PATCH] scsi_lib.c: continue after MEDIUM_ERROR
+References: <200701301947.08478.liml@rtr.ca>	 <1170206199.10890.13.camel@mulgrave.il.steeleye.com> <311601c90701301725n53d25a74g652b7ca3bfc64c56@mail.gmail.com> <45BFF3D6.9050605@rtr.ca> <45C061C3.8030006@garzik.org> <45C0A985.7010402@emc.com>
+In-Reply-To: <45C0A985.7010402@emc.com>
+X-Enigmail-Version: 0.94.0.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.7 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Jeff Garzik <jeff@garzik.org> wrote:
+Ric Wheeler wrote:
 > 
->> Easy to name an example, as they are pretty generic.  When sharing 
->> irqs -- usually ATA is configured to PCI native (IO-APIC-fasteoi) -- 
->> any interrupt storm causes the other devices sharing that irq to crap 
->> themselves (kernel turns off irq, suggests irqpoll, etc.)
 > 
-> ok. Can you suggest any way for me to reproduce such a bug artificially 
-> on a test system? [i have both old and new systems, so if you can think 
-> of a way for me to trigger this i'd be happy to try]
+> Jeff Garzik wrote:
+>> Mark Lord wrote:
+>>> Eric D. Mudama wrote:
+>>>>
+>>>> Actually, it's possibly worse, since each failure in libata will
+>>>> generate 3-4 retries.  With existing ATA error recovery in the
+>>>> drives, that's about 3 seconds per retry on average, or 12 seconds
+>>>> per failure.  Multiply that by the number of blocks past the error
+>>>> to complete the request..
+>>>
+>>> It really beats the alternative of a forced reboot
+>>> due to, say, superblock I/O failing because it happened
+>>> to get merged with an unrelated I/O which then failed..
+>>> Etc..
+>>
+>>
+>> FWIW -- speaking generally -- I think there are inevitable areas where
+>> libata error handling combined with SCSI error handling results in
+>> suboptimal error handling.
+>>
+>> Just creating a list of "<this behavior> should be handled <this way>,
+>> but in reality is handled in <this silly way>" would be very helpful.
+> 
+> I agree - Tejun has done a great job at giving us a great base. Next
+> step is to get clarity on what the types of errors are and how to
+> differentiate between them (and maybe how that would change by class of
+> device?).
+> 
+>>
+>> Error handling is tough to get right, because the code is exercised so
+>> infrequently.  Tejun has actually done an above-average job here, by
+>> making device probe, hotplug and other "exceptions" go through the
+>> libata EH code, thereby exercising the EH code more than one might
+>> normally assume.
+>>
+>> Some errors in libata probably should not be retried more than once,
+>> when we have a definitive diagnosis.  Suggestions for improvements are
+>> welcome.
+>>
+>>     Jeff
+> 
+> One thing that we find really useful is to inject real errors into
+> devices. Mark has some patches that let us inject media errors, we also
+> bring back failed drives and run them through testing and occasionally
+> get to use analyzers, etc to inject odd ball errors.
 
-Should be pretty easy.  With either the old-IDE driver or libata, 
-complete a command without acknowledging an interrupt.  For libata, that 
-means poking around in ata_host_intr() and avoiding well-built hardware 
-like AHCI.  Anything that uses ata_piix driver, basically all Intel 
-machines, should be applicable in the "not well built" category... :)
+Ric,
+Both ATA (ATA8-ACS) and SCSI (SBC-3) have recently added
+command support to flag a block as "uncorrectable". There
+is no need to send bad "long" data to it and suppress the
+disk's automatic re-allocation logic.
 
-	Jeff
+In the case of ATA it is the WRITE UNCORRECTABLE command.
+In the case of SCSI it is the WR_UNCOR bit in the WRITE
+LONG command.
 
+It seems that due to SAT any useful capability in the ATA
+command set will soon appear in the corresponding SCSI
+command set, if it is not already there.
 
+Doug Gilbert
 
