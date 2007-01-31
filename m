@@ -1,52 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932520AbXAaJOe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932653AbXAaJUo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932520AbXAaJOe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Jan 2007 04:14:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932515AbXAaJOe
+	id S932653AbXAaJUo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Jan 2007 04:20:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932697AbXAaJUo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Jan 2007 04:14:34 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:57619 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932520AbXAaJOd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Jan 2007 04:14:33 -0500
-Date: Wed, 31 Jan 2007 10:12:35 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Andi Kleen <ak@suse.de>
-Cc: Andrey Borzenkov <arvidjaar@mail.ru>, linux-kernel@vger.kernel.org
-Subject: Re: [patch] suspend debugging: simulate suspend-to-RAM
-Message-ID: <20070131091235.GA20306@elte.hu>
-References: <20070125113350.GA31068@elte.hu> <20070125180324.36E8B557CF8@chen.mtu.ru> <p73ejpd96x9.fsf@bingen.suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 31 Jan 2007 04:20:44 -0500
+Received: from wr-out-0506.google.com ([64.233.184.237]:63036 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932653AbXAaJUn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Jan 2007 04:20:43 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=XUDsCcxcssEzYUuBAJe+oAkO7mg9hDlh6aOIOWr8zNhN7wXjofTdb7HiAQ9j/bNUtnqDfPFHV9h6DRHMYPbs0J1wQ0eN9N0whcyy4UGlA7+4gHoHniWchtvw4NKpYhkEjt9RCwyMbXzy2eAzNjz/WmrmxZAZDgygpQ5ldSgmfbs=
+Message-ID: <9a8748490701310120u54274d12gcaaa035bcc746fd9@mail.gmail.com>
+Date: Wed, 31 Jan 2007 10:20:42 +0100
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: "Andi Kleen" <ak@suse.de>
+Subject: Re: Rewriting floppy.c was Re: Free Linux Driver Development!
+Cc: "Greg KH" <greg@kroah.com>, "Adrian Bunk" <bunk@stusta.de>,
+       "Roland Dreier" <rdreier@cisco.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <p7364anpkz5.fsf_-_@bingen.suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <p73ejpd96x9.fsf@bingen.suse.de>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -4.3
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-4.3 required=5.9 tests=ALL_TRUSTED,BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-3.3 ALL_TRUSTED            Did not pass through any untrusted hosts
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <20070130012904.GA9617@kroah.com> <ada8xfks90x.fsf@cisco.com>
+	 <20070130191020.GF20642@kroah.com> <20070131011340.GP3754@stusta.de>
+	 <20070131012428.GA31759@kroah.com> <p7364anpkz5.fsf_-_@bingen.suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 31 Jan 2007 11:08:14 +0100, Andi Kleen <ak@suse.de> wrote:
+> Greg KH <greg@kroah.com> writes:
+> >
+> > What?  Throw a fresh-faced newbie instantly into the tar-pit of despair
+> > that floppy.c is?  Do you want everyone just to run screaming from
+> > kernel development never to be seen again?
+>
+> Doing a from-scratch rewrite of floppy.c only supporting new
+> hardware and no obscure formats ("newfloppy.c") would be an excellent
+> newbie project imho.  This means for someone who is still pretty
+> new, but wants to get their fingers wet with more complicated changes.
+>
+> Then over time (old-)floppy.c could be phased out.
+>
+> If anybody is interested...? (non newbies would be welcome too of course)
+>
+Sounds like a fun little project. I'll bite.
 
-* Andi Kleen <ak@suse.de> wrote:
-
-> Andrey Borzenkov <arvidjaar@mail.ru> writes:
-> 
-> > Will it work with netconsole too? COM port is often missing in notebooks
-> > today.
-> 
-> It will work with some luck with firescope (in the worst case you
-> might need to disable suspend in ochi1394). Many laptops have firewire
-> ports.
-> 
-> ftp://ftp.firstfloor.org/pub/ak/firescope/
-
-wow, that's really neat!
-
-	Ingo
+-- 
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
