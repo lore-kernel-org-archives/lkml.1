@@ -1,185 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933198AbXAaNdz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933208AbXAaNfJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933198AbXAaNdz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Jan 2007 08:33:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933208AbXAaNdz
+	id S933208AbXAaNfJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Jan 2007 08:35:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933217AbXAaNfJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Jan 2007 08:33:55 -0500
-Received: from nic.NetDirect.CA ([216.16.235.2]:33485 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933198AbXAaNdy (ORCPT
+	Wed, 31 Jan 2007 08:35:09 -0500
+Received: from vms040pub.verizon.net ([206.46.252.40]:11403 "EHLO
+	vms040pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933208AbXAaNfG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Jan 2007 08:33:54 -0500
-X-Originating-Ip: 74.109.98.130
-Date: Wed, 31 Jan 2007 08:32:41 -0500 (EST)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@CPE00045a9c397f-CM001225dbafb6
-To: Linux kernel mailing list <linux-kernel@vger.kernel.org>
-cc: dhowells@redhat.com, rth@twiddle.net
-Subject: [PATCH] Centralize the selection for debugging semaphores.
-Message-ID: <Pine.LNX.4.64.0701310825500.4627@CPE00045a9c397f-CM001225dbafb6>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.723, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, TW_RW 0.08)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+	Wed, 31 Jan 2007 08:35:06 -0500
+Date: Wed, 31 Jan 2007 08:34:21 -0500
+From: David Hollis <dhollis@davehollis.com>
+Subject: Re: Free Linux Driver Development!
+In-reply-to: <45BFC99A.8040805@garzik.org>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Trent Waddington <trent.waddington@gmail.com>,
+       Dave Airlie <airlied@gmail.com>, Roland Dreier <rdreier@cisco.com>,
+       Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org
+Message-id: <1170250461.12914.33.camel@dhollis-lnx.sunera.com>
+MIME-version: 1.0
+X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6)
+Content-type: text/plain
+Content-transfer-encoding: 7bit
+References: <20070130012904.GA9617@kroah.com> <ada8xfks90x.fsf@cisco.com>
+	<20070130191020.GF20642@kroah.com> <adaodogqpmx.fsf@cisco.com>
+	<45BFA087.6020905@garzik.org> <ada4pq8qjpd.fsf@cisco.com>
+	<20070130214759.GA12477@kroah.com> <adar6tcp43r.fsf@cisco.com>
+	<21d7e9970701301414s251b584mbee85ecd6909febf@mail.gmail.com>
+	<3d57814d0701301424m67d22cdbg7afc0a1dab29c152@mail.gmail.com>
+	<45BFC99A.8040805@garzik.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 2007-01-30 at 17:41 -0500, Jeff Garzik wrote:
+> 
+> I think this is a quite fair criticism, and I would love to see
+> someone 
+> step up and help with this sort of organization.
+> 
+> For example, I didn't know that XGI graphics specs were available at 
+> all, otherwise it might have been something fun to tackle 
 
-  Centralize the kernel config option for debugging semaphores and
-modify the macro for frv to use that config option instead.
+Just to pony up my experience in all of this, which I think is probably
+quite representative of many other drivers:
 
-Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
+A bunch of years ago I picked up a USB Ethernet device at the store
+because it seemed really cool and I hoped it worked under Linux.  Turns
+out that it didn't.  I had never written a kernel driver before, and
+dealing with USB was an alien concept to me.  I searched around and
+found that FreeBSD had a driver and I tried to use that in combination
+with other USB Ethernet drivers in the kernel as reference to get
+something working.  There was a basic spec sheet from the vendor, but a
+lot of detail was missing and for someone who was new to spec sheets and
+such, it wasn't much of a source.  I wound up coming across a driver
+that Tivo had written for the device so I started working to hammer that
+into shape to be added to the kernel.  The driver was quite a mess and
+had a lot of issues and took a good amount of work, but eventually I was
+able to get it to give me basic operation.  As I published updates and
+such, I found that there were a lot of folks that were wanting these
+devices to work.
 
----
+I eventually was contacted by the manufacturer to add support to their
+newer chips and they even provided some code to make the devices work.
+The code was not suitable for inclusion because it was circuitous,
+spaghetti, impossible to understand, brute-force style code that just
+could not be maintained (which I think is quite common with vendor
+drivers, and really makes me shudder when I think of what the code
+behind many Windows drivers must look like).  I kept hammering on the
+code to get it to be understandable and modular and got it sent
+upstream.  For one of the chips, it wound up taking a lot longer than I
+had hoped, mainly due to a lack of time on my end and lack of interest
+from the community - I wasn't seeing much of a 'Hey, can we get this
+chip working?' so it seemed that the devices weren't out there in many
+hands.
 
-  at the moment, two architectures have support for debugging
-semaphores:  alpha (with a local Kconfig.debug option), and frv (with
-a hard-coded "SEMAPHORE_DEBUG" macro).
+At this point, the driver supports 19 devices and seems to work quite
+well on x86 and x86_64, but big-endian systems seem to show some issues
+which are being worked out.  The endian-issues drive me mad since I
+don't have access to any big-endian systems and have little experience
+with it but I'm determined to get them resolved.  For a vendor, they
+likely would care less if it doesn't work on big-endian.  If it works on
+Windows, that's all that matters.  
 
-  it would seem to make more sense to simply have a universal kernel
-config option for debugging semaphores in lib/Kconfig.debug, and let
-any architecture work off of that.
+The driver has been upstream for 3+ years or so and is included in all
+distros that I'm aware of so for most people, they can go out to
+BestBuy, buy the device and plug it into their Linux box and it just
+works, and that is what we all want in the end.
 
-  obviously, only two architectures would take advantage of it right
-now, but the "help" screen for the new config option mentions that,
-and it's trivial to add new architectures.
+Conversely, I've seen many cases of drivers that are developed by the
+community, but kept out-of-kernel forever due to various reasons.  Some
+of them are due to the code quality and the developers not accepting the
+feedback to get the drivers into shape to be 'kernel worthy', sometimes
+it seems to be a lack of interest from the developers to merge upstream.
+Maybe because they think they would lose control or something?
+Sometimes it may just be that they don't realize that they can do that.
+Thankfully, these tend to be somewhat fringe devices though all would
+benefit at their being upstream to make everyones lives easier.
 
-
- arch/alpha/Kconfig.debug    |    8 --------
- arch/frv/kernel/semaphore.c |    2 +-
- include/asm-frv/semaphore.h |   14 ++++++--------
- lib/Kconfig.debug           |   11 +++++++++++
- 4 files changed, 18 insertions(+), 17 deletions(-)
-
-diff --git a/arch/alpha/Kconfig.debug b/arch/alpha/Kconfig.debug
-index 36d0106..f45f28c 100644
---- a/arch/alpha/Kconfig.debug
-+++ b/arch/alpha/Kconfig.debug
-@@ -16,14 +16,6 @@ config DEBUG_RWLOCK
- 	  too many attempts.  If you suspect a rwlock problem or a kernel
- 	  hacker asks for this option then say Y.  Otherwise say N.
-
--config DEBUG_SEMAPHORE
--	bool "Semaphore debugging"
--	depends on DEBUG_KERNEL
--	help
--	  If you say Y here then semaphore processing will issue lots of
--	  verbose debugging messages.  If you suspect a semaphore problem or a
--	  kernel hacker asks for this option then say Y.  Otherwise say N.
--
- config ALPHA_LEGACY_START_ADDRESS
- 	bool "Legacy kernel start address"
- 	depends on ALPHA_GENERIC
-diff --git a/arch/frv/kernel/semaphore.c b/arch/frv/kernel/semaphore.c
-index f278cdf..8e182ce 100644
---- a/arch/frv/kernel/semaphore.c
-+++ b/arch/frv/kernel/semaphore.c
-@@ -19,7 +19,7 @@ struct sem_waiter {
- 	struct task_struct	*task;
- };
-
--#if SEMAPHORE_DEBUG
-+#ifdef CONFIG_DEBUG_SEMAPHORE
- void semtrace(struct semaphore *sem, const char *str)
- {
- 	if (sem->debug)
-diff --git a/include/asm-frv/semaphore.h b/include/asm-frv/semaphore.h
-index 907c5c3..0958652 100644
---- a/include/asm-frv/semaphore.h
-+++ b/include/asm-frv/semaphore.h
-@@ -20,8 +20,6 @@
- #include <linux/spinlock.h>
- #include <linux/rwsem.h>
-
--#define SEMAPHORE_DEBUG		0
--
- /*
-  * the semaphore definition
-  * - if counter is >0 then there are tokens available on the semaphore for down to collect
-@@ -32,12 +30,12 @@ struct semaphore {
- 	unsigned		counter;
- 	spinlock_t		wait_lock;
- 	struct list_head	wait_list;
--#if SEMAPHORE_DEBUG
-+#ifdef CONFIG_DEBUG_SEMAPHORE
- 	unsigned		__magic;
- #endif
- };
-
--#if SEMAPHORE_DEBUG
-+#ifdef CONFIG_DEBUG_SEMAPHORE
- # define __SEM_DEBUG_INIT(name) , (long)&(name).__magic
- #else
- # define __SEM_DEBUG_INIT(name)
-@@ -76,7 +74,7 @@ static inline void down(struct semaphore *sem)
- {
- 	unsigned long flags;
-
--#if SEMAPHORE_DEBUG
-+#ifdef CONFIG_DEBUG_SEMAPHORE
- 	CHECK_MAGIC(sem->__magic);
- #endif
-
-@@ -95,7 +93,7 @@ static inline int down_interruptible(struct semaphore *sem)
- 	unsigned long flags;
- 	int ret = 0;
-
--#if SEMAPHORE_DEBUG
-+#ifdef CONFIG_DEBUG_SEMAPHORE
- 	CHECK_MAGIC(sem->__magic);
- #endif
-
-@@ -119,7 +117,7 @@ static inline int down_trylock(struct semaphore *sem)
- 	unsigned long flags;
- 	int success = 0;
-
--#if SEMAPHORE_DEBUG
-+#ifdef CONFIG_DEBUG_SEMAPHORE
- 	CHECK_MAGIC(sem->__magic);
- #endif
-
-@@ -136,7 +134,7 @@ static inline void up(struct semaphore *sem)
- {
- 	unsigned long flags;
-
--#if SEMAPHORE_DEBUG
-+#ifdef CONFIG_DEBUG_SEMAPHORE
- 	CHECK_MAGIC(sem->__magic);
- #endif
-
-diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
-index 5c26818..17c4524 100644
---- a/lib/Kconfig.debug
-+++ b/lib/Kconfig.debug
-@@ -181,6 +181,17 @@ config DEBUG_MUTEXES
- 	 This feature allows mutex semantics violations to be detected and
- 	 reported.
-
-+config DEBUG_SEMAPHORE
-+	bool "Semaphore debugging"
-+	depends on DEBUG_KERNEL
-+	default n
-+	help
-+	  If you say Y here then semaphore processing will issue lots of
-+	  verbose debugging messages.  If you suspect a semaphore problem or a
-+	  kernel hacker asks for this option then say Y.  Otherwise say N.
-+
-+	  At the moment, this is implemented only by alpha and frv.
-+
- config DEBUG_RWSEMS
- 	bool "RW-sem debugging: basic checks"
- 	depends on DEBUG_KERNEL
 
 -- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
+David Hollis <dhollis@davehollis.com>
 
-http://www.fsdev.dreamhosters.com/wiki/index.php?title=Main_Page
-========================================================================
