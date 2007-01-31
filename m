@@ -1,49 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030563AbXAaT3H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030566AbXAaTcx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030563AbXAaT3H (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Jan 2007 14:29:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030564AbXAaT3H
+	id S1030566AbXAaTcx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Jan 2007 14:32:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030568AbXAaTcw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Jan 2007 14:29:07 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:48596 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030566AbXAaT3G (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Jan 2007 14:29:06 -0500
-In-Reply-To: <1170240636.24358.41.camel@frg-rhel40-em64t-03>
-References: <patchbomb.1170193181@tetsuo.zabbo.net> <1170209044.26655.364.camel@localhost.localdomain> <Pine.LNX.4.64.0701301838110.3611@woody.linux-foundation.org> <Pine.LNX.4.64.0701301853190.3611@woody.linux-foundation.org> <1170240636.24358.41.camel@frg-rhel40-em64t-03>
-Mime-Version: 1.0 (Apple Message framework v752.3)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <047B6126-F30E-46C6-8410-50935B71C8FD@oracle.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-aio@kvack.org, Suparna Bhattacharya <suparna@in.ibm.com>,
-       Benjamin LaHaise <bcrl@kvack.org>, Ingo Molnar <mingo@elte.hu>
-Content-Transfer-Encoding: 7bit
-From: Zach Brown <zach.brown@oracle.com>
-Subject: Re: [PATCH 0 of 4] Generic AIO by scheduling stacks
-Date: Wed, 31 Jan 2007 11:28:06 -0800
-To: Xavier Bestel <xavier.bestel@free.fr>
-X-Mailer: Apple Mail (2.752.3)
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
+	Wed, 31 Jan 2007 14:32:52 -0500
+Received: from electric-eye.fr.zoreil.com ([213.41.134.224]:40218 "EHLO
+	fr.zoreil.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030566AbXAaTcw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Jan 2007 14:32:52 -0500
+Date: Wed, 31 Jan 2007 20:29:18 +0100
+From: Francois Romieu <romieu@fr.zoreil.com>
+To: Nicolas Mailhot <nicolas.mailhot@laposte.net>
+Cc: greg@kroah.com, linux-kernel@vger.kernel.org
+Subject: Re: Free Linux Driver Development!
+Message-ID: <20070131192918.GA12495@electric-eye.fr.zoreil.com>
+References: <32793.192.54.193.51.1170248792.squirrel@rousalka.dyndns.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <32793.192.54.193.51.1170248792.squirrel@rousalka.dyndns.org>
+User-Agent: Mutt/1.4.2.1i
+X-Organisation: Land of Sunshine Inc.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Nicolas Mailhot <nicolas.mailhot@laposte.net> :
+[...]
+> incomplete NDAed documentation. If (as this offer implies) there are good
+> driver authors waiting to do more drivering, why aren't those a priority?
 
-On Jan 31, 2007, at 2:50 AM, Xavier Bestel wrote:
+So far nobody cared enough to maintain a list of said out-of-tree drivers.
 
-> On Tue, 2007-01-30 at 19:02 -0800, Linus Torvalds wrote:
->> Btw, this is also something where we should just disallow certain  
->> system
->> calls from being done through the asynchronous method.
->
-> Does that mean that doing an AIO-disabled syscall will wait for all  
-> in-
-> flight AIO syscalls to finish ?
-
-That seems unlikely.  I imagine we'd just return EINVAL or ENOSYS or  
-something to that effect.
-
-- z
+-- 
+Ueimor
