@@ -1,49 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030449AbXAaRfL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030453AbXAaRip@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030449AbXAaRfL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Jan 2007 12:35:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030446AbXAaRfK
+	id S1030453AbXAaRip (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Jan 2007 12:38:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030455AbXAaRio
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Jan 2007 12:35:10 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:49140 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1030443AbXAaRfJ (ORCPT
+	Wed, 31 Jan 2007 12:38:44 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:43799 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030447AbXAaRio (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Jan 2007 12:35:09 -0500
-Date: Wed, 31 Jan 2007 17:47:24 +0000
-From: Alan <alan@lxorguk.ukuu.org.uk>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: Re: [PATCH] libata: Fix (hopefully) all the remaining problems with
- devices failing setup/identify
-Message-ID: <20070131174724.7b17153a@localhost.localdomain>
-In-Reply-To: <45C0D050.4030302@garzik.org>
-References: <20070131172605.2c5dfc78@localhost.localdomain>
-	<45C0D050.4030302@garzik.org>
-X-Mailer: Claws Mail 2.7.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 31 Jan 2007 12:38:44 -0500
+In-Reply-To: <1170209044.26655.364.camel@localhost.localdomain>
+References: <patchbomb.1170193181@tetsuo.zabbo.net> <1170209044.26655.364.camel@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v752.3)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <6CDD5D9D-E031-499D-9A8A-5A8522C66D37@oracle.com>
+Cc: linux-kernel@vger.kernel.org, linux-aio@kvack.org,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Benjamin LaHaise <bcrl@kvack.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
 Content-Transfer-Encoding: 7bit
+From: Zach Brown <zach.brown@oracle.com>
+Subject: Re: [PATCH 0 of 4] Generic AIO by scheduling stacks
+Date: Wed, 31 Jan 2007 09:38:11 -0800
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+X-Mailer: Apple Mail (2.752.3)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Looks like you should use ata_busy_wait() here, rather than reproducing 
-> the same code again.
+>> - We would now have some measure of task_struct concurrency.  Read  
+>> that twice,
+>> it's scary.
 
-It waits in 10uS chunks while 1uS chunks were used in the workaround.
-Could indeed do that once I know the fix is right. While I'm at it the
-ata_busy_wait kerneldoc is borked so here's a fix
+> That's the one scaring me in fact ... Maybe it will end up being an  
+> easy
+> one but I don't feel too comfortable...
 
-Signed-off-by: Alan Cox <alan@redhat.com>
+Indeed, that was my first reaction too.  I dismissed the idea for a  
+good six months after initially realizing that it implied sharing  
+journal_info, etc.
 
---- linux.vanilla-2.6.20-rc6-mm3/include/linux/libata.h	2007-01-31 14:20:43.000000000 +0000
-+++ linux-2.6.20-rc6-mm3/include/linux/libata.h	2007-01-31 17:19:04.703229512 +0000
-@@ -1052,6 +1053,8 @@
- /**
-  *	ata_busy_wait - Wait for a port status register
-  *	@ap: Port to wait for.
-+ *	@bits: bits that must be clear
-+ *	@max: number of 10uS waits to perform
-  *
-  *	Waits up to max*10 microseconds for the selected bits in the port's
-  *	status register to be cleared.
+But when I finally sat down and started digging through the  
+task_struct members and, after quickly dismissing involuntary  
+preemption of the fibrils, it didn't seem so bad.  I haven't done an  
+exhaustive audit yet (and I won't advocate merging until I have) but  
+I haven't seen any train wrecks.
+
+> we didn't create fibril-like
+> things for threads, instead, we share PIDs between tasks. I wonder if
+> the sane approach would be to actually create task structs (or have a
+> pool of them pre-created sitting there for performances) and add a way
+> to share the necessary bits so that syscalls can be run on those
+> spin-offs.
+
+Maybe, if it comes to that.  I have some hopes that sharing by  
+default and explicitly marking the bits that we shouldn't share will  
+be good enough.
+
+- z
