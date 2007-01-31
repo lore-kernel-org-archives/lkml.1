@@ -1,68 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932368AbXAaIsc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932378AbXAaIsk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932368AbXAaIsc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Jan 2007 03:48:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932367AbXAaIsb
+	id S932378AbXAaIsk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Jan 2007 03:48:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932367AbXAaIsk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Jan 2007 03:48:31 -0500
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:57387 "EHLO 2ka.mipt.ru"
+	Wed, 31 Jan 2007 03:48:40 -0500
+Received: from verein.lst.de ([213.95.11.210]:56358 "EHLO mail.lst.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932337AbXAaIsa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Jan 2007 03:48:30 -0500
-Date: Wed, 31 Jan 2007 11:47:56 +0300
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Kaz Kylheku <kaz@zeugmasystems.com>
-Cc: Chris Friesen <cfriesen@nortel.com>, linux-kernel@vger.kernel.org,
-       libc-hacker@sources.redhat.com, libc-alpha@sources.redhat.com
-Subject: Re: [ANN] Userspace M-on-N threading model implementation. Alpha release.
-Message-ID: <20070131084756.GA3110@2ka.mipt.ru>
-References: <66910A579C9312469A7DF9ADB54A8B7D5C2B90@exchange.ZeugmaSystems.local>
+	id S932378AbXAaIsj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Jan 2007 03:48:39 -0500
+Date: Wed, 31 Jan 2007 09:47:21 +0100
+From: Christoph Hellwig <hch@lst.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Carl Love <cel@us.ibm.com>, Christoph Hellwig <hch@lst.de>,
+       linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org,
+       oprofile-list@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [Cbe-oss-dev] [RFC, PATCH 1/4] Add support to OProfile for profiling Cell BE SPUs -- update
+Message-ID: <20070131084721.GC5596@lst.de>
+References: <45BE4ED0.5030808@us.ibm.com> <45BE4F2A.5040702@us.ibm.com> <20070130103924.GA14571@lst.de> <1170197398.5235.12.camel@dyn9047021078.beaverton.ibm.com> <1170197846.26655.342.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=koi8-r
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <66910A579C9312469A7DF9ADB54A8B7D5C2B90@exchange.ZeugmaSystems.local>
-User-Agent: Mutt/1.5.9i
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.7.5 (2ka.mipt.ru [0.0.0.0]); Wed, 31 Jan 2007 11:47:57 +0300 (MSK)
+In-Reply-To: <1170197846.26655.342.camel@localhost.localdomain>
+User-Agent: Mutt/1.3.28i
+X-Spam-Score: -0.001 () BAYES_44
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 30, 2007 at 01:16:22PM -0800, Kaz Kylheku (kaz@zeugmasystems.com) wrote:
-> Evgeniy Polyakov wrote:
-> > I described in details why and how M:N model better, and its drawbacks
-> > include all issues mentioned by Ulrich Drepper, but nevertheless its
-> > advantages are far too superiour than those which can be
-> > provided by 1:1
-> > model.
+On Wed, Jan 31, 2007 at 09:57:26AM +1100, Benjamin Herrenschmidt wrote:
+> On Tue, 2007-01-30 at 14:49 -0800, Carl Love wrote:
+> > Christoph:
+> > 
+> > In our earlier work on the PPU profiling patch, Benjamin Herrenschmidt
+> > said that we should remove macros that are only used once and just put
+> > the actual code in.  That is why the macros were removed. 
 > 
-> M:N threading is an unnecessary performance hack that's needed by people
-> who are living in a C or C++ exile away from some language that has
-> lexical closures, generators or first-class continuations. Not having
-> these niceties, they resort to emulating them with threads. The proper
-> thing to do is to rewrite the code to use state machines which can be
-> driven by any available thread. Or else, write yourself a
-> source-to-source transformer that will give C the lexical closure,
-> generator, or continuation features that you need to express the
-> solution that way.
-> 
-> There is no need to retain any vestiges of a user space threading
-> implementation when you have the real thing.
-> 
-> Programs which appear to benefit from that model are badly optimized or
-> badly designed. A smartly written program uses an available thread to do
-> as much work as possible, until that thread happens to block or its time
-> slice burns up.
+> Heh... there is a balance to be found... In some cases, inline functions
+> might be better too.
 
-Do not mix languages like Erlang, specialy designed for concurrent
-programming, with M:N threading model - they are completely different,
-but you do not want to see this. As you pointed, one thread can do as
-much as it need until it is blocked, and what next? Allocate new real
-thread? You may want to see how things like JVM work, I seriously doubt
-spwning new thread each time task blocks is a way to go. Even having
-epoll does not help in many cases. And you forgot the price of
-rescheduling in kernelspace and userspace - even with signals it differs
-two times, with more intellegent case it differs in 20 times!
-Virtual machine can have thousands of threads, actually it cant, since
-it will kill Linux in rescheduling.
-
--- 
-	Evgeniy Polyakov
+Well, unless there's a very good reasons against it (token pasting,
+header pollution) inlines are always preferable over macros, but I
+didn't want to bring that issue up aswell..
