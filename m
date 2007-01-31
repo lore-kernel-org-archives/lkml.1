@@ -1,70 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932077AbXAaBzN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932113AbXAaCCw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932077AbXAaBzN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 20:55:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932080AbXAaBzM
+	id S932113AbXAaCCw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 21:02:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932224AbXAaCCw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 20:55:12 -0500
-Received: from paris.bmts.com ([216.183.128.227]:38124 "EHLO paris.bmts.com"
+	Tue, 30 Jan 2007 21:02:52 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:53280 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932077AbXAaBzL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 20:55:11 -0500
-Date: Tue, 30 Jan 2007 20:48:39 -0500
-From: Mike Houston <mikeserv@bmts.com>
-To: Adrian Bunk <bunk@stusta.de>
-Cc: Chuck Ebbert <cebbert@redhat.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: How many people are using 2.6.16?
-Message-Id: <20070130204839.4124e9f3.mikeserv@bmts.com>
-In-Reply-To: <20070130235215.GN3754@stusta.de>
-References: <45BE5948.6060403@redhat.com>
-	<20070129160448.65fc63f3.mikeserv@bmts.com>
-	<20070130235215.GN3754@stusta.de>
-X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S932113AbXAaCCv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jan 2007 21:02:51 -0500
+Message-ID: <45BFF8A0.30907@redhat.com>
+Date: Tue, 30 Jan 2007 21:02:08 -0500
+From: Jeff Layton <jlayton@redhat.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
+MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Bodo Eggert <7eggert@gmx.de>, akpm@osdl.org, dev@sw.ru,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       torvalds@osdl.org
+Subject: Re: [PATCH] pipefs unique inode numbers
+References: <Pine.LNX.4.58.0701302314210.2203@be1.lrz> <45BFEE85.30203@redhat.com> <Pine.LNX.4.64.0701301726280.3611@woody.linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0701301726280.3611@woody.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-brucetelecom.com-MailScanner-Information: Please contact Bruce Telecom 519.368.2000 for more information
-X-brucetelecom.com-MailScanner: Found to be clean
-X-brucetelecom.com-MailScanner-From: mikeserv@bmts.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 31 Jan 2007 00:52:15 +0100
-Adrian Bunk <bunk@stusta.de> wrote:
+Linus Torvalds wrote:
+ >
+ > On Tue, 30 Jan 2007, Jeff Layton wrote:
+ >> Also, that patch would break many 32-bit programs not compiled with large
+ >> offsets when run in compatibility mode on a 64-bit kernel. If they were to
+ >> do a stat on this inode, it would likely generate an EOVERFLOW error since
+ >> the pointer address would probably not fit in a 32 bit field.
+ >>
+ >> That problem was the whole impetus for this set of patches.
+ >
+ > Well, we have that problem with the slowly incrementing "last_ino" too.
+ >
+ > Should we make "last_ino" be "static unsigned int" instead of "long"?
+ >
+ > Does anybody actually even use the old stat() with 32-bit interfaces? We
+ > warn for it, and we've done so for a long time.. I dont' remember people
+ > even complaining about the warning, so..
+ >
+ > 		Linus
 
-> On Mon, Jan 29, 2007 at 04:04:48PM -0500, Mike Houston wrote:
+I've actually sent Andrew a patch that does that and the same thing to
+the counter in iunique as well. It's in -mm now, but I think it's pretty
+safe and can probably go into your tree any time you're ready for it.
 
-> > I've been using Adrian's 2.6.16 kernel releases on two internet
-> > servers that I look after remotely. One of them is RHEL 4 the
-> > other is Fedora Core 2 (Ensim Webppliance). I'm especially wary
-> > of breaking RHEL 4, and the 2.6.16.xx kernels work perfectly
-> > except for the hald not starting (but that doesn't matter on that
-> > server).
-> >...
-> 
-> I haven't heard of this before, and in a quick test hald from
-> HAL 0.5.8.1 starts fine here.
-> 
-> Are there any error messages?
->
+It's been quite a while since I looked at the original problem, but I
+believe glibc actually uses stat64 to make the call, so it doesn't
+throw the warning. The EOVERFLOW comes from glibc when it gets back an
+st_ino value that won't fit in the 32 bit buffer provided by the program.
 
-I think I recall hearing about hald breaking in rhel4 with modern
-kernels here on this list, some time before I built a custom kernel
-for that rig (Athlon 64 3200+ on Asus A8V w' VIA K8T800Pro chipset
-running 32 bit RHEL 4 ES). I was expecting it to happen. I think at
-the time, the current kernel was 2.6.15.2 or thereabouts.
+Obviously, we can't do anything for filesystems with permanent inodes larger
+than 32 bits, but when generating them on the fly via new_inode or iunique,
+we ought to try and have them fit in 32 bits if possible (at least as long
+as we can).
 
-However, I haven't upgraded any software that's in the distro packages
-beyond what up2date provides, so:
-
-$ rpm -qa | grep hal
-hal-0.4.2-4.EL4
-
-So sorry about that, I didn't mean to take up any of your time. I
-only mentioned it incidentally and wasn't expecting it to be
-addressed. (I was more happily stating that nothing of significance
-to me is broken in the distro). If that was something I needed, I
-would have looked into upgrading it.
-
-Mike Houston
+-- Jeff
