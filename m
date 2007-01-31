@@ -1,183 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932582AbXAaDmD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932594AbXAaDkJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932582AbXAaDmD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 22:42:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932659AbXAaDlm
+	id S932594AbXAaDkJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 22:40:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932585AbXAaDj6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 22:41:42 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:35779 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932582AbXAaDlg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 22:41:36 -0500
-Date: Tue, 30 Jan 2007 19:40:23 -0800
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: Ivo van Doorn <ivdoorn@gmail.com>
-Cc: Dmitry Torokhov <dtor@insightbb.com>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, "John Linville" <linville@tuxdriver.com>,
-       Jiri Benc <jbenc@suse.cz>, Lennart Poettering <lennart@poettering.net>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       Larry Finger <Larry.Finger@lwfinger.net>
-Subject: Re: [RFC] rfkill - Add support for input key to control wireless
- radio
-Message-ID: <20070130194023.4e2d5305@localhost.localdomain>
-In-Reply-To: <200612031936.34343.IvDoorn@gmail.com>
-References: <200612031936.34343.IvDoorn@gmail.com>
-Organization: Linux Foundation
-X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 30 Jan 2007 22:39:58 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.158]:65321 "EHLO
+	localhost.localdomain" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932597AbXAaDj3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jan 2007 22:39:29 -0500
+Message-Id: <20070131033809.298987113@mvista.com>
+References: <20070131033710.420168478@mvista.com>
+User-Agent: quilt/0.46.mv-1
+Date: Tue, 30 Jan 2007 19:37:30 -0800
+From: Daniel Walker <dwalker@mvista.com>
+To: akpm@osdl.org
+Cc: linux-kernel@vger.kernel.org, johnstul@us.ibm.com
+Subject: [PATCH 20/23] clocksource: x86_64 update for new flags
+Content-Disposition: inline; filename=clocksource-x86_64-add-flags.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hope you will be resubmitting this.
+Update x86_64 for new flags.
 
-> +/*
-> + * rfkill key structure.
-> + */
-> +struct rfkill_key {
-> +	/*
-> +	 * For sysfs representation.
-> +	 */
-> +	struct class_device *cdev;
-> +
-> +	/*
-> +	 * Pointer to rfkill structure
-> +	 * that was filled in by key driver.
-> +	 */
-> +	struct rfkill *rfkill;
+Signed-Off-By: Daniel Walker <dwalker@mvista.com>
 
-Since rfkill is basically a function pointer table,
-can it be made const?
+---
+ arch/x86_64/kernel/hpet.c |    1 -
+ arch/x86_64/kernel/tsc.c  |   11 ++++-------
+ 2 files changed, 4 insertions(+), 8 deletions(-)
 
+Index: linux-2.6.19/arch/x86_64/kernel/hpet.c
+===================================================================
+--- linux-2.6.19.orig/arch/x86_64/kernel/hpet.c
++++ linux-2.6.19/arch/x86_64/kernel/hpet.c
+@@ -470,7 +470,6 @@ struct clocksource clocksource_hpet = {
+ 	.mask		= (cycle_t)HPET_MASK,
+ 	.mult		= 0, /* set below */
+ 	.shift		= HPET_SHIFT,
+-	.flags		= CLOCK_SOURCE_IS_CONTINUOUS,
+ 	.vread		= vread_hpet,
+ };
+ 
+Index: linux-2.6.19/arch/x86_64/kernel/tsc.c
+===================================================================
+--- linux-2.6.19.orig/arch/x86_64/kernel/tsc.c
++++ linux-2.6.19/arch/x86_64/kernel/tsc.c
+@@ -195,18 +195,15 @@ static struct clocksource clocksource_ts
+ 	.read			= read_tsc,
+ 	.mask			= CLOCKSOURCE_MASK(64),
+ 	.shift			= 22,
+-	.flags			= CLOCK_SOURCE_IS_CONTINUOUS |
+-				  CLOCK_SOURCE_MUST_VERIFY,
++	.flags                  = CLOCKSOURCE_64BITS | CLOCKSOURCE_PM_AFFECTED,
+ 	.vread			= vread_tsc,
+ };
+ 
+ void mark_tsc_unstable(void)
+ {
+ 	/* check to see if we should switch to the safe clocksource: */
+-	if (unlikely(!tsc_unstable && clocksource_tsc.rating != 50)) {
+-		clocksource_tsc.rating = 50;
+-		clocksource_rating_change(&clocksource_tsc);
+-	}
++	if (unlikely(!tsc_unstable && clocksource_tsc.rating != 50))
++		clocksource_tsc.flags |= CLOCKSOURCE_UNSTABLE;
+ 
+ 	tsc_unstable = 1;
+ }
+@@ -218,7 +215,7 @@ static int __init init_tsc_clocksource(v
+ 		clocksource_tsc.mult = clocksource_khz2mult(cpu_khz,
+ 							clocksource_tsc.shift);
+ 		if (check_tsc_unstable())
+-			clocksource_tsc.rating = 50;
++			clocksource_tsc.flags |= CLOCKSOURCE_UNSTABLE;
+ 
+ 		return clocksource_register(&clocksource_tsc);
+ 	}
 
-> +	/*
-> +	 * Pointer to type structure that this key belongs to.
-> +	 */
-> +	struct rfkill_type *type;
-> +
-> +	/*
-> +	 * Once key status change has been detected, the toggled
-> +	 * field should be set to indicate a notification to
-> +	 * user or driver should be performed.
-> +	 */
-> +	int toggled;
-> +
-> +	/*
-> +	 * Current state of the device radio, this state will
-> +	 * change after the radio has actually been toggled since
-> +	 * receiving the radio key event.
-> +	 */
-> +	int radio_status;
-> +
-> +	/*
-> +	 * Current status of the key which controls the radio,
-> +	 * this value will change after the key state has changed
-> +	 * after polling, or the key driver has send the new state
-> +	 * manually.
-> +	 */
-> +	int key_status;
-
-
-Maybe turn these bits into a bit values (set_bit/clear_bit) in an unsigned long.
-
-> +	/*
-> +	 * Input device for this key,
-> +	 * we also keep track of the number of
-> +	 * times this input device is open. This
-> +	 * is important for determining to whom we
-> +	 * should report key events.
-> +	 */
-> +	struct input_dev *input;
-> +	unsigned int open_count;
-
-atomic on open_count?
-
-> +	/*
-> +	 * Key index number.
-> +	 */
-> +	unsigned int key_index;
-> +
-> +	/*
-> +	 * List head structure to be used
-> +	 * to add this structure to the list.
-> +	 */
-> +	struct list_head entry;
-> +};
-> +
-> +/*
-> + * rfkill key type structure.
-> + */
-> +struct rfkill_type {
-> +	/*
-> +	 * For sysfs representation.
-> +	 */
-> +	struct class_device *cdev;
-> +
-> +	/*
-> +	 * Name of this radio type.
-> +	 */
-> +	char *name;
-
-const?
-
-> +	/*
-> +	 * Key type identification. Value must be any
-> +	 * in the key_type enum.
-> +	 */
-> +	unsigned int key_type;
-> +
-> +	/*
-> +	 * Number of registered keys of this type.
-> +	 */
-> +	unsigned int key_count;
-> +};
-> +
-> +/*
-> + * rfkill master structure.
-> + */
-> +struct rfkill_master {
-> +	/*
-> +	 * For sysfs representation.
-> +	 */
-> +	struct class *class;
-> +
-> +	/*
-> +	 * All access to the master structure
-> +	 * and its children (the keys) are protected
-> +	 * by this key lock.
-> +	 */
-> +	struct semaphore key_sem;
-
-mutex instead of semaphort
-
-> +	/*
-> +	 * List of available key types.
-> +	 */
-> +	struct rfkill_type type[KEY_TYPE_MAX];
-> +
-> +	/*
-> +	 * Total number of registered keys.
-> +	 */
-> +	unsigned int key_count;
-> +
-> +	/*
-> +	 * Number of keys that require polling
-> +	 */
-> +	unsigned int poll_required;
-> +
-> +	/*
-> +	 * List of rfkill_key structures.
-> +	 */
-> +	struct list_head key_list;
-> +
-> +	/*
-> +	 * Work structures for periodic polling,
-> +	 * as well as the scheduled radio toggling.
-> +	 */
-> +	struct work_struct toggle_work;
-> +	struct work_struct poll_work;
-
-delayed_rearming_work instead?
-
-> +};
+-- 
