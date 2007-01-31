@@ -1,79 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965161AbXAaPym@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965166AbXAaPzG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965161AbXAaPym (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Jan 2007 10:54:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965166AbXAaPyl
+	id S965166AbXAaPzG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Jan 2007 10:55:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965038AbXAaPzG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Jan 2007 10:54:41 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:39485 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S965161AbXAaPyl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Jan 2007 10:54:41 -0500
-Date: Wed, 31 Jan 2007 10:54:39 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Pavel Machek <pavel@ucw.cz>
-cc: Oliver Neukum <oneukum@suse.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Oliver Neukum <oliver@neukum.name>, pm list <linux-pm@lists.osdl.org>,
-       <linux-kernel@vger.kernel.org>
-Subject: Re: [linux-pm] question on resume()
-In-Reply-To: <20070131093653.GA19643@elf.ucw.cz>
-Message-ID: <Pine.LNX.4.44L0.0701311048560.3803-100000@iolanthe.rowland.org>
+	Wed, 31 Jan 2007 10:55:06 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:35388 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965166AbXAaPzD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Jan 2007 10:55:03 -0500
+Date: Wed, 31 Jan 2007 07:34:35 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Adrian Bunk <bunk@stusta.de>
+cc: Mark Lord <lkml@rtr.ca>, Bron Gondwana <brong@fastmail.fm>,
+       Mike Houston <mikeserv@bmts.com>, Chuck Ebbert <cebbert@redhat.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Steve French <smfltc@us.ibm.com>,
+       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
+       Daniel Drake <dsd@gentoo.org>, samba-technical@lists.samba.org,
+       Vladimir Saveliev <vs@namesys.com>, reiserfs-dev@namesys.com,
+       David Chinner <dgc@sgi.com>, xfs-masters@oss.sgi.com
+Subject: Re: How many people are using 2.6.16?
+In-Reply-To: <20070131070237.GT3754@stusta.de>
+Message-ID: <Pine.LNX.4.64.0701310728130.3632@woody.linux-foundation.org>
+References: <45BE5948.6060403@redhat.com> <20070129160448.65fc63f3.mikeserv@bmts.com>
+ <20070129221300.GC19422@brong.net> <20070130203933.GJ3754@stusta.de>
+ <45BFF1F4.3060401@rtr.ca> <Pine.LNX.4.64.0701301748230.3611@woody.linux-foundation.org>
+ <20070131070237.GT3754@stusta.de>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 31 Jan 2007, Pavel Machek wrote:
 
-> Hi!
+
+On Wed, 31 Jan 2007, Adrian Bunk wrote:
 > 
-> > > Yes, it will.  The process freezer can only return success if there are no more
-> > > TASK_UNINTERRUPTIBLE tasks.  Otherwise it fails (after a timeout).
-> > 
-> > So, this means, on suspend():
-> > 
-> > 1. Don't worry about TASK_UNINTERRUPTIBLE
-> > 2. Do worry about TASK_INTERRUPTIBLE
-> > We have to cease IO and must not call wake_up_interruptible()
+> Regarding the longstanding CIFS/reiserfs/XFS problems, it seems the 
+> status is:
 > 
-> "cease IO"? No, I believe it is enough not to start new I/O. Userspace
-> is frozen at that point, it can't ask you to do I/O.
-
-There may be I/O requests sitting in a queue, already submitted by
-userspace.  The suspend method should wait for existing I/O to complete
-and stop processing new entries from the queue.
-
-> > Isn't that a race until suspend() is called?
+> CIFS:
+> commit cb876f451455b6187a7d69de2c112c45ec4b7f99
+>   Fix up CIFS for "test_clear_page_dirty()" removal
+> queued for 2.6.19.3
+> applies and compiles against 2.6.16
 > 
-> I do not think so.
-
-The part about not calling wake_up_interruptible() is indeed a race.  We 
-have:
-
-	1. Task is frozen.
-	2. Driver must not call wake_up_interruptible().
-	3. Driver's suspend() method is called.
-
-How is the driver supposed to satisfy (2) before (3) has occurred?
-
-In fact this shouldn't matter.  There shouldn't be anything wrong with 
-calling wake_up_interruptible() on a frozen task.
-
-> > On resume():
-> > 
-> > 1. Don't worry about TASK_UNINTERRUPTIBLE
-> > 2. Do not restart IO that may call wake_up_interruptible()
-> > 
-> > When do we restart such IO?
+> reiserfs:
+> commit de14569f94513279e3d44d9571a421e9da1759ae
+>   [PATCH] resierfs: avoid tail packing if an inode was ever mmapped
+> backport to 2.6.16 required
 > 
-> We reuse signal handling code to do that for us. It is same situation
-> as when someone signals task doing I/O.
+> XFS:
+> fix not yet in your tree
 
-Again you misunderstood the question.  The driver must start queued I/O
-when its resume() method is called.  It should then be okay for the driver
-to call wake_up_interruptible(), even before tasks are unfrozen.
+Yes. The XFS problem should only be triggerable through O_DIRECT and 
+non-O_DIRECT mmap at the same time, so the fix for that got pushed back as 
+noncritical.
 
-Alan Stern
+NOTE! I'm still not 100% sure about the older bdb corruption reports. Were 
+they just noise due to other issues? Flaky RAM? One report of corruption 
+was actually due to running my test-program without enough diskspace, so 
+while that confused the issue for a while, it turned out to be a 
+non-issue.
 
+So I'm just saying that there might be other things lurking too. 
+
+		Linus
