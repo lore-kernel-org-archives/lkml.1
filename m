@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932830AbXAaDqt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932781AbXAaDrc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932830AbXAaDqt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 22:46:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932787AbXAaDob
+	id S932781AbXAaDrc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 22:47:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932772AbXAaDoZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 22:44:31 -0500
-Received: from stargate.chelsio.com ([12.22.49.110]:11294 "EHLO
+	Tue, 30 Jan 2007 22:44:25 -0500
+Received: from stargate.chelsio.com ([12.22.49.110]:6383 "EHLO
 	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932675AbXAaDnw (ORCPT
+	with ESMTP id S932622AbXAaDn6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 22:43:52 -0500
+	Tue, 30 Jan 2007 22:43:58 -0500
 From: Divy Le Ray <None@chelsio.com>
-Subject: [PATCH 1/10] cxgb3 - FW versioning
-Date: Tue, 30 Jan 2007 19:43:45 -0800
+Subject: [PATCH 2/10] cxgb3 - bind qsets on multiport adapter
+Date: Tue, 30 Jan 2007 19:43:50 -0800
 To: jeff@garzik.org
 Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
        swise@opengridcomputing.com
-Message-Id: <20070131034345.8574.21031.stgit@localhost.localdomain>
+Message-Id: <20070131034350.8585.68707.stgit@localhost.localdomain>
 Content-Type: text/plain; charset=utf-8; format=fixed
 Content-Transfer-Encoding: 8bit
 User-Agent: StGIT/0.11
@@ -25,128 +25,149 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Divy Le Ray <divy@chelsio.com>
 
-Clean up FW version checking.
-The supported FW version is now 3.1.
+Inform FW about the queue set->interface mapping.
 
 Signed-off-by: Divy Le Ray <divy@chelsio.com>
 ---
 
- drivers/net/cxgb3/cxgb3_main.c       |   15 ++++++++-------
- drivers/net/cxgb3/firmware_exports.h |   27 +++++++++++++++++++++++++++
- drivers/net/cxgb3/t3_hw.c            |   17 ++++++++++++-----
- 3 files changed, 47 insertions(+), 12 deletions(-)
+ drivers/net/cxgb3/adapter.h    |    2 +
+ drivers/net/cxgb3/cxgb3_main.c |   68 ++++++++++++++++++++++++++--------------
+ drivers/net/cxgb3/sge.c        |    8 +++++
+ 3 files changed, 54 insertions(+), 24 deletions(-)
 
+diff --git a/drivers/net/cxgb3/adapter.h b/drivers/net/cxgb3/adapter.h
+index 16643f6..8902007 100644
+--- a/drivers/net/cxgb3/adapter.h
++++ b/drivers/net/cxgb3/adapter.h
+@@ -46,6 +46,7 @@ enum {				/* adapter flags */
+ 	FULL_INIT_DONE = (1 << 0),
+ 	USING_MSI = (1 << 1),
+ 	USING_MSIX = (1 << 2),
++	QUEUES_BOUND = (1 << 3),
+ };
+ 
+ struct rx_desc;
+@@ -244,6 +245,7 @@ void t3_free_sge_resources(struct adapte
+ void t3_sge_err_intr_handler(struct adapter *adapter);
+ intr_handler_t t3_intr_handler(struct adapter *adap, int polling);
+ int t3_eth_xmit(struct sk_buff *skb, struct net_device *dev);
++int t3_mgmt_tx(struct adapter *adap, struct sk_buff *skb);
+ void t3_update_qset_coalesce(struct sge_qset *qs, const struct qset_params *p);
+ int t3_sge_alloc_qset(struct adapter *adapter, unsigned int id, int nports,
+ 		      int irq_vec_idx, const struct qset_params *p,
 diff --git a/drivers/net/cxgb3/cxgb3_main.c b/drivers/net/cxgb3/cxgb3_main.c
-index 54c49ac..8044146 100644
+index 8044146..7e7ee7a 100644
 --- a/drivers/net/cxgb3/cxgb3_main.c
 +++ b/drivers/net/cxgb3/cxgb3_main.c
-@@ -665,11 +665,8 @@ static int cxgb_up(struct adapter *adap)
+@@ -649,6 +649,37 @@ static void init_port_mtus(struct adapte
+ 	t3_write_reg(adapter, A_TP_MTU_PORT_TABLE, mtus);
+ }
  
- 	if (!(adap->flags & FULL_INIT_DONE)) {
- 		err = t3_check_fw_version(adap);
--		if (err) {
--			dev_err(&adap->pdev->dev,
--				"adapter FW is not compatible with driver\n");
-+		if (err)
- 			goto out;
--		}
- 
- 		err = init_dummy_netdevs(adap);
- 		if (err)
-@@ -1002,10 +999,14 @@ static void get_drvinfo(struct net_devic
- 	strcpy(info->bus_info, pci_name(adapter->pdev));
- 	if (!fw_vers)
- 		strcpy(info->fw_version, "N/A");
--	else
-+	else {
- 		snprintf(info->fw_version, sizeof(info->fw_version),
--			 "%s %u.%u", (fw_vers >> 24) ? "T" : "N",
--			 (fw_vers >> 12) & 0xfff, fw_vers & 0xfff);
-+			 "%s %u.%u.%u",
-+			 G_FW_VERSION_TYPE(fw_vers) ? "T" : "N",
-+			 G_FW_VERSION_MAJOR(fw_vers),
-+			 G_FW_VERSION_MINOR(fw_vers),
-+			 G_FW_VERSION_MICRO(fw_vers));
++static void send_pktsched_cmd(struct adapter *adap, int sched, int qidx, int lo,
++			      int hi, int port)
++{
++	struct sk_buff *skb;
++	struct mngt_pktsched_wr *req;
++
++	skb = alloc_skb(sizeof(*req), GFP_KERNEL | __GFP_NOFAIL);
++	req = (struct mngt_pktsched_wr *)skb_put(skb, sizeof(*req));
++	req->wr_hi = htonl(V_WR_OP(FW_WROPCODE_MNGT));
++	req->mngt_opcode = FW_MNGTOPCODE_PKTSCHED_SET;
++	req->sched = sched;
++	req->idx = qidx;
++	req->min = lo;
++	req->max = hi;
++	req->binding = port;
++	t3_mgmt_tx(adap, skb);
++}
++
++static void bind_qsets(struct adapter *adap)
++{
++	int i, j;
++
++	for_each_port(adap, i) {
++		const struct port_info *pi = adap2pinfo(adap, i);
++
++		for (j = 0; j < pi->nqsets; ++j)
++			send_pktsched_cmd(adap, 1, pi->first_qset + j, -1,
++					  -1, i);
 +	}
- }
- 
- static void get_strings(struct net_device *dev, u32 stringset, u8 * data)
-diff --git a/drivers/net/cxgb3/firmware_exports.h b/drivers/net/cxgb3/firmware_exports.h
-index 3565f48..eea7d89 100644
---- a/drivers/net/cxgb3/firmware_exports.h
-+++ b/drivers/net/cxgb3/firmware_exports.h
-@@ -141,4 +141,31 @@
- #define FW_WRC_NUM			\
-     (65536 + FW_TUNNEL_NUM + FW_CTRL_NUM + FW_RI_NUM + FW_RX_PKT_NUM)
- 
-+/*
-+ * FW type and version.
-+ */
-+#define S_FW_VERSION_TYPE		28
-+#define M_FW_VERSION_TYPE		0xF
-+#define V_FW_VERSION_TYPE(x)		((x) << S_FW_VERSION_TYPE)
-+#define G_FW_VERSION_TYPE(x)		\
-+    (((x) >> S_FW_VERSION_TYPE) & M_FW_VERSION_TYPE)
-+
-+#define S_FW_VERSION_MAJOR		16
-+#define M_FW_VERSION_MAJOR		0xFFF
-+#define V_FW_VERSION_MAJOR(x)		((x) << S_FW_VERSION_MAJOR)
-+#define G_FW_VERSION_MAJOR(x)		\
-+    (((x) >> S_FW_VERSION_MAJOR) & M_FW_VERSION_MAJOR)
-+
-+#define S_FW_VERSION_MINOR		8
-+#define M_FW_VERSION_MINOR		0xFF
-+#define V_FW_VERSION_MINOR(x)		((x) << S_FW_VERSION_MINOR)
-+#define G_FW_VERSION_MINOR(x)		\
-+    (((x) >> S_FW_VERSION_MINOR) & M_FW_VERSION_MINOR)
-+
-+#define S_FW_VERSION_MICRO		0
-+#define M_FW_VERSION_MICRO		0xFF
-+#define V_FW_VERSION_MICRO(x)		((x) << S_FW_VERSION_MICRO)
-+#define G_FW_VERSION_MICRO(x)		\
-+    (((x) >> S_FW_VERSION_MICRO) & M_FW_VERSION_MICRO)
-+
- #endif				/* _FIRMWARE_EXPORTS_H_ */
-diff --git a/drivers/net/cxgb3/t3_hw.c b/drivers/net/cxgb3/t3_hw.c
-index a4e2e57..4545acb 100644
---- a/drivers/net/cxgb3/t3_hw.c
-+++ b/drivers/net/cxgb3/t3_hw.c
-@@ -826,6 +826,11 @@ static int t3_write_flash(struct adapter
- 	return 0;
- }
- 
-+enum fw_version_type {
-+	FW_VERSION_N3,
-+	FW_VERSION_T3
-+};
++}
 +
  /**
-  *	t3_get_fw_version - read the firmware version
-  *	@adapter: the adapter
-@@ -849,19 +854,21 @@ int t3_check_fw_version(struct adapter *
- {
- 	int ret;
- 	u32 vers;
-+	unsigned int type, major, minor;
+  *	cxgb_up - enable the adapter
+  *	@adapter: adapter being enabled
+@@ -708,6 +739,11 @@ static int cxgb_up(struct adapter *adap)
  
- 	ret = t3_get_fw_version(adapter, &vers);
- 	if (ret)
- 		return ret;
+ 	t3_sge_start(adap);
+ 	t3_intr_enable(adap);
++
++	if ((adap->flags & (USING_MSIX | QUEUES_BOUND)) == USING_MSIX)
++		bind_qsets(adap);
++	adap->flags |= QUEUES_BOUND;
++
+ out:
+ 	return err;
+ irq_err:
+@@ -1830,34 +1866,18 @@ static int cxgb_extension_ioctl(struct n
+ 		break;
+ 	}
+ 	case CHELSIO_SET_PKTSCHED:{
+-		struct sk_buff *skb;
+ 		struct ch_pktsched_params p;
+-		struct mngt_pktsched_wr *req;
  
--	/* Minor 0xfff means the FW is an internal development-only version. */
--	if ((vers & 0xfff) == 0xfff)
--		return 0;
-+	type = G_FW_VERSION_TYPE(vers);
-+	major = G_FW_VERSION_MAJOR(vers);
-+	minor = G_FW_VERSION_MINOR(vers);
- 
--	if (vers == 0x1002009)
-+	if (type == FW_VERSION_T3 && major == 3 && minor == 1)
- 		return 0;
- 
--	CH_ERR(adapter, "found wrong FW version, driver needs version 2.9\n");
-+	CH_ERR(adapter, "found wrong FW version(%u.%u), "
-+	       "driver needs version 3.1\n", major, minor);
- 	return -EINVAL;
+-		if (!(adapter->flags & FULL_INIT_DONE))
+-			return -EIO;	/* uP must be up and running */
++		if (!capable(CAP_NET_ADMIN))
++				return -EPERM;
++		if (!adapter->open_device_map)
++				return -EAGAIN;	/* uP and SGE must be running */
+ 		if (copy_from_user(&p, useraddr, sizeof(p)))
+-			return -EFAULT;
+-		skb = alloc_skb(sizeof(*req), GFP_KERNEL);
+-		if (!skb)
+-			return -ENOMEM;
+-		req =
+-			(struct mngt_pktsched_wr *)skb_put(skb,
+-							sizeof(*req));
+-		req->wr_hi = htonl(V_WR_OP(FW_WROPCODE_MNGT));
+-		req->mngt_opcode = FW_MNGTOPCODE_PKTSCHED_SET;
+-		req->sched = p.sched;
+-		req->idx = p.idx;
+-		req->min = p.min;
+-		req->max = p.max;
+-		req->binding = p.binding;
+-		printk(KERN_INFO
+-			"pktsched: sched %u idx %u min %u max %u binding %u\n",
+-			req->sched, req->idx, req->min, req->max,
+-			req->binding);
+-		skb->priority = 1;
+-		offload_tx(&adapter->tdev, skb);
++				return -EFAULT;
++		send_pktsched_cmd(adapter, p.sched, p.idx, p.min, p.max,
++				  p.binding);
+ 		break;
++			
+ 	}
+ 	default:
+ 		return -EOPNOTSUPP;
+diff --git a/drivers/net/cxgb3/sge.c b/drivers/net/cxgb3/sge.c
+index 6c77f4b..ccea06a 100644
+--- a/drivers/net/cxgb3/sge.c
++++ b/drivers/net/cxgb3/sge.c
+@@ -1198,6 +1198,14 @@ static void restart_ctrlq(unsigned long
+ 		     F_SELEGRCNTX | V_EGRCNTX(q->cntxt_id));
  }
  
++/*
++ * Send a management message through control queue 0
++ */
++int t3_mgmt_tx(struct adapter *adap, struct sk_buff *skb)
++{
++	return ctrl_xmit(adap, &adap->sge.qs[0].txq[TXQ_CTRL], skb);
++}
++
+ /**
+  *	write_ofld_wr - write an offload work request
+  *	@adap: the adapter
