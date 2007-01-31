@@ -1,42 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030457AbXAaRkf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030465AbXAaRlS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030457AbXAaRkf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Jan 2007 12:40:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030458AbXAaRke
+	id S1030465AbXAaRlS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Jan 2007 12:41:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030464AbXAaRlS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Jan 2007 12:40:34 -0500
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:53813 "EHLO
-	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030457AbXAaRkd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Jan 2007 12:40:33 -0500
-Date: Wed, 31 Jan 2007 12:40:21 -0500
-From: Josef Sipek <jsipek@fsl.cs.sunysb.edu>
-To: Andi Kleen <ak@suse.de>
-Cc: "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>, linux-kernel@vger.kernel.org,
-       torvalds@osdl.org
-Subject: Re: [PATCH] x86_64: Fix preprocessor condition
-Message-ID: <20070131174021.GA17747@filer.fsl.cs.sunysb.edu>
-References: <Pine.LNX.4.64.0701302019530.11095@woody.linux-foundation.org> <11702634681921-git-send-email-jsipek@cs.sunysb.edu> <200701311816.02372.ak@suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200701311816.02372.ak@suse.de>
-User-Agent: Mutt/1.4.1i
+	Wed, 31 Jan 2007 12:41:18 -0500
+Received: from javad.com ([216.122.176.236]:2633 "EHLO javad.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030460AbXAaRlR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Jan 2007 12:41:17 -0500
+From: Sergei Organov <osv@javad.com>
+To: Greg KH <greg@kroah.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Free Linux Driver Development!
+References: <20070130012904.GA9617@kroah.com> <ada8xfks90x.fsf@cisco.com>
+	<20070130191020.GF20642@kroah.com>
+Date: Wed, 31 Jan 2007 20:41:03 +0300
+In-Reply-To: <20070130191020.GF20642@kroah.com> (Greg KH's message of "Tue,
+ 30
+	Jan 2007 11:10:20 -0800")
+Message-ID: <87fy9r2ixc.fsf@javad.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) XEmacs/21.4.19 (linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 31, 2007 at 06:16:02PM +0100, Andi Kleen wrote:
-> 
-> > -#if defined(__KERNEL__) && __x86_64__
-> > +#if defined(__KERNEL__) && defined(__x86_64__)
-> 
-> Undefined symbols are replaced with 0, so the old line was already ok.
+Greg KH <greg@kroah.com> writes:
+[...]
+>> And there are plenty of documented devices that no one cares enough
+>> about to submit a driver for.
+>
+> Any specific examples?  I have a long list of people who wish to write
+> new drivers but just don't know which hardware is not yet supported.
 
-Fair enough, however sparse is not very happy about underfined symbols.
+Maybe not entirely a new driver, as there already exist out-of-kernel
+vendor GPL driver, but if somebody is willing to resolve the issue
+described here:
 
-Jeff.
+<http://article.gmane.org/gmane.linux.serial/1221>
 
--- 
-Reality is merely an illusion, albeit a very persistent one.
-		- Albert Einstein
+please contact me, and I'll be willing to help in testing as I have the
+hardware.
+
+-- Sergei.
