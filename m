@@ -1,58 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932169AbXAaTvw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161003AbXAaTyK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932169AbXAaTvw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Jan 2007 14:51:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932175AbXAaTvw
+	id S1161003AbXAaTyK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Jan 2007 14:54:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933345AbXAaTyK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Jan 2007 14:51:52 -0500
-Received: from web26011.mail.ukl.yahoo.com ([217.146.177.33]:41651 "HELO
-	web26011.mail.ukl.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S932169AbXAaTvv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Jan 2007 14:51:51 -0500
-X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Wed, 31 Jan 2007 14:51:51 EST
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.it;
-  h=X-YMail-OSG:Received:Date:From:Reply-To:Subject:To:MIME-Version:Content-Type:Message-ID;
-  b=Q6KYCUi/QzdgxL1nFO7Uhh0HWA63dr02N/BNZLyazhjvkQjBjP6GEU27eDPqz+b1Q16d+14VOB8cEGWhR0Rl/NnHOxVuYx7gyg4/7P8iBuVKiUD7DQBrsn5k6jfZygBbwDRr2buTJ9xivA1vZDj7mQzJ+4B2Tp9eFpOMsvTgia8=;
-X-YMail-OSG: 8m1BddoVM1maeB9EhVJITdgalznfLO64i5Q2hL_XQL2flQbKrc0Gx1PjLPnmAijUOsVSxpSqfcGfkZHt2oP4zuSIVtg07Ejf08eEVnHNQVpBVTpPdfCVPv9kd9btZkDQmL6JYdK1qhqo4p19AmDgv0cb2FJzB37ZEYIra148KiQs..a277kNfIX1Ew--
-Date: Wed, 31 Jan 2007 20:45:09 +0100 (CET)
-From: <nahidesafe-kernel@yahoo.it>
-Reply-To: nahidesafe-kernel@yahoo.it
-Subject: wireless kernel driver porting
-To: linux-kernel@vger.kernel.org
+	Wed, 31 Jan 2007 14:54:10 -0500
+Received: from mga02.intel.com ([134.134.136.20]:18603 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933344AbXAaTyJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Jan 2007 14:54:09 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: i="4.13,263,1167638400"; 
+   d="scan'208"; a="191238192:sNHT18849922"
+Message-ID: <45C0F3DD.6060703@intel.com>
+Date: Wed, 31 Jan 2007 11:54:05 -0800
+From: Auke Kok <auke-jan.h.kok@intel.com>
+User-Agent: Mail/News 1.5.0.9 (X11/20061228)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Message-ID: <522043.87100.qm@web26011.mail.ukl.yahoo.com>
+To: Francois Romieu <romieu@fr.zoreil.com>
+CC: Nicolas Mailhot <nicolas.mailhot@laposte.net>, greg@kroah.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: Free Linux Driver Development!
+References: <32793.192.54.193.51.1170248792.squirrel@rousalka.dyndns.org> <20070131192918.GA12495@electric-eye.fr.zoreil.com>
+In-Reply-To: <20070131192918.GA12495@electric-eye.fr.zoreil.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 31 Jan 2007 19:54:05.0758 (UTC) FILETIME=[904795E0:01C74571]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all, I've bought a USB wireless TA bundled with GPL
-Linux drivers for 2.6.11 kernel series.
-The driver seems to compile fine with 2.6.15-gentoo-r1
-on x86, but can't be used on x86_64 systems.
-Technical support can't provide a porting of the
-driver in the short time.
-It seems that there are no driver included in the
-current kernel tree for this wireless TA:
-Conitech Dakota Wireless TA 56Mbps.
-The driver provided is the IS89C35 Wireless Linux
-Driver 3.0.47.0, copyrighted by  Winbond Electronic
-Corporation, ISSC and released with
-MODULE_LICENSE("GPL");
+Francois Romieu wrote:
+> Nicolas Mailhot <nicolas.mailhot@laposte.net> :
+> [...]
+>> incomplete NDAed documentation. If (as this offer implies) there are good
+>> driver authors waiting to do more drivering, why aren't those a priority?
+> 
+> So far nobody cared enough to maintain a list of said out-of-tree drivers.
 
-I haven't a ftp server where to put the driver tarball
-so if you can help me tell me where I can send an
-email with the driver as attachment ~500kb.
-Please CC me in your reply, I'm not subscribed to the
-list.
+why not post this on the OSDL driver wiki [1]? There already is a list of 
+'binary kernel drivers'. It would seem a proper addition there.
 
+Cheers,
 
+Auke
 
-	
-
-	
-		
-___________________________________ 
-Vinci i biglietti per FIFA World Cup in Germania! 
-yahoo.it/concorso_messenger
+[1] http://developer.osdl.org/dev/opendrivers/wiki/index.php/Main_Page
