@@ -1,98 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030493AbXAaSVD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030500AbXAaSVf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030493AbXAaSVD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Jan 2007 13:21:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030498AbXAaSVD
+	id S1030500AbXAaSVf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Jan 2007 13:21:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030502AbXAaSVf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Jan 2007 13:21:03 -0500
-Received: from proxima.lp0.eu ([85.158.45.36]:38328 "EHLO proxima.lp0.eu"
+	Wed, 31 Jan 2007 13:21:35 -0500
+Received: from bear.ext.ti.com ([192.94.94.41]:59786 "EHLO bear.ext.ti.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030493AbXAaSVB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Jan 2007 13:21:01 -0500
-X-Greylist: delayed 2047 seconds by postgrey-1.27 at vger.kernel.org; Wed, 31 Jan 2007 13:21:00 EST
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=exim; d=thunder.lp0.eu;
-	h=Received:Message-ID:Date:From:User-Agent:MIME-Version:To:CC:Subject:References:In-Reply-To:X-Enigmail-Version:OpenPGP:Content-Type:Sender:Reply-To;
-	b=S3mUUfUcdd7t8W8gPAK8bYbzzuPKH/Qjd7FONDW8Z1JR15fGCVp2u8Fia99WZw5AN5J8hMK+41+aLJvT8nL5HzDRynRwwoZT0ju2kfKCAxA/ZzCQ1TvsFjdssjrZgNXF;
-Message-ID: <45C0D602.70708@simon.arlott.org.uk>
-Date: Wed, 31 Jan 2007 17:46:42 +0000
-From: Simon Arlott <simon@arlott.org>
-User-Agent: Thunderbird 1.5.0.5 (X11/20060819)
+	id S1030500AbXAaSVL convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Jan 2007 13:21:11 -0500
+X-Greylist: delayed 955 seconds by postgrey-1.27 at vger.kernel.org; Wed, 31 Jan 2007 13:21:10 EST
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: Duncan Sands <duncan.sands@math.u-psud.fr>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] cxacru: Poll for device status more frequently.
-References: <45BFB841.9030200@simon.arlott.org.uk> <200701311527.39343.duncan.sands@math.u-psud.fr>
-In-Reply-To: <200701311527.39343.duncan.sands@math.u-psud.fr>
-X-Enigmail-Version: 0.94.1.2
-OpenPGP: id=89C93563
-Content-Type: multipart/signed; micalg=pgp-sha512;
- protocol="application/pgp-signature";
- boundary="------------enig4F0DACC85D987B0CC41CEAB2"
-Reply-To: Simon Arlott <b3c83437033a245c3e1hcjxk0000jq7l@thunder.lp0.eu>
+Content-Type: text/plain;
+	charset="US-ASCII"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [linux-pm] question on resume()
+Date: Wed, 31 Jan 2007 12:04:40 -0600
+Message-ID: <3B6D69C3A9EBCA4BA5DA60D9130274293DCC43@dlee13.ent.ti.com>
+In-Reply-To: <Pine.LNX.4.44L0.0701311048560.3803-100000@iolanthe.rowland.org>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [linux-pm] question on resume()
+Thread-Index: AcdFUSXZ1MtTgrezT7KWC4yBF2wa/QAD7OpQ
+References: <20070131093653.GA19643@elf.ucw.cz> <Pine.LNX.4.44L0.0701311048560.3803-100000@iolanthe.rowland.org>
+From: "Woodruff, Richard" <r-woodruff2@ti.com>
+To: "Alan Stern" <stern@rowland.harvard.edu>, "Pavel Machek" <pavel@ucw.cz>
+Cc: "Oliver Neukum" <oneukum@suse.de>, "Oliver Neukum" <oliver@neukum.name>,
+       "pm list" <linux-pm@lists.osdl.org>, <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 31 Jan 2007 18:04:45.0203 (UTC) FILETIME=[49E25630:01C74562]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig4F0DACC85D987B0CC41CEAB2
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
 
-On 31/01/07 14:27, Duncan Sands wrote:
->> The device is only polled for status every 5 seconds yet status update=
-s
->> occur as often as every second - when the line is down the status chan=
-ges
->> between "down" and "attempting to activate" every 2 seconds. =20
->=20
-> How much overhead does polling involve?  [A particularly problematic ca=
-se
-> is when polling is failing - I've occasionally seen speedtouch modems
-> where polling fails every time (not sure why) and for some reason this
-> increases system load considerably, which is why the speedtch driver ha=
-s
-> a dynamic polling interval].  If polling overhead is basically nothing,=
+> Again you misunderstood the question.  The driver must start queued
+I/O
+> when its resume() method is called.  It should then be okay for the
+driver
+> to call wake_up_interruptible(), even before tasks are unfrozen.
 
-> then this change is OK with me.  Otherwise the next simplest thing to d=
-o
-> is to have a short polling interval when the line is down, and a longer=
+I kind of like the way MontaVista worked around this in some 2.4 drivers
+where no freezer is present.  A tiny amount of state is kept at the
+driver and suspend lock outs are added at service entry points and at
+thread wake up points inside of the driver.
 
-> one when the line is up.
->=20
+This way if some process makes a request in or wakes up when the driver
+is not ready for the action, that context will get re-slept.
 
-I've had it polling every 200ms on a dual ppro200 since november, and it =
-has never failed to poll the status.
+With 2.6 on some of our variants for TI boards we still kept our suspend
+lock outs even though the freezer was there.  It allows some interesting
+run time idling.  You potentially can turn ON and OFF a driver
+individually for something like a high latency operational mode.  I
+suppose based on your comments it also works around issues in the
+freezer.  It doesn't take all that many lock outs to shore up a driver.
 
-
-> Ciao,
->=20
-> Duncan.
-
-
---=20
-Simon Arlott
-
-
---------------enig4F0DACC85D987B0CC41CEAB2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.2.2 (GNU/Linux)
-
-iQIVAwUBRcDWBqRtx1WjQ8ihAQrnMQ//c9XB0fwt26FL2FKwpukcpRGYPqZxUyuf
-u1pKutHtPU/lJSBh2g9ixI7/JslGXJbaOZBh0XVbMc2VuTDSm0M6dfbjPhSIeFk3
-c6HJoTOBacelH91nd2LTSe/4usaeo2Yb9Gk0Wxjnb/lQutIq/Ep2dA2KMLqQ7huH
-VeJmKZv5iFwodWjaXWY3Eda6/Fj3uaIYoIsp2kF145YTfGFdndtQfQBRDBGMi7XT
-q5IgMk3TIZQVLRnIdepG1qcpyHX7NdANX5U1iP/B1JhhYSakgIQKtsBX9d2jpGiG
-C/ocJpA2iN0OqkFEiGKtTJ2MpCwuyCVwJHnce6vxlYFtDUnLONgHsHxUx5RkItrC
-t5TAHDFRe6KSkZ3c0LDslfo3KcD5ppnuxy1KRwQnL80wzo2idvgE+jcHZDmkxwzh
-VzMQxpOjqCMy87qHblhusP+e21aK4kC1zAODUMDxejXxKHAmhSGzOpfh6v6/PCWo
-PTnJvdU7waKmY78gQKjvxwAch9IR0hkmBgynit13LvGwtw2TCI9iMBHb0MnPb1cr
-qjPrZJGPYlCpYtjxVynvcWxU6IZsbfvLTh8t6zp9qeM9llOuao/iJ3kqq7vPCb44
-mnV5uhi6teYjnBrczhaNuUgHpOG3KGI4g5y9bGoK4esPyoKiOR1pesXlUDXK+wlb
-K1p0KEeF2xQ=
-=8/eA
------END PGP SIGNATURE-----
-
---------------enig4F0DACC85D987B0CC41CEAB2--
+Regards,
+Richard W.
