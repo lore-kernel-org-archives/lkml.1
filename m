@@ -1,72 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933179AbXAaMmT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933177AbXAaMn6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933179AbXAaMmT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Jan 2007 07:42:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933177AbXAaMmT
+	id S933177AbXAaMn6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Jan 2007 07:43:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933183AbXAaMn6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Jan 2007 07:42:19 -0500
-Received: from ug-out-1314.google.com ([66.249.92.171]:48598 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933146AbXAaMmS (ORCPT
+	Wed, 31 Jan 2007 07:43:58 -0500
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:41243 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S933177AbXAaMn5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Jan 2007 07:42:18 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:subject:content-type:content-transfer-encoding:sender;
-        b=fI/cqJsbJws49UDMpU3btdq4RB7bfUMz80ITNQgKS6TnVG0IIbIxc6L1y+30mA0nCqT6teOSvBW1pKhoO887aVsqf77JxG2KnoDkYEm7fqrYer+938cTnqkzTwdom8r5WnKgdfVIw7M7M6KNmROyDFbUMlr8L0kc+qxghExAGDk=
-Message-ID: <45C08EA6.9070504@web.de>
-Date: Wed, 31 Jan 2007 13:42:14 +0100
-From: Markus Wenke <M.Wenke@web.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; de-AT; rv:1.8.1.2pre) Gecko/20070111 SeaMonkey/1.1
+	Wed, 31 Jan 2007 07:43:57 -0500
+Date: Wed, 31 Jan 2007 13:43:55 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: James Simmons <jsimmons@infradead.org>
+cc: Linux Frame Buffer Device Development 
+	<linux-fbdev-devel@lists.sourceforge.net>,
+       Cell Broadband Engine OSS Development 
+	<cbe-oss-dev@ozlabs.org>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: [PATCH 1/7] fbdev: Avoid vertical overflow when making space for
+ the logo
+In-Reply-To: <Pine.LNX.4.62.0701311325480.14996@pademelon.sonytel.be>
+Message-ID: <Pine.LNX.4.62.0701311328170.15066@pademelon.sonytel.be>
+References: <Pine.LNX.4.62.0701311325480.14996@pademelon.sonytel.be>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Try to fill route cache
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+fbcon_prepare_logo(): Avoid vertical overflow when making space for the logo
 
-I try to test a programm, that manages ca. 120000 connections at the
-same time.
+Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
+---
+ drivers/video/console/fbcon.c |    9 +++++++--
+ 1 files changed, 7 insertions(+), 2 deletions(-)
 
-Now I want to test it with a full route cache. I can only test it from
-some Test-PC's.
-So the route cache ist nearly empty all the time.
+--- ps3-linux-2.6.20-rc7.orig/drivers/video/console/fbcon.c
++++ ps3-linux-2.6.20-rc7/drivers/video/console/fbcon.c
+@@ -619,8 +619,13 @@ static void fbcon_prepare_logo(struct vc
+ 			r -= cols;
+ 		}
+ 		if (!save) {
+-			vc->vc_y += logo_lines;
+-			vc->vc_pos += logo_lines * vc->vc_size_row;
++			int lines;
++			if (vc->vc_y + logo_lines >= rows)
++				lines = rows - vc->vc_y - 1;
++			else
++				lines = logo_lines;
++			vc->vc_y += lines;
++			vc->vc_pos += lines * vc->vc_size_row;
+ 		}
+ 	}
+ 	scr_memsetw((unsigned short *) vc->vc_origin,
 
-I tried to fill the route cache with pktgen amongst others with the
-appended configuration, but my route cache is always nearly empty.
-In my log this error appears:  "eth0: too many iterations (6) in
-nv_nic_irq."
+Gr{oetje,eeting}s,
 
-I use Kernel "2.6.16.13-4-smp".
+						Geert
 
-Where is the problem ?
-
-
-Thanks in advance
-
-Markus Wenke
-
-
-------------------------------------
-CLONE_SKB="clone_skb 1"
-PKT_SIZE="pkt_size 60"
-#COUNT="count 0"
-COUNT="count 10000000"
-
-
-PGDEV=/proc/net/pktgen/eth0
-echo "Configuring $PGDEV"
-pgset "$COUNT"
-pgset "$CLONE_SKB"
-pgset "$PKT_SIZE"
-pgset "flag IPDST_RND"
-pgset "dst_min 5.0.0.0"
-pgset "dst_max 5.255.255.255"
-pgset "flows 32768"
-pgset "flowlen 10"
-----------------------------------
-
-
+--
+Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
+Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
+Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
