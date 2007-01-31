@@ -1,48 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932461AbXAaJM6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932520AbXAaJOe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932461AbXAaJM6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Jan 2007 04:12:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932493AbXAaJM6
+	id S932520AbXAaJOe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Jan 2007 04:14:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932515AbXAaJOe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Jan 2007 04:12:58 -0500
-Received: from mail.first.fraunhofer.de ([194.95.169.2]:53569 "EHLO
-	mail.first.fraunhofer.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932461AbXAaJM5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Jan 2007 04:12:57 -0500
-Subject: Re: [linux-usb-devel] 2.6.20-rc6 SCSI error: I/O error - trouble
-	with mass storage devices ?!
-From: Soeren Sonnenburg <kernel@nn7.de>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       linux-usb-devel <linux-usb-devel@lists.sourceforge.net>
-In-Reply-To: <Pine.LNX.4.44L0.0701301300050.7522-100000@iolanthe.rowland.org>
-References: <Pine.LNX.4.44L0.0701301300050.7522-100000@iolanthe.rowland.org>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Wed, 31 Jan 2007 10:12:47 +0100
-Message-Id: <1170234767.4366.2.camel@localhost>
+	Wed, 31 Jan 2007 04:14:34 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:57619 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932520AbXAaJOd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Jan 2007 04:14:33 -0500
+Date: Wed, 31 Jan 2007 10:12:35 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Andi Kleen <ak@suse.de>
+Cc: Andrey Borzenkov <arvidjaar@mail.ru>, linux-kernel@vger.kernel.org
+Subject: Re: [patch] suspend debugging: simulate suspend-to-RAM
+Message-ID: <20070131091235.GA20306@elte.hu>
+References: <20070125113350.GA31068@elte.hu> <20070125180324.36E8B557CF8@chen.mtu.ru> <p73ejpd96x9.fsf@bingen.suse.de>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <p73ejpd96x9.fsf@bingen.suse.de>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -4.3
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-4.3 required=5.9 tests=ALL_TRUSTED,BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-3.3 ALL_TRUSTED            Did not pass through any untrusted hosts
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-01-30 at 13:08 -0500, Alan Stern wrote:
-> On Sat, 27 Jan 2007, Soeren Sonnenburg wrote:
 
-[P990 mass storage trouble]
-> > Now I am clueless what could have gone wrong (as I *think* this was all
-> > working at some point at least before firmware updates) and what the
-> > difference between these mass storage devices is.
+* Andi Kleen <ak@suse.de> wrote:
+
+> Andrey Borzenkov <arvidjaar@mail.ru> writes:
 > 
-> The log revealed that the phone's firmware returns garbage values in the 
-> Residue field for some WRITEs.  This patch should take care of it.
+> > Will it work with netconsole too? COM port is often missing in notebooks
+> > today.
+> 
+> It will work with some luck with firescope (in the worst case you
+> might need to disable suspend in ochi1394). Many laptops have firewire
+> ports.
+> 
+> ftp://ftp.firstfloor.org/pub/ak/firescope/
 
-I can confirm that this fixes the problem.
+wow, that's really neat!
 
-Thank you *very* much - you've made my day.
-
-Soeren
--- 
-Sometimes, there's a moment as you're waking, when you become aware of
-the real world around you, but you're still dreaming.
+	Ingo
