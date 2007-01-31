@@ -1,48 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933108AbXAaRDd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030212AbXAaREJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933108AbXAaRDd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Jan 2007 12:03:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933039AbXAaRDc
+	id S1030212AbXAaREJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Jan 2007 12:04:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030277AbXAaREI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Jan 2007 12:03:32 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:57789 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933174AbXAaRDc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Jan 2007 12:03:32 -0500
-Message-ID: <45C0CBF7.9000206@sandeen.net>
-Date: Wed, 31 Jan 2007 11:03:51 -0600
-From: Eric Sandeen <sandeen@sandeen.net>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
-MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-CC: Roland Dreier <rdreier@cisco.com>, Greg KH <greg@kroah.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Free Linux Driver Development!
-References: <20070130012904.GA9617@kroah.com> <ada8xfks90x.fsf@cisco.com>	<20070130191020.GF20642@kroah.com> <adaodogqpmx.fsf@cisco.com> <45BFA087.6020905@garzik.org>
-In-Reply-To: <45BFA087.6020905@garzik.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 31 Jan 2007 12:04:08 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.158]:34138 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030212AbXAaREH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Jan 2007 12:04:07 -0500
+Subject: Re: [PATCH 23/23] clocksource tsc: add verify routine
+From: Daniel Walker <dwalker@mvista.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, johnstul@us.ibm.com,
+       Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <20070131124300.GG1847@elte.hu>
+References: <20070131033710.420168478@mvista.com>
+	 <20070131033810.319576375@mvista.com>  <20070131124300.GG1847@elte.hu>
+Content-Type: text/plain
+Date: Wed, 31 Jan 2007 09:02:35 -0800
+Message-Id: <1170262956.9781.117.camel@imap.mvista.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
-> Roland Dreier wrote:
->> And I seem to recall there's more SATA chipset documentation than Jeff
->> Garzik has time to implement support for.
+On Wed, 2007-01-31 at 13:43 +0100, Ingo Molnar wrote:
+> * Daniel Walker <dwalker@mvista.com> wrote:
 > 
-> I seriously doubt you can come up with even a single concrete example here.
+> > I've included this as another user of the clocksource interface. I 
+> > don't see a usage for this across all achitectures. So a fully generic 
+> > version isn't needed.
+> 
+> well, this implementation is buggy in at least two ways:
+> 
+> firstly, it allows a circular verification dependency in highres+dyntick 
+> mode between the jiffies and tsc clocksources.
 
-Not trying to slight Jeff here in any way, but I thought I'd point out
-one driver-less SATA chip that seems to have docs available.
+In the current implementation, it's only happens if the only clocks that
+exist are "tsc" and "jiffies" which makes verification impossible
+anyway .. It's unlikely, but it is possible , the fix is not that
+complex.
 
-When looking for a sata controller I came across several inexpensive
-ones based on an Initio chipset, and at first glance it seems that they
-have docs out there*: http://www.initio.com/products/sata.htm
+> secondly, verification is not done while the system is booting up:
 
-but no drivers yet.  Just in case anyone is interested :)
+Do you know that this is needed ? The current implementation
+(clocksource watchdog) doesn't fully settle until after
+device_initcall() .. So boot-up is about 99% complete ..
 
--Eric
+It's trivial to make my version do verification during most of
+device_initcall() ..
 
+Daniel
 
-*knowing next to nothing about SATA, I have no idea if these docs are
-sufficient.
