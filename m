@@ -1,75 +1,185 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933254AbXAaNYq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933198AbXAaNdz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933254AbXAaNYq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Jan 2007 08:24:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933253AbXAaNYq
+	id S933198AbXAaNdz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Jan 2007 08:33:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933208AbXAaNdz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Jan 2007 08:24:46 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:54434 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933251AbXAaNYo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Jan 2007 08:24:44 -0500
-Date: Wed, 31 Jan 2007 14:22:45 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Karsten Wiese <fzu@wemgehoertderstaat.de>
-Cc: Andrew Morton <akpm@osdl.org>, Maciej Rutecki <maciej.rutecki@gmail.com>,
-       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
-Subject: Re: 2.6.20-rc6-mm3
-Message-ID: <20070131132245.GA26066@elte.hu>
-References: <20070129204528.eb8d695e.akpm@osdl.org> <45BFC442.5000903@gmail.com> <20070130142714.9f8dd5da.akpm@osdl.org> <200701310155.05474.fzu@wemgehoertderstaat.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200701310155.05474.fzu@wemgehoertderstaat.de>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -4.3
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-4.3 required=5.9 tests=ALL_TRUSTED,BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-3.3 ALL_TRUSTED            Did not pass through any untrusted hosts
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Wed, 31 Jan 2007 08:33:55 -0500
+Received: from nic.NetDirect.CA ([216.16.235.2]:33485 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933198AbXAaNdy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Jan 2007 08:33:54 -0500
+X-Originating-Ip: 74.109.98.130
+Date: Wed, 31 Jan 2007 08:32:41 -0500 (EST)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@CPE00045a9c397f-CM001225dbafb6
+To: Linux kernel mailing list <linux-kernel@vger.kernel.org>
+cc: dhowells@redhat.com, rth@twiddle.net
+Subject: [PATCH] Centralize the selection for debugging semaphores.
+Message-ID: <Pine.LNX.4.64.0701310825500.4627@CPE00045a9c397f-CM001225dbafb6>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.723, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, TW_RW 0.08)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Karsten Wiese <fzu@wemgehoertderstaat.de> wrote:
+  Centralize the kernel config option for debugging semaphores and
+modify the macro for frv to use that config option instead.
 
-> Similar weirdness here on rc6-mm2 and rc6-rt*: resume from disk waits 
-> unduly long.
+Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
 
-i'm wondering whether the jiffies update fix from Thomas fixes this bug 
-for you.
+---
 
-If not then do you have a serial console enabled?
+  at the moment, two architectures have support for debugging
+semaphores:  alpha (with a local Kconfig.debug option), and frv (with
+a hard-coded "SEMAPHORE_DEBUG" macro).
 
-> Some waiting times from rc6-rt6 from memory:
-> 
-> Config		| HZ			| NO_HZ + HRESTIMERS
-> cmos clock unchanged	| 2s			| 6s
-> cmos clock += 10min	| 			| 2 minutes
-> cmos clock += 2 month	| 20s			| > 4minutes, test interrupted
+  it would seem to make more sense to simply have a universal kernel
+config option for debugging semaphores in lib/Kconfig.debug, and let
+any architecture work off of that.
 
-i've seen something like this on -rt (and incorrectly attributed it to 
--rt) when running on a system which has a serial port and which has a 
-kernel console on that serial port. What happens is that after resume 
-(and straight after console suspend) every serial character printed 
-takes /alot/ of time - and resume does print a number of kernel messages 
-to the console. I didnt get any further in debugging this though, but 
-disabling the serial console made the problem go away.
+  obviously, only two architectures would take advantage of it right
+now, but the "help" screen for the new config option mentions that,
+and it's trivial to add new architectures.
 
-a possibly related thing: the serial code is sensitive to jiffies 
-updates and timers, i saw that during early revisions of the dynticks 
-code - but the specifics escape me.
 
-the slowdown could also be something like the kernel somehow wrapping 
-around jiffies and thus doing /alot/ of jiffy ticks? Or it could be a 
-miscalculation in the amount of jiffies that need updating, resulting in 
-a similar number of loops in the jiffy update code.
+ arch/alpha/Kconfig.debug    |    8 --------
+ arch/frv/kernel/semaphore.c |    2 +-
+ include/asm-frv/semaphore.h |   14 ++++++--------
+ lib/Kconfig.debug           |   11 +++++++++++
+ 4 files changed, 18 insertions(+), 17 deletions(-)
 
-(i'll try to figure out this regression - but wanted to describe to you 
-the known things so far, maybe you'll figure it out faster than me.)
+diff --git a/arch/alpha/Kconfig.debug b/arch/alpha/Kconfig.debug
+index 36d0106..f45f28c 100644
+--- a/arch/alpha/Kconfig.debug
++++ b/arch/alpha/Kconfig.debug
+@@ -16,14 +16,6 @@ config DEBUG_RWLOCK
+ 	  too many attempts.  If you suspect a rwlock problem or a kernel
+ 	  hacker asks for this option then say Y.  Otherwise say N.
 
-	Ingo
+-config DEBUG_SEMAPHORE
+-	bool "Semaphore debugging"
+-	depends on DEBUG_KERNEL
+-	help
+-	  If you say Y here then semaphore processing will issue lots of
+-	  verbose debugging messages.  If you suspect a semaphore problem or a
+-	  kernel hacker asks for this option then say Y.  Otherwise say N.
+-
+ config ALPHA_LEGACY_START_ADDRESS
+ 	bool "Legacy kernel start address"
+ 	depends on ALPHA_GENERIC
+diff --git a/arch/frv/kernel/semaphore.c b/arch/frv/kernel/semaphore.c
+index f278cdf..8e182ce 100644
+--- a/arch/frv/kernel/semaphore.c
++++ b/arch/frv/kernel/semaphore.c
+@@ -19,7 +19,7 @@ struct sem_waiter {
+ 	struct task_struct	*task;
+ };
+
+-#if SEMAPHORE_DEBUG
++#ifdef CONFIG_DEBUG_SEMAPHORE
+ void semtrace(struct semaphore *sem, const char *str)
+ {
+ 	if (sem->debug)
+diff --git a/include/asm-frv/semaphore.h b/include/asm-frv/semaphore.h
+index 907c5c3..0958652 100644
+--- a/include/asm-frv/semaphore.h
++++ b/include/asm-frv/semaphore.h
+@@ -20,8 +20,6 @@
+ #include <linux/spinlock.h>
+ #include <linux/rwsem.h>
+
+-#define SEMAPHORE_DEBUG		0
+-
+ /*
+  * the semaphore definition
+  * - if counter is >0 then there are tokens available on the semaphore for down to collect
+@@ -32,12 +30,12 @@ struct semaphore {
+ 	unsigned		counter;
+ 	spinlock_t		wait_lock;
+ 	struct list_head	wait_list;
+-#if SEMAPHORE_DEBUG
++#ifdef CONFIG_DEBUG_SEMAPHORE
+ 	unsigned		__magic;
+ #endif
+ };
+
+-#if SEMAPHORE_DEBUG
++#ifdef CONFIG_DEBUG_SEMAPHORE
+ # define __SEM_DEBUG_INIT(name) , (long)&(name).__magic
+ #else
+ # define __SEM_DEBUG_INIT(name)
+@@ -76,7 +74,7 @@ static inline void down(struct semaphore *sem)
+ {
+ 	unsigned long flags;
+
+-#if SEMAPHORE_DEBUG
++#ifdef CONFIG_DEBUG_SEMAPHORE
+ 	CHECK_MAGIC(sem->__magic);
+ #endif
+
+@@ -95,7 +93,7 @@ static inline int down_interruptible(struct semaphore *sem)
+ 	unsigned long flags;
+ 	int ret = 0;
+
+-#if SEMAPHORE_DEBUG
++#ifdef CONFIG_DEBUG_SEMAPHORE
+ 	CHECK_MAGIC(sem->__magic);
+ #endif
+
+@@ -119,7 +117,7 @@ static inline int down_trylock(struct semaphore *sem)
+ 	unsigned long flags;
+ 	int success = 0;
+
+-#if SEMAPHORE_DEBUG
++#ifdef CONFIG_DEBUG_SEMAPHORE
+ 	CHECK_MAGIC(sem->__magic);
+ #endif
+
+@@ -136,7 +134,7 @@ static inline void up(struct semaphore *sem)
+ {
+ 	unsigned long flags;
+
+-#if SEMAPHORE_DEBUG
++#ifdef CONFIG_DEBUG_SEMAPHORE
+ 	CHECK_MAGIC(sem->__magic);
+ #endif
+
+diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
+index 5c26818..17c4524 100644
+--- a/lib/Kconfig.debug
++++ b/lib/Kconfig.debug
+@@ -181,6 +181,17 @@ config DEBUG_MUTEXES
+ 	 This feature allows mutex semantics violations to be detected and
+ 	 reported.
+
++config DEBUG_SEMAPHORE
++	bool "Semaphore debugging"
++	depends on DEBUG_KERNEL
++	default n
++	help
++	  If you say Y here then semaphore processing will issue lots of
++	  verbose debugging messages.  If you suspect a semaphore problem or a
++	  kernel hacker asks for this option then say Y.  Otherwise say N.
++
++	  At the moment, this is implemented only by alpha and frv.
++
+ config DEBUG_RWSEMS
+ 	bool "RW-sem debugging: basic checks"
+ 	depends on DEBUG_KERNEL
+
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://www.fsdev.dreamhosters.com/wiki/index.php?title=Main_Page
+========================================================================
