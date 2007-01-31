@@ -1,50 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030298AbXAaRJY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030311AbXAaRLT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030298AbXAaRJY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Jan 2007 12:09:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030307AbXAaRJY
+	id S1030311AbXAaRLT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Jan 2007 12:11:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030309AbXAaRLT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Jan 2007 12:09:24 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:59949 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030298AbXAaRJX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Jan 2007 12:09:23 -0500
-Message-ID: <45C0CD52.3080908@sandeen.net>
-Date: Wed, 31 Jan 2007 11:09:38 -0600
-From: Eric Sandeen <sandeen@sandeen.net>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
-MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-CC: Roland Dreier <rdreier@cisco.com>, Greg KH <greg@kroah.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Free Linux Driver Development!
-References: <20070130012904.GA9617@kroah.com> <ada8xfks90x.fsf@cisco.com>	<20070130191020.GF20642@kroah.com> <adaodogqpmx.fsf@cisco.com> <45BFA087.6020905@garzik.org> <45C0CBF7.9000206@sandeen.net> <45C0CCE3.6030008@garzik.org>
-In-Reply-To: <45C0CCE3.6030008@garzik.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 31 Jan 2007 12:11:19 -0500
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:52755 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030307AbXAaRLT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Jan 2007 12:11:19 -0500
+From: "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
+To: linux-kernel@vger.kernel.org
+Cc: torvalds@osdl.org, ak@suse.de, "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
+Subject: [PATCH] x86_64: Fix preprocessor condition
+Date: Wed, 31 Jan 2007 12:11:08 -0500
+Message-Id: <11702634681921-git-send-email-jsipek@cs.sunysb.edu>
+X-Mailer: git-send-email 1.5.0.rc1.g5355
+In-Reply-To: <Pine.LNX.4.64.0701302019530.11095@woody.linux-foundation.org>
+References: <Pine.LNX.4.64.0701302019530.11095@woody.linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
-> Eric Sandeen wrote:
->> Jeff Garzik wrote:
->>> Roland Dreier wrote:
->>>> And I seem to recall there's more SATA chipset documentation than Jeff
->>>> Garzik has time to implement support for.
->>> I seriously doubt you can come up with even a single concrete example here.
->> Not trying to slight Jeff here in any way, but I thought I'd point out
->> one driver-less SATA chip that seems to have docs available.
->>
->> When looking for a sata controller I came across several inexpensive
->> ones based on an Initio chipset, and at first glance it seems that they
->> have docs out there*: http://www.initio.com/products/sata.htm
->>
->> but no drivers yet.  Just in case anyone is interested :)
-> 
-> The driver is in libata-dev.git#upstream and queued for 2.6.21.
-> 
-> 	Jeff
+Signed-off-by: Josef 'Jeff' Sipek <jsipek@cs.sunysb.edu>
+---
+ include/asm-x86_64/io.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Woo!  that was fast.  Ok I stand corrected. :)
+diff --git a/include/asm-x86_64/io.h b/include/asm-x86_64/io.h
+index 6ee9fad..7d0b568 100644
+--- a/include/asm-x86_64/io.h
++++ b/include/asm-x86_64/io.h
+@@ -100,7 +100,7 @@ __OUTS(l)
+ 
+ #define IO_SPACE_LIMIT 0xffff
+ 
+-#if defined(__KERNEL__) && __x86_64__
++#if defined(__KERNEL__) && defined(__x86_64__)
+ 
+ #include <linux/vmalloc.h>
+ 
+-- 
+1.5.0.rc1.g5355
 
--Eric
