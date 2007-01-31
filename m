@@ -1,41 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933269AbXAaRwv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933250AbXAaRyo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933269AbXAaRwv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Jan 2007 12:52:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933253AbXAaRwv
+	id S933250AbXAaRyo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Jan 2007 12:54:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933276AbXAaRyn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Jan 2007 12:52:51 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:59177 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933269AbXAaRwt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Jan 2007 12:52:49 -0500
-Message-ID: <45C0D765.4010709@garzik.org>
-Date: Wed, 31 Jan 2007 12:52:37 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Andrew Morton <akpm@osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.20-rc6 - sky2 resume breakage
-References: <20070129154518.40b0b3d3@freekitty> <Pine.LNX.4.64.0701291609180.3611@woody.linux-foundation.org> <20070129161626.33277eb1@freekitty> <Pine.LNX.4.64.0701291623360.3611@woody.linux-foundation.org> <20070130065457.GA23390@elte.hu> <45BEF61F.7000400@garzik.org> <20070130075325.GA591@elte.hu> <45BEFBB2.8090402@garzik.org> <20070130080830.GC2840@elte.hu> <45C0B570.4000000@garzik.org> <20070131173832.GA13653@elte.hu>
-In-Reply-To: <20070131173832.GA13653@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 31 Jan 2007 12:54:43 -0500
+Received: from www.osadl.org ([213.239.205.134]:39502 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S933250AbXAaRyn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Jan 2007 12:54:43 -0500
+Subject: Re: [PATCH 22/23] clocksource: new clock lookup method
+From: Thomas Gleixner <tglx@linutronix.de>
+Reply-To: tglx@linutronix.de
+To: Daniel Walker <dwalker@mvista.com>
+Cc: Ingo Molnar <mingo@elte.hu>, akpm@osdl.org, linux-kernel@vger.kernel.org,
+       johnstul@us.ibm.com
+In-Reply-To: <1170265169.9781.145.camel@imap.mvista.com>
+References: <20070131033710.420168478@mvista.com>
+	 <20070131033809.923199123@mvista.com> <20070131122215.GE1847@elte.hu>
+	 <1170261439.9781.96.camel@imap.mvista.com>  <20070131164918.GA4468@elte.hu>
+	 <1170265169.9781.145.camel@imap.mvista.com>
+Content-Type: text/plain
+Date: Wed, 31 Jan 2007 18:55:31 +0100
+Message-Id: <1170266132.29240.196.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.7 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
->  19:    2413090          0   IO-APIC-fasteoi   uhci_hcd:usb2, libata
+On Wed, 2007-01-31 at 09:39 -0800, Daniel Walker wrote:
+> > please read my reply above! To repeat: such flags tend to get forgotten, 
+> > resulting in a less safe default behavior. Clock hardware and thus 
+> > clocksources are fundamentally fragile so we want to default to the 
+> > safest behavior. I.e. if the IS_CONTINOUS flag is 'forgotten', the clock 
+> > wont be usable as a clock verification base for example. The flag has to 
+> > be affirmatively set to mark the clocksource continous.
+> 
+> I don't see this as an issue .. Your assuming that not continuous clocks
+> will be prevalent which they aren't ..
 
-Yep, that's a good candidate for such experiments :)
+And how does this change Ingo's statement ? Such beasts exist and having
+them default to the safe side is good. 
 
-	Jeff
+Also I really do not see the "huge burden" for a clocksource coder to
+add this flag. If he forgets it, then he can not use highres / dynticks
+and nothing breaks.
+
+	tglx
+
+
+
 
 
 
