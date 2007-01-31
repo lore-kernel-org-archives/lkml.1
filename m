@@ -1,60 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030480AbXAaSJ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030488AbXAaSN0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030480AbXAaSJ1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Jan 2007 13:09:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030487AbXAaSJ1
+	id S1030488AbXAaSN0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Jan 2007 13:13:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030485AbXAaSN0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Jan 2007 13:09:27 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.158]:51102 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030480AbXAaSJZ (ORCPT
+	Wed, 31 Jan 2007 13:13:26 -0500
+Received: from accolon.hansenpartnership.com ([64.109.89.108]:45365 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1030481AbXAaSNZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Jan 2007 13:09:25 -0500
-Subject: Re: [PATCH 22/23] clocksource: new clock lookup method
-From: Daniel Walker <dwalker@mvista.com>
-To: tglx@linutronix.de
-Cc: Ingo Molnar <mingo@elte.hu>, akpm@osdl.org, linux-kernel@vger.kernel.org,
-       johnstul@us.ibm.com
-In-Reply-To: <1170266132.29240.196.camel@localhost.localdomain>
-References: <20070131033710.420168478@mvista.com>
-	 <20070131033809.923199123@mvista.com> <20070131122215.GE1847@elte.hu>
-	 <1170261439.9781.96.camel@imap.mvista.com>  <20070131164918.GA4468@elte.hu>
-	 <1170265169.9781.145.camel@imap.mvista.com>
-	 <1170266132.29240.196.camel@localhost.localdomain>
+	Wed, 31 Jan 2007 13:13:25 -0500
+Subject: Re: [PATCH] scsi_lib.c: continue after MEDIUM_ERROR
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Mark Lord <liml@rtr.ca>
+Cc: Alan <alan@lxorguk.ukuu.org.uk>, Ric Wheeler <ric@emc.com>,
+       "Eric D. Mudama" <edmudama@gmail.com>, linux-kernel@vger.kernel.org,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>, dougg@torque.net
+In-Reply-To: <45C0D8A1.2030506@rtr.ca>
+References: <200701301947.08478.liml@rtr.ca>
+	 <1170206199.10890.13.camel@mulgrave.il.steeleye.com>
+	 <311601c90701301725n53d25a74g652b7ca3bfc64c56@mail.gmail.com>
+	 <45BFF3D6.9050605@rtr.ca>	<45C00AEE.1090708@emc.com>
+	 <45C0B0DC.8030501@rtr.ca> <20070131152301.19a8a5ac@localhost.localdomain>
+	 <45C0D8A1.2030506@rtr.ca>
 Content-Type: text/plain
-Date: Wed, 31 Jan 2007 10:07:54 -0800
-Message-Id: <1170266874.9781.150.camel@imap.mvista.com>
+Date: Wed, 31 Jan 2007 12:13:18 -0600
+Message-Id: <1170267198.3402.58.camel@mulgrave.il.steeleye.com>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-01-31 at 18:55 +0100, Thomas Gleixner wrote:
-> On Wed, 2007-01-31 at 09:39 -0800, Daniel Walker wrote:
-> > > please read my reply above! To repeat: such flags tend to get forgotten, 
-> > > resulting in a less safe default behavior. Clock hardware and thus 
-> > > clocksources are fundamentally fragile so we want to default to the 
-> > > safest behavior. I.e. if the IS_CONTINOUS flag is 'forgotten', the clock 
-> > > wont be usable as a clock verification base for example. The flag has to 
-> > > be affirmatively set to mark the clocksource continous.
+On Wed, 2007-01-31 at 12:57 -0500, Mark Lord wrote:
+> Alan wrote:
+> >> When libata reports a MEDIUM_ERROR to us, we *know* it's non-recoverable,
+> >> as the drive itself has already done internal retries (libata uses the
+> >> "with retry" ATA opcodes for this).
 > > 
-> > I don't see this as an issue .. Your assuming that not continuous clocks
-> > will be prevalent which they aren't ..
+> > This depends on the firmware. Some of the "raid firmware" drives don't
+> > appear to do retries in firmware.
 > 
-> And how does this change Ingo's statement ? Such beasts exist and having
-> them default to the safe side is good. 
-> 
-> Also I really do not see the "huge burden" for a clocksource coder to
-> add this flag. If he forgets it, then he can not use highres / dynticks
-> and nothing breaks.
+> One way to tell if this is true, is simply to time how long
+> the failed operation takes.  If the drive truly does not do retries,
+> then the media error should be reported more or less instantly
+> (assuming drive was already spun up).
 
-We're not talking about a rare system runtime configuration . If that
-were the case I would agree safe is better..
+Well, the simpler way (and one we have a hope of implementing) is to
+examine the ASC/ASCQ codes to see if the error is genuinely unretryable.
 
-I'm assuming that programmers will test their code, and others will
-review the code .. Catering to any other situation doesn't make sense to
-me. On top of that those clocks are rare, and not desirable ..
+I seem to have dropped the ball on this one in that the scsi_error.c
+pieces of this patch
 
-Daniel
+http://marc.theaimsgroup.com/?l=linux-scsi&m=116485834119885
+
+I thought I'd applied.  Apparently I didn't, so I'll go back and put
+them in.
+
+James
+
 
