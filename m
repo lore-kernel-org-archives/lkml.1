@@ -1,46 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932206AbXAaB3c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932157AbXAaBbX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932206AbXAaB3c (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 20:29:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932248AbXAaB3c
+	id S932157AbXAaBbX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 20:31:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932248AbXAaBbX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 20:29:32 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:32830 "EHLO smtp.osdl.org"
+	Tue, 30 Jan 2007 20:31:23 -0500
+Received: from mail.suse.de ([195.135.220.2]:52924 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932206AbXAaB3b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 20:29:31 -0500
-Date: Tue, 30 Jan 2007 17:28:38 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Jeff Layton <jlayton@redhat.com>
-cc: Bodo Eggert <7eggert@gmx.de>, akpm@osdl.org, dev@sw.ru,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       torvalds@osdl.org
-Subject: Re: [PATCH] pipefs unique inode numbers
-In-Reply-To: <45BFEE85.30203@redhat.com>
-Message-ID: <Pine.LNX.4.64.0701301726280.3611@woody.linux-foundation.org>
-References: <Pine.LNX.4.58.0701302314210.2203@be1.lrz> <45BFEE85.30203@redhat.com>
+	id S932157AbXAaBbW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jan 2007 20:31:22 -0500
+Date: Tue, 30 Jan 2007 17:30:24 -0800
+From: Greg KH <greg@kroah.com>
+To: Roland Dreier <rdreier@cisco.com>
+Cc: Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org
+Subject: Re: Free Linux Driver Development!
+Message-ID: <20070131013024.GC31759@kroah.com>
+References: <20070130191020.GF20642@kroah.com> <adaodogqpmx.fsf@cisco.com> <20070130195445.GE22022@kroah.com> <adazm80p4qp.fsf@cisco.com> <45BFC7F2.7090209@garzik.org> <adaac00p1rq.fsf@cisco.com> <45BFD03F.4020003@garzik.org> <adaps8wnlfl.fsf@cisco.com> <45BFDFE7.3000101@garzik.org> <adaejpcnguq.fsf@cisco.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <adaejpcnguq.fsf@cisco.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 30 Jan 2007, Jeff Layton wrote:
+On Tue, Jan 30, 2007 at 05:07:57PM -0800, Roland Dreier wrote:
+>  > > To me, it's clear that historically the community hasn't delivered on
+>  > 
+>  > How is that clear?  As noted in the specific examples I provided, that
+>  > is how a large number of popular drivers and subsystems have been
+>  > developed.
 > 
-> Also, that patch would break many 32-bit programs not compiled with large
-> offsets when run in compatibility mode on a 64-bit kernel. If they were to
-> do a stat on this inode, it would likely generate an EOVERFLOW error since
-> the pointer address would probably not fit in a 32 bit field.
-> 
-> That problem was the whole impetus for this set of patches.
+> Yes, I agree that it often works.  What I'm arguing is that it doesn't
+> ALWAYS work.  And Greg is promising (in effect, on my behalf) that "If
+> you give us specs, then we WILL have drivers."  As I've said several
+> times, I'm all for encouraging vendors to open specs.  The only thing
+> I don't like is marketing open specs by making promises that we may
+> not be able to keep.
 
-Well, we have that problem with the slowly incrementing "last_ino" too.
+I really think we can keep these promises.  A number of us have been
+doing just that for many years now, and I don't see any reason why we
+would stop doing that now.
 
-Should we make "last_ino" be "static unsigned int" instead of "long"?
+I would _love_ to be inundated with specs, so many that we run out of
+developers to work on the devices.  But I really don't see that
+happening any time soon, as there's not that many devices that Linux
+doesn't already support.
 
-Does anybody actually even use the old stat() with 32-bit interfaces? We 
-warn for it, and we've done so for a long time.. I dont' remember people 
-even complaining about the warning, so..
+And if such a situation does happen, perhaps I will be able to convince
+some distro companies to pony up the development man-power to help us
+from going back on our promise...  I know quite a few companies would
+love to help out just a "problem" as it is in their best interest to
+have Linux support as many devices as possible.
 
-		Linus
+So please, don't be so down on the offer, you don't have to do any work
+if you don't want to :)
+
+thanks,
+
+greg k-h
