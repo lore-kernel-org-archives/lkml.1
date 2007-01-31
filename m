@@ -1,76 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932436AbXAaCk3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932411AbXAaCqk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932436AbXAaCk3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 21:40:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932438AbXAaCk3
+	id S932411AbXAaCqk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 21:46:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932443AbXAaCqk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 21:40:29 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:34337 "EHLO smtp.osdl.org"
+	Tue, 30 Jan 2007 21:46:40 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:34481 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932436AbXAaCk2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 21:40:28 -0500
-Date: Tue, 30 Jan 2007 18:37:06 -0800
-From: Andrew Morton <akpm@osdl.org>
-To: Jean Delvare <jdelvare@suse.de>
-Cc: Sergey Vlasov <vsu@altlinux.ru>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Daniel Drake <dsd@reactivated.net>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@stusta.de>
-Subject: Re: [PATCH] VIA IRQ quirk breakage fix
-Message-Id: <20070130183706.f0d93103.akpm@osdl.org>
-In-Reply-To: <200701301325.58843.jdelvare@suse.de>
-References: <45B6A94A.3010006@yahoo.com.au>
-	<200701300854.06083.jdelvare@suse.de>
-	<20070130144701.e793c222.vsu@altlinux.ru>
-	<200701301325.58843.jdelvare@suse.de>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S932411AbXAaCqj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jan 2007 21:46:39 -0500
+Date: Tue, 30 Jan 2007 18:46:19 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+cc: Zach Brown <zach.brown@oracle.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-aio@kvack.org, Suparna Bhattacharya <suparna@in.ibm.com>,
+       Benjamin LaHaise <bcrl@kvack.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH 0 of 4] Generic AIO by scheduling stacks
+In-Reply-To: <1170209044.26655.364.camel@localhost.localdomain>
+Message-ID: <Pine.LNX.4.64.0701301838110.3611@woody.linux-foundation.org>
+References: <patchbomb.1170193181@tetsuo.zabbo.net>
+ <1170209044.26655.364.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 30 Jan 2007 13:25:58 +0100
-Jean Delvare <jdelvare@suse.de> wrote:
-
-> So here comes the third
-> (and hopefully last) iteration of the patch:
-
-argh, it looks like I sent v2 to Linus.
-
-Here's the missing bit.  Please confirm that we want it?
 
 
-From: Jean Delvare <jdelvare@suse.de>
+On Wed, 31 Jan 2007, Benjamin Herrenschmidt wrote:
 
-Add special handling for the VT82C686.
+> > - We would now have some measure of task_struct concurrency.  Read that twice,
+> > it's scary.  As two fibrils execute and block in turn they'll each be
+> > referencing current->.  It means that we need to audit task_struct to make sure
+> > that paths can handle racing as its scheduled away.  The current implementation
+> > *does not* let preemption trigger a fibril switch.  So one only has to worry
+> > about racing with voluntary scheduling of the fibril paths.  This can mean
+> > moving some task_struct members under an accessor that hides them in a struct
+> > in task_struct so they're switched along with the fibril.  I think this is a
+> > manageable burden.
+> 
+> That's the one scaring me in fact ... Maybe it will end up being an easy
+> one but I don't feel too comfortable...
 
-Signed-off-by: Jean Delvare <jdelvare@suse.de>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>
-Signed-off-by: Andrew Morton <akpm@osdl.org>
----
+We actually have almost zero "interesting" data in the task-struct.
 
- drivers/pci/quirks.c |    8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
+All the real meat of a task has long since been split up into structures 
+that can be shared for threading anyway (ie signal/files/mm/etc).
 
-diff -puN drivers/pci/quirks.c~via-quirk-fix-update drivers/pci/quirks.c
---- a/drivers/pci/quirks.c~via-quirk-fix-update
-+++ a/drivers/pci/quirks.c
-@@ -661,9 +661,11 @@ static void quirk_via_bridge(struct pci_
- 	/* See what bridge we have and find the device ranges */
- 	switch (dev->device) {
- 	case PCI_DEVICE_ID_VIA_82C686:
--		/* 82C686 is special */
--		via_vlink_dev_lo = 7;
--		via_vlink_dev_hi = 7;
-+		/* The VT82C686 is special, it attaches to PCI and can have
-+		   any device number. All its subdevices are functions of
-+		   that single device. */
-+		via_vlink_dev_lo = PCI_SLOT(dev->devfn);
-+		via_vlink_dev_hi = PCI_SLOT(dev->devfn);
- 		break;
- 	case PCI_DEVICE_ID_VIA_8237:
- 	case PCI_DEVICE_ID_VIA_8237A:
-_
+Which is why I'm personally very comfy with just re-using task_struct 
+as-is.
 
+NOTE! This is with the understanding that we *never* do any preemption. 
+The whole point of the microthreading as far as I'm concerned is exactly 
+that it is cooperative. It's not preemptive, and it's emphatically *not* 
+concurrent (ie you'd never have two fibrils running at the same time on 
+separate CPU's).
+
+If you want preemptive of concurrent CPU usage, you use separate threads. 
+The point of AIO scheduling is very much inherent in its name: it's for 
+filling up CPU's when there's IO.
+
+So the theory (and largely practice) is that you want to use real threads 
+to fill your CPU's, but then *within* those threads you use AIO to make 
+sure that each thread actually uses the CPU efficiently and doesn't just 
+block with nothing to do.
+
+So with the understanding that this is neither CPU-concurrent nor 
+preemptive (*within* a fibril group - obviously the thread itself gets 
+both preempted and concurrently run with other threads), I don't worry at 
+all about sharing "struct task_struct".
+
+Does that mean that we might not have some cases where we'd need to make 
+sure we do things differently? Of course not. Something migt show up. But 
+this actually makes it very clear what the difference between "struct 
+thread_struct" and "struct task_struct" are. One is shared between 
+fibrils, the other isn't.
+
+			Linus
