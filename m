@@ -1,70 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752087AbXAaBuu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932077AbXAaBzN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752087AbXAaBuu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 20:50:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752086AbXAaBuu
+	id S932077AbXAaBzN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 20:55:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932080AbXAaBzM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 20:50:50 -0500
-Received: from mx02.qsc.de ([213.148.130.14]:57586 "EHLO mx02.qsc.de"
+	Tue, 30 Jan 2007 20:55:12 -0500
+Received: from paris.bmts.com ([216.183.128.227]:38124 "EHLO paris.bmts.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752087AbXAaBut convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 20:50:49 -0500
-X-Greylist: delayed 1524 seconds by postgrey-1.27 at vger.kernel.org; Tue, 30 Jan 2007 20:50:49 EST
-Date: Wed, 31 Jan 2007 12:25:33 +1100
-From: Christian Krafft <parabelboi@bopserverein.de>
-To: Carl Love <cel@us.ibm.com>
-Cc: maynardj@us.ibm.com, linuxppc-dev@ozlabs.org,
-       oprofile-list@lists.sourceforge.net, cbe-oss-dev@ozlabs.org,
-       Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org
-Subject: Re: [Cbe-oss-dev] [RFC, PATCH 4/4] Add support to OProfile for
- profiling Cell BE SPUs -- update
-Message-ID: <20070131122533.5ef22907@localhost>
-In-Reply-To: <1170199869.5235.38.camel@dyn9047021078.beaverton.ibm.com>
-References: <45BE4ED0.5030808@us.ibm.com>
-	<45BE4FA4.9020105@us.ibm.com>
-	<200701300839.05144.arnd@arndb.de>
-	<45BFBB78.7060907@us.ibm.com>
-	<1170199869.5235.38.camel@dyn9047021078.beaverton.ibm.com>
-X-Mailer: Claws Mail 2.7.2 (GTK+ 2.10.6; i686-pc-linux-gnu)
+	id S932077AbXAaBzL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jan 2007 20:55:11 -0500
+Date: Tue, 30 Jan 2007 20:48:39 -0500
+From: Mike Houston <mikeserv@bmts.com>
+To: Adrian Bunk <bunk@stusta.de>
+Cc: Chuck Ebbert <cebbert@redhat.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: How many people are using 2.6.16?
+Message-Id: <20070130204839.4124e9f3.mikeserv@bmts.com>
+In-Reply-To: <20070130235215.GN3754@stusta.de>
+References: <45BE5948.6060403@redhat.com>
+	<20070129160448.65fc63f3.mikeserv@bmts.com>
+	<20070130235215.GN3754@stusta.de>
+X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-brucetelecom.com-MailScanner-Information: Please contact Bruce Telecom 519.368.2000 for more information
+X-brucetelecom.com-MailScanner: Found to be clean
+X-brucetelecom.com-MailScanner-From: mikeserv@bmts.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 30 Jan 2007 15:31:09 -0800
-Carl Love <cel@us.ibm.com> wrote:
+On Wed, 31 Jan 2007 00:52:15 +0100
+Adrian Bunk <bunk@stusta.de> wrote:
 
-> An LFSR sequence is similar to a pseudo random number sequence. For a 24
-> bit LFSR sequence each number between 0 and 2^24 will occur once in the
-> sequence but not in a normal counting order.  The hardware uses the LFSR
-> sequence to count to since it is much simpler to implement in hardware
-> then a normal counter.  Unfortunately, the only way we know how to
-> figure out what the LFSR value that corresponds to the number in the
-> sequence that is N before the last value (0xFFFFFF) is to calculate the
-> previous value N times.  It is like trying to ask what is the pseudo
-> random number that is N before this pseudo random number?
+> On Mon, Jan 29, 2007 at 04:04:48PM -0500, Mike Houston wrote:
 
-That should be no problem. 
-You can just revers your algorithm and let it run x times instead of 0xFFFFFF-x.
-
+> > I've been using Adrian's 2.6.16 kernel releases on two internet
+> > servers that I look after remotely. One of them is RHEL 4 the
+> > other is Fedora Core 2 (Ensim Webppliance). I'm especially wary
+> > of breaking RHEL 4, and the 2.6.16.xx kernels work perfectly
+> > except for the hald not starting (but that doesn't matter on that
+> > server).
+> >...
 > 
-> I will add a short comment to the code that will summarize the above
-> paragraph.
-> [snip]
+> I haven't heard of this before, and in a quick test hald from
+> HAL 0.5.8.1 starts fine here.
 > 
-> _______________________________________________
-> cbe-oss-dev mailing list
-> cbe-oss-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/cbe-oss-dev
+> Are there any error messages?
+>
 
+I think I recall hearing about hald breaking in rhel4 with modern
+kernels here on this list, some time before I built a custom kernel
+for that rig (Athlon 64 3200+ on Asus A8V w' VIA K8T800Pro chipset
+running 32 bit RHEL 4 ES). I was expecting it to happen. I think at
+the time, the current kernel was 2.6.15.2 or thereabouts.
 
--- 
-Mit freundlichen Grüssen,
-kind regards,
+However, I haven't upgraded any software that's in the distro packages
+beyond what up2date provides, so:
 
-Christian Krafft
-IBM Systems & Technology Group, 
-Linux Kernel Development
-IT Specialist
+$ rpm -qa | grep hal
+hal-0.4.2-4.EL4
+
+So sorry about that, I didn't mean to take up any of your time. I
+only mentioned it incidentally and wasn't expecting it to be
+addressed. (I was more happily stating that nothing of significance
+to me is broken in the distro). If that was something I needed, I
+would have looked into upgrading it.
+
+Mike Houston
