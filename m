@@ -1,54 +1,401 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965222AbXAaPRD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965284AbXAaPSG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965222AbXAaPRD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Jan 2007 10:17:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965239AbXAaPRD
+	id S965284AbXAaPSG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Jan 2007 10:18:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965273AbXAaPSG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Jan 2007 10:17:03 -0500
-Received: from e32.co.us.ibm.com ([32.97.110.150]:60407 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965222AbXAaPRB (ORCPT
+	Wed, 31 Jan 2007 10:18:06 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:56068 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965284AbXAaPSE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Jan 2007 10:17:01 -0500
-Date: Wed, 31 Jan 2007 20:46:47 +0530
-From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
-To: "Chris Friesen" <cfriesen@nortel.com>
-Cc: riel@redhat.com, Ingo Molnar <mingo@elte.hu>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Andrew Morton <akpm@osdl.org>,
+	Wed, 31 Jan 2007 10:18:04 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:date:from:x-x-sender:to:cc:subject:message-id:
+	mime-version:content-type;
+	b=PuraJXC9DQpqDwxCvfHUqZjsqTbkPYzFa6dlo0wW0oQTfL63D1gkOk3is6J8B6DJ0
+	shW4KDD+2EWmvYeOaZwgQ==
+Date: Wed, 31 Jan 2007 07:17:51 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Andrew Morton <akpm@osdl.org>
+cc: Andi Kleen <ak@suse.de>, Rohit Seth <rohitseth@google.com>,
        linux-kernel@vger.kernel.org
-Subject: Re: [RFC] Fair-user scheduler
-Message-ID: <20070131151647.GA23004@in.ibm.com>
-Reply-To: vatsa@in.ibm.com
-References: <20070126060142.GA2487@in.ibm.com> <45BA4B57.1070604@nortel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <45BA4B57.1070604@nortel.com>
-User-Agent: Mutt/1.5.11
+Subject: [patch -mm 1/7] x86_64: configurable fake numa node sizes
+Message-ID: <Pine.LNX.4.64.0701302223230.23653@chino.kir.corp.google.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 26, 2007 at 12:41:27PM -0600, Chris Friesen wrote:
-> As Kirill brought up, why does it take so much more time?  Are you 
-> thrashing the cache?
+Extends the numa=fake x86_64 command-line option to allow for configurable
+node sizes.  These nodes can be used in conjunction with cpusets for
+coarse memory resource management.
 
-Yes, the default 1-sec control window I had was causing lot of
-thrashing. See http://lkml.org/lkml/2007/1/31/142
+The old command-line option is still supported:
+  numa=fake=32	gives 32 fake NUMA nodes, ignoring the NUMA setup of the
+		actual machine.
 
-> Presumably this would be made generic, as in per-"group" rather than per 
-> user?
+But now you may configure your system for the node sizes of your choice:
+  numa=fake=2*512,1024,2*256
+		gives two 512M nodes, one 1024M node, two 256M nodes, and
+		the rest of system memory to a sixth node.
 
-Ideally yes! But I am trying to apply the solution to an existing problem
-and later extend for other needs as well.
+The existing hash function is maintained to support the various node sizes
+that are possible with this implementation.
 
-> >	- Fairsched aware SMP load balance NOT addressed (yet)
-> 
-> This is kind of important, no?
+Each node of the same size receives roughly the same amount of available
+pages, regardless of any reserved memory with its address range.  The
+total available pages on the system is calculated and divided by the
+number of equal nodes to allocate.  These nodes are then dynamically
+allocated and their borders extended until such time as their number of
+available pages reaches the required size.
 
-Yea again! I have again avoided it to keep the patch simple at first.
-Based on interest/response, I can address this later.
+Configurable node sizes are recommended when used in conjunction with
+cpusets for memory control because it eliminates the overhead associated
+with scanning the zonelists of many smaller full nodes on page_alloc().
 
+Cc: Andi Kleen <ak@suse.de>
+Signed-off-by: David Rientjes <rientjes@google.com>
+---
+ Documentation/x86_64/boot-options.txt |    8 +-
+ arch/x86_64/mm/numa.c                 |  255 +++++++++++++++++++--------------
+ include/asm-x86_64/mmzone.h           |    2 +-
+ 3 files changed, 155 insertions(+), 110 deletions(-)
 
--- 
-Regards,
-vatsa
+diff --git a/Documentation/x86_64/boot-options.txt b/Documentation/x86_64/boot-options.txt
+index 625a21d..87f4279 100644
+--- a/Documentation/x86_64/boot-options.txt
++++ b/Documentation/x86_64/boot-options.txt
+@@ -149,7 +149,13 @@ NUMA
+ 
+   numa=noacpi   Don't parse the SRAT table for NUMA setup
+ 
+-  numa=fake=X   Fake X nodes and ignore NUMA setup of the actual machine.
++  numa=fake=CMDLINE
++		If a number, fakes CMDLINE nodes and ignores NUMA setup of the
++		actual machine.  Otherwise, system memory is configured
++		depending on the sizes and coefficients listed.  For example:
++			numa=fake=2*512,1024,4*256
++		gives two 512M nodes, a 1024M node, and four 256M nodes.  The
++		remaining system RAM is allocated to an additional node.
+ 
+   numa=hotadd=percent
+ 		Only allow hotadd memory to preallocate page structures upto
+diff --git a/arch/x86_64/mm/numa.c b/arch/x86_64/mm/numa.c
+index 9ff3141..a5bda07 100644
+--- a/arch/x86_64/mm/numa.c
++++ b/arch/x86_64/mm/numa.c
+@@ -276,125 +276,166 @@ void __init numa_init_array(void)
+ 
+ #ifdef CONFIG_NUMA_EMU
+ /* Numa emulation */
+-int numa_fake __initdata = 0;
++#define E820_ADDR_HOLE_SIZE(start, end)					\
++	(e820_hole_size((start) >> PAGE_SHIFT, (end) >> PAGE_SHIFT) <<	\
++	PAGE_SHIFT)
++char *cmdline __initdata;
+ 
+ /*
+- * This function is used to find out if the start and end correspond to
+- * different zones.
++ * Setups up nid to range from addr to addr + size.  If the end boundary is
++ * greater than max_addr, then max_addr is used instead.  The return value is 0
++ * if there is additional memory left for allocation past addr and -1 otherwise.
++ * addr is adjusted to be at the end of the node.
+  */
+-int zone_cross_over(unsigned long start, unsigned long end)
++static int __init setup_node_range(int nid, struct bootnode *nodes, u64 *addr,
++				   u64 size, u64 max_addr)
+ {
+-	if ((start < (MAX_DMA32_PFN << PAGE_SHIFT)) &&
+-			(end >= (MAX_DMA32_PFN << PAGE_SHIFT)))
+-		return 1;
+-	return 0;
++	int ret = 0;
++	nodes[nid].start = *addr;
++	*addr += size;
++	if (*addr >= max_addr) {
++		*addr = max_addr;
++		ret = -1;
++	}
++	nodes[nid].end = *addr;
++	node_set_online(nid);
++	printk(KERN_INFO "Faking node %d at %016Lx-%016Lx (%LuMB)\n", nid,
++	       nodes[nid].start, nodes[nid].end,
++	       (nodes[nid].end - nodes[nid].start) >> 20);
++	return ret;
+ }
+ 
+-static int __init numa_emulation(unsigned long start_pfn, unsigned long end_pfn)
++/*
++ * Splits num_nodes nodes up equally starting at node_start.  The return value
++ * is the number of nodes split up and addr is adjusted to be at the end of the
++ * last node allocated.
++ */
++static int __init split_nodes_equally(struct bootnode *nodes, u64 *addr,
++				      u64 max_addr, int node_start,
++				      int num_nodes)
+ {
+- 	int i, big;
+- 	struct bootnode nodes[MAX_NUMNODES];
+- 	unsigned long sz, old_sz;
+-	unsigned long hole_size;
+-	unsigned long start, end;
+-	unsigned long max_addr = (end_pfn << PAGE_SHIFT);
+-
+-	start = (start_pfn << PAGE_SHIFT);
+-	hole_size = e820_hole_size(start, max_addr);
+-	sz = (max_addr - start - hole_size) / numa_fake;
+-
+- 	/* Kludge needed for the hash function */
+-
+-	old_sz = sz;
+-	/*
+-	 * Round down to the nearest FAKE_NODE_MIN_SIZE.
+-	 */
+-	sz &= FAKE_NODE_MIN_HASH_MASK;
++	unsigned int big;
++	u64 size;
++	int i;
+ 
++	if (num_nodes <= 0)
++		return -1;
++	if (num_nodes > MAX_NUMNODES)
++		num_nodes = MAX_NUMNODES;
++	size = (max_addr - *addr - E820_ADDR_HOLE_SIZE(*addr, max_addr)) /
++	       num_nodes;
+ 	/*
+-	 * We ensure that each node is at least 64MB big.  Smaller than this
+-	 * size can cause VM hiccups.
++	 * Calculate the number of big nodes that can be allocated as a result
++	 * of consolidating the leftovers.
+ 	 */
+-	if (sz == 0) {
+-		printk(KERN_INFO "Not enough memory for %d nodes.  Reducing "
+-				"the number of nodes\n", numa_fake);
+-		numa_fake = (max_addr - start - hole_size) / FAKE_NODE_MIN_SIZE;
+-		printk(KERN_INFO "Number of fake nodes will be = %d\n",
+-				numa_fake);
+-		sz = FAKE_NODE_MIN_SIZE;
++	big = ((size & ~FAKE_NODE_MIN_HASH_MASK) * num_nodes) /
++	      FAKE_NODE_MIN_SIZE;
++
++	/* Round down to nearest FAKE_NODE_MIN_SIZE. */
++	size &= FAKE_NODE_MIN_HASH_MASK;
++	if (!size) {
++		printk(KERN_ERR "Not enough memory for each node.  "
++		       "NUMA emulation disabled.\n");
++		return -1;
+ 	}
+-	/*
+-	 * Find out how many nodes can get an extra NODE_MIN_SIZE granule.
+-	 * This logic ensures the extra memory gets distributed among as many
+-	 * nodes as possible (as compared to one single node getting all that
+-	 * extra memory.
+-	 */
+-	big = ((old_sz - sz) * numa_fake) / FAKE_NODE_MIN_SIZE;
+-	printk(KERN_INFO "Fake node Size: %luMB hole_size: %luMB big nodes: "
+-			"%d\n",
+-			(sz >> 20), (hole_size >> 20), big);
+- 	memset(&nodes,0,sizeof(nodes));
+-	end = start;
+- 	for (i = 0; i < numa_fake; i++) {
+-		/*
+-		 * In case we are not able to allocate enough memory for all
+-		 * the nodes, we reduce the number of fake nodes.
+-		 */
+-		if (end >= max_addr) {
+-			numa_fake = i - 1;
+-			break;
+-		}
+- 		start = nodes[i].start = end;
+-		/*
+-		 * Final node can have all the remaining memory.
+-		 */
+- 		if (i == numa_fake-1)
+- 			sz = max_addr - start;
+- 		end = nodes[i].start + sz;
+-		/*
+-		 * Fir "big" number of nodes get extra granule.
+-		 */
++
++	for (i = node_start; i < num_nodes + node_start; i++) {
++		u64 end = *addr + size;
+ 		if (i < big)
+ 			end += FAKE_NODE_MIN_SIZE;
+ 		/*
+-		 * Iterate over the range to ensure that this node gets at
+-		 * least sz amount of RAM (excluding holes)
++		 * The final node can have the remaining system RAM.  Other
++		 * nodes receive roughly the same amount of available pages.
+ 		 */
+-		while ((end - start - e820_hole_size(start, end)) < sz) {
+-			end += FAKE_NODE_MIN_SIZE;
+-			if (end >= max_addr)
+-				break;
++		if (i == num_nodes + node_start - 1)
++			end = max_addr;
++		else
++			while (end - *addr - E820_ADDR_HOLE_SIZE(*addr, end) <
++			       size) {
++				end += FAKE_NODE_MIN_SIZE;
++				if (end > max_addr) {
++					end = max_addr;
++					break;
++				}
++			}
++		if (setup_node_range(i, nodes, addr, end - *addr, max_addr) < 0)
++			break;
++	}
++	return i - node_start + 1;
++}
++
++/*
++ * Sets up the system RAM area from start_pfn to end_pfn according to the
++ * numa=fake command-line option.
++ */
++static int __init numa_emulation(unsigned long start_pfn, unsigned long end_pfn)
++{
++	struct bootnode nodes[MAX_NUMNODES];
++	u64 addr = start_pfn << PAGE_SHIFT;
++	u64 max_addr = end_pfn << PAGE_SHIFT;
++	unsigned int coeff;
++	unsigned int num = 0;
++	int num_nodes = 0;
++	u64 size;
++	int i;
++
++	memset(&nodes, 0, sizeof(nodes));
++	/*
++	 * If the numa=fake command-line is just a single number N, split the
++	 * system RAM into N fake nodes.
++	 */
++	if (!strchr(cmdline, '*') && !strchr(cmdline, ',')) {
++		num_nodes = split_nodes_equally(nodes, &addr, max_addr, 0,
++						simple_strtol(cmdline, NULL, 0));
++		if (num_nodes < 0)
++			return num_nodes;
++		goto out;
++	}
++
++	/* Parse the command line. */
++	for (coeff = 1; ; cmdline++) {
++		if (*cmdline && isdigit(*cmdline)) {
++			num = num * 10 + *cmdline - '0';
++			continue;
+ 		}
+-		/*
+-		 * Look at the next node to make sure there is some real memory
+-		 * to map.  Bad things happen when the only memory present
+-		 * in a zone on a fake node is IO hole.
+-		 */
+-		while (e820_hole_size(end, end + FAKE_NODE_MIN_SIZE) > 0) {
+-			if (zone_cross_over(start, end + sz)) {
+-				end = (MAX_DMA32_PFN << PAGE_SHIFT);
+-				break;
++		if (*cmdline == '*')
++			coeff = num;
++		if (!*cmdline || *cmdline == ',') {
++			/*
++			 * Round down to the nearest FAKE_NODE_MIN_SIZE.
++			 * Command-line coefficients are in megabytes.
++			 */
++			size = ((u64)num << 20) & FAKE_NODE_MIN_HASH_MASK;
++			if (size) {
++				for (i = 0; i < coeff; i++, num_nodes++)
++					if (setup_node_range(num_nodes, nodes,
++						&addr, size, max_addr) < 0)
++						goto done;
++				coeff = 1;
+ 			}
+-			if (end >= max_addr)
+-				break;
+-			end += FAKE_NODE_MIN_SIZE;
+ 		}
+-		if (end > max_addr)
+-			end = max_addr;
+-		nodes[i].end = end;
+- 		printk(KERN_INFO "Faking node %d at %016Lx-%016Lx (%LuMB)\n",
+- 		       i,
+- 		       nodes[i].start, nodes[i].end,
+- 		       (nodes[i].end - nodes[i].start) >> 20);
+-		node_set_online(i);
+- 	}
+- 	memnode_shift = compute_hash_shift(nodes, numa_fake);
+- 	if (memnode_shift < 0) {
+- 		memnode_shift = 0;
+- 		printk(KERN_ERR "No NUMA hash function found. Emulation disabled.\n");
+- 		return -1;
+- 	}
+- 	for_each_online_node(i) {
++		if (!*cmdline)
++			break;
++		num = 0;
++	}
++done:
++	if (!num_nodes)
++		return -1;
++	/* Fill remainder of system RAM with a final node, if appropriate. */
++	if (addr < max_addr) {
++		setup_node_range(num_nodes, nodes, &addr, max_addr - addr,
++				 max_addr);
++		num_nodes++;
++	}
++out:
++	memnode_shift = compute_hash_shift(nodes, num_nodes);
++	if (memnode_shift < 0) {
++		memnode_shift = 0;
++		printk(KERN_ERR "No NUMA hash function found.  NUMA emulation "
++		       "disabled.\n");
++		return -1;
++	}
++	for_each_online_node(i) {
+ 		e820_register_active_regions(i, nodes[i].start >> PAGE_SHIFT,
+ 						nodes[i].end >> PAGE_SHIFT);
+  		setup_node_bootmem(i, nodes[i].start, nodes[i].end);
+@@ -402,14 +443,15 @@ static int __init numa_emulation(unsigned long start_pfn, unsigned long end_pfn)
+  	numa_init_array();
+  	return 0;
+ }
+-#endif
++#undef E820_ADDR_HOLE_SIZE
++#endif /* CONFIG_NUMA_EMU */
+ 
+ void __init numa_initmem_init(unsigned long start_pfn, unsigned long end_pfn)
+ { 
+ 	int i;
+ 
+ #ifdef CONFIG_NUMA_EMU
+-	if (numa_fake && !numa_emulation(start_pfn, end_pfn))
++	if (cmdline && !numa_emulation(start_pfn, end_pfn))
+  		return;
+ #endif
+ 
+@@ -502,11 +544,8 @@ static __init int numa_setup(char *opt)
+ 	if (!strncmp(opt,"off",3))
+ 		numa_off = 1;
+ #ifdef CONFIG_NUMA_EMU
+-	if(!strncmp(opt, "fake=", 5)) {
+-		numa_fake = simple_strtoul(opt+5,NULL,0); ;
+-		if (numa_fake >= MAX_NUMNODES)
+-			numa_fake = MAX_NUMNODES;
+-	}
++	if (!strncmp(opt, "fake=", 5))
++		cmdline = opt + 5;
+ #endif
+ #ifdef CONFIG_ACPI_NUMA
+  	if (!strncmp(opt,"noacpi",6))
+diff --git a/include/asm-x86_64/mmzone.h b/include/asm-x86_64/mmzone.h
+index fb558fb..19a8937 100644
+--- a/include/asm-x86_64/mmzone.h
++++ b/include/asm-x86_64/mmzone.h
+@@ -49,7 +49,7 @@ extern int pfn_valid(unsigned long pfn);
+ 
+ #ifdef CONFIG_NUMA_EMU
+ #define FAKE_NODE_MIN_SIZE	(64*1024*1024)
+-#define FAKE_NODE_MIN_HASH_MASK	(~(FAKE_NODE_MIN_SIZE - 1ul))
++#define FAKE_NODE_MIN_HASH_MASK	(~(FAKE_NODE_MIN_SIZE - 1uL))
+ #endif
+ 
+ #endif
