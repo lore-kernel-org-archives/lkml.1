@@ -1,65 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932938AbXAaKRO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932940AbXAaKTZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932938AbXAaKRO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Jan 2007 05:17:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932940AbXAaKRO
+	id S932940AbXAaKTZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Jan 2007 05:19:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932942AbXAaKTZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Jan 2007 05:17:14 -0500
-Received: from ug-out-1314.google.com ([66.249.92.168]:4932 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932938AbXAaKRN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Jan 2007 05:17:13 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=RsHBZyFXmrTcGYK1I7oflXrnCDQzqlL7hbLaRclW6Mi13X/bwpzEUDEpHqk97dv4iPDCLdqH5yDaIU+GjZcwY/TxW2NsQtWHys19hOzC8hLXkENJmDwfjfC7QvCzq4zT1Mhmg8thOzrUrH4u2223fSSrCBtUJn14ha6GM291KoU=
-From: Jesper Juhl <jesper.juhl@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [PATCH][Trivial] Remove duplicate listing of Cris arch from README
-Date: Wed, 31 Jan 2007 11:16:59 +0100
-User-Agent: KMail/1.9.6
-Cc: Mikael Pettersson <mikpe@it.uu.se>, linux-kernel@vger.kernel.org,
-       Trivial Patch Monkey <trivial@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+	Wed, 31 Jan 2007 05:19:25 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:39310 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932940AbXAaKTY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Jan 2007 05:19:24 -0500
+Date: Wed, 31 Jan 2007 11:17:10 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Daniel Walker <dwalker@mvista.com>
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, johnstul@us.ibm.com,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 09/23] clocksource: add block notifier
+Message-ID: <20070131101710.GB22377@elte.hu>
+References: <20070131033710.420168478@mvista.com> <20070131033805.815147778@mvista.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200701311116.59262.jesper.juhl@gmail.com>
+In-Reply-To: <20070131033805.815147778@mvista.com>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.8
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.8 required=5.9 tests=ALL_TRUSTED,BAYES_50 autolearn=no SpamAssassin version=3.0.3
+	-3.3 ALL_TRUSTED            Did not pass through any untrusted hosts
+	0.5 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
+	[score: 0.4806]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Hi Linus,
+* Daniel Walker <dwalker@mvista.com> wrote:
 
-Mikael Pettersson pointed out to me that a recent patch of mine (commit
-620034c84d1d939717bdfbe02c51a3fee43541c3), that made some corrections to the
-README file, accidentally listed the Cris architecture twice.  Whoops.
+> Adds a call back interface for register/rating change events. This is 
+> also used later in this series to signal other interesting events.
 
-This removes the duplicate. 
-Patch against current git tree.
+This patch adds:
 
+> +#define CLOCKSOURCE_NOTIFY_REGISTER	1
+> +#define CLOCKSOURCE_NOTIFY_RATING	2
+> +#define CLOCKSOURCE_NOTIFY_FREQ		4
 
-Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
----
+and a later patch adds:
 
- README |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+> +#define CLOCKSOURCE_NOTIFY_UNSTABLE	8
 
-diff --git a/README b/README
-index 46a66c6..159912c 100644
---- a/README
-+++ b/README
-@@ -24,7 +24,7 @@ ON WHAT HARDWARE DOES IT RUN?
-   today Linux also runs on (at least) the Compaq Alpha AXP, Sun SPARC and
-   UltraSPARC, Motorola 68000, PowerPC, PowerPC64, ARM, Hitachi SuperH, Cell,
-   IBM S/390, MIPS, HP PA-RISC, Intel IA-64, DEC VAX, AMD x86-64, AXIS CRIS,
--  Cris, Xtensa, AVR32 and Renesas M32R architectures.
-+  Xtensa, AVR32 and Renesas M32R architectures.
- 
-   Linux is easily portable to most general-purpose 32- or 64-bit architectures
-   as long as they have a paged memory management unit (PMMU) and a port of the
+while i tentatively agree with the introduction of clocksource driver 
+notifications in general (given any actual real users of that 
+infrastructure), i can see three problems with your notifier changes:
 
+firstly, with the full changes applied, CLOCKSOURCE_NOTIFY_RATING is 
+totally unused (and not even driven by the core clocksource code).
 
+secondly, CLOCKSOURCE_NOTIFY_REGISTER is only used by the core 
+clocksource code and no register-notifier interface is exposed: this 
+makes the whole thing an expensive NOP.
 
+thirdly, CLOCKSOURCE_NOTIFY_FREQ is totally unused as well.
+
+(there are tons of examples in the kernel of how to do driver 
+notification APIs properly.)
+
+	Ingo
