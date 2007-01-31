@@ -1,65 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932839AbXAaD5q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751841AbXAaEET@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932839AbXAaD5q (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jan 2007 22:57:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932838AbXAaD5p
+	id S1751841AbXAaEET (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jan 2007 23:04:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751943AbXAaEET
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jan 2007 22:57:45 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.158]:2352 "EHLO
-	localhost.localdomain" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932828AbXAaD5o (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jan 2007 22:57:44 -0500
-Message-Id: <20070131033759.798289135@mvista.com>
-References: <20070131033710.420168478@mvista.com>
-User-Agent: quilt/0.46.mv-1
-Date: Tue, 30 Jan 2007 19:37:11 -0800
-From: Daniel Walker <dwalker@mvista.com>
-To: akpm@osdl.org
-Cc: linux-kernel@vger.kernel.org, johnstul@us.ibm.com, tglx@linutronix.de,
-       mingo@elte.hu
-Subject: [PATCH 01/23] clocksource: drop clocksource-add-verification-watchdog-helper-fix.patch
-Content-Disposition: inline; filename=drop-clocksource-add-verification-watchdog-helper-fix.patch
+	Tue, 30 Jan 2007 23:04:19 -0500
+Received: from muan.mtu.ru ([195.34.34.229]:1712 "EHLO muan.mtu.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751841AbXAaEET (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jan 2007 23:04:19 -0500
+From: Andrey Borzenkov <arvidjaar@mail.ru>
+Subject: Re: Free Linux Driver Development!
+To: Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org
+Date: Wed, 31 Jan 2007 07:02:09 +0300
+References: <20070130012904.GA9617@kroah.com> <ada8xfks90x.fsf@cisco.com>	<20070130191020.GF20642@kroah.com> <adaodogqpmx.fsf@cisco.com> <45BFA087.6020905@garzik.org> <loom.20070130T231421-484@post.gmane.org> <45BFC9EF.4060506@garzik.org>
+User-Agent: KNode/0.10.4
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7Bit
+Message-Id: <20070131040212.6057239B568@muan.mtu.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Drop.
+Jeff Garzik wrote:
 
-Signed-Off-By: Daniel Walker <dwalker@mvista.com>
+>> When we switch to PATA and drop old ide stack, what will happen ?
+>> Will all driver be ported and full-feature, or some will be obsoleted ?
+> 
+> All drivers for which we can find users will be ported.  If any features
+> disappear that's a bug.
+> 
 
----
- kernel/time/clocksource.c |   11 +----------
- 1 file changed, 1 insertion(+), 10 deletions(-)
+Well, I have a long standing issue with pata_ali not detecting CD-ROM in DMA
+mode. When I rarely watch DVD I rather boot into legacy IDE kernel ...
 
-Index: linux-2.6.19/kernel/time/clocksource.c
-===================================================================
---- linux-2.6.19.orig/kernel/time/clocksource.c
-+++ linux-2.6.19/kernel/time/clocksource.c
-@@ -28,7 +28,6 @@
- #include <linux/sysdev.h>
- #include <linux/init.h>
- #include <linux/module.h>
--#include <linux/tick.h>
- 
- /* XXX - Would like a better way for initializing curr_clocksource */
- extern struct clocksource clocksource_jiffies;
-@@ -107,16 +106,8 @@ static void clocksource_watchdog(unsigne
- 		/* Initialized ? */
- 		if (!(cs->flags & CLOCK_SOURCE_WATCHDOG)) {
- 			if ((cs->flags & CLOCK_SOURCE_IS_CONTINUOUS) &&
--			    (watchdog->flags & CLOCK_SOURCE_IS_CONTINUOUS)) {
-+			    (watchdog->flags & CLOCK_SOURCE_IS_CONTINUOUS))
- 				cs->flags |= CLOCK_SOURCE_VALID_FOR_HRES;
--				/*
--				 * We just marked the clocksource as
--				 * highres-capable, notify the rest of the
--				 * system as well so that we transition
--				 * into high-res mode:
--				 */
--				tick_clock_notify();
--			}
- 			cs->flags |= CLOCK_SOURCE_WATCHDOG;
- 			cs->wd_last = csnow;
- 		} else {
+-andrey
 
--- 
