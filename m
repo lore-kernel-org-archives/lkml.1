@@ -1,44 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932428AbXAaJHi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932480AbXAaJI3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932428AbXAaJHi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Jan 2007 04:07:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932437AbXAaJHi
+	id S932480AbXAaJI3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Jan 2007 04:08:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932461AbXAaJI2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Jan 2007 04:07:38 -0500
-Received: from ns1.suse.de ([195.135.220.2]:45611 "EHLO mx1.suse.de"
+	Wed, 31 Jan 2007 04:08:28 -0500
+Received: from mailhub.sw.ru ([195.214.233.200]:3981 "EHLO relay.sw.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932428AbXAaJHg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Jan 2007 04:07:36 -0500
-To: Greg KH <greg@kroah.com>
-Cc: Adrian Bunk <bunk@stusta.de>, Roland Dreier <rdreier@cisco.com>,
-       linux-kernel@vger.kernel.org
-Subject: Rewriting floppy.c was Re: Free Linux Driver Development!
-References: <20070130012904.GA9617@kroah.com> <ada8xfks90x.fsf@cisco.com>
-	<20070130191020.GF20642@kroah.com> <20070131011340.GP3754@stusta.de>
-	<20070131012428.GA31759@kroah.com>
-From: Andi Kleen <ak@suse.de>
-Date: 31 Jan 2007 11:08:14 +0100
-In-Reply-To: <20070131012428.GA31759@kroah.com>
-Message-ID: <p7364anpkz5.fsf_-_@bingen.suse.de>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+	id S932437AbXAaJI0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Jan 2007 04:08:26 -0500
+Message-ID: <45C05F1C.30609@sw.ru>
+Date: Wed, 31 Jan 2007 12:19:24 +0300
+From: Kirill Korotaev <dev@sw.ru>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.13) Gecko/20060417
+X-Accept-Language: en-us, en, ru
 MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Jeff Layton <jlayton@redhat.com>, Bodo Eggert <7eggert@gmx.de>,
+       akpm@osdl.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, torvalds@osdl.org
+Subject: Re: [PATCH] pipefs unique inode numbers
+References: <Pine.LNX.4.58.0701302314210.2203@be1.lrz> <45BFEE85.30203@redhat.com> <Pine.LNX.4.64.0701301726280.3611@woody.linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0701301726280.3611@woody.linux-foundation.org>
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH <greg@kroah.com> writes:
+Linus,
+
+>>Also, that patch would break many 32-bit programs not compiled with large
+>>offsets when run in compatibility mode on a 64-bit kernel. If they were to
+>>do a stat on this inode, it would likely generate an EOVERFLOW error since
+>>the pointer address would probably not fit in a 32 bit field.
+>>
+>>That problem was the whole impetus for this set of patches.
 > 
-> What?  Throw a fresh-faced newbie instantly into the tar-pit of despair
-> that floppy.c is?  Do you want everyone just to run screaming from
-> kernel development never to be seen again?
+> 
+> Well, we have that problem with the slowly incrementing "last_ino" too.
+> 
+> Should we make "last_ino" be "static unsigned int" instead of "long"?
+yes. it is what the 1st patch (AFAIK commited to -mm) from Jeff.
 
-Doing a from-scratch rewrite of floppy.c only supporting new
-hardware and no obscure formats ("newfloppy.c") would be an excellent 
-newbie project imho.  This means for someone who is still pretty
-new, but wants to get their fingers wet with more complicated changes.
+> Does anybody actually even use the old stat() with 32-bit interfaces? We 
+> warn for it, and we've done so for a long time.. I dont' remember people 
+> even complaining about the warning, so..
+Yes, we saw this happening multiple times already.
+e.g. many OpenVZ users run 32bit VEs on 64bit host OS.
+due to this bug some apps (e.g. postfix) complain about EOVERFLOW returned by stat()
+and fail to work.
+I also observed similar bug on Debian 3.0 which has 'find' compiled w/o FILE_OFFSETS=64,
+but NFS partition used 64bit inode numbers.
 
-Then over time (old-)floppy.c could be phased out.
-
-If anybody is interested...? (non newbies would be welcome too of course)
-
--Andi
+Thanks,
+Kirill
