@@ -1,89 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751987AbXAaGxJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932663AbXAaHCc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751987AbXAaGxJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Jan 2007 01:53:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751943AbXAaGxJ
+	id S932663AbXAaHCc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Jan 2007 02:02:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752196AbXAaHCc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Jan 2007 01:53:09 -0500
-Received: from moutng.kundenserver.de ([212.227.126.179]:60927 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752179AbXAaGxH convert rfc822-to-8bit (ORCPT
+	Wed, 31 Jan 2007 02:02:32 -0500
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:52041 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752183AbXAaHCb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Jan 2007 01:53:07 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: cbe-oss-dev@ozlabs.org, maynardj@us.ibm.com
-Subject: Re: [Cbe-oss-dev] [RFC, PATCH 4/4] Add support to OProfile for profiling Cell BE SPUs -- update
-Date: Wed, 31 Jan 2007 07:52:48 +0100
-User-Agent: KMail/1.9.5
-Cc: linuxppc-dev@ozlabs.org, oprofile-list@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-References: <45BE4ED0.5030808@us.ibm.com> <45BFBB78.7060907@us.ibm.com> <45BFCC8E.4000008@us.ibm.com>
-In-Reply-To: <45BFCC8E.4000008@us.ibm.com>
+	Wed, 31 Jan 2007 02:02:31 -0500
+Date: Wed, 31 Jan 2007 08:02:37 +0100
+From: Adrian Bunk <bunk@stusta.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Mark Lord <lkml@rtr.ca>, Bron Gondwana <brong@fastmail.fm>,
+       Mike Houston <mikeserv@bmts.com>, Chuck Ebbert <cebbert@redhat.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Steve French <smfltc@us.ibm.com>,
+       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
+       Daniel Drake <dsd@gentoo.org>, samba-technical@lists.samba.org,
+       Vladimir Saveliev <vs@namesys.com>, reiserfs-dev@namesys.com,
+       David Chinner <dgc@sgi.com>, xfs-masters@oss.sgi.com
+Subject: Re: How many people are using 2.6.16?
+Message-ID: <20070131070237.GT3754@stusta.de>
+References: <45BE5948.6060403@redhat.com> <20070129160448.65fc63f3.mikeserv@bmts.com> <20070129221300.GC19422@brong.net> <20070130203933.GJ3754@stusta.de> <45BFF1F4.3060401@rtr.ca> <Pine.LNX.4.64.0701301748230.3611@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200701310752.48632.arnd@arndb.de>
-X-Provags-ID: kundenserver.de abuse@kundenserver.de login:c48f057754fc1b1a557605ab9fa6da41
-X-Provags-ID2: V01U2FsdGVkX18B2wypXxodavw5uSI/l6j3UJuFfyO7GYBp4WlAQTwBdwImeViqrDpI5pVac15N5DOEK7RD1N8ZbMR/pNRuQh+Q0OrSjSkvLbs9IpJ5AH/9kQ==
+In-Reply-To: <Pine.LNX.4.64.0701301748230.3611@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 30 January 2007 23:54, Maynard Johnson wrote:
-
-> >>Why do you store them per spu in the first place? The physical spu
-> >>doesn't have any relevance to this at all, the only data that is
-> >>per spu is the sample data collected on a profiling interrupt,
-> >>which you can then copy in the per-context data on a context switch.
+On Tue, Jan 30, 2007 at 06:36:48PM -0800, Linus Torvalds wrote:
+> 
+> 
+> On Tue, 30 Jan 2007, Mark Lord wrote:
 > > 
-> > The sample data is written out to the event buffer on every profiling 
-> > interrupt.  But we don't write out the SPU program counter samples 
-> > directly to the event buffer.  First, we have to find the cached_info 
-> > for the appropriate SPU context to retrieve the cached vma-to-fileoffset 
-> > map.  Then we do the vma_map_lookup to find the fileoffset corresponding 
-> > to the SPU PC sample, which we then write out to the event buffer.  This 
-> > is one of the most time-critical pieces of the SPU profiling code, so I 
-> > used an array to hold the cached_info for fast random access.  But as I 
-> > stated in a code comment above, the negative implication of this current 
-> > implementation is that the array can only hold the cached_info for 
-> > currently running SPU tasks.  I need to give this some more thought.
+> > I believe our featherless leader said he though it was an ancient bug,
+> > exasperated by something that went into 2.6.19.
+> > 
+> > If Linus's opinion is correct (still?), then the bug exists in all
+> > kernels since somewhere back in the 2.4.xx days.
 > 
-> I've given this some more thought, and I'm coming to the conclusion that 
-> a pure array-based implementation for holding cached_info (getting rid 
-> of the lists) would work well for the vast majority of cases in which 
-> OProfile will be used.  Yes, it is true that the mapping of an SPU 
-> context to a phsyical spu-numbered array location cannot be guaranteed 
-> to stay valid, and that's why I discard the cached_info at that array 
-> location when the SPU task is switched out.  Yes, it would be terribly 
-> inefficient if the same SPU task gets switched back in later and we 
-> would have to recreate the cached_info.  However, I contend that 
-> OProfile users are interested in profiling one application at a time. 
-> They are not going to want to muddy the waters with multiple SPU apps 
-> running at the same time.  I can't think of any reason why someone would 
-> conscisouly choose to do that.
+> The issue was somewhat confused by people certainly *reporting* it for 
+> older kernels. Also, as part of the dirty bit cleanups and sanity 
+> checkingwe did actually seem to fix a long-standing CIFS corruption (and 
+> apparently reisertfs/XFS problems too).
 > 
-> Any thoughts from the general community, especially OProfile users?
-> 
-Please assume that in the near future we will be scheduling SPU contexts
-in and out multiple times a second. Even in a single application, you
-can easily have more contexts than you have physical SPUs.
+> But the *common* case was actually introduced with 2.6.19, and 2.6.16 
+> wouldn't be affected. 
 
-The event buffer by definition needs to be per context. If you for some
-reason want to collect the samples per physical SPU during an event
-interrupt, you should at least make sure that they are copied into the
-per-context event buffer on a context switch.
+Thanks for the clarifications.
 
-At the context switch point, you probably also want to drain the
-hw event counters, so that you account all events correctly.
+Regarding the longstanding CIFS/reiserfs/XFS problems, it seems the 
+status is:
 
-We also want to be able to profile the context switch code itself, which
-means that we also need one event buffer associated with the kernel to
-collect events that for a zero context_id.
+CIFS:
+commit cb876f451455b6187a7d69de2c112c45ec4b7f99
+  Fix up CIFS for "test_clear_page_dirty()" removal
+queued for 2.6.19.3
+applies and compiles against 2.6.16
 
-Of course, the recording of raw samples in the per-context buffer does
-not need to have the dcookies along with it, you can still resolve
-the pointers when the SPU context gets destroyed (or an object gets
-unmapped).
+reiserfs:
+commit de14569f94513279e3d44d9571a421e9da1759ae
+  [PATCH] resierfs: avoid tail packing if an inode was ever mmapped
+backport to 2.6.16 required
 
-	Arnd <><
+XFS:
+fix not yet in your tree
+
+> 			Linus
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
