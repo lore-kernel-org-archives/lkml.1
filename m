@@ -1,35 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030329AbXAaRWI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030332AbXAaRWJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030329AbXAaRWI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Jan 2007 12:22:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030340AbXAaRWH
+	id S1030332AbXAaRWJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Jan 2007 12:22:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030340AbXAaRWJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Jan 2007 12:22:07 -0500
-Received: from ns1.suse.de ([195.135.220.2]:54671 "EHLO mx1.suse.de"
+	Wed, 31 Jan 2007 12:22:09 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:58877 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030331AbXAaRWG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1030332AbXAaRWG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 31 Jan 2007 12:22:06 -0500
-From: Andi Kleen <ak@suse.de>
-To: "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
-Subject: Re: [PATCH] x86_64: Fix preprocessor condition
-Date: Wed, 31 Jan 2007 18:16:02 +0100
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org, torvalds@osdl.org
-References: <Pine.LNX.4.64.0701302019530.11095@woody.linux-foundation.org> <11702634681921-git-send-email-jsipek@cs.sunysb.edu>
-In-Reply-To: <11702634681921-git-send-email-jsipek@cs.sunysb.edu>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+Date: Wed, 31 Jan 2007 18:19:57 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Daniel Walker <dwalker@mvista.com>
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, johnstul@us.ibm.com,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 08/23] clocksource: drop duplicate register checking
+Message-ID: <20070131171957.GE4468@elte.hu>
+References: <20070131033710.420168478@mvista.com> <20070131033805.498958666@mvista.com> <20070131095935.GA22377@elte.hu> <1170256393.9781.23.camel@imap.mvista.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200701311816.02372.ak@suse.de>
+In-Reply-To: <1170256393.9781.23.camel@imap.mvista.com>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -4.3
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-4.3 required=5.9 tests=ALL_TRUSTED,BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-3.3 ALL_TRUSTED            Did not pass through any untrusted hosts
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-> -#if defined(__KERNEL__) && __x86_64__
-> +#if defined(__KERNEL__) && defined(__x86_64__)
+* Daniel Walker <dwalker@mvista.com> wrote:
 
-Undefined symbols are replaced with 0, so the old line was already ok.
-	
--Andi
+> >          if (is_registered_source(c)) {
+> >                  printk("register_clocksource: Cannot register %s. "
+> >                         "Already registered!", c->name);
+> >                  ret = -EBUSY;
+> > 
+> > and Thomas' change keeps that property, but doesnt printk. Your 
+> > change makes double registry possible, potentially crashing the 
+> > kernel later on! (And this isnt theoretical, double registry did 
+> > happen in practice when i debugged suspend problems on my SMP 
+> > laptop.)
+> 
+> My original patch set makes the duplicate register checking better 
+> (which I dropped) .. I'll be happy to reintroduce that part of it..
+
+why if Thomas' patch: simplify-the-registration-of-clocksources.patch 
+already does it?
+
+	Ingo
