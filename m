@@ -1,51 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161050AbXAaVtE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161049AbXAaVwk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161050AbXAaVtE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Jan 2007 16:49:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161053AbXAaVtE
+	id S1161049AbXAaVwk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Jan 2007 16:52:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161051AbXAaVwk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Jan 2007 16:49:04 -0500
-Received: from wr-out-0506.google.com ([64.233.184.238]:60841 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161050AbXAaVtB (ORCPT
+	Wed, 31 Jan 2007 16:52:40 -0500
+Received: from nic.NetDirect.CA ([216.16.235.2]:52054 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161049AbXAaVwj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Jan 2007 16:49:01 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=pnysktKn+rxOJUfrxZBHazRadlR69eI0yMhoa+8tIsvfaoeE9D5Ly7D47W/0G52gxjy4l4EmABBw67hciQocNzKwdG14fE6ZuB7jji+CtZRCQmc8z6RlUNND8INpH18/pRsDAB7E7g39gfZjjtPvy526GNt0tDSguBFv8dxE0Ik=
-Message-ID: <3d57814d0701311348u4e465540of77f3eed054e01c6@mail.gmail.com>
-Date: Thu, 1 Feb 2007 07:48:59 +1000
-From: "Trent Waddington" <trent.waddington@gmail.com>
-To: "Jan Engelhardt" <jengelh@linux01.gwdg.de>
-Subject: Re: Free Linux Driver Development!
-Cc: "Auke Kok" <auke-jan.h.kok@intel.com>,
-       "Francois Romieu" <romieu@fr.zoreil.com>,
-       "Nicolas Mailhot" <nicolas.mailhot@laposte.net>, greg@kroah.com,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.61.0701312231120.13737@yvahk01.tjqt.qr>
+	Wed, 31 Jan 2007 16:52:39 -0500
+X-Originating-Ip: 74.109.98.130
+Date: Wed, 31 Jan 2007 16:50:09 -0500 (EST)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@CPE00045a9c397f-CM001225dbafb6
+To: Chuck Ebbert <cebbert@redhat.com>
+cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, Ralf Baechle <ralf@linux-mips.org>
+Subject: Re: [PATCH] Fix apparent typo of "CONFIG_MT_SMP".
+In-Reply-To: <45C10B68.4050002@redhat.com>
+Message-ID: <Pine.LNX.4.64.0701311645180.8375@CPE00045a9c397f-CM001225dbafb6>
+References: <Pine.LNX.4.64.0701251839140.15699@CPE00045a9c397f-CM001225dbafb6>
+ <45C10B68.4050002@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <32793.192.54.193.51.1170248792.squirrel@rousalka.dyndns.org>
-	 <20070131192918.GA12495@electric-eye.fr.zoreil.com>
-	 <45C0F3DD.6060703@intel.com>
-	 <Pine.LNX.4.61.0701312231120.13737@yvahk01.tjqt.qr>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/1/07, Jan Engelhardt <jengelh@linux01.gwdg.de> wrote:
-> That lists seems really outdata.
->
-> - RaLink has gpl drivers (SerialMonkey maintains a better version),
-> - Cisco IPSEC can be replaced by the userspace tool vpnc (as far as the VPN
->   Concentrators I have to deal with),
+On Wed, 31 Jan 2007, Chuck Ebbert wrote:
 
-It's a wiki[1], I invite everyone to fix the current information and
-add any new binary-only modules they are aware of.
+> Robert P. J. Day wrote:
+> >   Replace apparent typo of CONFIG_MT_SMP with CONFIG_MIPS_MT_SMP.
+> >
+> > Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
+> >
+> > ---
+> >
+> > diff --git a/arch/mips/mips-boards/sim/sim_setup.c b/arch/mips/mips-boards/sim/sim_setup.c
+> > index 2659c1c..ea2066c 100644
+> > --- a/arch/mips/mips-boards/sim/sim_setup.c
+> > +++ b/arch/mips/mips-boards/sim/sim_setup.c
+> > @@ -57,7 +57,7 @@ void __init plat_mem_setup(void)
+> >  	board_time_init = sim_time_init;
+> >  	prom_printf("Linux started...\n");
+> >
+> > -#ifdef CONFIG_MT_SMP
+> > +#ifdef CONFIG_MIPS_MT_SMP
+> >  	sanitize_tlb_entries();
+> >  #endif
+> >  }
+> >
+> >
+> Have you posted the latest version of your scripts for finding these?
 
-Trent
+it's available online:
 
-[1] that url again,
-http://developer.osdl.org/dev/opendrivers/wiki/index.php/Binary_Kernel_Modules_List
+http://www.fsdev.dreamhosters.com/wiki/index.php?title=Dead_CONFIG_variables
+
+rday
+
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://www.fsdev.dreamhosters.com/wiki/index.php?title=Main_Page
+========================================================================
