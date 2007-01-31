@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933177AbXAaMn6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933184AbXAaMoE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933177AbXAaMn6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Jan 2007 07:43:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933183AbXAaMn6
+	id S933184AbXAaMoE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Jan 2007 07:44:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933186AbXAaMoE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Jan 2007 07:43:58 -0500
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:41243 "EHLO
+	Wed, 31 Jan 2007 07:44:04 -0500
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:41251 "EHLO
 	vervifontaine.sonycom.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S933177AbXAaMn5 (ORCPT
+	by vger.kernel.org with ESMTP id S933184AbXAaMoB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Jan 2007 07:43:57 -0500
-Date: Wed, 31 Jan 2007 13:43:55 +0100 (CET)
+	Wed, 31 Jan 2007 07:44:01 -0500
+Date: Wed, 31 Jan 2007 13:43:59 +0100 (CET)
 From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 To: James Simmons <jsimmons@infradead.org>
 cc: Linux Frame Buffer Device Development 
@@ -18,42 +18,89 @@ cc: Linux Frame Buffer Device Development
        Cell Broadband Engine OSS Development 
 	<cbe-oss-dev@ozlabs.org>,
        Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: [PATCH 1/7] fbdev: Avoid vertical overflow when making space for
- the logo
+Subject: [PATCH 2/7] fbdev: fb_do_show_logo() updates
 In-Reply-To: <Pine.LNX.4.62.0701311325480.14996@pademelon.sonytel.be>
-Message-ID: <Pine.LNX.4.62.0701311328170.15066@pademelon.sonytel.be>
+Message-ID: <Pine.LNX.4.62.0701311338180.15066@pademelon.sonytel.be>
 References: <Pine.LNX.4.62.0701311325480.14996@pademelon.sonytel.be>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-fbcon_prepare_logo(): Avoid vertical overflow when making space for the logo
+fb_do_show_logo() updates:
+  - Use width and height of the passed image instead of the global variable
+    fb_logo
+  - Explicitly pass the number of logos to draw
 
 Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
 ---
- drivers/video/console/fbcon.c |    9 +++++++--
- 1 files changed, 7 insertions(+), 2 deletions(-)
+ drivers/video/fbmem.c |   34 +++++++++++++++-------------------
+ 1 files changed, 15 insertions(+), 19 deletions(-)
 
---- ps3-linux-2.6.20-rc7.orig/drivers/video/console/fbcon.c
-+++ ps3-linux-2.6.20-rc7/drivers/video/console/fbcon.c
-@@ -619,8 +619,13 @@ static void fbcon_prepare_logo(struct vc
- 			r -= cols;
+--- ps3-linux-2.6.20-rc7.orig/drivers/video/fbmem.c
++++ ps3-linux-2.6.20-rc7/drivers/video/fbmem.c
+@@ -377,37 +377,33 @@ static void fb_rotate_logo(struct fb_inf
+ }
+ 
+ static void fb_do_show_logo(struct fb_info *info, struct fb_image *image,
+-			    int rotate)
++			    int rotate, unsigned int num)
+ {
+-	int x;
++	unsigned int x;
+ 
+ 	if (rotate == FB_ROTATE_UR) {
+-		for (x = 0; x < num_online_cpus() &&
+-			     x * (fb_logo.logo->width + 8) <=
+-			     info->var.xres - fb_logo.logo->width; x++) {
++		for (x = 0;
++		     x < num && image->dx + image->width <= info->var.xres;
++		     x++) {
+ 			info->fbops->fb_imageblit(info, image);
+-			image->dx += fb_logo.logo->width + 8;
++			image->dx += image->width + 8;
  		}
- 		if (!save) {
--			vc->vc_y += logo_lines;
--			vc->vc_pos += logo_lines * vc->vc_size_row;
-+			int lines;
-+			if (vc->vc_y + logo_lines >= rows)
-+				lines = rows - vc->vc_y - 1;
-+			else
-+				lines = logo_lines;
-+			vc->vc_y += lines;
-+			vc->vc_pos += lines * vc->vc_size_row;
+ 	} else if (rotate == FB_ROTATE_UD) {
+-		for (x = 0; x < num_online_cpus() &&
+-			     x * (fb_logo.logo->width + 8) <=
+-			     info->var.xres - fb_logo.logo->width; x++) {
++		for (x = 0; x < num && image->dx >= 0; x++) {
+ 			info->fbops->fb_imageblit(info, image);
+-			image->dx -= fb_logo.logo->width + 8;
++			image->dx -= image->width + 8;
+ 		}
+ 	} else if (rotate == FB_ROTATE_CW) {
+-		for (x = 0; x < num_online_cpus() &&
+-			     x * (fb_logo.logo->width + 8) <=
+-			     info->var.yres - fb_logo.logo->width; x++) {
++		for (x = 0;
++		     x < num && image->dy + image->height <= info->var.yres;
++		     x++) {
+ 			info->fbops->fb_imageblit(info, image);
+-			image->dy += fb_logo.logo->width + 8;
++			image->dy += image->height + 8;
+ 		}
+ 	} else if (rotate == FB_ROTATE_CCW) {
+-		for (x = 0; x < num_online_cpus() &&
+-			     x * (fb_logo.logo->width + 8) <=
+-			     info->var.yres - fb_logo.logo->width; x++) {
++		for (x = 0; x < num && image->dy >= 0; x++) {
+ 			info->fbops->fb_imageblit(info, image);
+-			image->dy -= fb_logo.logo->width + 8;
++			image->dy -= image->height + 8;
  		}
  	}
- 	scr_memsetw((unsigned short *) vc->vc_origin,
+ }
+@@ -533,7 +529,7 @@ int fb_show_logo(struct fb_info *info, i
+ 			fb_rotate_logo(info, logo_rotate, &image, rotate);
+ 	}
+ 
+-	fb_do_show_logo(info, &image, rotate);
++	fb_do_show_logo(info, &image, rotate, num_online_cpus());
+ 
+ 	kfree(palette);
+ 	if (saved_pseudo_palette != NULL)
 
 Gr{oetje,eeting}s,
 
