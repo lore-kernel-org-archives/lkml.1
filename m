@@ -1,84 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932663AbXAaHCc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932667AbXAaHCe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932663AbXAaHCc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Jan 2007 02:02:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752196AbXAaHCc
+	id S932667AbXAaHCe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Jan 2007 02:02:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752196AbXAaHCe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Jan 2007 02:02:32 -0500
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:52041 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752183AbXAaHCb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Jan 2007 02:02:31 -0500
-Date: Wed, 31 Jan 2007 08:02:37 +0100
-From: Adrian Bunk <bunk@stusta.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Mark Lord <lkml@rtr.ca>, Bron Gondwana <brong@fastmail.fm>,
-       Mike Houston <mikeserv@bmts.com>, Chuck Ebbert <cebbert@redhat.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Steve French <smfltc@us.ibm.com>,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
-       Daniel Drake <dsd@gentoo.org>, samba-technical@lists.samba.org,
-       Vladimir Saveliev <vs@namesys.com>, reiserfs-dev@namesys.com,
-       David Chinner <dgc@sgi.com>, xfs-masters@oss.sgi.com
-Subject: Re: How many people are using 2.6.16?
-Message-ID: <20070131070237.GT3754@stusta.de>
-References: <45BE5948.6060403@redhat.com> <20070129160448.65fc63f3.mikeserv@bmts.com> <20070129221300.GC19422@brong.net> <20070130203933.GJ3754@stusta.de> <45BFF1F4.3060401@rtr.ca> <Pine.LNX.4.64.0701301748230.3611@woody.linux-foundation.org>
+	Wed, 31 Jan 2007 02:02:34 -0500
+Received: from raven.upol.cz ([158.194.120.4]:65292 "EHLO raven.upol.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752183AbXAaHCd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Jan 2007 02:02:33 -0500
+Date: Wed, 31 Jan 2007 07:11:04 +0000
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Roman Zippel <zippel@linux-m68k.org>, Bastian Blank <bastian@waldi.eu.org>,
+       Sam Ravnborg <sam@ravnborg.org>, Andrew Morton <akpm@osdl.org>
+Subject: [patch] kbuild: correctly skip tilded backups in localversion files
+Message-ID: <20070131071103.GA3295@flower.upol.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0701301748230.3611@woody.linux-foundation.org>
+Organization: Palacky University in Olomouc, experimental physics department.
 User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Oleg Verych <olecom@flower.upol.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 30, 2007 at 06:36:48PM -0800, Linus Torvalds wrote:
-> 
-> 
-> On Tue, 30 Jan 2007, Mark Lord wrote:
-> > 
-> > I believe our featherless leader said he though it was an ancient bug,
-> > exasperated by something that went into 2.6.19.
-> > 
-> > If Linus's opinion is correct (still?), then the bug exists in all
-> > kernels since somewhere back in the 2.4.xx days.
-> 
-> The issue was somewhat confused by people certainly *reporting* it for 
-> older kernels. Also, as part of the dirty bit cleanups and sanity 
-> checkingwe did actually seem to fix a long-standing CIFS corruption (and 
-> apparently reisertfs/XFS problems too).
-> 
-> But the *common* case was actually introduced with 2.6.19, and 2.6.16 
-> wouldn't be affected. 
+kbuild: correctly skip tilded backups in localversion files
 
-Thanks for the clarifications.
+ Tildes as in path as in filenames are handled correctly now.
 
-Regarding the longstanding CIFS/reiserfs/XFS problems, it seems the 
-status is:
+ Definition of `space' was removed, scripts/Kbuild.include has one.
+ This definition was taken right from GNU make manual, while Kbuild's
+ version is original.
 
-CIFS:
-commit cb876f451455b6187a7d69de2c112c45ec4b7f99
-  Fix up CIFS for "test_clear_page_dirty()" removal
-queued for 2.6.19.3
-applies and compiles against 2.6.16
+Cc: Roman Zippel <zippel@linux-m68k.org>
+Cc: Bastian Blank <bastian@waldi.eu.org>
+Cc: Sam Ravnborg <sam@ravnborg.org>
+Signed-off-by: Oleg Verych <olecom@flower.upol.cz>
+---
+Another try.
 
-reiserfs:
-commit de14569f94513279e3d44d9571a421e9da1759ae
-  [PATCH] resierfs: avoid tail packing if an inode was ever mmapped
-backport to 2.6.16 required
+Original report and fix by Bastian Blank:
 
-XFS:
-fix not yet in your tree
+ The following patch fixes the problem that localversion files where
+ ignored if the tree lives in a path which contains a ~. It changes the
+ test to apply to the filename only.
+ 
+ Debian allows versions which contains ~ in it. The upstream part of the
+ version is in the directory name of the build tree and we got weird
+ results because the localversion files was just got ignored in this
+ case.
 
-> 			Linus
+ Makefile |   15 +++++----------
+ 1 file changed, 5 insertions(+), 10 deletions(-)
 
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+--- linux-2.6.20-rc6/Makefile~4tilde-backups~	2007-01-30 23:33:45.781462750 +0100
++++ linux-2.6.20-rc6/Makefile	2007-01-31 07:46:18.696404500 +0100
+@@ -777,5 +777,5 @@ $(vmlinux-dirs): prepare scripts
+ #	$(localver-full)
+ #	  $(localver)
+-#	    localversion*		(all localversion* files)
++#	    localversion*		(files, without backups containing '~')
+ #	    $(CONFIG_LOCALVERSION)	(from kernel config setting)
+ #	  $(localver-auto)		(only if CONFIG_LOCALVERSION_AUTO is set)
+@@ -788,14 +788,9 @@ $(vmlinux-dirs): prepare scripts
+ # scripts/setlocalversion and add the appropriate checks as needed.
+ 
+-nullstring :=
+-space      := $(nullstring) # end of line
+-
+-___localver = $(objtree)/localversion* $(srctree)/localversion*
+-__localver  = $(sort $(wildcard $(___localver)))
+-# skip backup files (containing '~')
+-_localver = $(foreach f, $(__localver), $(if $(findstring ~, $(f)),,$(f)))
+-
++localversion = $(objtree)/localversion	    $(srctree)/localversion
++ext_versions = $(objtree)/localversion[^~]* $(srctree)/localversion[!~]*
++versions = $(localversion) $(ext_versions)
+ localver = $(subst $(space),, \
+-	   $(shell cat /dev/null $(_localver)) \
++	   $(shell cat /dev/null $(sort $(wildcard $(versions)))) \
+ 	   $(patsubst "%",%,$(CONFIG_LOCALVERSION)))
+ 
