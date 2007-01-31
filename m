@@ -1,81 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030245AbXAaQgL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030259AbXAaQmS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030245AbXAaQgL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Jan 2007 11:36:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030248AbXAaQgL
+	id S1030259AbXAaQmS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Jan 2007 11:42:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030261AbXAaQmS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Jan 2007 11:36:11 -0500
-Received: from amsfep20-int.chello.nl ([62.179.120.15]:43306 "EHLO
-	amsfep20-int.chello.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030245AbXAaQgK (ORCPT
+	Wed, 31 Jan 2007 11:42:18 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.158]:28884 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030259AbXAaQmR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Jan 2007 11:36:10 -0500
-Subject: Re: [PATCH] atomic.h : standardizing atomic primitives
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: linux-kernel@vger.kernel.org, Linus Torvalds <torvalds@osdl.org>,
-       Andrew Morton <akpm@osdl.org>, Ingo Molnar <mingo@redhat.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Christoph Hellwig <hch@infradead.org>, ltt-dev@shafik.org,
-       systemtap@sources.redhat.com, Douglas Niehaus <niehaus@eecs.ku.edu>,
-       "Martin J. Bligh" <mbligh@mbligh.org>,
+	Wed, 31 Jan 2007 11:42:17 -0500
+Subject: Re: [PATCH 12/23] clocksource: add clocksource_get_clock()
+From: Daniel Walker <dwalker@mvista.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, johnstul@us.ibm.com,
        Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <20070131162539.GA31985@Krystal>
-References: <11685657414033-git-send-email-mathieu.desnoyers@polymtl.ca>
-	 <1170257321.9516.42.camel@twins>  <20070131162539.GA31985@Krystal>
+In-Reply-To: <20070131114615.GB1847@elte.hu>
+References: <20070131033710.420168478@mvista.com>
+	 <20070131033806.795135512@mvista.com>  <20070131114615.GB1847@elte.hu>
 Content-Type: text/plain
-Date: Wed, 31 Jan 2007 17:36:03 +0100
-Message-Id: <1170261363.9516.50.camel@twins>
+Date: Wed, 31 Jan 2007 08:40:46 -0800
+Message-Id: <1170261646.9781.98.camel@imap.mvista.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
+X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-01-31 at 11:25 -0500, Mathieu Desnoyers wrote:
-> Hi Peter,
+On Wed, 2007-01-31 at 12:46 +0100, Ingo Molnar wrote:
+> * Daniel Walker <dwalker@mvista.com> wrote:
 > 
-> Thanks for testing Andrew's fixes.
-
-I haven't actually taken any from him. I just started afresh.
-
->  I am wondering about what happened to
-> the Powerpc recursive include problems Andrew experienced. Quoting him :
+> > One new API call clocksource_get_clock() which allows clocks to be 
+> > selected based on their name, or if the name is null the highest rated 
+> > clock is returned.
 > 
-> "OK, I fixed eight separate compile errors in this patch series and
-> now powerpc is being very ugly with a twisty maze of include
-> dependencies.
+> this one (and the dependent APIs utilizations) look a step in the right 
+> direction to me, but they are not fully consequent and thus a bit 
+> confusing at the moment:
 > 
-> I'm giving up.  Someone should publish a suite of cross-compilers for us
-> so stuff like this doesn't need to happen."
+> - the current_clocksource is now something that is conceptually related 
+>   to timekeeping - while it still resides in the clocksource domain.
+
+Yes . The sysfs code gets moved in the next patch so it resides in the
+timekeeping code .. 
+
+> - if we do this split there should be a separate sysfs hierarchy for 
+>   timekeeping, separate of clocksource
+
+A long time ago I changed "current_clocksource" to
+"timekeeping_clocksource" which made sense at the time .. I got push
+back on that from John, and I think maybe Thomas ..
+
+
+> - you use struct sys_device clocksource_sys_device from clocksource.c in 
+>   timekeeping.c, which is inconsistent as well.
 > 
-> I see that you have removed the include <asm/atomic.h> from bitops.h and
-> system.h in powerpc. If it compiles on every architectures, then it's a
-> good approach.
 
-Yeah, I fiddled around with those powerpc headers a bit until it stopped
-whining. Maybe the powerpc folks ought to eyeball it a bit, but it build
-a kernel image here.
+This was on purpose , because I feel the sysfs organization benefits
+when you have the clocksource users all in one place. Along with the
+list of available clocksources .. I'm all ears if you have a better
+suggestion ..
 
-> I planned to post a new patch which uses macros for cmpxchg and xchg in
-> asm-generic/atomic.h instead of inline functions. It would remove the
-> dependency on system.h. However, if your modifications work well on
-> every architecture, my fix might not be needed. Anyone has a preferred
-> solution ? I have not been able to setup my cross-compiler test bench
-> yet due to some hardware issues and waited for it before I released
-> further fixes, but if you want to try my macro-based fix, I could post
-> it.
-
-Whatever people want; inlines are generally preferred due to the extra
-type checking.
-
-I just needed atomic_long_cmpxchg to work so I kicked your patches about
-till they compiled.
-
-> And about the alpha build, Does the assembler errors also happen without
-> this patch ?
-
-Yes. Something fishy going on there... gcc-4.1.1 + binutils-2.17
-Compiler seems to build fine, but kernel code makes it go belly up.
-
+Daniel
 
