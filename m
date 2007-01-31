@@ -1,43 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933315AbXAaOv5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933325AbXAaPAX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933315AbXAaOv5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Jan 2007 09:51:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933318AbXAaOv4
+	id S933325AbXAaPAX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Jan 2007 10:00:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933326AbXAaPAX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Jan 2007 09:51:56 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:32999 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933315AbXAaOvz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Jan 2007 09:51:55 -0500
-Date: Wed, 31 Jan 2007 14:51:54 +0000
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Eddie Pettis <pettis.eddie@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: How to locate struct file * from a bio?
-Message-ID: <20070131145154.GA19815@ftp.linux.org.uk>
-References: <d66e87630701310634s385db5adwa82e2194188efa81@mail.gmail.com> <20070131144423.GB10050@ftp.linux.org.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070131144423.GB10050@ftp.linux.org.uk>
-User-Agent: Mutt/1.4.1i
+	Wed, 31 Jan 2007 10:00:23 -0500
+Received: from il.qumranet.com ([62.219.232.206]:42716 "EHLO il.qumranet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933328AbXAaPAW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Jan 2007 10:00:22 -0500
+Subject: [PATCH] KVM: Fix lockup on 32-bit intel hosts with nx disabled in the
+	bios
+From: Avi Kivity <avi@qumranet.com>
+Date: Wed, 31 Jan 2007 15:00:16 -0000
+To: kvm-devel@lists.sourceforge.net
+Cc: linux-kernel@vger.kernel.org, akpm@osdl.org, mingo@elte.hu
+Content-Type: text/plain; charset=UTF-8
+Message-Id: <20070131150017.020B9A0014@il.qumranet.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 31, 2007 at 02:44:23PM +0000, Al Viro wrote:
-> On Wed, Jan 31, 2007 at 09:34:54AM -0500, Eddie Pettis wrote:
-> > Short question:  Is it possible to locate the struct file * associated
-> > with a bio?  If so, how?
->  
-> Obviously impossible.  For one thing, there might very well be no inode,
-> let alone struct file, associated with bio in question (e.g. for any
-> filesystem metadata).  Moreover, the same on-disk object may get IO
-> without any stuct file at all (e.g. a directory) or with many struct
-> file (e.g. any file independently opened by several processes; no matter
-> how many of them do reads, we'll get stuff pulled into page cache the
-> same way (and once, not once per struct file).
+Intel hosts, without long mode, and with nx support disabled in the bios
+have an efer that is readable but not writable.  This causes a lockup on
+switch to guest mode (even though it should exit with reason 34 according to
+the documentation).
 
-BTW, here's a good testcase for you: /etc/ld.so.cache; it's accessed at
-practically any execve(), so it should be very close to top of the
-popularity list (right there with /lib/libc.so.6)...
+Signed-off-by: Avi Kivity <avi@qumranet.com>
+
+Index: linux-2.6/drivers/kvm/vmx.c
+===================================================================
+--- linux-2.6.orig/drivers/kvm/vmx.c
++++ linux-2.6/drivers/kvm/vmx.c
+@@ -1128,6 +1128,8 @@ static int vmx_vcpu_setup(struct kvm_vcp
+ 
+ 		if (rdmsr_safe(index, &data_low, &data_high) < 0)
+ 			continue;
++		if (wrmsr_safe(index, data_low, data_high) < 0)
++			continue;
+ 		data = data_low | ((u64)data_high << 32);
+ 		vcpu->host_msrs[j].index = index;
+ 		vcpu->host_msrs[j].reserved = 0;
