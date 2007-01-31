@@ -1,56 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932480AbXAaJI3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932461AbXAaJM6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932480AbXAaJI3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Jan 2007 04:08:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932461AbXAaJI2
+	id S932461AbXAaJM6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Jan 2007 04:12:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932493AbXAaJM6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Jan 2007 04:08:28 -0500
-Received: from mailhub.sw.ru ([195.214.233.200]:3981 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932437AbXAaJI0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Jan 2007 04:08:26 -0500
-Message-ID: <45C05F1C.30609@sw.ru>
-Date: Wed, 31 Jan 2007 12:19:24 +0300
-From: Kirill Korotaev <dev@sw.ru>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.13) Gecko/20060417
-X-Accept-Language: en-us, en, ru
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Jeff Layton <jlayton@redhat.com>, Bodo Eggert <7eggert@gmx.de>,
-       akpm@osdl.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, torvalds@osdl.org
-Subject: Re: [PATCH] pipefs unique inode numbers
-References: <Pine.LNX.4.58.0701302314210.2203@be1.lrz> <45BFEE85.30203@redhat.com> <Pine.LNX.4.64.0701301726280.3611@woody.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0701301726280.3611@woody.linux-foundation.org>
-Content-Type: text/plain; charset=us-ascii
+	Wed, 31 Jan 2007 04:12:58 -0500
+Received: from mail.first.fraunhofer.de ([194.95.169.2]:53569 "EHLO
+	mail.first.fraunhofer.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932461AbXAaJM5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Jan 2007 04:12:57 -0500
+Subject: Re: [linux-usb-devel] 2.6.20-rc6 SCSI error: I/O error - trouble
+	with mass storage devices ?!
+From: Soeren Sonnenburg <kernel@nn7.de>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       linux-usb-devel <linux-usb-devel@lists.sourceforge.net>
+In-Reply-To: <Pine.LNX.4.44L0.0701301300050.7522-100000@iolanthe.rowland.org>
+References: <Pine.LNX.4.44L0.0701301300050.7522-100000@iolanthe.rowland.org>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Date: Wed, 31 Jan 2007 10:12:47 +0100
+Message-Id: <1170234767.4366.2.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+On Tue, 2007-01-30 at 13:08 -0500, Alan Stern wrote:
+> On Sat, 27 Jan 2007, Soeren Sonnenburg wrote:
 
->>Also, that patch would break many 32-bit programs not compiled with large
->>offsets when run in compatibility mode on a 64-bit kernel. If they were to
->>do a stat on this inode, it would likely generate an EOVERFLOW error since
->>the pointer address would probably not fit in a 32 bit field.
->>
->>That problem was the whole impetus for this set of patches.
+[P990 mass storage trouble]
+> > Now I am clueless what could have gone wrong (as I *think* this was all
+> > working at some point at least before firmware updates) and what the
+> > difference between these mass storage devices is.
 > 
-> 
-> Well, we have that problem with the slowly incrementing "last_ino" too.
-> 
-> Should we make "last_ino" be "static unsigned int" instead of "long"?
-yes. it is what the 1st patch (AFAIK commited to -mm) from Jeff.
+> The log revealed that the phone's firmware returns garbage values in the 
+> Residue field for some WRITEs.  This patch should take care of it.
 
-> Does anybody actually even use the old stat() with 32-bit interfaces? We 
-> warn for it, and we've done so for a long time.. I dont' remember people 
-> even complaining about the warning, so..
-Yes, we saw this happening multiple times already.
-e.g. many OpenVZ users run 32bit VEs on 64bit host OS.
-due to this bug some apps (e.g. postfix) complain about EOVERFLOW returned by stat()
-and fail to work.
-I also observed similar bug on Debian 3.0 which has 'find' compiled w/o FILE_OFFSETS=64,
-but NFS partition used 64bit inode numbers.
+I can confirm that this fixes the problem.
 
-Thanks,
-Kirill
+Thank you *very* much - you've made my day.
+
+Soeren
+-- 
+Sometimes, there's a moment as you're waking, when you become aware of
+the real world around you, but you're still dreaming.
