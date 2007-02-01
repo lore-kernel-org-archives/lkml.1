@@ -1,51 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030517AbXBAAjS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030481AbXBAAlw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030517AbXBAAjS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Jan 2007 19:39:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030511AbXBAAjS
+	id S1030481AbXBAAlw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Jan 2007 19:41:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030509AbXBAAlw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Jan 2007 19:39:18 -0500
-Received: from www.osadl.org ([213.239.205.134]:59962 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1030517AbXBAAjR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Jan 2007 19:39:17 -0500
-Subject: Re: 2.6.20-rc6 ramdisk problem
-From: Thomas Gleixner <tglx@linutronix.de>
-Reply-To: tglx@linutronix.de
-To: Robert Hancock <hancockr@shaw.ca>
-Cc: michal.k.k.piotrowski@gmail.com,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <45C130DC.90905@shaw.ca>
-References: <fa.nr9vhGrVS5zmSNQEe1vQ/Ktii9w@ifi.uio.no>
-	 <45C12C3E.6010902@shaw.ca>
-	 <1170288386.29240.234.camel@localhost.localdomain> <45C130DC.90905@shaw.ca>
-Content-Type: text/plain
-Date: Thu, 01 Feb 2007 01:40:08 +0100
-Message-Id: <1170290408.29240.252.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 31 Jan 2007 19:41:52 -0500
+Received: from mail0.lsil.com ([147.145.40.20]:51932 "EHLO mail0.lsil.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030481AbXBAAlv convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Jan 2007 19:41:51 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE:  Re: [PATCH] scsi: megaraid_{mm,mbox} init fix for kdump
+Date: Wed, 31 Jan 2007 17:41:29 -0700
+Message-ID: <0631C836DBF79F42B5A60C8C8D4E82298ECBCC@NAMAIL2.ad.lsil.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Re: [PATCH] scsi: megaraid_{mm,mbox} init fix for kdump
+Thread-Index: AcdFZgrOowZ1FbS/RAqxTaDP/LCMGwAMxUbg
+From: "Patro, Sumant" <Sumant.Patro@lsi.com>
+To: "Matthias Urlichs" <matthias@urlichs.de>, <linux-scsi@vger.kernel.org>
+Cc: <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 01 Feb 2007 00:41:33.0309 (UTC) FILETIME=[B89F02D0:01C74599]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-01-31 at 18:14 -0600, Robert Hancock wrote:
-> > So either #1 or #2 should have failed in the first place. Failing in #3
-> > is definitely a BUG in #1 or #2.
-> > 
-> > How does your advise help to fix that BUG ? Ignoring it by using
-> > something else ?
-> 
-> Yes, there is likely a bug here of some sort. However, that doesn't 
-> change the fact that ramdisks are sub-optimal for most uses.
+The patch is specific to kdump scenario.
+What I see in the log is cmd timeout(s) and is not related to the patch.
 
-You still did not answer my question: 
-How does this deep insight help us to track down that BUG ?
+--Sumant
 
-Michal is actively testing the kernel and provides extremly useful
-information about problems. He pointed out a bug and we want to fix it.
-Adding special instructions, which are appropriate for a LUG
-mailinglist, does us not get any further.
+ 
 
-	tglx
+-----Original Message-----
+From: linux-scsi-owner@vger.kernel.org
+[mailto:linux-scsi-owner@vger.kernel.org] On Behalf Of Matthias Urlichs
+Sent: Wednesday, January 31, 2007 9:50 AM
+To: linux-scsi@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] scsi: megaraid_{mm,mbox} init fix for kdump
+
+On Fri, 05 Jan 2007 07:10:09 -0800, Sumant Patro wrote:
+
+>         This command clears the pending commands in the adapter
+>         and re-initialize its internal RAID structure.
+>         Without this change, megaraid driver either panics or fails to
+>         initialize the adapter during kdump's second kernel boot
+>         if there are pending commands or interrupts from other devices
+>         sharing the same IRQ.
+
+Nice. Is there a chance that this patch will also fix the regression
+I've noticed (today, unfortunately) on (at least one) Dell server?
+
+FWIW, here's the relevant LSPCI output and kernel logs:
+
+0d:0e.0 RAID bus controller: LSI Logic / Symbios Logic MegaRAID (rev 07)
+        Subsystem: Dell Unknown device 0002
+        Flags: bus master, stepping, 66MHz, medium devsel, latency 64,
+IRQ 18
+        Memory at d80f0000 (32-bit, prefetchable) [size=64K]
+        Memory at fc4c0000 (32-bit, non-prefetchable) [size=256K]
+        Expansion ROM at fc500000 [disabled] [size=128K]
+        Capabilities: [c0] Power Management version 2
+        Capabilities: [d0] Message Signalled Interrupts: Mask- 64bit+
+Queue=0/1 Enable-
+        Capabilities: [e0] PCI-X non-bridge device
+
+Jan 31 14:41:34 kernel: [ 232.873327] megaraid cmm: 2.20.2.7 (Release
+Date: Sun Jul 16 00:01:03 EST 2006) Jan 31 14:41:34 kernel: [
+232.877616] SCSI subsystem initialized Jan 31 14:41:34 kernel: [
+232.888779] megaraid: 2.20.4.9 (Release Date: Sun Jul 16 12:27:22 EST
+2006) Jan 31 14:41:34 kernel: [ 232.889835] megasas: 00.00.03.05 Mon Oct
+02 11:21:32 PDT 2006 Jan 31 14:41:34 kernel: [ 233.513659] megasas:
+0x1028:0x0015:0x1028:0x1f03: <6>megaraid: probe new device
+0x1000:0x0408:0x1028:0x0002: bus 13:slot 14:func 0 Jan 31 14:41:34
+kernel: [ 233.514770] megasas: FW now in Ready state Jan 31 14:41:34
+kernel: [ 233.528893] megaraid: fw version:[522A] bios version:[H430]
+Jan 31 14:41:34 kernel: [ 233.554778] scsi2 : LSI Logic SAS based
+MegaRAID driver Jan 31 14:41:34 kernel: [ 233.555536] scsi 2:0:0:0:
+Direct-Access MAXTOR ATLAS10K5_073SAS BP00 PQ: 0 ANSI: 5 Jan 31 14:41:34
+kernel: [ 233.556173] scsi 2:0:1:0: Direct-Access MAXTOR
+ATLAS10K5_073SAS BP00 PQ: 0 ANSI: 5 Jan 31 14:41:34 kernel: [
+233.569337] scsi3 : LSI Logic MegaRAID driver Jan 31 14:41:34 kernel: [
+233.569550] scsi[3]: scanning scsi channel 0 [Phy 0] for non-raid
+devices Jan 31 14:41:34 kernel: [ 233.604522] scsi 2:0:8:0: Enclosure DP
+BACKPLANE 1.00 PQ: 0 ANSI: 5 Jan 31 14:41:41 kernel: [ 243.115199]
+megaraid: aborting-16 cmd=12 <c=0 t=12 l=0> Jan 31 14:41:41 kernel: [
+243.115206] megaraid abort: 16:0[0:12], fw owner Jan 31 14:41:41 kernel:
+[ 243.115217] megaraid: 1 outstanding commands. Max wait 300 sec Jan 31
+14:41:41 kernel: [ 243.115221] megaraid mbox: Wait for 1 commands to
+complete:300 Jan 31 14:41:46 kernel: [ 248.125812] megaraid mbox: Wait
+for 1 commands to complete:295 Jan 31 14:41:48 kernel: [ 250.134075]
+megaraid mbox: reset sequence completed sucessfully Jan 31 14:41:58
+kernel: [ 260.117201] megaraid: aborting-16 cmd=0 <c=0 t=12 l=0>Jan 31
+14:41:58 kernel: [ 260.117207] megaraid abort: 16:0[0:12], fw owner Jan
+31 14:41:58 kernel: [ 260.117217] megaraid: 1 outstanding commands. Max
+wait 300 sec Jan 31 14:41:58 kernel: [ 260.117223] megaraid mbox: Wait
+for 1 commands to complete:300 Jan 31 14:42:03 kernel: [ 265.127417]
+megaraid mbox: Wait for 1 commands to complete:295 Jan 31 14:42:08
+kernel: [ 270.140211] megaraid mbox: Wait for 1 commands to complete:290
+Jan 31 14:42:12 kernel: [ 274.146803] megaraid mbox: reset sequence
+completed sucessfully [ nothing else that appears relevant ]
 
 
+-- 
+Matthias Urlichs   |   {M:U} IT Design @ m-u-it.de   |
+smurf@smurf.noris.de
+Disclaimer: The quote was selected randomly. Really. |
+http://smurf.noris.de
+ - -
+Those who welcome death have only tried it from the ears up.
+					-- Wilson Mizner
+
+-
+To unsubscribe from this list: send the line "unsubscribe linux-scsi" in
+the body of a message to majordomo@vger.kernel.org More majordomo info
+at  http://vger.kernel.org/majordomo-info.html
