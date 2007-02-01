@@ -1,63 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422738AbXBASbm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422926AbXBASfh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422738AbXBASbm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Feb 2007 13:31:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422923AbXBASbm
+	id S1422926AbXBASfh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Feb 2007 13:35:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422925AbXBASfh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Feb 2007 13:31:42 -0500
-Received: from nic.NetDirect.CA ([216.16.235.2]:52566 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422738AbXBASbl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Feb 2007 13:31:41 -0500
-X-Originating-Ip: 74.109.98.130
-Date: Thu, 1 Feb 2007 13:30:24 -0500 (EST)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@CPE00045a9c397f-CM001225dbafb6
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-cc: Judith Lebzelter <judith@osdl.org>, ebiederm@xmission.com,
-       linux-kernel@vger.kernel.org, fastboot@osdl.org
-Subject: Re: [ PATCH ] fix to documentation for kexec
-In-Reply-To: <Pine.LNX.4.61.0702011923530.13737@yvahk01.tjqt.qr>
-Message-ID: <Pine.LNX.4.64.0702011329550.16875@CPE00045a9c397f-CM001225dbafb6>
-References: <20070201181955.GE5825@shell0.pdx.osdl.net>
- <Pine.LNX.4.61.0702011923530.13737@yvahk01.tjqt.qr>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+	Thu, 1 Feb 2007 13:35:37 -0500
+Received: from smtp3-g19.free.fr ([212.27.42.29]:39467 "EHLO smtp3-g19.free.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1422926AbXBASfg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Feb 2007 13:35:36 -0500
+X-Greylist: delayed 2104 seconds by postgrey-1.27 at vger.kernel.org; Thu, 01 Feb 2007 13:35:36 EST
+Subject: Re: sky2 or acpi problem ?
+From: Lionel Landwerlin <landwer@free.fr>
+To: Fagyal Csongor <concept@conceptonline.hu>
+Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+In-Reply-To: <45C22F57.3030804@conceptonline.hu>
+References: <1170352795.5299.17.camel@cocoduo>
+	 <45C22F57.3030804@conceptonline.hu>
+Content-Type: text/plain; charset=UTF-8
+Date: Thu, 01 Feb 2007 19:35:32 +0100
+Message-Id: <1170354932.6698.4.camel@cocoduo>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 1 Feb 2007, Jan Engelhardt wrote:
+Le jeudi 01 février 2007 à 19:20 +0100, Fagyal Csongor a écrit :
+> Lionel Landwerlin wrote:
 
->
-> >@@ -228,8 +228,8 @@ Notes on loading the dump-capture kernel
-> > * You must specify <root-dev> in the format corresponding to the root
-> >   device name in the output of mount command.
-> >
-> >-* "init 1" boots the dump-capture kernel into single-user mode without
-> >-  networking. If you want networking, use "init 3."
-> >+* Boot parameter "1" boots the dump-capture kernel into single-user mode
-> >+  without networking. If you want networking, use "3".
->
-> Yup. More precisely, any arguments that could not be parsed (because
-> the kernel does not know them) are handed down to the init program
-> as arguments and/or environment variables.
+> I have idle=poll now, according to this thread:
+> 
+> http://www.gossamer-threads.com/lists/linux/kernel/725399
+> 
+> 
+> No lockup so far, but I only have this setting since yesterday...
+> 
 
-whoops, ignore my last post, i misread the critical words.
+I tried idle=poll too, same effect than disable_msi=1, tested a couple
+of hours only, maybe this leads to crash too. But anyway this is simply
+unusable on a laptop (macbook), fan is running almost at full speed...
 
-rday
 
 -- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
+Lionel Landwerlin <landwer@free.fr>
 
-http://www.fsdev.dreamhosters.com/wiki/index.php?title=Main_Page
-========================================================================
