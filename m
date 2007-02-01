@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422714AbXBAJjJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422717AbXBAJjd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422714AbXBAJjJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Feb 2007 04:39:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422713AbXBAJjI
+	id S1422717AbXBAJjd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Feb 2007 04:39:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422720AbXBAJjd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Feb 2007 04:39:08 -0500
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:35757 "EHLO
+	Thu, 1 Feb 2007 04:39:33 -0500
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:35858 "EHLO
 	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422710AbXBAJjG convert rfc822-to-8bit (ORCPT
+	with ESMTP id S1422717AbXBAJjR convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Feb 2007 04:39:06 -0500
-Date: Thu, 1 Feb 2007 10:22:52 +0100
+	Thu, 1 Feb 2007 04:39:17 -0500
+Date: Thu, 1 Feb 2007 10:30:53 +0100
 From: =?ISO-8859-1?Q?S=E9bastien_Dugu=E9?= <sebastien.dugue@bull.net>
 To: linux-kernel <linux-kernel@vger.kernel.org>
 Cc: Andrew Morton <akpm@osdl.org>, linux-aio <linux-aio@kvack.org>,
@@ -21,103 +21,123 @@ Cc: Andrew Morton <akpm@osdl.org>, linux-aio <linux-aio@kvack.org>,
        Oleg Nesterov <oleg@tv-sign.ru>, Badari Pulavarty <pbadari@us.ibm.com>,
        Benjamin LaHaise <bcrl@linux.intel.com>,
        Jean Pierre Dion <jean-pierre.dion@bull.net>
-Subject: [PATCH -mm 0/7][AIO] - AIO completion signal notification v6
-Message-ID: <20070201102252.240130c6@frecb000686>
+Subject: [PATCH -mm 4/7][AIO] - Make good_sigevent() non-static
+Message-ID: <20070201103053.64489048@frecb000686>
+In-Reply-To: <20070201102252.240130c6@frecb000686>
+References: <20070201102252.240130c6@frecb000686>
 X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
 X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 01/02/2007 10:39:58,
+ 01/02/2007 10:40:02,
 	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 01/02/2007 10:40:05,
-	Serialize complete at 01/02/2007 10:40:05
+ 01/02/2007 10:40:10,
+	Serialize complete at 01/02/2007 10:40:10
 Content-Transfer-Encoding: 8BIT
 Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-  Hi Andrew,
+From: Sébastien Dugué <sebastien.dugue@bull.net>
 
-  here is the latest rework of the aio notification and listio support
-patches with comments from Oleg Nesterov and you addressed.
-
-  Sébastien.
-
-  This set now consists in 7 patches:
-
-	1. rework-compat-sys-io-submit: cleanup the sys_io_submit() compat layer,
-	   making it more efficient and laying out the base for the following patches
-
-	2. aio-header-fix-includes: fixes the double inclusion of uio.h in aio.h
-
-	3. aio-fix-access_ok-check: fixes the access_ok() checks
-
-	4. make-good_sigevent-non-static: move good_sigevent into signal.c, rename
-	   it to something more meaningfull and make it non-static
-
-	5. make-__sigqueue_alloc-free-non-static: make __sigqueue_alloc() and
-	   __sigqueue_free() non static
-
-	6. aio-notify-sig: the AIO completion signal notification
-
-	7. add-listio-syscall-support: adds listio support via a new syscall
-
-  Description are in the individual patches.
+                Make good_sigevent() non-static and rename it
 
 
-  Changes from v5: based on comments from Oleg Nesterov and Andrew Morton
-
-	- Fix for signo range not checked in the SIGEV_THREAD_ID case in
-	  good_sigevent()
-	- renamed good_sigevent() to sigevent_find_task()
-
-	- Fixed the access_ok checks in sys_io_submit() and
-	  compat_sys_io_submit()
-
-	- Made __sigqueue_alloc() and __sigqueue_free() non static
-	- Reworked the aio code to directly use __sigqueue_alloc() and
-	  __sigqueue_free() and avoid messing with SIGQUEUE_PREALLOC
-
-	- Removed the unneeded PF_EXITING check in aio_setup_sigevent()
-	- Added a comment in aio_setup_sigevent() for why there is no task
-	  ref leak
-	- Changed read_lock(&tasklist_lock) to rcu_read_lock() in
-	  aio_setup_sigevent()
-
-	- Fixed an ioctx reference leak in compat_sys_lio_submit()
-	- Renamed lio_check() as lio_notify()
-	- Added comments to lio_notify() and lio_create()
-	- Replaced sigqueue_free() by __sigqueue_free() in lio_notify()
-
-  Changes from v4:
-	No comments received for v4, so it must be perfect ;-)
-	replaced the IOCB_CMD_GROUP listio implementation with Bharata's
-	syscall approach which I find much cleaner.
-
-  Changes from v3:
-
-	- added justification for the compat_sys_io_submit() cleanup - Zach Brown
-	- more cleanups in compat_sys_io_submit() to put it in line with
-	  sys_io_submit() - Zach Brown
-
-	- Changed "Export good_sigevent()" patch name to "Make good_sigevent()
-	  non-static" to better describe what it does. - Christoph Hellwig
-	- Reworked good_sigevent() to make it more readable. - Christoph Hellwig
-
-	- Simplified the use of the SIGEV_* constants in signal notification -
-	  Christoph Hellwig
-	- Take a reference on the target task both for the SIGEV_THREAD_ID and
-	  SIGEV_SIGNAL cases.
-
-  Changes from v2:
-	- rebased to 2.6.19-rc6-mm2
-	- reworked the sys_io_submit() compat layer as suggested by Zach Brown
-	- fixed saving of a pointer to a task struct in aio-notify-sig as
-	  pointed out by Andrew Morton
-
-  Changes from v1:
-	- cleanups suggested by Christoph Hellwig, Badari Pulavarty and
-	Zach Brown
-	- added lisio patch
+  Move good_sigevent() from posix-timers.c to signal.c where it belongs,
+clean it up, rename it to sigevent_find_task() to better describe what the
+function does and make it non-static so that it can be used by other
+ subsystems.
 
 
+ include/linux/signal.h |    1 +
+ kernel/posix-timers.c  |   19 +------------------
+ kernel/signal.c        |   24 ++++++++++++++++++++++++
+ 3 files changed, 26 insertions(+), 18 deletions(-)
+
+Signed-off-by: Sébastien Dugué <sebastien.dugue@bull.net>
+
+
+Index: linux-2.6.20-rc6-mm3/include/linux/signal.h
+===================================================================
+--- linux-2.6.20-rc6-mm3.orig/include/linux/signal.h	2007-01-30 11:41:27.000000000 +0100
++++ linux-2.6.20-rc6-mm3/include/linux/signal.h	2007-01-30 11:41:36.000000000 +0100
+@@ -240,6 +240,7 @@ extern int sigprocmask(int, sigset_t *, 
+ 
+ struct pt_regs;
+ extern int get_signal_to_deliver(siginfo_t *info, struct k_sigaction *return_ka, struct pt_regs *regs, void *cookie);
++extern struct task_struct * sigevent_find_task(sigevent_t *);
+ 
+ extern struct kmem_cache *sighand_cachep;
+ 
+Index: linux-2.6.20-rc6-mm3/kernel/posix-timers.c
+===================================================================
+--- linux-2.6.20-rc6-mm3.orig/kernel/posix-timers.c	2007-01-30 11:41:27.000000000 +0100
++++ linux-2.6.20-rc6-mm3/kernel/posix-timers.c	2007-01-30 11:41:36.000000000 +0100
+@@ -367,23 +367,6 @@ static enum hrtimer_restart posix_timer_
+ 	return ret;
+ }
+ 
+-static struct task_struct * good_sigevent(sigevent_t * event)
+-{
+-	struct task_struct *rtn = current->group_leader;
+-
+-	if ((event->sigev_notify & SIGEV_THREAD_ID ) &&
+-		(!(rtn = find_task_by_pid(event->sigev_notify_thread_id)) ||
+-		 rtn->tgid != current->tgid ||
+-		 (event->sigev_notify & ~SIGEV_THREAD_ID) != SIGEV_SIGNAL))
+-		return NULL;
+-
+-	if (((event->sigev_notify & ~SIGEV_THREAD_ID) != SIGEV_NONE) &&
+-	    ((event->sigev_signo <= 0) || (event->sigev_signo > SIGRTMAX)))
+-		return NULL;
+-
+-	return rtn;
+-}
+-
+ void register_posix_clock(const clockid_t clock_id, struct k_clock *new_clock)
+ {
+ 	if ((unsigned) clock_id >= MAX_CLOCKS) {
+@@ -496,7 +479,7 @@ sys_timer_create(const clockid_t which_c
+ 		new_timer->it_sigev_value = event.sigev_value;
+ 
+ 		read_lock(&tasklist_lock);
+-		if ((process = good_sigevent(&event))) {
++		if ((process = sigevent_find_task(&event))) {
+ 			/*
+ 			 * We may be setting up this process for another
+ 			 * thread.  It may be exiting.  To catch this
+Index: linux-2.6.20-rc6-mm3/kernel/signal.c
+===================================================================
+--- linux-2.6.20-rc6-mm3.orig/kernel/signal.c	2007-01-30 11:41:27.000000000 +0100
++++ linux-2.6.20-rc6-mm3/kernel/signal.c	2007-01-30 11:41:36.000000000 +0100
+@@ -1213,6 +1213,30 @@ int group_send_sig_info(int sig, struct 
+ 	return ret;
+ }
+ 
++/***
++ * sigevent_find_task - check and get target task from a sigevent.
++ * @event: the sigevent to be checked
++ *
++ * This function must be called with the tasklist_lock held for reading.
++ */
++struct task_struct * sigevent_find_task(sigevent_t * event)
++{
++	struct task_struct *task = NULL;
++
++	if (event->sigev_signo <= 0 || event->sigev_signo > SIGRTMAX)
++		return NULL;
++
++	if ((event->sigev_notify & SIGEV_THREAD_ID ) == SIGEV_THREAD_ID) {
++		task = find_task_by_pid(event->sigev_notify_thread_id);
++
++		if (!task || task->tgid != current->tgid)
++			task = NULL;
++	} else if (event->sigev_notify == SIGEV_SIGNAL)
++		task = current->group_leader;
++
++	return task;
++}
++
+ /*
+  * kill_pgrp_info() sends a signal to a process group: this is what the tty
+  * control characters do (^C, ^Z etc)
