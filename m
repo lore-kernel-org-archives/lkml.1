@@ -1,52 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030593AbXBAPRI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030595AbXBAPSH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030593AbXBAPRI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Feb 2007 10:17:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030594AbXBAPRH
+	id S1030595AbXBAPSH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Feb 2007 10:18:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030588AbXBAPSG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Feb 2007 10:17:07 -0500
-Received: from styx.suse.cz ([82.119.242.94]:33692 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1030593AbXBAPRG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Feb 2007 10:17:06 -0500
-Date: Thu, 1 Feb 2007 16:16:54 +0100
-From: Vojtech Pavlik <vojtech@suse.cz>
-To: Jiri Bohac <jbohac@suse.cz>
-Cc: Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org,
-       ssouhlal@freebsd.org, arjan@infradead.org, tglx@linutronix.de,
-       johnstul@us.ibm.com, zippel@linux-m68k.org, andrea@suse.de
-Subject: Re: [patch 4/9] Remove the TSC synchronization on SMP machines
-Message-ID: <20070201151654.GA20385@suse.cz>
-References: <20070201095952.589234000@jet.suse.cz> <20070201103753.753349000@jet.suse.cz> <200702011214.24126.ak@suse.de> <20070201131715.GM21755@dwarf.suse.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070201131715.GM21755@dwarf.suse.cz>
-X-Bounce-Cookie: It's a lemon tree, dear Watson!
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Thu, 1 Feb 2007 10:18:06 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.158]:7974 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161177AbXBAPSF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Feb 2007 10:18:05 -0500
+Subject: Re: crash on CONFIG_CFAG12864B=y in 2.6.20-rc3-mm1
+From: Daniel Walker <dwalker@mvista.com>
+To: Miguel Ojeda <maxextreme@gmail.com>
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org
+In-Reply-To: <653402b90702010716i7c0ddf71xe6fa7866323f52f4@mail.gmail.com>
+References: <1168188931.26086.255.camel@imap.mvista.com>
+	 <653402b90702010549v17e72765uc718c1ae79419003@mail.gmail.com>
+	 <653402b90702010716i7c0ddf71xe6fa7866323f52f4@mail.gmail.com>
+Content-Type: text/plain
+Date: Thu, 01 Feb 2007 07:16:31 -0800
+Message-Id: <1170342991.9781.189.camel@imap.mvista.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 01, 2007 at 02:17:15PM +0100, Jiri Bohac wrote:
-> On Thu, Feb 01, 2007 at 12:14:23PM +0100, Andi Kleen wrote:
-> > On Thursday 01 February 2007 10:59, jbohac@suse.cz wrote:
-> > > TSC is either synchronized by design or not reliable
-> > > to be used for anything, let alone timekeeping.
-> > 
-> > In my tree this is already done better by a patch from Ingo.
-> > Check if they look synchronized and don't use TSC if they are not.
+On Thu, 2007-02-01 at 16:16 +0100, Miguel Ojeda wrote:
+> The problem is easy:
 > 
-> The whole purpose of this patchset is to make use of TSC even if
-> it's not synchronized.
+> ks0108_init() prints the error message and exit with -EINVAL, so the
+> module isn't loaded properly.
 > 
-> Synchronizing it will not make anything better in any way -- the
-> implementation just does not care whether TSCs are synchronized.
-> That's why I think the synchronization code is not needed.
- 
-It might even make sense to desycnhronize the TSCs on such (AMD)
-machines on purpose, so that applications that rely on TSC break
-immediately and not after some time when the error becomes too large.
+> However, cfag12864b_init() is called, although ks0108 failed. It
+> returns 0 and after a while cfag12864b calls ks0108_writecontrol()
+> which dereferences the uninitialized pointer ks0108_parport:
+> 
+> 	parport_write_control(ks0108_parport, byte ^ (bit(0) | bit(1) | bit(3)));
+> 
+> Why is cfag12864b_init() called if ks0108 module didn't load properly?
+> Is that normal? If so, how a module should alarm other modules about
+> it failed loading?
 
--- 
-Vojtech Pavlik
-Director SuSE Labs
+I don't know if this matters, but I had this driver built-in , and not a
+module ..
+
+Daniel
+
