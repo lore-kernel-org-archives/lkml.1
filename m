@@ -1,25 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030540AbXBAIRN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030530AbXBAIS5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030540AbXBAIRN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Feb 2007 03:17:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030530AbXBAIRN
+	id S1030530AbXBAIS5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Feb 2007 03:18:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422652AbXBAIS5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Feb 2007 03:17:13 -0500
-Received: from dallas.jonmasters.org ([72.29.103.172]:3207 "EHLO
+	Thu, 1 Feb 2007 03:18:57 -0500
+Received: from dallas.jonmasters.org ([72.29.103.172]:3209 "EHLO
 	dallas.jonmasters.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030540AbXBAIRM (ORCPT
+	with ESMTP id S1030530AbXBAIS4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Feb 2007 03:17:12 -0500
-X-Greylist: delayed 468 seconds by postgrey-1.27 at vger.kernel.org; Thu, 01 Feb 2007 03:17:12 EST
-Date: Thu, 1 Feb 2007 08:09:24 +0000
+	Thu, 1 Feb 2007 03:18:56 -0500
+Date: Thu, 1 Feb 2007 08:10:36 +0000
 From: Jon Masters <jonathan@jonmasters.org>
 To: Andrew Morton <akpm@osdl.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] Update MAINTAINERS file entry for module-init-tools
-Message-ID: <20070201080924.GB32510@dallas.jonmasters.org>
+Cc: Jon Masters <jonathan@jonmasters.org>, linux-kernel@vger.kernel.org
+Subject: Re: New module-init-tools pre-release (v3.3-pre6)
+Message-ID: <20070201081036.GC32510@dallas.jonmasters.org>
+References: <45C188AB.1060207@jonmasters.org> <20070131231731.4b88d8f6.akpm@osdl.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20070131231731.4b88d8f6.akpm@osdl.org>
 User-Agent: Mutt/1.5.11
 X-SA-Exim-Connect-IP: <locally generated>
 X-SA-Exim-Mail-From: jcm@dallas.jonmasters.org
@@ -27,34 +28,14 @@ X-SA-Exim-Scanned: No (on dallas.jonmasters.org); SAEximRunCond expanded to fals
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jon Masters has taken over upstream maintainership of module-init-tools from
-Rusty, update MAINTAINERS file to reflect this change and to provide
-information about the location of new releases and the mailing list.
+On Wed, Jan 31, 2007 at 11:17:31PM -0800, Andrew Morton wrote:
+> On Thu, 01 Feb 2007 01:28:59 -0500 Jon Masters <jonathan@jonmasters.org> wrote:
+> > I took over upstream maintainership of the module-init-tools package 
+> > from Rusty at the end of last year.
 
-Signed-off-by: Jon Masters <jcm@jonmasters.org>
+> Cool.  A patch to the kernel's ./MAINTAINERS would be appreciated.
 
----
- MAINTAINERS |    7 ++++---
- 1 files changed, 4 insertions(+), 3 deletions(-)
+Sent a patch against the MODULE SUPPORT entry in MAINTAINERS since I
+guess that's the existing entry you're refering to.
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index b0e3361..bd502a2 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -2204,9 +2204,10 @@ L:	linux-kernel@vger.kernel.org
- S:	Maintained
- 
- MODULE SUPPORT
--P:	Rusty Russell
--M:	rusty@rustcorp.com.au
--L:	linux-kernel@vger.kernel.org
-+P:	Jon Masters
-+M:	jcm@jonmasters.org
-+L:	mit-devel@lists.printk.net
-+W:	http://www.kerneltools.org/
- S:	Maintained
- 
- MOTION EYE VAIO PICTUREBOOK CAMERA DRIVER
--- 
-1.4.4.2
-
+Jon.
