@@ -1,74 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422742AbXBARNJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422737AbXBARNv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422742AbXBARNJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Feb 2007 12:13:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422740AbXBARNJ
+	id S1422737AbXBARNv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Feb 2007 12:13:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422747AbXBARNv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Feb 2007 12:13:09 -0500
-Received: from wx-out-0506.google.com ([66.249.82.239]:22053 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422742AbXBARNH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Feb 2007 12:13:07 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=lXaycn5+XJYH5gnuUZvktGcFbxiRe1H10e6aTfJ5hfRlyh/mD2gFLwJnQzzBdebMohIMf6JvW5sdkiYxruZAyosDWHwZHNiunuupjj02fPq0G5wO0PfERvHp6nR33PYHzZzTv0+iF6hxnFy8tgm2uqN+MJmsbCXqHHBiJuc5vvY=
-Message-ID: <653402b90702010913g3d91b190ud4faa2bcce3251b@mail.gmail.com>
-Date: Thu, 1 Feb 2007 18:13:06 +0100
-From: "Miguel Ojeda" <maxextreme@gmail.com>
-To: "Daniel Walker" <dwalker@mvista.com>
-Subject: Re: crash on CONFIG_CFAG12864B=y in 2.6.20-rc3-mm1
-Cc: akpm@osdl.org, linux-kernel@vger.kernel.org
-In-Reply-To: <1170342991.9781.189.camel@imap.mvista.com>
+	Thu, 1 Feb 2007 12:13:51 -0500
+Received: from rtr.ca ([64.26.128.89]:1654 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1422737AbXBARNu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Feb 2007 12:13:50 -0500
+Message-ID: <45C21FCC.7040406@rtr.ca>
+Date: Thu, 01 Feb 2007 12:13:48 -0500
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 1.5.0.9 (X11/20061206)
 MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Christoph Hellwig <hch@infradead.org>, Zach Brown <zach.brown@oracle.com>,
+       linux-kernel@vger.kernel.org, linux-aio@kvack.org,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Benjamin LaHaise <bcrl@kvack.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH 2 of 4] Introduce i386 fibril scheduling
+References: <patchbomb.1170193181@tetsuo.zabbo.net> <df7bc026d50ec5bbdd8e.1170193183@tetsuo.zabbo.net> <20070201083611.GC18233@elte.hu> <20070201130234.GA15257@elte.hu> <20070201131903.GA24683@infradead.org> <20070201135215.GA23477@elte.hu>
+In-Reply-To: <20070201135215.GA23477@elte.hu>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1168188931.26086.255.camel@imap.mvista.com>
-	 <653402b90702010549v17e72765uc718c1ae79419003@mail.gmail.com>
-	 <653402b90702010716i7c0ddf71xe6fa7866323f52f4@mail.gmail.com>
-	 <1170342991.9781.189.camel@imap.mvista.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/1/07, Daniel Walker <dwalker@mvista.com> wrote:
-> On Thu, 2007-02-01 at 16:16 +0100, Miguel Ojeda wrote:
-> > The problem is easy:
-> >
-> > ks0108_init() prints the error message and exit with -EINVAL, so the
-> > module isn't loaded properly.
-> >
-> > However, cfag12864b_init() is called, although ks0108 failed. It
-> > returns 0 and after a while cfag12864b calls ks0108_writecontrol()
-> > which dereferences the uninitialized pointer ks0108_parport:
-> >
-> > 	parport_write_control(ks0108_parport, byte ^ (bit(0) | bit(1) | bit(3)));
-> >
-> > Why is cfag12864b_init() called if ks0108 module didn't load properly?
-> > Is that normal? If so, how a module should alarm other modules about
-> > it failed loading?
+Ingo Molnar wrote:
 >
-> I don't know if this matters, but I had this driver built-in , and not a
-> module ..
->
-> Daniel
->
->
+> also, we context-switch kernel threads in 350 nsecs on current hardware 
+> and the -rt kernel is certainly happy with that and runs all hardirqs 
 
-Well, I use the word "module" for both cases: When I modprobe
-cfag12864b, if ks0108 fails, it doesn't get linked. So I thought the
-same happen for built-in drivers (in other words, I didn't think
-cfag12864b would be linked if ks0108 failed).
+Ingo, how relevant is that "350 nsecs on current hardware" claim?
 
-So I'm waiting until someone tell me what is the right way to avoid
-drivers like cfag12864b been inited if their dependencies failed.
+I don't mean that in a bad way, but my own experience suggests that
+most people doing real hard RT (or tight soft RT) are not doing it
+on x86 architectures.  But rather on lowly 1GHz (or less) ARM based
+processors and the like.
 
-Anyway, thanks for discovering the bug (I wouldn't have discovered it
-as my motherboard has parallel port ;).
+For RT issues, those are the platforms I care more about,
+as those are the ones that get embedded into real-time devices.
 
-Miguel
+??
 
--- 
-Miguel Ojeda
-http://maxextreme.googlepages.com/index.htm
+Cheers
