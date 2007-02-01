@@ -1,78 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422794AbXBAR5Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422842AbXBASAd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422794AbXBAR5Z (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Feb 2007 12:57:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422842AbXBAR5Z
+	id S1422842AbXBASAd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Feb 2007 13:00:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422849AbXBASAd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Feb 2007 12:57:25 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.158]:42759 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422794AbXBAR5Y (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Feb 2007 12:57:24 -0500
-Subject: Re: crash on CONFIG_CFAG12864B=y in 2.6.20-rc3-mm1
-From: Daniel Walker <dwalker@mvista.com>
-To: Miguel Ojeda <maxextreme@gmail.com>
-Cc: akpm@osdl.org, linux-kernel@vger.kernel.org
-In-Reply-To: <653402b90702010939t692e0852pc6750dbfae4b25f5@mail.gmail.com>
-References: <1168188931.26086.255.camel@imap.mvista.com>
-	 <653402b90702010549v17e72765uc718c1ae79419003@mail.gmail.com>
-	 <653402b90702010716i7c0ddf71xe6fa7866323f52f4@mail.gmail.com>
-	 <1170342991.9781.189.camel@imap.mvista.com>
-	 <653402b90702010913g3d91b190ud4faa2bcce3251b@mail.gmail.com>
-	 <1170350433.9781.200.camel@imap.mvista.com>
-	 <653402b90702010939t692e0852pc6750dbfae4b25f5@mail.gmail.com>
+	Thu, 1 Feb 2007 13:00:33 -0500
+Received: from smtp7-g19.free.fr ([212.27.42.64]:50213 "EHLO smtp7-g19.free.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1422842AbXBASAd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Feb 2007 13:00:33 -0500
+Subject: sky2 or acpi problem ?
+From: Lionel Landwerlin <landwer@free.fr>
+To: Stephen Hemminger <shemminger@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
 Content-Type: text/plain
-Date: Thu, 01 Feb 2007 09:55:52 -0800
-Message-Id: <1170352552.9781.212.camel@imap.mvista.com>
+Date: Thu, 01 Feb 2007 18:59:55 +0100
+Message-Id: <1170352795.5299.17.camel@cocoduo>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
+X-Mailer: Evolution 2.8.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-02-01 at 18:39 +0100, Miguel Ojeda wrote:
-> On 2/1/07, Daniel Walker <dwalker@mvista.com> wrote:
-> > On Thu, 2007-02-01 at 18:13 +0100, Miguel Ojeda wrote:
-> >
-> > > >
-> > > >
-> > >
-> > > Well, I use the word "module" for both cases: When I modprobe
-> > > cfag12864b, if ks0108 fails, it doesn't get linked. So I thought the
-> > > same happen for built-in drivers (in other words, I didn't think
-> > > cfag12864b would be linked if ks0108 failed).
-> > >
-> > > So I'm waiting until someone tell me what is the right way to avoid
-> > > drivers like cfag12864b been inited if their dependencies failed.
-> > >
-> > > Anyway, thanks for discovering the bug (I wouldn't have discovered it
-> > > as my motherboard has parallel port ;).
-> >
-> > I have a parallel port, but I don't have the cfag12864b or ks0108 .. I
-> 
-> In fact, you don't need the cfag12864b display, as the driver just
-> needs the parallel port for output (you can put some LEDs attached to
-> the parallel port to check the driver's operations and it will be
-> fine).
-> 
-> BTW, why ks0108 didn't find the 888 parallel port? Haven't you got such number?
+Hi,
+we already had words on lkml about this bug with sky2 driver.
 
-You know I think your right, it may not have a parallel port.. It's so
-common I tend to take it for granted .
+I was having problems, and you told me to use the disable_msi=1
+parameter to see what happens. After a couple of hours of testing with
+heavly ethernet load, I answered you it had fixed the problem. I was
+wrong. Now, it takes much more time to crash. Most of time, I can't even
+see what happens beacause the box is completly frozen. But after several
+crashs, I only had my keyboard locked, usb unpowered, and ethernet
+interface down, I finally had the possibility see that :
 
-> > think the simplest way to fix it would be to add a flag to ks0108 that
-> > signals successful initialization , then force cfag12864b to check for
-> > that ..
-> 
-> Sure, that won't be a problem; however, maybe there is other better way (?).
+Feb  1 18:35:06 cocoduo kernel: [59723.468000] NETDEV WATCHDOG: eth0: transmit timed out
+Feb  1 18:35:07 cocoduo kernel: [59723.468000] sky2 eth0: tx timeout
+Feb  1 18:35:07 cocoduo kernel: [59723.468000] sky2 eth0: transmit ring 64 .. 41 report=65 done=65
+Feb  1 18:35:07 cocoduo kernel: [59723.468000] sky2 status report lost?
+Feb  1 18:35:16 cocoduo kernel: [59733.200000] BUG: soft lockup detected on CPU#0!
+Feb  1 18:35:16 cocoduo kernel: [59733.200000]  [softlockup_tick+155/208] softlockup_tick+0x9b/0xd0
+Feb  1 18:35:16 cocoduo kernel: [59733.200000]  [update_process_times+49/128] update_process_times+0x31/0x80
+Feb  1 18:35:16 cocoduo kernel: [59733.200000]  [smp_apic_timer_interrupt+145/176] smp_apic_timer_interrupt+0x91/0xb0
+Feb  1 18:35:16 cocoduo kernel: [59733.200000]  [apic_timer_interrupt+31/36] apic_timer_interrupt+0x1f/0x24
+Feb  1 18:35:16 cocoduo kernel: [59733.200000]  [_spin_lock_bh+15/32] _spin_lock_bh+0xf/0x20
+Feb  1 18:35:16 cocoduo kernel: [59733.200000]  [pg0+945481365/1068803072] sky2_tx_timeout+0xf5/0x1d0 [sky2]
+Feb  1 18:35:16 cocoduo kernel: [59733.200000]  [dev_watchdog+0/208] dev_watchdog+0x0/0xd0
+Feb  1 18:35:16 cocoduo kernel: [59733.200000]  [dev_watchdog+192/208] dev_watchdog+0xc0/0xd0
+Feb  1 18:35:16 cocoduo kernel: [59733.200000]  [run_timer_softirq+273/400] run_timer_softirq+0x111/0x190
+Feb  1 18:35:16 cocoduo kernel: [59733.200000]  [__do_softirq+116/240] __do_softirq+0x74/0xf0
+Feb  1 18:35:16 cocoduo kernel: [59733.200000]  [do_softirq+59/80] do_softirq+0x3b/0x50
+Feb  1 18:35:16 cocoduo kernel: [59733.200000]  [smp_apic_timer_interrupt+150/176] smp_apic_timer_interrupt+0x96/0xb0
+Feb  1 18:35:16 cocoduo kernel: [59733.200000]  [apic_timer_interrupt+31/36] apic_timer_interrupt+0x1f/0x24
+Feb  1 18:35:16 cocoduo kernel: [59733.200000]  [pg0+943208348/1068803072] acpi_processor_idle+0x1fd/0x3b9 [processor]
+Feb  1 18:35:16 cocoduo kernel: [59733.200000]  [cpu_idle+116/208] cpu_idle+0x74/0xd0
+Feb  1 18:35:16 cocoduo kernel: [59733.200000]  [start_kernel+872/1072] start_kernel+0x368/0x430
+Feb  1 18:35:16 cocoduo kernel: [59733.200000]  [unknown_bootoption+0/624] unknown_bootoption+0x0/0x270
 
-When you build the driver as a module the module loader will only load
-what is needed, and in order .. When the same driver is built-in the
-module_init() becomes a device_initcall() , and all device_initcall's
-get executed .. So you have to expect that cfag12864b drivers initcalls
-will run eventually and will need to be careful about it's
-initialization.
+It's exactly the same error than before. What do you think of this
+trace ? Is it related to sky2 driver or acpi ? Did you add debug output
+since 2.6.19.2 (version of the kernel I'm using) that would help to fix
+that bug ? What can I do to help to fix the bug ?
 
-Daniel
+Regards,
+
+-- 
+Lionel Landwerlin <landwer@free.fr>
 
