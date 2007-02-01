@@ -1,47 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933383AbXBAGsS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933385AbXBAGtz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933383AbXBAGsS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Feb 2007 01:48:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161153AbXBAGsS
+	id S933385AbXBAGtz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Feb 2007 01:49:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161136AbXBAGtz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Feb 2007 01:48:18 -0500
-Received: from ug-out-1314.google.com ([66.249.92.170]:17178 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933383AbXBAGsR (ORCPT
+	Thu, 1 Feb 2007 01:49:55 -0500
+Received: from terminus.zytor.com ([192.83.249.54]:42777 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933385AbXBAGty (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Feb 2007 01:48:17 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=WE5Bzi+CQEW1srVgA2lSAENOQgJ0fpnHwIi7XKpesK38b+8JsFs5NEx7dAUiy1rTlXHRE9uxYd1z+3OGvfIaMtJkLpXFI6EnmGGOmGaEXgPp2k+2FJjRZQBuoY7K94oWuPHvEzxQlkfLyCR4KkYMalTK68CNnxmXvpUsa4xvzeo=
-Message-ID: <84144f020701312248r74007ea6je278adf4f27e2171@mail.gmail.com>
-Date: Thu, 1 Feb 2007 08:48:16 +0200
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Linus Torvalds" <torvalds@linux-foundation.org>
-Subject: Re: Linux 2.6.20-rc7
-Cc: "=?ISO-8859-1?Q?Pawe=C5_Sikora?=" <pluto@agmk.net>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Christoph Hellwig" <hch@lst.de>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       "Martin Peschke" <mp3@de.ibm.com>, "Andrew Morton" <akpm@osdl.org>,
-       "Adrian Bunk" <bunk@stusta.de>
-In-Reply-To: <Pine.LNX.4.64.0701310748450.3632@woody.linux-foundation.org>
+	Thu, 1 Feb 2007 01:49:54 -0500
+Message-ID: <45C18D87.6000905@zytor.com>
+Date: Wed, 31 Jan 2007 22:49:43 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
 MIME-Version: 1.0
+To: Sebastian Kemper <sebastian_ml@gmx.net>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.20-rc7 mtrr handling
+References: <200701312046.02196.sebastian_ml@gmx.net> <45C18506.5090001@zytor.com> <200702010738.39497.sebastian_ml@gmx.net>
+In-Reply-To: <200702010738.39497.sebastian_ml@gmx.net>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <Pine.LNX.4.64.0701302019530.11095@woody.linux-foundation.org>
-	 <45C05150.6000802@agmk.net>
-	 <Pine.LNX.4.64.0701310748450.3632@woody.linux-foundation.org>
-X-Google-Sender-Auth: 099369d1a62f66f5
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 1/31/07, Linus Torvalds <torvalds@linux-foundation.org> wrote:
-> When do_tune_cpucache() is called at bootup, I'm not sure how safe it is
-> to do the kzalloc() thing.
+Sebastian Kemper wrote:
+> On Thursday 01 February 2007 07:13, you wrote:
+>> Sebastian Kemper wrote:
+>>> But now /proc/mtrr shows 256MB of video ram, same as lspci, whereas
+>>> the real amount of video ram (as properly detected by X) is only
+>>> 128MB.
+>> The size of the aperture doesn't have to match the actual amount of
+>> memory.  For many cards it doesn't.
+>>
+>> 	-hpa
+> 
+> Hello Peter,
+> 
+> sorry, I don't understand. Are you talking about the AGP Aperture size 
+> that I can set in my BIOS or about the actual video ram on the graphics 
+> card. Because that's the one that the mtrr sets to its double size.
 
-The kzalloc thing is safe as we have already successfully boostrapped
-all kmalloc caches at that point. The per-CPU caches that are replaced
-by do_tune_cpucache() point to boostrap-time array caches there (see
-use of struct arraycache_init in setup_cpu_cache).
+Neither.  I'm talking about the window in the address space, as shown in 
+/proc/pci.
+
+	-hpa
