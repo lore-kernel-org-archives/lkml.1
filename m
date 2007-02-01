@@ -1,49 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161227AbXBAHKJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161229AbXBAHNK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161227AbXBAHKJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Feb 2007 02:10:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161229AbXBAHKJ
+	id S1161229AbXBAHNK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Feb 2007 02:13:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161232AbXBAHNK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Feb 2007 02:10:09 -0500
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:32900 "EHLO 2ka.mipt.ru"
+	Thu, 1 Feb 2007 02:13:10 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:46031 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161227AbXBAHKH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Feb 2007 02:10:07 -0500
-Date: Thu, 1 Feb 2007 10:09:30 +0300
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Lee Revell <rlrevell@joe-job.com>
-Cc: linux-kernel@vger.kernel.org, libc-alpha@sources.redhat.com
-Subject: Re: [ANN] Userspace M-on-N threading model implementation. Alpha release.
-Message-ID: <20070201070930.GA26436@2ka.mipt.ru>
-References: <20070129145227.GA10524@2ka.mipt.ru> <75b66ecd0701312028w7866c608hbf70593055c92b19@mail.gmail.com>
+	id S1161229AbXBAHNI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Feb 2007 02:13:08 -0500
+Date: Wed, 31 Jan 2007 23:12:53 -0800
+From: Andrew Morton <akpm@osdl.org>
+To: David Chinner <dgc@sgi.com>
+Cc: Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: 2.6.20-rc6-mm3
+Message-Id: <20070131231253.fdebc9f5.akpm@osdl.org>
+In-Reply-To: <20070201062018.GC33919298@melbourne.sgi.com>
+References: <20070129204528.eb8d695e.akpm@osdl.org>
+	<Pine.LNX.4.64.0701311559310.11853@schroedinger.engr.sgi.com>
+	<20070131162422.6bccc52c.akpm@osdl.org>
+	<Pine.LNX.4.64.0701311626160.12104@schroedinger.engr.sgi.com>
+	<20070131163638.290f40c1.akpm@osdl.org>
+	<20070201062018.GC33919298@melbourne.sgi.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=koi8-r
-Content-Disposition: inline
-In-Reply-To: <75b66ecd0701312028w7866c608hbf70593055c92b19@mail.gmail.com>
-User-Agent: Mutt/1.5.9i
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.7.5 (2ka.mipt.ru [0.0.0.0]); Thu, 01 Feb 2007 10:09:35 +0300 (MSK)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 31, 2007 at 11:28:07PM -0500, Lee Revell (rlrevell@joe-job.com) wrote:
-> On 1/29/07, Evgeniy Polyakov <johnpol@2ka.mipt.ru> wrote:
-> >1. Scheduling fairness.
-> >Since kernel does not know about multiple threads behind given process,
-> >it can not add it appropriate number of timeslices for execution.
-> >Can be solved either by more tight collaboarion of the userspace and
-> >kernelspace schedulers or simply by increasing process' nice value.
-> 
-> nice value is only meaningful for SCHED_OTHER.  How will you handle a
-> multithreaded realtime application that uses SCHED_OTHER as well as
-> SCHED_FIFO threads?
+On Thu, 1 Feb 2007 17:20:18 +1100 David Chinner <dgc@sgi.com> wrote:
 
-Threads created inside one process obviously can not compete with RT
-threads created by other process. Instead process, which threads have RT
-priority itself should change its priority to RT to compete with other
-RT process. (By RT I mean any cases except SCHED_OTHER which is
-default).
+> What are the new unplugging rules introduced by the git-block
+> patch?
 
-> Lee
+Pretty simple: you read the largely-useless changelog then call the bravely
+uncommented blk_plug_current() when you're about to submit some IO and you
+call the audaciously uncommented blk_unplug_current() when you've finished
+and you're ready to let it rip.
 
--- 
-	Evgeniy Polyakov
+But usually none of that is necessary, because io_schedule() does all the
+work for you.
+
+err, this might help.
+
+--- a/fs/xfs/linux-2.6/xfs_buf.c~git-block-xfs-fix
++++ a/fs/xfs/linux-2.6/xfs_buf.c
+@@ -979,7 +979,7 @@ xfs_buf_wait_unpin(
+ 		set_current_state(TASK_UNINTERRUPTIBLE);
+ 		if (atomic_read(&bp->b_pin_count) == 0)
+ 			break;
+-		schedule();
++		io_schedule();
+ 	}
+ 	remove_wait_queue(&bp->b_waiters, &wait);
+ 	set_current_state(TASK_RUNNING);
+_
+
