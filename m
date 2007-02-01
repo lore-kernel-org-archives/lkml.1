@@ -1,81 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422852AbXBASFO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422865AbXBASRK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422852AbXBASFO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Feb 2007 13:05:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422867AbXBASFO
+	id S1422865AbXBASRK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Feb 2007 13:17:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422899AbXBASRK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Feb 2007 13:05:14 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:36406 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422852AbXBASFM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Feb 2007 13:05:12 -0500
-Date: Thu, 1 Feb 2007 19:02:47 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Mark Lord <lkml@rtr.ca>
-Cc: Christoph Hellwig <hch@infradead.org>, Zach Brown <zach.brown@oracle.com>,
-       linux-kernel@vger.kernel.org, linux-aio@kvack.org,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Benjamin LaHaise <bcrl@kvack.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH 2 of 4] Introduce i386 fibril scheduling
-Message-ID: <20070201180247.GA561@elte.hu>
-References: <patchbomb.1170193181@tetsuo.zabbo.net> <df7bc026d50ec5bbdd8e.1170193183@tetsuo.zabbo.net> <20070201083611.GC18233@elte.hu> <20070201130234.GA15257@elte.hu> <20070201131903.GA24683@infradead.org> <20070201135215.GA23477@elte.hu> <45C21FCC.7040406@rtr.ca>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 1 Feb 2007 13:17:10 -0500
+Received: from wx-out-0506.google.com ([66.249.82.236]:51952 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422865AbXBASRJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Feb 2007 13:17:09 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=gR1WG8TB6rFtNpSidj2I05YZ3ARI+iUsNj3GAj3+DONidw6LfFQm0DexmxQJLS8coOV5sXCjam07TmQKMC19rkLl7Ex+P9WYnx9rwAcm57JA0uCBtdcBuXKuIHn3qli+RsaG4LK98mDEwIKSW1r9ZCP1gjdFBK9Z9kxbxyYl3XI=
+Message-ID: <653402b90702011017j4c8602e8v983fb224662a5e3d@mail.gmail.com>
+Date: Thu, 1 Feb 2007 19:17:08 +0100
+From: "Miguel Ojeda" <maxextreme@gmail.com>
+To: "Daniel Walker" <dwalker@mvista.com>
+Subject: Re: crash on CONFIG_CFAG12864B=y in 2.6.20-rc3-mm1
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org
+In-Reply-To: <1170352552.9781.212.camel@imap.mvista.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <45C21FCC.7040406@rtr.ca>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.8
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.8 required=5.9 tests=ALL_TRUSTED,BAYES_40 autolearn=no SpamAssassin version=3.0.3
-	-3.3 ALL_TRUSTED            Did not pass through any untrusted hosts
-	0.5 BAYES_40               BODY: Bayesian spam probability is 20 to 40%
-	[score: 0.3314]
+References: <1168188931.26086.255.camel@imap.mvista.com>
+	 <653402b90702010549v17e72765uc718c1ae79419003@mail.gmail.com>
+	 <653402b90702010716i7c0ddf71xe6fa7866323f52f4@mail.gmail.com>
+	 <1170342991.9781.189.camel@imap.mvista.com>
+	 <653402b90702010913g3d91b190ud4faa2bcce3251b@mail.gmail.com>
+	 <1170350433.9781.200.camel@imap.mvista.com>
+	 <653402b90702010939t692e0852pc6750dbfae4b25f5@mail.gmail.com>
+	 <1170352552.9781.212.camel@imap.mvista.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 2/1/07, Daniel Walker <dwalker@mvista.com> wrote:
+> On Thu, 2007-02-01 at 18:39 +0100, Miguel Ojeda wrote:
+> > On 2/1/07, Daniel Walker <dwalker@mvista.com> wrote:
+> > > On Thu, 2007-02-01 at 18:13 +0100, Miguel Ojeda wrote:
+> > >
+> > > > >
+> > > > >
+> > > >
+> > > > Well, I use the word "module" for both cases: When I modprobe
+> > > > cfag12864b, if ks0108 fails, it doesn't get linked. So I thought the
+> > > > same happen for built-in drivers (in other words, I didn't think
+> > > > cfag12864b would be linked if ks0108 failed).
+> > > >
+> > > > So I'm waiting until someone tell me what is the right way to avoid
+> > > > drivers like cfag12864b been inited if their dependencies failed.
+> > > >
+> > > > Anyway, thanks for discovering the bug (I wouldn't have discovered it
+> > > > as my motherboard has parallel port ;).
+> > >
+> > > I have a parallel port, but I don't have the cfag12864b or ks0108 .. I
+> >
+> > In fact, you don't need the cfag12864b display, as the driver just
+> > needs the parallel port for output (you can put some LEDs attached to
+> > the parallel port to check the driver's operations and it will be
+> > fine).
+> >
+> > BTW, why ks0108 didn't find the 888 parallel port? Haven't you got such
+> number?
+>
+> You know I think your right, it may not have a parallel port.. It's so
+> common I tend to take it for granted .
+>
 
-* Mark Lord <lkml@rtr.ca> wrote:
+Sadly, parallel ports are dying :(
 
-> >also, we context-switch kernel threads in 350 nsecs on current 
-> >hardware and the -rt kernel is certainly happy with that and runs all 
-> >hardirqs
-> 
-> Ingo, how relevant is that "350 nsecs on current hardware" claim?
-> 
-> I don't mean that in a bad way, but my own experience suggests that 
-> most people doing real hard RT (or tight soft RT) are not doing it on 
-> x86 architectures.  But rather on lowly 1GHz (or less) ARM based 
-> processors and the like.
+> > > think the simplest way to fix it would be to add a flag to ks0108 that
+> > > signals successful initialization , then force cfag12864b to check for
+> > > that ..
+> >
+> > Sure, that won't be a problem; however, maybe there is other better way
+> (?).
+>
+> When you build the driver as a module the module loader will only load
+> what is needed, and in order .. When the same driver is built-in the
+> module_init() becomes a device_initcall() , and all device_initcall's
+> get executed .. So you have to expect that cfag12864b drivers initcalls
+> will run eventually and will need to be careful about it's
+> initialization.
 
-it's not relevant to those embedded boards, but it's relevant to the AIO 
-discussion, which centers around performance.
+That is the real problem, indeed.
 
-> For RT issues, those are the platforms I care more about, as those are 
-> the ones that get embedded into real-time devices.
+>
+> Daniel
+>
+>
 
-yeah. Nevertheless if you want to use -rt on your desktop (under Fedora 
-4/5/6) you can track an rpmized+distroized full kernel package quite 
-easily, via 3 easy commands:
+All right, if there is no other better way to avoid that, I will send
+the patch soon.
 
-   cd /etc/yum.repos.d
-   wget http://people.redhat.com/~mingo/realtime-preempt/rt.repo
+Miguel
 
-   yum install kernel-rt.x86_64   # on x86_64
-   yum install kernel-rt          # on i686
-
-which is closely tracking latest upstream -git. (for example, the 
-current kernel-rt-2.6.20-rc7.1.rt3.0109.i686.rpm is based on 
-2.6.20-rc7-git1, so if you want to run a kernel rpm that has all of 
-Linus' latest commits from yesterday, this might be for you.)
-
-it's rumored to be a quite smooth kernel ;-) So in this sense, because 
-this also runs on all my testboxes by default, it matters on modern 
-hardware too, at least to me. Today's commodity hardware is tomorrow's 
-embedded hardware. If a kernel is good on today's colorful desktop 
-hardware then it will be perfect for tomorrow's embedded hardware.
-
-	Ingo
+-- 
+Miguel Ojeda
+http://maxextreme.googlepages.com/index.htm
