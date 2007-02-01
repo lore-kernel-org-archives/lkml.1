@@ -1,463 +1,202 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422807AbXBALOB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422798AbXBALOl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422807AbXBALOB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Feb 2007 06:14:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422805AbXBALNx
+	id S1422798AbXBALOl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Feb 2007 06:14:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422801AbXBALOk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Feb 2007 06:13:53 -0500
-Received: from styx.suse.cz ([82.119.242.94]:53762 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751783AbXBALMf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Feb 2007 06:12:35 -0500
-Message-Id: <20070201103754.281474000@jet.suse.cz>
-References: <20070201095952.589234000@jet.suse.cz>
-User-Agent: quilt/0.44-16.5
-Date: Thu, 01 Feb 2007 11:00:01 +0100
-From: jbohac@suse.cz
-To: Andi Kleen <ak@suse.de>
-Cc: linux-kernel@vger.kernel.org, Jiri Bohac <jbohac@suse.cz>,
-       Vojtech Pavlik <vojtech@suse.cz>, ssouhlal@freebsd.org,
-       arjan@infradead.org, tglx@linutronix.de, johnstul@us.ibm.com,
-       zippel@linux-m68k.org, andrea@suse.de
-Subject: [patch 9/9] Make use of the Master Timer
-Content-Disposition: inline; filename=use_master_timer
+	Thu, 1 Feb 2007 06:14:40 -0500
+Received: from mail.alkar.net ([195.248.191.95]:58109 "EHLO mail.alkar.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1422806AbXBALNv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Feb 2007 06:13:51 -0500
+From: "Vladimir V. Saveliev" <vs@namesys.com>
+To: Adrian Bunk <bunk@stusta.de>
+Subject: Re: How many people are using 2.6.16?
+Date: Thu, 1 Feb 2007 15:13:03 +0300
+User-Agent: KMail/1.8.2
+Cc: reiserfs-dev@namesys.com, Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+References: <45BE5948.6060403@redhat.com> <Pine.LNX.4.64.0701301748230.3611@woody.linux-foundation.org> <20070131070237.GT3754@stusta.de>
+In-Reply-To: <20070131070237.GT3754@stusta.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200702011513.04627.vs@namesys.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Make use of the whole Master Timer infrastructure in gettimeofday, 
-monotonic_clock, etc.
+Hello
 
-Also make the vsyscall version of gettimeofday use the guess_mt() if
-possible.
+On Wednesday 31 January 2007 10:02, Adrian Bunk wrote:
+> On Tue, Jan 30, 2007 at 06:36:48PM -0800, Linus Torvalds wrote:
+> > 
+> > 
+> > On Tue, 30 Jan 2007, Mark Lord wrote:
+> > > 
+> > > I believe our featherless leader said he though it was an ancient bug,
+> > > exasperated by something that went into 2.6.19.
+> > > 
+> > > If Linus's opinion is correct (still?), then the bug exists in all
+> > > kernels since somewhere back in the 2.4.xx days.
+> > 
+> > The issue was somewhat confused by people certainly *reporting* it for 
+> > older kernels. Also, as part of the dirty bit cleanups and sanity 
+> > checkingwe did actually seem to fix a long-standing CIFS corruption (and 
+> > apparently reisertfs/XFS problems too).
+> > 
+> > But the *common* case was actually introduced with 2.6.19, and 2.6.16 
+> > wouldn't be affected. 
+> 
+> Thanks for the clarifications.
+> 
+> Regarding the longstanding CIFS/reiserfs/XFS problems, it seems the 
+> status is:
+> 
+> CIFS:
+> commit cb876f451455b6187a7d69de2c112c45ec4b7f99
+>   Fix up CIFS for "test_clear_page_dirty()" removal
+> queued for 2.6.19.3
+> applies and compiles against 2.6.16
+> 
+> reiserfs:
+> commit de14569f94513279e3d44d9571a421e9da1759ae
+>   [PATCH] resierfs: avoid tail packing if an inode was ever mmapped
+> backport to 2.6.16 required
+> 
 
-Signed-off-by: Jiri Bohac <jbohac@suse.cz>
+Here it goes:
 
-Index: linux-2.6.20-rc5/arch/x86_64/kernel/time.c
-===================================================================
---- linux-2.6.20-rc5.orig/arch/x86_64/kernel/time.c
-+++ linux-2.6.20-rc5/arch/x86_64/kernel/time.c
-@@ -341,27 +341,48 @@ inline u64 mt_to_nsec(u64 mt)
- }
+From: akpm@osdl.org
+
+The patch titled
+     resierfs: avoid tail packing if an inode was ever mmapped
+has been added to the -mm tree.  Its filename is
+     reiserfs-avoid-tail-packing-if-an-inode-was-ever-mmapped.patch
+
+See http://www.zip.com.au/~akpm/linux/patches/stuff/added-to-mm.txt to find
+out what to do about this
+
+------------------------------------------------------
+Subject: resierfs: avoid tail packing if an inode was ever mmapped
+From: Vladimir Saveliev <vs@namesys.com>
+
+This patch fixes a confusion reiserfs has for a long time.
+
+On release file operation reiserfs used to try to pack file data stored in
+last incomplete page of some files into metadata blocks.  After packing the
+page got cleared with clear_page_dirty.  It did not take into account that
+the page may be mmaped into other process's address space.  Recent
+replacement for clear_page_dirty cancel_dirty_page found the confusion with
+sanity check that page has to be not mapped.
+
+The patch fixes the confusion by making reiserfs avoid tail packing if an
+inode was ever mmapped.  reiserfs_mmap and reiserfs_file_release are
+serialized with mutex in reiserfs specific inode.  reiserfs_mmap locks the
+mutex and sets a bit in reiserfs specific inode flags. 
+reiserfs_file_release checks the bit having the mutex locked.  If bit is
+set - tail packing is avoided.  This eliminates a possibility that mmapped
+page gets cancel_page_dirty-ed.
+
+Signed-off-by: Vladimir Saveliev <vs@namesys.com>
+Cc: Jeff Mahoney <jeffm@suse.com>
+Cc: Chris Mason <mason@suse.com>
+Signed-off-by: Andrew Morton <akpm@osdl.org>
+---
+
+diff -puN fs/reiserfs/file.c~reiserfs-avoid-tail-packing-if-an-inode-was-ever-mmapped fs/reiserfs/file.c
+
+
+
+diff -puN fs/reiserfs/file.c~reiserfs-avoid-tail-packing-if-an-inode-was-ever-mmapped fs/reiserfs/file.c
+--- linux-2.6.16/fs/reiserfs/file.c~reiserfs-avoid-tail-packing-if-an-inode-was-ever-mmapped	2007-02-01 12:30:08.000000000 +0300
++++ linux-2.6.16-vs/fs/reiserfs/file.c	2007-02-01 12:43:07.000000000 +0300
+@@ -50,6 +50,11 @@ static int reiserfs_file_release(struct 
  
- /*
-- * do_gettimeoffset() returns microseconds since last timer interrupt was
-+ * do_gettimeoffset() returns nanoseconds since last timer interrupt was
-  * triggered by hardware. A memory read of HPET is slower than a register read
-  * of TSC, but much more reliable. It's also synchronized to the timer
-  * interrupt. Note that do_gettimeoffset() may return more than hpet_tick, if a
-  * timer interrupt has happened already, but vxtime.trigger wasn't updated yet.
-  * This is not a problem, because jiffies hasn't updated either. They are bound
-  * together by xtime_lock.
-+ *
-+ * If used_mt is not null, it will be filled with the master timer value
-+ * used for the calculation
-  */
- 
--static inline unsigned int do_gettimeoffset_tsc(void)
-+static inline s64 do_gettimeoffset(u64 *used_mt)
- {
--	unsigned long t;
--	unsigned long x;
--	t = get_cycles_sync();
--	if (t < vxtime.last_tsc) 
--		t = vxtime.last_tsc; /* hack */
--	x = ((t - vxtime.last_tsc) * vxtime.tsc_quot) >> US_SCALE;
--	return x;
--}
-+	int cpu = 0;
-+	u64 tsc = 0, mt;
-+	switch (vxtime.mode) {
-+
-+		case VXTIME_TSC:
-+			rdtscll(tsc);
-+                        break;
-+
-+                case VXTIME_TSCP:
-+                        rdtscpll(tsc, cpu);
-+			cpu &= 0xfff;
-+			break;
- 
--unsigned int (*do_gettimeoffset)(void) = do_gettimeoffset_tsc;
-+		case VXTIME_TSCS:
-+		case VXTIME_TSCM:
-+			preempt_disable();
-+			cpu = smp_processor_id();
-+			rdtscll(tsc);
-+			preempt_enable();
-+			break;
-+	}
-+
-+	mt = guess_mt(tsc, cpu);
-+	if (used_mt)
-+		*used_mt = mt;
-+
-+	return (((s64)(mt - vxtime.mt_wall)) * (s64)vxtime.mt_q) >> 32;
-+}
- 
- /*
-  * This version of gettimeofday() has microsecond resolution and better than
-@@ -372,28 +393,32 @@ unsigned int (*do_gettimeoffset)(void) =
- void do_gettimeofday(struct timeval *tv)
- {
- 	unsigned long seq;
-- 	unsigned int sec, usec;
-+	unsigned int sec;
-+	int nsec;
-+	u64 mt;
- 
- 	do {
- 		seq = read_seqbegin(&xtime_lock);
- 
- 		sec = xtime.tv_sec;
--		usec = xtime.tv_nsec / NSEC_PER_USEC;
-+		nsec = xtime.tv_nsec;
- 
--		/* i386 does some correction here to keep the clock 
--		   monotonous even when ntpd is fixing drift.
--		   But they didn't work for me, there is a non monotonic
--		   clock anyways with ntp.
--		   I dropped all corrections now until a real solution can
--		   be found. Note when you fix it here you need to do the same
--		   in arch/x86_64/kernel/vsyscall.c and export all needed
--		   variables in vmlinux.lds. -AK */ 
--		usec += do_gettimeoffset();
-+		nsec += max(do_gettimeoffset(&mt), vxtime.ns_drift);
- 
- 	} while (read_seqretry(&xtime_lock, seq));
- 
--	tv->tv_sec = sec + usec / USEC_PER_SEC;
--	tv->tv_usec = usec % USEC_PER_SEC;
-+	/* this must be done outside the seqlock loop. Until the loop has finished,
-+	the mt may be completely wrong, calculated from incosistent data */
-+	update_monotonic_mt(mt);
-+
-+	sec += nsec / NSEC_PER_SEC;
-+	nsec %= NSEC_PER_SEC;
-+	if (nsec < 0) {
-+		--sec;
-+		nsec += NSEC_PER_SEC;
-+	}
-+	tv->tv_sec = sec;
-+	tv->tv_usec = nsec / NSEC_PER_USEC;
- }
- 
- EXPORT_SYMBOL(do_gettimeofday);
-@@ -408,13 +433,13 @@ int do_settimeofday(struct timespec *tv)
- {
- 	time_t wtm_sec, sec = tv->tv_sec;
- 	long wtm_nsec, nsec = tv->tv_nsec;
-+	unsigned long flags;
- 
- 	if ((unsigned long)tv->tv_nsec >= NSEC_PER_SEC)
- 		return -EINVAL;
-+	write_seqlock_irqsave(&xtime_lock, flags);
- 
--	write_seqlock_irq(&xtime_lock);
--
--	nsec -= do_gettimeoffset() * NSEC_PER_USEC;
-+	nsec -= do_gettimeoffset(NULL);
- 
- 	wtm_sec  = wall_to_monotonic.tv_sec + (xtime.tv_sec - sec);
- 	wtm_nsec = wall_to_monotonic.tv_nsec + (xtime.tv_nsec - nsec);
-@@ -424,7 +449,7 @@ int do_settimeofday(struct timespec *tv)
- 
- 	ntp_clear();
- 
--	write_sequnlock_irq(&xtime_lock);
-+	write_sequnlock_irqrestore(&xtime_lock, flags);
- 	clock_was_set();
- 	return 0;
- }
-@@ -519,27 +544,32 @@ static void set_rtc_mmss(unsigned long n
- 	spin_unlock(&rtc_lock);
- }
- 
--
- /* monotonic_clock(): returns # of nanoseconds passed since time_init()
-  *		Note: This function is required to return accurate
-  *		time even in the absence of multiple timer ticks.
-  */
--static inline unsigned long long cycles_2_ns(unsigned long long cyc);
- unsigned long long monotonic_clock(void)
- {
--	unsigned long seq;
-- 	u32 last_offset, this_offset, offset;
--	unsigned long long base;
-+	int cpu;
-+	unsigned long flags;
-+	u64 t;
- 
--		do {
--			seq = read_seqbegin(&xtime_lock);
-+	/* any code that modifies the per-CPU variables used in guess_mt
-+	   will always run on this CPU, so we don't need to lock the xtime_lock
-+	   here. If we did, it would create a deadlock on debug printks (and
-+	   possibly elsewhere) called from other critical sections protected by
-+	   the lock */
- 
--			last_offset = vxtime.last_tsc;
--			base = monotonic_base;
--		} while (read_seqretry(&xtime_lock, seq));
--		this_offset = get_cycles_sync();
--		offset = cycles_2_ns(this_offset - last_offset);
--	return base + offset;
-+	local_irq_save(flags);
-+
-+	cpu = smp_processor_id();
-+	rdtscll(t);
-+	t = guess_mt(t, cpu);
-+	update_monotonic_mt(t);
-+
-+	local_irq_restore(flags);
-+
-+	return mt_to_nsec(t);
- }
- EXPORT_SYMBOL(monotonic_clock);
- 
-@@ -573,62 +603,54 @@ static noinline void handle_lost_ticks(i
- void main_timer_handler(void)
- {
- 	static unsigned long rtc_update = 0;
--	unsigned long tsc;
--	int delay = 0, offset = 0, lost = 0;
--
--/*
-- * Here we are in the timer irq handler. We have irqs locally disabled (so we
-- * don't need spin_lock_irqsave()) but we don't know if the timer_bh is running
-- * on the other CPU, so we need a lock. We also need to lock the vsyscall
-- * variables, because both do_timer() and us change them -arca+vojtech
-- */
--
--	write_seqlock(&xtime_lock);
-+	unsigned long flags;
-+	u64 mt;
-+	int ticks, i;
-+	u64 xtime_nsecs, mt_ticks;
- 
--	if (vxtime.hpet_address)
--		offset = hpet_readl(HPET_COUNTER);
-+	write_seqlock_irqsave(&xtime_lock, flags);
- 
--	if (hpet_use_timer) {
--		/* if we're using the hpet timer functionality,
--		 * we can more accurately know the counter value
--		 * when the timer interrupt occured.
--		 */
--		offset = hpet_readl(HPET_T0_CMP) - hpet_tick;
--		delay = hpet_readl(HPET_COUNTER) - offset;
-+	mt = update_master_timer64();
-+	ticks = (mt - vxtime.mt_wall + mt_per_tick / 2) / mt_per_tick;
-+	mt_ticks = ticks * mt_per_tick;
-+
-+	if (ticks > 1) {
-+		handle_lost_ticks(ticks - 1);
-+		jiffies += ticks - 1;
+ 	reiserfs_write_lock(inode->i_sb);
+ 	mutex_lock(&inode->i_mutex);
++ 
++ 	mutex_lock(&(REISERFS_I(inode)->i_mmap));
++ 	if (REISERFS_I(inode)->i_flags & i_ever_mapped)
++ 		REISERFS_I(inode)->i_flags &= ~i_pack_on_close_mask;
++ 
+ 	/* freeing preallocation only involves relogging blocks that
+ 	 * are already in the current transaction.  preallocation gets
+ 	 * freed at the end of each transaction, so it is impossible for
+@@ -100,11 +105,24 @@ static int reiserfs_file_release(struct 
+ 		err = reiserfs_truncate_file(inode, 0);
  	}
- 
--	tsc = get_cycles_sync();
--
--		offset = (((tsc - vxtime.last_tsc) *
--			   vxtime.tsc_quot) >> US_SCALE) - USEC_PER_TICK;
- 
--		if (offset < 0)
--			offset = 0;
-+/*
-+ * Do the timer stuff.
-+ * NTP will cause the actual increment of xtime to be slightly different from
-+ * NSEC_PER_TICK, so we set xtime.ns_drift to the difference. This will be used
-+ * by do_gettimeofday() to make sure the time stays monotonic.
-+ */
- 
--		if (offset > USEC_PER_TICK) {
--			lost = offset / USEC_PER_TICK;
--			offset %= USEC_PER_TICK;
-+	xtime_nsecs = xtime.tv_sec * NSEC_PER_SEC + xtime.tv_nsec;
-+	for (i = 0; i < ticks; ++i)
-+		do_timer(1);
-+	xtime_nsecs = xtime.tv_sec * NSEC_PER_SEC + xtime.tv_nsec - xtime_nsecs;
- 
--		monotonic_base += cycles_2_ns(tsc - vxtime.last_tsc);
-+	vxtime.ns_drift = (mt_ticks * mtq >> 32) - xtime_nsecs;
-+	vxtime.mt_wall += mt_ticks;
- 
--		vxtime.last_tsc = tsc - vxtime.quot * delay / vxtime.tsc_quot;
-+/*
-+ * If we have an externally synchronized Linux clock, then update CMOS clock
-+ * accordingly every ~11 minutes. set_rtc_mmss() will be called in the jiffy
-+ * closest to exactly 500 ms before the next second. If the update fails, we
-+ * don't care, as it'll be updated on the next turn, and the problem (time way
-+ * off) isn't likely to go away much sooner anyway.
-+ */
- 
--		if ((((tsc - vxtime.last_tsc) *
--		      vxtime.tsc_quot) >> US_SCALE) < offset)
--			vxtime.last_tsc = tsc -
--				(((long) offset << US_SCALE) / vxtime.tsc_quot) - 1;
-+	if (ntp_synced() && xtime.tv_sec > rtc_update &&
-+		abs(xtime.tv_nsec - 500000000) <= tick_nsec / 2) {
-+		set_rtc_mmss(xtime.tv_sec);
-+		rtc_update = xtime.tv_sec + 660;
- 	}
- 
--	if (lost > 0)
--		handle_lost_ticks(lost);
--	else
--		lost = 0;
--
--/*
-- * Do the timer stuff.
-- */
-+	write_sequnlock_irqrestore(&xtime_lock, flags);
- 
--	do_timer(lost + 1);
- #ifndef CONFIG_SMP
- 	update_process_times(user_mode(get_irq_regs()));
- #endif
-@@ -642,21 +664,6 @@ void main_timer_handler(void)
- 	if (!using_apic_timer)
- 		smp_local_timer_interrupt();
- 
--/*
-- * If we have an externally synchronized Linux clock, then update CMOS clock
-- * accordingly every ~11 minutes. set_rtc_mmss() will be called in the jiffy
-- * closest to exactly 500 ms before the next second. If the update fails, we
-- * don't care, as it'll be updated on the next turn, and the problem (time way
-- * off) isn't likely to go away much sooner anyway.
-- */
--
--	if (ntp_synced() && xtime.tv_sec > rtc_update &&
--		abs(xtime.tv_nsec - 500000000) <= tick_nsec / 2) {
--		set_rtc_mmss(xtime.tv_sec);
--		rtc_update = xtime.tv_sec + 660;
--	}
-- 
--	write_sequnlock(&xtime_lock);
+       out:
++	mutex_unlock(&(REISERFS_I(inode)->i_mmap));
+ 	mutex_unlock(&inode->i_mutex);
+ 	reiserfs_write_unlock(inode->i_sb);
+ 	return err;
  }
  
- static irqreturn_t timer_interrupt(int irq, void *dev_id)
-@@ -669,24 +676,9 @@ static irqreturn_t timer_interrupt(int i
- 	return IRQ_HANDLED;
- }
- 
--static unsigned int cyc2ns_scale __read_mostly;
--
--static inline void set_cyc2ns_scale(unsigned long cpu_khz)
--{
--	cyc2ns_scale = (NSEC_PER_MSEC << NS_SCALE) / cpu_khz;
--}
--
--static inline unsigned long long cycles_2_ns(unsigned long long cyc)
--{
--	return (cyc * cyc2ns_scale) >> NS_SCALE;
--}
--
- unsigned long long sched_clock(void)
- {
--	unsigned long a = 0;
--
--	rdtscll(a);
--	return cycles_2_ns(a);
-+	return monotonic_clock();
- }
- 
- static unsigned long get_cmos_time(void)
-Index: linux-2.6.20-rc5/arch/x86_64/kernel/vsyscall.c
-===================================================================
---- linux-2.6.20-rc5.orig/arch/x86_64/kernel/vsyscall.c
-+++ linux-2.6.20-rc5/arch/x86_64/kernel/vsyscall.c
-@@ -61,24 +61,35 @@ static __always_inline void timeval_norm
- 	}
- }
- 
--static __always_inline void do_vgettimeofday(struct timeval * tv)
-+static __always_inline u64 __guess_mt(u64 tsc, int cpu)
- {
--	long sequence, t;
--	unsigned long sec, usec;
-+	return (((tsc - __vxtime.cpu[cpu].tsc_last) * __vxtime.cpu[cpu].tsc_slope)
-+			>> TSC_SLOPE_SCALE) + __vxtime.cpu[cpu].mt_base;
-+}
-+
-+#define USEC_PER_TICK (USEC_PER_SEC / HZ)
-+static __always_inline s64 __do_gettimeoffset(u64 tsc, int cpu)
++static int reiserfs_file_mmap(struct file *file, struct vm_area_struct *vma)
 +{
-+	return (((s64)(__guess_mt(tsc, cpu) - __vxtime.mt_wall)) * (s64)__vxtime.mt_q) >> 32;
++	struct inode *inode;
++
++	inode = file->f_dentry->d_inode;
++	mutex_lock(&(REISERFS_I(inode)->i_mmap));
++	REISERFS_I(inode)->i_flags |= i_ever_mapped;
++	mutex_unlock(&(REISERFS_I(inode)->i_mmap));
++
++	return generic_file_mmap(file, vma);
 +}
 +
-+static __always_inline void do_vgettimeofday(struct timeval * tv, u64 tsc, int cpu)
-+{
-+	unsigned int sec;
-+	s64 nsec;
- 
--	do {
--		sequence = read_seqbegin(&__xtime_lock);
--		
--		sec = __xtime.tv_sec;
--		usec = __xtime.tv_nsec / 1000;
--
--			usec += ((readl((void __iomem *)
--				   fix_to_virt(VSYSCALL_HPET) + 0xf0) -
--				  __vxtime.last) * __vxtime.quot) >> 32;
--	} while (read_seqretry(&__xtime_lock, sequence));
-+	sec = __xtime.tv_sec;
-+	nsec = __xtime.tv_nsec;
-+	nsec +=	max(__do_gettimeoffset(tsc, cpu), __vxtime.drift);
- 
--	tv->tv_sec = sec + usec / 1000000;
--	tv->tv_usec = usec % 1000000;
-+	sec += nsec / NSEC_PER_SEC;
-+	nsec %= NSEC_PER_SEC;
-+	if (nsec < 0) {
-+		--sec;
-+		nsec += NSEC_PER_SEC;
-+	}
-+	tv->tv_sec = sec;
-+	tv->tv_usec = nsec / NSEC_PER_USEC;
- }
- 
- /* RED-PEN may want to readd seq locking, but then the variable should be write-once. */
-@@ -107,10 +118,39 @@ static __always_inline long time_syscall
- 
- int __vsyscall(0) vgettimeofday(struct timeval * tv, struct timezone * tz)
+ static void reiserfs_vfs_truncate_file(struct inode *inode)
  {
--	if (!__sysctl_vsyscall)
-+	int cpu = 0;
-+	u64 tsc;
-+	unsigned long seq;
-+	int do_syscall = !__sysctl_vsyscall;
-+
-+	if (tv && !do_syscall)
-+		switch (__vxtime.mode) {
-+			case VXTIME_TSC:
-+			case VXTIME_TSCP:
-+				do {
-+					seq = read_seqbegin(&__xtime_lock);
-+
-+					if (__vxtime.mode == VXTIME_TSC)
-+						rdtscll(tsc);
-+					else {
-+						rdtscpll(tsc, cpu);
-+						cpu &= 0xfff;
-+					}
-+
-+					if (unlikely(__vxtime.cpu[cpu].tsc_invalid))
-+						do_syscall = 1;
-+					else
-+						do_vgettimeofday(tv, tsc, cpu);
-+
-+				} while (read_seqretry(&__xtime_lock, seq));
-+				break;
-+			default:
-+				do_syscall = 1;
-+		}
-+
-+	if (do_syscall)
- 		return gettimeofday(tv,tz);
--	if (tv)
--		do_vgettimeofday(tv);
-+
- 	if (tz)
- 		do_get_tz(tz);
- 	return 0;
+ 	reiserfs_truncate_file(inode, 1);
+@@ -1570,7 +1588,7 @@ struct file_operations reiserfs_file_ope
+ 	.read = generic_file_read,
+ 	.write = reiserfs_file_write,
+ 	.ioctl = reiserfs_ioctl,
+-	.mmap = generic_file_mmap,
++	.mmap = reiserfs_file_mmap,
+ 	.release = reiserfs_file_release,
+ 	.fsync = reiserfs_sync_file,
+ 	.sendfile = generic_file_sendfile,
+diff -puN fs/reiserfs/inode.c~reiserfs-avoid-tail-packing-if-an-inode-was-ever-mmapped fs/reiserfs/inode.c
+--- linux-2.6.16/fs/reiserfs/inode.c~reiserfs-avoid-tail-packing-if-an-inode-was-ever-mmapped	2007-02-01 12:30:08.000000000 +0300
++++ linux-2.6.16-vs/fs/reiserfs/inode.c	2007-02-01 12:41:32.000000000 +0300
+@@ -1140,6 +1140,7 @@ static void init_inode(struct inode *ino
+ 	REISERFS_I(inode)->i_prealloc_count = 0;
+ 	REISERFS_I(inode)->i_trans_id = 0;
+ 	REISERFS_I(inode)->i_jl = NULL;
++	mutex_init(&(REISERFS_I(inode)->i_mmap));
+ 	REISERFS_I(inode)->i_acl_access = NULL;
+ 	REISERFS_I(inode)->i_acl_default = NULL;
+ 	init_rwsem(&REISERFS_I(inode)->xattr_sem);
+@@ -1847,6 +1848,7 @@ int reiserfs_new_inode(struct reiserfs_t
+ 	REISERFS_I(inode)->i_attrs =
+ 	    REISERFS_I(dir)->i_attrs & REISERFS_INHERIT_MASK;
+ 	sd_attrs_to_i_attrs(REISERFS_I(inode)->i_attrs, inode);
++	mutex_init(&(REISERFS_I(inode)->i_mmap));
+ 	REISERFS_I(inode)->i_acl_access = NULL;
+ 	REISERFS_I(inode)->i_acl_default = NULL;
+ 	init_rwsem(&REISERFS_I(inode)->xattr_sem);
+diff -puN include/linux/reiserfs_fs_i.h~reiserfs-avoid-tail-packing-if-an-inode-was-ever-mmapped include/linux/reiserfs_fs_i.h
+--- linux-2.6.16/include/linux/reiserfs_fs_i.h~reiserfs-avoid-tail-packing-if-an-inode-was-ever-mmapped	2007-02-01 12:30:08.000000000 +0300
++++ linux-2.6.16-vs/include/linux/reiserfs_fs_i.h	2007-02-01 12:35:50.000000000 +0300
+@@ -25,6 +25,7 @@ typedef enum {
+ 	i_link_saved_truncate_mask = 0x0020,
+ 	i_has_xattr_dir = 0x0040,
+ 	i_data_log = 0x0080,
++	i_ever_mapped = 0x0100
+ } reiserfs_inode_flags;
+ 
+ struct reiserfs_inode_info {
+@@ -52,6 +53,7 @@ struct reiserfs_inode_info {
+ 	 ** flushed */
+ 	unsigned long i_trans_id;
+ 	struct reiserfs_journal_list *i_jl;
++	struct mutex i_mmap;
+ 
+ 	struct posix_acl *i_acl_access;
+ 	struct posix_acl *i_acl_default;
 
---
+_
+
+
