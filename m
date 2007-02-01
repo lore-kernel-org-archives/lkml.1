@@ -1,53 +1,54 @@
-Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand id S1751690AbXAVLg4 (ORCPT <rfc822;ralf@linux-mips.org>); Mon, 22 Jan 2007 06:36:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751694AbXAVLg4 (ORCPT <rfc822;linux-kernel-outgoing>); Mon, 22 Jan 2007 06:36:56 -0500
-Received: from web53107.mail.yahoo.com ([206.190.49.57]:36611 "HELO web53107.mail.yahoo.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP id S1751690AbXAVLgz (ORCPT <rfc822;linux-kernel@vger.kernel.org>); Mon, 22 Jan 2007 06:36:55 -0500
-X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Mon, 22 Jan 2007 06:36:55 EST
-X-YMail-OSG: S_hJzUcVM1n4_NMbnUH1Im1omGprgTla4_kUt26xacLPBwYrgWlkphhP1e6NanYufqaSfuf.Z7fmXH1M.zOozXdnLiyd4U_nMtbsihF2Y0dRLFUSgQtCCVP.d73Qz9oTVmcQhIzzv7zNdOgmcXB55T9DuiMCTNPSeHA-
-Date: Mon, 22 Jan 2007 11:30:13 +0000 (GMT)
-From: Iheanacho Vitus <pride_vitus@yahoo.co.uk>
-Subject: dear GOD pls i need ur help
-To: menno@netbox.biz
-In-Reply-To: <20070119112509.59289.qmail@web53114.mail.yahoo.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <922117.15384.qm@web53107.mail.yahoo.com>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161160AbXBAFaq@vger.kernel.org>
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+	id S1161160AbXBAFaq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Feb 2007 00:30:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161177AbXBAFaq
+	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Thu, 1 Feb 2007 00:30:46 -0500
+Received: from mail.gmx.net ([213.165.64.20]:54854 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1161160AbXBAFap (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Feb 2007 00:30:45 -0500
+X-Authenticated: #14349625
+Subject: Re: 2.6.19.2 oops after resume from ram (corruption?)
+From: Mike Galbraith <efault@gmx.de>
+To: nigel@nigel.suspend2.net
+Cc: LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1170279722.5389.19.camel@nigel.suspend2.net>
+References: <1170241008.6512.10.camel@Homer.simpson.net>
+	 <1170279722.5389.19.camel@nigel.suspend2.net>
+Content-Type: text/plain
+Date: Thu, 01 Feb 2007 06:30:34 +0100
+Message-Id: <1170307834.7087.16.camel@Homer.simpson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1751690AbXAVLg4@vger.kernel.org>
 
-my dearest,father
+On Thu, 2007-02-01 at 08:42 +1100, Nigel Cunningham wrote:
+> Hi.
+> 
+> On Wed, 2007-01-31 at 11:56 +0100, Mike Galbraith wrote:
+> > Greetings,
+> > 
+> > I received the below upon first poke of firefox icon after a resume.  
+> 
+> Are you able to reproduce it reliably? Failing that, could you try
+> enabling some the kernel configuration options that help with debugging
+> memory corruption (slab corruption checking in particular will probably
+> be the most useful thing here).
 
-i am vitus by name and i am an orphan raised in the
-motherless babies home i never knew my parents till
-today as i am talking to you ,pls i need help before i
-do some thing that will lead me to my ealy grave i
-thank God for those people who have real nice life
-they should always thank their God that made a good
-way for them not like me that has no trace growing up
-to be in the mix of the rejected i shead a lot of
-tears as i type this letter i need some one to come
-and adopt me i swear i will be a good child and as for
-my real parents i hope GOD forgives them where ever
-they are ,pls breathen if you recive this letter of my
-as an insult pls forgive me it is said that when a man
-is in a critical post he will do anything to get out
-of it all i need is a fatherly love i have never
-experence it before you can call me to know me more
-+2348023668365 it is not easy to be alone .... i need
-someone to take me out of this motherless home i need
-a home i need to be adopted i am 23yrs of age and am
-still looking for a job well i hope someone out there
-will hear my cry and help.
+No, it's a never before seen event.  That said, I have had a couple of
+dead box after resume events with other kernels in the last few months,
+so I may have had corruption of a more deadly variety.  Unfortunately,
+when I'm resuming, my serial console box is almost guaranteed to be off.
 
-takecare and Godbless you amen.
+Rebuilding this particular kernel with slab debugging would probably be
+a waste of time since stable kernels get very little runtime here, but
+I'll re-add it to my config for test kernels just in case a survivable
+event should happen.
 
-vitus iheanacho
+	-Mike
 
-
-	
-	
-		
-___________________________________________________________ 
-New Yahoo! Mail is the ultimate force in competitive emailing. Find out more at the Yahoo! Mail Championships. Plus: play games and win prizes. 
-http://uk.rd.yahoo.com/evt=44106/*http://mail.yahoo.net/uk 
