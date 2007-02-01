@@ -1,66 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422839AbXBAMph@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422845AbXBAMty@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422839AbXBAMph (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Feb 2007 07:45:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422840AbXBAMph
+	id S1422845AbXBAMty (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Feb 2007 07:49:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422846AbXBAMty
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Feb 2007 07:45:37 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:59823 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422839AbXBAMph (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Feb 2007 07:45:37 -0500
-From: Andi Kleen <ak@suse.de>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [-mm patch] x86_64 GTOD: offer scalable vgettimeofday II
-Date: Thu, 1 Feb 2007 13:45:14 +0100
-User-Agent: KMail/1.9.5
-Cc: jbohac@suse.cz, linux-kernel@vger.kernel.org,
-       Vojtech Pavlik <vojtech@suse.cz>, arjan@infradead.org,
-       tglx@linutronix.de, johnstul@us.ibm.com, Andrew Morton <akpm@osdl.org>
-References: <20070201095952.589234000@jet.suse.cz> <200702011317.45876.ak@suse.de> <20070201122433.GA5255@elte.hu>
-In-Reply-To: <20070201122433.GA5255@elte.hu>
+	Thu, 1 Feb 2007 07:49:54 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:44007 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1422845AbXBAMty (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Feb 2007 07:49:54 -0500
+Date: Thu, 1 Feb 2007 13:49:37 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Len Brown <lenb@kernel.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jeff Garzik <jeff@garzik.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Linux 2.6.20-rc6 - sky2 resume breakage
+Message-ID: <20070201124937.GA1991@elf.ucw.cz>
+References: <Pine.LNX.4.64.0701241847360.25027@woody.linux-foundation.org> <20070129154518.40b0b3d3@freekitty> <Pine.LNX.4.64.0701291609180.3611@woody.linux-foundation.org> <200701300357.34304.lenb@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200702011345.14708.ak@suse.de>
+In-Reply-To: <200701300357.34304.lenb@kernel.org>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 01 February 2007 13:24, Ingo Molnar wrote:
+Hi!
 
-> if resolution is an issue then i can improve this thing to be based off 
-> a separate /optional/ hrtimer, thus if it's enabled it could enable 1000 
-> Hz (and not 1024 Hz) update for the variable. The update resolution 
-> could be tuned via a sysctl trivially, so everyone could tune the 
-> resolution of this to the value desired, and could do so runtime.
+> If we prove that Windows doesn't use the second either then it means
+> they enumerate processors  via the DSDT -- which means bringing up
+> the ACPI interpreter before bringing up SMP -- and that would require
+> a significant change to Linux boot sequence...
 
-It would be better to let the application set it without root rights 
-(afaik W. allows this).  Auto tuning beats explicit configuration anytime.
-
-Not sure it's really worth it though.
-
-My thinking was to gather more requirements of what users actually
-want first before adding all these new modi.
-
-> [ It could also be driven by the database right now: from a thread open 
->   /dev/rtc, set it to 1024 HZ, and do a gettimeofday() call in every 
->   tick - that will auto-update the timestamp. ]
-
-zmailer used to do that (or probably still does) but I always hated
-the scheme for some reason :)
-
-
-> > [...] But that would also make everything slower again due to CPU 
-> > overhead as it was learned in the 2.4->2.6 HZ transition.
-> 
-> note that this cost was measured on UP and on older hardware, and the 
-> cost of having a global 1000 Hz update gets linearly cheaper with the 
-> increase of CPUs on SMP: because only one such update has to be running. 
-> The systems those database vendors are interested in typically have a 
-> fair number of CPUs.
-
-Good point. Even on desktop with Multi Core or SMT it should be cheaper now.
-
--Andi
+Well, as we can do cpu hotplug these days... we could do this. Just
+boot up with single cpu, then bring up additional cpus at runtime...
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
