@@ -1,42 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751695AbXBAPfX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751714AbXBAPfd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751695AbXBAPfX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Feb 2007 10:35:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751714AbXBAPfX
+	id S1751714AbXBAPfd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Feb 2007 10:35:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751743AbXBAPfd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Feb 2007 10:35:23 -0500
-Received: from styx.suse.cz ([82.119.242.94]:34333 "EHLO mail.suse.cz"
+	Thu, 1 Feb 2007 10:35:33 -0500
+Received: from styx.suse.cz ([82.119.242.94]:34335 "EHLO mail.suse.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751695AbXBAPfW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Feb 2007 10:35:22 -0500
-Date: Thu, 1 Feb 2007 16:35:35 +0100 (CET)
+	id S1751714AbXBAPfc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Feb 2007 10:35:32 -0500
+Date: Thu, 1 Feb 2007 16:35:46 +0100 (CET)
 From: Jiri Kosina <jkosina@suse.cz>
 To: Andrew Morton <akpm@osdl.org>
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 0/10] fix usages of local_irq_save() and local_irq_disable()
-Message-ID: <Pine.LNX.4.64.0702011609090.13648@jikos.suse.cz>
+Subject: [PATCH 1/10] CRIS: local_irq_disable() is redundant after local_irq_save()
+In-Reply-To: <Pine.LNX.4.64.0702011609090.13648@jikos.suse.cz>
+Message-ID: <Pine.LNX.4.64.0702011612030.13648@jikos.suse.cz>
+References: <Pine.LNX.4.64.0702011609090.13648@jikos.suse.cz>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+From: Jiri Kosina <jkosina@suse.cz>
 
-the following series of 10 trivial patches contains two changes:
+CRIS: local_irq_disable() is redundant after local_irq_save()
 
-- removes local_irq_disable() on redundant places after local_irq_save()
-- turns local_save_flags() + local_irq_disable() into local_irq_save()
+arch/cris/arch-v10/kernel/time.c::get_ns_in_jiffie() contains
+local_irq_disable() call after local_irq_save(). This looks
+redundant.
 
-It was quite surprising to find it on so many places. There is another gem 
-in drivers/block/ataflop.c::do_fd_request():
+arch/cris/kernel/time.c::do_gettimeofday() contains
+local_irq_disable() call after local_irq_save(). This looks
+redundant.
 
-        local_save_flags(flags);        /* The request function is called with ints
-        local_irq_disable();             * disabled... so must save the IPL for later */
+Signed-off-by: Jiri Kosina <jkosina@suse.cz>
 
-I am not sure if the author was aware of the fact that he commented also 
-the local_irq_disable() call :) I will look into the code a bit more 
-later, to see whether it just really wants to save flags, or this should 
-be converted into standard local_irq_save(flags).
+---
 
--- 
-Jiri Kosina
+ arch/cris/arch-v10/kernel/time.c |    1 -
+ arch/cris/kernel/time.c          |    1 -
+ 2 files changed, 0 insertions(+), 2 deletions(-)
+
+diff --git a/arch/cris/arch-v10/kernel/time.c b/arch/cris/arch-v10/kernel/time.c
+index ebacf14..077e973 100644
+--- a/arch/cris/arch-v10/kernel/time.c
++++ b/arch/cris/arch-v10/kernel/time.c
+@@ -38,7 +38,6 @@ unsigned long get_ns_in_jiffie(void)
+ 	unsigned long flags;
+ 
+ 	local_irq_save(flags);
+-	local_irq_disable();
+ 	timer_count = *R_TIMER0_DATA;
+ 	presc_count = *R_TIM_PRESC_STATUS;  
+ 	/* presc_count might be wrapped */
+diff --git a/arch/cris/kernel/time.c b/arch/cris/kernel/time.c
+index 0f9213c..22a1aa5 100644
+--- a/arch/cris/kernel/time.c
++++ b/arch/cris/kernel/time.c
+@@ -55,7 +55,6 @@ void do_gettimeofday(struct timeval *tv)
+ 	unsigned long flags;
+ 	signed long usec, sec;
+ 	local_irq_save(flags);
+-	local_irq_disable();
+ 	usec = do_gettimeoffset();
+ 
+         /*
