@@ -1,48 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422737AbXBARNv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422732AbXBARNw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422737AbXBARNv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Feb 2007 12:13:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422747AbXBARNv
+	id S1422732AbXBARNw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Feb 2007 12:13:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422740AbXBARNw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Feb 2007 12:13:51 -0500
-Received: from rtr.ca ([64.26.128.89]:1654 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422737AbXBARNu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Feb 2007 12:13:52 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:35657 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422732AbXBARNu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 1 Feb 2007 12:13:50 -0500
-Message-ID: <45C21FCC.7040406@rtr.ca>
-Date: Thu, 01 Feb 2007 12:13:48 -0500
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061206)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Christoph Hellwig <hch@infradead.org>, Zach Brown <zach.brown@oracle.com>,
-       linux-kernel@vger.kernel.org, linux-aio@kvack.org,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Benjamin LaHaise <bcrl@kvack.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH 2 of 4] Introduce i386 fibril scheduling
-References: <patchbomb.1170193181@tetsuo.zabbo.net> <df7bc026d50ec5bbdd8e.1170193183@tetsuo.zabbo.net> <20070201083611.GC18233@elte.hu> <20070201130234.GA15257@elte.hu> <20070201131903.GA24683@infradead.org> <20070201135215.GA23477@elte.hu>
-In-Reply-To: <20070201135215.GA23477@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Date: Thu, 1 Feb 2007 17:13:25 +0000
+From: Al Viro <viro@ftp.linux.org.uk>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: Andi Kleen <ak@suse.de>, Greg KH <greg@kroah.com>,
+       Adrian Bunk <bunk@stusta.de>, Roland Dreier <rdreier@cisco.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Rewriting floppy.c was Re: Free Linux Driver Development!
+Message-ID: <20070201171325.GD10050@ftp.linux.org.uk>
+References: <20070130012904.GA9617@kroah.com> <ada8xfks90x.fsf@cisco.com> <20070130191020.GF20642@kroah.com> <20070131011340.GP3754@stusta.de> <20070131012428.GA31759@kroah.com> <p7364anpkz5.fsf_-_@bingen.suse.de> <58cb370e0702010512j51cc2d06w6ffa6df12bbc99f6@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <58cb370e0702010512j51cc2d06w6ffa6df12bbc99f6@mail.gmail.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
->
-> also, we context-switch kernel threads in 350 nsecs on current hardware 
-> and the -rt kernel is certainly happy with that and runs all hardirqs 
-
-Ingo, how relevant is that "350 nsecs on current hardware" claim?
-
-I don't mean that in a bad way, but my own experience suggests that
-most people doing real hard RT (or tight soft RT) are not doing it
-on x86 architectures.  But rather on lowly 1GHz (or less) ARM based
-processors and the like.
-
-For RT issues, those are the platforms I care more about,
-as those are the ones that get embedded into real-time devices.
-
-??
-
-Cheers
+On Thu, Feb 01, 2007 at 02:12:22PM +0100, Bartlomiej Zolnierkiewicz wrote:
+> On 31 Jan 2007 11:08:14 +0100, Andi Kleen <ak@suse.de> wrote:
+> >Greg KH <greg@kroah.com> writes:
+> >>
+> >> What?  Throw a fresh-faced newbie instantly into the tar-pit of despair
+> >> that floppy.c is?  Do you want everyone just to run screaming from
+> >> kernel development never to be seen again?
+> 
+> floppy.c is not really that ugly or complicated...
+> 
+> It just needs some care:
+> 
+> * cleanup of the over-usage of macros (DP macro etc)
+> * DocBook documentation would be nice
+> * make debugging printks optional by using macros in a smart way
+>  (see libata code for examples)
+> * tracking and fixing current regressions
+ 
+* piece of shit FSM buried in various continuation methods.
+* one hell of a problem with regression testing.
