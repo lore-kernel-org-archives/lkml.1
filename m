@@ -1,70 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422733AbXBAKHe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422743AbXBAKIz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422733AbXBAKHe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Feb 2007 05:07:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422735AbXBAKHe
+	id S1422743AbXBAKIz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Feb 2007 05:08:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422742AbXBAKIz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Feb 2007 05:07:34 -0500
-Received: from mathups.math.u-psud.fr ([129.175.52.4]:34137 "EHLO
-	matups.math.u-psud.fr" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1422733AbXBAKHd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Feb 2007 05:07:33 -0500
-X-Greylist: delayed 942 seconds by postgrey-1.27 at vger.kernel.org; Thu, 01 Feb 2007 05:07:32 EST
-From: Duncan Sands <duncan.sands@math.u-psud.fr>
-To: Andrew Morton <akpm@osdl.org>
-Subject: Re: [PATCH 3/3] cxacru: Store all device status information and report it when atm_proc_read is called.
-Date: Thu, 1 Feb 2007 10:15:31 +0100
-User-Agent: KMail/1.9.6
-References: <45BFB8F5.5010607@simon.arlott.org.uk> <20070131153914.eb693314.akpm@osdl.org>
-In-Reply-To: <20070131153914.eb693314.akpm@osdl.org>
-Cc: Simon Arlott <simon@arlott.org>, linux-kernel@vger.kernel.org
+	Thu, 1 Feb 2007 05:08:55 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:37630 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1422740AbXBAKIy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Feb 2007 05:08:54 -0500
+Message-ID: <45C1BC2D.8020405@garzik.org>
+Date: Thu, 01 Feb 2007 05:08:45 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Lee Revell <rlrevell@joe-job.com>
+CC: Mark Lord <lkml@rtr.ca>, Randy Dunlap <randy.dunlap@oracle.com>,
+       Theodore Tso <tytso@mit.edu>, Greg KH <greg@kroah.com>,
+       Nicolas Mailhot <nicolas.mailhot@laposte.net>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Free Linux Driver Development!
+References: <32793.192.54.193.51.1170248792.squirrel@rousalka.dyndns.org>	 <20070131201258.GB15128@kroah.com> <20070131230014.GD20514@thunk.org>	 <20070131150451.070fa90f.randy.dunlap@oracle.com>	 <45C13DAB.5090305@rtr.ca> <75b66ecd0701311739y5b9ebf52h296a9435a769bf1d@mail.gmail.com>
+In-Reply-To: <75b66ecd0701311739y5b9ebf52h296a9435a769bf1d@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200702011015.32238.duncan.sands@math.u-psud.fr>
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.7 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 1 February 2007 00:39:14 you wrote:
-> On Tue, 30 Jan 2007 21:30:29 +0000
-> Simon Arlott <simon@arlott.org> wrote:
+Lee Revell wrote:
+> On 1/31/07, Mark Lord <lkml@rtr.ca> wrote:
+>> I believe a BIG reason why lots of open-source drivers are out-of-tree
+>> right now, is because lkml is perceived as being wayyyyyy too fussy
+>> and petty about 80-column lines, brackets, etc.. for new code.
+>>
+>> It's just not worth the effort/abuse for many maintainers to pursue it.
 > 
-> > +static int cxacru_proc_read(struct usbatm_data *usbatm_instance,
-> > +	struct atm_dev *atm_dev, loff_t * pos, char *page)
-> > +{
-> > +	struct cxacru_data *instance = usbatm_instance->driver_data;
-> > +	u32 *cxinf = instance->cxinf_status;
-> > +	int left = *pos;
-> > +
-> > +	if (!left--)
-> > +		return sprintf(page, "# %s\n", usbatm_instance->description);
-> > +
-> > +	if (!left--) {
-> > +		if (cxinf[CXINF_LINE_STATUS] == 5) {
-> > +			return sprintf(page, "# UP %u/%u\n",
-> > +				cxinf[CXINF_DOWNSTREAM_RATE],
-> > +				cxinf[CXINF_UPSTREAM_RATE]);
-> > +		} else {
-> > +			return sprintf(page, "# DOWN\n");
-> > +		}
-> > +	}
-> 
-> hm, how well-tested was this proc interface?  The pread() and lseek()
-> behaviour might be strange.
-> 
-> I guess as long as it doesn't oops, hang or anything like that then it'll
-> be OK.  Anyone who does anything apart from a single big-fat-read from a 
-> procfile has a good chance of getting into trouble :(
+> That seems like the easy part - it seems like anyone bright enough to
+> write a working Linux driver would be good enough with their editor or
+> perl or bash to knock that out in 10 minutes.
 
-All the ATM drivers seem to do it like this.  That doesn't mean they are
-right of course!  But I never saw anyone complain on the ATM mailing list.
-On the other hand, why does Simon want this?  If he has written a user space
-tool that extracts bits from the proc file (eg: to tell users what's going
-on) then he could run into trouble, depending on how he implements it.
 
-Ciao,
+Or simply running it through scripts/Lindent, which fixes 97% of all 
+issues automatically.  The remaining 3% become fixing Lindent's lack of 
+C99 knowledge, etc.
 
-Duncan.
+	Jeff
+
+
