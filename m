@@ -1,95 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422936AbXBATJQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422943AbXBATJd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422936AbXBATJQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Feb 2007 14:09:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422940AbXBATJQ
+	id S1422943AbXBATJd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Feb 2007 14:09:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422947AbXBATJd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Feb 2007 14:09:16 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:57192 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422936AbXBATJP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Feb 2007 14:09:15 -0500
-Date: Thu, 1 Feb 2007 11:05:52 -0800
-From: Stephen Hemminger <shemminger@osdl.org>
-To: Thomas Glanzmann <thomas@glanzmann.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, shemminger@linux-foundation.org,
-       netdev@vger.kernel.org
-Subject: Re: sky2 hangs
-Message-ID: <20070201110552.5bf52c8f@localhost>
-In-Reply-To: <20070201185532.GL13130@cip.informatik.uni-erlangen.de>
-References: <20070201185532.GL13130@cip.informatik.uni-erlangen.de>
-X-Mailer: Sylpheed-Claws 2.5.0-rc3 (GTK+ 2.10.6; i486-pc-linux-gnu)
-X-Face: &@E+xe?c%:&e4D{>f1O<&U>2qwRREG5!}7R4;D<"NO^UI2mJ[eEOA2*3>(`Th.yP,VDPo9$
- /`~cw![cmj~~jWe?AHY7D1S+\}5brN0k*NE?pPh_'_d>6;XGG[\KDRViCfumZT3@[
+	Thu, 1 Feb 2007 14:09:33 -0500
+Received: from caramon.arm.linux.org.uk ([217.147.92.249]:2664 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422943AbXBATJc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Feb 2007 14:09:32 -0500
+Date: Thu, 1 Feb 2007 19:09:19 +0000
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Aubrey Li <aubreylee@gmail.com>
+Cc: Alan <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       linux-serial@vger.kernel.org
+Subject: Re: [BUG]: 2.6.19.2: Weird serial core issue
+Message-ID: <20070201190919.GA18642@flint.arm.linux.org.uk>
+Mail-Followup-To: Aubrey Li <aubreylee@gmail.com>,
+	Alan <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+	linux-serial@vger.kernel.org
+References: <6d6a94c50701310249o2b2c8024i4d3f28ec1601246a@mail.gmail.com> <20070131162123.67e22e23@localhost.localdomain> <6d6a94c50701311833m5952c6fdn8e1f0db28d674e79@mail.gmail.com> <20070201094522.GA24608@flint.arm.linux.org.uk> <6d6a94c50702010209t94964ew1aebfad2677aa315@mail.gmail.com> <20070201111618.GA3462@flint.arm.linux.org.uk> <6d6a94c50702010954g7cb769y8cba30fbad658984@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <6d6a94c50702010954g7cb769y8cba30fbad658984@mail.gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 1 Feb 2007 19:55:32 +0100
-Thomas Glanzmann <thomas@glanzmann.de> wrote:
+On Fri, Feb 02, 2007 at 01:54:23AM +0800, Aubrey Li wrote:
+> On 2/1/07, Russell King <rmk+lkml@arm.linux.org.uk> wrote:
+> >serial core does not and should not "record" the terminal settings.
+> >That's the job of the tty layer.
+> 
+> OK, if tty layer save the new terminal settings to an old one properly,
+> How could this happen?
 
-> Hello,
-> I have a sky2 network card in my intel mac mini. It stops working when I
-> do havy network load like watching a divx over http/sshfs. However if I
-> remove the driver module and load it again it works and even the tcp
-> connection doesn't get shutdown. I automated the above procedure using
-> a userland watchdog which basically does the same thing and is written
-> entirely by me, because the traditional watchdog wasn't that reliable
-> and did a lot of false positives:
-> 
->         * Look every ten seconds if my default router is pingable (3
->           pings, one has to get back).
->                 If it isn't the case I call network_fix script (it calls the
->                 script only once after a ping gets lost. To run the script again at least one
->                 ping has to arrive again)
-> 
->                 (mini) [~] cat /usr/local/sbin/fix_network
->                 #!/bin/bash
-> 
->                 export PATH=/bin:/usr/bin:/usr/sbin:/sbin
-> 
->                 rmmod sky2
->                 modprobe sky2
->                 ifdown eth0
->                 ifup eth0
-> 
->                 If after that no ping is received from the default
->                 router for another 90 seconds I tell init to reboot and
->                 stop feeding the kernel software watchdog.
-> 
->         * My watchdog also checks if sshd process is running. If it is
->           down for more than 100 seconds it reboots the machine, too.
-> 
-> Jan 27 22:35:35 mini watchdog-tg[4146]: No PONG received from 192.168.0.3 (failure 1 of 10)
-> Jan 27 22:35:35 mini watchdog-tg[4146]: Running fix_network script.
-> Jan 27 22:38:46 mini watchdog-tg[4146]: No PONG received from 192.168.0.3 (failure 1 of 10)
-> Jan 27 22:38:46 mini watchdog-tg[4146]: Running fix_network script.
-> Jan 27 22:44:17 mini watchdog-tg[4146]: No PONG received from 192.168.0.3 (failure 1 of 10)
-> Jan 27 22:44:17 mini watchdog-tg[4146]: Running fix_network script.
-> Jan 29 12:00:13 mini watchdog-tg[4146]: No PONG received from 192.168.0.3 (failure 1 of 10)
-> Jan 29 12:00:13 mini watchdog-tg[4146]: Running fix_network script.
-> Jan 29 19:18:59 mini watchdog-tg[4146]: No PONG received from 192.168.0.3 (failure 1 of 10)
-> Jan 29 19:18:59 mini watchdog-tg[4146]: Running fix_network script.
-> Jan 31 15:56:29 mini watchdog-tg[4146]: No PONG received from 192.168.0.3 (failure 1 of 10)
-> Jan 31 15:56:29 mini watchdog-tg[4146]: Running fix_network script.
-> Feb  1 08:56:57 mini watchdog-tg[4146]: No PONG received from 192.168.0.3 (failure 1 of 10)
-> Feb  1 08:56:57 mini watchdog-tg[4146]: Running fix_network script.
-> 
-> I have a question to this: I wonder why the Linux Kernel (no longer?)
-> increments the use counter of an ethernet driver (I saw it on sky2 and
-> e1000) when the interface is up, running and configured? I can unload
-> the sky2 driver without doing a 'ifconfig eth0 down' beforehand. Could
-> somone provide me with background on this fact?
+I don't understand that comment.
 
-It was intentional in 2.6 to allow interfaces to be hot-removed.
-Remember with Internet protocols there is no hard binding (normally)
-between address and device and connections should not go down
-if link fails.
-
+> >No.  You haven't analysed the call path causing tty_ioctl() to be
+> >invoked, so you have no basis to point the finger *anywhere* at the
+> >moment.
+> >
+> >Find out from where tty_ioctl() is called - maybe by adding a call
+> >to dump_stack().  I think you'll find it is coming from userspace.
+> >
 > 
-> With that everything works. If somone is interested in my userland
-> watchdog, just send me an E-Mail.
+> If I recall correctly, the call path is as follows:
+> 
+> sys_ioctl->vfs_ioctl->do_ioctl->tty_ioctl->n_tty_ioctl->set_termios,
 
-Hopefully, it won't be necessary for long.
+And here is the proof that it's *userspace* which is effecting this change.
+If "sys_ioctl" is the very first function in the list then that's a result
+of some userspace process issuing an ioctl.
+
+> Yes, from the back trace stack, it appears to come from userspace. But
+> I didn't startup any application. If there should be one, I think it's
+> shell.
+
+Shells typically alter the termios settings - eg, to turn off echo while
+they're waiting for command input.  When command input has finished (by
+pressing the enter key) they typically turn it back on.
+
+Changing the termios settings while the shell is waiting for input is not
+something they expect to happen, and this is the kind of behaviour I'd
+expect in this scenario.
+
+> I can't believe it's caused by the userspace, I'll go further to find
+> the root cause.
+
+Ho hum.  Guess you're in for a long investigation then. 8/
+
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
