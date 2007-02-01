@@ -1,87 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422656AbXBAQAs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422652AbXBAP7h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422656AbXBAQAs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Feb 2007 11:00:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422665AbXBAQAr
+	id S1422652AbXBAP7h (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Feb 2007 10:59:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422656AbXBAP7g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Feb 2007 11:00:47 -0500
-Received: from mail.screens.ru ([213.234.233.54]:56549 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422656AbXBAQAq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Feb 2007 11:00:46 -0500
-Date: Thu, 1 Feb 2007 19:00:10 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@osdl.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/7] barrier: a scalable synchonisation barrier
-Message-ID: <20070201160010.GA121@tv-sign.ru>
-References: <20070128115118.837777000@programming.kicks-ass.net> <20070128120509.719287000@programming.kicks-ass.net> <20070128143941.GA16552@infradead.org> <20070128152435.GC9196@elte.hu> <20070131191215.GK2574@linux.vnet.ibm.com> <20070131211340.GA171@tv-sign.ru> <1170280101.10924.36.camel@lappy> <20070131233229.GP2574@linux.vnet.ibm.com> <1170288190.10924.108.camel@lappy> <20070201004849.GS2574@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070201004849.GS2574@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.11
+	Thu, 1 Feb 2007 10:59:36 -0500
+Received: from nic.NetDirect.CA ([216.16.235.2]:46740 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422652AbXBAP7g (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Feb 2007 10:59:36 -0500
+X-Originating-Ip: 74.109.98.130
+Date: Thu, 1 Feb 2007 10:05:55 -0500 (EST)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@CPE00045a9c397f-CM001225dbafb6
+To: Linux kernel mailing list <linux-kernel@vger.kernel.org>
+cc: Paul Mackerras <paulus@samba.org>, benh@kernel.crashing.org,
+       wli@holomorphy.com, starvik@axis.com
+Subject: [PATCH] Replace arrays of SPIN_LOCK_UNLOCKED with __RAW_SPIN_LOCK_UNLOCKED.
+Message-ID: <Pine.LNX.4.64.0702010958190.15224@CPE00045a9c397f-CM001225dbafb6>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (cached,
+	score=-16.8, required 5, ALL_TRUSTED -1.80, BAYES_00 -15.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/31, Paul E. McKenney wrote:
-> 
-> QRCU as currently written (http://lkml.org/lkml/2006/11/29/330) doesn't
-> do what you want, as it acquires the lock unconditionally.  I am proposing
-> that synchronize_qrcu() change to something like the following:
-> 
-> 	void synchronize_qrcu(struct qrcu_struct *qp)
-> 	{
-> 		int idx;
-> 	
-> 		smp_mb();
-> 	
-> 		if (atomic_read(qp->ctr[0]) + atomic_read(qp->ctr[1]) <= 1) {
-> 			smp_rmb();
-> 			if (atomic_read(qp->ctr[0]) +
-> 			    atomic_read(qp->ctr[1]) <= 1)
-> 				goto out;
-> 		}
-> 	
-> 		mutex_lock(&qp->mutex);
-> 		idx = qp->completed & 0x1;
-> 		atomic_inc(qp->ctr + (idx ^ 0x1));
-> 		/* Reduce the likelihood that qrcu_read_lock() will loop */
-> 		smp_mb__after_atomic_inc();
-> 		qp->completed++;
-> 	
-> 		atomic_dec(qp->ctr + idx);
-> 		__wait_event(qp->wq, !atomic_read(qp->ctr + idx));
-> 		mutex_unlock(&qp->mutex);
-> 	out:
-> 		smp_mb();
-> 	}
-> 
-> For the first "if" to give a false positive, a concurrent switch had
-> to have happened.  For example, qp->ctr[0] was zero and qp->ctr[1]
-> was two at the time of the first atomic_read(), but then qp->completed
-> switched so that both qp->ctr[0] and qp->ctr[1] were one at the time
-> of the second atomic_read.  The only way the second "if" can give us a
-> false positive is if there was another change to qp->completed in the
-> meantime -- but that means that all of the pre-existing qrcu_read_lock()
-> holders must have gotten done, otherwise the second switch could not
-> have happened.  Yes, you do incur three memory barriers on the fast
-> path, but the best you could hope for with your approach was two of them
-> (unless I am confused about how you were using barrier_sync()).
 
-While doing qrcu, somehow I convinced myself we can't optimize out taking
-qp->mutex. Now I think I was wrong. Good!
+  For Sparc, PPC and CRIS, replace declarations of an array of
+SPIN_LOCK_UNLOCKED with an array of __RAW_SPIN_LOCK_UNLOCKED.
 
-Q: you deleted "if (atomic_read(qp->ctr + idx) == 1)" fastpath under ->mutex,
-was this needed for this optimization to work? I am asking because I can't
-understand how it can make any difference.
+Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
 
-> Oleg, does this look safe?
+---
 
-Yes. But let me think more about this later, I've got a fever, and can't
-think properly today :)
+  given that the macro SPIN_LOCK_UNLOCKED is deprecated in favour of
+the named version of spin locks, it would seem to make sense, if you
+need to allocate an array of spin locks, to use the raw form of the
+spin lock instead, as is done by PARISC and MIPS.
 
-Oleg.
+  but this is just a guess and i'm willing to be told i have no clue
+what i'm talking about.
 
+
+ arch/cris/arch-v32/kernel/smp.c       |    2 +-
+ arch/powerpc/platforms/iseries/htab.c |    4 ++--
+ arch/sparc/lib/atomic32.c             |    4 ++--
+ 3 files changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/arch/cris/arch-v32/kernel/smp.c b/arch/cris/arch-v32/kernel/smp.c
+index 77e655f..f5aa705 100644
+--- a/arch/cris/arch-v32/kernel/smp.c
++++ b/arch/cris/arch-v32/kernel/smp.c
+@@ -24,7 +24,7 @@
+ #define FLUSH_ALL (void*)0xffffffff
+
+ /* Vector of locks used for various atomic operations */
+-spinlock_t cris_atomic_locks[] = { [0 ... LOCK_COUNT - 1] = SPIN_LOCK_UNLOCKED};
++raw_spinlock_t cris_atomic_locks[] = { [0 ... LOCK_COUNT - 1] = __RAW_SPIN_LOCK_UNLOCKED};
+
+ /* CPU masks */
+ cpumask_t cpu_online_map = CPU_MASK_NONE;
+diff --git a/arch/powerpc/platforms/iseries/htab.c b/arch/powerpc/platforms/iseries/htab.c
+index ed44dfc..713fa1e 100644
+--- a/arch/powerpc/platforms/iseries/htab.c
++++ b/arch/powerpc/platforms/iseries/htab.c
+@@ -19,8 +19,8 @@
+
+ #include "call_hpt.h"
+
+-static spinlock_t iSeries_hlocks[64] __cacheline_aligned_in_smp =
+-	{ [0 ... 63] = SPIN_LOCK_UNLOCKED};
++static raw_spinlock_t iSeries_hlocks[64] __cacheline_aligned_in_smp =
++	{ [0 ... 63] = __RAW_SPIN_LOCK_UNLOCKED};
+
+ /*
+  * Very primitive algorithm for picking up a lock
+diff --git a/arch/sparc/lib/atomic32.c b/arch/sparc/lib/atomic32.c
+index 53ddcd9..21f407c 100644
+--- a/arch/sparc/lib/atomic32.c
++++ b/arch/sparc/lib/atomic32.c
+@@ -14,8 +14,8 @@
+ #define ATOMIC_HASH_SIZE	4
+ #define ATOMIC_HASH(a)	(&__atomic_hash[(((unsigned long)a)>>8) & (ATOMIC_HASH_SIZE-1)])
+
+-spinlock_t __atomic_hash[ATOMIC_HASH_SIZE] = {
+-	[0 ... (ATOMIC_HASH_SIZE-1)] = SPIN_LOCK_UNLOCKED
++raw_spinlock_t __atomic_hash[ATOMIC_HASH_SIZE] = {
++	[0 ... (ATOMIC_HASH_SIZE-1)] = __RAW_SPIN_LOCK_UNLOCKED
+ };
+
+ #else /* SMP */
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://www.fsdev.dreamhosters.com/wiki/index.php?title=Main_Page
+========================================================================
