@@ -1,72 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161133AbXBAGqL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933383AbXBAGsS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161133AbXBAGqL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Feb 2007 01:46:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933385AbXBAGqL
+	id S933383AbXBAGsS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Feb 2007 01:48:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161153AbXBAGsS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Feb 2007 01:46:11 -0500
-Received: from relay4.usu.ru ([194.226.235.39]:54486 "EHLO relay4.usu.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933383AbXBAGqK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Feb 2007 01:46:10 -0500
-X-Greylist: delayed 595 seconds by postgrey-1.27 at vger.kernel.org; Thu, 01 Feb 2007 01:46:09 EST
-Message-ID: <45C18ADA.4070602@ums.usu.ru>
-Date: Thu, 01 Feb 2007 11:38:18 +0500
-From: "Alexander E. Patrakov" <patrakov@ums.usu.ru>
-User-Agent: IceDove 1.5.0.9 (X11/20061220)
-MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       "=?ISO-8859-1?Q?=22S=2E?= =?ISO-8859-1?Q?=C3a=C4lar_Onur=22?=" 
-	<caglar@pardus.org.tr>,
-       lkml <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
-       Mark Huang <mlhuang@CS.Princeton.EDU>,
-       Al Viro <viro@zeniv.linux.org.uk>
+	Thu, 1 Feb 2007 01:48:18 -0500
+Received: from ug-out-1314.google.com ([66.249.92.170]:17178 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933383AbXBAGsR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Feb 2007 01:48:17 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=WE5Bzi+CQEW1srVgA2lSAENOQgJ0fpnHwIi7XKpesK38b+8JsFs5NEx7dAUiy1rTlXHRE9uxYd1z+3OGvfIaMtJkLpXFI6EnmGGOmGaEXgPp2k+2FJjRZQBuoY7K94oWuPHvEzxQlkfLyCR4KkYMalTK68CNnxmXvpUsa4xvzeo=
+Message-ID: <84144f020701312248r74007ea6je278adf4f27e2171@mail.gmail.com>
+Date: Thu, 1 Feb 2007 08:48:16 +0200
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Linus Torvalds" <torvalds@linux-foundation.org>
 Subject: Re: Linux 2.6.20-rc7
-References: <Pine.LNX.4.64.0701302019530.11095@woody.linux-foundation.org> <200702010416.59469.caglar@pardus.org.tr> <Pine.LNX.4.64.0701311828540.3632@woody.linux-foundation.org> <200702010501.20994.caglar@pardus.org.tr> <Pine.LNX.4.64.0701311921090.3632@woody.linux-foundation.org> <45C17E4C.1030509@zytor.com> <Pine.LNX.4.64.0701312157450.3632@woody.linux-foundation.org> <45C18457.6030504@zytor.com>
-In-Reply-To: <45C18457.6030504@zytor.com>
+Cc: "=?ISO-8859-1?Q?Pawe=C5_Sikora?=" <pluto@agmk.net>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Christoph Hellwig" <hch@lst.de>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       "Martin Peschke" <mp3@de.ibm.com>, "Andrew Morton" <akpm@osdl.org>,
+       "Adrian Bunk" <bunk@stusta.de>
+In-Reply-To: <Pine.LNX.4.64.0701310748450.3632@woody.linux-foundation.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-AV-Checked: ClamAV using ClamSMTP@relay4
+Content-Disposition: inline
+References: <Pine.LNX.4.64.0701302019530.11095@woody.linux-foundation.org>
+	 <45C05150.6000802@agmk.net>
+	 <Pine.LNX.4.64.0701310748450.3632@woody.linux-foundation.org>
+X-Google-Sender-Auth: 099369d1a62f66f5
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> Linus Torvalds wrote:
->>
->> On Wed, 31 Jan 2007, H. Peter Anvin wrote:
->>> It would be interesting to know what the inode numbers are in the 
->>> image; also,
->>> what is the exact behaviour -- do you end up with a missing link, or 
->>> do both
->>> entries end up getting hard-linked to an empty file?
->>
->> Judging by the
->>
->>     request_module: runaway loop modprobe binfmt-0000
->>
->> one or more of the hardlinked binaries (modprobe being one, but not 
->> necessarily the one that initially triggers hits) will read all zeroes-
->>
->> Or at least bytes at offsets 2 and 3 will read as zero, causing it to 
->> not be recognized as a proper binary, causing that "binfmt-0000" thing.
->>
-> 
-> Or perhaps not read at all, which would explain the problem.
-> 
-> cpio represents a hard link as who headers with the same type and the 
-> same file (inode) number and a link count that is > 1.  Only the first 
-> one contains data; the subsequent ones have length 0.  It's fairly easy 
-> for a bug in the decoder to truncate the file upon encountering the 
-> second header, since this is somewhat of a special case (it would have 
-> been better if the cpio format distinguished "hard link" explicitly, as 
-> tar does.)
-> 
-> I will look into this as soon as I can, but as I'm currently in the 
-> middle of job hunting it might take until the weekend.
+On 1/31/07, Linus Torvalds <torvalds@linux-foundation.org> wrote:
+> When do_tune_cpucache() is called at bootup, I'm not sure how safe it is
+> to do the kzalloc() thing.
 
-What's the proper way to make sure that the fix, when it appears, ends up in 
-my inbox?
-
--- 
-Alexander E. Patrakov
+The kzalloc thing is safe as we have already successfully boostrapped
+all kmalloc caches at that point. The per-CPU caches that are replaced
+by do_tune_cpucache() point to boostrap-time array caches there (see
+use of struct arraycache_init in setup_cpu_cache).
