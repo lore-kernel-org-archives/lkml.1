@@ -1,64 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933366AbXBACw3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933370AbXBACwr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933366AbXBACw3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Jan 2007 21:52:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933367AbXBACw3
+	id S933370AbXBACwr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Jan 2007 21:52:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933377AbXBACwr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Jan 2007 21:52:29 -0500
-Received: from hera.kernel.org ([140.211.167.34]:37535 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933366AbXBACw2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Jan 2007 21:52:28 -0500
-From: Len Brown <lenb@kernel.org>
-Organization: Intel Open Source Technology Center
-To: "Sunil Naidu" <akula2.shark@gmail.com>
-Subject: Re: 2.6.20-rc6-mm3 - interesting dmesg
-Date: Wed, 31 Jan 2007 21:50:58 -0500
-User-Agent: KMail/1.9.5
-Cc: "Andrew Morton" <akpm@osdl.org>, linux-kernel@vger.kernel.org
-References: <8355959a0701300352l27911a14t853e8dea5fcd820d@mail.gmail.com>
-In-Reply-To: <8355959a0701300352l27911a14t853e8dea5fcd820d@mail.gmail.com>
+	Wed, 31 Jan 2007 21:52:47 -0500
+Received: from nf-out-0910.google.com ([64.233.182.190]:16339 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933370AbXBACwq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Jan 2007 21:52:46 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=TPy51bVs6OV909o7HARiKIMid39LC/gsiusLgpipDV1DKnUk8SDuOWA/Qt8+H1G2aJ83eg1B5waLf72Xjd21QJ91mm3uZO19dwDbmV2WensG7pCdmMdAzEzq9HwgzwHzlc1NdK0Vf+tumpqSmZlWDiIGbCIk/qN+N6HaVsIr4QA=
+Message-ID: <b6a2187b0701311852i610ffc13wcc37d455ed734c86@mail.gmail.com>
+Date: Thu, 1 Feb 2007 10:52:40 +0800
+From: "Jeff Chua" <jeff.chua.linux@gmail.com>
+To: "Avi Kivity" <avi@qumranet.com>
+Subject: Re: [kvm-devel] [PATCH] KVM: Fix lockup on 32-bit intel hosts with nx disabled in the bios
+Cc: kvm-devel@lists.sourceforge.net, akpm@osdl.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20070131150017.020B9A0014@il.qumranet.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200701312150.58343.lenb@kernel.org>
+References: <20070131150017.020B9A0014@il.qumranet.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 30 January 2007 06:52, Sunil Naidu wrote:
-> Hi Andrew,
-> 
-> I did compile the same, it's a trouble free boot. I did observe
-> interesting changes in the dmesg between 2.6.20-rc6 & 2.6.20-rc6-mm3
-> (wondering why there are so many changes in the output). Anyway, the
-> changes in brief:-
-> 
-> a) ACPI values
+On 1/31/07, Avi Kivity <avi@qumranet.com> wrote:
+> Intel hosts, without long mode, and with nx support disabled in the bios
+> have an efer that is readable but not writable.  This causes a lockup on
+> switch to guest mode (even though it should exit with reason 34 according to
+> the documentation).
 
-The new ACPI messages are normal.
-They are the result of new table management code.
+Avi, thank you for the patch. I can confirm that this patch works on
+my IBM X60s notebook. Without it, the whole PC locks up upon starting
+qemu.
 
-thanks,
--Len
-
-> b) pnp - iomem range reserved values
-> c) Drive selection (hda, hdb)
-> d) USB Subsystem - (usb1, usb2, usb3, usb4, usb5, usb 2-1) - new
-> devices found.
-> e) EXT3-fs - warning - maximal_mount_count reached (???)
-> 
-> Here is the dmesg info:-
-
-> ACPI: RSDP @ 0x000f4eb0/0x0014 (v000 ACPIAM)
-> ACPI: RSDT @ 0x1f730000/0x003C (v001 INTEL  D915GAV  0x20060222 MSFT 0x00000097)
-> ACPI: FACP @ 0x1f730200/0x0081 (v002 INTEL  D915GAV  0x20060222 MSFT 0x00000097)
-> ACPI: DSDT @ 0x1f730440/0x5C05 (v001 INTEL  D915GAV  0x00000001 INTL 0x02002026)
-> ACPI: FACS @ 0x1f740000/0x0040
-> ACPI: APIC @ 0x1f730390/0x0068 (v001 INTEL  D915GAV  0x20060222 MSFT 0x00000097)
-> ACPI: MCFG @ 0x1f730400/0x003C (v001 INTEL  D915GAV  0x20060222 MSFT 0x00000097)
-> ACPI: ASF! @ 0x1f736050/0x0099 (v016 LEGEND I865PASF 0x00000001 INTL 0x02002026)
-> ACPI: TCPA @ 0x1f7360f0/0x0032 (v001 INTEL  TBLOEMID 0x00000001 MSFT 0x00000097)
-> ACPI: WDDT @ 0x1f736122/0x0040 (v001 INTEL  OEMWDDT  0x00000001 INTL 0x02002026)
-
+Thanks,
+Jeff.
