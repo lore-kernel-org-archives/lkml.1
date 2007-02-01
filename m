@@ -1,56 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932189AbXBAWYM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964813AbXBAWZb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932189AbXBAWYM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Feb 2007 17:24:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932344AbXBAWYM
+	id S964813AbXBAWZb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Feb 2007 17:25:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964852AbXBAWZb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Feb 2007 17:24:12 -0500
-Received: from kanga.kvack.org ([66.96.29.28]:36066 "EHLO kanga.kvack.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932189AbXBAWYL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Feb 2007 17:24:11 -0500
-Date: Thu, 1 Feb 2007 17:23:56 -0500
-From: Benjamin LaHaise <bcrl@kvack.org>
-To: Zach Brown <zach.brown@oracle.com>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       linux-aio@kvack.org, Suparna Bhattacharya <suparna@in.ibm.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH 2 of 4] Introduce i386 fibril scheduling
-Message-ID: <20070201222356.GV1344@kvack.org>
-References: <patchbomb.1170193181@tetsuo.zabbo.net> <df7bc026d50ec5bbdd8e.1170193183@tetsuo.zabbo.net> <20070201083611.GC18233@elte.hu> <20070201130234.GA15257@elte.hu> <5678BC95-E548-414F-85F9-9D6B4DC914EC@oracle.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <5678BC95-E548-414F-85F9-9D6B4DC914EC@oracle.com>
-User-Agent: Mutt/1.4.1i
+	Thu, 1 Feb 2007 17:25:31 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:48681 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964813AbXBAWZa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Feb 2007 17:25:30 -0500
+In-Reply-To: <x49hcu5y2jj.fsf@segfault.boston.devel.redhat.com>
+References: <000001c72f01$7e4e1e30$8b8c030a@amr.corp.intel.com> <32AF3D8D-536F-4B9F-908B-C292CB9D6AEE@oracle.com> <x49hcu5y2jj.fsf@segfault.boston.devel.redhat.com>
+Mime-Version: 1.0 (Apple Message framework v752.3)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <D277CD72-D8D7-4F93-A82D-209E00DC8055@oracle.com>
+Cc: "Chen, Kenneth W" <kenneth.w.chen@intel.com>,
+       "'Andrew Morton'" <akpm@osdl.org>, <linux-aio@kvack.org>,
+       <linux-kernel@vger.kernel.org>, "'Benjamin LaHaise'" <bcrl@kvack.org>,
+       <suparna@in.ibm.com>
+Content-Transfer-Encoding: 7bit
+From: Zach Brown <zach.brown@oracle.com>
+Subject: Re: [patch] aio: add per task aio wait event condition
+Date: Thu, 1 Feb 2007 14:21:41 -0800
+To: Jeff Moyer <jmoyer@redhat.com>
+X-Mailer: Apple Mail (2.752.3)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 01, 2007 at 01:52:13PM -0800, Zach Brown wrote:
-> >let me clarify this: i very much like your AIO patchset in general, in
-> >the sense that it 'completes' the AIO implementation: finally  
-> >everything
-> >can be done via it, greatly increasing its utility and hopefully its
-> >penetration. This is the most important step, by far.
-> 
-> We violently agree on this :).
+> That sounds like a programming error, don't you think?  Maybe
+> returning EINVAL is the right approach?
 
-There is also the old kernel_thread based method that should probably be 
-compared, especially if pre-created threads are thrown into the mix.  Also, 
-since the old days, a lot of thread scaling issues have been fixed that 
-could even make userland threads more viable.
+Maybe.  I think I'd prefer to be permissive and queue as much as  
+possible, but it's not a strong preference.  Returning EINVAL seems  
+ok, too.
 
-> Would your strategy be to update the syscall implementations to share  
-> data in task_struct so that there isn't as significant a change in  
-> behaviour?  (sharing current->ioprio, instead if just inheriting it,  
-> for example.).  We'd be betting that there would be few of these and  
-> that they'd be pretty reasonable to share?
-
-Priorities cannot be shared, as they have to adapt to the per-request 
-priority when we get down to the nitty gitty of POSIX AIO, as otherwise 
-realtime issues like keepalive transmits will be handled incorrectly.
-
-		-ben
--- 
-"Time is of no importance, Mr. President, only life is important."
-Don't Email: <dont@kvack.org>.
+- z
