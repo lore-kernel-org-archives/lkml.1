@@ -1,104 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030576AbXBAPLT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161174AbXBAPMf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030576AbXBAPLT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Feb 2007 10:11:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030579AbXBAPLT
+	id S1161174AbXBAPMf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Feb 2007 10:12:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030582AbXBAPMf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Feb 2007 10:11:19 -0500
-Received: from ausc60ps301.us.dell.com ([143.166.148.206]:25183 "EHLO
-	ausc60ps301.us.dell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030576AbXBAPLS convert rfc822-to-8bit (ORCPT
+	Thu, 1 Feb 2007 10:12:35 -0500
+Received: from e31.co.us.ibm.com ([32.97.110.149]:54772 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030579AbXBAPMe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Feb 2007 10:11:18 -0500
-DomainKey-Signature: s=smtpout; d=dell.com; c=nofws; q=dns; b=ZwbAuzIY75M0/m4pmV6NCZ34F9x+ceIEGxYK/wmbVzI328oYwQKmXDzNhq9bPzu4skKn7owttEhki2z6g+L+kHzBrJ2IKGVbwY2wPIkwEzj1wY5DeJ8lEYI63NtDVzZa;
-X-IronPort-AV: i="4.13,267,1167631200"; 
-   d="scan'208"; a="179608301:sNHT34969959"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: 2.6.16.16 Lost CD-ROM Drive
-Date: Thu, 1 Feb 2007 09:11:11 -0600
-Message-ID: <99CB33592628174AA5F382517D6FCBD3014ED789@ausx3mpc109.aus.amer.dell.com>
-In-Reply-To: <1170342315.3984.12.camel@ripley>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: 2.6.16.16 Lost CD-ROM Drive
-Thread-Index: AcdGEndBoMWKHCJDTLScVSR3VgAZtAAAE2Lw
-From: <Rogelio_Noriega@Dell.com>
-To: <jeremy@emperorlinux.com>, <brian@visionpro.com>
-Cc: <linux-kernel@vger.kernel.org>, <linux-precision@lists.us.dell.com>
-X-OriginalArrivalTime: 01 Feb 2007 15:11:12.0118 (UTC) FILETIME=[359D6960:01C74613]
+	Thu, 1 Feb 2007 10:12:34 -0500
+Date: Wed, 31 Jan 2007 21:46:16 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Nigel Cunningham <nigel@nigel.suspend2.net>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de,
+       dipankar@in.ibm.com, tytso@us.ibm.com, dvhltc@us.ibm.com,
+       oleg@tv-sign.ru, twoerner.k@gmail.com, josh@freedesktop.org,
+       billh@gnuppy.monkey.org, nielsen.esben@googlemail.com, corbet@lwn.net
+Subject: Re: [RFC PATCH -rt 2/2] RCU priority boosting additions to rcutorture
+Message-ID: <20070201054616.GA9969@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20070201012136.GA21770@linux.vnet.ibm.com> <20070201012653.GB22922@linux.vnet.ibm.com> <1170295936.32500.1.camel@nigel.suspend2.net> <20070201023149.GV2574@linux.vnet.ibm.com> <1170297763.32500.7.camel@nigel.suspend2.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1170297763.32500.7.camel@nigel.suspend2.net>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I think Jeremy is on the right track what worked for me on a M70 and M90
-is adding "hda=noprobe" on the kernel commandline or in grub.
-
-Roger  
-
------Original Message-----
-From: linux-precision-bounces@dell.com
-[mailto:linux-precision-bounces@dell.com] On Behalf Of Jeremy L. Moles
-Sent: Thursday, February 01, 2007 9:05 AM
-To: Brian D. McGrew
-Cc: linux-kernel@vger.kernel.org; linux-precision-Lists
-Subject: Re: 2.6.16.16 Lost CD-ROM Drive
-
-On Thu, 2007-02-01 at 07:00 -0800, Brian D. McGrew wrote:
-> Hey guys-
+On Thu, Feb 01, 2007 at 01:42:42PM +1100, Nigel Cunningham wrote:
+> Hi Paul.
 > 
-> Have a Precision workstation with SATA hard drive and SATA CD-ROM.  If
-
-> I load Fedora Core 5 with a stock 2.6.15 kernel, life is good.
+> On Wed, 2007-01-31 at 18:31 -0800, Paul E. McKenney wrote:
+> > Good to hear from you, Nigel!
 > 
-> However, I need to use 2.6.16.16.  Once I build and install this 
-> kernel, my CD-ROM drive is gone.  There is a log entry in dmesg that 
-> says "ATAPI not support.  Ignoring."
+> Thanks :)
 > 
-> If I go into the BIOS and set the SATA operations to Legacy/Compatible
-
-> then everything is fine.  I've rebuilt this kernel about 100 times 
-> trying everything I can think of.
+> > Should indeed be OK to freeze during suspend/hibernate.  Will my
+> > schedule_timeout_interruptible() be sufficient to allow the freeze
+> > to happen, or do I need to add an explicit try_to_freeze()?
 > 
-> When I have SATA set to legacy, the HDD and CD are detected as 
-> /dev/hd* and when they're set to SATA Normal operation the HDD is 
-> detected as /dev/sda.  If I boot my old 2.6.15 (stock install) kernel 
-> then the CD is found as /dev/sdc.
+> You need a try_to_freeze() - the process has to enter the refrigerator()
+> function to be counted as frozen.
+
+Even though it explicitly sleeps each time through the loop?  Hmmm...
+
+> > Ah, and I probably need to use the same trick that mtd_blktrans_thread()
+> > does to avoid having all my sleeps killed of by an errant signal:
+> > 
+> > 	spin_lock_irq(&current->sighand->siglock);
+> > 	sigfillset(&current->blocked);
+> > 	recalc_sigpending();
+> > 	spin_unlock_irq(&current->sighand->siglock);
+> > 
+> > Or is such paranoia unnecessary?
 > 
-> I've even tried taking the installation default configuration file for
+> Yeah. try_to_freeze() is a function now, so you can do something if
+> (try_to_freeze()) goto sleep_again if you so desire.
 
-> the 2.6.15 kernel and just wholesale copying it into my 2.6.16.16 
-> kernel and build that way but still no go.
-> 
-> What am I missing to get the 2.6.16.16 kernel to see a SATA CD-ROM 
-> drive in normal, non-legacy move?
+If try_to_freeze() succeeds, do I need to clean up signal state?
+It didn't look like it to me, but thought I should ask the expert!
 
-Try booting 2.6.16 with the following options:
+My guess is that I can simply do:
 
-libata.atapi_enabled=1 ide0=noprobe ide1=noprobe
+	try_to_freeze();
+	schedule_timeout_interruptible(HZ);
 
-> -brian
-> 
-> Brian D. McGrew        { brian@visionpro.com ||
-> brian@doubledimension.com }
-> --
-> > Do not read this email while waxing that cat! 
-> 
-> _______________________________________________
-> Linux-Precision mailing list
-> Linux-Precision@dell.com
-> http://lists.us.dell.com/mailman/listinfo/linux-precision
-> Please read the FAQ at http://lists.us.dell.com/faq or search the list
+The schedule_timeout_interruptible() might return early, but if I
+don't care about getting a shorter than expected sleep, I am OK,
+right?  Besides, one would have to get a couple of very closely
+spaced freeze_processes() calls for this to happen.  ;-)
 
-> archives at http://lists.us.dell.com/htdig/
-> 
-
-_______________________________________________
-Linux-Precision mailing list
-Linux-Precision@dell.com
-http://lists.us.dell.com/mailman/listinfo/linux-precision
-Please read the FAQ at http://lists.us.dell.com/faq or search the list
-archives at http://lists.us.dell.com/htdig/
+						Thanx, Paul
