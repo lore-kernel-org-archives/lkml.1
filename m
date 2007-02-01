@@ -1,104 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422652AbXBAP7h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422677AbXBAQB1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422652AbXBAP7h (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Feb 2007 10:59:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422656AbXBAP7g
+	id S1422677AbXBAQB1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Feb 2007 11:01:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422686AbXBAQB1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Feb 2007 10:59:36 -0500
-Received: from nic.NetDirect.CA ([216.16.235.2]:46740 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422652AbXBAP7g (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Feb 2007 10:59:36 -0500
-X-Originating-Ip: 74.109.98.130
-Date: Thu, 1 Feb 2007 10:05:55 -0500 (EST)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@CPE00045a9c397f-CM001225dbafb6
-To: Linux kernel mailing list <linux-kernel@vger.kernel.org>
-cc: Paul Mackerras <paulus@samba.org>, benh@kernel.crashing.org,
-       wli@holomorphy.com, starvik@axis.com
-Subject: [PATCH] Replace arrays of SPIN_LOCK_UNLOCKED with __RAW_SPIN_LOCK_UNLOCKED.
-Message-ID: <Pine.LNX.4.64.0702010958190.15224@CPE00045a9c397f-CM001225dbafb6>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (cached,
-	score=-16.8, required 5, ALL_TRUSTED -1.80, BAYES_00 -15.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+	Thu, 1 Feb 2007 11:01:27 -0500
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:47835 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422677AbXBAQB0 (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Feb 2007 11:01:26 -0500
+Message-Id: <200702011600.l11G08Zs015498@turing-police.cc.vt.edu>
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: wsl3@lrsehosting.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       alan@redhat.com, Adrian Bunk <bunk@stusta.de>
+Subject: Re: Unidentified Intel wifi network card
+In-Reply-To: Your message of "Thu, 01 Feb 2007 08:59:47 +1100."
+             <20070131215947.GA28294@gondor.apana.org.au>
+From: Valdis.Kletnieks@vt.edu
+References: <1170264624.5569.15.camel@scott-640m> <200701312054.l0VKstxg020891@turing-police.cc.vt.edu>
+            <20070131215947.GA28294@gondor.apana.org.au>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1170345608_13753P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Thu, 01 Feb 2007 11:00:08 -0500
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--==_Exmh_1170345608_13753P
+Content-Type: text/plain; charset=us-ascii
 
-  For Sparc, PPC and CRIS, replace declarations of an array of
-SPIN_LOCK_UNLOCKED with an array of __RAW_SPIN_LOCK_UNLOCKED.
+On Thu, 01 Feb 2007 08:59:47 +1100, Herbert Xu said:
+> On Wed, Jan 31, 2007 at 03:54:55PM -0500, Valdis.Kletnieks@vt.edu wrote:
+> > 
+> > Oh - the git-crypto-fix patch has to be applied with -R, I never got around
+ to
+> > re-diffing it the other way.
+> 
+> If this driver is still using the old digest interface, it needs to be
+> converted to use crypto_hash_*.
 
-Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
+OK, here's the more complete scoop - the *out of tree* ieee80211 tree
+hasn't been converted, but the *in tree* version has.
 
----
+Why did I have the out of tree version installed? Because the in-tree
+version claimed to be 1.1.3, and the out-of-tree 1.2.16.  Apparently,
+the update to the version string for the in-kernel version got blocked
+someplace - the in-tree is apparently actually very close to 1.2.16.
 
-  given that the macro SPIN_LOCK_UNLOCKED is deprecated in favour of
-the named version of spin locks, it would seem to make sense, if you
-need to allocate an array of spin locks, to use the raw form of the
-spin lock instead, as is done by PARISC and MIPS.
+--==_Exmh_1170345608_13753P
+Content-Type: application/pgp-signature
 
-  but this is just a guess and i'm willing to be told i have no clue
-what i'm talking about.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
 
+iD8DBQFFwg6IcC3lWbTT17ARAoJ1AKDw1SiIvR4bcQEIMnwloXIgX3nZOQCgzNik
+x7tXAekTl0eYsXFV4Eao8Ko=
+=rArN
+-----END PGP SIGNATURE-----
 
- arch/cris/arch-v32/kernel/smp.c       |    2 +-
- arch/powerpc/platforms/iseries/htab.c |    4 ++--
- arch/sparc/lib/atomic32.c             |    4 ++--
- 3 files changed, 5 insertions(+), 5 deletions(-)
-
-diff --git a/arch/cris/arch-v32/kernel/smp.c b/arch/cris/arch-v32/kernel/smp.c
-index 77e655f..f5aa705 100644
---- a/arch/cris/arch-v32/kernel/smp.c
-+++ b/arch/cris/arch-v32/kernel/smp.c
-@@ -24,7 +24,7 @@
- #define FLUSH_ALL (void*)0xffffffff
-
- /* Vector of locks used for various atomic operations */
--spinlock_t cris_atomic_locks[] = { [0 ... LOCK_COUNT - 1] = SPIN_LOCK_UNLOCKED};
-+raw_spinlock_t cris_atomic_locks[] = { [0 ... LOCK_COUNT - 1] = __RAW_SPIN_LOCK_UNLOCKED};
-
- /* CPU masks */
- cpumask_t cpu_online_map = CPU_MASK_NONE;
-diff --git a/arch/powerpc/platforms/iseries/htab.c b/arch/powerpc/platforms/iseries/htab.c
-index ed44dfc..713fa1e 100644
---- a/arch/powerpc/platforms/iseries/htab.c
-+++ b/arch/powerpc/platforms/iseries/htab.c
-@@ -19,8 +19,8 @@
-
- #include "call_hpt.h"
-
--static spinlock_t iSeries_hlocks[64] __cacheline_aligned_in_smp =
--	{ [0 ... 63] = SPIN_LOCK_UNLOCKED};
-+static raw_spinlock_t iSeries_hlocks[64] __cacheline_aligned_in_smp =
-+	{ [0 ... 63] = __RAW_SPIN_LOCK_UNLOCKED};
-
- /*
-  * Very primitive algorithm for picking up a lock
-diff --git a/arch/sparc/lib/atomic32.c b/arch/sparc/lib/atomic32.c
-index 53ddcd9..21f407c 100644
---- a/arch/sparc/lib/atomic32.c
-+++ b/arch/sparc/lib/atomic32.c
-@@ -14,8 +14,8 @@
- #define ATOMIC_HASH_SIZE	4
- #define ATOMIC_HASH(a)	(&__atomic_hash[(((unsigned long)a)>>8) & (ATOMIC_HASH_SIZE-1)])
-
--spinlock_t __atomic_hash[ATOMIC_HASH_SIZE] = {
--	[0 ... (ATOMIC_HASH_SIZE-1)] = SPIN_LOCK_UNLOCKED
-+raw_spinlock_t __atomic_hash[ATOMIC_HASH_SIZE] = {
-+	[0 ... (ATOMIC_HASH_SIZE-1)] = __RAW_SPIN_LOCK_UNLOCKED
- };
-
- #else /* SMP */
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://www.fsdev.dreamhosters.com/wiki/index.php?title=Main_Page
-========================================================================
+--==_Exmh_1170345608_13753P--
