@@ -1,60 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161180AbXBAFxc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161191AbXBAF5N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161180AbXBAFxc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Feb 2007 00:53:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161191AbXBAFxc
+	id S1161191AbXBAF5N (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Feb 2007 00:57:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161177AbXBAF5N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Feb 2007 00:53:32 -0500
-Received: from ns1.suse.de ([195.135.220.2]:43402 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161180AbXBAFxb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Feb 2007 00:53:31 -0500
-Date: Wed, 31 Jan 2007 21:52:18 -0800
-From: Greg KH <greg@kroah.com>
-To: Bob Copeland <me@bobcopeland.com>
-Cc: Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       David Hollis <dhollis@davehollis.com>, Jeff Garzik <jeff@garzik.org>,
-       Trent Waddington <trent.waddington@gmail.com>,
-       Dave Airlie <airlied@gmail.com>, Roland Dreier <rdreier@cisco.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Free Linux Driver Development!
-Message-ID: <20070201055218.GF5979@kroah.com>
-References: <45BFA087.6020905@garzik.org> <ada4pq8qjpd.fsf@cisco.com> <20070130214759.GA12477@kroah.com> <adar6tcp43r.fsf@cisco.com> <21d7e9970701301414s251b584mbee85ecd6909febf@mail.gmail.com> <3d57814d0701301424m67d22cdbg7afc0a1dab29c152@mail.gmail.com> <45BFC99A.8040805@garzik.org> <1170250461.12914.33.camel@dhollis-lnx.sunera.com> <Pine.LNX.4.61.0701311853390.13737@yvahk01.tjqt.qr> <b6c5339f0701311037l3971f11gad0d072e6c4cfcba@mail.gmail.com>
+	Thu, 1 Feb 2007 00:57:13 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:35780 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161191AbXBAF5M (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Feb 2007 00:57:12 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Andrew Morton <akpm@osdl.org>
+Cc: "Luigi Genoni" <luigi.genoni@pirelli.com>, <linux-kernel@vger.kernel.org>
+Subject: [PATCH] x86_64:  Survive having no irq mapping for a vector
+References: <200701221116.13154.luigi.genoni@pirelli.com>
+	<Pine.LNX.4.64.0701232052330.32111@baldios.it.pirelli.com>
+	<m1bqkfbnep.fsf@ebiederm.dsl.xmission.com>
+	<200701311549.22512.luigi.genoni@pirelli.com>
+Date: Wed, 31 Jan 2007 22:56:09 -0700
+In-Reply-To: <200701311549.22512.luigi.genoni@pirelli.com> (Luigi Genoni's
+	message of "Wed, 31 Jan 2007 15:49:22 +0100")
+Message-ID: <m1ps8u8lqe.fsf_-_@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <b6c5339f0701311037l3971f11gad0d072e6c4cfcba@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 31, 2007 at 01:37:58PM -0500, Bob Copeland wrote:
-> >Putting the "codingstyle" control aside, often it's because things look
-> >too hackish.
-> 
-> Also sometimes the authors know it's hackish, or just don't expect it
-> to be generally useful to the world.  I happen to own an out-of-tree
-> filesystem which I have little desire to have reviewed for mainline:
-> only a dozen people use it at most, and I know it would get pinged
-> mercilessly for using buffer heads and general insanity if it ever
-> made it past "use FUSE instead" (which would admittedly be a perfectly
-> fine response).  It works though, so I keep it up to date with the VFS
-> changes.
-> 
-> I do have some interest in working on various device drivers, though.
-> Greg, assuming this somehow kicks off some avalanche of specs, will
-> there be a ML for hooking up driver writers with specs and willing
-> users?
 
-I don't really want to create yet-another-mailing list for something
-like this.
+Occasionally the kernel has bugs that result in no irq being found for
+a given cpu vector.  If we acknowledge the irq the system has a good
+chance of continuing even though we dropped an irq message.  If we
+continue to simply print a message and not acknowledge the irq the
+system is likely to become non-responsive shortly there after. 
 
-So far I've just been taking down people's names and email addresses and
-a short description of what types of drivers they would like to work on.
-We already have a nice list of people willing to help out.
+Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+---
+ arch/x86_64/kernel/irq.c |   11 ++++++++---
+ 1 files changed, 8 insertions(+), 3 deletions(-)
 
-Anyone else is welcome to email me if they wish to join in.
+diff --git a/arch/x86_64/kernel/irq.c b/arch/x86_64/kernel/irq.c
+index 0c06af6..648055a 100644
+--- a/arch/x86_64/kernel/irq.c
++++ b/arch/x86_64/kernel/irq.c
+@@ -120,9 +120,14 @@ asmlinkage unsigned int do_IRQ(struct pt_regs *regs)
+ 
+ 	if (likely(irq < NR_IRQS))
+ 		generic_handle_irq(irq);
+-	else if (printk_ratelimit())
+-		printk(KERN_EMERG "%s: %d.%d No irq handler for vector\n",
+-			__func__, smp_processor_id(), vector);
++	else {
++		if (!disable_apic)
++			ack_APIC_irq();
++
++		if (printk_ratelimit())
++			printk(KERN_EMERG "%s: %d.%d No irq handler for vector\n",
++				__func__, smp_processor_id(), vector);
++	}
+ 
+ 	irq_exit();
+ 
+-- 
+1.4.4.1.g278f
 
-thanks,
-
-greg k-h
