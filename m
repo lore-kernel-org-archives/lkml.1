@@ -1,83 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422665AbXBAXB6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422702AbXBAXDQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422665AbXBAXB6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Feb 2007 18:01:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422695AbXBAXB5
+	id S1422702AbXBAXDQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Feb 2007 18:03:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422719AbXBAXDQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Feb 2007 18:01:57 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:46645 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422665AbXBAXB4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Feb 2007 18:01:56 -0500
-Date: Thu, 1 Feb 2007 14:55:25 -0800
-From: Andrew Morton <akpm@osdl.org>
-To: eranian@hpl.hp.com
-Cc: "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
-       Andi Kleen <ak@suse.de>
-Subject: Re: i386 and x86-64 bitops function prototypes differ
-Message-Id: <20070201145525.d4d950c0.akpm@osdl.org>
-In-Reply-To: <20070201091555.GA32377@frankl.hpl.hp.com>
-References: <20070126143555.GL11525@frankl.hpl.hp.com>
-	<45BA3F42.3020006@zytor.com>
-	<20070201091555.GA32377@frankl.hpl.hp.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 1 Feb 2007 18:03:16 -0500
+Received: from ug-out-1314.google.com ([66.249.92.173]:6758 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422702AbXBAXDN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Feb 2007 18:03:13 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=Zr+Lfc3HEB6y3rDkqwc3JX4S+p+wnp3OWz/ORxpfTe9UCKZFTuni9zA7VabKo1VULteztTKS4c1vKNC3c7eViMJJl0YTwbORcDPI1kvHLLzadaGkxfsk6VvP2YHJ7bgKH3r/Pkrv7zQAQS10oYCcm5qG+bDmukcw6A6P9vLZIhk=
+From: Denis Vlasenko <vda.linux@googlemail.com>
+To: Philippe Troin <phil@fifi.org>
+Subject: Re: O_NONBLOCK setting "leak" outside of a process??
+Date: Fri, 2 Feb 2007 00:00:40 +0100
+User-Agent: KMail/1.8.2
+Cc: linux-kernel@vger.kernel.org
+References: <200701272152.11087.vda.linux@googlemail.com> <87bqkhuqpp.fsf@tantale.fifi.org>
+In-Reply-To: <87bqkhuqpp.fsf@tantale.fifi.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200702020000.40524.vda.linux@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 1 Feb 2007 01:15:55 -0800
-Stephane Eranian <eranian@hpl.hp.com> wrote:
-
-> Hello,
-> 
-> On Fri, Jan 26, 2007 at 09:49:54AM -0800, H. Peter Anvin wrote:
-> > >
-> > >I ran into compiler warnings with the perfmon code when I tried
-> > >using test() and __set_bit() on i386. 
-> > >
-> > >For some reason, the i386 bitops functions use unsigned long * for
-> > >the address whereas x86-64/ia64 use void *.
-> > >
-> > >I do not quite understand why such difference?
-> > >Is this just for historical reasons?
-> > >
-> > >Thanks.
-> > >
+On Tuesday 30 January 2007 04:40, Philippe Troin wrote:
+> > int main() {
+> >         fcntl(0, F_SETFL, fcntl(0, F_GETFL, 0) | O_NONBLOCK);
+> >         return 0;
+> > }
 > > 
-> > Arguably void * is the right thing for a littleendian architecture.  For 
-> > bigendian architectures it unfortunately matters what the chunk size is, 
-> > regardless of if the chunks are numbered in bigendian (reverse) or 
-> > littleendian (forward) order.
+> > int main() {
+> >         fcntl(0, F_SETFL, fcntl(0, F_GETFL, 0) & ~O_NONBLOCK);
+> >         return 0;
+> > }
 > > 
+> > If I run "nonblock" in Midnight Commander in KDE's Konsole,
+> > screen redraw starts to work ~5 times slower. For example,
+> > Ctrl-O ("show/hide panels" in MC) takes ~0.5 sec to redraw.
+> > This persists after the program exits (which it
+> > does immediately as you see).
+> > Running "block" reverts things to normal.
+> > 
+> > I mean: how can O_NONBLOCK _issued in a process which
+> > already exited_ have any effect whatsoever on MC or Konsole?
+> > They can't even know that it did it, right?
+> > 
+> > Either I do not know something subtle about Unix or some sort
+> > of bug is at work.
 > 
-> I agree with you, but i386 is definitively little endian, so here is a patch
-> against 2.6.20-rc6-mm3 to make x86-64 and i386 have the same prototypes for
-> bit manipulation routines.
-> 
-> changelog:
-> 	- change all bit manipulation inline routine to use void * as their
-> 	  address argument instead of unsigned long *. Match x86-64
-> 
-> signed-off-by: stephane eranian <eranian@hpl.hp.com>
-> 
-> --- linux-2.6.20-rc6-mm3.orig/include/asm-i386/bitops.h	2007-01-31 09:24:21.000000000 -0800
-> +++ linux-2.6.20-rc6-mm3.base/include/asm-i386/bitops.h	2007-01-31 09:31:46.000000000 -0800
-> @@ -33,7 +33,7 @@
->   * Note that @nr may be almost arbitrarily large; this function is not
->   * restricted to acting on a single-word quantity.
->   */
-> -static inline void set_bit(int nr, volatile unsigned long * addr)
-> +static inline void set_bit(int nr, volatile void * addr)
+> Because they all share the same stdin file descriptor, therefore they
+> share the same file descriptor flags?
 
-These bitops are only valid on long*'s.  Or a least, they require a
-long-aligned address, and using long* is how we communicate and enforce
-that.
+What share the same file descriptor? MC and programs started from it?
 
-Numerous architectures implement these functions using ulong*.  If we make
-this change, we risk someone doing set_bit() on, say, a char *.  That
-change would compile and run happily on x86 and would then fail on, say,
-arm or h8/300.
+I thought after exec() fds atre either closed (if CLOEXEC) or
+becoming independent from parent process
+(i.e. it you seek, close, etc your fd, parent would not notice that).
 
-So I'd say that x86_64 is wrong, and should be changed to take ulong*.
+Am I wrong?
+--
+vda
