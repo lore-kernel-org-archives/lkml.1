@@ -1,49 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422734AbXBAXTs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422838AbXBAXV5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422734AbXBAXTs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Feb 2007 18:19:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422837AbXBAXTs
+	id S1422838AbXBAXV5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Feb 2007 18:21:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422837AbXBAXV5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Feb 2007 18:19:48 -0500
-Received: from omx2-ext.sgi.com ([192.48.171.19]:36562 "EHLO omx2.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1422734AbXBAXTr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Feb 2007 18:19:47 -0500
-Date: Thu, 1 Feb 2007 15:19:33 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-To: akpm@osdl.org
-cc: Oleg Nesterov <oleg@tv-sign.ru>, linux-kernel@vger.kernel.org
-Subject: Re: [SLAB] Shutdown cache_reaper when cpu goes down
-In-Reply-To: <Pine.LNX.4.64.0702011111560.8307@schroedinger.engr.sgi.com>
-Message-ID: <Pine.LNX.4.64.0702011517110.9210@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0702011111560.8307@schroedinger.engr.sgi.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 1 Feb 2007 18:21:57 -0500
+Received: from ozlabs.org ([203.10.76.45]:47711 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1422838AbXBAXV4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Feb 2007 18:21:56 -0500
+Subject: Re: New module-init-tools pre-release (v3.3-pre6)
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Jon Masters <jonathan@jonmasters.org>
+Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <45C1A8D7.6010100@jonmasters.org>
+References: <45C188AB.1060207@jonmasters.org>
+	 <20070131231731.4b88d8f6.akpm@osdl.org>
+	 <20070201081036.GC32510@dallas.jonmasters.org>
+	 <20070201003450.f0164d3e.akpm@osdl.org>  <45C1A8D7.6010100@jonmasters.org>
+Content-Type: text/plain
+Date: Fri, 02 Feb 2007 10:21:41 +1100
+Message-Id: <1170372101.22749.51.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The comments do not explain correctly what is going on. Sorry Oleg but it 
-seems that the protection of the assignment to reap_work is different that 
-what we initially thought.
+On Thu, 2007-02-01 at 03:46 -0500, Jon Masters wrote:
+> Andrew Morton wrote:
+> > The patch you sent claims that you maintain kernel/module.c.
+> 
+> Indeed, which I don't want to. Rusty can keep that one for now :-)
 
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
+Thanks 8)
 
-Index: current/mm/slab.c
-===================================================================
---- current.orig/mm/slab.c	2007-02-01 15:07:09.000000000 -0800
-+++ current/mm/slab.c	2007-02-01 15:09:21.000000000 -0800
-@@ -1274,10 +1274,12 @@ static int __cpuinit cpuup_callback(stru
-   	case CPU_DOWN_PREPARE:
- 		/*
- 		 * Shutdown cache reaper. Note that the cache_chain_mutex is
--		 * held so that cache_reap() cannot modify reap_work
--		 * concurrently.
-+		 * held so that if cache_reap() is invoked it cannot do
-+		 * anything expensive but will only modify reap_work
-+		 * and reschedule the timer.
- 		*/
- 		cancel_rearming_delayed_work(&per_cpu(reap_work, cpu));
-+		/* Now the cache_reaper is guaranteed to be not running. */
- 		per_cpu(reap_work, cpu).work.func = NULL;
-   		break;
-   	case CPU_DOWN_FAILED:
+BTW, just chiming in to officially ack Jon's handover of the overgrown
+example code known as module-init-tools.
+
+Cheers!
+Rusty.
+
+
