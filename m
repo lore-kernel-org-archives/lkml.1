@@ -1,67 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422856AbXBANKQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422858AbXBANKt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422856AbXBANKQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Feb 2007 08:10:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422825AbXBANKQ
+	id S1422858AbXBANKt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Feb 2007 08:10:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422857AbXBANKt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Feb 2007 08:10:16 -0500
-Received: from fms-01.valinux.co.jp ([210.128.90.1]:59579 "EHLO
-	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1422856AbXBANKP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Feb 2007 08:10:15 -0500
-From: Magnus Damm <magnus@valinux.co.jp>
-To: linux-kernel@vger.kernel.org
-Cc: akpm@osdl.org, jlan@sgi.com, nanhai.zou@intel.com, magnus.damm@gmail.com,
-       Magnus Damm <magnus@valinux.co.jp>, horms@verge.net.au
-Date: Thu, 01 Feb 2007 22:08:48 +0900
-Message-Id: <20070201130848.3785.12144.sendpatchset@localhost>
-Subject: [PATCH] kexec: Avoid migration of already disabled irqs (ia64)
+	Thu, 1 Feb 2007 08:10:49 -0500
+Received: from styx.suse.cz ([82.119.242.94]:58114 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1422858AbXBANKs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Feb 2007 08:10:48 -0500
+Date: Thu, 1 Feb 2007 14:13:57 +0100
+From: Jiri Bohac <jbohac@suse.cz>
+To: Andi Kleen <ak@suse.de>
+Cc: jbohac@suse.cz, linux-kernel@vger.kernel.org,
+       Vojtech Pavlik <vojtech@suse.cz>, ssouhlal@freebsd.org,
+       arjan@infradead.org, tglx@linutronix.de, johnstul@us.ibm.com,
+       zippel@linux-m68k.org, andrea@suse.de
+Subject: Re: [patch 2/9] Remove the support for the VXTIME_PMTMR timer mode
+Message-ID: <20070201131353.GL21755@dwarf.suse.cz>
+References: <20070201095952.589234000@jet.suse.cz> <20070201103753.508377000@jet.suse.cz> <200702011213.32278.ak@suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200702011213.32278.ak@suse.de>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-kexec: Avoid migration of already disabled irqs (ia64)
+On Thu, Feb 01, 2007 at 12:13:31PM +0100, Andi Kleen wrote:
+> On Thursday 01 February 2007 10:59, jbohac@suse.cz wrote:
+> > VXTIME_PMTMR will be replaced by a more generic "Master Timer"
+> 
+> This means we have no fallback if something goes wrong with the Master timer? 
+> 
+> A little risky.
 
-This patch fixes up ia64 kexec support for HP rx2620 hardware. It does this 
-by skipping migration of already disabled irqs. This is most likely a problem
-on other ia64 platforms as well, but I've only been able to reproduce it on
-one machine so far.
+No, either HPET or PM Timer will become the Master Timer (elected
+on boot). Master timer is just an abstraction of these, so the
+rest of the timekeeping code needn't care which hardware timer is
+being used. That's why the VXTIME_PMTMR mode is not needed.
 
-The full story is that handle_bad_irq() gets invoked before starting the new 
-kernel without this patch. This seems to happen when fixup_irqs() calls 
-generic_handle_irq() on already migrated (and disabled) irqs. So by avoiding
-migration of disabled irqs we stay away of handle_bad_irq().
+-- 
+Jiri Bohac <jbohac@suse.cz>
+SUSE Labs, SUSE CZ
 
-The code has been tested on three different ia64 machines, all with good 
-results. It is possible to trigger the same bug by offlining a processor
-using echo 0 > /sys/devices/system/cpu/cpuX/online.
-
-More detailed information is available in the following mail thread:
-http://lists.osdl.org/pipermail/fastboot/2007-January/thread.html#5774
-
-Signed-off-by: Magnus Damm <magnus@valinux.co.jp>
-Acked-by: Simon Horman <horms@verge.net.au>
-Acked-by: Zou, Nanhai <nanhai.zou@intel.com>
-Acked-by: Jay Lan <jlan@sgi.com>
----
-
- Tested using kexec-tools-testing 7792798a79b78a5d566f70c9f00237d050b01350
- on HP rx2620 hardware.
-
- Applies on top of 2.6.20-rc7.
-
- arch/ia64/kernel/irq.c |    3 +++
- 1 file changed, 3 insertions(+)
-
---- 0001/arch/ia64/kernel/irq.c
-+++ 0004/arch/ia64/kernel/irq.c	2007-01-30 12:35:10.000000000 +0900
-@@ -122,6 +122,9 @@ static void migrate_irqs(void)
- 	for (irq=0; irq < NR_IRQS; irq++) {
- 		desc = irq_desc + irq;
- 
-+		if (desc->status == IRQ_DISABLED)
-+			continue;
-+
- 		/*
- 		 * No handling for now.
- 		 * TBD: Implement a disable function so we can now
