@@ -1,139 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422931AbXBASjw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422929AbXBASml@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422931AbXBASjw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Feb 2007 13:39:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422934AbXBASjw
+	id S1422929AbXBASml (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Feb 2007 13:42:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422933AbXBASml
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Feb 2007 13:39:52 -0500
-Received: from mail.interware.hu ([195.70.32.130]:46351 "EHLO
-	mail.interware.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422931AbXBASjv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Feb 2007 13:39:51 -0500
-X-Greylist: delayed 1111 seconds by postgrey-1.27 at vger.kernel.org; Thu, 01 Feb 2007 13:39:51 EST
-Message-ID: <45C22F57.3030804@conceptonline.hu>
-Date: Thu, 01 Feb 2007 19:20:07 +0100
-From: Fagyal Csongor <concept@conceptonline.hu>
-Organization: Concept Online Ltd.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20050920
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: Lionel Landwerlin <landwer@free.fr>
-CC: Stephen Hemminger <shemminger@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: sky2 or acpi problem ?
-References: <1170352795.5299.17.camel@cocoduo>
-In-Reply-To: <1170352795.5299.17.camel@cocoduo>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 1 Feb 2007 13:42:41 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:54997 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1422929AbXBASmk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Feb 2007 13:42:40 -0500
+Date: Thu, 1 Feb 2007 10:42:17 -0800
+From: Judith Lebzelter <judith@osdl.org>
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>
+Cc: "Robert P. J. Day" <rpjday@mindspring.com>,
+       Judith Lebzelter <judith@osdl.org>, ebiederm@xmission.com,
+       linux-kernel@vger.kernel.org, fastboot@osdl.org
+Subject: Re: [ PATCH ] fix to documentation for kexec
+Message-ID: <20070201184217.GF5825@shell0.pdx.osdl.net>
+References: <20070201181955.GE5825@shell0.pdx.osdl.net> <Pine.LNX.4.61.0702011923530.13737@yvahk01.tjqt.qr> <Pine.LNX.4.64.0702011329550.16875@CPE00045a9c397f-CM001225dbafb6> <Pine.LNX.4.61.0702011932090.13737@yvahk01.tjqt.qr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.61.0702011932090.13737@yvahk01.tjqt.qr>
+User-Agent: Mutt/1.5.6i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Lionel Landwerlin wrote:
+On Thu, Feb 01, 2007 at 07:33:58PM +0100, Jan Engelhardt wrote:
+> 
+> On Feb 1 2007 13:30, Robert P. J. Day wrote:
+> >> >@@ -228,8 +228,8 @@ Notes on loading the dump-capture kernel
+> >> > * You must specify <root-dev> in the format corresponding to the root
+> >> >   device name in the output of mount command.
+> >> >
+> >> >-* "init 1" boots the dump-capture kernel into single-user mode without
+> >> >-  networking. If you want networking, use "init 3."
+> >> >+* Boot parameter "1" boots the dump-capture kernel into single-user mode
+> >> >+  without networking. If you want networking, use "3".
+> >>
+> >> Yup. More precisely, any arguments that could not be parsed (because
+> >> the kernel does not know them) are handed down to the init program
+> >> as arguments and/or environment variables.
+> >
+> >whoops, ignore my last post, i misread the critical words.
+> 
+> However, I am not sure how the kernel will handle this. Especially since:
+> 
+>   * if you boot with no initramfs, init= is handled by your script
+>     (otherwise: kernel)
+> 
+>   * does "init" qualify as a kernel param already? I don't think so,
+>     since the code indicates to be wanting "init=" at least.
+> 
+> Either way, the word "init" in the above doc is either (1) wrong
+> or (2) superfluous [unless something strange happens to interpret it later,
+> which I don't think]
 
->Hi,
->we already had words on lkml about this bug with sky2 driver.
->
->I was having problems, and you told me to use the disable_msi=1
->parameter to see what happens. After a couple of hours of testing with
->heavly ethernet load, I answered you it had fixed the problem. I was
->wrong. Now, it takes much more time to crash. Most of time, I can't even
->see what happens beacause the box is completly frozen. But after several
->crashs, I only had my keyboard locked, usb unpowered, and ethernet
->interface down, I finally had the possibility see that :
->
->Feb  1 18:35:06 cocoduo kernel: [59723.468000] NETDEV WATCHDOG: eth0: transmit timed out
->Feb  1 18:35:07 cocoduo kernel: [59723.468000] sky2 eth0: tx timeout
->Feb  1 18:35:07 cocoduo kernel: [59723.468000] sky2 eth0: transmit ring 64 .. 41 report=65 done=65
->Feb  1 18:35:07 cocoduo kernel: [59723.468000] sky2 status report lost?
->Feb  1 18:35:16 cocoduo kernel: [59733.200000] BUG: soft lockup detected on CPU#0!
->Feb  1 18:35:16 cocoduo kernel: [59733.200000]  [softlockup_tick+155/208] softlockup_tick+0x9b/0xd0
->Feb  1 18:35:16 cocoduo kernel: [59733.200000]  [update_process_times+49/128] update_process_times+0x31/0x80
->Feb  1 18:35:16 cocoduo kernel: [59733.200000]  [smp_apic_timer_interrupt+145/176] smp_apic_timer_interrupt+0x91/0xb0
->Feb  1 18:35:16 cocoduo kernel: [59733.200000]  [apic_timer_interrupt+31/36] apic_timer_interrupt+0x1f/0x24
->Feb  1 18:35:16 cocoduo kernel: [59733.200000]  [_spin_lock_bh+15/32] _spin_lock_bh+0xf/0x20
->Feb  1 18:35:16 cocoduo kernel: [59733.200000]  [pg0+945481365/1068803072] sky2_tx_timeout+0xf5/0x1d0 [sky2]
->Feb  1 18:35:16 cocoduo kernel: [59733.200000]  [dev_watchdog+0/208] dev_watchdog+0x0/0xd0
->Feb  1 18:35:16 cocoduo kernel: [59733.200000]  [dev_watchdog+192/208] dev_watchdog+0xc0/0xd0
->Feb  1 18:35:16 cocoduo kernel: [59733.200000]  [run_timer_softirq+273/400] run_timer_softirq+0x111/0x190
->Feb  1 18:35:16 cocoduo kernel: [59733.200000]  [__do_softirq+116/240] __do_softirq+0x74/0xf0
->Feb  1 18:35:16 cocoduo kernel: [59733.200000]  [do_softirq+59/80] do_softirq+0x3b/0x50
->Feb  1 18:35:16 cocoduo kernel: [59733.200000]  [smp_apic_timer_interrupt+150/176] smp_apic_timer_interrupt+0x96/0xb0
->Feb  1 18:35:16 cocoduo kernel: [59733.200000]  [apic_timer_interrupt+31/36] apic_timer_interrupt+0x1f/0x24
->Feb  1 18:35:16 cocoduo kernel: [59733.200000]  [pg0+943208348/1068803072] acpi_processor_idle+0x1fd/0x3b9 [processor]
->Feb  1 18:35:16 cocoduo kernel: [59733.200000]  [cpu_idle+116/208] cpu_idle+0x74/0xd0
->Feb  1 18:35:16 cocoduo kernel: [59733.200000]  [start_kernel+872/1072] start_kernel+0x368/0x430
->Feb  1 18:35:16 cocoduo kernel: [59733.200000]  [unknown_bootoption+0/624] unknown_bootoption+0x0/0x270
->
->It's exactly the same error than before. What do you think of this
->trace ? Is it related to sky2 driver or acpi ? Did you add debug output
->since 2.6.19.2 (version of the kernel I'm using) that would help to fix
->that bug ? What can I do to help to fix the bug ?
->
->Regards,
->  
->
-Same(?) problem here. I am not sure what causes it - happens once in a while (once in every day?) Once I got "no route to host", after which I had to reboot to get the interface working again. But the latest was this:
+Yes, it looks like "init=" is right, "init" is wrong.
 
+I did notice that my patch is out of date for the latest kernel, 
+however.  I can send an up to date one.
 
-Jan 31 19:15:34 tc kernel: sky2 eth0: tx timeout
-Jan 31 19:15:34 tc kernel: sky2 status report lost?
-Jan 31 19:15:34 tc kernel: BUG: spinlock recursion on CPU#0, swapper/0 
-(Not tainted)
-Jan 31 19:15:34 tc kernel: lock: f73b2a00, .magic: dead4ead, .owner: 
-swapper/0, .owner_cpu: 0
-Jan 31 19:15:34 tc kernel: [<c0405018>] dump_trace+0x69/0x1b6
-Jan 31 19:15:34 tc kernel: [<c040517d>] show_trace_log_lvl+0x18/0x2c
-Jan 31 19:15:34 tc kernel: [<c0405778>] show_trace+0xf/0x11
-Jan 31 19:15:34 tc kernel: [<c0405875>] dump_stack+0x15/0x17
-Jan 31 19:15:34 tc kernel: [<c04f3925>] _raw_spin_lock+0x35/0xdc
-Jan 31 19:15:34 tc kernel: [<f899bd63>] sky2_tx_timeout+0xe9/0x191 [sky2]
-Jan 31 19:15:34 tc kernel: [<c05d5a2c>] dev_watchdog+0x77/0xb9
-Jan 31 19:15:34 tc kernel: [<c0430cef>] run_timer_softirq+0x105/0x16c
-Jan 31 19:15:34 tc kernel: [<c042c041>] __do_softirq+0x5a/0xbb
-Jan 31 19:15:34 tc kernel: [<c0406435>] do_softirq+0x55/0xb5
-Jan 31 19:15:34 tc kernel: =======================
-Jan 31 19:15:43 tc kernel: BUG: soft lockup detected on CPU#0!
-Jan 31 19:15:43 tc kernel: [<c0405018>] dump_trace+0x69/0x1b6
-Jan 31 19:15:43 tc kernel: [<c040517d>] show_trace_log_lvl+0x18/0x2c
-Jan 31 19:15:43 tc kernel: [<c0405778>] show_trace+0xf/0x11
-Jan 31 19:15:43 tc kernel: [<c0405875>] dump_stack+0x15/0x17
-Jan 31 19:15:43 tc kernel: [<c04522c5>] softlockup_tick+0xad/0xc4
-Jan 31 19:15:43 tc kernel: [<c0430d8f>] update_process_times+0x39/0x5c
-Jan 31 19:15:43 tc kernel: [<c0419f5a>] smp_apic_timer_interrupt+0x95/0xb3
-Jan 31 19:15:43 tc kernel: [<c0404a57>] apic_timer_interrupt+0x1f/0x24
-Jan 31 19:15:43 tc kernel: [<c04f395f>] _raw_spin_lock+0x6f/0xdc
-Jan 31 19:15:43 tc kernel: [<f899bd63>] sky2_tx_timeout+0xe9/0x191 [sky2]
-Jan 31 19:15:43 tc kernel: [<c05d5a2c>] dev_watchdog+0x77/0xb9
-Jan 31 19:15:43 tc kernel: [<c0430cef>] run_timer_softirq+0x105/0x16c
-Jan 31 19:15:43 tc kernel: [<c042c041>] __do_softirq+0x5a/0xbb
-Jan 31 19:15:43 tc kernel: [<c0406435>] do_softirq+0x55/0xb5
-Jan 31 19:15:43 tc kernel: =======================
-Jan 31 19:16:10 tc kernel: BUG: spinlock lockup on CPU#0, swapper/0, 
-f73b2a00 (Not tainted)
-Jan 31 19:16:10 tc kernel: [<c0405018>] dump_trace+0x69/0x1b6
-Jan 31 19:16:10 tc kernel: [<c040517d>] show_trace_log_lvl+0x18/0x2c
-Jan 31 19:16:10 tc kernel: [<c0405778>] show_trace+0xf/0x11
-Jan 31 19:16:10 tc kernel: [<c0405875>] dump_stack+0x15/0x17
-Jan 31 19:16:10 tc kernel: [<c04f39af>] _raw_spin_lock+0xbf/0xdc
-Jan 31 19:16:10 tc kernel: [<f899bd63>] sky2_tx_timeout+0xe9/0x191 [sky2]
-Jan 31 19:16:10 tc kernel: [<c05d5a2c>] dev_watchdog+0x77/0xb9
-Jan 31 19:16:10 tc kernel: [<c0430cef>] run_timer_softirq+0x105/0x16c
-Jan 31 19:16:10 tc kernel: [<c042c041>] __do_softirq+0x5a/0xbb
-Jan 31 19:16:10 tc kernel: [<c0406435>] do_softirq+0x55/0xb5
-Jan 31 19:16:10 tc kernel: =======================
-Jan 31 19:17:14 tc named[2334]: *** POKED TIMER ***
-
-At this time I tried ifdown eth0, which completely froze the computer.
-
-I am running 2.6.19-1.2895.fc6, and this is an E6600 in a Gigabyte 
-965P-DS3 (with the default Marvell 88E8053).
-
-I have idle=poll now, according to this thread:
-
-http://www.gossamer-threads.com/lists/linux/kernel/725399
-
-
-No lockup so far, but I only have this setting since yesterday...
-
-- Fagzal
+Judith
+> 
+> 
+> Jan
+> -- 
+> ft: http://freshmeat.net/p/chaostables/
