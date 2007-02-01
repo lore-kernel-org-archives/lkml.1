@@ -1,46 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422697AbXBAIrJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030570AbXBAJD0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422697AbXBAIrJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Feb 2007 03:47:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422703AbXBAIrJ
+	id S1030570AbXBAJD0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Feb 2007 04:03:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030520AbXBAJDZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Feb 2007 03:47:09 -0500
-Received: from dallas.jonmasters.org ([72.29.103.172]:3347 "EHLO
-	dallas.jonmasters.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422697AbXBAIrI (ORCPT
+	Thu, 1 Feb 2007 04:03:25 -0500
+Received: from ug-out-1314.google.com ([66.249.92.168]:28155 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030570AbXBAJDY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Feb 2007 03:47:08 -0500
-Message-ID: <45C1A8D7.6010100@jonmasters.org>
-Date: Thu, 01 Feb 2007 03:46:15 -0500
-From: Jon Masters <jonathan@jonmasters.org>
-Organization: World Organi[sz]ation Of Broken Dreams
-User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
+	Thu, 1 Feb 2007 04:03:24 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=j8l717W4cbTHAqT3H8GE9AHzTCOdfVlv76iYI2NdBEhAF0iDDR36HgiK56womDb2Vj2yvJQY7i+PiODoyHxM3P0Jc0g+YistSk7zwgBq+lBecqq9vQHyLMEV7qSfcJAsabYgkludGxKHVktZVT9OgOlwj7QgHQ6KNoLSSkqPmaY=
+Message-ID: <3d57814d0702010103m4d7c3577q35b7f5fff16a716a@mail.gmail.com>
+Date: Thu, 1 Feb 2007 19:03:22 +1000
+From: "Trent Waddington" <trent.waddington@gmail.com>
+To: "Nicolas Mailhot" <nicolas.mailhot@laposte.net>
+Subject: Re: Free Linux Driver Development!
+Cc: "Greg KH" <greg@kroah.com>, "Theodore Tso" <tytso@mit.edu>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <54850.192.54.193.51.1170319212.squirrel@rousalka.dyndns.org>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@osdl.org>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: New module-init-tools pre-release (v3.3-pre6)
-References: <45C188AB.1060207@jonmasters.org>	<20070131231731.4b88d8f6.akpm@osdl.org>	<20070201081036.GC32510@dallas.jonmasters.org> <20070201003450.f0164d3e.akpm@osdl.org>
-In-Reply-To: <20070201003450.f0164d3e.akpm@osdl.org>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-SA-Do-Not-Run: Yes
-X-SA-Exim-Connect-IP: 74.92.29.237
-X-SA-Exim-Mail-From: jonathan@jonmasters.org
-X-SA-Exim-Scanned: No (on dallas.jonmasters.org); SAEximRunCond expanded to false
+Content-Disposition: inline
+References: <32793.192.54.193.51.1170248792.squirrel@rousalka.dyndns.org>
+	 <20070131201258.GB15128@kroah.com> <20070131230014.GD20514@thunk.org>
+	 <20070131234450.GB32078@kroah.com>
+	 <54850.192.54.193.51.1170319212.squirrel@rousalka.dyndns.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
+On 2/1/07, Nicolas Mailhot <nicolas.mailhot@laposte.net> wrote:
+> Well, reengineering nvidia/ati DRM is rude to ati/nvidia, so was creating
+> tigon3, so was rewriting from scratch the GPL drivers some ATA vendors
+> published in the past, so was spurning the SATA/SAS stack adaptec
+> offered...
 
-> No, I was thinking of a record which explicitly mentions module-init-tools.
-> It's not a part of the kernel, but it is closely connected to it, and this is
-> useful information to have in ./MAINTAINERS.
+It is rude, but they're writing proprietary modules, and *that* is
+rude, so screw 'em.
 
-Ah, now that makes more sense. I was thinking you were thinking of an 
-existing entry. Meh, anyway, way too late in the evening for thought.
+> If the answer is no, then there is a big pile of device documentation (in
+> the form of source code) waiting to be used.
 
-> The patch you sent claims that you maintain kernel/module.c.
+Greg didn't say it was rude to write a new driver without consulting
+the author of an existing driver.. just that taking their code without
+asking them if they would prefer to put it in the tree themselves is a
+bit rude.
 
-Indeed, which I don't want to. Rusty can keep that one for now :-)
+Admittably there is a point where this whole politeness thing could
+get out of hand, but I think a good rule of thumb is to ask the author
+if they're ok with you doing X with their code, and if they say no,
+well, try to be gracious about it.  Not that they *should* say no,
+this *is* free software after all.
 
-Jon.
+Trent
