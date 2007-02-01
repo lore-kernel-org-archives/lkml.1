@@ -1,85 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161182AbXBAQRU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422666AbXBAQdN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161182AbXBAQRU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Feb 2007 11:17:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161184AbXBAQRU
+	id S1422666AbXBAQdN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Feb 2007 11:33:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422669AbXBAQdN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Feb 2007 11:17:20 -0500
-Received: from www.osadl.org ([213.239.205.134]:40326 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1161182AbXBAQRT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Feb 2007 11:17:19 -0500
-Subject: [PATCH 2.6.20-rc7] at91: correct value for AT91_RSTC_KEY
-From: Jan Altenberg <jan@linutronix.de>
-To: andrew@sanpeople.com
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Date: Thu, 01 Feb 2007 17:17:08 +0100
-Message-Id: <1170346628.20424.12.camel@jan-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+	Thu, 1 Feb 2007 11:33:13 -0500
+Received: from nf-out-0910.google.com ([64.233.182.185]:12989 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422666AbXBAQdM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Feb 2007 11:33:12 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=tSO/9YddVgt083DRE6OL6BCl9FtX5AWL3zuIJZu3sZf5NpH24b/Yp2lffEg7WLS2dOZbUcEc+AwzkOKTWp7mFlnh0XIUwP9RMxkz/oHg+lYYzY/fAKIwNew4Ey8ptxJL44T7QLRz2Jp0H1zdY9MSyPljMLEFK9L/+JQgXihn6CE=
+Message-ID: <80d7e4090702010833u125346f9xc061651c904582f@mail.gmail.com>
+Date: Thu, 1 Feb 2007 09:33:10 -0700
+From: "Stephen John Smoogen" <smooge@gmail.com>
+To: "Brian D. McGrew" <brian@visionpro.com>
+Subject: Re: 2.6.16.16 Lost CD-ROM Drive
+Cc: jeremy@emperorlinux.com, linux-kernel@vger.kernel.org,
+       linux-precision@dell.com
+In-Reply-To: <14CFC56C96D8554AA0B8969DB825FEA001C3A234@chicken.machinevisionproducts.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <14CFC56C96D8554AA0B8969DB825FEA001C3A234@chicken.machinevisionproducts.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-- Remove a duplicated define for AT91_RSTC_KEY
-- Set AT91_RSTC_KEY to the correct value
-- Replace the hardcoded keys in at91sam9620.c and at91sam9261.c
-  by AT91_RSTC_KEY
+On 2/1/07, Brian D. McGrew <brian@visionpro.com> wrote:
 
-Signed-off-by: Jan Altenberg <jan@linutronix.de>
-
----
- arch/arm/mach-at91rm9200/at91sam9260.c      |    2 +-
- arch/arm/mach-at91rm9200/at91sam9261.c      |    2 +-
- include/asm-arm/arch-at91rm9200/at91_rstc.h |    3 +--
- 3 files changed, 3 insertions(+), 4 deletions(-)
-
-Index: linux-2.6/arch/arm/mach-at91rm9200/at91sam9260.c
-===================================================================
---- linux-2.6.orig/arch/arm/mach-at91rm9200/at91sam9260.c
-+++ linux-2.6/arch/arm/mach-at91rm9200/at91sam9260.c
-@@ -213,7 +213,7 @@ static struct at91_gpio_bank at91sam9260
- 
- static void at91sam9260_reset(void)
- {
--	at91_sys_write(AT91_RSTC_CR, (0xA5 << 24) | AT91_RSTC_PROCRST | AT91_RSTC_PERRST);
-+	at91_sys_write(AT91_RSTC_CR, AT91_RSTC_KEY | AT91_RSTC_PROCRST | AT91_RSTC_PERRST);
- }
- 
- 
-Index: linux-2.6/arch/arm/mach-at91rm9200/at91sam9261.c
-===================================================================
---- linux-2.6.orig/arch/arm/mach-at91rm9200/at91sam9261.c
-+++ linux-2.6/arch/arm/mach-at91rm9200/at91sam9261.c
-@@ -208,7 +208,7 @@ static struct at91_gpio_bank at91sam9261
- 
- static void at91sam9261_reset(void)
- {
--	at91_sys_write(AT91_RSTC_CR, (0xA5 << 24) | AT91_RSTC_PROCRST | AT91_RSTC_PERRST);
-+	at91_sys_write(AT91_RSTC_CR, AT91_RSTC_KEY | AT91_RSTC_PROCRST | AT91_RSTC_PERRST);
- }
- 
- 
-Index: linux-2.6/include/asm-arm/arch-at91rm9200/at91_rstc.h
-===================================================================
---- linux-2.6.orig/include/asm-arm/arch-at91rm9200/at91_rstc.h
-+++ linux-2.6/include/asm-arm/arch-at91rm9200/at91_rstc.h
-@@ -17,7 +17,7 @@
- #define		AT91_RSTC_PROCRST	(1 << 0)		/* Processor Reset */
- #define		AT91_RSTC_PERRST	(1 << 2)		/* Peripheral Reset */
- #define		AT91_RSTC_EXTRST	(1 << 3)		/* External Reset */
--#define		AT91_RSTC_KEY		(0xff << 24)		/* KEY Password */
-+#define		AT91_RSTC_KEY		(0xa5 << 24)		/* KEY Password */
- 
- #define AT91_RSTC_SR		(AT91_RSTC + 0x04)	/* Reset Controller Status Register */
- #define		AT91_RSTC_URSTS		(1 << 0)		/* User Reset Status */
-@@ -34,6 +34,5 @@
- #define		AT91_RSTC_URSTEN	(1 << 0)		/* User Reset Enable */
- #define		AT91_RSTC_URSTIEN	(1 << 4)		/* User Reset Interrupt Enable */
- #define		AT91_RSTC_ERSTL		(0xf << 8)		/* External Reset Length */
--#define		AT91_RSTC_KEY		(0xff << 24)		/* KEY Password */
- 
- #endif
+> On Thu, 2007-02-01 at 07:00 -0800, Brian D. McGrew wrote:
+> > Hey guys-
+> >
+> > Have a Precision workstation with SATA hard drive and SATA CD-ROM.  If
+> I
+> > load Fedora Core 5 with a stock 2.6.15 kernel, life is good.
+> >
+> > However, I need to use 2.6.16.16.  Once I build and install this
+> kernel,
+> > my CD-ROM drive is gone.  There is a log entry in dmesg that says
+> "ATAPI
+> > not support.  Ignoring."
+> >
+> > If I go into the BIOS and set the SATA operations to Legacy/Compatible
+> > then everything is fine.  I've rebuilt this kernel about 100 times
+> > trying everything I can think of.
+> >
+> > When I have SATA set to legacy, the HDD and CD are detected as
+> /dev/hd*
+> > and when they're set to SATA Normal operation the HDD is detected as
+> > /dev/sda.  If I boot my old 2.6.15 (stock install) kernel then the CD
+> is
+> > found as /dev/sdc.
+> >
+> > I've even tried taking the installation default configuration file for
+> > the 2.6.15 kernel and just wholesale copying it into my 2.6.16.16
+> kernel
+> > and build that way but still no go.
+> >
+> > What am I missing to get the 2.6.16.16 kernel to see a SATA CD-ROM
+> drive
+> > in normal, non-legacy move?
+>
+> Try booting 2.6.16 with the following options:
+>
+> libata.atapi_enabled=1 ide0=noprobe ide1=noprobe
+> -----
+>
+> Still no go.  /dev/sda* is created for the hard drive but no CD-ROM and
+> the same ATAPI error in dmesg.
+>
 
 
+I would try the following:
+
+yum update
+and boot the kernel and see what modules are linked to the cdrom. I am
+thinking it is the sr_mod module. I would check to see if its compiled
+in the 2.6.16 code.
+
+
+
+
+-- 
+Stephen J Smoogen. -- CSIRT/Linux System Administrator
+How far that little candle throws his beams! So shines a good deed
+in a naughty world. = Shakespeare. "The Merchant of Venice"
