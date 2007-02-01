@@ -1,42 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422871AbXBAO3a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422900AbXBAOpJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422871AbXBAO3a (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Feb 2007 09:29:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422873AbXBAO3a
+	id S1422900AbXBAOpJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Feb 2007 09:45:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422906AbXBAOpI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Feb 2007 09:29:30 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:50348 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1422871AbXBAO33 (ORCPT
+	Thu, 1 Feb 2007 09:45:08 -0500
+Received: from caffeine.uwaterloo.ca ([129.97.134.17]:47694 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1422900AbXBAOpH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Feb 2007 09:29:29 -0500
-Date: Thu, 1 Feb 2007 14:41:45 +0000
-From: Alan <alan@lxorguk.ukuu.org.uk>
-To: Sergei Organov <osv@javad.com>
-Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org
+	Thu, 1 Feb 2007 09:45:07 -0500
+Date: Thu, 1 Feb 2007 09:45:06 -0500
+To: Erik Mouw <erik@harddisk-recovery.com>
+Cc: Jeff Garzik <jeff@garzik.org>, Roland Dreier <rdreier@cisco.com>,
+       Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org
 Subject: Re: Free Linux Driver Development!
-Message-ID: <20070201144145.26b0b90e@localhost.localdomain>
-In-Reply-To: <873b5q2c0z.fsf@javad.com>
-References: <20070130012904.GA9617@kroah.com>
-	<ada8xfks90x.fsf@cisco.com>
-	<20070130191020.GF20642@kroah.com>
-	<87fy9r2ixc.fsf@javad.com>
-	<20070201054644.GD5979@kroah.com>
-	<873b5q2c0z.fsf@javad.com>
-X-Mailer: Claws Mail 2.7.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+Message-ID: <20070201144506.GD7582@csclub.uwaterloo.ca>
+References: <ada8xfks90x.fsf@cisco.com> <20070130191020.GF20642@kroah.com> <adaodogqpmx.fsf@cisco.com> <45BFA087.6020905@garzik.org> <ada4pq8qjpd.fsf@cisco.com> <20070130214759.GA12477@kroah.com> <adar6tcp43r.fsf@cisco.com> <45BFC2CF.8010603@garzik.org> <20070130222344.GF7584@csclub.uwaterloo.ca> <20070201135903.GE29212@harddisk-recovery.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070201135903.GE29212@harddisk-recovery.com>
+User-Agent: Mutt/1.5.9i
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> 3. Vendor driver is rather close to the generic one being in the kernel,
->    so maybe it's better to improve generic one instead of adding yet
->    another driver to the tree.
+On Thu, Feb 01, 2007 at 02:59:03PM +0100, Erik Mouw wrote:
+> I can't remember that kind of corruption ever being reported to the
+> bcm43xx-dev mailing list.
 
-Firstly can you post a patch which adds the relevant identifiers to the
-current pcmcia serial driver so that 115,200 works but nothing higher.
-After that I'd like to take a look at the needed changes for higher speed
-support using the 2.6.20-mm work which adds arbitary speed support.
+Well I assumed it messed up the eeprom settings, since we had to go into
+the advanced driver settings and change it from 802.11b only back to
+auto mode and I would think those settings are stored in the eeprom if
+booting a 2.6.18 kernel and loading the bcm43xx driver can cause it to
+stop working, then it has to be an eeprom setting.
 
-Alan
+Actually I suppose the other posibility is that you simply have to power
+cycle before booting windows after linux to avoid any left over settings
+in the chip from being a problem.  That may be what I did.  Given I
+couldn't get the card to connect using the bcm43xx driver anyhow, I
+didn't spend too much time trying (I am fairly sure I set the AP to
+802.11g only though which may have been a problem).
+
+> You could use a CardBus or USB card.
+
+I just don't like things sticking out that are breakable.
+
+> So are the bcm43xx maintainers.
+
+Excellent.  Is the bcm43xx planning to get 802.11g mode working at some
+point?  Is broadcom ever going to help out with any specs for their
+hardware or do they still mistakenly believe that end users are not
+their customers?  Given the behaviour of broadcom over the years I know
+I don't intend to buy anything with a broadcom chip in it again, which
+means broadcom's behaviour directly means they will get less sales to the
+laptop makers, since some people will actively avoid anything with
+broadcom's hardware in it. :)
+
+--
+Len Sorensen
