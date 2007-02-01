@@ -1,63 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422920AbXBAST6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422914AbXBASYL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422920AbXBAST6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Feb 2007 13:19:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422923AbXBAST6
+	id S1422914AbXBASYL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Feb 2007 13:24:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422915AbXBASYL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Feb 2007 13:19:58 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:53642 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422920AbXBAST5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Feb 2007 13:19:57 -0500
-Date: Thu, 1 Feb 2007 10:19:55 -0800
-From: Judith Lebzelter <judith@osdl.org>
-To: ebiederm@xmission.com
-Cc: linux-kernel@vger.kernel.org, fastboot@osdl.org
-Subject: [ PATCH ] fix to documentation for kexec
-Message-ID: <20070201181955.GE5825@shell0.pdx.osdl.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.6i
+	Thu, 1 Feb 2007 13:24:11 -0500
+Received: from mtagate3.de.ibm.com ([195.212.29.152]:55600 "EHLO
+	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422914AbXBASYK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Feb 2007 13:24:10 -0500
+Message-ID: <45C23046.8000303@fr.ibm.com>
+Date: Thu, 01 Feb 2007 19:24:06 +0100
+From: Cedric Le Goater <clg@fr.ibm.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@osdl.org>
+CC: linux-kernel@vger.kernel.org, Bob Moore <robert.moore@intel.com>,
+       Alexey Starikovskiy <alexey.y.starikovskiy@intel.com>,
+       keith mannthey <kmannth@us.ibm.com>
+Subject: Re: 2.6.20-rc6-mm3
+References: <20070129204528.eb8d695e.akpm@osdl.org>
+In-Reply-To: <20070129204528.eb8d695e.akpm@osdl.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Hello !
 
-I've noticed that the boot options are not correct for in 
-the documentation for kdump. The "init" keyword is not 
-necessary, and causes a kernel panic when booting with an 
-initrd on Fedora 5.
+changes in git-acpi.patch in 2.6.20-rc6-mm3 (and maybe before) broke the Summit 
+sub-arch (IBM x440) compile :( 
 
-Thanks;
-Judith Lebzelter
+thanks, 
+ 
+C. 
 
----
-Signed-off-by: Judith Lebzelter <judith@osdl.org>
----
-
-
-Index: linux/Documentation/kdump/kdump.txt
-===================================================================
---- linux.orig/Documentation/kdump/kdump.txt
-+++ linux/Documentation/kdump/kdump.txt
-@@ -207,7 +207,7 @@ the following command:
- 
-    kexec -p <dump-capture-kernel> \
-    --initrd=<initrd-for-dump-capture-kernel> --args-linux \
--   --append="root=<root-dev> init 1 irqpoll"
-+   --append="root=<root-dev> 1 irqpoll"
- 
- 
- Notes on loading the dump-capture kernel:
-@@ -228,8 +228,8 @@ Notes on loading the dump-capture kernel
- * You must specify <root-dev> in the format corresponding to the root
-   device name in the output of mount command.
- 
--* "init 1" boots the dump-capture kernel into single-user mode without
--  networking. If you want networking, use "init 3."
-+* Boot parameter "1" boots the dump-capture kernel into single-user mode 
-+  without networking. If you want networking, use "3".
- 
- 
- Kernel Panic
+  CC      arch/i386/kernel/cpu/intel.o
+  CC      arch/i386/kernel/early_printk.o
+arch/i386/kernel/srat.c: In function 'parse_cpu_affinity_structure':
+arch/i386/kernel/srat.c:68: error: dereferencing pointer to incomplete type
+arch/i386/kernel/srat.c:72: error: dereferencing pointer to incomplete type
+arch/i386/kernel/srat.c:72: error: dereferencing pointer to incomplete type
+arch/i386/kernel/srat.c:74: error: dereferencing pointer to incomplete type
+arch/i386/kernel/srat.c:74: error: dereferencing pointer to incomplete type
+arch/i386/kernel/srat.c:77: error: dereferencing pointer to incomplete type
+arch/i386/kernel/srat.c:77: error: dereferencing pointer to incomplete type
+arch/i386/kernel/srat.c: In function 'parse_memory_affinity_structure':
+arch/i386/kernel/srat.c:93: error: dereferencing pointer to incomplete type
+arch/i386/kernel/srat.c:97: error: dereferencing pointer to incomplete type
+arch/i386/kernel/srat.c:97: error: dereferencing pointer to incomplete type
+arch/i386/kernel/srat.c:100: error: dereferencing pointer to incomplete type
+arch/i386/kernel/srat.c:101: error: dereferencing pointer to incomplete type
+arch/i386/kernel/srat.c:102: error: dereferencing pointer to incomplete type
+arch/i386/kernel/srat.c:103: error: dereferencing pointer to incomplete type
+arch/i386/kernel/srat.c:108: error: dereferencing pointer to incomplete type
+arch/i386/kernel/srat.c:134: error: dereferencing pointer to incomplete type
+arch/i386/kernel/srat.c:135: error: dereferencing pointer to incomplete type
+arch/i386/kernel/srat.c:136: error: dereferencing pointer to incomplete type
+arch/i386/kernel/srat.c: In function 'acpi20_parse_srat':
+arch/i386/kernel/srat.c:188: error: 'ACPI_SRAT_PROCESSOR_AFFINITY' undeclared (first use in this function)
+arch/i386/kernel/srat.c:188: error: (Each undeclared identifier is reported only once
+arch/i386/kernel/srat.c:188: error: for each function it appears in.)
+arch/i386/kernel/srat.c:191: error: 'ACPI_SRAT_MEMORY_AFFINITY' undeclared (first use in this function)
+arch/i386/kernel/srat.c: In function 'get_memcfg_from_srat':
+arch/i386/kernel/srat.c:275: error: 'ACPI_PHYSICAL_ADDRESSING' undeclared (first use in this function)
+arch/i386/kernel/srat.c:275: error: too many arguments to function 'acpi_find_root_pointer'
+arch/i386/kernel/srat.c:282: error: dereferencing pointer to incomplete type
+arch/i386/kernel/srat.c:282: error: 'ACPI_PHYSICAL_POINTER' undeclared (first use in this function)
+arch/i386/kernel/srat.c:285: error: dereferencing pointer to incomplete type
+arch/i386/kernel/srat.c:298: error: 'RSDP_SIG' undeclared (first use in this function)
+arch/i386/kernel/srat.c:304: error: 'struct acpi_table_rsdp' has no member named 'rsdt_address'
+arch/i386/kernel/srat.c:315: error: 'RSDT_SIG' undeclared (first use in this function)
+arch/i386/kernel/srat.c:344: error: 'struct acpi_table_rsdt' has no member named 'entry'
+arch/i386/kernel/srat.c:348: error: 'struct acpi_table_rsdt' has no member named 'entry'
+  SYSCALL arch/i386/kernel/vsyscall-syms.o
+make[1]: *** [arch/i386/kernel/srat.o] Error 1
+make[1]: *** Waiting for unfinished jobs....
