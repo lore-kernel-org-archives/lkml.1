@@ -1,94 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751860AbXBAPvR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751855AbXBAPwx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751860AbXBAPvR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Feb 2007 10:51:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751867AbXBAPvR
+	id S1751855AbXBAPwx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Feb 2007 10:52:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751830AbXBAPwx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Feb 2007 10:51:17 -0500
-Received: from raven.upol.cz ([158.194.120.4]:42299 "EHLO raven.upol.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751860AbXBAPvP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Feb 2007 10:51:15 -0500
-Date: Thu, 1 Feb 2007 16:59:37 +0100
-To: Andrew Morton <akpm@osdl.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Roman Zippel <zippel@linux-m68k.org>,
-       Bastian Blank <bastian@waldi.eu.org>, Sam Ravnborg <sam@ravnborg.org>
-Subject: 2.6.20-rc7 (Re: [patch] kbuild: correctly skip tilded backups in localversion files)
-Message-ID: <20070201155937.GA24388@flower.upol.cz>
-References: <20070131071103.GA3295@flower.upol.cz> <20070131155651.529e933c.akpm@osdl.org> <20070201023717.GA22328@flower.upol.cz> <20070131184329.753ce801.akpm@osdl.org>
+	Thu, 1 Feb 2007 10:52:53 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.155]:54607 "EHLO
+	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751839AbXBAPww (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Feb 2007 10:52:52 -0500
+Message-ID: <45C20CC6.2070201@ru.mvista.com>
+Date: Thu, 01 Feb 2007 18:52:38 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070131184329.753ce801.akpm@osdl.org>
-Organization: Palacky University in Olomouc, experimental physics department.
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Oleg Verych <olecom@flower.upol.cz>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: v2.6.19-rt6, yum/rpm
+References: <20061205171114.GA25926@elte.hu> <4582CAD6.9040404@ru.mvista.com> <20061215161952.GA29191@elte.hu>
+In-Reply-To: <20061215161952.GA29191@elte.hu>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-kbuild: correctly skip tilded backups in localversion files
+Hello.
 
- Tildes as in path as in filenames are handled correctly now:
- only files, containing tilde '~', are backups, thus are not valid.
+Ingo Molnar wrote:
 
- [KJ]:
- Definition of `space' was removed, scripts/Kbuild.include has one.
- This definition was taken right from GNU make manual, while Kbuild's
- version is original.
+>>>as usual, bugreports, fixes and suggestions are welcome,
 
-Cc: Roman Zippel <zippel@linux-m68k.org>
-Cc: Bastian Blank <bastian@waldi.eu.org>
-Cc: Sam Ravnborg <sam@ravnborg.org>
-Signed-off-by: Oleg Verych <olecom@flower.upol.cz>
----
+>>   Be aware that even with the newest -rt patch, the PowerPC TOD 
+>>vsyscalls are still broken, i.e. glibc may return imprecise/incorrect 
+>>results for the related calls -- despite arch/powerpc/kernel/time.c 
+>>has been at last fixed to at least compile, the PowerPC clocksource 
+>>patch removed the important part of TOD vsyscall support, and this 
+>>hasn't been dealt with.  I've sent to Thomas Gleixner a patch removing 
+>>the affected vsyscalls altogether for the time being in the early 
+>>November (unfortunately, I came to know of the breakage too late, and 
+>>hadn't time to deal with it propery due to othr woes), however, I'm 
+>>not seeing any of my patches (I've also done PowerPC clockevents 
+>>support) merged to -rt (or otherwise published). Most of the patches 
+>>can be found in the linuxppc-dev list archives, for the interested...
 
- My using of the `sh' rides from willing to have more portable,
- understandable implementation (and due to GFDL make's docs ;)
+> could you resend them to me please?
 
-Original report by Bastian Blank:
+    Seeing that GENERIC_TIME has been thrown out from the -rt patch, it makes 
+no sense now (even if I had time -- I also decided to leave this to Thomas as 
+the HRT maintainer). Concerning this change: tghe patch that comments out 
+recalc_time_offset() call in arch/powerpc/kernel/time.c must have be thrown 
+out as well since it's breaking TOD vsyscall support now.
 
- The following patch fixes the problem that localversion files where
- ignored if the tree lives in a path which contains a ~. It changes the
- test to apply to the filename only.
- 
- Debian allows versions which contains ~ in it. The upstream part of the
- version is in the directory name of the build tree and we got weird
- results because the localversion files was just got ignored in this
- case.
+> 	Ingo
 
----
- linux-2.6.20-rc7/Makefile |   17 ++++++-----------
- 1 file changed, 6 insertions(+), 11 deletions(-)
-
-Index: kernel.org/linux-2.6.20-rc7/Makefile
-===================================================================
---- kernel.org.orig/linux-2.6.20-rc7/Makefile	2007-02-01 16:20:54.214174250 +0100
-+++ kernel.org/linux-2.6.20-rc7/Makefile	2007-02-01 16:21:40.649076250 +0100
-@@ -777,5 +777,5 @@ $(vmlinux-dirs): prepare scripts
- #	$(localver-full)
- #	  $(localver)
--#	    localversion*		(all localversion* files)
-+#	    localversion*		(files without backups, containing '~')
- #	    $(CONFIG_LOCALVERSION)	(from kernel config setting)
- #	  $(localver-auto)		(only if CONFIG_LOCALVERSION_AUTO is set)
-@@ -788,15 +788,10 @@ $(vmlinux-dirs): prepare scripts
- # scripts/setlocalversion and add the appropriate checks as needed.
- 
--nullstring :=
--space      := $(nullstring) # end of line
-+pattern = ".*/localversion[^~]*"
-+string  = $(shell cat /dev/null \
-+	   `find $(objtree) $(srctree) -maxdepth 1 -regex $(pattern) | sort`)
- 
--___localver = $(objtree)/localversion* $(srctree)/localversion*
--__localver  = $(sort $(wildcard $(___localver)))
--# skip backup files (containing '~')
--_localver = $(foreach f, $(__localver), $(if $(findstring ~, $(f)),,$(f)))
--
--localver = $(subst $(space),, \
--	   $(shell cat /dev/null $(_localver)) \
--	   $(patsubst "%",%,$(CONFIG_LOCALVERSION)))
-+localver = $(subst $(space),, $(string) \
-+			      $(patsubst "%",%,$(CONFIG_LOCALVERSION)))
- 
- # If CONFIG_LOCALVERSION_AUTO is set scripts/setlocalversion is called
+WBR, Sergei
