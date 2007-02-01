@@ -1,47 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030588AbXBAPT2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161164AbXBAPXv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030588AbXBAPT2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Feb 2007 10:19:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161164AbXBAPT2
+	id S1161164AbXBAPXv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Feb 2007 10:23:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030599AbXBAPXv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Feb 2007 10:19:28 -0500
-Received: from adsl-70-250-156-241.dsl.austtx.swbell.net ([70.250.156.241]:41149
-	"EHLO gw.microgate.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030588AbXBAPT1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Feb 2007 10:19:27 -0500
-Message-ID: <45C204F7.9060303@microgate.com>
-Date: Thu, 01 Feb 2007 09:19:19 -0600
-From: Paul Fulghum <paulkf@microgate.com>
-User-Agent: Thunderbird 1.5.0.8 (Windows/20061025)
+	Thu, 1 Feb 2007 10:23:51 -0500
+Received: from styx.suse.cz ([82.119.242.94]:33904 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1030598AbXBAPXu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Feb 2007 10:23:50 -0500
+Date: Thu, 1 Feb 2007 16:23:40 +0100
+From: Vojtech Pavlik <vojtech@suse.cz>
+To: Jiri Bohac <jbohac@suse.cz>
+Cc: Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org,
+       ssouhlal@freebsd.org, arjan@infradead.org, tglx@linutronix.de,
+       johnstul@us.ibm.com, zippel@linux-m68k.org, andrea@suse.de
+Subject: Re: [patch 9/9] Make use of the Master Timer
+Message-ID: <20070201152340.GA20792@suse.cz>
+References: <20070201095952.589234000@jet.suse.cz> <20070201103754.281474000@jet.suse.cz> <200702011236.05429.ak@suse.de> <20070201142927.GR21755@dwarf.suse.cz>
 MIME-Version: 1.0
-To: Aubrey Li <aubreylee@gmail.com>
-CC: Tosoni <jp.tosoni@acksys.fr>, linux-kernel@vger.kernel.org,
-       linux-serial@vger.kernel.org, Alan <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [BUG]: 2.6.19.2: Weird serial core issue
-References: <6d6a94c50701311833m5952c6fdn8e1f0db28d674e79@mail.gmail.com>	 <000201c745d9$4577fe20$2e01a8c0@acksys.local> <6d6a94c50702010238p7866f5a5m8824d2ca518eb704@mail.gmail.com>
-In-Reply-To: <6d6a94c50702010238p7866f5a5m8824d2ca518eb704@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070201142927.GR21755@dwarf.suse.cz>
+X-Bounce-Cookie: It's a lemon tree, dear Watson!
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Aubrey Li wrote:
-> But When I type "ENTER" key,
+On Thu, Feb 01, 2007 at 03:29:31PM +0100, Jiri Bohac wrote:
+> On Thu, Feb 01, 2007 at 12:36:05PM +0100, Andi Kleen wrote:
+> > On Thursday 01 February 2007 11:00, jbohac@suse.cz wrote:
+> > 
+> > > +		case VXTIME_TSC:
+> > > +			rdtscll(tsc);
+> > 
+> > Where is the CPU synchronization? 
+> > 
+> > > +	cpu = smp_processor_id();
+> > > +	rdtscll(t);
+> > 
+> > Also no synchronization. It's slower, but needed.
 > 
-> I got
-> ------------
-> cflag = 0x1cb1, old = 0x80001cb1
-> cflag = 0x1cb1, old = 0x1cb1
-> ------------
-> That means terminal setting is back to crtscts disabled. But here I
-> didn't do anything to disable it, I just type "ENTER", crtscts setting
-> should keep enabled. What makes it back to disabled? Now I guess there
-> must be something wrong with serial core.
+> Hmm, I wasn't sure. Why is it needed? How outdated can the
+> result of RDTSC / RDTSCP be?
+> 
+> If I do:
+> 	rdtscll(a)
+> 	...
+> 	rdtscll(b)
+> is it guaranteed that (b > a) ?
 
-Is there an mgetty or similar program monitoring
-the same serial port?
+On a single CPU this is always guaranteed. Even on AMD.
+
+> > >  unsigned long long sched_clock(void)
+> > >  {
+> > > -	unsigned long a = 0;
+> > > -
+> > > -	rdtscll(a);
+> > > -	return cycles_2_ns(a);
+> > > +	return monotonic_clock();
+> > >  }
+> > 
+> > This is overkill because sched_clock() doesn't need a globally monotonic
+> > clock, per CPU monotonic is enough. The old version was fine.
+> 
+> OK, thanks for spotting this. I'll change it to use __guess_mt().
+> (more or less equal to cycles_2_ns(), no need to maintain yet another
+> tsc->ns ratio just for cycles_2_ns().
+
+Will this also work correctly during CPU frequency changes?
+
+> > > -	tv->tv_sec = sec + usec / 1000000;
+> > > -	tv->tv_usec = usec % 1000000;
+> > > +	sec += nsec / NSEC_PER_SEC;
+> > > +	nsec %= NSEC_PER_SEC;
+> > 
+> > Using while() here is probably faster (done in vdso patchkit where
+> > gtod got mysteriously faster). Modulo and divisions are slow, even 
+> > for constants when they are large.
+> 
+> OK, will do that
+
+I'd suggest benchmarking the difference.
 
 -- 
-Paul Fulghum
-Microgate Systems, Ltd.
+Vojtech Pavlik
+Director SuSE Labs
