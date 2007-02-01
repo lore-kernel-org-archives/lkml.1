@@ -1,45 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933365AbXAaX72@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933369AbXBAADU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933365AbXAaX72 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Jan 2007 18:59:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933364AbXAaX72
+	id S933369AbXBAADU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Jan 2007 19:03:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933368AbXBAADU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Jan 2007 18:59:28 -0500
-Received: from wr-out-0506.google.com ([64.233.184.230]:45546 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933365AbXAaX71 (ORCPT
+	Wed, 31 Jan 2007 19:03:20 -0500
+Received: from amsfep16-int.chello.nl ([62.179.120.11]:40629 "EHLO
+	amsfep16-int.chello.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161104AbXBAADU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Jan 2007 18:59:27 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=S83wKudTKIUZ0CuFWRZ/TOTlhBWdvMK1rp8XS5LYQIrKiPYUP2MLoL2E2Ujh6GGmWWJEKSYxJdgDxvy89zfLWIaeugZXGuEw3OzgEDuG4lwez1osGjLy27Lk2+rgNZEVrTllNvtw8Fb9g/3pNWLL6cu3dvEYyC8qnO5cRqmT8sc=
-Message-ID: <75b66ecd0701311559u2c1f44f9t685b3054802d9cc3@mail.gmail.com>
-Date: Wed, 31 Jan 2007 18:59:26 -0500
-From: "Lee Revell" <rlrevell@joe-job.com>
-To: "Theodore Tso" <tytso@mit.edu>, "Greg KH" <greg@kroah.com>,
-       "Nicolas Mailhot" <nicolas.mailhot@laposte.net>,
+	Wed, 31 Jan 2007 19:03:20 -0500
+Subject: Re: [PATCH 3/7] barrier: a scalable synchonisation barrier
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: paulmck@linux.vnet.ibm.com
+Cc: Oleg Nesterov <oleg@tv-sign.ru>, Ingo Molnar <mingo@elte.hu>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@osdl.org>,
        linux-kernel@vger.kernel.org
-Subject: Re: Free Linux Driver Development!
-In-Reply-To: <20070131230014.GD20514@thunk.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+In-Reply-To: <20070131233229.GP2574@linux.vnet.ibm.com>
+References: <20070128115118.837777000@programming.kicks-ass.net>
+	 <20070128120509.719287000@programming.kicks-ass.net>
+	 <20070128143941.GA16552@infradead.org> <20070128152435.GC9196@elte.hu>
+	 <20070131191215.GK2574@linux.vnet.ibm.com>
+	 <20070131211340.GA171@tv-sign.ru> <1170280101.10924.36.camel@lappy>
+	 <20070131233229.GP2574@linux.vnet.ibm.com>
+Content-Type: text/plain
+Date: Thu, 01 Feb 2007 01:03:09 +0100
+Message-Id: <1170288190.10924.108.camel@lappy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <32793.192.54.193.51.1170248792.squirrel@rousalka.dyndns.org>
-	 <20070131201258.GB15128@kroah.com> <20070131230014.GD20514@thunk.org>
-X-Google-Sender-Auth: d7a6a5208118ac1b
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 1/31/07, Theodore Tso <tytso@mit.edu> wrote:
-> More specifically, Dave said that it "seemed rude" to just take the
-> driver and send updates, but maybe the best way of dealing with
-> out-of-tree drivers like lirc is to treat the out-of-tree drivers as a
-> kind of spec release, and just have someone in the community forcibly
-> take the code, fix it up, and then get it merged.
+On Wed, 2007-01-31 at 15:32 -0800, Paul E. McKenney wrote:
 
-But if the maintainer is unwilling to work with the kernel developers,
-the driver won't get bugfixes or updates for new hardware.
+> The wakeup in barrier_sync() would mean that the counter was zero
+> at some point in the past.  The counter would then be rechecked, and
+> if it were still zero, barrier_sync() would invoke finish_wait() and
+> then return -- but the counter might well become non-zero in the
+> meantime, right?
+> 
+> So given that barrier_sync() is permitted to return after the counter
+> becomes non-zero, why can't it just rely on the fact that barrier_unlock()
+> saw it as zero not long in the past?
+> 
+> > >  It looks like barrier_sync() is more a
+> > > rw semaphore biased to readers.
+> > 
+> > Indeed, the locked sections are designed to be the rare case.
+> 
+> OK -- but barrier_sync() just waits for readers, it doesn't exclude them.
+> 
+> If all barrier_sync() needs to do is to wait until all pre-existing
+> barrier_lock()/barrier_unlock() pairs to complete, it seems to me to
+> be compatible with qrcu's semantics.
+> 
+> So what am I missing here?
 
-Lee
+I might be the one missing stuff, I'll have a hard look at qrcu.
+
+The intent was that barrier_sync() would not write to memory when there
+are no active locked sections, so that the cacheline can stay shared,
+thus keeping is fast.
+
+If qrcu does exactly this, then yes we have a match.
+
