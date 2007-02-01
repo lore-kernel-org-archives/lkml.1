@@ -1,67 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161238AbXBAHU5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161253AbXBAHYg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161238AbXBAHU5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Feb 2007 02:20:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161244AbXBAHU4
+	id S1161253AbXBAHYg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Feb 2007 02:24:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161249AbXBAHYg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Feb 2007 02:20:56 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:40529 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161238AbXBAHU4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Feb 2007 02:20:56 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: "Luigi Genoni" <luigi.genoni@pirelli.com>
-Cc: <akpm@osdl.org>, <linux-kernel@vger.kernel.org>
-Subject: Re: System crash after "No irq handler for vector" linux 2.6.19
-References: <200701221116.13154.luigi.genoni@pirelli.com>
-	<Pine.LNX.4.64.0701232052330.32111@baldios.it.pirelli.com>
-	<m1bqkfbnep.fsf@ebiederm.dsl.xmission.com>
-	<200701311549.22512.luigi.genoni@pirelli.com>
-Date: Thu, 01 Feb 2007 00:20:21 -0700
-In-Reply-To: <200701311549.22512.luigi.genoni@pirelli.com> (Luigi Genoni's
-	message of "Wed, 31 Jan 2007 15:49:22 +0100")
-Message-ID: <m1veim739m.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Thu, 1 Feb 2007 02:24:36 -0500
+Received: from smurf.noris.de ([192.109.102.42]:39316 "EHLO smurf.noris.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161253AbXBAHYf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Feb 2007 02:24:35 -0500
+X-Greylist: delayed 1321 seconds by postgrey-1.27 at vger.kernel.org; Thu, 01 Feb 2007 02:24:35 EST
+Date: Thu, 1 Feb 2007 08:01:49 +0100
+To: "Patro\, Sumant" <Sumant.Patro@lsi.com>
+Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] scsi: megaraid_{mm,mbox} cmd timeout
+Message-ID: <20070201070149.GQ16848@kiste.smurf.noris.de>
+References: <0631C836DBF79F42B5A60C8C8D4E82298ECBCC@NAMAIL2.ad.lsil.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="rwgQ89ZNnFUwFHTC"
+Content-Disposition: inline
+In-Reply-To: <0631C836DBF79F42B5A60C8C8D4E82298ECBCC@NAMAIL2.ad.lsil.com>
+User-Agent: Mutt/1.5.12-2006-07-14
+From: Matthias Urlichs <smurf@smurf.noris.de>
+X-Smurf-Spam-Score: -2.0 (--)
+X-Smurf-Whitelist: +relay_from_hosts
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Luigi Genoni" <luigi.genoni@pirelli.com> writes:
 
-> OK,
-> willing to test any patch.
+--rwgQ89ZNnFUwFHTC
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Ok. I've finally figured out what is going on.  The code is
-race free but the programmer was an idiot.
+Hi,
 
-In the local apic there are two relevant registers.
-ISR (in service register) describing all of the
-interrupts that the cpu in the process of handling.
-IRR (intrerupt request register) which lists all of
-the interrupts that are currently pending.
+Patro, Sumant:
+> What I see in the log is cmd timeout(s) and is not related to the patch.
+>=20
+Ouch.
 
-Well it happens that IRR is used to catch the case
-when we are servicing an interrupt and that same interrupt
-comes in again.  When that happens as soon as we are
-done service the interrupt that same interrupt fires again.
+Any ideas what causes my problem? It's a regression; I tested Ubuntu
+Dapper and Edgy install CDs, and it's not worked since the latter.
 
-We perform interrupt migration in an interrupt handler, so
-we can be race free.
+I can pinpoint the change that triggers the problem more closely if
+necessary.
 
-It turns out that if I'm performing migration (updating all
-of the data structures and hardware registers) while IRR
-is set the interrupt will happen in the old location immediate after
-my migration work is complete.  And since the kernel is not
-setup to deal with it we get an ugly error message.
+--=20
+Matthias Urlichs   |   {M:U} IT Design @ m-u-it.de   |  smurf@smurf.noris.de
+Disclaimer: The quote was selected randomly. Really. | http://smurf.noris.de
+ - -
+My father was a God-fearing man, but he never missed a copy of the
+New York Times, either.
+		-- E.B. White
 
-Anyway now that I know what is going on I'm going to have to think
-about this a little bit more to figure out how to fix this.  My hunch
-is the easy fix will be simply not to migrate until I have an
-interrupt instance when IRR is clear.  
+--rwgQ89ZNnFUwFHTC
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
-Anyway with a little luck tomorrow I will be able to figure it out,
-it's to bed with me now.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.3 (GNU/Linux)
 
-Eric
+iD8DBQFFwZBd8+hUANcKr/kRAsN9AJ0WjgKt3P0z5t99qsm8k1H+xIeZdwCdHZIw
+8csg6UPaSVc/QvJteNoBcU0=
+=76uI
+-----END PGP SIGNATURE-----
+
+--rwgQ89ZNnFUwFHTC--
