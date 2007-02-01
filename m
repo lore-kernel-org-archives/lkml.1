@@ -1,77 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422895AbXBAXdQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422894AbXBAXee@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422895AbXBAXdQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Feb 2007 18:33:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422894AbXBAXdQ
+	id S1422894AbXBAXee (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Feb 2007 18:34:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422897AbXBAXee
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Feb 2007 18:33:16 -0500
-Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:41306 "EHLO
-	pd3mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422895AbXBAXdP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Feb 2007 18:33:15 -0500
-Date: Thu, 01 Feb 2007 17:29:36 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: smp and irq conflict
-In-reply-to: <fa.bd33YMixT9/jJwHfbD/DebGgVXs@ifi.uio.no>
-To: Lapo TIN <lapolapolapo@tin.it>
-Cc: linux-smp@vger.kernel.org, linux-kernel@vger.kernel.org
-Message-id: <45C277E0.2040604@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.bd33YMixT9/jJwHfbD/DebGgVXs@ifi.uio.no>
-User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
+	Thu, 1 Feb 2007 18:34:34 -0500
+Received: from mga09.intel.com ([134.134.136.24]:18808 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1422894AbXBAXed (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Feb 2007 18:34:33 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: i="4.13,269,1167638400"; 
+   d="scan'208"; a="42105648:sNHT20948841"
+Message-ID: <45C27908.1000202@foo-projects.org>
+Date: Thu, 01 Feb 2007 15:34:32 -0800
+From: Auke Kok <sofar@foo-projects.org>
+User-Agent: Mail/News 1.5.0.9 (X11/20061228)
+MIME-Version: 1.0
+To: Trent Waddington <trent.waddington@gmail.com>
+CC: Jon Masters <jonathan@jonmasters.org>,
+       Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, Alexey Dobriyan <adobriyan@gmail.com>
+Subject: Re: [PATCH] Ban module license tag string termination trick
+References: <Pine.LNX.4.61.0611011204140.23977@yvahk01.tjqt.qr>	 <Pine.LNX.4.61.0702012147470.1862@yvahk01.tjqt.qr>	 <45C2670F.5000003@jonmasters.org> <3d57814d0702011430l43c03ae1uc950339b6700f859@mail.gmail.com>
+In-Reply-To: <3d57814d0702011430l43c03ae1uc950339b6700f859@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 01 Feb 2007 23:34:32.0602 (UTC) FILETIME=[86818FA0:01C74659]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Lapo TIN wrote:
-> Dear all,
-> I have a problem with IRQs.
+Trent Waddington wrote:
+> On 2/2/07, Jon Masters <jonathan@jonmasters.org> wrote:
+>> Ok. I totally dig the *idea* here - I mean, this issue has been ongoing
+>> for a long time now. But I'd like to see a few comments as to whether we
+>> need a technological mechanism here to enforce the obvious. To me, it
+>> just seems totally obvious (any legal comment?) that early C string
+>> termination is undermining the intent of the MODULE_LICENSE tag.
 > 
-> My pc has a CPU PentiumD945 (dual core) and a 2.6.19smp kernel.
-> I have two video acquisition board (four bt8t8 each) in the only two pci
-> slots of my motherboard. Thus I have a total of 8 bttv modules that are
-> working together, and the /proc/interrupts is as follows:
-> # cat /proc/interrupts
->            CPU0       CPU1
->   0:      13575          0   IO-APIC-edge      timer
->   1:          2          0   IO-APIC-edge      i8042
->   4:         11          0   IO-APIC-edge      serial
->   8:          1          0   IO-APIC-edge      rtc
->   9:          0          0   IO-APIC-fasteoi   acpi
->  12:          4          0   IO-APIC-edge      i8042
->  14:      22286          0   IO-APIC-edge      ide0
->  17:       7073       2097   IO-APIC-fasteoi   uhci_hcd:usb5, eth0
->  18:       2525          0   IO-APIC-fasteoi   bttv0, bttv7
->  19:       2829          0   IO-APIC-fasteoi   bttv1, bttv4
->  20:       2526          0   IO-APIC-fasteoi   bttv2, bttv5
->  21:       2226          0   IO-APIC-fasteoi   bttv3, bttv6
->  22:          2          0   IO-APIC-fasteoi   ehci_hcd:usb1, uhci_hcd:usb4
->  23:         86          0   IO-APIC-fasteoi   uhci_hcd:usb2
->  24:          0          0   IO-APIC-fasteoi   uhci_hcd:usb3
-> NMI:          0          0
-> LOC:      13484      13502
-> ERR:          0
-> MIS:          0
-> You can see that IRQ18 is shared between bttv0 and bttv7, IRQ19 between
-> bttv1 and bttv4 and so on.
+> I'm not a lawyer, but I can tell you exactly what a lawyer would say:
 > 
-> Sometimes it crashes. It seems a matter of conflict in IRQ.
-> With only one video board everything is ok, but with two, they shared irq
-> and something goes wrong... 
-> How can I tell to the kernel to not to share the IRQ for these boards ?
-> I think (I don't know if I'm right) that this could be the problem.
+>   "well, ya know, it's hard to say when it comes to these issues"
+> 
+> that's the answer to *any* copyright question.  :)
 
-Usually the IRQ routing is hard-wired on the motherboard, so there's no 
-way to avoid the devices sharing IRQs. Unless the driver is badly buggy 
-this should not cause problems anyway.
+to me it even screams "bypassing or a digital copyright enforcement system". 
+that sounds really close to "D.M.C.A. violation" :)
 
-What kind of video bit rate are you capturing? 8 video capture chips is 
-a pretty heavy load on the PCI bus, maybe something just gets overwhelmed?
+thank goodness I'm not a laywer...
 
--- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
-
+Auke
