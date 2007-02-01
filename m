@@ -1,53 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422980AbXBAUUv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422986AbXBAUYk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422980AbXBAUUv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Feb 2007 15:20:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422982AbXBAUUv
+	id S1422986AbXBAUYk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Feb 2007 15:24:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422987AbXBAUYk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Feb 2007 15:20:51 -0500
-Received: from smtp.gentoo.org ([140.211.166.183]:46550 "EHLO smtp.gentoo.org"
+	Thu, 1 Feb 2007 15:24:40 -0500
+Received: from brick.kernel.dk ([62.242.22.158]:12945 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422980AbXBAUUu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Feb 2007 15:20:50 -0500
-From: Mike Frysinger <vapier@gentoo.org>
-Organization: wh0rd.org
-To: rth@twiddle.net
-Subject: epoll handling in the alpha port
-Date: Thu, 1 Feb 2007 15:20:45 -0500
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org, alpha@gentoo.org
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+	id S1422986AbXBAUYj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Feb 2007 15:24:39 -0500
+Date: Thu, 1 Feb 2007 21:26:47 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Andrew Morton <akpm@osdl.org>, David Chinner <dgc@sgi.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: 2.6.20-rc6-mm3
+Message-ID: <20070201202646.GR10305@kernel.dk>
+References: <20070129204528.eb8d695e.akpm@osdl.org> <Pine.LNX.4.64.0701311559310.11853@schroedinger.engr.sgi.com> <20070131162422.6bccc52c.akpm@osdl.org> <Pine.LNX.4.64.0701311626160.12104@schroedinger.engr.sgi.com> <20070131163638.290f40c1.akpm@osdl.org> <20070201062018.GC33919298@melbourne.sgi.com> <20070131231253.fdebc9f5.akpm@osdl.org> <Pine.LNX.4.64.0702011055310.7010@schroedinger.engr.sgi.com> <20070201191857.GQ10305@kernel.dk> <Pine.LNX.4.64.0702011214230.10061@schroedinger.engr.sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200702011520.46723.vapier@gentoo.org>
+In-Reply-To: <Pine.LNX.4.64.0702011214230.10061@schroedinger.engr.sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-the alpha linux port differs from all others when it comes to the epoll 
-functions in that it uses '__NR_sys_epoll_XXX' instead of '__NR_epoll_XXX' in 
-the asm/unistd.h header ... the trouble with this is that glibc maps the 
-function name directly to an __NR_ define, so when it maps 
-like 'epoll_create', it expects '__NR_epoll_create' (which it gets with all 
-other architectures)
+On Thu, Feb 01 2007, Christoph Lameter wrote:
+> On Thu, 1 Feb 2007, Jens Axboe wrote:
+> 
+> > for xfs_buf_wait_unpin() and xfs_buf_lock(). Does this fix it?
+> 
+> No it still hangs consistently. This time at an earlier spot.
 
-is there some obvious thing i'm missing here ?  or is the attached patch OK ?
+That looks like barriers, could you try with those disabled? Sorry for
+making you go through this, I can't debug and fix it myself before
+monday.
 
-Signed-off-by: Mike Frysinger <vapier@gentoo.org>
----
---- a/include/asm-alpha/unistd.h
-+++ b/include/asm-alpha/unistd.h
-@@ -342,9 +342,9 @@
- #define __NR_io_cancel			402
- #define __NR_exit_group			405
- #define __NR_lookup_dcookie		406
--#define __NR_sys_epoll_create		407
--#define __NR_sys_epoll_ctl		408
--#define __NR_sys_epoll_wait		409
-+#define __NR_epoll_create		407
-+#define __NR_epoll_ctl		408
-+#define __NR_epoll_wait		409
- #define __NR_remap_file_pages		410
- #define __NR_set_tid_address		411
- #define __NR_restart_syscall		412
+-- 
+Jens Axboe
+
