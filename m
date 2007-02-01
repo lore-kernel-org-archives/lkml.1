@@ -1,67 +1,502 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422763AbXBARse@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422776AbXBARvE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422763AbXBARse (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Feb 2007 12:48:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422781AbXBARse
+	id S1422776AbXBARvE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Feb 2007 12:51:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422781AbXBARvD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Feb 2007 12:48:34 -0500
-Received: from nf-out-0910.google.com ([64.233.182.191]:35135 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422763AbXBARsd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Feb 2007 12:48:33 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=ukajmdDpAvORiNDswaALpYsS2yMGkwdMUQ715MhwSy4qMyM2TKOxuhp4qiEt3e6S8q5KBH/P/IPz8Y/je7pCKaF6OG2SARArS4CSP/tSc9RT5frj+K0XcJQVCjneACAxKt8gfKqzmdNQ1XA1PjEAl0c9RnFNrggd9dYqF3WI79k=
-Message-ID: <f2b55d220702010948r16c48bdcsadc7c8492e36dd4e@mail.gmail.com>
-Date: Thu, 1 Feb 2007 09:48:30 -0800
-From: "Michael K. Edwards" <medwards.linux@gmail.com>
-To: "Lennart Sorensen" <lsorense@csclub.uwaterloo.ca>
-Subject: Re: Free Linux Driver Development!
-Cc: "Michael Buesch" <mb@bu3sch.de>, "Jeff Garzik" <jeff@garzik.org>,
-       "Roland Dreier" <rdreier@cisco.com>, "Greg KH" <greg@kroah.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20070201164201.GI7584@csclub.uwaterloo.ca>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 1 Feb 2007 12:51:03 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:39310 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1422776AbXBARvA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Feb 2007 12:51:00 -0500
+Date: Thu, 1 Feb 2007 18:49:00 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Cc: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: v2.6.19-rt6, yum/rpm
+Message-ID: <20070201174900.GA31866@elte.hu>
+References: <20061205171114.GA25926@elte.hu> <4582CAD6.9040404@ru.mvista.com> <20061215161952.GA29191@elte.hu> <45C20CC6.2070201@ru.mvista.com> <20070201173855.GA29309@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20070130012904.GA9617@kroah.com> <45BFC2CF.8010603@garzik.org>
-	 <20070130222344.GF7584@csclub.uwaterloo.ca>
-	 <200702011646.38762.mb@bu3sch.de>
-	 <20070201164201.GI7584@csclub.uwaterloo.ca>
+In-Reply-To: <20070201173855.GA29309@elte.hu>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -5.3
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-5.3 required=5.9 tests=ALL_TRUSTED,BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-3.3 ALL_TRUSTED            Did not pass through any untrusted hosts
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0011]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/1/07, Lennart Sorensen <lsorense@csclub.uwaterloo.ca> wrote:
-> Sometimes I might be.  At least on the days I have to deal with problems
-> in Windows (it's not even my machine, so I don't get to pick what it
-> runs all the time. :)  I haven't had particularly much luck getting a
-> stable wireless going on linux yet, although I haven't put much effort
-> into it yet either.  I figure in a couple of years there will be so many
-> wifi devices around that wireless won't work anymore anyhow so it isn't
-> a high priority.  I like simple trustworthy wires.
 
-For what it's worth, hostap + Prism chips of various kinds has worked
-quite solidly for 7-8 years or so, and I shipped handheld products
-with it in 2001 or so and ran all of my wireless infrastructure gear
-on it until I switched to off-the-shelf Broadcom- and Atheros-based
-gear a couple of years ago (running OpenWRT and variants thereof).
-The apparent inability of any wireless vendor to fix a low-level
-firmware bug without breaking at least one common order of operations
-in the driver API is hardly Linux's fault.
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-As it stands, there's enough of a learning and fiddling curve with
-every WiFi driver that it's usually not very time-efficient to get
-WiFi working under Linux on any single box that shipped with Windows.
-But given a controlled configuration and some up-front time
-investment, it's not that hard to switch over your local environment
-(my neighbors and I have a WDS mesh set up), at which point you may be
-the only people within RF range whose WiFi doesn't go belly-up when
-some mangled frame comes along.  In this case, it's the last 20% of
-the effort that produces 80% of the value.  (Bye-bye, telco monopoly;
-the only live wires remaining into our house are the AC mains.)
+> * Sergei Shtylyov <sshtylyov@ru.mvista.com> wrote:
+> 
+> > >could you resend them to me please?
+> > 
+> >    Seeing that GENERIC_TIME has been thrown out from the -rt patch, 
+> > [...]
+> 
+> hm, i did that accidentally during a rebase. That was certainly not 
+> meant to be a persistent condition.
 
-Cheers,
-- Michael
+ok, the delta below is what i've managed to restore from your PPC 
+patches so far. Looks like this was truly a comedy of errors: i 
+accidentally dropped the big ppc-gtod patch, which made your later fix 
+patches not apply, etc., etc. The one below still likely wont build 
+right away, but should be a more useful base for you and for Thomas too.
+
+	Ingo
+
+--------------->
+Index: linux/Makefile
+===================================================================
+--- linux.orig/Makefile
++++ linux/Makefile
+@@ -1,7 +1,7 @@
+ VERSION = 2
+ PATCHLEVEL = 6
+ SUBLEVEL = 20
+-EXTRAVERSION =-rc7-rt3
++EXTRAVERSION =-rc7-rt4
+ NAME = Homicidal Dwarf Hamster
+ 
+ # *DOCUMENTATION*
+Index: linux/arch/powerpc/Kconfig
+===================================================================
+--- linux.orig/arch/powerpc/Kconfig
++++ linux/arch/powerpc/Kconfig
+@@ -26,6 +26,10 @@ config MMU
+ 	bool
+ 	default y
+ 
++config GENERIC_TIME
++	bool
++	default y
++
+ config GENERIC_HARDIRQS
+ 	bool
+ 	default y
+Index: linux/arch/powerpc/kernel/time.c
+===================================================================
+--- linux.orig/arch/powerpc/kernel/time.c
++++ linux/arch/powerpc/kernel/time.c
+@@ -119,8 +119,6 @@ EXPORT_SYMBOL_GPL(rtc_lock);
+ u64 tb_to_ns_scale;
+ unsigned tb_to_ns_shift;
+ 
+-struct gettimeofday_struct do_gtod;
+-
+ extern struct timezone sys_tz;
+ static long timezone_offset;
+ 
+@@ -378,160 +376,6 @@ static __inline__ void timer_check_rtc(v
+         }
+ }
+ 
+-/*
+- * This version of gettimeofday has microsecond resolution.
+- */
+-static inline void __do_gettimeofday(struct timeval *tv)
+-{
+-	unsigned long sec, usec;
+-	u64 tb_ticks, xsec;
+-	struct gettimeofday_vars *temp_varp;
+-	u64 temp_tb_to_xs, temp_stamp_xsec;
+-
+-	/*
+-	 * These calculations are faster (gets rid of divides)
+-	 * if done in units of 1/2^20 rather than microseconds.
+-	 * The conversion to microseconds at the end is done
+-	 * without a divide (and in fact, without a multiply)
+-	 */
+-	temp_varp = do_gtod.varp;
+-
+-	/* Sampling the time base must be done after loading
+-	 * do_gtod.varp in order to avoid racing with update_gtod.
+-	 */
+-	data_barrier(temp_varp);
+-	tb_ticks = get_tb() - temp_varp->tb_orig_stamp;
+-	temp_tb_to_xs = temp_varp->tb_to_xs;
+-	temp_stamp_xsec = temp_varp->stamp_xsec;
+-	xsec = temp_stamp_xsec + mulhdu(tb_ticks, temp_tb_to_xs);
+-	sec = xsec / XSEC_PER_SEC;
+-	usec = (unsigned long)xsec & (XSEC_PER_SEC - 1);
+-	usec = SCALE_XSEC(usec, 1000000);
+-
+-	tv->tv_sec = sec;
+-	tv->tv_usec = usec;
+-}
+-
+-void do_gettimeofday(struct timeval *tv)
+-{
+-	if (__USE_RTC()) {
+-		/* do this the old way */
+-		unsigned long flags, seq;
+-		unsigned int sec, nsec, usec;
+-
+-		do {
+-			seq = read_seqbegin_irqsave(&xtime_lock, flags);
+-			sec = xtime.tv_sec;
+-			nsec = xtime.tv_nsec + tb_ticks_since(tb_last_jiffy);
+-		} while (read_seqretry_irqrestore(&xtime_lock, seq, flags));
+-		usec = nsec / 1000;
+-		while (usec >= 1000000) {
+-			usec -= 1000000;
+-			++sec;
+-		}
+-		tv->tv_sec = sec;
+-		tv->tv_usec = usec;
+-		return;
+-	}
+-	__do_gettimeofday(tv);
+-}
+-
+-EXPORT_SYMBOL(do_gettimeofday);
+-
+-/*
+- * There are two copies of tb_to_xs and stamp_xsec so that no
+- * lock is needed to access and use these values in
+- * do_gettimeofday.  We alternate the copies and as long as a
+- * reasonable time elapses between changes, there will never
+- * be inconsistent values.  ntpd has a minimum of one minute
+- * between updates.
+- */
+-static inline void update_gtod(u64 new_tb_stamp, u64 new_stamp_xsec,
+-			       u64 new_tb_to_xs)
+-{
+-	unsigned temp_idx;
+-	struct gettimeofday_vars *temp_varp;
+-
+-	temp_idx = (do_gtod.var_idx == 0);
+-	temp_varp = &do_gtod.vars[temp_idx];
+-
+-	temp_varp->tb_to_xs = new_tb_to_xs;
+-	temp_varp->tb_orig_stamp = new_tb_stamp;
+-	temp_varp->stamp_xsec = new_stamp_xsec;
+-	smp_mb();
+-	do_gtod.varp = temp_varp;
+-	do_gtod.var_idx = temp_idx;
+-
+-	/*
+-	 * tb_update_count is used to allow the userspace gettimeofday code
+-	 * to assure itself that it sees a consistent view of the tb_to_xs and
+-	 * stamp_xsec variables.  It reads the tb_update_count, then reads
+-	 * tb_to_xs and stamp_xsec and then reads tb_update_count again.  If
+-	 * the two values of tb_update_count match and are even then the
+-	 * tb_to_xs and stamp_xsec values are consistent.  If not, then it
+-	 * loops back and reads them again until this criteria is met.
+-	 * We expect the caller to have done the first increment of
+-	 * vdso_data->tb_update_count already.
+-	 */
+-	vdso_data->tb_orig_stamp = new_tb_stamp;
+-	vdso_data->stamp_xsec = new_stamp_xsec;
+-	vdso_data->tb_to_xs = new_tb_to_xs;
+-	vdso_data->wtom_clock_sec = wall_to_monotonic.tv_sec;
+-	vdso_data->wtom_clock_nsec = wall_to_monotonic.tv_nsec;
+-	smp_wmb();
+-	++(vdso_data->tb_update_count);
+-}
+-
+-/*
+- * When the timebase - tb_orig_stamp gets too big, we do a manipulation
+- * between tb_orig_stamp and stamp_xsec. The goal here is to keep the
+- * difference tb - tb_orig_stamp small enough to always fit inside a
+- * 32 bits number. This is a requirement of our fast 32 bits userland
+- * implementation in the vdso. If we "miss" a call to this function
+- * (interrupt latency, CPU locked in a spinlock, ...) and we end up
+- * with a too big difference, then the vdso will fallback to calling
+- * the syscall
+- */
+-static __inline__ void timer_recalc_offset(u64 cur_tb)
+-{
+-	unsigned long offset;
+-	u64 new_stamp_xsec;
+-	u64 tlen, t2x;
+-	u64 tb, xsec_old, xsec_new;
+-	struct gettimeofday_vars *varp;
+-
+-	if (__USE_RTC())
+-		return;
+-	tlen = current_tick_length();
+-	offset = cur_tb - do_gtod.varp->tb_orig_stamp;
+-	if (tlen == last_tick_len && offset < 0x80000000u)
+-		return;
+-	if (tlen != last_tick_len) {
+-		t2x = mulhdu(tlen << TICKLEN_SHIFT, ticklen_to_xs);
+-		last_tick_len = tlen;
+-	} else
+-		t2x = do_gtod.varp->tb_to_xs;
+-	new_stamp_xsec = (u64) xtime.tv_nsec * XSEC_PER_SEC;
+-	do_div(new_stamp_xsec, 1000000000);
+-	new_stamp_xsec += (u64) xtime.tv_sec * XSEC_PER_SEC;
+-
+-	++vdso_data->tb_update_count;
+-	smp_mb();
+-
+-	/*
+-	 * Make sure time doesn't go backwards for userspace gettimeofday.
+-	 */
+-	tb = get_tb();
+-	varp = do_gtod.varp;
+-	xsec_old = mulhdu(tb - varp->tb_orig_stamp, varp->tb_to_xs)
+-		+ varp->stamp_xsec;
+-	xsec_new = mulhdu(tb - cur_tb, t2x) + new_stamp_xsec;
+-	if (xsec_new < xsec_old)
+-		new_stamp_xsec += xsec_old - xsec_new;
+-
+-	update_gtod(cur_tb, new_stamp_xsec, t2x);
+-}
+-
+ #ifdef CONFIG_SMP
+ unsigned long notrace profile_pc(struct pt_regs *regs)
+ {
+@@ -581,11 +425,7 @@ static void iSeries_tb_recal(void)
+ 				tb_ticks_per_sec   = new_tb_ticks_per_sec;
+ 				calc_cputime_factors();
+ 				div128_by_32( XSEC_PER_SEC, 0, tb_ticks_per_sec, &divres );
+-				do_gtod.tb_ticks_per_sec = tb_ticks_per_sec;
+ 				tb_to_xs = divres.result_low;
+-				do_gtod.varp->tb_to_xs = tb_to_xs;
+-				vdso_data->tb_ticks_per_sec = tb_ticks_per_sec;
+-				vdso_data->tb_to_xs = tb_to_xs;
+ 			}
+ 			else {
+ 				printk( "Titan recalibrate: FAILED (difference > 4 percent)\n"
+@@ -756,77 +596,6 @@ unsigned long long sched_clock(void)
+ 	return mulhdu(get_tb(), tb_to_ns_scale) << tb_to_ns_shift;
+ }
+ 
+-int do_settimeofday(struct timespec *tv)
+-{
+-	time_t wtm_sec, new_sec = tv->tv_sec;
+-	long wtm_nsec, new_nsec = tv->tv_nsec;
+-	unsigned long flags;
+-	u64 new_xsec;
+-	unsigned long tb_delta;
+-
+-	if ((unsigned long)tv->tv_nsec >= NSEC_PER_SEC)
+-		return -EINVAL;
+-
+-	write_seqlock_irqsave(&xtime_lock, flags);
+-
+-	/*
+-	 * Updating the RTC is not the job of this code. If the time is
+-	 * stepped under NTP, the RTC will be updated after STA_UNSYNC
+-	 * is cleared.  Tools like clock/hwclock either copy the RTC
+-	 * to the system time, in which case there is no point in writing
+-	 * to the RTC again, or write to the RTC but then they don't call
+-	 * settimeofday to perform this operation.
+-	 */
+-#ifdef CONFIG_PPC_ISERIES
+-	if (firmware_has_feature(FW_FEATURE_ISERIES) && first_settimeofday) {
+-		iSeries_tb_recal();
+-		first_settimeofday = 0;
+-	}
+-#endif
+-
+-	/* Make userspace gettimeofday spin until we're done. */
+-	++vdso_data->tb_update_count;
+-	smp_mb();
+-
+-	/*
+-	 * Subtract off the number of nanoseconds since the
+-	 * beginning of the last tick.
+-	 */
+-	tb_delta = tb_ticks_since(tb_last_jiffy);
+-	tb_delta = mulhdu(tb_delta, do_gtod.varp->tb_to_xs); /* in xsec */
+-	new_nsec -= SCALE_XSEC(tb_delta, 1000000000);
+-
+-	wtm_sec  = wall_to_monotonic.tv_sec + (xtime.tv_sec - new_sec);
+-	wtm_nsec = wall_to_monotonic.tv_nsec + (xtime.tv_nsec - new_nsec);
+-
+- 	set_normalized_timespec(&xtime, new_sec, new_nsec);
+-	set_normalized_timespec(&wall_to_monotonic, wtm_sec, wtm_nsec);
+-
+-	/* In case of a large backwards jump in time with NTP, we want the 
+-	 * clock to be updated as soon as the PLL is again in lock.
+-	 */
+-	last_rtc_update = new_sec - 658;
+-
+-	ntp_clear();
+-
+-	new_xsec = xtime.tv_nsec;
+-	if (new_xsec != 0) {
+-		new_xsec *= XSEC_PER_SEC;
+-		do_div(new_xsec, NSEC_PER_SEC);
+-	}
+-	new_xsec += (u64)xtime.tv_sec * XSEC_PER_SEC;
+-	update_gtod(tb_last_jiffy, new_xsec, do_gtod.varp->tb_to_xs);
+-
+-	vdso_data->tz_minuteswest = sys_tz.tz_minuteswest;
+-	vdso_data->tz_dsttime = sys_tz.tz_dsttime;
+-
+-	write_sequnlock_irqrestore(&xtime_lock, flags);
+-	clock_was_set();
+-	return 0;
+-}
+-
+-EXPORT_SYMBOL(do_settimeofday);
+-
+ static int __init get_freq(char *name, int cells, unsigned long *val)
+ {
+ 	struct device_node *cpu;
+@@ -993,20 +762,6 @@ void __init time_init(void)
+ 
+ 	xtime.tv_sec = tm;
+ 	xtime.tv_nsec = 0;
+-	do_gtod.varp = &do_gtod.vars[0];
+-	do_gtod.var_idx = 0;
+-	do_gtod.varp->tb_orig_stamp = tb_last_jiffy;
+-	__get_cpu_var(last_jiffy) = tb_last_jiffy;
+-	do_gtod.varp->stamp_xsec = (u64) xtime.tv_sec * XSEC_PER_SEC;
+-	do_gtod.tb_ticks_per_sec = tb_ticks_per_sec;
+-	do_gtod.varp->tb_to_xs = tb_to_xs;
+-	do_gtod.tb_to_us = tb_to_us;
+-
+-	vdso_data->tb_orig_stamp = tb_last_jiffy;
+-	vdso_data->tb_update_count = 0;
+-	vdso_data->tb_ticks_per_sec = tb_ticks_per_sec;
+-	vdso_data->stamp_xsec = (u64) xtime.tv_sec * XSEC_PER_SEC;
+-	vdso_data->tb_to_xs = tb_to_xs;
+ 
+ 	time_freq = 0;
+ 
+@@ -1019,7 +774,6 @@ void __init time_init(void)
+ 	set_dec(tb_ticks_per_jiffy);
+ }
+ 
+-
+ #define FEBRUARY	2
+ #define	STARTOFTIME	1970
+ #define SECDAY		86400L
+@@ -1164,3 +918,36 @@ void div128_by_32(u64 dividend_high, u64
+ 	dr->result_low  = ((u64)y << 32) + z;
+ 
+ }
++
++/* PowerPC clocksource code */
++
++#include <linux/clocksource.h>
++
++static cycle_t timebase_read(void)
++{
++	return (cycle_t)get_tb();
++}
++
++struct clocksource clocksource_timebase = {
++	.name		= "timebase",
++	.rating		= 200,
++	.read		= timebase_read,
++	.mask		= (cycle_t)-1,
++	.mult		= 0,
++	.shift		= 22,
++	.is_continuous	= 1,
++};
++
++
++/* XXX - this should be calculated or properly externed! */
++static int __init init_timebase_clocksource(void)
++{
++	if (__USE_RTC())
++		return -ENODEV;
++
++	clocksource_timebase.mult = clocksource_hz2mult(tb_ticks_per_sec,
++					clocksource_timebase.shift);
++	return clocksource_register(&clocksource_timebase);
++}
++
++module_init(init_timebase_clocksource);
+Index: linux/arch/powerpc/platforms/cell/interrupt.c
+===================================================================
+--- linux.orig/arch/powerpc/platforms/cell/interrupt.c
++++ linux/arch/powerpc/platforms/cell/interrupt.c
+@@ -90,6 +90,7 @@ static struct irq_chip iic_chip = {
+ 	.typename = " CELL-IIC ",
+ 	.mask = iic_mask,
+ 	.unmask = iic_unmask,
++	.ack = iic_eoi,
+ 	.eoi = iic_eoi,
+ };
+ 
+Index: linux/arch/powerpc/platforms/iseries/irq.c
+===================================================================
+--- linux.orig/arch/powerpc/platforms/iseries/irq.c
++++ linux/arch/powerpc/platforms/iseries/irq.c
+@@ -279,6 +279,7 @@ static struct irq_chip iseries_pic = {
+ 	.shutdown	= iseries_shutdown_IRQ,
+ 	.unmask		= iseries_enable_IRQ,
+ 	.mask		= iseries_disable_IRQ,
++	.ack		= iseries_end_IRQ,
+ 	.eoi		= iseries_end_IRQ
+ };
+ 
+Index: linux/arch/powerpc/platforms/pseries/xics.c
+===================================================================
+--- linux.orig/arch/powerpc/platforms/pseries/xics.c
++++ linux/arch/powerpc/platforms/pseries/xics.c
+@@ -456,6 +456,7 @@ static struct irq_chip xics_pic_direct =
+ 	.startup = xics_startup,
+ 	.mask = xics_mask_irq,
+ 	.unmask = xics_unmask_irq,
++	.ack = xics_eoi_direct,
+ 	.eoi = xics_eoi_direct,
+ 	.set_affinity = xics_set_affinity
+ };
+@@ -466,6 +467,7 @@ static struct irq_chip xics_pic_lpar = {
+ 	.startup = xics_startup,
+ 	.mask = xics_mask_irq,
+ 	.unmask = xics_unmask_irq,
++	.ack = xics_eoi_lpar,
+ 	.eoi = xics_eoi_lpar,
+ 	.set_affinity = xics_set_affinity
+ };
+Index: linux/arch/powerpc/sysdev/mpic.c
+===================================================================
+--- linux.orig/arch/powerpc/sysdev/mpic.c
++++ linux/arch/powerpc/sysdev/mpic.c
+@@ -767,6 +767,7 @@ static int mpic_set_irq_type(unsigned in
+ static struct irq_chip mpic_irq_chip = {
+ 	.mask		= mpic_mask_irq,
+ 	.unmask		= mpic_unmask_irq,
++	.ack		= mpic_end_irq,
+ 	.eoi		= mpic_end_irq,
+ 	.set_type	= mpic_set_irq_type,
+ };
+Index: linux/drivers/mtd/nand/cafe.c
+===================================================================
+--- linux.orig/drivers/mtd/nand/cafe.c
++++ linux/drivers/mtd/nand/cafe.c
+@@ -597,7 +597,8 @@ static int __devinit cafe_nand_probe(str
+ 		cafe_writel(cafe, 0xffffffff, NAND_TIMING3);
+ 	}
+ 	cafe_writel(cafe, 0xffffffff, NAND_IRQ_MASK);
+-	err = request_irq(pdev->irq, &cafe_nand_interrupt, SA_SHIRQ, "CAFE NAND", mtd);
++	err = request_irq(pdev->irq, &cafe_nand_interrupt, IRQF_SHARED,
++			"CAFE NAND", mtd);
+ 	if (err) {
+ 		dev_warn(&pdev->dev, "Could not register IRQ %d\n", pdev->irq);
+ 
+Index: linux/kernel/latency_trace.c
+===================================================================
+--- linux.orig/kernel/latency_trace.c
++++ linux/kernel/latency_trace.c
+@@ -1774,8 +1774,8 @@ check_critical_timing(int cpu, struct cp
+ #ifndef CONFIG_CRITICAL_LATENCY_HIST
+ 	if (!preempt_thresh && preempt_max_latency > delta) {
+ 		printk("bug: updating %016Lx > %016Lx?\n",
+-			preempt_max_latency, delta);
+-		printk("  [%016Lx %016Lx %016Lx]\n", T0, T1, T2);
++			(u64)preempt_max_latency, (u64)delta);
++		printk("  [%016Lx %016Lx %016Lx]\n", (u64)T0, (u64)T1, (u64)T2);
+ 	}
+ #endif
+ 
+
