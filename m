@@ -1,44 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932099AbXBAWwc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422686AbXBAXBP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932099AbXBAWwc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Feb 2007 17:52:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932564AbXBAWwc
+	id S1422686AbXBAXBP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Feb 2007 18:01:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422695AbXBAXBP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Feb 2007 17:52:32 -0500
-Received: from ozlabs.org ([203.10.76.45]:44829 "EHLO ozlabs.org"
+	Thu, 1 Feb 2007 18:01:15 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:46597 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932099AbXBAWwb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Feb 2007 17:52:31 -0500
-From: Michael Neuling <mikey@neuling.org>
-To: Carl Love <cel@us.ibm.com>
-cc: cbe-oss-dev@ozlabs.org, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] CELL PPU Oprofile cleanup patch 
-In-reply-to: <1170360615.5204.18.camel@dyn9047021078.beaverton.ibm.com> 
-References: <1170360615.5204.18.camel@dyn9047021078.beaverton.ibm.com>
-Comments: In-reply-to Carl Love <cel@us.ibm.com>
-   message dated "Thu, 01 Feb 2007 12:10:15 -0800."
-X-Mailer: MH-E 8.0; nmh 1.1; GNU Emacs 21.4.1
-Date: Fri, 02 Feb 2007 09:52:28 +1100
-Message-ID: <10720.1170370348@neuling.org>
+	id S1422686AbXBAXBO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Feb 2007 18:01:14 -0500
+Date: Thu, 1 Feb 2007 14:58:15 -0800
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+To: "Fagyal Csongor" <concept@conceptonline.hu>
+Cc: <thomas@glanzmann.de>, <linux-kernel@vger.kernel.org>,
+       <netdev@vger.kernel.org>
+Subject: Re: sky2 hangs
+Message-ID: <20070201145815.199bfe1a@freekitty>
+In-Reply-To: <42007.80.98.159.250.1170369983.squirrel@www.hunhost.com>
+References: <20070201185532.GL13130@cip.informatik.uni-erlangen.de>
+	<42007.80.98.159.250.1170369983.squirrel@www.hunhost.com>
+Organization: Linux Foundation
+X-Mailer: Sylpheed-Claws 2.5.0-rc3 (GTK+ 2.10.6; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Carl,
+I can reproduce the problem now (on mac mini). Interestingly it seems to whack
+the whole ethernet switch when it happens.
+> 
+> - a previously suggested fix - passing idle=poll to the kernel - did not
+> work for me at the end
 
-> +#define NUM_TRACE_BUS_WORDS 4
-> +#define NUM_INPUT_BUS_WORDS 2
+It is not an MSI or IRQ problem. It is a phy problem (see below).
 
-<snip>
+> - the locks I have happen very periodically (somewhere around every 22-28
+> hours), as if the chip would die after a given amount of data transferred;
+> I know this looks stupid but I thought I might mention it
+> - I have about 1Mbit/s of (incoming) traffic on this interface: with
+> short, very high peaks, as there is a MySQL server on the other end,
+> receiving about 100 queries per second
+> - unloading the sky2 module totally freezes the computer for me
 
-> -	for (i = 0; i < 4; i++)
-> +	for (i = 0; i < NUM_INPUT_BUS_WORDS; i++)
->  		trace_bus[i] = 0xff;
->  
-> -	for (i = 0; i < 2; i++)
-> +	for (i = 0; i < NUM_INPUT_BUS_WORDS; i++)
->  		input_bus[i] = 0xff;
+If you do:
+	ethtool -r eth0
+it cause a PHY reset (renegotiation) and clears the problem.
 
-The first loop looks like a bug...   Shouldn't it be NUM_TRACE_BUS_WORDS?
 
-Mikey
+-- 
+Stephen Hemminger <shemminger@linux-foundation.org>
