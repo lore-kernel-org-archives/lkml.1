@@ -1,54 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422832AbXBAMRu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422834AbXBAMSp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422832AbXBAMRu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Feb 2007 07:17:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422833AbXBAMRu
+	id S1422834AbXBAMSp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Feb 2007 07:18:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422836AbXBAMSp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Feb 2007 07:17:50 -0500
-Received: from ns1.suse.de ([195.135.220.2]:34145 "EHLO mx1.suse.de"
+	Thu, 1 Feb 2007 07:18:45 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:50075 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422832AbXBAMRt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Feb 2007 07:17:49 -0500
-From: Andi Kleen <ak@suse.de>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [-mm patch] x86_64 GTOD: offer scalable vgettimeofday II
-Date: Thu, 1 Feb 2007 13:17:45 +0100
-User-Agent: KMail/1.9.5
+	id S1422835AbXBAMSo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Feb 2007 07:18:44 -0500
+Date: Thu, 1 Feb 2007 13:17:31 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Andi Kleen <ak@suse.de>
 Cc: jbohac@suse.cz, linux-kernel@vger.kernel.org,
        Vojtech Pavlik <vojtech@suse.cz>, arjan@infradead.org,
-       tglx@linutronix.de, johnstul@us.ibm.com, Andrew Morton <akpm@osdl.org>
-References: <20070201095952.589234000@jet.suse.cz> <20070201114644.GB26453@elte.hu>
-In-Reply-To: <20070201114644.GB26453@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+       tglx@linutronix.de, johnstul@us.ibm.com
+Subject: Re: [patch 0/9] x86_64: reliable TSC-based gettimeofday
+Message-ID: <20070201121731.GB3900@elte.hu>
+References: <20070201095952.589234000@jet.suse.cz> <200702011220.59484.ak@suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200702011317.45876.ak@suse.de>
+In-Reply-To: <200702011220.59484.ak@suse.de>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -5.3
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-5.3 required=5.9 tests=ALL_TRUSTED,BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-3.3 ALL_TRUSTED            Did not pass through any untrusted hosts
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 01 February 2007 12:46, Ingo Molnar wrote:
-> 
-> * jbohac@suse.cz <jbohac@suse.cz> wrote:
-> 
-> > Inter-CPU monotonicity can not, however, be guaranteed in a vsyscall, 
-> > so vsyscall is not used by default. [...]
-> 
-> note that this is not actually the case. My patch below, ontop of -mm, 
-> implements a fully monotonic gettimeofday as an optional vsyscall 
-> feature.
-> 
-> The 'price' paid for it is lower resolution - but it's still good for 
-> those benchmarking TPC-C runs - and /alot/ simpler. 
 
-BTW another comment: I was told that at least one of the big databases
-wants ms resolution here. So to make your scheme work
-would require a HZ=1024 regular interrupt. But that would also make
-everything slower again due to CPU overhead as it was learned in the 2.4->2.6 HZ 
-transition. 
+* Andi Kleen <ak@suse.de> wrote:
 
-So it might not actually be worth it.
+> The big strategic problem is how to marry your patchkit to John 
+> Stultz's clocksources work which is also competing for merge. Any 
+> thoughts on that?
 
--Andi
+the only sane thing would be to do it ontop of -mm: the stuff in -mm, 
+barring some catastrophy, is hopefully destined for v2.6.21. We could do 
+my quick optional hack for those who want fast gettimeofday now ahead of 
+that queue - but this approximation thing should be definitely ontop.
 
+	Ingo
