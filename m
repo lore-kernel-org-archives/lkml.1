@@ -1,50 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030595AbXBAPSH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030588AbXBAPT2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030595AbXBAPSH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Feb 2007 10:18:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030588AbXBAPSG
+	id S1030588AbXBAPT2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Feb 2007 10:19:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161164AbXBAPT2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Feb 2007 10:18:06 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.158]:7974 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161177AbXBAPSF (ORCPT
+	Thu, 1 Feb 2007 10:19:28 -0500
+Received: from adsl-70-250-156-241.dsl.austtx.swbell.net ([70.250.156.241]:41149
+	"EHLO gw.microgate.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030588AbXBAPT1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Feb 2007 10:18:05 -0500
-Subject: Re: crash on CONFIG_CFAG12864B=y in 2.6.20-rc3-mm1
-From: Daniel Walker <dwalker@mvista.com>
-To: Miguel Ojeda <maxextreme@gmail.com>
-Cc: akpm@osdl.org, linux-kernel@vger.kernel.org
-In-Reply-To: <653402b90702010716i7c0ddf71xe6fa7866323f52f4@mail.gmail.com>
-References: <1168188931.26086.255.camel@imap.mvista.com>
-	 <653402b90702010549v17e72765uc718c1ae79419003@mail.gmail.com>
-	 <653402b90702010716i7c0ddf71xe6fa7866323f52f4@mail.gmail.com>
-Content-Type: text/plain
-Date: Thu, 01 Feb 2007 07:16:31 -0800
-Message-Id: <1170342991.9781.189.camel@imap.mvista.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
+	Thu, 1 Feb 2007 10:19:27 -0500
+Message-ID: <45C204F7.9060303@microgate.com>
+Date: Thu, 01 Feb 2007 09:19:19 -0600
+From: Paul Fulghum <paulkf@microgate.com>
+User-Agent: Thunderbird 1.5.0.8 (Windows/20061025)
+MIME-Version: 1.0
+To: Aubrey Li <aubreylee@gmail.com>
+CC: Tosoni <jp.tosoni@acksys.fr>, linux-kernel@vger.kernel.org,
+       linux-serial@vger.kernel.org, Alan <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [BUG]: 2.6.19.2: Weird serial core issue
+References: <6d6a94c50701311833m5952c6fdn8e1f0db28d674e79@mail.gmail.com>	 <000201c745d9$4577fe20$2e01a8c0@acksys.local> <6d6a94c50702010238p7866f5a5m8824d2ca518eb704@mail.gmail.com>
+In-Reply-To: <6d6a94c50702010238p7866f5a5m8824d2ca518eb704@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-02-01 at 16:16 +0100, Miguel Ojeda wrote:
-> The problem is easy:
+Aubrey Li wrote:
+> But When I type "ENTER" key,
 > 
-> ks0108_init() prints the error message and exit with -EINVAL, so the
-> module isn't loaded properly.
-> 
-> However, cfag12864b_init() is called, although ks0108 failed. It
-> returns 0 and after a while cfag12864b calls ks0108_writecontrol()
-> which dereferences the uninitialized pointer ks0108_parport:
-> 
-> 	parport_write_control(ks0108_parport, byte ^ (bit(0) | bit(1) | bit(3)));
-> 
-> Why is cfag12864b_init() called if ks0108 module didn't load properly?
-> Is that normal? If so, how a module should alarm other modules about
-> it failed loading?
+> I got
+> ------------
+> cflag = 0x1cb1, old = 0x80001cb1
+> cflag = 0x1cb1, old = 0x1cb1
+> ------------
+> That means terminal setting is back to crtscts disabled. But here I
+> didn't do anything to disable it, I just type "ENTER", crtscts setting
+> should keep enabled. What makes it back to disabled? Now I guess there
+> must be something wrong with serial core.
 
-I don't know if this matters, but I had this driver built-in , and not a
-module ..
+Is there an mgetty or similar program monitoring
+the same serial port?
 
-Daniel
-
+-- 
+Paul Fulghum
+Microgate Systems, Ltd.
