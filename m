@@ -1,61 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422869AbXBAN26@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422874AbXBANda@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422869AbXBAN26 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Feb 2007 08:28:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422870AbXBAN26
+	id S1422874AbXBANda (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Feb 2007 08:33:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422873AbXBANda
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Feb 2007 08:28:58 -0500
-Received: from nic.NetDirect.CA ([216.16.235.2]:40826 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422869AbXBAN26 (ORCPT
+	Thu, 1 Feb 2007 08:33:30 -0500
+Received: from web52909.mail.yahoo.com ([206.190.49.19]:45110 "HELO
+	web52909.mail.yahoo.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1422870AbXBANda (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Feb 2007 08:28:58 -0500
-X-Originating-Ip: 74.109.98.130
-Date: Thu, 1 Feb 2007 08:28:02 -0500 (EST)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@CPE00045a9c397f-CM001225dbafb6
-To: Linux kernel mailing list <linux-kernel@vger.kernel.org>
-cc: achim_leubner@adaptec.com
-Subject: [PATCH] SCSI: Fix obvious typo "spin_lock_irqrestore()" in gdth.c.
-Message-ID: <Pine.LNX.4.64.0702010824390.14518@CPE00045a9c397f-CM001225dbafb6>
+	Thu, 1 Feb 2007 08:33:30 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=dXFJm5A71AvDRdyBq7sQBtJSHuniVPzMVkfsgtOzDtNg8LOnAq5PP0uHIa32jO79Ny75B3Cg6LY2Uy7Gh+WclgnlM82PmlC136QJ6uOw2aMP4eKbbqOBwd2uWR0sItfL76W0WUjlYe7fEUaVVIIjx6Gsbx3B5IZfN3wIwprMm04=;
+X-YMail-OSG: WBA9OSUVM1llw1gl5l_zxww4NDXD874omqrtk.x9MHQuR3kKTKvg1ZQsRpsdK7Stay4scOq7QIUaIr2iqvG2i.JPYicxmpR6bH_bnabF8otqj7X02.8DpoP4F3n17aL5P.cCrGdzEBFquA--
+Date: Thu, 1 Feb 2007 13:33:28 +0000 (GMT)
+From: Chris Rankin <rankincj@yahoo.com>
+Subject: Re: System crash after "No irq handler for vector" linux 2.6.19
+To: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <873148.54754.qm@web52909.mail.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> Ok. I've finally figured out what is going on. The code is race free but the programmer was an
+> idiot.
 
-  Fix misspelled "spin_lock_irqrestore" to read
-"spin_unlock_irqrestore" instead.
+Hi,
 
-Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
+Could this IRQ problem account for this bug as well, please? Or is yours strictly a 2.6.19.x
+issue?
 
----
+http://bugzilla.kernel.org/show_bug.cgi?id=7847
 
-diff --git a/drivers/scsi/gdth.c b/drivers/scsi/gdth.c
-index 4c698a7..25f7cf4 100644
---- a/drivers/scsi/gdth.c
-+++ b/drivers/scsi/gdth.c
-@@ -1956,7 +1956,7 @@ static int __init gdth_search_drives(int hanum)
-         for (j = 0; j < 12; ++j)
-             rtc[j] = CMOS_READ(j);
-     } while (rtc[0] != CMOS_READ(0));
--    spin_lock_irqrestore(&rtc_lock, flags);
-+    spin_unlock_irqrestore(&rtc_lock, flags);
-     TRACE2(("gdth_search_drives(): RTC: %x/%x/%x\n",*(ulong32 *)&rtc[0],
-             *(ulong32 *)&rtc[4], *(ulong32 *)&rtc[8]));
-     /* 3. send to controller firmware */
+I have a dual P4 Xeon box (HT enabled) so there is a lot of scope for IRQ migration. I was playing
+WoW when this bug occurred, so there would have been a lot of IRQs needing handling between both
+the video and sound cards.
 
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
+Cheers,
+Chris
 
-http://www.fsdev.dreamhosters.com/wiki/index.php?title=Main_Page
-========================================================================
+
+
+		
+___________________________________________________________ 
+What kind of emailer are you? Find out today - get a free analysis of your email personality. Take the quiz at the Yahoo! Mail Championship. 
+http://uk.rd.yahoo.com/evt=44106/*http://mail.yahoo.net/uk 
