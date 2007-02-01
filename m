@@ -1,50 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422639AbXBAIC6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030527AbXBAIG6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422639AbXBAIC6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Feb 2007 03:02:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030540AbXBAIC6
+	id S1030527AbXBAIG6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Feb 2007 03:06:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030540AbXBAIG6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Feb 2007 03:02:58 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:46814 "EHLO mx2.mail.elte.hu"
+	Thu, 1 Feb 2007 03:06:58 -0500
+Received: from mail.enyo.de ([212.9.189.167]:3704 "EHLO mail.enyo.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030520AbXBAIC5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Feb 2007 03:02:57 -0500
-Date: Thu, 1 Feb 2007 09:01:08 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Karsten Wiese <fzu@wemgehoertderstaat.de>
-Cc: Andrew Morton <akpm@osdl.org>, Maciej Rutecki <maciej.rutecki@gmail.com>,
-       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
-Subject: Re: 2.6.20-rc6-mm3
-Message-ID: <20070201080108.GC14378@elte.hu>
-References: <20070129204528.eb8d695e.akpm@osdl.org> <200701310155.05474.fzu@wemgehoertderstaat.de> <20070131132245.GA26066@elte.hu> <200701311525.50160.fzu@wemgehoertderstaat.de>
-Mime-Version: 1.0
+	id S1030527AbXBAIG5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Feb 2007 03:06:57 -0500
+From: Florian Weimer <fw@deneb.enyo.de>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Samium Gromoff <_deepfire@feelingofgreen.ru>, Pavel Machek <pavel@ucw.cz>,
+       Valdis.Kletnieks@vt.edu, David Wagner <daw@cs.berkeley.edu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Undo some of the pseudo-security madness
+References: <87r6toufpp.wl@betelheise.deep.net>
+	<200701221520.l0MFKLdK032645@turing-police.cc.vt.edu>
+	<871wlnq7ue.wl@betelheise.deep.net> <20070123084805.GB5560@ucw.cz>
+	<87mz4996wg.wl@betelheise.deep.net>
+	<1170237588.2865.2.camel@laptopd505.fenrus.org>
+Date: Thu, 01 Feb 2007 09:05:53 +0100
+In-Reply-To: <1170237588.2865.2.camel@laptopd505.fenrus.org> (Arjan van de
+	Ven's message of "Wed, 31 Jan 2007 17:59:48 +0800")
+Message-ID: <8764amb8v2.fsf@mid.deneb.enyo.de>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200701311525.50160.fzu@wemgehoertderstaat.de>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.8
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.8 required=5.9 tests=ALL_TRUSTED,BAYES_50 autolearn=no SpamAssassin version=3.0.3
-	-3.3 ALL_TRUSTED            Did not pass through any untrusted hosts
-	0.5 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
-	[score: 0.4622]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+* Arjan van de Ven:
 
-* Karsten Wiese <fzu@wemgehoertderstaat.de> wrote:
+>> No amount of carefulness will prevent vendors stick arbitrarily
+>> damaging values of stack and mmap base randomisation, severely reducing
+>> the usefullness of MAP_FIXED.
+>
+> MAP_FIXED is useful still. The only safe way is to use addresses you got
+> from mmap(), eg you overmap something.
+> Anything else is madness, with or without randomization. The C library
+> for example is free, and does, allocate memory and stacks etc etc.
 
-> Serial port console is off here and the jiffies update fix doesn't 
-> make a noticeable difference.
+This reminds me of a different matter: What is the recommended way to
+reserve address space (so that libc etc. won't use it) *without*
+increasing the VM committed memory counter?  In other words, without
+allocating backing store for it?
 
-ok, this eliminates my serial port theory.
+IIRC, mmap(PROT_NONE) followed by mprotect(PROT_READ | PROT_WRITE)
+seems to work, but I wonder if this is just an accident, or if this is
+part of the API.
 
-and this means i'm having trouble reproducing this problem locally. 
-Maybe i tried it the wrong way: does it only occur with suspend-to-disk, 
-or suspend-to-ram too? Does it need ACPI suspend-to-disk, or 
-software-suspend?
-
-	Ingo
+This is an interesting topic because such functionality is required to
+make many virtual machines work with address space randomization and
+(especially) vm.overcommit_memory=2.  They don't need the backing
+store from the beginning, but they really like (if not need, even)
+huge regions of continuous address space.
