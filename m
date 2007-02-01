@@ -1,48 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933385AbXBAGtz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161136AbXBAGuT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933385AbXBAGtz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Feb 2007 01:49:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161136AbXBAGtz
+	id S1161136AbXBAGuT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Feb 2007 01:50:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161177AbXBAGuT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Feb 2007 01:49:55 -0500
-Received: from terminus.zytor.com ([192.83.249.54]:42777 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933385AbXBAGty (ORCPT
+	Thu, 1 Feb 2007 01:50:19 -0500
+Received: from dallas.jonmasters.org ([72.29.103.172]:3803 "EHLO
+	dallas.jonmasters.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161136AbXBAGuP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Feb 2007 01:49:54 -0500
-Message-ID: <45C18D87.6000905@zytor.com>
-Date: Wed, 31 Jan 2007 22:49:43 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
+	Thu, 1 Feb 2007 01:50:15 -0500
+X-Greylist: delayed 1198 seconds by postgrey-1.27 at vger.kernel.org; Thu, 01 Feb 2007 01:50:15 EST
+Message-ID: <45C188AB.1060207@jonmasters.org>
+Date: Thu, 01 Feb 2007 01:28:59 -0500
+From: Jon Masters <jonathan@jonmasters.org>
+Organization: World Organi[sz]ation Of Broken Dreams
 User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
 MIME-Version: 1.0
-To: Sebastian Kemper <sebastian_ml@gmx.net>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.20-rc7 mtrr handling
-References: <200701312046.02196.sebastian_ml@gmx.net> <45C18506.5090001@zytor.com> <200702010738.39497.sebastian_ml@gmx.net>
-In-Reply-To: <200702010738.39497.sebastian_ml@gmx.net>
+To: linux-kernel@vger.kernel.org
+Subject: New module-init-tools pre-release (v3.3-pre6)
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-SA-Do-Not-Run: Yes
+X-SA-Exim-Connect-IP: 74.92.29.237
+X-SA-Exim-Mail-From: jonathan@jonmasters.org
+X-SA-Exim-Scanned: No (on dallas.jonmasters.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sebastian Kemper wrote:
-> On Thursday 01 February 2007 07:13, you wrote:
->> Sebastian Kemper wrote:
->>> But now /proc/mtrr shows 256MB of video ram, same as lspci, whereas
->>> the real amount of video ram (as properly detected by X) is only
->>> 128MB.
->> The size of the aperture doesn't have to match the actual amount of
->> memory.  For many cards it doesn't.
->>
->> 	-hpa
-> 
-> Hello Peter,
-> 
-> sorry, I don't understand. Are you talking about the AGP Aperture size 
-> that I can set in my BIOS or about the actual video ram on the graphics 
-> card. Because that's the one that the mtrr sets to its double size.
+Yo,
 
-Neither.  I'm talking about the window in the address space, as shown in 
-/proc/pci.
+I took over upstream maintainership of the module-init-tools package 
+from Rusty at the end of last year. At this point, there's a public 
+wiki, new pre-release, bugzilla and all that jazz up and running:
 
-	-hpa
+http://www.kerneltools.org/ has links to the latest release.
+
+There's a mailing list, etc. and most of us involved in m-i-t 
+development seem to have already noticed, but just in case, I'm sending 
+this reminder out to LKML now. I don't plan on shouting about every 
+minor release from this point on - unless it's critically serious.
+
+If you've got any patches (preferably git trees), let me know.
+
+Jon.
