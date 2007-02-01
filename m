@@ -1,61 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030572AbXBAESg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030565AbXBAEWR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030572AbXBAESg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Jan 2007 23:18:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030570AbXBAESg
+	id S1030565AbXBAEWR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Jan 2007 23:22:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030540AbXBAEWR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Jan 2007 23:18:36 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:41059 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030536AbXBAES2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Jan 2007 23:18:28 -0500
-Date: Wed, 31 Jan 2007 20:17:09 -0800
-From: Andrew Morton <akpm@osdl.org>
-To: Len Brown <lenb@kernel.org>
-Cc: Maciej Rutecki <maciej.rutecki@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org
-Subject: Re: 2.6.20-rc6-mm3
-Message-Id: <20070131201709.14f98fe9.akpm@osdl.org>
-In-Reply-To: <200701312310.32828.lenb@kernel.org>
-References: <20070129204528.eb8d695e.akpm@osdl.org>
-	<20070130142714.9f8dd5da.akpm@osdl.org>
-	<45C08368.2020904@gmail.com>
-	<200701312310.32828.lenb@kernel.org>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+	Wed, 31 Jan 2007 23:22:17 -0500
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:63779 "EHLO
+	pd5mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030565AbXBAEWQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Jan 2007 23:22:16 -0500
+Date: Wed, 31 Jan 2007 22:20:53 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: [PATCH 1/1] filesystem: Disk Errors at boot-time caused by probe
+ of partitions
+In-reply-to: <fa.vUjkpPQXmle+uox6D228qG85KCU@ifi.uio.no>
+To: TJ <linux@tjworld.net>, linux-kernel <linux-kernel@vger.kernel.org>
+Cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Message-id: <45C16AA5.7050808@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.vUjkpPQXmle+uox6D228qG85KCU@ifi.uio.no>
+User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 31 Jan 2007 23:10:32 -0500 Len Brown <lenb@kernel.org> wrote:
-
-> >   CC      arch/i386/kernel/traps.o
-> >   CC      arch/i386/kernel/irq.o
-> >   CC      arch/i386/kernel/ptrace.o
-> >   CC      arch/i386/kernel/time.o
-> >   CC      arch/i386/kernel/ioport.o
-> >   CC      arch/i386/kernel/ldt.o
-> >   CC      arch/i386/kernel/setup.o
-> > In file included from include/acpi/acpi.h:62,
-> >                  from include/linux/acpi.h:37,
-> >                  from arch/i386/kernel/setup.c:31:
-> > include/acpi/acpixf.h:100: warning: 'struct acpi_pointer' declared
-> > inside parameter list
-> > include/acpi/acpixf.h:100: warning: its scope is only this definition or
-> > declaration, which is probably not what you want
-> > include/acpi/acpixf.h:115: error: expected ')' before 'table_type'
-> > make[2]: *** [arch/i386/kernel/setup.o] Błąd 1
-> > make[1]: *** [arch/i386/kernel] Błąd 2
-> > make[1]: Opuszczenie katalogu `/usr/src/linux-rc'
-> > make: *** [debian/stamp-build-kernel] Błąd 2
-> > 
-> > "Błąd"="Error" (in polish).
+TJ wrote:
+> From: TJ <linux@tjworld.net>
 > 
-> Note that you can always get the latest ACPI patch and drop it directly onto Linus' tree here:
-> http://ftp.kernel.org/pub/linux/kernel/people/lenb/acpi/patches/test/2.6.20/
+> Applies to: up-to and including 2.6.20-rc7 
+> 
+> This rare but critical bug has the potential to cause a hardware failure on disk drives by
+> allowing the system to repeatedly attempt to seek to sectors beyond the end of the physical
+> disk, causing sustained 'head banging'.
 
-I'm suspecting that Maciej misapplied the -mm patch somehow:
+It seems pretty unlikely that telling a hard drive to seek past its 
+capacity would cause it to damage itself, that would be some pretty 
+moronic firmware. Though, you never know - if it's true, let me know 
+what kind of drives these are, so I know never to buy one :-)
 
-box:/usr/src/foo> grep acpi_pointer include/acpi/acpixf.h
-box:/usr/src/foo> 
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
+
