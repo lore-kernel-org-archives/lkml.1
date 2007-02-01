@@ -1,45 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422883AbXBANxS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422890AbXBANyc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422883AbXBANxS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Feb 2007 08:53:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422886AbXBANxI
+	id S1422890AbXBANyc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Feb 2007 08:54:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422891AbXBANxG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Feb 2007 08:53:08 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:40152 "EHLO
+	Thu, 1 Feb 2007 08:53:06 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:40172 "EHLO
 	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422880AbXBANwy (ORCPT
+	with ESMTP id S1422884AbXBANxA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Feb 2007 08:52:54 -0500
+	Thu, 1 Feb 2007 08:53:00 -0500
 To: torvalds@linux-foundation.org
-Subject: [PATCH] efi_set_rtc_mmss() is not __init
-Cc: linux-kernel@vger.kernel.org
-Message-Id: <E1HCcMw-0007S6-03@ZenIV.linux.org.uk>
+Subject: [PATCH] radio modems sitting on serial port are not for s390
+Cc: linux-kernel@vger.kernel.org, schwidefsky@de.ibm.com
+Message-Id: <E1HCcN1-0007Si-0C@ZenIV.linux.org.uk>
 From: Al Viro <viro@ftp.linux.org.uk>
-Date: Thu, 01 Feb 2007 13:52:54 +0000
+Date: Thu, 01 Feb 2007 13:52:59 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-fix the extern in efi.h
+Won't build (request_irq()/free_irq()), even if you manage to find an
+s390 box with 8250-compatible UART they are expecting.
 
 Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 ---
- include/linux/efi.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ drivers/net/hamradio/Kconfig |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/include/linux/efi.h b/include/linux/efi.h
-index df1c918..f8ebd7c 100644
---- a/include/linux/efi.h
-+++ b/include/linux/efi.h
-@@ -301,7 +301,7 @@ extern int __init efi_uart_console_only (void);
- extern void efi_initialize_iomem_resources(struct resource *code_resource,
- 					struct resource *data_resource);
- extern unsigned long efi_get_time(void);
--extern int __init efi_set_rtc_mmss(unsigned long nowtime);
-+extern int efi_set_rtc_mmss(unsigned long nowtime);
- extern int is_available_memory(efi_memory_desc_t * md);
- extern struct efi_memory_map memmap;
+diff --git a/drivers/net/hamradio/Kconfig b/drivers/net/hamradio/Kconfig
+index 896aa02..feb0ada 100644
+--- a/drivers/net/hamradio/Kconfig
++++ b/drivers/net/hamradio/Kconfig
+@@ -113,7 +113,7 @@ config SCC_TRXECHO
  
+ config BAYCOM_SER_FDX
+ 	tristate "BAYCOM ser12 fullduplex driver for AX.25"
+-	depends on AX25
++	depends on AX25 && !S390
+ 	select CRC_CCITT
+ 	---help---
+ 	  This is one of two drivers for Baycom style simple amateur radio
+@@ -133,7 +133,7 @@ config BAYCOM_SER_FDX
+ 
+ config BAYCOM_SER_HDX
+ 	tristate "BAYCOM ser12 halfduplex driver for AX.25"
+-	depends on AX25
++	depends on AX25 && !S390
+ 	select CRC_CCITT
+ 	---help---
+ 	  This is one of two drivers for Baycom style simple amateur radio
+@@ -181,7 +181,7 @@ config BAYCOM_EPP
+ 
+ config YAM
+ 	tristate "YAM driver for AX.25"
+-	depends on AX25
++	depends on AX25 && !S390
+ 	help
+ 	  The YAM is a modem for packet radio which connects to the serial
+ 	  port and includes some of the functions of a Terminal Node
 -- 
 1.5.0-rc2.GIT
 
