@@ -1,277 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422967AbXBAThW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422850AbXBATlY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422967AbXBAThW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Feb 2007 14:37:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422964AbXBAThW
+	id S1422850AbXBATlY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Feb 2007 14:41:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422959AbXBATlY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Feb 2007 14:37:22 -0500
-Received: from mga03.intel.com ([143.182.124.21]:18970 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422968AbXBAThV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Feb 2007 14:37:21 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.13,268,1167638400"; 
-   d="scan'208"; a="175933547:sNHT13260388806"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Thu, 1 Feb 2007 14:41:24 -0500
+Received: from styx.suse.cz ([82.119.242.94]:41576 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1422850AbXBATlX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Feb 2007 14:41:23 -0500
+Date: Thu, 1 Feb 2007 20:41:09 +0100
+From: Vojtech Pavlik <vojtech@suse.cz>
+To: john stultz <johnstul@us.ibm.com>
+Cc: Jiri Bohac <jbohac@suse.cz>, Andi Kleen <ak@suse.de>,
+       linux-kernel@vger.kernel.org, ssouhlal@freebsd.org, arjan@infradead.org,
+       tglx@linutronix.de, zippel@linux-m68k.org, andrea@suse.de
+Subject: Re: [patch 0/9] x86_64: reliable TSC-based gettimeofday
+Message-ID: <20070201194109.GA21971@suse.cz>
+References: <20070201095952.589234000@jet.suse.cz> <200702011220.59484.ak@suse.de> <20070201145236.GA23394@dwarf.suse.cz> <1170349008.2558.9.camel@localhost>
 MIME-Version: 1.0
-Content-Type: multipart/mixed;
-	boundary="----_=_NextPart_001_01C74638.58FC6FE5"
-Subject: RE: 2.6.20-rc6-mm3
-Date: Thu, 1 Feb 2007 22:37:01 +0300
-Message-ID: <B41635854730A14CA71C92B36EC22AAC7CC65D@mssmsx411>
-In-Reply-To: <45C23046.8000303@fr.ibm.com>
-X-MS-Has-Attach: yes
-X-MS-TNEF-Correlator: 
-Thread-Topic: 2.6.20-rc6-mm3
-Thread-Index: AcdGLnUfkKHLpCvjSA2iPRezbD0euQACY0yw
-From: "Starikovskiy, Alexey Y" <alexey.y.starikovskiy@intel.com>
-To: "Cedric Le Goater" <clg@fr.ibm.com>, "Andrew Morton" <akpm@osdl.org>
-Cc: <linux-kernel@vger.kernel.org>, "Moore, Robert" <robert.moore@intel.com>,
-       "keith mannthey" <kmannth@us.ibm.com>
-X-OriginalArrivalTime: 01 Feb 2007 19:37:06.0880 (UTC) FILETIME=[5B64E400:01C74638]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1170349008.2558.9.camel@localhost>
+X-Bounce-Cookie: It's a lemon tree, dear Watson!
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
+On Thu, Feb 01, 2007 at 08:56:48AM -0800, john stultz wrote:
+> On Thu, 2007-02-01 at 15:52 +0100, Jiri Bohac wrote:
+> > On Thu, Feb 01, 2007 at 12:20:59PM +0100, Andi Kleen wrote:
+> >>
+> > > The big strategic problem is how to marry your patchkit to John Stultz's
+> > > clocksources work which is also competing for merge. Any thoughts on that? 
+> > 
+> > I'll look into that next week. Sorry, I wanted to do that a long time
+> > ago, but I spent weeks (over a month) fighting a nasty livelock
+> > in the code. (Morale: think twice before using a spinlock inside
+> >                       a {do .. while (read_seqretry(..))} loop)
+> 
+> The first step here shouldn't be too difficult. Just create a _read
+> function that uses your code to return monotonic TSC cycles (instead of
+> nanoseconds w/ gettimeofday).  Then just create a clocksource structure
+> for it.
 
-------_=_NextPart_001_01C74638.58FC6FE5
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+guess_mt() is more or less the function you're looking for. (With the
+exception of the cpufreq and mode switching logic.)
 
-Sorry, here is the patch... ACPI has switched to acpi_find_rsdp(), so
-srat.c might want to do that too, please check.
+> The harder part will be the vsyscall, as you will need extra per cpu
+> data in the vsyscall read. I had some test code for this situation
+> awhile back, so if you get the first part functioning correctly (just a
+> clocksource w/o a vread pointer), I'll gladly help you get the vsyscall
+> bits working.
+> 
+> thanks
+> -john
+> 
+> 
 
-Thanks,
-	Alex.
-
->-----Original Message-----
->From: Cedric Le Goater [mailto:clg@fr.ibm.com]
->Sent: Thursday, February 01, 2007 9:24 PM
->To: Andrew Morton
->Cc: linux-kernel@vger.kernel.org; Moore, Robert; Starikovskiy, Alexey
-Y;
->keith mannthey
->Subject: Re: 2.6.20-rc6-mm3
->
->Hello !
->
->changes in git-acpi.patch in 2.6.20-rc6-mm3 (and maybe before) broke
-the
->Summit
->sub-arch (IBM x440) compile :(
->
->thanks,
->
->C.
->
->  CC      arch/i386/kernel/cpu/intel.o
->  CC      arch/i386/kernel/early_printk.o
->arch/i386/kernel/srat.c: In function 'parse_cpu_affinity_structure':
->arch/i386/kernel/srat.c:68: error: dereferencing pointer to incomplete
-type
->arch/i386/kernel/srat.c:72: error: dereferencing pointer to incomplete
-type
->arch/i386/kernel/srat.c:72: error: dereferencing pointer to incomplete
-type
->arch/i386/kernel/srat.c:74: error: dereferencing pointer to incomplete
-type
->arch/i386/kernel/srat.c:74: error: dereferencing pointer to incomplete
-type
->arch/i386/kernel/srat.c:77: error: dereferencing pointer to incomplete
-type
->arch/i386/kernel/srat.c:77: error: dereferencing pointer to incomplete
-type
->arch/i386/kernel/srat.c: In function 'parse_memory_affinity_structure':
->arch/i386/kernel/srat.c:93: error: dereferencing pointer to incomplete
-type
->arch/i386/kernel/srat.c:97: error: dereferencing pointer to incomplete
-type
->arch/i386/kernel/srat.c:97: error: dereferencing pointer to incomplete
-type
->arch/i386/kernel/srat.c:100: error: dereferencing pointer to incomplete
->type
->arch/i386/kernel/srat.c:101: error: dereferencing pointer to incomplete
->type
->arch/i386/kernel/srat.c:102: error: dereferencing pointer to incomplete
->type
->arch/i386/kernel/srat.c:103: error: dereferencing pointer to incomplete
->type
->arch/i386/kernel/srat.c:108: error: dereferencing pointer to incomplete
->type
->arch/i386/kernel/srat.c:134: error: dereferencing pointer to incomplete
->type
->arch/i386/kernel/srat.c:135: error: dereferencing pointer to incomplete
->type
->arch/i386/kernel/srat.c:136: error: dereferencing pointer to incomplete
->type
->arch/i386/kernel/srat.c: In function 'acpi20_parse_srat':
->arch/i386/kernel/srat.c:188: error: 'ACPI_SRAT_PROCESSOR_AFFINITY'
->undeclared (first use in this function)
->arch/i386/kernel/srat.c:188: error: (Each undeclared identifier is
-reported
->only once
->arch/i386/kernel/srat.c:188: error: for each function it appears in.)
->arch/i386/kernel/srat.c:191: error: 'ACPI_SRAT_MEMORY_AFFINITY'
-undeclared
->(first use in this function)
->arch/i386/kernel/srat.c: In function 'get_memcfg_from_srat':
->arch/i386/kernel/srat.c:275: error: 'ACPI_PHYSICAL_ADDRESSING'
-undeclared
->(first use in this function)
->arch/i386/kernel/srat.c:275: error: too many arguments to function
->'acpi_find_root_pointer'
->arch/i386/kernel/srat.c:282: error: dereferencing pointer to incomplete
->type
->arch/i386/kernel/srat.c:282: error: 'ACPI_PHYSICAL_POINTER' undeclared
->(first use in this function)
->arch/i386/kernel/srat.c:285: error: dereferencing pointer to incomplete
->type
->arch/i386/kernel/srat.c:298: error: 'RSDP_SIG' undeclared (first use in
->this function)
->arch/i386/kernel/srat.c:304: error: 'struct acpi_table_rsdp' has no
-member
->named 'rsdt_address'
->arch/i386/kernel/srat.c:315: error: 'RSDT_SIG' undeclared (first use in
->this function)
->arch/i386/kernel/srat.c:344: error: 'struct acpi_table_rsdt' has no
-member
->named 'entry'
->arch/i386/kernel/srat.c:348: error: 'struct acpi_table_rsdt' has no
-member
->named 'entry'
->  SYSCALL arch/i386/kernel/vsyscall-syms.o
->make[1]: *** [arch/i386/kernel/srat.o] Error 1
->make[1]: *** Waiting for unfinished jobs....
-
-------_=_NextPart_001_01C74638.58FC6FE5
-Content-Type: application/octet-stream;
-	name="fix_i386_srat.patch"
-Content-Transfer-Encoding: base64
-Content-Description: fix_i386_srat.patch
-Content-Disposition: attachment;
-	filename="fix_i386_srat.patch"
-
-TWFrZSBzcmF0LmMgaW4gaTM4NiBjb21waWxlIGFnYWluLgoKRnJvbTogQWxleGV5IFN0YXJpa292
-c2tpeSA8YWxleGV5Lnkuc3Rhcmlrb3Zza2l5QGxpbnV4LmludGVsLmNvbT4KCgotLS0KCiBhcmNo
-L2kzODYva2VybmVsL3NyYXQuYyB8ICAgNzcgKysrKysrKysrKysrKysrKysrKysrKystLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0KIDEgZmlsZXMgY2hhbmdlZCwgMzcgaW5zZXJ0aW9ucygrKSwgNDAg
-ZGVsZXRpb25zKC0pCgpkaWZmIC0tZ2l0IGEvYXJjaC9pMzg2L2tlcm5lbC9zcmF0LmMgYi9hcmNo
-L2kzODYva2VybmVsL3NyYXQuYwppbmRleCBmN2U3MzVjLi5hN2ZlMDBhIDEwMDY0NAotLS0gYS9h
-cmNoL2kzODYva2VybmVsL3NyYXQuYworKysgYi9hcmNoL2kzODYva2VybmVsL3NyYXQuYwpAQCAt
-NjIsMTkgKzYyLDE5IEBAIGV4dGVybiB2b2lkICogYm9vdF9pb3JlbWFwKHVuc2lnbmVkIGxvbmcK
-IC8qIElkZW50aWZ5IENQVSBwcm94aW1pdHkgZG9tYWlucyAqLwogc3RhdGljIHZvaWQgX19pbml0
-IHBhcnNlX2NwdV9hZmZpbml0eV9zdHJ1Y3R1cmUoY2hhciAqcCkKIHsKLQlzdHJ1Y3QgYWNwaV90
-YWJsZV9wcm9jZXNzb3JfYWZmaW5pdHkgKmNwdV9hZmZpbml0eSA9IAotCQkJCShzdHJ1Y3QgYWNw
-aV90YWJsZV9wcm9jZXNzb3JfYWZmaW5pdHkgKikgcDsKKwlzdHJ1Y3QgYWNwaV9zcmF0X2NwdV9h
-ZmZpbml0eSAqY3B1X2FmZmluaXR5ID0gCisJCQkJKHN0cnVjdCBhY3BpX3NyYXRfY3B1X2FmZmlu
-aXR5ICopIHA7CiAKLQlpZiAoIWNwdV9hZmZpbml0eS0+ZmxhZ3MuZW5hYmxlZCkKKwlpZiAoKGNw
-dV9hZmZpbml0eS0+ZmxhZ3MgJiBBQ1BJX1NSQVRfQ1BVX0VOQUJMRUQpID09IDApCiAJCXJldHVy
-bjsJCS8qIGVtcHR5IGVudHJ5ICovCiAKIAkvKiBtYXJrIHRoaXMgbm9kZSBhcyAic2VlbiIgaW4g
-bm9kZSBiaXRtYXAgKi8KLQlCTUFQX1NFVChweG1fYml0bWFwLCBjcHVfYWZmaW5pdHktPnByb3hp
-bWl0eV9kb21haW4pOworCUJNQVBfU0VUKHB4bV9iaXRtYXAsIGNwdV9hZmZpbml0eS0+cHJveGlt
-aXR5X2RvbWFpbl9sbyk7CiAKLQlhcGljaWRfdG9fcHhtW2NwdV9hZmZpbml0eS0+YXBpY19pZF0g
-PSBjcHVfYWZmaW5pdHktPnByb3hpbWl0eV9kb21haW47CisJYXBpY2lkX3RvX3B4bVtjcHVfYWZm
-aW5pdHktPmFwaWNfaWRdID0gY3B1X2FmZmluaXR5LT5wcm94aW1pdHlfZG9tYWluX2xvOwogCiAJ
-cHJpbnRrKCJDUFUgMHglMDJYIGluIHByb3hpbWl0eSBkb21haW4gMHglMDJYXG4iLAotCQljcHVf
-YWZmaW5pdHktPmFwaWNfaWQsIGNwdV9hZmZpbml0eS0+cHJveGltaXR5X2RvbWFpbik7CisJCWNw
-dV9hZmZpbml0eS0+YXBpY19pZCwgY3B1X2FmZmluaXR5LT5wcm94aW1pdHlfZG9tYWluX2xvKTsK
-IH0KIAogLyoKQEAgLTg3LDI1ICs4NywyNCBAQCBzdGF0aWMgdm9pZCBfX2luaXQgcGFyc2VfbWVt
-b3J5X2FmZmluaXR5CiAJdW5zaWduZWQgbG9uZyBzdGFydF9wZm4sIGVuZF9wZm47IAogCXU4IHB4
-bTsKIAlzdHJ1Y3Qgbm9kZV9tZW1vcnlfY2h1bmtfcyAqcCwgKnEsICpwZW5kOwotCXN0cnVjdCBh
-Y3BpX3RhYmxlX21lbW9yeV9hZmZpbml0eSAqbWVtb3J5X2FmZmluaXR5ID0KLQkJCShzdHJ1Y3Qg
-YWNwaV90YWJsZV9tZW1vcnlfYWZmaW5pdHkgKikgc3JhdHA7CisJc3RydWN0IGFjcGlfc3JhdF9t
-ZW1fYWZmaW5pdHkgKm1lbW9yeV9hZmZpbml0eSA9CisJCQkoc3RydWN0IGFjcGlfc3JhdF9tZW1f
-YWZmaW5pdHkgKikgc3JhdHA7CiAKLQlpZiAoIW1lbW9yeV9hZmZpbml0eS0+ZmxhZ3MuZW5hYmxl
-ZCkKKwlpZiAoKG1lbW9yeV9hZmZpbml0eS0+ZmxhZ3MgJiBBQ1BJX1NSQVRfTUVNX0VOQUJMRUQp
-ID09IDApCiAJCXJldHVybjsJCS8qIGVtcHR5IGVudHJ5ICovCiAKKwlweG0gPSBtZW1vcnlfYWZm
-aW5pdHktPnByb3hpbWl0eV9kb21haW4gJiAweGZmOworCiAJLyogbWFyayB0aGlzIG5vZGUgYXMg
-InNlZW4iIGluIG5vZGUgYml0bWFwICovCi0JQk1BUF9TRVQocHhtX2JpdG1hcCwgbWVtb3J5X2Fm
-ZmluaXR5LT5wcm94aW1pdHlfZG9tYWluKTsKKwlCTUFQX1NFVChweG1fYml0bWFwLCBweG0pOwog
-CiAJLyogY2FsY3VsYXRlIGluZm8gZm9yIG1lbW9yeSBjaHVuayBzdHJ1Y3R1cmUgKi8KLQlwYWRk
-ciA9IG1lbW9yeV9hZmZpbml0eS0+YmFzZV9hZGRyX2hpOwotCXBhZGRyID0gKHBhZGRyIDw8IDMy
-KSB8IG1lbW9yeV9hZmZpbml0eS0+YmFzZV9hZGRyX2xvOwotCXNpemUgPSBtZW1vcnlfYWZmaW5p
-dHktPmxlbmd0aF9oaTsKLQlzaXplID0gKHNpemUgPDwgMzIpIHwgbWVtb3J5X2FmZmluaXR5LT5s
-ZW5ndGhfbG87CisJcGFkZHIgPSBtZW1vcnlfYWZmaW5pdHktPmJhc2VfYWRkcmVzczsKKwlzaXpl
-ID0gbWVtb3J5X2FmZmluaXR5LT5sZW5ndGg7CiAJCiAJc3RhcnRfcGZuID0gcGFkZHIgPj4gUEFH
-RV9TSElGVDsKIAllbmRfcGZuID0gKHBhZGRyICsgc2l6ZSkgPj4gUEFHRV9TSElGVDsKIAkKLQlw
-eG0gPSBtZW1vcnlfYWZmaW5pdHktPnByb3hpbWl0eV9kb21haW47CiAKIAlpZiAobnVtX21lbW9y
-eV9jaHVua3MgPj0gTUFYQ0hVTktTKSB7CiAJCXByaW50aygiVG9vIG1hbnkgbWVtIGNodW5rcyBp
-biBTUkFULiBJZ25vcmluZyAlbGxkIE1CeXRlcyBhdCAlbGx4XG4iLApAQCAtMTMyLDggKzEzMSw4
-IEBAIHN0YXRpYyB2b2lkIF9faW5pdCBwYXJzZV9tZW1vcnlfYWZmaW5pdHkKIAlwcmludGsoIk1l
-bW9yeSByYW5nZSAweCVsWCB0byAweCVsWCAodHlwZSAweCVYKSBpbiBwcm94aW1pdHkgZG9tYWlu
-IDB4JTAyWCAlc1xuIiwKIAkJc3RhcnRfcGZuLCBlbmRfcGZuLAogCQltZW1vcnlfYWZmaW5pdHkt
-Pm1lbW9yeV90eXBlLAotCQltZW1vcnlfYWZmaW5pdHktPnByb3hpbWl0eV9kb21haW4sCi0JCSht
-ZW1vcnlfYWZmaW5pdHktPmZsYWdzLmhvdF9wbHVnZ2FibGUgPworCQlweG0sCisJCSgobWVtb3J5
-X2FmZmluaXR5LT5mbGFncyAmIEFDUElfU1JBVF9NRU1fSE9UX1BMVUdHQUJMRSkgPwogCQkgImVu
-YWJsZWQgYW5kIHJlbW92YWJsZSIgOiAiZW5hYmxlZCIgKSApOwogfQogCkBAIC0xODUsMTAgKzE4
-NCwxMCBAQCBzdGF0aWMgaW50IF9faW5pdCBhY3BpMjBfcGFyc2Vfc3JhdChzdHJ1CiAJbnVtX21l
-bW9yeV9jaHVua3MgPSAwOwogCXdoaWxlIChwIDwgZW5kKSB7CiAJCXN3aXRjaCAoKnApIHsKLQkJ
-Y2FzZSBBQ1BJX1NSQVRfUFJPQ0VTU09SX0FGRklOSVRZOgorCQljYXNlIEFDUElfU1JBVF9UWVBF
-X0NQVV9BRkZJTklUWToKIAkJCXBhcnNlX2NwdV9hZmZpbml0eV9zdHJ1Y3R1cmUocCk7CiAJCQli
-cmVhazsKLQkJY2FzZSBBQ1BJX1NSQVRfTUVNT1JZX0FGRklOSVRZOgorCQljYXNlIEFDUElfU1JB
-VF9UWVBFX01FTU9SWV9BRkZJTklUWToKIAkJCXBhcnNlX21lbW9yeV9hZmZpbml0eV9zdHJ1Y3R1
-cmUocCk7CiAJCQlicmVhazsKIAkJZGVmYXVsdDoKQEAgLTI2MiwzMSArMjYxLDI5IEBAIG91dF9m
-YWlsOgogCXJldHVybiAwOwogfQogCitzdHJ1Y3QgYWNwaV9zdGF0aWNfcnNkdCB7CisJc3RydWN0
-IGFjcGlfdGFibGVfcnNkdCB0YWJsZTsKKwl1MzIgcGFkZGluZ1s3XTsgLyogQWxsb3cgZm9yIDcg
-bW9yZSB0YWJsZSBlbnRyaWVzICovCit9OworCiBpbnQgX19pbml0IGdldF9tZW1jZmdfZnJvbV9z
-cmF0KHZvaWQpCiB7CiAJc3RydWN0IGFjcGlfdGFibGVfaGVhZGVyICpoZWFkZXIgPSBOVUxMOwog
-CXN0cnVjdCBhY3BpX3RhYmxlX3JzZHAgKnJzZHAgPSBOVUxMOwogCXN0cnVjdCBhY3BpX3RhYmxl
-X3JzZHQgKnJzZHQgPSBOVUxMOwotCXN0cnVjdCBhY3BpX3BvaW50ZXIgKnJzZHBfYWRkcmVzcyA9
-IE5VTEw7Ci0Jc3RydWN0IGFjcGlfdGFibGVfcnNkdCBzYXZlZF9yc2R0OworCWFjcGlfbmF0aXZl
-X3VpbnQgcnNkcF9hZGRyZXNzID0gMDsKKwlzdHJ1Y3QgYWNwaV9zdGF0aWNfcnNkdCBzYXZlZF9y
-c2R0OwogCWludCB0YWJsZXMgPSAwOwogCWludCBpID0gMDsKIAotCWlmIChBQ1BJX0ZBSUxVUkUo
-YWNwaV9maW5kX3Jvb3RfcG9pbnRlcihBQ1BJX1BIWVNJQ0FMX0FERFJFU1NJTkcsCi0JCQkJCQly
-c2RwX2FkZHJlc3MpKSkgeworCWlmIChBQ1BJX0ZBSUxVUkUoYWNwaV9maW5kX3Jvb3RfcG9pbnRl
-cigmcnNkcF9hZGRyZXNzKSkpIHsKIAkJcHJpbnRrKCIlczogU3lzdGVtIGRlc2NyaXB0aW9uIHRh
-YmxlcyBub3QgZm91bmRcbiIsCiAJCSAgICAgICBfX0ZVTkNUSU9OX18pOwogCQlnb3RvIG91dF9l
-cnI7CiAJfQogCi0JaWYgKHJzZHBfYWRkcmVzcy0+cG9pbnRlcl90eXBlID09IEFDUElfUEhZU0lD
-QUxfUE9JTlRFUikgewotCQlwcmludGsoIiVzOiBhc3NpZ25pbmcgYWRkcmVzcyB0byByc2RwXG4i
-LCBfX0ZVTkNUSU9OX18pOwotCQlyc2RwID0gKHN0cnVjdCBhY3BpX3RhYmxlX3JzZHAgKikKLQkJ
-CQkodTMyKXJzZHBfYWRkcmVzcy0+cG9pbnRlci5waHlzaWNhbDsKLQl9IGVsc2UgewotCQlwcmlu
-dGsoIiVzOiByc2RwX2FkZHJlc3MgaXMgbm90IGEgcGh5c2ljYWwgcG9pbnRlclxuIiwgX19GVU5D
-VElPTl9fKTsKLQkJZ290byBvdXRfZXJyOwotCX0KKwlwcmludGsoIiVzOiBhc3NpZ25pbmcgYWRk
-cmVzcyB0byByc2RwXG4iLCBfX0ZVTkNUSU9OX18pOworCXJzZHAgPSAoc3RydWN0IGFjcGlfdGFi
-bGVfcnNkcCAqKSh1MzIpcnNkcF9hZGRyZXNzOwogCWlmICghcnNkcCkgewogCQlwcmludGsoIiVz
-OiBEaWRuJ3QgZmluZCBBQ1BJIHJvb3QhXG4iLCBfX0ZVTkNUSU9OX18pOwogCQlnb3RvIG91dF9l
-cnI7CkBAIC0yOTUsMTMgKzI5MiwxMyBAQCBpbnQgX19pbml0IGdldF9tZW1jZmdfZnJvbV9zcmF0
-KHZvaWQpCiAJcHJpbnRrKEtFUk5fSU5GTyAiJS44cyB2JWQgWyUuNnNdXG4iLCByc2RwLT5zaWdu
-YXR1cmUsIHJzZHAtPnJldmlzaW9uLAogCQlyc2RwLT5vZW1faWQpOwogCi0JaWYgKHN0cm5jbXAo
-cnNkcC0+c2lnbmF0dXJlLCBSU0RQX1NJRyxzdHJsZW4oUlNEUF9TSUcpKSkgeworCWlmIChzdHJu
-Y21wKHJzZHAtPnNpZ25hdHVyZSwgQUNQSV9TSUdfUlNEUCxzdHJsZW4oQUNQSV9TSUdfUlNEUCkp
-KSB7CiAJCXByaW50ayhLRVJOX1dBUk5JTkcgIiVzOiBSU0RQIHRhYmxlIHNpZ25hdHVyZSBpbmNv
-cnJlY3RcbiIsIF9fRlVOQ1RJT05fXyk7CiAJCWdvdG8gb3V0X2VycjsKIAl9CiAKIAlyc2R0ID0g
-KHN0cnVjdCBhY3BpX3RhYmxlX3JzZHQgKikKLQkgICAgYm9vdF9pb3JlbWFwKHJzZHAtPnJzZHRf
-YWRkcmVzcywgc2l6ZW9mKHN0cnVjdCBhY3BpX3RhYmxlX3JzZHQpKTsKKwkgICAgYm9vdF9pb3Jl
-bWFwKHJzZHAtPnJzZHRfcGh5c2ljYWxfYWRkcmVzcywgc2l6ZW9mKHN0cnVjdCBhY3BpX3RhYmxl
-X3JzZHQpKTsKIAogCWlmICghcnNkdCkgewogCQlwcmludGsoS0VSTl9XQVJOSU5HCkBAIC0zMTAs
-OSArMzA3LDkgQEAgaW50IF9faW5pdCBnZXRfbWVtY2ZnX2Zyb21fc3JhdCh2b2lkKQogCQlnb3Rv
-IG91dF9lcnI7CiAJfQogCi0JaGVhZGVyID0gJiByc2R0LT5oZWFkZXI7CisJaGVhZGVyID0gJnJz
-ZHQtPmhlYWRlcjsKIAotCWlmIChzdHJuY21wKGhlYWRlci0+c2lnbmF0dXJlLCBSU0RUX1NJRywg
-c3RybGVuKFJTRFRfU0lHKSkpIHsKKwlpZiAoc3RybmNtcChoZWFkZXItPnNpZ25hdHVyZSwgQUNQ
-SV9TSUdfUlNEVCwgc3RybGVuKEFDUElfU0lHX1JTRFQpKSkgewogCQlwcmludGsoS0VSTl9XQVJO
-SU5HICJBQ1BJOiBSU0RUIHNpZ25hdHVyZSBpbmNvcnJlY3RcbiIpOwogCQlnb3RvIG91dF9lcnI7
-CiAJfQpAQCAtMzMwLDkgKzMyNyw5IEBAIGludCBfX2luaXQgZ2V0X21lbWNmZ19mcm9tX3NyYXQo
-dm9pZCkKIAogCW1lbWNweSgmc2F2ZWRfcnNkdCwgcnNkdCwgc2l6ZW9mKHNhdmVkX3JzZHQpKTsK
-IAotCWlmIChzYXZlZF9yc2R0LmhlYWRlci5sZW5ndGggPiBzaXplb2Yoc2F2ZWRfcnNkdCkpIHsK
-KwlpZiAoc2F2ZWRfcnNkdC50YWJsZS5oZWFkZXIubGVuZ3RoID4gc2l6ZW9mKHNhdmVkX3JzZHQp
-KSB7CiAJCXByaW50ayhLRVJOX1dBUk5JTkcgIkFDUEk6IFRvbyBiaWcgbGVuZ3RoIGluIFJTRFQ6
-ICVkXG4iLAotCQkgICAgICAgc2F2ZWRfcnNkdC5oZWFkZXIubGVuZ3RoKTsKKwkJICAgICAgIHNh
-dmVkX3JzZHQudGFibGUuaGVhZGVyLmxlbmd0aCk7CiAJCWdvdG8gb3V0X2VycjsKIAl9CiAKQEAg
-LTM0MSwxNSArMzM4LDE1IEBAIGludCBfX2luaXQgZ2V0X21lbWNmZ19mcm9tX3NyYXQodm9pZCkK
-IAlmb3IgKGkgPSAwOyBpIDwgdGFibGVzOyBpKyspIHsKIAkJLyogTWFwIGluIGhlYWRlciwgdGhl
-biBtYXAgaW4gZnVsbCB0YWJsZSBsZW5ndGguICovCiAJCWhlYWRlciA9IChzdHJ1Y3QgYWNwaV90
-YWJsZV9oZWFkZXIgKikKLQkJCWJvb3RfaW9yZW1hcChzYXZlZF9yc2R0LmVudHJ5W2ldLCBzaXpl
-b2Yoc3RydWN0IGFjcGlfdGFibGVfaGVhZGVyKSk7CisJCQlib290X2lvcmVtYXAoc2F2ZWRfcnNk
-dC50YWJsZS50YWJsZV9vZmZzZXRfZW50cnlbaV0sIHNpemVvZihzdHJ1Y3QgYWNwaV90YWJsZV9o
-ZWFkZXIpKTsKIAkJaWYgKCFoZWFkZXIpCiAJCQlicmVhazsKIAkJaGVhZGVyID0gKHN0cnVjdCBh
-Y3BpX3RhYmxlX2hlYWRlciAqKQotCQkJYm9vdF9pb3JlbWFwKHNhdmVkX3JzZHQuZW50cnlbaV0s
-IGhlYWRlci0+bGVuZ3RoKTsKKwkJCWJvb3RfaW9yZW1hcChzYXZlZF9yc2R0LnRhYmxlLnRhYmxl
-X29mZnNldF9lbnRyeVtpXSwgaGVhZGVyLT5sZW5ndGgpOwogCQlpZiAoIWhlYWRlcikKIAkJCWJy
-ZWFrOwogCi0JCWlmIChzdHJuY21wKChjaGFyICopICZoZWFkZXItPnNpZ25hdHVyZSwgIlNSQVQi
-LCA0KSkKKwkJaWYgKHN0cm5jbXAoKGNoYXIgKikgJmhlYWRlci0+c2lnbmF0dXJlLCBBQ1BJX1NJ
-R19TUkFULCA0KSkKIAkJCWNvbnRpbnVlOwogCiAJCS8qIHdlJ3ZlIGZvdW5kIHRoZSBzcmF0IHRh
-YmxlLiBkb24ndCBuZWVkIHRvIGxvb2sgYXQgYW55IG1vcmUgdGFibGVzICovCg==
-
-------_=_NextPart_001_01C74638.58FC6FE5--
+-- 
+Vojtech Pavlik
+Director SuSE Labs
