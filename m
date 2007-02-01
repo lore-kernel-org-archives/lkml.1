@@ -1,47 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161082AbXBAFpd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161124AbXBAFru@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161082AbXBAFpd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Feb 2007 00:45:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161149AbXBAFpd
+	id S1161124AbXBAFru (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Feb 2007 00:47:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161149AbXBAFru
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Feb 2007 00:45:33 -0500
-Received: from terminus.zytor.com ([192.83.249.54]:34024 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161082AbXBAFpc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Feb 2007 00:45:32 -0500
-Message-ID: <45C17E4C.1030509@zytor.com>
-Date: Wed, 31 Jan 2007 21:44:44 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
+	Thu, 1 Feb 2007 00:47:50 -0500
+Received: from mail.suse.de ([195.135.220.2]:42981 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161124AbXBAFrt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Feb 2007 00:47:49 -0500
+Date: Wed, 31 Jan 2007 21:46:44 -0800
+From: Greg KH <greg@kroah.com>
+To: Sergei Organov <osv@javad.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Free Linux Driver Development!
+Message-ID: <20070201054644.GD5979@kroah.com>
+References: <20070130012904.GA9617@kroah.com> <ada8xfks90x.fsf@cisco.com> <20070130191020.GF20642@kroah.com> <87fy9r2ixc.fsf@javad.com>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: =?ISO-8859-1?Q?=22S=2E=C3a=C4lar_Onur=22?= <caglar@pardus.org.tr>,
-       lkml <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
-       Mark Huang <mlhuang@CS.Princeton.EDU>,
-       Al Viro <viro@zeniv.linux.org.uk>
-Subject: Re: Linux 2.6.20-rc7
-References: <Pine.LNX.4.64.0701302019530.11095@woody.linux-foundation.org> <200702010416.59469.caglar@pardus.org.tr> <Pine.LNX.4.64.0701311828540.3632@woody.linux-foundation.org> <200702010501.20994.caglar@pardus.org.tr> <Pine.LNX.4.64.0701311921090.3632@woody.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0701311921090.3632@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87fy9r2ixc.fsf@javad.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
+On Wed, Jan 31, 2007 at 08:41:03PM +0300, Sergei Organov wrote:
+> Greg KH <greg@kroah.com> writes:
+> [...]
+> >> And there are plenty of documented devices that no one cares enough
+> >> about to submit a driver for.
+> >
+> > Any specific examples?  I have a long list of people who wish to write
+> > new drivers but just don't know which hardware is not yet supported.
 > 
-> On Thu, 1 Feb 2007, S.ÃaÄlar Onur wrote:
->> I think i found the cause of the problem, initramfs can't handle hardlinks 
->> anymore (which works with 2.6.18), copying same /sbin/busybox binary with 
->> different names into initramfs (which ends ups with 50 MB image) or using 
->> symbolic ones instead of hards seems works.
+> Maybe not entirely a new driver, as there already exist out-of-kernel
+> vendor GPL driver, but if somebody is willing to resolve the issue
+> described here:
 > 
-> Ok, it would still be interesting to hear what triggered this.
+> <http://article.gmane.org/gmane.linux.serial/1221>
 > 
+> please contact me, and I'll be willing to help in testing as I have the
+> hardware.
 
-It would be interesting to know what the inode numbers are in the image; 
-also, what is the exact behaviour -- do you end up with a missing link, 
-or do both entries end up getting hard-linked to an empty file?
+Do you have a pointer to the driver source anywhere?
 
-	-hpa
+I suggest just posting it as a patch to the tree as documented in
+Documentation/SubmittingPatches and seeing how that goes.
 
+thanks,
+
+greg k-h
