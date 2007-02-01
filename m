@@ -1,66 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422677AbXBAQB1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751868AbXBAQCI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422677AbXBAQB1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Feb 2007 11:01:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422686AbXBAQB1
+	id S1751868AbXBAQCI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Feb 2007 11:02:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751881AbXBAQCI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Feb 2007 11:01:27 -0500
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:47835 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422677AbXBAQB0 (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Feb 2007 11:01:26 -0500
-Message-Id: <200702011600.l11G08Zs015498@turing-police.cc.vt.edu>
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: wsl3@lrsehosting.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       alan@redhat.com, Adrian Bunk <bunk@stusta.de>
-Subject: Re: Unidentified Intel wifi network card
-In-Reply-To: Your message of "Thu, 01 Feb 2007 08:59:47 +1100."
-             <20070131215947.GA28294@gondor.apana.org.au>
-From: Valdis.Kletnieks@vt.edu
-References: <1170264624.5569.15.camel@scott-640m> <200701312054.l0VKstxg020891@turing-police.cc.vt.edu>
-            <20070131215947.GA28294@gondor.apana.org.au>
+	Thu, 1 Feb 2007 11:02:08 -0500
+Received: from mailhub.sw.ru ([195.214.233.200]:44444 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751868AbXBAQCG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Feb 2007 11:02:06 -0500
+Date: Thu, 1 Feb 2007 19:09:04 +0300
+From: Alexey Dobriyan <adobriyan@openvz.org>
+To: Duncan Sands <duncan.sands@math.u-psud.fr>
+Cc: linux-kernel@vger.kernel.org, adobriyan@gmail.com
+Subject: Re: remove_proc_entry and read_proc
+Message-ID: <20070201160904.GC6023@localhost.sw.ru>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1170345608_13753P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Thu, 01 Feb 2007 11:00:08 -0500
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1170345608_13753P
-Content-Type: text/plain; charset=us-ascii
+Duncan Sands wrote:
+> On Wednesday 31 January 2007 19:42:51 Alexey Dobriyan wrote:
+> > On Wed, Jan 31, 2007 at 11:54:35AM +0100, Duncan Sands wrote:
+> > > Can read_proc still be executing when remove_proc_entry returns?
+> > >
+> > > In my driver [*] I allocate some data and create a proc entry using
+> > > create_proc_entry.  My read method reads from my allocated data.  When
+> > > shutting down, I call remove_proc_entry and immediately free the data.
+> > > If some call to read_proc is still executing at this point then it will
+> > > be accessing freed memory.  Can this happen?  I've been rummaging around
+> > > in fs/proc to see what prevents it, but didn't find anything yet.
+> >
+> > This should be fixed by the following patch (in -mm currently):
+> > http://kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.20-rc6/2.6.20-rc6-mm3/broken-out/fix-rmmod-read-write-races-in-proc-entries.patch
+> >
+> > Tell me if you're unsure it will.
+>
+> Excellent!  But tell me,
+>
+> +	atomic_inc(&dp->pde_users);
+> +	if (!dp->proc_fops)
+>
+> don't you need a memory barrier between these two?  Also a corresponding
+> one where proc_fops is set to NULL.
 
-On Thu, 01 Feb 2007 08:59:47 +1100, Herbert Xu said:
-> On Wed, Jan 31, 2007 at 03:54:55PM -0500, Valdis.Kletnieks@vt.edu wrote:
-> > 
-> > Oh - the git-crypto-fix patch has to be applied with -R, I never got around
- to
-> > re-diffing it the other way.
-> 
-> If this driver is still using the old digest interface, it needs to be
-> converted to use crypto_hash_*.
+I believe, barriers not needed, not now.
 
-OK, here's the more complete scoop - the *out of tree* ieee80211 tree
-hasn't been converted, but the *in tree* version has.
+This scheme relies on the fact that remove_proc_entry() will be the only
+place that will clear ->proc_fops and, once cleared, ->proc_fops will
+never be resurrected. Clearing of ->proc_fops will eventually propagate
+to CPU doing first check, thus preveting refcount bumps from this CPU.
+What can be missed is some "rogue" readers or writers¹. Big deal.
 
-Why did I have the out of tree version installed? Because the in-tree
-version claimed to be 1.1.3, and the out-of-tree 1.2.16.  Apparently,
-the update to the version string for the in-kernel version got blocked
-someplace - the in-tree is apparently actually very close to 1.2.16.
+> +		/*
+> +		 * Stop accepting new readers/writers. If you're dynamically
+> +		 * allocating ->proc_fops, save a pointer somewhere.
+> +		 */
+> +		de->proc_fops = NULL;
+> +		/* Wait until all readers/writers are done. */
+> +		if (atomic_read(&de->pde_users) > 0) {
+> +			spin_unlock(&proc_subdir_lock);
+> +			msleep(1);
+> +			goto again;
+> +		}
+>
+> I don't understand how this is supposed to work.  Consider
+>
+> CPU1					CPU2
+>
+> atomic_inc(&dp->pde_users);
+> if (dp->proc_fops)
+> 					de->proc_fops = NULL;
+> 	use_proc_fops <= BOOM
+> 					if (atomic_read(&de->pde_users) > 0) {
+>
+> what prevents dereference of a NULL proc_fops value?
 
---==_Exmh_1170345608_13753P
-Content-Type: application/pgp-signature
+¹ Sigh, modules should do removals of proc entries first. And I should check
+  for that.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFFwg6IcC3lWbTT17ARAoJ1AKDw1SiIvR4bcQEIMnwloXIgX3nZOQCgzNik
-x7tXAekTl0eYsXFV4Eao8Ko=
-=rArN
------END PGP SIGNATURE-----
-
---==_Exmh_1170345608_13753P--
