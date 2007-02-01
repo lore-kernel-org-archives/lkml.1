@@ -1,79 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751799AbXBAPsR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751847AbXBAPsb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751799AbXBAPsR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Feb 2007 10:48:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751839AbXBAPsR
+	id S1751847AbXBAPsb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Feb 2007 10:48:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751852AbXBAPsb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Feb 2007 10:48:17 -0500
-Received: from chicken.visionpro.com ([63.91.95.13]:22640 "EHLO
-	chicken.machinevisionproducts.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751799AbXBAPsQ convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Feb 2007 10:48:16 -0500
-X-Ninja-PIM: Scanned by Ninja
-X-Ninja-AttachmentFiltering: (no action)
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Thu, 1 Feb 2007 10:48:31 -0500
+Received: from static-ip-62-75-166-246.inaddr.intergenia.de ([62.75.166.246]:33172
+	"EHLO vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751839AbXBAPs3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Feb 2007 10:48:29 -0500
+From: Michael Buesch <mb@bu3sch.de>
+To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+Subject: Re: Free Linux Driver Development!
+Date: Thu, 1 Feb 2007 16:46:38 +0100
+User-Agent: KMail/1.9.5
+Cc: Jeff Garzik <jeff@garzik.org>, Roland Dreier <rdreier@cisco.com>,
+       Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org
+References: <20070130012904.GA9617@kroah.com> <45BFC2CF.8010603@garzik.org> <20070130222344.GF7584@csclub.uwaterloo.ca>
+In-Reply-To: <20070130222344.GF7584@csclub.uwaterloo.ca>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: 2.6.16.16 Lost CD-ROM Drive
-Date: Thu, 1 Feb 2007 07:48:10 -0800
-Message-ID: <14CFC56C96D8554AA0B8969DB825FEA001C3A234@chicken.machinevisionproducts.com>
-Thread-Topic: 2.6.16.16 Lost CD-ROM Drive
-thread-index: AcdGEmfqKNQXvUS9QUKu26s0psRJ6AABeJeA
-From: "Brian D. McGrew" <brian@visionpro.com>
-To: <jeremy@emperorlinux.com>
-Cc: <linux-precision@dell.com>, <linux-kernel@vger.kernel.org>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200702011646.38762.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------Original Message-----
-From: Jeremy L. Moles [mailto:jeremy@emperorlinux.com] 
-Sent: Thursday, February 01, 2007 7:05 AM
-To: Brian D. McGrew
-Cc: linux-precision@dell.com; linux-kernel@vger.kernel.org
-Subject: Re: 2.6.16.16 Lost CD-ROM Drive
+On Tuesday 30 January 2007 23:23, Lennart Sorensen wrote:
+> On Tue, Jan 30, 2007 at 05:12:31PM -0500, Jeff Garzik wrote:
+> > You mean the bcm43xx wireless driver that's been upstream for months?
+> 
+> And seems to do 802.11b only and screw up the eeprom settings so that
+> the windows driver gets confused next time you boot windows.  Lovely
 
-On Thu, 2007-02-01 at 07:00 -0800, Brian D. McGrew wrote:
-> Hey guys-
-> 
-> Have a Precision workstation with SATA hard drive and SATA CD-ROM.  If
-I
-> load Fedora Core 5 with a stock 2.6.15 kernel, life is good.
-> 
-> However, I need to use 2.6.16.16.  Once I build and install this
-kernel,
-> my CD-ROM drive is gone.  There is a log entry in dmesg that says
-"ATAPI
-> not support.  Ignoring."  
-> 
-> If I go into the BIOS and set the SATA operations to Legacy/Compatible
-> then everything is fine.  I've rebuilt this kernel about 100 times
-> trying everything I can think of.
-> 
-> When I have SATA set to legacy, the HDD and CD are detected as
-/dev/hd*
-> and when they're set to SATA Normal operation the HDD is detected as
-> /dev/sda.  If I boot my old 2.6.15 (stock install) kernel then the CD
-is
-> found as /dev/sdc.  
-> 
-> I've even tried taking the installation default configuration file for
-> the 2.6.15 kernel and just wholesale copying it into my 2.6.16.16
-kernel
-> and build that way but still no go.
-> 
-> What am I missing to get the 2.6.16.16 kernel to see a SATA CD-ROM
-drive
-> in normal, non-legacy move?
+Nah, why do you think it will screw up the eeprom?
+Did you try to completely power off the machine before rebooting
+into windows?
 
-Try booting 2.6.16 with the following options:
+I _really_ _really_ _really_ think that there is no chance of writing
+the eeprom by accident. It is protected by some write-enable bit in
+PCI config space. There is only one place where we enable that bit
+and where we actually _write_ to the eeprom shadow mmio space. That's
+the eeprom writing code. It will output _lots_ of kernelmessages that
+you really can't miss when that happens. And it's only called on behalf
+of a private ioctl user request. _And_ it verifies the data with a CRC
+check. So you really can't call it by accident.
 
-libata.atapi_enabled=1 ide0=noprobe ide1=noprobe
------
+But prove me wrong and show the code that writes to eeprom. :)
 
-Still no go.  /dev/sda* is created for the hard drive but no CD-ROM and
-the same ATAPI error in dmesg.
+> driver.  If the bios on the laptop in question would let me change the
+> minipci card I would.  To something with a ralink on it.
+> 
+> Seems the ralink driver maintainers are doing a lot of the work on the
+> core wifi infastructure too.  Lots of work beyond just the driver then.
 
--brian
+Are you suggesting that bcm43xx people don't, or what?
+Are you living on another planet than me? Mine is called "Earth".
+
+-- 
+Greetings Michael.
