@@ -1,61 +1,169 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422744AbXBAKJ0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422765AbXBAKMw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422744AbXBAKJ0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Feb 2007 05:09:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422740AbXBAKJ0
+	id S1422765AbXBAKMw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Feb 2007 05:12:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422751AbXBAKMu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Feb 2007 05:09:26 -0500
-Received: from wx-out-0506.google.com ([66.249.82.229]:29332 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422744AbXBAKJY (ORCPT
+	Thu, 1 Feb 2007 05:12:50 -0500
+Received: from tservice.ru ([195.178.208.66]:58496 "EHLO tservice.net.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1422747AbXBAKMp convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Feb 2007 05:09:24 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=OJ0x53FDLtQHbKlZbysUgGQFPsaXOzNlJRnDDE7cE3+GNAdXySpPSNxty6Bi0IoC3pM1/uulcuzhT7rjiGlP/cZjio053gSeBu/2vveNVsByuzSZbbCKu9M3BV1oJ+c3QfnJfYLVcYZGvZFbA3r0yiYNKjy1jo+Ol7IjtrxwMyU=
-Message-ID: <6d6a94c50702010209t94964ew1aebfad2677aa315@mail.gmail.com>
-Date: Thu, 1 Feb 2007 18:09:24 +0800
-From: "Aubrey Li" <aubreylee@gmail.com>
-To: "Aubrey Li" <aubreylee@gmail.com>, Alan <alan@lxorguk.ukuu.org.uk>,
-       linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org
-Subject: Re: [BUG]: 2.6.19.2: Weird serial core issue
-In-Reply-To: <20070201094522.GA24608@flint.arm.linux.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <6d6a94c50701310249o2b2c8024i4d3f28ec1601246a@mail.gmail.com>
-	 <20070131162123.67e22e23@localhost.localdomain>
-	 <6d6a94c50701311833m5952c6fdn8e1f0db28d674e79@mail.gmail.com>
-	 <20070201094522.GA24608@flint.arm.linux.org.uk>
+	Thu, 1 Feb 2007 05:12:45 -0500
+Cc: David Miller <davem@davemloft.net>, Ulrich Drepper <drepper@redhat.com>,
+       Andrew Morton <akpm@osdl.org>, Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       netdev <netdev@vger.kernel.org>, Zach Brown <zach.brown@oracle.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Chase Venters <chase.venters@clientec.com>,
+       Johann Borck <johann.borck@densedata.com>, linux-kernel@vger.kernel.org,
+       Jeff Garzik <jeff@garzik.org>, Jamal Hadi Salim <hadi@cyberus.ca>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: [take35 5/10] kevent: Timer notifications.
+In-Reply-To: <11703247523827@2ka.mipt.ru>
+X-Mailer: gregkh_patchbomb
+Date: Thu, 1 Feb 2007 13:12:33 +0300
+Message-Id: <11703247532659@2ka.mipt.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Reply-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Content-Transfer-Encoding: 7BIT
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/1/07, Russell King <rmk+lkml@arm.linux.org.uk> wrote:
-> On Thu, Feb 01, 2007 at 10:33:40AM +0800, Aubrey Li wrote:
-> > On 2/1/07, Alan <alan@lxorguk.ukuu.org.uk> wrote:
-> > >What code is running on that console at the time. Most likely that user
-> > >code is also saving/restoring terminal settings so overwrite yours
-> > >
-> >
-> > I implemented the serial driver by myself, :). See the attachment.
-> > I didn't save/restore terminal setting in the my_set_termios().
-> >
-> > I trace this back till tty_tioctl(..., unsigned long arg), everytime I
-> > type "ENTER" key,
-> > the argument "arg" passed into tty_ioctl() is the address of a termios
-> > structure, which include wrong c_cflag.
->
-> If userspace is issuing an ioctl to re-enable crtscts, and the kernel
-> is obliging, how can this be a kernel bug?
 
-But the fact is not.
-1) kernel boot up and enable crtscts by default
-2) issue an ioctl to disable crtscts.
-3) not do anything but type "ENTER", kernel re-enable crtscts.
+Timer notifications.
 
-That's wrong. Terminal setting seems not be recorded by the serial core.
-Is it clear?
+Timer notifications can be used for fine grained per-process time 
+management, since interval timers are very inconvenient to use, 
+and they are limited.
 
--Aubrey
+This subsystem uses high-resolution timers.
+
+id.raw[0] is used as number of seconds
+id.raw[1] is used as number of nanoseconds
+
+Signed-off-by: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+
+diff --git a/kernel/kevent/kevent_timer.c b/kernel/kevent/kevent_timer.c
+new file mode 100644
+index 0000000..c21a155
+--- /dev/null
++++ b/kernel/kevent/kevent_timer.c
+@@ -0,0 +1,114 @@
++/*
++ * 2006 Copyright (c) Evgeniy Polyakov <johnpol@2ka.mipt.ru>
++ * All rights reserved.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
++ */
++
++#include <linux/kernel.h>
++#include <linux/types.h>
++#include <linux/list.h>
++#include <linux/slab.h>
++#include <linux/spinlock.h>
++#include <linux/hrtimer.h>
++#include <linux/jiffies.h>
++#include <linux/kevent.h>
++
++struct kevent_timer
++{
++	struct hrtimer		ktimer;
++	struct kevent_storage	ktimer_storage;
++	struct kevent		*ktimer_event;
++};
++
++static int kevent_timer_func(struct hrtimer *timer)
++{
++	struct kevent_timer *t = container_of(timer, struct kevent_timer, ktimer);
++	struct kevent *k = t->ktimer_event;
++
++	kevent_storage_ready(&t->ktimer_storage, NULL, KEVENT_MASK_ALL);
++	hrtimer_forward(timer, timer->base->softirq_time,
++			ktime_set(k->event.id.raw[0], k->event.id.raw[1]));
++	return HRTIMER_RESTART;
++}
++
++static struct lock_class_key kevent_timer_key;
++
++static int kevent_timer_enqueue(struct kevent *k)
++{
++	int err;
++	struct kevent_timer *t;
++
++	t = kmalloc(sizeof(struct kevent_timer), GFP_KERNEL);
++	if (!t)
++		return -ENOMEM;
++
++	hrtimer_init(&t->ktimer, CLOCK_MONOTONIC, HRTIMER_REL);
++	t->ktimer.expires = ktime_set(k->event.id.raw[0], k->event.id.raw[1]);
++	t->ktimer.function = kevent_timer_func;
++	t->ktimer_event = k;
++
++	err = kevent_storage_init(&t->ktimer, &t->ktimer_storage);
++	if (err)
++		goto err_out_free;
++	lockdep_set_class(&t->ktimer_storage.lock, &kevent_timer_key);
++
++	err = kevent_storage_enqueue(&t->ktimer_storage, k);
++	if (err)
++		goto err_out_st_fini;
++
++	hrtimer_start(&t->ktimer, t->ktimer.expires, HRTIMER_REL);
++
++	return 0;
++
++err_out_st_fini:
++	kevent_storage_fini(&t->ktimer_storage);
++err_out_free:
++	kfree(t);
++
++	return err;
++}
++
++static int kevent_timer_dequeue(struct kevent *k)
++{
++	struct kevent_storage *st = k->st;
++	struct kevent_timer *t = container_of(st, struct kevent_timer, ktimer_storage);
++
++	hrtimer_cancel(&t->ktimer);
++	kevent_storage_dequeue(st, k);
++	kfree(t);
++
++	return 0;
++}
++
++static int kevent_timer_callback(struct kevent *k)
++{
++	k->event.ret_data[0] = jiffies_to_msecs(jiffies);
++	return 1;
++}
++
++static int __init kevent_init_timer(void)
++{
++	struct kevent_callbacks tc = {
++		.callback = &kevent_timer_callback,
++		.enqueue = &kevent_timer_enqueue,
++		.dequeue = &kevent_timer_dequeue,
++		.flags = 0,
++	};
++
++	return kevent_add_callbacks(&tc, KEVENT_TIMER);
++}
++module_init(kevent_init_timer);
++
+
