@@ -1,73 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422779AbXBARrt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422763AbXBARse@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422779AbXBARrt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Feb 2007 12:47:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422776AbXBARrs
+	id S1422763AbXBARse (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Feb 2007 12:48:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422781AbXBARse
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Feb 2007 12:47:48 -0500
-Received: from vsmtp2.tin.it ([212.216.176.222]:62999 "EHLO vsmtp2.tin.it"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422760AbXBARrs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Feb 2007 12:47:48 -0500
-Message-ID: <45BE4003005C2845@vsmtp2.tin.it> (added by postmaster@virgilio.it)
-From: "Lapo TIN" <lapolapolapo@tin.it>
-To: <linux-smp@vger.kernel.org>, <linux-kernel@vger.kernel.org>
-Subject: smp and irq conflict
-Date: Thu, 1 Feb 2007 18:46:00 +0100
+	Thu, 1 Feb 2007 12:48:34 -0500
+Received: from nf-out-0910.google.com ([64.233.182.191]:35135 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422763AbXBARsd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Feb 2007 12:48:33 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=ukajmdDpAvORiNDswaALpYsS2yMGkwdMUQ715MhwSy4qMyM2TKOxuhp4qiEt3e6S8q5KBH/P/IPz8Y/je7pCKaF6OG2SARArS4CSP/tSc9RT5frj+K0XcJQVCjneACAxKt8gfKqzmdNQ1XA1PjEAl0c9RnFNrggd9dYqF3WI79k=
+Message-ID: <f2b55d220702010948r16c48bdcsadc7c8492e36dd4e@mail.gmail.com>
+Date: Thu, 1 Feb 2007 09:48:30 -0800
+From: "Michael K. Edwards" <medwards.linux@gmail.com>
+To: "Lennart Sorensen" <lsorense@csclub.uwaterloo.ca>
+Subject: Re: Free Linux Driver Development!
+Cc: "Michael Buesch" <mb@bu3sch.de>, "Jeff Garzik" <jeff@garzik.org>,
+       "Roland Dreier" <rdreier@cisco.com>, "Greg KH" <greg@kroah.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20070201164201.GI7584@csclub.uwaterloo.ca>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Mailer: Microsoft Office Outlook, Build 11.0.5510
-Thread-Index: AcdGKNWOUNdIDpVaTGGEI4dxVn/13w==
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
+Content-Disposition: inline
+References: <20070130012904.GA9617@kroah.com> <45BFC2CF.8010603@garzik.org>
+	 <20070130222344.GF7584@csclub.uwaterloo.ca>
+	 <200702011646.38762.mb@bu3sch.de>
+	 <20070201164201.GI7584@csclub.uwaterloo.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear all,
-I have a problem with IRQs.
+On 2/1/07, Lennart Sorensen <lsorense@csclub.uwaterloo.ca> wrote:
+> Sometimes I might be.  At least on the days I have to deal with problems
+> in Windows (it's not even my machine, so I don't get to pick what it
+> runs all the time. :)  I haven't had particularly much luck getting a
+> stable wireless going on linux yet, although I haven't put much effort
+> into it yet either.  I figure in a couple of years there will be so many
+> wifi devices around that wireless won't work anymore anyhow so it isn't
+> a high priority.  I like simple trustworthy wires.
 
-My pc has a CPU PentiumD945 (dual core) and a 2.6.19smp kernel.
-I have two video acquisition board (four bt8t8 each) in the only two pci
-slots of my motherboard. Thus I have a total of 8 bttv modules that are
-working together, and the /proc/interrupts is as follows:
-# cat /proc/interrupts
-           CPU0       CPU1
-  0:      13575          0   IO-APIC-edge      timer
-  1:          2          0   IO-APIC-edge      i8042
-  4:         11          0   IO-APIC-edge      serial
-  8:          1          0   IO-APIC-edge      rtc
-  9:          0          0   IO-APIC-fasteoi   acpi
- 12:          4          0   IO-APIC-edge      i8042
- 14:      22286          0   IO-APIC-edge      ide0
- 17:       7073       2097   IO-APIC-fasteoi   uhci_hcd:usb5, eth0
- 18:       2525          0   IO-APIC-fasteoi   bttv0, bttv7
- 19:       2829          0   IO-APIC-fasteoi   bttv1, bttv4
- 20:       2526          0   IO-APIC-fasteoi   bttv2, bttv5
- 21:       2226          0   IO-APIC-fasteoi   bttv3, bttv6
- 22:          2          0   IO-APIC-fasteoi   ehci_hcd:usb1, uhci_hcd:usb4
- 23:         86          0   IO-APIC-fasteoi   uhci_hcd:usb2
- 24:          0          0   IO-APIC-fasteoi   uhci_hcd:usb3
-NMI:          0          0
-LOC:      13484      13502
-ERR:          0
-MIS:          0
-You can see that IRQ18 is shared between bttv0 and bttv7, IRQ19 between
-bttv1 and bttv4 and so on.
+For what it's worth, hostap + Prism chips of various kinds has worked
+quite solidly for 7-8 years or so, and I shipped handheld products
+with it in 2001 or so and ran all of my wireless infrastructure gear
+on it until I switched to off-the-shelf Broadcom- and Atheros-based
+gear a couple of years ago (running OpenWRT and variants thereof).
+The apparent inability of any wireless vendor to fix a low-level
+firmware bug without breaking at least one common order of operations
+in the driver API is hardly Linux's fault.
 
-Sometimes it crashes. It seems a matter of conflict in IRQ.
-With only one video board everything is ok, but with two, they shared irq
-and something goes wrong... 
-How can I tell to the kernel to not to share the IRQ for these boards ?
-I think (I don't know if I'm right) that this could be the problem.
+As it stands, there's enough of a learning and fiddling curve with
+every WiFi driver that it's usually not very time-efficient to get
+WiFi working under Linux on any single box that shipped with Windows.
+But given a controlled configuration and some up-front time
+investment, it's not that hard to switch over your local environment
+(my neighbors and I have a WDS mesh set up), at which point you may be
+the only people within RF range whose WiFi doesn't go belly-up when
+some mangled frame comes along.  In this case, it's the last 20% of
+the effort that produces 80% of the value.  (Bye-bye, telco monopoly;
+the only live wires remaining into our house are the AC mains.)
 
-I even tried with another motherboard, and doing cat /proc/interrupts the
-situation was the same, except for 'eth0' that was together with bttv0 and
-bttv7... so it was even worst ! it crashes after few minutes.
-
-I tried to read IO-APIC.txt in Documentation/i386/ folder, but I didn't
-understand how to avoid the coupling of IRQ.
-Thanks
-Lapo
-
-
+Cheers,
+- Michael
