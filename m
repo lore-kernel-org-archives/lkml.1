@@ -1,84 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750936AbXBAVw4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750958AbXBAVxD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750936AbXBAVw4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Feb 2007 16:52:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751002AbXBAVw4
+	id S1750958AbXBAVxD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Feb 2007 16:53:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751068AbXBAVxD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Feb 2007 16:52:56 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:32692 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750958AbXBAVwy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Feb 2007 16:52:54 -0500
-In-Reply-To: <20070201130234.GA15257@elte.hu>
-References: <patchbomb.1170193181@tetsuo.zabbo.net> <df7bc026d50ec5bbdd8e.1170193183@tetsuo.zabbo.net> <20070201083611.GC18233@elte.hu> <20070201130234.GA15257@elte.hu>
-Mime-Version: 1.0 (Apple Message framework v752.3)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <5678BC95-E548-414F-85F9-9D6B4DC914EC@oracle.com>
-Cc: linux-kernel@vger.kernel.org, linux-aio@kvack.org,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Benjamin LaHaise <bcrl@kvack.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Content-Transfer-Encoding: 7bit
-From: Zach Brown <zach.brown@oracle.com>
-Subject: Re: [PATCH 2 of 4] Introduce i386 fibril scheduling
-Date: Thu, 1 Feb 2007 13:52:13 -0800
-To: Ingo Molnar <mingo@elte.hu>
-X-Mailer: Apple Mail (2.752.3)
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
+	Thu, 1 Feb 2007 16:53:03 -0500
+Received: from mail.zelnet.ru ([80.92.97.13]:60844 "EHLO mail.zelnet.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750958AbXBAVxA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Feb 2007 16:53:00 -0500
+Message-ID: <45C26130.5090108@namesys.com>
+Date: Fri, 02 Feb 2007 00:52:48 +0300
+From: Edward Shishkin <edward@namesys.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.13) Gecko/20060411
+X-Accept-Language: en-us, en
+MIME-Version: 1.0
+To: Laurent Riffard <laurent.riffard@free.fr>
+CC: Jens Axboe <jens.axboe@oracle.com>,
+       "Vladimir V. Saveliev" <vs@namesys.com>, reiserfs-list@namesys.com,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.20-rc3-mm1: umount reiser4 FS stuck in D state
+References: <20070104220200.ae4e9a46.akpm@osdl.org> <200701062158.06329.vs@namesys.com> <45A81231.6040104@free.fr> <200701231940.58053.vs@namesys.com> <20070123154617.GE11995@kernel.dk> <45B65234.4000203@free.fr> <45C247EB.6000806@namesys.com> <45C250C9.3040307@free.fr>
+In-Reply-To: <45C250C9.3040307@free.fr>
+X-Enigmail-Version: 0.86.0.0
+X-Enigmail-Supports: pgp-inline, pgp-mime
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> let me clarify this: i very much like your AIO patchset in general, in
-> the sense that it 'completes' the AIO implementation: finally  
-> everything
-> can be done via it, greatly increasing its utility and hopefully its
-> penetration. This is the most important step, by far.
+Laurent Riffard wrote:
 
-We violently agree on this :).
-
-> what i dont really like /the particular/ concept above - the
-> introduction of 'fibrils' as a hard distinction of kernel threads.  
-> They
-> are /almost/ kernel threads, but still by being different they create
-> alot of duplication and miss out on a good deal of features that  
-> kernel
-> threads have naturally.
-
-I might quibble with some of the details, but I understand your  
-fundamental concern.  I do.  I don't get up each morning *thrilled*  
-by the idea of having to update lockdep, sysrq-t, etc, to understand  
-these fibril things :).  The current fibril switch isn't nearly as  
-clever as the lock-free task scheduling switch.  It'd be nice if we  
-didn't have to do that work to optimize the hell out of it, sure.
-
-> It kind of hurts to say this because i'm usually quite concept-happy -
-> one can easily get addicted to the introduction of new core kernel
-> concepts :-)
-
-:)
-
-> so my suggestions center around the notion of extending kernel threads
-> to support the features you find important in fibrils:
 >
->> would it be hard to redo your AIO patches based on a pool of plain
->> simple kernel threads?
+>
+> Le 01.02.2007 21:04, Edward Shishkin a écrit :
+>
+>> Laurent Riffard wrote:
+>>
+>>> Le 23.01.2007 16:46, Jens Axboe a écrit :
+>>>
+>>>> On Tue, Jan 23 2007, Vladimir V. Saveliev wrote:
+>>>>
+>>>>> Hello
+>>>>>
+>>>>> On Saturday 13 January 2007 01:56, Laurent Riffard wrote:
+>>>>>
+>>>>>> Le 06.01.2007 19:58, Vladimir V. Saveliev a écrit :
+>>>>>>
+>>>>>>> Hello
+>>>>>>>
+>>>>>>> On Saturday 06 January 2007 13:58, Laurent Riffard wrote:
+>>>>>>>
+>>>>>>>> Hello,
+>>>>>>>>
+>>>>>>>> got this with 2.6.20-rc3-mm1:
+>>>>>>>>
+>>>>>>>> =======================
+>>>>>>>> SysRq : Show Blocked State
+>>>>>>>>
+>>>>>>>>                          free                        sibling
+>>>>>>>>   task             PC    stack   pid father child younger older
+>>>>>>>> umount        D C013135E  6044  1168   1150                     
+>>>>>>>> (NOTLB)
+>>>>>>>>        de591ae4 00000086 de591abc c013135e dff979c8 c012a6fe 
+>>>>>>>> 00000046 00000007        dfd94ac0 128d3000 00000026 00000000 
+>>>>>>>> dfd94bcc dff979c8 de591ae4 dffda038        00000002 dff979c0 
+>>>>>>>> dff979bc dff979c8 de591b10 c012d600 dff979f8 00000000 Call Trace:
+>>>>>>>>  [<c012d600>] synchronize_qrcu+0x70/0x8c
+>>>>>>>>  [<c01bede4>] __make_request+0x4c/0x29b
+>>>>>>>>  [<c01bd24b>] generic_make_request+0x1b0/0x1de
+>>>>>>>>  [<c01bf354>] submit_bio+0xda/0xe2
+>>>>>>>>  [<e12674bd>] write_jnodes_to_disk_extent+0x920/0x974 [reiser4]
+>>>>>>>>  [<e12678dd>] update_journal_footer+0x29f/0x2b7 [reiser4]
+>>>>>>>>  [<e1268b65>] write_tx_back+0x149/0x185 [reiser4]
+>>>>>>>>  [<e126a8e7>] reiser4_write_logs+0xea4/0xfd2 [reiser4]
+>>>>>>>>  [<e125626a>] try_commit_txnh+0x7e6/0xa4f [reiser4]
+>>>>>>>>  [<e125661b>] reiser4_txn_end+0x148/0x3cf [reiser4]
+>>>>>>>>  [<e12568ad>] reiser4_txn_restart+0xb/0x1a [reiser4]
+>>>>>>>>  [<e125692f>] reiser4_txn_restart_current+0x73/0x75 [reiser4]
+>>>>>>>>  [<e1256b89>] force_commit_atom+0x258/0x261 [reiser4]
+>>>>>>>>  [<e1257703>] txnmgr_force_commit_all+0x406/0x697 [reiser4]
+>>>>>>>>  [<e12e5e08>] release_format40+0x10c/0x193 [reiser4]
+>>>>>>>>  [<e1279922>] reiser4_put_super+0x134/0x16a [reiser4]
+>>>>>>>>  [<c015c930>] generic_shutdown_super+0x55/0xd8
+>>>>>>>>  [<c015c9d3>] kill_block_super+0x20/0x32
+>>>>>>>>  [<c015ca75>] deactivate_super+0x3f/0x51
+>>>>>>>>  [<c016d903>] mntput_no_expire+0x42/0x5f
+>>>>>>>>  [<c0160f37>] path_release_on_umount+0x15/0x18
+>>>>>>>>  [<c016df77>] sys_umount+0x1a3/0x1cb
+>>>>>>>>  [<c016dfb8>] sys_oldumount+0x19/0x1b
+>>>>>>>>  [<c0103ed2>] sysenter_past_esp+0x5f/0x99
+>>>>>>>>  =======================
+>>>>>>>>
+>>>>>>>> Scenario:
+>>>>>>>> - umount a reiser4 FS (no need to write something before)
+>>>>>>>
+>>>>>>>
+>>>>>>> Hmm, I can not reproduce this with 2.6.20-rc3-mm1. Probably I 
+>>>>>>> need to config the kernel more close to your system.
+>>>>>>>
+>>>>>>>> Earlier kernels were OK.
+>>>>>>>
+>>>>>>>
+>>>>>> This still happens with 2.6.20-rc4-mm1...
+>>>>>>
+>>>>>> Should I open a bug report at http://bugzilla.kernel.org?
+>>>>>>
+>>>>> Which device with reiser4 did you try to umount?  Jens wrote that it
+>>>>> could be a barrier related. If there are no multidevices involved -
+>>>>> please report to bugzilla.
+>>>>
+>>>>
+>>>>
+>>>> Make sure that your kernel contains this fix:
+>>>>
+>>>> http://git.kernel.dk/?p=linux-2.6-block.git;a=commitdiff;h=4af09c42ee1af70356471f51c1f40c1ff7881b68;hp=036f6008f43b5b4dd8c825365f15434d75005c6d 
+>>>>
+>>>>
+>>>> I think it missed 2.6.20-rc3-mm1. Again, that assumes you are using md
+>>>> or dm.
+>>>
+>>>
+>>>
+>>> I've got 2 reiser4 FS:
+>>> - one with /dev/sdb6
+>>> - the other with /dev/vglinux1/ccache (vglinux1 is built on 
+>>> /dev/sda4 and /dev/sdb7).
+>>> There is no md here, only dm.
+>>>
+>>> I applied the above patch on top of 2.6.20-rc4-mm1, but the problem 
+>>> still happens with the two devices.
+>>>
+>>> thanks
+>>
+>>
+>> Laurent, would you please try 2.6.20-rc6-mm3 + this patch:
+>> http://lkml.org/lkml/diff/2007/2/1/195/1
+>
+>
+> Reiser4 works fine with 2.6.20-rc6-mm2 or 2.6.20-rc6-mm3 without any 
+> additional patch (it was broken in rc6-mm1).
+>
+> FWIW, Andrew removed git-block.patch from 2.6.20-rc6-mm2, and he 
+> restored git-block.patch without some problematic CFQ updates in 
+> 2.6.20-rc6-mm3.
+>
+> In this case, does this patch need testing in rc6-mm3 ?
 
-It'd certainly be doable to throw together a credible attempt to  
-service "asys" system call submission with full-on kernel threads.   
-That seems like reasonable due diligence to me.  If full-on threads  
-are almost as cheap, great.  If fibrils are so much cheaper that they  
-seem to warrant investing in, great.
+Yes. This is against git-block patch to prevent endless waiting for IO 
+completion.
+I have reproduced it by ./iozone -B -a -n 524288 -f /mnt/foo
+on x86 box with 512M RAM available.
 
-I am concerned about the change in behaviour if we fall back to full  
-kernel threads, though.  I really, really, want aio syscalls to  
-behave just like sync ones.
-
-Would your strategy be to update the syscall implementations to share  
-data in task_struct so that there isn't as significant a change in  
-behaviour?  (sharing current->ioprio, instead if just inheriting it,  
-for example.).  We'd be betting that there would be few of these and  
-that they'd be pretty reasonable to share?
-
-- z
