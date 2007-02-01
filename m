@@ -1,61 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422902AbXBAOVG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422905AbXBAOW3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422902AbXBAOVG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Feb 2007 09:21:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422900AbXBAOVG
+	id S1422905AbXBAOW3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Feb 2007 09:22:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422904AbXBAOW3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Feb 2007 09:21:06 -0500
-Received: from ns1.suse.de ([195.135.220.2]:42154 "EHLO mx1.suse.de"
+	Thu, 1 Feb 2007 09:22:29 -0500
+Received: from javad.com ([216.122.176.236]:4221 "EHLO javad.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422902AbXBAOVF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Feb 2007 09:21:05 -0500
-From: Andi Kleen <ak@suse.de>
-To: Jiri Bohac <jbohac@suse.cz>
-Subject: Re: [patch 2/9] Remove the support for the VXTIME_PMTMR timer mode
-Date: Thu, 1 Feb 2007 15:18:47 +0100
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org, Vojtech Pavlik <vojtech@suse.cz>,
-       ssouhlal@freebsd.org, arjan@infradead.org, tglx@linutronix.de,
-       johnstul@us.ibm.com, zippel@linux-m68k.org, andrea@suse.de
-References: <20070201095952.589234000@jet.suse.cz> <200702011413.00623.ak@suse.de> <20070201135936.GQ21755@dwarf.suse.cz>
-In-Reply-To: <20070201135936.GQ21755@dwarf.suse.cz>
+	id S1422905AbXBAOW3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Feb 2007 09:22:29 -0500
+From: Sergei Organov <osv@javad.com>
+To: Greg KH <greg@kroah.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Free Linux Driver Development!
+References: <20070130012904.GA9617@kroah.com> <ada8xfks90x.fsf@cisco.com>
+	<20070130191020.GF20642@kroah.com> <87fy9r2ixc.fsf@javad.com>
+	<20070201054644.GD5979@kroah.com>
+Date: Thu, 01 Feb 2007 17:22:20 +0300
+In-Reply-To: <20070201054644.GD5979@kroah.com> (Greg KH's message of "Wed,
+ 31
+	Jan 2007 21:46:44 -0800")
+Message-ID: <873b5q2c0z.fsf@javad.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) XEmacs/21.4.19 (linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200702011518.47428.ak@suse.de>
+Content-Type: text/plain; charset=utf-8
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 01 February 2007 14:59, Jiri Bohac wrote:
-> On Thu, Feb 01, 2007 at 02:13:00PM +0100, Andi Kleen wrote:
-> > On Thursday 01 February 2007 14:13, Jiri Bohac wrote:
-> > > On Thu, Feb 01, 2007 at 12:13:31PM +0100, Andi Kleen wrote:
-> > > > On Thursday 01 February 2007 10:59, jbohac@suse.cz wrote:
-> > > > > VXTIME_PMTMR will be replaced by a more generic "Master Timer"
-> > > > 
-> > > > This means we have no fallback if something goes wrong with the Master timer? 
-> > > > 
-> > > > A little risky.
-> > > 
-> > > No, either HPET or PM Timer will become the Master Timer (elected
-> > > on boot). Master timer is just an abstraction of these, so the
-> > > rest of the timekeeping code needn't care which hardware timer is
-> > > being used. That's why the VXTIME_PMTMR mode is not needed.
-> > 
-> > But there is no option for the user to force so, is there?
-> 
-> HPET is the default. If it's not available or with the "nohpet"
-> commandline option, PM Timer will be used as the Master Timer. 
+Greg KH <greg@kroah.com> writes:
 
-This assumes all your algorithms are always correct.
- 
-> If this is not enough, it can be easily fixed in time_init().
+> On Wed, Jan 31, 2007 at 08:41:03PM +0300, Sergei Organov wrote:
+>> Greg KH <greg@kroah.com> writes:
+>> [...]
+>> >> And there are plenty of documented devices that no one cares enough
+>> >> about to submit a driver for.
+>> >
+>> > Any specific examples?  I have a long list of people who wish to write
+>> > new drivers but just don't know which hardware is not yet supported.
+>> 
+>> Maybe not entirely a new driver, as there already exist out-of-kernel
+>> vendor GPL driver, but if somebody is willing to resolve the issue
+>> described here:
+>> 
+>> <http://article.gmane.org/gmane.linux.serial/1221>
+>> 
+>> please contact me, and I'll be willing to help in testing as I have the
+>> hardware.
+>
+> Do you have a pointer to the driver source anywhere?
 
-I think we want at least one option that forces HPET/PMtimer as primary
-time source.
+Sure, here it is:
 
--Andi
+<http://www.quatech.com/ManualsDriversFirmware/Communication/serial-qtpcmcia-1.23.tar.gz>
 
- 
+> I suggest just posting it as a patch to the tree as documented in
+> Documentation/SubmittingPatches and seeing how that goes.
+
+That won't go, I'm afraid:
+
+1. Vendor driver doesn't compile for recent kernels. I did compile it,
+   but using brute-force approach that is not appropriate for the
+   kernel.
+
+2. There is generic driver in the kernel that supports this card among
+   others, should I add the ID of this particular card, but doesn't
+   support baud rates higher than 115200.
+
+3. Vendor driver is rather close to the generic one being in the kernel,
+   so maybe it's better to improve generic one instead of adding yet
+   another driver to the tree.
+
+-- Sergei Organov.
