@@ -1,220 +1,270 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422799AbXBALNA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422800AbXBALNA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422799AbXBALNA (ORCPT <rfc822;w@1wt.eu>);
+	id S1422800AbXBALNA (ORCPT <rfc822;w@1wt.eu>);
 	Thu, 1 Feb 2007 06:13:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422798AbXBALMk
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422799AbXBALMm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Feb 2007 06:12:40 -0500
-Received: from styx.suse.cz ([82.119.242.94]:53744 "EHLO mail.suse.cz"
+	Thu, 1 Feb 2007 06:12:42 -0500
+Received: from styx.suse.cz ([82.119.242.94]:53743 "EHLO mail.suse.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751736AbXBALMe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Feb 2007 06:12:34 -0500
-Message-Id: <20070201103753.508377000@jet.suse.cz>
+	id S1751734AbXBALMf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Feb 2007 06:12:35 -0500
+Message-Id: <20070201103753.753349000@jet.suse.cz>
 References: <20070201095952.589234000@jet.suse.cz>
 User-Agent: quilt/0.44-16.5
-Date: Thu, 01 Feb 2007 10:59:54 +0100
+Date: Thu, 01 Feb 2007 10:59:56 +0100
 From: jbohac@suse.cz
 To: Andi Kleen <ak@suse.de>
 Cc: linux-kernel@vger.kernel.org, Jiri Bohac <jbohac@suse.cz>,
        Vojtech Pavlik <vojtech@suse.cz>, ssouhlal@freebsd.org,
        arjan@infradead.org, tglx@linutronix.de, johnstul@us.ibm.com,
        zippel@linux-m68k.org, andrea@suse.de
-Subject: [patch 2/9] Remove the support for the VXTIME_PMTMR timer mode
-Content-Disposition: inline; filename=remove_vxtime_pmtmr
+Subject: [patch 4/9] Remove the TSC synchronization on SMP machines
+Content-Disposition: inline; filename=remove_tsc_synchronization
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-VXTIME_PMTMR will be replaced by a more generic "Master Timer"
+TSC is either synchronized by design or not reliable
+to be used for anything, let alone timekeeping.
 
 Signed-off-by: Jiri Bohac <jbohac@suse.cz>
 
-Index: linux-2.6.20-rc5/arch/x86_64/kernel/apic.c
+Index: linux-2.6.20-rc5/arch/x86_64/kernel/smpboot.c
 ===================================================================
---- linux-2.6.20-rc5.orig/arch/x86_64/kernel/apic.c
-+++ linux-2.6.20-rc5/arch/x86_64/kernel/apic.c
-@@ -784,16 +784,7 @@ static void setup_APIC_timer(unsigned in
- 		} while (c2 - c1 < 300);
- 	}
- 	__setup_APIC_LVTT(clocks);
--	/* Turn off PIT interrupt if we use APIC timer as main timer.
--	   Only works with the PM timer right now
--	   TBD fix it for HPET too. */
--	if (vxtime.mode == VXTIME_PMTMR &&
--		smp_processor_id() == boot_cpu_id &&
--		apic_runs_main_timer == 1 &&
--		!cpu_isset(boot_cpu_id, timer_interrupt_broadcast_ipi_mask)) {
--		stop_timer_interrupt();
--		apic_runs_main_timer++;
+--- linux-2.6.20-rc5.orig/arch/x86_64/kernel/smpboot.c
++++ linux-2.6.20-rc5/arch/x86_64/kernel/smpboot.c
+@@ -148,217 +148,6 @@ static void __cpuinit smp_store_cpu_info
+ 	print_cpu_info(c);
+ }
+ 
+-/*
+- * New Funky TSC sync algorithm borrowed from IA64.
+- * Main advantage is that it doesn't reset the TSCs fully and
+- * in general looks more robust and it works better than my earlier
+- * attempts. I believe it was written by David Mosberger. Some minor
+- * adjustments for x86-64 by me -AK
+- *
+- * Original comment reproduced below.
+- *
+- * Synchronize TSC of the current (slave) CPU with the TSC of the
+- * MASTER CPU (normally the time-keeper CPU).  We use a closed loop to
+- * eliminate the possibility of unaccounted-for errors (such as
+- * getting a machine check in the middle of a calibration step).  The
+- * basic idea is for the slave to ask the master what itc value it has
+- * and to read its own itc before and after the master responds.  Each
+- * iteration gives us three timestamps:
+- *
+- *	slave		master
+- *
+- *	t0 ---\
+- *             ---\
+- *		   --->
+- *			tm
+- *		   /---
+- *	       /---
+- *	t1 <---
+- *
+- *
+- * The goal is to adjust the slave's TSC such that tm falls exactly
+- * half-way between t0 and t1.  If we achieve this, the clocks are
+- * synchronized provided the interconnect between the slave and the
+- * master is symmetric.  Even if the interconnect were asymmetric, we
+- * would still know that the synchronization error is smaller than the
+- * roundtrip latency (t0 - t1).
+- *
+- * When the interconnect is quiet and symmetric, this lets us
+- * synchronize the TSC to within one or two cycles.  However, we can
+- * only *guarantee* that the synchronization is accurate to within a
+- * round-trip time, which is typically in the range of several hundred
+- * cycles (e.g., ~500 cycles).  In practice, this means that the TSCs
+- * are usually almost perfectly synchronized, but we shouldn't assume
+- * that the accuracy is much better than half a micro second or so.
+- *
+- * [there are other errors like the latency of RDTSC and of the
+- * WRMSR. These can also account to hundreds of cycles. So it's
+- * probably worse. It claims 153 cycles error on a dual Opteron,
+- * but I suspect the numbers are actually somewhat worse -AK]
+- */
+-
+-#define MASTER	0
+-#define SLAVE	(SMP_CACHE_BYTES/8)
+-
+-/* Intentionally don't use cpu_relax() while TSC synchronization
+-   because we don't want to go into funky power save modi or cause
+-   hypervisors to schedule us away.  Going to sleep would likely affect
+-   latency and low latency is the primary objective here. -AK */
+-#define no_cpu_relax() barrier()
+-
+-static __cpuinitdata DEFINE_SPINLOCK(tsc_sync_lock);
+-static volatile __cpuinitdata unsigned long go[SLAVE + 1];
+-static int notscsync __cpuinitdata;
+-
+-#undef DEBUG_TSC_SYNC
+-
+-#define NUM_ROUNDS	64	/* magic value */
+-#define NUM_ITERS	5	/* likewise */
+-
+-/* Callback on boot CPU */
+-static __cpuinit void sync_master(void *arg)
+-{
+-	unsigned long flags, i;
+-
+-	go[MASTER] = 0;
+-
+-	local_irq_save(flags);
+-	{
+-		for (i = 0; i < NUM_ROUNDS*NUM_ITERS; ++i) {
+-			while (!go[MASTER])
+-				no_cpu_relax();
+-			go[MASTER] = 0;
+-			rdtscll(go[SLAVE]);
+-		}
 -	}
-+
- 	local_irq_restore(flags);
- }
- 
-Index: linux-2.6.20-rc5/arch/x86_64/kernel/pmtimer.c
-===================================================================
---- linux-2.6.20-rc5.orig/arch/x86_64/kernel/pmtimer.c
-+++ linux-2.6.20-rc5/arch/x86_64/kernel/pmtimer.c
-@@ -29,10 +29,6 @@
-  * in arch/i386/kernel/acpi/boot.c */
- u32 pmtmr_ioport __read_mostly;
- 
--/* value of the Power timer at last timer interrupt */
--static u32 offset_delay;
--static u32 last_pmtmr_tick;
+-	local_irq_restore(flags);
+-}
 -
- #define ACPI_PM_MASK 0xFFFFFF /* limit it to 24 bits */
- 
- static inline u32 cyc2us(u32 cycles)
-@@ -48,38 +44,6 @@ static inline u32 cyc2us(u32 cycles)
- 	return (cycles >> 10);
- }
- 
--int pmtimer_mark_offset(void)
+-/*
+- * Return the number of cycles by which our tsc differs from the tsc
+- * on the master (time-keeper) CPU.  A positive number indicates our
+- * tsc is ahead of the master, negative that it is behind.
+- */
+-static inline long
+-get_delta(long *rt, long *master)
 -{
--	static int first_run = 1;
--	unsigned long tsc;
--	u32 lost;
+-	unsigned long best_t0 = 0, best_t1 = ~0UL, best_tm = 0;
+-	unsigned long tcenter, t0, t1, tm;
+-	int i;
 -
--	u32 tick = inl(pmtmr_ioport);
--	u32 delta;
+-	for (i = 0; i < NUM_ITERS; ++i) {
+-		rdtscll(t0);
+-		go[MASTER] = 1;
+-		while (!(tm = go[SLAVE]))
+-			no_cpu_relax();
+-		go[SLAVE] = 0;
+-		rdtscll(t1);
 -
--	delta = cyc2us((tick - last_pmtmr_tick) & ACPI_PM_MASK);
--
--	last_pmtmr_tick = tick;
--	monotonic_base += delta * NSEC_PER_USEC;
--
--	delta += offset_delay;
--
--	lost = delta / (USEC_PER_SEC / HZ);
--	offset_delay = delta % (USEC_PER_SEC / HZ);
--
--	rdtscll(tsc);
--	vxtime.last_tsc = tsc - offset_delay * (u64)cpu_khz / 1000;
--
--	/* don't calculate delay for first run,
--	   or if we've got less then a tick */
--	if (first_run || (lost < 1)) {
--		first_run = 0;
--		offset_delay = 0;
+-		if (t1 - t0 < best_t1 - best_t0)
+-			best_t0 = t0, best_t1 = t1, best_tm = tm;
 -	}
 -
--	return lost - 1;
+-	*rt = best_t1 - best_t0;
+-	*master = best_tm - best_t0;
+-
+-	/* average best_t0 and best_t1 without overflow: */
+-	tcenter = (best_t0/2 + best_t1/2);
+-	if (best_t0 % 2 + best_t1 % 2 == 2)
+-		++tcenter;
+-	return tcenter - best_tm;
 -}
 -
- static unsigned pmtimer_wait_tick(void)
- {
- 	u32 a, b;
-@@ -100,28 +64,3 @@ void pmtimer_wait(unsigned us)
- 		cpu_relax();
- 	} while (cyc2us(b - a) < us);
- }
--
--void pmtimer_resume(void)
+-static __cpuinit void sync_tsc(unsigned int master)
 -{
--	last_pmtmr_tick = inl(pmtmr_ioport);
+-	int i, done = 0;
+-	long delta, adj, adjust_latency = 0;
+-	unsigned long flags, rt, master_time_stamp, bound;
+-#ifdef DEBUG_TSC_SYNC
+-	static struct syncdebug {
+-		long rt;	/* roundtrip time */
+-		long master;	/* master's timestamp */
+-		long diff;	/* difference between midpoint and master's timestamp */
+-		long lat;	/* estimate of tsc adjustment latency */
+-	} t[NUM_ROUNDS] __cpuinitdata;
+-#endif
+-
+-	printk(KERN_INFO "CPU %d: Syncing TSC to CPU %u.\n",
+-		smp_processor_id(), master);
+-
+-	go[MASTER] = 1;
+-
+-	/* It is dangerous to broadcast IPI as cpus are coming up,
+-	 * as they may not be ready to accept them.  So since
+-	 * we only need to send the ipi to the boot cpu direct
+-	 * the message, and avoid the race.
+-	 */
+-	smp_call_function_single(master, sync_master, NULL, 1, 0);
+-
+-	while (go[MASTER])	/* wait for master to be ready */
+-		no_cpu_relax();
+-
+-	spin_lock_irqsave(&tsc_sync_lock, flags);
+-	{
+-		for (i = 0; i < NUM_ROUNDS; ++i) {
+-			delta = get_delta(&rt, &master_time_stamp);
+-			if (delta == 0) {
+-				done = 1;	/* let's lock on to this... */
+-				bound = rt;
+-			}
+-
+-			if (!done) {
+-				unsigned long t;
+-				if (i > 0) {
+-					adjust_latency += -delta;
+-					adj = -delta + adjust_latency/4;
+-				} else
+-					adj = -delta;
+-
+-				rdtscll(t);
+-				wrmsrl(MSR_IA32_TSC, t + adj);
+-			}
+-#ifdef DEBUG_TSC_SYNC
+-			t[i].rt = rt;
+-			t[i].master = master_time_stamp;
+-			t[i].diff = delta;
+-			t[i].lat = adjust_latency/4;
+-#endif
+-		}
+-	}
+-	spin_unlock_irqrestore(&tsc_sync_lock, flags);
+-
+-#ifdef DEBUG_TSC_SYNC
+-	for (i = 0; i < NUM_ROUNDS; ++i)
+-		printk("rt=%5ld master=%5ld diff=%5ld adjlat=%5ld\n",
+-		       t[i].rt, t[i].master, t[i].diff, t[i].lat);
+-#endif
+-
+-	printk(KERN_INFO
+-	       "CPU %d: synchronized TSC with CPU %u (last diff %ld cycles, "
+-	       "maxerr %lu cycles)\n",
+-	       smp_processor_id(), master, delta, rt);
 -}
 -
--unsigned int do_gettimeoffset_pm(void)
+-static void __cpuinit tsc_sync_wait(void)
 -{
--	u32 now, offset, delta = 0;
--
--	offset = last_pmtmr_tick;
--	now = inl(pmtmr_ioport);
--	delta = (now - offset) & ACPI_PM_MASK;
--
--	return offset_delay + cyc2us(delta);
+-	/*
+-	 * When the CPU has synchronized TSCs assume the BIOS
+-  	 * or the hardware already synced.  Otherwise we could
+-	 * mess up a possible perfect synchronization with a
+-	 * not-quite-perfect algorithm.
+-	 */
+-	if (notscsync || !cpu_has_tsc || !unsynchronized_tsc())
+-		return;
+-	sync_tsc(0);
 -}
 -
--
--static int __init nopmtimer_setup(char *s)
+-static __init int notscsync_setup(char *s)
 -{
--	pmtmr_ioport = 0;
+-	notscsync = 1;
 -	return 1;
 -}
+-__setup("notscsync", notscsync_setup);
 -
--__setup("nopmtimer", nopmtimer_setup);
-Index: linux-2.6.20-rc5/arch/x86_64/kernel/time.c
-===================================================================
---- linux-2.6.20-rc5.orig/arch/x86_64/kernel/time.c
-+++ linux-2.6.20-rc5/arch/x86_64/kernel/time.c
-@@ -364,13 +364,6 @@ void main_timer_handler(void)
- 		 */
- 		offset = hpet_readl(HPET_T0_CMP) - hpet_tick;
- 		delay = hpet_readl(HPET_COUNTER) - offset;
--	} else if (!pmtmr_ioport) {
--		spin_lock(&i8253_lock);
--		outb_p(0x00, 0x43);
--		delay = inb_p(0x40);
--		delay |= inb(0x40) << 8;
--		spin_unlock(&i8253_lock);
--		delay = LATCH - 1 - delay;
- 	}
+ static atomic_t init_deasserted __cpuinitdata;
  
- 	tsc = get_cycles_sync();
-@@ -384,10 +377,6 @@ void main_timer_handler(void)
- 			(offset - vxtime.last) * NSEC_PER_TICK / hpet_tick;
+ /*
+@@ -565,14 +354,6 @@ void __cpuinit start_secondary(void)
+ 	 */
+ 	set_cpu_sibling_map(smp_processor_id());
  
- 		vxtime.last = offset;
--#ifdef CONFIG_X86_PM_TIMER
--	} else if (vxtime.mode == VXTIME_PMTMR) {
--		lost = pmtimer_mark_offset();
--#endif
- 	} else {
- 		offset = (((tsc - vxtime.last_tsc) *
- 			   vxtime.tsc_quot) >> US_SCALE) - USEC_PER_TICK;
-@@ -914,13 +903,6 @@ void __init time_init(void)
- 	  	tick_nsec = TICK_NSEC_HPET;
- 		cpu_khz = hpet_calibrate_tsc();
- 		timename = "HPET";
--#ifdef CONFIG_X86_PM_TIMER
--	} else if (pmtmr_ioport && !vxtime.hpet_address) {
--		vxtime_hz = PM_TIMER_FREQUENCY;
--		timename = "PM";
--		pit_init();
--		cpu_khz = pit_calibrate_tsc();
--#endif
- 	} else {
- 		pit_init();
- 		cpu_khz = pit_calibrate_tsc();
-@@ -987,16 +969,6 @@ void time_init_gtod(void)
- 			vxtime.last = hpet_readl(HPET_COUNTER);
- 		vxtime.mode = VXTIME_HPET;
- 		do_gettimeoffset = do_gettimeoffset_hpet;
--#ifdef CONFIG_X86_PM_TIMER
--	/* Using PM for gettimeofday is quite slow, but we have no other
--	   choice because the TSC is too unreliable on some systems. */
--	} else if (pmtmr_ioport && !vxtime.hpet_address && notsc) {
--		timetype = "PM";
--		do_gettimeoffset = do_gettimeoffset_pm;
--		vxtime.mode = VXTIME_PMTMR;
--		sysctl_vsyscall = 0;
--		printk(KERN_INFO "Disabling vsyscall due to use of PM timer\n");
--#endif
- 	} else {
- 		timetype = hpet_use_timer ? "HPET/TSC" : "PIT/TSC";
- 		vxtime.mode = VXTIME_TSC;
-@@ -1064,10 +1036,6 @@ static int timer_resume(struct sys_devic
- 			vxtime.last = hpet_readl(HPET_T0_CMP) - hpet_tick;
- 		else
- 			vxtime.last = hpet_readl(HPET_COUNTER);
--#ifdef CONFIG_X86_PM_TIMER
--	} else if (vxtime.mode == VXTIME_PMTMR) {
--		pmtimer_resume();
--#endif
- 	} else
- 		vxtime.last_tsc = get_cycles_sync();
- 	write_sequnlock_irqrestore(&xtime_lock,flags);
-Index: linux-2.6.20-rc5/include/asm-x86_64/vsyscall.h
-===================================================================
---- linux-2.6.20-rc5.orig/include/asm-x86_64/vsyscall.h
-+++ linux-2.6.20-rc5/include/asm-x86_64/vsyscall.h
-@@ -26,7 +26,6 @@ enum vsyscall_num {
- 
- #define VXTIME_TSC	1
- #define VXTIME_HPET	2
--#define VXTIME_PMTMR	3
- 
- #define VGETCPU_RDTSCP	1
- #define VGETCPU_LSL	2
+-	/* 
+-  	 * Wait for TSC sync to not schedule things before.
+-	 * We still process interrupts, which could see an inconsistent
+-	 * time in that window unfortunately. 
+-	 * Do this here because TSC sync has global unprotected state.
+- 	 */
+-	tsc_sync_wait();
+-
+ 	/*
+ 	 * We need to hold call_lock, so there is no inconsistency
+ 	 * between the time smp_call_function() determines number of
 
 --
