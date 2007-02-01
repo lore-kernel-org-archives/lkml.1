@@ -1,83 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422886AbXBANzR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422882AbXBAN42@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422886AbXBANzR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Feb 2007 08:55:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422895AbXBANzQ
+	id S1422882AbXBAN42 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Feb 2007 08:56:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422887AbXBAN42
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Feb 2007 08:55:16 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:48924 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422886AbXBANyv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Feb 2007 08:54:51 -0500
-Message-ID: <45C1F11A.3030204@torque.net>
-Date: Thu, 01 Feb 2007 08:54:34 -0500
-From: Douglas Gilbert <dougg@torque.net>
-Reply-To: dougg@torque.net
-User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
-MIME-Version: 1.0
-To: linux-scsi@vger.kernel.org
-CC: linux-kernel@vger.kernel.org, emschwar@debian.org, robbat2@gentoo.org,
-       pknirsch@redhat.com, mj@feral.com
-Subject: [Announce] sg3_utils-1.23 available
-X-Enigmail-Version: 0.94.0.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Thu, 1 Feb 2007 08:56:28 -0500
+Received: from styx.suse.cz ([82.119.242.94]:59525 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1422882AbXBAN40 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Feb 2007 08:56:26 -0500
+Date: Thu, 1 Feb 2007 14:59:36 +0100
+From: Jiri Bohac <jbohac@suse.cz>
+To: Andi Kleen <ak@suse.de>
+Cc: Jiri Bohac <jbohac@suse.cz>, linux-kernel@vger.kernel.org,
+       Vojtech Pavlik <vojtech@suse.cz>, ssouhlal@freebsd.org,
+       arjan@infradead.org, tglx@linutronix.de, johnstul@us.ibm.com,
+       zippel@linux-m68k.org, andrea@suse.de
+Subject: Re: [patch 2/9] Remove the support for the VXTIME_PMTMR timer mode
+Message-ID: <20070201135936.GQ21755@dwarf.suse.cz>
+References: <20070201095952.589234000@jet.suse.cz> <200702011213.32278.ak@suse.de> <20070201131353.GL21755@dwarf.suse.cz> <200702011413.00623.ak@suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200702011413.00623.ak@suse.de>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-sg3_utils is a package of command line utilities for sending
-SCSI (and some ATA) commands to devices. This package targets
-the linux kernel (lk) 2.6 and lk 2.4 series. In the lk 2.6
-series these utilities (except sgp_dd) can be used with any
-devices that support the SG_IO ioctl. Ported to FreeBSD,
-Tru64 and Windows (cygwin and mingw).
+On Thu, Feb 01, 2007 at 02:13:00PM +0100, Andi Kleen wrote:
+> On Thursday 01 February 2007 14:13, Jiri Bohac wrote:
+> > On Thu, Feb 01, 2007 at 12:13:31PM +0100, Andi Kleen wrote:
+> > > On Thursday 01 February 2007 10:59, jbohac@suse.cz wrote:
+> > > > VXTIME_PMTMR will be replaced by a more generic "Master Timer"
+> > > 
+> > > This means we have no fallback if something goes wrong with the Master timer? 
+> > > 
+> > > A little risky.
+> > 
+> > No, either HPET or PM Timer will become the Master Timer (elected
+> > on boot). Master timer is just an abstraction of these, so the
+> > rest of the timekeeping code needn't care which hardware timer is
+> > being used. That's why the VXTIME_PMTMR mode is not needed.
+> 
+> But there is no option for the user to force so, is there?
 
-This version adds sg_read_buffer and sg_write_buffer utilities.
-Cleans up command line interface of older utilities and all
-man pages have been reworked. Package synchronized with SPC-4
-revision 8 and SBC-3 revision 8. Copy of ChangeLog below.
+HPET is the default. If it's not available or with the "nohpet"
+commandline option, PM Timer will be used as the Master Timer. 
 
-For an overview of sg3_utils and downloads see this page:
-http://www.torque.net/sg/sg3_utils.html
-The sg_dd utility has its own page at:
-http://www.torque.net/sg/sg_dd.html
-The SG_IO ioctl is discussed at:
-http://www.torque.net/sg/sg_io.html
-A full changelog can be found at:
-http://www.torque.net/sg/p/sg3_utils.CHANGELOG
+If this is not enough, it can be easily fixed in time_init().
 
-A release announcement has been sent to freshmeat.net .
+-- 
+Jiri Bohac <jbohac@suse.cz>
+SUSE Labs, SUSE CZ
 
-Top of Changelog:
-Changelog for sg3_utils-1.23 [20070131]
-  - sg_read_buffer: new utility
-  - sg_write_buffer: new utility
-  - sg_opcodes, sg_senddiag, sg_logs, sg_modes, sg_start, sg_inq,
-    sg_turs, sg_readcap, sg_rbuf: add getopt_long() based cli;
-    old and new cli selectable, new getopt_long cli is default
-  - scripts: new subdirectory containing some bash scripts
-    - add scripts/README file
-  - sg_reassign: add '--hex' option for grown and primary lists
-  - sg_rtpg: add '--raw' option
-  - sg_lib.h, sg_cmds_basic.h + sg_cmds_extra.h: add C++
-    'extern "C" ' wrappers
-    - cleanup C code so it will compile as C++
-  - sg_lib: sync with spc4r08
-    - include <inttypes.h>, use PRId64 instead of %lld form
-    - fix sg_get_sense_str() when empty sense buffer
-  - win32 port: add Makefile.mingw + related support for MinGW
-  - sg_cmds_extra: add sg_ll_read_buffer() and sg_ll_write_buffer()
-  - sg_dd, sgp_dd, sgm_dd, sg_read: use lseek64() instead of llseek.c
-  - sgm_dd: accept coe=<n> for interworking with sg_dd
-  - sg_rdac: fix on non-linux ports
-  - sg_ses: fix spurious warning in additional element status page
-    - '-rr' option outputs a diagnostic page in binary to stdout
-  - sg_opcodes: add command timeout descriptor support (spc4r08)
-    - change linux specific pass through to generic pass through
-  - sg_logs: add 'name=value' decoding for SAS specific lpage
-  - examples+utils subdirectories: remove symlinks
-  - synchronize man pages with usage messages
-  - sg3_utils.spec: rework
-
-Doug Gilbert
