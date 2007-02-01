@@ -1,111 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422935AbXBASob@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422939AbXBASqR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422935AbXBASob (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Feb 2007 13:44:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422934AbXBASob
+	id S1422939AbXBASqR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Feb 2007 13:46:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422936AbXBASqR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Feb 2007 13:44:31 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:45611 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422935AbXBASoa (ORCPT
+	Thu, 1 Feb 2007 13:46:17 -0500
+Received: from dhost002-89.dex002.intermedia.net ([64.78.20.227]:22257 "EHLO
+	dhost002-89.dex002.intermedia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1422934AbXBASqQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Feb 2007 13:44:30 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <45C23480.30805@s5r6.in-berlin.de>
-Date: Thu, 01 Feb 2007 19:42:08 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.9) Gecko/20070121 SeaMonkey/1.0.7
-MIME-Version: 1.0
-To: Nicolas Turro <Nicolas.Turro@inrialpes.fr>
-CC: linux-kernel@vger.kernel.org, sebastien.rougeaux@anu.edu.au,
-       GordPeters@smarttech.com, linux1394-devel@lists.sourceforge.net
-Subject: Re: rmmod ohci1394 -> BUG
-References: <20070130155608615.00000003564@rodal>
-In-Reply-To: <20070130155608615.00000003564@rodal>
-X-Enigmail-Version: 0.94.1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Thu, 1 Feb 2007 13:46:16 -0500
+From: "Jouni Malinen" <jkm@devicescape.com>
+Date: Thu, 1 Feb 2007 10:46:09 -0800
+To: Larry Finger <larry.finger@lwfinger.net>
+Cc: Dan Williams <dcbw@redhat.com>, Johannes Berg <johannes@sipsolutions.net>,
+       netdev <netdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Hidden SSID's
+Message-ID: <20070201184609.GE2652@instant802.com>
+References: <1169899689.25670.3.camel@localhost.localdomain> <1170019717.30318.0.camel@johannes.berg> <1170075611.2895.2.camel@localhost.localdomain> <20070130030911.GA6637@jm.kir.nu> <1170128208.3448.6.camel@localhost.localdomain> <45BECF04.3070904@lwfinger.net> <20070130050841.GC6637@jm.kir.nu> <45BEEEED.9010702@lwfinger.net> <20070130225641.GH32304@instant802.com> <45C00066.80807@lwfinger.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <45C00066.80807@lwfinger.net>
+User-Agent: Mutt/1.4.2.1i
+X-OriginalArrivalTime: 01 Feb 2007 18:46:12.0157 (UTC) FILETIME=[3EA326D0:01C74631]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(quoting in full for linux1394-devel)
+On Tue, Jan 30, 2007 at 08:35:18PM -0600, Larry Finger wrote:
 
-Nicolas Turro wrote on 2007-01-30:
-> Setup :
-> 64 bit dual core Xeon bi-processor, Fedora kernels
-> 
-> Bug :
-> Rmmoding ohci1394 produces ce following bug : 
-> 
-> 
-> List corruption. prev->next should be ffff810138d46e40, but was ffffffff882b9000
-> ----------- [cut here ] --------- [please bite here ] ---------
-> Kernel BUG at include/linux/list.h:180
-> invalid opcode: 0000 [1] SMP
-> last sysfs file: /class/ieee1394_protocol/raw1394/dev
-> CPU 2
-> Modules linked in: parport_pc lp parport autofs4 rfcomm l2cap bluetooth sunrpc dm_mod video button battery acpi_mem
-> hotplug ac ipv6 ohci1394 ieee1394 uhci_hcd ehci_hcd hw_random i2c_i801 i2c_core snd_hda_intel snd_hda_codec snd_seq
-> _dummy snd_seq_oss snd_seq_midi_event snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss snd_pcm snd_timer snd soundc
-> ore snd_page_alloc tg3 mptsas mptscsih scsi_transport_sas mptbase ahci libata sd_mod scsi_mod
-> Pid: 3841, comm: rmmod Not tainted 2.6.17-1.2142_FC4smp #1
-> RIP: 0010:[<ffffffff88256f37>] <ffffffff88256f37>{:ieee1394:__delete_addr+35}
+> If one does the equivalent of 'iwlist eth1 scan essid myssid', then a probe response with
+> NETWORK_EMPTY_ESSID set in the network flags will have 'myssid' returned in the SSID field of the
+> returned buffer. If the input command were 'iwlist eth1 scan', then an empty SSID would be returned
+> under the same circumstances. My code saves the SSID that is in the extra argument of the
+> SIOCSIWSCAN call, and uses that in the SIOCGIWSCAN call.
 
-I can't see how any of the lists which __delete_addr touches could get
-corrupted. My guess is that there is something unrelated corrupting the
-memory.
+Well, yes, but SIOCSIWSCAN and SIOCGIWSCAN calls are not in any way
+linked together.. You could have two user space programs asking for a
+scan of different SSID at more or less the same time and then have them
+read the results with SIOCGIWSCAN. At this point, the SSID from the last
+SIOCSIWSCAN would be returned for all APs that are in the scan list
+without an SSID. This may not be the correct SSID and can produce quite
+confusing results. I don't see this as an improvement over just removing
+the "<hidden>" which will at least provide consistent results.
 
-> RSP: 0018:ffff81012c4e9d98  EFLAGS: 00010092
-> RAX: 0000000000000054 RBX: ffff810138d46e40 RCX: ffffffff805524b8
-> RDX: 0000000000000000 RSI: 0000000000000046 RDI: ffffffff805524a0
-> RBP: ffff81013931c000 R08: ffffffff805524b8 R09: 0000000000000001
-> R10: ffff81012c4e99f8 R11: 0000000000000002 R12: ffffffff882939c0
-> R13: 0000000000000282 R14: 0000000000000000 R15: 0000000000000880
-> FS:  00002aaaaaabe3c0(0000) GS:ffff81013b8d1d40(0000) knlGS:0000000000000000
-> CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-> CR2: 0000003a012928f0 CR3: 000000012c69e000 CR4: 00000000000006e0
-> Process rmmod (pid: 3841, threadinfo ffff81012c4e8000, task ffff8101356ae820)
-> Stack: ffffffff88293a18 ffff810138d46e10 ffff81013931c000 ffffffff88257049
->        ffffffff882939c0 ffff81013931c000 ffff81013931ebf0 ffff81013b632100
->        ffffffff882c4778 ffffffff882570ec
-> Call Trace: <ffffffff88257049>{:ieee1394:__unregister_host+71}
->        <ffffffff882570ec>{:ieee1394:highlevel_remove_host+62}
->        <ffffffff88256373>{:ieee1394:hpsb_remove_host+60} <ffffffff882be227>{:ohci1394:ohci1394_pci_remove+75}
->        <ffffffff8033f83f>{pci_device_remove+33} <ffffffff8039b45d>{__device_release_driver+120}
->        <ffffffff8039b80c>{driver_detach+202} <ffffffff8039ae6d>{bus_remove_driver+111}
->        <ffffffff8039ba8b>{driver_unregister+13} <ffffffff8033f724>{pci_unregister_driver+26}
->        <ffffffff802a403f>{sys_delete_module+406} <ffffffff80262485>{tracesys+209}
-> 
-> Code: 0f 0b 68 98 fa 25 88 c2 b4 00 48 8b 03 48 8b 50 08 48 39 da
-> RIP <ffffffff88256f37>{:ieee1394:__delete_addr+35} RSP <ffff81012c4e9d98>
->  <3>BUG: sleeping function called from invalid context at include/linux/rwsem.h:43
-> in_atomic():0, irqs_disabled():1
-> 
-> Call Trace: <ffffffff80299b11>{blocking_notifier_call_chain+31}
->        <ffffffff80215bb0>{do_exit+34} <ffffffff8027000a>{kernel_math_error+0}
->        <ffffffff80270485>{do_invalid_op+173} <ffffffff88256f37>{:ieee1394:__delete_addr+35}
+The proper fix for this is to use the information from the AP (Probe
+Response frames) and create a local BSS list that has entries with SSID
+updated from Probe Responses. If the underlying hardware/firmware does
+not allow such handling, this kind of mapping of SSIDs from scan request
+to scan results should probably in the hardware driver that would have
+chance of mapping results from firmware to request for a given SSID. At
+that point, it might be feasible to change the SSID in scan results, but
+I see only problems for the case where this is done at higher layer.
 
-I don't know what that's supposed to tell us. There simply are no
-sleeping functions called from __delete_addr. Seems the kernel went off
-on a tangent here.
+> What is the method that should be used to associated with a given hidden AP?
 
->        <ffffffff80278680>{__smp_call_function+98} <ffffffff802784cc>{do_flush_tlb_all+0}
->        <ffffffff80290415>{printk+84} <ffffffff802631e9>{error_exit+0}
->        <ffffffff88256f37>{:ieee1394:__delete_addr+35} <ffffffff88256f37>{:ieee1394:__delete_addr+35}
->        <ffffffff88257049>{:ieee1394:__unregister_host+71} <ffffffff882570ec>{:ieee1394:highlevel_remove_host+62}
->        <ffffffff88256373>{:ieee1394:hpsb_remove_host+60} <ffffffff882be227>{:ohci1394:ohci1394_pci_remove+75}
->        <ffffffff8033f83f>{pci_device_remove+33} <ffffffff8039b45d>{__device_release_driver+120}
->        <ffffffff8039b80c>{driver_detach+202} <ffffffff8039ae6d>{bus_remove_driver+111}
->        <ffffffff8039ba8b>{driver_unregister+13} <ffffffff8033f724>{pci_unregister_driver+26}
->        <ffffffff802a403f>{sys_delete_module+406} <ffffffff80262485>{tracesys+209}
-> 
-> 
-> Any idea ? (if any, please cc Nicolas.Turro@inrialpes.fr since i didn't subscribe to LKML)
-> 
-> Nicolas
-> 
+The 802.11 stack should fill in the proper SSID data from Probe
+Responses and maintain a local BSS list, i.e., the hidden APs would be
+marked with proper SSID whenever Probe Responses are processed. See,
+e.g., how driver/net/wireless/hostap/*.c use local->bss_list that will
+be filled with information from both Beacon and Probe Response frames or
+how wireless-dev.git net/d80211/ieee80211_sta.c handles updating of BSS
+entry from both Beacon and Probe Response frames (i.e., do not allow
+Beacon frames to replace data from Probe Response frames) in
+ieee80211_rx_bss_info().
+
+In other words, the hidden SSIDs are resolved in the BSS list based on
+information from Probe Responses and user space programs will get proper
+information in the scan results regardless of how the real SSID was
+learned.
 
 -- 
-Stefan Richter
--=====-=-=== --=- ----=
-http://arcgraph.de/sr/
+Jouni Malinen                                            PGP id EFC895FA
