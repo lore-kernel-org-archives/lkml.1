@@ -1,58 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422813AbXBALg7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422824AbXBALhH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422813AbXBALg7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Feb 2007 06:36:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422823AbXBALgg
+	id S1422824AbXBALhH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Feb 2007 06:37:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422823AbXBALhE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Feb 2007 06:36:36 -0500
-Received: from ns1.suse.de ([195.135.220.2]:60013 "EHLO mx1.suse.de"
+	Thu, 1 Feb 2007 06:37:04 -0500
+Received: from ns2.suse.de ([195.135.220.15]:56479 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422815AbXBALgb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Feb 2007 06:36:31 -0500
+	id S1422817AbXBALgg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Feb 2007 06:36:36 -0500
 From: Andi Kleen <ak@suse.de>
 To: jbohac@suse.cz
-Subject: Re: [patch 8/9] Add time_update_mt_guess()
-Date: Thu, 1 Feb 2007 12:28:50 +0100
+Subject: Re: [patch 0/9] x86_64: reliable TSC-based gettimeofday
+Date: Thu, 1 Feb 2007 12:20:59 +0100
 User-Agent: KMail/1.9.5
 Cc: linux-kernel@vger.kernel.org, Vojtech Pavlik <vojtech@suse.cz>,
        ssouhlal@freebsd.org, arjan@infradead.org, tglx@linutronix.de,
        johnstul@us.ibm.com, zippel@linux-m68k.org, andrea@suse.de
-References: <20070201095952.589234000@jet.suse.cz> <20070201103754.136630000@jet.suse.cz>
-In-Reply-To: <20070201103754.136630000@jet.suse.cz>
+References: <20070201095952.589234000@jet.suse.cz>
+In-Reply-To: <20070201095952.589234000@jet.suse.cz>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200702011228.50435.ak@suse.de>
+Message-Id: <200702011220.59484.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 01 February 2007 11:00, jbohac@suse.cz wrote:
+On Thursday 01 February 2007 10:59, jbohac@suse.cz wrote:
 
-> Index: linux-2.6.20-rc5/arch/x86_64/kernel/apic.c
-> ===================================================================
-> --- linux-2.6.20-rc5.orig/arch/x86_64/kernel/apic.c
-> +++ linux-2.6.20-rc5/arch/x86_64/kernel/apic.c
-> @@ -63,6 +63,9 @@ int using_apic_timer __read_mostly = 0;
->  
->  static void apic_pm_activate(void);
->  
-> +extern void time_update_mt_guess(void);
+> 
+> Inter-CPU monotonicity can not, however, be guaranteed in a vsyscall, so
+> vsyscall is not used by default.
 
-No externs in .c files
+Only for unsynchronized machines I hope 
 
+> Still, the syscall version of gettimeofday is 
+> a lot faster using the TSC approximation instead of other hardware timers.
 
-> +inline u64 mt_to_nsec(u64 mt)
-> +{
-> +	u64 ret;
-> +	ret  = ((mt & 0xffffff) * vxtime.mt_q) >> 32;
-> +	mt >>= 24;
-> +	ret += ((mt & 0xffffff) * vxtime.mt_q) >> 8;
-> +	mt >>= 24;
-> +	ret += ( mt             * vxtime.mt_q) << 16;
-> +	return ret;
+Yes that makes sense.
 
-Why so complicated? Isn't a single multiply good enough?
+The big strategic problem is how to marry your patchkit to John Stultz's
+clocksources work which is also competing for merge. Any thoughts on that? 
+
+>When strict inter-CPU monotonicity is not needed, the vsyscall version of
+>gettimeofday may be forced using the "nomonotonic" command line parameter.
+>gettimeofday()'s monotonicity is guaranteed on a single CPU even with the very
+>fast vsyscall version.  Across CPUs, the vsyscall version of gettimeofday is
+>not guaranteed to be monotonic, but it should be pretty close. Currently, we
+>get errors of tens/hundreds of microseconds.
+
+I think a better way to do this would be to define a new CLOCK_THREAD_MONOTONOUS
+(or better name) timer for clock_gettime(). 
+
+[and my currently stalled vdso patches that implement clock_gettime
+as a vsyscall]
+
+Then also an application could easily use it with LD_PRELOAD
 
 -Andi
