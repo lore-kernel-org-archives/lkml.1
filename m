@@ -1,47 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422899AbXBASTN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422920AbXBAST6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422899AbXBASTN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Feb 2007 13:19:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422914AbXBASTN
+	id S1422920AbXBAST6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Feb 2007 13:19:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422923AbXBAST6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Feb 2007 13:19:13 -0500
-Received: from an-out-0708.google.com ([209.85.132.249]:35995 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422899AbXBASTM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Feb 2007 13:19:12 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=NxZwV5fA/hOundN27tL+DIZz2UORFMDQQWJ5O2eIuwiow3bCC7BcEjQG7/WAOXuHekdh71xuycAhap+88kQ/MVa7SOv/wua9B1WQEg0CLMfgHWHywyvJO6zpJquXQAu0WQ+SDv0aS65q4eu0PEwV7myZeb7zpBFP6GS2yeeK3nc=
-Message-ID: <f383264b0702011019ha411ef7t3447e65f6266917e@mail.gmail.com>
-Date: Thu, 1 Feb 2007 10:19:08 -0800
-From: "Matt Reimer" <mattjreimer@gmail.com>
-To: "Rodolfo Giometti" <giometti@enneenne.com>
-Subject: Re: Advice on battery support [was: Advice on APM-EMU reunion]
-Cc: "Paul Mundt" <lethal@linux-sh.org>, linux-kernel@vger.kernel.org,
-       linux-arm-kernel@lists.arm.linux.org.uk, linux-mips@linux-mips.org
-In-Reply-To: <20070201095904.GE8882@enneenne.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 1 Feb 2007 13:19:58 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:53642 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1422920AbXBAST5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Feb 2007 13:19:57 -0500
+Date: Thu, 1 Feb 2007 10:19:55 -0800
+From: Judith Lebzelter <judith@osdl.org>
+To: ebiederm@xmission.com
+Cc: linux-kernel@vger.kernel.org, fastboot@osdl.org
+Subject: [ PATCH ] fix to documentation for kexec
+Message-ID: <20070201181955.GE5825@shell0.pdx.osdl.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20070129230755.GA8705@enneenne.com>
-	 <20070130010055.GA15907@linux-sh.org>
-	 <20070201095904.GE8882@enneenne.com>
+User-Agent: Mutt/1.5.6i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/1/07, Rodolfo Giometti <giometti@enneenne.com> wrote:
->
-> Ok, starting from these patches I'd like to add a "battery support" to
-> the kernel.
->
-> What I suppose to do is a new class with a proper methods useful to
-> collect several info on battery status, such as get_ac_line_status()
-> get_battery_status(), get_battery_flags(),
-> get_remaining_battery_life() and so on.
+Hello,
 
-Wasn't there recently a big discussion on lkml about a battery class?
+I've noticed that the boot options are not correct for in 
+the documentation for kdump. The "init" keyword is not 
+necessary, and causes a kernel panic when booting with an 
+initrd on Fedora 5.
 
-Matt
+Thanks;
+Judith Lebzelter
+
+---
+Signed-off-by: Judith Lebzelter <judith@osdl.org>
+---
+
+
+Index: linux/Documentation/kdump/kdump.txt
+===================================================================
+--- linux.orig/Documentation/kdump/kdump.txt
++++ linux/Documentation/kdump/kdump.txt
+@@ -207,7 +207,7 @@ the following command:
+ 
+    kexec -p <dump-capture-kernel> \
+    --initrd=<initrd-for-dump-capture-kernel> --args-linux \
+-   --append="root=<root-dev> init 1 irqpoll"
++   --append="root=<root-dev> 1 irqpoll"
+ 
+ 
+ Notes on loading the dump-capture kernel:
+@@ -228,8 +228,8 @@ Notes on loading the dump-capture kernel
+ * You must specify <root-dev> in the format corresponding to the root
+   device name in the output of mount command.
+ 
+-* "init 1" boots the dump-capture kernel into single-user mode without
+-  networking. If you want networking, use "init 3."
++* Boot parameter "1" boots the dump-capture kernel into single-user mode 
++  without networking. If you want networking, use "3".
+ 
+ 
+ Kernel Panic
