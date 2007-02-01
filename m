@@ -1,74 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422939AbXBASqR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422851AbXBAS6Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422939AbXBASqR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Feb 2007 13:46:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422936AbXBASqR
+	id S1422851AbXBAS6Q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Feb 2007 13:58:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422923AbXBAS6Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Feb 2007 13:46:17 -0500
-Received: from dhost002-89.dex002.intermedia.net ([64.78.20.227]:22257 "EHLO
-	dhost002-89.dex002.intermedia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1422934AbXBASqQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Feb 2007 13:46:16 -0500
-From: "Jouni Malinen" <jkm@devicescape.com>
-Date: Thu, 1 Feb 2007 10:46:09 -0800
-To: Larry Finger <larry.finger@lwfinger.net>
-Cc: Dan Williams <dcbw@redhat.com>, Johannes Berg <johannes@sipsolutions.net>,
-       netdev <netdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Hidden SSID's
-Message-ID: <20070201184609.GE2652@instant802.com>
-References: <1169899689.25670.3.camel@localhost.localdomain> <1170019717.30318.0.camel@johannes.berg> <1170075611.2895.2.camel@localhost.localdomain> <20070130030911.GA6637@jm.kir.nu> <1170128208.3448.6.camel@localhost.localdomain> <45BECF04.3070904@lwfinger.net> <20070130050841.GC6637@jm.kir.nu> <45BEEEED.9010702@lwfinger.net> <20070130225641.GH32304@instant802.com> <45C00066.80807@lwfinger.net>
+	Thu, 1 Feb 2007 13:58:16 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:56186 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1422851AbXBAS6P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Feb 2007 13:58:15 -0500
+Date: Thu, 1 Feb 2007 10:58:08 -0800
+From: Judith Lebzelter <judith@osdl.org>
+To: Judith Lebzelter <judith@osdl.org>
+Cc: Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       "Robert P. J. Day" <rpjday@mindspring.com>, ebiederm@xmission.com,
+       linux-kernel@vger.kernel.org, fastboot@osdl.org
+Subject: Re: [ PATCH ] fix to documentation for kexec
+Message-ID: <20070201185808.GG5825@shell0.pdx.osdl.net>
+References: <20070201181955.GE5825@shell0.pdx.osdl.net> <Pine.LNX.4.61.0702011923530.13737@yvahk01.tjqt.qr> <Pine.LNX.4.64.0702011329550.16875@CPE00045a9c397f-CM001225dbafb6> <Pine.LNX.4.61.0702011932090.13737@yvahk01.tjqt.qr> <20070201184217.GF5825@shell0.pdx.osdl.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <45C00066.80807@lwfinger.net>
-User-Agent: Mutt/1.4.2.1i
-X-OriginalArrivalTime: 01 Feb 2007 18:46:12.0157 (UTC) FILETIME=[3EA326D0:01C74631]
+In-Reply-To: <20070201184217.GF5825@shell0.pdx.osdl.net>
+User-Agent: Mutt/1.5.6i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 30, 2007 at 08:35:18PM -0600, Larry Finger wrote:
+> 
+> I did notice that my patch is out of date for the latest kernel, 
+> however.  I can send an up to date one.
+> 
+This applies to 2.6.20-rc7
 
-> If one does the equivalent of 'iwlist eth1 scan essid myssid', then a probe response with
-> NETWORK_EMPTY_ESSID set in the network flags will have 'myssid' returned in the SSID field of the
-> returned buffer. If the input command were 'iwlist eth1 scan', then an empty SSID would be returned
-> under the same circumstances. My code saves the SSID that is in the extra argument of the
-> SIOCSIWSCAN call, and uses that in the SIOCGIWSCAN call.
+Signed-off-by: Judith Lebzeelter <judith@osdl.org>
+---
 
-Well, yes, but SIOCSIWSCAN and SIOCGIWSCAN calls are not in any way
-linked together.. You could have two user space programs asking for a
-scan of different SSID at more or less the same time and then have them
-read the results with SIOCGIWSCAN. At this point, the SSID from the last
-SIOCSIWSCAN would be returned for all APs that are in the scan list
-without an SSID. This may not be the correct SSID and can produce quite
-confusing results. I don't see this as an improvement over just removing
-the "<hidden>" which will at least provide consistent results.
+Stop recommending incorrect/superfluous "init" boot parameter.
 
-The proper fix for this is to use the information from the AP (Probe
-Response frames) and create a local BSS list that has entries with SSID
-updated from Probe Responses. If the underlying hardware/firmware does
-not allow such handling, this kind of mapping of SSIDs from scan request
-to scan results should probably in the hardware driver that would have
-chance of mapping results from firmware to request for a given SSID. At
-that point, it might be feasible to change the SSID in scan results, but
-I see only problems for the case where this is done at higher layer.
-
-> What is the method that should be used to associated with a given hidden AP?
-
-The 802.11 stack should fill in the proper SSID data from Probe
-Responses and maintain a local BSS list, i.e., the hidden APs would be
-marked with proper SSID whenever Probe Responses are processed. See,
-e.g., how driver/net/wireless/hostap/*.c use local->bss_list that will
-be filled with information from both Beacon and Probe Response frames or
-how wireless-dev.git net/d80211/ieee80211_sta.c handles updating of BSS
-entry from both Beacon and Probe Response frames (i.e., do not allow
-Beacon frames to replace data from Probe Response frames) in
-ieee80211_rx_bss_info().
-
-In other words, the hidden SSIDs are resolved in the BSS list based on
-information from Probe Responses and user space programs will get proper
-information in the scan results regardless of how the real SSID was
-learned.
-
--- 
-Jouni Malinen                                            PGP id EFC895FA
+Index: linux-2.6.20-rc7/Documentation/kdump/kdump.txt
+===================================================================
+--- linux-2.6.20-rc7.orig/Documentation/kdump/kdump.txt
++++ linux-2.6.20-rc7/Documentation/kdump/kdump.txt
+@@ -311,10 +311,10 @@ Following are the arch specific command 
+ loading dump-capture kernel.
+ 
+ For i386, x86_64 and ia64:
+-	"init 1 irqpoll maxcpus=1"
++	"1 irqpoll maxcpus=1"
+ 
+ For ppc64:
+-	"init 1 maxcpus=1 noirqdistrib"
++	"1 maxcpus=1 noirqdistrib"
+ 
+ 
+ Notes on loading the dump-capture kernel:
+@@ -332,8 +332,8 @@ Notes on loading the dump-capture kernel
+ * You must specify <root-dev> in the format corresponding to the root
+   device name in the output of mount command.
+ 
+-* "init 1" boots the dump-capture kernel into single-user mode without
+-  networking. If you want networking, use "init 3."
++* Boot parameter "1" boots the dump-capture kernel into single-user 
++  mode without networking. If you want networking, use "3".
+ 
+ * We generally don' have to bring up a SMP kernel just to capture the
+   dump. Hence generally it is useful either to build a UP dump-capture
