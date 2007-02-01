@@ -1,67 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933369AbXBAADU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933368AbXBAAFg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933369AbXBAADU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Jan 2007 19:03:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933368AbXBAADU
+	id S933368AbXBAAFg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Jan 2007 19:05:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933372AbXBAAFg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Jan 2007 19:03:20 -0500
-Received: from amsfep16-int.chello.nl ([62.179.120.11]:40629 "EHLO
-	amsfep16-int.chello.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161104AbXBAADU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Jan 2007 19:03:20 -0500
-Subject: Re: [PATCH 3/7] barrier: a scalable synchonisation barrier
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: paulmck@linux.vnet.ibm.com
-Cc: Oleg Nesterov <oleg@tv-sign.ru>, Ingo Molnar <mingo@elte.hu>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@osdl.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20070131233229.GP2574@linux.vnet.ibm.com>
-References: <20070128115118.837777000@programming.kicks-ass.net>
-	 <20070128120509.719287000@programming.kicks-ass.net>
-	 <20070128143941.GA16552@infradead.org> <20070128152435.GC9196@elte.hu>
-	 <20070131191215.GK2574@linux.vnet.ibm.com>
-	 <20070131211340.GA171@tv-sign.ru> <1170280101.10924.36.camel@lappy>
-	 <20070131233229.GP2574@linux.vnet.ibm.com>
+	Wed, 31 Jan 2007 19:05:36 -0500
+Received: from www.osadl.org ([213.239.205.134]:41548 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S933368AbXBAAFg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Jan 2007 19:05:36 -0500
+Subject: Re: 2.6.20-rc6 ramdisk problem
+From: Thomas Gleixner <tglx@linutronix.de>
+Reply-To: tglx@linutronix.de
+To: Robert Hancock <hancockr@shaw.ca>
+Cc: michal.k.k.piotrowski@gmail.com,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <45C12C3E.6010902@shaw.ca>
+References: <fa.nr9vhGrVS5zmSNQEe1vQ/Ktii9w@ifi.uio.no>
+	 <45C12C3E.6010902@shaw.ca>
 Content-Type: text/plain
-Date: Thu, 01 Feb 2007 01:03:09 +0100
-Message-Id: <1170288190.10924.108.camel@lappy>
+Date: Thu, 01 Feb 2007 01:06:26 +0100
+Message-Id: <1170288386.29240.234.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
+X-Mailer: Evolution 2.6.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-01-31 at 15:32 -0800, Paul E. McKenney wrote:
+On Wed, 2007-01-31 at 17:54 -0600, Robert Hancock wrote:
+> I'm not sure if there's an inherent max ramdisk size limit, however I 
+> should point out that in most cases, using a tmpfs or ramfs file system 
+> is better than old-style ramdisks. Those filesystems return unused 
+> memory to the kernel (ramdisks statically allocate the entire space) and 
+> also avoid the filesystem overhead of ramdisks (the files are mapped 
+> into pagecache directly).
 
-> The wakeup in barrier_sync() would mean that the counter was zero
-> at some point in the past.  The counter would then be rechecked, and
-> if it were still zero, barrier_sync() would invoke finish_wait() and
-> then return -- but the counter might well become non-zero in the
-> meantime, right?
-> 
-> So given that barrier_sync() is permitted to return after the counter
-> becomes non-zero, why can't it just rely on the fact that barrier_unlock()
-> saw it as zero not long in the past?
-> 
-> > >  It looks like barrier_sync() is more a
-> > > rw semaphore biased to readers.
-> > 
-> > Indeed, the locked sections are designed to be the rare case.
-> 
-> OK -- but barrier_sync() just waits for readers, it doesn't exclude them.
-> 
-> If all barrier_sync() needs to do is to wait until all pre-existing
-> barrier_lock()/barrier_unlock() pairs to complete, it seems to me to
-> be compatible with qrcu's semantics.
-> 
-> So what am I missing here?
+This is not a question of what's better or not. 
 
-I might be the one missing stuff, I'll have a hard look at qrcu.
+Michal stepped into a real life problem:
 
-The intent was that barrier_sync() would not write to memory when there
-are no active locked sections, so that the cacheline can stay shared,
-thus keeping is fast.
+1. ramdisk gets created in the first place w/o problems
+2. formatting the same ramdisk succeeds
+3. trying to use it fails
 
-If qrcu does exactly this, then yes we have a match.
+So either #1 or #2 should have failed in the first place. Failing in #3
+is definitely a BUG in #1 or #2.
+
+How does your advise help to fix that BUG ? Ignoring it by using
+something else ?
+
+	tglx
+
 
