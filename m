@@ -1,44 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422829AbXBALtp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422828AbXBALuf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422829AbXBALtp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Feb 2007 06:49:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422826AbXBALtp
+	id S1422828AbXBALuf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Feb 2007 06:50:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422830AbXBALuf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Feb 2007 06:49:45 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:46886 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1422825AbXBALto (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Feb 2007 06:49:44 -0500
-Date: Thu, 1 Feb 2007 12:02:08 +0000
-From: Alan <alan@lxorguk.ukuu.org.uk>
-To: "Aubrey Li" <aubreylee@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org
-Subject: Re: [BUG]: 2.6.19.2: Weird serial core issue
-Message-ID: <20070201120208.36ccb530@localhost.localdomain>
-In-Reply-To: <6d6a94c50701311833m5952c6fdn8e1f0db28d674e79@mail.gmail.com>
-References: <6d6a94c50701310249o2b2c8024i4d3f28ec1601246a@mail.gmail.com>
-	<20070131162123.67e22e23@localhost.localdomain>
-	<6d6a94c50701311833m5952c6fdn8e1f0db28d674e79@mail.gmail.com>
-X-Mailer: Claws Mail 2.7.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+	Thu, 1 Feb 2007 06:50:35 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:57552 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1422828AbXBALue (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Feb 2007 06:50:34 -0500
+Date: Thu, 1 Feb 2007 12:53:36 +0100
+From: Andrea Arcangeli <andrea@suse.de>
+To: Andi Kleen <ak@suse.de>
+Cc: jbohac@suse.cz, linux-kernel@vger.kernel.org,
+       Vojtech Pavlik <vojtech@suse.cz>, ssouhlal@freebsd.org,
+       arjan@infradead.org, tglx@linutronix.de, johnstul@us.ibm.com,
+       zippel@linux-m68k.org
+Subject: Re: [patch 0/9] x86_64: reliable TSC-based gettimeofday
+Message-ID: <20070201115336.GC13277@opteron.random>
+References: <20070201095952.589234000@jet.suse.cz> <200702011220.59484.ak@suse.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200702011220.59484.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I implemented the serial driver by myself, :). See the attachment.
-> I didn't save/restore terminal setting in the my_set_termios().
+On Thu, Feb 01, 2007 at 12:20:59PM +0100, Andi Kleen wrote:
+> I think a better way to do this would be to define a new CLOCK_THREAD_MONOTONOUS
+> (or better name) timer for clock_gettime(). 
+> 
+> [and my currently stalled vdso patches that implement clock_gettime
+> as a vsyscall]
+> 
+> Then also an application could easily use it with LD_PRELOAD
 
-Driver looks fine. 
-
-> I trace this back till tty_tioctl(..., unsigned long arg), everytime I
-> type "ENTER" key,
-> the argument "arg" passed into tty_ioctl() is the address of a termios
-> structure, which include wrong c_cflag. It seems once the flag is
-> assigned by uart_set_options the first time, it's never changed. So
-> even userspace application changed the flag, it will be set back soon.
-> I'll dig into it. But I still think it's a bug.
-
-Which application (see from current->pid) seems to be calling the
-tty_ioctl with the "wrong flag" ?
+I think a prctl to enable the non monothone mode is better than any
+LD_PRELOAD trick.
