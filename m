@@ -1,64 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751850AbXBAPuw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751860AbXBAPvR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751850AbXBAPuw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Feb 2007 10:50:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751830AbXBAPuv
+	id S1751860AbXBAPvR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Feb 2007 10:51:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751867AbXBAPvR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Feb 2007 10:50:51 -0500
-Received: from smtp40.mobistarmail.be ([193.252.23.61]:3382 "EHLO
-	smtp40.mobistarmail.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751850AbXBAPuu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Feb 2007 10:50:50 -0500
-X-Greylist: delayed 1171 seconds by postgrey-1.27 at vger.kernel.org; Thu, 01 Feb 2007 10:50:50 EST
-X-ME-UUID: 20070201153112972.ED4BF7000166@mwinf4017.mobistarmail.be
-From: Peter Korsgaard <jacmet@sunsite.dk>
-To: dustin@sensoria.com, netdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] net/smc911x: Match up spin lock/unlock
-Date: Thu, 01 Feb 2007 16:30:56 +0100
-Message-ID: <87tzy53nf3.fsf@slug.be.48ers.dk>
-User-Agent: Gnus/5.110004 (No Gnus v0.4) Emacs/21.4 (gnu/linux)
+	Thu, 1 Feb 2007 10:51:17 -0500
+Received: from raven.upol.cz ([158.194.120.4]:42299 "EHLO raven.upol.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751860AbXBAPvP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Feb 2007 10:51:15 -0500
+Date: Thu, 1 Feb 2007 16:59:37 +0100
+To: Andrew Morton <akpm@osdl.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Roman Zippel <zippel@linux-m68k.org>,
+       Bastian Blank <bastian@waldi.eu.org>, Sam Ravnborg <sam@ravnborg.org>
+Subject: 2.6.20-rc7 (Re: [patch] kbuild: correctly skip tilded backups in localversion files)
+Message-ID: <20070201155937.GA24388@flower.upol.cz>
+References: <20070131071103.GA3295@flower.upol.cz> <20070131155651.529e933c.akpm@osdl.org> <20070201023717.GA22328@flower.upol.cz> <20070131184329.753ce801.akpm@osdl.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070131184329.753ce801.akpm@osdl.org>
+Organization: Palacky University in Olomouc, experimental physics department.
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Oleg Verych <olecom@flower.upol.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-smc911x_phy_configure's error handling unconditionally unlocks the
-spinlock even if it wasn't locked. Patch fixes it.
+kbuild: correctly skip tilded backups in localversion files
 
-Signed-off-by: Peter Korsgaard <jacmet@sunsite.dk>
+ Tildes as in path as in filenames are handled correctly now:
+ only files, containing tilde '~', are backups, thus are not valid.
+
+ [KJ]:
+ Definition of `space' was removed, scripts/Kbuild.include has one.
+ This definition was taken right from GNU make manual, while Kbuild's
+ version is original.
+
+Cc: Roman Zippel <zippel@linux-m68k.org>
+Cc: Bastian Blank <bastian@waldi.eu.org>
+Cc: Sam Ravnborg <sam@ravnborg.org>
+Signed-off-by: Oleg Verych <olecom@flower.upol.cz>
+---
+
+ My using of the `sh' rides from willing to have more portable,
+ understandable implementation (and due to GFDL make's docs ;)
+
+Original report by Bastian Blank:
+
+ The following patch fixes the problem that localversion files where
+ ignored if the tree lives in a path which contains a ~. It changes the
+ test to apply to the filename only.
+ 
+ Debian allows versions which contains ~ in it. The upstream part of the
+ version is in the directory name of the build tree and we got weird
+ results because the localversion files was just got ignored in this
+ case.
 
 ---
- drivers/net/smc911x.c |    5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ linux-2.6.20-rc7/Makefile |   17 ++++++-----------
+ 1 file changed, 6 insertions(+), 11 deletions(-)
 
-Index: linux-trunk/drivers/net/smc911x.c
+Index: kernel.org/linux-2.6.20-rc7/Makefile
 ===================================================================
---- linux-trunk.orig/drivers/net/smc911x.c
-+++ linux-trunk/drivers/net/smc911x.c
-@@ -969,11 +969,11 @@
- 	 * We should not be called if phy_type is zero.
- 	 */
- 	if (lp->phy_type == 0)
--		 goto smc911x_phy_configure_exit;
-+		 goto smc911x_phy_configure_exit_nolock;
+--- kernel.org.orig/linux-2.6.20-rc7/Makefile	2007-02-01 16:20:54.214174250 +0100
++++ kernel.org/linux-2.6.20-rc7/Makefile	2007-02-01 16:21:40.649076250 +0100
+@@ -777,5 +777,5 @@ $(vmlinux-dirs): prepare scripts
+ #	$(localver-full)
+ #	  $(localver)
+-#	    localversion*		(all localversion* files)
++#	    localversion*		(files without backups, containing '~')
+ #	    $(CONFIG_LOCALVERSION)	(from kernel config setting)
+ #	  $(localver-auto)		(only if CONFIG_LOCALVERSION_AUTO is set)
+@@ -788,15 +788,10 @@ $(vmlinux-dirs): prepare scripts
+ # scripts/setlocalversion and add the appropriate checks as needed.
  
- 	if (smc911x_phy_reset(dev, phyaddr)) {
- 		printk("%s: PHY reset timed out\n", dev->name);
--		goto smc911x_phy_configure_exit;
-+		goto smc911x_phy_configure_exit_nolock;
- 	}
- 	spin_lock_irqsave(&lp->lock, flags);
+-nullstring :=
+-space      := $(nullstring) # end of line
++pattern = ".*/localversion[^~]*"
++string  = $(shell cat /dev/null \
++	   `find $(objtree) $(srctree) -maxdepth 1 -regex $(pattern) | sort`)
  
-@@ -1042,6 +1042,7 @@
+-___localver = $(objtree)/localversion* $(srctree)/localversion*
+-__localver  = $(sort $(wildcard $(___localver)))
+-# skip backup files (containing '~')
+-_localver = $(foreach f, $(__localver), $(if $(findstring ~, $(f)),,$(f)))
+-
+-localver = $(subst $(space),, \
+-	   $(shell cat /dev/null $(_localver)) \
+-	   $(patsubst "%",%,$(CONFIG_LOCALVERSION)))
++localver = $(subst $(space),, $(string) \
++			      $(patsubst "%",%,$(CONFIG_LOCALVERSION)))
  
- smc911x_phy_configure_exit:
- 	spin_unlock_irqrestore(&lp->lock, flags);
-+smc911x_phy_configure_exit_nolock:
- 	lp->work_pending = 0;
- }
- 
-
--- 
-Bye, Peter Korsgaard
+ # If CONFIG_LOCALVERSION_AUTO is set scripts/setlocalversion is called
