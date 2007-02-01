@@ -1,80 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161297AbXBADcJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161301AbXBAEL6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161297AbXBADcJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Jan 2007 22:32:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161298AbXBADcI
+	id S1161301AbXBAEL6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Jan 2007 23:11:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161157AbXBAEL6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Jan 2007 22:32:08 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:39995 "EHLO smtp.osdl.org"
+	Wed, 31 Jan 2007 23:11:58 -0500
+Received: from hera.kernel.org ([140.211.167.34]:55406 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161297AbXBADcH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Jan 2007 22:32:07 -0500
-Date: Wed, 31 Jan 2007 19:31:33 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: =?ISO-8859-1?Q?S=2E=C3a=C4lar_Onur?= <caglar@pardus.org.tr>
-cc: lkml <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
-       Peter Anvin <hpa@zytor.com>, Mark Huang <mlhuang@CS.Princeton.EDU>,
-       Al Viro <viro@zeniv.linux.org.uk>
-Subject: Re: Linux 2.6.20-rc7
-In-Reply-To: <200702010501.20994.caglar@pardus.org.tr>
-Message-ID: <Pine.LNX.4.64.0701311921090.3632@woody.linux-foundation.org>
-References: <Pine.LNX.4.64.0701302019530.11095@woody.linux-foundation.org>
- <200702010416.59469.caglar@pardus.org.tr> <Pine.LNX.4.64.0701311828540.3632@woody.linux-foundation.org>
- <200702010501.20994.caglar@pardus.org.tr>
+	id S1161167AbXBAELy convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Jan 2007 23:11:54 -0500
+From: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
+To: Maciej Rutecki <maciej.rutecki@gmail.com>
+Subject: Re: 2.6.20-rc6-mm3
+Date: Wed, 31 Jan 2007 23:10:32 -0500
+User-Agent: KMail/1.9.5
+Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org
+References: <20070129204528.eb8d695e.akpm@osdl.org> <20070130142714.9f8dd5da.akpm@osdl.org> <45C08368.2020904@gmail.com>
+In-Reply-To: <45C08368.2020904@gmail.com>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-1463790079-1702273712-1170300129=:3632"
-Content-ID: <Pine.LNX.4.64.0701311922210.3632@woody.linux-foundation.org>
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200701312310.32828.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-
----1463790079-1702273712-1170300129=:3632
-Content-Type: TEXT/PLAIN; CHARSET=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-Content-ID: <Pine.LNX.4.64.0701311922211.3632@woody.linux-foundation.org>
-
-
-
-On Thu, 1 Feb 2007, S.�a�lar Onur wrote:
+On Wednesday 31 January 2007 06:54, Maciej Rutecki wrote:
+> Andrew Morton napisał(a):
 > 
-> I think i found the cause of the problem, initramfs can't handle hardlinks 
-> anymore (which works with 2.6.18), copying same /sbin/busybox binary with 
-> different names into initramfs (which ends ups with 50 MB image) or using 
-> symbolic ones instead of hards seems works.
+> > OK, thanks.  That might be due to the time-management updates as well. 
+> > I'll see if I can reproduce this.
+> > 
+> > If you're keen, you could test just 2.6.19-rc6+origin.patch+git-acpi.patch
+> > from
+> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.20-rc6/2.6.20-rc6-mm3/broken-out
+> > and see which of these problems remain.
+> > 
+> 
+> I try 2.6.19-rc6 witch origin.patch and git-acpi.patch. This patch
+> didn't add correctly (see patch_output.txt). Also I have compiling error:
+> 
+> AS      arch/i386/kernel/entry.o
+>   CC      arch/i386/kernel/traps.o
+>   CC      arch/i386/kernel/irq.o
+>   CC      arch/i386/kernel/ptrace.o
+>   CC      arch/i386/kernel/time.o
+>   CC      arch/i386/kernel/ioport.o
+>   CC      arch/i386/kernel/ldt.o
+>   CC      arch/i386/kernel/setup.o
+> In file included from include/acpi/acpi.h:62,
+>                  from include/linux/acpi.h:37,
+>                  from arch/i386/kernel/setup.c:31:
+> include/acpi/acpixf.h:100: warning: 'struct acpi_pointer' declared
+> inside parameter list
+> include/acpi/acpixf.h:100: warning: its scope is only this definition or
+> declaration, which is probably not what you want
+> include/acpi/acpixf.h:115: error: expected ')' before 'table_type'
+> make[2]: *** [arch/i386/kernel/setup.o] Błąd 1
+> make[1]: *** [arch/i386/kernel] Błąd 2
+> make[1]: Opuszczenie katalogu `/usr/src/linux-rc'
+> make: *** [debian/stamp-build-kernel] Błąd 2
+> 
+> "Błąd"="Error" (in polish).
 
-Ok, it would still be interesting to hear what triggered this.
+Note that you can always get the latest ACPI patch and drop it directly onto Linus' tree here:
+http://ftp.kernel.org/pub/linux/kernel/people/lenb/acpi/patches/test/2.6.20/
 
-There's really only two initramfs-related changes in the whole 2.6.20 
-development series that I can see, and neither of them are even _remotely_ 
-likely to cause this, afaik. We have:
-
- - commit 8d610dd52dd1da696e199e4b4545f33a2a5de5c6
-
-   "Make sure we populate the initroot filesystem late enough"
-
-(but "late enough" is still _way_ before we actually mount it, so ..) and
-
- - commit 2e591bbc0d563e12f5a260fbbca0df7d5810910e
-
-   "Make initramfs printk a warning on incorrect cpio type"
-
-and the latter is just a build-time sanity-check.
-
-Since 2.6.18, there's been a couple more, but none of them look even 
-remotely likely either. Which is why it really would be good if you can 
-"git bisect" this behaviour.
-
-There _was_ a hardlink-related thing some time ago, but that was back in 
-May, and before 2.6.18. So if it worked for you in 2.6.18, I don't see 
-that being it.
-
-I've added some initramfs people to the Cc: in case somebody has better 
-ideas, but in the absense of that, it really would be good to do that 
-bisection. Also, you might want to double-check that your cpio actually 
-generates a good initramfs image (it that it's not some user-mode upgrade 
-that caused it to stop working).
-
-		Linus
----1463790079-1702273712-1170300129=:3632--
