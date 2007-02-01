@@ -1,270 +1,223 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422800AbXBALNA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422782AbXBALNu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422800AbXBALNA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Feb 2007 06:13:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422799AbXBALMm
+	id S1422782AbXBALNu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Feb 2007 06:13:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422797AbXBALMi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Feb 2007 06:12:42 -0500
-Received: from styx.suse.cz ([82.119.242.94]:53743 "EHLO mail.suse.cz"
+	Thu, 1 Feb 2007 06:12:38 -0500
+Received: from styx.suse.cz ([82.119.242.94]:53742 "EHLO mail.suse.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751734AbXBALMf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Feb 2007 06:12:35 -0500
-Message-Id: <20070201103753.753349000@jet.suse.cz>
+	id S1751730AbXBALMe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Feb 2007 06:12:34 -0500
+Message-Id: <20070201103753.944245000@jet.suse.cz>
 References: <20070201095952.589234000@jet.suse.cz>
 User-Agent: quilt/0.44-16.5
-Date: Thu, 01 Feb 2007 10:59:56 +0100
+Date: Thu, 01 Feb 2007 10:59:58 +0100
 From: jbohac@suse.cz
 To: Andi Kleen <ak@suse.de>
 Cc: linux-kernel@vger.kernel.org, Jiri Bohac <jbohac@suse.cz>,
        Vojtech Pavlik <vojtech@suse.cz>, ssouhlal@freebsd.org,
        arjan@infradead.org, tglx@linutronix.de, johnstul@us.ibm.com,
        zippel@linux-m68k.org, andrea@suse.de
-Subject: [patch 4/9] Remove the TSC synchronization on SMP machines
-Content-Disposition: inline; filename=remove_tsc_synchronization
+Subject: [patch 6/9] Add the "Master Timer"
+Content-Disposition: inline; filename=add_master_timer
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-TSC is either synchronized by design or not reliable
-to be used for anything, let alone timekeeping.
+Master Timer (MT) is a reliable, monotonic, constantly growing 64 bit timer. At
+present, PM timer or HPET can be used as the Master Timer.
+
+None of them is 64 bit (HPET migt be, but not always), so we access them
+through the get_master_timer64() and update_master_timer64() functions
+that take care of the wraparounds. update_master_timer64() needs to be
+called once in a while, at least once every period of the corresponding
+hardware timer (a couple minutes for HPET, cca 3-4 seconds for PM). This
+will be done from the main timer handler.
+
+While the hardware MT is reliable and monotonic, it is slow to read. We
+want to approximate it using the TSC. guess_mt() does just that, using a
+lot of per-cpu calibration data.
 
 Signed-off-by: Jiri Bohac <jbohac@suse.cz>
 
-Index: linux-2.6.20-rc5/arch/x86_64/kernel/smpboot.c
+Index: linux-2.6.20-rc5/arch/x86_64/kernel/time.c
 ===================================================================
---- linux-2.6.20-rc5.orig/arch/x86_64/kernel/smpboot.c
-+++ linux-2.6.20-rc5/arch/x86_64/kernel/smpboot.c
-@@ -148,217 +148,6 @@ static void __cpuinit smp_store_cpu_info
- 	print_cpu_info(c);
- }
+--- linux-2.6.20-rc5.orig/arch/x86_64/kernel/time.c
++++ linux-2.6.20-rc5/arch/x86_64/kernel/time.c
+@@ -54,9 +54,14 @@ static char *timename = NULL;
+ DEFINE_SPINLOCK(rtc_lock);
+ EXPORT_SYMBOL(rtc_lock);
+ DEFINE_SPINLOCK(i8253_lock);
++DEFINE_SEQLOCK(mt_lock);
++
++DEFINE_SPINLOCK(monotonic_mt_lock);
++static u64 last_monotonic_mt;
  
--/*
-- * New Funky TSC sync algorithm borrowed from IA64.
-- * Main advantage is that it doesn't reset the TSCs fully and
-- * in general looks more robust and it works better than my earlier
-- * attempts. I believe it was written by David Mosberger. Some minor
-- * adjustments for x86-64 by me -AK
-- *
-- * Original comment reproduced below.
-- *
-- * Synchronize TSC of the current (slave) CPU with the TSC of the
-- * MASTER CPU (normally the time-keeper CPU).  We use a closed loop to
-- * eliminate the possibility of unaccounted-for errors (such as
-- * getting a machine check in the middle of a calibration step).  The
-- * basic idea is for the slave to ask the master what itc value it has
-- * and to read its own itc before and after the master responds.  Each
-- * iteration gives us three timestamps:
-- *
-- *	slave		master
-- *
-- *	t0 ---\
-- *             ---\
-- *		   --->
-- *			tm
-- *		   /---
-- *	       /---
-- *	t1 <---
-- *
-- *
-- * The goal is to adjust the slave's TSC such that tm falls exactly
-- * half-way between t0 and t1.  If we achieve this, the clocks are
-- * synchronized provided the interconnect between the slave and the
-- * master is symmetric.  Even if the interconnect were asymmetric, we
-- * would still know that the synchronization error is smaller than the
-- * roundtrip latency (t0 - t1).
-- *
-- * When the interconnect is quiet and symmetric, this lets us
-- * synchronize the TSC to within one or two cycles.  However, we can
-- * only *guarantee* that the synchronization is accurate to within a
-- * round-trip time, which is typically in the range of several hundred
-- * cycles (e.g., ~500 cycles).  In practice, this means that the TSCs
-- * are usually almost perfectly synchronized, but we shouldn't assume
-- * that the accuracy is much better than half a micro second or so.
-- *
-- * [there are other errors like the latency of RDTSC and of the
-- * WRMSR. These can also account to hundreds of cycles. So it's
-- * probably worse. It claims 153 cycles error on a dual Opteron,
-- * but I suspect the numbers are actually somewhat worse -AK]
-- */
--
--#define MASTER	0
--#define SLAVE	(SMP_CACHE_BYTES/8)
--
--/* Intentionally don't use cpu_relax() while TSC synchronization
--   because we don't want to go into funky power save modi or cause
--   hypervisors to schedule us away.  Going to sleep would likely affect
--   latency and low latency is the primary objective here. -AK */
--#define no_cpu_relax() barrier()
--
--static __cpuinitdata DEFINE_SPINLOCK(tsc_sync_lock);
--static volatile __cpuinitdata unsigned long go[SLAVE + 1];
--static int notscsync __cpuinitdata;
--
--#undef DEBUG_TSC_SYNC
--
--#define NUM_ROUNDS	64	/* magic value */
--#define NUM_ITERS	5	/* likewise */
--
--/* Callback on boot CPU */
--static __cpuinit void sync_master(void *arg)
--{
--	unsigned long flags, i;
--
--	go[MASTER] = 0;
--
--	local_irq_save(flags);
--	{
--		for (i = 0; i < NUM_ROUNDS*NUM_ITERS; ++i) {
--			while (!go[MASTER])
--				no_cpu_relax();
--			go[MASTER] = 0;
--			rdtscll(go[SLAVE]);
--		}
--	}
--	local_irq_restore(flags);
--}
--
--/*
-- * Return the number of cycles by which our tsc differs from the tsc
-- * on the master (time-keeper) CPU.  A positive number indicates our
-- * tsc is ahead of the master, negative that it is behind.
-- */
--static inline long
--get_delta(long *rt, long *master)
--{
--	unsigned long best_t0 = 0, best_t1 = ~0UL, best_tm = 0;
--	unsigned long tcenter, t0, t1, tm;
--	int i;
--
--	for (i = 0; i < NUM_ITERS; ++i) {
--		rdtscll(t0);
--		go[MASTER] = 1;
--		while (!(tm = go[SLAVE]))
--			no_cpu_relax();
--		go[SLAVE] = 0;
--		rdtscll(t1);
--
--		if (t1 - t0 < best_t1 - best_t0)
--			best_t0 = t0, best_t1 = t1, best_tm = tm;
--	}
--
--	*rt = best_t1 - best_t0;
--	*master = best_tm - best_t0;
--
--	/* average best_t0 and best_t1 without overflow: */
--	tcenter = (best_t0/2 + best_t1/2);
--	if (best_t0 % 2 + best_t1 % 2 == 2)
--		++tcenter;
--	return tcenter - best_tm;
--}
--
--static __cpuinit void sync_tsc(unsigned int master)
--{
--	int i, done = 0;
--	long delta, adj, adjust_latency = 0;
--	unsigned long flags, rt, master_time_stamp, bound;
--#ifdef DEBUG_TSC_SYNC
--	static struct syncdebug {
--		long rt;	/* roundtrip time */
--		long master;	/* master's timestamp */
--		long diff;	/* difference between midpoint and master's timestamp */
--		long lat;	/* estimate of tsc adjustment latency */
--	} t[NUM_ROUNDS] __cpuinitdata;
--#endif
--
--	printk(KERN_INFO "CPU %d: Syncing TSC to CPU %u.\n",
--		smp_processor_id(), master);
--
--	go[MASTER] = 1;
--
--	/* It is dangerous to broadcast IPI as cpus are coming up,
--	 * as they may not be ready to accept them.  So since
--	 * we only need to send the ipi to the boot cpu direct
--	 * the message, and avoid the race.
--	 */
--	smp_call_function_single(master, sync_master, NULL, 1, 0);
--
--	while (go[MASTER])	/* wait for master to be ready */
--		no_cpu_relax();
--
--	spin_lock_irqsave(&tsc_sync_lock, flags);
--	{
--		for (i = 0; i < NUM_ROUNDS; ++i) {
--			delta = get_delta(&rt, &master_time_stamp);
--			if (delta == 0) {
--				done = 1;	/* let's lock on to this... */
--				bound = rt;
--			}
--
--			if (!done) {
--				unsigned long t;
--				if (i > 0) {
--					adjust_latency += -delta;
--					adj = -delta + adjust_latency/4;
--				} else
--					adj = -delta;
--
--				rdtscll(t);
--				wrmsrl(MSR_IA32_TSC, t + adj);
--			}
--#ifdef DEBUG_TSC_SYNC
--			t[i].rt = rt;
--			t[i].master = master_time_stamp;
--			t[i].diff = delta;
--			t[i].lat = adjust_latency/4;
--#endif
--		}
--	}
--	spin_unlock_irqrestore(&tsc_sync_lock, flags);
--
--#ifdef DEBUG_TSC_SYNC
--	for (i = 0; i < NUM_ROUNDS; ++i)
--		printk("rt=%5ld master=%5ld diff=%5ld adjlat=%5ld\n",
--		       t[i].rt, t[i].master, t[i].diff, t[i].lat);
--#endif
--
--	printk(KERN_INFO
--	       "CPU %d: synchronized TSC with CPU %u (last diff %ld cycles, "
--	       "maxerr %lu cycles)\n",
--	       smp_processor_id(), master, delta, rt);
--}
--
--static void __cpuinit tsc_sync_wait(void)
--{
--	/*
--	 * When the CPU has synchronized TSCs assume the BIOS
--  	 * or the hardware already synced.  Otherwise we could
--	 * mess up a possible perfect synchronization with a
--	 * not-quite-perfect algorithm.
--	 */
--	if (notscsync || !cpu_has_tsc || !unsynchronized_tsc())
--		return;
--	sync_tsc(0);
--}
--
--static __init int notscsync_setup(char *s)
--{
--	notscsync = 1;
--	return 1;
--}
--__setup("notscsync", notscsync_setup);
--
- static atomic_t init_deasserted __cpuinitdata;
+ int nohpet __initdata = 0;
+ static int notsc __initdata = 0;
++static int nomonotonic __initdata = 0;
  
+ #define USEC_PER_TICK (USEC_PER_SEC / HZ)
+ #define NSEC_PER_TICK (NSEC_PER_SEC / HZ)
+@@ -65,14 +70,18 @@ static int notsc __initdata = 0;
+ #define NS_SCALE	10 /* 2^10, carefully chosen */
+ #define US_SCALE	32 /* 2^32, arbitralrily chosen */
+ 
+-unsigned int cpu_khz;					/* TSC clocks / usec, not used here */
++unsigned int cpu_khz;		/* TSC clocks / usec, not used here */
++static s64 mt_per_tick;		/* master timer ticks per jiffie */
++static u64 __mt;		/* master timer */
++static u32 __mt_last;		/* value last read from read_master_timer() when updating timer caches */
++
++u32 (*read_master_timer)(void);
++
+ EXPORT_SYMBOL(cpu_khz);
+ static unsigned long hpet_period;			/* fsecs / HPET clock */
+ unsigned long hpet_tick;				/* HPET clocks / interrupt */
+ int hpet_use_timer;				/* Use counter of hpet for time keeping, otherwise PIT */
+-unsigned long vxtime_hz = PIT_TICK_RATE;
+ int report_lost_ticks;				/* command line option */
+-unsigned long long monotonic_base;
+ 
+ struct vxtime_data __vxtime __section_vxtime;	/* for vsyscalls */
+ 
+@@ -80,6 +89,137 @@ volatile unsigned long __jiffies __secti
+ struct timespec __xtime __section_xtime;
+ struct timezone __sys_tz __section_sys_tz;
+ 
++#define TSC_SLOPE_DECAY	16
++
++
++/*
++ * set the 64-bit master timer to a given value
++ */
++static inline void set_master_timer64(u64 t)
++{
++	unsigned long flags;
++
++	write_seqlock_irqsave(&mt_lock, flags);
++
++	__mt_last = read_master_timer();
++	__mt = t;
++
++	write_sequnlock_irqrestore(&mt_lock, flags);
++}
++
++/*
++ * add/subtract a number of ticks from the 64-bit master timer
++ */
++static inline void add_master_timer64(s64 t)
++{
++	unsigned long flags;
++	write_seqlock_irqsave(&mt_lock, flags);
++	__mt += t;
++	write_sequnlock_irqrestore(&mt_lock, flags);
++}
++
++/*
++ * get the 64-bit non-overflowing master timer based on current
++ * master timer reading
++ */
++static u64 get_master_timer64(void)
++{
++	u64 ret;
++	u32 delta, now;
++	unsigned long seq;
++	do {
++		seq = read_seqbegin(&mt_lock);
++
++		now = read_master_timer();
++		delta = now - __mt_last;
++		ret = __mt + delta;
++
++
++	} while (read_seqretry(&mt_lock, seq));
++
++	return ret;
++}
++
++/*
++ * get and update the 64-bit non-overflowing master timer based on current
++ * master timer reading
++ *
++ * This needs to be called often enough to prevent the MT from overflowing.
++ * Doing this from the main timer handler is enough. Other places can call
++ * get_master_timer64() instead, avoiding unnecessary contention.
++ */
++static u64 update_master_timer64(void)
++{
++	u32 delta, now;
++	unsigned long flags;
++	write_seqlock_irqsave(&mt_lock, flags);
++
++	now = read_master_timer();
++	delta = now - __mt_last;
++	__mt_last = now;
++	__mt += delta;
++
++	write_sequnlock_irqrestore(&mt_lock, flags);
++
++	return __mt;
++}
++
++/*
++ * estimates the current value of the master timer, based on the TSC
++ */
++static inline u64 __guess_mt(u64 tsc, int cpu)
++{
++	return (((tsc - vxtime.cpu[cpu].tsc_last) * vxtime.cpu[cpu].tsc_slope)
++			>> TSC_SLOPE_SCALE) + vxtime.cpu[cpu].mt_base;
++}
++
++/*
++ * estimates the current value of the master timer, based on the TSC
++ * and corrects the estimate to make it monotonic even across CPUs if needed.
++ */
++
++static inline u64 guess_mt(u64 tsc, int cpu)
++{
++	u64 mt;
++
++	if (unlikely(vxtime.mode == VXTIME_MT || vxtime.cpu[cpu].tsc_invalid))
++		mt = max(get_master_timer64(), vxtime.cpu[cpu].last_mt_guess);
++	else
++		mt = __guess_mt(tsc, cpu);
++
++	if (mt < last_monotonic_mt)
++		mt = last_monotonic_mt;
++
++	return mt;
++}
++
++static inline void update_monotonic_mt(u64 mt)
++{
++	unsigned long flags;
++
++	if (vxtime.mode != VXTIME_TSCM)
++		return;
++
++	spin_lock_irqsave(&monotonic_mt_lock, flags);
++
++	if (mt > last_monotonic_mt)
++		last_monotonic_mt = mt;
++
++	spin_unlock_irqrestore(&monotonic_mt_lock, flags);
++}
++
++static u32 read_master_timer_hpet(void)
++{
++	return hpet_readl(HPET_COUNTER);
++}
++
++static u32 read_master_timer_pm(void)
++{
++	/* the shift ensures u32 wraparound at the time	of
++	   the 24-bit counter wraparound */
++	return inl(pmtmr_ioport) << 8;
++}
++
  /*
-@@ -565,14 +354,6 @@ void __cpuinit start_secondary(void)
- 	 */
- 	set_cpu_sibling_map(smp_processor_id());
- 
--	/* 
--  	 * Wait for TSC sync to not schedule things before.
--	 * We still process interrupts, which could see an inconsistent
--	 * time in that window unfortunately. 
--	 * Do this here because TSC sync has global unprotected state.
-- 	 */
--	tsc_sync_wait();
--
- 	/*
- 	 * We need to hold call_lock, so there is no inconsistency
- 	 * between the time smp_call_function() determines number of
+  * do_gettimeoffset() returns microseconds since last timer interrupt was
+  * triggered by hardware. A memory read of HPET is slower than a register read
 
 --
