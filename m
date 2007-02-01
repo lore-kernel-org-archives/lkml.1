@@ -1,86 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933318AbXBAAW6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933331AbXBAAYI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933318AbXBAAW6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Jan 2007 19:22:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933376AbXBAAW6
+	id S933331AbXBAAYI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Jan 2007 19:24:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933376AbXBAAYI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Jan 2007 19:22:58 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:60772 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933318AbXBAAW5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Jan 2007 19:22:57 -0500
-Date: Wed, 31 Jan 2007 16:19:06 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: =?ISO-8859-1?Q?Pawe=C5_Sikora?= <pluto@agmk.net>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Christoph Hellwig <hch@lst.de>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       Martin Peschke <mp3@de.ibm.com>, Andrew Morton <akpm@osdl.org>,
-       Adrian Bunk <bunk@stusta.de>, Nick Piggin <nickpiggin@yahoo.com.au>
-Subject: Re: Linux 2.6.20-rc7
-In-Reply-To: <200702010037.48472.pluto@agmk.net>
-Message-ID: <Pine.LNX.4.64.0701311609210.3632@woody.linux-foundation.org>
-References: <Pine.LNX.4.64.0701302019530.11095@woody.linux-foundation.org>
- <45C05150.6000802@agmk.net> <Pine.LNX.4.64.0701310748450.3632@woody.linux-foundation.org>
- <200702010037.48472.pluto@agmk.net>
+	Wed, 31 Jan 2007 19:24:08 -0500
+Received: from smtp103.sbc.mail.mud.yahoo.com ([68.142.198.202]:29234 "HELO
+	smtp103.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S933331AbXBAAYG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Jan 2007 19:24:06 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=RQ4SSShHHh/gM0FQRfTkbQfzqxadRj6UhTDgfdEBtHm+rnZG8XX0lrO8tMvn2+h21sOAbm3zIugdE1/vJG9gvT9f2XG0aydOT4fEYWSK1bTmoYqo0Hhqwem+rxCR7LLoss6BX9nHpUpI9+k9C0gMG68tbJELlM8cbRaFU7xtxzg=  ;
+X-YMail-OSG: YiXJB4kVM1mIkDpDezJ1kcS4sAmzE6Dmk8.IHa1y7EfxxrOh
+From: David Brownell <david-b@pacbell.net>
+To: Daniel Walker <dwalker@mvista.com>
+Subject: Re: [PATCH 14/23] clocksource: increase initcall priority
+Date: Wed, 31 Jan 2007 16:24:03 -0800
+User-Agent: KMail/1.7.1
+Cc: linux-kernel@vger.kernel.org
+References: <20070131194311.4B8381FD833@adsl-69-226-248-13.dsl.pltn13.pacbell.net> <1170283629.9781.163.camel@imap.mvista.com>
+In-Reply-To: <1170283629.9781.163.camel@imap.mvista.com>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-1463790079-2110606773-1170289146=:3632"
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200701311624.03735.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-
----1463790079-2110606773-1170289146=:3632
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-
-
-
-On Thu, 1 Feb 2007, PaweÅ Sikora wrote:
+On Wednesday 31 January 2007 2:47 pm, Daniel Walker wrote:
+> On Wed, 2007-01-31 at 11:43 -0800, David Brownell wrote:
+> > > As a note, arm and mips both register their clocksources during
+> > > time_init() instead of using initcalls.
+> > 
+> > That's actually platform-specific.  ...
+> > 
+> > So don't assume any platform doesn't use clocksource initcalls.
 > 
-> 2.6.18 works, 2.6.19-rc1 doesn't work.
-> git bisect found this bad commit:
+> What does your OMAP clocksource do now ? 
 
-Git bisect rocks.
+OMAP being one family of ARMs ... well, maybe a few families
+under the same branding umbrella.
 
-I'll give myself yet abother pat on the back for writing it. You can never 
-encourage genius like that too much.
 
-> commit e80ee884ae0e3794ef2b65a18a767d502ad712ee
-> Author: Nick Piggin <nickpiggin@yahoo.com.au>
-> Date:   Wed Oct 4 02:15:23 2006 -0700
-> 
->     [PATCH] mm: micro optimise zone_watermark_ok
->
-> reverting mentioned commit removes the oops.
+> 	I thought one of the changes 
+> that you made was to have both 32k and mpu both registered ..
 
-Ok, that commit is just totally broken.
+Some OMAP1 chips will do that, if the MPU timer is configured *AND*
+they have that 32K counter register.  Not OMAP2 (which doesn't have
+MPU timers), and not the older OMAP1 chips (no 32K counter).
 
-If "free_pages" turns negative (which it can, since it's just doing a
+It turned out to be simpler to do it that way.  Otherwise the
+configuration options get too confusing.  There are three types
+of timer (MPU timers on most OMAP1 systems, 32K timer on some, dual
+mode timers on newer chips including OMAP2) that can generate ticks.
 
-	long free_pages = z->free_pages - (1 << order) + 1;
+In some cases, another of those timers wil also be used in free
+run mode as a clocksource.  That 32K counter isn't a timer, but
+it's a fine clocksource (if present).  But until clockevents go
+upstream, it's kind of pointless to factor it all differently.
 
-to initialize it, and for all we know, you have an empty or close-to-empty 
-zone or two, the whole test to do
-
-	if (free_pages <= min + z->lowmem_reserve[classzone_idx])
-		return 0;
-
-gets broken, because the negative 'free_pages' will look like a huge 
-unsigned positive number (and we'll make it unsigned becaue 'min' got 
-turned unsigned). There was a reason that thing was signed in the first 
-place, and neither me nor Andrew noticed.
-
-Bad Nick. And bad me and Andrew for not noticing.
-
-I should either revert that commit or just check for "free_pages" being 
-negative. The latter, in many ways, is probably better, because generally 
-we simply should never work with negative numbers in the kernel, so when 
-something potentially goes negative, we're probably just better off always 
-testing it explicitly anyway.
-
-Nick, Andrew, any preferences? 
-
-			Linus
----1463790079-2110606773-1170289146=:3632--
+- Dave
