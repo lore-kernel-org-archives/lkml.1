@@ -1,73 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751796AbXBAPuJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751850AbXBAPuw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751796AbXBAPuJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Feb 2007 10:50:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751839AbXBAPuI
+	id S1751850AbXBAPuw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Feb 2007 10:50:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751830AbXBAPuv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Feb 2007 10:50:08 -0500
-Received: from nat-132.atmel.no ([80.232.32.132]:52117 "EHLO relay.atmel.no"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751830AbXBAPuH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Feb 2007 10:50:07 -0500
-Date: Thu, 1 Feb 2007 16:49:31 +0100
-From: Haavard Skinnemoen <hskinnemoen@atmel.com>
-To: Linus Torvalds <torvalds@osdl.org>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Daniel Walker <dwalker@mvista.com>
-Subject: [PATCH] Remove avr32@atmel.com from MAINTAINERS
-Message-ID: <20070201164931.24d3b615@dhcp-252-105.norway.atmel.com>
-Organization: Atmel Norway
-X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 1 Feb 2007 10:50:51 -0500
+Received: from smtp40.mobistarmail.be ([193.252.23.61]:3382 "EHLO
+	smtp40.mobistarmail.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751850AbXBAPuu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Feb 2007 10:50:50 -0500
+X-Greylist: delayed 1171 seconds by postgrey-1.27 at vger.kernel.org; Thu, 01 Feb 2007 10:50:50 EST
+X-ME-UUID: 20070201153112972.ED4BF7000166@mwinf4017.mobistarmail.be
+From: Peter Korsgaard <jacmet@sunsite.dk>
+To: dustin@sensoria.com, netdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] net/smc911x: Match up spin lock/unlock
+Date: Thu, 01 Feb 2007 16:30:56 +0100
+Message-ID: <87tzy53nf3.fsf@slug.be.48ers.dk>
+User-Agent: Gnus/5.110004 (No Gnus v0.4) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-avr32@atmel.com is a technical support address and is not really
-appropriate for sending patches. Lots of annoying automatics getting
-in the way.
+smc911x_phy_configure's error handling unconditionally unlocks the
+spinlock even if it wasn't locked. Patch fixes it.
 
-I'm still the maintainer of all the entries touched by this patch, so
-nothing changes with regard to the "Supported" status of the AVR32
-architecture or the macb driver.
+Signed-off-by: Peter Korsgaard <jacmet@sunsite.dk>
 
-Signed-off-by: Haavard Skinnemoen <hskinnemoen@atmel.com>
 ---
- MAINTAINERS |    6 ------
- 1 files changed, 0 insertions(+), 6 deletions(-)
+ drivers/net/smc911x.c |    5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index a275f72..465e083 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -598,8 +598,6 @@ W:	http://linux-atm.sourceforge.net
- S:	Maintained
+Index: linux-trunk/drivers/net/smc911x.c
+===================================================================
+--- linux-trunk.orig/drivers/net/smc911x.c
++++ linux-trunk/drivers/net/smc911x.c
+@@ -969,11 +969,11 @@
+ 	 * We should not be called if phy_type is zero.
+ 	 */
+ 	if (lp->phy_type == 0)
+-		 goto smc911x_phy_configure_exit;
++		 goto smc911x_phy_configure_exit_nolock;
  
- ATMEL MACB ETHERNET DRIVER
--P:	Atmel AVR32 Support Team
--M:	avr32@atmel.com
- P:	Haavard Skinnemoen
- M:	hskinnemoen@atmel.com
- S:	Supported
-@@ -620,8 +618,6 @@ T:	git kernel.org:/pub/scm/linux/kernel/git/dwmw2/audit-2.6.git
- S:	Maintained
+ 	if (smc911x_phy_reset(dev, phyaddr)) {
+ 		printk("%s: PHY reset timed out\n", dev->name);
+-		goto smc911x_phy_configure_exit;
++		goto smc911x_phy_configure_exit_nolock;
+ 	}
+ 	spin_lock_irqsave(&lp->lock, flags);
  
- AVR32 ARCHITECTURE
--P:	Atmel AVR32 Support Team
--M:	avr32@atmel.com
- P:	Haavard Skinnemoen
- M:	hskinnemoen@atmel.com
- W:	http://www.atmel.com/products/AVR32/
-@@ -630,8 +626,6 @@ W:	http://avrfreaks.net/
- S:	Supported
+@@ -1042,6 +1042,7 @@
  
- AVR32/AT32AP MACHINE SUPPORT
--P:	Atmel AVR32 Support Team
--M:	avr32@atmel.com
- P:	Haavard Skinnemoen
- M:	hskinnemoen@atmel.com
- S:	Supported
+ smc911x_phy_configure_exit:
+ 	spin_unlock_irqrestore(&lp->lock, flags);
++smc911x_phy_configure_exit_nolock:
+ 	lp->work_pending = 0;
+ }
+ 
+
 -- 
-1.4.4.3
-
+Bye, Peter Korsgaard
