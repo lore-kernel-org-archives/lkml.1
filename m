@@ -1,50 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422712AbXBAQvp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422709AbXBAQ44@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422712AbXBAQvp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Feb 2007 11:51:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422709AbXBAQvp
+	id S1422709AbXBAQ44 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Feb 2007 11:56:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161212AbXBAQ44
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Feb 2007 11:51:45 -0500
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:54505 "EHLO
-	outbound4-sin-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1422712AbXBAQvo (ORCPT
+	Thu, 1 Feb 2007 11:56:56 -0500
+Received: from e32.co.us.ibm.com ([32.97.110.150]:58336 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161193AbXBAQ4z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Feb 2007 11:51:44 -0500
-X-BigFish: V
-Message-ID: <45C21A95.4010902@am.sony.com>
-Date: Thu, 01 Feb 2007 08:51:33 -0800
-From: Geoff Levand <geoffrey.levand@am.sony.com>
-User-Agent: Mozilla Thunderbird 1.0.8-1.1.fc4 (X11/20060501)
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-CC: James Simmons <jsimmons@infradead.org>,
-       Linux Frame Buffer Device Development 
-	<linux-fbdev-devel@lists.sourceforge.net>,
-       Cell Broadband Engine OSS Development 
-	<cbe-oss-dev@ozlabs.org>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: Re: [Cbe-oss-dev] [PATCH 0/7] RFC: Cell SPE logos
-References: <Pine.LNX.4.62.0701311325480.14996@pademelon.sonytel.be>
-In-Reply-To: <Pine.LNX.4.62.0701311325480.14996@pademelon.sonytel.be>
-X-Enigmail-Version: 0.93.0.0
-Content-Type: text/plain; charset=UTF-8
+	Thu, 1 Feb 2007 11:56:55 -0500
+Subject: Re: [patch 0/9] x86_64: reliable TSC-based gettimeofday
+From: john stultz <johnstul@us.ibm.com>
+To: Jiri Bohac <jbohac@suse.cz>
+Cc: Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org,
+       Vojtech Pavlik <vojtech@suse.cz>, ssouhlal@freebsd.org,
+       arjan@infradead.org, tglx@linutronix.de, zippel@linux-m68k.org,
+       andrea@suse.de
+In-Reply-To: <20070201145236.GA23394@dwarf.suse.cz>
+References: <20070201095952.589234000@jet.suse.cz>
+	 <200702011220.59484.ak@suse.de>  <20070201145236.GA23394@dwarf.suse.cz>
+Content-Type: text/plain
+Date: Thu, 01 Feb 2007 08:56:48 -0800
+Message-Id: <1170349008.2558.9.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 01 Feb 2007 16:51:34.0043 (UTC) FILETIME=[3AF63EB0:01C74621]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Geert Uytterhoeven wrote:
-> To emphasize the existence of the SPEs (which can be used under Linux), we
-> added a second row of (smaller) helper penguin logos, one for each SPE.
-> I attached a PNG version of the helper penguin logo for reference.
+On Thu, 2007-02-01 at 15:52 +0100, Jiri Bohac wrote:
+> On Thu, Feb 01, 2007 at 12:20:59PM +0100, Andi Kleen wrote:
+>>
+> > The big strategic problem is how to marry your patchkit to John Stultz's
+> > clocksources work which is also competing for merge. Any thoughts on that? 
+> 
+> I'll look into that next week. Sorry, I wanted to do that a long time
+> ago, but I spent weeks (over a month) fighting a nasty livelock
+> in the code. (Morale: think twice before using a spinlock inside
+>                       a {do .. while (read_seqretry(..))} loop)
 
-For anyone interested, I put a screen shot here:
+The first step here shouldn't be too difficult. Just create a _read
+function that uses your code to return monotonic TSC cycles (instead of
+nanoseconds w/ gettimeofday).  Then just create a clocksource structure
+for it.
 
-  http://www.kernel.org/pub/linux/kernel/people/geoff/cell/debian-penguin-shot.png
+The harder part will be the vsyscall, as you will need extra per cpu
+data in the vsyscall read. I had some test code for this situation
+awhile back, so if you get the first part functioning correctly (just a
+clocksource w/o a vread pointer), I'll gladly help you get the vsyscall
+bits working.
 
-It may take some time for it to go out to the mirrors.
+thanks
+-john
 
--Geoff 
-  
 
