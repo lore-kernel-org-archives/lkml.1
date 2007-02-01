@@ -1,52 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423006AbXBAVNb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422954AbXBAVTW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423006AbXBAVNb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Feb 2007 16:13:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423019AbXBAVNb
+	id S1422954AbXBAVTW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Feb 2007 16:19:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423018AbXBAVTW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Feb 2007 16:13:31 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:57517 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423006AbXBAVNa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Feb 2007 16:13:30 -0500
-To: "Chen, Kenneth W" <kenneth.w.chen@intel.com>
-Cc: "'Andrew Morton'" <akpm@osdl.org>, "'Benjamin LaHaise'" <bcrl@kvack.org>,
-       <zach.brown@oracle.com>, <linux-aio@kvack.org>,
-       <linux-kernel@vger.kernel.org>
-Subject: Re: [patch] aio: fix buggy put_ioctx call in aio_complete - v2
-X-PGP-KeyID: 1F78E1B4
-X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
-X-PCLoadLetter: What the f**k does that mean?
-References: <000101c72bb2$a47bfa70$d634030a@amr.corp.intel.com>
-From: Jeff Moyer <jmoyer@redhat.com>
-Date: Thu, 01 Feb 2007 16:13:11 -0500
-In-Reply-To: <000101c72bb2$a47bfa70$d634030a@amr.corp.intel.com> (Kenneth W. Chen's message of "Fri, 29 Dec 2006 17:34:26 -0800")
-Message-ID: <x49lkjhy42g.fsf@segfault.boston.devel.redhat.com>
-User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.5-b27 (linux)
+	Thu, 1 Feb 2007 16:19:22 -0500
+Received: from ug-out-1314.google.com ([66.249.92.175]:50832 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422954AbXBAVTW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Feb 2007 16:19:22 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=DMzQkKbiSjwMYhw5jV+bw3c2jYU2fhbt3t2V0gWeQI+nJoAXTUwW2FgUoHSsNC5u9cS9zdUF/KsQfqukjB9QZfo0CTcKFN4qpq++W+GyMzLm3iSmJNVhHesgTtgf3M9OjaQ5iqC8nfbQ+XU9C03eNyd8Kpn6AZWz52uYkVPFOlM=
+Message-ID: <3d57814d0702011319j48e2c2b1w376436d314a4d847@mail.gmail.com>
+Date: Fri, 2 Feb 2007 07:19:07 +1000
+From: "Trent Waddington" <trent.waddington@gmail.com>
+To: "Kyle Moffett" <mrmacman_g4@mac.com>
+Subject: Re: Mach-O loader
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <CAEB951D-58D6-447D-8CDE-F1F5A1FE76C5@mac.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <3d57814d0701312257x1f1fc352r6aecae72c89bee3c@mail.gmail.com>
+	 <CAEB951D-58D6-447D-8CDE-F1F5A1FE76C5@mac.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-==> On Fri, 29 Dec 2006 17:34:26 -0800, "Chen, Kenneth W" <kenneth.w.chen@intel.com> said:
+On 2/2/07, Kyle Moffett <mrmacman_g4@mac.com> wrote:
+> I started working on one a while ago but I ran out of time to
+> dedicate to the project.  My schedule is opening up again, though, so
+> I plan to start working on it again.  At this point I have most of
+> the actual loader code written, the problem is that the syscalls
+> between Linux and Darwin are very different and need a binary
+> translation layer which is still in the concept phase at this point. :-D
 
-Kenneth> An AIO bug was reported that sleeping function is being called in softirq
-Kenneth> context:
+I've written one before for the Boomerang[1] project.  Don't worry
+about the system calls, that's not the point.  I do wonder if you can
+mix Mach-O and ELF binaries in the same process however.. that would
+be good.  If you like, send me the code and I'll take a look at it.
 
-Kenneth> The real problem is that the condition check of ctx->reqs_active in
-Kenneth> wait_for_all_aios() is incorrect that access to reqs_active is not
-Kenneth> being properly protected by spin lock.
+Trent
 
-Kenneth> This patch adds that protective spin lock, and at the same time removes
-Kenneth> all duplicate ref counting for each kiocb as reqs_active is already used
-Kenneth> as a ref count for each active ioctx.  This also ensures that buggy call
-Kenneth> to flush_workqueue() in softirq context is eliminated.
-
-I was finally able to wrap my head around this, and testing has
-confirmed that this patch fixes the problem.  So,
-
-Acked-by: Jeff Moyer <jmoyer@redhat.com>
-
-Better late than never.
-
--Jeff
+[1] http://boomerang.sourceforge.net/  I don't work on this anymore
+due to work constraints.
