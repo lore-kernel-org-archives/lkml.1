@@ -1,85 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422860AbXBANPP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422855AbXBANTO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422860AbXBANPP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Feb 2007 08:15:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422855AbXBANPP
+	id S1422855AbXBANTO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Feb 2007 08:19:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422863AbXBANTO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Feb 2007 08:15:15 -0500
-Received: from fms-01.valinux.co.jp ([210.128.90.1]:53175 "EHLO
-	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1422862AbXBANPO (ORCPT
+	Thu, 1 Feb 2007 08:19:14 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:57928 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422855AbXBANTN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Feb 2007 08:15:14 -0500
-From: Magnus Damm <magnus@valinux.co.jp>
-To: linux-kernel@vger.kernel.org
-Cc: akpm@osdl.org, Magnus Damm <magnus@valinux.co.jp>
-Date: Thu, 01 Feb 2007 22:13:47 +0900
-Message-Id: <20070201131347.3807.87075.sendpatchset@localhost>
-Subject: [PATCH] kexec: Fix CONFIG_SMP=n compilation (ia64)
+	Thu, 1 Feb 2007 08:19:13 -0500
+Date: Thu, 1 Feb 2007 13:19:04 +0000
+From: Christoph Hellwig <hch@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Zach Brown <zach.brown@oracle.com>, linux-kernel@vger.kernel.org,
+       linux-aio@kvack.org, Suparna Bhattacharya <suparna@in.ibm.com>,
+       Benjamin LaHaise <bcrl@kvack.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH 2 of 4] Introduce i386 fibril scheduling
+Message-ID: <20070201131903.GA24683@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Ingo Molnar <mingo@elte.hu>, Zach Brown <zach.brown@oracle.com>,
+	linux-kernel@vger.kernel.org, linux-aio@kvack.org,
+	Suparna Bhattacharya <suparna@in.ibm.com>,
+	Benjamin LaHaise <bcrl@kvack.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>
+References: <patchbomb.1170193181@tetsuo.zabbo.net> <df7bc026d50ec5bbdd8e.1170193183@tetsuo.zabbo.net> <20070201083611.GC18233@elte.hu> <20070201130234.GA15257@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=unknown-8bit
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070201130234.GA15257@elte.hu>
+User-Agent: Mutt/1.4.2.2i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-kexec: Fix CONFIG_SMP=n compilation (ia64)
+On Thu, Feb 01, 2007 at 02:02:34PM +0100, Ingo Molnar wrote:
+> what i dont really like /the particular/ concept above - the 
+> introduction of 'fibrils' as a hard distinction of kernel threads. They 
+> are /almost/ kernel threads, but still by being different they create 
+> alot of duplication and miss out on a good deal of features that kernel 
+> threads have naturally.
+> 
+> It kind of hurts to say this because i'm usually quite concept-happy - 
+> one can easily get addicted to the introduction of new core kernel 
+> concepts :-) But i really, really think we dont want to do fibrils but 
+> we want to do kernel threads, and i havent really seen a discussion 
+> about why they shouldnt be done via kernel threads.
 
-This patch makes it possible to compile kexec for ia64 without SMP support.
-
-Signed-off-by: Magnus Damm <magnus@valinux.co.jp>
----
-
- Applies on top of 2.6.20-rc7.
-
- arch/ia64/kernel/crash.c         |   11 +++++++----
- arch/ia64/kernel/machine_kexec.c |    2 ++
- 2 files changed, 9 insertions(+), 4 deletions(-)
-
---- 0002/arch/ia64/kernel/crash.c
-+++ work/arch/ia64/kernel/crash.c	2007-02-01 12:42:38.000000000 +0900
-@@ -79,6 +79,7 @@ crash_save_this_cpu()
- 	final_note(buf);
- }
- 
-+#ifdef CONFIG_SMP
- static int
- kdump_wait_cpu_freeze(void)
- {
-@@ -91,6 +92,7 @@ kdump_wait_cpu_freeze(void)
- 	}
- 	return 1;
- }
-+#endif
- 
- void
- machine_crash_shutdown(struct pt_regs *pt)
-@@ -132,11 +134,12 @@ kdump_cpu_freeze(struct unw_frame_info *
- 	atomic_inc(&kdump_cpu_freezed);
- 	kdump_status[cpuid] = 1;
- 	mb();
--	if (cpuid == 0) {
--		for (;;)
--			cpu_relax();
--	} else
-+#ifdef CONFIG_HOTPLUG_CPU
-+	if (cpuid != 0)
- 		ia64_jump_to_sal(&sal_boot_rendez_state[cpuid]);
-+#endif
-+	for (;;)
-+		cpu_relax();
- }
- 
- static int
---- 0002/arch/ia64/kernel/machine_kexec.c
-+++ work/arch/ia64/kernel/machine_kexec.c	2007-02-01 12:35:46.000000000 +0900
-@@ -70,12 +70,14 @@ void machine_kexec_cleanup(struct kimage
- 
- void machine_shutdown(void)
- {
-+#ifdef CONFIG_SMP
- 	int cpu;
- 
- 	for_each_online_cpu(cpu) {
- 		if (cpu != smp_processor_id())
- 			cpu_down(cpu);
- 	}
-+#endif
- 	kexec_disable_iosapic();
- }
+I tend to agree.  Note that there is one thing we should be doing one
+one day (not only if we want to use it for aio) is to make kernel threads
+more lightweight.  Thereéis a lot of baggae we keep around in task_struct
+and co that only makes sense for threads that have a user space part and
+aren't or shouldn't be needed for a purely kernel-resistant thread.
