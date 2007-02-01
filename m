@@ -1,68 +1,513 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422842AbXBASAd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422790AbXBASBn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422842AbXBASAd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Feb 2007 13:00:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422849AbXBASAd
+	id S1422790AbXBASBn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Feb 2007 13:01:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422849AbXBASBn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Feb 2007 13:00:33 -0500
-Received: from smtp7-g19.free.fr ([212.27.42.64]:50213 "EHLO smtp7-g19.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422842AbXBASAd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Feb 2007 13:00:33 -0500
-Subject: sky2 or acpi problem ?
-From: Lionel Landwerlin <landwer@free.fr>
-To: Stephen Hemminger <shemminger@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Content-Type: text/plain
-Date: Thu, 01 Feb 2007 18:59:55 +0100
-Message-Id: <1170352795.5299.17.camel@cocoduo>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
+	Thu, 1 Feb 2007 13:01:43 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.155]:55575 "EHLO
+	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1422790AbXBASBl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Feb 2007 13:01:41 -0500
+Message-ID: <45C22AFF.6060102@ru.mvista.com>
+Date: Thu, 01 Feb 2007 21:01:35 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: v2.6.19-rt6, yum/rpm
+References: <20061205171114.GA25926@elte.hu> <4582CAD6.9040404@ru.mvista.com> <20061215161952.GA29191@elte.hu> <45C20CC6.2070201@ru.mvista.com> <20070201173855.GA29309@elte.hu> <20070201174900.GA31866@elte.hu>
+In-Reply-To: <20070201174900.GA31866@elte.hu>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-we already had words on lkml about this bug with sky2 driver.
+Ingo Molnar wrote:
+> * Ingo Molnar <mingo@elte.hu> wrote:
 
-I was having problems, and you told me to use the disable_msi=1
-parameter to see what happens. After a couple of hours of testing with
-heavly ethernet load, I answered you it had fixed the problem. I was
-wrong. Now, it takes much more time to crash. Most of time, I can't even
-see what happens beacause the box is completly frozen. But after several
-crashs, I only had my keyboard locked, usb unpowered, and ethernet
-interface down, I finally had the possibility see that :
+>>* Sergei Shtylyov <sshtylyov@ru.mvista.com> wrote:
 
-Feb  1 18:35:06 cocoduo kernel: [59723.468000] NETDEV WATCHDOG: eth0: transmit timed out
-Feb  1 18:35:07 cocoduo kernel: [59723.468000] sky2 eth0: tx timeout
-Feb  1 18:35:07 cocoduo kernel: [59723.468000] sky2 eth0: transmit ring 64 .. 41 report=65 done=65
-Feb  1 18:35:07 cocoduo kernel: [59723.468000] sky2 status report lost?
-Feb  1 18:35:16 cocoduo kernel: [59733.200000] BUG: soft lockup detected on CPU#0!
-Feb  1 18:35:16 cocoduo kernel: [59733.200000]  [softlockup_tick+155/208] softlockup_tick+0x9b/0xd0
-Feb  1 18:35:16 cocoduo kernel: [59733.200000]  [update_process_times+49/128] update_process_times+0x31/0x80
-Feb  1 18:35:16 cocoduo kernel: [59733.200000]  [smp_apic_timer_interrupt+145/176] smp_apic_timer_interrupt+0x91/0xb0
-Feb  1 18:35:16 cocoduo kernel: [59733.200000]  [apic_timer_interrupt+31/36] apic_timer_interrupt+0x1f/0x24
-Feb  1 18:35:16 cocoduo kernel: [59733.200000]  [_spin_lock_bh+15/32] _spin_lock_bh+0xf/0x20
-Feb  1 18:35:16 cocoduo kernel: [59733.200000]  [pg0+945481365/1068803072] sky2_tx_timeout+0xf5/0x1d0 [sky2]
-Feb  1 18:35:16 cocoduo kernel: [59733.200000]  [dev_watchdog+0/208] dev_watchdog+0x0/0xd0
-Feb  1 18:35:16 cocoduo kernel: [59733.200000]  [dev_watchdog+192/208] dev_watchdog+0xc0/0xd0
-Feb  1 18:35:16 cocoduo kernel: [59733.200000]  [run_timer_softirq+273/400] run_timer_softirq+0x111/0x190
-Feb  1 18:35:16 cocoduo kernel: [59733.200000]  [__do_softirq+116/240] __do_softirq+0x74/0xf0
-Feb  1 18:35:16 cocoduo kernel: [59733.200000]  [do_softirq+59/80] do_softirq+0x3b/0x50
-Feb  1 18:35:16 cocoduo kernel: [59733.200000]  [smp_apic_timer_interrupt+150/176] smp_apic_timer_interrupt+0x96/0xb0
-Feb  1 18:35:16 cocoduo kernel: [59733.200000]  [apic_timer_interrupt+31/36] apic_timer_interrupt+0x1f/0x24
-Feb  1 18:35:16 cocoduo kernel: [59733.200000]  [pg0+943208348/1068803072] acpi_processor_idle+0x1fd/0x3b9 [processor]
-Feb  1 18:35:16 cocoduo kernel: [59733.200000]  [cpu_idle+116/208] cpu_idle+0x74/0xd0
-Feb  1 18:35:16 cocoduo kernel: [59733.200000]  [start_kernel+872/1072] start_kernel+0x368/0x430
-Feb  1 18:35:16 cocoduo kernel: [59733.200000]  [unknown_bootoption+0/624] unknown_bootoption+0x0/0x270
+>>>>could you resend them to me please?
 
-It's exactly the same error than before. What do you think of this
-trace ? Is it related to sky2 driver or acpi ? Did you add debug output
-since 2.6.19.2 (version of the kernel I'm using) that would help to fix
-that bug ? What can I do to help to fix the bug ?
+>>>   Seeing that GENERIC_TIME has been thrown out from the -rt patch, 
+>>>[...]
 
-Regards,
+>>hm, i did that accidentally during a rebase. That was certainly not 
+>>meant to be a persistent condition.
 
--- 
-Lionel Landwerlin <landwer@free.fr>
+> ok, the delta below is what i've managed to restore from your PPC 
+> patches so far. Looks like this was truly a comedy of errors: i 
+> accidentally dropped the big ppc-gtod patch,
 
+   I can't take credit for this one -- it's (and the vsyscall breakage :-) 
+courtesy of John Stultz.
+
+> which made your later fix 
+> patches not apply, etc., etc. The one below still likely wont build 
+> right away, but should be a more useful base for you and for Thomas too.
+
+> 	Ingo
+> 
+> --------------->
+> Index: linux/Makefile
+> ===================================================================
+> --- linux.orig/Makefile
+> +++ linux/Makefile
+> @@ -1,7 +1,7 @@
+>  VERSION = 2
+>  PATCHLEVEL = 6
+>  SUBLEVEL = 20
+> -EXTRAVERSION =-rc7-rt3
+> +EXTRAVERSION =-rc7-rt4
+>  NAME = Homicidal Dwarf Hamster
+>  
+>  # *DOCUMENTATION*
+> Index: linux/arch/powerpc/Kconfig
+> ===================================================================
+> --- linux.orig/arch/powerpc/Kconfig
+> +++ linux/arch/powerpc/Kconfig
+> @@ -26,6 +26,10 @@ config MMU
+>  	bool
+>  	default y
+>  
+> +config GENERIC_TIME
+> +	bool
+> +	default y
+> +
+>  config GENERIC_HARDIRQS
+>  	bool
+>  	default y
+> Index: linux/arch/powerpc/kernel/time.c
+> ===================================================================
+> --- linux.orig/arch/powerpc/kernel/time.c
+> +++ linux/arch/powerpc/kernel/time.c
+> @@ -119,8 +119,6 @@ EXPORT_SYMBOL_GPL(rtc_lock);
+>  u64 tb_to_ns_scale;
+>  unsigned tb_to_ns_shift;
+>  
+> -struct gettimeofday_struct do_gtod;
+> -
+>  extern struct timezone sys_tz;
+>  static long timezone_offset;
+>  
+> @@ -378,160 +376,6 @@ static __inline__ void timer_check_rtc(v
+>          }
+>  }
+>  
+> -/*
+> - * This version of gettimeofday has microsecond resolution.
+> - */
+> -static inline void __do_gettimeofday(struct timeval *tv)
+> -{
+> -	unsigned long sec, usec;
+> -	u64 tb_ticks, xsec;
+> -	struct gettimeofday_vars *temp_varp;
+> -	u64 temp_tb_to_xs, temp_stamp_xsec;
+> -
+> -	/*
+> -	 * These calculations are faster (gets rid of divides)
+> -	 * if done in units of 1/2^20 rather than microseconds.
+> -	 * The conversion to microseconds at the end is done
+> -	 * without a divide (and in fact, without a multiply)
+> -	 */
+> -	temp_varp = do_gtod.varp;
+> -
+> -	/* Sampling the time base must be done after loading
+> -	 * do_gtod.varp in order to avoid racing with update_gtod.
+> -	 */
+> -	data_barrier(temp_varp);
+> -	tb_ticks = get_tb() - temp_varp->tb_orig_stamp;
+> -	temp_tb_to_xs = temp_varp->tb_to_xs;
+> -	temp_stamp_xsec = temp_varp->stamp_xsec;
+> -	xsec = temp_stamp_xsec + mulhdu(tb_ticks, temp_tb_to_xs);
+> -	sec = xsec / XSEC_PER_SEC;
+> -	usec = (unsigned long)xsec & (XSEC_PER_SEC - 1);
+> -	usec = SCALE_XSEC(usec, 1000000);
+> -
+> -	tv->tv_sec = sec;
+> -	tv->tv_usec = usec;
+> -}
+> -
+> -void do_gettimeofday(struct timeval *tv)
+> -{
+> -	if (__USE_RTC()) {
+> -		/* do this the old way */
+> -		unsigned long flags, seq;
+> -		unsigned int sec, nsec, usec;
+> -
+> -		do {
+> -			seq = read_seqbegin_irqsave(&xtime_lock, flags);
+> -			sec = xtime.tv_sec;
+> -			nsec = xtime.tv_nsec + tb_ticks_since(tb_last_jiffy);
+> -		} while (read_seqretry_irqrestore(&xtime_lock, seq, flags));
+> -		usec = nsec / 1000;
+> -		while (usec >= 1000000) {
+> -			usec -= 1000000;
+> -			++sec;
+> -		}
+> -		tv->tv_sec = sec;
+> -		tv->tv_usec = usec;
+> -		return;
+> -	}
+> -	__do_gettimeofday(tv);
+> -}
+> -
+> -EXPORT_SYMBOL(do_gettimeofday);
+> -
+> -/*
+> - * There are two copies of tb_to_xs and stamp_xsec so that no
+> - * lock is needed to access and use these values in
+> - * do_gettimeofday.  We alternate the copies and as long as a
+> - * reasonable time elapses between changes, there will never
+> - * be inconsistent values.  ntpd has a minimum of one minute
+> - * between updates.
+> - */
+> -static inline void update_gtod(u64 new_tb_stamp, u64 new_stamp_xsec,
+> -			       u64 new_tb_to_xs)
+> -{
+> -	unsigned temp_idx;
+> -	struct gettimeofday_vars *temp_varp;
+> -
+> -	temp_idx = (do_gtod.var_idx == 0);
+> -	temp_varp = &do_gtod.vars[temp_idx];
+> -
+> -	temp_varp->tb_to_xs = new_tb_to_xs;
+> -	temp_varp->tb_orig_stamp = new_tb_stamp;
+> -	temp_varp->stamp_xsec = new_stamp_xsec;
+> -	smp_mb();
+> -	do_gtod.varp = temp_varp;
+> -	do_gtod.var_idx = temp_idx;
+> -
+> -	/*
+> -	 * tb_update_count is used to allow the userspace gettimeofday code
+> -	 * to assure itself that it sees a consistent view of the tb_to_xs and
+> -	 * stamp_xsec variables.  It reads the tb_update_count, then reads
+> -	 * tb_to_xs and stamp_xsec and then reads tb_update_count again.  If
+> -	 * the two values of tb_update_count match and are even then the
+> -	 * tb_to_xs and stamp_xsec values are consistent.  If not, then it
+> -	 * loops back and reads them again until this criteria is met.
+> -	 * We expect the caller to have done the first increment of
+> -	 * vdso_data->tb_update_count already.
+> -	 */
+> -	vdso_data->tb_orig_stamp = new_tb_stamp;
+> -	vdso_data->stamp_xsec = new_stamp_xsec;
+> -	vdso_data->tb_to_xs = new_tb_to_xs;
+> -	vdso_data->wtom_clock_sec = wall_to_monotonic.tv_sec;
+> -	vdso_data->wtom_clock_nsec = wall_to_monotonic.tv_nsec;
+> -	smp_wmb();
+> -	++(vdso_data->tb_update_count);
+> -}
+> -
+> -/*
+> - * When the timebase - tb_orig_stamp gets too big, we do a manipulation
+> - * between tb_orig_stamp and stamp_xsec. The goal here is to keep the
+> - * difference tb - tb_orig_stamp small enough to always fit inside a
+> - * 32 bits number. This is a requirement of our fast 32 bits userland
+> - * implementation in the vdso. If we "miss" a call to this function
+> - * (interrupt latency, CPU locked in a spinlock, ...) and we end up
+> - * with a too big difference, then the vdso will fallback to calling
+> - * the syscall
+> - */
+> -static __inline__ void timer_recalc_offset(u64 cur_tb)
+> -{
+> -	unsigned long offset;
+> -	u64 new_stamp_xsec;
+> -	u64 tlen, t2x;
+> -	u64 tb, xsec_old, xsec_new;
+> -	struct gettimeofday_vars *varp;
+> -
+> -	if (__USE_RTC())
+> -		return;
+> -	tlen = current_tick_length();
+> -	offset = cur_tb - do_gtod.varp->tb_orig_stamp;
+> -	if (tlen == last_tick_len && offset < 0x80000000u)
+> -		return;
+> -	if (tlen != last_tick_len) {
+> -		t2x = mulhdu(tlen << TICKLEN_SHIFT, ticklen_to_xs);
+> -		last_tick_len = tlen;
+> -	} else
+> -		t2x = do_gtod.varp->tb_to_xs;
+> -	new_stamp_xsec = (u64) xtime.tv_nsec * XSEC_PER_SEC;
+> -	do_div(new_stamp_xsec, 1000000000);
+> -	new_stamp_xsec += (u64) xtime.tv_sec * XSEC_PER_SEC;
+> -
+> -	++vdso_data->tb_update_count;
+> -	smp_mb();
+> -
+> -	/*
+> -	 * Make sure time doesn't go backwards for userspace gettimeofday.
+> -	 */
+> -	tb = get_tb();
+> -	varp = do_gtod.varp;
+> -	xsec_old = mulhdu(tb - varp->tb_orig_stamp, varp->tb_to_xs)
+> -		+ varp->stamp_xsec;
+> -	xsec_new = mulhdu(tb - cur_tb, t2x) + new_stamp_xsec;
+> -	if (xsec_new < xsec_old)
+> -		new_stamp_xsec += xsec_old - xsec_new;
+> -
+> -	update_gtod(cur_tb, new_stamp_xsec, t2x);
+> -}
+> -
+>  #ifdef CONFIG_SMP
+>  unsigned long notrace profile_pc(struct pt_regs *regs)
+>  {
+> @@ -581,11 +425,7 @@ static void iSeries_tb_recal(void)
+>  				tb_ticks_per_sec   = new_tb_ticks_per_sec;
+>  				calc_cputime_factors();
+>  				div128_by_32( XSEC_PER_SEC, 0, tb_ticks_per_sec, &divres );
+> -				do_gtod.tb_ticks_per_sec = tb_ticks_per_sec;
+>  				tb_to_xs = divres.result_low;
+> -				do_gtod.varp->tb_to_xs = tb_to_xs;
+> -				vdso_data->tb_ticks_per_sec = tb_ticks_per_sec;
+> -				vdso_data->tb_to_xs = tb_to_xs;
+>  			}
+>  			else {
+>  				printk( "Titan recalibrate: FAILED (difference > 4 percent)\n"
+> @@ -756,77 +596,6 @@ unsigned long long sched_clock(void)
+>  	return mulhdu(get_tb(), tb_to_ns_scale) << tb_to_ns_shift;
+>  }
+>  
+> -int do_settimeofday(struct timespec *tv)
+> -{
+> -	time_t wtm_sec, new_sec = tv->tv_sec;
+> -	long wtm_nsec, new_nsec = tv->tv_nsec;
+> -	unsigned long flags;
+> -	u64 new_xsec;
+> -	unsigned long tb_delta;
+> -
+> -	if ((unsigned long)tv->tv_nsec >= NSEC_PER_SEC)
+> -		return -EINVAL;
+> -
+> -	write_seqlock_irqsave(&xtime_lock, flags);
+> -
+> -	/*
+> -	 * Updating the RTC is not the job of this code. If the time is
+> -	 * stepped under NTP, the RTC will be updated after STA_UNSYNC
+> -	 * is cleared.  Tools like clock/hwclock either copy the RTC
+> -	 * to the system time, in which case there is no point in writing
+> -	 * to the RTC again, or write to the RTC but then they don't call
+> -	 * settimeofday to perform this operation.
+> -	 */
+> -#ifdef CONFIG_PPC_ISERIES
+> -	if (firmware_has_feature(FW_FEATURE_ISERIES) && first_settimeofday) {
+> -		iSeries_tb_recal();
+> -		first_settimeofday = 0;
+> -	}
+> -#endif
+> -
+> -	/* Make userspace gettimeofday spin until we're done. */
+> -	++vdso_data->tb_update_count;
+> -	smp_mb();
+> -
+> -	/*
+> -	 * Subtract off the number of nanoseconds since the
+> -	 * beginning of the last tick.
+> -	 */
+> -	tb_delta = tb_ticks_since(tb_last_jiffy);
+> -	tb_delta = mulhdu(tb_delta, do_gtod.varp->tb_to_xs); /* in xsec */
+> -	new_nsec -= SCALE_XSEC(tb_delta, 1000000000);
+> -
+> -	wtm_sec  = wall_to_monotonic.tv_sec + (xtime.tv_sec - new_sec);
+> -	wtm_nsec = wall_to_monotonic.tv_nsec + (xtime.tv_nsec - new_nsec);
+> -
+> - 	set_normalized_timespec(&xtime, new_sec, new_nsec);
+> -	set_normalized_timespec(&wall_to_monotonic, wtm_sec, wtm_nsec);
+> -
+> -	/* In case of a large backwards jump in time with NTP, we want the 
+> -	 * clock to be updated as soon as the PLL is again in lock.
+> -	 */
+> -	last_rtc_update = new_sec - 658;
+> -
+> -	ntp_clear();
+> -
+> -	new_xsec = xtime.tv_nsec;
+> -	if (new_xsec != 0) {
+> -		new_xsec *= XSEC_PER_SEC;
+> -		do_div(new_xsec, NSEC_PER_SEC);
+> -	}
+> -	new_xsec += (u64)xtime.tv_sec * XSEC_PER_SEC;
+> -	update_gtod(tb_last_jiffy, new_xsec, do_gtod.varp->tb_to_xs);
+> -
+> -	vdso_data->tz_minuteswest = sys_tz.tz_minuteswest;
+> -	vdso_data->tz_dsttime = sys_tz.tz_dsttime;
+> -
+> -	write_sequnlock_irqrestore(&xtime_lock, flags);
+> -	clock_was_set();
+> -	return 0;
+> -}
+> -
+> -EXPORT_SYMBOL(do_settimeofday);
+> -
+>  static int __init get_freq(char *name, int cells, unsigned long *val)
+>  {
+>  	struct device_node *cpu;
+> @@ -993,20 +762,6 @@ void __init time_init(void)
+>  
+>  	xtime.tv_sec = tm;
+>  	xtime.tv_nsec = 0;
+> -	do_gtod.varp = &do_gtod.vars[0];
+> -	do_gtod.var_idx = 0;
+> -	do_gtod.varp->tb_orig_stamp = tb_last_jiffy;
+> -	__get_cpu_var(last_jiffy) = tb_last_jiffy;
+> -	do_gtod.varp->stamp_xsec = (u64) xtime.tv_sec * XSEC_PER_SEC;
+> -	do_gtod.tb_ticks_per_sec = tb_ticks_per_sec;
+> -	do_gtod.varp->tb_to_xs = tb_to_xs;
+> -	do_gtod.tb_to_us = tb_to_us;
+> -
+> -	vdso_data->tb_orig_stamp = tb_last_jiffy;
+> -	vdso_data->tb_update_count = 0;
+> -	vdso_data->tb_ticks_per_sec = tb_ticks_per_sec;
+> -	vdso_data->stamp_xsec = (u64) xtime.tv_sec * XSEC_PER_SEC;
+> -	vdso_data->tb_to_xs = tb_to_xs;
+>  
+>  	time_freq = 0;
+>  
+> @@ -1019,7 +774,6 @@ void __init time_init(void)
+>  	set_dec(tb_ticks_per_jiffy);
+>  }
+>  
+> -
+>  #define FEBRUARY	2
+>  #define	STARTOFTIME	1970
+>  #define SECDAY		86400L
+> @@ -1164,3 +918,36 @@ void div128_by_32(u64 dividend_high, u64
+>  	dr->result_low  = ((u64)y << 32) + z;
+>  
+>  }
+> +
+> +/* PowerPC clocksource code */
+> +
+> +#include <linux/clocksource.h>
+> +
+> +static cycle_t timebase_read(void)
+> +{
+> +	return (cycle_t)get_tb();
+> +}
+> +
+> +struct clocksource clocksource_timebase = {
+> +	.name		= "timebase",
+> +	.rating		= 200,
+> +	.read		= timebase_read,
+> +	.mask		= (cycle_t)-1,
+> +	.mult		= 0,
+> +	.shift		= 22,
+> +	.is_continuous	= 1,
+> +};
+> +
+> +
+> +/* XXX - this should be calculated or properly externed! */
+> +static int __init init_timebase_clocksource(void)
+> +{
+> +	if (__USE_RTC())
+> +		return -ENODEV;
+> +
+> +	clocksource_timebase.mult = clocksource_hz2mult(tb_ticks_per_sec,
+> +					clocksource_timebase.shift);
+> +	return clocksource_register(&clocksource_timebase);
+> +}
+> +
+> +module_init(init_timebase_clocksource);
+
+    Erm, there was one more patch implementing read_prersistent_clock()...
+
+> Index: linux/arch/powerpc/platforms/cell/interrupt.c
+> ===================================================================
+> --- linux.orig/arch/powerpc/platforms/cell/interrupt.c
+> +++ linux/arch/powerpc/platforms/cell/interrupt.c
+> @@ -90,6 +90,7 @@ static struct irq_chip iic_chip = {
+>  	.typename = " CELL-IIC ",
+>  	.mask = iic_mask,
+>  	.unmask = iic_unmask,
+> +	.ack = iic_eoi,
+>  	.eoi = iic_eoi,
+>  };
+>  
+> Index: linux/arch/powerpc/platforms/iseries/irq.c
+> ===================================================================
+> --- linux.orig/arch/powerpc/platforms/iseries/irq.c
+> +++ linux/arch/powerpc/platforms/iseries/irq.c
+> @@ -279,6 +279,7 @@ static struct irq_chip iseries_pic = {
+>  	.shutdown	= iseries_shutdown_IRQ,
+>  	.unmask		= iseries_enable_IRQ,
+>  	.mask		= iseries_disable_IRQ,
+> +	.ack		= iseries_end_IRQ,
+>  	.eoi		= iseries_end_IRQ
+>  };
+>  
+> Index: linux/arch/powerpc/platforms/pseries/xics.c
+> ===================================================================
+> --- linux.orig/arch/powerpc/platforms/pseries/xics.c
+> +++ linux/arch/powerpc/platforms/pseries/xics.c
+> @@ -456,6 +456,7 @@ static struct irq_chip xics_pic_direct =
+>  	.startup = xics_startup,
+>  	.mask = xics_mask_irq,
+>  	.unmask = xics_unmask_irq,
+> +	.ack = xics_eoi_direct,
+>  	.eoi = xics_eoi_direct,
+>  	.set_affinity = xics_set_affinity
+>  };
+> @@ -466,6 +467,7 @@ static struct irq_chip xics_pic_lpar = {
+>  	.startup = xics_startup,
+>  	.mask = xics_mask_irq,
+>  	.unmask = xics_unmask_irq,
+> +	.ack = xics_eoi_lpar,
+>  	.eoi = xics_eoi_lpar,
+>  	.set_affinity = xics_set_affinity
+>  };
+> Index: linux/arch/powerpc/sysdev/mpic.c
+> ===================================================================
+> --- linux.orig/arch/powerpc/sysdev/mpic.c
+> +++ linux/arch/powerpc/sysdev/mpic.c
+> @@ -767,6 +767,7 @@ static int mpic_set_irq_type(unsigned in
+>  static struct irq_chip mpic_irq_chip = {
+>  	.mask		= mpic_mask_irq,
+>  	.unmask		= mpic_unmask_irq,
+> +	.ack		= mpic_end_irq,
+>  	.eoi		= mpic_end_irq,
+>  	.set_type	= mpic_set_irq_type,
+>  };
+
+    These changes have been refused in favor of "fasetoi" flow fix.
+
+> Index: linux/drivers/mtd/nand/cafe.c
+> ===================================================================
+> --- linux.orig/drivers/mtd/nand/cafe.c
+> +++ linux/drivers/mtd/nand/cafe.c
+> @@ -597,7 +597,8 @@ static int __devinit cafe_nand_probe(str
+>  		cafe_writel(cafe, 0xffffffff, NAND_TIMING3);
+>  	}
+>  	cafe_writel(cafe, 0xffffffff, NAND_IRQ_MASK);
+> -	err = request_irq(pdev->irq, &cafe_nand_interrupt, SA_SHIRQ, "CAFE NAND", mtd);
+> +	err = request_irq(pdev->irq, &cafe_nand_interrupt, IRQF_SHARED,
+> +			"CAFE NAND", mtd);
+>  	if (err) {
+>  		dev_warn(&pdev->dev, "Could not register IRQ %d\n", pdev->irq);
+>  
+
+    Certainly not mine. :-)
+
+> Index: linux/kernel/latency_trace.c
+> ===================================================================
+> --- linux.orig/kernel/latency_trace.c
+> +++ linux/kernel/latency_trace.c
+> @@ -1774,8 +1774,8 @@ check_critical_timing(int cpu, struct cp
+>  #ifndef CONFIG_CRITICAL_LATENCY_HIST
+>  	if (!preempt_thresh && preempt_max_latency > delta) {
+>  		printk("bug: updating %016Lx > %016Lx?\n",
+> -			preempt_max_latency, delta);
+> -		printk("  [%016Lx %016Lx %016Lx]\n", T0, T1, T2);
+> +			(u64)preempt_max_latency, (u64)delta);
+> +		printk("  [%016Lx %016Lx %016Lx]\n", (u64)T0, (u64)T1, (u64)T2);
+>  	}
+>  #endif
+
+    IIRC, this is a fragment of my another refused patch (maybe the first take 
+on it?)... Should be outdated now.
+
+WBR, Sergei
