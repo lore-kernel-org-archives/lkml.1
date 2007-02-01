@@ -1,101 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932978AbXBACTA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964798AbXBAC3K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932978AbXBACTA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Jan 2007 21:19:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933340AbXBACTA
+	id S964798AbXBAC3K (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Jan 2007 21:29:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933352AbXBAC3K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Jan 2007 21:19:00 -0500
-Received: from ns2.uludag.org.tr ([193.140.100.220]:53003 "EHLO uludag.org.tr"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932978AbXBACS7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Jan 2007 21:18:59 -0500
-From: "=?utf-8?q?S=2E=C3=87a=C4=9Flar?= Onur" <caglar@pardus.org.tr>
-Reply-To: caglar@pardus.org.tr
-Organization: =?utf-8?q?T=C3=9CB=C4=B0TAK_/?= UEKAE
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Linux 2.6.20-rc7
-Date: Thu, 1 Feb 2007 04:16:48 +0200
-User-Agent: KMail/1.9.6
-References: <Pine.LNX.4.64.0701302019530.11095@woody.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0701302019530.11095@woody.linux-foundation.org>
-Cc: lkml <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>
+	Wed, 31 Jan 2007 21:29:10 -0500
+Received: from raven.upol.cz ([158.194.120.4]:65327 "EHLO raven.upol.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933340AbXBAC3J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Jan 2007 21:29:09 -0500
+Date: Thu, 1 Feb 2007 03:37:17 +0100
+To: Andrew Morton <akpm@osdl.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Roman Zippel <zippel@linux-m68k.org>,
+       Bastian Blank <bastian@waldi.eu.org>, Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [patch] kbuild: correctly skip tilded backups in localversion files
+Message-ID: <20070201023717.GA22328@flower.upol.cz>
+References: <20070131071103.GA3295@flower.upol.cz> <20070131155651.529e933c.akpm@osdl.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart5396694.LIL18qlPpU";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200702010416.59469.caglar@pardus.org.tr>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070131155651.529e933c.akpm@osdl.org>
+Organization: Palacky University in Olomouc, experimental physics department.
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Oleg Verych <olecom@flower.upol.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart5396694.LIL18qlPpU
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Wed, Jan 31, 2007 at 03:56:51PM -0800, Andrew Morton wrote:
+> On Wed, 31 Jan 2007 07:11:04 +0000
+> Oleg Verych <olecom@flower.upol.cz> wrote:
+> 
+> > kbuild: correctly skip tilded backups in localversion files
+> 
+> Does this patch replace Bastian's patch, below?
 
-Hi;
+Along with "Message-ID: <20070131093542.GA3471@flower.upol.cz>" -- yes.
 
-31 Oca 2007 =C3=87ar tarihinde =C5=9Funlar=C4=B1 yazm=C4=B1=C5=9Ft=C4=B1n=
-=C4=B1z:
-> In other words, please do give it a good testing. We should have fixed the
-> nasty stuff on Adrian's list (and here's another thanks to Adrian for
-> keeping me on my toes!) and it's all good. But please give it a quick
-> shake-down to make sure that nothing silly happened while fixing the bad
-> stuff.
+Note, that they also make a little bit of cleanup to top makefile's mess,
+And, i think, have more elegant, portable, clean solution.
 
-=46or me, both 2.6.20-rc6 and 2.6.20-rc7 fails while booting with initramfs=
-=20
-(initramfs that uses busybox) with "request_module: runaway loop modprobe=20
-binfmt-0000" error.=20
+Roman commented on another my patch, saying, that tilde in the end isn't
+the only way to name backups. Filename, containing '~' is a backup in the
+sources, thus i'm proposing new patch.
 
-So i modified kmod.c with [1] to get dump_stack, here is the picture taken=
-=20
-with [2] dump_stack enabled one with description below.
+Unfortunately still no more comments from anybody. Roman joined, but
+seems busy now, to comment on such minor stuff.
 
-And here is the some observations that i made;
+Anyway, thanks.
 
-* Booting without an initramfs works,
-* Booting with converted initrd from failed initramfs's content works,
-* Booting with "Hello world" type initramfs described=20
-in "Documentation/filesystems/ramfs-rootfs-initramfs.txt" works,
 
-But what is not working is busybox binaries inside the _initramfs_, modifiy=
-ing=20
-our init shell script to use staticly linked bash with confirms that, bash=
-=20
-script interpretted without a problem by staticaly linked bash until=20
-busybox's mount binary called inside the initramfs.
-
-=46irst i thought somehow busybox is broken but copying initramfs's content=
- into=20
-initrd works without a problem and also same binaries are working with 2.6.=
-18=20
-so i think its a regression in kernel but of course im not sure :), if you=
-=20
-need more information please ask.
-
-[1] http://www.mail-archive.com/linux-kernel@vger.kernel.org/msg109266.html
-[2] http://cekirdek.uludag.org.tr/~caglar/error.png
-
-Cheers
-=2D-=20
-S.=C3=87a=C4=9Flar Onur <caglar@pardus.org.tr>
-http://cekirdek.pardus.org.tr/~caglar/
-
-Linux is like living in a teepee. No Windows, no Gates and an Apache in hou=
-se!
-
---nextPart5396694.LIL18qlPpU
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.1 (GNU/Linux)
-
-iD8DBQBFwU2by7E6i0LKo6YRAnYxAJ4x/NMFKHnb+8qc24A7dSposwsREgCgq/Y1
-e4Pigq1EB+rweLp0AEyC3pQ=
-=XYRx
------END PGP SIGNATURE-----
-
---nextPart5396694.LIL18qlPpU--
+> From: Bastian Blank <bastian@waldi.eu.org>
+> 
+> Fix the problem that localversion files were ignored if the tree lives in
+> a path which contains a ~.  It changes the test to apply to the filename
+> only.
+> 
+> Debian allows versions which contains ~ in it.  The upstream part of the
+> version is in the directory name of the build tree and we got weird results
+> because the localversion files was just got ignored in this case.
+> 
+> Cc: Sam Ravnborg <sam@ravnborg.org>
+> Cc: Roman Zippel <zippel@linux-m68k.org>
+> Signed-off-by: Andrew Morton <akpm@osdl.org>
+> ---
+> 
+>  Makefile |    2 +-
+>  1 files changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff -puN Makefile~kbuild-dont-ignore-localversion-files-if-the-path-includes-a Makefile
+> --- a/Makefile~kbuild-dont-ignore-localversion-files-if-the-path-includes-a
+> +++ a/Makefile
+> @@ -793,7 +793,7 @@ space      := $(nullstring) # end of lin
+>  ___localver = $(objtree)/localversion* $(srctree)/localversion*
+>  __localver  = $(sort $(wildcard $(___localver)))
+>  # skip backup files (containing '~')
+> -_localver = $(foreach f, $(__localver), $(if $(findstring ~, $(f)),,$(f)))
+> +_localver = $(foreach f, $(__localver), $(if $(findstring ~, $(notdir $(f))),,$(f)))
+>  
+>  localver = $(subst $(space),, \
+>  	   $(shell cat /dev/null $(_localver)) \
+> _
+> 
