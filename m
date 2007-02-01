@@ -1,189 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933371AbXBAAGJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933375AbXBAAG2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933371AbXBAAGJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 31 Jan 2007 19:06:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933374AbXBAAGJ
+	id S933375AbXBAAG2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 31 Jan 2007 19:06:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933379AbXBAAG2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 31 Jan 2007 19:06:09 -0500
-Received: from patroclus.tjworld.net ([84.12.34.246]:49347 "EHLO phwoarrr.tv"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S933371AbXBAAGH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 31 Jan 2007 19:06:07 -0500
-X-Greylist: delayed 919 seconds by postgrey-1.27 at vger.kernel.org; Wed, 31 Jan 2007 19:06:06 EST
-Subject: [PATCH 1/1] filesystem: Disk Errors at boot-time caused by probe
-	of partitions
-From: TJ <linux@tjworld.net>
-To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-Cc: Neil Brown <neilb@suse.de>, linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Organization: TJworld
-Date: Wed, 31 Jan 2007 23:50:39 +0000
-Message-Id: <1170287439.13764.24.camel@butch.lan.tjworld.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
-Content-Transfer-Encoding: 7bit
-X-Server: High Performance Mail Server - http://surgemail.com r=-2006397171
-X-Authenticated-User: tj@tjworld.net 
-X-DNS-Paranoid: DNS lookup didn't match (84.12.34.243)->(dns2.hornytunes.com)->()
+	Wed, 31 Jan 2007 19:06:28 -0500
+Received: from ug-out-1314.google.com ([66.249.92.175]:52189 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933378AbXBAAG0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 31 Jan 2007 19:06:26 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:sender;
+        b=FzEfBLFQIGx/ExmfJEGbH49bZ3Z0sFYyF07B455PlC2Kz7Q3m06ZJSyyZsKBMYSA3S5CW/6QBQktRzTX27+SKHbovas2yllNtPWHI11DPEhwd08klroKLowlN637n8Mu6Ux8Fx/s2kAJCzboCGj4csDF2xUfpf0VPhNViG+PnWY=
+Date: Thu, 1 Feb 2007 00:06:19 +0000
+From: Frederik Deweerdt <deweerdt@free.fr>
+To: Jose Goncalves <jose.goncalves@inov.pt>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Oops on serial access on kernel 2.6.16.38
+Message-ID: <20070201000619.GI10257@slug>
+References: <45BA2341.40008@inov.pt> <20061226201003.GA2990@slug> <45BA459F.7060604@inov.pt> <20070126212203.GB2990@slug> <45BE0D44.1080309@inov.pt> <45BF4055.7030902@inov.pt>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <45BF4055.7030902@inov.pt>
+User-Agent: mutt-ng/devel-r804 (Linux)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: TJ <linux@tjworld.net>
+On Tue, Jan 30, 2007 at 12:55:49PM +0000, Jose Goncalves wrote:
+> Jose Goncalves wrote:
+> > Frederik Deweerdt wrote:
+> >   
+> >> On Fri, Jan 26, 2007 at 06:17:03PM +0000, Jose Goncalves wrote:
+> >>   
+> >>     
+> >>> Frederik Deweerdt wrote:
+> >>>     
+> >>>       
+> >>>> On Fri, Jan 26, 2007 at 03:50:25PM +0000, Jose Goncalves wrote:
+> >>>>   
+> >>>>       
+> >>>>         
+> >>>>> I'm having a problem with the latest 2.6.16 kernel (I've found the
+> >>>>> problem on 2.6.16.37 and 2.6.16.38). I have a application that retreives
+> >>>>> data from a GPS connected on a serial port. From time to time a get a
+> >>>>> kernel Oops, like this:
+> >>>>>
+> >>>>>     
+> >>>>>         
+> >>>>>           
+> >>>> Could you send your .config?
+> >>>>   
+> >>>>       
+> >>>>         
+> >>> Here it goes...
+> >>>
+> >>>     
+> >>>       
+> >> Thanks. It looks like something is wrong with port->ops->startup() in
+> >> uart_startup(), could you apply the following patch and report the
+> >> results? And btw, you're using a plain 8250 serial port, isn't it?
+> >>   
+> >>     
+> >
+> > OK. I've applied the patch and I'm now waiting for the kernel Oops...
+> > sometimes it takes two days until it happens.
+> > I'm using a standard 16550A serial controller found on my hardware, that
+> > is a PC/104 SBC:
+> >
+> >  http://www.icop.com.tw/products_detail.asp?ProductID=70
+> >
+> > We have a custom hardware that has another serial controller (TL16C554A)
+> > with 4 extra serial ports (also, 16550A type), and the problem happens
+> > in a test program that is retreiving data from ttyS0 (from the SBC) and
+> > ttyS3 (from our custom hardware).
+> > The serial ports initialization, as reported by the kernel:
+> >
+> > [   15.216847] Serial: 8250/16550 driver $Revision: 1.90 $ 6 ports, IRQ
+> > sharing disabled
+> > [   15.219517] serial8250: ttyS0 at I/O 0x3f8 (irq = 4) is a 16550A
+> > [   15.221963] serial8250: ttyS1 at I/O 0x2f8 (irq = 3) is a 16550A
+> > [   15.223907] serial8250: ttyS2 at I/O 0x3e8 (irq = 5) is a 16550A
+> > [   15.225757] serial8250: ttyS3 at I/O 0x2e8 (irq = 5) is a 16550A
+> > [   15.227644] serial8250: ttyS4 at I/O 0x1a0 (irq = 6) is a 16550A
+> > [   15.229656] serial8250: ttyS5 at I/O 0x1a8 (irq = 6) is a 16550A
+> >
+> > With your patch I'm now getting the following for each iteration of my
+> > test program:
+> >
+> > <4>[  298.918962] type is 4
+> > <4>[  298.919011] ops is c0292f00
+> > <4>[  298.919033] ops->startup is c01bd777
+> > <4>[  299.436980] type is 4
+> > <4>[  299.437030] ops is c0292f00
+> > <4>[  299.437051] ops->startup is c01bd777
+> >
+> > I don't know if it's relevant or not but the kernel is running in
+> > NFS-Root mode.
+> >   
+> I've had a new kernel Oops with your patch applied:
+> 
+> <4>[35769.361941] type is 4
+> <4>[35769.361994] ops is c0292f00
+> <4>[35769.362016] ops->startup is c01bd777
+> <4>[35769.958983] type is 4
+> <4>[35769.959038] ops is c0292f00
+> <4>[35769.959060] ops->startup is c01bd777
+> <1>[35769.959201] Unable to handle kernel NULL pointer dereference at
+> virtual address 00000000
+> <1>[35769.966797]  printing eip:
+> <4>[35769.974265] 00000000
+> <1>[35769.974296] *pde = 00000000
+> <0>[35769.981814] Oops: 0000 [#1]
+> <4>[35769.989367] Modules linked in:
+> <0>[35769.996955] CPU:    0
+> <4>[35769.996974] EIP:    0060:[<00000000>]    Not tainted VLI
+> <4>[35769.996990] EFLAGS: 00010202   (2.6.16.38-mtm4-debug2 #1)
+> <0>[35770.020533] EIP is at rest_init+0x3feffdc0/0x1e
+> <0>[35770.029044] eax: 00000060   ebx: 00000000   ecx: 00000000   edx:
+> 000002fd
+> <0>[35770.038017] esi: 00000000   edi: 00000040   ebp: 00000202   esp:
+> c72e9e34
+> <0>[35770.047118] ds: 007b   es: 007b   ss: 0068
+> <0>[35770.056257] Process gp_position (pid: 15013, threadinfo=c72e8000
+> task=c11a15a0)
+> <0>[35770.057042] Stack: <0>c02fae70 00000005 c02fae70 c77f6de0 c12815e4
+> c77714e0 c01ba4c4 c02fae70
+> <0>[35770.077407]        c025f18a c01bd777 c025f17f c0292f00 c025f173
+> 00000004 c12815e4 00000000
+> <0>[35770.089263]        c77714e0 c77714e0 c01bbacc c12815e4 00000000
+> ffffffed c77714e0 00000100
+> <0>[35770.101473] Call Trace:
+> <0>[35770.113147]  [<c01ba4c4>] uart_startup+0x8d/0x120
+> <0>[35770.125473]  [<c01bd777>] serial8250_startup+0x0/0x2a5
+> <0>[35770.138071]  [<c01bbacc>] uart_open+0xaa/0xec
+> <0>[35770.150859]  [<c01a9e67>] tty_open+0x16c/0x270
+> <0>[35770.163665]  [<c013dbbb>] chrdev_open+0xd7/0xf0
+> <0>[35770.176636]  [<c013dae4>] chrdev_open+0x0/0xf0
+> <0>[35770.189587]  [<c0136449>] __dentry_open+0xb4/0x180
+> <0>[35770.202755]  [<c01365e8>] nameidata_to_filp+0x1f/0x31
+> <0>[35770.216107]  [<c013654c>] do_filp_open+0x37/0x3f
+> <0>[35770.229554]  [<c0137bc0>] __fput+0x11e/0x126
+> <0>[35770.242947]  [<c018f64f>] strncpy_from_user+0x2e/0x4c
+> <0>[35770.256773]  [<c013668d>] get_unused_fd+0x4c/0x91
+> <0>[35770.270556]  [<c013676c>] do_sys_open+0x40/0xb5
+> <0>[35770.284545]  [<c01367f4>] sys_open+0x13/0x17
+> <0>[35770.298620]  [<c01023d9>] syscall_call+0x7/0xb
+> <0>[35770.312965] Code:  Bad EIP value.
+> <4>[35770.357131]  type is 4
+> <4>[35775.528001] ops is c0292f00
+> <4>[35775.541519] ops->startup is c01bd777
+> 
+Duh, not what I expected :(. is there a way that I could get your vmlinux
+file? Alternatively, could you get which code is at 0xc02fae70 ?
 
-Applies to: up-to and including 2.6.20-rc7 
-
-This rare but critical bug has the potential to cause a hardware failure on disk drives by
-allowing the system to repeatedly attempt to seek to sectors beyond the end of the physical
-disk, causing sustained 'head banging'.
-
-The bug particularly affects dmraid-managed RAID 1 stripes of the type hde+hdf where the
-first physical disk hde contains a standard partition table which relates to the larger
-logical disk represented by hde+hdf.
-
-The essence is that probing of physical disks that are part of a larger logical disk
-should be prevented because those disks will be managed by a driver that loads later in the
-boot sequence.
-This patch doesn't prevent probing of disks with 'sane' partition table entries.
-
-At boot-time when drives are being probed the disks are scanned for partition tables by
-fs/partitions/check.c:check_partition() which makes calls to all registered partition-types.
-
-In the case of the commonly used "msdos" partition-type used for Linux, BSD, Solaris, MS-DOS,
-extended and others, the checking is done in
-
-fs/partitions/msdos.c:msdos_partition().
-
-The partition table is only checked for validity based on the 'magic bytes' 55AA in the boot
-sector. The sector values in the partition table are copied without any checks to ensure they
-are within the bounds of the disk device. 
-
-As a result, block devices are created based on the partition structures and then various
-file-systems are given the task of scanning the partition to determine if it is one they will
-manage.
-
-This scanning, in a partition that has sector numbers outside the bounds of the device, causes
-the errors.
-
-Signed-off-by: TJ <linux@tjworld.net>
----
-
-I'm not sure if this bug will affect mdraid RAID-1 stripes, or other software
-RAID configurations.
-
-The bug was discovered on a RAID 1+0 array consisting of 4x60GB drives on a
-Promise FastTrak PDC20271 2-channel IDE controller (hde+hdf mirrored to hdg+hdh)
-with logical block addressing (LBA).
-
-There are 3 prolonged periods of disk-probing each lasting about 20 seconds
-during which the 'head banging' is quite scary. The first two occur during the
-kernel boot, and the last will occur when a GUI environment such as Gnome
-initialises.
-
-In the system where this bug appeared this caused thousands of disk-read errors
-during boot (which overflowed dmesg log), and 'head bangs' the drive(s) so hard
-that sometimes the system has to be powered off for a considerable time before
-the disk(s) will re-initialise.
-
---- fs/partitions/msdos.c	2006-11-29 21:57:37.000000000 +0000
-+++ fs/partitions/msdos.tj.c	2007-01-31 23:39:09.000000000 +0000
-@@ -399,6 +399,79 @@ static struct {
- 	{NEW_SOLARIS_X86_PARTITION, parse_solaris_x86},
- 	{0, NULL},
- };
-+
-+/* 
-+ * Check that *all* sector offsets are valid before actually building the partition structure.
-+ *
-+ * This prevents physical damage to disks and boot-time problems caused by an apparently valid
-+ * partition table causing attempts to read sectors beyond the end of the physical disk.
-+ *
-+ * This is especially important where this is the first physical disk in a striped RAID array
-+ * and the partition table contains sector offsets into the larger logical disk (beyond the end
-+ * of this physical disk).
-+ *
-+ * The RAID module will correctly manage the disks.
-+ *
-+ * The function is re-entrant so it can call itself to check extended partitions.
-+ * 
-+ * @param p partition table
-+ * @param bdev block device
-+ * @returns -1 if insane values found; 0 otherwise
-+ * @copy Copyright 31 January 2007
-+ * @author TJ <linux@tjworld.net>
-+ */ 
-+int check_sane_values(struct partition *p, struct block_device *bdev) {
-+	unsigned char *data;
-+	struct partition *ext;
-+	Sector sect;
-+	int slot;
-+	int insane;
-+	int sector_size = bdev_hardsect_size(bdev) / 512;
-+	int ret = 0; /* default is to report ok */
-+
-+	/* don't return early; allow all partition entries to be checked */
-+	for (slot = 1 ; slot <= 4 ; slot++, p++) { 
-+		insane = 0; /* track sanity within each table entry */
-+
-+		if (NR_SECTS(p) == 0)
-+			continue; /* ignore zero-sized entries */
-+
-+		if (START_SECT(p) > bdev->bd_disk->capacity-1) { /* invalid - beyond end of disk */
-+			insane |= 1; /* bit-0 flags insane start */
-+		}
-+		if (START_SECT(p)+NR_SECTS(p)-1 > bdev->bd_disk->capacity-1) { /* invalid - beyond end of disk */
-+			insane |= 2; /* bit-1 flags insane end */
-+		}
-+		if (!insane && is_extended_partition(p)) { /* check the extended partition */
-+			data = read_dev_sector(bdev, START_SECT(p)*sector_size, &sect); /* fetch sector from cache */
-+			if (data) {
-+				if (msdos_magic_present(data + 510)) { /* check for signature */
-+					ext = (struct partition *) (data + 0x1be);
-+					ret = check_sane_values(ext, bdev); /* recursive call */
-+					if (ret == -1) /* insanity found */
-+						insane |= 4; /* bit-2 flags insane extended partition contents */
-+				}
-+				put_dev_sector(sect); /* release sector to cache */
-+			}
-+			else ret = -1; /* failed to read sector from cache */
-+
-+		}
-+		if (insane) { /* insanity found; report it */
-+			ret = -1; /* error code */
-+			printk("\n"); /* start error report on a fresh line */
-+			if (insane | 1)
-+				printk(" partition %d: start (sector %d) beyond end of disk (sector %d)\n",
-+				 slot, START_SECT(p), (unsigned int) bdev->bd_disk->capacity-1);
-+			if (insane | 2)
-+				printk(" partition %d: end (sector %d) beyond end of disk (sector %d)\n",
-+				 slot, START_SECT(p)+NR_SECTS(p)-1, (unsigned int) bdev->bd_disk->capacity-1);
-+			if (insane | 4)
-+				printk(" partition %d: insane extended contents\n", slot);
-+		}
-+	}
-+	return ret;
-+}
-+
-  
- int msdos_partition(struct parsed_partitions *state, struct block_device *bdev)
- {
-@@ -448,6 +521,18 @@ int msdos_partition(struct parsed_partit
- #endif
- 	p = (struct partition *) (data + 0x1be);
- 
-+	/* 
-+	 * Check that *all* sector offsets are valid before actually building the partition structure
-+	 * Do it now rather than inside the loop that builds the partition entries to avoid having to
-+	 * unwind an unknown number of put_partition() calls in this loop and in the (possible) calls
-+	 * to parse_extended()
-+	 * Added by TJ <linux@tjworld.net>, 31 January 2007.
-+	 */
-+	if (check_sane_values(p, bdev) == -1) {
-+		put_dev_sector(sect); /* release to cache */
-+		return -1; /* report invalid partition table */
-+	}
-+
- 	/*
- 	 * Look for partitions in two passes:
- 	 * First find the primary and DOS-type extended partitions.
-
-
+Regards,
+Frederik
