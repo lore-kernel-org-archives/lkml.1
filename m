@@ -1,44 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422915AbXBAS2G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422918AbXBAS2g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422915AbXBAS2G (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Feb 2007 13:28:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422918AbXBAS2G
+	id S1422918AbXBAS2g (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Feb 2007 13:28:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422924AbXBAS2g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Feb 2007 13:28:06 -0500
-Received: from tmailer.gwdg.de ([134.76.10.23]:45748 "EHLO tmailer.gwdg.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422915AbXBAS2F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Feb 2007 13:28:05 -0500
-Date: Thu, 1 Feb 2007 19:24:51 +0100 (MET)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: Judith Lebzelter <judith@osdl.org>
-cc: ebiederm@xmission.com, linux-kernel@vger.kernel.org, fastboot@osdl.org
-Subject: Re: [ PATCH ] fix to documentation for kexec
-In-Reply-To: <20070201181955.GE5825@shell0.pdx.osdl.net>
-Message-ID: <Pine.LNX.4.61.0702011923530.13737@yvahk01.tjqt.qr>
-References: <20070201181955.GE5825@shell0.pdx.osdl.net>
+	Thu, 1 Feb 2007 13:28:36 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:13557 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422918AbXBAS2f (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Feb 2007 13:28:35 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=haHf42iVqlmHGH9kZqfhABOeco7mwd8aPnCThk/8wT0h6y/RvwiOa8bkowdkfhXr7
+	AJJy6yZoPehptHb/aclFQ==
+Message-ID: <b040c32a0702011028n37715f12s391d1ac884917763@mail.gmail.com>
+Date: Thu, 1 Feb 2007 10:28:25 -0800
+From: "Ken Chen" <kenchen@google.com>
+To: "Ananiev, Leonid I" <leonid.i.ananiev@intel.com>
+Subject: Re: Kernel BUG at fs/aio.c:509
+Cc: "Andrew Morton" <akpm@osdl.org>, linux-kernel@vger.kernel.org,
+       linux-aio@kvack.org
+In-Reply-To: <B41635854730A14CA71C92B36EC22AAC7CC56B@mssmsx411>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070131231622.4ccdb2c1.akpm@osdl.org>
+	 <B41635854730A14CA71C92B36EC22AAC7CC56B@mssmsx411>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 2/1/07, Ananiev, Leonid I <leonid.i.ananiev@intel.com> wrote:
+> >> BUG: warning at mm/truncate.c:398/invalidate_inode_pages2_range()
+> >  That warning got removed from -rc7.
+>
+> 2.6.20-rc-7: After 57 minutes and after 25 minutes of aiostress running
+> I've got 2 system hangs without any message in log.
+> On the third time I opened the console and got kernel panic massage:
 
->@@ -228,8 +228,8 @@ Notes on loading the dump-capture kernel
-> * You must specify <root-dev> in the format corresponding to the root
->   device name in the output of mount command.
-> 
->-* "init 1" boots the dump-capture kernel into single-user mode without
->-  networking. If you want networking, use "init 3."
->+* Boot parameter "1" boots the dump-capture kernel into single-user mode 
->+  without networking. If you want networking, use "3".
+I think it would be worthwhile to put some instrumentation in
+__aio_put_req to track last couple ref decrement for each aiocb.  My
+hunch is that aio_complete() was called twice on the same aiocb.
 
-Yup. More precisely, any arguments that could not be parsed (because
-the kernel does not know them) are handed down to the init program
-as arguments and/or environment variables.
-
-
-Jan
--- 
-ft: http://freshmeat.net/p/chaostables/
+    - Ken
