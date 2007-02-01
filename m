@@ -1,85 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751868AbXBAQCI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751882AbXBAQDm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751868AbXBAQCI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Feb 2007 11:02:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751881AbXBAQCI
+	id S1751882AbXBAQDm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Feb 2007 11:03:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751877AbXBAQDl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Feb 2007 11:02:08 -0500
-Received: from mailhub.sw.ru ([195.214.233.200]:44444 "EHLO relay.sw.ru"
+	Thu, 1 Feb 2007 11:03:41 -0500
+Received: from main.gmane.org ([80.91.229.2]:48766 "EHLO ciao.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751868AbXBAQCG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Feb 2007 11:02:06 -0500
-Date: Thu, 1 Feb 2007 19:09:04 +0300
-From: Alexey Dobriyan <adobriyan@openvz.org>
-To: Duncan Sands <duncan.sands@math.u-psud.fr>
-Cc: linux-kernel@vger.kernel.org, adobriyan@gmail.com
-Subject: Re: remove_proc_entry and read_proc
-Message-ID: <20070201160904.GC6023@localhost.sw.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-User-Agent: Mutt/1.5.11
+	id S1751882AbXBAQDk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Feb 2007 11:03:40 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Oleg Verych <olecom@flower.upol.cz>
+Subject: Re: PROBLEM: Crash on device_shutdown
+Date: Thu, 1 Feb 2007 16:03:12 +0000 (UTC)
+Organization: Palacky University in Olomouc, experimental physics department.
+Message-ID: <slrnes44am.m64.olecom@flower.upol.cz>
+References: <200701290003.50918.julien.rf@no-log.org>
+X-Complaints-To: usenet@sea.gmane.org
+X-Gmane-NNTP-Posting-Host: flower.upol.cz
+Mail-Followup-To: LKML <linux-kernel@vger.kernel.org>, Oleg Verych <olecom@flower.upol.cz>, Julien RF <julien.rf@no-log.org>
+User-Agent: slrn/0.9.8.1pl1 (Debian)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Duncan Sands wrote:
-> On Wednesday 31 January 2007 19:42:51 Alexey Dobriyan wrote:
-> > On Wed, Jan 31, 2007 at 11:54:35AM +0100, Duncan Sands wrote:
-> > > Can read_proc still be executing when remove_proc_entry returns?
-> > >
-> > > In my driver [*] I allocate some data and create a proc entry using
-> > > create_proc_entry.  My read method reads from my allocated data.  When
-> > > shutting down, I call remove_proc_entry and immediately free the data.
-> > > If some call to read_proc is still executing at this point then it will
-> > > be accessing freed memory.  Can this happen?  I've been rummaging around
-> > > in fs/proc to see what prevents it, but didn't find anything yet.
-> >
-> > This should be fixed by the following patch (in -mm currently):
-> > http://kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.20-rc6/2.6.20-rc6-mm3/broken-out/fix-rmmod-read-write-races-in-proc-entries.patch
-> >
-> > Tell me if you're unsure it will.
->
-> Excellent!  But tell me,
->
-> +	atomic_inc(&dp->pde_users);
-> +	if (!dp->proc_fops)
->
-> don't you need a memory barrier between these two?  Also a corresponding
-> one where proc_fops is set to NULL.
+> From: Julien RF
+> Newsgroups: gmane.linux.kernel
+> Subject: PROBLEM: Crash on device_shutdown
+> Date: Mon, 29 Jan 2007 00:03:49 +0100
+> Archived-At: <http://permalink.gmane.org/gmane.linux.kernel/487140>
 
-I believe, barriers not needed, not now.
+Hallo, Julien.
 
-This scheme relies on the fact that remove_proc_entry() will be the only
-place that will clear ->proc_fops and, once cleared, ->proc_fops will
-never be resurrected. Clearing of ->proc_fops will eventually propagate
-to CPU doing first check, thus preveting refcount bumps from this CPU.
-What can be missed is some "rogue" readers or writers¹. Big deal.
+Do you have such problem with more recent kernels, or mm one?
 
-> +		/*
-> +		 * Stop accepting new readers/writers. If you're dynamically
-> +		 * allocating ->proc_fops, save a pointer somewhere.
-> +		 */
-> +		de->proc_fops = NULL;
-> +		/* Wait until all readers/writers are done. */
-> +		if (atomic_read(&de->pde_users) > 0) {
-> +			spin_unlock(&proc_subdir_lock);
-> +			msleep(1);
-> +			goto again;
-> +		}
->
-> I don't understand how this is supposed to work.  Consider
->
-> CPU1					CPU2
->
-> atomic_inc(&dp->pde_users);
-> if (dp->proc_fops)
-> 					de->proc_fops = NULL;
-> 	use_proc_fops <= BOOM
-> 					if (atomic_read(&de->pde_users) > 0) {
->
-> what prevents dereference of a NULL proc_fops value?
+Also, if would be good to have at least some of the stack trace.
 
-¹ Sigh, modules should do removals of proc entries first. And I should check
-  for that.
+You can set up serial console for purpose of logging all information
+to remote host.
+
+> One line summary of the problem:
+> Crash on device_shutdown
+>
+>
+> Full description of the problem/report:
+> When I shut down the system, I get a crash on the device_shutdown function 
+> (called by kernel_shutdown_prepare).
+> Since the bug happens when the system is almost shutted down, I can't get the 
+> log...
+> I partially copied it by hand, ask me if you need further details :
+> Will now halt.
+> BUG: unable to handle kernel NULL pointer dereference at virtual adress 
+> 00000128
+> ...
+> EIP is at device_shutdown + 0x49/0x6c
+> ...
+> Process halt
+> ...
+> /etc/rc0.d/S90halt: line 21: 11198 Segmentation fault halt -d -f $shutdown 
+> $poweroff $hddown
+>
+> Julien Richard-Foy
+
+p.s. Please, care to honor "Mail-Followup-To" header information. Thanks.
+____
 
