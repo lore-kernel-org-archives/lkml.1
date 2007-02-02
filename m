@@ -1,207 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423162AbXBBThv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1945965AbXBBTqF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423162AbXBBThv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Feb 2007 14:37:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423079AbXBBThv
+	id S1945965AbXBBTqF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Feb 2007 14:46:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423198AbXBBTqE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Feb 2007 14:37:51 -0500
-Received: from waste.org ([66.93.16.53]:39149 "EHLO waste.org"
+	Fri, 2 Feb 2007 14:46:04 -0500
+Received: from pat.uio.no ([129.240.10.15]:49333 "EHLO pat.uio.no"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423162AbXBBThu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Feb 2007 14:37:50 -0500
-Date: Fri, 2 Feb 2007 13:24:40 -0600
-From: Matt Mackall <mpm@selenic.com>
-To: Christoph Hellwig <hch@infradead.org>, David Chinner <dgc@sgi.com>,
-       Andrew Morton <akpm@osdl.org>, "Martin J. Bligh" <mbligh@mbligh.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] mm: remove global locks from mm/highmem.c
-Message-ID: <20070202192440.GE16722@waste.org>
-References: <20070128142925.df2f4dce.akpm@osdl.org> <1170063848.6189.121.camel@twins> <45BE9FE8.4080603@mbligh.org> <20070129174118.0e922ab3.akpm@osdl.org> <45BEA41A.6020209@mbligh.org> <20070129181557.d4d17dd0.akpm@osdl.org> <20070131004436.GS44411608@melbourne.sgi.com> <20070130171132.7be3b054.akpm@osdl.org> <20070131032224.GV44411608@melbourne.sgi.com> <20070202120511.GA25714@infradead.org>
+	id S1423199AbXBBTqD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Feb 2007 14:46:03 -0500
+Subject: Re: Fwd: uninterruptable fcntl calls
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Aaron Wiebe <epiphani@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <e7ca40f70702021128n7325576et36d52adab6280de3@mail.gmail.com>
+References: <e7ca40f70702021054o49bee8fck5a5a38a84cd1e6e1@mail.gmail.com>
+	 <e7ca40f70702021128n7325576et36d52adab6280de3@mail.gmail.com>
+Content-Type: text/plain
+Date: Fri, 02 Feb 2007 11:45:57 -0800
+Message-Id: <1170445557.5890.35.camel@lade.trondhjem.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070202120511.GA25714@infradead.org>
-User-Agent: Mutt/1.5.9i
+X-Mailer: Evolution 2.8.1 
+Content-Transfer-Encoding: 7bit
+X-UiO-Resend: resent
+X-UiO-Spam-info: not spam, SpamAssassin (score=0.0, required=12.0, autolearn=disabled, none)
+X-UiO-Scanned: 2BA314079A55AB6E88998DA8DA12E260E6F936A9
+X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 400 total 229166 max/h 2301 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 02, 2007 at 12:05:11PM +0000, Christoph Hellwig wrote:
-> On Wed, Jan 31, 2007 at 02:22:24PM +1100, David Chinner wrote:
-> > > Yup.  Even better, use clear_highpage().
-> > 
-> > For even more goodness, clearmem_highpage_flush() does exactly
-> > the right thing for partial page zeroing ;)
+On Fri, 2007-02-02 at 14:28 -0500, Aaron Wiebe wrote:
+> Greetings,
 > 
-> Note that there are tons of places in buffer.c that could use
-> clearmem_highpage_flush().  See the so far untested patch below:
+> I've run into a situation where fcntl F_SETLKW calls lock up nearly
+> completely.  I've tried several approaches to handle this case, and
+> have yet to come up with some method of handling this.  I've never
+> really ventured outside userspace, so I'm turning to this list to try
+> and get a handle on this.
 > 
+> Over NFSv3 udp, this situation takes place VERY rarely, however with
+> the volume I do, its creating a problem.
+> 
+> In short, I am attempting to read or write lock, and the call hangs to
+> the point where a sigkill is not captured - no signal is.  I've tried
+> alarming out and I've tried switching the socket to nonblocking -
+> nothing I can think of prevents or even allows me to handle the case.
+> I understand NFS locking can be rather sketchy at times - but all I
+> need is the ability to handle the case.
+> 
+> I can force the process to die by sending a sigkill, then stracing.
+> The strace reports the process as sigstop, then processes the kill
+> signal.
+> 
+> All I need here is a method of capturing this case.  I can "repair"
+> the stuck lock by regenerating the file, but I can't capture the case
+> in order to handle this in code.
+> 
+> Any help would be useful - I am currently running 2.6.15.6 compiled
+> with the NFS patches from linux-nfs.org, but this case was happening
+> before applying those patches.  I'd be happy to provide any more
+> information nessecary.  I've been struggling with this one for a few
+> months now.
+> 
+> Thanks,
+> -Aaron
+> 
+> 
+> Straces:
+> 
+> rt_sigaction(SIGALRM, {0xb7f56640, [ALRM], 0}, {SIG_DFL}, 8) = 0
+> alarm(120)                              = 0
+> fcntl64(3, F_SETLKW, {type=F_RDLCK, whence=SEEK_SET, start=0, len=0}
+> [hangs]
+> 
+> Or:
+> 
+> fcntl64(3, F_GETFL)                     = 0x8002 (flags O_RDWR|O_LARGEFILE)
+> fcntl64(3, F_SETFL, O_RDWR|O_NONBLOCK|O_LARGEFILE) = 0
+> fcntl64(3, F_SETLKW, {type=F_RDLCK, whence=SEEK_SET, start=0, len=0}
+> 
+> 
+> 
+> Code used for locking:
+> 
+> static int db_lock(int fd, int type)
+> {
+>     struct flock fl;
+>     struct timespec *tv = (struct timespec *) malloc(sizeof(struct timespec));
+>     int ret, c = 0;
+> 
+>     if(!(fd > 0))
+>         return -1;
+> 
+> #ifdef SIGALRM_HACK
+>     /* after two minutes, wig out */
+>     sigalrm_set();
+>     alarm(120);
+> #endif
+> 
+>     fl.l_whence = SEEK_SET;
+>     fl.l_start = 0;
+>     fl.l_len = 0;
+>     fl.l_type = type;
+> 
+> #ifdef NONBLOCKING_HACK
+>     set_nonblocking(fd);
+> #endif
+> 
+>     while((ret = fcntl(fd, F_SETLKW, &fl)) < 0)
+>     {
+>         c++;
+>         if(c > 600)
+>         {
+>             /* we've been waiting for 60 seconds... */
+>             my_error("stuck on fcntl request, aborting");
+>             return -1;
+>         }
+>         tv->tv_nsec = 100;   /* 10th of a second wait */
+>         tv->tv_sec = 0;
+>         nanosleep(tv, NULL);
+>     }
+>     free(tv);
+> #ifdef SIGALRM_HACK
+>     sigalrm_unset();
+> #endif
+> #ifdef NONBLOCKING_HACK
+>     unset_nonblocking(fd);
+> #endif
+>     return ret;
+> }
 
-You probably need s/memclear/clearmem/g..
- 
-> Index: linux-2.6/fs/buffer.c
-> ===================================================================
-> --- linux-2.6.orig/fs/buffer.c	2007-02-02 12:53:51.000000000 +0100
-> +++ linux-2.6/fs/buffer.c	2007-02-02 12:59:42.000000000 +0100
-> @@ -1858,13 +1858,8 @@
->  		if (block_start >= to)
->  			break;
->  		if (buffer_new(bh)) {
-> -			void *kaddr;
-> -
->  			clear_buffer_new(bh);
-> -			kaddr = kmap_atomic(page, KM_USER0);
-> -			memset(kaddr+block_start, 0, bh->b_size);
-> -			flush_dcache_page(page);
-> -			kunmap_atomic(kaddr, KM_USER0);
-> +			memclear_highpage_flush(page, block_start, bh->b_size);
->  			set_buffer_uptodate(bh);
->  			mark_buffer_dirty(bh);
->  		}
-> @@ -1952,10 +1947,8 @@
->  					SetPageError(page);
->  			}
->  			if (!buffer_mapped(bh)) {
-> -				void *kaddr = kmap_atomic(page, KM_USER0);
-> -				memset(kaddr + i * blocksize, 0, blocksize);
-> -				flush_dcache_page(page);
-> -				kunmap_atomic(kaddr, KM_USER0);
-> +				memclear_highpage_flush(page, i * blocksize,
-> +							blocksize);
->  				if (!err)
->  					set_buffer_uptodate(bh);
->  				continue;
-> @@ -2098,7 +2091,6 @@
->  	long status;
->  	unsigned zerofrom;
->  	unsigned blocksize = 1 << inode->i_blkbits;
-> -	void *kaddr;
->  
->  	while(page->index > (pgpos = *bytes>>PAGE_CACHE_SHIFT)) {
->  		status = -ENOMEM;
-> @@ -2120,10 +2112,8 @@
->  						PAGE_CACHE_SIZE, get_block);
->  		if (status)
->  			goto out_unmap;
-> -		kaddr = kmap_atomic(new_page, KM_USER0);
-> -		memset(kaddr+zerofrom, 0, PAGE_CACHE_SIZE-zerofrom);
-> -		flush_dcache_page(new_page);
-> -		kunmap_atomic(kaddr, KM_USER0);
-> +		memclear_highpage_flush(page, zerofrom,
-> +					PAGE_CACHE_SIZE - zerofrom);
->  		generic_commit_write(NULL, new_page, zerofrom, PAGE_CACHE_SIZE);
->  		unlock_page(new_page);
->  		page_cache_release(new_page);
-> @@ -2150,10 +2140,7 @@
->  	if (status)
->  		goto out1;
->  	if (zerofrom < offset) {
-> -		kaddr = kmap_atomic(page, KM_USER0);
-> -		memset(kaddr+zerofrom, 0, offset-zerofrom);
-> -		flush_dcache_page(page);
-> -		kunmap_atomic(kaddr, KM_USER0);
-> +		memclear_highpage_flush(page, zerofrom, offset - zerofrom);
->  		__block_commit_write(inode, page, zerofrom, offset);
->  	}
->  	return 0;
-> @@ -2368,10 +2355,7 @@
->  	 * Error recovery is pretty slack.  Clear the page and mark it dirty
->  	 * so we'll later zero out any blocks which _were_ allocated.
->  	 */
-> -	kaddr = kmap_atomic(page, KM_USER0);
-> -	memset(kaddr, 0, PAGE_CACHE_SIZE);
-> -	flush_dcache_page(page);
-> -	kunmap_atomic(kaddr, KM_USER0);
-> +	memclear_highpage_flush(page, 0, PAGE_CACHE_SIZE);
->  	SetPageUptodate(page);
->  	set_page_dirty(page);
->  	return ret;
-> @@ -2405,7 +2389,6 @@
->  	loff_t i_size = i_size_read(inode);
->  	const pgoff_t end_index = i_size >> PAGE_CACHE_SHIFT;
->  	unsigned offset;
-> -	void *kaddr;
->  	int ret;
->  
->  	/* Is the page fully inside i_size? */
-> @@ -2436,10 +2419,7 @@
->  	 * the  page size, the remaining memory is zeroed when mapped, and
->  	 * writes to that region are not written out to the file."
->  	 */
-> -	kaddr = kmap_atomic(page, KM_USER0);
-> -	memset(kaddr + offset, 0, PAGE_CACHE_SIZE - offset);
-> -	flush_dcache_page(page);
-> -	kunmap_atomic(kaddr, KM_USER0);
-> +	memclear_highpage_flush(page, offset, PAGE_CACHE_SIZE - offset);
->  out:
->  	ret = mpage_writepage(page, get_block, wbc);
->  	if (ret == -EAGAIN)
-> @@ -2460,7 +2440,6 @@
->  	unsigned to;
->  	struct page *page;
->  	const struct address_space_operations *a_ops = mapping->a_ops;
-> -	char *kaddr;
->  	int ret = 0;
->  
->  	if ((offset & (blocksize - 1)) == 0)
-> @@ -2474,10 +2453,7 @@
->  	to = (offset + blocksize) & ~(blocksize - 1);
->  	ret = a_ops->prepare_write(NULL, page, offset, to);
->  	if (ret == 0) {
-> -		kaddr = kmap_atomic(page, KM_USER0);
-> -		memset(kaddr + offset, 0, PAGE_CACHE_SIZE - offset);
-> -		flush_dcache_page(page);
-> -		kunmap_atomic(kaddr, KM_USER0);
-> +		memclear_highpage_flush(page, offset, PAGE_CACHE_SIZE - offset);
->  		set_page_dirty(page);
->  	}
->  	unlock_page(page);
-> @@ -2498,7 +2474,6 @@
->  	struct inode *inode = mapping->host;
->  	struct page *page;
->  	struct buffer_head *bh;
-> -	void *kaddr;
->  	int err;
->  
->  	blocksize = 1 << inode->i_blkbits;
-> @@ -2552,11 +2527,7 @@
->  			goto unlock;
->  	}
->  
-> -	kaddr = kmap_atomic(page, KM_USER0);
-> -	memset(kaddr + offset, 0, length);
-> -	flush_dcache_page(page);
-> -	kunmap_atomic(kaddr, KM_USER0);
-> -
-> +	memclear_highpage_flush(page, offset, length);
->  	mark_buffer_dirty(bh);
->  	err = 0;
->  
-> @@ -2577,7 +2548,6 @@
->  	loff_t i_size = i_size_read(inode);
->  	const pgoff_t end_index = i_size >> PAGE_CACHE_SHIFT;
->  	unsigned offset;
-> -	void *kaddr;
->  
->  	/* Is the page fully inside i_size? */
->  	if (page->index < end_index)
-> @@ -2603,10 +2573,7 @@
->  	 * the  page size, the remaining memory is zeroed when mapped, and
->  	 * writes to that region are not written out to the file."
->  	 */
-> -	kaddr = kmap_atomic(page, KM_USER0);
-> -	memset(kaddr + offset, 0, PAGE_CACHE_SIZE - offset);
-> -	flush_dcache_page(page);
-> -	kunmap_atomic(kaddr, KM_USER0);
-> +	memclear_highpage_flush(page, offset, PAGE_CACHE_SIZE - offset);
->  	return __block_write_full_page(inode, page, get_block, wbc);
->  }
->  
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Should have been fixed in mainline in 2.6.16 by the following patch
 
--- 
-Mathematics is the supreme nostalgia of our time.
+http://linux-nfs.org/cgi-bin/gitweb.cgi?p=nfs-2.6.git;a=commitdiff;h=a9a801787a761616589a6526d7a29c13f4deb3d8;hp=03f28e3a2059fc466761d872122f30acb7be61ae
+
+Cheers,
+  Trond
+
