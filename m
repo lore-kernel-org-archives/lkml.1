@@ -1,66 +1,219 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423168AbXBBOWU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423180AbXBBOWe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423168AbXBBOWU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Feb 2007 09:22:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423157AbXBBOWT
+	id S1423180AbXBBOWe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Feb 2007 09:22:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423183AbXBBOWd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Feb 2007 09:22:19 -0500
-Received: from mtagate6.de.ibm.com ([195.212.29.155]:4305 "EHLO
-	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423170AbXBBOWR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Feb 2007 09:22:17 -0500
-Date: Fri, 2 Feb 2007 15:22:16 +0100
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
-Cc: heiko.carstens@de.ibm.com
-Subject: [S390] Add set_fs(USER_DS) to start_thread().
-Message-ID: <20070202142216.GC30839@skybase>
+	Fri, 2 Feb 2007 09:22:33 -0500
+Received: from mga02.intel.com ([134.134.136.20]:35958 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1423180AbXBBOWc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Feb 2007 09:22:32 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: i="4.13,273,1167638400"; 
+   d="scan'208"; a="192040421:sNHT25465524"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: multipart/mixed;
+	boundary="----_=_NextPart_001_01C746D5.8FCD879D"
+Subject: RE: 2.6.20-rc6-mm3
+Date: Fri, 2 Feb 2007 17:22:26 +0300
+Message-ID: <B41635854730A14CA71C92B36EC22AAC7CC853@mssmsx411>
+In-Reply-To: <45C24FCE.7000503@fr.ibm.com>
+X-MS-Has-Attach: yes
+X-MS-TNEF-Correlator: 
+Thread-Topic: 2.6.20-rc6-mm3
+Thread-Index: AcdGQPp0dfDMAA+lQtCt7hX1YBT4JAAlGsPQ
+From: "Starikovskiy, Alexey Y" <alexey.y.starikovskiy@intel.com>
+To: "Cedric Le Goater" <clg@fr.ibm.com>
+Cc: "Andrew Morton" <akpm@osdl.org>, <linux-kernel@vger.kernel.org>,
+       "Moore, Robert" <robert.moore@intel.com>,
+       "keith mannthey" <kmannth@us.ibm.com>
+X-OriginalArrivalTime: 02 Feb 2007 14:22:30.0488 (UTC) FILETIME=[9299CD80:01C746D5]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
+This is a multi-part message in MIME format.
 
-[S390] Add set_fs(USER_DS) to start_thread().
+------_=_NextPart_001_01C746D5.8FCD879D
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-Currently works anyway since search_binary_handler has a
-set_fs(USER_DS). But start_thread() is the place where this should be
-done. Following all other architectures...
+Hi,
+I updated patch to use acpi_find_rsdp(), as all other code does.
+Could you please try it?
 
-Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
-Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
----
+Thanks,
+	Alex.
 
- include/asm-s390/processor.h |    3 +++
- 1 files changed, 3 insertions(+)
+>-----Original Message-----
+>From: Cedric Le Goater [mailto:clg@fr.ibm.com]
+>Sent: Thursday, February 01, 2007 11:39 PM
+>To: Cedric Le Goater
+>Cc: Starikovskiy, Alexey Y; Andrew Morton;
+linux-kernel@vger.kernel.org;
+>Moore, Robert; keith mannthey
+>Subject: Re: 2.6.20-rc6-mm3
+>
+>Cedric Le Goater wrote:
+>> Starikovskiy, Alexey Y wrote:
+>>> Sorry, here is the patch... ACPI has switched to acpi_find_rsdp(),
+so
+>>> srat.c might want to do that too, please check.
+>>
+>> got it. running a compile and boot test.
+>
+>hmm, i got another issue while compiling :
+>
+>  CHK     include/linux/compile.h
+>  UPD     include/linux/compile.h
+>  CC      init/version.o
+>  LD      init/built-in.o
+>  LD      .tmp_vmlinux1
+>arch/i386/kernel/built-in.o: In function `get_memcfg_from_srat':
+>/home/legoater/linux/2.6.20-rc6-mm3/arch/i386/kernel/srat.c:279:
+undefined
+>reference to `acpi_find_root_pointer'
+>
+>it seems that drivers/acpi/tables/tbxfroot.c is never compiled ?
+>
+>> I should have the results in 'my' morning (UTC+1).
+>
+>I'll catchup in the morning.
+>
+>thanks,
+>
+>C.
 
-diff -urpN linux-2.6/include/asm-s390/processor.h linux-2.6-patched/include/asm-s390/processor.h
---- linux-2.6/include/asm-s390/processor.h	2007-02-02 14:04:34.000000000 +0100
-+++ linux-2.6-patched/include/asm-s390/processor.h	2007-02-02 14:04:42.000000000 +0100
-@@ -144,6 +144,7 @@ struct stack_frame {
- #ifndef __s390x__
- 
- #define start_thread(regs, new_psw, new_stackp) do {            \
-+	set_fs(USER_DS);					\
-         regs->psw.mask  = PSW_USER_BITS;                        \
-         regs->psw.addr  = new_psw | PSW_ADDR_AMODE;             \
-         regs->gprs[15]  = new_stackp ;                          \
-@@ -152,12 +153,14 @@ struct stack_frame {
- #else /* __s390x__ */
- 
- #define start_thread(regs, new_psw, new_stackp) do {            \
-+	set_fs(USER_DS);					\
-         regs->psw.mask  = PSW_USER_BITS;                        \
-         regs->psw.addr  = new_psw;                              \
-         regs->gprs[15]  = new_stackp;                           \
- } while (0)
- 
- #define start_thread31(regs, new_psw, new_stackp) do {          \
-+	set_fs(USER_DS);					\
- 	regs->psw.mask  = PSW_USER32_BITS;			\
-         regs->psw.addr  = new_psw;                              \
-         regs->gprs[15]  = new_stackp;                           \
+------_=_NextPart_001_01C746D5.8FCD879D
+Content-Type: application/octet-stream;
+	name="fix_i386_srat.patch"
+Content-Transfer-Encoding: base64
+Content-Description: fix_i386_srat.patch
+Content-Disposition: attachment;
+	filename="fix_i386_srat.patch"
+
+TWFrZSBzcmF0LmMgaW4gaTM4NiBjb21waWxlIGFnYWluLgoKRnJvbTogQWxleGV5IFN0YXJpa292
+c2tpeSA8YWxleGV5Lnkuc3Rhcmlrb3Zza2l5QGxpbnV4LmludGVsLmNvbT4KCgotLS0KCiBhcmNo
+L2kzODYva2VybmVsL3NyYXQuYyB8ICAgNzggKysrKysrKysrKysrKysrKysrKysrKystLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0KIDEgZmlsZXMgY2hhbmdlZCwgMzggaW5zZXJ0aW9ucygrKSwgNDAg
+ZGVsZXRpb25zKC0pCgpkaWZmIC0tZ2l0IGEvYXJjaC9pMzg2L2tlcm5lbC9zcmF0LmMgYi9hcmNo
+L2kzODYva2VybmVsL3NyYXQuYwppbmRleCBmN2U3MzVjLi41ZWQyNTliIDEwMDY0NAotLS0gYS9h
+cmNoL2kzODYva2VybmVsL3NyYXQuYworKysgYi9hcmNoL2kzODYva2VybmVsL3NyYXQuYwpAQCAt
+NjIsMTkgKzYyLDE5IEBAIGV4dGVybiB2b2lkICogYm9vdF9pb3JlbWFwKHVuc2lnbmVkIGxvbmcK
+IC8qIElkZW50aWZ5IENQVSBwcm94aW1pdHkgZG9tYWlucyAqLwogc3RhdGljIHZvaWQgX19pbml0
+IHBhcnNlX2NwdV9hZmZpbml0eV9zdHJ1Y3R1cmUoY2hhciAqcCkKIHsKLQlzdHJ1Y3QgYWNwaV90
+YWJsZV9wcm9jZXNzb3JfYWZmaW5pdHkgKmNwdV9hZmZpbml0eSA9IAotCQkJCShzdHJ1Y3QgYWNw
+aV90YWJsZV9wcm9jZXNzb3JfYWZmaW5pdHkgKikgcDsKKwlzdHJ1Y3QgYWNwaV9zcmF0X2NwdV9h
+ZmZpbml0eSAqY3B1X2FmZmluaXR5ID0gCisJCQkJKHN0cnVjdCBhY3BpX3NyYXRfY3B1X2FmZmlu
+aXR5ICopIHA7CiAKLQlpZiAoIWNwdV9hZmZpbml0eS0+ZmxhZ3MuZW5hYmxlZCkKKwlpZiAoKGNw
+dV9hZmZpbml0eS0+ZmxhZ3MgJiBBQ1BJX1NSQVRfQ1BVX0VOQUJMRUQpID09IDApCiAJCXJldHVy
+bjsJCS8qIGVtcHR5IGVudHJ5ICovCiAKIAkvKiBtYXJrIHRoaXMgbm9kZSBhcyAic2VlbiIgaW4g
+bm9kZSBiaXRtYXAgKi8KLQlCTUFQX1NFVChweG1fYml0bWFwLCBjcHVfYWZmaW5pdHktPnByb3hp
+bWl0eV9kb21haW4pOworCUJNQVBfU0VUKHB4bV9iaXRtYXAsIGNwdV9hZmZpbml0eS0+cHJveGlt
+aXR5X2RvbWFpbl9sbyk7CiAKLQlhcGljaWRfdG9fcHhtW2NwdV9hZmZpbml0eS0+YXBpY19pZF0g
+PSBjcHVfYWZmaW5pdHktPnByb3hpbWl0eV9kb21haW47CisJYXBpY2lkX3RvX3B4bVtjcHVfYWZm
+aW5pdHktPmFwaWNfaWRdID0gY3B1X2FmZmluaXR5LT5wcm94aW1pdHlfZG9tYWluX2xvOwogCiAJ
+cHJpbnRrKCJDUFUgMHglMDJYIGluIHByb3hpbWl0eSBkb21haW4gMHglMDJYXG4iLAotCQljcHVf
+YWZmaW5pdHktPmFwaWNfaWQsIGNwdV9hZmZpbml0eS0+cHJveGltaXR5X2RvbWFpbik7CisJCWNw
+dV9hZmZpbml0eS0+YXBpY19pZCwgY3B1X2FmZmluaXR5LT5wcm94aW1pdHlfZG9tYWluX2xvKTsK
+IH0KIAogLyoKQEAgLTg3LDI1ICs4NywyNCBAQCBzdGF0aWMgdm9pZCBfX2luaXQgcGFyc2VfbWVt
+b3J5X2FmZmluaXR5CiAJdW5zaWduZWQgbG9uZyBzdGFydF9wZm4sIGVuZF9wZm47IAogCXU4IHB4
+bTsKIAlzdHJ1Y3Qgbm9kZV9tZW1vcnlfY2h1bmtfcyAqcCwgKnEsICpwZW5kOwotCXN0cnVjdCBh
+Y3BpX3RhYmxlX21lbW9yeV9hZmZpbml0eSAqbWVtb3J5X2FmZmluaXR5ID0KLQkJCShzdHJ1Y3Qg
+YWNwaV90YWJsZV9tZW1vcnlfYWZmaW5pdHkgKikgc3JhdHA7CisJc3RydWN0IGFjcGlfc3JhdF9t
+ZW1fYWZmaW5pdHkgKm1lbW9yeV9hZmZpbml0eSA9CisJCQkoc3RydWN0IGFjcGlfc3JhdF9tZW1f
+YWZmaW5pdHkgKikgc3JhdHA7CiAKLQlpZiAoIW1lbW9yeV9hZmZpbml0eS0+ZmxhZ3MuZW5hYmxl
+ZCkKKwlpZiAoKG1lbW9yeV9hZmZpbml0eS0+ZmxhZ3MgJiBBQ1BJX1NSQVRfTUVNX0VOQUJMRUQp
+ID09IDApCiAJCXJldHVybjsJCS8qIGVtcHR5IGVudHJ5ICovCiAKKwlweG0gPSBtZW1vcnlfYWZm
+aW5pdHktPnByb3hpbWl0eV9kb21haW4gJiAweGZmOworCiAJLyogbWFyayB0aGlzIG5vZGUgYXMg
+InNlZW4iIGluIG5vZGUgYml0bWFwICovCi0JQk1BUF9TRVQocHhtX2JpdG1hcCwgbWVtb3J5X2Fm
+ZmluaXR5LT5wcm94aW1pdHlfZG9tYWluKTsKKwlCTUFQX1NFVChweG1fYml0bWFwLCBweG0pOwog
+CiAJLyogY2FsY3VsYXRlIGluZm8gZm9yIG1lbW9yeSBjaHVuayBzdHJ1Y3R1cmUgKi8KLQlwYWRk
+ciA9IG1lbW9yeV9hZmZpbml0eS0+YmFzZV9hZGRyX2hpOwotCXBhZGRyID0gKHBhZGRyIDw8IDMy
+KSB8IG1lbW9yeV9hZmZpbml0eS0+YmFzZV9hZGRyX2xvOwotCXNpemUgPSBtZW1vcnlfYWZmaW5p
+dHktPmxlbmd0aF9oaTsKLQlzaXplID0gKHNpemUgPDwgMzIpIHwgbWVtb3J5X2FmZmluaXR5LT5s
+ZW5ndGhfbG87CisJcGFkZHIgPSBtZW1vcnlfYWZmaW5pdHktPmJhc2VfYWRkcmVzczsKKwlzaXpl
+ID0gbWVtb3J5X2FmZmluaXR5LT5sZW5ndGg7CiAJCiAJc3RhcnRfcGZuID0gcGFkZHIgPj4gUEFH
+RV9TSElGVDsKIAllbmRfcGZuID0gKHBhZGRyICsgc2l6ZSkgPj4gUEFHRV9TSElGVDsKIAkKLQlw
+eG0gPSBtZW1vcnlfYWZmaW5pdHktPnByb3hpbWl0eV9kb21haW47CiAKIAlpZiAobnVtX21lbW9y
+eV9jaHVua3MgPj0gTUFYQ0hVTktTKSB7CiAJCXByaW50aygiVG9vIG1hbnkgbWVtIGNodW5rcyBp
+biBTUkFULiBJZ25vcmluZyAlbGxkIE1CeXRlcyBhdCAlbGx4XG4iLApAQCAtMTMyLDggKzEzMSw4
+IEBAIHN0YXRpYyB2b2lkIF9faW5pdCBwYXJzZV9tZW1vcnlfYWZmaW5pdHkKIAlwcmludGsoIk1l
+bW9yeSByYW5nZSAweCVsWCB0byAweCVsWCAodHlwZSAweCVYKSBpbiBwcm94aW1pdHkgZG9tYWlu
+IDB4JTAyWCAlc1xuIiwKIAkJc3RhcnRfcGZuLCBlbmRfcGZuLAogCQltZW1vcnlfYWZmaW5pdHkt
+Pm1lbW9yeV90eXBlLAotCQltZW1vcnlfYWZmaW5pdHktPnByb3hpbWl0eV9kb21haW4sCi0JCSht
+ZW1vcnlfYWZmaW5pdHktPmZsYWdzLmhvdF9wbHVnZ2FibGUgPworCQlweG0sCisJCSgobWVtb3J5
+X2FmZmluaXR5LT5mbGFncyAmIEFDUElfU1JBVF9NRU1fSE9UX1BMVUdHQUJMRSkgPwogCQkgImVu
+YWJsZWQgYW5kIHJlbW92YWJsZSIgOiAiZW5hYmxlZCIgKSApOwogfQogCkBAIC0xODUsMTAgKzE4
+NCwxMCBAQCBzdGF0aWMgaW50IF9faW5pdCBhY3BpMjBfcGFyc2Vfc3JhdChzdHJ1CiAJbnVtX21l
+bW9yeV9jaHVua3MgPSAwOwogCXdoaWxlIChwIDwgZW5kKSB7CiAJCXN3aXRjaCAoKnApIHsKLQkJ
+Y2FzZSBBQ1BJX1NSQVRfUFJPQ0VTU09SX0FGRklOSVRZOgorCQljYXNlIEFDUElfU1JBVF9UWVBF
+X0NQVV9BRkZJTklUWToKIAkJCXBhcnNlX2NwdV9hZmZpbml0eV9zdHJ1Y3R1cmUocCk7CiAJCQli
+cmVhazsKLQkJY2FzZSBBQ1BJX1NSQVRfTUVNT1JZX0FGRklOSVRZOgorCQljYXNlIEFDUElfU1JB
+VF9UWVBFX01FTU9SWV9BRkZJTklUWToKIAkJCXBhcnNlX21lbW9yeV9hZmZpbml0eV9zdHJ1Y3R1
+cmUocCk7CiAJCQlicmVhazsKIAkJZGVmYXVsdDoKQEAgLTI2MiwzMSArMjYxLDMwIEBAIG91dF9m
+YWlsOgogCXJldHVybiAwOwogfQogCitzdHJ1Y3QgYWNwaV9zdGF0aWNfcnNkdCB7CisJc3RydWN0
+IGFjcGlfdGFibGVfcnNkdCB0YWJsZTsKKwl1MzIgcGFkZGluZ1s3XTsgLyogQWxsb3cgZm9yIDcg
+bW9yZSB0YWJsZSBlbnRyaWVzICovCit9OworCiBpbnQgX19pbml0IGdldF9tZW1jZmdfZnJvbV9z
+cmF0KHZvaWQpCiB7CiAJc3RydWN0IGFjcGlfdGFibGVfaGVhZGVyICpoZWFkZXIgPSBOVUxMOwog
+CXN0cnVjdCBhY3BpX3RhYmxlX3JzZHAgKnJzZHAgPSBOVUxMOwogCXN0cnVjdCBhY3BpX3RhYmxl
+X3JzZHQgKnJzZHQgPSBOVUxMOwotCXN0cnVjdCBhY3BpX3BvaW50ZXIgKnJzZHBfYWRkcmVzcyA9
+IE5VTEw7Ci0Jc3RydWN0IGFjcGlfdGFibGVfcnNkdCBzYXZlZF9yc2R0OworCWFjcGlfbmF0aXZl
+X3VpbnQgcnNkcF9hZGRyZXNzID0gMDsKKwlzdHJ1Y3QgYWNwaV9zdGF0aWNfcnNkdCBzYXZlZF9y
+c2R0OwogCWludCB0YWJsZXMgPSAwOwogCWludCBpID0gMDsKIAotCWlmIChBQ1BJX0ZBSUxVUkUo
+YWNwaV9maW5kX3Jvb3RfcG9pbnRlcihBQ1BJX1BIWVNJQ0FMX0FERFJFU1NJTkcsCi0JCQkJCQly
+c2RwX2FkZHJlc3MpKSkgeworCXJzZHBfYWRkcmVzcyA9IGFjcGlfZmluZF9yc2RwKCk7CisJaWYg
+KCFyc2RwX2FkZHJlc3MpIHsKIAkJcHJpbnRrKCIlczogU3lzdGVtIGRlc2NyaXB0aW9uIHRhYmxl
+cyBub3QgZm91bmRcbiIsCiAJCSAgICAgICBfX0ZVTkNUSU9OX18pOwogCQlnb3RvIG91dF9lcnI7
+CiAJfQogCi0JaWYgKHJzZHBfYWRkcmVzcy0+cG9pbnRlcl90eXBlID09IEFDUElfUEhZU0lDQUxf
+UE9JTlRFUikgewotCQlwcmludGsoIiVzOiBhc3NpZ25pbmcgYWRkcmVzcyB0byByc2RwXG4iLCBf
+X0ZVTkNUSU9OX18pOwotCQlyc2RwID0gKHN0cnVjdCBhY3BpX3RhYmxlX3JzZHAgKikKLQkJCQko
+dTMyKXJzZHBfYWRkcmVzcy0+cG9pbnRlci5waHlzaWNhbDsKLQl9IGVsc2UgewotCQlwcmludGso
+IiVzOiByc2RwX2FkZHJlc3MgaXMgbm90IGEgcGh5c2ljYWwgcG9pbnRlclxuIiwgX19GVU5DVElP
+Tl9fKTsKLQkJZ290byBvdXRfZXJyOwotCX0KKwlwcmludGsoIiVzOiBhc3NpZ25pbmcgYWRkcmVz
+cyB0byByc2RwXG4iLCBfX0ZVTkNUSU9OX18pOworCXJzZHAgPSAoc3RydWN0IGFjcGlfdGFibGVf
+cnNkcCAqKSh1MzIpcnNkcF9hZGRyZXNzOwogCWlmICghcnNkcCkgewogCQlwcmludGsoIiVzOiBE
+aWRuJ3QgZmluZCBBQ1BJIHJvb3QhXG4iLCBfX0ZVTkNUSU9OX18pOwogCQlnb3RvIG91dF9lcnI7
+CkBAIC0yOTUsMTMgKzI5MywxMyBAQCBpbnQgX19pbml0IGdldF9tZW1jZmdfZnJvbV9zcmF0KHZv
+aWQpCiAJcHJpbnRrKEtFUk5fSU5GTyAiJS44cyB2JWQgWyUuNnNdXG4iLCByc2RwLT5zaWduYXR1
+cmUsIHJzZHAtPnJldmlzaW9uLAogCQlyc2RwLT5vZW1faWQpOwogCi0JaWYgKHN0cm5jbXAocnNk
+cC0+c2lnbmF0dXJlLCBSU0RQX1NJRyxzdHJsZW4oUlNEUF9TSUcpKSkgeworCWlmIChzdHJuY21w
+KHJzZHAtPnNpZ25hdHVyZSwgQUNQSV9TSUdfUlNEUCxzdHJsZW4oQUNQSV9TSUdfUlNEUCkpKSB7
+CiAJCXByaW50ayhLRVJOX1dBUk5JTkcgIiVzOiBSU0RQIHRhYmxlIHNpZ25hdHVyZSBpbmNvcnJl
+Y3RcbiIsIF9fRlVOQ1RJT05fXyk7CiAJCWdvdG8gb3V0X2VycjsKIAl9CiAKIAlyc2R0ID0gKHN0
+cnVjdCBhY3BpX3RhYmxlX3JzZHQgKikKLQkgICAgYm9vdF9pb3JlbWFwKHJzZHAtPnJzZHRfYWRk
+cmVzcywgc2l6ZW9mKHN0cnVjdCBhY3BpX3RhYmxlX3JzZHQpKTsKKwkgICAgYm9vdF9pb3JlbWFw
+KHJzZHAtPnJzZHRfcGh5c2ljYWxfYWRkcmVzcywgc2l6ZW9mKHN0cnVjdCBhY3BpX3RhYmxlX3Jz
+ZHQpKTsKIAogCWlmICghcnNkdCkgewogCQlwcmludGsoS0VSTl9XQVJOSU5HCkBAIC0zMTAsOSAr
+MzA4LDkgQEAgaW50IF9faW5pdCBnZXRfbWVtY2ZnX2Zyb21fc3JhdCh2b2lkKQogCQlnb3RvIG91
+dF9lcnI7CiAJfQogCi0JaGVhZGVyID0gJiByc2R0LT5oZWFkZXI7CisJaGVhZGVyID0gJnJzZHQt
+PmhlYWRlcjsKIAotCWlmIChzdHJuY21wKGhlYWRlci0+c2lnbmF0dXJlLCBSU0RUX1NJRywgc3Ry
+bGVuKFJTRFRfU0lHKSkpIHsKKwlpZiAoc3RybmNtcChoZWFkZXItPnNpZ25hdHVyZSwgQUNQSV9T
+SUdfUlNEVCwgc3RybGVuKEFDUElfU0lHX1JTRFQpKSkgewogCQlwcmludGsoS0VSTl9XQVJOSU5H
+ICJBQ1BJOiBSU0RUIHNpZ25hdHVyZSBpbmNvcnJlY3RcbiIpOwogCQlnb3RvIG91dF9lcnI7CiAJ
+fQpAQCAtMzMwLDkgKzMyOCw5IEBAIGludCBfX2luaXQgZ2V0X21lbWNmZ19mcm9tX3NyYXQodm9p
+ZCkKIAogCW1lbWNweSgmc2F2ZWRfcnNkdCwgcnNkdCwgc2l6ZW9mKHNhdmVkX3JzZHQpKTsKIAot
+CWlmIChzYXZlZF9yc2R0LmhlYWRlci5sZW5ndGggPiBzaXplb2Yoc2F2ZWRfcnNkdCkpIHsKKwlp
+ZiAoc2F2ZWRfcnNkdC50YWJsZS5oZWFkZXIubGVuZ3RoID4gc2l6ZW9mKHNhdmVkX3JzZHQpKSB7
+CiAJCXByaW50ayhLRVJOX1dBUk5JTkcgIkFDUEk6IFRvbyBiaWcgbGVuZ3RoIGluIFJTRFQ6ICVk
+XG4iLAotCQkgICAgICAgc2F2ZWRfcnNkdC5oZWFkZXIubGVuZ3RoKTsKKwkJICAgICAgIHNhdmVk
+X3JzZHQudGFibGUuaGVhZGVyLmxlbmd0aCk7CiAJCWdvdG8gb3V0X2VycjsKIAl9CiAKQEAgLTM0
+MSwxNSArMzM5LDE1IEBAIGludCBfX2luaXQgZ2V0X21lbWNmZ19mcm9tX3NyYXQodm9pZCkKIAlm
+b3IgKGkgPSAwOyBpIDwgdGFibGVzOyBpKyspIHsKIAkJLyogTWFwIGluIGhlYWRlciwgdGhlbiBt
+YXAgaW4gZnVsbCB0YWJsZSBsZW5ndGguICovCiAJCWhlYWRlciA9IChzdHJ1Y3QgYWNwaV90YWJs
+ZV9oZWFkZXIgKikKLQkJCWJvb3RfaW9yZW1hcChzYXZlZF9yc2R0LmVudHJ5W2ldLCBzaXplb2Yo
+c3RydWN0IGFjcGlfdGFibGVfaGVhZGVyKSk7CisJCQlib290X2lvcmVtYXAoc2F2ZWRfcnNkdC50
+YWJsZS50YWJsZV9vZmZzZXRfZW50cnlbaV0sIHNpemVvZihzdHJ1Y3QgYWNwaV90YWJsZV9oZWFk
+ZXIpKTsKIAkJaWYgKCFoZWFkZXIpCiAJCQlicmVhazsKIAkJaGVhZGVyID0gKHN0cnVjdCBhY3Bp
+X3RhYmxlX2hlYWRlciAqKQotCQkJYm9vdF9pb3JlbWFwKHNhdmVkX3JzZHQuZW50cnlbaV0sIGhl
+YWRlci0+bGVuZ3RoKTsKKwkJCWJvb3RfaW9yZW1hcChzYXZlZF9yc2R0LnRhYmxlLnRhYmxlX29m
+ZnNldF9lbnRyeVtpXSwgaGVhZGVyLT5sZW5ndGgpOwogCQlpZiAoIWhlYWRlcikKIAkJCWJyZWFr
+OwogCi0JCWlmIChzdHJuY21wKChjaGFyICopICZoZWFkZXItPnNpZ25hdHVyZSwgIlNSQVQiLCA0
+KSkKKwkJaWYgKHN0cm5jbXAoKGNoYXIgKikgJmhlYWRlci0+c2lnbmF0dXJlLCBBQ1BJX1NJR19T
+UkFULCA0KSkKIAkJCWNvbnRpbnVlOwogCiAJCS8qIHdlJ3ZlIGZvdW5kIHRoZSBzcmF0IHRhYmxl
+LiBkb24ndCBuZWVkIHRvIGxvb2sgYXQgYW55IG1vcmUgdGFibGVzICovCg==
+
+------_=_NextPart_001_01C746D5.8FCD879D--
