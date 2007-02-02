@@ -1,51 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423029AbXBBAZ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423037AbXBBAdg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423029AbXBBAZ1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Feb 2007 19:25:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423030AbXBBAZ1
+	id S1423037AbXBBAdg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Feb 2007 19:33:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423035AbXBBAdg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Feb 2007 19:25:27 -0500
-Received: from patroclus.tjworld.net ([84.12.34.246]:62422 "EHLO phwoarrr.tv"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1423029AbXBBAZ0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Feb 2007 19:25:26 -0500
-Subject: Re: [PATCH 1/1] filesystem: Disk Errors at boot-time caused by
-	probe of partitions
-From: TJ <linux@tjworld.net>
-To: "Eric D. Mudama" <edmudama@gmail.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       Neil Brown <neilb@suse.de>
-In-Reply-To: <311601c90702011610t1cb75d67if3c40347f373d7ad@mail.gmail.com>
-References: <1170287439.13764.24.camel@butch.lan.tjworld.net>
-	 <20070201142648.7d16e4b6.akpm@osdl.org>
-	 <1170373838.30201.45.camel@butch.lan.tjworld.net>
-	 <311601c90702011610t1cb75d67if3c40347f373d7ad@mail.gmail.com>
-Content-Type: text/plain
-Organization: TJworld
-Date: Fri, 02 Feb 2007 00:25:11 +0000
-Message-Id: <1170375911.30201.50.camel@butch.lan.tjworld.net>
+	Thu, 1 Feb 2007 19:33:36 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:52350 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1423032AbXBBAdf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Feb 2007 19:33:35 -0500
+Date: Thu, 1 Feb 2007 16:33:20 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Magnus Damm <magnus@valinux.co.jp>
+Cc: linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
+       "Luck, Tony" <tony.luck@intel.com>, fastboot@lists.osdl.org
+Subject: Re: [PATCH] kexec: Fix CONFIG_SMP=n compilation (ia64)
+Message-Id: <20070201163320.eb4fa2c7.akpm@osdl.org>
+In-Reply-To: <20070201131347.3807.87075.sendpatchset@localhost>
+References: <20070201131347.3807.87075.sendpatchset@localhost>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Server: High Performance Mail Server - http://surgemail.com r=-2006397171
-X-Authenticated-User: tj@tjworld.net 
-X-DNS-Paranoid: DNS lookup didn't match (84.12.34.243)->(dns2.hornytunes.com)->()
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-02-01 at 17:10 -0700, Eric D. Mudama wrote:
 
-> In the log you posted, the drive posted 51/04 to your out-of-bounds
-> request, but these are 59/04, do they span the end of the device or
-> something?
+(added ia64 list)
+(added ia64 maintainer)
+(added kexec list)
 
-As you can see in the error-log including in the Ubuntu bug report, the
-51/04 errors are generated in dma_intr() and occur in the initial phase
-when the driver is using DMA.
+On Thu, 01 Feb 2007 22:13:47 +0900
+Magnus Damm <magnus@valinux.co.jp> wrote:
 
-After a  few of these errors it disables DMA and switches to PIO mode,
-which is when the 59/04 errors are generated in task_in_intr().
+> kexec: Fix CONFIG_SMP=n compilation (ia64)
+> 
+> This patch makes it possible to compile kexec for ia64 without SMP support.
+> 
 
-TJ.
+Please always include the compiler stderr when fixing build errors or
+warnings.
+
+> 
+>  Applies on top of 2.6.20-rc7.
+> 
+>  arch/ia64/kernel/crash.c         |   11 +++++++----
+>  arch/ia64/kernel/machine_kexec.c |    2 ++
+>  2 files changed, 9 insertions(+), 4 deletions(-)
+> 
+> --- 0002/arch/ia64/kernel/crash.c
+> +++ work/arch/ia64/kernel/crash.c	2007-02-01 12:42:38.000000000 +0900
+> @@ -79,6 +79,7 @@ crash_save_this_cpu()
+>  	final_note(buf);
+>  }
+>  
+> +#ifdef CONFIG_SMP
+>  static int
+>  kdump_wait_cpu_freeze(void)
+>  {
+> @@ -91,6 +92,7 @@ kdump_wait_cpu_freeze(void)
+>  	}
+>  	return 1;
+>  }
+> +#endif
+
+I think this is a warning fix?
+
+>  void
+>  machine_crash_shutdown(struct pt_regs *pt)
+> @@ -132,11 +134,12 @@ kdump_cpu_freeze(struct unw_frame_info *
+>  	atomic_inc(&kdump_cpu_freezed);
+>  	kdump_status[cpuid] = 1;
+>  	mb();
+> -	if (cpuid == 0) {
+> -		for (;;)
+> -			cpu_relax();
+> -	} else
+> +#ifdef CONFIG_HOTPLUG_CPU
+> +	if (cpuid != 0)
+>  		ia64_jump_to_sal(&sal_boot_rendez_state[cpuid]);
+> +#endif
+> +	for (;;)
+> +		cpu_relax();
+>  }
+
+I trust ia64_jump_to_sal doesn't return.
+
+>  static int
+> --- 0002/arch/ia64/kernel/machine_kexec.c
+> +++ work/arch/ia64/kernel/machine_kexec.c	2007-02-01 12:35:46.000000000 +0900
+> @@ -70,12 +70,14 @@ void machine_kexec_cleanup(struct kimage
+>  
+>  void machine_shutdown(void)
+>  {
+> +#ifdef CONFIG_SMP
+>  	int cpu;
+>  
+>  	for_each_online_cpu(cpu) {
+>  		if (cpu != smp_processor_id())
+>  			cpu_down(cpu);
+>  	}
+> +#endif
+>  	kexec_disable_iosapic();
+>  }
+
+hm.  I suspect this one should have been #ifndef CONFIG_HOTPLUG_CPU?
+
+I was wondering if we should have stubs for cpu_down() if !CONFIG_HOTPLUG_CPU,
+but perhaps that doesn't make sense.
 
