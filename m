@@ -1,52 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946066AbXBBUyP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946067AbXBBU4g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946066AbXBBUyP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Feb 2007 15:54:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946067AbXBBUyP
+	id S1946067AbXBBU4g (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Feb 2007 15:56:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946068AbXBBU4f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Feb 2007 15:54:15 -0500
-Received: from omx1-ext.sgi.com ([192.48.179.11]:38674 "EHLO omx1.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1946064AbXBBUyO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Feb 2007 15:54:14 -0500
-From: John Keller <jpk@sgi.com>
-To: linux-acpi@vger.kernel.org
-Cc: ayoung@sgi.com, linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org,
-       John Keller <jpk@sgi.com>
-Date: Fri, 02 Feb 2007 14:54:12 -0600
-Message-Id: <20070202205412.14367.60290.sendpatchset@attica.americas.sgi.com>
-Subject: [PATCH 1/1] -  Altix: more ACPI PRT support
+	Fri, 2 Feb 2007 15:56:35 -0500
+Received: from avexch1.qlogic.com ([198.70.193.115]:52420 "EHLO
+	avexch1.qlogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1946067AbXBBU4f (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Feb 2007 15:56:35 -0500
+Date: Fri, 2 Feb 2007 12:56:30 -0800
+From: Andrew Vasquez <andrew.vasquez@qlogic.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux-SCSI Mailing List <linux-scsi@vger.kernel.org>,
+       Nigel Kirkland <nigel.kirkland@qlogic.com>
+Subject: Re: [BUG] Unable to handle kernel NULL pointer dereference...as_move_to_dispatch+0x11/0x135
+Message-ID: <20070202205630.GI3737@andrew-vasquezs-computer.local>
+References: <20070122183510.GA19905@andrew-vasquezs-computer.local> <20070201232302.905962b6.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070201232302.905962b6.akpm@linux-foundation.org>
+Organization: QLogic Corporation
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 02 Feb 2007 20:56:34.0475 (UTC) FILETIME=[9F83E7B0:01C7470C]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The SN Altix platform does not conform to the 
-IOSAPIC IRQ routing model. Add code in acpi_unregister_gsi()
-to check if (acpi_irq_model == ACPI_IRQ_MODEL_PLATFORM) and
-return.
+On Thu, 01 Feb 2007, Andrew Morton wrote:
 
-Signed-off-by: John Keller <jpk@sgi.com>
----
+> On Mon, 22 Jan 2007 10:35:10 -0800 Andrew Vasquez <andrew.vasquez@qlogic.com> wrote:
+> > Basically what is happening from the FC side is the initiator executes
+> > a simple dt test:
+> > 
+> >         dt of=/dev/raw/raw1 procs=8 oncerr=abort bs=16k disable=stats limit=2m passes=1000000 pattern=iot dlimit=2048
+> > 
+> > against a single lun (a very basic Windows target mode driver).
+> > During the test a port-enable, port-disable script is running agains
+> > the switch's port that is connected to the target (this occurs every
+> > sixty seconds (for a disabled duration of 2 seconds).  Additionally,
+> > the target itself is set to LOGO (logout) or drop off the topology
+> > every 30 seconds.
+> 
+> I don't understand what effect the port-enable/port-disable has upon the
+> system.  Will it cause I/O errors, or what?
 
-Due to an oversight, this code was not added previously when
-similar code was added to acpi_register_gsi().
+No I/O errors should make there way to the upper-layers (block/FS).
+The system *should* be shielded from the fibre-channel fabric events.
+I just wanted to explain what the (basic sanity) test did.
 
-http://marc.theaimsgroup.com/?l=linux-acpi&m=116680983430121&w=2
+> > This test runs fine up to 2.6.19.
+> 
+> One thing we did in there was to give direct-io-against-blockdevs some
+> special-case bio-preparation code.  Perhaps this is tickling a bug somehow.
+> 
+> We can revert that change like this:
+> 
+> 
+> diff -puN fs/block_dev.c~a fs/block_dev.c
+> --- a/fs/block_dev.c~a
+> +++ a/fs/block_dev.c
+> @@ -196,8 +196,47 @@ static void blk_unget_page(struct page *
+>  	pvec->page[--pvec->idx] = page;
+>  }
+>  
+> +static int
+> +blkdev_get_blocks(struct inode *inode, sector_t iblock,
+> +		struct buffer_head *bh, int create)
+...
 
- arch/ia64/kernel/acpi.c |    3 +++
- 1 file changed, 3 insertions(+)
+Hmm, with this patch we've noted two main differences:
 
+1) I/O throughput with the basic 'dd' command used (above) is back to
+   60MB/s, rather than the appalling 20-22 MB/s we were seeing with
+   2.6.20-rcX.
 
-Index: linux-2.6/arch/ia64/kernel/acpi.c
-===================================================================
---- linux-2.6.orig/arch/ia64/kernel/acpi.c	2007-02-02 14:44:31.000000000 -0600
-+++ linux-2.6/arch/ia64/kernel/acpi.c	2007-02-02 14:47:44.658143727 -0600
-@@ -609,6 +609,9 @@ EXPORT_SYMBOL(acpi_register_gsi);
- 
- void acpi_unregister_gsi(u32 gsi)
- {
-+	if (acpi_irq_model == ACPI_IRQ_MODEL_PLATFORM)
-+		return;
-+
- 	iosapic_unregister_intr(gsi);
- }
- 
+2) No panics -- so far with 2+ hours of testing.  With our vanilla
+   system of 2.6.20-rc7, the test could trigger the panic within 15 to
+   20 minutes.
+
+We'll let this run over the weekend -- I'll certainly let you know if
+anything has changed (failures).
+
+--
+Andrew Vasquez
