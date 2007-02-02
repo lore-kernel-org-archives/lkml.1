@@ -1,160 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946181AbXBCACP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933386AbXBCADi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946181AbXBCACP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Feb 2007 19:02:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946179AbXBCACP
+	id S933386AbXBCADi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Feb 2007 19:03:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933394AbXBCADi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Feb 2007 19:02:15 -0500
-Received: from x35.xmailserver.org ([64.71.152.41]:2827 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1946181AbXBCACO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Feb 2007 19:02:14 -0500
-X-AuthUser: davidel@xmailserver.org
-Date: Fri, 2 Feb 2007 16:02:11 -0800 (PST)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Zach Brown <zach.brown@oracle.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Fri, 2 Feb 2007 19:03:38 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:54949 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933386AbXBCADh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Feb 2007 19:03:37 -0500
+Date: Sat, 3 Feb 2007 00:55:31 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Zach Brown <zach.brown@oracle.com>, linux-kernel@vger.kernel.org,
        linux-aio@kvack.org, Suparna Bhattacharya <suparna@in.ibm.com>,
        Benjamin LaHaise <bcrl@kvack.org>
 Subject: Re: [PATCH 2 of 4] Introduce i386 fibril scheduling
-In-Reply-To: <Pine.LNX.4.64.0702021525370.5219@alien.or.mcafeemobile.com>
-Message-ID: <Pine.LNX.4.64.0702021548000.5219@alien.or.mcafeemobile.com>
-References: <patchbomb.1170193181@tetsuo.zabbo.net>
- <df7bc026d50ec5bbdd8e.1170193183@tetsuo.zabbo.net> <20070201083611.GC18233@elte.hu>
- <Pine.LNX.4.64.0702011154110.3632@woody.linux-foundation.org>
- <20070202104900.GA13941@elte.hu> <Pine.LNX.4.64.0702020738500.15057@woody.linux-foundation.org>
- <20070202222110.GA1212@elte.hu> <Pine.LNX.4.64.0702021525370.5219@alien.or.mcafeemobile.com>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-ID: <20070202235531.GA18904@elte.hu>
+References: <patchbomb.1170193181@tetsuo.zabbo.net> <df7bc026d50ec5bbdd8e.1170193183@tetsuo.zabbo.net> <20070201083611.GC18233@elte.hu> <Pine.LNX.4.64.0702011154110.3632@woody.linux-foundation.org> <20070202104900.GA13941@elte.hu> <Pine.LNX.4.64.0702020738500.15057@woody.linux-foundation.org> <20070202222110.GA1212@elte.hu> <Pine.LNX.4.64.0702021445410.15057@woody.linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0702021445410.15057@woody.linux-foundation.org>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.3
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.3 required=5.9 tests=ALL_TRUSTED,BAYES_50 autolearn=no SpamAssassin version=3.0.3
+	-3.3 ALL_TRUSTED            Did not pass through any untrusted hosts
+	1.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
+	[score: 0.4999]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2 Feb 2007, Davide Libenzi wrote:
 
-> On Fri, 2 Feb 2007, Ingo Molnar wrote:
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+
+> THAT'S THE POINT. That's what makes fibrils cooperative. The "only if 
+> you block" is really what makes a fibril be something else than a 
+> regular thread.
+
+Well, in my picture, 'only if you block' is a pure thread utilization 
+decision: bounce a piece of work to another thread if this thread cannot 
+complete it. (if the kernel is lucky enough that the user context told 
+it "it's fine to do that".)
+
+it is 'incidental parallelism' instead of 'intentional parallelism', but 
+the random and unpredictable nature of it doesnt change anything about 
+the fundamental fact: we start a new thread of execution in essence.
+
+Typically it will be rare in a workload as it will be driven by 
+cachemisses, but for example in DB workloads the 'cachemiss' will be the 
+/common case/ - because the DB manages the cache itself.
+
+And how to run a thread of execution is a fundamental /scheduling/ 
+decision: it is the acceptance of and the adoption to the cost of work 
+migration - if no forced wait happens then often it's cheaper to execute 
+all work locally and serially.
+
+[ in fact, such a mechanism doesnt even always have to be driven from
+  the scheduler itself: such a 'bounce current work to another thread'
+  event could occur when we detect that a pagecache page is missing and
+  that we have to do a ->readpage, etc. Tux does that since 1999: the
+  cutoff for 'bounce work' was when a soft cache (the pagecache or the
+  dentry cache) was missed - not when we went into the IO path. This has
+  the advantage that the Tux cachemiss threads could do /all/ the IO
+  preparation and IO completion on the same CPU and in one go - while
+  the user context was able to continue executing. ]
+
+But this is also a function of hardware: for example on a Transputer i'd 
+bounce off all such work immediately (even if it's a sys_time() 
+syscall), all the time, even if fully cached, no exceptions, because the 
+hardware is such that another CPU can pick it up in the next cycle.
+
+while we definitely dont want to bounce short-lived cached syscalls to 
+another thread, for longer ones or ones which we /expect/ to block we 
+might want to do it like that straight away. [Especially on a multi-core 
+CPU that has a shared L2 cache (and doubly so on a HT/SMT CPU that has a 
+shared L1 cache).]
+
+i dont see anything here that mandates (or even strongly supports) the 
+notion of cooperative scheduling. The moment a context sees a 'cache 
+miss', it is totally fair to potentially distribute it to other CPUs. It 
+wont run for a long time and it will be totally cache-cold when the 'IO 
+done' event occurs - hence we should schedule it where the IO event 
+occured. Which might easily be the same CPU where the user context is 
+running right now (we prefer last-run CPUs on wakeups), but not 
+necessarily - it's a general scheduling decision.
+
+> > Note: such a 'flip' would only occur when the original context 
+> > blocks, /not/ on every async syscall.
 > 
-> > in fact an app could also /trigger/ the execution of a syscall in a 
-> > different context - to create parallelism artificially - without any 
-> > blocking event. So we could do:
-> > 
-> >   cookie1 = sys_async(sys_read, params);
-> >   cookie2 = sys_async(sys_write, params);
-> > 
-> >   [ ... calculation loop ... ]
-> > 
-> >   wait_on_async_syscall(cookie1);
-> >   wait_on_async_syscall(cookie2);
-> > 
-> > or something like that. Without user-space having to create threads 
-> > itself, etc. So basically, we'd make kernel threads more useful, and 
-> > we'd make threading safer - by only letting syscalls thread.
+> Right.
 > 
-> Since I still think that the many-thousands potential async operations 
-> coming from network sockets are better handled with a classical event 
-> machanism [1], and since smooth integration of new async syscall into the 
-> standard POSIX infrastructure is IMO a huge win, I think we need to have a 
-> "bridge" to allow async completions being detectable through a pollable 
-> (by the mean of select/poll/epoll whatever) device.
-> In that way you can handle async operations with the best mechanism that 
-> is fit for them, and gather them in a single async scheduler.
+> So can you take a look at Zach's fibril idea again? Because that's 
+> exactly what it does. It basically sets a flag, saying "flip to this 
+> when you block or yield". Of course, it's a bit bigger than just a 
+> flag, since it needs to describe what to flip to, but that's the basic 
+> idea.
 
-To clarify further, below are the API and the use case of my userspace 
-implementation. The guasi_fd() gives you back a pollable (POLLIN) fd to be 
-integrated in your prefered event retrieval interface. Once it fd is 
-signaled, you can fetch your completed requests using guasi_fetch() and 
-schedule work based on that.
-The GUASI implementation uses pthreads, but it is clear that an in-kernel 
-async syscall implementation can take wiser decisions, and optimize the 
-heck out of it (locks, queues, ...).
+i know Zach's code ... i really do. Even if i didnt look at the code 
+(which i did), Jonathon Corbet did a very nice writeup about fibrils on 
+LWN.net two days ago, which i've read as well:
 
+  http://lwn.net/Articles/219954/
 
+So there's no misunderstanding on my side i think.
 
+> Now, if you want to make fibrils *also* then actually use a separate 
+> thread, that's an extension.
 
-- Davide
+oh please, Linus. I /did/ suggest this as an extension to Zach's idea! 
+Look at the Subject line - i'm reacting to the specific fibril code of 
+Zach. I wrote this:
 
+| as per my other email, i dont really like this concept. This is the 
+| killer:
+|
+| > [...]  There can be multiple of them in the process of executing for 
+| > a given task_struct, but only one can every be actively running at a 
+| > time. [...]
+|
+| there's almost no scheduling cost from being able to arbitrarily 
+| schedule a kernel thread - but there are /huge/ benefits in it.
+|
+| would it be hard to redo your AIO patches based on a pool of plain 
+| simple kernel threads?
 
+see http://lkml.org/lkml/2007/2/1/40.
 
-/*
- * Example of async pread using GUASI
- */
-static long guasi_wrap__pread(void *priv, long const *params) {
-
-        return (long) pread((int) params[0], (void *) params[1],
-                            (size_t) params[2], (off_t) params[3]);
-}
- 
-guasi_req_t guasi__pread(guasi_t hctx, void *priv, void *asid, int prio,
-                         int fd, void *buf, size_t size, off_t off) {
-
-        return guasi_submit(hctx, priv, asid, prio, guasi_wrap__pread, 4,
-                            (long) fd, (long) buf, (long) size, (long) off);
-}
-
-
----
-/*
- *  guasi by Davide Libenzi (generic userspace async syscall implementation)
- *  Copyright (C) 2003  Davide Libenzi
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
- *  Davide Libenzi <davidel@xmailserver.org>
- *
- */
-
-#if !defined(_GUASI_H)
-#define _GUASI_H
-
-
-#define GUASI_MAX_PARAMS 16
-
-#define GUASI_STATUS_PENDING 1
-#define GUASI_STATUS_ACTIVE 2
-#define GUASI_STATUS_COMPLETE 3
-
-
-typedef long (*guasi_syscall_t)(void *, long const *);
-
-typedef struct s_guasi { } *guasi_t;
-typedef struct s_guasi_req { } *guasi_req_t;
-
-struct guasi_reqinfo {
-	void *priv;   /* Call private data. Passed to guasi_submit */
-	void *asid;   /* Async request ID. Passed to guasi_submit */
-	long result;  /* Return code of "proc" passed to guasi_submit */
-	long error;   /* errno */
-	int status;   /* GUASI_STATUS_* */
-};
-
-
-
-guasi_t guasi_create(int min_threads, int max_threads, int max_priority);
-void guasi_free(guasi_t hctx);
-int guasi_fd(guasi_t hctx);
-guasi_req_t guasi_submit(guasi_t hctx, void *priv, void *asid, int prio,
-			 guasi_syscall_t proc, int nparams, ...);
-int guasi_fetch(guasi_t hctx, guasi_req_t *reqs, int nreqs);
-int guasi_req_info(guasi_req_t hreq, struct guasi_reqinfo *rinf);
-void guasi_req_free(guasi_req_t hreq);
-
-#endif
-
-
+	Ingo
