@@ -1,61 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751938AbXBBKrP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751936AbXBBKsL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751938AbXBBKrP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Feb 2007 05:47:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751897AbXBBKrP
+	id S1751936AbXBBKsL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Feb 2007 05:48:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751897AbXBBKsL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Feb 2007 05:47:15 -0500
-Received: from nic.NetDirect.CA ([216.16.235.2]:33459 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751938AbXBBKrO (ORCPT
+	Fri, 2 Feb 2007 05:48:11 -0500
+Received: from embla.aitel.hist.no ([158.38.50.22]:36965 "HELO
+	embla.aitel.hist.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751936AbXBBKsJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Feb 2007 05:47:14 -0500
-X-Originating-Ip: 74.109.98.130
-Date: Fri, 2 Feb 2007 05:46:03 -0500 (EST)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@CPE00045a9c397f-CM001225dbafb6
-To: Linux kernel mailing list <linux-kernel@vger.kernel.org>
-cc: Andrew Morton <akpm@osdl.org>, aia21@cantab.net
-Subject: [PATCH] NTFS: Rename apparently incorrect macro name "NTFS_DEBUG".
-Message-ID: <Pine.LNX.4.64.0702020543230.16913@CPE00045a9c397f-CM001225dbafb6>
+	Fri, 2 Feb 2007 05:48:09 -0500
+Message-ID: <45C3164C.1050805@aitel.hist.no>
+Date: Fri, 02 Feb 2007 11:45:32 +0100
+From: Helge Hafting <helge.hafting@aitel.hist.no>
+User-Agent: Icedove 1.5.0.9 (X11/20061220)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+To: davids@webmaster.com
+CC: sofar@foo-projects.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Ban module license tag string termination trick
+References: <MDEHLPKNGKAHNMBLJOLKOEBOBFAC.davids@webmaster.com>
+In-Reply-To: <MDEHLPKNGKAHNMBLJOLKOEBOBFAC.davids@webmaster.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+David Schwartz wrote:
+> In any event, even if you assume it is a copyright enforcement scheme, it is
+> not circumvention to remove or disable such a scheme with the permission of
+> the copyright holder. Section 2 of the GPL grants just such permission.
+>   
 
-  Replace the apparently incorrect macro name "NTFS_DEBUG" with
-"CONFIG_NTFS_DEBUG".
+The way I see this:
+There is a copyright enforcement scheme.  (A simple test for
+the word GPL.) Trivial, but still an enforcement scheme.
 
-Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
+You are of course allowed to remove the test completely,
+as the GPL lets you change the kernel source in any way you wish.
 
----
+But you are still not allowed to circumvent the scheme as long as
+it is in place - in those parts of the world were circumventing is
+illegal.
 
-diff --git a/fs/ntfs/attrib.c b/fs/ntfs/attrib.c
-index c577d8e..2154d03 100644
---- a/fs/ntfs/attrib.c
-+++ b/fs/ntfs/attrib.c
-@@ -1921,7 +1921,7 @@ s64 ntfs_attr_extend_allocation(ntfs_inode *ni, s64 new_alloc_size,
- 	u32 attr_len = 0; /* Silence stupid gcc warning. */
- 	bool mp_rebuilt;
+So a vendor using the \0 trick is on very shaky ground. 
+He has another option - to patch out the test.  But he
+don't want that, for then he have to distribute a kernel,
+not only a module.
 
--#ifdef NTFS_DEBUG
-+#ifdef CONFIG_NTFS_DEBUG
- 	read_lock_irqsave(&ni->size_lock, flags);
- 	allocated_size = ni->allocated_size;
- 	read_unlock_irqrestore(&ni->size_lock, flags);
-
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://www.fsdev.dreamhosters.com/wiki/index.php?title=Main_Page
-========================================================================
+Helge Hafting
