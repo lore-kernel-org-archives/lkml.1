@@ -1,76 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422933AbXBBElY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965398AbXBBEmA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422933AbXBBElY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Feb 2007 23:41:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965430AbXBBEkx
+	id S965398AbXBBEmA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Feb 2007 23:42:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422994AbXBBEle
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Feb 2007 23:40:53 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:51847 "EHLO mx2.suse.de"
+	Thu, 1 Feb 2007 23:41:34 -0500
+Received: from ns2.suse.de ([195.135.220.15]:51877 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422933AbXBBEk3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Feb 2007 23:40:29 -0500
+	id S965398AbXBBEk4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Feb 2007 23:40:56 -0500
 From: NeilBrown <neilb@suse.de>
 To: Andrew Morton <akpm@osdl.org>
-Date: Fri, 2 Feb 2007 15:40:02 +1100
-Message-Id: <1070202044002.19010@suse.de>
+Date: Fri, 2 Feb 2007 15:40:29 +1100
+Message-Id: <1070202044029.19107@suse.de>
 X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
 	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
 	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Cc: nfs@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: [PATCH 005 of 14] knfsd: SUNRPC: Don't set msg_name and msg_namelen when calling sock_recvmsg
+Subject: [PATCH 010 of 14] knfsd: SUNRPC: teach svc_sendto() to deal with IPv6 addresses
 References: <20070202153531.18622.patches@notabene>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 From: Chuck Lever <chuck.lever@oracle.com>
-Clean-up: msg_name and msg_namelen are not used by sock_recvmsg, so
-don't bother to set them in svc_recvfrom.
+CMSG_DATA comes in different sizes, depending on address family.
 
 Signed-off-by: Chuck Lever <chuck.lever@oracle.com>
+Cc: Aurelien Charbon <aurelien.charbon@ext.bull.net>
 Signed-off-by: Neil Brown <neilb@suse.de>
 
 ### Diffstat output
- ./net/sunrpc/svcsock.c |   22 +++++++---------------
- 1 file changed, 7 insertions(+), 15 deletions(-)
+ ./net/sunrpc/svcsock.c |   67 ++++++++++++++++++++++++++++++++++++-------------
+ 1 file changed, 50 insertions(+), 17 deletions(-)
 
 diff .prev/net/sunrpc/svcsock.c ./net/sunrpc/svcsock.c
---- .prev/net/sunrpc/svcsock.c	2007-02-02 15:21:55.000000000 +1100
-+++ ./net/sunrpc/svcsock.c	2007-02-02 15:22:22.000000000 +1100
-@@ -561,21 +561,13 @@ static int
- svc_recvfrom(struct svc_rqst *rqstp, struct kvec *iov, int nr, int buflen)
- {
- 	struct svc_sock *svsk = rqstp->rq_sock;
--	struct msghdr	msg;
--	struct socket	*sock;
--	int		len;
--
--	rqstp->rq_addrlen = sizeof(rqstp->rq_addr);
--	sock = svsk->sk_sock;
--
--	msg.msg_name    = &rqstp->rq_addr;
--	msg.msg_namelen = sizeof(rqstp->rq_addr);
--	msg.msg_control = NULL;
--	msg.msg_controllen = 0;
--
--	msg.msg_flags	= MSG_DONTWAIT;
-+	struct msghdr msg = {
-+		.msg_flags	= MSG_DONTWAIT,
-+	};
-+	int len;
- 
--	len = kernel_recvmsg(sock, &msg, iov, nr, buflen, MSG_DONTWAIT);
-+	len = kernel_recvmsg(svsk->sk_sock, &msg, iov, nr, buflen,
-+				msg.msg_flags);
- 
- 	/* sock_recvmsg doesn't fill in the name/namelen, so we must..
- 	 */
-@@ -583,7 +575,7 @@ svc_recvfrom(struct svc_rqst *rqstp, str
- 	rqstp->rq_addrlen = svsk->sk_remotelen;
- 
- 	dprintk("svc: socket %p recvfrom(%p, %Zu) = %d\n",
--		rqstp->rq_sock, iov[0].iov_base, iov[0].iov_len, len);
-+		svsk, iov[0].iov_base, iov[0].iov_len, len);
- 
- 	return len;
+--- .prev/net/sunrpc/svcsock.c	2007-02-02 15:22:32.000000000 +1100
++++ ./net/sunrpc/svcsock.c	2007-02-02 15:22:32.000000000 +1100
+@@ -36,6 +36,7 @@
+ #include <net/sock.h>
+ #include <net/checksum.h>
+ #include <net/ip.h>
++#include <net/ipv6.h>
+ #include <net/tcp_states.h>
+ #include <asm/uaccess.h>
+ #include <asm/ioctls.h>
+@@ -438,6 +439,45 @@ svc_wake_up(struct svc_serv *serv)
+ 	}
  }
+ 
++union svc_pktinfo_u {
++	struct in_pktinfo pkti;
++#if defined(CONFIG_IPV6) || defined(CONFIG_IPV6_MODULE)
++	struct in6_pktinfo pkti6;
++#endif
++};
++
++static void svc_set_cmsg_data(struct svc_rqst *rqstp, struct cmsghdr *cmh)
++{
++	switch (rqstp->rq_sock->sk_sk->sk_family) {
++	case AF_INET:
++		do {
++			struct in_pktinfo *pki = CMSG_DATA(cmh);
++
++			cmh->cmsg_level = SOL_IP;
++			cmh->cmsg_type = IP_PKTINFO;
++			pki->ipi_ifindex = 0;
++			pki->ipi_spec_dst.s_addr = rqstp->rq_daddr.addr.s_addr;
++			cmh->cmsg_len = CMSG_LEN(sizeof(*pki));
++		} while (0);
++		break;
++#if defined(CONFIG_IPV6) || defined(CONFIG_IPV6_MODULE)
++	case AF_INET6:
++		do {
++			struct in6_pktinfo *pki = CMSG_DATA(cmh);
++
++			cmh->cmsg_level = SOL_IPV6;
++			cmh->cmsg_type = IPV6_PKTINFO;
++			pki->ipi6_ifindex = 0;
++			ipv6_addr_copy(&pki->ipi6_addr,
++					&rqstp->rq_daddr.addr6);
++			cmh->cmsg_len = CMSG_LEN(sizeof(*pki));
++		} while (0);
++		break;
++#endif
++	}
++	return;
++}
++
+ /*
+  * Generic sendto routine
+  */
+@@ -447,9 +487,8 @@ svc_sendto(struct svc_rqst *rqstp, struc
+ 	struct svc_sock	*svsk = rqstp->rq_sock;
+ 	struct socket	*sock = svsk->sk_sock;
+ 	int		slen;
+-	char 		buffer[CMSG_SPACE(sizeof(struct in_pktinfo))];
++	char 		buffer[CMSG_SPACE(sizeof(union svc_pktinfo_u))];
+ 	struct cmsghdr *cmh = (struct cmsghdr *)buffer;
+-	struct in_pktinfo *pki = (struct in_pktinfo *)CMSG_DATA(cmh);
+ 	int		len = 0;
+ 	int		result;
+ 	int		size;
+@@ -462,21 +501,15 @@ svc_sendto(struct svc_rqst *rqstp, struc
+ 	slen = xdr->len;
+ 
+ 	if (rqstp->rq_prot == IPPROTO_UDP) {
+-		/* set the source and destination */
+-		struct msghdr	msg;
+-		msg.msg_name    = &rqstp->rq_addr;
+-		msg.msg_namelen = rqstp->rq_addrlen;
+-		msg.msg_iov     = NULL;
+-		msg.msg_iovlen  = 0;
+-		msg.msg_flags	= MSG_MORE;
+-
+-		msg.msg_control = cmh;
+-		msg.msg_controllen = sizeof(buffer);
+-		cmh->cmsg_len = CMSG_LEN(sizeof(*pki));
+-		cmh->cmsg_level = SOL_IP;
+-		cmh->cmsg_type = IP_PKTINFO;
+-		pki->ipi_ifindex = 0;
+-		pki->ipi_spec_dst.s_addr = rqstp->rq_daddr.addr.s_addr;
++		struct msghdr msg = {
++			.msg_name	= &rqstp->rq_addr,
++			.msg_namelen	= rqstp->rq_addrlen,
++			.msg_control	= cmh,
++			.msg_controllen	= sizeof(buffer),
++			.msg_flags	= MSG_MORE,
++		};
++
++		svc_set_cmsg_data(rqstp, cmh);
+ 
+ 		if (sock_sendmsg(sock, &msg, 0) < 0)
+ 			goto out;
