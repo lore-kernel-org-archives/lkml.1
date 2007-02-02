@@ -1,45 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423128AbXBBOUO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423154AbXBBOUu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423128AbXBBOUO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Feb 2007 09:20:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423134AbXBBOUO
+	id S1423154AbXBBOUu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Feb 2007 09:20:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423150AbXBBOUu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Feb 2007 09:20:14 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:47512 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423128AbXBBOUN (ORCPT
+	Fri, 2 Feb 2007 09:20:50 -0500
+Received: from mga07.intel.com ([143.182.124.22]:30091 "EHLO
+	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1423145AbXBBOUs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Feb 2007 09:20:13 -0500
-Subject: Re: Slower CPU frequency reported by the kernel
-From: Arjan van de Ven <arjan@infradead.org>
-To: Francis Moreau <francis.moro@gmail.com>
-Cc: Paolo Ornati <ornati@fastwebnet.it>, linux-kernel@vger.kernel.org
-In-Reply-To: <38b2ab8a0702020603h480fc1dfm22267089341cbe0e@mail.gmail.com>
-References: <38b2ab8a0702020311o54789ef6xff819dc3b492b005@mail.gmail.com>
-	 <20070202130408.05212b10@localhost>
-	 <38b2ab8a0702020603h480fc1dfm22267089341cbe0e@mail.gmail.com>
-Content-Type: text/plain
-Organization: Intel International BV
-Date: Fri, 02 Feb 2007 15:20:10 +0100
-Message-Id: <1170426010.3073.932.camel@laptopd505.fenrus.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 (2.8.2.1-2.fc6) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Fri, 2 Feb 2007 09:20:48 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: i="4.13,273,1167638400"; 
+   d="c'?scan'208"; a="176303319:sNHT23256583"
+Message-ID: <45C348B3.8000805@linux.intel.com>
+Date: Fri, 02 Feb 2007 17:20:35 +0300
+From: Alexey Starikovskiy <alexey.y.starikovskiy@linux.intel.com>
+User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
+MIME-Version: 1.0
+To: Bob Picco <bob.picco@hp.com>
+CC: Len Brown <lenb@kernel.org>, akpm@osdl.org, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org
+Subject: Re: 2.6.20-rc6-mm[2-3] ACPI issues
+References: <20070131202532.GS30233@localhost> <200702010155.02119.lenb@kernel.org> <20070201164709.GA17678@localhost>
+In-Reply-To: <20070201164709.GA17678@localhost>
+Content-Type: multipart/mixed;
+ boundary="------------050505040604030701050101"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is a multi-part message in MIME format.
+--------------050505040604030701050101
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-> it's seems that the cpu freq scaling depends on a user space tool.
-> Could you tell me how I can find if there're such tools installed on
-> my computer ?
+Bob Picco wrote:
+> BTW, this isn't specific to rx2600. Lee Schermerhorn reported same -mm3 problem 
+> on rx8620. Stephane Eranian reported the -mm2 problem mentioned above on rx2620.
+>
+> The debug information you requested is below. 
+>
+> thanks,
+>
+> bob
+Bob, thanks for debug information.
+Could you please try following patch?
 
-it may be userspace, or you may be using the "ondemand" governer. If you
-have the userspace tool it's often called "cpuspeed", but it depends on
-your distro.
+Thanks,
+    Alex.
 
--- 
-if you want to mail me at work (you don't), use arjan (at) linux.intel.com
-Test the interaction between Linux and your BIOS via http://www.linuxfirmwarekit.org
+--------------050505040604030701050101
+Content-Type: text/plain;
+ name="fix-tbfadt.c"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="fix-tbfadt.c"
 
+Copy space_id of GAS structure to newly created GAS.
+
+From: Alexey Starikovskiy <alexey.y.starikovskiy@linux.intel.com>
+
+
+---
+
+ drivers/acpi/tables/tbfadt.c |    5 +++++
+ 1 files changed, 5 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/acpi/tables/tbfadt.c b/drivers/acpi/tables/tbfadt.c
+index 30350dd..807c711 100644
+--- a/drivers/acpi/tables/tbfadt.c
++++ b/drivers/acpi/tables/tbfadt.c
+@@ -333,6 +333,8 @@ static void acpi_tb_convert_fadt(void)
+ 				     pm1_register_length,
+ 				     (acpi_gbl_FADT.xpm1a_event_block.address +
+ 				      pm1_register_length));
++	/* Don't forget to copy space_id of the GAS */
++	acpi_gbl_xpm1a_enable.space_id = acpi_gbl_FADT.xpm1a_event_block.space_id;
+ 
+ 	/* The PM1B register block is optional, ignore if not present */
+ 
+@@ -341,6 +343,9 @@ static void acpi_tb_convert_fadt(void)
+ 					     pm1_register_length,
+ 					     (acpi_gbl_FADT.xpm1b_event_block.
+ 					      address + pm1_register_length));
++		/* Don't forget to copy space_id of the GAS */
++		acpi_gbl_xpm1b_enable.space_id = acpi_gbl_FADT.xpm1a_event_block.space_id;
++
+ 	}
+ }
+ 
+
+--------------050505040604030701050101--
