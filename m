@@ -1,59 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161072AbXBBA4H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423038AbXBBBEP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161072AbXBBA4H (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Feb 2007 19:56:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161095AbXBBA4H
+	id S1423038AbXBBBEP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Feb 2007 20:04:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161131AbXBBBEP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Feb 2007 19:56:07 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:53545 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161072AbXBBA4G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Feb 2007 19:56:06 -0500
-Date: Thu, 1 Feb 2007 16:55:53 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Oleg Nesterov <oleg@tv-sign.ru>, linux-kernel@vger.kernel.org
-Subject: Re: [SLAB] Shutdown cache_reaper when cpu goes down
-Message-Id: <20070201165553.848fab65.akpm@osdl.org>
-In-Reply-To: <Pine.LNX.4.64.0702011111560.8307@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0702011111560.8307@schroedinger.engr.sgi.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 1 Feb 2007 20:04:15 -0500
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:24271 "EHLO
+	pd5mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161122AbXBBBEO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Feb 2007 20:04:14 -0500
+Date: Thu, 01 Feb 2007 18:59:53 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: smp and irq conflict
+In-reply-to: <45C0FAE300242D46@vsmtp14.tin.it>
+To: Lapo TIN <lapolapolapo@tin.it>
+Cc: james.garcia@lausd.net, linux-kernel <linux-kernel@vger.kernel.org>
+Message-id: <45C28D09.4030506@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <45C0FAE300242D46@vsmtp14.tin.it>
+User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 1 Feb 2007 11:13:29 -0800 (PST)
-Christoph Lameter <clameter@sgi.com> wrote:
-
-> Shutdown the cache_reaper if the cpu is brought down and set the 
-> cache_reap.func to NULL. Otherwise hotplug shuts down the reaper for good.
+Lapo TIN wrote:
+> I need to capture at 25 frame per second from each channel...
+> So 25 x 8 total frames per second on the pci.
 > 
-> Signed-off-by: Christoph Lameter <clameter@sgi.com>
 > 
-> Index: linux-2.6.20-rc6-mm2/mm/slab.c
-> ===================================================================
-> --- linux-2.6.20-rc6-mm2.orig/mm/slab.c	2007-01-29 14:27:34.199229828 -0600
-> +++ linux-2.6.20-rc6-mm2/mm/slab.c	2007-01-30 13:55:57.936838878 -0600
-> @@ -1271,6 +1271,18 @@ static int __cpuinit cpuup_callback(stru
->  		start_cpu_timer(cpu);
->  		break;
->  #ifdef CONFIG_HOTPLUG_CPU
-> +  	case CPU_DOWN_PREPARE:
-> +		/*
-> +		 * Shutdown cache reaper. Note that the cache_chain_mutex is
-> +		 * held so that cache_reap() cannot modify reap_work
-> +		 * concurrently.
-> +		*/
-> +		cancel_rearming_delayed_work(&per_cpu(reap_work, cpu));
-> +		per_cpu(reap_work, cpu).work.func = NULL;
-> +  		break;
-> +  	case CPU_DOWN_FAILED:
-> +		start_cpu_timer(cpu);
-> +  		break;
->  	case CPU_DEAD:
->  		/*
->  		 * Even if all the cpus of a node are down, we don't free the
+> So do you think I have to change the motherboard ?
+> What is important ? the chipset ? is there specification I need ?
 
-Is this bug unique to the changes in -mm, or is it in mainline?
+What resolution are you using? 720x480 with 24 bits per pixel and 25fps 
+will use about 25MB/sec on the PCI bus, there is no way you can keep up 
+with 8 channels running on a standard 32-bit 33MHz PCI bus which can 
+only transfer 133 MB/sec at most. If you need this much transfer rate, 
+you likely need PCI Express or PCI-X capture cards or at least a 
+motherboard which has multiple PCI buses (which most desktop boards 
+don't typically have).
+
+You may be able to reduce the resolution and/or frame rate in order to 
+allow the PCI bus to cope. Also, do you have enough CPU and disk speed 
+in order to cope with all these streams?
+
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
+
