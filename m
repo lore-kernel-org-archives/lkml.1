@@ -1,75 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965273AbXBBEcv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965239AbXBBEkG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965273AbXBBEcv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Feb 2007 23:32:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965127AbXBBEcv
+	id S965239AbXBBEkG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Feb 2007 23:40:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422903AbXBBEkG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Feb 2007 23:32:51 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:60294 "EHLO smtp.osdl.org"
+	Thu, 1 Feb 2007 23:40:06 -0500
+Received: from mail.suse.de ([195.135.220.2]:36373 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965038AbXBBEcu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Feb 2007 23:32:50 -0500
-Date: Thu, 1 Feb 2007 20:32:46 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Lapo TIN" <lapolapolapo@tin.it>
-Cc: <linux-smp@vger.kernel.org>, <linux-kernel@vger.kernel.org>
-Subject: Re: smp and irq conflict
-Message-Id: <20070201203246.ece495f0.akpm@linux-foundation.org>
-In-Reply-To: <45BE4003005C2845@vsmtp2.tin.it>
-References: <45BE4003005C2845@vsmtp2.tin.it>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S965239AbXBBEkF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Feb 2007 23:40:05 -0500
+From: NeilBrown <neilb@suse.de>
+To: Andrew Morton <akpm@osdl.org>
+Date: Fri, 2 Feb 2007 15:39:36 +1100
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+Cc: nfs@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: [PATCH 000 of 14] knfsd: Preparation for IPv6 support in NFS server.
+Message-ID: <20070202153531.18622.patches@notabene>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 1 Feb 2007 18:46:00 +0100 "Lapo TIN" <lapolapolapo@tin.it> wrote:
+Hi Andrew,
+ could you please remove
 
-> Dear all,
-> I have a problem with IRQs.
-> 
-> My pc has a CPU PentiumD945 (dual core) and a 2.6.19smp kernel.
-> I have two video acquisition board (four bt8t8 each) in the only two pci
-> slots of my motherboard. Thus I have a total of 8 bttv modules that are
-> working together, and the /proc/interrupts is as follows:
-> # cat /proc/interrupts
->            CPU0       CPU1
->   0:      13575          0   IO-APIC-edge      timer
->   1:          2          0   IO-APIC-edge      i8042
->   4:         11          0   IO-APIC-edge      serial
->   8:          1          0   IO-APIC-edge      rtc
->   9:          0          0   IO-APIC-fasteoi   acpi
->  12:          4          0   IO-APIC-edge      i8042
->  14:      22286          0   IO-APIC-edge      ide0
->  17:       7073       2097   IO-APIC-fasteoi   uhci_hcd:usb5, eth0
->  18:       2525          0   IO-APIC-fasteoi   bttv0, bttv7
->  19:       2829          0   IO-APIC-fasteoi   bttv1, bttv4
->  20:       2526          0   IO-APIC-fasteoi   bttv2, bttv5
->  21:       2226          0   IO-APIC-fasteoi   bttv3, bttv6
->  22:          2          0   IO-APIC-fasteoi   ehci_hcd:usb1, uhci_hcd:usb4
->  23:         86          0   IO-APIC-fasteoi   uhci_hcd:usb2
->  24:          0          0   IO-APIC-fasteoi   uhci_hcd:usb3
-> NMI:          0          0
-> LOC:      13484      13502
-> ERR:          0
-> MIS:          0
-> You can see that IRQ18 is shared between bttv0 and bttv7, IRQ19 between
-> bttv1 and bttv4 and so on.
-> 
-> Sometimes it crashes. It seems a matter of conflict in IRQ.
-> With only one video board everything is ok, but with two, they shared irq
-> and something goes wrong... 
-> How can I tell to the kernel to not to share the IRQ for these boards ?
-> I think (I don't know if I'm right) that this could be the problem.
-> 
-> I even tried with another motherboard, and doing cat /proc/interrupts the
-> situation was the same, except for 'eth0' that was together with bttv0 and
-> bttv7... so it was even worst ! it crashes after few minutes.
-> 
-> I tried to read IO-APIC.txt in Documentation/i386/ folder, but I didn't
-> understand how to avoid the coupling of IRQ.
-> Thanks
+knfsd-sunrpc-update-internal-api-separate-pmap-register-and-temp-sockets.patch
+knfsd-sunrpc-allow-creating-an-rpc-service-without-registering-with-portmapper.patch
+knfsd-sunrpc-cache-remote-peers-address-in-svc_sock.patch
+knfsd-sunrpc-use-sockaddr_storage-to-store-address-in-svc_deferred_req.patch
+knfsd-sunrpc-add-a-function-to-format-the-address-in-an-svc_rqst-for-printing.patch
 
-Should be OK.  Can you provide us with any kernel output from these crashes?
- 
+ and 
+
+#knfsd-sunrpc-provide-room-in-svc_rqst-for-larger-addresses.patch
+#knfsd-sunrpc-make-rq_daddr-field-address-version-independent.patch
+#knfsd-sunrpc-teach-svc_sendto-to-deal-with-ipv6-addresses.patch
+#knfsd-sunrpc-add-a-generic-function-to-see-if-the-peer-uses-a-secure-port.patch
+#knfsd-sunrpc-support-ipv6-addresses-in-svc_tcp_accept.patch
+#knfsd-sunrpc-support-ipv6-addresses-in-rpc-servers-udp-receive-path.patch
+#knfsd-sunrpc-fix-up-svc_create_socket-to-take-a-sockaddr-struct-length.patch
+
+and include the following 14 patches instead?
+They are mostly from Chuck Level and make preparating for IPv6 support
+in the NFS server.
+They are *not* for 2.6.20, but should be ok for .21.
+
+Thanks,
+NeilBrown
+
+
+ [PATCH 001 of 14] knfsd: SUNRPC: update internal API: separate pmap register and temp sockets
+ [PATCH 002 of 14] knfsd: SUNRPC: allow creating an RPC service without registering with portmapper
+ [PATCH 003 of 14] knfsd: SUNRPC: aplit svc_sock_enqueue out of svc_setup_socket.
+ [PATCH 004 of 14] knfsd: SUNRPC: Cache remote peer's address in svc_sock.
+ [PATCH 005 of 14] knfsd: SUNRPC: Don't set msg_name and msg_namelen when calling sock_recvmsg
+ [PATCH 006 of 14] knfsd: SUNRPC: Add a function to format the address in an svc_rqst for printing
+ [PATCH 007 of 14] knfsd: SUNRPC: Use sockaddr_storage to store address in svc_deferred_req
+ [PATCH 008 of 14] knfsd: SUNRPC: Provide room in svc_rqst for larger addresses
+ [PATCH 009 of 14] knfsd: SUNRPC: Make rq_daddr field address-version independent
+ [PATCH 010 of 14] knfsd: SUNRPC: teach svc_sendto() to deal with IPv6 addresses
+ [PATCH 011 of 14] knfsd: SUNRPC: add a "generic" function to see if the peer uses a secure port.
+ [PATCH 012 of 14] knfsd: SUNRPC: Support IPv6 addresses in svc_tcp_accept
+ [PATCH 013 of 14] knfsd: SUNRPC: support IPv6 addresses in RPC server's UDP receive path.
+ [PATCH 014 of 14] knfsd: SUNRPC: fix up svc_create_socket() to take a sockaddr struct + length
