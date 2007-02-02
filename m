@@ -1,66 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423195AbXBBHcL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423205AbXBBHnp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423195AbXBBHcL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Feb 2007 02:32:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423193AbXBBHcK
+	id S1423205AbXBBHnp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Feb 2007 02:43:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423209AbXBBHnp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Feb 2007 02:32:10 -0500
-Received: from smtp5-g19.free.fr ([212.27.42.35]:33648 "EHLO smtp5-g19.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423195AbXBBHcJ convert rfc822-to-8bit (ORCPT
+	Fri, 2 Feb 2007 02:43:45 -0500
+Received: from mailout1.vmware.com ([65.113.40.130]:41369 "EHLO
+	mailout1.vmware.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423205AbXBBHno (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Feb 2007 02:32:09 -0500
-From: Duncan Sands <duncan.sands@math.u-psud.fr>
-To: Alexey Dobriyan <adobriyan@openvz.org>
-Subject: Re: remove_proc_entry and read_proc
-Date: Fri, 2 Feb 2007 08:31:57 +0100
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org, adobriyan@gmail.com
-References: <20070201160904.GC6023@localhost.sw.ru>
-In-Reply-To: <20070201160904.GC6023@localhost.sw.ru>
+	Fri, 2 Feb 2007 02:43:44 -0500
+Message-ID: <45C2EBAE.7070600@vmware.com>
+Date: Thu, 01 Feb 2007 23:43:42 -0800
+From: Petr Vandrovec <petr@vmware.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.9) Gecko/20061219 Iceape/1.0.7 (Debian-1.0.7-3)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200702020831.58229.duncan.sands@math.u-psud.fr>
+To: "Philippe Dhont (Sea-ro)" <philippe.dhont@searo.be>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: C header files for vmware
+References: <EB998357DB660742877807C9BD7D251B9BD2E8@SRVR1.searo.local>
+In-Reply-To: <EB998357DB660742877807C9BD7D251B9BD2E8@SRVR1.searo.local>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 02 Feb 2007 07:43:42.0693 (UTC) FILETIME=[DC860950:01C7469D]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Alexey,
+Philippe Dhont (Sea-ro) wrote:
+> hello,
+>  
+> i downloaded latest kernel 2.6.19.2 and installed it and it works fine.
+> Now i am trying to install vmware and it asks the location of the
+> directory of the C header files.
+> So i pointed it to my download/install directory 
+> /data/kernel/2.6.19.2/linux-2.6.19.2/include/
+>  
+> and i get the error that the directory of kernel headers does not match
+> my running kernel ??
+> what am i doing wrong ?
+> do i need to download something else ?
 
-> I believe, barriers not needed, not now.
-> 
-> This scheme relies on the fact that remove_proc_entry() will be the only
-> place that will clear ->proc_fops and, once cleared, ->proc_fops will
-> never be resurrected. Clearing of ->proc_fops will eventually propagate
-> to CPU doing first check, thus preveting refcount bumps from this CPU.
-> What can be missed is some "rogue" readers or writers¹. Big deal.
+Error message most probably also contains additional details...
 
-I don't understand you.  Without memory barriers, remove_proc_entry will
-most of the time, but not all of the time, wait for all readers and writers
-to finish before exiting.  Since the whole point of your patch was to ensure
-that all readers and writers finish before remove_proc_entry exits, I don't
-understand why you don't just put the memory barriers in and make it correct.
+There may be couple of reasons - one of them may be that your product is 
+too old to run on 2.6.19.2 kernel without additional changes.  You 
+should discuss these issues on http://www.vmware.com/community/index.jspa.
 
-Also, I do consider it a big deal:
+If you are quite sure that you've built your kernel from these sources, 
+and you did not run 'make clean' (or make *config) after build kernel, 
+then you most probably have to download 
+http://knihovny.cvut.cz/ftp/pub/vmware/vmware-any-any-update107.tar.gz, 
+untar/ungzip it, run runme.pl from package, and follow directions...  It 
+should work with all released Linux products.  If you are using 
+Workstation 6.0 beta, you should contact VMware beta support.
+							Petr
 
-> ¹ Sigh, modules should do removals of proc entries first. And I should
-> check for that.
-
-Modules should of course call remove_proc_entry before exiting.  However
-right now, even with your patch, a read or write method can still be
-running when remove_proc_entry returns [1], so could still be running when
-the module is removed (if they sleep; I guess this applies mostly to
-write methods).  This is very bad - why not put in memory barriers and
-fix it?  Also, plenty of proc read and write methods access private data
-that is allocated before calling create_proc_entry and freed after calling
-remove_proc_entry.  If a read or write method is still running after
-remove_proc_entry returns, then it can access freed memory - very bad.
-
-Ciao,
-
-Duncan.
-
-[1] proc_get_inode does a try_module_get, so it is possible that module
-unloading is not a problem - not sure.
