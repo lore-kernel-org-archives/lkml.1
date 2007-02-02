@@ -1,56 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423129AbXBBGRB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423131AbXBBGSQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423129AbXBBGRB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Feb 2007 01:17:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423130AbXBBGRA
+	id S1423131AbXBBGSQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Feb 2007 01:18:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423133AbXBBGSQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Feb 2007 01:17:00 -0500
-Received: from dallas.jonmasters.org ([72.29.103.172]:4921 "EHLO
-	dallas.jonmasters.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423129AbXBBGRA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Feb 2007 01:17:00 -0500
-Message-ID: <45C2D71A.8030209@jonmasters.org>
-Date: Fri, 02 Feb 2007 01:15:54 -0500
-From: Jon Masters <jonathan@jonmasters.org>
-Organization: World Organi[sz]ation Of Broken Dreams
-User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
+	Fri, 2 Feb 2007 01:18:16 -0500
+Received: from omx1-ext.sgi.com ([192.48.179.11]:44631 "EHLO omx1.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1423131AbXBBGSP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Feb 2007 01:18:15 -0500
+Date: Thu, 1 Feb 2007 22:17:34 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+To: Neil Brown <neilb@suse.de>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Ethan Solomita <solo@google.com>, Paul Menage <menage@google.com>,
+       linux-kernel@vger.kernel.org, Nick Piggin <nickpiggin@yahoo.com.au>,
+       linux-mm@kvack.org, Andi Kleen <ak@suse.de>, Paul Jackson <pj@sgi.com>,
+       Dave Chinner <dgc@sgi.com>
+Subject: Re: [RFC 0/8] Cpuset aware writeback
+In-Reply-To: <17858.54239.364738.88727@notabene.brown>
+Message-ID: <Pine.LNX.4.64.0702012213140.31640@schroedinger.engr.sgi.com>
+References: <20070116054743.15358.77287.sendpatchset@schroedinger.engr.sgi.com>
+ <45C2960B.9070907@google.com> <Pine.LNX.4.64.0702011815240.9799@schroedinger.engr.sgi.com>
+ <20070201200358.89dd2991.akpm@osdl.org> <Pine.LNX.4.64.0702012044090.10575@schroedinger.engr.sgi.com>
+ <17858.54239.364738.88727@notabene.brown>
 MIME-Version: 1.0
-To: Arjan van de Ven <arjan@infradead.org>
-CC: Trent Waddington <trent.waddington@gmail.com>,
-       Tomas Carnecky <tom@dbservice.com>,
-       Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, Alexey Dobriyan <adobriyan@gmail.com>
-Subject: Re: [PATCH] Ban module license tag string termination trick
-References: <Pine.LNX.4.61.0611011204140.23977@yvahk01.tjqt.qr>	 <Pine.LNX.4.61.0702012147470.1862@yvahk01.tjqt.qr>	 <45C2670F.5000003@jonmasters.org> <45C2832F.10603@dbservice.com>	 <3d57814d0702011651s5d5f9dafuc26369fab99ad5cf@mail.gmail.com> <1170385955.3073.884.camel@laptopd505.fenrus.org>
-In-Reply-To: <1170385955.3073.884.camel@laptopd505.fenrus.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-SA-Do-Not-Run: Yes
-X-SA-Exim-Connect-IP: 74.92.29.237
-X-SA-Exim-Mail-From: jonathan@jonmasters.org
-X-SA-Exim-Scanned: No (on dallas.jonmasters.org); SAEximRunCond expanded to false
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arjan van de Ven wrote:
->>  But you're right, the MODULE_LICENSE tag really does imply that
->> licenses other than the GPL are ok.
-> 
-> yup.. BSD licensed modules are clearly ok as well..
+On Fri, 2 Feb 2007, Neil Brown wrote:
 
-So I guess we're going to go with Jan's change then.
+> md/raid doesn't cause any problems here.  It preallocates enough to be
+> sure that it can always make forward progress.  In general the entire
+> block layer from generic_make_request down can always successfully
+> write a block out in a reasonable amount of time without requiring
+> kmalloc to succeed (with obvious exceptions like loop and nbd which go
+> back up to a higher layer).
 
-I just wanted to discuss this briefly since I'm very keen for the kernel 
-not to enforce legal/DRM type policy at all - this isn't quite the same 
-discussion as we've had previously but the point remains: it should be 
-for people to realize when they are violating a license as software 
-unfortunately cannot ever be intelligent to catch all the baddies.
+Hmmm... I wonder if that could be generalized. A device driver could make 
+a reservation by increasing min_free_kbytes? Additional drivers in a 
+chain could make additional reservations in such a way that enough 
+memory is set aside for the worst case?
 
-Personally, I am less worried if people use an obvious "PROPRIETARY" 
-label because they're at least admitting and saying it how it is - then 
-if later it can be shown that they are in fact violating kernel 
-copyright, they've helped to sign their own death warrant :-)
+> The network stack is of course a different (much harder) problem.
 
-Jon.
+An NFS solution is possible without solving the network stack issue?
+
