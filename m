@@ -1,66 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422985AbXBBTBb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423057AbXBBTKh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422985AbXBBTBb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Feb 2007 14:01:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423039AbXBBTBb
+	id S1423057AbXBBTKh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Feb 2007 14:10:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423058AbXBBTKh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Feb 2007 14:01:31 -0500
-Received: from old-tantale.fifi.org ([64.81.251.130]:38118 "EHLO
-	tantale.fifi.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422985AbXBBTBa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Feb 2007 14:01:30 -0500
-To: Roland Kuhn <rkuhn@e18.physik.tu-muenchen.de>
-Cc: "Guillaume Chazarain" <guichaz@gmail.com>,
-       "Denis Vlasenko" <vda.linux@googlemail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: O_NONBLOCK setting "leak" outside of a process??
-References: <200701272152.11087.vda.linux@googlemail.com>
-	<87bqkhuqpp.fsf@tantale.fifi.org>
-	<200702020000.40524.vda.linux@googlemail.com>
-	<87abzxbhau.fsf@tantale.fifi.org>
-	<E0CFA8EB-F706-49E8-A1D1-7BAF19C8D271@e18.physik.tu-muenchen.de>
-	<3d8471ca0702020548n9455f4fre8c4ceea3f070a51@mail.gmail.com>
-	<24DAE20A-F4CC-4A8F-902A-2A73D0DA2EB1@e18.physik.tu-muenchen.de>
-Mail-Copies-To: nobody
-From: Philippe Troin <phil@fifi.org>
-Date: 02 Feb 2007 10:59:42 -0800
-In-Reply-To: <24DAE20A-F4CC-4A8F-902A-2A73D0DA2EB1@e18.physik.tu-muenchen.de>
-Message-ID: <87bqkc9yht.fsf@tantale.fifi.org>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.2
+	Fri, 2 Feb 2007 14:10:37 -0500
+Received: from tmailer.gwdg.de ([134.76.10.23]:52897 "EHLO tmailer.gwdg.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1423057AbXBBTKg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Feb 2007 14:10:36 -0500
+Date: Fri, 2 Feb 2007 20:06:42 +0100 (MET)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+cc: Paul Rolland <rol@as2917.net>,
+       "'Linux Kernel Mailing List'" <linux-kernel@vger.kernel.org>,
+       "'Andrew Morton'" <akpm@osdl.org>,
+       "'Jon Masters'" <jonathan@jonmasters.org>,
+       "'Alexey Dobriyan'" <adobriyan@gmail.com>
+Subject: Re: [PATCH] Ban module license tag string termination trick
+In-Reply-To: <20070202094900.d8931dbe.randy.dunlap@oracle.com>
+Message-ID: <Pine.LNX.4.61.0702022006060.27603@yvahk01.tjqt.qr>
+References: <011601c746d9$dc5453b0$4b00a8c0@donald>
+ <Pine.LNX.4.61.0702021610510.26531@yvahk01.tjqt.qr>
+ <20070202085351.3215815f.randy.dunlap@oracle.com>
+ <Pine.LNX.4.61.0702021840370.24408@yvahk01.tjqt.qr>
+ <20070202094900.d8931dbe.randy.dunlap@oracle.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roland Kuhn <rkuhn@e18.physik.tu-muenchen.de> writes:
 
-> Hi Guillaume!
-> 
-> On 2 Feb 2007, at 14:48, Guillaume Chazarain wrote:
-> 
-> > 2007/2/2, Roland Kuhn <rkuhn@e18.physik.tu-muenchen.de>:
-> >
-> >> That's a bug, right?
-> >
-> > No, if you want something like: (echo toto; date; echo titi) > file
-> > to work in your shell, you'll be happy to have the seek position
-> > shared in the processes.
+On Feb 2 2007 09:49, Randy Dunlap wrote:
+>On Fri, 2 Feb 2007 18:41:02 +0100 (MET) Jan Engelhardt wrote:
+>> On Feb 2 2007 08:53, Randy Dunlap wrote:
+>> >
+>> >if (MODULE_LICENSE_contains_null(license))
+>> >	printk(KERN_WARNING "this module's license is suspicious\n");
+>> 
+>> Try to code that macro.
+>
+>It's not a macro afaict.
 
-Absolutely right.  This has been part of Unix since the beginning.
+Whatever, I just want to see how you are going to implement
+MODULE_LICENSE_contains_null.
 
-> As a naive user I'd probably expect that each of the above adds to
-> the output, which perfectly fits the O_APPEND flag (to be set by the
-> shell, of course).
 
-No, no, O_APPEND has slightly different semantics.
 
-> The immediate point was about the flags, though, and having
-> O_NONBLOCK on or off certainly is a _design_ choice when writing a
-> program. If I remove O_NONBLOCK, I have a right to expect that I/O
-> functions do not return EAGAIN!
-
-Generally you don't want to mess with shared resouces like stdin,
-stdout and stderr.
-
-Phil.
+Jan
+-- 
