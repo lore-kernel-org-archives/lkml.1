@@ -1,53 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946148AbXBBXRa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946151AbXBBXTL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946148AbXBBXRa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Feb 2007 18:17:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946151AbXBBXR3
+	id S1946151AbXBBXTL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Feb 2007 18:19:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946156AbXBBXTK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Feb 2007 18:17:29 -0500
-Received: from omx2-ext.sgi.com ([192.48.171.19]:49666 "EHLO omx2.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1946148AbXBBXR3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Feb 2007 18:17:29 -0500
-Date: Sat, 3 Feb 2007 10:16:47 +1100
-From: David Chinner <dgc@sgi.com>
-To: Matt Mackall <mpm@selenic.com>
-Cc: Christoph Hellwig <hch@infradead.org>, David Chinner <dgc@sgi.com>,
-       Andrew Morton <akpm@osdl.org>, "Martin J. Bligh" <mbligh@mbligh.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] mm: remove global locks from mm/highmem.c
-Message-ID: <20070202231646.GB33919298@melbourne.sgi.com>
-References: <1170063848.6189.121.camel@twins> <45BE9FE8.4080603@mbligh.org> <20070129174118.0e922ab3.akpm@osdl.org> <45BEA41A.6020209@mbligh.org> <20070129181557.d4d17dd0.akpm@osdl.org> <20070131004436.GS44411608@melbourne.sgi.com> <20070130171132.7be3b054.akpm@osdl.org> <20070131032224.GV44411608@melbourne.sgi.com> <20070202120511.GA25714@infradead.org> <20070202192440.GE16722@waste.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070202192440.GE16722@waste.org>
-User-Agent: Mutt/1.4.2.1i
+	Fri, 2 Feb 2007 18:19:10 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:44135 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1946151AbXBBXTJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Feb 2007 18:19:09 -0500
+Date: Fri, 2 Feb 2007 15:17:57 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+cc: Alan <alan@lxorguk.ukuu.org.uk>, Zach Brown <zach.brown@oracle.com>,
+       linux-kernel@vger.kernel.org, linux-aio@kvack.org,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Benjamin LaHaise <bcrl@kvack.org>
+Subject: Re: [PATCH 2 of 4] Introduce i386 fibril scheduling
+In-Reply-To: <Pine.LNX.4.64.0702021459550.15057@woody.linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0702021512450.15057@woody.linux-foundation.org>
+References: <patchbomb.1170193181@tetsuo.zabbo.net>
+ <df7bc026d50ec5bbdd8e.1170193183@tetsuo.zabbo.net> <20070201083611.GC18233@elte.hu>
+ <Pine.LNX.4.64.0702011154110.3632@woody.linux-foundation.org>
+ <20070202104900.GA13941@elte.hu> <Pine.LNX.4.64.0702020738500.15057@woody.linux-foundation.org>
+ <20070202195932.15b9b4ed@localhost.localdomain>
+ <Pine.LNX.4.64.0702021155460.15057@woody.linux-foundation.org>
+ <20070202213019.202e8db5@localhost.localdomain>
+ <Pine.LNX.4.64.0702021322310.15057@woody.linux-foundation.org>
+ <20070202224259.GB1212@elte.hu> <Pine.LNX.4.64.0702021459550.15057@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 02, 2007 at 01:24:40PM -0600, Matt Mackall wrote:
-> On Fri, Feb 02, 2007 at 12:05:11PM +0000, Christoph Hellwig wrote:
-> > On Wed, Jan 31, 2007 at 02:22:24PM +1100, David Chinner wrote:
-> > > > Yup.  Even better, use clear_highpage().
-> > > 
-> > > For even more goodness, clearmem_highpage_flush() does exactly
-> > > the right thing for partial page zeroing ;)
+
+
+On Fri, 2 Feb 2007, Linus Torvalds wrote: 
+> On Fri, 2 Feb 2007, Ingo Molnar wrote:
 > > 
-> > Note that there are tons of places in buffer.c that could use
-> > clearmem_highpage_flush().  See the so far untested patch below:
-> > 
+> > but if the application /has/ identified fundamental parallelism, we 
+> > /must not/ shut that parallelism off by /designing/ this interface to 
+> > use the fibril thing which is a limited cooperative, single-CPU entity. 
 > 
-> You probably need s/memclear/clearmem/g..
+> Right. We should for example encourage people to use some kind of 
+> paralellizing construct. 
+> 
+> I know! We could even call them "threads", so to give people the idea that 
+> they are independent smaller entities in a thicker "rope", and we could 
+> call that bigger entity a "task" or "process", since it "processes" data.
+> 
+> Or is that just too far out?
 
-Not needed - as usual, the code is right and the comments
-are wrong. ;)
+So the above was obviously tongue-in-cheek, but you should really think 
+about the context here.
 
-Cheers,
+We're discussing doing *single* system calls. There is absolutely zero 
+point to try to parallelize the work over multiple CPU's or threads. We're 
+literally talking about doing things where the actual CPU cost is in the 
+hundreds of nanoseconds, and where traditionally a rather noticeable part 
+of the cost is not the code itself, but the high cost of taking a system 
+call trap, and saving all the register state.
 
-Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+When parallelising "real work", I absolutely agree with you: we should use 
+threads. But you need to look at what it is we parallelize here, and ask 
+yourself why we're doing what we're doing, and why people aren't *already* 
+just using a separate thread for it.
+
+			Linus
