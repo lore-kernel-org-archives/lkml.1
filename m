@@ -1,77 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933300AbXBBIZo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1945903AbXBBIa3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933300AbXBBIZo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Feb 2007 03:25:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933307AbXBBIZo
+	id S1945903AbXBBIa3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Feb 2007 03:30:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423201AbXBBIa3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Feb 2007 03:25:44 -0500
-Received: from mail1.webmaster.com ([216.152.64.169]:4918 "EHLO
-	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933300AbXBBIZo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Feb 2007 03:25:44 -0500
-From: "David Schwartz" <davids@webmaster.com>
-To: <sofar@foo-projects.org>
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: RE: [PATCH] Ban module license tag string termination trick
-Date: Fri, 2 Feb 2007 00:24:48 -0800
-Message-ID: <MDEHLPKNGKAHNMBLJOLKOEBOBFAC.davids@webmaster.com>
+	Fri, 2 Feb 2007 03:30:29 -0500
+Received: from mx2-2.mail.ru ([194.67.23.122]:12272 "EHLO mx2.mail.ru"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1423197AbXBBIa2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Feb 2007 03:30:28 -0500
+Date: Fri, 2 Feb 2007 11:36:34 +0300
+From: Evgeniy Dushistov <dushistov@mail.ru>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@osdl.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] MAINTAINERS: ufs entry
+Message-ID: <20070202083634.GA14773@rain>
+Mail-Followup-To: Linus Torvalds <torvalds@linux-foundation.org>,
+	Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-X-Priority: 3 (Normal)
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
-In-Reply-To: <45C27908.1000202@foo-projects.org>
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
-Importance: Normal
-X-Authenticated-Sender: joelkatz@webmaster.com
-X-Spam-Processed: mail1.webmaster.com, Fri, 02 Feb 2007 00:25:07 -0800
-	(not processed: message from trusted or authenticated source)
-X-MDRemoteIP: 206.171.168.138
-X-Return-Path: davids@webmaster.com
-X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
-Reply-To: davids@webmaster.com
-X-MDAV-Processed: mail1.webmaster.com, Fri, 02 Feb 2007 00:25:07 -0800
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Mark ufs file system as maintainable, and add me as maintainer,
+to help people find appropriate person to assign bugs.
 
-> to me it even screams "bypassing or a digital copyright
-> enforcement system".
-> that sounds really close to "D.M.C.A. violation" :)
->
-> thank goodness I'm not a laywer...
+Signed-off-by: Evgeniy Dushistov <dushistov@mail.ru>
 
-It is not. GPL export is *not* a copyright enforcement scheme. (See the many
-times when this was discussed on this list.) The GPL prohibits the use of
-copyright enforcement schemes in sections 6 and 7.
+---
 
-Suppose there were some law that said that if I put "do not modify this
-line" in a piece of code, you could not modify that line. The GPL would
-clearly prohibit putting such a thing in a work, as that would remove from
-recipients their right to modify the code -- a right guaranteed to them
-under the GPL.
+Index: linux-2.6.20-rc7/MAINTAINERS
+===================================================================
+--- linux-2.6.20-rc7.orig/MAINTAINERS
++++ linux-2.6.20-rc7/MAINTAINERS
+@@ -3599,6 +3599,12 @@ M:	ysato@users.sourceforge.jp
+ W:	http://uclinux-h8.sourceforge.jp/
+ S:	Supported
+ 
++UFS FILESYSTEM
++P: Evgeniy Dushistov
++M: dushistov@mail.ru
++L: linux-kernel@vger.kernel.org
++S: Maintained
++
+ USB DIAMOND RIO500 DRIVER
+ P:	Cesar Miquel
+ M:	miquel@df.uba.ar
 
-Same with GPL export. If it is a copyright enforcement scheme and it
-prevented people from modifying the code to include the license tag
-termination trick, they would not have the right to modify the code that way
-which the GPL says they are supposed to have. So *if* EXPORT_GPL were a
-copyright enforcement scheme, the Linux kernel containing it could not be
-distributed.
-
-The consensus view, as I understand it, is that the GPL export is a
-warning/notification scheme to alert people that their use of these symbols
-in non-GPL code is believed to violate the GPL *if* that code is distributed
-(which the GPL export logic has no way to determine has happened or will
-ever happen). It is no different than refusing a command to change the time
-of day from a non-superuser.
-
-In any event, even if you assume it is a copyright enforcement scheme, it is
-not circumvention to remove or disable such a scheme with the permission of
-the copyright holder. Section 2 of the GPL grants just such permission.
-
-DS
-
+-- 
+/Evgeniy
 
