@@ -1,100 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423121AbXBBFvo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423123AbXBBGCc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423121AbXBBFvo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Feb 2007 00:51:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423123AbXBBFvo
+	id S1423123AbXBBGCc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Feb 2007 01:02:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423114AbXBBGCc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Feb 2007 00:51:44 -0500
-Received: from mail.suse.de ([195.135.220.2]:40624 "EHLO mx1.suse.de"
+	Fri, 2 Feb 2007 01:02:32 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:45744 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423121AbXBBFvn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Feb 2007 00:51:43 -0500
-Date: Fri, 2 Feb 2007 06:51:42 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Neil Brown <neilb@suse.de>
-Cc: Linux Memory Management List <linux-mm@kvack.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [rfc][patch] mm: half-fix page tail zeroing on write problem
-Message-ID: <20070202055142.GA5004@wotan.suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.9i
+	id S1423112AbXBBGCb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Feb 2007 01:02:31 -0500
+Message-ID: <45C2D3F0.9050907@garzik.org>
+Date: Fri, 02 Feb 2007 01:02:24 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
+MIME-Version: 1.0
+To: Roland Dreier <rdreier@cisco.com>
+CC: NeilBrown <neilb@suse.de>, Andrew Morton <akpm@osdl.org>,
+       nfs@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 000 of 14] knfsd: Preparation for IPv6 support in NFS
+ server.
+References: <20070202153531.18622.patches@notabene> <adahcu55fiu.fsf@cisco.com>
+In-Reply-To: <adahcu55fiu.fsf@cisco.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.7 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Roland Dreier wrote:
+>  > They are mostly from Chuck Level and make preparating for IPv6 support
+>  > in the NFS server.
+>  > They are *not* for 2.6.20, but should be ok for .21.
+> 
+> Out of curiousity, does this patch series reduce the delta between the
+> NFS/RDMA tree and mainline Linux?  In other words does this bring
+> NFS/RDMA closer to merging?
 
-For no important reason, I've again looked at those zeroing patches that
-Neil did a while back. I've always thought that a simple
-`write(fd, NULL, size)` would cause the same sorts of problems.
+NFS/RDMA is IMO more than a little bit questionable, and the likely 
+userbase is also quite small.  I'm not sure its worth a mainline merge 
+at this point.
 
-Turns out it does. If you first write all 1s into a page, then do the
-`write(fd, NULL, size)` at the same position, you end up with all 0s in
-the page (test-case available on request).  Incredible; surely this
-violates the spec?
+	Jeff
 
-The buffered-write fixes I've got actually fix this properly, but  they
-don't look like getting merged any time soon. We could do this simple
-patch which just reduces the chance of corruption from a certainty down
-to a small race.
 
-Any thoughts?
 
--- 
-Index: linux-2.6/include/linux/pagemap.h
-===================================================================
---- linux-2.6.orig/include/linux/pagemap.h	2007-02-02 13:41:21.000000000 +1100
-+++ linux-2.6/include/linux/pagemap.h	2007-02-02 13:42:09.000000000 +1100
-@@ -198,6 +198,9 @@ static inline int fault_in_pages_writeab
- {
- 	int ret;
- 
-+	if (unlikely(size == 0))
-+		return 0;
-+
- 	/*
- 	 * Writing zeroes into userspace here is OK, because we know that if
- 	 * the zero gets there, we'll be overwriting it.
-@@ -217,19 +220,23 @@ static inline int fault_in_pages_writeab
- 	return ret;
- }
- 
--static inline void fault_in_pages_readable(const char __user *uaddr, int size)
-+static inline int fault_in_pages_readable(const char __user *uaddr, int size)
- {
- 	volatile char c;
- 	int ret;
- 
-+	if (unlikely(size == 0))
-+		return 0;
-+
- 	ret = __get_user(c, uaddr);
- 	if (ret == 0) {
- 		const char __user *end = uaddr + size - 1;
- 
- 		if (((unsigned long)uaddr & PAGE_MASK) !=
- 				((unsigned long)end & PAGE_MASK))
--		 	__get_user(c, end);
-+		 	ret = __get_user(c, end);
- 	}
-+	return ret;
- }
- 
- #endif /* _LINUX_PAGEMAP_H */
-Index: linux-2.6/mm/filemap.c
-===================================================================
---- linux-2.6.orig/mm/filemap.c	2007-02-02 13:42:40.000000000 +1100
-+++ linux-2.6/mm/filemap.c	2007-02-02 14:00:19.000000000 +1100
-@@ -2112,7 +2112,10 @@ generic_file_buffered_write(struct kiocb
- 		 * same page as we're writing to, without it being marked
- 		 * up-to-date.
- 		 */
--		fault_in_pages_readable(buf, bytes);
-+		if (fault_in_pages_readable(buf, bytes)) {
-+			status = -EFAULT;
-+			break;
-+		}
- 
- 		page = __grab_cache_page(mapping,index,&cached_page,&lru_pvec);
- 		if (!page) {
