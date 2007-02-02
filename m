@@ -1,69 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946092AbXBBV1g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946094AbXBBVaa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946092AbXBBV1g (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Feb 2007 16:27:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946094AbXBBV1g
+	id S1946094AbXBBVaa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Feb 2007 16:30:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946096AbXBBVaa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Feb 2007 16:27:36 -0500
-Received: from 81-174-11-161.f5.ngi.it ([81.174.11.161]:47446 "EHLO
-	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1946092AbXBBV1g (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Feb 2007 16:27:36 -0500
-Date: Fri, 2 Feb 2007 22:27:41 +0100
-From: Rodolfo Giometti <giometti@enneenne.com>
-To: Paul Mundt <lethal@linux-sh.org>, linux-kernel@vger.kernel.org,
-       linux-arm-kernel@lists.arm.linux.org.uk, linux-mips@linux-mips.org
-Message-ID: <20070202212741.GH8882@enneenne.com>
-References: <20070129230755.GA8705@enneenne.com> <20070130010055.GA15907@linux-sh.org> <20070201095904.GE8882@enneenne.com>
+	Fri, 2 Feb 2007 16:30:30 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:41292 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1946094AbXBBVaa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Feb 2007 16:30:30 -0500
+Date: Fri, 2 Feb 2007 13:30:09 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Alan <alan@lxorguk.ukuu.org.uk>
+cc: Ingo Molnar <mingo@elte.hu>, Zach Brown <zach.brown@oracle.com>,
+       linux-kernel@vger.kernel.org, linux-aio@kvack.org,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Benjamin LaHaise <bcrl@kvack.org>
+Subject: Re: [PATCH 2 of 4] Introduce i386 fibril scheduling
+In-Reply-To: <20070202213019.202e8db5@localhost.localdomain>
+Message-ID: <Pine.LNX.4.64.0702021322310.15057@woody.linux-foundation.org>
+References: <patchbomb.1170193181@tetsuo.zabbo.net>
+ <df7bc026d50ec5bbdd8e.1170193183@tetsuo.zabbo.net> <20070201083611.GC18233@elte.hu>
+ <Pine.LNX.4.64.0702011154110.3632@woody.linux-foundation.org>
+ <20070202104900.GA13941@elte.hu> <Pine.LNX.4.64.0702020738500.15057@woody.linux-foundation.org>
+ <20070202195932.15b9b4ed@localhost.localdomain>
+ <Pine.LNX.4.64.0702021155460.15057@woody.linux-foundation.org>
+ <20070202213019.202e8db5@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070201095904.GE8882@enneenne.com>
-Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
-X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: 192.168.32.1
-X-SA-Exim-Mail-From: giometti@enneenne.com
-Subject: [PATCH 1/1] APM-EMULATION: apm_get_power_status() should be NULL on init [was: Advice on battery support]
-X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
-X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-APM-EMULATION: apm_get_power_status() should be NULL on init.
 
-Signed-off-by: Rodolfo Giometti <giometti@enneenne.com>
 
----
+On Fri, 2 Feb 2007, Alan wrote:
+> 
+> The brown and sticky will hit the rotating air impeller pretty hard if you
+> are not very careful about how that ends up scheduled
 
-If the function apm_get_info() do like this:
+Why do you think that?
 
-   static int apm_get_info(char *buf, char **start, off_t fpos, int length)
-   {
-           struct apm_power_info info;
-           char *units;
-           int ret;
+With cooperative scheduling (like the example Zach posted), there is 
+absolutely no "brown and sticky" wrt any CPU usage. Which is why 
+cooperative scheduling is a *good* thing. If you want to blow up your 
+1024-node CPU cluster, you'd to it with "real threads".
 
-           info.ac_line_status = 0xff;
-           info.battery_status = 0xff;
-           info.battery_flag   = 0xff;
-           info.battery_life   = -1;
-           info.time           = -1;
-           info.units          = -1;
+Also, with sane default limits of fibrils per process (say, in the 5-10), 
+it also ends up beign good for IO. No "insane" IO bombs, but an easy way 
+for users to just just get a reasonable amount of IO parallelism without 
+having to use threading (which is hard).
 
-           if (apm_get_power_status)
-                   apm_get_power_status(&info);
-   ...
+So, best of both worlds.
 
-we shouldn't set:
+Yes, *of*course* you want to have limits on outstanding work. And yes, a 
+database server would set those limits much higher ("Only a thousand 
+outstanding IO requests? Can we raise that to ten thousand, please?") than 
+a regular process ("default: 5, and the super-user can raise it for you if 
+you're good").
 
-   static void __apm_get_power_status(struct apm_power_info *info)
-   {
-   }
+But there really shouldn't be any downsides.
 
-   void (*apm_get_power_status)(struct apm_power_info *) = __apm_get_power_status;
+(Of course, there will be downsides. I'm sure there will be. But I don't 
+see any really serious and obvious ones).
 
-otherwise the check is not needed. Furthermore setting the function to
-NULL signals that the apm-emulation layer is not already assigned (I
-found this very useful for my apm-emulation battery_class support).
+> Other minor evil. If we use fibrils we need to be careful we
+> know in advance how many fibrils an operation needs so we don't deadlock
+> on them in critical places like writeout paths when we either hit the per
+> task limit or we have no page for another stack.
+
+Since we'd only create fibrils on a system call entry level, and system 
+calls are independent, how would you do that anyway?
+
+Once a fibril has been created, it will *never* depend on any other fibril 
+resources ever again. At least not in any way that any normal non-fibril 
+call wouldn't already do as far as I can see.
+
+		Linus
