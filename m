@@ -1,53 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422790AbXBHLZP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423216AbXBHL3g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422790AbXBHLZP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Feb 2007 06:25:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423216AbXBHLZP
+	id S1423216AbXBHL3g (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Feb 2007 06:29:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423231AbXBHL3g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Feb 2007 06:25:15 -0500
-Received: from styx.suse.cz ([82.119.242.94]:34053 "EHLO duck.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1422790AbXBHLZO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Feb 2007 06:25:14 -0500
-Date: Thu, 8 Feb 2007 12:28:08 +0100
-From: Jan Kara <jack@suse.cz>
-To: hirofumi@mail.parknet.co.jp
-Cc: linux-kernel@vger.kernel.org
-Subject: Direct IO for fat
-Message-ID: <20070208112808.GA3767@duck.suse.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Thu, 8 Feb 2007 06:29:36 -0500
+Received: from outbound-cpk.frontbridge.com ([207.46.163.16]:19799 "EHLO
+	outbound2-cpk-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1423216AbXBHL3f (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Feb 2007 06:29:35 -0500
+X-BigFish: V
+Subject: Re: [LIBATA BUG] sr.c: TEST_UNIT_READY error
+From: Conke Hu <conke.hu@amd.com>
+Reply-To: conke.hu@amd.com
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Alan <alan@lxorguk.ukuu.org.uk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <45C9C8BF.6030501@garzik.org>
+References: <1170101430.29240.34.camel@localhost.localdomain>
+	 <20070129133849.1b523226@freekitty>
+	 <1170109401.29240.49.camel@localhost.localdomain>
+	 <Pine.LNX.4.64.0701291431320.3611@woody.linux-foundation.org>
+	 <20070129144055.151cfe52@freekitty> <Pine  <45C9C8BF.6030501@garzik.org>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Organization: AMD
+Date: Fri, 02 Feb 2007 13:48:06 +0800
+Message-Id: <1170395286.4626.11.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0 (2.8.0-7.fc6) 
+X-OriginalArrivalTime: 08 Feb 2007 11:28:50.0606 (UTC) FILETIME=[4E587CE0:01C74B74]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  Hello,
+On Wed, 2007-02-07 at 07:40 -0500, Jeff Garzik wrote:
+> Conke Hu wrote:
+> > Hi,
+> >    TEST_UNIT_READY in get_capabilities (drivers/scsi/sr.c line 743, or
+> > see below) always returns error.
+> > 
+> >   ---------------- code begin -----------------------------
+> >     retries = 0;
+> >     do {
+> >         memset((void *)cmd, 0, MAX_COMMAND_SIZE);
+> >         cmd[0] = TEST_UNIT_READY;
+> > 
+> >         the_result = scsi_execute_req (cd->device, cmd, DMA_NONE, NULL,
+> >                            0, &sshdr, SR_TIMEOUT,
+> >                            MAX_RETRIES);
+> > 
+> >         retries++;
+> >     } while (retries < 5 &&
+> >          (!scsi_status_is_good(the_result) ||
+> >           (scsi_sense_valid(&sshdr) &&
+> >            sshdr.sense_key == UNIT_ATTENTION)));
+> >   ---------------- code end -----------------------------
+> > 
+> >   I debugged all kernel versions from 2.6.17 to 2.6.20 on several AMD
+> > and other vendor's PATA/IDE controllers, and I get the_result==0x8000002
+> > and retries==5; on silicon image 3132, i get the_result=0x2eb.
+> >   Does 0x8000002 mean ((DRIVER_SENSE << 24) | SAM_STAT_CHECK_CONDITION)?
+> > what's wrong?
+> 
+> What does the sense data returned in the sense buffer say is wrong?
+> 
+> 	Jeff
 
-  I've noticed that extending a file using direct IO fails for FAT with
-EINVAL. It's basically because of the following code in fat_direct_IO():
+I dump scsi_sense_hdr as follows:
+sshdr.response_code = 0x70
+sshdr.sense_key = 0x2
+sshdr.asc = 0x3a
+sshdr.ascq = 0x1
+sshdr.additional_length = 0x0
 
-if (rw == WRITE) {
-        /*
-         * FIXME: blockdev_direct_IO() doesn't use
-         * ->prepare_write(),
-         * so we need to update the ->mmu_private to block
-         * boundary.
-         *
-         * But we must fill the remaining area or hole by nul for
-         * updating ->mmu_private.
-         */
-        loff_t size = offset + iov_length(iov, nr_segs);
-        if (MSDOS_I(inode)->mmu_private < size)
-                return -EINVAL;
-}
+the sense_key is 0x2 (NOT_READY), but the expected UNIT_ATTENTION :(
 
-  But isn't this check bogus? blockdev_direct_IO writes only to space that
-is already allocated and stops as soon as it needs to extend the file
-(further extension is then handled by buffered writes). So it should
-already do what it needed for FAT. Thanks for an answer in advance.
+BTW, I am sorry for a mistake, Sil3132 also returns 0x8000002, not 0x2eb
+as I said in the first mail. In a word, all cases return "the_result" as
+0x8000002.
 
-									Honza
--- 
-Jan Kara <jack@suse.cz>
-SuSE CR Labs
+Conke
+
+
+
