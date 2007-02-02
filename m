@@ -1,71 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1945981AbXBBRZ4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1945992AbXBBR2p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1945981AbXBBRZ4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Feb 2007 12:25:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945989AbXBBRZz
+	id S1945992AbXBBR2p (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Feb 2007 12:28:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945993AbXBBR2p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Feb 2007 12:25:55 -0500
-Received: from mga03.intel.com ([143.182.124.21]:35100 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1945981AbXBBRZz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Feb 2007 12:25:55 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.13,273,1167638400"; 
-   d="scan'208"; a="176395146:sNHT1975292368"
-Message-ID: <45C37412.70205@intel.com>
-Date: Fri, 02 Feb 2007 09:25:38 -0800
-From: Auke Kok <auke-jan.h.kok@intel.com>
-User-Agent: Mail/News 1.5.0.9 (X11/20061228)
+	Fri, 2 Feb 2007 12:28:45 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:46152 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1945992AbXBBR2o (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Feb 2007 12:28:44 -0500
+Date: Fri, 2 Feb 2007 09:28:30 -0800
+From: Mark Fasheh <mark.fasheh@oracle.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
+       ocfs2-devel@oss.oracle.com
+Subject: [git patches] ocfs2 fixes
+Message-ID: <20070202172830.GM14799@ca-server1.us.oracle.com>
+Reply-To: Mark Fasheh <mark.fasheh@oracle.com>
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@stusta.de>
-CC: Adam Kropelin <akropel1@rochester.rr.com>,
-       linux-pci@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org
-Subject: Re: MSI failure on nForce 430 (WAS: intel 82571EB gigabit fails to
- see link on 2.6.20-rc5 in-tree e1000 driver (regression))
-References: <20070117190448.A20184@mail.kroptech.com> <45AEB79B.2010205@intel.com> <00d701c73c1f$b2bb2390$84163e05@kroptech.com> <45B1562C.8070503@intel.com> <011101c73c29$9f6f5db0$84163e05@kroptech.com> <45B16491.7030207@intel.com> <023401c73cca$05bc5f00$84163e05@kroptech.com> <20070202164726.GH3754@stusta.de>
-In-Reply-To: <20070202164726.GH3754@stusta.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 02 Feb 2007 17:25:39.0050 (UTC) FILETIME=[284B4CA0:01C746EF]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Organization: Oracle Corporation
+User-Agent: Mutt/1.5.11
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> On Sat, Jan 20, 2007 at 02:34:37PM -0500, Adam Kropelin wrote:
->> (cc: list trimmed and thread moved to linux-pci)
->>
->> I have a PCI-E e1000 card that does not see interrupts on 2.6.20-rc5 
->> unless CONFIG_PCI_MSI is disabled. An e1000 maintainer indicated that 
->> the PHY state is correct, it's just that the interrupt is not getting 
->> thru to the kernel. Interestingly, on 2.6.19 PHY interrupts get thru ok 
->> with MSI enabled (link status responds appropriately) but packet tx 
->> fails with timeout errors, implying that perhaps MAC interrupts are not 
->> arriving.
->>
->> I've attached the contents dmesg, 'lspci -vvv', and 'cat 
->> /proc/interrupts' from 2.6.20-rc5.
->>
->> This is an nForce 430 based chipset on a Dell E521 which has had 
->> interrupt routing issues before. Prior to 2.6.19 it had to be booted 
->> with 'noapic' in order to come up at all. It also had USB lockup 
->> problems until I applied the latest BIOS update (v1.1.4). So a BIOS 
->> interrupt routing bug with MSI is not out of the question.
->>
->> I'm happy to gather more data or run tests...
-> 
-> Was this regression fixed by Eric's patch that is included in -rc7?
+One more regression fix for 2.6.20.
 
-no, this is a different issue afaics. Eric's patch solves a msi vector leak 
-where MSI's were no longer recovered after all 256 of them were handed out. The 
-issue here seems to be a very different regression (no vector at all or vector 
-not setup correctly to begin with).
+For some reason my test pulls aren't going through right now. Just to be
+safe, I'll also include the entire patch and commit message below in a
+manner suitable for commit from an e-mail.
+	--Mark
 
-I do suggest re-testing the issue with 2.6.20rc7, but it's unlikely it fixes the 
-problem for Adam.
+Please pull from 'upstream-linus' branch of
+git://git.kernel.org/pub/scm/linux/kernel/git/mfasheh/ocfs2.git upstream-linus
 
-The same issue was reported 2/3 days ago by another user basically too (no 
-interrupts at all arriving with MSI enabled).
+to receive the following update:
 
-Cheers,
 
-Auke
+From: Mark Fasheh <mark.fasheh@oracle.com>
+[PATCH] ocfs2: ocfs2_link() journal credits update
+
+Commit 592282cf2eaa33409c6511ddd3f3ecaa57daeaaa fixed some missing directory
+c/mtime updates in part by introducing a dinode update in ocfs2_add_entry().
+Unfortunately, ocfs2_link() (which didn't update the directory inode before)
+is now missing a single journal credit. Fix this by doubling the number of
+inode updates expected during hard link creation.
+
+Signed-off-by: Mark Fasheh <mark.fasheh@oracle.com>
+---
+ fs/ocfs2/journal.h |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/fs/ocfs2/journal.h b/fs/ocfs2/journal.h
+index e121636..d026b4f 100644
+--- a/fs/ocfs2/journal.h
++++ b/fs/ocfs2/journal.h
+@@ -306,8 +306,8 @@ #define OCFS2_WINDOW_MOVE_CREDITS (OCFS2
+  * for the dinode, one for the new block. */
+ #define OCFS2_SIMPLE_DIR_EXTEND_CREDITS (2)
+ 
+-/* file update (nlink, etc) + dir entry block */
+-#define OCFS2_LINK_CREDITS  (OCFS2_INODE_UPDATE_CREDITS + 1)
++/* file update (nlink, etc) + directory mtime/ctime + dir entry block */
++#define OCFS2_LINK_CREDITS  (2*OCFS2_INODE_UPDATE_CREDITS + 1)
+ 
+ /* inode + dir inode (if we unlink a dir), + dir entry block + orphan
+  * dir inode link */
+-- 
+1.4.2.3
+
