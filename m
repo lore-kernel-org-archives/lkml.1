@@ -1,50 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423143AbXBBG3k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423142AbXBBG3i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423143AbXBBG3k (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Feb 2007 01:29:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423139AbXBBG3j
+	id S1423142AbXBBG3i (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Feb 2007 01:29:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423139AbXBBG3i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Feb 2007 01:29:39 -0500
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:57375 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1423145AbXBBG3j (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Feb 2007 01:29:39 -0500
-Date: Fri, 2 Feb 2007 07:29:41 +0100
-From: Adrian Bunk <bunk@stusta.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: takada <takada@mbf.nifty.com>,
-       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       Jordan Crouse <jordan.crouse@amd.com>, linux-kernel@vger.kernel.org
-Subject: Please revert "fix typo in geode_configre()@cyrix.c"
-Message-ID: <20070202062941.GB3754@stusta.de>
+	Fri, 2 Feb 2007 01:29:38 -0500
+Received: from mx2.suse.de ([195.135.220.15]:56189 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1423142AbXBBG3h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Feb 2007 01:29:37 -0500
+From: Neil Brown <neilb@suse.de>
+To: Nick Piggin <npiggin@suse.de>
+Date: Fri, 2 Feb 2007 17:29:06 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Transfer-Encoding: 7bit
+Message-ID: <17858.55858.642522.861130@notabene.brown>
+Cc: Linux Memory Management List <linux-mm@kvack.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [rfc][patch] mm: half-fix page tail zeroing on write problem
+In-Reply-To: message from Nick Piggin on Friday February 2
+References: <20070202055142.GA5004@wotan.suse.de>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus, please revert commit e4f0ae0ea63caceff37a13f281a72652b7ea71ba
+On Friday February 2, npiggin@suse.de wrote:
+> Hi,
+> 
+> For no important reason, I've again looked at those zeroing patches that
+> Neil did a while back. I've always thought that a simple
+> `write(fd, NULL, size)` would cause the same sorts of problems.
 
-Rationale:
+Yeh, but who in their right mind would do that???
+Oh, you did :-)
 
-The thread starting with http://lkml.org/lkml/2007/1/9/63 contains 
-a discussion about what might be a correct patch.
+> 
+> Turns out it does. If you first write all 1s into a page, then do the
+> `write(fd, NULL, size)` at the same position, you end up with all 0s in
+> the page (test-case available on request).  Incredible; surely this
+> violates the spec?
 
-Somehow the first patch of this discussion made it into 2.6.20-rc, but 
-the ones considered more correct are later in the thread.
+Does it?
+I guess filling with zeros isn't what one would expect, but you could
+make a case for it being right.
+  write(fd, 0, size)
+writes 'size' 0s.  Cool.   Ok, bad-cool.
 
-Since there is AFAIK no actually observed problem fixed by this, it 
-should be safe to simply revert the patch for 2.6.20.
+> 
+> The buffered-write fixes I've got actually fix this properly, but  they
+> don't look like getting merged any time soon. We could do this simple
+> patch which just reduces the chance of corruption from a certainty down
+> to a small race.
+> 
+> Any thoughts?
 
-TIA
-Adrian
+I cannot see why you make a change to fault_in_pages_writeable.  Is it
+just for symmetry?
+For the rest, it certainly makes sense to return an early -EFAULT if
+you cannot fault in the page.
 
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+NeilBrown
