@@ -1,62 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1945960AbXBBQGW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161141AbXBBQMp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1945960AbXBBQGW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Feb 2007 11:06:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945958AbXBBQGW
+	id S1161141AbXBBQMp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Feb 2007 11:12:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161150AbXBBQMp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Feb 2007 11:06:22 -0500
-Received: from rtr.ca ([64.26.128.89]:1733 "EHLO mail.rtr.ca"
+	Fri, 2 Feb 2007 11:12:45 -0500
+Received: from main.gmane.org ([80.91.229.2]:41493 "EHLO ciao.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1945950AbXBBQGV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Feb 2007 11:06:21 -0500
-Message-ID: <45C3617B.2020400@rtr.ca>
-Date: Fri, 02 Feb 2007 11:06:19 -0500
-From: Mark Lord <liml@rtr.ca>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061206)
-MIME-Version: 1.0
-To: Alan <alan@lxorguk.ukuu.org.uk>
-Cc: Ric Wheeler <ric@emc.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       linux-kernel@vger.kernel.org,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>
-Subject: Re: [PATCH] scsi_lib.c: continue after MEDIUM_ERROR
-References: <200701301947.08478.liml@rtr.ca>	<1170206199.10890.13.camel@mulgrave.il.steeleye.com>	<45C2474E.9030306@rtr.ca>	<1170366920.3388.62.camel@mulgrave.il.steeleye.com>	<45C32C7F.9050706@emc.com> <20070202145003.525bd682@localhost.localdomain>
-In-Reply-To: <20070202145003.525bd682@localhost.localdomain>
+	id S1161141AbXBBQMo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Feb 2007 11:12:44 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Bill Davidsen <davidsen@tmr.com>
+Subject: Re: [ANN] Userspace M-on-N threading model implementation. Alpha
+ release.
+Date: Fri, 02 Feb 2007 11:12:02 -0500
+Message-ID: <45C362D2.2040407@tmr.com>
+References: <66910A579C9312469A7DF9ADB54A8B7D5C2B90@exchange.ZeugmaSystems.local>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@sea.gmane.org
+Cc: libc-alpha@sources.redhat.com
+X-Gmane-NNTP-Posting-Host: mail.tmr.com
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+In-Reply-To: <66910A579C9312469A7DF9ADB54A8B7D5C2B90@exchange.ZeugmaSystems.local>
+Cc: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan wrote:
->
-> If this is the right strategy for disk recovery for a given type of
-> device then this ought to be an automatic strategy. Most end users will
-> not have the knowledge to frob about in sysfs, and if the bad sector hits
-> at the wrong moment a sensible automatic recovery strategy is going to do
-> the right thing faster than human intervention, which may be some hours
-> away.
+Kaz Kylheku wrote:
+> Evgeniy Polyakov wrote:
+>> I described in details why and how M:N model better, and its drawbacks
+>> include all issues mentioned by Ulrich Drepper, but nevertheless its
+>> advantages are far too superiour than those which can be
+>> provided by 1:1
+>> model.
+> 
+> M:N threading is an unnecessary performance hack that's needed by people
+> who are living in a C or C++ exile away from some language that has
+> lexical closures, generators or first-class continuations.
 
-I think something we seem to be discussing here are the opposite aims
-of enterprise RAID (traditional SCSI market) versus desktop filesystems
-(now the number one user of Linux SCSI, courtesy of libata).
+Yes, that's called the "real world." Arguments of the "I don't need it, 
+in a perfect world you wouldn't either, therefore it's a bad idea" type 
+simply contribute nothing.
 
-With RAID, it's safe to suggest that a very fast, bounded exit from EH
-is almost always what the customer / end-user wants, because the higher
-level RAID management can then deal with the failed drive offline.
+Because user threading can avoid context switches, there will always be 
+cases where it will outperform o/s threads for hardware reasons.
 
-But for a desktop filesystem, failing out quickly and bulk-failing megabytes
-around a couple of bad sectors is not good -- no redundancy, and this will
-lead to unneeded data loss.
+-- 
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
 
-It's beginning to look like this needs to be run-time tuneable,
-per block minor device (per-partition), through sysfs at a minimum.
-The RAID tools could then automatically choose settings to bias more
-towards an "instant exit" when errors are found, whereas a non-RAID
-desktop could select a more reliable recovery strategy.
-
-Right now, with Jame's patch (earlier in this thread), the whole scheme
-is heavily weighted towards the RAID "instant exit" strategy, which is
-making me quite nervous about the data on my laptop.
-
-Cheers 
