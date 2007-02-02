@@ -1,45 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751744AbXBBIrL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932078AbXBBIsW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751744AbXBBIrL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Feb 2007 03:47:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751614AbXBBIrL
+	id S932078AbXBBIsW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Feb 2007 03:48:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932564AbXBBIsW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Feb 2007 03:47:11 -0500
-Received: from [221.6.14.228] ([221.6.14.228]:51237 "EHLO proxy.fnst.com.cn"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751365AbXBBIrK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Feb 2007 03:47:10 -0500
-Message-ID: <026801c746a6$c3f81780$2801a8c0@zhangxiliang>
-From: "zhangxiliang" <zhangxiliang@nanjing-fnst.com>
-To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: ntp
-Date: Fri, 2 Feb 2007 16:47:26 +0800
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook Express 6.00.2900.3028
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
-X-RFC2646: Format=Flowed; Original
+	Fri, 2 Feb 2007 03:48:22 -0500
+Received: from averell.tiscali.it ([213.205.33.55]:35719 "EHLO
+	averell.tiscali.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932078AbXBBIsV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Feb 2007 03:48:21 -0500
+X-DSPAM-Result: Innocent
+X-DSPAM-Processed: Fri Feb  2 08:45:42 2007
+X-DSPAM-Confidence: 0.9997
+X-DSPAM-Probability: 0.0000
+X-DSPAM-Signature: 45c2fa36185201804284693
+X-DSPAM-Factors: 27,
+X-Spam-Score: -8.151
+Message-ID: <31786283.271170405942194.JavaMail.root@lxnaydesign.net>
+Date: Fri, 2 Feb 2007 08:45:42 +0000 (UTC)
+From: Fabio Erculiani <lxnay@lxnaydesign.net>
+To: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.20-rc7: known regressions
+In-Reply-To: <19868466.241170405430418.JavaMail.root@lxnaydesign.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When i start the ntp service successful on server, the client must ntpdate
-with the server after waiting a moment.
-The moment may be 3~5 minutes, or it may be 10~15 minutes. I don't know why
-it happens?
+Adrian, 
 
-Regards
-Zhang Xiliang
---------------------------------------------------
-Zhang Xiliang
-Development Dept.I
-Nanjing Fujitsu Nanda Software Tech. Co., Ltd.(FNST)
-8/F., Civil Defense Building, No.189 Guangzhou Road,
-Nanjing, 210029, China
-TEL: +86+25-86630566-851
-COINS: 79955-851
-FAX: +86+25-83317685
-MAIL:zhangxiliang@nanjing-fnst.com
---------------------------------------------------
+and this one? 
+http://bugzilla.kernel.org/show_bug.cgi?id=7589 
 
-
+--- 
+Fabio Erculiani 
+http://www.sabayonlinux.org 
+Sabayon Linux Founder 
 
