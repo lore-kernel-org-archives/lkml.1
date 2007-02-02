@@ -1,54 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946171AbXBBXwZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946178AbXBBXwq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946171AbXBBXwZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Feb 2007 18:52:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946172AbXBBXwY
+	id S1946178AbXBBXwq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Feb 2007 18:52:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946174AbXBBXwq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Feb 2007 18:52:24 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:49397 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1946171AbXBBXwY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Feb 2007 18:52:24 -0500
-Date: Sat, 3 Feb 2007 00:04:15 +0000
-From: Alan <alan@lxorguk.ukuu.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Zach Brown <zach.brown@oracle.com>,
-       linux-kernel@vger.kernel.org, linux-aio@kvack.org,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Benjamin LaHaise <bcrl@kvack.org>
-Subject: Re: [PATCH 2 of 4] Introduce i386 fibril scheduling
-Message-ID: <20070203000415.053af657@localhost.localdomain>
-In-Reply-To: <Pine.LNX.4.64.0702021512450.15057@woody.linux-foundation.org>
-References: <patchbomb.1170193181@tetsuo.zabbo.net>
-	<df7bc026d50ec5bbdd8e.1170193183@tetsuo.zabbo.net>
-	<20070201083611.GC18233@elte.hu>
-	<Pine.LNX.4.64.0702011154110.3632@woody.linux-foundation.org>
-	<20070202104900.GA13941@elte.hu>
-	<Pine.LNX.4.64.0702020738500.15057@woody.linux-foundation.org>
-	<20070202195932.15b9b4ed@localhost.localdomain>
-	<Pine.LNX.4.64.0702021155460.15057@woody.linux-foundation.org>
-	<20070202213019.202e8db5@localhost.localdomain>
-	<Pine.LNX.4.64.0702021322310.15057@woody.linux-foundation.org>
-	<20070202224259.GB1212@elte.hu>
-	<Pine.LNX.4.64.0702021459550.15057@woody.linux-foundation.org>
-	<Pine.LNX.4.64.0702021512450.15057@woody.linux-foundation.org>
-X-Mailer: Claws Mail 2.7.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+	Fri, 2 Feb 2007 18:52:46 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:45215 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1946172AbXBBXwo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Feb 2007 18:52:44 -0500
+Date: Fri, 2 Feb 2007 15:52:36 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Linux Filesystems <linux-fsdevel@vger.kernel.org>,
+       Linux Memory Management <linux-mm@kvack.org>
+Subject: Re: [patch 1/9] fs: libfs buffered write leak fix
+Message-Id: <20070202155236.dae54aa2.akpm@linux-foundation.org>
+In-Reply-To: <20070129081914.23584.23886.sendpatchset@linux.site>
+References: <20070129081905.23584.97878.sendpatchset@linux.site>
+	<20070129081914.23584.23886.sendpatchset@linux.site>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> When parallelising "real work", I absolutely agree with you: we should use 
-> threads. But you need to look at what it is we parallelize here, and ask 
-> yourself why we're doing what we're doing, and why people aren't *already* 
-> just using a separate thread for it.
+On Mon, 29 Jan 2007 11:31:46 +0100 (CET)
+Nick Piggin <npiggin@suse.de> wrote:
 
-Because its a pain in the arse and because its very hard to self tune. If
-you've got async_anything then the thread/fibril/synchronous/whatever
-decision can be made kernel side based upon expected cost and other
-tradeoffs, even if its as dumb as per syscall or per syscall/filp type
-guessing.
+> simple_prepare_write and nobh_prepare_write leak uninitialised kernel data.
 
-Alan
+They do?  Under what situation?
+
+> Fix the former,
+
+How?
+
+> make a note of the latter. Several other filesystems seem
+> to be iffy here, too.
+
+Please, tell us what the bug is so that others have a chance of reviewing
+and, if needed, fixing those other filesystems.
+
+> --- linux-2.6.orig/fs/libfs.c
+> +++ linux-2.6/fs/libfs.c
+> @@ -327,32 +327,35 @@ int simple_readpage(struct file *file, s
+>  int simple_prepare_write(struct file *file, struct page *page,
+>  			unsigned from, unsigned to)
+>  {
+> -	if (!PageUptodate(page)) {
+> -		if (to - from != PAGE_CACHE_SIZE) {
+> -			void *kaddr = kmap_atomic(page, KM_USER0);
+> -			memset(kaddr, 0, from);
+> -			memset(kaddr + to, 0, PAGE_CACHE_SIZE - to);
+> -			flush_dcache_page(page);
+> -			kunmap_atomic(kaddr, KM_USER0);
+> -		}
+> +	if (PageUptodate(page))
+> +		return 0;
+> +
+> +	if (to - from != PAGE_CACHE_SIZE) {
+> +		clear_highpage(page);
+> +		flush_dcache_page(page);
+>  		SetPageUptodate(page);
+>  	}
+
+memclear_highpage_flush() is fashionable.
+
+> ===================================================================
+> --- linux-2.6.orig/fs/buffer.c
+> +++ linux-2.6/fs/buffer.c
+> @@ -2344,6 +2344,8 @@ int nobh_prepare_write(struct page *page
+>  
+>  	if (is_mapped_to_disk)
+>  		SetPageMappedToDisk(page);
+> +
+> +	/* XXX: information leak vs read(2) */
+>  	SetPageUptodate(page);
+>  
+>  	/*
+
+That comment is too terse to be useful.
