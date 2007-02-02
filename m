@@ -1,89 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423211AbXBBHzI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423215AbXBBICq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423211AbXBBHzI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Feb 2007 02:55:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423213AbXBBHzI
+	id S1423215AbXBBICq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Feb 2007 03:02:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423216AbXBBICq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Feb 2007 02:55:08 -0500
-Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:44141 "EHLO
-	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423211AbXBBHzG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Feb 2007 02:55:06 -0500
-Message-ID: <45C2EE52.4020103@drzeus.cx>
-Date: Fri, 02 Feb 2007 08:54:58 +0100
-From: Pierre Ossman <drzeus-mmc@drzeus.cx>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061223)
-MIME-Version: 1.0
-To: linux@youmustbejoking.demon.co.uk, linux-kernel@vger.kernel.org,
-       sdhci-devel@list.drzeus.cx
-Subject: Re: [Sdhci-devel] [PATCH 2.6.20-rc2] Add a quirk to allow ENE PCI
- SD	card readers to work again
-References: <4E9DA5E8EB%linux@youmustbejoking.demon.co.uk>	<4597A791.60007@drzeus.cx>	<4E9DE7C297%linux@youmustbejoking.demon.co.uk> <4E9DF295D4%linux@youmustbejoking.demon.co.uk>
-In-Reply-To: <4E9DF295D4%linux@youmustbejoking.demon.co.uk>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Fri, 2 Feb 2007 03:02:46 -0500
+Received: from e32.co.us.ibm.com ([32.97.110.150]:40774 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423215AbXBBICp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Feb 2007 03:02:45 -0500
+Date: Fri, 2 Feb 2007 13:32:40 +0530
+From: Vivek Goyal <vgoyal@in.ibm.com>
+To: Judith Lebzelter <judith@osdl.org>
+Cc: linux-kernel@vger.kernel.org, fastboot@osdl.org, ebiederm@xmission.com,
+       Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       "Robert P. J. Day" <rpjday@mindspring.com>
+Subject: Re: [Fastboot] [ PATCH ] fix to documentation for kexec
+Message-ID: <20070202080240.GC6353@in.ibm.com>
+Reply-To: vgoyal@in.ibm.com
+References: <20070201181955.GE5825@shell0.pdx.osdl.net> <Pine.LNX.4.61.0702011923530.13737@yvahk01.tjqt.qr> <Pine.LNX.4.64.0702011329550.16875@CPE00045a9c397f-CM001225dbafb6> <Pine.LNX.4.61.0702011932090.13737@yvahk01.tjqt.qr> <20070201184217.GF5825@shell0.pdx.osdl.net> <20070201185808.GG5825@shell0.pdx.osdl.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070201185808.GG5825@shell0.pdx.osdl.net>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Darren,
+On Thu, Feb 01, 2007 at 10:58:08AM -0800, Judith Lebzelter wrote:
+> > 
+> > I did notice that my patch is out of date for the latest kernel, 
+> > however.  I can send an up to date one.
+> > 
+> This applies to 2.6.20-rc7
+> 
+> Signed-off-by: Judith Lebzeelter <judith@osdl.org>
+> ---
+> 
+> Stop recommending incorrect/superfluous "init" boot parameter.
+> 
 
-It has come to my attention that the current routine for setting power
-is not compliant with the specification. As such, I'd like you to try
-the following and see if removes the need for your patch:
+This looks good. The intention here is just to boot into run level 1, so
+that minimum scripts run in user space and probability of capturing the
+dump increases.
 
-diff --git a/drivers/mmc/sdhci.c b/drivers/mmc/sdhci.c
-index dc1b04a..13ac2fe 100644
---- a/drivers/mmc/sdhci.c
-+++ b/drivers/mmc/sdhci.c
-@@ -685,23 +690,21 @@ static void sdhci_set_power(struct sdhci_host
-*host, unsigned short power)
-        if (power == (unsigned short)-1)
-                goto out;
+Fedora doc does say that appending "1" on command line will boot it
+into runlevel 1. I hope same is true for other distributions too.
 
--       pwr = SDHCI_POWER_ON;
--
-        switch (power) {
-        case MMC_VDD_170:
-        case MMC_VDD_180:
-        case MMC_VDD_190:
--               pwr |= SDHCI_POWER_180;
-+               pwr = SDHCI_POWER_180;
-                break;
-        case MMC_VDD_290:
-        case MMC_VDD_300:
-        case MMC_VDD_310:
--               pwr |= SDHCI_POWER_300;
-+               pwr = SDHCI_POWER_300;
-                break;
-        case MMC_VDD_320:
-        case MMC_VDD_330:
-        case MMC_VDD_340:
--               pwr |= SDHCI_POWER_330;
-+               pwr = SDHCI_POWER_330;
-                break;
-        default:
-                BUG();
-@@ -709,6 +712,10 @@ static void sdhci_set_power(struct sdhci_host
-*host, unsigned short power)
+Thanks
+Vivek
 
-        writeb(pwr, host->ioaddr + SDHCI_POWER_CONTROL);
-
-+       pwr |= SDHCI_POWER_ON;
-+
-+       writeb(pwr, host->ioaddr + SDHCI_POWER_CONTROL);
-+
- out:
-        host->power = power;
- }
-
-
-I'd appreciate if you could test this sooner rather than later as the
-merge window is just around the corner.
-
-Rgds
--- 
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  PulseAudio, core developer          http://pulseaudio.org
-  rdesktop, core developer          http://www.rdesktop.org
+> Index: linux-2.6.20-rc7/Documentation/kdump/kdump.txt
+> ===================================================================
+> --- linux-2.6.20-rc7.orig/Documentation/kdump/kdump.txt
+> +++ linux-2.6.20-rc7/Documentation/kdump/kdump.txt
+> @@ -311,10 +311,10 @@ Following are the arch specific command 
+>  loading dump-capture kernel.
+>  
+>  For i386, x86_64 and ia64:
+> -	"init 1 irqpoll maxcpus=1"
+> +	"1 irqpoll maxcpus=1"
+>  
+>  For ppc64:
+> -	"init 1 maxcpus=1 noirqdistrib"
+> +	"1 maxcpus=1 noirqdistrib"
+>  
+>  
+>  Notes on loading the dump-capture kernel:
+> @@ -332,8 +332,8 @@ Notes on loading the dump-capture kernel
+>  * You must specify <root-dev> in the format corresponding to the root
+>    device name in the output of mount command.
+>  
+> -* "init 1" boots the dump-capture kernel into single-user mode without
+> -  networking. If you want networking, use "init 3."
+> +* Boot parameter "1" boots the dump-capture kernel into single-user 
+> +  mode without networking. If you want networking, use "3".
+>  
+>  * We generally don' have to bring up a SMP kernel just to capture the
+>    dump. Hence generally it is useful either to build a UP dump-capture
+> _______________________________________________
+> fastboot mailing list
+> fastboot@lists.osdl.org
+> https://lists.osdl.org/mailman/listinfo/fastboot
