@@ -1,58 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423118AbXBBF3Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423102AbXBBFbz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423118AbXBBF3Q (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Feb 2007 00:29:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423119AbXBBF3Q
+	id S1423102AbXBBFbz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Feb 2007 00:31:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423098AbXBBFbz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Feb 2007 00:29:16 -0500
-Received: from omx2-ext.sgi.com ([192.48.171.19]:45866 "EHLO omx2.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1423118AbXBBF3P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Feb 2007 00:29:15 -0500
-Date: Thu, 1 Feb 2007 21:29:06 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
+	Fri, 2 Feb 2007 00:31:55 -0500
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:57275 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1423121AbXBBFby (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Feb 2007 00:31:54 -0500
+Date: Fri, 2 Feb 2007 06:32:00 +0100
+From: Adrian Bunk <bunk@stusta.de>
 To: Andrew Morton <akpm@linux-foundation.org>
-cc: Ethan Solomita <solo@google.com>, Paul Menage <menage@google.com>,
-       linux-kernel@vger.kernel.org, Nick Piggin <nickpiggin@yahoo.com.au>,
-       linux-mm@kvack.org, Andi Kleen <ak@suse.de>, Paul Jackson <pj@sgi.com>,
-       Dave Chinner <dgc@sgi.com>
-Subject: Re: [RFC 0/8] Cpuset aware writeback
-In-Reply-To: <20070201200358.89dd2991.akpm@osdl.org>
-Message-ID: <Pine.LNX.4.64.0702012044090.10575@schroedinger.engr.sgi.com>
-References: <20070116054743.15358.77287.sendpatchset@schroedinger.engr.sgi.com>
- <45C2960B.9070907@google.com> <Pine.LNX.4.64.0702011815240.9799@schroedinger.engr.sgi.com>
- <20070201200358.89dd2991.akpm@osdl.org>
+Cc: Luca Tettamanti <kronos.it@gmail.com>, Peter Osterlund <petero2@telia.com>,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       Christoph Hellwig <hch@lst.de>
+Subject: Re: [2.6.20-rc6] pktcdvd doesn't work
+Message-ID: <20070202053200.GZ3754@stusta.de>
+References: <20070130195319.GA10994@dreamland.darkstar.lan> <20070131233044.GX3754@stusta.de> <20070201230752.GA17679@dreamland.darkstar.lan> <20070201182147.2835668e.akpm@osdl.org> <20070202023343.GY3754@stusta.de> <20070201200712.3b48311a.akpm@osdl.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070201200712.3b48311a.akpm@osdl.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 1 Feb 2007, Andrew Morton wrote:
-
-> > Peter Zilkstra addressed the NFS issue.
+On Thu, Feb 01, 2007 at 08:07:12PM -0800, Andrew Morton wrote:
+> On Fri, 2 Feb 2007 03:33:43 +0100 Adrian Bunk <bunk@stusta.de> wrote:
 > 
-> Did he?  Are you yet in a position to confirm that?
+> > On Thu, Feb 01, 2007 at 06:21:47PM -0800, Andrew Morton wrote:
+> > > On Fri, 2 Feb 2007 00:07:52 +0100 Luca Tettamanti <kronos.it@gmail.com> wrote:
+> > > 
+> > > > Il Thu, Feb 01, 2007 at 12:30:44AM +0100, Adrian Bunk ha scritto: 
+> > > > > On Tue, Jan 30, 2007 at 08:53:19PM +0100, Luca Tettamanti wrote:
+> > > > > > Hi,
+> > > > > > pktcdvd on kernel 2.6.20-rc6 is not working as expected. Any file that
+> > > > > > is written to the device is lost after umount.
+> > > > > > I rarely use pktcdvd but at some point it used to work on my system.
+> > > > > > 
+> > > > > > This is what I'm doing:
+> > > > > > 
+> > > > > > root@dreamland:/tmp# cdrwtool -d /dev/scd0 -q
+> > > > > > using device /dev/scd0
+> > > > > > 1029KB internal buffer
+> > > > > > setting write speed to 12x
+> > > > > > Settings for /dev/scd0:
+> > > > > >         Fixed packets, size 32
+> > > > > >         Mode-2 disc
+> > > > > >...
+> > > > > 
+> > > > > Does 2.6.20-rc7 work?
+> > > > > If no, does it work after applying the attached patch?
+> > > > > If no, does 2.6.19.2 work?
+> > > > 
+> > > > Git current + the following patch works.
+> > > > 
+> > > > > diff --git a/drivers/block/pktcdvd.c b/drivers/block/pktcdvd.c
+> > > > > index 6246219..7c95c76 100644
+> > > > > --- a/drivers/block/pktcdvd.c
+> > > > > +++ b/drivers/block/pktcdvd.c
+> > > > > @@ -765,34 +765,47 @@ static inline struct bio *pkt_get_list_first(struct bio **list_head, struct bio
+> > > > >   */
+> > > > >  static int pkt_generic_packet(struct pktcdvd_device *pd, struct packet_command *cgc)
+> > > > >  {
+> > > > > -	request_queue_t *q = bdev_get_queue(pd->bdev);
+> > > > > +	char sense[SCSI_SENSE_BUFFERSIZE];
+> > > 
+> > > Where did this patch come from?
+> > 
+> > It's a revert of the commits 3b00315799d78f76531b71435fbc2643cd71ae4c 
+> > and 406c9b605cbc45151c03ac9a3f95e9acf050808c
+> > 
+> 
+> Oh.  That's
+> 
+>  [SCSI] untangle scsi_prep_fn
+> and	
+>  [PATCH] Fix BUG at drivers/scsi/scsi_lib.c:1118 caused by "pktsetup dvd /dev
+> 
+> so this is a post-2.6.18 regression, yes?
 
-He provided a solution to fix the congestion issue in NFS. I thought 
-that is what you were looking for? That should make NFS behave more
-like a block device right?
+No, a post-2.6.19 regression.
 
-As I said before I think NFS is inherently unfixable given the layering of 
-a block device on top of the network stack (which consists of an unknown 
-number of additional intermediate layers). Cpuset writeback needs to work 
-in the same way as in a machine without cpusets. If fails then at least 
-let the cpuset behave as if we had a machine all on our own and fail in 
-both cases in the same way. Right now we create dangerous low memory 
-conditions due to high dirty ratios in a cpuset created by not having a 
-throttling method. The NFS problems also exist for non cpuset scenarios 
-and we have by and large been able to live with it so I think they are 
-lower priority. It seems that the basic problem is created by the dirty 
-ratios in a cpuset.
+> do we know why this is happening?
 
-BTW the block layer also may be layered with raid and stuff and then we 
-have similar issues. There is no general way so far of handling these 
-situations except by twiddling around with min_free_kbytes praying 5 Hail 
-Mary's and trying again. Maybe we are able allocate all needed memory from 
-PF_MEMALLOC processes during reclaim and hopefully there is now enough 
-memory for these allocations and those that happen to occur during an 
-interrupt while we reclaim.
+No.
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
