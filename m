@@ -1,52 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1945952AbXBBPty@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1945954AbXBBPwt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1945952AbXBBPty (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Feb 2007 10:49:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945937AbXBBPty
+	id S1945954AbXBBPwt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Feb 2007 10:52:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945941AbXBBPwt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Feb 2007 10:49:54 -0500
-Received: from e33.co.us.ibm.com ([32.97.110.151]:46631 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1945952AbXBBPtx (ORCPT
+	Fri, 2 Feb 2007 10:52:49 -0500
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:58214 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1945954AbXBBPwt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Feb 2007 10:49:53 -0500
-Date: Fri, 2 Feb 2007 07:49:46 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Karsten Wiese <fzu@wemgehoertderstaat.de>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@osdl.org>,
-       dipankar@in.ibm.com
-Subject: Re: [PATCH -mm] Make rcupreempt.c compile with CONFIG_RCU_TRACE not set
-Message-ID: <20070202154945.GA4732@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <200701300131.36485.fzu@wemgehoertderstaat.de> <20070201020619.GU2574@linux.vnet.ibm.com> <200702011106.13836.fzu@wemgehoertderstaat.de> <200702020448.03256.fzu@wemgehoertderstaat.de>
-Mime-Version: 1.0
+	Fri, 2 Feb 2007 10:52:49 -0500
+Date: Fri, 2 Feb 2007 16:52:51 +0100
+From: Adrian Bunk <bunk@stusta.de>
+To: "Krzysztof Sierota (o2.pl/Tlen.pl)" <Krzysztof.Sierota@firma.o2.pl>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: BUG 2.6.20-rc7-git1 - soft lockup detected
+Message-ID: <20070202155251.GF3754@stusta.de>
+References: <200702021438.50126.Krzysztof.Sierota@firma.o2.pl>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200702020448.03256.fzu@wemgehoertderstaat.de>
-User-Agent: Mutt/1.4.1i
+In-Reply-To: <200702021438.50126.Krzysztof.Sierota@firma.o2.pl>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 02, 2007 at 04:48:02AM +0100, Karsten Wiese wrote:
+On Fri, Feb 02, 2007 at 02:38:50PM +0100, Krzysztof Sierota (o2.pl/Tlen.pl) wrote:
+> Hi,
 > 
-> RCU_TRACE is always defined.
+> I get a lockup short after a bootup, hand written from the screenshot from 
+> remote location:
+>...
 
-Good catch!!!
+Can you make the screenshot available?
 
-Acked-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> TIA,
+> Krzysztof
 
-> Signed-off-by: Karsten Wiese <fzu@wemgehoertderstaat.de>
-> 
-> ---
-> diff -pur rc6-mm2/kernel/rcupreempt.c rc6-mm2-kw/kernel/rcupreempt.c
-> --- rc6-mm2/kernel/rcupreempt.c	2007-01-30 00:08:21.000000000 +0100
-> +++ rc6-mm2-kw/kernel/rcupreempt.c	2007-01-29 11:07:43.000000000 +0100
-> @@ -619,7 +619,7 @@ void synchronize_kernel(void)
->  	synchronize_rcu();
->  }
-> 
-> -#ifdef RCU_TRACE
-> +#ifdef CONFIG_RCU_TRACE
->  int *rcupreempt_flipctr(int cpu)
->  {
->  	return &per_cpu(rcu_flipctr, cpu)[0];
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
