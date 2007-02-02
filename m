@@ -1,44 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1945935AbXBBPbi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1945949AbXBBPmL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1945935AbXBBPbi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Feb 2007 10:31:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945938AbXBBPbh
+	id S1945949AbXBBPmL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Feb 2007 10:42:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945948AbXBBPmL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Feb 2007 10:31:37 -0500
-Received: from qb-out-0506.google.com ([72.14.204.238]:21036 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1945935AbXBBPbg (ORCPT
+	Fri, 2 Feb 2007 10:42:11 -0500
+Received: from ccerelrim04.cce.hp.com ([161.114.21.25]:46894 "EHLO
+	ccerelrim04.cce.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1945938AbXBBPmJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Feb 2007 10:31:36 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=d40fAXMQpGGTf9/68Q+/2mmakC6egSv5YRDl42RR7nyOxHZ2kFOZ8KVtg1KXU/le44mRSL0HT50UwYpA8xVchCQDJHoeb/KugmOA+Gu3YrmQ2/C0AbnsW2SOka9ypMFevaFs0P+ATP4gsdcH7AK1LNyXjWpMMWW2lnBikQLCI4g=
-Message-ID: <38b2ab8a0702020731w6b41bee3qd150bc2f92bce20d@mail.gmail.com>
-Date: Fri, 2 Feb 2007 16:31:35 +0100
-From: "Francis Moreau" <francis.moro@gmail.com>
-To: "Paolo Ornati" <ornati@fastwebnet.it>
-Subject: Re: Slower CPU frequency reported by the kernel
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20070202153327.1a06cffd@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 2 Feb 2007 10:42:09 -0500
+From: "Bob Picco" <bob.picco@hp.com>
+Date: Fri, 2 Feb 2007 10:42:05 -0500
+To: Alexey Starikovskiy <alexey.y.starikovskiy@linux.intel.com>
+Cc: Bob Picco <bob.picco@hp.com>, Len Brown <lenb@kernel.org>, akpm@osdl.org,
+       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ia64@vger.kernel.org
+Subject: Re: 2.6.20-rc6-mm[2-3] ACPI issues
+Message-ID: <20070202154205.GC17678@localhost>
+References: <20070131202532.GS30233@localhost> <200702010155.02119.lenb@kernel.org> <20070201164709.GA17678@localhost> <45C348B3.8000805@linux.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <38b2ab8a0702020311o54789ef6xff819dc3b492b005@mail.gmail.com>
-	 <20070202130408.05212b10@localhost>
-	 <38b2ab8a0702020603h480fc1dfm22267089341cbe0e@mail.gmail.com>
-	 <20070202153327.1a06cffd@localhost>
+In-Reply-To: <45C348B3.8000805@linux.intel.com>
+User-Agent: Mutt/1.5.11
+X-PMX-Version: 5.2.1.279297, Antispam-Engine: 2.4.0.264935, Antispam-Data: 2007.2.2.72933
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/2/07, Paolo Ornati <ornati@fastwebnet.it> wrote:
-> Anyway it is started by an init script, so you should find it looking
-> at "ls /etc/init.d/".
->
+Alexey Starikovskiy wrote:	[Fri Feb 02 2007, 09:20:35AM EST]
+> Bob Picco wrote:
+> >BTW, this isn't specific to rx2600. Lee Schermerhorn reported same -mm3 
+> >problem on rx8620. Stephane Eranian reported the -mm2 problem mentioned 
+> >above on rx2620.
+> >
+> >The debug information you requested is below. 
+> >
+> >thanks,
+> >
+> >bob
+> Bob, thanks for debug information.
+> Could you please try following patch?
+> 
+> Thanks,
+your welcome,
 
-thanks for these information. I'm using a Fedora distrib and it
-actually uses 'ondemand' governer with the cpu I use.
+It boots rx2600 and NUMA simulator successfully. The NUMA simulator has my M$
+SRAT 1.0 hack applied.
 
--- 
-Francis
+thanks,
+
+bob
+>    Alex.
+
+> Copy space_id of GAS structure to newly created GAS.
+> 
+> From: Alexey Starikovskiy <alexey.y.starikovskiy@linux.intel.com>
+> 
+> 
+> ---
+> 
+>  drivers/acpi/tables/tbfadt.c |    5 +++++
+>  1 files changed, 5 insertions(+), 0 deletions(-)
+> 
+> diff --git a/drivers/acpi/tables/tbfadt.c b/drivers/acpi/tables/tbfadt.c
+> index 30350dd..807c711 100644
+> --- a/drivers/acpi/tables/tbfadt.c
+> +++ b/drivers/acpi/tables/tbfadt.c
+> @@ -333,6 +333,8 @@ static void acpi_tb_convert_fadt(void)
+>  				     pm1_register_length,
+>  				     (acpi_gbl_FADT.xpm1a_event_block.address +
+>  				      pm1_register_length));
+> +	/* Don't forget to copy space_id of the GAS */
+> +	acpi_gbl_xpm1a_enable.space_id = acpi_gbl_FADT.xpm1a_event_block.space_id;
+>  
+>  	/* The PM1B register block is optional, ignore if not present */
+>  
+> @@ -341,6 +343,9 @@ static void acpi_tb_convert_fadt(void)
+>  					     pm1_register_length,
+>  					     (acpi_gbl_FADT.xpm1b_event_block.
+>  					      address + pm1_register_length));
+> +		/* Don't forget to copy space_id of the GAS */
+> +		acpi_gbl_xpm1b_enable.space_id = acpi_gbl_FADT.xpm1a_event_block.space_id;
+> +
+>  	}
+>  }
+>  
+
