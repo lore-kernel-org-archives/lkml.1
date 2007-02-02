@@ -1,128 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946028AbXBBSyd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422985AbXBBTBb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946028AbXBBSyd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Feb 2007 13:54:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946029AbXBBSyc
+	id S1422985AbXBBTBb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Feb 2007 14:01:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423039AbXBBTBb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Feb 2007 13:54:32 -0500
-Received: from wr-out-0506.google.com ([64.233.184.228]:10894 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1946028AbXBBSyb (ORCPT
+	Fri, 2 Feb 2007 14:01:31 -0500
+Received: from old-tantale.fifi.org ([64.81.251.130]:38118 "EHLO
+	tantale.fifi.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422985AbXBBTBa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Feb 2007 13:54:31 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition:x-google-sender-auth;
-        b=uKZZLlKcave/FyPaNdWBz/VeBvxQ4hHKGmz+eYi78hGQuDlUAmbqZ3rHjpvBff6Fkb/bw0vrr4mg6AK7mLgcCUgSLuC8x3N1yia6Cu0FdmW9jF0MgYUddEF0Z7uzpwicVKZXEp77I4+v2riO6uCMLYltg9GZbtcrmMVwCjGAVVE=
-Message-ID: <e7ca40f70702021054o49bee8fck5a5a38a84cd1e6e1@mail.gmail.com>
-Date: Fri, 2 Feb 2007 13:54:31 -0500
-From: "Aaron Wiebe" <epiphani@powertrip.net>
-To: linux-kernel@vger.kernel.org
-Subject: uninterruptable fcntl calls
+	Fri, 2 Feb 2007 14:01:30 -0500
+To: Roland Kuhn <rkuhn@e18.physik.tu-muenchen.de>
+Cc: "Guillaume Chazarain" <guichaz@gmail.com>,
+       "Denis Vlasenko" <vda.linux@googlemail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: O_NONBLOCK setting "leak" outside of a process??
+References: <200701272152.11087.vda.linux@googlemail.com>
+	<87bqkhuqpp.fsf@tantale.fifi.org>
+	<200702020000.40524.vda.linux@googlemail.com>
+	<87abzxbhau.fsf@tantale.fifi.org>
+	<E0CFA8EB-F706-49E8-A1D1-7BAF19C8D271@e18.physik.tu-muenchen.de>
+	<3d8471ca0702020548n9455f4fre8c4ceea3f070a51@mail.gmail.com>
+	<24DAE20A-F4CC-4A8F-902A-2A73D0DA2EB1@e18.physik.tu-muenchen.de>
+Mail-Copies-To: nobody
+From: Philippe Troin <phil@fifi.org>
+Date: 02 Feb 2007 10:59:42 -0800
+In-Reply-To: <24DAE20A-F4CC-4A8F-902A-2A73D0DA2EB1@e18.physik.tu-muenchen.de>
+Message-ID: <87bqkc9yht.fsf@tantale.fifi.org>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-X-Google-Sender-Auth: 58ad3f43f5d629af
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greetings,
+Roland Kuhn <rkuhn@e18.physik.tu-muenchen.de> writes:
 
-I've run into a situation where fcntl F_SETLKW calls lock up nearly
-completely.  I've tried several approaches to handle this case, and
-have yet to come up with some method of handling this.  I've never
-really ventured outside userspace, so I'm turning to this list to try
-and get a handle on this.
+> Hi Guillaume!
+> 
+> On 2 Feb 2007, at 14:48, Guillaume Chazarain wrote:
+> 
+> > 2007/2/2, Roland Kuhn <rkuhn@e18.physik.tu-muenchen.de>:
+> >
+> >> That's a bug, right?
+> >
+> > No, if you want something like: (echo toto; date; echo titi) > file
+> > to work in your shell, you'll be happy to have the seek position
+> > shared in the processes.
 
-Over NFSv3 udp, this situation takes place VERY rarely, however with
-the volume I do, its creating a problem.
+Absolutely right.  This has been part of Unix since the beginning.
 
-In short, I am attempting to read or write lock, and the call hangs to
-the point where a sigkill is not captured - no signal is.  I've tried
-alarming out and I've tried switching the socket to nonblocking -
-nothing I can think of prevents or even allows me to handle the case.
-I understand NFS locking can be rather sketchy at times - but all I
-need is the ability to handle the case.
+> As a naive user I'd probably expect that each of the above adds to
+> the output, which perfectly fits the O_APPEND flag (to be set by the
+> shell, of course).
 
-I can force the process to die by sending a sigkill, then stracing.
-The strace reports the process as sigstop, then processes the kill
-signal.
+No, no, O_APPEND has slightly different semantics.
 
-All I need here is a method of capturing this case.  I can "repair"
-the stuck lock by regenerating the file, but I can't capture the case
-in order to handle this in code.
+> The immediate point was about the flags, though, and having
+> O_NONBLOCK on or off certainly is a _design_ choice when writing a
+> program. If I remove O_NONBLOCK, I have a right to expect that I/O
+> functions do not return EAGAIN!
 
-Any help would be useful - I am currently running 2.6.15.6 compiled
-with the NFS patches from linux-nfs.org, but this case was happening
-before applying those patches.  I'd be happy to provide any more
-information nessecary.  I've been struggling with this one for a few
-months now.
+Generally you don't want to mess with shared resouces like stdin,
+stdout and stderr.
 
-Thanks,
--Aaron
-
-
-Straces:
-
-rt_sigaction(SIGALRM, {0xb7f56640, [ALRM], 0}, {SIG_DFL}, 8) = 0
-alarm(120)                              = 0
-fcntl64(3, F_SETLKW, {type=F_RDLCK, whence=SEEK_SET, start=0, len=0}
-[hangs]
-
-Or:
-
-fcntl64(3, F_GETFL)                     = 0x8002 (flags O_RDWR|O_LARGEFILE)
-fcntl64(3, F_SETFL, O_RDWR|O_NONBLOCK|O_LARGEFILE) = 0
-fcntl64(3, F_SETLKW, {type=F_RDLCK, whence=SEEK_SET, start=0, len=0}
-
-
-
-Code used for locking:
-
-static int db_lock(int fd, int type)
-{
-    struct flock fl;
-    struct timespec *tv = (struct timespec *) malloc(sizeof(struct timespec));
-    int ret, c = 0;
-
-    if(!(fd > 0))
-        return -1;
-
-#ifdef SIGALRM_HACK
-    /* after two minutes, wig out */
-    sigalrm_set();
-    alarm(120);
-#endif
-
-    fl.l_whence = SEEK_SET;
-    fl.l_start = 0;
-    fl.l_len = 0;
-    fl.l_type = type;
-
-#ifdef NONBLOCKING_HACK
-    set_nonblocking(fd);
-#endif
-
-    while((ret = fcntl(fd, F_SETLKW, &fl)) < 0)
-    {
-        c++;
-        if(c > 600)
-        {
-            /* we've been waiting for 60 seconds... */
-            my_error("stuck on fcntl request, aborting");
-            return -1;
-        }
-        tv->tv_nsec = 100;   /* 10th of a second wait */
-        tv->tv_sec = 0;
-        nanosleep(tv, NULL);
-    }
-    free(tv);
-#ifdef SIGALRM_HACK
-    sigalrm_unset();
-#endif
-#ifdef NONBLOCKING_HACK
-    unset_nonblocking(fd);
-#endif
-    return ret;
-}
+Phil.
