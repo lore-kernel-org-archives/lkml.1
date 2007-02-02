@@ -1,93 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423154AbXBBOUu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423144AbXBBOVh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423154AbXBBOUu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Feb 2007 09:20:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423150AbXBBOUu
+	id S1423144AbXBBOVh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Feb 2007 09:21:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423138AbXBBOVh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Feb 2007 09:20:50 -0500
-Received: from mga07.intel.com ([143.182.124.22]:30091 "EHLO
-	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1423145AbXBBOUs (ORCPT
+	Fri, 2 Feb 2007 09:21:37 -0500
+Received: from mtagate3.de.ibm.com ([195.212.29.152]:22292 "EHLO
+	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423144AbXBBOVg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Feb 2007 09:20:48 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.13,273,1167638400"; 
-   d="c'?scan'208"; a="176303319:sNHT23256583"
-Message-ID: <45C348B3.8000805@linux.intel.com>
-Date: Fri, 02 Feb 2007 17:20:35 +0300
-From: Alexey Starikovskiy <alexey.y.starikovskiy@linux.intel.com>
-User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
+	Fri, 2 Feb 2007 09:21:36 -0500
+Date: Fri, 2 Feb 2007 15:21:33 +0100
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
+Cc: heiko.carstens@de.ibm.com
+Subject: [S390] Fix register usage description.
+Message-ID: <20070202142133.GA30839@skybase>
 MIME-Version: 1.0
-To: Bob Picco <bob.picco@hp.com>
-CC: Len Brown <lenb@kernel.org>, akpm@osdl.org, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org
-Subject: Re: 2.6.20-rc6-mm[2-3] ACPI issues
-References: <20070131202532.GS30233@localhost> <200702010155.02119.lenb@kernel.org> <20070201164709.GA17678@localhost>
-In-Reply-To: <20070201164709.GA17678@localhost>
-Content-Type: multipart/mixed;
- boundary="------------050505040604030701050101"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------050505040604030701050101
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
 
-Bob Picco wrote:
-> BTW, this isn't specific to rx2600. Lee Schermerhorn reported same -mm3 problem 
-> on rx8620. Stephane Eranian reported the -mm2 problem mentioned above on rx2620.
->
-> The debug information you requested is below. 
->
-> thanks,
->
-> bob
-Bob, thanks for debug information.
-Could you please try following patch?
+[S390] Fix register usage description.
 
-Thanks,
-    Alex.
+Fix description of register usage as pointed out by Andreas Krebbel.
+Since this document is completely outdated and would need a lot of
+fixing, it might be worth considering to get rid of it...
 
---------------050505040604030701050101
-Content-Type: text/plain;
- name="fix-tbfadt.c"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="fix-tbfadt.c"
-
-Copy space_id of GAS structure to newly created GAS.
-
-From: Alexey Starikovskiy <alexey.y.starikovskiy@linux.intel.com>
-
-
+Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
 ---
 
- drivers/acpi/tables/tbfadt.c |    5 +++++
- 1 files changed, 5 insertions(+), 0 deletions(-)
+ Documentation/s390/Debugging390.txt |    2 +-
+ 1 files changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/acpi/tables/tbfadt.c b/drivers/acpi/tables/tbfadt.c
-index 30350dd..807c711 100644
---- a/drivers/acpi/tables/tbfadt.c
-+++ b/drivers/acpi/tables/tbfadt.c
-@@ -333,6 +333,8 @@ static void acpi_tb_convert_fadt(void)
- 				     pm1_register_length,
- 				     (acpi_gbl_FADT.xpm1a_event_block.address +
- 				      pm1_register_length));
-+	/* Don't forget to copy space_id of the GAS */
-+	acpi_gbl_xpm1a_enable.space_id = acpi_gbl_FADT.xpm1a_event_block.space_id;
- 
- 	/* The PM1B register block is optional, ignore if not present */
- 
-@@ -341,6 +343,9 @@ static void acpi_tb_convert_fadt(void)
- 					     pm1_register_length,
- 					     (acpi_gbl_FADT.xpm1b_event_block.
- 					      address + pm1_register_length));
-+		/* Don't forget to copy space_id of the GAS */
-+		acpi_gbl_xpm1b_enable.space_id = acpi_gbl_FADT.xpm1a_event_block.space_id;
-+
- 	}
- }
- 
-
---------------050505040604030701050101--
+diff -urpN linux-2.6/Documentation/s390/Debugging390.txt linux-2.6-patched/Documentation/s390/Debugging390.txt
+--- linux-2.6/Documentation/s390/Debugging390.txt	2007-02-02 14:03:56.000000000 +0100
++++ linux-2.6-patched/Documentation/s390/Debugging390.txt	2007-02-02 14:04:39.000000000 +0100
+@@ -480,7 +480,7 @@ r2       argument 0 / return value 0    
+ r3       argument 1 / return value 1 (if long long) call-clobbered
+ r4       argument 2                                 call-clobbered
+ r5       argument 3                                 call-clobbered
+-r6	 argument 5                                 saved
++r6	 argument 4				    saved
+ r7       pointer-to arguments 5 to ...              saved      
+ r8       this & that                                saved
+ r9       this & that                                saved
