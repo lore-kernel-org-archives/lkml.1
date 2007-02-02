@@ -1,71 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1945933AbXBBPU0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1945914AbXBBP1J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1945933AbXBBPU0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Feb 2007 10:20:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945936AbXBBPU0
+	id S1945914AbXBBP1J (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Feb 2007 10:27:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945911AbXBBP1J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Feb 2007 10:20:26 -0500
-Received: from omx2-ext.sgi.com ([192.48.171.19]:34266 "EHLO omx2.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1945933AbXBBPUZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Feb 2007 10:20:25 -0500
-Message-ID: <45C35705.20505@sgi.com>
-Date: Fri, 02 Feb 2007 07:21:41 -0800
-From: Jay Lan <jlan@sgi.com>
-User-Agent: Thunderbird 1.5 (X11/20060317)
+	Fri, 2 Feb 2007 10:27:09 -0500
+Received: from qb-out-0506.google.com ([72.14.204.237]:13871 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1945914AbXBBP1I (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Feb 2007 10:27:08 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=SaljPWXVXna4/sKq/sDKkHhW/Z1r4lIORo7kErrKo0o9ie2SHasBarGcLC6BaGzQ1MNuj2nOHRrRPebTyvPpGdMg1NXqm5Hc2l34xjP7vwuE51Lul49OuBBHpw6Ce5jAqhaYN1tZsEqe0OGzz35ceyJiwWLEV5PCa/cWDlnqZN4=
+Message-ID: <38b2ab8a0702020727k7501451aj5ce350027e3eeb85@mail.gmail.com>
+Date: Fri, 2 Feb 2007 16:27:06 +0100
+From: "Francis Moreau" <francis.moro@gmail.com>
+To: "Arjan van de Ven" <arjan@infradead.org>
+Subject: Re: Slower CPU frequency reported by the kernel
+Cc: "Paolo Ornati" <ornati@fastwebnet.it>, linux-kernel@vger.kernel.org
+In-Reply-To: <1170426010.3073.932.camel@laptopd505.fenrus.org>
 MIME-Version: 1.0
-To: Horms <horms@verge.net.au>
-CC: "Zou, Nanhai" <nanhai.zou@intel.com>, Magnus Damm <magnus@valinux.co.jp>,
-       "Luck, Tony" <tony.luck@intel.com>, linux-ia64@vger.kernel.org,
-       fastboot@lists.osdl.org, Andrew Morton <akpm@linux-foundation.org>,
-       Magnus Damm <magnus.damm@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [Fastboot] [PATCH] kexec: Fix CONFIG_SMP=n compilation (ia64)
-References: <aec7e5c30702011838g6e9edd23sc782321aacb07297@mail.gmail.com>	<10EA09EFD8728347A513008B6B0DA77A086BD0@pdsmsx411.ccr.corp.intel.com> <20070202035714.GE16554@verge.net.au>
-In-Reply-To: <20070202035714.GE16554@verge.net.au>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <38b2ab8a0702020311o54789ef6xff819dc3b492b005@mail.gmail.com>
+	 <20070202130408.05212b10@localhost>
+	 <38b2ab8a0702020603h480fc1dfm22267089341cbe0e@mail.gmail.com>
+	 <1170426010.3073.932.camel@laptopd505.fenrus.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Horms wrote:
-> On Fri, Feb 02, 2007 at 11:01:21AM +0800, Zou, Nanhai wrote:
->>>>>  void
->>>>>  machine_crash_shutdown(struct pt_regs *pt)
->>>>> @@ -132,11 +134,12 @@ kdump_cpu_freeze(struct unw_frame_info *
->>>>>       atomic_inc(&kdump_cpu_freezed);
->>>>>       kdump_status[cpuid] = 1;
->>>>>       mb();
->>>>> -     if (cpuid == 0) {
->>>>> -             for (;;)
->>>>> -                     cpu_relax();
->>>>> -     } else
->>>>> +#ifdef CONFIG_HOTPLUG_CPU
->>>>> +     if (cpuid != 0)
->>>>>               ia64_jump_to_sal(&sal_boot_rendez_state[cpuid]);
->>>>> +#endif
->>>>> +     for (;;)
->>>>> +             cpu_relax();
->>>>>  }
->>>> I trust ia64_jump_to_sal doesn't return.
->>> So do I. The main problem with the compilation seems to be that
->>> ia64_jump_to_sal() only exists if CONFIG_HOTPLUG_CPU=y.
->>> (include/asm-ia64/sal.h, arch/ia64/kernel/head.S)
->>>
->>  This may cause problem on SN platform. 
->> I remember SN requires cpu0 return to SAL rendez loop to do IRQ redirection.
->> However this needs SGI people to confirm...
+On 2/2/07, Arjan van de Ven <arjan@infradead.org> wrote:
+> it may be userspace, or you may be using the "ondemand" governer. If you
+> have the userspace tool it's often called "cpuspeed", but it depends on
+> your distro.
 
-SN needs slave cpus being returned to SAL rendez loop with the exception
-of cpu0. It seems there is not a decent way to return cpu0, so we
-decided to handle cpu0 in PROM. This above code change does not casue
-problem on SN platform.
+you're right, I actually use 'ondemand' governer. It seems to be the
+governer used by Fedora when the cpu is a AMD 64 3000+
 
-> 
-> Does this mean that CONFIG_HOTPLUG_CPU may be required for kdump
-> on the SN platform?
-
-The SN platform uses the ia64_jump_to_sal() routine.
-
-Thanks,
- - jay
-
+thanks
+-- 
+Francis
