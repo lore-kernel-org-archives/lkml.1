@@ -1,76 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751848AbXBBJYL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751839AbXBBJdm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751848AbXBBJYL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Feb 2007 04:24:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751839AbXBBJYL
+	id S1751839AbXBBJdm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Feb 2007 04:33:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751856AbXBBJdm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Feb 2007 04:24:11 -0500
-Received: from nic.NetDirect.CA ([216.16.235.2]:58326 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751823AbXBBJYJ (ORCPT
+	Fri, 2 Feb 2007 04:33:42 -0500
+Received: from nz-out-0506.google.com ([64.233.162.237]:52065 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751839AbXBBJdl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Feb 2007 04:24:09 -0500
-X-Originating-Ip: 74.109.98.130
-Date: Fri, 2 Feb 2007 04:22:51 -0500 (EST)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@CPE00045a9c397f-CM001225dbafb6
-To: Linux kernel mailing list <linux-kernel@vger.kernel.org>
-Subject: finding macro names that might need a "CONFIG_" prefix
-Message-ID: <Pine.LNX.4.64.0702020410480.8570@CPE00045a9c397f-CM001225dbafb6>
+	Fri, 2 Feb 2007 04:33:41 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=lGYlvkJ46etzPSR5vpdzllMYyJvc8FVFnJeC5IHK1m9e6jdMLji1AT42lJwEk1EFGAljWE0KEZz8XB/ju5v23igGEboNdtEfhragOHj2qna93NBr9h/Pzf0C6wimbXo508hfAH9kyQ7YYoK/4+5MZoBsIWaSYzJgM65RwEQxZXU=
+Message-ID: <e9f486400702020133h669c4f2ci908f952b22ddcf49@mail.gmail.com>
+Date: Fri, 2 Feb 2007 10:33:40 +0100
+From: "Henri Hunnekens" <henrihunnekens@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: 2.6.20-RC7-RT3 compiler error
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+I've the following compiler error:
 
-  as another test, i wrote the following script:
+linux-2.6.20.i686/arch/i386/mm/pgtable.c:303: undefined reference to
+`paravirt_enabled'
+linux-2.6.20.i686/arch/i386/mm/pgtable.c:306: undefined reference to `hypercall'
+Error 1
 
-http://www.fsdev.dreamhosters.com/wiki/index.php?title=Misspelled_CONFIG_variables
+Is there anyone who knows what causes this error?
 
-that scans whatever part of the kernel source tree you want, and
-locates macro names in preprocessor conditionals that might be
-erroneously missing a "CONFIG_" prefix.
-
-  as an example (and for no particular reason), let's pick on the
-reiser file system:
-
-$ bad_config.sh fs/reiserfs/
-========== REISERFS_PROC_INFO ==========
-fs/reiserfs/procfs.c:#if defined( REISERFS_PROC_INFO )
-fs/reiserfs/procfs.c:/* REISERFS_PROC_INFO */
-fs/reiserfs/procfs.c:/* REISERFS_PROC_INFO */
-./fs/Kconfig:config REISERFS_PROC_INFO
-
-that looks pretty clearly like someone should be testing
-"CONFIG_REISERFS_PROC_INFO" rather than just "REISERFS_PROC_INFO", no?
-
-  what about NTFS?
-
-$ bad_config.sh fs/ntfs
-========== NTFS_DEBUG ==========
-fs/ntfs/attrib.c:#ifdef NTFS_DEBUG          <---  aha!
-./fs/Kconfig:config NTFS_DEBUG
-========== NTFS_RW ==========
-fs/ntfs/logfile.h:#ifdef NTFS_RW            <--- another potential aha
-fs/ntfs/logfile.h:#endif /* NTFS_RW */
-... lots of dups removed ...
-./fs/Kconfig:config NTFS_RW
-
-  anyway, you get the idea.  have at it.
-
-rday
-
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://www.fsdev.dreamhosters.com/wiki/index.php?title=Main_Page
-========================================================================
+Henri
