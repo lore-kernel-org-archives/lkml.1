@@ -1,56 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1945902AbXBBIS3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933300AbXBBIZo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1945902AbXBBIS3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Feb 2007 03:18:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423197AbXBBIS3
+	id S933300AbXBBIZo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Feb 2007 03:25:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933307AbXBBIZo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Feb 2007 03:18:29 -0500
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:43839 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423198AbXBBIS2 (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Feb 2007 03:18:28 -0500
-Message-Id: <200702020817.l128Hios030270@turing-police.cc.vt.edu>
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Jon Masters <jonathan@jonmasters.org>
-Cc: Chris Rankin <rankincj@yahoo.com>, Mark Rustad <mrustad@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.18-stable release plans?
-In-Reply-To: Your message of "Fri, 02 Feb 2007 01:47:38 EST."
-             <45C2DE8A.7040201@jonmasters.org>
-From: Valdis.Kletnieks@vt.edu
-References: <999038.34946.qm@web52908.mail.yahoo.com> <200702020402.l12427em008810@turing-police.cc.vt.edu>
-            <45C2DE8A.7040201@jonmasters.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1170404264_8768P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+	Fri, 2 Feb 2007 03:25:44 -0500
+Received: from mail1.webmaster.com ([216.152.64.169]:4918 "EHLO
+	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933300AbXBBIZo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Feb 2007 03:25:44 -0500
+From: "David Schwartz" <davids@webmaster.com>
+To: <sofar@foo-projects.org>
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: RE: [PATCH] Ban module license tag string termination trick
+Date: Fri, 2 Feb 2007 00:24:48 -0800
+Message-ID: <MDEHLPKNGKAHNMBLJOLKOEBOBFAC.davids@webmaster.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Date: Fri, 02 Feb 2007 03:17:44 -0500
+X-Priority: 3 (Normal)
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
+In-Reply-To: <45C27908.1000202@foo-projects.org>
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
+Importance: Normal
+X-Authenticated-Sender: joelkatz@webmaster.com
+X-Spam-Processed: mail1.webmaster.com, Fri, 02 Feb 2007 00:25:07 -0800
+	(not processed: message from trusted or authenticated source)
+X-MDRemoteIP: 206.171.168.138
+X-Return-Path: davids@webmaster.com
+X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
+Reply-To: davids@webmaster.com
+X-MDAV-Processed: mail1.webmaster.com, Fri, 02 Feb 2007 00:25:07 -0800
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1170404264_8768P
-Content-Type: text/plain; charset=us-ascii
 
-On Fri, 02 Feb 2007 01:47:38 EST, Jon Masters said:
+> to me it even screams "bypassing or a digital copyright
+> enforcement system".
+> that sounds really close to "D.M.C.A. violation" :)
+>
+> thank goodness I'm not a laywer...
 
-> I must be weird or something, but I often think about this and the sheer 
-> number of clock cycles executing at any one time around the world. Have 
-> you ever stopped to think how many copies of schedule() (or whatever) 
-> are currently running somewhere in the world? It's just nuts :-)
+It is not. GPL export is *not* a copyright enforcement scheme. (See the many
+times when this was discussed on this list.) The GPL prohibits the use of
+copyright enforcement schemes in sections 6 and 7.
 
-That's why we count single cycles in fast-path sections of code. :)
+Suppose there were some law that said that if I put "do not modify this
+line" in a piece of code, you could not modify that line. The GPL would
+clearly prohibit putting such a thing in a work, as that would remove from
+recipients their right to modify the code -- a right guaranteed to them
+under the GPL.
 
---==_Exmh_1170404264_8768P
-Content-Type: application/pgp-signature
+Same with GPL export. If it is a copyright enforcement scheme and it
+prevented people from modifying the code to include the license tag
+termination trick, they would not have the right to modify the code that way
+which the GPL says they are supposed to have. So *if* EXPORT_GPL were a
+copyright enforcement scheme, the Linux kernel containing it could not be
+distributed.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
+The consensus view, as I understand it, is that the GPL export is a
+warning/notification scheme to alert people that their use of these symbols
+in non-GPL code is believed to violate the GPL *if* that code is distributed
+(which the GPL export logic has no way to determine has happened or will
+ever happen). It is no different than refusing a command to change the time
+of day from a non-superuser.
 
-iD8DBQFFwvOocC3lWbTT17ARAli8AKCehF1cTrsrTeDivVpfuaCSLxh5uQCfeDNA
-QM2vk7HzDiVwpftMfMPBTCo=
-=fud2
------END PGP SIGNATURE-----
+In any event, even if you assume it is a copyright enforcement scheme, it is
+not circumvention to remove or disable such a scheme with the permission of
+the copyright holder. Section 2 of the GPL grants just such permission.
 
---==_Exmh_1170404264_8768P--
+DS
+
+
