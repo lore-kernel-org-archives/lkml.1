@@ -1,81 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423075AbXBBCdk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423076AbXBBCfS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423075AbXBBCdk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Feb 2007 21:33:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030225AbXBBCdk
+	id S1423076AbXBBCfS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Feb 2007 21:35:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423077AbXBBCfS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Feb 2007 21:33:40 -0500
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:57081 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1030218AbXBBCdj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Feb 2007 21:33:39 -0500
-Date: Fri, 2 Feb 2007 03:33:43 +0100
-From: Adrian Bunk <bunk@stusta.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Luca Tettamanti <kronos.it@gmail.com>, Peter Osterlund <petero2@telia.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [2.6.20-rc6] pktcdvd doesn't work
-Message-ID: <20070202023343.GY3754@stusta.de>
-References: <20070130195319.GA10994@dreamland.darkstar.lan> <20070131233044.GX3754@stusta.de> <20070201230752.GA17679@dreamland.darkstar.lan> <20070201182147.2835668e.akpm@osdl.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070201182147.2835668e.akpm@osdl.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Thu, 1 Feb 2007 21:35:18 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:56852 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030218AbXBBCfQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Feb 2007 21:35:16 -0500
+Date: Thu, 1 Feb 2007 18:34:50 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: jbohac@suse.cz
+Cc: Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org,
+       Vojtech Pavlik <vojtech@suse.cz>, ssouhlal@freebsd.org,
+       arjan@infradead.org, tglx@linutronix.de, johnstul@us.ibm.com,
+       zippel@linux-m68k.org, andrea@suse.de
+Subject: Re: [patch 1/9] Fix HPET init race
+Message-Id: <20070201183450.6d37d443.akpm@osdl.org>
+In-Reply-To: <20070201103753.357427000@jet.suse.cz>
+References: <20070201095952.589234000@jet.suse.cz>
+	<20070201103753.357427000@jet.suse.cz>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 01, 2007 at 06:21:47PM -0800, Andrew Morton wrote:
-> On Fri, 2 Feb 2007 00:07:52 +0100 Luca Tettamanti <kronos.it@gmail.com> wrote:
+On Thu, 01 Feb 2007 10:59:53 +0100 jbohac@suse.cz wrote:
+
+> Fix a race in the initialization of HPET, which might result in a 
+> 5 minute lockup on boot.
 > 
-> > Il Thu, Feb 01, 2007 at 12:30:44AM +0100, Adrian Bunk ha scritto: 
-> > > On Tue, Jan 30, 2007 at 08:53:19PM +0100, Luca Tettamanti wrote:
-> > > > Hi,
-> > > > pktcdvd on kernel 2.6.20-rc6 is not working as expected. Any file that
-> > > > is written to the device is lost after umount.
-> > > > I rarely use pktcdvd but at some point it used to work on my system.
-> > > > 
-> > > > This is what I'm doing:
-> > > > 
-> > > > root@dreamland:/tmp# cdrwtool -d /dev/scd0 -q
-> > > > using device /dev/scd0
-> > > > 1029KB internal buffer
-> > > > setting write speed to 12x
-> > > > Settings for /dev/scd0:
-> > > >         Fixed packets, size 32
-> > > >         Mode-2 disc
-> > > >...
-> > > 
-> > > Does 2.6.20-rc7 work?
-> > > If no, does it work after applying the attached patch?
-> > > If no, does 2.6.19.2 work?
-> > 
-> > Git current + the following patch works.
-> > 
-> > > diff --git a/drivers/block/pktcdvd.c b/drivers/block/pktcdvd.c
-> > > index 6246219..7c95c76 100644
-> > > --- a/drivers/block/pktcdvd.c
-> > > +++ b/drivers/block/pktcdvd.c
-> > > @@ -765,34 +765,47 @@ static inline struct bio *pkt_get_list_first(struct bio **list_head, struct bio
-> > >   */
-> > >  static int pkt_generic_packet(struct pktcdvd_device *pd, struct packet_command *cgc)
-> > >  {
-> > > -	request_queue_t *q = bdev_get_queue(pd->bdev);
-> > > +	char sense[SCSI_SENSE_BUFFERSIZE];
+
+What race?  Please always describe bugs when fixing them.
+
 > 
-> Where did this patch come from?
+> Index: linux-2.6.20-rc5/arch/x86_64/kernel/apic.c
+> ===================================================================
+> --- linux-2.6.20-rc5.orig/arch/x86_64/kernel/apic.c
+> +++ linux-2.6.20-rc5/arch/x86_64/kernel/apic.c
+> @@ -764,10 +767,12 @@ static void setup_APIC_timer(unsigned in
+>  
+>  	/* wait for irq slice */
+>   	if (vxtime.hpet_address && hpet_use_timer) {
+> - 		int trigger = hpet_readl(HPET_T0_CMP);
+> - 		while (hpet_readl(HPET_COUNTER) >= trigger)
+> - 			/* do nothing */ ;
+> - 		while (hpet_readl(HPET_COUNTER) <  trigger)
+> +		int trigger;
+> +		do
+> +			trigger = hpet_readl(HPET_T0_CMP);
+> +		while (hpet_readl(HPET_COUNTER) >= trigger);
+> +
 
-It's a revert of the commits 3b00315799d78f76531b71435fbc2643cd71ae4c 
-and 406c9b605cbc45151c03ac9a3f95e9acf050808c
+Is this signedness-safe and wraparound-safe?  It might be better to make
+`trigger' unsigned and do
 
-cu
-Adrian
+	while (hpet_readl(HPET_COUNTER) - trigger >= 0)
 
--- 
+> +		while (hpet_readl(HPET_COUNTER) <  trigger)
+>   			/* do nothing */ ;
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+ditto.
