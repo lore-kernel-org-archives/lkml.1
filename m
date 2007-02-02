@@ -1,58 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1945970AbXBBQ4G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1945986AbXBBQ6W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1945970AbXBBQ4G (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Feb 2007 11:56:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945981AbXBBQ4F
+	id S1945986AbXBBQ6W (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Feb 2007 11:58:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945983AbXBBQ6V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Feb 2007 11:56:05 -0500
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:58323 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1945970AbXBBQ4E (ORCPT
+	Fri, 2 Feb 2007 11:58:21 -0500
+Received: from rgminet01.oracle.com ([148.87.113.118]:32223 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1945986AbXBBQ6U (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Feb 2007 11:56:04 -0500
-Date: Fri, 2 Feb 2007 17:56:05 +0100
-From: Adrian Bunk <bunk@stusta.de>
-To: Eric Van Hensbergen <ericvh@gmail.com>
-Cc: rminnich@lanl.gov, lucho@ionkov.net, v9fs-developer@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: [2.6.20 patch] v9fs_vfs_mkdir(): fix a double free
-Message-ID: <20070202165605.GI3754@stusta.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Fri, 2 Feb 2007 11:58:20 -0500
+Date: Fri, 2 Feb 2007 08:53:51 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>
+Cc: Paul Rolland <rol@as2917.net>,
+       "'Linux Kernel Mailing List'" <linux-kernel@vger.kernel.org>,
+       "'Andrew Morton'" <akpm@osdl.org>,
+       "'Jon Masters'" <jonathan@jonmasters.org>,
+       "'Alexey Dobriyan'" <adobriyan@gmail.com>
+Subject: Re: [PATCH] Ban module license tag string termination trick
+Message-Id: <20070202085351.3215815f.randy.dunlap@oracle.com>
+In-Reply-To: <Pine.LNX.4.61.0702021610510.26531@yvahk01.tjqt.qr>
+References: <011601c746d9$dc5453b0$4b00a8c0@donald>
+	<Pine.LNX.4.61.0702021610510.26531@yvahk01.tjqt.qr>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.0 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes a double free of "dfid" introduced by
-commit da977b2c7eb4d6312f063a7b486f2aad99809710 and spotted by the 
-Coverity checker.
+On Fri, 2 Feb 2007 16:11:11 +0100 (MET) Jan Engelhardt wrote:
 
-Signed-off-by: Adrian Bunk <bunk@stusta.de>
+> 
+> On Feb 2 2007 15:53, Paul Rolland wrote:
+> >
+> >If that is really one important point, why not simply adding a :
+> >MODULE_IS_UNDER_GPL_LICENSE("yes|no")
+> >and a
+> >MODULE_IS_UNDER_GPL_LIKE_LICENSE("yes|no")
+> >
+> >or use 0 and 1 instead of yes and no, and thus clearly avoid all the
+> >C string mess ?
+> 
+> MODULE_IS_UNDER_GPL_LICENSE("yes\0 but only this .c file");
 
---- linux-2.6.20-rc6-mm3/fs/9p/vfs_inode.c.old	2007-02-02 17:11:10.000000000 +0100
-+++ linux-2.6.20-rc6-mm3/fs/9p/vfs_inode.c	2007-02-02 17:39:12.000000000 +0100
-@@ -583,21 +583,18 @@ static int v9fs_vfs_mkdir(struct inode *
- 	v9fs_fid_clunk(v9ses, dfid);
- 	inode = v9fs_inode_from_fid(v9ses, vfid->fid, dir->i_sb);
- 	if (IS_ERR(inode)) {
- 		err = PTR_ERR(inode);
- 		inode = NULL;
--		goto clean_up_fids;
-+		v9fs_fid_destroy(vfid);
-+		goto error;
- 	}
- 
- 	dentry->d_op = &v9fs_dentry_operations;
- 	d_instantiate(dentry, inode);
- 	return 0;
- 
--clean_up_fids:
--	if (vfid)
--		v9fs_fid_destroy(vfid);
--
- clean_up_dfid:
- 	v9fs_fid_clunk(v9ses, dfid);
- 
- error:
- 	return err;
+
+if (MODULE_LICENSE_contains_null(license))
+	printk(KERN_WARNING "this module's license is suspicious\n");
+
+
+---
+~Randy
