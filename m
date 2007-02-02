@@ -1,59 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946088AbXBBVWO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946092AbXBBV1g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946088AbXBBVWO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Feb 2007 16:22:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946089AbXBBVWO
+	id S1946092AbXBBV1g (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Feb 2007 16:27:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946094AbXBBV1g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Feb 2007 16:22:14 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:40958 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1946088AbXBBVWN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Feb 2007 16:22:13 -0500
-Date: Fri, 2 Feb 2007 13:18:54 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
-Cc: Adrian Bunk <bunk@stusta.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       takada <takada@mbf.nifty.com>, Jordan Crouse <jordan.crouse@amd.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Please revert "fix typo in geode_configre()@cyrix.c"
-Message-Id: <20070202131854.d5ea9de7.akpm@osdl.org>
-In-Reply-To: <20070202151236.GN7582@csclub.uwaterloo.ca>
-References: <20070202062941.GB3754@stusta.de>
-	<20070202000543.c3664ecc.akpm@linux-foundation.org>
-	<20070202151236.GN7582@csclub.uwaterloo.ca>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 2 Feb 2007 16:27:36 -0500
+Received: from 81-174-11-161.f5.ngi.it ([81.174.11.161]:47446 "EHLO
+	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1946092AbXBBV1g (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Feb 2007 16:27:36 -0500
+Date: Fri, 2 Feb 2007 22:27:41 +0100
+From: Rodolfo Giometti <giometti@enneenne.com>
+To: Paul Mundt <lethal@linux-sh.org>, linux-kernel@vger.kernel.org,
+       linux-arm-kernel@lists.arm.linux.org.uk, linux-mips@linux-mips.org
+Message-ID: <20070202212741.GH8882@enneenne.com>
+References: <20070129230755.GA8705@enneenne.com> <20070130010055.GA15907@linux-sh.org> <20070201095904.GE8882@enneenne.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070201095904.GE8882@enneenne.com>
+Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
+X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SA-Exim-Connect-IP: 192.168.32.1
+X-SA-Exim-Mail-From: giometti@enneenne.com
+Subject: [PATCH 1/1] APM-EMULATION: apm_get_power_status() should be NULL on init [was: Advice on battery support]
+X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
+X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2 Feb 2007 10:12:36 -0500
-lsorense@csclub.uwaterloo.ca (Lennart Sorensen) wrote:
+APM-EMULATION: apm_get_power_status() should be NULL on init.
 
-> On Fri, Feb 02, 2007 at 12:05:43AM -0800, Andrew Morton wrote:
-> > On Fri, 2 Feb 2007 07:29:41 +0100 Adrian Bunk <bunk@stusta.de> wrote:
-> > 
-> > > Linus, please revert commit e4f0ae0ea63caceff37a13f281a72652b7ea71ba
-> > > 
-> > 
-> > Yup.
-> > 
-> > That discussion seems to have died.  The 2.6.19 code looks rather silly, but
-> > presumably it passed someone's testing at some stage.
-> 
-> The discussion ended because the last patch seemed to be correct to
-> everyone involved in the discussion.  At least that is my understanding.
-> Of course I am just one of the users affected by the patch.
+Signed-off-by: Rodolfo Giometti <giometti@enneenne.com>
 
-The discussion ended with me asking for someone to send a patch.  That
-hasn't happened yet.  I don't want to have to troll through 20-30 messages
-and try to work out what patch we ended up with - that's the way in which
-mistakes occur.
+---
 
-Linus has now reverted e4f0ae0ea63caceff37a13f281a72652b7ea71ba.  Now,
-please, could someone send a patch against either current -git or against
-2.6.19?  One which includes a descriptin of what it does, and why.
+If the function apm_get_info() do like this:
 
-Thanks.
+   static int apm_get_info(char *buf, char **start, off_t fpos, int length)
+   {
+           struct apm_power_info info;
+           char *units;
+           int ret;
+
+           info.ac_line_status = 0xff;
+           info.battery_status = 0xff;
+           info.battery_flag   = 0xff;
+           info.battery_life   = -1;
+           info.time           = -1;
+           info.units          = -1;
+
+           if (apm_get_power_status)
+                   apm_get_power_status(&info);
+   ...
+
+we shouldn't set:
+
+   static void __apm_get_power_status(struct apm_power_info *info)
+   {
+   }
+
+   void (*apm_get_power_status)(struct apm_power_info *) = __apm_get_power_status;
+
+otherwise the check is not needed. Furthermore setting the function to
+NULL signals that the apm-emulation layer is not already assigned (I
+found this very useful for my apm-emulation battery_class support).
