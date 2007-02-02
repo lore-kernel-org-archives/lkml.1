@@ -1,55 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423083AbXBBN6I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423081AbXBBODe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423083AbXBBN6I (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Feb 2007 08:58:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423065AbXBBN6I
+	id S1423081AbXBBODe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Feb 2007 09:03:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423111AbXBBODe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Feb 2007 08:58:08 -0500
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:58018 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1423083AbXBBN6H (ORCPT
+	Fri, 2 Feb 2007 09:03:34 -0500
+Received: from qb-out-0506.google.com ([72.14.204.226]:7611 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423081AbXBBODd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Feb 2007 08:58:07 -0500
-Date: Fri, 2 Feb 2007 14:58:09 +0100
-From: Adrian Bunk <bunk@stusta.de>
-To: Fabio Erculiani <lxnay@lxnaydesign.net>
+	Fri, 2 Feb 2007 09:03:33 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=buA1JNgWk5Bvh4XZbK2enqZd1Au//0ofz00tSEwyYB6o8+FrePnyz6jNvviI+hmtVzBWzmILXFj1h4/8mqpbgNEMO0BbtFuijWO1PFMpO6fE60iH4CQs7dgnJQfYjhvps0oZFloLbnehc/1kglutlOVs/txLV5L4yZLDM5VcyqU=
+Message-ID: <38b2ab8a0702020603h480fc1dfm22267089341cbe0e@mail.gmail.com>
+Date: Fri, 2 Feb 2007 15:03:31 +0100
+From: "Francis Moreau" <francis.moro@gmail.com>
+To: "Paolo Ornati" <ornati@fastwebnet.it>
+Subject: Re: Slower CPU frequency reported by the kernel
 Cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.20-rc7: known regressions
-Message-ID: <20070202135809.GD3754@stusta.de>
-References: <19868466.241170405430418.JavaMail.root@lxnaydesign.net> <31786283.271170405942194.JavaMail.root@lxnaydesign.net>
+In-Reply-To: <20070202130408.05212b10@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <31786283.271170405942194.JavaMail.root@lxnaydesign.net>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <38b2ab8a0702020311o54789ef6xff819dc3b492b005@mail.gmail.com>
+	 <20070202130408.05212b10@localhost>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 02, 2007 at 08:45:42AM +0000, Fabio Erculiani wrote:
+On 2/2/07, Paolo Ornati <ornati@fastwebnet.it> wrote:
+>
+> You are using frequency scaling(*) and "/proc/cpuinfo" reflects the
+> current speed.
+>
 
-> Adrian, 
+ok, I didn't know about this.
 
-Hi Fabio,
+>
+> (*) =
+> #
+> # CPU Frequency scaling
+> #
+> CONFIG_CPU_FREQ=y
+> CONFIG_CPU_FREQ_TABLE=y
+> CONFIG_CPU_FREQ_DEBUG=y
+> CONFIG_CPU_FREQ_STAT=m
+> CONFIG_CPU_FREQ_STAT_DETAILS=y
+> # CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE is not set
+> CONFIG_CPU_FREQ_DEFAULT_GOV_USERSPACE=y
 
-> and this one? 
-> http://bugzilla.kernel.org/show_bug.cgi?id=7589 
+it's seems that the cpu freq scaling depends on a user space tool.
+Could you tell me how I can find if there're such tools installed on
+my computer ?
 
-Not a regression in 2.6.20-rc compared to 2.6.19 - it's already in 
-broken in 2.6.19.
-
-This bug should be fixed, but it's outside the scope of my list.
-
-> Fabio Erculiani 
-
-cu
-Adrian
-
-BTW: Please don't strip me from the Cc when asking me a question.
-
+thanks
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Francis
