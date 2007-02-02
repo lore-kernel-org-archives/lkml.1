@@ -1,102 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422969AbXBBAGb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423012AbXBBAKh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422969AbXBBAGb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Feb 2007 19:06:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423012AbXBBAGb
+	id S1423012AbXBBAKh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Feb 2007 19:10:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423024AbXBBAKh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Feb 2007 19:06:31 -0500
-Received: from vsmtp14.tin.it ([212.216.176.118]:47716 "EHLO vsmtp14.tin.it"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422969AbXBBAGa convert rfc822-to-8bit (ORCPT
+	Thu, 1 Feb 2007 19:10:37 -0500
+Received: from ug-out-1314.google.com ([66.249.92.175]:24147 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423012AbXBBAKg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Feb 2007 19:06:30 -0500
-Message-ID: <45C0FAE300242D46@vsmtp14.tin.it> (added by postmaster@virgilio.it)
-From: "Lapo TIN" <lapolapolapo@tin.it>
-To: <linux-smp@vger.kernel.org>, <linux-kernel@vger.kernel.org>
-Cc: "'Robert Hancock'" <hancockr@shaw.ca>
-Subject: Re: smp and irq conflict
-Date: Fri, 2 Feb 2007 01:04:53 +0100
+	Thu, 1 Feb 2007 19:10:36 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=cYGK68kvqAE9etnDHFPQJQnMDDq+2/8BNGWu/h4UiKLZaztc9+2QfFUh8J0P6mpaTzaYSaqmq7yLTjbm23bLGnebcW7RD6u79roXiKet1A9upk4SLUISWmJGx9L1gBkOKXoc//IT6O1pdd9YdDHkYvZXAc4IVzKsILIdLR04+7U=
+Message-ID: <311601c90702011610t1cb75d67if3c40347f373d7ad@mail.gmail.com>
+Date: Thu, 1 Feb 2007 17:10:33 -0700
+From: "Eric D. Mudama" <edmudama@gmail.com>
+To: TJ <linux@tjworld.net>
+Subject: Re: [PATCH 1/1] filesystem: Disk Errors at boot-time caused by probe of partitions
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       "OGAWA Hirofumi" <hirofumi@mail.parknet.co.jp>,
+       "Neil Brown" <neilb@suse.de>
+In-Reply-To: <1170373838.30201.45.camel@butch.lan.tjworld.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-X-Mailer: Microsoft Office Outlook, Build 11.0.5510
-Thread-Index: AcdGWtW4uct+YWZpQIy/bCIU9BU3EgAAf0LA
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
-In-Reply-To: <45C277E0.2040604@shaw.ca>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1170287439.13764.24.camel@butch.lan.tjworld.net>
+	 <20070201142648.7d16e4b6.akpm@osdl.org>
+	 <1170373838.30201.45.camel@butch.lan.tjworld.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I need to capture at 25 frame per second from each channel...
-So 25 x 8 total frames per second on the pci.
+On 2/1/07, TJ <linux@tjworld.net> wrote:
+> ---- short extract ---
+> DC202XX: Primary channel reset.
+> ide2: reset: success
+> hde: task_in_intr: status=0x59 { DriveReady SeekComplete DataRequest
+> Error }
+> hde: task_in_intr: error=0x04 { DriveStatusError }
+> ide: failed opcode was: unknown
+> end_request: I/O error, dev hde, sector 238276076
+> printk: 8 messages suppressed.
+> Buffer I/O error on device hde2, logical block 47279294
+> hde: task_in_intr: status=0x59 { DriveReady SeekComplete DataRequest
+> Error }
+> hde: task_in_intr: error=0x04 { DriveStatusError }
+> ide: failed opcode was: unknown
+> hde: task_in_intr: status=0x59 { DriveReady SeekComplete DataRequest
+> Error }
+...
+> The Model number is Maxtor 6Y060L0.
 
+In the log you posted, the drive posted 51/04 to your out-of-bounds
+request, but these are 59/04, do they span the end of the device or
+something?
 
-So do you think I have to change the motherboard ?
-What is important ? the chipset ? is there specification I need ?
-
-
------Messaggio originale-----
-Da: linux-kernel-owner@vger.kernel.org
-[mailto:linux-kernel-owner@vger.kernel.org] Per conto di Robert Hancock
-Inviato: venerdì 2 febbraio 2007 0.30
-A: Lapo TIN
-Cc: linux-smp@vger.kernel.org; linux-kernel@vger.kernel.org
-Oggetto: Re: smp and irq conflict
-
-Lapo TIN wrote:
-> Dear all,
-> I have a problem with IRQs.
-> 
-> My pc has a CPU PentiumD945 (dual core) and a 2.6.19smp kernel.
-> I have two video acquisition board (four bt8t8 each) in the only two pci
-> slots of my motherboard. Thus I have a total of 8 bttv modules that are
-> working together, and the /proc/interrupts is as follows:
-> # cat /proc/interrupts
->            CPU0       CPU1
->   0:      13575          0   IO-APIC-edge      timer
->   1:          2          0   IO-APIC-edge      i8042
->   4:         11          0   IO-APIC-edge      serial
->   8:          1          0   IO-APIC-edge      rtc
->   9:          0          0   IO-APIC-fasteoi   acpi
->  12:          4          0   IO-APIC-edge      i8042
->  14:      22286          0   IO-APIC-edge      ide0
->  17:       7073       2097   IO-APIC-fasteoi   uhci_hcd:usb5, eth0
->  18:       2525          0   IO-APIC-fasteoi   bttv0, bttv7
->  19:       2829          0   IO-APIC-fasteoi   bttv1, bttv4
->  20:       2526          0   IO-APIC-fasteoi   bttv2, bttv5
->  21:       2226          0   IO-APIC-fasteoi   bttv3, bttv6
->  22:          2          0   IO-APIC-fasteoi   ehci_hcd:usb1,
-uhci_hcd:usb4
->  23:         86          0   IO-APIC-fasteoi   uhci_hcd:usb2
->  24:          0          0   IO-APIC-fasteoi   uhci_hcd:usb3
-> NMI:          0          0
-> LOC:      13484      13502
-> ERR:          0
-> MIS:          0
-> You can see that IRQ18 is shared between bttv0 and bttv7, IRQ19 between
-> bttv1 and bttv4 and so on.
-> 
-> Sometimes it crashes. It seems a matter of conflict in IRQ.
-> With only one video board everything is ok, but with two, they shared irq
-> and something goes wrong... 
-> How can I tell to the kernel to not to share the IRQ for these boards ?
-> I think (I don't know if I'm right) that this could be the problem.
-
-Usually the IRQ routing is hard-wired on the motherboard, so there's no 
-way to avoid the devices sharing IRQs. Unless the driver is badly buggy 
-this should not cause problems anyway.
-
-What kind of video bit rate are you capturing? 8 video capture chips is 
-a pretty heavy load on the PCI bus, maybe something just gets overwhelmed?
-
--- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
-
--
-To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
-Please read the FAQ at  http://www.tux.org/lkml/
-
+I'd be surprised if the drive clunked because of an out of range
+command, that model of drive used a very mature interface firmware
+with many generations of testing and qualification.
