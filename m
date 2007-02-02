@@ -1,46 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1945929AbXBBPOA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1945934AbXBBPTR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1945929AbXBBPOA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Feb 2007 10:14:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945931AbXBBPN7
+	id S1945934AbXBBPTR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Feb 2007 10:19:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945935AbXBBPTR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Feb 2007 10:13:59 -0500
-Received: from tmailer.gwdg.de ([134.76.10.23]:38783 "EHLO tmailer.gwdg.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1945929AbXBBPN7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Feb 2007 10:13:59 -0500
-Date: Fri, 2 Feb 2007 16:11:11 +0100 (MET)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: Paul Rolland <rol@as2917.net>
-cc: "'Linux Kernel Mailing List'" <linux-kernel@vger.kernel.org>,
-       "'Andrew Morton'" <akpm@osdl.org>,
-       "'Jon Masters'" <jonathan@jonmasters.org>,
-       "'Alexey Dobriyan'" <adobriyan@gmail.com>
-Subject: RE: [PATCH] Ban module license tag string termination trick
-In-Reply-To: <011601c746d9$dc5453b0$4b00a8c0@donald>
-Message-ID: <Pine.LNX.4.61.0702021610510.26531@yvahk01.tjqt.qr>
-References: <011601c746d9$dc5453b0$4b00a8c0@donald>
+	Fri, 2 Feb 2007 10:19:17 -0500
+Received: from an-out-0708.google.com ([209.85.132.251]:2861 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1945934AbXBBPTQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Feb 2007 10:19:16 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:subject:references:in-reply-to:content-type:content-transfer-encoding:sender;
+        b=MqY3saELe7j5qpDSHEwS3GLvgc+fyn66FzaechM5GEq8VHpoKfFIVK8YD+JkYD+/tU+73zS7DxCOV+ViEx3RrY47tb4WUlQ4ZLlgG/G/OKHbk5usAq6s4Qtzbt7VTVU8G2cKQ7itvbzYDDq7b3HRTbdBDBupzS6PMlfIY3j3Vjs=
+Message-ID: <45C35670.6060406@web.de>
+Date: Fri, 02 Feb 2007 16:19:12 +0100
+From: Markus Wenke <M.Wenke@web.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; de-AT; rv:1.8.1.2pre) Gecko/20070111 SeaMonkey/1.1
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	0.0 UPPERCASE_25_50        message body is 25-50% uppercase
+To: linux-kernel@vger.kernel.org
+Subject: Re: Try to fill route cache
+References: <45C08EA6.9070504@web.de> <p73irekogce.fsf@bingen.suse.de>
+In-Reply-To: <p73irekogce.fsf@bingen.suse.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Feb 2 2007 15:53, Paul Rolland wrote:
+Andi Kleen schrieb:
+> Markus Wenke <M.Wenke@web.de> writes:
+>   
+>> Where is the problem ?
+>>     
 >
->If that is really one important point, why not simply adding a :
->MODULE_IS_UNDER_GPL_LICENSE("yes|no")
->and a
->MODULE_IS_UNDER_GPL_LIKE_LICENSE("yes|no")
+> pktgen doesn't use the routing cache.
 >
->or use 0 and 1 instead of yes and no, and thus clearly avoid all the
->C string mess ?
+>   
+Is there any other chance to test my Application with a stressed route
+cache?
 
-MODULE_IS_UNDER_GPL_LICENSE("yes\0 but only this .c file");
 
+thanks
 
-Jan
--- 
-ft: http://freshmeat.net/p/chaostables/
+Markus
+
