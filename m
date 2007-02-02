@@ -1,71 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423072AbXBBCTx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423074AbXBBCZN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423072AbXBBCTx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Feb 2007 21:19:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030211AbXBBCTx
+	id S1423074AbXBBCZN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Feb 2007 21:25:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423075AbXBBCZN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Feb 2007 21:19:53 -0500
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:57893 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030196AbXBBCTw (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Feb 2007 21:19:52 -0500
-Message-Id: <200702020219.l122J6aE005791@turing-police.cc.vt.edu>
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Trent Waddington <trent.waddington@gmail.com>
-Cc: Tomas Carnecky <tom@dbservice.com>, Jon Masters <jonathan@jonmasters.org>,
-       Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, Alexey Dobriyan <adobriyan@gmail.com>
-Subject: Re: [PATCH] Ban module license tag string termination trick
-In-Reply-To: Your message of "Fri, 02 Feb 2007 10:51:23 +1000."
-             <3d57814d0702011651s5d5f9dafuc26369fab99ad5cf@mail.gmail.com>
-From: Valdis.Kletnieks@vt.edu
-References: <Pine.LNX.4.61.0611011204140.23977@yvahk01.tjqt.qr> <Pine.LNX.4.61.0702012147470.1862@yvahk01.tjqt.qr> <45C2670F.5000003@jonmasters.org> <45C2832F.10603@dbservice.com>
-            <3d57814d0702011651s5d5f9dafuc26369fab99ad5cf@mail.gmail.com>
+	Thu, 1 Feb 2007 21:25:13 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:56574 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1423074AbXBBCZL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Feb 2007 21:25:11 -0500
+Date: Thu, 1 Feb 2007 18:21:47 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Luca Tettamanti <kronos.it@gmail.com>
+Cc: Adrian Bunk <bunk@stusta.de>, Peter Osterlund <petero2@telia.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [2.6.20-rc6] pktcdvd doesn't work
+Message-Id: <20070201182147.2835668e.akpm@osdl.org>
+In-Reply-To: <20070201230752.GA17679@dreamland.darkstar.lan>
+References: <20070130195319.GA10994@dreamland.darkstar.lan>
+	<20070131233044.GX3754@stusta.de>
+	<20070201230752.GA17679@dreamland.darkstar.lan>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1170382746_5349P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Date: Thu, 01 Feb 2007 21:19:06 -0500
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1170382746_5349P
-Content-Type: text/plain; charset=us-ascii
+On Fri, 2 Feb 2007 00:07:52 +0100 Luca Tettamanti <kronos.it@gmail.com> wrote:
 
-On Fri, 02 Feb 2007 10:51:23 +1000, Trent Waddington said:
-> On 2/2/07, Tomas Carnecky <tom@dbservice.com> wrote:
-> > Can't you put this somewhere into the documentation: it's our kernel,
-> > play by our rules, and our rules are, the license is what is visible in
-> > 'printf(license)'?
+> Il Thu, Feb 01, 2007 at 12:30:44AM +0100, Adrian Bunk ha scritto: 
+> > On Tue, Jan 30, 2007 at 08:53:19PM +0100, Luca Tettamanti wrote:
+> > > Hi,
+> > > pktcdvd on kernel 2.6.20-rc6 is not working as expected. Any file that
+> > > is written to the device is lost after umount.
+> > > I rarely use pktcdvd but at some point it used to work on my system.
+> > > 
+> > > This is what I'm doing:
+> > > 
+> > > root@dreamland:/tmp# cdrwtool -d /dev/scd0 -q
+> > > using device /dev/scd0
+> > > 1029KB internal buffer
+> > > setting write speed to 12x
+> > > Settings for /dev/scd0:
+> > >         Fixed packets, size 32
+> > >         Mode-2 disc
+> > >...
+> > 
+> > Does 2.6.20-rc7 work?
+> > If no, does it work after applying the attached patch?
+> > If no, does 2.6.19.2 work?
 > 
-> Here I was thinking the rules were: all modules must be GPL and the
-> jerks who make proprietary modules are just blatantly breaking the
-> law.  But you're right, the MODULE_LICENSE tag really does imply that
-> licenses other than the GPL are ok.
+> Git current + the following patch works.
+> 
+> > diff --git a/drivers/block/pktcdvd.c b/drivers/block/pktcdvd.c
+> > index 6246219..7c95c76 100644
+> > --- a/drivers/block/pktcdvd.c
+> > +++ b/drivers/block/pktcdvd.c
+> > @@ -765,34 +765,47 @@ static inline struct bio *pkt_get_list_first(struct bio **list_head, struct bio
+> >   */
+> >  static int pkt_generic_packet(struct pktcdvd_device *pd, struct packet_command *cgc)
+> >  {
+> > -	request_queue_t *q = bdev_get_queue(pd->bdev);
+> > +	char sense[SCSI_SENSE_BUFFERSIZE];
 
-Given that the definition of "derived work" in the software world is still
-quite squishy and not firmed up, it's not at all clear that proprietary
-modules are "blatantly" breaking the law.  In particular, feel free to
-cite actual statute or case law that proves unequivocally that modules that
-have a GPL shim that interface between the kernel and a binary blob are
-breaking the law.
-
-Hint: first you have to prove that the kernel API doesn't qualify as 'scenes
-a faire' - a tough job when calling a function in any way but the one approved
-one will cause an oops. ;)
-
---==_Exmh_1170382746_5349P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFFwp+acC3lWbTT17ARApkTAKD0uADAZdZpPRFftJK31uX9U3LgfQCg5dkj
-CvX6j4e9ONDna0Z4op1CcX4=
-=cnJK
------END PGP SIGNATURE-----
-
---==_Exmh_1170382746_5349P--
+Where did this patch come from?
