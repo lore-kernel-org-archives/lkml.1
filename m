@@ -1,55 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161141AbXBBQMp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1945971AbXBBQQj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161141AbXBBQMp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Feb 2007 11:12:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161150AbXBBQMp
+	id S1945971AbXBBQQj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Feb 2007 11:16:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945968AbXBBQQj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Feb 2007 11:12:45 -0500
-Received: from main.gmane.org ([80.91.229.2]:41493 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161141AbXBBQMo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Feb 2007 11:12:44 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Bill Davidsen <davidsen@tmr.com>
-Subject: Re: [ANN] Userspace M-on-N threading model implementation. Alpha
- release.
-Date: Fri, 02 Feb 2007 11:12:02 -0500
-Message-ID: <45C362D2.2040407@tmr.com>
-References: <66910A579C9312469A7DF9ADB54A8B7D5C2B90@exchange.ZeugmaSystems.local>
-Mime-Version: 1.0
+	Fri, 2 Feb 2007 11:16:39 -0500
+Received: from mexforward.lss.emc.com ([128.222.32.20]:24477 "EHLO
+	mexforward.lss.emc.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1945965AbXBBQQi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Feb 2007 11:16:38 -0500
+Message-ID: <45C363D3.20809@emc.com>
+Date: Fri, 02 Feb 2007 11:16:19 -0500
+From: Ric Wheeler <ric@emc.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20061206)
+MIME-Version: 1.0
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+CC: Alan <alan@lxorguk.ukuu.org.uk>, Mark Lord <liml@rtr.ca>,
+       linux-kernel@vger.kernel.org,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>
+Subject: Re: [PATCH] scsi_lib.c: continue after MEDIUM_ERROR
+References: <200701301947.08478.liml@rtr.ca>	 <1170206199.10890.13.camel@mulgrave.il.steeleye.com>	 <45C2474E.9030306@rtr.ca>	 <1170366920.3388.62.camel@mulgrave.il.steeleye.com>	 <45C32C7F.9050706@emc.com>  <20070202144211.5a2d2365@localhost.localdomain> <1170428007.3380.4.camel@mulgrave.il.steeleye.com>
+In-Reply-To: <1170428007.3380.4.camel@mulgrave.il.steeleye.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@sea.gmane.org
-Cc: libc-alpha@sources.redhat.com
-X-Gmane-NNTP-Posting-Host: mail.tmr.com
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
-In-Reply-To: <66910A579C9312469A7DF9ADB54A8B7D5C2B90@exchange.ZeugmaSystems.local>
-Cc: linux-kernel@vger.kernel.org
+X-PMX-Version: 4.7.1.128075, Antispam-Engine: 2.5.0.283055, Antispam-Data: 2007.2.2.75433
+X-PerlMx-Spam: Gauge=, SPAM=2%, Reason='EMC_FROM_0+ -2, __CT 0, __CTE 0, __CT_TEXT_PLAIN 0, __HAS_MSGID 0, __MIME_TEXT_ONLY 0, __MIME_VERSION 0, __SANE_MSGID 0, __USER_AGENT 0'
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kaz Kylheku wrote:
-> Evgeniy Polyakov wrote:
->> I described in details why and how M:N model better, and its drawbacks
->> include all issues mentioned by Ulrich Drepper, but nevertheless its
->> advantages are far too superiour than those which can be
->> provided by 1:1
->> model.
-> 
-> M:N threading is an unnecessary performance hack that's needed by people
-> who are living in a C or C++ exile away from some language that has
-> lexical closures, generators or first-class continuations.
 
-Yes, that's called the "real world." Arguments of the "I don't need it, 
-in a perfect world you wouldn't either, therefore it's a bad idea" type 
-simply contribute nothing.
 
-Because user threading can avoid context switches, there will always be 
-cases where it will outperform o/s threads for hardware reasons.
+James Bottomley wrote:
+> On Fri, 2007-02-02 at 14:42 +0000, Alan wrote:
+>   
+>>> The interesting point of this question is about the typically pattern of 
+>>> IO errors. On a read, it is safe to assume that you will have issues 
+>>> with some bounded numbers of adjacent sectors.
+>>>       
+>> Which in theory you can get by asking the drive for the real sector size
+>> from the ATA7 info. (We ought to dig this out more as its relevant for
+>> partition layout too).
+>>     
 
--- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+Actually, my point is that damage typically impacts a cluster of disk 
+sectors that are adjacent. Think of a drive that has junk on the platter 
+or a some such thing - the contamination is likely to be localized.
+>>     
+>>> I really like the idea of being able to set this kind of policy on a per 
+>>> drive instance since what you want here will change depending on what 
+>>> your system requirements are, what the system is trying to do (i.e., 
+>>> when trying to recover a failing but not dead yet disk, IO errors should 
+>>> be as quick as possible and we should choose an IO scheduler that does 
+>>> not combine IO's).
+>>>       
+>> That seems to be arguing for a bounded "live" time including retry run
+>> time for a command. That's also more intuitive for real time work and for
+>> end user setup. "Either work or fail within n seconds"
+>>     
+>
+> Actually, then I think perhaps we use the allowed retries for this ...
+>   
+I really am not a big retry fan for most modern drives - the drive will 
+try really, really hard to complete an IO for us and multiple retries 
+can just slow down the higher level application from recovering.
+> So you would fail a single sector and count it against the retries.
+> When you've done this allowed retries times, you fail the rest of the
+> request.
+>
+> James
+>
+>   
+I think that we need to play with some of these possible solutions on 
+some  real-world bad drives and see how they react. 
+
+We should definitely talk more about this at the workshop ;-)
+
+ric
 
