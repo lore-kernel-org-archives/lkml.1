@@ -1,75 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932823AbXBBK6u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751916AbXBBLEu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932823AbXBBK6u (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Feb 2007 05:58:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933316AbXBBK6u
+	id S1751916AbXBBLEu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Feb 2007 06:04:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751945AbXBBLEu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Feb 2007 05:58:50 -0500
-Received: from ns.suse.de ([195.135.220.2]:57822 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932823AbXBBK6u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Feb 2007 05:58:50 -0500
-From: Oliver Neukum <oneukum@suse.de>
-Organization: Novell
-To: Oleg Verych <olecom@flower.upol.cz>,
-       Pekka J Enberg <penberg@cs.helsinki.fi>, lirc@bartelmus.de
-Subject: Re: lirc: igorplususb error handling cleanup
-Date: Fri, 2 Feb 2007 11:58:19 +0100
-User-Agent: KMail/1.9.1
-Cc: linux-kernel@vger.kernel.org
-References: <Pine.LNX.4.64.0702021113160.22862@sbz-30.cs.Helsinki.FI> <slrnes64tk.m64.olecom@flower.upol.cz>
-In-Reply-To: <slrnes64tk.m64.olecom@flower.upol.cz>
+	Fri, 2 Feb 2007 06:04:50 -0500
+Received: from ug-out-1314.google.com ([66.249.92.171]:27219 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751916AbXBBLEt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Feb 2007 06:04:49 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=SveR4OeuVStORxcRzdu7aWIjo0MmHrjn6Gr5kxCwGZ6R1e+MRYvU9N2o3WRkUM+tPIcgw7fevvodO/xjut7uP4NSheaTGHltUI400e6c5RnNgswhfiCOGx3MUw8yYYI+xpl55JVpN663g/hK3YjGwRmXvNHrUTyC4veJhWzaZfs=
+Message-ID: <65258a580702020304m52283349ne4ba2895d9ce7188@mail.gmail.com>
+Date: Fri, 2 Feb 2007 12:04:47 +0100
+From: "Vincent Vanackere" <vincent.vanackere@gmail.com>
+To: "Pekka J Enberg" <penberg@cs.helsinki.fi>
+Subject: Re: [PATCH] lirc: remove backwards compatibility macro obfuscation (Was: Free Linux Driver Development!)
+Cc: lirc@bartelmus.de, linux-kernel@vger.kernel.org,
+       linux-input@atrey.karlin.mff.cuni.cz
+In-Reply-To: <Pine.LNX.4.64.0702021038270.21422@sbz-30.cs.Helsinki.FI>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200702021158.19514.oneukum@suse.de>
+References: <Pine.LNX.4.64.0702021038270.21422@sbz-30.cs.Helsinki.FI>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 2/2/07, Pekka J Enberg <penberg@cs.helsinki.fi> wrote:
+> From: Pekka Enberg <penberg@cs.helsinki.fi>
+>  [...]
+>  drivers/lirc_atiusb/lirc_atiusb.c           |  102 -----------------
+                              ^^^^^^^^^^^^^^
 
-> > -	/* allocate kernel memory */
-> > -	mem_failure = 0;
-> > -	if (!(ir = kmalloc(sizeof(struct irctl), GFP_KERNEL))) {
-> > -		mem_failure = 1;
-> > -	} else {
-> > -		memset(ir, 0, sizeof(struct irctl));
-> > -
-> > -		if (!(plugin = kmalloc(sizeof(struct lirc_plugin), GFP_KERNEL))) {
-> > -			mem_failure = 2;
-> > -		} else if (!(rbuf = kmalloc(sizeof(struct lirc_buffer), GFP_KERNEL))) {
-> > -			mem_failure = 3;
-> 
-> If size of all structs, allocated here is 3-4 pages (say, 4096 bytes
-> one), then, i think something like, allocating all at once may be
-> utilized:
-> 
-> ,-*-
-> |struct ir_stuff_t {
-> |       struct irctl *ir;
-> |       struct lirc_plugin *plugin;
-> |       struct lirc_buffer *rbuf;
+ I may be mistaken, but the lirc_atiusb module looks redondant with
+the driver already in drivers/usb/input/ati_remote.c.
+Moreover, I was under the impression that the input layer was
+currently considered the "right way" to implement the kernel side lirc
+needs (AFAICT the lircd daemon is already able to handle events from
+the input layer).
 
-I guess you mean 
-struct lirc_buffer rbuf;
-without the "*"
+So I'm wondering : in view of a kernel merge, wouldn't it be better
+for the lirc drivers to be ported to the input layer (linux-input ML
+in cc:) ?
 
-> |} ir_stuff;
-> |
-> |ir_stuff = kzalloc(...);
-> |
-> |if(!ir_stuff)
-> |       error;
-> `-*-       
-> 
-> then join buffer init, usb init together and final register, after
-> it. Thus to have second erroneous path.
+Regards,
 
-If I understand this code correctly the allocated buffers end up as
-buffers used in URBs. If that is the case you must allocate each of
-them separately with kmalloc() or usb_alloc_buffer() or you violate
-DMA constraints on non-coherent architectures (eg. ppc)
-
-	Regards
-		Oliver
+Vincent
