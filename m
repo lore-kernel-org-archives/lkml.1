@@ -1,60 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933387AbXBBMvn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423050AbXBBNJt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933387AbXBBMvn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Feb 2007 07:51:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933390AbXBBMvn
+	id S1423050AbXBBNJt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Feb 2007 08:09:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423048AbXBBNJt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Feb 2007 07:51:43 -0500
-Received: from rzcomm12.rz.tu-bs.de ([134.169.9.59]:62568 "EHLO
-	rzcomm12.rz.tu-bs.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933387AbXBBMvn (ORCPT
+	Fri, 2 Feb 2007 08:09:49 -0500
+Received: from 147.175.241.83.in-addr.dgcsystems.net ([83.241.175.147]:13009
+	"EHLO tmnt04.transmode.se" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1423039AbXBBNJs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Feb 2007 07:51:43 -0500
-Message-ID: <45C333D7.3000205@l4x.org>
-Date: Fri, 02 Feb 2007 13:51:35 +0100
-From: Jan Dittmer <jdi@l4x.org>
-User-Agent: Thunderbird 2.0pre (Windows/20070130)
-MIME-Version: 1.0
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-CC: lirc@bartelmus.de, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] lirc: remove backwards compatibility macro obfuscation
- (Was: Free Linux Driver Development!)
-References: <Pine.LNX.4.64.0702021038270.21422@sbz-30.cs.Helsinki.FI>	 <45C31C19.5040200@l4x.org> <84144f020702020332wee0aa69v19d09768f5643779@mail.gmail.com>
-In-Reply-To: <84144f020702020332wee0aa69v19d09768f5643779@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 2 Feb 2007 08:09:48 -0500
+Subject: [PATCH]ip_auto_config bug in 2.6.20-rc6
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Reply-To: joakim.tjernlund@transmode.se
+To: Netdev <netdev@vger.kernel.org>
+Cc: Linux-Kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <1170329187.15627.11.camel@gentoo-jocke.transmode.se>
+References: <1170329187.15627.11.camel@gentoo-jocke.transmode.se>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Organization: Transmode AB
+Date: Fri, 02 Feb 2007 14:09:43 +0100
+Message-Id: <1170421783.15627.23.camel@gentoo-jocke.transmode.se>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pekka Enberg wrote:
-> On 2/2/07, Jan Dittmer <jdi@l4x.org> wrote:
->> Pekka, it would be better if you could sort out most of the
->> basic issues with lirc directly with the developers of lirc
->> and then prepare a complete patch series and post that to
->> lkml. Incrementally adding one driver after another. Posting
->> patches to non-existent sources to lkml is pointless. First
->> create a discussion base, please.
+On Thu, 2007-02-01 at 12:26 +0100, Joakim Tjernlund wrote:
+> The following commandline:
+>  root=/dev/mtdblock6 rw rootfstype=jffs2 ip=192.168.1.10:::255.255.255.0:localhost.localdomain:eth1:off console=ttyS0,115200
+> makes ip_auto_config fall back to DHCP and complain "IP-Config: Incomplete network configuration information."
+> depending on if CONFIG_IP_PNP_DHCP is set or not.
 > 
-> What discussion base? You need to get rid of the cruft anyway and now
-> you have patch to do that. I am not volunteering to sort out _all_ the
-> issues.
+> The only way I can make ip_auto_config accept my IP config is to add an entry for the server IP:
+> ip=192.168.1.10:192.168.1.15::255.255.255.0:localhost.localdomain:eth1:off
+> 
+> I think this is a bug since I am not using a NFS root FS.
+> 
+>  Jocke
 
-I really really welcome your efforts - no doubt.
+The following patch fixes the above problem. This change was present in
+2.4 but has been removed from 2.6, dunno why.
 
-I wanted to express that the patches you posted are simply not
-suitable for lkml discussion as there was no full patchset for
-lirc for review posted, prior to your patches.
+Signed-off-by: Joakim Tjernlund <joakim.tjernlund@transmode.se>
 
-Normal process for new features (and lirc is a new feature so
-far lkml is concerned) is like (as I understand it):
-  1. post full patchset
-  2. duck
-  3. receive criticism & patches
-  4. integrate results from 3
-  5. goto 1
-You started at 3. It would be better to start with the whole
-picture at 1.
+diff --git a/net/ipv4/ipconfig.c b/net/ipv4/ipconfig.c
+index 9f245de..b90479c 100644
+--- a/net/ipv4/ipconfig.c
++++ b/net/ipv4/ipconfig.c
+@@ -1282,7 +1282,8 @@ static int __init ip_auto_config(void)
+ #ifdef CONFIG_ROOT_NFS
+ 	    (MAJOR(ROOT_DEV) == UNNAMED_MAJOR
+ 	     && root_server_addr == NONE
+-	     && ic_servaddr == NONE) ||
++	     && ic_servaddr == NONE
++	     && ROOT_DEV == Root_NFS) ||
+ #endif
+ 	    ic_first_dev->next) {
+ #ifdef IPCONFIG_DYNAMIC
 
-I hope I made myself clearer now.
 
-Jan
