@@ -1,361 +1,197 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422952AbXBBEkr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965375AbXBBEkr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422952AbXBBEkr (ORCPT <rfc822;w@1wt.eu>);
+	id S965375AbXBBEkr (ORCPT <rfc822;w@1wt.eu>);
 	Thu, 1 Feb 2007 23:40:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422961AbXBBEkq
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422995AbXBBEkr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Feb 2007 23:40:46 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:51857 "EHLO mx2.suse.de"
+	Thu, 1 Feb 2007 23:40:47 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:51827 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965384AbXBBEkg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Feb 2007 23:40:36 -0500
+	id S965375AbXBBEkP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Feb 2007 23:40:15 -0500
 From: NeilBrown <neilb@suse.de>
 To: Andrew Morton <akpm@osdl.org>
-Date: Fri, 2 Feb 2007 15:40:07 +1100
-Message-Id: <1070202044007.19031@suse.de>
+Date: Fri, 2 Feb 2007 15:39:47 +1100
+Message-Id: <1070202043947.18952@suse.de>
 X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
 	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
 	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Cc: nfs@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: [PATCH 006 of 14] knfsd: SUNRPC: Add a function to format the address in an svc_rqst for printing
+Subject: [PATCH 002 of 14] knfsd: SUNRPC: allow creating an RPC service without registering with portmapper
 References: <20070202153531.18622.patches@notabene>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 From: Chuck Lever <chuck.lever@oracle.com>
-There are loads of places where the RPC server assumes that the rq_addr
-fields contains an IPv4 address.  Top among these are error and debugging
-messages that display the server's IP address.
+Sometimes we need to create an RPC service but not register it with the
+local portmapper.  NFSv4 delegation callback, for example.
 
-Let's refactor the address printing into a separate function that's smart
-enough to figure out the difference between IPv4 and IPv6 addresses.
+Change the svc_makesock() API to allow optionally creating temporary or
+permanent sockets, optionally registering with the local portmapper, and
+make it return the ephemeral port of the new socket.
 
 Signed-off-by: Chuck Lever <chuck.lever@oracle.com>
 Cc: Aurelien Charbon <aurelien.charbon@ext.bull.net>
 Signed-off-by: Neil Brown <neilb@suse.de>
 
 ### Diffstat output
- ./fs/lockd/svc.c             |    6 +--
- ./fs/lockd/svc4proc.c        |    7 +--
- ./fs/lockd/svcproc.c         |    7 +--
- ./fs/nfs/callback.c          |   12 ++++--
- ./fs/nfsd/nfsfh.c            |    7 ++-
- ./fs/nfsd/nfsproc.c          |    7 ++-
- ./include/linux/sunrpc/svc.h |    3 +
- ./net/sunrpc/svcsock.c       |   80 +++++++++++++++++++++++++++++++------------
- 8 files changed, 88 insertions(+), 41 deletions(-)
-
-diff .prev/fs/lockd/svc4proc.c ./fs/lockd/svc4proc.c
---- .prev/fs/lockd/svc4proc.c	2007-02-02 15:15:10.000000000 +1100
-+++ ./fs/lockd/svc4proc.c	2007-02-02 15:22:31.000000000 +1100
-@@ -426,10 +426,9 @@ nlm4svc_proc_sm_notify(struct svc_rqst *
- 	dprintk("lockd: SM_NOTIFY     called\n");
- 	if (saddr.sin_addr.s_addr != htonl(INADDR_LOOPBACK)
- 	 || ntohs(saddr.sin_port) >= 1024) {
--		printk(KERN_WARNING
--			"lockd: rejected NSM callback from %08x:%d\n",
--			ntohl(rqstp->rq_addr.sin_addr.s_addr),
--			ntohs(rqstp->rq_addr.sin_port));
-+		char buf[RPC_MAX_ADDRBUFLEN];
-+		printk(KERN_WARNING "lockd: rejected NSM callback from %s\n",
-+				svc_print_addr(rqstp, buf, sizeof(buf)));
- 		return rpc_system_err;
- 	}
- 
+ ./fs/lockd/svc.c                 |   26 ++++++++++++++++----------
+ ./fs/nfs/callback.c              |   20 +++++++++-----------
+ ./fs/nfsd/nfssvc.c               |    6 ++++--
+ ./include/linux/sunrpc/svcsock.h |    2 +-
+ ./net/sunrpc/svcsock.c           |    6 ++++--
+ 5 files changed, 34 insertions(+), 26 deletions(-)
 
 diff .prev/fs/lockd/svc.c ./fs/lockd/svc.c
---- .prev/fs/lockd/svc.c	2007-02-02 15:15:10.000000000 +1100
-+++ ./fs/lockd/svc.c	2007-02-02 15:22:31.000000000 +1100
-@@ -141,6 +141,7 @@ lockd(struct svc_rqst *rqstp)
- 	 */
- 	while ((nlmsvc_users || !signalled()) && nlmsvc_pid == current->pid) {
- 		long timeout = MAX_SCHEDULE_TIMEOUT;
-+		char buf[RPC_MAX_ADDRBUFLEN];
+--- .prev/fs/lockd/svc.c	2007-02-02 14:31:52.000000000 +1100
++++ ./fs/lockd/svc.c	2007-02-02 14:40:41.000000000 +1100
+@@ -223,23 +223,29 @@ static int find_socket(struct svc_serv *
+ 	return found;
+ }
  
- 		if (signalled()) {
- 			flush_signals(current);
-@@ -175,11 +176,10 @@ lockd(struct svc_rqst *rqstp)
- 			break;
- 		}
- 
--		dprintk("lockd: request from %08x\n",
--			(unsigned)ntohl(rqstp->rq_addr.sin_addr.s_addr));
-+		dprintk("lockd: request from %s\n",
-+				svc_print_addr(rqstp, buf, sizeof(buf)));
- 
- 		svc_process(rqstp);
--
- 	}
- 
- 	flush_signals(current);
-
-diff .prev/fs/lockd/svcproc.c ./fs/lockd/svcproc.c
---- .prev/fs/lockd/svcproc.c	2007-02-02 15:15:10.000000000 +1100
-+++ ./fs/lockd/svcproc.c	2007-02-02 15:22:31.000000000 +1100
-@@ -457,10 +457,9 @@ nlmsvc_proc_sm_notify(struct svc_rqst *r
- 	dprintk("lockd: SM_NOTIFY     called\n");
- 	if (saddr.sin_addr.s_addr != htonl(INADDR_LOOPBACK)
- 	 || ntohs(saddr.sin_port) >= 1024) {
--		printk(KERN_WARNING
--			"lockd: rejected NSM callback from %08x:%d\n",
--			ntohl(rqstp->rq_addr.sin_addr.s_addr),
--			ntohs(rqstp->rq_addr.sin_port));
-+		char buf[RPC_MAX_ADDRBUFLEN];
-+		printk(KERN_WARNING "lockd: rejected NSM callback from %s\n",
-+				svc_print_addr(rqstp, buf, sizeof(buf)));
- 		return rpc_system_err;
- 	}
- 
++/*
++ * Make any sockets that are needed but not present.
++ * If nlm_udpport or nlm_tcpport were set as module
++ * options, make those sockets unconditionally
++ */
+ static int make_socks(struct svc_serv *serv, int proto)
+ {
+-	/* Make any sockets that are needed but not present.
+-	 * If nlm_udpport or nlm_tcpport were set as module
+-	 * options, make those sockets unconditionally
+-	 */
+-	static int		warned;
++	static int warned;
+ 	int err = 0;
++
+ 	if (proto == IPPROTO_UDP || nlm_udpport)
+ 		if (!find_socket(serv, IPPROTO_UDP))
+-			err = svc_makesock(serv, IPPROTO_UDP, nlm_udpport);
+-	if (err == 0 && (proto == IPPROTO_TCP || nlm_tcpport))
++			err = svc_makesock(serv, IPPROTO_UDP, nlm_udpport,
++						SVC_SOCK_DEFAULTS);
++	if (err >= 0 && (proto == IPPROTO_TCP || nlm_tcpport))
+ 		if (!find_socket(serv, IPPROTO_TCP))
+-			err= svc_makesock(serv, IPPROTO_TCP, nlm_tcpport);
+-	if (!err)
++			err = svc_makesock(serv, IPPROTO_TCP, nlm_tcpport,
++						SVC_SOCK_DEFAULTS);
++
++	if (err >= 0) {
+ 		warned = 0;
+-	else if (warned++ == 0)
++		err = 0;
++	} else if (warned++ == 0)
+ 		printk(KERN_WARNING
+ 		       "lockd_up: makesock failed, error=%d\n", err);
+ 	return err;
 
 diff .prev/fs/nfs/callback.c ./fs/nfs/callback.c
---- .prev/fs/nfs/callback.c	2007-02-02 15:15:10.000000000 +1100
-+++ ./fs/nfs/callback.c	2007-02-02 15:22:31.000000000 +1100
-@@ -71,6 +71,8 @@ static void nfs_callback_svc(struct svc_
- 	complete(&nfs_callback_info.started);
- 
- 	for(;;) {
-+		char buf[RPC_MAX_ADDRBUFLEN];
-+
- 		if (signalled()) {
- 			if (nfs_callback_info.users == 0)
- 				break;
-@@ -88,8 +90,8 @@ static void nfs_callback_svc(struct svc_
- 					__FUNCTION__, -err);
- 			break;
- 		}
--		dprintk("%s: request from %u.%u.%u.%u\n", __FUNCTION__,
--				NIPQUAD(rqstp->rq_addr.sin_addr.s_addr));
-+		dprintk("%s: request from %s\n", __FUNCTION__,
-+				svc_print_addr(rqstp, buf, sizeof(buf)));
- 		svc_process(rqstp);
- 	}
- 
-@@ -166,13 +168,17 @@ static int nfs_callback_authenticate(str
+--- .prev/fs/nfs/callback.c	2007-02-02 14:31:52.000000000 +1100
++++ ./fs/nfs/callback.c	2007-02-02 14:40:41.000000000 +1100
+@@ -106,7 +106,6 @@ static void nfs_callback_svc(struct svc_
+ int nfs_callback_up(void)
  {
- 	struct sockaddr_in *addr = &rqstp->rq_addr;
- 	struct nfs_client *clp;
-+	char buf[RPC_MAX_ADDRBUFLEN];
+ 	struct svc_serv *serv;
+-	struct svc_sock *svsk;
+ 	int ret = 0;
  
- 	/* Don't talk to strangers */
- 	clp = nfs_find_client(addr, 4);
- 	if (clp == NULL)
- 		return SVC_DROP;
--	dprintk("%s: %u.%u.%u.%u NFSv4 callback!\n", __FUNCTION__, NIPQUAD(addr->sin_addr));
+ 	lock_kernel();
+@@ -119,17 +118,14 @@ int nfs_callback_up(void)
+ 	ret = -ENOMEM;
+ 	if (!serv)
+ 		goto out_err;
+-	/* FIXME: We don't want to register this socket with the portmapper */
+-	ret = svc_makesock(serv, IPPROTO_TCP, nfs_callback_set_tcpport);
+-	if (ret < 0)
 +
-+	dprintk("%s: %s NFSv4 callback!\n", __FUNCTION__,
-+			svc_print_addr(rqstp, buf, sizeof(buf)));
- 	nfs_put_client(clp);
++	ret = svc_makesock(serv, IPPROTO_TCP, nfs_callback_set_tcpport,
++							SVC_SOCK_ANONYMOUS);
++	if (ret <= 0)
+ 		goto out_destroy;
+-	if (!list_empty(&serv->sv_permsocks)) {
+-		svsk = list_entry(serv->sv_permsocks.next,
+-				struct svc_sock, sk_list);
+-		nfs_callback_tcpport = ntohs(inet_sk(svsk->sk_sk)->sport);
+-		dprintk ("Callback port = 0x%x\n", nfs_callback_tcpport);
+-	} else
+-		BUG();
++	nfs_callback_tcpport = ret;
++	dprintk("Callback port = 0x%x\n", nfs_callback_tcpport);
 +
- 	switch (rqstp->rq_authop->flavour) {
- 		case RPC_AUTH_NULL:
- 			if (rqstp->rq_proc != CB_NULL)
+ 	ret = svc_create_thread(nfs_callback_svc, serv);
+ 	if (ret < 0)
+ 		goto out_destroy;
+@@ -140,6 +136,8 @@ out:
+ 	unlock_kernel();
+ 	return ret;
+ out_destroy:
++	dprintk("Couldn't create callback socket or server thread; err = %d\n",
++		ret);
+ 	svc_destroy(serv);
+ out_err:
+ 	nfs_callback_info.users--;
 
-diff .prev/fs/nfsd/nfsfh.c ./fs/nfsd/nfsfh.c
---- .prev/fs/nfsd/nfsfh.c	2007-02-02 15:15:10.000000000 +1100
-+++ ./fs/nfsd/nfsfh.c	2007-02-02 15:22:31.000000000 +1100
-@@ -19,6 +19,7 @@
- #include <linux/mount.h>
- #include <asm/pgtable.h>
+diff .prev/fs/nfsd/nfssvc.c ./fs/nfsd/nfssvc.c
+--- .prev/fs/nfsd/nfssvc.c	2007-02-02 14:31:52.000000000 +1100
++++ ./fs/nfsd/nfssvc.c	2007-02-02 14:40:41.000000000 +1100
+@@ -235,7 +235,8 @@ static int nfsd_init_socks(int port)
  
-+#include <linux/sunrpc/clnt.h>
- #include <linux/sunrpc/svc.h>
- #include <linux/nfsd/nfsd.h>
- 
-@@ -179,10 +180,10 @@ fh_verify(struct svc_rqst *rqstp, struct
- 		/* Check if the request originated from a secure port. */
- 		error = nfserr_perm;
- 		if (!rqstp->rq_secure && EX_SECURE(exp)) {
-+			char buf[RPC_MAX_ADDRBUFLEN];
- 			printk(KERN_WARNING
--			       "nfsd: request from insecure port (%u.%u.%u.%u:%d)!\n",
--			       NIPQUAD(rqstp->rq_addr.sin_addr.s_addr),
--			       ntohs(rqstp->rq_addr.sin_port));
-+			       "nfsd: request from insecure port %s!\n",
-+			       svc_print_addr(rqstp, buf, sizeof(buf)));
- 			goto out;
- 		}
- 
-
-diff .prev/fs/nfsd/nfsproc.c ./fs/nfsd/nfsproc.c
---- .prev/fs/nfsd/nfsproc.c	2007-02-02 15:15:10.000000000 +1100
-+++ ./fs/nfsd/nfsproc.c	2007-02-02 15:22:31.000000000 +1100
-@@ -19,6 +19,7 @@
- #include <linux/unistd.h>
- #include <linux/slab.h>
- 
-+#include <linux/sunrpc/clnt.h>
- #include <linux/sunrpc/svc.h>
- #include <linux/nfsd/nfsd.h>
- #include <linux/nfsd/cache.h>
-@@ -147,10 +148,10 @@ nfsd_proc_read(struct svc_rqst *rqstp, s
- 	 */
- 
- 	if (NFSSVC_MAXBLKSIZE_V2 < argp->count) {
-+		char buf[RPC_MAX_ADDRBUFLEN];
- 		printk(KERN_NOTICE
--			"oversized read request from %u.%u.%u.%u:%d (%d bytes)\n",
--				NIPQUAD(rqstp->rq_addr.sin_addr.s_addr),
--				ntohs(rqstp->rq_addr.sin_port),
-+			"oversized read request from %s (%d bytes)\n",
-+				svc_print_addr(rqstp, buf, sizeof(buf)),
- 				argp->count);
- 		argp->count = NFSSVC_MAXBLKSIZE_V2;
+ 	error = lockd_up(IPPROTO_UDP);
+ 	if (error >= 0) {
+-		error = svc_makesock(nfsd_serv, IPPROTO_UDP, port);
++		error = svc_makesock(nfsd_serv, IPPROTO_UDP, port,
++					SVC_SOCK_DEFAULTS);
+ 		if (error < 0)
+ 			lockd_down();
+ 	}
+@@ -245,7 +246,8 @@ static int nfsd_init_socks(int port)
+ #ifdef CONFIG_NFSD_TCP
+ 	error = lockd_up(IPPROTO_TCP);
+ 	if (error >= 0) {
+-		error = svc_makesock(nfsd_serv, IPPROTO_TCP, port);
++		error = svc_makesock(nfsd_serv, IPPROTO_TCP, port,
++					SVC_SOCK_DEFAULTS);
+ 		if (error < 0)
+ 			lockd_down();
  	}
 
-diff .prev/include/linux/sunrpc/svc.h ./include/linux/sunrpc/svc.h
---- .prev/include/linux/sunrpc/svc.h	2007-02-02 15:15:10.000000000 +1100
-+++ ./include/linux/sunrpc/svc.h	2007-02-02 15:22:31.000000000 +1100
-@@ -368,5 +368,8 @@ int		   svc_register(struct svc_serv *, 
- void		   svc_wake_up(struct svc_serv *);
- void		   svc_reserve(struct svc_rqst *rqstp, int space);
- struct svc_pool *  svc_pool_for_cpu(struct svc_serv *serv, int cpu);
-+char *		   svc_print_addr(struct svc_rqst *, char *, size_t);
-+
-+#define	RPC_MAX_ADDRBUFLEN	(63U)
- 
- #endif /* SUNRPC_SVC_H */
+diff .prev/include/linux/sunrpc/svcsock.h ./include/linux/sunrpc/svcsock.h
+--- .prev/include/linux/sunrpc/svcsock.h	2007-02-02 14:39:07.000000000 +1100
++++ ./include/linux/sunrpc/svcsock.h	2007-02-02 14:40:41.000000000 +1100
+@@ -62,7 +62,7 @@ struct svc_sock {
+ /*
+  * Function prototypes.
+  */
+-int		svc_makesock(struct svc_serv *, int, unsigned short);
++int		svc_makesock(struct svc_serv *, int, unsigned short, int flags);
+ void		svc_delete_socket(struct svc_sock *);
+ int		svc_recv(struct svc_rqst *, long);
+ int		svc_send(struct svc_rqst *);
 
 diff .prev/net/sunrpc/svcsock.c ./net/sunrpc/svcsock.c
---- .prev/net/sunrpc/svcsock.c	2007-02-02 15:22:22.000000000 +1100
-+++ ./net/sunrpc/svcsock.c	2007-02-02 15:22:31.000000000 +1100
-@@ -41,6 +41,7 @@
- #include <asm/ioctls.h>
+--- .prev/net/sunrpc/svcsock.c	2007-02-02 14:39:07.000000000 +1100
++++ ./net/sunrpc/svcsock.c	2007-02-02 14:40:41.000000000 +1100
+@@ -1665,9 +1665,11 @@ svc_delete_socket(struct svc_sock *svsk)
+  * @serv: RPC server structure
+  * @protocol: transport protocol to use
+  * @port: port to use
++ * @flags: requested socket characteristics
+  *
+  */
+-int svc_makesock(struct svc_serv *serv, int protocol, unsigned short port)
++int svc_makesock(struct svc_serv *serv, int protocol, unsigned short port,
++			int flags)
+ {
+ 	struct sockaddr_in sin = {
+ 		.sin_family		= AF_INET,
+@@ -1676,7 +1678,7 @@ int svc_makesock(struct svc_serv *serv, 
+ 	};
  
- #include <linux/sunrpc/types.h>
-+#include <linux/sunrpc/clnt.h>
- #include <linux/sunrpc/xdr.h>
- #include <linux/sunrpc/svcsock.h>
- #include <linux/sunrpc/stats.h>
-@@ -114,6 +115,41 @@ static inline void svc_reclassify_socket
+ 	dprintk("svc: creating socket proto = %d\n", protocol);
+-	return svc_create_socket(serv, protocol, &sin, SVC_SOCK_DEFAULTS);
++	return svc_create_socket(serv, protocol, &sin, flags);
  }
- #endif
  
-+static char *__svc_print_addr(struct sockaddr *addr, char *buf, size_t len)
-+{
-+	switch (addr->sa_family) {
-+	case AF_INET:
-+		snprintf(buf, len, "%u.%u.%u.%u, port=%u",
-+			NIPQUAD(((struct sockaddr_in *) addr)->sin_addr),
-+			htons(((struct sockaddr_in *) addr)->sin_port));
-+		break;
-+#if defined(CONFIG_IPV6) || defined(CONFIG_IPV6_MODULE)
-+	case AF_INET6:
-+		snprintf(buf, len, "%x:%x:%x:%x:%x:%x:%x:%x, port=%u",
-+			NIP6(((struct sockaddr_in6 *) addr)->sin6_addr),
-+			htons(((struct sockaddr_in6 *) addr)->sin6_port));
-+		break;
-+#endif
-+	default:
-+		snprintf(buf, len, "unknown address type: %d", addr->sa_family);
-+		break;
-+	}
-+	return buf;
-+}
-+
-+/**
-+ * svc_print_addr - Format rq_addr field for printing
-+ * @rqstp: svc_rqst struct containing address to print
-+ * @buf: target buffer for formatted address
-+ * @len: length of target buffer
-+ *
-+ */
-+char *svc_print_addr(struct svc_rqst *rqstp, char *buf, size_t len)
-+{
-+	return __svc_print_addr((struct sockaddr *) &rqstp->rq_addr, buf, len);
-+}
-+EXPORT_SYMBOL_GPL(svc_print_addr);
-+
  /*
-  * Queue up an idle server thread.  Must have pool->sp_lock held.
-  * Note: this is really a stack rather than a queue, so that we only
-@@ -421,6 +457,7 @@ svc_sendto(struct svc_rqst *rqstp, struc
- 	size_t		base = xdr->page_base;
- 	unsigned int	pglen = xdr->page_len;
- 	unsigned int	flags = MSG_MORE;
-+	char		buf[RPC_MAX_ADDRBUFLEN];
- 
- 	slen = xdr->len;
- 
-@@ -483,9 +520,9 @@ svc_sendto(struct svc_rqst *rqstp, struc
- 			len += result;
- 	}
- out:
--	dprintk("svc: socket %p sendto([%p %Zu... ], %d) = %d (addr %x)\n",
--			rqstp->rq_sock, xdr->head[0].iov_base, xdr->head[0].iov_len, xdr->len, len,
--		rqstp->rq_addr.sin_addr.s_addr);
-+	dprintk("svc: socket %p sendto([%p %Zu... ], %d) = %d (addr %s)\n",
-+		rqstp->rq_sock, xdr->head[0].iov_base, xdr->head[0].iov_len,
-+		xdr->len, len, svc_print_addr(rqstp, buf, sizeof(buf)));
- 
- 	return len;
- }
-@@ -865,6 +902,7 @@ svc_tcp_accept(struct svc_sock *svsk)
- 	struct socket	*newsock;
- 	struct svc_sock	*newsvsk;
- 	int		err, slen;
-+	char		buf[RPC_MAX_ADDRBUFLEN];
- 
- 	dprintk("svc: tcp_accept %p sock %p\n", svsk, sock);
- 	if (!sock)
-@@ -895,18 +933,19 @@ svc_tcp_accept(struct svc_sock *svsk)
- 	}
- 
- 	/* Ideally, we would want to reject connections from unauthorized
--	 * hosts here, but when we get encription, the IP of the host won't
--	 * tell us anything. For now just warn about unpriv connections.
-+	 * hosts here, but when we get encryption, the IP of the host won't
-+	 * tell us anything.  For now just warn about unpriv connections.
- 	 */
- 	if (ntohs(sin.sin_port) >= 1024) {
- 		dprintk(KERN_WARNING
--			"%s: connect from unprivileged port: %u.%u.%u.%u:%d\n",
--			serv->sv_name, 
--			NIPQUAD(sin.sin_addr.s_addr), ntohs(sin.sin_port));
--	}
--
--	dprintk("%s: connect from %u.%u.%u.%u:%04x\n", serv->sv_name,
--			NIPQUAD(sin.sin_addr.s_addr), ntohs(sin.sin_port));
-+			"%s: connect from unprivileged port: %s\n",
-+			serv->sv_name,
-+			__svc_print_addr((struct sockaddr *) &sin, buf,
-+								sizeof(buf)));
-+	}
-+	dprintk("%s: connect from %s\n", serv->sv_name,
-+		__svc_print_addr((struct sockaddr *) &sin, buf,
-+				 sizeof(buf)));
- 
- 	/* make sure that a write doesn't block forever when
- 	 * low on memory
-@@ -942,11 +981,9 @@ svc_tcp_accept(struct svc_sock *svsk)
- 					"sockets, consider increasing the "
- 					"number of nfsd threads\n",
- 						   serv->sv_name);
--				printk(KERN_NOTICE "%s: last TCP connect from "
--					"%u.%u.%u.%u:%d\n",
--					serv->sv_name,
--					NIPQUAD(sin.sin_addr.s_addr),
--					ntohs(sin.sin_port));
-+				printk(KERN_NOTICE
-+				       "%s: last TCP connect from %s\n",
-+				       serv->sv_name, buf);
- 			}
- 			/*
- 			 * Always select the oldest socket. It's not fair,
-@@ -1573,11 +1610,12 @@ static int svc_create_socket(struct svc_
- 	struct socket	*sock;
- 	int		error;
- 	int		type;
-+	char		buf[RPC_MAX_ADDRBUFLEN];
- 
--	dprintk("svc: svc_create_socket(%s, %d, %u.%u.%u.%u:%d)\n",
--				serv->sv_program->pg_name, protocol,
--				NIPQUAD(sin->sin_addr.s_addr),
--				ntohs(sin->sin_port));
-+	dprintk("svc: svc_create_socket(%s, %d, %s)\n",
-+			serv->sv_program->pg_name, protocol,
-+			__svc_print_addr((struct sockaddr *) sin, buf,
-+								sizeof(buf)));
- 
- 	if (protocol != IPPROTO_UDP && protocol != IPPROTO_TCP) {
- 		printk(KERN_WARNING "svc: only UDP and TCP "
