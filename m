@@ -1,64 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946047AbXBBURg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946052AbXBBU0R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946047AbXBBURg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Feb 2007 15:17:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946048AbXBBURf
+	id S1946052AbXBBU0R (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Feb 2007 15:26:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423207AbXBBU0R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Feb 2007 15:17:35 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:57417 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1946043AbXBBURe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Feb 2007 15:17:34 -0500
-Message-ID: <45C39C37.8060201@torque.net>
-Date: Fri, 02 Feb 2007 15:16:55 -0500
-From: Douglas Gilbert <dougg@torque.net>
-Reply-To: dougg@torque.net
-User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
-MIME-Version: 1.0
-To: Alan <alan@lxorguk.ukuu.org.uk>
-CC: Ric Wheeler <ric@emc.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Mark Lord <liml@rtr.ca>, linux-kernel@vger.kernel.org,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>
-Subject: Re: [PATCH] scsi_lib.c: continue after MEDIUM_ERROR
-References: <200701301947.08478.liml@rtr.ca>	<1170206199.10890.13.camel@mulgrave.il.steeleye.com>	<45C2474E.9030306@rtr.ca>	<1170366920.3388.62.camel@mulgrave.il.steeleye.com>	<45C32C7F.9050706@emc.com> <20070202144211.5a2d2365@localhost.localdomain>
-In-Reply-To: <20070202144211.5a2d2365@localhost.localdomain>
-X-Enigmail-Version: 0.94.0.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 2 Feb 2007 15:26:17 -0500
+Received: from www.osadl.org ([213.239.205.134]:60668 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1423203AbXBBU0Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Feb 2007 15:26:16 -0500
+Subject: Re: dynticks + iptables almost stops the boot process [was: Re:
+	2.6.20-rc6-mm3]
+From: Thomas Gleixner <tglx@linutronix.de>
+Reply-To: tglx@linutronix.de
+To: Mattia Dongili <malattia@linux.it>
+Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
+       mingo@redhat.com, netdev@vger.kernel.org,
+       netfilter-devel@lists.netfilter.org
+In-Reply-To: <20070202191802.GA4262@inferi.kami.home>
+References: <20070129204528.eb8d695e.akpm@osdl.org>
+	 <20070131215241.GB2890@inferi.kami.home>
+	 <20070131232130.GC4137@inferi.kami.home>
+	 <1170358572.29240.292.camel@localhost.localdomain>
+	 <1170360101.29240.297.camel@localhost.localdomain>
+	 <20070201211137.GA2830@inferi.kami.home>
+	 <1170369202.29240.339.camel@localhost.localdomain>
+	 <20070202191802.GA4262@inferi.kami.home>
+Content-Type: text/plain
+Date: Fri, 02 Feb 2007 21:27:14 +0100
+Message-Id: <1170448034.29240.364.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan wrote:
->> The interesting point of this question is about the typically pattern of 
->> IO errors. On a read, it is safe to assume that you will have issues 
->> with some bounded numbers of adjacent sectors.
+On Fri, 2007-02-02 at 20:18 +0100, Mattia Dongili wrote:
+> > May I ask you for another test ? Please turn on high resolution timers
+> > and check, if the same strange behaviour is happening.
 > 
-> Which in theory you can get by asking the drive for the real sector size
-> from the ATA7 info. (We ought to dig this out more as its relevant for
-> partition layout too).
-> 
->> I really like the idea of being able to set this kind of policy on a per 
->> drive instance since what you want here will change depending on what 
->> your system requirements are, what the system is trying to do (i.e., 
->> when trying to recover a failing but not dead yet disk, IO errors should 
->> be as quick as possible and we should choose an IO scheduler that does 
->> not combine IO's).
-> 
-> That seems to be arguing for a bounded "live" time including retry run
-> time for a command. That's also more intuitive for real time work and for
-> end user setup. "Either work or fail within n seconds"
+> Yep, here we go again. Still seeing long stalls but no negative expires
+> offset.
+> Actually one more test I did is disabling my iptables script and the
+> boot process went fine. The script is just:
 
-Which is more or less the "streaming" feature set in recent
-ATA standards. [Alas, streaming and NCQ/TCQ can't be done
-with the same access.] SCSI has its Read Write Error Recovery
-mode page which doesn't have timeouts but does have Read
-and Write Retry Counts amongst other fields that control
-the amount (and indirectly the time) of attempted error
-recovery.
+Mattia,
 
-Doug Gilbert
+I have it halfways reproducible now and I'm working to find the root
+cause. Thanks for providing the info.
+
+	tglx
 
 
