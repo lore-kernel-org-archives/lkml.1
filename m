@@ -1,86 +1,214 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422769AbXBBKXE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750887AbXBBKZx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422769AbXBBKXE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Feb 2007 05:23:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422748AbXBBKXE
+	id S1750887AbXBBKZx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Feb 2007 05:25:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751858AbXBBKZx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Feb 2007 05:23:04 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:40351 "EHLO mx2.suse.de"
+	Fri, 2 Feb 2007 05:25:53 -0500
+Received: from main.gmane.org ([80.91.229.2]:36270 "EHLO ciao.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932666AbXBBKXB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Feb 2007 05:23:01 -0500
-Date: Fri, 2 Feb 2007 11:07:51 +0100
-From: Bernhard Walle <bwalle@suse.de>
-To: Andrew Morton <akpm@osdl.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Alon Bar-Lev <alon.barlev@gmail.com>
-Cc: Greg Kroah-Hartman <gregkh@novell.com>, Andreas Kleen <ak@suse.de>,
-       Torsten Duwe <duwe@suse.de>
-Subject: [PATCH] i386, x86_64: Change Boot Protocol to longer command lines
-Message-ID: <20070202100751.GA29200@strauss.suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	id S1750887AbXBBKZw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Feb 2007 05:25:52 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Oleg Verych <olecom@flower.upol.cz>
+Subject: Re: lirc: igorplususb error handling cleanup
+Date: Fri, 2 Feb 2007 10:25:32 +0000 (UTC)
+Organization: Palacky University in Olomouc, experimental physics department.
+Message-ID: <slrnes64tk.m64.olecom@flower.upol.cz>
+References: <Pine.LNX.4.64.0702021113160.22862@sbz-30.cs.Helsinki.FI>
+X-Complaints-To: usenet@sea.gmane.org
+X-Gmane-NNTP-Posting-Host: flower.upol.cz
+Mail-Followup-To: LKML <linux-kernel@vger.kernel.org>, Oleg Verych <olecom@flower.upol.cz>, Pekka J Enberg <penberg@cs.helsinki.fi>, lirc@bartelmus.de
+User-Agent: slrn/0.9.8.1pl1 (Debian)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-After the kernel can handle command lines with 2048 characters, the
-documentation should be updated. 
+> From: Pekka J Enberg
+> Newsgroups: gmane.linux.kernel
+> Subject: lirc: igorplususb error handling cleanup
+> Date: Fri, 2 Feb 2007 11:15:15 +0200 (EET)
+> Archived-At: <http://permalink.gmane.org/gmane.linux.kernel/488937>
 
-I think it would be better to increase the boot protocol version, just
-to make it possible that kexec and bootloaders can determine the size
-of the command line.  The problem is that if we just increase the
-length in kexec, it's not possible to determine if the user wants to
-load an old kernel and warn him that the kernel truncates the command
-line after 256 characters.
+Hallo.
 
-Signed-off-by: Bernhard Walle <bwalle@suse.de>
-Acked-by: Torsten Duwe <duwe@suse.de>
+> Use goto instead of a big ugly switch for error handling. Convert some 
+> kmalloc + memset pairs to kzalloc too.
 
----
- Documentation/i386/boot.txt |   11 ++++++-----
- arch/i386/boot/setup.S      |    2 +-
- 2 files changed, 7 insertions(+), 6 deletions(-)
+IMHO, goto ugly 2. But this isn't issue here. Let's try to optimize
+all this a little bit:
 
-Index: b/Documentation/i386/boot.txt
-===================================================================
---- a/Documentation/i386/boot.txt
-+++ b/Documentation/i386/boot.txt
-@@ -2,7 +2,7 @@
- 		     ----------------------------
- 
- 		    H. Peter Anvin <hpa@zytor.com>
--			Last update 2007-01-26
-+			Last update 2007-02-01
- 
- On the i386 platform, the Linux kernel uses a rather complicated boot
- convention.  This has evolved partially due to historical aspects, as
-@@ -243,10 +243,11 @@ relevant to the boot loader itself, see 
- below.
- 
- The kernel command line is a null-terminated string currently up to
--255 characters long, plus the final null.  A string that is too long
--will be automatically truncated by the kernel, a boot loader may allow
--a longer command line to be passed to permit future kernels to extend
--this limit.
-+2047 characters long, plus the final null. With protocol version
-+2.05 and earlier, the maximum length was 255 characters. A string
-+that is too long will be automatically truncated by the kernel, a boot
-+loader may allow a longer command line to be passed to permit future
-+kernels to extend this limit.
- 
- If the boot protocol version is 2.02 or later, the address of the
- kernel command line is given by the header field cmd_line_ptr (see
-Index: b/arch/i386/boot/setup.S
-===================================================================
---- a/arch/i386/boot/setup.S
-+++ b/arch/i386/boot/setup.S
-@@ -81,7 +81,7 @@ start:
- # This is the setup header, and it must start at %cs:2 (old 0x9020:2)
- 
- 		.ascii	"HdrS"		# header signature
--		.word	0x0205		# header version number (>= 0x0105)
-+		.word	0x0206		# header version number (>= 0x0105)
- 					# or else old loadlin-1.5 will fail)
- realmode_swtch:	.word	0, 0		# default_switch, SETUPSEG
- start_sys_seg:	.word	SYSSEG
+> Index: lirc-0.8.1/drivers/lirc_igorplugusb/lirc_igorplugusb.c
+>===================================================================
+> --- lirc-0.8.1.orig/drivers/lirc_igorplugusb/lirc_igorplugusb.c
+> +++ lirc-0.8.1/drivers/lirc_igorplugusb/lirc_igorplugusb.c
+> @@ -405,7 +405,7 @@ static int usb_remote_probe(struct usb_i
+>  	int minor = 0;
+>  	char buf[63], name[128]="";
+>  	int mem_failure = 0;
+> -	int ret;
+> +	int ret, err;
+>  
+>  	dprintk(DRIVER_NAME ": usb probe called.\n");
+>  
+> @@ -430,67 +430,44 @@ static int usb_remote_probe(struct usb_i
+>  		devnum, bytes_in_key, maxp);
+>  
+>  
+> -	/* allocate kernel memory */
+> -	mem_failure = 0;
+> -	if (!(ir = kmalloc(sizeof(struct irctl), GFP_KERNEL))) {
+> -		mem_failure = 1;
+> -	} else {
+> -		memset(ir, 0, sizeof(struct irctl));
+> -
+> -		if (!(plugin = kmalloc(sizeof(struct lirc_plugin), GFP_KERNEL))) {
+> -			mem_failure = 2;
+> -		} else if (!(rbuf = kmalloc(sizeof(struct lirc_buffer), GFP_KERNEL))) {
+> -			mem_failure = 3;
+
+If size of all structs, allocated here is 3-4 pages (say, 4096 bytes
+one), then, i think something like, allocating all at once may be
+utilized:
+
+,-*-
+|struct ir_stuff_t {
+|       struct irctl *ir;
+|       struct lirc_plugin *plugin;
+|       struct lirc_buffer *rbuf;
+|} ir_stuff;
+|
+|ir_stuff = kzalloc(...);
+|
+|if(!ir_stuff)
+|       error;
+`-*-       
+
+then join buffer init, usb init together and final register, after
+it. Thus to have second erroneous path.
+
+So, lucky path may be faster, erroneous, with more *free() stuff slower,
+but who cares?
+
+Finally i would put first stage in do { ...if (error) break; ...} while(0),
+second in if (error) ... break.
+
+What about that? (ENOPATCH, but i have no lirc ATM ;)
+
+> -		} else if (lirc_buffer_init(rbuf, bytes_in_key, 
+> -                		DEVICE_BUFLEN+ADDITIONAL_LIRC_BYTES)) {
+> -			mem_failure = 4;
+> -		} else if (!(ir->buf_in = usb_buffer_alloc(dev, 
+> -				DEVICE_BUFLEN+DEVICE_HEADERLEN, 
+> -                                GFP_ATOMIC, &ir->dma_in))) {
+> -			mem_failure = 5;
+> -		} else {
+> -
+> -			memset(plugin, 0, sizeof(struct lirc_plugin));
+> -
+> -			strcpy(plugin->name, DRIVER_NAME " ");
+> -			plugin->minor = -1;
+> -			plugin->code_length = bytes_in_key*8; /* in bits */
+> -			plugin->features = LIRC_CAN_REC_MODE2;
+> -			plugin->data = ir;
+> -			plugin->rbuf = rbuf;
+> -			plugin->set_use_inc = &set_use_inc;
+> -			plugin->set_use_dec = &set_use_dec;
+> -			plugin->sample_rate = SAMPLE_RATE;    /* per second */
+> -			plugin->add_to_buf = &usb_remote_poll;
+> -			plugin->owner = THIS_MODULE;
+> -
+> -			init_MUTEX(&ir->lock);
+> -			init_waitqueue_head(&ir->wait_out);
+> -
+> -			if ((minor = lirc_register_plugin(plugin)) < 0) {
+> -				mem_failure = 9;
+> -			}
+> -		}
+> -	}
+> -
+> -	/* free allocated memory in case of failure */
+> -	switch (mem_failure) {
+> -	case 9:
+> -		usb_buffer_free(dev, DEVICE_BUFLEN+DEVICE_HEADERLEN, 
+> -                	ir->buf_in, ir->dma_in);
+> -	case 5:
+> -		lirc_buffer_free(rbuf);
+> -	case 4:
+> -		kfree(rbuf);
+> -	case 3:
+> -		kfree(plugin);
+> -	case 2:
+> -		kfree(ir);
+> -	case 1:
+> -		printk(DRIVER_NAME "[%d]: out of memory (code=%d)\n",
+> -			devnum, mem_failure);
+> -		return -ENOMEM;
+> -	}
+> +	ir = kzalloc(sizeof(struct irctl), GFP_KERNEL);
+> +	if (!ir)
+> +		goto failed_ctl_alloc;
+> +
+> +	plugin = kzalloc(sizeof(struct lirc_plugin), GFP_KERNEL);
+> +	if (!plugin)
+> +		goto failed_plugin_alloc;
+> +	rbuf = kmalloc(sizeof(struct lirc_buffer), GFP_KERNEL);
+> +	if (!rbuf)
+> +		goto failed_rbuf_alloc;
+> +
+> +	err = lirc_buffer_init(rbuf, bytes_in_key, DEVICE_BUFLEN +
+> +			       ADDITIONAL_LIRC_BYTES);
+> +	if (err)
+> +		goto failed_buffer_init;
+> +
+> +	ir->buf_in = usb_buffer_alloc(dev, DEVICE_BUFLEN+DEVICE_HEADERLEN, GFP_ATOMIC, &ir->dma_in);
+> +	if (!ir->buf_in)
+> +		goto failed_buf_in_alloc;
+> +
+> +	strcpy(plugin->name, DRIVER_NAME " ");
+> +	plugin->minor = -1;
+> +	plugin->code_length = bytes_in_key*8; /* in bits */
+> +	plugin->features = LIRC_CAN_REC_MODE2;
+> +	plugin->data = ir;
+> +	plugin->rbuf = rbuf;
+> +	plugin->set_use_inc = &set_use_inc;
+> +	plugin->set_use_dec = &set_use_dec;
+> +	plugin->sample_rate = SAMPLE_RATE;    /* per second */
+> +	plugin->add_to_buf = &usb_remote_poll;
+> +	plugin->owner = THIS_MODULE;
+> +
+> +	init_MUTEX(&ir->lock);
+> +	init_waitqueue_head(&ir->wait_out);
+> +
+> +	minor = lirc_register_plugin(plugin);
+> +	if (minor < 0)
+> +		goto failed_register;
+>  
+>  	plugin->minor = minor;
+>  	ir->p = plugin;
+> @@ -522,6 +499,21 @@ static int usb_remote_probe(struct usb_i
+>  
+>  	usb_set_intfdata(intf, ir);
+>  	return SUCCESS;
+> +
+> +  failed_register:
+> +	usb_buffer_free(dev, DEVICE_BUFLEN+DEVICE_HEADERLEN, ir->buf_in,
+> +			ir->dma_in);
+> +  failed_buf_in_alloc:
+> +	lirc_buffer_free(rbuf);
+> +  failed_buffer_init:
+> +	kfree(rbuf);
+> +  failed_rbuf_alloc:
+> +	kfree(plugin);
+> +  failed_plugin_alloc:
+> +	kfree(ir);
+> +  failed_ctl_alloc:
+> +	printk(DRIVER_NAME "[%d]: out of memory (code=%d)\n", devnum, mem_failure);
+> +	return -ENOMEM;
+>  }
+>  
+>  
+
+p.s. Please honor information in the 'Mail-Followup-To' header. Thanks.
+____
+
