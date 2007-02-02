@@ -1,94 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423010AbXBBExQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422994AbXBBEyb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423010AbXBBExQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Feb 2007 23:53:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423013AbXBBExQ
+	id S1422994AbXBBEyb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Feb 2007 23:54:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422995AbXBBEyb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Feb 2007 23:53:16 -0500
-Received: from cantor.suse.de ([195.135.220.2]:37254 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423010AbXBBExP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Feb 2007 23:53:15 -0500
-From: NeilBrown <neilb@suse.de>
-To: Andrew Morton <akpm@osdl.org>
-Date: Fri, 2 Feb 2007 15:52:47 +1100
-Message-Id: <1070202045247.24710@suse.de>
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
-Cc: nfs@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: [RESEND] [PATCH 012 of 14] knfsd: SUNRPC: Support IPv6 addresses in svc_tcp_accept
-References: <20070202154949.24444.patches@notabene>
+	Thu, 1 Feb 2007 23:54:31 -0500
+Received: from moutng.kundenserver.de ([212.227.126.186]:51624 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422994AbXBBEya (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Feb 2007 23:54:30 -0500
+Date: 02 Feb 2007 05:54:00 +0100
+From: lirc@bartelmus.de (Christoph Bartelmus)
+To: linux-kernel@vger.kernel.org
+Message-ID: <AA6hlPkMB9B@bartelmus.de>
+Subject: Re: Free Linux Driver Development!
+User-Agent: OpenXP/4.0.7330 (Linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+X-Provags-ID: kundenserver.de abuse@kundenserver.de login:284c5d0e30cf020a3f9a09292c25b7b4
+X-Provags-ID2: V01U2FsdGVkX1/fJlpv3sS0JX+EL5QRtMTdHvEyPKo2G1HYnWmjTsZRniOXPu8WLkfNo5oqbb5hGnRgwH87NfChTuiExM33t7oP5a9ojynBQWVmOfDaHhCG/IzWDdkC6aL+
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sorry, missed a cast in a dprintk that I could remove (and a '&' that
-had to go too).
-NeilBrown
+On Wed, 31 Jan 2007 21:20:06 +0100 Greg KH wrote:
 
+> On Wed, Jan 31, 2007 at 02:06:32PM +0100, Nicolas Mailhot wrote:
+>> I'd really love if the same offer was extended to GPL out-of-tree
+>> driver trees.
+>
+> This kind of offer has _always_ been there for out-of-tree GPL
+> drivers. I have contacted many different groups and driver authors
+> over the years to offer my help in trying to get their code into the
+> mainline kernel.
+>
+> Some take me up on the offer, others ignore it, and still others
+> activly refuse to do so, saying they want to stay out-of-the tree
+> (lirc is one of these examples...)
 
-### Comments for Changeset
+I'm the LIRC maintainer. I don't know what let's you think LIRC wants to  
+stay out-of-the-tree.
 
-From: Chuck Lever <chuck.lever@oracle.com>
-Modify svc_tcp_accept to support connecting on IPv6 sockets.
+I just made clear that I don't have the time to do the merging of LIRC  
+drivers to the kernel myself. In fact a lot of work still needs to be  
+done before LIRC drivers are ready to be included into the kernel.  
+Spreading the impression that LIRC refuses to work with kernel  
+developers is not particularly helpful...
 
-Signed-off-by: Chuck Lever <chuck.lever@oracle.com>
-Cc: Aurelien Charbon <aurelien.charbon@ext.bull.net>
-Signed-off-by: Neil Brown <neilb@suse.de>
+Any help welcome.
 
-### Diffstat output
- ./net/sunrpc/svcsock.c |   16 +++++++---------
- 1 file changed, 7 insertions(+), 9 deletions(-)
+Christoph
 
-diff .prev/net/sunrpc/svcsock.c ./net/sunrpc/svcsock.c
---- .prev/net/sunrpc/svcsock.c	2007-02-02 15:48:21.000000000 +1100
-+++ ./net/sunrpc/svcsock.c	2007-02-02 15:48:39.000000000 +1100
-@@ -949,7 +949,8 @@ static inline int svc_port_is_privileged
- static void
- svc_tcp_accept(struct svc_sock *svsk)
- {
--	struct sockaddr_in sin;
-+	struct sockaddr_storage addr;
-+	struct sockaddr	*sin = (struct sockaddr *) &addr;
- 	struct svc_serv	*serv = svsk->sk_server;
- 	struct socket	*sock = svsk->sk_sock;
- 	struct socket	*newsock;
-@@ -976,8 +977,7 @@ svc_tcp_accept(struct svc_sock *svsk)
- 	set_bit(SK_CONN, &svsk->sk_flags);
- 	svc_sock_enqueue(svsk);
- 
--	slen = sizeof(sin);
--	err = kernel_getpeername(newsock, (struct sockaddr *) &sin, &slen);
-+	err = kernel_getpeername(newsock, sin, &slen);
- 	if (err < 0) {
- 		if (net_ratelimit())
- 			printk(KERN_WARNING "%s: peername failed (err %d)!\n",
-@@ -989,16 +989,14 @@ svc_tcp_accept(struct svc_sock *svsk)
- 	 * hosts here, but when we get encryption, the IP of the host won't
- 	 * tell us anything.  For now just warn about unpriv connections.
- 	 */
--	if (!svc_port_is_privileged((struct sockaddr *) &sin)) {
-+	if (!svc_port_is_privileged(sin)) {
- 		dprintk(KERN_WARNING
- 			"%s: connect from unprivileged port: %s\n",
- 			serv->sv_name,
--			__svc_print_addr((struct sockaddr *) &sin, buf,
--								sizeof(buf)));
-+			__svc_print_addr(sin, buf, sizeof(buf)));
- 	}
- 	dprintk("%s: connect from %s\n", serv->sv_name,
--		__svc_print_addr((struct sockaddr *) &sin, buf,
--				 sizeof(buf)));
-+		__svc_print_addr(sin, buf, sizeof(buf)));
- 
- 	/* make sure that a write doesn't block forever when
- 	 * low on memory
-@@ -1008,7 +1006,7 @@ svc_tcp_accept(struct svc_sock *svsk)
- 	if (!(newsvsk = svc_setup_socket(serv, newsock, &err,
- 				 (SVC_SOCK_ANONYMOUS | SVC_SOCK_TEMPORARY))))
- 		goto failed;
--	memcpy(&newsvsk->sk_remote, &sin, slen);
-+	memcpy(&newsvsk->sk_remote, sin, slen);
- 	newsvsk->sk_remotelen = slen;
- 
- 	svc_sock_received(newsvsk);
+Pls Cc me on replies, I'm not subscribed.
