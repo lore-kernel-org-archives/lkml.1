@@ -1,93 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423133AbXBBGWy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423135AbXBBG1Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423133AbXBBGWy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Feb 2007 01:22:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423135AbXBBGWy
+	id S1423135AbXBBG1Z (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Feb 2007 01:27:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423136AbXBBG1Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Feb 2007 01:22:54 -0500
-Received: from smtp.gentoo.org ([140.211.166.183]:55807 "EHLO smtp.gentoo.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423133AbXBBGWx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Feb 2007 01:22:53 -0500
-From: Mike Frysinger <vapier@gentoo.org>
-Organization: wh0rd.org
-To: Willy Tarreau <w@1wt.eu>
-Subject: Re: epoll handling in the alpha port
-Date: Fri, 2 Feb 2007 01:22:50 -0500
-User-Agent: KMail/1.9.6
-Cc: Andrew Morton <akpm@linux-foundation.org>, rth@twiddle.net,
-       linux-kernel@vger.kernel.org, alpha@gentoo.org
-References: <200702011520.46723.vapier@gentoo.org> <200702020019.36248.vapier@gentoo.org> <20070202054828.GE24090@1wt.eu>
-In-Reply-To: <20070202054828.GE24090@1wt.eu>
+	Fri, 2 Feb 2007 01:27:24 -0500
+Received: from faui03.informatik.uni-erlangen.de ([131.188.30.103]:55392 "EHLO
+	faui03.informatik.uni-erlangen.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1423135AbXBBG1X (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Feb 2007 01:27:23 -0500
+Date: Fri, 2 Feb 2007 07:27:22 +0100
+From: Thomas Glanzmann <thomas@glanzmann.de>
+To: Fagyal Csongor <concept@conceptonline.hu>
+Cc: linux-kernel@vger.kernel.org, shemminger@linux-foundation.org,
+       netdev@vger.kernel.org
+Subject: Re: sky2 hangs
+Message-ID: <20070202062722.GZ13130@cip.informatik.uni-erlangen.de>
+Mail-Followup-To: Thomas Glanzmann <thomas@glanzmann.de>,
+	Fagyal Csongor <concept@conceptonline.hu>,
+	linux-kernel@vger.kernel.org, shemminger@linux-foundation.org,
+	netdev@vger.kernel.org
+References: <20070201185532.GL13130@cip.informatik.uni-erlangen.de> <42007.80.98.159.250.1170369983.squirrel@www.hunhost.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1389656.s5TCqhpphT";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200702020122.51226.vapier@gentoo.org>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <42007.80.98.159.250.1170369983.squirrel@www.hunhost.com>
+User-Agent: Mutt/1.5.11-2006-07-11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1389656.s5TCqhpphT
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Hello Fagyal,
 
-On Friday 02 February 2007, Willy Tarreau wrote:
-> I think it would be reasonable to use the NR_epoll* names first, and to
-> declare NR_sys_epoll* aliases which will point to NR_epoll*. You would
-> then add a comment with the date of the change, stating that you keep
-> them just in case there are some old apps. Then, someone coming on the
-> comment in 3 or 4 years could reasonably suggest removing those aliases.
+> - a previously suggested fix - passing idle=poll to the kernel - did not
+> work for me at the end
 
-fair enough, sounds like a plan man ... patch attached to do that
+same for me. I tried the two module parameters and the kernel parameter:
 
-Signed-off-by: Mike Frysinger <vapier@gentoo.org>
----
-diff --git a/include/asm-alpha/unistd.h b/include/asm-alpha/unistd.h
-index 84313d1..e58a427 100644
---- a/include/asm-alpha/unistd.h
-+++ b/include/asm-alpha/unistd.h
-@@ -342,9 +342,14 @@
- #define __NR_io_cancel			402
- #define __NR_exit_group			405
- #define __NR_lookup_dcookie		406
--#define __NR_sys_epoll_create		407
--#define __NR_sys_epoll_ctl		408
--#define __NR_sys_epoll_wait		409
-+#define __NR_epoll_create		407
-+#define __NR_epoll_ctl			408
-+#define __NR_epoll_wait			409
-+/* Feb 2007: These three sys_epoll defines shouldn't be here but culling
-+ * them would break userspace apps ... we'll kill them off in 2010 :) */
-+#define __NR_sys_epoll_create		__NR_epoll_create
-+#define __NR_sys_epoll_ctl		__NR_epoll_ctl
-+#define __NR_sys_epoll_wait		__NR_epoll_wait
- #define __NR_remap_file_pages		410
- #define __NR_set_tid_address		411
- #define __NR_restart_syscall		412
+pci=nomsi sky2.disable_msi=1 sky2.idle_timeout=1000
 
---nextPart1389656.s5TCqhpphT
-Content-Type: application/pgp-signature
+> - the locks I have happen very periodically (somewhere around every 22-28
+> hours), as if the chip would die after a given amount of data transferred;
+> I know this looks stupid but I thought I might mention it
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.1 (GNU/Linux)
+I had a dedicated server with sky2 which had the same symptoms but I
+disabled the onboard sky2 to and added a e100. On my mac mini I can
+reproduce it nearly immediately. Just have to scp a kernel tar tree over
+and it hangs.
 
-iQIVAwUARcLYu0FjO5/oN/WBAQKSDA//fJRbFML4WIz9VDoDntDwPcffvXDRGQA1
-zrGP8ya28w6O269dA0zLJnI0mVps9WdOUIzcPpXeRrPAFKOX830IASXJHtryea4P
-zuOMFAw1qxwrrBAAi3DJaktTzS6rNYLLwbav1fRpbG9LA/y8HbGxQ5YB540oYIf1
-SmAWi4NzrJWqu0z7qDuoIENznOSNhxTgPJZf8y4e9m8yGFFTcZn2M6e6086a/hUm
-laq3VVj5ZpwXC9UnELAivrj6Zylq2WZAor5iIZ1Anauw7dORELMYb0FmGBDrmLhe
-+7EG5iTP8EvqL++kdpbwGTlvL9FcP2I8PiJN6kEtkA7LnHtHn4kX4mg2a0Rb0SYP
-zmsCMcvzkd7VG3SjQ01+MsF0FMi3jL9v7x1SZOH6oXyNLX0r+/sdAVfrPOnJh5de
-o+1eSeqPGlI6t1u3HJnZL+JBT2gHC5037iZ68ayBb9Y4WJ4LCEXBs1f/oB4m7kCi
-pp84JTvuVdXTpLtWa67uK9HK5fMT4WE8G8kdY01R6DlAG1T6cC/UxQywfbtWh0Gq
-4hPnHzTcLYH0EHEGmUEpgYhFxr45Hva2jEiPCLcaYZgZkxk5JsUOn3HldyXO6V3Y
-c+gxPEY6FdA5lBWAnWDxUb2Brcl93mtw0TO8R23JjlHkrz9KUGll2yjAydK/18C0
-uzDib3tBj8k=
-=myWK
------END PGP SIGNATURE-----
+> - unloading the sky2 module totally freezes the computer for me
 
---nextPart1389656.s5TCqhpphT--
+For me it works pretty good.
+
+        Thomas
