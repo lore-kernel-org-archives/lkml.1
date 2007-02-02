@@ -1,85 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1945912AbXBBOw2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1945917AbXBBOxg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1945912AbXBBOw2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Feb 2007 09:52:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945911AbXBBOw2
+	id S1945917AbXBBOxg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Feb 2007 09:53:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945914AbXBBOxg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Feb 2007 09:52:28 -0500
-Received: from mail.tmr.com ([64.65.253.246]:59961 "EHLO gaimboi.tmr.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1945912AbXBBOw1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Feb 2007 09:52:27 -0500
-Message-ID: <45C35024.8090907@tmr.com>
-Date: Fri, 02 Feb 2007 09:52:20 -0500
-From: Bill Davidsen <davidsen@tmr.com>
-Organization: TMR Associates Inc, Schenectady NY
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
-MIME-Version: 1.0
-To: Lapo TIN <lapolapolapo@tin.it>
-CC: linux-smp@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: smp and irq conflict
-References: <45BE4003005C2845@vsmtp2.tin.it> (added by postmaster@virgilio.it)
-In-Reply-To: <45BE4003005C2845@vsmtp2.tin.it> (added by postmaster@virgilio.it)
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 2 Feb 2007 09:53:36 -0500
+Received: from accolon.hansenpartnership.com ([64.109.89.108]:39686 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1161150AbXBBOxe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Feb 2007 09:53:34 -0500
+Subject: Re: [PATCH] scsi_lib.c: continue after MEDIUM_ERROR
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Alan <alan@lxorguk.ukuu.org.uk>
+Cc: Ric Wheeler <ric@emc.com>, Mark Lord <liml@rtr.ca>,
+       linux-kernel@vger.kernel.org,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>
+In-Reply-To: <20070202144211.5a2d2365@localhost.localdomain>
+References: <200701301947.08478.liml@rtr.ca>
+	 <1170206199.10890.13.camel@mulgrave.il.steeleye.com>
+	 <45C2474E.9030306@rtr.ca>
+	 <1170366920.3388.62.camel@mulgrave.il.steeleye.com>
+	 <45C32C7F.9050706@emc.com>  <20070202144211.5a2d2365@localhost.localdomain>
+Content-Type: text/plain
+Date: Fri, 02 Feb 2007 08:53:27 -0600
+Message-Id: <1170428007.3380.4.camel@mulgrave.il.steeleye.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Lapo TIN wrote:
-> Dear all,
-> I have a problem with IRQs.
->
-> My pc has a CPU PentiumD945 (dual core) and a 2.6.19smp kernel.
-> I have two video acquisition board (four bt8t8 each) in the only two pci
-> slots of my motherboard. Thus I have a total of 8 bttv modules that are
-> working together, and the /proc/interrupts is as follows:
-> # cat /proc/interrupts
->            CPU0       CPU1
->   0:      13575          0   IO-APIC-edge      timer
->   1:          2          0   IO-APIC-edge      i8042
->   4:         11          0   IO-APIC-edge      serial
->   8:          1          0   IO-APIC-edge      rtc
->   9:          0          0   IO-APIC-fasteoi   acpi
->  12:          4          0   IO-APIC-edge      i8042
->  14:      22286          0   IO-APIC-edge      ide0
->  17:       7073       2097   IO-APIC-fasteoi   uhci_hcd:usb5, eth0
->  18:       2525          0   IO-APIC-fasteoi   bttv0, bttv7
->  19:       2829          0   IO-APIC-fasteoi   bttv1, bttv4
->  20:       2526          0   IO-APIC-fasteoi   bttv2, bttv5
->  21:       2226          0   IO-APIC-fasteoi   bttv3, bttv6
->  22:          2          0   IO-APIC-fasteoi   ehci_hcd:usb1, uhci_hcd:usb4
->  23:         86          0   IO-APIC-fasteoi   uhci_hcd:usb2
->  24:          0          0   IO-APIC-fasteoi   uhci_hcd:usb3
-> NMI:          0          0
-> LOC:      13484      13502
-> ERR:          0
-> MIS:          0
-> You can see that IRQ18 is shared between bttv0 and bttv7, IRQ19 between
-> bttv1 and bttv4 and so on.
->
-> Sometimes it crashes. It seems a matter of conflict in IRQ.
-> With only one video board everything is ok, but with two, they shared irq
-> and something goes wrong... 
-> How can I tell to the kernel to not to share the IRQ for these boards ?
-> I think (I don't know if I'm right) that this could be the problem.
->
-> I even tried with another motherboard, and doing cat /proc/interrupts the
-> situation was the same, except for 'eth0' that was together with bttv0 and
-> bttv7... so it was even worst ! it crashes after few minutes.
->
-> I tried to read IO-APIC.txt in Documentation/i386/ folder, but I didn't
-> understand how to avoid the coupling of IRQ.
+On Fri, 2007-02-02 at 14:42 +0000, Alan wrote:
+> > The interesting point of this question is about the typically pattern of 
+> > IO errors. On a read, it is safe to assume that you will have issues 
+> > with some bounded numbers of adjacent sectors.
+> 
+> Which in theory you can get by asking the drive for the real sector size
+> from the ATA7 info. (We ought to dig this out more as its relevant for
+> partition layout too).
+> 
+> > I really like the idea of being able to set this kind of policy on a per 
+> > drive instance since what you want here will change depending on what 
+> > your system requirements are, what the system is trying to do (i.e., 
+> > when trying to recover a failing but not dead yet disk, IO errors should 
+> > be as quick as possible and we should choose an IO scheduler that does 
+> > not combine IO's).
+> 
+> That seems to be arguing for a bounded "live" time including retry run
+> time for a command. That's also more intuitive for real time work and for
+> end user setup. "Either work or fail within n seconds"
 
-You may be able to move one board to another slot, but looking at the 
-bandwidth I suspect you may need a server motherboard with multiple 
-busses, preferably running at 66MHz 64bit. I don't think this is a 
-interrupt problem, but you can just try capture on two channels which 
-share an interrupt, like bttv0 and bttv7 to verify that.
+Actually, then I think perhaps we use the allowed retries for this ...
 
-I think you are just running out of bus.
+So you would fail a single sector and count it against the retries.
+When you've done this allowed retries times, you fail the rest of the
+request.
 
--- 
-bill davidsen <davidsen@tmr.com>
-  CTO TMR Associates, Inc
-  Doing interesting things with small computers since 1979
+James
+
 
