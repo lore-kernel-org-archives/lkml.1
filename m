@@ -1,48 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161014AbXBBAv0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161072AbXBBA4H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161014AbXBBAv0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Feb 2007 19:51:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161025AbXBBAv0
+	id S1161072AbXBBA4H (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Feb 2007 19:56:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161095AbXBBA4H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Feb 2007 19:51:26 -0500
-Received: from ug-out-1314.google.com ([66.249.92.175]:6589 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161014AbXBBAvZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Feb 2007 19:51:25 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=ixBFM70OfdswNjDLgjEJ7WTwpVzopfhmzw2Omq0e3Xt6zfrO5nsmOnTlSGX0Kqwc4C/wknA/gD3y93z6vch4zNk47la196pX5qyEnOmrUxMvU289w8Rpb5+eovL2UpN7Z2hCGul8/kXBZlcIUVstoat03daQgmx80Gw1lJwInms=
-Message-ID: <3d57814d0702011651s5d5f9dafuc26369fab99ad5cf@mail.gmail.com>
-Date: Fri, 2 Feb 2007 10:51:23 +1000
-From: "Trent Waddington" <trent.waddington@gmail.com>
-To: "Tomas Carnecky" <tom@dbservice.com>
-Subject: Re: [PATCH] Ban module license tag string termination trick
-Cc: "Jon Masters" <jonathan@jonmasters.org>,
-       "Jan Engelhardt" <jengelh@linux01.gwdg.de>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@osdl.org>,
-       "Alexey Dobriyan" <adobriyan@gmail.com>
-In-Reply-To: <45C2832F.10603@dbservice.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 1 Feb 2007 19:56:07 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:53545 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161072AbXBBA4G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Feb 2007 19:56:06 -0500
+Date: Thu, 1 Feb 2007 16:55:53 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Oleg Nesterov <oleg@tv-sign.ru>, linux-kernel@vger.kernel.org
+Subject: Re: [SLAB] Shutdown cache_reaper when cpu goes down
+Message-Id: <20070201165553.848fab65.akpm@osdl.org>
+In-Reply-To: <Pine.LNX.4.64.0702011111560.8307@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0702011111560.8307@schroedinger.engr.sgi.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <Pine.LNX.4.61.0611011204140.23977@yvahk01.tjqt.qr>
-	 <Pine.LNX.4.61.0702012147470.1862@yvahk01.tjqt.qr>
-	 <45C2670F.5000003@jonmasters.org> <45C2832F.10603@dbservice.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/2/07, Tomas Carnecky <tom@dbservice.com> wrote:
-> Can't you put this somewhere into the documentation: it's our kernel,
-> play by our rules, and our rules are, the license is what is visible in
-> 'printf(license)'?
+On Thu, 1 Feb 2007 11:13:29 -0800 (PST)
+Christoph Lameter <clameter@sgi.com> wrote:
 
-Here I was thinking the rules were: all modules must be GPL and the
-jerks who make proprietary modules are just blatantly breaking the
-law.  But you're right, the MODULE_LICENSE tag really does imply that
-licenses other than the GPL are ok.
+> Shutdown the cache_reaper if the cpu is brought down and set the 
+> cache_reap.func to NULL. Otherwise hotplug shuts down the reaper for good.
+> 
+> Signed-off-by: Christoph Lameter <clameter@sgi.com>
+> 
+> Index: linux-2.6.20-rc6-mm2/mm/slab.c
+> ===================================================================
+> --- linux-2.6.20-rc6-mm2.orig/mm/slab.c	2007-01-29 14:27:34.199229828 -0600
+> +++ linux-2.6.20-rc6-mm2/mm/slab.c	2007-01-30 13:55:57.936838878 -0600
+> @@ -1271,6 +1271,18 @@ static int __cpuinit cpuup_callback(stru
+>  		start_cpu_timer(cpu);
+>  		break;
+>  #ifdef CONFIG_HOTPLUG_CPU
+> +  	case CPU_DOWN_PREPARE:
+> +		/*
+> +		 * Shutdown cache reaper. Note that the cache_chain_mutex is
+> +		 * held so that cache_reap() cannot modify reap_work
+> +		 * concurrently.
+> +		*/
+> +		cancel_rearming_delayed_work(&per_cpu(reap_work, cpu));
+> +		per_cpu(reap_work, cpu).work.func = NULL;
+> +  		break;
+> +  	case CPU_DOWN_FAILED:
+> +		start_cpu_timer(cpu);
+> +  		break;
+>  	case CPU_DEAD:
+>  		/*
+>  		 * Even if all the cpus of a node are down, we don't free the
 
-Trent
+Is this bug unique to the changes in -mm, or is it in mainline?
