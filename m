@@ -1,105 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422942AbXBBEn2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422946AbXBBEn7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422942AbXBBEn2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Feb 2007 23:43:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423002AbXBBEnL
+	id S1422946AbXBBEn7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Feb 2007 23:43:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965384AbXBBEku
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Feb 2007 23:43:11 -0500
-Received: from mx2.suse.de ([195.135.220.15]:51872 "EHLO mx2.suse.de"
+	Thu, 1 Feb 2007 23:40:50 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:51834 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965403AbXBBEkv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Feb 2007 23:40:51 -0500
+	id S1422903AbXBBEkT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Feb 2007 23:40:19 -0500
 From: NeilBrown <neilb@suse.de>
 To: Andrew Morton <akpm@osdl.org>
-Date: Fri, 2 Feb 2007 15:40:24 +1100
-Message-Id: <1070202044024.19089@suse.de>
+Date: Fri, 2 Feb 2007 15:39:52 +1100
+Message-Id: <1070202043952.18971@suse.de>
 X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
 	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
 	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Cc: nfs@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: [PATCH 009 of 14] knfsd: SUNRPC: Make rq_daddr field address-version independent
+Subject: [PATCH 003 of 14] knfsd: SUNRPC: aplit svc_sock_enqueue out of svc_setup_socket.
 References: <20070202153531.18622.patches@notabene>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-From: Chuck Lever <chuck.lever@oracle.com>
-The rq_daddr field must support larger addresses.
+Rather than calling svc_sock_enqueue at the end of svc_setup_socket,
+we now call it (via svc_sock_recieved) after calling svc_setup_socket
+at each call site.
 
-Signed-off-by: Chuck Lever <chuck.lever@oracle.com>
-Cc: Aurelien Charbon <aurelien.charbon@ext.bull.net>
+We do this because a subsequent patch will insert some code between
+the two calls at one call site.
+
 Signed-off-by: Neil Brown <neilb@suse.de>
 
 ### Diffstat output
- ./include/linux/sunrpc/svc.h |   15 +++++++++++----
- ./net/sunrpc/svcsock.c       |    4 ++--
- 2 files changed, 13 insertions(+), 6 deletions(-)
-
-diff .prev/include/linux/sunrpc/svc.h ./include/linux/sunrpc/svc.h
---- .prev/include/linux/sunrpc/svc.h	2007-02-02 15:22:32.000000000 +1100
-+++ ./include/linux/sunrpc/svc.h	2007-02-02 15:22:32.000000000 +1100
-@@ -11,6 +11,7 @@
- #define SUNRPC_SVC_H
- 
- #include <linux/in.h>
-+#include <linux/in6.h>
- #include <linux/sunrpc/types.h>
- #include <linux/sunrpc/xdr.h>
- #include <linux/sunrpc/auth.h>
-@@ -191,7 +192,13 @@ static inline void svc_putu32(struct kve
- 	iov->iov_len += sizeof(__be32);
- }
- 
--	
-+union svc_addr_u {
-+    struct in_addr	addr;
-+#if defined(CONFIG_IPV6) || defined(CONFIG_IPV6_MODULE)
-+    struct in6_addr	addr6;
-+#endif
-+};
-+
- /*
-  * The context of a single thread, including the request currently being
-  * processed.
-@@ -227,8 +234,8 @@ struct svc_rqst {
- 	unsigned short
- 				rq_secure  : 1;	/* secure port */
- 
--
--	__be32			rq_daddr;	/* dest addr of request - reply from here */
-+	union svc_addr_u	rq_daddr;	/* dest addr of request
-+						 *  - reply from here */
- 
- 	void *			rq_argp;	/* decoded arguments */
- 	void *			rq_resp;	/* xdr'd results */
-@@ -308,7 +315,7 @@ struct svc_deferred_req {
- 	struct svc_sock		*svsk;
- 	struct sockaddr_storage	addr;	/* where reply must go */
- 	size_t			addrlen;
--	__be32			daddr;	/* where reply must come from */
-+	union svc_addr_u	daddr;	/* where reply must come from */
- 	struct cache_deferred_req handle;
- 	int			argslen;
- 	__be32			args[0];
+ ./net/sunrpc/svcsock.c |   12 +++++++-----
+ 1 file changed, 7 insertions(+), 5 deletions(-)
 
 diff .prev/net/sunrpc/svcsock.c ./net/sunrpc/svcsock.c
---- .prev/net/sunrpc/svcsock.c	2007-02-02 15:22:32.000000000 +1100
-+++ ./net/sunrpc/svcsock.c	2007-02-02 15:22:32.000000000 +1100
-@@ -476,7 +476,7 @@ svc_sendto(struct svc_rqst *rqstp, struc
- 		cmh->cmsg_level = SOL_IP;
- 		cmh->cmsg_type = IP_PKTINFO;
- 		pki->ipi_ifindex = 0;
--		pki->ipi_spec_dst.s_addr = rqstp->rq_daddr;
-+		pki->ipi_spec_dst.s_addr = rqstp->rq_daddr.addr.s_addr;
+--- .prev/net/sunrpc/svcsock.c	2007-02-02 15:15:11.000000000 +1100
++++ ./net/sunrpc/svcsock.c	2007-02-02 15:18:37.000000000 +1100
+@@ -925,7 +925,7 @@ svc_tcp_accept(struct svc_sock *svsk)
+ 	if (!(newsvsk = svc_setup_socket(serv, newsock, &err,
+ 				 (SVC_SOCK_ANONYMOUS | SVC_SOCK_TEMPORARY))))
+ 		goto failed;
+-
++	svc_sock_received(newsvsk);
  
- 		if (sock_sendmsg(sock, &msg, 0) < 0)
- 			goto out;
-@@ -750,7 +750,7 @@ svc_udp_recvfrom(struct svc_rqst *rqstp)
- 	rqstp->rq_addrlen = sizeof(struct sockaddr_in);
+ 	/* make sure that we don't have too many active connections.
+ 	 * If we have, something must be dropped.
+@@ -1532,8 +1532,6 @@ static struct svc_sock *svc_setup_socket
+ 	dprintk("svc: svc_setup_socket created %p (inet %p)\n",
+ 				svsk, svsk->sk_sk);
  
- 	/* Remember which interface received this request */
--	rqstp->rq_daddr = skb->nh.iph->daddr;
-+	rqstp->rq_daddr.addr.s_addr = skb->nh.iph->daddr;
+-	clear_bit(SK_BUSY, &svsk->sk_flags);
+-	svc_sock_enqueue(svsk);
+ 	return svsk;
+ }
  
- 	if (skb_is_nonlinear(skb)) {
- 		/* we have to copy */
+@@ -1557,8 +1555,10 @@ int svc_addsock(struct svc_serv *serv,
+ 		err = -EISCONN;
+ 	else {
+ 		svsk = svc_setup_socket(serv, so, &err, SVC_SOCK_DEFAULTS);
+-		if (svsk)
++		if (svsk) {
++			svc_sock_received(svsk);
+ 			err = 0;
++		}
+ 	}
+ 	if (err) {
+ 		sockfd_put(so);
+@@ -1609,8 +1609,10 @@ static int svc_create_socket(struct svc_
+ 			goto bummer;
+ 	}
+ 
+-	if ((svsk = svc_setup_socket(serv, sock, &error, flags)) != NULL)
++	if ((svsk = svc_setup_socket(serv, sock, &error, flags)) != NULL) {
++		svc_sock_received(svsk);
+ 		return ntohs(inet_sk(svsk->sk_sk)->sport);
++	}
+ 
+ bummer:
+ 	dprintk("svc: svc_create_socket error = %d\n", -error);
