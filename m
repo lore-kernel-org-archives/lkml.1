@@ -1,64 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423137AbXBBGmG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423155AbXBBGsd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423137AbXBBGmG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Feb 2007 01:42:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423152AbXBBGmG
+	id S1423155AbXBBGsd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Feb 2007 01:48:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423156AbXBBGsd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Feb 2007 01:42:06 -0500
-Received: from mx1.suse.de ([195.135.220.2]:43001 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423137AbXBBGmD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Feb 2007 01:42:03 -0500
-From: Neil Brown <neilb@suse.de>
-To: Christoph Lameter <clameter@sgi.com>
-Date: Fri, 2 Feb 2007 17:41:33 +1100
+	Fri, 2 Feb 2007 01:48:33 -0500
+Received: from dallas.jonmasters.org ([72.29.103.172]:2129 "EHLO
+	dallas.jonmasters.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423155AbXBBGsd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Feb 2007 01:48:33 -0500
+Message-ID: <45C2DE8A.7040201@jonmasters.org>
+Date: Fri, 02 Feb 2007 01:47:38 -0500
+From: Jon Masters <jonathan@jonmasters.org>
+Organization: World Organi[sz]ation Of Broken Dreams
+User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Valdis.Kletnieks@vt.edu
+CC: Chris Rankin <rankincj@yahoo.com>, Mark Rustad <mrustad@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: 2.6.18-stable release plans?
+References: <999038.34946.qm@web52908.mail.yahoo.com> <200702020402.l12427em008810@turing-police.cc.vt.edu>
+In-Reply-To: <200702020402.l12427em008810@turing-police.cc.vt.edu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-ID: <17858.56605.643106.476961@notabene.brown>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Ethan Solomita <solo@google.com>, Paul Menage <menage@google.com>,
-       linux-kernel@vger.kernel.org, Nick Piggin <nickpiggin@yahoo.com.au>,
-       linux-mm@kvack.org, Andi Kleen <ak@suse.de>, Paul Jackson <pj@sgi.com>,
-       Dave Chinner <dgc@sgi.com>
-Subject: Re: [RFC 0/8] Cpuset aware writeback
-In-Reply-To: message from Christoph Lameter on Thursday February 1
-References: <20070116054743.15358.77287.sendpatchset@schroedinger.engr.sgi.com>
-	<45C2960B.9070907@google.com>
-	<Pine.LNX.4.64.0702011815240.9799@schroedinger.engr.sgi.com>
-	<20070201200358.89dd2991.akpm@osdl.org>
-	<Pine.LNX.4.64.0702012044090.10575@schroedinger.engr.sgi.com>
-	<17858.54239.364738.88727@notabene.brown>
-	<Pine.LNX.4.64.0702012213140.31640@schroedinger.engr.sgi.com>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+X-SA-Do-Not-Run: Yes
+X-SA-Exim-Connect-IP: 74.92.29.237
+X-SA-Exim-Mail-From: jonathan@jonmasters.org
+X-SA-Exim-Scanned: No (on dallas.jonmasters.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday February 1, clameter@sgi.com wrote:
-> 
-> > The network stack is of course a different (much harder) problem.
-> 
-> An NFS solution is possible without solving the network stack issue?
+Valdis.Kletnieks@vt.edu wrote:
 
-NFS is currently able to make more than max_dirty_ratio of memory
-Dirty/Writeback without being effectively throttled.  So it can use up
-way more than it should and put pressure in the network stack.
+> "With 100 million computers in use today, we should expect roughly 6 million
+> single bit errors per year. Computer hardware and software companies must
+> receive thousands of "side effect" bug reports and support calls due to memory
+> errors alone. The costs of NOT including parity memory must be huge!"
 
-If NFS were throttled like other block-based filesystems (which
-Peter's patch should do), then there will normally be a lot more head
-room and the network stack will normally be able to cope.  There might
-still be situations were you can run out of memory to the extent that
-NFS cannot make forward progress, but they will be substantially less
-likely (I think you need lots of TCP streams with slow consumers and
-fast producers so that TCP is forced to use up it reserves).
+I must be weird or something, but I often think about this and the sheer 
+number of clock cycles executing at any one time around the world. Have 
+you ever stopped to think how many copies of schedule() (or whatever) 
+are currently running somewhere in the world? It's just nuts :-)
 
-The block layer guarantees not to run out of memory.
-The network layer makes a best effort as long as nothing goes crazy.
-NFS (currently) doesn't do quite enough to stop things going crazy.
+More seriously, if nobody cared about this stuff then we wouldn't have 
+all this MCE reporting and tools to handle differentiating between 
+actual failing DRAMs and temporary bit transitions in ECC memory.
 
-At least, that is my understanding.
-
-NeilBrown
+Jon.
