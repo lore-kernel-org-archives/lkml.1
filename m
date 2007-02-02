@@ -1,86 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423044AbXBBMLh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423036AbXBBMNn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423044AbXBBMLh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Feb 2007 07:11:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423043AbXBBMLh
+	id S1423036AbXBBMNn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Feb 2007 07:13:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423043AbXBBMNn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Feb 2007 07:11:37 -0500
-Received: from mail-gw3.adaptec.com ([216.52.22.36]:34531 "EHLO
-	mail-gw3.adaptec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423042AbXBBMLg (ORCPT
+	Fri, 2 Feb 2007 07:13:43 -0500
+Received: from nic.NetDirect.CA ([216.16.235.2]:37403 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423036AbXBBMNm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Feb 2007 07:11:36 -0500
-From: Nagendra Singh Tomar <nagendra_tomar@adaptec.com>
-Organization: Adaptec
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 2.6.19.2] SCSI sd:  udev accessing an uninitialized scsi_disk results in a crash
-Date: Fri, 2 Feb 2007 17:34:56 +0530
-User-Agent: KMail/1.9.1
-Cc: linux-scsi@vger.kernel.org
+	Fri, 2 Feb 2007 07:13:42 -0500
+X-Originating-Ip: 74.109.98.130
+Date: Fri, 2 Feb 2007 06:22:25 -0500 (EST)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@CPE00045a9c397f-CM001225dbafb6
+To: Anton Altaparmakov <aia21@cam.ac.uk>
+cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, aia21@cantab.net
+Subject: Re: [PATCH] NTFS: Rename apparently incorrect macro name "NTFS_DEBUG".
+In-Reply-To: <1170414630.5749.0.camel@imp.csi.cam.ac.uk>
+Message-ID: <Pine.LNX.4.64.0702020620320.17217@CPE00045a9c397f-CM001225dbafb6>
+References: <Pine.LNX.4.64.0702020543230.16913@CPE00045a9c397f-CM001225dbafb6>
+ <1170414630.5749.0.camel@imp.csi.cam.ac.uk>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200702021734.57161.nagendra_tomar@adaptec.com>
-X-OriginalArrivalTime: 02 Feb 2007 12:11:33.0257 (UTC) FILETIME=[47537F90:01C746C3]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (cached,
+	score=-16.8, required 5, ALL_TRUSTED -1.80, BAYES_00 -15.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-	sd_probe() calls class_device_add() even before initializing the 
-sdkp->device variable. class_device_add() eventually results in the user mode 
-udev program to be called. udev program can read the the allow_restart 
-attribute of the newly created scsi device. This is resulting in a crash as 
-the show function for allow_restart (i.e sd_show_allow_restart) returns the 
-attribute value by reading the sdkp->device->allow_restart variable. As the 
-sdkp->device is not initialized before calling the user mode hotplug helper, 
-this results in a crash.
-	The patch below solves it by calling class_device_add() only after the 
-necessary fields in the scsi_disk structure are initialized properly.
+On Fri, 2 Feb 2007, Anton Altaparmakov wrote:
 
+> Hi,
+>
+> On Fri, 2007-02-02 at 05:46 -0500, Robert P. J. Day wrote:
+> >   Replace the apparently incorrect macro name "NTFS_DEBUG" with
+> > "CONFIG_NTFS_DEBUG".
+> >
+> > Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
+> >
+> > ---
+> >
+> > diff --git a/fs/ntfs/attrib.c b/fs/ntfs/attrib.c
+> > index c577d8e..2154d03 100644
+> > --- a/fs/ntfs/attrib.c
+> > +++ b/fs/ntfs/attrib.c
+> > @@ -1921,7 +1921,7 @@ s64 ntfs_attr_extend_allocation(ntfs_inode *ni, s64 new_alloc_size,
+> >  	u32 attr_len = 0; /* Silence stupid gcc warning. */
+> >  	bool mp_rebuilt;
+> >
+> > -#ifdef NTFS_DEBUG
+> > +#ifdef CONFIG_NTFS_DEBUG
+>
+> The fix is also wrong.  It should be:
+>
+> #ifdef DEBUG
+>
+> See fs/ntfs/Makefile for details...
 
-Thanx,
-Tomar
+ah, yes, i see what you mean.  revised patch coming shortly, i'll send
+that one to just the relevant parties.
 
+rday
 
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
 
-Signed-off-by: Nagendra Singh Tomar <nagendra_tomar@adaptec.com>
----
-
---- linux-2.6.19.2/drivers/scsi/sd.c.orig	2007-02-02 17:03:03.000000000 +0530
-+++ linux-2.6.19.2/drivers/scsi/sd.c	2007-02-02 17:04:04.000000000 +0530
-@@ -1646,16 +1646,6 @@ static int sd_probe(struct device *dev)
- 	if (error)
- 		goto out_put;
- 
--	class_device_initialize(&sdkp->cdev);
--	sdkp->cdev.dev = &sdp->sdev_gendev;
--	sdkp->cdev.class = &sd_disk_class;
--	strncpy(sdkp->cdev.class_id, sdp->sdev_gendev.bus_id, BUS_ID_SIZE);
--
--	if (class_device_add(&sdkp->cdev))
--		goto out_put;
--
--	get_device(&sdp->sdev_gendev);
--
- 	sdkp->device = sdp;
- 	sdkp->driver = &sd_template;
- 	sdkp->disk = gd;
-@@ -1669,6 +1659,16 @@ static int sd_probe(struct device *dev)
- 			sdp->timeout = SD_MOD_TIMEOUT;
- 	}
- 
-+	class_device_initialize(&sdkp->cdev);
-+	sdkp->cdev.dev = &sdp->sdev_gendev;
-+	sdkp->cdev.class = &sd_disk_class;
-+	strncpy(sdkp->cdev.class_id, sdp->sdev_gendev.bus_id, BUS_ID_SIZE);
-+
-+	if (class_device_add(&sdkp->cdev))
-+		goto out_put;
-+
-+	get_device(&sdp->sdev_gendev);
-+
- 	gd->major = sd_major((index & 0xf0) >> 4);
- 	gd->first_minor = ((index & 0xf) << 4) | (index & 0xfff00);
- 	gd->minors = 16;
+http://www.fsdev.dreamhosters.com/wiki/index.php?title=Main_Page
+========================================================================
