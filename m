@@ -1,38 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423149AbXBBGa6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423140AbXBBGbI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423149AbXBBGa6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Feb 2007 01:30:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423140AbXBBGa6
+	id S1423140AbXBBGbI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Feb 2007 01:31:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423139AbXBBGbI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Feb 2007 01:30:58 -0500
-Received: from terminus.zytor.com ([192.83.249.54]:51901 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423151AbXBBGa5 (ORCPT
+	Fri, 2 Feb 2007 01:31:08 -0500
+Received: from faui03.informatik.uni-erlangen.de ([131.188.30.103]:55491 "EHLO
+	faui03.informatik.uni-erlangen.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1423140AbXBBGbG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Feb 2007 01:30:57 -0500
-Message-ID: <45C2DA8D.4050007@zytor.com>
-Date: Thu, 01 Feb 2007 22:30:37 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
+	Fri, 2 Feb 2007 01:31:06 -0500
+Date: Fri, 2 Feb 2007 07:31:04 +0100
+From: Thomas Glanzmann <thomas@glanzmann.de>
+To: Stephen Hemminger <shemminger@linux-foundation.org>
+Cc: Fagyal Csongor <concept@conceptonline.hu>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: sky2 hangs
+Message-ID: <20070202063104.GA13130@cip.informatik.uni-erlangen.de>
+Mail-Followup-To: Thomas Glanzmann <thomas@glanzmann.de>,
+	Stephen Hemminger <shemminger@linux-foundation.org>,
+	Fagyal Csongor <concept@conceptonline.hu>,
+	linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+References: <20070201185532.GL13130@cip.informatik.uni-erlangen.de> <42007.80.98.159.250.1170369983.squirrel@www.hunhost.com> <20070201145815.199bfe1a@freekitty>
 MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-CC: "Michael K. Edwards" <medwards.linux@gmail.com>,
-       Linux Kernel List <linux-kernel@vger.kernel.org>
-Subject: Re: Should io(read|write)(8|16|32)_rep take (const|) volatile u(8|16|32)
- __iomem *addr?
-References: <f2b55d220702011624v6cb13c8ct1d70863a661d2227@mail.gmail.com> <f2b55d220702011635s5b338a6ct861645ea7892f732@mail.gmail.com> <45C2D47A.9080001@garzik.org>
-In-Reply-To: <45C2D47A.9080001@garzik.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070201145815.199bfe1a@freekitty>
+User-Agent: Mutt/1.5.11-2006-07-11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
-> Volatile is usually reserved for a specific need on a specific arch.  I 
-> doubt it is correct to force it on all arches.
+Hello Stephen,
 
-They already are volatile; the issue is adding "const".
+> I can reproduce the problem now (on mac mini). Interestingly it seems
+> to whack the whole ethernet switch when it happens.
 
-All io(read|write)* pointers are volatile, IIRC.
+wow. I have Linksys wrt54g has 'ethernet switch' and my Snom 320 VoIP
+phone still works when the mini network card goes down. On the other
+side the wrt54g isn't exactly a switch but more like a bunch of network
+cards which use the linux bridging code IIRC.
 
-	-hpa
+> If you do:
+> 	ethtool -r eth0
+> it cause a PHY reset (renegotiation) and clears the problem.
+
+But this isn't related to my problen (on mac mini), is it?
+
+        Thomas
