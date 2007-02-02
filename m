@@ -1,47 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1945930AbXBBPMh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1945929AbXBBPOA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1945930AbXBBPMh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Feb 2007 10:12:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945929AbXBBPMh
+	id S1945929AbXBBPOA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Feb 2007 10:14:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945931AbXBBPN7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Feb 2007 10:12:37 -0500
-Received: from caffeine.uwaterloo.ca ([129.97.134.17]:57366 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1945930AbXBBPMg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Feb 2007 10:12:36 -0500
-Date: Fri, 2 Feb 2007 10:12:36 -0500
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Adrian Bunk <bunk@stusta.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       takada <takada@mbf.nifty.com>, Jordan Crouse <jordan.crouse@amd.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Please revert "fix typo in geode_configre()@cyrix.c"
-Message-ID: <20070202151236.GN7582@csclub.uwaterloo.ca>
-References: <20070202062941.GB3754@stusta.de> <20070202000543.c3664ecc.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070202000543.c3664ecc.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.9i
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+	Fri, 2 Feb 2007 10:13:59 -0500
+Received: from tmailer.gwdg.de ([134.76.10.23]:38783 "EHLO tmailer.gwdg.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1945929AbXBBPN7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Feb 2007 10:13:59 -0500
+Date: Fri, 2 Feb 2007 16:11:11 +0100 (MET)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: Paul Rolland <rol@as2917.net>
+cc: "'Linux Kernel Mailing List'" <linux-kernel@vger.kernel.org>,
+       "'Andrew Morton'" <akpm@osdl.org>,
+       "'Jon Masters'" <jonathan@jonmasters.org>,
+       "'Alexey Dobriyan'" <adobriyan@gmail.com>
+Subject: RE: [PATCH] Ban module license tag string termination trick
+In-Reply-To: <011601c746d9$dc5453b0$4b00a8c0@donald>
+Message-ID: <Pine.LNX.4.61.0702021610510.26531@yvahk01.tjqt.qr>
+References: <011601c746d9$dc5453b0$4b00a8c0@donald>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	0.0 UPPERCASE_25_50        message body is 25-50% uppercase
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 02, 2007 at 12:05:43AM -0800, Andrew Morton wrote:
-> On Fri, 2 Feb 2007 07:29:41 +0100 Adrian Bunk <bunk@stusta.de> wrote:
-> 
-> > Linus, please revert commit e4f0ae0ea63caceff37a13f281a72652b7ea71ba
-> > 
-> 
-> Yup.
-> 
-> That discussion seems to have died.  The 2.6.19 code looks rather silly, but
-> presumably it passed someone's testing at some stage.
 
-The discussion ended because the last patch seemed to be correct to
-everyone involved in the discussion.  At least that is my understanding.
-Of course I am just one of the users affected by the patch.
+On Feb 2 2007 15:53, Paul Rolland wrote:
+>
+>If that is really one important point, why not simply adding a :
+>MODULE_IS_UNDER_GPL_LICENSE("yes|no")
+>and a
+>MODULE_IS_UNDER_GPL_LIKE_LICENSE("yes|no")
+>
+>or use 0 and 1 instead of yes and no, and thus clearly avoid all the
+>C string mess ?
 
---
-Len Sorensen
+MODULE_IS_UNDER_GPL_LICENSE("yes\0 but only this .c file");
+
+
+Jan
+-- 
+ft: http://freshmeat.net/p/chaostables/
