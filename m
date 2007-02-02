@@ -1,81 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1945971AbXBBQQj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1945918AbXBBQSr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1945971AbXBBQQj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Feb 2007 11:16:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945968AbXBBQQj
+	id S1945918AbXBBQSr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Feb 2007 11:18:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945915AbXBBQSr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Feb 2007 11:16:39 -0500
-Received: from mexforward.lss.emc.com ([128.222.32.20]:24477 "EHLO
-	mexforward.lss.emc.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1945965AbXBBQQi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Feb 2007 11:16:38 -0500
-Message-ID: <45C363D3.20809@emc.com>
-Date: Fri, 02 Feb 2007 11:16:19 -0500
-From: Ric Wheeler <ric@emc.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061206)
+	Fri, 2 Feb 2007 11:18:47 -0500
+Received: from pfx2.jmh.fr ([194.153.89.55]:48109 "EHLO pfx2.jmh.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1945918AbXBBQSr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Feb 2007 11:18:47 -0500
+From: Eric Dumazet <dada1@cosmosbay.com>
+To: Markus Wenke <M.Wenke@web.de>
+Subject: Re: Try to fill route cache
+Date: Fri, 2 Feb 2007 17:18:42 +0100
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org
+References: <45C08EA6.9070504@web.de> <p73irekogce.fsf@bingen.suse.de> <45C35670.6060406@web.de>
+In-Reply-To: <45C35670.6060406@web.de>
 MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-CC: Alan <alan@lxorguk.ukuu.org.uk>, Mark Lord <liml@rtr.ca>,
-       linux-kernel@vger.kernel.org,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>
-Subject: Re: [PATCH] scsi_lib.c: continue after MEDIUM_ERROR
-References: <200701301947.08478.liml@rtr.ca>	 <1170206199.10890.13.camel@mulgrave.il.steeleye.com>	 <45C2474E.9030306@rtr.ca>	 <1170366920.3388.62.camel@mulgrave.il.steeleye.com>	 <45C32C7F.9050706@emc.com>  <20070202144211.5a2d2365@localhost.localdomain> <1170428007.3380.4.camel@mulgrave.il.steeleye.com>
-In-Reply-To: <1170428007.3380.4.camel@mulgrave.il.steeleye.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Disposition: inline
+Message-Id: <200702021718.43021.dada1@cosmosbay.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-PMX-Version: 4.7.1.128075, Antispam-Engine: 2.5.0.283055, Antispam-Data: 2007.2.2.75433
-X-PerlMx-Spam: Gauge=, SPAM=2%, Reason='EMC_FROM_0+ -2, __CT 0, __CTE 0, __CT_TEXT_PLAIN 0, __HAS_MSGID 0, __MIME_TEXT_ONLY 0, __MIME_VERSION 0, __SANE_MSGID 0, __USER_AGENT 0'
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-James Bottomley wrote:
-> On Fri, 2007-02-02 at 14:42 +0000, Alan wrote:
->   
->>> The interesting point of this question is about the typically pattern of 
->>> IO errors. On a read, it is safe to assume that you will have issues 
->>> with some bounded numbers of adjacent sectors.
->>>       
->> Which in theory you can get by asking the drive for the real sector size
->> from the ATA7 info. (We ought to dig this out more as its relevant for
->> partition layout too).
->>     
-
-Actually, my point is that damage typically impacts a cluster of disk 
-sectors that are adjacent. Think of a drive that has junk on the platter 
-or a some such thing - the contamination is likely to be localized.
->>     
->>> I really like the idea of being able to set this kind of policy on a per 
->>> drive instance since what you want here will change depending on what 
->>> your system requirements are, what the system is trying to do (i.e., 
->>> when trying to recover a failing but not dead yet disk, IO errors should 
->>> be as quick as possible and we should choose an IO scheduler that does 
->>> not combine IO's).
->>>       
->> That seems to be arguing for a bounded "live" time including retry run
->> time for a command. That's also more intuitive for real time work and for
->> end user setup. "Either work or fail within n seconds"
->>     
+On Friday 02 February 2007 16:19, Markus Wenke wrote:
+> Andi Kleen schrieb:
+> > Markus Wenke <M.Wenke@web.de> writes:
+> >> Where is the problem ?
+> >
+> > pktgen doesn't use the routing cache.
 >
-> Actually, then I think perhaps we use the allowed retries for this ...
->   
-I really am not a big retry fan for most modern drives - the drive will 
-try really, really hard to complete an IO for us and multiple retries 
-can just slow down the higher level application from recovering.
-> So you would fail a single sector and count it against the retries.
-> When you've done this allowed retries times, you fail the rest of the
-> request.
+> Is there any other chance to test my Application with a stressed route
+> cache?
 >
-> James
->
->   
-I think that we need to play with some of these possible solutions on 
-some  real-world bad drives and see how they react. 
 
-We should definitely talk more about this at the workshop ;-)
-
-ric
+I am not sure I understood your stress environment.
+Do you use several machines ?
+If yes, then the route cache of the destination machine should be filled...
 
