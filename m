@@ -1,57 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946165AbXBBXUK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946168AbXBBXhO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946165AbXBBXUK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Feb 2007 18:20:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946161AbXBBXUJ
+	id S1946168AbXBBXhO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Feb 2007 18:37:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946171AbXBBXhO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Feb 2007 18:20:09 -0500
-Received: from waste.org ([66.93.16.53]:55644 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1946157AbXBBXUH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Feb 2007 18:20:07 -0500
-Date: Fri, 2 Feb 2007 17:07:25 -0600
-From: Matt Mackall <mpm@selenic.com>
-To: Mark Lord <liml@rtr.ca>
-Cc: Alan <alan@lxorguk.ukuu.org.uk>, Ric Wheeler <ric@emc.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       linux-kernel@vger.kernel.org,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>
-Subject: Re: [PATCH] scsi_lib.c: continue after MEDIUM_ERROR
-Message-ID: <20070202230725.GG10108@waste.org>
-References: <200701301947.08478.liml@rtr.ca> <1170206199.10890.13.camel@mulgrave.il.steeleye.com> <45C2474E.9030306@rtr.ca> <1170366920.3388.62.camel@mulgrave.il.steeleye.com> <45C32C7F.9050706@emc.com> <20070202145003.525bd682@localhost.localdomain> <45C3617B.2020400@rtr.ca> <20070202194956.GF16722@waste.org> <45C3C1FC.8020500@rtr.ca>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <45C3C1FC.8020500@rtr.ca>
-User-Agent: Mutt/1.5.9i
+	Fri, 2 Feb 2007 18:37:14 -0500
+Received: from x35.xmailserver.org ([64.71.152.41]:2814 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1946169AbXBBXhM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Feb 2007 18:37:12 -0500
+X-AuthUser: davidel@xmailserver.org
+Date: Fri, 2 Feb 2007 15:37:09 -0800 (PST)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Zach Brown <zach.brown@oracle.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-aio@kvack.org, Suparna Bhattacharya <suparna@in.ibm.com>,
+       Benjamin LaHaise <bcrl@kvack.org>
+Subject: Re: [PATCH 2 of 4] Introduce i386 fibril scheduling
+In-Reply-To: <20070202222110.GA1212@elte.hu>
+Message-ID: <Pine.LNX.4.64.0702021525370.5219@alien.or.mcafeemobile.com>
+References: <patchbomb.1170193181@tetsuo.zabbo.net>
+ <df7bc026d50ec5bbdd8e.1170193183@tetsuo.zabbo.net> <20070201083611.GC18233@elte.hu>
+ <Pine.LNX.4.64.0702011154110.3632@woody.linux-foundation.org>
+ <20070202104900.GA13941@elte.hu> <Pine.LNX.4.64.0702020738500.15057@woody.linux-foundation.org>
+ <20070202222110.GA1212@elte.hu>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 02, 2007 at 05:58:04PM -0500, Mark Lord wrote:
-> Matt Mackall wrote:
-> >..
-> >Also worth considering is that spending minutes trying to reread
-> >damaged sectors is likely to accelerate your death spiral. More data
-> >may be recoverable if you give up quickly in a first pass, then go
-> >back and manually retry damaged bits with smaller I/Os.
+On Fri, 2 Feb 2007, Ingo Molnar wrote:
+
+> in fact an app could also /trigger/ the execution of a syscall in a 
+> different context - to create parallelism artificially - without any 
+> blocking event. So we could do:
 > 
-> All good input.  But what was being debated here is not so much
-> the retrying of known-bad sectors, but rather what to do about
-> the kiBs or MiBs of sectors remaining in a merged request after
-> hitting a single bad sector mid-way.
+>   cookie1 = sys_async(sys_read, params);
+>   cookie2 = sys_async(sys_write, params);
+> 
+>   [ ... calculation loop ... ]
+> 
+>   wait_on_async_syscall(cookie1);
+>   wait_on_async_syscall(cookie2);
+> 
+> or something like that. Without user-space having to create threads 
+> itself, etc. So basically, we'd make kernel threads more useful, and 
+> we'd make threading safer - by only letting syscalls thread.
 
-Yep, that's precisely what was addressed in the part you snipped. 
+Since I still think that the many-thousands potential async operations 
+coming from network sockets are better handled with a classical event 
+machanism [1], and since smooth integration of new async syscall into the 
+standard POSIX infrastructure is IMO a huge win, I think we need to have a 
+"bridge" to allow async completions being detectable through a pollable 
+(by the mean of select/poll/epoll whatever) device.
+In that way you can handle async operations with the best mechanism that 
+is fit for them, and gather them in a single async scheduler.
 
-My main point being that what to do about the remaining workload
-should be dependent on the size of the I/O. If we encounter errors on
-sectors 4,5,6,7,8.. of a 1MB request, we should have a threshold for
-giving up. It's not unreasonable for that threshold to be larger than
-1, but it should not be 2048.
 
-And if we do the I/O as four 256KB requests, we should have
-approximately the same number of retries (assuming the whole region's
-bad).
 
--- 
-Mathematics is the supreme nostalgia of our time.
+[1] Unless you really want to have thousands of kthreads/fibrils lingering 
+    on the system.
+
+
+
+- Davide
+
+
