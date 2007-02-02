@@ -1,80 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422724AbXBBKRk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422769AbXBBKXE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422724AbXBBKRk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Feb 2007 05:17:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422735AbXBBKRj
+	id S1422769AbXBBKXE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Feb 2007 05:23:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422748AbXBBKXE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Feb 2007 05:17:39 -0500
-Received: from nic.NetDirect.CA ([216.16.235.2]:60500 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422724AbXBBKRj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Feb 2007 05:17:39 -0500
-X-Originating-Ip: 74.109.98.130
-Date: Fri, 2 Feb 2007 05:16:05 -0500 (EST)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@CPE00045a9c397f-CM001225dbafb6
-To: Linux kernel mailing list <linux-kernel@vger.kernel.org>
-cc: Andrew Morton <akpm@osdl.org>, Greg KH <greg@kroah.com>,
-       linville@tuxdriver.com
-Subject: [PATCH] Replace incorrect macro name "WIRELESS_EXT" with
- "CONFIG_WIRELESS_EXT".
-Message-ID: <Pine.LNX.4.64.0702020510560.16122@CPE00045a9c397f-CM001225dbafb6>
+	Fri, 2 Feb 2007 05:23:04 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:40351 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932666AbXBBKXB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Feb 2007 05:23:01 -0500
+Date: Fri, 2 Feb 2007 11:07:51 +0100
+From: Bernhard Walle <bwalle@suse.de>
+To: Andrew Morton <akpm@osdl.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       Alon Bar-Lev <alon.barlev@gmail.com>
+Cc: Greg Kroah-Hartman <gregkh@novell.com>, Andreas Kleen <ak@suse.de>,
+       Torsten Duwe <duwe@suse.de>
+Subject: [PATCH] i386, x86_64: Change Boot Protocol to longer command lines
+Message-ID: <20070202100751.GA29200@strauss.suse.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+After the kernel can handle command lines with 2048 characters, the
+documentation should be updated. 
 
-  Rename the (apparently) incorrect macro name WIRELESS_EXT to
-CONFIG_WIRELESS_EXT.
+I think it would be better to increase the boot protocol version, just
+to make it possible that kexec and bootloaders can determine the size
+of the command line.  The problem is that if we just increase the
+length in kexec, it's not possible to determine if the user wants to
+load an old kernel and warn him that the kernel truncates the command
+line after 256 characters.
 
-Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
+Signed-off-by: Bernhard Walle <bwalle@suse.de>
+Acked-by: Torsten Duwe <duwe@suse.de>
 
 ---
+ Documentation/i386/boot.txt |   11 ++++++-----
+ arch/i386/boot/setup.S      |    2 +-
+ 2 files changed, 7 insertions(+), 6 deletions(-)
 
-  this one i'm not sure about since there really is a WIRELESS_EXT
-macro defined in the header file:
-
-  include/linux/wireless.h:#define WIRELESS_EXT 21
-
-but since it exists unconditionally, it wouldn't make much sense to be
-testing if it's defined.
-
-diff --git a/net/core/net-sysfs.c b/net/core/net-sysfs.c
-index f47f319..44e69a2 100644
---- a/net/core/net-sysfs.c
-+++ b/net/core/net-sysfs.c
-@@ -329,7 +329,7 @@ static struct attribute_group netstat_group = {
- 	.attrs  = netstat_attrs,
- };
-
--#ifdef WIRELESS_EXT
-+#ifdef CONFIG_WIRELESS_EXT
- /* helper function that does all the locking etc for wireless stats */
- static ssize_t wireless_show(struct class_device *cd, char *buf,
- 			     ssize_t (*format)(const struct iw_statistics *,
-@@ -462,7 +462,7 @@ int netdev_register_sysfs(struct net_device *net)
- 	if (net->get_stats)
- 		*groups++ = &netstat_group;
-
--#ifdef WIRELESS_EXT
-+#ifdef CONFIG_WIRELESS_EXT
- 	if (net->wireless_handlers && net->wireless_handlers->get_wireless_stats)
- 		*groups++ = &wireless_group;
- #endif
-
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://www.fsdev.dreamhosters.com/wiki/index.php?title=Main_Page
-========================================================================
+Index: b/Documentation/i386/boot.txt
+===================================================================
+--- a/Documentation/i386/boot.txt
++++ b/Documentation/i386/boot.txt
+@@ -2,7 +2,7 @@
+ 		     ----------------------------
+ 
+ 		    H. Peter Anvin <hpa@zytor.com>
+-			Last update 2007-01-26
++			Last update 2007-02-01
+ 
+ On the i386 platform, the Linux kernel uses a rather complicated boot
+ convention.  This has evolved partially due to historical aspects, as
+@@ -243,10 +243,11 @@ relevant to the boot loader itself, see 
+ below.
+ 
+ The kernel command line is a null-terminated string currently up to
+-255 characters long, plus the final null.  A string that is too long
+-will be automatically truncated by the kernel, a boot loader may allow
+-a longer command line to be passed to permit future kernels to extend
+-this limit.
++2047 characters long, plus the final null. With protocol version
++2.05 and earlier, the maximum length was 255 characters. A string
++that is too long will be automatically truncated by the kernel, a boot
++loader may allow a longer command line to be passed to permit future
++kernels to extend this limit.
+ 
+ If the boot protocol version is 2.02 or later, the address of the
+ kernel command line is given by the header field cmd_line_ptr (see
+Index: b/arch/i386/boot/setup.S
+===================================================================
+--- a/arch/i386/boot/setup.S
++++ b/arch/i386/boot/setup.S
+@@ -81,7 +81,7 @@ start:
+ # This is the setup header, and it must start at %cs:2 (old 0x9020:2)
+ 
+ 		.ascii	"HdrS"		# header signature
+-		.word	0x0205		# header version number (>= 0x0105)
++		.word	0x0206		# header version number (>= 0x0105)
+ 					# or else old loadlin-1.5 will fail)
+ realmode_swtch:	.word	0, 0		# default_switch, SETUPSEG
+ start_sys_seg:	.word	SYSSEG
