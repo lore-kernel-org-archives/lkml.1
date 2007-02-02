@@ -1,41 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946030AbXBBSjQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946033AbXBBSuW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946030AbXBBSjQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Feb 2007 13:39:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946031AbXBBSjQ
+	id S1946033AbXBBSuW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Feb 2007 13:50:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946032AbXBBSuW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Feb 2007 13:39:16 -0500
-Received: from tag.witbe.net ([81.88.96.48]:38842 "EHLO tag.witbe.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1946030AbXBBSjQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Feb 2007 13:39:16 -0500
-Reply-To: <rol@as2917.net>
-From: "Paul Rolland" <rol@as2917.net>
-To: "'Jan Engelhardt'" <jengelh@linux01.gwdg.de>
-Cc: "'Linux Kernel Mailing List'" <linux-kernel@vger.kernel.org>,
-       "'Andrew Morton'" <akpm@osdl.org>,
-       "'Jon Masters'" <jonathan@jonmasters.org>,
-       "'Alexey Dobriyan'" <adobriyan@gmail.com>
-Subject: RE: [PATCH] Ban module license tag string termination trick
-Date: Fri, 2 Feb 2007 19:37:27 +0100
-Organization: AS2917.net
-Message-ID: <01b701c746f9$333c9d80$4b00a8c0@donald>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
+	Fri, 2 Feb 2007 13:50:22 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:52263 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1946029AbXBBSuV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Feb 2007 13:50:21 -0500
+Date: Fri, 2 Feb 2007 19:02:43 +0000
+From: Alan <alan@lxorguk.ukuu.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Jeff Garzik <jeff@garzik.org>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [git patches] libata fixes
+Message-ID: <20070202190243.56db38d8@localhost.localdomain>
+In-Reply-To: <Pine.LNX.4.64.0702020911560.15057@woody.linux-foundation.org>
+References: <20070202165842.GA6412@havoc.gtf.org>
+	<Pine.LNX.4.64.0702020911560.15057@woody.linux-foundation.org>
+X-Mailer: Claws Mail 2.7.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Mailer: Microsoft Office Outlook 11
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
-Thread-Index: AcdG3M2hx7X+j4gGRs2VLrd71Kc9OwAHE+4w
-In-Reply-To: <Pine.LNX.4.61.0702021610510.26531@yvahk01.tjqt.qr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> MODULE_IS_UNDER_GPL_LICENSE("yes\0 but only this .c file");
+On Fri, 2 Feb 2007 09:13:56 -0800 (PST)
+Linus Torvalds <torvalds@linux-foundation.org> wrote:
+
 > 
+> 
+> On Fri, 2 Feb 2007, Jeff Garzik wrote:
+> >
+> >       pata_atiixp: propogate cable detection hack from drivers/ide to the new driver
+> 
+> It's prop*a*gate. 
+> 
+> Damn. 
 
-MODULE_IS_UNDER_GPL_LICENSE(0)
-(integer, not string).
+So add git-commit auto spelling fixes for them
 
-Paul
+Alan, taking leave henceforth reptant unto his box.
 
