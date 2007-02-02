@@ -1,54 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751958AbXBBLH6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751956AbXBBLI6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751958AbXBBLH6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Feb 2007 06:07:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751981AbXBBLH6
+	id S1751956AbXBBLI6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Feb 2007 06:08:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751981AbXBBLI6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Feb 2007 06:07:58 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:47533 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751958AbXBBLH5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Feb 2007 06:07:57 -0500
-Message-ID: <45C31B86.6070009@garzik.org>
-Date: Fri, 02 Feb 2007 06:07:50 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
+	Fri, 2 Feb 2007 06:08:58 -0500
+Received: from dtp.xs4all.nl ([80.126.206.180]:24363 "HELO abra2.bitwizard.nl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1751945AbXBBLI5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Feb 2007 06:08:57 -0500
+Date: Fri, 2 Feb 2007 12:08:54 +0100
+From: Erik Mouw <erik@harddisk-recovery.com>
+To: Lapo TIN <lapolapolapo@tin.it>
+Cc: linux-smp@vger.kernel.org, linux-kernel@vger.kernel.org,
+       "'Robert Hancock'" <hancockr@shaw.ca>
+Subject: Re: smp and irq conflict
+Message-ID: <20070202110853.GA16296@harddisk-recovery.com>
+References: <45C277E0.2040604@shaw.ca> <45C0FAE300242D46@vsmtp14.tin.it>
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: "Michael K. Edwards" <medwards.linux@gmail.com>,
-       Linux Kernel List <linux-kernel@vger.kernel.org>
-Subject: Re: Should io(read|write)(8|16|32)_rep take (const|) volatile u(8|16|32)
- __iomem *addr?
-References: <f2b55d220702011624v6cb13c8ct1d70863a661d2227@mail.gmail.com> <f2b55d220702011635s5b338a6ct861645ea7892f732@mail.gmail.com> <45C2D47A.9080001@garzik.org> <45C2DA8D.4050007@zytor.com>
-In-Reply-To: <45C2DA8D.4050007@zytor.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.7 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <45C0FAE300242D46@vsmtp14.tin.it>
+Organization: Harddisk-recovery.com
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> Jeff Garzik wrote:
->> Volatile is usually reserved for a specific need on a specific arch.  
->> I doubt it is correct to force it on all arches.
-> 
-> They already are volatile; the issue is adding "const".
-> 
-> All io(read|write)* pointers are volatile, IIRC.
+On Fri, Feb 02, 2007 at 01:04:53AM +0100, Lapo TIN wrote:
+> I need to capture at 25 frame per second from each channel...
+> So 25 x 8 total frames per second on the pci.
 
-No, none are volatile, hence my comment.
+Each PAL frame takes about 800k, so that makes 20MB/s per channel. With
+8 channels that makes 160 MB/s. That will most certainly overwhelm a
+normal 33 MHz 32 bit PCI bus which has a theoretical bandwidth of 132
+MB/s (90MB/s max in practice). Modern PCs have faster PCI busses
+(66MHz, 64 bit, PCI-X, or PCI-e) so there's less chance on bus
+contention.
 
-> [jgarzik@pretzel linux-2.6]$ grep volatile lib/iomap.c include/asm-generic/iomap.h 
-> [jgarzik@pretzel linux-2.6]$ 
+On the other hand, I suppose you will store the video streams on disk.
+That will use another 20MB/s per channel on the bus so the total
+becomes 320 MB/s. You need some careful system design in order to get
+that right. Especially look carefully at bus contention, if the system
+has multiple busses, distribute the bttv cards over those busses. Also
+be sure to have enough bandwidth for the disk subsystem.
 
-Maybe you were thinking about writel() and friends, whose implementation 
-(not prototype!) includes use of volatile.
+> So do you think I have to change the motherboard ?
+> What is important ? the chipset ? is there specification I need ?
 
-Regards,
+Last time I had to record frame-synchronous video from 3 streams (8
+years ago) PCs could hardly manage 2 streams over their bus and there
+was no way to guarantee frame sync. The only way out was to use an SGI
+Onyx2 with 3 digital video option cards and a large disk subsystem.
+That made the whole system much more expensive but at that time it was
+the only way to meet all requirements.
 
-	Jeff
+I don't know about current PCs, bus speeds have improved. It is however
+still important how those busses are connected together and to the
+chipset. You have to figure out from your motherboard documentation if
+there is enough bandwidth available. If there isn't, get a faster
+motherboard, or consider using compressing grabber cards like the
+Hauppauge PVR 150 or PVR 500.
 
 
-
+Erik
+-- 
++-- Erik Mouw -- www.harddisk-recovery.com -- +31 70 370 12 90 --
+| Lab address: Delftechpark 26, 2628 XH, Delft, The Netherlands
