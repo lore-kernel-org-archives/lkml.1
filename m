@@ -1,55 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423184AbXBBH3K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423195AbXBBHcL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423184AbXBBH3K (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Feb 2007 02:29:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423191AbXBBH3K
+	id S1423195AbXBBHcL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Feb 2007 02:32:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423193AbXBBHcK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Feb 2007 02:29:10 -0500
-Received: from brick.kernel.dk ([62.242.22.158]:22055 "EHLO kernel.dk"
+	Fri, 2 Feb 2007 02:32:10 -0500
+Received: from smtp5-g19.free.fr ([212.27.42.35]:33648 "EHLO smtp5-g19.free.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423184AbXBBH3I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Feb 2007 02:29:08 -0500
-Date: Fri, 2 Feb 2007 08:31:18 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: David Chinner <dgc@sgi.com>
-Cc: Christoph Lameter <clameter@sgi.com>, Andrew Morton <akpm@osdl.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.20-rc6-mm3
-Message-ID: <20070202073117.GS10305@kernel.dk>
-References: <20070129204528.eb8d695e.akpm@osdl.org> <Pine.LNX.4.64.0701311559310.11853@schroedinger.engr.sgi.com> <20070131162422.6bccc52c.akpm@osdl.org> <Pine.LNX.4.64.0701311626160.12104@schroedinger.engr.sgi.com> <20070131163638.290f40c1.akpm@osdl.org> <20070201062018.GC33919298@melbourne.sgi.com> <20070131231253.fdebc9f5.akpm@osdl.org> <Pine.LNX.4.64.0702011055310.7010@schroedinger.engr.sgi.com> <20070201191857.GQ10305@kernel.dk> <20070202040858.GN33919298@melbourne.sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1423195AbXBBHcJ convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Feb 2007 02:32:09 -0500
+From: Duncan Sands <duncan.sands@math.u-psud.fr>
+To: Alexey Dobriyan <adobriyan@openvz.org>
+Subject: Re: remove_proc_entry and read_proc
+Date: Fri, 2 Feb 2007 08:31:57 +0100
+User-Agent: KMail/1.9.6
+Cc: linux-kernel@vger.kernel.org, adobriyan@gmail.com
+References: <20070201160904.GC6023@localhost.sw.ru>
+In-Reply-To: <20070201160904.GC6023@localhost.sw.ru>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <20070202040858.GN33919298@melbourne.sgi.com>
+Message-Id: <200702020831.58229.duncan.sands@math.u-psud.fr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 02 2007, David Chinner wrote:
-> On Thu, Feb 01, 2007 at 08:18:57PM +0100, Jens Axboe wrote:
-> > That down() probably wants a replug to precede it. Probably something
-> > like:
-> > 
-> >         if (atomic_read(&bp->b_io_remaining))
-> >                 blk_replug_current_nested();
-> > 
-> > for xfs_buf_wait_unpin() and xfs_buf_lock(). Does this fix it?
+Hi Alexey,
+
+> I believe, barriers not needed, not now.
 > 
-> Jens, this patch looks like you originally removed the explicit
-> unplug calls that XFS used to prevent metadata I/O hangs and now you
-> are putting them back.  Correct?
-> 
-> Reading on from Andrew's earlier comments, shouldn't XFS have
-> worked unchanged? I'm just trying to understand why you removed
-> the explicit unplugs in the first place.....
+> This scheme relies on the fact that remove_proc_entry() will be the only
+> place that will clear ->proc_fops and, once cleared, ->proc_fops will
+> never be resurrected. Clearing of ->proc_fops will eventually propagate
+> to CPU doing first check, thus preveting refcount bumps from this CPU.
+> What can be missed is some "rogue" readers or writers¹. Big deal.
 
-It should, the problem is if someone has plugged higher up in the
-hierarchy, then you do need the explicit replug to drain that before
-going to sleep and waiting for IO to complete. Not very happy about that
-situation, I'd prefer if that happened automagically. I'll likely change
-the code to fix that, so we don't have to sprinkle
-blk_replug_current_nested() and always call io_schedule() instead of
-schedule(). It's just going to cause too many problems.
+I don't understand you.  Without memory barriers, remove_proc_entry will
+most of the time, but not all of the time, wait for all readers and writers
+to finish before exiting.  Since the whole point of your patch was to ensure
+that all readers and writers finish before remove_proc_entry exits, I don't
+understand why you don't just put the memory barriers in and make it correct.
 
--- 
-Jens Axboe
+Also, I do consider it a big deal:
 
+> ¹ Sigh, modules should do removals of proc entries first. And I should
+> check for that.
+
+Modules should of course call remove_proc_entry before exiting.  However
+right now, even with your patch, a read or write method can still be
+running when remove_proc_entry returns [1], so could still be running when
+the module is removed (if they sleep; I guess this applies mostly to
+write methods).  This is very bad - why not put in memory barriers and
+fix it?  Also, plenty of proc read and write methods access private data
+that is allocated before calling create_proc_entry and freed after calling
+remove_proc_entry.  If a read or write method is still running after
+remove_proc_entry returns, then it can access freed memory - very bad.
+
+Ciao,
+
+Duncan.
+
+[1] proc_get_inode does a try_module_get, so it is possible that module
+unloading is not a problem - not sure.
