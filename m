@@ -1,78 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946094AbXBBVaa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946079AbXBBVeP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946094AbXBBVaa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Feb 2007 16:30:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946096AbXBBVaa
+	id S1946079AbXBBVeP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Feb 2007 16:34:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946097AbXBBVeP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Feb 2007 16:30:30 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:41292 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1946094AbXBBVaa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Feb 2007 16:30:30 -0500
-Date: Fri, 2 Feb 2007 13:30:09 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Alan <alan@lxorguk.ukuu.org.uk>
-cc: Ingo Molnar <mingo@elte.hu>, Zach Brown <zach.brown@oracle.com>,
-       linux-kernel@vger.kernel.org, linux-aio@kvack.org,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Benjamin LaHaise <bcrl@kvack.org>
-Subject: Re: [PATCH 2 of 4] Introduce i386 fibril scheduling
-In-Reply-To: <20070202213019.202e8db5@localhost.localdomain>
-Message-ID: <Pine.LNX.4.64.0702021322310.15057@woody.linux-foundation.org>
-References: <patchbomb.1170193181@tetsuo.zabbo.net>
- <df7bc026d50ec5bbdd8e.1170193183@tetsuo.zabbo.net> <20070201083611.GC18233@elte.hu>
- <Pine.LNX.4.64.0702011154110.3632@woody.linux-foundation.org>
- <20070202104900.GA13941@elte.hu> <Pine.LNX.4.64.0702020738500.15057@woody.linux-foundation.org>
- <20070202195932.15b9b4ed@localhost.localdomain>
- <Pine.LNX.4.64.0702021155460.15057@woody.linux-foundation.org>
- <20070202213019.202e8db5@localhost.localdomain>
+	Fri, 2 Feb 2007 16:34:15 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:49412 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1946079AbXBBVeO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Feb 2007 16:34:14 -0500
+Date: Fri, 2 Feb 2007 22:13:40 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Leo Yuriev <ly@hanoi.cronyx.ru>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.19 + VIA EPIA = very mysterious RESET-problem :(
+Message-ID: <20070202211340.GA4737@elf.ucw.cz>
+References: <1833199799.20070129203818@hanoi.cronyx.ru>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1833199799.20070129203818@hanoi.cronyx.ru>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi!
 
-
-On Fri, 2 Feb 2007, Alan wrote:
+> I have a really big trouble with VIA-EPIA mainboards under Linux
+> 2.6.19. After loading kernel Linux the RESET-circuit ceases to work
+> correctly.
 > 
-> The brown and sticky will hit the rotating air impeller pretty hard if you
-> are not very careful about how that ends up scheduled
+> At reset (by RESET-button or by Watchdog) the system begins to be
+> restarted, but hangs before occurrence of any BIOS-messages. Only a
+> power-off and then power-up can help. The problem has been reproduced
+> confidently and constantly, I has checked up about 20 mainboards (EPIA-
+> EN/C7 and EPIA-PD/C3).
+> 
+> I am sure, this is not a Linux-related problem, but error in hardware
+> design or BIOS-code. Because RESET-circuit must work always and be
+> independent from a running software.
 
-Why do you think that?
+BIOS/hw problem.
 
-With cooperative scheduling (like the example Zach posted), there is 
-absolutely no "brown and sticky" wrt any CPU usage. Which is why 
-cooperative scheduling is a *good* thing. If you want to blow up your 
-1024-node CPU cluster, you'd to it with "real threads".
+> VIA's support doesn't give any usable response. But now I just need
+> some workaround...
+> 
+> Does somebody has ideas?
+> I can make some tests or perform deep-debugging, but currently I don't
+> know where I could start from.
 
-Also, with sane default limits of fibrils per process (say, in the 5-10), 
-it also ends up beign good for IO. No "insane" IO bombs, but an easy way 
-for users to just just get a reasonable amount of IO parallelism without 
-having to use threading (which is hard).
+Try disabling acpi, apic, and/or try repeating it with minimum drivers.
 
-So, best of both worlds.
-
-Yes, *of*course* you want to have limits on outstanding work. And yes, a 
-database server would set those limits much higher ("Only a thousand 
-outstanding IO requests? Can we raise that to ten thousand, please?") than 
-a regular process ("default: 5, and the super-user can raise it for you if 
-you're good").
-
-But there really shouldn't be any downsides.
-
-(Of course, there will be downsides. I'm sure there will be. But I don't 
-see any really serious and obvious ones).
-
-> Other minor evil. If we use fibrils we need to be careful we
-> know in advance how many fibrils an operation needs so we don't deadlock
-> on them in critical places like writeout paths when we either hit the per
-> task limit or we have no page for another stack.
-
-Since we'd only create fibrils on a system call entry level, and system 
-calls are independent, how would you do that anyway?
-
-Once a fibril has been created, it will *never* depend on any other fibril 
-resources ever again. At least not in any way that any normal non-fibril 
-call wouldn't already do as far as I can see.
-
-		Linus
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
