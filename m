@@ -1,61 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946087AbXBBVNj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946081AbXBBVSS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946087AbXBBVNj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Feb 2007 16:13:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946081AbXBBVNj
+	id S1946081AbXBBVSS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Feb 2007 16:18:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946088AbXBBVSS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Feb 2007 16:13:39 -0500
-Received: from smtp23.orange.fr ([193.252.22.126]:28860 "EHLO smtp23.orange.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1946087AbXBBVNi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Feb 2007 16:13:38 -0500
-X-ME-UUID: 20070202211335710.AD6F67000089@mwinf2322.orange.fr
-Message-ID: <45C3A97E.5060909@free.fr>
-Date: Fri, 02 Feb 2007 22:13:34 +0100
-From: Laurent Riffard <laurent.riffard@free.fr>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; fr-FR; rv:1.8.0.7) Gecko/20060405 SeaMonkey/1.0.5
-MIME-Version: 1.0
-To: Edward Shishkin <edward@namesys.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>,
-       "Vladimir V. Saveliev" <vs@namesys.com>, reiserfs-list@namesys.com,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.20-rc3-mm1: umount reiser4 FS stuck in D state
-References: <20070104220200.ae4e9a46.akpm@osdl.org> <200701062158.06329.vs@namesys.com> <45A81231.6040104@free.fr> <200701231940.58053.vs@namesys.com> <20070123154617.GE11995@kernel.dk> <45B65234.4000203@free.fr> <45C247EB.6000806@namesys.com> <45C250C9.3040307@free.fr> <45C26130.5090108@namesys.com>
-In-Reply-To: <45C26130.5090108@namesys.com>
-X-Enigmail-Version: 0.94.0.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+	Fri, 2 Feb 2007 16:18:18 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:55408 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1946081AbXBBVSS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Feb 2007 16:18:18 -0500
+Date: Fri, 2 Feb 2007 21:30:19 +0000
+From: Alan <alan@lxorguk.ukuu.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Zach Brown <zach.brown@oracle.com>,
+       linux-kernel@vger.kernel.org, linux-aio@kvack.org,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Benjamin LaHaise <bcrl@kvack.org>
+Subject: Re: [PATCH 2 of 4] Introduce i386 fibril scheduling
+Message-ID: <20070202213019.202e8db5@localhost.localdomain>
+In-Reply-To: <Pine.LNX.4.64.0702021155460.15057@woody.linux-foundation.org>
+References: <patchbomb.1170193181@tetsuo.zabbo.net>
+	<df7bc026d50ec5bbdd8e.1170193183@tetsuo.zabbo.net>
+	<20070201083611.GC18233@elte.hu>
+	<Pine.LNX.4.64.0702011154110.3632@woody.linux-foundation.org>
+	<20070202104900.GA13941@elte.hu>
+	<Pine.LNX.4.64.0702020738500.15057@woody.linux-foundation.org>
+	<20070202195932.15b9b4ed@localhost.localdomain>
+	<Pine.LNX.4.64.0702021155460.15057@woody.linux-foundation.org>
+X-Mailer: Claws Mail 2.7.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> They are NOT the generic co-routine that some languages support natively. 
+> So I think trying to call them coroutines would be even more misleading 
+> than calling them fibrils.
 
-Le 01.02.2007 22:52, Edward Shishkin a écrit :
-> Laurent Riffard wrote:
->>
->> Le 01.02.2007 21:04, Edward Shishkin a écrit :
->>>
->>> Laurent, would you please try 2.6.20-rc6-mm3 + this patch:
->>> http://lkml.org/lkml/diff/2007/2/1/195/1
->>
->>
->> Reiser4 works fine with 2.6.20-rc6-mm2 or 2.6.20-rc6-mm3 without any 
->> additional patch (it was broken in rc6-mm1).
->>
->> FWIW, Andrew removed git-block.patch from 2.6.20-rc6-mm2, and he 
->> restored git-block.patch without some problematic CFQ updates in 
->> 2.6.20-rc6-mm3.
->>
->> In this case, does this patch need testing in rc6-mm3 ?
+Its actually pretty damned close the Honeywell B co-routine package, with
+a kernel twist to be honest.
+
+> ends up looking like. There's a good reason why people program mostly in 
+> linear flow: that's how people think consciously - even if it's obviously 
+> not how the brain actually works).
+
+The IRQ example below is an example of how it linearizes - so it cuts
+both ways like most tools, admittedly one of the blades is at the handle
+end in this case ...
+
+> Basically, what I'm hoping can come out of this (and this is a simplistic 
+> example, but perhaps exactly *because* of that it hopefully also shows 
+> that we canactually make *simple* interfaces for complex asynchronous 
+> things):
 > 
-> Yes. This is against git-block patch to prevent endless waiting for IO 
-> completion.
-> I have reproduced it by ./iozone -B -a -n 524288 -f /mnt/foo
-> on x86 box with 512M RAM available.
+> 	struct one_entry *prev = NULL;
+> 	struct dirent *de;
+> 
+> 	while ((de = readdir(dir)) != NULL) {
+> 		struct one_entry *entry = malloc(..);
+> 
+> 		/* Add it to the list, fill in the name */
+> 		entry->next = prev;
+> 		prev = entry;
+> 		strcpy(entry->name, de->d_name);
+> 
+> 		/* Do the stat lookup async */
+> 		async_stat(de->d_name, &entry->stat_buf);
+> 	}
+> 	wait_for_async();
 
-OK, applied yesterday. I have been using it a few hours with a normal 
-workload and I didn't notice any problem.
+The brown and sticky will hit the rotating air impeller pretty hard if you
+are not very careful about how that ends up scheduled. Its one thing to
+exploit the ability to pull all the easy lookups out in advance, and
+another having created all the parallelism to turn into into sane disk
+scheduling and wakeups without scaling hit. But you do at least have the
+opportunity to exploit it I guess.
 
-Thanks
--- 
-laurent
+> > You get some other funny things from co-routines which are very powerful,
+> > very dangerous, or plain insane
+> 
+> You forgot "very hard to think about". 
 
+I'm not sure handing a fibril off to another task is that hard to think
+about. It's not easy to turn it around as an async_exit() keeping the
+other fibrils around because of the mass of rules and behaviours tied to
+process exit but its perhaps not impossible.
+
+Other minor evil. If we use fibrils we need to be careful we
+know in advance how many fibrils an operation needs so we don't deadlock
+on them in critical places like writeout paths when we either hit the per
+task limit or we have no page for another stack.
+
+Alan
