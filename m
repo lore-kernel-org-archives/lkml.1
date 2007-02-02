@@ -1,88 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946067AbXBBU4g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946069AbXBBVBk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946067AbXBBU4g (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Feb 2007 15:56:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946068AbXBBU4f
+	id S1946069AbXBBVBk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Feb 2007 16:01:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946070AbXBBVBj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Feb 2007 15:56:35 -0500
-Received: from avexch1.qlogic.com ([198.70.193.115]:52420 "EHLO
-	avexch1.qlogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1946067AbXBBU4f (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Feb 2007 15:56:35 -0500
-Date: Fri, 2 Feb 2007 12:56:30 -0800
-From: Andrew Vasquez <andrew.vasquez@qlogic.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux-SCSI Mailing List <linux-scsi@vger.kernel.org>,
-       Nigel Kirkland <nigel.kirkland@qlogic.com>
-Subject: Re: [BUG] Unable to handle kernel NULL pointer dereference...as_move_to_dispatch+0x11/0x135
-Message-ID: <20070202205630.GI3737@andrew-vasquezs-computer.local>
-References: <20070122183510.GA19905@andrew-vasquezs-computer.local> <20070201232302.905962b6.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070201232302.905962b6.akpm@linux-foundation.org>
-Organization: QLogic Corporation
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-OriginalArrivalTime: 02 Feb 2007 20:56:34.0475 (UTC) FILETIME=[9F83E7B0:01C7470C]
+	Fri, 2 Feb 2007 16:01:39 -0500
+Received: from main.gmane.org ([80.91.229.2]:41920 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1946069AbXBBVBi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Feb 2007 16:01:38 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Oleg Verych <olecom@flower.upol.cz>
+Subject: Re: [PATCH] sed s/gawk/awk/ scripts/gen_init_ramfs.sh
+Date: Fri, 2 Feb 2007 21:01:04 +0000 (UTC)
+Organization: Palacky University in Olomouc, experimental physics department.
+Message-ID: <slrnes7a58.m64.olecom@flower.upol.cz>
+References: <200701151624.18033.rob@landley.net> <20070115221146.GA12698@uranus.ravnborg.org> <20070123164944.db8acbad.akpm@osdl.org> <20070202163620.GG3754@stusta.de>
+X-Complaints-To: usenet@sea.gmane.org
+X-Gmane-NNTP-Posting-Host: flower.upol.cz
+User-Agent: slrn/0.9.8.1pl1 (Debian)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 01 Feb 2007, Andrew Morton wrote:
+> From: Adrian Bunk
+> Newsgroups: gmane.linux.kernel
+> Subject: Re: [PATCH] sed s/gawk/awk/ scripts/gen_init_ramfs.sh
+> Date: Fri, 2 Feb 2007 17:36:20 +0100
+[]
+> On Tue, Jan 23, 2007 at 04:49:44PM -0800, Andrew Morton wrote:
+>> On Mon, 15 Jan 2007 23:11:46 +0100
+>> Sam Ravnborg <sam@ravnborg.org> wrote:
+>> 
+>> > On Mon, Jan 15, 2007 at 04:24:17PM -0500, Rob Landley wrote:
+>> > > Signed-off-by: Rob Landley <rob@landley.net>
+>> > Acked-by: Sam Ravnborg <sam@ravnborg>
+>> > 
+>> > > Use "awk" instead of "gawk".
+>> > > 
+>> > > -- 
+>> > > 
+>> > > There's a symlink from awk to gawk if you're using the gnu tools, but no
+>> > > symlink from gawk to awk if you're using BusyBox or some such.  (There's a
+>> > > reason for the existence of standard names.  Can we use them please?)
+>> 
+>> If the kernel is being compiled on a non-Linux system (eg: legacy Unix)
+>> then it is, I guess, possible for `awk' and `gawk' to offer different
+>> features.  If the kernel's use of gawk uses GNU extensions then this patch
+>> might break things on such a system.
+>> 
+>> I guess we'll find out...
+>
+> Not only legacy systems.
+>
+> E.g. in Debian GNU/Linux you must have at least one AWK implementation 
+> installed, and awk is a symlink to one of them (both is done by the 
+> package manager).
+>
+> Available AWK implementations are:
+> - GNU AWK 
+> - Mawk
+> - the original AWK
 
-> On Mon, 22 Jan 2007 10:35:10 -0800 Andrew Vasquez <andrew.vasquez@qlogic.com> wrote:
-> > Basically what is happening from the FC side is the initiator executes
-> > a simple dt test:
-> > 
-> >         dt of=/dev/raw/raw1 procs=8 oncerr=abort bs=16k disable=stats limit=2m passes=1000000 pattern=iot dlimit=2048
-> > 
-> > against a single lun (a very basic Windows target mode driver).
-> > During the test a port-enable, port-disable script is running agains
-> > the switch's port that is connected to the target (this occurs every
-> > sixty seconds (for a disabled duration of 2 seconds).  Additionally,
-> > the target itself is set to LOGO (logout) or drop off the topology
-> > every 30 seconds.
-> 
-> I don't understand what effect the port-enable/port-disable has upon the
-> system.  Will it cause I/O errors, or what?
+Well, i'm looking for anyone to comment on my respond to this "issue".
+Probably noone has much time to do this. Anyway, please see my patch:
 
-No I/O errors should make there way to the upper-layers (block/FS).
-The system *should* be shielded from the fibre-channel fabric events.
-I just wanted to explain what the (basic sanity) test did.
+	 Message-ID: <slrnes021q.f71.olecom@flower.upol.cz>
+	 Archived-At: <http://permalink.gmane.org/gmane.linux.kernel/488044>
 
-> > This test runs fine up to 2.6.19.
-> 
-> One thing we did in there was to give direct-io-against-blockdevs some
-> special-case bio-preparation code.  Perhaps this is tickling a bug somehow.
-> 
-> We can revert that change like this:
-> 
-> 
-> diff -puN fs/block_dev.c~a fs/block_dev.c
-> --- a/fs/block_dev.c~a
-> +++ a/fs/block_dev.c
-> @@ -196,8 +196,47 @@ static void blk_unget_page(struct page *
->  	pvec->page[--pvec->idx] = page;
->  }
->  
-> +static int
-> +blkdev_get_blocks(struct inode *inode, sector_t iblock,
-> +		struct buffer_head *bh, int create)
-...
+Thanks.
 
-Hmm, with this patch we've noted two main differences:
+____
 
-1) I/O throughput with the basic 'dd' command used (above) is back to
-   60MB/s, rather than the appalling 20-22 MB/s we were seeing with
-   2.6.20-rcX.
-
-2) No panics -- so far with 2+ hours of testing.  With our vanilla
-   system of 2.6.20-rc7, the test could trigger the panic within 15 to
-   20 minutes.
-
-We'll let this run over the weekend -- I'll certainly let you know if
-anything has changed (failures).
-
---
-Andrew Vasquez
