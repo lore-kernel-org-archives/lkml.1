@@ -1,59 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423110AbXBBFsq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423117AbXBBFtN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423110AbXBBFsq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Feb 2007 00:48:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423105AbXBBFsq
+	id S1423117AbXBBFtN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Feb 2007 00:49:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423111AbXBBFtM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Feb 2007 00:48:46 -0500
-Received: from 1wt.eu ([62.212.114.60]:2219 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423110AbXBBFsq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Feb 2007 00:48:46 -0500
-Date: Fri, 2 Feb 2007 06:48:28 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: Mike Frysinger <vapier@gentoo.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, rth@twiddle.net,
-       linux-kernel@vger.kernel.org, alpha@gentoo.org
-Subject: Re: epoll handling in the alpha port
-Message-ID: <20070202054828.GE24090@1wt.eu>
-References: <200702011520.46723.vapier@gentoo.org> <20070201210555.ac637298.akpm@linux-foundation.org> <200702020019.36248.vapier@gentoo.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 2 Feb 2007 00:49:12 -0500
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:57314 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1423112AbXBBFtJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Feb 2007 00:49:09 -0500
+Date: Fri, 2 Feb 2007 06:49:16 +0100
+From: Adrian Bunk <bunk@stusta.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@osdl.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Vasquez <andrew.vasquez@qlogic.com>,
+       Jens Axboe <jens.axboe@oracle.com>, Gerhard Dirschl <gd@spherenet.de>,
+       Luca Tettamanti <kronos.it@gmail.com>, Christoph Hellwig <hch@lst.de>,
+       petero2@telia.com, jgarzik@pobox.com, linux-ide@vger.kernel.org,
+       alan@lxorguk.ukuu.org.uk, Livio Soares <livio@eecg.toronto.edu>,
+       Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org,
+       Berthold Cogel <cogel@rrz.uni-koeln.de>,
+       =?utf-8?B?RnJhbsOnb2lz?= Valenduc <francois.valenduc@skynet.be>,
+       Alan Stern <stern@rowland.harvard.edu>, greg@kroah.com,
+       linux-usb-devel@lists.sourceforge.net,
+       Prakash Punnoor <prakash@punnoor.de>, Oliver Neukum <oliver@neukum.org>,
+       Cijoml Cijomlovic Cijomlov <cijoml@volny.cz>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, ttb@tentacle.dhs.org,
+       rml@novell.com, Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+       takada <takada@mbf.nifty.com>, Jordan Crouse <jordan.crouse@amd.com>
+Subject: 2.6.20-rc7: known regressions
+Message-ID: <20070202054916.GA3754@stusta.de>
+References: <Pine.LNX.4.64.0701302019530.11095@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <200702020019.36248.vapier@gentoo.org>
-User-Agent: Mutt/1.5.11
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <Pine.LNX.4.64.0701302019530.11095@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 02, 2007 at 12:19:35AM -0500, Mike Frysinger wrote:
-> On Friday 02 February 2007, Andrew Morton wrote:
-> > It might be to late to fix this - we risk breaking userspace which worked
-> > around it.
-> 
-> we'd be breaking userspace API, but not ABI ... and the largest consumers out 
-> there (glibc/uclibc) have not been accounting for this, so we wouldnt be 
-> breaking them
-> 
-> that's how we noticed the issue in Gentoo ... all the epoll calls are 
-> automatically declared -ENOSYS stubs in glibc's libc.so
-> 
-> is there some other large consumer i'm not thinking of ?
+This email lists some known regressions in 2.6.20-rc7 compared to 2.6.19
+that are not yet fixed in Linus' tree.
 
-Not necessarily some large consumers, but epoll() is quite older than its
-kernel inclusion, so there certainly are some apps still using the syscall
-without going through libc.
+If you find your name in the Cc header, you are either submitter of one
+of the bugs, maintainer of an affectected subsystem or driver, a patch
+of you caused a breakage or I'm considering you in any other way possibly
+involved with one or more of these issues.
 
-> > It would be safer to add the correct definitions while leaving the old ones
-> > in place.
-> 
-> in the end, either works for me ... i can see linux's pretty hard 'dont break 
-> userspace' policy coming into play here
+Due to the huge amount of recipients, please trim the Cc when answering.
 
-I think it would be reasonable to use the NR_epoll* names first, and to
-declare NR_sys_epoll* aliases which will point to NR_epoll*. You would
-then add a comment with the date of the change, stating that you keep
-them just in case there are some old apps. Then, someone coming on the
-comment in 3 or 4 years could reasonably suggest removing those aliases.
 
-Willy
+Subject    : NULL pointer dereference at as_move_to_dispatch()
+References : http://lkml.org/lkml/2007/1/22/141
+Submitter  : Andrew Vasquez <andrew.vasquez@qlogic.com>
+Status     : unknown
+
+
+Subject    : pktcdvd doesn't work with libata pata drivers
+References : http://bugzilla.kernel.org/show_bug.cgi?id=7810
+             http://lkml.org/lkml/2007/1/25/128
+             http://bugzilla.kernel.org/show_bug.cgi?id=7910
+             http://lkml.org/lkml/2007/1/30/289
+Submitter  : Gerhard Dirschl <gd@spherenet.de>
+             Luca Tettamanti <kronos.it@gmail.com>
+Caused-By  : Christoph Hellwig <hch@lst.de>
+             commit 3b00315799d78f76531b71435fbc2643cd71ae4c
+             commit 406c9b605cbc45151c03ac9a3f95e9acf050808c
+Status     : unknown
+
+
+Subject    : powerpc64: performance monitor exception
+References : http://ozlabs.org/pipermail/linuxppc-dev/2007-January/030045.html
+Submitter  : Livio Soares <livio@eecg.toronto.edu>
+Caused-By  : Paul Mackerras <paulus@samba.org>
+             commit d04c56f73c30a5e593202ecfcf25ed43d42363a2
+Status     : unknown
+
+
+Subject    : reboot instead of powerdown  (CONFIG_USB_SUSPEND)
+References : http://lkml.org/lkml/2006/12/25/40
+             http://bugzilla.kernel.org/show_bug.cgi?id=7828
+Submitter  : Berthold Cogel <cogel@rrz.uni-koeln.de>
+             François Valenduc <francois.valenduc@skynet.be>
+Handled-By : Alan Stern <stern@rowland.harvard.edu>
+Status     : problem is being debugged
+
+
+Subject    : usb somehow broken  (CONFIG_USB_SUSPEND)
+References : http://lkml.org/lkml/2007/1/11/146
+Submitter  : Prakash Punnoor <prakash@punnoor.de>
+Handled-By : Oliver Neukum <oliver@neukum.org>
+             Alan Stern <stern@rowland.harvard.edu>
+Status     : problem is being debugged
+
+
+Subject    : BUG: at fs/inotify.c:172 set_dentry_child_flags()
+References : http://bugzilla.kernel.org/show_bug.cgi?id=7785
+Submitter  : Cijoml Cijomlovic Cijomlov <cijoml@volny.cz>
+Handled-By : Nick Piggin <nickpiggin@yahoo.com.au>
+Status     : problem is being debugged
+
+
+Subject    : fix geode_configure()
+References : http://lkml.org/lkml/2007/1/9/216
+Submitter  : Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+Caused-By  : takada <takada@mbf.nifty.com>
+             commit e4f0ae0ea63caceff37a13f281a72652b7ea71ba
+Handled-By : takada <takada@mbf.nifty.com>
+             Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+Status     : patches are being discussed
 
