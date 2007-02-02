@@ -1,46 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423013AbXBBE5V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423007AbXBBFGL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423013AbXBBE5V (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Feb 2007 23:57:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423002AbXBBE5V
+	id S1423007AbXBBFGL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Feb 2007 00:06:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423017AbXBBFGL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Feb 2007 23:57:21 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:52326 "EHLO mx2.suse.de"
+	Fri, 2 Feb 2007 00:06:11 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:32855 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423007AbXBBE5U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Feb 2007 23:57:20 -0500
-From: Neil Brown <neilb@suse.de>
-To: Roland Dreier <rdreier@cisco.com>
-Date: Fri, 2 Feb 2007 15:56:52 +1100
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1423007AbXBBFGK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Feb 2007 00:06:10 -0500
+Date: Thu, 1 Feb 2007 21:05:55 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mike Frysinger <vapier@gentoo.org>
+Cc: rth@twiddle.net, linux-kernel@vger.kernel.org, alpha@gentoo.org
+Subject: Re: epoll handling in the alpha port
+Message-Id: <20070201210555.ac637298.akpm@linux-foundation.org>
+In-Reply-To: <200702011520.46723.vapier@gentoo.org>
+References: <200702011520.46723.vapier@gentoo.org>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-ID: <17858.50324.772378.397661@notabene.brown>
-Cc: Andrew Morton <akpm@osdl.org>, nfs@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 000 of 14] knfsd: Preparation for IPv6 support in NFS server.
-In-Reply-To: message from Roland Dreier on Thursday February 1
-References: <20070202153531.18622.patches@notabene>
-	<adahcu55fiu.fsf@cisco.com>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday February 1, rdreier@cisco.com wrote:
->  > They are mostly from Chuck Level and make preparating for IPv6 support
->  > in the NFS server.
->  > They are *not* for 2.6.20, but should be ok for .21.
-> 
-> Out of curiousity, does this patch series reduce the delta between the
-> NFS/RDMA tree and mainline Linux?  In other words does this bring
-> NFS/RDMA closer to merging?
-> 
->  - R.
+On Thu, 1 Feb 2007 15:20:45 -0500 Mike Frysinger <vapier@gentoo.org> wrote:
 
-No idea.  I haven't seen any RDMA patches.  I seem to remember hearing
-them mentioned some time ago, but I haven't gone looking for them.
+> the alpha linux port differs from all others when it comes to the epoll 
+> functions in that it uses '__NR_sys_epoll_XXX' instead of '__NR_epoll_XXX' in 
+> the asm/unistd.h header ... the trouble with this is that glibc maps the 
+> function name directly to an __NR_ define, so when it maps 
+> like 'epoll_create', it expects '__NR_epoll_create' (which it gets with all 
+> other architectures)
+> 
+> is there some obvious thing i'm missing here ?  or is the attached patch OK ?
+> 
+> Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+> ---
+> --- a/include/asm-alpha/unistd.h
+> +++ b/include/asm-alpha/unistd.h
+> @@ -342,9 +342,9 @@
+>  #define __NR_io_cancel			402
+>  #define __NR_exit_group			405
+>  #define __NR_lookup_dcookie		406
+> -#define __NR_sys_epoll_create		407
+> -#define __NR_sys_epoll_ctl		408
+> -#define __NR_sys_epoll_wait		409
+> +#define __NR_epoll_create		407
+> +#define __NR_epoll_ctl		408
+> +#define __NR_epoll_wait		409
+>  #define __NR_remap_file_pages		410
+>  #define __NR_set_tid_address		411
+>  #define __NR_restart_syscall		412
 
-NeilBrown
+It might be to late to fix this - we risk breaking userspace which worked
+around it.
+
+It would be safer to add the correct definitions while leaving the old ones
+in place.
+
