@@ -1,46 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423048AbXBBOhe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1945907AbXBBOrk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423048AbXBBOhe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Feb 2007 09:37:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423039AbXBBOhe
+	id S1945907AbXBBOrk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Feb 2007 09:47:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945908AbXBBOrk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Feb 2007 09:37:34 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:42810 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1423048AbXBBOhc (ORCPT
+	Fri, 2 Feb 2007 09:47:40 -0500
+Received: from mtagate6.uk.ibm.com ([195.212.29.139]:44564 "EHLO
+	mtagate6.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1945907AbXBBOrj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Feb 2007 09:37:32 -0500
-Date: Fri, 2 Feb 2007 14:50:03 +0000
-From: Alan <alan@lxorguk.ukuu.org.uk>
-To: Ric Wheeler <ric@emc.com>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Mark Lord <liml@rtr.ca>, linux-kernel@vger.kernel.org,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>
-Subject: Re: [PATCH] scsi_lib.c: continue after MEDIUM_ERROR
-Message-ID: <20070202145003.525bd682@localhost.localdomain>
-In-Reply-To: <45C32C7F.9050706@emc.com>
-References: <200701301947.08478.liml@rtr.ca>
-	<1170206199.10890.13.camel@mulgrave.il.steeleye.com>
-	<45C2474E.9030306@rtr.ca>
-	<1170366920.3388.62.camel@mulgrave.il.steeleye.com>
-	<45C32C7F.9050706@emc.com>
-X-Mailer: Claws Mail 2.7.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 2 Feb 2007 09:47:39 -0500
+Message-ID: <45C34F08.90307@fr.ibm.com>
+Date: Fri, 02 Feb 2007 15:47:36 +0100
+From: Cedric Le Goater <clg@fr.ibm.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
+MIME-Version: 1.0
+To: "Starikovskiy, Alexey Y" <alexey.y.starikovskiy@intel.com>
+CC: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
+       "Moore, Robert" <robert.moore@intel.com>,
+       keith mannthey <kmannth@us.ibm.com>
+Subject: Re: 2.6.20-rc6-mm3
+References: <B41635854730A14CA71C92B36EC22AAC7CC853@mssmsx411>
+In-Reply-To: <B41635854730A14CA71C92B36EC22AAC7CC853@mssmsx411>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> your system requirements are, what the system is trying to do (i.e., 
-> when trying to recover a failing but not dead yet disk, IO errors should 
-> be as quick as possible and we should choose an IO scheduler that does 
-> not combine IO's).
+Hello !
 
-If this is the right strategy for disk recovery for a given type of
-device then this ought to be an automatic strategy. Most end users will
-not have the knowledge to frob about in sysfs, and if the bad sector hits
-at the wrong moment a sensible automatic recovery strategy is going to do
-the right thing faster than human intervention, which may be some hours
-away.
+Starikovskiy, Alexey Y wrote:
+> Hi,
+> I updated patch to use acpi_find_rsdp(), as all other code does.
 
+so it probably means that drivers/acpi/tables/tbxfroot.c is 
+obsolete ?
+
+> Could you please try it?
+
+sure, I'll cancel the current boot test in which I was using 
+acpi_find_root_pointer() in tbxfroot.c and restart one with your
+new patch. I should have the result today.
+ 
+> Thanks,
+> 	Alex.
+
+
+Thanks !
+
+C.
