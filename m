@@ -1,52 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751916AbXBBLEu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751957AbXBBLHh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751916AbXBBLEu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Feb 2007 06:04:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751945AbXBBLEu
+	id S1751957AbXBBLHh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Feb 2007 06:07:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751956AbXBBLHh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Feb 2007 06:04:50 -0500
-Received: from ug-out-1314.google.com ([66.249.92.171]:27219 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751916AbXBBLEt (ORCPT
+	Fri, 2 Feb 2007 06:07:37 -0500
+Received: from sardaukar.technologeek.org ([213.41.134.240]:55145 "EHLO
+	sonic.technologeek.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751952AbXBBLHg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Feb 2007 06:04:49 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=SveR4OeuVStORxcRzdu7aWIjo0MmHrjn6Gr5kxCwGZ6R1e+MRYvU9N2o3WRkUM+tPIcgw7fevvodO/xjut7uP4NSheaTGHltUI400e6c5RnNgswhfiCOGx3MUw8yYYI+xpl55JVpN663g/hK3YjGwRmXvNHrUTyC4veJhWzaZfs=
-Message-ID: <65258a580702020304m52283349ne4ba2895d9ce7188@mail.gmail.com>
-Date: Fri, 2 Feb 2007 12:04:47 +0100
-From: "Vincent Vanackere" <vincent.vanackere@gmail.com>
-To: "Pekka J Enberg" <penberg@cs.helsinki.fi>
-Subject: Re: [PATCH] lirc: remove backwards compatibility macro obfuscation (Was: Free Linux Driver Development!)
-Cc: lirc@bartelmus.de, linux-kernel@vger.kernel.org,
-       linux-input@atrey.karlin.mff.cuni.cz
-In-Reply-To: <Pine.LNX.4.64.0702021038270.21422@sbz-30.cs.Helsinki.FI>
+	Fri, 2 Feb 2007 06:07:36 -0500
+X-Greylist: delayed 1357 seconds by postgrey-1.27 at vger.kernel.org; Fri, 02 Feb 2007 06:07:36 EST
+From: Julien BLACHE <jb@jblache.org>
+To: Thomas Glanzmann <thomas@glanzmann.de>
+Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
+       Fagyal Csongor <concept@conceptonline.hu>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: sky2 hangs
+References: <20070201185532.GL13130@cip.informatik.uni-erlangen.de>
+	<42007.80.98.159.250.1170369983.squirrel@www.hunhost.com>
+	<20070201145815.199bfe1a@freekitty>
+	<20070202063104.GA13130@cip.informatik.uni-erlangen.de>
+Date: Fri, 02 Feb 2007 11:44:55 +0100
+In-Reply-To: <20070202063104.GA13130@cip.informatik.uni-erlangen.de> (Thomas
+	Glanzmann's message of "Fri, 2 Feb 2007 07:31:04 +0100")
+Message-ID: <873b5o25zs.fsf@sonic.technologeek.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) XEmacs/21.4.19 (linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <Pine.LNX.4.64.0702021038270.21422@sbz-30.cs.Helsinki.FI>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/2/07, Pekka J Enberg <penberg@cs.helsinki.fi> wrote:
-> From: Pekka Enberg <penberg@cs.helsinki.fi>
->  [...]
->  drivers/lirc_atiusb/lirc_atiusb.c           |  102 -----------------
-                              ^^^^^^^^^^^^^^
+Thomas Glanzmann <thomas@glanzmann.de> wrote:
 
- I may be mistaken, but the lirc_atiusb module looks redondant with
-the driver already in drivers/usb/input/ati_remote.c.
-Moreover, I was under the impression that the input layer was
-currently considered the "right way" to implement the kernel side lirc
-needs (AFAICT the lircd daemon is already able to handle events from
-the input layer).
+Hi,
 
-So I'm wondering : in view of a kernel merge, wouldn't it be better
-for the lirc drivers to be ported to the input layer (linux-input ML
-in cc:) ?
+>> I can reproduce the problem now (on mac mini). Interestingly it seems
+>> to whack the whole ethernet switch when it happens.
 
-Regards,
+I've observed that too, on a cheap DLink switch.
 
-Vincent
+Next time sky2 hangs on me I'll try to reset the PHY and see if that
+helps. I can usually trigger the hang by doing a couple of ifconfig
+up/down on the interface, though I'm not getting any error message
+from the driver when that happens.
+
+JB.
+
+-- 
+Julien BLACHE                                   <http://www.jblache.org> 
+<jb@jblache.org>                                  GPG KeyID 0xF5D65169
