@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946290AbXBCCn4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946294AbXBCCoQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946290AbXBCCn4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Feb 2007 21:43:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946285AbXBCCnn
+	id S1946294AbXBCCoQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Feb 2007 21:44:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946289AbXBCCn4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Feb 2007 21:43:43 -0500
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:53543 "EHLO
+	Fri, 2 Feb 2007 21:43:56 -0500
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:53567 "EHLO
 	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1946280AbXBCCn2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Feb 2007 21:43:28 -0500
-Message-Id: <20070203024533.636518000@sous-sol.org>
+	id S1946287AbXBCCnw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Feb 2007 21:43:52 -0500
+Message-Id: <20070203024610.275987000@sous-sol.org>
 References: <20070203023504.435051000@sous-sol.org>
 User-Agent: quilt/0.45-1
-Date: Fri, 02 Feb 2007 18:35:51 -0800
+Date: Fri, 02 Feb 2007 18:35:54 -0800
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,58 +23,54 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
        David Miller <davem@davemloft.net>, bunk@stusta.de,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Steven Whitehouse <steve@chygwyn.com>
-Subject: [patch 47/59] DECNET: Handle a failure in neigh_parms_alloc (take 2)
-Content-Disposition: inline; filename=decnet-handle-a-failure-in-neigh_parms_alloc.patch
+       Robert Olsson <robert.olsson@its.uu.se>,
+       Eric W Biederman <ebiederm@xmission.com>
+Subject: [patch 50/59] IPV4: Fix single-entry /proc/net/fib_trie output.
+Content-Disposition: inline; filename=ipv4-fix-single-entry-proc-net-fib_trie-output.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 -stable review patch.  If anyone has any objections, please let us know.
 ------------------
 
-From: Eric W. Biederman <ebiederm@xmission.com>
+From: Robert Olsson <robert.olsson@its.uu.se>
 
-While enhancing the neighbour code to handle multiple network
-namespaces I noticed that decnet is assuming neigh_parms_alloc
-will allways succeed, which is clearly wrong.  So handle the
-failure.
+When main table is just a single leaf this gets printed as belonging to the
+local table in /proc/net/fib_trie. A fix is below.
 
-Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
-Acked-by: Steven Whitehouse <steve@chygwyn.com>
+Signed-off-by: Robert Olsson <robert.olsson@its.uu.se>
+Acked-by: Eric W. Biederman <ebiederm@xmission.com>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- net/decnet/dn_dev.c |   11 +++++++++--
- 1 file changed, 9 insertions(+), 2 deletions(-)
+ net/ipv4/fib_trie.c |   13 +++++++------
+ 1 file changed, 7 insertions(+), 6 deletions(-)
 
---- linux-2.6.19.2.orig/net/decnet/dn_dev.c
-+++ linux-2.6.19.2/net/decnet/dn_dev.c
-@@ -1116,16 +1116,23 @@ struct dn_dev *dn_dev_create(struct net_
- 	init_timer(&dn_db->timer);
+--- linux-2.6.19.2.orig/net/ipv4/fib_trie.c
++++ linux-2.6.19.2/net/ipv4/fib_trie.c
+@@ -2290,16 +2290,17 @@ static int fib_trie_seq_show(struct seq_
+ 	if (v == SEQ_START_TOKEN)
+ 		return 0;
  
- 	dn_db->uptime = jiffies;
-+
-+	dn_db->neigh_parms = neigh_parms_alloc(dev, &dn_neigh_table);
-+	if (!dn_db->neigh_parms) {
-+		dev->dn_ptr = NULL;
-+		kfree(dn_db);
-+		return NULL;
++	if (!NODE_PARENT(n)) {
++		if (iter->trie == trie_local)
++			seq_puts(seq, "<local>:\n");
++		else
++			seq_puts(seq, "<main>:\n");
 +	}
 +
- 	if (dn_db->parms.up) {
- 		if (dn_db->parms.up(dev) < 0) {
-+			neigh_parms_release(&dn_neigh_table, dn_db->neigh_parms);
- 			dev->dn_ptr = NULL;
- 			kfree(dn_db);
- 			return NULL;
- 		}
- 	}
+ 	if (IS_TNODE(n)) {
+ 		struct tnode *tn = (struct tnode *) n;
+ 		__be32 prf = htonl(MASK_PFX(tn->key, tn->pos));
  
--	dn_db->neigh_parms = neigh_parms_alloc(dev, &dn_neigh_table);
--
- 	dn_dev_sysctl_register(dev, &dn_db->parms);
- 
- 	dn_dev_set_timer(dev);
+-		if (!NODE_PARENT(n)) {
+-			if (iter->trie == trie_local)
+-				seq_puts(seq, "<local>:\n");
+-			else
+-				seq_puts(seq, "<main>:\n");
+-		} 
+ 		seq_indent(seq, iter->depth-1);
+ 		seq_printf(seq, "  +-- %d.%d.%d.%d/%d %d %d %d\n",
+ 			   NIPQUAD(prf), tn->pos, tn->bits, tn->full_children, 
 
 --
