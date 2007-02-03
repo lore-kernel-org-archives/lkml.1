@@ -1,84 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946436AbXBCKug@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946445AbXBCKvl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946436AbXBCKug (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Feb 2007 05:50:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946438AbXBCKug
+	id S1946445AbXBCKvl (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Feb 2007 05:51:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946446AbXBCKvl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Feb 2007 05:50:36 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:41947 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1946436AbXBCKuf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Feb 2007 05:50:35 -0500
-Date: Sat, 3 Feb 2007 01:24:43 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: kernel list <linux-kernel@vger.kernel.org>, sdhci-devel@list.drzeus.cx
-Subject: x60: mmc card reader problem
-Message-ID: <20070203002443.GA3031@elf.ucw.cz>
+	Sat, 3 Feb 2007 05:51:41 -0500
+Received: from ns.suse.de ([195.135.220.2]:48508 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1946445AbXBCKvk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Feb 2007 05:51:40 -0500
+From: Andi Kleen <ak@suse.de>
+To: =?utf-8?q?Fr=C3=A9d=C3=A9ric_Riss?= <frederic.riss@gmail.com>
+Subject: Re: 2.6.20-rc7: known regressions
+Date: Sat, 3 Feb 2007 11:51:16 +0100
+User-Agent: KMail/1.9.5
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Matt Domsch <Matt_Domsch@dell.com>, Adrian Bunk <bunk@stusta.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Eric Van Hensbergen <ericvh@gmail.com>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Neil Brown <neilb@suse.de>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Jeff Garzik <jeff@garzik.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Francois Romieu <romieu@fr.zoreil.com>
+References: <Pine.LNX.4.64.0701302019530.11095@woody.linux-foundation.org> <200702031058.13830.ak@suse.de> <1170499668.31373.35.camel@funkylaptop>
+In-Reply-To: <1170499668.31373.35.camel@funkylaptop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+Message-Id: <200702031151.17220.ak@suse.de>
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
 
-...it wants me to report:
+> +#ifdef CONFIG_X86_32
+> +#define efilinkage asmlinkage
+> +#else
+> +#define efilinkage
+> +#endif
 
+No ifdefs, this should be somewhere in the headers for the EFI supporting
+architectures
 
-...yes, I yanked the card when I seen "unknown partition table".
+But I suspect you could actually get away with just using asmlinkage
+(after reviewing the ia64 asmlinkage I think it's ok)
 
-(This is how it looks on debug console; it captured the dumps, too:)
+x86-64 when it is ever implemented will always need asm stubs though
+because it uses completely incompatible calling conventions.
 
-									Pavel
+> +
+> +typedef efilinkage efi_status_t efi_get_time_t (efi_time_t *tm,
+> +						efi_time_cap_t *tc);
 
+I assume you have double checked it actually works? (i vaguely recall some
+issues with applying attributes to typedefs). If not you would need
+to put them to the declarations.
 
-Feb  3 01:21:43 amd kernel: mmcblk0: mmc0:0001 IFX128 125440KiB
-Feb  3 01:21:43 amd kernel:  mmcblk0:<3>mmcblk0: error 1 transferring
-data
-<???>
-Feb  3 01:21:43 amd kernel: end_request: I/O error, dev mmcblk0, sector 0
-Feb  3 01:21:43 amd kernel: Buffer I/O error on device mmcblk0, logical block 0
-Feb  3 01:21:43 amd kernel: ldm_validate_partition_table(): Disk read failed.
-Feb  3 01:21:43 amd kernel: mmcblk0: error 1 transferring data
-Feb  3 01:21:43 amd kernel: end_request: I/O error, dev mmcblk0, sector 0
-Feb  3 01:21:43 amd kernel: Buffer I/O error on device mmcblk0, logical block 0
-Feb  3 01:21:44 amd kernel:  unknown partition table
-
-Feb  3 01:21:57 amd kernel: mmc0: Card removed during transfer!
-Feb  3 01:21:57 amd kernel: mmc0: Resetting controller.
-Feb  3 01:21:57 amd kernel: mmc0: Got command interrupt even though no command operation was in progress.
-Feb  3 01:21:57 amd kernel: mmc0: Please report this to <sdhci-devel@list.drzeus.cx>.
-Feb  3 01:21:57 amd kernel: sdhci: ============== REGISTER DUMP ==============
-Feb  3 01:21:57 amd kernel: sdhci: Sys addr: 0x2e984000 | Version:  0x00000200
-Feb  3 01:21:57 amd kernel: sdhci: Blk size: 0x00007200 | Blk cnt:  0x00000008
-Feb  3 01:21:57 amd kernel: sdhci: Argument: 0x00000000 | Trn mode: 0x00000033
-Feb  3 01:21:57 amd kernel: sdhci: Present:  0x01f80001 | Host ctl: 0x00000001
-Feb  3 01:21:57 amd kernel: sdhci: Power:    0x0000000e | Blk gap:  0x00000000
-Feb  3 01:21:57 amd kernel: sdhci: Wake-up:  0x00000000 | Clock:    0x00008007
-Feb  3 01:21:57 amd kernel: sdhci: Timeout:  0x00000006 | Int stat: 0x00038000
-Feb  3 01:21:57 amd kernel: sdhci: Int enab: 0x00ff00fb | Sig enab: 0x00ff00fb
-Feb  3 01:21:57 amd kernel: sdhci: AC12 err: 0x00000000 | Slot int: 0x00000001
-Feb  3 01:21:57 amd kernel: sdhci: Caps:     0x018021a1 | Max curr: 0x00000040
-Feb  3 01:21:57 amd kernel: sdhci: ===========================================
-Feb  3 01:21:57 amd kernel: mmc0: Got command interrupt even though no command operation was in progress.
-Feb  3 01:21:57 amd kernel: mmc0: Please report this to <sdhci-devel@list.drzeus.cx>.
-Feb  3 01:21:57 amd kernel: sdhci: ============== REGISTER DUMP ==============
-Feb  3 01:21:57 amd kernel: sdhci: Sys addr: 0x2e984000 | Version:  0x00000200
-Feb  3 01:21:57 amd kernel: sdhci: Blk size: 0x00007200 | Blk cnt:  0x00000008
-Feb  3 01:21:57 amd kernel: sdhci: Argument: 0x00000000 | Trn mode: 0x00000033
-Feb  3 01:21:57 amd kernel: sdhci: Present:  0x01f80001 | Host ctl: 0x00000001
-Feb  3 01:21:57 amd kernel: sdhci: Power:    0x0000000e | Blk gap:  0x00000000
-Feb  3 01:21:57 amd kernel: sdhci: Wake-up:  0x00000000 | Clock:    0x00008007
-Feb  3 01:21:57 amd kernel: sdhci: Timeout:  0x00000006 | Int stat: 0x00000000
-Feb  3 01:21:57 amd kernel: sdhci: Int enab: 0x00ff00fb | Sig enab: 0x00ff00fb
-Feb  3 01:21:57 amd kernel: sdhci: AC12 err: 0x00000000 | Slot int: 0x00000000
-Feb  3 01:21:57 amd kernel: sdhci: Caps:     0x018021a1 | Max curr: 0x00000040
-Feb  3 01:21:57 amd kernel: sdhci: ===========================================
-Feb  3 01:21:57 amd kernel: PM: Removing info for mmc:mmc0:0001
-
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+-Andi
