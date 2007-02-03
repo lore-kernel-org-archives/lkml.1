@@ -1,66 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946461AbXBCO0K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946460AbXBCO1D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946461AbXBCO0K (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Feb 2007 09:26:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946460AbXBCO0J
+	id S1946460AbXBCO1D (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Feb 2007 09:27:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946462AbXBCO1D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Feb 2007 09:26:09 -0500
-Received: from hancock.steeleye.com ([71.30.118.248]:41136 "EHLO
-	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1946457AbXBCO0G (ORCPT
+	Sat, 3 Feb 2007 09:27:03 -0500
+Received: from oola.is.scarlet.be ([193.74.71.23]:49719 "EHLO
+	oola.is.scarlet.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1946460AbXBCO1B (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Feb 2007 09:26:06 -0500
-Subject: [GIT PATCH] SCSI final bug fixes for 2.6.20-rc7
-From: James Bottomley <James.Bottomley@SteelEye.com>
-To: Andrew Morton <akpm@osdl.org>, Linus Torvalds <torvalds@osdl.org>
-Cc: linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Sat, 03 Feb 2007 08:25:59 -0600
-Message-Id: <1170512760.3345.20.camel@mulgrave.il.steeleye.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
+	Sat, 3 Feb 2007 09:27:01 -0500
+Message-ID: <45C49A88.4050809@joow.be>
+Date: Sat, 03 Feb 2007 15:22:00 +0100
+From: Pieter Palmers <pieterp@joow.be>
+User-Agent: Thunderbird 1.5.0.2 (X11/20060501)
+MIME-Version: 1.0
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+CC: Dan Dennedy <dan@dennedy.org>, linux1394-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH update] ieee1394: cycle timer read extension for	raw1394/libraw1394
+References: <45BA5CFD.6070900@joow.be> <45BB27AF.7030007@s5r6.in-berlin.de>	<45BB2D67.7030608@joow.be> <45BB4A33.4070206@s5r6.in-berlin.de> <tkrat.e06f68103e99e517@s5r6.in-berlin.de>
+In-Reply-To: <tkrat.e06f68103e99e517@s5r6.in-berlin.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-DCC-scarlet.be-Metrics: oola 20001; Body=4 Fuz1=4 Fuz2=4
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There are four small bug fixes in this:  A set of qla4xxx driver bugs, a
-fix for uninitialised variables in sd during initial hotplug, a tape fix
-for BUG 7864 and an async scan fix for the "none" scanning type with
-RAID devices.
+Stefan Richter wrote:
+> From: Pieter Palmers <pieterp@joow.be>
+> 
+> This implements the simultaneous read of the isochronous cycle timer and
+> the system clock (in usecs).  This allows to express the exact receive
+> time of an ISO packet as a system time with microsecond accuracy.
+> http://bugzilla.kernel.org/show_bug.cgi?id=7773
+> 
+> The counterpart patch for libraw1394 can be found at
+> http://thread.gmane.org/gmane.linux.kernel.firewire.devel/8934
+> 
+> Patch update (Stefan R.):
+>   - Disable preemption and local interrupts.
+>   - Fix integer overflow.
+I had to use 1000000ULL instead of USEC_PER_SEC to avoid weird behavior.
 
-The fix is available here:
+>   - Add paranoid error checks and kerneldoc to hpsb_read_cycle_timer.
+>     Move it to other ieee1394_core high-level API functions.
+>   - Rename userspace-exported struct _raw1394_cycle_timer to
+>     raw1394_cycle_timer.  Change comments in raw1394.
+>   - Adjust whitespace.
+Thanks for the cleanups!
 
-master.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-rc-fixes-2.6.git
+I can't test it right now, but I'll report later.
 
-The short changelog is:
-
-David C Somayajulu (1):
-       qla4xxx: bug fixes
-
-Kai Makisara (1):
-       st: A MTIOCTOP/MTWEOF within the early warning will cause the file number to be incorrect
-
-Matthew Wilcox (1):
-       Fix scsi_add_device() for async scanning
-
-Nagendra Singh Tomar (1):
-       sd: udev accessing an uninitialized scsi_disk field results in a crash
-
-and the diffstat:
-
- qla4xxx/ql4_def.h     |    1 
- qla4xxx/ql4_glbl.h    |    1 
- qla4xxx/ql4_init.c    |   18 +++++++-------
- qla4xxx/ql4_isr.c     |    4 +--
- qla4xxx/ql4_mbx.c     |   35 ++++++++++++++++-----------
- qla4xxx/ql4_os.c      |   64 ++++++++++++++++++++++++++++++--------------------
- qla4xxx/ql4_version.h |    2 -
- scsi_scan.c           |    6 ++++
- sd.c                  |   20 +++++++--------
- st.c                  |   19 ++++++++------
- 10 files changed, 100 insertions(+), 70 deletions(-)
-
-James
-
-
+Pieter
