@@ -1,70 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946468AbXBCPgt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946472AbXBCPjh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946468AbXBCPgt (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Feb 2007 10:36:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946472AbXBCPgt
+	id S1946472AbXBCPjh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Feb 2007 10:39:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946476AbXBCPjg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Feb 2007 10:36:49 -0500
-Received: from dvhart.com ([64.146.134.43]:44550 "EHLO dvhart.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1946468AbXBCPgs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Feb 2007 10:36:48 -0500
-Message-ID: <45C4ABDF.9050701@mbligh.org>
-Date: Sat, 03 Feb 2007 07:35:59 -0800
-From: "Martin J. Bligh" <mbligh@mbligh.org>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070104)
+	Sat, 3 Feb 2007 10:39:36 -0500
+Received: from ug-out-1314.google.com ([66.249.92.172]:31546 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1946472AbXBCPjg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Feb 2007 10:39:36 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=gTl+pHis0vtCu2SpwLyjvDxLiQaeidp5+B1yGQY8EJODgBFk7dXXkmyRSDYUXRf0y5Rb0JzAjw/a2x/b0y0c4MeczixeGBnruRfCXmFHEtXh1LlVY1o3jYYKiwuAvw0ZnVSuxu/rELulbr3Mt+zw7ClUQz75JH4n8YEY6LcV4W8=
+Message-ID: <4af2d03a0702030739n77afadf4t8d26d66416b075e1@mail.gmail.com>
+Date: Sat, 3 Feb 2007 16:39:34 +0100
+From: "Jiri Slaby" <jirislaby@gmail.com>
+To: "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>
+Subject: Re: [PATCH 1/2] Char: add __devinitdata to pci_device_ids
+Cc: "Andrew Morton" <akpm@osdl.org>, linux-kernel@vger.kernel.org,
+       "Cyclades team" <async@cyclades.com>, airlied@linux.ie,
+       dri-devel@lists.sourceforge.net, nils@kernelconcepts.de, wim@iguana.be,
+       R.E.Wolff@bitwizard.nl, "Greg Kroah-Hartman" <gregkh@suse.de>
+In-Reply-To: <58cb370e0702030731i61b32e93j3f7a8f0e061cb136@mail.gmail.com>
 MIME-Version: 1.0
-To: Christoph Hellwig <hch@infradead.org>,
-       Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, Nick Piggin <nickpiggin@yahoo.com.au>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Rik van Riel <riel@redhat.com>
-Subject: Re: [RFC] Tracking mlocked pages and moving them off the LRU
-References: <Pine.LNX.4.64.0702022214580.3960@schroedinger.engr.sgi.com> <20070203101628.GB28806@infradead.org>
-In-Reply-To: <20070203101628.GB28806@infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <2106930977152662464@wsc.cz>
+	 <58cb370e0702030731i61b32e93j3f7a8f0e061cb136@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Hellwig wrote:
-> On Fri, Feb 02, 2007 at 10:20:12PM -0800, Christoph Lameter wrote:
->> This is a new variation on the earlier RFC for tracking mlocked pages.
->> We now mark a mlocked page with a bit in the page flags and remove
->> them from the LRU. Pages get moved back when no vma that references
->> the page has VM_LOCKED set anymore.
->>
->> This means that vmscan no longer uselessly cycles over large amounts
->> of mlocked memory should someone attempt to mlock large amounts of
->> memory (may even result in a livelock on large systems).
->>
->> Synchronization is build around state changes of the PageMlocked bit.
->> The NR_MLOCK counter is incremented and decremented based on
->> state transitions of PageMlocked. So the count is accurate.
->>
->> There is still some unfinished business:
->>
->> 1. We use the 21st page flag and we only have 20 on 32 bit NUMA platforms.
->>
->> 2. Since mlocked pages are now off the LRU page migration will no longer
->>    move them.
->>
->> 3. Use NR_MLOCK to tune various VM behaviors so that the VM does not 
->>    longer fall due to too many mlocked pages in certain areas.
-> 
-> This patch seems to not handle the cases where more than one process mlocks
-> a page and you really need a pincount in the page to not release it before
-> all processes have munlock it or died.  I did a similar patch a while
-> ago and tried to handle it by overloading the lru lists pointers with
-> a pincount, but at some point I gave up because I couldn't get that part
-> right.
+On 2/3/07, Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
+> On 2/3/07, Jiri Slaby <jirislaby@gmail.com> wrote:
+> > add __devinitdata to pci_device_ids
+> >
+> > Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+>
+> http://lkml.org/lkml/2003/8/1/135
+>
+> I think that it is still true, Greg?
 
-Doesn't matter - you can just do it lazily. If you find a page that is
-locked, move it to the locked list. when unlocking a page you *always*
-move it back to the normal list. If someone else is still locking it,
-we'll move it back to the lock list on next reclaim pass.
+Hmm, then I misunderstood this:
+http://lkml.org/lkml/2007/1/17/136
+?
 
-I have a half-finished patch from 6 months ago that does this, but never
-found time to complete it ;-(
-
-M.
+regards,
+-- 
+http://www.fi.muni.cz/~xslaby/            Jiri Slaby
+faculty of informatics, masaryk university, brno, cz
+e-mail: jirislaby gmail com, gpg pubkey fingerprint:
+B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
