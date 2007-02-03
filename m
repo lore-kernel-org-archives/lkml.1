@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946296AbXBCCuV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946232AbXBCChQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946296AbXBCCuV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Feb 2007 21:50:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946262AbXBCCiJ
+	id S1946232AbXBCChQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Feb 2007 21:37:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946239AbXBCChA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Feb 2007 21:38:09 -0500
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:52951 "EHLO
+	Fri, 2 Feb 2007 21:37:00 -0500
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:52788 "EHLO
 	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1946259AbXBCCiF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Feb 2007 21:38:05 -0500
-Message-Id: <20070203024202.157345000@sous-sol.org>
+	id S1946232AbXBCCgu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Feb 2007 21:36:50 -0500
+Message-Id: <20070203023909.479963000@sous-sol.org>
 References: <20070203023504.435051000@sous-sol.org>
 User-Agent: quilt/0.45-1
-Date: Fri, 02 Feb 2007 18:35:32 -0800
+Date: Fri, 02 Feb 2007 18:35:14 -0800
 From: Chris Wright <chrisw@sous-sol.org>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org,
+       Takashi Iwai <tiwai@suse.de>
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -22,54 +23,54 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Patrick McHardy <kaber@trash.net>,
-       Netfilter Development Mailinglist 
-	<netfilter-devel@lists.netfilter.org>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: [patch 28/59] NETFILTER: Fix iptables ABI breakage on (at least) CRIS
-Content-Disposition: inline; filename=netfilter-fix-iptables-abi-breakage-on-cris.patch
+       Karsten Wiese <annabellesgarden@yahoo.de>,
+       Matt Savigear <mcs_jack@savigear.com>, alsa-devel@lists.sourceforge.net,
+       Rui Capela <rncbc@rncbc.org>, Karsten Wiese <fzu@wemgehoertderstaat.de>
+Subject: [patch 10/59] Repair snd-usb-usx2y over OHCI
+Content-Disposition: inline; filename=repair-snd-usb-usx2y-over-ohci.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 -stable review patch.  If anyone has any objections, please let us know.
 ------------------
 
-From: Patrick McHardy <kaber@trash.net>
+From: Karsten Wiese <fzu@wemgehoertderstaat.de>
 
-With the introduction of x_tables we accidentally broke compatibility
-by defining IPT_TABLE_MAXNAMELEN to XT_FUNCTION_MAXNAMELEN instead of
-XT_TABLE_MAXNAMELEN, which is two bytes larger.
+The previous patch "Repair snd-usb-usx2y for usb 2.6.18" assumed
+urb->start_frame roll over beyond MAX_INT for both UHCI & OHCI.
+This isn't true until now (kernel 2.6.20).
+Fix this by only looking at the common between OHCI & UHCI Frame number
+range.
+This is for mainline and stable kernels >= 2.6.18.
 
-On most architectures it doesn't really matter since we don't have
-any tables with names that long in the kernel and the structure
-layout didn't change because of alignment requirements of following
-members. On CRIS however (and other architectures that don't align
-data) this changed the structure layout and thus broke compatibility
-with old iptables binaries.
-
-Changing it back will break compatibility with binaries compiled
-against recent kernels again, but since the breakage has only been
-there for three releases this seems like the better choice.
-
-Spotted by Jonas Berlin <xkr47@outerspace.dyndns.org>.
-
-Signed-off-by: Patrick McHardy <kaber@trash.net>
+Signed-off-by: Karsten Wiese <fzu@wemgehoertderstaat.de>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
+ sound/usb/usx2y/usbusx2yaudio.c |    2 +-
+ sound/usb/usx2y/usx2yhwdeppcm.c |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
- include/linux/netfilter_ipv4/ip_tables.h |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
---- linux-2.6.19.2.orig/include/linux/netfilter_ipv4/ip_tables.h
-+++ linux-2.6.19.2/include/linux/netfilter_ipv4/ip_tables.h
-@@ -28,7 +28,7 @@
- #include <linux/netfilter/x_tables.h>
- 
- #define IPT_FUNCTION_MAXNAMELEN XT_FUNCTION_MAXNAMELEN
--#define IPT_TABLE_MAXNAMELEN XT_FUNCTION_MAXNAMELEN
-+#define IPT_TABLE_MAXNAMELEN XT_TABLE_MAXNAMELEN
- #define ipt_match xt_match
- #define ipt_target xt_target
- #define ipt_table xt_table
+--- linux-2.6.19.2.orig/sound/usb/usx2y/usbusx2yaudio.c
++++ linux-2.6.19.2/sound/usb/usx2y/usbusx2yaudio.c
+@@ -322,7 +322,7 @@ static void i_usX2Y_urb_complete(struct 
+ 		usX2Y_error_urb_status(usX2Y, subs, urb);
+ 		return;
+ 	}
+-	if (likely(urb->start_frame == usX2Y->wait_iso_frame))
++	if (likely((urb->start_frame & 0xFFFF) == (usX2Y->wait_iso_frame & 0xFFFF)))
+ 		subs->completed_urb = urb;
+ 	else {
+ 		usX2Y_error_sequence(usX2Y, subs, urb);
+--- linux-2.6.19.2.orig/sound/usb/usx2y/usx2yhwdeppcm.c
++++ linux-2.6.19.2/sound/usb/usx2y/usx2yhwdeppcm.c
+@@ -243,7 +243,7 @@ static void i_usX2Y_usbpcm_urb_complete(
+ 		usX2Y_error_urb_status(usX2Y, subs, urb);
+ 		return;
+ 	}
+-	if (likely(urb->start_frame == usX2Y->wait_iso_frame))
++	if (likely((urb->start_frame & 0xFFFF) == (usX2Y->wait_iso_frame & 0xFFFF)))
+ 		subs->completed_urb = urb;
+ 	else {
+ 		usX2Y_error_sequence(usX2Y, subs, urb);
 
 --
