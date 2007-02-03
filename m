@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946242AbXBCCif@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946270AbXBCCi4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946242AbXBCCif (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Feb 2007 21:38:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946255AbXBCCiM
+	id S1946270AbXBCCi4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Feb 2007 21:38:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946268AbXBCCi4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Feb 2007 21:38:12 -0500
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:52934 "EHLO
+	Fri, 2 Feb 2007 21:38:56 -0500
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:53039 "EHLO
 	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1946258AbXBCCiA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Feb 2007 21:38:00 -0500
-Message-Id: <20070203024236.800727000@sous-sol.org>
+	id S1946263AbXBCCiu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Feb 2007 21:38:50 -0500
+Message-Id: <20070203024309.888535000@sous-sol.org>
 References: <20070203023504.435051000@sous-sol.org>
 User-Agent: quilt/0.45-1
-Date: Fri, 02 Feb 2007 18:35:35 -0800
+Date: Fri, 02 Feb 2007 18:35:39 -0800
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,40 +22,75 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Mike Frysinger <vapier@gentoo.org>,
-       Alessandro Zummo <a.zummo@towertech.it>, Andrew Morton <akpm@osdl.org>
-Subject: [patch 31/59] remove __devinit markings from rtc_sysfs_add_device()
-Content-Disposition: inline; filename=remove-__devinit-markings-from-rtc_sysfs_add_device.patch
+       NeilBrown <neilb@suse.de>
+Subject: [patch 35/59] knfsd: fix an NFSD bug with full sized, non-page-aligned reads.
+Content-Disposition: inline; filename=knfsd-fix-an-nfsd-bug-with-full-sized-non-page-aligned-reads.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 -stable review patch.  If anyone has any objections, please let us know.
 ------------------
 
-From: Mike Frysinger <vapier@gentoo.org>
+From: NeilBrown <neilb@suse.de>
 
-rtc_sysfs_add_device is needed even after dev initialization, so drop __devinit.
+NFSd assumes that largest number of pages that will be needed
+for a request+response is 2+N where N pages is the size of the largest
+permitted read/write request.  The '2' are 1 for the non-data part of
+the request, and 1 for the non-data part of the reply.
 
-Signed-off-by: Mike Frysinger <vapier@gentoo.org>
-Acked-by: Alessandro Zummo <a.zummo@towertech.it>
-Cc: <stable@kernel.org>
-Signed-off-by: Andrew Morton <akpm@osdl.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+However, when a read request is not page-aligned, and we choose to use
+->sendfile to send it directly from the page cache, we may need N+1
+pages to hold the whole reply.  This can overflow and array and cause
+an Oops.
+
+This patch increases size of the array for holding pages by one and
+makes sure that entry is NULL when it is not in use.
+
+Signed-off-by: Neil Brown <neilb@suse.de>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- drivers/rtc/rtc-sysfs.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ fs/nfsd/vfs.c              |    3 ++-
+ include/linux/sunrpc/svc.h |    5 ++++-
+ net/sunrpc/svcsock.c       |    2 ++
+ 3 files changed, 8 insertions(+), 2 deletions(-)
 
---- linux-2.6.19.2.orig/drivers/rtc/rtc-sysfs.c
-+++ linux-2.6.19.2/drivers/rtc/rtc-sysfs.c
-@@ -78,7 +78,7 @@ static struct attribute_group rtc_attr_g
- 	.attrs = rtc_attrs,
- };
+--- linux-2.6.19.2.orig/fs/nfsd/vfs.c
++++ linux-2.6.19.2/fs/nfsd/vfs.c
+@@ -822,7 +822,8 @@ nfsd_read_actor(read_descriptor_t *desc,
+ 		rqstp->rq_res.page_len = size;
+ 	} else if (page != pp[-1]) {
+ 		get_page(page);
+-		put_page(*pp);
++		if (*pp)
++			put_page(*pp);
+ 		*pp = page;
+ 		rqstp->rq_resused++;
+ 		rqstp->rq_res.page_len += size;
+--- linux-2.6.19.2.orig/include/linux/sunrpc/svc.h
++++ linux-2.6.19.2/include/linux/sunrpc/svc.h
+@@ -144,8 +144,11 @@ extern u32 svc_max_payload(const struct 
+  *
+  * Each request/reply pair can have at most one "payload", plus two pages,
+  * one for the request, and one for the reply.
++ * We using ->sendfile to return read data, we might need one extra page
++ * if the request is not page-aligned.  So add another '1'.
+  */
+-#define RPCSVC_MAXPAGES		((RPCSVC_MAXPAYLOAD+PAGE_SIZE-1)/PAGE_SIZE + 2)
++#define RPCSVC_MAXPAGES		((RPCSVC_MAXPAYLOAD+PAGE_SIZE-1)/PAGE_SIZE \
++				+ 2 + 1)
  
--static int __devinit rtc_sysfs_add_device(struct class_device *class_dev,
-+static int rtc_sysfs_add_device(struct class_device *class_dev,
- 					struct class_interface *class_intf)
+ static inline u32 svc_getnl(struct kvec *iov)
  {
- 	int err;
+--- linux-2.6.19.2.orig/net/sunrpc/svcsock.c
++++ linux-2.6.19.2/net/sunrpc/svcsock.c
+@@ -1248,6 +1248,8 @@ svc_recv(struct svc_rqst *rqstp, long ti
+ 				schedule_timeout_uninterruptible(msecs_to_jiffies(500));
+ 			rqstp->rq_pages[i] = p;
+ 		}
++	rqstp->rq_pages[i++] = NULL; /* this might be seen in nfs_read_actor */
++	BUG_ON(pages >= RPCSVC_MAXPAGES);
+ 
+ 	/* Make arg->head point to first page and arg->pages point to rest */
+ 	arg = &rqstp->rq_arg;
 
 --
