@@ -1,22 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946427AbXBCJtk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946424AbXBCJ6Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946427AbXBCJtk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Feb 2007 04:49:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946426AbXBCJtk
+	id S1946424AbXBCJ6Z (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Feb 2007 04:58:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946425AbXBCJ6Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Feb 2007 04:49:40 -0500
-Received: from ug-out-1314.google.com ([66.249.92.174]:38934 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1946425AbXBCJtj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Feb 2007 04:49:39 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=XPgnbvO4b+XkcRezoIz4kkA7AoaRUTkI61k46lF6kgFCQmTaSngs8jMPyn4kvewsNeDfq2aTW8D7EwgEasMOhwbfxqfWnNb2IIsk4djg1VHjdLrCTKGvZA+g6/10b+D8TwQxt444/KT/Q5yrnU9NBbMS4Vn5rNM5XBrfTlOFFOs=
+	Sat, 3 Feb 2007 04:58:24 -0500
+Received: from mx1.suse.de ([195.135.220.2]:46150 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1946424AbXBCJ6Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Feb 2007 04:58:24 -0500
+From: Andi Kleen <ak@suse.de>
+To: =?utf-8?q?Fr=C3=A9d=C3=A9ric_Riss?= <frederic.riss@gmail.com>
 Subject: Re: 2.6.20-rc7: known regressions
-From: =?ISO-8859-1?Q?Fr=E9d=E9ric?= Riss <frederic.riss@gmail.com>
-To: Andi Kleen <ak@suse.de>
+Date: Sat, 3 Feb 2007 10:58:13 +0100
+User-Agent: KMail/1.9.5
 Cc: Andrew Morton <akpm@linux-foundation.org>,
        Matt Domsch <Matt_Domsch@dell.com>, Adrian Bunk <bunk@stusta.de>,
        Linus Torvalds <torvalds@linux-foundation.org>,
@@ -29,43 +26,31 @@ Cc: Andrew Morton <akpm@linux-foundation.org>,
        Jeff Garzik <jeff@garzik.org>,
        "Eric W. Biederman" <ebiederm@xmission.com>,
        Francois Romieu <romieu@fr.zoreil.com>
-In-Reply-To: <200702031033.42940.ak@suse.de>
-References: <Pine.LNX.4.64.0701302019530.11095@woody.linux-foundation.org>
-	 <1170494391.31373.25.camel@funkylaptop>
-	 <20070203012426.120ec586.akpm@linux-foundation.org>
-	 <200702031033.42940.ak@suse.de>
-Content-Type: text/plain; charset=utf-8
-Date: Sat, 03 Feb 2007 10:49:35 +0100
-Message-Id: <1170496175.31373.31.camel@funkylaptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
+References: <Pine.LNX.4.64.0701302019530.11095@woody.linux-foundation.org> <200702031033.42940.ak@suse.de> <1170496175.31373.31.camel@funkylaptop>
+In-Reply-To: <1170496175.31373.31.camel@funkylaptop>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+Message-Id: <200702031058.13830.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Le samedi 03 février 2007 à 10:33 +0100, Andi Kleen a écrit :
-> >  /*
-> > + * Wrap all the virtual calls in a way that forces the parameters on the stack.
-> > + */
-> > +
-> > +#define efi_call_virt(f, args...) \
-> > +     ((efi_##f##_t __attribute__((regparm(0)))*)efi.systab->runtime->f)(args)
-> > +
-> > +static efi_status_t virt_efi_get_time(efi_time_t *tm, efi_time_cap_t *tc)
-> > +{
-> > +	return efi_call_virt(get_time, tm, tc);
+On Saturday 03 February 2007 10:49, Frédéric Riss wrote:
+
+> Was what I did in the initial patch: 
+>      http://lkml.org/lkml/2007/1/30/258 
 > 
-> Wouldn't it be better to just declare the pointers in efi.systab with 
-> the correct attribute?  Then you wouldn't need all that ugly casting.
+> The issue is that the structure definition is used on multiple
+> architectures (for now ia64 and i386) which might used different calling
+> conventions. As Bjorn Helgaas pointed out, ia64 already has such wrapper
+> functions. I agree that the casting isn't the nicest thing, but I prefer
+> that to writing asm stubs.
 
-Was what I did in the initial patch: 
-     http://lkml.org/lkml/2007/1/30/258 
+Define a efilinkage macro then that expands to nothing on ia64
 
-The issue is that the structure definition is used on multiple
-architectures (for now ia64 and i386) which might used different calling
-conventions. As Bjorn Helgaas pointed out, ia64 already has such wrapper
-functions. I agree that the casting isn't the nicest thing, but I prefer
-that to writing asm stubs.
+Probably asmlinkage would work already, syscall_linkage as used on ia64 doesn't
+seem to affect function pointers.
 
-Fred
-
+-Andi
