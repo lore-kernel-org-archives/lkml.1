@@ -1,92 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946375AbXBCHnJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946387AbXBCH4n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946375AbXBCHnJ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Feb 2007 02:43:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946382AbXBCHnI
+	id S1946387AbXBCH4n (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Feb 2007 02:56:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946388AbXBCH4n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Feb 2007 02:43:08 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:44950 "EHLO
+	Sat, 3 Feb 2007 02:56:43 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:44359 "EHLO
 	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1946379AbXBCHnH (ORCPT
+	with ESMTP id S1946387AbXBCH4m (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Feb 2007 02:43:07 -0500
+	Sat, 3 Feb 2007 02:56:42 -0500
 From: ebiederm@xmission.com (Eric W. Biederman)
-To: Auke Kok <auke-jan.h.kok@intel.com>
-Cc: Adrian Bunk <bunk@stusta.de>, Adam Kropelin <akropel1@rochester.rr.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       jgarzik@pobox.com, alan@lxorguk.ukuu.org.uk,
-       Allen Parker <parker@isohunt.com>, jesse.brandeburg@intel.com,
-       gregkh@suse.de, linux-pci@atrey.karlin.mff.cuni.cz,
-       ebiederm@xmission.com, netdev@vger.kernel.org
-Subject: Re: 2.6.20-rc7: known regressions (v2) (part 1)
-References: <Pine.LNX.4.64.0701302019530.11095@woody.linux-foundation.org>
-	<20070203004447.GJ3754@stusta.de> <45C42669.2010105@intel.com>
-Date: Sat, 03 Feb 2007 00:41:45 -0700
-In-Reply-To: <45C42669.2010105@intel.com> (Auke Kok's message of "Fri, 02 Feb
-	2007 22:06:33 -0800")
-Message-ID: <m1k5yz3cxy.fsf@ebiederm.dsl.xmission.com>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
+       "Lu, Yinghai" <yinghai.lu@amd.com>,
+       Luigi Genoni <luigi.genoni@pirelli.com>, Ingo Molnar <mingo@elte.hu>,
+       Natalie Protasevich <protasnb@gmail.com>, Andi Kleen <ak@suse.de>
+Subject: Re: [PATCH 2/2] x86_64 irq:  Handle irqs pending in IRR during irq migration.
+References: <200701221116.13154.luigi.genoni@pirelli.com>
+	<200702021848.55921.luigi.genoni@pirelli.com>
+	<m1ejp85tgm.fsf@ebiederm.dsl.xmission.com>
+	<200702021905.39922.luigi.genoni@pirelli.com>
+	<m1zm7w3wvr.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1veik3woc.fsf_-_@ebiederm.dsl.xmission.com>
+	<20070202170500.57b6c3a3.akpm@linux-foundation.org>
+	<1170487929.3073.988.camel@laptopd505.fenrus.org>
+Date: Sat, 03 Feb 2007 00:55:11 -0700
+In-Reply-To: <1170487929.3073.988.camel@laptopd505.fenrus.org> (Arjan van de
+	Ven's message of "Sat, 03 Feb 2007 08:32:09 +0100")
+Message-ID: <m1d54r3cbk.fsf@ebiederm.dsl.xmission.com>
 User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Auke Kok <auke-jan.h.kok@intel.com> writes:
+Arjan van de Ven <arjan@infradead.org> writes:
 
-> Adrian Bunk wrote:
->> This email lists some known regressions in 2.6.20-rc7 compared to 2.6.19
->> that are not yet fixed in Linus' tree.
->>
->> If you find your name in the Cc header, you are either submitter of one
->> of the bugs, maintainer of an affectected subsystem or driver, a patch
->> of you caused a breakage or I'm considering you in any other way possibly
->> involved with one or more of these issues.
+>> > Once the migration operation is complete we know we will receive
+>> > no more interrupts on this vector so the irq pending state for
+>> > this irq will no longer be updated.  If the irq is not pending and
+>> > we are in the intermediate state we immediately free the vector,
+>> > otherwise in we free the vector in do_IRQ when the pending irq
+>> > arrives.
+>> 
+>> So is this a for-2.6.20 thing?  The bug was present in 2.6.19, so
+>> I assume it doesn't affect many people?
 >
->
->> Subject    : e1000: 82571EB/82572EI PCI-E cards: link is always down
->>              (MSI related)
->> References : http://lkml.org/lkml/2007/1/16/27
->>              http://lkml.org/lkml/2007/1/17/182
->> Submitter  : Allen Parker <parker@isohunt.com>
->>              Adam Kropelin <akropel1@rochester.rr.com>
->> Handled-By : Auke Kok <auke-jan.h.kok@intel.com>
->> Status     : problem is being debugged
->
-> I probably can't fix this bug. Not only do I doubt that the e1000 driver is at
-> fault here, I don't have a system with this particular chipset. Most likely the
-> regression comes from a combination of MSI layer rewrites and possibly platform
-> issues. We've seen many reports that are similar and all are on the platform
-> type mentioned here. I really don't want to point fingers here either.
->
-> None of the MSI code in e1000 has changed significantly either. as far as I can
-> see, the msi code in e1000 has not changed since 2.6.18. Nonetheless there's no
-> way I can debug any of this without a system.
->
-> I will address the fact that we are lacking any of these systems to test on, but
-> that is not going to get this issue handled (not to mention soon) in the way it
-> needs to be.
->
-> I strongly encourage the people on the linux-pci list to help out, I'll trace
-> the e1000 driver for suspicious activity (again), but I run countless tests on
-> the latest trees and nothing has shown up recently, other than Eric Biederman's
-> msi irq reclaim leak fix.
->
-> Perhaps Adam can git-bisect this issue? Adam?
+> I got a few reports of this; irqbalance may trigger this kernel bug it
+> seems... I would suggest to consider this for 2.6.20 since it's a
+> hard-hang case
 
-Do we have any explanation about the weird /proc/interrupts output?
-i.e. Multiple MSI irqs being assigned to the same card?
 
-Does /sbin/ifconfig ethN down ; /sbin/ifconfig ethN up have anything to do
-with the duplication in /proc/interrupts?
+Yes.  The bug I fixed will not happen if you don't migrate irqs.
 
-I can't see any way for a pci device that doesn't support msi-x to be assigned
-multiple interrupts simultaneously.
+At the very least we want the patch below (already in -mm)
+that makes it not a hard hang case.
 
-I just skimmed through the code and there hasn't been any significant
-generic MSI work since 2.6.19.
+Subject: [PATCH] x86_64:  Survive having no irq mapping for a vector
 
-Did this device really work with MSI enabled in 2.6.19?
+Occasionally the kernel has bugs that result in no irq being
+found for a given cpu vector.  If we acknowledge the irq
+the system has a good chance of continuing even though we dropped
+an missed an irq message.  If we continue to simply print a
+message and drop and not acknowledge the irq the system is
+likely to become non-responsive shortly there after.
 
-Eric
+Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+---
+ arch/x86_64/kernel/irq.c |   11 ++++++++---
+ 1 files changed, 8 insertions(+), 3 deletions(-)
+
+diff --git a/arch/x86_64/kernel/irq.c b/arch/x86_64/kernel/irq.c
+index 0c06af6..648055a 100644
+--- a/arch/x86_64/kernel/irq.c
++++ b/arch/x86_64/kernel/irq.c
+@@ -120,9 +120,14 @@ asmlinkage unsigned int do_IRQ(struct pt_regs *regs)
+ 
+ 	if (likely(irq < NR_IRQS))
+ 		generic_handle_irq(irq);
+-	else if (printk_ratelimit())
+-		printk(KERN_EMERG "%s: %d.%d No irq handler for vector\n",
+-			__func__, smp_processor_id(), vector);
++	else {
++		if (!disable_apic)
++			ack_APIC_irq();
++
++		if (printk_ratelimit())
++			printk(KERN_EMERG "%s: %d.%d No irq handler for vector\n",
++				__func__, smp_processor_id(), vector);
++	}
+ 
+ 	irq_exit();
+ 
+-- 
+1.4.4.1.g278f
+
