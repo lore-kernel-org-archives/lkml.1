@@ -1,73 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750863AbXBCKT3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752042AbXBCKXk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750863AbXBCKT3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Feb 2007 05:19:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751873AbXBCKT3
+	id S1752042AbXBCKXk (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Feb 2007 05:23:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751947AbXBCKXk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Feb 2007 05:19:29 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:57373 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750863AbXBCKT2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Feb 2007 05:19:28 -0500
-Date: Sat, 3 Feb 2007 11:03:51 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Matt Mackall <mpm@selenic.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Zach Brown <zach.brown@oracle.com>, linux-kernel@vger.kernel.org,
-       linux-aio@kvack.org, Suparna Bhattacharya <suparna@in.ibm.com>,
-       Benjamin LaHaise <bcrl@kvack.org>
-Subject: Re: [PATCH 2 of 4] Introduce i386 fibril scheduling
-Message-ID: <20070203100351.GA30262@elte.hu>
-References: <20070201083611.GC18233@elte.hu> <Pine.LNX.4.64.0702011154110.3632@woody.linux-foundation.org> <20070202104900.GA13941@elte.hu> <Pine.LNX.4.64.0702020738500.15057@woody.linux-foundation.org> <20070202222110.GA1212@elte.hu> <Pine.LNX.4.64.0702021445410.15057@woody.linux-foundation.org> <20070202235531.GA18904@elte.hu> <Pine.LNX.4.64.0702021636410.15057@woody.linux-foundation.org> <20070203082308.GA6748@elte.hu> <20070203092540.GH16722@waste.org>
-Mime-Version: 1.0
+	Sat, 3 Feb 2007 05:23:40 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:46746 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751873AbXBCKXj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Feb 2007 05:23:39 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Andi Kleen <ak@suse.de>
+Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
+       "Lu, Yinghai" <yinghai.lu@amd.com>,
+       "Luigi Genoni" <luigi.genoni@pirelli.com>, Ingo Molnar <mingo@elte.hu>,
+       Natalie Protasevich <protasnb@gmail.com>
+Subject: Re: [PATCH 2/2] x86_64 irq:  Handle irqs pending in IRR during irq migration.
+References: <200701221116.13154.luigi.genoni@pirelli.com>
+	<m1zm7w3wvr.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1veik3woc.fsf_-_@ebiederm.dsl.xmission.com>
+	<200702031101.22313.ak@suse.de>
+Date: Sat, 03 Feb 2007 03:22:33 -0700
+In-Reply-To: <200702031101.22313.ak@suse.de> (Andi Kleen's message of "Sat, 3
+	Feb 2007 11:01:22 +0100")
+Message-ID: <m1wt2z1qxi.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070203092540.GH16722@waste.org>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.3
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.3 required=5.9 tests=ALL_TRUSTED,BAYES_50 autolearn=no SpamAssassin version=3.0.3
-	-3.3 ALL_TRUSTED            Did not pass through any untrusted hosts
-	1.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
-	[score: 0.4263]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Andi Kleen <ak@suse.de> writes:
 
-* Matt Mackall <mpm@selenic.com> wrote:
+>> Once the migration operation is complete we know we will receive
+>> no more interrupts on this vector so the irq pending state for
+>> this irq will no longer be updated.  If the irq is not pending and
+>> we are in the intermediate state we immediately free the vector,
+>> otherwise in we free the vector in do_IRQ when the pending irq
+>> arrives.
+>
+> Ok for me, although the magic numbers are a little nasty.
 
-> On Sat, Feb 03, 2007 at 09:23:08AM +0100, Ingo Molnar wrote:
-> > The normal and most optimal workflow should be a user-space ring-buffer 
-> > of these constant-size struct async_syscall entries:
-> > 
-> >   struct async_syscall ringbuffer[1024];
-> > 
-> >   LIST_HEAD(submitted);
-> >   LIST_HEAD(pending);
-> >   LIST_HEAD(completed);
-> 
-> It's wrong to call this a ring buffer as things won't be completed in
-> any particular order. [...]
+You must be talking about (vector/32) *0x10.
+The 32 is the number of bits and 0x10 the gap between apic
+registers.  I couldn't think of a better form.    If someone
+can think of a better way it probably warrants a cleanup patch
+at some point.
 
-yeah, i realized this when i sent the mail. I wanted to say 'array of 
-elements' - and it's clear from these list heads that it's fully out of 
-order. (it should be an array so that the pages of those entries can be 
-pinned and that completion can be manipulated from any context, 
-anytime.)
+> What about i386?
 
-(the queueing i described closely resembles Tux's "Tux syscall request" 
-handling scheme.)
+i386 does not handle this case but since it is still globally
+allocating all of it's vectors and never changes it's vectors during
+migration it is totally harmless when an irq comes in on a cpu other
+than the one we are expecting it on.
 
-> [...] So you'll need a fourth list head for which buffer elements are 
-> free. At which point, you might as well leave it entirely up to the 
-> application to manage the allocation of async_syscall structs. It may 
-> know it only needs two, or ten thousand, or five per client...
-
-sure - it should be variable but still the array should be compact, and 
-should be registered with the kernel. That way security checks can be 
-done once, the pages can be pinned, accessed anytime, etc.
-
-	Ingo
+Eric
