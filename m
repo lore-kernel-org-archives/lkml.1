@@ -1,103 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946249AbXBCC4a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946276AbXBCC6N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946249AbXBCC4a (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Feb 2007 21:56:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946244AbXBCCgS
+	id S1946276AbXBCC6N (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Feb 2007 21:58:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946265AbXBCC6M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Feb 2007 21:36:18 -0500
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:52705 "EHLO
-	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1946246AbXBCCgA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Feb 2007 21:36:00 -0500
-Message-Id: <20070203024013.737331000@sous-sol.org>
-References: <20070203023504.435051000@sous-sol.org>
-User-Agent: quilt/0.45-1
-Date: Fri, 02 Feb 2007 18:35:21 -0800
-From: Chris Wright <chrisw@sous-sol.org>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Daniel Drake <dsd@gentoo.org>, ard@telegraafnet.nl,
-       Greg KH <greg@kroah.com>, Andrew Morton <akpm@osdl.org>,
-       Linus Torvalds <torvalds@osdl.org>
-Subject: [patch 17/59] PCI: prevent down_read when pci_devices is empty
-Content-Disposition: inline; filename=pci-prevent-down_read-when-pci_devices-is-empty.patch
+	Fri, 2 Feb 2007 21:58:12 -0500
+Received: from hera.kernel.org ([140.211.167.34]:51386 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1946238AbXBCC6J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Feb 2007 21:58:09 -0500
+From: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
+To: Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH 1/1] -  Altix: more ACPI PRT support
+Date: Fri, 2 Feb 2007 21:56:42 -0500
+User-Agent: KMail/1.9.5
+Cc: John Keller <jpk@sgi.com>, linux-acpi@vger.kernel.org, ayoung@sgi.com,
+       linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org,
+       "Luck, Tony" <tony.luck@intel.com>
+References: <20070202205412.14367.60290.sendpatchset@attica.americas.sgi.com> <20070202173746.9fc66172.akpm@linux-foundation.org>
+In-Reply-To: <20070202173746.9fc66172.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200702022156.42805.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
--stable review patch.  If anyone has any objections, please let us know.
-------------------
+On Friday 02 February 2007 20:37, Andrew Morton wrote:
+> On Fri, 02 Feb 2007 14:54:12 -0600
+> John Keller <jpk@sgi.com> wrote:
+> 
+> > The SN Altix platform does not conform to the 
+> > IOSAPIC IRQ routing model. Add code in acpi_unregister_gsi()
+> > to check if (acpi_irq_model == ACPI_IRQ_MODEL_PLATFORM) and
+> > return.
+> > 
+> > Signed-off-by: John Keller <jpk@sgi.com>
+> > ---
+> > 
+> > Due to an oversight, this code was not added previously when
+> > similar code was added to acpi_register_gsi().
+> > 
+> > http://marc.theaimsgroup.com/?l=linux-acpi&m=116680983430121&w=2
+> > 
+> >  arch/ia64/kernel/acpi.c |    3 +++
+> >  1 file changed, 3 insertions(+)
+> > 
+> > 
+> > Index: linux-2.6/arch/ia64/kernel/acpi.c
+> > ===================================================================
+> > --- linux-2.6.orig/arch/ia64/kernel/acpi.c	2007-02-02 14:44:31.000000000 -0600
+> > +++ linux-2.6/arch/ia64/kernel/acpi.c	2007-02-02 14:47:44.658143727 -0600
+> > @@ -609,6 +609,9 @@ EXPORT_SYMBOL(acpi_register_gsi);
+> >  
+> >  void acpi_unregister_gsi(u32 gsi)
+> >  {
+> > +	if (acpi_irq_model == ACPI_IRQ_MODEL_PLATFORM)
+> > +		return;
+> > +
+> >  	iosapic_unregister_intr(gsi);
+> >  }
+> 
+> Given that the December 22 patch appears to be in mainline, and that this
+> patch is simple, I shall cheerily bypass maintainers and send it in for
+> 2.6.20.
 
-From: Ard van Breemen <ard@telegraafnet.nl>
+Yep.
 
-The pci_find_subsys gets called very early by obsolete ide setup parameters.
-This is a bogus call since pci is not initialized yet, so the list is empty.
-But in the mean time, interrupts get enabled by down_read.  This can result in
-a kernel panic when the irq controller gets initialized.
+Acked-by: Len Brown <len.brown@intel.com>
 
-This patch checks if the device list is empty before taking the semaphore, and
-hence will not enable irq's.  Furthermore it will inform that it is called
-while pci_devices is empty as a reminder that the ide code needs to be fixed.
+thanks,
+-Len
 
-The pci_get_subsys can get called in the same manner, and as such is patched
-in the same manner.
-
-[akpm@osdl.org: cleanups]
-Signed-off-by: Ard van Breemen <ard@telegraafnet.nl>
-Cc: Greg KH <greg@kroah.com>
-Signed-off-by: Andrew Morton <akpm@osdl.org>
-Signed-off-by: Linus Torvalds <torvalds@osdl.org>
-Signed-off-by: Chris Wright <chrisw@sous-sol.org>
----
-This is the other half of the fix for bug #7505
-
- drivers/pci/search.c |   24 ++++++++++++++++++++++++
- 1 file changed, 24 insertions(+)
-
---- linux-2.6.19.2.orig/drivers/pci/search.c
-+++ linux-2.6.19.2/drivers/pci/search.c
-@@ -193,6 +193,18 @@ static struct pci_dev * pci_find_subsys(
- 	struct pci_dev *dev;
- 
- 	WARN_ON(in_interrupt());
-+
-+	/*
-+	 * pci_find_subsys() can be called on the ide_setup() path, super-early
-+	 * in boot.  But the down_read() will enable local interrupts, which
-+	 * can cause some machines to crash.  So here we detect and flag that
-+	 * situation and bail out early.
-+	 */
-+	if (unlikely(list_empty(&pci_devices))) {
-+		printk(KERN_INFO "pci_find_subsys() called while pci_devices "
-+				"is still empty\n");
-+		return NULL;
-+	}
- 	down_read(&pci_bus_sem);
- 	n = from ? from->global_list.next : pci_devices.next;
- 
-@@ -259,6 +271,18 @@ pci_get_subsys(unsigned int vendor, unsi
- 	struct pci_dev *dev;
- 
- 	WARN_ON(in_interrupt());
-+
-+	/*
-+	 * pci_get_subsys() can potentially be called by drivers super-early
-+	 * in boot.  But the down_read() will enable local interrupts, which
-+	 * can cause some machines to crash.  So here we detect and flag that
-+	 * situation and bail out early.
-+	 */
-+	if (unlikely(list_empty(&pci_devices))) {
-+		printk(KERN_NOTICE "pci_get_subsys() called while pci_devices "
-+				"is still empty\n");
-+		return NULL;
-+	}
- 	down_read(&pci_bus_sem);
- 	n = from ? from->global_list.next : pci_devices.next;
- 
-
---
