@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946262AbXBCCyG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946209AbXBCCyH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946262AbXBCCyG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Feb 2007 21:54:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946209AbXBCCgg
+	id S1946209AbXBCCyH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Feb 2007 21:54:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946241AbXBCCgd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Feb 2007 21:36:36 -0500
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:52671 "EHLO
+	Fri, 2 Feb 2007 21:36:33 -0500
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:52672 "EHLO
 	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1946238AbXBCCfs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1946239AbXBCCfs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 2 Feb 2007 21:35:48 -0500
-Message-Id: <20070203023803.713362000@sous-sol.org>
+Message-Id: <20070203023848.631905000@sous-sol.org>
 References: <20070203023504.435051000@sous-sol.org>
 User-Agent: quilt/0.45-1
-Date: Fri, 02 Feb 2007 18:35:07 -0800
+Date: Fri, 02 Feb 2007 18:35:12 -0800
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,62 +22,38 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Andrew Morton <akpm@osdl.org>,
-       Christoph Lameter <clameter@engr.sgi.com>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Christoph Lameter <clameter@sgi.com>,
-       Linus Torvalds <torvalds@osdl.org>
-Subject: [patch 03/59] Check for populated zone in __drain_pages
-Content-Disposition: inline; filename=check-for-populated-zone-in-__drain_pages.patch
+       Patrick McHardy <kaber@trash.net>, netfilter-devel@lists.netfilter.org,
+       davem@davemloft.net
+Subject: [patch 08/59] NETFILTER: tcp conntrack: fix IP_CT_TCP_FLAG_CLOSE_INIT value
+Content-Disposition: inline; filename=netfilter-tcp-conntrack-fix-ip_ct_tcp_flag_close_init-value.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 -stable review patch.  If anyone has any objections, please let us know.
 ------------------
 
-From: Christoph Lameter <clameter@sgi.com>
+From: Patrick McHardy <kaber@trash.net>
 
-Both process_zones() and drain_node_pages() check for populated zones
-before touching pagesets.  However, __drain_pages does not do so,
+IP_CT_TCP_FLAG_CLOSE_INIT is a flag and should have a value of 0x4 instead
+of 0x3, which is IP_CT_TCP_FLAG_WINDOW_SCALE | IP_CT_TCP_FLAG_SACK_PERM.
 
-This may result in a NULL pointer dereference for pagesets in unpopulated
-zones if a NUMA setup is combined with cpu hotplug.
-
-Initially the unpopulated zone has the pcp pointers pointing to the boot
-pagesets.  Since the zone is not populated the boot pageset pointers will
-not be changed during page allocator and slab bootstrap.
-
-If a cpu is later brought down (first call to __drain_pages()) then the pcp
-pointers for cpus in unpopulated zones are set to NULL since __drain_pages
-does not first check for an unpopulated zone.
-
-If the cpu is then brought up again then we call process_zones() which will
-ignore the unpopulated zone.  So the pageset pointers will still be NULL.
-
-If the cpu is then again brought down then __drain_pages will attempt to
-drain pages by following the NULL pageset pointer for unpopulated zones.
-
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
-Signed-off-by: Andrew Morton <akpm@osdl.org>
-Signed-off-by: Linus Torvalds <torvalds@osdl.org>
+Signed-off-by: Patrick McHardy <kaber@trash.net>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
-http://git.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=f2e12bb272f2544d1504f982270e90ae3dcc4ff2
 
- mm/page_alloc.c |    3 +++
- 1 file changed, 3 insertions(+)
+ include/linux/netfilter/nf_conntrack_tcp.h |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- linux-2.6.19.2.orig/mm/page_alloc.c
-+++ linux-2.6.19.2/mm/page_alloc.c
-@@ -710,6 +710,9 @@ static void __drain_pages(unsigned int c
- 	for_each_zone(zone) {
- 		struct per_cpu_pageset *pset;
+--- linux-2.6.19.2.orig/include/linux/netfilter/nf_conntrack_tcp.h
++++ linux-2.6.19.2/include/linux/netfilter/nf_conntrack_tcp.h
+@@ -25,7 +25,7 @@ enum tcp_conntrack {
+ #define IP_CT_TCP_FLAG_SACK_PERM		0x02
  
-+		if (!populated_zone(zone))
-+			continue;
-+
- 		pset = zone_pcp(zone, cpu);
- 		for (i = 0; i < ARRAY_SIZE(pset->pcp); i++) {
- 			struct per_cpu_pages *pcp;
+ /* This sender sent FIN first */
+-#define IP_CT_TCP_FLAG_CLOSE_INIT		0x03
++#define IP_CT_TCP_FLAG_CLOSE_INIT		0x04
+ 
+ #ifdef __KERNEL__
+ 
 
 --
