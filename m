@@ -1,67 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751462AbXBCUDK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751486AbXBCUKr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751462AbXBCUDK (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Feb 2007 15:03:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751464AbXBCUDK
+	id S1751486AbXBCUKr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Feb 2007 15:10:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751510AbXBCUKr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Feb 2007 15:03:10 -0500
-Received: from e36.co.us.ibm.com ([32.97.110.154]:41896 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751462AbXBCUDJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Feb 2007 15:03:09 -0500
-Message-ID: <45C4EA7D.4000709@us.ibm.com>
-Date: Sat, 03 Feb 2007 14:03:09 -0600
-From: Maynard Johnson <maynardj@us.ibm.com>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.7.3) Gecko/20040910
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-CC: cbe-oss-dev@ozlabs.org, linuxppc-dev@ozlabs.org,
-       oprofile-list@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [Cbe-oss-dev] [RFC, PATCH 4/4] Add support to OProfile for profiling
- Cell BE SPUs -- update
-References: <45BE4ED0.5030808@us.ibm.com> <200701310752.48632.arnd@arndb.de> <45C36B21.60400@us.ibm.com> <200702030840.06270.arnd@arndb.de>
-In-Reply-To: <200702030840.06270.arnd@arndb.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sat, 3 Feb 2007 15:10:47 -0500
+Received: from hera.kernel.org ([140.211.167.34]:41645 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751486AbXBCUKq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Feb 2007 15:10:46 -0500
+Date: Sat, 3 Feb 2007 20:10:45 +0000
+From: Willy Tarreau <wtarreau@hera.kernel.org>
+To: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Linux 2.4.34.1
+Message-ID: <20070203201045.GA29991@hera.kernel.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arnd Bergmann wrote:
+Hi all,
 
->On Friday 02 February 2007 17:47, Maynard Johnson wrote:
->  
->
->>>We also want to be able to profile the context switch code itself, which
->>>means that we also need one event buffer associated with the kernel to
->>>collect events that for a zero context_id.
->>>      
->>>
->>The hardware design precludes tracing both SPU and PPU simultaneously.
->>
->>    
->>
->I mean the SPU-side part of the context switch code, which you can find
->in arch/powerpc/platforms/cell/spufs/spu_{save,restore}*.
->
->This code is the one that runs when context_id == 0 is passed to the
->callback.
->  
->
-I presume you mean 'object_id'.  What you're asking for is a new 
-requirement, and one which I don't believe is achievable in the current 
-timeframe.  Since this is spufs code that's dynamicaly loaded into the 
-SPU at runtime, the symbol information for this code is not accessible 
-to the userspace post-processing tools.  It would require an altogether 
-different mechanism to record samples along with necessary information, 
-not to mention the changes required in the post-processing tools.  This 
-will have to be a future enhancement.
+activity has been very calm for 2.4 since 2.4.34. Three minor fixes
+were pending, and I finally decided to release 2.4.34.1 with them
+instead of keeping them in the fridge. Upgrade is recommended for
+users of smbfs with unix extension, since a security fix in 2.4.34
+broke symlinks. Special thanks to Dann Frazier, Santiago Garcia
+and Grant Coady who did the boring work of tracking and fixing the
+problem.
 
--Maynard
+The files are located at the usual places. Please give it some time
+to sync between the servers, and preferably use ftp2.kernel.org.
 
->	Arnd <><
->  
->
+Regards,
+Willy
 
+Summary of changes from v2.4.34 to v2.4.34.1
+============================================
+
+Christian Praehauser (1):
+      [NET] ethernet: Fix first packet goes out with MAC 00:00:00:00:00:00
+
+dann frazier (1):
+      smbfs: fix problems introduced by last security backport
+
+Oliver Neukum (1):
+      proper locking on disconnect for mdc800
+
+Willy Tarreau (1):
+      Change VERSION to 2.4.34.1
 
