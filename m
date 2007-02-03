@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946294AbXBCCoQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946283AbXBCCok@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946294AbXBCCoQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Feb 2007 21:44:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946289AbXBCCn4
+	id S1946283AbXBCCok (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Feb 2007 21:44:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946291AbXBCCo0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Feb 2007 21:43:56 -0500
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:53567 "EHLO
+	Fri, 2 Feb 2007 21:44:26 -0500
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:53572 "EHLO
 	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1946287AbXBCCnw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Feb 2007 21:43:52 -0500
-Message-Id: <20070203024610.275987000@sous-sol.org>
+	id S1946280AbXBCCnz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Feb 2007 21:43:55 -0500
+Message-Id: <20070203023948.151061000@sous-sol.org>
 References: <20070203023504.435051000@sous-sol.org>
 User-Agent: quilt/0.45-1
-Date: Fri, 02 Feb 2007 18:35:54 -0800
+Date: Fri, 02 Feb 2007 18:35:19 -0800
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,55 +22,94 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       David Miller <davem@davemloft.net>, bunk@stusta.de,
-       Robert Olsson <robert.olsson@its.uu.se>,
-       Eric W Biederman <ebiederm@xmission.com>
-Subject: [patch 50/59] IPV4: Fix single-entry /proc/net/fib_trie output.
-Content-Disposition: inline; filename=ipv4-fix-single-entry-proc-net-fib_trie-output.patch
+       Daniel Drake <dsd@gentoo.org>, torvalds@osdl.org,
+       Steve French <smfltc@us.ibm.com>,
+       Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+Subject: [patch 15/59] Fix up CIFS for "test_clear_page_dirty()" removal
+Content-Disposition: inline; filename=fix-up-cifs-for-test_clear_page_dirty-removal.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 -stable review patch.  If anyone has any objections, please let us know.
 ------------------
 
-From: Robert Olsson <robert.olsson@its.uu.se>
+From: Linus Torvalds <torvalds@osdl.org>
 
-When main table is just a single leaf this gets printed as belonging to the
-local table in /proc/net/fib_trie. A fix is below.
+Fix up CIFS for "test_clear_page_dirty()" removal
 
-Signed-off-by: Robert Olsson <robert.olsson@its.uu.se>
-Acked-by: Eric W. Biederman <ebiederm@xmission.com>
-Signed-off-by: David S. Miller <davem@davemloft.net>
+This also adds he required page "writeback" flag handling, that cifs
+hasn't been doing and that the page dirty flag changes made obvious.
+
+Acked-by: Steve French <smfltc@us.ibm.com>
+Acked-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+Signed-off-by: Linus Torvalds <torvalds@osdl.org>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- net/ipv4/fib_trie.c |   13 +++++++------
- 1 file changed, 7 insertions(+), 6 deletions(-)
+This fixes a long term corruption bug when copying large files to a CIFS 
+mount. Thanks Linus!
 
---- linux-2.6.19.2.orig/net/ipv4/fib_trie.c
-+++ linux-2.6.19.2/net/ipv4/fib_trie.c
-@@ -2290,16 +2290,17 @@ static int fib_trie_seq_show(struct seq_
- 	if (v == SEQ_START_TOKEN)
- 		return 0;
+---
+ fs/cifs/file.c |   26 +++++++++++++++++++++++---
+ 1 file changed, 23 insertions(+), 3 deletions(-)
+
+--- linux-2.6.19.2.orig/fs/cifs/file.c
++++ linux-2.6.19.2/fs/cifs/file.c
+@@ -1244,14 +1244,21 @@ retry:
+ 				wait_on_page_writeback(page);
  
-+	if (!NODE_PARENT(n)) {
-+		if (iter->trie == trie_local)
-+			seq_puts(seq, "<local>:\n");
-+		else
-+			seq_puts(seq, "<main>:\n");
-+	}
+ 			if (PageWriteback(page) ||
+-					!test_clear_page_dirty(page)) {
++					!clear_page_dirty_for_io(page)) {
+ 				unlock_page(page);
+ 				break;
+ 			}
+ 
++			/*
++			 * This actually clears the dirty bit in the radix tree.
++			 * See cifs_writepage() for more commentary.
++			 */
++			set_page_writeback(page);
 +
- 	if (IS_TNODE(n)) {
- 		struct tnode *tn = (struct tnode *) n;
- 		__be32 prf = htonl(MASK_PFX(tn->key, tn->pos));
+ 			if (page_offset(page) >= mapping->host->i_size) {
+ 				done = 1;
+ 				unlock_page(page);
++				end_page_writeback(page);
+ 				break;
+ 			}
  
--		if (!NODE_PARENT(n)) {
--			if (iter->trie == trie_local)
--				seq_puts(seq, "<local>:\n");
--			else
--				seq_puts(seq, "<main>:\n");
--		} 
- 		seq_indent(seq, iter->depth-1);
- 		seq_printf(seq, "  +-- %d.%d.%d.%d/%d %d %d %d\n",
- 			   NIPQUAD(prf), tn->pos, tn->bits, tn->full_children, 
+@@ -1315,6 +1322,7 @@ retry:
+ 					SetPageError(page);
+ 				kunmap(page);
+ 				unlock_page(page);
++				end_page_writeback(page);
+ 				page_cache_release(page);
+ 			}
+ 			if ((wbc->nr_to_write -= n_iov) <= 0)
+@@ -1351,11 +1359,23 @@ static int cifs_writepage(struct page* p
+         if (!PageUptodate(page)) {
+ 		cFYI(1, ("ppw - page not up to date"));
+ 	}
+-	
++
++	/*
++	 * Set the "writeback" flag, and clear "dirty" in the radix tree.
++	 *
++	 * A writepage() implementation always needs to do either this,
++	 * or re-dirty the page with "redirty_page_for_writepage()" in
++	 * the case of a failure.
++	 *
++	 * Just unlocking the page will cause the radix tree tag-bits
++	 * to fail to update with the state of the page correctly.
++	 */
++	set_page_writeback(page);		
+ 	rc = cifs_partialpagewrite(page, 0, PAGE_CACHE_SIZE);
+ 	SetPageUptodate(page); /* BB add check for error and Clearuptodate? */
+ 	unlock_page(page);
+-	page_cache_release(page);	
++	end_page_writeback(page);
++	page_cache_release(page);
+ 	FreeXid(xid);
+ 	return rc;
+ }
 
 --
