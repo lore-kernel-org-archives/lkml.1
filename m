@@ -1,50 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946401AbXBCIlO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946407AbXBCIxf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946401AbXBCIlO (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Feb 2007 03:41:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946402AbXBCIlO
+	id S1946407AbXBCIxf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Feb 2007 03:53:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946408AbXBCIxf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Feb 2007 03:41:14 -0500
-Received: from nz-out-0506.google.com ([64.233.162.226]:60466 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1946401AbXBCIlN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Feb 2007 03:41:13 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=EcDiIwqmYvc/uYXrifxo6vTNaYPW8IEEFkjmZCMOQ2vZC+Pn4rThnN2gFeMhqB6JyFBwwUSLm+kU5aryrCUYPQMu0ZvYskqH5D0yq4Hw8ADVnTXu0fRtvqdy16LXiGG3e+af6/VkAoyUiICtHQB6o9AOuW7d7CJzu8AJ2VwwoUE=
-Message-ID: <8d158e1f0702030041xaa34440r125a39a85d498f4c@mail.gmail.com>
-Date: Sat, 3 Feb 2007 09:41:12 +0100
-From: "Patrick Ale" <patrick.ale@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: hdparm for lib_pata
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sat, 3 Feb 2007 03:53:35 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:34587 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1946407AbXBCIxe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Feb 2007 03:53:34 -0500
+Date: Sat, 3 Feb 2007 00:53:16 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: linux-kernel@vger.kernel.org, Nick Piggin <nickpiggin@yahoo.com.au>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Rik van Riel <riel@redhat.com>
+Subject: Re: [RFC] Tracking mlocked pages and moving them off the LRU
+Message-Id: <20070203005316.eb0b4042.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0702022214580.3960@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0702022214580.3960@schroedinger.engr.sgi.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi guys,
+On Fri, 2 Feb 2007 22:20:12 -0800 (PST) Christoph Lameter <clameter@sgi.com> wrote:
 
-Me again, sorry.
+> This is a new variation on the earlier RFC for tracking mlocked pages.
+> We now mark a mlocked page with a bit in the page flags and remove
+> them from the LRU. Pages get moved back when no vma that references
+> the page has VM_LOCKED set anymore.
+> 
+> This means that vmscan no longer uselessly cycles over large amounts
+> of mlocked memory should someone attempt to mlock large amounts of
+> memory (may even result in a livelock on large systems).
+> 
+> Synchronization is build around state changes of the PageMlocked bit.
+> The NR_MLOCK counter is incremented and decremented based on
+> state transitions of PageMlocked. So the count is accurate.
 
-Is it possible to make hdparm work with libata?
-I have some drives that for some reason fall back to lower UDMA
-settings (like UDMA/44) while the drive is UDMA/100. I blame the way I
-set-up my raid arrays for this and the bus not being able to handle
-all the data that goes trough it but that isnt really the case now.
+I wonder if it can be simpler.  Make two changes:
 
-Anyway, I used to be able to force the drive back with using hdparm
--X68 -d 1 /dev/sdk
-But with the new lib_pata drivers I get "Inappropriate iotcl for
-device" and HD_IO_DRIVE_CMD Input/Output errors.
+a) If the scanner encounters an mlocked page on the LRU, take it off.
 
-Or! Is there some other way to force the drive not to failback to
-lower UDMA settings? (Yep, I know, if this is answer, it's my risk, I
-cant and wont blame you for destructing my pr0n or severe trauma I
-suffer from losing data)
+b) munlock() adds all affected pages to the LRU.
 
+And that's it.  Simpler, solves the uselessly-scan-lots-of-mlocked-pages
+problem (which is the sole requirement according to your description) and
+doesn't consume a page flag.  Optional (and arguable) extension: scan the
+vmas during munmap, don't add page to LRU if it's still mlocked.
 
-Patrick
+Why _does_ your patch add a new page flag?  That info is available via a
+vma scan.
+
+> There is still some unfinished business:
+> 
+> 1. We use the 21st page flag and we only have 20 on 32 bit NUMA platforms.
+
+Ow.  How were you thinking of fixing that?
+
+> 2. Since mlocked pages are now off the LRU page migration will no longer
+>    move them.
+
+Ow.  That could be a right pain when we get around to using migration for
+memory-unplug?
+
