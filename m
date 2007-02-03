@@ -1,52 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946447AbXBCLHS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946450AbXBCLIK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946447AbXBCLHS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Feb 2007 06:07:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946448AbXBCLHS
+	id S1946450AbXBCLIK (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Feb 2007 06:08:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946451AbXBCLIJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Feb 2007 06:07:18 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:46706 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1946446AbXBCLHQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Feb 2007 06:07:16 -0500
-Date: Sat, 3 Feb 2007 01:37:52 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Karsten Wiese <fzu@wemgehoertderstaat.de>, Andrew Morton <akpm@osdl.org>,
-       Maciej Rutecki <maciej.rutecki@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org
-Subject: Re: 2.6.20-rc6-mm3
-Message-ID: <20070203003752.GC1712@elf.ucw.cz>
-References: <20070129204528.eb8d695e.akpm@osdl.org> <200701310155.05474.fzu@wemgehoertderstaat.de> <20070131132245.GA26066@elte.hu> <200701311525.50160.fzu@wemgehoertderstaat.de> <20070201080108.GC14378@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070201080108.GC14378@elte.hu>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+	Sat, 3 Feb 2007 06:08:09 -0500
+Received: from ug-out-1314.google.com ([66.249.92.168]:24838 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1946450AbXBCLIG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Feb 2007 06:08:06 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=hLRyXvOc9z4RIKmXzKxaiYMS2fb3xq6hjCbMjQJp1u/D5BxbrlQC9yJxmys5TDxdpZpEiMfe3AjSll6UM1AhmdBiYKLqpzGgtp70+qUYeNBM5c0McpdxjG6LC7pCk3ASn+BVMF916Q56YB5rTBXt4NaKpi7HJWnUV0svv+rOr0A=
+Subject: Re: 2.6.20-rc7: known regressions
+From: =?ISO-8859-1?Q?Fr=E9d=E9ric?= RISS <frederic.riss@gmail.com>
+To: Andi Kleen <ak@suse.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Matt Domsch <Matt_Domsch@dell.com>, Adrian Bunk <bunk@stusta.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Eric Van Hensbergen <ericvh@gmail.com>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Neil Brown <neilb@suse.de>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Jeff Garzik <jeff@garzik.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Francois Romieu <romieu@fr.zoreil.com>
+In-Reply-To: <1170500244.31373.40.camel@funkylaptop>
+References: <Pine.LNX.4.64.0701302019530.11095@woody.linux-foundation.org>
+	 <200702031058.13830.ak@suse.de> <1170499668.31373.35.camel@funkylaptop>
+	 <200702031151.17220.ak@suse.de>  <1170500244.31373.40.camel@funkylaptop>
+Content-Type: text/plain; charset=utf-8
+Date: Sat, 03 Feb 2007 12:08:01 +0100
+Message-Id: <1170500882.31373.47.camel@funkylaptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
-> * Karsten Wiese <fzu@wemgehoertderstaat.de> wrote:
+Le samedi 03 février 2007 à 11:57 +0100, Frédéric Riss a écrit :
+> Le samedi 03 février 2007 à 11:51 +0100, Andi Kleen a écrit :
+> > > +
+> > > +typedef efilinkage efi_status_t efi_get_time_t (efi_time_t *tm,
+> > > +						efi_time_cap_t *tc);
+> > 
+> > I assume you have double checked it actually works? (i vaguely recall some
+> > issues with applying attributes to typedefs). If not you would need
+> > to put them to the declarations.
 > 
-> > Serial port console is off here and the jiffies update fix doesn't 
-> > make a noticeable difference.
-> 
-> ok, this eliminates my serial port theory.
-> 
-> and this means i'm having trouble reproducing this problem locally. 
-> Maybe i tried it the wrong way: does it only occur with suspend-to-disk, 
-> or suspend-to-ram too? Does it need ACPI suspend-to-disk, or 
-> software-suspend?
+> Of course, I tested 10 suspend/resume cycles. This is with gcc 4.1.2, I
+> guess other compilers could mishandle it. Would you prefer the version
+> putting asmlinkage inside the struct definition?
 
-? What is ACPI suspend-to-disk? There used to be S4bios *long* time
-ago... these days everyone does swsusp.
+But then it then throws 'assignment from incompatible pointer type'
+warnings in efi.c. This would need fixing in arch/ia64 and arch/i386. Or
+should I put it in the typdefs _and_ in the struct to be safe ?
 
-(Granted, you can select "shutdown" and "platform" flavours...)
-									Pavel
+Fred
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
