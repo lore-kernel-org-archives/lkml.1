@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946236AbXBCCg6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946254AbXBCChP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946236AbXBCCg6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Feb 2007 21:36:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946239AbXBCCgl
+	id S1946254AbXBCChP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Feb 2007 21:37:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946245AbXBCCg6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Feb 2007 21:36:41 -0500
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:52666 "EHLO
+	Fri, 2 Feb 2007 21:36:58 -0500
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:52798 "EHLO
 	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1946233AbXBCCfr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Feb 2007 21:35:47 -0500
-Message-Id: <20070203023816.610328000@sous-sol.org>
+	id S1946236AbXBCCgz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Feb 2007 21:36:55 -0500
+Message-Id: <20070203024119.875945000@sous-sol.org>
 References: <20070203023504.435051000@sous-sol.org>
 User-Agent: quilt/0.45-1
-Date: Fri, 02 Feb 2007 18:35:09 -0800
+Date: Fri, 02 Feb 2007 18:35:27 -0800
 From: Chris Wright <chrisw@sous-sol.org>
-To: linux-kernel@vger.kernel.org, stable@kernel.org,
-       Lars Ellenberg <Lars.Ellenberg@linbit.com>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -23,163 +22,57 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Andrew Morton <akpm@osdl.org>, Neil Brown <neilb@suse.de>,
-       linux-raid@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
-       Jens Axboe <jens.axboe@oracle.com>, Lars Ellenberg <lars@linbit.com>
-Subject: [patch 05/59] md: pass down BIO_RW_SYNC in raid{1,10}
-Content-Disposition: inline; filename=md-pass-down-bio_rw_sync-in-raid-1-10.patch
+       "Paul Moore" <paul.moore@hp.com>, antoine@nagafix.co.uk,
+       sds@tycho.nsa.gov, jmorris@namei.org
+Subject: [patch 23/59] SELinux: fix an oops with NetLabel and non-MLS SELinux policy
+Content-Disposition: inline; filename=netlabel-selinux_mls_fix
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 -stable review patch.  If anyone has any objections, please let us know.
 ------------------
 
-From: Lars Ellenberg <Lars.Ellenberg@linbit.com>
+From:  <paul.moore@hp.com>
 
-md raidX make_request functions strip off the BIO_RW_SYNC flag, thus
-introducing additional latency.
+In the case where a user has configured NetLabel in the kernel but is not
+using a SELinux policy with the MLS/MCS feature enabled there is a bug in
+mls_export_cat() where a NULL pointer is used.  The initial problem report and
+discussion can be found here (this patch has been ACK'd by Stephen Smalley and
+ James Morris in the discussion thread below):
 
-Fixing this in raid1 and raid10 seems to be straightforward enough.
+ * http://marc2.theaimsgroup.com/?t=116920302500004&r=1&w=2
 
-For our particular usage case in DRBD, passing this flag improved some
-initialization time from ~5 minutes to ~5 seconds.
+This patch is specific to the 2.6.19.y kernel series as the mls_export_cat()
+function has been replaced in the 2.6.20 kernel.
 
-Acked-by: NeilBrown <neilb@suse.de>
-Signed-off-by: Lars Ellenberg <lars@linbit.com>
-Acked-by: Jens Axboe <jens.axboe@oracle.com>
-Cc: <stable@kernel.org>
-Signed-off-by: Andrew Morton <akpm@osdl.org>
+Signed-off-by: Paul Moore <paul.moore@hp.com>
+Acked-by:  Stephen Smalley <sds@tycho.nsa.gov>
+Acked-by: James Morris <jmorris@namei.org>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- drivers/md/raid1.c  |   13 +++++++++----
- drivers/md/raid10.c |   11 ++++++++---
- 2 files changed, 17 insertions(+), 7 deletions(-)
+ security/selinux/ss/mls.c |   12 ++++++++----
+ 1 file changed, 8 insertions(+), 4 deletions(-)
 
---- linux-2.6.19.2.orig/drivers/md/raid1.c
-+++ linux-2.6.19.2/drivers/md/raid1.c
-@@ -775,6 +775,7 @@ static int make_request(request_queue_t 
- 	struct bio_list bl;
- 	struct page **behind_pages = NULL;
- 	const int rw = bio_data_dir(bio);
-+	const int do_sync = bio_sync(bio);
- 	int do_barriers;
+--- linux-2.6.19.2.orig/security/selinux/ss/mls.c
++++ linux-2.6.19.2/security/selinux/ss/mls.c
+@@ -641,10 +641,14 @@ int mls_export_cat(const struct context 
+ 	int rc = -EPERM;
  
- 	/*
-@@ -835,7 +836,7 @@ static int make_request(request_queue_t 
- 		read_bio->bi_sector = r1_bio->sector + mirror->rdev->data_offset;
- 		read_bio->bi_bdev = mirror->rdev->bdev;
- 		read_bio->bi_end_io = raid1_end_read_request;
--		read_bio->bi_rw = READ;
-+		read_bio->bi_rw = READ | do_sync;
- 		read_bio->bi_private = r1_bio;
+ 	if (!selinux_mls_enabled) {
+-		*low = NULL;
+-		*low_len = 0;
+-		*high = NULL;
+-		*high_len = 0;
++		if (low != NULL) {
++			*low = NULL;
++			*low_len = 0;
++		}
++		if (high != NULL) {
++			*high = NULL;
++			*high_len = 0;
++		}
+ 		return 0;
+ 	}
  
- 		generic_make_request(read_bio);
-@@ -906,7 +907,7 @@ static int make_request(request_queue_t 
- 		mbio->bi_sector	= r1_bio->sector + conf->mirrors[i].rdev->data_offset;
- 		mbio->bi_bdev = conf->mirrors[i].rdev->bdev;
- 		mbio->bi_end_io	= raid1_end_write_request;
--		mbio->bi_rw = WRITE | do_barriers;
-+		mbio->bi_rw = WRITE | do_barriers | do_sync;
- 		mbio->bi_private = r1_bio;
- 
- 		if (behind_pages) {
-@@ -941,6 +942,8 @@ static int make_request(request_queue_t 
- 	blk_plug_device(mddev->queue);
- 	spin_unlock_irqrestore(&conf->device_lock, flags);
- 
-+	if (do_sync)
-+		md_wakeup_thread(mddev->thread);
- #if 0
- 	while ((bio = bio_list_pop(&bl)) != NULL)
- 		generic_make_request(bio);
-@@ -1541,6 +1544,7 @@ static void raid1d(mddev_t *mddev)
- 			 * We already have a nr_pending reference on these rdevs.
- 			 */
- 			int i;
-+			const int do_sync = bio_sync(r1_bio->master_bio);
- 			clear_bit(R1BIO_BarrierRetry, &r1_bio->state);
- 			clear_bit(R1BIO_Barrier, &r1_bio->state);
- 			for (i=0; i < conf->raid_disks; i++)
-@@ -1561,7 +1565,7 @@ static void raid1d(mddev_t *mddev)
- 						conf->mirrors[i].rdev->data_offset;
- 					bio->bi_bdev = conf->mirrors[i].rdev->bdev;
- 					bio->bi_end_io = raid1_end_write_request;
--					bio->bi_rw = WRITE;
-+					bio->bi_rw = WRITE | do_sync;
- 					bio->bi_private = r1_bio;
- 					r1_bio->bios[i] = bio;
- 					generic_make_request(bio);
-@@ -1593,6 +1597,7 @@ static void raid1d(mddev_t *mddev)
- 				       (unsigned long long)r1_bio->sector);
- 				raid_end_bio_io(r1_bio);
- 			} else {
-+				const int do_sync = bio_sync(r1_bio->master_bio);
- 				r1_bio->bios[r1_bio->read_disk] =
- 					mddev->ro ? IO_BLOCKED : NULL;
- 				r1_bio->read_disk = disk;
-@@ -1608,7 +1613,7 @@ static void raid1d(mddev_t *mddev)
- 				bio->bi_sector = r1_bio->sector + rdev->data_offset;
- 				bio->bi_bdev = rdev->bdev;
- 				bio->bi_end_io = raid1_end_read_request;
--				bio->bi_rw = READ;
-+				bio->bi_rw = READ | do_sync;
- 				bio->bi_private = r1_bio;
- 				unplug = 1;
- 				generic_make_request(bio);
---- linux-2.6.19.2.orig/drivers/md/raid10.c
-+++ linux-2.6.19.2/drivers/md/raid10.c
-@@ -782,6 +782,7 @@ static int make_request(request_queue_t 
- 	int i;
- 	int chunk_sects = conf->chunk_mask + 1;
- 	const int rw = bio_data_dir(bio);
-+	const int do_sync = bio_sync(bio);
- 	struct bio_list bl;
- 	unsigned long flags;
- 
-@@ -863,7 +864,7 @@ static int make_request(request_queue_t 
- 			mirror->rdev->data_offset;
- 		read_bio->bi_bdev = mirror->rdev->bdev;
- 		read_bio->bi_end_io = raid10_end_read_request;
--		read_bio->bi_rw = READ;
-+		read_bio->bi_rw = READ | do_sync;
- 		read_bio->bi_private = r10_bio;
- 
- 		generic_make_request(read_bio);
-@@ -909,7 +910,7 @@ static int make_request(request_queue_t 
- 			conf->mirrors[d].rdev->data_offset;
- 		mbio->bi_bdev = conf->mirrors[d].rdev->bdev;
- 		mbio->bi_end_io	= raid10_end_write_request;
--		mbio->bi_rw = WRITE;
-+		mbio->bi_rw = WRITE | do_sync;
- 		mbio->bi_private = r10_bio;
- 
- 		atomic_inc(&r10_bio->remaining);
-@@ -922,6 +923,9 @@ static int make_request(request_queue_t 
- 	blk_plug_device(mddev->queue);
- 	spin_unlock_irqrestore(&conf->device_lock, flags);
- 
-+	if (do_sync)
-+		md_wakeup_thread(mddev->thread);
-+
- 	return 0;
- }
- 
-@@ -1563,6 +1567,7 @@ static void raid10d(mddev_t *mddev)
- 				       (unsigned long long)r10_bio->sector);
- 				raid_end_bio_io(r10_bio);
- 			} else {
-+				const int do_sync = bio_sync(r10_bio->master_bio);
- 				rdev = conf->mirrors[mirror].rdev;
- 				if (printk_ratelimit())
- 					printk(KERN_ERR "raid10: %s: redirecting sector %llu to"
-@@ -1574,7 +1579,7 @@ static void raid10d(mddev_t *mddev)
- 				bio->bi_sector = r10_bio->devs[r10_bio->read_slot].addr
- 					+ rdev->data_offset;
- 				bio->bi_bdev = rdev->bdev;
--				bio->bi_rw = READ;
-+				bio->bi_rw = READ | do_sync;
- 				bio->bi_private = r10_bio;
- 				bio->bi_end_io = raid10_end_read_request;
- 				unplug = 1;
 
 --
