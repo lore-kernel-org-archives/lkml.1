@@ -1,44 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946455AbXBCPbp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946463AbXBCPc6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946455AbXBCPbp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Feb 2007 10:31:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946463AbXBCPbp
+	id S1946463AbXBCPc6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Feb 2007 10:32:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992427AbXBCPc6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Feb 2007 10:31:45 -0500
-Received: from nf-out-0910.google.com ([64.233.182.184]:35082 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1946455AbXBCPbo (ORCPT
+	Sat, 3 Feb 2007 10:32:58 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:58288 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1946463AbXBCPc5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Feb 2007 10:31:44 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=neUSpDHELSC9HiRAL/eoY4ulxHgu9DVC3ul3KqtIWuTDwA8dtMp8gFomm2A8XGGvZjfM3D+B0c015bZiGg1y+FHLhqiNIzG5EXC7QRRIRJf7YDo3P+5kiPpcclKGWnzc3pohtgRo0oicFha1qEeGN58kzdKpE4k3dH9mg0/Dqnc=
-Message-ID: <58cb370e0702030731i61b32e93j3f7a8f0e061cb136@mail.gmail.com>
-Date: Sat, 3 Feb 2007 16:31:41 +0100
-From: "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>
-To: "Jiri Slaby" <jirislaby@gmail.com>
-Subject: Re: [PATCH 1/2] Char: add __devinitdata to pci_device_ids
-Cc: "Andrew Morton" <akpm@osdl.org>, linux-kernel@vger.kernel.org,
-       "Cyclades team" <async@cyclades.com>, airlied@linux.ie,
-       dri-devel@lists.sourceforge.net, nils@kernelconcepts.de, wim@iguana.be,
-       R.E.Wolff@bitwizard.nl, "Greg Kroah-Hartman" <gregkh@suse.de>
-In-Reply-To: <2106930977152662464@wsc.cz>
+	Sat, 3 Feb 2007 10:32:57 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <45C4AAFA.3050208@s5r6.in-berlin.de>
+Date: Sat, 03 Feb 2007 16:32:10 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.9) Gecko/20070121 SeaMonkey/1.0.7
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Pieter Palmers <pieterp@joow.be>
+CC: Dan Dennedy <dan@dennedy.org>, linux1394-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH update] ieee1394: cycle timer read extension for	raw1394/libraw1394
+References: <45BA5CFD.6070900@joow.be> <45BB27AF.7030007@s5r6.in-berlin.de>	<45BB2D67.7030608@joow.be> <45BB4A33.4070206@s5r6.in-berlin.de> <tkrat.e06f68103e99e517@s5r6.in-berlin.de> <45C49A88.4050809@joow.be>
+In-Reply-To: <45C49A88.4050809@joow.be>
+X-Enigmail-Version: 0.94.1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <2106930977152662464@wsc.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/3/07, Jiri Slaby <jirislaby@gmail.com> wrote:
-> add __devinitdata to pci_device_ids
->
-> Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+Pieter Palmers wrote:
+> Stefan Richter wrote:
+...
+>>   - Fix integer overflow.
+> I had to use 1000000ULL instead of USEC_PER_SEC to avoid weird behavior.
 
-http://lkml.org/lkml/2003/8/1/135
+OK, I'll change that and will wait for...
 
-I think that it is still true, Greg?
+> I can't test it right now, but I'll report later.
 
-Bart
+...your and Dan's ACK before I commit the patch.
+-- 
+Stefan Richter
+-=====-=-=== --=- ---==
+http://arcgraph.de/sr/
