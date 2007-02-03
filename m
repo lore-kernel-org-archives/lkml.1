@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946248AbXBCChy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946253AbXBCChy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946248AbXBCChy (ORCPT <rfc822;w@1wt.eu>);
+	id S1946253AbXBCChy (ORCPT <rfc822;w@1wt.eu>);
 	Fri, 2 Feb 2007 21:37:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946253AbXBCChW
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946255AbXBCChT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Feb 2007 21:37:22 -0500
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:52825 "EHLO
+	Fri, 2 Feb 2007 21:37:19 -0500
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:52826 "EHLO
 	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1946248AbXBCChE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1946253AbXBCChE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 2 Feb 2007 21:37:04 -0500
-Message-Id: <20070203024138.485584000@sous-sol.org>
+Message-Id: <20070203024055.928618000@sous-sol.org>
 References: <20070203023504.435051000@sous-sol.org>
 User-Agent: quilt/0.45-1
-Date: Fri, 02 Feb 2007 18:35:29 -0800
+Date: Fri, 02 Feb 2007 18:35:25 -0800
 From: Chris Wright <chrisw@sous-sol.org>
-To: linux-kernel@vger.kernel.org, stable@kernel.org, akpm@osdl.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org,
+       David Miller <davem@davemloft.net>
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -22,90 +23,75 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Jeff Dike <jdike@addtoit.com>, Blaisorblade <blaisorblade@yahoo.it>,
-       Pravin <shindepravin@gmail.com>, uml@flonatel.org
-Subject: [patch 25/59] Fix UML on non-standard VM split hosts
-Content-Disposition: inline; filename=fix-uml-on-non-standard-vm-split-hosts.patch
+       Herbert Xu <herbert@gondor.apana.org.au>, pupilla@hotmail.com
+Subject: [patch 21/59] IPSEC: Policy list disorder
+Content-Disposition: inline; filename=ipsec-policy-list-disorder.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 -stable review patch.  If anyone has any objections, please let us know.
 ------------------
 
-From: Jeff Dike <jdike@addtoit.com>
+From: Herbert Xu <herbert@gondor.apana.org.au>
 
-This fixes UML on hosts with non-standard VM splits.  We had changed
-the config variable that controls UML behavior on such hosts, but not
-propogated the change everywhere.  In particular, the values of
-STUB_CODE and STUB_DATA relied on the old variable.
+The recent hashing introduced an off-by-one bug in policy list insertion.
+Instead of adding after the last entry with a lesser or equal priority,
+we're adding after the successor of that entry.
 
-I also reformatted the HOST_VMSPLIT_3G help to make it more standard.
+This patch fixes this and also adds a warning if we detect a duplicate
+entry in the policy list.  This should never happen due to this if clause.
 
-Spotted by uml@flonatel.org.
-
-Signed-off-by: Jeff Dike <jdike@addtoit.com>
+Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
+Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
---
- arch/um/Kconfig.i386 |   38 +++++++++++++++++++-------------------
- 1 file changed, 19 insertions(+), 19 deletions(-)
+---
+ net/xfrm/xfrm_policy.c |   16 +++++-----------
+ 1 file changed, 5 insertions(+), 11 deletions(-)
 
---- linux-2.6.19.2.orig/arch/um/Kconfig.i386
-+++ linux-2.6.19.2/arch/um/Kconfig.i386
-@@ -19,22 +19,22 @@ config SEMAPHORE_SLEEPERS
- choice
- 	prompt "Host memory split"
- 	default HOST_VMSPLIT_3G
--	---help---
--	   This is needed when the host kernel on which you run has a non-default
--	   (like 2G/2G) memory split, instead of the customary 3G/1G. If you did
--	   not recompile your own kernel but use the default distro's one, you can
--	   safely accept the "Default split" option.
--
--	   It can be enabled on recent (>=2.6.16-rc2) vanilla kernels via
--	   CONFIG_VM_SPLIT_*, or on previous kernels with special patches (-ck
--	   patchset by Con Kolivas, or other ones) - option names match closely the
--	   host CONFIG_VM_SPLIT_* ones.
--
--	   A lower setting (where 1G/3G is lowest and 3G/1G is higher) will
--	   tolerate even more "normal" host kernels, but an higher setting will be
--	   stricter.
-+	help
-+        This is needed when the host kernel on which you run has a non-default
-+	(like 2G/2G) memory split, instead of the customary 3G/1G. If you did
-+	not recompile your own kernel but use the default distro's one, you can
-+	safely accept the "Default split" option.
-+
-+	It can be enabled on recent (>=2.6.16-rc2) vanilla kernels via
-+	CONFIG_VM_SPLIT_*, or on previous kernels with special patches (-ck
-+	patchset by Con Kolivas, or other ones) - option names match closely the
-+	host CONFIG_VM_SPLIT_* ones.
-+
-+	A lower setting (where 1G/3G is lowest and 3G/1G is higher) will
-+	tolerate even more "normal" host kernels, but an higher setting will be
-+	stricter.
+--- linux-2.6.19.2.orig/net/xfrm/xfrm_policy.c
++++ linux-2.6.19.2/net/xfrm/xfrm_policy.c
+@@ -615,19 +615,18 @@ int xfrm_policy_insert(int dir, struct x
+ 	struct xfrm_policy *pol;
+ 	struct xfrm_policy *delpol;
+ 	struct hlist_head *chain;
+-	struct hlist_node *entry, *newpos, *last;
++	struct hlist_node *entry, *newpos;
+ 	struct dst_entry *gc_list;
  
--	   So, if you do not know what to do here, say 'Default split'.
-+	So, if you do not know what to do here, say 'Default split'.
- 
- 	config HOST_VMSPLIT_3G
- 		bool "Default split (3G/1G user/kernel host split)"
-@@ -67,13 +67,13 @@ config 3_LEVEL_PGTABLES
- 
- config STUB_CODE
- 	hex
--	default 0xbfffe000 if !HOST_2G_2G
--	default 0x7fffe000 if HOST_2G_2G
-+	default 0xbfffe000 if !HOST_VMSPLIT_2G
-+	default 0x7fffe000 if HOST_VMSPLIT_2G
- 
- config STUB_DATA
- 	hex
--	default 0xbffff000 if !HOST_2G_2G
--	default 0x7ffff000 if HOST_2G_2G
-+	default 0xbffff000 if !HOST_VMSPLIT_2G
-+	default 0x7ffff000 if HOST_VMSPLIT_2G
- 
- config STUB_START
- 	hex
+ 	write_lock_bh(&xfrm_policy_lock);
+ 	chain = policy_hash_bysel(&policy->selector, policy->family, dir);
+ 	delpol = NULL;
+ 	newpos = NULL;
+-	last = NULL;
+ 	hlist_for_each_entry(pol, entry, chain, bydst) {
+-		if (!delpol &&
+-		    pol->type == policy->type &&
++		if (pol->type == policy->type &&
+ 		    !selector_cmp(&pol->selector, &policy->selector) &&
+-		    xfrm_sec_ctx_match(pol->security, policy->security)) {
++		    xfrm_sec_ctx_match(pol->security, policy->security) &&
++		    !WARN_ON(delpol)) {
+ 			if (excl) {
+ 				write_unlock_bh(&xfrm_policy_lock);
+ 				return -EEXIST;
+@@ -636,17 +635,12 @@ int xfrm_policy_insert(int dir, struct x
+ 			if (policy->priority > pol->priority)
+ 				continue;
+ 		} else if (policy->priority >= pol->priority) {
+-			last = &pol->bydst;
++			newpos = &pol->bydst;
+ 			continue;
+ 		}
+-		if (!newpos)
+-			newpos = &pol->bydst;
+ 		if (delpol)
+ 			break;
+-		last = &pol->bydst;
+ 	}
+-	if (!newpos)
+-		newpos = last;
+ 	if (newpos)
+ 		hlist_add_after(newpos, &policy->bydst);
+ 	else
 
 --
