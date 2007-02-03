@@ -1,46 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946362AbXBCHkZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946375AbXBCHnJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946362AbXBCHkZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Feb 2007 02:40:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946379AbXBCHkZ
+	id S1946375AbXBCHnJ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Feb 2007 02:43:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946382AbXBCHnI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Feb 2007 02:40:25 -0500
-Received: from moutng.kundenserver.de ([212.227.126.188]:62998 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1946362AbXBCHkY (ORCPT
+	Sat, 3 Feb 2007 02:43:08 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:44950 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1946379AbXBCHnH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Feb 2007 02:40:24 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: maynardj@us.ibm.com
-Subject: Re: [Cbe-oss-dev] [RFC, PATCH 4/4] Add support to OProfile for profiling Cell BE SPUs -- update
-Date: Sat, 3 Feb 2007 08:40:05 +0100
-User-Agent: KMail/1.9.5
-Cc: cbe-oss-dev@ozlabs.org, linuxppc-dev@ozlabs.org,
-       oprofile-list@lists.sourceforge.net, linux-kernel@vger.kernel.org
-References: <45BE4ED0.5030808@us.ibm.com> <200701310752.48632.arnd@arndb.de> <45C36B21.60400@us.ibm.com>
-In-Reply-To: <45C36B21.60400@us.ibm.com>
+	Sat, 3 Feb 2007 02:43:07 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Auke Kok <auke-jan.h.kok@intel.com>
+Cc: Adrian Bunk <bunk@stusta.de>, Adam Kropelin <akropel1@rochester.rr.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       jgarzik@pobox.com, alan@lxorguk.ukuu.org.uk,
+       Allen Parker <parker@isohunt.com>, jesse.brandeburg@intel.com,
+       gregkh@suse.de, linux-pci@atrey.karlin.mff.cuni.cz,
+       ebiederm@xmission.com, netdev@vger.kernel.org
+Subject: Re: 2.6.20-rc7: known regressions (v2) (part 1)
+References: <Pine.LNX.4.64.0701302019530.11095@woody.linux-foundation.org>
+	<20070203004447.GJ3754@stusta.de> <45C42669.2010105@intel.com>
+Date: Sat, 03 Feb 2007 00:41:45 -0700
+In-Reply-To: <45C42669.2010105@intel.com> (Auke Kok's message of "Fri, 02 Feb
+	2007 22:06:33 -0800")
+Message-ID: <m1k5yz3cxy.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200702030840.06270.arnd@arndb.de>
-X-Provags-ID: kundenserver.de abuse@kundenserver.de login:c48f057754fc1b1a557605ab9fa6da41
-X-Provags-ID2: V01U2FsdGVkX1/ZRUwtOdbFtjVvewpd9tY31qBK8Bw1ugxsbSvD1FRiKna+l8fmTpweGS2R+yPFsFJmgVDvQPf0635GH+RnBPLTyqfqwlF0EEEx1Y45E2I3nw==
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 02 February 2007 17:47, Maynard Johnson wrote:
-> 
-> > We also want to be able to profile the context switch code itself, which
-> > means that we also need one event buffer associated with the kernel to
-> > collect events that for a zero context_id.
-> The hardware design precludes tracing both SPU and PPU simultaneously.
-> 
-I mean the SPU-side part of the context switch code, which you can find
-in arch/powerpc/platforms/cell/spufs/spu_{save,restore}*.
+Auke Kok <auke-jan.h.kok@intel.com> writes:
 
-This code is the one that runs when context_id == 0 is passed to the
-callback.
+> Adrian Bunk wrote:
+>> This email lists some known regressions in 2.6.20-rc7 compared to 2.6.19
+>> that are not yet fixed in Linus' tree.
+>>
+>> If you find your name in the Cc header, you are either submitter of one
+>> of the bugs, maintainer of an affectected subsystem or driver, a patch
+>> of you caused a breakage or I'm considering you in any other way possibly
+>> involved with one or more of these issues.
+>
+>
+>> Subject    : e1000: 82571EB/82572EI PCI-E cards: link is always down
+>>              (MSI related)
+>> References : http://lkml.org/lkml/2007/1/16/27
+>>              http://lkml.org/lkml/2007/1/17/182
+>> Submitter  : Allen Parker <parker@isohunt.com>
+>>              Adam Kropelin <akropel1@rochester.rr.com>
+>> Handled-By : Auke Kok <auke-jan.h.kok@intel.com>
+>> Status     : problem is being debugged
+>
+> I probably can't fix this bug. Not only do I doubt that the e1000 driver is at
+> fault here, I don't have a system with this particular chipset. Most likely the
+> regression comes from a combination of MSI layer rewrites and possibly platform
+> issues. We've seen many reports that are similar and all are on the platform
+> type mentioned here. I really don't want to point fingers here either.
+>
+> None of the MSI code in e1000 has changed significantly either. as far as I can
+> see, the msi code in e1000 has not changed since 2.6.18. Nonetheless there's no
+> way I can debug any of this without a system.
+>
+> I will address the fact that we are lacking any of these systems to test on, but
+> that is not going to get this issue handled (not to mention soon) in the way it
+> needs to be.
+>
+> I strongly encourage the people on the linux-pci list to help out, I'll trace
+> the e1000 driver for suspicious activity (again), but I run countless tests on
+> the latest trees and nothing has shown up recently, other than Eric Biederman's
+> msi irq reclaim leak fix.
+>
+> Perhaps Adam can git-bisect this issue? Adam?
 
-	Arnd <><
+Do we have any explanation about the weird /proc/interrupts output?
+i.e. Multiple MSI irqs being assigned to the same card?
+
+Does /sbin/ifconfig ethN down ; /sbin/ifconfig ethN up have anything to do
+with the duplication in /proc/interrupts?
+
+I can't see any way for a pci device that doesn't support msi-x to be assigned
+multiple interrupts simultaneously.
+
+I just skimmed through the code and there hasn't been any significant
+generic MSI work since 2.6.19.
+
+Did this device really work with MSI enabled in 2.6.19?
+
+Eric
