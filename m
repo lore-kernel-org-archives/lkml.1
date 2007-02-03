@@ -1,115 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1945967AbXBCNz0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1945990AbXBCODO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1945967AbXBCNz0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Feb 2007 08:55:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945995AbXBCNz0
+	id S1945990AbXBCODO (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Feb 2007 09:03:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945995AbXBCODO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Feb 2007 08:55:26 -0500
-Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:37131 "EHLO
-	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1945967AbXBCNzZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Feb 2007 08:55:25 -0500
-Message-ID: <45C49444.8020503@drzeus.cx>
-Date: Sat, 03 Feb 2007 14:55:16 +0100
-From: Pierre Ossman <drzeus-list@drzeus.cx>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070131)
-Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="=_hera.drzeus.cx-18092-1170510923-0001-2"
-To: Alex Dubov <oakad@yahoo.com>, LKML <linux-kernel@vger.kernel.org>
-Subject: [RFC] [PATCH] Fix up needless kmap:s
+	Sat, 3 Feb 2007 09:03:14 -0500
+Received: from elch.in-berlin.de ([192.109.42.5]:53977 "EHLO elch.in-berlin.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1945990AbXBCODN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Feb 2007 09:03:13 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <45C49137.2060103@s5r6.in-berlin.de>
+Date: Sat, 03 Feb 2007 14:42:15 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.9) Gecko/20070121 SeaMonkey/1.0.7
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+CC: Pieter Palmers <pieterp@joow.be>, Dan Dennedy <dan@dennedy.org>,
+       linux1394-devel@lists.sourceforge.net
+Subject: which header for local_irq_save? (was Re: [PATCH update] ieee1394:
+ cycle timer read extension for raw1394/libraw1394)
+References: <45BA5CFD.6070900@joow.be> <45BB27AF.7030007@s5r6.in-berlin.de> <45BB2D67.7030608@joow.be> <45BB4A33.4070206@s5r6.in-berlin.de> <tkrat.e06f68103e99e517@s5r6.in-berlin.de>
+In-Reply-To: <tkrat.e06f68103e99e517@s5r6.in-berlin.de>
+X-Enigmail-Version: 0.94.1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+I wrote:
+> --- linux.orig/drivers/ieee1394/ieee1394_core.c	2007-01-27 14:07:00.000000000 +0100
+> +++ linux/drivers/ieee1394/ieee1394_core.c	2007-02-03 13:47:33.000000000 +0100
+> @@ -33,6 +33,9 @@
+>  #include <linux/skbuff.h>
+>  #include <linux/suspend.h>
+>  #include <linux/kthread.h>
+> +#include <linux/irqflags.h>
+> +#include <linux/preempt.h>
+> +#include <linux/time.h>
+>  
+>  #include <asm/byteorder.h>
+>  
 
---=_hera.drzeus.cx-18092-1170510923-0001-2
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
-
-Hi Alex,
-
-I'd like you to test and comment on the following patch.
-
-Rgds
+Is <linux/irqflags.h> the correct header for local_irq_save/
+local_irq_restore? It seems to be <asm/system.h> under Linux 2.6.16 but
+I'm not sure about later kernels.
 -- 
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  PulseAudio, core developer          http://pulseaudio.org
-  rdesktop, core developer          http://www.rdesktop.org
-
---=_hera.drzeus.cx-18092-1170510923-0001-2
-Content-Type: text/plain; name="0001-mmc-tifm-replace-kmap-with-page_address.txt"; charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="0001-mmc-tifm-replace-kmap-with-page_address.txt"
-
->From c8467c6b0ea0443f948c0ece281e1ca8e92f6ea7 Mon Sep 17 00:00:00 2001
-From: Pierre Ossman <drzeus@drzeus.cx>
-Date: Sat, 3 Feb 2007 13:36:41 +0100
-Subject: [PATCH] mmc: tifm: replace kmap with page_address
-
-Since we actively avoid highmem, calling kmap_atomic() instead
-of page_address() is effectively only obfuscation.
-
-Signed-off-by: Pierre Ossman <drzeus@drzeus.cx>
----
- drivers/mmc/tifm_sd.c |   15 ++++-----------
- 1 files changed, 4 insertions(+), 11 deletions(-)
-
-diff --git a/drivers/mmc/tifm_sd.c b/drivers/mmc/tifm_sd.c
-index 7e607b7..e65f8a0 100644
---- a/drivers/mmc/tifm_sd.c
-+++ b/drivers/mmc/tifm_sd.c
-@@ -107,14 +107,9 @@ struct tifm_sd {
- 
- };
- 
--static char* tifm_sd_kmap_atomic(struct mmc_data *data)
-+static char* tifm_sd_data_buffer(struct mmc_data *data)
- {
--	return kmap_atomic(data->sg->page, KM_BIO_SRC_IRQ) + data->sg->offset;
--}
--
--static void tifm_sd_kunmap_atomic(char *buffer, struct mmc_data *data)
--{
--	kunmap_atomic(buffer - data->sg->offset, KM_BIO_SRC_IRQ);
-+	return page_address(data->sg->page) + data->sg->offset;
- }
- 
- static int tifm_sd_transfer_data(struct tifm_dev *sock, struct tifm_sd *host,
-@@ -127,18 +122,17 @@ static int tifm_sd_transfer_data(struct tifm_dev *sock, struct tifm_sd *host,
- 	if (host_status & TIFM_MMCSD_BRS) {
- 		/* in non-dma rx mode BRS fires when fifo is still not empty */
- 		if (no_dma && (cmd->data->flags & MMC_DATA_READ)) {
--			buffer = tifm_sd_kmap_atomic(host->req->data);
-+			buffer = tifm_sd_data_buffer(host->req->data);
- 			while (host->buffer_size > host->buffer_pos) {
- 				t_val = readl(sock->addr + SOCK_MMCSD_DATA);
- 				buffer[host->buffer_pos++] = t_val & 0xff;
- 				buffer[host->buffer_pos++] =
- 							(t_val >> 8) & 0xff;
- 			}
--			tifm_sd_kunmap_atomic(buffer, host->req->data);
- 		}
- 		return 1;
- 	} else if (no_dma) {
--		buffer = tifm_sd_kmap_atomic(host->req->data);
-+		buffer = tifm_sd_data_buffer(host->req->data);
- 		if ((cmd->data->flags & MMC_DATA_READ) &&
- 				(host_status & TIFM_MMCSD_AF)) {
- 			for (cnt = 0; cnt < TIFM_MMCSD_FIFO_SIZE; cnt++) {
-@@ -163,7 +157,6 @@ static int tifm_sd_transfer_data(struct tifm_dev *sock, struct tifm_sd *host,
- 				}
- 			}
- 		}
--		tifm_sd_kunmap_atomic(buffer, host->req->data);
- 	}
- 	return 0;
- }
--- 
-1.4.4.2
-
-
---=_hera.drzeus.cx-18092-1170510923-0001-2--
+Stefan Richter
+-=====-=-=== --=- ---==
+http://arcgraph.de/sr/
