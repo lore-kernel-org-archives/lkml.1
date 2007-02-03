@@ -1,94 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751690AbXBCVOL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751731AbXBCVWT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751690AbXBCVOL (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Feb 2007 16:14:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751703AbXBCVOK
+	id S1751731AbXBCVWT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Feb 2007 16:22:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751732AbXBCVWT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Feb 2007 16:14:10 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:43223 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751697AbXBCVOJ (ORCPT
+	Sat, 3 Feb 2007 16:22:19 -0500
+Received: from wr-out-0506.google.com ([64.233.184.228]:46136 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751728AbXBCVWS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Feb 2007 16:14:09 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Auke Kok <auke-jan.h.kok@intel.com>
-Cc: Adam Kropelin <akropel1@rochester.rr.com>, Adrian Bunk <bunk@stusta.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       jgarzik@pobox.com, alan@lxorguk.ukuu.org.uk,
-       Allen Parker <parker@isohunt.com>, jesse.brandeburg@intel.com,
-       gregkh@suse.de, linux-pci@atrey.karlin.mff.cuni.cz,
-       netdev@vger.kernel.org
-Subject: Re: 2.6.20-rc7: known regressions (v2) (part 1)
-References: <Pine.LNX.4.64.0701302019530.11095@woody.linux-foundation.org>
-	<20070203004447.GJ3754@stusta.de> <45C42669.2010105@intel.com>
-	<m1k5yz3cxy.fsf@ebiederm.dsl.xmission.com>
-	<089b01c747be$0ca22620$84163e05@kroptech.com>
-	<45C4F3F1.6060500@intel.com>
-Date: Sat, 03 Feb 2007 14:12:39 -0700
-In-Reply-To: <45C4F3F1.6060500@intel.com> (Auke Kok's message of "Sat, 03 Feb
-	2007 12:43:29 -0800")
-Message-ID: <m1ejp70wu0.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Sat, 3 Feb 2007 16:22:18 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=o2vjTYMxY4p4UrhcNqfrHlf53n9THXA3aPfHAkR+4JC2OkNu+Osz0RGgbNNrXj6PQ5CGyTus/Usc0Smcab40oNJMF6vrMaXomlhhfU8C8L8F/F8eggGP7BGiGkgec9p6iHKxHfl8TsDnkrPis4QG9s0uI7x4L2g7cmmMvxy31pE=
+Message-ID: <75b66ecd0702031322k58db9da7l1ae1fc3a9342682b@mail.gmail.com>
+Date: Sat, 3 Feb 2007 16:22:17 -0500
+From: "Lee Revell" <rlrevell@joe-job.com>
+To: ebuddington@wesleyan.edu
+Subject: Re: 2.6.20-rc6-mm3 BUG in drm_ioctl with Rage 128 card
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20070203185407.GA5256@pool-70-109-243-148.wma.east.verizon.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070203185407.GA5256@pool-70-109-243-148.wma.east.verizon.net>
+X-Google-Sender-Auth: c362559fb3291463
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Auke Kok <auke-jan.h.kok@intel.com> writes:
+On 2/3/07, Eric Buddington <ebuddington@verizon.net> wrote:
+> EIP:    0060:[<00000000>]    Tainted: G   M   VLI
+> EFLAGS: 00013246   (2.6.20-rc6-mm3 #1)
 
-> maybe I've been unclear, but here's how e1000 detects link changes:
->
-> 1) by checking every 2 seconds in the watchdog by reading PHY registers
-> 2) by receiving an interrupt from the NIC with the LSI bit in the interrupt
-> control register
->
-> if the link is down to start with, the watchdog will obviously spot a 'link up'
-> change since it doesn't use any interrupts.
->
-> The link interrupt (LSI) is a generic interrupt that comes over the same vector
-> (be it MSI or not) as RX interrupts, and in your case doesn't arrive at all,
-> which should be demonstrateable if you set e.g. the watchdog interval to 30
-> seconds and unplug the cable - the driver won't spot the link change until the
-> watchdog fires a lot later than you unplugged the cable.
->
->> The behavior I observe on 2.6.19 is better than 2.6.20-rc7. Link status
->> interrupts seem to work but rx/tx does not. A few more details here:
->>
-> <http://www.kroptech.com/~adk0212/mailimport/showmsg.php?msg_id=3339092450&db_name=linux_kernel>
->
->> I'm going to test 2.6.16 thru 2.6.20-rc7 this weekend and will report
->> back any variations in behavior I notice.
->
-> that would be a good start, but I still think that you might have a broken
-> bridge on that system. Anyway, thanks for digging into this.
+The "M" taint flag indicates that a machine check exception has
+occured.  Check your logs for the MCE and make sure the hardware is
+OK.
 
-Right.  The basic question is on a problem system are MSI interrupts
-from the card in /proc/interrupts observed.  If interrupts are not
-observed (as it sounds like is the case) it is most likely something
-outside of the card, and driver.  If interrupts are observed but the
-card does not work correctly it could be a card or driver bug.
-
-Ok.  In the archives I finally found the output of cat
-/proc/interrupts and there were none.
-
-This is a PCI-E to Hypertransport system from the lspci output.
-
-Can I get the corresponding lspci -xxx output.  I suspect the BIOS
-did not program the hypertransport MSI mapping capabilities correctly.
-All it has to do is set the enable but still, occasionally BIOS
-writers miss the most amazing things.
-
-If that is the case with just a little creativity we should be able to
-write a pci quirk that will enable the MSI mapping capability on this
-class of systems and save ourselves a lot of trouble.
-
-Although I thought I did see a quirk that disabled MSI if the enable
-bit was not set.  Hmm.
-
-Anyway please the lspci -xxx output.  Although if someone could teach
-lspci to decode the hypertransport MSI mapping capability so that
-lspic -vvv gave us this information that would be great too.
-
-Eric
+Lee
