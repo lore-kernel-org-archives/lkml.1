@@ -1,67 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751825AbXBCX2K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751845AbXBCXdD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751825AbXBCX2K (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Feb 2007 18:28:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751864AbXBCX2K
+	id S1751845AbXBCXdD (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Feb 2007 18:33:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751864AbXBCXdD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Feb 2007 18:28:10 -0500
-Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:58725 "EHLO
-	pd3mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751825AbXBCX2J (ORCPT
+	Sat, 3 Feb 2007 18:33:03 -0500
+Received: from dallas.jonmasters.org ([72.29.103.172]:3484 "EHLO
+	dallas.jonmasters.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751845AbXBCXdB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Feb 2007 18:28:09 -0500
-Date: Sat, 03 Feb 2007 17:28:00 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: hdparm for lib_pata
-In-reply-to: <45C5178A.1000501@seclark.us>
-To: Stephen.Clark@seclark.us
-Cc: Patrick Ale <patrick.ale@gmail.com>, linux-kernel@vger.kernel.org
-Message-id: <45C51A80.3050308@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.L/RjDlo6Njb5Jt7/9ENZuiASoV0@ifi.uio.no>
- <45C4DF2A.1070501@shaw.ca> <45C5178A.1000501@seclark.us>
-User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
+	Sat, 3 Feb 2007 18:33:01 -0500
+Message-ID: <45C51B81.5040309@jonmasters.org>
+Date: Sat, 03 Feb 2007 18:32:17 -0500
+From: Jon Masters <jonathan@jonmasters.org>
+Organization: World Organi[sz]ation Of Broken Dreams
+User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
+MIME-Version: 1.0
+To: Alan <alan@lxorguk.ukuu.org.uk>
+CC: Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       David Schwartz <davids@webmaster.com>,
+       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Ban module license tag string termination trick
+References: <MDEHLPKNGKAHNMBLJOLKEEJIBFAC.davids@webmaster.com>	<Pine.LNX.4.61.0702032136430.13874@yvahk01.tjqt.qr> <20070203222141.6f723fd9@localhost.localdomain>
+In-Reply-To: <20070203222141.6f723fd9@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-SA-Do-Not-Run: Yes
+X-SA-Exim-Connect-IP: 74.92.29.237
+X-SA-Exim-Mail-From: jonathan@jonmasters.org
+X-SA-Exim-Scanned: No (on dallas.jonmasters.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Clark wrote:
->> Only some of the hdparm functionality is supported in libata, which is 
->> partially by design. Presently there's no way to override the DMA 
->> settings in libata, it starts out at the fastest supported settings 
->> and falls back if it gets too many errors of certain types.
->>
->> You shouldn't be seeing errors like this unless you have bad IDE 
->> cables or are using 40-wire cables with high UDMA modes. Can you post 
->> the output you're seeing?
->>
-> Ok,
+Alan wrote:
+> On Sat, 3 Feb 2007 21:47:36 +0100 (MET)
+> Jan Engelhardt <jengelh@linux01.gwdg.de> wrote:
 > 
-> But why are we taking away the users capability to control his/her own 
-> hardware. Sounds like windows.
+>> On Feb 3 2007 10:31, David Schwartz wrote:
+>>> The way out of the GPL problem is to make clear that it is *not* a 
+>>> copyright enforcement scheme
+>> So why do we have EXPORT_SYMBOL_GPL then, if
 > 
-> My $.02
-> Steve Clark
+> Because if you go around modifying code to get around it then regardless
+> of the DMCA question you are actively doing it and there is very clear
+> intent to do other than the right holder intended. In some ways its the
+> difference between walking through an open archway into a private area
+> and kicking the door down to get in.
 
-A lot of those hdparm commands are legacy cruft from the old drivers/ide 
-setup and just aren't needed with libata. For example, I think a major 
-use for the enable/disable DMA option was for screwy distro setups where 
-all the IDE drivers were built modular and the IDE core would load some 
-generic support for the controller, then the device-specific driver 
-module would get loaded and then you'd have to switch DMA on manually 
-afterwards. (The old IDE drivers never really seemed to play well with 
-being built as modules, probably a big reason why Red Hat/Fedora have 
-always built them into the kernel.)
+It's a sign, a notice, and the reason I brought up this discussion is 
+precisely because I don't think the kernel has any business being an 
+enforcement mechanism - that's not what the spirit of our community is 
+really about, we're about openness (as much as is possible).
 
-Support for that ioctl could likely be added, but these days I don't 
-think there's much use for it. I can't see how anybody in their right 
-mind would want to disable DMA on a modern drive, and if libata turns it 
-off automatically then there's likely some serious hardware or driver 
-problem that will end up biting you some other way if you force it back on.
+If I go into an airport, open my laptop and connect to a network called 
+"Free WiFi network", then I might have a good case to argue that I 
+expected the WiFi to be free. If I connect to a network called "Not 
+Free, Don't Use" then...I think the intent of the wording is clear.
 
--- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
+Anyway. Are we doing this or not - the more I think about it, the more 
+I'm kinda "happy" to just leave things as they are. Yes, bad people will 
+continuing doing bad things no matter what we do. Do we really want to 
+change stuff just to work around obvious abuse? Alan?
 
+Jon.
