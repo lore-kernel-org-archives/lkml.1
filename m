@@ -1,66 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946214AbXBCBjI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946212AbXBCBj3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946214AbXBCBjI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Feb 2007 20:39:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946213AbXBCBjI
+	id S1946212AbXBCBj3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Feb 2007 20:39:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946216AbXBCBj3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Feb 2007 20:39:08 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:49213 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1946210AbXBCBjD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Feb 2007 20:39:03 -0500
-Date: Fri, 2 Feb 2007 17:37:46 -0800
-From: Andrew Morton <akpm@osdl.org>
-To: John Keller <jpk@sgi.com>
-Cc: linux-acpi@vger.kernel.org, ayoung@sgi.com, linux-ia64@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Len Brown <lenb@kernel.org>,
-       "Luck, Tony" <tony.luck@intel.com>
-Subject: Re: [PATCH 1/1] -  Altix: more ACPI PRT support
-Message-Id: <20070202173746.9fc66172.akpm@linux-foundation.org>
-In-Reply-To: <20070202205412.14367.60290.sendpatchset@attica.americas.sgi.com>
-References: <20070202205412.14367.60290.sendpatchset@attica.americas.sgi.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 2 Feb 2007 20:39:29 -0500
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:59062 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1946212AbXBCBj2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Feb 2007 20:39:28 -0500
+Date: Sat, 3 Feb 2007 02:39:30 +0100
+From: Adrian Bunk <bunk@stusta.de>
+To: "Vladimir V. Saveliev" <vs@namesys.com>
+Cc: reiserfs-dev@namesys.com, Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: How many people are using 2.6.16?
+Message-ID: <20070203013930.GP3754@stusta.de>
+References: <45BE5948.6060403@redhat.com> <Pine.LNX.4.64.0701301748230.3611@woody.linux-foundation.org> <20070131070237.GT3754@stusta.de> <200702011513.04627.vs@namesys.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200702011513.04627.vs@namesys.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 02 Feb 2007 14:54:12 -0600
-John Keller <jpk@sgi.com> wrote:
+On Thu, Feb 01, 2007 at 03:13:03PM +0300, Vladimir V. Saveliev wrote:
+> Hello
 
-> The SN Altix platform does not conform to the 
-> IOSAPIC IRQ routing model. Add code in acpi_unregister_gsi()
-> to check if (acpi_irq_model == ACPI_IRQ_MODEL_PLATFORM) and
-> return.
-> 
-> Signed-off-by: John Keller <jpk@sgi.com>
-> ---
-> 
-> Due to an oversight, this code was not added previously when
-> similar code was added to acpi_register_gsi().
-> 
-> http://marc.theaimsgroup.com/?l=linux-acpi&m=116680983430121&w=2
-> 
->  arch/ia64/kernel/acpi.c |    3 +++
->  1 file changed, 3 insertions(+)
-> 
-> 
-> Index: linux-2.6/arch/ia64/kernel/acpi.c
-> ===================================================================
-> --- linux-2.6.orig/arch/ia64/kernel/acpi.c	2007-02-02 14:44:31.000000000 -0600
-> +++ linux-2.6/arch/ia64/kernel/acpi.c	2007-02-02 14:47:44.658143727 -0600
-> @@ -609,6 +609,9 @@ EXPORT_SYMBOL(acpi_register_gsi);
->  
->  void acpi_unregister_gsi(u32 gsi)
->  {
-> +	if (acpi_irq_model == ACPI_IRQ_MODEL_PLATFORM)
-> +		return;
-> +
->  	iosapic_unregister_intr(gsi);
->  }
+Hi Vladimir,
 
-Given that the December 22 patch appears to be in mainline, and that this
-patch is simple, I shall cheerily bypass maintainers and send it in for
-2.6.20.
+> On Wednesday 31 January 2007 10:02, Adrian Bunk wrote:
+>...
+> > reiserfs:
+> > commit de14569f94513279e3d44d9571a421e9da1759ae
+> >   [PATCH] resierfs: avoid tail packing if an inode was ever mmapped
+> > backport to 2.6.16 required
+> 
+> Here it goes:
+>...
+
+thanks a lot, applied to 2.6.16.
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
