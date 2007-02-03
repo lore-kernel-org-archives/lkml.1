@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946240AbXBCCga@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946236AbXBCCg6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946240AbXBCCga (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Feb 2007 21:36:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946251AbXBCCgZ
+	id S1946236AbXBCCg6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Feb 2007 21:36:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946239AbXBCCgl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Feb 2007 21:36:25 -0500
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:52692 "EHLO
+	Fri, 2 Feb 2007 21:36:41 -0500
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:52666 "EHLO
 	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1946243AbXBCCfx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Feb 2007 21:35:53 -0500
-Message-Id: <20070203023933.841475000@sous-sol.org>
+	id S1946233AbXBCCfr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Feb 2007 21:35:47 -0500
+Message-Id: <20070203023816.610328000@sous-sol.org>
 References: <20070203023504.435051000@sous-sol.org>
 User-Agent: quilt/0.45-1
-Date: Fri, 02 Feb 2007 18:35:17 -0800
+Date: Fri, 02 Feb 2007 18:35:09 -0800
 From: Chris Wright <chrisw@sous-sol.org>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org,
+       Lars Ellenberg <Lars.Ellenberg@linbit.com>
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -22,47 +23,163 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [patch 13/59] ieee1394: sbp2: fix probing of some DVD-ROM/RWs
-Content-Disposition: inline; filename=ieee1394-sbp2-fix-probing-of-some-dvd-rom-rws.patch
+       Andrew Morton <akpm@osdl.org>, Neil Brown <neilb@suse.de>,
+       linux-raid@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
+       Jens Axboe <jens.axboe@oracle.com>, Lars Ellenberg <lars@linbit.com>
+Subject: [patch 05/59] md: pass down BIO_RW_SYNC in raid{1,10}
+Content-Disposition: inline; filename=md-pass-down-bio_rw_sync-in-raid-1-10.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 -stable review patch.  If anyone has any objections, please let us know.
 ------------------
 
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+From: Lars Ellenberg <Lars.Ellenberg@linbit.com>
 
-Since commit 98e238cd42be6c0852da519303cf0182690f8d9f in Linux 2.6.19,
-"ieee1394: sbp2: don't prefer MODE SENSE 10", some FireWire DVD-ROMs and
-DVD-RWs were mistaken as CD-ROM because sr_mod now sent MODE SENSE 6.
-The MMC command set includes only MODE SENSE 10.
-http://bugzilla.kernel.org/show_bug.cgi?id=7800
+md raidX make_request functions strip off the BIO_RW_SYNC flag, thus
+introducing additional latency.
 
-This fix lets sbp2 switch scsi_device.use_10_for_rw on for MMC LUs.
-This should rather be done in the command set driver sr_mod, not in the
-sbp2 transport driver, and an according patch will follow for a next
-Linux release.
+Fixing this in raid1 and raid10 seems to be straightforward enough.
 
-Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+For our particular usage case in DRBD, passing this flag improved some
+initialization time from ~5 minutes to ~5 seconds.
+
+Acked-by: NeilBrown <neilb@suse.de>
+Signed-off-by: Lars Ellenberg <lars@linbit.com>
+Acked-by: Jens Axboe <jens.axboe@oracle.com>
+Cc: <stable@kernel.org>
+Signed-off-by: Andrew Morton <akpm@osdl.org>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
-same as commit 1a74bc68e4c0534d150e6454b45a70dab831fa32
+ drivers/md/raid1.c  |   13 +++++++++----
+ drivers/md/raid10.c |   11 ++++++++---
+ 2 files changed, 17 insertions(+), 7 deletions(-)
 
----
- drivers/ieee1394/sbp2.c |    2 ++
- 1 file changed, 2 insertions(+)
-
---- linux-2.6.19.2.orig/drivers/ieee1394/sbp2.c
-+++ linux-2.6.19.2/drivers/ieee1394/sbp2.c
-@@ -2530,6 +2530,8 @@ static int sbp2scsi_slave_configure(stru
- 	blk_queue_dma_alignment(sdev->request_queue, (512 - 1));
- 	sdev->use_10_for_rw = 1;
+--- linux-2.6.19.2.orig/drivers/md/raid1.c
++++ linux-2.6.19.2/drivers/md/raid1.c
+@@ -775,6 +775,7 @@ static int make_request(request_queue_t 
+ 	struct bio_list bl;
+ 	struct page **behind_pages = NULL;
+ 	const int rw = bio_data_dir(bio);
++	const int do_sync = bio_sync(bio);
+ 	int do_barriers;
  
-+	if (sdev->type == TYPE_ROM)
-+		sdev->use_10_for_ms = 1;
- 	if (sdev->type == TYPE_DISK &&
- 	    scsi_id->workarounds & SBP2_WORKAROUND_MODE_SENSE_8)
- 		sdev->skip_ms_page_8 = 1;
+ 	/*
+@@ -835,7 +836,7 @@ static int make_request(request_queue_t 
+ 		read_bio->bi_sector = r1_bio->sector + mirror->rdev->data_offset;
+ 		read_bio->bi_bdev = mirror->rdev->bdev;
+ 		read_bio->bi_end_io = raid1_end_read_request;
+-		read_bio->bi_rw = READ;
++		read_bio->bi_rw = READ | do_sync;
+ 		read_bio->bi_private = r1_bio;
+ 
+ 		generic_make_request(read_bio);
+@@ -906,7 +907,7 @@ static int make_request(request_queue_t 
+ 		mbio->bi_sector	= r1_bio->sector + conf->mirrors[i].rdev->data_offset;
+ 		mbio->bi_bdev = conf->mirrors[i].rdev->bdev;
+ 		mbio->bi_end_io	= raid1_end_write_request;
+-		mbio->bi_rw = WRITE | do_barriers;
++		mbio->bi_rw = WRITE | do_barriers | do_sync;
+ 		mbio->bi_private = r1_bio;
+ 
+ 		if (behind_pages) {
+@@ -941,6 +942,8 @@ static int make_request(request_queue_t 
+ 	blk_plug_device(mddev->queue);
+ 	spin_unlock_irqrestore(&conf->device_lock, flags);
+ 
++	if (do_sync)
++		md_wakeup_thread(mddev->thread);
+ #if 0
+ 	while ((bio = bio_list_pop(&bl)) != NULL)
+ 		generic_make_request(bio);
+@@ -1541,6 +1544,7 @@ static void raid1d(mddev_t *mddev)
+ 			 * We already have a nr_pending reference on these rdevs.
+ 			 */
+ 			int i;
++			const int do_sync = bio_sync(r1_bio->master_bio);
+ 			clear_bit(R1BIO_BarrierRetry, &r1_bio->state);
+ 			clear_bit(R1BIO_Barrier, &r1_bio->state);
+ 			for (i=0; i < conf->raid_disks; i++)
+@@ -1561,7 +1565,7 @@ static void raid1d(mddev_t *mddev)
+ 						conf->mirrors[i].rdev->data_offset;
+ 					bio->bi_bdev = conf->mirrors[i].rdev->bdev;
+ 					bio->bi_end_io = raid1_end_write_request;
+-					bio->bi_rw = WRITE;
++					bio->bi_rw = WRITE | do_sync;
+ 					bio->bi_private = r1_bio;
+ 					r1_bio->bios[i] = bio;
+ 					generic_make_request(bio);
+@@ -1593,6 +1597,7 @@ static void raid1d(mddev_t *mddev)
+ 				       (unsigned long long)r1_bio->sector);
+ 				raid_end_bio_io(r1_bio);
+ 			} else {
++				const int do_sync = bio_sync(r1_bio->master_bio);
+ 				r1_bio->bios[r1_bio->read_disk] =
+ 					mddev->ro ? IO_BLOCKED : NULL;
+ 				r1_bio->read_disk = disk;
+@@ -1608,7 +1613,7 @@ static void raid1d(mddev_t *mddev)
+ 				bio->bi_sector = r1_bio->sector + rdev->data_offset;
+ 				bio->bi_bdev = rdev->bdev;
+ 				bio->bi_end_io = raid1_end_read_request;
+-				bio->bi_rw = READ;
++				bio->bi_rw = READ | do_sync;
+ 				bio->bi_private = r1_bio;
+ 				unplug = 1;
+ 				generic_make_request(bio);
+--- linux-2.6.19.2.orig/drivers/md/raid10.c
++++ linux-2.6.19.2/drivers/md/raid10.c
+@@ -782,6 +782,7 @@ static int make_request(request_queue_t 
+ 	int i;
+ 	int chunk_sects = conf->chunk_mask + 1;
+ 	const int rw = bio_data_dir(bio);
++	const int do_sync = bio_sync(bio);
+ 	struct bio_list bl;
+ 	unsigned long flags;
+ 
+@@ -863,7 +864,7 @@ static int make_request(request_queue_t 
+ 			mirror->rdev->data_offset;
+ 		read_bio->bi_bdev = mirror->rdev->bdev;
+ 		read_bio->bi_end_io = raid10_end_read_request;
+-		read_bio->bi_rw = READ;
++		read_bio->bi_rw = READ | do_sync;
+ 		read_bio->bi_private = r10_bio;
+ 
+ 		generic_make_request(read_bio);
+@@ -909,7 +910,7 @@ static int make_request(request_queue_t 
+ 			conf->mirrors[d].rdev->data_offset;
+ 		mbio->bi_bdev = conf->mirrors[d].rdev->bdev;
+ 		mbio->bi_end_io	= raid10_end_write_request;
+-		mbio->bi_rw = WRITE;
++		mbio->bi_rw = WRITE | do_sync;
+ 		mbio->bi_private = r10_bio;
+ 
+ 		atomic_inc(&r10_bio->remaining);
+@@ -922,6 +923,9 @@ static int make_request(request_queue_t 
+ 	blk_plug_device(mddev->queue);
+ 	spin_unlock_irqrestore(&conf->device_lock, flags);
+ 
++	if (do_sync)
++		md_wakeup_thread(mddev->thread);
++
+ 	return 0;
+ }
+ 
+@@ -1563,6 +1567,7 @@ static void raid10d(mddev_t *mddev)
+ 				       (unsigned long long)r10_bio->sector);
+ 				raid_end_bio_io(r10_bio);
+ 			} else {
++				const int do_sync = bio_sync(r10_bio->master_bio);
+ 				rdev = conf->mirrors[mirror].rdev;
+ 				if (printk_ratelimit())
+ 					printk(KERN_ERR "raid10: %s: redirecting sector %llu to"
+@@ -1574,7 +1579,7 @@ static void raid10d(mddev_t *mddev)
+ 				bio->bi_sector = r10_bio->devs[r10_bio->read_slot].addr
+ 					+ rdev->data_offset;
+ 				bio->bi_bdev = rdev->bdev;
+-				bio->bi_rw = READ;
++				bio->bi_rw = READ | do_sync;
+ 				bio->bi_private = r10_bio;
+ 				bio->bi_end_io = raid10_end_read_request;
+ 				unplug = 1;
 
 --
