@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946286AbXBCCnP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946292AbXBCCne@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946286AbXBCCnP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Feb 2007 21:43:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946283AbXBCCmo
+	id S1946292AbXBCCne (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Feb 2007 21:43:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946283AbXBCCnR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Feb 2007 21:42:44 -0500
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:53499 "EHLO
+	Fri, 2 Feb 2007 21:43:17 -0500
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:53523 "EHLO
 	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1946276AbXBCCml (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Feb 2007 21:42:41 -0500
-Message-Id: <20070203024522.492330000@sous-sol.org>
+	id S1946281AbXBCCnG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Feb 2007 21:43:06 -0500
+Message-Id: <20070203024716.734895000@sous-sol.org>
 References: <20070203023504.435051000@sous-sol.org>
 User-Agent: quilt/0.45-1
-Date: Fri, 02 Feb 2007 18:35:50 -0800
+Date: Fri, 02 Feb 2007 18:36:01 -0800
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,80 +22,116 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       "ethanhsiao@jmicron.com" <ethanhsiao@jmicron.com>,
-       Jeff Garzik <jeff@garzik.org>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
-       Andrew Morton <akpm@osdl.org>, Chuck Ebbert <cebbert@redhat.com>
-Subject: [patch 46/59] jmicron: 40/80pin primary detection
-Content-Disposition: inline; filename=jmicron-40-80pin-primary-detection.patch
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Trond Myklebust <Trond.Myklebust@netapp.com>
+Subject: [patch 57/59] SUNRPC: Give cloned RPC clients their own rpc_pipefs directory
+Content-Disposition: inline; filename=sunrpc-give-cloned-rpc-clients-their-own-rpc_pipefs-directory.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 -stable review patch.  If anyone has any objections, please let us know.
 ------------------
 
-From: ethanhsiao@jmicron.com <ethanhsiao@jmicron.com>
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
 
-jmicron module detects all JMB36x as JMB361 and PATA0 has wrong pin status
-of XICBLID.
+This patch fixes a regression in 2.6.19 in which the use of multiple
+krb5 mounts against the same NFS server may result in an Oops on
+unmount. The Oops is due to the fact that multiple NFS krb5 clients may
+end up inadvertently sharing the same rpc_pipefs upcall pipe. The first
+client to 'umount' will unlink that shared pipe, causing an Oops.
 
-Cc: Jeff Garzik <jeff@garzik.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Signed-off-by: Andrew Morton <akpm@osdl.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+The solution is to give each client their own upcall pipe. This fix has
+been in mainline since 2.6.20-rc1.
 
-cebbert@redhat.com: I folded in the warning fix (a51545ab25) because
-otherwise it makes the tester think the patch caused the warning
-that was already there.
-
-Cc: Dave Jones <davej@redhat.com>
-Signed-off-by: Chuck Ebbert <cebbert@redhat.com>
+Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+[chrisw: backport to 2.6.19.2]
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- drivers/ide/pci/jmicron.c |   17 +++++++++--------
- 1 file changed, 9 insertions(+), 8 deletions(-)
+ include/linux/sunrpc/clnt.h |    1 +
+ net/sunrpc/clnt.c           |   26 +++++++++++++++-----------
+ 2 files changed, 16 insertions(+), 11 deletions(-)
 
---- linux-2.6.19.2.orig/drivers/ide/pci/jmicron.c
-+++ linux-2.6.19.2/drivers/ide/pci/jmicron.c
-@@ -86,15 +86,16 @@ static int __devinit ata66_jmicron(ide_h
- 	{
- 	case PORT_PATA0:
- 		if (control & (1 << 3))	/* 40/80 pin primary */
--			return 1;
--		return 0;
-+			return 0;
-+		return 1;
- 	case PORT_PATA1:
- 		if (control5 & (1 << 19))	/* 40/80 pin secondary */
- 			return 0;
- 		return 1;
- 	case PORT_SATA:
--		return 1;
-+		break;
- 	}
-+	return 1; /* Avoid bogus "control reaches end of non-void function" */
- }
- 
- static void jmicron_tuneproc (ide_drive_t *drive, byte mode_wanted)
-@@ -240,11 +241,11 @@ static int __devinit jmicron_init_one(st
- }
- 
- static struct pci_device_id jmicron_pci_tbl[] = {
--	{ PCI_DEVICE(PCI_VENDOR_ID_JMICRON, PCI_DEVICE_ID_JMICRON_JMB361), 0},
--	{ PCI_DEVICE(PCI_VENDOR_ID_JMICRON, PCI_DEVICE_ID_JMICRON_JMB363), 1},
--	{ PCI_DEVICE(PCI_VENDOR_ID_JMICRON, PCI_DEVICE_ID_JMICRON_JMB365), 2},
--	{ PCI_DEVICE(PCI_VENDOR_ID_JMICRON, PCI_DEVICE_ID_JMICRON_JMB366), 3},
--	{ PCI_DEVICE(PCI_VENDOR_ID_JMICRON, PCI_DEVICE_ID_JMICRON_JMB368), 4},
-+	{ PCI_VENDOR_ID_JMICRON, PCI_DEVICE_ID_JMICRON_JMB361, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
-+	{ PCI_VENDOR_ID_JMICRON, PCI_DEVICE_ID_JMICRON_JMB363, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 1},
-+	{ PCI_VENDOR_ID_JMICRON, PCI_DEVICE_ID_JMICRON_JMB365, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 2},
-+	{ PCI_VENDOR_ID_JMICRON, PCI_DEVICE_ID_JMICRON_JMB366, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 3},
-+	{ PCI_VENDOR_ID_JMICRON, PCI_DEVICE_ID_JMICRON_JMB368, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 4},
- 	{ 0, },
+--- linux-2.6.19.2.orig/include/linux/sunrpc/clnt.h
++++ linux-2.6.19.2/include/linux/sunrpc/clnt.h
+@@ -53,6 +53,7 @@ struct rpc_clnt {
+ 	struct dentry *		cl_dentry;	/* inode */
+ 	struct rpc_clnt *	cl_parent;	/* Points to parent of clones */
+ 	struct rpc_rtt		cl_rtt_default;
++	struct rpc_program *	cl_program;
+ 	char			cl_inline_name[32];
  };
  
+--- linux-2.6.19.2.orig/net/sunrpc/clnt.c
++++ linux-2.6.19.2/net/sunrpc/clnt.c
+@@ -141,6 +141,7 @@ static struct rpc_clnt * rpc_new_client(
+ 	clnt->cl_vers     = version->number;
+ 	clnt->cl_stats    = program->stats;
+ 	clnt->cl_metrics  = rpc_alloc_iostats(clnt);
++	clnt->cl_program  = program;
+ 
+ 	if (!xprt_bound(clnt->cl_xprt))
+ 		clnt->cl_autobind = 1;
+@@ -252,6 +253,7 @@ struct rpc_clnt *
+ rpc_clone_client(struct rpc_clnt *clnt)
+ {
+ 	struct rpc_clnt *new;
++	int err = -ENOMEM;
+ 
+ 	new = kmalloc(sizeof(*new), GFP_KERNEL);
+ 	if (!new)
+@@ -259,6 +261,10 @@ rpc_clone_client(struct rpc_clnt *clnt)
+ 	memcpy(new, clnt, sizeof(*new));
+ 	atomic_set(&new->cl_count, 1);
+ 	atomic_set(&new->cl_users, 0);
++	new->cl_metrics = rpc_alloc_iostats(clnt);
++	err = rpc_setup_pipedir(new, clnt->cl_program->pipe_dir_name);
++	if (err != 0)
++		goto out_no_path;
+ 	new->cl_parent = clnt;
+ 	atomic_inc(&clnt->cl_count);
+ 	new->cl_xprt = xprt_get(clnt->cl_xprt);
+@@ -266,16 +272,16 @@ rpc_clone_client(struct rpc_clnt *clnt)
+ 	new->cl_autobind = 0;
+ 	new->cl_oneshot = 0;
+ 	new->cl_dead = 0;
+-	if (!IS_ERR(new->cl_dentry))
+-		dget(new->cl_dentry);
+ 	rpc_init_rtt(&new->cl_rtt_default, clnt->cl_xprt->timeout.to_initval);
+ 	if (new->cl_auth)
+ 		atomic_inc(&new->cl_auth->au_count);
+-	new->cl_metrics = rpc_alloc_iostats(clnt);
+ 	return new;
++out_no_path:
++	rpc_free_iostats(new->cl_metrics);
++	kfree(new);
+ out_no_clnt:
+-	printk(KERN_INFO "RPC: out of memory in %s\n", __FUNCTION__);
+-	return ERR_PTR(-ENOMEM);
++	dprintk("RPC: %s returned error %d\n", __FUNCTION__, err);
++	return ERR_PTR(err);
+ }
+ 
+ /*
+@@ -328,16 +334,14 @@ rpc_destroy_client(struct rpc_clnt *clnt
+ 		rpcauth_destroy(clnt->cl_auth);
+ 		clnt->cl_auth = NULL;
+ 	}
+-	if (clnt->cl_parent != clnt) {
+-		if (!IS_ERR(clnt->cl_dentry))
+-			dput(clnt->cl_dentry);
+-		rpc_destroy_client(clnt->cl_parent);
+-		goto out_free;
+-	}
+ 	if (!IS_ERR(clnt->cl_dentry)) {
+ 		rpc_rmdir(clnt->cl_dentry);
+ 		rpc_put_mount();
+ 	}
++	if (clnt->cl_parent != clnt) {
++		rpc_destroy_client(clnt->cl_parent);
++		goto out_free;
++	}
+ 	if (clnt->cl_server != clnt->cl_inline_name)
+ 		kfree(clnt->cl_server);
+ out_free:
 
 --
