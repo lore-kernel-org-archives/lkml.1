@@ -1,60 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946432AbXBCK5a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946444AbXBCLHR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946432AbXBCK5a (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Feb 2007 05:57:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946439AbXBCK5a
+	id S1946444AbXBCLHR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Feb 2007 06:07:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946448AbXBCLHR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Feb 2007 05:57:30 -0500
-Received: from ug-out-1314.google.com ([66.249.92.174]:17670 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1946432AbXBCK53 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Feb 2007 05:57:29 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=rjJus1Nyva91kYeSijeBxnAKU4m2sDF1nXI/OmsJ0D2WiS7sI1kafjqG2DDaaukoe4H/lmeEYGHHryGwAVDPeSqwr/NsTo0+pusdYqWnKiSHpAOcUE7LjNywN0LW2+cQswfz++xqg5AkVhVaH+/Mv5pH8S94MIX/AAsf+aShCwU=
-Subject: Re: 2.6.20-rc7: known regressions
-From: =?ISO-8859-1?Q?Fr=E9d=E9ric?= Riss <frederic.riss@gmail.com>
-To: Andi Kleen <ak@suse.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Matt Domsch <Matt_Domsch@dell.com>, Adrian Bunk <bunk@stusta.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Eric Van Hensbergen <ericvh@gmail.com>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Neil Brown <neilb@suse.de>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Jeff Garzik <jeff@garzik.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Francois Romieu <romieu@fr.zoreil.com>
-In-Reply-To: <200702031151.17220.ak@suse.de>
-References: <Pine.LNX.4.64.0701302019530.11095@woody.linux-foundation.org>
-	 <200702031058.13830.ak@suse.de> <1170499668.31373.35.camel@funkylaptop>
-	 <200702031151.17220.ak@suse.de>
-Content-Type: text/plain; charset=utf-8
-Date: Sat, 03 Feb 2007 11:57:24 +0100
-Message-Id: <1170500244.31373.40.camel@funkylaptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
-Content-Transfer-Encoding: 8bit
+	Sat, 3 Feb 2007 06:07:17 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:46704 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1946444AbXBCLHP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Feb 2007 06:07:15 -0500
+Date: Sat, 3 Feb 2007 01:01:53 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: paulmck@linux.vnet.ibm.com, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@osdl.org>, dipankar@in.ibm.com,
+       Gautham Shenoy <ego@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org
+Subject: Re: Fw: Re: [mm PATCH 4/6] RCU: (now) CPU hotplug
+Message-ID: <20070203000153.GA1712@elf.ucw.cz>
+References: <20070126112837.059502fc.akpm@osdl.org> <20070130073340.GC30160@elte.hu> <20070130160244.GB2092@linux.vnet.ibm.com> <200701301744.48601.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200701301744.48601.rjw@sisk.pl>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Le samedi 03 février 2007 à 11:51 +0100, Andi Kleen a écrit :
-> > +
-> > +typedef efilinkage efi_status_t efi_get_time_t (efi_time_t *tm,
-> > +						efi_time_cap_t *tc);
+Hi!
+
+> > > > 	static int _cpu_down(unsigned int cpu)
+> > > > 	{
+> > > > 		int err;
+> > > > 		struct task_struct *p;
+> > > > 		cpumask_t old_allowed, tmp;
+> > > > 
+> > > > 		if (num_online_cpus() == 1)
+> > > > 			return -EBUSY;
+> > > > 
+> > > > 		if (!cpu_online(cpu))
+> > > > 			return -EINVAL;
+> > > > 
+> > > > 		if (freeze_processes()) {
+> > > > 			err = -EBUSY;
+> > > > 			goto out_freeze_notify_failed;
+> > > > 		}
+> > > > 		err = raw_notifier_call_chain(&cpu_chain, CPU_DOWN_PREPARE,
+> > > > 							(void *)(long)cpu);
+> > > 
+> > > yeah. This all looks so nice that i almost cannot believe it's true :-) 
+> > 
+> > Well, it turns out that maybe it is in fact untrue.  :-/
+> > 
+> > I need to look at all uses of PF_NOFREEZE -- as I understand the
+> > code, processes marked PF_NOFREEZE will continue running, potentially
+> > interfering with the hotplug operation.  :-(
+> > 
+> > I will pass my findings on to this list.
 > 
-> I assume you have double checked it actually works? (i vaguely recall some
-> issues with applying attributes to typedefs). If not you would need
-> to put them to the declarations.
+> Well, I did it some time ago, although not very thoroughly.
+> 
+> AFAICS there are not so many, but one that stands out is the worker threads.
+> We needed two of them to actually go to sleep, so now it's possible to create
+> a "freezeable workqueue" the worker thread of which will not set PF_NOFREEZE,
+> but currently this is only used by XFS.
 
-Of course, I tested 10 suspend/resume cycles. This is with gcc 4.1.2, I
-guess other compilers could mishandle it. Would you prefer the version
-putting asmlinkage inside the struct definition?
+We should slowly move as workqueues to freezeable ones... Having too
+much stuff NOFREEZE is evil, even for swsusp.
+								Pavel
 
-Fred.
-
-
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
