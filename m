@@ -1,75 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946229AbXBCC2y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946220AbXBCCfF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946229AbXBCC2y (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Feb 2007 21:28:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946222AbXBCC2y
+	id S1946220AbXBCCfF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Feb 2007 21:35:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946221AbXBCCfF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Feb 2007 21:28:54 -0500
-Received: from mail.suse.de ([195.135.220.2]:56534 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1946233AbXBCC2x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Feb 2007 21:28:53 -0500
-Date: Sat, 3 Feb 2007 03:28:51 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Andrew Morton <akpm@osdl.org>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Linux Filesystems <linux-fsdevel@vger.kernel.org>,
-       Linux Memory Management <linux-mm@kvack.org>
-Subject: Re: [patch 1/9] fs: libfs buffered write leak fix
-Message-ID: <20070203022851.GA16887@wotan.suse.de>
-References: <20070129081905.23584.97878.sendpatchset@linux.site> <20070129081914.23584.23886.sendpatchset@linux.site> <20070202155236.dae54aa2.akpm@linux-foundation.org> <20070203013316.GB27300@wotan.suse.de> <20070202175801.3f97f79b.akpm@linux-foundation.org> <20070203020926.GD27300@wotan.suse.de> <20070202181955.a48d5b3c.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070202181955.a48d5b3c.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.9i
+	Fri, 2 Feb 2007 21:35:05 -0500
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:52532 "EHLO
+	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1946220AbXBCCfD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Feb 2007 21:35:03 -0500
+Message-Id: <20070203023504.435051000@sous-sol.org>
+User-Agent: quilt/0.45-1
+Date: Fri, 02 Feb 2007 18:35:04 -0800
+From: Chris Wright <chrisw@sous-sol.org>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
+Subject: [patch 00/59] -stable review
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 02, 2007 at 06:19:55PM -0800, Andrew Morton wrote:
-> On Sat, 3 Feb 2007 03:09:26 +0100
-> Nick Piggin <npiggin@suse.de> wrote:
-> 
-> > From: Nick Piggin <npiggin@suse.de>
-> > To: Andrew Morton <akpm@osdl.org>
-> 
-> argh.  Yesterday all my emails were getting a mysterious
-> s/osdl/linux-foundation/ done to them at the server, so I switched everything
-> over.  Now it would appear that they are getting an equally mysterious
-> s/linux-foundation/osdl/ done to them.  I assume you sent this to
-> akpm@linux-foundation.org?
+This is the start of the stable review cycle for the 2.6.19.3 release.
+There are 59 patches in this series, all will be posted as a response
+to this one.  If anyone has any issues with these being applied, please
+let us know.  If anyone is a maintainer of the proper subsystem, and
+wants to add a Signed-off-by: line to the patch, please respond with it.
 
-No. Your first reply I got to this patch came as linux-foundantion, and
-that's what I replied to. Your subsequent reply back to me ("Yes, the page
-just isn't uptodate yet..."), came from osdl.org, which is what I replied
-to.
+These patches are sent out with a number of different people on the
+Cc: line.  If you wish to be a reviewer, please email stable@kernel.org
+to add your name to the list.  If you want to be off the reviewer list,
+also email us.
 
-> > Cc: Linux Kernel <linux-kernel@vger.kernel.org>, Linux Filesystems <linux-fsdevel@vger.kernel.org>, Linux Memory Management <linux-mm@kvack.org>
-> > Subject: Re: [patch 1/9] fs: libfs buffered write leak fix
-> > Date: Sat, 3 Feb 2007 03:09:26 +0100
-> > User-Agent: Mutt/1.5.9i
-> > 
-> > On Fri, Feb 02, 2007 at 05:58:01PM -0800, Andrew Morton wrote:
-> > > On Sat, 3 Feb 2007 02:33:16 +0100
-> > > Nick Piggin <npiggin@suse.de> wrote:
-> > > 
-> > > > I think just setting page uptodate in commit_write might do the
-> > > > trick? (and getting rid of the set_page_dirty there).
-> > > 
-> > > Yes, the page just isn't uptodate yet in prepare_write() - moving things
-> > > to commti_write() sounds sane.
-> > > 
-> > > But please, can we have sufficient changelogs and comments in the next version?
-> > 
-> > You're right, sorry. Is this any better?
-> 
-> yup, thanks.
-> 
-> > (warning: nobh code is untested)
-> 
-> ow.
+Responses should be made by Mon Feb  3 02:30 UTC 2007
+Anything received after that time might be too late.
 
-I'll get a chance to do that later today. I have to fire up the old test
-case and see if I can reproduce the problem with nobh on a real fs...
-Will get back to you when I do.
+thanks,
 
+the -stable release team
+--
