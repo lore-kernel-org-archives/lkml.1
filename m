@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946256AbXBCCiI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946268AbXBCCi4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946256AbXBCCiI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Feb 2007 21:38:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946255AbXBCChz
+	id S1946268AbXBCCi4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Feb 2007 21:38:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946259AbXBCCil
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Feb 2007 21:37:55 -0500
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:52885 "EHLO
+	Fri, 2 Feb 2007 21:38:41 -0500
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:52958 "EHLO
 	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1946259AbXBCCha (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Feb 2007 21:37:30 -0500
-Message-Id: <20070203023916.739906000@sous-sol.org>
+	id S1946263AbXBCCiJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Feb 2007 21:38:09 -0500
+Message-Id: <20070203024224.681516000@sous-sol.org>
 References: <20070203023504.435051000@sous-sol.org>
 User-Agent: quilt/0.45-1
-Date: Fri, 02 Feb 2007 18:35:15 -0800
+Date: Fri, 02 Feb 2007 18:35:34 -0800
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,52 +22,55 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Roland Dreier <rdreier@cisco.com>,
-       "Michael S. Tsirkin" <mst@mellanox.co.il>, openib-general@openib.org,
-       Roland Dreier <rolandd@cisco.com>
-Subject: [patch 11/59] [stable] [PATCH] IB/mthca: Fix off-by-one in FMR handling on memfree
-Content-Disposition: inline; filename=ib-mthca-fix-off-by-one-in-fmr-handling-on-memfree.patch
+       Linus Torvalds <torvalds@woody.linux-foundation.org>,
+       Franck Bui-Huu <fbuihuu@gmail.com>,
+       Nadia Derbey <Nadia.Derbey@bull.net>, Andi Kleen <ak@suse.de>,
+       Arjan van de Ven <arjan@infradead.org>, Andrew Morton <akpm@osdl.org>
+Subject: [patch 30/59] Revert "[PATCH] Fix up mmap_kmem"
+Content-Disposition: inline; filename=revert-fix-up-mmap_kmem.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 -stable review patch.  If anyone has any objections, please let us know.
 ------------------
 
-From: Michael S. Tsirkin <mst@mellanox.co.il>
+From: Linus Torvalds <torvalds@woody.linux-foundation.org>
 
-mthca_table_find() will return the wrong address when the table entry
-being searched for is exactly at the beginning of a sglist entry
-(other than the first), because it uses >= when it should use >.
+This reverts commit 99a10a60ba9bedcf5d70ef81414d3e03816afa3f.
 
-Example: assume we have 2 entries in scatterlist, 4K each, offset is
-4K.  The current code will return first entry + 4K when we really want
-the second entry.
+As per Hugh Dickins:
 
-In particular this means mapping an FMR on a memfree HCA may end up
-writing the page table into the wrong place, leading to memory
-corruption and also causing the HCA to use an incorrect address
-translation table.
+  "Nadia Derbey has reported that mmap of /dev/kmem no longer works with
+   the kernel virtual address as offset, and Franck has confirmed that
+   his patch came from a misunderstanding of what an offset means to
+   /dev/kmem - whereas his patch description seems to say that he was
+   correcting the offset on a few plaforms, there was no such problem to
+   correct, and his patch was in fact changing its API on all platforms."
 
-Signed-off-by: Michael S. Tsirkin <mst@mellanox.co.il>
-Signed-off-by: Roland Dreier <rolandd@cisco.com>
+Suggested-by: Hugh Dickins <hugh@veritas.com>
+Cc: Franck Bui-Huu <fbuihuu@gmail.com>
+Cc: Nadia Derbey <Nadia.Derbey@bull.net>
+Cc: Andi Kleen <ak@suse.de>
+Cc: Arjan van de Ven <arjan@infradead.org>
+Cc: Andrew Morton <akpm@osdl.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
-This is upstream, and fixes a data corruption/crash bug with storage
-over SRP.
+ drivers/char/mem.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
- drivers/infiniband/hw/mthca/mthca_memfree.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
---- linux-2.6.19.2.orig/drivers/infiniband/hw/mthca/mthca_memfree.c
-+++ linux-2.6.19.2/drivers/infiniband/hw/mthca/mthca_memfree.c
-@@ -232,7 +232,7 @@ void *mthca_table_find(struct mthca_icm_
+--- linux-2.6.19.2.orig/drivers/char/mem.c
++++ linux-2.6.19.2/drivers/char/mem.c
+@@ -293,8 +293,8 @@ static int mmap_kmem(struct file * file,
+ {
+ 	unsigned long pfn;
  
- 	list_for_each_entry(chunk, &icm->chunk_list, list) {
- 		for (i = 0; i < chunk->npages; ++i) {
--			if (chunk->mem[i].length >= offset) {
-+			if (chunk->mem[i].length > offset) {
- 				page = chunk->mem[i].page;
- 				goto out;
- 			}
+-	/* Turn a pfn offset into an absolute pfn */
+-	pfn = PFN_DOWN(virt_to_phys((void *)PAGE_OFFSET)) + vma->vm_pgoff;
++	/* Turn a kernel-virtual address into a physical page frame */
++	pfn = __pa((u64)vma->vm_pgoff << PAGE_SHIFT) >> PAGE_SHIFT;
+ 
+ 	/*
+ 	 * RED-PEN: on some architectures there is more mapped memory
 
 --
