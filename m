@@ -1,411 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946027AbXBCNsq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1945967AbXBCNz0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946027AbXBCNsq (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Feb 2007 08:48:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945995AbXBCNso
+	id S1945967AbXBCNz0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Feb 2007 08:55:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945995AbXBCNz0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Feb 2007 08:48:44 -0500
-Received: from ug-out-1314.google.com ([66.249.92.173]:7890 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752149AbXBCNsX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Feb 2007 08:48:23 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=LVtu8YltdqYr0ibYCybvbGTmjLUKcIkiXoEOtfxXi2+0l4b7mIFndJ9BooXfnZ3SQc5govm1MNNyJbRMIQrifXkrZxlcwxCBAm4ngNt6/Y5+RQ0yK+zWgbFXVm/Y3Knqo5e9hnbF6QmChzLgeql5P9GbBtzqC7vTqB8DKd54UYI=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Cc: linux-ide@vger.kernel.org, Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       linux-kernel@vger.kernel.org
-Date: Sat, 03 Feb 2007 14:53:14 +0100
-Message-Id: <20070203135314.2546.37802.sendpatchset@localhost.localdomain>
-In-Reply-To: <20070203135301.2546.54884.sendpatchset@localhost.localdomain>
-References: <20070203135301.2546.54884.sendpatchset@localhost.localdomain>
-Subject: Re: [PATCH 13/15] ide: fix UDMA/MWDMA/SWDMA masks
+	Sat, 3 Feb 2007 08:55:26 -0500
+Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:37131 "EHLO
+	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1945967AbXBCNzZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Feb 2007 08:55:25 -0500
+Message-ID: <45C49444.8020503@drzeus.cx>
+Date: Sat, 03 Feb 2007 14:55:16 +0100
+From: Pierre Ossman <drzeus-list@drzeus.cx>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070131)
+Mime-Version: 1.0
+Content-Type: multipart/mixed; boundary="=_hera.drzeus.cx-18092-1170510923-0001-2"
+To: Alex Dubov <oakad@yahoo.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: [RFC] [PATCH] Fix up needless kmap:s
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[PATCH] ide: fix UDMA/MWDMA/SWDMA masks
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-* use 0x00 instead of 0x80 to disable ->{ultra,mwdma,swdma}_mask
-* add udma_mask field to ide_pci_device_t and use it to initialize
-  ->ultra_mask in aec62xx, cmd64x, pdc202xx_new and pdc202xx_old drivers
-* fix UDMA masks to match with chipset specific *_ratemask()
-  (alim15x3, hpt366, serverworks and siimage drivers need UDMA mask
-   filtering method - done in the next patch)
+--=_hera.drzeus.cx-18092-1170510923-0001-2
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 7bit
 
-v2:
-* piix: fix cable detection for 82801AA_1 and 82372FB_1
-  [ Noticed by Sergei Shtylyov <sshtylyov@ru.mvista.com>. ]
-* cmd64x: use hwif->cds->udma_mask
-  [ Suggested by Sergei Shtylyov <sshtylyov@ru.mvista.com>. ]
-* aec62xx: fix newly introduced bug - check DMA status not command register
-  [ Noticed by Sergei Shtylyov <sshtylyov@ru.mvista.com>. ]
+Hi Alex,
 
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+I'd like you to test and comment on the following patch.
 
+Rgds
+-- 
+     -- Pierre Ossman
+
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
+
+--=_hera.drzeus.cx-18092-1170510923-0001-2
+Content-Type: text/plain; name="0001-mmc-tifm-replace-kmap-with-page_address.txt"; charset=iso-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="0001-mmc-tifm-replace-kmap-with-page_address.txt"
+
+>From c8467c6b0ea0443f948c0ece281e1ca8e92f6ea7 Mon Sep 17 00:00:00 2001
+From: Pierre Ossman <drzeus@drzeus.cx>
+Date: Sat, 3 Feb 2007 13:36:41 +0100
+Subject: [PATCH] mmc: tifm: replace kmap with page_address
+
+Since we actively avoid highmem, calling kmap_atomic() instead
+of page_address() is effectively only obfuscation.
+
+Signed-off-by: Pierre Ossman <drzeus@drzeus.cx>
 ---
- drivers/ide/ide.c              |    3 ---
- drivers/ide/pci/aec62xx.c      |   19 +++++++++++++++++--
- drivers/ide/pci/alim15x3.c     |   13 +++++++++++--
- drivers/ide/pci/cmd64x.c       |   15 ++++++++-------
- drivers/ide/pci/pdc202xx_new.c |    9 ++++++++-
- drivers/ide/pci/pdc202xx_old.c |    7 ++++++-
- drivers/ide/pci/piix.c         |    6 +++++-
- drivers/ide/pci/sis5513.c      |    5 ++++-
- include/linux/ide.h            |    1 +
- 9 files changed, 60 insertions(+), 18 deletions(-)
+ drivers/mmc/tifm_sd.c |   15 ++++-----------
+ 1 files changed, 4 insertions(+), 11 deletions(-)
 
-Index: b/drivers/ide/ide.c
-===================================================================
---- a/drivers/ide/ide.c
-+++ b/drivers/ide/ide.c
-@@ -222,9 +222,6 @@ static void init_hwif_data(ide_hwif_t *h
- 	hwif->bus_state	= BUSSTATE_ON;
+diff --git a/drivers/mmc/tifm_sd.c b/drivers/mmc/tifm_sd.c
+index 7e607b7..e65f8a0 100644
+--- a/drivers/mmc/tifm_sd.c
++++ b/drivers/mmc/tifm_sd.c
+@@ -107,14 +107,9 @@ struct tifm_sd {
  
- 	hwif->atapi_dma = 0;		/* disable all atapi dma */ 
--	hwif->ultra_mask = 0x80;	/* disable all ultra */
--	hwif->mwdma_mask = 0x80;	/* disable all mwdma */
--	hwif->swdma_mask = 0x80;	/* disable all swdma */
+ };
  
- 	init_completion(&hwif->gendev_rel_comp);
- 
-Index: b/drivers/ide/pci/aec62xx.c
-===================================================================
---- a/drivers/ide/pci/aec62xx.c
-+++ b/drivers/ide/pci/aec62xx.c
-@@ -270,11 +270,13 @@ static unsigned int __devinit init_chips
- 
- static void __devinit init_hwif_aec62xx(ide_hwif_t *hwif)
+-static char* tifm_sd_kmap_atomic(struct mmc_data *data)
++static char* tifm_sd_data_buffer(struct mmc_data *data)
  {
-+	struct pci_dev *dev = hwif->pci_dev;
-+
- 	hwif->autodma = 0;
- 	hwif->tuneproc = &aec62xx_tune_drive;
- 	hwif->speedproc = &aec62xx_tune_chipset;
+-	return kmap_atomic(data->sg->page, KM_BIO_SRC_IRQ) + data->sg->offset;
+-}
+-
+-static void tifm_sd_kunmap_atomic(char *buffer, struct mmc_data *data)
+-{
+-	kunmap_atomic(buffer - data->sg->offset, KM_BIO_SRC_IRQ);
++	return page_address(data->sg->page) + data->sg->offset;
+ }
  
--	if (hwif->pci_dev->device == PCI_DEVICE_ID_ARTOP_ATP850UF)
-+	if (dev->device == PCI_DEVICE_ID_ARTOP_ATP850UF)
- 		hwif->serialized = hwif->channel;
- 
- 	if (hwif->mate)
-@@ -286,7 +288,15 @@ static void __devinit init_hwif_aec62xx(
- 		return;
+ static int tifm_sd_transfer_data(struct tifm_dev *sock, struct tifm_sd *host,
+@@ -127,18 +122,17 @@ static int tifm_sd_transfer_data(struct tifm_dev *sock, struct tifm_sd *host,
+ 	if (host_status & TIFM_MMCSD_BRS) {
+ 		/* in non-dma rx mode BRS fires when fifo is still not empty */
+ 		if (no_dma && (cmd->data->flags & MMC_DATA_READ)) {
+-			buffer = tifm_sd_kmap_atomic(host->req->data);
++			buffer = tifm_sd_data_buffer(host->req->data);
+ 			while (host->buffer_size > host->buffer_pos) {
+ 				t_val = readl(sock->addr + SOCK_MMCSD_DATA);
+ 				buffer[host->buffer_pos++] = t_val & 0xff;
+ 				buffer[host->buffer_pos++] =
+ 							(t_val >> 8) & 0xff;
+ 			}
+-			tifm_sd_kunmap_atomic(buffer, host->req->data);
+ 		}
+ 		return 1;
+ 	} else if (no_dma) {
+-		buffer = tifm_sd_kmap_atomic(host->req->data);
++		buffer = tifm_sd_data_buffer(host->req->data);
+ 		if ((cmd->data->flags & MMC_DATA_READ) &&
+ 				(host_status & TIFM_MMCSD_AF)) {
+ 			for (cnt = 0; cnt < TIFM_MMCSD_FIFO_SIZE; cnt++) {
+@@ -163,7 +157,6 @@ static int tifm_sd_transfer_data(struct tifm_dev *sock, struct tifm_sd *host,
+ 				}
+ 			}
+ 		}
+-		tifm_sd_kunmap_atomic(buffer, host->req->data);
  	}
- 
--	hwif->ultra_mask = 0x7f;
-+	hwif->ultra_mask = hwif->cds->udma_mask;
-+
-+	/* atp865 and atp865r */
-+	if (hwif->ultra_mask == 0x3f) {
-+		/* check bit 0x10 of DMA status register */
-+		if (inb(pci_resource_start(dev, 4) + 2) & 0x10)
-+ 			hwif->ultra_mask = 0x7f; /* udma0-6 */
-+	}
-+
- 	hwif->mwdma_mask = 0x07;
- 	hwif->swdma_mask = 0x07;
- 
-@@ -354,6 +364,7 @@ static ide_pci_device_t aec62xx_chipsets
- 		.autodma	= AUTODMA,
- 		.enablebits	= {{0x4a,0x02,0x02}, {0x4a,0x04,0x04}},
- 		.bootable	= OFF_BOARD,
-+		.udma_mask	= 0x07, /* udma0-2 */
- 	},{	/* 1 */
- 		.name		= "AEC6260",
- 		.init_setup	= init_setup_aec62xx,
-@@ -363,6 +374,7 @@ static ide_pci_device_t aec62xx_chipsets
- 		.channels	= 2,
- 		.autodma	= NOAUTODMA,
- 		.bootable	= OFF_BOARD,
-+		.udma_mask	= 0x1f, /* udma0-4 */
- 	},{	/* 2 */
- 		.name		= "AEC6260R",
- 		.init_setup	= init_setup_aec62xx,
-@@ -373,6 +385,7 @@ static ide_pci_device_t aec62xx_chipsets
- 		.autodma	= AUTODMA,
- 		.enablebits	= {{0x4a,0x02,0x02}, {0x4a,0x04,0x04}},
- 		.bootable	= NEVER_BOARD,
-+		.udma_mask	= 0x1f, /* udma0-4 */
- 	},{	/* 3 */
- 		.name		= "AEC6X80",
- 		.init_setup	= init_setup_aec6x80,
-@@ -382,6 +395,7 @@ static ide_pci_device_t aec62xx_chipsets
- 		.channels	= 2,
- 		.autodma	= AUTODMA,
- 		.bootable	= OFF_BOARD,
-+		.udma_mask	= 0x3f, /* udma0-5 */
- 	},{	/* 4 */
- 		.name		= "AEC6X80R",
- 		.init_setup	= init_setup_aec6x80,
-@@ -392,6 +406,7 @@ static ide_pci_device_t aec62xx_chipsets
- 		.autodma	= AUTODMA,
- 		.enablebits	= {{0x4a,0x02,0x02}, {0x4a,0x04,0x04}},
- 		.bootable	= OFF_BOARD,
-+		.udma_mask	= 0x3f, /* udma0-5 */
- 	}
- };
- 
-Index: b/drivers/ide/pci/alim15x3.c
-===================================================================
---- a/drivers/ide/pci/alim15x3.c
-+++ b/drivers/ide/pci/alim15x3.c
-@@ -765,8 +765,17 @@ static void __devinit init_hwif_common_a
- 
- 	hwif->atapi_dma = 1;
- 
--	if (m5229_revision > 0x20)
--		hwif->ultra_mask = 0x7f;
-+	if (m5229_revision <= 0x20)
-+		hwif->ultra_mask = 0x00; /* no udma */
-+	else if (m5229_revision < 0xC2)
-+		hwif->ultra_mask = 0x07; /* udma0-2 */
-+	else if (m5229_revision == 0xC2 || m5229_revision == 0xC3)
-+		hwif->ultra_mask = 0x1f; /* udma0-4 */
-+	else if (m5229_revision == 0xC4)
-+		hwif->ultra_mask = 0x3f; /* udma0-5 */
-+	else
-+		hwif->ultra_mask = 0x7f; /* udma0-6 */
-+
- 	hwif->mwdma_mask = 0x07;
- 	hwif->swdma_mask = 0x07;
- 
-Index: b/drivers/ide/pci/cmd64x.c
-===================================================================
---- a/drivers/ide/pci/cmd64x.c
-+++ b/drivers/ide/pci/cmd64x.c
-@@ -690,16 +690,13 @@ static void __devinit init_hwif_cmd64x(i
- 
- 	hwif->atapi_dma = 1;
- 
--	hwif->ultra_mask = 0x3f;
- 	hwif->mwdma_mask = 0x07;
- 	hwif->swdma_mask = 0x07;
- 
--	if (dev->device == PCI_DEVICE_ID_CMD_643)
--		hwif->ultra_mask = 0x80;
--	if (dev->device == PCI_DEVICE_ID_CMD_646)
--		hwif->ultra_mask = (class_rev > 0x04) ? 0x07 : 0x80;
--	if (dev->device == PCI_DEVICE_ID_CMD_648)
--		hwif->ultra_mask = 0x1f;
-+	hwif->ultra_mask = hwif->cds->udma_mask;
-+
-+	if (dev->device == PCI_DEVICE_ID_CMD_646 && class_rev < 5)
-+		hwif->ultra_mask = 0x00;
- 
- 	hwif->ide_dma_check = &cmd64x_config_drive_for_dma;
- 	if (!(hwif->udma_four))
-@@ -733,6 +730,7 @@ static ide_pci_device_t cmd64x_chipsets[
- 		.channels	= 2,
- 		.autodma	= AUTODMA,
- 		.bootable	= ON_BOARD,
-+		.udma_mask	= 0x00, /* no udma */
- 	},{	/* 1 */
- 		.name		= "CMD646",
- 		.init_chipset	= init_chipset_cmd64x,
-@@ -741,6 +739,7 @@ static ide_pci_device_t cmd64x_chipsets[
- 		.autodma	= AUTODMA,
- 		.enablebits	= {{0x00,0x00,0x00}, {0x51,0x80,0x80}},
- 		.bootable	= ON_BOARD,
-+		.udma_mask	= 0x07, /* udma0-2 */
- 	},{	/* 2 */
- 		.name		= "CMD648",
- 		.init_chipset	= init_chipset_cmd64x,
-@@ -748,6 +747,7 @@ static ide_pci_device_t cmd64x_chipsets[
- 		.channels	= 2,
- 		.autodma	= AUTODMA,
- 		.bootable	= ON_BOARD,
-+		.udma_mask	= 0x1f, /* udma0-4 */
- 	},{	/* 3 */
- 		.name		= "CMD649",
- 		.init_chipset	= init_chipset_cmd64x,
-@@ -755,6 +755,7 @@ static ide_pci_device_t cmd64x_chipsets[
- 		.channels	= 2,
- 		.autodma	= AUTODMA,
- 		.bootable	= ON_BOARD,
-+		.udma_mask	= 0x3f, /* udma0-5 */
- 	}
- };
- 
-Index: b/drivers/ide/pci/pdc202xx_new.c
-===================================================================
---- a/drivers/ide/pci/pdc202xx_new.c
-+++ b/drivers/ide/pci/pdc202xx_new.c
-@@ -545,7 +545,7 @@ static void __devinit init_hwif_pdc202ne
- 
- 	hwif->drives[0].autotune = hwif->drives[1].autotune = 1;
- 
--	hwif->ultra_mask = 0x7f;
-+	hwif->ultra_mask = hwif->cds->udma_mask;
- 	hwif->mwdma_mask = 0x07;
- 
- 	hwif->err_stops_fifo = 1;
-@@ -621,6 +621,7 @@ static ide_pci_device_t pdcnew_chipsets[
- 		.channels	= 2,
- 		.autodma	= AUTODMA,
- 		.bootable	= OFF_BOARD,
-+		.udma_mask	= 0x3f, /* udma0-5 */
- 	},{	/* 1 */
- 		.name		= "PDC20269",
- 		.init_setup	= init_setup_pdcnew,
-@@ -629,6 +630,7 @@ static ide_pci_device_t pdcnew_chipsets[
- 		.channels	= 2,
- 		.autodma	= AUTODMA,
- 		.bootable	= OFF_BOARD,
-+		.udma_mask	= 0x7f, /* udma0-6*/
- 	},{	/* 2 */
- 		.name		= "PDC20270",
- 		.init_setup	= init_setup_pdc20270,
-@@ -637,6 +639,7 @@ static ide_pci_device_t pdcnew_chipsets[
- 		.channels	= 2,
- 		.autodma	= AUTODMA,
- 		.bootable	= OFF_BOARD,
-+		.udma_mask	= 0x3f, /* udma0-5 */
- 	},{	/* 3 */
- 		.name		= "PDC20271",
- 		.init_setup	= init_setup_pdcnew,
-@@ -645,6 +648,7 @@ static ide_pci_device_t pdcnew_chipsets[
- 		.channels	= 2,
- 		.autodma	= AUTODMA,
- 		.bootable	= OFF_BOARD,
-+		.udma_mask	= 0x7f, /* udma0-6*/
- 	},{	/* 4 */
- 		.name		= "PDC20275",
- 		.init_setup	= init_setup_pdcnew,
-@@ -653,6 +657,7 @@ static ide_pci_device_t pdcnew_chipsets[
- 		.channels	= 2,
- 		.autodma	= AUTODMA,
- 		.bootable	= OFF_BOARD,
-+		.udma_mask	= 0x7f, /* udma0-6*/
- 	},{	/* 5 */
- 		.name		= "PDC20276",
- 		.init_setup	= init_setup_pdc20276,
-@@ -661,6 +666,7 @@ static ide_pci_device_t pdcnew_chipsets[
- 		.channels	= 2,
- 		.autodma	= AUTODMA,
- 		.bootable	= OFF_BOARD,
-+		.udma_mask	= 0x7f, /* udma0-6*/
- 	},{	/* 6 */
- 		.name		= "PDC20277",
- 		.init_setup	= init_setup_pdcnew,
-@@ -669,6 +675,7 @@ static ide_pci_device_t pdcnew_chipsets[
- 		.channels	= 2,
- 		.autodma	= AUTODMA,
- 		.bootable	= OFF_BOARD,
-+		.udma_mask	= 0x7f, /* udma0-6*/
- 	}
- };
- 
-Index: b/drivers/ide/pci/pdc202xx_old.c
-===================================================================
---- a/drivers/ide/pci/pdc202xx_old.c
-+++ b/drivers/ide/pci/pdc202xx_old.c
-@@ -478,7 +478,7 @@ static void __devinit init_hwif_pdc202xx
- 
- 	hwif->drives[0].autotune = hwif->drives[1].autotune = 1;
- 
--	hwif->ultra_mask = 0x3f;
-+	hwif->ultra_mask = hwif->cds->udma_mask;
- 	hwif->mwdma_mask = 0x07;
- 	hwif->swdma_mask = 0x07;
- 	hwif->atapi_dma = 1;
-@@ -587,6 +587,7 @@ static ide_pci_device_t pdc202xx_chipset
- 		.autodma	= AUTODMA,
- 		.bootable	= OFF_BOARD,
- 		.extra		= 16,
-+		.udma_mask	= 0x07, /* udma0-2 */
- 	},{	/* 1 */
- 		.name		= "PDC20262",
- 		.init_setup	= init_setup_pdc202ata4,
-@@ -597,6 +598,7 @@ static ide_pci_device_t pdc202xx_chipset
- 		.autodma	= AUTODMA,
- 		.bootable	= OFF_BOARD,
- 		.extra		= 48,
-+		.udma_mask	= 0x1f, /* udma0-4 */
- 	},{	/* 2 */
- 		.name		= "PDC20263",
- 		.init_setup	= init_setup_pdc202ata4,
-@@ -607,6 +609,7 @@ static ide_pci_device_t pdc202xx_chipset
- 		.autodma	= AUTODMA,
- 		.bootable	= OFF_BOARD,
- 		.extra		= 48,
-+		.udma_mask	= 0x1f, /* udma0-4 */
- 	},{	/* 3 */
- 		.name		= "PDC20265",
- 		.init_setup	= init_setup_pdc20265,
-@@ -617,6 +620,7 @@ static ide_pci_device_t pdc202xx_chipset
- 		.autodma	= AUTODMA,
- 		.bootable	= OFF_BOARD,
- 		.extra		= 48,
-+		.udma_mask	= 0x3f, /* udma0-5 */
- 	},{	/* 4 */
- 		.name		= "PDC20267",
- 		.init_setup	= init_setup_pdc202xx,
-@@ -627,6 +631,7 @@ static ide_pci_device_t pdc202xx_chipset
- 		.autodma	= AUTODMA,
- 		.bootable	= OFF_BOARD,
- 		.extra		= 48,
-+		.udma_mask	= 0x3f, /* udma0-5 */
- 	}
- };
- 
-Index: b/drivers/ide/pci/piix.c
-===================================================================
---- a/drivers/ide/pci/piix.c
-+++ b/drivers/ide/pci/piix.c
-@@ -522,7 +522,7 @@ static void __devinit init_hwif_piix(ide
- 		case PCI_DEVICE_ID_INTEL_82371FB_0:
- 		case PCI_DEVICE_ID_INTEL_82371FB_1:
- 		case PCI_DEVICE_ID_INTEL_82371SB_1:
--			hwif->ultra_mask = 0x80;
-+			hwif->ultra_mask = 0x00;
- 			break;
- 		case PCI_DEVICE_ID_INTEL_82371AB:
- 		case PCI_DEVICE_ID_INTEL_82443MX_1:
-@@ -530,6 +530,10 @@ static void __devinit init_hwif_piix(ide
- 		case PCI_DEVICE_ID_INTEL_82801AB_1:
- 			hwif->ultra_mask = 0x07;
- 			break;
-+		case PCI_DEVICE_ID_INTEL_82801AA_1:
-+		case PCI_DEVICE_ID_INTEL_82372FB_1:
-+			hwif->ultra_mask = 0x1f;
-+			/* fall-through */
- 		default:
- 			if (!hwif->udma_four)
- 				hwif->udma_four = piix_cable_detect(hwif);
-Index: b/drivers/ide/pci/sis5513.c
-===================================================================
---- a/drivers/ide/pci/sis5513.c
-+++ b/drivers/ide/pci/sis5513.c
-@@ -858,6 +858,8 @@ static unsigned int __devinit ata66_sis5
- 
- static void __devinit init_hwif_sis5513 (ide_hwif_t *hwif)
- {
-+	u8 udma_rates[] = { 0x00, 0x00, 0x07, 0x1f, 0x3f, 0x3f, 0x7f, 0x7f };
-+
- 	hwif->autodma = 0;
- 
- 	if (!hwif->irq)
-@@ -873,7 +875,8 @@ static void __devinit init_hwif_sis5513 
- 	}
- 
- 	hwif->atapi_dma = 1;
--	hwif->ultra_mask = 0x7f;
-+
-+	hwif->ultra_mask = udma_rates[chipset_family];
- 	hwif->mwdma_mask = 0x07;
- 	hwif->swdma_mask = 0x07;
- 
-Index: b/include/linux/ide.h
-===================================================================
---- a/include/linux/ide.h
-+++ b/include/linux/ide.h
-@@ -1255,6 +1255,7 @@ typedef struct ide_pci_device_s {
- 	unsigned int		extra;
- 	struct ide_pci_device_s	*next;
- 	u8			flags;
-+	u8			udma_mask;
- } ide_pci_device_t;
- 
- extern int ide_setup_pci_device(struct pci_dev *, ide_pci_device_t *);
+ 	return 0;
+ }
+-- 
+1.4.4.2
+
+
+--=_hera.drzeus.cx-18092-1170510923-0001-2--
