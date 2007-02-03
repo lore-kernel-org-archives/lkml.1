@@ -1,91 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751599AbXBCUnd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751606AbXBCUr6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751599AbXBCUnd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Feb 2007 15:43:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751596AbXBCUnd
+	id S1751606AbXBCUr6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Feb 2007 15:47:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751621AbXBCUr5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Feb 2007 15:43:33 -0500
-Received: from mga01.intel.com ([192.55.52.88]:6521 "EHLO mga01.intel.com"
+	Sat, 3 Feb 2007 15:47:57 -0500
+Received: from tmailer.gwdg.de ([134.76.10.23]:36841 "EHLO tmailer.gwdg.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751590AbXBCUnc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Feb 2007 15:43:32 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.13,277,1167638400"; 
-   d="scan'208"; a="195437579:sNHT17768352"
-Message-ID: <45C4F3F1.6060500@intel.com>
-Date: Sat, 03 Feb 2007 12:43:29 -0800
-From: Auke Kok <auke-jan.h.kok@intel.com>
-User-Agent: Mail/News 1.5.0.9 (X11/20061228)
+	id S1751606AbXBCUr5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Feb 2007 15:47:57 -0500
+Date: Sat, 3 Feb 2007 21:47:36 +0100 (MET)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: David Schwartz <davids@webmaster.com>
+cc: "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+Subject: RE: [PATCH] Ban module license tag string termination trick
+In-Reply-To: <MDEHLPKNGKAHNMBLJOLKEEJIBFAC.davids@webmaster.com>
+Message-ID: <Pine.LNX.4.61.0702032136430.13874@yvahk01.tjqt.qr>
+References: <MDEHLPKNGKAHNMBLJOLKEEJIBFAC.davids@webmaster.com>
 MIME-Version: 1.0
-To: Adam Kropelin <akropel1@rochester.rr.com>
-CC: "Eric W. Biederman" <ebiederm@xmission.com>, Adrian Bunk <bunk@stusta.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       jgarzik@pobox.com, alan@lxorguk.ukuu.org.uk,
-       Allen Parker <parker@isohunt.com>, jesse.brandeburg@intel.com,
-       gregkh@suse.de, linux-pci@atrey.karlin.mff.cuni.cz,
-       netdev@vger.kernel.org
-Subject: Re: 2.6.20-rc7: known regressions (v2) (part 1)
-References: <Pine.LNX.4.64.0701302019530.11095@woody.linux-foundation.org> <20070203004447.GJ3754@stusta.de> <45C42669.2010105@intel.com> <m1k5yz3cxy.fsf@ebiederm.dsl.xmission.com> <089b01c747be$0ca22620$84163e05@kroptech.com>
-In-Reply-To: <089b01c747be$0ca22620$84163e05@kroptech.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adam Kropelin wrote:
- > Eric W. Biederman wrote:
- >> Auke Kok <auke-jan.h.kok@intel.com> writes:
- >>> None of the MSI code in e1000 has changed significantly either. as
- >>> far as I can see, the msi code in e1000 has not changed since
- >>> 2.6.18. Nonetheless there's no way I can debug any of this without a
- >>> system.
- >>> [...]
- >>> Perhaps Adam can git-bisect this issue? Adam?
- >> Do we have any explanation about the weird /proc/interrupts output?
- >> i.e. Multiple MSI irqs being assigned to the same card?
- >>
- >> Does /sbin/ifconfig ethN down ; /sbin/ifconfig ethN up have anything
- >> to do with the duplication in /proc/interrupts?
- >>
- >> I can't see any way for a pci device that doesn't support msi-x to be
- >> assigned multiple interrupts simultaneously.
- >>
- >> I just skimmed through the code and there hasn't been any significant
- >> generic MSI work since 2.6.19.
- >>
- >> Did this device really work with MSI enabled in 2.6.19?
- >
- > I've never had this device work 100% with MSI on any kernel version I've
- > tested so far. But I'm not the original reporter of the problem, and I
- > believe for him it was a true regression where a previous kernel wored
- > correctly.
 
-maybe I've been unclear, but here's how e1000 detects link changes:
+On Feb 3 2007 10:31, David Schwartz wrote:
+>
+>The way out of the GPL problem is to make clear that it is *not* a 
+>copyright enforcement scheme
 
-1) by checking every 2 seconds in the watchdog by reading PHY registers
-2) by receiving an interrupt from the NIC with the LSI bit in the interrupt 
-control register
+So why do we have EXPORT_SYMBOL_GPL then, if
 
-if the link is down to start with, the watchdog will obviously spot a 'link up' 
-change since it doesn't use any interrupts.
+  -  there shall be no enforcement (such as requiring modules to carry 
+     exactly one MODULE_LICENSE, and it be GPL to access GPL symbols)
 
-The link interrupt (LSI) is a generic interrupt that comes over the same vector 
-(be it MSI or not) as RX interrupts, and in your case doesn't arrive at all, 
-which should be demonstrateable if you set e.g. the watchdog interval to 30 
-seconds and unplug the cable - the driver won't spot the link change until the 
-watchdog fires a lot later than you unplugged the cable.
+  -  EXPORT_SYMBOL_GPL can be circumvented by having multiple 
+     MODULE_LICENSE and one of those MODULE_LICENSE is ("GPL")
+     [see Bodo's patch]
 
- > The behavior I observe on 2.6.19 is better than 2.6.20-rc7. Link status
- > interrupts seem to work but rx/tx does not. A few more details here:
- > 
-<http://www.kroptech.com/~adk0212/mailimport/showmsg.php?msg_id=3339092450&db_name=linux_kernel>
+I think Linus has made a stance on the purpose of _GPL [yup, 
+http://lkml.org/lkml/2003/12/4/84 ], and I interpret his words "if you 
+need this export, you're clearly doing something that requires the GPL" 
+being in conflict with [X].
 
- > I'm going to test 2.6.16 thru 2.6.20-rc7 this weekend and will report
- > back any variations in behavior I notice.
+[X]: """obj-combo += proprietary.o gpldummy.o""" and allowing 
+proprietary.c to use GPL symbols just because the combo.ko file contains 
+at least one MODULE_LICENSE("GPL").
 
-that would be a good start, but I still think that you might have a broken 
-bridge on that system. Anyway, thanks for digging into this.
+Note IANAL, more a developer, so please don't flame too much.
 
-Auke
+
+Jan
+-- 
