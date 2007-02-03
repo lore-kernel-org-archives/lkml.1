@@ -1,74 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946317AbXBCDxB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946315AbXBCEab@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946317AbXBCDxB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Feb 2007 22:53:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946316AbXBCDxB
+	id S1946315AbXBCEab (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Feb 2007 23:30:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946320AbXBCEaa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Feb 2007 22:53:01 -0500
-Received: from koto.vergenet.net ([210.128.90.7]:53545 "EHLO koto.vergenet.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1946312AbXBCDxA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Feb 2007 22:53:00 -0500
-Date: Sat, 3 Feb 2007 12:27:54 +0900
-From: Horms <horms@verge.net.au>
-To: Magnus Damm <magnus.damm@gmail.com>
+	Fri, 2 Feb 2007 23:30:30 -0500
+Received: from avexch1.qlogic.com ([198.70.193.115]:55313 "EHLO
+	avexch1.qlogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1946315AbXBCEa3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Feb 2007 23:30:29 -0500
+Date: Fri, 2 Feb 2007 20:30:24 -0800
+From: Andrew Vasquez <andrew.vasquez@qlogic.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>
 Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Magnus Damm <magnus@valinux.co.jp>, "Luck, Tony" <tony.luck@intel.com>,
-       linux-ia64@vger.kernel.org, nanhai.zou@intel.com,
-       fastboot@lists.osdl.org, linux-kernel@vger.kernel.org
-Subject: Re: [Fastboot] [PATCH] kexec: Fix CONFIG_SMP=n compilation (ia64)
-Message-ID: <20070203032753.GE3709@verge.net.au>
-References: <20070201131347.3807.87075.sendpatchset@localhost> <20070201163320.eb4fa2c7.akpm@osdl.org> <aec7e5c30702011838g6e9edd23sc782321aacb07297@mail.gmail.com> <aec7e5c30702020353h31fe9287nbf63612819a8c08f@mail.gmail.com>
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux-SCSI Mailing List <linux-scsi@vger.kernel.org>,
+       Nigel Kirkland <nigel.kirkland@qlogic.com>
+Subject: Re: [BUG] Unable to handle kernel NULL pointer dereference...as_move_to_dispatch+0x11/0x135
+Message-ID: <20070203043024.GC11332@plap2.qlogic.org>
+References: <20070122183510.GA19905@andrew-vasquezs-computer.local> <20070201232302.905962b6.akpm@linux-foundation.org> <20070202205630.GI3737@andrew-vasquezs-computer.local> <20070202162541.20e1e930.akpm@linux-foundation.org> <20070202171810.5f089b38.randy.dunlap@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <aec7e5c30702020353h31fe9287nbf63612819a8c08f@mail.gmail.com>
-User-Agent: mutt-ng/devel-r804 (Debian)
+In-Reply-To: <20070202171810.5f089b38.randy.dunlap@oracle.com>
+Organization: QLogic Corporation
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 03 Feb 2007 04:30:29.0225 (UTC) FILETIME=[08B0F590:01C7474C]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 02, 2007 at 08:53:00PM +0900, Magnus Damm wrote:
-> On 2/2/07, Magnus Damm <magnus.damm@gmail.com> wrote:
-> > On 2/2/07, Andrew Morton <akpm@linux-foundation.org> wrote:
-> > > Magnus Damm <magnus@valinux.co.jp> wrote:
-> > >
-> > > > kexec: Fix CONFIG_SMP=n compilation (ia64)
-> > > >
-> > > > This patch makes it possible to compile kexec for ia64 without SMP support.
-> > > > --- 0002/arch/ia64/kernel/machine_kexec.c
-> > > > +++ work/arch/ia64/kernel/machine_kexec.c     2007-02-01 12:35:46.000000000 +0900
-> > > > @@ -70,12 +70,14 @@ void machine_kexec_cleanup(struct kimage
-> > > >
-> > > >  void machine_shutdown(void)
-> > > >  {
-> > > > +#ifdef CONFIG_SMP
-> > > >       int cpu;
-> > > >
-> > > >       for_each_online_cpu(cpu) {
-> > > >               if (cpu != smp_processor_id())
-> > > >                       cpu_down(cpu);
-> > > >       }
-> > > > +#endif
-> > > >       kexec_disable_iosapic();
-> > > >  }
-> > >
-> > > hm.  I suspect this one should have been #ifndef CONFIG_HOTPLUG_CPU?
+On Fri, 02 Feb 2007, Randy Dunlap wrote:
+
+> On Fri, 2 Feb 2007 16:25:41 -0800 Andrew Morton wrote:
 > 
-> Re-reading this I assume you mean #ifdef CONFIG_HOTPLUG_CPU.
+> > On Fri, 2 Feb 2007 12:56:30 -0800
+> > Andrew Vasquez <andrew.vasquez@qlogic.com> wrote:
+> > 
+> > > > >         dt of=/dev/raw/raw1 procs=8 oncerr=abort bs=16k disable=stats limit=2m passes=1000000 pattern=iot dlimit=2048
+> > 
+> > What is this mysterious dt command, btw?
 > 
-> I would be happy to resend a new updated version of the patch, but I
-> wonder if it may be better to fail miserably during the build than
-> fail silently in the case of CONFIG_SMP=y but CONFIG_HOTPLUG_CPU=n.
+> I expect that it's the one here:
+> http://www.scsifaq.org/RMiller_Tools/index.html
 
-There used to be alternate code for the CONFIG_SMP +
-!CONFIG_HOTPLUG_CPU, but this was removed because it was determined to
-be flakey and not maintainable (I can dig up the threads if you want).
-I think that this means that if we have CONFIG_KEXEC and CONFIG_SMP then
-CONFIG_HOTPLUG_CPU is required. I think this is expressable in Kconfig
-somehow.
-
--- 
-Horms
-  H: http://www.vergenet.net/~horms/
-  W: http://www.valinux.co.jp/en/
-
+yep, that's the one.
