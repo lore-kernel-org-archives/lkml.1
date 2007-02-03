@@ -1,66 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946217AbXBCBk0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946204AbXBCBmU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946217AbXBCBk0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Feb 2007 20:40:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946216AbXBCBk0
+	id S1946204AbXBCBmU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Feb 2007 20:42:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946216AbXBCBmU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Feb 2007 20:40:26 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:47459 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1946217AbXBCBkZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Feb 2007 20:40:25 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Andrew Morton <akpm@osdl.org>
-Cc: <linux-kernel@vger.kernel.org>, "Lu, Yinghai" <yinghai.lu@amd.com>,
-       "Luigi Genoni" <luigi.genoni@pirelli.com>, Ingo Molnar <mingo@elte.hu>,
-       Natalie Protasevich <protasnb@gmail.com>, Andi Kleen <ak@suse.de>
-Subject: Re: [PATCH 2/2] x86_64 irq:  Handle irqs pending in IRR during irq migration.
-References: <200701221116.13154.luigi.genoni@pirelli.com>
-	<200702021848.55921.luigi.genoni@pirelli.com>
-	<m1ejp85tgm.fsf@ebiederm.dsl.xmission.com>
-	<200702021905.39922.luigi.genoni@pirelli.com>
-	<m1zm7w3wvr.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1veik3woc.fsf_-_@ebiederm.dsl.xmission.com>
-	<20070202170500.57b6c3a3.akpm@linux-foundation.org>
-Date: Fri, 02 Feb 2007 18:39:15 -0700
-In-Reply-To: <20070202170500.57b6c3a3.akpm@linux-foundation.org> (Andrew
-	Morton's message of "Fri, 2 Feb 2007 17:05:00 -0800")
-Message-ID: <m1fy9o3tq4.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Fri, 2 Feb 2007 20:42:20 -0500
+Received: from mail.gmx.net ([213.165.64.20]:56974 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1946204AbXBCBmT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Feb 2007 20:42:19 -0500
+X-Authenticated: #5039886
+Date: Sat, 3 Feb 2007 02:42:15 +0100
+From: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>
+To: Robert Hancock <hancockr@shaw.ca>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Larry Walton <lwalton@real.com>, s0348365@sms.ed.ac.uk, pomac@vapor.com,
+       chunkeey@web.de, Jeff Garzik <jeff@garzik.org>
+Subject: Re: SATA exceptions with 2.6.20-rc5
+Message-ID: <20070203014215.GA28126@atjola.homenet>
+Mail-Followup-To: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>,
+	Robert Hancock <hancockr@shaw.ca>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	Larry Walton <lwalton@real.com>, s0348365@sms.ed.ac.uk,
+	pomac@vapor.com, chunkeey@web.de, Jeff Garzik <jeff@garzik.org>
+References: <fa.1kBz5luWz8nR0lLqm1VD4hZZYdw@ifi.uio.no> <fa.QZxgjxcwtENaZNY24NMTlKBSgIM@ifi.uio.no> <fa.fkPTbUGmKc/1pt0eD6TE4d02n+Q@ifi.uio.no> <fa.6iQt5OtHZ3x5w8eYbLxwULhLTJ0@ifi.uio.no> <fa.1aqo3IxNGJClHcBVZNTagX6bL9o@ifi.uio.no> <fa.rI60BGlFbSyfLyumqmgiOfDqCI4@ifi.uio.no> <45B697D3.4070707@shaw.ca> <20070124003923.GA3093@atjola.homenet>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070124003923.GA3093@atjola.homenet>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton <akpm@osdl.org> writes:
+On 2007.01.24 01:39:23 +0100, Björn Steinbrink wrote:
+> On 2007.01.23 17:18:43 -0600, Robert Hancock wrote:
+> > Larry Walton wrote:
+> > >The last patch (sata_nv-force-int-dev-in-interrupt.patch) 
+> > >seems to have fix the problem.  Much appreciated, 
+> > >thank you. I'd consider it a must have in 2.6.20.
+> > 
+> > Can any of the rest of you that have been seeing this problem also 
+> > confirm that this fixes it?
+> 
+> Seems to work for me, uptime is about an hour now and no exception yet.
+> Had the stress test running for only about 10 minutes, but I usually got
+> an exception within an hour even during plain irssi usage, so I'm quite
+> confident that the patch fixes it.
 
-> So is this a for-2.6.20 thing?  The bug was present in 2.6.19, so
-> I assume it doesn't affect many people?
+Or maybe not :( Just got an exception on 2.6.20-rc6. Took 4 days of
+uptime to trigger, so it's just a lot harder to trigger now.
 
-If it's not to late, and this patch isn't too scary.
-
-It's a really rare set of circumstances that trigger it, but the
-possibility of being hit is pretty widespread, anything with
-more than one cpu, and more then one irq could see this.
-
-The easiest way to trigger this is to have two level triggered irqs on
-two different cpus using the same vector.  In that case if one acks
-it's irq while the other irq is migrating to a different cpu 2.6.19
-get completely confused and stop handling interrupts properly.
-
-With my previous bug fix (not to drop the ack when we are confused)
-the machine will stay up, and that is obviously correct and can't
-affect anything else so is probably a candidate for the stable tree.
-
-With this fix everything just works.
-
-I don't know how often a legitimate case of the exact same irq
-going off twice in a row is, but that is a possibility as well
-especially with edge triggered interrupts.
-
-Setting up the test scenario was a pain, but by extremely limiting
-my choice of vectors I was able to confirm I survived several hundred
-of these events with in a couple of minutes no problem.
-
-Eric
+Björn
