@@ -1,68 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751766AbXBCKQe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750863AbXBCKT3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751766AbXBCKQe (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Feb 2007 05:16:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751670AbXBCKQe
+	id S1750863AbXBCKT3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Feb 2007 05:19:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751873AbXBCKT3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Feb 2007 05:16:34 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:51942 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750863AbXBCKQd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Feb 2007 05:16:33 -0500
-Date: Sat, 3 Feb 2007 10:16:28 +0000
-From: Christoph Hellwig <hch@infradead.org>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Rik van Riel <riel@redhat.com>
-Subject: Re: [RFC] Tracking mlocked pages and moving them off the LRU
-Message-ID: <20070203101628.GB28806@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org,
-	akpm@linux-foundation.org, Nick Piggin <nickpiggin@yahoo.com.au>,
-	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-	Rik van Riel <riel@redhat.com>
-References: <Pine.LNX.4.64.0702022214580.3960@schroedinger.engr.sgi.com>
+	Sat, 3 Feb 2007 05:19:29 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:57373 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750863AbXBCKT2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Feb 2007 05:19:28 -0500
+Date: Sat, 3 Feb 2007 11:03:51 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Matt Mackall <mpm@selenic.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Zach Brown <zach.brown@oracle.com>, linux-kernel@vger.kernel.org,
+       linux-aio@kvack.org, Suparna Bhattacharya <suparna@in.ibm.com>,
+       Benjamin LaHaise <bcrl@kvack.org>
+Subject: Re: [PATCH 2 of 4] Introduce i386 fibril scheduling
+Message-ID: <20070203100351.GA30262@elte.hu>
+References: <20070201083611.GC18233@elte.hu> <Pine.LNX.4.64.0702011154110.3632@woody.linux-foundation.org> <20070202104900.GA13941@elte.hu> <Pine.LNX.4.64.0702020738500.15057@woody.linux-foundation.org> <20070202222110.GA1212@elte.hu> <Pine.LNX.4.64.0702021445410.15057@woody.linux-foundation.org> <20070202235531.GA18904@elte.hu> <Pine.LNX.4.64.0702021636410.15057@woody.linux-foundation.org> <20070203082308.GA6748@elte.hu> <20070203092540.GH16722@waste.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0702022214580.3960@schroedinger.engr.sgi.com>
+In-Reply-To: <20070203092540.GH16722@waste.org>
 User-Agent: Mutt/1.4.2.2i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.3
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.3 required=5.9 tests=ALL_TRUSTED,BAYES_50 autolearn=no SpamAssassin version=3.0.3
+	-3.3 ALL_TRUSTED            Did not pass through any untrusted hosts
+	1.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
+	[score: 0.4263]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 02, 2007 at 10:20:12PM -0800, Christoph Lameter wrote:
-> This is a new variation on the earlier RFC for tracking mlocked pages.
-> We now mark a mlocked page with a bit in the page flags and remove
-> them from the LRU. Pages get moved back when no vma that references
-> the page has VM_LOCKED set anymore.
-> 
-> This means that vmscan no longer uselessly cycles over large amounts
-> of mlocked memory should someone attempt to mlock large amounts of
-> memory (may even result in a livelock on large systems).
-> 
-> Synchronization is build around state changes of the PageMlocked bit.
-> The NR_MLOCK counter is incremented and decremented based on
-> state transitions of PageMlocked. So the count is accurate.
-> 
-> There is still some unfinished business:
-> 
-> 1. We use the 21st page flag and we only have 20 on 32 bit NUMA platforms.
-> 
-> 2. Since mlocked pages are now off the LRU page migration will no longer
->    move them.
-> 
-> 3. Use NR_MLOCK to tune various VM behaviors so that the VM does not 
->    longer fall due to too many mlocked pages in certain areas.
 
-This patch seems to not handle the cases where more than one process mlocks
-a page and you really need a pincount in the page to not release it before
-all processes have munlock it or died.  I did a similar patch a while
-ago and tried to handle it by overloading the lru lists pointers with
-a pincount, but at some point I gave up because I couldn't get that part
-right.
+* Matt Mackall <mpm@selenic.com> wrote:
 
+> On Sat, Feb 03, 2007 at 09:23:08AM +0100, Ingo Molnar wrote:
+> > The normal and most optimal workflow should be a user-space ring-buffer 
+> > of these constant-size struct async_syscall entries:
+> > 
+> >   struct async_syscall ringbuffer[1024];
+> > 
+> >   LIST_HEAD(submitted);
+> >   LIST_HEAD(pending);
+> >   LIST_HEAD(completed);
+> 
+> It's wrong to call this a ring buffer as things won't be completed in
+> any particular order. [...]
+
+yeah, i realized this when i sent the mail. I wanted to say 'array of 
+elements' - and it's clear from these list heads that it's fully out of 
+order. (it should be an array so that the pages of those entries can be 
+pinned and that completion can be manipulated from any context, 
+anytime.)
+
+(the queueing i described closely resembles Tux's "Tux syscall request" 
+handling scheme.)
+
+> [...] So you'll need a fourth list head for which buffer elements are 
+> free. At which point, you might as well leave it entirely up to the 
+> application to manage the allocation of async_syscall structs. It may 
+> know it only needs two, or ten thousand, or five per client...
+
+sure - it should be variable but still the array should be compact, and 
+should be registered with the kernel. That way security checks can be 
+done once, the pages can be pinned, accessed anytime, etc.
+
+	Ingo
