@@ -1,65 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946172AbXBCBSV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933408AbXBCBTQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946172AbXBCBSV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Feb 2007 20:18:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946182AbXBCBSV
+	id S933408AbXBCBTQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Feb 2007 20:19:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933406AbXBCBTQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Feb 2007 20:18:21 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:24824 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1946172AbXBCBSU (ORCPT
+	Fri, 2 Feb 2007 20:19:16 -0500
+Received: from terminus.zytor.com ([192.83.249.54]:49095 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933408AbXBCBTP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Feb 2007 20:18:20 -0500
-Date: Fri, 2 Feb 2007 17:12:32 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-Cc: Paul Rolland <rol@as2917.net>,
-       "'Linux Kernel Mailing List'" <linux-kernel@vger.kernel.org>,
-       "'Andrew Morton'" <akpm@osdl.org>,
-       "'Jon Masters'" <jonathan@jonmasters.org>,
-       "'Alexey Dobriyan'" <adobriyan@gmail.com>
-Subject: Re: [PATCH] Ban module license tag string termination trick
-Message-Id: <20070202171232.261c4fad.randy.dunlap@oracle.com>
-In-Reply-To: <Pine.LNX.4.61.0702022006060.27603@yvahk01.tjqt.qr>
-References: <011601c746d9$dc5453b0$4b00a8c0@donald>
-	<Pine.LNX.4.61.0702021610510.26531@yvahk01.tjqt.qr>
-	<20070202085351.3215815f.randy.dunlap@oracle.com>
-	<Pine.LNX.4.61.0702021840370.24408@yvahk01.tjqt.qr>
-	<20070202094900.d8931dbe.randy.dunlap@oracle.com>
-	<Pine.LNX.4.61.0702022006060.27603@yvahk01.tjqt.qr>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.0 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 2 Feb 2007 20:19:15 -0500
+Message-ID: <45C3E259.1050908@zytor.com>
+Date: Fri, 02 Feb 2007 17:16:09 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070102)
+MIME-Version: 1.0
+To: jbohac@suse.cz
+CC: Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org,
+       Vojtech Pavlik <vojtech@suse.cz>, ssouhlal@freebsd.org,
+       arjan@infradead.org, tglx@linutronix.de, johnstul@us.ibm.com,
+       zippel@linux-m68k.org, andrea@suse.de
+Subject: Re: [patch 4/9] Remove the TSC synchronization on SMP machines
+References: <20070201095952.589234000@jet.suse.cz> <20070201103753.753349000@jet.suse.cz>
+In-Reply-To: <20070201103753.753349000@jet.suse.cz>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2 Feb 2007 20:06:42 +0100 (MET) Jan Engelhardt wrote:
+jbohac@suse.cz wrote:
+> TSC is either synchronized by design or not reliable
+> to be used for anything, let alone timekeeping.
 
-> 
-> On Feb 2 2007 09:49, Randy Dunlap wrote:
-> >On Fri, 2 Feb 2007 18:41:02 +0100 (MET) Jan Engelhardt wrote:
-> >> On Feb 2 2007 08:53, Randy Dunlap wrote:
-> >> >
-> >> >if (MODULE_LICENSE_contains_null(license))
-> >> >	printk(KERN_WARNING "this module's license is suspicious\n");
-> >> 
-> >> Try to code that macro.
-> >
-> >It's not a macro afaict.
-> 
-> Whatever, I just want to see how you are going to implement
-> MODULE_LICENSE_contains_null.
+This refers to eliminating the offset between multiple synchronized TSCs.
 
-I was busy on other things this morning (my time).
-Now I have looked and I see what you mean.  ;)
-
-I think it's possible, but it requires digging/learning about
-Elf headers.
-
----
-~Randy
+	-hpa
