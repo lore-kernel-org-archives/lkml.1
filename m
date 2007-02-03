@@ -1,48 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946319AbXBCPV4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946037AbXBCP0T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946319AbXBCPV4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Feb 2007 10:21:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946455AbXBCPV4
+	id S1946037AbXBCP0T (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Feb 2007 10:26:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946299AbXBCP0T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Feb 2007 10:21:56 -0500
-Received: from 263.net.cn ([211.150.96.21]:47346 "EHLO smtp.263.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1946319AbXBCPVz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Feb 2007 10:21:55 -0500
-X-KSVirus-check: 0
-X-ABS-CHECKED: 0
-X-SENDER-IP: 221.201.75.142
-X-LOGIN-NAME: linux
-Subject: Re: Some process went UNINTERRUPTABLE forever.
-From: "Di, Wu" <linux@51sun.cn>
-To: linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <1170515191.3655.10.camel@linux-soc5.51sun.cn>
-References: <1170515191.3655.10.camel@linux-soc5.51sun.cn>
+	Sat, 3 Feb 2007 10:26:19 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:44575 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1946037AbXBCP0T (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Feb 2007 10:26:19 -0500
+Subject: Re: [ANN] Userspace M-on-N threading model implementation. Alpha
+	release.
+From: Arjan van de Ven <arjan@infradead.org>
+To: Bill Davidsen <davidsen@tmr.com>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <45C362D2.2040407@tmr.com>
+References: <66910A579C9312469A7DF9ADB54A8B7D5C2B90@exchange.ZeugmaSystems.local>
+	 <45C362D2.2040407@tmr.com>
 Content-Type: text/plain
-Date: Sat, 03 Feb 2007 15:22:33 +0000
-Message-Id: <1170516153.4307.4.camel@linux-soc5.51sun.cn>
+Organization: Intel International BV
+Date: Sat, 03 Feb 2007 16:26:16 +0100
+Message-Id: <1170516376.3073.1015.camel@laptopd505.fenrus.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
+X-Mailer: Evolution 2.8.2.1 (2.8.2.1-2.fc6) 
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Exactly when I save the file to the media(A Removable Disk with XFS
-Filesystem.)
 
-On Sat, 2007-02-03 at 15:06 +0000, Di, Wu wrote:
-> The process status of 'pdflush' went to UNINTERRUPTIBLE forever, and
-> then I edit some file(in other media) use 'vi', the 'vi' also went to
-> that status. And I cannot even reboot my system, instead I need use the
-> power button.
-> I am using Kernel-2.6.20-rc6-mm3 with 'preemptible' option.
-> 
-> 
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+> Because user threading can avoid context switches, there will always be 
+> cases where it will outperform o/s threads for hardware reasons.
 
+actually.. switching from one "real" thread to another in Linux is not
+an actual context switch in the hardware sense... at least this part of
+your argument seems to be incorrect ;)
+
+> 
+-- 
+if you want to mail me at work (you don't), use arjan (at) linux.intel.com
+Test the interaction between Linux and your BIOS via http://www.linuxfirmwarekit.org
 
