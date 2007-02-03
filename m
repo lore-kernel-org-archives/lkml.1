@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946247AbXBCCgQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946240AbXBCCga@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946247AbXBCCgQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Feb 2007 21:36:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946244AbXBCCgQ
+	id S1946240AbXBCCga (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Feb 2007 21:36:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946251AbXBCCgZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Feb 2007 21:36:16 -0500
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:52707 "EHLO
+	Fri, 2 Feb 2007 21:36:25 -0500
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:52692 "EHLO
 	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1946247AbXBCCgA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Feb 2007 21:36:00 -0500
-Message-Id: <20070203023959.413020000@sous-sol.org>
+	id S1946243AbXBCCfx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Feb 2007 21:35:53 -0500
+Message-Id: <20070203023933.841475000@sous-sol.org>
 References: <20070203023504.435051000@sous-sol.org>
 User-Agent: quilt/0.45-1
-Date: Fri, 02 Feb 2007 18:35:20 -0800
+Date: Fri, 02 Feb 2007 18:35:17 -0800
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,50 +22,47 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Daniel Drake <dsd@gentoo.org>, ard@telegraafnet.nl,
-       Andrew Morton <akpm@osdl.org>, Linus Torvalds <torvalds@osdl.org>
-Subject: [patch 16/59] start_kernel: test if irqs got enabled early, barf, and disable them again
-Content-Disposition: inline; filename=start_kernel-test-if-irq-s-got-enabled-early-barf-and-disable-them-again.patch
+       Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [patch 13/59] ieee1394: sbp2: fix probing of some DVD-ROM/RWs
+Content-Disposition: inline; filename=ieee1394-sbp2-fix-probing-of-some-dvd-rom-rws.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 -stable review patch.  If anyone has any objections, please let us know.
 ------------------
 
-From: Ard van Breemen <ard@telegraafnet.nl>
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
 
-The calls made by parse_parms to other initialization code might enable
-interrupts again way too early.
+Since commit 98e238cd42be6c0852da519303cf0182690f8d9f in Linux 2.6.19,
+"ieee1394: sbp2: don't prefer MODE SENSE 10", some FireWire DVD-ROMs and
+DVD-RWs were mistaken as CD-ROM because sr_mod now sent MODE SENSE 6.
+The MMC command set includes only MODE SENSE 10.
+http://bugzilla.kernel.org/show_bug.cgi?id=7800
 
-Having interrupts on this early can make systems PANIC when they initialize
-the IRQ controllers (which happens later in the code).  This patch detects
-that irq's are enabled again, barfs about it and disables them again as a
-safety net.
+This fix lets sbp2 switch scsi_device.use_10_for_rw on for MMC LUs.
+This should rather be done in the command set driver sr_mod, not in the
+sbp2 transport driver, and an according patch will follow for a next
+Linux release.
 
-[akpm@osdl.org: cleanups]
-Signed-off-by: Ard van Breemen <ard@telegraafnet.nl>
-Signed-off-by: Andrew Morton <akpm@osdl.org>
-Signed-off-by: Linus Torvalds <torvalds@osdl.org>
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
-This is half of the fix for http://bugzilla.kernel.org/show_bug.cgi?id=7505
+same as commit 1a74bc68e4c0534d150e6454b45a70dab831fa32
 
- init/main.c |    5 +++++
- 1 file changed, 5 insertions(+)
+---
+ drivers/ieee1394/sbp2.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
---- linux-2.6.19.2.orig/init/main.c
-+++ linux-2.6.19.2/init/main.c
-@@ -525,6 +525,11 @@ asmlinkage void __init start_kernel(void
- 	parse_args("Booting kernel", command_line, __start___param,
- 		   __stop___param - __start___param,
- 		   &unknown_bootoption);
-+	if (!irqs_disabled()) {
-+		printk(KERN_WARNING "start_kernel(): bug: interrupts were "
-+				"enabled *very* early, fixing it\n");
-+		local_irq_disable();
-+	}
- 	sort_main_extable();
- 	trap_init();
- 	rcu_init();
+--- linux-2.6.19.2.orig/drivers/ieee1394/sbp2.c
++++ linux-2.6.19.2/drivers/ieee1394/sbp2.c
+@@ -2530,6 +2530,8 @@ static int sbp2scsi_slave_configure(stru
+ 	blk_queue_dma_alignment(sdev->request_queue, (512 - 1));
+ 	sdev->use_10_for_rw = 1;
+ 
++	if (sdev->type == TYPE_ROM)
++		sdev->use_10_for_ms = 1;
+ 	if (sdev->type == TYPE_DISK &&
+ 	    scsi_id->workarounds & SBP2_WORKAROUND_MODE_SENSE_8)
+ 		sdev->skip_ms_page_8 = 1;
 
 --
