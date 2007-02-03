@@ -1,65 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751845AbXBCXdD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750942AbXBCXoK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751845AbXBCXdD (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Feb 2007 18:33:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751864AbXBCXdD
+	id S1750942AbXBCXoK (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Feb 2007 18:44:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750996AbXBCXoK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Feb 2007 18:33:03 -0500
-Received: from dallas.jonmasters.org ([72.29.103.172]:3484 "EHLO
-	dallas.jonmasters.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751845AbXBCXdB (ORCPT
+	Sat, 3 Feb 2007 18:44:10 -0500
+Received: from nz-out-0506.google.com ([64.233.162.238]:60120 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750942AbXBCXoJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Feb 2007 18:33:01 -0500
-Message-ID: <45C51B81.5040309@jonmasters.org>
-Date: Sat, 03 Feb 2007 18:32:17 -0500
-From: Jon Masters <jonathan@jonmasters.org>
-Organization: World Organi[sz]ation Of Broken Dreams
-User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
+	Sat, 3 Feb 2007 18:44:09 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=UB6Qcij+9cVCW0tkOStjFPlQ0ApreQZ67KzDe9gn8MvH1eNeS9uo9YZ9KUv5i3W1wgnd+ozoQg8rcheac1osYtRjxcNtiaw6QZwix1ywf8Ddl0nb+de0sR6YmRIbb//kvLtB0KZxvFHR5lDvVgpVsiZa05EjzXXb9rihhH3a/es=
+Message-ID: <8d158e1f0702031544h6c5f81c7s3c54a6192255d447@mail.gmail.com>
+Date: Sun, 4 Feb 2007 00:44:08 +0100
+From: "Patrick Ale" <patrick.ale@gmail.com>
+To: Stephen.Clark@seclark.us
+Subject: Re: hdparm for lib_pata
+Cc: "Robert Hancock" <hancockr@shaw.ca>, linux-kernel@vger.kernel.org
+In-Reply-To: <45C5178A.1000501@seclark.us>
 MIME-Version: 1.0
-To: Alan <alan@lxorguk.ukuu.org.uk>
-CC: Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       David Schwartz <davids@webmaster.com>,
-       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Ban module license tag string termination trick
-References: <MDEHLPKNGKAHNMBLJOLKEEJIBFAC.davids@webmaster.com>	<Pine.LNX.4.61.0702032136430.13874@yvahk01.tjqt.qr> <20070203222141.6f723fd9@localhost.localdomain>
-In-Reply-To: <20070203222141.6f723fd9@localhost.localdomain>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-SA-Do-Not-Run: Yes
-X-SA-Exim-Connect-IP: 74.92.29.237
-X-SA-Exim-Mail-From: jonathan@jonmasters.org
-X-SA-Exim-Scanned: No (on dallas.jonmasters.org); SAEximRunCond expanded to false
+Content-Disposition: inline
+References: <fa.L/RjDlo6Njb5Jt7/9ENZuiASoV0@ifi.uio.no>
+	 <45C4DF2A.1070501@shaw.ca> <45C5178A.1000501@seclark.us>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan wrote:
-> On Sat, 3 Feb 2007 21:47:36 +0100 (MET)
-> Jan Engelhardt <jengelh@linux01.gwdg.de> wrote:
-> 
->> On Feb 3 2007 10:31, David Schwartz wrote:
->>> The way out of the GPL problem is to make clear that it is *not* a 
->>> copyright enforcement scheme
->> So why do we have EXPORT_SYMBOL_GPL then, if
-> 
-> Because if you go around modifying code to get around it then regardless
-> of the DMCA question you are actively doing it and there is very clear
-> intent to do other than the right holder intended. In some ways its the
-> difference between walking through an open archway into a private area
-> and kicking the door down to get in.
+On 2/4/07, Stephen Clark <Stephen.Clark@seclark.us> wrote:
+> Robert Hancock wrote:
 
-It's a sign, a notice, and the reason I brought up this discussion is 
-precisely because I don't think the kernel has any business being an 
-enforcement mechanism - that's not what the spirit of our community is 
-really about, we're about openness (as much as is possible).
+> But why are we taking away the users capability to control his/her own
+> hardware. Sounds like windows.
 
-If I go into an airport, open my laptop and connect to a network called 
-"Free WiFi network", then I might have a good case to argue that I 
-expected the WiFi to be free. If I connect to a network called "Not 
-Free, Don't Use" then...I think the intent of the wording is clear.
+I wouldn't go as far as making that comparsion, most of all cause it's
+totaly invalid, with all respect.
 
-Anyway. Are we doing this or not - the more I think about it, the more 
-I'm kinda "happy" to just leave things as they are. Yes, bad people will 
-continuing doing bad things no matter what we do. Do we really want to 
-change stuff just to work around obvious abuse? Alan?
+In my opinion the new pata drivers are work in progress, they only
+appear in the latest kernel and snapshots so please, let's allow the
+drivers to evolve, I am no kernel hacker or coder, nor does my
+interest lay here at the moment to be honest, I am a system
+administrator working with Unix and Linux and am interested in helping
+out where I can. By using the new pata drivers in favor of the old IDE
+drivers I took a risk, well calculated and with the very thought of
+encountering these kind of problems and reporting them to make things
+better.
 
-Jon.
+However, I do have to agree with the point that if the drivers/kernel,
+for whatever reason they might have, to switch to a lower UDMA mode,
+and when none is left, even to PIO mode, I should have at least the
+chance to switch back to a higher level of datatransfer speed.
+
+How it looks now is that the kernel and its drivers treat the devices
+as ATA devices with their features, but the userland programs like
+hdparm and sdparm and blkutil see the devices as SCSI/SATA devices,
+and dont allow the ioctl commands which are valid for ATA drives.
+
+Just my two euros/canadian dollars/croatian kunas in the pocket :)
+
+Patrick
