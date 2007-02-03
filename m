@@ -1,69 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946407AbXBCIxf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946412AbXBCIzy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946407AbXBCIxf (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Feb 2007 03:53:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946408AbXBCIxf
+	id S1946412AbXBCIzy (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Feb 2007 03:55:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946414AbXBCIzy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Feb 2007 03:53:35 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:34587 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1946407AbXBCIxe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Feb 2007 03:53:34 -0500
-Date: Sat, 3 Feb 2007 00:53:16 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: linux-kernel@vger.kernel.org, Nick Piggin <nickpiggin@yahoo.com.au>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Rik van Riel <riel@redhat.com>
-Subject: Re: [RFC] Tracking mlocked pages and moving them off the LRU
-Message-Id: <20070203005316.eb0b4042.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0702022214580.3960@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0702022214580.3960@schroedinger.engr.sgi.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 3 Feb 2007 03:55:54 -0500
+Received: from nz-out-0506.google.com ([64.233.162.236]:64072 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1946412AbXBCIzx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Feb 2007 03:55:53 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=jt/DX6TY8UIfMa8RiR1TLxsySlcWbx7aAECTdCw4KqY5jxdOCSSlPJpAPKr90XZn7c1sy71G2HjD7e47iacnJvnDZtMA7VDaH9bT/dY4Q1WWcHb3fdWarFS9fxBGu3Tnnf+fayBmPilI76T0ZxMnSsmb0aJK3u2E2X9LrgExGKI=
+Message-ID: <8d158e1f0702030055l39b7cc9eg6e9b36862a4b495d@mail.gmail.com>
+Date: Sat, 3 Feb 2007 09:55:52 +0100
+From: "Patrick Ale" <patrick.ale@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: hdparm for lib_pata
+In-Reply-To: <8d158e1f0702030041xaa34440r125a39a85d498f4c@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <8d158e1f0702030041xaa34440r125a39a85d498f4c@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2 Feb 2007 22:20:12 -0800 (PST) Christoph Lameter <clameter@sgi.com> wrote:
+Hi,
 
-> This is a new variation on the earlier RFC for tracking mlocked pages.
-> We now mark a mlocked page with a bit in the page flags and remove
-> them from the LRU. Pages get moved back when no vma that references
-> the page has VM_LOCKED set anymore.
-> 
-> This means that vmscan no longer uselessly cycles over large amounts
-> of mlocked memory should someone attempt to mlock large amounts of
-> memory (may even result in a livelock on large systems).
-> 
-> Synchronization is build around state changes of the PageMlocked bit.
-> The NR_MLOCK counter is incremented and decremented based on
-> state transitions of PageMlocked. So the count is accurate.
+The problem is even worse, the drive falls back to PIO mode and there
+is no way I can get it back to dma mode (like I could by using
+hdparm). The only thing i can do is reboot the machine so it will see
+the drive is UDMA capable.
 
-I wonder if it can be simpler.  Make two changes:
+If there is some beta/gamma software around or something you'd like to
+have tested, you can mail me directly, my machine is your private
+prostitute at the moment, it's not like i have something important to
+do with the machine anyway (not related to this problem):)
 
-a) If the scanner encounters an mlocked page on the LRU, take it off.
 
-b) munlock() adds all affected pages to the LRU.
-
-And that's it.  Simpler, solves the uselessly-scan-lots-of-mlocked-pages
-problem (which is the sole requirement according to your description) and
-doesn't consume a page flag.  Optional (and arguable) extension: scan the
-vmas during munmap, don't add page to LRU if it's still mlocked.
-
-Why _does_ your patch add a new page flag?  That info is available via a
-vma scan.
-
-> There is still some unfinished business:
-> 
-> 1. We use the 21st page flag and we only have 20 on 32 bit NUMA platforms.
-
-Ow.  How were you thinking of fixing that?
-
-> 2. Since mlocked pages are now off the LRU page migration will no longer
->    move them.
-
-Ow.  That could be a right pain when we get around to using migration for
-memory-unplug?
-
+Patrick
