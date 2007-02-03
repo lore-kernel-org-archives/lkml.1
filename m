@@ -1,175 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946188AbXBBXxY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946180AbXBBXyM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946188AbXBBXxY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Feb 2007 18:53:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946185AbXBBXxX
+	id S1946180AbXBBXyM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Feb 2007 18:54:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946179AbXBBXyL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Feb 2007 18:53:23 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:45243 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1946182AbXBBXxT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Feb 2007 18:53:19 -0500
-Date: Fri, 2 Feb 2007 15:53:11 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Linux Filesystems <linux-fsdevel@vger.kernel.org>,
-       Linux Memory Management <linux-mm@kvack.org>
-Subject: Re: [patch 9/9] mm: fix pagecache write deadlocks
-Message-Id: <20070202155311.e4f57985.akpm@linux-foundation.org>
-In-Reply-To: <20070129082030.23584.72376.sendpatchset@linux.site>
-References: <20070129081905.23584.97878.sendpatchset@linux.site>
-	<20070129082030.23584.72376.sendpatchset@linux.site>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+	Fri, 2 Feb 2007 18:54:11 -0500
+Received: from ms-smtp-04.nyroc.rr.com ([24.24.2.58]:41392 "EHLO
+	ms-smtp-04.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1946185AbXBBXyJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Feb 2007 18:54:09 -0500
+Date: Fri, 2 Feb 2007 19:26:19 -0500
+From: Adam Kropelin <akropel1@rochester.rr.com>
+To: Auke Kok <auke-jan.h.kok@intel.com>
+Cc: Adrian Bunk <bunk@stusta.de>, linux-pci@atrey.karlin.mff.cuni.cz,
+       linux-kernel@vger.kernel.org
+Subject: Re: MSI failure on nForce 430 (WAS: intel 82571EB gigabit fails to see link on 2.6.20-rc5 in-tree e1000 driver (regression))
+Message-ID: <20070202192619.A23633@mail.kroptech.com>
+References: <20070117190448.A20184@mail.kroptech.com> <45AEB79B.2010205@intel.com> <00d701c73c1f$b2bb2390$84163e05@kroptech.com> <45B1562C.8070503@intel.com> <011101c73c29$9f6f5db0$84163e05@kroptech.com> <45B16491.7030207@intel.com> <023401c73cca$05bc5f00$84163e05@kroptech.com> <20070202164726.GH3754@stusta.de> <45C37412.70205@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.2.5.1i
+In-Reply-To: <45C37412.70205@intel.com>; from auke-jan.h.kok@intel.com on Fri, Feb 02, 2007 at 09:25:38AM -0800
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 29 Jan 2007 11:33:03 +0100 (CET)
-Nick Piggin <npiggin@suse.de> wrote:
-
-> Modify the core write() code so that it won't take a pagefault while holding a
-> lock on the pagecache page. There are a number of different deadlocks possible
-> if we try to do such a thing:
+On Fri, Feb 02, 2007 at 09:25:38AM -0800, Auke Kok wrote:
+> Adrian Bunk wrote:
+> > On Sat, Jan 20, 2007 at 02:34:37PM -0500, Adam Kropelin wrote:
+> >> (cc: list trimmed and thread moved to linux-pci)
+> >>
+> >> I have a PCI-E e1000 card that does not see interrupts on 2.6.20-rc5 
+> >> unless CONFIG_PCI_MSI is disabled. An e1000 maintainer indicated that 
+> >> the PHY state is correct, it's just that the interrupt is not getting 
+> >> thru to the kernel. Interestingly, on 2.6.19 PHY interrupts get thru ok 
+> >> with MSI enabled (link status responds appropriately) but packet tx 
+> >> fails with timeout errors, implying that perhaps MAC interrupts are not 
+> >> arriving.
+> >>
+> >> I've attached the contents dmesg, 'lspci -vvv', and 'cat 
+> >> /proc/interrupts' from 2.6.20-rc5.
+> >>
+> >> This is an nForce 430 based chipset on a Dell E521 which has had 
+> >> interrupt routing issues before. Prior to 2.6.19 it had to be booted 
+> >> with 'noapic' in order to come up at all. It also had USB lockup 
+> >> problems until I applied the latest BIOS update (v1.1.4). So a BIOS 
+> >> interrupt routing bug with MSI is not out of the question.
+> >>
+> >> I'm happy to gather more data or run tests...
+> > 
+> > Was this regression fixed by Eric's patch that is included in -rc7?
 > 
-> 1.  generic_buffered_write
-> 2.   lock_page
-> 3.    prepare_write
-> 4.     unlock_page+vmtruncate
-> 5.     copy_from_user
-> 6.      mmap_sem(r)
-> 7.       handle_mm_fault
-> 8.        lock_page (filemap_nopage)
-> 9.    commit_write
-> 10.  unlock_page
+> no, this is a different issue afaics. Eric's patch solves a msi vector leak 
+> where MSI's were no longer recovered after all 256 of them were handed out. The 
+> issue here seems to be a very different regression (no vector at all or vector 
+> not setup correctly to begin with).
 > 
-> a. sys_munmap / sys_mlock / others
-> b.  mmap_sem(w)
-> c.   make_pages_present
-> d.    get_user_pages
-> e.     handle_mm_fault
-> f.      lock_page (filemap_nopage)
-> 
-> 2,8	- recursive deadlock if page is same
-> 2,8;2,8	- ABBA deadlock is page is different
-> 2,6;b,f	- ABBA deadlock if page is same
-> 
-> The solution is as follows:
-> 1.  If we find the destination page is uptodate, continue as normal, but use
->     atomic usercopies which do not take pagefaults and do not zero the uncopied
->     tail of the destination. The destination is already uptodate, so we can
->     commit_write the full length even if there was a partial copy: it does not
->     matter that the tail was not modified, because if it is dirtied and written
->     back to disk it will not cause any problems (uptodate *means* that the
->     destination page is as new or newer than the copy on disk).
-> 
-> 1a. The above requires that fault_in_pages_readable correctly returns access
->     information, because atomic usercopies cannot distinguish between
->     non-present pages in a readable mapping, from lack of a readable mapping.
-> 
-> 2.  If we find the destination page is non uptodate, unlock it (this could be
->     made slightly more optimal), then find and pin the source page with
->     get_user_pages. Relock the destination page and continue with the copy.
->     However, instead of a usercopy (which might take a fault), copy the data
->     via the kernel address space.
-> 
+> I do suggest re-testing the issue with 2.6.20rc7, but it's unlikely it fixes the 
+> problem for Adam.
 
-Oh what a mess we're making :(
+Your thought is correct: 2.6.20-rc7 still fails.
 
-Unfortunately, write() into a non-uptodate page is very much the common
-case.  We've always tried to avoid doing a pte-walk in the write() path to
-fix this bug.  Careful performance testing is needed here so we can assess
-the impact.  For threaded applications, simply the taking of mmap_sem might
-be the biggest problem.
-
-And I can't think of any tricks we can play to avoid doing the pte-walk in
-most cases.  For example, we don't yet have a page to run page_mapped()
-against.
-
->  			break;
->  		}
->  
-> +		/*
-> +		 * non-uptodate pages cannot cope with short copies, and we
-> +		 * cannot take a pagefault with the destination page locked.
-> +		 * So pin the source page to copy it.
-> +		 */
-> +		if (!PageUptodate(page)) {
-> +			unlock_page(page);
-> +
-> +			bytes = min(bytes, PAGE_CACHE_SIZE -
-> +				     ((unsigned long)buf & ~PAGE_CACHE_MASK));
-> +
-> +			/*
-> +			 * Cannot get_user_pages with a page locked for the
-> +			 * same reason as we can't take a page fault with a
-> +			 * page locked (as explained below).
-> +			 */
-> +			down_read(&current->mm->mmap_sem);
-> +			status = get_user_pages(current, current->mm,
-> +					(unsigned long)buf & PAGE_CACHE_MASK, 1,
-> +					0, 0, &src_page, NULL);
-> +			up_read(&current->mm->mmap_sem);
-> +			if (status != 1) {
-> +				page_cache_release(page);
-> +				break;
-> +			}
-> +
-> +			lock_page(page);
-> +			if (!page->mapping) {
-
-Hopefully this can't happen?  If it can, who went and took our page off the
-mapping?  Reclaim?  The elevated page_count will prevent that?
-
-> +				unlock_page(page);
-> +				page_cache_release(page);
-> +				page_cache_release(src_page);
-> +				continue;
-> +			}
-> +
-> +		}
-> +
->  		status = a_ops->prepare_write(file, page, offset, offset+bytes);
->  		if (unlikely(status))
->  			goto fs_write_aop_error;
->  
-> -		copied = filemap_copy_from_user(page, offset,
-> +		if (!src_page) {
-> +			/*
-> +			 * Must not enter the pagefault handler here, because
-> +			 * we hold the page lock, so we might recursively
-> +			 * deadlock on the same lock, or get an ABBA deadlock
-> +			 * against a different lock, or against the mmap_sem
-> +			 * (which nests outside the page lock).  So increment
-> +			 * preempt count, and use _atomic usercopies.
-> +			 *
-> +			 * The page is uptodate so we are OK to encounter a
-> +			 * short copy: if unmodified parts of the page are
-> +			 * marked dirty and written out to disk, it doesn't
-> +			 * really matter.
-> +			 */
-> +			pagefault_disable();
-> +			copied = filemap_copy_from_user_atomic(page, offset,
->  					cur_iov, nr_segs, iov_offset, bytes);
-> +			pagefault_enable();
-> +		} else {
-> +			char *src, *dst;
-> +			src = kmap(src_page);
-> +			dst = kmap(page);
-> +			memcpy(dst + offset,
-> +				src + ((unsigned long)buf & ~PAGE_CACHE_MASK),
-> +				bytes);
-> +			kunmap(page);
-> +			kunmap(src_page);
-> +			copied = bytes;
-> +		}
-
-As you say, we don't want to do this: taking two kmap()s at the same time
-leaves us vulnerable to kmap() deadlocks: we deadlock when there are 512
-tasks (LAST_PKMAP) each holding one kmap, and all waiting for someone else
-to give one back.
-
-
+--Adam
 
