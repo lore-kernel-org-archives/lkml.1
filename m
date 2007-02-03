@@ -1,69 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423216AbXBCMHT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1945951AbXBCMZI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423216AbXBCMHT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Feb 2007 07:07:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423214AbXBCMHT
+	id S1945951AbXBCMZI (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Feb 2007 07:25:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945963AbXBCMZH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Feb 2007 07:07:19 -0500
-Received: from mx02.qsc.de ([213.148.130.14]:44812 "EHLO mx02.qsc.de"
+	Sat, 3 Feb 2007 07:25:07 -0500
+Received: from main.gmane.org ([80.91.229.2]:34098 "EHLO ciao.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1945911AbXBCMHS convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Feb 2007 07:07:18 -0500
-From: Rene Rebe <rene@exactcode.de>
-Organization: ExactCODE
-To: "Patrick Ale" <patrick.ale@gmail.com>
-Subject: Re: hdparm for lib_pata
-Date: Sat, 3 Feb 2007 13:07:02 +0100
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org
-References: <8d158e1f0702030041xaa34440r125a39a85d498f4c@mail.gmail.com> <8d158e1f0702030055l39b7cc9eg6e9b36862a4b495d@mail.gmail.com>
-In-Reply-To: <8d158e1f0702030055l39b7cc9eg6e9b36862a4b495d@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200702031307.03179.rene@exactcode.de>
-X-Spam-Score: -1.4 (-)
-X-Spam-Report: Spam detection software, running on the system "grum.localhost", has
-	identified this incoming email as possible spam.  The original message
-	has been attached to this so you can view it (if it isn't spam) or label
-	similar future email.  If you have any questions, see
-	the administrator of that system for details.
-	Content preview:  On Saturday 03 February 2007 09:55:52 Patrick Ale wrote:
-	> Hi, > > The problem is even worse, the drive falls back to PIO mode
-	and there > is no way I can get it back to dma mode (like I could by
-	using > hdparm). The only thing i can do is reboot the machine so it
-	will see > the drive is UDMA capable. > > If there is some beta/gamma
-	software around or something you'd like to > have tested, you can mail
-	me directly, my machine is your private > prostitute at the moment, it's
-	not like i have something important to > do with the machine anyway (not
-	related to this problem):) [...] 
-	Content analysis details:   (-1.4 points, 5.0 required)
-	pts rule name              description
-	---- ---------------------- --------------------------------------------------
-	-1.4 ALL_TRUSTED            Passed through trusted hosts only via SMTP
+	id S1945951AbXBCMZG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Feb 2007 07:25:06 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: lnx.tmp@gmail.com
+Subject: Re: Slower CPU frequency reported by the kernel
+Date: Sat, 3 Feb 2007 12:19:43 +0000 (UTC)
+Message-ID: <eq1ukv$p21$1@sea.gmane.org>
+References: <38b2ab8a0702020311o54789ef6xff819dc3b492b005@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Complaints-To: usenet@sea.gmane.org
+X-Gmane-NNTP-Posting-Host: cs78145192.pp.htv.fi
+User-Agent: pan 0.120 (Plate of Shrimp)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 03 February 2007 09:55:52 Patrick Ale wrote:
+On Fri, 02 Feb 2007 12:11:25 +0100, Francis Moreau wrote:
 > Hi,
 > 
-> The problem is even worse, the drive falls back to PIO mode and there
-> is no way I can get it back to dma mode (like I could by using
-> hdparm). The only thing i can do is reboot the machine so it will see
-> the drive is UDMA capable.
-> 
-> If there is some beta/gamma software around or something you'd like to
-> have tested, you can mail me directly, my machine is your private
-> prostitute at the moment, it's not like i have something important to
-> do with the machine anyway (not related to this problem):)
+> I'm using a PC with AMD 64 3000+ cpu which is theoricaly running at
+> 2Ghz. But when looking at /proc/cpuinfo, the kernel reports that it
+> runs only at 1Ghz:
+> ...
+> What's going wrong ?
 
-The libata expoted disls have a SCSI ioctl interface, sdparm should
-work on those.
+Do you have feature called "Cool N' Quiet" enabled in BIOS?
+I had the same problem and disabling the feature the problem resolved.
 
--- 
-  René Rebe - ExactCODE GmbH - Europe, Germany, Berlin
-  http://exactcode.de | http://t2-project.org | http://rene.rebe.name
-  +49 (0)30 / 255 897 45
