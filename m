@@ -1,65 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423199AbXBCLmm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1945898AbXBCLyg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423199AbXBCLmm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Feb 2007 06:42:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423209AbXBCLmm
+	id S1945898AbXBCLyg (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Feb 2007 06:54:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423217AbXBCLyg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Feb 2007 06:42:42 -0500
-Received: from tmailer.gwdg.de ([134.76.10.23]:58556 "EHLO tmailer.gwdg.de"
+	Sat, 3 Feb 2007 06:54:36 -0500
+Received: from thunk.org ([69.25.196.29]:33766 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423199AbXBCLml (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Feb 2007 06:42:41 -0500
-Date: Sat, 3 Feb 2007 12:38:47 +0100 (MET)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: Russell King <rmk+lkml@arm.linux.org.uk>
-cc: Bodo Eggert <7eggert@gmx.de>,
+	id S1423216AbXBCLyf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Feb 2007 06:54:35 -0500
+Date: Sat, 3 Feb 2007 06:54:12 -0500
+From: Theodore Tso <tytso@mit.edu>
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>
+Cc: Bodo Eggert <7eggert@gmx.de>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@osdl.org>, Jon Masters <jonathan@jonmasters.org>,
        Alexey Dobriyan <adobriyan@gmail.com>
-Subject: Re: [PATCH/RFC] alternative aproach to: Ban module license tag string
- termination trick
-In-Reply-To: <20070203081426.GA10520@flint.arm.linux.org.uk>
-Message-ID: <Pine.LNX.4.61.0702031236340.27840@yvahk01.tjqt.qr>
-References: <Pine.LNX.4.58.0702022216120.25199@be1.lrz>
- <20070203081426.GA10520@flint.arm.linux.org.uk>
+Subject: Re: [PATCH/RFC] alternative aproach to: Ban module license tag string termination trick
+Message-ID: <20070203115412.GA15419@thunk.org>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Jan Engelhardt <jengelh@linux01.gwdg.de>,
+	Bodo Eggert <7eggert@gmx.de>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Andrew Morton <akpm@osdl.org>,
+	Jon Masters <jonathan@jonmasters.org>,
+	Alexey Dobriyan <adobriyan@gmail.com>
+References: <Pine.LNX.4.58.0702022216120.25199@be1.lrz> <Pine.LNX.4.61.0702031213220.27840@yvahk01.tjqt.qr>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.61.0702031213220.27840@yvahk01.tjqt.qr>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, Feb 03, 2007 at 12:32:08PM +0100, Jan Engelhardt wrote:
+> I strongly nak that. If you combine two object files (e.g. foo.o, bar.o)
+> that have different licenses, the resulting object file (comb.o) IMHO
+> constitutes a combined work, and hence the GPL should be applied to all of
+> it. That obviously "does not work" - what good is a GPL comb.o file if you
+> don't have the source to bar.o? 
 
-On Feb 3 2007 08:14, Russell King wrote:
->On Sat, Feb 03, 2007 at 03:08:14AM +0100, Bodo Eggert wrote:
->> This patch changes the module license handling code to:
->> - prevent the "GPL\0 for nothing"-trick
->
->You can achieve this effect without changing the existing module
->format, and it's far more difficult to bypass with build-with-
->modified module.h tricks.
->
->+static int check_modinfo_objects(Elf_Shdr *sechdrs,
->+				 unsigned int symindex,
->+				 unsigned int infoindex)
->+{
->+	unsigned int i;
->+	Elf_Sym *sym = (void *)sechdrs[symindex].sh_addr;
->+	char *info = (char *)sechdrs[infoindex].sh_addr;
->+
->+	for (i = 1; i < sechdrs[symindex].sh_size/sizeof(*sym); i++) {
->+		if (sym[i].st_shndx == infoindex &&
->+		    ELF_ST_TYPE(sym[i].st_info) == STT_OBJECT) {
->+			if (strlen(info + sym[i].st_value) + 1 != sym[i].st_size)
->+				return -ENOEXEC;
->+		}
->+	}
+Gaaah.  This is why it's a bad idea to try to attempt to do GPL
+"enforcement" in kernel code.  Your reasoning is totally bogus.  GPL
+is only about distribution, and if a user is building a standalone
+module which they never distibute, the provisions of GPL won't apply,
+since it's only about distribution, and a user who builds an ATI or
+Nvidia module in the privacy of their own home won't be violating the
+GPL.   
 
-What happens when there is no symbol for the "license=GPL\0foo..." string?
-To me it looks like we'll miss it.
-
-
-
-Jan
--- 
-ft: http://freshmeat.net/p/chaostables/
+						- Ted
