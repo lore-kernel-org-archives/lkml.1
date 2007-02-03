@@ -1,44 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946412AbXBCIzy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946408AbXBCI5x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946412AbXBCIzy (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Feb 2007 03:55:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946414AbXBCIzy
+	id S1946408AbXBCI5x (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Feb 2007 03:57:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946410AbXBCI5x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Feb 2007 03:55:54 -0500
-Received: from nz-out-0506.google.com ([64.233.162.236]:64072 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1946412AbXBCIzx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Feb 2007 03:55:53 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=jt/DX6TY8UIfMa8RiR1TLxsySlcWbx7aAECTdCw4KqY5jxdOCSSlPJpAPKr90XZn7c1sy71G2HjD7e47iacnJvnDZtMA7VDaH9bT/dY4Q1WWcHb3fdWarFS9fxBGu3Tnnf+fayBmPilI76T0ZxMnSsmb0aJK3u2E2X9LrgExGKI=
-Message-ID: <8d158e1f0702030055l39b7cc9eg6e9b36862a4b495d@mail.gmail.com>
-Date: Sat, 3 Feb 2007 09:55:52 +0100
-From: "Patrick Ale" <patrick.ale@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: hdparm for lib_pata
-In-Reply-To: <8d158e1f0702030041xaa34440r125a39a85d498f4c@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sat, 3 Feb 2007 03:57:53 -0500
+Received: from waste.org ([66.93.16.53]:44288 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1946408AbXBCI5w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Feb 2007 03:57:52 -0500
+Date: Sat, 3 Feb 2007 02:45:26 -0600
+From: Matt Mackall <mpm@selenic.com>
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+Cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>
+Subject: Re: a quick survey:  "FIELD_SIZEOF" or "MEMBER_SIZE"?
+Message-ID: <20070203084526.GG16722@waste.org>
+References: <Pine.LNX.4.64.0702030243350.23432@CPE00045a9c397f-CM001225dbafb6>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <8d158e1f0702030041xaa34440r125a39a85d498f4c@mail.gmail.com>
+In-Reply-To: <Pine.LNX.4.64.0702030243350.23432@CPE00045a9c397f-CM001225dbafb6>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Sat, Feb 03, 2007 at 02:49:34AM -0500, Robert P. J. Day wrote:
+> 
+>   pardon the interruption but, once upon a time, we were discussing
+> cleaning up code to use the kernel.h-defined macro "FIELD_SIZEOF".
+> 
+>   some folks suggested that the macro name itself was kind of awkward
+> as it didn't fit the pattern of "ARRAY_SIZE" defined in that same
+> header file.
+> 
+>   because of a name clash, "FIELD_SIZE" is not available, but there
+> was a suggestion of, uh, "MEMBER_SIZE".  :-)
+> 
+>   so, really, those are the two viable choices -- stick with the
+> current name of FIELD_SIZEOF, or switch to MEMBER_SIZE.  switching is
+> not a big deal since no one (at least, no one in the current tree)
+> uses FIELD_SIZEOF as it is, so it's not as if it would be a disruptive
+> change in the slightest.
 
-The problem is even worse, the drive falls back to PIO mode and there
-is no way I can get it back to dma mode (like I could by using
-hdparm). The only thing i can do is reboot the machine so it will see
-the drive is UDMA capable.
+K&R calls them 'members'. 
 
-If there is some beta/gamma software around or something you'd like to
-have tested, you can mail me directly, my machine is your private
-prostitute at the moment, it's not like i have something important to
-do with the machine anyway (not related to this problem):)
+We've currently got:
 
+sizeof (built-in)
+typeof (built-in)
+offsetof (standard macro)
+container_of (kernel macro) (1800 of these, ugh)
 
-Patrick
+We don't want:
+
+FIELD_SIZE - they're members
+MEMBER_SIZE - inconsistent with the above
+member_size - all the above have of
+member_size_of - inconsistent with sizeof
+member_sizeof - inconsistent _ between words
+sizeof_member - same, plus other issues
+memsizeof - confusion with memory
+
+So my vote would be for:
+
+membersizeof(a, b)
+
+There's also at least two pieces of code that could use:
+
+membertypeof(a, b)
+
+And please kill all the reimplementations of offsetof while you're at it.
+
+-- 
+Mathematics is the supreme nostalgia of our time.
