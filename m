@@ -1,45 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946037AbXBCP0T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946446AbXBCPae@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946037AbXBCP0T (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Feb 2007 10:26:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946299AbXBCP0T
+	id S1946446AbXBCPae (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Feb 2007 10:30:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946455AbXBCPae
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Feb 2007 10:26:19 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:44575 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1946037AbXBCP0T (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Feb 2007 10:26:19 -0500
-Subject: Re: [ANN] Userspace M-on-N threading model implementation. Alpha
-	release.
-From: Arjan van de Ven <arjan@infradead.org>
-To: Bill Davidsen <davidsen@tmr.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <45C362D2.2040407@tmr.com>
-References: <66910A579C9312469A7DF9ADB54A8B7D5C2B90@exchange.ZeugmaSystems.local>
-	 <45C362D2.2040407@tmr.com>
-Content-Type: text/plain
-Organization: Intel International BV
-Date: Sat, 03 Feb 2007 16:26:16 +0100
-Message-Id: <1170516376.3073.1015.camel@laptopd505.fenrus.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 (2.8.2.1-2.fc6) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sat, 3 Feb 2007 10:30:34 -0500
+Received: from smtp.ustc.edu.cn ([202.38.64.16]:53407 "HELO ustc.edu.cn"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1946446AbXBCPad (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Feb 2007 10:30:33 -0500
+Message-ID: <370516630.03363@ustc.edu.cn>
+X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
+Date: Sat, 3 Feb 2007 23:31:45 +0800
+From: Fengguang Wu <fengguang.wu@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Nick Piggin <npiggin@suse.de>, Linux Kernel <linux-kernel@vger.kernel.org>,
+       Linux Filesystems <linux-fsdevel@vger.kernel.org>,
+       Linux Memory Management <linux-mm@kvack.org>,
+       Suparna Bhattacharya <suparna@in.ibm.com>
+Subject: Re: [patch 0/9] buffered write deadlock fix
+Message-ID: <20070203153145.GA3980@mail.ustc.edu.cn>
+Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
+	Nick Piggin <npiggin@suse.de>,
+	Linux Kernel <linux-kernel@vger.kernel.org>,
+	Linux Filesystems <linux-fsdevel@vger.kernel.org>,
+	Linux Memory Management <linux-mm@kvack.org>,
+	Suparna Bhattacharya <suparna@in.ibm.com>
+References: <20070129081905.23584.97878.sendpatchset@linux.site> <20070202155232.babe1a52.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070202155232.babe1a52.akpm@linux-foundation.org>
+X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Feb 02, 2007 at 03:52:32PM -0800, Andrew Morton wrote:
+> Bugfixes come first, so I will drop readahead and fsaio and git-block to get
+> this work completed if needed - please work agaisnt mainline.
 
-> Because user threading can avoid context switches, there will always be 
-> cases where it will outperform o/s threads for hardware reasons.
+OK with readahead.
 
-actually.. switching from one "real" thread to another in Linux is not
-an actual context switch in the hardware sense... at least this part of
-your argument seems to be incorrect ;)
+There are too much fixes in the series.  I'd like to fold them up and
+update some change logs. And then there would be one more update.
 
-> 
--- 
-if you want to mail me at work (you don't), use arjan (at) linux.intel.com
-Test the interaction between Linux and your BIOS via http://www.linuxfirmwarekit.org
-
+Regards,
+Wu
