@@ -1,59 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933390AbXBCAYB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946162AbXBCAZw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933390AbXBCAYB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Feb 2007 19:24:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933399AbXBCAYB
+	id S1946162AbXBCAZw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Feb 2007 19:25:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946166AbXBCAZw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Feb 2007 19:24:01 -0500
-Received: from outpost.ds9a.nl ([213.244.168.210]:46483 "EHLO outpost.ds9a.nl"
+	Fri, 2 Feb 2007 19:25:52 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:46399 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933390AbXBCAYA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Feb 2007 19:24:00 -0500
-Date: Sat, 3 Feb 2007 01:23:59 +0100
-From: bert hubert <bert.hubert@netherlabs.nl>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Alan <alan@lxorguk.ukuu.org.uk>,
-       Zach Brown <zach.brown@oracle.com>, linux-kernel@vger.kernel.org,
-       linux-aio@kvack.org, Suparna Bhattacharya <suparna@in.ibm.com>,
-       Benjamin LaHaise <bcrl@kvack.org>
-Subject: Re: [PATCH 2 of 4] Introduce i386 fibril scheduling
-Message-ID: <20070203002358.GA26422@outpost.ds9a.nl>
-Mail-Followup-To: bert hubert <bert.hubert@netherlabs.nl>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Ingo Molnar <mingo@elte.hu>, Alan <alan@lxorguk.ukuu.org.uk>,
-	Zach Brown <zach.brown@oracle.com>, linux-kernel@vger.kernel.org,
-	linux-aio@kvack.org, Suparna Bhattacharya <suparna@in.ibm.com>,
-	Benjamin LaHaise <bcrl@kvack.org>
-References: <Pine.LNX.4.64.0702011154110.3632@woody.linux-foundation.org> <20070202104900.GA13941@elte.hu> <Pine.LNX.4.64.0702020738500.15057@woody.linux-foundation.org> <20070202195932.15b9b4ed@localhost.localdomain> <Pine.LNX.4.64.0702021155460.15057@woody.linux-foundation.org> <20070202213019.202e8db5@localhost.localdomain> <Pine.LNX.4.64.0702021322310.15057@woody.linux-foundation.org> <20070202224259.GB1212@elte.hu> <Pine.LNX.4.64.0702021459550.15057@woody.linux-foundation.org> <Pine.LNX.4.64.0702021512450.15057@woody.linux-foundation.org>
+	id S1946162AbXBCAZv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Feb 2007 19:25:51 -0500
+Date: Fri, 2 Feb 2007 16:25:41 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Andrew Vasquez <andrew.vasquez@qlogic.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux-SCSI Mailing List <linux-scsi@vger.kernel.org>,
+       Nigel Kirkland <nigel.kirkland@qlogic.com>
+Subject: Re: [BUG] Unable to handle kernel NULL pointer
+ dereference...as_move_to_dispatch+0x11/0x135
+Message-Id: <20070202162541.20e1e930.akpm@linux-foundation.org>
+In-Reply-To: <20070202205630.GI3737@andrew-vasquezs-computer.local>
+References: <20070122183510.GA19905@andrew-vasquezs-computer.local>
+	<20070201232302.905962b6.akpm@linux-foundation.org>
+	<20070202205630.GI3737@andrew-vasquezs-computer.local>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0702021512450.15057@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.9i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 02, 2007 at 03:17:57PM -0800, Linus Torvalds wrote:
+On Fri, 2 Feb 2007 12:56:30 -0800
+Andrew Vasquez <andrew.vasquez@qlogic.com> wrote:
 
-> threads. But you need to look at what it is we parallelize here, and ask 
-> yourself why we're doing what we're doing, and why people aren't *already* 
-> just using a separate thread for it.
+> > >         dt of=/dev/raw/raw1 procs=8 oncerr=abort bs=16k disable=stats limit=2m passes=1000000 pattern=iot dlimit=2048
 
-Partially this is for the bad reason that creating "i/o threads" (or even
-processes) has a bad stigma to it, and additionally has always felt crummy.
-
-On the first reason, the 'pain' of creating threads is actually rather
-minor, so this feeling may have been wrong. The main thing is that you don't
-wantonly create a thousand i/o threads, whereas you conceivably might want
-to have a thousand outstanding i/o requests. At least I know I want to have
-that ability.
-
-Secondly, the actual mechanics of i/o processes isn't trivial, and feels
-wasteful with lots of additional copying, or in the case of threads,
-queueing and posting.
-
-	Bert
-
--- 
-http://www.PowerDNS.com      Open source, database driven DNS Software 
-http://netherlabs.nl              Open and Closed source services
+What is this mysterious dt command, btw?
