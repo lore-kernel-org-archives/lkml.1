@@ -1,77 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946488AbXBCQVi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992432AbXBCQaK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946488AbXBCQVi (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Feb 2007 11:21:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946486AbXBCQVh
+	id S2992432AbXBCQaK (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Feb 2007 11:30:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992429AbXBCQaK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Feb 2007 11:21:37 -0500
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:39362 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1946457AbXBCQVg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Feb 2007 11:21:36 -0500
-Date: Sat, 3 Feb 2007 19:21:18 +0300
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: linux-kernel@vger.kernel.org
-Cc: linux-crypto@vger.kernel.org, netdev@vger.kernel.org
-Subject: [ANN] Acrypto asynchronous crypto layer 2.6.20 release.
-Message-ID: <20070203162118.GA8731@2ka.mipt.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=koi8-r
-Content-Disposition: inline
-User-Agent: Mutt/1.5.9i
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.7.5 (2ka.mipt.ru [0.0.0.0]); Sat, 03 Feb 2007 19:21:19 +0300 (MSK)
+	Sat, 3 Feb 2007 11:30:10 -0500
+Received: from h155.mvista.com ([63.81.120.155]:5006 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1946490AbXBCQaJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Feb 2007 11:30:09 -0500
+Message-ID: <45C4B888.9050006@ru.mvista.com>
+Date: Sat, 03 Feb 2007 19:30:00 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
+MIME-Version: 1.0
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 13/15] ide: fix UDMA/MWDMA/SWDMA masks
+References: <20070119003058.14846.43637.sendpatchset@localhost.localdomain>	 <20070119003226.14846.87052.sendpatchset@localhost.localdomain>	 <45B4E401.6070208@ru.mvista.com> <58cb370e0702021606v4efa6143lf060e6aab9782c35@mail.gmail.com> <45C3D9CE.8020202@gmail.com>
+In-Reply-To: <45C3D9CE.8020202@gmail.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hello.
 
-I am pleased to announce new release of the acrypto for 2.6.20 kernel -
-first asynchronous crypto layer for Linux kernel 2.6.
+Bartlomiej Zolnierkiewicz wrote:
 
-Acrypto allows to handle crypto requests asynchronously in hardware.
+>>>Index: b/drivers/ide/pci/cmd64x.c
+>>>===================================================================
+>>>--- a/drivers/ide/pci/cmd64x.c
+>>>+++ b/drivers/ide/pci/cmd64x.c
+>>>@@ -695,9 +695,10 @@ static void __devinit init_hwif_cmd64x(i
+>>>      hwif->swdma_mask = 0x07;
+>>>
+>>>      if (dev->device == PCI_DEVICE_ID_CMD_643)
+>>>-             hwif->ultra_mask = 0x80;
+>>>+             hwif->ultra_mask = 0x00;
+>>>      if (dev->device == PCI_DEVICE_ID_CMD_646)
+>>>-             hwif->ultra_mask = (class_rev > 0x04) ? 0x07 : 0x80;
+>>>+             hwif->ultra_mask =
+>>>+                     (class_rev == 0x05 || class_rev == 0x07) ? 0x07 : 0x00;
+>>>      if (dev->device == PCI_DEVICE_ID_CMD_648)
+>>>              hwif->ultra_mask = 0x1f;
 
-Acrypto supports following features:
- * multiple asynchronous crypto device queues
- * crypto session routing (allows to complete single crypto session when
-   several operations (crypto, hmac, anything) are completed)
- * crypto session binding (bind crypto processing to specified device)
- * modular load balancing (one can created load balancer which will get
-   into account for example pid of the calling process)
- * crypto session batching genetically implemented by design (acrypto
-   provides the whole data structure to crypto device, i.e. it is
-   possible to use acrypto as a bridge which routes requests between
-   completely different devices, since it does not differentiate between
-   users, just handles requests)
- * crypto session priority
- * different kinds of crypto operation(RNG, asymmetrical crypto, HMAC and
-   any other)
+>>   Hm, well, this doesn't look consistent with the changes in other drivers.
+>>This driver asks for explicit hwif->cds->ultra_mask initializers, IMO...
+>>   You'd only have to check for PCI-646 revisions < 5 then...
 
-Combined patchset includes:
- * acrypto core
- * IPsec ESP4 port to acrypto
- * dm-crypt port to acrypto
- * OCF to acrypto bridge, which allows to run OCF device
-   drivers with acrypto (for example ixp4xx), requires OCF installed.
+> reworked
 
-Ported crypto drivers and benchmarks can be found on acrypto homepage:
+    Thanks. :-)
 
-http://tservice.net.ru/~s0mbre/old/?section=projects&item=acrypto
+>>>Index: b/drivers/ide/pci/piix.c
+>>>===================================================================
+>>>--- a/drivers/ide/pci/piix.c
+>>>+++ b/drivers/ide/pci/piix.c
+>>>              default:
+>>>                      if (!hwif->udma_four)
+>>>                              hwif->udma_four = piix_cable_detect(hwif);
 
-Changes from previous release:
- * moved to 2.6.20 API (work struct)
- * updated HIFN driver
-   * crypto->acrypto conversation (by Markus Kammerst)
-   * work struct changes
- * bugfixes
+>>   This one also certainly asks for explicit hwif->cds->ultra_mask
+>>initializers... Thus almost all of this switch statement could go away...
+  	
+> Alas doing it now would make the nice DECLARE_PIIX_DEV() macro go away
 
-TODO: 
- * extend software provider to support all types of ciphers
+    Why? Could add another argument to that macro...
 
-2.6.16 - 2.6.19 releases moved to maintenance mode.
+> (=> a lot of duplicated code)... could be done in the future...
 
-Patchset is not attached due to its size (190kb).
+    Yes, of course.
 
-Signed-off-by: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+> Thanks,
+> Bart
 
--- 
-	Evgeniy Polyakov
+MBR, Sergei
