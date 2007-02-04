@@ -1,122 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752325AbXBDNNT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752323AbXBDNXe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752325AbXBDNNT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Feb 2007 08:13:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752327AbXBDNNT
+	id S1752323AbXBDNXe (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Feb 2007 08:23:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752327AbXBDNXe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Feb 2007 08:13:19 -0500
-Received: from ug-out-1314.google.com ([66.249.92.175]:31977 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752326AbXBDNNN (ORCPT
+	Sun, 4 Feb 2007 08:23:34 -0500
+Received: from nf-out-0910.google.com ([64.233.182.188]:21167 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752323AbXBDNXd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Feb 2007 08:13:13 -0500
+	Sun, 4 Feb 2007 08:23:33 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=AvWZ2PW4v5GunpKpPTx+4jso9Xhj5viYEJ2JAy5Ysj1jmM502/rG9sp1ChTv84YHiT8pWWc+ATcGuT4PU7W+1vfCyOnapEQTg6jCy3Us0W+1ylDVKJGqbEyAFz9IIMniaIlPAg5yVryJtZP5qKt5mrEP5NNpOFFbMRVpg4ck1IA=
-Subject: Re: 2.6.20-rc7: known regressions
-From: =?ISO-8859-1?Q?Fr=E9d=E9ric?= Riss <frederic.riss@gmail.com>
-To: Andi Kleen <ak@suse.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Matt Domsch <Matt_Domsch@dell.com>, Adrian Bunk <bunk@stusta.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Eric Van Hensbergen <ericvh@gmail.com>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Neil Brown <neilb@suse.de>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Jeff Garzik <jeff@garzik.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Francois Romieu <romieu@fr.zoreil.com>
-In-Reply-To: <200702031151.17220.ak@suse.de>
-References: <Pine.LNX.4.64.0701302019530.11095@woody.linux-foundation.org>
-	 <200702031058.13830.ak@suse.de> <1170499668.31373.35.camel@funkylaptop>
-	 <200702031151.17220.ak@suse.de>
-Content-Type: text/plain; charset=utf-8
-Date: Sun, 04 Feb 2007 14:13:08 +0100
-Message-Id: <1170594788.5217.4.camel@funkylaptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
-Content-Transfer-Encoding: 8bit
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=YvI7qD2MXyisADmQza4yaYlR2dMfoxnAQAWNLCd87/BpuPop2zkSA6TFJLQt7wvnzY/51VUXBCK+ci/sUfV+LtqJNvFl4od8qstd75T2AvHue5mCqu+J3oeaI4PqK5fuorxrNficCv+TXBajuzbP9Q7qfDWwv8tC1sD873HUFHI=
+Date: Sun, 4 Feb 2007 16:21:15 +0300
+From: "Cyrill V. Gorcunov" <gorcunov@gmail.com>
+To: Helge Deller <deller@gmx.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] HIL small fix
+Message-ID: <20070204132115.GA10026@cvg>
+References: <20070204074758.GA10596@cvg> <200702041255.57835.deller@gmx.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200702041255.57835.deller@gmx.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Le samedi 03 février 2007 à 11:51 +0100, Andi Kleen a écrit :
-> > +
-> > +typedef efilinkage efi_status_t efi_get_time_t (efi_time_t *tm,
-> > +						efi_time_cap_t *tc);
-> 
-> I assume you have double checked it actually works? (i vaguely recall some
-> issues with applying attributes to typedefs). If not you would need
-> to put them to the declarations.
+On Sun, Feb 04, 2007 at 12:55:57PM +0100, Helge Deller wrote:
+| Hello Cyrill,
+| 
+| thanks a lot for the patch.
+| I've applied it to the PARISC-Linux git tree:
+| http://git.parisc-linux.org/?p=linux-2.6.git;a=commit;h=2b1f35b1cdec70c3a0ee2d4174668597355b6041
+| 
+| Your patch made me aware of an unitialized spinlock in the code as well:
+| http://lists.parisc-linux.org/pipermail/parisc-linux-cvs/2007-February/037203.html
+| 
+| Regards,
+| Helge
+| 
+| On Sunday 04 February 2007, Cyrill V. Gorcunov wrote:
+| > This patch adds a checking for errors in hil_keyb_init.
+| > Also some extra spaces are removed.
+| > 
+| > Signed-off-by: Cyrill V. Gorcunov <gorcunov@gmail.com>
+| > 
+| > ---
+| > 
+| >  dvers/input/keyboard/hilkbd.c |  106 +++++++++++++++++++++++----------------
+| >  1 files changed, 62 insertions(+), 44 deletions(-)
 
-OK, I tried the following patch (simply adding asmlinkage to the
-typedefs) with gcc 3.3, 3.4, 4.0 and 4.1. I couldn't easily try older
-compilers.
+Hi, I'm glad to be useful ;)
 
-New patch:
-
-When calling into the EFI firmware, the parameters need to be passed on
-the stack. The recent change to use -mregparm=3 breaks x86 EFI support.
-This patch is needed to allow the new Intel-based Macs to suspend to ram
-(efi.get_time is called during the suspend phase).
-
-Signed-off-by: Frederic Riss <frederic.riss@gmail.com>
----
-diff --git a/include/linux/efi.h b/include/linux/efi.h
-index f8ebd7c..578bc2a 100644
---- a/include/linux/efi.h
-+++ b/include/linux/efi.h
-@@ -157,22 +157,33 @@ typedef struct {
- 	unsigned long reset_system;
- } efi_runtime_services_t;
- 
--typedef efi_status_t efi_get_time_t (efi_time_t *tm, efi_time_cap_t *tc);
--typedef efi_status_t efi_set_time_t (efi_time_t *tm);
--typedef efi_status_t efi_get_wakeup_time_t (efi_bool_t *enabled, efi_bool_t *pending,
--					    efi_time_t *tm);
--typedef efi_status_t efi_set_wakeup_time_t (efi_bool_t enabled, efi_time_t *tm);
--typedef efi_status_t efi_get_variable_t (efi_char16_t *name, efi_guid_t *vendor, u32 *attr,
--					 unsigned long *data_size, void *data);
--typedef efi_status_t efi_get_next_variable_t (unsigned long *name_size, efi_char16_t *name,
--					      efi_guid_t *vendor);
--typedef efi_status_t efi_set_variable_t (efi_char16_t *name, efi_guid_t *vendor, 
--					 unsigned long attr, unsigned long data_size, 
--					 void *data);
--typedef efi_status_t efi_get_next_high_mono_count_t (u32 *count);
--typedef void efi_reset_system_t (int reset_type, efi_status_t status,
--				 unsigned long data_size, efi_char16_t *data);
--typedef efi_status_t efi_set_virtual_address_map_t (unsigned long memory_map_size,
-+typedef asmlinkage efi_status_t efi_get_time_t (efi_time_t *tm,
-+						efi_time_cap_t *tc);
-+typedef asmlinkage efi_status_t efi_set_time_t (efi_time_t *tm);
-+typedef asmlinkage efi_status_t efi_get_wakeup_time_t (efi_bool_t *enabled, 
-+						       efi_bool_t *pending,
-+						       efi_time_t *tm);
-+typedef asmlinkage efi_status_t efi_set_wakeup_time_t (efi_bool_t enabled,
-+						       efi_time_t *tm);
-+typedef asmlinkage efi_status_t efi_get_variable_t (efi_char16_t *name,
-+						    efi_guid_t *vendor,
-+						    u32 *attr,
-+						    unsigned long *data_size,
-+						    void *data);
-+typedef asmlinkage efi_status_t efi_get_next_variable_t (unsigned long *name_sz,
-+							 efi_char16_t *name,
-+							 efi_guid_t *vendor);
-+typedef asmlinkage efi_status_t efi_set_variable_t (efi_char16_t *name,
-+						    efi_guid_t *vendor,
-+						    unsigned long attr,
-+						    unsigned long data_size,
-+						    void *data);
-+typedef asmlinkage efi_status_t efi_get_next_high_mono_count_t (u32 *count);
-+typedef asmlinkage void efi_reset_system_t (int reset_type, 
-+					    efi_status_t status,
-+					    unsigned long data_size,
-+					    efi_char16_t *data);
-+typedef asmlinkage efi_status_t efi_set_virtual_address_map_t (unsigned long memory_map_size,
- 						unsigned long descriptor_size,
- 						u32 descriptor_version,
- 						efi_memory_desc_t *virtual_map);
-
+		Cyrill
 
