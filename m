@@ -1,62 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752064AbXBDEpO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752076AbXBDFMg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752064AbXBDEpO (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Feb 2007 23:45:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752066AbXBDEpO
+	id S1752076AbXBDFMg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Feb 2007 00:12:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752072AbXBDFMf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Feb 2007 23:45:14 -0500
-Received: from ms-smtp-04.nyroc.rr.com ([24.24.2.58]:44137 "EHLO
-	ms-smtp-04.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752056AbXBDEpM (ORCPT
+	Sun, 4 Feb 2007 00:12:35 -0500
+Received: from x35.xmailserver.org ([64.71.152.41]:3200 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752076AbXBDFMf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Feb 2007 23:45:12 -0500
-Message-ID: <09ba01c74817$1ae12980$84163e05@kroptech.com>
-From: "Adam Kropelin" <akropel1@rochester.rr.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: "Auke Kok" <auke-jan.h.kok@intel.com>, "Adrian Bunk" <bunk@stusta.de>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       <jgarzik@pobox.com>, <alan@lxorguk.ukuu.org.uk>,
-       "Allen Parker" <parker@isohunt.com>, <jesse.brandeburg@intel.com>,
-       <gregkh@suse.de>, <linux-pci@atrey.karlin.mff.cuni.cz>,
-       <netdev@vger.kernel.org>
-References: <Pine.LNX.4.64.0701302019530.11095@woody.linux-foundation.org> <20070203004447.GJ3754@stusta.de> <45C42669.2010105@intel.com> <m1k5yz3cxy.fsf@ebiederm.dsl.xmission.com> <089b01c747be$0ca22620$84163e05@kroptech.com> <45C4F3F1.6060500@intel.com> <m1ejp70wu0.fsf@ebiederm.dsl.xmission.com> <098001c747e9$d8931b60$84163e05@kroptech.com> <m1ps8qzpte.fsf@ebiederm.dsl.xmission.com>
-Subject: Re: 2.6.20-rc7: known regressions (v2) (part 1)
-Date: Sat, 3 Feb 2007 23:44:07 -0500
+	Sun, 4 Feb 2007 00:12:35 -0500
+X-AuthUser: davidel@xmailserver.org
+Date: Sat, 3 Feb 2007 21:12:27 -0800 (PST)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Zach Brown <zach.brown@oracle.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-aio@kvack.org, Suparna Bhattacharya <suparna@in.ibm.com>,
+       Benjamin LaHaise <bcrl@kvack.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH 2 of 4] Introduce i386 fibril scheduling
+In-Reply-To: <df7bc026d50ec5bbdd8e.1170193183@tetsuo.zabbo.net>
+Message-ID: <Pine.LNX.4.64.0702032112220.16929@alien.or.mcafeemobile.com>
+References: <df7bc026d50ec5bbdd8e.1170193183@tetsuo.zabbo.net>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-Content-Type: text/plain;
-	format=flowed;
-	charset="iso-8859-1";
-	reply-type=original
-Content-Transfer-Encoding: 7bit
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook Express 6.00.2900.3028
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
-> "Adam Kropelin" <akropel1@rochester.rr.com> writes:
->
->>> Can I get the corresponding lspci -xxx output.  I suspect the BIOS
->>> did not program the hypertransport MSI mapping capabilities
->>> correctly. All it has to do is set the enable but still,
->>> occasionally BIOS writers miss the most amazing things.
->>
->> Here you go. This is from 2.6.20-rc7.
->
-> Thanks.  Conclusion.  I could not find bit 16 (the enable bit) set in
-> any of your hypertransport msi mapping capabilities.
->
-> So MSI interrupts won't work until someone enables your chipset
-> to transform them into hypertransport interrupts.
+On Tue, 30 Jan 2007, Zach Brown wrote:
 
-Naive question... Can the pci layer (or e1000) detect that MSI is not 
-enabled in the hardware and avoid using it in that case? With the number 
-of MSI problems showing up it seems risky to assume it's usable on any 
-given platform without some sort of sanity check.
+> +	/* 
+> +	 * XXX The idea is to copy all but the actual call stack.  Obviously
+> +	 * this is wildly arch-specific and belongs abstracted out.
+> +	 */
+> +	*next->ti = *ti;
+> +	*thread_info_pt_regs(next->ti) = *thread_info_pt_regs(ti);
 
---Adam
+arch copy_thread_info()?
+
+
+
+> +	current->per_call = next->per_call;
+
+Pointer instead of structure copy? percall_clone()/percall_free()?
+
+
+
+> +	/* always switch to a runnable fibril if we aren't being preempted */
+> +	if (unlikely(!(preempt_count() & PREEMPT_ACTIVE) &&
+> +		     !list_empty(&prev->runnable_fibrils))) {
+> +		schedule_fibril(prev);
+> +		/* 
+> +		 * finish_fibril_switch() drops the rq lock and enables
+> +		 * premption, but the popfl disables interrupts again.  Watch
+> +		 * me learn how context switch locking works before your very
+> +		 * eyes!  XXX This will need to be fixed up by throwing
+> +		 * together something like the prepare_lock_switch() path the
+> +		 * scheduler does.  Guidance appreciated!
+> +		 */
+> +		local_irq_enable();
+> +		return;
+> +	}
+
+Yes, please (prepare/finish) ... ;)
+
+
+
+- Davide
+
 
