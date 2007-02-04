@@ -1,61 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752035AbXBDE1m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752053AbXBDEjz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752035AbXBDE1m (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Feb 2007 23:27:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752037AbXBDE1m
+	id S1752053AbXBDEjz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Feb 2007 23:39:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752056AbXBDEjy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Feb 2007 23:27:42 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:36874 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752035AbXBDE1l (ORCPT
+	Sat, 3 Feb 2007 23:39:54 -0500
+Received: from pool-71-111-65-226.ptldor.dsl-w.verizon.net ([71.111.65.226]:5377
+	"EHLO IBM-8EC8B5596CA.beaverton.ibm.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752053AbXBDEjy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Feb 2007 23:27:41 -0500
-Date: Sat, 3 Feb 2007 20:19:14 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Jeff Dike <jdike@addtoit.com>
-Cc: Chris Wright <chrisw@sous-sol.org>, linux-kernel@vger.kernel.org,
-       stable@kernel.org, akpm@osdl.org, Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Blaisorblade <blaisorblade@yahoo.it>, Pravin <shindepravin@gmail.com>,
-       uml@flonatel.org
-Subject: Re: [patch 25/59] Fix UML on non-standard VM split hosts
-Message-Id: <20070203201914.d67c80cf.randy.dunlap@oracle.com>
-In-Reply-To: <20070204031152.GA6376@ccure.user-mode-linux.org>
-References: <20070203023504.435051000@sous-sol.org>
-	<20070203024138.485584000@sous-sol.org>
-	<20070203170654.fd0e1d7d.randy.dunlap@oracle.com>
-	<20070204031152.GA6376@ccure.user-mode-linux.org>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.0 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+	Sat, 3 Feb 2007 23:39:54 -0500
+Date: Sat, 3 Feb 2007 20:39:29 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Andrew Morton <akpm@osdl.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Ingo Molnar <mingo@elte.hu>, dipankar@in.ibm.com,
+       Gautham Shenoy <ego@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org
+Subject: Re: Fw: Re: [mm PATCH 4/6] RCU: (now) CPU hotplug
+Message-ID: <20070204043929.GG5647@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20070126112837.059502fc.akpm@osdl.org> <20070130073340.GC30160@elte.hu> <20070130160244.GB2092@linux.vnet.ibm.com> <200701301744.48601.rjw@sisk.pl> <20070130102718.f03f37d8.akpm@osdl.org> <20070130194940.GI2092@linux.vnet.ibm.com> <20070131231017.GA2995@linux.vnet.ibm.com> <20070203001745.GB1712@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070203001745.GB1712@elf.ucw.cz>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 3 Feb 2007 22:11:52 -0500 Jeff Dike wrote:
-
-> On Sat, Feb 03, 2007 at 05:06:54PM -0800, Randy Dunlap wrote:
-> > The reformatting looks bad to me.  Kconfig help text should be
-> > indented consistently by 2 spaces under "help".
-> > 
-> > This can be fixed later if you don't want to drop it from -stable.
+On Sat, Feb 03, 2007 at 01:17:45AM +0100, Pavel Machek wrote:
+> Hi!
 > 
-> The formatting actually broke the Kconfig option, which was noticed by
-> Al Viro, who sent a patch, which I forwarded to -stable.
+> > > Part of what I need to look at.  ;-)
+> > 
+> > OK.  This just might be feasible.  That said, there is a lot of code
+> > containing PF_NOFREEZE that I am not familiar with.  That said, here
+> > are my thoughts -- this is in addition to the changes to freeze_processes()
+> > and thaw_processes() called out earlier.
+> > 
+> > Thoughts?
+> 
+> Looks ok to me.
 
-I think that's different lines of text.  What is currently in
-http://www.kernel.org/pub/linux/kernel/people/chrisw/stable/patch-2.6.19.3-rc1.{gz,bz2}
-still looks like is contains bad indentation.
+Cool!
 
----
-~Randy
+> > o	Introduce a mutex to prevent overlapping freezes -- or find
+> > 	out what the heck prevents them at present!!!  (I don't see
+> > 	anything.)  
+> 
+> swsusp is protected by some giant "doing suspend" mutex. Other users
+> may be buggy :-).
+
+Ah!  Any reason not to have locking at the level of the
+freeze_processes()/thaw_processes() functions?
+
+> > o	Replace all the "current->flags |= PF_NOFREEZE" statements with
+> > 	"exempt_from_freeze(current, int pfe)" or some such.  This would
+> > 	set the flags bit and also store the pfe argument into the pf_exempt
+> > 	field.
+> 
+> I'd suggest step 0, remove as many PF_NOFREEZE as possible... ok, you
+> seem to be doing that one.
+
+Well, in my little corner of the kernel, anyway.  ;-)
+
+> > o	init/do_mounts_initrd.c line 57 handle_initrd().
+> > 	This looks to be short term anyway, so OK to leave.
+> > 	But does kernel_execve() clear PF_NOFREEZE?
+> > 
+> > 	But it should be OK to freeze the init process when doing CPU
+> > 	hotplug ops, right?
+> 
+> That looks bogus. If it is short term, it can as well live _without_
+> PF_NOFREEZE. Noone should suspend system at that stage, right?
+
+I agree that any attempt to freeze that early in boot would be
+at best an act of extreme bravery!
+
+> > o	kernel/softlockup.c line 88 watchdog().  Well, we wouldn't
+> > 	want false alarms when freezing for hotplug.  Perhaps
+> > 	temporarily disabling timestamp checking while doing hotplug
+> > 	would do the trick.  But if hotplug takes the time required
+> > 	to trigger softlockup (seconds!), we are broken anyway.
+> > 	The fix would be to speed up the freezing process.
+> 
+> Freezing _can_ take seconds. We do sync in between freezing userspace
+> and kernel, for example. We avoid freezing in some difficult situations
+> by waiting for I/O to complete....
+
+OK.  Point taken.
+
+> > o	net/bluetooth/bnep/core.c line 476 bnep_session().  Suspending
+> > 	to a bluetooth device???  These guys got -hair-!!!  I bet this
+> > 	one can tolerate being frozen for hotplugging CPUs -- though
+> > 	I could imagine the bluetooth protocol needing some TLC after
+> > 	such an event.  But I don't know enough about bluetooth to do
+> > 	more than raise the possibility.
+> 
+> Should be fixed. Someone was probably lazy.
+> 
+> > o	net/bluetooth/cmtp/core.c line 290 cmtp_session().  Same as
+> > 	for bnep_session(), at least as far as I can tell.
+> > 
+> > o	net/bluetooth/hidp/core.c line 476 hidp_session().  Same as
+> > 	for bnep_session(), AFAICT.
+> > 
+> > o	net/bluetooth/rfcomm/core.c line 1940 rfcomm_run(). Same as
+> > 	for bnep_session(), AFAICT.
+> 
+> Someone was definitely lazy :-).
+> 								Pavel
+
+OK, so we should think in terms of moving these to try_to_freeze(),
+then.
+
+						Thanx, Paul
