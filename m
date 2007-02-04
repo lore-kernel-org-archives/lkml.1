@@ -1,68 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751732AbXBDAVe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751771AbXBDAXE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751732AbXBDAVe (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Feb 2007 19:21:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751771AbXBDAVe
+	id S1751771AbXBDAXE (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Feb 2007 19:23:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750741AbXBDAXE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Feb 2007 19:21:34 -0500
-Received: from sj-iport-5.cisco.com ([171.68.10.87]:1334 "EHLO
-	sj-iport-5.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751732AbXBDAVd (ORCPT
+	Sat, 3 Feb 2007 19:23:04 -0500
+Received: from gockel.physik3.uni-rostock.de ([139.30.44.16]:18613 "EHLO
+	gockel.physik3.uni-rostock.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751771AbXBDAXD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Feb 2007 19:21:33 -0500
-X-IronPort-AV: i="4.13,277,1167638400"; 
-   d="scan'208"; a="385480744:sNHT44995420"
+	Sat, 3 Feb 2007 19:23:03 -0500
+Date: Sun, 4 Feb 2007 01:22:59 +0100 (CET)
+From: Tim Schmielau <tim@physik3.uni-rostock.de>
 To: "Ahmed S. Darwish" <darwish.07@gmail.com>
-Cc: Richard Knutsson <ricknu-0@student.ltu.se>, linux-kernel@vger.kernel.org,
+cc: Richard Knutsson <ricknu-0@student.ltu.se>, linux-kernel@vger.kernel.org,
        randy.dunlap@oracle.com
 Subject: Re: A CodingStyle suggestion
-X-Message-Flag: Warning: May contain useful information
+In-Reply-To: <20070204000532.GA20721@Ahmed>
+Message-ID: <Pine.LNX.4.63.0702040120001.5396@gockel.physik3.uni-rostock.de>
 References: <20070203215848.GA10440@Ahmed> <45C51310.6070304@student.ltu.se>
-	<20070204000532.GA20721@Ahmed>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Sat, 03 Feb 2007 16:21:18 -0800
-In-Reply-To: <20070204000532.GA20721@Ahmed> (Ahmed S. Darwish's message of "Sun, 4 Feb 2007 02:05:32 +0200")
-Message-ID: <aday7neydq9.fsf@cisco.com>
-User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.19 (linux)
+ <20070204000532.GA20721@Ahmed>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 04 Feb 2007 00:21:21.0375 (UTC) FILETIME=[657DCEF0:01C747F2]
-Authentication-Results: sj-dkim-6; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim6002 verified; ); 
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > Good catch :). A small grep of `access_ok' reveals that it's always used in the 
- > form of:
- > if (!access_ok()) { .. }
- > 
- > I can conclude that verbal/imperative methods like `kmalloc, add_work' be 
- > checked as:
- > ret = do_work();
- > if (ret) { ... }
- > and predicate methods like `acess_ok, pci_dev_present' be checked like:
- > if (!access_ok) { ... }
- > if (pci_dev_present) { ...}
- > 
- > Any comments ?
+On Sun, 4 Feb 2007, Ahmed S. Darwish wrote:
+> On Sat, Feb 03, 2007 at 11:56:16PM +0100, Richard Knutsson wrote:
+> > So:
+> > 
+> > if (is_true()) {
+> > 	/* do something */
+> > }
+> > 
+> > is alright then? If so, I agree, but please make it real clear in the 
+> > document ;)
+> 
+> Good catch :). A small grep of `access_ok' reveals that it's always used in the 
+> form of:
+> if (!access_ok()) { .. }
+> 
+> I can conclude that verbal/imperative methods like `kmalloc, add_work' be 
+> checked as:
+> ret = do_work();
+> if (ret) { ... }
+> and predicate methods like `acess_ok, pci_dev_present' be checked like:
+> if (!access_ok) { ... }
+> if (pci_dev_present) { ...}
 
-I don't think that's really the distinction that matters.  I think
-really the issue is that assignment within an if is hard to read, so
+Maybe say that any functions with a side effect should be called on a line 
+by themselves?
 
-	ret = foo(a, b);
-        if (ret) { ... }
-
-is clearly preferred to
-
-	if ((ret = foo(a,b))) { ... }
-
-However, in my opinion something like
-
-	if (foo(a,b)) { ... }
-
-if perfectly fine if the return value of foo is not needed anywhere
-else.  In other words, there's no sense introducing a temporary
-variable to hold the return value if you're never going to do anything
-with it other than check it on the next line.
-
- - R.
+Tim
