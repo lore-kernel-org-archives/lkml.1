@@ -1,100 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752254AbXBDKbK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752262AbXBDKg3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752254AbXBDKbK (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Feb 2007 05:31:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752258AbXBDKbK
+	id S1752262AbXBDKg3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Feb 2007 05:36:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752265AbXBDKg3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Feb 2007 05:31:10 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:36037 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752196AbXBDKbJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Feb 2007 05:31:09 -0500
-Date: Sun, 4 Feb 2007 02:30:55 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Linux Filesystems <linux-fsdevel@vger.kernel.org>,
-       Linux Memory Management <linux-mm@kvack.org>
-Subject: Re: [patch 9/9] mm: fix pagecache write deadlocks
-Message-Id: <20070204023055.2583fd65.akpm@linux-foundation.org>
-In-Reply-To: <20070204101529.GA22004@wotan.suse.de>
-References: <20070204063707.23659.20741.sendpatchset@linux.site>
-	<20070204063833.23659.55105.sendpatchset@linux.site>
-	<20070204014445.88e6c8c7.akpm@linux-foundation.org>
-	<20070204101529.GA22004@wotan.suse.de>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 4 Feb 2007 05:36:29 -0500
+Received: from static-ip-62-75-166-246.inaddr.intergenia.de ([62.75.166.246]:47865
+	"EHLO vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752258AbXBDKg2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Feb 2007 05:36:28 -0500
+From: Michael Buesch <mb@bu3sch.de>
+To: bcm43xx-dev@lists.berlios.de
+Subject: Re: Free Linux Driver Development!
+Date: Sun, 4 Feb 2007 11:36:14 +0100
+User-Agent: KMail/1.9.5
+Cc: Larry Finger <Larry.Finger@lwfinger.net>,
+       LKML <linux-kernel@vger.kernel.org>
+References: <45C57C93.2020808@lwfinger.net>
+In-Reply-To: <45C57C93.2020808@lwfinger.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200702041136.15083.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 4 Feb 2007 11:15:29 +0100 Nick Piggin <npiggin@suse.de> wrote:
+On Sunday 04 February 2007 07:26, Larry Finger wrote:
+> What is true is that none of the OFDM rates work 
+> because of some unknown bug, probably in initialization. As a result, we are limited to a maximum
+> data rate of 11Mbs, but it is still running in 802.11g mode!
 
-> On Sun, Feb 04, 2007 at 01:44:45AM -0800, Andrew Morton wrote:
-> > On Sun,  4 Feb 2007 09:51:07 +0100 (CET) Nick Piggin <npiggin@suse.de> wrote:
-> > 
-> > > 2.  If we find the destination page is non uptodate, unlock it (this could be
-> > >     made slightly more optimal), then find and pin the source page with
-> > >     get_user_pages. Relock the destination page and continue with the copy.
-> > >     However, instead of a usercopy (which might take a fault), copy the data
-> > >     via the kernel address space.
-> > 
-> > argh.  We just can't go adding all this gunk into the write() path. 
-> > 
-> > mmap_sem, a full pte-walk, taking of pte-page locks, etc.  For every page. 
-> > Even single-process write() will suffer, let along multithreaded stuff,
-> > where mmap_sem contention may be the bigger problem.
-> 
-> The write path is broken. I prefer my kernels slow, than buggy.
+That's also not true for me. I really don't understand why people keep saying
+that rates above 11MBit don't work, because they do (and always did) on all
+of my 4306 cards.
+Sure, rates above 11M don't work for 4318 and similiar, but for those cards
+not even 11M works, so one has to use 1M or something.
 
-That won't fly.
+And there is absolutely no limit to 11MBit in the code.
 
-> > There's a build error in filemap_xip.c btw.
-
-?
-
-> > 
-> > We need to think different.
-> > 
-> > What happened to the idea of doing an atomic copy into the non-uptodate
-> > page and handling it somehow?
-> 
-> That was my second idea.
-
-Coulda sworn it was mine ;) I thought you ended up deciding it wasn't
-practical because of the games we needed to play with ->commit_write.
-
-> I didn't get any feedback on that patchset
-> except to try this method, so I assume everyone hated it.
-> 
-> I actually liked it, because it didn't have to do the writev
-> segment-at-a-time for !uptodate pages like this one does. Considering
-> this code gets called from mm-less contexts, maybe I'll have to go back
-> to this approach.
-
-OK.
-
-> > Another option might be to effectively pin the whole mm during the copy:
-> > 
-> > 	down_read(&current->mm->unpaging_lock);
-> > 	get_user(addr);		/* Fault the page in */
-> > 	...
-> > 	copy_from_user()
-> > 	up_read(&current->mm->unpaging_lock);
-> > 
-> > then, anyone who wants to unmap pages from this mm requires
-> > write_lock(unpaging_lock).  So we know the results of that get_user()
-> > cannot be undone.
-> 
-> Fugly.
-
-I invited you to think different - don't just fixate on one random
-tossed-out-there suggestion.
-
-> but you introduce the theoretical memory deadlock
-> where a task cannot reclaim its own memory.
-
-Nah, that'll never happen - both pages are already allocated.
-
-It's better than taking mmap_sem and walking pagetables...
+-- 
+Greetings Michael.
