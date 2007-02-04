@@ -1,56 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752015AbXBDEPu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752027AbXBDEQy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752015AbXBDEPu (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Feb 2007 23:15:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752018AbXBDEPu
+	id S1752027AbXBDEQy (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Feb 2007 23:16:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752024AbXBDEQy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Feb 2007 23:15:50 -0500
-Received: from pool-71-111-65-226.ptldor.dsl-w.verizon.net ([71.111.65.226]:4735
-	"EHLO IBM-8EC8B5596CA.beaverton.ibm.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752015AbXBDEPt (ORCPT
+	Sat, 3 Feb 2007 23:16:54 -0500
+Received: from tomts40.bellnexxia.net ([209.226.175.97]:50366 "EHLO
+	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752036AbXBDEQx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Feb 2007 23:15:49 -0500
-Date: Sat, 3 Feb 2007 20:15:24 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: oleg@tv-sign.ru, akpm@linux-foundation.org, johnstul@us.ibm.com,
-       mingo@elte.hu, tglx@linutronix.de, zippel@linux-m68k.org
-Subject: [PATCH] POSIX timers RCU optimization fix for clock_gettime
-Message-ID: <20070204041524.GA6582@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
+	Sat, 3 Feb 2007 23:16:53 -0500
+Date: Sat, 3 Feb 2007 23:16:51 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: linux-mips@linux-mips.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] ifdef missing in arch/mips/pmc-sierra/yosemite/setup.c
+Message-ID: <20070204041651.GA8732@Krystal>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.9i
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.4.34-grsec (i686)
+X-Uptime: 23:15:02 up 1 day, 18:23,  2 users,  load average: 1.18, 1.05, 1.01
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fixes an exit()/posix_cpu_clock_get() race spotted by Oleg Nesterov.
-Solution is to move the p->signal check under the tasklist_lock.
+ifdef missing in arch/mips/pmc-sierra/yosemite/setup.c
 
-Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
----
+early_serial_setup is only defined when CONFIG_SERIAL_8250 is set.
+Applies on 2.6.20-rc7.
 
- posix-cpu-timers.c |    9 ++++++---
- 1 file changed, 6 insertions(+), 3 deletions(-)
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 
-diff -urpNa -X dontdiff linux-2.6.20-rc6-clockrcu/kernel/posix-cpu-timers.c linux-2.6.20-rc6-clockrcu-fixes/kernel/posix-cpu-timers.c
---- linux-2.6.20-rc6-clockrcu/kernel/posix-cpu-timers.c	2007-02-01 13:03:57.000000000 -0800
-+++ linux-2.6.20-rc6-clockrcu-fixes/kernel/posix-cpu-timers.c	2007-02-03 16:53:41.000000000 -0800
-@@ -312,10 +312,13 @@ int posix_cpu_clock_get(const clockid_t 
- 					error = cpu_clock_sample(which_clock,
- 								 p, &rtn);
- 				}
--			} else if (p->tgid == pid && p->signal) {
-+			} else {
- 				read_lock(&tasklist_lock);
--				error = cpu_clock_sample_group(which_clock,
--							       p, &rtn);
-+				if (p->tgid == pid && p->signal) {
-+					error =
-+					    cpu_clock_sample_group(which_clock,
-+							           p, &rtn);
-+				}
- 				read_unlock(&tasklist_lock);
- 			}
- 		}
+--- a/arch/mips/pmc-sierra/yosemite/setup.c
++++ b/arch/mips/pmc-sierra/yosemite/setup.c
+@@ -171,6 +171,7 @@ static void __init py_map_ocd(void)
+ 
+ static void __init py_uart_setup(void)
+ {
++#ifdef CONFIG_SERIAL_8250
+ 	struct uart_port up;
+ 
+ 	/*
+@@ -188,6 +189,7 @@ static void __init py_uart_setup(void)
+ 
+ 	if (early_serial_setup(&up))
+ 		printk(KERN_ERR "Early serial init of port 0 failed\n");
++#endif //CONFIG_SERIAL_8250
+ }
+ 
+ static void __init py_rtc_setup(void)
+-- 
+OpenPGP public key:              http://krystal.dyndns.org:8080/key/compudj.gpg
+Key fingerprint:     8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68 
