@@ -1,49 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752003AbXBDDXL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751998AbXBDDYI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752003AbXBDDXL (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Feb 2007 22:23:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752009AbXBDDXL
+	id S1751998AbXBDDYI (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Feb 2007 22:24:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752011AbXBDDYI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Feb 2007 22:23:11 -0500
-Received: from [198.99.130.12] ([198.99.130.12]:47939 "EHLO
-	saraswathi.solana.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1752003AbXBDDXK (ORCPT
+	Sat, 3 Feb 2007 22:24:08 -0500
+Received: from firewall.rowland.harvard.edu ([140.247.233.35]:64492 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with SMTP id S1751998AbXBDDYH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Feb 2007 22:23:10 -0500
-Date: Sat, 3 Feb 2007 22:11:52 -0500
-From: Jeff Dike <jdike@addtoit.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Chris Wright <chrisw@sous-sol.org>, linux-kernel@vger.kernel.org,
-       stable@kernel.org, akpm@osdl.org, Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Jeff Dike <jdike@addtoit.com>, Blaisorblade <blaisorblade@yahoo.it>,
-       Pravin <shindepravin@gmail.com>, uml@flonatel.org
-Subject: Re: [patch 25/59] Fix UML on non-standard VM split hosts
-Message-ID: <20070204031152.GA6376@ccure.user-mode-linux.org>
-References: <20070203023504.435051000@sous-sol.org> <20070203024138.485584000@sous-sol.org> <20070203170654.fd0e1d7d.randy.dunlap@oracle.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070203170654.fd0e1d7d.randy.dunlap@oracle.com>
-User-Agent: Mutt/1.4.2.1i
+	Sat, 3 Feb 2007 22:24:07 -0500
+Date: Sat, 3 Feb 2007 22:24:04 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+cc: Oleg Nesterov <oleg@tv-sign.ru>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Ingo Molnar <mingo@elte.hu>, Christoph Hellwig <hch@infradead.org>,
+       Andrew Morton <akpm@osdl.org>, <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 3/7] barrier: a scalable synchonisation barrier
+In-Reply-To: <20070204002338.GB5647@linux.vnet.ibm.com>
+Message-ID: <Pine.LNX.4.44L0.0702032220560.17500-100000@netrider.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 03, 2007 at 05:06:54PM -0800, Randy Dunlap wrote:
-> The reformatting looks bad to me.  Kconfig help text should be
-> indented consistently by 2 spaces under "help".
+On Sat, 3 Feb 2007, Paul E. McKenney wrote:
+
+> > And another note: this all assumes that STORE-MB-LOAD works "correctly", yes?
+> > We have other code which relies on that, should not be a problem.
 > 
-> This can be fixed later if you don't want to drop it from -stable.
+> We have been working with Doug Lea of SUNY Oswego, Sebatian Burckhardt of
+> University of Pennsylvania, and Vijay Saraswat of IBM Research towards
+> a "universal memory model" that accommodates all machines.  Currently,
+> it does in fact handle store-mb-load the way we all want, thankfully!
 
-The formatting actually broke the Kconfig option, which was noticed by
-Al Viro, who sent a patch, which I forwarded to -stable.
+We should add that many places in the kernel do depend on proper behavior 
+for this data access pattern.  So whatever "universal memory model" we end 
+up with, it had better handle the pattern correctly if Linux is to support 
+it.
 
-				Jeff
+It's interesting to note, however, that this does exclude simple MESI.
 
--- 
-Work email - jdike at linux dot intel dot com
+Alan Stern
+
