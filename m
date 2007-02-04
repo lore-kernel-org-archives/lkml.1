@@ -1,52 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752016AbXBDD4H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752015AbXBDEPu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752016AbXBDD4H (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Feb 2007 22:56:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752021AbXBDD4H
+	id S1752015AbXBDEPu (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Feb 2007 23:15:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752018AbXBDEPu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Feb 2007 22:56:07 -0500
-Received: from ns2.suse.de ([195.135.220.15]:60762 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752016AbXBDD4F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Feb 2007 22:56:05 -0500
-Date: Sun, 4 Feb 2007 04:55:49 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: =?iso-8859-1?Q?J=F6rn?= Engel <joern@lazybastard.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Linux Filesystems <linux-fsdevel@vger.kernel.org>,
-       Linux Memory Management <linux-mm@kvack.org>
-Subject: Re: [patch 1/9] fs: libfs buffered write leak fix
-Message-ID: <20070204035549.GA3502@wotan.suse.de>
-References: <20070129081905.23584.97878.sendpatchset@linux.site> <20070129081914.23584.23886.sendpatchset@linux.site> <20070202155236.dae54aa2.akpm@linux-foundation.org> <20070203013316.GB27300@wotan.suse.de> <20070203174947.GA2656@lazybastard.org>
+	Sat, 3 Feb 2007 23:15:50 -0500
+Received: from pool-71-111-65-226.ptldor.dsl-w.verizon.net ([71.111.65.226]:4735
+	"EHLO IBM-8EC8B5596CA.beaverton.ibm.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752015AbXBDEPt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Feb 2007 23:15:49 -0500
+Date: Sat, 3 Feb 2007 20:15:24 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: oleg@tv-sign.ru, akpm@linux-foundation.org, johnstul@us.ibm.com,
+       mingo@elte.hu, tglx@linutronix.de, zippel@linux-m68k.org
+Subject: [PATCH] POSIX timers RCU optimization fix for clock_gettime
+Message-ID: <20070204041524.GA6582@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070203174947.GA2656@lazybastard.org>
 User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 03, 2007 at 05:49:47PM +0000, Jörn Engel wrote:
-> On Sat, 3 February 2007 02:33:16 +0100, Nick Piggin wrote:
-> > 
-> > If doing a partial-write, simply clear the whole page and set it uptodate
-> > (don't need to get too tricky).
-> 
-> That sounds just like a bug I recently fixed in logfs.  prepare_write()
-> would clear the page, commit_write() would write the whole page.  Bug
-> can be reproduced with a simple testcate:
-> 
-> echo -n foo > foo
-> echo -n bar >> foo
-> cat foo
-> 
-> With the bug, the second write will replace "foo" with "\0\0\0" and
-> cat will return "bar".  Doing a read instead of clearing the page will
-> return "foobar", as would be expected.
-> 
-> Can you hit the same bug with your patch or did I miss something?
+Fixes an exit()/posix_cpu_clock_get() race spotted by Oleg Nesterov.
+Solution is to move the p->signal check under the tasklist_lock.
 
-Yes, the page is only cleared if it is not uptodate. This is fine
-for the simple filesystems.
+Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+---
+
+ posix-cpu-timers.c |    9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
+
+diff -urpNa -X dontdiff linux-2.6.20-rc6-clockrcu/kernel/posix-cpu-timers.c linux-2.6.20-rc6-clockrcu-fixes/kernel/posix-cpu-timers.c
+--- linux-2.6.20-rc6-clockrcu/kernel/posix-cpu-timers.c	2007-02-01 13:03:57.000000000 -0800
++++ linux-2.6.20-rc6-clockrcu-fixes/kernel/posix-cpu-timers.c	2007-02-03 16:53:41.000000000 -0800
+@@ -312,10 +312,13 @@ int posix_cpu_clock_get(const clockid_t 
+ 					error = cpu_clock_sample(which_clock,
+ 								 p, &rtn);
+ 				}
+-			} else if (p->tgid == pid && p->signal) {
++			} else {
+ 				read_lock(&tasklist_lock);
+-				error = cpu_clock_sample_group(which_clock,
+-							       p, &rtn);
++				if (p->tgid == pid && p->signal) {
++					error =
++					    cpu_clock_sample_group(which_clock,
++							           p, &rtn);
++				}
+ 				read_unlock(&tasklist_lock);
+ 			}
+ 		}
