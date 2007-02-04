@@ -1,49 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752463AbXBDRjM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752455AbXBDRif@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752463AbXBDRjM (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Feb 2007 12:39:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752465AbXBDRjM
+	id S1752455AbXBDRif (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Feb 2007 12:38:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752461AbXBDRif
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Feb 2007 12:39:12 -0500
-Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:31655 "EHLO
-	pd4mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752463AbXBDRjK (ORCPT
+	Sun, 4 Feb 2007 12:38:35 -0500
+Received: from rgminet01.oracle.com ([148.87.113.118]:54161 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752455AbXBDRie (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Feb 2007 12:39:10 -0500
-Date: Sun, 04 Feb 2007 11:38:04 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: More pata_ stuff
-In-reply-to: <fa.0NlWYh2G2PI5gqX24xfe+268eQY@ifi.uio.no>
-To: Patrick Ale <patrick.ale@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Message-id: <45C619FC.3040804@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.0NlWYh2G2PI5gqX24xfe+268eQY@ifi.uio.no>
-User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
+	Sun, 4 Feb 2007 12:38:34 -0500
+Date: Sun, 4 Feb 2007 09:30:32 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Dave Jones <davej@redhat.com>
+Cc: Chris Wright <chrisw@sous-sol.org>, linux-kernel@vger.kernel.org,
+       stable@kernel.org, "Theodore Ts'o" <tytso@mit.edu>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Randy Dunlap <rdunlap@xenotime.net>,
+       Michael Krufky <mkrufky@linuxtv.org>,
+       Chuck Wolber <chuckw@quantumlinux.com>, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org, alan@lxorguk.ukuu.org.uk
+Subject: Re: [stable] [patch 00/59] -stable review
+Message-Id: <20070204093032.730f4598.randy.dunlap@oracle.com>
+In-Reply-To: <20070204133623.GA25817@redhat.com>
+References: <20070203023504.435051000@sous-sol.org>
+	<20070203025913.GL10475@sequoia.sous-sol.org>
+	<20070203220828.f095bb91.randy.dunlap@oracle.com>
+	<20070204133623.GA25817@redhat.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.0 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Patrick Ale wrote:
-> Hi,
-> 
-> I tried to use the new pata drivers on a Dual PII-400Mhz with the
-> Intel PIIX controller.
-> 
-> Unfortunately the controller doesn't get detected on boot time, the
-> old IDE drivers do work and see the controller as a PIIX4 chipset,
-> which is correct.
-> 
-> The mainboard is a Asus P2B with integrated Adaptec SCSI host and the
-> PIIX controller.
+On Sun, 4 Feb 2007 08:36:23 -0500 Dave Jones wrote:
 
-ata_piix should drive that chipset. Was that driver enabled in the 
-kernel configuration, and if it's built modular is the initrd, etc. set 
-up to load it on boot?
+> On Sat, Feb 03, 2007 at 10:08:28PM -0800, Randy Dunlap wrote:
+>  > On Fri, 2 Feb 2007 18:59:13 -0800 Chris Wright wrote:
+>  > 
+>  > > * Chris Wright (chrisw@sous-sol.org) wrote:
+>  > > > Responses should be made by Mon Feb  3 02:30 UTC 2007
+>  > > 
+>  > > Yes, that's Mon Feb 5 (thanks to those on their toes ;-)
+>  > > 
+>  > > And the roll-up will be available at:
+>  > > 
+>  > > 	http://www.kernel.org/pub/linux/kernel/people/chrisw/stable/patch-2.6.19.3-rc1.{gz,bz2}
+>  > > 
+>  > > once mirroring finishes.
+>  > 
+>  > Shouldn't this apply cleanly to 2.6.19?  I get
+>  > 
+>  > 1 out of 1 hunk FAILED -- saving rejects to file Makefile.rej
+>  > 1 out of 2 hunks FAILED -- saving rejects to file net/ipv6/addrconf.c.rej
+> 
+> The -rc's usually apply to the previously released -stable (.2 in this case).
 
--- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
+Oh.  Thanks, that works.   "usually"?   but not always?  :)
 
+---
+~Randy
