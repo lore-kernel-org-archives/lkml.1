@@ -1,61 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752579AbXBDWmB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752588AbXBDWwQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752579AbXBDWmB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Feb 2007 17:42:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752581AbXBDWmA
+	id S1752588AbXBDWwQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Feb 2007 17:52:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752582AbXBDWwQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Feb 2007 17:42:00 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:58727 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752579AbXBDWmA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Feb 2007 17:42:00 -0500
-Date: Sun, 4 Feb 2007 17:39:42 -0500
-From: Dave Jones <davej@redhat.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Eric Piel <Eric.Piel@tremplin-utc.net>,
-       Wang Zhenyu <zhenyu.z.wang@intel.com>, linux-kernel@vger.kernel.org,
-       Adrian Bunk <bunk@stusta.de>
-Subject: Re: 2.6.20-rc7 regression on intel-agp
-Message-ID: <20070204223942.GA8960@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Randy Dunlap <randy.dunlap@oracle.com>,
-	Eric Piel <Eric.Piel@tremplin-utc.net>,
-	Wang Zhenyu <zhenyu.z.wang@intel.com>, linux-kernel@vger.kernel.org,
-	Adrian Bunk <bunk@stusta.de>
-References: <45C6010A.9010902@tremplin-utc.net> <20070204171850.GA17171@redhat.com> <45C64960.3080605@tremplin-utc.net> <20070204130846.d8895f97.randy.dunlap@oracle.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070204130846.d8895f97.randy.dunlap@oracle.com>
-User-Agent: Mutt/1.4.2.2i
+	Sun, 4 Feb 2007 17:52:16 -0500
+Received: from x35.xmailserver.org ([64.71.152.41]:3635 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752588AbXBDWwP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Feb 2007 17:52:15 -0500
+X-AuthUser: davidel@xmailserver.org
+Date: Sun, 4 Feb 2007 14:52:08 -0800 (PST)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Jakub Jelinek <jakub@redhat.com>
+cc: Bill Davidsen <davidsen@tmr.com>, Arjan van de Ven <arjan@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [ANN] Userspace M-on-N threading model implementation. Alpha
+ release.
+In-Reply-To: <20070204202053.GC20307@devserv.devel.redhat.com>
+Message-ID: <Pine.LNX.4.64.0702041438180.18633@alien.or.mcafeemobile.com>
+References: <66910A579C9312469A7DF9ADB54A8B7D5C2B90@exchange.ZeugmaSystems.local>
+ <45C362D2.2040407@tmr.com> <1170516376.3073.1015.camel@laptopd505.fenrus.org>
+ <45C63E30.4010106@tmr.com> <20070204202053.GC20307@devserv.devel.redhat.com>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 04, 2007 at 01:08:46PM -0800, Randy Dunlap wrote:
- > On Sun, 04 Feb 2007 22:00:16 +0100 Eric Piel wrote:
- > 
- > > 04.02.2007 18:18, Dave Jones wrote/a écrit:
- > > > On Sun, Feb 04, 2007 at 04:51:38PM +0100, Eric Piel wrote:
- > > >  > Hello,
- > > >  > 
- > > >  > I've got a regression in 2.6.20-rc7 (-rc6 was fine) due to commit 
- > > >  > 4b95320fc4d21b0ff2f8604305dd6c851aff6096 ([AGPGART] intel_agp: restore 
- > > >  > graphics device's pci space early in resume).
- > > :
- > > > 
- > > > There's an ugly patch below which does the latter. Give it a try?
- > > Thanks a lot, this made the trick... to some extends at least. I can 
- > > suspend to disk and resume fine. The framebuffer is not garble neither, 
- > > however nothing is displayed after resuming :-S Well, it's probably 
- > > enough to be applied before 2.6.20.
- > 
- > Missed that.  Please send it to stable@kernel.org .
+On Sun, 4 Feb 2007, Jakub Jelinek wrote:
 
-Done.  It's also in agpgart.git, waiting for Linus to pull when
-he's ready to open the floodgates for .21 again.
+> On Sun, Feb 04, 2007 at 03:12:32PM -0500, Bill Davidsen wrote:
+> > Arjan van de Ven wrote:
+> > >>Because user threading can avoid context switches, there will always be 
+> > >>cases where it will outperform o/s threads for hardware reasons.
+> > >
+> > >actually.. switching from one "real" thread to another in Linux is not
+> > >an actual context switch in the hardware sense... at least this part of
+> > >your argument seems to be incorrect ;)
+> > >
+> > How does that work? Switching between kernel threads requires going into 
+> > the kernel, user level thread switches are all done in user mode.
+> > 
+> > Do you have some way to change o/s threads w/o going into the kernel?
+> 
+> But going into kernel is not very expensive on Linux.
+> 
+> On the other side, the overhead you need to add for every single syscall
+> that might block for the M:N threads and the associated complications
+> which make it far harder to conform to POSIX IMHO far outweight the costs
+> of going into the kernel for a context switch.
 
-		Dave
+Agreed, definitely. A libpcl (using swapcontext(3)) cobench is about 50 
+times faster than an context switch measured by lmbench (although I have 
+serious doubts about about the ability of lat_ctx to measure it - but 
+that's another story) on an Opteron 254. One may say "Wow! Really?!?".
+The point is, who cares. We are talking about differences between 
+super-fast (~2us) and ultra-fast (~0.04us).
+The time (and code) that you'll have to drop in the syscall path to handle 
+M:N is very likely to make you lose way more of what you gain by avoiding 
+an OS context switch (a "soft" context switch you still have to do it).
+Either use N:N (requires locking, but spread over multiple CPUs) or 1:N 
+(I/O driven state machines or coroutines - no locking, once-CPU bound).
 
--- 
-http://www.codemonkey.org.uk
+
+
+- Davide
+
+
