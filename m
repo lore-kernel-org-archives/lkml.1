@@ -1,66 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751760AbXBDBXG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751749AbXBDBYv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751760AbXBDBXG (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Feb 2007 20:23:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751802AbXBDBXG
+	id S1751749AbXBDBYv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Feb 2007 20:24:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751841AbXBDBYv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Feb 2007 20:23:06 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:55466 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751760AbXBDBXD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Feb 2007 20:23:03 -0500
-Date: Sat, 3 Feb 2007 17:22:42 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Rik van Riel <riel@redhat.com>
-Subject: Re: [RFC] Tracking mlocked pages and moving them off the LRU
-Message-Id: <20070203172242.e5bf2534.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0702031055210.18224@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0702022214580.3960@schroedinger.engr.sgi.com>
-	<20070203005316.eb0b4042.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0702030946330.5388@schroedinger.engr.sgi.com>
-	<1170525860.3073.1054.camel@laptopd505.fenrus.org>
-	<Pine.LNX.4.64.0702031055210.18224@schroedinger.engr.sgi.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 3 Feb 2007 20:24:51 -0500
+Received: from ug-out-1314.google.com ([66.249.92.170]:7061 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751749AbXBDBYu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Feb 2007 20:24:50 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=GywXc0ZzLfPLJr0p6K/mrXoiRSAndAK7qiUtcYsrQaLYEiyDwF7/mYIyxMulSq/XNQOi3ToOm9Ur7QDV+yE5Wc3rOOdr1g/OnO38HzY33D4r8pgOFV3zjCV/1TY7Kz4iy7j9Fwtz43AfrBBhTP11e9ZE3sTSE7j3MG+S6KI4ghg=
+From: Denis Vlasenko <vda.linux@googlemail.com>
+To: davids@webmaster.com
+Subject: Re: O_NONBLOCK setting "leak" outside of a process??
+Date: Sun, 4 Feb 2007 02:22:13 +0100
+User-Agent: KMail/1.8.2
+Cc: "Philippe Troin" <phil@fifi.org>, linux-kernel@vger.kernel.org
+References: <MDEHLPKNGKAHNMBLJOLKGEJJBFAC.davids@webmaster.com>
+In-Reply-To: <MDEHLPKNGKAHNMBLJOLKGEJJBFAC.davids@webmaster.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200702040222.13337.vda.linux@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 3 Feb 2007 11:03:59 -0800 (PST) Christoph Lameter <clameter@sgi.com> wrote:
-
-> Here is the second piece removing mlock pages off the LRU during scanning. 
-> I tried moving them to a separate list but then we run into issues with
-> locking. We do not need ithe list though since we will encounter the
-> page again anyways during zap_pte_range.
+On Sunday 04 February 2007 01:55, David Schwartz wrote:
 > 
-> However, in zap_pte_range we then run into another problem. Multiple 
-> zap_pte_ranges may handle the same page and without a page flag and 
-> scanning all the vmas we cannot determine if the page should or should not 
-> be moved back to the LRU. As a result this patch may decrement NR_MLOCK 
-> too much so that is goes below zero. Any ideas on how to fix this without 
-> a page flag and a scan over vmas?
+> > That's a bug, right? I couldn't find anything to that effect in IEEE
+> > Std. 1003.1, 2004 Edition...
+> >
+> > Ciao,
+> >                      Roland
 > 
-> Plus there is the issue of NR_MLOCK only being updated when we are 
-> reclaiming and when we may already be in trouble. An app may mlock huge 
-> amounts of memory and NR_MLOCK will stay low. If memory gets too low then
-> NR_MLOCKED is suddenly become accurate and the VM is likely undergoing a 
-> shock from that discovery (should we actually use NR_MLOCK elsewhere to 
-> determine memory management behavior). Hopefully we will not fall over 
-> then.
+> It's not a bug, there's no rational alternative. What would two indepedent
+> file descriptors for the same end of a TCP connection be?
 
-Do we actually need NR_MLOCK?  Page reclaim tends to care more about the
-size of the LRUs and doesn't have much dependency on ->present_pages,
-iirc.
+Easy. O_NONBLOCK should only affect whether read/write blocks or
+returns EAGAIN. It's logical for this setting to be per-process.
 
-I guess we could use NR_MLOCK for writeback threshold calculations, to
-force writeback earlier if there's a lot of mlocked memory in the affected
-zones.  But that code isn't zone-aware anyway, and we don't know how to make
-it zone aware in any sane fashion and making it cpuset-aware isn't very
-interesting or useful..
+Currently changing O_NONBLOCK on stdin/out/err affects other,
+possibly unrelated processes - they don't expect that *their*
+reads/writes will start returning EAGAIN!
 
-So..  Why do we want NR_MLOCK?
+Worse, it cannot be worked around by dup() because duped fds
+are still sharing O_NONBLOCK. How can I work around this?
+--
+vda
