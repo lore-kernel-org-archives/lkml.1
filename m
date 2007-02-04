@@ -1,51 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752391AbXBDPno@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752392AbXBDPp7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752391AbXBDPno (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Feb 2007 10:43:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752392AbXBDPno
+	id S1752392AbXBDPp7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Feb 2007 10:45:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752398AbXBDPp7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Feb 2007 10:43:44 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:40996 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752391AbXBDPnn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Feb 2007 10:43:43 -0500
-Date: Sun, 4 Feb 2007 16:43:35 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Mike Galbraith <efault@gmx.de>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.19.2 oops after resume from ram (corruption?)
-Message-ID: <20070204154335.GB2032@elf.ucw.cz>
-References: <1170241008.6512.10.camel@Homer.simpson.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1170241008.6512.10.camel@Homer.simpson.net>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+	Sun, 4 Feb 2007 10:45:59 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:41585 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752392AbXBDPp6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Feb 2007 10:45:58 -0500
+Subject: Re: mm: how to check for kernel pages
+From: Arjan van de Ven <arjan@infradead.org>
+To: Michal Hocko <mstsxfx@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20070204153321.GC10477@curandero.marconia.cz>
+References: <20070204110256.GA10477@curandero.marconia.cz>
+	 <1170597450.3073.1127.camel@laptopd505.fenrus.org>
+	 <20070204153321.GC10477@curandero.marconia.cz>
+Content-Type: text/plain
+Organization: Intel International BV
+Date: Sun, 04 Feb 2007 16:45:51 +0100
+Message-Id: <1170603951.3073.1160.camel@laptopd505.fenrus.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2.1 (2.8.2.1-2.fc6) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
-> I received the below upon first poke of firefox icon after a resume.  
+On Sun, 2007-02-04 at 16:33 +0100, Michal Hocko wrote:
+> On Sun, Feb 04, 2007 at 02:57:30PM +0100, Arjan van de Ven wrote:
+> > On Sun, 2007-02-04 at 12:02 +0100, Michal Hocko wrote:
+> > > Hi,
+> > > is there any effective and fast way how to find out whether page
+> > > given by its page frame number is currenly used by (mapped by) kernel?
+> > 
+> > what do you want to use this for? The answer to your question greatly
+> > depends on that...
 > 
-> See attachment (evolution refuses to inline it).
+> Sorry for not being more precise. As a part of my thesis work I need to
+> migrate pages. I greatly use mm/migrate.c code.  
+> I assume that not all pages can be migrated - especially those used by
+> kernel (where direct virtual to physical mapping is used).
+> So I intended something like following code:
 
-Is it repeatable? You may want to try with smaller set of
-modules... prism54 is quite unusual...
-
-								Pavel
-
->  BUG: unable to handle kernel NULL pointer dereference at virtual address 00000002
-> printing eip:
-> c109a7cf
-> *pde = 00000000
-> Oops: 0000 [#1]
-> PREEMPT SMP 
-> Modules linked in: xt_pkttype ipt_LOG xt_limit snd_pcm_oss snd_mixer_oss eeprom snd_seq_midi snd_seq_midi_event snd_seq edd button battery ac ip6t_REJECT xt_tcpudp ipt_REJECT xt_state iptable_mangle iptable_nat ip_nat iptable_filter ip6table_mangle ip_conntrack nfnetlink ip_tables ip6table_filter ip6_tables x_tables nls_iso8859_1 nls_cp437 nls_utf8 snd_mpu401 snd_mpu401_uart snd_rawmidi snd_seq_device ohci1394 ieee1394 prism54 snd_intel8x0 snd_ac97_codec snd_ac97_bus snd_pcm snd_timer snd soundcore snd_page_alloc intel_agp agpgart i2c_i801 sd_mod fan thermal processor
-> CPU:    0
-
-
+it's more than that... even userspace pages may not be moved if they're
+the target of active DMA for example ..... 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+if you want to mail me at work (you don't), use arjan (at) linux.intel.com
+Test the interaction between Linux and your BIOS via http://www.linuxfirmwarekit.org
+
