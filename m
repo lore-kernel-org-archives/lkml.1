@@ -1,48 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752342AbXBDNwa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752343AbXBDN4L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752342AbXBDNwa (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Feb 2007 08:52:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752346AbXBDNwa
+	id S1752343AbXBDN4L (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Feb 2007 08:56:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752346AbXBDN4L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Feb 2007 08:52:30 -0500
-Received: from raven.upol.cz ([158.194.120.4]:41440 "EHLO raven.upol.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752345AbXBDNw3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Feb 2007 08:52:29 -0500
-Date: Sun, 4 Feb 2007 15:01:18 +0100
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [patch] kbuild: correctly skip tilded backups in localversion files
-Message-ID: <20070204140118.GA9188@flower.upol.cz>
-References: <20070131071103.GA3295@flower.upol.cz> <20070131155651.529e933c.akpm@osdl.org> <20070201023717.GA22328@flower.upol.cz> <20070131184329.753ce801.akpm@osdl.org>
+	Sun, 4 Feb 2007 08:56:11 -0500
+Received: from 2-1-3-15a.ens.sth.bostream.se ([82.182.31.214]:51915 "EHLO
+	zoo.weinigel.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752343AbXBDN4K (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Feb 2007 08:56:10 -0500
+X-Greylist: delayed 1615 seconds by postgrey-1.27 at vger.kernel.org; Sun, 04 Feb 2007 08:56:09 EST
+To: Greg KH <greg@kroah.com>
+Cc: Andrew Lyon <andrew.lyon@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: Free Linux Driver Development!
+References: <20070130012904.GA9617@kroah.com>
+	<f4527be0701301215q11924e3fnaaa5f33e6b6c5b36@mail.gmail.com>
+	<20070130203039.GA23370@kroah.com>
+From: Christer Weinigel <christer@weinigel.se>
+Organization: Weinigel Ingenjorsbyra AB
+Date: 04 Feb 2007 14:29:13 +0100
+In-Reply-To: <20070130203039.GA23370@kroah.com>
+Message-ID: <m3y7neoxue.fsf@zoo.weinigel.se>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.4
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070131184329.753ce801.akpm@osdl.org>
-Organization: Palacky University in Olomouc, experimental physics department.
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Oleg Verych <olecom@flower.upol.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 31, 2007 at 06:43:29PM -0800, Andrew Morton wrote:
-> On Thu, 1 Feb 2007 03:37:17 +0100 Oleg Verych <olecom@flower.upol.cz> wrote:
-> 
-> > On Wed, Jan 31, 2007 at 03:56:51PM -0800, Andrew Morton wrote:
-> > > On Wed, 31 Jan 2007 07:11:04 +0000
-> > > Oleg Verych <olecom@flower.upol.cz> wrote:
-> > > 
-> > > > kbuild: correctly skip tilded backups in localversion files
-> > > 
-> > > Does this patch replace Bastian's patch, below?
-> > 
-> > Along with "Message-ID: <20070131093542.GA3471@flower.upol.cz>" -- yes.
-> > 
-> 
-> OK.  Just to avoid mistakes, can you please resend everything, against
-> 2.6.20-rc7?
+Greg KH <greg@kroah.com> writes:
 
-I've resent patches, that i wanted to be in -mm, even without anyone,
-who can ack or even test them. But it seems, they not made it to lkml.
+> Why would a userspace driver not work out for this.  We already can
+> saturate the USB bus with a userspace program
 
-____
+That is unfortunately not quite true.  I have a (unfortunately
+proprietary) driver for a USB device that simply cannot be implemented
+in userspace.  The USB device is a measurement device that pushes
+close to 800 kBytes/second of data through a FT245 chip.  The
+measurement device does no flow control at all, it just presents a
+sample every 125 us to the FT245 and with only 256 bytes of buffer in
+the FT245 the only way to handle that is to have two URBs in flight at
+the same time, and I haven't found any way to do that in a robust and
+non-racey way from userspace.  So the comment "The USB subsystem has
+changed a lot over time, and it has been possible to create userspace
+USB drivers using usbfs/libusb/gadgetfs that operate as fast as the
+USB bus allows." from feature-removal-schedule.txt is wrong I
+think. :-(
+
+Personally I'd much prefer to release the driver as open source, but
+as a consultant you don't get to decide what the customer does.  So
+now they sit there with a driver that warns them that it'll stop
+working after february 2008.
+
+On a different topic, my personal pet peeve is USB scanners.  There
+seems to be just a handful of different manufacturers of chips used in
+USB scanners: Realtek and Genesys covers 90% of the scanners.  The
+SANE team has done a wonderful job of reverse engineering a lot of
+scanners, but the models change so fast that there seems to be no
+chance of keeping up.  If the chip manufacturers just released specs
+for their chips and the scanner manufacturers could then document what
+settings to use Linux could have support for almost all USB scanners
+on the market, and it would probably cost them very little to do that.
+If I could find a good (4800-9600 dpi) scanner which said "supported
+by SANE" on the box I'd buy it immedately.
+
+  /Christer
+
+-- 
+"Just how much can I get away with and still go to heaven?"
+
+Christer Weinigel <christer@weinigel.se>  http://www.weinigel.se
