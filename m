@@ -1,75 +1,232 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752432AbXBDQQf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752433AbXBDQcZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752432AbXBDQQf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Feb 2007 11:16:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752431AbXBDQQf
+	id S1752433AbXBDQcZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Feb 2007 11:32:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752436AbXBDQcZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Feb 2007 11:16:35 -0500
-Received: from yuma.hostsharing.net ([212.42.230.35]:52444 "EHLO
-	yuma.hostsharing.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752432AbXBDQQe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Feb 2007 11:16:34 -0500
-Date: Sun, 4 Feb 2007 17:15:21 +0100
-From: Elimar Riesebieter <riesebie@lxtec.de>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [Linux-fbdev-devel] radeonfb: Can't use the dvi port
-Message-ID: <20070204161521.GA9623@frodo.home.lxtec.de>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
-Mail-Followup-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>
-MIME-Version: 1.0
+	Sun, 4 Feb 2007 11:32:25 -0500
+Received: from mx2.suse.de ([195.135.220.15]:60806 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752433AbXBDQcY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Feb 2007 11:32:24 -0500
+Date: Sun, 4 Feb 2007 17:32:07 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux Memory Management List <linux-mm@kvack.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Hugh Dickins <hugh@veritas.com>
+Subject: [rfc] mm: PageUptodate memorder problem?
+Message-ID: <20070204163207.GA31183@wotan.suse.de>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.13-muttng (2007-01-02)
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+Hi,
 
-I replaced my old monitor with a brandnew LCD one (Samsung
-SyncMaster 204B). Booting 2.6.(19|20-rc7) aknowledge the dvi port
-but after a while the screen is blank. The monitor claims:
+I think there might be a problem, but don't take this as a final patch
+because I can make it nicer if we are agreed there is a problem.
 
-"Not Optimum Mode, Recommended mode : 1600 X 1200 60 Hz"
+One thing I like about it is that it ties in the anonymous page handling
+with the rest of the page management, by marking anon pages as uptodate
+when they _are_ uptodate, rather than when our implementation requires
+that they be marked as such. Doing this let me get rid of the smp_wmb's
+in the page copying functions, which always vaguely troubled me.
 
-$ fbset
+Any comments?
 
-mode "1600x1200-60"
-    # D: 162.022 MHz, H: 75.010 kHz, V: 60.008 Hz
-    geometry 1600 1200 1600 1200 8
-    timings 6172 304 64 46 1 192 3
-    hsync high
-    vsync high
-    rgba 8/0,8/0,8/0,0/0
-endmode
-
-
-I`ve compiled raeonfb debug in the kernel:
-Dec 26 14:52:05 frodo kernel: hStart = 1664, hEnd = 1856, hTotal = 2160
-Dec 26 14:52:05 frodo kernel: vStart = 1201, vEnd = 1204, vTotal = 1250
-Dec 26 14:52:05 frodo kernel: h_total_disp = 0xc7010d hsync_strt_wid = 0x18067a
-Dec 26 14:52:05 frodo kernel: v_total_disp = 0x4af04e1 vsync_strt_wid = 0x304b0
-Dec 26 14:52:05 frodo kernel: pixclock = 6172
-Dec 26 14:52:05 frodo kernel: freq = 16202
-Dec 26 14:52:05 frodo kernel: freq = 16202, PLL min = 20000, PLL max = 40000
-Dec 26 14:52:05 frodo kernel: ref_div = 12, ref_clk = 2700, output_freq = 32404
-Dec 26 14:52:05 frodo kernel: ref_div = 12, ref_clk = 2700, output_freq = 32404
-Dec 26 14:52:05 frodo kernel: post div = 0x1
-Dec 26 14:52:05 frodo kernel: fb_div = 0x90
-Dec 26 14:52:05 frodo kernel: ppll_div_3 = 0x10090
-
-My card:
-01:00.0 VGA compatible controller: ATI Technologies Inc Radeon RV250 If [Radeon 9000] (rev 01)
-
-Switching to the analog port works well.
-
-Any hints?
-
-Elimar
-
-
--- 
-  You cannot propel yourself forward by
-  patting yourself on the back.
+Index: linux-2.6/include/linux/highmem.h
+===================================================================
+--- linux-2.6.orig/include/linux/highmem.h
++++ linux-2.6/include/linux/highmem.h
+@@ -57,8 +57,6 @@ static inline void clear_user_highpage(s
+ 	void *addr = kmap_atomic(page, KM_USER0);
+ 	clear_user_page(addr, vaddr, page);
+ 	kunmap_atomic(addr, KM_USER0);
+-	/* Make sure this page is cleared on other CPU's too before using it */
+-	smp_wmb();
+ }
+ 
+ #ifndef __HAVE_ARCH_ALLOC_ZEROED_USER_HIGHPAGE
+@@ -108,8 +106,6 @@ static inline void copy_user_highpage(st
+ 	copy_user_page(vto, vfrom, vaddr, to);
+ 	kunmap_atomic(vfrom, KM_USER0);
+ 	kunmap_atomic(vto, KM_USER1);
+-	/* Make sure this page is cleared on other CPU's too before using it */
+-	smp_wmb();
+ }
+ 
+ #endif
+Index: linux-2.6/include/linux/page-flags.h
+===================================================================
+--- linux-2.6.orig/include/linux/page-flags.h
++++ linux-2.6/include/linux/page-flags.h
+@@ -127,15 +127,27 @@
+ #define TestClearPageReferenced(page) test_and_clear_bit(PG_referenced, &(page)->flags)
+ 
+ #define PageUptodate(page)	test_bit(PG_uptodate, &(page)->flags)
+-#ifdef CONFIG_S390
+ static inline void SetPageUptodate(struct page *page)
+ {
++#ifdef CONFIG_S390
+ 	if (!test_and_set_bit(PG_uptodate, &page->flags))
+ 		page_test_and_clear_dirty(page);
+-}
+ #else
+-#define SetPageUptodate(page)	set_bit(PG_uptodate, &(page)->flags)
++	/*
++	 * Memory barrier must be issued before setting the PG_uptodate bit,
++	 * so all previous writes that served to bring the page uptodate are
++	 * visible before PageUptodate becomes true.
++	 *
++	 * S390 is guaranteed to have a barrier in the test_and_set operation
++	 * (see Documentation/atomic_ops.txt).
++	 *
++	 * XXX: does this memory barrier need to be anything special to
++	 * handle things like DMA writes into the page?
++	 */
++	smp_wmb();
++	set_bit(PG_uptodate, &(page)->flags);
+ #endif
++}
+ #define ClearPageUptodate(page)	clear_bit(PG_uptodate, &(page)->flags)
+ 
+ #define PageDirty(page)		test_bit(PG_dirty, &(page)->flags)
+Index: linux-2.6/mm/hugetlb.c
+===================================================================
+--- linux-2.6.orig/mm/hugetlb.c
++++ linux-2.6/mm/hugetlb.c
+@@ -443,6 +443,7 @@ static int hugetlb_cow(struct mm_struct 
+ 
+ 	spin_unlock(&mm->page_table_lock);
+ 	copy_huge_page(new_page, old_page, address, vma);
++	SetPageUptodate(new_page);
+ 	spin_lock(&mm->page_table_lock);
+ 
+ 	ptep = huge_pte_offset(mm, address & HPAGE_MASK);
+@@ -506,6 +507,7 @@ retry:
+ 		} else
+ 			lock_page(page);
+ 	}
++	SetPageUptodate(page);
+ 
+ 	spin_lock(&mm->page_table_lock);
+ 	size = i_size_read(mapping->host) >> HPAGE_SHIFT;
+Index: linux-2.6/mm/memory.c
+===================================================================
+--- linux-2.6.orig/mm/memory.c
++++ linux-2.6/mm/memory.c
+@@ -1463,10 +1463,8 @@ static inline void cow_user_page(struct 
+ 			memset(kaddr, 0, PAGE_SIZE);
+ 		kunmap_atomic(kaddr, KM_USER0);
+ 		flush_dcache_page(dst);
+-		return;
+-
+-	}
+-	copy_user_highpage(dst, src, va, vma);
++	} else
++		copy_user_highpage(dst, src, va, vma);
+ }
+ 
+ /*
+@@ -1579,6 +1577,7 @@ gotten:
+ 			goto oom;
+ 		cow_user_page(new_page, old_page, address, vma);
+ 	}
++	SetPageUptodate(new_page);
+ 
+ 	/*
+ 	 * Re-check the pte - we dropped the lock
+@@ -2097,6 +2096,7 @@ static int do_anonymous_page(struct mm_s
+ 		page = alloc_zeroed_user_highpage(vma, address);
+ 		if (!page)
+ 			goto oom;
++		SetPageUptodate(page);
+ 
+ 		entry = mk_pte(page, vma->vm_page_prot);
+ 		entry = maybe_mkwrite(pte_mkdirty(entry), vma);
+@@ -2203,6 +2203,7 @@ retry:
+ 			copy_user_highpage(page, new_page, address, vma);
+ 			page_cache_release(new_page);
+ 			new_page = page;
++			SetPageUptodate(new_page);
+ 			anon = 1;
+ 
+ 		} else {
+Index: linux-2.6/mm/filemap.c
+===================================================================
+--- linux-2.6.orig/mm/filemap.c
++++ linux-2.6/mm/filemap.c
+@@ -935,6 +935,13 @@ find_page:
+ 		if (!PageUptodate(page))
+ 			goto page_not_up_to_date;
+ page_ok:
++		/*
++		 * Must ensure that the data we read out of the page is loaded
++		 * _after_ we've loaded page->flags to check for PageUptodate.
++		 * See include/linux/page-flags.h:SetPageUptodate() for the
++		 * other side of the story.
++		 */
++		smp_rmb();
+ 
+ 		/* If users can be writing to this page using arbitrary
+ 		 * virtual addresses, take care about potential aliasing
+@@ -1422,6 +1429,11 @@ retry_find:
+ 
+ success:
+ 	/*
++	 * Must order memory for the same reason as do_generic_mapping_read
++	 */
++	smp_rmb();
++
++	/*
+ 	 * Found the page and have a reference on it.
+ 	 */
+ 	mark_page_accessed(page);
+@@ -1564,6 +1576,11 @@ retry_find:
+ 
+ success:
+ 	/*
++	 * Must order memory for the same reason as do_generic_mapping_read
++	 */
++	smp_rmb();
++
++	/*
+ 	 * Found the page and have a reference on it.
+ 	 */
+ 	mark_page_accessed(page);
+Index: linux-2.6/mm/page_io.c
+===================================================================
+--- linux-2.6.orig/mm/page_io.c
++++ linux-2.6/mm/page_io.c
+@@ -134,7 +134,7 @@ int swap_readpage(struct file *file, str
+ 	int ret = 0;
+ 
+ 	BUG_ON(!PageLocked(page));
+-	ClearPageUptodate(page);
++	BUG_ON(PageUptodate(page));
+ 	bio = get_swap_bio(GFP_KERNEL, page_private(page), page,
+ 				end_swap_bio_read);
+ 	if (bio == NULL) {
+Index: linux-2.6/mm/swap_state.c
+===================================================================
+--- linux-2.6.orig/mm/swap_state.c
++++ linux-2.6/mm/swap_state.c
+@@ -149,6 +149,7 @@ int add_to_swap(struct page * page, gfp_
+ 	int err;
+ 
+ 	BUG_ON(!PageLocked(page));
++	BUG_ON(!PageUptodate(page));
+ 
+ 	for (;;) {
+ 		entry = get_swap_page();
+@@ -171,7 +172,6 @@ int add_to_swap(struct page * page, gfp_
+ 
+ 		switch (err) {
+ 		case 0:				/* Success */
+-			SetPageUptodate(page);
+ 			SetPageDirty(page);
+ 			INC_CACHE_INFO(add_total);
+ 			return 1;
