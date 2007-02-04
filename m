@@ -1,47 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752580AbXBDWbZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752579AbXBDWmB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752580AbXBDWbZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Feb 2007 17:31:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752579AbXBDWbZ
+	id S1752579AbXBDWmB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Feb 2007 17:42:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752581AbXBDWmA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Feb 2007 17:31:25 -0500
-Received: from wx-out-0506.google.com ([66.249.82.229]:49587 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752580AbXBDWbY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Feb 2007 17:31:24 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=g1VAFFbjSXfEr7KumoKPLp5TOLWdpTH5Md/R62FT+5tYB1ONweFA9+ujlsekHsK+DRbQ8+R3+3Ymt1JwhjYsGlCGZPXkErfK/EorOobZUe+VgMbWnR1mUKyjdjMSkT/AL0T6B2ddiNAUUryEzpICGsvX4DMURQ8R0eBKMFDd0QE=
-Message-ID: <82e4877d0702041431p555e644et35845db674304403@mail.gmail.com>
-Date: Sun, 4 Feb 2007 17:31:23 -0500
-From: "Parag Warudkar" <parag.warudkar@gmail.com>
-To: linux-netdev@vger.kernel.org
-Subject: Unexpected Acknowledgement / Stalled Connections
-Cc: linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sun, 4 Feb 2007 17:42:00 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:58727 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752579AbXBDWmA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Feb 2007 17:42:00 -0500
+Date: Sun, 4 Feb 2007 17:39:42 -0500
+From: Dave Jones <davej@redhat.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Eric Piel <Eric.Piel@tremplin-utc.net>,
+       Wang Zhenyu <zhenyu.z.wang@intel.com>, linux-kernel@vger.kernel.org,
+       Adrian Bunk <bunk@stusta.de>
+Subject: Re: 2.6.20-rc7 regression on intel-agp
+Message-ID: <20070204223942.GA8960@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Randy Dunlap <randy.dunlap@oracle.com>,
+	Eric Piel <Eric.Piel@tremplin-utc.net>,
+	Wang Zhenyu <zhenyu.z.wang@intel.com>, linux-kernel@vger.kernel.org,
+	Adrian Bunk <bunk@stusta.de>
+References: <45C6010A.9010902@tremplin-utc.net> <20070204171850.GA17171@redhat.com> <45C64960.3080605@tremplin-utc.net> <20070204130846.d8895f97.randy.dunlap@oracle.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070204130846.d8895f97.randy.dunlap@oracle.com>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I am running 2.6.20 and have trouble with stalled connections. For
-instance, if I try to download a debian ISO image using wget, the
-connection runs fine for few seconds and then stalls for ever.
+On Sun, Feb 04, 2007 at 01:08:46PM -0800, Randy Dunlap wrote:
+ > On Sun, 04 Feb 2007 22:00:16 +0100 Eric Piel wrote:
+ > 
+ > > 04.02.2007 18:18, Dave Jones wrote/a écrit:
+ > > > On Sun, Feb 04, 2007 at 04:51:38PM +0100, Eric Piel wrote:
+ > > >  > Hello,
+ > > >  > 
+ > > >  > I've got a regression in 2.6.20-rc7 (-rc6 was fine) due to commit 
+ > > >  > 4b95320fc4d21b0ff2f8604305dd6c851aff6096 ([AGPGART] intel_agp: restore 
+ > > >  > graphics device's pci space early in resume).
+ > > :
+ > > > 
+ > > > There's an ugly patch below which does the latter. Give it a try?
+ > > Thanks a lot, this made the trick... to some extends at least. I can 
+ > > suspend to disk and resume fine. The framebuffer is not garble neither, 
+ > > however nothing is displayed after resuming :-S Well, it's probably 
+ > > enough to be applied before 2.6.20.
+ > 
+ > Missed that.  Please send it to stable@kernel.org .
 
-In my router logs I see a ton of messages like the below -
+Done.  It's also in agpgart.git, waiting for Linus to pull when
+he's ready to open the floodgates for .21 again.
 
-[INFO] Sun Feb 04 17:22:03 2007 Blocked incoming TCP packet from
-192.168.0.174:34090 to 130.239.18.138:80 with unexpected
-acknowledgement 3269301836 (expected 3269343453 to 3269408989)
+		Dave
 
-Where 192.168.0.174 is my laptop running FC6 and kernel 2.6.20 and
-130.239.18.138 is whatever cdimage.debian.org resolves to atm.
-
-What's going on here? Any TCP/IP tunable that I can set/turn on/off to
-prevent this from happening?
-
-Thanks
-Parag
+-- 
+http://www.codemonkey.org.uk
