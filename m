@@ -1,64 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752573AbXBDVme@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752575AbXBDWCK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752573AbXBDVme (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Feb 2007 16:42:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752571AbXBDVme
+	id S1752575AbXBDWCK (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Feb 2007 17:02:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752574AbXBDWCJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Feb 2007 16:42:34 -0500
-Received: from mail.tmr.com ([64.65.253.246]:33722 "EHLO gaimboi.tmr.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752574AbXBDVmd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Feb 2007 16:42:33 -0500
-Message-ID: <45C65353.5000602@tmr.com>
-Date: Sun, 04 Feb 2007 16:42:43 -0500
-From: Bill Davidsen <davidsen@tmr.com>
-Organization: TMR Associates Inc, Schenectady NY
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+	Sun, 4 Feb 2007 17:02:09 -0500
+Received: from ug-out-1314.google.com ([66.249.92.174]:9612 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752575AbXBDWCI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Feb 2007 17:02:08 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=WLGXR5uJZsGnFHWxQlRfcx3E0rpQ6lElYzLlGzixoMiEHCBYG9lpRKiOMgkZAF1wQyEWu3yryrMsaRnkWgbPA6b6hdz893fN7g5CL8GsnBInXFokM7V5xH5116llf5VS2cMBB/eoEIZ9zFlfFAhrfBmeOS/A1x0hbXBrBgjSsz0=
+Message-ID: <a44ae5cd0702041402g14051b58qfeb270a72123e22e@mail.gmail.com>
+Date: Sun, 4 Feb 2007 14:02:06 -0800
+From: "Miles Lane" <miles.lane@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: 2.6.20 -- Loads of section mismatches
 MIME-Version: 1.0
-To: Jakub Jelinek <jakub@redhat.com>
-CC: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org
-Subject: Re: [ANN] Userspace M-on-N threading model implementation. Alpha
- release.
-References: <66910A579C9312469A7DF9ADB54A8B7D5C2B90@exchange.ZeugmaSystems.local> <45C362D2.2040407@tmr.com> <1170516376.3073.1015.camel@laptopd505.fenrus.org> <45C63E30.4010106@tmr.com> <20070204202053.GC20307@devserv.devel.redhat.com>
-In-Reply-To: <20070204202053.GC20307@devserv.devel.redhat.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jakub Jelinek wrote:
-> On Sun, Feb 04, 2007 at 03:12:32PM -0500, Bill Davidsen wrote:
->   
->> Arjan van de Ven wrote:
->>     
->>>> Because user threading can avoid context switches, there will always be 
->>>> cases where it will outperform o/s threads for hardware reasons.
->>>>         
->>> actually.. switching from one "real" thread to another in Linux is not
->>> an actual context switch in the hardware sense... at least this part of
->>> your argument seems to be incorrect ;)
->>>
->>>       
->> How does that work? Switching between kernel threads requires going into 
->> the kernel, user level thread switches are all done in user mode.
->>
->> Do you have some way to change o/s threads w/o going into the kernel?
->>     
->
-> But going into kernel is not very expensive on Linux.
->
-> On the other side, the overhead you need to add for every single syscall
-> that might block for the M:N threads and the associated complications
-> which make it far harder to conform to POSIX IMHO far outweight the costs
-> of going into the kernel for a context switch.
+Are any of these worth fixing?
 
-That really wasn't my question, Arjan said that switching real threads 
-wasn't a context switch in the hardware sense, and I was asking if I 
-missed something. It may be cheap, but it would seem to be a context 
-switch none-the-less.
-
--- 
-bill davidsen <davidsen@tmr.com>
-  CTO TMR Associates, Inc
-  Doing interesting things with small computers since 1979
-
+WARNING: vmlinux - Section mismatch: reference to
+.init.data:boot_params from .text between '_text' (at offset
+0xc0100036) and 'checkCPUtype'
+WARNING: vmlinux - Section mismatch: reference to
+.init.data:boot_params from .text between '_text' (at offset
+0xc0100044) and 'checkCPUtype'
+WARNING: vmlinux - Section mismatch: reference to
+.init.data:init_pg_tables_end from .text between '_text' (at offset
+0xc01000a6) and 'checkCPUtype'
+WARNING: vmlinux - Section mismatch: reference to
+.init.data:new_cpu_data from .text between 'checkCPUtype' (at offset
+0xc01000d5) and 'is486'
+WARNING: vmlinux - Section mismatch: reference to
+.init.data:new_cpu_data from .text between 'checkCPUtype' (at offset
+0xc01000df) and 'is486'
+WARNING: vmlinux - Section mismatch: reference to
+.init.data:new_cpu_data from .text between 'checkCPUtype' (at offset
+0xc01000fe) and 'is486'
+WARNING: vmlinux - Section mismatch: reference to
+.init.data:new_cpu_data from .text between 'checkCPUtype' (at offset
+0xc010010f) and 'is486'
+WARNING: vmlinux - Section mismatch: reference to
+.init.data:new_cpu_data from .text between 'checkCPUtype' (at offset
+0xc0100115) and 'is486'
+WARNING: vmlinux - Section mismatch: reference to
+.init.data:new_cpu_data from .text between 'checkCPUtype' (at offset
+0xc010011b) and 'is486'
+WARNING: vmlinux - Section mismatch: reference to
+.init.data:new_cpu_data from .text between 'checkCPUtype' (at offset
+0xc0100121) and 'is486'
+WARNING: vmlinux - Section mismatch: reference to
+.init.data:new_cpu_data from .text between 'checkCPUtype' (at offset
+0xc0100137) and 'is486'
+WARNING: vmlinux - Section mismatch: reference to
+.init.data:new_cpu_data from .text between 'checkCPUtype' (at offset
+0xc0100141) and 'is486'
+WARNING: vmlinux - Section mismatch: reference to
+.init.data:new_cpu_data from .text between 'checkCPUtype' (at offset
+0xc010014a) and 'is486'
+WARNING: vmlinux - Section mismatch: reference to
+.init.data:new_cpu_data from .text between 'checkCPUtype' (at offset
+0xc0100150) and 'is486'
+WARNING: vmlinux - Section mismatch: reference to
+.init.data:new_cpu_data from .text between 'check_x87' (at offset
+0xc01001b4) and 'setup_pda'
+WARNING: vmlinux - Section mismatch: reference to
+.init.data:new_cpu_data from .text between 'check_x87' (at offset
+0xc01001d2) and 'setup_pda'
+WARNING: vmlinux - Section mismatch: reference to
+.init.text:start_kernel from .text between 'is386' (at offset
+0xc01001ae) and 'check_x87'
+WARNING: vmlinux - Section mismatch: reference to
+.init.text:spawn_ksoftirqd from .text between 'init' (at offset
+0xc0100392) and 'rest_init'
+WARNING: vmlinux - Section mismatch: reference to
+.init.text:spawn_softlockup_task from .text between 'init' (at offset
+0xc0100397) and 'rest_init'
+WARNING: vmlinux - Section mismatch: reference to
+.init.text:APIC_init_uniprocessor from .text between 'init' (at offset
+0xc010039c) and 'rest_init'
+WARNING: vmlinux - Section mismatch: reference to
+.init.text:sched_init_smp from .text between 'init' (at offset
+0xc01003a1) and 'rest_init'
+WARNING: vmlinux - Section mismatch: reference to
+.init.text:usermodehelper_init from .text between 'init' (at offset
+0xc01003ab) and 'rest_init'
+WARNING: vmlinux - Section mismatch: reference to
+.init.text:driver_init from .text between 'init' (at offset
+0xc01003b0) and 'rest_init'
+WARNING: vmlinux - Section mismatch: reference to
+.init.text:sysctl_init from .text between 'init' (at offset
+0xc01003b5) and 'rest_init'
+WARNING: vmlinux - Section mismatch: reference to .init.data: from
+.text between 'init' (at offset 0xc01003cf) and 'rest_init'
+WARNING: vmlinux - Section mismatch: reference to .init.data: from
+.text between 'init' (at offset 0xc010040d) and 'rest_init'
+WARNING: vmlinux - Section mismatch: reference to
+.init.text:prepare_namespace from .text between 'init' (at offset
+0xc01004e5) and 'rest_init'
+WARNING: vmlinux - Section mismatch: reference to
+.init.text:lockdep_init from .text between 'lockdep_init_map' (at
+offset 0xc012e6a9) and 'save_trace'
+WARNING: vmlinux - Section mismatch: reference to
+.init.text:lockdep_init from .text between 'lockdep_reset_lock' (at
+offset 0xc012f3fb) and 'lockdep_off'
+WARNING: vmlinux - Section mismatch: reference to
+.init.text:lockdep_init from .text between '__lock_acquire' (at offset
+0xc01304e4) and 'lock_acquire'
+WARNING: vmlinux - Section mismatch: reference to
+.init.text:__alloc_bootmem_node from .text between
+'init_currently_empty_zone' (at offset 0xc013f92a) and
+'free_area_init_node'
+WARNING: vmlinux - Section mismatch: reference to
+.init.text:zone_spanned_pages_in_node from .text between
+'free_area_init_node' (at offset 0xc013fa12) and 'build_all_zonelists'
+WARNING: vmlinux - Section mismatch: reference to
+.init.text:zone_absent_pages_in_node from .text between
+'free_area_init_node' (at offset 0xc013fa3c) and 'build_all_zonelists'
+WARNING: vmlinux - Section mismatch: reference to
+.init.text:zone_spanned_pages_in_node from .text between
+'free_area_init_node' (at offset 0xc013fadb) and 'build_all_zonelists'
+WARNING: vmlinux - Section mismatch: reference to
+.init.text:zone_absent_pages_in_node from .text between
+'free_area_init_node' (at offset 0xc013faec) and 'build_all_zonelists'
+WARNING: vmlinux - Section mismatch: reference to .init.data: from
+.text between 'free_area_init_node' (at offset 0xc013fb43) and
+'build_all_zonelists'
+WARNING: vmlinux - Section mismatch: reference to
+.init.text:__alloc_bootmem_node from .text between 'sparse_init' (at
+offset 0xc01515b2) and '__section_nr'
+WARNING: vmlinux - Section mismatch: reference to
+.init.data:initkmem_list3 from .text between 'set_up_list3s' (at
+offset 0xc0154b74) and 'poison_obj'
+WARNING: vmlinux - Section mismatch: reference to
+.init.text:__alloc_bootmem from .text between 'vgacon_startup' (at
+offset 0xc01f873b) and 'vgacon_scrolldelta'
+WARNING: vmlinux - Section mismatch: reference to
+.init.data:logo_linux_clut224 from .text between 'fb_find_logo' (at
+offset 0xc01febff) and 'cfb_fillrect'
+WARNING: vmlinux - Section mismatch: reference to .init.text: from
+.text between 'iret_exc' (at offset 0xc02d11ae) and '_etext'
+WARNING: vmlinux - Section mismatch: reference to
+.init.text:start_kernel from .paravirtprobe between
+'__start_paravirtprobe' (at offset 0xc03a24c4) and
+'__stop_paravirtprobe'
