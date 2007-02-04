@@ -1,91 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752593AbXBDXEe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752602AbXBDXFt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752593AbXBDXEe (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Feb 2007 18:04:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752594AbXBDXEe
+	id S1752602AbXBDXFt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Feb 2007 18:05:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752600AbXBDXFt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Feb 2007 18:04:34 -0500
-Received: from main.gmane.org ([80.91.229.2]:42750 "EHLO ciao.gmane.org"
+	Sun, 4 Feb 2007 18:05:49 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:37299 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752593AbXBDXEd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Feb 2007 18:04:33 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Oleg Verych <olecom@flower.upol.cz>
-Subject: Re: Free Linux Driver Development!
-Date: Sun, 4 Feb 2007 23:04:15 +0000 (UTC)
-Organization: Palacky University in Olomouc, experimental physics department.
-Message-ID: <slrnescq4c.90j.olecom@flower.upol.cz>
-References: <1605445807@web.de>
-X-Complaints-To: usenet@sea.gmane.org
-X-Gmane-NNTP-Posting-Host: flower.upol.cz
-Mail-Followup-To: LKML <linux-kernel@vger.kernel.org>, Oleg Verych <olecom@flower.upol.cz>, devzero@web.de, greg@kroah.com
-User-Agent: slrn/0.9.8.1pl1 (Debian)
+	id S1752594AbXBDXFs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Feb 2007 18:05:48 -0500
+Date: Sun, 4 Feb 2007 18:05:44 -0500
+From: Dave Jones <davej@redhat.com>
+To: ebuddington@wesleyan.edu
+Cc: Thomas Hellstr?m <thomas@tungstengraphics.com>,
+       Dave Airlie <airlied@gmail.com>, Lee Revell <rlrevell@joe-job.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: 2.6.20-rc6-mm3 BUG in drm_ioctl with Rage 128 card
+Message-ID: <20070204230544.GB8960@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>, ebuddington@wesleyan.edu,
+	Thomas Hellstr?m <thomas@tungstengraphics.com>,
+	Dave Airlie <airlied@gmail.com>, Lee Revell <rlrevell@joe-job.com>,
+	linux-kernel@vger.kernel.org
+References: <20070203185407.GA5256@pool-70-109-243-148.wma.east.verizon.net> <75b66ecd0702031322k58db9da7l1ae1fc3a9342682b@mail.gmail.com> <20070203230945.GA4557@pool-71-161-133-234.spfdma.east.verizon.net> <21d7e9970702031520y503bfa98p43708e2d18a6599f@mail.gmail.com> <20070203232505.GC4557@pool-71-161-133-234.spfdma.east.verizon.net> <45C5AEA5.2040501@tungstengraphics.com> <20070204192645.GA5169@pool-71-161-131-9.spfdma.east.verizon.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070204192645.GA5169@pool-71-161-131-9.spfdma.east.verizon.net>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> From: devzero web.de
-> Newsgroups: gmane.linux.kernel
-> Subject: Re: Free Linux Driver Development!
-> Date: Sun, 04 Feb 2007 22:37:33 +0100
-> Organization: http://freemail.web.de/
-> Archived-At: <http://permalink.gmane.org/gmane.linux.kernel/489586>
+On Sun, Feb 04, 2007 at 02:26:59PM -0500, Eric Buddington wrote:
+ > On Sun, Feb 04, 2007 at 11:00:05AM +0100, Thomas Hellstr?m wrote:
+ > > Eric,
+ > > Sorry for the breakage. Can you try the attached patch and see if it 
+ > > fixes the problem.
+ > > 
+ > > /Thomas
+ > 
+ > Thomas,
+ > 
+ > Thanks! That seems to fix it:
 
-> First off, compliments to this announcement, I liked it very much!
->
-> Some comment regarding those "volunteers, waiting to get some real work" :)
->
->> > OK, but why isn't your army of volunteers fixing them?
->
->> They don't know about them, or they don't have the hardware to test?
->> Seriously, let the kernel-janitor's project know about any issues you
->> have and they will be glad to jump on it.  Those people are just
->> chomping a the bit to do something a bit bigger than "compiler warning
->> cleanups" :)
->
-> So many times i have seen good ideas brought up, kernel patches being written, posted to lkml, being developed outside mainline for a while and then being forgotten some time later due to lack of energy of some individual to get this into mainline.
->
-> If there is an noticeably number of talented programmers (unfortunately, i`m not) , so why not "feeding" them the right way ? Where is those public and transparent and moderated Linux-Kernel "ToDo"- or "Keep an eye on"-list, sorted by priorities, with sort of a "vote for this feature"-button, so those guys have something they can pick up? There is so much great stuff and ideas out there where they could put their work onto or getting involved, it just needs to be found or sort of being "managed" a little bit better.
->
-> For myself, i`m waiting for so quite some things to get "one step further", but they are more or less tied to some single individuals, for which you just cannot send some "hey, what`s up with your project"-message every second day. The interest in many nice projects often is quite low and evolution quite slow, but not only because of the fact that they aren`t great, but more because of not getting widely known. It`s not always missing specs, it`s also some missing noise/feedback for different features or missing of some "driving force" to bring things forward. How should one developer know that somebody needs a feature if those who could probably need it don`t request it? Maybe just because of the fact that they even imagine that such feature would be possible ?
->
-> Where is those efforts for fixing/integrating fantastic cowloop?
-> What about badram/badmem patch ?
-> Compressed Ccaching ?
-> Somebody helping with development of dm-loop or extend loop.c to support more than 256 devices ?
-> Replacement of proprietary, unstable and unelegant vmware-lopp for being able to mount vmware .vmdk files ? Internal Spec for this is open, dm-userspace could be some infrastructure for this, but the author seems to have other priorities....
-> dm-cow, zfs-fuse - anybody ?
-> Kernel based target for AoE (Ata over Ethernet) ?  (there are two independent implementations, but both got stuck at some early experimental stage) 
+Great.  Thomas, can you resend me that patch with a description & Signed-off-by ?
+(Also for some reason that one looks like it was MIME damaged, git-am wouldn't eat it)
 
-A quick answer for philosophers:
-  	       <http://www.linuxjournal.com/article/7272>
+		Dave
 
-For example, i don't know if somebody volunteered to be a bug-buddy in
-google, see Andrew's 2.6.20-rc6-mm1 announcement. It seems no, as he
-still forwards bugzilla reports to developers/maintainers.
-
-I myself am new. But anyway, i can write a little bit of HOWTO
-
--- effectively handle (among others) LKML, to break free from myths,
-
--- to not afraid emacs as good editor for issues like symbol-searching (TAGS),
-   whitespace, spell (typos) and such,
-
--- having linux tree up-today with small bandwidth: mirrors, patches, quilt
-
-of course if such things prevent people from participating.
-
-[:(ot) As for Greg's message, imho somebody was bored. There is plenty  ;]
-[: of work *in* the kernel, not only in drivers/ related part of it...  ;]
-
-> Just my 2 cents. 
-
-So my.
-
-
-Greetings.
---
--o--=O`C  info emacs : not found  /. .\ ( is there any reason to live? )
- #oo'L O  info make  : not found      o (    yes --- R.I.P. FSF+RMS    )
-<___=E M  man gcc    : not found    `-- ( viva Debian Operating System )
-
+-- 
+http://www.codemonkey.org.uk
