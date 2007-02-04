@@ -1,78 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751871AbXBDCBw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751914AbXBDCDG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751871AbXBDCBw (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Feb 2007 21:01:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751887AbXBDCBw
+	id S1751914AbXBDCDG (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Feb 2007 21:03:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751909AbXBDCDG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Feb 2007 21:01:52 -0500
-Received: from yuma.hostsharing.net ([212.42.230.35]:45637 "EHLO
-	yuma.hostsharing.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751871AbXBDCBv (ORCPT
+	Sat, 3 Feb 2007 21:03:06 -0500
+Received: from web36702.mail.mud.yahoo.com ([209.191.85.36]:20469 "HELO
+	web36702.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751914AbXBDCDF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Feb 2007 21:01:51 -0500
-Date: Sun, 4 Feb 2007 03:00:46 +0100
-From: Elimar Riesebieter <riesebie@lxtec.de>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.20-rc7: hid on PPC
-Message-ID: <20070204020046.GA17041@frodo.home.lxtec.de>
-Mail-Followup-To: Jiri Kosina <jkosina@suse.cz>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <20070202205151.GA3212@aragorn.home.lxtec.de> <Pine.LNX.4.64.0702040046280.22958@jikos.suse.cz>
+	Sat, 3 Feb 2007 21:03:05 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=acuoSLbO+ZRW2U2MZl/L5ftMOYN+dy+n99CCICkjt/+kg2YpbR3So2/rnYq8hov+9iaGkjyOdEYc7o6hYeJ5JGWmUCvxNbz86Bmcs7q3d+9HlsPZ75Z0B5mUKTwGoGW+MY/38GmzxSufOl7piYA/xywjmPln6Irkv2z4trhvKJc=;
+X-YMail-OSG: QwoiD0QVM1niyrAo0kV87dfABtLOBbjQwjFJE8G_G31UWRd98QfrsD.9oUFYzNpNATsAQ3cLBjAFcd5JfLPJlf89jZta5ZgGSyiXJpYeBE8kL6iZv5xbg5gLBuhiLAJ.9FkeL1BkjLqKeLs-
+Date: Sat, 3 Feb 2007 18:03:03 -0800 (PST)
+From: Alex Dubov <oakad@yahoo.com>
+Subject: Re: [RFC] [PATCH] Fix up needless kmap:s
+To: Pierre Ossman <drzeus-list@drzeus.cx>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <45C49444.8020503@drzeus.cx>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0702040046280.22958@jikos.suse.cz>
-Organization: LXTEC
-X-gnupg-key-fingerprint: BE65 85E4 4867 7E9B 1F2A  B2CE DC88 3C6E C54F 7FB0
-X-Editor: VIM - Vi IMproved 7.0 (2006 May 7, compiled Jan 21 2007 22:03:27)
-User-Agent: Mutt/1.5.13-muttng (2007-01-02)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <147773.6460.qm@web36702.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 04 Feb 2007 the mental interface of
-Jiri Kosina told:
+The patch looks ok.
 
-> On Fri, 2 Feb 2007, Elimar Riesebieter wrote:
-> 
-> > it would be great, if we can choose pb_fnmode while configure the 
-> > kernel. I have a PowerBook5,6 but want fkeysfirst. So I have to # echo 2 
-> > >| /sys/module/hid/parameters/pb_fnmode by hand after each boot. The 
-> > module-parm pb_fnmode doesn't work either in /etc/modules nor in a 
-> > modprobe instruction while boot. An modprobe -r usb-hid hid; sleep 2; 
-> > modprobe hid pb_fnmode=2; modprobe usb-hid works on a fresh booted 
-> > machine. Else module-parm isn't available with a built-in hid, though.
-> 
-> Hi Elimar,
-> 
-> sorry, but I don't seem to understand your problem. There are two 
-> situations - either you have hid bultin in kernel, or compiled as a 
-> module. In the first case, you simply modify the kernel boot commandline 
-> to contain a string 
-> 
-> 	hid.pb_fnmode=2 
+However, due to certain peculiarities with memorystick and xd I have to emulate a scatter-gather
+in software. Considering that this particular aspect of implementation is the same for all card
+types on this TI chip, it can be shared by tifm_sd driver as well. In this case highmem won't be
+needed to be avoided and kmap_atomic will come back (may be).
 
-This works fine, thanks ;)
+And, by the way, to what extent pagefault_enable/pagefault_disable calls are needed? They are
+present in k(u)map_atomic even for non-highmem pages/architectures.
 
-> and that's it. In the latter case, you add something like 
-> 
-> 	options hid     pb_fnmode=2
-> 
-> into the /etc/modprobe.conf file (or you can use any distro-specific way 
-> to pass parameters to modules, such as /etc/modprobe.d). This is standard 
-> way to do things, and it works also with hid.
 
-Hmmm, I've had "options hid     pb_fnmode=2" in /etc/modprobe.d/hid,
-which did not work. But "options hid pb_fnmode=2" in
-/etc/modprobe.conf works well ;)
 
-> I don't think there is a need to have this as a separate kernel 
-> configuration option.
-
-Thanks, sorry for the noise.
-
-Elimar
-
--- 
-  Do you smell something burning or ist it me?
-
+ 
+____________________________________________________________________________________
+Expecting? Get great news right away with email Auto-Check. 
+Try the Yahoo! Mail Beta.
+http://advision.webevents.yahoo.com/mailbeta/newmail_tools.html 
