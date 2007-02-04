@@ -1,63 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752488AbXBDSdK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752497AbXBDSg1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752488AbXBDSdK (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Feb 2007 13:33:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752491AbXBDSdK
+	id S1752497AbXBDSg1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Feb 2007 13:36:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752493AbXBDSg1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Feb 2007 13:33:10 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:46271 "EHLO smtp.osdl.org"
+	Sun, 4 Feb 2007 13:36:27 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:46372 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752488AbXBDSdJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Feb 2007 13:33:09 -0500
-Date: Sun, 4 Feb 2007 10:29:28 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: =?ISO-8859-1?Q?Fr=E9d=E9ric_Riss?= <frederic.riss@gmail.com>
-cc: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       Matt Domsch <Matt_Domsch@dell.com>, Adrian Bunk <bunk@stusta.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Eric Van Hensbergen <ericvh@gmail.com>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Neil Brown <neilb@suse.de>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Jeff Garzik <jeff@garzik.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Francois Romieu <romieu@fr.zoreil.com>
-Subject: Re: 2.6.20-rc7: known regressions
-In-Reply-To: <1170613097.5217.13.camel@funkylaptop>
-Message-ID: <Pine.LNX.4.64.0702041027460.8424@woody.linux-foundation.org>
-References: <Pine.LNX.4.64.0701302019530.11095@woody.linux-foundation.org> 
- <200702031058.13830.ak@suse.de> <1170499668.31373.35.camel@funkylaptop> 
- <200702031151.17220.ak@suse.de> <1170594788.5217.4.camel@funkylaptop> 
- <Pine.LNX.4.64.0702040928330.8424@woody.linux-foundation.org>
- <1170613097.5217.13.camel@funkylaptop>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-1463790079-598720875-1170613768=:8424"
+	id S1752492AbXBDSg0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Feb 2007 13:36:26 -0500
+Date: Sun, 4 Feb 2007 10:36:20 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Linux Filesystems <linux-fsdevel@vger.kernel.org>,
+       Linux Memory Management <linux-mm@kvack.org>
+Subject: Re: [patch 9/9] mm: fix pagecache write deadlocks
+Message-Id: <20070204103620.33c24cad.akpm@linux-foundation.org>
+In-Reply-To: <20070204151051.GB12771@wotan.suse.de>
+References: <20070204063707.23659.20741.sendpatchset@linux.site>
+	<20070204063833.23659.55105.sendpatchset@linux.site>
+	<20070204014445.88e6c8c7.akpm@linux-foundation.org>
+	<20070204101529.GA22004@wotan.suse.de>
+	<20070204023055.2583fd65.akpm@linux-foundation.org>
+	<20070204104609.GA29943@wotan.suse.de>
+	<20070204025602.a5f8c53a.akpm@linux-foundation.org>
+	<20070204110317.GA9034@wotan.suse.de>
+	<20070204031549.203f7b47.akpm@linux-foundation.org>
+	<20070204151051.GB12771@wotan.suse.de>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Sun, 4 Feb 2007 16:10:51 +0100 Nick Piggin <npiggin@suse.de> wrote:
 
----1463790079-598720875-1170613768=:8424
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-
-
-
-On Sun, 4 Feb 2007, Frédéric Riss wrote:
+> On Sun, Feb 04, 2007 at 03:15:49AM -0800, Andrew Morton wrote:
+> > On Sun, 4 Feb 2007 12:03:17 +0100 Nick Piggin <npiggin@suse.de> wrote:
+> > 
+> > > On Sun, Feb 04, 2007 at 02:56:02AM -0800, Andrew Morton wrote:
+> > > > On Sun, 4 Feb 2007 11:46:09 +0100 Nick Piggin <npiggin@suse.de> wrote:
+> > > > 
+> > > > If that recollection is right, I think we could afford to reintroduce that
+> > > > problem, frankly.  Especially as it only happens in the incredibly rare
+> > > > case of that get_user()ed page getting unmapped under our feet.
+> > > 
+> > > Dang. I was hoping to fix it without introducing data corruption.
+> > 
+> > Well.  It's a compromise.  Being practical about it, I reeeealy doubt that
+> > anyone will hit this combination of circumstances.
 > 
-> I think Andi said that adding asmlinkage on the function pointers
-> shouldn't harm ia64. If you prefer wrapper functions, one of the patches
-> I sent ( http://lkml.org/lkml/2007/1/30/309 ) did that, but the casting
-> it uses looks clumsy.
+> They're not likely to hit the deadlocks, either. Probability gets more
+> likely after my patch to lock the page in the fault path. But practially,
+> we could live without that too, because the data corruption it fixes is
+> very rare as well. Which is exactly what we've been doing quite happily
+> for most of 2.6, including all distro kernels (I think).
 
-I'm more comfortable with that one, at least for now. It's guaranteed to 
-not break ia64, at least. Also, it does what I think is right: do the 
-calling convention conversion at the call-site rather than at a C compiler 
-level.
+Thing is, an application which is relying on the contents of that page is
+already unreliable (or really peculiar), because it can get indeterminate
+results anyway.
 
-Will apply a whitespace-fixed version,
+> ...
+> 
+> On a P4 Xeon, SMP kernel, on a tmpfs filesystem, a 1GB dd if=/dev/zero write
+> had the following performance (higher is worse):
+> 
+> Orig kernel			New kernel
+> new file (no pagecache)
+> 4K  blocks 1.280s		1.287s (+0.5%)
+> 64K blocks 1.090s		1.105s (+1.4%)
+> notrunc (uptodate pagecache)
+> 4K  blocks 0.976s		1.001s (+0.5%)
+> 64K blocks 0.780s		0.792s (+1.5%)
+> 
+> [numbers are better than +/- 0.005]
+> 
+> So we lose somewhere between half and one and a half of one percent
+> performance in a pagecache write intensive workload.
 
-		Linus
----1463790079-598720875-1170613768=:8424--
+That's not too bad - caches are fast.  Did you look at optimising the
+handling of that temp page, ensure that we always use the same page?  I
+guess the page allocator per-cpu-pages thing is being good here.
+
+I'm not sure how, though.  Park a copy in the task_struct, just as an
+experiment.  But that'd de-optimise multiple-tasks-writing-on-the-same-cpu.
+Maybe a per-cpu thing?  Largely duplicates the page allocator's per-cpu-pages.
+
+Of course, we're also increasing caceh footprint, which this test won't
+show.
+
