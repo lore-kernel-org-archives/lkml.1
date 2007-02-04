@@ -1,73 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751464AbXBDAFk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751701AbXBDAK0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751464AbXBDAFk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Feb 2007 19:05:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751698AbXBDAFk
+	id S1751701AbXBDAK0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Feb 2007 19:10:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751708AbXBDAK0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Feb 2007 19:05:40 -0500
-Received: from nz-out-0506.google.com ([64.233.162.225]:1634 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751464AbXBDAFj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Feb 2007 19:05:39 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
-        b=cDYSVJLftzhtfcltAu7LlkTl8s7lqzxhjNfjgWpE9Pv4epI2P2lLcVsY1mnYVX8EFbJkWUHL+BUstHAveHlymKfhlq/zMOlI0s+5j/hA1HEo5p0FxHycY3aIgVu9STxryg3f8t+gG8Fd/B9EyMcht+aK9IhLjhzYglymlylhgEk=
-Date: Sun, 4 Feb 2007 02:05:32 +0200
-To: Richard Knutsson <ricknu-0@student.ltu.se>
-Cc: linux-kernel@vger.kernel.org, randy.dunlap@oracle.com
-Subject: Re: A CodingStyle suggestion
-Message-ID: <20070204000532.GA20721@Ahmed>
-References: <20070203215848.GA10440@Ahmed> <45C51310.6070304@student.ltu.se>
+	Sat, 3 Feb 2007 19:10:26 -0500
+Received: from lucidpixels.com ([75.144.35.66]:38423 "EHLO lucidpixels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751698AbXBDAK0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Feb 2007 19:10:26 -0500
+Date: Sat, 3 Feb 2007 19:10:25 -0500 (EST)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+X-X-Sender: jpiszcz@p34.internal.lan
+To: linux-kernel@vger.kernel.org
+cc: linux-usb-users@lists.sourceforge.net
+Subject: 2.6.20-rc7 USB issue(?) [disabled by hub(EMI?)]
+Message-ID: <Pine.LNX.4.64.0702031903550.29127@p34.internal.lan>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <45C51310.6070304@student.ltu.se>
-User-Agent: Mutt/1.5.11
-From: "Ahmed S. Darwish" <darwish.07@gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 03, 2007 at 11:56:16PM +0100, Richard Knutsson wrote:
-> Ahmed S. Darwish wrote:
-> >Hi all,
-> >
-> >In CodingStyle Chapter 16 "Function return value and names", why not
-> >adding a comment about the favorable community way of checking the return
-> >value. ie:
-> >
-> >ret = do_method();
-> >if (ret) {
-> >   /* deal with error */
-> >}
-> >
-> >and not other ways like:
-> >
-> >if (do_method()) or 
-> So:
-> 
-> if (is_true()) {
-> 	/* do something */
-> }
-> 
-> is alright then? If so, I agree, but please make it real clear in the 
-> document ;)
+Not sure if this is normal or not, was not doing anything out of the 
+ordinary and after secs/3600..  ~ 42hrs this occured?
 
-Good catch :). A small grep of `access_ok' reveals that it's always used in the 
-form of:
-if (!access_ok()) { .. }
+$ uptime
+  19:06:17 up 2 days, 29 min, 10 users,  load average: 0.13, 0.07, 0.06
 
-I can conclude that verbal/imperative methods like `kmalloc, add_work' be 
-checked as:
-ret = do_work();
-if (ret) { ... }
-and predicate methods like `acess_ok, pci_dev_present' be checked like:
-if (!access_ok) { ... }
-if (pci_dev_present) { ...}
+$ uname -ra
+Linux p34 2.6.20-rc7 #2 SMP Wed Jan 31 20:03:09 EST 2007 i686 GNU/Linux
 
-Any comments ?
+One thing I did recently was upgrade to a newer Intel Motherboard BIOS but 
+this is also the first time I have run 2.6.20-rc7 for this long as well.
 
--- 
-Ahmed S. Darwish
-http://darwish-07.blogspot.com
+Any clues?
+
+[151698.814092] hub 6-0:1.0: port 2 disabled by hub (EMI?), re-enabling...
+[151698.814102] usb 6-2: USB disconnect, address 2
+[151698.917209] usb 6-2: new low speed USB device using uhci_hcd and 
+address 3
+[151699.078032] usb 6-2: configuration #1 chosen from 1 choice
+[151699.525889] hiddev96: USB HID v1.00 Device [        UPS] on 
+usb-0000:00:1d.1-2
+
+Mobo: Intel DG965WHMKR
+Bios: 1618 (latest)
+
+Could this have been from an apt-get update/upgrade?  Perhaps it upgraded 
+something that would probe/look at the USB bus?
+
+It is just the first time I have seen this and was wondering what the 
+culprit could be..
+
+Reading package lists... Done
+Reading package lists... Done
+Building dependency tree... Done
+Calculating upgrade... Done
+The following NEW packages will be installed
+   avahi-daemon libavahi-core4 libdaemon0
+The following packages will be upgraded:
+   adduser akregator alsa-utils apt-listchanges autoconf bsdutils dcoprss
+   ethereal-common gdm-themes geoip-bin kaddressbook kalarm kandy karm kcron
+   kdat kdeadmin kdeadmin-kfile-plugins kdenetwork kdenetwork-filesharing
+   kdenetwork-kfile-plugins kdepim kdepim-kfile-plugins kdepim-kio-plugins
+   kdepim-kresources kdepim-wizards kdict kdnssd kget kitchensync kleopatra
+   kmail kmailcvt knetworkconf knewsticker knode knotes konsolekalendar kontact
+   kopete korganizer korn kpackage kpf kpilot kppp krdc krfb ksirc ksync ksysv
+   ktnef kuser kwifimanager libavahi-client-dev libavahi-client3
+   libavahi-common-data libavahi-common-dev libavahi-common3
+   libavahi-compat-libdnssd1 libavahi-glib1 libavahi-qt3-1 libc6 libc6-dev
+   libgeoip1 libgtk2.0-0 libgtk2.0-bin libgtk2.0-common libgtk2.0-dev libindex0
+   libkcal2b libkdepim1a libkgantt0 libkleopatra1 libkmime2 libkpimexchange1
+   libkpimidentities1 libksieve0 libktnef1 libmimelib1c2a libnss-mdns
+   libpoppler0c2 libpoppler0c2-qt libpq4 librss1 libsane lilo locales logcheck
+   logcheck-database logtail mailgraph mount networkstatus pure-ftpd
+   pure-ftpd-common sane sane-utils squid squid-common sysstat util-linux w3m
+   wireshark wireshark-common x11-common xlibs-data xorg xserver-xorg
+   xserver-xorg-input-all xserver-xorg-video-all xserver-xorg-video-i810 xterm
+113 upgraded, 3 newly installed, 0 to remove and 0 not upgraded.
+Need to get 77.0MB of archives.
+
+Any ideas?
+
+Thanks,
+
+Justin.
