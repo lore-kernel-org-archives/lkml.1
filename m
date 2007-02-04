@@ -1,86 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752525AbXBDT4y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752524AbXBDT7Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752525AbXBDT4y (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Feb 2007 14:56:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752526AbXBDT4y
+	id S1752524AbXBDT7Z (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Feb 2007 14:59:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752526AbXBDT7Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Feb 2007 14:56:54 -0500
-Received: from ug-out-1314.google.com ([66.249.92.170]:30027 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752525AbXBDT4x (ORCPT
+	Sun, 4 Feb 2007 14:59:25 -0500
+Received: from nz-out-0506.google.com ([64.233.162.230]:62356 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752524AbXBDT7Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Feb 2007 14:56:53 -0500
+	Sun, 4 Feb 2007 14:59:24 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=thj6jXT2bkTt2E15aP9Zu/p6Ns7xtAN2dLWDat/r7gnN5JHq96Kx7ZxSzKWbZVXN0UXyW0893HO3+0ygUFRfHuBu+lFItfCF19gnVDe2oaHESLNw/5PoJVRqCQ0zRALMxD7Sn02Kkwnk0vfCJfrwFGK15XujZVjYqyJUSAZIrVE=
-Message-ID: <5a4c581d0702041156v55aea567wd6da4460dfd77b4c@mail.gmail.com>
-Date: Sun, 4 Feb 2007 20:56:51 +0100
-From: "Alessandro Suardi" <alessandro.suardi@gmail.com>
-To: "Linus Torvalds" <torvalds@linux-foundation.org>
-Subject: Re: Super Kernel Sunday!
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0702041057090.8424@woody.linux-foundation.org>
+        b=Vpm326xniMdaerT66TqfKaSsG8TYkiWa8rIIchKA+khKbAjbP1rtK2u3sRXUnWCDqctxrnli/xvHkn7s5qynx5T6Ddy//tH1CDhRoeCB2N8zPJ5IUZL2LWVvGpDIarLeuYgAWcqR9/igkUjilqj6lnVPs3+sWS+HK1cxJ2309eY=
+Message-ID: <8d158e1f0702041159m45a70303lf0fc3ce71b8f946a@mail.gmail.com>
+Date: Sun, 4 Feb 2007 20:59:23 +0100
+From: "Patrick Ale" <patrick.ale@gmail.com>
+To: Alan <alan@lxorguk.ukuu.org.uk>
+Subject: Re: More pata_ stuff
+Cc: "Alistair John Strachan" <s0348365@sms.ed.ac.uk>,
+       "Robert Hancock" <hancockr@shaw.ca>, linux-kernel@vger.kernel.org
+In-Reply-To: <8d158e1f0702041139k658e6d6dv52e7b3c68ef146e1@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <Pine.LNX.4.64.0702041057090.8424@woody.linux-foundation.org>
+References: <fa.0NlWYh2G2PI5gqX24xfe+268eQY@ifi.uio.no>
+	 <45C619FC.3040804@shaw.ca>
+	 <8d158e1f0702041020yd1ad858m77538b198d467797@mail.gmail.com>
+	 <200702041910.46421.s0348365@sms.ed.ac.uk>
+	 <20070204193441.6746bbca@localhost.localdomain>
+	 <8d158e1f0702041129n578a4a58xe8cb2a5f4da69284@mail.gmail.com>
+	 <20070204194909.136dccc5@localhost.localdomain>
+	 <8d158e1f0702041139k658e6d6dv52e7b3c68ef146e1@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/4/07, Linus Torvalds <torvalds@linux-foundation.org> wrote:
->
-> In a widely anticipated move, Linux "headcase" Torvalds today announced
-> the immediate availability of the most advanced Linux kernel to date,
-> version 2.6.20.
->
-> Before downloading the actual new kernel, most avid kernel hackers have
-> been involved in a 2-hour pre-kernel-compilation count-down, with some
-> even spending the preceding week doing typing exercises and reciting PI
-> to a thousand decimal places.
->
-> The half-time entertainment is provided by randomly inserted trivial
-> syntax errors that nerds are expected to fix at home before completing
-> the compile, but most people actually seem to mostly enjoy watching the
-> compile warnings, sponsored by Anheuser-Busch, scroll past.
->
-> As ICD head analyst Walter Dickweed put it: "Releasing a new kernel on
-> Superbowl Sunday means that the important 'pasty white nerd'
-> constituency finally has something to do while the rest of the country
-> sits comatose in front of their 65" plasma screens".
->
-> Walter was immediately attacked for his racist and insensitive remarks
-> by Geeks without Borders representative Marilyn vos Savant, who pointed
-> out that not all of their members are either pasty nor white.  "Some of
-> them even shower!" she added, claiming that the constant stereotyping
-> hurts nerds' standing in society.
->
-> Geeks outside the US were just confused about the whole issue, and were
-> heard wondering what the big hoopla was all about. Some of the more
-> culturally aware of them were heard snickering about balls that weren't
-> even round.
+On 2/4/07, Patrick Ale <patrick.ale@gmail.com> wrote:
+> On 2/4/07, Alan <alan@lxorguk.ukuu.org.uk> wrote:
+> \
+> > OLDPIIX is for "old" PIIX devices only - from pentium era. It does not
+> > cover the later chips at all
 
-Ha. And you wouldn't have thought there was someone who
+Just to make sure, this is a P2 SMP board, Slot A, doesnt even support P3 CPUs.
+The board is something like, 5 years old or so. Which driver *should*
+work for me?
 
- - was born and raised and lives in old europe
- - builds and tests 100+ kernels a year
- - has already built 2.6.20
-
-[asuardi@sandman ~]$ cat /proc/version
-Linux version 2.6.20 (asuardi@sandman) (gcc version 4.1.1 20070105
-(Red Hat 4.1.1-51)) #1 Sun Feb 4 20:41:13 CET 2007
-
-...because...
-
-there's the SUPERBOWL to watch in front of a 32" LCD screen !!
-
- (yes, I took tomorrow off work of course ;)
-
---alessandro
-
- "but I thought that I should let you know
-  the things that I don't always show
-  might not be worth the time it took"
-
-     (Steve Wynn, 'If My Life Was An Open Book')
+The board even has *gasp* ISA slots and doesnt support anything more
+than UDMA33 :D
