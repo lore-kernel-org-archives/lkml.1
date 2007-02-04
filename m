@@ -1,46 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751998AbXBDDYI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752016AbXBDD4H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751998AbXBDDYI (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Feb 2007 22:24:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752011AbXBDDYI
+	id S1752016AbXBDD4H (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Feb 2007 22:56:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752021AbXBDD4H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Feb 2007 22:24:08 -0500
-Received: from firewall.rowland.harvard.edu ([140.247.233.35]:64492 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with SMTP id S1751998AbXBDDYH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Feb 2007 22:24:07 -0500
-Date: Sat, 3 Feb 2007 22:24:04 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-cc: Oleg Nesterov <oleg@tv-sign.ru>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Ingo Molnar <mingo@elte.hu>, Christoph Hellwig <hch@infradead.org>,
-       Andrew Morton <akpm@osdl.org>, <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 3/7] barrier: a scalable synchonisation barrier
-In-Reply-To: <20070204002338.GB5647@linux.vnet.ibm.com>
-Message-ID: <Pine.LNX.4.44L0.0702032220560.17500-100000@netrider.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sat, 3 Feb 2007 22:56:07 -0500
+Received: from ns2.suse.de ([195.135.220.15]:60762 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752016AbXBDD4F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Feb 2007 22:56:05 -0500
+Date: Sun, 4 Feb 2007 04:55:49 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: =?iso-8859-1?Q?J=F6rn?= Engel <joern@lazybastard.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Linux Filesystems <linux-fsdevel@vger.kernel.org>,
+       Linux Memory Management <linux-mm@kvack.org>
+Subject: Re: [patch 1/9] fs: libfs buffered write leak fix
+Message-ID: <20070204035549.GA3502@wotan.suse.de>
+References: <20070129081905.23584.97878.sendpatchset@linux.site> <20070129081914.23584.23886.sendpatchset@linux.site> <20070202155236.dae54aa2.akpm@linux-foundation.org> <20070203013316.GB27300@wotan.suse.de> <20070203174947.GA2656@lazybastard.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070203174947.GA2656@lazybastard.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 3 Feb 2007, Paul E. McKenney wrote:
-
-> > And another note: this all assumes that STORE-MB-LOAD works "correctly", yes?
-> > We have other code which relies on that, should not be a problem.
+On Sat, Feb 03, 2007 at 05:49:47PM +0000, Jörn Engel wrote:
+> On Sat, 3 February 2007 02:33:16 +0100, Nick Piggin wrote:
+> > 
+> > If doing a partial-write, simply clear the whole page and set it uptodate
+> > (don't need to get too tricky).
 > 
-> We have been working with Doug Lea of SUNY Oswego, Sebatian Burckhardt of
-> University of Pennsylvania, and Vijay Saraswat of IBM Research towards
-> a "universal memory model" that accommodates all machines.  Currently,
-> it does in fact handle store-mb-load the way we all want, thankfully!
+> That sounds just like a bug I recently fixed in logfs.  prepare_write()
+> would clear the page, commit_write() would write the whole page.  Bug
+> can be reproduced with a simple testcate:
+> 
+> echo -n foo > foo
+> echo -n bar >> foo
+> cat foo
+> 
+> With the bug, the second write will replace "foo" with "\0\0\0" and
+> cat will return "bar".  Doing a read instead of clearing the page will
+> return "foobar", as would be expected.
+> 
+> Can you hit the same bug with your patch or did I miss something?
 
-We should add that many places in the kernel do depend on proper behavior 
-for this data access pattern.  So whatever "universal memory model" we end 
-up with, it had better handle the pattern correctly if Linux is to support 
-it.
-
-It's interesting to note, however, that this does exclude simple MESI.
-
-Alan Stern
-
+Yes, the page is only cleared if it is not uptodate. This is fine
+for the simple filesystems.
