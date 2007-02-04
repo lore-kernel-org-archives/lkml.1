@@ -1,59 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751572AbXBCXt7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751596AbXBCXxq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751572AbXBCXt7 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Feb 2007 18:49:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751596AbXBCXt7
+	id S1751596AbXBCXxq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Feb 2007 18:53:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751698AbXBCXxp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Feb 2007 18:49:59 -0500
-Received: from styx.suse.cz ([82.119.242.94]:60766 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751572AbXBCXt6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Feb 2007 18:49:58 -0500
-Date: Sun, 4 Feb 2007 00:50:13 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Elimar Riesebieter <riesebie@lxtec.de>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.20-rc7: hid on PPC
-In-Reply-To: <20070202205151.GA3212@aragorn.home.lxtec.de>
-Message-ID: <Pine.LNX.4.64.0702040046280.22958@jikos.suse.cz>
-References: <20070202205151.GA3212@aragorn.home.lxtec.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sat, 3 Feb 2007 18:53:45 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:59298 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751596AbXBCXxp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Feb 2007 18:53:45 -0500
+Date: Sun, 4 Feb 2007 00:05:53 +0000
+From: Alan <alan@lxorguk.ukuu.org.uk>
+To: Jon Masters <jonathan@jonmasters.org>
+Cc: Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       David Schwartz <davids@webmaster.com>,
+       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Ban module license tag string termination trick
+Message-ID: <20070204000553.18c102d4@localhost.localdomain>
+In-Reply-To: <45C51B81.5040309@jonmasters.org>
+References: <MDEHLPKNGKAHNMBLJOLKEEJIBFAC.davids@webmaster.com>
+	<Pine.LNX.4.61.0702032136430.13874@yvahk01.tjqt.qr>
+	<20070203222141.6f723fd9@localhost.localdomain>
+	<45C51B81.5040309@jonmasters.org>
+X-Mailer: Claws Mail 2.7.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2 Feb 2007, Elimar Riesebieter wrote:
+> Anyway. Are we doing this or not - the more I think about it, the more 
+> I'm kinda "happy" to just leave things as they are. Yes, bad people will 
+> continuing doing bad things no matter what we do. Do we really want to 
+> change stuff just to work around obvious abuse? Alan?
 
-> it would be great, if we can choose pb_fnmode while configure the 
-> kernel. I have a PowerBook5,6 but want fkeysfirst. So I have to # echo 2 
-> >| /sys/module/hid/parameters/pb_fnmode by hand after each boot. The 
-> module-parm pb_fnmode doesn't work either in /etc/modules nor in a 
-> modprobe instruction while boot. An modprobe -r usb-hid hid; sleep 2; 
-> modprobe hid pb_fnmode=2; modprobe usb-hid works on a fresh booted 
-> machine. Else module-parm isn't available with a built-in hid, though.
-
-Hi Elimar,
-
-sorry, but I don't seem to understand your problem. There are two 
-situations - either you have hid bultin in kernel, or compiled as a 
-module. In the first case, you simply modify the kernel boot commandline 
-to contain a string 
-
-	hid.pb_fnmode=2 
-
-and that's it. In the latter case, you add something like 
-
-	options hid     pb_fnmode=2
-
-into the /etc/modprobe.conf file (or you can use any distro-specific way 
-to pass parameters to modules, such as /etc/modprobe.d). This is standard 
-way to do things, and it works also with hid.
-
-I don't think there is a need to have this as a separate kernel 
-configuration option.
-
-Thanks,
-
--- 
-Jiri Kosina
-SUSE Labs
+Actually checking the ELF sections does make the loader more robust and
+we need to fix up the off by one as well so I think so yes. When I
+thought about this I was happy I'd have said yes without modules doing
+GPL\0
