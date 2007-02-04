@@ -1,58 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752162AbXBDIQo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752172AbXBDIRH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752162AbXBDIQo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Feb 2007 03:16:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752165AbXBDIQo
+	id S1752172AbXBDIRH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Feb 2007 03:17:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752174AbXBDIRG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Feb 2007 03:16:44 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:47956 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752162AbXBDIQn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Feb 2007 03:16:43 -0500
-Subject: Re: [RFC] Tracking mlocked pages and moving them off the LRU
-From: Arjan van de Ven <arjan@infradead.org>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Rik van Riel <riel@redhat.com>
-In-Reply-To: <Pine.LNX.4.64.0702031744060.31986@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0702022214580.3960@schroedinger.engr.sgi.com>
-	 <20070203005316.eb0b4042.akpm@linux-foundation.org>
-	 <Pine.LNX.4.64.0702030946330.5388@schroedinger.engr.sgi.com>
-	 <1170525860.3073.1054.camel@laptopd505.fenrus.org>
-	 <Pine.LNX.4.64.0702031055210.18224@schroedinger.engr.sgi.com>
-	 <20070203172242.e5bf2534.akpm@linux-foundation.org>
-	 <Pine.LNX.4.64.0702031744060.31986@schroedinger.engr.sgi.com>
-Content-Type: text/plain
-Organization: Intel International BV
-Date: Sun, 04 Feb 2007 09:16:16 +0100
-Message-Id: <1170576977.3073.1100.camel@laptopd505.fenrus.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 (2.8.2.1-2.fc6) 
+	Sun, 4 Feb 2007 03:17:06 -0500
+Received: from tag.witbe.net ([81.88.96.48]:49979 "EHLO tag.witbe.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752172AbXBDIRF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Feb 2007 03:17:05 -0500
+Reply-To: <rol@as2917.net>
+From: "Paul Rolland" <rol@as2917.net>
+To: "'Jan Engelhardt'" <jengelh@linux01.gwdg.de>
+Cc: "'Linux Kernel Mailing List'" <linux-kernel@vger.kernel.org>,
+       "'Andrew Morton'" <akpm@osdl.org>,
+       "'Jon Masters'" <jonathan@jonmasters.org>,
+       "'Alexey Dobriyan'" <adobriyan@gmail.com>
+Subject: RE: [PATCH] Ban module license tag string termination trick
+Date: Sun, 4 Feb 2007 09:14:57 +0100
+Organization: AS2917.net
+Message-ID: <006401c74834$8f927d70$2101a8c0@donald>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+X-Mailer: Microsoft Office Outlook 11
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
+In-Reply-To: <Pine.LNX.4.61.0702022006500.27603@yvahk01.tjqt.qr>
+thread-index: AcdG/d9Hk6bdXZaZQmujZGgtrv4yiABNmosg
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> So what (legally) happens when someone does
+> MODULE_IS_UNDER_GPL_LICENSE(2), (~0) or (-1)? Does the judge 
+> get confused?
+> Then better use strings and an appropriate check.
 
-> Exclusion or inclusion of NR_MLOCK number is straightforward for the dirty 
-> ratio calcuations. global_page_state(NR_MLOCK) f.e. would get us totals on 
-> mlocked pages per zone. node_page_state(NR_MLOCK) gives a node specific 
-> number of mlocked pages. The nice thing about ZVCs is that it allows
-> easy access to counts on different levels.
+Please let me not believe it's not possible to have a compilation test
+on that that would issue a #error if param is not one of the acceptable
+value...
 
-however... mlocked pages still can be dirty, and want to be written back
-at some point ;)
-
-I can see the point of doing dirty ratio as percentage of the LRU size,
-but in that case you don't need to track NR_MLOCK, only the total LRU
-size. (And yes it'll be sometimes optimistic because not all mlock'd
-pages are moved off the lru yet, but I doubt you'll have that as a
-problem in practice)
--- 
-if you want to mail me at work (you don't), use arjan (at) linux.intel.com
-Test the interaction between Linux and your BIOS via http://www.linuxfirmwarekit.org
+Paul
 
