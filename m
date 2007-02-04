@@ -1,68 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752460AbXBDRiZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752463AbXBDRjM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752460AbXBDRiZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Feb 2007 12:38:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752455AbXBDRiZ
+	id S1752463AbXBDRjM (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Feb 2007 12:39:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752465AbXBDRjM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Feb 2007 12:38:25 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:44693 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752460AbXBDRiY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Feb 2007 12:38:24 -0500
-Date: Sun, 4 Feb 2007 09:34:27 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: =?ISO-8859-1?Q?Fr=E9d=E9ric_Riss?= <frederic.riss@gmail.com>
-cc: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       Matt Domsch <Matt_Domsch@dell.com>, Adrian Bunk <bunk@stusta.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Eric Van Hensbergen <ericvh@gmail.com>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Neil Brown <neilb@suse.de>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Jeff Garzik <jeff@garzik.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Francois Romieu <romieu@fr.zoreil.com>
-Subject: Re: 2.6.20-rc7: known regressions
-In-Reply-To: <1170594788.5217.4.camel@funkylaptop>
-Message-ID: <Pine.LNX.4.64.0702040928330.8424@woody.linux-foundation.org>
-References: <Pine.LNX.4.64.0701302019530.11095@woody.linux-foundation.org> 
- <200702031058.13830.ak@suse.de> <1170499668.31373.35.camel@funkylaptop> 
- <200702031151.17220.ak@suse.de> <1170594788.5217.4.camel@funkylaptop>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-1463790079-472062795-1170610467=:8424"
+	Sun, 4 Feb 2007 12:39:12 -0500
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:31655 "EHLO
+	pd4mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752463AbXBDRjK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Feb 2007 12:39:10 -0500
+Date: Sun, 04 Feb 2007 11:38:04 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: More pata_ stuff
+In-reply-to: <fa.0NlWYh2G2PI5gqX24xfe+268eQY@ifi.uio.no>
+To: Patrick Ale <patrick.ale@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Message-id: <45C619FC.3040804@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.0NlWYh2G2PI5gqX24xfe+268eQY@ifi.uio.no>
+User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-
----1463790079-472062795-1170610467=:8424
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-
-
-
-On Sun, 4 Feb 2007, Frédéric Riss wrote:
+Patrick Ale wrote:
+> Hi,
 > 
-> New patch:
+> I tried to use the new pata drivers on a Dual PII-400Mhz with the
+> Intel PIIX controller.
+> 
+> Unfortunately the controller doesn't get detected on boot time, the
+> old IDE drivers do work and see the controller as a PIIX4 chipset,
+> which is correct.
+> 
+> The mainboard is a Asus P2B with integrated Adaptec SCSI host and the
+> PIIX controller.
 
-I didn't get how this would fix the ia64 issues? I thought ia64 needed 
-the standard calling convention?
+ata_piix should drive that chipset. Was that driver enabled in the 
+kernel configuration, and if it's built modular is the initrd, etc. set 
+up to load it on boot?
 
-My gut feel is that EFI should be handled exactly the same way that we 
-used to handle APM: never even make it look like it's callable from C, but 
-make architecture-specific wrapper functions that have bog-standard 
-calling conventions, and then possibly even use inline asm to actually do 
-the real call (but even if you don't, at that point it would be inside one 
-particular arch-specific EFI source file - nobody outside of that would 
-ever call into the firmware directly).
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
 
-As it is, I don't think I dare apply this right now, which means that it 
-will miss 2.6.20, and we'll have to backport it to the stable tree when 
-everybody agrees and has acked it. I don't like having suspend broken on 
-EFI macs, but on the other hand, I would hate to have an ia64 regression 
-even more..
-
-		Linus
----1463790079-472062795-1170610467=:8424--
