@@ -1,43 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752351AbXBDN5d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752354AbXBDN54@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752351AbXBDN5d (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Feb 2007 08:57:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752349AbXBDN5d
+	id S1752354AbXBDN54 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Feb 2007 08:57:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752355AbXBDN5z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Feb 2007 08:57:33 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:46711 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752346AbXBDN5d (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Feb 2007 08:57:33 -0500
-Subject: Re: mm: how to check for kernel pages
-From: Arjan van de Ven <arjan@infradead.org>
-To: Michal Hocko <mstsxfx@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20070204110256.GA10477@curandero.marconia.cz>
-References: <20070204110256.GA10477@curandero.marconia.cz>
-Content-Type: text/plain
-Organization: Intel International BV
-Date: Sun, 04 Feb 2007 14:57:30 +0100
-Message-Id: <1170597450.3073.1127.camel@laptopd505.fenrus.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 (2.8.2.1-2.fc6) 
+	Sun, 4 Feb 2007 08:57:55 -0500
+Received: from cacti.profiwh.com ([85.93.165.66]:46010 "EHLO cacti.profiwh.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752354AbXBDN5z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Feb 2007 08:57:55 -0500
+Message-ID: <45C5E66A.1090005@gmail.com>
+Date: Sun, 04 Feb 2007 14:58:02 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0b2 (X11/20070116)
+MIME-Version: 1.0
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: hwsusp defunct
+References: <45C5DBBA.20502@gmail.com> <200702041452.28874.rjw@sisk.pl>
+In-Reply-To: <200702041452.28874.rjw@sisk.pl>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-02-04 at 12:02 +0100, Michal Hocko wrote:
+Rafael J. Wysocki napsal(a):
 > Hi,
-> is there any effective and fast way how to find out whether page
-> given by its page frame number is currenly used by (mapped by) kernel?
+> 
+> On Sunday, 4 February 2007 14:12, Jiri Slaby wrote:
+>> Hi.
+>>
+>> When I'm trying to suspend to mem one machine, it wakes immediatly back with 
+>> nothing notable in dmesg:
+> [--snip--] 
+>> Will PM_DEBUG or ACPI_DEBUG help somehow? Or later kernel?
+> 
+> Later kernel might help, some important fixes have gone in since 2.6.19,
+> PCI quirks-related etc.
+> 
+> Please try 2.6.20-rc7 and if that doesn't help, try the latest -mm.
 
-what do you want to use this for? The answer to your question greatly
-depends on that...
+Yes, I'll try it next week (maybe 2.6.20 will be out) and will keep you informed.
 
-Specifically, do you want to know if it's a kernel allocated page or a
-kernel mapped page? (Those are different concepts)
-Also can you deal with false negatives/positives?
-
-
+thanks,
+-- 
+http://www.fi.muni.cz/~xslaby/            Jiri Slaby
+faculty of informatics, masaryk university, brno, cz
+e-mail: jirislaby gmail com, gpg pubkey fingerprint:
+B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
