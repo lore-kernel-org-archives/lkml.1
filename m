@@ -1,87 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752557AbXBDVGN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752560AbXBDVJ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752557AbXBDVGN (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Feb 2007 16:06:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752558AbXBDVGN
+	id S1752560AbXBDVJ3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Feb 2007 16:09:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752561AbXBDVJ3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Feb 2007 16:06:13 -0500
-Received: from nf-out-0910.google.com ([64.233.182.189]:39610 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752557AbXBDVGL (ORCPT
+	Sun, 4 Feb 2007 16:09:29 -0500
+Received: from mail1.webmaster.com ([216.152.64.169]:1887 "EHLO
+	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752560AbXBDVJ2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Feb 2007 16:06:11 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=Po0ey32YX6vl20RZGS7YZcWHmOSJRT9ljs1Sn5OJCb+8ZmicXrcnkPuU/E2ef+xKRcABWN6Ge16IqIwDff6gNpVf5/3y21ap1xjIoVohx6rW42wn+DLN6Q641nctzQEZseFUPUCeB/KTYhynUMWwgFo5xdh30j2RLBr6jqeihyE=
-Message-ID: <1a297b360702041306x73b4be24j32922aed2a95f7d4@mail.gmail.com>
-Date: Mon, 5 Feb 2007 01:06:09 +0400
-From: "Manu Abraham" <abraham.manu@gmail.com>
-To: "Linux Kernel" <linux-kernel@vger.kernel.org>
-Subject: PCI BIST is running
+	Sun, 4 Feb 2007 16:09:28 -0500
+From: "David Schwartz" <davids@webmaster.com>
+To: "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+Subject: RE: O_NONBLOCK setting "leak" outside of a process??
+Date: Sun, 4 Feb 2007 13:08:36 -0800
+Message-ID: <MDEHLPKNGKAHNMBLJOLKEEOJBFAC.davids@webmaster.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+X-Priority: 3 (Normal)
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
+In-Reply-To: <45C63DE9.7020800@tls.msk.ru>
+Importance: Normal
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
+X-Authenticated-Sender: joelkatz@webmaster.com
+X-Spam-Processed: mail1.webmaster.com, Sun, 04 Feb 2007 13:08:57 -0800
+	(not processed: message from trusted or authenticated source)
+X-MDRemoteIP: 206.171.168.138
+X-Return-Path: davids@webmaster.com
+X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
+Reply-To: davids@webmaster.com
+X-MDAV-Processed: mail1.webmaster.com, Sun, 04 Feb 2007 13:08:58 -0800
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-I have 3 similar PCI cards all 32 bit in 32 bit PCI slots on a x86 (32 bit) CPU
+> > *Every* blocking fd operation should be followed by a check to
+> > see if the
+> > operation failed, succeeded, or partially succeeded. If it partially
+> > succeeded, it needs to be continued. If it failed, you need to
+> > check if the
+> > error is fatal or transient. If transient, you need to back off
+> > and retry.
+> > It has, sadly, always been this way. (Programs can get signals,
+> > debuggers
+> > can interrupt a system call, the unexpected happens.)
 
-On booting up 2.6.17.7, i get this message,
+> Well, that's partly nonsense.  The only error condition which is
+> always being
+> checked in correctly written software is EINTR - if you've got an
+> interrupt,
+> continue/retry the I/O.
 
-PCI: Unable to handle 64-bit address space for device 02:0a.0
+> Checking and retrying for EAGAIN is umm.. plain wrong.  You'll get a nice
+> busywait eating 100% CPU this way, till the I/O actually happens, and will
+> get another the next try.
 
-i get one more message stating that an address could not be mapped for
-the same slot.
+I said back off and retry.
 
-running lspci, i get thus ..
+> Checking I/Os for every possible weird condition is just non-productive.
+>
+> It's like this:
+>
+>   if (fcntl(fd, F_SETFL, ~O_NONBLOCK) < 0)  error_out();
+>   if (fcntl(fd, F_GETFL, 0) & O_NOBLOCK) ??? what to do?
+>   while(do_something())
+>     if (fcntl(fd, F_GETFL, 0) & O_NOBLOCK)
+>       if (fcntl(fd, F_SETFL, ~O_NONBLOCK) < 0)  error_out();
+>
+> (don't pay attention to ~O_NONBLOCK thing - it's wrong, but it's
+> used like that just to show the "idea" - which is to clear O_NONBLOCK)
 
-All the 3 PCI cards are the same except that the first one is Rev 08
-card and the others Rev 01
+I agree that checking for a condition that there's no sane way to handle is
+non-productive. But here we're talking about testing for a condition that
+has been proven to happen and for which a sane way to handle it is
+obvious -- back off and retry.
+
+> Which is a complete nonsense.  It's either set or cleared, and once
+> set or cleared it should stay that way, period.  Until the app changes
+> it again.
+
+Until anything with access to it changes it.
+
+> >> Worse, it cannot be worked around by dup() because duped fds
+> >> are still sharing O_NONBLOCK. How can I work around this?
+> >
+> > If this causes your code a problem, your code is broken. What
+> > does your code
+>
+> With dup() - maybe.  But definitely NOT with fork().
+
+With 'fork', you either give the other process the file descriptor or you
+share it. Any shared resource requires cooperation for sane results.
+
+> > currently do if it gets a non-fatal error from a blocking
+> > operation? If it
+> > does anything other than back off and retry, it's mishandling
+> > the condition.
+
+> Retrying I/O in case of EAGAIN is *wrong*.  See above.
+
+You missed the "back off" part.
+
+DS
 
 
-can somebody point me as to what's happening on the first card ? I
-understand that some Built In Self Test is Running, but syill don't
-understand why it doesn't terminate or so
-
-
-Thanks,
-Manu
-
-02:0a.0 4e35: 1800:4e35 (rev 08) (prog-if 18)
-	Subsystem: 002c:c200
-	Control: I/O- Mem- BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
-Stepping- SERR- FastB2B-
-	Status: Cap- 66MHz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort-
-<TAbort- <MAbort- >SERR+ <PERR+
-	Latency: 0, Cache Line Size 0c
-	BIST is running
-	Region 0: Memory at f7ee0000 (32-bit, non-prefetchable) [disabled] [size=4K]
-	Region 2: Memory at e9b00000 (32-bit, prefetchable) [disabled] [size=4K]
-	Region 3: Memory at <unassigned> (32-bit, prefetchable) [disabled]
-	Region 4: Memory at <ignored> (32-bit, non-prefetchable) [disabled]
-	Region 5: Memory at <invalid-64bit-slot> (64-bit, non-prefetchable) [disabled]
-	Expansion ROM at e9b01000 [disabled] [size=4K]
-
-02:0c.0 0480: 1822:4e35 (rev 01)
-	Subsystem: 1822:0014
-	Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
-Stepping- SERR+ FastB2B-
-	Status: Cap- 66MHz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort-
-<TAbort- <MAbort- >SERR- <PERR-
-	Latency: 64 (2000ns min, 63750ns max)
-	Interrupt: pin A routed to IRQ 19
-	Region 0: Memory at e9bfe000 (32-bit, prefetchable) [size=4K]
-
-02:0d.0 0480: 1822:4e35 (rev 01)
-	Subsystem: 1822:0024
-	Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
-Stepping- SERR+ FastB2B-
-	Status: Cap- 66MHz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort-
-<TAbort- <MAbort- >SERR- <PERR-
-	Latency: 64 (2000ns min, 63750ns max)
-	Interrupt: pin A routed to IRQ 20
-	Region 0: Memory at e9bfd000 (32-bit, prefetchable) [size=4K]
