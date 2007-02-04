@@ -1,65 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752283AbXBDMgq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752313AbXBDMse@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752283AbXBDMgq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Feb 2007 07:36:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752306AbXBDMgq
+	id S1752313AbXBDMse (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Feb 2007 07:48:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752309AbXBDMse
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Feb 2007 07:36:46 -0500
-Received: from nf-out-0910.google.com ([64.233.182.191]:43720 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752283AbXBDMgp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Feb 2007 07:36:45 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=b3w4tE3Eswv8gzhbRoX271CzyZZo+/mbysiK/gisLKcNzFaBnQf5dZRAe1WtHKIUBBzIj9zn1aIcmgT2YgPsgu3pMBtjnkl1wMBPv1BCyMSy4BDTD8HT07qDMKCbDeVIdN1Y84XqYy5ZlRPnrRIUiLsNWZrBYm1FFwCmHhhG9pQ=
-Message-ID: <1a297b360702040436g1193ddfcscea68236f5b9092a@mail.gmail.com>
-Date: Sun, 4 Feb 2007 16:36:44 +0400
-From: "Manu Abraham" <abraham.manu@gmail.com>
-To: "Ahmed S. Darwish" <darwish.07@gmail.com>
+	Sun, 4 Feb 2007 07:48:34 -0500
+Received: from thunk.org ([69.25.196.29]:40768 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752078AbXBDMsd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Feb 2007 07:48:33 -0500
+Date: Sun, 4 Feb 2007 07:48:19 -0500
+From: Theodore Tso <tytso@mit.edu>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: "Ahmed S. Darwish" <darwish.07@gmail.com>, linux-kernel@vger.kernel.org
 Subject: Re: A CodingStyle suggestion
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20070203215848.GA10440@Ahmed>
+Message-ID: <20070204124819.GC12943@thunk.org>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Randy Dunlap <randy.dunlap@oracle.com>,
+	"Ahmed S. Darwish" <darwish.07@gmail.com>,
+	linux-kernel@vger.kernel.org
+References: <20070203215848.GA10440@Ahmed> <20070203135951.564e5fe2.randy.dunlap@oracle.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20070203215848.GA10440@Ahmed>
+In-Reply-To: <20070203135951.564e5fe2.randy.dunlap@oracle.com>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/4/07, Ahmed S. Darwish <darwish.07@gmail.com> wrote:
-> Hi all,
->
-> In CodingStyle Chapter 16 "Function return value and names", why not
-> adding a comment about the favorable community way of checking the return
-> value. ie:
->
-> ret = do_method();
-> if (ret) {
->    /* deal with error */
-> }
->
-> and not other ways like:
->
-> if (do_method()) or if ((ret = do_method()) > value) ...
+On Sat, Feb 03, 2007 at 01:59:51PM -0800, Randy Dunlap wrote:
+> On Sat, 3 Feb 2007 23:58:48 +0200 Ahmed S. Darwish wrote:
+> > 
+> > In CodingStyle Chapter 16 "Function return value and names", why not
+> > adding a comment about the favorable community way of checking the return
+> > value. ie:
+> > 
+> > ret = do_method();
+> > if (ret) {
+> >    /* deal with error */
+> > }
+> > 
+> > and not other ways like:
+> > 
+> > if (do_method()) or if ((ret = do_method()) > value) ...
+> > 
+> 
+> I like it.  Please cc: Andrew Morton <akpm@osdl.org> on it.
+> Hopefully he will merge it.
+> 
 
+I'm going to have to disagree.  Sometimes if the main flow of the code
+is down, it's actually better to do this:
 
-if we have some 100 lines of
+	if ((err = do_foo()) < 0)
+		return (err);
+	if ((err = do_bar(current, filp)) < 0)
+		return (err);
+	if ((err = do_quux(filp, buffer)) < 0) {
+		close(filp);
+		return (err);
+	}
 
-ret = do_method()
-if (ret) {
-/* error handling */
-}
+Than to do something like this:
 
-This is going to additionally increase the number of lines of unnecessarily.
+	err = do_foo();
+	if (err < 0)
+		return (err);
+	err = do_bar(current, filp);
+	if (err < 0)
+		return (err);
+	err = do_quux(filp, buffer);
+	if (err < 0) {
+		close(filp);
+		return (err);
+	}
 
-IMHO, when you have a large number of lines which do a similar thing ..
+The first is more concise, and it draws the reader's eye to what's
+really going on.  The cleanup/return error path is less important, and
+and it's pretty clear what's going on just from glancing at it.
 
-if ((ret = do_method()) < value)
-   goto err;
+						- Ted
 
-could greatly reduce the number of lines, otherwise.
-
-manu
+		
+		
