@@ -1,65 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751935AbXBDC0O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751733AbXBDCmz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751935AbXBDC0O (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Feb 2007 21:26:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751953AbXBDC0O
+	id S1751733AbXBDCmz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Feb 2007 21:42:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751967AbXBDCmz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Feb 2007 21:26:14 -0500
-Received: from imf23aec.mail.bellsouth.net ([205.152.59.71]:50484 "EHLO
-	imf23aec.mail.bellsouth.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751935AbXBDC0N (ORCPT
+	Sat, 3 Feb 2007 21:42:55 -0500
+Received: from moutng.kundenserver.de ([212.227.126.174]:54231 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751733AbXBDCmy convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Feb 2007 21:26:13 -0500
-Date: Sat, 3 Feb 2007 20:26:11 -0600
-From: Jay Cliburn <jacliburn@bellsouth.net>
-To: jeff@garzik.org
-Cc: csnook@redhat.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       atl1-devel@lists.sourceforge.net
-Subject: [PATCH netdev#atl1 3/3] pci_ids: add Attansic vendor id
-Message-ID: <20070204022611.GD4063@osprey.hogchain.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 3 Feb 2007 21:42:54 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: cbe-oss-dev@ozlabs.org
+Subject: Re: [Cbe-oss-dev] [RFC, PATCH 4/4] Add support to OProfile for profiling Cell BE SPUs -- update
+Date: Sun, 4 Feb 2007 03:42:39 +0100
+User-Agent: KMail/1.9.5
+Cc: Maynard Johnson <maynardj@us.ibm.com>, linuxppc-dev@ozlabs.org,
+       oprofile-list@lists.sourceforge.net, linux-kernel@vger.kernel.org
+References: <45BE4ED0.5030808@us.ibm.com> <200702030840.06270.arnd@arndb.de> <45C4EA7D.4000709@us.ibm.com>
+In-Reply-To: <45C4EA7D.4000709@us.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-User-Agent: Mutt/1.4.2.2i
+Message-Id: <200702040342.39626.arnd@arndb.de>
+X-Provags-ID: kundenserver.de abuse@kundenserver.de login:c48f057754fc1b1a557605ab9fa6da41
+X-Provags-ID2: V01U2FsdGVkX19MF+1N6hU8ue5wRfcKU7oEBuGqx6iUhkbFb+RpHU/HSb+7WQBtrZhpCTFMpcQuT8PdgqmVp5ktlBqK2EkadSsigDbZlmcFTOcxJ4Mi6p6eaA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jay Cliburn <jacliburn@bellsouth.net>
+On Saturday 03 February 2007 21:03, Maynard Johnson wrote:
+> I presume you mean 'object_id'. 
 
-pci_ids: add Attansic vendor id
+Right, sorry for the confusion.
 
-Add Attansic to pci_ids and use the ID in the driver.
+> What you're asking for is a new  
+> requirement, and one which I don't believe is achievable in the current 
+> timeframe.  Since this is spufs code that's dynamicaly loaded into the 
+> SPU at runtime, the symbol information for this code is not accessible 
+> to the userspace post-processing tools.
 
-Signed-off-by: Jay Cliburn <jacliburn@bellsouth.net>
----
+We can always fix the user space tool later, but it is important to
+get at least the kernel interface right, so we can add the functionality
+later without breaking new user space on old kernels or vice versa.
 
- drivers/net/atl1/atl1_main.c |    2 +-
- include/linux/pci_ids.h      |    2 ++
- 2 files changed, 3 insertions(+), 1 deletions(-)
+> It would require an altogether  
+> different mechanism to record samples along with necessary information, 
+> not to mention the changes required in the post-processing tools.  This 
+> will have to be a future enhancement.
 
-diff --git a/drivers/net/atl1/atl1_main.c b/drivers/net/atl1/atl1_main.c
-index b037ebc..9a3fb86 100644
---- a/drivers/net/atl1/atl1_main.c
-+++ b/drivers/net/atl1/atl1_main.c
-@@ -102,7 +102,7 @@ extern struct ethtool_ops atl1_ethtool_ops;
-  * atl1_pci_tbl - PCI Device ID Table
-  */
- static const struct pci_device_id atl1_pci_tbl[] = {
--	{PCI_DEVICE(0x1969, 0x1048)},
-+	{PCI_DEVICE(PCI_VENDOR_ID_ATTANSIC, 0x1048)},
- 	/* required last entry */
- 	{0,}
- };
-diff --git a/include/linux/pci_ids.h b/include/linux/pci_ids.h
-index 3d1d210..68a7be9 100644
---- a/include/linux/pci_ids.h
-+++ b/include/linux/pci_ids.h
-@@ -2066,6 +2066,8 @@
- #define PCI_VENDOR_ID_TDI               0x192E
- #define PCI_DEVICE_ID_TDI_EHCI          0x0101
- 
-+#define PCI_VENDOR_ID_ATTANSIC		0x1969
-+
- #define PCI_VENDOR_ID_JMICRON		0x197B
- #define PCI_DEVICE_ID_JMICRON_JMB360	0x2360
- #define PCI_DEVICE_ID_JMICRON_JMB361	0x2361
+So what do you do with the samples for object_id == 0? I would expect them
+to be simply added to the sample buffer for the kernel, which is sort
+of special in oprofile anyway.
+
+	Arnd <><
