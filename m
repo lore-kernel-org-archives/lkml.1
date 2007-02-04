@@ -1,69 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752455AbXBDRif@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752466AbXBDRk6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752455AbXBDRif (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Feb 2007 12:38:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752461AbXBDRif
+	id S1752466AbXBDRk6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Feb 2007 12:40:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752462AbXBDRk6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Feb 2007 12:38:35 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:54161 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752455AbXBDRie (ORCPT
+	Sun, 4 Feb 2007 12:40:58 -0500
+Received: from ppsw-9.csi.cam.ac.uk ([131.111.8.139]:48476 "EHLO
+	ppsw-9.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752461AbXBDRk5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Feb 2007 12:38:34 -0500
-Date: Sun, 4 Feb 2007 09:30:32 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Dave Jones <davej@redhat.com>
-Cc: Chris Wright <chrisw@sous-sol.org>, linux-kernel@vger.kernel.org,
-       stable@kernel.org, "Theodore Ts'o" <tytso@mit.edu>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Randy Dunlap <rdunlap@xenotime.net>,
-       Michael Krufky <mkrufky@linuxtv.org>,
-       Chuck Wolber <chuckw@quantumlinux.com>, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, alan@lxorguk.ukuu.org.uk
-Subject: Re: [stable] [patch 00/59] -stable review
-Message-Id: <20070204093032.730f4598.randy.dunlap@oracle.com>
-In-Reply-To: <20070204133623.GA25817@redhat.com>
-References: <20070203023504.435051000@sous-sol.org>
-	<20070203025913.GL10475@sequoia.sous-sol.org>
-	<20070203220828.f095bb91.randy.dunlap@oracle.com>
-	<20070204133623.GA25817@redhat.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.0 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+	Sun, 4 Feb 2007 12:40:57 -0500
+X-Cam-SpamDetails: Not scanned
+X-Cam-AntiVirus: No virus found
+X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
+Date: Sun, 4 Feb 2007 17:40:35 +0000 (GMT)
+From: Anton Altaparmakov <aia21@cam.ac.uk>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Nick Piggin <npiggin@suse.de>, Linux Kernel <linux-kernel@vger.kernel.org>,
+       Linux Filesystems <linux-fsdevel@vger.kernel.org>,
+       Linux Memory Management <linux-mm@kvack.org>
+Subject: Re: [patch 9/9] mm: fix pagecache write deadlocks
+In-Reply-To: <20070204031039.46b56dbb.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0702041737110.19190@hermes-1.csi.cam.ac.uk>
+References: <20070204063707.23659.20741.sendpatchset@linux.site>
+ <20070204063833.23659.55105.sendpatchset@linux.site>
+ <20070204014445.88e6c8c7.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0702041036420.24838@hermes-1.csi.cam.ac.uk>
+ <20070204031039.46b56dbb.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 4 Feb 2007 08:36:23 -0500 Dave Jones wrote:
-
-> On Sat, Feb 03, 2007 at 10:08:28PM -0800, Randy Dunlap wrote:
->  > On Fri, 2 Feb 2007 18:59:13 -0800 Chris Wright wrote:
->  > 
->  > > * Chris Wright (chrisw@sous-sol.org) wrote:
->  > > > Responses should be made by Mon Feb  3 02:30 UTC 2007
->  > > 
->  > > Yes, that's Mon Feb 5 (thanks to those on their toes ;-)
->  > > 
->  > > And the roll-up will be available at:
->  > > 
->  > > 	http://www.kernel.org/pub/linux/kernel/people/chrisw/stable/patch-2.6.19.3-rc1.{gz,bz2}
->  > > 
->  > > once mirroring finishes.
->  > 
->  > Shouldn't this apply cleanly to 2.6.19?  I get
->  > 
->  > 1 out of 1 hunk FAILED -- saving rejects to file Makefile.rej
->  > 1 out of 2 hunks FAILED -- saving rejects to file net/ipv6/addrconf.c.rej
+On Sun, 4 Feb 2007, Andrew Morton wrote:
+> On Sun, 4 Feb 2007 10:59:58 +0000 (GMT) Anton Altaparmakov <aia21@cam.ac.uk> wrote:
+> > On Sun, 4 Feb 2007, Andrew Morton wrote:
+> > > On Sun,  4 Feb 2007 09:51:07 +0100 (CET) Nick Piggin <npiggin@suse.de> wrote:
+> > > > 2.  If we find the destination page is non uptodate, unlock it (this could be
+> > > >     made slightly more optimal), then find and pin the source page with
+> > > >     get_user_pages. Relock the destination page and continue with the copy.
+> > > >     However, instead of a usercopy (which might take a fault), copy the data
+> > > >     via the kernel address space.
+> > > 
+> > > argh.  We just can't go adding all this gunk into the write() path. 
+> > > 
+> > > mmap_sem, a full pte-walk, taking of pte-page locks, etc.  For every page. 
+> > > Even single-process write() will suffer, let along multithreaded stuff,
+> > > where mmap_sem contention may be the bigger problem.
+> > > 
+> > > I was going to do some quick measurements of this, but the code oopses
+> > > on power4 (http://userweb.kernel.org/~akpm/s5000402.jpg)
+> > > 
+> > > We need to think different.
+> > 
+> > How about leaving the existing code with the following minor 
+> > modifications:
+> > 
+> > Instead of calling filemap_copy_from_user{,_iovec}() do only the atomic 
+> > bit with pagefaults disabled, i.e. instead of filemap_copy_from_user() we 
+> > would do (could of course move into a helper function of course):
+> > 
+> > pagefault_disable()
+> > kaddr = kmap_atomic(page, KM_USER0);
+> > left = __copy_from_user_inatomic_nocache(kaddr + offset, buf, bytes);
+> > kunmap_atomic(kaddr, KM_USER0);
+> > pagefault_enable()
+> > 
+> > if (unlikely(left)) {
+> > 	/* The user space page got unmapped before we got to copy it. */
+> > 	...
+> > }
+> > 
+> > Thus the 99.999% (or more!) of the time the code would just work as it 
+> > always has and there is no bug and no speed impact.  Only in the very rare 
+> > and hard to trigger race condition that the user space page after being 
+> > faulted in got thrown out again before we did the atomic memory copy do we 
+> > run into the above "..." code path.
 > 
-> The -rc's usually apply to the previously released -stable (.2 in this case).
+> Right.  And what I wanted to do here is to zero out the uncopied part of
+> the page (if it wasn't uptodate), then run commit_write(), then retry the
+> whole thing.
+> 
+> iirc, we ruled that out because those temporary zeroes are exposed to
+> userspace.  But the kernel used to do that anyway for a long time (years)
+> until someone noticed, and we'll only do it in your 0.0001% case anyway.
+> 
+> (Actually, perhaps we can prevent it by not marking the page uptodate in
+> this case.  But that'll cause a read()er to try to bring it uptodate...)
 
-Oh.  Thanks, that works.   "usually"?   but not always?  :)
+My thinking was not marking the page uptodate.  But yes that causes the 
+problem of a concurrent readpage reading uninitialized disk blocks that 
+prepare_write allocated.
 
----
-~Randy
+> > I would propose to call out a different function altogether which could do 
+> > a multitude of things including drop the lock on the destination page 
+> > (maintaining a reference on the page!), allocate a temporary page, copy 
+> > from the user space page into the temporary page, then lock the 
+> > destination page again, and copy from the temporary page into the 
+> > destination page.
+> 
+> The problem with all these things is that as soon as we unlock the page,
+> it's visible to read().  And in fact, as soon as we mark it uptodate it's
+> visible to mmap, even if it's still locked.
+
+Yes we definitely cannot mark it uptodate before it really is uptodate.
+Either we have to not mark it uptodate or we have to zero it or we have to
+think of some other magic...
+
+> > This would be slow but who cares given it would only happen incredibly 
+> > rarely and on majority of machines it would never happen at all.
+> > 
+> > The only potential problem I can see is that the destination page could be 
+> > truncated whilst it is unlocked.  I can see two possible solutions to 
+> > this:
+> 
+> truncate's OK: we're holding i_mutex.
+
+How about excluding readpage() (in addition to truncate if Nick is right  
+and some cases of truncate do not hold i_mutex) with an extra page flag as
+I proposed for truncate exclusion?  Then it would not matter that
+prepare_write might have allocated blocks and might expose stale data.    
+It would go to sleep and wait on the bit to be cleared instead of trying  
+to bring the page uptodate.  It can then lock the page and either find it 
+uptodate (because commit_write did it) or not and then bring it uptodate.
+
+Then we could safely fault in the page, copy from it into a temporary 
+page, then lock the destination page again and copy into it.
+
+This is getting more involved as a patch again...  )-:  But at least it   
+does not affect the common case except for having to check the new page 
+flag in every readpage() and truncate() call.  But at least the checks 
+could be with an "if (unlikely(newpageflag()))" so should not be too bad.
+
+Have I missed anything this time?
+
+Best regards,
+
+	Anton
+-- 
+Anton Altaparmakov <aia21 at cam.ac.uk> (replace at with @)
+Unix Support, Computing Service, University of Cambridge, CB2 3QH, UK
+Linux NTFS maintainer, http://www.linux-ntfs.org/
