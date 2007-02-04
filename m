@@ -1,61 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752091AbXBDGA6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752098AbXBDGQT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752091AbXBDGA6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Feb 2007 01:00:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752094AbXBDGA6
+	id S1752098AbXBDGQT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Feb 2007 01:16:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752103AbXBDGQT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Feb 2007 01:00:58 -0500
-Received: from mailgw.cvut.cz ([147.32.3.235]:50873 "EHLO mailgw.cvut.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752091AbXBDGA5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Feb 2007 01:00:57 -0500
-Message-ID: <45C57695.7000707@vc.cvut.cz>
-Date: Sat, 03 Feb 2007 22:00:53 -0800
-From: Petr Vandrovec <vandrove@vc.cvut.cz>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.9) Gecko/20061219 Iceape/1.0.7 (Debian-1.0.7-3)
-MIME-Version: 1.0
-To: Pierre Ossman <drzeus-list@drzeus.cx>
-CC: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: NCPFS and brittle connections
-References: <459D1794.2060009@drzeus.cx> <459D38DA.4030803@vc.cvut.cz> <459D55E3.4000905@drzeus.cx> <459E01B2.50309@vc.cvut.cz> <45B77AE4.2010605@drzeus.cx> <45B79C35.2090302@vc.cvut.cz> <45B7D750.1040501@drzeus.cx> <45B868D5.9070409@vc.cvut.cz> <45B8845E.8070008@drzeus.cx>
-In-Reply-To: <45B8845E.8070008@drzeus.cx>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sun, 4 Feb 2007 01:16:19 -0500
+Received: from rgminet01.oracle.com ([148.87.113.118]:59089 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752098AbXBDGQT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Feb 2007 01:16:19 -0500
+Date: Sat, 3 Feb 2007 22:08:28 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Chris Wright <chrisw@sous-sol.org>
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
+       "Theodore Ts'o" <tytso@mit.edu>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Randy Dunlap <rdunlap@xenotime.net>,
+       Michael Krufky <mkrufky@linuxtv.org>, Dave Jones <davej@redhat.com>,
+       Chuck Wolber <chuckw@quantumlinux.com>, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org, alan@lxorguk.ukuu.org.uk
+Subject: Re: [stable] [patch 00/59] -stable review
+Message-Id: <20070203220828.f095bb91.randy.dunlap@oracle.com>
+In-Reply-To: <20070203025913.GL10475@sequoia.sous-sol.org>
+References: <20070203023504.435051000@sous-sol.org>
+	<20070203025913.GL10475@sequoia.sous-sol.org>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.0 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pierre Ossman wrote:
-> Ok... how about this baby instead. I've replaced the stack allocated
-> request structure by one allocated with kmalloc() and reference counted
-> using an atomic_t. I couldn't see anything else that was associated to
-> the process, so I believe this should suffice.
-> 
-> (This is just a RFC. Once I get an ok from you I'll put together a more
-> proper patch mail)
-> 
-> -       req.tx_type = *(u_int16_t*)server->packet;
-> -
-> -       result = ncp_add_request(server, &req);
-> +       struct ncp_request_reply *req;
-> +
-> +       req = ncp_alloc_req();
-> +       if (!req)
-> +               return -ENOMEM;
-> +
-> +       req->reply_buf = reply_buf;
-> +       req->datalen = max_reply_size;
-> +       req->tx_iov[1].iov_base = server->packet;
-> +       req->tx_iov[1].iov_len = size;
-> +       req->tx_iovlen = 1;
-> +       req->tx_totallen = size;
-> +       req->tx_type = *(u_int16_t*)server->packet;
+On Fri, 2 Feb 2007 18:59:13 -0800 Chris Wright wrote:
 
-Problem is with these pointers - reply_buf & server->packet.  Now code 
-will just read packet from server->packet, and write result to 
-reply_buf, most probably transmiting some random data to network, and 
-overwriting innocent memory on receiption...  I believe that you need to 
-make copies of server->packet/size for transmission, and some simillar 
-solution for receive as well.  As both request & response can be up to 
-~66000 bytes.
-							Petr
+> * Chris Wright (chrisw@sous-sol.org) wrote:
+> > Responses should be made by Mon Feb  3 02:30 UTC 2007
+> 
+> Yes, that's Mon Feb 5 (thanks to those on their toes ;-)
+> 
+> And the roll-up will be available at:
+> 
+> 	http://www.kernel.org/pub/linux/kernel/people/chrisw/stable/patch-2.6.19.3-rc1.{gz,bz2}
+> 
+> once mirroring finishes.
 
+Shouldn't this apply cleanly to 2.6.19?  I get
+
+1 out of 1 hunk FAILED -- saving rejects to file Makefile.rej
+1 out of 2 hunks FAILED -- saving rejects to file net/ipv6/addrconf.c.rej
+
+---
+~Randy
