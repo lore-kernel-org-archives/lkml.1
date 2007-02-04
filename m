@@ -1,66 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752239AbXBDO3a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752348AbXBDOqK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752239AbXBDO3a (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Feb 2007 09:29:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752364AbXBDO3a
+	id S1752348AbXBDOqK (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Feb 2007 09:46:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752371AbXBDOqK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Feb 2007 09:29:30 -0500
-Received: from ug-out-1314.google.com ([66.249.92.169]:20566 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752239AbXBDO33 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Feb 2007 09:29:29 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:to:subject:message-id:mail-followup-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
-        b=eSmfbBlRtOr0h6fiPIs4Ky83xcyw5q6TNe19Y18/nfOP9xDWNC4ASkLu1/9P67oeYw4X+puYiIVprNzIGId89//xJWsygLLlYP0CD3awBNryCPanQ/WNPM4M757pOAVkS371+hZnPSy4W3g8Vh90pOwxh2oIrvM5GhiYGlj1xdQ=
-Date: Sun, 4 Feb 2007 15:29:21 +0100
-To: Linux kernel mailing list <linux-kernel@vger.kernel.org>
-Subject: [PATCH] ipv4: remove a call to skb_queue_len() in inet_diag.c
-Message-ID: <20070204142921.GA5787@unknown-00-0d-60-79-ca-00.lan>
-Mail-Followup-To: Linux kernel mailing list <linux-kernel@vger.kernel.org>
-References: <Pine.LNX.4.64.0612311547200.30821@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 4 Feb 2007 09:46:10 -0500
+Received: from mx1.suse.de ([195.135.220.2]:39873 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752348AbXBDOqJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Feb 2007 09:46:09 -0500
+From: Andi Kleen <ak@suse.de>
+To: =?utf-8?q?Fr=C3=A9d=C3=A9ric_Riss?= <frederic.riss@gmail.com>
+Subject: Re: 2.6.20-rc7: known regressions
+Date: Sun, 4 Feb 2007 15:37:24 +0100
+User-Agent: KMail/1.9.5
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Matt Domsch <Matt_Domsch@dell.com>, Adrian Bunk <bunk@stusta.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Eric Van Hensbergen <ericvh@gmail.com>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Neil Brown <neilb@suse.de>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Jeff Garzik <jeff@garzik.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Francois Romieu <romieu@fr.zoreil.com>
+References: <Pine.LNX.4.64.0701302019530.11095@woody.linux-foundation.org> <200702031151.17220.ak@suse.de> <1170594788.5217.4.camel@funkylaptop>
+In-Reply-To: <1170594788.5217.4.camel@funkylaptop>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0612311547200.30821@localhost.localdomain>
-User-Agent: Mutt/1.4.2.2i
-From: Thomas Hisch <t.hisch@gmail.com>
+Message-Id: <200702041537.24560.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-remove unneeded call to skb_queue_len (skb_dequeue already checks queuelen) and
-replace a sizeof() by a Netlink Macro
 
-Signed-off-by: Thomas Hisch <t.hisch@gmail.com>
----
- net/ipv4/inet_diag.c |    5 ++---
- 1 files changed, 2 insertions(+), 3 deletions(-)
+> 
+> When calling into the EFI firmware, the parameters need to be passed on
+> the stack. The recent change to use -mregparm=3 breaks x86 EFI support.
+> This patch is needed to allow the new Intel-based Macs to suspend to ram
+> (efi.get_time is called during the suspend phase).
 
-diff --git a/net/ipv4/inet_diag.c b/net/ipv4/inet_diag.c
-index 77761ac..ccd7fab 100644
---- a/net/ipv4/inet_diag.c
-+++ b/net/ipv4/inet_diag.c
-@@ -846,7 +846,7 @@ static inline void inet_diag_rcv_skb(struct sk_buff *skb)
- 		int err;
- 		struct nlmsghdr *nlh = (struct nlmsghdr *)skb->data;
- 
--		if (nlh->nlmsg_len < sizeof(*nlh) ||
-+		if (nlh->nlmsg_len < NLMSG_HDRLEN ||
- 		    skb->len < nlh->nlmsg_len)
- 			return;
- 		err = inet_diag_rcv_msg(skb, nlh);
-@@ -858,9 +858,8 @@ static inline void inet_diag_rcv_skb(struct sk_buff *skb)
- static void inet_diag_rcv(struct sock *sk, int len)
- {
- 	struct sk_buff *skb;
--	unsigned int qlen = skb_queue_len(&sk->sk_receive_queue);
- 
--	while (qlen-- && (skb = skb_dequeue(&sk->sk_receive_queue))) {
-+	while (skb = skb_dequeue(&sk->sk_receive_queue)) {
- 		inet_diag_rcv_skb(skb);
- 		kfree_skb(skb);
- 	}
--- 
-1.5.0.rc3.22.g5057
+Thanks looks good.
 
+-Andi
