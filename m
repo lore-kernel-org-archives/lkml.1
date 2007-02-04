@@ -1,46 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751914AbXBDCDG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751880AbXBDCWv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751914AbXBDCDG (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Feb 2007 21:03:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751909AbXBDCDG
+	id S1751880AbXBDCWv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Feb 2007 21:22:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751905AbXBDCWv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Feb 2007 21:03:06 -0500
-Received: from web36702.mail.mud.yahoo.com ([209.191.85.36]:20469 "HELO
-	web36702.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751914AbXBDCDF (ORCPT
+	Sat, 3 Feb 2007 21:22:51 -0500
+Received: from imf25aec.mail.bellsouth.net ([205.152.59.73]:59783 "EHLO
+	imf25aec.mail.bellsouth.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751880AbXBDCWu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Feb 2007 21:03:05 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=acuoSLbO+ZRW2U2MZl/L5ftMOYN+dy+n99CCICkjt/+kg2YpbR3So2/rnYq8hov+9iaGkjyOdEYc7o6hYeJ5JGWmUCvxNbz86Bmcs7q3d+9HlsPZ75Z0B5mUKTwGoGW+MY/38GmzxSufOl7piYA/xywjmPln6Irkv2z4trhvKJc=;
-X-YMail-OSG: QwoiD0QVM1niyrAo0kV87dfABtLOBbjQwjFJE8G_G31UWRd98QfrsD.9oUFYzNpNATsAQ3cLBjAFcd5JfLPJlf89jZta5ZgGSyiXJpYeBE8kL6iZv5xbg5gLBuhiLAJ.9FkeL1BkjLqKeLs-
-Date: Sat, 3 Feb 2007 18:03:03 -0800 (PST)
-From: Alex Dubov <oakad@yahoo.com>
-Subject: Re: [RFC] [PATCH] Fix up needless kmap:s
-To: Pierre Ossman <drzeus-list@drzeus.cx>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <45C49444.8020503@drzeus.cx>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <147773.6460.qm@web36702.mail.mud.yahoo.com>
+	Sat, 3 Feb 2007 21:22:50 -0500
+Date: Sat, 3 Feb 2007 20:22:48 -0600
+From: Jay Cliburn <jacliburn@bellsouth.net>
+To: jeff@garzik.org
+Cc: csnook@redhat.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       atl1-devel@lists.sourceforge.net
+Subject: [PATCH netdev#atl1 0/3] atl1: fix whitespace, add maintainers and pci_ids
+Message-ID: <20070204022248.GA4063@osprey.hogchain.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The patch looks ok.
+This set of patches completes the final bit of tidying up in the Attansic
+ethernet driver.  Sorry for nickel-and-diming you, Jeff, but this really
+should be the end of it for awhile.
 
-However, due to certain peculiarities with memorystick and xd I have to emulate a scatter-gather
-in software. Considering that this particular aspect of implementation is the same for all card
-types on this TI chip, it can be shared by tifm_sd driver as well. In this case highmem won't be
-needed to be avoided and kmap_atomic will come back (may be).
-
-And, by the way, to what extent pagefault_enable/pagefault_disable calls are needed? They are
-present in k(u)map_atomic even for non-highmem pages/architectures.
-
-
-
- 
-____________________________________________________________________________________
-Expecting? Get great news right away with email Auto-Check. 
-Try the Yahoo! Mail Beta.
-http://advision.webevents.yahoo.com/mailbeta/newmail_tools.html 
+Summary:
+1.  Clean up whitespace damage.
+2.  Add a maintainers entry.
+3.  Add a pci_ids entry.
+---
+ MAINTAINERS                     |   10 +++
+ drivers/net/atl1/atl1.h         |   12 ++--
+ drivers/net/atl1/atl1_ethtool.c |  120 +++++++++++++++++++++++++++-------
+ drivers/net/atl1/atl1_hw.h      |   14 ++--
+ drivers/net/atl1/atl1_main.c    |  137 +++++++++++++++++++--------------------
+ drivers/net/atl1/atl1_param.c   |   22 +++---
+ include/linux/pci_ids.h         |    2 +
+ 7 files changed, 200 insertions(+), 117 deletions(-)
