@@ -1,62 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752484AbXBDSYf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752488AbXBDSdK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752484AbXBDSYf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Feb 2007 13:24:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752485AbXBDSYf
+	id S1752488AbXBDSdK (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Feb 2007 13:33:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752491AbXBDSdK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Feb 2007 13:24:35 -0500
-Received: from thing.hostingexpert.com ([67.15.235.34]:44023 "EHLO
-	thing.hostingexpert.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752484AbXBDSYe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Feb 2007 13:24:34 -0500
-Message-ID: <45C624D2.9030403@linuxtv.org>
-Date: Sun, 04 Feb 2007 13:24:18 -0500
-From: Michael Krufky <mkrufky@linuxtv.org>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070103)
+	Sun, 4 Feb 2007 13:33:10 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:46271 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752488AbXBDSdJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Feb 2007 13:33:09 -0500
+Date: Sun, 4 Feb 2007 10:29:28 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: =?ISO-8859-1?Q?Fr=E9d=E9ric_Riss?= <frederic.riss@gmail.com>
+cc: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       Matt Domsch <Matt_Domsch@dell.com>, Adrian Bunk <bunk@stusta.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Eric Van Hensbergen <ericvh@gmail.com>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Neil Brown <neilb@suse.de>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Jeff Garzik <jeff@garzik.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Francois Romieu <romieu@fr.zoreil.com>
+Subject: Re: 2.6.20-rc7: known regressions
+In-Reply-To: <1170613097.5217.13.camel@funkylaptop>
+Message-ID: <Pine.LNX.4.64.0702041027460.8424@woody.linux-foundation.org>
+References: <Pine.LNX.4.64.0701302019530.11095@woody.linux-foundation.org> 
+ <200702031058.13830.ak@suse.de> <1170499668.31373.35.camel@funkylaptop> 
+ <200702031151.17220.ak@suse.de> <1170594788.5217.4.camel@funkylaptop> 
+ <Pine.LNX.4.64.0702040928330.8424@woody.linux-foundation.org>
+ <1170613097.5217.13.camel@funkylaptop>
 MIME-Version: 1.0
-To: Chris Wright <chrisw@sous-sol.org>
-CC: linux-kernel@vger.kernel.org, stable@kernel.org,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>, torvalds@osdl.org,
-       akpm@osdl.org, alan@lxorguk.ukuu.org.uk
-Subject: Re: [patch 00/50] -stable review
-References: <20070106022753.334962000@sous-sol.org>
-In-Reply-To: <20070106022753.334962000@sous-sol.org>
-X-Enigmail-Version: 0.94.0.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - thing.hostingexpert.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - linuxtv.org
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+Content-Type: MULTIPART/MIXED; BOUNDARY="-1463790079-598720875-1170613768=:8424"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Wright wrote:
-> This is the start of the stable review cycle for the 2.6.19.2 release.
-> There are 50 patches in this series, all will be posted as a response
-> to this one.  If anyone has any issues with these being applied, please
-> let us know.  If anyone is a maintainer of the proper subsystem, and
-> wants to add a Signed-off-by: line to the patch, please respond with it.
-> 
-> These patches are sent out with a number of different people on the
-> Cc: line.  If you wish to be a reviewer, please email stable@kernel.org
-> to add your name to the list.  If you want to be off the reviewer list,
-> also email us.
-> 
-> Responses should be made by Mon Jan 8 02:30 UTC.
-> Anything received after that time might be too late.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-At which point was 2.6.18.y dropped?  I thought we were always going to keep
-the last two stable kernels up-to-date.  Have I been wasting my time fwd'ing
-2.6.18.y patches?
+---1463790079-598720875-1170613768=:8424
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 
--Mike Krufky
+
+
+On Sun, 4 Feb 2007, Frédéric Riss wrote:
+> 
+> I think Andi said that adding asmlinkage on the function pointers
+> shouldn't harm ia64. If you prefer wrapper functions, one of the patches
+> I sent ( http://lkml.org/lkml/2007/1/30/309 ) did that, but the casting
+> it uses looks clumsy.
+
+I'm more comfortable with that one, at least for now. It's guaranteed to 
+not break ia64, at least. Also, it does what I think is right: do the 
+calling convention conversion at the call-site rather than at a C compiler 
+level.
+
+Will apply a whitespace-fixed version,
+
+		Linus
+---1463790079-598720875-1170613768=:8424--
