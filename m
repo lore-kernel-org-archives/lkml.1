@@ -1,54 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752223AbXBDIwq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752253AbXBDJIV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752223AbXBDIwq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Feb 2007 03:52:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752199AbXBDIuj
+	id S1752253AbXBDJIV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Feb 2007 04:08:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752259AbXBDJIV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Feb 2007 03:50:39 -0500
-Received: from mx2.suse.de ([195.135.220.15]:40973 "EHLO mx2.suse.de"
+	Sun, 4 Feb 2007 04:08:21 -0500
+Received: from linux.dunaweb.hu ([62.77.196.1]:43815 "EHLO linux.dunaweb.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752191AbXBDIuc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Feb 2007 03:50:32 -0500
-From: Nick Piggin <npiggin@suse.de>
-To: Andrew Morton <akpm@osdl.org>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Linux Filesystems <linux-fsdevel@vger.kernel.org>,
-       Nick Piggin <npiggin@suse.de>,
-       Linux Memory Management <linux-mm@kvack.org>
-Message-Id: <20070204063754.23659.28403.sendpatchset@linux.site>
-In-Reply-To: <20070204063707.23659.20741.sendpatchset@linux.site>
-References: <20070204063707.23659.20741.sendpatchset@linux.site>
-Subject: [patch 5/9] mm: debug write deadlocks
-Date: Sun,  4 Feb 2007 09:50:28 +0100 (CET)
+	id S1752253AbXBDJIT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Feb 2007 04:08:19 -0500
+X-Greylist: delayed 1301 seconds by postgrey-1.27 at vger.kernel.org; Sun, 04 Feb 2007 04:08:19 EST
+Message-ID: <45C59D65.1050706@dunaweb.hu>
+Date: Sun, 04 Feb 2007 09:46:29 +0100
+From: Zoltan Boszormenyi <zboszor@dunaweb.hu>
+User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org,
+       For users of Fedora Core releases 
+	<fedora-list@redhat.com>
+Subject: How mature is forcedeth?
+Content-Type: text/plain; charset=ISO-8859-2; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Allow CONFIG_DEBUG_VM to switch off the prefaulting logic, to simulate the
-difficult race where the page may be unmapped before calling copy_from_user.
-Makes the race much easier to hit.
+Hi,
 
-This is useful for demonstration and testing purposes, but is removed in a
-subsequent patch.
+I replaced my "aging" (means: no SVM) first generation
+Athlon64 3200+ and mainboard with a new AM2 X2 4200+
+and ABit KN9 SLI which has dual GbE. Both channels are
+claimed by forcedeth. I have another machine that is used
+mostly as a thin client, it's connected to the main machine
+with a crossover cable. The problem is that if I use the
+forcedeth ports on the main machine, the thin client doesn't
+work correctly. Sometimes it fails to get the IP via DHCP.
+Sometimes it doesn't finish booting, either during the TFTP
+or NFS mount/transaction. Sometimes it boots up but
+X "locks up", e.g. during a window dragging, the window
+gets stuck and the pointer doesn't change back to the
+regular arrow. With the previous mainboard that used
+the r8169 driver everything was OK. I put an 3com card
+into the new machine and the thin client works again
+via that connection. The system is a fully uptodate FC6,
+kernel 2.6.19-1.2895.fc6.
 
-Signed-off-by: Nick Piggin <npiggin@suse.de>
-
-Index: linux-2.6/mm/filemap.c
-===================================================================
---- linux-2.6.orig/mm/filemap.c
-+++ linux-2.6/mm/filemap.c
-@@ -2103,6 +2103,7 @@ generic_file_buffered_write(struct kiocb
- 		if (maxlen > bytes)
- 			maxlen = bytes;
- 
-+#ifndef CONFIG_DEBUG_VM
- 		/*
- 		 * Bring in the user page that we will copy from _first_.
- 		 * Otherwise there's a nasty deadlock on copying from the
-@@ -2110,6 +2111,7 @@ generic_file_buffered_write(struct kiocb
- 		 * up-to-date.
- 		 */
- 		fault_in_pages_readable(buf, maxlen);
-+#endif
- 
- 		page = __grab_cache_page(mapping,index,&cached_page,&lru_pvec);
- 		if (!page) {
+Best regards,
+Zoltán Böszörményip
