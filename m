@@ -1,60 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752158AbXBDIAt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752162AbXBDIQo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752158AbXBDIAt (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Feb 2007 03:00:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752159AbXBDIAt
+	id S1752162AbXBDIQo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Feb 2007 03:16:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752165AbXBDIQo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Feb 2007 03:00:49 -0500
-Received: from mail1.webmaster.com ([216.152.64.169]:1323 "EHLO
-	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752158AbXBDIAs (ORCPT
+	Sun, 4 Feb 2007 03:16:44 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:47956 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752162AbXBDIQn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Feb 2007 03:00:48 -0500
-From: "David Schwartz" <davids@webmaster.com>
-To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: RE: ntp
-Date: Sat, 3 Feb 2007 23:59:56 -0800
-Message-ID: <MDEHLPKNGKAHNMBLJOLKCELPBFAC.davids@webmaster.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+	Sun, 4 Feb 2007 03:16:43 -0500
+Subject: Re: [RFC] Tracking mlocked pages and moving them off the LRU
+From: Arjan van de Ven <arjan@infradead.org>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Rik van Riel <riel@redhat.com>
+In-Reply-To: <Pine.LNX.4.64.0702031744060.31986@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0702022214580.3960@schroedinger.engr.sgi.com>
+	 <20070203005316.eb0b4042.akpm@linux-foundation.org>
+	 <Pine.LNX.4.64.0702030946330.5388@schroedinger.engr.sgi.com>
+	 <1170525860.3073.1054.camel@laptopd505.fenrus.org>
+	 <Pine.LNX.4.64.0702031055210.18224@schroedinger.engr.sgi.com>
+	 <20070203172242.e5bf2534.akpm@linux-foundation.org>
+	 <Pine.LNX.4.64.0702031744060.31986@schroedinger.engr.sgi.com>
+Content-Type: text/plain
+Organization: Intel International BV
+Date: Sun, 04 Feb 2007 09:16:16 +0100
+Message-Id: <1170576977.3073.1100.camel@laptopd505.fenrus.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2.1 (2.8.2.1-2.fc6) 
 Content-Transfer-Encoding: 7bit
-X-Priority: 3 (Normal)
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
-Importance: Normal
-In-Reply-To: <026801c746a6$c3f81780$2801a8c0@zhangxiliang>
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
-X-Authenticated-Sender: joelkatz@webmaster.com
-X-Spam-Processed: mail1.webmaster.com, Sun, 04 Feb 2007 00:00:08 -0800
-	(not processed: message from trusted or authenticated source)
-X-MDRemoteIP: 206.171.168.138
-X-Return-Path: davids@webmaster.com
-X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
-Reply-To: davids@webmaster.com
-X-MDAV-Processed: mail1.webmaster.com, Sun, 04 Feb 2007 00:00:09 -0800
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-> When i start the ntp service successful on server, the client must ntpdate
-> with the server after waiting a moment.
-> The moment may be 3~5 minutes, or it may be 10~15 minutes. I
-> don't know why
-> it happens?
+> Exclusion or inclusion of NR_MLOCK number is straightforward for the dirty 
+> ratio calcuations. global_page_state(NR_MLOCK) f.e. would get us totals on 
+> mlocked pages per zone. node_page_state(NR_MLOCK) gives a node specific 
+> number of mlocked pages. The nice thing about ZVCs is that it allows
+> easy access to counts on different levels.
 
-Two clocks cannot be synchronized instantaneously. It takes time to compare
-the two clocks and adjust so that they stay in sync. A client will not
-accept a date from an NTP server whose clock is not synchronized -- why
-should it?
+however... mlocked pages still can be dirty, and want to be written back
+at some point ;)
 
-Imagine this -- you have a clock you do not trust. You ask a clock you do
-trust what time it is, and it tells you it is 10:00. A bit later, I ask you
-what time it is. Your clock says 10:12. Can you trust that time? Your clock
-may be fast, it may be slow. You don't know. Until you check the clock you
-trust a few times and confirm both clocks are flowing at the same rate, you
-cannot tell the client what time it is when it asks you.
-
-DS
-
+I can see the point of doing dirty ratio as percentage of the LRU size,
+but in that case you don't need to track NR_MLOCK, only the total LRU
+size. (And yes it'll be sometimes optimistic because not all mlock'd
+pages are moved off the lru yet, but I doubt you'll have that as a
+problem in practice)
+-- 
+if you want to mail me at work (you don't), use arjan (at) linux.intel.com
+Test the interaction between Linux and your BIOS via http://www.linuxfirmwarekit.org
 
