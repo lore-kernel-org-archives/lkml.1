@@ -1,89 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751879AbXBDBgX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751846AbXBDBtd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751879AbXBDBgX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Feb 2007 20:36:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751887AbXBDBgX
+	id S1751846AbXBDBtd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Feb 2007 20:49:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751864AbXBDBtc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Feb 2007 20:36:23 -0500
-Received: from homer.mvista.com ([63.81.120.158]:60501 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1751879AbXBDBgX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Feb 2007 20:36:23 -0500
-Message-ID: <45C53841.5000505@mvista.com>
-Date: Sat, 03 Feb 2007 15:34:57 -1000
-From: akuster <akuster@mvista.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
+	Sat, 3 Feb 2007 20:49:32 -0500
+Received: from omx1-ext.sgi.com ([192.48.179.11]:50503 "EHLO omx1.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751846AbXBDBtc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Feb 2007 20:49:32 -0500
+Date: Sat, 3 Feb 2007 17:49:13 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Rik van Riel <riel@redhat.com>
+Subject: Re: [RFC] Tracking mlocked pages and moving them off the LRU
+In-Reply-To: <20070203172242.e5bf2534.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0702031744060.31986@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0702022214580.3960@schroedinger.engr.sgi.com>
+ <20070203005316.eb0b4042.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0702030946330.5388@schroedinger.engr.sgi.com>
+ <1170525860.3073.1054.camel@laptopd505.fenrus.org>
+ <Pine.LNX.4.64.0702031055210.18224@schroedinger.engr.sgi.com>
+ <20070203172242.e5bf2534.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Christoph Hellwig <hch@infradead.org>, akuster@mvista.com,
-       linux-kernel@vger.kernel.org, akpm@osdl.org
-Subject: Re: [patch 1/1] PM: Adds remount fs ro at suspend
-References: <20070202235132.EDBDF1C448@hermes.mvista.com> <20070203100848.GA28806@infradead.org>
-In-Reply-To: <20070203100848.GA28806@infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, 3 Feb 2007, Andrew Morton wrote:
 
+> Do we actually need NR_MLOCK?  Page reclaim tends to care more about the
+> size of the LRUs and doesn't have much dependency on ->present_pages,
 
-Christoph Hellwig wrote:
-> On Fri, Feb 02, 2007 at 01:50:10PM -1000, akuster@mvista.com wrote:
->>
->> This adds the ability for the file system to remounted as read only during a
->> system suspend.  Log the mount points so when the resume occurs, they can be 
->> remounted back to their original states. This is so in an advent of a power
->> failure, we try our best to keep data from being corrupted or lost.
-> 
-> Can you please explain why this can't be done in userspace?  
+Yes, we'd be fine with general reclaim I think. But the calculation of the 
+dirty ratio based on ZVCs would need it if we take the mlocked pages off. 
+Otherwise we may have dirty ratios > 100%.
 
-I am sure it can.  The idea came from customer inputs, speed is my 
-guess. echo mem > /sys/../state seems a whole lot simpler and cleaner 
-than having userspace figure out what it mounted and then doing echo mem.
+> I guess we could use NR_MLOCK for writeback threshold calculations, to
+> force writeback earlier if there's a lot of mlocked memory in the affected
+> zones.  But that code isn't zone-aware anyway, and we don't know how to make
+> it zone aware in any sane fashion and making it cpuset-aware isn't very
+> interesting or useful..
 
-In fact
-> all existing suspend solutions seem to be doing fine doing things like
-> this in userspace.
+Exclusion or inclusion of NR_MLOCK number is straightforward for the dirty 
+ratio calcuations. global_page_state(NR_MLOCK) f.e. would get us totals on 
+mlocked pages per zone. node_page_state(NR_MLOCK) gives a node specific 
+number of mlocked pages. The nice thing about ZVCs is that it allows
+easy access to counts on different levels.
 
-I guess I missed that boat. If you don't mind, could you point at one 
-solution.
+> So..  Why do we want NR_MLOCK?
 
-> 
->> +static struct suspremount *suspremount_list;
->> +
-< snipped>
-
->> +void suspend_remount_all_fs_ro(void)
->> +{
->> +	suspremount_list = NULL;
->> +	emergency_remount();
-> 
-> NACK.  emergency_remount is exactly what it sais and should never ever
-> be used for a system that you want to keep on using later on.  
-
-The code "emergency_remount" is almost identical to what we have been 
-using. I wanted to reuse existing code rather than dup it.
-
-If you
-> look at it's implementation it's not correct and can't serve as more than
-> a bandaid for susrq. 
-
- From our customer experience, we have not gotten an bad feedback on it. 
-  It seems to address there needs.
-
-  In fact we should probably just remove it..
-> 
->> +EXPORT_SYMBOL(suspend_remount_all_fs_ro);
-> 
-> And something like this for sure should not be exported.
-> 
->> +EXPORT_SYMBOL(resume_remount_fs_rw);
-> 
-> ditto.
-> 
-
-All the code corrects have been address in my upcoming version.
-
-Many thanks for you time and feedback.
-
-Armin
+Rik also had some uses in mind for allocation?
