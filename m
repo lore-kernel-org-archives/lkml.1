@@ -1,48 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752542AbXBDUXu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752541AbXBDU0o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752542AbXBDUXu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Feb 2007 15:23:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752541AbXBDUXu
+	id S1752541AbXBDU0o (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Feb 2007 15:26:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752543AbXBDU0o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Feb 2007 15:23:50 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:41759
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752538AbXBDUXt (ORCPT
+	Sun, 4 Feb 2007 15:26:44 -0500
+Received: from nf-out-0910.google.com ([64.233.182.189]:5356 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752541AbXBDU0n (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Feb 2007 15:23:49 -0500
-Date: Sun, 04 Feb 2007 12:23:48 -0800 (PST)
-Message-Id: <20070204.122348.38681159.davem@davemloft.net>
-To: t.hisch@gmail.com
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH] ipv4: remove a call to skb_queue_len() in inet_diag.c
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20070204142921.GA5787@unknown-00-0d-60-79-ca-00.lan>
-References: <Pine.LNX.4.64.0612311547200.30821@localhost.localdomain>
-	<20070204142921.GA5787@unknown-00-0d-60-79-ca-00.lan>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Sun, 4 Feb 2007 15:26:43 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=oq4iQ3nR6K02IEy9LYAyijOXzWPskoM5KLpfq1UIu+kqnTSS1VoNEDcwG18jDndV1cXsaf7njf/jJcrnV2kF8bajmnSMSagCBWemnEL69eW0rHmIFfGsWI1fvVD5FqvmocijxaI6Xdrap1xDMQ/JatjyMA4/YSdsakXibuj3mLw=
+Message-ID: <767314830702041226o10d162e6u4f8b6e42baf600d5@mail.gmail.com>
+Date: Sun, 4 Feb 2007 15:26:42 -0500
+From: "Keenan Pepper" <keenanpepper@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: Timeouts on ICH7 PATA drive with ata_piix; ide_generic worksperfectly
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Thomas Hisch <t.hisch@gmail.com>
-Date: Sun, 4 Feb 2007 15:29:21 +0100
+Andrew Morton wrote:
+> From what version of the kernel did you upgrade?
+> It is very helpful for us to knwo the latest version which worked OK.
 
-> remove unneeded call to skb_queue_len (skb_dequeue already checks queuelen) and
-> replace a sizeof() by a Netlink Macro
-> 
-> Signed-off-by: Thomas Hisch <t.hisch@gmail.com>
+The ata_piix driver never worked correctly. The last kernel I used,
+2.6.17, used ide_generic by default, so the ata_piix bug never showed
+up. Sorry if that was unclear.
 
-You don't understand the code you are editing :-)
-
-We want to process the number of packets present when we
-start the function, other threads can add more packets to
-the queue meanwhile and we don't want to keep dequeueing
-in that case or else we can theoretically run forever with
-a fast enough producer.
-
-Also, please post all networking patches to netdev@vger.kernel.org,
-the majority of the networking developers do not read linux-kernel.
-
-Thank you.
+Keenan
