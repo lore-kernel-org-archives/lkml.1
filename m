@@ -1,88 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752313AbXBDMse@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752314AbXBDMxa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752313AbXBDMse (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Feb 2007 07:48:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752309AbXBDMse
+	id S1752314AbXBDMxa (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Feb 2007 07:53:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752315AbXBDMxa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Feb 2007 07:48:34 -0500
-Received: from thunk.org ([69.25.196.29]:40768 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752078AbXBDMsd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Feb 2007 07:48:33 -0500
-Date: Sun, 4 Feb 2007 07:48:19 -0500
-From: Theodore Tso <tytso@mit.edu>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: "Ahmed S. Darwish" <darwish.07@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: A CodingStyle suggestion
-Message-ID: <20070204124819.GC12943@thunk.org>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Randy Dunlap <randy.dunlap@oracle.com>,
-	"Ahmed S. Darwish" <darwish.07@gmail.com>,
-	linux-kernel@vger.kernel.org
-References: <20070203215848.GA10440@Ahmed> <20070203135951.564e5fe2.randy.dunlap@oracle.com>
+	Sun, 4 Feb 2007 07:53:30 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:42113 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752309AbXBDMxa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Feb 2007 07:53:30 -0500
+Date: Sun, 4 Feb 2007 13:53:16 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: paulmck@linux.vnet.ibm.com, Andrew Morton <akpm@osdl.org>,
+       Ingo Molnar <mingo@elte.hu>, dipankar@in.ibm.com,
+       Gautham Shenoy <ego@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org
+Subject: Re: Fw: Re: [mm PATCH 4/6] RCU: (now) CPU hotplug
+Message-ID: <20070204125316.GA1945@elf.ucw.cz>
+References: <20070126112837.059502fc.akpm@osdl.org> <20070203001745.GB1712@elf.ucw.cz> <20070204043929.GG5647@linux.vnet.ibm.com> <200702041208.56466.rjw@sisk.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070203135951.564e5fe2.randy.dunlap@oracle.com>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@thunk.org
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+In-Reply-To: <200702041208.56466.rjw@sisk.pl>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 03, 2007 at 01:59:51PM -0800, Randy Dunlap wrote:
-> On Sat, 3 Feb 2007 23:58:48 +0200 Ahmed S. Darwish wrote:
-> > 
-> > In CodingStyle Chapter 16 "Function return value and names", why not
-> > adding a comment about the favorable community way of checking the return
-> > value. ie:
-> > 
-> > ret = do_method();
-> > if (ret) {
-> >    /* deal with error */
-> > }
-> > 
-> > and not other ways like:
-> > 
-> > if (do_method()) or if ((ret = do_method()) > value) ...
-> > 
+Hi!
+
+> > > > o	init/do_mounts_initrd.c line 57 handle_initrd().
+> > > > 	This looks to be short term anyway, so OK to leave.
+> > > > 	But does kernel_execve() clear PF_NOFREEZE?
+> > > > 
+> > > > 	But it should be OK to freeze the init process when doing CPU
+> > > > 	hotplug ops, right?
+> > > 
+> > > That looks bogus. If it is short term, it can as well live _without_
+> > > PF_NOFREEZE. Noone should suspend system at that stage, right?
+> >
+> > I agree that any attempt to freeze that early in boot would be
+> > at best an act of extreme bravery!
 > 
-> I like it.  Please cc: Andrew Morton <akpm@osdl.org> on it.
-> Hopefully he will merge it.
-> 
+> This is needed so that the _resume_ works, when it's handled from the user land
+> by our resume tool.  Currently, the resume code calls
+> freeze_processes() too.
 
-I'm going to have to disagree.  Sometimes if the main flow of the code
-is down, it's actually better to do this:
-
-	if ((err = do_foo()) < 0)
-		return (err);
-	if ((err = do_bar(current, filp)) < 0)
-		return (err);
-	if ((err = do_quux(filp, buffer)) < 0) {
-		close(filp);
-		return (err);
-	}
-
-Than to do something like this:
-
-	err = do_foo();
-	if (err < 0)
-		return (err);
-	err = do_bar(current, filp);
-	if (err < 0)
-		return (err);
-	err = do_quux(filp, buffer);
-	if (err < 0) {
-		close(filp);
-		return (err);
-	}
-
-The first is more concise, and it draws the reader's eye to what's
-really going on.  The cleanup/return error path is less important, and
-and it's pretty clear what's going on just from glancing at it.
-
-						- Ted
-
-		
-		
+I do not understand... freeze_processes() always leaves curent process
+running... why is it needed?
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
