@@ -1,52 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752434AbXBDQdj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752436AbXBDQuH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752434AbXBDQdj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Feb 2007 11:33:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752439AbXBDQdj
+	id S1752436AbXBDQuH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Feb 2007 11:50:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752438AbXBDQuH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Feb 2007 11:33:39 -0500
-Received: from delta.idt.cz ([81.0.223.58]:1708 "EHLO delta.idt.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752434AbXBDQdi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Feb 2007 11:33:38 -0500
-Date: Sun, 4 Feb 2007 17:54:08 +0100
-From: Michal Hocko <mstsxfx@gmail.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: mm: how to check for kernel pages
-Message-ID: <20070204165407.GD10477@curandero.marconia.cz>
-References: <20070204110256.GA10477@curandero.marconia.cz> <1170597450.3073.1127.camel@laptopd505.fenrus.org> <20070204153321.GC10477@curandero.marconia.cz> <1170603951.3073.1160.camel@laptopd505.fenrus.org>
+	Sun, 4 Feb 2007 11:50:07 -0500
+Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:36865 "EHLO
+	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752436AbXBDQuG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Feb 2007 11:50:06 -0500
+Message-ID: <45C60EB6.1060104@drzeus.cx>
+Date: Sun, 04 Feb 2007 17:49:58 +0100
+From: Pierre Ossman <drzeus-list@drzeus.cx>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070131)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1170603951.3073.1160.camel@laptopd505.fenrus.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Alex Dubov <oakad@yahoo.com>
+CC: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC] [PATCH] Fix up needless kmap:s
+References: <147773.6460.qm@web36702.mail.mud.yahoo.com>
+In-Reply-To: <147773.6460.qm@web36702.mail.mud.yahoo.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 04, 2007 at 04:45:51PM +0100, Arjan van de Ven wrote:
-> > Sorry for not being more precise. As a part of my thesis work I need to
-> > migrate pages. I greatly use mm/migrate.c code.  
-> > I assume that not all pages can be migrated - especially those used by
-> > kernel (where direct virtual to physical mapping is used).
-> > So I intended something like following code:
-> 
-> it's more than that... even userspace pages may not be moved if they're
-> the target of active DMA for example ..... 
+Alex Dubov wrote:
+> The patch looks ok.
+>
+> However, due to certain peculiarities with memorystick and xd I have to emulate a scatter-gather
+> in software. Considering that this particular aspect of implementation is the same for all card
+> types on this TI chip, it can be shared by tifm_sd driver as well. In this case highmem won't be
+> needed to be avoided and kmap_atomic will come back (may be).
+>
+>   
 
-Ok, so what everything should be checked?
+Fair enough. Just make sure you handle the big problem case (kmap only
+maps a single page, not the entire sg entry).
 
-- PageReserved
-- PageSlab
-- PageLocked
-- PageBuddy 
-- PageCompound
-- PageNosave
-- PageNosaveFree 
-- kernel page
-- userspace active DMA as you've mentioned. But I don't know how to test
-  it
+> And, by the way, to what extent pagefault_enable/pagefault_disable calls are needed? They are
+> present in k(u)map_atomic even for non-highmem pages/architectures.
+>
+>   
+
+They tell the page fault handler that it may not sleep on a page fault.
+Currently it only has the behaviour of disabling preemption though. I'd
+guess it is present for non-highmem so that things behave somewhat
+similar for both the highmem and non-highmem cases.
+
+Rgds
 
 -- 
-Michal Hocko
+     -- Pierre Ossman
+
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
 
