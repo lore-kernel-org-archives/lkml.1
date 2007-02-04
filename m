@@ -1,60 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752098AbXBDGQT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752103AbXBDGWP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752098AbXBDGQT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Feb 2007 01:16:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752103AbXBDGQT
+	id S1752103AbXBDGWP (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Feb 2007 01:22:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752109AbXBDGWO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Feb 2007 01:16:19 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:59089 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752098AbXBDGQT (ORCPT
+	Sun, 4 Feb 2007 01:22:14 -0500
+Received: from tomts13.bellnexxia.net ([209.226.175.34]:61824 "EHLO
+	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752103AbXBDGWO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Feb 2007 01:16:19 -0500
-Date: Sat, 3 Feb 2007 22:08:28 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Chris Wright <chrisw@sous-sol.org>
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
-       "Theodore Ts'o" <tytso@mit.edu>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Randy Dunlap <rdunlap@xenotime.net>,
-       Michael Krufky <mkrufky@linuxtv.org>, Dave Jones <davej@redhat.com>,
-       Chuck Wolber <chuckw@quantumlinux.com>, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, alan@lxorguk.ukuu.org.uk
-Subject: Re: [stable] [patch 00/59] -stable review
-Message-Id: <20070203220828.f095bb91.randy.dunlap@oracle.com>
-In-Reply-To: <20070203025913.GL10475@sequoia.sous-sol.org>
-References: <20070203023504.435051000@sous-sol.org>
-	<20070203025913.GL10475@sequoia.sous-sol.org>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.0 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+	Sun, 4 Feb 2007 01:22:14 -0500
+Date: Sun, 4 Feb 2007 01:22:12 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@osdl.org>,
+       Ingo Molnar <mingo@redhat.com>
+Subject: [PATCH] kernel/time/clocksource.c needs struct task_struct on m68k
+Message-ID: <20070204062211.GA10674@Krystal>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+Content-Disposition: inline
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.4.34-grsec (i686)
+X-Uptime: 01:14:38 up 1 day, 20:22,  2 users,  load average: 1.01, 1.05, 1.03
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2 Feb 2007 18:59:13 -0800 Chris Wright wrote:
+kernel/time/clocksource.c needs struct task_struct on m68k.
 
-> * Chris Wright (chrisw@sous-sol.org) wrote:
-> > Responses should be made by Mon Feb  3 02:30 UTC 2007
-> 
-> Yes, that's Mon Feb 5 (thanks to those on their toes ;-)
-> 
-> And the roll-up will be available at:
-> 
-> 	http://www.kernel.org/pub/linux/kernel/people/chrisw/stable/patch-2.6.19.3-rc1.{gz,bz2}
-> 
-> once mirroring finishes.
+Because it uses spin_unlock_irq(), which, on m68k, uses hardirq_count(), which
+uses preempt_count(), which needs to dereference struct task_struct, we
+have to include sched.h. Because it would cause a loop inclusion, we
+cannot include sched.h in any other of asm-m68k/system.h,
+linux/thread_info.h, linux/hardirq.h, which leaves this ugly include in
+a C file as the only simple solution.
 
-Shouldn't this apply cleanly to 2.6.19?  I get
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 
-1 out of 1 hunk FAILED -- saving rejects to file Makefile.rej
-1 out of 2 hunks FAILED -- saving rejects to file net/ipv6/addrconf.c.rej
-
----
-~Randy
+--- a/kernel/time/clocksource.c
++++ b/kernel/time/clocksource.c
+@@ -28,6 +28,7 @@
+ #include <linux/sysdev.h>
+ #include <linux/init.h>
+ #include <linux/module.h>
++#include <linux/sched.h> /* for spin_unlock_irq() using preempt_count() m68k */
+ 
+ /* XXX - Would like a better way for initializing curr_clocksource */
+ extern struct clocksource clocksource_jiffies;
+-- 
+OpenPGP public key:              http://krystal.dyndns.org:8080/key/compudj.gpg
+Key fingerprint:     8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68 
