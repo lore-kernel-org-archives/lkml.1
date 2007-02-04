@@ -1,114 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751886AbXBDB4i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751871AbXBDCBw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751886AbXBDB4i (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Feb 2007 20:56:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751887AbXBDB4i
+	id S1751871AbXBDCBw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Feb 2007 21:01:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751887AbXBDCBw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Feb 2007 20:56:38 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:56075 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751886AbXBDB4h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Feb 2007 20:56:37 -0500
-Date: Sat, 3 Feb 2007 17:56:23 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Tilman Schmidt <tilman@imap.cc>
-Cc: Karsten Keil <kkeil@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       i4ldeveloper@listserv.isdn4linux.de, linux-serial@vger.kernel.org,
-       Hansjoerg Lipp <hjlipp@web.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Greg KH <greg@kroah.com>
-Subject: Re: [PATCH] drivers/isdn/gigaset: new M101 driver
-Message-Id: <20070203175623.72a171a1.akpm@linux-foundation.org>
-In-Reply-To: <45C537B9.7080704@imap.cc>
-References: <200702012112.l11LCOO4016557@lx1.pxnet.com>
-	<20070201171345.bd98ce30.akpm@osdl.org>
-	<45C537B9.7080704@imap.cc>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 3 Feb 2007 21:01:52 -0500
+Received: from yuma.hostsharing.net ([212.42.230.35]:45637 "EHLO
+	yuma.hostsharing.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751871AbXBDCBv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Feb 2007 21:01:51 -0500
+Date: Sun, 4 Feb 2007 03:00:46 +0100
+From: Elimar Riesebieter <riesebie@lxtec.de>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.20-rc7: hid on PPC
+Message-ID: <20070204020046.GA17041@frodo.home.lxtec.de>
+Mail-Followup-To: Jiri Kosina <jkosina@suse.cz>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <20070202205151.GA3212@aragorn.home.lxtec.de> <Pine.LNX.4.64.0702040046280.22958@jikos.suse.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0702040046280.22958@jikos.suse.cz>
+Organization: LXTEC
+X-gnupg-key-fingerprint: BE65 85E4 4867 7E9B 1F2A  B2CE DC88 3C6E C54F 7FB0
+X-Editor: VIM - Vi IMproved 7.0 (2006 May 7, compiled Jan 21 2007 22:03:27)
+User-Agent: Mutt/1.5.13-muttng (2007-01-02)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 04 Feb 2007 02:32:41 +0100 Tilman Schmidt <tilman@imap.cc> wrote:
+On Sun, 04 Feb 2007 the mental interface of
+Jiri Kosina told:
 
-> >> +	spin_lock_irqsave(&cs->cmdlock, flags);
-> >> +	cb = cs->cmdbuf;
-> >> +	spin_unlock_irqrestore(&cs->cmdlock, flags);
-> > 
-> > It is doubtful if the locking here does anything useful.
+> On Fri, 2 Feb 2007, Elimar Riesebieter wrote:
 > 
-> It assures atomicity when reading the cs->cmdbuf pointer.
-
-I think it's bogus.  If the quantity being copied here is more than 32-bits
-then yes, a lock is appropriate.  But if it's a single word then it's
-unlikely that the locking does anything useful.  Or there might be a bug
-here.
-
-> >> +	spin_lock_irqsave(&cs->cmdlock, flags);
-> >> +	cb->prev = cs->lastcmdbuf;
-> >> +	if (cs->lastcmdbuf)
-> >> +		cs->lastcmdbuf->next = cb;
-> >> +	else {
-> >> +		cs->cmdbuf = cb;
-> >> +		cs->curlen = len;
-> >> +	}
-> >> +	cs->cmdbytes += len;
-> >> +	cs->lastcmdbuf = cb;
-> >> +	spin_unlock_irqrestore(&cs->cmdlock, flags);
-> > 
-> > Would the use of list_heads simplify things here?
+> > it would be great, if we can choose pb_fnmode while configure the 
+> > kernel. I have a PowerBook5,6 but want fkeysfirst. So I have to # echo 2 
+> > >| /sys/module/hid/parameters/pb_fnmode by hand after each boot. The 
+> > module-parm pb_fnmode doesn't work either in /etc/modules nor in a 
+> > modprobe instruction while boot. An modprobe -r usb-hid hid; sleep 2; 
+> > modprobe hid pb_fnmode=2; modprobe usb-hid works on a fresh booted 
+> > machine. Else module-parm isn't available with a built-in hid, though.
 > 
-> I don't think so. The operations in list.h do not keep track of
-> the total byte count, and adding that in a race-free way appears
-> non-trivial.
-
-Maintaining a byte count isn't related to maintaining a list.
-
-> >> +			down(&cs->hw.ser->dead_sem);
-> > 
-> > Does this actually use the semaphore's counting feature?  If not, can we
-> > switch it to a mutex?
+> Hi Elimar,
 > 
-> I stole that code from the PPP line discipline. It is to assure all
-> other ldisc methods have completed before the close method proceeds.
-> This doesn't look like a case for a mutex to me, but I'm open to
-> suggestions if it's important to avoid a semaphore here.
-
-If a sleeping lock is being used as a mutex, please use a mutex.  We prefer
-that semaphores only be used in those situations where their counting
-feature is being used.
-
-Reasons: a) mutexes have better runtime debugging support and b) Ingo had
-some plans to reimplement semaphores in an arch-neutral way and for some
-reason reducing the number of callers would help that.  I forget what the
-reason was, actually.
-
-> >> +	tail = atomic_read(&inbuf->tail);
-> >> +	head = atomic_read(&inbuf->head);
-> >> +	gig_dbg(DEBUG_INTR, "buffer state: %u -> %u, receive %u bytes",
-> >> +		head, tail, count);
-> >> +
-> >> +	if (head <= tail) {
-> >> +		n = RBUFSIZE - tail;
-> >> +		if (count >= n) {
-> >> +			/* buffer wraparound */
-> >> +			memcpy(inbuf->data + tail, buf, n);
-> >> +			tail = 0;
-> >> +			buf += n;
-> >> +			count -= n;
-> >> +		} else {
-> >> +			memcpy(inbuf->data + tail, buf, count);
-> >> +			tail += count;
-> >> +			buf += count;
-> >> +			count = 0;
-> >> +		}
-> >> +	}
-> > 
-> > Perhaps the (fairly revolting) circ_buf.h can be used for this stuff.
+> sorry, but I don't seem to understand your problem. There are two 
+> situations - either you have hid bultin in kernel, or compiled as a 
+> module. In the first case, you simply modify the kernel boot commandline 
+> to contain a string 
 > 
-> It probably could, but IMHO readability would suffer rather than improve.
-> 
+> 	hid.pb_fnmode=2 
 
-How about kernel/kfifo.c?
+This works fine, thanks ;)
+
+> and that's it. In the latter case, you add something like 
+> 
+> 	options hid     pb_fnmode=2
+> 
+> into the /etc/modprobe.conf file (or you can use any distro-specific way 
+> to pass parameters to modules, such as /etc/modprobe.d). This is standard 
+> way to do things, and it works also with hid.
+
+Hmmm, I've had "options hid     pb_fnmode=2" in /etc/modprobe.d/hid,
+which did not work. But "options hid pb_fnmode=2" in
+/etc/modprobe.conf works well ;)
+
+> I don't think there is a need to have this as a separate kernel 
+> configuration option.
+
+Thanks, sorry for the noise.
+
+Elimar
+
+-- 
+  Do you smell something burning or ist it me?
 
