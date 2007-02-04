@@ -1,59 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751740AbXBDBQa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751760AbXBDBXG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751740AbXBDBQa (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Feb 2007 20:16:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751802AbXBDBQa
+	id S1751760AbXBDBXG (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Feb 2007 20:23:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751802AbXBDBXG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Feb 2007 20:16:30 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:60586 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751740AbXBDBQ3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Feb 2007 20:16:29 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: "Adam Kropelin" <akropel1@rochester.rr.com>
-Cc: "Auke Kok" <auke-jan.h.kok@intel.com>, "Adrian Bunk" <bunk@stusta.de>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       <jgarzik@pobox.com>, <alan@lxorguk.ukuu.org.uk>,
-       "Allen Parker" <parker@isohunt.com>, <jesse.brandeburg@intel.com>,
-       <gregkh@suse.de>, <linux-pci@atrey.karlin.mff.cuni.cz>,
-       <netdev@vger.kernel.org>
-Subject: Re: 2.6.20-rc7: known regressions (v2) (part 1)
-References: <Pine.LNX.4.64.0701302019530.11095@woody.linux-foundation.org>
-	<20070203004447.GJ3754@stusta.de> <45C42669.2010105@intel.com>
-	<m1k5yz3cxy.fsf@ebiederm.dsl.xmission.com>
-	<089b01c747be$0ca22620$84163e05@kroptech.com>
-	<45C4F3F1.6060500@intel.com>
-	<m1ejp70wu0.fsf@ebiederm.dsl.xmission.com>
-	<098001c747e9$d8931b60$84163e05@kroptech.com>
-Date: Sat, 03 Feb 2007 18:14:53 -0700
-In-Reply-To: <098001c747e9$d8931b60$84163e05@kroptech.com> (Adam Kropelin's
-	message of "Sat, 3 Feb 2007 18:20:08 -0500")
-Message-ID: <m1ps8qzpte.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 3 Feb 2007 20:23:06 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:55466 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751760AbXBDBXD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Feb 2007 20:23:03 -0500
+Date: Sat, 3 Feb 2007 17:22:42 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Rik van Riel <riel@redhat.com>
+Subject: Re: [RFC] Tracking mlocked pages and moving them off the LRU
+Message-Id: <20070203172242.e5bf2534.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0702031055210.18224@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0702022214580.3960@schroedinger.engr.sgi.com>
+	<20070203005316.eb0b4042.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0702030946330.5388@schroedinger.engr.sgi.com>
+	<1170525860.3073.1054.camel@laptopd505.fenrus.org>
+	<Pine.LNX.4.64.0702031055210.18224@schroedinger.engr.sgi.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Adam Kropelin" <akropel1@rochester.rr.com> writes:
+On Sat, 3 Feb 2007 11:03:59 -0800 (PST) Christoph Lameter <clameter@sgi.com> wrote:
 
->> Can I get the corresponding lspci -xxx output.  I suspect the BIOS
->> did not program the hypertransport MSI mapping capabilities correctly.
->> All it has to do is set the enable but still, occasionally BIOS
->> writers miss the most amazing things.
->
-> Here you go. This is from 2.6.20-rc7.
+> Here is the second piece removing mlock pages off the LRU during scanning. 
+> I tried moving them to a separate list but then we run into issues with
+> locking. We do not need ithe list though since we will encounter the
+> page again anyways during zap_pte_range.
+> 
+> However, in zap_pte_range we then run into another problem. Multiple 
+> zap_pte_ranges may handle the same page and without a page flag and 
+> scanning all the vmas we cannot determine if the page should or should not 
+> be moved back to the LRU. As a result this patch may decrement NR_MLOCK 
+> too much so that is goes below zero. Any ideas on how to fix this without 
+> a page flag and a scan over vmas?
+> 
+> Plus there is the issue of NR_MLOCK only being updated when we are 
+> reclaiming and when we may already be in trouble. An app may mlock huge 
+> amounts of memory and NR_MLOCK will stay low. If memory gets too low then
+> NR_MLOCKED is suddenly become accurate and the VM is likely undergoing a 
+> shock from that discovery (should we actually use NR_MLOCK elsewhere to 
+> determine memory management behavior). Hopefully we will not fall over 
+> then.
 
-Thanks.  Conclusion.  I could not find bit 16 (the enable bit) set in any of
-your hypertransport msi mapping capabilities.
+Do we actually need NR_MLOCK?  Page reclaim tends to care more about the
+size of the LRUs and doesn't have much dependency on ->present_pages,
+iirc.
 
-So MSI interrupts won't work until someone enables your chipset
-to transform them into hypertransport interrupts.
+I guess we could use NR_MLOCK for writeback threshold calculations, to
+force writeback earlier if there's a lot of mlocked memory in the affected
+zones.  But that code isn't zone-aware anyway, and we don't know how to make
+it zone aware in any sane fashion and making it cpuset-aware isn't very
+interesting or useful..
 
-Ideally it is a BIOS issue, but it may be the kind of thing we can
-fix up with quirks in the kernel.
-
-Eric
+So..  Why do we want NR_MLOCK?
