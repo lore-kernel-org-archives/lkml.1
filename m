@@ -1,115 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752568AbXBDVlj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752573AbXBDVme@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752568AbXBDVlj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Feb 2007 16:41:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752573AbXBDVlj
+	id S1752573AbXBDVme (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Feb 2007 16:42:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752571AbXBDVme
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Feb 2007 16:41:39 -0500
-Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:35935 "EHLO
-	pd5mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752568AbXBDVli (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Feb 2007 16:41:38 -0500
-Date: Sun, 04 Feb 2007 13:40:31 -0800 (PST)
-From: Zwane Mwaikambo <zwane@infradead.org>
-Subject: [PATCH] Fix MTRR compat ioctl
-To: rgooch@atnf.csiro.au
-Cc: Andrew Morton <akpm@linux-foundation.org>, Dave Jones <davej@redhat.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Message-id: <Pine.LNX.4.64.0702041328150.31479@montezuma.fsmlabs.com>
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
+	Sun, 4 Feb 2007 16:42:34 -0500
+Received: from mail.tmr.com ([64.65.253.246]:33722 "EHLO gaimboi.tmr.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752574AbXBDVmd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Feb 2007 16:42:33 -0500
+Message-ID: <45C65353.5000602@tmr.com>
+Date: Sun, 04 Feb 2007 16:42:43 -0500
+From: Bill Davidsen <davidsen@tmr.com>
+Organization: TMR Associates Inc, Schenectady NY
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+MIME-Version: 1.0
+To: Jakub Jelinek <jakub@redhat.com>
+CC: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org
+Subject: Re: [ANN] Userspace M-on-N threading model implementation. Alpha
+ release.
+References: <66910A579C9312469A7DF9ADB54A8B7D5C2B90@exchange.ZeugmaSystems.local> <45C362D2.2040407@tmr.com> <1170516376.3073.1015.camel@laptopd505.fenrus.org> <45C63E30.4010106@tmr.com> <20070204202053.GC20307@devserv.devel.redhat.com>
+In-Reply-To: <20070204202053.GC20307@devserv.devel.redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The MTRR compat code wasn't calling the lowlevel MTRR setup due to a 
-switch block not handling the compat case.
+Jakub Jelinek wrote:
+> On Sun, Feb 04, 2007 at 03:12:32PM -0500, Bill Davidsen wrote:
+>   
+>> Arjan van de Ven wrote:
+>>     
+>>>> Because user threading can avoid context switches, there will always be 
+>>>> cases where it will outperform o/s threads for hardware reasons.
+>>>>         
+>>> actually.. switching from one "real" thread to another in Linux is not
+>>> an actual context switch in the hardware sense... at least this part of
+>>> your argument seems to be incorrect ;)
+>>>
+>>>       
+>> How does that work? Switching between kernel threads requires going into 
+>> the kernel, user level thread switches are all done in user mode.
+>>
+>> Do you have some way to change o/s threads w/o going into the kernel?
+>>     
+>
+> But going into kernel is not very expensive on Linux.
+>
+> On the other side, the overhead you need to add for every single syscall
+> that might block for the M:N threads and the associated complications
+> which make it far harder to conform to POSIX IMHO far outweight the costs
+> of going into the kernel for a context switch.
 
-Before:
-(WW) I810(0): Failed to set up write-combining range (0xd0000000,0x10000000)
+That really wasn't my question, Arjan said that switching real threads 
+wasn't a context switch in the hardware sense, and I was asking if I 
+missed something. It may be cheap, but it would seem to be a context 
+switch none-the-less.
 
-After:
-reg00: base=0x00000000 (   0MB), size=1024MB: write-back, count=1
-reg01: base=0x40000000 (1024MB), size= 512MB: write-back, count=1
-reg02: base=0x5f700000 (1527MB), size=   1MB: uncachable, count=1
-reg03: base=0x5f800000 (1528MB), size=   8MB: uncachable, count=1
-reg04: base=0xd0000000 (3328MB), size= 256MB: write-combining, count=1
+-- 
+bill davidsen <davidsen@tmr.com>
+  CTO TMR Associates, Inc
+  Doing interesting things with small computers since 1979
 
-Signed-off-by: Zwane Mwaikambo <zwane@infradead.org>
-
-Index: arch/i386/kernel/cpu/mtrr/if.c
-===================================================================
-RCS file: /home/cvsroot/linux-2.6.20-rc6-mm1/arch/i386/kernel/cpu/mtrr/if.c,v
-retrieving revision 1.1.1.1
-diff -u -p -B -r1.1.1.1 if.c
---- arch/i386/kernel/cpu/mtrr/if.c	30 Jan 2007 05:28:30 -0000	1.1.1.1
-+++ arch/i386/kernel/cpu/mtrr/if.c	4 Feb 2007 21:36:57 -0000
-@@ -158,8 +158,9 @@ mtrr_ioctl(struct file *file, unsigned i
- 	struct mtrr_sentry sentry;
- 	struct mtrr_gentry gentry;
- 	void __user *arg = (void __user *) __arg;
-+	unsigned int compat_cmd = cmd;
- 
--	switch (cmd) {
-+	switch (compat_cmd) {
- 	case MTRRIOC_ADD_ENTRY:
- 	case MTRRIOC_SET_ENTRY:
- 	case MTRRIOC_DEL_ENTRY:
-@@ -177,14 +178,20 @@ mtrr_ioctl(struct file *file, unsigned i
- 			return -EFAULT;
- 		break;
- #ifdef CONFIG_COMPAT
--	case MTRRIOC32_ADD_ENTRY:
--	case MTRRIOC32_SET_ENTRY:
--	case MTRRIOC32_DEL_ENTRY:
--	case MTRRIOC32_KILL_ENTRY:
--	case MTRRIOC32_ADD_PAGE_ENTRY:
--	case MTRRIOC32_SET_PAGE_ENTRY:
--	case MTRRIOC32_DEL_PAGE_ENTRY:
--	case MTRRIOC32_KILL_PAGE_ENTRY: {
-+#define MTRR_COMPAT_OP(op, type)\
-+	case MTRRIOC32_##op:	\
-+	cmd = MTRRIOC_##op;	\
-+	goto compat_get_##type
-+
-+	MTRR_COMPAT_OP(ADD_ENTRY, sentry);
-+	MTRR_COMPAT_OP(SET_ENTRY, sentry);
-+	MTRR_COMPAT_OP(DEL_ENTRY, sentry);
-+	MTRR_COMPAT_OP(KILL_ENTRY, sentry);
-+	MTRR_COMPAT_OP(ADD_PAGE_ENTRY, sentry);
-+	MTRR_COMPAT_OP(SET_PAGE_ENTRY, sentry);
-+	MTRR_COMPAT_OP(DEL_PAGE_ENTRY, sentry);
-+	MTRR_COMPAT_OP(KILL_PAGE_ENTRY, sentry);
-+compat_get_sentry: {
- 		struct mtrr_sentry32 __user *s32 = (struct mtrr_sentry32 __user *)__arg;
- 		err = get_user(sentry.base, &s32->base);
- 		err |= get_user(sentry.size, &s32->size);
-@@ -193,8 +200,9 @@ mtrr_ioctl(struct file *file, unsigned i
- 			return err;
- 		break;
- 	}
--	case MTRRIOC32_GET_ENTRY:
--	case MTRRIOC32_GET_PAGE_ENTRY: {
-+	MTRR_COMPAT_OP(GET_ENTRY, gentry);
-+	MTRR_COMPAT_OP(GET_PAGE_ENTRY, gentry);
-+compat_get_gentry: {
- 		struct mtrr_gentry32 __user *g32 = (struct mtrr_gentry32 __user *)__arg;
- 		err = get_user(gentry.regnum, &g32->regnum);
- 		err |= get_user(gentry.base, &g32->base);
-@@ -204,6 +212,7 @@ mtrr_ioctl(struct file *file, unsigned i
- 			return err;
- 		break;
- 	}
-+#undef MTRR_COMPAT_OP
- #endif
- 	}
- 
-@@ -317,7 +326,7 @@ mtrr_ioctl(struct file *file, unsigned i
- 	if (err)
- 		return err;
- 
--	switch(cmd) {
-+	switch(compat_cmd) {
- 	case MTRRIOC_GET_ENTRY:
- 	case MTRRIOC_GET_PAGE_ENTRY:
- 		if (copy_to_user(arg, &gentry, sizeof gentry))
