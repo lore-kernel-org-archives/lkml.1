@@ -1,53 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752591AbXBDW46@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752596AbXBDW6y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752591AbXBDW46 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Feb 2007 17:56:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752594AbXBDW45
+	id S1752596AbXBDW6y (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Feb 2007 17:58:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752594AbXBDW6x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Feb 2007 17:56:57 -0500
-Received: from wx-out-0506.google.com ([66.249.82.233]:57419 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752592AbXBDW44 (ORCPT
+	Sun, 4 Feb 2007 17:58:53 -0500
+Received: from nf-out-0910.google.com ([64.233.182.185]:8649 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752593AbXBDW6x (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Feb 2007 17:56:56 -0500
+	Sun, 4 Feb 2007 17:58:53 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=gxIt+cRoSqyJ3a8mnnQ9VNP+0m+vXWyhCRv7HWNZkyPKZq1hA9KNwpqn3kLAb/J3XUivb72CiobjZ+NO9p9ssnE803asH1kxtlQ0on5vupP1VscmHx4OOmT7oZNqA8qyJIElJ0bmXXsul9+klKTwZ4dcm893jakje9wcGsSOIJg=
-Message-ID: <82e4877d0702041456u5d30d32bs41233048a1833d59@mail.gmail.com>
-Date: Sun, 4 Feb 2007 17:56:55 -0500
-From: "Parag Warudkar" <parag.warudkar@gmail.com>
-To: netdev@vger.kernel.org
-Subject: Re: Unexpected Acknowledgement / Stalled Connections
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <82e4877d0702041431p555e644et35845db674304403@mail.gmail.com>
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=BRuIfJlqYuqSXCe50iZsftQxFaN27QO46z0A9Ec8MwjmsTDTqa8+Uvyf62vOqbRtyXu4AxTbiGJvCakuqUg9ES7Jeb2qaCApbYBcna1niei6lC2IA/boa3lPh4Nhd0N0iB40l0tCsk0heKfqtJGt1kzNgtEoxXVC1KZNLGD4Sus=
+Message-ID: <767314830702041458w58cd41bcn353fd8dbc96dd09e@mail.gmail.com>
+Date: Sun, 4 Feb 2007 17:58:51 -0500
+From: "Keenan Pepper" <keenanpepper@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: Timeouts on ICH7 PATA drive with ata_piix; ide_generic worksperfectly
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <82e4877d0702041431p555e644et35845db674304403@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/4/07, Parag Warudkar <parag.warudkar@gmail.com> wrote:
-> I am running 2.6.20 and have trouble with stalled connections. For
-> instance, if I try to download a debian ISO image using wget, the
-> connection runs fine for few seconds and then stalls for ever.
->
-> In my router logs I see a ton of messages like the below -
->
-> [INFO] Sun Feb 04 17:22:03 2007 Blocked incoming TCP packet from
-> 192.168.0.174:34090 to 130.239.18.138:80 with unexpected
-> acknowledgement 3269301836 (expected 3269343453 to 3269408989)
->
-> Where 192.168.0.174 is my laptop running FC6 and kernel 2.6.20 and
-> 130.239.18.138 is whatever cdimage.debian.org resolves to atm.
->
-> What's going on here? Any TCP/IP tunable that I can set/turn on/off to
-> prevent this from happening?
+Tejun Heo wrote:
+> * Does putting in a readable CD or DVD make any difference?
 
-Turning tcp_sack off seems to cure it. Turning it on again makes the
-connections stall. Seems like the D-Link router doesn't like the SACKs
-linux sends?
+Yes, I ran for an hour with an audio CD in the drive and there were no timeouts.
 
-Parag
+> * Does the problem occur in single mode where no HAL or whatever is running?
+
+No, there were no timeouts in single mode even without a CD in the drive.
+
+> Auch, scrap the last paragraph. You actually did. Sorry about that. ;-)
+
+Well, partly my fault for letting Gmail give it the wrong MIME type.
+Should have made the filenames end in .txt.
+
+> I see your controller is ICH7 and the errors are over ten minutes apart.
+> It really seems that HAL, smartd, hddtemp or whatever is poking the dvd
+> writer and it isn't happy about it. In addition to the above questions,
+> you can read cd/dvd's using the drive, right?
+
+Yes, the optical drive itself works great; I can even burn DVDs.
+
+Keenan
