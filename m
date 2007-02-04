@@ -1,46 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752540AbXBDUVX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752542AbXBDUXu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752540AbXBDUVX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Feb 2007 15:21:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752539AbXBDUVX
+	id S1752542AbXBDUXu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Feb 2007 15:23:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752541AbXBDUXu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Feb 2007 15:21:23 -0500
-Received: from wr-out-0506.google.com ([64.233.184.237]:61725 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752536AbXBDUVW (ORCPT
+	Sun, 4 Feb 2007 15:23:50 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:41759
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752538AbXBDUXt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Feb 2007 15:21:22 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=ZK3xZ5ewcm9TEe6uHZ0ilsWP9FWPL8F675etHuHEvpTpDkl8Y+bBOKhmKZWaQAbbbjvMRaIMErZzqDD5beuDeefRcU/I1DNcsRHpnKQ6VOXrtI/D4GYpeGSdPcc/5mSEkG15hHWi6QQLv2ehi9Jh2yBrnmfgNiMBY5sTLUtrP5M=
-Message-ID: <8d158e1f0702041221p566d3a9bq67054e7147b46663@mail.gmail.com>
-Date: Sun, 4 Feb 2007 21:21:20 +0100
-From: "Patrick Ale" <patrick.ale@gmail.com>
-To: Alan <alan@lxorguk.ukuu.org.uk>
-Subject: Re: More pata_ stuff
-Cc: "Alistair John Strachan" <s0348365@sms.ed.ac.uk>,
-       "Robert Hancock" <hancockr@shaw.ca>, linux-kernel@vger.kernel.org
-In-Reply-To: <8d158e1f0702041159m45a70303lf0fc3ce71b8f946a@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sun, 4 Feb 2007 15:23:49 -0500
+Date: Sun, 04 Feb 2007 12:23:48 -0800 (PST)
+Message-Id: <20070204.122348.38681159.davem@davemloft.net>
+To: t.hisch@gmail.com
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH] ipv4: remove a call to skb_queue_len() in inet_diag.c
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20070204142921.GA5787@unknown-00-0d-60-79-ca-00.lan>
+References: <Pine.LNX.4.64.0612311547200.30821@localhost.localdomain>
+	<20070204142921.GA5787@unknown-00-0d-60-79-ca-00.lan>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <fa.0NlWYh2G2PI5gqX24xfe+268eQY@ifi.uio.no>
-	 <45C619FC.3040804@shaw.ca>
-	 <8d158e1f0702041020yd1ad858m77538b198d467797@mail.gmail.com>
-	 <200702041910.46421.s0348365@sms.ed.ac.uk>
-	 <20070204193441.6746bbca@localhost.localdomain>
-	 <8d158e1f0702041129n578a4a58xe8cb2a5f4da69284@mail.gmail.com>
-	 <20070204194909.136dccc5@localhost.localdomain>
-	 <8d158e1f0702041139k658e6d6dv52e7b3c68ef146e1@mail.gmail.com>
-	 <8d158e1f0702041159m45a70303lf0fc3ce71b8f946a@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It's working, thanks :)
+From: Thomas Hisch <t.hisch@gmail.com>
+Date: Sun, 4 Feb 2007 15:29:21 +0100
 
-I was confused by this ATA_PIIX driver needing to be enabled, I
-genuinly thought and read it was the SATA driver.
+> remove unneeded call to skb_queue_len (skb_dequeue already checks queuelen) and
+> replace a sizeof() by a Netlink Macro
+> 
+> Signed-off-by: Thomas Hisch <t.hisch@gmail.com>
 
-Thanks :)
+You don't understand the code you are editing :-)
+
+We want to process the number of packets present when we
+start the function, other threads can add more packets to
+the queue meanwhile and we don't want to keep dequeueing
+in that case or else we can theoretically run forever with
+a fast enough producer.
+
+Also, please post all networking patches to netdev@vger.kernel.org,
+the majority of the networking developers do not read linux-kernel.
+
+Thank you.
