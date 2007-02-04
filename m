@@ -1,75 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752358AbXBDN7S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752239AbXBDO3a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752358AbXBDN7S (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Feb 2007 08:59:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752368AbXBDN7S
+	id S1752239AbXBDO3a (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Feb 2007 09:29:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752364AbXBDO3a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Feb 2007 08:59:18 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:58841 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752358AbXBDN7R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Feb 2007 08:59:17 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: Fw: Re: [mm PATCH 4/6] RCU: (now) CPU hotplug
-Date: Sun, 4 Feb 2007 14:59:48 +0100
-User-Agent: KMail/1.9.1
-Cc: paulmck@linux.vnet.ibm.com, Andrew Morton <akpm@osdl.org>,
-       Ingo Molnar <mingo@elte.hu>, dipankar@in.ibm.com,
-       Gautham Shenoy <ego@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org
-References: <20070126112837.059502fc.akpm@osdl.org> <200702041446.18482.rjw@sisk.pl> <20070204135049.GC1945@elf.ucw.cz>
-In-Reply-To: <20070204135049.GC1945@elf.ucw.cz>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Sun, 4 Feb 2007 09:29:30 -0500
+Received: from ug-out-1314.google.com ([66.249.92.169]:20566 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752239AbXBDO33 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Feb 2007 09:29:29 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:to:subject:message-id:mail-followup-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
+        b=eSmfbBlRtOr0h6fiPIs4Ky83xcyw5q6TNe19Y18/nfOP9xDWNC4ASkLu1/9P67oeYw4X+puYiIVprNzIGId89//xJWsygLLlYP0CD3awBNryCPanQ/WNPM4M757pOAVkS371+hZnPSy4W3g8Vh90pOwxh2oIrvM5GhiYGlj1xdQ=
+Date: Sun, 4 Feb 2007 15:29:21 +0100
+To: Linux kernel mailing list <linux-kernel@vger.kernel.org>
+Subject: [PATCH] ipv4: remove a call to skb_queue_len() in inet_diag.c
+Message-ID: <20070204142921.GA5787@unknown-00-0d-60-79-ca-00.lan>
+Mail-Followup-To: Linux kernel mailing list <linux-kernel@vger.kernel.org>
+References: <Pine.LNX.4.64.0612311547200.30821@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200702041459.49562.rjw@sisk.pl>
+In-Reply-To: <Pine.LNX.4.64.0612311547200.30821@localhost.localdomain>
+User-Agent: Mutt/1.4.2.2i
+From: Thomas Hisch <t.hisch@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 4 February 2007 14:50, Pavel Machek wrote:
-> Hi!
-> 
-> > > > This is needed so that the _resume_ works, when it's handled from the user land
-> > > > by our resume tool.  Currently, the resume code calls
-> > > > freeze_processes() too.
-> > > 
-> > > I do not understand... freeze_processes() always leaves curent process
-> > > running... why is it needed?
-> > 
-> > IIRC, the do_linuxrc thread cannot be frozen (doesn't call try_to_freeze()),
-> > so the freeze_processes() during the resume fails and the resume fails as a
-> > result.
-> 
-> Aha, ok. (We still may want to add try_to_freeze there; there's no
-> reason to have that running while resuming).
-> 
-> > Still, I have an idea:
-> > 
-> > Instead of hunting for PF_NOFREEZE and wondering if the suspend/resume fails
-> > when we remove them or replace them with try_to_freeze(), why don't we add
-> > an "ignore_pf_nofreeze" argument to freeze_processes() and make it regard
-> > _all_ tasks as if they haven't set PF_NOFREEZE when this "ignore_pf_nofreeze"
-> > is set?  Of course, additionally we'll have to make everyone call
-> > try_to_freeze(), even if they set PF_NOFREEZE anyway.
-> > 
-> > Then, if freeze_processes() is called with "ignore_pf_nofreeze = 0", it will
-> > work just as it does now.  However, if it's called with
-> > "ignore_pf_nofreeze = 1", it will try to make all prcesses enter the
-> > refrigerator.  The "ignore_pf_nofreeze = 0" version will be suitable for us
-> > (ie. suspend etc.) and the "ignore_pf_nofreeze = 1" version will be suitable
-> > for the CPU hotplug and such things.
-> 
-> Yep, something like that will be needed. Probably more finegrained
-> (with flags), because CPU hotplug and kprobes may want their own sets
-> of unfreezeable processes.
+remove unneeded call to skb_queue_len (skb_dequeue already checks queuelen) and
+replace a sizeof() by a Netlink Macro
 
-Yes, but for this purpose we'll need to use one more task flag at least, I
-think.  Or transform PF_NOFREEZE into a 2-bit field with values from 0 to 3
-indicating the "freezing level" at which given task should be frozen and
-call freeze_processes() with the level as an argument?
+Signed-off-by: Thomas Hisch <t.hisch@gmail.com>
+---
+ net/ipv4/inet_diag.c |    5 ++---
+ 1 files changed, 2 insertions(+), 3 deletions(-)
 
-Paul, what is your opnion?
+diff --git a/net/ipv4/inet_diag.c b/net/ipv4/inet_diag.c
+index 77761ac..ccd7fab 100644
+--- a/net/ipv4/inet_diag.c
++++ b/net/ipv4/inet_diag.c
+@@ -846,7 +846,7 @@ static inline void inet_diag_rcv_skb(struct sk_buff *skb)
+ 		int err;
+ 		struct nlmsghdr *nlh = (struct nlmsghdr *)skb->data;
+ 
+-		if (nlh->nlmsg_len < sizeof(*nlh) ||
++		if (nlh->nlmsg_len < NLMSG_HDRLEN ||
+ 		    skb->len < nlh->nlmsg_len)
+ 			return;
+ 		err = inet_diag_rcv_msg(skb, nlh);
+@@ -858,9 +858,8 @@ static inline void inet_diag_rcv_skb(struct sk_buff *skb)
+ static void inet_diag_rcv(struct sock *sk, int len)
+ {
+ 	struct sk_buff *skb;
+-	unsigned int qlen = skb_queue_len(&sk->sk_receive_queue);
+ 
+-	while (qlen-- && (skb = skb_dequeue(&sk->sk_receive_queue))) {
++	while (skb = skb_dequeue(&sk->sk_receive_queue)) {
+ 		inet_diag_rcv_skb(skb);
+ 		kfree_skb(skb);
+ 	}
+-- 
+1.5.0.rc3.22.g5057
 
-Rafael
