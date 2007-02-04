@@ -1,54 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751898AbXBDL4E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752011AbXBDMBU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751898AbXBDL4E (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Feb 2007 06:56:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751953AbXBDL4E
+	id S1752011AbXBDMBU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Feb 2007 07:01:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752009AbXBDMBU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Feb 2007 06:56:04 -0500
-Received: from mail.gmx.net ([213.165.64.20]:58317 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751898AbXBDL4D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Feb 2007 06:56:03 -0500
-X-Authenticated: #1045983
-From: Helge Deller <deller@gmx.de>
-To: "Cyrill V. Gorcunov" <gorcunov@gmail.com>
-Subject: Re: [PATCH] HIL small fix
-Date: Sun, 4 Feb 2007 12:55:57 +0100
-User-Agent: KMail/1.9.6
-Cc: Andrew Morton <akpm@osdl.org>,
-       linux-kernel-list <linux-kernel@vger.kernel.org>
-References: <20070204074758.GA10596@cvg>
-In-Reply-To: <20070204074758.GA10596@cvg>
-X-Face: *4/{KL3=jWs!v\UO#3e7~Vb1~CL@oP'~|*/M$!9`tb2[;fY@)WscF2iV7`,a$141g'o,=?utf-8?q?7X=0A=09=3FBt1Wb=3AL7K6z-?=<?-+-13|S_ixrq58*E`)ZkSe~NSI?u=89G'J<n]7\?[)LCCBZc}~[j(=?utf-8?q?e=7D=0A=09=60-QV=7B=23=25=26=5B=3F=5EfAke6t8QbP=3Bb=27XB?=,ZU84HeThMrO(@/K.`jxq9P({V(AzezCKMxk\F2^p^+"=?utf-8?q?=0A=09=5B?="ppalbA!zy-l)^Qa3*u/Z-1W3,o?2fes2_d\u=1\E9N+~Qo
+	Sun, 4 Feb 2007 07:01:20 -0500
+Received: from ns1.suse.de ([195.135.220.2]:58989 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751977AbXBDMBT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Feb 2007 07:01:19 -0500
+From: Andreas Gruenbacher <agruen@suse.de>
+Organization: SuSE Labs, Novell
+To: =?utf-8?q?J=C3=B6rn_Engel?= <joern@lazybastard.org>
+Subject: Re: [RFC] Pack the vfsmount and dentry in nameidata into a struct path
+Date: Sun, 4 Feb 2007 04:00:51 -0800
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+References: <200702031425.38054.agruen@suse.de> <20070204041653.GA3672@lazybastard.org>
+In-Reply-To: <20070204041653.GA3672@lazybastard.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200702041255.57835.deller@gmx.de>
-X-Y-GMX-Trusted: 0
+X-Length: 3247
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Message-Id: <200702040400.51958.agruen@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Cyrill,
+On Saturday 03 February 2007 20:16, Jörn Engel wrote:
+> On its own, I don't like this patch too much.  It is just a form of
+> mental masturbation that complicates the source.
 
-thanks a lot for the patch.
-I've applied it to the PARISC-Linux git tree:
-http://git.parisc-linux.org/?p=linux-2.6.git;a=commit;h=2b1f35b1cdec70c3a0ee2d4174668597355b6041
+Thanks for pointing out the masturbation thing. I was actually polling for 
+comments; this single patch in itself wasn't meant to be the ultimate hot 
+stuff.
 
-Your patch made me aware of an unitialized spinlock in the code as well:
-http://lists.parisc-linux.org/pipermail/parisc-linux-cvs/2007-February/037203.html
+> > -	inode = nd.dentry->d_inode;
+> > +	inode = nd.path.dentry->d_inode;
+>
+> However, once we start passing struct path by reference, it should
+> result in a smaller binary.
 
-Regards,
-Helge
+There are several components to it. Storing the dentry and vfsmount in a 
+struct path allows to pass them somewhere where a struct path is expected 
+without having to construct a temporary struct path object. Also, two 
+parameters would become one; I believe that this could lead to somewhat 
+cleaner code in some places.
 
-On Sunday 04 February 2007, Cyrill V. Gorcunov wrote:
-> This patch adds a checking for errors in hil_keyb_init.
-> Also some extra spaces are removed.
-> 
-> Signed-off-by: Cyrill V. Gorcunov <gorcunov@gmail.com>
-> 
-> ---
-> 
->  dvers/input/keyboard/hilkbd.c |  106 +++++++++++++++++++++++----------------
->  1 files changed, 62 insertions(+), 44 deletions(-)
+The other question is whether we would want to pass such struct paths by value 
+or by reference: by value would lead to roughly the same code that we have 
+right now. By reference would reduce the function call overhead, but would 
+blow up the code that accesses the struct path elements by about the same 
+amount: getting to the dentry or vfsmount from a struct path pointer requires 
+a pointer dereference.
+
+It's hard to tell whether the code size would decrease overall with 
+by-reference passing. The experiments I did didn't, but I also didn't try to 
+optimize the by-reference code.
+
+Thanks,
+Andreas
