@@ -1,92 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752446AbXBDRVE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752442AbXBDRdp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752446AbXBDRVE (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Feb 2007 12:21:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752449AbXBDRVE
+	id S1752442AbXBDRdp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Feb 2007 12:33:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752450AbXBDRdp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Feb 2007 12:21:04 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:38331 "EHLO mx1.redhat.com"
+	Sun, 4 Feb 2007 12:33:45 -0500
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:58135 "EHLO e2.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752446AbXBDRVD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Feb 2007 12:21:03 -0500
-Date: Sun, 4 Feb 2007 12:18:50 -0500
-From: Dave Jones <davej@redhat.com>
-To: Eric Piel <Eric.Piel@tremplin-utc.net>
-Cc: Wang Zhenyu <zhenyu.z.wang@intel.com>, linux-kernel@vger.kernel.org,
-       Adrian Bunk <bunk@stusta.de>
-Subject: Re: 2.6.20-rc7 regression on intel-agp
-Message-ID: <20070204171850.GA17171@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Eric Piel <Eric.Piel@tremplin-utc.net>,
-	Wang Zhenyu <zhenyu.z.wang@intel.com>, linux-kernel@vger.kernel.org,
-	Adrian Bunk <bunk@stusta.de>
-References: <45C6010A.9010902@tremplin-utc.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <45C6010A.9010902@tremplin-utc.net>
-User-Agent: Mutt/1.4.2.2i
+	id S1752442AbXBDRdo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Feb 2007 12:33:44 -0500
+Message-ID: <45C618FA.3060000@us.ibm.com>
+Date: Sun, 04 Feb 2007 11:33:46 -0600
+From: Maynard Johnson <maynardj@us.ibm.com>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.7.3) Gecko/20040910
+X-Accept-Language: en-us, en
+MIME-Version: 1.0
+To: Arnd Bergmann <arnd@arndb.de>
+CC: cbe-oss-dev@ozlabs.org, linuxppc-dev@ozlabs.org,
+       oprofile-list@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [Cbe-oss-dev] [RFC, PATCH 4/4] Add support to OProfile for profiling
+ Cell BE SPUs -- update
+References: <45BE4ED0.5030808@us.ibm.com> <200701300839.05144.arnd@arndb.de> <45C51F6C.7080300@us.ibm.com> <200702040352.03792.arnd@arndb.de>
+In-Reply-To: <200702040352.03792.arnd@arndb.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 04, 2007 at 04:51:38PM +0100, Eric Piel wrote:
- > Hello,
- > 
- > I've got a regression in 2.6.20-rc7 (-rc6 was fine) due to commit 
- > 4b95320fc4d21b0ff2f8604305dd6c851aff6096 ([AGPGART] intel_agp: restore 
- > graphics device's pci space early in resume).
+Arnd Bergmann wrote:
 
-I think the key to this failure is the last line here ..
+>On Sunday 04 February 2007 00:49, Maynard Johnson wrote:
+>  
+>
+>>I seem to recall looking at this option a while back, but didn't go that 
+>>route since struct spu_context is opaque to me.  With such a teqnique, I 
+>>could then use a simple 16-element array of  pointers to cached_info 
+>>objects, creating them as needed when spu_context->profile_private is 
+>>NULL.  I suppose the better option for now is to add a 
+>>get_profile_private() function to SPUFs, rather than requiring 
+>>spu_context to be visible.
+>>    
+>>
+>
+>Yes, that sounds good. Note that the file providing the 
+>spufs_get_profile_private (and respective spufs_set_profile_private)
+>functions needs to be compiled into the kernel then in case oprofile
+>gets linked in but spufs is a module.
+>  
+>
+Hmm . . . we already depend on the register/unregister functions in 
+sched.c, so my patch changes the oprofile Kconfig to default to 'm' and 
+'depends on SPU_FS'.
 
- > agpgart-intel 0000:00:00.0: resuming
- > PM: Writing back config space on device 0000:00:02.0 at offset f (was 10b, writing 0)
- > PM: Writing back config space on device 0000:00:02.0 at offset d (was dc, writing 0)
- > PM: Writing back config space on device 0000:00:02.0 at offset b (was 10161025, writing 0)
- > PM: Writing back config space on device 0000:00:02.0 at offset 5 (was f4000000, writing 0)
- > PM: Writing back config space on device 0000:00:02.0 at offset 4 (was f8000008, writing 0)
- > PM: Writing back config space on device 0000:00:02.0 at offset 2 (was 3000011, writing 0)
- > PM: Writing back config space on device 0000:00:02.0 at offset 1 (was 2b00007, writing 0)
- > PM: Writing back config space on device 0000:00:02.0 at offset 0 (was 11328086, writing 0)
- > agpgart: Unable to remap memory.
+>I think it would also be necessary to have another interface for cleaning
+>up this data when spufs destroys the context. That could possibly
+>a variation of the existing notifier call, or a new call, or you
+>establish the convention that if the private pointer is non-NULL,
+>spufs will kfree it.
+>  
+>
+Yes, I was thnking along the lines of your last suggestion.  I presume 
+OProfile gets notified (object_id == 0) before the context is actually 
+destroyed.  At that time, we would NULL-out the reference to the 
+cached_info, so then SPUFS would kfree it at destroy time.
 
-This then blows up the next access to intel_i810_private.registers, which happens to
-be intel_i810_insert_entries.
+-Maynard
 
-Either we need .suspend methods which unmap these regions, or we need
-to skip trying to map them a second time on resume.
+>	Arnd <><
+>  
+>
 
-There's an ugly patch below which does the latter. Give it a try?
 
-The intel-agp suspend/resume code has really grown into something
-of a monster, and could use some refactoring in a big way.
-
-		Dave
-
-diff --git a/drivers/char/agp/intel-agp.c b/drivers/char/agp/intel-agp.c
-index a3011de..84787ce 100644
---- a/drivers/char/agp/intel-agp.c
-+++ b/drivers/char/agp/intel-agp.c
-@@ -117,13 +117,15 @@ static int intel_i810_configure(void)
- 
- 	current_size = A_SIZE_FIX(agp_bridge->current_size);
- 
--	pci_read_config_dword(intel_i810_private.i810_dev, I810_MMADDR, &temp);
--	temp &= 0xfff80000;
--
--	intel_i810_private.registers = ioremap(temp, 128 * 4096);
- 	if (!intel_i810_private.registers) {
--		printk(KERN_ERR PFX "Unable to remap memory.\n");
--		return -ENOMEM;
-+		pci_read_config_dword(intel_i810_private.i810_dev, I810_MMADDR, &temp);
-+		temp &= 0xfff80000;
-+
-+		intel_i810_private.registers = ioremap(temp, 128 * 4096);
-+		if (!intel_i810_private.registers) {
-+			printk(KERN_ERR PFX "Unable to remap memory.\n");
-+			return -ENOMEM;
-+		}
- 	}
- 
- 	if ((readl(intel_i810_private.registers+I810_DRAM_CTL)
--- 
-http://www.codemonkey.org.uk
