@@ -1,45 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752486AbXBDSVJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752484AbXBDSYf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752486AbXBDSVJ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Feb 2007 13:21:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752483AbXBDSVI
+	id S1752484AbXBDSYf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Feb 2007 13:24:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752485AbXBDSYf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Feb 2007 13:21:08 -0500
-Received: from cantor.suse.de ([195.135.220.2]:51863 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752480AbXBDSVH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Feb 2007 13:21:07 -0500
-Date: Sun, 4 Feb 2007 10:20:03 -0800
-From: Greg KH <greg@kroah.com>
-To: Parav Pandit <paravpandit@yahoo.com>
-Cc: linux-kernel@vger.kernel.org,
-       "Michael K. Edwards" <medwards.linux@gmail.com>
-Subject: Re: Free Linux Driver Development!
-Message-ID: <20070204182003.GB12379@kroah.com>
-References: <f2b55d220701301827h703d24eele941c86046caa9e7@mail.gmail.com> <355711.50750.qm@web36602.mail.mud.yahoo.com>
+	Sun, 4 Feb 2007 13:24:35 -0500
+Received: from thing.hostingexpert.com ([67.15.235.34]:44023 "EHLO
+	thing.hostingexpert.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752484AbXBDSYe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Feb 2007 13:24:34 -0500
+Message-ID: <45C624D2.9030403@linuxtv.org>
+Date: Sun, 04 Feb 2007 13:24:18 -0500
+From: Michael Krufky <mkrufky@linuxtv.org>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070103)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <355711.50750.qm@web36602.mail.mud.yahoo.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Chris Wright <chrisw@sous-sol.org>
+CC: linux-kernel@vger.kernel.org, stable@kernel.org,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>, torvalds@osdl.org,
+       akpm@osdl.org, alan@lxorguk.ukuu.org.uk
+Subject: Re: [patch 00/50] -stable review
+References: <20070106022753.334962000@sous-sol.org>
+In-Reply-To: <20070106022753.334962000@sous-sol.org>
+X-Enigmail-Version: 0.94.0.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - thing.hostingexpert.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - linuxtv.org
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 04, 2007 at 03:04:58AM -0800, Parav Pandit wrote:
-> Hi,
+Chris Wright wrote:
+> This is the start of the stable review cycle for the 2.6.19.2 release.
+> There are 50 patches in this series, all will be posted as a response
+> to this one.  If anyone has any issues with these being applied, please
+> let us know.  If anyone is a maintainer of the proper subsystem, and
+> wants to add a Signed-off-by: line to the patch, please respond with it.
 > 
-> So how can an individual like me having ardor, contribute in Free
-> driver development?  What is the eligibility criteria and process for
-> contributing in this activity?
+> These patches are sent out with a number of different people on the
+> Cc: line.  If you wish to be a reviewer, please email stable@kernel.org
+> to add your name to the list.  If you want to be off the reviewer list,
+> also email us.
 > 
-> In brief, I come with background of developing, verifying device
-> drivers for Linux, Apple MAC OS X, DSP/BIOS RTOS for HBAs, LCD
-> controllers, networking L2-L3 ASIC devices, platform management
-> drivers, few Samsung SoC peripherals.
+> Responses should be made by Mon Jan 8 02:30 UTC.
+> Anything received after that time might be too late.
 
-Just let me know if you are interested in participating, and what types
-of devices you wish to write drivers for (USB, PCI, network, etc.)
+At which point was 2.6.18.y dropped?  I thought we were always going to keep
+the last two stable kernels up-to-date.  Have I been wasting my time fwd'ing
+2.6.18.y patches?
 
-thanks,
-
-greg k-h
+-Mike Krufky
