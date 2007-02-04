@@ -1,99 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752265AbXBDKqM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752270AbXBDKsS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752265AbXBDKqM (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Feb 2007 05:46:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752267AbXBDKqM
+	id S1752270AbXBDKsS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Feb 2007 05:48:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752274AbXBDKsS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Feb 2007 05:46:12 -0500
-Received: from mx1.suse.de ([195.135.220.2]:56404 "EHLO mx1.suse.de"
+	Sun, 4 Feb 2007 05:48:18 -0500
+Received: from delta.idt.cz ([81.0.223.58]:1775 "EHLO delta.idt.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752265AbXBDKqL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Feb 2007 05:46:11 -0500
-Date: Sun, 4 Feb 2007 11:46:09 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Linux Filesystems <linux-fsdevel@vger.kernel.org>,
-       Linux Memory Management <linux-mm@kvack.org>
-Subject: Re: [patch 9/9] mm: fix pagecache write deadlocks
-Message-ID: <20070204104609.GA29943@wotan.suse.de>
-References: <20070204063707.23659.20741.sendpatchset@linux.site> <20070204063833.23659.55105.sendpatchset@linux.site> <20070204014445.88e6c8c7.akpm@linux-foundation.org> <20070204101529.GA22004@wotan.suse.de> <20070204023055.2583fd65.akpm@linux-foundation.org>
-Mime-Version: 1.0
+	id S1752270AbXBDKsR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Feb 2007 05:48:17 -0500
+X-Greylist: delayed 370 seconds by postgrey-1.27 at vger.kernel.org; Sun, 04 Feb 2007 05:48:17 EST
+Date: Sun, 4 Feb 2007 12:02:56 +0100
+From: Michal Hocko <mstsxfx@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: mm: how to check for kernel pages
+Message-ID: <20070204110256.GA10477@curandero.marconia.cz>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070204023055.2583fd65.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.9i
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 04, 2007 at 02:30:55AM -0800, Andrew Morton wrote:
-> On Sun, 4 Feb 2007 11:15:29 +0100 Nick Piggin <npiggin@suse.de> wrote:
-> 
-> > The write path is broken. I prefer my kernels slow, than buggy.
-> 
-> That won't fly.
+Hi,
+is there any effective and fast way how to find out whether page
+given by its page frame number is currenly used by (mapped by) kernel?
 
-What won't fly?
+At the time of checking I can rely that such page:
+	- is not buddy allocator page and also not on per CPU lists
+	- is not compound page
+	- is not reserved page
+Because I can check that from struct page's flags.
+I was thinking about using rmap code to find all ptes, but I don't know
+whether it is not too complicated way.
 
-> 
-> > > There's a build error in filemap_xip.c btw.
-> 
-> ?
+Thanks for all hints.
 
-Thanks?
+Please add me to Cc, because I am not the list member.
+Best regards.
+-- 
+Michal Hocko
 
-> > > What happened to the idea of doing an atomic copy into the non-uptodate
-> > > page and handling it somehow?
-> > 
-> > That was my second idea.
-> 
-> Coulda sworn it was mine ;) I thought you ended up deciding it wasn't
-> practical because of the games we needed to play with ->commit_write.
-
-Maybe I misunderstood what you meant, above. I have an alterative fix
-where a temporary page is allocated if the write enncounters a non
-uptodate page. The usercopy then goes into that page, and from there
-into the target page after we have opened the prepare_write().
-
-My *first* idea to fix this was to do the atomic copy into a non-uptodate
-page and then calling a zero-length commit_write if it failed. I pretty
-carefully constructed all these good arguments as to why each case works
-properly, but in the end it just didn't fly because it broke lots of
-filesystems.
-
-> > > Another option might be to effectively pin the whole mm during the copy:
-> > > 
-> > > 	down_read(&current->mm->unpaging_lock);
-> > > 	get_user(addr);		/* Fault the page in */
-> > > 	...
-> > > 	copy_from_user()
-> > > 	up_read(&current->mm->unpaging_lock);
-> > > 
-> > > then, anyone who wants to unmap pages from this mm requires
-> > > write_lock(unpaging_lock).  So we know the results of that get_user()
-> > > cannot be undone.
-> > 
-> > Fugly.
-> 
-> I invited you to think different - don't just fixate on one random
-> tossed-out-there suggestion.
-
-I've thought. Quite a lot. I have 2 other approaches that don't require
-mmap_sem, and 1 which is actually possible to implement without breaking
-filesystems.
-
-> > but you introduce the theoretical memory deadlock
-> > where a task cannot reclaim its own memory.
-> 
-> Nah, that'll never happen - both pages are already allocated.
-
-Both pages? I don't get it.
-
-You set the don't-reclaim vma flag, then run get_user, which takes a
-page fault and potentially has to allocate N pages for pagetables,
-pagecache readahead, buffers and fs private data and pagecache radix
-tree nodes for all of the pages read in.
-
-> It's better than taking mmap_sem and walking pagetables...
-
-I'm not convinced.
