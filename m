@@ -1,44 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752172AbXBDIRH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752175AbXBDIrW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752172AbXBDIRH (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Feb 2007 03:17:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752174AbXBDIRG
+	id S1752175AbXBDIrW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Feb 2007 03:47:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752177AbXBDIrW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Feb 2007 03:17:06 -0500
-Received: from tag.witbe.net ([81.88.96.48]:49979 "EHLO tag.witbe.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752172AbXBDIRF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Feb 2007 03:17:05 -0500
-Reply-To: <rol@as2917.net>
-From: "Paul Rolland" <rol@as2917.net>
-To: "'Jan Engelhardt'" <jengelh@linux01.gwdg.de>
-Cc: "'Linux Kernel Mailing List'" <linux-kernel@vger.kernel.org>,
-       "'Andrew Morton'" <akpm@osdl.org>,
-       "'Jon Masters'" <jonathan@jonmasters.org>,
-       "'Alexey Dobriyan'" <adobriyan@gmail.com>
-Subject: RE: [PATCH] Ban module license tag string termination trick
-Date: Sun, 4 Feb 2007 09:14:57 +0100
-Organization: AS2917.net
-Message-ID: <006401c74834$8f927d70$2101a8c0@donald>
+	Sun, 4 Feb 2007 03:47:22 -0500
+Received: from nz-out-0506.google.com ([64.233.162.233]:51791 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752175AbXBDIrV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Feb 2007 03:47:21 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=TbpVnrZIq0OmUS8zVD481F0BLA2zmDAnE93e13vQ0iAEt5WcS1amxBQAvBg+zm2uMOEouiwipm62FBeVFOcA6W6zD9gvPrCj3Urm985+3sVoptPgfV8ZFsYhNTNJUeJ3YFbmUsv2WpucqnWwXphWF3GKposAMJGy2ygt8wuzrs4=
+Message-ID: <38b2ab8a0702040047m7f537e80g8ca33e76b8b2bbd6@mail.gmail.com>
+Date: Sun, 4 Feb 2007 09:47:20 +0100
+From: "Francis Moreau" <francis.moro@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Looking for trainings in VFS area
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Mailer: Microsoft Office Outlook 11
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
-In-Reply-To: <Pine.LNX.4.61.0702022006500.27603@yvahk01.tjqt.qr>
-thread-index: AcdG/d9Hk6bdXZaZQmujZGgtrv4yiABNmosg
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> So what (legally) happens when someone does
-> MODULE_IS_UNDER_GPL_LICENSE(2), (~0) or (-1)? Does the judge 
-> get confused?
-> Then better use strings and an appropriate check.
+Hi,
 
-Please let me not believe it's not possible to have a compilation test
-on that that would issue a #error if param is not one of the acceptable
-value...
+I'm looking for some serious kernel trainings and specifically in the
+VFS area (in Europe if possible). This training should address these
+peculiar subjects:
 
-Paul
+        - VFS
+        - Page cache
+        - Block device drivers
+        - VFS synchronisation
+        - Study of a simple FS like Cramfs
 
+At the end of the training sessions, I'd like to be able to write my
+own very very basic FS.
+
+I'd like to know if someone could advice or share a great experience.
+I'm not looking for technical books (well except if they are great)
+because I'd like to get good knowledges in a short time with practical
+exercices.
+
+Thanks for your answers
+-- 
+Francis
