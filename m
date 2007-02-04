@@ -1,77 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751647AbXBDAoy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751258AbXBDA4J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751647AbXBDAoy (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Feb 2007 19:44:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751578AbXBDAoy
+	id S1751258AbXBDA4J (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Feb 2007 19:56:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751626AbXBDA4J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Feb 2007 19:44:54 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:34282 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751439AbXBDAoy (ORCPT
+	Sat, 3 Feb 2007 19:56:09 -0500
+Received: from mail1.webmaster.com ([216.152.64.169]:2164 "EHLO
+	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751258AbXBDA4I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Feb 2007 19:44:54 -0500
-Date: Sat, 3 Feb 2007 16:40:42 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Roland Dreier <rdreier@cisco.com>
-Cc: "Ahmed S. Darwish" <darwish.07@gmail.com>,
-       Richard Knutsson <ricknu-0@student.ltu.se>,
-       linux-kernel@vger.kernel.org
-Subject: Re: A CodingStyle suggestion
-Message-Id: <20070203164042.237f156b.randy.dunlap@oracle.com>
-In-Reply-To: <aday7neydq9.fsf@cisco.com>
-References: <20070203215848.GA10440@Ahmed>
-	<45C51310.6070304@student.ltu.se>
-	<20070204000532.GA20721@Ahmed>
-	<aday7neydq9.fsf@cisco.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.0 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 3 Feb 2007 19:56:08 -0500
+From: "David Schwartz" <davids@webmaster.com>
+To: "Philippe Troin" <phil@fifi.org>
+Cc: "Denis Vlasenko" <vda.linux@googlemail.com>,
+       <linux-kernel@vger.kernel.org>
+Subject: RE: O_NONBLOCK setting "leak" outside of a process??
+Date: Sat, 3 Feb 2007 16:55:29 -0800
+Message-ID: <MDEHLPKNGKAHNMBLJOLKGEJJBFAC.davids@webmaster.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Priority: 3 (Normal)
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
+Importance: Normal
+In-Reply-To: <E0CFA8EB-F706-49E8-A1D1-7BAF19C8D271@e18.physik.tu-muenchen.de>
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
+X-Authenticated-Sender: joelkatz@webmaster.com
+X-Spam-Processed: mail1.webmaster.com, Sat, 03 Feb 2007 16:55:44 -0800
+	(not processed: message from trusted or authenticated source)
+X-MDRemoteIP: 206.171.168.138
+X-Return-Path: davids@webmaster.com
+X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
+Reply-To: davids@webmaster.com
+X-MDAV-Processed: mail1.webmaster.com, Sat, 03 Feb 2007 16:55:45 -0800
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 03 Feb 2007 16:21:18 -0800 Roland Dreier wrote:
 
->  > Good catch :). A small grep of `access_ok' reveals that it's always used in the 
->  > form of:
->  > if (!access_ok()) { .. }
->  > 
->  > I can conclude that verbal/imperative methods like `kmalloc, add_work' be 
->  > checked as:
->  > ret = do_work();
->  > if (ret) { ... }
->  > and predicate methods like `acess_ok, pci_dev_present' be checked like:
->  > if (!access_ok) { ... }
->  > if (pci_dev_present) { ...}
->  > 
->  > Any comments ?
-> 
-> I don't think that's really the distinction that matters.  I think
-> really the issue is that assignment within an if is hard to read, so
-> 
-> 	ret = foo(a, b);
->         if (ret) { ... }
-> 
-> is clearly preferred to
-> 
-> 	if ((ret = foo(a,b))) { ... }
-> 
-> However, in my opinion something like
-> 
-> 	if (foo(a,b)) { ... }
-> 
-> if perfectly fine if the return value of foo is not needed anywhere
-> else.  In other words, there's no sense introducing a temporary
-> variable to hold the return value if you're never going to do anything
-> with it other than check it on the next line.
+> That's a bug, right? I couldn't find anything to that effect in IEEE
+> Std. 1003.1, 2004 Edition...
+>
+> Ciao,
+>                      Roland
 
-I agree with Roland's comments here.
+It's not a bug, there's no rational alternative. What would two indepedent
+file descriptors for the same end of a TCP connection be? What happens when
+you call 'dup' on a file descriptor? The behavior is both the only logical
+behavior and consistent with other cases where a file descriptor is
+split/duplicated.
 
-And with Tim's about side effects.
+DS
 
----
-~Randy
+
