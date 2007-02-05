@@ -1,57 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751921AbXBERLZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932846AbXBERNa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751921AbXBERLZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 12:11:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751960AbXBERLZ
+	id S932846AbXBERNa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 12:13:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932918AbXBERN3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 12:11:25 -0500
-Received: from mail.screens.ru ([213.234.233.54]:60401 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751954AbXBERLY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 12:11:24 -0500
-Date: Mon, 5 Feb 2007 20:13:35 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: S?bastien Dugu? <sebastien.dugue@bull.net>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
-       linux-aio <linux-aio@kvack.org>, Bharata B Rao <bharata@in.ibm.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
-       Badari Pulavarty <pbadari@us.ibm.com>,
-       Jean Pierre Dion <jean-pierre.dion@bull.net>
-Subject: Re: [PATCH -mm][AIO] Fix AIO completion signal notification possible ref leak
-Message-ID: <20070205171335.GA528@tv-sign.ru>
-References: <20070201102252.240130c6@frecb000686> <20070201103053.64489048@frecb000686> <20070202180039.GA658@tv-sign.ru> <20070205131839.6f601c3e@frecb000686> <20070205134314.GA283@tv-sign.ru> <20070205170056.6a29b19b@frecb000686>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070205170056.6a29b19b@frecb000686>
-User-Agent: Mutt/1.5.11
+	Mon, 5 Feb 2007 12:13:29 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:59340 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932846AbXBERN2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Feb 2007 12:13:28 -0500
+In-Reply-To: <Pine.LNX.4.64.0702021525370.5219@alien.or.mcafeemobile.com>
+References: <patchbomb.1170193181@tetsuo.zabbo.net> <df7bc026d50ec5bbdd8e.1170193183@tetsuo.zabbo.net> <20070201083611.GC18233@elte.hu> <Pine.LNX.4.64.0702011154110.3632@woody.linux-foundation.org> <20070202104900.GA13941@elte.hu> <Pine.LNX.4.64.0702020738500.15057@woody.linux-foundation.org> <20070202222110.GA1212@elte.hu> <Pine.LNX.4.64.0702021525370.5219@alien.or.mcafeemobile.com>
+Mime-Version: 1.0 (Apple Message framework v752.3)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <EDD3B5A9-9EAB-4E0A-BE1F-3B73C3870DC8@oracle.com>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-aio@kvack.org, Suparna Bhattacharya <suparna@in.ibm.com>,
+       Benjamin LaHaise <bcrl@kvack.org>
+Content-Transfer-Encoding: 7bit
+From: Zach Brown <zach.brown@oracle.com>
+Subject: Re: [PATCH 2 of 4] Introduce i386 fibril scheduling
+Date: Mon, 5 Feb 2007 12:12:59 -0500
+To: Davide Libenzi <davidel@xmailserver.org>
+X-Mailer: Apple Mail (2.752.3)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/05, S?bastien Dugu? wrote:
-> 
->   Make sure we only accept valid sigev_notify values in aio_setup_sigevent(),
-> namely SIGEV_NONE, SIGEV_THREAD_ID or SIGEV_SIGNAL.
+> Since I still think that the many-thousands potential async operations
+> coming from network sockets are better handled with a classical event
+> machanism [1], and since smooth integration of new async syscall  
+> into the
+> standard POSIX infrastructure is IMO a huge win, I think we need to  
+> have a
+> "bridge" to allow async completions being detectable through a  
+> pollable
+> (by the mean of select/poll/epoll whatever) device.
 
-I think this is correct, but I have another concern (most probably I just
-confused looking at non-applied patch), could you re-check?
+Ugh, I'd rather not if we don't have to.
 
-> @@ -959,6 +959,10 @@ static long aio_setup_sigevent(struct ai
->  	if (event.sigev_notify == SIGEV_NONE)
->  		return 0;
->  
-> +	if (event.sigev_notify != SIGEV_SIGNAL &&
-> +	    event.sigev_notify != SIGEV_THREAD_ID)
-> +		return -EINVAL;
-> +
->  	notify->notify = event.sigev_notify;
->  	notify->signo = event.sigev_signo;
->  	notify->value = event.sigev_value;
+It seems like you could get this behaviour from issuing a poll/select 
+(really?)/epoll as one of the async calls to complete.  (And you  
+mention this in a later email? :))
 
-Ok. But what if sigevent_find_task() fails after that? Doesn't this mean
-that really_put_req() will do put_task_struct(NULL) ?
+Part of my thinking on this is that we might want it to be really  
+trivial to create and wait on groups of ops.. maybe as a context.   
+One of the things posix AIO wants is the notion of submitting and  
+waiting on a group of ops as a "list".  That sounds like we might be  
+able to implement it by issuing ops against a context, created as  
+part of the submission, and then waiting for it to drain.
 
-Oleg.
+Being able to wait on that with file->poll() obviously requires  
+juggling file-> associations which sounds like more weight than we  
+might want.  Or it'd be optional and we'd get more moving parts and  
+divergent paths to test.
 
+So, sure, it's possible and not terribly difficult, but I'd rather  
+avoid it if people can be convinced to get the same behaviour by  
+issuing an async instance of their favourite readiness syscall.
+
+- z
