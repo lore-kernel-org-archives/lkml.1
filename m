@@ -1,57 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933474AbXBEV26@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933471AbXBEV3V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933474AbXBEV26 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 16:28:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933476AbXBEV26
+	id S933471AbXBEV3V (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 16:29:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933436AbXBEV3U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 16:28:58 -0500
-Received: from nigel.suspend2.net ([203.171.70.205]:49088 "EHLO
-	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933474AbXBEV2x (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 16:28:53 -0500
-Subject: Re: [patch 1/1] PM: Adds remount fs ro at suspend
-From: Nigel Cunningham <nigel@nigel.suspend2.net>
-Reply-To: nigel@nigel.suspend2.net
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Cc: Andrew Morton <akpm@linux-foundation.org>, akuster@mvista.com,
-       linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-In-Reply-To: <20070203003536.GA619@khazad-dum.debian.net>
-References: <20070202235132.EDBDF1C448@hermes.mvista.com>
-	 <20070202161611.cf8b4328.akpm@linux-foundation.org>
-	 <20070203003536.GA619@khazad-dum.debian.net>
-Content-Type: text/plain
-Date: Tue, 06 Feb 2007 08:28:33 +1100
-Message-Id: <1170710913.6105.39.camel@nigel.suspend2.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 5 Feb 2007 16:29:20 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:34518 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933475AbXBEV3S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Feb 2007 16:29:18 -0500
+Date: Mon, 5 Feb 2007 13:28:55 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: David Woodhouse <dwmw2@infradead.org>
+cc: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [patch] MTD: fix DOC2000/2001/2001PLUS build error
+In-Reply-To: <1170710272.29759.894.camel@pmac.infradead.org>
+Message-ID: <Pine.LNX.4.64.0702051322580.8424@woody.linux-foundation.org>
+References: <Pine.LNX.4.64.0702041057090.8424@woody.linux-foundation.org> 
+ <20070205084523.GA21858@elte.hu>  <1170682488.29759.795.camel@pmac.infradead.org>
+  <20070205155627.GA8354@elte.hu>  <1170692539.29759.856.camel@pmac.infradead.org>
+  <20070205162635.GA755@elte.hu> <20070205163152.GA2464@elte.hu> 
+ <Pine.LNX.4.64.0702050852160.8424@woody.linux-foundation.org>
+ <1170710272.29759.894.camel@pmac.infradead.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
 
-On Fri, 2007-02-02 at 22:35 -0200, Henrique de Moraes Holschuh wrote:
-> On Fri, 02 Feb 2007, Andrew Morton wrote:
-> > Well the code appears simple enough, but I've not previously heard anyone
-> > express a need for this feature.  But I know how to cc people who might
-> > have heard this.
-> 
-> You are, now.
-> 
-> We usually try to do it in userspace (and it gets ugly when we fail).  If
-> the kernel would do it, it would be very welcome.
 
-Why do you think remounting filesystems is necessary? Are you getting
-problems with some particular filesystem?
+On Mon, 5 Feb 2007, David Woodhouse wrote:
+>
+> No, you're thinking of something else. The use of 'select' just turns
+> the problem backwards -- if _every_ SCSI hostadapter were to 'select
+> SCSI' instead of depending on it, then I'd have to say 'n' to every damn
+> one of them instead of being able to just say 'n' to SCSI as I can at
+> the moment.
 
-If I recall correctly, we briefly tried remounting filesystems in
-Suspend2, but it created problems with logging - some files open r/w
-were readonly afterwards. We then tried bdev freezing with much better
-success.
+Right. Because for MOST scsi drivers, it's obvious that they are SCSI to 
+the user.
 
-Regards,
+So we ask "do you want SCSI" in order to not ask a million questions that 
+a lot of people know a-priori that they don't want.
 
-Nigel
+But if you cannot see that this is something TOTALLY DIFFERENT from USB 
+storage, you're either being obtuse on purpose, or just incapable of 
+understanding humans.
 
+We should NEVER have had "USB_STORAGE" depending on SCSI. It'sa BUG. It's 
+a _stupid_ bug.
+
+We should have done what is sane:
+ - make CONFIG_SCSI (as a "support the SCSI layer" be invisible to users, 
+   because it's not a user decision.
+ - have a CONFIG_SCSI_DRIVER question for "do you want to be asked about 
+   SCSI drivers" (and which also does "select SCSI" for you)
+ - make USB_STORAGE _also_ do the "select SCSI" thing.
+
+In other words, you seem to be totally unable to grasp my argument. You 
+are arguing on TOTALLY IRRELEVANT TECHNICAL GROUNDS. That's not what the 
+Kconfig language is about. The Kconfig language and rules are about HUMAN 
+interaction.
+
+So next time you say something about Kconfig, ask yourself: "What question 
+would a user want to see".
+
+Any other question is pretty much totally irrelevant, and your "don't use 
+select" rule comes from your confusion that thinks that it's somehow about 
+machines and technical issues. It's not.
+
+		Linus
