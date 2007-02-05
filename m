@@ -1,83 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750955AbXBEQam@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751665AbXBEQdU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750955AbXBEQam (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 11:30:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750975AbXBEQam
+	id S1751665AbXBEQdU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 11:33:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750975AbXBEQdU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 11:30:42 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:50573 "EHLO mx2.mail.elte.hu"
+	Mon, 5 Feb 2007 11:33:20 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:48689 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750955AbXBEQal (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 11:30:41 -0500
-Date: Mon, 5 Feb 2007 17:26:35 +0100
-From: Ingo Molnar <mingo@elte.hu>
+	id S1751338AbXBEQdU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Feb 2007 11:33:20 -0500
+Date: Mon, 5 Feb 2007 08:32:50 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
 To: David Woodhouse <dwmw2@infradead.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+cc: Ingo Molnar <mingo@elte.hu>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Subject: Re: [patch] MTD: fix DOC2000/2001/2001PLUS build error
-Message-ID: <20070205162635.GA755@elte.hu>
-References: <Pine.LNX.4.64.0702041057090.8424@woody.linux-foundation.org> <20070205084523.GA21858@elte.hu> <1170682488.29759.795.camel@pmac.infradead.org> <20070205155627.GA8354@elte.hu> <1170692539.29759.856.camel@pmac.infradead.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1170692539.29759.856.camel@pmac.infradead.org>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -5.3
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-5.3 required=5.9 tests=ALL_TRUSTED,BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-3.3 ALL_TRUSTED            Did not pass through any untrusted hosts
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <1170682488.29759.795.camel@pmac.infradead.org>
+Message-ID: <Pine.LNX.4.64.0702050829360.8424@woody.linux-foundation.org>
+References: <Pine.LNX.4.64.0702041057090.8424@woody.linux-foundation.org> 
+ <20070205084523.GA21858@elte.hu> <1170682488.29759.795.camel@pmac.infradead.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* David Woodhouse <dwmw2@infradead.org> wrote:
 
-> No, it was MTD_NAND_CAFE which requires MTD_NAND, and that _is_ within 
-> the same tree. I don't know why you added it to the old monolithic 
-> DiskOnChip driver.
-
-yeah, i mis-analyzed the point of breakage - and my Kconfig hack simply 
-papered it over by accident. I agree that your fix is the right one.
-
-> > btw., this whole select problem is not limited to Aunt Tillie: in a 
-> > couple of cases in the past few months when i saw some weird code in 
-> > a driver and tried to enable it i had to search around for many 
-> > minutes and enable random options to figure out its config 
-> > dependencies until i had the driver truly enabled. (if there's some 
-> > easy solution to this then i'm all ears - but i exclude the easiest 
-> > solution of adding me to the 'aunt' category ;-)
+On Mon, 5 Feb 2007, David Woodhouse wrote:
 > 
-> I come across this frequently -- and I just look at the Kconfig file 
-> to see the dependencies of the option I want to enable. It's usually 
-> very simple.
+> Secondly, please don't _ever_ use 'select'.
 
-i come across this problem frequently, and sometimes it's far from 
-simple and involves half a dozen Kconfigs. For example pick up a Fedora 
-.config of your choice and disable CONFIG_I2C.
+No, David.
 
-> It's got a _lot_ harder recently to turn stuff _off_, as rmk observes. 
-> You don't just look at the option you're interested in; you have to 
-> grep all over the rest of the tree to find the 'select' which is 
-> forcing it on after you turn it off. It's no longer in one place.
+I don't know why you keep repeating this mantra, when it's WRONG.
 
-yeah.
+Using "select" is a lot more sane and intelligent than assuming that users 
+know what dependencies they want.
 
-> > I think that by blaming Aunt Tillie you might be missing the real 
-> > problem.
-> 
-> No, by arbitrarily throwing 'select' into the mix with no real 
-> guidance as to when to use it and when to use normal dependencies, 
-> _that's_ when we're missing the real problem.
+The Kconfig files should ask about *end-user* visible features. They 
+should say "do you want to support X".
 
-we should not have 'select' at all - unless it's some non-code option 
-that is just a convenience switch for several other config options. A 
-true dependency is already expressed in one direction via the 'depend 
-on' directive - no need to express it in the other direction as well, 
-that only leads to redundancy and to bugs.
+If "X" then needs Y, Z and something else to actually compile, then that 
+Kconfig file should DAMN WELL use "select". Stop claiming anything else!
 
-	Ingo
+The user shouldn't know that they should say that they need some library Y 
+in order to even see the question for "X". It's not a sane thing to ask 
+them to know and care about. They care about the devices or capabilities 
+they want to support, not about the fact that a USB storage device needs 
+the SCSI core layer, for example.
+
+So stop saying "don't use select".
+
+		Linus
