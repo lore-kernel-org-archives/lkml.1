@@ -1,48 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964786AbXBEWvU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964907AbXBEXEQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964786AbXBEWvU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 17:51:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964830AbXBEWvU
+	id S964907AbXBEXEQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 18:04:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964934AbXBEXEQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 17:51:20 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:46332 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964786AbXBEWvT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 17:51:19 -0500
-Message-ID: <45C7B4E3.8070802@garzik.org>
-Date: Mon, 05 Feb 2007 17:51:15 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
+	Mon, 5 Feb 2007 18:04:16 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:36169 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964907AbXBEXEQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Feb 2007 18:04:16 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: "Lu, Yinghai" <yinghai.lu@amd.com>
+Cc: "Andi Kleen" <ak@suse.de>, "Andrew Morton" <akpm@osdl.org>,
+       linux-kernel@vger.kernel.org, "Luigi Genoni" <luigi.genoni@pirelli.com>,
+       "Ingo Molnar" <mingo@elte.hu>,
+       "Natalie Protasevich" <protasnb@gmail.com>
+Subject: Re: [PATCH 2/2] x86_64 irq: Handle irqs pending in IRR during irq migration.
+References: <5986589C150B2F49A46483AC44C7BCA4907416@ssvlexmb2.amd.com>
+Date: Mon, 05 Feb 2007 16:03:03 -0700
+In-Reply-To: <5986589C150B2F49A46483AC44C7BCA4907416@ssvlexmb2.amd.com>
+	(Yinghai Lu's message of "Mon, 5 Feb 2007 12:54:13 -0800")
+Message-ID: <m1d54ow6l4.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-To: Oleg Verych <olecom@flower.upol.cz>
-CC: Alan <alan@lxorguk.ukuu.org.uk>, Allen Martin <AMartin@nvidia.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: Re: Nvidia cable detection problems & ACPI (beware, slight off-top)
-References: <45C72012.7050605@gmail.com> <20070205132247.6f611e3c@localhost.localdomain> <45C73A3E.6080700@gmail.com> <20070205143439.6962c076@localhost.localdomain> <45C7444F.4070500@gmail.com> <58cb370e0702050709w1b7682dr5dff9e7ce69465a@mail.gmail.com> <DBFABB80F7FD3143A911F9E6CFD477B01EC0DD7D@hqemmail02.nvidia.com> <E1HEB7U-0007IH-FV@flower> <20070205220442.6e13a7b6@localhost.localdomain> <45C7A7D0.407@garzik.org> <20070205224235.GB28048@flower.upol.cz>
-In-Reply-To: <20070205224235.GB28048@flower.upol.cz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.7 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oleg Verych wrote:
->> We also need ACPI, where available, because that's the only way to 
->> obtain a BIOS-set hard drive password.
-> 
-> Plain-text passwords -- i don't actually know, if they are useful at all.
-> What if BIOS has admin/user passwords set?
-> (kernel: if you have BIOS password, press RESET; if you don't press POWER ;)
+"Lu, Yinghai" <yinghai.lu@amd.com> writes:
+
+> -----Original Message-----
+> From: ebiederm@xmission.com [mailto:ebiederm@xmission.com] 
+> Sent: Monday, February 05, 2007 12:37 PM
+>
+>
+>>The only corner case I can see that might potentially happen is
+>>"apic_in_service_vector() != irq_vector[irq]" and if that is the case
+>>we don't want to migrate, because the precondition that we are in the
+>>irq handler servicing the expected irq isn't true.
+>
+> Reuse vector could help in that case.
+
+A little but you are still on the wrong cpu, and that corner case might
+even be worth looking at on i386.  I haven't assessed what might go wrong
+yet but the current strategy of migrating irqs is based in the interrupt
+service routine being where new instances of that irq will be
+delivered.
+
+What I do know is all of this is a very narrow window, and insanely
+hard to trigger with consequences that shouldn't hang the machine.
+The only reason we are even getting a reasonable number of irqs being
+in service and in the irr is because we are acking a level triggered
+vector used by two irqs and then the pending irq retriggers.  Avoiding
+that case would certainly be an efficiency improvement.
+
+Basically I think it takes the alignment of several 1 in a million
+chances before the code I posted will have problems with this
+theoretical case.  
+
+> In another case, if two irq are migrated from one cpu to another cpu.
+> ack_apic_edge for irq2 could use get apci_in_servier_vector for irq1,
+> and handle that to clear irr for irq1. instead of irq2.
+
+Nope. irq routines are a stack.  if apic_in_service_vector could return
+the wrong value.  ack_APIC_irq() which use the same information would
+acknowledge the wrong irq.  If there was actually any danger of
+mis-computing that information I would just pass it from the interrupt
+service routine stash it in a per cpu variable and then read it out.
+But the apic already has registers doing that, so I was lazy and used
+what was available.  It should be the common case that we need that
+information.
 
 
-It's not a matter of usefulness, but of accessing data.
-
-The password must be provided to the hard drive at the ATA command 
-level, otherwise the hard drive will simply refuse to read or write data.
-
-	Jeff
-
-
+Eric
