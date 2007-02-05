@@ -1,52 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752274AbXBEKqz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751432AbXBEKtp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752274AbXBEKqz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 05:46:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752218AbXBEKqz
+	id S1751432AbXBEKtp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 05:49:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752146AbXBEKtp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 05:46:55 -0500
-Received: from amsfep17-int.chello.nl ([213.46.243.15]:28037 "EHLO
-	amsfep13-int.chello.nl" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751460AbXBEKqy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 05:46:54 -0500
-Subject: Re: v2.6.20-rt1, yum/rpm
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Sunil Naidu <akula2.shark@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       linux-rt-users@vger.kernel.org
-In-Reply-To: <8355959a0702050236k14aa8c98g29fdbac2c1370def@mail.gmail.com>
-References: <20070205065636.GA1652@elte.hu>
-	 <8355959a0702050236k14aa8c98g29fdbac2c1370def@mail.gmail.com>
-Content-Type: text/plain
-Date: Mon, 05 Feb 2007 11:42:33 +0100
-Message-Id: <1170672153.4672.1.camel@twins>
+	Mon, 5 Feb 2007 05:49:45 -0500
+Received: from outpost.ds9a.nl ([213.244.168.210]:43377 "EHLO outpost.ds9a.nl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751432AbXBEKto (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Feb 2007 05:49:44 -0500
+Date: Mon, 5 Feb 2007 11:49:43 +0100
+From: bert hubert <bert.hubert@netherlabs.nl>
+To: Philippe Troin <phil@fifi.org>
+Cc: Roland Kuhn <rkuhn@e18.physik.tu-muenchen.de>,
+       Guillaume Chazarain <guichaz@gmail.com>,
+       Denis Vlasenko <vda.linux@googlemail.com>, linux-kernel@vger.kernel.org
+Subject: Re: O_NONBLOCK setting "leak" outside of a process??
+Message-ID: <20070205104942.GA7053@outpost.ds9a.nl>
+Mail-Followup-To: bert hubert <bert.hubert@netherlabs.nl>,
+	Philippe Troin <phil@fifi.org>,
+	Roland Kuhn <rkuhn@e18.physik.tu-muenchen.de>,
+	Guillaume Chazarain <guichaz@gmail.com>,
+	Denis Vlasenko <vda.linux@googlemail.com>,
+	linux-kernel@vger.kernel.org
+References: <200701272152.11087.vda.linux@googlemail.com> <87bqkhuqpp.fsf@tantale.fifi.org> <200702020000.40524.vda.linux@googlemail.com> <87abzxbhau.fsf@tantale.fifi.org> <E0CFA8EB-F706-49E8-A1D1-7BAF19C8D271@e18.physik.tu-muenchen.de> <3d8471ca0702020548n9455f4fre8c4ceea3f070a51@mail.gmail.com> <24DAE20A-F4CC-4A8F-902A-2A73D0DA2EB1@e18.physik.tu-muenchen.de> <87bqkc9yht.fsf@tantale.fifi.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87bqkc9yht.fsf@tantale.fifi.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-02-05 at 16:06 +0530, Sunil Naidu wrote:
-> On 2/5/07, Ingo Molnar <mingo@elte.hu> wrote:
-> > i have released the v2.6.20-rt1 kernel, which can be downloaded from the
-> > usual place:
-> 
-> Clean boot for me with 2.6.20 & 2.6.20-rt1. There isn't any error
-> (like in 2.6.20-rc7-rt3).
-> 
-> But here is an interesting dmesg:
-> 
-> rcu_boost_dat: idx=1 b=0 ul=0 ub=0 boost: a=0 b=0
-> rcu_boost_dat block:    0  0  0  0?
-> rcu_boost_dat boost:    0! 0  0  0?
-> rcu_boost_dat unlock:   0? 0  0  0?
-> 
-> I didn'tunderstand this with ? Am I missing anything here or please
-> give some inputs.
+O_NONBLOCK supposedly hits the entire 'ofile' and not just the fd:
+http://cr.yp.to/unix/nonblock.html
 
-That is Paul McKenney's RCU priority boosting stuff.
-
-Look here:
-  http://lkml.org/lkml/2007/1/24/294
-
+-- 
+http://www.PowerDNS.com      Open source, database driven DNS Software 
+http://netherlabs.nl              Open and Closed source services
