@@ -1,72 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752451AbXBEJoc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752470AbXBEJpn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752451AbXBEJoc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 04:44:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752459AbXBEJoc
+	id S1752470AbXBEJpn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 04:45:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752459AbXBEJpn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 04:44:32 -0500
-Received: from outmail1.freedom2surf.net ([194.106.33.237]:50980 "EHLO
-	outmail1.freedom2surf.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752451AbXBEJob (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 04:44:31 -0500
-X-Greylist: delayed 1242 seconds by postgrey-1.27 at vger.kernel.org; Mon, 05 Feb 2007 04:44:31 EST
-Message-ID: <45C6F7BA.5050700@f2s.com>
-Date: Mon, 05 Feb 2007 09:24:10 +0000
-From: Ian Molton <spyro@f2s.com>
-Organization: The Dragon Roost
-User-Agent: Thunderbird 2.0a1 (X11/20061107)
+	Mon, 5 Feb 2007 04:45:43 -0500
+Received: from mail.thinknet.ro ([86.55.168.3]:40522 "EHLO mail.thinknet.ro"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752470AbXBEJpm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Feb 2007 04:45:42 -0500
+X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Mon, 05 Feb 2007 04:45:42 EST
+Message-ID: <1131.86.55.168.2.1170690089.squirrel@mail.thinknet.ro>
+Date: Mon, 5 Feb 2007 17:41:29 +0200 (EET)
+Subject: 
+From: logic@thinknet.ro
+To: linux-kernel@vger.kernel.org
+User-Agent: SquirrelMail/1.4.8
 MIME-Version: 1.0
-To: "Ahmed S. Darwish" <darwish.07@gmail.com>
-Cc: kernel@wantstofly.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2.6.20] arch ARM: Use ARRAY_SIZE macro when appropriate
-References: <20070205024357.GP18118@Ahmed>
-In-Reply-To: <20070205024357.GP18118@Ahmed>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ahmed S. Darwish wrote:
-> Hi all,
-> 
-> A patch to use ARRAY_SIZE macro already defined in linux/kernel.h
+Good morning,
 
-Looks good. I can only speak for arm26 though, however trivial this is.
+I am experiencing a bug i think. I am running a 2.6.19.2 kernel on a 3Ghz
+Intel with HT activated, 1 gb ram, and noname motherboard. Here is the
+output of the hang:
+------------[ cut here ]------------
 
-Signed-off-by: Ahmed S. Darwish <darwish.07@gmail.com>
-Acked-by: Ian Molton <spyro@f2s.com
+Message from syslogd@mail at Fri Feb  2 22:47:32 2007 ...
+mail kernel: kernel BUG at mm/slab.c:607!
 
-> ---
-> Patch isn't compile checked cause I have no ARM machine at hand.
-> Thanks,
+Message from syslogd@mail at Fri Feb  2 22:47:32 2007 ...
+mail kernel: invalid opcode: 0000 [#1]
+
+Message from syslogd@mail at Fri Feb  2 22:47:32 2007 ...
+mail kernel: CPU:    1
+
+Message from syslogd@mail at Fri Feb  2 22:47:32 2007 ...
+mail kernel: EIP:    0060:[<c0155ebb>]    Not tainted VLI
+
+Message from syslogd@mail at Fri Feb  2 22:47:32 2007 ...
+
+Message from syslogd@mail at Fri Feb  2 22:47:32 2007 ...
+mail kernel: eax: 1af3a451   ebx: c89ba000   ecx: 4a5ffc80   edx: c214bfe0
+
+Message from syslogd@mail at Fri Feb  2 22:47:32 2007 ...
+mail kernel: ds: 007b   es: 007b   ss: 0068
+
+Message from syslogd@mail at Fri Feb  2 22:47:32 2007 ...
+mail kernel: EIP is at free_block+0x44/0xda
+
+Message from syslogd@mail at Fri Feb  2 22:47:32 2007 ...
+mail kernel: PREEMPT SMP
+mail kernel: EFLAGS: 00010046   (2.6.19.2 #1)
+
+Message from syslogd@mail at Fri Feb  2 22:47:32 2007 ...
+mail kernel: Call Trace:
+
+Message from syslogd@mail at Fri Feb  2 22:47:32 2007 ...
+mail kernel:  =======================
+
+Message from syslogd@mail at Fri Feb  2 22:47:32 2007 ...
+mail kernel: Process events/1 (pid: 9, ti=c19b6000 task=c1983a90
+task.ti=c19b6000)
+
+Message from syslogd@mail at Fri Feb  2 22:47:32 2007 ...
+mail kernel: Stack: 00000000 0000001e c196d018 c196d018 0000001e c196d000
+00000000 c015664d
+
+Message from syslogd@mail at Fri Feb  2 22:47:32 2007 ...
+mail kernel:        00000000 00000000 c196fc80 c19485c0 c196fc80 c19485c0
+c194b140 00000213
 
 
-diff --git a/arch/arm/kernel/ecard.c b/arch/arm/kernel/ecard.c
-index 71257e3..f1c0fb9 100644
---- a/arch/arm/kernel/ecard.c
-+++ b/arch/arm/kernel/ecard.c
-@@ -1009,7 +1009,7 @@ ecard_probe(int slot, card_type_t type)
-  		ec->fiqmask = 4;
-  	}
 
--	for (i = 0; i < sizeof(blacklist) / sizeof(*blacklist); i++)
-+	for (i = 0; i < ARRAY_SIZE(blacklist); i++)
-  		if (blacklist[i].manufacturer == ec->cid.manufacturer &&
-  		    blacklist[i].product == ec->cid.product) {
-  			ec->card_desc = blacklist[i].type;
-diff --git a/arch/arm26/kernel/ecard.c b/arch/arm26/kernel/ecard.c
-index 9dbc172..e2bcefc 100644
---- a/arch/arm26/kernel/ecard.c
-+++ b/arch/arm26/kernel/ecard.c
-@@ -665,7 +665,7 @@ ecard_probe(int slot, card_type_t type)
-  		ec->fiqmask = 4;
-  	}
-
--	for (i = 0; i < sizeof(blacklist) / sizeof(*blacklist); i++)
-+	for (i = 0; i < ARRAY_SIZE(blacklist); i++)
-  		if (blacklist[i].manufacturer == ec->cid.manufacturer &&
-  		    blacklist[i].product == ec->cid.product) {
-  			ec->card_desc = blacklist[i].type;
+-- 
+--
+Va salut,
+Alexandru Gheorghita
+Technical Manager
+Think.Net
+phone: 0788.700.842
+mail: logic@thinknet.ro
 
 
