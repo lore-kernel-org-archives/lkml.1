@@ -1,89 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752722AbXBEFkW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752721AbXBEFmq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752722AbXBEFkW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 00:40:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752723AbXBEFkW
+	id S1752721AbXBEFmq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 00:42:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752723AbXBEFmq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 00:40:22 -0500
-Received: from rex.snapgear.com ([203.143.235.140]:49749 "EHLO
-	cyberguard.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752722AbXBEFkV (ORCPT
+	Mon, 5 Feb 2007 00:42:46 -0500
+Received: from rrcs-24-123-59-149.central.biz.rr.com ([24.123.59.149]:59915
+	"EHLO galon.ev-en.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752721AbXBEFmp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 00:40:21 -0500
-Message-ID: <45C6C33D.1010504@snapgear.com>
-Date: Mon, 05 Feb 2007 15:40:13 +1000
-From: Greg Ungerer <gerg@snapgear.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070102)
+	Mon, 5 Feb 2007 00:42:45 -0500
+X-Greylist: delayed 339 seconds by postgrey-1.27 at vger.kernel.org; Mon, 05 Feb 2007 00:42:45 EST
+Date: Mon, 5 Feb 2007 07:37:03 +0200
+From: Baruch Even <baruch@ev-en.org>
+To: Parag Warudkar <parag.warudkar@gmail.com>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: Unexpected Acknowledgement / Stalled Connections
+Message-ID: <20070205053703.GC25760@galon.ev-en.org>
+Mail-Followup-To: Parag Warudkar <parag.warudkar@gmail.com>,
+	netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <82e4877d0702041431p555e644et35845db674304403@mail.gmail.com> <82e4877d0702041456u5d30d32bs41233048a1833d59@mail.gmail.com>
 MIME-Version: 1.0
-To: "Ahmed S. Darwish" <darwish.07@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2.6.20] arch M68KNOMMU: user ARRAY_SIZE macro when appropriate
-References: <20070205024151.GJ18118@Ahmed>
-In-Reply-To: <20070205024151.GJ18118@Ahmed>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <82e4877d0702041456u5d30d32bs41233048a1833d59@mail.gmail.com>
+User-Agent: mutt-ng/devel-r804 (Debian)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ahmed,
-
-Ahmed S. Darwish wrote:
-> A patch to use ARRAY_SIZE macro already defined in linux/kernel.h
+* Parag Warudkar <parag.warudkar@gmail.com> [070205 00:57]:
+> On 2/4/07, Parag Warudkar <parag.warudkar@gmail.com> wrote:
+> >I am running 2.6.20 and have trouble with stalled connections. For
+> >instance, if I try to download a debian ISO image using wget, the
+> >connection runs fine for few seconds and then stalls for ever.
+> >
+> >In my router logs I see a ton of messages like the below -
+> >
+> >[INFO] Sun Feb 04 17:22:03 2007 Blocked incoming TCP packet from
+> >192.168.0.174:34090 to 130.239.18.138:80 with unexpected
+> >acknowledgement 3269301836 (expected 3269343453 to 3269408989)
+> >
+> >Where 192.168.0.174 is my laptop running FC6 and kernel 2.6.20 and
+> >130.239.18.138 is whatever cdimage.debian.org resolves to atm.
+> >
+> >What's going on here? Any TCP/IP tunable that I can set/turn on/off to
+> >prevent this from happening?
 > 
-> Signed-off-by: Ahmed S. Darwish <darwish.07@gmail.com>
-> ---
-> Patch isn't compile checked cause I have no M68KNOMMU board at hand.
+> Turning tcp_sack off seems to cure it. Turning it on again makes the
+> connections stall. Seems like the D-Link router doesn't like the SACKs
+> linux sends?
 
-Compiled and tested on m68knommu, no problems.
+You can also try to disable tcp_window_scaling.
 
-Signed-off-by: Greg Ungerer <gerg@uclinux.org>
+Can you provide a tcpdump trace of the connection? Traces with and
+without SACK would be appreciated, also a trace with SACK but without
+window scaling would be useful. I only need the headers of the packet so
+-s 60 (the default) will be fine.
 
-Regards
-Greg
+There was a change in 2.6.20 that I put but it should only have affected
+the sender side and even then only the way it interpreted the data and
+not things it sent on the wire.
 
+Trying the dl with previous kernels can also help, if only to try and
+pinpoint where things went bad, assuming it is in the kernel. This
+sounds like a bad implementation of ACK window checks that ICSA requires
+for firewall product certification.
 
-
-
-> diff --git a/arch/m68knommu/kernel/ptrace.c b/arch/m68knommu/kernel/ptrace.c
-> index 9130119..72d3496 100644
-> --- a/arch/m68knommu/kernel/ptrace.c
-> +++ b/arch/m68knommu/kernel/ptrace.c
-> @@ -62,7 +62,7 @@ static inline long get_reg(struct task_struct *task, int regno)
->  
->  	if (regno == PT_USP)
->  		addr = &task->thread.usp;
-> -	else if (regno < sizeof(regoff)/sizeof(regoff[0]))
-> +	else if (regno < ARRAY_SIZE(regoff))
->  		addr = (unsigned long *)(task->thread.esp0 + regoff[regno]);
->  	else
->  		return 0;
-> @@ -79,7 +79,7 @@ static inline int put_reg(struct task_struct *task, int regno,
->  
->  	if (regno == PT_USP)
->  		addr = &task->thread.usp;
-> -	else if (regno < sizeof(regoff)/sizeof(regoff[0]))
-> +	else if (regno < ARRAY_SIZE(regoff))
->  		addr = (unsigned long *) (task->thread.esp0 + regoff[regno]);
->  	else
->  		return -1;
-> diff --git a/arch/m68knommu/kernel/traps.c b/arch/m68knommu/kernel/traps.c
-> index 9129b3a..bed5f47 100644
-> --- a/arch/m68knommu/kernel/traps.c
-> +++ b/arch/m68knommu/kernel/traps.c
-> @@ -158,7 +158,7 @@ void show_stack(struct task_struct *task, unsigned long *stack)
->  void bad_super_trap(struct frame *fp)
->  {
->  	console_verbose();
-> -	if (fp->ptregs.vector < 4*sizeof(vec_names)/sizeof(vec_names[0]))
-> +	if (fp->ptregs.vector < 4 * ARRAY_SIZE(vec_names))
->  		printk (KERN_WARNING "*** %s ***   FORMAT=%X\n",
->  			vec_names[(fp->ptregs.vector) >> 2],
->  			fp->ptregs.format);
-> 
-
--- 
-------------------------------------------------------------------------
-Greg Ungerer  --  Chief Software Dude       EMAIL:     gerg@snapgear.com
-SnapGear -- a Secure Computing Company      PHONE:       +61 7 3435 2888
-825 Stanley St,                             FAX:         +61 7 3891 3630
-Woolloongabba, QLD, 4102, Australia         WEB: http://www.SnapGear.com
+Baruch
