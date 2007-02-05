@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752621AbXBEAnX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752624AbXBEAoR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752621AbXBEAnX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Feb 2007 19:43:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752620AbXBEAnX
+	id S1752624AbXBEAoR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Feb 2007 19:44:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752626AbXBEAoR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Feb 2007 19:43:23 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:37424
+	Sun, 4 Feb 2007 19:44:17 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:37427
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752619AbXBEAnW (ORCPT
+	by vger.kernel.org with ESMTP id S1752624AbXBEAoQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Feb 2007 19:43:22 -0500
-Date: Sun, 04 Feb 2007 16:43:21 -0800 (PST)
-Message-Id: <20070204.164321.32065834.davem@davemloft.net>
-To: ahendry@tusc.com.au
-Cc: linux-x25@vger.kernel.org, eis@baty.hanse.de, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH 2.6.19 2/2] X.25: Adds /proc/net/x25/forward to view
- active forwarded calls.
+	Sun, 4 Feb 2007 19:44:16 -0500
+Date: Sun, 04 Feb 2007 16:44:16 -0800 (PST)
+Message-Id: <20070204.164416.85425216.davem@davemloft.net>
+To: deweerdt@free.fr
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org
+Subject: Re: [-mm patch] remove tcp header from tcp_v4_check (take #2)
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <1167881835.5124.89.camel@localhost>
-References: <1167881835.5124.89.camel@localhost>
+In-Reply-To: <20070112135514.GG5941@slug>
+References: <20070111222627.66bb75ab.akpm@osdl.org>
+	<20070112133309.GF5941@slug>
+	<20070112135514.GG5941@slug>
 X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -27,12 +27,26 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: ahendry <ahendry@tusc.com.au>
-Date: Thu, 04 Jan 2007 14:37:15 +1100
+From: Frederik Deweerdt <deweerdt@free.fr>
+Date: Fri, 12 Jan 2007 13:55:14 +0000
 
-> View the active forwarded call list
-> cat /proc/net/x25/forward
+> On Fri, Jan 12, 2007 at 01:33:09PM +0000, Frederik Deweerdt wrote:
+> > On Thu, Jan 11, 2007 at 10:26:27PM -0800, Andrew Morton wrote:
+> > > 
+> > >   ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.20-rc3/2.6.20-rc4-mm1/
+> > > 
+> Hi,
 > 
-> Signed-off-by: Andrew Hendry <andrew.hendry@gmail.com>
+> Sorry for the resend, I forgot the Signed-off-by line, and noticed a
+> whitespace breakage in ipt_REJECT.
+> The tcphdr struct passed to tcp_v4_check is not used, the following
+> patch removes it from the parameter list.
+> This adds the netfilter modifications missing in the patch I sent
+> for rc3-mm1.
+> 
+> Regards,
+> Frederik 
+> 
+> Signed-off-by: Frederik Deweerdt <frederik.deweerdt@gmail.com>
 
-Applied, thanks a lot.
+Applied, thanks Frederik.
