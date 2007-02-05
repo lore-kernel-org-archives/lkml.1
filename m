@@ -1,61 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751826AbXBEQ41@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751811AbXBEQ4T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751826AbXBEQ41 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 11:56:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751798AbXBEQ41
+	id S1751811AbXBEQ4T (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 11:56:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751798AbXBEQ4S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 11:56:27 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:43395 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751812AbXBEQ40 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 11:56:26 -0500
-Date: Mon, 5 Feb 2007 17:52:33 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: David Woodhouse <dwmw2@infradead.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [patch] MTD: fix DOC2000/2001/2001PLUS build error
-Message-ID: <20070205165233.GA4781@elte.hu>
-References: <Pine.LNX.4.64.0702041057090.8424@woody.linux-foundation.org> <20070205084523.GA21858@elte.hu> <1170682488.29759.795.camel@pmac.infradead.org> <20070205155627.GA8354@elte.hu> <1170692539.29759.856.camel@pmac.infradead.org> <20070205162635.GA755@elte.hu> <20070205164603.GC4563@flint.arm.linux.org.uk>
+	Mon, 5 Feb 2007 11:56:18 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:56092 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751811AbXBEQ4R (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Feb 2007 11:56:17 -0500
+Date: Mon, 5 Feb 2007 16:56:11 +0000
+From: Christoph Hellwig <hch@infradead.org>
+To: akuster <akuster@mvista.com>
+Cc: linux-kernel@vger.kernel.org, akpm@osdl.org
+Subject: Re: [patch 1/1] PM: Adds remount fs ro at suspend
+Message-ID: <20070205165611.GA4777@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	akuster <akuster@mvista.com>, linux-kernel@vger.kernel.org,
+	akpm@osdl.org
+References: <20070202235132.EDBDF1C448@hermes.mvista.com> <20070203100848.GA28806@infradead.org> <45C53841.5000505@mvista.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070205164603.GC4563@flint.arm.linux.org.uk>
+In-Reply-To: <45C53841.5000505@mvista.com>
 User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -5.3
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-5.3 required=5.9 tests=ALL_TRUSTED,BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-3.3 ALL_TRUSTED            Did not pass through any untrusted hosts
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Russell King <rmk+lkml@arm.linux.org.uk> wrote:
-
-> and the rest (ie, except integrator, versatile and ixp4xx) has:
+On Sat, Feb 03, 2007 at 03:34:57PM -1000, akuster wrote:
+> >Can you please explain why this can't be done in userspace?  
 > 
-> config ARCH_SHARK
->         bool "Shark"
->         select PCI
+> I am sure it can.  The idea came from customer inputs, speed is my 
+> guess. echo mem > /sys/../state seems a whole lot simpler and cleaner 
+> than having userspace figure out what it mounted and then doing echo mem.
+
+I don't think we really want people to use the kernel interface directly.
+Currently the distros seem to use the s2ram and s2disk helpers IIRC.
+
+In any case there should be a userland abstraction doing all helper work
+and finally calling into the kernel.
+
+It would be nice if the embedded folk could work together with the desktop
+people on the userland bits for power managment.
+
+> In fact
+> >all existing suspend solutions seem to be doing fine doing things like
+> >this in userspace.
 > 
-> IOW, the "PCI support" question isn't offered for platforms which 
-> require PCI to be present, but is offered on platforms where it's 
-> optional.
+> I guess I missed that boat. If you don't mind, could you point at one 
+> solution.
 
-yeah. I think this also fits into the special-case i mentioned: it isnt 
-connected to something user-selectable, it's a side-effect of the first 
-'feature selection' the user does: 'what platform do you compile your 
-kernel on'. As such it is a convenience group-selection.
+> >NACK.  emergency_remount is exactly what it sais and should never ever
+> >be used for a system that you want to keep on using later on.  
+> 
+> The code "emergency_remount" is almost identical to what we have been 
+> using. I wanted to reuse existing code rather than dup it.
 
-i.e. what we have behind this is still a clean tree of dependencies.
+The problem with emergency_remount is that it calls do_remount_sb with
+the force argument, which then calls into mark_files_ro.  This isn't
+very useful because it doesn't actually stop existing writers and seems
+to have a racy f_mode access.  Then again it doesn't really help either
+that we want to get rid of file_list_lock the sb->s_files :)
 
-The mess begins i think when options with real code behind them start to 
-grow back and forth dependencies in form of criss-crossing 'depends on' 
-and 'select' instances.
+If you really want to stop all current writes you need to call freeze_bdev,
+and I'd rather expose that through a separate user interface instead of
+hooking it into the suspend process at the kernel side.  For XFS you
+could use the private ioctls already today, but I'd prefer a more general
+solution.
 
-	Ingo
