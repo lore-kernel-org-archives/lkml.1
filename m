@@ -1,69 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932368AbXBENYQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932333AbXBENZ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932368AbXBENYQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 08:24:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932374AbXBENYQ
+	id S932333AbXBENZ2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 08:25:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932378AbXBENZ2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 08:24:16 -0500
-Received: from mcr-smtp-001.bulldogdsl.com ([212.158.248.7]:3447 "EHLO
-	mcr-smtp-001.bulldogdsl.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932368AbXBENYP (ORCPT
+	Mon, 5 Feb 2007 08:25:28 -0500
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:60339 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932333AbXBENZ1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 08:24:15 -0500
-X-Spam-Abuse: Please report all spam/abuse matters to abuse@bulldogdsl.com
-From: Alistair John Strachan <s0348365@sms.ed.ac.uk>
-To: Al Boldi <a1426z@gawab.com>
-Subject: Re: 2.6.20 doesn't compile with gcc-3.2.2
-User-Agent: KMail/1.9.5
-References: <200702051531.20326.a1426z@gawab.com>
-In-Reply-To: <200702051531.20326.a1426z@gawab.com>
-MIME-Version: 1.0
-Content-Disposition: inline
-X-Length: 1934
-Date: Mon, 5 Feb 2007 13:24:11 +0000
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200702051324.11866.s0348365@sms.ed.ac.uk>
+	Mon, 5 Feb 2007 08:25:27 -0500
+To: ckrm-tech@lists.sourceforge.net
+Subject: [RFC][PATCH 2/5] RSS accounting callbacks
+Cc: balbir@in.ibm.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       menage@google.com
+Message-Id: <20070205132529.367C91B676@openx4.frec.bull.fr>
+Date: Mon, 5 Feb 2007 14:25:29 +0100 (CET)
+From: Patrick.Le-Dot@bull.net (Patrick.Le-Dot)
+X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 05/02/2007 14:26:31,
+	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 05/02/2007 14:26:31,
+	Serialize complete at 05/02/2007 14:26:31
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 05 February 2007 12:31, you wrote:
-> Doing the following results in an incomplete vmlinuz:
->
-> # make mrproper
-> # make allnoconfig
-> # make bzlilo
->
-> objcopy: arch/i386/boot/compressed/vmlinux.bin: File truncated
-> make[2]: *** [arch/i386/boot/compressed/vmlinux.bin] Error 1
-> make[1]: *** [arch/i386/boot/compressed/vmlinux] Error 2
-> make: *** [bzlilo] Error 2
->
-> # gcc -v
-> Reading specs from /usr/lib/gcc-lib/i586-mandrake-linux-gnu/3.2.2/specs
-> Configured with: ../configure --prefix=/usr --libdir=/usr/lib
-> --with-slibdir=/lib --mandir=/usr/share/man --infodir=/usr/share/info
-> --enable-shared --enable-threads=posix --disable-checking
-> --enable-long-long --enable-__cxa_atexit
-> --enable-languages=c,c++,ada,f77,objc,java
-> --host=i586-mandrake-linux-gnu --with-system-zlib
-> Thread model: posix
-> gcc version 3.2.2 (Mandrake Linux 9.1 3.2.2-3mdk)
->
->
-> Is gcc-4.0.1 now the minimum required to compile the kernel?
 
-A patch went in to remove support for GCC 3.1, but as far as I know, 3.2 
-should be a supported compiler.
+Add callbacks to allocate and free instances of the controller.
 
-At any rate, this might be a binutils issue. What version of binutils are you 
-using?
+Signed-off-by: Patrick Le Dot <Patrick.Le-Dot@bull.net>
+---
 
--- 
-Cheers,
-Alistair.
+ kernel/res_group/memctlr.c |   57 ++++++++++++++++++++++++++++++++++++++++++---
+ 1 files changed, 54 insertions(+), 3 deletions(-)
 
-Final year Computer Science undergraduate.
-1F2 55 South Clerk Street, Edinburgh, UK.
+diff -puN a/kernel/res_group/memctlr.c b/kernel/res_group/memctlr.c
+--- a/kernel/res_group/memctlr.c	2006-12-08 09:34:49.000000000 +0100
++++ b/kernel/res_group/memctlr.c	2006-12-08 09:44:15.000000000 +0100
+@@ -37,6 +37,8 @@
+ 
+ static const char res_ctlr_name[] = "memctlr";
+ static struct resource_group *root_rgroup;
++static const char version[] = "0.01";
++static struct memctlr *memctlr_root;
+ 
+ /*
+  * this struct is used in mm_struct
+@@ -68,14 +70,63 @@ static struct memctlr *get_memctlr(struc
+ 								&memctlr_rg));
+ }
+ 
++static void memctlr_init_new(struct memctlr *res)
++{
++	res->shares.min_shares = SHARE_DONT_CARE;
++	res->shares.max_shares = SHARE_DONT_CARE;
++	res->shares.child_shares_divisor = SHARE_DEFAULT_DIVISOR;
++	res->shares.unused_min_shares = SHARE_DEFAULT_DIVISOR;
++}
++
++static struct res_shares *memctlr_alloc_instance(struct resource_group *rgroup)
++{
++	struct memctlr *res;
++
++	res = kzalloc(sizeof(struct memctlr), GFP_KERNEL);
++	if (!res)
++		return NULL;
++	memctlr_init_new(res);
++	if (is_res_group_root(rgroup)) {
++		root_rgroup = rgroup;
++		memctlr_root = res;
++		printk("Memory Controller version %s\n", version);
++	}
++	return &res->shares;
++}
++
++static void memctlr_free_instance(struct res_shares *shares)
++{
++	struct memctlr *res;
++
++	res = get_memctlr_from_shares(shares);
++	BUG_ON(!res);
++	/*
++	 * Containers do not allow removal of groups that have tasks
++	 * associated with them. To free a container, it must be empty.
++	 * Handle transfer of charges in the move_task notification
++	 */
++	kfree(res);
++}
++
++static ssize_t memctlr_show_stats(struct res_shares *shares, char *buf,
++					size_t len)
++{
++	int i = 0;
++
++	i += snprintf(buf, len, "Accounting will be added soon\n");
++	buf += i;
++	len -= i;
++	return i;
++}
++
+ struct res_controller memctlr_rg = {
+ 	.name = res_ctlr_name,
+ 	.ctlr_id = NO_RES_ID,
+-	.alloc_shares_struct = NULL,
+-	.free_shares_struct = NULL,
++	.alloc_shares_struct = memctlr_alloc_instance,
++	.free_shares_struct = memctlr_free_instance,
+ 	.move_task = NULL,
+ 	.shares_changed = NULL,
+-	.show_stats = NULL,
++	.show_stats = memctlr_show_stats,
+ };
+ 
+ int __init memctlr_init(void)
