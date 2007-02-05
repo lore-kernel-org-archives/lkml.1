@@ -1,65 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752663AbXBECWG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752666AbXBECjv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752663AbXBECWG (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Feb 2007 21:22:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752665AbXBECWG
+	id S1752666AbXBECjv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Feb 2007 21:39:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752667AbXBECjv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Feb 2007 21:22:06 -0500
-Received: from qsrv01sl.mx.bigpond.com ([144.140.92.181]:38487 "EHLO
-	qsrv01sl.mx.bigpond.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752663AbXBECWE (ORCPT
+	Sun, 4 Feb 2007 21:39:51 -0500
+Received: from ug-out-1314.google.com ([66.249.92.173]:21814 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752666AbXBECju (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Feb 2007 21:22:04 -0500
-Message-ID: <45C6802D.5040307@bigpond.net.au>
-Date: Mon, 05 Feb 2007 10:54:05 +1000
-From: Peter Williams <pwil3058@bigpond.net.au>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
+	Sun, 4 Feb 2007 21:39:50 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:to:subject:message-id:mime-version:content-type:content-disposition:user-agent:from;
+        b=ssMVhx5pd9cuDdOiqONv62zUcDMjVsp+nvXrjPQfiU/0TfU4xQj6Lk8z9rt6+MdrEpPJO00FN7PjEP9NXu1cWuuNcYYxV+IFcH71sWZpc7iw9RUQD9XBngk9KHKDbf8mTWh20ARb4HIC4HvA5GmWM3KHYEUaQk6/WbdNgUwiVDg=
+Date: Mon, 5 Feb 2007 04:39:35 +0200
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 00] A series of patches to use ARRAY_SIZE macro under arch/
+Message-ID: <20070205023935.GG18118@Ahmed>
 MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-CC: Chris Han <xiphux@gmail.com>, Con Kolivas <kernel@kolivas.org>,
-       William Lee Irwin III <wli@holomorphy.com>,
-       Jake Moilanen <moilanen@austin.ibm.com>,
-       Paolo Ornati <ornati@fastwebnet.it>, Ingo Molnar <mingo@elte.hu>
-Subject: [ANNOUNCE][RFC] PlugSched-6.5 for  2.6.20
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Authentication-Info: Submitted using SMTP AUTH PLAIN at oaamta03sl.mx.bigpond.com from [60.231.44.29] using ID pwil3058@bigpond.net.au at Mon, 5 Feb 2007 00:54:16 +0000
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.11
+From: "Ahmed S. Darwish" <darwish.07@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The main change in this version is a change to the scheduler driver 
-interface to take account of recent changes to the load balancing code.
+Hi, all
 
-A patch for 2.6.20 is available at:
+A series of patches to use ARRAY_SIZE macro under the `arch' subtree. 
+Each architecture has its own mail/patch as a reply to this thread.
+Those patches are not compile-tested as I don't have needed machines but
+I tried hard to make sure that they are hopefully correct.
+Patches can be applied cleanly on 2.6.20.
 
-<http://downloads.sourceforge.net/cpuse/plugsched-6.5-for-2.6.20.patch?use_mirror=osdn>
+arm/kernel/ecard.c                   |    2 +-
+arm26/kernel/ecard.c                 |    2 +-
+avr32/kernel/setup.c                 |    4 ++--
+cris/arch-v10/drivers/axisflashmap.c |    3 +--
+cris/mm/tlb.c                        |    3 ++-
+m68k/kernel/ptrace.c                 |    4 ++--
+m68k/kernel/traps.c                  |    2 +-
+m68knommu/kernel/ptrace.c            |    4 ++--
+m68knommu/kernel/traps.c             |    2 +-
+mips/arc/identify.c                  |    2 +-
+mips/jmr3927/rbhma3100/setup.c       |    2 +-
+mips/mips-boards/atlas/atlas_int.c   |    5 +++--
+mips/mips-boards/malta/malta_int.c   |    5 +++--
+mips/pci/fixup-vr4133.c              |    3 ++-
+powerpc/lib/rheap.c                  |    3 ++-
+powerpc/xmon/ppc-opc.c               |    7 +++----
+powerpc/xmon/spu-opc.c               |    4 ++--
+ppc/lib/rheap.c                      |    3 ++-
+ppc/syslib/m8xx_setup.c              |    2 +-
+ppc/xmon/ppc-opc.c                   |    7 +++----
+v850/kernel/anna.c                   |    2 +-
+v850/kernel/as85ep1.c                |    2 +-
+v850/kernel/fpga85e2c.c              |    2 +-
+v850/kernel/gbus_int.c               |    6 +++---
+v850/kernel/ma.c                     |    2 +-
+v850/kernel/me2.c                    |    2 +-
+v850/kernel/rte_cb.c                 |    4 ++--
+v850/kernel/rte_mb_a_pci.c           |    3 +--
+v850/kernel/rte_me2_cb.c             |    3 +--
+v850/kernel/teg.c                    |    2 +-
+30 files changed, 49 insertions(+), 48 deletions(-)
 
-Very Brief Documentation:
-
-You can select a default scheduler at kernel build time.  If you wish to
-boot with a scheduler other than the default it can be selected at boot
-time by adding:
-
-cpusched=<scheduler>
-
-to the boot command line where <scheduler> is one of: ingosched,
-ingo_ll, nicksched, staircase, spa_no_frills, spa_ws, spa_svr, spa_ebs
-or zaphod.  If you don't change the default when you build the kernel
-the default scheduler will be ingosched (which is the normal scheduler).
-
-The scheduler in force on a running system can be determined by the
-contents of:
-
-/proc/scheduler
-
-Control parameters for the scheduler can be read/set via files in:
-
-/sys/cpusched/<scheduler>/
-
-Peter
+Thanks,
 -- 
-Peter Williams                                   pwil3058@bigpond.net.au
-
-"Learning, n. The kind of ignorance distinguishing the studious."
-  -- Ambrose Bierce
-
+Ahmed S. Darwish
+http://darwish-07.blogspot.com
