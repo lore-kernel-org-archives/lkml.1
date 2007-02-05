@@ -1,63 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752661AbXBEGOX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752737AbXBEGRp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752661AbXBEGOX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 01:14:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752731AbXBEGOX
+	id S1752737AbXBEGRp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 01:17:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752739AbXBEGRo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 01:14:23 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:43462 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752661AbXBEGOW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 01:14:22 -0500
-Subject: Re: [ANN] Userspace M-on-N threading model implementation. Alpha
-	release.
-From: Arjan van de Ven <arjan@infradead.org>
-To: Bill Davidsen <davidsen@tmr.com>
-Cc: Jakub Jelinek <jakub@redhat.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <45C65353.5000602@tmr.com>
-References: <66910A579C9312469A7DF9ADB54A8B7D5C2B90@exchange.ZeugmaSystems.local>
-	 <45C362D2.2040407@tmr.com>
-	 <1170516376.3073.1015.camel@laptopd505.fenrus.org>
-	 <45C63E30.4010106@tmr.com>
-	 <20070204202053.GC20307@devserv.devel.redhat.com>
-	 <45C65353.5000602@tmr.com>
-Content-Type: text/plain
-Organization: Intel International BV
-Date: Mon, 05 Feb 2007 07:14:18 +0100
-Message-Id: <1170656058.3073.1230.camel@laptopd505.fenrus.org>
+	Mon, 5 Feb 2007 01:17:44 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:32926 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752732AbXBEGRn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Feb 2007 01:17:43 -0500
+Date: Sun, 4 Feb 2007 22:17:41 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Robert Hancock <hancockr@shaw.ca>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
+       Ayaz Abdulla <aabdulla@nvidia.com>
+Subject: Re: forcedeth problems on 2.6.20-rc6-mm3
+Message-Id: <20070204221741.63152cbe.akpm@linux-foundation.org>
+In-Reply-To: <45C6C531.20508@shaw.ca>
+References: <45C6BCE5.90103@shaw.ca>
+	<20070204213603.a5bce839.akpm@linux-foundation.org>
+	<45C6C531.20508@shaw.ca>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 (2.8.2.1-2.fc6) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 04 Feb 2007 23:48:33 -0600 Robert Hancock <hancockr@shaw.ca> wrote:
 
-> > On the other side, the overhead you need to add for every single syscall
-> > that might block for the M:N threads and the associated complications
-> > which make it far harder to conform to POSIX IMHO far outweight the costs
-> > of going into the kernel for a context switch.
+> Andrew Morton wrote:
+> > On Sun, 04 Feb 2007 23:13:09 -0600 Robert Hancock <hancockr@shaw.ca> wrote:
+> > 
+> >> Something's busted with forcedeth in 2.6.20-rc6-mm3 for me relative to 
+> >> 2.6.20-rc6. There's no errors in dmesg, but it seems no packets ever get 
+> >> received and so the machine can't get an IP address. I tried reverting 
+> >> all the -mm changes to drivers/net/forcedeth.c, which didn't help. The 
+> >> network controller shares an IRQ with the USB OHCI controller which is 
+> >> receiving interrupts, so it doesn't seem like an interrupt routing 
+> >> problem, though I suppose something wierd could be happening there.
+> >>
+> >> This is on an Asus A8N-SLI Deluxe (CK804 chipset) on x86_64.
+> >>
+> >> Any suggestions on how to debug/what to try reverting to see what's 
+> >> causing this?
+> > 
+> > There are many forcedeth changes in git-netdev-all.patch.  Can you
+> > try reverting drivers/net/forcedeth.c back to the unpatched version
+> > from 2.6.20-rc6?
+> > 
+> > Thanks.
+> > 
 > 
-> That really wasn't my question, Arjan said that switching real threads 
-> wasn't a context switch in the hardware sense, and I was asking if I 
-> missed something.
+> That's essentially what I did, it didn't appear to help. I assume the
+> problem must lie elsewhere..
+> 
 
-a hardware context switch is basically a CR3 change with associated tlb
-flush. That is the part that is the most expensive of a context switch.
-Just going into the kernel and getting out with a different EIP/ESP is
-really cheap, in the order of "a few hundred cycles"; not a heck of a
-lot more expensive than a simple getpid or other simple system call.
+doh, I missed that.
 
-
->  It may be cheap, but it would seem to be a context 
-> switch none-the-less.
-
-it includes a privilege level switch, not so much a full context
-switch...
-
--- 
-if you want to mail me at work (you don't), use arjan (at) linux.intel.com
-Test the interaction between Linux and your BIOS via http://www.linuxfirmwarekit.org
-
+It's presumably not the driver and nobody else seems to be hitting this, so
+it must be something peculiar to your setup.  But I don't know what it
+might be, sorry.
