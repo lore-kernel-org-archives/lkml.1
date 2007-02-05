@@ -1,67 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752688AbXBEDu5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752689AbXBED4V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752688AbXBEDu5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Feb 2007 22:50:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752689AbXBEDu5
+	id S1752689AbXBED4V (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Feb 2007 22:56:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752690AbXBED4V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Feb 2007 22:50:57 -0500
-Received: from mailgw.cvut.cz ([147.32.3.235]:46454 "EHLO mailgw.cvut.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752688AbXBEDu4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Feb 2007 22:50:56 -0500
-Message-ID: <45C6A99C.5030607@vc.cvut.cz>
-Date: Sun, 04 Feb 2007 19:50:52 -0800
-From: Petr Vandrovec <vandrove@vc.cvut.cz>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.9) Gecko/20061219 Iceape/1.0.7 (Debian-1.0.7-3)
+	Sun, 4 Feb 2007 22:56:21 -0500
+Received: from wr-out-0506.google.com ([64.233.184.225]:44868 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752689AbXBED4U (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Feb 2007 22:56:20 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=A2lovrWI8qOlzLWQQKuZnCIdZ6IpHa5EfeM9TPpEubi8xpZlhwn/yi/YP4bxtu7D0emsgrtBu3MhTVtYx1XTwTs6r5pwyv/bbpeIMot8KxOKh7ZFhTItni/ADQPK7RELExgY+8SQRFKU+lMPSWHmD4DHu/1lNIHQsyhV0gt82Vo=
+Message-ID: <3877989d0702041956h1a423cafy40aef4aa4d8a1dc9@mail.gmail.com>
+Date: Mon, 5 Feb 2007 11:56:19 +0800
+From: "Luming Yu" <luming.yu@gmail.com>
+To: "Keenan Pepper" <keenanpepper@gmail.com>
+Subject: Re: Timeouts on ICH7 PATA drive with ata_piix; ide_generic works perfectly
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <767314830702032132m4172ddfbmb2519ad90e7ae578@mail.gmail.com>
 MIME-Version: 1.0
-To: Pierre Ossman <drzeus-list@drzeus.cx>
-CC: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: NCPFS and brittle connections
-References: <459D1794.2060009@drzeus.cx> <459D38DA.4030803@vc.cvut.cz> <459D55E3.4000905@drzeus.cx> <459E01B2.50309@vc.cvut.cz> <45B77AE4.2010605@drzeus.cx> <45B79C35.2090302@vc.cvut.cz> <45B7D750.1040501@drzeus.cx> <45B868D5.9070409@vc.cvut.cz> <45B8845E.8070008@drzeus.cx> <45C57695.7000707@vc.cvut.cz> <45C61540.7000008@drzeus.cx>
-In-Reply-To: <45C61540.7000008@drzeus.cx>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <767314830702032132m4172ddfbmb2519ad90e7ae578@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pierre Ossman wrote:
-> Petr Vandrovec wrote:
->> Problem is with these pointers - reply_buf & server->packet.  Now code
->> will just read packet from server->packet, and write result to
->> reply_buf, most probably transmiting some random data to network, and
->> overwriting innocent memory on receiption...  I believe that you need
->> to make copies of server->packet/size for transmission, and some
->> simillar solution for receive as well.  As both request & response can
->> be up to ~66000 bytes.
-> 
-> Hmm.. I thought server->packet was protected until the packet was
-> completed, independent of the process that issued it. Looking closer I
-> see that this isn't quite the case.
-> 
-> How about this... We allocate two buffers at startup, one for outgoing
-> and one for incoming. Then we use these during the actual transmission,
-> copying back and forth as need. Then we just need to avoid the final
-> response copy if the process has gone belly up.
+>From the dmesg, I found a problem NOT relative to the PATA driver.
+I would like to know if cpu freq driver works? If not, please enter a
+acpi bug on bugzilla.kernel.org.
 
-You must not allow anybody to reuse transmit buffer until you are done 
-with all retransmits and received reply from server...  That's why code 
-uses same buffer for both request and reply - you never need both, and 
-as maximum size is more or less same for both (65KB), it avoid problem 
-that you would need two 65KB buffers in worst case.
+"[   17.368000] ACPI Exception (exoparg2-0442): AE_AML_PACKAGE_LIMIT,
+Index (0FFFFFFFD) is beyond end of object [20060707]
+[   17.368000] ACPI Error (psparse-0537): Method parse/execution
+failed [\_PR_.CPU1._PSS] (Node c1468ba8), AE_AML_PACKAGE_LIMIT
+[   17.368000] ACPI Exception (acpi_processor-0235):
+AE_AML_PACKAGE_LIMIT, Evaluating _PSS [20060707]
+[   17.368000] ACPI Exception (exoparg2-0442): AE_AML_PACKAGE_LIMIT,
+Index (0FFFFFFFD) is beyond end of object [20060707]
+[   17.368000] ACPI Error (psparse-0537): Method parse/execution
+failed [\_PR_.CPU2._PSS] (Node c14689f0), AE_AML_PACKAGE_LIMIT
+[   17.368000] ACPI Exception (acpi_processor-0235):
+AE_AML_PACKAGE_LIMIT, Evaluating _PSS [20060707]
+"
 
-> Now my next question in that case is, what is the purpose of
-> server->packet. Couldn't this buffer be provided by the caller like the
-> response buffer?
-
-Then you would need to do vmalloc (or maybe kmalloc for some cases) on 
-each request transmit & receive.  And only very few callers provide 
-receive buffer - most of them does ncp_request() which receives reply to 
-server->packet, without doing any additional allocation - there are only 
-three callers which use ncp_request2 - two of them (ioctl, 
-ncp_read_bounce) do that because copy_to_user is not allowed while 
-ncp_server is locked, and third one (search for file set) does that 
-because caller may need to issue additional NCP calls while parsing its 
-result.  But everybody else gets away with no memory allocation.
-								Petr
-
-
+On 2/4/07, Keenan Pepper <keenanpepper@gmail.com> wrote:
+> I just upgraded the kernel on my System76 Gazelle laptop (basically an
+> ASUS Z62FP without the Microsoft tax) and the hard drive began
+> freezing every few minutes. I blacklisted ata_piix and the problem
+> went away, so that really narrows down where the bug has to be. Here's
+> the relevant part of the dmesg:
+>
+> [  924.000000] ata1.01: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
+> [  924.000000] ata1.01: cmd a0/01:00:00:00:00/00:00:00:00:00/b0 tag 0
+> cdb 0x25 data 8 in
+> [  924.000000]          res 40/00:03:00:00:00/00:00:00:00:00/b0 Emask
+> 0x4 (timeout)
+> [  931.004000] ata1: port is slow to respond, please be patient (Status 0xd0)
+> [  954.028000] ata1: port failed to respond (30 secs, Status 0xd0)
+> [  954.028000] ata1: soft resetting port
+> [  954.380000] ata1.00: configured for UDMA/100
+> [  954.560000] ata1.01: configured for UDMA/33
+> [  954.560000] ata1: EH complete
+>
+> Complete dmesg and lspci -vvx are attached; please CC me because I'm
+> not subscribed. My sincere apologies if this is already fixed in the
+> main kernel.
+>
+> Keenan Pepper
+>
+>
