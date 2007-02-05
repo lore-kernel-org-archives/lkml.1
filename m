@@ -1,53 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752266AbXBEJzh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752258AbXBEKCl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752266AbXBEJzh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 04:55:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752279AbXBEJzh
+	id S1752258AbXBEKCl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 05:02:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752279AbXBEKCl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 04:55:37 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:48412 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752266AbXBEJzg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 04:55:36 -0500
-Date: Mon, 5 Feb 2007 10:02:58 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Serge Belyshev <belyshev@depni.sinp.msu.ru>
-Cc: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
-Subject: Re: v2.6.20-rt1, yum/rpm
-Message-ID: <20070205090258.GA442@elte.hu>
-References: <20070205065636.GA1652@elte.hu> <87wt2xdksl.fsf@depni.sinp.msu.ru>
-Mime-Version: 1.0
+	Mon, 5 Feb 2007 05:02:41 -0500
+Received: from styx.suse.cz ([82.119.242.94]:7307 "EHLO duck.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752258AbXBEKCk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Feb 2007 05:02:40 -0500
+X-Greylist: delayed 1064 seconds by postgrey-1.27 at vger.kernel.org; Mon, 05 Feb 2007 05:02:40 EST
+Date: Mon, 5 Feb 2007 10:47:34 +0100
+From: Jan Kara <jack@suse.cz>
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH] QUOTA: Have <linux/quota.h> include <linux/rwsem.h> explicitly.
+Message-ID: <20070205094733.GA31641@duck.suse.cz>
+References: <Pine.LNX.4.64.0702041021310.20978@CPE00045a9c397f-CM001225dbafb6>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <87wt2xdksl.fsf@depni.sinp.msu.ru>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -5.3
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-5.3 required=5.9 tests=ALL_TRUSTED,BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-3.3 ALL_TRUSTED            Did not pass through any untrusted hosts
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <Pine.LNX.4.64.0702041021310.20978@CPE00045a9c397f-CM001225dbafb6>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Serge Belyshev <belyshev@depni.sinp.msu.ru> wrote:
-
-> Ingo Molnar <mingo@elte.hu> writes:
+On Sun 04-02-07 10:46:33, Robert P. J. Day wrote:
 > 
-> > i have released the v2.6.20-rt1 kernel, which can be downloaded from 
-> > the usual place:
+>   Since quota.h declares a R/W semaphore, it should include rwsem.h
+> explicitly.
 > 
-> I did not find tarball with split patches there. Could you please make 
-> it available somewhere via http or ftp?
+> Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
+  Acked-by: Jan Kara <jack@suse.cz>
 
-it basically consists of the -hrt queue, the GTOD queue (both are 
-available in -mm) plus the rest of -rt in a mostly monolithic fashion. I 
-dont really want to post it in a queue form because most of the time 
-it's not bisectable, etc. It's really an internal thing - i do my 
-development on the full tree, so that's the primary source form anyway.
+> ---
+> 
+>   No, this doesn't fix an *existing* problem, but it's necessary for
+> an upcoming patch which will remove all includes of <linux/rwsem.h>
+> from all the semaphore.h files.
+> 
+>   As I read it, since R/W semaphores have their own header file,
+> there's no rationale for the regular semaphore header files to have
+> that include statement, so any header file that's been happily picking
+> up the rwsem header file by accident (via semaphore.h) should be fixed
+> this way.
+> 
+>   quota.h appears to be the only file that has this issue building on
+> x86 with "make allyesconfig".
+> 
+> 
+> diff --git a/include/linux/quota.h b/include/linux/quota.h
+> index b8fbf26..77db80a 100644
+> --- a/include/linux/quota.h
+> +++ b/include/linux/quota.h
+> @@ -132,6 +132,7 @@ struct if_dqinfo {
+> 
+>  #ifdef __KERNEL__
+>  #include <linux/spinlock.h>
+> +#include <linux/rwsem.h>
+>  #include <linux/mutex.h>
+> 
+>  #include <linux/dqblk_xfs.h>
+> 
+> -- 
+> ========================================================================
+> Robert P. J. Day
+> Linux Consulting, Training and Annoying Kernel Pedantry
+> Waterloo, Ontario, CANADA
+> 
+> http://www.fsdev.dreamhosters.com/wiki/index.php?title=Main_Page
+> ========================================================================
 
-	Ingo
+										Honza
+
+-- 
+Jan Kara <jack@suse.cz>
+SuSE CR Labs
