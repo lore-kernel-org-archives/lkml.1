@@ -1,147 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932984AbXBESXN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932955AbXBESX0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932984AbXBESXN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 13:23:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932993AbXBESXN
+	id S932955AbXBESX0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 13:23:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932993AbXBESX0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 13:23:13 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:47572 "EHLO mx2.suse.de"
+	Mon, 5 Feb 2007 13:23:26 -0500
+Received: from mail.suse.de ([195.135.220.2]:43139 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932984AbXBESXL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 13:23:11 -0500
+	id S932955AbXBESXY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Feb 2007 13:23:24 -0500
 From: Tony Jones <tonyj@suse.de>
 To: linux-kernel@vger.kernel.org
 Cc: linux-fsdevel@vger.kernel.org, chrisw@sous-sol.org,
        Tony Jones <tonyj@suse.de>, linux-security-module@vger.kernel.org,
        agruen@suse.de
-Date: Mon, 05 Feb 2007 10:22:13 -0800
-Message-Id: <20070205182213.12164.40927.sendpatchset@ermintrude.int.wirex.com>
-Subject: [RFC 0/28] Patches to pass vfsmount to LSM inode security hooks
+Date: Mon, 05 Feb 2007 10:22:21 -0800
+Message-Id: <20070205182221.12164.57485.sendpatchset@ermintrude.int.wirex.com>
+In-Reply-To: <20070205182213.12164.40927.sendpatchset@ermintrude.int.wirex.com>
+References: <20070205182213.12164.40927.sendpatchset@ermintrude.int.wirex.com>
+Subject: [RFC 1/28] Pass struct vfsmount to the inode_create LSM hook.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Introduction
-------------
+Pass struct vfsmount to the inode_create LSM hook.
 
-The following are a set of patches the goal of which is to pass vfsmounts
-through select portions of the VFS layer sufficient to be visible to the LSM
-inode operation hooks.
+Signed-off-by: Tony Jones <tonyj@suse.de>
+Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 
-They are being posted now as a request for comment.  Presently the AppArmor
-code - being a user of the LSM interface - does not receive the vfsmount 
-correspoding to an operation and has to employ convoluted and slow mechanisms 
-in an attempt to determine the vfsmount which are error prone. Therefore these
-patches or some variant of them are viewed as a necessary precursor for the 
-AppArmor code being resubmitted. 
-
-It is currently planned to resubmit the AppArmor code to the list in the next 
-month.  We apologise greatly for the silence since the last submission, a 
-combination of research into different designs, other work pressures and just 
-not doing the "right thing". Regardless, early discussion and feedback on 
-the interface changes presented here is appreciated.
-
-Limitations of the current patches
-----------------------------------
-
-NULL is passed for the vfsmount from all NFS functions,  this is analagous
-to the current NULL nameidata for security_inode_permission.  NULL is also 
-passed in certain cases for internal filesystem data which is not visible in
-the normal namespace (Reiserfs being one example).
-
-Struct vfsmount is passed to the LSM inode hooks rather than struct nameidata 
-as the hooks do not require the intent data and also as a few hooks are called
-when only a struct file is available.
-
-Possible changes
-----------------
-
-A second parameter is now being passed to many functions. One alternative is 
-to ammend the LSM interface (and struct nameidata) to use struct path instead
-but this would be a larger change.
-
-Patches
--------
-
-security-create.diff
-	Pass struct vfsmount to the inode_create LSM hook.
-	
-proc_setattr.diff
-	Remove redundant check from proc_setattr().
-
-remove_suid.diff
-	Pass struct file down to remove_suid and children
-	
-vfs-notify_change.diff
-	Add a vfsmount parameter to notify_change()
-	
-security-setattr.diff
-	Pass struct vfsmount to the inode_setattr LSM hook
-	
-vfs-mkdir.diff
-	Add struct vfsmount parameter to vfs_mkdir()
-	
-security-mkdir.diff
-	Pass struct vfsmount to the inode_mkdir LSM hook
-	
-vfs-mknod.diff
-	Add a struct vfsmount parameter to vfs_mknod()
-	
-security-mknod.diff
-	Pass struct vfsmount to the inode_mknod LSM hook
-	
-vfs-symlink.diff
-	Add a struct vfsmount parameter to vfs_symlink()
-	
-security-symlink.diff
-	Pass struct vfsmount to the inode_symlink LSM hook.
-	
-security-readlink.diff
-	Pass struct vfsmount to the inode_readlink LSM hook
-	
-vfs-link.diff
-	Add struct vfsmount parameters to vfs_link()
-	
-security-link.diff
-	Pass struct vfsmount to the inode_link LSM hook
-	
-vfs-rmdir.diff
-	Add a struct vfsmount parameter to vfs_rmdir()
-	
-security-rmdir.diff
-	Pass struct vfsmount to the inode_rmdir LSM hook
-	
-vfs-unlink.diff
-	Add a struct vfsmount parameter to vfs_unlink()
-	
-security-unlink.diff
-	Pass struct vfsmount to the inode_unlink LSM hook
-	
-vfs-rename.diff
-	Add struct vfsmount parameters to vfs_rename()
-	
-security-rename.diff
-	Pass struct vfsmount to the inode_rename LSM hook
-	
-vfs-setxattr.diff
-	Add a struct vfsmount parameter to vfs_setxattr()
-	
-security-setxattr.diff
-	Pass struct vfsmount to the inode_setxattr LSM hook
-	
-vfs-getxattr.diff
-	Add a struct vfsmount parameter to vfs_getxattr()
-	
-security-getxattr.diff
-	Pass struct vfsmount to the inode_getxattr LSM hook
-	
-vfs-listxattr.diff
-	Add a struct vfsmount parameter to vfs_listxattr()
-	
-security-listxattr.diff
-	Pass struct vfsmount to the inode_listxattr LSM hook
-	
-vfs-removexattr.diff
-	Add a struct vfsmount parameter to vfs_removexattr()
-	
-security-removexattr.diff
-	Pass struct vfsmount to the inode_removexattr LSM hook
+Index: linux-2.6/fs/namei.c
+===================================================================
+--- linux-2.6.orig/fs/namei.c
++++ linux-2.6/fs/namei.c
+@@ -1503,7 +1503,7 @@ int vfs_create(struct inode *dir, struct
+ 		return -EACCES;	/* shouldn't it be ENOSYS? */
+ 	mode &= S_IALLUGO;
+ 	mode |= S_IFREG;
+-	error = security_inode_create(dir, dentry, mode);
++	error = security_inode_create(dir, dentry, nd ? nd->mnt : NULL, mode);
+ 	if (error)
+ 		return error;
+ 	DQUOT_INIT(dir);
+Index: linux-2.6/include/linux/security.h
+===================================================================
+--- linux-2.6.orig/include/linux/security.h
++++ linux-2.6/include/linux/security.h
+@@ -283,6 +283,7 @@ struct request_sock;
+  *	Check permission to create a regular file.
+  *	@dir contains inode structure of the parent of the new file.
+  *	@dentry contains the dentry structure for the file to be created.
++ *	@mnt is the vfsmount corresponding to @dentry (may be NULL).
+  *	@mode contains the file mode of the file to be created.
+  *	Return 0 if permission is granted.
+  * @inode_link:
+@@ -1204,8 +1205,8 @@ struct security_operations {
+ 	void (*inode_free_security) (struct inode *inode);
+ 	int (*inode_init_security) (struct inode *inode, struct inode *dir,
+ 				    char **name, void **value, size_t *len);
+-	int (*inode_create) (struct inode *dir,
+-	                     struct dentry *dentry, int mode);
++	int (*inode_create) (struct inode *dir, struct dentry *dentry,
++			     struct vfsmount *mnt, int mode);
+ 	int (*inode_link) (struct dentry *old_dentry,
+ 	                   struct inode *dir, struct dentry *new_dentry);
+ 	int (*inode_unlink) (struct inode *dir, struct dentry *dentry);
+@@ -1611,11 +1612,12 @@ static inline int security_inode_init_se
+ 	
+ static inline int security_inode_create (struct inode *dir,
+ 					 struct dentry *dentry,
++					 struct vfsmount *mnt,
+ 					 int mode)
+ {
+ 	if (unlikely (IS_PRIVATE (dir)))
+ 		return 0;
+-	return security_ops->inode_create (dir, dentry, mode);
++	return security_ops->inode_create (dir, dentry, mnt, mode);
+ }
+ 
+ static inline int security_inode_link (struct dentry *old_dentry,
+@@ -2338,6 +2340,7 @@ static inline int security_inode_init_se
+ 	
+ static inline int security_inode_create (struct inode *dir,
+ 					 struct dentry *dentry,
++					 struct vfsmount *mnt,
+ 					 int mode)
+ {
+ 	return 0;
+Index: linux-2.6/security/dummy.c
+===================================================================
+--- linux-2.6.orig/security/dummy.c
++++ linux-2.6/security/dummy.c
+@@ -265,7 +265,7 @@ static int dummy_inode_init_security (st
+ }
+ 
+ static int dummy_inode_create (struct inode *inode, struct dentry *dentry,
+-			       int mask)
++			       struct vfsmount *mnt, int mask)
+ {
+ 	return 0;
+ }
+Index: linux-2.6/security/selinux/hooks.c
+===================================================================
+--- linux-2.6.orig/security/selinux/hooks.c
++++ linux-2.6/security/selinux/hooks.c
+@@ -2135,7 +2135,8 @@ static int selinux_inode_init_security(s
+ 	return 0;
+ }
+ 
+-static int selinux_inode_create(struct inode *dir, struct dentry *dentry, int mask)
++static int selinux_inode_create(struct inode *dir, struct dentry *dentry,
++				 struct vfsmount *mnt, int mask)
+ {
+ 	return may_create(dir, dentry, SECCLASS_FILE);
+ }
