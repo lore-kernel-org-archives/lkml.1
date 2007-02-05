@@ -1,57 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932659AbXBEQ6o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932694AbXBEQ7K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932659AbXBEQ6o (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 11:58:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932451AbXBEQ6m
+	id S932694AbXBEQ7K (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 11:59:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932451AbXBEQ7K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 11:58:42 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:49492 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751838AbXBEQ6k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 11:58:40 -0500
-Date: Mon, 5 Feb 2007 08:58:10 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-cc: David Woodhouse <dwmw2@infradead.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [patch] MTD: fix DOC2000/2001/2001PLUS build error
-In-Reply-To: <20070205163152.GA2464@elte.hu>
-Message-ID: <Pine.LNX.4.64.0702050852160.8424@woody.linux-foundation.org>
-References: <Pine.LNX.4.64.0702041057090.8424@woody.linux-foundation.org>
- <20070205084523.GA21858@elte.hu> <1170682488.29759.795.camel@pmac.infradead.org>
- <20070205155627.GA8354@elte.hu> <1170692539.29759.856.camel@pmac.infradead.org>
- <20070205162635.GA755@elte.hu> <20070205163152.GA2464@elte.hu>
+	Mon, 5 Feb 2007 11:59:10 -0500
+Received: from ug-out-1314.google.com ([66.249.92.172]:25383 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932662AbXBEQ66 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Feb 2007 11:58:58 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:to:cc:subject:message-id:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
+        b=iqyKfHcQqQXz+f965kOX38AgtuxpC2s2zcmFj9i1jNTSsH+PJ4OcvWYPne7fSdrI+pOadD1irP2flCDEhFpHkLhv+JyvUUIQsgvN34S6zy8EcZHytcdgnOawFtrvqw/fC8RabSeuxf19uC8moK0yvvHmkAwjwOFZvuoOho6PXrs=
+Date: Mon, 5 Feb 2007 18:58:52 +0200
+To: jkmaline@cc.hut.fi, linville@tuxdriver.com
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: [PATCH 2.6.20] hostap: Use ARRAY_SIZE macro when appropriate
+Message-ID: <20070205165852.GJ3896@Ahmed>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070205165429.GD3896@Ahmed>
+User-Agent: Mutt/1.5.11
+From: "Ahmed S. Darwish" <darwish.07@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
+A patch to use ARRAY_SIZE macro in the Host AP wireless driver.
 
-On Mon, 5 Feb 2007, Ingo Molnar wrote:
-> 
-> but this is /only/ practical if all (even disabled) features are visible 
-> (and selectable) in the tools. They are not at the moment, so selects 
-> are quite useful.
+Signed-off-by: Ahmed S. Darwish <darwish.07@gmail.com>
+---
+Patch is compile tested.
 
-More importantly, some things that *are* visible probably shouldn't be, or 
-should perhaps only be in expert mode (aka "EMBEDDED").
+diff --git a/drivers/net/wireless/hostap/hostap.h b/drivers/net/wireless/hostap/hostap.h
+index e89c890..ef37a75 100644
+--- a/drivers/net/wireless/hostap/hostap.h
++++ b/drivers/net/wireless/hostap/hostap.h
+@@ -2,13 +2,14 @@
+ #define HOSTAP_H
+ 
+ #include <linux/ethtool.h>
++#include <linux/kernel.h>
+ 
+ #include "hostap_wlan.h"
+ #include "hostap_ap.h"
+ 
+ static const long freq_list[] = { 2412, 2417, 2422, 2427, 2432, 2437, 2442,
+ 				  2447, 2452, 2457, 2462, 2467, 2472, 2484 };
+-#define FREQ_COUNT (sizeof(freq_list) / sizeof(freq_list[0]))
++#define FREQ_COUNT ARRAY_SIZE(freq_list)
+ 
+ /* hostap.c */
+ 
 
-A prime example of this is all the firewall settings. I'd personally 
-prefer to just select a "default firewall setup" which would be enough 
-for all the normal crud, instead of seeing 50 different choices. 
-
-And dammit, I'm supposed to be "technical". So if _I_ find it irritating 
-to have to select all those NF_MATCH_xxx/NF_TARGET_xxx crud things, 
-imagine what most people must feel like?
-
-Me, I'd like to say I want "default firewall built in", and not have to 
-see *any* of the crap. And that's exactly why "select" is a good thing.
-
-Not using select, and have people having to say "y" to the basic feature 
-and then y/m/n to each sub-feature is really damn annoying.
-
-So thank God for the few selects we have, and we should add a whole lot 
-more!
-
-			Linus
+-- 
+Ahmed S. Darwish
+http://darwish-07.blogspot.com
