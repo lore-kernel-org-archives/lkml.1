@@ -1,95 +1,201 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752289AbXBELc1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932107AbXBELtx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752289AbXBELc1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 06:32:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752496AbXBELc1
+	id S932107AbXBELtx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 06:49:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932112AbXBELtx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 06:32:27 -0500
-Received: from mailhub.sw.ru ([195.214.233.200]:47982 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752289AbXBELc0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 06:32:26 -0500
-Date: Mon, 5 Feb 2007 14:39:32 +0300
-From: Alexey Dobriyan <adobriyan@openvz.org>
-To: Duncan Sands <duncan.sands@math.u-psud.fr>
-Cc: linux-kernel@vger.kernel.org, adobriyan@gmail.com
-Subject: Re: remove_proc_entry and read_proc
-Message-ID: <20070205113932.GA5968@localhost.sw.ru>
-References: <20070201160904.GC6023@localhost.sw.ru> <200702020831.58229.duncan.sands@math.u-psud.fr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Mon, 5 Feb 2007 06:49:53 -0500
+Received: from mx2-2.mail.ru ([194.67.23.122]:5315 "EHLO mx2.mail.ru"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S932107AbXBELtv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Feb 2007 06:49:51 -0500
+Date: Mon, 5 Feb 2007 14:56:02 +0300
+From: Evgeniy Dushistov <dushistov@mail.ru>
+To: Andrew Morton <akpm@osdl.org>, linux-fsdevel@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Dave Bailey <dsbailey@pacbell.net>
+Subject: [PATCH]: ufs: restore back support of openstep
+Message-ID: <20070205115602.GA16493@rain>
+Mail-Followup-To: Andrew Morton <akpm@osdl.org>,
+	linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+	Dave Bailey <dsbailey@pacbell.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200702020831.58229.duncan.sands@math.u-psud.fr>
-User-Agent: Mutt/1.5.11
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 02, 2007 at 08:31:57AM +0100, Duncan Sands wrote:
-> > I believe, barriers not needed, not now.
+This is a fix of regression, which triggered by ~2.6.16.
 
-> > This scheme relies on the fact that remove_proc_entry() will be the only
-> > place that will clear ->proc_fops and, once cleared, ->proc_fops will
-> > never be resurrected. Clearing of ->proc_fops will eventually propagate
-> > to CPU doing first check, thus preveting refcount bumps from this CPU.
-> > What can be missed is some "rogue" readers or writers¹. Big deal.
->
-> I don't understand you.  Without memory barriers, remove_proc_entry will
-> most of the time, but not all of the time, wait for all readers and writers
-> to finish before exiting.  Since the whole point of your patch was to ensure
-> that all readers and writers finish before remove_proc_entry exits, I don't
-> understand why you don't just put the memory barriers in and make it correct.
+Patch with name ufs-directory-and-page-cache-from-blocks-to-pages.patch:
+in additional to conversation from block to page cache
+mechanism added new checks of directory integrity,
+one of them that directory entry do not across directory chunks.
 
-Gee, thanks. I sat and wrote code side-by-side, and it looks like, even barriers
-won't fix anything, because they don't affect other CPUs. There will be
-new patch soon.
+But some kinds of UFS: OpenStep UFS and Apple UFS (looks like these
+are the same filesystems) have different directory chunk size,
+then common UFSes(BSD and Solaris UFS).
 
-	->proc_fops is valid			->proc_fops is valid
-	->pde_users is 0			->pde_users is 0
-	------------------------------------------------------------
+So this patch adds ability to works with variable size of directory chunks,
+and set it for ufstype=openstep to right size.
 
+Tested on darwin ufs.
 
-						if (!pde->proc_fops)
-							goto out;
+This patch designed to be on top of UFS patches which are situated 
+in -mm branch, after applying it, other 3 patches(UFS2 write support)
+will produce warnings like: HUNK succeeded, but I tested,
+they works as expected,
+should I resend them?
 
-	->proc_fops = NULL;
-	if (atomic_read(->pde_users) > 0)
-		goto again;
+Signed-off-by: Evgeniy Dushistov <dushistov@mail.ru>
 
-		|
-		|				atomic_inc(->pde_users);
-		|
-		|
-		|
-		V
+---
 
-> Also, I do consider it a big deal:
->
-> > ¹ Sigh, modules should do removals of proc entries first. And I should
-> > check for that.
->
-> Modules should of course call remove_proc_entry before exiting.  However
-> right now, even with your patch, a read or write method can still be
-> running when remove_proc_entry returns [1], so could still be running when
-> the module is removed (if they sleep; I guess this applies mostly to
-> write methods).  This is very bad - why not put in memory barriers and
-> fix it?  Also, plenty of proc read and write methods access private data
-> that is allocated before calling create_proc_entry and freed after calling
-> remove_proc_entry.  If a read or write method is still running after
-> remove_proc_entry returns, then it can access freed memory - very bad.
-
-> [1] proc_get_inode does a try_module_get, so it is possible that module
-> unloading is not a problem - not sure.
-
-Modules forget to set ->owner sometimes. Also, it's still racy, because
-of the typical
-
-	pde = create_proc_entry();
-	/*
-	 *
-	 * ->owner is NULL here, effectively, PDE without ->owner.
-	 *
-	 */
-	if (pde)
-		pde->owner = THIS_MODULE;
+Index: linux-2.6.20-rc7/fs/ufs/dir.c
+===================================================================
+--- linux-2.6.20-rc7.orig/fs/ufs/dir.c
++++ linux-2.6.20-rc7/fs/ufs/dir.c
+@@ -106,12 +106,13 @@ static void ufs_check_page(struct page *
+ 	char *kaddr = page_address(page);
+ 	unsigned offs, rec_len;
+ 	unsigned limit = PAGE_CACHE_SIZE;
++	const unsigned chunk_mask = UFS_SB(sb)->s_uspi->s_dirblksize - 1;
+ 	struct ufs_dir_entry *p;
+ 	char *error;
+ 
+ 	if ((dir->i_size >> PAGE_CACHE_SHIFT) == page->index) {
+ 		limit = dir->i_size & ~PAGE_CACHE_MASK;
+-		if (limit & (UFS_SECTOR_SIZE - 1))
++		if (limit & chunk_mask)
+ 			goto Ebadsize;
+ 		if (!limit)
+ 			goto out;
+@@ -126,7 +127,7 @@ static void ufs_check_page(struct page *
+ 			goto Ealign;
+ 		if (rec_len < UFS_DIR_REC_LEN(ufs_get_de_namlen(sb, p)))
+ 			goto Enamelen;
+-		if (((offs + rec_len - 1) ^ offs) & ~(UFS_SECTOR_SIZE-1))
++		if (((offs + rec_len - 1) ^ offs) & ~chunk_mask)
+ 			goto Espan;
+ 		if (fs32_to_cpu(sb, p->d_ino) > (UFS_SB(sb)->s_uspi->s_ipg *
+ 						  UFS_SB(sb)->s_uspi->s_ncg))
+@@ -310,6 +311,7 @@ int ufs_add_link(struct dentry *dentry, 
+ 	int namelen = dentry->d_name.len;
+ 	struct super_block *sb = dir->i_sb;
+ 	unsigned reclen = UFS_DIR_REC_LEN(namelen);
++	const unsigned int chunk_size = UFS_SB(sb)->s_uspi->s_dirblksize;
+ 	unsigned short rec_len, name_len;
+ 	struct page *page = NULL;
+ 	struct ufs_dir_entry *de;
+@@ -342,8 +344,8 @@ int ufs_add_link(struct dentry *dentry, 
+ 			if ((char *)de == dir_end) {
+ 				/* We hit i_size */
+ 				name_len = 0;
+-				rec_len = UFS_SECTOR_SIZE;
+-				de->d_reclen = cpu_to_fs16(sb, UFS_SECTOR_SIZE);
++				rec_len = chunk_size;
++				de->d_reclen = cpu_to_fs16(sb, chunk_size);
+ 				de->d_ino = 0;
+ 				goto got_it;
+ 			}
+@@ -431,7 +433,7 @@ ufs_readdir(struct file *filp, void *dir
+ 	unsigned int offset = pos & ~PAGE_CACHE_MASK;
+ 	unsigned long n = pos >> PAGE_CACHE_SHIFT;
+ 	unsigned long npages = ufs_dir_pages(inode);
+-	unsigned chunk_mask = ~(UFS_SECTOR_SIZE - 1);
++	unsigned chunk_mask = ~(UFS_SB(sb)->s_uspi->s_dirblksize - 1);
+ 	int need_revalidate = filp->f_version != inode->i_version;
+ 	unsigned flags = UFS_SB(sb)->s_flags;
+ 
+@@ -511,7 +513,7 @@ int ufs_delete_entry(struct inode *inode
+ 	struct super_block *sb = inode->i_sb;
+ 	struct address_space *mapping = page->mapping;
+ 	char *kaddr = page_address(page);
+-	unsigned from = ((char*)dir - kaddr) & ~(UFS_SECTOR_SIZE - 1);
++	unsigned from = ((char*)dir - kaddr) & ~(UFS_SB(sb)->s_uspi->s_dirblksize - 1);
+ 	unsigned to = ((char*)dir - kaddr) + fs16_to_cpu(sb, dir->d_reclen);
+ 	struct ufs_dir_entry *pde = NULL;
+ 	struct ufs_dir_entry *de = (struct ufs_dir_entry *) (kaddr + from);
+@@ -556,6 +558,7 @@ int ufs_make_empty(struct inode * inode,
+ 	struct super_block * sb = dir->i_sb;
+ 	struct address_space *mapping = inode->i_mapping;
+ 	struct page *page = grab_cache_page(mapping, 0);
++	const unsigned int chunk_size = UFS_SB(sb)->s_uspi->s_dirblksize;
+ 	struct ufs_dir_entry * de;
+ 	char *base;
+ 	int err;
+@@ -563,7 +566,7 @@ int ufs_make_empty(struct inode * inode,
+ 	if (!page)
+ 		return -ENOMEM;
+ 	kmap(page);
+-	err = mapping->a_ops->prepare_write(NULL, page, 0, UFS_SECTOR_SIZE);
++	err = mapping->a_ops->prepare_write(NULL, page, 0, chunk_size);
+ 	if (err) {
+ 		unlock_page(page);
+ 		goto fail;
+@@ -584,11 +587,11 @@ int ufs_make_empty(struct inode * inode,
+ 		((char *)de + fs16_to_cpu(sb, de->d_reclen));
+ 	de->d_ino = cpu_to_fs32(sb, dir->i_ino);
+ 	ufs_set_de_type(sb, de, dir->i_mode);
+-	de->d_reclen = cpu_to_fs16(sb, UFS_SECTOR_SIZE - UFS_DIR_REC_LEN(1));
++	de->d_reclen = cpu_to_fs16(sb, chunk_size - UFS_DIR_REC_LEN(1));
+ 	ufs_set_de_namlen(sb, de, 2);
+ 	strcpy (de->d_name, "..");
+ 
+-	err = ufs_commit_chunk(page, 0, UFS_SECTOR_SIZE);
++	err = ufs_commit_chunk(page, 0, chunk_size);
+ fail:
+ 	kunmap(page);
+ 	page_cache_release(page);
+Index: linux-2.6.20-rc7/fs/ufs/super.c
+===================================================================
+--- linux-2.6.20-rc7.orig/fs/ufs/super.c
++++ linux-2.6.20-rc7/fs/ufs/super.c
+@@ -649,7 +649,7 @@ static int ufs_fill_super(struct super_b
+ 		kmalloc (sizeof(struct ufs_sb_private_info), GFP_KERNEL);
+ 	if (!uspi)
+ 		goto failed;
+-
++	uspi->s_dirblksize = UFS_SECTOR_SIZE;
+ 	super_block_offset=UFS_SBLOCK;
+ 
+ 	/* Keep 2Gig file limit. Some UFS variants need to override 
+@@ -718,6 +718,7 @@ static int ufs_fill_super(struct super_b
+ 		break;
+ 	
+ 	case UFS_MOUNT_UFSTYPE_NEXTSTEP:
++		/*TODO: check may be we need set special dir block size?*/
+ 		UFSD("ufstype=nextstep\n");
+ 		uspi->s_fsize = block_size = 1024;
+ 		uspi->s_fmask = ~(1024 - 1);
+@@ -733,6 +734,7 @@ static int ufs_fill_super(struct super_b
+ 		break;
+ 	
+ 	case UFS_MOUNT_UFSTYPE_NEXTSTEP_CD:
++		/*TODO: check may be we need set special dir block size?*/
+ 		UFSD("ufstype=nextstep-cd\n");
+ 		uspi->s_fsize = block_size = 2048;
+ 		uspi->s_fmask = ~(2048 - 1);
+@@ -754,6 +756,7 @@ static int ufs_fill_super(struct super_b
+ 		uspi->s_fshift = 10;
+ 		uspi->s_sbsize = super_block_size = 2048;
+ 		uspi->s_sbbase = 0;
++		uspi->s_dirblksize = 1024;
+ 		flags |= UFS_DE_44BSD | UFS_UID_44BSD | UFS_ST_44BSD | UFS_CG_44BSD;
+ 		if (!(sb->s_flags & MS_RDONLY)) {
+ 			if (!silent)
+Index: linux-2.6.20-rc7/include/linux/ufs_fs.h
+===================================================================
+--- linux-2.6.20-rc7.orig/include/linux/ufs_fs.h
++++ linux-2.6.20-rc7/include/linux/ufs_fs.h
+@@ -789,6 +789,7 @@ struct ufs_sb_private_info {
+ 
+ 	__u32	s_maxsymlinklen;/* upper limit on fast symlinks' size */
+ 	__s32	fs_magic;       /* filesystem magic */
++	unsigned int s_dirblksize;
+ };
+ 
+ /*
+-- 
+/Evgeniy
 
