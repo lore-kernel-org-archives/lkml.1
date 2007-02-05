@@ -1,77 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752632AbXBESPd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932653AbXBESUy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752632AbXBESPd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 13:15:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752606AbXBESPd
+	id S932653AbXBESUy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 13:20:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932663AbXBESUy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 13:15:33 -0500
-Received: from mcr-smtp-001.bulldogdsl.com ([212.158.248.7]:2849 "EHLO
-	mcr-smtp-001.bulldogdsl.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932436AbXBESPc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 13:15:32 -0500
-X-Spam-Abuse: Please report all spam/abuse matters to abuse@bulldogdsl.com
-From: Alistair John Strachan <s0348365@sms.ed.ac.uk>
-To: Al Boldi <a1426z@gawab.com>
-Subject: Re: 2.6.20 doesn't compile with gcc-3.2.2
-Date: Mon, 5 Feb 2007 18:15:30 +0000
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org, Bodo Eggert <7eggert@gmx.de>
-References: <Pine.LNX.4.58.0702051441370.3434@be1.lrz> <200702051507.40421.s0348365@sms.ed.ac.uk> <200702052104.44580.a1426z@gawab.com>
-In-Reply-To: <200702052104.44580.a1426z@gawab.com>
+	Mon, 5 Feb 2007 13:20:54 -0500
+Received: from omx1-ext.sgi.com ([192.48.179.11]:53104 "EHLO omx1.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S932653AbXBESUx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Feb 2007 13:20:53 -0500
+Date: Mon, 5 Feb 2007 10:20:40 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+cc: Andrew Morton <akpm@osdl.org>, David Chinner <dgc@sgi.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: 2.6.20-rc6-mm3
+In-Reply-To: <20070205125643.GG4487@kernel.dk>
+Message-ID: <Pine.LNX.4.64.0702051019340.6772@schroedinger.engr.sgi.com>
+References: <20070131163638.290f40c1.akpm@osdl.org> <20070201062018.GC33919298@melbourne.sgi.com>
+ <20070131231253.fdebc9f5.akpm@osdl.org> <Pine.LNX.4.64.0702011055310.7010@schroedinger.engr.sgi.com>
+ <20070201191857.GQ10305@kernel.dk> <Pine.LNX.4.64.0702011214230.10061@schroedinger.engr.sgi.com>
+ <20070201202646.GR10305@kernel.dk> <Pine.LNX.4.64.0702011435060.4632@schroedinger.engr.sgi.com>
+ <20070205120253.GC4487@kernel.dk> <20070205121735.GD4487@kernel.dk>
+ <20070205125643.GG4487@kernel.dk>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="windows-1256"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200702051815.30427.s0348365@sms.ed.ac.uk>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 05 February 2007 18:04, Al Boldi wrote:
-> Alistair John Strachan wrote:
-> > On Monday 05 February 2007 13:48, Bodo Eggert wrote:
-> > > Al Boldi <a1426z@gawab.com> wrote:
-> > > > Doing the following results in an incomplete vmlinuz:
-> > > >
-> > > > # make bzlilo
-> > > >
-> > > > objcopy: arch/i386/boot/compressed/vmlinux.bin: File truncated
-> > > > make[2]: *** [arch/i386/boot/compressed/vmlinux.bin] Error 1
-> > > > make[1]: *** [arch/i386/boot/compressed/vmlinux] Error 2
-> > > > make: *** [bzlilo] Error 2
-> > > >
-> > > > gcc version 3.2.2 (Mandrake Linux 9.1 3.2.2-3mdk)
-> > >
-> > > I just compiled using gcc 3.3.5 (debian stable). Please verify that
-> > > your disk is not full and gcc is the cause. If it is, this patch should
-> > > do the trick: :)
-> >
-> > Not so fast.. post your config? If you've got anything referring to
-> > relocatable kernel support, try disabling it?
->
-> No luck disabling relocatable kernel, but using a mem-split other than 3/1
-> compiles fine.  There is a catch though, the kernel won't boot anymore.
->
-> # ld -v
-> GNU ld version 2.13.90.0.18 20030121
->
-> Which binutils version is now the minimum required, and why is a binutils
-> upgrade necessary?
+On Mon, 5 Feb 2007, Jens Axboe wrote:
 
-Documentation/Changes still says 2.12, and your binutils is closer to 2.14.
-I can't think of a particular patch to point the finger at (looking now).
+> But for now this is just a debug test, can you see if xfs with barriers
+> for that kernel now works as expected?
 
-If you want an interim workaround, grab a newer binutils (probably 2.17), 
-install it to a prefix like $HOME/binutils, then:
+The kernel that failed before boots fine with this patch.
 
-export PATH=$HOME/binutils/bin:$PATH
-
-And confirm the resulting kernel builds and works.
-
--- 
-Cheers,
-Alistair.
-
-Final year Computer Science undergraduate.
-1F2 55 South Clerk Street, Edinburgh, UK.
