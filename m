@@ -1,51 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751716AbXBEQvl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751724AbXBEQwQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751716AbXBEQvl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 11:51:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751697AbXBEQvl
+	id S1751724AbXBEQwQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 11:52:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751722AbXBEQwQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 11:51:41 -0500
-Received: from an-out-0708.google.com ([209.85.132.246]:37343 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751649AbXBEQvj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 11:51:39 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:to:subject:message-id:mime-version:content-type:content-disposition:user-agent:from;
-        b=SHIWBxI7myvPY3AI1S42T+rgSAC5h7Zd00yCgvvbe4W2+bON2fhU8Mhre1eg418pVsmTd1CgLFKseudI7BfYrGu/SJMdozIdH2bUHyeuzIr7FGBGGRPuwl+k+l3Uy/yjpvlnUUfSgJv+vig1im+MkuHS6KDUc/eH/EtAw4CVv2U=
-Date: Mon, 5 Feb 2007 18:51:34 +0200
-To: linux-kernel@vger.kernel.org, video4linux-list@redhat.com
-Subject: [PATCH 00] A series of patches to use ARRAY_SIZE under video subtree
-Message-ID: <20070205165134.GA3896@Ahmed>
-MIME-Version: 1.0
+	Mon, 5 Feb 2007 11:52:16 -0500
+Received: from waste.org ([66.93.16.53]:41013 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751718AbXBEQwP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Feb 2007 11:52:15 -0500
+Date: Mon, 5 Feb 2007 10:38:47 -0600
+From: Matt Mackall <mpm@selenic.com>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Christoph Lameter <clameter@sgi.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Rik van Riel <riel@redhat.com>
+Subject: Re: [RFC] Tracking mlocked pages and moving them off the LRU
+Message-ID: <20070205163847.GI16722@waste.org>
+References: <Pine.LNX.4.64.0702022214580.3960@schroedinger.engr.sgi.com> <20070203005316.eb0b4042.akpm@linux-foundation.org> <Pine.LNX.4.64.0702030946330.5388@schroedinger.engr.sgi.com> <1170525860.3073.1054.camel@laptopd505.fenrus.org> <Pine.LNX.4.64.0702031055210.18224@schroedinger.engr.sgi.com> <20070203172242.e5bf2534.akpm@linux-foundation.org> <Pine.LNX.4.64.0702031744060.31986@schroedinger.engr.sgi.com> <1170576977.3073.1100.camel@laptopd505.fenrus.org> <Pine.LNX.4.64.0702042351040.23790@schroedinger.engr.sgi.com> <1170664774.3073.1236.camel@laptopd505.fenrus.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.11
-From: "Ahmed S. Darwish" <darwish.07@gmail.com>
+In-Reply-To: <1170664774.3073.1236.camel@laptopd505.fenrus.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+On Mon, Feb 05, 2007 at 09:39:34AM +0100, Arjan van de Ven wrote:
+> On Sun, 2007-02-04 at 23:57 -0800, Christoph Lameter wrote:
+> > Hmmm.. I have had no time to test this one yet but I think this should 
+> > work. It uses the delayed method and a new page flag PageMlocked() with 
+> > different semantics. Fix for page migration is also included.
+> > 
+> > Patch avoids to put new anonymous mlocked pages on the LRU. Maybe the same 
+> > could be done for new pagecache pages?
+> > 
+> > I still need a solution for the problem of not having enough page flag 
+> > bits on i386 NUMA.
+> 
+> I still don't get why you *really* need such a bit. 
 
-Follows is a series of patches to use ARRAY_SIZE macro in the video drivers
-located under /drivers/media/video.
-Patches are test compiled and can be applied cleanly on 2.6.20
+There are three possibilities mentioned so far:
 
- cpia2/cpia2_v4l.c             |    9 +++++----
- ov7670.c                      |    7 ++++---
- pvrusb2/pvrusb2-audio.c       |   10 ++++------
- pvrusb2/pvrusb2-ctrl.c        |    4 ++--
- pvrusb2/pvrusb2-cx2584x-v4l.c |   10 ++++------
- pvrusb2/pvrusb2-debugifc.c    |    5 +++--
- pvrusb2/pvrusb2-eeprom.c      |    3 ++-
- pvrusb2/pvrusb2-hdw.c         |    3 ++-
- tveeprom.c                    |    6 +++---
- tvp5150.c                     |    3 ++-
- usbvideo/quickcam_messenger.c |    2 +-
- 11 files changed, 32 insertions(+), 30 deletions(-)
+1) slow accounting - scan each attached VMA on each mmap/munmap
+2) lazy accounting - the same as above, with the work all moved to the
+LRU sweep
+3) accounting with an extra page flag - still needs to scan VMAs on munmap
 
-Thanks,
+Christoph seems to prefer the third.
+
+I wonder if we couldn't stick a rough counter in address_space to
+fast-path the slow accounting - we'll typically only have 0 or 1 locks
+active.
+
 -- 
-Ahmed S. Darwish
-http://darwish-07.blogspot.com
+Mathematics is the supreme nostalgia of our time.
