@@ -1,105 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752748AbXBEGpV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752750AbXBEGpn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752748AbXBEGpV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 01:45:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752749AbXBEGpV
+	id S1752750AbXBEGpn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 01:45:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752752AbXBEGpm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 01:45:21 -0500
-Received: from fms-01.valinux.co.jp ([210.128.90.1]:35673 "EHLO
-	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752742AbXBEGpT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 01:45:19 -0500
-From: Magnus Damm <magnus@valinux.co.jp>
-To: akpm@linux-foundation.org
-Cc: tony.luck@intel.com, linux-ia64@vger.kernel.org, jlan@sgi.com,
-       nanhai.zou@intel.com, fastboot@lists.osdl.org,
-       linux-kernel@vger.kernel.org, Magnus Damm <magnus@valinux.co.jp>,
-       horms@verge.net.au, magnus.damm@gmail.com
-Date: Mon, 05 Feb 2007 15:43:42 +0900
-Message-Id: <20070205064342.21398.97736.sendpatchset@localhost>
-Subject: [PATCH] kexec: Fix CONFIG_SMP=n compilation V2 (ia64)
+	Mon, 5 Feb 2007 01:45:42 -0500
+Received: from omx1-ext.sgi.com ([192.48.179.11]:34919 "EHLO omx1.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752751AbXBEGpk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Feb 2007 01:45:40 -0500
+Date: Sun, 4 Feb 2007 22:45:16 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+To: Arjan van de Ven <arjan@infradead.org>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Rik van Riel <riel@redhat.com>
+Subject: Re: [RFC] Tracking mlocked pages and moving them off the LRU
+In-Reply-To: <1170576977.3073.1100.camel@laptopd505.fenrus.org>
+Message-ID: <Pine.LNX.4.64.0702042236250.6748@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0702022214580.3960@schroedinger.engr.sgi.com> 
+ <20070203005316.eb0b4042.akpm@linux-foundation.org> 
+ <Pine.LNX.4.64.0702030946330.5388@schroedinger.engr.sgi.com> 
+ <1170525860.3073.1054.camel@laptopd505.fenrus.org> 
+ <Pine.LNX.4.64.0702031055210.18224@schroedinger.engr.sgi.com> 
+ <20070203172242.e5bf2534.akpm@linux-foundation.org> 
+ <Pine.LNX.4.64.0702031744060.31986@schroedinger.engr.sgi.com>
+ <1170576977.3073.1100.camel@laptopd505.fenrus.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-kexec: Fix CONFIG_SMP=n compilation V2 (ia64)
+On Sun, 4 Feb 2007, Arjan van de Ven wrote:
 
-Kexec support for 2.6.20 on ia64 does not build properly using a config
-made up by CONFIG_SMP=n and CONFIG_HOTPLUG_CPU=n:
+> 
+> > Exclusion or inclusion of NR_MLOCK number is straightforward for the dirty 
+> > ratio calcuations. global_page_state(NR_MLOCK) f.e. would get us totals on 
+> > mlocked pages per zone. node_page_state(NR_MLOCK) gives a node specific 
+> > number of mlocked pages. The nice thing about ZVCs is that it allows
+> > easy access to counts on different levels.
+> 
+> however... mlocked pages still can be dirty, and want to be written back
+> at some point ;)
 
-  CC      arch/ia64/kernel/machine_kexec.o
-arch/ia64/kernel/machine_kexec.c: In function `machine_shutdown':
-arch/ia64/kernel/machine_kexec.c:77: warning: implicit declaration of function `cpu_down'
-  AS      arch/ia64/kernel/relocate_kernel.o
-  CC      arch/ia64/kernel/crash.o
-arch/ia64/kernel/crash.c: In function `kdump_cpu_freeze':
-arch/ia64/kernel/crash.c:139: warning: implicit declaration of function `ia64_jump_to_sal'
-arch/ia64/kernel/crash.c:139: error: `sal_boot_rendez_state' undeclared (first use in this function)
-arch/ia64/kernel/crash.c:139: error: (Each undeclared identifier is reported only once
-arch/ia64/kernel/crash.c:139: error: for each function it appears in.)
-arch/ia64/kernel/crash.c: At top level:
-arch/ia64/kernel/crash.c:84: warning: 'kdump_wait_cpu_freeze' defined but not used
-make[1]: *** [arch/ia64/kernel/crash.o] Error 1
-make: *** [arch/ia64/kernel] Error 2
+Yes that is why we need to add them to the count of total pages.
+ 
+> I can see the point of doing dirty ratio as percentage of the LRU size,
+> but in that case you don't need to track NR_MLOCK, only the total LRU
+> size. (And yes it'll be sometimes optimistic because not all mlock'd
+> pages are moved off the lru yet, but I doubt you'll have that as a
+> problem in practice)
 
-Signed-off-by: Magnus Damm <magnus@valinux.co.jp>
----
+The dirty ratio with the ZVCS would be
 
- Applies on top of 2.6.20.
+NR_DIRTY + NR_UNSTABLE_NFS
+	/ 
+NR_FREE_PAGES + NR_INACTIVE + NR_ACTIVE + NR_MLOCK
 
- arch/ia64/kernel/crash.c         |   11 +++++++----
- arch/ia64/kernel/machine_kexec.c |    2 ++
- 2 files changed, 9 insertions(+), 4 deletions(-)
 
---- 0002/arch/ia64/kernel/crash.c
-+++ work/arch/ia64/kernel/crash.c	2007-02-02 20:31:18.000000000 +0900
-@@ -79,6 +79,7 @@ crash_save_this_cpu()
- 	final_note(buf);
- }
- 
-+#ifdef CONFIG_SMP
- static int
- kdump_wait_cpu_freeze(void)
- {
-@@ -91,6 +92,7 @@ kdump_wait_cpu_freeze(void)
- 	}
- 	return 1;
- }
-+#endif
- 
- void
- machine_crash_shutdown(struct pt_regs *pt)
-@@ -132,11 +134,12 @@ kdump_cpu_freeze(struct unw_frame_info *
- 	atomic_inc(&kdump_cpu_freezed);
- 	kdump_status[cpuid] = 1;
- 	mb();
--	if (cpuid == 0) {
--		for (;;)
--			cpu_relax();
--	} else
-+#ifdef CONFIG_HOTPLUG_CPU
-+	if (cpuid != 0)
- 		ia64_jump_to_sal(&sal_boot_rendez_state[cpuid]);
-+#endif
-+	for (;;)
-+		cpu_relax();
- }
- 
- static int
---- 0002/arch/ia64/kernel/machine_kexec.c
-+++ work/arch/ia64/kernel/machine_kexec.c	2007-02-02 20:56:24.000000000 +0900
-@@ -70,12 +70,14 @@ void machine_kexec_cleanup(struct kimage
- 
- void machine_shutdown(void)
- {
-+#ifdef CONFIG_HOTPLUG_CPU
- 	int cpu;
- 
- 	for_each_online_cpu(cpu) {
- 		if (cpu != smp_processor_id())
- 			cpu_down(cpu);
- 	}
-+#endif
- 	kexec_disable_iosapic();
- }
- 
+I think we need a PageMlocked after all for the delayed NR_MLOCK 
+approach but it needs to have different semantics in order to make
+it work. With the patch that I posted earlier we could actually return
+a page to the LRU in zap_pte_range while something else is keeping
+a page off the LRU (i.e. Page migration is occurring and suddenly the 
+page is reclaimed since zap_pte_range put it back). So PageMlocked needs 
+to be set in shrink_list() in order to clarify that the page was taken 
+off the LRU lists due to it being mlocked and not for other reasons. 
+zap_pte_range then needs to check for PageMlocked before putting the 
+page onto the LRU.
+
+If we do that then we can observer the state transitions and have an 
+accurate count. The delayed accounting problem can probably be 
+somewhat remedied by putting new mlocked pages not on the LRU and 
+counting them directly. Page migration can simply clear the PageMlocked 
+bit and then treat the page as if it was taken off the LRU.
+
