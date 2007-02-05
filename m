@@ -1,51 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932579AbXBEPYF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933007AbXBEPgK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932579AbXBEPYF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 10:24:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932518AbXBEPYF
+	id S933007AbXBEPgK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 10:36:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933005AbXBEPgK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 10:24:05 -0500
-Received: from cacti.profiwh.com ([85.93.165.66]:52645 "EHLO cacti.profiwh.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932662AbXBEPYE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 10:24:04 -0500
-Message-ID: <45C74C25.5070901@gmail.com>
-Date: Mon, 05 Feb 2007 16:24:21 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0b2 (X11/20070116)
-MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
-Cc: Miguel Ojeda <maxextreme@gmail.com>, Parav Pandit <paravpandit@yahoo.com>,
-       linux-kernel@vger.kernel.org,
-       "Michael K. Edwards" <medwards.linux@gmail.com>
-Subject: Re: Free Linux Driver Development!
-References: <f2b55d220701301827h703d24eele941c86046caa9e7@mail.gmail.com> <355711.50750.qm@web36602.mail.mud.yahoo.com> <20070204182003.GB12379@kroah.com> <653402b90702041108q3c5c7b91x727c09c7c069bba3@mail.gmail.com> <20070205081312.GA19669@kroah.com>
-In-Reply-To: <20070205081312.GA19669@kroah.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 5 Feb 2007 10:36:10 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:45602 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S933001AbXBEPgI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Feb 2007 10:36:08 -0500
+Date: Mon, 5 Feb 2007 15:49:03 +0000
+From: Alan <alan@lxorguk.ukuu.org.uk>
+To: Tejun Heo <htejun@gmail.com>
+Cc: bzolnier@gmail.com, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Nvidia cable detection problems (was [PATCH] amd74xx: don't
+ configure udma mode higher than BIOS did)
+Message-ID: <20070205154903.0ac71232@localhost.localdomain>
+In-Reply-To: <45C7444F.4070500@gmail.com>
+References: <20070205075836.GG1625@htj.dyndns.org>
+	<20070205112410.5a3c3182@localhost.localdomain>
+	<45C72012.7050605@gmail.com>
+	<20070205132247.6f611e3c@localhost.localdomain>
+	<45C73A3E.6080700@gmail.com>
+	<20070205143439.6962c076@localhost.localdomain>
+	<45C7444F.4070500@gmail.com>
+X-Mailer: Claws Mail 2.7.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH napsal(a):
-> On Sun, Feb 04, 2007 at 08:08:32PM +0100, Miguel Ojeda wrote:
->> On 2/4/07, Greg KH <greg@kroah.com> wrote:
->>> Just let me know if you are interested in participating, and what types
->>> of devices you wish to write drivers for (USB, PCI, network, etc.)
->> I would like to participate; however, for people who is not at USA
->> (say, Europe), are there fair chances to get samples of devices to
->> work with?
+> > No the IDE layer does DMA changedown fine, well apart from all the
+> > error/timer races in the old IDE code.
 > 
-> Not all of the companies asking for this work are in the US, so I don't
-> see any reason why we should limit our developers to just one country,
-> that wouldn't be very fair...
-> 
-> Just let me know what types of devices you are interested in working on.
+> I dunno.  It always ended up in PIO mode in my case.  I can post the log
+> if necessary.
 
-Then, I want to be involved too. I'm interested in PCI and network devices.
+Ok testing my hardware
 
-thanks,
--- 
-http://www.fi.muni.cz/~xslaby/            Jiri Slaby
-faculty of informatics, masaryk university, brno, cz
-e-mail: jirislaby gmail com, gpg pubkey fingerprint:
-B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
+- AMD get it right for those with host cable detect
+- AMD get it right for disk side detect
+
+- My NV03 gets it wrong on all counts but it pauses only briefly to
+change neatly down to UDMA33 with old IDE.
+
+(We could speed that with libata by going straight to UDMA33 on cable
+error with PATA_CBL_UNK or some other way to flag "cable detection
+untrusted")
+
+The BIOS seems to get the detection it does right, so we need an Nvidia
+person to answer this properly. Nvidia + 40pin cable is still clearly such
+an obscure setting we don't want to damage general behaviour for it.
+
+Good news is that the AMD just works, that AFAIK means all the non x86 PC
+cases just work.
+
+Alan
