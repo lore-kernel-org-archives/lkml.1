@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932587AbXBEOF5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932629AbXBEOGt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932587AbXBEOF5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 09:05:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932614AbXBEOF5
+	id S932629AbXBEOGt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 09:06:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932614AbXBEOGs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 09:05:57 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:42093 "EHLO mx1.redhat.com"
+	Mon, 5 Feb 2007 09:06:48 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:42451 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932587AbXBEOF4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 09:05:56 -0500
-Subject: [DLM] fix receive_request() lvb copying [6/54]
+	id S932629AbXBEOGr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Feb 2007 09:06:47 -0500
+Subject: [DLM] fix lost flags in stub replies
 From: Steven Whitehouse <swhiteho@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: David Teigland <teigland@redhat.com>, cluster-devel@redhat.com
@@ -17,47 +17,58 @@ In-Reply-To: <1170684425.11001.267.camel@quoit.chygwyn.com>
 References: <1170684425.11001.267.camel@quoit.chygwyn.com>
 Content-Type: text/plain
 Organization: Red Hat (UK) Ltd
-Date: Mon, 05 Feb 2007 14:13:57 +0000
-Message-Id: <1170684837.11001.282.camel@quoit.chygwyn.com>
+Date: Mon, 05 Feb 2007 14:14:51 +0000
+Message-Id: <1170684891.11001.284.camel@quoit.chygwyn.com>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.2.2 (2.2.2-5) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From f1d7674362afc47d0125e68dc7187e81f276a235 Mon Sep 17 00:00:00 2001
+>From b08c5ad55e470d1cb05d1dc3e7159996903cc701 Mon Sep 17 00:00:00 2001
 From: David Teigland <teigland@redhat.com>
-Date: Wed, 13 Dec 2006 10:39:20 -0600
-Subject: [PATCH] [DLM] fix receive_request() lvb copying
+Date: Wed, 13 Dec 2006 10:40:26 -0600
+Subject: [PATCH] [DLM] fix lost flags in stub replies
 
-LVB's are not sent as part of new requests, but the code receiving the
-request was copying data into the lvb anyway.  The space in the message
-where it mistakenly thought the lvb lived actually contained the resource
-name, so it wound up incorrectly copying this name data into the lvb.  Fix
-is to just create the lvb, not copy junk into it.
+When the dlm fakes an unlock/cancel reply from a failed node using a stub
+message struct, it wasn't setting the flags in the stub message.  So, in
+the process of receiving the fake message the lkb flags would be updated
+and cleared from the zero flags in the message.  The problem observed in
+tests was the loss of the USER flag which caused the dlm to think a user
+lock was a kernel lock and subsequently fail an assertion checking the
+validity of the ast/callback field.
 
 Signed-off-by: David Teigland <teigland@redhat.com>
 Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
 
 diff --git a/fs/dlm/lock.c b/fs/dlm/lock.c
-index cdf2cb9..d8e919b 100644
+index d8e919b..ed52485 100644
 --- a/fs/dlm/lock.c
 +++ b/fs/dlm/lock.c
-@@ -2430,8 +2430,12 @@ static int receive_request_args(struct dlm_ls *ls, struct dlm_lkb *lkb,
+@@ -3148,6 +3148,7 @@ static void recover_convert_waiter(struct dlm_ls *ls, struct dlm_lkb *lkb)
+ 	if (middle_conversion(lkb)) {
+ 		hold_lkb(lkb);
+ 		ls->ls_stub_ms.m_result = -EINPROGRESS;
++		ls->ls_stub_ms.m_flags = lkb->lkb_flags;
+ 		_remove_from_waiters(lkb);
+ 		_receive_convert_reply(lkb, &ls->ls_stub_ms);
  
- 	DLM_ASSERT(is_master_copy(lkb), dlm_print_lkb(lkb););
- 
--	if (receive_lvb(ls, lkb, ms))
--		return -ENOMEM;
-+	if (lkb->lkb_exflags & DLM_LKF_VALBLK) {
-+		/* lkb was just created so there won't be an lvb yet */
-+		lkb->lkb_lvbptr = allocate_lvb(ls);
-+		if (!lkb->lkb_lvbptr)
-+			return -ENOMEM;
-+	}
- 
- 	return 0;
- }
+@@ -3221,6 +3222,7 @@ void dlm_recover_waiters_pre(struct dlm_ls *ls)
+ 		case DLM_MSG_UNLOCK:
+ 			hold_lkb(lkb);
+ 			ls->ls_stub_ms.m_result = -DLM_EUNLOCK;
++			ls->ls_stub_ms.m_flags = lkb->lkb_flags;
+ 			_remove_from_waiters(lkb);
+ 			_receive_unlock_reply(lkb, &ls->ls_stub_ms);
+ 			dlm_put_lkb(lkb);
+@@ -3229,6 +3231,7 @@ void dlm_recover_waiters_pre(struct dlm_ls *ls)
+ 		case DLM_MSG_CANCEL:
+ 			hold_lkb(lkb);
+ 			ls->ls_stub_ms.m_result = -DLM_ECANCEL;
++			ls->ls_stub_ms.m_flags = lkb->lkb_flags;
+ 			_remove_from_waiters(lkb);
+ 			_receive_cancel_reply(lkb, &ls->ls_stub_ms);
+ 			dlm_put_lkb(lkb);
 -- 
 1.4.4.2
 
