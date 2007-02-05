@@ -1,67 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752656AbXBECGJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752571AbXBECQ5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752656AbXBECGJ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Feb 2007 21:06:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752657AbXBECGJ
+	id S1752571AbXBECQ5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Feb 2007 21:16:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752663AbXBECQ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Feb 2007 21:06:09 -0500
-Received: from [221.6.14.228] ([221.6.14.228]:33930 "EHLO proxy.fnst.com.cn"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752656AbXBECGH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Feb 2007 21:06:07 -0500
-Message-ID: <00b201c748ca$3aa95cc0$2801a8c0@zhangxiliang>
-From: "zhangxiliang" <zhangxiliang@nanjing-fnst.com>
-To: "Matti Aarnio" <matti.aarnio@zmailer.org>
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-References: <026801c746a6$c3f81780$2801a8c0@zhangxiliang> <20070202091059.GB3438@mea-ext.zmailer.org>
-Subject: Re: ntp
-Date: Mon, 5 Feb 2007 10:06:19 +0800
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook Express 6.00.2900.3028
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
-X-RFC2646: Format=Flowed; Original
+	Sun, 4 Feb 2007 21:16:57 -0500
+Received: from gate.crashing.org ([63.228.1.57]:51773 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752571AbXBECQ4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Feb 2007 21:16:56 -0500
+Subject: Re: [Cbe-oss-dev] [PATCH 0/7] RFC: Cell SPE logos
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+       Linux Frame Buffer Device Development 
+	<linux-fbdev-devel@lists.sourceforge.net>,
+       James Simmons <jsimmons@infradead.org>,
+       Cell Broadband Engine OSS Development 
+	<cbe-oss-dev@ozlabs.org>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070204133212.GA2032@elf.ucw.cz>
+References: <Pine.LNX.4.62.0701311325480.14996@pademelon.sonytel.be>
+	 <20070204133212.GA2032@elf.ucw.cz>
+Content-Type: text/plain
+Date: Mon, 05 Feb 2007 13:14:11 +1100
+Message-Id: <1170641652.2620.89.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
-When I use the ntpd service, I see if I use the client attempt to connect 
-the server repeat before the server is ready, the ntpd on server can not be 
-ready all the times.
-
-Sometimes the waiting time maybe very long.
-
------ Original Message ----- 
-From: "Matti Aarnio" <matti.aarnio@zmailer.org>
-To: "zhangxiliang" <zhangxiliang@nanjing-fnst.com>
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Sent: Friday, February 02, 2007 5:10 PM
-Subject: Re: ntp
-
-
-> On Fri, Feb 02, 2007 at 04:47:26PM +0800, zhangxiliang wrote:
->> When i start the ntp service successful on server, the client must
->> ntpdate with the server after waiting a moment.
->> The moment may be 3~5 minutes, or it may be 10~15 minutes. I don't
->> know why it happens?
->
-> The  ntp server  takes several external clock comparisons to know its
-> local running environments (hosts) clock behaviour.
->
-> Before it knows that, it has no real knowledge of what the time is,
-> and it won't report anything out.
->
-> In my environments I have couple local machines (usually doing
-> something else too) assigned as network local NTP servers, and
-> all other machines refer to them.
->
->
->> Regards
->> Zhang Xiliang
->> MAIL:zhangxiliang@nanjing-fnst.com
->
-> /Matti Aarnio
+On Sun, 2007-02-04 at 14:32 +0100, Pavel Machek wrote:
+> Hi1
 > 
+> > I would like to hear your opinions about the patchset below (updated version
+> > compared to yesterday, lkml added to the CC list).
+> 
+> Can you just blast these pictures from userspace? There's really no
+> excuse to advertise SPEs from kernel....
+> 
+> What's next, I have powerful Intel graphics chipset in here, perhaps
+> it is as powerful as SPE, shall I start adding little pictures for its
+> pipelines?
 
+By the same token, there is no excuse to have the logo code at all in
+the kernel in the first place... it's cool though :-) And it's a config
+option, so you don't have to have it....
+
+Ben
 
 
