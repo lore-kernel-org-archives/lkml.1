@@ -1,81 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752300AbXBERdy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752249AbXBEReL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752300AbXBERdy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 12:33:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752388AbXBERdy
+	id S1752249AbXBEReL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 12:34:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752534AbXBEReL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 12:33:54 -0500
-Received: from verein.lst.de ([213.95.11.210]:35548 "EHLO mail.lst.de"
+	Mon, 5 Feb 2007 12:34:11 -0500
+Received: from verein.lst.de ([213.95.11.210]:35569 "EHLO mail.lst.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752249AbXBERdx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 12:33:53 -0500
-Date: Mon, 5 Feb 2007 18:32:47 +0100
+	id S1752249AbXBEReJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Feb 2007 12:34:09 -0500
+Date: Mon, 5 Feb 2007 18:34:00 +0100
 From: Christoph Hellwig <hch@lst.de>
 To: akpm@osdl.org, haveblue@us.ibm.com
 Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH[RFC] kill sysrq-u (emergency remount r/o)
-Message-ID: <20070205173247.GA25790@lst.de>
+Subject: [PATCH[RFC] don't force remount in sysrq-u (emergency remount r/o)
+Message-ID: <20070205173400.GB25790@lst.de>
+References: <20070205173247.GA25790@lst.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20070205173247.GA25790@lst.de>
 User-Agent: Mutt/1.3.28i
 X-Spam-Score: -0.001 () BAYES_44
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi there,
+On Mon, Feb 05, 2007 at 06:32:47PM +0100, Christoph Hellwig wrote:
+> Hi there,
+> 
+> in two recent discussions (file_list_lock scalability and remount r/o
+> on suspend) I stumbled over this emergency remount feature.  It's not
+> actually useful because it tries a potentially dangerous remount
+> despite writers still beeing in progress, which we can't get rid.
+> 
+> I've attached one patch in this mail that simply kills the
+> functionality, and in a reply to this mail I'll send a second one
+> that keeps the sysrq functionality, but removes the force argument
+> from do_remount_sb that overrides the still busy check.  This version
+> is currently not useful, but makes a lot of sense once Dave Hansens
+> per-mountpoint r/o patches get in, as we can check for a real write
+> in progress instead of simply a file opened with write permission.
 
-in two recent discussions (file_list_lock scalability and remount r/o
-on suspend) I stumbled over this emergency remount feature.  It's not
-actually useful because it tries a potentially dangerous remount
-despite writers still beeing in progress, which we can't get rid.
-
-I've attached one patch in this mail that simply kills the
-functionality, and in a reply to this mail I'll send a second one
-that keeps the sysrq functionality, but removes the force argument
-from do_remount_sb that overrides the still busy check.  This version
-is currently not useful, but makes a lot of sense once Dave Hansens
-per-mountpoint r/o patches get in, as we can check for a real write
-in progress instead of simply a file opened with write permission.
-
-Any ideas and comments?
+And here is the alternate patch that simply removes the forced remount
+r/o hack:
 
 
-Index: linux-2.6/drivers/char/sysrq.c
-===================================================================
---- linux-2.6.orig/drivers/char/sysrq.c	2007-02-05 18:05:11.000000000 +0100
-+++ linux-2.6/drivers/char/sysrq.c	2007-02-05 18:12:47.000000000 +0100
-@@ -159,17 +159,6 @@
- 	.enable_mask	= SYSRQ_ENABLE_SYNC,
- };
- 
--static void sysrq_handle_mountro(int key, struct tty_struct *tty)
--{
--	emergency_remount();
--}
--static struct sysrq_key_op sysrq_mountro_op = {
--	.handler	= sysrq_handle_mountro,
--	.help_msg	= "Unmount",
--	.action_msg	= "Emergency Remount R/O",
--	.enable_mask	= SYSRQ_ENABLE_REMOUNT,
--};
--
- #ifdef CONFIG_LOCKDEP
- static void sysrq_handle_showlocks(int key, struct tty_struct *tty)
- {
-@@ -340,7 +329,7 @@
- 	&sysrq_unraw_op,		/* r */
- 	&sysrq_sync_op,			/* s */
- 	&sysrq_showstate_op,		/* t */
--	&sysrq_mountro_op,		/* u */
-+	NULL,				/* u */
- 	/* v: May be registered at init time by SMP VOYAGER */
- 	NULL,				/* v */
- 	&sysrq_showstate_blocked_op,	/* w */
 Index: linux-2.6/fs/namespace.c
 ===================================================================
---- linux-2.6.orig/fs/namespace.c	2007-02-05 18:03:23.000000000 +0100
-+++ linux-2.6/fs/namespace.c	2007-02-05 18:04:24.000000000 +0100
+--- linux-2.6.orig/fs/namespace.c	2007-02-05 18:21:03.000000000 +0100
++++ linux-2.6/fs/namespace.c	2007-02-05 18:21:18.000000000 +0100
 @@ -597,7 +597,7 @@
  		if (!(sb->s_flags & MS_RDONLY)) {
  			lock_kernel();
@@ -96,9 +69,9 @@ Index: linux-2.6/fs/namespace.c
  	up_write(&sb->s_umount);
 Index: linux-2.6/fs/super.c
 ===================================================================
---- linux-2.6.orig/fs/super.c	2007-02-05 18:03:23.000000000 +0100
-+++ linux-2.6/fs/super.c	2007-02-05 18:04:54.000000000 +0100
-@@ -557,35 +557,14 @@
+--- linux-2.6.orig/fs/super.c	2007-02-05 18:21:03.000000000 +0100
++++ linux-2.6/fs/super.c	2007-02-05 18:21:48.000000000 +0100
+@@ -557,26 +557,6 @@
  }
  
  /**
@@ -125,8 +98,7 @@ Index: linux-2.6/fs/super.c
   *	do_remount_sb - asks filesystem to change mount options.
   *	@sb:	superblock in question
   *	@flags:	numeric part of options
-  *	@data:	the rest of options
-- *      @force: whether or not to force the change
+@@ -585,7 +565,7 @@
   *
   *	Alters the mount options of a mounted file system.
   */
@@ -135,7 +107,7 @@ Index: linux-2.6/fs/super.c
  {
  	int retval;
  	
-@@ -601,9 +580,7 @@
+@@ -601,9 +581,7 @@
  	/* If we are remounting RDONLY and current sb is read/write,
  	   make sure there are no rw files opened */
  	if ((flags & MS_RDONLY) && !(sb->s_flags & MS_RDONLY)) {
@@ -146,45 +118,16 @@ Index: linux-2.6/fs/super.c
  			return -EBUSY;
  	}
  
-@@ -618,37 +595,6 @@
- 	return 0;
- }
- 
--static void do_emergency_remount(unsigned long foo)
--{
--	struct super_block *sb;
--
--	spin_lock(&sb_lock);
--	list_for_each_entry(sb, &super_blocks, s_list) {
--		sb->s_count++;
--		spin_unlock(&sb_lock);
--		down_read(&sb->s_umount);
--		if (sb->s_root && sb->s_bdev && !(sb->s_flags & MS_RDONLY)) {
--			/*
--			 * ->remount_fs needs lock_kernel().
--			 *
--			 * What lock protects sb->s_flags??
--			 */
--			lock_kernel();
+@@ -634,7 +612,7 @@
+ 			 * What lock protects sb->s_flags??
+ 			 */
+ 			lock_kernel();
 -			do_remount_sb(sb, MS_RDONLY, NULL, 1);
--			unlock_kernel();
--		}
--		drop_super(sb);
--		spin_lock(&sb_lock);
--	}
--	spin_unlock(&sb_lock);
--	printk("Emergency Remount complete\n");
--}
--
--void emergency_remount(void)
--{
--	pdflush_operation(do_emergency_remount, 0);
--}
--
- /*
-  * Unnamed block devices are dummy devices used by virtual
-  * filesystems which don't use real block-devices.  -- jrs
-@@ -861,7 +807,7 @@
++			do_remount_sb(sb, MS_RDONLY, NULL);
+ 			unlock_kernel();
+ 		}
+ 		drop_super(sb);
+@@ -861,7 +839,7 @@
  		}
  		s->s_flags |= MS_ACTIVE;
  	}
@@ -195,13 +138,12 @@ Index: linux-2.6/fs/super.c
  
 Index: linux-2.6/include/linux/fs.h
 ===================================================================
---- linux-2.6.orig/include/linux/fs.h	2007-02-05 18:03:23.000000000 +0100
-+++ linux-2.6/include/linux/fs.h	2007-02-05 18:05:16.000000000 +0100
-@@ -1599,9 +1599,7 @@
- extern void sync_filesystems(int wait);
+--- linux-2.6.orig/include/linux/fs.h	2007-02-05 18:21:03.000000000 +0100
++++ linux-2.6/include/linux/fs.h	2007-02-05 18:21:27.000000000 +0100
+@@ -1600,8 +1600,7 @@
  extern void __fsync_super(struct super_block *sb);
  extern void emergency_sync(void);
--extern void emergency_remount(void);
+ extern void emergency_remount(void);
 -extern int do_remount_sb(struct super_block *sb, int flags,
 -			 void *data, int force);
 +extern int do_remount_sb(struct super_block *sb, int flags, void *data);
