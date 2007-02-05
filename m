@@ -1,87 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752697AbXBEEuQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752707AbXBEE6k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752697AbXBEEuQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Feb 2007 23:50:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752698AbXBEEuQ
+	id S1752707AbXBEE6k (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Feb 2007 23:58:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752705AbXBEE6k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Feb 2007 23:50:16 -0500
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:56073 "EHLO
-	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752697AbXBEEuO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Feb 2007 23:50:14 -0500
-Date: Sun, 4 Feb 2007 23:49:55 -0500
-From: Josef Sipek <jsipek@fsl.cs.sunysb.edu>
-To: NeilBrown <neilb@suse.de>
-Cc: Andrew Morton <akpm@osdl.org>, nfs@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 013 of 14] knfsd: SUNRPC: support IPv6 addresses in RPC server's UDP receive path.
-Message-ID: <20070205044955.GB1193@filer.fsl.cs.sunysb.edu>
-References: <20070202153531.18622.patches@notabene> <1070202044044.19169@suse.de>
+	Sun, 4 Feb 2007 23:58:40 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:59404 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752704AbXBEE6j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Feb 2007 23:58:39 -0500
+Date: Sun, 4 Feb 2007 20:58:17 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Tilman Schmidt <tilman@imap.cc>
+Cc: Karsten Keil <kkeil@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       i4ldeveloper@listserv.isdn4linux.de, linux-serial@vger.kernel.org,
+       Hansjoerg Lipp <hjlipp@web.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Greg KH <greg@kroah.com>
+Subject: Re: [PATCH] drivers/isdn/gigaset: new M101 driver
+Message-Id: <20070204205817.fe686375.akpm@linux-foundation.org>
+In-Reply-To: <45C68B71.6050904@imap.cc>
+References: <200702012112.l11LCOO4016557@lx1.pxnet.com>
+	<20070201171345.bd98ce30.akpm@osdl.org>
+	<45C537B9.7080704@imap.cc>
+	<20070203175623.72a171a1.akpm@linux-foundation.org>
+	<45C68B71.6050904@imap.cc>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1070202044044.19169@suse.de>
-User-Agent: Mutt/1.4.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 02, 2007 at 03:40:44PM +1100, NeilBrown wrote:
-...
-> diff .prev/net/sunrpc/svcsock.c ./net/sunrpc/svcsock.c
-> --- .prev/net/sunrpc/svcsock.c	2007-02-02 15:22:40.000000000 +1100
-> +++ ./net/sunrpc/svcsock.c	2007-02-02 15:22:58.000000000 +1100
-> @@ -715,13 +715,55 @@ svc_write_space(struct sock *sk)
->  	}
->  }
->  
-> +static void svc_udp_get_sender_address(struct svc_rqst *rqstp,
-> +					struct sk_buff *skb)
-> +{
-> +	switch (rqstp->rq_sock->sk_sk->sk_family) {
-> +	case AF_INET:
-> +		/* this seems to come from net/ipv4/udp.c:udp_recvmsg */
-> +		do {
-> +			struct sockaddr_in *sin = svc_addr_in(rqstp);
-> +
-> +			sin->sin_family = AF_INET;
-> +			sin->sin_port = skb->h.uh->source;
-> +			sin->sin_addr.s_addr = skb->nh.iph->saddr;
-> +			rqstp->rq_addrlen = sizeof(struct sockaddr_in);
-> +			/* Remember which interface received this request */
-> +			rqstp->rq_daddr.addr.s_addr = skb->nh.iph->daddr;
-> +		} while (0);
-> +		break;
+On Mon, 05 Feb 2007 02:42:09 +0100 Tilman Schmidt <tilman@imap.cc> wrote:
 
-Why the while(0) ?
+> Am 04.02.2007 02:56 schrieb Andrew Morton:
+> > On Sun, 04 Feb 2007 02:32:41 +0100 Tilman Schmidt <tilman@imap.cc> wrote:
+> > 
+> >>>> +	spin_lock_irqsave(&cs->cmdlock, flags);
+> >>>> +	cb = cs->cmdbuf;
+> >>>> +	spin_unlock_irqrestore(&cs->cmdlock, flags);
+> >>> It is doubtful if the locking here does anything useful.
+> >> It assures atomicity when reading the cs->cmdbuf pointer.
+> > 
+> > I think it's bogus.  If the quantity being copied here is more than 32-bits
+> > then yes, a lock is appropriate.  But if it's a single word then it's
+> > unlikely that the locking does anything useful.  Or there might be a bug
+> > here.
+> 
+> It's a pointer. Are reads and writes of pointer sized objects
+> guaranteed to be atomic on every platform?
 
-> +#if defined(CONFIG_IPV6) || defined(CONFIG_IPV6_MODULE)
-> +	case AF_INET6:
-> +		/* this is derived from net/ipv6/udp.c:udpv6_recvmesg */
-> +		do {
-> +			struct sockaddr_in6 *sin6 = svc_addr_in6(rqstp);
-> +
-> +			sin6->sin6_family = AF_INET6;
-> +			sin6->sin6_port = skb->h.uh->source;
-> +			sin6->sin6_flowinfo = 0;
-> +			sin6->sin6_scope_id = 0;
-> +			if (ipv6_addr_type(&sin6->sin6_addr) &
-> +							IPV6_ADDR_LINKLOCAL)
-> +				sin6->sin6_scope_id = IP6CB(skb)->iif;
-> +			ipv6_addr_copy(&sin6->sin6_addr,
-> +							&skb->nh.ipv6h->saddr);
-> +			rqstp->rq_addrlen = sizeof(struct sockaddr_in);
-> +			/* Remember which interface received this request */
-> +			ipv6_addr_copy(&rqstp->rq_daddr.addr6,
-> +							&skb->nh.ipv6h->saddr);
-> +		} while (0);
-> +		break;
+Yup - we make the same assumption about longs in various places.
 
-Ditto.
-
-Josef "Jeff" Sipek.
-
--- 
-You measure democracy by the freedom it gives its dissidents, not the
-freedom it gives its assimilated conformists.
-		- Abbie Hoffman
+It's a bit strange to read a pointer which can be changing at the
+same time.  Because the local copy will no longer represent the
+thing which it was just copied from.
