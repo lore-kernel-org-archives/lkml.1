@@ -1,118 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933090AbXBESYr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933132AbXBESZJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933090AbXBESYr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 13:24:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933100AbXBESYq
+	id S933132AbXBESZJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 13:25:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933127AbXBESZF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 13:24:46 -0500
-Received: from ns1.suse.de ([195.135.220.2]:43240 "EHLO mx1.suse.de"
+	Mon, 5 Feb 2007 13:25:05 -0500
+Received: from mail.suse.de ([195.135.220.2]:43280 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933090AbXBESYa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 13:24:30 -0500
+	id S933111AbXBESY7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Feb 2007 13:24:59 -0500
 From: Tony Jones <tonyj@suse.de>
 To: linux-kernel@vger.kernel.org
 Cc: linux-fsdevel@vger.kernel.org, chrisw@sous-sol.org,
        Tony Jones <tonyj@suse.de>, linux-security-module@vger.kernel.org,
        agruen@suse.de
-Date: Mon, 05 Feb 2007 10:23:31 -0800
-Message-Id: <20070205182331.12164.66455.sendpatchset@ermintrude.int.wirex.com>
+Date: Mon, 05 Feb 2007 10:23:58 -0800
+Message-Id: <20070205182358.12164.66864.sendpatchset@ermintrude.int.wirex.com>
 In-Reply-To: <20070205182213.12164.40927.sendpatchset@ermintrude.int.wirex.com>
 References: <20070205182213.12164.40927.sendpatchset@ermintrude.int.wirex.com>
-Subject: [RFC 8/28] Add a struct vfsmount parameter to vfs_mknod()
+Subject: [RFC 11/28] Pass struct vfsmount to the inode_symlink LSM hook.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add a struct vfsmount parameter to vfs_mknod()
+Pass struct vfsmount to the inode_symlink LSM hook.
 
 Signed-off-by: Tony Jones <tonyj@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 
-Index: linux-2.6/fs/ecryptfs/inode.c
-===================================================================
---- linux-2.6.orig/fs/ecryptfs/inode.c
-+++ linux-2.6/fs/ecryptfs/inode.c
-@@ -552,11 +552,14 @@ ecryptfs_mknod(struct inode *dir, struct
- {
- 	int rc;
- 	struct dentry *lower_dentry;
-+	struct vfsmount *lower_mnt;
- 	struct dentry *lower_dir_dentry;
- 
- 	lower_dentry = ecryptfs_dentry_to_lower(dentry);
-+	lower_mnt = ecryptfs_dentry_to_lower_mnt(dentry);
- 	lower_dir_dentry = lock_parent(lower_dentry);
--	rc = vfs_mknod(lower_dir_dentry->d_inode, lower_dentry, mode, dev);
-+	rc = vfs_mknod(lower_dir_dentry->d_inode, lower_dentry, lower_mnt, mode,
-+		       dev);
- 	if (rc || !lower_dentry->d_inode)
- 		goto out;
- 	rc = ecryptfs_interpose(lower_dentry, dentry, dir->i_sb, 0);
 Index: linux-2.6/fs/namei.c
 ===================================================================
 --- linux-2.6.orig/fs/namei.c
 +++ linux-2.6/fs/namei.c
-@@ -1837,7 +1837,8 @@ fail:
- }
- EXPORT_SYMBOL_GPL(lookup_create);
+@@ -2196,7 +2196,7 @@ int vfs_symlink(struct inode *dir, struc
+ 	if (!dir->i_op || !dir->i_op->symlink)
+ 		return -EPERM;
  
--int vfs_mknod(struct inode *dir, struct dentry *dentry, int mode, dev_t dev)
-+int vfs_mknod(struct inode *dir, struct dentry *dentry, struct vfsmount *mnt,
-+	      int mode, dev_t dev)
+-	error = security_inode_symlink(dir, dentry, oldname);
++	error = security_inode_symlink(dir, dentry, mnt, oldname);
+ 	if (error)
+ 		return error;
+ 
+Index: linux-2.6/include/linux/security.h
+===================================================================
+--- linux-2.6.orig/include/linux/security.h
++++ linux-2.6/include/linux/security.h
+@@ -301,6 +301,7 @@ struct request_sock;
+  *	Check the permission to create a symbolic link to a file.
+  *	@dir contains the inode structure of parent directory of the symbolic link.
+  *	@dentry contains the dentry structure of the symbolic link.
++ *	@mnt is the vfsmount corresponding to @dentry (may be NULL).
+  *	@old_name contains the pathname of file.
+  *	Return 0 if permission is granted.
+  * @inode_mkdir:
+@@ -1213,8 +1214,8 @@ struct security_operations {
+ 	int (*inode_link) (struct dentry *old_dentry,
+ 	                   struct inode *dir, struct dentry *new_dentry);
+ 	int (*inode_unlink) (struct inode *dir, struct dentry *dentry);
+-	int (*inode_symlink) (struct inode *dir,
+-	                      struct dentry *dentry, const char *old_name);
++	int (*inode_symlink) (struct inode *dir, struct dentry *dentry,
++			      struct vfsmount *mnt, const char *old_name);
+ 	int (*inode_mkdir) (struct inode *dir, struct dentry *dentry,
+ 			    struct vfsmount *mnt, int mode);
+ 	int (*inode_rmdir) (struct inode *dir, struct dentry *dentry);
+@@ -1644,11 +1645,12 @@ static inline int security_inode_unlink 
+ 
+ static inline int security_inode_symlink (struct inode *dir,
+ 					  struct dentry *dentry,
++					  struct vfsmount *mnt,
+ 					  const char *old_name)
  {
- 	int error = may_create(dir, dentry, NULL);
+ 	if (unlikely (IS_PRIVATE (dir)))
+ 		return 0;
+-	return security_ops->inode_symlink (dir, dentry, old_name);
++	return security_ops->inode_symlink (dir, dentry, mnt, old_name);
+ }
  
-@@ -1889,11 +1890,12 @@ asmlinkage long sys_mknodat(int dfd, con
- 			error = vfs_create(nd.dentry->d_inode,dentry,mode,&nd);
- 			break;
- 		case S_IFCHR: case S_IFBLK:
--			error = vfs_mknod(nd.dentry->d_inode,dentry,mode,
--					new_decode_dev(dev));
-+			error = vfs_mknod(nd.dentry->d_inode, dentry, nd.mnt,
-+					  mode, new_decode_dev(dev));
- 			break;
- 		case S_IFIFO: case S_IFSOCK:
--			error = vfs_mknod(nd.dentry->d_inode,dentry,mode,0);
-+			error = vfs_mknod(nd.dentry->d_inode, dentry, nd.mnt,
-+					  mode, 0);
- 			break;
- 		case S_IFDIR:
- 			error = -EPERM;
-Index: linux-2.6/fs/nfsd/vfs.c
+ static inline int security_inode_mkdir (struct inode *dir,
+@@ -2369,6 +2371,7 @@ static inline int security_inode_unlink 
+ 
+ static inline int security_inode_symlink (struct inode *dir,
+ 					  struct dentry *dentry,
++					  struct vfsmount *mnt,
+ 					  const char *old_name)
+ {
+ 	return 0;
+Index: linux-2.6/security/dummy.c
 ===================================================================
---- linux-2.6.orig/fs/nfsd/vfs.c
-+++ linux-2.6/fs/nfsd/vfs.c
-@@ -1189,7 +1189,7 @@ nfsd_create(struct svc_rqst *rqstp, stru
- 	case S_IFBLK:
- 	case S_IFIFO:
- 	case S_IFSOCK:
--		host_err = vfs_mknod(dirp, dchild, iap->ia_mode, rdev);
-+		host_err = vfs_mknod(dirp, dchild, NULL, iap->ia_mode, rdev);
- 		break;
- 	default:
- 	        printk("nfsd: bad file type %o in nfsd_create\n", type);
-Index: linux-2.6/include/linux/fs.h
+--- linux-2.6.orig/security/dummy.c
++++ linux-2.6/security/dummy.c
+@@ -282,7 +282,7 @@ static int dummy_inode_unlink (struct in
+ }
+ 
+ static int dummy_inode_symlink (struct inode *inode, struct dentry *dentry,
+-				const char *name)
++				struct vfsmount *mnt, const char *name)
+ {
+ 	return 0;
+ }
+Index: linux-2.6/security/selinux/hooks.c
 ===================================================================
---- linux-2.6.orig/include/linux/fs.h
-+++ linux-2.6/include/linux/fs.h
-@@ -980,7 +980,7 @@ extern void unlock_super(struct super_bl
- extern int vfs_permission(struct nameidata *, int);
- extern int vfs_create(struct inode *, struct dentry *, int, struct nameidata *);
- extern int vfs_mkdir(struct inode *, struct dentry *, struct vfsmount *, int);
--extern int vfs_mknod(struct inode *, struct dentry *, int, dev_t);
-+extern int vfs_mknod(struct inode *, struct dentry *, struct vfsmount *, int, dev_t);
- extern int vfs_symlink(struct inode *, struct dentry *, const char *, int);
- extern int vfs_link(struct dentry *, struct inode *, struct dentry *);
- extern int vfs_rmdir(struct inode *, struct dentry *);
-Index: linux-2.6/net/unix/af_unix.c
-===================================================================
---- linux-2.6.orig/net/unix/af_unix.c
-+++ linux-2.6/net/unix/af_unix.c
-@@ -808,7 +808,7 @@ static int unix_bind(struct socket *sock
- 		 */
- 		mode = S_IFSOCK |
- 		       (SOCK_INODE(sock)->i_mode & ~current->fs->umask);
--		err = vfs_mknod(nd.dentry->d_inode, dentry, mode, 0);
-+		err = vfs_mknod(nd.dentry->d_inode, dentry, nd.mnt, mode, 0);
- 		if (err)
- 			goto out_mknod_dput;
- 		mutex_unlock(&nd.dentry->d_inode->i_mutex);
+--- linux-2.6.orig/security/selinux/hooks.c
++++ linux-2.6/security/selinux/hooks.c
+@@ -2161,7 +2161,8 @@ static int selinux_inode_unlink(struct i
+ 	return may_link(dir, dentry, MAY_UNLINK);
+ }
+ 
+-static int selinux_inode_symlink(struct inode *dir, struct dentry *dentry, const char *name)
++static int selinux_inode_symlink(struct inode *dir, struct dentry *dentry,
++				 struct vfsmount *mnt, const char *name)
+ {
+ 	return may_create(dir, dentry, SECCLASS_LNK_FILE);
+ }
