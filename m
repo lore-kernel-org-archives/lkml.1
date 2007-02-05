@@ -1,78 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752720AbXBEFh6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752722AbXBEFkW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752720AbXBEFh6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 00:37:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752722AbXBEFh6
+	id S1752722AbXBEFkW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 00:40:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752723AbXBEFkW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 00:37:58 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:26114 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752720AbXBEFh5 (ORCPT
+	Mon, 5 Feb 2007 00:40:22 -0500
+Received: from rex.snapgear.com ([203.143.235.140]:49749 "EHLO
+	cyberguard.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752722AbXBEFkV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 00:37:57 -0500
-Date: Sun, 4 Feb 2007 21:33:56 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: lkml <linux-kernel@vger.kernel.org>, dri-devel@lists.sourceforge.net
-Cc: bugzilla.kernel.org@beej.org, airlied@linux.ie, akpm <akpm@osdl.org>
-Subject: [PATCH] update README.drm (bugzilla #7933)
-Message-Id: <20070204213356.05737487.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.0 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 5 Feb 2007 00:40:21 -0500
+Message-ID: <45C6C33D.1010504@snapgear.com>
+Date: Mon, 05 Feb 2007 15:40:13 +1000
+From: Greg Ungerer <gerg@snapgear.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070102)
+MIME-Version: 1.0
+To: "Ahmed S. Darwish" <darwish.07@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2.6.20] arch M68KNOMMU: user ARRAY_SIZE macro when appropriate
+References: <20070205024151.GJ18118@Ahmed>
+In-Reply-To: <20070205024151.GJ18118@Ahmed>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+Hi Ahmed,
 
-Update URLs in drivers/char/drm/README.drm, to take care of
-kernel bugzilla #7933.
+Ahmed S. Darwish wrote:
+> A patch to use ARRAY_SIZE macro already defined in linux/kernel.h
+> 
+> Signed-off-by: Ahmed S. Darwish <darwish.07@gmail.com>
+> ---
+> Patch isn't compile checked cause I have no M68KNOMMU board at hand.
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- drivers/char/drm/README.drm |   15 +++++++--------
- 1 file changed, 7 insertions(+), 8 deletions(-)
+Compiled and tested on m68knommu, no problems.
 
---- linux-2620-pv.orig/drivers/char/drm/README.drm
-+++ linux-2620-pv/drivers/char/drm/README.drm
-@@ -1,6 +1,6 @@
- ************************************************************
- * For the very latest on DRI development, please see:      *
--*     http://dri.sourceforge.net/                          *
-+*     http://dri.freedesktop.org/wiki/FrontPage            *
- ************************************************************
- 
- The Direct Rendering Manager (drm) is a device-independent kernel-level
-@@ -26,21 +26,20 @@ ways:
- 
- 
- Documentation on the DRI is available from:
--    http://precisioninsight.com/piinsights.html
-+    http://dri.freedesktop.org/wiki/Documentation
-+    http://sourceforge.net/project/showfiles.php?group_id=387
-+    http://dri.sourceforge.net/doc/
- 
- For specific information about kernel-level support, see:
- 
-     The Direct Rendering Manager, Kernel Support for the Direct Rendering
-     Infrastructure
--    http://precisioninsight.com/dr/drm.html
-+    http://dri.sourceforge.net/doc/drm_low_level.html
- 
-     Hardware Locking for the Direct Rendering Infrastructure
--    http://precisioninsight.com/dr/locking.html
-+    http://dri.sourceforge.net/doc/hardware_locking_low_level.html
- 
-     A Security Analysis of the Direct Rendering Infrastructure
--    http://precisioninsight.com/dr/security.html
-+    http://dri.sourceforge.net/doc/security_low_level.html
- 
- ************************************************************
--* For the very latest on DRI development, please see:      *
--*     http://dri.sourceforge.net/                          *
--************************************************************
+Signed-off-by: Greg Ungerer <gerg@uclinux.org>
+
+Regards
+Greg
+
+
+
+
+> diff --git a/arch/m68knommu/kernel/ptrace.c b/arch/m68knommu/kernel/ptrace.c
+> index 9130119..72d3496 100644
+> --- a/arch/m68knommu/kernel/ptrace.c
+> +++ b/arch/m68knommu/kernel/ptrace.c
+> @@ -62,7 +62,7 @@ static inline long get_reg(struct task_struct *task, int regno)
+>  
+>  	if (regno == PT_USP)
+>  		addr = &task->thread.usp;
+> -	else if (regno < sizeof(regoff)/sizeof(regoff[0]))
+> +	else if (regno < ARRAY_SIZE(regoff))
+>  		addr = (unsigned long *)(task->thread.esp0 + regoff[regno]);
+>  	else
+>  		return 0;
+> @@ -79,7 +79,7 @@ static inline int put_reg(struct task_struct *task, int regno,
+>  
+>  	if (regno == PT_USP)
+>  		addr = &task->thread.usp;
+> -	else if (regno < sizeof(regoff)/sizeof(regoff[0]))
+> +	else if (regno < ARRAY_SIZE(regoff))
+>  		addr = (unsigned long *) (task->thread.esp0 + regoff[regno]);
+>  	else
+>  		return -1;
+> diff --git a/arch/m68knommu/kernel/traps.c b/arch/m68knommu/kernel/traps.c
+> index 9129b3a..bed5f47 100644
+> --- a/arch/m68knommu/kernel/traps.c
+> +++ b/arch/m68knommu/kernel/traps.c
+> @@ -158,7 +158,7 @@ void show_stack(struct task_struct *task, unsigned long *stack)
+>  void bad_super_trap(struct frame *fp)
+>  {
+>  	console_verbose();
+> -	if (fp->ptregs.vector < 4*sizeof(vec_names)/sizeof(vec_names[0]))
+> +	if (fp->ptregs.vector < 4 * ARRAY_SIZE(vec_names))
+>  		printk (KERN_WARNING "*** %s ***   FORMAT=%X\n",
+>  			vec_names[(fp->ptregs.vector) >> 2],
+>  			fp->ptregs.format);
+> 
+
+-- 
+------------------------------------------------------------------------
+Greg Ungerer  --  Chief Software Dude       EMAIL:     gerg@snapgear.com
+SnapGear -- a Secure Computing Company      PHONE:       +61 7 3435 2888
+825 Stanley St,                             FAX:         +61 7 3891 3630
+Woolloongabba, QLD, 4102, Australia         WEB: http://www.SnapGear.com
