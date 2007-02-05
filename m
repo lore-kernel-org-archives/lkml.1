@@ -1,48 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932389AbXBENMm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932258AbXBENVh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932389AbXBENMm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 08:12:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932379AbXBENMm
+	id S932258AbXBENVh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 08:21:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932422AbXBENVh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 08:12:42 -0500
-Received: from mtagate4.de.ibm.com ([195.212.29.153]:56290 "EHLO
-	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932389AbXBENMl (ORCPT
+	Mon, 5 Feb 2007 08:21:37 -0500
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:58673 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932258AbXBENVh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 08:12:41 -0500
-Subject: [Patch] fixing a comment
-From: martin <mp3@de.ibm.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Date: Mon, 05 Feb 2007 14:12:38 +0100
-Message-Id: <1170681158.2343.11.camel@dix>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 5 Feb 2007 08:21:37 -0500
+To: ckrm-tech@lists.sourceforge.net
+Subject: [RFC][PATCH 0/5] RSS accounting for resource groups
+Cc: balbir@in.ibm.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       menage@google.com
+Message-Id: <20070205132145.2355B1B676@openx4.frec.bull.fr>
+Date: Mon, 5 Feb 2007 14:21:45 +0100 (CET)
+From: Patrick.Le-Dot@bull.net (Patrick.Le-Dot)
+X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 05/02/2007 14:22:40,
+	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 05/02/2007 14:22:41,
+	Serialize complete at 05/02/2007 14:22:41
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The return value of scnprintf() never exceeds @size.
 
-Patch is against 2.6.20-rc6-mm3
+Hi all,
 
-Cc: Martin Peschke <mp3@de.ibm.com>
----
+First step for a memory controller : a sane pages accounting
+for a group of tasks.
 
- vsprintf.c |    3 +--
- 1 files changed, 1 insertion(+), 2 deletions(-)
+Based on top of the last multi-hierarchy generic containers
+patch, against 2.6.20-rc1 sent by P.Menage (Fri, 22 Dec).
 
---- a/lib/vsprintf.c	2007-02-02 19:12:09.000000000 +0100
-+++ b/lib/vsprintf.c	2007-02-05 13:56:02.000000000 +0100
-@@ -554,8 +554,7 @@ EXPORT_SYMBOL(snprintf);
-  * @...: Arguments for the format string
-  *
-  * The return value is the number of characters written into @buf not including
-- * the trailing '\0'. If @size is <= 0 the function returns 0. If the return is
-- * greater than or equal to @size, the resulting string is truncated.
-+ * the trailing '\0'. If @size is <= 0 the function returns 0.
-  */
- 
- int scnprintf(char * buf, size_t size, const char *fmt, ...)
+Patch[1,4] is a back port of the last set of patches sent by
+Balbir (Fri, 10 Nov) + fixes.
 
+In patch5, accounting is like a reference count per page (by
+comparison with the CKRM accounting based on page allocation).
 
+Only "user pages" (ie private and shared pages for tasks with
+a struct mm) are currently under consideration.
+
+Patrick
+
++=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+    Patrick Le Dot
+ mailto: Patrick.Le-Dot@bull.net         Centre UNIX de BULL SAS
+ Phone : +33 4 76 29 73 20               1, Rue de Provence     BP 208
+ Fax   : +33 4 76 29 76 00               38130 ECHIROLLES Cedex FRANCE
+ Bull, Architect of an Open World TM
+ www.bull.com
