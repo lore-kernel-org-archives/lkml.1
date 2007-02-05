@@ -1,239 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932995AbXBESXz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933015AbXBESYU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932995AbXBESXz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 13:23:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933015AbXBESXy
+	id S933015AbXBESYU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 13:24:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933029AbXBESYU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 13:23:54 -0500
-Received: from cantor.suse.de ([195.135.220.2]:43163 "EHLO mx1.suse.de"
+	Mon, 5 Feb 2007 13:24:20 -0500
+Received: from ns.suse.de ([195.135.220.2]:43198 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932995AbXBESXm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 13:23:42 -0500
+	id S933031AbXBESYF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Feb 2007 13:24:05 -0500
 From: Tony Jones <tonyj@suse.de>
 To: linux-kernel@vger.kernel.org
 Cc: linux-fsdevel@vger.kernel.org, chrisw@sous-sol.org,
        Tony Jones <tonyj@suse.de>, linux-security-module@vger.kernel.org,
        agruen@suse.de
-Date: Mon, 05 Feb 2007 10:22:42 -0800
-Message-Id: <20070205182242.12164.33021.sendpatchset@ermintrude.int.wirex.com>
+Date: Mon, 05 Feb 2007 10:23:06 -0800
+Message-Id: <20070205182306.12164.22623.sendpatchset@ermintrude.int.wirex.com>
 In-Reply-To: <20070205182213.12164.40927.sendpatchset@ermintrude.int.wirex.com>
 References: <20070205182213.12164.40927.sendpatchset@ermintrude.int.wirex.com>
-Subject: [RFC 3/28] Pass struct file down to remove_suid and children
+Subject: [RFC 5/28] Pass struct vfsmount to the inode_setattr LSM hook
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pass struct file down to remove_suid and children
-
-Pass struct path to remove_suid and should_remove_suid instead of
-only the dentry. Required by a later patch that adds a struct
-vfsmount parameter to notify_change().
+Pass struct vfsmount to the inode_setattr LSM hook
 
 Signed-off-by: Tony Jones <tonyj@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 
-Index: linux-2.6/mm/filemap.c
+Index: linux-2.6/fs/attr.c
 ===================================================================
---- linux-2.6.orig/mm/filemap.c
-+++ linux-2.6/mm/filemap.c
-@@ -1869,9 +1869,9 @@ repeat:
-  *	if suid or (sgid and xgrp)
-  *		remove privs
-  */
--int should_remove_suid(struct dentry *dentry)
-+int should_remove_suid(struct path *path)
- {
--	mode_t mode = dentry->d_inode->i_mode;
-+	mode_t mode = path->dentry->d_inode->i_mode;
- 	int kill = 0;
+--- linux-2.6.orig/fs/attr.c
++++ linux-2.6/fs/attr.c
+@@ -145,13 +145,13 @@ int notify_change(struct dentry *dentry,
+ 		down_write(&dentry->d_inode->i_alloc_sem);
  
- 	/* suid always must be killed */
-@@ -1892,20 +1892,20 @@ int should_remove_suid(struct dentry *de
+ 	if (inode->i_op && inode->i_op->setattr) {
+-		error = security_inode_setattr(dentry, attr);
++		error = security_inode_setattr(dentry, mnt, attr);
+ 		if (!error)
+ 			error = inode->i_op->setattr(dentry, attr);
+ 	} else {
+ 		error = inode_change_ok(inode, attr);
+ 		if (!error)
+-			error = security_inode_setattr(dentry, attr);
++			error = security_inode_setattr(dentry, mnt, attr);
+ 		if (!error) {
+ 			if ((ia_valid & ATTR_UID && attr->ia_uid != inode->i_uid) ||
+ 			    (ia_valid & ATTR_GID && attr->ia_gid != inode->i_gid))
+Index: linux-2.6/include/linux/security.h
+===================================================================
+--- linux-2.6.orig/include/linux/security.h
++++ linux-2.6/include/linux/security.h
+@@ -358,6 +358,7 @@ struct request_sock;
+  *	file attributes change (such as when a file is truncated, chown/chmod
+  *	operations, transferring disk quotas, etc).
+  *	@dentry contains the dentry structure for the file.
++ *	@mnt is the vfsmount corresponding to @dentry (may be NULL).
+  *	@attr is the iattr structure containing the new file attributes.
+  *	Return 0 if permission is granted.
+  * @inode_getattr:
+@@ -1221,7 +1222,8 @@ struct security_operations {
+ 	int (*inode_readlink) (struct dentry *dentry);
+ 	int (*inode_follow_link) (struct dentry *dentry, struct nameidata *nd);
+ 	int (*inode_permission) (struct inode *inode, int mask, struct nameidata *nd);
+-	int (*inode_setattr)	(struct dentry *dentry, struct iattr *attr);
++	int (*inode_setattr) (struct dentry *dentry, struct vfsmount *mnt,
++			      struct iattr *attr);
+ 	int (*inode_getattr) (struct vfsmount *mnt, struct dentry *dentry);
+         void (*inode_delete) (struct inode *inode);
+ 	int (*inode_setxattr) (struct dentry *dentry, char *name, void *value,
+@@ -1708,11 +1710,12 @@ static inline int security_inode_permiss
  }
- EXPORT_SYMBOL(should_remove_suid);
  
--int __remove_suid(struct dentry *dentry, int kill)
-+int __remove_suid(struct path *path, int kill)
+ static inline int security_inode_setattr (struct dentry *dentry,
++					  struct vfsmount *mnt,
+ 					  struct iattr *attr)
  {
- 	struct iattr newattrs;
- 
- 	newattrs.ia_valid = ATTR_FORCE | kill;
--	return notify_change(dentry, &newattrs);
-+	return notify_change(path->dentry, &newattrs);
+ 	if (unlikely (IS_PRIVATE (dentry->d_inode)))
+ 		return 0;
+-	return security_ops->inode_setattr (dentry, attr);
++	return security_ops->inode_setattr (dentry, mnt, attr);
  }
  
--int remove_suid(struct dentry *dentry)
-+int remove_suid(struct path *path)
+ static inline int security_inode_getattr (struct vfsmount *mnt,
+@@ -2412,6 +2415,7 @@ static inline int security_inode_permiss
+ }
+ 
+ static inline int security_inode_setattr (struct dentry *dentry,
++					  struct vfsmount *mnt,
+ 					  struct iattr *attr)
  {
--	int kill = should_remove_suid(dentry);
-+	int kill = should_remove_suid(path);
- 
- 	if (unlikely(kill))
--		return __remove_suid(dentry, kill);
-+		return __remove_suid(path, kill);
- 
+ 	return 0;
+Index: linux-2.6/security/dummy.c
+===================================================================
+--- linux-2.6.orig/security/dummy.c
++++ linux-2.6/security/dummy.c
+@@ -328,7 +328,8 @@ static int dummy_inode_permission (struc
  	return 0;
  }
-@@ -2266,7 +2266,7 @@ __generic_file_aio_write_nolock(struct k
- 	if (count == 0)
- 		goto out;
  
--	err = remove_suid(file->f_path.dentry);
-+	err = remove_suid(&file->f_path);
- 	if (err)
- 		goto out;
- 
-Index: linux-2.6/fs/ntfs/file.c
+-static int dummy_inode_setattr (struct dentry *dentry, struct iattr *iattr)
++static int dummy_inode_setattr (struct dentry *dentry, struct vfsmount *mnt,
++				struct iattr *iattr)
+ {
+ 	return 0;
+ }
+Index: linux-2.6/security/selinux/hooks.c
 ===================================================================
---- linux-2.6.orig/fs/ntfs/file.c
-+++ linux-2.6/fs/ntfs/file.c
-@@ -2162,7 +2162,7 @@ static ssize_t ntfs_file_aio_write_noloc
- 		goto out;
- 	if (!count)
- 		goto out;
--	err = remove_suid(file->f_path.dentry);
-+	err = remove_suid(&file->f_path);
- 	if (err)
- 		goto out;
- 	file_update_time(file);
-Index: linux-2.6/fs/reiserfs/file.c
-===================================================================
---- linux-2.6.orig/fs/reiserfs/file.c
-+++ linux-2.6/fs/reiserfs/file.c
-@@ -1353,7 +1353,7 @@ static ssize_t reiserfs_file_write(struc
- 	if (count == 0)
- 		goto out;
- 
--	res = remove_suid(file->f_path.dentry);
-+	res = remove_suid(&file->f_path);
- 	if (res)
- 		goto out;
- 
-Index: linux-2.6/fs/splice.c
-===================================================================
---- linux-2.6.orig/fs/splice.c
-+++ linux-2.6/fs/splice.c
-@@ -844,7 +844,7 @@ generic_file_splice_write_nolock(struct 
- 	ssize_t ret;
- 	int err;
- 
--	err = remove_suid(out->f_path.dentry);
-+	err = remove_suid(&out->f_path);
- 	if (unlikely(err))
- 		return err;
- 
-@@ -890,10 +890,10 @@ generic_file_splice_write(struct pipe_in
- 	ssize_t ret;
- 	int err;
- 
--	err = should_remove_suid(out->f_path.dentry);
-+	err = should_remove_suid(&out->f_path);
- 	if (unlikely(err)) {
- 		mutex_lock(&inode->i_mutex);
--		err = __remove_suid(out->f_path.dentry, err);
-+		err = __remove_suid(&out->f_path, err);
- 		mutex_unlock(&inode->i_mutex);
- 		if (err)
- 			return err;
-Index: linux-2.6/fs/xfs/linux-2.6/xfs_lrw.c
-===================================================================
---- linux-2.6.orig/fs/xfs/linux-2.6/xfs_lrw.c
-+++ linux-2.6/fs/xfs/linux-2.6/xfs_lrw.c
-@@ -805,7 +805,7 @@ start:
- 	     !capable(CAP_FSETID)) {
- 		error = xfs_write_clear_setuid(xip);
- 		if (likely(!error))
--			error = -remove_suid(file->f_path.dentry);
-+			error = -remove_suid(&file->f_path);
- 		if (unlikely(error)) {
- 			xfs_iunlock(xip, iolock);
- 			goto out_unlock_mutex;
-Index: linux-2.6/include/linux/fs.h
-===================================================================
---- linux-2.6.orig/include/linux/fs.h
-+++ linux-2.6/include/linux/fs.h
-@@ -1678,9 +1678,9 @@ extern void __iget(struct inode * inode)
- extern void clear_inode(struct inode *);
- extern void destroy_inode(struct inode *);
- extern struct inode *new_inode(struct super_block *);
--extern int __remove_suid(struct dentry *, int);
--extern int should_remove_suid(struct dentry *);
--extern int remove_suid(struct dentry *);
-+extern int __remove_suid(struct path *, int);
-+extern int should_remove_suid(struct path *);
-+extern int remove_suid(struct path *);
- extern void remove_dquot_ref(struct super_block *, int, struct list_head *);
- 
- extern void __insert_inode_hash(struct inode *, unsigned long hashval);
-Index: linux-2.6/mm/filemap_xip.c
-===================================================================
---- linux-2.6.orig/mm/filemap_xip.c
-+++ linux-2.6/mm/filemap_xip.c
-@@ -379,7 +379,7 @@ xip_file_write(struct file *filp, const 
- 	if (count == 0)
- 		goto out_backing;
- 
--	ret = remove_suid(filp->f_path.dentry);
-+	ret = remove_suid(&filp->f_path);
- 	if (ret)
- 		goto out_backing;
- 
-Index: linux-2.6/mm/shmem.c
-===================================================================
---- linux-2.6.orig/mm/shmem.c
-+++ linux-2.6/mm/shmem.c
-@@ -1447,7 +1447,7 @@ shmem_file_write(struct file *file, cons
- 	if (err || !count)
- 		goto out;
- 
--	err = remove_suid(file->f_path.dentry);
-+	err = remove_suid(&file->f_path);
- 	if (err)
- 		goto out;
- 
-Index: linux-2.6/fs/ocfs2/file.c
-===================================================================
---- linux-2.6.orig/fs/ocfs2/file.c
-+++ linux-2.6/fs/ocfs2/file.c
-@@ -1035,13 +1035,13 @@ out:
- 	return ret;
+--- linux-2.6.orig/security/selinux/hooks.c
++++ linux-2.6/security/selinux/hooks.c
+@@ -2226,11 +2226,12 @@ static int selinux_inode_permission(stru
+ 			       file_mask_to_av(inode->i_mode, mask), NULL);
  }
  
--static int ocfs2_prepare_inode_for_write(struct dentry *dentry,
-+static int ocfs2_prepare_inode_for_write(struct path *path,
- 					 loff_t *ppos,
- 					 size_t count,
- 					 int appending)
+-static int selinux_inode_setattr(struct dentry *dentry, struct iattr *iattr)
++static int selinux_inode_setattr(struct dentry *dentry, struct vfsmount *mnt,
++				 struct iattr *iattr)
  {
- 	int ret = 0, meta_level = appending;
--	struct inode *inode = dentry->d_inode;
-+	struct inode *inode = path->dentry->d_inode;
- 	u32 clusters;
- 	loff_t newsize, saved_pos;
+ 	int rc;
  
-@@ -1067,7 +1067,7 @@ static int ocfs2_prepare_inode_for_write
- 		 * inode. There's also the dinode i_size state which
- 		 * can be lost via setattr during extending writes (we
- 		 * set inode->i_size at the end of a write. */
--		if (should_remove_suid(dentry)) {
-+		if (should_remove_suid(path)) {
- 			if (meta_level == 0) {
- 				ocfs2_meta_unlock(inode, meta_level);
- 				meta_level = 1;
-@@ -1176,7 +1176,7 @@ static ssize_t ocfs2_file_aio_write(stru
- 		goto out;
- 	}
+-	rc = secondary_ops->inode_setattr(dentry, iattr);
++	rc = secondary_ops->inode_setattr(dentry, mnt, iattr);
+ 	if (rc)
+ 		return rc;
  
--	ret = ocfs2_prepare_inode_for_write(filp->f_path.dentry, &iocb->ki_pos,
-+	ret = ocfs2_prepare_inode_for_write(&filp->f_path, &iocb->ki_pos,
- 					    iocb->ki_left, appending);
- 	if (ret < 0) {
- 		mlog_errno(ret);
-@@ -1239,7 +1239,7 @@ static ssize_t ocfs2_file_splice_write(s
- 		goto out;
- 	}
- 
--	ret = ocfs2_prepare_inode_for_write(out->f_path.dentry, ppos, len, 0);
-+	ret = ocfs2_prepare_inode_for_write(&out->f_path, ppos, len, 0);
- 	if (ret < 0) {
- 		mlog_errno(ret);
- 		goto out_unlock;
