@@ -1,59 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751724AbXBEQwQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751617AbXBEQw3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751724AbXBEQwQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 11:52:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751722AbXBEQwQ
+	id S1751617AbXBEQw3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 11:52:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751718AbXBEQw3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 11:52:16 -0500
-Received: from waste.org ([66.93.16.53]:41013 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751718AbXBEQwP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 11:52:15 -0500
-Date: Mon, 5 Feb 2007 10:38:47 -0600
-From: Matt Mackall <mpm@selenic.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Christoph Lameter <clameter@sgi.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Rik van Riel <riel@redhat.com>
-Subject: Re: [RFC] Tracking mlocked pages and moving them off the LRU
-Message-ID: <20070205163847.GI16722@waste.org>
-References: <Pine.LNX.4.64.0702022214580.3960@schroedinger.engr.sgi.com> <20070203005316.eb0b4042.akpm@linux-foundation.org> <Pine.LNX.4.64.0702030946330.5388@schroedinger.engr.sgi.com> <1170525860.3073.1054.camel@laptopd505.fenrus.org> <Pine.LNX.4.64.0702031055210.18224@schroedinger.engr.sgi.com> <20070203172242.e5bf2534.akpm@linux-foundation.org> <Pine.LNX.4.64.0702031744060.31986@schroedinger.engr.sgi.com> <1170576977.3073.1100.camel@laptopd505.fenrus.org> <Pine.LNX.4.64.0702042351040.23790@schroedinger.engr.sgi.com> <1170664774.3073.1236.camel@laptopd505.fenrus.org>
+	Mon, 5 Feb 2007 11:52:29 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:56055 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751617AbXBEQw2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Feb 2007 11:52:28 -0500
+Subject: Re: [patch] MTD: fix DOC2000/2001/2001PLUS build error
+From: David Woodhouse <dwmw2@infradead.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0702050829360.8424@woody.linux-foundation.org>
+References: <Pine.LNX.4.64.0702041057090.8424@woody.linux-foundation.org>
+	 <20070205084523.GA21858@elte.hu>
+	 <1170682488.29759.795.camel@pmac.infradead.org>
+	 <Pine.LNX.4.64.0702050829360.8424@woody.linux-foundation.org>
+Content-Type: text/plain
+Date: Mon, 05 Feb 2007 16:52:20 +0000
+Message-Id: <1170694340.29759.883.camel@pmac.infradead.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1170664774.3073.1236.camel@laptopd505.fenrus.org>
-User-Agent: Mutt/1.5.9i
+X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6.dwmw2.1) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 05, 2007 at 09:39:34AM +0100, Arjan van de Ven wrote:
-> On Sun, 2007-02-04 at 23:57 -0800, Christoph Lameter wrote:
-> > Hmmm.. I have had no time to test this one yet but I think this should 
-> > work. It uses the delayed method and a new page flag PageMlocked() with 
-> > different semantics. Fix for page migration is also included.
-> > 
-> > Patch avoids to put new anonymous mlocked pages on the LRU. Maybe the same 
-> > could be done for new pagecache pages?
-> > 
-> > I still need a solution for the problem of not having enough page flag 
-> > bits on i386 NUMA.
+On Mon, 2007-02-05 at 08:32 -0800, Linus Torvalds wrote:
 > 
-> I still don't get why you *really* need such a bit. 
+> On Mon, 5 Feb 2007, David Woodhouse wrote:
+> > 
+> > Secondly, please don't _ever_ use 'select'.
+> 
+> No, David.
+> 
+> I don't know why you keep repeating this mantra, when it's WRONG.
 
-There are three possibilities mentioned so far:
+It may not shock you to find that I repeat it because I disagree.
 
-1) slow accounting - scan each attached VMA on each mmap/munmap
-2) lazy accounting - the same as above, with the work all moved to the
-LRU sweep
-3) accounting with an extra page flag - still needs to scan VMAs on munmap
+> Using "select" is a lot more sane and intelligent than assuming that users 
+> know what dependencies they want.
+>
+> The Kconfig files should ask about *end-user* visible features. They 
+> should say "do you want to support X".
 
-Christoph seems to prefer the third.
+For the benefit of some, that's useful. Others still want to be able to
+turn off entire subsystems when they don't compile or when they want to
+quickly build a minimal kernel. It's become very hard to do that though.
 
-I wonder if we couldn't stick a rough counter in address_space to
-fast-path the slow accounting - we'll typically only have 0 or 1 locks
-active.
+> If "X" then needs Y, Z and something else to actually compile, then that 
+> Kconfig file should DAMN WELL use "select". Stop claiming anything else!
+
+I agree that the tools should let them do that easily. It doesn't
+necessarily follow that we should use 'select' for that purpose.
+
+> The user shouldn't know that they should say that they need some library Y 
+> in order to even see the question for "X". It's not a sane thing to ask 
+> them to know and care about. They care about the devices or capabilities 
+> they want to support, not about the fact that a USB storage device needs 
+> the SCSI core layer, for example.
+
+This I agree with. And it's something which the _tools_ have been
+capable of for a long time. You don't need 'select'. 
+
+The problem is that the widespread and inconsistent use of 'select' for
+Aunt Tillie's benefit causes problems for a _different_ set of people.
+To use Ingo's example -- if I want to turn off CONFIG_I2C because it
+doesn't build or I want it modular to hack on it, I want to be able to
+just _do_ that.
+
+I don't want to find that it's forced to 'Y' because I also happen to be
+building support for some esoteric peripheral that I've never heard of.
+I want that that peripheral to be turned _off_ when I turn I2C off. I
+don't want to have to spend hours grepping _all_ over the tree to find
+out what's forcing I2C on again. When it was just dependencies, it was
+easy enough to find -- it was right there in the Kconfig file in one
+place. Now it's a lot harder.
+
+And I'm sure you aren't seriously suggesting that we should take it all
+the way and that, for example, all SCSI host drivers should 'select
+SCSI' rather than merely depending on SCSI? If I configure a kernel I
+don't _want_ to be asked individually about every leaf option -- I want
+to be able to turn stuff off in an orderly fashion; in a tree as Ingo
+suggests.
 
 -- 
-Mathematics is the supreme nostalgia of our time.
+dwmw2
+
