@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752669AbXBECm3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752678AbXBECmy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752669AbXBECm3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Feb 2007 21:42:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752670AbXBECm2
+	id S1752678AbXBECmy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Feb 2007 21:42:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752677AbXBECmy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Feb 2007 21:42:28 -0500
+	Sun, 4 Feb 2007 21:42:54 -0500
 Received: from ug-out-1314.google.com ([66.249.92.172]:22954 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752671AbXBECm0 (ORCPT
+	with ESMTP id S1752676AbXBECmx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Feb 2007 21:42:26 -0500
+	Sun, 4 Feb 2007 21:42:53 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:date:to:cc:subject:message-id:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
-        b=OJ+OxNmTatvZWwK17A32rzOGV56gXhAcOHrCLIWPDpHzgqUpHCFMdylN5riApFX/Ej7HE+VTfgTMFvAQ95cFnYgDLmyHyywzLJFlqiAR9m3EcOk7Zkaygl5aYaNlDHD3ocBItIjsCtkjpVluDeF3aI18dcJlRdw+UKMYE14C82k=
-Date: Mon, 5 Feb 2007 04:42:11 +0200
-To: ralf@linux-mips.org, linux-mips@linux-mips.org
+        b=LBYDIL/ysQZdAj7LjjGYI+bRPZ0CS1oZ6xYa8upZu54IuoqaMEBSfxtH0Wsc6XPhJg+78Ay0GXU6pZruOpQ7iiAQPKElC+qQCBhcWIK5bQ9h+Ed3tqUgJUW0rhwLul+vHhys31pWD/UKSDKIRJHpM9Ls3xfFzKzgrY8542gSji4=
+Date: Mon, 5 Feb 2007 04:42:37 +0200
+To: uclinux-v850@lsi.nec.co.jp
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 2.6.20] arch MIPS: user ARRAY_SIZE macro when appropriate
-Message-ID: <20070205024211.GK18118@Ahmed>
+Subject: [PATCH 2.6.20] arch V850: user ARRAY_SIZE macro when appropriate
+Message-ID: <20070205024237.GL18118@Ahmed>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -34,116 +34,168 @@ A patch to use ARRAY_SIZE macro already defined in linux/kernel.h
 
 Signed-off-by: Ahmed S. Darwish <darwish.07@gmail.com>
 ---
-Patch isn't compile checked cause I have no MIPS board at hand.
+Patch isn't compile checked cause I have no V850 board at hand.
 Thanks,
 
-diff --git a/arch/mips/jmr3927/rbhma3100/setup.c b/arch/mips/jmr3927/rbhma3100/setup.c
-index 138f25e..7ca3d6d 100644
---- a/arch/mips/jmr3927/rbhma3100/setup.c
-+++ b/arch/mips/jmr3927/rbhma3100/setup.c
-@@ -434,7 +434,7 @@ void __init tx3927_setup(void)
+diff --git a/arch/v850/kernel/anna.c b/arch/v850/kernel/anna.c
+index 40892d3..0e42904 100644
+--- a/arch/v850/kernel/anna.c
++++ b/arch/v850/kernel/anna.c
+@@ -114,7 +114,7 @@ static struct v850e_intc_irq_init irq_inits[] = {
+ 	{ "ST",  IRQ_INTST(0), 	IRQ_INTST_NUM, 	3, 5 },
+ 	{ 0 }
+ };
+-#define NUM_IRQ_INITS ((sizeof irq_inits / sizeof irq_inits[0]) - 1)
++#define NUM_IRQ_INITS (ARRAY_SIZE(irq_inits) - 1)
  
- 	/* DMA */
- 	tx3927_dmaptr->mcr = 0;
--	for (i = 0; i < sizeof(tx3927_dmaptr->ch) / sizeof(tx3927_dmaptr->ch[0]); i++) {
-+	for (i = 0; i < ARRAY_SIZE(tx3927_dmaptr->ch); i++) {
- 		/* reset channel */
- 		tx3927_dmaptr->ch[i].ccr = TX3927_DMA_CCR_CHRST;
- 		tx3927_dmaptr->ch[i].ccr = 0;
-diff --git a/arch/mips/arc/identify.c b/arch/mips/arc/identify.c
-index 3ba7c47..4b90736 100644
---- a/arch/mips/arc/identify.c
-+++ b/arch/mips/arc/identify.c
-@@ -77,7 +77,7 @@ static struct smatch * __init string_to_mach(const char *s)
- {
- 	int i;
+ static struct hw_interrupt_type hw_itypes[NUM_IRQ_INITS];
  
--	for (i = 0; i < (sizeof(mach_table) / sizeof (mach_table[0])); i++) {
-+	for (i = 0; i < ARRAY_SIZE(mach_table); i++) {
- 		if (!strcmp(s, mach_table[i].arcname))
- 			return &mach_table[i];
- 	}
-diff --git a/arch/mips/mips-boards/atlas/atlas_int.c b/arch/mips/mips-boards/atlas/atlas_int.c
-index 43dba6c..4929f4d 100644
---- a/arch/mips/mips-boards/atlas/atlas_int.c
-+++ b/arch/mips/mips-boards/atlas/atlas_int.c
-@@ -32,6 +32,7 @@
- #include <linux/slab.h>
+diff --git a/arch/v850/kernel/as85ep1.c b/arch/v850/kernel/as85ep1.c
+index 5352f8a..18437bc 100644
+--- a/arch/v850/kernel/as85ep1.c
++++ b/arch/v850/kernel/as85ep1.c
+@@ -142,7 +142,7 @@ static struct v850e_intc_irq_init irq_inits[] = {
+ 	{ "ST",  IRQ_INTST(0), 	IRQ_INTST_NUM, 	3, 5 },
+ 	{ 0 }
+ };
+-#define NUM_IRQ_INITS ((sizeof irq_inits / sizeof irq_inits[0]) - 1)
++#define NUM_IRQ_INITS (ARRAY_SIZE(irq_inits) - 1)
+ 
+ static struct hw_interrupt_type hw_itypes[NUM_IRQ_INITS];
+ 
+diff --git a/arch/v850/kernel/fpga85e2c.c b/arch/v850/kernel/fpga85e2c.c
+index cb04a69..5c49235 100644
+--- a/arch/v850/kernel/fpga85e2c.c
++++ b/arch/v850/kernel/fpga85e2c.c
+@@ -138,7 +138,7 @@ struct v850e_intc_irq_init irq_inits[] = {
+ 	{ "RPU", IRQ_RPU(0),	IRQ_RPU_NUM,	1, 6 },
+ 	{ 0 }
+ };
+-#define NUM_IRQ_INITS ((sizeof irq_inits / sizeof irq_inits[0]) - 1)
++#define NUM_IRQ_INITS (ARRAY_SIZE(irq_inits) - 1)
+ 
+ struct hw_interrupt_type hw_itypes[NUM_IRQ_INITS];
+ 
+diff --git a/arch/v850/kernel/gbus_int.c b/arch/v850/kernel/gbus_int.c
+index 25d636e..b2bcc25 100644
+--- a/arch/v850/kernel/gbus_int.c
++++ b/arch/v850/kernel/gbus_int.c
+@@ -16,6 +16,7 @@
+ #include <linux/irq.h>
  #include <linux/interrupt.h>
- #include <linux/kernel_stat.h>
+ #include <linux/signal.h>
 +#include <linux/kernel.h>
  
- #include <asm/gdb-stub.h>
- #include <asm/io.h>
-@@ -220,7 +221,7 @@ msc_irqmap_t __initdata msc_irqmap[] = {
- 	{MSC01C_INT_TMR,		MSC01_IRQ_EDGE, 0},
- 	{MSC01C_INT_PCI,		MSC01_IRQ_LEVEL, 0},
+ #include <asm/machdep.h>
+ 
+@@ -36,7 +37,7 @@ struct used_gint {
+ 	{ 1, GBUS_INT_PRIORITY_HIGH },
+ 	{ 3, GBUS_INT_PRIORITY_LOW }
  };
--int __initdata msc_nr_irqs = sizeof(msc_irqmap) / sizeof(*msc_irqmap);
-+int __initdata msc_nr_irqs = ARRAY_SIZE(msc_irqmap);
+-#define NUM_USED_GINTS	(sizeof used_gint / sizeof used_gint[0])
++#define NUM_USED_GINTS ARRAY_SIZE(used_gint)
  
- msc_irqmap_t __initdata msc_eicirqmap[] = {
- 	{MSC01E_INT_SW0,		MSC01_IRQ_LEVEL, 0},
-@@ -231,7 +232,7 @@ msc_irqmap_t __initdata msc_eicirqmap[] = {
- 	{MSC01E_INT_PERFCTR,		MSC01_IRQ_LEVEL, 0},
- 	{MSC01E_INT_CPUCTR,		MSC01_IRQ_LEVEL, 0}
+ /* A table of which GINT is used by each GBUS interrupts (they are
+    assigned based on priority).  */
+@@ -231,8 +232,7 @@ struct gbus_int_irq_init gbus_irq_inits[] __initdata = {
+ 	{ "GBUS_INT", IRQ_GBUS_INT(0), IRQ_GBUS_INT_NUM, 1, 6},
+ 	{ 0 }
  };
--int __initdata msc_nr_eicirqs = sizeof(msc_eicirqmap) / sizeof(*msc_eicirqmap);
-+int __initdata msc_nr_eicirqs = ARRAY_SIZE(msc_eicirqmap);
+-#define NUM_GBUS_IRQ_INITS  \
+-   ((sizeof gbus_irq_inits / sizeof gbus_irq_inits[0]) - 1)
++#define NUM_GBUS_IRQ_INITS (ARRAY_SIZE(gbus_irq_inits) - 1)
  
- void __init arch_init_irq(void)
- {
-diff --git a/arch/mips/mips-boards/malta/malta_int.c b/arch/mips/mips-boards/malta/malta_int.c
-index 90ad5bf..b28edf5 100644
---- a/arch/mips/mips-boards/malta/malta_int.c
-+++ b/arch/mips/mips-boards/malta/malta_int.c
-@@ -27,6 +27,7 @@
- #include <linux/slab.h>
- #include <linux/interrupt.h>
- #include <linux/kernel_stat.h>
-+#include <linux/kernel.h>
- #include <linux/random.h>
+ static struct hw_interrupt_type gbus_hw_itypes[NUM_GBUS_IRQ_INITS];
  
- #include <asm/i8259.h>
-@@ -289,7 +290,7 @@ msc_irqmap_t __initdata msc_irqmap[] = {
- 	{MSC01C_INT_TMR,		MSC01_IRQ_EDGE, 0},
- 	{MSC01C_INT_PCI,		MSC01_IRQ_LEVEL, 0},
+diff --git a/arch/v850/kernel/ma.c b/arch/v850/kernel/ma.c
+index 2aa8ab0..143774d 100644
+--- a/arch/v850/kernel/ma.c
++++ b/arch/v850/kernel/ma.c
+@@ -43,7 +43,7 @@ static struct v850e_intc_irq_init irq_inits[] = {
+ 	{ "ST",  IRQ_INTST(0), 	IRQ_INTST_NUM, 	4, 5 },
+ 	{ 0 }
  };
--int __initdata msc_nr_irqs = sizeof(msc_irqmap)/sizeof(msc_irqmap_t);
-+int __initdata msc_nr_irqs = ARRAY_SIZE(msc_irqmap);
+-#define NUM_IRQ_INITS ((sizeof irq_inits / sizeof irq_inits[0]) - 1)
++#define NUM_IRQ_INITS (ARRAY_SIZE(irq_inits) - 1)
  
- msc_irqmap_t __initdata msc_eicirqmap[] = {
- 	{MSC01E_INT_SW0,		MSC01_IRQ_LEVEL, 0},
-@@ -303,7 +304,7 @@ msc_irqmap_t __initdata msc_eicirqmap[] = {
- 	{MSC01E_INT_PERFCTR,		MSC01_IRQ_LEVEL, 0},
- 	{MSC01E_INT_CPUCTR,		MSC01_IRQ_LEVEL, 0}
+ static struct hw_interrupt_type hw_itypes[NUM_IRQ_INITS];
+ 
+diff --git a/arch/v850/kernel/me2.c b/arch/v850/kernel/me2.c
+index 14b0c88..38be5c1 100644
+--- a/arch/v850/kernel/me2.c
++++ b/arch/v850/kernel/me2.c
+@@ -44,7 +44,7 @@ static struct v850e_intc_irq_init irq_inits[] = {
+ 	{ "UBTITO", IRQ_INTUBTITO(0), IRQ_INTUBTITO_NUM, 5, 4 },
+ 	{ 0 }
  };
--int __initdata msc_nr_eicirqs = sizeof(msc_eicirqmap)/sizeof(msc_irqmap_t);
-+int __initdata msc_nr_eicirqs = ARRAY_SIZE(msc_eicirqmap);
+-#define NUM_IRQ_INITS ((sizeof irq_inits / sizeof irq_inits[0]) - 1)
++#define NUM_IRQ_INITS (ARRAY_SIZE(irq_inits) - 1)
  
- void __init arch_init_irq(void)
- {
-diff --git a/arch/mips/pci/fixup-vr4133.c b/arch/mips/pci/fixup-vr4133.c
-index 597b897..6e09f38 100644
---- a/arch/mips/pci/fixup-vr4133.c
-+++ b/arch/mips/pci/fixup-vr4133.c
-@@ -17,6 +17,7 @@
-  */
- #include <linux/init.h>
- #include <linux/pci.h>
+ static struct hw_interrupt_type hw_itypes[NUM_IRQ_INITS];
+ 
+diff --git a/arch/v850/kernel/rte_cb.c b/arch/v850/kernel/rte_cb.c
+index 0f7f6cd..43018e1 100644
+--- a/arch/v850/kernel/rte_cb.c
++++ b/arch/v850/kernel/rte_cb.c
+@@ -15,6 +15,7 @@
+ #include <linux/irq.h>
+ #include <linux/fs.h>
+ #include <linux/module.h>
 +#include <linux/kernel.h>
  
- #include <asm/io.h>
- #include <asm/vr41xx/cmbvr4133.h>
-@@ -142,7 +143,7 @@ int rockhopper_get_irq(struct pci_dev *dev, u8 pin, u8 slot)
- 	if (bus == NULL)
- 		return -1;
+ #include <asm/machdep.h>
+ #include <asm/v850e_uart.h>
+@@ -176,8 +177,7 @@ static struct gbus_int_irq_init gbus_irq_inits[] = {
+ #endif
+ 	{ 0 }
+ };
+-#define NUM_GBUS_IRQ_INITS  \
+-   ((sizeof gbus_irq_inits / sizeof gbus_irq_inits[0]) - 1)
++#define NUM_GBUS_IRQ_INITS (ARRAY_SIZE(gbus_irq_inits) - 1)
  
--	for (i = 0; i < sizeof (int_map) / sizeof (int_map[0]); i++) {
-+	for (i = 0; i < ARRAY_SIZE(int_map); i++) {
- 		if (int_map[i].bus == bus->number && int_map[i].slot == slot) {
- 			int line;
- 			for (line = 0; line < 4; line++)
+ static struct hw_interrupt_type gbus_hw_itypes[NUM_GBUS_IRQ_INITS];
+ 
+diff --git a/arch/v850/kernel/rte_mb_a_pci.c b/arch/v850/kernel/rte_mb_a_pci.c
+index 35213fa..35a4bd5 100644
+--- a/arch/v850/kernel/rte_mb_a_pci.c
++++ b/arch/v850/kernel/rte_mb_a_pci.c
+@@ -70,8 +70,7 @@ static struct mb_pci_dev_irq mb_pci_dev_irqs[] = {
+ 	/* PCI slot 2 */
+ 	{ 9, 	IRQ_MB_A_PCI2(0),	1 }
+ };
+-#define NUM_MB_PCI_DEV_IRQS \
+-  (sizeof mb_pci_dev_irqs / sizeof mb_pci_dev_irqs[0])
++#define NUM_MB_PCI_DEV_IRQS ARRAY_SIZE(mb_pci_dev_irqs)
+ 
+ 
+ /* PCI configuration primitives.  */
+diff --git a/arch/v850/kernel/rte_me2_cb.c b/arch/v850/kernel/rte_me2_cb.c
+index 3be355a..46803d4 100644
+--- a/arch/v850/kernel/rte_me2_cb.c
++++ b/arch/v850/kernel/rte_me2_cb.c
+@@ -170,8 +170,7 @@ static struct cb_pic_irq_init cb_pic_irq_inits[] = {
+ 	{ "CB_EXTTM2",       IRQ_CB_EXTTM2,       1, 1, 6 },
+ 	{ 0 }
+ };
+-#define NUM_CB_PIC_IRQ_INITS  \
+-   ((sizeof cb_pic_irq_inits / sizeof cb_pic_irq_inits[0]) - 1)
++#define NUM_CB_PIC_IRQ_INITS (ARRAY_SIZE(cb_pic_irq_inits) - 1)
+ 
+ static struct hw_interrupt_type cb_pic_hw_itypes[NUM_CB_PIC_IRQ_INITS];
+ static unsigned char cb_pic_active_irqs = 0;
+diff --git a/arch/v850/kernel/teg.c b/arch/v850/kernel/teg.c
+index 290d506..699248f 100644
+--- a/arch/v850/kernel/teg.c
++++ b/arch/v850/kernel/teg.c
+@@ -43,7 +43,7 @@ static struct v850e_intc_irq_init irq_inits[] = {
+ 	{ "ST",	 IRQ_INTST(0),	IRQ_INTST_NUM,	1, 5 },
+ 	{ 0 }
+ };
+-#define NUM_IRQ_INITS ((sizeof irq_inits / sizeof irq_inits[0]) - 1)
++#define NUM_IRQ_INITS (ARRAY_SIZE(irq_inits) - 1)
+ 
+ static struct hw_interrupt_type hw_itypes[NUM_IRQ_INITS];
+ 
 
 -- 
 Ahmed S. Darwish
