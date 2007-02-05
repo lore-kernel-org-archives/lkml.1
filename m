@@ -1,53 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933495AbXBEVti@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933496AbXBEVt5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933495AbXBEVti (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 16:49:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933494AbXBEVti
+	id S933496AbXBEVt5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 16:49:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933498AbXBEVt4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 16:49:38 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:42539 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S933492AbXBEVth (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 16:49:37 -0500
-Date: Mon, 5 Feb 2007 22:02:32 +0000
-From: Alan <alan@lxorguk.ukuu.org.uk>
-To: "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>
-Cc: "Tejun Heo" <htejun@gmail.com>, "Allen Martin" <AMartin@nvidia.com>,
-       linux-ide@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Nvidia cable detection problems (was [PATCH] amd74xx: don't
- configure udma mode higher than BIOS did)
-Message-ID: <20070205220232.3e73297b@localhost.localdomain>
-In-Reply-To: <58cb370e0702051327p7b253dafs439c937093ca837d@mail.gmail.com>
-References: <20070205075836.GG1625@htj.dyndns.org>
-	<20070205132247.6f611e3c@localhost.localdomain>
-	<45C73A3E.6080700@gmail.com>
-	<20070205143439.6962c076@localhost.localdomain>
-	<45C7444F.4070500@gmail.com>
-	<58cb370e0702050709w1b7682dr5dff9e7ce69465a@mail.gmail.com>
-	<DBFABB80F7FD3143A911F9E6CFD477B01EC0DD7D@hqemmail02.nvidia.com>
-	<20070205181224.3319d6c3@localhost.localdomain>
-	<45C77921.4020808@gmail.com>
-	<58cb370e0702051055w3c7dcff3wd3e3b4935b910b41@mail.gmail.com>
-	<58cb370e0702051327p7b253dafs439c937093ca837d@mail.gmail.com>
-X-Mailer: Claws Mail 2.7.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 5 Feb 2007 16:49:56 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:35158 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933496AbXBEVtz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Feb 2007 16:49:55 -0500
+Date: Mon, 5 Feb 2007 13:49:38 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: David Woodhouse <dwmw2@infradead.org>
+cc: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [patch] MTD: fix DOC2000/2001/2001PLUS build error
+In-Reply-To: <1170711587.29759.909.camel@pmac.infradead.org>
+Message-ID: <Pine.LNX.4.64.0702051345380.8424@woody.linux-foundation.org>
+References: <Pine.LNX.4.64.0702041057090.8424@woody.linux-foundation.org> 
+ <20070205084523.GA21858@elte.hu>  <1170682488.29759.795.camel@pmac.infradead.org>
+  <20070205155627.GA8354@elte.hu>  <1170692539.29759.856.camel@pmac.infradead.org>
+  <20070205162635.GA755@elte.hu> <20070205163152.GA2464@elte.hu> 
+ <Pine.LNX.4.64.0702050852160.8424@woody.linux-foundation.org> 
+ <1170710272.29759.894.camel@pmac.infradead.org> 
+ <Pine.LNX.4.64.0702051322580.8424@woody.linux-foundation.org>
+ <1170711587.29759.909.camel@pmac.infradead.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Since we are already using UDMA mode set by BIOS to determine if 80c cable
-> is present so why not also use it to determine if the 40c cable is present?
-> 
-> I mean just ignoring AMD_CABLE_DETECT register for NVIDIA devices.
-> 
-> 2-lines change and we wouldn't have to deal with ACPI at ell.
 
-And as I explained earlier you get false values. The existing hack is
-dodgy as well and breaks on suspend/resume then loading the driver for
-one. It's probably the best that can be done without ACPI but the ACPI
-_GTM/_STM methods are pretty clean so its not hard to use them. You need
-them for full suspend/resume support anyway.
 
-Alan
+On Mon, 5 Feb 2007, David Woodhouse wrote:
+
+> On Mon, 2007-02-05 at 13:28 -0800, Linus Torvalds wrote:
+> > Right. Because for MOST scsi drivers, it's obvious that they are SCSI to 
+> > the user.
+> 
+> Really? Including the 'Scanner driver' card which arrived with my
+> scanner?
+
+Can you read? Can you UNDERSTAND?
+
+This is exactly my point.
+
+If it's not obviously a SCSI card, then it shouldn't be "depends on SCSI". 
+It should be on its own and "select SCSI".
+
+The whole AND ALMOST ONLY point of "depends on" is really to allow people 
+to do a shorthand or know that "ok, he gave us some information that makes 
+this choice pointless".
+
+And yes, we've messed that up. But you're apparently arguing that the 
+mess-up is something "good".
+
+"select" is _good_. Because it's the thing that avoids us having to ask 
+totally inane questions THAT DO NOT MAKE SENSE to a user.
+
+It's totally idiotic that we should ask people for SCSI support. That's 
+not a user question, unless we're talking "odd-ball obviously SCSI 
+devices", and then the question actually makes sense as a way to allow 99% 
+of all users to say "nope" and not have to see another million questions 
+that aren't relevant to them.
+
+			Linus
