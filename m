@@ -1,53 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751532AbXBEQvE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751716AbXBEQvl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751532AbXBEQvE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 11:51:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751634AbXBEQvE
+	id S1751716AbXBEQvl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 11:51:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751697AbXBEQvl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 11:51:04 -0500
-Received: from caramon.arm.linux.org.uk ([217.147.92.249]:3204 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751532AbXBEQvB (ORCPT
+	Mon, 5 Feb 2007 11:51:41 -0500
+Received: from an-out-0708.google.com ([209.85.132.246]:37343 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751649AbXBEQvj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 11:51:01 -0500
-Date: Mon, 5 Feb 2007 16:50:45 +0000
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: David Woodhouse <dwmw2@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [patch] MTD: fix DOC2000/2001/2001PLUS build error
-Message-ID: <20070205165045.GD4563@flint.arm.linux.org.uk>
-Mail-Followup-To: Linus Torvalds <torvalds@linux-foundation.org>,
-	David Woodhouse <dwmw2@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <Pine.LNX.4.64.0702041057090.8424@woody.linux-foundation.org> <20070205084523.GA21858@elte.hu> <1170682488.29759.795.camel@pmac.infradead.org> <Pine.LNX.4.64.0702050829360.8424@woody.linux-foundation.org>
-Mime-Version: 1.0
+	Mon, 5 Feb 2007 11:51:39 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:to:subject:message-id:mime-version:content-type:content-disposition:user-agent:from;
+        b=SHIWBxI7myvPY3AI1S42T+rgSAC5h7Zd00yCgvvbe4W2+bON2fhU8Mhre1eg418pVsmTd1CgLFKseudI7BfYrGu/SJMdozIdH2bUHyeuzIr7FGBGGRPuwl+k+l3Uy/yjpvlnUUfSgJv+vig1im+MkuHS6KDUc/eH/EtAw4CVv2U=
+Date: Mon, 5 Feb 2007 18:51:34 +0200
+To: linux-kernel@vger.kernel.org, video4linux-list@redhat.com
+Subject: [PATCH 00] A series of patches to use ARRAY_SIZE under video subtree
+Message-ID: <20070205165134.GA3896@Ahmed>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0702050829360.8424@woody.linux-foundation.org>
-User-Agent: Mutt/1.4.2.1i
+User-Agent: Mutt/1.5.11
+From: "Ahmed S. Darwish" <darwish.07@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 05, 2007 at 08:32:50AM -0800, Linus Torvalds wrote:
-> If "X" then needs Y, Z and something else to actually compile, then that 
-> Kconfig file should DAMN WELL use "select". Stop claiming anything else!
+Hi all,
 
-Disagree.  The UI app should handle this and ask the user if it's okay
-to proceed to enable that option along with the others.
+Follows is a series of patches to use ARRAY_SIZE macro in the video drivers
+located under /drivers/media/video.
+Patches are test compiled and can be applied cleanly on 2.6.20
 
-All we should be doing in the Kconfig files is describing the
-dependencies for user-visible symbols.  If we want to allow the
-user to enable something, it's up to the UI _itself_ to sort out the
-dependencies.
+ cpia2/cpia2_v4l.c             |    9 +++++----
+ ov7670.c                      |    7 ++++---
+ pvrusb2/pvrusb2-audio.c       |   10 ++++------
+ pvrusb2/pvrusb2-ctrl.c        |    4 ++--
+ pvrusb2/pvrusb2-cx2584x-v4l.c |   10 ++++------
+ pvrusb2/pvrusb2-debugifc.c    |    5 +++--
+ pvrusb2/pvrusb2-eeprom.c      |    3 ++-
+ pvrusb2/pvrusb2-hdw.c         |    3 ++-
+ tveeprom.c                    |    6 +++---
+ tvp5150.c                     |    3 ++-
+ usbvideo/quickcam_messenger.c |    2 +-
+ 11 files changed, 32 insertions(+), 30 deletions(-)
 
-Principle of least surprise.  Principle of giving the user control.
-
-As I say at the moment throwing "select" is just moving the bloody
-problem around.  It's not actually _solving_ anything, and anyone
-who thinks otherwise is a nutcase!
-
+Thanks,
 -- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+Ahmed S. Darwish
+http://darwish-07.blogspot.com
