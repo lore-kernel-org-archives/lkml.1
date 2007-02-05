@@ -1,125 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933198AbXBES0v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933235AbXBES1x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933198AbXBES0v (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 13:26:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933199AbXBES0u
+	id S933235AbXBES1x (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 13:27:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933254AbXBES1h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 13:26:50 -0500
-Received: from mx2.suse.de ([195.135.220.15]:47832 "EHLO mx2.suse.de"
+	Mon, 5 Feb 2007 13:27:37 -0500
+Received: from mx1.suse.de ([195.135.220.2]:43531 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933195AbXBES0q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 13:26:46 -0500
+	id S933235AbXBES13 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Feb 2007 13:27:29 -0500
 From: Tony Jones <tonyj@suse.de>
 To: linux-kernel@vger.kernel.org
 Cc: linux-fsdevel@vger.kernel.org, chrisw@sous-sol.org,
        Tony Jones <tonyj@suse.de>, linux-security-module@vger.kernel.org,
        agruen@suse.de
-Date: Mon, 05 Feb 2007 10:25:49 -0800
-Message-Id: <20070205182549.12164.54830.sendpatchset@ermintrude.int.wirex.com>
+Date: Mon, 05 Feb 2007 10:26:30 -0800
+Message-Id: <20070205182630.12164.23895.sendpatchset@ermintrude.int.wirex.com>
 In-Reply-To: <20070205182213.12164.40927.sendpatchset@ermintrude.int.wirex.com>
 References: <20070205182213.12164.40927.sendpatchset@ermintrude.int.wirex.com>
-Subject: [RFC 23/28] Add a struct vfsmount parameter to vfs_getxattr()
+Subject: [RFC 28/28] Pass struct vfsmount to the inode_removexattr LSM hook
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add a struct vfsmount parameter to vfs_getxattr()
+Pass struct vfsmount to the inode_removexattr LSM hook
 
 Signed-off-by: Tony Jones <tonyj@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 
-Index: linux-2.6/fs/nfsd/vfs.c
-===================================================================
---- linux-2.6.orig/fs/nfsd/vfs.c
-+++ linux-2.6/fs/nfsd/vfs.c
-@@ -382,7 +382,7 @@ static ssize_t nfsd_getxattr(struct dent
- {
- 	ssize_t buflen;
- 
--	buflen = vfs_getxattr(dentry, key, NULL, 0);
-+	buflen = vfs_getxattr(dentry, NULL, key, NULL, 0);
- 	if (buflen <= 0)
- 		return buflen;
- 
-@@ -390,7 +390,7 @@ static ssize_t nfsd_getxattr(struct dent
- 	if (!*buf)
- 		return -ENOMEM;
- 
--	return vfs_getxattr(dentry, key, *buf, buflen);
-+	return vfs_getxattr(dentry, NULL, key, *buf, buflen);
- }
- #endif
- 
 Index: linux-2.6/fs/xattr.c
 ===================================================================
 --- linux-2.6.orig/fs/xattr.c
 +++ linux-2.6/fs/xattr.c
-@@ -107,7 +107,8 @@ out:
- EXPORT_SYMBOL_GPL(vfs_setxattr);
- 
- ssize_t
--vfs_getxattr(struct dentry *dentry, char *name, void *value, size_t size)
-+vfs_getxattr(struct dentry *dentry, struct vfsmount *mnt, char *name,
-+	     void *value, size_t size)
- {
- 	struct inode *inode = dentry->d_inode;
- 	int error;
-@@ -279,7 +280,8 @@ sys_fsetxattr(int fd, char __user *name,
-  * Extended attribute GET operations
-  */
- static ssize_t
--getxattr(struct dentry *d, char __user *name, void __user *value, size_t size)
-+getxattr(struct dentry *dentry, struct vfsmount *mnt, char __user *name,
-+	 void __user *value, size_t size)
- {
- 	ssize_t error;
- 	void *kvalue = NULL;
-@@ -299,7 +301,7 @@ getxattr(struct dentry *d, char __user *
- 			return -ENOMEM;
- 	}
- 
--	error = vfs_getxattr(d, kname, kvalue, size);
-+	error = vfs_getxattr(dentry, mnt, kname, kvalue, size);
- 	if (error > 0) {
- 		if (size && copy_to_user(value, kvalue, error))
- 			error = -EFAULT;
-@@ -322,7 +324,7 @@ sys_getxattr(char __user *path, char __u
- 	error = user_path_walk(path, &nd);
+@@ -178,7 +178,7 @@ vfs_removexattr(struct dentry *dentry, s
  	if (error)
  		return error;
--	error = getxattr(nd.dentry, name, value, size);
-+	error = getxattr(nd.dentry, nd.mnt, name, value, size);
- 	path_release(&nd);
- 	return error;
- }
-@@ -337,7 +339,7 @@ sys_lgetxattr(char __user *path, char __
- 	error = user_path_walk_link(path, &nd);
+ 
+-	error = security_inode_removexattr(dentry, name);
++	error = security_inode_removexattr(dentry, mnt, name);
  	if (error)
  		return error;
--	error = getxattr(nd.dentry, name, value, size);
-+	error = getxattr(nd.dentry, nd.mnt, name, value, size);
- 	path_release(&nd);
- 	return error;
- }
-@@ -351,7 +353,7 @@ sys_fgetxattr(int fd, char __user *name,
- 	f = fget(fd);
- 	if (!f)
- 		return error;
--	error = getxattr(f->f_path.dentry, name, value, size);
-+	error = getxattr(f->f_path.dentry, f->f_path.mnt, name, value, size);
- 	fput(f);
- 	return error;
- }
-Index: linux-2.6/include/linux/xattr.h
+ 
+Index: linux-2.6/include/linux/security.h
 ===================================================================
---- linux-2.6.orig/include/linux/xattr.h
-+++ linux-2.6/include/linux/xattr.h
-@@ -40,7 +40,8 @@ struct xattr_handler {
- 		   size_t size, int flags);
- };
+--- linux-2.6.orig/include/linux/security.h
++++ linux-2.6/include/linux/security.h
+@@ -50,7 +50,7 @@ extern int cap_bprm_set_security (struct
+ extern void cap_bprm_apply_creds (struct linux_binprm *bprm, int unsafe);
+ extern int cap_bprm_secureexec(struct linux_binprm *bprm);
+ extern int cap_inode_setxattr(struct dentry *dentry, struct vfsmount *mnt, char *name, void *value, size_t size, int flags);
+-extern int cap_inode_removexattr(struct dentry *dentry, char *name);
++extern int cap_inode_removexattr(struct dentry *dentry, struct vfsmount *mnt, char *name);
+ extern int cap_task_post_setuid (uid_t old_ruid, uid_t old_euid, uid_t old_suid, int flags);
+ extern void cap_task_reparent_to_init (struct task_struct *p);
+ extern int cap_syslog (int type);
+@@ -1251,7 +1251,8 @@ struct security_operations {
+ 	int (*inode_getxattr) (struct dentry *dentry, struct vfsmount *mnt,
+ 			       char *name);
+ 	int (*inode_listxattr) (struct dentry *dentry, struct vfsmount *mnt);
+-	int (*inode_removexattr) (struct dentry *dentry, char *name);
++	int (*inode_removexattr) (struct dentry *dentry, struct vfsmount *mnt,
++				  char *name);
+ 	const char *(*inode_xattr_getsuffix) (void);
+   	int (*inode_getsecurity)(const struct inode *inode, const char *name, void *buffer, size_t size, int err);
+   	int (*inode_setsecurity)(struct inode *inode, const char *name, const void *value, size_t size, int flags);
+@@ -1799,11 +1800,12 @@ static inline int security_inode_listxat
+ 	return security_ops->inode_listxattr (dentry, mnt);
+ }
  
--ssize_t vfs_getxattr(struct dentry *, char *, void *, size_t);
-+ssize_t vfs_getxattr(struct dentry *, struct vfsmount *, char *, void *,
-+		     size_t);
- ssize_t vfs_listxattr(struct dentry *d, char *list, size_t size);
- int vfs_setxattr(struct dentry *, struct vfsmount *, char *, void *, size_t,
- 		 int);
+-static inline int security_inode_removexattr (struct dentry *dentry, char *name)
++static inline int security_inode_removexattr (struct dentry *dentry,
++					      struct vfsmount *mnt, char *name)
+ {
+ 	if (unlikely (IS_PRIVATE (dentry->d_inode)))
+ 		return 0;
+-	return security_ops->inode_removexattr (dentry, name);
++	return security_ops->inode_removexattr (dentry, mnt, name);
+ }
+ 
+ static inline const char *security_inode_xattr_getsuffix(void)
+@@ -2502,9 +2504,10 @@ static inline int security_inode_listxat
+ 	return 0;
+ }
+ 
+-static inline int security_inode_removexattr (struct dentry *dentry, char *name)
++static inline int security_inode_removexattr (struct dentry *dentry,
++					      struct vfsmount *mnt, char *name)
+ {
+-	return cap_inode_removexattr(dentry, name);
++	return cap_inode_removexattr(dentry, mnt, name);
+ }
+ 
+ static inline const char *security_inode_xattr_getsuffix (void)
+Index: linux-2.6/security/commoncap.c
+===================================================================
+--- linux-2.6.orig/security/commoncap.c
++++ linux-2.6/security/commoncap.c
+@@ -201,7 +201,8 @@ int cap_inode_setxattr(struct dentry *de
+ 	return 0;
+ }
+ 
+-int cap_inode_removexattr(struct dentry *dentry, char *name)
++int cap_inode_removexattr(struct dentry *dentry, struct vfsmount *mnt,
++			  char *name)
+ {
+ 	if (!strncmp(name, XATTR_SECURITY_PREFIX,
+ 		     sizeof(XATTR_SECURITY_PREFIX) - 1)  &&
+Index: linux-2.6/security/dummy.c
+===================================================================
+--- linux-2.6.orig/security/dummy.c
++++ linux-2.6/security/dummy.c
+@@ -379,7 +379,8 @@ static int dummy_inode_listxattr (struct
+ 	return 0;
+ }
+ 
+-static int dummy_inode_removexattr (struct dentry *dentry, char *name)
++static int dummy_inode_removexattr (struct dentry *dentry, struct vfsmount *mnt,
++				    char *name)
+ {
+ 	if (!strncmp(name, XATTR_SECURITY_PREFIX,
+ 		     sizeof(XATTR_SECURITY_PREFIX) - 1) &&
+Index: linux-2.6/security/selinux/hooks.c
+===================================================================
+--- linux-2.6.orig/security/selinux/hooks.c
++++ linux-2.6/security/selinux/hooks.c
+@@ -2363,7 +2363,8 @@ static int selinux_inode_listxattr (stru
+ 	return dentry_has_perm(current, NULL, dentry, FILE__GETATTR);
+ }
+ 
+-static int selinux_inode_removexattr (struct dentry *dentry, char *name)
++static int selinux_inode_removexattr (struct dentry *dentry,
++				      struct vfsmount *mnt, char *name)
+ {
+ 	if (strcmp(name, XATTR_NAME_SELINUX)) {
+ 		if (!strncmp(name, XATTR_SECURITY_PREFIX,
