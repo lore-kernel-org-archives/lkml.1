@@ -1,46 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933174AbXBEUWH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933303AbXBEUWQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933174AbXBEUWH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 15:22:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933303AbXBEUWH
+	id S933303AbXBEUWQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 15:22:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933309AbXBEUWP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 15:22:07 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:42182 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933174AbXBEUWF (ORCPT
+	Mon, 5 Feb 2007 15:22:15 -0500
+Received: from nf-out-0910.google.com ([64.233.182.186]:2351 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933303AbXBEUWK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 15:22:05 -0500
-In-Reply-To: <Pine.LNX.4.64.0702051147100.14453@alien.or.mcafeemobile.com>
-References: <patchbomb.1170193181@tetsuo.zabbo.net> <df7bc026d50ec5bbdd8e.1170193183@tetsuo.zabbo.net> <20070201083611.GC18233@elte.hu> <Pine.LNX.4.64.0702011154110.3632@woody.linux-foundation.org> <20070202104900.GA13941@elte.hu> <Pine.LNX.4.64.0702020738500.15057@woody.linux-foundation.org> <20070202222110.GA1212@elte.hu> <Pine.LNX.4.64.0702021445410.15057@woody.linux-foundation.org> <20070202235531.GA18904@elte.hu> <Pine.LNX.4.64.0702021636410.15057@woody.linux-foundation.org> <20070203082308.GA6748@elte.hu> <B27B1E97-10E3-4A60-A476-4ED4173481A5@oracle.com> <Pine.LNX.4.64.0702051121420.14453@alien.or.mcafeemobile.com> <8CF4BE18-8EEF-4ACA-A4B4-B627ED3B4831@oracle.com> <Pine.LNX.4.64.0702051147100.14453@alien.or.mcafeemobile.com>
-Mime-Version: 1.0 (Apple Message framework v752.3)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <22734C32-BC8C-49E8-B6EB-E150B916323E@oracle.com>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-aio@kvack.org, Suparna Bhattacharya <suparna@in.ibm.com>,
-       Benjamin LaHaise <bcrl@kvack.org>
-Content-Transfer-Encoding: 7bit
-From: Zach Brown <zach.brown@oracle.com>
-Subject: Re: [PATCH 2 of 4] Introduce i386 fibril scheduling
-Date: Mon, 5 Feb 2007 15:21:31 -0500
-To: Davide Libenzi <davidel@xmailserver.org>
-X-Mailer: Apple Mail (2.752.3)
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
+	Mon, 5 Feb 2007 15:22:10 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=O4SY56D3oPAsT1mxPeQCCQUtKGHWRgNCdEwUrVenYdmTUDk3k/WMkQ8Yd3Y8TQhrznorFPmBG38TLhyx1KfaDQmu8jH+JZYqSZ5nuyyOEk9MsEj32na/BFK2YhJPIKRrPVYwlS9bfPLvDwHti8w3Y8NUp+QkiIlu0qFRemQwXTM=
+Date: Mon, 5 Feb 2007 23:22:06 +0300
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: "Ahmed S. Darwish" <darwish.07@gmail.com>
+Cc: ebs@ebshome.net, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       linuxppc-embedded@ozlabs.org
+Subject: Re: [PATCH 2.6.20] ibm_emac: Use ARRAY_SIZE macro when appropriate
+Message-ID: <20070205202206.GD11055@martell.zuzino.mipt.ru>
+References: <20070205165429.GD3896@Ahmed> <20070205165916.GK3896@Ahmed>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070205165916.GK3896@Ahmed>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> No, that's *really* it ;)
+On Mon, Feb 05, 2007 at 06:59:16PM +0200, Ahmed S. Darwish wrote:
+> A patch to use ARRAY_SIZE macro already defined in kernel.h.
 
-For syscalls, sure.
+OK, but checks you're changing are strange. idx there is signed so
 
-The kevent work incorporates Uli's desire to have more data per  
-event.  Have you read his OLS stuff?  It's been a while since I did  
-so I've lost the details of why he cares to have more.
+	BUG_ON(idx < 0 || idx > ARRAY_SIZE());
 
-Let me say it again, maybe a little louder this time:  I'm not  
-interested in worrying about this aspect of the API until the  
-scheduler mechanics are more solidified.
+should be more appropriate.
 
-- z
+> --- a/drivers/net/ibm_emac/ibm_emac_debug.c
+> +++ b/drivers/net/ibm_emac/ibm_emac_debug.c
+> @@ -132,7 +132,7 @@ void emac_dbg_register(int idx, struct ocp_enet_private *dev)
+>  {
+>  	unsigned long flags;
+>  
+> -	if (idx >= sizeof(__emacs) / sizeof(__emacs[0])) {
+> +	if (idx >= ARRAY_SIZE(__emacs)) {
+
+no __vi, no cookie. :)
+
+>  		printk(KERN_WARNING
+>  		       "invalid index %d when registering EMAC for debugging\n",
+>  		       idx);
+> @@ -148,7 +148,7 @@ void mal_dbg_register(int idx, struct ibm_ocp_mal *mal)
+>  {
+>  	unsigned long flags;
+>  
+> -	if (idx >= sizeof(__mals) / sizeof(__mals[0])) {
+> +	if (idx >= ARRAY_SIZE(__mals)) {
+>  		printk(KERN_WARNING
+>  		       "invalid index %d when registering MAL for debugging\n",
+>  		       idx);
+
