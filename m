@@ -1,51 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752680AbXBEDEy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752683AbXBEDT1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752680AbXBEDEy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Feb 2007 22:04:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752681AbXBEDEy
+	id S1752683AbXBEDT1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Feb 2007 22:19:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752684AbXBEDT1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Feb 2007 22:04:54 -0500
-Received: from wr-out-0506.google.com ([64.233.184.229]:30951 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752680AbXBEDEx (ORCPT
+	Sun, 4 Feb 2007 22:19:27 -0500
+Received: from mtiwmhc11.worldnet.att.net ([204.127.131.115]:37299 "EHLO
+	mtiwmhc11.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752683AbXBEDT0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Feb 2007 22:04:53 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=N7RgsqWg026kZXTlNoU+6YZYnP7GU8seaCmHVioqv8t1SZlZBF+xw0EWWhrnWJvPp5LyAq7/rCsqBA3Snhbwd0fMqakl5ed9BsyX3CDpwZm8ZPT/y3rNKWxZnnzfyittSbsgr8d+Vf3VGYsat9fsFX4a7lkaRB1hzv+Dsa5PyOo=
-Message-ID: <3877989d0702041904w1b57bb1dufbb731d2823d0b64@mail.gmail.com>
-Date: Mon, 5 Feb 2007 11:04:52 +0800
-From: "Luming Yu" <luming.yu@gmail.com>
-To: "Manu Abraham" <abraham.manu@gmail.com>
-Subject: Re: 2.6.20 PCI Cannot allocate resource region 2
-Cc: linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
-       greg@kroah.com, "Andrew Morton" <akpm@osdl.org>
-In-Reply-To: <1a297b360702041709l3b0309c7y8fcd33df1d487889@mail.gmail.com>
+	Sun, 4 Feb 2007 22:19:26 -0500
+Message-ID: <45C6A23A.8010305@lwfinger.net>
+Date: Sun, 04 Feb 2007 21:19:22 -0600
+From: Larry Finger <larry.finger@lwfinger.net>
+User-Agent: Thunderbird 1.5.0.9 (X11/20060911)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: bcm43xx-dev@lists.berlios.de,
+       roucaries bastien <roucaries.bastien@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
+       Matthew Garrett <mjg59@srcf.ucam.org>
+Subject: Re: Bcm43xx oops after suspend to disk
+References: <45B92488.6090908@lwfinger.net>	<195c7a900702040907y8b8eff0gc8b0bbddd79a6792@mail.gmail.com>	<45C61B09.7010102@lwfinger.net> <200702050210.06009.rjw@sisk.pl>
+In-Reply-To: <200702050210.06009.rjw@sisk.pl>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1a297b360702041709l3b0309c7y8fcd33df1d487889@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/5/07, Manu Abraham <abraham.manu@gmail.com> wrote:
-> Hi,
->
-> I get this error on booting up 2.6.20 (Similar error on 2.6.17.7 also,
-> the message is slightly different in 2.6.17.7)
->
-> PCI Cannot allocate resource region 2 of device 0000:02:0a.0
-Just did a search about this message around the kernel source tree.
-The interesting thing is that I see the following comments at several
-different arch/drivers files. Is it related to your problem?
+Rafael J. Wysocki wrote:
+> On Sunday, 4 February 2007 18:42, Larry Finger wrote:
+>> roucaries bastien wrote:
+>>> Sorry for the delay it works. This time I can use iwlist eth scan.
+>>> I have some difficulties to associate and I need to rmmod/modprobe in
+>>> order to associate but it is another problem linked to a really weak
+>>> power.
+>> Bastien,
+>>
+>> Please try this patch instead.
+> 
+> Hm, it doesn't seem to apply to the mainline version of the driver.  Any chance
+> for a fix against 2.6.20?
 
- *  Known BIOS problems we have to work around:
- *      - I/O or memory regions not configured
- *      - regions configured, but not enabled in the command register
- *      - bogus I/O addresses above 64K used
-  *      - expansion ROMs left enabled (this may sound harmless, but given
-  *        the fact the PCI specs explicitly allow address decoders to be
-  *        shared between expansion ROMs and other resource regions, it's
- *        at least dangerous)
+Please try this one. I forgot about some other stuff in my working copy of wireless-2.6.
+
+Larry
+
+============
+
+Index: linux-2.6/drivers/net/wireless/bcm43xx/bcm43xx_main.c
+===================================================================
+--- linux-2.6.orig/drivers/net/wireless/bcm43xx/bcm43xx_main.c
++++ linux-2.6/drivers/net/wireless/bcm43xx/bcm43xx_main.c
+@@ -3617,6 +3617,7 @@ error:
+ static int bcm43xx_init_board(struct bcm43xx_private *bcm)
+ {
+ 	int err;
++	struct bcm43xx_phyinfo *phy = bcm43xx_current_phy(bcm);
+
+ 	mutex_lock(&(bcm)->mutex);
+
+@@ -3637,6 +3638,8 @@ static int bcm43xx_init_board(struct bcm
+ 	if (err)
+ 		goto err_sysfs_unreg;
+ 	bcm43xx_periodic_tasks_setup(bcm);
++	/* force initial LO calibration */
++	phy->lo_control->txctl2 = 0xFFFF;
+
+ 	/*FIXME: This should be handled by softmac instead. */
+ 	schedule_delayed_work(&bcm->softmac->associnfo.work, 0);
