@@ -1,86 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965034AbXBEXJg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965059AbXBEXVY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965034AbXBEXJg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 18:09:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965041AbXBEXJg
+	id S965059AbXBEXVY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 18:21:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965065AbXBEXVY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 18:09:36 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:38289 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965034AbXBEXJf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 18:09:35 -0500
-Date: Mon, 5 Feb 2007 15:09:15 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-cc: David Woodhouse <dwmw2@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [patch] MTD: fix DOC2000/2001/2001PLUS build error
-In-Reply-To: <20070205143110.fca62b57.randy.dunlap@oracle.com>
-Message-ID: <Pine.LNX.4.64.0702051502370.8424@woody.linux-foundation.org>
-References: <Pine.LNX.4.64.0702041057090.8424@woody.linux-foundation.org>
- <20070205084523.GA21858@elte.hu> <1170682488.29759.795.camel@pmac.infradead.org>
- <20070205155627.GA8354@elte.hu> <1170692539.29759.856.camel@pmac.infradead.org>
- <20070205162635.GA755@elte.hu> <20070205163152.GA2464@elte.hu>
- <Pine.LNX.4.64.0702050852160.8424@woody.linux-foundation.org>
- <1170710272.29759.894.camel@pmac.infradead.org>
- <Pine.LNX.4.64.0702051322580.8424@woody.linux-foundation.org>
- <1170711587.29759.909.camel@pmac.infradead.org>
- <Pine.LNX.4.64.0702051345380.8424@woody.linux-foundation.org>
- <1170712393.29759.925.camel@pmac.infradead.org>
- <Pine.LNX.4.64.0702051409110.8424@woody.linux-foundation.org>
- <20070205143110.fca62b57.randy.dunlap@oracle.com>
+	Mon, 5 Feb 2007 18:21:24 -0500
+Received: from wx-out-0506.google.com ([66.249.82.232]:34881 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965059AbXBEXVX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Feb 2007 18:21:23 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=G570d9PfT99r9Xuu/jy82DdQBtibWFUJBKmb3U+PTyBO/lU2nfjjaPZNk8wzclI2Y/m8xQA7zsz26O2MGA8KUb3JhLfTwSM6CdaswDLl29wu3yKbBkNISYiMe1/L5LLs28m46avVBZsZZ7DQCv8C5wTcdRd6ai7BZ4gw9EIxk8U=
+Message-ID: <e6babb600702051521l4a08eb2dw2a7f423fd0d7edd7@mail.gmail.com>
+Date: Mon, 5 Feb 2007 16:21:22 -0700
+From: "Robert Crocombe" <rcrocomb@gmail.com>
+To: linux1394-devel <linux1394-devel@lists.sourceforge.net>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: ohci1394 broke 2.6.19 -> 2.6.20-rc1
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Prior to testing a patch for bugzilla bug 7569 (hosts lost on bus
+reset), I wanted to reproduce the behavior.  I can under the noted
+2.6.16-blah kernels, but moving to anything more recent than 2.6.19
+means ohci1394 is non-functional (no 1394 hosts are detected) and the
+module cannot be removed.
 
+I have narrowed it down to 2.6.19 works, 2.6.20-rc1 doesn't.  Lots of detail at:
 
-On Mon, 5 Feb 2007, Randy Dunlap wrote:
->
-> I think the problem is "who is make *config" for?".
+http://bugzilla.kernel.org/show_bug.cgi?id=7942
 
-Absolutely.
-
-> Linus wants it to be for (unadvanced) users, but they tend to just
-> use distro kernels and distro configs, according to David, and I
-> agree with that.
-
-Well, the thing is, according to that logic, we might as well go back to 
-the pre-Kconfig language entirely. 
-
-I want people to feel that compiling their own kernel is *simple*.
-
-I also feel that a lot of people are "advanced" in one area, but not 
-necessarily in another. The Netfilter example I gave was one such personal 
-gripe of mine. I just feel like I shouldn't need to care! Yeah, I have the 
-knowledge, but I *still* want to be baby-fed with just a simple "anybody 
-can understand it".
-
-The same is true of the whole SATA/USB/SCSI thing. I know damn well that 
-the kernel uses the SCSI layer for USB and SATA, yet I feel that the ATA 
-layer does it right, and I just find the USB storage situation to be 
-*offensively* bad in this regard. Why the HELL does it have those big 
-comments and warnings, when it could just damn well enable SCSI support 
-itself?
-
-So even advanced users aren't necessarily advanced outside their own 
-area of expertise (I have no clue what I2C crud I'd need for some DVB 
-card or even regular video card - or even *if* I need it). And even when 
-they are advanced, they don't mind simple questions.
-
-This is not something where it's "good to be hard to use" (if those things 
-even exist anywhere else either..)
-
-> > Claiming that "select" is evil is just totally strange.
-> 
-> It's a real problem for developers who actually try to modify
-> configs.
-
-Why? You could *trivially* have a tool tell you. Make "xconfig" or 
-something just pop up a window saying "sorry, you can't disable SCSI, 
-because you've got ATA enabled, and ATA wants SCSI".
-
-What's the big deal, here?
-
-			Linus
+-- 
+Robert Crocombe
