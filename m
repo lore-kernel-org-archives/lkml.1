@@ -1,55 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751649AbXBEQzy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751826AbXBEQ41@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751649AbXBEQzy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 11:55:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751761AbXBEQzy
+	id S1751826AbXBEQ41 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 11:56:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751798AbXBEQ41
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 11:55:54 -0500
-Received: from an-out-0708.google.com ([209.85.132.246]:40423 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751649AbXBEQzv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 11:55:51 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:to:cc:subject:message-id:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
-        b=XOvEcfRC96dKQTBUZEZZ/5+AAxF1lMaMDOp2atgU9tBBWHdsTW8QZhcca29v1pXaRrfrlzntPoAMvLuOJLSNx+c/UtECcUnx2eU/2mTTFF6BM990BogwOj0HwQRUVgaxRkkm0cPUvD9R49wH/Q6jZmWLgnudSKQHANAzTMVxQZM=
-Date: Mon, 5 Feb 2007 18:55:46 +0200
-To: cramerj@intel.com, john.ronciak@intel.com
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: [PATCH 2.6.20] e1000: Use ARRAY_SIZE macro when appropriate
-Message-ID: <20070205165546.GE3896@Ahmed>
-MIME-Version: 1.0
+	Mon, 5 Feb 2007 11:56:27 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:43395 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751812AbXBEQ40 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Feb 2007 11:56:26 -0500
+Date: Mon, 5 Feb 2007 17:52:33 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: David Woodhouse <dwmw2@infradead.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [patch] MTD: fix DOC2000/2001/2001PLUS build error
+Message-ID: <20070205165233.GA4781@elte.hu>
+References: <Pine.LNX.4.64.0702041057090.8424@woody.linux-foundation.org> <20070205084523.GA21858@elte.hu> <1170682488.29759.795.camel@pmac.infradead.org> <20070205155627.GA8354@elte.hu> <1170692539.29759.856.camel@pmac.infradead.org> <20070205162635.GA755@elte.hu> <20070205164603.GC4563@flint.arm.linux.org.uk>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070205165429.GD3896@Ahmed>
-User-Agent: Mutt/1.5.11
-From: "Ahmed S. Darwish" <darwish.07@gmail.com>
+In-Reply-To: <20070205164603.GC4563@flint.arm.linux.org.uk>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -5.3
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-5.3 required=5.9 tests=ALL_TRUSTED,BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-3.3 ALL_TRUSTED            Did not pass through any untrusted hosts
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-A patch to use ARRAY_SIZE macro already defined in kernel.h.
+* Russell King <rmk+lkml@arm.linux.org.uk> wrote:
 
-Signed-off-by: Ahmed S. Darwish <darwish.07@gmail.com>
----
-Patch is compile tested.
+> and the rest (ie, except integrator, versatile and ixp4xx) has:
+> 
+> config ARCH_SHARK
+>         bool "Shark"
+>         select PCI
+> 
+> IOW, the "PCI support" question isn't offered for platforms which 
+> require PCI to be present, but is offered on platforms where it's 
+> optional.
 
-diff --git a/drivers/net/e1000/e1000_ethtool.c b/drivers/net/e1000/e1000_ethtool.c
-index fb96c87..d21706e 100644
---- a/drivers/net/e1000/e1000_ethtool.c
-+++ b/drivers/net/e1000/e1000_ethtool.c
-@@ -746,7 +746,7 @@ err_setup:
- 	uint32_t pat, value;                                                   \
- 	uint32_t test[] =                                                      \
- 		{0x5A5A5A5A, 0xA5A5A5A5, 0x00000000, 0xFFFFFFFF};              \
--	for (pat = 0; pat < sizeof(test)/sizeof(test[0]); pat++) {              \
-+	for (pat = 0; pat < ARRAY_SIZE(test); pat++) {              \
- 		E1000_WRITE_REG(&adapter->hw, R, (test[pat] & W));             \
- 		value = E1000_READ_REG(&adapter->hw, R);                       \
- 		if (value != (test[pat] & W & M)) {                             \
+yeah. I think this also fits into the special-case i mentioned: it isnt 
+connected to something user-selectable, it's a side-effect of the first 
+'feature selection' the user does: 'what platform do you compile your 
+kernel on'. As such it is a convenience group-selection.
 
--- 
-Ahmed S. Darwish
-http://darwish-07.blogspot.com
+i.e. what we have behind this is still a clean tree of dependencies.
+
+The mess begins i think when options with real code behind them start to 
+grow back and forth dependencies in form of criss-crossing 'depends on' 
+and 'select' instances.
+
+	Ingo
