@@ -1,103 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964928AbXBEWhB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964786AbXBEWvU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964928AbXBEWhB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 17:37:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965014AbXBEWhB
+	id S964786AbXBEWvU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 17:51:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964830AbXBEWvU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 17:37:01 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:11134 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964928AbXBEWhA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 17:37:00 -0500
-Date: Mon, 5 Feb 2007 14:31:10 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: David Woodhouse <dwmw2@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [patch] MTD: fix DOC2000/2001/2001PLUS build error
-Message-Id: <20070205143110.fca62b57.randy.dunlap@oracle.com>
-In-Reply-To: <Pine.LNX.4.64.0702051409110.8424@woody.linux-foundation.org>
-References: <Pine.LNX.4.64.0702041057090.8424@woody.linux-foundation.org>
-	<20070205084523.GA21858@elte.hu>
-	<1170682488.29759.795.camel@pmac.infradead.org>
-	<20070205155627.GA8354@elte.hu>
-	<1170692539.29759.856.camel@pmac.infradead.org>
-	<20070205162635.GA755@elte.hu>
-	<20070205163152.GA2464@elte.hu>
-	<Pine.LNX.4.64.0702050852160.8424@woody.linux-foundation.org>
-	<1170710272.29759.894.camel@pmac.infradead.org>
-	<Pine.LNX.4.64.0702051322580.8424@woody.linux-foundation.org>
-	<1170711587.29759.909.camel@pmac.infradead.org>
-	<Pine.LNX.4.64.0702051345380.8424@woody.linux-foundation.org>
-	<1170712393.29759.925.camel@pmac.infradead.org>
-	<Pine.LNX.4.64.0702051409110.8424@woody.linux-foundation.org>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.0 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 5 Feb 2007 17:51:20 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:46332 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S964786AbXBEWvT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Feb 2007 17:51:19 -0500
+Message-ID: <45C7B4E3.8070802@garzik.org>
+Date: Mon, 05 Feb 2007 17:51:15 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
+MIME-Version: 1.0
+To: Oleg Verych <olecom@flower.upol.cz>
+CC: Alan <alan@lxorguk.ukuu.org.uk>, Allen Martin <AMartin@nvidia.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: Re: Nvidia cable detection problems & ACPI (beware, slight off-top)
+References: <45C72012.7050605@gmail.com> <20070205132247.6f611e3c@localhost.localdomain> <45C73A3E.6080700@gmail.com> <20070205143439.6962c076@localhost.localdomain> <45C7444F.4070500@gmail.com> <58cb370e0702050709w1b7682dr5dff9e7ce69465a@mail.gmail.com> <DBFABB80F7FD3143A911F9E6CFD477B01EC0DD7D@hqemmail02.nvidia.com> <E1HEB7U-0007IH-FV@flower> <20070205220442.6e13a7b6@localhost.localdomain> <45C7A7D0.407@garzik.org> <20070205224235.GB28048@flower.upol.cz>
+In-Reply-To: <20070205224235.GB28048@flower.upol.cz>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.7 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 5 Feb 2007 14:21:41 -0800 (PST) Linus Torvalds wrote:
+Oleg Verych wrote:
+>> We also need ACPI, where available, because that's the only way to 
+>> obtain a BIOS-set hard drive password.
+> 
+> Plain-text passwords -- i don't actually know, if they are useful at all.
+> What if BIOS has admin/user passwords set?
+> (kernel: if you have BIOS password, press RESET; if you don't press POWER ;)
 
-> On Mon, 5 Feb 2007, David Woodhouse wrote:
-> >
-> > Ten years ago, people used 'depends on' to fix the tools, so that then
-> > you want to enable something like USB_STORAGE, it can automatically turn
-> > SCSI on for you.
-> > 
-> > Isn't that what you wanted?
-> 
-> Try it. It's not what it does. 
-> 
-> If you have a 
-> 
-> 	depends on SCSI
-> 
-> and you did not say you wanted SCSI, you'll never even *see* the question.
-> 
-> It will *not* turn on SCSI automatically for you. Quite the reverse. It 
-> will not even show you the option.
-> 
-> In contrast, it you do a
-> 
-> 	select SCSI
-> 
-> you'll see the question, and it will do exactly what you claim "depends 
-> on" does. Which yes, is what we want.
-> 
-> So what's your problem? You argue as if you didn't understand the 
-> difference between "depends on" and "select".
 
-I think the problem is "who is make *config" for?".
+It's not a matter of usefulness, but of accessing data.
 
-David wants it to be for developers (ISTM) and "select" is a
-hassle for us.
+The password must be provided to the hard drive at the ATA command 
+level, otherwise the hard drive will simply refuse to read or write data.
 
-Linus wants it to be for (unadvanced) users, but they tend to just
-use distro kernels and distro configs, according to David, and I
-agree with that.
+	Jeff
 
-So I think that make *config is more for developers and advanced
-(not embedded) users.
 
-> As an example of this, look at SATA. It does "select SCSI" if you select 
-> CONFIG_ATA, _exactly_ because it actually wants to turn on the SCSI layer 
-> *regardless* of what the user said. Because if the user said "n" to SCSI, 
-> the user simply didn't know that the SATA code uses the SCSI code.
-> 
-> Which is an example of what I've been saying all along: "select" makes 
-> sense. USB_STORAGE should have done the same.
-> 
-> Claiming that "select" is evil is just totally strange.
-
-It's a real problem for developers who actually try to modify
-configs.
-
----
-~Randy
