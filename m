@@ -1,71 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751591AbXBEQMr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751641AbXBEQVK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751591AbXBEQMr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 11:12:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751602AbXBEQMr
+	id S1751641AbXBEQVK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 11:21:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751648AbXBEQVK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 11:12:47 -0500
-Received: from caramon.arm.linux.org.uk ([217.147.92.249]:4550 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751567AbXBEQMq (ORCPT
+	Mon, 5 Feb 2007 11:21:10 -0500
+Received: from nz-out-0506.google.com ([64.233.162.237]:46230 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751602AbXBEQVG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 11:12:46 -0500
-Date: Mon, 5 Feb 2007 16:12:27 +0000
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: David Woodhouse <dwmw2@infradead.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [patch] MTD: fix DOC2000/2001/2001PLUS build error
-Message-ID: <20070205161227.GB4563@flint.arm.linux.org.uk>
-Mail-Followup-To: Ingo Molnar <mingo@elte.hu>,
-	David Woodhouse <dwmw2@infradead.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <Pine.LNX.4.64.0702041057090.8424@woody.linux-foundation.org> <20070205084523.GA21858@elte.hu> <1170682488.29759.795.camel@pmac.infradead.org> <20070205155627.GA8354@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 5 Feb 2007 11:21:06 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Jdlouje4XYPyWcAkv6Mwe+hy2153XarFuREqes1Tnzjf9RVzZrsPm9xK4o6QDm2aXC64tl2WUZYJQwdRW+syrNKtKSOCHrbSSETYIxHHwUaod38P8L4g10xC5bEMiW2ZtRcHinmUchjHUo7aFThNi55IigNFeqsH2T/bNPq8L8s=
+Message-ID: <8d158e1f0702050821m53596327hdf20e29a7cd83ab@mail.gmail.com>
+Date: Mon, 5 Feb 2007 17:21:05 +0100
+From: "Patrick Ale" <patrick.ale@gmail.com>
+To: "Robert Hancock" <hancockr@shaw.ca>
+Subject: Re: hdparm for lib_pata
+Cc: Stephen.Clark@seclark.us, linux-kernel@vger.kernel.org
+In-Reply-To: <45C73DD8.7070309@shaw.ca>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070205155627.GA8354@elte.hu>
-User-Agent: Mutt/1.4.2.1i
+References: <fa.L/RjDlo6Njb5Jt7/9ENZuiASoV0@ifi.uio.no>
+	 <45C4DF2A.1070501@shaw.ca> <45C5178A.1000501@seclark.us>
+	 <8d158e1f0702031544h6c5f81c7s3c54a6192255d447@mail.gmail.com>
+	 <45C5249B.8020101@seclark.us>
+	 <8d158e1f0702031618w2249c64x18ad4d2f03ce3c69@mail.gmail.com>
+	 <8d158e1f0702050300s56dd1d9cg76e13b3a13f07de7@mail.gmail.com>
+	 <45C73DD8.7070309@shaw.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 05, 2007 at 04:56:27PM +0100, Ingo Molnar wrote:
-> btw., this whole select problem is not limited to Aunt Tillie: in a 
-> couple of cases in the past few months when i saw some weird code in a 
-> driver and tried to enable it i had to search around for many minutes 
-> and enable random options to figure out its config dependencies until i 
-> had the driver truly enabled. (if there's some easy solution to this 
-> then i'm all ears - but i exclude the easiest solution of adding me to 
-> the 'aunt' category ;-) I think that by blaming Aunt Tillie you might be 
-> missing the real problem.
+On 2/5/07, Robert Hancock <hancockr@shaw.ca> wrote:
+> Patrick Ale wrote:
+> The southbridge usually runs the PCI bus connected to the slots, so it's
+> possible that PCI bus issues were causing problems..
 
-Adding a 'select' statement might solve that particular problem:
-
- "What config symbols do I need to turn on to enable FOO"
-
-but it creates another problem which is at precisely the same level.
-IOW:
-
- "What config symbols do I need to turn off to disable FOO"
-
-Both require the use of grep to solve it.  Both are as bad as each
-other.  'select' only moves the problem - it doesn't actually solve
-anything.
-
-The real problem is that "band-aiding" the problem is all too easy,
-so we just bung a select in.  We're actually storing up bigger problems
-for the future, making the kernel configuration system more and more
-complex, sometimes creating circular dependencies through select/depends,
-basically turning it into something several orders of magnitude worse
-than the original shell scripts.
-
-The only real way I see the problem truely getting solved is if folk
-start standing up against throwing "select" in so there's some
-motivation to actually fix the underlying problem.
-
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+Explains a lot then yeah... okay, if the error occures again I will
+let you know, I am booting up as we speak :)
