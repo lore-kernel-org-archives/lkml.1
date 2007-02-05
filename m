@@ -1,49 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752757AbXBEHMJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752760AbXBEHTf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752757AbXBEHMJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 02:12:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752761AbXBEHMJ
+	id S1752760AbXBEHTf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 02:19:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752761AbXBEHTf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 02:12:09 -0500
-Received: from postman.lauml.com ([205.134.240.66]:35753 "EHLO
-	postman.lauml.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752757AbXBEHMI (ORCPT
+	Mon, 5 Feb 2007 02:19:35 -0500
+Received: from wr-out-0506.google.com ([64.233.184.224]:38141 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752760AbXBEHTe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 02:12:08 -0500
-X-Greylist: delayed 1503 seconds by postgrey-1.27 at vger.kernel.org; Mon, 05 Feb 2007 02:12:08 EST
-Message-ID: <45C6D2C1.5010103@xman.org>
-Date: Sun, 04 Feb 2007 22:46:25 -0800
-From: Christopher Smith <x@xman.org>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061221)
+	Mon, 5 Feb 2007 02:19:34 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=cEK1QbPKnN0gvfDOyI0hmzb5dk3jJ+3XYHJOdoxoR3plxBvL8Eqsy0CF3MoSam5/4xl3VY2r9OVusogA4VaXXQ3A0INZDQLrLFheEC3wMiFzZSAPr6qE49gME6k/VAKFRusIRGiSERHJAZPY3wAFNq7Z0zzmUAgVXQdIDir1SyA=
+Message-ID: <3877989d0702042319x61230492nc0fc1ed0fa3d58a4@mail.gmail.com>
+Date: Mon, 5 Feb 2007 15:19:33 +0800
+From: "Luming Yu" <luming.yu@gmail.com>
+To: "Mike Galbraith" <efault@gmx.de>
+Subject: Re: 2.6.19.2 oops after resume from ram (corruption?)
+Cc: nigel@nigel.suspend2.net, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1170307834.7087.16.camel@Homer.simpson.net>
 MIME-Version: 1.0
-To: Davide Libenzi <davidel@xmailserver.org>
-CC: bert hubert <bert.hubert@netherlabs.nl>,
-       Zach Brown <zach.brown@oracle.com>, Benjamin LaHaise <bcrl@kvack.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-aio@kvack.org, Suparna Bhattacharya <suparna@in.ibm.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: regarding generic AIO, async syscalls precedent + some benchmarks
- by lighttpd
-References: <20070204225541.GA18359@outpost.ds9a.nl> <Pine.LNX.4.64.0702041548480.18633@alien.or.mcafeemobile.com>
-In-Reply-To: <Pine.LNX.4.64.0702041548480.18633@alien.or.mcafeemobile.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1170241008.6512.10.camel@Homer.simpson.net>
+	 <1170279722.5389.19.camel@nigel.suspend2.net>
+	 <1170307834.7087.16.camel@Homer.simpson.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Davide Libenzi wrote:
-> Yes, that is some very interesting data IMO. I did not bench the GUASI 
-> (userspace async thread library) against AIO, but those numbers show that a 
-> *userspace* async syscall wrapper interface performs in the ballpark of AIO.
-> This leads to some hope about the ability to effectively deploy the kernel 
-> generic async AIO (being it fibril or kthreads based) as low-impact async 
-> provider for basically anything.
->   
+On 2/1/07, Mike Galbraith <efault@gmx.de> wrote:
+> On Thu, 2007-02-01 at 08:42 +1100, Nigel Cunningham wrote:
+> > Hi.
+> >
+> > On Wed, 2007-01-31 at 11:56 +0100, Mike Galbraith wrote:
+> > > Greetings,
+> > >
+> > > I received the below upon first poke of firefox icon after a resume.
+> >
+> > Are you able to reproduce it reliably? Failing that, could you try
+> > enabling some the kernel configuration options that help with debugging
+> > memory corruption (slab corruption checking in particular will probably
+> > be the most useful thing here).
+>
+> No, it's a never before seen event.  That said, I have had a couple of
+> dead box after resume events with other kernels in the last few months,
+> so I may have had corruption of a more deadly variety.  Unfortunately,
+> when I'm resuming, my serial console box is almost guaranteed to be off.
 
-SGI's kaio patch to linux kind of went that route (using kthreads) for 
-non-SCSI async IO. It wasn't a bad way to go, but at least for 
-disk-based access they achieved much better results when they could go 
-right to the hardware.
-
---Chris
+if you have dead serial console, or no serial console at all on you
+laptop. Probably you can try the alternative of firewire with
+http://www.suse.de/~bk/firewire/
+Ah,  linux S3 resume is still a problem.
