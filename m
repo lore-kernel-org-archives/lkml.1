@@ -1,72 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752774AbXBEHs3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752715AbXBEHvz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752774AbXBEHs3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 02:48:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752773AbXBEHs3
+	id S1752715AbXBEHvz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 02:51:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752766AbXBEHvz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 02:48:29 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:47430 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752772AbXBEHs2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 02:48:28 -0500
-Date: Mon, 5 Feb 2007 07:56:36 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: linux-kernel@vger.kernel.org
-Cc: linux-rt-users@vger.kernel.org
-Subject: v2.6.20-rt1, yum/rpm
-Message-ID: <20070205065636.GA1652@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -3.8
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-3.8 required=5.9 tests=ALL_TRUSTED,BAYES_20 autolearn=no SpamAssassin version=3.0.3
-	-3.3 ALL_TRUSTED            Did not pass through any untrusted hosts
-	-0.5 BAYES_20               BODY: Bayesian spam probability is 5 to 20%
-	[score: 0.1746]
+	Mon, 5 Feb 2007 02:51:55 -0500
+Received: from mail.velocitynet.com.au ([203.17.154.25]:37012 "EHLO
+	m0.velocity.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752715AbXBEHvy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Feb 2007 02:51:54 -0500
+Message-ID: <45C6E203.5050007@iinet.net.au>
+Date: Mon, 05 Feb 2007 18:51:31 +1100
+From: Ben Nizette <ben.nizette@iinet.net.au>
+User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
+MIME-Version: 1.0
+To: "Wu, Bryan" <Bryan.Wu@analog.com>
+CC: akpm@osdl.org, arnd@arndb.de, rdunlap@xenotime.net, rdreier@cisco.com,
+       castet.matthieu@free.fr, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] Blackfin: architecture patch against Linux kernel
+ 2.6.20
+References: <D3664A3D9376A94BB603EE19E4AA246D10D64758@nwd2exm4.ad.analog.com>
+In-Reply-To: <D3664A3D9376A94BB603EE19E4AA246D10D64758@nwd2exm4.ad.analog.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-i have released the v2.6.20-rt1 kernel, which can be downloaded from the 
-usual place:
+Wu, Bryan wrote:
+> Hi everyone,
+> 
+> This is the Blackfin architecture patch against Linux kernel 2.6.20,
+> again. As we promised, some issues are fixed in the latest release with
+> the help from lkml.
+> 
+> The blackfin-arch patch is at 
+> https://blackfin.uclinux.org/gf/download/frsrelease/25/2490/blackfin-arc
+> h-linux-2.6.20.patch
 
-  http://redhat.com/~mingo/realtime-preempt/
+Hi!  Your mail client is monstering your emails to make them fit 70 
+cols.  Kinda playing havoc with the diffstats and URLs here and the 
+patches in the other emails in this series.  See if you can fix this and 
+at least resend the patches in the other 2 emails.  Much easier to 
+review then.
 
-more info about the -rt patchset can be found in the RT wiki:
-
-  http://rt.wiki.kernel.org
-
-This is a fixes-only release. Since the -rt tree has been closely 
-tracking Linus' upstream kernel since -rc1, no new issues are expected - 
-please re-report if anything is still unfixed.
-
-There are lots of changes relative to 2.6.19-rt6 (the last stable 
-release), but these are mostly fixes and other gradual improvements. KVM
-is now enabled in the yum kernel on both i686 and x86_64 (and has been
-enabled since around -rc1-rt1), the -rt tree tracks kvm-trunk (which is
-a bit fresher than upstream KVM) and has a few additional paravirt
-speedups implemented and enabled.
-
-to build a 2.6.20-rt1 tree, the following patches should be applied:
-
-  http://kernel.org/pub/linux/kernel/v2.6/linux-2.6.20.tar.bz2
-  http://redhat.com/~mingo/realtime-preempt/patch-2.6.20-rt1
-
-the -rt YUM repository for Fedora Core 6 and 5, for architectures i686 
-and x86_64 can be activated via:
-
-   cd /etc/yum.repos.d
-   wget http://people.redhat.com/~mingo/realtime-preempt/rt.repo
-
-   yum install kernel-rt.x86_64   # on x86_64
-   yum install kernel-rt          # on i686
-
-   yum update kernel-rt           # refresh - or enable yum-updatesd
-
-as usual, bugreports, fixes and suggestions are welcome,
-
-	Ingo
+Thanks,
+Ben.
