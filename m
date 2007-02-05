@@ -1,207 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932371AbXBENYL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932368AbXBENYQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932371AbXBENYL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 08:24:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932374AbXBENYL
+	id S932368AbXBENYQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 08:24:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932374AbXBENYQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 08:24:11 -0500
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:59922 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932371AbXBENYK (ORCPT
+	Mon, 5 Feb 2007 08:24:16 -0500
+Received: from mcr-smtp-001.bulldogdsl.com ([212.158.248.7]:3447 "EHLO
+	mcr-smtp-001.bulldogdsl.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932368AbXBENYP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 08:24:10 -0500
-To: ckrm-tech@lists.sourceforge.net
-Subject: [RFC][PATCH 1/5] RSS accounting setup
-Cc: balbir@in.ibm.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       menage@google.com
-Message-Id: <20070205132408.0E9281B676@openx4.frec.bull.fr>
-Date: Mon, 5 Feb 2007 14:24:08 +0100 (CET)
-From: Patrick.Le-Dot@bull.net (Patrick.Le-Dot)
-X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 05/02/2007 14:25:07,
-	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 05/02/2007 14:25:14,
-	Serialize complete at 05/02/2007 14:25:14
+	Mon, 5 Feb 2007 08:24:15 -0500
+X-Spam-Abuse: Please report all spam/abuse matters to abuse@bulldogdsl.com
+From: Alistair John Strachan <s0348365@sms.ed.ac.uk>
+To: Al Boldi <a1426z@gawab.com>
+Subject: Re: 2.6.20 doesn't compile with gcc-3.2.2
+User-Agent: KMail/1.9.5
+References: <200702051531.20326.a1426z@gawab.com>
+In-Reply-To: <200702051531.20326.a1426z@gawab.com>
+MIME-Version: 1.0
+Content-Disposition: inline
+X-Length: 1934
+Date: Mon, 5 Feb 2007 13:24:11 +0000
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200702051324.11866.s0348365@sms.ed.ac.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Monday 05 February 2007 12:31, you wrote:
+> Doing the following results in an incomplete vmlinuz:
+>
+> # make mrproper
+> # make allnoconfig
+> # make bzlilo
+>
+> objcopy: arch/i386/boot/compressed/vmlinux.bin: File truncated
+> make[2]: *** [arch/i386/boot/compressed/vmlinux.bin] Error 1
+> make[1]: *** [arch/i386/boot/compressed/vmlinux] Error 2
+> make: *** [bzlilo] Error 2
+>
+> # gcc -v
+> Reading specs from /usr/lib/gcc-lib/i586-mandrake-linux-gnu/3.2.2/specs
+> Configured with: ../configure --prefix=/usr --libdir=/usr/lib
+> --with-slibdir=/lib --mandir=/usr/share/man --infodir=/usr/share/info
+> --enable-shared --enable-threads=posix --disable-checking
+> --enable-long-long --enable-__cxa_atexit
+> --enable-languages=c,c++,ada,f77,objc,java
+> --host=i586-mandrake-linux-gnu --with-system-zlib
+> Thread model: posix
+> gcc version 3.2.2 (Mandrake Linux 9.1 3.2.2-3mdk)
+>
+>
+> Is gcc-4.0.1 now the minimum required to compile the kernel?
 
-Basic setup for a memory controller written for resource groups.
-This patch registers a dummy controller.
+A patch went in to remove support for GCC 3.1, but as far as I know, 3.2 
+should be a supported compiler.
 
-Signed-off-by: Patrick Le Dot <Patrick.Le-Dot@bull.net>
----
+At any rate, this might be a binutils issue. What version of binutils are you 
+using?
 
- include/linux/memctlr.h    |   33 +++++++++++++++
- init/Kconfig               |   11 +++++
- kernel/res_group/Makefile  |    1
- kernel/res_group/memctlr.c |   98 +++++++++++++++++++++++++++++++++++++++++++++
- 4 files changed, 143 insertions(+)
+-- 
+Cheers,
+Alistair.
 
-diff -puN /dev/null b/include/linux/memctlr.h
---- /dev/null	2004-02-23 22:02:56.000000000 +0100
-+++ b/include/linux/memctlr.h	2006-12-08 07:25:42.000000000 +0100
-@@ -0,0 +1,33 @@
-+/*
-+ * Memory controller - "Resource Groups Memory Usage Accounting"
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-+ *
-+ * Copyright (C) IBM Corporation, 2006
-+ * Copyright (C) BULL SAS, 2006
-+ *
-+ * Author: Balbir Singh <balbir@in.ibm.com>
-+ *         Patrick Le Dot <Patrick.Le-Dot@bull.net>
-+ *
-+ */
-+
-+#ifndef _LINUX_MEMCTRL_H
-+#define _LINUX_MEMCTRL_H
-+
-+#ifdef CONFIG_RES_GROUPS_MEMORY
-+#include <linux/res_group_rc.h>
-+#endif /* CONFIG_RES_GROUPS_MEMORY */
-+
-+#endif /* _LINUX_MEMCTRL_H */
-diff -puN a/init/Kconfig b/init/Kconfig
---- a/init/Kconfig	2006-12-08 07:10:24.000000000 +0100
-+++ b/init/Kconfig	2006-12-08 07:11:54.000000000 +0100
-@@ -332,6 +332,17 @@ config RES_GROUPS_NUMTASKS
- 
- 	  Say N if unsure, Y to use the feature.
- 
-+config RES_GROUPS_MEMORY
-+	bool "Memory Controller for RSS"
-+	depends on RES_GROUPS
-+	default y
-+	help
-+	  Provides a Resource Controller for Resource Groups.
-+	  It limits the resident pages of the tasks belonging to the resource
-+	  group.
-+
-+	  Say N if unsure, Y to use the feature.
-+
- endmenu
- config SYSCTL
- 	bool
-diff -puN a/kernel/res_group/Makefile b/kernel/res_group/Makefile
---- a/kernel/res_group/Makefile	2006-12-08 07:10:24.000000000 +0100
-+++ b/kernel/res_group/Makefile	2006-12-08 07:11:03.000000000 +0100
-@@ -1,2 +1,3 @@
- obj-y = res_group.o shares.o rgcs.o
- obj-$(CONFIG_RES_GROUPS_NUMTASKS) += numtasks.o
-+obj-$(CONFIG_RES_GROUPS_MEMORY) += memctlr.o
-diff -puN /dev/null b/kernel/res_group/memctlr.c
---- /dev/null	2004-02-23 22:02:56.000000000 +0100
-+++ b/kernel/res_group/memctlr.c	2006-12-08 08:56:30.000000000 +0100
-@@ -0,0 +1,98 @@
-+/*
-+ * Memory controller - "Resource Groups Memory Usage Accounting"
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-+ *
-+ * Copyright (C) IBM Corporation, 2006
-+ * Copyright (C) BULL SAS, 2006
-+ *
-+ * Author: Balbir Singh <balbir@in.ibm.com>
-+ *         Patrick Le Dot <Patrick.Le-Dot@bull.net>
-+ *
-+ */
-+
-+/*
-+ * Simple memory controller with a sane accounting.
-+ * First implementation : only pages in VMAs are concerned.
-+ * Limits and guarantees will be supported later.
-+ *
-+ * Tasks are group'ed virtually by thread groups - Add more details
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/res_group_rc.h>
-+#include <linux/memctlr.h>
-+
-+static const char res_ctlr_name[] = "memctlr";
-+static struct resource_group *root_rgroup;
-+
-+/*
-+ * this struct is used in mm_struct
-+ */
-+struct mem_counter {
-+	atomic_long_t	rss;	
-+};
-+
-+/*
-+ * one memctlr per group then counter is the group's rss value
-+ */
-+struct memctlr {
-+	struct res_shares shares;	/* My shares		  */
-+	struct mem_counter counter;	/* Accounting information */
-+};
-+
-+struct res_controller memctlr_rg;
-+
-+static struct memctlr *get_memctlr_from_shares(struct res_shares *shares)
-+{
-+	if (shares)
-+		return container_of(shares, struct memctlr, shares);
-+	return NULL;
-+}
-+
-+static struct memctlr *get_memctlr(struct resource_group *rgroup)
-+{
-+	return get_memctlr_from_shares(get_controller_shares(rgroup,
-+								&memctlr_rg));
-+}
-+
-+struct res_controller memctlr_rg = {
-+	.name = res_ctlr_name,
-+	.ctlr_id = NO_RES_ID,
-+	.alloc_shares_struct = NULL,
-+	.free_shares_struct = NULL,
-+	.move_task = NULL,
-+	.shares_changed = NULL,
-+	.show_stats = NULL,
-+};
-+
-+int __init memctlr_init(void)
-+{
-+	if (memctlr_rg.ctlr_id != NO_RES_ID)
-+		return -EBUSY;	/* already registered */
-+	return register_controller(&memctlr_rg);
-+}
-+
-+void __exit memctlr_exit(void)
-+{
-+	int rc;
-+	do {
-+		rc = unregister_controller(&memctlr_rg);
-+	} while (rc == -EBUSY);
-+	BUG_ON(rc != 0);
-+}
-+
-+module_init(memctlr_init);
-+module_exit(memctlr_exit);
+Final year Computer Science undergraduate.
+1F2 55 South Clerk Street, Edinburgh, UK.
