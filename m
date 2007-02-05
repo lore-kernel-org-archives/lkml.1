@@ -1,67 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965092AbXBEX2J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965069AbXBEXcu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965092AbXBEX2J (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 18:28:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965069AbXBEX2I
+	id S965069AbXBEXcu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 18:32:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965114AbXBEXcu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 18:28:08 -0500
-Received: from wr-out-0506.google.com ([64.233.184.238]:7638 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965114AbXBEX2G (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 18:28:06 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:mime-version:content-disposition:content-type:content-transfer-encoding:message-id;
-        b=rsbTcCEF0x/yrU68NDmwrbxDcDDIuzUJaluY6JRu+qdwtvLpPqd8BpBzGyK9RGrO+aRKm9b6f12jukZzBcOncQwcvXAyJvXuYXUCHKwtMnlGjAPgLMIBqm7m20lZq4hAwn+grwVtWtxExlqotTeZtYt/uumuKajtx+994Ne99aQ=
-From: Jesper Juhl <jesper.juhl@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH][5/5] floppy.c: Fix device_create_file() warning
-Date: Tue, 6 Feb 2007 00:30:33 +0100
-User-Agent: KMail/1.9.4
-Cc: Andi Kleen <ak@suse.de>, Trent Waddington <trent.waddington@gmail.com>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jesper Juhl <jesper.juhl@gmail.com>
+	Mon, 5 Feb 2007 18:32:50 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:39012 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965069AbXBEXct (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Feb 2007 18:32:49 -0500
+Date: Mon, 5 Feb 2007 15:32:27 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: David Woodhouse <dwmw2@infradead.org>
+cc: Randy Dunlap <randy.dunlap@oracle.com>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [patch] MTD: fix DOC2000/2001/2001PLUS build error
+In-Reply-To: <1170717694.29759.941.camel@pmac.infradead.org>
+Message-ID: <Pine.LNX.4.64.0702051525320.8424@woody.linux-foundation.org>
+References: <Pine.LNX.4.64.0702041057090.8424@woody.linux-foundation.org> 
+ <20070205084523.GA21858@elte.hu>  <1170682488.29759.795.camel@pmac.infradead.org>
+  <20070205155627.GA8354@elte.hu>  <1170692539.29759.856.camel@pmac.infradead.org>
+  <20070205162635.GA755@elte.hu> <20070205163152.GA2464@elte.hu> 
+ <Pine.LNX.4.64.0702050852160.8424@woody.linux-foundation.org> 
+ <1170710272.29759.894.camel@pmac.infradead.org> 
+ <Pine.LNX.4.64.0702051322580.8424@woody.linux-foundation.org> 
+ <1170711587.29759.909.camel@pmac.infradead.org> 
+ <Pine.LNX.4.64.0702051345380.8424@woody.linux-foundation.org> 
+ <1170712393.29759.925.camel@pmac.infradead.org> 
+ <Pine.LNX.4.64.0702051409110.8424@woody.linux-foundation.org> 
+ <20070205143110.fca62b57.randy.dunlap@oracle.com> 
+ <Pine.LNX.4.64.0702051502370.8424@woody.linux-foundation.org>
+ <1170717694.29759.941.camel@pmac.infradead.org>
 MIME-Version: 1.0
-Content-Disposition: inline
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200702060030.33671.jesper.juhl@gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-This fixes the warning 
-  warning: ignoring return value of `device_create_file', declared with attribute warn_unused_result
-in function `floppy_init'. It does this by checking the return value and 
-printing a warning message in case of no success.
 
+On Mon, 5 Feb 2007, David Woodhouse wrote:
+> 
+> The netfilter example is totally irrelevant here, since 'select' is
+> neither necessary nor sufficient for that. Russell and I have both
+> pointed that out to you already.
 
-Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
----
+No, the example IS relevant.
 
- floppy.c |    7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+Why?
 
---- linux-2.6.20/drivers/block/floppy.c.patch4	2007-02-05 23:22:26.000000000 +0100
-+++ linux-2.6.20/drivers/block/floppy.c	2007-02-05 23:32:42.000000000 +0100
-@@ -4302,7 +4302,12 @@
- 		if (err)
- 			goto out_flush_work;
- 
--		device_create_file(&floppy_device[drive].dev,&dev_attr_cmos);
-+		err = device_create_file(&floppy_device[drive].dev, &dev_attr_cmos);
-+		if (err)
-+			printk(KERN_WARNING "Unable to create sysfs attribute "
-+				"file for floppy device: %s\n", 
-+				floppy_device[drive].name);
-+
- 		/* to be cleaned up... */
- 		disks[drive]->private_data = (void *)(long)drive;
- 		disks[drive]->queue = floppy_queue;
+Because you don't seem to be getting the whole "be nice" part.
 
+You continually argue as if being nice isn't an issue, and shouldn't be 
+even an option.
 
+And maybe you can do it without select for netfilter, but you sure as HELL 
+cannot do it for things like SCSI and the USB/ATA question.
 
+So you keep on ignoring the real argument, by belittling it.
+
+You talk about "Aunt Tillie".
+
+Don't talk about Aunt Tillie. Dammit! Talk about ME!
+
+And talk about the kinds of people we *want* to compile the kernel: people 
+who may be entirely regular users, but people who want to help us debug 
+things by testing the -rc1 release.
+
+Those people are IMPORTANT. You belittling the whole concept just makes 
+you look like an ass.
+
+> Not only does that not work like it always did, but it's also _really_
+> hard to find out why, on occasion.
+
+And I told you that you could just improve the tools that track those 
+dependencies ANYWAY!
+
+But what do you do? You just ignore it, talk about sed/grep, and bring up 
+your Aunt Tillie again.
+
+Guess what? Maybe Aunt Tillie really *could* compile her own kernel.
+
+But even more importantly, you have both the expertise and the knowledge 
+to make _your_ gripes go away, without having to just belittle and ignore 
+everybody elses concerns.
+
+In other words, just make xconfig/gconfig/menuconfig/whatever say "Oops, 
+I'm not going to disable i2c because of the following dependency: ..."
+and what is your problem?
+
+And don't tell me about Aunt Tillie or about how you refuse to do anything 
+but grep's and sed's. If THAT is your problem, then you're barking up the 
+wrong tree.
+
+		Linus
