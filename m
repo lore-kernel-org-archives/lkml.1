@@ -1,130 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752627AbXBESFd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932101AbXBESNH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752627AbXBESFd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 13:05:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752088AbXBESFd
+	id S932101AbXBESNH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 13:13:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932299AbXBESNG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 13:05:33 -0500
-Received: from verein.lst.de ([213.95.11.210]:36587 "EHLO mail.lst.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751400AbXBESFc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 13:05:32 -0500
-Date: Mon, 5 Feb 2007 19:05:27 +0100
-From: Christoph Hellwig <hch@lst.de>
-To: jack@suse.cz
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] move remove_dquot_ref to dqout.c
-Message-ID: <20070205180527.GA26951@lst.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.3.28i
-X-Spam-Score: -0.001 () BAYES_44
+	Mon, 5 Feb 2007 13:13:06 -0500
+Received: from omx2-ext.sgi.com ([192.48.171.19]:58616 "EHLO omx2.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S932101AbXBESNF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Feb 2007 13:13:05 -0500
+Message-ID: <45C7740D.70509@sgi.com>
+Date: Mon, 05 Feb 2007 10:14:37 -0800
+From: Jay Lan <jlan@sgi.com>
+User-Agent: Thunderbird 1.5 (X11/20060317)
+MIME-Version: 1.0
+To: Magnus Damm <magnus@valinux.co.jp>
+CC: akpm@linux-foundation.org, tony.luck@intel.com, linux-ia64@vger.kernel.org,
+       nanhai.zou@intel.com, fastboot@lists.osdl.org,
+       linux-kernel@vger.kernel.org, horms@verge.net.au, magnus.damm@gmail.com
+Subject: Re: [PATCH] kexec: Fix CONFIG_SMP=n compilation V2 (ia64)
+References: <20070205064342.21398.97736.sendpatchset@localhost>
+In-Reply-To: <20070205064342.21398.97736.sendpatchset@localhost>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove_dquot_ref can move to dqout.c instead of beeing in inode.c
-under #ifdef CONFIG_QUOTA.  Also clean the resulting code up
-a tiny little bit by testing sb->dq_op earlier - it's constant
-over a filesystems lifetime.
+Magnus Damm wrote:
+> kexec: Fix CONFIG_SMP=n compilation V2 (ia64)
+> 
+> Kexec support for 2.6.20 on ia64 does not build properly using a config
+> made up by CONFIG_SMP=n and CONFIG_HOTPLUG_CPU=n:
+> 
+>   CC      arch/ia64/kernel/machine_kexec.o
+> arch/ia64/kernel/machine_kexec.c: In function `machine_shutdown':
+> arch/ia64/kernel/machine_kexec.c:77: warning: implicit declaration of function `cpu_down'
+>   AS      arch/ia64/kernel/relocate_kernel.o
+>   CC      arch/ia64/kernel/crash.o
+> arch/ia64/kernel/crash.c: In function `kdump_cpu_freeze':
+> arch/ia64/kernel/crash.c:139: warning: implicit declaration of function `ia64_jump_to_sal'
+> arch/ia64/kernel/crash.c:139: error: `sal_boot_rendez_state' undeclared (first use in this function)
+> arch/ia64/kernel/crash.c:139: error: (Each undeclared identifier is reported only once
+> arch/ia64/kernel/crash.c:139: error: for each function it appears in.)
+> arch/ia64/kernel/crash.c: At top level:
+> arch/ia64/kernel/crash.c:84: warning: 'kdump_wait_cpu_freeze' defined but not used
+> make[1]: *** [arch/ia64/kernel/crash.o] Error 1
+> make: *** [arch/ia64/kernel] Error 2
+> 
+> Signed-off-by: Magnus Damm <magnus@valinux.co.jp>
+> ---
 
+Looks good to me also.
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
+Acked-by: Jay Lan <jlan@sgi.com>
 
-Index: linux-2.6/fs/dquot.c
-===================================================================
---- linux-2.6.orig/fs/dquot.c	2007-02-05 18:49:41.000000000 +0100
-+++ linux-2.6/fs/dquot.c	2007-02-05 18:53:49.000000000 +0100
-@@ -79,6 +79,7 @@
- #include <linux/buffer_head.h>
- #include <linux/capability.h>
- #include <linux/quotaops.h>
-+#include <linux/writeback.h> /* for inode_lock, oddly enough.. */
- 
- #include <asm/uaccess.h>
- 
-@@ -756,15 +757,30 @@
- 	}
- }
- 
-+static void remove_dquot_ref(struct super_block *sb, int type,
-+		struct list_head *tofree_head)
-+{
-+	struct inode *inode;
-+
-+	spin_lock(&inode_lock);
-+	list_for_each_entry(inode, &sb->s_inodes, i_sb_list) {
-+		if (!IS_NOQUOTA(inode))
-+			remove_inode_dquot_ref(inode, type, tofree_head);
-+	}
-+	spin_unlock(&inode_lock);
-+}
-+
- /* Gather all references from inodes and drop them */
- static void drop_dquot_ref(struct super_block *sb, int type)
- {
- 	LIST_HEAD(tofree_head);
- 
--	down_write(&sb_dqopt(sb)->dqptr_sem);
--	remove_dquot_ref(sb, type, &tofree_head);
--	up_write(&sb_dqopt(sb)->dqptr_sem);
--	put_dquot_list(&tofree_head);
-+	if (sb->dq_op) {
-+		down_write(&sb_dqopt(sb)->dqptr_sem);
-+		remove_dquot_ref(sb, type, &tofree_head);
-+		up_write(&sb_dqopt(sb)->dqptr_sem);
-+		put_dquot_list(&tofree_head);
-+	}
- }
- 
- static inline void dquot_incr_inodes(struct dquot *dquot, unsigned long number)
-Index: linux-2.6/fs/inode.c
-===================================================================
---- linux-2.6.orig/fs/inode.c	2007-02-05 18:49:41.000000000 +0100
-+++ linux-2.6/fs/inode.c	2007-02-05 18:49:56.000000000 +0100
-@@ -1252,33 +1252,6 @@
- 
- EXPORT_SYMBOL(inode_needs_sync);
- 
--/*
-- *	Quota functions that want to walk the inode lists..
-- */
--#ifdef CONFIG_QUOTA
--
--void remove_dquot_ref(struct super_block *sb, int type,
--			struct list_head *tofree_head)
--{
--	struct inode *inode;
--
--	if (!sb->dq_op)
--		return;	/* nothing to do */
--	spin_lock(&inode_lock);	/* This lock is for inodes code */
--
--	/*
--	 * We don't have to lock against quota code - test IS_QUOTAINIT is
--	 * just for speedup...
--	 */
--	list_for_each_entry(inode, &sb->s_inodes, i_sb_list)
--		if (!IS_NOQUOTA(inode))
--			remove_inode_dquot_ref(inode, type, tofree_head);
--
--	spin_unlock(&inode_lock);
--}
--
--#endif
--
- int inode_wait(void *word)
- {
- 	schedule();
-Index: linux-2.6/include/linux/fs.h
-===================================================================
---- linux-2.6.orig/include/linux/fs.h	2007-02-05 18:51:48.000000000 +0100
-+++ linux-2.6/include/linux/fs.h	2007-02-05 18:51:52.000000000 +0100
-@@ -1681,7 +1681,6 @@
- extern int __remove_suid(struct dentry *, int);
- extern int should_remove_suid(struct dentry *);
- extern int remove_suid(struct dentry *);
--extern void remove_dquot_ref(struct super_block *, int, struct list_head *);
- 
- extern void __insert_inode_hash(struct inode *, unsigned long hashval);
- extern void remove_inode_hash(struct inode *);
+> machine_kexec.c
+>  Applies on top of 2.6.20.
+> 
+>  arch/ia64/kernel/crash.c         |   11 +++++++----
+>  arch/ia64/kernel/machine_kexec.c |    2 ++
+>  2 files changed, 9 insertions(+), 4 deletions(-)
+> 
+> --- 0002/arch/ia64/kernel/crash.c
+> +++ work/arch/ia64/kernel/crash.c	2007-02-02 20:31:18.000000000 +0900
+> @@ -79,6 +79,7 @@ crash_save_this_cpu()
+>  	final_note(buf);
+>  }
+>  
+> +#ifdef CONFIG_SMP
+>  static int
+>  kdump_wait_cpu_freeze(void)
+>  {
+> @@ -91,6 +92,7 @@ kdump_wait_cpu_freeze(void)
+>  	}
+>  	return 1;
+>  }
+> +#endif
+>  
+>  void
+>  machine_crash_shutdown(struct pt_regs *pt)
+> @@ -132,11 +134,12 @@ kdump_cpu_freeze(struct unw_frame_info *
+>  	atomic_inc(&kdump_cpu_freezed);
+>  	kdump_status[cpuid] = 1;
+>  	mb();
+> -	if (cpuid == 0) {
+> -		for (;;)
+> -			cpu_relax();
+> -	} else
+> +#ifdef CONFIG_HOTPLUG_CPU
+> +	if (cpuid != 0)
+>  		ia64_jump_to_sal(&sal_boot_rendez_state[cpuid]);
+> +#endif
+> +	for (;;)
+> +		cpu_relax();
+>  }
+>  
+>  static int
+> --- 0002/arch/ia64/kernel/machine_kexec.c
+> +++ work/arch/ia64/kernel/machine_kexec.c	2007-02-02 20:56:24.000000000 +0900
+> @@ -70,12 +70,14 @@ void machine_kexec_cleanup(struct kimage
+>  
+>  void machine_shutdown(void)
+>  {
+> +#ifdef CONFIG_HOTPLUG_CPU
+>  	int cpu;
+>  
+>  	for_each_online_cpu(cpu) {
+>  		if (cpu != smp_processor_id())
+>  			cpu_down(cpu);
+>  	}
+> +#endif
+>  	kexec_disable_iosapic();
+>  }
+>  
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-ia64" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
