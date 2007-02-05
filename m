@@ -1,33 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752227AbXBEJuV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752238AbXBEJvL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752227AbXBEJuV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 04:50:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752232AbXBEJuV
+	id S1752238AbXBEJvL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 04:51:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752243AbXBEJvK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 04:50:21 -0500
-Received: from depni.sinp.msu.ru ([213.131.7.21]:53461 "EHLO depni.sinp.msu.ru"
+	Mon, 5 Feb 2007 04:51:10 -0500
+Received: from max.feld.cvut.cz ([147.32.192.36]:60843 "EHLO max.feld.cvut.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752227AbXBEJuU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 04:50:20 -0500
-X-Greylist: delayed 1886 seconds by postgrey-1.27 at vger.kernel.org; Mon, 05 Feb 2007 04:50:20 EST
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
-Subject: Re: v2.6.20-rt1, yum/rpm
-References: <20070205065636.GA1652@elte.hu>
-From: Serge Belyshev <belyshev@depni.sinp.msu.ru>
-Date: Mon, 05 Feb 2007 12:18:50 +0300
-In-Reply-To: <20070205065636.GA1652@elte.hu> (Ingo Molnar's message of "Mon\, 5 Feb 2007 07\:56\:36 +0100")
-Message-ID: <87wt2xdksl.fsf@depni.sinp.msu.ru>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/23.0.0 (gnu/linux)
+	id S1752250AbXBEJvJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Feb 2007 04:51:09 -0500
+From: CIJOML <cijoml@volny.cz>
+To: linux-kernel@vger.kernel.org
+Subject: Some "patch" between 2.6.20-rc7 and 2.6.20-final-vanilla has broken my SWSUSP resume
+Date: Mon, 5 Feb 2007 10:49:49 +0100
+User-Agent: KMail/1.9.5
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200702051049.49705.cijoml@volny.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar <mingo@elte.hu> writes:
+Hi,
 
-> i have released the v2.6.20-rt1 kernel, which can be downloaded from the 
-> usual place:
+please take a look at my bugreport. It is very important for me...
 
-I did not find tarball with split patches there.
-Could you please make it available somewhere via http or ftp?
+http://bugzilla.kernel.org/show_bug.cgi?id=7936
+
+Thanks a lot
+
+Michal
