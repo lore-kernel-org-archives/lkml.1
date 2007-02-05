@@ -1,57 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933371AbXBETA0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933378AbXBETCe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933371AbXBETA0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 14:00:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933370AbXBETA0
+	id S933378AbXBETCe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 14:02:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933372AbXBETCe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 14:00:26 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:45269 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S933367AbXBETAZ (ORCPT
+	Mon, 5 Feb 2007 14:02:34 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:42804 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933366AbXBETCb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 14:00:25 -0500
-Date: Mon, 5 Feb 2007 19:13:18 +0000
-From: Alan <alan@lxorguk.ukuu.org.uk>
-To: Tejun Heo <htejun@gmail.com>
-Cc: Allen Martin <AMartin@nvidia.com>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       linux-ide@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Nvidia cable detection problems (was [PATCH] amd74xx: don't
- configure udma mode higher than BIOS did)
-Message-ID: <20070205191318.39f84ced@localhost.localdomain>
-In-Reply-To: <45C77921.4020808@gmail.com>
-References: <20070205075836.GG1625@htj.dyndns.org>
-	<20070205112410.5a3c3182@localhost.localdomain>
-	<45C72012.7050605@gmail.com>
-	<20070205132247.6f611e3c@localhost.localdomain>
-	<45C73A3E.6080700@gmail.com>
-	<20070205143439.6962c076@localhost.localdomain>
-	<45C7444F.4070500@gmail.com>
-	<58cb370e0702050709w1b7682dr5dff9e7ce69465a@mail.gmail.com>
-	<DBFABB80F7FD3143A911F9E6CFD477B01EC0DD7D@hqemmail02.nvidia.com>
-	<20070205181224.3319d6c3@localhost.localdomain>
-	<45C77921.4020808@gmail.com>
-X-Mailer: Claws Mail 2.7.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+	Mon, 5 Feb 2007 14:02:31 -0500
+Date: Mon, 5 Feb 2007 19:02:30 +0000
+From: Christoph Hellwig <hch@infradead.org>
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+Cc: Christoph Hellwig <hch@infradead.org>, Tony Jones <tonyj@suse.de>,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       chrisw@sous-sol.org, linux-security-module@vger.kernel.org,
+       agruen@suse.de, viro@zeniv.linux.org.uk
+Subject: Re: [RFC 0/28] Patches to pass vfsmount to LSM inode security hooks
+Message-ID: <20070205190230.GA23104@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Trond Myklebust <trond.myklebust@fys.uio.no>,
+	Tony Jones <tonyj@suse.de>, linux-kernel@vger.kernel.org,
+	linux-fsdevel@vger.kernel.org, chrisw@sous-sol.org,
+	linux-security-module@vger.kernel.org, agruen@suse.de,
+	viro@zeniv.linux.org.uk
+References: <20070205182213.12164.40927.sendpatchset@ermintrude.int.wirex.com> <20070205184410.GA20672@infradead.org> <1170701906.5934.41.camel@lade.trondhjem.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1170701906.5934.41.camel@lade.trondhjem.org>
+User-Agent: Mutt/1.4.2.2i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > Well we can certainly do some of that if ACPI is present and active. In
-> > particular since _GTM will give us current modes allowing for hotplug and
-> > post BIOS boot kexec etc it ought to be safe to do Tejun's hack that way.
-> > We could even probe UDMA3+ capable devices by doing _STM to a high mode
-> > and _GTM to determine the cable type 8)
+On Mon, Feb 05, 2007 at 10:58:26AM -0800, Trond Myklebust wrote:
+> On Mon, 2007-02-05 at 18:44 +0000, Christoph Hellwig wrote:
+> > Just FYI:  Al was very opposed to the idea of passing the vfsmount to
+> > the vfs_ helpers, so you should discuss this with him.
+> > 
+> > Looking at the actual patches I see you're lazy in a lot of places.
+> > Please make sure that when you introduce a vfsmount argument somewhere
+> > that it is _always_ passed and not just when it's conveniant.  Yes, that's
+> > more work, but then again if you're not consistant anyone half-serious
+> > will laught at a security model using this infrasturcture.
 > 
-> Glad to see the problem getting solved.  Now that we know the solution,
-> any volunteers?  :-)
+> nfsd in particular tends to be a bit lazy about passing around vfsmount
+> info. Forcing it to do so should not be hard since the vfsmount is
+> already cached in the "struct export" (which can be found using the
+> filehandle). It will take a bit of re-engineering in order to pass that
+> information around inside the nfsd code, though.
 
-I am currently putting together an experimental pata_acpi driver to play
-with this stuff. May take a bit of time while I work out the current acpi
-interface gunge and how to expand it.
+I actually have a patch to fix that.  It's part of a bigger series
+that's not quite ready, but I hope to finish all of it this month.
 
-The fact we have to try each mode to see what we can set doesn't make it
-pretty either!
+> Note also that it might be nice to enforce the vfsmount argument by
+> replacing the existing dentry parameters with a struct path instead of
+> adding an extra reference to the vfsmount to existing functions.
 
-Alan
+That definitly sounds like a good idea, independent of whether we want
+to pass the vfsmount in more places or not.
