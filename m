@@ -1,144 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933301AbXBESbF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933216AbXBESba@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933301AbXBESbF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 13:31:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933298AbXBESaz
+	id S933216AbXBESba (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 13:31:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933093AbXBES0I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 13:30:55 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:47752 "EHLO mx2.suse.de"
+	Mon, 5 Feb 2007 13:26:08 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:47707 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933173AbXBES0J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 13:26:09 -0500
+	id S933167AbXBESZn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Feb 2007 13:25:43 -0500
 From: Tony Jones <tonyj@suse.de>
 To: linux-kernel@vger.kernel.org
 Cc: linux-fsdevel@vger.kernel.org, chrisw@sous-sol.org,
        Tony Jones <tonyj@suse.de>, linux-security-module@vger.kernel.org,
        agruen@suse.de
-Date: Mon, 05 Feb 2007 10:25:11 -0800
-Message-Id: <20070205182511.12164.62940.sendpatchset@ermintrude.int.wirex.com>
+Date: Mon, 05 Feb 2007 10:24:45 -0800
+Message-Id: <20070205182445.12164.94899.sendpatchset@ermintrude.int.wirex.com>
 In-Reply-To: <20070205182213.12164.40927.sendpatchset@ermintrude.int.wirex.com>
 References: <20070205182213.12164.40927.sendpatchset@ermintrude.int.wirex.com>
-Subject: [RFC 19/28] Add struct vfsmount parameters to vfs_rename()
+Subject: [RFC 16/28] Pass struct vfsmount to the inode_rmdir LSM hook
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add struct vfsmount parameters to vfs_rename()
+Pass struct vfsmount to the inode_rmdir LSM hook
 
 Signed-off-by: Tony Jones <tonyj@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 
-Index: linux-2.6/fs/ecryptfs/inode.c
-===================================================================
---- linux-2.6.orig/fs/ecryptfs/inode.c
-+++ linux-2.6/fs/ecryptfs/inode.c
-@@ -590,19 +590,24 @@ ecryptfs_rename(struct inode *old_dir, s
- {
- 	int rc;
- 	struct dentry *lower_old_dentry;
-+	struct vfsmount *lower_old_mnt;
- 	struct dentry *lower_new_dentry;
-+	struct vfsmount *lower_new_mnt;
- 	struct dentry *lower_old_dir_dentry;
- 	struct dentry *lower_new_dir_dentry;
- 
- 	lower_old_dentry = ecryptfs_dentry_to_lower(old_dentry);
-+	lower_old_mnt = ecryptfs_dentry_to_lower_mnt(old_dentry);
- 	lower_new_dentry = ecryptfs_dentry_to_lower(new_dentry);
-+	lower_new_mnt = ecryptfs_dentry_to_lower_mnt(new_dentry);
- 	dget(lower_old_dentry);
- 	dget(lower_new_dentry);
- 	lower_old_dir_dentry = dget_parent(lower_old_dentry);
- 	lower_new_dir_dentry = dget_parent(lower_new_dentry);
- 	lock_rename(lower_old_dir_dentry, lower_new_dir_dentry);
- 	rc = vfs_rename(lower_old_dir_dentry->d_inode, lower_old_dentry,
--			lower_new_dir_dentry->d_inode, lower_new_dentry);
-+			lower_old_mnt, lower_new_dir_dentry->d_inode,
-+			lower_new_dentry, lower_new_mnt);
- 	if (rc)
- 		goto out_lock;
- 	fsstack_copy_attr_all(new_dir, lower_new_dir_dentry->d_inode, NULL);
 Index: linux-2.6/fs/namei.c
 ===================================================================
 --- linux-2.6.orig/fs/namei.c
 +++ linux-2.6/fs/namei.c
-@@ -2382,7 +2382,8 @@ asmlinkage long sys_link(const char __us
-  *	   locking].
-  */
- static int vfs_rename_dir(struct inode *old_dir, struct dentry *old_dentry,
--			  struct inode *new_dir, struct dentry *new_dentry)
-+			  struct vfsmount *old_mnt, struct inode *new_dir,
-+			  struct dentry *new_dentry, struct vfsmount *new_mnt)
- {
- 	int error = 0;
- 	struct inode *target;
-@@ -2425,7 +2426,8 @@ static int vfs_rename_dir(struct inode *
+@@ -2023,7 +2023,7 @@ int vfs_rmdir(struct inode *dir, struct 
+ 	if (d_mountpoint(dentry))
+ 		error = -EBUSY;
+ 	else {
+-		error = security_inode_rmdir(dir, dentry);
++		error = security_inode_rmdir(dir, dentry, mnt);
+ 		if (!error) {
+ 			error = dir->i_op->rmdir(dir, dentry);
+ 			if (!error)
+Index: linux-2.6/include/linux/security.h
+===================================================================
+--- linux-2.6.orig/include/linux/security.h
++++ linux-2.6/include/linux/security.h
+@@ -318,6 +318,7 @@ struct request_sock;
+  *	Check the permission to remove a directory.
+  *	@dir contains the inode structure of parent of the directory to be removed.
+  *	@dentry contains the dentry structure of directory to be removed.
++ *	@mnt is the vfsmount corresponding to @dentry (may be NULL).
+  *	Return 0 if permission is granted.
+  * @inode_mknod:
+  *	Check permissions when creating a special file (or a socket or a fifo
+@@ -1222,7 +1223,8 @@ struct security_operations {
+ 			      struct vfsmount *mnt, const char *old_name);
+ 	int (*inode_mkdir) (struct inode *dir, struct dentry *dentry,
+ 			    struct vfsmount *mnt, int mode);
+-	int (*inode_rmdir) (struct inode *dir, struct dentry *dentry);
++	int (*inode_rmdir) (struct inode *dir, struct dentry *dentry,
++			    struct vfsmount *mnt);
+ 	int (*inode_mknod) (struct inode *dir, struct dentry *dentry,
+ 			    struct vfsmount *mnt, int mode, dev_t dev);
+ 	int (*inode_rename) (struct inode *old_dir, struct dentry *old_dentry,
+@@ -1671,11 +1673,12 @@ static inline int security_inode_mkdir (
  }
  
- static int vfs_rename_other(struct inode *old_dir, struct dentry *old_dentry,
--			    struct inode *new_dir, struct dentry *new_dentry)
-+			    struct vfsmount *old_mnt, struct inode *new_dir,
-+			    struct dentry *new_dentry, struct vfsmount *new_mnt)
+ static inline int security_inode_rmdir (struct inode *dir,
+-					struct dentry *dentry)
++					struct dentry *dentry,
++					struct vfsmount *mnt)
  {
- 	struct inode *target;
- 	int error;
-@@ -2453,7 +2455,8 @@ static int vfs_rename_other(struct inode
+ 	if (unlikely (IS_PRIVATE (dentry->d_inode)))
+ 		return 0;
+-	return security_ops->inode_rmdir (dir, dentry);
++	return security_ops->inode_rmdir (dir, dentry, mnt);
  }
  
- int vfs_rename(struct inode *old_dir, struct dentry *old_dentry,
--	       struct inode *new_dir, struct dentry *new_dentry)
-+	        struct vfsmount *old_mnt, struct inode *new_dir,
-+	        struct dentry *new_dentry, struct vfsmount *new_mnt)
+ static inline int security_inode_mknod (struct inode *dir,
+@@ -2396,7 +2399,8 @@ static inline int security_inode_mkdir (
+ }
+ 
+ static inline int security_inode_rmdir (struct inode *dir,
+-					struct dentry *dentry)
++					struct dentry *dentry,
++					struct vfsmount *mnt)
  {
- 	int error;
- 	int is_dir = S_ISDIR(old_dentry->d_inode->i_mode);
-@@ -2482,9 +2485,11 @@ int vfs_rename(struct inode *old_dir, st
- 	old_name = fsnotify_oldname_init(old_dentry->d_name.name);
- 
- 	if (is_dir)
--		error = vfs_rename_dir(old_dir,old_dentry,new_dir,new_dentry);
-+		error = vfs_rename_dir(old_dir, old_dentry, old_mnt,
-+				       new_dir, new_dentry, new_mnt);
- 	else
--		error = vfs_rename_other(old_dir,old_dentry,new_dir,new_dentry);
-+		error = vfs_rename_other(old_dir, old_dentry, old_mnt,
-+					 new_dir, new_dentry, new_mnt);
- 	if (!error) {
- 		const char *new_name = old_dentry->d_name.name;
- 		fsnotify_move(old_dir, new_dir, old_name, new_name, is_dir,
-@@ -2556,8 +2561,8 @@ static int do_rename(int olddfd, const c
- 	if (new_dentry == trap)
- 		goto exit5;
- 
--	error = vfs_rename(old_dir->d_inode, old_dentry,
--				   new_dir->d_inode, new_dentry);
-+	error = vfs_rename(old_dir->d_inode, old_dentry, oldnd.mnt,
-+			   new_dir->d_inode, new_dentry, newnd.mnt);
- exit5:
- 	dput(new_dentry);
- exit4:
-Index: linux-2.6/fs/nfsd/vfs.c
+ 	return 0;
+ }
+Index: linux-2.6/security/dummy.c
 ===================================================================
---- linux-2.6.orig/fs/nfsd/vfs.c
-+++ linux-2.6/fs/nfsd/vfs.c
-@@ -1620,7 +1620,7 @@ nfsd_rename(struct svc_rqst *rqstp, stru
- 			host_err = -EPERM;
- 	} else
- #endif
--	host_err = vfs_rename(fdir, odentry, tdir, ndentry);
-+	host_err = vfs_rename(fdir, odentry, NULL, tdir, ndentry, NULL);
- 	if (!host_err && EX_ISSYNC(tfhp->fh_export)) {
- 		host_err = nfsd_sync_dir(tdentry);
- 		if (!host_err)
-Index: linux-2.6/include/linux/fs.h
-===================================================================
---- linux-2.6.orig/include/linux/fs.h
-+++ linux-2.6/include/linux/fs.h
-@@ -985,7 +985,7 @@ extern int vfs_symlink(struct inode *, s
- extern int vfs_link(struct dentry *, struct vfsmount *, struct inode *, struct dentry *, struct vfsmount *);
- extern int vfs_rmdir(struct inode *, struct dentry *, struct vfsmount *);
- extern int vfs_unlink(struct inode *, struct dentry *, struct vfsmount *);
--extern int vfs_rename(struct inode *, struct dentry *, struct inode *, struct dentry *);
-+extern int vfs_rename(struct inode *, struct dentry *, struct vfsmount *, struct inode *, struct dentry *, struct vfsmount *);
+--- linux-2.6.orig/security/dummy.c
++++ linux-2.6/security/dummy.c
+@@ -295,7 +295,8 @@ static int dummy_inode_mkdir (struct ino
+ 	return 0;
+ }
  
- /*
-  * VFS dentry helper functions.
+-static int dummy_inode_rmdir (struct inode *inode, struct dentry *dentry)
++static int dummy_inode_rmdir (struct inode *inode, struct dentry *dentry,
++			      struct vfsmount *mnt)
+ {
+ 	return 0;
+ }
+Index: linux-2.6/security/selinux/hooks.c
+===================================================================
+--- linux-2.6.orig/security/selinux/hooks.c
++++ linux-2.6/security/selinux/hooks.c
+@@ -2178,7 +2178,8 @@ static int selinux_inode_mkdir(struct in
+ 	return may_create(dir, dentry, SECCLASS_DIR);
+ }
+ 
+-static int selinux_inode_rmdir(struct inode *dir, struct dentry *dentry)
++static int selinux_inode_rmdir(struct inode *dir, struct dentry *dentry,
++			       struct vfsmount *mnt)
+ {
+ 	return may_link(dir, dentry, MAY_RMDIR);
+ }
