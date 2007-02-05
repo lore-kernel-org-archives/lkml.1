@@ -1,89 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751798AbXBEQ6l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932659AbXBEQ6o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751798AbXBEQ6l (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 11:58:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751850AbXBEQ6k
+	id S932659AbXBEQ6o (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 11:58:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932451AbXBEQ6m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Mon, 5 Feb 2007 11:58:42 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:49492 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751838AbXBEQ6k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 5 Feb 2007 11:58:40 -0500
-Received: from ug-out-1314.google.com ([66.249.92.170]:25012 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751827AbXBEQ6j (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 11:58:39 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:to:cc:subject:message-id:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
-        b=g+wsk8BRBU57aereW25SKDK96hP59PFfV9fpkoyZzJS2zoqnEqy4W5gc9XIqf5q30mU27Z4ssrX5VgiGttlYqKz9e+gM2G9aBI1VSsqIGyS+SM3jJjB+gig+4VlJGRmsyFXIalBTRQAOxDN2iXPGSv58VKQKmiq0V5GmOZfCISA=
-Date: Mon, 5 Feb 2007 18:58:29 +0200
-To: linville@tuxdriver.com
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: [PATCH 2.6.20] misc-wireless: Use ARRAY_SIZE macro when appropriate
-Message-ID: <20070205165829.GI3896@Ahmed>
+Date: Mon, 5 Feb 2007 08:58:10 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+cc: David Woodhouse <dwmw2@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [patch] MTD: fix DOC2000/2001/2001PLUS build error
+In-Reply-To: <20070205163152.GA2464@elte.hu>
+Message-ID: <Pine.LNX.4.64.0702050852160.8424@woody.linux-foundation.org>
+References: <Pine.LNX.4.64.0702041057090.8424@woody.linux-foundation.org>
+ <20070205084523.GA21858@elte.hu> <1170682488.29759.795.camel@pmac.infradead.org>
+ <20070205155627.GA8354@elte.hu> <1170692539.29759.856.camel@pmac.infradead.org>
+ <20070205162635.GA755@elte.hu> <20070205163152.GA2464@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070205165429.GD3896@Ahmed>
-User-Agent: Mutt/1.5.11
-From: "Ahmed S. Darwish" <darwish.07@gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-A patch to use ARRAY_SIZE macro already defined in kernel.h for some
-miscellaneous wireless drivers with no specific maintaners.
-
-Signed-off-by: Ahmed S. Darwish <darwish.07@gmail.com>
----
-Patch is compile tested.
-
-diff --git a/drivers/net/wireless/airo.c b/drivers/net/wireless/airo.c
-index 44a2270..4ad910b 100644
---- a/drivers/net/wireless/airo.c
-+++ b/drivers/net/wireless/airo.c
-@@ -1623,7 +1623,7 @@ static void emmh32_setseed(emmh32_context *context, u8 *pkey, int keylen,
- 
- 	crypto_cipher_setkey(tfm, pkey, 16);
- 	counter = 0;
--	for (i = 0; i < (sizeof(context->coeff)/sizeof(context->coeff[0])); ) {
-+	for (i = 0; i < ARRAY_SIZE(context->coeff); ) {
- 		aes_counter[15] = (u8)(counter >> 0);
- 		aes_counter[14] = (u8)(counter >> 8);
- 		aes_counter[13] = (u8)(counter >> 16);
-@@ -1632,7 +1632,7 @@ static void emmh32_setseed(emmh32_context *context, u8 *pkey, int keylen,
- 		memcpy (plain, aes_counter, 16);
- 		crypto_cipher_encrypt_one(tfm, plain, plain);
- 		cipher = plain;
--		for (j=0; (j<16) && (i< (sizeof(context->coeff)/sizeof(context->coeff[0]))); ) {
-+		for (j = 0; (j < 16) && (i < ARRAY_SIZE(context->coeff)); ) {
- 			context->coeff[i++] = ntohl(*(u32 *)&cipher[j]);
- 			j += 4;
- 		}
-diff --git a/drivers/net/wireless/prism54/oid_mgt.c b/drivers/net/wireless/prism54/oid_mgt.c
-index e6cf9df..4278032 100644
---- a/drivers/net/wireless/prism54/oid_mgt.c
-+++ b/drivers/net/wireless/prism54/oid_mgt.c
-@@ -16,6 +16,8 @@
-  *
-  */
- 
-+#include <linux/kernel.h>
-+
- #include "prismcompat.h"
- #include "islpci_dev.h"
- #include "islpci_mgt.h"
-@@ -692,7 +694,7 @@ mgt_update_addr(islpci_private *priv)
- 	return ret;
- }
- 
--#define VEC_SIZE(a) (sizeof(a)/sizeof(a[0]))
-+#define VEC_SIZE(a) ARRAY_SIZE(a)
- 
- int
- mgt_commit(islpci_private *priv)
 
 
+On Mon, 5 Feb 2007, Ingo Molnar wrote:
+> 
+> but this is /only/ practical if all (even disabled) features are visible 
+> (and selectable) in the tools. They are not at the moment, so selects 
+> are quite useful.
 
--- 
-Ahmed S. Darwish
-http://darwish-07.blogspot.com
+More importantly, some things that *are* visible probably shouldn't be, or 
+should perhaps only be in expert mode (aka "EMBEDDED").
+
+A prime example of this is all the firewall settings. I'd personally 
+prefer to just select a "default firewall setup" which would be enough 
+for all the normal crud, instead of seeing 50 different choices. 
+
+And dammit, I'm supposed to be "technical". So if _I_ find it irritating 
+to have to select all those NF_MATCH_xxx/NF_TARGET_xxx crud things, 
+imagine what most people must feel like?
+
+Me, I'd like to say I want "default firewall built in", and not have to 
+see *any* of the crap. And that's exactly why "select" is a good thing.
+
+Not using select, and have people having to say "y" to the basic feature 
+and then y/m/n to each sub-feature is really damn annoying.
+
+So thank God for the few selects we have, and we should add a whole lot 
+more!
+
+			Linus
