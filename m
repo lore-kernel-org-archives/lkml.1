@@ -1,140 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933093AbXBEScR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933136AbXBESc3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933093AbXBEScR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 13:32:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933231AbXBEScO
+	id S933136AbXBESc3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 13:32:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933231AbXBESc2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 13:32:14 -0500
-Received: from mx1.suse.de ([195.135.220.2]:43316 "EHLO mx1.suse.de"
+	Mon, 5 Feb 2007 13:32:28 -0500
+Received: from brick.kernel.dk ([62.242.22.158]:10329 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933033AbXBESZ0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 13:25:26 -0500
-From: Tony Jones <tonyj@suse.de>
-To: linux-kernel@vger.kernel.org
-Cc: linux-fsdevel@vger.kernel.org, chrisw@sous-sol.org,
-       Tony Jones <tonyj@suse.de>, linux-security-module@vger.kernel.org,
-       agruen@suse.de
-Date: Mon, 05 Feb 2007 10:24:28 -0800
-Message-Id: <20070205182428.12164.93387.sendpatchset@ermintrude.int.wirex.com>
-In-Reply-To: <20070205182213.12164.40927.sendpatchset@ermintrude.int.wirex.com>
-References: <20070205182213.12164.40927.sendpatchset@ermintrude.int.wirex.com>
-Subject: [RFC 14/28] Pass struct vfsmount to the inode_link LSM hook
+	id S933169AbXBEScM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Feb 2007 13:32:12 -0500
+Date: Mon, 5 Feb 2007 19:34:38 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Andrew Morton <akpm@osdl.org>, David Chinner <dgc@sgi.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: 2.6.20-rc6-mm3
+Message-ID: <20070205183438.GL4487@kernel.dk>
+References: <20070131231253.fdebc9f5.akpm@osdl.org> <Pine.LNX.4.64.0702011055310.7010@schroedinger.engr.sgi.com> <20070201191857.GQ10305@kernel.dk> <Pine.LNX.4.64.0702011214230.10061@schroedinger.engr.sgi.com> <20070201202646.GR10305@kernel.dk> <Pine.LNX.4.64.0702011435060.4632@schroedinger.engr.sgi.com> <20070205120253.GC4487@kernel.dk> <20070205121735.GD4487@kernel.dk> <20070205125643.GG4487@kernel.dk> <Pine.LNX.4.64.0702051019340.6772@schroedinger.engr.sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0702051019340.6772@schroedinger.engr.sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pass the struct vfsmounts to the inode_link LSM hook
+On Mon, Feb 05 2007, Christoph Lameter wrote:
+> On Mon, 5 Feb 2007, Jens Axboe wrote:
+> 
+> > But for now this is just a debug test, can you see if xfs with barriers
+> > for that kernel now works as expected?
+> 
+> The kernel that failed before boots fine with this patch.
 
-Signed-off-by: Tony Jones <tonyj@suse.de>
-Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
+Wonderful, I'll leave the patch in-place for now.
 
-Index: linux-2.6/fs/namei.c
-===================================================================
---- linux-2.6.orig/fs/namei.c
-+++ linux-2.6/fs/namei.c
-@@ -2275,7 +2275,8 @@ int vfs_link(struct dentry *old_dentry, 
- 	if (S_ISDIR(old_dentry->d_inode->i_mode))
- 		return -EPERM;
- 
--	error = security_inode_link(old_dentry, dir, new_dentry);
-+	error = security_inode_link(old_dentry, old_mnt, dir, new_dentry,
-+				    new_mnt);
- 	if (error)
- 		return error;
- 
-Index: linux-2.6/include/linux/security.h
-===================================================================
---- linux-2.6.orig/include/linux/security.h
-+++ linux-2.6/include/linux/security.h
-@@ -289,8 +289,10 @@ struct request_sock;
-  * @inode_link:
-  *	Check permission before creating a new hard link to a file.
-  *	@old_dentry contains the dentry structure for an existing link to the file.
-+ *	@old_mnt is the vfsmount corresponding to @old_dentry (may be NULL).
-  *	@dir contains the inode structure of the parent directory of the new link.
-  *	@new_dentry contains the dentry structure for the new link.
-+ *	@new_mnt is the vfsmount corresponding to @new_dentry (may be NULL).
-  *	Return 0 if permission is granted.
-  * @inode_unlink:
-  *	Check the permission to remove a hard link to a file. 
-@@ -1212,8 +1214,9 @@ struct security_operations {
- 				    char **name, void **value, size_t *len);
- 	int (*inode_create) (struct inode *dir, struct dentry *dentry,
- 			     struct vfsmount *mnt, int mode);
--	int (*inode_link) (struct dentry *old_dentry,
--	                   struct inode *dir, struct dentry *new_dentry);
-+	int (*inode_link) (struct dentry *old_dentry, struct vfsmount *old_mnt,
-+	                   struct inode *dir, struct dentry *new_dentry,
-+			   struct vfsmount *new_mnt);
- 	int (*inode_unlink) (struct inode *dir, struct dentry *dentry);
- 	int (*inode_symlink) (struct inode *dir, struct dentry *dentry,
- 			      struct vfsmount *mnt, const char *old_name);
-@@ -1628,12 +1631,15 @@ static inline int security_inode_create 
- }
- 
- static inline int security_inode_link (struct dentry *old_dentry,
-+				       struct vfsmount *old_mnt,
- 				       struct inode *dir,
--				       struct dentry *new_dentry)
-+				       struct dentry *new_dentry,
-+				       struct vfsmount *new_mnt)
- {
- 	if (unlikely (IS_PRIVATE (old_dentry->d_inode)))
- 		return 0;
--	return security_ops->inode_link (old_dentry, dir, new_dentry);
-+	return security_ops->inode_link (old_dentry, old_mnt, dir,
-+					 new_dentry, new_mnt);
- }
- 
- static inline int security_inode_unlink (struct inode *dir,
-@@ -2359,8 +2365,10 @@ static inline int security_inode_create 
- }
- 
- static inline int security_inode_link (struct dentry *old_dentry,
-+				       struct vfsmount *old_mnt,
- 				       struct inode *dir,
--				       struct dentry *new_dentry)
-+				       struct dentry *new_dentry,
-+				       struct vfsmount *new_mnt)
- {
- 	return 0;
- }
-Index: linux-2.6/security/dummy.c
-===================================================================
---- linux-2.6.orig/security/dummy.c
-+++ linux-2.6/security/dummy.c
-@@ -270,8 +270,10 @@ static int dummy_inode_create (struct in
- 	return 0;
- }
- 
--static int dummy_inode_link (struct dentry *old_dentry, struct inode *inode,
--			     struct dentry *new_dentry)
-+static int dummy_inode_link (struct dentry *old_dentry,
-+			     struct vfsmount *old_mnt, struct inode *inode,
-+			     struct dentry *new_dentry,
-+			     struct vfsmount *new_mnt)
- {
- 	return 0;
- }
-Index: linux-2.6/security/selinux/hooks.c
-===================================================================
---- linux-2.6.orig/security/selinux/hooks.c
-+++ linux-2.6/security/selinux/hooks.c
-@@ -2141,11 +2141,16 @@ static int selinux_inode_create(struct i
- 	return may_create(dir, dentry, SECCLASS_FILE);
- }
- 
--static int selinux_inode_link(struct dentry *old_dentry, struct inode *dir, struct dentry *new_dentry)
-+static int selinux_inode_link(struct dentry *old_dentry,
-+			      struct vfsmount *old_mnt,
-+			      struct inode *dir,
-+			      struct dentry *new_dentry,
-+			      struct vfsmount *new_mnt)
- {
- 	int rc;
- 
--	rc = secondary_ops->inode_link(old_dentry,dir,new_dentry);
-+	rc = secondary_ops->inode_link(old_dentry, old_mnt, dir, new_dentry,
-+				       new_mnt);
- 	if (rc)
- 		return rc;
- 	return may_link(dir, old_dentry, MAY_LINK);
+-- 
+Jens Axboe
+
