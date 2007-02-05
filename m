@@ -1,169 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932812AbXBEOVZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932829AbXBEOVt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932812AbXBEOVZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 09:21:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932815AbXBEOVZ
+	id S932829AbXBEOVt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 09:21:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932815AbXBEOVs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 09:21:25 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:47991 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932812AbXBEOVY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 09:21:24 -0500
-Subject: [GFS2] make gfs2_change_nlink_i() static [22/54]
-From: Steven Whitehouse <swhiteho@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: Adrian Bunk <bunk@stusta.de>, cluster-devel@redhat.com
-In-Reply-To: <1170684425.11001.267.camel@quoit.chygwyn.com>
-References: <1170684425.11001.267.camel@quoit.chygwyn.com>
-Content-Type: text/plain
-Organization: Red Hat (UK) Ltd
-Date: Mon, 05 Feb 2007 14:27:27 +0000
-Message-Id: <1170685647.11001.315.camel@quoit.chygwyn.com>
+	Mon, 5 Feb 2007 09:21:48 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:58982 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932659AbXBEOVq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Feb 2007 09:21:46 -0500
+Date: Mon, 5 Feb 2007 14:34:39 +0000
+From: Alan <alan@lxorguk.ukuu.org.uk>
+To: Tejun Heo <htejun@gmail.com>
+Cc: bzolnier@gmail.com, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Nvidia cable detection problems (was [PATCH] amd74xx: don't
+ configure udma mode higher than BIOS did)
+Message-ID: <20070205143439.6962c076@localhost.localdomain>
+In-Reply-To: <45C73A3E.6080700@gmail.com>
+References: <20070205075836.GG1625@htj.dyndns.org>
+	<20070205112410.5a3c3182@localhost.localdomain>
+	<45C72012.7050605@gmail.com>
+	<20070205132247.6f611e3c@localhost.localdomain>
+	<45C73A3E.6080700@gmail.com>
+X-Mailer: Claws Mail 2.7.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.2.2 (2.2.2-5) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 5c98f86d6ac69688a53e96f294a1b7a8e33c6070 Mon Sep 17 00:00:00 2001
-From: Adrian Bunk <bunk@stusta.de>
-Date: Sat, 13 Jan 2007 10:56:41 +0100
-Subject: [PATCH] [GFS2] make gfs2_change_nlink_i() static
+> > Also another case you broke is kexec.
+> 
+> 1. If kexec is done while either of amd74xx or pata_amd is loaded, the
+> currently configured mode is what the kexeced kernel would use as
+> reference.  If the port has been slowed down during operation, yeah, it
+> would be sub-optimal but again the worst can happen is udma33.
 
-On Thu, Jan 11, 2007 at 10:26:27PM -0800, Andrew Morton wrote:
->...
-> Changes since 2.6.20-rc3-mm1:
->...
->  git-gfs2-nmw.patch
->...
->  git trees
->...
+So we now have an exciting "well kexec might work but here is a new
+random weirdness to screw people who it hit".
 
-This patch makes the needlessly globlal gfs2_change_nlink_i() static.
+> CK804 IDE, at least mine, reports 80c in a lot of cases where it
+> shouldn't.  I dunno the reason but it also makes drives confused about
+> cable type.  Maybe it has the wrong capacitor attached or something.
+> This is A8N-E from ASUS, probably one of the popular ones using nf4.
 
-Signed-off-by: Adrian Bunk <bunk@stusta.de>
-Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
+I take it this was how you came to find every cable related bug while
+trying to work out what was going on ?
 
-diff --git a/fs/gfs2/inode.c b/fs/gfs2/inode.c
-index 58c2ce7..2603169 100644
---- a/fs/gfs2/inode.c
-+++ b/fs/gfs2/inode.c
-@@ -280,6 +280,50 @@ out:
- 	return error;
- }
- 
-+static int gfs2_change_nlink_i(struct gfs2_inode *ip)
-+{
-+	struct gfs2_sbd *sdp = ip->i_inode.i_sb->s_fs_info;
-+	struct gfs2_inode *rindex = GFS2_I(sdp->sd_rindex);
-+	struct gfs2_glock *ri_gl = rindex->i_gl;
-+	struct gfs2_rgrpd *rgd;
-+	struct gfs2_holder ri_gh, rg_gh;
-+	int existing, error;
-+
-+	/* if we come from rename path, we could have the lock already */
-+	existing = gfs2_glock_is_locked_by_me(ri_gl);
-+	if (!existing) {
-+		error = gfs2_rindex_hold(sdp, &ri_gh);
-+		if (error)
-+			goto out;
-+	}
-+
-+	/* find the matching rgd */
-+	error = -EIO;
-+	rgd = gfs2_blk2rgrpd(sdp, ip->i_num.no_addr);
-+	if (!rgd)
-+		goto out_norgrp;
-+
-+	/*
-+	 * Eventually we may want to move rgd(s) to a linked list
-+	 * and piggyback the free logic into one of gfs2 daemons
-+	 * to gain some performance.
-+	 */
-+	if (!rgd->rd_gl || !gfs2_glock_is_locked_by_me(rgd->rd_gl)) {
-+		error = gfs2_glock_nq_init(rgd->rd_gl, LM_ST_EXCLUSIVE, 0, &rg_gh);
-+		if (error)
-+			goto out_norgrp;
-+
-+		gfs2_unlink_di(&ip->i_inode); /* mark inode unlinked */
-+		gfs2_glock_dq_uninit(&rg_gh);
-+	}
-+
-+out_norgrp:
-+	if (!existing)
-+		gfs2_glock_dq_uninit(&ri_gh);
-+out:
-+	return error;
-+}
-+
- /**
-  * gfs2_change_nlink - Change nlink count on inode
-  * @ip: The GFS2 inode
-@@ -326,50 +370,6 @@ int gfs2_change_nlink(struct gfs2_inode *ip, int diff)
- 	return error;
- }
- 
--int gfs2_change_nlink_i(struct gfs2_inode *ip)
--{
--	struct gfs2_sbd *sdp = ip->i_inode.i_sb->s_fs_info;
--	struct gfs2_inode *rindex = GFS2_I(sdp->sd_rindex);
--	struct gfs2_glock *ri_gl = rindex->i_gl;
--	struct gfs2_rgrpd *rgd;
--	struct gfs2_holder ri_gh, rg_gh;
--	int existing, error;
--
--	/* if we come from rename path, we could have the lock already */
--	existing = gfs2_glock_is_locked_by_me(ri_gl);
--	if (!existing) {
--		error = gfs2_rindex_hold(sdp, &ri_gh);
--		if (error)
--			goto out;
--	}
--
--	/* find the matching rgd */
--	error = -EIO;
--	rgd = gfs2_blk2rgrpd(sdp, ip->i_num.no_addr);
--	if (!rgd)
--		goto out_norgrp;
--
--	/*
--	 * Eventually we may want to move rgd(s) to a linked list
--	 * and piggyback the free logic into one of gfs2 daemons
--	 * to gain some performance.
--	 */
--	if (!rgd->rd_gl || !gfs2_glock_is_locked_by_me(rgd->rd_gl)) {
--		error = gfs2_glock_nq_init(rgd->rd_gl, LM_ST_EXCLUSIVE, 0, &rg_gh);
--		if (error)
--			goto out_norgrp;
--
--		gfs2_unlink_di(&ip->i_inode); /* mark inode unlinked */
--		gfs2_glock_dq_uninit(&rg_gh);
--	}
--
--out_norgrp:
--	if (!existing)
--		gfs2_glock_dq_uninit(&ri_gh);
--out:
--	return error;
--}
--
- struct inode *gfs2_lookup_simple(struct inode *dip, const char *name)
- {
- 	struct qstr qstr;
-diff --git a/fs/gfs2/inode.h b/fs/gfs2/inode.h
-index cee281b..b57f448 100644
---- a/fs/gfs2/inode.h
-+++ b/fs/gfs2/inode.h
-@@ -40,7 +40,6 @@ int gfs2_inode_refresh(struct gfs2_inode *ip);
- 
- int gfs2_dinode_dealloc(struct gfs2_inode *inode);
- int gfs2_change_nlink(struct gfs2_inode *ip, int diff);
--int gfs2_change_nlink_i(struct gfs2_inode *ip);
- struct inode *gfs2_lookupi(struct inode *dir, const struct qstr *name,
- 			   int is_root, struct nameidata *nd);
- struct inode *gfs2_createi(struct gfs2_holder *ghs, const struct qstr *name,
--- 
-1.4.4.2
+> When that happens, libata EH does its job and slows the interface to
+> udma33 after quite a few error messages.  On IDE, if this happens, the
+> drive is put into PIO mode making the machine painful to use.
 
+No the IDE layer does DMA changedown fine, well apart from all the
+error/timer races in the old IDE code.
 
+> Googling...  I'm listing a few which seem similar.
 
+All of which are before you fixed the drive side stuff
+
+>   http://search.luky.org/linux-kernel.2005/msg30919.html
+>   http://www.centos.org/modules/newbb/viewtopic.php?topic_id=4662
+>   http://blog.gmane.org/gmane.linux.bios/month=20060601/page=6
+
+And the third is LinuxBIOS so you've actually not fixed anything for that
+one.
+
+> Please keep in mind that no one has reported driver side detection is
+> wrong in all these years even when in some cases we just assume 80c on
+> host side and depended on driver side detection (amd74xx UDMA66
+> controllers), but I'm pretty sure it has caused some griefs out in the wild.
+
+Yep.
+
+> I agree with you that this is a hack and ugly as hell.  I don't like it
+> either, but it solves an existing problem which could have and possibly
+> will hit many users.  So, I think this problem should at least be
+> verified.  If it's just my BIOS/motherboard that's crazy, I have no
+> problem forgetting about this.
+
+It certainly seems to be Nvidia specific, so perhaps Nvidia can provide
+more details on the Nforce4 cable detection ? As with a lot of Nvidia
+stuff there was much reverse engineering involved in the original code
+base.
+
+And if its a specific board or couple of boards then we should perhaps
+use DMI to match them specifically.
+
+> So, anyone with CK804 (a.k.a NF4) up for some testing?
+
+If it still goes I've got a rather iffy NF3 but not an NF4 handy.
+
+Alan
