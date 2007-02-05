@@ -1,64 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933378AbXBETCe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932969AbXBETE4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933378AbXBETCe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 14:02:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933372AbXBETCe
+	id S932969AbXBETE4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 14:04:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933201AbXBETEz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 14:02:34 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:42804 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933366AbXBETCb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 14:02:31 -0500
-Date: Mon, 5 Feb 2007 19:02:30 +0000
-From: Christoph Hellwig <hch@infradead.org>
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-Cc: Christoph Hellwig <hch@infradead.org>, Tony Jones <tonyj@suse.de>,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       chrisw@sous-sol.org, linux-security-module@vger.kernel.org,
-       agruen@suse.de, viro@zeniv.linux.org.uk
-Subject: Re: [RFC 0/28] Patches to pass vfsmount to LSM inode security hooks
-Message-ID: <20070205190230.GA23104@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Trond Myklebust <trond.myklebust@fys.uio.no>,
-	Tony Jones <tonyj@suse.de>, linux-kernel@vger.kernel.org,
-	linux-fsdevel@vger.kernel.org, chrisw@sous-sol.org,
-	linux-security-module@vger.kernel.org, agruen@suse.de,
-	viro@zeniv.linux.org.uk
-References: <20070205182213.12164.40927.sendpatchset@ermintrude.int.wirex.com> <20070205184410.GA20672@infradead.org> <1170701906.5934.41.camel@lade.trondhjem.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1170701906.5934.41.camel@lade.trondhjem.org>
-User-Agent: Mutt/1.4.2.2i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Mon, 5 Feb 2007 14:04:55 -0500
+Received: from omx2-ext.sgi.com ([192.48.171.19]:60552 "EHLO omx2.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S932969AbXBETEy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Feb 2007 14:04:54 -0500
+Date: Mon, 5 Feb 2007 11:04:34 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+To: Matt Mackall <mpm@selenic.com>
+cc: Arjan van de Ven <arjan@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Rik van Riel <riel@redhat.com>
+Subject: Re: [RFC] Tracking mlocked pages and moving them off the LRU
+In-Reply-To: <20070205163847.GI16722@waste.org>
+Message-ID: <Pine.LNX.4.64.0702051102150.20617@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0702022214580.3960@schroedinger.engr.sgi.com>
+ <20070203005316.eb0b4042.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0702030946330.5388@schroedinger.engr.sgi.com>
+ <1170525860.3073.1054.camel@laptopd505.fenrus.org>
+ <Pine.LNX.4.64.0702031055210.18224@schroedinger.engr.sgi.com>
+ <20070203172242.e5bf2534.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0702031744060.31986@schroedinger.engr.sgi.com>
+ <1170576977.3073.1100.camel@laptopd505.fenrus.org>
+ <Pine.LNX.4.64.0702042351040.23790@schroedinger.engr.sgi.com>
+ <1170664774.3073.1236.camel@laptopd505.fenrus.org> <20070205163847.GI16722@waste.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 05, 2007 at 10:58:26AM -0800, Trond Myklebust wrote:
-> On Mon, 2007-02-05 at 18:44 +0000, Christoph Hellwig wrote:
-> > Just FYI:  Al was very opposed to the idea of passing the vfsmount to
-> > the vfs_ helpers, so you should discuss this with him.
-> > 
-> > Looking at the actual patches I see you're lazy in a lot of places.
-> > Please make sure that when you introduce a vfsmount argument somewhere
-> > that it is _always_ passed and not just when it's conveniant.  Yes, that's
-> > more work, but then again if you're not consistant anyone half-serious
-> > will laught at a security model using this infrasturcture.
-> 
-> nfsd in particular tends to be a bit lazy about passing around vfsmount
-> info. Forcing it to do so should not be hard since the vfsmount is
-> already cached in the "struct export" (which can be found using the
-> filehandle). It will take a bit of re-engineering in order to pass that
-> information around inside the nfsd code, though.
+Patch seems to work and survives AIM7. However, we only know about 30% of 
+the Mlocked pages after boot. With this additional patch to 
+opportunistically move pages off the LRU immediately I can get the counter 
+be accurate (for all practical purposes) like the non lazy version:
 
-I actually have a patch to fix that.  It's part of a bigger series
-that's not quite ready, but I hope to finish all of it this month.
 
-> Note also that it might be nice to enforce the vfsmount argument by
-> replacing the existing dentry parameters with a struct path instead of
-> adding an extra reference to the vfsmount to existing functions.
-
-That definitly sounds like a good idea, independent of whether we want
-to pass the vfsmount in more places or not.
+Index: current/mm/memory.c
+===================================================================
+--- current.orig/mm/memory.c	2007-02-05 10:44:10.000000000 -0800
++++ current/mm/memory.c	2007-02-05 11:01:46.000000000 -0800
+@@ -919,6 +919,30 @@ void anon_add(struct vm_area_struct *vma
+ }
+ 
+ /*
++ * Opportunistically move the page off the LRU
++ * if possible. If we do not succeed then the LRU
++ * scans will take the page off.
++ */
++void try_to_set_mlocked(struct page *page)
++{
++	struct zone *zone;
++	unsigned long flags;
++
++	if (!PageLRU(page) || PageMlocked(page))
++		return;
++
++	zone = page_zone(page);
++	if (spin_trylock_irqsave(&zone->lru_lock, flags)) {
++		if (PageLRU(page) && !PageMlocked(page)) {
++			ClearPageLRU(page);
++			list_del(&page->lru);
++			SetPageMlocked(page);
++			__inc_zone_page_state(page, NR_MLOCK);
++		}
++		spin_unlock_irqrestore(&zone->lru_lock, flags);
++	}
++}
++/*
+  * Do a quick page-table lookup for a single page.
+  */
+ struct page *follow_page(struct vm_area_struct *vma, unsigned long address,
+@@ -978,6 +1002,8 @@ struct page *follow_page(struct vm_area_
+ 			set_page_dirty(page);
+ 		mark_page_accessed(page);
+ 	}
++	if (vma->vm_flags & VM_LOCKED)
++		try_to_set_mlocked(page);
+ unlock:
+ 	pte_unmap_unlock(ptep, ptl);
+ out:
+@@ -2271,6 +2297,8 @@ retry:
+ 		else {
+ 			inc_mm_counter(mm, file_rss);
+ 			page_add_file_rmap(new_page);
++			if (vma->vm_flags & VM_LOCKED)
++				try_to_set_mlocked(new_page);
+ 			if (write_access) {
+ 				dirty_page = new_page;
+ 				get_page(dirty_page);
