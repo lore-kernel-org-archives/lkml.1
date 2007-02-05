@@ -1,56 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933477AbXBEVgE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933483AbXBEVgY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933477AbXBEVgE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 16:36:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933475AbXBEVgD
+	id S933483AbXBEVgY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 16:36:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933480AbXBEVgY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 16:36:03 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:55509 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933460AbXBEVgB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 16:36:01 -0500
-Date: Mon, 5 Feb 2007 21:35:30 +0000
-From: Christoph Hellwig <hch@infradead.org>
-To: Nigel Cunningham <nigel@nigel.suspend2.net>
-Cc: Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       Andrew Morton <akpm@linux-foundation.org>, akuster@mvista.com,
-       linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [patch 1/1] PM: Adds remount fs ro at suspend
-Message-ID: <20070205213530.GA9794@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Nigel Cunningham <nigel@nigel.suspend2.net>,
-	Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-	Andrew Morton <akpm@linux-foundation.org>, akuster@mvista.com,
-	linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>,
-	"Rafael J. Wysocki" <rjw@sisk.pl>
-References: <20070202235132.EDBDF1C448@hermes.mvista.com> <20070202161611.cf8b4328.akpm@linux-foundation.org> <20070203003536.GA619@khazad-dum.debian.net> <1170710913.6105.39.camel@nigel.suspend2.net>
+	Mon, 5 Feb 2007 16:36:24 -0500
+Received: from outpost.ds9a.nl ([213.244.168.210]:53448 "EHLO outpost.ds9a.nl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933475AbXBEVgW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Feb 2007 16:36:22 -0500
+Date: Mon, 5 Feb 2007 22:36:19 +0100
+From: bert hubert <bert.hubert@netherlabs.nl>
+To: Davide Libenzi <davidel@xmailserver.org>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Zach Brown <zach.brown@oracle.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-aio@kvack.org, Suparna Bhattacharya <suparna@in.ibm.com>,
+       Benjamin LaHaise <bcrl@kvack.org>
+Subject: Re: [PATCH 2 of 4] Introduce i386 fibril scheduling
+Message-ID: <20070205213618.GA30923@outpost.ds9a.nl>
+Mail-Followup-To: bert hubert <bert.hubert@netherlabs.nl>,
+	Davide Libenzi <davidel@xmailserver.org>,
+	Ingo Molnar <mingo@elte.hu>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Zach Brown <zach.brown@oracle.com>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	linux-aio@kvack.org, Suparna Bhattacharya <suparna@in.ibm.com>,
+	Benjamin LaHaise <bcrl@kvack.org>
+References: <patchbomb.1170193181@tetsuo.zabbo.net> <df7bc026d50ec5bbdd8e.1170193183@tetsuo.zabbo.net> <20070201083611.GC18233@elte.hu> <Pine.LNX.4.64.0702011154110.3632@woody.linux-foundation.org> <20070202104900.GA13941@elte.hu> <Pine.LNX.4.64.0702020738500.15057@woody.linux-foundation.org> <20070202222110.GA1212@elte.hu> <Pine.LNX.4.64.0702021525370.5219@alien.or.mcafeemobile.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1170710913.6105.39.camel@nigel.suspend2.net>
-User-Agent: Mutt/1.4.2.2i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+In-Reply-To: <Pine.LNX.4.64.0702021525370.5219@alien.or.mcafeemobile.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 06, 2007 at 08:28:33AM +1100, Nigel Cunningham wrote:
-> Why do you think remounting filesystems is necessary? Are you getting
-> problems with some particular filesystem?
-> 
-> If I recall correctly, we briefly tried remounting filesystems in
-> Suspend2, but it created problems with logging - some files open r/w
-> were readonly afterwards.
+On Fri, Feb 02, 2007 at 03:37:09PM -0800, Davide Libenzi wrote:
 
-Yes, that's the biggest problem with the forced remount r/o hack -
-FMODE_WRITE is dropped from all files, and can't be recovered.
-(and at the same time in progress writes or writes through shared
-mmaps are totally ignored).
+> Since I still think that the many-thousands potential async operations 
+> coming from network sockets are better handled with a classical event 
+> machanism [1], and since smooth integration of new async syscall into the 
+> standard POSIX infrastructure is IMO a huge win, I think we need to have a 
+> "bridge" to allow async completions being detectable through a pollable 
+> (by the mean of select/poll/epoll whatever) device.
 
-> We then tried bdev freezing with much better success.
+> [1] Unless you really want to have thousands of kthreads/fibrils lingering 
+>     on the system.
 
-Yes, that's the right thing to do if you want to be safe, but
-we already had that discussion..
+>From my end as an application developer, yes please. Either make it
+perfectly ok to have thousands of outstanding asynchronous system calls (I
+work with thousands of separate sockets), or allow me to select/poll/epoll
+on the "async fd".
 
+Alternatively, something like SIGIO ('SIGASYS'?) might be considered, but,
+well, the fd might be easier.
+
+In fact, perhaps the communication channel might simply *be* an fd. Queueing
+up syscalls sounds remarkably like sending datagrams. 
+
+	Bert
+
+-- 
+http://www.PowerDNS.com      Open source, database driven DNS Software 
+http://netherlabs.nl              Open and Closed source services
