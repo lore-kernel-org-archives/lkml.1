@@ -1,65 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932300AbXBENGV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932113AbXBENJH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932300AbXBENGV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 08:06:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932333AbXBENGV
+	id S932113AbXBENJH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 08:09:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932333AbXBENJG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 08:06:21 -0500
-Received: from nf-out-0910.google.com ([64.233.182.190]:24277 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932300AbXBENGU (ORCPT
+	Mon, 5 Feb 2007 08:09:06 -0500
+Received: from moutng.kundenserver.de ([212.227.126.177]:51094 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932113AbXBENJF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 08:06:20 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=InsPaBJtGm3jf0ad3op75puKoMkMq17Fs6xxmKER01yLVW8S3aZz710bvGWn7r/DGSMxJ5pbu6jXtyUdIGDhbhwwhM/Et9EmqhwVRphIvq0ZuixYIQkPPUzXbMtEBrkZodzMkvX6jkXP500R7HKZPrhfu58mE/0qX4o0wzFkuKE=
-Message-ID: <625fc13d0702050506q11b971e3j9345b81c651ed232@mail.gmail.com>
-Date: Mon, 5 Feb 2007 07:06:18 -0600
-From: "Josh Boyer" <jwboyer@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>, "David Woodhouse" <dwmw2@infradead.org>
-Subject: Re: [patch] MTD: fix DOC2000/2001/2001PLUS build error
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20070205084523.GA21858@elte.hu>
+	Mon, 5 Feb 2007 08:09:05 -0500
+Date: Mon, 5 Feb 2007 14:08:51 +0100 (CET)
+From: Bodo Eggert <7eggert@gmx.de>
+To: Alan <alan@lxorguk.ukuu.org.uk>
+cc: Bodo Eggert <7eggert@gmx.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jan Engelhardt <jengelh@linux01.gwdg.de>, Andrew Morton <akpm@osdl.org>,
+       Jon Masters <jonathan@jonmasters.org>,
+       Alexey Dobriyan <adobriyan@gmail.com>
+Subject: Re: [PATCH/RFC] alternative aproach to: Ban module license tag string
+ termination trick
+In-Reply-To: <20070203200209.4f931fdc@localhost.localdomain>
+Message-ID: <Pine.LNX.4.58.0702051342210.3110@be1.lrz>
+References: <Pine.LNX.4.58.0702022216120.25199@be1.lrz>
+ <20070203200209.4f931fdc@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <Pine.LNX.4.64.0702041057090.8424@woody.linux-foundation.org>
-	 <20070205084523.GA21858@elte.hu>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
+X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
+X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
+X-Provags-ID: kundenserver.de abuse@kundenserver.de login:9b3b2cc444a07783f194c895a09f1de9
+X-Provags-ID2: V01U2FsdGVkX19/mj6BFoLZxiFUfvIisDl0Z3Uyzg1Kc1omGLk/YVDwrG4QAk3TOP3qhQCaijXwi6aWptP8Wolab2Dp2FtGdBFb/eL6x9203xZeXIc47p1eDg==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/5/07, Ingo Molnar <mingo@elte.hu> wrote:
-> Subject: [patch] MTD: fix DOC2000/2001/2001PLUS build error
-> From: Ingo Molnar <mingo@elte.hu>
->
-> The very first "make ARCH=i386 randconfig" gave this build error:
->
->     LD      vmlinux
->   drivers/built-in.o: In function `cafe_nand_remove':
->   cafe.c:(.text+0x19277a): undefined reference to `nand_release'
->   drivers/built-in.o: In function `cafe_nand_cmdfunc':
->   cafe.c:(.text+0x193036): undefined reference to `nand_wait_ready'
->   drivers/built-in.o: In function `cafe_nand_probe':
->   cafe.c:(.text+0x19359e): undefined reference to `nand_scan_ident'
->   cafe.c:(.text+0x193658): undefined reference to `nand_scan_tail'
->   distcc[1703] ERROR: compile (null) on localhost failed
->   make: *** [vmlinux] Error 1
->
-> which i suspect was a side-effect of the late and optimistic MTD merge.
->
-> but hey, we always knew Linux was better at offense than at defense, and
-> good offense is what wins the game in the end, as the Bears had to find
-> out the hard way ;-)
->
-> so here's the fix for the 3 affected MTD drivers: DOC2000, DOC2001 and
-> DOC2001PLUS.
+On Sat, 3 Feb 2007, Alan wrote:
+> Bodo Eggert <7eggert@gmx.de> wrote:
 
-Erm... from your output above, cafe.c is completely separate from the
-DOC drivers.  Does this also need a fix, or...
+> > This patch changes the module license handling code to:
+> > - allow modules to have multiple licenses
+> 
+> NAK
 
-David?
+I still think it would be a good idea, but if too many people misinterpret 
+my concept, you can't do that.
 
-josh
+> > - access GPL symbols if at least one license is GPL-compatible
+> 
+> NAK
+> 
+> The legal boundary of a work is not "the file".
+
+IMO, the scope of the MODULE_LICENSE is the module. If you intend to ship 
+one binary using _only_ the proprietary license, you'll have to remove the 
+license=GPL-string. Obviously this isn't obvious. :(
+
+-- 
+Backups? We doan NEED no steenking baX%^~,VbKx NO CARRIER 
