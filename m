@@ -1,39 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933127AbXBEUO4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933162AbXBEUPN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933127AbXBEUO4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 15:14:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933122AbXBEUO4
+	id S933162AbXBEUPN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 15:15:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933160AbXBEUPN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 15:14:56 -0500
-Received: from gate.crashing.org ([63.228.1.57]:49707 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933127AbXBEUOz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 15:14:55 -0500
-Subject: Re: [PATCH] Missing include in include/asm-powerpc/prom.h
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@osdl.org>,
-       paulus@samba.org, linuxppc-dev@ozlabs.org
-In-Reply-To: <20070205142905.GA31392@Krystal>
-References: <20070205142905.GA31392@Krystal>
-Content-Type: text/plain
-Date: Tue, 06 Feb 2007 07:14:29 +1100
-Message-Id: <1170706469.2620.124.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 5 Feb 2007 15:15:13 -0500
+Received: from europa.telenet-ops.be ([195.130.137.75]:60425 "EHLO
+	europa.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933122AbXBEUPL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Feb 2007 15:15:11 -0500
+Date: Mon, 5 Feb 2007 21:15:07 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: "Ahmed S. Darwish" <darwish.07@gmail.com>
+Cc: linux-m68k@vger.kernel.org,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2.6.20] arch M68K: user ARRAY_SIZE macro when appropriate
+In-Reply-To: <20070205024341.GO18118@Ahmed>
+Message-ID: <Pine.LNX.4.64.0702052114120.26055@anakin>
+References: <20070205024341.GO18118@Ahmed>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-02-05 at 09:29 -0500, Mathieu Desnoyers wrote:
-> Missing include in include/asm-powerpc/prom.h
+On Mon, 5 Feb 2007, Ahmed S. Darwish wrote:
+> A patch to use ARRAY_SIZE macro already defined in linux/kernel.h
 > 
-> include/asm-powerpc/prom.h needs to include asm/irq.h because it uses
-> irq_of_parse_and_map and NO_IRQ. It applies on 2.6.20.
+> Signed-off-by: Ahmed S. Darwish <darwish.07@gmail.com>
+> ---
+> Patch isn't compile checked since I have no m68k machine at hand.
 
-I'd rather not do that.... better to move of_irq_to_resource() to
-prom_parse.c 
+Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
 
-Ben
+Gr{oetje,eeting}s,
 
+						Geert
 
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
