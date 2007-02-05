@@ -1,50 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964777AbXBEVze@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964781AbXBEV5r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964777AbXBEVze (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 16:55:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964778AbXBEVze
+	id S964781AbXBEV5r (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 16:57:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964783AbXBEV5r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 16:55:34 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:45952 "EHLO mail.dvmed.net"
+	Mon, 5 Feb 2007 16:57:47 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:35513 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964777AbXBEVzd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 16:55:33 -0500
-Message-ID: <45C7A7D0.407@garzik.org>
-Date: Mon, 05 Feb 2007 16:55:28 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
+	id S964781AbXBEV5q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Feb 2007 16:57:46 -0500
+Date: Mon, 5 Feb 2007 13:57:15 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: bert hubert <bert.hubert@netherlabs.nl>
+cc: Davide Libenzi <davidel@xmailserver.org>, Ingo Molnar <mingo@elte.hu>,
+       Zach Brown <zach.brown@oracle.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-aio@kvack.org, Suparna Bhattacharya <suparna@in.ibm.com>,
+       Benjamin LaHaise <bcrl@kvack.org>
+Subject: Re: [PATCH 2 of 4] Introduce i386 fibril scheduling
+In-Reply-To: <20070205213618.GA30923@outpost.ds9a.nl>
+Message-ID: <Pine.LNX.4.64.0702051350010.8424@woody.linux-foundation.org>
+References: <patchbomb.1170193181@tetsuo.zabbo.net>
+ <df7bc026d50ec5bbdd8e.1170193183@tetsuo.zabbo.net> <20070201083611.GC18233@elte.hu>
+ <Pine.LNX.4.64.0702011154110.3632@woody.linux-foundation.org>
+ <20070202104900.GA13941@elte.hu> <Pine.LNX.4.64.0702020738500.15057@woody.linux-foundation.org>
+ <20070202222110.GA1212@elte.hu> <Pine.LNX.4.64.0702021525370.5219@alien.or.mcafeemobile.com>
+ <20070205213618.GA30923@outpost.ds9a.nl>
 MIME-Version: 1.0
-To: Alan <alan@lxorguk.ukuu.org.uk>
-CC: Oleg Verych <olecom@flower.upol.cz>, Allen Martin <AMartin@nvidia.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: Re: Nvidia cable detection problems & ACPI (beware, slight off-top)
-References: <20070205075836.GG1625@htj.dyndns.org>	<20070205112410.5a3c3182@localhost.localdomain>	<45C72012.7050605@gmail.com>	<20070205132247.6f611e3c@localhost.localdomain>	<45C73A3E.6080700@gmail.com>	<20070205143439.6962c076@localhost.localdomain>	<45C7444F.4070500@gmail.com>	<58cb370e0702050709w1b7682dr5dff9e7ce69465a@mail.gmail.com>	<DBFABB80F7FD3143A911F9E6CFD477B01EC0DD7D@hqemmail02.nvidia.com>	<E1HEB7U-0007IH-FV@flower> <20070205220442.6e13a7b6@localhost.localdomain>
-In-Reply-To: <20070205220442.6e13a7b6@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.7 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan wrote:
->> I'm very upset, that hardware nvidia-lego forces system software (and
->> programmers) to know "unfortunately no standard" ways of desinging
->> things... One read-only-for-os, hardware set bit in kind of control
+
+
+On Mon, 5 Feb 2007, bert hubert wrote:
 > 
-> The hardware doesn't. The BIOS authors do by not setting the cable flags.
-> We actually need to use the STM and GTM methods for PC suspend/resume so
-> it makes sense to see if they will work out in this case too.
+> From my end as an application developer, yes please. Either make it
+> perfectly ok to have thousands of outstanding asynchronous system calls (I
+> work with thousands of separate sockets), or allow me to select/poll/epoll
+> on the "async fd".
 
+No can do.
 
-We also need ACPI, where available, because that's the only way to 
-obtain a BIOS-set hard drive password.  And BIOS vendors often deliver 
-hard drive-specific errata this way, if the problem is serious enough 
-(though certainly we would prefer that the OS knows about drive errata, 
-when a runtime patch is necessary)
+Allocating an fd is actually too expensive, exactly because a lot of these 
+operations are supposed to be a few hundred ns, and taking locks is simply 
+a bad idea.
 
-	Jeff
+But if you want to, we could have a *separate* "convert async cookie to 
+fd" so that you can poll for it, or something.
 
+I doubt very many people want to do that. It would tend to simply be nicer 
+to do
 
+	async(poll);
+	async(waitpid);
+	async(.. wait foranything else ..)
+
+followed by a
+
+	wait_for_async();
+
+That's just a much NICER approach, I would argue. And it automatically 
+and very naturally solves the "wait for different kinds of events" 
+question, in a way that "poll()" never did (except by turning all events 
+into file descriptors or signals).
+
+> Alternatively, something like SIGIO ('SIGASYS'?) might be considered, but,
+> well, the fd might be easier.
+
+Again. NO WAY. Signals are just damn expensive. At most, it would be an 
+option again, but if you want high performance, signals simply aren't very 
+good. They are also a nice way to make your user-space code very racy.
+
+> In fact, perhaps the communication channel might simply *be* an fd. Queueing
+> up syscalls sounds remarkably like sending datagrams. 
+
+I'm the first to say that file descriptors is the UNIX way, but so are 
+processes, and I think this is MUCH better done as a "process" interface. 
+In other words, instead of doing it as a filedescriptor, do it as a 
+"micro-fork/exec", and have the "wait()" equivalent. It's just that we 
+don't fork a "real process", and we don't exec a "real program", we just 
+exec a single system call.
+
+If you think of it in those terms, it all makes sense *without* any file 
+descriptors what-so-ever, and the "wait_for_async()" interface also makes 
+a ton of sense (it really *is* "waitpid()" for the system call).
+
+		Linus
