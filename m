@@ -1,52 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933429AbXBETjW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932378AbXBETmK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933429AbXBETjW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 14:39:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933426AbXBETjW
+	id S932378AbXBETmK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 14:42:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933420AbXBETmK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 14:39:22 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:44318 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933429AbXBETjU (ORCPT
+	Mon, 5 Feb 2007 14:42:10 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:22557 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932378AbXBETmI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 14:39:20 -0500
-Subject: Re: [RFC 0/28] Patches to pass vfsmount to LSM inode security hooks
-From: Arjan van de Ven <arjan@infradead.org>
-To: casey@schaufler-ca.com
-Cc: Tony Jones <tonyj@suse.de>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, chrisw@sous-sol.org,
-       linux-security-module@vger.kernel.org, agruen@suse.de
-In-Reply-To: <101270.11571.qm@web36602.mail.mud.yahoo.com>
-References: <101270.11571.qm@web36602.mail.mud.yahoo.com>
-Content-Type: text/plain
-Organization: Intel International BV
-Date: Mon, 05 Feb 2007 20:39:08 +0100
-Message-Id: <1170704348.3107.61.camel@laptopd505.fenrus.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
+	Mon, 5 Feb 2007 14:42:08 -0500
+In-Reply-To: <Pine.LNX.4.64.0702051121420.14453@alien.or.mcafeemobile.com>
+References: <patchbomb.1170193181@tetsuo.zabbo.net> <df7bc026d50ec5bbdd8e.1170193183@tetsuo.zabbo.net> <20070201083611.GC18233@elte.hu> <Pine.LNX.4.64.0702011154110.3632@woody.linux-foundation.org> <20070202104900.GA13941@elte.hu> <Pine.LNX.4.64.0702020738500.15057@woody.linux-foundation.org> <20070202222110.GA1212@elte.hu> <Pine.LNX.4.64.0702021445410.15057@woody.linux-foundation.org> <20070202235531.GA18904@elte.hu> <Pine.LNX.4.64.0702021636410.15057@woody.linux-foundation.org> <20070203082308.GA6748@elte.hu> <B27B1E97-10E3-4A60-A476-4ED4173481A5@oracle.com> <Pine.LNX.4.64.0702051121420.14453@alien.or.mcafeemobile.com>
+Mime-Version: 1.0 (Apple Message framework v752.3)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <8CF4BE18-8EEF-4ACA-A4B4-B627ED3B4831@oracle.com>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-aio@kvack.org, Suparna Bhattacharya <suparna@in.ibm.com>,
+       Benjamin LaHaise <bcrl@kvack.org>
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+From: Zach Brown <zach.brown@oracle.com>
+Subject: Re: [PATCH 2 of 4] Introduce i386 fibril scheduling
+Date: Mon, 5 Feb 2007 14:41:31 -0500
+To: Davide Libenzi <davidel@xmailserver.org>
+X-Mailer: Apple Mail (2.752.3)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> The "result" of one async operation is basically a cookie and a result
+> code. Eight or sixteen bytes at most.
 
-> 
-> Would it be possible for you to describe those
-> methods? Perhaps there is a better way to go
-> about getting the information you need without
-> introducing this level of change.
+s/basically/minimally/
 
-the code did a full walk of the vfsmounts to find a match. Entirely
-horrid!
+Well, yeah.  The patches I sent had:
 
-There is no problem with such a medium-severity level change as long as
-it's the right thing... in Linux we mostly try to solve problems the
-right way rather than adding workarounds on both sides of an interface
-after all ;-)
+struct asys_completion {
+         long            return_code;
+         unsigned long   cookie;
+};
 
+That's as stupid as it gets.
 
--- 
-if you want to mail me at work (you don't), use arjan (at) linux.intel.com
-Test the interaction between Linux and your BIOS via http://www.linuxfirmwarekit.org
+> IMO, before going wacko designing
+> complex shared userspace-kernel result buffers, I think it'd be better
+> measuring the worth-value of the thing ;)
 
+Obviously, yes.
+
+The potential win is to be able to have one place to wait for  
+collection from multiple sources.  Some of them might want more data  
+per event.  They can always indirect out via a cookie pointer,  sure,  
+but at insanely high message rates (10gige small messages) one might  
+not want that.
+
+See also: the kevent thread.
+
+- z
