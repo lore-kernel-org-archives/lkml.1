@@ -1,47 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933506AbXBEVvv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933460AbXBEVx2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933506AbXBEVvv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 16:51:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933504AbXBEVvv
+	id S933460AbXBEVx2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 16:53:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933500AbXBEVx2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 16:51:51 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:42549 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S933500AbXBEVvu (ORCPT
+	Mon, 5 Feb 2007 16:53:28 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:46503 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933460AbXBEVx1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 16:51:50 -0500
-Date: Mon, 5 Feb 2007 22:04:42 +0000
-From: Alan <alan@lxorguk.ukuu.org.uk>
-To: Oleg Verych <olecom@flower.upol.cz>
-Cc: "Allen Martin" <AMartin@nvidia.com>,
-       "linux-kernel" <linux-kernel@vger.kernel.org>,
-       "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>
-Subject: Re: Nvidia cable detection problems & ACPI (beware, slight off-top)
-Message-ID: <20070205220442.6e13a7b6@localhost.localdomain>
-In-Reply-To: <E1HEB7U-0007IH-FV@flower>
-References: <20070205075836.GG1625@htj.dyndns.org>
-	<20070205112410.5a3c3182@localhost.localdomain>
-	<45C72012.7050605@gmail.com>
-	<20070205132247.6f611e3c@localhost.localdomain>
-	<45C73A3E.6080700@gmail.com>
-	<20070205143439.6962c076@localhost.localdomain>
-	<45C7444F.4070500@gmail.com>
-	<58cb370e0702050709w1b7682dr5dff9e7ce69465a@mail.gmail.com>
-	<DBFABB80F7FD3143A911F9E6CFD477B01EC0DD7D@hqemmail02.nvidia.com>
-	<E1HEB7U-0007IH-FV@flower>
-X-Mailer: Claws Mail 2.7.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+	Mon, 5 Feb 2007 16:53:27 -0500
+Subject: Re: [patch] MTD: fix DOC2000/2001/2001PLUS build error
+From: David Woodhouse <dwmw2@infradead.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0702051345380.8424@woody.linux-foundation.org>
+References: <Pine.LNX.4.64.0702041057090.8424@woody.linux-foundation.org>
+	 <20070205084523.GA21858@elte.hu>
+	 <1170682488.29759.795.camel@pmac.infradead.org>
+	 <20070205155627.GA8354@elte.hu>
+	 <1170692539.29759.856.camel@pmac.infradead.org>
+	 <20070205162635.GA755@elte.hu> <20070205163152.GA2464@elte.hu>
+	 <Pine.LNX.4.64.0702050852160.8424@woody.linux-foundation.org>
+	 <1170710272.29759.894.camel@pmac.infradead.org>
+	 <Pine.LNX.4.64.0702051322580.8424@woody.linux-foundation.org>
+	 <1170711587.29759.909.camel@pmac.infradead.org>
+	 <Pine.LNX.4.64.0702051345380.8424@woody.linux-foundation.org>
+Content-Type: text/plain
+Date: Mon, 05 Feb 2007 21:53:13 +0000
+Message-Id: <1170712393.29759.925.camel@pmac.infradead.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6.dwmw2.1) 
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I'm very upset, that hardware nvidia-lego forces system software (and
-> programmers) to know "unfortunately no standard" ways of desinging
-> things... One read-only-for-os, hardware set bit in kind of control
+On Mon, 2007-02-05 at 13:49 -0800, Linus Torvalds wrote:
+> Can you read? Can you UNDERSTAND?
+> 
+> This is exactly my point.
+> 
+> If it's not obviously a SCSI card, then it shouldn't be "depends on SCSI". 
+> It should be on its own and "select SCSI".
+> 
+> The whole AND ALMOST ONLY point of "depends on" is really to allow people 
+> to do a shorthand or know that "ok, he gave us some information that makes 
+> this choice pointless". 
 
-The hardware doesn't. The BIOS authors do by not setting the cable flags.
-We actually need to use the STM and GTM methods for PC suspend/resume so
-it makes sense to see if they will work out in this case too.
+You're asking _me_ if I can read?
 
-Alan
+Ten years ago, people used 'depends on' to fix the tools, so that then
+you want to enable something like USB_STORAGE, it can automatically turn
+SCSI on for you.
+
+Isn't that what you wanted?
+
+You don't need to screw over the technical users -- the _common_ case --
+in order to achieve that.
+
+We had it. TEN YEARS AGO. In the tools.
+
+-- 
+dwmw2
+
