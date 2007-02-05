@@ -1,43 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752021AbXBEITb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752136AbXBEIX2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752021AbXBEITb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 03:19:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752136AbXBEITb
+	id S1752136AbXBEIX2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 03:23:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752139AbXBEIX2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 03:19:31 -0500
-Received: from nat-132.atmel.no ([80.232.32.132]:50522 "EHLO relay.atmel.no"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752021AbXBEITa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 03:19:30 -0500
-Date: Mon, 5 Feb 2007 09:19:26 +0100
-From: Haavard Skinnemoen <hskinnemoen@atmel.com>
-To: "Ahmed S. Darwish" <darwish.07@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2.6.20] arch AVR32: Use ARRAY_SIZE macro when
- appropriate
-Message-ID: <20070205091926.50fc11d5@dhcp-252-105.norway.atmel.com>
-In-Reply-To: <20070205024126.GI18118@Ahmed>
-References: <20070205023935.GG18118@Ahmed>
-	<20070205024126.GI18118@Ahmed>
-Organization: Atmel Norway
-X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 5 Feb 2007 03:23:28 -0500
+Received: from mail1.webmaster.com ([216.152.64.169]:2041 "EHLO
+	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752136AbXBEIX1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Feb 2007 03:23:27 -0500
+From: "David Schwartz" <davids@webmaster.com>
+To: <zhangxiliang@nanjing-fnst.com>
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: RE: ntp
+Date: Mon, 5 Feb 2007 00:22:42 -0800
+Message-ID: <MDEHLPKNGKAHNMBLJOLKGEAJBGAC.davids@webmaster.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+X-Priority: 3 (Normal)
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
+In-Reply-To: <00b201c748ca$3aa95cc0$2801a8c0@zhangxiliang>
+Importance: Normal
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
+X-Authenticated-Sender: joelkatz@webmaster.com
+X-Spam-Processed: mail1.webmaster.com, Mon, 05 Feb 2007 00:23:08 -0800
+	(not processed: message from trusted or authenticated source)
+X-MDRemoteIP: 206.171.168.138
+X-Return-Path: davids@webmaster.com
+X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
+Reply-To: davids@webmaster.com
+X-MDAV-Processed: mail1.webmaster.com, Mon, 05 Feb 2007 00:23:09 -0800
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 5 Feb 2007 04:41:27 +0200
-"Ahmed S. Darwish" <darwish.07@gmail.com> wrote:
 
-> Hi Haavard,
-> 
-> A patch to use ARRAY_SIZE macro already defined in linux/kernel.h
-> 
-> Signed-off-by: Ahmed S. Darwish <darwish.07@gmail.com>
+> Hello.
+> When I use the ntpd service, I see if I use the client attempt to connect
+> the server repeat before the server is ready, the ntpd on server
+> can not be
+> ready all the times.
+>
+> Sometimes the waiting time maybe very long.
 
-Acked-by: Haavard Skinnemoen <hskinnemoen@atmel.com>
+Sounds like NTP is the wrong tool for the job. NTP is specifically designed
+to synchronize clocks with high accuracy to timing sources traceable to UTC.
+It requires stable servers in order to do that. There are any number of
+other time settings tools that don't try to actually synchronize clocks.
 
-I'll queue this up for the next merge. Thanks.
+DS
 
-Haavard
+
+
