@@ -1,244 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932422AbXBEN2r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932428AbXBENeV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932422AbXBEN2r (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 08:28:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932428AbXBEN2r
+	id S932428AbXBENeV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 08:34:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932432AbXBENeV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 08:28:47 -0500
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:33213 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932422AbXBEN2p (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 08:28:45 -0500
-To: ckrm-tech@lists.sourceforge.net
-Subject: [RFC][PATCH 5/5] RSS accounting at the page level
-Cc: balbir@in.ibm.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       menage@google.com
-Message-Id: <20070205132846.6E1911B676@openx4.frec.bull.fr>
-Date: Mon, 5 Feb 2007 14:28:46 +0100 (CET)
-From: Patrick.Le-Dot@bull.net (Patrick.Le-Dot)
-X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 05/02/2007 14:29:46,
-	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 05/02/2007 14:29:49,
-	Serialize complete at 05/02/2007 14:29:49
+	Mon, 5 Feb 2007 08:34:21 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:60676 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932428AbXBENeU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Feb 2007 08:34:20 -0500
+Date: Mon, 5 Feb 2007 08:34:10 -0500
+From: Dave Jones <davej@redhat.com>
+To: Thomas =?iso-8859-1?Q?Hellstr=F6m?= <thomas@tungstengraphics.com>
+Cc: ebuddington@wesleyan.edu, Dave Airlie <airlied@gmail.com>,
+       Lee Revell <rlrevell@joe-job.com>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.20-rc6-mm3 BUG in drm_ioctl with Rage 128 card
+Message-ID: <20070205133410.GA4121@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Thomas =?iso-8859-1?Q?Hellstr=F6m?= <thomas@tungstengraphics.com>,
+	ebuddington@wesleyan.edu, Dave Airlie <airlied@gmail.com>,
+	Lee Revell <rlrevell@joe-job.com>, linux-kernel@vger.kernel.org
+References: <20070203185407.GA5256@pool-70-109-243-148.wma.east.verizon.net> <75b66ecd0702031322k58db9da7l1ae1fc3a9342682b@mail.gmail.com> <20070203230945.GA4557@pool-71-161-133-234.spfdma.east.verizon.net> <21d7e9970702031520y503bfa98p43708e2d18a6599f@mail.gmail.com> <20070203232505.GC4557@pool-71-161-133-234.spfdma.east.verizon.net> <45C5AEA5.2040501@tungstengraphics.com> <20070204192645.GA5169@pool-71-161-131-9.spfdma.east.verizon.net> <20070204230544.GB8960@redhat.com> <45C72976.9090201@tungstengraphics.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <45C72976.9090201@tungstengraphics.com>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Feb 05, 2007 at 01:56:22PM +0100, Thomas Hellström wrote:
+ > Dave Jones wrote:
+ > > On Sun, Feb 04, 2007 at 02:26:59PM -0500, Eric Buddington wrote:
+ > >  > On Sun, Feb 04, 2007 at 11:00:05AM +0100, Thomas Hellstr?m wrote:
+ > >  > > Eric,
+ > >  > > Sorry for the breakage. Can you try the attached patch and see if it 
+ > >  > > fixes the problem.
+ > >  > > 
+ > >  > > /Thomas
+ > >  > 
+ > >  > Thomas,
+ > >  > 
+ > >  > Thanks! That seems to fix it:
+ > >
+ > > Great.  Thomas, can you resend me that patch with a description & Signed-off-by ?
+ > > (Also for some reason that one looks like it was MIME damaged, git-am wouldn't eat it)
+ > >
+ > > 		Dave
+ > >
+ > >   
+ > Dave,
+ > I'll post an updated complete patch. The previous one was really only 
+ > for Eric to try.
 
-Add accounting at the page level.
+Can you send just an incremental against what's in agpgart.git right now?
 
-Signed-off-by: Patrick Le Dot <Patrick.Le-Dot@bull.net>
----
+Thanks,
 
- include/linux/mm_types.h   |   12 +++++
- kernel/res_group/memctlr.c |   98 +++++++++++++++++++++++++++++++++++----------
- 2 files changed, 90 insertions(+), 20 deletions(-)
+		Dave
 
-diff -puN a/include/linux/mm_types.h b/include/linux/mm_types.h
---- a/include/linux/mm_types.h	2006-12-12 13:39:19.000000000 +0100
-+++ b/include/linux/mm_types.h	2006-12-11 10:47:22.000000000 +0100
-@@ -6,6 +6,14 @@
- #include <linux/list.h>
- #include <linux/spinlock.h>
- 
-+#ifdef CONFIG_RES_GROUPS_MEMORY
-+struct rg_shared_pg_cnt {
-+	unsigned long rg_bit_id;	/* rgroup id */
-+	atomic_t count;			/* 1 counter per shared page per rgroup */
-+	struct rg_shared_pg_cnt *next;	/* another rgroup use the page */
-+};
-+#endif /* CONFIG_RES_GROUPS_MEMORY */
-+
- struct address_space;
- 
- /*
-@@ -62,6 +70,10 @@ struct page {
- 	void *virtual;			/* Kernel virtual address (NULL if
- 					   not kmapped, ie. highmem) */
- #endif /* WANT_PAGE_VIRTUAL */
-+#ifdef CONFIG_RES_GROUPS_MEMORY
-+	unsigned long rg_bitmap;		/* 1 bit per rgroup using this page */
-+	struct rg_shared_pg_cnt *shared_count;	/* and 1 counter per rgroup */
-+#endif /* CONFIG_RES_GROUPS_MEMORY */
- };
- 
- #endif /* _LINUX_MM_TYPES_H */
-diff -puN a/kernel/res_group/memctlr.c b/kernel/res_group/memctlr.c
---- a/kernel/res_group/memctlr.c	2006-12-12 13:20:24.000000000 +0100
-+++ b/kernel/res_group/memctlr.c	2006-12-12 12:57:30.000000000 +0100
-@@ -42,6 +42,12 @@ static const char res_ctlr_name[] = "mem
- static struct resource_group *root_rgroup;
- static const char version[] = "0.01";
- static struct memctlr *memctlr_root;
-+static unsigned long rg_bitmap_shift_index = 0;
-+
-+/*
-+ * first implementation : use a global lock
-+ */
-+static spinlock_t memctlr_lock;
- 
- /*
-  * this struct is used in mm_struct
-@@ -56,6 +62,7 @@ struct mem_counter {
- struct memctlr {
- 	struct res_shares shares;	/* My shares		  */
- 	struct mem_counter counter;	/* Accounting information */
-+	unsigned long bit_id;		/* rgroup_id bitmap : only 1 bit on  */
- 	spinlock_t lock;
- };
- 
-@@ -120,10 +127,17 @@ static inline struct memctlr *get_task_m
- 	return res;
- }
- 
-+void memctlr_inc_rss(struct page *page)
-+{
-+	struct mm_struct *mm = current->mm;
-+
-+	memctlr_inc_rss_mm(page, mm);
-+}
- 
- void memctlr_inc_rss_mm(struct page *page, struct mm_struct *mm)
- {
- 	struct memctlr *res;
-+	struct rg_shared_pg_cnt *shared_pg_cnt;
- 
- 	res = get_task_memctlr(current);
- 	if (!res) {
-@@ -131,32 +145,44 @@ void memctlr_inc_rss_mm(struct page *pag
- 		return;
- 	}
- 
--	spin_lock(&res->lock);
--	atomic_long_inc(&current->mm->counter->rss);
--	atomic_long_inc(&res->counter.rss);
--	spin_unlock(&res->lock);
--}
--
--void memctlr_inc_rss(struct page *page)
--{
--	struct memctlr *res;
--	struct mm_struct *mm = current->mm;
-+	spin_lock(&memctlr_lock);
- 
--	res = get_task_memctlr(current);
--	if (!res) {
--		printk(KERN_INFO "inc_rss no res set *---*\n");
--		return;
-+	if ((page->rg_bitmap & res->bit_id) != 0) {
-+		/* search the counter for this rgroup */
-+		shared_pg_cnt = page->shared_count;
-+		while (shared_pg_cnt != NULL) {
-+			if (shared_pg_cnt->rg_bit_id == res->bit_id) {
-+				atomic_inc(&shared_pg_cnt->count);
-+				spin_unlock(&memctlr_lock);
-+				return;
-+			}
-+			shared_pg_cnt = shared_pg_cnt->next;
-+		}
-+		/* should never get here */
-+		BUG();
- 	}
- 
--	spin_lock(&res->lock);
-+	/* first mapping for this rgroup : add a new counter */
-+	shared_pg_cnt = kzalloc(sizeof(struct rg_shared_pg_cnt), GFP_ATOMIC);
-+	shared_pg_cnt->rg_bit_id = res->bit_id;
-+	atomic_set(&shared_pg_cnt->count, 1);
-+
-+	shared_pg_cnt->next = page->shared_count;
-+	page->shared_count = shared_pg_cnt;
-+
-+	page->rg_bitmap = (page->rg_bitmap ^ res->bit_id);
-+
- 	atomic_long_inc(&mm->counter->rss);
- 	atomic_long_inc(&res->counter.rss);
--	spin_unlock(&res->lock);
-+
-+	spin_unlock(&memctlr_lock);
- }
- 
- void memctlr_dec_rss_mm(struct page *page, struct mm_struct *mm)
- {
- 	struct memctlr *res;
-+	struct rg_shared_pg_cnt *shared_pg_cnt;
-+	struct rg_shared_pg_cnt *previous = NULL;
- 
- 	res = get_task_memctlr(current);
- 	if (!res) {
-@@ -164,10 +190,36 @@ void memctlr_dec_rss_mm(struct page *pag
- 		return;
- 	}
- 
--	spin_lock(&res->lock);
--	atomic_long_dec(&res->counter.rss);
--	atomic_long_dec(&mm->counter->rss);
--	spin_unlock(&res->lock);
-+	spin_lock(&memctlr_lock);
-+	shared_pg_cnt = page->shared_count;
-+
-+	while (shared_pg_cnt != NULL) {
-+		if (shared_pg_cnt->rg_bit_id == res->bit_id) {
-+			atomic_dec(&shared_pg_cnt->count);
-+
-+			if (atomic_read(&shared_pg_cnt->count) == 0) {
-+				/* this group don't use this page anymore */
-+				/* remove the rg_shared_pg_cnt struct from the list */
-+				if (previous != NULL)
-+					previous->next = shared_pg_cnt->next;
-+				else
-+					page->shared_count = NULL;
-+				/* and free it */
-+				kfree(shared_pg_cnt);
-+				/* remove the rgroup from the page bitmap */
-+				page->rg_bitmap = (page->rg_bitmap & ~res->bit_id);
-+
-+				atomic_long_dec(&res->counter.rss);
-+				atomic_long_dec(&mm->counter->rss);
-+			}
-+			spin_unlock(&memctlr_lock);
-+			return;
-+		}
-+		previous = shared_pg_cnt;
-+		shared_pg_cnt = shared_pg_cnt->next;
-+	}
-+	/* should never get here */
-+	BUG();
- }
- 
- static void memctlr_init_new(struct memctlr *res)
-@@ -176,6 +228,7 @@ static void memctlr_init_new(struct memc
- 	res->shares.max_shares = SHARE_DONT_CARE;
- 	res->shares.child_shares_divisor = SHARE_DEFAULT_DIVISOR;
- 	res->shares.unused_min_shares = SHARE_DEFAULT_DIVISOR;
-+	res->bit_id = (1 << rg_bitmap_shift_index);
- 
- 	memctlr_init_mem_counter(&res->counter);
- 	spin_lock_init(&res->lock);
-@@ -189,6 +242,7 @@ static struct res_shares *memctlr_alloc_
- 	if (!res)
- 		return NULL;
- 	memctlr_init_new(res);
-+	rg_bitmap_shift_index++;	/* overflow TBC */
- 	if (is_res_group_root(rgroup)) {
- 		root_rgroup = rgroup;
- 		memctlr_root = res;
-@@ -386,6 +440,9 @@ static void memctlr_move_task(struct tas
-	if (p->pid != p->tgid)
-		return;
-
-+	printk("memctlr_move_task not yet available \n");
-+	return;
-+
-	oldres = get_memctlr_from_shares(old);
-	newres = get_memctlr_from_shares(new);
-
-@@ -414,6 +471,7 @@ int __init memctlr_init(void)
- {
- 	if (memctlr_rg.ctlr_id != NO_RES_ID)
- 		return -EBUSY;	/* already registered */
-+	spin_lock_init(&memctlr_lock);
- 	return register_controller(&memctlr_rg);
- }
- 
+-- 
+http://www.codemonkey.org.uk
