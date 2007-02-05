@@ -1,55 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752623AbXBEAwg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752616AbXBEBDX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752623AbXBEAwg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Feb 2007 19:52:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752626AbXBEAwg
+	id S1752616AbXBEBDX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Feb 2007 20:03:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752630AbXBEBDX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Feb 2007 19:52:36 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:53488
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752623AbXBEAwf (ORCPT
+	Sun, 4 Feb 2007 20:03:23 -0500
+Received: from mga09.intel.com ([134.134.136.24]:23399 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752616AbXBEBDV convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Feb 2007 19:52:35 -0500
-Date: Sun, 04 Feb 2007 16:52:35 -0800 (PST)
-Message-Id: <20070204.165235.26305735.davem@davemloft.net>
-To: dkabs@mobotix.com
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Problem with unix sockets: SOCK_DGRAM ignores MSG_TRUNC
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <200701291259.50155.dkabs@mobotix.com>
-References: <200701291259.50155.dkabs@mobotix.com>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Sun, 4 Feb 2007 20:03:21 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: i="4.13,279,1167638400"; 
+   d="scan'208"; a="42877882:sNHT22497687"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="gb2312"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [Fastboot] [PATCH] kexec: Fix CONFIG_SMP=n compilation (ia64)
+Date: Mon, 5 Feb 2007 09:02:59 +0800
+Message-ID: <10EA09EFD8728347A513008B6B0DA77A086BD4@pdsmsx411.ccr.corp.intel.com>
+In-Reply-To: <20070203032753.GE3709@verge.net.au>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [Fastboot] [PATCH] kexec: Fix CONFIG_SMP=n compilation (ia64)
+Thread-Index: AcdHRs64G++o4WIoSS2XL7sxWCiVWABegW6A
+From: "Zou, Nanhai" <nanhai.zou@intel.com>
+To: "Horms" <horms@verge.net.au>, "Magnus Damm" <magnus.damm@gmail.com>
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Magnus Damm" <magnus@valinux.co.jp>,
+       "Luck, Tony" <tony.luck@intel.com>, <linux-ia64@vger.kernel.org>,
+       <fastboot@lists.osdl.org>, <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 05 Feb 2007 01:03:16.0056 (UTC) FILETIME=[6AC56D80:01C748C1]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Daniel Kabs <dkabs@mobotix.com>
-Date: Mon, 29 Jan 2007 12:59:49 +0100
 
-> I use unix domain datagram sockets for IPC, e.g. I receive messages by 
-> calling recv().
+
+> -----Original Message-----
+> From: Horms [mailto:horms@verge.net.au]
+> Sent: 2007Äê2ÔÂ3ÈÕ 11:28
+> To: Magnus Damm
+> Cc: Andrew Morton; Magnus Damm; Luck, Tony; linux-ia64@vger.kernel.org; Zou,
+> Nanhai; fastboot@lists.osdl.org; linux-kernel@vger.kernel.org
+> Subject: Re: [Fastboot] [PATCH] kexec: Fix CONFIG_SMP=n compilation (ia64)
 > 
-> "man 2 recv" tells me about the flags argument to a recv() call, namely:
+> On Fri, Feb 02, 2007 at 08:53:00PM +0900, Magnus Damm wrote:
+> > On 2/2/07, Magnus Damm <magnus.damm@gmail.com> wrote:
+> > > On 2/2/07, Andrew Morton <akpm@linux-foundation.org> wrote:
+> > > > Magnus Damm <magnus@valinux.co.jp> wrote:
+> > > >
+> > > > > kexec: Fix CONFIG_SMP=n compilation (ia64)
+> > > > >
+> > > > > This patch makes it possible to compile kexec for ia64 without SMP
+> support.
+> > > > > --- 0002/arch/ia64/kernel/machine_kexec.c
+> > > > > +++ work/arch/ia64/kernel/machine_kexec.c     2007-02-01
+> 12:35:46.000000000 +0900
+> > > > > @@ -70,12 +70,14 @@ void machine_kexec_cleanup(struct kimage
+> > > > >
+> > > > >  void machine_shutdown(void)
+> > > > >  {
+> > > > > +#ifdef CONFIG_SMP
+> > > > >       int cpu;
+> > > > >
+> > > > >       for_each_online_cpu(cpu) {
+> > > > >               if (cpu != smp_processor_id())
+> > > > >                       cpu_down(cpu);
+> > > > >       }
+> > > > > +#endif
+> > > > >       kexec_disable_iosapic();
+> > > > >  }
+> > > >
+> > > > hm.  I suspect this one should have been #ifndef CONFIG_HOTPLUG_CPU?
+> >
+> > Re-reading this I assume you mean #ifdef CONFIG_HOTPLUG_CPU.
+> >
+> > I would be happy to resend a new updated version of the patch, but I
+> > wonder if it may be better to fail miserably during the build than
+> > fail silently in the case of CONFIG_SMP=y but CONFIG_HOTPLUG_CPU=n.
 > 
->  MSG_TRUNC
->       Return  the  real  length of the packet, even when it was longer
->       than the passed buffer. Only valid for packet sockets.
+> There used to be alternate code for the CONFIG_SMP +
+> !CONFIG_HOTPLUG_CPU, but this was removed because it was determined to
+> be flakey and not maintainable (I can dig up the threads if you want).
+> I think that this means that if we have CONFIG_KEXEC and CONFIG_SMP then
+> CONFIG_HOTPLUG_CPU is required. I think this is expressable in Kconfig
+> somehow.
 > 
-> Thus I used recv() with flags MSG_TRUNC|MSG_PEEK in order to detect 
-> message truncation due to insufficient buffer size.
 
-What part of "Only valid for packet sockets" from the manual page
-escapes you?  :-))
 
-It's a feature which only was meant to be valid for AF_PACKET sockets.
+Yes, CONFIG_HOTPLUG_CPU is required by Kexec.
+But CONFIG_HOTPLUG_CPU is not required by Kdump except SN platform.
 
-What UDP is doing is different, it's returning the full packet length
-when the packet is larger then the given buffer size, but it does this
-irregardless of whether you set MSG_TRUNC in the recvmsg() passed-in
-flags.  UDP itself sets the MSG_TRUNC flag when it detects this
-situation.
-
-I checked the history and our AF_UNIX sockets have always behaved like
-this.
+Zou Nan hai
+> --
+> Horms
+>   H: http://www.vergenet.net/~horms/
+>   W: http://www.valinux.co.jp/en/
