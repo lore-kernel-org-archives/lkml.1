@@ -1,73 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933334AbXBEU3l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933306AbXBEUbu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933334AbXBEU3l (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 15:29:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933416AbXBEU3l
+	id S933306AbXBEUbu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 15:31:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933366AbXBEUbu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 15:29:41 -0500
-Received: from anhedonia.sammy.net ([72.5.28.211]:41223 "EHLO
-	anhedonia.sammy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933309AbXBEU3k (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 15:29:40 -0500
-X-Greylist: delayed 1661 seconds by postgrey-1.27 at vger.kernel.org; Mon, 05 Feb 2007 15:29:40 EST
-Date: Mon, 5 Feb 2007 15:01:56 -0500
-To: "Cyrill V. Gorcunov" <gorcunov@gmail.com>
-Cc: linux-kernel-list <linux-kernel@vger.kernel.org>,
-       linux-m68k@vger.kernel.org
-Subject: Re: [PATCH] SUN3/3X Lance trivial fix
-Message-ID: <20070205200155.GC28224@sammy.net>
-References: <20070205191321.GA12839@cvg>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070205191321.GA12839@cvg>
-User-Agent: Mutt/1.5.9i
-From: Sam Creasey <sammy@sammy.net>
+	Mon, 5 Feb 2007 15:31:50 -0500
+Received: from mga02.intel.com ([134.134.136.20]:46191 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933306AbXBEUbt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Feb 2007 15:31:49 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: i="4.13,284,1167638400"; 
+   d="scan'208"; a="193018273:sNHT43816528"
+Message-ID: <45C7941E.2050305@intel.com>
+Date: Mon, 05 Feb 2007 12:31:26 -0800
+From: Auke Kok <auke-jan.h.kok@intel.com>
+User-Agent: Mail/News 1.5.0.9 (X11/20061228)
+MIME-Version: 1.0
+To: "Ahmed S. Darwish" <darwish.07@gmail.com>
+CC: Alexey Dobriyan <adobriyan@gmail.com>, jeffrey.t.kirsher@intel.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH 2.6.20] ixgb: Use ARRAY_SIZE macro when appropriate
+References: <20070205165429.GD3896@Ahmed> <20070205165933.GL3896@Ahmed> <20070205201804.GC11055@martell.zuzino.mipt.ru>
+In-Reply-To: <20070205201804.GC11055@martell.zuzino.mipt.ru>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 05 Feb 2007 20:31:26.0974 (UTC) FILETIME=[9C36C1E0:01C74964]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 05, 2007 at 10:13:21PM +0300, Cyrill V. Gorcunov wrote:
-> This patch adds checking for allocated DVMA
-> memory and granted IRQ line.
+Alexey Dobriyan wrote:
+> On Mon, Feb 05, 2007 at 06:59:33PM +0200, Ahmed S. Darwish wrote:
+>> A patch to use ARRAY_SIZE macro already defined in kernel.h.
 > 
-> Signed-off-by: Cyrill V. Gorcunov <gorcunov@gmail.com>
-
-Acked-by: Sam Creasey <sammy@sammy.net>
-
-Included in my tree for rolling back into m68k.  I'm fine with it
-going upstream as well.
-
--- Sam
-
-> ---
+> Remove it and use ARRAY_SIZE instead.
 > 
->  drivers/net/sun3lance.c |    9 ++++++++-
->  1 files changed, 8 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/net/sun3lance.c b/drivers/net/sun3lance.c
-> index c62e85d..e4c2c88 100644
-> --- a/drivers/net/sun3lance.c
-> +++ b/drivers/net/sun3lance.c
-> @@ -336,13 +336,20 @@ static int __init lance_probe( struct net_device *dev)
->  
->  	/* XXX - leak? */
->  	MEM = dvma_malloc_align(sizeof(struct lance_memory), 0x10000);
-> +	if (MEM == NULL) {
-> +		printk(KERN_WARNING "SUN3 Lance couldn't allocate DVMA memory\n");
-> +		return 0;
-> +	}
->  
->  	lp->iobase = (volatile unsigned short *)ioaddr;
->  	dev->base_addr = (unsigned long)ioaddr; /* informational only */
->  
->  	REGA(CSR0) = CSR0_STOP;
->  
-> -	request_irq(LANCE_IRQ, lance_interrupt, IRQF_DISABLED, "SUN3 Lance", dev);
-> +	if (request_irq(LANCE_IRQ, lance_interrupt, IRQF_DISABLED, "SUN3 Lance", dev) < 0) {
-> +		printk(KERN_WARNING "SUN3 Lance unable to allocate IRQ\n");
-> +		return 0;
-> +	}
->  	dev->irq = (unsigned short)LANCE_IRQ;
->  
->  
+>> --- a/drivers/net/ixgb/ixgb_param.c
+>> +++ b/drivers/net/ixgb/ixgb_param.c
+>> @@ -245,7 +245,7 @@ ixgb_validate_option(int *value, struct ixgb_option *opt)
+>>  	return -1;
+>>  }
+>>  
+>> -#define LIST_LEN(l) (sizeof(l) / sizeof(l[0]))
+>> +#define LIST_LEN(l) ARRAY_SIZE(l)
+
+yes, well spotted. Please change line 338 in this file to read:
+
+      .arg  = { .l = { .nr = ARRAY_SIZE(fc_list),
+
+instead, so you can remove the LIST_LEN macro completely.
+
+Thanks,
+
+Auke
