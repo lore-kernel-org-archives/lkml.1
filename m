@@ -1,56 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932432AbXBENot@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932520AbXBENsK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932432AbXBENot (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 08:44:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932518AbXBENot
+	id S932520AbXBENsK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 08:48:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932521AbXBENsK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 08:44:49 -0500
-Received: from ns2.gothnet.se ([82.193.160.251]:2198 "EHLO
-	GOTHNET-SMTP2.gothnet.se" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S932432AbXBENos (ORCPT
+	Mon, 5 Feb 2007 08:48:10 -0500
+Received: from moutng.kundenserver.de ([212.227.126.183]:52313 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932520AbXBENsJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 08:44:48 -0500
-From: thomas@tungstengraphics.com
-To: davej@redhat.com
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       Thomas Hellstrom <thomas@tungstengraphics.com>
-Subject: [PATCH] [AGPGART] Add agp-type-to-mask-type method missing from some drivers.
-Reply-To: thomas@tungstengraphics.com
-Date: Mon, 05 Feb 2007 14:44:23 +0100
-Message-Id: <1170683063550-git-send-email-thomas@tungstengraphics.com>
-X-Mailer: git-send-email 1.4.1
-In-Reply-To: <20070205133410.GA4121@redhat.com>
-References: <20070205133410.GA4121@redhat.com>
+	Mon, 5 Feb 2007 08:48:09 -0500
+Date: Mon, 5 Feb 2007 14:48:02 +0100 (CET)
+From: Bodo Eggert <7eggert@gmx.de>
+To: linux-kernel@vger.kernel.org, Al Boldi <a1426z@gawab.com>
+Subject: 2.6.20 doesn't compile with gcc-3.2.2
+Message-ID: <Pine.LNX.4.58.0702051441370.3434@be1.lrz>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
+X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
+X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
+X-Provags-ID: kundenserver.de abuse@kundenserver.de login:9b3b2cc444a07783f194c895a09f1de9
+X-Provags-ID2: V01U2FsdGVkX18+FG0CD4rHTMB/kX5bMeIeK2xMiVKhcDeubl3G5i6CmiRqTYlpdjIYeoI2LdYO7vIwj+RR7WBobckL6O50A+U4sy738Mi5yG1veO5eVX8xxw==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Thomas Hellstrom <thomas@tungstengraphics.com>
+Al Boldi <a1426z@gawab.com> wrote:
 
-diff --git a/drivers/char/agp/parisc-agp.c b/drivers/char/agp/parisc-agp.c
-index 17c50b0..b7b4590 100644
---- a/drivers/char/agp/parisc-agp.c
-+++ b/drivers/char/agp/parisc-agp.c
-@@ -228,6 +228,7 @@ struct agp_bridge_driver parisc_agp_driv
- 	.free_by_type		= agp_generic_free_by_type,
- 	.agp_alloc_page		= agp_generic_alloc_page,
- 	.agp_destroy_page	= agp_generic_destroy_page,
-+	.agp_type_to_mask_type  = agp_generic_type_to_mask_type,
- 	.cant_use_aperture	= 1,
- };
+> Doing the following results in an incomplete vmlinuz:
+
+> # make bzlilo
+> 
+> objcopy: arch/i386/boot/compressed/vmlinux.bin: File truncated
+> make[2]: *** [arch/i386/boot/compressed/vmlinux.bin] Error 1
+> make[1]: *** [arch/i386/boot/compressed/vmlinux] Error 2
+> make: *** [bzlilo] Error 2
+
+> gcc version 3.2.2 (Mandrake Linux 9.1 3.2.2-3mdk)
+
+I just compiled using gcc 3.3.5 (debian stable). Please verify that your 
+disk is not full and gcc is the cause. If it is, this patch should do the 
+trick: :)
+
+--- ./Documentation/Changes~	2007-02-05 15:10:04.000000000 +0100
++++ ./Documentation/Changes	2007-02-05 15:10:04.000000000 +0100
+@@ -29,5 +29,5 @@ hardware, for example, you probably need
+ isdn4k-utils.
  
-diff --git a/drivers/char/agp/sis-agp.c b/drivers/char/agp/sis-agp.c
-index a00fd48..60342b7 100644
---- a/drivers/char/agp/sis-agp.c
-+++ b/drivers/char/agp/sis-agp.c
-@@ -140,6 +140,7 @@ static struct agp_bridge_driver sis_driv
- 	.free_by_type		= agp_generic_free_by_type,
- 	.agp_alloc_page		= agp_generic_alloc_page,
- 	.agp_destroy_page	= agp_generic_destroy_page,
-+	.agp_type_to_mask_type  = agp_generic_type_to_mask_type,
- };
- 
- static struct agp_device_ids sis_agp_device_ids[] __devinitdata =
+-o  Gnu C                  3.2                     # gcc --version
++o  Gnu C                  3.3                     # gcc --version
+ o  Gnu make               3.79.1                  # make --version
+ o  binutils               2.12                    # ld -v
+
 -- 
-1.4.1
-
-
+Anything you do can get you shot, including nothing. 
