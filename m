@@ -1,37 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752691AbXBEEQT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752694AbXBEEVI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752691AbXBEEQT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Feb 2007 23:16:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752692AbXBEEQT
+	id S1752694AbXBEEVI (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Feb 2007 23:21:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752693AbXBEEVI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Feb 2007 23:16:19 -0500
-Received: from terminus.zytor.com ([192.83.249.54]:36582 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752691AbXBEEQS (ORCPT
+	Sun, 4 Feb 2007 23:21:08 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.158]:32177 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752694AbXBEEVH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Feb 2007 23:16:18 -0500
-Message-ID: <45C6AF81.1010908@zytor.com>
-Date: Sun, 04 Feb 2007 20:16:01 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
-MIME-Version: 1.0
-To: Luming Yu <luming.yu@gmail.com>
-CC: Manu Abraham <abraham.manu@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz, greg@kroah.com,
-       Andrew Morton <akpm@osdl.org>
-Subject: Re: 2.6.20 PCI Cannot allocate resource region 2
-References: <1a297b360702041709l3b0309c7y8fcd33df1d487889@mail.gmail.com> <3877989d0702041904w1b57bb1dufbb731d2823d0b64@mail.gmail.com>
-In-Reply-To: <3877989d0702041904w1b57bb1dufbb731d2823d0b64@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sun, 4 Feb 2007 23:21:07 -0500
+Subject: clocksource v13
+From: Daniel Walker <dwalker@mvista.com>
+To: akpm@osdl.org
+Cc: johnstul@us.ibm.com, mingo@elte.hu, tglx@linutronix.com,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Date: Sun, 04 Feb 2007 20:19:26 -0800
+Message-Id: <1170649167.9781.309.camel@imap.mvista.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Luming Yu wrote:
-> 
-> *  Known BIOS problems we have to work around:
-> *      - bogus I/O addresses above 64K used
 
-On non-x86 architectures this might be just fine.
+I released another version of my clocksource update. I incorporated some
+of Ingo's suggestions. I also tested my changes on an older Sony Vaio
+where the TSC stops in C2/C3. I noticed that generic time already marks
+the TSC unstable if the system enters C2/C3 . So the verify code doesn't
+need to run. If I disable that the TSC is detect the same with both sets
+of changes. I haven't found a VAIO that has random frequency changes. If
+it's a rare condition we can use the DMI black list to avoid using it on
+those system.
 
-	-hpa
+Download from,
+
+ftp://source.mvista.com/pub/dwalker/clocksource/clocksource-v13/
+
+
+Daniel
+
