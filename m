@@ -1,39 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752142AbXBEJsa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752227AbXBEJuV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752142AbXBEJsa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 04:48:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752227AbXBEJsa
+	id S1752227AbXBEJuV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 04:50:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752232AbXBEJuV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 04:48:30 -0500
-Received: from ns1.suse.de ([195.135.220.2]:37106 "EHLO mx1.suse.de"
+	Mon, 5 Feb 2007 04:50:21 -0500
+Received: from depni.sinp.msu.ru ([213.131.7.21]:53461 "EHLO depni.sinp.msu.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752142AbXBEJs3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 04:48:29 -0500
-To: vgoyal@in.ibm.com
-Cc: Alon Bar-Lev <alon.barlev@gmail.com>, Miles Lane <miles.lane@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.20 -- Loads of section mismatches
-References: <a44ae5cd0702041402g14051b58qfeb270a72123e22e@mail.gmail.com>
-	<9e0cf0bf0702041406n50bd5639l66b62647d9c4795e@mail.gmail.com>
-	<20070205064029.GA23996@in.ibm.com>
-From: Andi Kleen <ak@suse.de>
-Date: 05 Feb 2007 11:48:57 +0100
-In-Reply-To: <20070205064029.GA23996@in.ibm.com>
-Message-ID: <p73sldknali.fsf@bingen.suse.de>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+	id S1752227AbXBEJuU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Feb 2007 04:50:20 -0500
+X-Greylist: delayed 1886 seconds by postgrey-1.27 at vger.kernel.org; Mon, 05 Feb 2007 04:50:20 EST
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
+Subject: Re: v2.6.20-rt1, yum/rpm
+References: <20070205065636.GA1652@elte.hu>
+From: Serge Belyshev <belyshev@depni.sinp.msu.ru>
+Date: Mon, 05 Feb 2007 12:18:50 +0300
+In-Reply-To: <20070205065636.GA1652@elte.hu> (Ingo Molnar's message of "Mon\, 5 Feb 2007 07\:56\:36 +0100")
+Message-ID: <87wt2xdksl.fsf@depni.sinp.msu.ru>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/23.0.0 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vivek Goyal <vgoyal@in.ibm.com> writes:
-> 
-> http://kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.20-rc6/2.6.20-rc6-mm3/broken-out/x86_64-mm-move-startup_32-in-texthead-section.patch
-> 
-> http://kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.20-rc6/2.6.20-rc6-mm3/broken-out/x86_64-mm-break-init-in-two-parts-to-avoid-modpost-warnings.patch
+Ingo Molnar <mingo@elte.hu> writes:
 
-The two part init / head.S patch was considered too intrusive late
-in the game.
-Near all of the other section patches should have made it in though.
+> i have released the v2.6.20-rt1 kernel, which can be downloaded from the 
+> usual place:
 
--Andi
+I did not find tarball with split patches there.
+Could you please make it available somewhere via http or ftp?
