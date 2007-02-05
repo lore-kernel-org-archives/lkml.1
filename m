@@ -1,114 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933099AbXBESdT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933315AbXBESd5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933099AbXBESdT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 13:33:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933306AbXBESdR
+	id S933315AbXBESd5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 13:33:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933231AbXBESdb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 13:33:17 -0500
-Received: from mx1.suse.de ([195.135.220.2]:43269 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933108AbXBESYr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 13:24:47 -0500
-From: Tony Jones <tonyj@suse.de>
-To: linux-kernel@vger.kernel.org
-Cc: linux-fsdevel@vger.kernel.org, chrisw@sous-sol.org,
-       Tony Jones <tonyj@suse.de>, linux-security-module@vger.kernel.org,
-       agruen@suse.de
-Date: Mon, 05 Feb 2007 10:23:49 -0800
-Message-Id: <20070205182349.12164.22812.sendpatchset@ermintrude.int.wirex.com>
-In-Reply-To: <20070205182213.12164.40927.sendpatchset@ermintrude.int.wirex.com>
-References: <20070205182213.12164.40927.sendpatchset@ermintrude.int.wirex.com>
-Subject: [RFC 10/28] Add a struct vfsmount parameter to vfs_symlink()
+	Mon, 5 Feb 2007 13:33:31 -0500
+Received: from x35.xmailserver.org ([64.71.152.41]:4026 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933012AbXBESYo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Feb 2007 13:24:44 -0500
+X-AuthUser: davidel@xmailserver.org
+Date: Mon, 5 Feb 2007 10:24:34 -0800 (PST)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Zach Brown <zach.brown@oracle.com>
+cc: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-aio@kvack.org, Suparna Bhattacharya <suparna@in.ibm.com>,
+       Benjamin LaHaise <bcrl@kvack.org>
+Subject: Re: [PATCH 2 of 4] Introduce i386 fibril scheduling
+In-Reply-To: <EDD3B5A9-9EAB-4E0A-BE1F-3B73C3870DC8@oracle.com>
+Message-ID: <Pine.LNX.4.64.0702051022170.14453@alien.or.mcafeemobile.com>
+References: <patchbomb.1170193181@tetsuo.zabbo.net>
+ <df7bc026d50ec5bbdd8e.1170193183@tetsuo.zabbo.net> <20070201083611.GC18233@elte.hu>
+ <Pine.LNX.4.64.0702011154110.3632@woody.linux-foundation.org>
+ <20070202104900.GA13941@elte.hu> <Pine.LNX.4.64.0702020738500.15057@woody.linux-foundation.org>
+ <20070202222110.GA1212@elte.hu> <Pine.LNX.4.64.0702021525370.5219@alien.or.mcafeemobile.com>
+ <EDD3B5A9-9EAB-4E0A-BE1F-3B73C3870DC8@oracle.com>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add a struct vfsmount parameter to vfs_symlink()
+On Mon, 5 Feb 2007, Zach Brown wrote:
 
-Signed-off-by: Tony Jones <tonyj@suse.de>
-Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
+> > Since I still think that the many-thousands potential async operations
+> > coming from network sockets are better handled with a classical event
+> > machanism [1], and since smooth integration of new async syscall into the
+> > standard POSIX infrastructure is IMO a huge win, I think we need to have a
+> > "bridge" to allow async completions being detectable through a pollable
+> > (by the mean of select/poll/epoll whatever) device.
+> 
+> Ugh, I'd rather not if we don't have to.
+> 
+> It seems like you could get this behaviour from issuing a
+> poll/select(really?)/epoll as one of the async calls to complete.  (And you
+> mention this in a later email? :))
 
-Index: linux-2.6/fs/ecryptfs/inode.c
-===================================================================
---- linux-2.6.orig/fs/ecryptfs/inode.c
-+++ linux-2.6/fs/ecryptfs/inode.c
-@@ -462,6 +462,7 @@ static int ecryptfs_symlink(struct inode
- {
- 	int rc;
- 	struct dentry *lower_dentry;
-+	struct vfsmount *lower_mnt;
- 	struct dentry *lower_dir_dentry;
- 	umode_t mode;
- 	char *encoded_symname;
-@@ -470,6 +471,7 @@ static int ecryptfs_symlink(struct inode
- 
- 	lower_dentry = ecryptfs_dentry_to_lower(dentry);
- 	dget(lower_dentry);
-+	lower_mnt = ecryptfs_dentry_to_lower_mnt(dentry);
- 	lower_dir_dentry = lock_parent(lower_dentry);
- 	mode = S_IALLUGO;
- 	encoded_symlen = ecryptfs_encode_filename(crypt_stat, symname,
-@@ -479,7 +481,7 @@ static int ecryptfs_symlink(struct inode
- 		rc = encoded_symlen;
- 		goto out_lock;
- 	}
--	rc = vfs_symlink(lower_dir_dentry->d_inode, lower_dentry,
-+	rc = vfs_symlink(lower_dir_dentry->d_inode, lower_dentry, lower_mnt,
- 			 encoded_symname, mode);
- 	kfree(encoded_symname);
- 	if (rc || !lower_dentry->d_inode)
-Index: linux-2.6/fs/namei.c
-===================================================================
---- linux-2.6.orig/fs/namei.c
-+++ linux-2.6/fs/namei.c
-@@ -2185,7 +2185,8 @@ asmlinkage long sys_unlink(const char __
- 	return do_unlinkat(AT_FDCWD, pathname);
- }
- 
--int vfs_symlink(struct inode *dir, struct dentry *dentry, const char *oldname, int mode)
-+int vfs_symlink(struct inode *dir, struct dentry *dentry, struct vfsmount *mnt,
-+		const char *oldname, int mode)
- {
- 	int error = may_create(dir, dentry, NULL);
- 
-@@ -2231,7 +2232,8 @@ asmlinkage long sys_symlinkat(const char
- 	if (IS_ERR(dentry))
- 		goto out_unlock;
- 
--	error = vfs_symlink(nd.dentry->d_inode, dentry, from, S_IALLUGO);
-+	error = vfs_symlink(nd.dentry->d_inode, dentry, nd.mnt, from,
-+			    S_IALLUGO);
- 	dput(dentry);
- out_unlock:
- 	mutex_unlock(&nd.dentry->d_inode->i_mutex);
-Index: linux-2.6/fs/nfsd/vfs.c
-===================================================================
---- linux-2.6.orig/fs/nfsd/vfs.c
-+++ linux-2.6/fs/nfsd/vfs.c
-@@ -1463,11 +1463,12 @@ nfsd_symlink(struct svc_rqst *rqstp, str
- 		else {
- 			strncpy(path_alloced, path, plen);
- 			path_alloced[plen] = 0;
--			host_err = vfs_symlink(dentry->d_inode, dnew, path_alloced, mode);
-+			host_err = vfs_symlink(dentry->d_inode, dnew, NULL,
-+					       path_alloced, mode);
- 			kfree(path_alloced);
- 		}
- 	} else
--		host_err = vfs_symlink(dentry->d_inode, dnew, path, mode);
-+		host_err = vfs_symlink(dentry->d_inode, dnew, NULL, path, mode);
- 
- 	if (!host_err) {
- 		if (EX_ISSYNC(fhp->fh_export))
-Index: linux-2.6/include/linux/fs.h
-===================================================================
---- linux-2.6.orig/include/linux/fs.h
-+++ linux-2.6/include/linux/fs.h
-@@ -981,7 +981,7 @@ extern int vfs_permission(struct nameida
- extern int vfs_create(struct inode *, struct dentry *, int, struct nameidata *);
- extern int vfs_mkdir(struct inode *, struct dentry *, struct vfsmount *, int);
- extern int vfs_mknod(struct inode *, struct dentry *, struct vfsmount *, int, dev_t);
--extern int vfs_symlink(struct inode *, struct dentry *, const char *, int);
-+extern int vfs_symlink(struct inode *, struct dentry *, struct vfsmount *, const char *, int);
- extern int vfs_link(struct dentry *, struct inode *, struct dentry *);
- extern int vfs_rmdir(struct inode *, struct dentry *);
- extern int vfs_unlink(struct inode *, struct dentry *);
+Yes, no need for the above. We can just host a poll/epoll in an async() 
+operation, and demultiplex once that gets ready.
+
+
+
+- Davide
+
+
