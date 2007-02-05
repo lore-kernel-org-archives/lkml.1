@@ -1,43 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964981AbXBEWPk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964933AbXBEWUP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964981AbXBEWPk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 17:15:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964982AbXBEWPk
+	id S964933AbXBEWUP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 17:20:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964923AbXBEWUP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 17:15:40 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:41995 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964981AbXBEWPj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 17:15:39 -0500
-In-Reply-To: <20070205220745.GB32115@outpost.ds9a.nl>
-References: <patchbomb.1170193181@tetsuo.zabbo.net> <df7bc026d50ec5bbdd8e.1170193183@tetsuo.zabbo.net> <20070201083611.GC18233@elte.hu> <Pine.LNX.4.64.0702011154110.3632@woody.linux-foundation.org> <20070202104900.GA13941@elte.hu> <Pine.LNX.4.64.0702020738500.15057@woody.linux-foundation.org> <20070202222110.GA1212@elte.hu> <Pine.LNX.4.64.0702021525370.5219@alien.or.mcafeemobile.com> <20070205213618.GA30923@outpost.ds9a.nl> <Pine.LNX.4.64.0702051350010.8424@woody.linux-foundation.org> <20070205220745.GB32115@outpost.ds9a.nl>
-Mime-Version: 1.0 (Apple Message framework v752.3)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <85F9EF88-050F-4F3F-8E3D-4205338AAC56@oracle.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Davide Libenzi <davidel@xmailserver.org>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-aio@kvack.org, Suparna Bhattacharya <suparna@in.ibm.com>,
-       Benjamin LaHaise <bcrl@kvack.org>
-Content-Transfer-Encoding: 7bit
-From: Zach Brown <zach.brown@oracle.com>
-Subject: Re: [PATCH 2 of 4] Introduce i386 fibril scheduling
-Date: Mon, 5 Feb 2007 17:15:02 -0500
-To: bert hubert <bert.hubert@netherlabs.nl>
-X-Mailer: Apple Mail (2.752.3)
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
+	Mon, 5 Feb 2007 17:20:15 -0500
+Received: from ns.suse.de ([195.135.220.2]:60864 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S964857AbXBEWUN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Feb 2007 17:20:13 -0500
+Date: Mon, 5 Feb 2007 14:18:54 -0800
+From: Greg KH <greg@kroah.com>
+To: Chris Wright <chrisw@sous-sol.org>
+Cc: Michael Krufky <mkrufky@linuxtv.org>, torvalds@osdl.org, akpm@osdl.org,
+       "Theodore Ts'o" <tytso@mit.edu>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       Justin Forbes <jmforbes@linuxtx.org>, linux-kernel@vger.kernel.org,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Randy Dunlap <rdunlap@xenotime.net>, Dave Jones <davej@redhat.com>,
+       Chuck Wolber <chuckw@quantumlinux.com>, stable@kernel.org,
+       alan@lxorguk.ukuu.org.uk
+Subject: Re: [stable] [patch 00/50] -stable review
+Message-ID: <20070205221854.GA19345@kroah.com>
+References: <20070106022753.334962000@sous-sol.org> <45C624D2.9030403@linuxtv.org> <20070205214332.GB18230@kroah.com> <20070205221233.GU10475@sequoia.sous-sol.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070205221233.GU10475@sequoia.sous-sol.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> It has me excited in any case. Once anything even remotely testable  
-> appears
-> (Zach tells me not to try the current code), I'll work it into MTasker
-> (http://ds9a.nl/mtasker) and make it power a nameserver that does  
-> async i/o,
-> for use with very very large zones that aren't preloaded.
+On Mon, Feb 05, 2007 at 02:12:33PM -0800, Chris Wright wrote:
+> * Greg KH (greg@kroah.com) wrote:
+> > On Sun, Feb 04, 2007 at 01:24:18PM -0500, Michael Krufky wrote:
+> > > At which point was 2.6.18.y dropped?  I thought we were always going to keep
+> > > the last two stable kernels up-to-date.
+> 
+> Not quite.  It's more of a "some overlap," so that as soon as 2.6.x
+> comes out we don't instantly drop 2.6.(x-1).y stream.  But we don't keep
+> it going, typically more 1 or 2 2.6.(x-1).y releases once 2.6.x is out.
+> 
+> > > Have I been wasting my time fwd'ing
+> > > 2.6.18.y patches?
+> 
+> I had actually queued them up, but we only had 1 or 2 other patches,
+> and they weren't significant enough to warrant flushing that queue.
 
-I'll be sure to let you know :)
+I'll see if the latest stuff that is queued up and some other stuff is
+worth to push out a new release in a few days.
 
-- z
+thanks,
+
+greg k-h
