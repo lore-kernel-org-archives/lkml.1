@@ -1,46 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933473AbXBEVoo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933490AbXBEVpc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933473AbXBEVoo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 16:44:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933478AbXBEVoo
+	id S933490AbXBEVpc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 16:45:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933486AbXBEVpc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 16:44:44 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:50126
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S933473AbXBEVon (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 16:44:43 -0500
-Date: Mon, 05 Feb 2007 13:44:42 -0800 (PST)
-Message-Id: <20070205.134442.85686980.davem@davemloft.net>
-To: davidel@xmailserver.org
-Cc: zach.brown@oracle.com, mingo@elte.hu, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-aio@kvack.org, suparna@in.ibm.com,
-       bcrl@kvack.org
-Subject: Re: [PATCH 2 of 4] Introduce i386 fibril scheduling
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <Pine.LNX.4.64.0702051022170.14453@alien.or.mcafeemobile.com>
-References: <Pine.LNX.4.64.0702021525370.5219@alien.or.mcafeemobile.com>
-	<EDD3B5A9-9EAB-4E0A-BE1F-3B73C3870DC8@oracle.com>
-	<Pine.LNX.4.64.0702051022170.14453@alien.or.mcafeemobile.com>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Mon, 5 Feb 2007 16:45:32 -0500
+Received: from cantor.suse.de ([195.135.220.2]:58724 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933490AbXBEVpb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Feb 2007 16:45:31 -0500
+Date: Mon, 5 Feb 2007 13:43:32 -0800
+From: Greg KH <greg@kroah.com>
+To: Michael Krufky <mkrufky@linuxtv.org>
+Cc: Chris Wright <chrisw@sous-sol.org>, torvalds@osdl.org, akpm@osdl.org,
+       "Theodore Ts'o" <tytso@mit.edu>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       Justin Forbes <jmforbes@linuxtx.org>, linux-kernel@vger.kernel.org,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Randy Dunlap <rdunlap@xenotime.net>, Dave Jones <davej@redhat.com>,
+       Chuck Wolber <chuckw@quantumlinux.com>, stable@kernel.org,
+       alan@lxorguk.ukuu.org.uk
+Subject: Re: [stable] [patch 00/50] -stable review
+Message-ID: <20070205214332.GB18230@kroah.com>
+References: <20070106022753.334962000@sous-sol.org> <45C624D2.9030403@linuxtv.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <45C624D2.9030403@linuxtv.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Davide Libenzi <davidel@xmailserver.org>
-Date: Mon, 5 Feb 2007 10:24:34 -0800 (PST)
+On Sun, Feb 04, 2007 at 01:24:18PM -0500, Michael Krufky wrote:
+> Chris Wright wrote:
+> > This is the start of the stable review cycle for the 2.6.19.2 release.
+> > There are 50 patches in this series, all will be posted as a response
+> > to this one.  If anyone has any issues with these being applied, please
+> > let us know.  If anyone is a maintainer of the proper subsystem, and
+> > wants to add a Signed-off-by: line to the patch, please respond with it.
+> > 
+> > These patches are sent out with a number of different people on the
+> > Cc: line.  If you wish to be a reviewer, please email stable@kernel.org
+> > to add your name to the list.  If you want to be off the reviewer list,
+> > also email us.
+> > 
+> > Responses should be made by Mon Jan 8 02:30 UTC.
+> > Anything received after that time might be too late.
+> 
+> At which point was 2.6.18.y dropped?  I thought we were always going to keep
+> the last two stable kernels up-to-date.  Have I been wasting my time fwd'ing
+> 2.6.18.y patches?
 
-> Yes, no need for the above. We can just host a poll/epoll in an async() 
-> operation, and demultiplex once that gets ready.
+It was dropped a while ago, sorry.
 
-I can hear Evgeniy crying 8,000 miles away.
+I'll go through the archives and see if there's enough to do a .18
+release (and the patches are serious enough to warrent it.)
 
-I strongly encourage a lot of folks commenting in this thread to
-familiarize themselves with kevent and how it handles this stuff.  I
-see a lot of suggestions for things he has totally implemented and
-solved already in kevent.
+thanks,
 
-I'm not talking about Zach's fibril's, I'm talking about the interface
-aspects of these discussions.
+greg k-h
