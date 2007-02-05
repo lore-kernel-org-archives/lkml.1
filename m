@@ -1,130 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932815AbXBEO2m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932938AbXBEO3P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932815AbXBEO2m (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 09:28:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932874AbXBEO2m
+	id S932938AbXBEO3P (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 09:29:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932874AbXBEO3P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 09:28:42 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:50864 "EHLO mx1.redhat.com"
+	Mon, 5 Feb 2007 09:29:15 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:51067 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932868AbXBEO2j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 09:28:39 -0500
-Subject: [DLM] fix lowcomms receiving [35/54]
+	id S932938AbXBEO3M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Feb 2007 09:29:12 -0500
+Subject: [GFS2] Remove queue_empty() function [36/54]
 From: Steven Whitehouse <swhiteho@redhat.com>
 To: linux-kernel@vger.kernel.org
-Cc: Patrick Caulfield <pcaulfie@redhat.com>, cluster-devel@redhat.com
+Cc: cluster-devel@redhat.com
 In-Reply-To: <1170684425.11001.267.camel@quoit.chygwyn.com>
 References: <1170684425.11001.267.camel@quoit.chygwyn.com>
 Content-Type: text/plain
 Organization: Red Hat (UK) Ltd
-Date: Mon, 05 Feb 2007 14:36:43 +0000
-Message-Id: <1170686203.11001.341.camel@quoit.chygwyn.com>
+Date: Mon, 05 Feb 2007 14:37:15 +0000
+Message-Id: <1170686235.11001.343.camel@quoit.chygwyn.com>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.2.2 (2.2.2-5) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 8fc2b7f76db12f7f214948e01ebd9d36f25a873c Mon Sep 17 00:00:00 2001
-From: Patrick Caulfield <pcaulfie@redhat.com>
-Date: Mon, 22 Jan 2007 14:51:33 +0000
-Subject: [PATCH] [DLM] fix lowcomms receiving
+>From 5eaeb9b4dc1299eba6065ab2e5c9e5b23e55a9f3 Mon Sep 17 00:00:00 2001
+From: Steven Whitehouse <swhiteho@redhat.com>
+Date: Mon, 22 Jan 2007 13:09:04 -0500
+Subject: [PATCH] [GFS2] Remove queue_empty() function
 
-This patch fixes a bug whereby data on a newly accepted connection would be
-ignored if it arrived soon after the accept.
+This function is not longer required since we do not do recursive
+locking in the glock layer. As a result all its callers can be
+replaceed with list_empty() calls.
 
-Signed-Off-By: Patrick Caulfield <pcaulfie@redhat.com>
 Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
 
-diff --git a/fs/dlm/lowcomms-tcp.c b/fs/dlm/lowcomms-tcp.c
-index 6e27201..8e6a76c 100644
---- a/fs/dlm/lowcomms-tcp.c
-+++ b/fs/dlm/lowcomms-tcp.c
-@@ -327,6 +327,9 @@ static int receive_from_sock(struct connection *con)
+diff --git a/fs/gfs2/glock.c b/fs/gfs2/glock.c
+index 5b772bb..1509481 100644
+--- a/fs/gfs2/glock.c
++++ b/fs/gfs2/glock.c
+@@ -211,30 +211,6 @@ out:
+ }
  
- 	if (ret <= 0)
- 		goto out_close;
-+	if (ret == -EAGAIN)
-+		goto out_resched;
-+
- 	if (ret == len)
- 		call_again_soon = 1;
- 	cbuf_add(&con->cb, ret);
-@@ -359,8 +362,7 @@ out_resched:
- 	if (!test_and_set_bit(CF_READ_PENDING, &con->flags))
- 		queue_work(recv_workqueue, &con->rwork);
- 	up_read(&con->sock_sem);
--	cond_resched();
--	return 0;
-+	return -EAGAIN;
- 
- out_close:
- 	up_read(&con->sock_sem);
-@@ -381,6 +383,7 @@ static int accept_from_sock(struct connection *con)
- 	int len;
- 	int nodeid;
- 	struct connection *newcon;
-+	struct connection *addcon;
- 
- 	memset(&peeraddr, 0, sizeof(peeraddr));
- 	result = sock_create_kern(dlm_local_addr.ss_family, SOCK_STREAM,
-@@ -454,12 +457,13 @@ static int accept_from_sock(struct connection *con)
- 		othercon->sock = newsock;
- 		newsock->sk->sk_user_data = othercon;
- 		add_sock(newsock, othercon);
-+		addcon = othercon;
- 	}
- 	else {
- 		newsock->sk->sk_user_data = newcon;
- 		newcon->rx_action = receive_from_sock;
- 		add_sock(newsock, newcon);
+ /**
+- * queue_empty - check to see if a glock's queue is empty
+- * @gl: the glock
+- * @head: the head of the queue to check
+- *
+- * This function protects the list in the event that a process already
+- * has a holder on the list and is adding a second holder for itself.
+- * The glmutex lock is what generally prevents processes from working
+- * on the same glock at once, but the special case of adding a second
+- * holder for yourself ("recursive" locking) doesn't involve locking
+- * glmutex, making the spin lock necessary.
+- *
+- * Returns: 1 if the queue is empty
+- */
 -
-+		addcon = newcon;
+-static inline int queue_empty(struct gfs2_glock *gl, struct list_head *head)
+-{
+-	int empty;
+-	spin_lock(&gl->gl_spin);
+-	empty = list_empty(head);
+-	spin_unlock(&gl->gl_spin);
+-	return empty;
+-}
+-
+-/**
+  * search_bucket() - Find struct gfs2_glock by lock number
+  * @bucket: the bucket to search
+  * @name: The lock name
+@@ -814,7 +790,7 @@ static void xmote_bh(struct gfs2_glock *gl, unsigned int ret)
+ 	int op_done = 1;
+ 
+ 	gfs2_assert_warn(sdp, test_bit(GLF_LOCK, &gl->gl_flags));
+-	gfs2_assert_warn(sdp, queue_empty(gl, &gl->gl_holders));
++	gfs2_assert_warn(sdp, list_empty(&gl->gl_holders));
+ 	gfs2_assert_warn(sdp, !(ret & LM_OUT_ASYNC));
+ 
+ 	state_change(gl, ret & LM_OUT_ST_MASK);
+@@ -925,7 +901,7 @@ void gfs2_glock_xmote_th(struct gfs2_holder *gh)
+ 		glops->go_xmote_th(gl);
+ 
+ 	gfs2_assert_warn(sdp, test_bit(GLF_LOCK, &gl->gl_flags));
+-	gfs2_assert_warn(sdp, queue_empty(gl, &gl->gl_holders));
++	gfs2_assert_warn(sdp, list_empty(&gl->gl_holders));
+ 	gfs2_assert_warn(sdp, state != LM_ST_UNLOCKED);
+ 	gfs2_assert_warn(sdp, state != gl->gl_state);
+ 
+@@ -960,7 +936,7 @@ static void drop_bh(struct gfs2_glock *gl, unsigned int ret)
+ 	struct gfs2_holder *gh = gl->gl_req_gh;
+ 
+ 	gfs2_assert_warn(sdp, test_bit(GLF_LOCK, &gl->gl_flags));
+-	gfs2_assert_warn(sdp, queue_empty(gl, &gl->gl_holders));
++	gfs2_assert_warn(sdp, list_empty(&gl->gl_holders));
+ 	gfs2_assert_warn(sdp, !ret);
+ 
+ 	state_change(gl, LM_ST_UNLOCKED);
+@@ -1007,7 +983,7 @@ static void gfs2_glock_drop_th(struct gfs2_glock *gl)
+ 		glops->go_drop_th(gl);
+ 
+ 	gfs2_assert_warn(sdp, test_bit(GLF_LOCK, &gl->gl_flags));
+-	gfs2_assert_warn(sdp, queue_empty(gl, &gl->gl_holders));
++	gfs2_assert_warn(sdp, list_empty(&gl->gl_holders));
+ 	gfs2_assert_warn(sdp, gl->gl_state != LM_ST_UNLOCKED);
+ 
+ 	gfs2_glock_hold(gl);
+@@ -1697,7 +1673,7 @@ void gfs2_reclaim_glock(struct gfs2_sbd *sdp)
+ 	atomic_inc(&sdp->sd_reclaimed);
+ 
+ 	if (gfs2_glmutex_trylock(gl)) {
+-		if (queue_empty(gl, &gl->gl_holders) &&
++		if (list_empty(&gl->gl_holders) &&
+ 		    gl->gl_state != LM_ST_UNLOCKED && demote_ok(gl))
+ 			handle_callback(gl, LM_ST_UNLOCKED);
+ 		gfs2_glmutex_unlock(gl);
+@@ -1761,7 +1737,7 @@ static void scan_glock(struct gfs2_glock *gl)
+ 		return;
+ 
+ 	if (gfs2_glmutex_trylock(gl)) {
+-		if (queue_empty(gl, &gl->gl_holders) &&
++		if (list_empty(&gl->gl_holders) &&
+ 		    gl->gl_state != LM_ST_UNLOCKED && demote_ok(gl))
+ 			goto out_schedule;
+ 		gfs2_glmutex_unlock(gl);
+@@ -1810,7 +1786,7 @@ static void clear_glock(struct gfs2_glock *gl)
  	}
  
- 	up_write(&newcon->sock_sem);
-@@ -469,8 +473,8 @@ static int accept_from_sock(struct connection *con)
- 	 * beween processing the accept adding the socket
- 	 * to the read_sockets list
- 	 */
--	if (!test_and_set_bit(CF_READ_PENDING, &newcon->flags))
--		queue_work(recv_workqueue, &newcon->rwork);
-+	if (!test_and_set_bit(CF_READ_PENDING, &addcon->flags))
-+		queue_work(recv_workqueue, &addcon->rwork);
- 	up_read(&con->sock_sem);
- 
- 	return 0;
-@@ -610,8 +614,7 @@ static struct socket *create_listen_sock(struct connection *con,
- 
- 	result = sock->ops->listen(sock, 5);
- 	if (result < 0) {
--		printk("dlm: Can't listen on port %d\n",
--		       dlm_config.ci_tcp_port);
-+		printk("dlm: Can't listen on port %d\n", dlm_config.ci_tcp_port);
- 		sock_release(sock);
- 		sock = NULL;
- 		goto create_out;
-@@ -811,7 +814,7 @@ send_error:
- 
- out_connect:
- 	up_read(&con->sock_sem);
--	lowcomms_connect_sock(con);
-+	connect_to_sock(con);
- 	return;
- }
- 
-@@ -873,9 +876,8 @@ static void process_send_sockets(struct work_struct *work)
- 		connect_to_sock(con);
- 	}
- 
--	if (test_and_clear_bit(CF_WRITE_PENDING, &con->flags)) {
--		send_to_sock(con);
--	}
-+	clear_bit(CF_WRITE_PENDING, &con->flags);
-+	send_to_sock(con);
- }
- 
- 
+ 	if (gfs2_glmutex_trylock(gl)) {
+-		if (queue_empty(gl, &gl->gl_holders) &&
++		if (list_empty(gl, &gl->gl_holders) &&
+ 		    gl->gl_state != LM_ST_UNLOCKED)
+ 			handle_callback(gl, LM_ST_UNLOCKED);
+ 		gfs2_glmutex_unlock(gl);
 -- 
 1.4.4.2
 
