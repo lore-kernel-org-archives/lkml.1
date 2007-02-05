@@ -1,106 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932667AbXBEPR3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932579AbXBEPYF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932667AbXBEPR3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 10:17:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932991AbXBEPR2
+	id S932579AbXBEPYF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 10:24:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932518AbXBEPYF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 10:17:28 -0500
-Received: from main.gmane.org ([80.91.229.2]:55320 "EHLO ciao.gmane.org"
+	Mon, 5 Feb 2007 10:24:05 -0500
+Received: from cacti.profiwh.com ([85.93.165.66]:52645 "EHLO cacti.profiwh.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932667AbXBEPR1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 10:17:27 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Parag Warudkar <kernel-stuff@comcast.net>
-Subject: Re: v2.6.20-rt1, yum/rpm
-Date: Mon, 5 Feb 2007 15:17:14 +0000 (UTC)
-Message-ID: <loom.20070205T161518-353@post.gmane.org>
-References: <20070205065636.GA1652@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S932662AbXBEPYE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Feb 2007 10:24:04 -0500
+Message-ID: <45C74C25.5070901@gmail.com>
+Date: Mon, 05 Feb 2007 16:24:21 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0b2 (X11/20070116)
+MIME-Version: 1.0
+To: Greg KH <greg@kroah.com>
+Cc: Miguel Ojeda <maxextreme@gmail.com>, Parav Pandit <paravpandit@yahoo.com>,
+       linux-kernel@vger.kernel.org,
+       "Michael K. Edwards" <medwards.linux@gmail.com>
+Subject: Re: Free Linux Driver Development!
+References: <f2b55d220701301827h703d24eele941c86046caa9e7@mail.gmail.com> <355711.50750.qm@web36602.mail.mud.yahoo.com> <20070204182003.GB12379@kroah.com> <653402b90702041108q3c5c7b91x727c09c7c069bba3@mail.gmail.com> <20070205081312.GA19669@kroah.com>
+In-Reply-To: <20070205081312.GA19669@kroah.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@sea.gmane.org
-X-Gmane-NNTP-Posting-Host: main.gmane.org
-User-Agent: Loom/3.14 (http://gmane.org/)
-X-Loom-IP: 68.42.164.97 (Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.1) Gecko/20061208 Firefox/2.0.0.1)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar <mingo <at> elte.hu> writes:
-
+Greg KH napsal(a):
+> On Sun, Feb 04, 2007 at 08:08:32PM +0100, Miguel Ojeda wrote:
+>> On 2/4/07, Greg KH <greg@kroah.com> wrote:
+>>> Just let me know if you are interested in participating, and what types
+>>> of devices you wish to write drivers for (USB, PCI, network, etc.)
+>> I would like to participate; however, for people who is not at USA
+>> (say, Europe), are there fair chances to get samples of devices to
+>> work with?
 > 
-> i have released the v2.6.20-rt1 kernel, which can be downloaded from the 
-> usual place:
+> Not all of the companies asking for this work are in the US, so I don't
+> see any reason why we should limit our developers to just one country,
+> that wouldn't be very fair...
 > 
->   http://redhat.com/~mingo/realtime-preempt/
-> 
-> more info about the -rt patchset can be found in the RT wiki:
-> 
->   http://rt.wiki.kernel.org
-> 
+> Just let me know what types of devices you are interested in working on.
 
-On FC6 with KVM userspace from trunk I get a ton of errors like this in dmesg -
+Then, I want to be involved too. I'm interested in PCI and network devices.
 
-=======================
----------------------------
-| preempt count: 00000001 ]
-| 1-level deep critical section nesting:
-----------------------------------------
-.. [<f90ecc48>] .... vmx_vcpu_load+0x26/0xd2 [kvm_intel]
-.....[<f90b0a1c>] ..   ( <= vcpu_load+0x38/0x3c [kvm])
-
-BUG: sleeping function called from invalid context qemu(4314) at
-arch/i386/mm/highmem.c:8
-in_atomic():1 [00000001], irqs_disabled():0
- [<c010503c>] dump_trace+0x63/0x1e8
- [<c01051dd>] show_trace_log_lvl+0x1c/0x39
- [<c01055d4>] show_trace+0x12/0x14
- [<c01055ea>] dump_stack+0x14/0x16
- [<c0122b71>] __might_sleep+0x110/0x117
- [<c012161b>] kmap+0x3e/0x48
- [<f90b415e>] paging32_walk_addr+0x214/0x276 [kvm]
- [<f90b4f08>] paging32_page_fault+0x51/0x749 [kvm]
- [<f90ede01>] handle_exception+0xeb/0x1da [kvm_intel]
- [<f90edc8a>] kvm_vmx_return+0x169/0x1f5 [kvm_intel]
- [<f90b108a>] kvm_dev_ioctl+0x284/0x1148 [kvm]
- [<c0189db9>] do_ioctl+0x21/0x66
- [<c018a053>] vfs_ioctl+0x255/0x268
- [<c018a0ae>] sys_ioctl+0x48/0x62
- [<c0104009>] syscall_call+0x7/0xb
- [<009858b2>] 0x9858b2
- =======================
----------------------------
-| preempt count: 00000001 ]
-| 1-level deep critical section nesting:
-----------------------------------------
-.. [<f90ecc48>] .... vmx_vcpu_load+0x26/0xd2 [kvm_intel]
-.....[<f90b0a1c>] ..   ( <= vcpu_load+0x38/0x3c [kvm])
-
-BUG: sleeping function called from invalid context qemu(4314) at
-arch/i386/mm/highmem.c:8
-in_atomic():1 [00000001], irqs_disabled():0
- [<c010503c>] dump_trace+0x63/0x1e8
- [<c01051dd>] show_trace_log_lvl+0x1c/0x39
- [<c01055d4>] show_trace+0x12/0x14
- [<c01055ea>] dump_stack+0x14/0x16
- [<c0122b71>] __might_sleep+0x110/0x117
- [<c012161b>] kmap+0x3e/0x48
- [<f90b415e>] paging32_walk_addr+0x214/0x276 [kvm]
- [<f90b4f08>] paging32_page_fault+0x51/0x749 [kvm]
- [<f90ede01>] handle_exception+0xeb/0x1da [kvm_intel]
- [<f90edc8a>] kvm_vmx_return+0x169/0x1f5 [kvm_intel]
- [<f90b108a>] kvm_dev_ioctl+0x284/0x1148 [kvm]
- [<c0189db9>] do_ioctl+0x21/0x66
- [<c018a053>] vfs_ioctl+0x255/0x268
- [<c018a0ae>] sys_ioctl+0x48/0x62
- [<c0104009>] syscall_call+0x7/0xb
- [<009858b2>] 0x9858b2
- =======================
----------------------------
-| preempt count: 00000001 ]
-| 1-level deep critical section nesting:
-----------------------------------------
-.. [<f90ecc48>] .... vmx_vcpu_load+0x26/0xd2 [kvm_intel]
-.....[<f90b0a1c>] ..   ( <= vcpu_load+0x38/0x3c [kvm])
-
-
+thanks,
+-- 
+http://www.fi.muni.cz/~xslaby/            Jiri Slaby
+faculty of informatics, masaryk university, brno, cz
+e-mail: jirislaby gmail com, gpg pubkey fingerprint:
+B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
