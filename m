@@ -1,72 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932478AbXBENlZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932417AbXBENoX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932478AbXBENlZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 08:41:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932417AbXBENlY
+	id S932417AbXBENoX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 08:44:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932432AbXBENoX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 08:41:24 -0500
-Received: from mail.screens.ru ([213.234.233.54]:53477 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932478AbXBENlY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 08:41:24 -0500
-Date: Mon, 5 Feb 2007 16:43:14 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: S?bastien Dugu? <sebastien.dugue@bull.net>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
-       linux-aio <linux-aio@kvack.org>, Bharata B Rao <bharata@in.ibm.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
-       Badari Pulavarty <pbadari@us.ibm.com>,
-       Benjamin LaHaise <bcrl@linux.intel.com>,
-       Jean Pierre Dion <jean-pierre.dion@bull.net>
-Subject: Re: [PATCH -mm 4/7][AIO] Resend - Make good_sigevent() non-static
-Message-ID: <20070205134314.GA283@tv-sign.ru>
-References: <20070201102252.240130c6@frecb000686> <20070201103053.64489048@frecb000686> <20070202180039.GA658@tv-sign.ru> <20070205131839.6f601c3e@frecb000686>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070205131839.6f601c3e@frecb000686>
-User-Agent: Mutt/1.5.11
+	Mon, 5 Feb 2007 08:44:23 -0500
+Received: from relay.gothnet.se ([82.193.160.251]:6923 "EHLO
+	GOTHNET-SMTP2.gothnet.se" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S932417AbXBENoW convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Feb 2007 08:44:22 -0500
+Message-ID: <45C7349A.3020209@tungstengraphics.com>
+Date: Mon, 05 Feb 2007 14:43:54 +0100
+From: =?ISO-8859-1?Q?Thomas_Hellstr=F6m?= <thomas@tungstengraphics.com>
+User-Agent: Thunderbird 1.5.0.7 (X11/20060921)
+MIME-Version: 1.0
+To: Dave Jones <davej@redhat.com>,
+       =?ISO-8859-1?Q?Thomas_Hellstr=F6m?= <thomas@tungstengraphics.com>,
+       ebuddington@wesleyan.edu, Dave Airlie <airlied@gmail.com>,
+       Lee Revell <rlrevell@joe-job.com>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.20-rc6-mm3 BUG in drm_ioctl with Rage 128 card
+References: <20070203185407.GA5256@pool-70-109-243-148.wma.east.verizon.net> <75b66ecd0702031322k58db9da7l1ae1fc3a9342682b@mail.gmail.com> <20070203230945.GA4557@pool-71-161-133-234.spfdma.east.verizon.net> <21d7e9970702031520y503bfa98p43708e2d18a6599f@mail.gmail.com> <20070203232505.GC4557@pool-71-161-133-234.spfdma.east.verizon.net> <45C5AEA5.2040501@tungstengraphics.com> <20070204192645.GA5169@pool-71-161-131-9.spfdma.east.verizon.net> <20070204230544.GB8960@redhat.com> <45C72976.9090201@tungstengraphics.com> <20070205133410.GA4121@redhat.com>
+In-Reply-To: <20070205133410.GA4121@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+X-BitDefender-Scanner: Mail not scanned due to license constraints
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/05, S?bastien Dugu? wrote:
-> 
-> +struct task_struct * sigevent_find_task(sigevent_t * event)
-> +{
-> +	struct task_struct *task = current->group_leader;
-> +
-> +	if ((event->sigev_notify & ~SIGEV_THREAD_ID) != SIGEV_NONE) {
-> +		if (event->sigev_signo <= 0 || event->sigev_signo > SIGRTMAX)
-> +			return NULL;
-> +	}
-> +
-> +	if (event->sigev_notify & SIGEV_THREAD_ID) {
-> +		if ((event->sigev_notify & ~SIGEV_THREAD_ID) != SIGEV_SIGNAL)
-> +			return NULL;
-> +
-> +		task = find_task_by_pid(event->sigev_notify_thread_id);
-> +
-> +		if (!task || task->tgid != current->tgid)
-> +			task = NULL;
-> +	}
-> +
-> +	return task;
-> +}
+Dave Jones wrote:
+> On Mon, Feb 05, 2007 at 01:56:22PM +0100, Thomas Hellström wrote:
+>  > Dave Jones wrote:
+>  > > On Sun, Feb 04, 2007 at 02:26:59PM -0500, Eric Buddington wrote:
+>  > >  > On Sun, Feb 04, 2007 at 11:00:05AM +0100, Thomas Hellstr?m wrote:
+>  > >  > > Eric,
+>  > >  > > Sorry for the breakage. Can you try the attached patch and see if it 
+>  > >  > > fixes the problem.
+>  > >  > > 
+>  > >  > > /Thomas
+>  > >  > 
+>  > >  > Thomas,
+>  > >  > 
+>  > >  > Thanks! That seems to fix it:
+>  > >
+>  > > Great.  Thomas, can you resend me that patch with a description & Signed-off-by ?
+>  > > (Also for some reason that one looks like it was MIME damaged, git-am wouldn't eat it)
+>  > >
+>  > > 		Dave
+>  > >
+>  > >   
+>  > Dave,
+>  > I'll post an updated complete patch. The previous one was really only 
+>  > for Eric to try.
+>
+> Can you send just an incremental against what's in agpgart.git right now?
+>
+> Thanks,
+>
+> 		Dave
+>
+>   
+Ok.
 
-I think this patch is correct, and the code is much more readable than
-the old good_sigevet().
+Coming right away,
 
-But please don't forget that PATCH 6/7 still needs a small fixup, we can
-leak a task_struct in really_put_req()
+/Thomas
 
-		if (notify == SIGEV_THREAD_ID || notify == SIGEV_SIGNAL)
-			put_task_struct(req->ki_notify.target);
 
-because without SIGEV_THREAD_ID ->sigev_notify can have any bit/bits set,
-even SIGEV_NONE (along with some other bit, aio_setup_sigevent checks for
-== SIGEV_NONE).
-
-Oleg.
 
