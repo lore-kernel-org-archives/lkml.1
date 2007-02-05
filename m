@@ -1,62 +1,216 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933472AbXBEV2E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933469AbXBEV2c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933472AbXBEV2E (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 16:28:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933470AbXBEV2E
+	id S933469AbXBEV2c (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 16:28:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933477AbXBEV2b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 16:28:04 -0500
-Received: from nf-out-0910.google.com ([64.233.182.190]:6738 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933469AbXBEV2B (ORCPT
+	Mon, 5 Feb 2007 16:28:31 -0500
+Received: from smtp.nokia.com ([131.228.20.172]:25234 "EHLO
+	mgw-ext13.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933464AbXBEV2a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 16:28:01 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=aZgZdYDGX5RUOA5pUzM2RylH3fSJMXJZ7ev46OOLVxz3UjyfFIZMqC36iCeaeteOXEjcBhpzp/qYnQL7Yc9UayWIiee4+EMHDkjxpQ3EfmHTZCyX/7hXPk54BDXmePx/lxs7fCxLBnppnp8Sitz5QhhvDeqyhx2dCRCv7E4Etds=
-Message-ID: <58cb370e0702051327p7b253dafs439c937093ca837d@mail.gmail.com>
-Date: Mon, 5 Feb 2007 22:27:59 +0100
-From: "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>
-To: "Tejun Heo" <htejun@gmail.com>
-Subject: Re: Nvidia cable detection problems (was [PATCH] amd74xx: don't configure udma mode higher than BIOS did)
-Cc: Alan <alan@lxorguk.ukuu.org.uk>, "Allen Martin" <AMartin@nvidia.com>,
-       linux-ide@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <58cb370e0702051055w3c7dcff3wd3e3b4935b910b41@mail.gmail.com>
+	Mon, 5 Feb 2007 16:28:30 -0500
+Message-ID: <45C7A2B4.10505@indt.org.br>
+Date: Mon, 05 Feb 2007 17:33:40 -0400
+From: Anderson Briglia <anderson.briglia@indt.org.br>
+User-Agent: Icedove 1.5.0.9 (X11/20061220)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070205075836.GG1625@htj.dyndns.org>
-	 <20070205132247.6f611e3c@localhost.localdomain>
-	 <45C73A3E.6080700@gmail.com>
-	 <20070205143439.6962c076@localhost.localdomain>
-	 <45C7444F.4070500@gmail.com>
-	 <58cb370e0702050709w1b7682dr5dff9e7ce69465a@mail.gmail.com>
-	 <DBFABB80F7FD3143A911F9E6CFD477B01EC0DD7D@hqemmail02.nvidia.com>
-	 <20070205181224.3319d6c3@localhost.localdomain>
-	 <45C77921.4020808@gmail.com>
-	 <58cb370e0702051055w3c7dcff3wd3e3b4935b910b41@mail.gmail.com>
+To: ext Pierre Ossman <drzeus-list@drzeus.cx>
+CC: Russell King <rmk+lkml@arm.linux.org.uk>,
+       "Lizardo Anderson (EXT-INdT/Manaus)" <anderson.lizardo@indt.org.br>,
+       linux-kernel@vger.kernel.org,
+       "Aguiar Carlos (EXT-INdT/Manaus)" <carlos.aguiar@indt.org.br>,
+       Tony Lindgren <tony@atomide.com>,
+       ext David Brownell <david-b@pacbell.net>
+Subject: Re: [PATCH 4/4] Add MMC Password Protection (lock/unlock) support
+ V9: mmc_sysfs.diff
+References: <4582F007.7030100@indt.org.br> <459B9C4E.3020406@indt.org.br> <45A021B2.4090104@drzeus.cx> <45BE3E70.9050505@indt.org.br> <45BF8A28.5010605@drzeus.cx> <45BFB818.3020908@indt.org.br> <45C49FFA.70104@drzeus.cx>
+In-Reply-To: <45C49FFA.70104@drzeus.cx>
+X-Enigmail-Version: 0.94.1.2
+Content-Type: multipart/mixed;
+ boundary="------------070800020207080008090709"
+X-OriginalArrivalTime: 05 Feb 2007 21:27:08.0157 (UTC) FILETIME=[63B6D2D0:01C7496C]
+X-eXpurgate-Category: 1/0
+X-eXpurgate-ID: 149371::070205232518-5D94FBB0-0A15B775/0-0/0-1
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/5/07, Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
-> > > Well we can certainly do some of that if ACPI is present and active. In
-> > > particular since _GTM will give us current modes allowing for hotplug and
-> > > post BIOS boot kexec etc it ought to be safe to do Tejun's hack that way.
-> > > We could even probe UDMA3+ capable devices by doing _STM to a high mode
-> > > and _GTM to determine the cable type 8)
->
-> agreed
+This is a multi-part message in MIME format.
+--------------070800020207080008090709
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
 
-New look at the issue:
+Hi Pierre,
 
-Since we are already using UDMA mode set by BIOS to determine if 80c cable
-is present so why not also use it to determine if the 40c cable is present?
+ext Pierre Ossman wrote:
+> Anderson Briglia wrote:
+>> Hi Pierre,
+>>
+>> How about now? Is better?
+>>
+>>   
+> 
+> Locking problem is still there. You need to unclaim the host even when
+> claim fails.
 
-I mean just ignoring AMD_CABLE_DETECT register for NVIDIA devices.
+Bug fixed. Is there anything else to improve?
 
-2-lines change and we wouldn't have to deal with ACPI at ell.
+Regards,
 
-What do you think?
+Anderson Briglia
 
-Bart
+--------------070800020207080008090709
+Content-Type: text/plain;
+ name="mmc_sysfs.diff"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="mmc_sysfs.diff"
+
+Implement MMC password force erase, remove password, change password,
+unlock card and assign password operations. It uses the sysfs mechanism
+to send commands to the MMC subsystem. 
+
+Signed-off-by: Carlos Eduardo Aguiar <carlos.aguiar@indt.org.br>
+Signed-off-by: Anderson Lizardo <anderson.lizardo@indt.org.br>
+Signed-off-by: Anderson Briglia <anderson.briglia@indt.org.br>
+
+Index: linux-linus-2.6/drivers/mmc/mmc_sysfs.c
+===================================================================
+--- linux-linus-2.6.orig/drivers/mmc/mmc_sysfs.c	2007-02-05 17:32:05.000000000 -0400
++++ linux-linus-2.6/drivers/mmc/mmc_sysfs.c	2007-02-05 17:32:19.000000000 -0400
+@@ -17,6 +17,7 @@
+ #include <linux/idr.h>
+ #include <linux/workqueue.h>
+ #include <linux/key.h>
++#include <linux/err.h>
+ 
+ #include <linux/mmc/card.h>
+ #include <linux/mmc/host.h>
+@@ -65,6 +66,102 @@ static struct device_attribute mmc_dev_a
+ 
+ static struct device_attribute mmc_dev_attr_scr = MMC_ATTR_RO(scr);
+ 
++#ifdef	CONFIG_MMC_PASSWORDS
++
++static ssize_t
++mmc_lockable_show(struct device *dev, struct device_attribute *att, char *buf)
++{
++	struct mmc_card *card = dev_to_mmc_card(dev);
++
++	if (!mmc_card_lockable(card))
++		return sprintf(buf, "unsupported\n");
++	else
++		return sprintf(buf, "%slocked\n", mmc_card_locked(card) ?
++			"" : "un");
++}
++
++/*
++ * implement MMC password functions: force erase, remove password, change
++ * password, unlock card and assign password.
++ */
++static ssize_t
++mmc_lockable_store(struct device *dev, struct device_attribute *att,
++	const char *data, size_t len)
++{
++	struct mmc_card *card = dev_to_mmc_card(dev);
++	int ret;
++
++	if(!mmc_card_lockable(card))
++		return -EINVAL;
++
++	ret = mmc_card_claim_host(card);
++	if (ret != MMC_ERR_NONE) {
++		mmc_card_release_host(card);
++		return -EINVAL;
++	}
++
++	ret = -EINVAL;
++	if (mmc_card_locked(card) && !strncmp(data, "erase", 5)) {
++		/* forced erase only works while card is locked */
++		mmc_lock_unlock(card, NULL, MMC_LOCK_MODE_ERASE);
++		ret = len;
++	} else if (!mmc_card_locked(card) && !strncmp(data, "remove", 6)) {
++		/* remove password only works while card is unlocked */
++		struct key *mmc_key = request_key(&mmc_key_type, "mmc:key", "remove");
++
++		if (!IS_ERR(mmc_key)) {
++			ret =  mmc_lock_unlock(card, mmc_key, MMC_LOCK_MODE_CLR_PWD);
++			if (!ret)
++				ret = len;
++		} else
++			dev_dbg(&card->dev, "request_key returned error %ld\n", PTR_ERR(mmc_key));
++	} else if (!mmc_card_locked(card) && ((!strncmp(data, "assign", 6)) ||
++					      (!strncmp(data, "change", 6)))) {
++		/* assign or change */
++		struct key *mmc_key;
++
++		if(!(strncmp(data, "assign", 6)))
++			mmc_key = request_key(&mmc_key_type, "mmc:key", "assign");
++		else
++			mmc_key = request_key(&mmc_key_type, "mmc:key", "change");
++
++		if (!IS_ERR(mmc_key)) {
++			ret =  mmc_lock_unlock(card, mmc_key, MMC_LOCK_MODE_SET_PWD);
++			if (!ret)
++				ret = len;
++		} else
++			dev_dbg(&card->dev, "request_key returned error %ld\n", PTR_ERR(mmc_key));
++	} else if (mmc_card_locked(card) && !strncmp(data, "unlock", 6)) {
++		/* unlock */
++		struct key *mmc_key = request_key(&mmc_key_type, "mmc:key", "unlock");
++		if (!IS_ERR(mmc_key)) {
++			ret = mmc_lock_unlock(card, mmc_key, MMC_LOCK_MODE_UNLOCK);
++			if (ret) {
++				dev_dbg(&card->dev, "Wrong password\n");
++				ret = -EINVAL;
++			}
++			else {
++				mmc_card_release_host(card);
++				device_release_driver(dev);
++				ret = device_attach(dev);
++				if(!ret)
++					return -EINVAL;
++				else
++					return len;
++			}
++		} else
++			dev_dbg(&card->dev, "request_key returned error %ld\n", PTR_ERR(mmc_key));
++	}
++
++	mmc_card_release_host(card);
++	return ret;
++}
++
++static struct device_attribute mmc_dev_attr_lockable =
++	__ATTR(lockable, S_IWUSR | S_IRUGO,
++		 mmc_lockable_show, mmc_lockable_store);
++
++#endif
+ 
+ static void mmc_release_card(struct device *dev)
+ {
+@@ -234,6 +331,11 @@ int mmc_register_card(struct mmc_card *c
+ 			if (ret)
+ 				device_del(&card->dev);
+ 		}
++#ifdef CONFIG_MMC_PASSWORDS
++		ret = device_create_file(&card->dev, &mmc_dev_attr_lockable);
++		if (ret)
++			device_del(&card->dev);
++#endif
+ 	}
+ 	return ret;
+ }
+@@ -248,6 +350,9 @@ void mmc_remove_card(struct mmc_card *ca
+ 		if (mmc_card_sd(card))
+ 			device_remove_file(&card->dev, &mmc_dev_attr_scr);
+ 
++#ifdef CONFIG_MMC_PASSWORDS
++		device_remove_file(&card->dev, &mmc_dev_attr_lockable);
++#endif
+ 		device_del(&card->dev);
+ 	}
+ 
+
+--------------070800020207080008090709--
