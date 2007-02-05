@@ -1,115 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932905AbXBEOeA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932926AbXBEOeO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932905AbXBEOeA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 09:34:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932929AbXBEOd7
+	id S932926AbXBEOeO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 09:34:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932908AbXBEOeN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 09:33:59 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:52718 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932905AbXBEOd6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 09:33:58 -0500
-Subject: [GFS2] Fix recursive locking attempt with NFS [43/54]
-From: Steven Whitehouse <swhiteho@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: cluster-devel@redhat.com
-In-Reply-To: <1170684425.11001.267.camel@quoit.chygwyn.com>
-References: <1170684425.11001.267.camel@quoit.chygwyn.com>
-Content-Type: text/plain
-Organization: Red Hat (UK) Ltd
-Date: Mon, 05 Feb 2007 14:41:58 +0000
-Message-Id: <1170686518.11001.357.camel@quoit.chygwyn.com>
+	Mon, 5 Feb 2007 09:34:13 -0500
+Received: from tomts22-srv.bellnexxia.net ([209.226.175.184]:51403 "EHLO
+	tomts22-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932926AbXBEOeL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Feb 2007 09:34:11 -0500
+Date: Mon, 5 Feb 2007 09:29:05 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@osdl.org>,
+       paulus@samba.org, linuxppc-dev@ozlabs.org
+Subject: [PATCH] Missing include in include/asm-powerpc/prom.h
+Message-ID: <20070205142905.GA31392@Krystal>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.2.2 (2.2.2-5) 
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.4.34-grsec (i686)
+X-Uptime: 09:27:06 up 3 days,  4:35,  4 users,  load average: 1.16, 1.24, 1.33
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 57c070ec9322815caaa33f4a669b86fac9002075 Mon Sep 17 00:00:00 2001
-From: Steven Whitehouse <swhiteho@redhat.com>
-Date: Thu, 25 Jan 2007 17:14:59 +0000
-Subject: [PATCH] [GFS2] Fix recursive locking attempt with NFS
+Missing include in include/asm-powerpc/prom.h
 
-In certain cases, its possible for NFS to call the lookup code while
-holding the glock (when doing a readdirplus operation) so we need to
-check for that and not try and lock the glock twice. This also fixes a
-typo in a previous NFS related GFS2 patch.
+include/asm-powerpc/prom.h needs to include asm/irq.h because it uses
+irq_of_parse_and_map and NO_IRQ. It applies on 2.6.20.
 
-Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 
-diff --git a/fs/gfs2/inode.c b/fs/gfs2/inode.c
-index f7c8d31..88fcfb4 100644
---- a/fs/gfs2/inode.c
-+++ b/fs/gfs2/inode.c
-@@ -395,8 +395,10 @@ struct inode *gfs2_lookup_simple(struct inode *dip, const char *name)
-  * @is_root: If 1, ignore the caller's permissions
-  * @i_gh: An uninitialized holder for the new inode glock
-  *
-- * There will always be a vnode (Linux VFS inode) for the d_gh inode unless
-- * @is_root is true.
-+ * This can be called via the VFS filldir function when NFS is doing
-+ * a readdirplus and the inode which its intending to stat isn't
-+ * already in cache. In this case we must not take the directory glock
-+ * again, since the readdir call will have already taken that lock.
-  *
-  * Returns: errno
-  */
-@@ -409,8 +411,9 @@ struct inode *gfs2_lookupi(struct inode *dir, const struct qstr *name,
- 	struct gfs2_holder d_gh;
- 	struct gfs2_inum_host inum;
- 	unsigned int type;
--	int error = 0;
-+	int error;
- 	struct inode *inode = NULL;
-+	int unlock = 0;
+--- a/include/asm-powerpc/prom.h
++++ b/include/asm-powerpc/prom.h
+@@ -19,6 +19,7 @@
+ #include <linux/proc_fs.h>
+ #include <linux/platform_device.h>
+ #include <asm/atomic.h>
++#include <asm/irq.h>
  
- 	if (!name->len || name->len > GFS2_FNAMESIZE)
- 		return ERR_PTR(-ENAMETOOLONG);
-@@ -422,9 +425,12 @@ struct inode *gfs2_lookupi(struct inode *dir, const struct qstr *name,
- 		return dir;
- 	}
- 
--	error = gfs2_glock_nq_init(dip->i_gl, LM_ST_SHARED, 0, &d_gh);
--	if (error)
--		return ERR_PTR(error);
-+	if (gfs2_glock_is_locked_by_me(dip->i_gl) == 0) {
-+		error = gfs2_glock_nq_init(dip->i_gl, LM_ST_SHARED, 0, &d_gh);
-+		if (error)
-+			return ERR_PTR(error);
-+		unlock = 1;
-+	}
- 
- 	if (!is_root) {
- 		error = permission(dir, MAY_EXEC, NULL);
-@@ -439,10 +445,11 @@ struct inode *gfs2_lookupi(struct inode *dir, const struct qstr *name,
- 	inode = gfs2_inode_lookup(sb, &inum, type);
- 
- out:
--	gfs2_glock_dq_uninit(&d_gh);
-+	if (unlock)
-+		gfs2_glock_dq_uninit(&d_gh);
- 	if (error == -ENOENT)
- 		return NULL;
--	return inode;
-+	return inode ? inode : ERR_PTR(error);
- }
- 
- static int pick_formal_ino_1(struct gfs2_sbd *sdp, u64 *formal_ino)
-diff --git a/fs/gfs2/ops_inode.c b/fs/gfs2/ops_inode.c
-index 747c731..5591f89 100644
---- a/fs/gfs2/ops_inode.c
-+++ b/fs/gfs2/ops_inode.c
-@@ -1018,7 +1018,7 @@ static int gfs2_getattr(struct vfsmount *mnt, struct dentry *dentry,
- 	}
- 
- 	generic_fillattr(inode, stat);
--	if (unlock);
-+	if (unlock)
- 		gfs2_glock_dq_uninit(&gh);
- 
- 	return 0;
+ /* Definitions used by the flattened device tree */
+ #define OF_DT_HEADER		0xd00dfeed	/* marker */
 -- 
-1.4.4.2
-
-
-
+OpenPGP public key:              http://krystal.dyndns.org:8080/key/compudj.gpg
+Key fingerprint:     8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68 
