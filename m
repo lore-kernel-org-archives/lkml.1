@@ -1,129 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751960AbXBERUP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751954AbXBERUy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751960AbXBERUP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 12:20:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751954AbXBERUP
+	id S1751954AbXBERUy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 12:20:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751977AbXBERUy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 12:20:15 -0500
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:16960 "EHLO
-	outbound1-dub-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751960AbXBERUM (ORCPT
+	Mon, 5 Feb 2007 12:20:54 -0500
+Received: from nf-out-0910.google.com ([64.233.182.190]:61247 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751954AbXBERUw convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 12:20:12 -0500
-X-BigFish: VP
-X-Server-Uuid: 5FC0E2DF-CD44-48CD-883A-0ED95B391E89
-Date: Mon, 5 Feb 2007 18:19:59 +0100
-From: "Andreas Herrmann" <andreas.herrmann3@amd.com>
-To: "Andi Kleen" <ak@suse.de>
-cc: linux-kernel@vger.kernel.org, discuss@x86-64.org,
-       "Richard Gooch" <rgooch@safe-mbox.com>
-Subject: [patch] mtrr: fix issues with large addresses
-Message-ID: <20070205171959.GF8665@alberich.amd.com>
+	Mon, 5 Feb 2007 12:20:52 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=NV8OlOjTqqMnnM7FBritkMx7uSJwOcemKqBxV4rmSlSEaPycSpwHPQDFT3f6Wmz7PGPPL+KO/+E3nUt+awZdqGF5iLW11cH+qYzca9E+GYISt+0CMGd2gAqDmPfIuVYMKtmkkPWOkpNs09ugWSUcFOaZQWp7X1esqWfcYJpNbEg=
+Message-ID: <1a297b360702050920v76fd61b6qb958c6223cba5442@mail.gmail.com>
+Date: Mon, 5 Feb 2007 21:20:49 +0400
+From: "Manu Abraham" <abraham.manu@gmail.com>
+To: "Luming Yu" <luming.yu@gmail.com>
+Subject: Re: 2.6.20 PCI Cannot allocate resource region 2
+Cc: linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
+       greg@kroah.com, "Andrew Morton" <akpm@osdl.org>
+In-Reply-To: <3877989d0702041904w1b57bb1dufbb731d2823d0b64@mail.gmail.com>
 MIME-Version: 1.0
-User-Agent: mutt-ng/devel-r804 (Linux)
-X-OriginalArrivalTime: 05 Feb 2007 17:20:00.0100 (UTC)
- FILETIME=[DD80E240:01C74949]
-X-WSS-ID: 69D9B8C92MC7090153-01-01
-Content-Type: text/plain;
- charset=us-ascii
+Content-Type: text/plain; charset=WINDOWS-1252; format=flowed
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
+References: <1a297b360702041709l3b0309c7y8fcd33df1d487889@mail.gmail.com>
+	 <3877989d0702041904w1b57bb1dufbb731d2823d0b64@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On 2/5/07, Luming Yu <luming.yu@gmail.com> wrote:
+> On 2/5/07, Manu Abraham <abraham.manu@gmail.com> wrote:
+> > Hi,
+> >
+> > I get this error on booting up 2.6.20 (Similar error on 2.6.17.7 also,
+> > the message is slightly different in 2.6.17.7)
+> >
+> > PCI Cannot allocate resource region 2 of device 0000:02:0a.0
+> Just did a search about this message around the kernel source tree.
+> The interesting thing is that I see the following comments at several
+> different arch/drivers files. Is it related to your problem?
+>
+>  *  Known BIOS problems we have to work around:
+>  *      - I/O or memory regions not configured
+>  *      - regions configured, but not enabled in the command register
+>  *      - bogus I/O addresses above 64K used
+>   *      - expansion ROMs left enabled (this may sound harmless, but given
+>   *        the fact the PCI specs explicitly allow address decoders to be
+>   *        shared between expansion ROMs and other resource regions, it's
+>  *        at least dangerous)
+>
 
-This is a repost of a mail sent to Richard Gooch and lkml some time
-ago. Meanwhile I noticed that Richard has a new email address. And it
-seems that he does not maintain the mtrr code anymore. (So how about
-updating the MAINTAINERS file?)
+The card supports I/O addresses above 64k, i think. It has a PCMCIA
+slot as well on it, allowing access to the same
 
-Here we go again -- with new recipient and a slightly modified
-version of the patch.
+I have put my dmesg over here http://kromtek.com/dvb/dmesg.txt It
+looks like lot of workarounds in my BIOS to me probably, couldn't
+really make out much in there
+
+The bridge features from the vendor are like this ..
+
+PCI 2.2 Compatible
+DVB Common Interface EN50221 Compliant
+Philips I2C 2.0 Compliant
+Master mode
+UART – RS232
+Receiver mode
+Support PTC PT2225
+TSMC 0.25um 5M1P CMOS Technology
+PQFP 144 Package
+
+2.5V Core / 3.3V IO
+2660x2560 um2
+100K Gate
+4 Clock Domains
+99.6% ATPG Test Coverage
+32 scan chains
+
+Implementation
+Logical
+Logic synthesis – Synopsys 2003.12-SP1
+Test synthesis – Synopsys DFTC 2003.12-SP1
+Physical
+P&R – Synopsys Astro 2003.06-SP2
+
+Verification
+Logical
+Simulation – Cadence NCsim 5.1
+Physical
+DRC/LVS – Synopsys Hercules 2003.12
+
+
+DVB Common Interface EN50221 Compliant
+Memory Mode
+CIS
+Support 8/16 bit
+IO Mode
+Indirect Read/Write
+Issue address and data thru PCI local register
+Pseudo GPIO Pins
+A12/A13/A14
+
+Common Access (CA)
+Card reader – 7816 compliant
+DVB CSA / B-CAS Multi2
+PID/session filters
+
+UART
+Receiver mode only – 6 bits data
+Configurable BAUD rate
+9600 to 115.2K
+16 Word FIFO
+I2C
+Master mode only
+400k/s default
+
+
+
+One of the things that really confused me was, on 2.6.17.7 in lspci it
+always shows BIST is running. on 2.6.20, it is not there at all.
+
+If this is a bug in the BIOS, i am wondering how the older revisions
+of the same bridge works. The last two devices in that lspci output
+are Rev 01 devices
 
 
 Regards,
-
-Andreas
-
-
-mtrr: fix issues with large addresses
-
-Fixes some issues with /proc/mtrr interface:
-o If physical address size crosses the 44 bit boundary
-  size_or_mask is evaluated wrong
-o size_and_mask limits physical base
-  address for an MTRR to be less than 44 bit
-o added check to restrict base address to 36 bit on i386
-
-Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
-
---
-diff --git a/arch/i386/kernel/cpu/mtrr/generic.c b/arch/i386/kernel/cpu/mtrr/generic.c
-index f77fc53..aa21d15 100644
---- a/arch/i386/kernel/cpu/mtrr/generic.c
-+++ b/arch/i386/kernel/cpu/mtrr/generic.c
-@@ -172,7 +172,7 @@ int generic_get_free_region(unsigned long base, unsigned long size, int replace_
- static void generic_get_mtrr(unsigned int reg, unsigned long *base,
- 			     unsigned long *size, mtrr_type *type)
- {
--	unsigned int mask_lo, mask_hi, base_lo, base_hi;
-+	unsigned long mask_lo, mask_hi, base_lo, base_hi;
- 
- 	rdmsr(MTRRphysMask_MSR(reg), mask_lo, mask_hi);
- 	if ((mask_lo & 0x800) == 0) {
-diff --git a/arch/i386/kernel/cpu/mtrr/if.c b/arch/i386/kernel/cpu/mtrr/if.c
-index 5ae1705..3abc3f1 100644
---- a/arch/i386/kernel/cpu/mtrr/if.c
-+++ b/arch/i386/kernel/cpu/mtrr/if.c
-@@ -137,6 +137,10 @@ mtrr_write(struct file *file, const char __user *buf, size_t len, loff_t * ppos)
- 	for (i = 0; i < MTRR_NUM_TYPES; ++i) {
- 		if (strcmp(ptr, mtrr_strings[i]))
- 			continue;
-+#ifndef CONFIG_X86_64
-+		if (base > 0xfffffffffULL)
-+			return -EINVAL;
-+#endif
- 		base >>= PAGE_SHIFT;
- 		size >>= PAGE_SHIFT;
- 		err =
-diff --git a/arch/i386/kernel/cpu/mtrr/main.c b/arch/i386/kernel/cpu/mtrr/main.c
-index 16bb7ea..0acfb6a 100644
---- a/arch/i386/kernel/cpu/mtrr/main.c
-+++ b/arch/i386/kernel/cpu/mtrr/main.c
-@@ -50,7 +50,7 @@ u32 num_var_ranges = 0;
- unsigned int *usage_table;
- static DEFINE_MUTEX(mtrr_mutex);
- 
--u32 size_or_mask, size_and_mask;
-+u64 size_or_mask, size_and_mask;
- 
- static struct mtrr_ops * mtrr_ops[X86_VENDOR_NUM] = {};
- 
-@@ -662,8 +662,8 @@ void __init mtrr_bp_init(void)
- 			     boot_cpu_data.x86_mask == 0x4))
- 				phys_addr = 36;
- 
--			size_or_mask = ~((1 << (phys_addr - PAGE_SHIFT)) - 1);
--			size_and_mask = ~size_or_mask & 0xfff00000;
-+			size_or_mask = ~((1ULL << (phys_addr - PAGE_SHIFT)) - 1);
-+			size_and_mask = ~size_or_mask & 0xfffff00000ULL;
- 		} else if (boot_cpu_data.x86_vendor == X86_VENDOR_CENTAUR &&
- 			   boot_cpu_data.x86 == 6) {
- 			/* VIA C* family have Intel style MTRRs, but
-diff --git a/arch/i386/kernel/cpu/mtrr/mtrr.h b/arch/i386/kernel/cpu/mtrr/mtrr.h
-index d61ea9d..289dfe6 100644
---- a/arch/i386/kernel/cpu/mtrr/mtrr.h
-+++ b/arch/i386/kernel/cpu/mtrr/mtrr.h
-@@ -84,7 +84,7 @@ void get_mtrr_state(void);
- 
- extern void set_mtrr_ops(struct mtrr_ops * ops);
- 
--extern u32 size_or_mask, size_and_mask;
-+extern u64 size_or_mask, size_and_mask;
- extern struct mtrr_ops * mtrr_if;
- 
- #define is_cpu(vnd)	(mtrr_if && mtrr_if->vendor == X86_VENDOR_##vnd)
-
-
-
+Manu
