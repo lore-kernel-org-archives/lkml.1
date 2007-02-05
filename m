@@ -1,61 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933007AbXBEPgK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751068AbXBEPtw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933007AbXBEPgK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 10:36:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933005AbXBEPgK
+	id S1751068AbXBEPtw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 10:49:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751194AbXBEPtw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 10:36:10 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:45602 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S933001AbXBEPgI (ORCPT
+	Mon, 5 Feb 2007 10:49:52 -0500
+Received: from mail29.messagelabs.com ([216.82.249.147]:33313 "HELO
+	mail29.messagelabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751068AbXBEPtv convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 10:36:08 -0500
-Date: Mon, 5 Feb 2007 15:49:03 +0000
-From: Alan <alan@lxorguk.ukuu.org.uk>
-To: Tejun Heo <htejun@gmail.com>
-Cc: bzolnier@gmail.com, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Nvidia cable detection problems (was [PATCH] amd74xx: don't
- configure udma mode higher than BIOS did)
-Message-ID: <20070205154903.0ac71232@localhost.localdomain>
-In-Reply-To: <45C7444F.4070500@gmail.com>
-References: <20070205075836.GG1625@htj.dyndns.org>
-	<20070205112410.5a3c3182@localhost.localdomain>
-	<45C72012.7050605@gmail.com>
-	<20070205132247.6f611e3c@localhost.localdomain>
-	<45C73A3E.6080700@gmail.com>
-	<20070205143439.6962c076@localhost.localdomain>
-	<45C7444F.4070500@gmail.com>
-X-Mailer: Claws Mail 2.7.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 5 Feb 2007 10:49:51 -0500
+X-VirusChecked: Checked
+X-Env-Sender: Scott_Kilau@digi.com
+X-Msg-Ref: server-7.tower-29.messagelabs.com!1170690590!1102!1
+X-StarScan-Version: 5.5.10.7.1; banners=-,-,-
+X-Originating-IP: [66.77.174.21]
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: Re: 2.6.20 doesn't compile with gcc-3.2.2
+Date: Mon, 5 Feb 2007 09:49:49 -0600
+Message-ID: <335DD0B75189FB428E5C32680089FB9F012DCBB3@mtk-sms-mail01.digi.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Re: 2.6.20 doesn't compile with gcc-3.2.2
+Thread-Index: AcdJPURsxcUEqCGcQjGUqYLgU8l9zg==
+From: "Kilau, Scott" <Scott_Kilau@digi.com>
+To: <linux-kernel@vger.kernel.org>
+Cc: <a1426z@gawab.com>
+X-OriginalArrivalTime: 05 Feb 2007 15:49:50.0286 (UTC) FILETIME=[4500C6E0:01C7493D]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > No the IDE layer does DMA changedown fine, well apart from all the
-> > error/timer races in the old IDE code.
-> 
-> I dunno.  It always ended up in PIO mode in my case.  I can post the log
-> if necessary.
+Hi all,
 
-Ok testing my hardware
+> > objcopy: arch/i386/boot/compressed/vmlinux.bin: File truncated
+> > make[2]: *** [arch/i386/boot/compressed/vmlinux.bin] Error 1
+> > make[1]: *** [arch/i386/boot/compressed/vmlinux] Error 2
+> > make: *** [bzlilo] Error 2
 
-- AMD get it right for those with host cable detect
-- AMD get it right for disk side detect
+I got the same as well here on my box.
 
-- My NV03 gets it wrong on all counts but it pauses only briefly to
-change neatly down to UDMA33 with old IDE.
+I am using Red Hat 9, with a lot of things upgraded.
 
-(We could speed that with libata by going straight to UDMA33 on cable
-error with PATA_CBL_UNK or some other way to flag "cable detection
-untrusted")
+I found other "hints" that this might be a binutils issue,
+which obviously hasn't been touched in years on Red Hat 9,
+so I picked up the binutils built for Fedora Core 3,
+and installed them...
 
-The BIOS seems to get the detection it does right, so we need an Nvidia
-person to answer this properly. Nvidia + 40pin cable is still clearly such
-an obscure setting we don't want to damage general behaviour for it.
+That solved the problem.
 
-Good news is that the AMD just works, that AFAIK means all the non x86 PC
-cases just work.
+Scott Kilau
 
-Alan
+
+
