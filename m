@@ -1,39 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933136AbXBESc3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933308AbXBEScv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933136AbXBESc3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 13:32:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933231AbXBESc2
+	id S933308AbXBEScv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 13:32:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933127AbXBESZQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 13:32:28 -0500
-Received: from brick.kernel.dk ([62.242.22.158]:10329 "EHLO kernel.dk"
+	Mon, 5 Feb 2007 13:25:16 -0500
+Received: from cantor.suse.de ([195.135.220.2]:43291 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933169AbXBEScM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 13:32:12 -0500
-Date: Mon, 5 Feb 2007 19:34:38 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Andrew Morton <akpm@osdl.org>, David Chinner <dgc@sgi.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.20-rc6-mm3
-Message-ID: <20070205183438.GL4487@kernel.dk>
-References: <20070131231253.fdebc9f5.akpm@osdl.org> <Pine.LNX.4.64.0702011055310.7010@schroedinger.engr.sgi.com> <20070201191857.GQ10305@kernel.dk> <Pine.LNX.4.64.0702011214230.10061@schroedinger.engr.sgi.com> <20070201202646.GR10305@kernel.dk> <Pine.LNX.4.64.0702011435060.4632@schroedinger.engr.sgi.com> <20070205120253.GC4487@kernel.dk> <20070205121735.GD4487@kernel.dk> <20070205125643.GG4487@kernel.dk> <Pine.LNX.4.64.0702051019340.6772@schroedinger.engr.sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0702051019340.6772@schroedinger.engr.sgi.com>
+	id S933033AbXBESZJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Feb 2007 13:25:09 -0500
+From: Tony Jones <tonyj@suse.de>
+To: linux-kernel@vger.kernel.org
+Cc: linux-fsdevel@vger.kernel.org, chrisw@sous-sol.org,
+       Tony Jones <tonyj@suse.de>, linux-security-module@vger.kernel.org,
+       agruen@suse.de
+Date: Mon, 05 Feb 2007 10:24:10 -0800
+Message-Id: <20070205182410.12164.78472.sendpatchset@ermintrude.int.wirex.com>
+In-Reply-To: <20070205182213.12164.40927.sendpatchset@ermintrude.int.wirex.com>
+References: <20070205182213.12164.40927.sendpatchset@ermintrude.int.wirex.com>
+Subject: [RFC 12/28] Pass struct vfsmount to the inode_readlink LSM hook
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 05 2007, Christoph Lameter wrote:
-> On Mon, 5 Feb 2007, Jens Axboe wrote:
-> 
-> > But for now this is just a debug test, can you see if xfs with barriers
-> > for that kernel now works as expected?
-> 
-> The kernel that failed before boots fine with this patch.
+Pass struct vfsmount to the inode_readlink LSM hook
 
-Wonderful, I'll leave the patch in-place for now.
+Signed-off-by: Tony Jones <tonyj@suse.de>
+Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 
--- 
-Jens Axboe
-
+Index: linux-2.6/fs/stat.c
+===================================================================
+--- linux-2.6.orig/fs/stat.c
++++ linux-2.6/fs/stat.c
+@@ -307,7 +307,7 @@ asmlinkage long sys_readlinkat(int dfd, 
+ 
+ 		error = -EINVAL;
+ 		if (inode->i_op && inode->i_op->readlink) {
+-			error = security_inode_readlink(nd.dentry);
++			error = security_inode_readlink(nd.dentry, nd.mnt);
+ 			if (!error) {
+ 				touch_atime(nd.mnt, nd.dentry);
+ 				error = inode->i_op->readlink(nd.dentry, buf, bufsiz);
+Index: linux-2.6/include/linux/security.h
+===================================================================
+--- linux-2.6.orig/include/linux/security.h
++++ linux-2.6/include/linux/security.h
+@@ -338,6 +338,7 @@ struct request_sock;
+  * @inode_readlink:
+  *	Check the permission to read the symbolic link.
+  *	@dentry contains the dentry structure for the file link.
++ *	@mnt is the vfsmount corresponding to @dentry (may be NULL).
+  *	Return 0 if permission is granted.
+  * @inode_follow_link:
+  *	Check permission to follow a symbolic link when looking up a pathname.
+@@ -1223,7 +1224,7 @@ struct security_operations {
+ 			    struct vfsmount *mnt, int mode, dev_t dev);
+ 	int (*inode_rename) (struct inode *old_dir, struct dentry *old_dentry,
+ 	                     struct inode *new_dir, struct dentry *new_dentry);
+-	int (*inode_readlink) (struct dentry *dentry);
++	int (*inode_readlink) (struct dentry *dentry, struct vfsmount *mnt);
+ 	int (*inode_follow_link) (struct dentry *dentry, struct nameidata *nd);
+ 	int (*inode_permission) (struct inode *inode, int mask, struct nameidata *nd);
+ 	int (*inode_setattr) (struct dentry *dentry, struct vfsmount *mnt,
+@@ -1693,11 +1694,12 @@ static inline int security_inode_rename 
+ 					   new_dir, new_dentry);
+ }
+ 
+-static inline int security_inode_readlink (struct dentry *dentry)
++static inline int security_inode_readlink (struct dentry *dentry,
++					   struct vfsmount *mnt)
+ {
+ 	if (unlikely (IS_PRIVATE (dentry->d_inode)))
+ 		return 0;
+-	return security_ops->inode_readlink (dentry);
++	return security_ops->inode_readlink (dentry, mnt);
+ }
+ 
+ static inline int security_inode_follow_link (struct dentry *dentry,
+@@ -2407,7 +2409,8 @@ static inline int security_inode_rename 
+ 	return 0;
+ }
+ 
+-static inline int security_inode_readlink (struct dentry *dentry)
++static inline int security_inode_readlink (struct dentry *dentry,
++					   struct vfsmount *mnt)
+ {
+ 	return 0;
+ }
+Index: linux-2.6/security/dummy.c
+===================================================================
+--- linux-2.6.orig/security/dummy.c
++++ linux-2.6/security/dummy.c
+@@ -312,7 +312,7 @@ static int dummy_inode_rename (struct in
+ 	return 0;
+ }
+ 
+-static int dummy_inode_readlink (struct dentry *dentry)
++static int dummy_inode_readlink (struct dentry *dentry, struct vfsmount *mnt)
+ {
+ 	return 0;
+ }
+Index: linux-2.6/security/selinux/hooks.c
+===================================================================
+--- linux-2.6.orig/security/selinux/hooks.c
++++ linux-2.6/security/selinux/hooks.c
+@@ -2196,7 +2196,7 @@ static int selinux_inode_rename(struct i
+ 	return may_rename(old_inode, old_dentry, new_inode, new_dentry);
+ }
+ 
+-static int selinux_inode_readlink(struct dentry *dentry)
++static int selinux_inode_readlink(struct dentry *dentry, struct vfsmount *mnt)
+ {
+ 	return dentry_has_perm(current, NULL, dentry, FILE__READ);
+ }
