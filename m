@@ -1,27 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932189AbXBEQ6A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751798AbXBEQ6l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932189AbXBEQ6A (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 11:58:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932451AbXBEQ6A
+	id S1751798AbXBEQ6l (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 11:58:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751850AbXBEQ6k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 11:58:00 -0500
-Received: from an-out-0708.google.com ([209.85.132.241]:42008 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932344AbXBEQ55 (ORCPT
+	Mon, 5 Feb 2007 11:58:40 -0500
+Received: from ug-out-1314.google.com ([66.249.92.170]:25012 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751827AbXBEQ6j (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 11:57:57 -0500
+	Mon, 5 Feb 2007 11:58:39 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:date:to:subject:message-id:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
-        b=bsBdHhayjElIUtIEVXKPzmLrgmw60VKQ54RKMU9Cgz+wqQpznk/kaKlA4BCVe/67/lisAKcObg4sHbOSIokdQ0birZSVAs/PN40El0g6R6vBu2E34GGVM6D/PifprtwcDYLdRMiSY+VqP4Pbfy0PhS8CP9y3qElEhc9YALzW/mI=
-Date: Mon, 5 Feb 2007 18:57:51 +0200
-To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: [PATCH 02/02] misc-net-drivers: Use ARRAY_SIZE macro when appropriate
-Message-ID: <20070205165751.GH3896@Ahmed>
+        h=received:date:to:cc:subject:message-id:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
+        b=g+wsk8BRBU57aereW25SKDK96hP59PFfV9fpkoyZzJS2zoqnEqy4W5gc9XIqf5q30mU27Z4ssrX5VgiGttlYqKz9e+gM2G9aBI1VSsqIGyS+SM3jJjB+gig+4VlJGRmsyFXIalBTRQAOxDN2iXPGSv58VKQKmiq0V5GmOZfCISA=
+Date: Mon, 5 Feb 2007 18:58:29 +0200
+To: linville@tuxdriver.com
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: [PATCH 2.6.20] misc-wireless: Use ARRAY_SIZE macro when appropriate
+Message-ID: <20070205165829.GI3896@Ahmed>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070205165657.GG3896@Ahmed>
+In-Reply-To: <20070205165429.GD3896@Ahmed>
 User-Agent: Mutt/1.5.11
 From: "Ahmed S. Darwish" <darwish.07@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -29,97 +30,58 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi,
 
-A 2.6.20 patch to use ARRAY_SIZE macro already defined in kernel.h for some
-miscellaneous network drivers with no specific maintaners.
+A patch to use ARRAY_SIZE macro already defined in kernel.h for some
+miscellaneous wireless drivers with no specific maintaners.
 
 Signed-off-by: Ahmed S. Darwish <darwish.07@gmail.com>
 ---
-Patch isn't compile-tested due to missing hardware.
+Patch is compile tested.
 
-diff --git a/drivers/net/apne.c b/drivers/net/apne.c
-index 9541911..8806151 100644
---- a/drivers/net/apne.c
-+++ b/drivers/net/apne.c
-@@ -247,7 +247,7 @@ static int __init apne_probe1(struct net_device *dev, int ioaddr)
- 	    {0x00,	NE_EN0_RSARHI},
- 	    {E8390_RREAD+E8390_START, NE_CMD},
- 	};
--	for (i = 0; i < sizeof(program_seq)/sizeof(program_seq[0]); i++) {
-+	for (i = 0; i < ARRAY_SIZE(program_seq); i++) {
- 	    outb(program_seq[i].value, ioaddr + program_seq[i].offset);
- 	}
+diff --git a/drivers/net/wireless/airo.c b/drivers/net/wireless/airo.c
+index 44a2270..4ad910b 100644
+--- a/drivers/net/wireless/airo.c
++++ b/drivers/net/wireless/airo.c
+@@ -1623,7 +1623,7 @@ static void emmh32_setseed(emmh32_context *context, u8 *pkey, int keylen,
  
-diff --git a/drivers/net/arm/am79c961a.c b/drivers/net/arm/am79c961a.c
-index ddd12d4..200cbc0 100644
---- a/drivers/net/arm/am79c961a.c
-+++ b/drivers/net/arm/am79c961a.c
-@@ -414,7 +414,7 @@ static void am79c961_setmulticastlist (struct net_device *dev)
- 	/*
- 	 * Update the multicast hash table
- 	 */
--	for (i = 0; i < sizeof(multi_hash) / sizeof(multi_hash[0]); i++)
-+	for (i = 0; i < ARRAY_SIZE(multi_hash); i++)
- 		write_rreg(dev->base_addr, i + LADRL, multi_hash[i]);
+ 	crypto_cipher_setkey(tfm, pkey, 16);
+ 	counter = 0;
+-	for (i = 0; i < (sizeof(context->coeff)/sizeof(context->coeff[0])); ) {
++	for (i = 0; i < ARRAY_SIZE(context->coeff); ) {
+ 		aes_counter[15] = (u8)(counter >> 0);
+ 		aes_counter[14] = (u8)(counter >> 8);
+ 		aes_counter[13] = (u8)(counter >> 16);
+@@ -1632,7 +1632,7 @@ static void emmh32_setseed(emmh32_context *context, u8 *pkey, int keylen,
+ 		memcpy (plain, aes_counter, 16);
+ 		crypto_cipher_encrypt_one(tfm, plain, plain);
+ 		cipher = plain;
+-		for (j=0; (j<16) && (i< (sizeof(context->coeff)/sizeof(context->coeff[0]))); ) {
++		for (j = 0; (j < 16) && (i < ARRAY_SIZE(context->coeff)); ) {
+ 			context->coeff[i++] = ntohl(*(u32 *)&cipher[j]);
+ 			j += 4;
+ 		}
+diff --git a/drivers/net/wireless/prism54/oid_mgt.c b/drivers/net/wireless/prism54/oid_mgt.c
+index e6cf9df..4278032 100644
+--- a/drivers/net/wireless/prism54/oid_mgt.c
++++ b/drivers/net/wireless/prism54/oid_mgt.c
+@@ -16,6 +16,8 @@
+  *
+  */
  
- 	/*
-diff --git a/drivers/net/atarilance.c b/drivers/net/atarilance.c
-index 7e37ac8..ef18428 100644
---- a/drivers/net/atarilance.c
-+++ b/drivers/net/atarilance.c
-@@ -263,7 +263,7 @@ struct lance_addr {
- 									   (highest byte stripped) */
- };
++#include <linux/kernel.h>
++
+ #include "prismcompat.h"
+ #include "islpci_dev.h"
+ #include "islpci_mgt.h"
+@@ -692,7 +694,7 @@ mgt_update_addr(islpci_private *priv)
+ 	return ret;
+ }
  
--#define	N_LANCE_ADDR	(sizeof(lance_addr_list)/sizeof(*lance_addr_list))
-+#define	N_LANCE_ADDR	ARRAY_SIZE(lance_addr_list)
+-#define VEC_SIZE(a) (sizeof(a)/sizeof(a[0]))
++#define VEC_SIZE(a) ARRAY_SIZE(a)
  
- 
- /* Definitions for the Lance */
-diff --git a/drivers/net/fec_8xx/fec_mii.c b/drivers/net/fec_8xx/fec_mii.c
-index d3c16b8..1fc2b43 100644
---- a/drivers/net/fec_8xx/fec_mii.c
-+++ b/drivers/net/fec_8xx/fec_mii.c
-@@ -310,12 +310,12 @@ int fec_mii_phy_id_detect(struct net_device *dev)
- 		return -1;
- 	}
- 
--	for (i = 0, phy = phy_info; i < sizeof(phy_info) / sizeof(phy_info[0]);
-+	for (i = 0, phy = phy_info; i < ARRAY_SIZE(phy_info));
- 	     i++, phy++)
- 		if (phy->id == (phy_hwid >> 4) || phy->id == 0)
- 			break;
- 
--	if (i >= sizeof(phy_info) / sizeof(phy_info[0])) {
-+	if (i >= ARRAY_SIZE(phy_info)) {
- 		printk(KERN_ERR DRV_MODULE_NAME
- 		       ": %s PHY id 0x%08x is not supported!\n",
- 		       dev->name, phy_hwid);
-diff --git a/drivers/net/ne-h8300.c b/drivers/net/ne-h8300.c
-index 38fd525..7599d77 100644
---- a/drivers/net/ne-h8300.c
-+++ b/drivers/net/ne-h8300.c
-@@ -259,7 +259,7 @@ static int __init ne_probe1(struct net_device *dev, int ioaddr)
- 			{E8390_RREAD+E8390_START, E8390_CMD},
- 		};
- 
--		for (i = 0; i < sizeof(program_seq)/sizeof(program_seq[0]); i++)
-+		for (i = 0; i < ARRAY_SIZE(program_seq); i++)
- 			outb_p(program_seq[i].value, ioaddr + program_seq[i].offset);
- 
- 	}
-diff --git a/drivers/net/zorro8390.c b/drivers/net/zorro8390.c
-index d85e2ea..29f9750 100644
---- a/drivers/net/zorro8390.c
-+++ b/drivers/net/zorro8390.c
-@@ -191,7 +191,7 @@ static int __devinit zorro8390_init(struct net_device *dev,
- 	    {0x00,	NE_EN0_RSARHI},
- 	    {E8390_RREAD+E8390_START, NE_CMD},
- 	};
--	for (i = 0; i < sizeof(program_seq)/sizeof(program_seq[0]); i++) {
-+	for (i = 0; i < ARRAY_SIZE(program_seq); i++) {
- 	    z_writeb(program_seq[i].value, ioaddr + program_seq[i].offset);
- 	}
-     }
+ int
+ mgt_commit(islpci_private *priv)
+
 
 
 -- 
