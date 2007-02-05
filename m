@@ -1,203 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932740AbXBEOOA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932749AbXBEOOm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932740AbXBEOOA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 09:14:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932772AbXBEOOA
+	id S932749AbXBEOOm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 09:14:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932772AbXBEOOm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 09:14:00 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:45167 "EHLO mx1.redhat.com"
+	Mon, 5 Feb 2007 09:14:42 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:45417 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932740AbXBEON6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 09:13:58 -0500
-Subject: [GFS2] Fix gfs2_rename deadlock [16/54]
+	id S932711AbXBEOOl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Feb 2007 09:14:41 -0500
+Subject: [DLM] change some log_error to log_debug [17/54]
 From: Steven Whitehouse <swhiteho@redhat.com>
 To: linux-kernel@vger.kernel.org
-Cc: "S. Wendy Cheng" <wcheng@redhat.com>, cluster-devel@redhat.com
+Cc: David Teigland <teigland@redhat.com>, cluster-devel@redhat.com
 In-Reply-To: <1170684425.11001.267.camel@quoit.chygwyn.com>
 References: <1170684425.11001.267.camel@quoit.chygwyn.com>
 Content-Type: text/plain
 Organization: Red Hat (UK) Ltd
-Date: Mon, 05 Feb 2007 14:22:02 +0000
-Message-Id: <1170685322.11001.302.camel@quoit.chygwyn.com>
+Date: Mon, 05 Feb 2007 14:22:40 +0000
+Message-Id: <1170685360.11001.304.camel@quoit.chygwyn.com>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.2.2 (2.2.2-5) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 10728f781249cf02a1e3de8699744c7b48ae544f Mon Sep 17 00:00:00 2001
-From: S. Wendy Cheng <wcheng@redhat.com>
-Date: Thu, 18 Jan 2007 16:07:03 -0500
-Subject: [PATCH] [GFS2] Fix gfs2_rename deadlock
+>From a9ade49e7bbf836feb4512c2f282faf51c486d78 Mon Sep 17 00:00:00 2001
+From: David Teigland <teigland@redhat.com>
+Date: Tue, 9 Jan 2007 09:38:39 -0600
+Subject: [PATCH] [DLM] change some log_error to log_debug
 
-Second round of gfs2_rename lock re-ordering to allow Anaconda adding
-root partition on top of gfs2. Previous to this patch the recursive
-lock detector in glock.c can be triggered due to attempting to lock
-the rgrp twice. This fixes it by checking to see whether the rgrp
-is already locked.
+Some common, non-error messages should use log_debug instead of log_error
+so they can be turned off.
 
-This fixes Red Hat bugzilla #221237
-
-Signed-off-by: S. Wendy Cheng <wcheng@redhat.com>
+Signed-off-by: David Teigland <teigland@redhat.com>
 Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
 
-diff --git a/fs/gfs2/inode.c b/fs/gfs2/inode.c
-index bab338f..58c2ce7 100644
---- a/fs/gfs2/inode.c
-+++ b/fs/gfs2/inode.c
-@@ -281,13 +281,13 @@ out:
- }
- 
- /**
-- * gfs2_change_nlink_i - Change nlink count on inode
-+ * gfs2_change_nlink - Change nlink count on inode
-  * @ip: The GFS2 inode
-  * @diff: The change in the nlink count required
-  *
-  * Returns: errno
-  */
--int gfs2_change_nlink_i(struct gfs2_inode *ip, int diff)
-+int gfs2_change_nlink(struct gfs2_inode *ip, int diff)
- {
- 	struct buffer_head *dibh;
- 	u32 nlink;
-@@ -320,40 +320,52 @@ int gfs2_change_nlink_i(struct gfs2_inode *ip, int diff)
- 	brelse(dibh);
- 	mark_inode_dirty(&ip->i_inode);
- 
-+	if (ip->i_inode.i_nlink == 0)
-+		error = gfs2_change_nlink_i(ip);
-+
- 	return error;
- }
- 
--int gfs2_change_nlink(struct gfs2_inode *ip, int diff)
-+int gfs2_change_nlink_i(struct gfs2_inode *ip)
- {
- 	struct gfs2_sbd *sdp = ip->i_inode.i_sb->s_fs_info;
--	int error;
--
--	/* update the nlink */
--	error = gfs2_change_nlink_i(ip, diff);
--	if (error)
--		return error;
--
--	/* return meta data block back to rg */
--	if (ip->i_inode.i_nlink == 0) {
--		struct gfs2_rgrpd *rgd;
--		struct gfs2_holder ri_gh, rg_gh;
-+	struct gfs2_inode *rindex = GFS2_I(sdp->sd_rindex);
-+	struct gfs2_glock *ri_gl = rindex->i_gl;
-+	struct gfs2_rgrpd *rgd;
-+	struct gfs2_holder ri_gh, rg_gh;
-+	int existing, error;
- 
-+	/* if we come from rename path, we could have the lock already */
-+	existing = gfs2_glock_is_locked_by_me(ri_gl);
-+	if (!existing) {
- 		error = gfs2_rindex_hold(sdp, &ri_gh);
- 		if (error)
- 			goto out;
--		error = -EIO;
--		rgd = gfs2_blk2rgrpd(sdp, ip->i_num.no_addr);
--		if (!rgd)
--			goto out_norgrp;
-+	}
-+
-+	/* find the matching rgd */
-+	error = -EIO;
-+	rgd = gfs2_blk2rgrpd(sdp, ip->i_num.no_addr);
-+	if (!rgd)
-+		goto out_norgrp;
-+
-+	/*
-+	 * Eventually we may want to move rgd(s) to a linked list
-+	 * and piggyback the free logic into one of gfs2 daemons
-+	 * to gain some performance.
-+	 */
-+	if (!rgd->rd_gl || !gfs2_glock_is_locked_by_me(rgd->rd_gl)) {
- 		error = gfs2_glock_nq_init(rgd->rd_gl, LM_ST_EXCLUSIVE, 0, &rg_gh);
- 		if (error)
- 			goto out_norgrp;
- 
- 		gfs2_unlink_di(&ip->i_inode); /* mark inode unlinked */
- 		gfs2_glock_dq_uninit(&rg_gh);
-+	}
-+
- out_norgrp:
-+	if (!existing)
- 		gfs2_glock_dq_uninit(&ri_gh);
--	}
- out:
- 	return error;
- }
-diff --git a/fs/gfs2/inode.h b/fs/gfs2/inode.h
-index 85c67cb..cee281b 100644
---- a/fs/gfs2/inode.h
-+++ b/fs/gfs2/inode.h
-@@ -40,7 +40,7 @@ int gfs2_inode_refresh(struct gfs2_inode *ip);
- 
- int gfs2_dinode_dealloc(struct gfs2_inode *inode);
- int gfs2_change_nlink(struct gfs2_inode *ip, int diff);
--int gfs2_change_nlink_i(struct gfs2_inode *ip, int diff);
-+int gfs2_change_nlink_i(struct gfs2_inode *ip);
- struct inode *gfs2_lookupi(struct inode *dir, const struct qstr *name,
- 			   int is_root, struct nameidata *nd);
- struct inode *gfs2_createi(struct gfs2_holder *ghs, const struct qstr *name,
-diff --git a/fs/gfs2/ops_inode.c b/fs/gfs2/ops_inode.c
-index 919e894..b2a12f4 100644
---- a/fs/gfs2/ops_inode.c
-+++ b/fs/gfs2/ops_inode.c
-@@ -553,7 +553,6 @@ static int gfs2_rename(struct inode *odir, struct dentry *odentry,
- 	int alloc_required;
- 	unsigned int x;
- 	int error;
--	struct gfs2_rgrpd *rgd;
- 
- 	if (ndentry->d_inode) {
- 		nip = GFS2_I(ndentry->d_inode);
-@@ -685,12 +684,12 @@ static int gfs2_rename(struct inode *odir, struct dentry *odentry,
- 		error = gfs2_trans_begin(sdp, sdp->sd_max_dirres +
- 					 al->al_rgd->rd_ri.ri_length +
- 					 4 * RES_DINODE + 4 * RES_LEAF +
--					 RES_STATFS + RES_QUOTA + 1, 0);
-+					 RES_STATFS + RES_QUOTA + 4, 0);
- 		if (error)
- 			goto out_ipreserv;
- 	} else {
- 		error = gfs2_trans_begin(sdp, 4 * RES_DINODE +
--					 5 * RES_LEAF + 1, 0);
-+					 5 * RES_LEAF + 4, 0);
- 		if (error)
- 			goto out_gunlock;
+diff --git a/fs/dlm/rcom.c b/fs/dlm/rcom.c
+index 54fba9b..2e246af 100644
+--- a/fs/dlm/rcom.c
++++ b/fs/dlm/rcom.c
+@@ -435,7 +435,7 @@ static int is_old_reply(struct dlm_ls *ls, struct dlm_rcom *rc)
+ 		seq = ls->ls_recover_seq;
+ 		spin_unlock(&ls->ls_recover_lock);
+ 		if (rc->rc_seq_reply != seq) {
+-			log_error(ls, "ignoring old reply %x from %d "
++			log_debug(ls, "ignoring old reply %x from %d "
+ 				      "seq_reply %llx expect %llx",
+ 				      rc->rc_type, rc->rc_header.h_nodeid,
+ 				      (unsigned long long)rc->rc_seq_reply,
+@@ -469,7 +469,7 @@ void dlm_receive_rcom(struct dlm_header *hd, int nodeid)
  	}
-@@ -704,25 +703,7 @@ static int gfs2_rename(struct inode *odir, struct dentry *odentry,
- 			error = gfs2_dir_del(ndip, &ndentry->d_name);
- 			if (error)
- 				goto out_end_trans;
--			error = gfs2_change_nlink_i(nip, -1);
--			if ((!error) && (nip->i_inode.i_nlink == 0)) {
--				error = -EIO;
--				rgd = gfs2_blk2rgrpd(sdp, nip->i_num.no_addr);
--				if (rgd) {
--					struct gfs2_holder nlink_rg_gh;
--					if (rgd != nip->i_alloc.al_rgd)
--						error = gfs2_glock_nq_init(
--						rgd->rd_gl, LM_ST_EXCLUSIVE,
--						0, &nlink_rg_gh);
--					else
--						error = 0;
--                			if (!error) {
--						gfs2_unlink_di(&nip->i_inode);
--						if (rgd != nip->i_alloc.al_rgd)
--							gfs2_glock_dq_uninit(&nlink_rg_gh);
--					}
--				}
--			}
-+			error = gfs2_change_nlink(nip, -1);
+ 
+ 	if (dlm_recovery_stopped(ls) && (rc->rc_type != DLM_RCOM_STATUS)) {
+-		log_error(ls, "ignoring recovery message %x from %d",
++		log_debug(ls, "ignoring recovery message %x from %d",
+ 			  rc->rc_type, nodeid);
+ 		goto out;
+ 	}
+diff --git a/fs/dlm/recoverd.c b/fs/dlm/recoverd.c
+index 650536a..3cb636d 100644
+--- a/fs/dlm/recoverd.c
++++ b/fs/dlm/recoverd.c
+@@ -77,7 +77,7 @@ static int ls_recover(struct dlm_ls *ls, struct dlm_recover *rv)
+ 
+ 	error = dlm_recover_members(ls, rv, &neg);
+ 	if (error) {
+-		log_error(ls, "recover_members failed %d", error);
++		log_debug(ls, "recover_members failed %d", error);
+ 		goto fail;
+ 	}
+ 	start = jiffies;
+@@ -89,7 +89,7 @@ static int ls_recover(struct dlm_ls *ls, struct dlm_recover *rv)
+ 
+ 	error = dlm_recover_directory(ls);
+ 	if (error) {
+-		log_error(ls, "recover_directory failed %d", error);
++		log_debug(ls, "recover_directory failed %d", error);
+ 		goto fail;
+ 	}
+ 
+@@ -99,7 +99,7 @@ static int ls_recover(struct dlm_ls *ls, struct dlm_recover *rv)
+ 
+ 	error = dlm_recover_directory_wait(ls);
+ 	if (error) {
+-		log_error(ls, "recover_directory_wait failed %d", error);
++		log_debug(ls, "recover_directory_wait failed %d", error);
+ 		goto fail;
+ 	}
+ 
+@@ -129,7 +129,7 @@ static int ls_recover(struct dlm_ls *ls, struct dlm_recover *rv)
+ 
+ 		error = dlm_recover_masters(ls);
+ 		if (error) {
+-			log_error(ls, "recover_masters failed %d", error);
++			log_debug(ls, "recover_masters failed %d", error);
+ 			goto fail;
  		}
- 		if (error)
- 			goto out_end_trans;
+ 
+@@ -139,13 +139,13 @@ static int ls_recover(struct dlm_ls *ls, struct dlm_recover *rv)
+ 
+ 		error = dlm_recover_locks(ls);
+ 		if (error) {
+-			log_error(ls, "recover_locks failed %d", error);
++			log_debug(ls, "recover_locks failed %d", error);
+ 			goto fail;
+ 		}
+ 
+ 		error = dlm_recover_locks_wait(ls);
+ 		if (error) {
+-			log_error(ls, "recover_locks_wait failed %d", error);
++			log_debug(ls, "recover_locks_wait failed %d", error);
+ 			goto fail;
+ 		}
+ 
+@@ -166,7 +166,7 @@ static int ls_recover(struct dlm_ls *ls, struct dlm_recover *rv)
+ 
+ 		error = dlm_recover_locks_wait(ls);
+ 		if (error) {
+-			log_error(ls, "recover_locks_wait failed %d", error);
++			log_debug(ls, "recover_locks_wait failed %d", error);
+ 			goto fail;
+ 		}
+ 	}
+@@ -184,7 +184,7 @@ static int ls_recover(struct dlm_ls *ls, struct dlm_recover *rv)
+ 	dlm_set_recover_status(ls, DLM_RS_DONE);
+ 	error = dlm_recover_done_wait(ls);
+ 	if (error) {
+-		log_error(ls, "recover_done_wait failed %d", error);
++		log_debug(ls, "recover_done_wait failed %d", error);
+ 		goto fail;
+ 	}
+ 
+@@ -192,19 +192,19 @@ static int ls_recover(struct dlm_ls *ls, struct dlm_recover *rv)
+ 
+ 	error = enable_locking(ls, rv->seq);
+ 	if (error) {
+-		log_error(ls, "enable_locking failed %d", error);
++		log_debug(ls, "enable_locking failed %d", error);
+ 		goto fail;
+ 	}
+ 
+ 	error = dlm_process_requestqueue(ls);
+ 	if (error) {
+-		log_error(ls, "process_requestqueue failed %d", error);
++		log_debug(ls, "process_requestqueue failed %d", error);
+ 		goto fail;
+ 	}
+ 
+ 	error = dlm_recover_waiters_post(ls);
+ 	if (error) {
+-		log_error(ls, "recover_waiters_post failed %d", error);
++		log_debug(ls, "recover_waiters_post failed %d", error);
+ 		goto fail;
+ 	}
+ 
 -- 
 1.4.4.2
 
