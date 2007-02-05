@@ -1,74 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964795AbXBEWUV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964857AbXBEWWG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964795AbXBEWUV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 17:20:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964923AbXBEWUV
+	id S964857AbXBEWWG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 17:22:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964919AbXBEWWF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 17:20:21 -0500
-Received: from kirby.webscope.com ([204.141.84.54]:53717 "EHLO
-	kirby.webscope.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964857AbXBEWUT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 17:20:19 -0500
-Message-ID: <45C7ACAB.6060408@linuxtv.org>
-Date: Mon, 05 Feb 2007 17:16:11 -0500
-From: Michael Krufky <mkrufky@linuxtv.org>
-User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
+	Mon, 5 Feb 2007 17:22:05 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:36408 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S964857AbXBEWWE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Feb 2007 17:22:04 -0500
+Date: Mon, 5 Feb 2007 14:21:41 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: David Woodhouse <dwmw2@infradead.org>
+cc: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [patch] MTD: fix DOC2000/2001/2001PLUS build error
+In-Reply-To: <1170712393.29759.925.camel@pmac.infradead.org>
+Message-ID: <Pine.LNX.4.64.0702051409110.8424@woody.linux-foundation.org>
+References: <Pine.LNX.4.64.0702041057090.8424@woody.linux-foundation.org> 
+ <20070205084523.GA21858@elte.hu>  <1170682488.29759.795.camel@pmac.infradead.org>
+  <20070205155627.GA8354@elte.hu>  <1170692539.29759.856.camel@pmac.infradead.org>
+  <20070205162635.GA755@elte.hu> <20070205163152.GA2464@elte.hu> 
+ <Pine.LNX.4.64.0702050852160.8424@woody.linux-foundation.org> 
+ <1170710272.29759.894.camel@pmac.infradead.org> 
+ <Pine.LNX.4.64.0702051322580.8424@woody.linux-foundation.org> 
+ <1170711587.29759.909.camel@pmac.infradead.org> 
+ <Pine.LNX.4.64.0702051345380.8424@woody.linux-foundation.org>
+ <1170712393.29759.925.camel@pmac.infradead.org>
 MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
-CC: Chris Wright <chrisw@sous-sol.org>, torvalds@osdl.org, akpm@osdl.org,
-       "Theodore Ts'o" <tytso@mit.edu>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       Justin Forbes <jmforbes@linuxtx.org>, linux-kernel@vger.kernel.org,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Randy Dunlap <rdunlap@xenotime.net>, Dave Jones <davej@redhat.com>,
-       Chuck Wolber <chuckw@quantumlinux.com>, stable@kernel.org,
-       alan@lxorguk.ukuu.org.uk
-Subject: Re: [stable] [patch 00/50] -stable review
-References: <20070106022753.334962000@sous-sol.org> <45C624D2.9030403@linuxtv.org> <20070205214332.GB18230@kroah.com>
-In-Reply-To: <20070205214332.GB18230@kroah.com>
-X-Enigmail-Version: 0.94.0.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
-> On Sun, Feb 04, 2007 at 01:24:18PM -0500, Michael Krufky wrote:
->> Chris Wright wrote:
->>> This is the start of the stable review cycle for the 2.6.19.2 release.
->>> There are 50 patches in this series, all will be posted as a response
->>> to this one.  If anyone has any issues with these being applied, please
->>> let us know.  If anyone is a maintainer of the proper subsystem, and
->>> wants to add a Signed-off-by: line to the patch, please respond with it.
->>>
->>> These patches are sent out with a number of different people on the
->>> Cc: line.  If you wish to be a reviewer, please email stable@kernel.org
->>> to add your name to the list.  If you want to be off the reviewer list,
->>> also email us.
->>>
->>> Responses should be made by Mon Jan 8 02:30 UTC.
->>> Anything received after that time might be too late.
->> At which point was 2.6.18.y dropped?  I thought we were always going to keep
->> the last two stable kernels up-to-date.  Have I been wasting my time fwd'ing
->> 2.6.18.y patches?
+
+
+On Mon, 5 Feb 2007, David Woodhouse wrote:
+>
+> Ten years ago, people used 'depends on' to fix the tools, so that then
+> you want to enable something like USB_STORAGE, it can automatically turn
+> SCSI on for you.
 > 
-> It was dropped a while ago, sorry.
-> 
-> I'll go through the archives and see if there's enough to do a .18
-> release (and the patches are serious enough to warrent it.)
+> Isn't that what you wanted?
 
-Actually, I have a few more -stable patches for both 2.6.18.y and 2.6.19.y, if
-you don't mind holding off a day or two (wont have time to prepare these until
-tomorrow evening)...  One of them is a security fix, that allows a non-root user
-to hang the kernel given the correct circumstances.
+Try it. It's not what it does. 
 
-Maybe you guys can make some sort of announcement before the -stable kernel is
-closed.  I know that now that 2.6.20 is released, implicitly 2.6.18.y is
-closed... but it's been a long while since the last 2.6.18.y release, so I
-wasn't sure if patches were still being accepted.
+If you have a 
 
-Regards,
+	depends on SCSI
 
-Michael Krufky
+and you did not say you wanted SCSI, you'll never even *see* the question.
 
+It will *not* turn on SCSI automatically for you. Quite the reverse. It 
+will not even show you the option.
+
+In contrast, it you do a
+
+	select SCSI
+
+you'll see the question, and it will do exactly what you claim "depends 
+on" does. Which yes, is what we want.
+
+So what's your problem? You argue as if you didn't understand the 
+difference between "depends on" and "select".
+
+As an example of this, look at SATA. It does "select SCSI" if you select 
+CONFIG_ATA, _exactly_ because it actually wants to turn on the SCSI layer 
+*regardless* of what the user said. Because if the user said "n" to SCSI, 
+the user simply didn't know that the SATA code uses the SCSI code.
+
+Which is an example of what I've been saying all along: "select" makes 
+sense. USB_STORAGE should have done the same.
+
+Claiming that "select" is evil is just totally strange.
+
+		Linus
