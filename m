@@ -1,58 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752707AbXBEE6k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752704AbXBEFIq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752707AbXBEE6k (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Feb 2007 23:58:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752705AbXBEE6k
+	id S1752704AbXBEFIq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 00:08:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752713AbXBEFIq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Feb 2007 23:58:40 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:59404 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752704AbXBEE6j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Feb 2007 23:58:39 -0500
-Date: Sun, 4 Feb 2007 20:58:17 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Tilman Schmidt <tilman@imap.cc>
-Cc: Karsten Keil <kkeil@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       i4ldeveloper@listserv.isdn4linux.de, linux-serial@vger.kernel.org,
-       Hansjoerg Lipp <hjlipp@web.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Greg KH <greg@kroah.com>
-Subject: Re: [PATCH] drivers/isdn/gigaset: new M101 driver
-Message-Id: <20070204205817.fe686375.akpm@linux-foundation.org>
-In-Reply-To: <45C68B71.6050904@imap.cc>
-References: <200702012112.l11LCOO4016557@lx1.pxnet.com>
-	<20070201171345.bd98ce30.akpm@osdl.org>
-	<45C537B9.7080704@imap.cc>
-	<20070203175623.72a171a1.akpm@linux-foundation.org>
-	<45C68B71.6050904@imap.cc>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 5 Feb 2007 00:08:46 -0500
+Received: from fencepost.gnu.org ([199.232.76.164]:47350 "EHLO
+	fencepost.gnu.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752704AbXBEFIp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Feb 2007 00:08:45 -0500
+Subject: Re: [PATCH] fix unaligned exception in
+	/drivers/net/wireless/orinoco.c
+From: Pavel Roskin <proski@gnu.org>
+To: "John W. Linville" <linville@tuxdriver.com>
+Cc: "Hennerich, Michael" <Michael.Hennerich@analog.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20070202202039.GA9382@tuxdriver.com>
+References: <600D5CB4DFD93545BF61FF01473D11AC0783715B@limkexm2.ad.analog.com>
+	 <20070202202039.GA9382@tuxdriver.com>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Date: Mon, 05 Feb 2007 00:08:38 -0500
+Message-Id: <1170652118.4191.36.camel@dv.roinet.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.9.5 (2.9.5-4.fc7) 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 05 Feb 2007 02:42:09 +0100 Tilman Schmidt <tilman@imap.cc> wrote:
-
-> Am 04.02.2007 02:56 schrieb Andrew Morton:
-> > On Sun, 04 Feb 2007 02:32:41 +0100 Tilman Schmidt <tilman@imap.cc> wrote:
+On Fri, 2007-02-02 at 15:20 -0500, John W. Linville wrote:
+> On Thu, Jan 18, 2007 at 09:57:18AM -0000, Hennerich, Michael wrote:
 > > 
-> >>>> +	spin_lock_irqsave(&cs->cmdlock, flags);
-> >>>> +	cb = cs->cmdbuf;
-> >>>> +	spin_unlock_irqrestore(&cs->cmdlock, flags);
-> >>> It is doubtful if the locking here does anything useful.
-> >> It assures atomicity when reading the cs->cmdbuf pointer.
-> > 
-> > I think it's bogus.  If the quantity being copied here is more than 32-bits
-> > then yes, a lock is appropriate.  But if it's a single word then it's
-> > unlikely that the locking does anything useful.  Or there might be a bug
-> > here.
-> 
-> It's a pointer. Are reads and writes of pointer sized objects
-> guaranteed to be atomic on every platform?
+> > This short patch prevents an unaligned exception to occur. (GCC 4.1)
+> > tmp is defined as char pointer while it is later accessed as short.
 
-Yup - we make the same assumption about longs in various places.
+Signed-off-by: Pavel Roskin <proski@gnu.org>
 
-It's a bit strange to read a pointer which can be changing at the
-same time.  Because the local copy will no longer represent the
-thing which it was just copied from.
+> This patch seems fine, such as it is.  But, it seems like it might
+> also be appropriate to change hermes_read_ltv and/or hermes_read_words
+> to not take void * parameters?  This patch would still be needed,
+> but it might be more obvious to future coders?
+
+I agree.  If we use any optimization that requires alignment of the
+buffer for aligned access, it needs to be clearly specified and
+(ideally) enforced.
+
+I've tried to make a patch, but it seems to be a bigger effort than I
+expected.  It turns out that hermes_clear_words() is not doing what it
+should (although it would only affect some buggy firmwares), and it's
+clear that I just cannot replace a couple of arguments and hope for the
+best.  I need to dust off my 802.11b cards and re-test everything.
+
+I've started orinoco branch locally, and I hope I'll be able to clean
+the driver from all that bitrot soon.
+
+-- 
+Regards,
+Pavel Roskin
+
