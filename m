@@ -1,113 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933170AbXBES2a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933228AbXBES26@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933170AbXBES2a (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 13:28:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933228AbXBES1c
+	id S933228AbXBES26 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 13:28:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933219AbXBES1G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 13:27:32 -0500
-Received: from ns.suse.de ([195.135.220.2]:43526 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933216AbXBES1U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 13:27:20 -0500
-From: Tony Jones <tonyj@suse.de>
-To: linux-kernel@vger.kernel.org
-Cc: linux-fsdevel@vger.kernel.org, chrisw@sous-sol.org,
-       Tony Jones <tonyj@suse.de>, linux-security-module@vger.kernel.org,
-       agruen@suse.de
-Date: Mon, 05 Feb 2007 10:26:22 -0800
-Message-Id: <20070205182622.12164.66195.sendpatchset@ermintrude.int.wirex.com>
-In-Reply-To: <20070205182213.12164.40927.sendpatchset@ermintrude.int.wirex.com>
-References: <20070205182213.12164.40927.sendpatchset@ermintrude.int.wirex.com>
-Subject: [RFC 27/28] Add a struct vfsmount parameter to vfs_removexattr()
+	Mon, 5 Feb 2007 13:27:06 -0500
+Received: from mcr-smtp-001.bulldogdsl.com ([212.158.248.7]:1464 "EHLO
+	mcr-smtp-001.bulldogdsl.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933217AbXBES1A (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Feb 2007 13:27:00 -0500
+X-Spam-Abuse: Please report all spam/abuse matters to abuse@bulldogdsl.com
+From: Alistair John Strachan <s0348365@sms.ed.ac.uk>
+To: Al Boldi <a1426z@gawab.com>
+Subject: Re: 2.6.20 doesn't compile with gcc-3.2.2
+Date: Mon, 5 Feb 2007 18:26:57 +0000
+User-Agent: KMail/1.9.5
+References: <Pine.LNX.4.58.0702051441370.3434@be1.lrz> <200702051507.40421.s0348365@sms.ed.ac.uk> <200702052104.44580.a1426z@gawab.com>
+In-Reply-To: <200702052104.44580.a1426z@gawab.com>
+Cc: linux-kernel@vger.kernel.org, Bodo Eggert <7eggert@gmx.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="windows-1256"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200702051826.57781.s0348365@sms.ed.ac.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add a struct vfsmount parameter to vfs_removexattr()
+On Monday 05 February 2007 18:04, you wrote:
+> Alistair John Strachan wrote:
+> > On Monday 05 February 2007 13:48, Bodo Eggert wrote:
+> > > Al Boldi <a1426z@gawab.com> wrote:
+> > > > Doing the following results in an incomplete vmlinuz:
+> > > >
+> > > > # make bzlilo
+> > > >
+> > > > objcopy: arch/i386/boot/compressed/vmlinux.bin: File truncated
+> > > > make[2]: *** [arch/i386/boot/compressed/vmlinux.bin] Error 1
+> > > > make[1]: *** [arch/i386/boot/compressed/vmlinux] Error 2
+> > > > make: *** [bzlilo] Error 2
+> > > >
+> > > > gcc version 3.2.2 (Mandrake Linux 9.1 3.2.2-3mdk)
+> > >
+> > > I just compiled using gcc 3.3.5 (debian stable). Please verify that
+> > > your disk is not full and gcc is the cause. If it is, this patch should
+> > > do the trick: :)
+> >
+> > Not so fast.. post your config? If you've got anything referring to
+> > relocatable kernel support, try disabling it?
+>
+> No luck disabling relocatable kernel, but using a mem-split other than 3/1
+> compiles fine.  There is a catch though, the kernel won't boot anymore.
+>
+> # ld -v
+> GNU ld version 2.13.90.0.18 20030121
+>
+> Which binutils version is now the minimum required, and why is a binutils
+> upgrade necessary?
 
-Signed-off-by: Tony Jones <tonyj@suse.de>
-Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
+Another obvious question is, did -rc1/-rc2 compile correctly? If you have the 
+time, go through all the -rc's, that'll make a bisection easier (if you end 
+up having to do one).
 
-Index: linux-2.6/fs/nfsd/vfs.c
-===================================================================
---- linux-2.6.orig/fs/nfsd/vfs.c
-+++ linux-2.6/fs/nfsd/vfs.c
-@@ -1974,7 +1974,7 @@ nfsd_set_posix_acl(struct svc_fh *fhp, i
- 		if (!S_ISDIR(inode->i_mode) && type == ACL_TYPE_DEFAULT)
- 			error = 0;
- 		else {
--			error = vfs_removexattr(fhp->fh_dentry, name);
-+			error = vfs_removexattr(fhp->fh_dentry, NULL, name);
- 			if (error == -ENODATA)
- 				error = 0;
- 		}
-Index: linux-2.6/fs/xattr.c
-===================================================================
---- linux-2.6.orig/fs/xattr.c
-+++ linux-2.6/fs/xattr.c
-@@ -166,7 +166,7 @@ vfs_listxattr(struct dentry *dentry, str
- EXPORT_SYMBOL_GPL(vfs_listxattr);
- 
- int
--vfs_removexattr(struct dentry *dentry, char *name)
-+vfs_removexattr(struct dentry *dentry, struct vfsmount *mnt, char *name)
- {
- 	struct inode *inode = dentry->d_inode;
- 	int error;
-@@ -437,7 +437,7 @@ sys_flistxattr(int fd, char __user *list
-  * Extended attribute REMOVE operations
-  */
- static long
--removexattr(struct dentry *d, char __user *name)
-+removexattr(struct dentry *dentry, struct vfsmount *mnt, char __user *name)
- {
- 	int error;
- 	char kname[XATTR_NAME_MAX + 1];
-@@ -448,7 +448,7 @@ removexattr(struct dentry *d, char __use
- 	if (error < 0)
- 		return error;
- 
--	return vfs_removexattr(d, kname);
-+	return vfs_removexattr(dentry, mnt, kname);
- }
- 
- asmlinkage long
-@@ -460,7 +460,7 @@ sys_removexattr(char __user *path, char 
- 	error = user_path_walk(path, &nd);
- 	if (error)
- 		return error;
--	error = removexattr(nd.dentry, name);
-+	error = removexattr(nd.dentry, nd.mnt, name);
- 	path_release(&nd);
- 	return error;
- }
-@@ -474,7 +474,7 @@ sys_lremovexattr(char __user *path, char
- 	error = user_path_walk_link(path, &nd);
- 	if (error)
- 		return error;
--	error = removexattr(nd.dentry, name);
-+	error = removexattr(nd.dentry, nd.mnt, name);
- 	path_release(&nd);
- 	return error;
- }
-@@ -491,7 +491,7 @@ sys_fremovexattr(int fd, char __user *na
- 		return error;
- 	dentry = f->f_path.dentry;
- 	audit_inode(NULL, dentry->d_inode);
--	error = removexattr(dentry, name);
-+	error = removexattr(dentry, f->f_path.mnt, name);
- 	fput(f);
- 	return error;
- }
-Index: linux-2.6/include/linux/xattr.h
-===================================================================
---- linux-2.6.orig/include/linux/xattr.h
-+++ linux-2.6/include/linux/xattr.h
-@@ -46,7 +46,7 @@ ssize_t vfs_listxattr(struct dentry *d, 
- 		      size_t size);
- int vfs_setxattr(struct dentry *, struct vfsmount *, char *, void *, size_t,
- 		 int);
--int vfs_removexattr(struct dentry *, char *);
-+int vfs_removexattr(struct dentry *, struct vfsmount *, char *);
- 
- ssize_t generic_getxattr(struct dentry *dentry, const char *name, void *buffer, size_t size);
- ssize_t generic_listxattr(struct dentry *dentry, char *buffer, size_t buffer_size);
+-- 
+Cheers,
+Alistair.
+
+Final year Computer Science undergraduate.
+1F2 55 South Clerk Street, Edinburgh, UK.
