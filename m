@@ -1,85 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933454AbXBEVJV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933420AbXBEVPL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933454AbXBEVJV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 16:09:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933452AbXBEVJV
+	id S933420AbXBEVPL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 16:15:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933436AbXBEVPL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 16:09:21 -0500
-Received: from x35.xmailserver.org ([64.71.152.41]:4103 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933454AbXBEVJU (ORCPT
+	Mon, 5 Feb 2007 16:15:11 -0500
+Received: from smtprelay04.ispgateway.de ([80.67.18.16]:47128 "EHLO
+	smtprelay04.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933420AbXBEVPJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 16:09:20 -0500
-X-AuthUser: davidel@xmailserver.org
-Date: Mon, 5 Feb 2007 13:09:17 -0800 (PST)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
+	Mon, 5 Feb 2007 16:15:09 -0500
+From: Ingo Oeser <ioe-lkml@rameria.de>
 To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Zach Brown <zach.brown@oracle.com>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-aio@kvack.org, Suparna Bhattacharya <suparna@in.ibm.com>,
-       Benjamin LaHaise <bcrl@kvack.org>
-Subject: Re: [PATCH 2 of 4] Introduce i386 fibril scheduling
-In-Reply-To: <Pine.LNX.4.64.0702051223390.8424@woody.linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0702051259030.14453@alien.or.mcafeemobile.com>
-References: <patchbomb.1170193181@tetsuo.zabbo.net>
- <df7bc026d50ec5bbdd8e.1170193183@tetsuo.zabbo.net> <20070201083611.GC18233@elte.hu>
- <Pine.LNX.4.64.0702011154110.3632@woody.linux-foundation.org>
- <20070202104900.GA13941@elte.hu> <Pine.LNX.4.64.0702020738500.15057@woody.linux-foundation.org>
- <20070202222110.GA1212@elte.hu> <Pine.LNX.4.64.0702021445410.15057@woody.linux-foundation.org>
- <20070202235531.GA18904@elte.hu> <Pine.LNX.4.64.0702021636410.15057@woody.linux-foundation.org>
- <20070203082308.GA6748@elte.hu> <B27B1E97-10E3-4A60-A476-4ED4173481A5@oracle.com>
- <Pine.LNX.4.64.0702051121420.14453@alien.or.mcafeemobile.com>
- <8CF4BE18-8EEF-4ACA-A4B4-B627ED3B4831@oracle.com>
- <Pine.LNX.4.64.0702051147100.14453@alien.or.mcafeemobile.com>
- <Pine.LNX.4.64.0702051223390.8424@woody.linux-foundation.org>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+Subject: Re: [patch] MTD: fix DOC2000/2001/2001PLUS build error
+Date: Mon, 5 Feb 2007 22:15:00 +0100
+User-Agent: KMail/1.9.6
+Cc: Ingo Molnar <mingo@elte.hu>, David Woodhouse <dwmw2@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <Pine.LNX.4.64.0702041057090.8424@woody.linux-foundation.org> <20070205163152.GA2464@elte.hu> <Pine.LNX.4.64.0702050852160.8424@woody.linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0702050852160.8424@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200702052215.01572.ioe-lkml@rameria.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 5 Feb 2007, Linus Torvalds wrote:
+On Monday, 5. February 2007, Linus Torvalds wrote:
+> So thank God for the few selects we have, and we should add a whole lot 
+> more!
 
-> Indeed. One word is *exactly* what a normal system call returns too.
-> 
-> That said, normally we have a user-space library layer to turn that into 
-> the "errno + return value" thing, and in the case of async() calls we 
-> very basically wouldn't have that. So either:
-> 
->  - we'd need to do it in the kernel (which is actually nasty, since 
->    different system calls have slightly different semantics - some don't 
->    return any error value at all, and negative numbers are real numbers)
-> 
->  - we'd have to teach user space about the "negative errno" mechanism, in 
->    which case one word really is alwats enough.
-> 
-> Quite frankly, I much prefer the second alternative. The "negative errno" 
-> thing has not only worked really really well inside the kernel, it's so 
-> obviously 100% superior to the standard UNIX "-1 + errno" approach that 
-> it's not even funny. 
+But "select" is not fine grained enough.
 
-Currently it's in the syscall wrapper. Couldn't we have it in the 
-asys_teardown_stack() stub?
+I would like to have "require", "recommend", "suggest" for feature A.
 
+require X
+	does not work without X, but X is way down the tree 
+	e.g. ext3 and block device or how select currently is intended
 
+recommend X
+	it is usable but uncomfortable without X, enabled per default
+	e.g. firewalling recommends connection tracking support 
+	or NAT recommends all NAT helpers
 
-> HOWEVER, they get returned differently. The cookie gets returned 
-> immediately, the system call result gets returned in-memory only after the 
-> async thing has actually completed.
-> 
-> I would actually argue that it's not the kernel that should generate any 
-> cookie, but that user-space should *pass*in* the cookie it wants to, and 
-> the kernel should consider it a pointer to a 64-bit entity which is the 
-> return code.
+suggest X
+	many people use A together with X, 
+	so you might be interested in enabling it, but I disabled it
+	per default unless you said "featuritis mode" before.
+	e.g. highmem and SMP or a network driver and NAPI.
 
-Yes. Let's have the userspace to "mark" the async operation. IMO the 
-cookie should be something transparent to the kernel.
-Like you said though, that'd require compat-code (unless we fix the size).
+That is what the Debian/Ubuntu package management does and maybe other too.
+And this also gives us new keywords to replace select with, 
+so migration is doable :-)
 
+This would also make "EMBEDDED" superflous, because it would just mean 
+"disable anything not required". 
 
+And this would enable an individual tree for the users current configuration 
+problem instead of a global one.
 
-- Davide
+Regards
 
-
+Ingo "and tomorrow we change the world" Oeser :-)
