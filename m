@@ -1,110 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752427AbXBELKp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752529AbXBELQa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752427AbXBELKp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 06:10:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752289AbXBELKo
+	id S1752529AbXBELQa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 06:16:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752537AbXBELQa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 06:10:44 -0500
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:46510 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751453AbXBELKo convert rfc822-to-8bit (ORCPT
+	Mon, 5 Feb 2007 06:16:30 -0500
+Received: from wr-out-0506.google.com ([64.233.184.224]:61045 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752530AbXBELQa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 06:10:44 -0500
-Date: Mon, 5 Feb 2007 12:09:28 +0100
-From: =?ISO-8859-1?Q?S=E9bastien_Dugu=E9?= <sebastien.dugue@bull.net>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
-       linux-aio <linux-aio@kvack.org>, Bharata B Rao <bharata@in.ibm.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
-       Badari Pulavarty <pbadari@us.ibm.com>,
-       Benjamin LaHaise <bcrl@linux.intel.com>,
-       Jean Pierre Dion <jean-pierre.dion@bull.net>
-Subject: Re: [PATCH -mm 4/7][AIO] - Make good_sigevent() non-static
-Message-ID: <20070205120928.51dbc6a2@frecb000686>
-In-Reply-To: <20070202180039.GA658@tv-sign.ru>
-References: <20070201102252.240130c6@frecb000686>
-	<20070201103053.64489048@frecb000686>
-	<20070202180039.GA658@tv-sign.ru>
-X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 05/02/2007 12:11:46,
-	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 05/02/2007 12:11:47,
-	Serialize complete at 05/02/2007 12:11:47
-Content-Transfer-Encoding: 8BIT
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 5 Feb 2007 06:16:30 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=SlktsfGjGVJw6Om3WC+lql+RZyQMSTGf1TGFeQVht2Tl1rhaWC8SbDFTHkIkv9Tr5Ro6JjIWQ854T8XVxoZwxQllslV0hZ1jCgEHM2UnfrqmFYIoTBfgPxjQVXTZBgZL5UKLopky8dUkoAKoAibo1GCsgvzzrBd0+1X9M3LX1gk=
+Message-ID: <8355959a0702050315y35eb0df9h4229d73226f064ea@mail.gmail.com>
+Date: Mon, 5 Feb 2007 16:45:36 +0530
+From: "Sunil Naidu" <akula2.shark@gmail.com>
+To: "Peter Zijlstra" <a.p.zijlstra@chello.nl>
+Subject: Re: v2.6.20-rt1, yum/rpm
+Cc: "Ingo Molnar" <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       linux-rt-users@vger.kernel.org
+In-Reply-To: <1170672153.4672.1.camel@twins>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070205065636.GA1652@elte.hu>
+	 <8355959a0702050236k14aa8c98g29fdbac2c1370def@mail.gmail.com>
+	 <1170672153.4672.1.camel@twins>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 2/5/07, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+> On Mon, 2007-02-05 at 16:06 +0530, Sunil Naidu wrote:
+> > On 2/5/07, Ingo Molnar <mingo@elte.hu> wrote:
+> > > i have released the v2.6.20-rt1 kernel, which can be downloaded from the
+> > > usual place:
+> >
+> > Clean boot for me with 2.6.20 & 2.6.20-rt1. There isn't any error
+> > (like in 2.6.20-rc7-rt3).
+> >
+> > But here is an interesting dmesg:
+> >
+> > rcu_boost_dat: idx=1 b=0 ul=0 ub=0 boost: a=0 b=0
+> > rcu_boost_dat block:    0  0  0  0?
+> > rcu_boost_dat boost:    0! 0  0  0?
+> > rcu_boost_dat unlock:   0? 0  0  0?
+> >
+> > I didn'tunderstand this with ? Am I missing anything here or please
+> > give some inputs.
+>
+> That is Paul McKenney's RCU priority boosting stuff.
+>
+> Look here:
+>   http://lkml.org/lkml/2007/1/24/294
 
-  Hi Oleg,
+Thanks for the input. I did check the URL to refer the update of the
+patch by Paul:-
 
-  thanks for your comments.
+http://lkml.org/lkml/2007/01/15/219
 
-On Fri, 2 Feb 2007 21:00:39 +0300 Oleg Nesterov <oleg@tv-sign.ru> wrote:
+I am getting error, The requested URL /lkml/2007/01/15/219. was not
+found on this server.
 
-> On 02/01, S?bastien Dugu? wrote:
-> > 
-> > +struct task_struct * sigevent_find_task(sigevent_t * event)
-> > +{
-> > +	struct task_struct *task = NULL;
-> > +
-> > +	if (event->sigev_signo <= 0 || event->sigev_signo > SIGRTMAX)
-> > +		return NULL;
-> > +
-> > +	if ((event->sigev_notify & SIGEV_THREAD_ID ) == SIGEV_THREAD_ID) {
-> > +		task = find_task_by_pid(event->sigev_notify_thread_id);
-> > +
-> > +		if (!task || task->tgid != current->tgid)
-> > +			task = NULL;
-> > +	} else if (event->sigev_notify == SIGEV_SIGNAL)
-> > +		task = current->group_leader;
-> > +
-> > +	return task;
-> > +}
-> 
-> I am afraid this is still not right. Consider
-> 
-> 	->sigev_notify == SIGEV_THREAD_ID | RANDOM_BIT
-> 
-> Now, the second "if (SIGEV_THREAD_ID)" returns a valid task. However,
-> 
-> 	really_put_req:
-> 
-> 		if (notify == SIGEV_THREAD_ID || notify == SIGEV_SIGNAL)
-> 			put_task_struct();
-> 
-> doesn't work, so we have task_struct leak.
-
-  Right, I'll revert back to the old code with cleanups.
-
-> 
-> Worse, this breaks posix-timers. Note that posix-timers allow SIGEV_NONE,
-> the timer is not queued in that case, we shouldn't do ->sigev_signo check.
-> This means that aio should check SIGEV_NONE itself.
-> 
-> Also, it is critical for posix-timers that SIGEV_THREAD_ID doesn't come
-> with another bit (like in the example below), note the code like
-> 
-> 	if (sigev_notify == (SIGEV_SIGNAL|SIGEV_THREAD_ID))
-> 		...
-> 
-> IOW: good_sigevent() in its current form is very cryptic, and it _really_
-> needs a cleanup, but we should not change its behaviour.
-
-  Yep. I must admit that I didn't pay enough attention to this 10-liner,
-but in the end it rightfully backfired on me.
-
-> 
-> Apart from this, I don't see other problems in the signal related code in
-> this series.
-> 
-> Oleg.
-> 
-
-  Thanks again for your review.
-
-  Sébastien.
+~Akula2
