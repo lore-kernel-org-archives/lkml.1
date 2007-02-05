@@ -1,42 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752736AbXBEGe4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752735AbXBEGkp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752736AbXBEGe4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 01:34:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752735AbXBEGe4
+	id S1752735AbXBEGkp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 01:40:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752738AbXBEGko
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 01:34:56 -0500
-Received: from iabervon.org ([66.92.72.58]:1387 "EHLO iabervon.org"
+	Mon, 5 Feb 2007 01:40:44 -0500
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:46336 "EHLO e4.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752736AbXBEGez (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 01:34:55 -0500
-Date: Mon, 5 Feb 2007 01:34:54 -0500 (EST)
-From: Daniel Barkalow <barkalow@iabervon.org>
-To: Robert Hancock <hancockr@shaw.ca>
-cc: linux-kernel <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
-       Andrew Morton <akpm@osdl.org>
-Subject: Re: forcedeth problems on 2.6.20-rc6-mm3
-In-Reply-To: <45C6BCE5.90103@shaw.ca>
-Message-ID: <Pine.LNX.4.64.0702050124320.20138@iabervon.org>
-References: <45C6BCE5.90103@shaw.ca>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1752735AbXBEGko (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Feb 2007 01:40:44 -0500
+Date: Mon, 5 Feb 2007 12:10:29 +0530
+From: Vivek Goyal <vgoyal@in.ibm.com>
+To: Alon Bar-Lev <alon.barlev@gmail.com>
+Cc: Miles Lane <miles.lane@gmail.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.20 -- Loads of section mismatches
+Message-ID: <20070205064029.GA23996@in.ibm.com>
+Reply-To: vgoyal@in.ibm.com
+References: <a44ae5cd0702041402g14051b58qfeb270a72123e22e@mail.gmail.com> <9e0cf0bf0702041406n50bd5639l66b62647d9c4795e@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <9e0cf0bf0702041406n50bd5639l66b62647d9c4795e@mail.gmail.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 4 Feb 2007, Robert Hancock wrote:
+On Mon, Feb 05, 2007 at 12:06:47AM +0200, Alon Bar-Lev wrote:
+> On 2/5/07, Miles Lane <miles.lane@gmail.com> wrote:
+> >Are any of these worth fixing?
+> 
+> I am preparing a patch for this.
+> I will submit it soon.
+> 
 
-> Something's busted with forcedeth in 2.6.20-rc6-mm3 for me relative to
-> 2.6.20-rc6. There's no errors in dmesg, but it seems no packets ever get
-> received and so the machine can't get an IP address. I tried reverting all the
-> -mm changes to drivers/net/forcedeth.c, which didn't help. The network
-> controller shares an IRQ with the USB OHCI controller which is receiving
-> interrupts, so it doesn't seem like an interrupt routing problem, though I
-> suppose something wierd could be happening there.
+Many of those warnings I have already fixed. I had posted quite a few
+patches. Looks like some of these have not made into mainline yet.
+For ex...
 
-IIRC, forcedeth tries to use MSI by default. Perhaps the hardware is using 
-it, but the kernel thinks enabling it didn't work? I think there's a 
-module option for forcedeth to disable MSI, which might be worth a try to 
-see if it has any effect.
+http://kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.20-rc6/2.6.20-rc6-mm3/broken-out/x86_64-mm-move-startup_32-in-texthead-section.patch
 
-	-Daniel
-*This .sig left intentionally blank*
+http://kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.20-rc6/2.6.20-rc6-mm3/broken-out/x86_64-mm-break-init-in-two-parts-to-avoid-modpost-warnings.patch
+
+I think I should trace the status of all the patches I had posted.
+
+Thanks
+Vivek
