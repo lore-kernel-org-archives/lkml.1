@@ -1,59 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932106AbXBEMAa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932154AbXBEMFY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932106AbXBEMAa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 07:00:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932119AbXBEMAa
+	id S932154AbXBEMFY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 07:05:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932157AbXBEMFY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 07:00:30 -0500
-Received: from brick.kernel.dk ([62.242.22.158]:24476 "EHLO kernel.dk"
+	Mon, 5 Feb 2007 07:05:24 -0500
+Received: from smtp5-g19.free.fr ([212.27.42.35]:38185 "EHLO smtp5-g19.free.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932106AbXBEMA3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 07:00:29 -0500
-Date: Mon, 5 Feb 2007 13:02:54 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Andrew Morton <akpm@osdl.org>, David Chinner <dgc@sgi.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.20-rc6-mm3
-Message-ID: <20070205120253.GC4487@kernel.dk>
-References: <20070131162422.6bccc52c.akpm@osdl.org> <Pine.LNX.4.64.0701311626160.12104@schroedinger.engr.sgi.com> <20070131163638.290f40c1.akpm@osdl.org> <20070201062018.GC33919298@melbourne.sgi.com> <20070131231253.fdebc9f5.akpm@osdl.org> <Pine.LNX.4.64.0702011055310.7010@schroedinger.engr.sgi.com> <20070201191857.GQ10305@kernel.dk> <Pine.LNX.4.64.0702011214230.10061@schroedinger.engr.sgi.com> <20070201202646.GR10305@kernel.dk> <Pine.LNX.4.64.0702011435060.4632@schroedinger.engr.sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S932154AbXBEMFX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Feb 2007 07:05:23 -0500
+From: Duncan Sands <duncan.sands@math.u-psud.fr>
+To: Alexey Dobriyan <adobriyan@openvz.org>
+Subject: Re: remove_proc_entry and read_proc
+Date: Mon, 5 Feb 2007 13:05:05 +0100
+User-Agent: KMail/1.9.6
+Cc: linux-kernel@vger.kernel.org, adobriyan@gmail.com
+References: <20070201160904.GC6023@localhost.sw.ru> <200702020831.58229.duncan.sands@math.u-psud.fr> <20070205113932.GA5968@localhost.sw.ru>
+In-Reply-To: <20070205113932.GA5968@localhost.sw.ru>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0702011435060.4632@schroedinger.engr.sgi.com>
+Message-Id: <200702051305.06201.duncan.sands@math.u-psud.fr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 01 2007, Christoph Lameter wrote:
-> On Thu, 1 Feb 2007, Jens Axboe wrote:
+> Gee, thanks. I sat and wrote code side-by-side, and it looks like, even barriers
+> won't fix anything, because they don't affect other CPUs.
+
+?! The whole point of memory barriers is that they affect other CPUs.
+Maybe you are thinking of compiler barriers?
+
+> 	->proc_fops is valid			->proc_fops is valid
+> 	->pde_users is 0			->pde_users is 0
+> 	------------------------------------------------------------
 > 
-> > That looks like barriers, could you try with those disabled? Sorry for
-> > making you go through this, I can't debug and fix it myself before
-> > monday.
 > 
-> Disabling barriers + your patch works. Modified /etc/fstab and added a 
-> nobarrier option to the root filesystem. If I take your patch out then the 
-> systems hangs again.
+> 						if (!pde->proc_fops)
+> 							goto out;
+> 
+> 	->proc_fops = NULL;
+> 	if (atomic_read(->pde_users) > 0)
+> 		goto again;
+> 
+> 		|
+> 		|				atomic_inc(->pde_users);
+> 		|
+> 		|
+> 		|
+> 		V
 
-I can't reproduce this. Can you see if this debug patch catches
-anything? You need to enable barriers again.
+The proc_fops check *before* the atomic_inc is indeed pointless (notice
+how I removed it in the patch I sent?).  It's the one after the atomic_inc
+that prevents this race, but only if there is a memory barrier between the
+atomic_inc and the check... because otherwise they could be reordered (i.e.
+seen in reverse order by another CPU) giving the race.
 
-diff --git a/kernel/sched.c b/kernel/sched.c
-index e209901..00c2ab9 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -3434,6 +3434,10 @@ asmlinkage void __sched schedule(void)
- 			print_irqtrace_events(current);
- 		dump_stack();
- 	}
-+	if (unlikely(current->io_context && current->io_context->plugged)) {
-+		printk(KERN_ERR "%s: schedules plugged\n", current->comm);
-+		print_irqtrace_events(current);
-+	}
- 	profile_hit(SCHED_PROFILING, __builtin_return_address(0));
- 
- need_resched:
+> Modules forget to set ->owner sometimes. Also, it's still racy, because
+> of the typical
+> 
+> 	pde = create_proc_entry();
+> 	/*
+> 	 *
+> 	 * ->owner is NULL here, effectively, PDE without ->owner.
+> 	 *
+> 	 */
+> 	if (pde)
+> 		pde->owner = THIS_MODULE;
 
--- 
-Jens Axboe
+As long as the module calls remove_proc_entry before being unloaded,
+this should be ok.
 
+Best wishes,
+
+Duncan.
