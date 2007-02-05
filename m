@@ -1,204 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932461AbXBENi0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932478AbXBENlZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932461AbXBENi0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 08:38:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932432AbXBENi0
+	id S932478AbXBENlZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 08:41:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932417AbXBENlY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 08:38:26 -0500
-Received: from mtagate7.de.ibm.com ([195.212.29.156]:19985 "EHLO
-	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932374AbXBENiZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 08:38:25 -0500
-From: Jan-Bernd Themann <ossthema@de.ibm.com>
-Subject: [PATCH 2.6.21-rc1] ehea: Fixed error recovery
-Date: Mon, 5 Feb 2007 14:35:42 +0100
-User-Agent: KMail/1.8.2
-MIME-Version: 1.0
+	Mon, 5 Feb 2007 08:41:24 -0500
+Received: from mail.screens.ru ([213.234.233.54]:53477 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932478AbXBENlY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Feb 2007 08:41:24 -0500
+Date: Mon, 5 Feb 2007 16:43:14 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: S?bastien Dugu? <sebastien.dugue@bull.net>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
+       linux-aio <linux-aio@kvack.org>, Bharata B Rao <bharata@in.ibm.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
+       Badari Pulavarty <pbadari@us.ibm.com>,
+       Benjamin LaHaise <bcrl@linux.intel.com>,
+       Jean Pierre Dion <jean-pierre.dion@bull.net>
+Subject: Re: [PATCH -mm 4/7][AIO] Resend - Make good_sigevent() non-static
+Message-ID: <20070205134314.GA283@tv-sign.ru>
+References: <20070201102252.240130c6@frecb000686> <20070201103053.64489048@frecb000686> <20070202180039.GA658@tv-sign.ru> <20070205131839.6f601c3e@frecb000686>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-To: netdev <netdev@vger.kernel.org>
-Cc: Christoph Raisch <raisch@de.ibm.com>,
-       "Jan-Bernd Themann" <themann@de.ibm.com>,
-       "linux-kernel" <linux-kernel@vger.kernel.org>,
-       "linux-ppc" <linuxppc-dev@ozlabs.org>, Marcus Eder <meder@de.ibm.com>,
-       Thomas Klein <tklein@de.ibm.com>,
-       Stefan Roscher <stefan.roscher@de.ibm.com>
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200702051435.42211.ossthema@de.ibm.com>
+In-Reply-To: <20070205131839.6f601c3e@frecb000686>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Error recovery for QP errors: Reset QPs and dump error information
+On 02/05, S?bastien Dugu? wrote:
+> 
+> +struct task_struct * sigevent_find_task(sigevent_t * event)
+> +{
+> +	struct task_struct *task = current->group_leader;
+> +
+> +	if ((event->sigev_notify & ~SIGEV_THREAD_ID) != SIGEV_NONE) {
+> +		if (event->sigev_signo <= 0 || event->sigev_signo > SIGRTMAX)
+> +			return NULL;
+> +	}
+> +
+> +	if (event->sigev_notify & SIGEV_THREAD_ID) {
+> +		if ((event->sigev_notify & ~SIGEV_THREAD_ID) != SIGEV_SIGNAL)
+> +			return NULL;
+> +
+> +		task = find_task_by_pid(event->sigev_notify_thread_id);
+> +
+> +		if (!task || task->tgid != current->tgid)
+> +			task = NULL;
+> +	}
+> +
+> +	return task;
+> +}
 
-Signed-off-by: Jan-Bernd Themann <themann@de.ibm.com>
----
+I think this patch is correct, and the code is much more readable than
+the old good_sigevet().
 
+But please don't forget that PATCH 6/7 still needs a small fixup, we can
+leak a task_struct in really_put_req()
 
- drivers/net/ehea/ehea.h      |    2 +-
- drivers/net/ehea/ehea_main.c |    8 +++++++-
- drivers/net/ehea/ehea_phyp.c |   10 ++++++++++
- drivers/net/ehea/ehea_phyp.h |    3 +++
- drivers/net/ehea/ehea_qmr.c  |   42 ++++++++++++++++++++++++++++++++++++++++++
- drivers/net/ehea/ehea_qmr.h  |    5 +++++
- 6 files changed, 68 insertions(+), 2 deletions(-)
+		if (notify == SIGEV_THREAD_ID || notify == SIGEV_SIGNAL)
+			put_task_struct(req->ki_notify.target);
 
-diff --git a/drivers/net/ehea/ehea.h b/drivers/net/ehea/ehea.h
-index 272e1ec..42295d6 100644
---- a/drivers/net/ehea/ehea.h
-+++ b/drivers/net/ehea/ehea.h
-@@ -39,7 +39,7 @@ #include <asm/abs_addr.h>
- #include <asm/io.h>
- 
- #define DRV_NAME	"ehea"
--#define DRV_VERSION	"EHEA_0045"
-+#define DRV_VERSION	"EHEA_0046"
- 
- #define EHEA_MSG_DEFAULT (NETIF_MSG_LINK | NETIF_MSG_TIMER \
- 	| NETIF_MSG_RX_ERR | NETIF_MSG_TX_ERR)
-diff --git a/drivers/net/ehea/ehea_main.c b/drivers/net/ehea/ehea_main.c
-index 9de2d38..1ef3846 100644
---- a/drivers/net/ehea/ehea_main.c
-+++ b/drivers/net/ehea/ehea_main.c
-@@ -76,7 +76,7 @@ void ehea_dump(void *adr, int len, char 
- 	int x;
- 	unsigned char *deb = adr;
- 	for (x = 0; x < len; x += 16) {
--		printk(DRV_NAME "%s adr=%p ofs=%04x %016lx %016lx\n", msg,
-+		printk(DRV_NAME " %s adr=%p ofs=%04x %016lx %016lx\n", msg,
- 			  deb, x, *((u64*)&deb[0]), *((u64*)&deb[8]));
- 		deb += 16;
- 	}
-@@ -555,6 +555,7 @@ static irqreturn_t ehea_qp_aff_irq_handl
- {
- 	struct ehea_port *port = param;
- 	struct ehea_eqe *eqe;
-+	struct ehea_qp *qp;
- 	u32 qp_token;
- 
- 	eqe = ehea_poll_eq(port->qp_eq);
-@@ -563,9 +564,14 @@ static irqreturn_t ehea_qp_aff_irq_handl
- 		qp_token = EHEA_BMASK_GET(EHEA_EQE_QP_TOKEN, eqe->entry);
- 		ehea_error("QP aff_err: entry=0x%lx, token=0x%x",
- 			   eqe->entry, qp_token);
-+
-+		qp = port->port_res[qp_token].qp;
-+		ehea_error_data(port->adapter, qp->fw_handle);
- 		eqe = ehea_poll_eq(port->qp_eq);
- 	}
- 
-+	queue_work(port->adapter->ehea_wq, &port->reset_task);
-+
- 	return IRQ_HANDLED;
- }
- 
-diff --git a/drivers/net/ehea/ehea_phyp.c b/drivers/net/ehea/ehea_phyp.c
-index 37716e0..bc3c005 100644
---- a/drivers/net/ehea/ehea_phyp.c
-+++ b/drivers/net/ehea/ehea_phyp.c
-@@ -612,3 +612,13 @@ u64 ehea_h_reset_events(const u64 adapte
- 				       event_mask,		/* R6 */
- 				       0, 0, 0, 0);		/* R7-R12 */
- }
-+
-+u64 ehea_h_error_data(const u64 adapter_handle, const u64 ressource_handle,
-+		      void *rblock)
-+{
-+	return ehea_plpar_hcall_norets(H_ERROR_DATA,
-+				       adapter_handle,          /* R4 */
-+				       ressource_handle,        /* R5 */
-+				       virt_to_abs(rblock),     /* R6 */
-+				       0, 0, 0, 0);             /* R7-R12 */
-+}
-diff --git a/drivers/net/ehea/ehea_phyp.h b/drivers/net/ehea/ehea_phyp.h
-index 919f94b..90acddb 100644
---- a/drivers/net/ehea/ehea_phyp.h
-+++ b/drivers/net/ehea/ehea_phyp.h
-@@ -454,4 +454,7 @@ u64 ehea_h_reg_dereg_bcmc(const u64 adap
- u64 ehea_h_reset_events(const u64 adapter_handle, const u64 neq_handle,
- 			const u64 event_mask);
- 
-+u64 ehea_h_error_data(const u64 adapter_handle, const u64 ressource_handle,
-+		      void *rblock);
-+
- #endif	/* __EHEA_PHYP_H__ */
-diff --git a/drivers/net/ehea/ehea_qmr.c b/drivers/net/ehea/ehea_qmr.c
-index f143e13..96ff3b6 100644
---- a/drivers/net/ehea/ehea_qmr.c
-+++ b/drivers/net/ehea/ehea_qmr.c
-@@ -486,6 +486,7 @@ int ehea_destroy_qp(struct ehea_qp *qp)
- 	if (!qp)
- 		return 0;
- 
-+	ehea_h_disable_and_get_hea(qp->adapter->handle, qp->fw_handle);
- 	hret = ehea_h_free_resource(qp->adapter->handle, qp->fw_handle);
- 	if (hret != H_SUCCESS) {
- 		ehea_error("destroy_qp failed");
-@@ -581,4 +582,45 @@ out:
- 	return ret;
- }
- 
-+void print_error_data(u64 *data)
-+{
-+	int length;
-+	u64 type = EHEA_BMASK_GET(ERROR_DATA_TYPE, data[2]);
-+	u64 resource = data[1];
-+
-+	length = EHEA_BMASK_GET(ERROR_DATA_LENGTH, data[0]);
-+
-+	if (length > EHEA_PAGESIZE)
-+		length = EHEA_PAGESIZE;
-+
-+	if (type == 0x8) /* Queue Pair */
-+		ehea_error("QP (resource=%lX) state: AER=0x%lX, AERR=0x%lX, "
-+			   "port=%lX", resource, data[6], data[12], data[22]);
-+
-+	ehea_dump(data, length, "error data");
-+}
-+
-+void ehea_error_data(struct ehea_adapter *adapter, u64 res_handle)
-+{
-+	unsigned long ret;
-+	u64 *rblock;
-+
-+	rblock = kzalloc(PAGE_SIZE, GFP_KERNEL);
-+	if (!rblock) {
-+		ehea_error("Cannot allocate rblock memory.");
-+		return;
-+	}
- 
-+	ret = ehea_h_error_data(adapter->handle,
-+				res_handle,
-+				rblock);
-+
-+	if (ret == H_R_STATE)
-+		ehea_error("No error data is available: %lX.", res_handle);
-+	else if (ret == H_SUCCESS)
-+		print_error_data(rblock);
-+	else
-+		ehea_error("Error data could not be fetched: %lX", res_handle);
-+
-+	kfree(rblock);
-+}
-diff --git a/drivers/net/ehea/ehea_qmr.h b/drivers/net/ehea/ehea_qmr.h
-index 7efdc96..1ff6098 100644
---- a/drivers/net/ehea/ehea_qmr.h
-+++ b/drivers/net/ehea/ehea_qmr.h
-@@ -180,6 +180,9 @@ struct ehea_eqe {
- 	u64 entry;
- };
- 
-+#define ERROR_DATA_LENGTH  EHEA_BMASK_IBM(52,63)
-+#define ERROR_DATA_TYPE    EHEA_BMASK_IBM(0,7)
-+
- static inline void *hw_qeit_calc(struct hw_queue *queue, u64 q_offset)
- {
- 	struct ehea_page *current_page;
-@@ -355,4 +358,6 @@ int ehea_destroy_qp(struct ehea_qp *qp);
- 
- int ehea_reg_mr_adapter(struct ehea_adapter *adapter);
- 
-+void ehea_error_data(struct ehea_adapter *adapter, u64 res_handle);
-+
- #endif	/* __EHEA_QMR_H__ */
+because without SIGEV_THREAD_ID ->sigev_notify can have any bit/bits set,
+even SIGEV_NONE (along with some other bit, aio_setup_sigevent checks for
+== SIGEV_NONE).
+
+Oleg.
+
