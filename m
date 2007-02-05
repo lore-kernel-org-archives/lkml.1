@@ -1,81 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964812AbXBEWHr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964851AbXBEWIc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964812AbXBEWHr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 17:07:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964830AbXBEWHr
+	id S964851AbXBEWIc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 17:08:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964852AbXBEWIc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 17:07:47 -0500
-Received: from outpost.ds9a.nl ([213.244.168.210]:53776 "EHLO outpost.ds9a.nl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964812AbXBEWHq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 17:07:46 -0500
-Date: Mon, 5 Feb 2007 23:07:45 +0100
-From: bert hubert <bert.hubert@netherlabs.nl>
+	Mon, 5 Feb 2007 17:08:32 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:57024 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S964851AbXBEWIb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Feb 2007 17:08:31 -0500
+Date: Mon, 5 Feb 2007 22:21:23 +0000
+From: Alan <alan@lxorguk.ukuu.org.uk>
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Davide Libenzi <davidel@xmailserver.org>, Ingo Molnar <mingo@elte.hu>,
-       Zach Brown <zach.brown@oracle.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-aio@kvack.org, Suparna Bhattacharya <suparna@in.ibm.com>,
-       Benjamin LaHaise <bcrl@kvack.org>
-Subject: Re: [PATCH 2 of 4] Introduce i386 fibril scheduling
-Message-ID: <20070205220745.GB32115@outpost.ds9a.nl>
-Mail-Followup-To: bert hubert <bert.hubert@netherlabs.nl>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Davide Libenzi <davidel@xmailserver.org>,
-	Ingo Molnar <mingo@elte.hu>, Zach Brown <zach.brown@oracle.com>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	linux-aio@kvack.org, Suparna Bhattacharya <suparna@in.ibm.com>,
-	Benjamin LaHaise <bcrl@kvack.org>
-References: <patchbomb.1170193181@tetsuo.zabbo.net> <df7bc026d50ec5bbdd8e.1170193183@tetsuo.zabbo.net> <20070201083611.GC18233@elte.hu> <Pine.LNX.4.64.0702011154110.3632@woody.linux-foundation.org> <20070202104900.GA13941@elte.hu> <Pine.LNX.4.64.0702020738500.15057@woody.linux-foundation.org> <20070202222110.GA1212@elte.hu> <Pine.LNX.4.64.0702021525370.5219@alien.or.mcafeemobile.com> <20070205213618.GA30923@outpost.ds9a.nl> <Pine.LNX.4.64.0702051350010.8424@woody.linux-foundation.org>
+Cc: David Woodhouse <dwmw2@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [patch] MTD: fix DOC2000/2001/2001PLUS build error
+Message-ID: <20070205222123.16a51fe6@localhost.localdomain>
+In-Reply-To: <Pine.LNX.4.64.0702051345380.8424@woody.linux-foundation.org>
+References: <Pine.LNX.4.64.0702041057090.8424@woody.linux-foundation.org>
+	<20070205084523.GA21858@elte.hu>
+	<1170682488.29759.795.camel@pmac.infradead.org>
+	<20070205155627.GA8354@elte.hu>
+	<1170692539.29759.856.camel@pmac.infradead.org>
+	<20070205162635.GA755@elte.hu>
+	<20070205163152.GA2464@elte.hu>
+	<Pine.LNX.4.64.0702050852160.8424@woody.linux-foundation.org>
+	<1170710272.29759.894.camel@pmac.infradead.org>
+	<Pine.LNX.4.64.0702051322580.8424@woody.linux-foundation.org>
+	<1170711587.29759.909.camel@pmac.infradead.org>
+	<Pine.LNX.4.64.0702051345380.8424@woody.linux-foundation.org>
+X-Mailer: Claws Mail 2.7.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0702051350010.8424@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.9i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 05, 2007 at 01:57:15PM -0800, Linus Torvalds wrote:
-
-> I doubt very many people want to do that. It would tend to simply be nicer 
-> to do
+> > Really? Including the 'Scanner driver' card which arrived with my
+> > scanner?
 > 
-> 	async(poll);
+> Can you read? Can you UNDERSTAND?
+> 
+> This is exactly my point.
+> 
+> If it's not obviously a SCSI card, then it shouldn't be "depends on SCSI". 
+> It should be on its own and "select SCSI".
 
-Yeah - I saw that technique being mentioned later on in the thread, and it
-would work, I think.
+It works both ways. If I don't need to know that I must select SCSI then
+it turns on easily. If I want to turn SCSI off then it causes mayhem. Two
+sides of the same coin.
 
-To make up for the waste of time, some other news. I asked Matt Dillon of
-DragonflyBSD why he removed asynchronous system calls from his OS, and he
-told me it was because of the problems he had implementing them in the
-kernel:
+What is missing from the current config tools is that when you try and
+turn SCSI off you can't. If there is a "really turn it off" button, then
+you get told
 
-    There were two basic problems:  First, it added a lot of overhead when
-    most system calls are either non-blocking anyway (like getpid()). 
-    Second and more importantly it was very, very difficult to recode the
-    system calls that COULD block to actually be asynchronous in the kernel. 
-    I spent some time recoding nanosleep() to operate asynchronously and it
-    was a huge mess.
+	Disabling SCSI will disable
+		USB scanner
+		Foo
+		Bar
 
-Aside from that, they did not discover any skeletons hidden in the closet,
-although from mailing list traffic, I gather the asynchronous system calls
-didn't see a lot of use. If I understand it correctly, for a number of years
-they emulated asynchronous system calls using threads.
+	Disable Y/N
 
-We'd be sidestepping the need to update all syscalls via 'fibrils' of
-course.
+it fixes Dave's problem. 
 
-> If you think of it in those terms, it all makes sense *without* any file 
-> descriptors what-so-ever, and the "wait_for_async()" interface also makes 
-> a ton of sense (it really *is* "waitpid()" for the system call).
+There are great examples of this - trying to kill off the I2C bus in a
+small build is one of the most painful. Yes users shouldn't need to know
+to turn it on, but it does need a way to turn it back off sanely.
 
-It has me excited in any case. Once anything even remotely testable appears
-(Zach tells me not to try the current code), I'll work it into MTasker
-(http://ds9a.nl/mtasker) and make it power a nameserver that does async i/o,
-for use with very very large zones that aren't preloaded.
-
-	Bert
-
--- 
-http://www.PowerDNS.com      Open source, database driven DNS Software 
-http://netherlabs.nl              Open and Closed source services
+Alan
