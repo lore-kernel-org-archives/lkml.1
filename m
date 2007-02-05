@@ -1,142 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932585AbXBEPGA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932600AbXBEPHp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932585AbXBEPGA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 10:06:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932617AbXBEPGA
+	id S932600AbXBEPHp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 10:07:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932617AbXBEPHp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 10:06:00 -0500
-Received: from mkedef1.rockwellautomation.com ([208.22.104.18]:13098 "EHLO
-	ramilwsmtp01.ra.rockwell.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S932600AbXBEPF7 (ORCPT
+	Mon, 5 Feb 2007 10:07:45 -0500
+Received: from mcr-smtp-001.bulldogdsl.com ([212.158.248.7]:2542 "EHLO
+	mcr-smtp-001.bulldogdsl.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932600AbXBEPHo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 10:05:59 -0500
-To: linux-kernel@vger.kernel.org
-Subject: Re: v2.6.20-rt1, yum/rpm
+	Mon, 5 Feb 2007 10:07:44 -0500
+X-Spam-Abuse: Please report all spam/abuse matters to abuse@bulldogdsl.com
+From: Alistair John Strachan <s0348365@sms.ed.ac.uk>
+To: Bodo Eggert <7eggert@gmx.de>
+Subject: Re: 2.6.20 doesn't compile with gcc-3.2.2
+Date: Mon, 5 Feb 2007 15:07:40 +0000
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org, Al Boldi <a1426z@gawab.com>
+References: <Pine.LNX.4.58.0702051441370.3434@be1.lrz>
+In-Reply-To: <Pine.LNX.4.58.0702051441370.3434@be1.lrz>
 MIME-Version: 1.0
-X-Mailer: Lotus Notes Release 6.5.5  CCH1 March 07, 2006
-Message-ID: <OF7AB1DD4E.7E28CFD4-ONC1257279.0052B9E9-C1257279.0052EFF1@ra.rockwell.com>
-From: Milan Svoboda <msvoboda@ra.rockwell.com>
-Date: Mon, 5 Feb 2007 16:06:46 +0100
-X-MIMETrack: Serialize by Router on RAMilwSMTP01/Milwaukee/RA/Rockwell(Release 6.5.4FP1|June
- 19, 2005) at 02/05/2007 09:06:59 AM,
-	Serialize complete at 02/05/2007 09:06:59 AM
-Content-Type: text/plain; charset="US-ASCII"
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200702051507.40421.s0348365@sms.ed.ac.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Feb 5, 7:50 am, Ingo Molnar <m...@elte.hu> wrote:
-> i have released the v2.6.20-rt1 kernel, which can be downloaded from the
-> usual place:
-> 
+On Monday 05 February 2007 13:48, Bodo Eggert wrote:
+> Al Boldi <a1426z@gawab.com> wrote:
+> > Doing the following results in an incomplete vmlinuz:
+> >
+> > # make bzlilo
+> >
+> > objcopy: arch/i386/boot/compressed/vmlinux.bin: File truncated
+> > make[2]: *** [arch/i386/boot/compressed/vmlinux.bin] Error 1
+> > make[1]: *** [arch/i386/boot/compressed/vmlinux] Error 2
+> > make: *** [bzlilo] Error 2
+> >
+> > gcc version 3.2.2 (Mandrake Linux 9.1 3.2.2-3mdk)
+>
+> I just compiled using gcc 3.3.5 (debian stable). Please verify that your
+> disk is not full and gcc is the cause. If it is, this patch should do the
+> trick: :)
 
-Clean boot for me on ARM ixp4xx (gcc-4.1.1, glibc-2.5, big endian, 
-softfloat).
-High-res timers looks good.
+Not so fast.. post your config? If you've got anything referring to 
+relocatable kernel support, try disabling it?
 
-However, I'm trying to use PI mutexes in userspace 
-(pthread_mutexattr_setprotocol =>
-PTHREAD_PRIO_INHERIT) and found strange behaviour. It seems to me that 
-mutex
-is not really locked, ie. first thread locks mutex then second thread also 
-locks the
-same mutex! Then the second mutex unlock it and when the first thread 
-unlocks the
-mutex error EPERM is returned.
+-- 
+Cheers,
+Alistair.
 
-What do you think, is it kernel or glibc problem? (Priority ceiling works 
-as expected.)
-Is PTHREAD_PRIO_INHERIT supposed to work on my platform?
-
-If there is anything else what would you like to see from my system, let 
-me know.
-
-See logs from pi_tests-1.15 => classic_pi.c (I added code that test return 
-value from
-pthread_mutex_lock/pthread_mutex_unlock):
-
-# /mnt/clfs/opt/classic_pi --verbose
-main: Priority Inheritance turned on
-set_cpu_affinity: using processr 0
-main: creating low priority thread
-main: creating medium priority thread
-main: creating high priority thread
-main: releasing all threads
-high_priority: running as FIFO thread at priority 97
-high_priority: entering ready state
-med_priority: running as FIFO thread at priority 96
-med_priority: entering ready state
-low_priority: running as FIFO thread at priority 95
-low_priority: entering ready state
-main: all threads initialized, waiting for mutex to be claimed
-main: waiting for threads to finish
-high_priority: starting inversion loop (1)
-high_priority: entering start state (1)
-med_priority: starting inversion loop (1)
-med_priority: entering start state (1)
-low_priority: starting inversion loop (1)
-low_priority: entering start wait (1)
-high_priority: entering running state
-med_priority: entering elevate state
-low_priority: claiming mutex
-low_priority: mutex locked
-low_priority: entering locked wait
-high_priority: locking mutex
-high_priority: got mutex
-high_priority: unlocking mutex
-high_priority: entering finish state
-low_priority: entering elevated wait
-med_priority: entering finish state
-low_priority: unlocking mutex
-low_priority: mutex unlock failed: 1
-low_priority: entering finish wait
-high_priority: entering exit state
-med_priority: entering exit state
-low_priority: entering exit state
-main: all threads terminated!
-main: test passed
-
-And this is log from kernel (I added prink to sys_futex and do_futex):
-sys_futex: op == 0
-do_futex: op == 0
-sys_futex: op == 0
-do_futex: op == 0
-sys_futex: op == 0
-do_futex: op == 0
-sys_futex: op == 1
-do_futex: op == 1
-sys_futex: op == 0
-do_futex: op == 0
-sys_futex: op == 0
-do_futex: op == 0
-sys_futex: op == 0
-do_futex: op == 0
-sys_futex: op == 1
-do_futex: op == 1
-sys_futex: op == 0
-do_futex: op == 0
-sys_futex: op == 0
-do_futex: op == 0
-sys_futex: op == 1
-do_futex: op == 1
-sys_futex: op == 6
-do_futex: op == 6
-FUTEX_LOCK_PI
-sys_futex: op == 7
-do_futex: op == 7
-FUTEX_UNLOCK_PI
-sys_futex: op == 0
-do_futex: op == 0
-sys_futex: op == 1
-do_futex: op == 1
-sys_futex: op == 0
-do_futex: op == 0
-sys_futex: op == 1
-do_futex: op == 1
-sys_futex: op == 0
-do_futex: op == 0
-sys_futex: op == 0
-do_futex: op == 0
-sys_futex: op == 1
-do_futex: op == 1
-sys_futex: op == 1
-do_futex: op == 1
+Final year Computer Science undergraduate.
+1F2 55 South Clerk Street, Edinburgh, UK.
