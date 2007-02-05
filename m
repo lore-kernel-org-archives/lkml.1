@@ -1,80 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752211AbXBEKP2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751440AbXBEKa0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752211AbXBEKP2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 05:15:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752218AbXBEKP2
+	id S1751440AbXBEKa0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 05:30:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751434AbXBEKaZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 05:15:28 -0500
-Received: from sj-iport-6.cisco.com ([171.71.176.117]:15889 "EHLO
-	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752211AbXBEKP1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 05:15:27 -0500
-X-IronPort-AV: i="4.13,282,1167638400"; 
-   d="scan'208"; a="109020327:sNHT49700079"
-To: torvalds@linux-foundation.org
-Cc: openib-general@openib.org, linux-kernel@vger.kernel.org
-Subject: [GIT PULL] please pull infiniband.git
-X-Message-Flag: Warning: May contain useful information
-From: Roland Dreier <rdreier@cisco.com>
-Date: Mon, 05 Feb 2007 02:15:25 -0800
-Message-ID: <ada1wl4x64i.fsf@cisco.com>
-User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.19 (linux)
-MIME-Version: 1.0
+	Mon, 5 Feb 2007 05:30:25 -0500
+Received: from main.gmane.org ([80.91.229.2]:51531 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751440AbXBEKaZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Feb 2007 05:30:25 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Benny Amorsen <benny+usenet@amorsen.dk>
+Subject: Re: smp and irq conflict
+Date: 05 Feb 2007 11:33:23 +0100
+Message-ID: <m3zm7suc5o.fsf@ursa.amorsen.dk>
+References: <45BE4003005C2845@vsmtp2.tin.it> <45C35024.8090907@tmr.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 05 Feb 2007 10:15:25.0785 (UTC) FILETIME=[8DA0E490:01C7490E]
-Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim3002 verified; ); 
+X-Complaints-To: usenet@sea.gmane.org
+X-Gmane-NNTP-Posting-Host: 10.8.185.213.dk-amb.res.sta.perspektivbredband.net
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.4
+Cc: linux-smp@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus, please pull from
+>>>>> "BD" == Bill Davidsen <davidsen@tmr.com> writes:
 
-    master.kernel.org:/pub/scm/linux/kernel/git/roland/infiniband.git for-linus
+BD> You may be able to move one board to another slot, but looking at
+BD> the bandwidth I suspect you may need a server motherboard with
+BD> multiple busses, preferably running at 66MHz 64bit. I don't think
+BD> this is a interrupt problem, but you can just try capture on two
+BD> channels which share an interrupt, like bttv0 and bttv7 to verify
+BD> that.
 
-This tree is also available from kernel.org mirrors at:
+66MHz 64bit isn't much fun when the capture cards are 33MHz 32bit.
 
-    git://git.kernel.org/pub/scm/linux/kernel/git/roland/infiniband.git for-linus
 
-This is my first merge for 2.6.21:
+/Benny
 
-Hoang-Nam Nguyen (2):
-      IB/ehca: Remove use of do_mmap()
-      IB/ehca: Remove obsolete prototypes
 
-Ishai Rabinovitz (1):
-      IB/srp: Don't wait for response when QP is in error state.
-
-Jason Gunthorpe (1):
-      IB: Make sure struct ib_user_mad.data is aligned
-
-Michael S. Tsirkin (2):
-      IB: Include <linux/kref.h> explicitly in <rdma/ib_verbs.h>
-      IB: Return qp pointer as part of ib_wc
-
-Steve Wise (1):
-      RDMA/addr: Handle ethernet neighbour updates during route resolution
-
- drivers/infiniband/core/addr.c            |    3 +-
- drivers/infiniband/core/mad.c             |   11 +-
- drivers/infiniband/core/uverbs_cmd.c      |    2 +-
- drivers/infiniband/hw/amso1100/c2_cq.c    |    2 +-
- drivers/infiniband/hw/ehca/ehca_classes.h |   29 +--
- drivers/infiniband/hw/ehca/ehca_cq.c      |   65 ++----
- drivers/infiniband/hw/ehca/ehca_iverbs.h  |    8 -
- drivers/infiniband/hw/ehca/ehca_main.c    |    6 +-
- drivers/infiniband/hw/ehca/ehca_qp.c      |   78 +-----
- drivers/infiniband/hw/ehca/ehca_reqs.c    |    2 +-
- drivers/infiniband/hw/ehca/ehca_uverbs.c  |  395 ++++++++++++-----------------
- drivers/infiniband/hw/ipath/ipath_qp.c    |    2 +-
- drivers/infiniband/hw/ipath/ipath_rc.c    |    8 +-
- drivers/infiniband/hw/ipath/ipath_ruc.c   |    8 +-
- drivers/infiniband/hw/ipath/ipath_uc.c    |    4 +-
- drivers/infiniband/hw/ipath/ipath_ud.c    |    8 +-
- drivers/infiniband/hw/mthca/mthca_cmd.c   |    2 +-
- drivers/infiniband/hw/mthca/mthca_cq.c    |    2 +-
- drivers/infiniband/ulp/srp/ib_srp.c       |    7 +
- drivers/infiniband/ulp/srp/ib_srp.h       |    1 +
- include/rdma/ib_user_mad.h                |    2 +-
- include/rdma/ib_verbs.h                   |    3 +-
- 22 files changed, 243 insertions(+), 405 deletions(-)
