@@ -1,76 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964907AbXBEXEQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965034AbXBEXJg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964907AbXBEXEQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 18:04:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964934AbXBEXEQ
+	id S965034AbXBEXJg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 18:09:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965041AbXBEXJg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 18:04:16 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:36169 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964907AbXBEXEQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 18:04:16 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: "Lu, Yinghai" <yinghai.lu@amd.com>
-Cc: "Andi Kleen" <ak@suse.de>, "Andrew Morton" <akpm@osdl.org>,
-       linux-kernel@vger.kernel.org, "Luigi Genoni" <luigi.genoni@pirelli.com>,
-       "Ingo Molnar" <mingo@elte.hu>,
-       "Natalie Protasevich" <protasnb@gmail.com>
-Subject: Re: [PATCH 2/2] x86_64 irq: Handle irqs pending in IRR during irq migration.
-References: <5986589C150B2F49A46483AC44C7BCA4907416@ssvlexmb2.amd.com>
-Date: Mon, 05 Feb 2007 16:03:03 -0700
-In-Reply-To: <5986589C150B2F49A46483AC44C7BCA4907416@ssvlexmb2.amd.com>
-	(Yinghai Lu's message of "Mon, 5 Feb 2007 12:54:13 -0800")
-Message-ID: <m1d54ow6l4.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Mon, 5 Feb 2007 18:09:36 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:38289 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965034AbXBEXJf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Feb 2007 18:09:35 -0500
+Date: Mon, 5 Feb 2007 15:09:15 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+cc: David Woodhouse <dwmw2@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [patch] MTD: fix DOC2000/2001/2001PLUS build error
+In-Reply-To: <20070205143110.fca62b57.randy.dunlap@oracle.com>
+Message-ID: <Pine.LNX.4.64.0702051502370.8424@woody.linux-foundation.org>
+References: <Pine.LNX.4.64.0702041057090.8424@woody.linux-foundation.org>
+ <20070205084523.GA21858@elte.hu> <1170682488.29759.795.camel@pmac.infradead.org>
+ <20070205155627.GA8354@elte.hu> <1170692539.29759.856.camel@pmac.infradead.org>
+ <20070205162635.GA755@elte.hu> <20070205163152.GA2464@elte.hu>
+ <Pine.LNX.4.64.0702050852160.8424@woody.linux-foundation.org>
+ <1170710272.29759.894.camel@pmac.infradead.org>
+ <Pine.LNX.4.64.0702051322580.8424@woody.linux-foundation.org>
+ <1170711587.29759.909.camel@pmac.infradead.org>
+ <Pine.LNX.4.64.0702051345380.8424@woody.linux-foundation.org>
+ <1170712393.29759.925.camel@pmac.infradead.org>
+ <Pine.LNX.4.64.0702051409110.8424@woody.linux-foundation.org>
+ <20070205143110.fca62b57.randy.dunlap@oracle.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Lu, Yinghai" <yinghai.lu@amd.com> writes:
 
-> -----Original Message-----
-> From: ebiederm@xmission.com [mailto:ebiederm@xmission.com] 
-> Sent: Monday, February 05, 2007 12:37 PM
+
+On Mon, 5 Feb 2007, Randy Dunlap wrote:
 >
->
->>The only corner case I can see that might potentially happen is
->>"apic_in_service_vector() != irq_vector[irq]" and if that is the case
->>we don't want to migrate, because the precondition that we are in the
->>irq handler servicing the expected irq isn't true.
->
-> Reuse vector could help in that case.
+> I think the problem is "who is make *config" for?".
 
-A little but you are still on the wrong cpu, and that corner case might
-even be worth looking at on i386.  I haven't assessed what might go wrong
-yet but the current strategy of migrating irqs is based in the interrupt
-service routine being where new instances of that irq will be
-delivered.
+Absolutely.
 
-What I do know is all of this is a very narrow window, and insanely
-hard to trigger with consequences that shouldn't hang the machine.
-The only reason we are even getting a reasonable number of irqs being
-in service and in the irr is because we are acking a level triggered
-vector used by two irqs and then the pending irq retriggers.  Avoiding
-that case would certainly be an efficiency improvement.
+> Linus wants it to be for (unadvanced) users, but they tend to just
+> use distro kernels and distro configs, according to David, and I
+> agree with that.
 
-Basically I think it takes the alignment of several 1 in a million
-chances before the code I posted will have problems with this
-theoretical case.  
+Well, the thing is, according to that logic, we might as well go back to 
+the pre-Kconfig language entirely. 
 
-> In another case, if two irq are migrated from one cpu to another cpu.
-> ack_apic_edge for irq2 could use get apci_in_servier_vector for irq1,
-> and handle that to clear irr for irq1. instead of irq2.
+I want people to feel that compiling their own kernel is *simple*.
 
-Nope. irq routines are a stack.  if apic_in_service_vector could return
-the wrong value.  ack_APIC_irq() which use the same information would
-acknowledge the wrong irq.  If there was actually any danger of
-mis-computing that information I would just pass it from the interrupt
-service routine stash it in a per cpu variable and then read it out.
-But the apic already has registers doing that, so I was lazy and used
-what was available.  It should be the common case that we need that
-information.
+I also feel that a lot of people are "advanced" in one area, but not 
+necessarily in another. The Netfilter example I gave was one such personal 
+gripe of mine. I just feel like I shouldn't need to care! Yeah, I have the 
+knowledge, but I *still* want to be baby-fed with just a simple "anybody 
+can understand it".
 
+The same is true of the whole SATA/USB/SCSI thing. I know damn well that 
+the kernel uses the SCSI layer for USB and SATA, yet I feel that the ATA 
+layer does it right, and I just find the USB storage situation to be 
+*offensively* bad in this regard. Why the HELL does it have those big 
+comments and warnings, when it could just damn well enable SCSI support 
+itself?
 
-Eric
+So even advanced users aren't necessarily advanced outside their own 
+area of expertise (I have no clue what I2C crud I'd need for some DVB 
+card or even regular video card - or even *if* I need it). And even when 
+they are advanced, they don't mind simple questions.
+
+This is not something where it's "good to be hard to use" (if those things 
+even exist anywhere else either..)
+
+> > Claiming that "select" is evil is just totally strange.
+> 
+> It's a real problem for developers who actually try to modify
+> configs.
+
+Why? You could *trivially* have a tool tell you. Make "xconfig" or 
+something just pop up a window saying "sorry, you can't disable SCSI, 
+because you've got ATA enabled, and ATA wants SCSI".
+
+What's the big deal, here?
+
+			Linus
