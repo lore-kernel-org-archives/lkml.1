@@ -1,120 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933176AbXBES0G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933104AbXBESYo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933176AbXBES0G (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 13:26:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933170AbXBES0D
+	id S933104AbXBESYo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 13:24:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933099AbXBESYo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 13:26:03 -0500
-Received: from mx1.suse.de ([195.135.220.2]:43350 "EHLO mx1.suse.de"
+	Mon, 5 Feb 2007 13:24:44 -0500
+Received: from mx1.suse.de ([195.135.220.2]:43257 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933168AbXBESZw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 13:25:52 -0500
+	id S933012AbXBESYj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Feb 2007 13:24:39 -0500
 From: Tony Jones <tonyj@suse.de>
 To: linux-kernel@vger.kernel.org
 Cc: linux-fsdevel@vger.kernel.org, chrisw@sous-sol.org,
        Tony Jones <tonyj@suse.de>, linux-security-module@vger.kernel.org,
        agruen@suse.de
-Date: Mon, 05 Feb 2007 10:24:54 -0800
-Message-Id: <20070205182454.12164.33929.sendpatchset@ermintrude.int.wirex.com>
+Date: Mon, 05 Feb 2007 10:23:40 -0800
+Message-Id: <20070205182340.12164.75619.sendpatchset@ermintrude.int.wirex.com>
 In-Reply-To: <20070205182213.12164.40927.sendpatchset@ermintrude.int.wirex.com>
 References: <20070205182213.12164.40927.sendpatchset@ermintrude.int.wirex.com>
-Subject: [RFC 17/28] Add a struct vfsmount parameter to vfs_unlink()
+Subject: [RFC 9/28] Pass struct vfsmount to the inode_mknod LSM hook
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add a struct vfsmount parameter to vfs_unlink()
+Pass struct vfsmount to the inode_mknod LSM hook
 
 Signed-off-by: Tony Jones <tonyj@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 
-Index: linux-2.6/fs/ecryptfs/inode.c
-===================================================================
---- linux-2.6.orig/fs/ecryptfs/inode.c
-+++ linux-2.6/fs/ecryptfs/inode.c
-@@ -445,10 +445,11 @@ static int ecryptfs_unlink(struct inode 
- {
- 	int rc = 0;
- 	struct dentry *lower_dentry = ecryptfs_dentry_to_lower(dentry);
-+	struct vfsmount *lower_mnt = ecryptfs_dentry_to_lower_mnt(dentry);
- 	struct inode *lower_dir_inode = ecryptfs_inode_to_lower(dir);
- 
- 	lock_parent(lower_dentry);
--	rc = vfs_unlink(lower_dir_inode, lower_dentry);
-+	rc = vfs_unlink(lower_dir_inode, lower_dentry, lower_mnt);
- 	if (rc) {
- 		printk(KERN_ERR "Error in vfs_unlink; rc = [%d]\n", rc);
- 		goto out_unlock;
 Index: linux-2.6/fs/namei.c
 ===================================================================
 --- linux-2.6.orig/fs/namei.c
 +++ linux-2.6/fs/namei.c
-@@ -2086,7 +2086,7 @@ asmlinkage long sys_rmdir(const char __u
- 	return do_rmdir(AT_FDCWD, pathname);
- }
+@@ -1851,7 +1851,7 @@ int vfs_mknod(struct inode *dir, struct 
+ 	if (!dir->i_op || !dir->i_op->mknod)
+ 		return -EPERM;
  
--int vfs_unlink(struct inode *dir, struct dentry *dentry)
-+int vfs_unlink(struct inode *dir, struct dentry *dentry, struct vfsmount *mnt)
+-	error = security_inode_mknod(dir, dentry, mode, dev);
++	error = security_inode_mknod(dir, dentry, mnt, mode, dev);
+ 	if (error)
+ 		return error;
+ 
+Index: linux-2.6/include/linux/security.h
+===================================================================
+--- linux-2.6.orig/include/linux/security.h
++++ linux-2.6/include/linux/security.h
+@@ -323,6 +323,7 @@ struct request_sock;
+  *	and not this hook.
+  *	@dir contains the inode structure of parent of the new file.
+  *	@dentry contains the dentry structure of the new file.
++ *	@mnt is the vfsmount corresponding to @dentry (may be NULL).
+  *	@mode contains the mode of the new file.
+  *	@dev contains the the device number.
+  *	Return 0 if permission is granted.
+@@ -1218,7 +1219,7 @@ struct security_operations {
+ 			    struct vfsmount *mnt, int mode);
+ 	int (*inode_rmdir) (struct inode *dir, struct dentry *dentry);
+ 	int (*inode_mknod) (struct inode *dir, struct dentry *dentry,
+-	                    int mode, dev_t dev);
++			    struct vfsmount *mnt, int mode, dev_t dev);
+ 	int (*inode_rename) (struct inode *old_dir, struct dentry *old_dentry,
+ 	                     struct inode *new_dir, struct dentry *new_dentry);
+ 	int (*inode_readlink) (struct dentry *dentry);
+@@ -1670,11 +1671,12 @@ static inline int security_inode_rmdir (
+ 
+ static inline int security_inode_mknod (struct inode *dir,
+ 					struct dentry *dentry,
++					struct vfsmount *mnt,
+ 					int mode, dev_t dev)
  {
- 	int error = may_delete(dir, dentry, 0);
- 
-@@ -2150,7 +2150,7 @@ static long do_unlinkat(int dfd, const c
- 		inode = dentry->d_inode;
- 		if (inode)
- 			atomic_inc(&inode->i_count);
--		error = vfs_unlink(nd.dentry->d_inode, dentry);
-+		error = vfs_unlink(nd.dentry->d_inode, dentry, nd.mnt);
- 	exit2:
- 		dput(dentry);
- 	}
-Index: linux-2.6/fs/nfsd/nfs4recover.c
-===================================================================
---- linux-2.6.orig/fs/nfsd/nfs4recover.c
-+++ linux-2.6/fs/nfsd/nfs4recover.c
-@@ -260,7 +260,7 @@ nfsd4_remove_clid_file(struct dentry *di
- 		return -EINVAL;
- 	}
- 	mutex_lock_nested(&dir->d_inode->i_mutex, I_MUTEX_PARENT);
--	status = vfs_unlink(dir->d_inode, dentry);
-+	status = vfs_unlink(dir->d_inode, dentry, NULL);
- 	mutex_unlock(&dir->d_inode->i_mutex);
- 	return status;
+ 	if (unlikely (IS_PRIVATE (dir)))
+ 		return 0;
+-	return security_ops->inode_mknod (dir, dentry, mode, dev);
++	return security_ops->inode_mknod (dir, dentry, mnt, mode, dev);
  }
-Index: linux-2.6/fs/nfsd/vfs.c
-===================================================================
---- linux-2.6.orig/fs/nfsd/vfs.c
-+++ linux-2.6/fs/nfsd/vfs.c
-@@ -1692,7 +1692,7 @@ nfsd_unlink(struct svc_rqst *rqstp, stru
- 			host_err = -EPERM;
- 		} else
- #endif
--		host_err = vfs_unlink(dirp, rdentry);
-+		host_err = vfs_unlink(dirp, rdentry, NULL);
- 	} else { /* It's RMDIR */
- 		host_err = vfs_rmdir(dirp, rdentry, NULL);
- 	}
-Index: linux-2.6/include/linux/fs.h
-===================================================================
---- linux-2.6.orig/include/linux/fs.h
-+++ linux-2.6/include/linux/fs.h
-@@ -984,7 +984,7 @@ extern int vfs_mknod(struct inode *, str
- extern int vfs_symlink(struct inode *, struct dentry *, struct vfsmount *, const char *, int);
- extern int vfs_link(struct dentry *, struct vfsmount *, struct inode *, struct dentry *, struct vfsmount *);
- extern int vfs_rmdir(struct inode *, struct dentry *, struct vfsmount *);
--extern int vfs_unlink(struct inode *, struct dentry *);
-+extern int vfs_unlink(struct inode *, struct dentry *, struct vfsmount *);
- extern int vfs_rename(struct inode *, struct dentry *, struct inode *, struct dentry *);
  
- /*
-Index: linux-2.6/ipc/mqueue.c
-===================================================================
---- linux-2.6.orig/ipc/mqueue.c
-+++ linux-2.6/ipc/mqueue.c
-@@ -747,7 +747,7 @@ asmlinkage long sys_mq_unlink(const char
- 	if (inode)
- 		atomic_inc(&inode->i_count);
+ static inline int security_inode_rename (struct inode *old_dir,
+@@ -2388,6 +2390,7 @@ static inline int security_inode_rmdir (
  
--	err = vfs_unlink(dentry->d_parent->d_inode, dentry);
-+	err = vfs_unlink(dentry->d_parent->d_inode, dentry, mqueue_mnt);
- out_err:
- 	dput(dentry);
+ static inline int security_inode_mknod (struct inode *dir,
+ 					struct dentry *dentry,
++					struct vfsmount *mnt,
+ 					int mode, dev_t dev)
+ {
+ 	return 0;
+Index: linux-2.6/security/dummy.c
+===================================================================
+--- linux-2.6.orig/security/dummy.c
++++ linux-2.6/security/dummy.c
+@@ -299,7 +299,7 @@ static int dummy_inode_rmdir (struct ino
+ }
+ 
+ static int dummy_inode_mknod (struct inode *inode, struct dentry *dentry,
+-			      int mode, dev_t dev)
++			      struct vfsmount *mnt, int mode, dev_t dev)
+ {
+ 	return 0;
+ }
+Index: linux-2.6/security/selinux/hooks.c
+===================================================================
+--- linux-2.6.orig/security/selinux/hooks.c
++++ linux-2.6/security/selinux/hooks.c
+@@ -2177,11 +2177,12 @@ static int selinux_inode_rmdir(struct in
+ 	return may_link(dir, dentry, MAY_RMDIR);
+ }
+ 
+-static int selinux_inode_mknod(struct inode *dir, struct dentry *dentry, int mode, dev_t dev)
++static int selinux_inode_mknod(struct inode *dir, struct dentry *dentry,
++			       struct vfsmount *mnt, int mode, dev_t dev)
+ {
+ 	int rc;
+ 
+-	rc = secondary_ops->inode_mknod(dir, dentry, mode, dev);
++	rc = secondary_ops->inode_mknod(dir, dentry, mnt, mode, dev);
+ 	if (rc)
+ 		return rc;
  
