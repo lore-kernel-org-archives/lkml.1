@@ -1,47 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932582AbXBEOB0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932594AbXBEOBp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932582AbXBEOB0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 09:01:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932585AbXBEOB0
+	id S932594AbXBEOBp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 09:01:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932585AbXBEOBp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 09:01:26 -0500
-Received: from ug-out-1314.google.com ([66.249.92.175]:15608 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932582AbXBEOBZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 09:01:25 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=kjG6QnSMKGwbcxfK2sBBXCTwdDSjiIXZIYrkzzyyYaaVHehSWPgUCy+WusU1Y/7jQfNiBi8wreuHnJSfevEl2en4e7VUXNfwm49h74cXDJ1Do1c6G1/nDcNwl70kSL/whfxtOJ4pXmH7GZexernn6EtrI1+DOX+riGsEvId0Mws=
-Message-ID: <84144f020702050601ve2e4746oebd774af9c487b63@mail.gmail.com>
-Date: Mon, 5 Feb 2007 16:01:23 +0200
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Joerg Roedel" <joerg.roedel@amd.com>
-Subject: Re: your mail
-Cc: logic@thinknet.ro, linux-kernel@vger.kernel.org
-In-Reply-To: <20070205123611.GI8804@amd.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 5 Feb 2007 09:01:45 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:40547 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932594AbXBEOBo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Feb 2007 09:01:44 -0500
+Subject: [GFS2] don't try to lockfs after shutdown [1/54]
+From: Steven Whitehouse <swhiteho@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: David Teigland <teigland@redhat.com>, cluster-devel@redhat.com
+In-Reply-To: <1170684425.11001.267.camel@quoit.chygwyn.com>
+References: <1170684425.11001.267.camel@quoit.chygwyn.com>
+Content-Type: text/plain
+Organization: Red Hat (UK) Ltd
+Date: Mon, 05 Feb 2007 14:09:45 +0000
+Message-Id: <1170684585.11001.270.camel@quoit.chygwyn.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.2.2 (2.2.2-5) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1131.86.55.168.2.1170690089.squirrel@mail.thinknet.ro>
-	 <20070205123611.GI8804@amd.com>
-X-Google-Sender-Auth: 07b8b09f00f18033
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Joerg,
+>From d951e07bc1d2d3e43af5325d4cad19b41ae4d427 Mon Sep 17 00:00:00 2001
+From: David Teigland <teigland@redhat.com>
+Date: Wed, 6 Dec 2006 11:46:33 -0600
+Subject: [PATCH] [GFS2] don't try to lockfs after shutdown
 
-On 2/5/07, Joerg Roedel <joerg.roedel@amd.com> wrote:
-> Hmm, this seems to be the same issue as in [1] and [2]. A page that is
-> assumed to belong to the slab but is not longer marked as a slab page.
-> Could this be a bug in the memory management?
+If an fs has already been shut down, a lockfs callback should do nothing.
+An fs that's been shut down can't acquire locks or do anything with
+respect to the cluster.
 
-The BUG_ON triggers whenever you feed an invalid pointer to kfree() or
-kmem_cache_free() so I am guessing the caller is simply broken. Note
-that kernels prior to 2.6.18 would quietly corrupt the slab unless
-CONFIG_SLAB_DEBUG was enabled which might explain why this hasn't been
-noticed before.
+Also, remove FIXME comment in withdraw function.  The missing bits of the
+withdraw procedure are now all done by user space.
 
-                               Pekka
+Signed-off-by: David Teigland <teigland@redhat.com>
+Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
+
+diff --git a/fs/gfs2/lm.c b/fs/gfs2/lm.c
+index effe4a3..e30673d 100644
+--- a/fs/gfs2/lm.c
++++ b/fs/gfs2/lm.c
+@@ -104,15 +104,9 @@ int gfs2_lm_withdraw(struct gfs2_sbd *sdp, char *fmt, ...)
+ 	vprintk(fmt, args);
+ 	va_end(args);
+ 
+-	fs_err(sdp, "about to withdraw from the cluster\n");
++	fs_err(sdp, "about to withdraw this file system\n");
+ 	BUG_ON(sdp->sd_args.ar_debug);
+ 
+-
+-	fs_err(sdp, "waiting for outstanding I/O\n");
+-
+-	/* FIXME: suspend dm device so oustanding bio's complete
+-	   and all further io requests fail */
+-
+ 	fs_err(sdp, "telling LM to withdraw\n");
+ 	gfs2_withdraw_lockproto(&sdp->sd_lockstruct);
+ 	fs_err(sdp, "withdrawn\n");
+diff --git a/fs/gfs2/ops_super.c b/fs/gfs2/ops_super.c
+index 7685b46..b283783 100644
+--- a/fs/gfs2/ops_super.c
++++ b/fs/gfs2/ops_super.c
+@@ -173,6 +173,9 @@ static void gfs2_write_super_lockfs(struct super_block *sb)
+ 	struct gfs2_sbd *sdp = sb->s_fs_info;
+ 	int error;
+ 
++	if (test_bit(SDF_SHUTDOWN, &sdp->sd_flags))
++		return;
++
+ 	for (;;) {
+ 		error = gfs2_freeze_fs(sdp);
+ 		if (!error)
+-- 
+1.4.4.2
+
+
+
