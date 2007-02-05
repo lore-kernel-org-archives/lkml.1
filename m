@@ -1,61 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933315AbXBESd5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933012AbXBESeG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933315AbXBESd5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 13:33:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933231AbXBESdb
+	id S933012AbXBESeG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 13:34:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933029AbXBESY1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 13:33:31 -0500
-Received: from x35.xmailserver.org ([64.71.152.41]:4026 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933012AbXBESYo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 13:24:44 -0500
-X-AuthUser: davidel@xmailserver.org
-Date: Mon, 5 Feb 2007 10:24:34 -0800 (PST)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Zach Brown <zach.brown@oracle.com>
-cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-aio@kvack.org, Suparna Bhattacharya <suparna@in.ibm.com>,
-       Benjamin LaHaise <bcrl@kvack.org>
-Subject: Re: [PATCH 2 of 4] Introduce i386 fibril scheduling
-In-Reply-To: <EDD3B5A9-9EAB-4E0A-BE1F-3B73C3870DC8@oracle.com>
-Message-ID: <Pine.LNX.4.64.0702051022170.14453@alien.or.mcafeemobile.com>
-References: <patchbomb.1170193181@tetsuo.zabbo.net>
- <df7bc026d50ec5bbdd8e.1170193183@tetsuo.zabbo.net> <20070201083611.GC18233@elte.hu>
- <Pine.LNX.4.64.0702011154110.3632@woody.linux-foundation.org>
- <20070202104900.GA13941@elte.hu> <Pine.LNX.4.64.0702020738500.15057@woody.linux-foundation.org>
- <20070202222110.GA1212@elte.hu> <Pine.LNX.4.64.0702021525370.5219@alien.or.mcafeemobile.com>
- <EDD3B5A9-9EAB-4E0A-BE1F-3B73C3870DC8@oracle.com>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 5 Feb 2007 13:24:27 -0500
+Received: from cantor.suse.de ([195.135.220.2]:43235 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933090AbXBESYV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Feb 2007 13:24:21 -0500
+From: Tony Jones <tonyj@suse.de>
+To: linux-kernel@vger.kernel.org
+Cc: linux-fsdevel@vger.kernel.org, chrisw@sous-sol.org,
+       Tony Jones <tonyj@suse.de>, linux-security-module@vger.kernel.org,
+       agruen@suse.de
+Date: Mon, 05 Feb 2007 10:23:23 -0800
+Message-Id: <20070205182323.12164.27325.sendpatchset@ermintrude.int.wirex.com>
+In-Reply-To: <20070205182213.12164.40927.sendpatchset@ermintrude.int.wirex.com>
+References: <20070205182213.12164.40927.sendpatchset@ermintrude.int.wirex.com>
+Subject: [RFC 7/28] Pass struct vfsmount to the inode_mkdir LSM hook
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 5 Feb 2007, Zach Brown wrote:
+Pass struct vfsmount to the inode_mkdir LSM hook
 
-> > Since I still think that the many-thousands potential async operations
-> > coming from network sockets are better handled with a classical event
-> > machanism [1], and since smooth integration of new async syscall into the
-> > standard POSIX infrastructure is IMO a huge win, I think we need to have a
-> > "bridge" to allow async completions being detectable through a pollable
-> > (by the mean of select/poll/epoll whatever) device.
-> 
-> Ugh, I'd rather not if we don't have to.
-> 
-> It seems like you could get this behaviour from issuing a
-> poll/select(really?)/epoll as one of the async calls to complete.  (And you
-> mention this in a later email? :))
+Signed-off-by: Tony Jones <tonyj@suse.de>
+Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 
-Yes, no need for the above. We can just host a poll/epoll in an async() 
-operation, and demultiplex once that gets ready.
-
-
-
-- Davide
-
-
+Index: linux-2.6/fs/namei.c
+===================================================================
+--- linux-2.6.orig/fs/namei.c
++++ linux-2.6/fs/namei.c
+@@ -1928,7 +1928,7 @@ int vfs_mkdir(struct inode *dir, struct 
+ 		return -EPERM;
+ 
+ 	mode &= (S_IRWXUGO|S_ISVTX);
+-	error = security_inode_mkdir(dir, dentry, mode);
++	error = security_inode_mkdir(dir, dentry, mnt, mode);
+ 	if (error)
+ 		return error;
+ 
+Index: linux-2.6/include/linux/security.h
+===================================================================
+--- linux-2.6.orig/include/linux/security.h
++++ linux-2.6/include/linux/security.h
+@@ -308,6 +308,7 @@ struct request_sock;
+  *	associated with inode strcture @dir. 
+  *	@dir containst the inode structure of parent of the directory to be created.
+  *	@dentry contains the dentry structure of new directory.
++ *	@mnt is the vfsmount corresponding to @dentry (may be NULL).
+  *	@mode contains the mode of new directory.
+  *	Return 0 if permission is granted.
+  * @inode_rmdir:
+@@ -1213,7 +1214,8 @@ struct security_operations {
+ 	int (*inode_unlink) (struct inode *dir, struct dentry *dentry);
+ 	int (*inode_symlink) (struct inode *dir,
+ 	                      struct dentry *dentry, const char *old_name);
+-	int (*inode_mkdir) (struct inode *dir, struct dentry *dentry, int mode);
++	int (*inode_mkdir) (struct inode *dir, struct dentry *dentry,
++			    struct vfsmount *mnt, int mode);
+ 	int (*inode_rmdir) (struct inode *dir, struct dentry *dentry);
+ 	int (*inode_mknod) (struct inode *dir, struct dentry *dentry,
+ 	                    int mode, dev_t dev);
+@@ -1650,11 +1652,12 @@ static inline int security_inode_symlink
+ 
+ static inline int security_inode_mkdir (struct inode *dir,
+ 					struct dentry *dentry,
++					struct vfsmount *mnt,
+ 					int mode)
+ {
+ 	if (unlikely (IS_PRIVATE (dir)))
+ 		return 0;
+-	return security_ops->inode_mkdir (dir, dentry, mode);
++	return security_ops->inode_mkdir (dir, dentry, mnt, mode);
+ }
+ 
+ static inline int security_inode_rmdir (struct inode *dir,
+@@ -2371,6 +2374,7 @@ static inline int security_inode_symlink
+ 
+ static inline int security_inode_mkdir (struct inode *dir,
+ 					struct dentry *dentry,
++					struct vfsmount *mnt,
+ 					int mode)
+ {
+ 	return 0;
+Index: linux-2.6/security/dummy.c
+===================================================================
+--- linux-2.6.orig/security/dummy.c
++++ linux-2.6/security/dummy.c
+@@ -288,7 +288,7 @@ static int dummy_inode_symlink (struct i
+ }
+ 
+ static int dummy_inode_mkdir (struct inode *inode, struct dentry *dentry,
+-			      int mask)
++			      struct vfsmount *mnt, int mask)
+ {
+ 	return 0;
+ }
+Index: linux-2.6/security/selinux/hooks.c
+===================================================================
+--- linux-2.6.orig/security/selinux/hooks.c
++++ linux-2.6/security/selinux/hooks.c
+@@ -2166,7 +2166,8 @@ static int selinux_inode_symlink(struct 
+ 	return may_create(dir, dentry, SECCLASS_LNK_FILE);
+ }
+ 
+-static int selinux_inode_mkdir(struct inode *dir, struct dentry *dentry, int mask)
++static int selinux_inode_mkdir(struct inode *dir, struct dentry *dentry,
++			       struct vfsmount *mnt, int mask)
+ {
+ 	return may_create(dir, dentry, SECCLASS_DIR);
+ }
