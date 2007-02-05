@@ -1,78 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933029AbXBEShx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933254AbXBESo2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933029AbXBEShx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 13:37:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932588AbXBEShw
+	id S933254AbXBESo2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 13:44:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933039AbXBESo2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 13:37:52 -0500
-Received: from e36.co.us.ibm.com ([32.97.110.154]:33292 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933035AbXBEShu (ORCPT
+	Mon, 5 Feb 2007 13:44:28 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:34735 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932669AbXBESo0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 13:37:50 -0500
-Subject: [PATCH]Add memory barrier before clear bit in unlock_buffer()
-From: Mingming Cao <cmm@us.ibm.com>
-Reply-To: cmm@us.ibm.com
-To: Andrew Morton <akpm@osdl.org>
-Cc: Andreas Gruenbacher <agruen@suse.de>,
-       "Paul E. McKenney" <paulmck@us.ibm.com>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-In-Reply-To: <200702050032.06905.agruen@suse.de>
-References: <200702021923.02491.agruen@suse.de>
-	 <200702050032.06905.agruen@suse.de>
-Content-Type: text/plain
-Organization: IBM LTC
-Date: Mon, 05 Feb 2007 10:37:46 -0800
-Message-Id: <1170700667.3815.14.camel@dyn9047017103.beaverton.ibm.com>
+	Mon, 5 Feb 2007 13:44:26 -0500
+Date: Mon, 5 Feb 2007 18:44:10 +0000
+From: Christoph Hellwig <hch@infradead.org>
+To: Tony Jones <tonyj@suse.de>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       chrisw@sous-sol.org, linux-security-module@vger.kernel.org,
+       agruen@suse.de, viro@zeniv.linux.org.uk
+Subject: Re: [RFC 0/28] Patches to pass vfsmount to LSM inode security hooks
+Message-ID: <20070205184410.GA20672@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Tony Jones <tonyj@suse.de>, linux-kernel@vger.kernel.org,
+	linux-fsdevel@vger.kernel.org, chrisw@sous-sol.org,
+	linux-security-module@vger.kernel.org, agruen@suse.de,
+	viro@zeniv.linux.org.uk
+References: <20070205182213.12164.40927.sendpatchset@ermintrude.int.wirex.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.0.4 (2.0.4-7) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070205182213.12164.40927.sendpatchset@ermintrude.int.wirex.com>
+User-Agent: Mutt/1.4.2.2i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We are runnin SDET benchmark and saw double free issue for ext3 extended
-attributes block, which complains the same xattr block already being
-freed (in ext3_xattr_release_block()). The problem could also been
-triggered by multiple threads loop untar/rm a kernel tree.
+Just FYI:  Al was very opposed to the idea of passing the vfsmount to
+the vfs_ helpers, so you should discuss this with him.
 
-The race is caused by missing a memory barrier at unlock_buffer() before
-the lock bit being cleared, resulting in possible concurrent
-h_refcounter update. That causes a reference counter leak, then later
-leads to the double free that we have seen.
-
-Inside unlock_buffer(), there is a memory barrier is placed *after* the
-lock bit is being cleared, however, there is no memory barrier *before*
-the bit is cleared. On some arch the h_refcount update instruction and
-the clear bit instruction could be reordered, thus leave the critical
-section re-entered.
-
-The race is like this: For example, if the h_refcount is initialized as
-1,
-
-cpu 0:                                   cpu1
---------------------------------------   -----------------------------------
-lock_buffer() /* test_and_set_bit */
-clear_buffer_locked(bh);             
-                                        lock_buffer() /* test_and_set_bit */
-h_refcount = h_refcount+1; /* = 2*/     h_refcount = h_refcount + 1; /*= 2 */
-                                        clear_buffer_locked(bh);
-....                                    ......
-
-We lost a h_refcount here. We need a memory barrier before the buffer head lock
-bit being cleared to force the order of the two writes.  Please apply.
-
-Signed-Off-By: Mingming Cao <cmm@us.ibm.com>
-
-
---- linux/fs/buffer.c.orig	2007-02-04 11:37:50.000000000 -0600
-+++ linux/fs/buffer.c	2007-02-04 11:38:14.000000000 -0600
-@@ -77,6 +77,7 @@
- 
- void fastcall unlock_buffer(struct buffer_head *bh)
- {
-+	smp_mb__before_clear_bit();
- 	clear_buffer_locked(bh);
- 	smp_mb__after_clear_bit();
- 	wake_up_bit(&bh->b_state, BH_Lock);
-
+Looking at the actual patches I see you're lazy in a lot of places.
+Please make sure that when you introduce a vfsmount argument somewhere
+that it is _always_ passed and not just when it's conveniant.  Yes, that's
+more work, but then again if you're not consistant anyone half-serious
+will laught at a security model using this infrasturcture.
 
