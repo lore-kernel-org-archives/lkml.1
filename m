@@ -1,74 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965462AbXBFCNt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965453AbXBFCZw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965462AbXBFCNt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 21:13:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965458AbXBFCNt
+	id S965453AbXBFCZw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 21:25:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965450AbXBFCZw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 21:13:49 -0500
-Received: from ns.suse.de ([195.135.220.2]:42951 "EHLO mx1.suse.de"
+	Mon, 5 Feb 2007 21:25:52 -0500
+Received: from mx1.suse.de ([195.135.220.2]:43367 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965456AbXBFCNr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 21:13:47 -0500
-From: Andreas Gruenbacher <agruen@suse.de>
-Organization: SuSE Labs, Novell
-To: Christoph Hellwig <hch@infradead.org>
-Subject: Re: [RFC 0/28] Patches to pass vfsmount to LSM inode security hooks
-Date: Mon, 5 Feb 2007 18:13:26 -0800
-User-Agent: KMail/1.9.5
-Cc: Tony Jones <tonyj@suse.de>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, chrisw@sous-sol.org,
-       linux-security-module@vger.kernel.org, viro@zeniv.linux.org.uk
-References: <20070205182213.12164.40927.sendpatchset@ermintrude.int.wirex.com> <20070205184410.GA20672@infradead.org>
-In-Reply-To: <20070205184410.GA20672@infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	id S965430AbXBFCZv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Feb 2007 21:25:51 -0500
+Date: Tue, 6 Feb 2007 03:25:49 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Linux Filesystems <linux-fsdevel@vger.kernel.org>,
+       Linux Memory Management <linux-mm@kvack.org>
+Subject: Re: [patch 9/9] mm: fix pagecache write deadlocks
+Message-ID: <20070206022549.GB31476@wotan.suse.de>
+References: <20070204063833.23659.55105.sendpatchset@linux.site> <20070204014445.88e6c8c7.akpm@linux-foundation.org> <20070204101529.GA22004@wotan.suse.de> <20070204023055.2583fd65.akpm@linux-foundation.org> <20070204104609.GA29943@wotan.suse.de> <20070204025602.a5f8c53a.akpm@linux-foundation.org> <20070204110317.GA9034@wotan.suse.de> <20070204031549.203f7b47.akpm@linux-foundation.org> <20070204151051.GB12771@wotan.suse.de> <20070204103620.33c24cad.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200702051813.26958.agruen@suse.de>
+In-Reply-To: <20070204103620.33c24cad.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 05 February 2007 10:44, Christoph Hellwig wrote:
-> Looking at the actual patches I see you're lazy in a lot of places.
-> Please make sure that when you introduce a vfsmount argument somewhere
-> that it is _always_ passed and not just when it's conveniant.  Yes, that's
-> more work, but then again if you're not consistant anyone half-serious
-> will laught at a security model using this infrasturcture.
+On Sun, Feb 04, 2007 at 10:36:20AM -0800, Andrew Morton wrote:
+> On Sun, 4 Feb 2007 16:10:51 +0100 Nick Piggin <npiggin@suse.de> wrote:
+> 
+> > They're not likely to hit the deadlocks, either. Probability gets more
+> > likely after my patch to lock the page in the fault path. But practially,
+> > we could live without that too, because the data corruption it fixes is
+> > very rare as well. Which is exactly what we've been doing quite happily
+> > for most of 2.6, including all distro kernels (I think).
+> 
+> Thing is, an application which is relying on the contents of that page is
+> already unreliable (or really peculiar), because it can get indeterminate
+> results anyway.
 
-It may appear like laziness, but it's not. Let's look at where we're passing 
-NULL at the moment:
+Not necessarily -- they could read from one part of a page and write to
+another. I see this as the biggest data corruption problem.
 
-fs/hpfs/namei.c
+But even in the case where they can get indeterminate results, they can
+still determine what the results *won't* be. Eg. they might use a single
+byte for a flag or something.
 
-	In hpfs_unlink, hpfs truncates one of its own inodes through
-	notify_change(). You definitely don't want any lsms to interfere here,
-	pathname based or not; hpfs should probably truncate its inode itself
-	instead. But given that hpfs goes via the vfs, we at least pass NULL
-	to indicate that this file really has no meaningful paths to it
-	anymore. (In addition, we don't really have a vfsmount at this
-	point anymore, and neither would it make sense to pass it there.)
+> > ...
+> > 
+> > On a P4 Xeon, SMP kernel, on a tmpfs filesystem, a 1GB dd if=/dev/zero write
+> > had the following performance (higher is worse):
+> > 
+> > Orig kernel			New kernel
+> > new file (no pagecache)
+> > 4K  blocks 1.280s		1.287s (+0.5%)
+> > 64K blocks 1.090s		1.105s (+1.4%)
+> > notrunc (uptodate pagecache)
+> > 4K  blocks 0.976s		1.001s (+0.5%)
+> > 64K blocks 0.780s		0.792s (+1.5%)
+> > 
+> > [numbers are better than +/- 0.005]
+> > 
+> > So we lose somewhere between half and one and a half of one percent
+> > performance in a pagecache write intensive workload.
+> 
+> That's not too bad - caches are fast.  Did you look at optimising the
+> handling of that temp page, ensure that we always use the same page?  I
+> guess the page allocator per-cpu-pages thing is being good here.
 
-	To play more nicely with other lsms, hpfs could mark the inode as
-	private before attempting the truncate.
+Yeah it should be doing a reasonable job.
 
-fs/reiserfs/xattr.c
+> I'm not sure how, though.  Park a copy in the task_struct, just as an
+> experiment.  But that'd de-optimise multiple-tasks-writing-on-the-same-cpu.
+> Maybe a per-cpu thing?  Largely duplicates the page allocator's per-cpu-pages.
 
-	The directories an files that reiserfs uses internally to store xattrs
-	are hanging off ".reiserfs_priv/xattrs" in the filesystem. This part
-	of the namespace is not accessible or visible from user space though
-	except through the xattr syscalls.
+Putting a copy in the task_struct won't do much I figure, except saving
+a copule of interrupt enable/disable, and being more wasteful of memory
+and cache-hotness.
 
-	Reiserfs should probably just mark all its xattr inodes as private in order
-	to play nicely with other lsms. As far as pathname based lsms are concerned,
-	pathnames to those fs-internal objects are meaningless though, and so we
-	pass NULL here.
+Per-cpu doesn't work because we can't hold preempt off over the usercopy
+(well, we *could* do it in a loop together with fault_in_pages, but that
+just adds to the icache bloat).
 
-fs/sysfs/file.c
-fs/nfsd/vfs.c and fs/nfsd/nfs4recover.c
+> 
+> Of course, we're also increasing caceh footprint, which this test won't
+> show.
 
-	For nfsd, the concept of pathnames is a bit peculiar. I'll try to respond to
-	that separately.
+We are indeed. At least we release the hot page back to the allocator
+very quickly that it can be reused.
 
-Thanks,
-Andreas
+The upshot is that your writev performance will be improved :)
