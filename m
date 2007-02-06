@@ -1,40 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932085AbXBFQ5Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752254AbXBFRCi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932085AbXBFQ5Y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 11:57:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932930AbXBFQ5Y
+	id S1752254AbXBFRCi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 12:02:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752239AbXBFRCi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 11:57:24 -0500
-Received: from zrtps0kn.nortel.com ([47.140.192.55]:63936 "EHLO
-	zrtps0kn.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932085AbXBFQ5X (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 11:57:23 -0500
-Message-ID: <45C8B362.3000402@nortel.com>
-Date: Tue, 06 Feb 2007 10:57:06 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
-X-Accept-Language: en-us, en
+	Tue, 6 Feb 2007 12:02:38 -0500
+Received: from cantor.suse.de ([195.135.220.2]:59160 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752026AbXBFRCh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Feb 2007 12:02:37 -0500
+Date: Tue, 6 Feb 2007 09:01:31 -0800
+From: Greg KH <greg@kroah.com>
+To: Sunil Naidu <akula2.shark@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Free Linux Driver Development!
+Message-ID: <20070206170131.GA16429@kroah.com>
+References: <f2b55d220701301827h703d24eele941c86046caa9e7@mail.gmail.com> <355711.50750.qm@web36602.mail.mud.yahoo.com> <20070204182003.GB12379@kroah.com> <653402b90702041108q3c5c7b91x727c09c7c069bba3@mail.gmail.com> <20070205081312.GA19669@kroah.com> <8355959a0702060535m6146835awa2748c72801c50b8@mail.gmail.com>
 MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: legal to call tasklet_schedule() from within schedule()?
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 06 Feb 2007 16:57:11.0522 (UTC) FILETIME=[D82E3420:01C74A0F]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <8355959a0702060535m6146835awa2748c72801c50b8@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Feb 06, 2007 at 07:05:10PM +0530, Sunil Naidu wrote:
+> >Just let me know what types of devices you are interested in working on.
+> 
+> I would love to work on PC as well as Embedded stuff (Power, Intel, and 
+> ARM).
+> Devices types - Audio/Video (this needs special attention for the
+> Linux Desktop), USB (TV Tuner card, key for Linux Desktop), Bluetooth
+> (Mobiles) , GSM/GPRS/WiFi/WIMAX (my self R&D area).  Plus any device
+> which we think important to boost Linux Desktop ;-)
 
-I'm noodling around with some way to print out error messages from 
-within the scheduler itself.  One way that I'm considering is to copy 
-messages to a static memory buffer and then trigger a tasklet to do the 
-actual printing.  The question I had was whether it's actually legal to 
-call tasklet_schedule() from within the schedule() function, or whether 
-that could lead to bad things.  Can anyone give me a definitive 
-statement on this?
+Thanks, I've added you to to the list.
 
-Does anyone have any other suggestions on the best way to do this?
-
-Thanks,
-
-Chris
+greg k-h
