@@ -1,106 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933200AbXBFVa2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752315AbXBFVcH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933200AbXBFVa2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 16:30:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933241AbXBFVa1
+	id S1752315AbXBFVcH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 16:32:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933225AbXBFVcH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 16:30:27 -0500
-Received: from outbound-blu.frontbridge.com ([65.55.251.16]:15163 "EHLO
-	outbound3-blu-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933200AbXBFVa0 (ORCPT
+	Tue, 6 Feb 2007 16:32:07 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:49653
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752315AbXBFVcF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 16:30:26 -0500
-X-BigFish: VP
-X-Server-Uuid: 5FC0E2DF-CD44-48CD-883A-0ED95B391E89
-Message-ID: <45C8F419.5040103@amd.com>
-Date: Tue, 06 Feb 2007 22:33:13 +0100
-From: "Markus Rechberger" <markus.rechberger@amd.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070206)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: [patch] x86-64 ext2/ext3 datestamp problem
-X-OriginalArrivalTime: 06 Feb 2007 21:30:09.0093 (UTC)
- FILETIME=[F9F93750:01C74A35]
-X-WSS-ID: 69D62CE92MC7277786-01-01
-Content-Type: multipart/mixed;
- boundary=------------020601070705000403010905
+	Tue, 6 Feb 2007 16:32:05 -0500
+Date: Tue, 06 Feb 2007 13:31:40 -0800 (PST)
+Message-Id: <20070206.133140.91442326.davem@davemloft.net>
+To: torvalds@linux-foundation.org
+Cc: kent.overstreet@gmail.com, davidel@xmailserver.org, zach.brown@oracle.com,
+       mingo@elte.hu, linux-kernel@vger.kernel.org, linux-aio@kvack.org,
+       suparna@in.ibm.com, bcrl@kvack.org
+Subject: Re: [PATCH 2 of 4] Introduce i386 fibril scheduling
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <Pine.LNX.4.64.0702061325380.8424@woody.linux-foundation.org>
+References: <Pine.LNX.4.64.0702061238300.8424@woody.linux-foundation.org>
+	<20070206.131631.82049180.davem@davemloft.net>
+	<Pine.LNX.4.64.0702061325380.8424@woody.linux-foundation.org>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------020601070705000403010905
-Content-Type: text/plain;
- charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Tue, 6 Feb 2007 13:28:34 -0800 (PST)
 
-Hi,
+> Yeah, in 1% of all cases it will block, and you'll want to wait for them. 
+> Maybe the kevent queue works then, but if it needs any more setup than the 
+> nonblocking case, that's a big no.
 
-there is an issue with ext2/ext3 date stamps, if someone creates a file
-with a timestamp between 1902 and 1970(epoch 0) it will overflow and
-result in a higher date than 2038.
+So the idea is to just run it to completion if it won't block and use
+a fibril if it would?
 
-$ touch --date "1905-01-01" test
-$ ls -lah test
--rw-r--r-- 1 root root 0 Jan  1  1905 test (this is a cached value here)
-(remount the partition/clear the cache)
-$ ls -lah test
--rw-r--r-- 1 root root 0 Feb  6  2041 test
-
-10000101101111001100011001110000 .. -2051226000 (1905)
-10000101101111001100011001110000 .. 2243741296 (2041)
-
-this was tested against linus git tree
-
-Markus
-
--- 
-Markus Rechberger
-Operating System Research Center
-AMD Saxony LLC & Co. KG
-
-
---------------020601070705000403010905
-Content-Type: text/plain;
- name=inode.diff
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename=inode.diff
-
-diff --git a/fs/ext2/inode.c b/fs/ext2/inode.c
-index dd4e14c..9fa1bd6 100644
---- a/fs/ext2/inode.c
-+++ b/fs/ext2/inode.c
-@@ -1079,9 +1079,9 @@ void ext2_read_inode (struct inode * inode)
- 	}
- 	inode->i_nlink = le16_to_cpu(raw_inode->i_links_count);
- 	inode->i_size = le32_to_cpu(raw_inode->i_size);
--	inode->i_atime.tv_sec = le32_to_cpu(raw_inode->i_atime);
--	inode->i_ctime.tv_sec = le32_to_cpu(raw_inode->i_ctime);
--	inode->i_mtime.tv_sec = le32_to_cpu(raw_inode->i_mtime);
-+	inode->i_atime.tv_sec = (signed)le32_to_cpu(raw_inode->i_atime);
-+	inode->i_ctime.tv_sec = (signed)le32_to_cpu(raw_inode->i_ctime);
-+	inode->i_mtime.tv_sec = (signed)le32_to_cpu(raw_inode->i_mtime);
- 	inode->i_atime.tv_nsec = inode->i_mtime.tv_nsec = inode->i_ctime.tv_nsec = 0;
- 	ei->i_dtime = le32_to_cpu(raw_inode->i_dtime);
- 	/* We now have enough fields to check if the inode was active or not.
-diff --git a/fs/ext3/inode.c b/fs/ext3/inode.c
-index beaf25f..5d171c0 100644
---- a/fs/ext3/inode.c
-+++ b/fs/ext3/inode.c
-@@ -2673,9 +2673,9 @@ void ext3_read_inode(struct inode * inode)
- 	}
- 	inode->i_nlink = le16_to_cpu(raw_inode->i_links_count);
- 	inode->i_size = le32_to_cpu(raw_inode->i_size);
--	inode->i_atime.tv_sec = le32_to_cpu(raw_inode->i_atime);
--	inode->i_ctime.tv_sec = le32_to_cpu(raw_inode->i_ctime);
--	inode->i_mtime.tv_sec = le32_to_cpu(raw_inode->i_mtime);
-+	inode->i_atime.tv_sec = (signed)le32_to_cpu(raw_inode->i_atime);
-+	inode->i_ctime.tv_sec = (signed)le32_to_cpu(raw_inode->i_ctime);
-+	inode->i_mtime.tv_sec = (signed)le32_to_cpu(raw_inode->i_mtime);
- 	inode->i_atime.tv_nsec = inode->i_ctime.tv_nsec = inode->i_mtime.tv_nsec = 0;
- 
- 	ei->i_state = 0;
-
---------------020601070705000403010905--
-
-
+kevent could support something like that too.
