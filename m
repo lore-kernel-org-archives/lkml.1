@@ -1,109 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751614AbXBFIbP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751635AbXBFIdI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751614AbXBFIbP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 03:31:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751635AbXBFIbP
+	id S1751635AbXBFIdI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 03:33:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751678AbXBFIdI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 03:31:15 -0500
-Received: from mx2.suse.de ([195.135.220.15]:56432 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751614AbXBFIbO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 03:31:14 -0500
-Date: Tue, 6 Feb 2007 09:31:03 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Hugh Dickins <hugh@veritas.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Linux Memory Management <linux-mm@kvack.org>,
-       Linux Filesystems <linux-fsdevel@vger.kernel.org>
-Subject: Re: [patch 2/3] fs: buffer don't PageUptodate without page locked
-Message-ID: <20070206083103.GB16965@wotan.suse.de>
-References: <20070206054925.21042.50546.sendpatchset@linux.site> <20070206054947.21042.32493.sendpatchset@linux.site> <20070206002140.4030a11f.akpm@linux-foundation.org>
+	Tue, 6 Feb 2007 03:33:08 -0500
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:60866 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751635AbXBFIdG convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Feb 2007 03:33:06 -0500
+Date: Tue, 6 Feb 2007 09:31:42 +0100
+From: =?ISO-8859-1?Q?S=E9bastien_Dugu=E9?= <sebastien.dugue@bull.net>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
+       linux-aio <linux-aio@kvack.org>, Bharata B Rao <bharata@in.ibm.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
+       Badari Pulavarty <pbadari@us.ibm.com>,
+       Jean Pierre Dion <jean-pierre.dion@bull.net>
+Subject: Re: [PATCH -mm][AIO] Fix AIO completion signal notification
+ possible ref leak
+Message-ID: <20070206093142.738f93e6@frecb000686>
+In-Reply-To: <20070205171335.GA528@tv-sign.ru>
+References: <20070201102252.240130c6@frecb000686>
+	<20070201103053.64489048@frecb000686>
+	<20070202180039.GA658@tv-sign.ru>
+	<20070205131839.6f601c3e@frecb000686>
+	<20070205134314.GA283@tv-sign.ru>
+	<20070205170056.6a29b19b@frecb000686>
+	<20070205171335.GA528@tv-sign.ru>
+X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070206002140.4030a11f.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.9i
+X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 06/02/2007 09:34:07,
+	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 06/02/2007 09:34:08,
+	Serialize complete at 06/02/2007 09:34:08
+Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 06, 2007 at 12:21:40AM -0800, Andrew Morton wrote:
-> On Tue,  6 Feb 2007 09:02:23 +0100 (CET) Nick Piggin <npiggin@suse.de> wrote:
+On Mon, 5 Feb 2007 20:13:35 +0300 Oleg Nesterov <oleg@tv-sign.ru> wrote:
+
+> On 02/05, S?bastien Dugu? wrote:
+> > 
+> >   Make sure we only accept valid sigev_notify values in aio_setup_sigevent(),
+> > namely SIGEV_NONE, SIGEV_THREAD_ID or SIGEV_SIGNAL.
 > 
-> > __block_write_full_page is calling SetPageUptodate without the page locked.
-> > This is unusual, but not incorrect, as PG_writeback is still set.
-> > 
-> > However with the previous patch, this is now a problem: so don't bother
-> > setting the page uptodate in this case (it is weird that the write path
-> > does such a thing anyway). Instead just leave it to the read side to bring
-> > the page uptodate when it notices that all buffers are uptodate.
-> > 
-> > Signed-off-by: Nick Piggin <npiggin@suse.de>
-> > 
-> > Index: linux-2.6/fs/buffer.c
-> > ===================================================================
-> > --- linux-2.6.orig/fs/buffer.c
-> > +++ linux-2.6/fs/buffer.c
-> > @@ -1679,6 +1679,7 @@ static int __block_write_full_page(struc
-> >  	 */
-> >  	BUG_ON(PageWriteback(page));
-> >  	set_page_writeback(page);
-> > +	unlock_page(page);
-> >  
-> >  	do {
-> >  		struct buffer_head *next = bh->b_this_page;
-> > @@ -1688,7 +1689,6 @@ static int __block_write_full_page(struc
-> >  		}
-> >  		bh = next;
-> >  	} while (bh != head);
-> > -	unlock_page(page);
-> >  
-> >  	err = 0;
-> >  done:
+> I think this is correct, but I have another concern (most probably I just
+> confused looking at non-applied patch), could you re-check?
 > 
-> Why this change?  Without looking at it too hard, it seems that if
-> submit_bh() completes synchronously, this thread can end up playing with
-> the buffers on a non-locked, non-PageWriteback page.  Someone else could
-> whip the buffers away and oops?
+> > @@ -959,6 +959,10 @@ static long aio_setup_sigevent(struct ai
+> >  	if (event.sigev_notify == SIGEV_NONE)
+> >  		return 0;
+> >  
+> > +	if (event.sigev_notify != SIGEV_SIGNAL &&
+> > +	    event.sigev_notify != SIGEV_THREAD_ID)
+> > +		return -EINVAL;
+> > +
+> >  	notify->notify = event.sigev_notify;
+> >  	notify->signo = event.sigev_signo;
+> >  	notify->value = event.sigev_value;
+> 
+> Ok. But what if sigevent_find_task() fails after that? Doesn't this mean
+> that really_put_req() will do put_task_struct(NULL) ?
+> 
 
-Hmm, it definitely shouldn't be there, it leaked in from another patch
-to bring partiy with the error handling...
+  Argh, right, a patch to fix that and a couple of other corner cases to
+follow soon.
 
-Here is an updated patch.
+  Thanks Oleg for looking through this.
 
---
-
-__block_write_full_page is calling SetPageUptodate without the page locked.
-This is unusual, but not incorrect, as PG_writeback is still set.
-
-However with the previous patch, this is now a problem: so don't bother
-setting the page uptodate in this case (it is weird that the write path
-does such a thing anyway). Instead just leave it to the read side to bring
-the page uptodate when it notices that all buffers are uptodate.
-
-Signed-off-by: Nick Piggin <npiggin@suse.de>
-
-Index: linux-2.6/fs/buffer.c
-===================================================================
---- linux-2.6.orig/fs/buffer.c
-+++ linux-2.6/fs/buffer.c
-@@ -1698,17 +1698,8 @@ done:
- 		 * clean.  Someone wrote them back by hand with
- 		 * ll_rw_block/submit_bh.  A rare case.
- 		 */
--		int uptodate = 1;
--		do {
--			if (!buffer_uptodate(bh)) {
--				uptodate = 0;
--				break;
--			}
--			bh = bh->b_this_page;
--		} while (bh != head);
--		if (uptodate)
--			SetPageUptodate(page);
- 		end_page_writeback(page);
-+
- 		/*
- 		 * The page and buffer_heads can be released at any time from
- 		 * here on.
+  Sébastien.
