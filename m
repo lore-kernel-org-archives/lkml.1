@@ -1,58 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751519AbXBFPNG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752226AbXBFPQT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751519AbXBFPNG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 10:13:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752216AbXBFPNF
+	id S1752226AbXBFPQT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 10:16:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752217AbXBFPQT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 10:13:05 -0500
-Received: from mail.tmr.com ([64.65.253.246]:35094 "EHLO gaimboi.tmr.com"
+	Tue, 6 Feb 2007 10:16:19 -0500
+Received: from rtr.ca ([64.26.128.89]:3639 "EHLO mail.rtr.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751519AbXBFPNE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 10:13:04 -0500
-Message-ID: <45C89AC4.7050708@tmr.com>
-Date: Tue, 06 Feb 2007 10:12:04 -0500
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+	id S1752225AbXBFPQT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Feb 2007 10:16:19 -0500
+Message-ID: <45C89BC1.9010703@rtr.ca>
+Date: Tue, 06 Feb 2007 10:16:17 -0500
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 1.5.0.9 (X11/20061206)
 MIME-Version: 1.0
-To: Stefan Seyfried <seife@suse.de>
-CC: Adrian Bunk <bunk@stusta.de>, Greg KH <greg@kroah.com>,
-       Roland Dreier <rdreier@cisco.com>, linux-kernel@vger.kernel.org
-Subject: Re: Free Linux Driver Development!
-References: <20070130012904.GA9617@kroah.com> <ada8xfks90x.fsf@cisco.com> <20070130191020.GF20642@kroah.com> <20070131011340.GP3754@stusta.de> <20070131012428.GA31759@kroah.com> <20070131021431.GR3754@stusta.de> <20070205094947.GA32384@suse.de>
-In-Reply-To: <20070205094947.GA32384@suse.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>,
+       David Woodhouse <dwmw2@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [patch] MTD: fix DOC2000/2001/2001PLUS build error
+References: <Pine.LNX.4.64.0702041057090.8424@woody.linux-foundation.org> <20070205084523.GA21858@elte.hu> <1170682488.29759.795.camel@pmac.infradead.org> <20070205155627.GA8354@elte.hu> <1170692539.29759.856.camel@pmac.infradead.org> <20070205162635.GA755@elte.hu> <20070205163152.GA2464@elte.hu> <Pine.LNX.4.64.0702050852160.8424@woody.linux-foundation.org> <1170710272.29759.894.camel@pmac.infradead.org> <Pine.LNX.4.64.0702051322580.8424@woody.linux-foundation.org> <1170711587.29759.909.camel@pmac.infradead.org> <Pine.LNX.4.64.0702051345380.8424@woody.linux-foundation.org> <1170712393.29759.925.camel@pmac.infradead.org> <Pine.LNX.4.64.0702051409110.8424@woody.linux-foundation.org> <20070205143110.fca62b57.randy.dunlap@oracle.com> <Pine.LNX.4.64.0702051502370.8424@woody.linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0702051502370.8424@woody.linux-foundation.org>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stefan Seyfried wrote:
-> On Wed, Jan 31, 2007 at 03:14:31AM +0100, Adrian Bunk wrote:
->> On Tue, Jan 30, 2007 at 05:24:28PM -0800, Greg KH wrote:
-> 
->>> What?  Throw a fresh-faced newbie instantly into the tar-pit of despair
->>> that floppy.c is?  Do you want everyone just to run screaming from
->>> kernel development never to be seen again?
->>>
->>> :)
->> Other than with the ISA drivers example, at least everyone has the 
->> hardware... ;-)
-> 
-> Wrong. I abandoned all floppy drives some years ago. I'd actually
-> vote for removing the floppy driver from the kernel completely.
+I'm with Linus 100% here.
 
-Is that your model of how the kernel should work? Take out anything you 
-don't personally need?
+It's really irritating to upgrade to a newer kernel,
+using the same old .config file, and then discover that
+my MythTV box no longer auto-boots to record programs.
 
-I'm guesstimating the 20-30% of the old laptops I rehab on Linux for 
-kids who have none lack the ability to boot off CD. Or write a CD, for 
-that matter. The ability of Linux to run on old hardware is another 
-advantage over commercial systems.
-> 
-> Well, at work i probably have an USB floppy lying around somewhere,
-> but i doubt that it uses floppy.c ;-), 
+The reason being, that /proc/acpi/alarm no longer exists,
+and the kernel option to configure it has mysteriously
+disappeared from the menus.
 
+After an hour of hand examining and grep'ing Kconfig files,
+I eventually find the secret little totally-unrelated option
+that has to be selected to make the ACPI alarm option visible
+again.
 
--- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+Doh!
+
+That interface is driven entirely backwards.
+The funtionality option should always be visible,
+and should "select" (or hey, invent a better mechanism,
+I'm not fussy), the underlying crap required to let me use it.
+
+Cheers
