@@ -1,241 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752053AbXBFNa4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752126AbXBFNcZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752053AbXBFNa4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 08:30:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752110AbXBFNa4
+	id S1752126AbXBFNcZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 08:32:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752147AbXBFNcZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 08:30:56 -0500
-Received: from v813.rev.tld.pl ([195.149.226.213]:54454 "EHLO
-	smtp.host4.kei.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752053AbXBFNaz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 08:30:55 -0500
-X-clamdmail: clamdmail 0.18a
-From: Marcin Juszkiewicz <openembedded@hrw.one.pl>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] backlight control for Frontpath ProGear HX1050+
-Date: Tue, 6 Feb 2007 14:30:40 +0100
-User-Agent: KMail/1.9.5
-Cc: Richard Purdie <rpurdie@rpsys.net>
+	Tue, 6 Feb 2007 08:32:25 -0500
+Received: from [69.90.0.18] ([69.90.0.18]:56980 "EHLO mtl.rackplans.net"
+	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752131AbXBFNcY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Feb 2007 08:32:24 -0500
+Date: Tue, 6 Feb 2007 08:32:21 -0500 (EST)
+From: Gerhard Mack <gmack@innerfire.net>
+X-X-Sender: gmack@mtl.rackplans.net
+To: Ingo Oeser <ioe-lkml@rameria.de>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, David Woodhouse <dwmw2@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [patch] MTD: fix DOC2000/2001/2001PLUS build error
+In-Reply-To: <200702052215.01572.ioe-lkml@rameria.de>
+Message-ID: <Pine.LNX.4.64.0702060824220.26380@mtl.rackplans.net>
+References: <Pine.LNX.4.64.0702041057090.8424@woody.linux-foundation.org>
+ <20070205163152.GA2464@elte.hu> <Pine.LNX.4.64.0702050852160.8424@woody.linux-foundation.org>
+ <200702052215.01572.ioe-lkml@rameria.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200702061430.42581.openembedded@hrw.one.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Marcin Juszkiewicz <openembedded@hrw.one.pl>
+On Mon, 5 Feb 2007, Ingo Oeser wrote:
 
-Add control of LCD backlight for Frontpath ProGear HX1050+.
-Patch is based on http://downloads.sf.net/progear/progear-lcd-0.2.tar.gz
-driver by M Schacht.
+> On Monday, 5. February 2007, Linus Torvalds wrote:
+> > So thank God for the few selects we have, and we should add a whole lot 
+> > more!
+> 
+> But "select" is not fine grained enough.
+> 
+> I would like to have "require", "recommend", "suggest" for feature A.
+> 
+> require X
+> 	does not work without X, but X is way down the tree 
+> 	e.g. ext3 and block device or how select currently is intended
+> 
+> recommend X
+> 	it is usable but uncomfortable without X, enabled per default
+> 	e.g. firewalling recommends connection tracking support 
+> 	or NAT recommends all NAT helpers
+> 
+> suggest X
+> 	many people use A together with X, 
+> 	so you might be interested in enabling it, but I disabled it
+> 	per default unless you said "featuritis mode" before.
+> 	e.g. highmem and SMP or a network driver and NAPI.
+> 
+> That is what the Debian/Ubuntu package management does and maybe other too.
+> And this also gives us new keywords to replace select with, 
+> so migration is doable :-)
+> 
+> This would also make "EMBEDDED" superflous, because it would just mean 
+> "disable anything not required". 
+> 
+> And this would enable an individual tree for the users current configuration 
+> problem instead of a global one.
 
-Signed-Off-By: Marcin Juszkiewicz <openembedded@hrw.one.pl>
+I think "package manager" is the best possible way to think about this 
+problem.
 
----
-Patch follow kernel version 2.6.20
+I can't tell you how often I've wished the kernel config process behaved 
+like apt and just prompted me with a list of things it would need to 
+enable to allow me to use the option and ask me if I still want to do it. 
+The reverse when I try and remove something important would be good too 
+just ask me if I really want to remove all those as well.
 
- Kconfig      |    8 +++
- Makefile     |    1
- progear_bl.c |  157 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 166 insertions(+)
+A functional equivelant of deborphan would be cool too.  Just run it and 
+have it tell me what is enabled that no devices depend on.
 
+The config system is nasty even for power users. There is a fun part of 
+the netfilter code where I find myself having to enable all from one menu, 
+go to the next menu down enable everything and then go back to the first 
+menu.
 
-Index: linux-2.6.20/drivers/video/backlight/Kconfig
-===================================================================
---- linux-2.6.20.orig/drivers/video/backlight/Kconfig	2007-02-04 19:44:54.000000000 +0100
-+++ linux-2.6.20/drivers/video/backlight/Kconfig	2007-02-05 16:13:13.000000000 +0100
-@@ -66,3 +66,11 @@
- 	  If you have a HP Jornada 680, say y to enable the
- 	  backlight driver.
- 
-+config BACKLIGHT_PROGEAR
-+       tristate "Frontpath ProGear Backlight Driver"
-+       depends on BACKLIGHT_DEVICE && PCI
-+       default y
-+       help
-+         If you have a Frontpath ProGear say Y to enable the
-+         backlight driver.
-+
-Index: linux-2.6.20/drivers/video/backlight/progear_bl.c
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20/drivers/video/backlight/progear_bl.c	2007-02-05 16:29:14.000000000 +0100
-@@ -0,0 +1,157 @@
-+/*
-+ *  Backlight Driver for Frontpath ProGear HX1050+
-+ *
-+ *  Copyright (c) 2006 Marcin Juszkiewicz
-+ *
-+ *  Based on Progear LCD driver by M Schacht
-+ *  <mschacht at alumni dot washington dot edu>
-+ *
-+ *  Based on Sharp's Corgi Backlight Driver
-+ *  Based on Backlight Driver for HP Jornada 680
-+ *
-+ *  This program is free software; you can redistribute it and/or modify
-+ *  it under the terms of the GNU General Public License version 2 as
-+ *  published by the Free Software Foundation.
-+ *
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/kernel.h>
-+#include <linux/init.h>
-+#include <linux/platform_device.h>
-+#include <linux/mutex.h>
-+#include <linux/fb.h>
-+#include <linux/backlight.h>
-+#include <linux/pci.h>
-+#include <asm/uaccess.h>
-+
-+#define PMU_LPCR               0xB0
-+#define SB_MPS1                0x61
-+#define HW_LEVEL_MAX           0x77
-+#define HW_LEVEL_MIN           0x4f
-+
-+static int progearbl_intensity;
-+static struct backlight_properties progearbl_data;
-+static struct backlight_device *progear_backlight_device;
-+
-+static struct pci_dev *pmu_dev = NULL;
-+static struct pci_dev *sb_dev = NULL;
-+
-+static int progearbl_send_intensity(struct backlight_device *bd)
-+{
-+       int intensity = bd->props->brightness;
-+
-+       if (bd->props->power != FB_BLANK_UNBLANK)
-+               intensity = 0;
-+       if (bd->props->fb_blank != FB_BLANK_UNBLANK)
-+               intensity = 0;
-+
-+       pci_write_config_byte(pmu_dev, PMU_LPCR, intensity + HW_LEVEL_MIN);
-+
-+       progearbl_intensity = intensity;
-+
-+       return 0;
-+}
-+
-+static int progearbl_get_intensity(struct backlight_device *bd)
-+{
-+       return progearbl_intensity;
-+}
-+
-+static int progearbl_set_intensity(struct backlight_device *bd)
-+{
-+       progearbl_send_intensity(progear_backlight_device);
-+
-+       return 0;
-+}
-+
-+static struct backlight_properties progearbl_data = {
-+       .owner = THIS_MODULE,
-+       .get_brightness = progearbl_get_intensity,
-+       .update_status = progearbl_set_intensity,
-+};
-+
-+static int progearbl_probe(struct platform_device *pdev)
-+{
-+       u8 temp;
-+
-+       pmu_dev = pci_get_device(PCI_VENDOR_ID_AL, PCI_DEVICE_ID_AL_M7101, 0);
-+       if (!pmu_dev) {
-+               printk("ALI M7101 PMU not found.\n");
-+               return -ENODEV;
-+       }
-+
-+       sb_dev = pci_get_device(PCI_VENDOR_ID_AL, PCI_DEVICE_ID_AL_M1533, 0);
-+       if (!sb_dev) {
-+               printk("ALI 1533 SB not found.\n");
-+               pci_dev_put(pmu_dev);
-+               return -ENODEV;
-+       }
-+
-+       /*     Set SB_MPS1 to enable brightness control. */
-+       pci_read_config_byte(sb_dev, SB_MPS1, &temp);
-+       pci_write_config_byte(sb_dev, SB_MPS1, temp | 0x20);
-+
-+       progear_backlight_device = backlight_device_register("progear-bl",
-+			   &pdev->dev, NULL, &progearbl_data);
-+       if (IS_ERR(progear_backlight_device))
-+               return PTR_ERR(progear_backlight_device);
-+
-+       progearbl_data.power = FB_BLANK_UNBLANK;
-+       progearbl_data.brightness = HW_LEVEL_MAX - HW_LEVEL_MIN;
-+       progearbl_data.max_brightness = HW_LEVEL_MAX - HW_LEVEL_MIN;
-+       progearbl_send_intensity(progear_backlight_device);
-+
-+       return 0;
-+}
-+
-+static int progearbl_remove(struct platform_device *dev)
-+{
-+       backlight_device_unregister(progear_backlight_device);
-+
-+       return 0;
-+}
-+
-+static struct platform_driver progearbl_driver = {
-+       .probe = progearbl_probe,
-+       .remove = progearbl_remove,
-+       .driver = {
-+                  .name = "progear-bl",
-+                  },
-+};
-+
-+static struct platform_device *progearbl_device;
-+
-+static int __init progearbl_init(void)
-+{
-+       int ret = platform_driver_register(&progearbl_driver);
-+       if (!ret) {
-+               progearbl_device = platform_device_alloc("progear-bl", -1);
-+               if (!progearbl_device)
-+                       return -ENOMEM;
-+
-+               ret = platform_device_add(progearbl_device);
-+
-+               if (ret) {
-+                       platform_device_put(progearbl_device);
-+                       platform_driver_unregister(&progearbl_driver);
-+               }
-+       }
-+       return ret;
-+}
-+
-+static void __exit progearbl_exit(void)
-+{
-+       pci_dev_put(pmu_dev);
-+       pci_dev_put(sb_dev);
-+
-+       platform_device_unregister(progearbl_device);
-+       platform_driver_unregister(&progearbl_driver);
-+}
-+
-+module_init(progearbl_init);
-+module_exit(progearbl_exit);
-+
-+MODULE_AUTHOR("Marcin Juszkiewicz <linux@hrw.one.pl>");
-+MODULE_DESCRIPTION("ProGear Backlight Driver");
-+MODULE_LICENSE("GPL");
-Index: linux-2.6.20/drivers/video/backlight/Makefile
-===================================================================
---- linux-2.6.20.orig/drivers/video/backlight/Makefile	2007-02-04 19:44:54.000000000 +0100
-+++ linux-2.6.20/drivers/video/backlight/Makefile	2007-02-05 16:13:13.000000000 +0100
-@@ -5,3 +5,4 @@
- obj-$(CONFIG_BACKLIGHT_CORGI)	+= corgi_bl.o
- obj-$(CONFIG_BACKLIGHT_HP680)	+= hp680_bl.o
- obj-$(CONFIG_BACKLIGHT_LOCOMO)	+= locomolcd.o
-+obj-$(CONFIG_BACKLIGHT_PROGEAR) += progear_bl.o
+	Gerhard
 
 
--- 
-JID: hrw-jabber.org
-OpenEmbedded developer/consultant
+--
+Gerhard Mack
 
-   Programming consists of 50% planning, 50% coding and 30% mathematics
+gmack@innerfire.net
 
-
+<>< As a computer I find your faith in technology amusing.
