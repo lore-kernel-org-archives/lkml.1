@@ -1,57 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933122AbXBFSi5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965041AbXBFSjS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933122AbXBFSi5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 13:38:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933177AbXBFSi5
+	id S965041AbXBFSjS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 13:39:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964784AbXBFSjS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 13:38:57 -0500
-Received: from outbound-blu.frontbridge.com ([65.55.251.16]:42204 "EHLO
-	outbound7-blu-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933122AbXBFSi4 convert rfc822-to-8bit
+	Tue, 6 Feb 2007 13:39:18 -0500
+Received: from web26913.mail.ukl.yahoo.com ([217.146.177.80]:24264 "HELO
+	web26913.mail.ukl.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S965244AbXBFSjQ convert rfc822-to-8bit
 	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 13:38:56 -0500
-X-BigFish: VP
-X-Server-Uuid: 5FC0E2DF-CD44-48CD-883A-0ED95B391E89
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Tue, 6 Feb 2007 13:39:16 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.fr;
+  h=X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=BHWTJ26klQh3ED80GkugnE1I0XWmloUmGOKWR7BXQ9Ivteyc0z/sU/h2tiyuksETu/KE4Ru6foFEo2cUrhoJDmtRmW/mKCR62pDG7VC6NtDc3JAEcsWpGIFP53eLtv3NSLQBNTVGgpei8/VD1ev8t6rbS0sQjpvzbgG5w6iiWEI=;
+X-YMail-OSG: HEr5QXgVM1miqSf8skX9DwHA5Q7MiRFIHIz7hwB4NSPZjew3HPLJpl.VlfIq_5M90RbRQqRhwGLLUl3fHCehqNhy1EevamAeSMj7rl44sBGDTPNvFcG2Fglam1Ebny6zGerQOwWo3LrrsALZw0nctdCGOWQcEmIVO4JOmfkbyKAxYI640NGt80kuVg--
+X-Mailer: YahooMailRC/368.3 YahooMailWebService/0.6.132.7
+Date: Tue, 6 Feb 2007 18:39:11 +0000 (GMT)
+From: Etienne Lorrain <etienne_lorrain@yahoo.fr>
+Subject: Re : Re : [PATCH] Compressed ia32 ELF file generation for loading by Gujin 1/3
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, vgoyal@in.ibm.com,
+       linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Subject: RE: Slower CPU frequency reported by the kernel
-Date: Tue, 6 Feb 2007 12:38:11 -0600
-Message-ID: <1449F58C868D8D4E9C72945771150BDFD965A1@SAUSEXMB1.amd.com>
-In-Reply-To: <eq1ukv$p21$1@sea.gmane.org>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Slower CPU frequency reported by the kernel
-Thread-Index: AcdHjmzID9dhgXb2QoehmN2NNmIZ1ACj00hw
-References: <38b2ab8a0702020311o54789ef6xff819dc3b492b005@mail.gmail.com>
- <eq1ukv$p21$1@sea.gmane.org>
-From: "Langsdorf, Mark" <mark.langsdorf@amd.com>
-To: lnx.tmp@gmail.com, linux-kernel@vger.kernel.org
-X-OriginalArrivalTime: 06 Feb 2007 18:38:11.0643 (UTC)
- FILETIME=[F44B48B0:01C74A1D]
-X-WSS-ID: 69D6149E2MC7262044-01-01
-Content-Type: text/plain;
- charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Transfer-Encoding: 8BIT
+Message-ID: <988792.74810.qm@web26913.mail.ukl.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > I'm using a PC with AMD 64 3000+ cpu which is theoricaly running at
-> > 2Ghz. But when looking at /proc/cpuinfo, the kernel reports that it
-> > runs only at 1Ghz:
-> > ...
-> > What's going wrong ?
+Eric W. Biederman wrote:
+> Etienne Lorrain <etienne_lorrain@yahoo.fr> writes:
+> >  New features are more that this real-mode function can return an error
+> >  to the bootloader to tell something to the user, so the user can select
+> >  another kernel with the right processor, another video mode... with
+> >  clean error messages - not a crash dump because this assembly
+> >  instruction is not for that processor.
+>
+> Having an error handling compatibility that is backwards compatible sounds
+> interesting.
+
+ Well, if the function called at offset 0 in the real-mode section return
+ non zero, that is probably an error - that is Gujin interface, but do not ask
+ me to change other bootloaders to handle that.
+ This function is called with few parameters, one is a string pointer
+ if the function do not want to print the problem report itself.
+ The function is called with an offset of zero in its own intel segment.
+
+> >   I am still saying that the bootloader knows the root filesystem to
+> >  be used by the kernel it loads, and that ELF is a clean format to
+> >  store different sections to be loaded into memory at predefined
+> >  addresses.
 > 
-> Do you have feature called "Cool N' Quiet" enabled in BIOS?
-> I had the same problem and disabling the feature the problem resolved.
+> Yes.  Although when you think sections instead of segments I'm a little
+> worried.
 
-Linux reports the frequency the processor is currently running at.
-Cool N' Quiet is a feature that allows the processor to run at a
-lower frequency and voltage when it is idle, thereby saving you
-power and letting your fans run slower and quieter.  Don't turn it
-off.
+  Well, for my defense, if Gujin do not find the real mode code in the program
+ header it search for it in the section table, if the program header cannot be
+ modified for some reason. There may be some issues if that ELF file is
+ "stripped" but it seems to work on my side.
 
--Mark Langsdorf
-AMD, Inc.
+> >  Also there isn't any more kernel size limit.
+>
+> I think as HPA points out we have gotten past that a long time
+> ago with the bzImage format.
+
+  There was still a test not that long ago (in the code I am not executing) - but
+ I was wrong to bring this point forward.
+
+> With the right delicacy, and preserving backwards compatibility
+> with existing bootloaders I think we can achieve things.
+
+  Well, you can generate with the proposed patch and boot with SYSLINUX,
+ Grub and LILO, but trying to clean Linux real-mode code is where I begun.
+
+> The big issue is that sometimes bootloaders are a little bit brittle.
+> Eric
+
+  I like to think mine is more stable - maybe I am a dreamer...
+  I do not compete on network booting neither.
+
+  Etienne.
 
 
+	
+
+	
+		
+___________________________________________________________________________ 
+Découvrez une nouvelle façon d'obtenir des réponses à toutes vos questions ! 
+Profitez des connaissances, des opinions et des expériences des internautes sur Yahoo! Questions/Réponses 
+http://fr.answers.yahoo.com
