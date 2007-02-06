@@ -1,79 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751734AbXBFLlK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751685AbXBFLpJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751734AbXBFLlK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 06:41:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751708AbXBFLlJ
+	id S1751685AbXBFLpJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 06:45:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751749AbXBFLpJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 06:41:09 -0500
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:55752 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751685AbXBFLlH convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 06:41:07 -0500
-Date: Tue, 6 Feb 2007 12:39:46 +0100
-From: =?ISO-8859-1?Q?S=E9bastien_Dugu=E9?= <sebastien.dugue@bull.net>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
-       linux-aio <linux-aio@kvack.org>, Bharata B Rao <bharata@in.ibm.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
-       Badari Pulavarty <pbadari@us.ibm.com>,
-       Jean Pierre Dion <jean-pierre.dion@bull.net>
-Subject: Re: [PATCH -mm][AIO] AIO completion signal notification fixes and
- cleanups
-Message-ID: <20070206123946.401bf57f@frecb000686>
-In-Reply-To: <20070206110539.GA129@tv-sign.ru>
-References: <20070201102252.240130c6@frecb000686>
-	<20070201103053.64489048@frecb000686>
-	<20070202180039.GA658@tv-sign.ru>
-	<20070205131839.6f601c3e@frecb000686>
-	<20070205134314.GA283@tv-sign.ru>
-	<20070205170056.6a29b19b@frecb000686>
-	<20070205171335.GA528@tv-sign.ru>
-	<20070206102253.20b121ae@frecb000686>
-	<20070206110539.GA129@tv-sign.ru>
-X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 06/02/2007 12:42:09,
-	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 06/02/2007 12:42:10,
-	Serialize complete at 06/02/2007 12:42:10
-Content-Transfer-Encoding: 8BIT
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 6 Feb 2007 06:45:09 -0500
+Received: from cacti.profiwh.com ([85.93.165.66]:33506 "EHLO cacti.profiwh.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751685AbXBFLpH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Feb 2007 06:45:07 -0500
+Message-ID: <45C86A57.4070308@gmail.com>
+Date: Tue, 06 Feb 2007 12:45:27 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0b2 (X11/20070116)
+MIME-Version: 1.0
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: "Cyrill V. Gorcunov" <gorcunov@gmail.com>, Sam Creasey <sammy@sammy.net>,
+       linux-kernel-list <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] SUN3/3X Lance trivial fix
+References: <20070205191321.GA12839@cvg> <45C8683C.1070409@gmail.com>
+In-Reply-To: <45C8683C.1070409@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 6 Feb 2007 14:05:39 +0300 Oleg Nesterov <oleg@tv-sign.ru> wrote:
-
-> On 02/06, S?bastien Dugu? wrote:
-> > 
-> > @@ -970,8 +969,14 @@ static long aio_setup_sigevent(struct ai
-> >  	rcu_read_lock();
-> >  	target = sigevent_find_task(&event);
-> >  
-> > -	if (unlikely(!target))
-> > +	if (unlikely(!target)) {
-> > +		/*
-> > +		 * Revert notify to SIGEV_NONE so that really_put_req()
-> > +		 * knows that no ref has been taken on a task.
-> > +		 */
-> > +		notify->notify = SIGEV_NONE;
-> >  		goto out_unlock;
-> > +	}
+Jiri Slaby napsal(a):
+> Cyrill V. Gorcunov napsal(a):
+>> This patch adds checking for allocated DVMA
+>> memory and granted IRQ line.
+>>
+>> Signed-off-by: Cyrill V. Gorcunov <gorcunov@gmail.com>
+>>
+>> ---
+>>
+>>  drivers/net/sun3lance.c |    9 ++++++++-
+>>  1 files changed, 8 insertions(+), 1 deletions(-)
+>>
+>> diff --git a/drivers/net/sun3lance.c b/drivers/net/sun3lance.c
+>> index c62e85d..e4c2c88 100644
+>> --- a/drivers/net/sun3lance.c
+>> +++ b/drivers/net/sun3lance.c
+>> @@ -336,13 +336,20 @@ static int __init lance_probe( struct net_device 
+>> *dev)
+>>  
+>>      /* XXX - leak? */
+>>      MEM = dvma_malloc_align(sizeof(struct lance_memory), 0x10000);
+>> +    if (MEM == NULL) {
+>> +        printk(KERN_WARNING "SUN3 Lance couldn't allocate DVMA 
+>> memory\n");
+>> +        return 0;
+>> +    }
+>>  
+>>      lp->iobase = (volatile unsigned short *)ioaddr;
+>>      dev->base_addr = (unsigned long)ioaddr; /* informational only */
 > 
-> Very minor nit, feel free to ignore.
+> But now, if it fails (and you return 0=OK state) these are not assigned 
+
+Ok, 0 is not OK state, I see it now.
+
+> and probably used later.
 > 
-> Isn't it better to move "notify->* = event.*;" down, when we know that
-> target != NULL. Imho, a bit easier to follow. This way we don't need to
-> reset notify->notify = SIGEV_NONE.
-> 
-> aio_setup_sigevent() relies on the fact that ->notify = SIGEV_NONE on
-> entry anyway.
+>>  
+>>      REGA(CSR0) = CSR0_STOP;
+>>  
+>> -    request_irq(LANCE_IRQ, lance_interrupt, IRQF_DISABLED, "SUN3 
+>> Lance", dev);
+>> +    if (request_irq(LANCE_IRQ, lance_interrupt, IRQF_DISABLED, "SUN3 
+>> Lance", dev) < 0) {
+>> +        printk(KERN_WARNING "SUN3 Lance unable to allocate IRQ\n");
 
-  Yep, right, it will make things cleaner.
+But in that case, you want to dvma_free() here?
 
-  Thanks,
+>> +        return 0;
+>> +    }
+>>      dev->irq = (unsigned short)LANCE_IRQ;
 
-  Sébastien.
+regards,
+-- 
+http://www.fi.muni.cz/~xslaby/            Jiri Slaby
+faculty of informatics, masaryk university, brno, cz
+e-mail: jirislaby gmail com, gpg pubkey fingerprint:
+B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
