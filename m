@@ -1,52 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751598AbXBFI3K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751614AbXBFIbP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751598AbXBFI3K (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 03:29:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751626AbXBFI3K
+	id S1751614AbXBFIbP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 03:31:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751635AbXBFIbP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 03:29:10 -0500
-Received: from nf-out-0910.google.com ([64.233.182.185]:51071 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751598AbXBFI3H (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 03:29:07 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=lDKz5/XcQPTVfd38Ucnj9CQLiCHhZHw5GZpCZ9L/D3Qdx4T5JBawPDf+kRSSTKPgPSR2S3bZzAw2AxcqJgs1gKkg8VXeR/YqDSf43ALAxO8mSNY8Ir8SQ3+hqKmIwxzBUahpcGybgsa6DFYc/gmSflifSypGlhsKrh/8qD1tt+M=
-Message-ID: <1a297b360702060029q578b6b2anc8658e9d565e54a7@mail.gmail.com>
-Date: Tue, 6 Feb 2007 12:29:03 +0400
-From: "Manu Abraham" <abraham.manu@gmail.com>
-To: "Greg KH" <greg@kroah.com>
-Subject: Re: Free Linux Driver Development!
-Cc: "Pierre Ossman" <drzeus-list@drzeus.cx>, linux-kernel@vger.kernel.org
-In-Reply-To: <20070206064448.GE9071@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 6 Feb 2007 03:31:15 -0500
+Received: from mx2.suse.de ([195.135.220.15]:56432 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751614AbXBFIbO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Feb 2007 03:31:14 -0500
+Date: Tue, 6 Feb 2007 09:31:03 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Hugh Dickins <hugh@veritas.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Linux Memory Management <linux-mm@kvack.org>,
+       Linux Filesystems <linux-fsdevel@vger.kernel.org>
+Subject: Re: [patch 2/3] fs: buffer don't PageUptodate without page locked
+Message-ID: <20070206083103.GB16965@wotan.suse.de>
+References: <20070206054925.21042.50546.sendpatchset@linux.site> <20070206054947.21042.32493.sendpatchset@linux.site> <20070206002140.4030a11f.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20070130012904.GA9617@kroah.com> <45C62D23.9040307@drzeus.cx>
-	 <20070206064448.GE9071@kroah.com>
+In-Reply-To: <20070206002140.4030a11f.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/6/07, Greg KH <greg@kroah.com> wrote:
-> On Sun, Feb 04, 2007 at 07:59:47PM +0100, Pierre Ossman wrote:
-> > Hi Greg,
-> >
-> > Although I am a bit of a cynic, I really hope that this endeavor works
-> > the way you hope.
-> >
-> > I'd also like to offer my services to this quest of yours. If you get
-> > any SD, MMC or SDIO requests, feel free to pass them along to me. I am
-> > not a big fan of debug-by-email though, so I'd prefer vendors who either
-> > can provide samples or where the hardware is cheap and freely available
-> > so I can just go out and by one.
->
-> Great, thanks for letting me know, I've added you to the list.
+On Tue, Feb 06, 2007 at 12:21:40AM -0800, Andrew Morton wrote:
+> On Tue,  6 Feb 2007 09:02:23 +0100 (CET) Nick Piggin <npiggin@suse.de> wrote:
+> 
+> > __block_write_full_page is calling SetPageUptodate without the page locked.
+> > This is unusual, but not incorrect, as PG_writeback is still set.
+> > 
+> > However with the previous patch, this is now a problem: so don't bother
+> > setting the page uptodate in this case (it is weird that the write path
+> > does such a thing anyway). Instead just leave it to the read side to bring
+> > the page uptodate when it notices that all buffers are uptodate.
+> > 
+> > Signed-off-by: Nick Piggin <npiggin@suse.de>
+> > 
+> > Index: linux-2.6/fs/buffer.c
+> > ===================================================================
+> > --- linux-2.6.orig/fs/buffer.c
+> > +++ linux-2.6/fs/buffer.c
+> > @@ -1679,6 +1679,7 @@ static int __block_write_full_page(struc
+> >  	 */
+> >  	BUG_ON(PageWriteback(page));
+> >  	set_page_writeback(page);
+> > +	unlock_page(page);
+> >  
+> >  	do {
+> >  		struct buffer_head *next = bh->b_this_page;
+> > @@ -1688,7 +1689,6 @@ static int __block_write_full_page(struc
+> >  		}
+> >  		bh = next;
+> >  	} while (bh != head);
+> > -	unlock_page(page);
+> >  
+> >  	err = 0;
+> >  done:
+> 
+> Why this change?  Without looking at it too hard, it seems that if
+> submit_bh() completes synchronously, this thread can end up playing with
+> the buffers on a non-locked, non-PageWriteback page.  Someone else could
+> whip the buffers away and oops?
 
-for any DVB/DAB/DMB (PCI based) devices, if any vendors would like to
-offer sample device and specs, would like to join the bandwagon.
+Hmm, it definitely shouldn't be there, it leaked in from another patch
+to bring partiy with the error handling...
 
-regards,
-manu
+Here is an updated patch.
+
+--
+
+__block_write_full_page is calling SetPageUptodate without the page locked.
+This is unusual, but not incorrect, as PG_writeback is still set.
+
+However with the previous patch, this is now a problem: so don't bother
+setting the page uptodate in this case (it is weird that the write path
+does such a thing anyway). Instead just leave it to the read side to bring
+the page uptodate when it notices that all buffers are uptodate.
+
+Signed-off-by: Nick Piggin <npiggin@suse.de>
+
+Index: linux-2.6/fs/buffer.c
+===================================================================
+--- linux-2.6.orig/fs/buffer.c
++++ linux-2.6/fs/buffer.c
+@@ -1698,17 +1698,8 @@ done:
+ 		 * clean.  Someone wrote them back by hand with
+ 		 * ll_rw_block/submit_bh.  A rare case.
+ 		 */
+-		int uptodate = 1;
+-		do {
+-			if (!buffer_uptodate(bh)) {
+-				uptodate = 0;
+-				break;
+-			}
+-			bh = bh->b_this_page;
+-		} while (bh != head);
+-		if (uptodate)
+-			SetPageUptodate(page);
+ 		end_page_writeback(page);
++
+ 		/*
+ 		 * The page and buffer_heads can be released at any time from
+ 		 * here on.
