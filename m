@@ -1,70 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752287AbXBFTqS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752295AbXBFT4q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752287AbXBFTqS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 14:46:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752288AbXBFTqS
+	id S1752295AbXBFT4q (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 14:56:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752284AbXBFT4q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 14:46:18 -0500
-Received: from mx2.suse.de ([195.135.220.15]:34498 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752284AbXBFTqQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 14:46:16 -0500
-From: Neil Brown <neilb@suse.de>
-To: "Yu-Chen Wu" <g944370@oz.nthu.edu.tw>
-Date: Wed, 7 Feb 2007 06:45:41 +1100
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 6 Feb 2007 14:56:46 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.158]:46913 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751753AbXBFT4p (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Feb 2007 14:56:45 -0500
+Subject: Re: 2.6.20-rc6-mm3
+From: Daniel Walker <dwalker@mvista.com>
+Reply-To: dwalker@mvista.com
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org, mingo@elte.hu
+In-Reply-To: <1170788870.3785.9.camel@chaos>
+References: <20070129204528.eb8d695e.akpm@osdl.org>
+	 <1170777802.9781.353.camel@imap.mvista.com> <1170786992.3785.0.camel@chaos>
+	 <1170787543.9781.362.camel@imap.mvista.com> <1170788870.3785.9.camel@chaos>
+Content-Type: text/plain
+Date: Tue, 06 Feb 2007 11:55:39 -0800
+Message-Id: <1170791739.3455.3.camel@dwalker1>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
 Content-Transfer-Encoding: 7bit
-Message-ID: <17864.56037.855359.839197@notabene.brown>
-Cc: <linux-kernel@vger.kernel.org>, <linux-raid@vger.kernel.org>
-Subject: Re: Could "bio_vec" be referenced any time?
-In-Reply-To: message from Yu-Chen Wu on Tuesday February 6
-References: <005a01c74a01$ec1832a0$0100a8c0@sslabmayasky>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday February 6, g944370@oz.nthu.edu.tw wrote:
-> Hi all,
-> 	I write a module that creates a kernel thread to show the BIOs from
-> MD modules.
-> 	The kernel thread will call show_bio() when md passing a BIO to my
-> module,else sleep.
-> 	Sometimes, show_bio() continues working successfully ,but it
-> somtimes makes "general protection fault".
-> 	The show_bio() always works when I comment the
-> "bio_for_each_segment" loop. 
-> 	Is the zone I comment the cause of the fault? 
-> 	As above, I consider it's the main problem.Also, I strongly want to
-> know your opinions.Thank you for help.
+On Tue, 2007-02-06 at 20:07 +0100, Thomas Gleixner wrote:
+> On Tue, 2007-02-06 at 10:45 -0800, Daniel Walker wrote:
+> > > > -rt tree also .. I haven't done a bisect , but I'm assuming this is HRT
+> > > > related ..
+> > > 
+> > > And why should it increment ? Is there a rule that it has to ?
+> > 
+> > I don't know .. I would imagine some users might look at it and wonder
+> > why there timer isn't ticking (I know it actually is ticking , but they
+> > don't), when it has is every other kernel. 
 > 
-> 	THX
+> What kind of artificial problem are you creating here ?
 
-Without seeing how the bio gets to show_bio it is hard to be certain,
-but my guess would be that by the time show_bio tries to inspect the
-bio, the IO request involving it has already completed and the bio has
-been freed, so you are accessing freed memory.
+I'm not trying to create anything .. However, as I said before
+the /proc/interrupts "timer" entry doesn't work the same as it has in
+other kernels.
 
-> Feb  6 22:00:28 RAID-SUSE kernel: Code: 8b 00 f6 c4 08 74 0e 48 c7 c7 14 9c
-> 45 88 31 c0 e8 b5 bf e2
+If you think that isn't a problem then explain why ..
 
-If you feed this line into ksymoops you get:
+> > We could just remove the timer entry .
+> 
+> No we can't. The timer interrupt is setup and it does not go away, as we
+> keep the PIT as a backup for the broken lapics.
 
-Code;  0000000000000000 Before first symbol
-   0:   8b 00                     mov    (%rax),%eaxC
-...
+Ok, how about adding the interrupts to the list which are driving the
+timer ?
 
-so it is trying to dereference $rax.
+Daniel
 
-> Feb  6 22:00:28 RAID-SUSE kernel: RAX: 6b6b6b6b6b6b6b6b RBX:
-> ffff810037f52668 RCX: 0000000000040000
-
-Which contains 6b6b6b6b6b6b6b6b.
-which is lots of copies of 'POISON_FREE' (defined in
-include/linux/poison.h) which makes it really look like that memory
-has already been freed.
-
-NeilBrown
