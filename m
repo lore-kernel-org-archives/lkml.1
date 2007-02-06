@@ -1,55 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965284AbXBFVrn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965534AbXBFVtg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965284AbXBFVrn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 16:47:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965534AbXBFVrn
+	id S965534AbXBFVtg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 16:49:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965540AbXBFVtg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 16:47:43 -0500
-Received: from sp604003mt.neufgp.fr ([84.96.92.56]:57457 "EHLO smTp.neuf.fr"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S965284AbXBFVrm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 16:47:42 -0500
-Date: Tue, 06 Feb 2007 22:46:25 +0100
-From: Eric Dumazet <dada1@cosmosbay.com>
-Subject: Re: [PATCH 2 of 4] Introduce i386 fibril scheduling
-In-reply-to: <20070206.133140.91442326.davem@davemloft.net>
-To: David Miller <davem@davemloft.net>
-Cc: torvalds@linux-foundation.org, kent.overstreet@gmail.com,
-       davidel@xmailserver.org, zach.brown@oracle.com, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, linux-aio@kvack.org, suparna@in.ibm.com,
-       bcrl@kvack.org
-Message-id: <45C8F731.4070007@cosmosbay.com>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 8BIT
-References: <Pine.LNX.4.64.0702061238300.8424@woody.linux-foundation.org>
- <20070206.131631.82049180.davem@davemloft.net>
- <Pine.LNX.4.64.0702061325380.8424@woody.linux-foundation.org>
- <20070206.133140.91442326.davem@davemloft.net>
-User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
+	Tue, 6 Feb 2007 16:49:36 -0500
+Received: from terminus.zytor.com ([192.83.249.54]:55870 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965534AbXBFVtf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Feb 2007 16:49:35 -0500
+Message-ID: <45C8F7E6.6060009@zytor.com>
+Date: Tue, 06 Feb 2007 13:49:26 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070102)
+MIME-Version: 1.0
+To: Markus Rechberger <markus.rechberger@amd.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [patch] x86-64 ext2/ext3 datestamp problem
+References: <45C8F419.5040103@amd.com>
+In-Reply-To: <45C8F419.5040103@amd.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller a écrit :
-> From: Linus Torvalds <torvalds@linux-foundation.org>
-> Date: Tue, 6 Feb 2007 13:28:34 -0800 (PST)
+Markus Rechberger wrote:
+> Hi,
 > 
->> Yeah, in 1% of all cases it will block, and you'll want to wait for them. 
->> Maybe the kevent queue works then, but if it needs any more setup than the 
->> nonblocking case, that's a big no.
+> there is an issue with ext2/ext3 date stamps, if someone creates a file
+> with a timestamp between 1902 and 1970(epoch 0) it will overflow and
+> result in a higher date than 2038.
 > 
-> So the idea is to just run it to completion if it won't block and use
-> a fibril if it would?
+> $ touch --date "1905-01-01" test
+> $ ls -lah test
+> -rw-r--r-- 1 root root 0 Jan  1  1905 test (this is a cached value here)
+> (remount the partition/clear the cache)
+> $ ls -lah test
+> -rw-r--r-- 1 root root 0 Feb  6  2041 test
 > 
-> kevent could support something like that too.
+> 10000101101111001100011001110000 .. -2051226000 (1905)
+> 10000101101111001100011001110000 .. 2243741296 (2041)
+> 
+> this was tested against linus git tree
+> 
 
-It seems to me that kevent was designed to handle many events sources on a 
-single endpoint, like epoll (but with different internals). Typical load of 
-thousand of sockets/pipes providers glued into one queue.
+I believe the timestamp fields in ext2/ext3 are defined as unsigned.
 
-In the fibril case, I guess a thread wont have many fibrils lying around...
-
-Also, kevent needs a fd lookup/fput to retrieve some queued events, and that 
-may be a performance hit for the AIO case, (fget/fput in a multi-threaded 
-program cost some atomic ops)
-
+	-hpa
