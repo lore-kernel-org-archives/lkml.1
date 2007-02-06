@@ -1,45 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933195AbXBFSrb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752229AbXBFSxD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933195AbXBFSrb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 13:47:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933199AbXBFSrb
+	id S1752229AbXBFSxD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 13:53:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933200AbXBFSxD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 13:47:31 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.158]:28223 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933195AbXBFSra (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 13:47:30 -0500
-Subject: Re: 2.6.20-rc6-mm3
-From: Daniel Walker <dwalker@mvista.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org, mingo@elte.hu
-In-Reply-To: <1170786992.3785.0.camel@chaos>
-References: <20070129204528.eb8d695e.akpm@osdl.org>
-	 <1170777802.9781.353.camel@imap.mvista.com> <1170786992.3785.0.camel@chaos>
-Content-Type: text/plain
-Date: Tue, 06 Feb 2007 10:45:43 -0800
-Message-Id: <1170787543.9781.362.camel@imap.mvista.com>
+	Tue, 6 Feb 2007 13:53:03 -0500
+Received: from xenotime.net ([66.160.160.81]:56721 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752284AbXBFSxA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Feb 2007 13:53:00 -0500
+Date: Tue, 6 Feb 2007 10:49:34 -0800
+From: Randy Dunlap <rdunlap@xenotime.net>
+To: "Mike Frysinger" <vapier.adi@gmail.com>
+Cc: "Wu, Bryan" <Bryan.Wu@analog.com>, akpm@osdl.org, arnd@arndb.de,
+       rdreier@cisco.com, castet.matthieu@free.fr,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] Blackfin: architecture patch against Linux kernel
+ 2.6.20
+Message-Id: <20070206104934.40cf0ade.rdunlap@xenotime.net>
+In-Reply-To: <8bd0f97a0702051759n1e5217fcv18a51aa8125d36f5@mail.gmail.com>
+References: <D3664A3D9376A94BB603EE19E4AA246D10D64758@nwd2exm4.ad.analog.com>
+	<20070205173428.9f2109a4.rdunlap@xenotime.net>
+	<8bd0f97a0702051759n1e5217fcv18a51aa8125d36f5@mail.gmail.com>
+Organization: YPO4
+X-Mailer: Sylpheed 2.3.0 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-02-06 at 19:36 +0100, Thomas Gleixner wrote:
-> On Tue, 2007-02-06 at 08:03 -0800, Daniel Walker wrote:
-> > It appears there a problem with the /proc/interrupts entry for
-> > "timer" .. It doesn't increment anymore .. This problem exists in the
-> > -rt tree also .. I haven't done a bisect , but I'm assuming this is HRT
-> > related ..
+On Mon, 5 Feb 2007 20:59:20 -0500 Mike Frysinger wrote:
+
+> On 2/5/07, Randy Dunlap <rdunlap@xenotime.net> wrote:
+> > I can't access this patch file.  (no, don't attach it for the mailing
+> > list)
 > 
-> And why should it increment ? Is there a rule that it has to ?
+> please try this:
+> http://blackfin.uclinux.org/gf/download/frsrelease/25/2501/blackfin-arch-linux-2.6.20.patch
 
-I don't know .. I would imagine some users might look at it and wonder
-why there timer isn't ticking (I know it actually is ticking , but they
-don't), when it has is every other kernel. 
+Yes, that works, thanks.
 
-We could just remove the timer entry .
+> as it gets tweaked, the magic id # gets incremented :/
+> 
+> this URL should contain the latest link:
+> http://blackfin.uclinux.org/gf/project/uclinux-dist/frs/?action=FrsReleaseView&release_id=25
 
-Daniel
 
+---
+~Randy
