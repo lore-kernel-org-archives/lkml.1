@@ -1,53 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752156AbXBFNl1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752180AbXBFNmk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752156AbXBFNl1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 08:41:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752158AbXBFNl1
+	id S1752180AbXBFNmk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 08:42:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752175AbXBFNmk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 08:41:27 -0500
-Received: from ug-out-1314.google.com ([66.249.92.173]:7937 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752156AbXBFNl0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 08:41:26 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=SGB81lnyw9V+x+l/T7mLparvl6fuLlWqQrol05KhifwJzNDRh/M1pzF8mSh6XF7hje5brZgQKLLw8IdW+7HM9bYNQ505qftSpUibaRSBKINYzQwkA4zLAVp6NYi1cGMgCPUt7+6m5ZcbJBWbL1Cgpdq7QOmF+Uega4hp9RW/2fE=
-Message-ID: <b6fcc0a0702060541s4f14f439xe448574ba7e318a5@mail.gmail.com>
-Date: Tue, 6 Feb 2007 16:41:24 +0300
-From: "Alexey Dobriyan" <adobriyan@gmail.com>
+	Tue, 6 Feb 2007 08:42:40 -0500
+Received: from nat-132.atmel.no ([80.232.32.132]:60192 "EHLO relay.atmel.no"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752196AbXBFNmj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Feb 2007 08:42:39 -0500
+Date: Tue, 6 Feb 2007 14:42:30 +0100
+From: Haavard Skinnemoen <hskinnemoen@atmel.com>
 To: Alan <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH] pata_acpi driver
-Cc: linux-kernel@vger.kernel.org, jeff@garzik.org
-In-Reply-To: <20070206134623.0dc3f566@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Re: [PATCH] libata: Fix (hopefully) all the remaining problems with
+ devices failing setup/identify
+Message-ID: <20070206144230.5421c01d@dhcp-252-105.norway.atmel.com>
+In-Reply-To: <20070131172605.2c5dfc78@localhost.localdomain>
+References: <20070131172605.2c5dfc78@localhost.localdomain>
+Organization: Atmel Norway
+X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070206134623.0dc3f566@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/6/07, Alan <alan@lxorguk.ukuu.org.uk> wrote:
-> An ACPI[1] firmware driver for motherboard PATA ports.
+On Wed, 31 Jan 2007 17:26:05 +0000
+Alan <alan@lxorguk.ukuu.org.uk> wrote:
 
-> +int ata_acpi_stm(const struct ata_port *ap, void *handle, struct acpi_gtm
-> *stm)
-> +{
-> +	acpi_status status;
-> +	struct acpi_object_list         input;
-> +	union acpi_object               in_params[3];
-> +
-> +	in_params[0].type = ACPI_TYPE_BUFFER;
-> +	in_params[0].buffer.length = sizeof(struct acpi_gtm);
-> +	in_params[0].buffer.pointer = (u8 *)stm;
-> +	/* Buffers for id may need byteswapping ? */
-> +	in_params[1].type = ACPI_TYPE_BUFFER;
-> +	in_params[1].buffer.length = 512;
-> +	in_params[1].buffer.pointer = (u8 *)ap->device[0].id;
-> +	in_params[2].type = ACPI_TYPE_BUFFER;
-> +	in_params[2].buffer.length = 512;
-> +	in_params[1].buffer.pointer = (u8 *)ap->device[1].id;
+> Two fixes in this test patch. One of them allows old CF cards to refuse
+> pio mode setting, and one to wait for the drive to settle after a set
+> features changes the speed settings, which is based upon the workarounds
+> used by drivers/ide.
+> 
+> Please test and report back if you have an afflicted system. This patch
+> isn't for merging just testing.
 
-Must be a typo. [2]
+Just ran into the CF problem you describe when implementing support for
+CompactFlash on AVR32 using an old 32 MB TwinMos card. Works fine with
+this patch applied; without it, libata gives up after failing to set
+xfermode (err_mask=0x1).
+
+> The CF card fix will still display errors when the card works (got fixes
+> for that once I know the cure works) but should then be found/usable.
+
+Actually, I don't see any errors, but the card comes up in PIO0 mode
+(which is correct behaviour as far as I can tell):
+
+ata1: PATA max PIO0 cmd 0xA4800000 ctl 0xA480000E bmdma 0x0 irq 67
+scsi0 : pata_pcmcia
+ata1.00: CFA, max PIO0, 62592 sectors: LBA
+ata1.00: ata1: dev 0 multi count 0
+ata1.00: configured for PIO0
+scsi 0:0:0:0: Direct-Access     ATA      32MB CHH         Rev  PQ: 0 ANSI: 5
+
+Thanks for the patch. I would probably have spent a long time debugging
+this without it.
+
+Haavard
