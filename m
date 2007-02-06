@@ -1,71 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965005AbXBFQ0d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751897AbXBFQaV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965005AbXBFQ0d (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 11:26:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965017AbXBFQ0d
+	id S1751897AbXBFQaV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 11:30:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752157AbXBFQaV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 11:26:33 -0500
-Received: from outbound-cpk.frontbridge.com ([207.46.163.16]:32677 "EHLO
-	outbound2-cpk-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S965005AbXBFQ0c (ORCPT
+	Tue, 6 Feb 2007 11:30:21 -0500
+Received: from vms046pub.verizon.net ([206.46.252.46]:46300 "EHLO
+	vms046pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751897AbXBFQaU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 11:26:32 -0500
-X-BigFish: VP
-X-Server-Uuid: 5FC0E2DF-CD44-48CD-883A-0ED95B391E89
-Date: Tue, 6 Feb 2007 17:25:42 +0100
-From: "Andreas Herrmann" <andreas.herrmann3@amd.com>
-To: "Andi Kleen" <ak@suse.de>
-cc: "Jan Beulich" <jbeulich@novell.com>,
-       "Suresh B Siddha" <suresh.b.siddha@intel.com>,
-       "Richard Gooch" <rgooch@safe-mbox.com>, linux-kernel@vger.kernel.org,
-       discuss@x86-64.org
-Subject: Re: [discuss] [patch] mtrr: fix issues with large addresses
-Message-ID: <20070206162542.GJ8665@alberich.amd.com>
-References: <20070205171959.GF8665@alberich.amd.com>
- <200702061045.22966.ak@suse.de> <45C85E41.76E4.0078.0@novell.com>
- <200702061154.57621.ak@suse.de>
-MIME-Version: 1.0
-In-Reply-To: <200702061154.57621.ak@suse.de>
-User-Agent: mutt-ng/devel-r804 (Linux)
-X-OriginalArrivalTime: 06 Feb 2007 16:25:43.0571 (UTC)
- FILETIME=[72DFBE30:01C74A0B]
-X-WSS-ID: 69D6739E2MC7247376-01-01
-Content-Type: text/plain;
- charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
+	Tue, 6 Feb 2007 11:30:20 -0500
+Date: Tue, 06 Feb 2007 11:30:09 -0500
+From: Gene Heskett <gene.heskett@verizon.net>
+Subject: Re: Free Linux Driver Development!
+In-reply-to: <8355959a0702060537jbd96e96sc10772f72f9491b3@mail.gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: "Sunil Naidu" <akula2.shark@gmail.com>, "Stefan Seyfried" <seife@suse.de>,
+       "Adrian Bunk" <bunk@stusta.de>, "Greg KH" <greg@kroah.com>,
+       "Roland Dreier" <rdreier@cisco.com>
+Message-id: <200702061130.10222.gene.heskett@verizon.net>
+Organization: Not detectable
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
+Content-transfer-encoding: 7bit
+Content-disposition: inline
+References: <20070130012904.GA9617@kroah.com> <20070205094947.GA32384@suse.de>
+ <8355959a0702060537jbd96e96sc10772f72f9491b3@mail.gmail.com>
+User-Agent: KMail/1.9.5
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 06, 2007 at 11:54:57AM +0100, Andi Kleen wrote:
-> On Tuesday 06 February 2007 10:53, Jan Beulich wrote:
-> > >> I don't think I remember a restriction here, at least not below 44 bits
-> > >> (that's where pfn-s would need to become 64-bit wide).
-> > >
-> > >The i386 mm code only supports 4 entries in the PGD, so more than 36bit cannot 
-> > >be mapped right now.
-> > 
-> > That has nothing to do with the number of physical address bits.
-> 
-> You couldn't use the memory in any ways.
-> 
-> Anyways I give up -- the check is probably not needed, unless Andreas
-> comes up with a good reason.
+On Tuesday 06 February 2007 08:37, Sunil Naidu wrote:
+>On 2/5/07, Stefan Seyfried <seife@suse.de> wrote:
+>> On Wed, Jan 31, 2007 at 03:14:31AM +0100, Adrian Bunk wrote:
+>> > On Tue, Jan 30, 2007 at 05:24:28PM -0800, Greg KH wrote:
+>>
+>> Wrong. I abandoned all floppy drives some years ago. I'd actually
+>> vote for removing the floppy driver from the kernel completely.
+>
+>I don't think time has come for that yet, still millions of people do
+>use Floppy on Linux ;-)
+>Maybe by 2.6.30 or so...
 
-No, I haven't a good reason to restrict the base address to fewer
-than 44 bits.
+How about not even then?  There are few uses for the floppy drive today 
+within linux, this is true.  BUT, that floppy is often the only was 
+software can be gotten from a vintage computer and published, or from a 
+publishing site back to that vintage computer.  Please don't take away 
+our last data path to what is to many of us, a very old and trusted dear 
+friend.  OS9, and later Nitros9, on a TRS-80 Color Computer, was my 
+teacher about unix-like systems, running a multiuser/multitasking 
+operating system on a machine with only 64k of ram, although my current 
+machine has 2 megs in it.  And I occasionally still miss some of the 
+things I could do on that little machine that I have not been able to do 
+since, like start an assembly that generates an output listing, and 
+switch to another monitor or window & list that listing to the screen a 
+maximum of 256 bytes behind the writing of that listing to the disk file 
+it was going to.
 
-So the question is, should I completely remove that check or adapt it
-to check for 44 bit instead of 36 bit?
-
-
-Regards,
-
-Andreas
+The floppy may not be usefull to linux anymore, but in support of other 
+older formats, it is priceless.
+ 
+>> Stefan Seyfried
+>
+>~Akula2
+>-
+>To unsubscribe from this list: send the line "unsubscribe linux-kernel"
+> in the body of a message to majordomo@vger.kernel.org
+>More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>Please read the FAQ at  http://www.tux.org/lkml/
 
 -- 
-AMD Saxony, Dresden, Germany
-Operating System Research Center
-
-
-
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+Yahoo.com and AOL/TW attorneys please note, additions to the above
+message by Gene Heskett are:
+Copyright 2007 by Maurice Eugene Heskett, all rights reserved.
