@@ -1,103 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933284AbXBFVjs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933289AbXBFVlL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933284AbXBFVjs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 16:39:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933252AbXBFVjs
+	id S933289AbXBFVlL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 16:41:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933252AbXBFVlL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 16:39:48 -0500
-Received: from nf-out-0910.google.com ([64.233.182.188]:49479 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933284AbXBFVjr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 16:39:47 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:mime-version:content-type;
-        b=YN6/QQO2i7PmkUCftUFMVTDpUD/WNcfB+iXFp1Xi2SZ6LIWzqxDjj1tJFQ835vQDKYUurp86MteOHm82pOE8wAhgg9nhTBO38llC0MWXvgy6UMFm86YDZJvBeMyrtuhyfYE44rn0eil5wZN/9GKpQ8OJqKR/W6xsRsEpoJSfeCk=
-Message-ID: <5157576d0702061339w28adbf5fp2dbc5e86661d894@mail.gmail.com>
-Date: Wed, 7 Feb 2007 00:39:45 +0300
-From: "Tomasz Kvarsin" <kvarsin@gmail.com>
-To: "Andrew Morton" <akpm@osdl.org>
-Subject: [PATCH]: warrning fix: unsigned->signed
-Cc: viro@zeniv.linux.org.uk, axboe@kernel.dk, linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_16598_21243532.1170797985949"
+	Tue, 6 Feb 2007 16:41:11 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:60073 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933289AbXBFVlK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Feb 2007 16:41:10 -0500
+Date: Tue, 6 Feb 2007 22:41:31 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Daniel Walker <dwalker@mvista.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Andrew Morton <akpm@osdl.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: 2.6.20-rc6-mm3
+Message-ID: <20070206214131.GA1176@elte.hu>
+References: <1170786992.3785.0.camel@chaos> <1170787543.9781.362.camel@imap.mvista.com> <1170788870.3785.9.camel@chaos> <1170791739.3455.3.camel@dwalker1> <1170793206.3785.16.camel@chaos> <1170794437.3455.20.camel@dwalker1> <20070206205231.GA25430@elte.hu> <1170795378.3455.31.camel@dwalker1> <20070206210959.GC25430@elte.hu> <1170796999.3455.43.camel@dwalker1>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1170796999.3455.43.camel@dwalker1>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -5.3
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-5.3 required=5.9 tests=ALL_TRUSTED,BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-3.3 ALL_TRUSTED            Did not pass through any untrusted hosts
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_16598_21243532.1170797985949
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 
-While compiling my code, I always get bunch of warrning from headers,
-here is fix for them:
-__getblk is alawys called with unsigned argument,
-but it takes signed, the same story with __bread,__breadahead and so on.
+* Daniel Walker <dwalker@mvista.com> wrote:
 
-Signed-off-by: Tomasz Kvarsin
+> > we could make this clearer by renaming 'LOC' (which stands for 
+> > 'LOCal timer interupts' and was added [and misnamed] by yours truly 
+> > many moons ago) to 'apic-timer' and 'timer' to 'PIT-timer' but 
+> > /that/ would be more of a userspace visible change than the change 
+> > in the counter rates.
+> 
+> If we change the current "timer" entry to be listed as "lapic-timer" 
+> and not "IO-APIC-edge" (or one of the other names) and replace it with 
+> the count from LOC , [...]
 
-------=_Part_16598_21243532.1170797985949
-Content-Type: application/octet-stream; name=unsigned-fix.patch
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_exuv364w
-Content-Disposition: attachment; filename="unsigned-fix.patch"
+doing that would not fake the old behavior (which is your suggestion), 
+LOC is per CPU, while the PIT timer irq that was there is global.
 
-SW5kZXg6IGxpbnV4LTIuNi4yMC9pbmNsdWRlL2xpbnV4L2J1ZmZlcl9oZWFkLmgKPT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PQotLS0gbGludXgtMi42LjIwLm9yaWcvaW5jbHVkZS9saW51eC9idWZmZXJfaGVhZC5oCisrKyBs
-aW51eC0yLjYuMjAvaW5jbHVkZS9saW51eC9idWZmZXJfaGVhZC5oCkBAIC0xNzIsMTIgKzE3Miwx
-MiBAQCBzdHJ1Y3Qgc3VwZXJfYmxvY2sgKmZyZWV6ZV9iZGV2KHN0cnVjdCBiCiB2b2lkIHRoYXdf
-YmRldihzdHJ1Y3QgYmxvY2tfZGV2aWNlICosIHN0cnVjdCBzdXBlcl9ibG9jayAqKTsKIGludCBm
-c3luY19zdXBlcihzdHJ1Y3Qgc3VwZXJfYmxvY2sgKik7CiBpbnQgZnN5bmNfbm9fc3VwZXIoc3Ry
-dWN0IGJsb2NrX2RldmljZSAqKTsKLXN0cnVjdCBidWZmZXJfaGVhZCAqX19maW5kX2dldF9ibG9j
-ayhzdHJ1Y3QgYmxvY2tfZGV2aWNlICosIHNlY3Rvcl90LCBpbnQpOwotc3RydWN0IGJ1ZmZlcl9o
-ZWFkICogX19nZXRibGsoc3RydWN0IGJsb2NrX2RldmljZSAqLCBzZWN0b3JfdCwgaW50KTsKK3N0
-cnVjdCBidWZmZXJfaGVhZCAqX19maW5kX2dldF9ibG9jayhzdHJ1Y3QgYmxvY2tfZGV2aWNlICos
-IHNlY3Rvcl90LCB1bnNpZ25lZCBpbnQpOworc3RydWN0IGJ1ZmZlcl9oZWFkICogX19nZXRibGso
-c3RydWN0IGJsb2NrX2RldmljZSAqLCBzZWN0b3JfdCwgdW5zaWduZWQgaW50KTsKIHZvaWQgX19i
-cmVsc2Uoc3RydWN0IGJ1ZmZlcl9oZWFkICopOwogdm9pZCBfX2Jmb3JnZXQoc3RydWN0IGJ1ZmZl
-cl9oZWFkICopOwotdm9pZCBfX2JyZWFkYWhlYWQoc3RydWN0IGJsb2NrX2RldmljZSAqLCBzZWN0
-b3JfdCBibG9jaywgaW50IHNpemUpOwotc3RydWN0IGJ1ZmZlcl9oZWFkICpfX2JyZWFkKHN0cnVj
-dCBibG9ja19kZXZpY2UgKiwgc2VjdG9yX3QgYmxvY2ssIGludCBzaXplKTsKK3ZvaWQgX19icmVh
-ZGFoZWFkKHN0cnVjdCBibG9ja19kZXZpY2UgKiwgc2VjdG9yX3QgYmxvY2ssIHVuc2lnbmVkIGlu
-dCBzaXplKTsKK3N0cnVjdCBidWZmZXJfaGVhZCAqX19icmVhZChzdHJ1Y3QgYmxvY2tfZGV2aWNl
-ICosIHNlY3Rvcl90IGJsb2NrLCB1bnNpZ25lZCBpbnQgc2l6ZSk7CiBzdHJ1Y3QgYnVmZmVyX2hl
-YWQgKmFsbG9jX2J1ZmZlcl9oZWFkKGdmcF90IGdmcF9mbGFncyk7CiB2b2lkIGZyZWVfYnVmZmVy
-X2hlYWQoc3RydWN0IGJ1ZmZlcl9oZWFkICogYmgpOwogdm9pZCBGQVNUQ0FMTCh1bmxvY2tfYnVm
-ZmVyKHN0cnVjdCBidWZmZXJfaGVhZCAqYmgpKTsKSW5kZXg6IGxpbnV4LTIuNi4yMC9mcy9idWZm
-ZXIuYwo9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09Ci0tLSBsaW51eC0yLjYuMjAub3JpZy9mcy9idWZmZXIuYworKysgbGlu
-dXgtMi42LjIwL2ZzL2J1ZmZlci5jCkBAIC0xMjgyLDExICsxMjgyLDExIEBAIHN0YXRpYyB2b2lk
-IGJoX2xydV9pbnN0YWxsKHN0cnVjdCBidWZmZXIKICAqIExvb2sgdXAgdGhlIGJoIGluIHRoaXMg
-Y3B1J3MgTFJVLiAgSWYgaXQncyB0aGVyZSwgbW92ZSBpdCB0byB0aGUgaGVhZC4KICAqLwogc3Rh
-dGljIHN0cnVjdCBidWZmZXJfaGVhZCAqCi1sb29rdXBfYmhfbHJ1KHN0cnVjdCBibG9ja19kZXZp
-Y2UgKmJkZXYsIHNlY3Rvcl90IGJsb2NrLCBpbnQgc2l6ZSkKK2xvb2t1cF9iaF9scnUoc3RydWN0
-IGJsb2NrX2RldmljZSAqYmRldiwgc2VjdG9yX3QgYmxvY2ssIHVuc2lnbmVkIGludCBzaXplKQog
-ewogCXN0cnVjdCBidWZmZXJfaGVhZCAqcmV0ID0gTlVMTDsKIAlzdHJ1Y3QgYmhfbHJ1ICpscnU7
-Ci0JaW50IGk7CisJdW5zaWduZWQgaW50IGk7CiAKIAljaGVja19pcnFzX29uKCk7CiAJYmhfbHJ1
-X2xvY2soKTsKQEAgLTEzMTgsNyArMTMxOCw3IEBAIGxvb2t1cF9iaF9scnUoc3RydWN0IGJsb2Nr
-X2RldmljZSAqYmRldiwKICAqIE5VTEwKICAqLwogc3RydWN0IGJ1ZmZlcl9oZWFkICoKLV9fZmlu
-ZF9nZXRfYmxvY2soc3RydWN0IGJsb2NrX2RldmljZSAqYmRldiwgc2VjdG9yX3QgYmxvY2ssIGlu
-dCBzaXplKQorX19maW5kX2dldF9ibG9jayhzdHJ1Y3QgYmxvY2tfZGV2aWNlICpiZGV2LCBzZWN0
-b3JfdCBibG9jaywgdW5zaWduZWQgaW50IHNpemUpCiB7CiAJc3RydWN0IGJ1ZmZlcl9oZWFkICpi
-aCA9IGxvb2t1cF9iaF9scnUoYmRldiwgYmxvY2ssIHNpemUpOwogCkBAIC0xMzQ2LDcgKzEzNDYs
-NyBAQCBFWFBPUlRfU1lNQk9MKF9fZmluZF9nZXRfYmxvY2spOwogICogYXR0ZW1wdCBpcyBmYWls
-aW5nLiAgRklYTUUsIHBlcmhhcHM/CiAgKi8KIHN0cnVjdCBidWZmZXJfaGVhZCAqCi1fX2dldGJs
-ayhzdHJ1Y3QgYmxvY2tfZGV2aWNlICpiZGV2LCBzZWN0b3JfdCBibG9jaywgaW50IHNpemUpCitf
-X2dldGJsayhzdHJ1Y3QgYmxvY2tfZGV2aWNlICpiZGV2LCBzZWN0b3JfdCBibG9jaywgdW5zaWdu
-ZWQgaW50IHNpemUpCiB7CiAJc3RydWN0IGJ1ZmZlcl9oZWFkICpiaCA9IF9fZmluZF9nZXRfYmxv
-Y2soYmRldiwgYmxvY2ssIHNpemUpOwogCkBAIC0xMzYwLDcgKzEzNjAsNyBAQCBFWFBPUlRfU1lN
-Qk9MKF9fZ2V0YmxrKTsKIC8qCiAgKiBEbyBhc3luYyByZWFkLWFoZWFkIG9uIGEgYnVmZmVyLi4K
-ICAqLwotdm9pZCBfX2JyZWFkYWhlYWQoc3RydWN0IGJsb2NrX2RldmljZSAqYmRldiwgc2VjdG9y
-X3QgYmxvY2ssIGludCBzaXplKQordm9pZCBfX2JyZWFkYWhlYWQoc3RydWN0IGJsb2NrX2Rldmlj
-ZSAqYmRldiwgc2VjdG9yX3QgYmxvY2ssIHVuc2lnbmVkIGludCBzaXplKQogewogCXN0cnVjdCBi
-dWZmZXJfaGVhZCAqYmggPSBfX2dldGJsayhiZGV2LCBibG9jaywgc2l6ZSk7CiAJaWYgKGxpa2Vs
-eShiaCkpIHsKQEAgLTEzODAsNyArMTM4MCw3IEBAIEVYUE9SVF9TWU1CT0woX19icmVhZGFoZWFk
-KTsKICAqICBJdCByZXR1cm5zIE5VTEwgaWYgdGhlIGJsb2NrIHdhcyB1bnJlYWRhYmxlLgogICov
-CiBzdHJ1Y3QgYnVmZmVyX2hlYWQgKgotX19icmVhZChzdHJ1Y3QgYmxvY2tfZGV2aWNlICpiZGV2
-LCBzZWN0b3JfdCBibG9jaywgaW50IHNpemUpCitfX2JyZWFkKHN0cnVjdCBibG9ja19kZXZpY2Ug
-KmJkZXYsIHNlY3Rvcl90IGJsb2NrLCB1bnNpZ25lZCBpbnQgc2l6ZSkKIHsKIAlzdHJ1Y3QgYnVm
-ZmVyX2hlYWQgKmJoID0gX19nZXRibGsoYmRldiwgYmxvY2ssIHNpemUpOwogCg==
-------=_Part_16598_21243532.1170797985949--
+But, as per the previous mails, the new behavior is just fine, because 
+/proc/interrupts just reflects reality. And the way the kernel utilizes 
+the hardware has just changed - for the better.
+
+The same happens when say a network driver implements NAPI: the IRQ 
+count goes way, way down. Or if a driver starts supporing MSI - the IRQ 
+line even moves to another one. Do we try to fix those counts up to 
+match the 'previous behavior'? Of course not. What you are suggesting 
+makes no sense, is against current kernel practices - as we pointed it 
+out to you 7 mails ago.
+
+> [...] that would make sense cause that field already changes depending 
+> if you have a io-apic or not ..
+
+(that is something else: it's different because a different irq-chip is 
+behind it.)
+
+	Ingo
