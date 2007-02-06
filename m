@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932838AbXBFQIW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964827AbXBFQIn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932838AbXBFQIW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 11:08:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932999AbXBFQIW
+	id S964827AbXBFQIn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 11:08:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964972AbXBFQIm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 11:08:22 -0500
+	Tue, 6 Feb 2007 11:08:42 -0500
 Received: from nz-out-0506.google.com ([64.233.162.225]:59552 "EHLO
 	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932838AbXBFQIT (ORCPT
+	with ESMTP id S964827AbXBFQIk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 11:08:19 -0500
+	Tue, 6 Feb 2007 11:08:40 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:date:to:cc:subject:message-id:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
-        b=evYSxboav3TpzYr94MPxd/Rf+VfVMQSs+/pYGzD1Yo/DmccR4CD5j0rRn5bl32R6Xc+kowWZMqoW/doHACfWKHZQWjtR8VbBGAspgJbu3pOcd9g33b0rzEnylMCLgV/mj04DcGlCtla0HcLzOci7uYw/pXzFVxe194bHU06p4dc=
-Date: Tue, 6 Feb 2007 18:08:06 +0200
-To: josh@freedesktop.org
+        b=XrlFywfURhWihX5ZNHJFN/6X9ldxgaP30wIU12b06JNeUaWnjq9aMCWIpmiOf7yruAsROaaARfPc7YnpxY6xZBx0c3lheAU+Kw5GIeb9BR9Sj73wEUDXBVgdbkwDCOYLeKLnU6NnrHNDggnfczoHBC/MiMOyHM5wG8MSHpC7JaQ=
+Date: Tue, 6 Feb 2007 18:08:28 +0200
+To: davej@codemonkey.org.uk
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 2.6.20] rcutorture: Use ARRAY_SIZE macro when appropriate
-Message-ID: <20070206160806.GL8991@Ahmed>
+Subject: [PATCH 2.6.20] intel-agp: Use ARRAY_SIZE macro when appropriate
+Message-ID: <20070206160828.GM8991@Ahmed>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -34,19 +34,27 @@ A patch to use ARRAY_SIZE macro already defined in kernel.h
 
 Signed-off-by: Ahmed S. Darwish <darwish.07@gmail.com>
 ---
-diff --git a/kernel/rcutorture.c b/kernel/rcutorture.c
-index 482b11f..97c2277 100644
---- a/kernel/rcutorture.c
-+++ b/kernel/rcutorture.c
-@@ -899,7 +899,7 @@ rcu_torture_init(void)
- 	/* Set up the freelist. */
+diff --git a/drivers/char/agp/intel-agp.c b/drivers/char/agp/intel-agp.c
+index ab0a9c0..7233310 100644
+--- a/drivers/char/agp/intel-agp.c
++++ b/drivers/char/agp/intel-agp.c
+@@ -5,6 +5,7 @@
+ #include <linux/module.h>
+ #include <linux/pci.h>
+ #include <linux/init.h>
++#include <linux/kernel.h>
+ #include <linux/pagemap.h>
+ #include <linux/agp_backend.h>
+ #include "agp.h"
+@@ -803,7 +804,7 @@ static int intel_i915_remove_entries(struct agp_memory *mem,off_t pg_start,
+  */
+ static int intel_i9xx_fetch_size(void)
+ {
+-	int num_sizes = sizeof(intel_i830_sizes) / sizeof(*intel_i830_sizes);
++	int num_sizes = ARRAY_SIZE(intel_i830_sizes);
+ 	int aper_size; /* size in megabytes */
+ 	int i;
  
- 	INIT_LIST_HEAD(&rcu_torture_freelist);
--	for (i = 0; i < sizeof(rcu_tortures) / sizeof(rcu_tortures[0]); i++) {
-+	for (i = 0; i < ARRAY_SIZE(rcu_tortures); i++) {
- 		rcu_tortures[i].rtort_mbtest = 0;
- 		list_add_tail(&rcu_tortures[i].rtort_free,
- 			      &rcu_torture_freelist);
 
 
 -- 
