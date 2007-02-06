@@ -1,49 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965407AbXBFULu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965408AbXBFUMR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965407AbXBFULu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 15:11:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965408AbXBFULu
+	id S965408AbXBFUMR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 15:12:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965423AbXBFUMR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 15:11:50 -0500
-Received: from mail1.webmaster.com ([216.152.64.169]:1125 "EHLO
-	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965407AbXBFULu (ORCPT
+	Tue, 6 Feb 2007 15:12:17 -0500
+Received: from mga06.intel.com ([134.134.136.21]:31441 "EHLO
+	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S965408AbXBFUMQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 15:11:50 -0500
-From: "David Schwartz" <davids@webmaster.com>
-To: "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
-Subject: RE: Problem with unix sockets: SOCK_DGRAM ignores MSG_TRUNC
-Date: Tue, 6 Feb 2007 12:11:31 -0800
-Message-ID: <MDEHLPKNGKAHNMBLJOLKCEKJBGAC.davids@webmaster.com>
+	Tue, 6 Feb 2007 15:12:16 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: i="4.13,291,1167638400"; 
+   d="scan'208"; a="193484942:sNHT18191376"
+Message-ID: <45C8E112.9070701@linux.intel.com>
+Date: Tue, 06 Feb 2007 21:12:02 +0100
+From: Arjan van de Ven <arjan@linux.intel.com>
+User-Agent: Thunderbird 1.5 (Windows/20051201)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: Pablo Sebastian Greco <lkml@fliagreco.com.ar>
+CC: Marc Donner <donner@dbd-breitband.de>, linux-kernel@vger.kernel.org
+Subject: Re: cpu load balancing problem on smp
+References: <200702061832.17771.donner@dbd-breitband.de> <1170785364.7324.31.camel@laptopd505.fenrus.org> <200702061941.32907.donner@dbd-breitband.de> <45C8CC2A.90403@linux.intel.com> <45C8DD9E.7010309@fliagreco.com.ar>
+In-Reply-To: <45C8DD9E.7010309@fliagreco.com.ar>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Priority: 3 (Normal)
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
-In-Reply-To: <200702061355.39660.daniel.kabs@mobotix.com>
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
-Importance: Normal
-X-Authenticated-Sender: joelkatz@webmaster.com
-X-Spam-Processed: mail1.webmaster.com, Tue, 06 Feb 2007 12:11:46 -0800
-	(not processed: message from trusted or authenticated source)
-X-MDRemoteIP: 206.171.168.138
-X-Return-Path: davids@webmaster.com
-X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
-Reply-To: davids@webmaster.com
-X-MDAV-Processed: mail1.webmaster.com, Tue, 06 Feb 2007 12:11:48 -0800
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Pablo Sebastian Greco wrote:
 
-> Why not improve consistency and make unix_dgram_recvmsg() return the full
-> packet length? So it would behave as UDP does. What do you think about
-> adding the following code to linux/net/unix/af_unix.c:
+> 2296:        427        426        436  134563009   PCI-MSI-edge      eth1
+> 2297:        252        252  135926471        257   PCI-MSI-edge      eth0
 
-It would be nice if the world worked that way, but you can't break POSIX
-compliance. Perhaps another receive flag?
-
-DS
-
-
+this suggests that  cores would be busy rather than only one....
