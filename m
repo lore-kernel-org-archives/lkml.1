@@ -1,62 +1,191 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965598AbXBFXvG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965038AbXBFXvS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965598AbXBFXvG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 18:51:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965600AbXBFXvG
+	id S965038AbXBFXvS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 18:51:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030612AbXBFXvR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 18:51:06 -0500
-Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:45035 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S965598AbXBFXuz (ORCPT
+	Tue, 6 Feb 2007 18:51:17 -0500
+Received: from an-out-0708.google.com ([209.85.132.247]:13730 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030608AbXBFXvN convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 18:50:55 -0500
-Message-ID: <45C9145E.7080800@vmware.com>
-Date: Tue, 06 Feb 2007 15:50:54 -0800
-From: Zachary Amsden <zach@vmware.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061206)
+	Tue, 6 Feb 2007 18:51:13 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=hrOtTGnC92ytDuzQ87RyHOOeWX5TI1BTRrciD4NIzmE2tMbWOPfl3iP6pmsUb3gqJcO8Azxv655Fd/Lt+ppTDOYiyNHIBrGBc2ap23p59RqJq+2K48uA7RZcIBHYe6/Hh1W2zTvvdlQzrMEuXgwtVtpbeh4RceF5IKk1eTSMI+k=
+Message-ID: <b0943d9e0702061551n1da2c665na6184b09b64f92e6@mail.gmail.com>
+Date: Tue, 6 Feb 2007 23:51:12 +0000
+From: "Catalin Marinas" <catalin.marinas@gmail.com>
+To: "GIT list" <git@vger.kernel.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: [ANNOUNCE] Stacked GIT 0.12
 MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Andi Kleen <ak@muc.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, Rusty Russell <rusty@rustcorp.com.au>,
-       Chris Wright <chrisw@sous-sol.org>
-Subject: Re: [PATCH 2/11] Sched clock paravirt op
-References: <200702060352.l163qeAf000727@zach-dev.vmware.com> <20070206123256.GF47229@muc.de> <45C9056A.8060504@vmware.com> <45C90DDA.3060009@goop.org> <45C9125A.3040704@vmware.com> <45C913B6.4080701@goop.org>
-In-Reply-To: <45C913B6.4080701@goop.org>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
-> Zachary Amsden wrote:
->   
->> Jeremy Fitzhardinge wrote:
->>     
->>> Zachary Amsden wrote:
->>>  
->>>       
->>>> Scheduled (or available) time and real time are good notions.  Stolen
->>>> time is debatable.  But TSC is basically just always wrong.  That's
->>>> why I don't want to overload the rdtsc operation.     
->>>>         
->>> Well, in the Xen case it is actually guaranteed to be correct and useful
->>> as real time, but that's definitely not something we can expect in
->>> general.  But you're talking specifically about schedulable vcpu time
->>> here, right?
->>>   
->>>       
->> Not schedulable time, scheduled time (schedulable - scheduled) = stolen
->>     
->
-> I meant "schedulable" (perhaps "usable" would be better) from the
-> guest's perspective: total amount of real cpu time each vcpu gets.  ie:
-> (real - schedulable) = stolen.  So I think we're talking about the same
-> thing.
->   
+Stacked GIT 0.12 release is available from http://www.procode.org/stgit/.
 
-Yes, I think so.  The point though, is the for Xen, TSC is real time.  
-So it won't do for the scheduler, which must be schedulable time.
+StGIT is a Python application providing similar functionality to Quilt
+(i.e. pushing/popping patches to/from a stack) on top of GIT. These
+operations are performed using GIT commands and the patches are stored
+as GIT commit objects, allowing easy merging of the StGIT patches into
+other repositories using standard GIT functionality.
 
-Zach
+The main features in this release:
 
+    * New 'rebase' command to change the base of an StGIT stack
+    * New 'hide' and 'unhide' commands to act on the patches in a
+series. Additional options were added to 'series' for displaying the
+hidden patches
+    * New 'sync' command to synchronise same patches in different branches
+    * New 'assimilate' command to transform GIT (accidental) commits
+at the top of the stack in StGIT patches
+    * Re-worked pulling logic to use the branch information stored in
+the .git/config file
+    * Abbreviation for StGIT commands
+    * Correct encoding of the e-mail headers and body
+    * Support for importing multipart e-mails and mbox files
+    * Configuration read from the GIT config files rather than stgitrc
+    * Patch ranges can be specified for 'export'
+    * '--missing' option for 'series' to list the patches on a branch
+which are missing in current
+    * StGIT bash completion script
+    * Bug fixes
+
+Acknowledgements (generated with 'git shortlog'):
+
+Catalin Marinas (58):
+      Add the 'autobcc' config option
+      Clean-up the number of imports in main.py
+      Slightly change the multiple patches delete function
+      Properly encode the e-mail headers and body
+      Properly import qp-encoded e-mail headers
+      Add support for multipart messages to import
+      Add a trash directory with deleted patches
+      Add mbox support to "import"
+      Add file renaming support
+      Fix the mail import regex to remove the [...PATCH...] text
+      Reduce the imports in stgit/main.py
+      Update the bash-completion script
+      Edit the cover or patch message before e-mail encoding
+      Only create a 'From: author' line if needed
+      Add a 'sender' configuration option
+      Only read the config files when running a command
+      Fix a bug in gitmergeonefile.py introduced recently
+      Allow 'show' to display many patches
+      Add a boundary to parse_patches()
+      Complete patch names after a patch (range) option
+      Use gitconfig rather than stgirc
+      Only print the progress message if on a TTY
+      Allow the cloning of branches not under StGIT control
+      Fix "series -d" when the patch description is empty
+      Flush the stdout in the commit command
+      Fix the 'clean' command not to pop all the patches
+      Allow ranges for the 'export' command
+      Allow patch ranges for the 'pop' command
+      Pipe the 'stg help <command>' output through the pager
+      Print 'refresh done' before pushing other patches
+      Fix a merge case with files added in both heads but different
+      Make 'push --undo' safer
+      Add the 'sync' command
+      Don't always use git-merge-recursive because of speed
+      Allow the abbreviation of StGIT commands
+      Add the --unapplied option to pick
+      Allow the mail command to send unapplied patches as well
+      Fix the bash completion when there is no patch applied
+      Add '--missing' option to 'series'
+      Fix the branch renaming to also rename the reflogs
+      Pipe the 'patches --diff' output through the pager
+      Indent the example gitconfig file
+      Allow e-mail aliases for the "mail" command
+      Add option to automatically invoke the interactive merger
+      Track the files conflict history
+      Fix the displaying of unknown files for 'stg status'
+      Synchronise the current patch if none specified for 'sync'
+      Hide the test_create_repo output
+      Allow a patch range to be specified for 'series'
+      '--showbranch' and '--noprefix' options for 'series'
+      Add support to hide and unhide patches
+      Make the 'series --short' length configurable
+      set() is not a builtin function in Python 2.3
+      Check for invalid patch names before acting
+      Stop the e-mail sending if editor fails
+      Escape the quotes in example/gitconfig
+      Add extra files to MANIFEST.in
+      Release 0.12
+
+Yann Dirson (23):
+      Make Series::patch_applied public.
+      Optimize stg goto in the pop case.
+      Bomb out when --ack and --sign are both passed to "refresh".
+      Allows to refresh a non-top applied patch.
+      More config examples.
+      Create a StgitObject class to factorise code for property handling.
+      Document some current bugs and add to the TODO list.
+      Add new 'rebase' command.
+      Make stgit.config use git-repo-config.
+      Add caching to the new config class.
+      Move identification of parent branch's remote def up into stack class.
+      Allows extraction of information about remotes.
+      Basic support for keeping a ref to the parent branch.
+      Have 'stg branch --create' record parent information.
+      Make 'stg pull' use git-fetch and not git-pull.
+      Fixes to doc strings.
+      The user does not want to mess with the refspecs.
+      Rebase to parent branch after git-fetch in "stg pull".
+      Do not return 'origin' as parent remote when there is no such remote.
+      Correctly check the pull-does-rebase parameter in 'stg pull'.
+      Warn the user when there is no parent information in the config.
+      Use FETCH_HEAD to know where to rebase to after pull.
+      Use branch.*.stgit.parentbranch for authoritative parent information.
+
+Karl Hasselström (15):
+      Let "stg help" be like "stg --help"
+      When no command was given, print usage message
+      Disregard extraneous arguments when providing help
+      New stg command: assimilate
+      Regression test for "stg assimilate"
+      Allow hand-editing of patches before sending
+      Allow deletion of several patches at once
+      Generate shorter patch names
+      Generate unique patch names
+      Print progress message to stderr, not stdout
+      Don't mention deprecated template variables
+      Regression test for "stg import"
+      Regression test for "stg mail"
+      StGIT bash completion
+      Ask git for author and committer name
+
+Pavel Roskin (9):
+      Set HOME to the test directory to avoid reading ~/.stgitrc
+      The author's address is incorrect in setyp.py
+      Check git pull remote before defaulting to 'origin'
+      Allow .git/branches and .git/remotes to be missing
+      Rename branch section in config when the branch is renamed
+      Copy remote and merge settings when cloning a branch
+      Don't print "rebasing" if the head doesn't change
+      Assorted typos
+      Add missing spaces in warnings about default remote
+
+Chuck Lever (3):
+      Print a message while checking for changes in the working directory.
+      Add a new option to "stg applied" and "stg unapplied" that
+provides a count
+      Optionally repack the object repository after every pull
+
+Robin Rosenberg (2):
+      Add an optional prefix to the PATCH subject when mailing.
+      Bash snippet to show branch and patch in bash prompt
+
+Ilpo Järvinen (1):
+      Fixes "stg goto `stg top`" to no-op & adds test
+
+Paolo 'Blaisorblade' Giarrusso (1):
+      Stgit: allow importing series files where patch names include slashes
+
+-- 
+Catalin
