@@ -1,174 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965375AbXBFTdJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965387AbXBFTeF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965375AbXBFTdJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 14:33:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965381AbXBFTdI
+	id S965387AbXBFTeF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 14:34:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965389AbXBFTeE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 14:33:08 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:57594 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965375AbXBFTdH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 14:33:07 -0500
-Date: Tue, 6 Feb 2007 14:32:47 -0500
-From: Andy Gospodarek <andy@greyhouse.net>
-To: akpm@linux-foundation.org, greg@kroah.com, Matt_Domsch@dell.com
-Cc: linux-kernel@vger.kernel.org, andy@greyhouse.net
-Subject: Re: [PATCH] PCI: Add systems for automatic breadth-first device sorting
-Message-ID: <20070206193247.GA13104@gospo.rdu.redhat.com>
-References: <20070202182714.GA11549@gospo.rdu.redhat.com>
+	Tue, 6 Feb 2007 14:34:04 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:40301 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S965387AbXBFTeB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Feb 2007 14:34:01 -0500
+Date: Tue, 6 Feb 2007 19:46:26 +0000
+From: Alan <alan@lxorguk.ukuu.org.uk>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: David Woodhouse <dwmw2@infradead.org>, Robert Hancock <hancockr@shaw.ca>,
+       linux-kernel <linux-kernel@vger.kernel.org>, drzeus-wbsd@drzeus.cx,
+       wbsd-devel@list.drzeus.cx
+Subject: Re: [PATCH] kernel: shut up the IRQ mismatch messages (Re: wbsd:
+ IRQ handler type mismatch)
+Message-ID: <20070206194626.5a8f47ab@localhost.localdomain>
+In-Reply-To: <20070206112949.1fc99299.akpm@linux-foundation.org>
+References: <45C7F32B.1060402@shaw.ca>
+	<20070206113023.3c845bb2@localhost.localdomain>
+	<20070206112949.1fc99299.akpm@linux-foundation.org>
+X-Mailer: Claws Mail 2.7.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070202182714.GA11549@gospo.rdu.redhat.com>
-User-Agent: Mutt/1.5.10i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 02, 2007 at 01:27:14PM -0500, Andy Gospodarek wrote:
+> > Signed-off-by: Alan Cox <alan@redhat.com>
+> > 
+> > --- linux.vanilla-2.6.20-rc6-mm3/kernel/irq/manage.c	2007-01-31 14:20:43.000000000 +0000
+> > +++ linux-2.6.20-rc6-mm3/kernel/irq/manage.c	2007-02-06 11:01:00.796928504 +0000
+> > @@ -372,12 +372,14 @@
+> >  	return 0;
+> >  
+> >  mismatch:
+> > +#ifdef CONFIG_DEBUG_SHIRQ
+> >  	if (!(new->flags & IRQF_PROBE_SHARED)) {
+> >  		printk(KERN_ERR "IRQ handler type mismatch for IRQ %d\n", irq);
+> >  		if (old_name)
+> >  			printk(KERN_ERR "current handler: %s\n", old_name);
+> >  		dump_stack();
+> >  	}
+> > +#endif	
+> >  	spin_unlock_irqrestore(&desc->lock, flags);
+> >  	return -EBUSY;
+> >  }
 > 
-> This is an additional list of systems that exhibit the PCI device
-> ordering issue that prompted the following patch:
-> 
-> commit 6b4b78fed47e7380dfe9280b154e8b9bfcd4c86c
-> Author: Matt Domsch <Matt_Domsch@dell.com>
-> Date:   Fri Sep 29 15:23:23 2006 -0500
-> 
->     PCI: optionally sort device lists breadth-first
-> 
-> Adding these systems to the list prevents the need for the additional
-> kernel command line argument.
->     
-> 
-> Signed-off-by: Andy Gospodarek <andy@greyhouse.net>
-> ---
-> 
->  common.c |   88 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
->  1 files changed, 88 insertions(+)
-> 
+> hm, well, it's dependent upon dwmw2's
+> generate-a-spurious-irq-at-request_irq-time patch.  Do we want to merge
+> that?
 
+CONFIG_DEBUG_SHIRQ seemed to be the right configuration option
+irrespective of whether we merge Dave's spurious irq tester (which I
+think is actually a good test tool)
 
-A problem with this patch was pointed out to me today.  A cut-and-paste
-error was made creating these entries and one of the entries for the
-BL45p was incorrect.  Here is the updated patch:
-
-
-This is an additional list of systems that exhibit the PCI device ordering
-issue that prompted the following patch:
-
-commit 6b4b78fed47e7380dfe9280b154e8b9bfcd4c86c
-Author: Matt Domsch <Matt_Domsch@dell.com>
-Date:   Fri Sep 29 15:23:23 2006 -0500
-
-    PCI: optionally sort device lists breadth-first
-
-Adding these systems to the list prevents the need for the additional
-kernel command line argument.
-
-Signed-off-by: Andy Gospodarek <andy@greyhouse.net>
-Cc: Greg KH <greg@kroah.com>
-Cc: Matt Domsch <Matt_Domsch@dell.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
----
-
- arch/i386/pci/common.c |   88 +++++++++++++++++++++++++++++++++++++++
- 1 file changed, 88 insertions(+)
-
-diff -puN arch/i386/pci/common.c~pci-add-systems-for-automatic-breadth-first-device-sorting arch/i386/pci/common.c
---- a/arch/i386/pci/common.c~pci-add-systems-for-automatic-breadth-first-device-sorting
-+++ a/arch/i386/pci/common.c
-@@ -191,6 +191,94 @@ static struct dmi_system_id __devinitdat
- 			DMI_MATCH(DMI_PRODUCT_NAME, "PowerEdge 2950"),
- 		},
- 	},
-+	{
-+		.callback = set_bf_sort,
-+		.ident = "HP ProLiant BL20p G3",
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "HP"),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "ProLiant BL20p G3"),
-+		},
-+	},
-+	{
-+		.callback = set_bf_sort,
-+		.ident = "HP ProLiant BL20p G4",
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "HP"),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "ProLiant BL20p G4"),
-+		},
-+	},
-+	{
-+		.callback = set_bf_sort,
-+		.ident = "HP ProLiant BL30p G1",
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "HP"),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "ProLiant BL30p G1"),
-+		},
-+	},
-+	{
-+		.callback = set_bf_sort,
-+		.ident = "HP ProLiant BL25p G1",
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "HP"),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "ProLiant BL25p G1"),
-+		},
-+	},
-+	{
-+		.callback = set_bf_sort,
-+		.ident = "HP ProLiant BL35p G1",
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "HP"),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "ProLiant BL35p G1"),
-+		},
-+	},
-+	{
-+		.callback = set_bf_sort,
-+		.ident = "HP ProLiant BL45p G1",
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "HP"),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "ProLiant BL45p G1"),
-+		},
-+	},
-+	{
-+		.callback = set_bf_sort,
-+		.ident = "HP ProLiant BL45p G2",
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "HP"),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "ProLiant BL45p G2"),
-+		},
-+	},
-+	{
-+		.callback = set_bf_sort,
-+		.ident = "HP ProLiant BL460c G1",
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "HP"),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "ProLiant BL460c G1"),
-+		},
-+	},
-+	{
-+		.callback = set_bf_sort,
-+		.ident = "HP ProLiant BL465c G1",
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "HP"),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "ProLiant BL465c G1"),
-+		},
-+	},
-+	{
-+		.callback = set_bf_sort,
-+		.ident = "HP ProLiant BL480c G1",
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "HP"),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "ProLiant BL480c G1"),
-+		},
-+	},
-+	{
-+		.callback = set_bf_sort,
-+		.ident = "HP ProLiant BL685c G1",
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "HP"),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "ProLiant BL685c G1"),
-+		},
-+	},
- 	{}
- };
- 
-_
+Alan
