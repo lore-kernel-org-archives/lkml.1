@@ -1,82 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030540AbXBFXLr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030557AbXBFXMF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030540AbXBFXLr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 18:11:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030557AbXBFXLr
+	id S1030557AbXBFXMF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 18:12:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030559AbXBFXMF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 18:11:47 -0500
-Received: from out5.smtp.messagingengine.com ([66.111.4.29]:48243 "EHLO
-	out5.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1030556AbXBFXLp (ORCPT
+	Tue, 6 Feb 2007 18:12:05 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:38500 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030557AbXBFXMD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 18:11:45 -0500
-X-Sasl-enc: tRtstthYAE4t1/alxuV3Ljrp4z1ukBZXxkJeZ7ZTxU8G 1170803501
-Message-ID: <45C90B57.90104@imap.cc>
-Date: Wed, 07 Feb 2007 00:12:23 +0100
-From: Tilman Schmidt <tilman@imap.cc>
-Organization: me - organized??
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; de-AT; rv:1.8.0.9) Gecko/20061211 SeaMonkey/1.0.7 Mnenhy/0.7.4.666
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
-       mingo@redhat.com, netdev@vger.kernel.org,
-       netfilter-devel@lists.netfilter.org
-Subject: Re: dynticks + iptables almost stops the boot process [was: Re: 2.6.20-rc6-mm3]
-References: <20070131215241.GB2890@inferi.kami.home> <20070131232130.GC4137@inferi.kami.home> <1170358572.29240.292.camel@localhost.localdomain> <1170360101.29240.297.camel@localhost.localdomain> <20070201211137.GA2830@inferi.kami.home> <1170369202.29240.339.camel@localhost.localdomain> <20070202191802.GA4262@inferi.kami.home> <1170448034.29240.364.camel@localhost.localdomain> <20070202204344.GB4262@inferi.kami.home> <20070206164826.GA3491@elte.hu> <20070206192840.GB2971@inferi.kami.home>
-In-Reply-To: <20070206192840.GB2971@inferi.kami.home>
-X-Enigmail-Version: 0.94.1.2
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig078781D7F46D04E8339CF8CB"
+	Tue, 6 Feb 2007 18:12:03 -0500
+Subject: Re: [patch] MTD: fix DOC2000/2001/2001PLUS build error
+From: David Woodhouse <dwmw2@infradead.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0702061451560.8424@woody.linux-foundation.org>
+References: <1170801484.29759.1000.camel@pmac.infradead.org>
+	 <Pine.LNX.4.64.0702061451560.8424@woody.linux-foundation.org>
+Content-Type: text/plain; charset=UTF-8
+Date: Tue, 06 Feb 2007 23:11:55 +0000
+Message-Id: <1170803515.29759.1032.camel@pmac.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6.dwmw2.1) 
+Content-Transfer-Encoding: 8bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig078781D7F46D04E8339CF8CB
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Tue, 2007-02-06 at 14:53 -0800, Linus Torvalds wrote:
+> I don't think you've ever showed any such example.
+> 
+> And if you did, it would all boil down to *exactly* what 'select' does: 
+> config options that get set automatically based on other choices.
 
-Am 06.02.2007 20:28 schrieb Mattia Dongili:
-> On Tue, Feb 06, 2007 at 05:48:26PM +0100, Ingo Molnar wrote:
->> Could you try the patch below? The RCU serialization code (a rare call=
-=20
->> but can be common in some types of setups) has a nasty implicit=20
->> dependency on the HZ tick - which until now was a hidden wart but beca=
-me=20
->> an explicit bug under dynticks. Maybe this is what is slowing down you=
-r=20
->> box.
+That's one option which I don't think I've seen implemented.
 
-I have the same problem (huge delay when loading iptables) with
-2.6.20-rc6-mm3, and for me this patch did fix it.
+The other possibility which comes to mind, and which I _have_ seen
+implemented, is not to hide the disabled option but to _show_ it, and
+represent its dependencies right there next to it somehow. 
 
-> No, not this. Anyway the last patch Thomas forwarded does fix the
-> problem.
+Where I saw this done was actually in the Nemesis kernel configuration,
+which was based on our old tcl xconfig tool. It actually worked quite
+well. It's a _long_ time ago now, but IIRC it was in a cell below the
+disabled option. It'd look something like (remember hte old xconfig?):
 
-Which one would that be? I might try it for comparison.
+------------------------------------------------------------------------
+|  USB Mass storage support                      |  o Y   o M   ✓ N    |
+------------------------------------------------------------------------
+|  depends on:  o SCSI   ✓ USB                                         |
+------------------------------------------------------------------------
 
-Thanks,
-Tilman
+I'm sure I had a screenshot of it once. But it doesn't matter; you get
+the idea -- our current tools would do it differently anyway. But they
+_could_ do it.
 
---=20
-Tilman Schmidt                          E-Mail: tilman@imap.cc
-Bonn, Germany
-Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
-Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
+> So care to give a real example? Start with USB automatically selecting 
+> SCSI support without the user having to even know it uses SCSI. Tell me 
+> how it's supposed to work sanely without 'select'.
 
+Well one option, as you suggest, is just that if you go into the
+graphical tool and enable USB_STORAGE, you get SCSI turned on
+automatically. That's simple enough and the xconfig tool can do it quite
+easily. It just needs to _show_ you the option, which isn't particularly
+hard. But what I care about is that when you when you explicitly set
+ # CONFIG_SCSI is not set
+and run 'make oldconfig' it doesn't get turned back on again.
 
---------------enig078781D7F46D04E8339CF8CB
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+But as I said, I'm not entirely averse to having to do 'make
+oldconfig-noselect' or something like that to preserve the old
+behaviour. And then you can sprinkle 'select' wherever you like without
+bothering those of us who object.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3rc1 (MingW32)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+-- 
+dwmw2
 
-iD8DBQFFyQtfMdB4Whm86/kRAh1SAJ4nD7AUYhg1gU7UloR588LGaO0L+wCeO2un
-CImLLx8g+vh7yfduSEgwfXU=
-=YkNg
------END PGP SIGNATURE-----
-
---------------enig078781D7F46D04E8339CF8CB--
