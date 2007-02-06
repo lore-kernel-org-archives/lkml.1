@@ -1,51 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030592AbXBFXtP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030607AbXBFXte@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030592AbXBFXtP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 18:49:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030607AbXBFXtP
+	id S1030607AbXBFXte (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 18:49:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030610AbXBFXte
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 18:49:15 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:40337 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030592AbXBFXtN (ORCPT
+	Tue, 6 Feb 2007 18:49:34 -0500
+Received: from mail.dbd-breitband.de ([217.188.211.21]:31674 "EHLO
+	dbd-mpx01.dbd-breitband.de" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1030607AbXBFXtc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 18:49:13 -0500
-Subject: Re: [patch] MTD: fix DOC2000/2001/2001PLUS build error
-From: David Woodhouse <dwmw2@infradead.org>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <20070206154146.c62012b4.randy.dunlap@oracle.com>
-References: <1170801484.29759.1000.camel@pmac.infradead.org>
-	 <Pine.LNX.4.64.0702061451560.8424@woody.linux-foundation.org>
-	 <1170803515.29759.1032.camel@pmac.infradead.org>
-	 <Pine.LNX.4.64.0702061516110.8424@woody.linux-foundation.org>
-	 <1170804983.29759.1051.camel@pmac.infradead.org>
-	 <20070206154146.c62012b4.randy.dunlap@oracle.com>
-Content-Type: text/plain
-Date: Tue, 06 Feb 2007 23:49:05 +0000
-Message-Id: <1170805745.29759.1052.camel@pmac.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6.dwmw2.1) 
+	Tue, 6 Feb 2007 18:49:32 -0500
+From: Marc Donner <donner@dbd-breitband.de>
+Organization: DBD DeutscheBreitbandDienste
+To: Arjan van de Ven <arjan@linux.intel.com>
+Subject: Re: cpu load balancing problem on smp
+Date: Wed, 7 Feb 2007 00:49:51 +0100
+User-Agent: KMail/1.9.5
+References: <200702061832.17771.donner@dbd-breitband.de> <200702061941.32907.donner@dbd-breitband.de> <45C8CC2A.90403@linux.intel.com>
+In-Reply-To: <45C8CC2A.90403@linux.intel.com>
+X-Face: 8wX"obNKFY5e`AQ_k`>jn=23vm("ew,/l"P1@qcYiQ[nNGR08P\M^7k(=?utf-8?q?tG=26bz=5CH=3BP=7E1w0O=0A=09+wJq=5C=5Dfy=3DyWGLWBIsnq-L7?=<(<bD6#1Wwuz(fd2tH)r8l'q|U
+Cc: linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
+Message-Id: <200702070049.51536.donner@dbd-breitband.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-02-06 at 15:41 -0800, Randy Dunlap wrote:
-> It's quite subjective.  E.g., I made/submitted a patch maybe 1 year
-> ago that tried to put all video graphics (frame buffer, AGP, DRM/DRI,
-> etc.) into one localized place in the menu structure.
-> OK, perhaps I wasn't persistent enough, but no one was interested
-> in it.  (That probably just means that config menus are low
-> priority.) 
+> can you send me the output of
+>
+> cat /proc/interrupts
+ 
+here it is:
+irqblance is running.
+network loaded with 600Mbit/s for about 5minutes. 
 
-Compared with making the bloody _code_ actually cooperate, in that
-particular respect, I think the config options are indeed a fairly low
-priority :)
+          CPU0       CPU1       CPU2       CPU3
+  0:      37713      41667      41673      49914   IO-APIC-edge      timer
+  1:          0          0          2          0   IO-APIC-edge      i8042
+  8:          0          0          1          0   IO-APIC-edge      rtc
+  9:          0          0          0          0   IO-APIC-fasteoi   acpi
+ 12:          2          0          2          0   IO-APIC-edge      i8042
+ 14:         11          9          9          8   IO-APIC-edge      ide0
+ 20:          0          0          0          0   IO-APIC-fasteoi   
+uhci_hcd:usb3
+ 21:         62         52         37         46   IO-APIC-fasteoi   
+ehci_hcd:usb1, uhci_hcd:usb2, uhci_hcd:usb4
+ 78:        665        581        344        351   IO-APIC-fasteoi   megasas
+501:     215717     209388     209430     202514   PCI-MSI-edge      eth10
+502:        927       1019       1053        888   PCI-MSI-edge      eth11
+NMI:        451         39         42         46
+LOC:     170899     170864     170846     170788
+ERR:          0
 
--- 
-dwmw2
+top output:
 
+top - 01:45:32 up 16 min,  2 users,  load average: 1.04, 0.92, 0.50
+Tasks:  81 total,   3 running,  78 sleeping,   0 stopped,   0 zombie
+Cpu0  :  0.0% us,  0.0% sy,  0.0% ni,  0.0% id,  0.0% wa,  0.0% hi, 100.0% si
+Cpu1  :  0.0% us,  0.0% sy,  0.0% ni, 99.0% id,  1.0% wa,  0.0% hi,  0.0% si
+Cpu2  :  0.0% us,  0.0% sy,  0.0% ni, 99.7% id,  0.0% wa,  0.0% hi,  0.3% si
+Cpu3  :  0.0% us,  0.0% sy,  0.0% ni, 99.7% id,  0.0% wa,  0.3% hi,  0.0% si
+
+
+regards
+Marc
