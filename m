@@ -1,66 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965402AbXBFAsL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965424AbXBFAsp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965402AbXBFAsL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 19:48:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965413AbXBFAsK
+	id S965424AbXBFAsp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 19:48:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965421AbXBFAso
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 19:48:10 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:55648 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965402AbXBFAsJ (ORCPT
+	Mon, 5 Feb 2007 19:48:44 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:51336 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965411AbXBFAsd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 19:48:09 -0500
-Date: Mon, 5 Feb 2007 16:43:29 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Jesper Juhl <jesper.juhl@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Andi Kleen <ak@suse.de>,
-       Trent Waddington <trent.waddington@gmail.com>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH][1/5] floppy.c: Initial (partial) CodingStyle cleanup
-Message-Id: <20070205164329.8f1eca97.randy.dunlap@oracle.com>
-In-Reply-To: <200702060028.50439.jesper.juhl@gmail.com>
-References: <200702060028.50439.jesper.juhl@gmail.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.0 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+	Mon, 5 Feb 2007 19:48:33 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Tue, 6 Feb 2007 01:48:25 +0100 (CET)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: Re: ohci1394 broke 2.6.19 -> 2.6.20-rc1
+To: Robert Crocombe <rcrocomb@gmail.com>
+cc: linux1394-devel <linux1394-devel@lists.sourceforge.net>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <tkrat.f2510ec744e6b5c8@s5r6.in-berlin.de>
+Message-ID: <tkrat.064c609db01a3918@s5r6.in-berlin.de>
+References: <e6babb600702051521l4a08eb2dw2a7f423fd0d7edd7@mail.gmail.com>
+ <tkrat.c39467d7194502c4@s5r6.in-berlin.de>
+ <tkrat.f2510ec744e6b5c8@s5r6.in-berlin.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 6 Feb 2007 00:28:50 +0100 Jesper Juhl wrote:
-
-> 
-> This is a basic CodingStyle cleanup for drivers/block/floppy.c
-> 
-> There are no functional changes in this patch. 
-> 
-> Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
-> ---
-> 
->  floppy.c |  203 ++++++++++++++++++++++++-----------------------------
->  1 file changed, 94 insertions(+), 109 deletions(-)
-> 
-> --- linux-2.6.20-orig/drivers/block/floppy.c	2007-02-04 19:44:54.000000000 +0100
-> +++ linux-2.6.20/drivers/block/floppy.c	2007-02-05 23:08:39.000000000 +0100
-> @@ -1252,8 +1258,8 @@
->  			DPRINT("Invalid data rate for perpendicular mode!\n");
->  			cont->done(0);
->  			FDCS->reset = 1;	/* convenient way to return to
-> -						 * redo without to much hassle (deep
-> -						 * stack et al. */
-> +						 * redo without to much hassle
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~> too
-> +						 * (deep stack et al. */
->  			return;
+I wrote:
+> @@ -1132,6 +1132,7 @@ static int __init ieee1394_init(void)
 >  		}
->  	} else
+>  	}
+>  
+> +	ret = driver_register(&nodemgr_mid_layer_driver);
+>  	ret = class_register(&hpsb_host_class);
+>  	if (ret < 0)
+>  		goto release_all_bus;
+
+I think I make that a
+	WARN_ON(driver_register(&nodemgr_mid_layer_driver));
+-- 
+Stefan Richter
+-=====-=-=== --=- --==-
+http://arcgraph.de/sr/
 
 
----
-~Randy
