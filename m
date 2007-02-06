@@ -1,47 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752267AbXBFRs5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932606AbXBFRvY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752267AbXBFRs5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 12:48:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752262AbXBFRs5
+	id S932606AbXBFRvY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 12:51:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933018AbXBFRvY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 12:48:57 -0500
-Received: from mail.tmr.com ([64.65.253.246]:35209 "EHLO gaimboi.tmr.com"
+	Tue, 6 Feb 2007 12:51:24 -0500
+Received: from ns.suse.de ([195.135.220.2]:33720 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751462AbXBFRs4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 12:48:56 -0500
-Message-ID: <45C8BF9A.2@tmr.com>
-Date: Tue, 06 Feb 2007 12:49:14 -0500
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+	id S932606AbXBFRvX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Feb 2007 12:51:23 -0500
+Date: Tue, 6 Feb 2007 18:51:03 +0100
+From: Stefan Seyfried <seife@suse.de>
+To: Christian Axelsson <smiler@lanil.mine.nu>
+Cc: suspend-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [Suspend-devel] [swsusp] s2ram fails to restore graphics
+Message-ID: <20070206175103.GA8604@suse.de>
+References: <45C8B688.1080105@lanil.mine.nu> <45C8B87E.9090603@lanil.mine.nu>
 MIME-Version: 1.0
-To: Mark Lord <lkml@rtr.ca>
-CC: Robert Hancock <hancockr@shaw.ca>, Patrick Ale <patrick.ale@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: hdparm for lib_pata
-References: <fa.L/RjDlo6Njb5Jt7/9ENZuiASoV0@ifi.uio.no> <45C4DF2A.1070501@shaw.ca> <45C77435.8090806@rtr.ca>
-In-Reply-To: <45C77435.8090806@rtr.ca>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <45C8B87E.9090603@lanil.mine.nu>
+X-Operating-System: openSUSE 10.2 (i586), Kernel 2.6.18.2-34-default
+User-Agent: mutt-ng/devel-r804 (Linux)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Lord wrote:
-> Robert Hancock wrote:
->> ..
->> Only some of the hdparm functionality is supported in libata,
+On Tue, Feb 06, 2007 at 06:18:54PM +0100, Christian Axelsson wrote:
+> Ups, forgot suspend-devel CC :)
 > 
-> That's not true.  MOST hdparm functionality is supported in libata.
-> Only a very few things are not supported, including -d and -X,
-> for reasons already pointed out.
-> 
-> Nearly everything else works.
-> 
-Agreed, I've already had problems typing faster than I think, twice, as 
-as I hit ENTER saying "wait, that's a SCSI device" and then "wow, it 
-worked anyway!" Nice job on the whole, but setting transfer modes is 
-desirable, still.
+> Christian Axelsson wrote:
+> > Hello!
+> > 
+> > I'm having problems with s2ram being unable to restore my Intel 945GM (a 
+> > Dell D420 laptop) when resuming. I think everything else is restored 
+> > properly (I have input so I can reboot or suspend again). Full 
+> > hibernation is working flawless on this machine including restoring 
+> > framebuffer and X (kudos to the suspend team :).
+> > 
+> > I've tried both with and without framebuffer on 2.6.20.
+> > Using the vbetool-trick brings the backlight on (it's otherwise off 
+> > after resume).
 
+Which of the three vbetool tricks?
+
+The machine is in the whitelist and i have personally seen a D420 resume with
+the workarounds from the whitelist entry.
+
+I strongly suggest that this is not a kernel problem but a user(space)
+problem :-)
 -- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+Stefan Seyfried
+QA / R&D Team Mobile Devices        |              "Any ideas, John?"
+SUSE LINUX Products GmbH, Nürnberg  | "Well, surrounding them's out." 
