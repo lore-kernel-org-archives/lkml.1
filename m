@@ -1,42 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965496AbXBFWGh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965506AbXBFWHO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965496AbXBFWGh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 17:06:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965541AbXBFWGg
+	id S965506AbXBFWHO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 17:07:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965532AbXBFWHO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 17:06:36 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:32880 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965496AbXBFWGf (ORCPT
+	Tue, 6 Feb 2007 17:07:14 -0500
+Received: from terminus.zytor.com ([192.83.249.54]:49509 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965506AbXBFWHM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 17:06:35 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: "Luigi Genoni" <luigi.genoni@pirelli.com>
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Andrew Morton" <akpm@osdl.org>,
-       <linux-kernel@vger.kernel.org>, "Lu, Yinghai" <yinghai.lu@amd.com>,
-       "Natalie Protasevich" <protasnb@gmail.com>, "Andi Kleen" <ak@suse.de>
-Subject: Re: [PATCH 2/2] x86_64 irq:  Handle irqs pending in IRR during irq migration.
-References: <200701221116.13154.luigi.genoni@pirelli.com>
-	<m1veik3woc.fsf_-_@ebiederm.dsl.xmission.com>
-	<20070206073616.GA15016@elte.hu>
-	<200702061012.25910.luigi.genoni@pirelli.com>
-Date: Tue, 06 Feb 2007 15:05:25 -0700
-In-Reply-To: <200702061012.25910.luigi.genoni@pirelli.com> (Luigi Genoni's
-	message of "Tue, 6 Feb 2007 10:12:25 +0100")
-Message-ID: <m1sldjq6vu.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Tue, 6 Feb 2007 17:07:12 -0500
+Message-ID: <45C8FC01.8060506@zytor.com>
+Date: Tue, 06 Feb 2007 14:06:57 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070102)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Markus Rechberger <markus.rechberger@amd.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [patch] x86-64 ext2/ext3 datestamp problem
+References: <45C8F419.5040103@amd.com> <45C8F7E6.6060009@zytor.com> <45C8F9DA.6040906@amd.com> <45C8FA62.7000308@zytor.com> <45C8FC19.1020109@amd.com>
+In-Reply-To: <45C8FC19.1020109@amd.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Luigi Genoni" <luigi.genoni@pirelli.com> writes:
+Markus Rechberger wrote:
+> H. Peter Anvin wrote:
+>> Markus Rechberger wrote:
+>>> My debian system's coreutils package only allows dates between 1902 and
+>>> 2038, but it might be interesting to get that right if it's wrong.
+>>>
+>>> touch (GNU coreutils) 5.97 just says invalid dateformat to 2050-01-01
+>> Lemme guess, you're on a 32-bit system...
+>>
+> 
+> I have both here, 64 and 32bit
+> If I touch a file with 1905 on my 32bit system and remount the disk the
+> date will remain at 1905 without any patch.
+> 
 
-> btw, I tested in on ( CPU and no way to reproduce the bug, (no messages 
-> appeared and load average was quite as high as exspected). 
-> Going to test an a 16 CPU (the same who triggered the bug at the beginning) 
-> immediatelly when it will be free.
+The reason is that most 32-bit systems (e.g. i386) only have a 32-bit 
+time_t, so the user space interface wraps around in 2038.
 
-Thanks.  Hopefully that will confirm I have properly tracked this bug.
+However, most 64-bit systems (e.g. x86_64) have 64-bit time_t, and thus 
+don't have that problem.
 
-Eric
+	-hpa
