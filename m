@@ -1,80 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751825AbXBFJAO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751690AbXBFJGW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751825AbXBFJAO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 04:00:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751723AbXBFJAO
+	id S1751690AbXBFJGW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 04:06:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751717AbXBFJGW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 04:00:14 -0500
-Received: from hp3.statik.TU-Cottbus.De ([141.43.120.68]:35900 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751825AbXBFJAL (ORCPT
+	Tue, 6 Feb 2007 04:06:22 -0500
+Received: from nf-out-0910.google.com ([64.233.182.190]:22885 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751690AbXBFJGU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 04:00:11 -0500
-Message-ID: <45C84399.70407@s5r6.in-berlin.de>
-Date: Tue, 06 Feb 2007 10:00:09 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.0.8) Gecko/20061030 SeaMonkey/1.0.6
+	Tue, 6 Feb 2007 04:06:20 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=mnzhcCpgQNqiJwAHy7s+vMcQ7bIu/R+RcgRcomUSh6EJG9Cgv8VfNFOUO0tW4EbTaZyfv7tsLmPjn4xXE7fYWggvTvsIy5g/ag/i8EjmEk3h08vteiOk4wdF0RsBugiGZRrWGrHEkuvsuKmQdgcrXV5jHGbuR1KhWAwqZ6atzbs=
+Message-ID: <1a297b360702060106x321bfb8dw918d15df76952576@mail.gmail.com>
+Date: Tue, 6 Feb 2007 13:06:17 +0400
+From: "Manu Abraham" <abraham.manu@gmail.com>
+To: "Grant Grundler" <grundler@parisc-linux.org>
+Subject: Re: 2.6.20 PCI Cannot allocate resource region 2
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-pci@atrey.karlin.mff.cuni.cz, greg@kroah.com
+In-Reply-To: <20070206084638.GB20752@colo.lackof.org>
 MIME-Version: 1.0
-To: Andi Kleen <ak@suse.de>
-CC: Andrew Morton <akpm@linux-foundation.org>, David Moore <dcm@mit.edu>,
-       linux-kernel <linux-kernel@vger.kernel.org>, discuss@x86-64.org,
-       linux1394-devel <linux1394-devel@lists.sourceforge.net>,
-       Jan Beulich <jbeulich@novell.com>
-Subject: Re: [PATCH] Missing critical phys_to_virt in lib/swiotlb.c
-References: <1170614380.26464.52.camel@PISCES.MIT.EDU> <20070205133556.9b290d0a.akpm@linux-foundation.org> <200702060856.45473.ak@suse.de>
-In-Reply-To: <200702060856.45473.ak@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1a297b360702041709l3b0309c7y8fcd33df1d487889@mail.gmail.com>
+	 <20070206045528.GA4228@colo.lackof.org>
+	 <20070206050331.GB4228@colo.lackof.org>
+	 <20070205213339.80239a22.akpm@linux-foundation.org>
+	 <20070206084638.GB20752@colo.lackof.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/6/2007 8:56 AM, Andi Kleen wrote:
->> > From: David Moore <dcm@acm.org>
-...
->> > It fixes real crashes:
->> > http://lists.opensuse.org/opensuse-bugs/2006-12/msg02943.html
->> > http://qa.mandriva.com/show_bug.cgi?id=28224
->> > http://www.pchdtv.com/forum/viewtopic.php?t=2063&sid=a959a14a4c2db0eebaab7b0df56103ce
->> > 
->> > --- linux-2.6.19.x86_64/lib/swiotlb.c.orig	2007-02-04 13:18:41.000000000 -0500
->> > +++ linux-2.6.19.x86_64/lib/swiotlb.c	2007-02-04 13:19:43.000000000 -0500
->> > @@ -750,7 +750,7 @@ swiotlb_sync_sg(struct device *hwdev, st
->> >  
->> >  	for (i = 0; i < nelems; i++, sg++)
->> >  		if (sg->dma_address != SG_ENT_PHYS_ADDRESS(sg))
->> > -			sync_single(hwdev, (void *) sg->dma_address,
->> > +			sync_single(hwdev, phys_to_virt(sg->dma_address),
->> >  				    sg->dma_length, dir, target);
->> >  }
-...
-> Sounds weird. If this really didn't work much more should be broken
-> (e.g. no cdroms/sound on Intel x86-64 boxes with >4GB)
+On 2/6/07, Grant Grundler <grundler@parisc-linux.org> wrote:
+> On Mon, Feb 05, 2007 at 09:33:39PM -0800, Andrew Morton wrote:
+> > On Mon, 5 Feb 2007 22:03:31 -0700 Grant Grundler <grundler@parisc-linux.org> wrote:
+> >
+> > > On Mon, Feb 05, 2007 at 09:55:28PM -0700, Grant Grundler wrote:
+> > > ...
+> > > > >         Control: I/O- Mem- BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
+> > > > >         Status: Cap- 66MHz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR+ <PERR+
+> > > > >         Latency: 0, Cache Line Size 0c
+> > > > >         BIST is running
+> > > >
+> > > > BIST is required to complete in 2 seconds. Either with success or failure.
+> > > > I expect BIOS to have complained before launching grub/lilo.
+> > >
+> > > Gregkh,
+> > > I just realized linux-pci bus scan should ignore devices (print a warning)
+> > > which have BIST set.  Want a patch for this?
+> > >
+> > > Slight risk some previously "working" device which violates the
+> > > spec might get ignored...but I hope there aren't too many of those.
+> >
+> > Should we wait two seconds before declaring the device dead?
+> > To see whether it will come back?
+>
+> Hrm...my thought was BIOS should already be doing that...but I just
+> realised 2 seconds have elapsed if Manu can collect "lspci" output showing
+> "BIST is running". I think the fact that BIST is not "running" in the
+> 2.6.20-rc7 lspci output is just coincidental. The config space for that
+> device is full of similar garbage in both cases regardless how long
+> it took.
+>
 
-Yes, it's weird; e.g. it seems that reports of that on linux1394-user
-and -devel came in only recently. But I may have missed something.
-(OTOH, this bug was partially hidden for FireWire users because one of
-the relevant FireWire drivers was lacking respective _sync_sg calls.)
+waited for more than 30 mins as well, well almost the entire night,
+BIST didn't stop
 
-> I'm a little sceptical. Perhaps the TV driver is doing something bogus
-> here? 
 
-sync_single() definitely wants a virtual address there. sg->dma_address
-is a physical address. The bug and the fix are obvious.
+> Maybe BIOS is clobbering BIST when writing latency timer or cacheline size
+> register and BIOS is not being careful to clear or disable the other
+> bytes in that same 32-bit word?
+>
 
-Unfortunately an author of lib/swiotlb.c chose to call many variables
-holding *virtual* addresses "dma_addr". Note how that file at the same
-time contains variables like "dma_addr_t dma_handle". A recipe for disaster.
 
-> Also I haven't heard of this problem before at all and I'm sure I would
-> have if sounds/cdroms were broken.
-> 
-> Shouldn't be applied without further analysis.
+If the BIOS is clobbering the BIST, then the same should happen in the
+other OS as well ?
+Just plugging in the card, without any drivers, got me the PCI vendor info.
 
-Maybe some recent changes elsewhere cause more frequent use of
-swiotlb-driven bounce buffers? That should be verified.
 
-Or maybe people are deploying affected hardware more often now?
--- 
-Stefan Richter
--=====-=-=== --=- --==-
-http://arcgraph.de/sr/
+> PCI is by nature a 32-bit wide config space and "byte enables"
+> are used to mask off bytes we want to ignore.  If the chipset
+> or BIOS config access routines aren't careful, they could accidentally
+> modify other values in the same 32-bit word when only one byte was
+> intended to be changed.
+>
+> The code in pci_set_cacheline_size() uses byte enables but is only
+> called by pci_set_mwi(). 82 different .c files (124 instances) access
+> PCI_LATENCY_TIMER.  Of those, 68 are pci_write_config_byte() calls.
+> But I really only care about the calls what would apply get invoked
+> for 1822:4e35. My guess is this one always gets invoked:
+>   ./arch/i386/pci/i386.c: pci_write_config_byte(dev, PCI_LATENCY_TIMER, lat);
+>
+> since the offending device is "Mantis DTV PCI Bridge Controller [Ver 1.0]".
+> (http://pci-ids.ucw.cz/iii/?i=1822)
+> pci_enable_bridges() -> pci_set_master() -> pcibios_set_master().
+>
+> Manu, can you add code to pci_enable_bridges() to dump information about
+> which bridges are getting enabled _before_ pci_set_master() is called?
+> I'm interested in a hex dump of the first 8  32-bit words of
+> PCI config space for each device.
+>
+
+let me give it a shot.
+
+
+> BTW, I wasn't planning declaring the device as dead. I just wanted to
+> pretend it didn't exist and then let something else (user space? timeout?)
+> trigger a rescan of that bus/"slot". That trigger could come in a successive
+> patch which also removes the 2 second polling loop.
+
+maybe the driver can do a rescan ?
+
+>
+> grant
+>
+
+
+thanks,
+manu
