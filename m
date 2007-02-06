@@ -1,116 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751744AbXBFJYN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751877AbXBFJZK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751744AbXBFJYN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 04:24:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751837AbXBFJYN
+	id S1751877AbXBFJZK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 04:25:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751879AbXBFJZK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 04:24:13 -0500
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:49893 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751744AbXBFJYM convert rfc822-to-8bit (ORCPT
+	Tue, 6 Feb 2007 04:25:10 -0500
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:43982 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751877AbXBFJZI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 04:24:12 -0500
-Date: Tue, 6 Feb 2007 10:22:53 +0100
-From: =?ISO-8859-1?Q?S=E9bastien_Dugu=E9?= <sebastien.dugue@bull.net>
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Cc: Oleg Nesterov <oleg@tv-sign.ru>, Andrew Morton <akpm@osdl.org>,
-       linux-aio <linux-aio@kvack.org>, Bharata B Rao <bharata@in.ibm.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
-       Badari Pulavarty <pbadari@us.ibm.com>,
-       Jean Pierre Dion <jean-pierre.dion@bull.net>
-Subject: [PATCH -mm][AIO] AIO completion signal notification fixes and
- cleanups
-Message-ID: <20070206102253.20b121ae@frecb000686>
-In-Reply-To: <20070205171335.GA528@tv-sign.ru>
-References: <20070201102252.240130c6@frecb000686>
-	<20070201103053.64489048@frecb000686>
-	<20070202180039.GA658@tv-sign.ru>
-	<20070205131839.6f601c3e@frecb000686>
-	<20070205134314.GA283@tv-sign.ru>
-	<20070205170056.6a29b19b@frecb000686>
-	<20070205171335.GA528@tv-sign.ru>
-X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 06/02/2007 10:25:16,
-	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 06/02/2007 10:25:17,
-	Serialize complete at 06/02/2007 10:25:17
-Content-Transfer-Encoding: 8BIT
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 6 Feb 2007 04:25:08 -0500
+Message-ID: <45C84973.6060805@vmware.com>
+Date: Tue, 06 Feb 2007 01:25:07 -0800
+From: Zachary Amsden <zach@vmware.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20061206)
+MIME-Version: 1.0
+To: Arjan van de Ven <arjan@infradead.org>
+CC: Rusty Russell <rusty@rustcorp.com.au>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, Andi Kleen <ak@muc.de>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Chris Wright <chrisw@sous-sol.org>
+Subject: Re: [PATCH 0/11] VMI / Paravirt bugfixes for 2.6.21
+References: <200702060352.l163q87K000713@zach-dev.vmware.com>	 <1170736029.29293.31.camel@localhost.localdomain>	 <45C809F9.2090905@vmware.com>	 <1170738676.29293.35.camel@localhost.localdomain> <1170752856.7324.5.camel@laptopd505.fenrus.org>
+In-Reply-To: <1170752856.7324.5.camel@laptopd505.fenrus.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Arjan van de Ven wrote:
+> On Tue, 2007-02-06 at 16:11 +1100, Rusty Russell wrote:
+>   
+>> On Mon, 2007-02-05 at 20:54 -0800, Zachary Amsden wrote:
+>>     
+>>> Rusty Russell wrote:
+>>>       
+>>>> Indeed, I'm expecting to push lguest this week, and this code will
+>>>> effect me, so I'd like to see this in a -mm soon...
+>>>>         
+>>> Yes, I took a look at the lguest changes today and I think these won't 
+>>> generate conflicts, just make stuff easier for you ;)  Course you've now 
+>>> got a couple new paravirt-ops to support, but the native ones are fine 
+>>> for temporary use.
+>>>       
+>> Implementing stolen time is something I'd like to do, since it'd be a
+>> nice self-contained example the expectations.
+>>     
+>
+>
+> hmm stolen time could even be useful without virtualization; to a large
+> degree, if cpufreq reduces the speed of your cpu you have "stolen
+> cycles" that way... I wonder if this concept can be used for that as
+> well...
+>   
 
-  Andrew, here is another incremental patch which does a bit of cleanup
-as well as fixing a possible release on a task ref that was not taken.
+Yes, stolen time happens in most moderns systems as a result of power 
+management (and you can probably count SMM cycles as stolen if only 
+there was a way to count them).  It would be useful to report on a 
+laptop, for instance, how many cycles have been stolen by running off 
+battery or on a server because of heat issues.  Having an interface for 
+Linux to report this seems useful.  It is a covert channel, however, in 
+a virtualized environment, so there should be some provision in the 
+hypervisor to turn it off.
 
-  Thanks,
-
-  Sébastien.
-
-
-From: Sébastien Dugué <sebastien.dugue@bull.net>
-
-	AIO completion signal notification misc fixes and cleanups
-
-  This patches cleans up the notification path and fixes a possible
-release on a task ref that was not taken in aio_setup_sigevent().
-
-
- aio.c |   15 ++++++++++-----
- 1 file changed, 10 insertions(+), 5 deletions(-)
-
-Signed-off-by: Sébastien Dugué <sebastien.dugue@bull.net>
-
-
-Index: linux-2.6.20-rc6-mm3/fs/aio.c
-===================================================================
---- linux-2.6.20-rc6-mm3.orig/fs/aio.c	2007-02-05 16:53:43.000000000 +0100
-+++ linux-2.6.20-rc6-mm3/fs/aio.c	2007-02-06 09:33:55.000000000 +0100
-@@ -469,8 +469,7 @@ static inline void really_put_req(struct
- 		kfree(req->ki_iovec);
- 
- 	/* Release task ref */
--	if (req->ki_notify.notify == SIGEV_THREAD_ID ||
--	    req->ki_notify.notify == SIGEV_SIGNAL)
-+	if (req->ki_notify.notify != SIGEV_NONE)
- 		put_task_struct(req->ki_notify.target);
- 
- 	kmem_cache_free(kiocb_cachep, req);
-@@ -970,8 +969,14 @@ static long aio_setup_sigevent(struct ai
- 	rcu_read_lock();
- 	target = sigevent_find_task(&event);
- 
--	if (unlikely(!target))
-+	if (unlikely(!target)) {
-+		/*
-+		 * Revert notify to SIGEV_NONE so that really_put_req()
-+		 * knows that no ref has been taken on a task.
-+		 */
-+		notify->notify = SIGEV_NONE;
- 		goto out_unlock;
-+	}
- 
- 	/*
- 	 * At this point, we know that notify is either SIGEV_SIGNAL or
-@@ -996,7 +1001,7 @@ static long aio_setup_sigevent(struct ai
- 	return 0;
- 
- out_unlock:
--	read_unlock(&tasklist_lock);
-+	rcu_read_unlock();
- 	return -EINVAL;
- }
- 
-@@ -1763,7 +1768,7 @@ int fastcall io_submit_one(struct kioctx
- 					 (struct sigevent __user *)(unsigned long)
- 					 iocb->aio_sigeventp);
- 		if (ret)
--			goto out_put_req;
-+			goto out_sigqfree;
- 	}
- 
- 	/* Attach this iocb to its lio */
+Zach
