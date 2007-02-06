@@ -1,62 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965396AbXBFUhz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965430AbXBFUjb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965396AbXBFUhz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 15:37:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965416AbXBFUhz
+	id S965430AbXBFUjb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 15:39:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965433AbXBFUja
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 15:37:55 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:52854 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965396AbXBFUhz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 15:37:55 -0500
-Date: Tue, 6 Feb 2007 20:37:35 +0000 (GMT)
-From: James Simmons <jsimmons@infradead.org>
-To: Luca Tettamanti <kronos@people.it>
-cc: linux-fbdev-devel@lists.sourceforge.net, Andrew Morton <akpm@osdl.org>,
-       Dave Airlie <airlied@gmail.com>,
-       Giuseppe Bilotta <giuseppe.bilotta@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [Linux-fbdev-devel] [PATCH] nvidiafb: allow ignoring EDID info
-In-Reply-To: <20070204201713.GA12867@dreamland.darkstar.lan>
-Message-ID: <Pine.LNX.4.64.0702062034380.9224@pentafluge.infradead.org>
-References: <ephv35$4i3$1@sea.gmane.org> <20070128160831.fb51347f.akpm@osdl.org>
- <21d7e9970701281612q56b694edp6efd1a5556dea3fe@mail.gmail.com>
- <20070128162907.370f5476.akpm@osdl.org> <21d7e9970701281639w57edc2efw4ba620d4c1bdcee7@mail.gmail.com>
- <cb7bb73a0701290637q2ce0ff16t28f82d0c0339a2ba@mail.gmail.com>
- <20070130203301.GA15067@dreamland.darkstar.lan> <20070204201713.GA12867@dreamland.darkstar.lan>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 6 Feb 2007 15:39:30 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:3963 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S965416AbXBFUja (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Feb 2007 15:39:30 -0500
+Date: Tue, 6 Feb 2007 20:39:15 +0000
+From: Pavel Machek <pavel@ucw.cz>
+To: Denis Vlasenko <vda.linux@googlemail.com>
+Cc: Phillip Susi <psusi@cfl.rr.com>, Michael Tokarev <mjt@tls.msk.ru>,
+       Linus Torvalds <torvalds@osdl.org>, Viktor <vvp01@inbox.ru>,
+       Aubrey <aubreylee@gmail.com>, Hua Zhong <hzhong@gmail.com>,
+       Hugh Dickins <hugh@veritas.com>, linux-kernel@vger.kernel.org,
+       hch@infradead.org, kenneth.w.chen@in.karlin.mff.cuni.cz
+Subject: Re: O_DIRECT question
+Message-ID: <20070206203914.GA4128@ucw.cz>
+References: <6d6a94c50701101857v2af1e097xde69e592135e54ae@mail.gmail.com> <200701252211.39017.vda.linux@googlemail.com> <45BA34EE.4050402@cfl.rr.com> <200701270016.46951.vda.linux@googlemail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200701270016.46951.vda.linux@googlemail.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi!
 
-> > > Although solving the problem at the fb layer level is probably the
-> > > correct/best way to do it, I am not aware of people having problems
-> > > with broken EDIDs and non-nVidia cards. By contrast, workarounds for
-> > > nVidia and broken EDIDs is a very common thing to do even on Windows.
+> > > Which shouldn't be true. There is no fundamental reason why
+> > > ordinary writes should be slower than O_DIRECT.
 > > 
-> > Not all drivers have support for reading EDID information, so in many
-> > cases it just "works". My old monitor had garbage in the EDID eeprom and
-> > I had to pass "ignore_edid" to radeonfb (before I reprogrammed the
-> > eeprom that is :P).
-> > 
-> > > Plus, providing an fb-layer-level solution is way beyond my kernel
-> > > programming experience :)
-> > 
-> > I'll try to code something in the weekend.
+> > Again, there IS a reason:  O_DIRECT eliminates the cpu overhead of the 
+> > kernel-user copy,
 > 
-> I'm somewhat stuck. fbmon has the library functions to parse and
-> optionally fix EDID block, but it lacks the knowledge of the source of
-> the data; IOW it's not possible to ignore the EDID coming from a certain
-> head, the flag would be global (which may be less that optimal with
-> multi-head setups).
-> So instead of adding an option I'd use the existing broken EDID db,
-> adding another state (say 'unfixable') which causes the data to be
-> discarded. Comments?
-> 
-> Giuseppe, can you send me the EDID block of your monitor?
+> You assume that ordinary read()/write() is *required* to do the copying.
+> It doesn't. Kernel is allowed to do direct DMAing in this case too.
 
-If you can find post the manufacturer and model number we can place it on 
-the backlist in fbmon. Also we should figure out what is wrong and fix it.
+Kernel is allowed, but it is practically impossible to code. It would
+require slow MMU magic.
 
+							Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
