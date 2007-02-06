@@ -1,61 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933005AbXBFRRK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752153AbXBFRT2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933005AbXBFRRK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 12:17:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932999AbXBFRRJ
+	id S1752153AbXBFRT2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 12:19:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752262AbXBFRT2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 12:17:09 -0500
-Received: from mga03.intel.com ([143.182.124.21]:13330 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932952AbXBFRRH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 12:17:07 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.13,291,1167638400"; 
-   d="scan'208"; a="177923677:sNHT5212313680"
-Message-ID: <45C8B808.3080908@intel.com>
-Date: Tue, 06 Feb 2007 09:16:56 -0800
-From: Auke Kok <auke-jan.h.kok@intel.com>
-User-Agent: Mail/News 1.5.0.9 (X11/20061228)
+	Tue, 6 Feb 2007 12:19:28 -0500
+Received: from web38507.mail.mud.yahoo.com ([209.191.125.53]:43506 "HELO
+	web38507.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751651AbXBFRT1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Feb 2007 12:19:27 -0500
+X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Tue, 06 Feb 2007 12:19:27 EST
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=FOilkRvlL0BpHWo3jvgH8Ayv8eFw1c6M1bOPkYVFZoRFvmEtz2RSCaorx9jrLref1eG/QsFnV/A6d8MbtYAsk/XTmcW1wEM3g8MnxMhybJkrZ0LX5h5FpL1fLFRzG6/eXxMqGm5bwEzJVJeDBlU/CAENdikgZ1AYLVlOXNbJrww=;
+X-YMail-OSG: ZFVL4VgVM1mgvJgYrTln7gAJkguwkentRByzPPj_8AQG4BL6JwPf6wsJ_UWi.To_wQ--
+Date: Tue, 6 Feb 2007 09:12:47 -0800 (PST)
+From: Levitsky Maxim <maximlevitsky@yahoo.com>
+Subject: Question: Status of marvell's PATA 88SE6101 controller on intel boards
+To: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-To: "Ahmed S. Darwish" <darwish.07@gmail.com>
-CC: cramerj@intel.com, john.ronciak@intel.com, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH 2.6.20] e1000: Use ARRAY_SIZE macro when appropriate
-References: <20070205165546.GE3896@Ahmed>
-In-Reply-To: <20070205165546.GE3896@Ahmed>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 06 Feb 2007 17:16:57.0468 (UTC) FILETIME=[9B0F33C0:01C74A12]
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <508716.76088.qm@web38507.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ahmed S. Darwish wrote:
-> Hi,
-> 
-> A patch to use ARRAY_SIZE macro already defined in kernel.h.
-> 
-> Signed-off-by: Ahmed S. Darwish <darwish.07@gmail.com>
+Hello,
 
-Acked-by: Auke Kok <auke-jan.h.kok@intel.com>
+I am going to buy a intel DG965RYCK motherboard. The board looks ok to me , 
+but I found that it contains marvell's 88SE6101 PATA controller , and I need to use PATA.
 
-Cheers,
+I also noticed that 2.6.20 adds experimentally support for that chip.
+But driver says that it enables it via 'legacy mode'
 
-Auke
+I will be glad to hear whenever full support is planned or not.
 
-> ---
-> Patch is compile tested.
-> 
-> diff --git a/drivers/net/e1000/e1000_ethtool.c b/drivers/net/e1000/e1000_ethtool.c
-> index fb96c87..d21706e 100644
-> --- a/drivers/net/e1000/e1000_ethtool.c
-> +++ b/drivers/net/e1000/e1000_ethtool.c
-> @@ -746,7 +746,7 @@ err_setup:
->  	uint32_t pat, value;                                                   \
->  	uint32_t test[] =                                                      \
->  		{0x5A5A5A5A, 0xA5A5A5A5, 0x00000000, 0xFFFFFFFF};              \
-> -	for (pat = 0; pat < sizeof(test)/sizeof(test[0]); pat++) {              \
-> +	for (pat = 0; pat < ARRAY_SIZE(test); pat++) {              \
->  		E1000_WRITE_REG(&adapter->hw, R, (test[pat] & W));             \
->  		value = E1000_READ_REG(&adapter->hw, R);                       \
->  		if (value != (test[pat] & W & M)) {                             \
-> 
+And as last thing I want to ask you whenever current support is usable, 
+that is can I use DMA , can I use DVD as at least reader for CD/DVD , 
+and even better can I burn disks with it ( although I can live without it)
+
+Your truly,
+             Maxim Levitsky
+
+
+Maxim Levitsky
+
+
+ 
+____________________________________________________________________________________
+Don't get soaked.  Take a quick peak at the forecast
+with the Yahoo! Search weather shortcut.
+http://tools.search.yahoo.com/shortcuts/#loc_weather
