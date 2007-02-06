@@ -1,70 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932617AbXBFPlc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932518AbXBFPuV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932617AbXBFPlc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 10:41:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932085AbXBFPlc
+	id S932518AbXBFPuV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 10:50:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932606AbXBFPuV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 10:41:32 -0500
-Received: from mail.tmr.com ([64.65.253.246]:35113 "EHLO gaimboi.tmr.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932617AbXBFPlc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 10:41:32 -0500
-Message-ID: <45C8A18F.3010604@tmr.com>
-Date: Tue, 06 Feb 2007 10:41:03 -0500
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+	Tue, 6 Feb 2007 10:50:21 -0500
+Received: from terminus.zytor.com ([192.83.249.54]:55419 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932518AbXBFPuU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Feb 2007 10:50:20 -0500
+Message-ID: <45C8A3B3.6000802@zytor.com>
+Date: Tue, 06 Feb 2007 07:50:11 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: David Woodhouse <dwmw2@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [patch] MTD: fix DOC2000/2001/2001PLUS build error
-References: <Pine.LNX.4.64.0702041057090.8424@woody.linux-foundation.org>  <20070205084523.GA21858@elte.hu>  <1170682488.29759.795.camel@pmac.infradead.org>  <20070205155627.GA8354@elte.hu>  <1170692539.29759.856.camel@pmac.infradead.org>  <20070205162635.GA755@elte.hu> <20070205163152.GA2464@elte.hu>  <Pine.LNX.4.64.0702050852160.8424@woody.linux-foundation.org>  <1170710272.29759.894.camel@pmac.infradead.org>  <Pine.LNX.4.64.0702051322580.8424@woody.linux-foundation.org>  <1170711587.29759.909.camel@pmac.infradead.org>  <Pine.LNX.4.64.0702051345380.8424@woody.linux-foundation.org> <1170712393.29759.925.camel@pmac.infradead.org> <Pine.LNX.4.64.0702051409110.8424@woody.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0702051409110.8424@woody.linux-foundation.org>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: vgoyal@in.ibm.com, Etienne Lorrain <etienne_lorrain@yahoo.fr>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Compressed ia32 ELF file generation for loading by Gujin
+ 1/3
+References: <522909.27613.qm@web26909.mail.ukl.yahoo.com>	<45C7CDD7.20806@zytor.com> <20070206052514.GA15613@in.ibm.com>	<45C81D5B.3050408@zytor.com> <20070206063320.GA26462@in.ibm.com>	<45C82266.3010007@zytor.com> <20070206065104.GB26462@in.ibm.com> <m1abzrvjdj.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <m1abzrvjdj.fsf@ebiederm.dsl.xmission.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
+Eric W. Biederman wrote:
 > 
-> On Mon, 5 Feb 2007, David Woodhouse wrote:
->> Ten years ago, people used 'depends on' to fix the tools, so that then
->> you want to enable something like USB_STORAGE, it can automatically turn
->> SCSI on for you.
->>
->> Isn't that what you wanted?
+> Just for documentation the current interface is you come in through
+> the kernels 16bit entry point and get all of it's BIOS calls, or your
+> bootloader is responsible for getting the equivalent information
+> somehow.
 > 
-> Try it. It's not what it does. 
+> From what little I skimmed part of what Gujin wanted to do was sane
+> at first glance. Just boot a gziped vmlinux like the other
+> architectures.  The problem was the 16bit code.  
 > 
-> If you have a 
+> So there may be some good ideas buried in there somewhere, but it
+> likely to take some doing, and patches that I have to save before
+> I read them are a real pain!
 > 
-> 	depends on SCSI
-> 
-> and you did not say you wanted SCSI, you'll never even *see* the question.
-> 
-> It will *not* turn on SCSI automatically for you. Quite the reverse. It 
-> will not even show you the option.
 
-My favorite example of this is selinux, which you don't see unless you 
-enable other unobvious things first. I say unobvious because until you 
-do it the first few times you don't see the option, you ask menuconfig 
-where it is, and it isn't there. So you go use your favorite tool to 
-search the Kconfig until you find out why.
+Actually, as far as I can see, he has re-invented having a real-mode 
+code chunk which then gets run before the protected-mode kernel.  We 
+already have that!  You can even intercept between running real-mode and 
+protected-mode if you really want to.
 
-Now that's in part a failure of the menuconfig tool I use, which may not 
-be in xconfig (I'll try that later today when I build a new kernel), but 
-it seem odd that a major feature would not show unless something obscure 
-were selected, and that the crypto features needed for selinux would be 
-good candidates for SELECT.
+I don't really see anything new here.  The one thing that he does which 
+we might want to consider emulating is writing the real-mode code in C. 
+  Right now, the assembly code is very cluttered, and with the size 
+limit having been, long ago, raised from 2K to 32K we should be able to 
+fit a fair bit of code even if we use C.
 
-Just because config is something mostly done by advanced user doesn't 
-mean it should be difficult or time-consuming.
-
-And why say "should have done" for the SCSI mess, it's correctable, if 
-everyone agrees that you are right (who would dare disagree ;-) then it 
-can be fixed.
-
--- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+	-hpa
