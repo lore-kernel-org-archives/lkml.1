@@ -1,75 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751760AbXBFI4Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751769AbXBFI6m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751760AbXBFI4Q (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 03:56:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751770AbXBFI4Q
+	id S1751769AbXBFI6m (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 03:58:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751770AbXBFI6m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 03:56:16 -0500
-Received: from smtp107.mail.mud.yahoo.com ([209.191.85.217]:25334 "HELO
-	smtp107.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751760AbXBFI4P (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 03:56:15 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=aj/eei/8slhZyljhVZFjhab4FKCZQZwBakvDmyK860wo9xMXeuGnqcvy2IdzdkeJ1T0MreJnK5kbf2zB8JBsAjOT4/kjSW45v8bSD4vN3/PnAEmgEEXSRP6aoVIxdjXMZmBsU4NB2Efr+ZwhIAjhlkl9P3EPRhs06F5LL/yNdvY=  ;
-X-YMail-OSG: 6jtrdOsVM1nKymOOLVxjAWIJdDceSyeIjawvLvQa9wZ_H8CbMhOzcNJ6EVok9WPutIvGSkLz74_To2BIrhQA.i0gpHSwOw2fyF88efmveKkgZxCCn_i5RfLDzm3AMYR5FaIxc3GjQYWwZ.I-
-Message-ID: <45C842A0.8010804@yahoo.com.au>
-Date: Tue, 06 Feb 2007 19:56:00 +1100
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
+	Tue, 6 Feb 2007 03:58:42 -0500
+Received: from 81-174-33-43.f5.ngi.it ([81.174.33.43]:57629 "EHLO develer.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751769AbXBFI6l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Feb 2007 03:58:41 -0500
+Message-ID: <45C84333.709@develer.com>
+Date: Tue, 06 Feb 2007 09:58:27 +0100
+From: Bernardo Innocenti <bernie@develer.com>
+Organization: Develer S.r.l. - http://www.develer.com/
+User-Agent: Thunderbird 1.5.0.9 (X11/20070131)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Nick Piggin <npiggin@suse.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Hugh Dickins <hugh@veritas.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Linux Memory Management <linux-mm@kvack.org>,
-       Linux Filesystems <linux-fsdevel@vger.kernel.org>
-Subject: Re: [patch 3/3] mm: make read_cache_page synchronous
-References: <20070206054925.21042.50546.sendpatchset@linux.site>	<20070206054957.21042.18724.sendpatchset@linux.site> <20070206002839.f02a47bc.akpm@linux-foundation.org>
-In-Reply-To: <20070206002839.f02a47bc.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: mpt_linux_developer@lsil.com
+CC: lkml <linux-kernel@vger.kernel.org>,
+       Develer IT Infrastructure <it@lists.develer.com>,
+       linux-scsi@vger.kernel.org
+Subject: Writing performance problem with SAS1068
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Tue,  6 Feb 2007 09:02:33 +0100 (CET) Nick Piggin <npiggin@suse.de> wrote:
-> 
-> 
->>Ensure pages are uptodate after returning from read_cache_page, which allows
->>us to cut out most of the filesystem-internal PageUptodate_NoLock calls.
-> 
-> 
-> Normally it's good to rename functions when we change their behaviour, but
-> I guess any missed (or out-of-tree) filesystems will just end up doing a
-> pointless wait_on_page_locked() and will continue to work OK, yes?
+Hello,
 
-Yeah.
+I've stumbled onto a strange performance problem on a new server:
+reading from disks is fast (70-80MB/s), but writing is extremely
+slow (13-15MB/s).  I've measured it like this:
 
-> 
-> 
->>I didn't have a great look down the call chains, but this appears to fixes 7
->>possible use-before uptodate in hfs, 2 in hfsplus, 1 in jfs, a few in ecryptfs,
->>1 in jffs2, and a possible cleared data overwritten with readpage in block2mtd.
->>All depending on whether the filler is async and/or can return with a !uptodate
->>page.
->>
->>Also, a memory leak in sys_swapon().
-> 
-> 
-> Separate patch?
+ dd if=/dev/zero of=/dev/sdd bs=4096 count=65536 conv=fdatasync
+ 65536+0 records in
+ 65536+0 records out
+ 268435456 bytes (268 MB) copied, 17.7004 seconds, 15.2 MB/s
 
-Well its fixed by virtue of read_cache_page now correctly dropping the page
-refcount if it finds the page !uptodate, rather than any special logic I
-added.
+*but*: if I rebuild the kernel and change CONFIG_FUSION_MAX_SGE
+from 40 (Fedora's default) to 128 (maximum value), it suddenly
+gets much faster: 31MB/s!
 
-I can do another patch though. No problem, I'll be resending the series after
-this round of feedback.
+Looks very much like an interrupt problem to me.  Maybe
+increasing the scatter gather mitigates the problem of
+missing completion notifications.
+
+Evidence:
+
+ Exhibit A: custom kernel config for 2.6.18-1.2257.fc5.bernie
+ http://www.codewiz.org/helium_logs/config
+
+ Exhibit B: dmesg output from said kernel
+ http://www.codewiz.org/helium_logs/dmesg
+
+ Exhibit C: misc proc files, and all that
+ http://www.codewiz.org/helium_logs/
+
+ Exhibit D: motherboard and chipset specification
+ http://www.supermicro.com/products/motherboard/Xeon3000/3010/PDSME+.cfm
+
+
+Circumstantial evidence:
+
+ - Seems to affect just the LSI SAS1068 PCI-X controller.
+   The on-board AHCI controller writes very fast (>60MB/s)
+
+ - I've seen a very similar writing bottleneck with a
+   Promise TX4 SATA controller (not PCI-X) on a server with
+   a similar motherboard (Supermicro with Mukilteo 3000).
+
+ - Passing mpt_msi_enable=1 doesn't change anything
+
+ - FreeBSD 6.2 is even slower: writes at 7MB/s
+
+ - OpenSolaris is much, much slower... less than 1MB/s.
+
+ - Windows Vista (rc something) writes at 90MB/s.  Too
+   fast to believe, maybe dd from Cygwin is misbehaving.
 
 -- 
-SUSE Labs, Novell Inc.
-Send instant messages to your online friends http://au.messenger.yahoo.com 
+   // Bernardo Innocenti - Develer S.r.l., R&D dept.
+ \X/  http://www.develer.com/
+
