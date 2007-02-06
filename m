@@ -1,47 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965472AbXBFV7M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965468AbXBFV7L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965472AbXBFV7M (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 16:59:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965474AbXBFV7M
-	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 16:59:12 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.158]:24104 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965472AbXBFV7L (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+	id S965468AbXBFV7L (ORCPT <rfc822;w@1wt.eu>);
 	Tue, 6 Feb 2007 16:59:11 -0500
-Subject: Re: 2.6.20-rc6-mm3
-From: Daniel Walker <dwalker@mvista.com>
-Reply-To: dwalker@mvista.com
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@osdl.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <1170798181.3785.32.camel@chaos>
-References: <20070129204528.eb8d695e.akpm@osdl.org>
-	 <1170777802.9781.353.camel@imap.mvista.com> <1170786992.3785.0.camel@chaos>
-	 <1170787543.9781.362.camel@imap.mvista.com> <1170788870.3785.9.camel@chaos>
-	 <1170791739.3455.3.camel@dwalker1> <1170793206.3785.16.camel@chaos>
-	 <1170794437.3455.20.camel@dwalker1> <20070206205231.GA25430@elte.hu>
-	 <1170795378.3455.31.camel@dwalker1>  <20070206210959.GC25430@elte.hu>
-	 <1170796999.3455.43.camel@dwalker1>  <1170798181.3785.32.camel@chaos>
-Content-Type: text/plain
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965474AbXBFV7L
+	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Tue, 6 Feb 2007 16:59:11 -0500
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:53062 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S965468AbXBFV7K (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Feb 2007 16:59:10 -0500
+Message-ID: <45C8FA2D.6010706@vmware.com>
 Date: Tue, 06 Feb 2007 13:59:09 -0800
-Message-Id: <1170799149.3455.60.camel@dwalker1>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
+From: Zachary Amsden <zach@vmware.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20061206)
+MIME-Version: 1.0
+To: Andi Kleen <ak@muc.de>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, Rusty Russell <rusty@rustcorp.com.au>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Chris Wright <chrisw@sous-sol.org>
+Subject: Re: [PATCH 9/11] Panic delay fix
+References: <200702060353.l163rUmj000771@zach-dev.vmware.com> <20070206122729.GC47229@muc.de>
+In-Reply-To: <20070206122729.GC47229@muc.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-02-06 at 22:43 +0100, Thomas Gleixner wrote:
+Andi Kleen wrote:
+> On Mon, Feb 05, 2007 at 07:53:30PM -0800, Zachary Amsden wrote:
+>   
+>> Failure to use real-time delay here causes the keyboard to become demonically
+>> possessed in the event of a kernel crash, with wildly blinking lights and
+>> unpredictable behavior.  This has resulted in several injuries.
+>>     
+>
+> There must be a reason why it wasn't default before. Has this
+> reason changed?
+>   
 
-> > I think the regression (if you can call it that) is not scripts
-> > crashing, but more people not know what's going on with there system .. 
-> 
-> I did not hear a complaint of anyone except you. I doubt that there will
-> be a big confusion as long as the kernel does work as expected.
+This only matters under paravirt; non-paravirt kernels and kernels 
+running on native hardware will always behave properly.
 
-This is going to be a slow motion explosion ..
+But paravirtualized kernels with fake devices have no need to udelay to 
+accommodate slow hardware - the hardware is just virtual.  The 
+USE_REAL_TIME_DELAY define allows udelay to be specifically reverted 
+back to being a real delay.  There are only a couple cases where it 
+matters - one is booting APs on SMP systems (there is a real delay 
+before they come up), and one is any hardware that drives world 
+interacting devices - such as keyboard LEDs in a panic loop.
 
-Daniel
-
+Zach
