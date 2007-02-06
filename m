@@ -1,95 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751785AbXBFJJP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751831AbXBFJMZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751785AbXBFJJP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 04:09:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751802AbXBFJJP
+	id S1751831AbXBFJMZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 04:12:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751837AbXBFJMZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 04:09:15 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:55889 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751785AbXBFJJM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 04:09:12 -0500
-Date: Tue, 6 Feb 2007 01:09:07 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Lukas Hejtmanek <xhejtman@mail.muni.cz>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.19.2, 2.6.20 Kernel oops
-Message-Id: <20070206010907.c553dd52.akpm@linux-foundation.org>
-In-Reply-To: <20070206085943.GG22820@mail.muni.cz>
-References: <20070205110829.GC22820@mail.muni.cz>
-	<20070205195739.cabf67fa.akpm@linux-foundation.org>
-	<20070206085943.GG22820@mail.muni.cz>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 6 Feb 2007 04:12:25 -0500
+Received: from nz-out-0506.google.com ([64.233.162.235]:21290 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751771AbXBFJMX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Feb 2007 04:12:23 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
+        b=m/cJ59v/dkkaUJMLzFAgIWk4QfzAyCYZaSYVCFN1gzjdTZLJiqnvTNZxMeY23VXZqZmXjzrj0hDkdHecP590ZW2dwGdLlhj2PZeBgK71AK3gY2FNeBrHzf+QlMxwQtCUaAvFTX4oW1CTGvgyaKuEiwbnlCVKe1AobKSLP4emazI=
+Date: Tue, 6 Feb 2007 11:12:07 +0200
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: ebs@ebshome.net, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       linuxppc-embedded@ozlabs.org
+Subject: Re: [PATCH 2.6.20] ibm_emac: Use ARRAY_SIZE macro when appropriate
+Message-ID: <20070206091207.GR3896@Ahmed>
+References: <20070205165429.GD3896@Ahmed> <20070205165916.GK3896@Ahmed> <20070205202206.GD11055@martell.zuzino.mipt.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070205202206.GD11055@martell.zuzino.mipt.ru>
+User-Agent: Mutt/1.5.11
+From: "Ahmed S. Darwish" <darwish.07@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 6 Feb 2007 09:59:43 +0100 Lukas Hejtmanek <xhejtman@mail.muni.cz> wrote:
-
-> On Mon, Feb 05, 2007 at 07:57:39PM -0800, Andrew Morton wrote:
+On Mon, Feb 05, 2007 at 11:22:06PM +0300, Alexey Dobriyan wrote:
+> On Mon, Feb 05, 2007 at 06:59:16PM +0200, Ahmed S. Darwish wrote:
+> > A patch to use ARRAY_SIZE macro already defined in kernel.h.
 > 
-> these are lines above:
+> OK, but checks you're changing are strange. idx there is signed so
 > 
-> kernel: [  144.639984] ACPI: Power Button (FF) [PWRF]
-> kernel: [  144.640006] input: Power Button (CM) as /class/input/input3
-> kernel: [  144.640017] ACPI: Power Button (CM) [PWRB]
-> kernel: [  222.002010] PGD 253115067 PUD 0
+> 	BUG_ON(idx < 0 || idx > ARRAY_SIZE());
 > 
-> 
-> > > kernel: [  222.002013] CPU 0
-> > > kernel: [  222.002014] Modules linked in: container fan button ac thermal processor myri10ge megaraid_sas serio_raw psmouse evdev
-> > > kernel: [  222.002020] Pid: 3234, comm: java Not tainted 2.6.20 #1
-> > > kernel: [  222.002021] RIP: 0010:[page_to_pfn+0/64] [page_to_pfn+0/64] page_to_pfn+0x0/0x40
-> > > kernel: [  222.002024] RSP: 0018:ffff81024ebf9ac0 EFLAGS: 00010246
-> > > kernel: [  222.002026] RAX: ffff8102574213c0 RBX: ffff810256f07800 RCX: ffff81022e5600c0
-> > > kernel: [  222.002027] RDX: 0000000000000740 RSI: 0000000000000000 RDI: 0000000000000000
-> > > kernel: [  222.002028] RBP: 0000000000000740 R08: 0000000000000002 R09: ffff8102536b9a40
-> > > kernel: [  222.002030] R10: 0000000000000007 R11: ffffffff80259650 R12: 0000000000000000
-> > > kernel: [  222.002031] R13: ffff810257422460 R14: 0000000000000002 R15: ffff81022e5600c0
-> > > kernel: [  222.002033] FS:  0000000041061950(0063) GS:ffffffff80649000(0000) knlGS:0000000000000000
-> > > kernel: [  222.002034] CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-> > > kernel: [  222.002036] CR2: 0000000000000000 CR3: 0000000251dbb000 CR4: 00000000000006e0
-> > > kernel: [  222.002037] Process java (pid: 3234, threadinfo ffff81024ebf8000, task ffff81024ebdc7a0)
-> > > kernel: [  222.002038] Stack:  ffffffff804c4f77 ffff810257422400 0000000000000002 ffff81024ebf9f28
-> > > kernel: [  222.002042]  fffffffffffff240 0000000000000740 ffff810257422460 0000000000000002
-> > > kernel: [  222.002044]  ffffffff804c3ba5 0000000000000010 ffff81022e5600c0 ffff8102536b9a40
-> > > kernel: [  222.002046] Call Trace:
-> > > kernel: [  222.002051] [ioat_dma_memcpy_buf_to_pg+71/224] ioat_dma_memcpy_buf_to_pg+0x47/0xe0
-> > > kernel: [  222.002053]  [dma_memcpy_to_iovec+613/768] dma_memcpy_to_iovec+0x265/0x300
-> > > kernel: [  222.002057] [dma_skb_copy_datagram_iovec+115/656] dma_skb_copy_datagram_iovec+0x73/0x290
-> > > kernel: [  222.002060]  [tcp_recvmsg+1764/3296] tcp_recvmsg+0x6e4/0xce0
-> > > kernel: [  222.002063]  [sock_common_recvmsg+48/80] sock_common_recvmsg+0x30/0x50
-> > > kernel: [  222.002065]  [sock_recvmsg+281/352] sock_recvmsg+0x119/0x160
-> > > kernel: [  222.002069]  [autoremove_wake_function+0/48] autoremove_wake_function+0x0/0x30
-> > > kernel: [  222.002071]  [autoremove_wake_function+0/48] autoremove_wake_function+0x0/0x30
-> > > kernel: [  222.002073]  [__handle_mm_fault+1741/2896] __handle_mm_fault+0x6cd/0xb50
-> > > kernel: [  222.002076]  [sys_recvfrom+250/400] sys_recvfrom+0xfa/0x190
-> > > kernel: [  222.002078]  [tty_ldisc_deref+100/128] tty_ldisc_deref+0x64/0x80
-> > > kernel: [  222.002080]  [tty_write+540/592] tty_write+0x21c/0x250
-> > > kernel: [  222.002083]  [system_call+126/131] system_call+0x7e/0x83
-> > > kernel: [  222.002084]
-> > > kernel: [  222.002085]
-> > > kernel: [  222.002085] Code: 48 8b 07 48 c1 e8 3a 48 8b 14 c5 80 b8 65 80 48 b8 b7 6d db
-> > > kernel: [  222.002092]  RSP <ffff81024ebf9ac0>
-> > > 
-> > 
-> > Is that the whole oops message?  There should have been a few interesting
-> > lines preceding the above.
-> 
-> I've posted it above.
+> should be more appropriate.
 
-That's peculiar.
+It's just a janitor patch. I don't like to mess with code logic in such
+kind of patches (to minimize errors and because I can't find time to
+understand all affected files since they are scattered allover the tree).
 
-Normally an oops on x86_64 looks like:
-
-Unable to handle kernel NULL pointer dereference at 0000000000000038
-RIP: [<ffffffff8022b9c8>] iput+0x18/0x80
-PGD 3a607067 PUD 27b20067 PMD 0
-Oops: 0000 [1] SMP
-CPU 0
-Modules linked in: psmouse battery ac thermal fan button
-...
-
-but you seem to have lost the first few lines.
+Thanks,
+-- 
+Ahmed S. Darwish
+http://darwish-07.blogspot.com
