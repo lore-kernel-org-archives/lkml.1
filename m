@@ -1,59 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965483AbXBFVKW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965492AbXBFVKr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965483AbXBFVKW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 16:10:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965487AbXBFVKW
+	id S965492AbXBFVKr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 16:10:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965490AbXBFVKr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 16:10:22 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:40156 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965483AbXBFVKU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 16:10:20 -0500
-Date: Tue, 6 Feb 2007 22:09:59 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Daniel Walker <dwalker@mvista.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Andrew Morton <akpm@osdl.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.20-rc6-mm3
-Message-ID: <20070206210959.GC25430@elte.hu>
-References: <20070129204528.eb8d695e.akpm@osdl.org> <1170777802.9781.353.camel@imap.mvista.com> <1170786992.3785.0.camel@chaos> <1170787543.9781.362.camel@imap.mvista.com> <1170788870.3785.9.camel@chaos> <1170791739.3455.3.camel@dwalker1> <1170793206.3785.16.camel@chaos> <1170794437.3455.20.camel@dwalker1> <20070206205231.GA25430@elte.hu> <1170795378.3455.31.camel@dwalker1>
-Mime-Version: 1.0
+	Tue, 6 Feb 2007 16:10:47 -0500
+Received: from mtagate3.de.ibm.com ([195.212.29.152]:9594 "EHLO
+	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965487AbXBFVKY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Feb 2007 16:10:24 -0500
+Date: Tue, 6 Feb 2007 22:10:23 +0100
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
+Cc: cornelia.huck@de.ibm.com
+Subject: [S390] cio: Fixup interface for setting options on ccw devices.
+Message-ID: <20070206211023.GC30335@skybase>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1170795378.3455.31.camel@dwalker1>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -5.3
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-5.3 required=5.9 tests=ALL_TRUSTED,BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-3.3 ALL_TRUSTED            Did not pass through any untrusted hosts
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
 
-* Daniel Walker <dwalker@mvista.com> wrote:
+[S390] cio: Fixup interface for setting options on ccw devices.
 
-> > it's quite easy to explain: because of the new dynticks feature. 
-> > Both 'timer' and 'LOC' counts go way down.
-> 
-> I don't have that enabled tho .. This is with HRT/dynamic tick both 
-> off..
+The current ccw_device_set_options() sets a specified mask of options
+and clears those not specified, but there is no way to find out which
+options have already been set.
 
-your kernel utilizes the kernelin a more optimal way: the new 
-clockevents code now utilizes the local APIC timer irq (represented by 
-the LOC field) for periodic interrupts. The local APIC timer irq has a 
-cost of ~2 usecs per IRQ, while the PIT irq is ~10 usecs per irq. With 
-HZ=1000 this means savings of ~8000 usecs per second - i.e. 8 msecs per 
-second, which is 0.8% more raw CPU power available - which isnt that 
-bad.
+In order to fix this up, introduce the following interface changes:
 
-we could make this clearer by renaming 'LOC' (which stands for 'LOCal 
-timer interupts' and was added [and misnamed] by yours truly many moons 
-ago) to 'apic-timer' and 'timer' to 'PIT-timer' but /that/ would be more 
-of a userspace visible change than the change in the counter rates.
+ccw_device_set_options() now only sets the specified bits, but does
+not clear those that are not specified.
 
-	Ingo
+ccw_device_clear_options() clears the specified bits.
+
+ccw_device_set_options_mask() provides the old semantics (setting only
+the specified bits and clearing the others).
+
+Device drivers now work as expected. qdio has been adapted.
+
+Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
+Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+---
+
+ drivers/s390/cio/device_ops.c |   32 ++++++++++++++++++++++++++++++--
+ drivers/s390/cio/qdio.c       |    2 +-
+ include/asm-s390/ccwdev.h     |    2 ++
+ 3 files changed, 33 insertions(+), 3 deletions(-)
+
+diff -urpN linux-2.6/drivers/s390/cio/device_ops.c linux-2.6-patched/drivers/s390/cio/device_ops.c
+--- linux-2.6/drivers/s390/cio/device_ops.c	2007-02-04 19:44:54.000000000 +0100
++++ linux-2.6-patched/drivers/s390/cio/device_ops.c	2007-02-06 21:43:36.000000000 +0100
+@@ -23,8 +23,7 @@
+ #include "chsc.h"
+ #include "device.h"
+ 
+-int
+-ccw_device_set_options(struct ccw_device *cdev, unsigned long flags)
++int ccw_device_set_options_mask(struct ccw_device *cdev, unsigned long flags)
+ {
+        /*
+ 	* The flag usage is mutal exclusive ...
+@@ -39,6 +38,33 @@ ccw_device_set_options(struct ccw_device
+ 	return 0;
+ }
+ 
++int ccw_device_set_options(struct ccw_device *cdev, unsigned long flags)
++{
++       /*
++	* The flag usage is mutal exclusive ...
++	*/
++	if (((flags & CCWDEV_EARLY_NOTIFICATION) &&
++	    (flags & CCWDEV_REPORT_ALL)) ||
++	    ((flags & CCWDEV_EARLY_NOTIFICATION) &&
++	     cdev->private->options.repall) ||
++	    ((flags & CCWDEV_REPORT_ALL) &&
++	     cdev->private->options.fast))
++		return -EINVAL;
++	cdev->private->options.fast |= (flags & CCWDEV_EARLY_NOTIFICATION) != 0;
++	cdev->private->options.repall |= (flags & CCWDEV_REPORT_ALL) != 0;
++	cdev->private->options.pgroup |= (flags & CCWDEV_DO_PATHGROUP) != 0;
++	cdev->private->options.force |= (flags & CCWDEV_ALLOW_FORCE) != 0;
++	return 0;
++}
++
++void ccw_device_clear_options(struct ccw_device *cdev, unsigned long flags)
++{
++	cdev->private->options.fast &= (flags & CCWDEV_EARLY_NOTIFICATION) == 0;
++	cdev->private->options.repall &= (flags & CCWDEV_REPORT_ALL) == 0;
++	cdev->private->options.pgroup &= (flags & CCWDEV_DO_PATHGROUP) == 0;
++	cdev->private->options.force &= (flags & CCWDEV_ALLOW_FORCE) == 0;
++}
++
+ int
+ ccw_device_clear(struct ccw_device *cdev, unsigned long intparm)
+ {
+@@ -601,7 +627,9 @@ _ccw_device_get_device_number(struct ccw
+ 
+ 
+ MODULE_LICENSE("GPL");
++EXPORT_SYMBOL(ccw_device_set_options_mask);
+ EXPORT_SYMBOL(ccw_device_set_options);
++EXPORT_SYMBOL(ccw_device_clear_options);
+ EXPORT_SYMBOL(ccw_device_clear);
+ EXPORT_SYMBOL(ccw_device_halt);
+ EXPORT_SYMBOL(ccw_device_resume);
+diff -urpN linux-2.6/drivers/s390/cio/qdio.c linux-2.6-patched/drivers/s390/cio/qdio.c
+--- linux-2.6/drivers/s390/cio/qdio.c	2007-02-06 21:43:03.000000000 +0100
++++ linux-2.6-patched/drivers/s390/cio/qdio.c	2007-02-06 21:43:36.000000000 +0100
+@@ -3194,7 +3194,7 @@ qdio_establish(struct qdio_initialize *i
+ 
+ 	spin_lock_irqsave(get_ccwdev_lock(cdev),saveflags);
+ 
+-	ccw_device_set_options(cdev, 0);
++	ccw_device_set_options_mask(cdev, 0);
+ 	result=ccw_device_start_timeout(cdev,&irq_ptr->ccw,
+ 					QDIO_DOING_ESTABLISH,0, 0,
+ 					QDIO_ESTABLISH_TIMEOUT);
+diff -urpN linux-2.6/include/asm-s390/ccwdev.h linux-2.6-patched/include/asm-s390/ccwdev.h
+--- linux-2.6/include/asm-s390/ccwdev.h	2007-02-04 19:44:54.000000000 +0100
++++ linux-2.6-patched/include/asm-s390/ccwdev.h	2007-02-06 21:43:36.000000000 +0100
+@@ -110,7 +110,9 @@ extern void ccw_driver_unregister (struc
+ 
+ struct ccw1;
+ 
++extern int ccw_device_set_options_mask(struct ccw_device *, unsigned long);
+ extern int ccw_device_set_options(struct ccw_device *, unsigned long);
++extern void ccw_device_clear_options(struct ccw_device *, unsigned long);
+ 
+ /* Allow for i/o completion notification after primary interrupt status. */
+ #define CCWDEV_EARLY_NOTIFICATION	0x0001
