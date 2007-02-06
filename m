@@ -1,77 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752225AbXBFPik@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932617AbXBFPlc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752225AbXBFPik (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 10:38:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932085AbXBFPik
+	id S932617AbXBFPlc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 10:41:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932085AbXBFPlc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 10:38:40 -0500
-Received: from nf-out-0910.google.com ([64.233.182.189]:47616 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752229AbXBFPij (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 10:38:39 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=VieBFmdoNb8QNlvL73a+SVQ5kcJl2SCjUKpE9lZ47U3AD4Wt0OgLrt2uJFe7TEB8cl5To2aXolOt1N1FyogJrM6TgdJFb0YUGiyD93jIXsatoUTdUB+QqhRNldL6O8bUj8O2Jrio1dbDrM0+RM4sGzzzd4It7oG9LmhgRATyZ3I=
-Date: Tue, 6 Feb 2007 18:36:15 +0300
-From: "Cyrill V. Gorcunov" <gorcunov@gmail.com>
-To: Sam Creasey <sammy@sammy.net>
-Cc: linux-kernel-list <linux-kernel@vger.kernel.org>,
-       Jiri Slaby <jirislaby@gmail.com>
-Subject: [PATCH] SUN3/3X Lance trivial fix improved
-Message-ID: <20070206153615.GA12371@cvg>
+	Tue, 6 Feb 2007 10:41:32 -0500
+Received: from mail.tmr.com ([64.65.253.246]:35113 "EHLO gaimboi.tmr.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932617AbXBFPlc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Feb 2007 10:41:32 -0500
+Message-ID: <45C8A18F.3010604@tmr.com>
+Date: Tue, 06 Feb 2007 10:41:03 -0500
+From: Bill Davidsen <davidsen@tmr.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: David Woodhouse <dwmw2@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [patch] MTD: fix DOC2000/2001/2001PLUS build error
+References: <Pine.LNX.4.64.0702041057090.8424@woody.linux-foundation.org>  <20070205084523.GA21858@elte.hu>  <1170682488.29759.795.camel@pmac.infradead.org>  <20070205155627.GA8354@elte.hu>  <1170692539.29759.856.camel@pmac.infradead.org>  <20070205162635.GA755@elte.hu> <20070205163152.GA2464@elte.hu>  <Pine.LNX.4.64.0702050852160.8424@woody.linux-foundation.org>  <1170710272.29759.894.camel@pmac.infradead.org>  <Pine.LNX.4.64.0702051322580.8424@woody.linux-foundation.org>  <1170711587.29759.909.camel@pmac.infradead.org>  <Pine.LNX.4.64.0702051345380.8424@woody.linux-foundation.org> <1170712393.29759.925.camel@pmac.infradead.org> <Pine.LNX.4.64.0702051409110.8424@woody.linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0702051409110.8424@woody.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds checking for allocated DVMA memory
-and granted IRQ line.
+Linus Torvalds wrote:
+> 
+> On Mon, 5 Feb 2007, David Woodhouse wrote:
+>> Ten years ago, people used 'depends on' to fix the tools, so that then
+>> you want to enable something like USB_STORAGE, it can automatically turn
+>> SCSI on for you.
+>>
+>> Isn't that what you wanted?
+> 
+> Try it. It's not what it does. 
+> 
+> If you have a 
+> 
+> 	depends on SCSI
+> 
+> and you did not say you wanted SCSI, you'll never even *see* the question.
+> 
+> It will *not* turn on SCSI automatically for you. Quite the reverse. It 
+> will not even show you the option.
 
-Signed-off-by: Cyrill V. Gorcunov <gorcunov@gmail.com>
+My favorite example of this is selinux, which you don't see unless you 
+enable other unobvious things first. I say unobvious because until you 
+do it the first few times you don't see the option, you ask menuconfig 
+where it is, and it isn't there. So you go use your favorite tool to 
+search the Kconfig until you find out why.
 
----
+Now that's in part a failure of the menuconfig tool I use, which may not 
+be in xconfig (I'll try that later today when I build a new kernel), but 
+it seem odd that a major feature would not show unless something obscure 
+were selected, and that the crypto features needed for selinux would be 
+good candidates for SELECT.
 
-Sam, this patch is almost the same I've already sent you
-except of some improvements (thanks to Jiri Slaby) like
-iounmap(), dvma_free() calls.
+Just because config is something mostly done by advanced user doesn't 
+mean it should be difficult or time-consuming.
 
- drivers/net/sun3lance.c |   16 +++++++++++++++-
- 1 files changed, 15 insertions(+), 1 deletions(-)
+And why say "should have done" for the SCSI mess, it's correctable, if 
+everyone agrees that you are right (who would dare disagree ;-) then it 
+can be fixed.
 
-diff --git a/drivers/net/sun3lance.c b/drivers/net/sun3lance.c
-index c62e85d..7bee45b 100644
---- a/drivers/net/sun3lance.c
-+++ b/drivers/net/sun3lance.c
-@@ -336,13 +336,27 @@ static int __init lance_probe( struct net_device *dev)
- 
- 	/* XXX - leak? */
- 	MEM = dvma_malloc_align(sizeof(struct lance_memory), 0x10000);
-+	if (MEM == NULL) {
-+#ifdef CONFIG_SUN3
-+		iounmap((void __iomem *)ioaddr);
-+#endif
-+		printk(KERN_WARNING "SUN3 Lance couldn't allocate DVMA memory\n");
-+		return 0;
-+	}
- 
- 	lp->iobase = (volatile unsigned short *)ioaddr;
- 	dev->base_addr = (unsigned long)ioaddr; /* informational only */
- 
- 	REGA(CSR0) = CSR0_STOP;
- 
--	request_irq(LANCE_IRQ, lance_interrupt, IRQF_DISABLED, "SUN3 Lance", dev);
-+	if (request_irq(LANCE_IRQ, lance_interrupt, IRQF_DISABLED, "SUN3 Lance", dev) < 0) {
-+#ifdef CONFIG_SUN3
-+		iounmap((void __iomem *)ioaddr);
-+#endif
-+		dvma_free((void *)MEM);
-+		printk(KERN_WARNING "SUN3 Lance unable to allocate IRQ\n");
-+		return 0;
-+	}
- 	dev->irq = (unsigned short)LANCE_IRQ;
- 
- 
+-- 
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
