@@ -1,41 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965421AbXBFBEL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965415AbXBFBKS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965421AbXBFBEL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 20:04:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965427AbXBFBEK
+	id S965415AbXBFBKS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 20:10:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965427AbXBFBKS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 20:04:10 -0500
-Received: from wx-out-0506.google.com ([66.249.82.225]:6183 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965420AbXBFBEJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 20:04:09 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=LzC+5v2WKGnLJRNQCrlqE22DZPPTP2SuA6/L8UjQUEH4D72Q6Mcvd69YJ9qaM6xXmsZbFCIorluMSwPja0yuTiSt9FsHYuoNQvHTXq1X4FJ9C86MFUyqP9z4Qly+yK3A2EJS4t2oMkr/y9dVv+CUBLnD26pRny4YESitarwzwL8=
-Message-ID: <e6babb600702051704s31cf24a5x425c9595b2266fdf@mail.gmail.com>
-Date: Mon, 5 Feb 2007 18:04:08 -0700
-From: "Robert Crocombe" <rcrocomb@gmail.com>
-To: "Stefan Richter" <stefanr@s5r6.in-berlin.de>
-Subject: Re: ohci1394 broke 2.6.19 -> 2.6.20-rc1
-Cc: linux1394-devel <linux1394-devel@lists.sourceforge.net>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <tkrat.f2510ec744e6b5c8@s5r6.in-berlin.de>
+	Mon, 5 Feb 2007 20:10:18 -0500
+Received: from thunk.org ([69.25.196.29]:58099 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965415AbXBFBKR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Feb 2007 20:10:17 -0500
+Date: Mon, 5 Feb 2007 20:09:58 -0500
+From: Theodore Tso <tytso@mit.edu>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [patch] MTD: fix DOC2000/2001/2001PLUS build error
+Message-ID: <20070206010958.GA31809@thunk.org>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	David Woodhouse <dwmw2@infradead.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Randy Dunlap <randy.dunlap@oracle.com>, Ingo Molnar <mingo@elte.hu>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <Pine.LNX.4.64.0702050852160.8424@woody.linux-foundation.org> <1170710272.29759.894.camel@pmac.infradead.org> <Pine.LNX.4.64.0702051322580.8424@woody.linux-foundation.org> <1170711587.29759.909.camel@pmac.infradead.org> <Pine.LNX.4.64.0702051345380.8424@woody.linux-foundation.org> <1170712393.29759.925.camel@pmac.infradead.org> <Pine.LNX.4.64.0702051409110.8424@woody.linux-foundation.org> <20070205143110.fca62b57.randy.dunlap@oracle.com> <Pine.LNX.4.64.0702051502370.8424@woody.linux-foundation.org> <1170717694.29759.941.camel@pmac.infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <e6babb600702051521l4a08eb2dw2a7f423fd0d7edd7@mail.gmail.com>
-	 <tkrat.c39467d7194502c4@s5r6.in-berlin.de>
-	 <tkrat.f2510ec744e6b5c8@s5r6.in-berlin.de>
+In-Reply-To: <1170717694.29759.941.camel@pmac.infradead.org>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/5/07, Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
-> It's my oversight, see patch.
+On Mon, Feb 05, 2007 at 11:21:34PM +0000, David Woodhouse wrote:
+> But Alan makes a reasonable suggestion -- we could work around this in
+> the tools too. 
 
-Yes, this fixes things.  Thanks!
+I wouldn't call it "work around this" in the tools.  It's a useful
+feature we can add in the tools for developers who aren't men enough
+to use "sed/grep" pipelines.  :-)
 
--- 
-Robert Crocombe
+But I have to agree with Linus here that we should be optimizing the
+tools for people who know how to compile the kernel, but who aren't
+necessarily familiar with all of the hidden dependencies in the
+literally hundreds of config options in the kernel tree.  In reality,
+you want to make it easy to turn on *or* off any arbitrary config
+option, and to understand what you need to do so you can turn an
+arbitrary config option on or off.  If that means tools enhancements,
+so be it.  
+						- Ted
