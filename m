@@ -1,61 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752180AbXBFNmk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752196AbXBFNnq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752180AbXBFNmk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 08:42:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752175AbXBFNmk
+	id S1752196AbXBFNnq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 08:43:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752187AbXBFNnq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 08:42:40 -0500
-Received: from nat-132.atmel.no ([80.232.32.132]:60192 "EHLO relay.atmel.no"
+	Tue, 6 Feb 2007 08:43:46 -0500
+Received: from styx.suse.cz ([82.119.242.94]:6385 "EHLO duck.suse.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752196AbXBFNmj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 08:42:39 -0500
-Date: Tue, 6 Feb 2007 14:42:30 +0100
-From: Haavard Skinnemoen <hskinnemoen@atmel.com>
-To: Alan <alan@lxorguk.ukuu.org.uk>
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: Re: [PATCH] libata: Fix (hopefully) all the remaining problems with
- devices failing setup/identify
-Message-ID: <20070206144230.5421c01d@dhcp-252-105.norway.atmel.com>
-In-Reply-To: <20070131172605.2c5dfc78@localhost.localdomain>
-References: <20070131172605.2c5dfc78@localhost.localdomain>
-Organization: Atmel Norway
-X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1752183AbXBFNnp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Feb 2007 08:43:45 -0500
+Date: Tue, 6 Feb 2007 14:46:29 +0100
+From: Jan Kara <jack@suse.cz>
+To: Christoph Hellwig <hch@lst.de>
+Cc: akpm@osdl.org, linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] remove sb->s_files and file_list_lock usage in dquot.c
+Message-ID: <20070206134629.GG328@duck.suse.cz>
+References: <20070206132333.GA9919@lst.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070206132333.GA9919@lst.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 31 Jan 2007 17:26:05 +0000
-Alan <alan@lxorguk.ukuu.org.uk> wrote:
-
-> Two fixes in this test patch. One of them allows old CF cards to refuse
-> pio mode setting, and one to wait for the drive to settle after a set
-> features changes the speed settings, which is based upon the workarounds
-> used by drivers/ide.
+On Tue 06-02-07 14:23:33, Christoph Hellwig wrote:
+> Iterate over sb->s_inodes instead of sb->s_files in add_dquot_ref.
+> This reduces list search and lock hold time aswell as getting rid of
+> one of the few uses of file_list_lock which Ingo identified as a
+> scalability problem.
 > 
-> Please test and report back if you have an afflicted system. This patch
-> isn't for merging just testing.
+> Previously we called dq_op->initialize for every inode handing of
+> a writeable file that wasn't initialized before.  Now we're calling
+> it for every inode that has a non-zero i_writecount, aka a writeable
+> file descriptor refering to it.
+> 
+> Thanks a lot to Jan Kara for running this patch through his quota
+> test harness.
+> 
+> Note:  this is ontop of '[PATCH] move remove_dquot_ref to dqout.c'
+> which I sent out yesterday.
+> 
+> 
+> Signed-off-by: Christoph Hellwig <hch@lst.de>
+  Signed-off-by: Jan Kara <jack@suse.cz>
 
-Just ran into the CF problem you describe when implementing support for
-CompactFlash on AVR32 using an old 32 MB TwinMos card. Works fine with
-this patch applied; without it, libata gives up after failing to set
-xfermode (err_mask=0x1).
+> Index: linux-2.6/fs/dquot.c
+> ===================================================================
+> --- linux-2.6.orig/fs/dquot.c	2007-02-05 18:54:36.000000000 +0100
+> +++ linux-2.6/fs/dquot.c	2007-02-05 18:59:48.000000000 +0100
+> @@ -689,23 +689,27 @@
+>  /* This routine is guarded by dqonoff_mutex mutex */
+>  static void add_dquot_ref(struct super_block *sb, int type)
+>  {
+> -	struct list_head *p;
+> +	struct inode *inode;
+>  
+>  restart:
+> -	file_list_lock();
+> -	list_for_each(p, &sb->s_files) {
+> -		struct file *filp = list_entry(p, struct file, f_u.fu_list);
+> -		struct inode *inode = filp->f_path.dentry->d_inode;
+> -		if (filp->f_mode & FMODE_WRITE && dqinit_needed(inode, type)) {
+> -			struct dentry *dentry = dget(filp->f_path.dentry);
+> -			file_list_unlock();
+> -			sb->dq_op->initialize(inode, type);
+> -			dput(dentry);
+> -			/* As we may have blocked we had better restart... */
+> -			goto restart;
+> -		}
+> +	spin_lock(&inode_lock);
+> +	list_for_each_entry(inode, &sb->s_inodes, i_sb_list) {
+> +		if (!atomic_read(&inode->i_writecount))
+> +			continue;
+> +		if (!dqinit_needed(inode, type))
+> +			continue;
+> +		if (inode->i_state & (I_FREEING|I_WILL_FREE))
+> +			continue;
+> +
+> +		__iget(inode);
+> +		spin_unlock(&inode_lock);
+> +
+> +		sb->dq_op->initialize(inode, type);
+> +		iput(inode);
+> +		/* As we may have blocked we had better restart... */
+> +		goto restart;
+>  	}
+> -	file_list_unlock();
+> +	spin_unlock(&inode_lock);
+>  }
+>  
+>  /* Return 0 if dqput() won't block (note that 1 doesn't necessarily mean blocking) */
 
-> The CF card fix will still display errors when the card works (got fixes
-> for that once I know the cure works) but should then be found/usable.
-
-Actually, I don't see any errors, but the card comes up in PIO0 mode
-(which is correct behaviour as far as I can tell):
-
-ata1: PATA max PIO0 cmd 0xA4800000 ctl 0xA480000E bmdma 0x0 irq 67
-scsi0 : pata_pcmcia
-ata1.00: CFA, max PIO0, 62592 sectors: LBA
-ata1.00: ata1: dev 0 multi count 0
-ata1.00: configured for PIO0
-scsi 0:0:0:0: Direct-Access     ATA      32MB CHH         Rev  PQ: 0 ANSI: 5
-
-Thanks for the patch. I would probably have spent a long time debugging
-this without it.
-
-Haavard
+									Honza
+-- 
+Jan Kara <jack@suse.cz>
+SuSE CR Labs
