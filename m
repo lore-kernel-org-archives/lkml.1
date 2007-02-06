@@ -1,83 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030559AbXBFX2d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030570AbXBFX2i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030559AbXBFX2d (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 18:28:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030567AbXBFX2d
+	id S1030570AbXBFX2i (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 18:28:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030572AbXBFX2i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 18:28:33 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:55224 "EHLO smtp.osdl.org"
+	Tue, 6 Feb 2007 18:28:38 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:39015 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030559AbXBFX2c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 18:28:32 -0500
-Date: Tue, 6 Feb 2007 15:28:13 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: David Woodhouse <dwmw2@infradead.org>
-cc: Randy Dunlap <randy.dunlap@oracle.com>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [patch] MTD: fix DOC2000/2001/2001PLUS build error
-In-Reply-To: <1170803515.29759.1032.camel@pmac.infradead.org>
-Message-ID: <Pine.LNX.4.64.0702061516110.8424@woody.linux-foundation.org>
-References: <1170801484.29759.1000.camel@pmac.infradead.org> 
- <Pine.LNX.4.64.0702061451560.8424@woody.linux-foundation.org>
- <1170803515.29759.1032.camel@pmac.infradead.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1030570AbXBFX2g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Feb 2007 18:28:36 -0500
+Date: Wed, 7 Feb 2007 00:28:28 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Daniel Walker <dwalker@mvista.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Andrew Morton <akpm@osdl.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: 2.6.20-rc6-mm3
+Message-ID: <20070206232828.GA21969@elte.hu>
+References: <20070206210959.GC25430@elte.hu> <1170796999.3455.43.camel@dwalker1> <20070206214131.GA1176@elte.hu> <1170798879.3455.58.camel@dwalker1> <20070206220855.GB5109@elte.hu> <1170801742.3455.87.camel@dwalker1> <20070206225650.GA14853@elte.hu> <1170803070.3455.93.camel@dwalker1> <20070206231421.GA18654@elte.hu> <1170804177.3455.109.camel@dwalker1>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1170804177.3455.109.camel@dwalker1>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -5.3
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-5.3 required=5.9 tests=ALL_TRUSTED,BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-3.3 ALL_TRUSTED            Did not pass through any untrusted hosts
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+* Daniel Walker <dwalker@mvista.com> wrote:
 
-On Tue, 6 Feb 2007, David Woodhouse wrote:
+> On Wed, 2007-02-07 at 00:14 +0100, Ingo Molnar wrote:
+> > * Daniel Walker <dwalker@mvista.com> wrote:
+> > 
+> > > On Tue, 2007-02-06 at 23:56 +0100, Ingo Molnar wrote:
+> > > 
+> > > > changing the current 'timer' entry (which is line 2 of /proc/interrupts) 
+> > > > to be 'listed as lapic-timer' and to 'replace it with the count from 
+> > > > LOC' is faking a count in a line where nothing like that should be.
+> > > 
+> > > This point is getting irrelevant ..
+> > 
+> > it is very much relevant: faking a count is something we /dont/ want 
+> > to do with /proc/interrupts, for (very) basic compatibility, 
+> > simplicity and policy reasons. And that is precisely what your 
+> > suggestion was to 'solve' this supposed 'problem' - so it's very 
+> > much relevant.
 > 
-> The other possibility which comes to mind, and which I _have_ seen
-> implemented, is not to hide the disabled option but to _show_ it, and
-> represent its dependencies right there next to it somehow. 
+> As I said you are misunderstanding me .. which is why this is not 
+> relevant any more ..
 
-That would probably work, especially if you had some way to "warp" to the 
-other options (so that if you see "depends on SCSI" you could say "ok, go 
-to SCSI then".
+actually, i quoted what you said:
 
-However, I have this suspicion that you'd just drown in options that you 
-really don't want to see.
+| If we change the current "timer" entry to be listed as "lapic-timer" 
+| and not "IO-APIC-edge" (or one of the other names) and replace it with 
+| the count from LOC
 
-> Well one option, as you suggest, is just that if you go into the
-> graphical tool and enable USB_STORAGE, you get SCSI turned on
-> automatically.
+this is a pretty clear sentence, i dont think i misunderstood anything 
+about it. If i did, please point it out specifically.
 
-Yes. That basically is what "select" means, though. The difference is, 
-indeed, largely about visibility.
-
-If everything was always visible, there really wouldn't be much of a 
-difference between "depends on" and "select". In both cases, when you 
-click on something that depends on or selects something else, the config 
-tool would obviously select it.
-
-So yes, you can make "depends on" and "select" mean _exactly_ the same 
-thing. But basically only by always showing everything. Which I don't 
-think you want. If I say I don't want IPv6, I really am not interested in 
-seeing some IPv6-only questions. But on the other hand, maybe there is 
-something that _needs_ IPv6 to work, and then maybe I'd like it enabled..
-
-(Example: I don't want to see IPV6 questions if IPV6 is off, BUT I might 
-still want to be able to see the question about NFSv8.1, which only works 
-on top of IPV6. I might not even *know* I want IPV6, but I know my company 
-uses NFSv8.1, so I say "yes").
-
-And I realize that was a contrieved example, but there are *real* examples 
-of this in the kernel today. I may well know that I want 802.11 WEP 
-encryption, for example, but I sure as hell had *no* clue that it requires 
-ARC4.
-
-See the problem? I may be a well-educated user who doesn't even *know* 
-that I actually want an encrytion algorithm that I've never heard of. For 
-all I knew, the 802.11 WEP stuff was done inside the wireless cards by 
-hardware..
-
-Does that mean that if I don't have CRYPTO_ARC4 enabled (which in turn 
-would need CRYPTO_ALGAPI enabled too) I'd not even get the choice of WEP? 
-Obviously that is broken. 
-
-And yes, if you *always* get the choice of *everyting*, then it all boils 
-down to the same thing. I just don't think you do..
-
-		Linus
+	Ingo
