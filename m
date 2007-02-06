@@ -1,81 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965289AbXBFAhw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965333AbXBFAkz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965289AbXBFAhw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 19:37:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965305AbXBFAhw
+	id S965333AbXBFAkz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 19:40:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965378AbXBFAkz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 19:37:52 -0500
-Received: from terminus.zytor.com ([192.83.249.54]:54603 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965289AbXBFAhv (ORCPT
+	Mon, 5 Feb 2007 19:40:55 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:51016 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965333AbXBFAky (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 19:37:51 -0500
-Message-ID: <45C7CDD7.20806@zytor.com>
-Date: Mon, 05 Feb 2007 16:37:43 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070102)
+	Mon, 5 Feb 2007 19:40:54 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Tue, 6 Feb 2007 01:39:59 +0100 (CET)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: Re: ohci1394 broke 2.6.19 -> 2.6.20-rc1
+To: Robert Crocombe <rcrocomb@gmail.com>
+cc: linux1394-devel <linux1394-devel@lists.sourceforge.net>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <tkrat.c39467d7194502c4@s5r6.in-berlin.de>
+Message-ID: <tkrat.f2510ec744e6b5c8@s5r6.in-berlin.de>
+References: <e6babb600702051521l4a08eb2dw2a7f423fd0d7edd7@mail.gmail.com>
+ <tkrat.c39467d7194502c4@s5r6.in-berlin.de>
 MIME-Version: 1.0
-To: Etienne Lorrain <etienne_lorrain@yahoo.fr>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Compressed ia32 ELF file generation for loading by Gujin
- 1/3
-References: <522909.27613.qm@web26909.mail.ukl.yahoo.com>
-In-Reply-To: <522909.27613.qm@web26909.mail.ukl.yahoo.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-First of all, if sending attached patches, *MAKE SURE* they're text/plain.
+On  6 Feb, Stefan Richter wrote:
+> Robert Crocombe wrote:
+>> moving to anything more recent than 2.6.19
+>> means ohci1394 is non-functional (no 1394 hosts are detected) and the
+>> module cannot be removed.
 
-> diff -uprN -X linux-2.6.20/Documentation/dontdiff linux-2.6.20/arch/i386/kernel/setup.c linux-2.6.20-gujin/arch/i386/kernel/setup.c
-> --- linux-2.6.20/arch/i386/kernel/setup.c       2007-02-04 18:44:54.000000000 +0000
-> +++ linux-2.6.20-gujin/arch/i386/kernel/setup.c 2007-02-05 21:27:01.000000000 +0000
-> @@ -579,6 +579,19 @@ void __init setup_arch(char **cmdline_p)
->         strlcpy(command_line, saved_command_line, COMMAND_LINE_SIZE);
->         *cmdline_p = command_line;
+Not using the option disable_nodemgr=1 should avoid the bug.
+
+>> I have narrowed it down to 2.6.19 works, 2.6.20-rc1 doesn't.  Lots of detail at:
+>> 
+>> http://bugzilla.kernel.org/show_bug.cgi?id=7942
 > 
-> +       /*
-> +        * If the command line begin with '/', it is the filename of the
-> +        * kernel file - like a shell command line. That can be used to
-> +        * deduce where root was located when the kernel was compiled,
-> +        * inside a directory of root named /boot, inside a small partition
-> +        * mounted on a directory of root named /boot or in the root
-> +        * directory itself.
-> +        */
-> +       if (**cmdline_p == '/')
-> +               while (**cmdline_p != ' ' && **cmdline_p != '\t'
-> +                       && **cmdline_p != '\n' && **cmdline_p != '\0')
-> +                       ++*cmdline_p;
-> +
->         max_low_pfn = setup_memory();
-> 
->         /*
+> I get a spinlock lockup on 2.6.20-rc6 + some 1394 updates with a similar
+> trace to what Robert posted at bugzilla --- *if* I use ieee1394's option
+> disable_nodemgr=1. (Never used it before.) The key appears to be how
+> hpsb_alloc_host interacts with the driver core. I don't know if hosts.c
+> is at fault or some change in the driver core.
 
-The standard way to do this is to have a command line argument named 
-BOOT_IMAGE (as in BOOT_IMAGE=/foo/bar/baz).  There is no reason to do 
-this differently from every other bootloader.
+It's my oversight, see patch.
 
-Why build the real-mode code as part of the kernel binary?  If you have 
-to reference kernel symbols, you can do that with the -R option to ld. 
-Bundling it into the kernel binary just to then extract it later is 
-silly at best.
 
-> @@ -1106,6 +1179,9 @@ help:
->         @echo  'Other generic targets:'
->         @echo  '  all             - Build all targets marked with [*]'
->         @echo  '* vmlinux         - Build the bare kernel'
-> +       @echo  "  /boot/linux-$(KERNELRELEASE).kgz - create a boot kernel for the Gujin bootloader"
-> +       @echo  '  /boot/linux.kgz ROOT=/dev/hda1   - do not autodetect root filesystem at boot time'
-> +       @echo  '  /boot/linux.kgz ROOT=auto        - root filesystem from current /proc/cmdline'
->         @echo  '* modules         - Build all modules'
->         @echo  '  modules_install - Install all modules to INSTALL_MOD_PATH (default: /)'
->         @echo  '  dir/            - Build all files in dir and below'
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: ieee1394: fix host device registering when nodemgr disabled
 
-This doesn't exactly fit very well the standard pattern.  Something like 
-  make gujin TARGET=... would be more like it.
+Since my commit 8252bbb1363b7fe963a3eb6f8a36da619a6f5a65 in 2.6.20-rc1,
+host devices have a dummy driver attached.  Alas the driver was not
+registered before use if ieee1394 was loaded with disable_nodemgr=1.
 
-Given how many of your files are highly Gujin-specific, and have generic 
-names, please put them in a subdirectory (e.g. arch/i386/boot/gujin/).
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+---
+ drivers/ieee1394/ieee1394_core.c |    1 +
+ drivers/ieee1394/nodemgr.c       |    3 +--
+ drivers/ieee1394/nodemgr.h       |    4 +---
+ 3 files changed, 3 insertions(+), 5 deletions(-)
 
-	-hpa
+Index: linux-2.6.20-rc6/drivers/ieee1394/ieee1394_core.c
+===================================================================
+--- linux-2.6.20-rc6.orig/drivers/ieee1394/ieee1394_core.c	2007-02-03 18:04:50.000000000 +0100
++++ linux-2.6.20-rc6/drivers/ieee1394/ieee1394_core.c	2007-02-06 01:28:04.000000000 +0100
+@@ -1132,6 +1132,7 @@ static int __init ieee1394_init(void)
+ 		}
+ 	}
+ 
++	ret = driver_register(&nodemgr_mid_layer_driver);
+ 	ret = class_register(&hpsb_host_class);
+ 	if (ret < 0)
+ 		goto release_all_bus;
+Index: linux-2.6.20-rc6/drivers/ieee1394/nodemgr.c
+===================================================================
+--- linux-2.6.20-rc6.orig/drivers/ieee1394/nodemgr.c	2007-01-27 14:07:00.000000000 +0100
++++ linux-2.6.20-rc6/drivers/ieee1394/nodemgr.c	2007-02-06 01:29:21.000000000 +0100
+@@ -249,7 +249,7 @@ static struct device nodemgr_dev_templat
+  * useful drivers for them yet, and there would be a deadlock possible if the
+  * driver core scans the host device while the host's low-level driver (i.e.
+  * the host's parent device) is being removed. */
+-static struct device_driver nodemgr_mid_layer_driver = {
++struct device_driver nodemgr_mid_layer_driver = {
+ 	.bus		= &ieee1394_bus_type,
+ 	.name		= "nodemgr",
+ 	.owner		= THIS_MODULE,
+@@ -1857,7 +1857,6 @@ int init_ieee1394_nodemgr(void)
+ 		class_unregister(&nodemgr_ne_class);
+ 		return error;
+ 	}
+-	error = driver_register(&nodemgr_mid_layer_driver);
+ 	hpsb_register_highlevel(&nodemgr_highlevel);
+ 	return 0;
+ }
+Index: linux-2.6.20-rc6/drivers/ieee1394/nodemgr.h
+===================================================================
+--- linux-2.6.20-rc6.orig/drivers/ieee1394/nodemgr.h	2007-01-27 14:07:00.000000000 +0100
++++ linux-2.6.20-rc6/drivers/ieee1394/nodemgr.h	2007-02-06 01:30:27.000000000 +0100
+@@ -181,10 +181,8 @@ int nodemgr_for_each_host(void *__data, 
+ int init_ieee1394_nodemgr(void);
+ void cleanup_ieee1394_nodemgr(void);
+ 
+-/* The template for a host device */
++extern struct device_driver nodemgr_mid_layer_driver;
+ extern struct device nodemgr_dev_template_host;
+-
+-/* Bus attributes we export */
+ extern struct bus_attribute *const fw_bus_attrs[];
+ 
+ #endif /* _IEEE1394_NODEMGR_H */
+
+
+
+-- 
+Stefan Richter
+-=====-=-=== --=- --==-
+http://arcgraph.de/sr/
+
+
