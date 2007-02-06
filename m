@@ -1,118 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751756AbXBFIwB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751760AbXBFI4Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751756AbXBFIwB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 03:52:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751747AbXBFIwB
+	id S1751760AbXBFI4Q (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 03:56:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751770AbXBFI4Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 03:52:01 -0500
-Received: from pat.uio.no ([129.240.10.15]:59804 "EHLO pat.uio.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751740AbXBFIv7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 03:51:59 -0500
-Subject: Re: [RFC 0/28] Patches to pass vfsmount to LSM inode security hooks
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Andreas Gruenbacher <agruen@suse.de>
-Cc: Christoph Hellwig <hch@infradead.org>, Tony Jones <tonyj@suse.de>,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       chrisw@sous-sol.org, linux-security-module@vger.kernel.org,
-       viro@zeniv.linux.org.uk
-In-Reply-To: <200702051920.36057.agruen@suse.de>
-References: <20070205182213.12164.40927.sendpatchset@ermintrude.int.wirex.com>
-	 <1170701906.5934.41.camel@lade.trondhjem.org>
-	 <20070205190230.GA23104@infradead.org>  <200702051920.36057.agruen@suse.de>
-Content-Type: text/plain
-Date: Tue, 06 Feb 2007 00:51:52 -0800
-Message-Id: <1170751912.6242.30.camel@lade.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
+	Tue, 6 Feb 2007 03:56:16 -0500
+Received: from smtp107.mail.mud.yahoo.com ([209.191.85.217]:25334 "HELO
+	smtp107.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751760AbXBFI4P (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Feb 2007 03:56:15 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=aj/eei/8slhZyljhVZFjhab4FKCZQZwBakvDmyK860wo9xMXeuGnqcvy2IdzdkeJ1T0MreJnK5kbf2zB8JBsAjOT4/kjSW45v8bSD4vN3/PnAEmgEEXSRP6aoVIxdjXMZmBsU4NB2Efr+ZwhIAjhlkl9P3EPRhs06F5LL/yNdvY=  ;
+X-YMail-OSG: 6jtrdOsVM1nKymOOLVxjAWIJdDceSyeIjawvLvQa9wZ_H8CbMhOzcNJ6EVok9WPutIvGSkLz74_To2BIrhQA.i0gpHSwOw2fyF88efmveKkgZxCCn_i5RfLDzm3AMYR5FaIxc3GjQYWwZ.I-
+Message-ID: <45C842A0.8010804@yahoo.com.au>
+Date: Tue, 06 Feb 2007 19:56:00 +1100
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Nick Piggin <npiggin@suse.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Hugh Dickins <hugh@veritas.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Linux Memory Management <linux-mm@kvack.org>,
+       Linux Filesystems <linux-fsdevel@vger.kernel.org>
+Subject: Re: [patch 3/3] mm: make read_cache_page synchronous
+References: <20070206054925.21042.50546.sendpatchset@linux.site>	<20070206054957.21042.18724.sendpatchset@linux.site> <20070206002839.f02a47bc.akpm@linux-foundation.org>
+In-Reply-To: <20070206002839.f02a47bc.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
-X-UiO-Resend: resent
-X-UiO-Spam-info: not spam, SpamAssassin (score=0.0, required=12.0, autolearn=disabled, none)
-X-UiO-Scanned: 12470DEB67EC577D0EF1F62F82E5830E8DB1347F
-X-UiO-Ratelimit-Test: Ratelimit
-X-UiO-SPAM-Test: UIO-RATELIMIT remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 1658 total 278179 max/h 2716 blacklist 0 greylist 0 ratelimit 1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-02-05 at 19:20 -0800, Andreas Gruenbacher wrote:
-> On Monday 05 February 2007 11:02, Christoph Hellwig wrote:
-> > On Mon, Feb 05, 2007 at 10:58:26AM -0800, Trond Myklebust wrote:
-> > > On Mon, 2007-02-05 at 18:44 +0000, Christoph Hellwig wrote:
-> > > > Just FYI:  Al was very opposed to the idea of passing the vfsmount to
-> > > > the vfs_ helpers, so you should discuss this with him.
-> > > >
-> > > > Looking at the actual patches I see you're lazy in a lot of places.
-> > > > Please make sure that when you introduce a vfsmount argument somewhere
-> > > > that it is _always_ passed and not just when it's conveniant.  Yes,
-> > > > that's more work, but then again if you're not consistant anyone
-> > > > half-serious will laught at a security model using this infrasturcture.
-> > >
-> > > nfsd in particular tends to be a bit lazy about passing around vfsmount
-> > > info. Forcing it to do so should not be hard since the vfsmount is
-> > > already cached in the "struct export" (which can be found using the
-> > > filehandle). It will take a bit of re-engineering in order to pass that
-> > > information around inside the nfsd code, though.
-> >
-> > I actually have a patch to fix that.  It's part of a bigger series
-> > that's not quite ready, but I hope to finish all of it this month.
+Andrew Morton wrote:
+> On Tue,  6 Feb 2007 09:02:33 +0100 (CET) Nick Piggin <npiggin@suse.de> wrote:
 > 
-> It's actually not hard to "fix", and nfsd would look a little less weird. But 
-> what would this add, what do pathnames mean in the context of nfsd, and would 
-> nfsd actually become less weird?
 > 
-> On the wire, nfs transmits file handles, not filenames. The file handle 
-> usually contains the inode numbers of the file and the containing directory.
+>>Ensure pages are uptodate after returning from read_cache_page, which allows
+>>us to cut out most of the filesystem-internal PageUptodate_NoLock calls.
 > 
-> The code in fs/exportfs/expfs.c:find_exported_dentry() shows that fh_verify() 
-> should return a dentry that may be connected or not, depending on the export 
-> options and whether it's a file or directory. Together with the vfsmount from 
-> the svc_export, we could compute a pathname.
 > 
-> But there is no way to tell different hardlinks to the same inode in the same 
-> directory from each other (both the file and directory inode are the same), 
-> and depending on the export options, we may or may not be able to distinguish 
-> different hardlinks across directories.
+> Normally it's good to rename functions when we change their behaviour, but
+> I guess any missed (or out-of-tree) filesystems will just end up doing a
+> pointless wait_on_page_locked() and will continue to work OK, yes?
 
-Who cares? There is no way to export a partial directory, and in any
-case the subtree_check crap is borken beyond repair (see cross-directory
-renames which lead to actual changes to the filehandle - broken, broken,
-broken!!!!).
+Yeah.
 
-> If the nohide or crossmnt export options are used, we might run into similar 
-> aliasing issues with mounts (I'm not sure about this).
-
-Wrong. Those create new export points since you are crossing into a
-different filesystem.
-
-> So we could compute pathnames, but they wouldn't be very meaningful. Instead 
-> of going that way, it seems more reasonable to not do pathname based access 
-> control for the kernel kernel nfsd at all. Passing NULL as the vfsmounts does 
-> that. With a properly configured nfsd, the areas that remote users could 
-> access would still be well confined.
-
-Huh? Even if you don't pass in a vfsmount, you _still_ need to pass in a
-super_block. Inodes are only unique per filesystem.
-In fact, on an ideal NFS export, there is no ambiguity between the two
-(see above comment about subtree_check) since the entire filesystem will
-be exported.
-
-> The focus with this whole pathname based security stuff really is to be able 
-> to better confine local processes. The kernel nfsd is a kernel thread, and as 
-> such, confining it from a security point of view cannot really work, anyway.
 > 
-> > > Note also that it might be nice to enforce the vfsmount argument by
-> > > replacing the existing dentry parameters with a struct path instead of
-> > > adding an extra reference to the vfsmount to existing functions.
-> >
-> > That definitly sounds like a good idea, independent of whether we want
-> > to pass the vfsmount in more places or not.
 > 
-> Note that you can still pass a NULL vfsmount in a struct path.
+>>I didn't have a great look down the call chains, but this appears to fixes 7
+>>possible use-before uptodate in hfs, 2 in hfsplus, 1 in jfs, a few in ecryptfs,
+>>1 in jffs2, and a possible cleared data overwritten with readpage in block2mtd.
+>>All depending on whether the filler is async and/or can return with a !uptodate
+>>page.
+>>
+>>Also, a memory leak in sys_swapon().
+> 
+> 
+> Separate patch?
 
-...but we will have Dick Cheney track you down and shoot you if you do.
-The point is that you only have to check _one_ argument (the
-initialisation of the struct path) instead of having a check for every
-function argument in the vfs.
+Well its fixed by virtue of read_cache_page now correctly dropping the page
+refcount if it finds the page !uptodate, rather than any special logic I
+added.
 
-Trond
+I can do another patch though. No problem, I'll be resending the series after
+this round of feedback.
 
+-- 
+SUSE Labs, Novell Inc.
+Send instant messages to your online friends http://au.messenger.yahoo.com 
