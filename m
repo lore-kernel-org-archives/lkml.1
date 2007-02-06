@@ -1,45 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965537AbXBFVZc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752314AbXBFV3P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965537AbXBFVZc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 16:25:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965533AbXBFVZc
+	id S1752314AbXBFV3P (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 16:29:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752315AbXBFV3P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 16:25:32 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.158]:12916 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965528AbXBFVZb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 16:25:31 -0500
-Subject: Re: 2.6.20-rc6-mm3
-From: Daniel Walker <dwalker@mvista.com>
-Reply-To: dwalker@mvista.com
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org, mingo@elte.hu
-In-Reply-To: <1170796664.3785.26.camel@chaos>
-References: <20070129204528.eb8d695e.akpm@osdl.org>
-	 <1170777802.9781.353.camel@imap.mvista.com> <1170786992.3785.0.camel@chaos>
-	 <1170787543.9781.362.camel@imap.mvista.com> <1170788870.3785.9.camel@chaos>
-	 <1170791739.3455.3.camel@dwalker1>  <1170793206.3785.16.camel@chaos>
-	 <1170794437.3455.20.camel@dwalker1>  <1170796664.3785.26.camel@chaos>
-Content-Type: text/plain
-Date: Tue, 06 Feb 2007 13:25:05 -0800
-Message-Id: <1170797106.3455.45.camel@dwalker1>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
-Content-Transfer-Encoding: 7bit
+	Tue, 6 Feb 2007 16:29:15 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:51853 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752313AbXBFV3O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Feb 2007 16:29:14 -0500
+Date: Tue, 6 Feb 2007 13:28:34 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: David Miller <davem@davemloft.net>
+cc: kent.overstreet@gmail.com, davidel@xmailserver.org, zach.brown@oracle.com,
+       mingo@elte.hu, linux-kernel@vger.kernel.org, linux-aio@kvack.org,
+       suparna@in.ibm.com, bcrl@kvack.org
+Subject: Re: [PATCH 2 of 4] Introduce i386 fibril scheduling
+In-Reply-To: <20070206.131631.82049180.davem@davemloft.net>
+Message-ID: <Pine.LNX.4.64.0702061325380.8424@woody.linux-foundation.org>
+References: <Pine.LNX.4.64.0702051259030.14453@alien.or.mcafeemobile.com>
+ <6f703f960702051331v3ceab725h68aea4cd77617f84@mail.gmail.com>
+ <Pine.LNX.4.64.0702061238300.8424@woody.linux-foundation.org>
+ <20070206.131631.82049180.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-02-06 at 22:17 +0100, Thomas Gleixner wrote:
 
-> > The reason that I'm bringing it up at all is because people have ask me
-> > "Why isn't my timer ticking??"
+
+On Tue, 6 Feb 2007, David Miller wrote:
 > 
-> So it's a problem of user perception and not of a user space regression.
-> Please stop confusing things.
+> I really think that Evgeniy's kevent is a good event notification
+> mechanism for anything, including AIO.
+> 
+> Events are events, applications want a centralized way to receive and
+> process them.
 
-At least we agree on this point .. I'm not trying to confuse anything,
-this issue needs to be discussed ..
+Don't be silly. AIO isn't an event. AIO is an *action*.
 
-Daniel
+The event part is hopefully something that doesn't even *happen*.
 
+Why do people ignore this? Look at a web server: I can pretty much 
+guarantee that 99% of all filesystem accesses are cached, and doing them 
+as "events" would be a total and utter waste of time.
+
+You want to do them synchronously, as fast as possible, and you do NOT 
+want to see them as any kind of asynchronous events.
+
+Yeah, in 1% of all cases it will block, and you'll want to wait for them. 
+Maybe the kevent queue works then, but if it needs any more setup than the 
+nonblocking case, that's a big no.
+
+		Linus
