@@ -1,102 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933270AbXBFVh6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933298AbXBFVir@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933270AbXBFVh6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 16:37:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933285AbXBFVh6
+	id S933298AbXBFVir (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 16:38:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933302AbXBFVir
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 16:37:58 -0500
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:11043 "EHLO
-	outbound4-dub-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933270AbXBFVh5 (ORCPT
+	Tue, 6 Feb 2007 16:38:47 -0500
+Received: from nigel.suspend2.net ([203.171.70.205]:38376 "EHLO
+	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933298AbXBFViq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 16:37:57 -0500
-X-BigFish: VP
-X-Server-Uuid: 8C3DB987-180B-4465-9446-45C15473FD3E
-Message-ID: <45C8F5E0.5030500@amd.com>
-Date: Tue, 06 Feb 2007 22:40:48 +0100
-From: "Markus Rechberger" <markus.rechberger@amd.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070206)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Re: [patch] x86-64 ext2/ext3 datestamp problem
-References: <45C8F419.5040103@amd.com>
-In-Reply-To: <45C8F419.5040103@amd.com>
-X-OriginalArrivalTime: 06 Feb 2007 21:37:43.0862 (UTC)
- FILETIME=[09097560:01C74A37]
-X-WSS-ID: 69D62AA02KW7199190-01-01
-Content-Type: text/plain;
- charset=iso-8859-1
+	Tue, 6 Feb 2007 16:38:46 -0500
+Subject: Re: [patch 1/1] PM: Adds remount fs ro at suspend
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
+Reply-To: nigel@nigel.suspend2.net
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: Andrew Morton <akpm@linux-foundation.org>, akuster@mvista.com,
+       linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+In-Reply-To: <20070206143231.GD18392@khazad-dum.debian.net>
+References: <20070202235132.EDBDF1C448@hermes.mvista.com>
+	 <20070202161611.cf8b4328.akpm@linux-foundation.org>
+	 <20070203003536.GA619@khazad-dum.debian.net>
+	 <1170710913.6105.39.camel@nigel.suspend2.net>
+	 <20070206143231.GD18392@khazad-dum.debian.net>
+Content-Type: text/plain
+Date: Wed, 07 Feb 2007 08:38:44 +1100
+Message-Id: <1170797924.14398.19.camel@nigel.suspend2.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Markus Rechberger <markus.rechberger@amd.com>
+Hi.
 
-Markus Rechberger wrote:
-> Hi,
->
-> there is an issue with ext2/ext3 date stamps, if someone creates a file
-> with a timestamp between 1902 and 1970(epoch 0) it will overflow and
-> result in a higher date than 2038.
->
-> $ touch --date "1905-01-01" test
-> $ ls -lah test
-> -rw-r--r-- 1 root root 0 Jan  1  1905 test (this is a cached value here)
-> (remount the partition/clear the cache)
-> $ ls -lah test
-> -rw-r--r-- 1 root root 0 Feb  6  2041 test
->
-> 10000101101111001100011001110000 .. -2051226000 (1905)
-> 10000101101111001100011001110000 .. 2243741296 (2041)
->
-> this was tested against linus git tree
->
-> Markus
->
->   
-> ------------------------------------------------------------------------
->
-> diff --git a/fs/ext2/inode.c b/fs/ext2/inode.c
-> index dd4e14c..9fa1bd6 100644
-> --- a/fs/ext2/inode.c
-> +++ b/fs/ext2/inode.c
-> @@ -1079,9 +1079,9 @@ void ext2_read_inode (struct inode * inode)
->  	}
->  	inode->i_nlink = le16_to_cpu(raw_inode->i_links_count);
->  	inode->i_size = le32_to_cpu(raw_inode->i_size);
-> -	inode->i_atime.tv_sec = le32_to_cpu(raw_inode->i_atime);
-> -	inode->i_ctime.tv_sec = le32_to_cpu(raw_inode->i_ctime);
-> -	inode->i_mtime.tv_sec = le32_to_cpu(raw_inode->i_mtime);
-> +	inode->i_atime.tv_sec = (signed)le32_to_cpu(raw_inode->i_atime);
-> +	inode->i_ctime.tv_sec = (signed)le32_to_cpu(raw_inode->i_ctime);
-> +	inode->i_mtime.tv_sec = (signed)le32_to_cpu(raw_inode->i_mtime);
->  	inode->i_atime.tv_nsec = inode->i_mtime.tv_nsec = inode->i_ctime.tv_nsec = 0;
->  	ei->i_dtime = le32_to_cpu(raw_inode->i_dtime);
->  	/* We now have enough fields to check if the inode was active or not.
-> diff --git a/fs/ext3/inode.c b/fs/ext3/inode.c
-> index beaf25f..5d171c0 100644
-> --- a/fs/ext3/inode.c
-> +++ b/fs/ext3/inode.c
-> @@ -2673,9 +2673,9 @@ void ext3_read_inode(struct inode * inode)
->  	}
->  	inode->i_nlink = le16_to_cpu(raw_inode->i_links_count);
->  	inode->i_size = le32_to_cpu(raw_inode->i_size);
-> -	inode->i_atime.tv_sec = le32_to_cpu(raw_inode->i_atime);
-> -	inode->i_ctime.tv_sec = le32_to_cpu(raw_inode->i_ctime);
-> -	inode->i_mtime.tv_sec = le32_to_cpu(raw_inode->i_mtime);
-> +	inode->i_atime.tv_sec = (signed)le32_to_cpu(raw_inode->i_atime);
-> +	inode->i_ctime.tv_sec = (signed)le32_to_cpu(raw_inode->i_ctime);
-> +	inode->i_mtime.tv_sec = (signed)le32_to_cpu(raw_inode->i_mtime);
->  	inode->i_atime.tv_nsec = inode->i_ctime.tv_nsec = inode->i_mtime.tv_nsec = 0;
->  
->  	ei->i_state = 0;
->   
+On Tue, 2007-02-06 at 12:32 -0200, Henrique de Moraes Holschuh wrote:
+> On Tue, 06 Feb 2007, Nigel Cunningham wrote:
+> > Why do you think remounting filesystems is necessary? Are you getting
+> > problems with some particular filesystem?
+> 
+> No.  But anything in a removable device neets to be either remounted
+> read-only or unmounted if that is at all possible, because the user could
+> unplug it.  It is of course, sync'd anyway, so if the remount/umount fails,
+> no corruption should happen...  but the fs will be dirty, etc.
+> 
+> It can get very ugly when you factor in docks and removable bays. It's not
+> just USB/firewire mass-storage devices and memory cards.  And there is the
+> patological cases where the user suspends with the device in one port, and
+> resumes with the device in another port.
+> 
+> I feel userspace *can* do all that needs to be done, but we are (currently)
+> very bad at it.
 
+Ok, as far as usage scenario goes, that's fair enough. But as to the
+solution, I wonder though whether it's making life more complicated than
+it needs to be. After all, we should also be able to cope okay with
+having the power suddenly go out. If we can cope with that, cleaning
+filesystems prior to suspending should be a non-issue.
 
--- 
-Markus Rechberger
-Operating System Research Center
-AMD Saxony LLC & Co. KG
+Likewise with changes in hardware. Once hotplugging support is mature,
+suspending, switching around hardware and resuming should just result in
+hot[un]plug events.
 
+Regards,
 
+Nigel
 
