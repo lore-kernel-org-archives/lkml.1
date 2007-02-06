@@ -1,60 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752272AbXBFRYB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752217AbXBFR0u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752272AbXBFRYB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 12:24:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932622AbXBFRYB
+	id S1752217AbXBFR0u (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 12:26:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752262AbXBFR0u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 12:24:01 -0500
-Received: from web26903.mail.ukl.yahoo.com ([217.146.176.92]:39363 "HELO
-	web26903.mail.ukl.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752272AbXBFRYA convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 12:24:00 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.fr;
-  h=X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=fzaPxK8bbKFe48uBOwjeeO4Ka/Rv8Kln+ovrvMNRy5NeqotXY9fiJlc0BGGRTziUx58xswVKkGu+cwWH4RpUlO/ykPyO15kloK81IJ/Sx2/uHeyPio9xa8Y6uUBSugTSDwPFjrH4O14pf+rDiS33OE3NWXRulqpuc3h8P6zxlhk=;
-X-YMail-OSG: HnuTRxsVM1mDRwp4Q8wlrEi8DtynePDTsIiyVbfjx6mspJYcevVgefP8m2A8ThGADuiY_akAT1Qcn.h2OhCx1HdQPWUPM8I6hH7VV5mjcnBvsPoqqYGrENBg28bHEuo5eXKBSYnbzniY
-X-Mailer: YahooMailRC/368.3 YahooMailWebService/0.6.132.7
-Date: Tue, 6 Feb 2007 17:23:55 +0000 (GMT)
-From: Etienne Lorrain <etienne_lorrain@yahoo.fr>
-Subject: Re : [PATCH] Compressed ia32 ELF file generation for loading by Gujin 1/3
-To: "H. Peter Anvin" <hpa@zytor.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: vgoyal@in.ibm.com, linux-kernel@vger.kernel.org
+	Tue, 6 Feb 2007 12:26:50 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.155]:25571 "EHLO
+	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751651AbXBFR0t (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Feb 2007 12:26:49 -0500
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+To: mingo@elte.hu
+Subject: [PATCH] (2.6.20-rt3) PowerPC: convert spinlocks into raw
+Date: Tue, 6 Feb 2007 20:26:40 +0300
+User-Agent: KMail/1.5
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, dwalker@mvista.com,
+       mgreer@mvista.com
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
-Message-ID: <957176.28334.qm@web26903.mail.ukl.yahoo.com>
+Content-Disposition: inline
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200702062026.40875.sshtylyov@ru.mvista.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> Actually, as far as I can see, he has re-invented having a real-mode 
-> code chunk which then gets run before the protected-mode kernel.  We 
-> already have that!
+Convert the spinlocks in the PowerPC interrupt related code into the raw ones,
+also convert the PURR and PMC related spinlocks...
 
-  I did not claim to have invented anything there, this is just a quite
- simple C code to execute instead of the current real mode assembly:
- it is a rewrite with obvious advantages/disadvantages.
- New features are more that this real-mode function can return an error
- to the bootloader to tell something to the user, so the user can select
- another kernel with the right processor, another video mode... with
- clean error messages - not a crash dump because this assembly
- instruction is not for that processor.
-  I am still saying that the bootloader knows the root filesystem to
- be used by the kernel it loads, and that ELF is a clean format to
- store different sections to be loaded into memory at predefined
- addresses. Also there isn't any more kernel size limit.
+Signed-off-by: Mark A. Greer <mgreer@mvista.com>
+Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 
- Etienne.
+Index: linux-2.6/arch/powerpc/kernel/irq.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/kernel/irq.c
++++ linux-2.6/arch/powerpc/kernel/irq.c
+@@ -392,7 +392,7 @@ EXPORT_SYMBOL(do_softirq);
+ #ifdef CONFIG_PPC_MERGE
+ 
+ static LIST_HEAD(irq_hosts);
+-static spinlock_t irq_big_lock = SPIN_LOCK_UNLOCKED;
++static DEFINE_RAW_SPINLOCK(irq_big_lock);
+ static DEFINE_PER_CPU(unsigned int, irq_radix_reader);
+ static unsigned int irq_radix_writer;
+ struct irq_map_entry irq_map[NR_IRQS];
+Index: linux-2.6/arch/powerpc/kernel/pmc.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/kernel/pmc.c
++++ linux-2.6/arch/powerpc/kernel/pmc.c
+@@ -52,7 +52,7 @@ static void dummy_perf(struct pt_regs *r
+ }
+ #endif
+ 
+-static DEFINE_SPINLOCK(pmc_owner_lock);
++static DEFINE_RAW_SPINLOCK(pmc_owner_lock);
+ static void *pmc_owner_caller; /* mostly for debugging */
+ perf_irq_t perf_irq = dummy_perf;
+ 
+Index: linux-2.6/arch/powerpc/kernel/time.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/kernel/time.c
++++ linux-2.6/arch/powerpc/kernel/time.c
+@@ -223,7 +223,7 @@ struct cpu_purr_data {
+ 	int	initialized;			/* thread is running */
+ 	u64	tb;			/* last TB value read */
+ 	u64	purr;			/* last PURR value read */
+-	spinlock_t lock;
++	raw_spinlock_t lock;
+ };
+ 
+ static DEFINE_PER_CPU(struct cpu_purr_data, cpu_purr_data);
+Index: linux-2.6/arch/powerpc/sysdev/i8259.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/sysdev/i8259.c
++++ linux-2.6/arch/powerpc/sysdev/i8259.c
+@@ -23,7 +23,7 @@ static unsigned char cached_8259[2] = { 
+ #define cached_A1 (cached_8259[0])
+ #define cached_21 (cached_8259[1])
+ 
+-static DEFINE_SPINLOCK(i8259_lock);
++static DEFINE_RAW_SPINLOCK(i8259_lock);
+ 
+ static struct device_node *i8259_node;
+ static struct irq_host *i8259_host;
+Index: linux-2.6/arch/powerpc/sysdev/ipic.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/sysdev/ipic.c
++++ linux-2.6/arch/powerpc/sysdev/ipic.c
+@@ -30,7 +30,7 @@
+ #include "ipic.h"
+ 
+ static struct ipic * primary_ipic;
+-static DEFINE_SPINLOCK(ipic_lock);
++static DEFINE_RAW_SPINLOCK(ipic_lock);
+ 
+ static struct ipic_info ipic_info[] = {
+ 	[9] = {
+Index: linux-2.6/arch/powerpc/sysdev/mpic.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/sysdev/mpic.c
++++ linux-2.6/arch/powerpc/sysdev/mpic.c
+@@ -44,7 +44,7 @@
+ 
+ static struct mpic *mpics;
+ static struct mpic *mpic_primary;
+-static DEFINE_SPINLOCK(mpic_lock);
++static DEFINE_RAW_SPINLOCK(mpic_lock);
+ 
+ #ifdef CONFIG_PPC32	/* XXX for now */
+ #ifdef CONFIG_IRQ_ALL_CPUS
+Index: linux-2.6/include/asm-powerpc/mpic.h
+===================================================================
+--- linux-2.6.orig/include/asm-powerpc/mpic.h
++++ linux-2.6/include/asm-powerpc/mpic.h
+@@ -279,7 +279,7 @@ struct mpic
+ #ifdef CONFIG_MPIC_BROKEN_U3
+ 	/* The fixup table */
+ 	struct mpic_irq_fixup	*fixups;
+-	spinlock_t		fixup_lock;
++	raw_spinlock_t		fixup_lock;
+ #endif
+ 
+ 	/* Register access method */
 
-
-	
-
-	
-		
-___________________________________________________________________________ 
-Découvrez une nouvelle façon d'obtenir des réponses à toutes vos questions ! 
-Profitez des connaissances, des opinions et des expériences des internautes sur Yahoo! Questions/Réponses 
-http://fr.answers.yahoo.com
