@@ -1,73 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750922AbXBFMZA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751837AbXBFMZR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750922AbXBFMZA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 07:25:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751795AbXBFMZA
+	id S1751837AbXBFMZR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 07:25:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751741AbXBFMZR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 07:25:00 -0500
-Received: from nf-out-0910.google.com ([64.233.182.188]:21088 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750922AbXBFMY7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 07:24:59 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=tgAr77KZuwj4ooVV1YHf6cAUa33QViDzVefNiapQxFwd1IbFksGD/4gFRaJMbF7HdQtJ4V7hvzZjEVhQwW5Mb8gNli0K9TEthfTmNDDrTSo6jUWPlkO0FUiu40KpYmAD1tYAeIXMk21ZjkK0dVm5fbguiIrTtaTZt8UuOTDhQjY=
-Message-ID: <1a297b360702060424m393d66cdka4a446b24cbd1ff@mail.gmail.com>
-Date: Tue, 6 Feb 2007 16:24:57 +0400
-From: "Manu Abraham" <abraham.manu@gmail.com>
-To: "Luming Yu" <luming.yu@gmail.com>
-Subject: Re: 2.6.20 PCI Cannot allocate resource region 2
-Cc: "Grant Grundler" <grundler@parisc-linux.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
-       greg@kroah.com
-In-Reply-To: <3877989d0702060421g1a00c114yba9e193db55f3d11@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 6 Feb 2007 07:25:17 -0500
+Received: from colin.muc.de ([193.149.48.1]:3120 "EHLO mail.muc.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750698AbXBFMZQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Feb 2007 07:25:16 -0500
+Date: 6 Feb 2007 13:25:14 +0100
+Date: Tue, 6 Feb 2007 13:25:14 +0100
+From: Andi Kleen <ak@muc.de>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, Zachary Amsden <zach@vmware.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Chris Wright <chrisw@sous-sol.org>
+Subject: Re: [PATCH 0/11] VMI / Paravirt bugfixes for 2.6.21
+Message-ID: <20070206122514.GA47229@muc.de>
+References: <200702060352.l163q87K000713@zach-dev.vmware.com> <1170736029.29293.31.camel@localhost.localdomain> <45C809F9.2090905@vmware.com> <1170738676.29293.35.camel@localhost.localdomain> <1170752856.7324.5.camel@laptopd505.fenrus.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <1a297b360702041709l3b0309c7y8fcd33df1d487889@mail.gmail.com>
-	 <20070206045528.GA4228@colo.lackof.org>
-	 <20070206050331.GB4228@colo.lackof.org>
-	 <20070205213339.80239a22.akpm@linux-foundation.org>
-	 <20070206084638.GB20752@colo.lackof.org>
-	 <1a297b360702060106x321bfb8dw918d15df76952576@mail.gmail.com>
-	 <1a297b360702060129n54f73e66qc753a2ccb35cb3cd@mail.gmail.com>
-	 <3877989d0702060421g1a00c114yba9e193db55f3d11@mail.gmail.com>
+In-Reply-To: <1170752856.7324.5.camel@laptopd505.fenrus.org>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/6/07, Luming Yu <luming.yu@gmail.com> wrote:
-> > dang !
-> >
-> > rebooted it into 2.6.17.7
-> >
-> > no errors, during a bootup, BIST isn't running anymore
-> > running M$ did change the status from dead to alive ??? shocked !!
->
-> Interesting!  does windows driver fixes the broken firmware/flash on this card?
+> hmm stolen time could even be useful without virtualization; to a large
+> degree, if cpufreq reduces the speed of your cpu you have "stolen
+> cycles" that way... I wonder if this concept can be used for that as
+> well...
 
+If you mean it for the real time clock: Doesn't make sense then 
+because Linux time isn't measured in cycles
 
-No firmware/flash on the card.
+If you mean it for the scheduler: it only uses estimates for
+relative fairness. As long as everybody is sloeed down in the same
+way the relative fairness doesn't change.
 
+For time accounting: the regular timer interrupt is fairly imprecise
+anyawys because it samples at a low frequency. While it would be possible to 
+improve this it would be quite costly by slowing down interrupts and syscalls.
+I'm not sure it makes that much difference here either.
 
->
-> >
-> > attached lspci output in the very same setup as earlier, no difference
-> > in anything, except that it was rebooted into windows.
-> >
-> > the PCI config dump would help ?
-> >
->
-> I guess you would never reproduce this issue again unless you can
-> restore the broken firmware/flash on this card. :-)
->
+I don't see the point, frankly.
 
-none on the card, a flash or a firmware .. it has a 24c02 EEPROM for
-vendor information, that's all
-
-
-regards,
-manu
+-Andi
