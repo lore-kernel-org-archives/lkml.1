@@ -1,46 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965386AbXBFB7W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965452AbXBFCJS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965386AbXBFB7W (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 20:59:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965393AbXBFB7W
+	id S965452AbXBFCJS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 21:09:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965434AbXBFCJS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 20:59:22 -0500
-Received: from wr-out-0506.google.com ([64.233.184.228]:62787 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965386AbXBFB7V (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 20:59:21 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=XDh/iSQYRsQ1mZRP3yxfa+M8hQ3Dz4Cr/gUJMTn8ilVNWT7T9DnaZtreJnGqOmVlbitQirDCpjGngV9Loqf1v3Tm+arOCKJdge6ySH20/BBrZAUyEhhz9tx/ek4By1VoJJpk2a+D2Z5pPKGNbTmTnmb1o8kzLNXF+Cvmxt73e3c=
-Message-ID: <8bd0f97a0702051759n1e5217fcv18a51aa8125d36f5@mail.gmail.com>
-Date: Mon, 5 Feb 2007 20:59:20 -0500
-From: "Mike Frysinger" <vapier.adi@gmail.com>
-To: "Randy Dunlap" <rdunlap@xenotime.net>
-Subject: Re: [PATCH 1/3] Blackfin: architecture patch against Linux kernel 2.6.20
-Cc: "Wu, Bryan" <Bryan.Wu@analog.com>, akpm@osdl.org, arnd@arndb.de,
-       rdreier@cisco.com, castet.matthieu@free.fr,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20070205173428.9f2109a4.rdunlap@xenotime.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 5 Feb 2007 21:09:18 -0500
+Received: from mail.suse.de ([195.135.220.2]:42755 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965433AbXBFCJR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Feb 2007 21:09:17 -0500
+Date: Tue, 6 Feb 2007 03:09:16 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Anton Altaparmakov <aia21@cam.ac.uk>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Linux Filesystems <linux-fsdevel@vger.kernel.org>,
+       Linux Memory Management <linux-mm@kvack.org>
+Subject: Re: [patch 9/9] mm: fix pagecache write deadlocks
+Message-ID: <20070206020916.GA31476@wotan.suse.de>
+References: <20070204063707.23659.20741.sendpatchset@linux.site> <20070204063833.23659.55105.sendpatchset@linux.site> <20070204014445.88e6c8c7.akpm@linux-foundation.org> <Pine.LNX.4.64.0702041036420.24838@hermes-1.csi.cam.ac.uk> <20070204031039.46b56dbb.akpm@linux-foundation.org> <Pine.LNX.4.64.0702041737110.19190@hermes-1.csi.cam.ac.uk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <D3664A3D9376A94BB603EE19E4AA246D10D64758@nwd2exm4.ad.analog.com>
-	 <20070205173428.9f2109a4.rdunlap@xenotime.net>
+In-Reply-To: <Pine.LNX.4.64.0702041737110.19190@hermes-1.csi.cam.ac.uk>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/5/07, Randy Dunlap <rdunlap@xenotime.net> wrote:
-> I can't access this patch file.  (no, don't attach it for the mailing
-> list)
+On Sun, Feb 04, 2007 at 05:40:35PM +0000, Anton Altaparmakov wrote:
+> On Sun, 4 Feb 2007, Andrew Morton wrote:
+> > truncate's OK: we're holding i_mutex.
+> 
+> How about excluding readpage() (in addition to truncate if Nick is right  
+> and some cases of truncate do not hold i_mutex) with an extra page flag as
+> I proposed for truncate exclusion?  Then it would not matter that
+> prepare_write might have allocated blocks and might expose stale data.    
+> It would go to sleep and wait on the bit to be cleared instead of trying  
+> to bring the page uptodate.  It can then lock the page and either find it 
+> uptodate (because commit_write did it) or not and then bring it uptodate.
+> 
+> Then we could safely fault in the page, copy from it into a temporary 
+> page, then lock the destination page again and copy into it.
+> 
+> This is getting more involved as a patch again...  )-:  But at least it   
+> does not affect the common case except for having to check the new page 
+> flag in every readpage() and truncate() call.  But at least the checks 
+> could be with an "if (unlikely(newpageflag()))" so should not be too bad.
+> 
+> Have I missed anything this time?
 
-please try this:
-http://blackfin.uclinux.org/gf/download/frsrelease/25/2501/blackfin-arch-linux-2.6.20.patch
+Yes. If you have a flag to exclude readpage(), then you must also
+exclude filemap_nopage, in which case it is still deadlocky.
 
-as it gets tweaked, the magic id # gets incremented :/
-
-this URL should contain the latest link:
-http://blackfin.uclinux.org/gf/project/uclinux-dist/frs/?action=FrsReleaseView&release_id=25
--mike
