@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752056AbXBFQDi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752246AbXBFQEE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752056AbXBFQDi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 11:03:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752119AbXBFQDi
+	id S1752246AbXBFQEE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 11:04:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752233AbXBFQEE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 11:03:38 -0500
+	Tue, 6 Feb 2007 11:04:04 -0500
 Received: from nz-out-0506.google.com ([64.233.162.232]:57604 "EHLO
 	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752056AbXBFQDh (ORCPT
+	with ESMTP id S1752119AbXBFQEC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 11:03:37 -0500
+	Tue, 6 Feb 2007 11:04:02 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:date:to:cc:subject:message-id:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
-        b=o2kGHJ1zRtXe8GOQ5Syd2qmOWe9KNf54ldxw5unDT5ELREbOM76SK2nrCwqg6t5nEnlx2enzoRDIyLy05lf7bcrp4CexCd57Nnwk/kVARXRo7XDxzOoUS0+igumQ5Ua8npIn8NuNacsC4tH6D5qkj0o+6HBTiQBPJt9LBshwK5Q=
-Date: Tue, 6 Feb 2007 18:03:23 +0200
-To: v4l-dvb-maintainer@linuxtv.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 2.6.20] DVB: Use ARRAY_SIZE macro when appropriate
-Message-ID: <20070206160323.GB8991@Ahmed>
+        b=lmOqhOItBzUefqMvrVmIkFYuukHu3TMs/UR08PiWF4iLh2jJqM5XB5y+vYdA/tdy/w83PNFBGjrlUkxY21Gg51w6qDge20wrIpXWOkXgwKjAPIpYFkE8957VsJpL9u5eH8vn0/qeikAy678J31iFVc+hud04+xiPOOPchy9MEQA=
+Date: Tue, 6 Feb 2007 18:03:48 +0200
+To: avi@qumranet.com
+Cc: linux-kernel@vger.kernel.org, kvm-devel@lists.sourceforge.net
+Subject: [PATCH 2.6.20] KVM: Use ARRAY_SIZE macro when appropriate
+Message-ID: <20070206160348.GC8991@Ahmed>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -34,116 +34,89 @@ A patch to use ARRAY_SIZE macro already defined in kernel.h
 
 Signed-off-by: Ahmed S. Darwish <darwish.07@gmail.com>
 ---
-Patch is compile-tested.
-
-diff --git a/drivers/media/dvb/bt8xx/dst.c b/drivers/media/dvb/bt8xx/dst.c
-index 9f72b70..0393a3d 100644
---- a/drivers/media/dvb/bt8xx/dst.c
-+++ b/drivers/media/dvb/bt8xx/dst.c
-@@ -1161,7 +1161,7 @@ static int dst_get_device_id(struct dst_state *state)
- 		}
- 	}
+diff --git a/drivers/kvm/kvm_svm.h b/drivers/kvm/kvm_svm.h
+index 74cc862..624f1ca 100644
+--- a/drivers/kvm/kvm_svm.h
++++ b/drivers/kvm/kvm_svm.h
+@@ -1,6 +1,7 @@
+ #ifndef __KVM_SVM_H
+ #define __KVM_SVM_H
  
--	if (i >= sizeof (dst_tlist) / sizeof (dst_tlist [0])) {
-+	if (i >= ARRAY_SIZE(dst_tlist)) {
- 		dprintk(verbose, DST_ERROR, 1, "Unable to recognize %s or %s", &state->rxbuffer[0], &state->rxbuffer[1]);
- 		dprintk(verbose, DST_ERROR, 1, "please email linux-dvb@linuxtv.org with this type in");
- 		use_dst_type = DST_TYPE_IS_SAT;
-diff --git a/drivers/media/dvb/bt8xx/dvb-bt8xx.c b/drivers/media/dvb/bt8xx/dvb-bt8xx.c
-index 3e35931..5185a3c 100644
---- a/drivers/media/dvb/bt8xx/dvb-bt8xx.c
-+++ b/drivers/media/dvb/bt8xx/dvb-bt8xx.c
-@@ -23,6 +23,7 @@
++#include <linux/kernel.h>
+ #include <linux/types.h>
+ #include <linux/list.h>
+ #include <asm/msr.h>
+@@ -18,7 +19,7 @@ static const u32 host_save_msrs[] = {
+ 	MSR_IA32_LASTBRANCHTOIP, MSR_IA32_LASTINTFROMIP,MSR_IA32_LASTINTTOIP,*/
+ };
+ 
+-#define NR_HOST_SAVE_MSRS (sizeof(host_save_msrs) / sizeof(*host_save_msrs))
++#define NR_HOST_SAVE_MSRS ARRAY_SIZE(host_save_msrs)
+ #define NUM_DB_REGS 4
+ 
+ struct vcpu_svm {
+diff --git a/drivers/kvm/svm.c b/drivers/kvm/svm.c
+index c79df79..dc5c172 100644
+--- a/drivers/kvm/svm.c
++++ b/drivers/kvm/svm.c
+@@ -15,6 +15,7 @@
+  */
+ 
  #include <linux/module.h>
- #include <linux/moduleparam.h>
- #include <linux/init.h>
 +#include <linux/kernel.h>
- #include <linux/device.h>
- #include <linux/delay.h>
- #include <linux/slab.h>
-@@ -213,7 +214,7 @@ static int cx24108_tuner_set_params(struct dvb_frontend* fe, struct dvb_frontend
- 		freq = 2150000; /* satellite IF is 950..2150MHz */
+ #include <linux/vmalloc.h>
+ #include <linux/highmem.h>
+ #include <linux/profile.h>
+@@ -75,7 +76,7 @@ struct svm_init_data {
  
- 	/* decide which VCO to use for the input frequency */
--	for(i=1;(i<sizeof(osci)/sizeof(osci[0]))&&(osci[i]<freq);i++);
-+	for(i=1;(i<ARRAY_SIZE(osci))&&(osci[i]<freq);i++);
- 	printk("cx24108 debug: select vco #%d (f=%d)\n",i,freq);
- 	band=bandsel[i];
- 	/* the gain values must be set by SetSymbolrate */
-diff --git a/drivers/media/dvb/frontends/cx24110.c b/drivers/media/dvb/frontends/cx24110.c
-index ae96395..96ae6b1 100644
---- a/drivers/media/dvb/frontends/cx24110.c
-+++ b/drivers/media/dvb/frontends/cx24110.c
-@@ -254,7 +254,7 @@ static int cx24110_set_symbolrate (struct cx24110_state* state, u32 srate)
- 	if (srate<500000)
- 		srate=500000;
+ static u32 msrpm_ranges[] = {0, 0xc0000000, 0xc0010000};
  
--	for(i=0;(i<sizeof(bands)/sizeof(bands[0]))&&(srate>bands[i]);i++)
-+	for(i=0;(i<ARRAY_SIZE(bands))&&(srate>bands[i]);i++)
- 		;
- 	/* first, check which sample rate is appropriate: 45, 60 80 or 90 MHz,
- 	   and set the PLL accordingly (R07[1:0] Fclk, R06[7:4] PLLmult,
-@@ -361,7 +361,7 @@ static int cx24110_initfe(struct dvb_frontend* fe)
+-#define NUM_MSR_MAPS (sizeof(msrpm_ranges) / sizeof(*msrpm_ranges))
++#define NUM_MSR_MAPS ARRAY_SIZE(msrpm_ranges)
+ #define MSRS_RANGE_SIZE 2048
+ #define MSRS_IN_RANGE (MSRS_RANGE_SIZE * 8 / 2)
  
- 	dprintk("%s: init chip\n", __FUNCTION__);
+@@ -1287,7 +1288,7 @@ static int handle_exit(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
+ 		       __FUNCTION__, vcpu->svm->vmcb->control.exit_int_info,
+ 		       exit_code);
  
--	for(i=0;i<sizeof(cx24110_regdata)/sizeof(cx24110_regdata[0]);i++) {
-+	for(i=0;i<ARRAY_SIZE(cx24110_regdata);i++) {
- 		cx24110_writereg(state, cx24110_regdata[i].reg, cx24110_regdata[i].data);
- 	};
- 
-diff --git a/drivers/media/dvb/frontends/cx24123.c b/drivers/media/dvb/frontends/cx24123.c
-index a356d28..732e94a 100644
---- a/drivers/media/dvb/frontends/cx24123.c
-+++ b/drivers/media/dvb/frontends/cx24123.c
-@@ -507,7 +507,7 @@ static int cx24123_pll_calculate(struct dvb_frontend* fe, struct dvb_frontend_pa
- 	int i = 0;
- 	int pump = 2;
- 	int band = 0;
--	int num_bands = sizeof(cx24123_bandselect_vals) / sizeof(cx24123_bandselect_vals[0]);
-+	int num_bands = ARRAY_SIZE(cx24123_bandselect_vals);
- 
- 	/* Defaults for low freq, low rate */
- 	state->VCAarg = cx24123_AGC_vals[0].VCAprogdata;
-@@ -516,7 +516,7 @@ static int cx24123_pll_calculate(struct dvb_frontend* fe, struct dvb_frontend_pa
- 	vco_div = cx24123_bandselect_vals[0].VCOdivider;
- 
- 	/* For the given symbol rate, determine the VCA, VGA and FILTUNE programming bits */
--	for (i = 0; i < sizeof(cx24123_AGC_vals) / sizeof(cx24123_AGC_vals[0]); i++)
-+	for (i = 0; i < ARRAY_SIZE(cx24123_AGC_vals); i++)
- 	{
- 		if ((cx24123_AGC_vals[i].symbolrate_low <= p->u.qpsk.symbol_rate) &&
- 		    (cx24123_AGC_vals[i].symbolrate_high >= p->u.qpsk.symbol_rate) ) {
-@@ -658,7 +658,7 @@ static int cx24123_initfe(struct dvb_frontend* fe)
- 	dprintk("%s:  init frontend\n",__FUNCTION__);
- 
- 	/* Configure the demod to a good set of defaults */
--	for (i = 0; i < sizeof(cx24123_regdata) / sizeof(cx24123_regdata[0]); i++)
-+	for (i = 0; i < ARRAY_SIZE(cx24123_regdata); i++)
- 		cx24123_writereg(state, cx24123_regdata[i].reg, cx24123_regdata[i].data);
- 
- 	/* Set the LNB polarity */
-diff --git a/drivers/media/dvb/ttpci/av7110_ir.c b/drivers/media/dvb/ttpci/av7110_ir.c
-index e4544ea..c281d78 100644
---- a/drivers/media/dvb/ttpci/av7110_ir.c
-+++ b/drivers/media/dvb/ttpci/av7110_ir.c
-@@ -4,6 +4,7 @@
- #include <linux/moduleparam.h>
- #include <linux/input.h>
- #include <linux/proc_fs.h>
+-	if (exit_code >= sizeof(svm_exit_handlers) / sizeof(*svm_exit_handlers)
++	if (exit_code >= ARRAY_SIZE(svm_exit_handlers)
+ 	    || svm_exit_handlers[exit_code] == 0) {
+ 		kvm_run->exit_reason = KVM_EXIT_UNKNOWN;
+ 		printk(KERN_ERR "%s: 0x%x @ 0x%llx cr0 0x%lx rflags 0x%llx\n",
+diff --git a/drivers/kvm/vmx.c b/drivers/kvm/vmx.c
+index 54c35c0..072965b 100644
+--- a/drivers/kvm/vmx.c
++++ b/drivers/kvm/vmx.c
+@@ -19,6 +19,7 @@
+ #include "vmx.h"
+ #include "kvm_vmx.h"
+ #include <linux/module.h>
 +#include <linux/kernel.h>
- #include <asm/bitops.h>
+ #include <linux/mm.h>
+ #include <linux/highmem.h>
+ #include <linux/profile.h>
+@@ -76,7 +77,7 @@ static const u32 vmx_msr_index[] = {
+ #endif
+ 	MSR_EFER, MSR_K6_STAR,
+ };
+-#define NR_VMX_MSR (sizeof(vmx_msr_index) / sizeof(*vmx_msr_index))
++#define NR_VMX_MSR ARRAY_SIZE(vmx_msr_index)
  
- #include "av7110.h"
-@@ -217,7 +218,7 @@ int __devinit av7110_ir_init(struct av7110 *av7110)
- 	static struct proc_dir_entry *e;
- 	int err;
+ static inline int is_page_fault(u32 intr_info)
+ {
+@@ -1645,8 +1646,7 @@ static int (*kvm_vmx_exit_handlers[])(struct kvm_vcpu *vcpu,
+ 	[EXIT_REASON_HLT]                     = handle_halt,
+ };
  
--	if (av_cnt >= sizeof av_list/sizeof av_list[0])
-+	if (av_cnt >= ARRAY_SIZE(av_list))
- 		return -ENOSPC;
+-static const int kvm_vmx_max_exit_handlers =
+-	sizeof(kvm_vmx_exit_handlers) / sizeof(*kvm_vmx_exit_handlers);
++static const int kvm_vmx_max_exit_handlers = ARRAY_SIZE(kvm_vmx_exit_handlers);
  
- 	av7110_setup_irc_config(av7110, 0x0001);
+ /*
+  * The guest has exited.  See if we can fix it or if we need userspace
+
 
 -- 
 Ahmed S. Darwish
