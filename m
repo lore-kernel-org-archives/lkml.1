@@ -1,56 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964778AbXBFQN1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964785AbXBFQPi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964778AbXBFQN1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 11:13:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964784AbXBFQN0
+	id S964785AbXBFQPi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 11:15:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964860AbXBFQPi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 11:13:26 -0500
-Received: from ns.suse.de ([195.135.220.2]:55889 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964778AbXBFQNZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 11:13:25 -0500
-Date: Tue, 6 Feb 2007 17:11:17 +0100
-From: Stefan Seyfried <seife@suse.de>
-To: Bill Davidsen <davidsen@tmr.com>
-Cc: Adrian Bunk <bunk@stusta.de>, Greg KH <greg@kroah.com>,
-       Roland Dreier <rdreier@cisco.com>, linux-kernel@vger.kernel.org
-Subject: Re: Free Linux Driver Development!
-Message-ID: <20070206161117.GF6131@suse.de>
-References: <20070130012904.GA9617@kroah.com> <ada8xfks90x.fsf@cisco.com> <20070130191020.GF20642@kroah.com> <20070131011340.GP3754@stusta.de> <20070131012428.GA31759@kroah.com> <20070131021431.GR3754@stusta.de> <20070205094947.GA32384@suse.de> <45C89AC4.7050708@tmr.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <45C89AC4.7050708@tmr.com>
-X-Operating-System: openSUSE 10.2 (i586), Kernel 2.6.18.2-34-default
-User-Agent: mutt-ng/devel-r804 (Linux)
+	Tue, 6 Feb 2007 11:15:38 -0500
+Received: from vms048pub.verizon.net ([206.46.252.48]:47002 "EHLO
+	vms048pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964785AbXBFQPh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Feb 2007 11:15:37 -0500
+Date: Tue, 06 Feb 2007 11:15:23 -0500
+From: Gene Heskett <gene.heskett@verizon.net>
+Subject: Re: [PATCH][5/5] floppy.c: Fix device_create_file() warning
+In-reply-to: <45C820EF.3030502@zytor.com>
+To: linux-kernel@vger.kernel.org
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Jesper Juhl <jesper.juhl@gmail.com>,
+       Andi Kleen <ak@suse.de>, Trent Waddington <trent.waddington@gmail.com>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Message-id: <200702061115.24568.gene.heskett@verizon.net>
+Organization: Not detectable
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
+Content-transfer-encoding: 7bit
+Content-disposition: inline
+References: <200702060030.33671.jesper.juhl@gmail.com>
+ <200702060059.18345.gene.heskett@verizon.net> <45C820EF.3030502@zytor.com>
+User-Agent: KMail/1.9.5
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 06, 2007 at 10:12:04AM -0500, Bill Davidsen wrote:
-> Stefan Seyfried wrote:
-> >On Wed, Jan 31, 2007 at 03:14:31AM +0100, Adrian Bunk wrote:
-> >>On Tue, Jan 30, 2007 at 05:24:28PM -0800, Greg KH wrote:
-> >>>What?  Throw a fresh-faced newbie instantly into the tar-pit of despair
-> >>>that floppy.c is?  Do you want everyone just to run screaming from
-> >>>kernel development never to be seen again?
-> >>>
-> >>>:)
-> >>Other than with the ISA drivers example, at least everyone has the hardware... ;-)
-> >Wrong. I abandoned all floppy drives some years ago. I'd actually
-> >vote for removing the floppy driver from the kernel completely.
-> 
-> Is that your model of how the kernel should work? Take out anything you don't personally need?
+On Tuesday 06 February 2007 01:32, H. Peter Anvin wrote:
+>Gene Heskett wrote:
+>> On Monday 05 February 2007 18:30, Jesper Juhl wrote:
+>>
+>> And this is almost OT for this, but I'd like to interject here that in
+>> recent history, it has been very very difficult to properly access
+>> LSN0 of a floppy.  Some formats, such as those laid down by a WD-1773
+>> floppy controller, do indeed use a sector marking of '0' (zero) on all
+>> tracks.
+>
+>I thought the sector numbers of floppy discs were software programmable
+>(at formatting time.)  I believe different OSes used different offsets,
+>with 1, 2, 3... being the way IBM did it in the PC, but all kinds of
+>variants were used, including things like 0xa0, 0xa1, ... for no
+>apparent reason.
+>
+>	-hpa
+>-
+What I'm referring to hpa, is the suite of floppy tools that isn't even in 
+the FC6 catalog for some reason, fdutils-x.x.  In the past when I was 
+running fc2, I had to go find version 5.4, not 5.5 of that kit, build and 
+install that, and then revert the floppy stuffs to something borrowed 
+from a much older kernel before a command of 'setfdprm /dev/fd0 COCO720' 
+could even get past the syntax error stage, and we traced it down to an 
+inability to set a track format whose sector numbering scheme included a 
+sector number of zero as the first sector of the track.
 
-Oh. I must have forgotten those smilies.
-;-)
+I have a copy of fdutils-5.4 here, which I have not done a make install of 
+yet for FC6, so I should do a make clean;make;checkinstall --inspect and 
+see if it will work.  I have not be able to do that since about 2.6.8 or 
+so.
 
-> I'm guesstimating the 20-30% of the old laptops I rehab on Linux for kids who have none lack the 
-> ability to boot off CD. Or write a CD, for that matter. The ability of Linux to run on old 
-> hardware is another advantage over commercial systems.
+I just installed & tested it, and it appears to work correctly with the 
+floppy driver in 2.6.20, but I'll see if I can dd a bootable floppy to 
+it, the acid test for this user anyway... 10 minutes later, looking at 
+the recovered image with khexedit, it looks good, everything is in the 
+right place AFAICT, no little one byte offsets apparent.  So as long as 
+I'm using the older fdutils version-5.4, it looks like it works.
 
-Yes, i know.
+If it does not work, then we have locked at least one vintage computer 
+that I have several of, The TRS-80 Color Computer family, out of talking 
+to linux by any means.  I have also spent the equ of several days trying 
+to get its file transfer utility rzsz-3.36 based on Chuck Foresburgs 
+code, to work through a pl2303 usb-serial convertor.  Something in the 
+flow controls I think, I can type back and forth with terminal programs 
+but nothing that sends large quantities of data works.
+
+Maybe my fears are unfounded ATM, but I did want to voice them.
+
 -- 
-Stefan Seyfried
-QA / R&D Team Mobile Devices        |              "Any ideas, John?"
-SUSE LINUX Products GmbH, Nürnberg  | "Well, surrounding them's out." 
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+Yahoo.com and AOL/TW attorneys please note, additions to the above
+message by Gene Heskett are:
+Copyright 2007 by Maurice Eugene Heskett, all rights reserved.
