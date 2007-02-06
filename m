@@ -1,69 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965411AbXBFAtN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965413AbXBFAvG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965411AbXBFAtN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 19:49:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965426AbXBFAtM
+	id S965413AbXBFAvG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 19:51:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965414AbXBFAvG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 19:49:12 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:33231 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965411AbXBFAtJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 19:49:09 -0500
-Date: Mon, 5 Feb 2007 16:48:42 -0800
-From: Joel Becker <Joel.Becker@oracle.com>
-To: Scot McKinley <scot.mckinley@oracle.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       bert hubert <bert.hubert@netherlabs.nl>,
-       Davide Libenzi <davidel@xmailserver.org>, Ingo Molnar <mingo@elte.hu>,
-       Zach Brown <zach.brown@oracle.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-aio@kvack.org, Suparna Bhattacharya <suparna@in.ibm.com>,
-       Benjamin LaHaise <bcrl@kvack.org>
-Subject: Re: [PATCH 2 of 4] Introduce i386 fibril scheduling
-Message-ID: <20070206004842.GS32307@ca-server1.us.oracle.com>
-Mail-Followup-To: Scot McKinley <scot.mckinley@oracle.com>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	bert hubert <bert.hubert@netherlabs.nl>,
-	Davide Libenzi <davidel@xmailserver.org>,
-	Ingo Molnar <mingo@elte.hu>, Zach Brown <zach.brown@oracle.com>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	linux-aio@kvack.org, Suparna Bhattacharya <suparna@in.ibm.com>,
-	Benjamin LaHaise <bcrl@kvack.org>
-References: <df7bc026d50ec5bbdd8e.1170193183@tetsuo.zabbo.net> <20070201083611.GC18233@elte.hu> <Pine.LNX.4.64.0702011154110.3632@woody.linux-foundation.org> <20070202104900.GA13941@elte.hu> <Pine.LNX.4.64.0702020738500.15057@woody.linux-foundation.org> <20070202222110.GA1212@elte.hu> <Pine.LNX.4.64.0702021525370.5219@alien.or.mcafeemobile.com> <20070205213618.GA30923@outpost.ds9a.nl> <Pine.LNX.4.64.0702051350010.8424@woody.linux-foundation.org> <45C7CB80.4040402@oracle.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <45C7CB80.4040402@oracle.com>
-X-Burt-Line: Trees are cool.
-X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever come to perfection.
-User-Agent: Mutt/1.5.11
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Mon, 5 Feb 2007 19:51:06 -0500
+Received: from gate.crashing.org ([63.228.1.57]:38869 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965415AbXBFAvF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Feb 2007 19:51:05 -0500
+Subject: Re: [Cbe-oss-dev] [RFC, PATCH] CELL PPU Oprofile SPU profiling
+	updated patch
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Carl Love <cel@us.ibm.com>
+Cc: linux-kernel@vger.kernel.org, cbe-oss-dev@ozlabs.org,
+       linuxppc-dev@ozlabs.org
+In-Reply-To: <1170721711.5204.44.camel@dyn9047021078.beaverton.ibm.com>
+References: <1170721711.5204.44.camel@dyn9047021078.beaverton.ibm.com>
+Content-Type: text/plain
+Date: Tue, 06 Feb 2007 11:49:06 +1100
+Message-Id: <1170722946.2620.177.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 05, 2007 at 04:27:44PM -0800, Scot McKinley wrote:
-> Finally, it is agreed that neg-errno is a much better approach for the 
-> return code. The threading/concurrency issues associated w/ the current 
-> unix errno has always been buggy area for Oracle Networking code.
+On Mon, 2007-02-05 at 16:28 -0800, Carl Love wrote:
+> This is the first update to the patch previously posted by Maynard
+> Johnson as "PATCH 4/4. Add support to OProfile for profiling CELL".  
+> 
+> There are still a few items from the comments being discussed
+> specifically how to profile the dynamic code for the SPFS context
+> switch
+> code and how to deal with dynamic code stubs for library support.  Our
+> proposal is to assign the samples from the SPFS and dynamic library
+> code
+> to an anonymous sample bucket.  The support for properly handling the
+> symbol extraction in these cases would be deferred to a later SDK.    
+> 
+> There is also a bug in profiling overlay code that we are
+> investigating.
+> 
+> Subject: Add support to OProfile for profiling Cell BE SPUs
+> 
+> From: Maynard Johnson <maynardj@us.ibm.com>
+> 
+> This patch updates the existing arch/powerpc/oprofile/op_model_cell.c
+> to add in the SPU profiling capabilities.  In addition, a 'cell'
+> subdirectory
+> was added to arch/powerpc/oprofile to hold Cell-specific SPU profiling
+> code.
+> 
+> Signed-off-by: Carl Love <carll@us.ibm.com>
+> Signed-off-by: Maynard Johnson <mpjohn@us.ibm.com> 
 
-	As Scot knows, when Oracle started using the current io_submit(2)
-and io_getevents(2), -errno was a big win.
+Patch got mangled. You seem to be using evolution, make sure you use the
+"Preformat" style when posting a patch.
 
-Joel
+Ben.
 
--- 
 
-"Born under a bad sign.
- I been down since I began to crawl.
- If it wasn't for bad luck,
- I wouldn't have no luck at all."
-
-Joel Becker
-Principal Software Developer
-Oracle
-E-mail: joel.becker@oracle.com
-Phone: (650) 506-8127
