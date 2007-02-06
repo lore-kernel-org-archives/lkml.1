@@ -1,84 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752208AbXBFQgw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965017AbXBFQhr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752208AbXBFQgw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 11:36:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752157AbXBFQgw
+	id S965017AbXBFQhr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 11:37:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964972AbXBFQhr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 11:36:52 -0500
-Received: from vms044pub.verizon.net ([206.46.252.44]:40146 "EHLO
-	vms044pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752198AbXBFQgv (ORCPT
+	Tue, 6 Feb 2007 11:37:47 -0500
+Received: from ug-out-1314.google.com ([66.249.92.170]:24515 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965041AbXBFQhq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 11:36:51 -0500
-Date: Tue, 06 Feb 2007 11:36:18 -0500
-From: Gene Heskett <gene.heskett@verizon.net>
-Subject: Re: Free Linux Driver Development!
-In-reply-to: <200702061130.10222.gene.heskett@verizon.net>
-To: linux-kernel@vger.kernel.org
-Cc: "Sunil Naidu" <akula2.shark@gmail.com>, "Stefan Seyfried" <seife@suse.de>,
-       "Adrian Bunk" <bunk@stusta.de>, "Greg KH" <greg@kroah.com>,
-       "Roland Dreier" <rdreier@cisco.com>
-Message-id: <200702061136.19234.gene.heskett@verizon.net>
-Organization: Not detectable
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
-Content-transfer-encoding: 7bit
-Content-disposition: inline
-References: <20070130012904.GA9617@kroah.com>
- <8355959a0702060537jbd96e96sc10772f72f9491b3@mail.gmail.com>
- <200702061130.10222.gene.heskett@verizon.net>
-User-Agent: KMail/1.9.5
+	Tue, 6 Feb 2007 11:37:46 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Krc0iKriFyx+NBwICp81iOP+fTxFt5qATE4nGWQQcbtagxfz1KuNEaWWIpDKSZ3SyNhHseRAXZF5a4osbWcMKlyqPT/zs8xbC/krkxPl4bTnMn5zy5ZeXnEtCHu/Ajvp/amBqWNWl5xE6f46pBX6SOFBw56eFJ7wzYhGAKFYWn8=
+Message-ID: <d120d5000702060837j7382d429ned3fb5a5e47ac76b@mail.gmail.com>
+Date: Tue, 6 Feb 2007 11:37:44 -0500
+From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+To: "Michael Leun" <ml@newton.leun.net>
+Subject: Re: [PATCH] wistron button support for fujitsu-siemens Amilo D88x0
+Cc: mitr@volny.cz, linux-kernel@vger.kernel.org
+In-Reply-To: <20070205110529.0e4ae6c0@xenia.leun.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070205103521.0f20779d@xenia.leun.net>
+	 <20070205110529.0e4ae6c0@xenia.leun.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 06 February 2007 11:30, Gene Heskett wrote:
->On Tuesday 06 February 2007 08:37, Sunil Naidu wrote:
->>On 2/5/07, Stefan Seyfried <seife@suse.de> wrote:
->>> On Wed, Jan 31, 2007 at 03:14:31AM +0100, Adrian Bunk wrote:
->>> > On Tue, Jan 30, 2007 at 05:24:28PM -0800, Greg KH wrote:
->>>
->>> Wrong. I abandoned all floppy drives some years ago. I'd actually
->>> vote for removing the floppy driver from the kernel completely.
->>
->>I don't think time has come for that yet, still millions of people do
->>use Floppy on Linux ;-)
->>Maybe by 2.6.30 or so...
+On 2/5/07, Michael Leun <ml@newton.leun.net> wrote:
+> On Mon, 5 Feb 2007 10:35:21 +0100
+> Michael Leun <ml@newton.leun.net> wrote:
 >
->How about not even then?  There are few uses for the floppy drive today
->within linux, this is true.  BUT, that floppy is often the only was
+> > Hello,
+> >
+> > works just fine for me on a Amilo D8820.
+> >
+>
 
-Gahh, s/was/way above.  Old fingers seem to have minds of their own... :)
+Michael,
 
->software can be gotten from a vintage computer and published, or from a
->publishing site back to that vintage computer.  Please don't take away
->our last data path to what is to many of us, a very old and trusted dear
->friend.  OS9, and later Nitros9, on a TRS-80 Color Computer, was my
->teacher about unix-like systems, running a multiuser/multitasking
->operating system on a machine with only 64k of ram, although my current
->machine has 2 megs in it.  And I occasionally still miss some of the
->things I could do on that little machine that I have not been able to do
->since, like start an assembly that generates an output listing, and
->switch to another monitor or window & list that listing to the screen a
->maximum of 256 bytes behind the writing of that listing to the disk file
->it was going to.
->
->The floppy may not be usefull to linux anymore, but in support of other
->older formats, it is priceless.
->
->>> Stefan Seyfried
->>
->>~Akula2
->>-
->>To unsubscribe from this list: send the line "unsubscribe linux-kernel"
->> in the body of a message to majordomo@vger.kernel.org
->>More majordomo info at  http://vger.kernel.org/majordomo-info.html
->>Please read the FAQ at  http://www.tux.org/lkml/
+Could you please resend your patch with "Signed-off-by: ..." line and
+I will apply it.
+
+Thanks!
 
 -- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-Yahoo.com and AOL/TW attorneys please note, additions to the above
-message by Gene Heskett are:
-Copyright 2007 by Maurice Eugene Heskett, all rights reserved.
+Dmitry
