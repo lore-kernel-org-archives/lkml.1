@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933000AbXBFQIE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932838AbXBFQIW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933000AbXBFQIE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 11:08:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933002AbXBFQIC
+	id S932838AbXBFQIW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 11:08:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932999AbXBFQIW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 11:08:02 -0500
+	Tue, 6 Feb 2007 11:08:22 -0500
 Received: from nz-out-0506.google.com ([64.233.162.225]:59552 "EHLO
 	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933000AbXBFQIA (ORCPT
+	with ESMTP id S932838AbXBFQIT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 11:08:00 -0500
+	Tue, 6 Feb 2007 11:08:19 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:date:to:cc:subject:message-id:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
-        b=c/0X8iuzn1AUPgDqkI44EQS+L+knrwe6WY2qNUvqkBR0Tz7xdyWUR44GFf2mBbExG9JwpsE1gXAn5DB1kbk12mq929PPi3jwX3D3+f1quNZd+CdawimtUodju2WCzCm5qRqwNqcXiW+S8DRvhuXQHrt8yTjmfYUsE+/lA97nyyI=
-Date: Tue, 6 Feb 2007 18:07:44 +0200
-To: schwidefsky@de.ibm.com
-Cc: linux-kernel@vger.kernel.org, linux-390@vm.marist.edu
-Subject: [PATCH 2.6.20] s390-drivers: Use ARRAY_SIZE macro when appropriate
-Message-ID: <20070206160744.GK8991@Ahmed>
+        b=evYSxboav3TpzYr94MPxd/Rf+VfVMQSs+/pYGzD1Yo/DmccR4CD5j0rRn5bl32R6Xc+kowWZMqoW/doHACfWKHZQWjtR8VbBGAspgJbu3pOcd9g33b0rzEnylMCLgV/mj04DcGlCtla0HcLzOci7uYw/pXzFVxe194bHU06p4dc=
+Date: Tue, 6 Feb 2007 18:08:06 +0200
+To: josh@freedesktop.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH 2.6.20] rcutorture: Use ARRAY_SIZE macro when appropriate
+Message-ID: <20070206160806.GL8991@Ahmed>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -34,29 +34,19 @@ A patch to use ARRAY_SIZE macro already defined in kernel.h
 
 Signed-off-by: Ahmed S. Darwish <darwish.07@gmail.com>
 ---
-Not compile tested due to (ofcourse ;)) missing hardware.
-
-diff --git a/drivers/s390/cio/device_id.c b/drivers/s390/cio/device_id.c
-index f172759..997f468 100644
---- a/drivers/s390/cio/device_id.c
-+++ b/drivers/s390/cio/device_id.c
-@@ -11,6 +11,7 @@
+diff --git a/kernel/rcutorture.c b/kernel/rcutorture.c
+index 482b11f..97c2277 100644
+--- a/kernel/rcutorture.c
++++ b/kernel/rcutorture.c
+@@ -899,7 +899,7 @@ rcu_torture_init(void)
+ 	/* Set up the freelist. */
  
- #include <linux/module.h>
- #include <linux/init.h>
-+#include <linux/kernel.h>
- 
- #include <asm/ccwdev.h>
- #include <asm/delay.h>
-@@ -138,7 +139,7 @@ VM_virtual_device_info (__u16 devno, struct senseid *ps)
- 		ps->cu_model = 0x60;
- 		return;
- 	}
--	for (i = 0; i < sizeof(vm_devices) / sizeof(vm_devices[0]); i++)
-+	for (i = 0; i < ARRAY_SIZE(vm_devices); i++)
- 		if (diag_data.vrdcvcla == vm_devices[i].vrdcvcla &&
- 		    diag_data.vrdcvtyp == vm_devices[i].vrdcvtyp) {
- 			ps->cu_type = vm_devices[i].cu_type;
+ 	INIT_LIST_HEAD(&rcu_torture_freelist);
+-	for (i = 0; i < sizeof(rcu_tortures) / sizeof(rcu_tortures[0]); i++) {
++	for (i = 0; i < ARRAY_SIZE(rcu_tortures); i++) {
+ 		rcu_tortures[i].rtort_mbtest = 0;
+ 		list_add_tail(&rcu_tortures[i].rtort_free,
+ 			      &rcu_torture_freelist);
 
 
 -- 
