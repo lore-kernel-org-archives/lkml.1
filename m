@@ -1,91 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964785AbXBFQPi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964860AbXBFQQl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964785AbXBFQPi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 11:15:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964860AbXBFQPi
+	id S964860AbXBFQQl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 11:16:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964972AbXBFQQl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 11:15:38 -0500
-Received: from vms048pub.verizon.net ([206.46.252.48]:47002 "EHLO
-	vms048pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964785AbXBFQPh (ORCPT
+	Tue, 6 Feb 2007 11:16:41 -0500
+Received: from outbound-blu.frontbridge.com ([65.55.251.16]:47458 "EHLO
+	outbound2-blu-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S964860AbXBFQQj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 11:15:37 -0500
-Date: Tue, 06 Feb 2007 11:15:23 -0500
-From: Gene Heskett <gene.heskett@verizon.net>
-Subject: Re: [PATCH][5/5] floppy.c: Fix device_create_file() warning
-In-reply-to: <45C820EF.3030502@zytor.com>
-To: linux-kernel@vger.kernel.org
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Jesper Juhl <jesper.juhl@gmail.com>,
-       Andi Kleen <ak@suse.de>, Trent Waddington <trent.waddington@gmail.com>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Message-id: <200702061115.24568.gene.heskett@verizon.net>
-Organization: Not detectable
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
-Content-transfer-encoding: 7bit
-Content-disposition: inline
-References: <200702060030.33671.jesper.juhl@gmail.com>
- <200702060059.18345.gene.heskett@verizon.net> <45C820EF.3030502@zytor.com>
-User-Agent: KMail/1.9.5
+	Tue, 6 Feb 2007 11:16:39 -0500
+X-BigFish: VP
+X-Server-Uuid: 8C3DB987-180B-4465-9446-45C15473FD3E
+Date: Tue, 6 Feb 2007 17:16:24 +0100
+From: "Andreas Herrmann" <andreas.herrmann3@amd.com>
+To: "Jan Beulich" <jbeulich@novell.com>
+cc: "Andi Kleen" <ak@suse.de>, "Suresh B Siddha" <suresh.b.siddha@intel.com>,
+       "Richard Gooch" <rgooch@safe-mbox.com>, linux-kernel@vger.kernel.org,
+       discuss@x86-64.org
+Subject: Re: [discuss] [patch] mtrr: fix issues with large addresses
+Message-ID: <20070206161624.GI8665@alberich.amd.com>
+References: <20070205171959.GF8665@alberich.amd.com>
+ <20070205145055.A19581@unix-os.sc.intel.com>
+ <200702060853.30812.ak@suse.de> <45C85911.76E4.0078.0@novell.com>
+MIME-Version: 1.0
+In-Reply-To: <45C85911.76E4.0078.0@novell.com>
+User-Agent: mutt-ng/devel-r804 (Linux)
+X-OriginalArrivalTime: 06 Feb 2007 16:16:26.0349 (UTC)
+ FILETIME=[26BE69D0:01C74A0A]
+X-WSS-ID: 69D676572KW7165502-01-01
+Content-Type: text/plain;
+ charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 06 February 2007 01:32, H. Peter Anvin wrote:
->Gene Heskett wrote:
->> On Monday 05 February 2007 18:30, Jesper Juhl wrote:
->>
->> And this is almost OT for this, but I'd like to interject here that in
->> recent history, it has been very very difficult to properly access
->> LSN0 of a floppy.  Some formats, such as those laid down by a WD-1773
->> floppy controller, do indeed use a sector marking of '0' (zero) on all
->> tracks.
->
->I thought the sector numbers of floppy discs were software programmable
->(at formatting time.)  I believe different OSes used different offsets,
->with 1, 2, 3... being the way IBM did it in the PC, but all kinds of
->variants were used, including things like 0xa0, 0xa1, ... for no
->apparent reason.
->
->	-hpa
->-
-What I'm referring to hpa, is the suite of floppy tools that isn't even in 
-the FC6 catalog for some reason, fdutils-x.x.  In the past when I was 
-running fc2, I had to go find version 5.4, not 5.5 of that kit, build and 
-install that, and then revert the floppy stuffs to something borrowed 
-from a much older kernel before a command of 'setfdprm /dev/fd0 COCO720' 
-could even get past the syntax error stage, and we traced it down to an 
-inability to set a track format whose sector numbering scheme included a 
-sector number of zero as the first sector of the track.
+On Tue, Feb 06, 2007 at 09:31:45AM +0000, Jan Beulich wrote:
+> >>> Andi Kleen <ak@suse.de> 06.02.07 08:53 >>>
+> >On Monday 05 February 2007 23:50, Siddha, Suresh B wrote:
+> >> On Mon, Feb 05, 2007 at 06:19:59PM +0100, Andreas Herrmann wrote:
+> >> > o added check to restrict base address to 36 bit on i386
+> >> 
+> >> Why is this? It can go upto implemented physical bits, right?
+> >
+> >In theory it can, but Linux doesn't support it.
+> 
+> I don't think I remember a restriction here, at least not below 44 bits
+> (that's where pfn-s would need to become 64-bit wide).
+> 
+> Jan
+> 
 
-I have a copy of fdutils-5.4 here, which I have not done a make install of 
-yet for FC6, so I should do a make clean;make;checkinstall --inspect and 
-see if it will work.  I have not be able to do that since about 2.6.8 or 
-so.
+Hi all,
 
-I just installed & tested it, and it appears to work correctly with the 
-floppy driver in 2.6.20, but I'll see if I can dd a bootable floppy to 
-it, the acid test for this user anyway... 10 minutes later, looking at 
-the recovered image with khexedit, it looks good, everything is in the 
-right place AFAICT, no little one byte offsets apparent.  So as long as 
-I'm using the older fdutils version-5.4, it looks like it works.
+shame on me.
+Wanted to fix and interface issue where base address is truncated
+at 44 bit in mtrr_write().
 
-If it does not work, then we have locked at least one vintage computer 
-that I have several of, The TRS-80 Color Computer family, out of talking 
-to linux by any means.  I have also spent the equ of several days trying 
-to get its file transfer utility rzsz-3.36 based on Chuck Foresburgs 
-code, to work through a pl2303 usb-serial convertor.  Something in the 
-flow controls I think, I can type back and forth with terminal programs 
-but nothing that sends large quantities of data works.
+(And just thought 36 bit would be more than enough for that 32 bit
+Linux version :)
 
-Maybe my fears are unfounded ATM, but I did want to voice them.
+
+Regards,
+
+Andreas
 
 -- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-Yahoo.com and AOL/TW attorneys please note, additions to the above
-message by Gene Heskett are:
-Copyright 2007 by Maurice Eugene Heskett, all rights reserved.
+AMD Saxony, Dresden, Germany
+Operating System Research Center
+
+
+
