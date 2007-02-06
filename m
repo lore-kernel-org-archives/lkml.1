@@ -1,79 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965477AbXBFWLn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965540AbXBFWLw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965477AbXBFWLn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 17:11:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965540AbXBFWLm
+	id S965540AbXBFWLw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 17:11:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965545AbXBFWLw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 17:11:42 -0500
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:39697 "EHLO
+	Tue, 6 Feb 2007 17:11:52 -0500
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:39701 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S965477AbXBFWLl (ORCPT
+	with ESMTP id S965540AbXBFWLv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 17:11:41 -0500
-Date: Tue, 6 Feb 2007 23:11:45 +0100
+	Tue, 6 Feb 2007 17:11:51 -0500
+Date: Tue, 6 Feb 2007 23:11:56 +0100
 From: Adrian Bunk <bunk@stusta.de>
-To: Andrew Morton <akpm@osdl.org>, lenb@kernel.org
-Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
-Subject: [-mm patch] #ifdef ACPI_FUTURE_USAGE acpi_os_readable()
-Message-ID: <20070206221145.GF27397@stusta.de>
-References: <20070129204528.eb8d695e.akpm@osdl.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Paul Mackerras <paulus@samba.org>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Subject: [2.6 patch] drivers/macintosh/mac_hid.c: make code static
+Message-ID: <20070206221155.GG27397@stusta.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070129204528.eb8d695e.akpm@osdl.org>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 29, 2007 at 08:45:28PM -0800, Andrew Morton wrote:
->...
-> Changes since 2.6.20-rc6-mm2:
->...
->  git-acpi.patch
->...
->  git trees
->...
-
-
-acpi_os_readable() is no longer used.
+This patch makes some needlessly global code static.
 
 Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
 ---
 
- drivers/acpi/osl.c      |    2 --
- include/acpi/acpiosxf.h |    3 +--
- 2 files changed, 1 insertion(+), 4 deletions(-)
+ drivers/macintosh/mac_hid.c |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
---- linux-2.6.20-rc6-mm3/include/acpi/acpiosxf.h.old	2007-02-06 06:57:15.000000000 +0100
-+++ linux-2.6.20-rc6-mm3/include/acpi/acpiosxf.h	2007-02-06 06:57:53.000000000 +0100
-@@ -240,9 +240,8 @@
- acpi_os_validate_address(u8 space_id,
- 			 acpi_physical_address address, acpi_size length);
+--- linux-2.6.20-rc6-mm3/drivers/macintosh/mac_hid.c.old	2007-02-06 07:38:21.000000000 +0100
++++ linux-2.6.20-rc6-mm3/drivers/macintosh/mac_hid.c	2007-02-06 07:39:14.000000000 +0100
+@@ -24,7 +24,7 @@
  
--u8 acpi_os_readable(void *pointer, acpi_size length);
--
- #ifdef ACPI_FUTURE_USAGE
-+u8 acpi_os_readable(void *pointer, acpi_size length);
- u8 acpi_os_writable(void *pointer, acpi_size length);
- #endif
+ #if defined(CONFIG_SYSCTL)
+ /* file(s) in /proc/sys/dev/mac_hid */
+-ctl_table mac_hid_files[] = {
++static ctl_table mac_hid_files[] = {
+ 	{
+ 		.ctl_name	= DEV_MAC_HID_MOUSE_BUTTON_EMULATION,
+ 		.procname	= "mouse_button_emulation",
+@@ -53,7 +53,7 @@
+ };
  
---- linux-2.6.20-rc6-mm3/drivers/acpi/osl.c.old	2007-02-06 07:18:33.000000000 +0100
-+++ linux-2.6.20-rc6-mm3/drivers/acpi/osl.c	2007-02-06 07:18:54.000000000 +0100
-@@ -888,7 +888,6 @@
+ /* dir in /proc/sys/dev */
+-ctl_table mac_hid_dir[] = {
++static ctl_table mac_hid_dir[] = {
+ 	{
+ 		.ctl_name	= DEV_MAC_HID,
+ 		.procname	= "mac_hid",
+@@ -65,7 +65,7 @@
+ };
  
- 	return 0;
+ /* /proc/sys/dev itself, in case that is not there yet */
+-ctl_table mac_hid_root_dir[] = {
++static ctl_table mac_hid_root_dir[] = {
+ 	{
+ 		.ctl_name	= CTL_DEV,
+ 		.procname	= "dev",
+@@ -129,7 +129,7 @@
+ 	return ret;
  }
--#endif				/*  ACPI_FUTURE_USAGE  */
  
- /* Assumes no unreadable holes inbetween */
- u8 acpi_os_readable(void *ptr, acpi_size len)
-@@ -901,7 +900,6 @@
- 	return 1;
- }
- 
--#ifdef ACPI_FUTURE_USAGE
- u8 acpi_os_writable(void *ptr, acpi_size len)
+-int __init mac_hid_init(void)
++static int __init mac_hid_init(void)
  {
- 	/* could do dummy write (racy) or a kernel page table lookup.
+ 	int err;
+ 
 
