@@ -1,132 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965286AbXBFAdT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965304AbXBFAgF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965286AbXBFAdT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 19:33:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965220AbXBFAdT
+	id S965304AbXBFAgF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 19:36:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965305AbXBFAgF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 19:33:19 -0500
-Received: from electric-eye.fr.zoreil.com ([213.41.134.224]:45585 "EHLO
-	fr.zoreil.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965223AbXBFAdR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 19:33:17 -0500
-Date: Tue, 6 Feb 2007 01:31:30 +0100
-From: Francois Romieu <romieu@fr.zoreil.com>
-To: =?unknown-8bit?B?6Kix5oGG5ZiJ?= <edward_hsu@realtek.com.tw>
-Cc: jeff@garzik.org, linux-kernel@vger.kernel.org, hiwu@realtek.com.tw
-Subject: Re: [PATCH 2.6.19.2] r8169: support RTL8169SC/8110SC
-Message-ID: <20070206003130.GA18236@electric-eye.fr.zoreil.com>
-References: <45C2F390.4070805@realtek.com.tw> <20070203003952.GA22823@electric-eye.fr.zoreil.com> <45C6A8EC.5090201@realtek.com.tw>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=unknown-8bit
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <45C6A8EC.5090201@realtek.com.tw>
-User-Agent: Mutt/1.4.2.1i
-X-Organisation: Land of Sunshine Inc.
+	Mon, 5 Feb 2007 19:36:05 -0500
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:15368 "EHLO
+	pd5mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965302AbXBFAgD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Feb 2007 19:36:03 -0500
+Date: Mon, 05 Feb 2007 18:35:06 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: forcedeth problems on 2.6.20-rc6-mm3
+In-reply-to: <Pine.LNX.4.64.0702050124320.20138@iabervon.org>
+To: Daniel Barkalow <barkalow@iabervon.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
+       Andrew Morton <akpm@osdl.org>
+Message-id: <45C7CD3A.808@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <45C6BCE5.90103@shaw.ca>
+ <Pine.LNX.4.64.0702050124320.20138@iabervon.org>
+User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-許恆嘉 <edward_hsu@realtek.com.tw> :
-[...]
-> >>static struct pci_device_id rtl8169_pci_tbl[] = {
-> >>- { PCI_DEVICE(PCI_VENDOR_ID_REALTEK, 0x8129), 0, 0, RTL_CFG_0 },
-> >>- { PCI_DEVICE(PCI_VENDOR_ID_REALTEK, 0x8136), 0, 0, RTL_CFG_2 },
-> >>- { PCI_DEVICE(PCI_VENDOR_ID_REALTEK, 0x8167), 0, 0, RTL_CFG_0 },
-> >>- { PCI_DEVICE(PCI_VENDOR_ID_REALTEK, 0x8168), 0, 0, RTL_CFG_2 },
-> >>- { PCI_DEVICE(PCI_VENDOR_ID_REALTEK, 0x8169), 0, 0, RTL_CFG_0 },
-> >>- { PCI_DEVICE(PCI_VENDOR_ID_DLINK, 0x4300), 0, 0, RTL_CFG_0 },
-> >>- { PCI_DEVICE(0x1259, 0xc107), 0, 0, RTL_CFG_0 },
-> >>- { PCI_DEVICE(0x16ec, 0x0116), 0, 0, RTL_CFG_0 },
-> >>- { PCI_VENDOR_ID_LINKSYS, 0x1032,
-> >>- PCI_ANY_ID, 0x0024, 0, 0, RTL_CFG_0 },
-> >>+ { PCI_DEVICE(PCI_VENDOR_ID_REALTEK, 0x8169), },
-> >>+ { PCI_DEVICE(PCI_VENDOR_ID_REALTEK, 0x8167), },
-> >>   
-> >>
-> >
-> >The current driver is intended to handle the whole set of PCI IDs
-> >which would be removed by the patch. Thoug some combination of
-> >chipset and motherboard do not work as expected, the gigabit
-> >chipsets have been reported to work.
-> >
-> >Please elaborate if there is a good reason to remove any ID.
-> > 
-> >
-> ANS:
-> I have explained my point about this in last question. This driver is 
-> developed for Realtek PCI gigabit ethernet controllers. Although some 
-> vendors may use Realtek solutions with their own PCI DIDs and VIDs, they 
-> should customize this driver and maintained the customized driver on 
-> their own.
-
-Vendors will change the PCI ID because they like to see their name in
-the nifty hardware GUI under Windows. The brave ones will mess with the
-VPD (before or after they vandalize the ACPI tables, at their option).
-Eventually they will copy an outdated version of your driver on their site
-with the updated ID. Given the tight margin on these kind of mass-volume
-product, I would not expect vendors to do more for their customers who
-use Linux.
-
-If your hardware changes significantly, it may make sense to use a new,
-different driver. Otherwise, as long as the changes are minor, a single
-in-kernel driver which works out of the box for most users/vendors offers
-the best coverage. It should not be neglected.
-
-So far, I have only seen minor differences between r8101-1.001.00,
-r8168-8.001.00 and r8169-6.001.00. The mac init sequence is not pretty
-to unify but the drivers stay mostly the same. There even is a floating
-patch for MSI support which seems manageable within a single driver.
-
-Of course it depends a lot on the kind of changes that you envision for
-the driver(s).
-
-[...]
-> >>RxMaxSize = 0xDA,
-> >>CPlusCmd = 0xE0,
-> >>IntrMitigate = 0xE2,
-> >>@@ -287,11 +291,10 @@ enum RTL8169_register_content {
-> >>RxOK = 0x01,
-> >>
-> >>/* RxStatusDesc */
-> >>- RxFOVF = (1 << 23),
-> >>- RxRWT = (1 << 22),
-> >>- RxRES = (1 << 21),
-> >>- RxRUNT = (1 << 20),
-> >>- RxCRC = (1 << 19),
-> >>+ RxRES = 0x00200000,
-> >>+ RxCRC = 0x00080000,
-> >>+ RxRUNT = 0x00100000,
-> >>+ RxRWT = 0x00400000,
-> >>   
-> >>
-> >
-> >This part removes RxFOVF. Please elaborate if there is a reason
-> >to do so.
-> > 
-> >
+Daniel Barkalow wrote:
+> On Sun, 4 Feb 2007, Robert Hancock wrote:
 > 
-> ANS:
-> According to the spec of RTL8110SC, bit 23 and bit 24 are reserved in 
-> the 1st double word of rx status descriptor. Therefore, I delete it.
+>> Something's busted with forcedeth in 2.6.20-rc6-mm3 for me relative to
+>> 2.6.20-rc6. There's no errors in dmesg, but it seems no packets ever get
+>> received and so the machine can't get an IP address. I tried reverting all the
+>> -mm changes to drivers/net/forcedeth.c, which didn't help. The network
+>> controller shares an IRQ with the USB OHCI controller which is receiving
+>> interrupts, so it doesn't seem like an interrupt routing problem, though I
+>> suppose something wierd could be happening there.
+> 
+> IIRC, forcedeth tries to use MSI by default. Perhaps the hardware is using 
+> it, but the kernel thinks enabling it didn't work? I think there's a 
+> module option for forcedeth to disable MSI, which might be worth a try to 
+> see if it has any effect.
 
-The bits are fine for the old Gigabit 8169 though, aren't they ?
+I must have messed something up when testing before - reverting to 
+forcedeth.c from 2.6.20-rc6 does indeed fix the problem. And it doesn't 
+seem like no packets at all are received with the -mm3 version (driver 
+version 0.60), either - if I do a tcpdump I can get Ethernet packets 
+showing up, but I can't ping my router so it seems like something isn't 
+getting through properly. With the 2.6.20-rc6 version (driver version 
+0.59) it works fine. I switched back and forth between versions and this 
+seems repeatable.
 
-[...]
-> >Two points here:
-> >1. the driver uniformly uses u{8/16/32} types. Please follow the current
-> >  style and avoid to add uint{8/16/32}_t things.
-> >2. does this new field bring something that struct net_device.dev_addr
-> >  does not ?
-> >
-> > 
-> >
-> ANS:
-> I reference the source code of e1000.c, which is currently existing in 
-> Linux kernel. I think it uses u{8/16/32} and the new field.
-
-The e1000 driver has an interesting history. It is strongly suggested
-to ponder several drivers to figure some good practices. Please see for
-instance tg3.c, b44.c, sky2.c or any recent driver in drivers/net.
+I don't think it's MSI related, the CK804 version of these controllers 
+doesn't support MSI and the driver shouldn't be trying to use it. I 
+tried the MSI and MSI-X disable options on the 0.60 driver, but that 
+didn't help.
 
 -- 
-Ueimor
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
+
