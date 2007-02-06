@@ -1,66 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752076AbXBFKzM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750936AbXBFLGE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752076AbXBFKzM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 05:55:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751898AbXBFKzM
+	id S1750936AbXBFLGE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 06:06:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751041AbXBFLGE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 05:55:12 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:34690 "EHLO mx2.suse.de"
+	Tue, 6 Feb 2007 06:06:04 -0500
+Received: from mail.screens.ru ([213.234.233.54]:50679 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752076AbXBFKzK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 05:55:10 -0500
-From: Andi Kleen <ak@suse.de>
-To: "Jan Beulich" <jbeulich@novell.com>
-Subject: Re: [discuss] [patch] mtrr: fix issues with large addresses
-Date: Tue, 6 Feb 2007 11:54:57 +0100
-User-Agent: KMail/1.9.5
-Cc: "Andreas Herrmann" <andreas.herrmann3@amd.com>,
-       "Suresh B Siddha" <suresh.b.siddha@intel.com>,
-       "Richard Gooch" <rgooch@safe-mbox.com>, linux-kernel@vger.kernel.org,
-       discuss@x86-64.org
-References: <20070205171959.GF8665@alberich.amd.com> <200702061045.22966.ak@suse.de> <45C85E41.76E4.0078.0@novell.com>
-In-Reply-To: <45C85E41.76E4.0078.0@novell.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	id S1750936AbXBFLGB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Feb 2007 06:06:01 -0500
+Date: Tue, 6 Feb 2007 14:05:39 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: S?bastien Dugu? <sebastien.dugue@bull.net>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
+       linux-aio <linux-aio@kvack.org>, Bharata B Rao <bharata@in.ibm.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
+       Badari Pulavarty <pbadari@us.ibm.com>,
+       Jean Pierre Dion <jean-pierre.dion@bull.net>
+Subject: Re: [PATCH -mm][AIO] AIO completion signal notification fixes and cleanups
+Message-ID: <20070206110539.GA129@tv-sign.ru>
+References: <20070201102252.240130c6@frecb000686> <20070201103053.64489048@frecb000686> <20070202180039.GA658@tv-sign.ru> <20070205131839.6f601c3e@frecb000686> <20070205134314.GA283@tv-sign.ru> <20070205170056.6a29b19b@frecb000686> <20070205171335.GA528@tv-sign.ru> <20070206102253.20b121ae@frecb000686>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200702061154.57621.ak@suse.de>
+In-Reply-To: <20070206102253.20b121ae@frecb000686>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 06 February 2007 10:53, Jan Beulich wrote:
-> >> I don't think I remember a restriction here, at least not below 44 bits
-> >> (that's where pfn-s would need to become 64-bit wide).
-> >
-> >The i386 mm code only supports 4 entries in the PGD, so more than 36bit cannot 
-> >be mapped right now.
+On 02/06, S?bastien Dugu? wrote:
 > 
-> That has nothing to do with the number of physical address bits.
+> @@ -970,8 +969,14 @@ static long aio_setup_sigevent(struct ai
+>  	rcu_read_lock();
+>  	target = sigevent_find_task(&event);
+>  
+> -	if (unlikely(!target))
+> +	if (unlikely(!target)) {
+> +		/*
+> +		 * Revert notify to SIGEV_NONE so that really_put_req()
+> +		 * knows that no ref has been taken on a task.
+> +		 */
+> +		notify->notify = SIGEV_NONE;
+>  		goto out_unlock;
+> +	}
 
-You couldn't use the memory in any ways.
+Very minor nit, feel free to ignore.
 
-Anyways I give up -- the check is probably not needed, unless Andreas
-comes up with a good reason.
+Isn't it better to move "notify->* = event.*;" down, when we know that
+target != NULL. Imho, a bit easier to follow. This way we don't need to
+reset notify->notify = SIGEV_NONE.
 
-> 
-> >Also even 64MB barely works (many boxes don't boot), you would likely
-> >need at least the 4:4 patch to go >64GB. Also we know there are tons
-> >of possible deadlocks in various subsystems when the lowmem:highmem ratio 
-> >gets so out of hand.
-> >
-> >Ok it could be probably all fixed with some work (at least the mm part,
-> >the deadlocks would be more tricky), but would seem fairly 
-> >pointless to me because all machines with >36bits support are 64bit capable.
-> 
-> That's a different story, and certainly a limiting factor. But this shouldn't
-> e.g. disallow (hypothetical?) systems that have a very sparse memory map
-> extending beyond 64G.
+aio_setup_sigevent() relies on the fact that ->notify = SIGEV_NONE on
+entry anyway.
 
-They would need a discontig kernel to boot most likely, otherwise
-mem_map would fill up their memory. 
+Oleg.
 
-And I was told Windows doesn't like that, so it's unlikely there will ever be such
-x86 machines.
-
--Andi
