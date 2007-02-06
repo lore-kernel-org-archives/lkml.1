@@ -1,64 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965571AbXBFWOH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965587AbXBFWOI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965571AbXBFWOH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 17:14:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965583AbXBFWN6
+	id S965587AbXBFWOI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 17:14:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965580AbXBFWN2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 17:13:58 -0500
-Received: from www.osadl.org ([213.239.205.134]:49909 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S965571AbXBFWNb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 17:13:31 -0500
-Subject: Re: 2.6.20-rc6-mm3
-From: Thomas Gleixner <tglx@linutronix.de>
-To: dwalker@mvista.com
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@osdl.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <1170798879.3455.58.camel@dwalker1>
-References: <1170786992.3785.0.camel@chaos>
-	 <1170787543.9781.362.camel@imap.mvista.com> <1170788870.3785.9.camel@chaos>
-	 <1170791739.3455.3.camel@dwalker1> <1170793206.3785.16.camel@chaos>
-	 <1170794437.3455.20.camel@dwalker1> <20070206205231.GA25430@elte.hu>
-	 <1170795378.3455.31.camel@dwalker1> <20070206210959.GC25430@elte.hu>
-	 <1170796999.3455.43.camel@dwalker1>  <20070206214131.GA1176@elte.hu>
-	 <1170798879.3455.58.camel@dwalker1>
-Content-Type: text/plain
-Date: Tue, 06 Feb 2007 23:13:40 +0100
-Message-Id: <1170800020.3785.41.camel@chaos>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
-Content-Transfer-Encoding: 7bit
+	Tue, 6 Feb 2007 17:13:28 -0500
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:39728 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S965571AbXBFWMy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Feb 2007 17:12:54 -0500
+Date: Tue, 6 Feb 2007 23:12:58 +0100
+From: Adrian Bunk <bunk@stusta.de>
+To: Andrew Morton <akpm@osdl.org>, "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: [-mm patch] fs/proc/: make code static
+Message-ID: <20070206221258.GK27397@stusta.de>
+References: <20070127234928.64d8e437.akpm@osdl.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070127234928.64d8e437.akpm@osdl.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-02-06 at 13:54 -0800, Daniel Walker wrote:
-> > The same happens when say a network driver implements NAPI: the IRQ 
-> > count goes way, way down. Or if a driver starts supporing MSI - the IRQ 
-> > line even moves to another one. Do we try to fix those counts up to 
-> > match the 'previous behavior'? Of course not. What you are suggesting 
-> > makes no sense, is against current kernel practices - as we pointed it 
-> > out to you 7 mails ago.
-> 
-> I'm not saying we should "fake" anything .. I'm saying list what's
-> really happening .. In a human readable way .
+On Sat, Jan 27, 2007 at 11:49:28PM -0800, Andrew Morton wrote:
+>...
+> Changes since 2.6.20-rc4-mm1:
+>...
+> +sysctl-reimplement-the-sysctl-proc-support.patch
+>...
+>  A few sysctl patches.
+>...
 
-We do that. IRQ0 is not happening. So simply it does not increment the
-interrupt count. And it is human readable.
 
-> Your saying we should keep it unreadable, and let the users be that much
-> more confused .. Which I don't agree with.
+proc_match() and struct proc_sys_root can now become static.
 
-It is readable, as it reflects the reality which is going on in the
-system and not some artificial view which you think is how the interrupt
-count should be presented. /proc/interrupt _IS_ statistics about the
-number of interrupts on particular interrupt numbers and nothing else. 
+Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
-> Why is that not the case with lapic ? 
+---
 
-Local APIC is not really part of the interrupt subsystem as it uses a
-seperate entry vector for historic reasons and therefor is not handled
-by setup/request/free/... _irq() functions.
+ fs/proc/generic.c       |    2 +-
+ fs/proc/proc_sysctl.c   |    2 +-
+ include/linux/proc_fs.h |    2 --
+ 3 files changed, 2 insertions(+), 4 deletions(-)
 
-	tglx
-
+--- linux-2.6.20-rc6-mm3/include/linux/proc_fs.h.old	2007-02-06 08:34:02.000000000 +0100
++++ linux-2.6.20-rc6-mm3/include/linux/proc_fs.h	2007-02-06 08:34:09.000000000 +0100
+@@ -128,8 +128,6 @@
+ extern int proc_fill_super(struct super_block *,void *,int);
+ extern struct inode *proc_get_inode(struct super_block *, unsigned int, struct proc_dir_entry *);
+ 
+-extern int proc_match(int, const char *,struct proc_dir_entry *);
+-
+ /*
+  * These are generic /proc routines that use the internal
+  * "struct proc_dir_entry" tree to traverse the filesystem.
+--- linux-2.6.20-rc6-mm3/fs/proc/generic.c.old	2007-02-06 08:34:17.000000000 +0100
++++ linux-2.6.20-rc6-mm3/fs/proc/generic.c	2007-02-06 08:34:25.000000000 +0100
+@@ -33,7 +33,7 @@
+ 
+ DEFINE_SPINLOCK(proc_subdir_lock);
+ 
+-int proc_match(int len, const char *name, struct proc_dir_entry *de)
++static int proc_match(int len, const char *name, struct proc_dir_entry *de)
+ {
+ 	if (de->namelen != len)
+ 		return 0;
+--- linux-2.6.20-rc6-mm3/fs/proc/proc_sysctl.c.old	2007-02-06 08:34:33.000000000 +0100
++++ linux-2.6.20-rc6-mm3/fs/proc/proc_sysctl.c	2007-02-06 08:34:42.000000000 +0100
+@@ -466,7 +466,7 @@
+ 	.d_revalidate	= proc_sys_revalidate,
+ };
+ 
+-struct proc_dir_entry *proc_sys_root;
++static struct proc_dir_entry *proc_sys_root;
+ 
+ int proc_sys_init(void)
+ {
 
