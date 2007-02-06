@@ -1,94 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752231AbXBFPbU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932436AbXBFPgN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752231AbXBFPbU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 10:31:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932099AbXBFPbU
+	id S932436AbXBFPgN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 10:36:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932588AbXBFPgN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 10:31:20 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:47142 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752231AbXBFPbT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 10:31:19 -0500
-Date: Tue, 6 Feb 2007 10:31:18 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Andrew Morton <akpm@osdl.org>
-cc: Kernel development list <linux-kernel@vger.kernel.org>
-Subject: [PATCH] USB: fix concurrent buffer access in the hub driver
-Message-ID: <Pine.LNX.4.44L0.0702061028530.3421-100000@iolanthe.rowland.org>
+	Tue, 6 Feb 2007 10:36:13 -0500
+Received: from smtp.ocgnet.org ([64.20.243.3]:34363 "EHLO smtp.ocgnet.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932436AbXBFPgM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Feb 2007 10:36:12 -0500
+Date: Wed, 7 Feb 2007 00:34:13 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Matt Mackall <mpm@selenic.com>
+Cc: David Woodhouse <dwmw2@infradead.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [patch] MTD: fix DOC2000/2001/2001PLUS build error
+Message-ID: <20070206153413.GA10167@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Matt Mackall <mpm@selenic.com>,
+	David Woodhouse <dwmw2@infradead.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Ingo Molnar <mingo@elte.hu>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <Pine.LNX.4.64.0702041057090.8424@woody.linux-foundation.org> <20070205084523.GA21858@elte.hu> <1170682488.29759.795.camel@pmac.infradead.org> <20070205155627.GA8354@elte.hu> <1170692539.29759.856.camel@pmac.infradead.org> <20070205162635.GA755@elte.hu> <20070205163152.GA2464@elte.hu> <Pine.LNX.4.64.0702050852160.8424@woody.linux-foundation.org> <1170710272.29759.894.camel@pmac.infradead.org> <20070206054612.GL16722@waste.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070206054612.GL16722@waste.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch (as849) fixes a bug in the hub driver.  A single
-pre-allocated buffer is used for all port status reads, but nothing
-guarantees exclusive use of the buffer.  A mutex is added to provide
-this guarantee.
+On Mon, Feb 05, 2007 at 11:46:12PM -0600, Matt Mackall wrote:
+> I'd be happy to turn this into CONFIG_NONSTANDARD or
+> CONFIG_EXPERT, which is how I described it in the Kconfig help texts:
+> 
+> menuconfig EMBEDDED
+>         bool "Configure standard kernel features (for small systems)"
+>         help
+>           This option allows certain base kernel options and settings
+>           to be disabled or tweaked. This is for specialized
+>           environments which can tolerate a "non-standard" kernel.
+>           Only use this if you really know what you are doing.
+> 
+> A number of current users are indeed bogus. Stuff like:
+> 
+> config SUPERH
+>         bool
+>         default y
+>         select EMBEDDED
+> 
+> Just because you're using a SuperH board doesn't mean you want to turn
+> off standard features.
+> 
+The only thing bogus is the CONFIG_EMBEDDED use itself, if it were only
+limited to turning options off, you'd be correct, but both PCI and IDE
+use it for other things. We specifically wanted it for IDE in this case.
 
-Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+I'd be quite happy to see CONFIG_EMBEDDED separated entirely from the
+"advanced/expert/screwing aunt tillie" selection menu, or whatever we're
+choosing to call it these days. Then we wouldn't have to deal with these
+confusing defconfigs that expose far more than most users are going to
+care about.
 
----
-
-This patch should go into Greg's USB development tree and -mm as well as
-into the 2.6.20-stable queue (submitted separately).  It fixes the "usb
-somehow broken (CONFIG_USB_SUSPEND)" bug reported by Prakash Punnoor.
-
-Alan Stern
-
-
-
-Index: usb-2.6/drivers/usb/core/hub.c
-===================================================================
---- usb-2.6.orig/drivers/usb/core/hub.c
-+++ usb-2.6/drivers/usb/core/hub.c
-@@ -44,6 +44,7 @@ struct usb_hub {
- 		struct usb_hub_status	hub;
- 		struct usb_port_status	port;
- 	}			*status;	/* buffer for status reports */
-+	struct mutex		status_mutex;	/* for the status buffer */
- 
- 	int			error;		/* last reported error */
- 	int			nerrors;	/* track consecutive errors */
-@@ -535,6 +536,7 @@ static int hub_hub_status(struct usb_hub
- {
- 	int ret;
- 
-+	mutex_lock(&hub->status_mutex);
- 	ret = get_hub_status(hub->hdev, &hub->status->hub);
- 	if (ret < 0)
- 		dev_err (hub->intfdev,
-@@ -544,6 +546,7 @@ static int hub_hub_status(struct usb_hub
- 		*change = le16_to_cpu(hub->status->hub.wHubChange); 
- 		ret = 0;
- 	}
-+	mutex_unlock(&hub->status_mutex);
- 	return ret;
- }
- 
-@@ -617,6 +620,7 @@ static int hub_configure(struct usb_hub 
- 		ret = -ENOMEM;
- 		goto fail;
- 	}
-+	mutex_init(&hub->status_mutex);
- 
- 	hub->descriptor = kmalloc(sizeof(*hub->descriptor), GFP_KERNEL);
- 	if (!hub->descriptor) {
-@@ -1394,6 +1398,7 @@ static int hub_port_status(struct usb_hu
- {
- 	int ret;
- 
-+	mutex_lock(&hub->status_mutex);
- 	ret = get_port_status(hub->hdev, port1, &hub->status->port);
- 	if (ret < 4) {
- 		dev_err (hub->intfdev,
-@@ -1405,6 +1410,7 @@ static int hub_port_status(struct usb_hu
- 		*change = le16_to_cpu(hub->status->port.wPortChange); 
- 		ret = 0;
- 	}
-+	mutex_unlock(&hub->status_mutex);
- 	return ret;
- }
- 
-
+There are a number of other architectures that do this too, so it may be
+worth separating so we can finally get rid of the confusion.
