@@ -1,117 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965521AbXBFVWl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965518AbXBFVX1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965521AbXBFVWl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 16:22:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965528AbXBFVWl
+	id S965518AbXBFVX1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 16:23:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965481AbXBFVX0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 16:22:41 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:35890 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965521AbXBFVWj (ORCPT
+	Tue, 6 Feb 2007 16:23:26 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.158]:12231 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965518AbXBFVXZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 16:22:39 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Andrew Morton <akpm@osdl.org>
-Cc: Ingo Molnar <mingo@elte.hu>, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov, jmorris@namei.org,
-       Stephen Smalley <sds@tycho.nsa.gov>
-Subject: [PATCH 2/2] sysctl: Restore the selinux path based label lookup for sysctls.
-References: <200701280106.l0S16CG3019873@shell0.pdx.osdl.net>
-	<20070127172410.2b041952.akpm@osdl.org>
-	<1169972718.17469.164.camel@localhost.localdomain>
-	<20070128003549.2ca38dc8.akpm@osdl.org>
-	<20070128093358.GA2071@elte.hu> <20070128095712.GA6485@elte.hu>
-	<20070128100627.GA8416@elte.hu>
-	<20070128104548.a835d859.akpm@osdl.org>
-	<m1r6tfq7nv.fsf_-_@ebiederm.dsl.xmission.com>
-	<1170075866.8720.15.camel@moss-spartans.epoch.ncsc.mil>
-	<m17iuvrnpk.fsf_-_@ebiederm.dsl.xmission.com>
-Date: Tue, 06 Feb 2007 14:21:54 -0700
-In-Reply-To: <m17iuvrnpk.fsf_-_@ebiederm.dsl.xmission.com> (Eric
-	W. Biederman's message of "Tue, 06 Feb 2007 14:16:39 -0700")
-Message-ID: <m13b5jrngt.fsf_-_@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 6 Feb 2007 16:23:25 -0500
+Subject: Re: 2.6.20-rc6-mm3
+From: Daniel Walker <dwalker@mvista.com>
+Reply-To: dwalker@mvista.com
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Andrew Morton <akpm@osdl.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20070206210959.GC25430@elte.hu>
+References: <20070129204528.eb8d695e.akpm@osdl.org>
+	 <1170777802.9781.353.camel@imap.mvista.com> <1170786992.3785.0.camel@chaos>
+	 <1170787543.9781.362.camel@imap.mvista.com> <1170788870.3785.9.camel@chaos>
+	 <1170791739.3455.3.camel@dwalker1> <1170793206.3785.16.camel@chaos>
+	 <1170794437.3455.20.camel@dwalker1> <20070206205231.GA25430@elte.hu>
+	 <1170795378.3455.31.camel@dwalker1>  <20070206210959.GC25430@elte.hu>
+Content-Type: text/plain
+Date: Tue, 06 Feb 2007 13:23:19 -0800
+Message-Id: <1170796999.3455.43.camel@dwalker1>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 2007-02-06 at 22:09 +0100, Ingo Molnar wrote:
+> * Daniel Walker <dwalker@mvista.com> wrote:
+> 
+> > > it's quite easy to explain: because of the new dynticks feature. 
+> > > Both 'timer' and 'LOC' counts go way down.
+> > 
+> > I don't have that enabled tho .. This is with HRT/dynamic tick both 
+> > off..
+> 
+> your kernel utilizes the kernelin a more optimal way: the new 
+> clockevents code now utilizes the local APIC timer irq (represented by 
+> the LOC field) for periodic interrupts. The local APIC timer irq has a 
+> cost of ~2 usecs per IRQ, while the PIT irq is ~10 usecs per irq. With 
+> HZ=1000 this means savings of ~8000 usecs per second - i.e. 8 msecs per 
+> second, which is 0.8% more raw CPU power available - which isnt that 
+> bad.
 
-This time instead of generating the generating the paths from proc_dir_entries
-generate the labels from the names in the sysctl ctl_tables themselves.  This
-removes an unnecessary layer of indirection, allows this to work even when
-procfs support is not compiled into the kernel, and especially allows it
-to work now that ctl_tables no longer have a proc_dir_entry field.
+I'm happy it's better .. I'm not saying it's worse .
 
-I continue passing "proc" into genfs sid although that is complete nonsense
-to allow existing selinux policies to work without modification.
+> we could make this clearer by renaming 'LOC' (which stands for 'LOCal 
+> timer interupts' and was added [and misnamed] by yours truly many moons 
+> ago) to 'apic-timer' and 'timer' to 'PIT-timer' but /that/ would be more 
+> of a userspace visible change than the change in the counter rates.
 
-Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
----
- security/selinux/hooks.c |   43 +++++++++++++++++++++++++++++++++++++++++--
- 1 files changed, 41 insertions(+), 2 deletions(-)
+If we change the current "timer" entry to be listed as "lapic-timer" and
+not "IO-APIC-edge" (or one of the other names) and replace it with the
+count from LOC , that would make sense cause that field already changes
+depending if you have a io-apic or not ..
 
-diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
-index 3a36057..c17a8dd 100644
---- a/security/selinux/hooks.c
-+++ b/security/selinux/hooks.c
-@@ -1424,6 +1424,41 @@ static int selinux_capable(struct task_struct *tsk, int cap)
- 	return task_has_capability(tsk,cap);
- }
- 
-+static int selinux_sysctl_get_sid(ctl_table *table, u16 tclass, u32 *sid)
-+{
-+	int buflen, rc;
-+	char *buffer, *path, *end;
-+
-+	rc = -ENOMEM;
-+	buffer = (char*)__get_free_page(GFP_KERNEL);
-+	if (!buffer)
-+		goto out;
-+
-+	buflen = PAGE_SIZE;
-+	end = buffer+buflen;
-+	*--end = '\0';
-+	buflen--;
-+	path = end-1;
-+	*path = '/';
-+	while (table) {
-+		const char *name = table->procname;
-+		size_t namelen = strlen(name);
-+		buflen -= namelen + 1;
-+		if (buflen < 0)
-+			goto out_free;
-+		end -= namelen;
-+		memcpy(end, name, namelen);
-+		*--end = '/';
-+		path = end;
-+		table = table->parent;
-+	}
-+	rc = security_genfs_sid("proc", path, tclass, sid);
-+out_free:
-+	free_page((unsigned long)buffer);
-+out:
-+	return rc;
-+}
-+
- static int selinux_sysctl(ctl_table *table, int op)
- {
- 	int error = 0;
-@@ -1438,8 +1473,12 @@ static int selinux_sysctl(ctl_table *table, int op)
- 
- 	tsec = current->security;
- 
--	/* Use the well-defined sysctl SID. */
--	tsid = SECINITSID_SYSCTL;
-+	rc = selinux_sysctl_get_sid(table, (op == 0001) ?
-+				    SECCLASS_DIR : SECCLASS_FILE, &tsid);
-+	if (rc) {
-+		/* Default to the well-defined sysctl SID. */
-+		tsid = SECINITSID_SYSCTL;
-+	}
- 
- 	/* The op values are "defined" in sysctl.c, thereby creating
- 	 * a bad coupling between this module and sysctl.c */
--- 
-1.4.4.1.g278f
+I think the regression (if you can call it that) is not scripts
+crashing, but more people not know what's going on with there system .. 
+
+Daniel
 
