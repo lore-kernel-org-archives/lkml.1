@@ -1,49 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965490AbXBFVQe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965499AbXBFVRd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965490AbXBFVQe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 16:16:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965499AbXBFVQd
+	id S965499AbXBFVRd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 16:17:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965500AbXBFVRd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 16:16:33 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:42404
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S965490AbXBFVQd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 16:16:33 -0500
-Date: Tue, 06 Feb 2007 13:16:31 -0800 (PST)
-Message-Id: <20070206.131631.82049180.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-Cc: kent.overstreet@gmail.com, davidel@xmailserver.org, zach.brown@oracle.com,
-       mingo@elte.hu, linux-kernel@vger.kernel.org, linux-aio@kvack.org,
-       suparna@in.ibm.com, bcrl@kvack.org
-Subject: Re: [PATCH 2 of 4] Introduce i386 fibril scheduling
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <Pine.LNX.4.64.0702061238300.8424@woody.linux-foundation.org>
-References: <Pine.LNX.4.64.0702051259030.14453@alien.or.mcafeemobile.com>
-	<6f703f960702051331v3ceab725h68aea4cd77617f84@mail.gmail.com>
-	<Pine.LNX.4.64.0702061238300.8424@woody.linux-foundation.org>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+	Tue, 6 Feb 2007 16:17:33 -0500
+Received: from www.osadl.org ([213.239.205.134]:50971 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S965499AbXBFVRc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Feb 2007 16:17:32 -0500
+Subject: Re: 2.6.20-rc6-mm3
+From: Thomas Gleixner <tglx@linutronix.de>
+To: dwalker@mvista.com
+Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org, mingo@elte.hu
+In-Reply-To: <1170794437.3455.20.camel@dwalker1>
+References: <20070129204528.eb8d695e.akpm@osdl.org>
+	 <1170777802.9781.353.camel@imap.mvista.com> <1170786992.3785.0.camel@chaos>
+	 <1170787543.9781.362.camel@imap.mvista.com> <1170788870.3785.9.camel@chaos>
+	 <1170791739.3455.3.camel@dwalker1>  <1170793206.3785.16.camel@chaos>
+	 <1170794437.3455.20.camel@dwalker1>
+Content-Type: text/plain
+Date: Tue, 06 Feb 2007 22:17:44 +0100
+Message-Id: <1170796664.3785.26.camel@chaos>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Tue, 6 Feb 2007 12:46:11 -0800 (PST)
+On Tue, 2007-02-06 at 12:40 -0800, Daniel Walker wrote:
+> > Yes, it is different. Why are you insisting, that something is a problem
+> > just because it is different ?
+> 
+> In this case "different" goes into userspace .. So different could mean
+> userspace regression, which is something that we don't want. I have no
+> idea if any apps use /proc/interrupts , but it's possible since it's
+> been around for a long time.
 
-> And for user space, it means that we pass the _one_ thing around that we 
-> need for both identifying the async operation to the kernel (the "cookie") 
-> for wait or cancel, and the place where we expect the return value to be 
-> found (which in turn can _easily_ represent a whole "struct aiocb *", 
-> since the return value obviously has to be embedded in there anyway).
+It _IS_ statistics info about the number of interrupts and has no fixed
+meaning at all. It does not cause any user space regression, as the
+interface is still the same. It produces different numbers, like the
+clock_getres() syscall returns different values on highres and !highres
+systems.
 
-I really think that Evgeniy's kevent is a good event notification
-mechanism for anything, including AIO.
+> The reason that I'm bringing it up at all is because people have ask me
+> "Why isn't my timer ticking??"
 
-Events are events, applications want a centralized way to receive and
-process them.
+So it's a problem of user perception and not of a user space regression.
+Please stop confusing things.
 
-It's already implemented, and if there are tangible problems with it,
-Evgeniy has been excellent at responding to criticism and implementing
-suggested changes to the interfaces.
+> Your saying we can't remove it tho, if /proc/interrupts is not related
+> to timers why does the entry exist at all ? Your saying the LOC entry is
+> the new "timer" entry, but we still have the old "timer" entry ..
+
+Ok. Each irqaction struct which is used to request/setup an interrupt
+contains a name field. This is the one which shows up
+in /proc/interrupts. The one which is used to setup irq0 has .name =
+"timer". 
+
+> Getting confusing ..
+
+Sigh.
+
+> It might be nicer to list all the registered clock event sources
+> in /proc/interrupts, with more descriptive names .. 
+
+No. No. No. clockevents has nothing to do with /proc/interrupts.
+
+/proc/interrupts is the statistics interface for the IRQ subsystem.
+
+> Why is it that HRT doesn't use the "timer" as a valid timer?
+
+Because local apic timer is better.
+
+	tglx
+
+
