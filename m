@@ -1,61 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752324AbXBFXOf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030535AbXBFXPe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752324AbXBFXOf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 18:14:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752326AbXBFXOf
+	id S1030535AbXBFXPe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 18:15:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030550AbXBFXPe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 18:14:35 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:49522 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752322AbXBFXOf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 18:14:35 -0500
-Date: Wed, 7 Feb 2007 00:14:21 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Daniel Walker <dwalker@mvista.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Andrew Morton <akpm@osdl.org>,
-       linux-kernel@vger.kernel.org
+	Tue, 6 Feb 2007 18:15:34 -0500
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:47170
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030535AbXBFXPd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Feb 2007 18:15:33 -0500
+From: Rob Landley <rob@landley.net>
+To: dwalker@mvista.com
 Subject: Re: 2.6.20-rc6-mm3
-Message-ID: <20070206231421.GA18654@elte.hu>
-References: <20070206205231.GA25430@elte.hu> <1170795378.3455.31.camel@dwalker1> <20070206210959.GC25430@elte.hu> <1170796999.3455.43.camel@dwalker1> <20070206214131.GA1176@elte.hu> <1170798879.3455.58.camel@dwalker1> <20070206220855.GB5109@elte.hu> <1170801742.3455.87.camel@dwalker1> <20070206225650.GA14853@elte.hu> <1170803070.3455.93.camel@dwalker1>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Date: Tue, 6 Feb 2007 18:15:40 -0500
+User-Agent: KMail/1.9.1
+Cc: Thomas Gleixner <tglx@linutronix.de>, Andrew Morton <akpm@osdl.org>,
+       linux-kernel@vger.kernel.org, mingo@elte.hu
+References: <20070129204528.eb8d695e.akpm@osdl.org> <1170793206.3785.16.camel@chaos> <1170794437.3455.20.camel@dwalker1>
+In-Reply-To: <1170794437.3455.20.camel@dwalker1>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1170803070.3455.93.camel@dwalker1>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.3
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.3 required=5.9 tests=ALL_TRUSTED,BAYES_50 autolearn=no SpamAssassin version=3.0.3
-	-3.3 ALL_TRUSTED            Did not pass through any untrusted hosts
-	1.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
-	[score: 0.4805]
+Message-Id: <200702061815.41078.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Daniel Walker <dwalker@mvista.com> wrote:
-
-> On Tue, 2007-02-06 at 23:56 +0100, Ingo Molnar wrote:
+On Tuesday 06 February 2007 3:40 pm, Daniel Walker wrote:
+> In this case "different" goes into userspace .. So different could mean
+> userspace regression, which is something that we don't want. I have no
+> idea if any apps use /proc/interrupts , but it's possible since it's
+> been around for a long time.
 > 
-> > changing the current 'timer' entry (which is line 2 of /proc/interrupts) 
-> > to be 'listed as lapic-timer' and to 'replace it with the count from 
-> > LOC' is faking a count in a line where nothing like that should be.
+> The reason that I'm bringing it up at all is because people have ask me
+> "Why isn't my timer ticking??"
+
+Because there are two clock sources in the machine and it's using the other 
+one, so the interrupt isn't firing?
+
+Are you saying that the /proc statistics aren't accurate, or that you 
+previously misunderstood what it was actually measuring and you'd now like it 
+to lie?
+
+> > Uurg. /proc/interrupts has nothing to do with timers. It's interrupts
+> > statistics. See LOC entry for the lapic ones.
 > 
-> This point is getting irrelevant ..
+> Your saying we can't remove it tho, if /proc/interrupts is not related
+> to timers why does the entry exist at all ?
 
-it is very much relevant: faking a count is something we /dont/ want to 
-do with /proc/interrupts, for (very) basic compatibility, simplicity and 
-policy reasons. And that is precisely what your suggestion was to 
-'solve' this supposed 'problem' - so it's very much relevant.
+I didn't think Thomas even touched the /proc/interrupts reporting code.  It's 
+still accurate.  The patch changed the usage of timers, /proc/interrupts is 
+accurately showing the change, and you're surprised that what it was 
+measuring wasn't what you thought it was measuring all along.
 
-> > the kernel simply displays reality: IRQ#0 isnt increasing because 
-> > it's not used, and LOC (local apic timers) is increasing.
-> 
-> What about the statistics for the other interrupts in the system ? It 
-> clearly doesn't list all interrupts in the system .
+This ain't jiffies.  This is how often the PIT fired.  They are not the same 
+thing.
 
-what is your point?
-
-	Ingo
+Rob
+-- 
+"Perfection is reached, not when there is no longer anything to add, but
+when there is no longer anything to take away." - Antoine de Saint-Exupery
