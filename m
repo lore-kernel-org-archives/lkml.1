@@ -1,75 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030187AbXBFWUx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030191AbXBFWZj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030187AbXBFWUx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 17:20:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030188AbXBFWUx
+	id S1030191AbXBFWZj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 17:25:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030190AbXBFWZi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 17:20:53 -0500
-Received: from outbound-blu.frontbridge.com ([65.55.251.16]:1781 "EHLO
-	outbound5-blu-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1030187AbXBFWUv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 17:20:51 -0500
-X-BigFish: VP
-X-Server-Uuid: 8C3DB987-180B-4465-9446-45C15473FD3E
-Message-ID: <45C8FFEF.60806@amd.com>
-Date: Tue, 06 Feb 2007 23:23:43 +0100
-From: "Markus Rechberger" <markus.rechberger@amd.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070206)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Re: [patch] x86-64 ext2/ext3 datestamp problem
-References: <45C8F419.5040103@amd.com> <45C8F7E6.6060009@zytor.com>
- <45C8F9DA.6040906@amd.com> <45C8FA62.7000308@zytor.com>
- <45C8FC19.1020109@amd.com> <45C8FC01.8060506@zytor.com>
-In-Reply-To: <45C8FC01.8060506@zytor.com>
-X-OriginalArrivalTime: 06 Feb 2007 22:20:37.0972 (UTC)
- FILETIME=[07537940:01C74A3D]
-X-WSS-ID: 69D620B22KW7203223-01-01
-Content-Type: text/plain;
- charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 6 Feb 2007 17:25:38 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:44481 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030191AbXBFWZi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Feb 2007 17:25:38 -0500
+Date: Tue, 6 Feb 2007 23:25:23 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
+       "Lu, Yinghai" <yinghai.lu@amd.com>,
+       Luigi Genoni <luigi.genoni@pirelli.com>,
+       Natalie Protasevich <protasnb@gmail.com>, Andi Kleen <ak@suse.de>
+Subject: Re: [PATCH 2/2] x86_64 irq:  Handle irqs pending in IRR during irq migration.
+Message-ID: <20070206222523.GA11602@elte.hu>
+References: <200701221116.13154.luigi.genoni@pirelli.com> <200702021848.55921.luigi.genoni@pirelli.com> <m1ejp85tgm.fsf@ebiederm.dsl.xmission.com> <200702021905.39922.luigi.genoni@pirelli.com> <m1zm7w3wvr.fsf_-_@ebiederm.dsl.xmission.com> <m1veik3woc.fsf_-_@ebiederm.dsl.xmission.com> <20070206073616.GA15016@elte.hu> <m1odo7q6cq.fsf@ebiederm.dsl.xmission.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m1odo7q6cq.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.3
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.3 required=5.9 tests=ALL_TRUSTED,BAYES_50 autolearn=no SpamAssassin version=3.0.3
+	-3.3 ALL_TRUSTED            Did not pass through any untrusted hosts
+	1.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
+	[score: 0.4694]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> Markus Rechberger wrote:
->> H. Peter Anvin wrote:
->>> Markus Rechberger wrote:
->>>> My debian system's coreutils package only allows dates between 1902
->>>> and
->>>> 2038, but it might be interesting to get that right if it's wrong.
->>>>
->>>> touch (GNU coreutils) 5.97 just says invalid dateformat to 2050-01-01
->>> Lemme guess, you're on a 32-bit system...
->>>
->>
->> I have both here, 64 and 32bit
->> If I touch a file with 1905 on my 32bit system and remount the disk the
->> date will remain at 1905 without any patch.
->>
->
-> The reason is that most 32-bit systems (e.g. i386) only have a 32-bit
-> time_t, so the user space interface wraps around in 2038.
->
-> However, most 64-bit systems (e.g. x86_64) have 64-bit time_t, and
-> thus don't have that problem.
->
->     -hpa
->
->
-I know time_t expands to long, anyway the existing filesystem layout
 
-cannot be changed so that problem would even remain with a 64bit system
-unless the whole system would really treat it as unsigned. A 64 bit
-system will cast the unsigned stamp over a signed long value which in
-this case is bigger than 32 bit and behaves differently.
+* Eric W. Biederman <ebiederm@xmission.com> wrote:
 
+> Ingo would it be reasonable to get a wait queue so I can wait for an 
+> irq that needs the delayed disable action to actually become masked?
 
--- 
-Markus Rechberger
-Operating System Research Center
-AMD Saxony LLC & Co. KG
+that might make sense, but what will do the wakeup - incidental IRQ 
+arriving on the new CPU? Isnt that a bit risky - maybe the device wont 
+generate IRQs for a really long time.
 
-
-
+	Ingo
