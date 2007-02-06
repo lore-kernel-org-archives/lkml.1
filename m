@@ -1,23 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932927AbXBFQGO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932827AbXBFQGZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932927AbXBFQGO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 11:06:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932922AbXBFQGO
+	id S932827AbXBFQGZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 11:06:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932622AbXBFQGY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 11:06:14 -0500
+	Tue, 6 Feb 2007 11:06:24 -0500
 Received: from nz-out-0506.google.com ([64.233.162.229]:58148 "EHLO
 	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932965AbXBFQFw (ORCPT
+	with ESMTP id S932827AbXBFQGW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 11:05:52 -0500
+	Tue, 6 Feb 2007 11:06:22 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:date:to:subject:message-id:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
-        b=sD4IwDEQoVTbYZbjN32sj6JraOuChOmDpzOdcZy6vK4qWXyKGET1KRaHuH22svyoAohsWUdDmiXnUFvdMeFNNzfPrRQVkkyLej3G5eEnOnKR0bP6rcm/37Uq7LfPVr/rT1l2QQHXFosQO3gqrUb5LE2K1wcmSJ5fCMgouNrRF1k=
-Date: Tue, 6 Feb 2007 18:05:39 +0200
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 2.6.20 2/2] OSS: Use ARRAY_SIZE macro when appropriate
-Message-ID: <20070206160539.GG8991@Ahmed>
+        h=received:date:to:cc:subject:message-id:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
+        b=CNAxyXbwggwkF3nLw43mqtGj/t57nC8nra3YGfOVMj8Is4cGJmcGIzSd/dk8gPrG6J1GsN9IrP0CN4rosaPdrGIHAJIZeYfFsZfa4Xf94pn5uKei4huILiptWVenj7RbKQW0rOG2uCbn+sB2lo1Lqqbtt/tcJHAHYOoyDjf6tK0=
+Date: Tue, 6 Feb 2007 18:06:08 +0200
+To: chas@cmf.nrl.navy.mil
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH 2.6.20] atm: Use ARRAY_SIZE macro when appropriate
+Message-ID: <20070206160608.GH8991@Ahmed>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -29,74 +30,86 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi all,
 
-A patch to use ARRAY_SIZE macro already defined in kernel.h
+A patch to use ARRAY_SIZE macro already defined in kernel.h for ATM
+drivers.
 
 Signed-off-by: Ahmed S. Darwish <darwish.07@gmail.com>
 ---
-I couldn't compile-test this patch with `allyesconfig' or `allmodconfig'.
-
- au1550_ac97.c   |    4 ++--
- nec_vrc5477.c   |    4 ++--
- swarm_cs4297a.c |    3 ++-
- 3 files changed, 6 insertions(+), 5 deletions(-)
-
-diff --git a/sound/oss/au1550_ac97.c b/sound/oss/au1550_ac97.c
-index 2197951..a339f0c 100644
---- a/sound/oss/au1550_ac97.c
-+++ b/sound/oss/au1550_ac97.c
-@@ -1354,11 +1354,11 @@ au1550_ioctl(struct inode *inode, struct file *file, unsigned int cmd,
- 		((file->f_mode & FMODE_READ) && s->dma_adc.mapped);
- 
- #ifdef DEBUG
--	for (count=0; count<sizeof(ioctl_str)/sizeof(ioctl_str[0]); count++) {
-+	for (count = 0; count < ARRAY_SIZE(ioctl_str); count++) {
- 		if (ioctl_str[count].cmd == cmd)
- 			break;
+diff --git a/drivers/atm/he.c b/drivers/atm/he.c
+index db33f6f..8510026 100644
+--- a/drivers/atm/he.c
++++ b/drivers/atm/he.c
+@@ -3017,7 +3017,7 @@ read_prom_byte(struct he_dev *he_dev, int addr)
+ 	he_writel(he_dev, val, HOST_CNTL);
+        
+ 	/* Send READ instruction */
+-	for (i = 0; i < sizeof(readtab)/sizeof(readtab[0]); i++) {
++	for (i = 0; i < ARRAY_SIZE(readtab); i++) {
+ 		he_writel(he_dev, val | readtab[i], HOST_CNTL);
+ 		udelay(EEPROM_DELAY);
  	}
--	if (count < sizeof(ioctl_str) / sizeof(ioctl_str[0]))
-+	if (count < ARRAY_SIZE(ioctl_str))
- 		pr_debug("ioctl %s, arg=0x%lxn", ioctl_str[count].str, arg);
- 	else
- 		pr_debug("ioctl 0x%x unknown, arg=0x%lx\n", cmd, arg);
-diff --git a/sound/oss/nec_vrc5477.c b/sound/oss/nec_vrc5477.c
-index da9728e..d459bdb 100644
---- a/sound/oss/nec_vrc5477.c
-+++ b/sound/oss/nec_vrc5477.c
-@@ -1381,11 +1381,11 @@ static int vrc5477_ac97_ioctl(struct inode *inode, struct file *file,
- 	int val, ret;
+diff --git a/drivers/atm/idt77252.c b/drivers/atm/idt77252.c
+index f407861..b4b8014 100644
+--- a/drivers/atm/idt77252.c
++++ b/drivers/atm/idt77252.c
+@@ -388,7 +388,7 @@ idt77252_eeprom_read_status(struct idt77252_dev *card)
  
- #ifdef VRC5477_AC97_DEBUG
--	for (count=0; count<sizeof(ioctl_str)/sizeof(ioctl_str[0]); count++) {
-+	for (count = 0; count < ARRAY_SIZE(ioctl_str); count++) {
- 		if (ioctl_str[count].cmd == cmd)
- 			break;
+ 	gp = idt77252_read_gp(card) & ~(SAR_GP_EESCLK|SAR_GP_EECS|SAR_GP_EEDO);
+ 
+-	for (i = 0; i < sizeof(rdsrtab)/sizeof(rdsrtab[0]); i++) {
++	for (i = 0; i < ARRAY_SIZE(rdsrtab); i++) {
+ 		idt77252_write_gp(card, gp | rdsrtab[i]);
+ 		udelay(5);
  	}
--	if (count < sizeof(ioctl_str)/sizeof(ioctl_str[0]))
-+	if (count < ARRAY_SIZE(ioctl_str))
- 		printk(KERN_INFO PFX "ioctl %s\n", ioctl_str[count].str);
- 	else
- 		printk(KERN_INFO PFX "ioctl unknown, 0x%x\n", cmd);
-diff --git a/sound/oss/swarm_cs4297a.c b/sound/oss/swarm_cs4297a.c
-index 471c274..9f7e5f5 100644
---- a/sound/oss/swarm_cs4297a.c
-+++ b/sound/oss/swarm_cs4297a.c
-@@ -77,6 +77,7 @@
- #include <linux/poll.h>
- #include <linux/smp_lock.h>
- #include <linux/mutex.h>
+@@ -422,7 +422,7 @@ idt77252_eeprom_read_byte(struct idt77252_dev *card, u8 offset)
+ 
+ 	gp = idt77252_read_gp(card) & ~(SAR_GP_EESCLK|SAR_GP_EECS|SAR_GP_EEDO);
+ 
+-	for (i = 0; i < sizeof(rdtab)/sizeof(rdtab[0]); i++) {
++	for (i = 0; i < ARRAY_SIZE(rdtab); i++) {
+ 		idt77252_write_gp(card, gp | rdtab[i]);
+ 		udelay(5);
+ 	}
+@@ -469,14 +469,14 @@ idt77252_eeprom_write_byte(struct idt77252_dev *card, u8 offset, u8 data)
+ 
+ 	gp = idt77252_read_gp(card) & ~(SAR_GP_EESCLK|SAR_GP_EECS|SAR_GP_EEDO);
+ 
+-	for (i = 0; i < sizeof(wrentab)/sizeof(wrentab[0]); i++) {
++	for (i = 0; i < ARRAY_SIZE(wrentab); i++) {
+ 		idt77252_write_gp(card, gp | wrentab[i]);
+ 		udelay(5);
+ 	}
+ 	idt77252_write_gp(card, gp | SAR_GP_EECS);
+ 	udelay(5);
+ 
+-	for (i = 0; i < sizeof(wrtab)/sizeof(wrtab[0]); i++) {
++	for (i = 0; i < ARRAY_SIZE(wrtab); i++) {
+ 		idt77252_write_gp(card, gp | wrtab[i]);
+ 		udelay(5);
+ 	}
+diff --git a/drivers/atm/nicstarmac.c b/drivers/atm/nicstarmac.c
+index 2c5e3ae..480947f 100644
+--- a/drivers/atm/nicstarmac.c
++++ b/drivers/atm/nicstarmac.c
+@@ -7,6 +7,8 @@
+  * Read this ForeRunner's MAC address from eprom/eeprom
+  */
+ 
 +#include <linux/kernel.h>
++
+ typedef void __iomem *virt_addr_t;
  
- #include <asm/byteorder.h>
- #include <asm/dma.h>
-@@ -2676,7 +2677,7 @@ static int __init cs4297a_init(void)
- #if 0
-                 val = SOUND_MASK_LINE;
-                 mixer_ioctl(s, SOUND_MIXER_WRITE_RECSRC, (unsigned long) &val);
--                for (i = 0; i < sizeof(initvol) / sizeof(initvol[0]); i++) {
-+                for (i = 0; i < ARRAY_SIZE(initvol); i++) {
-                         val = initvol[i].vol;
-                         mixer_ioctl(s, initvol[i].mixch, (unsigned long) &val);
-                 }
+ #define CYCLE_DELAY 5
+@@ -176,7 +178,7 @@ read_eprom_byte(virt_addr_t base, u_int8_t offset)
+    val = NICSTAR_REG_READ( base, NICSTAR_REG_GENERAL_PURPOSE ) & 0xFFFFFFF0;
+ 
+    /* Send READ instruction */
+-   for (i=0; i<sizeof readtab/sizeof readtab[0]; i++)
++   for (i=0; i<ARRAY_SIZE(readtab); i++)
+    {
+ 	NICSTAR_REG_WRITE( base, NICSTAR_REG_GENERAL_PURPOSE,
+ 		(val | readtab[i]) );
+
 
 -- 
 Ahmed S. Darwish
