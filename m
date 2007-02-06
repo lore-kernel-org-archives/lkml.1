@@ -1,85 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752700AbXBFEiI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752731AbXBFEmA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752700AbXBFEiI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 23:38:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752719AbXBFEiI
+	id S1752731AbXBFEmA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 23:42:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752719AbXBFEmA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 23:38:08 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:48645 "EHLO smtp.osdl.org"
+	Mon, 5 Feb 2007 23:42:00 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:48945 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752700AbXBFEiG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 23:38:06 -0500
-Date: Mon, 5 Feb 2007 20:37:50 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Kai" <epimetreus@fastmail.fm>
-Cc: linux-kernel@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>,
-       Neil Brown <neilb@suse.de>
-Subject: Re: Bio device too big | kernel BUG at mm/filemap.c:537!
-Message-Id: <20070205203750.7be7f772.akpm@linux-foundation.org>
-In-Reply-To: <1170734919.15636.1173102761@webmail.messagingengine.com>
-References: <1170734919.15636.1173102761@webmail.messagingengine.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	id S1752603AbXBFEl7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Feb 2007 23:41:59 -0500
+Date: Tue, 6 Feb 2007 05:41:46 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Linux Filesystems <linux-fsdevel@vger.kernel.org>,
+       Linux Memory Management <linux-mm@kvack.org>
+Subject: Re: [patch 9/9] mm: fix pagecache write deadlocks
+Message-ID: <20070206044146.GA11856@wotan.suse.de>
+References: <20070204014445.88e6c8c7.akpm@linux-foundation.org> <20070204101529.GA22004@wotan.suse.de> <20070204023055.2583fd65.akpm@linux-foundation.org> <20070204104609.GA29943@wotan.suse.de> <20070204025602.a5f8c53a.akpm@linux-foundation.org> <20070204110317.GA9034@wotan.suse.de> <20070204031549.203f7b47.akpm@linux-foundation.org> <20070204151051.GB12771@wotan.suse.de> <20070204103620.33c24cad.akpm@linux-foundation.org> <20070206022549.GB31476@wotan.suse.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070206022549.GB31476@wotan.suse.de>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 05 Feb 2007 20:08:39 -0800 "Kai" <epimetreus@fastmail.fm> wrote:
+On Tue, Feb 06, 2007 at 03:25:49AM +0100, Nick Piggin wrote:
+> On Sun, Feb 04, 2007 at 10:36:20AM -0800, Andrew Morton wrote:
+> > On Sun, 4 Feb 2007 16:10:51 +0100 Nick Piggin <npiggin@suse.de> wrote:
+> > 
+> > > They're not likely to hit the deadlocks, either. Probability gets more
+> > > likely after my patch to lock the page in the fault path. But practially,
+> > > we could live without that too, because the data corruption it fixes is
+> > > very rare as well. Which is exactly what we've been doing quite happily
+> > > for most of 2.6, including all distro kernels (I think).
+> > 
+> > Thing is, an application which is relying on the contents of that page is
+> > already unreliable (or really peculiar), because it can get indeterminate
+> > results anyway.
+> 
+> Not necessarily -- they could read from one part of a page and write to
+> another. I see this as the biggest data corruption problem.
 
-> I booted up the new kernel version, 2.6.20; I pretty much copied over my
-> .config that worked in 2.6.19.2, that has worked correctly since that
-> version came out... I looked through the menuconfig to see if any new
-> options had been added, but I'm pretty sure I didn't change anything,
-> and got this error message shortly after booting:
-> 
-> bio too big device hdg1 (184 > 128)
-> ------------[ cut here ]------------
-> kernel BUG at mm/filemap.c:537!
-> invalid opcode: 0000 [#1]
-> Modules linked in: iptable_filter ip_tables x_tables snd_seq_dummy
-> snd_seq_oss snd_seq_midi_event snd_seq snd_seq_device snd_pcm_oss
-> snd_mixer_oss nvidia_agp agpgart
-> CPU:    0
-> EIP:    0060:[<c012dc66>]    Not tainted VLI
-> EFLAGS: 00010246   (2.6.20 #1)
-> EIP is at unlock_page+0xd/0x22
-> eax: 00000000   ebx: c1714a20   ecx: 00000000   edx: c1714a20
-> esi: c199c45c   edi: 00000001   ebp: 1422bf48   esp: f7c8df18
-> ds: 007b   es: 007b   ss: 0068
-> Process md0_raid5 (pid: 901, ti=f7c8c000 task=f7c50050 task.ti=f7c8c000)
-> Stack: c1997920 c016363c c1bca460 c1997920 c1bca460 c0315af2 f7c8df4c
-> f7c8df50
->        c1bca460 00000000 00000000 1422bf48 0a115f48 00000002 00000000
->        c1bca460
->        00000002 f7faf600 fffffffc c0315b92 f7ee6c20 7fffffff f7c8df8c
->        c031f877
-> Call Trace:
->  [<c016363c>] mpage_end_io_read+0x4c/0x5e
->  [<c0315af2>] retry_aligned_read+0x108/0x13a
->  [<c0315b92>] raid5d+0x6e/0xcc
->  [<c031f877>] md_thread+0xdc/0xf2
->  [<c0122465>] autoremove_wake_function+0x0/0x33
->  [<c0110a90>] __wake_up_common+0x35/0x4f
->  [<c0122465>] autoremove_wake_function+0x0/0x33
->  [<c031f79b>] md_thread+0x0/0xf2
->  [<c01221b8>] kthread+0x72/0x97
->  [<c0122146>] kthread+0x0/0x97
->  [<c0103a7b>] kernel_thread_helper+0x7/0x10
->  =======================
-> Code: 73 ff ff ff b9 a4 d6 12 c0 89 fa c7 04 24 02 00 00 00 e8 87 77 27
-> 00 83 c4 44 5b 5e 5f c3 53 89 c3 0f ba 30 00 19 c0 85 c0 75 04 <0f> 0b
-> eb fe 89 d8 e8 41 ff ff ff 89$
-> EIP: [<c012dc66>] unlock_page+0xd/0x22 SS:ESP 0068:f7c8df18
-> 
-> The devices it seems to be complaining about are /dev/hdg and /dev/hde,
-> which are physically attached to the PCI0680 Ultra ATA-133 Host
-> Controller listed in lspci.txt.
-> Both drives are 160 GB Western Digital HDDs... don't remember the
-> precise model, but I can find out if necessary.
-> 
+And in fact, it is not just transient errors either. This problem can
+add permanent corruption into the pagecache and onto disk, and it doesn't
+even require two processes to race.
 
-You hit two bugs.  It seems that raid5 is submitting BIOs which are larger
-than the device can accept.  In response someone (probably the block layer)
-caused a page to come unlocked twice, possibly by running bi_end_io twice
-against the same BIO.
+After zeroing out the uncopied part of the page, and attempting to loop
+again, we might bail out of the loop for any reason before completing the
+rest of the copy, leaving the pagecache corrupted, which will soon go out
+to disk.
+
+Nick
