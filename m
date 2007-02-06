@@ -1,55 +1,165 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933177AbXBFSls@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752283AbXBFSm2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933177AbXBFSls (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 13:41:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933179AbXBFSls
+	id S1752283AbXBFSm2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 13:42:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752262AbXBFSm1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 13:41:48 -0500
-Received: from mail.dbd-breitband.de ([217.188.211.21]:1996 "EHLO
-	dbd-mpx01.dbd-breitband.de" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S933177AbXBFSlr (ORCPT
+	Tue, 6 Feb 2007 13:42:27 -0500
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:12445 "EHLO
+	outbound3-sin-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751419AbXBFSm0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 13:41:47 -0500
-From: Marc Donner <donner@dbd-breitband.de>
-Organization: DBD DeutscheBreitbandDienste
-To: Arjan van de Ven <arjan@linux.intel.com>
-Subject: Re: cpu load balancing problem on smp
-Date: Tue, 6 Feb 2007 19:41:32 +0100
-User-Agent: KMail/1.9.5
-References: <200702061832.17771.donner@dbd-breitband.de> <1170785364.7324.31.camel@laptopd505.fenrus.org>
-In-Reply-To: <1170785364.7324.31.camel@laptopd505.fenrus.org>
-Cc: linux-kernel@vger.kernel.org
+	Tue, 6 Feb 2007 13:42:26 -0500
+X-BigFish: VP
+X-Server-Uuid: 8C3DB987-180B-4465-9446-45C15473FD3E
+Date: Tue, 6 Feb 2007 19:42:13 +0100
+From: "Andreas Herrmann" <andreas.herrmann3@amd.com>
+To: ebiederm@xmission.com
+cc: discuss@x86-64.org, "Richard Gooch" <rgooch@safe-mbox.com>,
+       "Andi Kleen" <ak@suse.de>, linux-kernel@vger.kernel.org
+Subject: Re: [discuss] [patch] mtrr: fix issues with large addresses
+Message-ID: <20070206184213.GA4628@alberich.amd.com>
+References: <20070205171959.GF8665@alberich.amd.com>
+ <m13b5kw2qj.fsf@ebiederm.dsl.xmission.com>
+ <20070206160828.GH8665@alberich.amd.com>
+ <m1sldjtbn4.fsf@ebiederm.dsl.xmission.com>
 MIME-Version: 1.0
+In-Reply-To: <m1sldjtbn4.fsf@ebiederm.dsl.xmission.com>
+User-Agent: mutt-ng/devel-r804 (Linux)
+X-OriginalArrivalTime: 06 Feb 2007 18:42:15.0576 (UTC)
+ FILETIME=[85B08180:01C74A1E]
+X-WSS-ID: 69D613802KW7181974-01-01
 Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+ charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200702061941.32907.donner@dbd-breitband.de>
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 06 February 2007 19:09, you wrote:
-> On Tue, 2007-02-06 at 18:32 +0100, Marc Donner wrote:
-> > Hi @all
+On Tue, Feb 06, 2007 at 10:54:23AM -0700, ebiederm@xmission.com wrote:
+> "Andreas Herrmann" <andreas.herrmann3@amd.com> writes:
+> > On Mon, Feb 05, 2007 at 05:26:12PM -0700, ebiederm@xmission.com wrote:
+> >> "Andreas Herrmann" <andreas.herrmann3@amd.com> writes:
+> >> >
+> >> The limit is per cpu not per architecture.  So if you run a
+> >> cpu that can run in 64bit mode in 32bit mode the limit
+> >> is not 36 bits.  Even PAE in 32bit mode doesn't have that limit.
+> >> 
+> > Good point.
 > >
-> > we have detected some problems on our live systems and so i have build a
-> > test setup in our lab as follow:
-> >
-> > 3 Core 2 duo servers, each with 2 CPUs,  with GE interfaces. 2 of them
-> > are only for generating network traffic. the 3rd server is the one i want
-> > to test. it is connected over two GE links to the other servers. the
-> > testserver is configured as an ip router. running kernel 2.6.20.
-> >
-> > now if i  let traffic flow over the box, about 600Mbit/s and about 120k
-> > packets/s all seems to be ok. the load is balanced over all cpus. if now
-> > insert some iptables rules, about 500, the softirq load increases, but
-> > all seems to be ok. now i insert some rules more, and suddenly 1 CPU is
-> > 100% loaded and the other ones are 99% idle. the load toggles now between
-> > the cpus in intervals.
->
-> I wonder if you are using irqbalance.. if not you probably want to...
-> (this should at least split it over 2 cpus)
->
-> see http://www.irqbalance.org to get irqbalance
+> > I totally ignored that on 64 bit cpus in legacy mode
+> > - PAE-paging means up to 52 physical address bits respectively
+> > "physical address size of the underlying implementation"
+> > - for non-PAE-paging with PSE enabled we have 40 bits for AMD and
+> > with PSE36 36 bits for Intel
+> 
+> For non PAE-paging you have 32bits.
 
-I now have tried irqloadbalance, but the same problem.
+You are referring to current Linux implementation?
+The AMD64 architecture increased physical address size in PSE mode to
+40 bits. So at least it would be possible to use more than 32 bits.
+
+> >> > diff --git a/arch/i386/kernel/cpu/mtrr/generic.c
+> >> > b/arch/i386/kernel/cpu/mtrr/generic.c
+> >> > index f77fc53..aa21d15 100644
+> >> > --- a/arch/i386/kernel/cpu/mtrr/generic.c
+> >> > +++ b/arch/i386/kernel/cpu/mtrr/generic.c
+> >> > @@ -172,7 +172,7 @@ int generic_get_free_region(unsigned long base, unsigned
+> >> > long size, int replace_
+> >> >  static void generic_get_mtrr(unsigned int reg, unsigned long *base,
+> >> >  			     unsigned long *size, mtrr_type *type)
+> >> >  {
+> >> > -	unsigned int mask_lo, mask_hi, base_lo, base_hi;
+> >> > +	unsigned long mask_lo, mask_hi, base_lo, base_hi;
+> >> 
+> >> Why?  Given the low and the high I am assuming these are all implicitly
+> >> 32bit quantities.  unsigned int is fine.
+> >
+> > It is not, please refer to the function body, e.g.
+> >
+> > 	*base = base_hi << (32 - PAGE_SHIFT) | base_lo >> PAGE_SHIFT;
+> >
+> > All leading 20 bits of "unsigned int" base_hi are snipped away. Thus
+> > limiting base to use 44 bit instead of 52 bit in 64 bit mode. An
+> > option would have been to use a type cast while shifting.
+> >
+> > (Hmm, having your first remark in mind I have to admit that my fix is
+> > mainly focused on 64 bit mode not on 64 bit cpu running in 32 bit ...)
+> 
+> Yes.  So base needs to be come a u64. 
+
+I was afraid you'ld say that.
+
+> So base = ((base_hi << 32) | base_lo) >> PAGE_SHIFT.
+> 
+> I see where the 44bit limit comes in.  Do you actually have boxes
+> with > 16TB?
+
+No, I don't have access to such a box. Would be nice though.
+
+> 
+> Regardless it looks like base and possibly size needs to become
+> a u64.  At which time the extra >> PAGE_SHIFT could be meaningless.
+> Either that or because base and size need to be sized in something like
+> megabytes.
+> 
+> I suspect making it a u64 sized in bytes will get the job done and
+> result in simpler code.
+
+Right you are!
+
+> >> > diff --git a/arch/i386/kernel/cpu/mtrr/if.c b/arch/i386/kernel/cpu/mtrr/if.c
+> >> > index 5ae1705..3abc3f1 100644
+> >> > --- a/arch/i386/kernel/cpu/mtrr/if.c
+> >> > +++ b/arch/i386/kernel/cpu/mtrr/if.c
+> >> > @@ -137,6 +137,10 @@ mtrr_write(struct file *file, const char __user *buf,
+> >> > size_t len, loff_t * ppos)
+> >> >  	for (i = 0; i < MTRR_NUM_TYPES; ++i) {
+> >> >  		if (strcmp(ptr, mtrr_strings[i]))
+> >> >  			continue;
+> >> > +#ifndef CONFIG_X86_64
+> >> > +		if (base > 0xfffffffffULL)
+> >> > +			return -EINVAL;
+> >> > +#endif
+> >> 
+> >> That is just silly.  If the cpu is running in long mode or should
+> >> not affect this capability.
+
+	<snip>
+
+> > So I could do one of the following:
+> > (1) prepare new patch omitting this silly hunk (-> old behaviour)
+> > (2) check for 44 bit address size instead of 36 bit address size to
+> > reflect the implicit truncation (-> avoid silent truncation)
+> > (3) fix all mtrr code to be able to use up to 52 bit width physical
+> > addresses instead of 44 bit ones if running in 32 bit mode on 64 bit
+> > cpus.
+> >
+> > I prefer to do (2).
+> > (IMHO those who have the need for n>44 bit width base address in an MTRR
+> > should stick to 64 bit mode.)
+> 
+> I prefer (3).  Since the code is shared between 32 and 64bit mode it
+> should behave the same in both.  I know there are people who regularly
+> test 32bit kernels on boxes with 128 cpus and 128MB of ram.
+> 
+> People sometimes want crazy things and since it just a matter of changing
+> the type it should be no real work to get the code to work in 32bit mode.
+
+Ok, it is best to do (3).
+I will come up with another patch asap.
+
+
+> Eric
+
+
+Regards,
+
+Andreas
+
+-- 
+AMD Saxony, Dresden, Germany
+Operating System Research Center
+
+
+
