@@ -1,42 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752719AbXBFFDI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752749AbXBFFDk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752719AbXBFFDI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 00:03:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752738AbXBFFDI
+	id S1752749AbXBFFDk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 00:03:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752763AbXBFFDj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 00:03:08 -0500
-Received: from sandeen.net ([209.173.210.139]:28381 "EHLO sandeen.net"
+	Tue, 6 Feb 2007 00:03:39 -0500
+Received: from colo.lackof.org ([198.49.126.79]:53450 "EHLO colo.lackof.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752719AbXBFFDH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 00:03:07 -0500
-Message-ID: <45C80C05.6090807@sandeen.net>
-Date: Mon, 05 Feb 2007 23:03:01 -0600
-From: Eric Sandeen <sandeen@sandeen.net>
-User-Agent: Thunderbird 1.5.0.9 (Macintosh/20061207)
-MIME-Version: 1.0
-To: linux-kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: How far should BLKROSET/set_device_ro() go?
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1752749AbXBFFDi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Feb 2007 00:03:38 -0500
+Date: Mon, 5 Feb 2007 22:03:31 -0700
+From: Grant Grundler <grundler@parisc-linux.org>
+To: Grant Grundler <grundler@parisc-linux.org>
+Cc: Manu Abraham <abraham.manu@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-pci@atrey.karlin.mff.cuni.cz, greg@kroah.com,
+       Andrew Morton <akpm@osdl.org>
+Subject: Re: 2.6.20 PCI Cannot allocate resource region 2
+Message-ID: <20070206050331.GB4228@colo.lackof.org>
+References: <1a297b360702041709l3b0309c7y8fcd33df1d487889@mail.gmail.com> <20070206045528.GA4228@colo.lackof.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070206045528.GA4228@colo.lackof.org>
+X-Home-Page: http://www.parisc-linux.org/
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-While looking at another bug a while ago, I noticed that in 2.6 at 
-least, set_device_ro() sets the policy on the hd_struct to mark it 
-readonly, but it appears that IO is only really blocked from userspace, 
-via generic_write_checks().
+On Mon, Feb 05, 2007 at 09:55:28PM -0700, Grant Grundler wrote:
+...
+> > 	Control: I/O- Mem- BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
+> > 	Status: Cap- 66MHz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR+ <PERR+
+> > 	Latency: 0, Cache Line Size 0c
+> > 	BIST is running
+> 
+> BIST is required to complete in 2 seconds. Either with success or failure.
+> I expect BIOS to have complained before launching grub/lilo.
 
-There are bdev_read_only() checks in other places, but nothing in a 
-common spot to reject all possible IO.
+Gregkh,
+I just realized linux-pci bus scan should ignore devices (print a warning)
+which have BIST set.  Want a patch for this?
 
-Should we have something in generic_make_request() to reject ALL IO on a 
-readonly bdev, or is that further than the policy is supposed to go?  Or 
-is it up to each location that might possibly issue that IO to check it 
-and be well-behaved?
+Slight risk some previously "working" device which violates the
+spec might get ignored...but I hope there aren't too many of those.
 
-The motivation for this investigation was ext3 happily doing orphan 
-inode recovery on read-only lvm snapshot....
-
-Thanks,
-
--Eric
+grant
