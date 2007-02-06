@@ -1,52 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965514AbXBFVUW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965515AbXBFVWI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965514AbXBFVUW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 16:20:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965500AbXBFVUV
+	id S965515AbXBFVWI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 16:22:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965518AbXBFVWI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 16:20:21 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:55726 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965514AbXBFVUU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 16:20:20 -0500
-Date: Tue, 6 Feb 2007 22:20:11 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Daniel Walker <dwalker@mvista.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Andrew Morton <akpm@osdl.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.20-rc6-mm3
-Message-ID: <20070206212011.GA32593@elte.hu>
-References: <1170777802.9781.353.camel@imap.mvista.com> <1170786992.3785.0.camel@chaos> <1170787543.9781.362.camel@imap.mvista.com> <1170788870.3785.9.camel@chaos> <1170791739.3455.3.camel@dwalker1> <1170793206.3785.16.camel@chaos> <1170794437.3455.20.camel@dwalker1> <20070206205231.GA25430@elte.hu> <1170795378.3455.31.camel@dwalker1> <20070206210959.GC25430@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070206210959.GC25430@elte.hu>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -5.3
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-5.3 required=5.9 tests=ALL_TRUSTED,BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-3.3 ALL_TRUSTED            Did not pass through any untrusted hosts
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Tue, 6 Feb 2007 16:22:08 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:47532 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965515AbXBFVWF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Feb 2007 16:22:05 -0500
+Date: Tue, 6 Feb 2007 21:22:00 +0000 (GMT)
+From: James Simmons <jsimmons@infradead.org>
+To: Giuseppe Bilotta <giuseppe.bilotta@gmail.com>
+cc: Luca Tettamanti <kronos@people.it>,
+       linux-fbdev-devel@lists.sourceforge.net, Andrew Morton <akpm@osdl.org>,
+       Dave Airlie <airlied@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [Linux-fbdev-devel] [PATCH] nvidiafb: allow ignoring EDID info
+In-Reply-To: <cb7bb73a0702051328n50c889d9o461ac2bb9f9ea75e@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0702062118450.9224@pentafluge.infradead.org>
+References: <ephv35$4i3$1@sea.gmane.org>  <20070128160831.fb51347f.akpm@osdl.org>
+  <21d7e9970701281612q56b694edp6efd1a5556dea3fe@mail.gmail.com> 
+ <20070128162907.370f5476.akpm@osdl.org>  <21d7e9970701281639w57edc2efw4ba620d4c1bdcee7@mail.gmail.com>
+  <cb7bb73a0701290637q2ce0ff16t28f82d0c0339a2ba@mail.gmail.com> 
+ <20070130203301.GA15067@dreamland.darkstar.lan>  <20070204201713.GA12867@dreamland.darkstar.lan>
+  <cb7bb73a0702041317u4ca2fbabp45cf56526e57c982@mail.gmail.com> 
+ <20070205201824.GA13431@dreamland.darkstar.lan>
+ <cb7bb73a0702051328n50c889d9o461ac2bb9f9ea75e@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Ingo Molnar <mingo@elte.hu> wrote:
-
-> > I don't have that enabled tho .. This is with HRT/dynamic tick both 
-> > off..
+> On 2/5/07, Luca Tettamanti <kronos@people.it> wrote:
+> > get-edid uses the BIOS, while the other two talk directly over the I2C
+> > bus.
+> > 
+> > Try loading i2c-dev (I2C_CHARDEV); With i2cdump[1] you can read the EDID
+> > block, which resides at address 0x50:
+> > 
+> > i2cdump N 0x50 (where N is the bus number)
+> > 
+> > If you are unshure about bus number try with all the available
+> > /dev/i2c-* devices (you may want to unload HW monitor drivers first, so
+> > you don't poke at random stuff).
 > 
-> your kernel utilizes the kernel in a more optimal way: the new 
-                           ^hardware                            
-> clockevents code now utilizes the local APIC timer irq (represented by 
-> the LOC field) for periodic interrupts. The local APIC timer irq has a 
-> cost of ~2 usecs per IRQ, while the PIT irq is ~10 usecs per irq. With 
-> HZ=1000 this means savings of ~8000 usecs per second - i.e. 8 msecs per 
-> second, which is 0.8% more raw CPU power available - which isnt that 
-> bad.
+> No luck. i2c-dev and dependencies are loaded
+> """ lsmod | grep i2c reports """
+> i2c_i801                7404  0
+> i2c_isa                 5152  0
+> i2c_piix4               8140  0
+> i2c_algo_pcf            6180  0
+> i2c_algo_pca            5380  0
+> i2c_algo_bit            8424  0
+> i2c_dev                 8548  0
+> i2c_core               19680  7
+> i2c_i801,i2c_isa,i2c_piix4,i2c_algo_pcf,i2c_algo_pca,i2c_algo_bit,i2c_dev
+> """"
+> 
+> There is no such thing as /dev/i2c* UNLESS I load nvidiafb. When I
+> load that, I get three busses (i2c-0, -1, and -2), but i2cdump N 0x50
+> gives me a nice tableau of X's all around, for all values of N. This
+> is using kernel 2.6.18-3 stock Debian kernel. I'll keep trying with
+> some variations, to see if I can get more sensible information.
 
-	Ingo
+There is no stand alone nvidia card i2c driver. Its the issue of sharing 
+device interfaces with the same hardware problem again!!! There is a patch 
+for DRI and fbdev but it really looks like we need a generic solution.
+ 
