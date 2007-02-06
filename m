@@ -1,55 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752731AbXBFEmA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752708AbXBFEyS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752731AbXBFEmA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 23:42:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752719AbXBFEmA
+	id S1752708AbXBFEyS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 23:54:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752719AbXBFEyS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 23:42:00 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:48945 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752603AbXBFEl7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 23:41:59 -0500
-Date: Tue, 6 Feb 2007 05:41:46 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Linux Filesystems <linux-fsdevel@vger.kernel.org>,
-       Linux Memory Management <linux-mm@kvack.org>
-Subject: Re: [patch 9/9] mm: fix pagecache write deadlocks
-Message-ID: <20070206044146.GA11856@wotan.suse.de>
-References: <20070204014445.88e6c8c7.akpm@linux-foundation.org> <20070204101529.GA22004@wotan.suse.de> <20070204023055.2583fd65.akpm@linux-foundation.org> <20070204104609.GA29943@wotan.suse.de> <20070204025602.a5f8c53a.akpm@linux-foundation.org> <20070204110317.GA9034@wotan.suse.de> <20070204031549.203f7b47.akpm@linux-foundation.org> <20070204151051.GB12771@wotan.suse.de> <20070204103620.33c24cad.akpm@linux-foundation.org> <20070206022549.GB31476@wotan.suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070206022549.GB31476@wotan.suse.de>
-User-Agent: Mutt/1.5.9i
+	Mon, 5 Feb 2007 23:54:18 -0500
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:37640 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752708AbXBFEyS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Feb 2007 23:54:18 -0500
+Message-ID: <45C809F9.2090905@vmware.com>
+Date: Mon, 05 Feb 2007 20:54:17 -0800
+From: Zachary Amsden <zach@vmware.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20061206)
+MIME-Version: 1.0
+To: Rusty Russell <rusty@rustcorp.com.au>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, Andi Kleen <ak@muc.de>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Chris Wright <chrisw@sous-sol.org>
+Subject: Re: [PATCH 0/11] VMI / Paravirt bugfixes for 2.6.21
+References: <200702060352.l163q87K000713@zach-dev.vmware.com> <1170736029.29293.31.camel@localhost.localdomain>
+In-Reply-To: <1170736029.29293.31.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 06, 2007 at 03:25:49AM +0100, Nick Piggin wrote:
-> On Sun, Feb 04, 2007 at 10:36:20AM -0800, Andrew Morton wrote:
-> > On Sun, 4 Feb 2007 16:10:51 +0100 Nick Piggin <npiggin@suse.de> wrote:
-> > 
-> > > They're not likely to hit the deadlocks, either. Probability gets more
-> > > likely after my patch to lock the page in the fault path. But practially,
-> > > we could live without that too, because the data corruption it fixes is
-> > > very rare as well. Which is exactly what we've been doing quite happily
-> > > for most of 2.6, including all distro kernels (I think).
-> > 
-> > Thing is, an application which is relying on the contents of that page is
-> > already unreliable (or really peculiar), because it can get indeterminate
-> > results anyway.
-> 
-> Not necessarily -- they could read from one part of a page and write to
-> another. I see this as the biggest data corruption problem.
+Rusty Russell wrote:
+> On Mon, 2007-02-05 at 19:52 -0800, Zachary Amsden wrote:
+>   
+>> A bunch of VMI and paravirt-ops bugfixes for upstream.  Also, fix the
+>> timer code to work for 2.6.21, which had a number of changes.
+>>
+>> These should mostly be non-controversial and beneficial to all the
+>> paravirt-ops work.
+>>     
+>
+> Indeed, I'm expecting to push lguest this week, and this code will
+> effect me, so I'd like to see this in a -mm soon...
+>
+> Thanks!
+> Rusty.
+>   
 
-And in fact, it is not just transient errors either. This problem can
-add permanent corruption into the pagecache and onto disk, and it doesn't
-even require two processes to race.
+Yes, I took a look at the lguest changes today and I think these won't 
+generate conflicts, just make stuff easier for you ;)  Course you've now 
+got a couple new paravirt-ops to support, but the native ones are fine 
+for temporary use.
 
-After zeroing out the uncopied part of the page, and attempting to loop
-again, we might bail out of the loop for any reason before completing the
-rest of the copy, leaving the pagecache corrupted, which will soon go out
-to disk.
-
-Nick
+Cheers,
+Zach
