@@ -1,69 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932436AbXBFPgN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752225AbXBFPik@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932436AbXBFPgN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 10:36:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932588AbXBFPgN
+	id S1752225AbXBFPik (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 10:38:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932085AbXBFPik
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 10:36:13 -0500
-Received: from smtp.ocgnet.org ([64.20.243.3]:34363 "EHLO smtp.ocgnet.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932436AbXBFPgM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 10:36:12 -0500
-Date: Wed, 7 Feb 2007 00:34:13 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Matt Mackall <mpm@selenic.com>
-Cc: David Woodhouse <dwmw2@infradead.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [patch] MTD: fix DOC2000/2001/2001PLUS build error
-Message-ID: <20070206153413.GA10167@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Matt Mackall <mpm@selenic.com>,
-	David Woodhouse <dwmw2@infradead.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Ingo Molnar <mingo@elte.hu>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <Pine.LNX.4.64.0702041057090.8424@woody.linux-foundation.org> <20070205084523.GA21858@elte.hu> <1170682488.29759.795.camel@pmac.infradead.org> <20070205155627.GA8354@elte.hu> <1170692539.29759.856.camel@pmac.infradead.org> <20070205162635.GA755@elte.hu> <20070205163152.GA2464@elte.hu> <Pine.LNX.4.64.0702050852160.8424@woody.linux-foundation.org> <1170710272.29759.894.camel@pmac.infradead.org> <20070206054612.GL16722@waste.org>
+	Tue, 6 Feb 2007 10:38:40 -0500
+Received: from nf-out-0910.google.com ([64.233.182.189]:47616 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752229AbXBFPij (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Feb 2007 10:38:39 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=VieBFmdoNb8QNlvL73a+SVQ5kcJl2SCjUKpE9lZ47U3AD4Wt0OgLrt2uJFe7TEB8cl5To2aXolOt1N1FyogJrM6TgdJFb0YUGiyD93jIXsatoUTdUB+QqhRNldL6O8bUj8O2Jrio1dbDrM0+RM4sGzzzd4It7oG9LmhgRATyZ3I=
+Date: Tue, 6 Feb 2007 18:36:15 +0300
+From: "Cyrill V. Gorcunov" <gorcunov@gmail.com>
+To: Sam Creasey <sammy@sammy.net>
+Cc: linux-kernel-list <linux-kernel@vger.kernel.org>,
+       Jiri Slaby <jirislaby@gmail.com>
+Subject: [PATCH] SUN3/3X Lance trivial fix improved
+Message-ID: <20070206153615.GA12371@cvg>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070206054612.GL16722@waste.org>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 05, 2007 at 11:46:12PM -0600, Matt Mackall wrote:
-> I'd be happy to turn this into CONFIG_NONSTANDARD or
-> CONFIG_EXPERT, which is how I described it in the Kconfig help texts:
-> 
-> menuconfig EMBEDDED
->         bool "Configure standard kernel features (for small systems)"
->         help
->           This option allows certain base kernel options and settings
->           to be disabled or tweaked. This is for specialized
->           environments which can tolerate a "non-standard" kernel.
->           Only use this if you really know what you are doing.
-> 
-> A number of current users are indeed bogus. Stuff like:
-> 
-> config SUPERH
->         bool
->         default y
->         select EMBEDDED
-> 
-> Just because you're using a SuperH board doesn't mean you want to turn
-> off standard features.
-> 
-The only thing bogus is the CONFIG_EMBEDDED use itself, if it were only
-limited to turning options off, you'd be correct, but both PCI and IDE
-use it for other things. We specifically wanted it for IDE in this case.
+This patch adds checking for allocated DVMA memory
+and granted IRQ line.
 
-I'd be quite happy to see CONFIG_EMBEDDED separated entirely from the
-"advanced/expert/screwing aunt tillie" selection menu, or whatever we're
-choosing to call it these days. Then we wouldn't have to deal with these
-confusing defconfigs that expose far more than most users are going to
-care about.
+Signed-off-by: Cyrill V. Gorcunov <gorcunov@gmail.com>
 
-There are a number of other architectures that do this too, so it may be
-worth separating so we can finally get rid of the confusion.
+---
+
+Sam, this patch is almost the same I've already sent you
+except of some improvements (thanks to Jiri Slaby) like
+iounmap(), dvma_free() calls.
+
+ drivers/net/sun3lance.c |   16 +++++++++++++++-
+ 1 files changed, 15 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/net/sun3lance.c b/drivers/net/sun3lance.c
+index c62e85d..7bee45b 100644
+--- a/drivers/net/sun3lance.c
++++ b/drivers/net/sun3lance.c
+@@ -336,13 +336,27 @@ static int __init lance_probe( struct net_device *dev)
+ 
+ 	/* XXX - leak? */
+ 	MEM = dvma_malloc_align(sizeof(struct lance_memory), 0x10000);
++	if (MEM == NULL) {
++#ifdef CONFIG_SUN3
++		iounmap((void __iomem *)ioaddr);
++#endif
++		printk(KERN_WARNING "SUN3 Lance couldn't allocate DVMA memory\n");
++		return 0;
++	}
+ 
+ 	lp->iobase = (volatile unsigned short *)ioaddr;
+ 	dev->base_addr = (unsigned long)ioaddr; /* informational only */
+ 
+ 	REGA(CSR0) = CSR0_STOP;
+ 
+-	request_irq(LANCE_IRQ, lance_interrupt, IRQF_DISABLED, "SUN3 Lance", dev);
++	if (request_irq(LANCE_IRQ, lance_interrupt, IRQF_DISABLED, "SUN3 Lance", dev) < 0) {
++#ifdef CONFIG_SUN3
++		iounmap((void __iomem *)ioaddr);
++#endif
++		dvma_free((void *)MEM);
++		printk(KERN_WARNING "SUN3 Lance unable to allocate IRQ\n");
++		return 0;
++	}
+ 	dev->irq = (unsigned short)LANCE_IRQ;
+ 
+ 
