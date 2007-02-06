@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751685AbXBFLpJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751707AbXBFLrQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751685AbXBFLpJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 06:45:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751749AbXBFLpJ
+	id S1751707AbXBFLrQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 06:47:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751710AbXBFLrQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 06:45:09 -0500
-Received: from cacti.profiwh.com ([85.93.165.66]:33506 "EHLO cacti.profiwh.com"
+	Tue, 6 Feb 2007 06:47:16 -0500
+Received: from cacti.profiwh.com ([85.93.165.66]:35348 "EHLO cacti.profiwh.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751685AbXBFLpH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 06:45:07 -0500
-Message-ID: <45C86A57.4070308@gmail.com>
-Date: Tue, 06 Feb 2007 12:45:27 +0100
+	id S1751679AbXBFLrQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Feb 2007 06:47:16 -0500
+Message-ID: <45C86AD8.20701@gmail.com>
+Date: Tue, 06 Feb 2007 12:47:36 +0100
 From: Jiri Slaby <jirislaby@gmail.com>
 User-Agent: Thunderbird 2.0b2 (X11/20070116)
 MIME-Version: 1.0
@@ -18,63 +18,69 @@ To: Jiri Slaby <jirislaby@gmail.com>
 Cc: "Cyrill V. Gorcunov" <gorcunov@gmail.com>, Sam Creasey <sammy@sammy.net>,
        linux-kernel-list <linux-kernel@vger.kernel.org>
 Subject: Re: [PATCH] SUN3/3X Lance trivial fix
-References: <20070205191321.GA12839@cvg> <45C8683C.1070409@gmail.com>
-In-Reply-To: <45C8683C.1070409@gmail.com>
+References: <20070205191321.GA12839@cvg> <45C8683C.1070409@gmail.com> <45C86A57.4070308@gmail.com>
+In-Reply-To: <45C86A57.4070308@gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Jiri Slaby napsal(a):
-> Cyrill V. Gorcunov napsal(a):
->> This patch adds checking for allocated DVMA
->> memory and granted IRQ line.
+> Jiri Slaby napsal(a):
+>> Cyrill V. Gorcunov napsal(a):
+>>> This patch adds checking for allocated DVMA
+>>> memory and granted IRQ line.
+>>>
+>>> Signed-off-by: Cyrill V. Gorcunov <gorcunov@gmail.com>
+>>>
+>>> ---
+>>>
+>>>  drivers/net/sun3lance.c |    9 ++++++++-
+>>>  1 files changed, 8 insertions(+), 1 deletions(-)
+>>>
+>>> diff --git a/drivers/net/sun3lance.c b/drivers/net/sun3lance.c
+>>> index c62e85d..e4c2c88 100644
+>>> --- a/drivers/net/sun3lance.c
+>>> +++ b/drivers/net/sun3lance.c
+>>> @@ -336,13 +336,20 @@ static int __init lance_probe( struct 
+>>> net_device *dev)
+>>>  
+>>>      /* XXX - leak? */
+>>>      MEM = dvma_malloc_align(sizeof(struct lance_memory), 0x10000);
+>>> +    if (MEM == NULL) {
+>>> +        printk(KERN_WARNING "SUN3 Lance couldn't allocate DVMA 
+>>> memory\n");
+
+And also iounmap() here...
+
+>>> +        return 0;
+>>> +    }
+>>>  
+>>>      lp->iobase = (volatile unsigned short *)ioaddr;
+>>>      dev->base_addr = (unsigned long)ioaddr; /* informational only */
 >>
->> Signed-off-by: Cyrill V. Gorcunov <gorcunov@gmail.com>
->>
->> ---
->>
->>  drivers/net/sun3lance.c |    9 ++++++++-
->>  1 files changed, 8 insertions(+), 1 deletions(-)
->>
->> diff --git a/drivers/net/sun3lance.c b/drivers/net/sun3lance.c
->> index c62e85d..e4c2c88 100644
->> --- a/drivers/net/sun3lance.c
->> +++ b/drivers/net/sun3lance.c
->> @@ -336,13 +336,20 @@ static int __init lance_probe( struct net_device 
->> *dev)
->>  
->>      /* XXX - leak? */
->>      MEM = dvma_malloc_align(sizeof(struct lance_memory), 0x10000);
->> +    if (MEM == NULL) {
->> +        printk(KERN_WARNING "SUN3 Lance couldn't allocate DVMA 
->> memory\n");
->> +        return 0;
->> +    }
->>  
->>      lp->iobase = (volatile unsigned short *)ioaddr;
->>      dev->base_addr = (unsigned long)ioaddr; /* informational only */
+>> But now, if it fails (and you return 0=OK state) these are not assigned 
 > 
-> But now, if it fails (and you return 0=OK state) these are not assigned 
-
-Ok, 0 is not OK state, I see it now.
-
-> and probably used later.
+> Ok, 0 is not OK state, I see it now.
 > 
->>  
->>      REGA(CSR0) = CSR0_STOP;
->>  
->> -    request_irq(LANCE_IRQ, lance_interrupt, IRQF_DISABLED, "SUN3 
->> Lance", dev);
->> +    if (request_irq(LANCE_IRQ, lance_interrupt, IRQF_DISABLED, "SUN3 
->> Lance", dev) < 0) {
->> +        printk(KERN_WARNING "SUN3 Lance unable to allocate IRQ\n");
+>> and probably used later.
+>>
+>>>  
+>>>      REGA(CSR0) = CSR0_STOP;
+>>>  
+>>> -    request_irq(LANCE_IRQ, lance_interrupt, IRQF_DISABLED, "SUN3 
+>>> Lance", dev);
+>>> +    if (request_irq(LANCE_IRQ, lance_interrupt, IRQF_DISABLED, "SUN3 
+>>> Lance", dev) < 0) {
+>>> +        printk(KERN_WARNING "SUN3 Lance unable to allocate IRQ\n");
+> 
+> But in that case, you want to dvma_free() here?
 
-But in that case, you want to dvma_free() here?
+And here.
 
->> +        return 0;
->> +    }
->>      dev->irq = (unsigned short)LANCE_IRQ;
+>>> +        return 0;
+>>> +    }
+>>>      dev->irq = (unsigned short)LANCE_IRQ;
 
 regards,
 -- 
