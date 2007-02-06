@@ -1,62 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933085AbXBEX7U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933100AbXBFAAc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933085AbXBEX7U (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 18:59:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933100AbXBEX7U
+	id S933100AbXBFAAc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 19:00:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933102AbXBFAAc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 18:59:20 -0500
-Received: from mail-dub.bigfish.com ([213.199.154.10]:59784 "EHLO
-	mail24-dub-R.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933085AbXBEX7T convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 18:59:19 -0500
-X-Greylist: delayed 1476 seconds by postgrey-1.27 at vger.kernel.org; Mon, 05 Feb 2007 18:59:19 EST
-X-BigFish: VP
-X-Server-Uuid: 519AC16A-9632-469E-B354-112C592D09E8
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Mon, 5 Feb 2007 19:00:32 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:46737 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933100AbXBFAAb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Feb 2007 19:00:31 -0500
+Message-ID: <45C7C509.6090009@garzik.org>
+Date: Mon, 05 Feb 2007 19:00:09 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
 MIME-Version: 1.0
-Subject: RE: [PATCH 2/2] x86_64 irq: Handle irqs pending in IRR during
- irq migration.
-Date: Mon, 5 Feb 2007 15:33:36 -0800
-Message-ID: <5986589C150B2F49A46483AC44C7BCA4907417@ssvlexmb2.amd.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 2/2] x86_64 irq: Handle irqs pending in IRR during
- irq migration.
-Thread-Index: AcdJeepBQmD4q4NsSdinZ1C/+kuC+wAA8dqA
-From: "Lu, Yinghai" <yinghai.lu@amd.com>
-To: ebiederm@xmission.com
-cc: "Andi Kleen" <ak@suse.de>, "Andrew Morton" <akpm@osdl.org>,
-       linux-kernel@vger.kernel.org, "Luigi Genoni" <luigi.genoni@pirelli.com>,
-       "Ingo Molnar" <mingo@elte.hu>,
-       "Natalie Protasevich" <protasnb@gmail.com>
-X-OriginalArrivalTime: 05 Feb 2007 23:33:37.0160 (UTC)
- FILETIME=[0F1CC880:01C7497E]
-X-WSS-ID: 69D9615A0T06159839-01-01
-Content-Type: text/plain;
- charset=us-ascii
-Content-Transfer-Encoding: 8BIT
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Randy Dunlap <randy.dunlap@oracle.com>,
+       David Woodhouse <dwmw2@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [patch] MTD: fix DOC2000/2001/2001PLUS build error
+References: <Pine.LNX.4.64.0702041057090.8424@woody.linux-foundation.org> <20070205084523.GA21858@elte.hu> <1170682488.29759.795.camel@pmac.infradead.org> <20070205155627.GA8354@elte.hu> <1170692539.29759.856.camel@pmac.infradead.org> <20070205162635.GA755@elte.hu> <20070205163152.GA2464@elte.hu> <Pine.LNX.4.64.0702050852160.8424@woody.linux-foundation.org> <1170710272.29759.894.camel@pmac.infradead.org> <Pine.LNX.4.64.0702051322580.8424@woody.linux-foundation.org> <1170711587.29759.909.camel@pmac.infradead.org> <Pine.LNX.4.64.0702051345380.8424@woody.linux-foundation.org> <1170712393.29759.925.camel@pmac.infradead.org> <Pine.LNX.4.64.0702051409110.8424@woody.linux-foundation.org> <20070205143110.fca62b57.randy.dunlap@oracle.com> <Pine.LNX.4.64.0702051502370.8424@woody.linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0702051502370.8424@woody.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.7 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------Original Message-----
-From: ebiederm@xmission.com [mailto:ebiederm@xmission.com] 
-Sent: Monday, February 05, 2007 3:03 PM
->Nope. irq routines are a stack.  if apic_in_service_vector could return
->the wrong value.  ack_APIC_irq() which use the same information would
->acknowledge the wrong irq.  If there was actually any danger of
->mis-computing that information I would just pass it from the interrupt
->service routine stash it in a per cpu variable and then read it out.
->But the apic already has registers doing that, so I was lazy and used
->what was available.  It should be the common case that we need that
->information.
+Linus Torvalds wrote:
+> I also feel that a lot of people are "advanced" in one area, but not 
+> necessarily in another. The Netfilter example I gave was one such personal 
+> gripe of mine. I just feel like I shouldn't need to care! Yeah, I have the 
+> knowledge, but I *still* want to be baby-fed with just a simple "anybody 
+> can understand it".
 
-OK.
+It's a good example.  I had a bear of a time with the netfilter kernel 
+config on my firewall (w/ IPv6 goodness) box, when the generic netfilter 
+stuff landed.  For the first time in a long time, that firewall booted 
+into a configuration that wouldn't forward+masq packets properly.
 
-I wonder if current kernel support different cpu handle irq request for
-different device at the same time.
 
-YH
+> The same is true of the whole SATA/USB/SCSI thing. I know damn well that 
+> the kernel uses the SCSI layer for USB and SATA, yet I feel that the ATA 
+> layer does it right, and I just find the USB storage situation to be 
+> *offensively* bad in this regard. Why the HELL does it have those big 
+> comments and warnings, when it could just damn well enable SCSI support 
+> itself?
+
+I think maybe ATA is just lucky.  I allowed myself to get bullied into 
+avoiding 'select', even though I feel the same way as you.
+
+ATA should select scsi-disk but doesn't, for example.
+
+And at some point it becomes a matter of taste:  should ATA select 
+BLOCK, or depend on BLOCK?  There are IMO good arguments either way.
+
+	Jeff
 
 
