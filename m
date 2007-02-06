@@ -1,95 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965579AbXBFWNY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965558AbXBFWN2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965579AbXBFWNY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 17:13:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965576AbXBFWNX
+	id S965558AbXBFWN2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 17:13:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965576AbXBFWN1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 17:13:23 -0500
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:39734 "EHLO
+	Tue, 6 Feb 2007 17:13:27 -0500
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:39731 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S965557AbXBFWNK (ORCPT
+	with ESMTP id S965541AbXBFWNA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 17:13:10 -0500
-Date: Tue, 6 Feb 2007 23:13:14 +0100
+	Tue, 6 Feb 2007 17:13:00 -0500
+Date: Tue, 6 Feb 2007 23:13:04 +0100
 From: Adrian Bunk <bunk@stusta.de>
-To: jkmaline@cc.hut.fi, linville@tuxdriver.com
-Cc: hostap@shmoo.com, netdev@vger.kernel.org, linux-pcmcia@lists.infradead.org,
-       linux-kernel@vger.kernel.org
-Subject: hostap_cs_{resume,suspend}(): inconsequent NULL checking
-Message-ID: <20070206221314.GM27397@stusta.de>
+To: Andrew Morton <akpm@osdl.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: [-mm patch] make kernel/time/timer_stats.c:nr_entries static
+Message-ID: <20070206221304.GL27397@stusta.de>
+References: <20070129001207.71ea3470.akpm@osdl.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20070129001207.71ea3470.akpm@osdl.org>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The Coverity checker spotted the following in 
-drivers/net/wireless/hostap/hostap_cs.c:
+On Mon, Jan 29, 2007 at 12:12:07AM -0800, Andrew Morton wrote:
+>...
+> Changes since 2.6.20-rc6-mm1:
+>...
+> +add-debugging-feature-proc-timer_stat.patch
+>...
+>  New hrtimers/dynticks patches
+>...
 
-<--  snip  -->
 
-...
-static int hostap_cs_suspend(struct pcmcia_device *link)
-{
-        struct net_device *dev = (struct net_device *) link->priv;
-        int dev_open = 0;
-        struct hostap_interface *iface = NULL;
+nr_entries can become static.
 
-        if (dev)
-                iface = netdev_priv(dev);
+Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
-        PDEBUG(DEBUG_EXTRA, "%s: CS_EVENT_PM_SUSPEND\n", dev_info);
-        if (iface && iface->local)
-                dev_open = iface->local->num_dev_open > 0;
-        if (dev_open) {
-                netif_stop_queue(dev);
-                netif_device_detach(dev);
-        }
-        prism2_suspend(dev);
-
-        return 0;
-}
-
-static int hostap_cs_resume(struct pcmcia_device *link)
-{
-        struct net_device *dev = (struct net_device *) link->priv;
-        int dev_open = 0;
-        struct hostap_interface *iface = NULL;
-
-        if (dev)
-                iface = netdev_priv(dev);
-
-        PDEBUG(DEBUG_EXTRA, "%s: CS_EVENT_PM_RESUME\n", dev_info);
-
-        if (iface && iface->local)
-                dev_open = iface->local->num_dev_open > 0;
-
-        prism2_hw_shutdown(dev, 1);
-        prism2_hw_config(dev, dev_open ? 0 : 1);
-        if (dev_open) {
-                netif_device_attach(dev);
-                netif_start_queue(dev);
-        }
-
-        return 0;
-}
-...
-
-<--  snip  -->
-
-The problem is that if the "if (dev)" is false, there's a guaranteed 
-NULL dereference later in the "prism2_suspend(dev)" resp.
-"prism2_hw_config(dev, dev_open ? 0 : 1)".
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+--- linux-2.6.20-rc6-mm3/kernel/time/timer_stats.c.old	2007-02-06 10:27:13.000000000 +0100
++++ linux-2.6.20-rc6-mm3/kernel/time/timer_stats.c	2007-02-06 10:27:31.000000000 +0100
+@@ -112,7 +112,7 @@
+ #define MAX_ENTRIES_BITS	10
+ #define MAX_ENTRIES		(1UL << MAX_ENTRIES_BITS)
+ 
+-unsigned long nr_entries;
++static unsigned long nr_entries;
+ static struct entry entries[MAX_ENTRIES];
+ 
+ static atomic_t overflow_count;
 
