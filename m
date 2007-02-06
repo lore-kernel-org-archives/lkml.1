@@ -1,107 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965369AbXBFT12@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965344AbXBFT3G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965369AbXBFT12 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 14:27:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965371AbXBFT12
+	id S965344AbXBFT3G (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 14:29:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965376AbXBFT3F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 14:27:28 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:52800 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965370AbXBFT10 (ORCPT
+	Tue, 6 Feb 2007 14:29:05 -0500
+Received: from aa014msr.fastwebnet.it ([85.18.95.74]:39790 "EHLO
+	aa014msr.fastwebnet.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965344AbXBFT3E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 14:27:26 -0500
-Message-ID: <45C8D686.7010103@torque.net>
-Date: Tue, 06 Feb 2007 14:27:02 -0500
-From: Douglas Gilbert <dougg@torque.net>
-Reply-To: dougg@torque.net
-User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
+	Tue, 6 Feb 2007 14:29:04 -0500
+Date: Tue, 6 Feb 2007 20:28:40 +0100
+From: Mattia Dongili <malattia@linux.it>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Andrew Morton <akpm@osdl.org>,
+       linux-kernel@vger.kernel.org, mingo@redhat.com, netdev@vger.kernel.org,
+       netfilter-devel@lists.netfilter.org
+Subject: Re: dynticks + iptables almost stops the boot process [was: Re: 2.6.20-rc6-mm3]
+Message-ID: <20070206192840.GB2971@inferi.kami.home>
+Mail-Followup-To: Ingo Molnar <mingo@elte.hu>,
+	Thomas Gleixner <tglx@linutronix.de>, Andrew Morton <akpm@osdl.org>,
+	linux-kernel@vger.kernel.org, mingo@redhat.com,
+	netdev@vger.kernel.org, netfilter-devel@lists.netfilter.org
+References: <20070131215241.GB2890@inferi.kami.home> <20070131232130.GC4137@inferi.kami.home> <1170358572.29240.292.camel@localhost.localdomain> <1170360101.29240.297.camel@localhost.localdomain> <20070201211137.GA2830@inferi.kami.home> <1170369202.29240.339.camel@localhost.localdomain> <20070202191802.GA4262@inferi.kami.home> <1170448034.29240.364.camel@localhost.localdomain> <20070202204344.GB4262@inferi.kami.home> <20070206164826.GA3491@elte.hu>
 MIME-Version: 1.0
-To: Bernardo Innocenti <bernie@develer.com>
-CC: mpt_linux_developer@lsil.com, lkml <linux-kernel@vger.kernel.org>,
-       Develer IT Infrastructure <it@lists.develer.com>,
-       linux-scsi@vger.kernel.org
-Subject: Re: Writing performance problem with SAS1068
-References: <45C84333.709@develer.com>
-In-Reply-To: <45C84333.709@develer.com>
-X-Enigmail-Version: 0.94.0.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070206164826.GA3491@elte.hu>
+X-Message-Flag: Cranky? Try Free Software instead!
+X-Operating-System: Linux 2.6.20-rc6-mm3-1 i686
+X-Editor: Vim http://www.vim.org/
+X-Disclaimer: Buh!
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bernardo Innocenti wrote:
-> Hello,
+On Tue, Feb 06, 2007 at 05:48:26PM +0100, Ingo Molnar wrote:
 > 
-> I've stumbled onto a strange performance problem on a new server:
-> reading from disks is fast (70-80MB/s), but writing is extremely
-> slow (13-15MB/s).  I've measured it like this:
+> Mattia,
 > 
-> dd if=/dev/zero of=/dev/sdd bs=4096 count=65536 conv=fdatasync
-> 65536+0 records in
-> 65536+0 records out
-> 268435456 bytes (268 MB) copied, 17.7004 seconds, 15.2 MB/s
+> * Mattia Dongili <malattia@linux.it> wrote:
+> 
+> > > I have it halfways reproducible now and I'm working to find the root 
+> > > cause. Thanks for providing the info.
+> > 
+> > Great, I'm obviously available to test any patch :)
+> 
+> Could you try the patch below? The RCU serialization code (a rare call 
+> but can be common in some types of setups) has a nasty implicit 
+> dependency on the HZ tick - which until now was a hidden wart but became 
+> an explicit bug under dynticks. Maybe this is what is slowing down your 
+> box.
 
-# dd if=/dev/zero of=/dev/sdj bs=4096 count=65536 conv=fdatasync
-65536+0 records in
-65536+0 records out
-268435456 bytes (268 MB) copied, 2.24953 seconds, 119 MB/s
+No, not this. Anyway the last patch Thomas forwarded does fix the
+problem.
 
-# dd if=/dev/zero of=/dev/sdd bs=4096 count=65536 conv=fdatasync
-65536+0 records in
-65536+0 records out
-268435456 bytes (268 MB) copied, 2.3246 seconds, 115 MB/s
+By the way, I have all the patches I received stacked up, if you want me
+to test some different combination, just ask.
 
-Both /dev/sdj and /dev/sdd connect via an expander to the same
-SAS disk. /dev/sdj is via the LT aic94xx driver and a PCI-X HBA.
-/dev/sdd is via the mptsas driver and a SAS1068 (PCIe) based HBA.
-The kernel version is 2.6.20-rc5.
-
-Looks good to me.
-
-You may like to check that Write Cache Enable is on with:
-'sdparm --get=WCE /dev/sdd'.
-
-Doug Gilbert
-
-> *but*: if I rebuild the kernel and change CONFIG_FUSION_MAX_SGE
-> from 40 (Fedora's default) to 128 (maximum value), it suddenly
-> gets much faster: 31MB/s!
-> 
-> Looks very much like an interrupt problem to me.  Maybe
-> increasing the scatter gather mitigates the problem of
-> missing completion notifications.
-> 
-> Evidence:
-> 
-> Exhibit A: custom kernel config for 2.6.18-1.2257.fc5.bernie
-> http://www.codewiz.org/helium_logs/config
-> 
-> Exhibit B: dmesg output from said kernel
-> http://www.codewiz.org/helium_logs/dmesg
-> 
-> Exhibit C: misc proc files, and all that
-> http://www.codewiz.org/helium_logs/
-> 
-> Exhibit D: motherboard and chipset specification
-> http://www.supermicro.com/products/motherboard/Xeon3000/3010/PDSME+.cfm
-> 
-> 
-> Circumstantial evidence:
-> 
-> - Seems to affect just the LSI SAS1068 PCI-X controller.
->   The on-board AHCI controller writes very fast (>60MB/s)
-> 
-> - I've seen a very similar writing bottleneck with a
->   Promise TX4 SATA controller (not PCI-X) on a server with
->   a similar motherboard (Supermicro with Mukilteo 3000).
-> 
-> - Passing mpt_msi_enable=1 doesn't change anything
-> 
-> - FreeBSD 6.2 is even slower: writes at 7MB/s
-> 
-> - OpenSolaris is much, much slower... less than 1MB/s.
-> 
-> - Windows Vista (rc something) writes at 90MB/s.  Too
->   fast to believe, maybe dd from Cygwin is misbehaving.
-> 
-
+Thanks
+-- 
+mattia
+:wq!
