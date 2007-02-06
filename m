@@ -1,83 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752054AbXBFNMH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752057AbXBFNM5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752054AbXBFNMH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 08:12:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752064AbXBFNMH
+	id S1752057AbXBFNM5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 08:12:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752053AbXBFNM5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 08:12:07 -0500
-Received: from web26908.mail.ukl.yahoo.com ([217.146.176.97]:23442 "HELO
-	web26908.mail.ukl.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752054AbXBFNMG convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 08:12:06 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.fr;
-  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding;
-  b=jkJvi9INZBmD8FMf3EzzfwQ+OpzVyE844NBbKSFGBkKK0ouvpHVK6DUkNtsmF0Kl8o+zSlCs7Xhl1OxhM4K9fiCDM1pOJTzYp9ghhvcjmqDEasnabPNDXrV3QrXtwPjeuCryYOoW+ceHM+wemZLySMNE+DqtvG0acGMfgPAdV2s=  ;
-Message-ID: <20070206131205.17780.qmail@web26908.mail.ukl.yahoo.com>
-X-YMail-OSG: 1n5ZK2MVM1mzgZmGvXY2MmcAKQ6xFR6op.RXeEptwAivb33PnfXtEgtxPhTafQ0QWxHwCB730dQtGNwm5igTNLUHh7wYGf8Kou2cP8yunDxxG13nYuv2KoCj3R4NMbYJ5hfdko.Rx4U6UCWzmyxrFO0j3pZtaUaXDyfiv9oJ1CDqvg4eO6E8fg--
-X-Mailer: YahooMailRC/368.3 YahooMailWebService/0.6.132.7
-Date: Tue, 6 Feb 2007 13:12:05 +0000 (GMT)
-From: Etienne Lorrain <etienne_lorrain@yahoo.fr>
-Subject: Re : [PATCH] Compressed ia32 ELF file generation for loading by Gujin 1/3
-To: vgoyal@in.ibm.com, "H. Peter Anvin" <hpa@zytor.com>
-Cc: linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>
+	Tue, 6 Feb 2007 08:12:57 -0500
+Received: from mail2.domainserver.de ([213.83.41.143]:3999 "EHLO
+	smtp.domainserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752064AbXBFNM4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Feb 2007 08:12:56 -0500
+X-Greylist: delayed 1030 seconds by postgrey-1.27 at vger.kernel.org; Tue, 06 Feb 2007 08:12:55 EST
+Envelope-to: linux-kernel@vger.kernel.org
+Delivery-date: Tue, 06 Feb 2007 14:12:56 +0100
+From: Daniel Kabs <daniel.kabs@mobotix.com>
+Organization: MOBOTIX AG
+To: David Miller <davem@davemloft.net>
+Subject: Re: Problem with unix sockets: SOCK_DGRAM ignores MSG_TRUNC
+Date: Tue, 6 Feb 2007 13:55:39 +0100
+User-Agent: KMail/1.7.2
+Cc: linux-kernel@vger.kernel.org
+References: <200701291259.50155.dkabs@mobotix.com> <20070204.165235.26305735.davem@davemloft.net>
+In-Reply-To: <20070204.165235.26305735.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200702061355.39660.daniel.kabs@mobotix.com>
+X-AUTH: - 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Building real mode code with kernel binary (vmlinux) has got another
-> disadvantage that it breaks using vmlinux for kdump purposes. One compiles
-> the kernel binary to execute from a different address but real mode code/data
-> will continue to be at virtual/physical addr 0 and kexec can not load it
-> as that physical memory is not available at all. Kdump skips the real mode
-> code execution.
+On Monday 05 February 2007 01:52, David Miller wrote:
+> > Thus I used recv() with flags MSG_TRUNC|MSG_PEEK in order to detect
+> > message truncation due to insufficient buffer size.
+>
+> What part of "Only valid for packet sockets" from the manual page
+> escapes you?  :-))
+> It's a feature which only was meant to be valid for AF_PACKET sockets.
 
- But that is exactly what you want and need for kdump, isn't it?
- The ELF file did not change, the program header has the last index at
-address 0 that you do not want to load because you do not want to
-execute the real-mode code. Load the rest and provide the 4 Kbytes
-parameter page - it should work.
+Thanks for pointing that out. I thought, "packet sockets" means  
+"datagram-oriented  socket". Obviously it means PF_PACKET instead. It's 
+hard to learn programming IPC by only reading man pages :-)
 
-> I don't know much about Gujin, but advantage here seems to be that it has
-> capability to load elf files and that's why the attempt to turn kernel binary
-> into a compressed elf image. Why don't we then simply add an ELF header to
-> bzImage and Gujin and any ELF loader including Gujin, should be able to load
-> it? (As Eric had done in one of the implementations in the past?) Why to 
->create the new infrastructure?
+> What UDP is doing is different, it's returning the full packet length
+> when the packet is larger then the given buffer size, but it does this
+> irregardless of whether you set MSG_TRUNC in the recvmsg() passed-in
+> flags.  UDP itself sets the MSG_TRUNC flag when it detects this
+> situation.
 
- Because I think when a program evolves it has to get simpler to generate,
-run and maintain/debug - while doing more stuff. The number of assembler
-lines has to reduce because they are difficult to maintain.
- Removing a ELF header to modify the binary and stick another ELF header
-is not exactly what I think simpler - a bit like linking at a fix address and
-then modifying the whole set.
+Please correct me gently if I am wrong: According to the kernel source 
+code, this behaviour was introduced with patch-2.6.8: 
 
-HPA wrote:
-> Well, Gujin wants additional code too.
-> Putting an ELF header on bzImage broke some bootloaders (GRUB, I believe),
-> so that's not going to happen again. See the relocatable bzImage thread...
+http://www.kernel.org/diff/diffview.cgi?file=/pub/linux/kernel/v2.6/patch-2.6.8.gz;z=4325
 
-  I also refuses to load a big file at a fixed address before asking the BIOS
- for information, I only crash once the memory when I am pretty sure everything
- seems alright, interruption disabled, just before jumping to the kernel
- entry point. Cannot do that with bzImage. Cannot easily debug without
- this feature.
+linux/net/ipv4/udp.c 
++
+         err = copied;
++        if (flags & MSG_TRUNC)
++          err = skb->len - sizeof(struct udphdr);
 
-> Thanks
-> Vivek
+I think local sockets (PF_UNIX) implement a different semantics: According 
+to unix_dgram_recvmsg() in linux/net/unix/af_unix.c, in case of 
+truncation the buffer size is returned and not the full packet length.
 
-  Thanks for you comment.
- Etienne.
+In my opinion this implementation of local sockets (PF_UNIX) is not 
+following the wording of the man page man 2 recv: "These  calls  return  
+the  number of bytes received". Am I getting something wrong here?
+
+Why not improve consistency and make unix_dgram_recvmsg() return the full 
+packet length? So it would behave as UDP does. What do you think about 
+adding the following code to linux/net/unix/af_unix.c:
+        err = size;
++        if (flags & MSG_TRUNC)
++                err = skb->len;
 
 
-	
-
-	
-		
-___________________________________________________________________________ 
-Découvrez une nouvelle façon d'obtenir des réponses à toutes vos questions ! 
-Profitez des connaissances, des opinions et des expériences des internautes sur Yahoo! Questions/Réponses 
-http://fr.answers.yahoo.com
+Cheers
+Daniel
