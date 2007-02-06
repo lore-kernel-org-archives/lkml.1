@@ -1,64 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965304AbXBFAgF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965289AbXBFAhw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965304AbXBFAgF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 19:36:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965305AbXBFAgF
+	id S965289AbXBFAhw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 19:37:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965305AbXBFAhw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 19:36:05 -0500
-Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:15368 "EHLO
-	pd5mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965302AbXBFAgD (ORCPT
+	Mon, 5 Feb 2007 19:37:52 -0500
+Received: from terminus.zytor.com ([192.83.249.54]:54603 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965289AbXBFAhv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 19:36:03 -0500
-Date: Mon, 05 Feb 2007 18:35:06 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: forcedeth problems on 2.6.20-rc6-mm3
-In-reply-to: <Pine.LNX.4.64.0702050124320.20138@iabervon.org>
-To: Daniel Barkalow <barkalow@iabervon.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
-       Andrew Morton <akpm@osdl.org>
-Message-id: <45C7CD3A.808@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <45C6BCE5.90103@shaw.ca>
- <Pine.LNX.4.64.0702050124320.20138@iabervon.org>
-User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
+	Mon, 5 Feb 2007 19:37:51 -0500
+Message-ID: <45C7CDD7.20806@zytor.com>
+Date: Mon, 05 Feb 2007 16:37:43 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070102)
+MIME-Version: 1.0
+To: Etienne Lorrain <etienne_lorrain@yahoo.fr>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Compressed ia32 ELF file generation for loading by Gujin
+ 1/3
+References: <522909.27613.qm@web26909.mail.ukl.yahoo.com>
+In-Reply-To: <522909.27613.qm@web26909.mail.ukl.yahoo.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Daniel Barkalow wrote:
-> On Sun, 4 Feb 2007, Robert Hancock wrote:
+First of all, if sending attached patches, *MAKE SURE* they're text/plain.
+
+> diff -uprN -X linux-2.6.20/Documentation/dontdiff linux-2.6.20/arch/i386/kernel/setup.c linux-2.6.20-gujin/arch/i386/kernel/setup.c
+> --- linux-2.6.20/arch/i386/kernel/setup.c       2007-02-04 18:44:54.000000000 +0000
+> +++ linux-2.6.20-gujin/arch/i386/kernel/setup.c 2007-02-05 21:27:01.000000000 +0000
+> @@ -579,6 +579,19 @@ void __init setup_arch(char **cmdline_p)
+>         strlcpy(command_line, saved_command_line, COMMAND_LINE_SIZE);
+>         *cmdline_p = command_line;
 > 
->> Something's busted with forcedeth in 2.6.20-rc6-mm3 for me relative to
->> 2.6.20-rc6. There's no errors in dmesg, but it seems no packets ever get
->> received and so the machine can't get an IP address. I tried reverting all the
->> -mm changes to drivers/net/forcedeth.c, which didn't help. The network
->> controller shares an IRQ with the USB OHCI controller which is receiving
->> interrupts, so it doesn't seem like an interrupt routing problem, though I
->> suppose something wierd could be happening there.
+> +       /*
+> +        * If the command line begin with '/', it is the filename of the
+> +        * kernel file - like a shell command line. That can be used to
+> +        * deduce where root was located when the kernel was compiled,
+> +        * inside a directory of root named /boot, inside a small partition
+> +        * mounted on a directory of root named /boot or in the root
+> +        * directory itself.
+> +        */
+> +       if (**cmdline_p == '/')
+> +               while (**cmdline_p != ' ' && **cmdline_p != '\t'
+> +                       && **cmdline_p != '\n' && **cmdline_p != '\0')
+> +                       ++*cmdline_p;
+> +
+>         max_low_pfn = setup_memory();
 > 
-> IIRC, forcedeth tries to use MSI by default. Perhaps the hardware is using 
-> it, but the kernel thinks enabling it didn't work? I think there's a 
-> module option for forcedeth to disable MSI, which might be worth a try to 
-> see if it has any effect.
+>         /*
 
-I must have messed something up when testing before - reverting to 
-forcedeth.c from 2.6.20-rc6 does indeed fix the problem. And it doesn't 
-seem like no packets at all are received with the -mm3 version (driver 
-version 0.60), either - if I do a tcpdump I can get Ethernet packets 
-showing up, but I can't ping my router so it seems like something isn't 
-getting through properly. With the 2.6.20-rc6 version (driver version 
-0.59) it works fine. I switched back and forth between versions and this 
-seems repeatable.
+The standard way to do this is to have a command line argument named 
+BOOT_IMAGE (as in BOOT_IMAGE=/foo/bar/baz).  There is no reason to do 
+this differently from every other bootloader.
 
-I don't think it's MSI related, the CK804 version of these controllers 
-doesn't support MSI and the driver shouldn't be trying to use it. I 
-tried the MSI and MSI-X disable options on the 0.60 driver, but that 
-didn't help.
+Why build the real-mode code as part of the kernel binary?  If you have 
+to reference kernel symbols, you can do that with the -R option to ld. 
+Bundling it into the kernel binary just to then extract it later is 
+silly at best.
 
--- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
+> @@ -1106,6 +1179,9 @@ help:
+>         @echo  'Other generic targets:'
+>         @echo  '  all             - Build all targets marked with [*]'
+>         @echo  '* vmlinux         - Build the bare kernel'
+> +       @echo  "  /boot/linux-$(KERNELRELEASE).kgz - create a boot kernel for the Gujin bootloader"
+> +       @echo  '  /boot/linux.kgz ROOT=/dev/hda1   - do not autodetect root filesystem at boot time'
+> +       @echo  '  /boot/linux.kgz ROOT=auto        - root filesystem from current /proc/cmdline'
+>         @echo  '* modules         - Build all modules'
+>         @echo  '  modules_install - Install all modules to INSTALL_MOD_PATH (default: /)'
+>         @echo  '  dir/            - Build all files in dir and below'
 
+This doesn't exactly fit very well the standard pattern.  Something like 
+  make gujin TARGET=... would be more like it.
+
+Given how many of your files are highly Gujin-specific, and have generic 
+names, please put them in a subdirectory (e.g. arch/i386/boot/gujin/).
+
+	-hpa
