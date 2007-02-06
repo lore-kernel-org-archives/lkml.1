@@ -1,60 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751957AbXBFJvA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751972AbXBFJv0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751957AbXBFJvA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 04:51:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751967AbXBFJvA
+	id S1751972AbXBFJv0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 04:51:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752011AbXBFJv0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 04:51:00 -0500
-Received: from outbound-fra.frontbridge.com ([62.209.45.174]:64296 "EHLO
-	outbound4-fra-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751957AbXBFJu7 (ORCPT
+	Tue, 6 Feb 2007 04:51:26 -0500
+Received: from office-abk.mandriva.com ([84.55.162.90]:4799 "EHLO
+	office.mandriva.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751972AbXBFJvZ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 04:50:59 -0500
-X-BigFish: VP
-X-Server-Uuid: 5FC0E2DF-CD44-48CD-883A-0ED95B391E89
-Date: Tue, 6 Feb 2007 10:41:08 +0100
-From: "Joerg Roedel" <joerg.roedel@amd.com>
-To: "Pekka Enberg" <penberg@cs.helsinki.fi>
-cc: logic@thinknet.ro, linux-kernel@vger.kernel.org
-Subject: Re: your mail
-Message-ID: <20070206094108.GC18017@amd.com>
-References: <1131.86.55.168.2.1170690089.squirrel@mail.thinknet.ro>
- <20070205123611.GI8804@amd.com>
- <84144f020702050601ve2e4746oebd774af9c487b63@mail.gmail.com>
+	Tue, 6 Feb 2007 04:51:25 -0500
+X-Greylist: delayed 763 seconds by postgrey-1.27 at vger.kernel.org; Tue, 06 Feb 2007 04:51:25 EST
+To: Thomas =?iso-8859-15?Q?B=E4chler?= <thomas@archlinux.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [2.6.20] Regression in dmfe driver
+X-URL: <http://www.mandrivalinux.com/
+References: <Pine.LNX.4.64.0702041057090.8424@woody.linux-foundation.org>
+	<eq87gu$5vo$1@sea.gmane.org>
+From: Thierry Vignaud <tvignaud@mandriva.com>
+Organization: Mandriva
+Date: Tue, 06 Feb 2007 10:38:39 +0100
+In-Reply-To: <eq87gu$5vo$1@sea.gmane.org> (Thomas =?iso-8859-15?Q?B=E4chle?=
+ =?iso-8859-15?Q?r's?= message of "Mon\, 05 Feb 2007 22\:27\:58 +0100")
+Message-ID: <m27iuvhbhc.fsf@vador.mandriva.com>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.90 (gnu/linux)
 MIME-Version: 1.0
-In-Reply-To: <84144f020702050601ve2e4746oebd774af9c487b63@mail.gmail.com>
-User-Agent: mutt-ng/devel-r804 (Linux)
-X-OriginalArrivalTime: 06 Feb 2007 09:41:12.0133 (UTC)
- FILETIME=[EFF83750:01C749D2]
-X-WSS-ID: 69D690A62MC7212473-10-01
-Content-Type: text/plain;
- charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-15
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 05, 2007 at 04:01:23PM +0200, Pekka Enberg wrote:
-> Hi Joerg,
-> 
-> On 2/5/07, Joerg Roedel <joerg.roedel@amd.com> wrote:
-> >Hmm, this seems to be the same issue as in [1] and [2]. A page that is
-> >assumed to belong to the slab but is not longer marked as a slab page.
-> >Could this be a bug in the memory management?
-> 
-> The BUG_ON triggers whenever you feed an invalid pointer to kfree() or
-> kmem_cache_free() so I am guessing the caller is simply broken. Note
-> that kernels prior to 2.6.18 would quietly corrupt the slab unless
-> CONFIG_SLAB_DEBUG was enabled which might explain why this hasn't been
-> noticed before.
+Thomas Bächler <thomas@archlinux.org> writes:
 
-Ok. I was not aware of that. Thanks for clarification.
+> Commit 7628b0a8c01a02966d2228bdf741ddedb128e8f8 (drivers/net/tulip/dmfe:
+> support basic carrier detection) breaks networking on my Davicom DM9009.
+> ethtool always reports there is no link. tcpdump shows incoming packets,
+> but TX is disabled. Reverting the above patch fixes the problem.
 
-Joerg
-
--- 
-Joerg Roedel
-Operating System Research Center
-AMD Saxony LLC & Co. KG
-
-
+disable link detection in your network config then (eg:
+MII_NOT_SUPPORTED=yes in ifcfg-XXX depending on the distro).
