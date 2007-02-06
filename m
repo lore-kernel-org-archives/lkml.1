@@ -1,96 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030196AbXBFWuu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030221AbXBFWwZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030196AbXBFWuu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 17:50:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030221AbXBFWuu
+	id S1030221AbXBFWwZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 17:52:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030228AbXBFWwY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 17:50:50 -0500
-Received: from cacti.profiwh.com ([85.93.165.66]:53213 "EHLO cacti.profiwh.com"
+	Tue, 6 Feb 2007 17:52:24 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:54248 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030196AbXBFWut (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 17:50:49 -0500
-Message-ID: <45C9065A.7010102@gmail.com>
-Date: Tue, 06 Feb 2007 23:51:06 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0b2 (X11/20070116)
+	id S1030221AbXBFWwY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Feb 2007 17:52:24 -0500
+Date: Tue, 6 Feb 2007 14:51:52 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Haavard Skinnemoen <hskinnemoen@gmail.com>
+cc: Matt Mackall <mpm@selenic.com>, David Woodhouse <dwmw2@infradead.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [patch] MTD: fix DOC2000/2001/2001PLUS build error
+In-Reply-To: <1defaf580702061439w5eca87e6s8d152fdec5f8c627@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0702061447390.8424@woody.linux-foundation.org>
+References: <Pine.LNX.4.64.0702041057090.8424@woody.linux-foundation.org> 
+ <20070205084523.GA21858@elte.hu>  <1170682488.29759.795.camel@pmac.infradead.org>
+  <20070205155627.GA8354@elte.hu>  <1170692539.29759.856.camel@pmac.infradead.org>
+  <20070205162635.GA755@elte.hu> <20070205163152.GA2464@elte.hu> 
+ <Pine.LNX.4.64.0702050852160.8424@woody.linux-foundation.org> 
+ <1170710272.29759.894.camel@pmac.infradead.org>  <20070206054612.GL16722@waste.org>
+ <1defaf580702061439w5eca87e6s8d152fdec5f8c627@mail.gmail.com>
 MIME-Version: 1.0
-To: Ondrej Zajicek <santiago@crfreenet.org>
-Cc: James Simmons <jsimmons@infradead.org>, Andrew Morton <akpm@osdl.org>,
-       linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
-Subject: Re: [PATCH] fbdev driver for S3 Trio/Virge
-References: <20070205195130.GB5206@localhost.localdomain> <45C7B0A8.50707@gmail.com> <20070206211746.GA31501@localhost.localdomain>
-In-Reply-To: <20070206211746.GA31501@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ondrej Zajicek napsal(a):
-> On Mon, Feb 05, 2007 at 11:33:12PM +0100, Jiri Slaby wrote:                                                             
->> Ondrej Zajicek napsal(a):
->>> +#ifdef CONFIG_MTRR
->>> +#include <asm/mtrr.h>
->>> +#endif
->> Why ifdef? It's ifdeffed in the header itself.
+
+
+On Tue, 6 Feb 2007, Haavard Skinnemoen wrote:
 > 
-> But this header is only available on some archs, isn't it?
+> I disagree. I did the exact same thing on AVR32 because !EMBEDDED
+> forces on tons of crap that just isn't useful on many embedded
+> platforms.
 
-Yup, I stand corrected.
+I do agree. EMBEDDED largely means "non-generic/non-standard" these days. 
+It's also true that EMBEDDED does *not* necessarily mean "small", since 
+some of the choices that it disables can often be choices that you want on 
+*big* machines.
 
->>> +		memset(&(par->state), 0, sizeof(struct vgastate));
->>> +		par->state.flags = VGA_SAVE_MODE | VGA_SAVE_FONTS | 
->>> VGA_SAVE_CMAP;
->>> +		par->state.num_crtc = 0x70;
->>> +		par->state.num_seq = 0x20;
->>> +		save_vga(&(par->state));
->>> +	}
->>> +
->>> +	atomic_inc(&(par->ref_count));
->>> +
->>> +	return 0;
->>> +}
-> 
-> This pattern is in several fbdev drivers (neofb, i810fb, rivafb, vga16fb).
-> I understand the problem but i am not sure what is the best solution.
+For example, the whole thing where VGA and keyboard/mouse support default 
+to on when EMBEDDED isn't selected is quite possibly a good reason to 
+enable EMBEDDED on big servers that aren't even meant to be general- 
+purpose, but simply optimized for a particular environment.
 
-Blah. It should be fixed, then.
+That is, technically, what "embedded" really means. A lot of the time 
+people talk about it as if it was always "small", but it can be a big 
+computer that is just used in a very specific turn-key environment where 
+some of the default kernel choices may not be sensible.
 
-> Maybe acquire/release console semaphore before/after s3fb_open?
-
-Kick atomic_t-s off and use mutexes to protect simple uint or something like this.
-
->>> +static int s3fb_release(struct fb_info *info, int user)
->>> +{
->>> +	struct s3fb_info *par = (struct s3fb_info *) info;
->> Use container_of for this (and below/above).
-> 
-> Isn't container_of overkill for this case?
-
-Hmm, maybe yes. Anyway it's not so clean way to do it.
-
-I can see, they have void *par in fb_info. I would do:
-struct s3fb_info {
-	int chip, rev, mclk_freq;
-	int mtrr_reg;
-	struct vgastate state;
-	atomic_t ref_count;
-	u32 pseudo_palette[16];
-};
-I.e. no struct fb_info inside, since you allocate the space twice by 
-framebuffer_alloc() -- 2*sizeof(struct fb_info) + sizeof(struct s3fb_info) + 
-padding.
-Then normally
-framebuffer_alloc(sizeof(struct s3fb_info), NULL);
-and happily use
-struct s3fb_info *s = info->par;
-since par member is set directly to aligned space after fb_info when size is 
-nonzero inside the framebuffer_alloc().
-
-Is there any problem with this approach?
-
-regards,
--- 
-http://www.fi.muni.cz/~xslaby/            Jiri Slaby
-faculty of informatics, masaryk university, brno, cz
-e-mail: jirislaby gmail com, gpg pubkey fingerprint:
-B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
+			Linus
