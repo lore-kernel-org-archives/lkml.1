@@ -1,77 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030574AbXBFXgU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030582AbXBFXga@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030574AbXBFXgU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 18:36:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030578AbXBFXgU
+	id S1030582AbXBFXga (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 18:36:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030578AbXBFXga
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 18:36:20 -0500
-Received: from www.osadl.org ([213.239.205.134]:42685 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1030574AbXBFXgT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 18:36:19 -0500
-Subject: Re: 2.6.20-rc6-mm3
-From: Thomas Gleixner <tglx@linutronix.de>
-To: dwalker@mvista.com
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@osdl.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <1170804177.3455.109.camel@dwalker1>
-References: <20070206205231.GA25430@elte.hu>
-	 <1170795378.3455.31.camel@dwalker1> <20070206210959.GC25430@elte.hu>
-	 <1170796999.3455.43.camel@dwalker1> <20070206214131.GA1176@elte.hu>
-	 <1170798879.3455.58.camel@dwalker1> <20070206220855.GB5109@elte.hu>
-	 <1170801742.3455.87.camel@dwalker1> <20070206225650.GA14853@elte.hu>
-	 <1170803070.3455.93.camel@dwalker1>  <20070206231421.GA18654@elte.hu>
-	 <1170804177.3455.109.camel@dwalker1>
+	Tue, 6 Feb 2007 18:36:30 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:43729 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030584AbXBFXg2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Feb 2007 18:36:28 -0500
+Subject: Re: [patch] MTD: fix DOC2000/2001/2001PLUS build error
+From: David Woodhouse <dwmw2@infradead.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0702061516110.8424@woody.linux-foundation.org>
+References: <1170801484.29759.1000.camel@pmac.infradead.org>
+	 <Pine.LNX.4.64.0702061451560.8424@woody.linux-foundation.org>
+	 <1170803515.29759.1032.camel@pmac.infradead.org>
+	 <Pine.LNX.4.64.0702061516110.8424@woody.linux-foundation.org>
 Content-Type: text/plain
-Date: Wed, 07 Feb 2007 00:36:29 +0100
-Message-Id: <1170804989.3785.58.camel@chaos>
+Date: Tue, 06 Feb 2007 23:36:23 +0000
+Message-Id: <1170804983.29759.1051.camel@pmac.infradead.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
+X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6.dwmw2.1) 
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-02-06 at 15:22 -0800, Daniel  Walker wrote:
-> > > What about the statistics for the other interrupts in the system ? It 
-> > > clearly doesn't list all interrupts in the system .
-> > 
-> > what is your point?
-> 
-> Isn't the listing inconsistent ? /proc/interrupts only showing some
-> special interrupts, and not others .. 
+On Tue, 2007-02-06 at 15:28 -0800, Linus Torvalds wrote:
+> (Example: I don't want to see IPV6 questions if IPV6 is off, BUT I might 
+> still want to be able to see the question about NFSv8.1, which only works 
+> on top of IPV6. I might not even *know* I want IPV6, but I know my company 
+> uses NFSv8.1, so I say "yes"). 
 
-It shows _ALL_ used interrupts in the system. There is no point to let
-it show NR_IRQ interrupts with a event count = 0.
+(Quoting very sparsely but I think honestly -- I think the above is the
+essence of what you were saying).
 
-> For example it shows NMI which is
-> not related to request_irq() .. It shows some clock driver devices
-> (timer, NMI, LOC) and not others (clock event devices) ..
+Actually it doesn't have to be that much of a problem if the config
+stuff is laid out sensibly, as Ingo mentioned earlier. Those IPv6
+options you don't want to see are likely to be all in an 'IPv6' submenu
+of the networking stuff which nobody forces you to visit. Yet
+'NFSv8.1' (*shudder*) would be elsewhere under networked file systems,
+or some suboption of NFS, and you'd see it just fine.
 
-PIT is a clock event device and uses IRQ0, where the interrupt count is
-displayed:
+> And I realize that was a contrieved example, but there are *real* examples 
+> of this in the kernel today. I may well know that I want 802.11 WEP 
+> encryption, for example, but I sure as hell had *no* clue that it requires 
+> ARC4.
 
-0:    3022812          0   IO-APIC-edge      timer
+Again, if you don't care about crypto then you're unlikely to be delving
+in the crypto menus. Nobody forces you to go there. But when you look at
+the greyed-out WEP option and you click on it and it tells you "You need
+ARC4 for this. Do you want me to turn it on for you?" (or whatever), you
+get what you wanted.
 
-Local APIC timer is a clock event device too and the interrupt count is
-displayed as well:
+Really, if our config is set up in sensible submenus (as in general it
+_is_), the "see everything" behaviour really isn't bad.
 
-LOC:     177795    1755941 
-
-There are no other clock event devices in a PC system at the moment
-and /proc/interrupt does not care, whether the interrupt was setup for a
-clock event device or something else. It displays the name which is
-given in the irqaction struct and does not care what it means. I did not
-change the name in the IRQ#0 setup, so it still displays "timer" (which
-can either be PIT or HPET), but this is something the interrupt layer
-does not know and does not care about.
-
-The special interrupts, which are not handled by the generic IRQ layer
-(LOC, NMI) are displayed to have the complete statistics available.
-
-We did not change anything on that. The changed behavior you are
-observing (IRQ#0 is not incrementing) is reflecting the reality of the
-system. IRQ#0 is not firing, so it does not increment.
-
-	tglx
-
+-- 
+dwmw2
 
