@@ -1,59 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965600AbXBFXyD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965605AbXBFXzA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965600AbXBFXyD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 18:54:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965603AbXBFXyC
+	id S965605AbXBFXzA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 18:55:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965606AbXBFXzA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 18:54:02 -0500
-Received: from nic.NetDirect.CA ([216.16.235.2]:36452 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965600AbXBFXyA (ORCPT
+	Tue, 6 Feb 2007 18:55:00 -0500
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:38496
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965605AbXBFXy7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 18:54:00 -0500
-X-Originating-Ip: 74.102.209.62
-Date: Tue, 6 Feb 2007 18:52:24 -0500 (EST)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Randy Dunlap <randy.dunlap@oracle.com>
-cc: David Woodhouse <dwmw2@infradead.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [patch] MTD: fix DOC2000/2001/2001PLUS build error
-In-Reply-To: <20070206154146.c62012b4.randy.dunlap@oracle.com>
-Message-ID: <Pine.LNX.4.64.0702061850550.5045@localhost.localdomain>
-References: <1170801484.29759.1000.camel@pmac.infradead.org>
- <Pine.LNX.4.64.0702061451560.8424@woody.linux-foundation.org>
- <1170803515.29759.1032.camel@pmac.infradead.org>
- <Pine.LNX.4.64.0702061516110.8424@woody.linux-foundation.org>
- <1170804983.29759.1051.camel@pmac.infradead.org> <20070206154146.c62012b4.randy.dunlap@oracle.com>
+	Tue, 6 Feb 2007 18:54:59 -0500
+From: Rob Landley <rob@landley.net>
+To: dwalker@mvista.com
+Subject: Re: 2.6.20-rc6-mm3
+Date: Tue, 6 Feb 2007 18:55:04 -0500
+User-Agent: KMail/1.9.1
+Cc: Thomas Gleixner <tglx@linutronix.de>, Andrew Morton <akpm@osdl.org>,
+       linux-kernel@vger.kernel.org, mingo@elte.hu
+References: <20070129204528.eb8d695e.akpm@osdl.org> <200702061815.41078.rob@landley.net> <1170804518.3455.115.camel@dwalker1>
+In-Reply-To: <1170804518.3455.115.camel@dwalker1>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200702061855.05020.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 6 Feb 2007, Randy Dunlap wrote:
+On Tuesday 06 February 2007 6:28 pm, Daniel Walker wrote:
+> On Tue, 2007-02-06 at 18:15 -0500, Rob Landley wrote:
+> > On Tuesday 06 February 2007 3:40 pm, Daniel Walker wrote:
+> > > In this case "different" goes into userspace .. So different could mean
+> > > userspace regression, which is something that we don't want. I have no
+> > > idea if any apps use /proc/interrupts , but it's possible since it's
+> > > been around for a long time.
+> > > 
+> > > The reason that I'm bringing it up at all is because people have ask me
+> > > "Why isn't my timer ticking??"
 
-> Besides this select business, Bill (or someone :) mentioned a
-> feature that I requested about 8 months ago:  the ability to disable
-> or enable groups of drivers at one swoop.
+Ah, you can't answer this question.  Right:
 
-i vaguely recall that *i* was pushing that idea, and even submitted a
-couple patches to start the process, but it never really went
-anywhere.
+A) Because there are multiple timer interrupt sources in the system, and we're 
+now using a newer (better) one.
 
-rday
+B) This measures interrupts.  It doesn't measure jiffies.  Interrupts != 
+jiffies.  This is a conceptual issue.
+
+C) /proc/uptime may be of use here.
+
+> > Because there are two clock sources in the machine and it's using the 
+other 
+> > one, so the interrupt isn't firing?
+> > 
+> > Are you saying that the /proc statistics aren't accurate, or that you 
+> > previously misunderstood what it was actually measuring and you'd now like 
+it 
+> > to lie?
+> 
+> I understand exactly what is happening . The statistics are unclear, and
+> tend to confuse people .
+
+You find /proc/interrupts showing interrupts to be _unclear_?
+
+> Daniel
+
+Rob
 -- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
+"Perfection is reached, not when there is no longer anything to add, but
+when there is no longer anything to take away." - Antoine de Saint-Exupery
