@@ -1,104 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751898AbXBFMzY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751958AbXBFM4S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751898AbXBFMzY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 07:55:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751914AbXBFMzY
+	id S1751958AbXBFM4S (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 07:56:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751977AbXBFM4R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 07:55:24 -0500
-Received: from ug-out-1314.google.com ([66.249.92.172]:8164 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751898AbXBFMzX (ORCPT
+	Tue, 6 Feb 2007 07:56:17 -0500
+Received: from nf-out-0910.google.com ([64.233.182.185]:52993 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751958AbXBFM4Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 07:55:23 -0500
+	Tue, 6 Feb 2007 07:56:16 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=Ehmu59CMUlC9srUym073BHtxLfGTjOUxZxRTOHnutmgW4CdpiQOL5uIeveriOnFglBygnJsq54FVeI4YjVSBX9TzsyV9LfroNs1202AAypGcUmJ/Y8CYlHdjkXx6EE6ggFqYWMymvDkLqCpnbl/Oq1CRJIdkBA12tHdIE+qy0Mo=
-Date: Tue, 6 Feb 2007 15:52:59 +0300
-From: "Cyrill V. Gorcunov" <gorcunov@gmail.com>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: linux-kernel-list <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] SUN3/3X Lance trivial fix
-Message-ID: <20070206125259.GA10088@cvg>
-References: <20070205191321.GA12839@cvg> <45C8683C.1070409@gmail.com> <45C86A57.4070308@gmail.com> <45C86AD8.20701@gmail.com>
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=kUMcW0ReFskphEb/URMHqzEeG4jbqotBChfhEHvBGJP30UW0pUe0FxX6zKV+8rBXAsJJ4KHh7ZKzygC2PC4bI8eR9jHt1Ufn5Yv8rJhkv9Eio147t5wyb0T/p19FYIlA0b8ENqfEU9zVuFcBH/rKF4hBTWNBqtbUPy7V9Gef0X0=
+Message-ID: <1a297b360702060456n654c976fycb8fcb37012c6212@mail.gmail.com>
+Date: Tue, 6 Feb 2007 16:56:13 +0400
+From: "Manu Abraham" <abraham.manu@gmail.com>
+To: "Luming Yu" <luming.yu@gmail.com>
+Subject: Re: 2.6.20 PCI Cannot allocate resource region 2
+Cc: "Grant Grundler" <grundler@parisc-linux.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
+       greg@kroah.com
+In-Reply-To: <1a297b360702060424m393d66cdka4a446b24cbd1ff@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <45C86AD8.20701@gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <1a297b360702041709l3b0309c7y8fcd33df1d487889@mail.gmail.com>
+	 <20070206045528.GA4228@colo.lackof.org>
+	 <20070206050331.GB4228@colo.lackof.org>
+	 <20070205213339.80239a22.akpm@linux-foundation.org>
+	 <20070206084638.GB20752@colo.lackof.org>
+	 <1a297b360702060106x321bfb8dw918d15df76952576@mail.gmail.com>
+	 <1a297b360702060129n54f73e66qc753a2ccb35cb3cd@mail.gmail.com>
+	 <3877989d0702060421g1a00c114yba9e193db55f3d11@mail.gmail.com>
+	 <1a297b360702060424m393d66cdka4a446b24cbd1ff@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 06, 2007 at 12:47:36PM +0100, Jiri Slaby wrote:
-| Jiri Slaby napsal(a):
-| >Jiri Slaby napsal(a):
-| >>Cyrill V. Gorcunov napsal(a):
-| >>>This patch adds checking for allocated DVMA
-| >>>memory and granted IRQ line.
-| >>>
-| >>>Signed-off-by: Cyrill V. Gorcunov <gorcunov@gmail.com>
-| >>>
-| >>>---
-| >>>
-| >>> drivers/net/sun3lance.c |    9 ++++++++-
-| >>> 1 files changed, 8 insertions(+), 1 deletions(-)
-| >>>
-| >>>diff --git a/drivers/net/sun3lance.c b/drivers/net/sun3lance.c
-| >>>index c62e85d..e4c2c88 100644
-| >>>--- a/drivers/net/sun3lance.c
-| >>>+++ b/drivers/net/sun3lance.c
-| >>>@@ -336,13 +336,20 @@ static int __init lance_probe( struct 
-| >>>net_device *dev)
-| >>> 
-| >>>     /* XXX - leak? */
-| >>>     MEM = dvma_malloc_align(sizeof(struct lance_memory), 0x10000);
-| >>>+    if (MEM == NULL) {
-| >>>+        printk(KERN_WARNING "SUN3 Lance couldn't allocate DVMA 
-| >>>memory\n");
-| 
-| And also iounmap() here...
-| 
-| >>>+        return 0;
-| >>>+    }
-| >>> 
-| >>>     lp->iobase = (volatile unsigned short *)ioaddr;
-| >>>     dev->base_addr = (unsigned long)ioaddr; /* informational only */
-| >>
-| >>But now, if it fails (and you return 0=OK state) these are not assigned 
-| >
-| >Ok, 0 is not OK state, I see it now.
-| >
-| >>and probably used later.
-| >>
-| >>> 
-| >>>     REGA(CSR0) = CSR0_STOP;
-| >>> 
-| >>>-    request_irq(LANCE_IRQ, lance_interrupt, IRQF_DISABLED, "SUN3 
-| >>>Lance", dev);
-| >>>+    if (request_irq(LANCE_IRQ, lance_interrupt, IRQF_DISABLED, "SUN3 
-| >>>Lance", dev) < 0) {
-| >>>+        printk(KERN_WARNING "SUN3 Lance unable to allocate IRQ\n");
-| >
-| >But in that case, you want to dvma_free() here?
-| 
-| And here.
-| 
-| >>>+        return 0;
-| >>>+    }
-| >>>     dev->irq = (unsigned short)LANCE_IRQ;
-| 
-| regards,
-| -- 
-| http://www.fi.muni.cz/~xslaby/            Jiri Slaby
-| faculty of informatics, masaryk university, brno, cz
-| e-mail: jirislaby gmail com, gpg pubkey fingerprint:
-| B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
+On 2/6/07, Manu Abraham <abraham.manu@gmail.com> wrote:
+> On 2/6/07, Luming Yu <luming.yu@gmail.com> wrote:
+> > > dang !
+> > >
+> > > rebooted it into 2.6.17.7
+> > >
+> > > no errors, during a bootup, BIST isn't running anymore
+> > > running M$ did change the status from dead to alive ??? shocked !!
+> >
+> > Interesting!  does windows driver fixes the broken firmware/flash on this card?
+>
+>
+> No firmware/flash on the card.
+>
+>
+> >
+> > >
+> > > attached lspci output in the very same setup as earlier, no difference
+> > > in anything, except that it was rebooted into windows.
+> > >
+> > > the PCI config dump would help ?
+> > >
+> >
+> > I guess you would never reproduce this issue again unless you can
+> > restore the broken firmware/flash on this card. :-)
+> >
+>
+> none on the card, a flash or a firmware .. it has a 24c02 EEPROM for
+> vendor information, that's all
+>
 
-Thanks a lot,
+You can see the same from this picture
 
-I'll fix it to get iounmap() used. I don't know is there any reason
-to use dvma_free() - it's just a 'return' function. May be for further?
-I think you are right - we should use dvma_free() anyway...
-
-		Cyrill
-
+regards,
+manu
