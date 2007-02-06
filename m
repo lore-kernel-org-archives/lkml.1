@@ -1,136 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752299AbXBFUZx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752310AbXBFUaK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752299AbXBFUZx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 15:25:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752310AbXBFUZx
+	id S1752310AbXBFUaK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 15:30:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965396AbXBFUaK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 15:25:53 -0500
-Received: from gate.crashing.org ([63.228.1.57]:38366 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752299AbXBFUZw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 15:25:52 -0500
-Subject: Re: [PATCH] (2.6.20-rt3) PowerPC: convert spinlocks into raw
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Cc: mingo@elte.hu, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-       dwalker@mvista.com
-In-Reply-To: <200702062026.40875.sshtylyov@ru.mvista.com>
-References: <200702062026.40875.sshtylyov@ru.mvista.com>
-Content-Type: text/plain
-Date: Wed, 07 Feb 2007 07:24:24 +1100
-Message-Id: <1170793464.2620.251.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 6 Feb 2007 15:30:10 -0500
+Received: from web26913.mail.ukl.yahoo.com ([217.146.177.80]:33794 "HELO
+	web26913.mail.ukl.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752309AbXBFUaI convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Feb 2007 15:30:08 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.fr;
+  h=X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=df5+vqMA0ThvXymUXiTyFlIFKMfzMGuzTi0yj0fiv6IzNdRnQddzM+AkFNvq72QsHEA7haBOoW3J6/Gs3OMJa9xBx8Dk9m0mNpQGh3A2muM+uq0TEfVF82EhmNahzEXN3ybNsMv+l8SmMofuYtvx0oUhEbaCwNmi7rhBh2b7hV0=;
+X-YMail-OSG: IkotzB4VM1lp6U2RmiJ2k33bCXqN6EKgUOkswJaqARHeNRRZbjSX7VWWevqGqIvF_sRleWjqPqfGWJtVvlnN22HktBCn.6u4kKUnO7n92v2xY3YHWB8gMNSrax79ZdBohPypgtNH2uKPdK67N9LBKMnDQEsZ6axl1ypgoAQlaIC7OiYIgXLA6uqLBg--
+X-Mailer: YahooMailRC/368.3 YahooMailWebService/0.6.132.7
+Date: Tue, 6 Feb 2007 20:30:04 +0000 (GMT)
+From: Etienne Lorrain <etienne_lorrain@yahoo.fr>
+Subject: Re : Re : Re : [PATCH] Compressed ia32 ELF file generation for loading by Gujin 1/3
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, vgoyal@in.ibm.com,
+       linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
+Message-ID: <199171.13576.qm@web26913.mail.ukl.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-02-06 at 20:26 +0300, Sergei Shtylyov wrote:
-> Convert the spinlocks in the PowerPC interrupt related code into the raw ones,
-> also convert the PURR and PMC related spinlocks...
+Eric W. Biederman wrote:
+> Etienne Lorrain <etienne_lorrain@yahoo.fr> writes:
+>>  Well, if the function called at offset 0 in the real-mode section return
+>>  non zero, that is probably an error - that is Gujin interface, but do not ask
+>>  me to change other bootloaders to handle that.
+>>  This function is called with few parameters, one is a string pointer
+>>  if the function do not want to print the problem report itself.
+>>  The function is called with an offset of zero in its own intel
+>>  segment.
+>
+> So I think there are some backwards compatibility issues with your
+> real mode code interface.  Setting a new flag that says to return instead
+> of printing an error message and halting would be one way to handle
+> this.
 
-Care to explain the difference ? This is related to the -rt stuff ?
+ I am not sure to understand: Gujin calls a function inside the ELF real
+mode program header of the Linux kernel. All the system is currently
+in real mode. There isn't any limitation in this function of the kernel to
+decide to print some message and not return at all, this function can
+selectively do so by reading which bootloader ID it is using (another
+parameter). It is not done mostly because "printf" is difficult to do
+in assembler, Gujin has no problem.
 
-Cheers,
-Ben.
+> Is your real mode C code section relative such that it can be loaded
+> at different addresses and still work?
 
-> Signed-off-by: Mark A. Greer <mgreer@mvista.com>
-> Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-> 
-> Index: linux-2.6/arch/powerpc/kernel/irq.c
-> ===================================================================
-> --- linux-2.6.orig/arch/powerpc/kernel/irq.c
-> +++ linux-2.6/arch/powerpc/kernel/irq.c
-> @@ -392,7 +392,7 @@ EXPORT_SYMBOL(do_softirq);
->  #ifdef CONFIG_PPC_MERGE
->  
->  static LIST_HEAD(irq_hosts);
-> -static spinlock_t irq_big_lock = SPIN_LOCK_UNLOCKED;
-> +static DEFINE_RAW_SPINLOCK(irq_big_lock);
->  static DEFINE_PER_CPU(unsigned int, irq_radix_reader);
->  static unsigned int irq_radix_writer;
->  struct irq_map_entry irq_map[NR_IRQS];
-> Index: linux-2.6/arch/powerpc/kernel/pmc.c
-> ===================================================================
-> --- linux-2.6.orig/arch/powerpc/kernel/pmc.c
-> +++ linux-2.6/arch/powerpc/kernel/pmc.c
-> @@ -52,7 +52,7 @@ static void dummy_perf(struct pt_regs *r
->  }
->  #endif
->  
-> -static DEFINE_SPINLOCK(pmc_owner_lock);
-> +static DEFINE_RAW_SPINLOCK(pmc_owner_lock);
->  static void *pmc_owner_caller; /* mostly for debugging */
->  perf_irq_t perf_irq = dummy_perf;
->  
-> Index: linux-2.6/arch/powerpc/kernel/time.c
-> ===================================================================
-> --- linux-2.6.orig/arch/powerpc/kernel/time.c
-> +++ linux-2.6/arch/powerpc/kernel/time.c
-> @@ -223,7 +223,7 @@ struct cpu_purr_data {
->  	int	initialized;			/* thread is running */
->  	u64	tb;			/* last TB value read */
->  	u64	purr;			/* last PURR value read */
-> -	spinlock_t lock;
-> +	raw_spinlock_t lock;
->  };
->  
->  static DEFINE_PER_CPU(struct cpu_purr_data, cpu_purr_data);
-> Index: linux-2.6/arch/powerpc/sysdev/i8259.c
-> ===================================================================
-> --- linux-2.6.orig/arch/powerpc/sysdev/i8259.c
-> +++ linux-2.6/arch/powerpc/sysdev/i8259.c
-> @@ -23,7 +23,7 @@ static unsigned char cached_8259[2] = { 
->  #define cached_A1 (cached_8259[0])
->  #define cached_21 (cached_8259[1])
->  
-> -static DEFINE_SPINLOCK(i8259_lock);
-> +static DEFINE_RAW_SPINLOCK(i8259_lock);
->  
->  static struct device_node *i8259_node;
->  static struct irq_host *i8259_host;
-> Index: linux-2.6/arch/powerpc/sysdev/ipic.c
-> ===================================================================
-> --- linux-2.6.orig/arch/powerpc/sysdev/ipic.c
-> +++ linux-2.6/arch/powerpc/sysdev/ipic.c
-> @@ -30,7 +30,7 @@
->  #include "ipic.h"
->  
->  static struct ipic * primary_ipic;
-> -static DEFINE_SPINLOCK(ipic_lock);
-> +static DEFINE_RAW_SPINLOCK(ipic_lock);
->  
->  static struct ipic_info ipic_info[] = {
->  	[9] = {
-> Index: linux-2.6/arch/powerpc/sysdev/mpic.c
-> ===================================================================
-> --- linux-2.6.orig/arch/powerpc/sysdev/mpic.c
-> +++ linux-2.6/arch/powerpc/sysdev/mpic.c
-> @@ -44,7 +44,7 @@
->  
->  static struct mpic *mpics;
->  static struct mpic *mpic_primary;
-> -static DEFINE_SPINLOCK(mpic_lock);
-> +static DEFINE_RAW_SPINLOCK(mpic_lock);
->  
->  #ifdef CONFIG_PPC32	/* XXX for now */
->  #ifdef CONFIG_IRQ_ALL_CPUS
-> Index: linux-2.6/include/asm-powerpc/mpic.h
-> ===================================================================
-> --- linux-2.6.orig/include/asm-powerpc/mpic.h
-> +++ linux-2.6/include/asm-powerpc/mpic.h
-> @@ -279,7 +279,7 @@ struct mpic
->  #ifdef CONFIG_MPIC_BROKEN_U3
->  	/* The fixup table */
->  	struct mpic_irq_fixup	*fixups;
-> -	spinlock_t		fixup_lock;
-> +	raw_spinlock_t		fixup_lock;
->  #endif
->  
->  	/* Register access method */
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+  The code is relative - but not the data (first 4 Kbytes at %ds:0 and stack
+ available) - but the whole lot at any segment boundary, i.e. every 16 bytes.
+ Else Gujin would not work under DOS.
 
+> The program header is for executable loaders the section header is for
+> linkers and the section header is optional in PT_LOAD and PT_DYN
+> executables.  Use of the section header by a loader is a bug.
+
+  Unless if there is a problem, Gujin uses only the program header;
+ it has a look in the section header just in case - that can be removed
+ easily. I was wondering about a relocatable image there - but I do
+ not know enough for that.
+
+> There have been limitations but mostly with respect to page table size
+> and the like but they were not limitations a bootloader had to deal with.
+
+Was talking about this comment, but it is old:
+/* 0x28000*16 = 2.5 MB, conservative estimate for the current maximum */
+http://lxr.linux.no/source/arch/i386/boot/tools/build.c?v=2.4.28
+
+> >   Well, you can generate with the proposed patch and boot with SYSLINUX,
+> >  Grub and LILO, but trying to clean Linux real-mode code is where I begun.
+>
+> I haven't looked yet.  But I believe this is something that we can do,
+> so long as cleaning and feature enhancement are not mixed in a bad way.
+> Phrasing this another way.  What we can do with the interface is
+> determined our interface to existing bootloaders and what bootloaders
+> exist.  Basically it is the rule that we need to preserve backwards
+> compatibility and changes generally need to be evolutionary ones.
+
+  Well, if you want to preserve compatibility with other bootloaders,
+ it is probably possible to put some source around the ELF kernel file,
+ mostly taken from Gujin if you want (GPL), but I wonder why you would
+ like to be compatible with LILO.
+ Modifying the linux real mode assembler, nobody could even want to.
+
+ Etienne.
+
+
+
+
+
+
+	
+
+	
+		
+___________________________________________________________________________ 
+Découvrez une nouvelle façon d'obtenir des réponses à toutes vos questions ! 
+Profitez des connaissances, des opinions et des expériences des internautes sur Yahoo! Questions/Réponses 
+http://fr.answers.yahoo.com
