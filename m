@@ -1,92 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965368AbXBFF7e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965361AbXBFGRM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965368AbXBFF7e (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 00:59:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965369AbXBFF7e
+	id S965361AbXBFGRM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 01:17:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965362AbXBFGRM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 00:59:34 -0500
-Received: from vms042pub.verizon.net ([206.46.252.42]:33471 "EHLO
-	vms042pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965368AbXBFF7d (ORCPT
+	Tue, 6 Feb 2007 01:17:12 -0500
+Received: from terminus.zytor.com ([192.83.249.54]:46234 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965361AbXBFGRM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 00:59:33 -0500
-Date: Tue, 06 Feb 2007 00:59:13 -0500
-From: Gene Heskett <gene.heskett@verizon.net>
-Subject: Re: [PATCH][5/5] floppy.c: Fix device_create_file() warning
-In-reply-to: <200702060030.33671.jesper.juhl@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: Jesper Juhl <jesper.juhl@gmail.com>, Andi Kleen <ak@suse.de>,
-       Trent Waddington <trent.waddington@gmail.com>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Message-id: <200702060059.18345.gene.heskett@verizon.net>
-Organization: Not detectable
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
-Content-transfer-encoding: 7bit
-Content-disposition: inline
-References: <200702060030.33671.jesper.juhl@gmail.com>
-User-Agent: KMail/1.9.5
+	Tue, 6 Feb 2007 01:17:12 -0500
+Message-ID: <45C81D5B.3050408@zytor.com>
+Date: Mon, 05 Feb 2007 22:16:59 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
+MIME-Version: 1.0
+To: vgoyal@in.ibm.com
+CC: Etienne Lorrain <etienne_lorrain@yahoo.fr>, linux-kernel@vger.kernel.org,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [PATCH] Compressed ia32 ELF file generation for loading by Gujin
+ 1/3
+References: <522909.27613.qm@web26909.mail.ukl.yahoo.com> <45C7CDD7.20806@zytor.com> <20070206052514.GA15613@in.ibm.com>
+In-Reply-To: <20070206052514.GA15613@in.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 05 February 2007 18:30, Jesper Juhl wrote:
+Vivek Goyal wrote:
+> 
+> I don't know much about Gujin, but advantage here seems to be that it has
+> capability to load elf files and that's why the attempt to turn kernel binary
+> into a compressed elf image. Why don't we then simply add an ELF header to
+> bzImage and Gujin and any ELF loader including Gujin, should be able to load
+> it? (As Eric had done in one of the implementations in the past?) Why to 
+> create the new infrastructure?
+> 
 
-And this is almost OT for this, but I'd like to interject here that in 
-recent history, it has been very very difficult to properly access LSN0 
-of a floppy.  Some formats, such as those laid down by a WD-1773 floppy 
-controller, do indeed use a sector marking of '0' (zero) on all tracks.
+Well, Gujin wants additional code too.
 
-This is akin to an old basic program that had a 'base' statement with an 
-argument of zero or one.  We need, for legacy machines where a floppy 
-disk sneakernet is in use, to maintain this "base 0" functionality in an 
-easy to access format.  Ditto for sector sizes of 256 and even 128 bytes.
+Putting an ELF header on bzImage broke some bootloaders (GRUB, I 
+believe), so that's not going to happen again.  See the relocatable 
+bzImage thread...
 
->This fixes the warning
->  warning: ignoring return value of `device_create_file', declared with
-> attribute warn_unused_result in function `floppy_init'. It does this by
-> checking the return value and printing a warning message in case of no
-> success.
->
->
->Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
->---
->
-> floppy.c |    7 ++++++-
-> 1 file changed, 6 insertions(+), 1 deletion(-)
->
->--- linux-2.6.20/drivers/block/floppy.c.patch4	2007-02-05
-> 23:22:26.000000000 +0100 +++
-> linux-2.6.20/drivers/block/floppy.c	2007-02-05 23:32:42.000000000 +0100
-> @@ -4302,7 +4302,12 @@
-> 		if (err)
-> 			goto out_flush_work;
->
->-		device_create_file(&floppy_device[drive].dev,&dev_attr_cmos);
->+		err = device_create_file(&floppy_device[drive].dev, &dev_attr_cmos);
->+		if (err)
->+			printk(KERN_WARNING "Unable to create sysfs attribute "
->+				"file for floppy device: %s\n",
->+				floppy_device[drive].name);
->+
-> 		/* to be cleaned up... */
-> 		disks[drive]->private_data = (void *)(long)drive;
-> 		disks[drive]->queue = floppy_queue;
->
->
->
->-
->To unsubscribe from this list: send the line "unsubscribe linux-kernel"
-> in the body of a message to majordomo@vger.kernel.org
->More majordomo info at  http://vger.kernel.org/majordomo-info.html
->Please read the FAQ at  http://www.tux.org/lkml/
+	-hpa
 
--- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-Yahoo.com and AOL/TW attorneys please note, additions to the above
-message by Gene Heskett are:
-Copyright 2007 by Maurice Eugene Heskett, all rights reserved.
