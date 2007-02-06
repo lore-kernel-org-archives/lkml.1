@@ -1,125 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933108AbXBFA16@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965225AbXBFA2W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933108AbXBFA16 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 19:27:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933105AbXBFA16
+	id S965225AbXBFA2W (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 19:28:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965286AbXBFA2V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 19:27:58 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:40740 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933111AbXBFA15 (ORCPT
+	Mon, 5 Feb 2007 19:28:21 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:27307 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965225AbXBFA2U (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 19:27:57 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: "Andreas Herrmann" <andreas.herrmann3@amd.com>
-Cc: "Andi Kleen" <ak@suse.de>, linux-kernel@vger.kernel.org,
-       discuss@x86-64.org, "Richard Gooch" <rgooch@safe-mbox.com>
-Subject: Re: [patch] mtrr: fix issues with large addresses
-References: <20070205171959.GF8665@alberich.amd.com>
-Date: Mon, 05 Feb 2007 17:26:12 -0700
-In-Reply-To: <20070205171959.GF8665@alberich.amd.com> (Andreas Herrmann's
-	message of "Mon, 5 Feb 2007 18:19:59 +0100")
-Message-ID: <m13b5kw2qj.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Mon, 5 Feb 2007 19:28:20 -0500
+Message-ID: <45C7CB80.4040402@oracle.com>
+Date: Mon, 05 Feb 2007 16:27:44 -0800
+From: Scot McKinley <scot.mckinley@oracle.com>
+User-Agent: Mozilla/5.0 (X11; U; SunOS sun4u; en-US; rv:1.5a) Gecko/20030527
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: bert hubert <bert.hubert@netherlabs.nl>,
+       Davide Libenzi <davidel@xmailserver.org>, Ingo Molnar <mingo@elte.hu>,
+       Zach Brown <zach.brown@oracle.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-aio@kvack.org, Suparna Bhattacharya <suparna@in.ibm.com>,
+       Benjamin LaHaise <bcrl@kvack.org>
+Subject: Re: [PATCH 2 of 4] Introduce i386 fibril scheduling
+References: <patchbomb.1170193181@tetsuo.zabbo.net> <df7bc026d50ec5bbdd8e.1170193183@tetsuo.zabbo.net> <20070201083611.GC18233@elte.hu> <Pine.LNX.4.64.0702011154110.3632@woody.linux-foundation.org> <20070202104900.GA13941@elte.hu> <Pine.LNX.4.64.0702020738500.15057@woody.linux-foundation.org> <20070202222110.GA1212@elte.hu> <Pine.LNX.4.64.0702021525370.5219@alien.or.mcafeemobile.com> <20070205213618.GA30923@outpost.ds9a.nl> <Pine.LNX.4.64.0702051350010.8424@woody.linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0702051350010.8424@woody.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Andreas Herrmann" <andreas.herrmann3@amd.com> writes:
 
-> Hi,
->
-> This is a repost of a mail sent to Richard Gooch and lkml some time
-> ago. Meanwhile I noticed that Richard has a new email address. And it
-> seems that he does not maintain the mtrr code anymore. (So how about
-> updating the MAINTAINERS file?)
->
-> Here we go again -- with new recipient and a slightly modified
-> version of the patch.
->
->
-> Regards,
->
-> Andreas
->
->
-> mtrr: fix issues with large addresses
->
-> Fixes some issues with /proc/mtrr interface:
-> o If physical address size crosses the 44 bit boundary
->   size_or_mask is evaluated wrong
-> o size_and_mask limits physical base
->   address for an MTRR to be less than 44 bit
-> o added check to restrict base address to 36 bit on i386
+As Joel mentioned earlier, from an Oracle perspective, one of the key 
+things we are looking for is a nice clean *common* wait point. We don't 
+really care whether this common wait point is the old libaio:async-poll, 
+epoll, or "wait_for_async". And if "wait_for_async" has the added 
+benefit of scaling, all the better.
 
-The limit is per cpu not per architecture.  So if you run a
-cpu that can run in 64bit mode in 32bit mode the limit
-is not 36 bits.  Even PAE in 32bit mode doesn't have that limit.
+However, it is desirable for that common wait-routine to have the 
+ability to return explicit completions, instead of requiring a follow-on 
+call to some other query/wait for events/completions for each of the 
+different type of async submissions done (poll, pid, i/o, ...). 
+Obviously not a "must-have", but desirable.
 
-> Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
->
-> --
-> diff --git a/arch/i386/kernel/cpu/mtrr/generic.c
-> b/arch/i386/kernel/cpu/mtrr/generic.c
-> index f77fc53..aa21d15 100644
-> --- a/arch/i386/kernel/cpu/mtrr/generic.c
-> +++ b/arch/i386/kernel/cpu/mtrr/generic.c
-> @@ -172,7 +172,7 @@ int generic_get_free_region(unsigned long base, unsigned
-> long size, int replace_
->  static void generic_get_mtrr(unsigned int reg, unsigned long *base,
->  			     unsigned long *size, mtrr_type *type)
->  {
-> -	unsigned int mask_lo, mask_hi, base_lo, base_hi;
-> +	unsigned long mask_lo, mask_hi, base_lo, base_hi;
+It is also desirable (if possible) to have immediate completions (either 
+immediate errs or async submissions that complete synchronously) 
+communicated at submission time, instead of via the common wait-routine.
 
-Why?  Given the low and the high I am assuming these are all implicitly
-32bit quantities.  unsigned int is fine.
-  
->  	rdmsr(MTRRphysMask_MSR(reg), mask_lo, mask_hi);
->  	if ((mask_lo & 0x800) == 0) {
-> diff --git a/arch/i386/kernel/cpu/mtrr/if.c b/arch/i386/kernel/cpu/mtrr/if.c
-> index 5ae1705..3abc3f1 100644
-> --- a/arch/i386/kernel/cpu/mtrr/if.c
-> +++ b/arch/i386/kernel/cpu/mtrr/if.c
-> @@ -137,6 +137,10 @@ mtrr_write(struct file *file, const char __user *buf,
-> size_t len, loff_t * ppos)
->  	for (i = 0; i < MTRR_NUM_TYPES; ++i) {
->  		if (strcmp(ptr, mtrr_strings[i]))
->  			continue;
-> +#ifndef CONFIG_X86_64
-> +		if (base > 0xfffffffffULL)
-> +			return -EINVAL;
-> +#endif
+Finally, it is agreed that neg-errno is a much better approach for the 
+return code. The threading/concurrency issues associated w/ the current 
+unix errno has always been buggy area for Oracle Networking code.
 
-That is just silly.  If the cpu is running in long mode or should
-not affect this capability.
+Regards, -Scot 
 
->  		base >>= PAGE_SHIFT;
->  		size >>= PAGE_SHIFT;
->  		err =
-> diff --git a/arch/i386/kernel/cpu/mtrr/main.c b/arch/i386/kernel/cpu/mtrr/main.c
-> index 16bb7ea..0acfb6a 100644
-> --- a/arch/i386/kernel/cpu/mtrr/main.c
-> +++ b/arch/i386/kernel/cpu/mtrr/main.c
-> @@ -50,7 +50,7 @@ u32 num_var_ranges = 0;
->  unsigned int *usage_table;
->  static DEFINE_MUTEX(mtrr_mutex);
+Linus Torvalds wrote:
+
+>On Mon, 5 Feb 2007, bert hubert wrote:
 >  
-> -u32 size_or_mask, size_and_mask;
-> +u64 size_or_mask, size_and_mask;
+>
+>>From my end as an application developer, yes please. Either make it
+>>perfectly ok to have thousands of outstanding asynchronous system calls (I
+>>work with thousands of separate sockets), or allow me to select/poll/epoll
+>>on the "async fd".
+>>    
+>>
+>
+>No can do.
+>
+>Allocating an fd is actually too expensive, exactly because a lot of these 
+>operations are supposed to be a few hundred ns, and taking locks is simply 
+>a bad idea.
+>
+>But if you want to, we could have a *separate* "convert async cookie to 
+>fd" so that you can poll for it, or something.
+>
+>I doubt very many people want to do that. It would tend to simply be nicer 
+>to do
+>
+>	async(poll);
+>	async(waitpid);
+>	async(.. wait foranything else ..)
+>
+>followed by a
+>
+>	wait_for_async();
+>
+>That's just a much NICER approach, I would argue. And it automatically 
+>and very naturally solves the "wait for different kinds of events" 
+>question, in a way that "poll()" never did (except by turning all events 
+>into file descriptors or signals).
+>
 >  
->  static struct mtrr_ops * mtrr_ops[X86_VENDOR_NUM] = {};
+>
+>>Alternatively, something like SIGIO ('SIGASYS'?) might be considered, but,
+>>well, the fd might be easier.
+>>    
+>>
+>
+>Again. NO WAY. Signals are just damn expensive. At most, it would be an 
+>option again, but if you want high performance, signals simply aren't very 
+>good. They are also a nice way to make your user-space code very racy.
+>
 >  
-> @@ -662,8 +662,8 @@ void __init mtrr_bp_init(void)
->  			     boot_cpu_data.x86_mask == 0x4))
->  				phys_addr = 36;
+>
+>>In fact, perhaps the communication channel might simply *be* an fd. Queueing
+>>up syscalls sounds remarkably like sending datagrams. 
+>>    
+>>
+>
+>I'm the first to say that file descriptors is the UNIX way, but so are 
+>processes, and I think this is MUCH better done as a "process" interface. 
+>In other words, instead of doing it as a filedescriptor, do it as a 
+>"micro-fork/exec", and have the "wait()" equivalent. It's just that we 
+>don't fork a "real process", and we don't exec a "real program", we just 
+>exec a single system call.
+>
+>If you think of it in those terms, it all makes sense *without* any file 
+>descriptors what-so-ever, and the "wait_for_async()" interface also makes 
+>a ton of sense (it really *is* "waitpid()" for the system call).
+>
+>		Linus
+>
+>--
+>To unsubscribe, send a message with 'unsubscribe linux-aio' in
+>the body to majordomo@kvack.org.  For more info on Linux AIO,
+>see: http://www.kvack.org/aio/
+>Don't email: <a href=mailto:"aart@kvack.org">aart@kvack.org</a>
 >  
-> -			size_or_mask = ~((1 << (phys_addr - PAGE_SHIFT)) - 1);
-> -			size_and_mask = ~size_or_mask & 0xfff00000;
-> + size_or_mask = ~((1ULL << (phys_addr - PAGE_SHIFT)) - 1);
-> +			size_and_mask = ~size_or_mask & 0xfffff00000ULL;
+>
 
-Don't you want to make this hard coded mask 0xfffffffffff00000ULL?
-
-Eric
