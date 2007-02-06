@@ -1,83 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933168AbXBFSFe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933159AbXBFSHv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933168AbXBFSFe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 13:05:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933173AbXBFSFe
+	id S933159AbXBFSHv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 13:07:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933177AbXBFSHv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 13:05:34 -0500
-Received: from mail.tmr.com ([64.65.253.246]:35237 "EHLO gaimboi.tmr.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933168AbXBFSFe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 13:05:34 -0500
-Message-ID: <45C8C2F3.2010905@tmr.com>
-Date: Tue, 06 Feb 2007 13:03:31 -0500
-From: Bill Davidsen <davidsen@tmr.com>
-Organization: TMR Associates Inc, Schenectady NY
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+	Tue, 6 Feb 2007 13:07:51 -0500
+Received: from web38515.mail.mud.yahoo.com ([209.191.125.61]:31257 "HELO
+	web38515.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S933159AbXBFSHu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Feb 2007 13:07:50 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=rCYD5ROmpjAU1rMljm3HTWTiMznLeDc4uZiX1rEFiTj+m6vIrk1sIrTuiJ6PpZDQWYpQXQnIXla0Am9dTVMOt8Y+yL68MDoJsHfFojt1/uXQPrlSviAY7V7KntlQrXUmMkKzDfrPsUkOd77jOSIQo+6bror6nCL+SxQZX7YQPrs=;
+X-YMail-OSG: QYGBSjYVM1lBlK7bbWldznFMA5mWi7dP.bPuSkplU.VO0cBV9cgckb1rQTO_vWqP8iTb1ieQdqE9DBbEHXLyT265t4ZUYY2352cZ_3ugav.7HYh79eAT8A--
+Date: Tue, 6 Feb 2007 10:07:50 -0800 (PST)
+From: Levitsky Maxim <maximlevitsky@yahoo.com>
+Subject: Re: Question: Status of marvell's PATA 88SE6101 controller on intel boards
+To: alan@lxorguk.ukuu.org.uk
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20070206174428.7ca93476@localhost.localdomain>
 MIME-Version: 1.0
-To: Matt Mackall <mpm@selenic.com>
-CC: Theodore Tso <tytso@mit.edu>, David Woodhouse <dwmw2@infradead.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [patch] MTD: fix DOC2000/2001/2001PLUS build error
-References: <1170711587.29759.909.camel@pmac.infradead.org> <Pine.LNX.4.64.0702051345380.8424@woody.linux-foundation.org> <1170712393.29759.925.camel@pmac.infradead.org> <Pine.LNX.4.64.0702051409110.8424@woody.linux-foundation.org> <20070205143110.fca62b57.randy.dunlap@oracle.com> <Pine.LNX.4.64.0702051502370.8424@woody.linux-foundation.org> <1170717694.29759.941.camel@pmac.infradead.org> <20070206010958.GA31809@thunk.org> <20070206060937.GM16722@waste.org> <45C8A70F.9090507@tmr.com> <20070206164118.GP10108@waste.org>
-In-Reply-To: <20070206164118.GP10108@waste.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <223870.54188.qm@web38515.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matt Mackall wrote:
-> On Tue, Feb 06, 2007 at 11:04:31AM -0500, Bill Davidsen wrote:
->   
->>> There's no reason we shouldn't be able to do exactly that with config
->>> symbols in Kconfig-land. The only difference is that we've got
->>> slightly different semantics for our "depend" keyword. Things which
->>> don't have their "depend" requirements met aren't offered as options.
->>> Whereas "select" is "automatically pull in dependencies"
->>> apt/yum-style.
->>>       
->> Perhaps this is because there is a lacking keyword. The depends controls 
->> visibility, perhaps a "requires" could be used to provide advisory 
->> information which mean "these other things will be turned on if you 
->> build this feature."
->>     
->
-> "require" is a bad name as it's a synonym of "depend".
->
->   
->>> While we're at it, it would also be nice to be able to do:
->>>
->>> $ kconfig enable ACPI
->>> CONFIG_ACPI conflicts with CONFIG_APM
->>> $ kconfig enable -F ACPI
->>> disabling CONFIG_APM
->>> $ kconfig disable SCSI
->>> CONFIG_USB_STORAGE depends on CONFIG_SCSI
->>> $ kconfig disable -f SCSI
->>> disabling USB_STORAGE
->>> $ make
->>>
->>>       
->> I think depends and select provide this now, the postulated "requires" 
->> might make building the trees easier.
->>     
->
-> The above is all about having a scriptable command line interface so
-> that people don't need the broken sed + make oldconfig thing.
->
->   
-I didn't say that clearly, I meant that the information to do this was 
-present, not the functionality.
 
-Someone suggested that 'requires' was a synonym of 'depends on' and was 
-a bad choice. I think the requirement is in fasct the same, what I was 
-after was not to prevent visibility of the option as 'depends' does. And 
-we still probably need depends to avoid way too many choices.
+--- Alan <alan@lxorguk.ukuu.org.uk> wrote:
 
--- 
-bill davidsen <davidsen@tmr.com>
-  CTO TMR Associates, Inc
-  Doing interesting things with small computers since 1979
+> > I also noticed that 2.6.20 adds experimentally support for that chip.
+> > But driver says that it enables it via 'legacy mode'
+> 
+> Yes.
+> 
+> > I will be glad to hear whenever full support is planned or not.
+> 
+> At the moment it is not, but it may be a neccessary side effect of full
+> support for the later SATA capable controllers in native SATA mode. In
+> which case you might get it one day.
+> 
+> The legacy mode is itself as good as most typical PATA controllers and
+> better than some.
 
+And I don't need anything better , just normal recording on my PATA DVD writer.
+I now have very old system and still DVD recording works fine , so I don't need anything more than
+that
+
+> >
+> > And as last thing I want to ask you whenever current support is usable, 
+> > that is can I use DMA , can I use DVD as at least reader for CD/DVD , 
+> > and even better can I burn disks with it ( although I can live without it)
+> 
+> The legacy mode has full DMA support. What you don't get is the ability
+> to queue multiple commands so the hardware can fire off a new command as
+> the first completes and to have the hardware do some of the general
+> poking around for us. 
+
+So that means that DVD-writer will work too ?
+
+> 
+> Alan
+> 
+
+Thank you very much, I didn't expect so quick response.
+
+
+Thank you, kernel developers for so great kernel.
+              Maxim Levitsky
+
+
+
+ 
+____________________________________________________________________________________
+Looking for earth-friendly autos? 
+Browse Top Cars by "Green Rating" at Yahoo! Autos' Green Center.
+http://autos.yahoo.com/green_center/
