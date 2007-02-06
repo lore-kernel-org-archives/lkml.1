@@ -1,55 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752314AbXBFV3P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933200AbXBFVa2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752314AbXBFV3P (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 16:29:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752315AbXBFV3P
+	id S933200AbXBFVa2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 16:30:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933241AbXBFVa1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 16:29:15 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:51853 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752313AbXBFV3O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 16:29:14 -0500
-Date: Tue, 6 Feb 2007 13:28:34 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: David Miller <davem@davemloft.net>
-cc: kent.overstreet@gmail.com, davidel@xmailserver.org, zach.brown@oracle.com,
-       mingo@elte.hu, linux-kernel@vger.kernel.org, linux-aio@kvack.org,
-       suparna@in.ibm.com, bcrl@kvack.org
-Subject: Re: [PATCH 2 of 4] Introduce i386 fibril scheduling
-In-Reply-To: <20070206.131631.82049180.davem@davemloft.net>
-Message-ID: <Pine.LNX.4.64.0702061325380.8424@woody.linux-foundation.org>
-References: <Pine.LNX.4.64.0702051259030.14453@alien.or.mcafeemobile.com>
- <6f703f960702051331v3ceab725h68aea4cd77617f84@mail.gmail.com>
- <Pine.LNX.4.64.0702061238300.8424@woody.linux-foundation.org>
- <20070206.131631.82049180.davem@davemloft.net>
+	Tue, 6 Feb 2007 16:30:27 -0500
+Received: from outbound-blu.frontbridge.com ([65.55.251.16]:15163 "EHLO
+	outbound3-blu-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933200AbXBFVa0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Feb 2007 16:30:26 -0500
+X-BigFish: VP
+X-Server-Uuid: 5FC0E2DF-CD44-48CD-883A-0ED95B391E89
+Message-ID: <45C8F419.5040103@amd.com>
+Date: Tue, 06 Feb 2007 22:33:13 +0100
+From: "Markus Rechberger" <markus.rechberger@amd.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070206)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linux-kernel@vger.kernel.org
+Subject: [patch] x86-64 ext2/ext3 datestamp problem
+X-OriginalArrivalTime: 06 Feb 2007 21:30:09.0093 (UTC)
+ FILETIME=[F9F93750:01C74A35]
+X-WSS-ID: 69D62CE92MC7277786-01-01
+Content-Type: multipart/mixed;
+ boundary=------------020601070705000403010905
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is a multi-part message in MIME format.
+--------------020601070705000403010905
+Content-Type: text/plain;
+ charset=iso-8859-1
+Content-Transfer-Encoding: 7bit
+
+Hi,
+
+there is an issue with ext2/ext3 date stamps, if someone creates a file
+with a timestamp between 1902 and 1970(epoch 0) it will overflow and
+result in a higher date than 2038.
+
+$ touch --date "1905-01-01" test
+$ ls -lah test
+-rw-r--r-- 1 root root 0 Jan  1  1905 test (this is a cached value here)
+(remount the partition/clear the cache)
+$ ls -lah test
+-rw-r--r-- 1 root root 0 Feb  6  2041 test
+
+10000101101111001100011001110000 .. -2051226000 (1905)
+10000101101111001100011001110000 .. 2243741296 (2041)
+
+this was tested against linus git tree
+
+Markus
+
+-- 
+Markus Rechberger
+Operating System Research Center
+AMD Saxony LLC & Co. KG
 
 
-On Tue, 6 Feb 2007, David Miller wrote:
-> 
-> I really think that Evgeniy's kevent is a good event notification
-> mechanism for anything, including AIO.
-> 
-> Events are events, applications want a centralized way to receive and
-> process them.
+--------------020601070705000403010905
+Content-Type: text/plain;
+ name=inode.diff
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename=inode.diff
 
-Don't be silly. AIO isn't an event. AIO is an *action*.
+diff --git a/fs/ext2/inode.c b/fs/ext2/inode.c
+index dd4e14c..9fa1bd6 100644
+--- a/fs/ext2/inode.c
++++ b/fs/ext2/inode.c
+@@ -1079,9 +1079,9 @@ void ext2_read_inode (struct inode * inode)
+ 	}
+ 	inode->i_nlink = le16_to_cpu(raw_inode->i_links_count);
+ 	inode->i_size = le32_to_cpu(raw_inode->i_size);
+-	inode->i_atime.tv_sec = le32_to_cpu(raw_inode->i_atime);
+-	inode->i_ctime.tv_sec = le32_to_cpu(raw_inode->i_ctime);
+-	inode->i_mtime.tv_sec = le32_to_cpu(raw_inode->i_mtime);
++	inode->i_atime.tv_sec = (signed)le32_to_cpu(raw_inode->i_atime);
++	inode->i_ctime.tv_sec = (signed)le32_to_cpu(raw_inode->i_ctime);
++	inode->i_mtime.tv_sec = (signed)le32_to_cpu(raw_inode->i_mtime);
+ 	inode->i_atime.tv_nsec = inode->i_mtime.tv_nsec = inode->i_ctime.tv_nsec = 0;
+ 	ei->i_dtime = le32_to_cpu(raw_inode->i_dtime);
+ 	/* We now have enough fields to check if the inode was active or not.
+diff --git a/fs/ext3/inode.c b/fs/ext3/inode.c
+index beaf25f..5d171c0 100644
+--- a/fs/ext3/inode.c
++++ b/fs/ext3/inode.c
+@@ -2673,9 +2673,9 @@ void ext3_read_inode(struct inode * inode)
+ 	}
+ 	inode->i_nlink = le16_to_cpu(raw_inode->i_links_count);
+ 	inode->i_size = le32_to_cpu(raw_inode->i_size);
+-	inode->i_atime.tv_sec = le32_to_cpu(raw_inode->i_atime);
+-	inode->i_ctime.tv_sec = le32_to_cpu(raw_inode->i_ctime);
+-	inode->i_mtime.tv_sec = le32_to_cpu(raw_inode->i_mtime);
++	inode->i_atime.tv_sec = (signed)le32_to_cpu(raw_inode->i_atime);
++	inode->i_ctime.tv_sec = (signed)le32_to_cpu(raw_inode->i_ctime);
++	inode->i_mtime.tv_sec = (signed)le32_to_cpu(raw_inode->i_mtime);
+ 	inode->i_atime.tv_nsec = inode->i_ctime.tv_nsec = inode->i_mtime.tv_nsec = 0;
+ 
+ 	ei->i_state = 0;
 
-The event part is hopefully something that doesn't even *happen*.
+--------------020601070705000403010905--
 
-Why do people ignore this? Look at a web server: I can pretty much 
-guarantee that 99% of all filesystem accesses are cached, and doing them 
-as "events" would be a total and utter waste of time.
 
-You want to do them synchronously, as fast as possible, and you do NOT 
-want to see them as any kind of asynchronous events.
-
-Yeah, in 1% of all cases it will block, and you'll want to wait for them. 
-Maybe the kevent queue works then, but if it needs any more setup than the 
-nonblocking case, that's a big no.
-
-		Linus
