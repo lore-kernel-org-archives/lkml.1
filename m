@@ -1,68 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933298AbXBFVir@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933284AbXBFVjs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933298AbXBFVir (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 16:38:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933302AbXBFVir
+	id S933284AbXBFVjs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 16:39:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933252AbXBFVjs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 16:38:47 -0500
-Received: from nigel.suspend2.net ([203.171.70.205]:38376 "EHLO
-	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933298AbXBFViq (ORCPT
+	Tue, 6 Feb 2007 16:39:48 -0500
+Received: from nf-out-0910.google.com ([64.233.182.188]:49479 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933284AbXBFVjr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 16:38:46 -0500
-Subject: Re: [patch 1/1] PM: Adds remount fs ro at suspend
-From: Nigel Cunningham <nigel@nigel.suspend2.net>
-Reply-To: nigel@nigel.suspend2.net
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Cc: Andrew Morton <akpm@linux-foundation.org>, akuster@mvista.com,
-       linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-In-Reply-To: <20070206143231.GD18392@khazad-dum.debian.net>
-References: <20070202235132.EDBDF1C448@hermes.mvista.com>
-	 <20070202161611.cf8b4328.akpm@linux-foundation.org>
-	 <20070203003536.GA619@khazad-dum.debian.net>
-	 <1170710913.6105.39.camel@nigel.suspend2.net>
-	 <20070206143231.GD18392@khazad-dum.debian.net>
-Content-Type: text/plain
-Date: Wed, 07 Feb 2007 08:38:44 +1100
-Message-Id: <1170797924.14398.19.camel@nigel.suspend2.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 6 Feb 2007 16:39:47 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:mime-version:content-type;
+        b=YN6/QQO2i7PmkUCftUFMVTDpUD/WNcfB+iXFp1Xi2SZ6LIWzqxDjj1tJFQ835vQDKYUurp86MteOHm82pOE8wAhgg9nhTBO38llC0MWXvgy6UMFm86YDZJvBeMyrtuhyfYE44rn0eil5wZN/9GKpQ8OJqKR/W6xsRsEpoJSfeCk=
+Message-ID: <5157576d0702061339w28adbf5fp2dbc5e86661d894@mail.gmail.com>
+Date: Wed, 7 Feb 2007 00:39:45 +0300
+From: "Tomasz Kvarsin" <kvarsin@gmail.com>
+To: "Andrew Morton" <akpm@osdl.org>
+Subject: [PATCH]: warrning fix: unsigned->signed
+Cc: viro@zeniv.linux.org.uk, axboe@kernel.dk, linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_16598_21243532.1170797985949"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+------=_Part_16598_21243532.1170797985949
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-On Tue, 2007-02-06 at 12:32 -0200, Henrique de Moraes Holschuh wrote:
-> On Tue, 06 Feb 2007, Nigel Cunningham wrote:
-> > Why do you think remounting filesystems is necessary? Are you getting
-> > problems with some particular filesystem?
-> 
-> No.  But anything in a removable device neets to be either remounted
-> read-only or unmounted if that is at all possible, because the user could
-> unplug it.  It is of course, sync'd anyway, so if the remount/umount fails,
-> no corruption should happen...  but the fs will be dirty, etc.
-> 
-> It can get very ugly when you factor in docks and removable bays. It's not
-> just USB/firewire mass-storage devices and memory cards.  And there is the
-> patological cases where the user suspends with the device in one port, and
-> resumes with the device in another port.
-> 
-> I feel userspace *can* do all that needs to be done, but we are (currently)
-> very bad at it.
+While compiling my code, I always get bunch of warrning from headers,
+here is fix for them:
+__getblk is alawys called with unsigned argument,
+but it takes signed, the same story with __bread,__breadahead and so on.
 
-Ok, as far as usage scenario goes, that's fair enough. But as to the
-solution, I wonder though whether it's making life more complicated than
-it needs to be. After all, we should also be able to cope okay with
-having the power suddenly go out. If we can cope with that, cleaning
-filesystems prior to suspending should be a non-issue.
+Signed-off-by: Tomasz Kvarsin
 
-Likewise with changes in hardware. Once hotplugging support is mature,
-suspending, switching around hardware and resuming should just result in
-hot[un]plug events.
+------=_Part_16598_21243532.1170797985949
+Content-Type: application/octet-stream; name=unsigned-fix.patch
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_exuv364w
+Content-Disposition: attachment; filename="unsigned-fix.patch"
 
-Regards,
-
-Nigel
-
+SW5kZXg6IGxpbnV4LTIuNi4yMC9pbmNsdWRlL2xpbnV4L2J1ZmZlcl9oZWFkLmgKPT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PQotLS0gbGludXgtMi42LjIwLm9yaWcvaW5jbHVkZS9saW51eC9idWZmZXJfaGVhZC5oCisrKyBs
+aW51eC0yLjYuMjAvaW5jbHVkZS9saW51eC9idWZmZXJfaGVhZC5oCkBAIC0xNzIsMTIgKzE3Miwx
+MiBAQCBzdHJ1Y3Qgc3VwZXJfYmxvY2sgKmZyZWV6ZV9iZGV2KHN0cnVjdCBiCiB2b2lkIHRoYXdf
+YmRldihzdHJ1Y3QgYmxvY2tfZGV2aWNlICosIHN0cnVjdCBzdXBlcl9ibG9jayAqKTsKIGludCBm
+c3luY19zdXBlcihzdHJ1Y3Qgc3VwZXJfYmxvY2sgKik7CiBpbnQgZnN5bmNfbm9fc3VwZXIoc3Ry
+dWN0IGJsb2NrX2RldmljZSAqKTsKLXN0cnVjdCBidWZmZXJfaGVhZCAqX19maW5kX2dldF9ibG9j
+ayhzdHJ1Y3QgYmxvY2tfZGV2aWNlICosIHNlY3Rvcl90LCBpbnQpOwotc3RydWN0IGJ1ZmZlcl9o
+ZWFkICogX19nZXRibGsoc3RydWN0IGJsb2NrX2RldmljZSAqLCBzZWN0b3JfdCwgaW50KTsKK3N0
+cnVjdCBidWZmZXJfaGVhZCAqX19maW5kX2dldF9ibG9jayhzdHJ1Y3QgYmxvY2tfZGV2aWNlICos
+IHNlY3Rvcl90LCB1bnNpZ25lZCBpbnQpOworc3RydWN0IGJ1ZmZlcl9oZWFkICogX19nZXRibGso
+c3RydWN0IGJsb2NrX2RldmljZSAqLCBzZWN0b3JfdCwgdW5zaWduZWQgaW50KTsKIHZvaWQgX19i
+cmVsc2Uoc3RydWN0IGJ1ZmZlcl9oZWFkICopOwogdm9pZCBfX2Jmb3JnZXQoc3RydWN0IGJ1ZmZl
+cl9oZWFkICopOwotdm9pZCBfX2JyZWFkYWhlYWQoc3RydWN0IGJsb2NrX2RldmljZSAqLCBzZWN0
+b3JfdCBibG9jaywgaW50IHNpemUpOwotc3RydWN0IGJ1ZmZlcl9oZWFkICpfX2JyZWFkKHN0cnVj
+dCBibG9ja19kZXZpY2UgKiwgc2VjdG9yX3QgYmxvY2ssIGludCBzaXplKTsKK3ZvaWQgX19icmVh
+ZGFoZWFkKHN0cnVjdCBibG9ja19kZXZpY2UgKiwgc2VjdG9yX3QgYmxvY2ssIHVuc2lnbmVkIGlu
+dCBzaXplKTsKK3N0cnVjdCBidWZmZXJfaGVhZCAqX19icmVhZChzdHJ1Y3QgYmxvY2tfZGV2aWNl
+ICosIHNlY3Rvcl90IGJsb2NrLCB1bnNpZ25lZCBpbnQgc2l6ZSk7CiBzdHJ1Y3QgYnVmZmVyX2hl
+YWQgKmFsbG9jX2J1ZmZlcl9oZWFkKGdmcF90IGdmcF9mbGFncyk7CiB2b2lkIGZyZWVfYnVmZmVy
+X2hlYWQoc3RydWN0IGJ1ZmZlcl9oZWFkICogYmgpOwogdm9pZCBGQVNUQ0FMTCh1bmxvY2tfYnVm
+ZmVyKHN0cnVjdCBidWZmZXJfaGVhZCAqYmgpKTsKSW5kZXg6IGxpbnV4LTIuNi4yMC9mcy9idWZm
+ZXIuYwo9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09Ci0tLSBsaW51eC0yLjYuMjAub3JpZy9mcy9idWZmZXIuYworKysgbGlu
+dXgtMi42LjIwL2ZzL2J1ZmZlci5jCkBAIC0xMjgyLDExICsxMjgyLDExIEBAIHN0YXRpYyB2b2lk
+IGJoX2xydV9pbnN0YWxsKHN0cnVjdCBidWZmZXIKICAqIExvb2sgdXAgdGhlIGJoIGluIHRoaXMg
+Y3B1J3MgTFJVLiAgSWYgaXQncyB0aGVyZSwgbW92ZSBpdCB0byB0aGUgaGVhZC4KICAqLwogc3Rh
+dGljIHN0cnVjdCBidWZmZXJfaGVhZCAqCi1sb29rdXBfYmhfbHJ1KHN0cnVjdCBibG9ja19kZXZp
+Y2UgKmJkZXYsIHNlY3Rvcl90IGJsb2NrLCBpbnQgc2l6ZSkKK2xvb2t1cF9iaF9scnUoc3RydWN0
+IGJsb2NrX2RldmljZSAqYmRldiwgc2VjdG9yX3QgYmxvY2ssIHVuc2lnbmVkIGludCBzaXplKQog
+ewogCXN0cnVjdCBidWZmZXJfaGVhZCAqcmV0ID0gTlVMTDsKIAlzdHJ1Y3QgYmhfbHJ1ICpscnU7
+Ci0JaW50IGk7CisJdW5zaWduZWQgaW50IGk7CiAKIAljaGVja19pcnFzX29uKCk7CiAJYmhfbHJ1
+X2xvY2soKTsKQEAgLTEzMTgsNyArMTMxOCw3IEBAIGxvb2t1cF9iaF9scnUoc3RydWN0IGJsb2Nr
+X2RldmljZSAqYmRldiwKICAqIE5VTEwKICAqLwogc3RydWN0IGJ1ZmZlcl9oZWFkICoKLV9fZmlu
+ZF9nZXRfYmxvY2soc3RydWN0IGJsb2NrX2RldmljZSAqYmRldiwgc2VjdG9yX3QgYmxvY2ssIGlu
+dCBzaXplKQorX19maW5kX2dldF9ibG9jayhzdHJ1Y3QgYmxvY2tfZGV2aWNlICpiZGV2LCBzZWN0
+b3JfdCBibG9jaywgdW5zaWduZWQgaW50IHNpemUpCiB7CiAJc3RydWN0IGJ1ZmZlcl9oZWFkICpi
+aCA9IGxvb2t1cF9iaF9scnUoYmRldiwgYmxvY2ssIHNpemUpOwogCkBAIC0xMzQ2LDcgKzEzNDYs
+NyBAQCBFWFBPUlRfU1lNQk9MKF9fZmluZF9nZXRfYmxvY2spOwogICogYXR0ZW1wdCBpcyBmYWls
+aW5nLiAgRklYTUUsIHBlcmhhcHM/CiAgKi8KIHN0cnVjdCBidWZmZXJfaGVhZCAqCi1fX2dldGJs
+ayhzdHJ1Y3QgYmxvY2tfZGV2aWNlICpiZGV2LCBzZWN0b3JfdCBibG9jaywgaW50IHNpemUpCitf
+X2dldGJsayhzdHJ1Y3QgYmxvY2tfZGV2aWNlICpiZGV2LCBzZWN0b3JfdCBibG9jaywgdW5zaWdu
+ZWQgaW50IHNpemUpCiB7CiAJc3RydWN0IGJ1ZmZlcl9oZWFkICpiaCA9IF9fZmluZF9nZXRfYmxv
+Y2soYmRldiwgYmxvY2ssIHNpemUpOwogCkBAIC0xMzYwLDcgKzEzNjAsNyBAQCBFWFBPUlRfU1lN
+Qk9MKF9fZ2V0YmxrKTsKIC8qCiAgKiBEbyBhc3luYyByZWFkLWFoZWFkIG9uIGEgYnVmZmVyLi4K
+ICAqLwotdm9pZCBfX2JyZWFkYWhlYWQoc3RydWN0IGJsb2NrX2RldmljZSAqYmRldiwgc2VjdG9y
+X3QgYmxvY2ssIGludCBzaXplKQordm9pZCBfX2JyZWFkYWhlYWQoc3RydWN0IGJsb2NrX2Rldmlj
+ZSAqYmRldiwgc2VjdG9yX3QgYmxvY2ssIHVuc2lnbmVkIGludCBzaXplKQogewogCXN0cnVjdCBi
+dWZmZXJfaGVhZCAqYmggPSBfX2dldGJsayhiZGV2LCBibG9jaywgc2l6ZSk7CiAJaWYgKGxpa2Vs
+eShiaCkpIHsKQEAgLTEzODAsNyArMTM4MCw3IEBAIEVYUE9SVF9TWU1CT0woX19icmVhZGFoZWFk
+KTsKICAqICBJdCByZXR1cm5zIE5VTEwgaWYgdGhlIGJsb2NrIHdhcyB1bnJlYWRhYmxlLgogICov
+CiBzdHJ1Y3QgYnVmZmVyX2hlYWQgKgotX19icmVhZChzdHJ1Y3QgYmxvY2tfZGV2aWNlICpiZGV2
+LCBzZWN0b3JfdCBibG9jaywgaW50IHNpemUpCitfX2JyZWFkKHN0cnVjdCBibG9ja19kZXZpY2Ug
+KmJkZXYsIHNlY3Rvcl90IGJsb2NrLCB1bnNpZ25lZCBpbnQgc2l6ZSkKIHsKIAlzdHJ1Y3QgYnVm
+ZmVyX2hlYWQgKmJoID0gX19nZXRibGsoYmRldiwgYmxvY2ssIHNpemUpOwogCg==
+------=_Part_16598_21243532.1170797985949--
