@@ -1,41 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750849AbXBFGqM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750824AbXBFGvK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750849AbXBFGqM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 01:46:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750845AbXBFGqL
+	id S1750824AbXBFGvK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 01:51:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750845AbXBFGvK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 01:46:11 -0500
-Received: from ns2.suse.de ([195.135.220.15]:52676 "EHLO mx2.suse.de"
+	Tue, 6 Feb 2007 01:51:10 -0500
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:37689 "EHLO e3.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750741AbXBFGqK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 01:46:10 -0500
-Date: Mon, 5 Feb 2007 22:44:48 -0800
-From: Greg KH <greg@kroah.com>
-To: Pierre Ossman <drzeus-list@drzeus.cx>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Free Linux Driver Development!
-Message-ID: <20070206064448.GE9071@kroah.com>
-References: <20070130012904.GA9617@kroah.com> <45C62D23.9040307@drzeus.cx>
-MIME-Version: 1.0
+	id S1750824AbXBFGvH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Feb 2007 01:51:07 -0500
+Date: Tue, 6 Feb 2007 12:21:04 +0530
+From: Vivek Goyal <vgoyal@in.ibm.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Etienne Lorrain <etienne_lorrain@yahoo.fr>, linux-kernel@vger.kernel.org,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [PATCH] Compressed ia32 ELF file generation for loading by Gujin 1/3
+Message-ID: <20070206065104.GB26462@in.ibm.com>
+Reply-To: vgoyal@in.ibm.com
+References: <522909.27613.qm@web26909.mail.ukl.yahoo.com> <45C7CDD7.20806@zytor.com> <20070206052514.GA15613@in.ibm.com> <45C81D5B.3050408@zytor.com> <20070206063320.GA26462@in.ibm.com> <45C82266.3010007@zytor.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <45C62D23.9040307@drzeus.cx>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <45C82266.3010007@zytor.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 04, 2007 at 07:59:47PM +0100, Pierre Ossman wrote:
-> Hi Greg,
+On Mon, Feb 05, 2007 at 10:38:30PM -0800, H. Peter Anvin wrote:
+> Vivek Goyal wrote:
+> >
+> >That time, grub was working fine but lilo had broken on one of Andrew's
+> >machine. I could not reproduce the problem on my setup and had no clue what
+> >was the issue. Hence got rid of ELF header from bzImage which was 
+> >non-essential
+> >stuff for relocatable kernel. But that issue should be fixable.
+> >
 > 
-> Although I am a bit of a cynic, I really hope that this endeavor works
-> the way you hope.
+> Either way, though, putting Gujin-specific code in the main kernel 
+> output is a pretty dull thud.
 > 
-> I'd also like to offer my services to this quest of yours. If you get
-> any SD, MMC or SDIO requests, feel free to pass them along to me. I am
-> not a big fan of debug-by-email though, so I'd prefer vendors who either
-> can provide samples or where the hardware is cheap and freely available
-> so I can just go out and by one.
 
-Great, thanks for letting me know, I've added you to the list.
+Agreed.
 
-greg k-h
+Thanks
+Vivek
+
