@@ -1,70 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933289AbXBFVlL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965528AbXBFVlZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933289AbXBFVlL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 16:41:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933252AbXBFVlL
+	id S965528AbXBFVlZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 16:41:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933292AbXBFVlY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 16:41:11 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:60073 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933289AbXBFVlK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 16:41:10 -0500
-Date: Tue, 6 Feb 2007 22:41:31 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Daniel Walker <dwalker@mvista.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Andrew Morton <akpm@osdl.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.20-rc6-mm3
-Message-ID: <20070206214131.GA1176@elte.hu>
-References: <1170786992.3785.0.camel@chaos> <1170787543.9781.362.camel@imap.mvista.com> <1170788870.3785.9.camel@chaos> <1170791739.3455.3.camel@dwalker1> <1170793206.3785.16.camel@chaos> <1170794437.3455.20.camel@dwalker1> <20070206205231.GA25430@elte.hu> <1170795378.3455.31.camel@dwalker1> <20070206210959.GC25430@elte.hu> <1170796999.3455.43.camel@dwalker1>
+	Tue, 6 Feb 2007 16:41:24 -0500
+Received: from electric-eye.fr.zoreil.com ([213.41.134.224]:49346 "EHLO
+	fr.zoreil.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933252AbXBFVlX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Feb 2007 16:41:23 -0500
+Date: Tue, 6 Feb 2007 22:38:27 +0100
+From: Francois Romieu <romieu@fr.zoreil.com>
+To: =?unknown-8bit?B?6Kix5oGG5ZiJ?= <edward_hsu@realtek.com.tw>
+Cc: jeff@garzik.org, linux-kernel@vger.kernel.org, hiwu@realtek.com.tw
+Subject: Re: [PATCH 2.6.19.2] r8169: support RTL8169SC/8110SC
+Message-ID: <20070206213827.GA25119@electric-eye.fr.zoreil.com>
+References: <45C2F390.4070805@realtek.com.tw> <20070203003952.GA22823@electric-eye.fr.zoreil.com> <45C6A8EC.5090201@realtek.com.tw> <20070206003130.GA18236@electric-eye.fr.zoreil.com> <45C7EB8A.1090700@realtek.com.tw>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1170796999.3455.43.camel@dwalker1>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -5.3
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-5.3 required=5.9 tests=ALL_TRUSTED,BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-3.3 ALL_TRUSTED            Did not pass through any untrusted hosts
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <45C7EB8A.1090700@realtek.com.tw>
+User-Agent: Mutt/1.4.2.1i
+X-Organisation: Land of Sunshine Inc.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+edward_hsu@realtek.com.tw :
+[...]
+> ANS_2:
+> So, do you think that it is a good idea to keep other vendos's PID and
+> DID in the part?
 
-* Daniel Walker <dwalker@mvista.com> wrote:
+Yes.
 
-> > we could make this clearer by renaming 'LOC' (which stands for 
-> > 'LOCal timer interupts' and was added [and misnamed] by yours truly 
-> > many moons ago) to 'apic-timer' and 'timer' to 'PIT-timer' but 
-> > /that/ would be more of a userspace visible change than the change 
-> > in the counter rates.
+[...]
+> ANS_2:
 > 
-> If we change the current "timer" entry to be listed as "lapic-timer" 
-> and not "IO-APIC-edge" (or one of the other names) and replace it with 
-> the count from LOC , [...]
+> Sure! You are right. RTL8110SC, RTL8111B and RTL8101E have modest
+> differences, now. However, RTL8101E is a PCI-E fast ethernet controller.
+> I don't think is a good idea to merge its Linux driver into r8168.c or
+> r8169.c. RTL8110SC is the final version of Realtek PCI gigabit ethernet
+> controller. Moreover, due to the increasing popularity of PCI-E, Realtek
+> is going to design several generations of PCI-E ethernet controllers to
+> satisfy customer requests. I have discussed this issue with my hardware
+> colleagues. They believe that both MAC register layout and tx/rx
+> descriptor layout will be changed a lot in new PCI-E ICs. Actually, they
+> already did. Therefore, the hardwares of RTL8111B(PCI-E gigabit
+> ethernet) and RTL8101E(PCI-E fast ethernet) will have frequent and
+> drastic changes. So, I think that it's a good moment to separate their
+> Linux drivers, and r8169.c can become stable.
 
-doing that would not fake the old behavior (which is your suggestion), 
-LOC is per CPU, while the PIT timer irq that was there is global.
+Well, code and facts will tell. :o)
 
-But, as per the previous mails, the new behavior is just fine, because 
-/proc/interrupts just reflects reality. And the way the kernel utilizes 
-the hardware has just changed - for the better.
+Since you asked for questions:
 
-The same happens when say a network driver implements NAPI: the IRQ 
-count goes way, way down. Or if a driver starts supporing MSI - the IRQ 
-line even moves to another one. Do we try to fix those counts up to 
-match the 'previous behavior'? Of course not. What you are suggesting 
-makes no sense, is against current kernel practices - as we pointed it 
-out to you 7 mails ago.
+- will the ~7k limit for the jumbo frames be fixed ? One can hardly call
+  it a feature.
 
-> [...] that would make sense cause that field already changes depending 
-> if you have a io-apic or not ..
+- out of curiosity, did you try the current in-kernel r8169 driver with
+  a 8111B or a 8101E ?
 
-(that is something else: it's different because a different irq-chip is 
-behind it.)
+- is there any plan to open the programming manuals of the PCI-E chipsets ?
 
-	Ingo
+-- 
+Ueimor
