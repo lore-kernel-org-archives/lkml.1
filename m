@@ -1,64 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750969AbXBFHZK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751059AbXBFHdO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750969AbXBFHZK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 02:25:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750978AbXBFHZK
+	id S1751059AbXBFHdO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 02:33:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751093AbXBFHdN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 02:25:10 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:60288 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750973AbXBFHZI (ORCPT
+	Tue, 6 Feb 2007 02:33:13 -0500
+Received: from amsfep17-int.chello.nl ([213.46.243.15]:32452 "EHLO
+	amsfep13-int.chello.nl" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751059AbXBFHdN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 02:25:08 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: vgoyal@in.ibm.com
-Cc: "H. Peter Anvin" <hpa@zytor.com>,
-       Etienne Lorrain <etienne_lorrain@yahoo.fr>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Compressed ia32 ELF file generation for loading by Gujin 1/3
-References: <522909.27613.qm@web26909.mail.ukl.yahoo.com>
-	<45C7CDD7.20806@zytor.com> <20070206052514.GA15613@in.ibm.com>
-	<45C81D5B.3050408@zytor.com> <20070206063320.GA26462@in.ibm.com>
-	<45C82266.3010007@zytor.com> <20070206065104.GB26462@in.ibm.com>
-Date: Tue, 06 Feb 2007 00:24:24 -0700
-In-Reply-To: <20070206065104.GB26462@in.ibm.com> (Vivek Goyal's message of
-	"Tue, 6 Feb 2007 12:21:04 +0530")
-Message-ID: <m1abzrvjdj.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 6 Feb 2007 02:33:13 -0500
+Subject: Re: One-shot high-resolution POSIX timer periodically late
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: John <shill@free.fr>
+Cc: linux-kernel@vger.kernel.org, tglx@timesys.com, mingo@elte.hu,
+       johnstul@us.ibm.com, akpm@osdl.org
+In-Reply-To: <45C75D2D.9010506@free.fr>
+References: <fa.4zD54Ie6Ozt0P4YqQSicS+XzXGw@ifi.uio.no>
+	 <fa.G+/T32f2o1M3+YGLca/O8NaAQyY@ifi.uio.no>
+	 <fa.6Ua8xjNfLKQEZZgDsoJgPMyww4g@ifi.uio.no>
+	 <fa.yQlV+WU0TgrJTVqjopa01tgCnT0@ifi.uio.no>
+	 <fa.ucVrLJ1Lh6FjdBHRglsIUc8/evk@ifi.uio.no>
+	 <fa.Id9oufyELrVbe5Wb8SRakwC0V50@ifi.uio.no>  <45C75D2D.9010506@free.fr>
+Content-Type: text/plain
+Date: Tue, 06 Feb 2007 08:31:21 +0100
+Message-Id: <1170747081.4672.11.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vivek Goyal <vgoyal@in.ibm.com> writes:
+On Mon, 2007-02-05 at 17:37 +0100, John wrote:
+> Ingo Molnar wrote:
+> 
+> > John wrote:
+> > 
+> >> John Stultz wrote:
+> >> 
+> >>> Also do check the -rt tree as Ingo suggested. I mis-read your earlier
+> >>> email and thought you were running it.
+> >> 
+> >> I've been pulling my hair over a related issue for the past two days.
+> >> 
+> >> (I think I may be tickling a -hrt bug...)
+> >> 
+> >> I'm working with 2.6.18.6 + patch-2.6.18-rt7
+> > 
+> > 2.6.18-rt7 is pretty old, do you see the problem in 2.6.20-rc6-rt5 too?
+> 
+> Ingo, Thomas,
+> 
+> As far as I can tell, the -rt patch set is only updated for the latest 
+> kernel version available. Is that correct?
+> 
+> http://people.redhat.com/mingo/realtime-preempt/older/?M=D
+> 
+> In other words, once 2.6.20 is released, and work starts on 2.6.21, if a 
+> bug is discovered in -rt, the fix will not be back-ported to the 
+> 2.6.20.x (and 2.6.19.x, and 2.6.18.x, etc) patch set?
 
-> On Mon, Feb 05, 2007 at 10:38:30PM -0800, H. Peter Anvin wrote:
->> Vivek Goyal wrote:
->> >
->> >That time, grub was working fine but lilo had broken on one of Andrew's
->> >machine. I could not reproduce the problem on my setup and had no clue what
->> >was the issue. Hence got rid of ELF header from bzImage which was 
->> >non-essential
->> >stuff for relocatable kernel. But that issue should be fixable.
->> >
->> 
->> Either way, though, putting Gujin-specific code in the main kernel 
->> output is a pretty dull thud.
->> 
->
-> Agreed.
+Correct, there is only 1 live branch.
 
-Just for documentation the current interface is you come in through
-the kernels 16bit entry point and get all of it's BIOS calls, or your
-bootloader is responsible for getting the equivalent information
-somehow.
-
->From what little I skimmed part of what Gujin wanted to do was sane
-at first glance. Just boot a gziped vmlinux like the other
-architectures.  The problem was the 16bit code.  
-
-So there may be some good ideas buried in there somewhere, but it
-likely to take some doing, and patches that I have to save before
-I read them are a real pain!
-
-Eric
