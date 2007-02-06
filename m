@@ -1,71 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965515AbXBFVWI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965521AbXBFVWl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965515AbXBFVWI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 16:22:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965518AbXBFVWI
+	id S965521AbXBFVWl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 16:22:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965528AbXBFVWl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 16:22:08 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:47532 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965515AbXBFVWF (ORCPT
+	Tue, 6 Feb 2007 16:22:41 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:35890 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965521AbXBFVWj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 16:22:05 -0500
-Date: Tue, 6 Feb 2007 21:22:00 +0000 (GMT)
-From: James Simmons <jsimmons@infradead.org>
-To: Giuseppe Bilotta <giuseppe.bilotta@gmail.com>
-cc: Luca Tettamanti <kronos@people.it>,
-       linux-fbdev-devel@lists.sourceforge.net, Andrew Morton <akpm@osdl.org>,
-       Dave Airlie <airlied@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [Linux-fbdev-devel] [PATCH] nvidiafb: allow ignoring EDID info
-In-Reply-To: <cb7bb73a0702051328n50c889d9o461ac2bb9f9ea75e@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0702062118450.9224@pentafluge.infradead.org>
-References: <ephv35$4i3$1@sea.gmane.org>  <20070128160831.fb51347f.akpm@osdl.org>
-  <21d7e9970701281612q56b694edp6efd1a5556dea3fe@mail.gmail.com> 
- <20070128162907.370f5476.akpm@osdl.org>  <21d7e9970701281639w57edc2efw4ba620d4c1bdcee7@mail.gmail.com>
-  <cb7bb73a0701290637q2ce0ff16t28f82d0c0339a2ba@mail.gmail.com> 
- <20070130203301.GA15067@dreamland.darkstar.lan>  <20070204201713.GA12867@dreamland.darkstar.lan>
-  <cb7bb73a0702041317u4ca2fbabp45cf56526e57c982@mail.gmail.com> 
- <20070205201824.GA13431@dreamland.darkstar.lan>
- <cb7bb73a0702051328n50c889d9o461ac2bb9f9ea75e@mail.gmail.com>
+	Tue, 6 Feb 2007 16:22:39 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Andrew Morton <akpm@osdl.org>
+Cc: Ingo Molnar <mingo@elte.hu>, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov, jmorris@namei.org,
+       Stephen Smalley <sds@tycho.nsa.gov>
+Subject: [PATCH 2/2] sysctl: Restore the selinux path based label lookup for sysctls.
+References: <200701280106.l0S16CG3019873@shell0.pdx.osdl.net>
+	<20070127172410.2b041952.akpm@osdl.org>
+	<1169972718.17469.164.camel@localhost.localdomain>
+	<20070128003549.2ca38dc8.akpm@osdl.org>
+	<20070128093358.GA2071@elte.hu> <20070128095712.GA6485@elte.hu>
+	<20070128100627.GA8416@elte.hu>
+	<20070128104548.a835d859.akpm@osdl.org>
+	<m1r6tfq7nv.fsf_-_@ebiederm.dsl.xmission.com>
+	<1170075866.8720.15.camel@moss-spartans.epoch.ncsc.mil>
+	<m17iuvrnpk.fsf_-_@ebiederm.dsl.xmission.com>
+Date: Tue, 06 Feb 2007 14:21:54 -0700
+In-Reply-To: <m17iuvrnpk.fsf_-_@ebiederm.dsl.xmission.com> (Eric
+	W. Biederman's message of "Tue, 06 Feb 2007 14:16:39 -0700")
+Message-ID: <m13b5jrngt.fsf_-_@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-> On 2/5/07, Luca Tettamanti <kronos@people.it> wrote:
-> > get-edid uses the BIOS, while the other two talk directly over the I2C
-> > bus.
-> > 
-> > Try loading i2c-dev (I2C_CHARDEV); With i2cdump[1] you can read the EDID
-> > block, which resides at address 0x50:
-> > 
-> > i2cdump N 0x50 (where N is the bus number)
-> > 
-> > If you are unshure about bus number try with all the available
-> > /dev/i2c-* devices (you may want to unload HW monitor drivers first, so
-> > you don't poke at random stuff).
-> 
-> No luck. i2c-dev and dependencies are loaded
-> """ lsmod | grep i2c reports """
-> i2c_i801                7404  0
-> i2c_isa                 5152  0
-> i2c_piix4               8140  0
-> i2c_algo_pcf            6180  0
-> i2c_algo_pca            5380  0
-> i2c_algo_bit            8424  0
-> i2c_dev                 8548  0
-> i2c_core               19680  7
-> i2c_i801,i2c_isa,i2c_piix4,i2c_algo_pcf,i2c_algo_pca,i2c_algo_bit,i2c_dev
-> """"
-> 
-> There is no such thing as /dev/i2c* UNLESS I load nvidiafb. When I
-> load that, I get three busses (i2c-0, -1, and -2), but i2cdump N 0x50
-> gives me a nice tableau of X's all around, for all values of N. This
-> is using kernel 2.6.18-3 stock Debian kernel. I'll keep trying with
-> some variations, to see if I can get more sensible information.
+This time instead of generating the generating the paths from proc_dir_entries
+generate the labels from the names in the sysctl ctl_tables themselves.  This
+removes an unnecessary layer of indirection, allows this to work even when
+procfs support is not compiled into the kernel, and especially allows it
+to work now that ctl_tables no longer have a proc_dir_entry field.
 
-There is no stand alone nvidia card i2c driver. Its the issue of sharing 
-device interfaces with the same hardware problem again!!! There is a patch 
-for DRI and fbdev but it really looks like we need a generic solution.
+I continue passing "proc" into genfs sid although that is complete nonsense
+to allow existing selinux policies to work without modification.
+
+Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+---
+ security/selinux/hooks.c |   43 +++++++++++++++++++++++++++++++++++++++++--
+ 1 files changed, 41 insertions(+), 2 deletions(-)
+
+diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
+index 3a36057..c17a8dd 100644
+--- a/security/selinux/hooks.c
++++ b/security/selinux/hooks.c
+@@ -1424,6 +1424,41 @@ static int selinux_capable(struct task_struct *tsk, int cap)
+ 	return task_has_capability(tsk,cap);
+ }
  
++static int selinux_sysctl_get_sid(ctl_table *table, u16 tclass, u32 *sid)
++{
++	int buflen, rc;
++	char *buffer, *path, *end;
++
++	rc = -ENOMEM;
++	buffer = (char*)__get_free_page(GFP_KERNEL);
++	if (!buffer)
++		goto out;
++
++	buflen = PAGE_SIZE;
++	end = buffer+buflen;
++	*--end = '\0';
++	buflen--;
++	path = end-1;
++	*path = '/';
++	while (table) {
++		const char *name = table->procname;
++		size_t namelen = strlen(name);
++		buflen -= namelen + 1;
++		if (buflen < 0)
++			goto out_free;
++		end -= namelen;
++		memcpy(end, name, namelen);
++		*--end = '/';
++		path = end;
++		table = table->parent;
++	}
++	rc = security_genfs_sid("proc", path, tclass, sid);
++out_free:
++	free_page((unsigned long)buffer);
++out:
++	return rc;
++}
++
+ static int selinux_sysctl(ctl_table *table, int op)
+ {
+ 	int error = 0;
+@@ -1438,8 +1473,12 @@ static int selinux_sysctl(ctl_table *table, int op)
+ 
+ 	tsec = current->security;
+ 
+-	/* Use the well-defined sysctl SID. */
+-	tsid = SECINITSID_SYSCTL;
++	rc = selinux_sysctl_get_sid(table, (op == 0001) ?
++				    SECCLASS_DIR : SECCLASS_FILE, &tsid);
++	if (rc) {
++		/* Default to the well-defined sysctl SID. */
++		tsid = SECINITSID_SYSCTL;
++	}
+ 
+ 	/* The op values are "defined" in sysctl.c, thereby creating
+ 	 * a bad coupling between this module and sysctl.c */
+-- 
+1.4.4.1.g278f
+
