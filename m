@@ -1,77 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751590AbXBFLgJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751603AbXBFLky@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751590AbXBFLgJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 06:36:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751638AbXBFLgJ
+	id S1751603AbXBFLky (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 06:40:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751695AbXBFLky
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 06:36:09 -0500
-Received: from cacti.profiwh.com ([85.93.165.66]:33038 "EHLO cacti.profiwh.com"
+	Tue, 6 Feb 2007 06:40:54 -0500
+Received: from ns2.suse.de ([195.135.220.15]:36779 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751590AbXBFLgI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 06:36:08 -0500
-Message-ID: <45C8683C.1070409@gmail.com>
-Date: Tue, 06 Feb 2007 12:36:28 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0b2 (X11/20070116)
+	id S1751018AbXBFLkx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Feb 2007 06:40:53 -0500
+Date: Tue, 6 Feb 2007 12:40:50 +0100
+From: Bernhard Walle <bwalle@suse.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org,
+       fastboot@lists.osdl.org
+Subject: [PATCH] Fix NULL-pointer dereference in ia64_machine_kexec()
+Message-ID: <20070206114050.GA3648@strauss.suse.de>
+Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
+	linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org,
+	fastboot@lists.osdl.org
+References: <eparjg$nhq$1@sea.gmane.org> <yq0odolq8zg.fsf@jaguar.mkp.net> <20070127131514.GA30463@strauss.suse.de> <45BBD6F5.6040801@sgi.com>
 MIME-Version: 1.0
-To: "Cyrill V. Gorcunov" <gorcunov@gmail.com>
-Cc: Sam Creasey <sammy@sammy.net>,
-       linux-kernel-list <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] SUN3/3X Lance trivial fix
-References: <20070205191321.GA12839@cvg>
-In-Reply-To: <20070205191321.GA12839@cvg>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <45BBD6F5.6040801@sgi.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Cyrill V. Gorcunov napsal(a):
-> This patch adds checking for allocated DVMA
-> memory and granted IRQ line.
-> 
-> Signed-off-by: Cyrill V. Gorcunov <gorcunov@gmail.com>
-> 
-> ---
-> 
->  drivers/net/sun3lance.c |    9 ++++++++-
->  1 files changed, 8 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/net/sun3lance.c b/drivers/net/sun3lance.c
-> index c62e85d..e4c2c88 100644
-> --- a/drivers/net/sun3lance.c
-> +++ b/drivers/net/sun3lance.c
-> @@ -336,13 +336,20 @@ static int __init lance_probe( struct net_device *dev)
->  
->  	/* XXX - leak? */
->  	MEM = dvma_malloc_align(sizeof(struct lance_memory), 0x10000);
-> +	if (MEM == NULL) {
-> +		printk(KERN_WARNING "SUN3 Lance couldn't allocate DVMA memory\n");
-> +		return 0;
-> +	}
->  
->  	lp->iobase = (volatile unsigned short *)ioaddr;
->  	dev->base_addr = (unsigned long)ioaddr; /* informational only */
+[I got no response after my corrected patch, so I try it again.
+I request it to appear in -mm tree. Patch is against 2.6.20-rc6-mm3.]
 
-But now, if it fails (and you return 0=OK state) these are not assigned and 
-probably used later.
+This patch fixes a NULL-pointer dereference in ia64_machine_kexec().
 
->  
->  	REGA(CSR0) = CSR0_STOP;
->  
-> -	request_irq(LANCE_IRQ, lance_interrupt, IRQF_DISABLED, "SUN3 Lance", dev);
-> +	if (request_irq(LANCE_IRQ, lance_interrupt, IRQF_DISABLED, "SUN3 Lance", dev) < 0) {
-> +		printk(KERN_WARNING "SUN3 Lance unable to allocate IRQ\n");
-> +		return 0;
-> +	}
->  	dev->irq = (unsigned short)LANCE_IRQ;
+The variable ia64_kimage is set in machine_kexec_prepare() which is
+called from sys_kexec_load(). If kdump wasn't configured before,
+ia64_kimage is NULL.  machine_kdump_on_init() passes ia64_kimage() to
+machine_kexec() which assumes a valid value.
 
-Not even irq is grabbed.
+The patch also adds a few sanity checks for the image to simplify
+debugging of similar problems in future.
 
-Is this intended?
+Signed-off-by: Bernhard Walle <bwalle@suse.de>
 
-regards,
--- 
-http://www.fi.muni.cz/~xslaby/            Jiri Slaby
-faculty of informatics, masaryk university, brno, cz
-e-mail: jirislaby gmail com, gpg pubkey fingerprint:
-B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
+---
+ arch/ia64/kernel/crash.c         |    5 +++++
+ arch/ia64/kernel/machine_kexec.c |    2 ++
+ 2 files changed, 7 insertions(+)
+
+Index: b/arch/ia64/kernel/crash.c
+===================================================================
+--- a/arch/ia64/kernel/crash.c
++++ b/arch/ia64/kernel/crash.c
+@@ -116,6 +116,11 @@ machine_crash_shutdown(struct pt_regs *p
+ static void
+ machine_kdump_on_init(void)
+ {
++	if (!ia64_kimage) {
++		printk(KERN_NOTICE "machine_kdump_on_init(): "
++				"kdump not configured\n");
++		return;
++	}
+ 	local_irq_disable();
+ 	kexec_disable_iosapic();
+ 	machine_kexec(ia64_kimage);
+Index: b/arch/ia64/kernel/machine_kexec.c
+===================================================================
+--- a/arch/ia64/kernel/machine_kexec.c
++++ b/arch/ia64/kernel/machine_kexec.c
+@@ -93,6 +93,7 @@ static void ia64_machine_kexec(struct un
+ 	unsigned long vector;
+ 	int ii;
+ 
++	BUG_ON(!image);
+ 	if (image->type == KEXEC_TYPE_CRASH) {
+ 		crash_save_this_cpu();
+ 		current->thread.ksp = (__u64)info->sw - 16;
+@@ -131,6 +132,7 @@ static void ia64_machine_kexec(struct un
+ 
+ void machine_kexec(struct kimage *image)
+ {
++	BUG_ON(!image);
+ 	unw_init_running(ia64_machine_kexec, image);
+ 	for(;;);
+ }
