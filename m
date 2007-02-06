@@ -1,50 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751831AbXBFJMZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751869AbXBFJPL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751831AbXBFJMZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 04:12:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751837AbXBFJMZ
+	id S1751869AbXBFJPL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 04:15:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751871AbXBFJPL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 04:12:25 -0500
-Received: from nz-out-0506.google.com ([64.233.162.235]:21290 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751771AbXBFJMX (ORCPT
+	Tue, 6 Feb 2007 04:15:11 -0500
+Received: from an-out-0708.google.com ([209.85.132.250]:46903 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751869AbXBFJPJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 04:12:23 -0500
+	Tue, 6 Feb 2007 04:15:09 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
-        b=m/cJ59v/dkkaUJMLzFAgIWk4QfzAyCYZaSYVCFN1gzjdTZLJiqnvTNZxMeY23VXZqZmXjzrj0hDkdHecP590ZW2dwGdLlhj2PZeBgK71AK3gY2FNeBrHzf+QlMxwQtCUaAvFTX4oW1CTGvgyaKuEiwbnlCVKe1AobKSLP4emazI=
-Date: Tue, 6 Feb 2007 11:12:07 +0200
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: ebs@ebshome.net, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH 2.6.20] ibm_emac: Use ARRAY_SIZE macro when appropriate
-Message-ID: <20070206091207.GR3896@Ahmed>
-References: <20070205165429.GD3896@Ahmed> <20070205165916.GK3896@Ahmed> <20070205202206.GD11055@martell.zuzino.mipt.ru>
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=rKC+AwFaPw14474Mzi0UdlFFYhp/7Nbmoae7k5M0Q/PX/fuJ0I/CNN04JgcmevB9ycjqJH5YG3ro+Olb8R1oMmDU6u7oxLciEbI2tM7tMP9TO2mZLLepNclbQKPBsdtl9I5BJt4hYPduJxuE3N1ZtBm9hyy5nC5Pjy/ZiwZEx/o=
+Message-ID: <9a8748490702060115x45807f16v608bc4806d7baa0e@mail.gmail.com>
+Date: Tue, 6 Feb 2007 10:15:07 +0100
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: "Andi Kleen" <ak@suse.de>
+Subject: Re: [PATCH][0/5] floppy.c: first round of cleanup patches - the simple stuff
+Cc: linux-kernel@vger.kernel.org,
+       "Trent Waddington" <trent.waddington@gmail.com>,
+       "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>,
+       "Alan Cox" <alan@lxorguk.ukuu.org.uk>
+In-Reply-To: <200702060906.42295.ak@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070205202206.GD11055@martell.zuzino.mipt.ru>
-User-Agent: Mutt/1.5.11
-From: "Ahmed S. Darwish" <darwish.07@gmail.com>
+References: <200702060028.31691.jesper.juhl@gmail.com>
+	 <200702060906.42295.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 05, 2007 at 11:22:06PM +0300, Alexey Dobriyan wrote:
-> On Mon, Feb 05, 2007 at 06:59:16PM +0200, Ahmed S. Darwish wrote:
-> > A patch to use ARRAY_SIZE macro already defined in kernel.h.
-> 
-> OK, but checks you're changing are strange. idx there is signed so
-> 
-> 	BUG_ON(idx < 0 || idx > ARRAY_SIZE());
-> 
-> should be more appropriate.
+On 06/02/07, Andi Kleen <ak@suse.de> wrote:
+> On Tuesday 06 February 2007 00:28, Jesper Juhl wrote:
+> > Greetings people,
+> >
+> > Here is, as promised, the first round of cleanup patches for floppy.c
+> > (more will follow later).
+>
+> I think the real problem with floppy.c is the basic code logic,
+> not the coding style. While cleaning the later up is nice, I'm afraid
+> it doesn't really help all that much because that code has to be
+> replaced anyways.
+>
 
-It's just a janitor patch. I don't like to mess with code logic in such
-kind of patches (to minimize errors and because I can't find time to
-understand all affected files since they are scattered allover the tree).
+And I will get to the logic later, don't worry :-)   I just wanted to
+get all the simple little things out of the way first.
 
-Thanks,
+Thank you for commenting.
+
 -- 
-Ahmed S. Darwish
-http://darwish-07.blogspot.com
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
