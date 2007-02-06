@@ -1,42 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965473AbXBFVFs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965456AbXBFVJs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965473AbXBFVFs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 16:05:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965472AbXBFVFs
+	id S965456AbXBFVJs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 16:09:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965474AbXBFVJr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 16:05:48 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:54496 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965473AbXBFVFr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 16:05:47 -0500
-Message-ID: <45C8EDA7.2090303@garzik.org>
-Date: Tue, 06 Feb 2007 16:05:43 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070130)
+	Tue, 6 Feb 2007 16:09:47 -0500
+Received: from mtagate6.de.ibm.com ([195.212.29.155]:60585 "EHLO
+	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965456AbXBFVJq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Feb 2007 16:09:46 -0500
+Date: Tue, 6 Feb 2007 22:09:45 +0100
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
+Cc: cornelia.huck@de.ibm.com
+Subject: [S390] cio: Don't spam debug feature.
+Message-ID: <20070206210945.GA30335@skybase>
 MIME-Version: 1.0
-To: Bill Davidsen <davidsen@tmr.com>
-CC: Robert Hancock <hancockr@shaw.ca>, Stephen.Clark@seclark.us,
-       Patrick Ale <patrick.ale@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: hdparm for lib_pata
-References: <fa.L/RjDlo6Njb5Jt7/9ENZuiASoV0@ifi.uio.no> <45C4DF2A.1070501@shaw.ca> <45C5178A.1000501@seclark.us> <45C51A80.3050308@shaw.ca> <45C8BE89.9000705@tmr.com>
-In-Reply-To: <45C8BE89.9000705@tmr.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.7 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bill Davidsen wrote:
-> I think deciding to turn off DMA which works fine in old kernels 
-> qualifies as a "serious driver problem," which is why it should be under 
-> user control.
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
 
-For PATA, perhaps.
+[S390] cio: Don't spam debug feature.
 
-For SATA, turning off DMA can often -cause- additional problems.
+Lower priority of "Blacklisted device detected" messages so we don't
+overwrite more useful messages.
 
-	Jeff
+Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
+Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+---
 
+ drivers/s390/cio/cio.c |    2 +-
+ 1 files changed, 1 insertion(+), 1 deletion(-)
 
+diff -urpN linux-2.6/drivers/s390/cio/cio.c linux-2.6-patched/drivers/s390/cio/cio.c
+--- linux-2.6/drivers/s390/cio/cio.c	2007-02-04 19:44:54.000000000 +0100
++++ linux-2.6-patched/drivers/s390/cio/cio.c	2007-02-06 21:43:33.000000000 +0100
+@@ -585,7 +585,7 @@ cio_validate_subchannel (struct subchann
+ 		 * This device must not be known to Linux. So we simply
+ 		 * say that there is no device and return ENODEV.
+ 		 */
+-		CIO_MSG_EVENT(0, "Blacklisted device detected "
++		CIO_MSG_EVENT(4, "Blacklisted device detected "
+ 			      "at devno %04X, subchannel set %x\n",
+ 			      sch->schib.pmcw.dev, sch->schid.ssid);
+ 		err = -ENODEV;
