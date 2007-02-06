@@ -1,84 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751845AbXBFI7z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751825AbXBFJAO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751845AbXBFI7z (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 03:59:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751723AbXBFI7y
+	id S1751825AbXBFJAO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 04:00:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751723AbXBFJAO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 03:59:54 -0500
-Received: from tirith.ics.muni.cz ([147.251.4.36]:54552 "EHLO
-	tirith.ics.muni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751831AbXBFI7x (ORCPT
+	Tue, 6 Feb 2007 04:00:14 -0500
+Received: from hp3.statik.TU-Cottbus.De ([141.43.120.68]:35900 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751825AbXBFJAL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 03:59:53 -0500
-Date: Tue, 6 Feb 2007 09:59:43 +0100
-From: Lukas Hejtmanek <xhejtman@mail.muni.cz>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.19.2, 2.6.20 Kernel oops
-Message-ID: <20070206085943.GG22820@mail.muni.cz>
-References: <20070205110829.GC22820@mail.muni.cz> <20070205195739.cabf67fa.akpm@linux-foundation.org>
+	Tue, 6 Feb 2007 04:00:11 -0500
+Message-ID: <45C84399.70407@s5r6.in-berlin.de>
+Date: Tue, 06 Feb 2007 10:00:09 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.0.8) Gecko/20061030 SeaMonkey/1.0.6
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-2
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070205195739.cabf67fa.akpm@linux-foundation.org>
-X-echelon: NSA, CIA, CI5, MI5, FBI, KGB, BIS, Plutonium, Bin Laden, bomb
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-Muni-Spam-TestIP: 81.31.45.161
+To: Andi Kleen <ak@suse.de>
+CC: Andrew Morton <akpm@linux-foundation.org>, David Moore <dcm@mit.edu>,
+       linux-kernel <linux-kernel@vger.kernel.org>, discuss@x86-64.org,
+       linux1394-devel <linux1394-devel@lists.sourceforge.net>,
+       Jan Beulich <jbeulich@novell.com>
+Subject: Re: [PATCH] Missing critical phys_to_virt in lib/swiotlb.c
+References: <1170614380.26464.52.camel@PISCES.MIT.EDU> <20070205133556.9b290d0a.akpm@linux-foundation.org> <200702060856.45473.ak@suse.de>
+In-Reply-To: <200702060856.45473.ak@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 05, 2007 at 07:57:39PM -0800, Andrew Morton wrote:
+On 2/6/2007 8:56 AM, Andi Kleen wrote:
+>> > From: David Moore <dcm@acm.org>
+...
+>> > It fixes real crashes:
+>> > http://lists.opensuse.org/opensuse-bugs/2006-12/msg02943.html
+>> > http://qa.mandriva.com/show_bug.cgi?id=28224
+>> > http://www.pchdtv.com/forum/viewtopic.php?t=2063&sid=a959a14a4c2db0eebaab7b0df56103ce
+>> > 
+>> > --- linux-2.6.19.x86_64/lib/swiotlb.c.orig	2007-02-04 13:18:41.000000000 -0500
+>> > +++ linux-2.6.19.x86_64/lib/swiotlb.c	2007-02-04 13:19:43.000000000 -0500
+>> > @@ -750,7 +750,7 @@ swiotlb_sync_sg(struct device *hwdev, st
+>> >  
+>> >  	for (i = 0; i < nelems; i++, sg++)
+>> >  		if (sg->dma_address != SG_ENT_PHYS_ADDRESS(sg))
+>> > -			sync_single(hwdev, (void *) sg->dma_address,
+>> > +			sync_single(hwdev, phys_to_virt(sg->dma_address),
+>> >  				    sg->dma_length, dir, target);
+>> >  }
+...
+> Sounds weird. If this really didn't work much more should be broken
+> (e.g. no cdroms/sound on Intel x86-64 boxes with >4GB)
 
-these are lines above:
+Yes, it's weird; e.g. it seems that reports of that on linux1394-user
+and -devel came in only recently. But I may have missed something.
+(OTOH, this bug was partially hidden for FireWire users because one of
+the relevant FireWire drivers was lacking respective _sync_sg calls.)
 
-kernel: [  144.639984] ACPI: Power Button (FF) [PWRF]
-kernel: [  144.640006] input: Power Button (CM) as /class/input/input3
-kernel: [  144.640017] ACPI: Power Button (CM) [PWRB]
-kernel: [  222.002010] PGD 253115067 PUD 0
+> I'm a little sceptical. Perhaps the TV driver is doing something bogus
+> here? 
 
+sync_single() definitely wants a virtual address there. sg->dma_address
+is a physical address. The bug and the fix are obvious.
 
-> > kernel: [  222.002013] CPU 0
-> > kernel: [  222.002014] Modules linked in: container fan button ac thermal processor myri10ge megaraid_sas serio_raw psmouse evdev
-> > kernel: [  222.002020] Pid: 3234, comm: java Not tainted 2.6.20 #1
-> > kernel: [  222.002021] RIP: 0010:[page_to_pfn+0/64] [page_to_pfn+0/64] page_to_pfn+0x0/0x40
-> > kernel: [  222.002024] RSP: 0018:ffff81024ebf9ac0 EFLAGS: 00010246
-> > kernel: [  222.002026] RAX: ffff8102574213c0 RBX: ffff810256f07800 RCX: ffff81022e5600c0
-> > kernel: [  222.002027] RDX: 0000000000000740 RSI: 0000000000000000 RDI: 0000000000000000
-> > kernel: [  222.002028] RBP: 0000000000000740 R08: 0000000000000002 R09: ffff8102536b9a40
-> > kernel: [  222.002030] R10: 0000000000000007 R11: ffffffff80259650 R12: 0000000000000000
-> > kernel: [  222.002031] R13: ffff810257422460 R14: 0000000000000002 R15: ffff81022e5600c0
-> > kernel: [  222.002033] FS:  0000000041061950(0063) GS:ffffffff80649000(0000) knlGS:0000000000000000
-> > kernel: [  222.002034] CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-> > kernel: [  222.002036] CR2: 0000000000000000 CR3: 0000000251dbb000 CR4: 00000000000006e0
-> > kernel: [  222.002037] Process java (pid: 3234, threadinfo ffff81024ebf8000, task ffff81024ebdc7a0)
-> > kernel: [  222.002038] Stack:  ffffffff804c4f77 ffff810257422400 0000000000000002 ffff81024ebf9f28
-> > kernel: [  222.002042]  fffffffffffff240 0000000000000740 ffff810257422460 0000000000000002
-> > kernel: [  222.002044]  ffffffff804c3ba5 0000000000000010 ffff81022e5600c0 ffff8102536b9a40
-> > kernel: [  222.002046] Call Trace:
-> > kernel: [  222.002051] [ioat_dma_memcpy_buf_to_pg+71/224] ioat_dma_memcpy_buf_to_pg+0x47/0xe0
-> > kernel: [  222.002053]  [dma_memcpy_to_iovec+613/768] dma_memcpy_to_iovec+0x265/0x300
-> > kernel: [  222.002057] [dma_skb_copy_datagram_iovec+115/656] dma_skb_copy_datagram_iovec+0x73/0x290
-> > kernel: [  222.002060]  [tcp_recvmsg+1764/3296] tcp_recvmsg+0x6e4/0xce0
-> > kernel: [  222.002063]  [sock_common_recvmsg+48/80] sock_common_recvmsg+0x30/0x50
-> > kernel: [  222.002065]  [sock_recvmsg+281/352] sock_recvmsg+0x119/0x160
-> > kernel: [  222.002069]  [autoremove_wake_function+0/48] autoremove_wake_function+0x0/0x30
-> > kernel: [  222.002071]  [autoremove_wake_function+0/48] autoremove_wake_function+0x0/0x30
-> > kernel: [  222.002073]  [__handle_mm_fault+1741/2896] __handle_mm_fault+0x6cd/0xb50
-> > kernel: [  222.002076]  [sys_recvfrom+250/400] sys_recvfrom+0xfa/0x190
-> > kernel: [  222.002078]  [tty_ldisc_deref+100/128] tty_ldisc_deref+0x64/0x80
-> > kernel: [  222.002080]  [tty_write+540/592] tty_write+0x21c/0x250
-> > kernel: [  222.002083]  [system_call+126/131] system_call+0x7e/0x83
-> > kernel: [  222.002084]
-> > kernel: [  222.002085]
-> > kernel: [  222.002085] Code: 48 8b 07 48 c1 e8 3a 48 8b 14 c5 80 b8 65 80 48 b8 b7 6d db
-> > kernel: [  222.002092]  RSP <ffff81024ebf9ac0>
-> > 
+Unfortunately an author of lib/swiotlb.c chose to call many variables
+holding *virtual* addresses "dma_addr". Note how that file at the same
+time contains variables like "dma_addr_t dma_handle". A recipe for disaster.
+
+> Also I haven't heard of this problem before at all and I'm sure I would
+> have if sounds/cdroms were broken.
 > 
-> Is that the whole oops message?  There should have been a few interesting
-> lines preceding the above.
+> Shouldn't be applied without further analysis.
 
-I've posted it above.
+Maybe some recent changes elsewhere cause more frequent use of
+swiotlb-driven bounce buffers? That should be verified.
 
+Or maybe people are deploying affected hardware more often now?
 -- 
-Luká¹ Hejtmánek
+Stefan Richter
+-=====-=-=== --=- --==-
+http://arcgraph.de/sr/
