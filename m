@@ -1,69 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030570AbXBFX2i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030571AbXBFX26@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030570AbXBFX2i (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 18:28:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030572AbXBFX2i
+	id S1030571AbXBFX26 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 18:28:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030569AbXBFX25
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 18:28:38 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:39015 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030570AbXBFX2g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 18:28:36 -0500
-Date: Wed, 7 Feb 2007 00:28:28 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Daniel Walker <dwalker@mvista.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Andrew Morton <akpm@osdl.org>,
-       linux-kernel@vger.kernel.org
+	Tue, 6 Feb 2007 18:28:57 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.158]:53346 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030571AbXBFX2l (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Feb 2007 18:28:41 -0500
 Subject: Re: 2.6.20-rc6-mm3
-Message-ID: <20070206232828.GA21969@elte.hu>
-References: <20070206210959.GC25430@elte.hu> <1170796999.3455.43.camel@dwalker1> <20070206214131.GA1176@elte.hu> <1170798879.3455.58.camel@dwalker1> <20070206220855.GB5109@elte.hu> <1170801742.3455.87.camel@dwalker1> <20070206225650.GA14853@elte.hu> <1170803070.3455.93.camel@dwalker1> <20070206231421.GA18654@elte.hu> <1170804177.3455.109.camel@dwalker1>
+From: Daniel Walker <dwalker@mvista.com>
+Reply-To: dwalker@mvista.com
+To: Rob Landley <rob@landley.net>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Andrew Morton <akpm@osdl.org>,
+       linux-kernel@vger.kernel.org, mingo@elte.hu
+In-Reply-To: <200702061815.41078.rob@landley.net>
+References: <20070129204528.eb8d695e.akpm@osdl.org>
+	 <1170793206.3785.16.camel@chaos> <1170794437.3455.20.camel@dwalker1>
+	 <200702061815.41078.rob@landley.net>
+Content-Type: text/plain
+Date: Tue, 06 Feb 2007 15:28:38 -0800
+Message-Id: <1170804518.3455.115.camel@dwalker1>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1170804177.3455.109.camel@dwalker1>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -5.3
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-5.3 required=5.9 tests=ALL_TRUSTED,BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-3.3 ALL_TRUSTED            Did not pass through any untrusted hosts
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Daniel Walker <dwalker@mvista.com> wrote:
-
-> On Wed, 2007-02-07 at 00:14 +0100, Ingo Molnar wrote:
-> > * Daniel Walker <dwalker@mvista.com> wrote:
+On Tue, 2007-02-06 at 18:15 -0500, Rob Landley wrote:
+> On Tuesday 06 February 2007 3:40 pm, Daniel Walker wrote:
+> > In this case "different" goes into userspace .. So different could mean
+> > userspace regression, which is something that we don't want. I have no
+> > idea if any apps use /proc/interrupts , but it's possible since it's
+> > been around for a long time.
 > > 
-> > > On Tue, 2007-02-06 at 23:56 +0100, Ingo Molnar wrote:
-> > > 
-> > > > changing the current 'timer' entry (which is line 2 of /proc/interrupts) 
-> > > > to be 'listed as lapic-timer' and to 'replace it with the count from 
-> > > > LOC' is faking a count in a line where nothing like that should be.
-> > > 
-> > > This point is getting irrelevant ..
-> > 
-> > it is very much relevant: faking a count is something we /dont/ want 
-> > to do with /proc/interrupts, for (very) basic compatibility, 
-> > simplicity and policy reasons. And that is precisely what your 
-> > suggestion was to 'solve' this supposed 'problem' - so it's very 
-> > much relevant.
+> > The reason that I'm bringing it up at all is because people have ask me
+> > "Why isn't my timer ticking??"
 > 
-> As I said you are misunderstanding me .. which is why this is not 
-> relevant any more ..
+> Because there are two clock sources in the machine and it's using the other 
+> one, so the interrupt isn't firing?
+> 
+> Are you saying that the /proc statistics aren't accurate, or that you 
+> previously misunderstood what it was actually measuring and you'd now like it 
+> to lie?
 
-actually, i quoted what you said:
+I understand exactly what is happening . The statistics are unclear, and
+tend to confuse people .
 
-| If we change the current "timer" entry to be listed as "lapic-timer" 
-| and not "IO-APIC-edge" (or one of the other names) and replace it with 
-| the count from LOC
+Daniel
 
-this is a pretty clear sentence, i dont think i misunderstood anything 
-about it. If i did, please point it out specifically.
-
-	Ingo
