@@ -1,55 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752153AbXBFRT2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752272AbXBFRYB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752153AbXBFRT2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 12:19:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752262AbXBFRT2
+	id S1752272AbXBFRYB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 12:24:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932622AbXBFRYB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 12:19:28 -0500
-Received: from web38507.mail.mud.yahoo.com ([209.191.125.53]:43506 "HELO
-	web38507.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751651AbXBFRT1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 12:19:27 -0500
-X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Tue, 06 Feb 2007 12:19:27 EST
+	Tue, 6 Feb 2007 12:24:01 -0500
+Received: from web26903.mail.ukl.yahoo.com ([217.146.176.92]:39363 "HELO
+	web26903.mail.ukl.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752272AbXBFRYA convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Feb 2007 12:24:00 -0500
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=FOilkRvlL0BpHWo3jvgH8Ayv8eFw1c6M1bOPkYVFZoRFvmEtz2RSCaorx9jrLref1eG/QsFnV/A6d8MbtYAsk/XTmcW1wEM3g8MnxMhybJkrZ0LX5h5FpL1fLFRzG6/eXxMqGm5bwEzJVJeDBlU/CAENdikgZ1AYLVlOXNbJrww=;
-X-YMail-OSG: ZFVL4VgVM1mgvJgYrTln7gAJkguwkentRByzPPj_8AQG4BL6JwPf6wsJ_UWi.To_wQ--
-Date: Tue, 6 Feb 2007 09:12:47 -0800 (PST)
-From: Levitsky Maxim <maximlevitsky@yahoo.com>
-Subject: Question: Status of marvell's PATA 88SE6101 controller on intel boards
-To: linux-kernel@vger.kernel.org
+  s=s1024; d=yahoo.fr;
+  h=X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=fzaPxK8bbKFe48uBOwjeeO4Ka/Rv8Kln+ovrvMNRy5NeqotXY9fiJlc0BGGRTziUx58xswVKkGu+cwWH4RpUlO/ykPyO15kloK81IJ/Sx2/uHeyPio9xa8Y6uUBSugTSDwPFjrH4O14pf+rDiS33OE3NWXRulqpuc3h8P6zxlhk=;
+X-YMail-OSG: HnuTRxsVM1mDRwp4Q8wlrEi8DtynePDTsIiyVbfjx6mspJYcevVgefP8m2A8ThGADuiY_akAT1Qcn.h2OhCx1HdQPWUPM8I6hH7VV5mjcnBvsPoqqYGrENBg28bHEuo5eXKBSYnbzniY
+X-Mailer: YahooMailRC/368.3 YahooMailWebService/0.6.132.7
+Date: Tue, 6 Feb 2007 17:23:55 +0000 (GMT)
+From: Etienne Lorrain <etienne_lorrain@yahoo.fr>
+Subject: Re : [PATCH] Compressed ia32 ELF file generation for loading by Gujin 1/3
+To: "H. Peter Anvin" <hpa@zytor.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: vgoyal@in.ibm.com, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <508716.76088.qm@web38507.mail.mud.yahoo.com>
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
+Message-ID: <957176.28334.qm@web26903.mail.ukl.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+H. Peter Anvin wrote:
+> Actually, as far as I can see, he has re-invented having a real-mode 
+> code chunk which then gets run before the protected-mode kernel.  We 
+> already have that!
 
-I am going to buy a intel DG965RYCK motherboard. The board looks ok to me , 
-but I found that it contains marvell's 88SE6101 PATA controller , and I need to use PATA.
+  I did not claim to have invented anything there, this is just a quite
+ simple C code to execute instead of the current real mode assembly:
+ it is a rewrite with obvious advantages/disadvantages.
+ New features are more that this real-mode function can return an error
+ to the bootloader to tell something to the user, so the user can select
+ another kernel with the right processor, another video mode... with
+ clean error messages - not a crash dump because this assembly
+ instruction is not for that processor.
+  I am still saying that the bootloader knows the root filesystem to
+ be used by the kernel it loads, and that ELF is a clean format to
+ store different sections to be loaded into memory at predefined
+ addresses. Also there isn't any more kernel size limit.
 
-I also noticed that 2.6.20 adds experimentally support for that chip.
-But driver says that it enables it via 'legacy mode'
-
-I will be glad to hear whenever full support is planned or not.
-
-And as last thing I want to ask you whenever current support is usable, 
-that is can I use DMA , can I use DVD as at least reader for CD/DVD , 
-and even better can I burn disks with it ( although I can live without it)
-
-Your truly,
-             Maxim Levitsky
-
-
-Maxim Levitsky
+ Etienne.
 
 
- 
-____________________________________________________________________________________
-Don't get soaked.  Take a quick peak at the forecast
-with the Yahoo! Search weather shortcut.
-http://tools.search.yahoo.com/shortcuts/#loc_weather
+	
+
+	
+		
+___________________________________________________________________________ 
+Découvrez une nouvelle façon d'obtenir des réponses à toutes vos questions ! 
+Profitez des connaissances, des opinions et des expériences des internautes sur Yahoo! Questions/Réponses 
+http://fr.answers.yahoo.com
