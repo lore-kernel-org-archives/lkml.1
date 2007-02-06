@@ -1,52 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030599AbXBFXqN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030602AbXBFXrP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030599AbXBFXqN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 18:46:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030602AbXBFXqM
+	id S1030602AbXBFXrP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 18:47:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030604AbXBFXrO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 18:46:12 -0500
-Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:52208 "EHLO
-	pd4mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030599AbXBFXqM (ORCPT
+	Tue, 6 Feb 2007 18:47:14 -0500
+Received: from rgminet01.oracle.com ([148.87.113.118]:26693 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030601AbXBFXrN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 18:46:12 -0500
-Date: Tue, 06 Feb 2007 17:45:22 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: hdparm for lib_pata
-In-reply-to: <45C8BE89.9000705@tmr.com>
-To: Bill Davidsen <davidsen@tmr.com>
-Cc: Stephen.Clark@seclark.us, Patrick Ale <patrick.ale@gmail.com>,
-       linux-kernel@vger.kernel.org
-Message-id: <45C91312.2030403@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.L/RjDlo6Njb5Jt7/9ENZuiASoV0@ifi.uio.no>
- <45C4DF2A.1070501@shaw.ca> <45C5178A.1000501@seclark.us>
- <45C51A80.3050308@shaw.ca> <45C8BE89.9000705@tmr.com>
-User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
+	Tue, 6 Feb 2007 18:47:13 -0500
+Date: Tue, 6 Feb 2007 15:41:46 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [patch] MTD: fix DOC2000/2001/2001PLUS build error
+Message-Id: <20070206154146.c62012b4.randy.dunlap@oracle.com>
+In-Reply-To: <1170804983.29759.1051.camel@pmac.infradead.org>
+References: <1170801484.29759.1000.camel@pmac.infradead.org>
+	<Pine.LNX.4.64.0702061451560.8424@woody.linux-foundation.org>
+	<1170803515.29759.1032.camel@pmac.infradead.org>
+	<Pine.LNX.4.64.0702061516110.8424@woody.linux-foundation.org>
+	<1170804983.29759.1051.camel@pmac.infradead.org>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.0 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bill Davidsen wrote:
->> Support for that ioctl could likely be added, but these days I don't 
->> think there's much use for it. I can't see how anybody in their right 
->> mind would want to disable DMA on a modern drive, and if libata turns 
->> it off automatically then there's likely some serious hardware or 
->> driver problem that will end up biting you some other way if you force 
->> it back on.
->>
-> I think deciding to turn off DMA which works fine in old kernels 
-> qualifies as a "serious driver problem," which is why it should be under 
-> user control.
+On Tue, 06 Feb 2007 23:36:23 +0000 David Woodhouse wrote:
 
-Point is, if the DMA's not working such that the system decides to turn 
-it off, it's obviously having some issues, and thus turning it back on 
-without fixing the problem could cause problems or even cause data 
-corruption.
+> On Tue, 2007-02-06 at 15:28 -0800, Linus Torvalds wrote:
+> > (Example: I don't want to see IPV6 questions if IPV6 is off, BUT I might 
+> > still want to be able to see the question about NFSv8.1, which only works 
+> > on top of IPV6. I might not even *know* I want IPV6, but I know my company 
+> > uses NFSv8.1, so I say "yes"). 
+> 
+> (Quoting very sparsely but I think honestly -- I think the above is the
+> essence of what you were saying).
+> 
+> Actually it doesn't have to be that much of a problem if the config
+> stuff is laid out sensibly, as Ingo mentioned earlier. Those IPv6
+> options you don't want to see are likely to be all in an 'IPv6' submenu
+> of the networking stuff which nobody forces you to visit. Yet
+> 'NFSv8.1' (*shudder*) would be elsewhere under networked file systems,
+> or some suboption of NFS, and you'd see it just fine.
+> 
+> > And I realize that was a contrieved example, but there are *real* examples 
+> > of this in the kernel today. I may well know that I want 802.11 WEP 
+> > encryption, for example, but I sure as hell had *no* clue that it requires 
+> > ARC4.
+> 
+> Again, if you don't care about crypto then you're unlikely to be delving
+> in the crypto menus. Nobody forces you to go there. But when you look at
+> the greyed-out WEP option and you click on it and it tells you "You need
+> ARC4 for this. Do you want me to turn it on for you?" (or whatever), you
+> get what you wanted.
+> 
+> Really, if our config is set up in sensible submenus (as in general it
+> _is_), the "see everything" behaviour really isn't bad.
 
--- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
+Well, there's layout and then there's the tool(s).
 
+Besides this select business, Bill (or someone :) mentioned a feature
+that I requested about 8 months ago:  the ability to disable or enable
+groups of drivers at one swoop.  And Matt has made some good
+scripting suggestions.
+
+For layout, we may not all agree on that part either.  :)
+It's quite subjective.  E.g., I made/submitted a patch maybe 1 year
+ago that tried to put all video graphics (frame buffer, AGP, DRM/DRI,
+etc.) into one localized place in the menu structure.
+OK, perhaps I wasn't persistent enough, but no one was interested
+in it.  (That probably just means that config menus are low priority.)
+
+
+---
+~Randy
