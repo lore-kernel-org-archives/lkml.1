@@ -1,60 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965577AbXBFWR5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030179AbXBFWTr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965577AbXBFWR5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 17:17:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965541AbXBFWR5
+	id S1030179AbXBFWTr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 17:19:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030183AbXBFWTr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 17:17:57 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:49658 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965577AbXBFWRz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 17:17:55 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
-       "Lu, Yinghai" <yinghai.lu@amd.com>,
-       Luigi Genoni <luigi.genoni@pirelli.com>,
-       Natalie Protasevich <protasnb@gmail.com>, Andi Kleen <ak@suse.de>
-Subject: Re: [PATCH 2/2] x86_64 irq:  Handle irqs pending in IRR during irq migration.
-References: <200701221116.13154.luigi.genoni@pirelli.com>
-	<200702021848.55921.luigi.genoni@pirelli.com>
-	<m1ejp85tgm.fsf@ebiederm.dsl.xmission.com>
-	<200702021905.39922.luigi.genoni@pirelli.com>
-	<m1zm7w3wvr.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1veik3woc.fsf_-_@ebiederm.dsl.xmission.com>
-	<20070206073616.GA15016@elte.hu>
-Date: Tue, 06 Feb 2007 15:16:53 -0700
-In-Reply-To: <20070206073616.GA15016@elte.hu> (Ingo Molnar's message of "Tue,
-	6 Feb 2007 08:36:16 +0100")
-Message-ID: <m1odo7q6cq.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Tue, 6 Feb 2007 17:19:47 -0500
+Received: from web26914.mail.ukl.yahoo.com ([217.146.177.81]:23784 "HELO
+	web26914.mail.ukl.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1030179AbXBFWTq convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Feb 2007 17:19:46 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.fr;
+  h=X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=0PLgAwRvPw4cWYlWqIKdXFf2twOlVaRLmMSyyP+N4auVzxFjJU834x4TA6T9nC8E5yuHFDKae1Mj+FwqQtsxANeRWmaiNt9+sAX7WCBtEVel4W90f9Vz6xBIckYLaOxl9RdTRom42j5O3+8j4TtBHOtybunMKj3LjqqW4i8XZvg=;
+X-YMail-OSG: E3BkJp4VM1ksTcQVbATbpwNF2p92KD1lW5oUPBY7iNnOqD2mdvwGUQXTmkWnIndnaUYl7M0DWnqjYGWXnykG1RJPLPFXHwSy7wdwhgMy_7Zm6DRHWUdx.7UGv8wAbDT03FFketZ2
+X-Mailer: YahooMailRC/368.3 YahooMailWebService/0.6.132.7
+Date: Tue, 6 Feb 2007 22:19:44 +0000 (GMT)
+From: Etienne Lorrain <etienne_lorrain@yahoo.fr>
+Subject: Re : Re : Re : Re : [PATCH] Compressed ia32 ELF file generation for loading by Gujin 1/3
+To: "H. Peter Anvin" <hpa@zytor.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: vgoyal@in.ibm.com, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
+Message-ID: <965140.82745.qm@web26914.mail.ukl.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+H. Peter Anvin wrote:
+> I've long wished that someone would do a proper 16-bit x86 port of gcc; 
 
-Ingo would it be reasonable to get a wait queue so I can wait for an
-irq that needs the delayed disable action to actually become masked?
+> however, the .code16gcc is usually good enough, although it produces 
+> code which is a lot bigger than it needs to be.
 
-There are a lot of practical reasons while I cannot reprogram an
-unmasked irq.  However if we can wait it should be able to get all of
-the convoluted irq migration logic out of interrupt context, and into
-process context.
+  It is only that much bigger if you compare to 16 bits integer compilers,
 
-If know interrupts have been enabled on the cpus where an irq could be
-delivered after the irq has been masked, I know that the irq is not
-currently in progress. 
+ but once you deal with 32 bits integers in real mode you have one extra byte
 
-Therefore I know the irq will not be in progress again until the irq
-is unmasked.
+ out of the two - which is still better than dealing with dx:ax.
 
-Once I know the irq will not be received again it is safe to modify
-the irq handling data structures and the interrupt controller.
+ Last time I compiled (long time ago) some piece of code with and without
 
-I think the only generic piece missing from this equation is a wait
-queue so I can wait for the irq to become masked.  Say a generic
-sleeping masq_irq() call?
+ .code16gcc it was approx 15% bigger - approx what you get when optimising.
 
-Eric
+
+ Etienne.
+
+
+
+
+	
+
+	
+		
+___________________________________________________________________________ 
+Découvrez une nouvelle façon d'obtenir des réponses à toutes vos questions ! 
+Profitez des connaissances, des opinions et des expériences des internautes sur Yahoo! Questions/Réponses 
+http://fr.answers.yahoo.com
