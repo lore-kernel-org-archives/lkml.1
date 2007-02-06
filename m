@@ -1,79 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030532AbXBFXS3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752292AbXBFXXA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030532AbXBFXS3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 18:18:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030553AbXBFXS3
+	id S1752292AbXBFXXA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 18:23:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030559AbXBFXXA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 18:18:29 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:58156 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030532AbXBFXS2 (ORCPT
+	Tue, 6 Feb 2007 18:23:00 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.158]:51606 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752292AbXBFXW7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 18:18:28 -0500
-Subject: Re: [patch] MTD: fix DOC2000/2001/2001PLUS build error
-From: David Woodhouse <dwmw2@infradead.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0702061505400.8424@woody.linux-foundation.org>
-References: <Pine.LNX.4.64.0702041057090.8424@woody.linux-foundation.org>
-	 <20070205162635.GA755@elte.hu> <20070205163152.GA2464@elte.hu>
-	 <Pine.LNX.4.64.0702050852160.8424@woody.linux-foundation.org>
-	 <1170710272.29759.894.camel@pmac.infradead.org>
-	 <Pine.LNX.4.64.0702051322580.8424@woody.linux-foundation.org>
-	 <1170711587.29759.909.camel@pmac.infradead.org>
-	 <Pine.LNX.4.64.0702051345380.8424@woody.linux-foundation.org>
-	 <1170712393.29759.925.camel@pmac.infradead.org>
-	 <Pine.LNX.4.64.0702051409110.8424@woody.linux-foundation.org>
-	 <20070205143110.fca62b57.randy.dunlap@oracle.com>
-	 <Pine.LNX.4.64.0702051502370.8424@woody.linux-foundation.org>
-	 <1170717694.29759.941.camel@pmac.infradead.org>
-	 <Pine.LNX.4.64.0702051525320.8424@woody.linux-foundation.org>
-	 <1170755101.29759.960.camel@pmac.infradead.org>
-	 <Pine.LNX.4.64.0702060841440.8424@woody.linux-foundation.org>
-	 <1170801484.29759.1000.camel@pmac.infradead.org>
-	 <20070206143956.b09c674d.randy.dunlap@oracle.com>
-	 <Pine.LNX.4.64.0702061505400.8424@woody.linux-foundation.org>
+	Tue, 6 Feb 2007 18:22:59 -0500
+Subject: Re: 2.6.20-rc6-mm3
+From: Daniel Walker <dwalker@mvista.com>
+Reply-To: dwalker@mvista.com
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Andrew Morton <akpm@osdl.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20070206231421.GA18654@elte.hu>
+References: <20070206205231.GA25430@elte.hu>
+	 <1170795378.3455.31.camel@dwalker1> <20070206210959.GC25430@elte.hu>
+	 <1170796999.3455.43.camel@dwalker1> <20070206214131.GA1176@elte.hu>
+	 <1170798879.3455.58.camel@dwalker1> <20070206220855.GB5109@elte.hu>
+	 <1170801742.3455.87.camel@dwalker1> <20070206225650.GA14853@elte.hu>
+	 <1170803070.3455.93.camel@dwalker1>  <20070206231421.GA18654@elte.hu>
 Content-Type: text/plain
-Date: Tue, 06 Feb 2007 23:18:20 +0000
-Message-Id: <1170803900.29759.1040.camel@pmac.infradead.org>
+Date: Tue, 06 Feb 2007 15:22:57 -0800
+Message-Id: <1170804177.3455.109.camel@dwalker1>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6.dwmw2.1) 
+X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-02-06 at 15:11 -0800, Linus Torvalds wrote:
+On Wed, 2007-02-07 at 00:14 +0100, Ingo Molnar wrote:
+> * Daniel Walker <dwalker@mvista.com> wrote:
 > 
-> On Tue, 6 Feb 2007, Randy Dunlap wrote:
-> > > But it doesn't matter. I'll come up with a hack for the tools which make
-> > > them (optionally) treat 'select' of a user-visible option as if it
-> > > was just 'depends on'. And that should fix the problem.
-> >
-> > Yes, that's the solution that I decided on during lunch also:
-> > 	select <==> depends on
+> > On Tue, 2007-02-06 at 23:56 +0100, Ingo Molnar wrote:
+> > 
+> > > changing the current 'timer' entry (which is line 2 of /proc/interrupts) 
+> > > to be 'listed as lapic-timer' and to 'replace it with the count from 
+> > > LOC' is faking a count in a line where nothing like that should be.
+> > 
+> > This point is getting irrelevant ..
 > 
-> I think yuou can certainly enable an "expert mode", which just reads 
-> "select" as "depends on".
-> 
-> You'll probably have to do *more* changes to the tools than my suggestion 
-> to just make them let you know why they can't turn something off, though. 
-> Why? Some things don't even have questions at all right now, and their 
-> only life is as implied options that are turned on by others.
-> 
-> And yes, some silly people who hate "select" have tried to turn them into
+> it is very much relevant: faking a count is something we /dont/ want to 
+> do with /proc/interrupts, for (very) basic compatibility, simplicity and 
+> policy reasons. And that is precisely what your suggestion was to 
+> 'solve' this supposed 'problem' - so it's very much relevant.
 
-Out of interest, which people would this be? Not me, certainly.
-I _use_ select, for options which don't have questions. There were two
-such instances in the context of Ingo's mail of $subject, even.
+As I said you are misunderstanding me .. which is why this is not
+relevant any more .. 
 
-And the thing Randy was saying "yes" to, which you elided but I've
-restored in the above quotation, was the idea of turning 'select' into
-'depends on' for _user-visible_ options. NOT for the ones which don't
-have a question.
+Please move on .
 
--- 
-dwmw2
+> > > the kernel simply displays reality: IRQ#0 isnt increasing because 
+> > > it's not used, and LOC (local apic timers) is increasing.
+> > 
+> > What about the statistics for the other interrupts in the system ? It 
+> > clearly doesn't list all interrupts in the system .
+> 
+> what is your point?
+
+Isn't the listing inconsistent ? /proc/interrupts only showing some
+special interrupts, and not others .. For example it shows NMI which is
+not related to request_irq() .. It shows some clock driver devices
+(timer, NMI, LOC) and not others (clock event devices) ..
+
+Daniel
 
