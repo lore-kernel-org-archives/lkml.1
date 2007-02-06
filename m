@@ -1,90 +1,241 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752114AbXBFNXn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752053AbXBFNa4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752114AbXBFNXn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 08:23:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752126AbXBFNXn
+	id S1752053AbXBFNa4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 08:30:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752110AbXBFNa4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 08:23:43 -0500
-Received: from verein.lst.de ([213.95.11.210]:43734 "EHLO mail.lst.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752114AbXBFNXl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 08:23:41 -0500
-Date: Tue, 6 Feb 2007 14:23:33 +0100
-From: Christoph Hellwig <hch@lst.de>
-To: jack@suse.cz, akpm@osdl.org
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] remove sb->s_files and file_list_lock usage in dquot.c
-Message-ID: <20070206132333.GA9919@lst.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 6 Feb 2007 08:30:56 -0500
+Received: from v813.rev.tld.pl ([195.149.226.213]:54454 "EHLO
+	smtp.host4.kei.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752053AbXBFNaz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Feb 2007 08:30:55 -0500
+X-clamdmail: clamdmail 0.18a
+From: Marcin Juszkiewicz <openembedded@hrw.one.pl>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] backlight control for Frontpath ProGear HX1050+
+Date: Tue, 6 Feb 2007 14:30:40 +0100
+User-Agent: KMail/1.9.5
+Cc: Richard Purdie <rpurdie@rpsys.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.3.28i
-X-Spam-Score: -0.001 () BAYES_44
+Message-Id: <200702061430.42581.openembedded@hrw.one.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Iterate over sb->s_inodes instead of sb->s_files in add_dquot_ref.
-This reduces list search and lock hold time aswell as getting rid of
-one of the few uses of file_list_lock which Ingo identified as a
-scalability problem.
+From: Marcin Juszkiewicz <openembedded@hrw.one.pl>
 
-Previously we called dq_op->initialize for every inode handing of
-a writeable file that wasn't initialized before.  Now we're calling
-it for every inode that has a non-zero i_writecount, aka a writeable
-file descriptor refering to it.
+Add control of LCD backlight for Frontpath ProGear HX1050+.
+Patch is based on http://downloads.sf.net/progear/progear-lcd-0.2.tar.gz
+driver by M Schacht.
 
-Thanks a lot to Jan Kara for running this patch through his quota
-test harness.
+Signed-Off-By: Marcin Juszkiewicz <openembedded@hrw.one.pl>
 
-Note:  this is ontop of '[PATCH] move remove_dquot_ref to dqout.c'
-which I sent out yesterday.
+---
+Patch follow kernel version 2.6.20
+
+ Kconfig      |    8 +++
+ Makefile     |    1
+ progear_bl.c |  157 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 166 insertions(+)
 
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
-
-Index: linux-2.6/fs/dquot.c
+Index: linux-2.6.20/drivers/video/backlight/Kconfig
 ===================================================================
---- linux-2.6.orig/fs/dquot.c	2007-02-05 18:54:36.000000000 +0100
-+++ linux-2.6/fs/dquot.c	2007-02-05 18:59:48.000000000 +0100
-@@ -689,23 +689,27 @@
- /* This routine is guarded by dqonoff_mutex mutex */
- static void add_dquot_ref(struct super_block *sb, int type)
- {
--	struct list_head *p;
-+	struct inode *inode;
+--- linux-2.6.20.orig/drivers/video/backlight/Kconfig	2007-02-04 19:44:54.000000000 +0100
++++ linux-2.6.20/drivers/video/backlight/Kconfig	2007-02-05 16:13:13.000000000 +0100
+@@ -66,3 +66,11 @@
+ 	  If you have a HP Jornada 680, say y to enable the
+ 	  backlight driver.
  
- restart:
--	file_list_lock();
--	list_for_each(p, &sb->s_files) {
--		struct file *filp = list_entry(p, struct file, f_u.fu_list);
--		struct inode *inode = filp->f_path.dentry->d_inode;
--		if (filp->f_mode & FMODE_WRITE && dqinit_needed(inode, type)) {
--			struct dentry *dentry = dget(filp->f_path.dentry);
--			file_list_unlock();
--			sb->dq_op->initialize(inode, type);
--			dput(dentry);
--			/* As we may have blocked we had better restart... */
--			goto restart;
--		}
-+	spin_lock(&inode_lock);
-+	list_for_each_entry(inode, &sb->s_inodes, i_sb_list) {
-+		if (!atomic_read(&inode->i_writecount))
-+			continue;
-+		if (!dqinit_needed(inode, type))
-+			continue;
-+		if (inode->i_state & (I_FREEING|I_WILL_FREE))
-+			continue;
++config BACKLIGHT_PROGEAR
++       tristate "Frontpath ProGear Backlight Driver"
++       depends on BACKLIGHT_DEVICE && PCI
++       default y
++       help
++         If you have a Frontpath ProGear say Y to enable the
++         backlight driver.
 +
-+		__iget(inode);
-+		spin_unlock(&inode_lock);
+Index: linux-2.6.20/drivers/video/backlight/progear_bl.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6.20/drivers/video/backlight/progear_bl.c	2007-02-05 16:29:14.000000000 +0100
+@@ -0,0 +1,157 @@
++/*
++ *  Backlight Driver for Frontpath ProGear HX1050+
++ *
++ *  Copyright (c) 2006 Marcin Juszkiewicz
++ *
++ *  Based on Progear LCD driver by M Schacht
++ *  <mschacht at alumni dot washington dot edu>
++ *
++ *  Based on Sharp's Corgi Backlight Driver
++ *  Based on Backlight Driver for HP Jornada 680
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License version 2 as
++ *  published by the Free Software Foundation.
++ *
++ */
 +
-+		sb->dq_op->initialize(inode, type);
-+		iput(inode);
-+		/* As we may have blocked we had better restart... */
-+		goto restart;
- 	}
--	file_list_unlock();
-+	spin_unlock(&inode_lock);
- }
- 
- /* Return 0 if dqput() won't block (note that 1 doesn't necessarily mean blocking) */
++#include <linux/module.h>
++#include <linux/kernel.h>
++#include <linux/init.h>
++#include <linux/platform_device.h>
++#include <linux/mutex.h>
++#include <linux/fb.h>
++#include <linux/backlight.h>
++#include <linux/pci.h>
++#include <asm/uaccess.h>
++
++#define PMU_LPCR               0xB0
++#define SB_MPS1                0x61
++#define HW_LEVEL_MAX           0x77
++#define HW_LEVEL_MIN           0x4f
++
++static int progearbl_intensity;
++static struct backlight_properties progearbl_data;
++static struct backlight_device *progear_backlight_device;
++
++static struct pci_dev *pmu_dev = NULL;
++static struct pci_dev *sb_dev = NULL;
++
++static int progearbl_send_intensity(struct backlight_device *bd)
++{
++       int intensity = bd->props->brightness;
++
++       if (bd->props->power != FB_BLANK_UNBLANK)
++               intensity = 0;
++       if (bd->props->fb_blank != FB_BLANK_UNBLANK)
++               intensity = 0;
++
++       pci_write_config_byte(pmu_dev, PMU_LPCR, intensity + HW_LEVEL_MIN);
++
++       progearbl_intensity = intensity;
++
++       return 0;
++}
++
++static int progearbl_get_intensity(struct backlight_device *bd)
++{
++       return progearbl_intensity;
++}
++
++static int progearbl_set_intensity(struct backlight_device *bd)
++{
++       progearbl_send_intensity(progear_backlight_device);
++
++       return 0;
++}
++
++static struct backlight_properties progearbl_data = {
++       .owner = THIS_MODULE,
++       .get_brightness = progearbl_get_intensity,
++       .update_status = progearbl_set_intensity,
++};
++
++static int progearbl_probe(struct platform_device *pdev)
++{
++       u8 temp;
++
++       pmu_dev = pci_get_device(PCI_VENDOR_ID_AL, PCI_DEVICE_ID_AL_M7101, 0);
++       if (!pmu_dev) {
++               printk("ALI M7101 PMU not found.\n");
++               return -ENODEV;
++       }
++
++       sb_dev = pci_get_device(PCI_VENDOR_ID_AL, PCI_DEVICE_ID_AL_M1533, 0);
++       if (!sb_dev) {
++               printk("ALI 1533 SB not found.\n");
++               pci_dev_put(pmu_dev);
++               return -ENODEV;
++       }
++
++       /*     Set SB_MPS1 to enable brightness control. */
++       pci_read_config_byte(sb_dev, SB_MPS1, &temp);
++       pci_write_config_byte(sb_dev, SB_MPS1, temp | 0x20);
++
++       progear_backlight_device = backlight_device_register("progear-bl",
++			   &pdev->dev, NULL, &progearbl_data);
++       if (IS_ERR(progear_backlight_device))
++               return PTR_ERR(progear_backlight_device);
++
++       progearbl_data.power = FB_BLANK_UNBLANK;
++       progearbl_data.brightness = HW_LEVEL_MAX - HW_LEVEL_MIN;
++       progearbl_data.max_brightness = HW_LEVEL_MAX - HW_LEVEL_MIN;
++       progearbl_send_intensity(progear_backlight_device);
++
++       return 0;
++}
++
++static int progearbl_remove(struct platform_device *dev)
++{
++       backlight_device_unregister(progear_backlight_device);
++
++       return 0;
++}
++
++static struct platform_driver progearbl_driver = {
++       .probe = progearbl_probe,
++       .remove = progearbl_remove,
++       .driver = {
++                  .name = "progear-bl",
++                  },
++};
++
++static struct platform_device *progearbl_device;
++
++static int __init progearbl_init(void)
++{
++       int ret = platform_driver_register(&progearbl_driver);
++       if (!ret) {
++               progearbl_device = platform_device_alloc("progear-bl", -1);
++               if (!progearbl_device)
++                       return -ENOMEM;
++
++               ret = platform_device_add(progearbl_device);
++
++               if (ret) {
++                       platform_device_put(progearbl_device);
++                       platform_driver_unregister(&progearbl_driver);
++               }
++       }
++       return ret;
++}
++
++static void __exit progearbl_exit(void)
++{
++       pci_dev_put(pmu_dev);
++       pci_dev_put(sb_dev);
++
++       platform_device_unregister(progearbl_device);
++       platform_driver_unregister(&progearbl_driver);
++}
++
++module_init(progearbl_init);
++module_exit(progearbl_exit);
++
++MODULE_AUTHOR("Marcin Juszkiewicz <linux@hrw.one.pl>");
++MODULE_DESCRIPTION("ProGear Backlight Driver");
++MODULE_LICENSE("GPL");
+Index: linux-2.6.20/drivers/video/backlight/Makefile
+===================================================================
+--- linux-2.6.20.orig/drivers/video/backlight/Makefile	2007-02-04 19:44:54.000000000 +0100
++++ linux-2.6.20/drivers/video/backlight/Makefile	2007-02-05 16:13:13.000000000 +0100
+@@ -5,3 +5,4 @@
+ obj-$(CONFIG_BACKLIGHT_CORGI)	+= corgi_bl.o
+ obj-$(CONFIG_BACKLIGHT_HP680)	+= hp680_bl.o
+ obj-$(CONFIG_BACKLIGHT_LOCOMO)	+= locomolcd.o
++obj-$(CONFIG_BACKLIGHT_PROGEAR) += progear_bl.o
+
+
+-- 
+JID: hrw-jabber.org
+OpenEmbedded developer/consultant
+
+   Programming consists of 50% planning, 50% coding and 30% mathematics
+
+
