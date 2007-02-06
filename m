@@ -1,127 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751945AbXBFJpM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751981AbXBFJpn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751945AbXBFJpM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 04:45:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751956AbXBFJpM
+	id S1751981AbXBFJpn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 04:45:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751967AbXBFJpm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 04:45:12 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:56631 "EHLO smtp.osdl.org"
+	Tue, 6 Feb 2007 04:45:42 -0500
+Received: from mx2.suse.de ([195.135.220.15]:59323 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751945AbXBFJpJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 04:45:09 -0500
-Date: Tue, 6 Feb 2007 01:45:01 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Lukas Hejtmanek <xhejtman@mail.muni.cz>
-Cc: linux-kernel@vger.kernel.org, Chris Leech <christopher.leech@intel.com>
-Subject: Re: 2.6.19.2, 2.6.20 Kernel oops
-Message-Id: <20070206014501.753b406a.akpm@linux-foundation.org>
-In-Reply-To: <20070206091617.GI22820@mail.muni.cz>
-References: <20070205110829.GC22820@mail.muni.cz>
-	<20070205195739.cabf67fa.akpm@linux-foundation.org>
-	<20070206085943.GG22820@mail.muni.cz>
-	<20070206010907.c553dd52.akpm@linux-foundation.org>
-	<20070206091617.GI22820@mail.muni.cz>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1751927AbXBFJpe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Feb 2007 04:45:34 -0500
+From: Andi Kleen <ak@suse.de>
+To: "Jan Beulich" <jbeulich@novell.com>
+Subject: Re: [discuss] [patch] mtrr: fix issues with large addresses
+Date: Tue, 6 Feb 2007 10:45:22 +0100
+User-Agent: KMail/1.9.5
+Cc: "Andreas Herrmann" <andreas.herrmann3@amd.com>,
+       "Suresh B Siddha" <suresh.b.siddha@intel.com>,
+       "Richard Gooch" <rgooch@safe-mbox.com>, linux-kernel@vger.kernel.org,
+       discuss@x86-64.org
+References: <20070205171959.GF8665@alberich.amd.com> <200702060853.30812.ak@suse.de> <45C85911.76E4.0078.0@novell.com>
+In-Reply-To: <45C85911.76E4.0078.0@novell.com>
+MIME-Version: 1.0
+Content-Disposition: inline
+Message-Id: <200702061045.22966.ak@suse.de>
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 6 Feb 2007 10:16:17 +0100 Lukas Hejtmanek <xhejtman@mail.muni.cz> wrote:
-
-> On Tue, Feb 06, 2007 at 01:09:07AM -0800, Andrew Morton wrote:
-> > > these are lines above:
-> > > 
-> > > kernel: [  144.639984] ACPI: Power Button (FF) [PWRF]
-> > > kernel: [  144.640006] input: Power Button (CM) as /class/input/input3
-> > > kernel: [  144.640017] ACPI: Power Button (CM) [PWRB]
-> > > kernel: [  222.002010] PGD 253115067 PUD 0
-> > > 
-> > > 
-> > > > > kernel: [  222.002013] CPU 0
-> > > > > kernel: [  222.002014] Modules linked in: container fan button ac thermal processor myri10ge megaraid_sas serio_raw psmouse evdev
-> > > > > kernel: [  222.002020] Pid: 3234, comm: java Not tainted 2.6.20 #1
-> > > > > kernel: [  222.002021] RIP: 0010:[page_to_pfn+0/64] [page_to_pfn+0/64] page_to_pfn+0x0/0x40
-> > > > > kernel: [  222.002024] RSP: 0018:ffff81024ebf9ac0 EFLAGS: 00010246
-> > > > > kernel: [  222.002026] RAX: ffff8102574213c0 RBX: ffff810256f07800 RCX: ffff81022e5600c0
-> > > > > kernel: [  222.002027] RDX: 0000000000000740 RSI: 0000000000000000 RDI: 0000000000000000
-> > > > > kernel: [  222.002028] RBP: 0000000000000740 R08: 0000000000000002 R09: ffff8102536b9a40
-> > > > > kernel: [  222.002030] R10: 0000000000000007 R11: ffffffff80259650 R12: 0000000000000000
-> > > > > kernel: [  222.002031] R13: ffff810257422460 R14: 0000000000000002 R15: ffff81022e5600c0
-> > > > > kernel: [  222.002033] FS:  0000000041061950(0063) GS:ffffffff80649000(0000) knlGS:0000000000000000
-> > > > > kernel: [  222.002034] CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-> > > > > kernel: [  222.002036] CR2: 0000000000000000 CR3: 0000000251dbb000 CR4: 00000000000006e0
-> > > > > kernel: [  222.002037] Process java (pid: 3234, threadinfo ffff81024ebf8000, task ffff81024ebdc7a0)
-> > > > > kernel: [  222.002038] Stack:  ffffffff804c4f77 ffff810257422400 0000000000000002 ffff81024ebf9f28
-> > > > > kernel: [  222.002042]  fffffffffffff240 0000000000000740 ffff810257422460 0000000000000002
-> > > > > kernel: [  222.002044]  ffffffff804c3ba5 0000000000000010 ffff81022e5600c0 ffff8102536b9a40
-> > > > > kernel: [  222.002046] Call Trace:
-> > > > > kernel: [  222.002051] [ioat_dma_memcpy_buf_to_pg+71/224] ioat_dma_memcpy_buf_to_pg+0x47/0xe0
-> > > > > kernel: [  222.002053]  [dma_memcpy_to_iovec+613/768] dma_memcpy_to_iovec+0x265/0x300
-> > > > > kernel: [  222.002057] [dma_skb_copy_datagram_iovec+115/656] dma_skb_copy_datagram_iovec+0x73/0x290
-> > > > > kernel: [  222.002060]  [tcp_recvmsg+1764/3296] tcp_recvmsg+0x6e4/0xce0
-> > > > > kernel: [  222.002063]  [sock_common_recvmsg+48/80] sock_common_recvmsg+0x30/0x50
-> > > > > kernel: [  222.002065]  [sock_recvmsg+281/352] sock_recvmsg+0x119/0x160
-> > > > > kernel: [  222.002069]  [autoremove_wake_function+0/48] autoremove_wake_function+0x0/0x30
-> > > > > kernel: [  222.002071]  [autoremove_wake_function+0/48] autoremove_wake_function+0x0/0x30
-> > > > > kernel: [  222.002073]  [__handle_mm_fault+1741/2896] __handle_mm_fault+0x6cd/0xb50
-> > > > > kernel: [  222.002076]  [sys_recvfrom+250/400] sys_recvfrom+0xfa/0x190
-> > > > > kernel: [  222.002078]  [tty_ldisc_deref+100/128] tty_ldisc_deref+0x64/0x80
-> > > > > kernel: [  222.002080]  [tty_write+540/592] tty_write+0x21c/0x250
-> > > > > kernel: [  222.002083]  [system_call+126/131] system_call+0x7e/0x83
-> > > > > kernel: [  222.002084]
-> > > > > kernel: [  222.002085]
-> > > > > kernel: [  222.002085] Code: 48 8b 07 48 c1 e8 3a 48 8b 14 c5 80 b8 65 80 48 b8 b7 6d db
-> > > > > kernel: [  222.002092]  RSP <ffff81024ebf9ac0>
-> > > > > 
-> > > > 
-> > > > Is that the whole oops message?  There should have been a few interesting
-> > > > lines preceding the above.
-> > > 
-> > > I've posted it above.
-> > 
-> > That's peculiar.
-> > 
-> > Normally an oops on x86_64 looks like:
-> > 
-> > Unable to handle kernel NULL pointer dereference at 0000000000000038
-> > RIP: [<ffffffff8022b9c8>] iput+0x18/0x80
-> > PGD 3a607067 PUD 27b20067 PMD 0
-> > Oops: 0000 [1] SMP
-> > CPU 0
-> > Modules linked in: psmouse battery ac thermal fan button
-> > ...
-> > 
-> > but you seem to have lost the first few lines.
+On Tuesday 06 February 2007 10:31, Jan Beulich wrote:
+> >>> Andi Kleen <ak@suse.de> 06.02.07 08:53 >>>
+> >On Monday 05 February 2007 23:50, Siddha, Suresh B wrote:
+> >> On Mon, Feb 05, 2007 at 06:19:59PM +0100, Andreas Herrmann wrote:
+> >> > o added check to restrict base address to 36 bit on i386
+> >> 
+> >> Why is this? It can go upto implemented physical bits, right?
+> >
+> >In theory it can, but Linux doesn't support it.
 > 
-> It looks like some of these messages have different priority. These lines have
-> been in different log file...
-> 
-> kernel: [  222.002000] Unable to handle kernel NULL pointer dereference at 0000000000000000 RIP:
-> kernel: [  222.002004]  [page_to_pfn+0/64] page_to_pfn+0x0/0x40
-> kernel: [  222.002010] PGD 253115067 PUD 0
-> kernel: [  222.002011] Oops: 0000 [1] PREEMPT SMP
-> kernel: [  222.002013] CPU 0
+> I don't think I remember a restriction here, at least not below 44 bits
+> (that's where pfn-s would need to become 64-bit wide).
 
-Ah, that makes things clearer, thanks.
+The i386 mm code only supports 4 entries in the PGD, so more than 36bit cannot 
+be mapped right now.
 
-Your page_to_pfn() is:
+Also even 64MB barely works (many boxes don't boot), you would likely
+need at least the 4:4 patch to go >64GB. Also we know there are tons
+of possible deadlocks in various subsystems when the lowmem:highmem ratio 
+gets so out of hand.
 
-Code;  0000000000000000 Before first symbol
-0000000000000000 <_RIP>:
-Code;  0000000000000000 Before first symbol
-   0:   48 8b 07                  mov    (%rdi),%rax
-Code;  0000000000000003 Before first symbol
-   3:   48 c1 e8 3a               shr    $0x3a,%rax
-Code;  0000000000000007 Before first symbol
-   7:   48 8b 14 c5 80 b8 65      mov    0xffffffff8065b880(,%rax,8),%rdx
-Code;  000000000000000e Before first symbol
-   e:   80 
-Code;  000000000000000f Before first symbol
-   f:   48 b8 b7 6d db 00 00      mov    $0xdb6db7,%rax
+Ok it could be probably all fixed with some work (at least the mm part,
+the deadlocks would be more tricky), but would seem fairly 
+pointless to me because all machines with >36bits support are 64bit capable.
 
-So ioat_dma_memcpy_buf_to_pg() is simply passing a null page pointer into
-pci_map_page().
-
-Over to you, Chris ;)
+-Andi
