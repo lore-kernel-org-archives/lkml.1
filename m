@@ -1,62 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965134AbXBFQku@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965164AbXBFQl1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965134AbXBFQku (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 11:40:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965140AbXBFQku
+	id S965164AbXBFQl1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 11:41:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965140AbXBFQl1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 11:40:50 -0500
-Received: from raven.upol.cz ([158.194.120.4]:32782 "EHLO raven.upol.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965134AbXBFQkt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 11:40:49 -0500
-Date: Tue, 6 Feb 2007 17:47:52 +0100
-To: Mark Lord <lkml@rtr.ca>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jesper Juhl <jesper.juhl@gmail.com>,
-       Roman Zippel <zippel@linux-m68k.org>, Sam Ravnborg <sam@ravnborg.org>,
-       William Stearns <wstearns@pobox.com>,
-       Martin Schlemmer <azarah@nosferatu.za.org>
-Subject: Re: [patch 1/3, resend] scripts: replace gawk, head, bc with shell, update
-Message-ID: <20070206164752.GB1160@flower.upol.cz>
-References: <20070206011819.160359000@flower.upol.cz> <20070206012207.805083000@flower.upol.cz> <45C8958B.8040906@rtr.ca>
-MIME-Version: 1.0
+	Tue, 6 Feb 2007 11:41:27 -0500
+Received: from styx.suse.cz ([82.119.242.94]:36426 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S965164AbXBFQl0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Feb 2007 11:41:26 -0500
+Date: Tue, 6 Feb 2007 17:44:59 +0100
+From: Jiri Bohac <jbohac@suse.cz>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: jbohac@suse.cz, Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org,
+       Vojtech Pavlik <vojtech@suse.cz>, ssouhlal@freebsd.org,
+       arjan@infradead.org, tglx@linutronix.de, johnstul@us.ibm.com,
+       zippel@linux-m68k.org, andrea@suse.de
+Subject: Re: [patch 1/9] Fix HPET init race
+Message-ID: <20070206164459.GA7271@dwarf.suse.cz>
+References: <20070201095952.589234000@jet.suse.cz> <20070201103753.357427000@jet.suse.cz> <20070201183450.6d37d443.akpm@osdl.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <45C8958B.8040906@rtr.ca>
-Organization: Palacky University in Olomouc, experimental physics department.
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Oleg Verych <olecom@flower.upol.cz>
+In-Reply-To: <20070201183450.6d37d443.akpm@osdl.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 06, 2007 at 09:49:47AM -0500, Mark Lord wrote:
-> Oleg Verych wrote:
-> >scripts: replace gawk, head, bc with shell, update
-> >
-> >  Replacing overhead of using some (external) programs
-> >  instead of good old `sh'.
-> ...                                  <---------------,
-> >-    t4=`echo $t3 | gawk '{ print $1 }'`            |
-> >-    t5=`echo $t1 | gawk '{ print $1 }'`            |
-> >-    t6=`echo $t4 - $t5 | tr a-f A-F`               |
-> >-    t7=`( echo  ibase=16 ; echo $t6 ) | bc`        |
-> >+    t4=`field 1 $t3`                               |
-> >+    t5=`field 1 $t1`                               |
-> >+    t6=`printf "%lu" $((0x$t4 - 0x$t5))`           |
-> ...                                                  |
->                                                      |
-> >From where do we obtain this new "field" command ?  |
-                                       `---- here -----'
+On Thu, Feb 01, 2007 at 06:34:50PM -0800, Andrew Morton wrote:
+> On Thu, 01 Feb 2007 10:59:53 +0100 jbohac@suse.cz wrote:
+> 
+> > Fix a race in the initialization of HPET, which might result in a 
+> > 5 minute lockup on boot.
+> > 
+> 
+> What race?  Please always describe bugs when fixing them.
 
-Without jokes, it even commented:
+If the value of the HPET_T0_CMP register is reached and exceeded
+by the value of the HPET_COUNTER register after HPET_T0_CMP is
+read into trigger, but before the first iteration of the while,
+the while loop will iterate "endlessly" until the HPET overlaps
+eventually (in as much as 5 minutes).
 
-+# awk style field access
-+field() {
-+  shift $1 ; echo $1
-+}
+> > 
+> > Index: linux-2.6.20-rc5/arch/x86_64/kernel/apic.c
+> > ===================================================================
+> > --- linux-2.6.20-rc5.orig/arch/x86_64/kernel/apic.c
+> > +++ linux-2.6.20-rc5/arch/x86_64/kernel/apic.c
+> > @@ -764,10 +767,12 @@ static void setup_APIC_timer(unsigned in
+> >  
+> >  	/* wait for irq slice */
+> >   	if (vxtime.hpet_address && hpet_use_timer) {
+> > - 		int trigger = hpet_readl(HPET_T0_CMP);
+> > - 		while (hpet_readl(HPET_COUNTER) >= trigger)
+> > - 			/* do nothing */ ;
+> > - 		while (hpet_readl(HPET_COUNTER) <  trigger)
+> > +		int trigger;
+> > +		do
+> > +			trigger = hpet_readl(HPET_T0_CMP);
+> > +		while (hpet_readl(HPET_COUNTER) >= trigger);
+> > +
+> 
+> Is this signedness-safe and wraparound-safe?  It might be better to make
+> `trigger' unsigned and do
+> 
+> 	while (hpet_readl(HPET_COUNTER) - trigger >= 0)
+
+
+Yes, making trigger unsigned is a good idea (although having it
+signed would probably never cause any problem, because this is
+called during boot and it takes ~2 minutes for HPET to overflow
+the s32)
+
+But no, looping while the unsigned result is >= 0 does not seem
+that good an idea to me ;-)
+
+An updated patch follows. It is still not wraparound safe (a
+lockup would still happen if it's called ~5 minutes after boot, but
+this should never happen -- it's called early during boot)
+
+--- linux-2.6.20-rc5.orig/arch/x86_64/kernel/apic.c	2007-02-06 16:56:00.000000000 +0100
++++ linux-2.6.20-rc5/arch/x86_64/kernel/apic.c	2007-02-06 17:26:42.000000000 +0100
+@@ -764,10 +764,12 @@ static void setup_APIC_timer(unsigned in
+ 
+ 	/* wait for irq slice */
+  	if (vxtime.hpet_address && hpet_use_timer) {
+- 		int trigger = hpet_readl(HPET_T0_CMP);
+- 		while (hpet_readl(HPET_COUNTER) >= trigger)
+- 			/* do nothing */ ;
+- 		while (hpet_readl(HPET_COUNTER) <  trigger)
++		u32 trigger;
++		do
++			trigger = hpet_readl(HPET_T0_CMP);
++		while (hpet_readl(HPET_COUNTER) >= trigger);
 +
++		while (hpet_readl(HPET_COUNTER) <  trigger)
+  			/* do nothing */ ;
+  	} else {
+ 		int c1, c2;
 
-> Cheers
-____
+
+-- 
+Jiri Bohac <jbohac@suse.cz>
+SUSE Labs, SUSE CZ
+
