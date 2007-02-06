@@ -1,94 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751578AbXBFI0A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751606AbXBFI2u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751578AbXBFI0A (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 03:26:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751595AbXBFI0A
+	id S1751606AbXBFI2u (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 03:28:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751596AbXBFI2u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 03:26:00 -0500
-Received: from colo.lackof.org ([198.49.126.79]:57518 "EHLO colo.lackof.org"
+	Tue, 6 Feb 2007 03:28:50 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:55050 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751572AbXBFIZ7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 03:25:59 -0500
-Date: Tue, 6 Feb 2007 01:25:50 -0700
-From: Grant Grundler <grundler@parisc-linux.org>
-To: Manu Abraham <abraham.manu@gmail.com>
-Cc: Grant Grundler <grundler@parisc-linux.org>, linux-kernel@vger.kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz, greg@kroah.com,
-       Andrew Morton <akpm@osdl.org>
-Subject: Re: 2.6.20 PCI Cannot allocate resource region 2
-Message-ID: <20070206082550.GA25953@colo.lackof.org>
-References: <1a297b360702041709l3b0309c7y8fcd33df1d487889@mail.gmail.com> <20070206045528.GA4228@colo.lackof.org> <1a297b360702052120x10f15b4cicaa867573d0210b9@mail.gmail.com>
+	id S1751395AbXBFI2t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Feb 2007 03:28:49 -0500
+Date: Tue, 6 Feb 2007 00:28:39 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Hugh Dickins <hugh@veritas.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Linux Memory Management <linux-mm@kvack.org>,
+       Linux Filesystems <linux-fsdevel@vger.kernel.org>
+Subject: Re: [patch 3/3] mm: make read_cache_page synchronous
+Message-Id: <20070206002839.f02a47bc.akpm@linux-foundation.org>
+In-Reply-To: <20070206054957.21042.18724.sendpatchset@linux.site>
+References: <20070206054925.21042.50546.sendpatchset@linux.site>
+	<20070206054957.21042.18724.sendpatchset@linux.site>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1a297b360702052120x10f15b4cicaa867573d0210b9@mail.gmail.com>
-X-Home-Page: http://www.parisc-linux.org/
-User-Agent: Mutt/1.5.9i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 06, 2007 at 09:20:15AM +0400, Manu Abraham wrote:
-...
-> >BIST is required to complete in 2 seconds. Either with success or failure.
-> >I expect BIOS to have complained before launching grub/lilo.
-...
-> BIST is supposed to terminate before, say the OS kernel is loaded?
+On Tue,  6 Feb 2007 09:02:33 +0100 (CET) Nick Piggin <npiggin@suse.de> wrote:
 
-Yes - that's what I was trying to imply above.
+> Ensure pages are uptodate after returning from read_cache_page, which allows
+> us to cut out most of the filesystem-internal PageUptodate_NoLock calls.
 
-> or does it mean that it can keep running still ?
+Normally it's good to rename functions when we change their behaviour, but
+I guess any missed (or out-of-tree) filesystems will just end up doing a
+pointless wait_on_page_locked() and will continue to work OK, yes?
 
-Don't know. Either it's still running (for much longer that 2 seconds),
-linux is causing it run _again_, or linux is has terribly confused the
-device somehow. More on this in an email I'm still working on...will
-send that out in a bit.
-
-> >>       Region 0: Memory at f7ee0000 (32-bit, non-prefetchable) [disabled] 
-> >[size=4K]
-> >>       Region 2: Memory at e9b00000 (32-bit, prefetchable) [disabled] 
-> >[size=4K]
-> >>       Region 3: Memory at <unassigned> (32-bit, prefetchable) [disabled]
-> >>       Region 4: Memory at <ignored> (32-bit, non-prefetchable) [disabled]
-> >>       Region 5: Memory at <invalid-64bit-slot> (64-bit, 
-> >non-prefetchable) [disabled]
-> >
-> >This is obviously garbage. 64-bit registers can only be represented with
-> >two consecutive "BAR" and region 5 is the last one.
-> >There is no way this can be a 64-bit BAR.
-> >Generally, 64-bit BARs start on an "even" numbered BAR (but I've forgotten
-> >again if that's just convention or a requirement)
-> >
+> I didn't have a great look down the call chains, but this appears to fixes 7
+> possible use-before uptodate in hfs, 2 in hfsplus, 1 in jfs, a few in ecryptfs,
+> 1 in jffs2, and a possible cleared data overwritten with readpage in block2mtd.
+> All depending on whether the filler is async and/or can return with a !uptodate
+> page.
 > 
-> was just wondering how it could be a 64 bit device.
+> Also, a memory leak in sys_swapon().
 
-64-bit BAR is seperate from 64-bit Device (data path).
-
-PCI has three different 32 vs 64-bit areas:
-o BARs
-o DMA 
-o HW/data path width.
-
-"32-bit device" generally only refers to the latter.
-The three attributes are generally all "32-bit" for "32-bit device".
-
-That's less likely to be true for "64-bit devices". Several "64-bit
-devices" can only DMA to 32-bit host memory and at least a few only
-support 32-bit BARs (even if the device claims it has a 64-bit BAR).
-
-hth,
-grant
-
-> 
-> >hth,
-> >grant
-> >
-> 
-> 
-> Thanks a lot for the valuable info. I had not ruled out the option
-> that it could be broken.
-> I will try the device in the other OS also, to confirm this. Will post
-> the status after that.
-> But most probably as you said, could be broken.
-> 
-> Thanks,
-> Manu
+Separate patch?
