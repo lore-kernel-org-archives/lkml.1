@@ -1,50 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752162AbXBFNhx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752135AbXBFNlP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752162AbXBFNhx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 08:37:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752156AbXBFNhw
+	id S1752135AbXBFNlP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 08:41:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752156AbXBFNlP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 08:37:52 -0500
-Received: from ug-out-1314.google.com ([66.249.92.175]:2277 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752135AbXBFNhw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 08:37:52 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=dBCgWk0M8Tw9cPRH+a1JNDpx3ENVAFh0Oz0Sa+3FAU94FIhCHyKm85UJwDiGS6LFHHEhHHQGsCXH79MpQW3/jUc/3psc2MLT0+kOQINNxdp5VbUWDe78D11oSap4XDBeypX+M750liNEefopl/Vo9Lb6t3jrv7nVnlsVFbiD6sg=
-Message-ID: <8355959a0702060537jbd96e96sc10772f72f9491b3@mail.gmail.com>
-Date: Tue, 6 Feb 2007 19:07:50 +0530
-From: "Sunil Naidu" <akula2.shark@gmail.com>
-To: "Stefan Seyfried" <seife@suse.de>
-Subject: Re: Free Linux Driver Development!
-Cc: "Adrian Bunk" <bunk@stusta.de>, "Greg KH" <greg@kroah.com>,
-       "Roland Dreier" <rdreier@cisco.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <20070205094947.GA32384@suse.de>
+	Tue, 6 Feb 2007 08:41:15 -0500
+Received: from [212.12.190.119] ([212.12.190.119]:32883 "EHLO raad.intranet"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752135AbXBFNlP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Feb 2007 08:41:15 -0500
+From: Al Boldi <a1426z@gawab.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2 of 4] Introduce i386 fibril scheduling
+Date: Tue, 6 Feb 2007 16:43:37 +0300
+User-Agent: KMail/1.5
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20070130012904.GA9617@kroah.com> <ada8xfks90x.fsf@cisco.com>
-	 <20070130191020.GF20642@kroah.com> <20070131011340.GP3754@stusta.de>
-	 <20070131012428.GA31759@kroah.com> <20070131021431.GR3754@stusta.de>
-	 <20070205094947.GA32384@suse.de>
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200702061643.37380.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/5/07, Stefan Seyfried <seife@suse.de> wrote:
-> On Wed, Jan 31, 2007 at 03:14:31AM +0100, Adrian Bunk wrote:
-> > On Tue, Jan 30, 2007 at 05:24:28PM -0800, Greg KH wrote:
+Linus Torvalds wrote:
+> On Mon, 5 Feb 2007, Zach Brown wrote:
+> > For syscalls, sure.
+> >
+> > The kevent work incorporates Uli's desire to have more data per event. 
+> > Have you read his OLS stuff?  It's been a while since I did so I've lost
+> > the details of why he cares to have more.
 >
-> Wrong. I abandoned all floppy drives some years ago. I'd actually
-> vote for removing the floppy driver from the kernel completely.
+> You'd still do that as _arguments_ to the system call, not as the return
+> value.
+>
+> Also, quite frankly, I tend to find Uli over-designs things. The whole
+> disease of "make things general" is a CS disease that some people take to
+> extreme.
+>
+> The good thing about generic code is not that it solves some generic
+> problem. The good thing about generics is that they mean that you can
+> _avoid_ solving other problems AND HAVE LESS CODE.
 
-I don't think time has come for that yet, still millions of people do
-use Floppy on Linux ;-)
-Maybe by 2.6.30 or so...
+Yes, that would be generic code, in the pure sense.
+
+> But some people seem to
+> think that "generic" means that you have to have tons of code to handle
+> all the possible cases, and that *completely* misses the point.
+
+That would be generic code too, but by way of functional awareness. This is 
+sometimes necessary, as no pure generic code has been found.
+
+What's important is not the generic code, but rather the correct abstraction 
+of the problem-domain, regardless of it's implementation, as that can be 
+conveniently hidden behind the interface.
+
+> We want less code. The whole (and really, the _only_) point of the
+> fibrils, at least as far as I'm concerned, is to *not* have special code
+> for aio_read/write/whatever.
+
+What we want is correct code, and usually that means less code in the long 
+run.  
+
+So, instead of allowing the implementation to dictate the system design, it 
+may be advisable to concentrate on the design first, to achieve an abstract 
+interface that is realized by an implementation second.
 
 
-> Stefan Seyfried
+Thanks!
 
-~Akula2
+--
+Al
+
