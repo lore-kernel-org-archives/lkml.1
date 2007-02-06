@@ -1,80 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933159AbXBFSHv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933173AbXBFSIO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933159AbXBFSHv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 13:07:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933177AbXBFSHv
+	id S933173AbXBFSIO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 13:08:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933187AbXBFSIO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 13:07:51 -0500
-Received: from web38515.mail.mud.yahoo.com ([209.191.125.61]:31257 "HELO
-	web38515.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S933159AbXBFSHu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 13:07:50 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=rCYD5ROmpjAU1rMljm3HTWTiMznLeDc4uZiX1rEFiTj+m6vIrk1sIrTuiJ6PpZDQWYpQXQnIXla0Am9dTVMOt8Y+yL68MDoJsHfFojt1/uXQPrlSviAY7V7KntlQrXUmMkKzDfrPsUkOd77jOSIQo+6bror6nCL+SxQZX7YQPrs=;
-X-YMail-OSG: QYGBSjYVM1lBlK7bbWldznFMA5mWi7dP.bPuSkplU.VO0cBV9cgckb1rQTO_vWqP8iTb1ieQdqE9DBbEHXLyT265t4ZUYY2352cZ_3ugav.7HYh79eAT8A--
-Date: Tue, 6 Feb 2007 10:07:50 -0800 (PST)
-From: Levitsky Maxim <maximlevitsky@yahoo.com>
-Subject: Re: Question: Status of marvell's PATA 88SE6101 controller on intel boards
-To: alan@lxorguk.ukuu.org.uk
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20070206174428.7ca93476@localhost.localdomain>
+	Tue, 6 Feb 2007 13:08:14 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:44342 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933173AbXBFSIM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Feb 2007 13:08:12 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Subject: Re: [patch 1/1] PM: Adds remount fs ro at suspend
+Date: Tue, 6 Feb 2007 19:07:39 +0100
+User-Agent: KMail/1.9.5
+Cc: Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Andrew Morton <akpm@linux-foundation.org>, akuster@mvista.com,
+       linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>
+References: <20070202235132.EDBDF1C448@hermes.mvista.com> <1170710913.6105.39.camel@nigel.suspend2.net> <20070206143231.GD18392@khazad-dum.debian.net>
+In-Reply-To: <20070206143231.GD18392@khazad-dum.debian.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <223870.54188.qm@web38515.mail.mud.yahoo.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200702061907.40920.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
---- Alan <alan@lxorguk.ukuu.org.uk> wrote:
-
-> > I also noticed that 2.6.20 adds experimentally support for that chip.
-> > But driver says that it enables it via 'legacy mode'
+On Tuesday, 6 February 2007 15:32, Henrique de Moraes Holschuh wrote:
+> On Tue, 06 Feb 2007, Nigel Cunningham wrote:
+> > Why do you think remounting filesystems is necessary? Are you getting
+> > problems with some particular filesystem?
 > 
-> Yes.
+> No.  But anything in a removable device neets to be either remounted
+> read-only or unmounted if that is at all possible, because the user could
+> unplug it.  It is of course, sync'd anyway, so if the remount/umount fails,
+> no corruption should happen...  but the fs will be dirty, etc.
 > 
-> > I will be glad to hear whenever full support is planned or not.
+> It can get very ugly when you factor in docks and removable bays. It's not
+> just USB/firewire mass-storage devices and memory cards.  And there is the
+> patological cases where the user suspends with the device in one port, and
+> resumes with the device in another port.
 > 
-> At the moment it is not, but it may be a neccessary side effect of full
-> support for the later SATA capable controllers in native SATA mode. In
-> which case you might get it one day.
-> 
-> The legacy mode is itself as good as most typical PATA controllers and
-> better than some.
+> I feel userspace *can* do all that needs to be done, but we are (currently)
+> very bad at it.
 
-And I don't need anything better , just normal recording on my PATA DVD writer.
-I now have very old system and still DVD recording works fine , so I don't need anything more than
-that
+Agreed, but still I think that we should try to solve these problems in user
+space and only _after_ it turns out to be impossible or too hard to do we can
+start to implement such things on the kernel side.
 
-> >
-> > And as last thing I want to ask you whenever current support is usable, 
-> > that is can I use DMA , can I use DVD as at least reader for CD/DVD , 
-> > and even better can I burn disks with it ( although I can live without it)
-> 
-> The legacy mode has full DMA support. What you don't get is the ability
-> to queue multiple commands so the hardware can fire off a new command as
-> the first completes and to have the hardware do some of the general
-> poking around for us. 
-
-So that means that DVD-writer will work too ?
-
-> 
-> Alan
-> 
-
-Thank you very much, I didn't expect so quick response.
-
-
-Thank you, kernel developers for so great kernel.
-              Maxim Levitsky
-
-
-
- 
-____________________________________________________________________________________
-Looking for earth-friendly autos? 
-Browse Top Cars by "Green Rating" at Yahoo! Autos' Green Center.
-http://autos.yahoo.com/green_center/
+Greetings,
+Rafael
