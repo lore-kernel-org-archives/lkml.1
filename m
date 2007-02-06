@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932965AbXBFQHW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932994AbXBFQHl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932965AbXBFQHW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 11:07:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933000AbXBFQHV
+	id S932994AbXBFQHl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 11:07:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932622AbXBFQHk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 11:07:21 -0500
+	Tue, 6 Feb 2007 11:07:40 -0500
 Received: from nz-out-0506.google.com ([64.233.162.225]:59552 "EHLO
 	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932922AbXBFQHR (ORCPT
+	with ESMTP id S932994AbXBFQHi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 11:07:17 -0500
+	Tue, 6 Feb 2007 11:07:38 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:date:to:cc:subject:message-id:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
-        b=KNYN/ZX4lLuCCls2A9Ujl+OhgYbwVoIZDl91FXls7uYQMCjXIQiKmAt54TrEcV9iOzDnPj0txX0+HrCW3/PFadCvFsNUXf2DPrBAD8Wmya/Ied6GxZU3Ogc/itfdbRgc8M84z4xz4wnY/m8Azex+WZrv+WYvTkvieflf/KkZpjE=
-Date: Tue, 6 Feb 2007 18:06:57 +0200
-To: mingo@redhat.com
-Cc: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
-Subject: [PATCH 2.6.20] drivers/md.c: Use ARRAY_SIZE macro when appropriate
-Message-ID: <20070206160657.GI8991@Ahmed>
+        b=UIGAGckiW268ylYIk0+uugxLtsRVAxXr8FkqDyMAkfnEGBH+AC4xe0aakS4Gc9FoW7ElDXZ+7pOvKZTaN3udTjhgcq6bKT+v8nO6uPtxaKD8MwViGip2AUX7OtyMFF4ynDzHpyJ5Dd82LRXMaI0rwQBb2KLb6ARQ4LFgem+BHNg=
+Date: Tue, 6 Feb 2007 18:07:25 +0200
+To: rolandd@cisco.com
+Cc: linux-kernel@vger.kernel.org, openib-general@openib.org
+Subject: [PATCH 2.6.20] infinband: Use ARRAY_SIZE macro when appropriate
+Message-ID: <20070206160725.GJ8991@Ahmed>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -34,38 +34,27 @@ A patch to use ARRAY_SIZE macro already defined in kernel.h
 
 Signed-off-by: Ahmed S. Darwish <darwish.07@gmail.com>
 ---
-diff --git a/drivers/md/md.c b/drivers/md/md.c
-index e8807ea..6f6d9e5 100644
---- a/drivers/md/md.c
-+++ b/drivers/md/md.c
-@@ -33,6 +33,7 @@
- */
- 
+diff --git a/drivers/infiniband/core/device.c b/drivers/infiniband/core/device.c
+index 63d2a39..7fabb42 100644
+--- a/drivers/infiniband/core/device.c
++++ b/drivers/infiniband/core/device.c
+@@ -36,6 +36,7 @@
  #include <linux/module.h>
+ #include <linux/string.h>
+ #include <linux/errno.h>
 +#include <linux/kernel.h>
- #include <linux/kthread.h>
- #include <linux/linkage.h>
- #include <linux/raid/md.h>
-@@ -2635,8 +2636,7 @@ metadata_store(mddev_t *mddev, const char *buf, size_t len)
- 	minor = simple_strtoul(buf, &e, 10);
- 	if (e==buf || (*e && *e != '\n') )
- 		return -EINVAL;
--	if (major >= sizeof(super_types)/sizeof(super_types[0]) ||
--	    super_types[major].name == NULL)
-+	if (major >= ARRAY_SIZE(super_types) || super_types[major].name == NULL)
- 		return -ENOENT;
- 	mddev->major_version = major;
- 	mddev->minor_version = minor;
-@@ -3973,7 +3973,7 @@ static int set_array_info(mddev_t * mddev, mdu_array_info_t *info)
- 	if (info->raid_disks == 0) {
- 		/* just setting version number for superblock loading */
- 		if (info->major_version < 0 ||
--		    info->major_version >= sizeof(super_types)/sizeof(super_types[0]) ||
-+		    info->major_version >= ARRAY_SIZE(super_types) ||
- 		    super_types[info->major_version].name == NULL) {
- 			/* maybe try to auto-load a module? */
- 			printk(KERN_INFO 
-
+ #include <linux/slab.h>
+ #include <linux/init.h>
+ #include <linux/mutex.h>
+@@ -93,7 +94,7 @@ static int ib_device_check_mandatory(struct ib_device *device)
+ 	};
+ 	int i;
+ 
+-	for (i = 0; i < sizeof mandatory_table / sizeof mandatory_table[0]; ++i) {
++	for (i = 0; i < ARRAY_SIZE(mandatory_table); ++i) {
+ 		if (!*(void **) ((void *) device + mandatory_table[i].offset)) {
+ 			printk(KERN_WARNING "Device %s is missing mandatory function %s\n",
+ 			       device->name, mandatory_table[i].name);
 
 -- 
 Ahmed S. Darwish
