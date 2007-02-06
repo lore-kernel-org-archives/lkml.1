@@ -1,72 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965451AbXBFBec@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933105AbXBFBht@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965451AbXBFBec (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 20:34:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965452AbXBFBec
+	id S933105AbXBFBht (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 20:37:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933089AbXBFBht
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 20:34:32 -0500
-Received: from smtp.gentoo.org ([140.211.166.183]:39021 "EHLO smtp.gentoo.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965451AbXBFBec (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 20:34:32 -0500
-From: Mike Frysinger <vapier@gentoo.org>
-Organization: wh0rd.org
-To: geert@linux-m68k.org, zippel@linux-m68k.org, linux-m68k@vger.kernel.org
-Date: Mon, 5 Feb 2007 20:34:44 -0500
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart6358936.qhQqYfGYkC";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+	Mon, 5 Feb 2007 20:37:49 -0500
+Received: from xenotime.net ([66.160.160.81]:45513 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S933105AbXBFBhs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Feb 2007 20:37:48 -0500
+Date: Mon, 5 Feb 2007 17:34:28 -0800
+From: Randy Dunlap <rdunlap@xenotime.net>
+To: "Wu, Bryan" <Bryan.Wu@analog.com>
+Cc: <akpm@osdl.org>, <arnd@arndb.de>, <rdreier@cisco.com>,
+       <castet.matthieu@free.fr>, <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/3] Blackfin: architecture patch against Linux kernel
+ 2.6.20
+Message-Id: <20070205173428.9f2109a4.rdunlap@xenotime.net>
+In-Reply-To: <D3664A3D9376A94BB603EE19E4AA246D10D64758@nwd2exm4.ad.analog.com>
+References: <D3664A3D9376A94BB603EE19E4AA246D10D64758@nwd2exm4.ad.analog.com>
+Organization: YPO4
+X-Mailer: Sylpheed 2.3.0 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <200702052034.45456.vapier@gentoo.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart6358936.qhQqYfGYkC
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Mon, 5 Feb 2007 02:28:40 -0500 Wu, Bryan wrote:
 
-we don't actually use anything from asm-m68k/page.h in asm-m68k/user.h, so
-don't bother including it
+> Hi everyone,
+> 
+> This is the Blackfin architecture patch against Linux kernel 2.6.20,
+> again. As we promised, some issues are fixed in the latest release with
+> the help from lkml.
+> 
+> The blackfin-arch patch is at 
+> https://blackfin.uclinux.org/gf/download/frsrelease/25/2490/blackfin-arc
+> h-linux-2.6.20.patch
+> Which, at 1.9M bytes, is too large to attach here. Please let me know if
+> you want me to do it anyway.
 
-Signed-off-by: Mike Frysinger <vapier@gentoo.org>
-=2D--
-=2D-- a/include/asm-m68k/user.h
-+++ b/include/asm-m68k/user.h
-@@ -1,8 +1,6 @@
- #ifndef _M68K_USER_H
- #define _M68K_USER_H
-=20
-=2D#include <asm/page.h>
-=2D
- /* Core file format: The core file is written in such a way that gdb
-    can understand it and provide useful information to the user (under
-    linux we use the 'trad-core' bfd).  There are quite a number of
+I can't access this patch file.  (no, don't attach it for the mailing
+list)
 
---nextPart6358936.qhQqYfGYkC
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.2 (GNU/Linux)
-
-iQIVAwUARcfbNUFjO5/oN/WBAQKw+A//e8qUYBspuiHfEIhrpSDf20ofW83TKkZM
-l1wevku1KY0idp3oHYbRjowa5Ee4PHb62aTucO6aJc60xfqnWe//RtuVWRn0+EjG
-qCfILbuqIhW4/w4giQGhIiIo853b+kE8ERnWfWES7Vi6WH3dLuuuHsjg7uIGEfFR
-LyWhFIMWmIAYWqlwC2qubUCu8ZvdXnLKyQfkqnkdcBuhjO7Xgz4JCf1zjKydPRqU
-YHPoQwtkUeigea8QcCdVTqGq8QnJboBqYUVlH1tcCa+hwq9zG3plwrdCIi1TUDoU
-XGOvehRJaJdrymMVI7QJebAOVkPUWjfaW3YVteOi8AqIL82VxA7lApidvCtBIqWF
-VOcmP2TbFvU66/kCzFzhfLb+k+S47DxGErmAPIDTo83JaQRO+mhGhxGnXbI4pi9f
-F43EuClXdcxWs1spEpTmocblR3OtEzGdMOGUAJA2UWxu7P3Tefg71XFBAxVW59Sc
-e5q7R8TnKFVhd7e3rGPVskFVRzB0LbwyA0YPIlWhgNj1OiJmMULQ7xFgdiLaMS0X
-rvHXJCW/z1i+IB2bngIl5ZKV38JNKEuse3jrAERELnVjHmlf/tz5vB4f3Q62dvFn
-WhStoZR9cRIsQVyWm6ZigackivROp4k1h38u/kmxShgiQiH3t0izHoP7AdWNXgLB
-RqmQuRwnHwY=
-=OyuX
------END PGP SIGNATURE-----
-
---nextPart6358936.qhQqYfGYkC--
+---
+~Randy
