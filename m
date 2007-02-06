@@ -1,50 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965242AbXBFFeL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965260AbXBFFtM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965242AbXBFFeL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 00:34:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965260AbXBFFeL
+	id S965260AbXBFFtM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 00:49:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965305AbXBFFtM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 00:34:11 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:49709 "EHLO smtp.osdl.org"
+	Tue, 6 Feb 2007 00:49:12 -0500
+Received: from mail.suse.de ([195.135.220.2]:51236 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965242AbXBFFeJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 00:34:09 -0500
-Date: Mon, 5 Feb 2007 21:33:39 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Grant Grundler <grundler@parisc-linux.org>
-Cc: Manu Abraham <abraham.manu@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz, greg@kroah.com
-Subject: Re: 2.6.20 PCI Cannot allocate resource region 2
-Message-Id: <20070205213339.80239a22.akpm@linux-foundation.org>
-In-Reply-To: <20070206050331.GB4228@colo.lackof.org>
-References: <1a297b360702041709l3b0309c7y8fcd33df1d487889@mail.gmail.com>
-	<20070206045528.GA4228@colo.lackof.org>
-	<20070206050331.GB4228@colo.lackof.org>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	id S965260AbXBFFtL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Feb 2007 00:49:11 -0500
+Date: Tue, 6 Feb 2007 06:49:05 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Linux Filesystems <linux-fsdevel@vger.kernel.org>,
+       Linux Memory Management <linux-mm@kvack.org>
+Subject: Re: [patch 9/9] mm: fix pagecache write deadlocks
+Message-ID: <20070206054905.GC16647@wotan.suse.de>
+References: <20070204023055.2583fd65.akpm@linux-foundation.org> <20070204104609.GA29943@wotan.suse.de> <20070204025602.a5f8c53a.akpm@linux-foundation.org> <20070204110317.GA9034@wotan.suse.de> <20070204031549.203f7b47.akpm@linux-foundation.org> <20070204151051.GB12771@wotan.suse.de> <20070204103620.33c24cad.akpm@linux-foundation.org> <20070206022549.GB31476@wotan.suse.de> <20070206044146.GA11856@wotan.suse.de> <20070205213006.0ea2d918.akpm@linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070205213006.0ea2d918.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 5 Feb 2007 22:03:31 -0700 Grant Grundler <grundler@parisc-linux.org> wrote:
+On Mon, Feb 05, 2007 at 09:30:06PM -0800, Andrew Morton wrote:
+> On Tue, 6 Feb 2007 05:41:46 +0100 Nick Piggin <npiggin@suse.de> wrote:
+> > > 
+> > > Not necessarily -- they could read from one part of a page and write to
+> > > another. I see this as the biggest data corruption problem.
+> 
+> The kernel gets that sort of thing wrong anyway, and always has, because
+> it uses memcpy()-style copying and not memmove()-style.
+> 
+> I can't imagine what sort of application you're envisaging here.  The
+> problem was only ever observed from userspace by an artificial stress-test
+> thing.
 
-> On Mon, Feb 05, 2007 at 09:55:28PM -0700, Grant Grundler wrote:
-> ...
-> > > 	Control: I/O- Mem- BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
-> > > 	Status: Cap- 66MHz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR+ <PERR+
-> > > 	Latency: 0, Cache Line Size 0c
-> > > 	BIST is running
+No, I'm not talking about writing into a page with memory from the same
+page. I'm talking about one process writing to part of a file, and another
+reading from that same file (different offset).
+
+If they happen to be covered by the same page, then the reader can see
+zeroes.
+
+I'm not envisaging any sort of application, all I know is that there are
+several (related) data corruption bugs and I'm trying to fix them (and
+fix these deadlock problems without introducing more).
+
+> > And in fact, it is not just transient errors either. This problem can
+> > add permanent corruption into the pagecache and onto disk, and it doesn't
+> > even require two processes to race.
 > > 
-> > BIST is required to complete in 2 seconds. Either with success or failure.
-> > I expect BIOS to have complained before launching grub/lilo.
+> > After zeroing out the uncopied part of the page, and attempting to loop
+> > again, we might bail out of the loop for any reason before completing the
+> > rest of the copy, leaving the pagecache corrupted, which will soon go out
+> > to disk.
+> > 
 > 
-> Gregkh,
-> I just realized linux-pci bus scan should ignore devices (print a warning)
-> which have BIST set.  Want a patch for this?
+> Only because ->commit_write() went and incorrectly marked parts of the page
+> as up-to-date.
 > 
-> Slight risk some previously "working" device which violates the
-> spec might get ignored...but I hope there aren't too many of those.
+> Zeroing out the fag end of the copy_from_user() on fault is actually incorrect. 
 
-Should we wait two seconds before declaring the device dead?  To see whether
-it will come back?
+Yes, I know.
+
+> What we _should_ do is to bring those uncopyable, non-uptodate parts of the
+> page uptodate rather than zeroing them.  ->readpage() does that.
+> 
+> So...  what happens if we do
+> 
+> 	lock_page()
+> 	prepare_write()
+> 	if (copy_from_user_atomic()) {
+> 		readpage()
+> 		wait_on_page()
+> 		lock_page()
+> 	}
+> 	commit_write()
+> 	unlock_page()
+> 
+> - If the page has no buffers then it is either fully uptodate or fully
+>   not uptodate.  In the former case, don't call readpage at all.  In the
+>   latter case, readpage() is the correct thing to do.
+> 
+> - If the page had buffers, then readpage() won't touch the uptodate ones
+>   and will bring the non-uptodate ones up to date from disk.
+> 
+>   Some of the data which we copied from userspace may get overwritten
+>   from backing store, but that's OK.
+> 
+> seems crazy, but it's close.  We do have the minor problem that readpage
+> went and unlocked the page so we need to relock it.  I bet there are holes
+> in there.
+
+Yes, I tried doing this as well and there are holes in it. Even supposing
+that we add a readpage_dontunlock, there is still the issue of breaking
+the filesystem API from nesting readpage inside prepare_write. You also
+do need to zero newly allocated blocks, for example.
+
+> Idea #42: after we've locked the pagecache page, do an atomic get_user()
+> against the source page(s) before attempting the copy_from_user().  If that
+> faults, don't run prepare_write or anything else: drop the page lock and
+> try again.
+> 
+> Because
+> 
+> - If the get_user() faults, it might be because the page we're copying
+>   from and to is the same page, and someone went and unmapped it: deadlock.
+> 
+> - If the get_user() doesn't fault, and if we're copying from and to the
+>   same page, we know that we've locked it, so nobody will be able to unmap
+>   it while we're copying from it.
+> 
+> Close, but no cigar!  This is still vulnerable to Hugh's ab/ba deadlock
+> scenario.
+
+Yes I considered this too. Hard isn't it?
+
+> btw, to fix the writev() performance problem we may need to go off and run
+> get_user() against up to 1024 separate user pages before locking the
+> pagecache page, which sounds fairly idiotic.  Are you doing that in the
+> implemetnations which you've been working on?  I forget...
+
+No, because in my fix it can do non-atomic usercopies for !uptodate pages.
+
+For uptodate pages, yes there is a possibility that it may do a short copy
+and have to retry, but it is probably safe to bet that the source data is
+fairly recently accessed in most cases, so a short copy will be unlikely.
