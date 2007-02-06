@@ -1,63 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030519AbXBFXI2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030538AbXBFXKh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030519AbXBFXI2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 18:08:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030533AbXBFXI2
+	id S1030538AbXBFXKh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 18:10:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030551AbXBFXKh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 18:08:28 -0500
-Received: from an-out-0708.google.com ([209.85.132.243]:55535 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030519AbXBFXI1 (ORCPT
+	Tue, 6 Feb 2007 18:10:37 -0500
+Received: from ug-out-1314.google.com ([66.249.92.172]:29279 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030538AbXBFXKg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 18:08:27 -0500
+	Tue, 6 Feb 2007 18:10:36 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=nmtC5gu4AHrLND+aAYQIDHLZIEGamUDVrQFU39MWQXExMI6KK81AOqBz1g8UXp+bsGepdjxDj5VFJXk4AT1bDYRfSdqzsSgjqkFw/5pGcb17Fnb45UmSXcFLuOAnd6TKSnSiCyKm6/oT+P83nnLVTQOx+xPj5JMPy1bplwpIw1E=
-Message-ID: <cb7bb73a0702061508x767882dcia1b13f85d898b6e7@mail.gmail.com>
-Date: Wed, 7 Feb 2007 00:08:26 +0100
-From: "Giuseppe Bilotta" <giuseppe.bilotta@gmail.com>
-To: "James Simmons" <jsimmons@infradead.org>
-Subject: Re: [Linux-fbdev-devel] [PATCH] nvidiafb: allow ignoring EDID info
-Cc: "Luca Tettamanti" <kronos@people.it>,
-       linux-fbdev-devel@lists.sourceforge.net,
-       "Andrew Morton" <akpm@osdl.org>, "Dave Airlie" <airlied@gmail.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0702062034380.9224@pentafluge.infradead.org>
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=KPcCefRvUK7IlceEq7ron2jxZuoRo94dWwsBZSs0ifixMyKWACHKvj5SvtLhTXPP+rF/IogkHLq6x0oSN4f2TR1HI77emZOP+eS4uNqC1aDg2ctePfphUPlJB5oZBiIjHVj/ChGX78EbmXdoLHS3nOWqjNnaMJReqFieNE/jwj4=
+Message-ID: <45C90C1A.6090906@gmail.com>
+Date: Wed, 07 Feb 2007 00:15:38 +0100
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Jesper Juhl <jesper.juhl@gmail.com>
+CC: Alan <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       Andi Kleen <ak@suse.de>, Trent Waddington <trent.waddington@gmail.com>
+Subject: Re: [PATCH][0/5] floppy.c: first round of cleanup patches - the simple
+ stuff
+References: <200702060028.31691.jesper.juhl@gmail.com>	 <20070206114152.4b622e40@localhost.localdomain> <58cb370e0702061458u41f0a108n1eeae03770433bbf@mail.gmail.com>
+In-Reply-To: <58cb370e0702061458u41f0a108n1eeae03770433bbf@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <ephv35$4i3$1@sea.gmane.org>
-	 <20070128160831.fb51347f.akpm@osdl.org>
-	 <21d7e9970701281612q56b694edp6efd1a5556dea3fe@mail.gmail.com>
-	 <20070128162907.370f5476.akpm@osdl.org>
-	 <21d7e9970701281639w57edc2efw4ba620d4c1bdcee7@mail.gmail.com>
-	 <cb7bb73a0701290637q2ce0ff16t28f82d0c0339a2ba@mail.gmail.com>
-	 <20070130203301.GA15067@dreamland.darkstar.lan>
-	 <20070204201713.GA12867@dreamland.darkstar.lan>
-	 <Pine.LNX.4.64.0702062034380.9224@pentafluge.infradead.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/6/07, James Simmons <jsimmons@infradead.org> wrote:
->
-> If you can find post the manufacturer and model number we can place it on
-> the backlist in fbmon. Also we should figure out what is wrong and fix it.
 
-It's the UltraSharp UXGA display that used to come with Dell Inspiron
-8200, 15" with a resolution of 1600x1200. I've been looking all around
-for more info on it, but the only things I could find were posts that
-remarked the problems Windows nVidia drivers have with some of these
-(no image when running at 1600x1200), and other posts about banded
-gradients with Windows drivers on Radeon video cards (but I get banded
-gradients also win my nVidia card, on Linux, regardless of which
-driver I use, binary, nv or nouveau).
+Alan wrote:
+> 
+> On Tue, 6 Feb 2007 00:28:31 +0100
+> Jesper Juhl <jesper.juhl@gmail.com> wrote:
+> 
+>> Greetings people,
+>>
+>> Here is, as promised, the first round of cleanup patches for floppy.c
+>> (more will follow later).
+>>
+>> I opted to start with the simple stuff first, both to get it out of
+>> the way
+>> and also to get something done resonably fast, so don't expect anything
+>> earth shattering in this first series.
+>>
+>> There are 5 patches in this series. They are based on 2.6.20 and are
+>> incremental.
+>>
+>> These are the patches (they'll be posted to the same recipients as
+>> this initial mail) :
+>>
+>>       [PATCH][1/5] floppy.c: Initial (partial) CodingStyle cleanup
+>>       [PATCH][2/5] floppy.c: Remove pointless register keywords
+>>       [PATCH][3/5] floppy.c: Remove dead/commented out code
+>>       [PATCH][4/5] floppy.c: Add explicit/better printk() levels
+>>       [PATCH][5/5] floppy.c: Fix device_create_file() warning
+> 
+> Acked-by: Alan Cox <alan@redhat.com>
+> 
+> for the set of 5 patches. Its a beginning and removing the dead wood so
+> you can see what is actually there is a good a beginning as any other.
 
-As mentioned in another post in this thread, I can't get any info out
-of the i2c busses, because even when I have them available (i.e. after
-loading nvidiafb) I get XXXX all around (on all three of them).
-Suggestions on how to get the information welcome.
+Seconded, looks like a good beginning.
+You may also add my ACK for the whole set.
 
--- 
-Giuseppe "Oblomov" Bilotta
+Thanks,
+Bart
+
