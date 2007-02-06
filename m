@@ -1,50 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752037AbXBFPzQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751998AbXBFQCS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752037AbXBFPzQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 10:55:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752119AbXBFPzQ
+	id S1751998AbXBFQCS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 11:02:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752056AbXBFQCS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 10:55:16 -0500
-Received: from mail.tmr.com ([64.65.253.246]:35132 "EHLO gaimboi.tmr.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752037AbXBFPzO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 10:55:14 -0500
-Message-ID: <45C8A4E9.9080304@tmr.com>
-Date: Tue, 06 Feb 2007 10:55:21 -0500
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+	Tue, 6 Feb 2007 11:02:18 -0500
+Received: from nz-out-0506.google.com ([64.233.162.232]:56867 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751998AbXBFQCR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Feb 2007 11:02:17 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:to:subject:message-id:mime-version:content-type:content-disposition:user-agent:from;
+        b=iKRJNGvT6lnsWqhFGrFAheEQ2Ff+rA+/NOrpnSTaMWcz8Y5OEquhkgyJ+qjZ20sWBoXJeMSDLZTY5oZ3TRmR6AaTt7u36KH9dT7e7My/I0p9PcTZQbzU8Ag+/M0K/+DTZDVec0hthfv9dVyC9cFVIgG/sMFo4htm/iGFaITFIlw=
+Date: Tue, 6 Feb 2007 18:02:04 +0200
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 00] A series of patches to use ARRAY_SIZE macro
+Message-ID: <20070206160204.GA8991@Ahmed>
 MIME-Version: 1.0
-To: Mark Rustad <mrustad@gmail.com>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [patch] MTD: fix DOC2000/2001/2001PLUS build error
-References: <Pine.LNX.4.64.0702041057090.8424@woody.linux-foundation.org>  <20070205084523.GA21858@elte.hu>  <1170682488.29759.795.camel@pmac.infradead.org> <20070205155627.GA8354@elte.hu>  <1170692539.29759.856.camel@pmac.infradead.org> <20070205162635.GA755@elte.hu> <20070205163152.GA2464@elte.hu>  <Pine.LNX.4.64.0702050852160.8424@woody.linux-foundation.org>  <1170710272.29759.894.camel@pmac.infradead.org>  <Pine.LNX.4.64.0702051322580.8424@woody.linux-foundation.org>  <1170711587.29759.909.camel@pmac.infradead.org>  <Pine.LNX.4.64.0702051345380.8424@woody.linux-foundation.org>  <1170712393.29759.925.camel@pmac.infradead.org>  <Pine.LNX.4.64.0702051409110.8424@woody.linux-foundation.org>  <20070205143110.fca62b57.randy.dunlap@oracle.com>  <Pine.LNX.4.64.0702051502370.8424@woody.linux-foundation.org> <1170717694.29759.941.camel@pmac.infradead.org> <Pine.LNX.4.64.0702051525320.8424@wood y.linux-foundation.org> <A77CFAF3-DFCF-44B5-8917-364D3498DB1A@gmail.com>
-In-Reply-To: <A77CFAF3-DFCF-44B5-8917-364D3498DB1A@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.11
+From: "Ahmed S. Darwish" <darwish.07@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Rustad wrote:
-> On Feb 5, 2007, at 5:32 PM, Linus Torvalds wrote:
-> 
-> <snip>
-> 
->> And I told you that you could just improve the tools that track those
->> dependencies ANYWAY!
-> 
-> They aren't that bad even now. Using menuconfig (I'm a fossil that just 
-> uses curses for most things), hitting ? shows what depends or selects 
-> any particular entry. That is good enough for me now. Maybe I am just 
-> willing to ask for help, but the help already seems to be there.
-> 
-I think the problem Linus referenced with not even seeing an option is 
-an issue, you can't "?" on an option you can't see. An I use menuconfig 
-also, from long habit (accessing a remote compile server with slow dialup).
+Hi lovely list :),
 
+Follows (as thread replies) is a series of patches to use ARRAY_SIZE 
+macro defined in kernel.h.
+
+It's complementary to previous patch serieses that dealt with this 
+issue under `video' (drivers/media/video), `net' (drivers/net) and 
+`arch' subtrees.
+
+ drivers/acpi/toshiba_acpi.c            |    2 +-
+ drivers/atm/he.c                       |    2 +-
+ drivers/atm/idt77252.c                 |    8 ++++----
+ drivers/atm/nicstarmac.c               |    4 +++-
+ drivers/char/agp/intel-agp.c           |    3 ++-
+ drivers/char/drm/drm_proc.c            |    2 +-
+ drivers/infiniband/core/device.c       |    3 ++-
+ drivers/isdn/capi/capi.c               |    4 ++--
+ drivers/isdn/capi/capidrv.c            |    4 ++--
+ drivers/isdn/hardware/eicon/debug.c    |   30 +++++++++++++++---------------
+ drivers/isdn/hardware/eicon/message.c  |   23 +++++++++++------------
+ drivers/isdn/hardware/eicon/platform.h |    4 ----
+ drivers/kvm/kvm_svm.h                  |    3 ++-
+ drivers/kvm/svm.c                      |    5 +++--
+ drivers/kvm/vmx.c                      |    6 +++---
+ drivers/md/md.c                        |    6 +++---
+ drivers/media/dvb/bt8xx/dst.c          |    2 +-
+ drivers/media/dvb/bt8xx/dvb-bt8xx.c    |    3 ++-
+ drivers/media/dvb/frontends/cx24110.c  |    4 ++--
+ drivers/media/dvb/frontends/cx24123.c  |    6 +++---
+ drivers/media/dvb/ttpci/av7110_ir.c    |    3 ++-
+ drivers/s390/cio/device_id.c           |    3 ++-
+ drivers/w1/slaves/w1_therm.c           |    6 +++---
+ fs/reiserfs/do_balan.c                 |    5 +++--
+ kernel/rcutorture.c                    |    2 +-
+ sound/oss/au1550_ac97.c                |    4 ++--
+ sound/oss/es1371.c                     |    3 ++-
+ sound/oss/nec_vrc5477.c                |    4 ++--
+ sound/oss/soundcard.c                  |    5 +++--
+ sound/oss/swarm_cs4297a.c              |    3 ++-
+ 30 files changed, 85 insertions(+), 77 deletions(-)
+
+Thanks,
 -- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+Ahmed S. Darwish
+http://darwish-07.blogspot.com
