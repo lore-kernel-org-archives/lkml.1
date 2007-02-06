@@ -1,74 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965540AbXBFWLw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965574AbXBFWMl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965540AbXBFWLw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 17:11:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965545AbXBFWLw
+	id S965574AbXBFWMl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 17:12:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965570AbXBFWMl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 17:11:52 -0500
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:39701 "EHLO
+	Tue, 6 Feb 2007 17:12:41 -0500
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:39720 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S965540AbXBFWLv (ORCPT
+	with ESMTP id S965563AbXBFWMj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 17:11:51 -0500
-Date: Tue, 6 Feb 2007 23:11:56 +0100
+	Tue, 6 Feb 2007 17:12:39 -0500
+Date: Tue, 6 Feb 2007 23:12:43 +0100
 From: Adrian Bunk <bunk@stusta.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Paul Mackerras <paulus@samba.org>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: [2.6 patch] drivers/macintosh/mac_hid.c: make code static
-Message-ID: <20070206221155.GG27397@stusta.de>
+To: Andrew Morton <akpm@osdl.org>, James.Bottomley@SteelEye.com
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: [-mm patch] drivers/scsi/aacraid/: cleanups
+Message-ID: <20070206221243.GI27397@stusta.de>
+References: <20070129204528.eb8d695e.akpm@osdl.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20070129204528.eb8d695e.akpm@osdl.org>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch makes some needlessly global code static.
+On Mon, Jan 29, 2007 at 08:45:28PM -0800, Andrew Morton wrote:
+>...
+> Changes since 2.6.20-rc6-mm2:
+>...
+>  git-scsi-misc.patch
+>...
+>  git trees
+>...
+
+
+This patch contains the following cleanups:
+- proper prototypes for global code in aacraid.h
+- aac_rx_start_adapter() can now become static
 
 Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
 ---
 
- drivers/macintosh/mac_hid.c |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ drivers/scsi/aacraid/aacraid.h |    3 +++
+ drivers/scsi/aacraid/linit.c   |    2 --
+ drivers/scsi/aacraid/nark.c    |    3 ---
+ drivers/scsi/aacraid/rkt.c     |    3 ---
+ drivers/scsi/aacraid/rx.c      |    2 +-
+ 5 files changed, 4 insertions(+), 9 deletions(-)
 
---- linux-2.6.20-rc6-mm3/drivers/macintosh/mac_hid.c.old	2007-02-06 07:38:21.000000000 +0100
-+++ linux-2.6.20-rc6-mm3/drivers/macintosh/mac_hid.c	2007-02-06 07:39:14.000000000 +0100
-@@ -24,7 +24,7 @@
+--- linux-2.6.20-rc6-mm3/drivers/scsi/aacraid/aacraid.h.old	2007-02-06 08:22:50.000000000 +0100
++++ linux-2.6.20-rc6-mm3/drivers/scsi/aacraid/aacraid.h	2007-02-06 08:27:17.000000000 +0100
+@@ -1840,8 +1840,11 @@
+ int aac_get_adapter_info(struct aac_dev* dev);
+ int aac_send_shutdown(struct aac_dev *dev);
+ int aac_probe_container(struct aac_dev *dev, int cid);
++int _aac_rx_init(struct aac_dev *dev);
++int aac_rx_select_comm(struct aac_dev *dev, int comm);
+ extern int numacb;
+ extern int acbsize;
+ extern char aac_driver_version[];
+ extern int startup_timeout;
+ extern int aif_timeout;
++extern int expose_physicals;
+--- linux-2.6.20-rc6-mm3/drivers/scsi/aacraid/rx.c.old	2007-02-06 08:21:40.000000000 +0100
++++ linux-2.6.20-rc6-mm3/drivers/scsi/aacraid/rx.c	2007-02-06 08:21:50.000000000 +0100
+@@ -294,7 +294,7 @@
+  *	Start up processing on an i960 based AAC adapter
+  */
  
- #if defined(CONFIG_SYSCTL)
- /* file(s) in /proc/sys/dev/mac_hid */
--ctl_table mac_hid_files[] = {
-+static ctl_table mac_hid_files[] = {
- 	{
- 		.ctl_name	= DEV_MAC_HID_MOUSE_BUTTON_EMULATION,
- 		.procname	= "mouse_button_emulation",
-@@ -53,7 +53,7 @@
- };
- 
- /* dir in /proc/sys/dev */
--ctl_table mac_hid_dir[] = {
-+static ctl_table mac_hid_dir[] = {
- 	{
- 		.ctl_name	= DEV_MAC_HID,
- 		.procname	= "mac_hid",
-@@ -65,7 +65,7 @@
- };
- 
- /* /proc/sys/dev itself, in case that is not there yet */
--ctl_table mac_hid_root_dir[] = {
-+static ctl_table mac_hid_root_dir[] = {
- 	{
- 		.ctl_name	= CTL_DEV,
- 		.procname	= "dev",
-@@ -129,7 +129,7 @@
- 	return ret;
- }
- 
--int __init mac_hid_init(void)
-+static int __init mac_hid_init(void)
+-void aac_rx_start_adapter(struct aac_dev *dev)
++static void aac_rx_start_adapter(struct aac_dev *dev)
  {
- 	int err;
+ 	struct aac_init *init;
  
+--- linux-2.6.20-rc6-mm3/drivers/scsi/aacraid/linit.c.old	2007-02-06 08:23:20.000000000 +0100
++++ linux-2.6.20-rc6-mm3/drivers/scsi/aacraid/linit.c	2007-02-06 08:23:26.000000000 +0100
+@@ -82,8 +82,6 @@
+ static int aac_cfg_major = -1;
+ char aac_driver_version[] = AAC_DRIVER_FULL_VERSION;
+ 
+-extern int expose_physicals;
+-
+ /*
+  * Because of the way Linux names scsi devices, the order in this table has
+  * become important.  Check for on-board Raid first, add-in cards second.
+--- linux-2.6.20-rc6-mm3/drivers/scsi/aacraid/nark.c.old	2007-02-06 08:24:47.000000000 +0100
++++ linux-2.6.20-rc6-mm3/drivers/scsi/aacraid/nark.c	2007-02-06 08:24:58.000000000 +0100
+@@ -74,9 +74,6 @@
+ 
+ int aac_nark_init(struct aac_dev * dev)
+ {
+-	extern int _aac_rx_init(struct aac_dev *dev);
+-	extern int aac_rx_select_comm(struct aac_dev *dev, int comm);
+-
+ 	/*
+ 	 *	Fill in the function dispatch table.
+ 	 */
+--- linux-2.6.20-rc6-mm3/drivers/scsi/aacraid/rkt.c.old	2007-02-06 08:25:07.000000000 +0100
++++ linux-2.6.20-rc6-mm3/drivers/scsi/aacraid/rkt.c	2007-02-06 08:25:20.000000000 +0100
+@@ -45,7 +45,6 @@
+ static int aac_rkt_select_comm(struct aac_dev *dev, int comm)
+ {
+ 	int retval;
+-	extern int aac_rx_select_comm(struct aac_dev *dev, int comm);
+ 	retval = aac_rx_select_comm(dev, comm);
+ 	if (comm == AAC_COMM_MESSAGE) {
+ 		/*
+@@ -97,8 +96,6 @@
+ 
+ int aac_rkt_init(struct aac_dev *dev)
+ {
+-	extern int _aac_rx_init(struct aac_dev *dev);
+-
+ 	/*
+ 	 *	Fill in the function dispatch table.
+ 	 */
 
