@@ -1,123 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751690AbXBFJGW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751717AbXBFJIG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751690AbXBFJGW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 04:06:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751717AbXBFJGW
+	id S1751717AbXBFJIG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 04:08:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751771AbXBFJIG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 04:06:22 -0500
-Received: from nf-out-0910.google.com ([64.233.182.190]:22885 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751690AbXBFJGU (ORCPT
+	Tue, 6 Feb 2007 04:08:06 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:39449 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751728AbXBFJIE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 04:06:20 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=mnzhcCpgQNqiJwAHy7s+vMcQ7bIu/R+RcgRcomUSh6EJG9Cgv8VfNFOUO0tW4EbTaZyfv7tsLmPjn4xXE7fYWggvTvsIy5g/ag/i8EjmEk3h08vteiOk4wdF0RsBugiGZRrWGrHEkuvsuKmQdgcrXV5jHGbuR1KhWAwqZ6atzbs=
-Message-ID: <1a297b360702060106x321bfb8dw918d15df76952576@mail.gmail.com>
-Date: Tue, 6 Feb 2007 13:06:17 +0400
-From: "Manu Abraham" <abraham.manu@gmail.com>
-To: "Grant Grundler" <grundler@parisc-linux.org>
-Subject: Re: 2.6.20 PCI Cannot allocate resource region 2
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz, greg@kroah.com
-In-Reply-To: <20070206084638.GB20752@colo.lackof.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 6 Feb 2007 04:08:04 -0500
+Subject: Re: [PATCH 0/11] VMI / Paravirt bugfixes for 2.6.21
+From: Arjan van de Ven <arjan@infradead.org>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Zachary Amsden <zach@vmware.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, Andi Kleen <ak@muc.de>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Chris Wright <chrisw@sous-sol.org>
+In-Reply-To: <1170738676.29293.35.camel@localhost.localdomain>
+References: <200702060352.l163q87K000713@zach-dev.vmware.com>
+	 <1170736029.29293.31.camel@localhost.localdomain>
+	 <45C809F9.2090905@vmware.com>
+	 <1170738676.29293.35.camel@localhost.localdomain>
+Content-Type: text/plain
+Organization: Intel International BV
+Date: Tue, 06 Feb 2007 10:07:36 +0100
+Message-Id: <1170752856.7324.5.camel@laptopd505.fenrus.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1a297b360702041709l3b0309c7y8fcd33df1d487889@mail.gmail.com>
-	 <20070206045528.GA4228@colo.lackof.org>
-	 <20070206050331.GB4228@colo.lackof.org>
-	 <20070205213339.80239a22.akpm@linux-foundation.org>
-	 <20070206084638.GB20752@colo.lackof.org>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/6/07, Grant Grundler <grundler@parisc-linux.org> wrote:
-> On Mon, Feb 05, 2007 at 09:33:39PM -0800, Andrew Morton wrote:
-> > On Mon, 5 Feb 2007 22:03:31 -0700 Grant Grundler <grundler@parisc-linux.org> wrote:
-> >
-> > > On Mon, Feb 05, 2007 at 09:55:28PM -0700, Grant Grundler wrote:
-> > > ...
-> > > > >         Control: I/O- Mem- BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
-> > > > >         Status: Cap- 66MHz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR+ <PERR+
-> > > > >         Latency: 0, Cache Line Size 0c
-> > > > >         BIST is running
-> > > >
-> > > > BIST is required to complete in 2 seconds. Either with success or failure.
-> > > > I expect BIOS to have complained before launching grub/lilo.
-> > >
-> > > Gregkh,
-> > > I just realized linux-pci bus scan should ignore devices (print a warning)
-> > > which have BIST set.  Want a patch for this?
-> > >
-> > > Slight risk some previously "working" device which violates the
-> > > spec might get ignored...but I hope there aren't too many of those.
-> >
-> > Should we wait two seconds before declaring the device dead?
-> > To see whether it will come back?
->
-> Hrm...my thought was BIOS should already be doing that...but I just
-> realised 2 seconds have elapsed if Manu can collect "lspci" output showing
-> "BIST is running". I think the fact that BIST is not "running" in the
-> 2.6.20-rc7 lspci output is just coincidental. The config space for that
-> device is full of similar garbage in both cases regardless how long
-> it took.
->
-
-waited for more than 30 mins as well, well almost the entire night,
-BIST didn't stop
+On Tue, 2007-02-06 at 16:11 +1100, Rusty Russell wrote:
+> On Mon, 2007-02-05 at 20:54 -0800, Zachary Amsden wrote:
+> > Rusty Russell wrote:
+> > > Indeed, I'm expecting to push lguest this week, and this code will
+> > > effect me, so I'd like to see this in a -mm soon...
+> > 
+> > Yes, I took a look at the lguest changes today and I think these won't 
+> > generate conflicts, just make stuff easier for you ;)  Course you've now 
+> > got a couple new paravirt-ops to support, but the native ones are fine 
+> > for temporary use.
+> 
+> Implementing stolen time is something I'd like to do, since it'd be a
+> nice self-contained example the expectations.
 
 
-> Maybe BIOS is clobbering BIST when writing latency timer or cacheline size
-> register and BIOS is not being careful to clear or disable the other
-> bytes in that same 32-bit word?
->
+hmm stolen time could even be useful without virtualization; to a large
+degree, if cpufreq reduces the speed of your cpu you have "stolen
+cycles" that way... I wonder if this concept can be used for that as
+well...
 
 
-If the BIOS is clobbering the BIST, then the same should happen in the
-other OS as well ?
-Just plugging in the card, without any drivers, got me the PCI vendor info.
-
-
-> PCI is by nature a 32-bit wide config space and "byte enables"
-> are used to mask off bytes we want to ignore.  If the chipset
-> or BIOS config access routines aren't careful, they could accidentally
-> modify other values in the same 32-bit word when only one byte was
-> intended to be changed.
->
-> The code in pci_set_cacheline_size() uses byte enables but is only
-> called by pci_set_mwi(). 82 different .c files (124 instances) access
-> PCI_LATENCY_TIMER.  Of those, 68 are pci_write_config_byte() calls.
-> But I really only care about the calls what would apply get invoked
-> for 1822:4e35. My guess is this one always gets invoked:
->   ./arch/i386/pci/i386.c: pci_write_config_byte(dev, PCI_LATENCY_TIMER, lat);
->
-> since the offending device is "Mantis DTV PCI Bridge Controller [Ver 1.0]".
-> (http://pci-ids.ucw.cz/iii/?i=1822)
-> pci_enable_bridges() -> pci_set_master() -> pcibios_set_master().
->
-> Manu, can you add code to pci_enable_bridges() to dump information about
-> which bridges are getting enabled _before_ pci_set_master() is called?
-> I'm interested in a hex dump of the first 8  32-bit words of
-> PCI config space for each device.
->
-
-let me give it a shot.
-
-
-> BTW, I wasn't planning declaring the device as dead. I just wanted to
-> pretend it didn't exist and then let something else (user space? timeout?)
-> trigger a rescan of that bus/"slot". That trigger could come in a successive
-> patch which also removes the 2 second polling loop.
-
-maybe the driver can do a rescan ?
-
->
-> grant
->
-
-
-thanks,
-manu
