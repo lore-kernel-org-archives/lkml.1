@@ -1,21 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752320AbXBFWiU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965524AbXBFWj3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752320AbXBFWiU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 17:38:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752321AbXBFWiU
+	id S965524AbXBFWj3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 17:39:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965542AbXBFWj3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 17:38:20 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:53870 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752305AbXBFWiT (ORCPT
+	Tue, 6 Feb 2007 17:39:29 -0500
+Received: from nf-out-0910.google.com ([64.233.182.189]:41279 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965524AbXBFWj2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 17:38:19 -0500
+	Tue, 6 Feb 2007 17:39:28 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=kW6GqcpaO87jn43q1qZ7P3lhOEQvvrnhKBm8ne2HwBu0SZZtPz+5gPTo4xDVJSiTt7D+kJ5OdBvbzg8JoMLdVYYC3ti68kZrY451xgL0RS+b/HXDxRtD6pbcQ1UDPDyxvRsLUkMC7QGUHAvdEosvoHoVcGzjtJW2qND5pVH5J/g=
+Message-ID: <1defaf580702061439w5eca87e6s8d152fdec5f8c627@mail.gmail.com>
+Date: Tue, 6 Feb 2007 23:39:26 +0100
+From: "Haavard Skinnemoen" <hskinnemoen@gmail.com>
+To: "Matt Mackall" <mpm@selenic.com>
 Subject: Re: [patch] MTD: fix DOC2000/2001/2001PLUS build error
-From: David Woodhouse <dwmw2@infradead.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0702060841440.8424@woody.linux-foundation.org>
+Cc: "David Woodhouse" <dwmw2@infradead.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Ingo Molnar" <mingo@elte.hu>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070206054612.GL16722@waste.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 References: <Pine.LNX.4.64.0702041057090.8424@woody.linux-foundation.org>
 	 <20070205084523.GA21858@elte.hu>
 	 <1170682488.29759.795.camel@pmac.infradead.org>
@@ -24,63 +36,26 @@ References: <Pine.LNX.4.64.0702041057090.8424@woody.linux-foundation.org>
 	 <20070205162635.GA755@elte.hu> <20070205163152.GA2464@elte.hu>
 	 <Pine.LNX.4.64.0702050852160.8424@woody.linux-foundation.org>
 	 <1170710272.29759.894.camel@pmac.infradead.org>
-	 <Pine.LNX.4.64.0702051322580.8424@woody.linux-foundation.org>
-	 <1170711587.29759.909.camel@pmac.infradead.org>
-	 <Pine.LNX.4.64.0702051345380.8424@woody.linux-foundation.org>
-	 <1170712393.29759.925.camel@pmac.infradead.org>
-	 <Pine.LNX.4.64.0702051409110.8424@woody.linux-foundation.org>
-	 <20070205143110.fca62b57.randy.dunlap@oracle.com>
-	 <Pine.LNX.4.64.0702051502370.8424@woody.linux-foundation.org>
-	 <1170717694.29759.941.camel@pmac.infradead.org>
-	 <Pine.LNX.4.64.0702051525320.8424@woody.linux-foundation.org>
-	 <1170755101.29759.960.camel@pmac.infradead.org>
-	 <Pine.LNX.4.64.0702060841440.8424@woody.linux-foundation.org>
-Content-Type: text/plain
-Date: Tue, 06 Feb 2007 22:38:04 +0000
-Message-Id: <1170801484.29759.1000.camel@pmac.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6.dwmw2.1) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	 <20070206054612.GL16722@waste.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-02-06 at 08:53 -0800, Linus Torvalds wrote:
-> 
-> WE WANT TO BE NICE.
->  - the firewall example was not an example of 'select', but of the "we 
->    want to be nice". But you simply DID NOT GET IT.
-
-It's a very clever straw man, Linus, but it's still bogus. Not only do I
-_agree_ about the firewall example, I've even implemented very similar
-things already, of my own accord. I really do get it.
-
-I don't claim that we shouldn't "be nice". You keep coming back to that
-but it bears no relation to what I'm actually saying.
-
->  - the USB and SATA examples are *also* examples of "we want to be nice", 
->    and hell yeah, you need 'select' to do them. Claiming anything else is 
->    just stupid.
+On 2/6/07, Matt Mackall <mpm@selenic.com> wrote:
+> A number of current users are indeed bogus. Stuff like:
 >
-> So: are you stupid, or do you just refuse to even think about it? 
+> config SUPERH
+>         bool
+>         default y
+>         select EMBEDDED
+>
+> Just because you're using a SuperH board doesn't mean you want to turn
+> off standard features.
 
-I claim that there are _better_ ways to do it than 'select'. I claim
-that we can 'be nice' without actually screwing over the people who use
-non-interactive config methods and need to turn stuff off. A number of
-whom have spoken up already but are perhaps less quixotic than I am so
-have given up on getting you to listen.
+I disagree. I did the exact same thing on AVR32 because !EMBEDDED
+forces on tons of crap that just isn't useful on many embedded
+platforms. I trust our users to actually enable for example virtual
+terminal support if they happen to need it. Far from everyone do, and
+it's going to end up as dead code unless they also enable the right
+framebuffer driver.
 
-99% of the times I configure a kernel, it's in an RPM package. The
-answer "you can use xconfig and press the question mark" isn't
-wonderfully useful -- although having xconfig be the answer for those
-who need the extra guidance that 'select' currently offers is perhaps a
-more reasonable solution.
-
-But it doesn't matter. I'll come up with a hack for the tools which make
-them (optionally) treat 'select' of a user-visible option as if it was
-just 'depends on'. And that should fix the problem.
-
--- 
-dwmw2
-
+Haavard
