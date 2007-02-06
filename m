@@ -1,86 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751603AbXBFLky@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751734AbXBFLlK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751603AbXBFLky (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 06:40:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751695AbXBFLky
+	id S1751734AbXBFLlK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 06:41:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751708AbXBFLlJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 06:40:54 -0500
-Received: from ns2.suse.de ([195.135.220.15]:36779 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751018AbXBFLkx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 06:40:53 -0500
-Date: Tue, 6 Feb 2007 12:40:50 +0100
-From: Bernhard Walle <bwalle@suse.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org,
-       fastboot@lists.osdl.org
-Subject: [PATCH] Fix NULL-pointer dereference in ia64_machine_kexec()
-Message-ID: <20070206114050.GA3648@strauss.suse.de>
-Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
-	linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org,
-	fastboot@lists.osdl.org
-References: <eparjg$nhq$1@sea.gmane.org> <yq0odolq8zg.fsf@jaguar.mkp.net> <20070127131514.GA30463@strauss.suse.de> <45BBD6F5.6040801@sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <45BBD6F5.6040801@sgi.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Tue, 6 Feb 2007 06:41:09 -0500
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:55752 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751685AbXBFLlH convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Feb 2007 06:41:07 -0500
+Date: Tue, 6 Feb 2007 12:39:46 +0100
+From: =?ISO-8859-1?Q?S=E9bastien_Dugu=E9?= <sebastien.dugue@bull.net>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
+       linux-aio <linux-aio@kvack.org>, Bharata B Rao <bharata@in.ibm.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
+       Badari Pulavarty <pbadari@us.ibm.com>,
+       Jean Pierre Dion <jean-pierre.dion@bull.net>
+Subject: Re: [PATCH -mm][AIO] AIO completion signal notification fixes and
+ cleanups
+Message-ID: <20070206123946.401bf57f@frecb000686>
+In-Reply-To: <20070206110539.GA129@tv-sign.ru>
+References: <20070201102252.240130c6@frecb000686>
+	<20070201103053.64489048@frecb000686>
+	<20070202180039.GA658@tv-sign.ru>
+	<20070205131839.6f601c3e@frecb000686>
+	<20070205134314.GA283@tv-sign.ru>
+	<20070205170056.6a29b19b@frecb000686>
+	<20070205171335.GA528@tv-sign.ru>
+	<20070206102253.20b121ae@frecb000686>
+	<20070206110539.GA129@tv-sign.ru>
+X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 06/02/2007 12:42:09,
+	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 06/02/2007 12:42:10,
+	Serialize complete at 06/02/2007 12:42:10
+Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[I got no response after my corrected patch, so I try it again.
-I request it to appear in -mm tree. Patch is against 2.6.20-rc6-mm3.]
+On Tue, 6 Feb 2007 14:05:39 +0300 Oleg Nesterov <oleg@tv-sign.ru> wrote:
 
-This patch fixes a NULL-pointer dereference in ia64_machine_kexec().
+> On 02/06, S?bastien Dugu? wrote:
+> > 
+> > @@ -970,8 +969,14 @@ static long aio_setup_sigevent(struct ai
+> >  	rcu_read_lock();
+> >  	target = sigevent_find_task(&event);
+> >  
+> > -	if (unlikely(!target))
+> > +	if (unlikely(!target)) {
+> > +		/*
+> > +		 * Revert notify to SIGEV_NONE so that really_put_req()
+> > +		 * knows that no ref has been taken on a task.
+> > +		 */
+> > +		notify->notify = SIGEV_NONE;
+> >  		goto out_unlock;
+> > +	}
+> 
+> Very minor nit, feel free to ignore.
+> 
+> Isn't it better to move "notify->* = event.*;" down, when we know that
+> target != NULL. Imho, a bit easier to follow. This way we don't need to
+> reset notify->notify = SIGEV_NONE.
+> 
+> aio_setup_sigevent() relies on the fact that ->notify = SIGEV_NONE on
+> entry anyway.
 
-The variable ia64_kimage is set in machine_kexec_prepare() which is
-called from sys_kexec_load(). If kdump wasn't configured before,
-ia64_kimage is NULL.  machine_kdump_on_init() passes ia64_kimage() to
-machine_kexec() which assumes a valid value.
+  Yep, right, it will make things cleaner.
 
-The patch also adds a few sanity checks for the image to simplify
-debugging of similar problems in future.
+  Thanks,
 
-Signed-off-by: Bernhard Walle <bwalle@suse.de>
-
----
- arch/ia64/kernel/crash.c         |    5 +++++
- arch/ia64/kernel/machine_kexec.c |    2 ++
- 2 files changed, 7 insertions(+)
-
-Index: b/arch/ia64/kernel/crash.c
-===================================================================
---- a/arch/ia64/kernel/crash.c
-+++ b/arch/ia64/kernel/crash.c
-@@ -116,6 +116,11 @@ machine_crash_shutdown(struct pt_regs *p
- static void
- machine_kdump_on_init(void)
- {
-+	if (!ia64_kimage) {
-+		printk(KERN_NOTICE "machine_kdump_on_init(): "
-+				"kdump not configured\n");
-+		return;
-+	}
- 	local_irq_disable();
- 	kexec_disable_iosapic();
- 	machine_kexec(ia64_kimage);
-Index: b/arch/ia64/kernel/machine_kexec.c
-===================================================================
---- a/arch/ia64/kernel/machine_kexec.c
-+++ b/arch/ia64/kernel/machine_kexec.c
-@@ -93,6 +93,7 @@ static void ia64_machine_kexec(struct un
- 	unsigned long vector;
- 	int ii;
- 
-+	BUG_ON(!image);
- 	if (image->type == KEXEC_TYPE_CRASH) {
- 		crash_save_this_cpu();
- 		current->thread.ksp = (__u64)info->sw - 16;
-@@ -131,6 +132,7 @@ static void ia64_machine_kexec(struct un
- 
- void machine_kexec(struct kimage *image)
- {
-+	BUG_ON(!image);
- 	unw_init_running(ia64_machine_kexec, image);
- 	for(;;);
- }
+  Sébastien.
