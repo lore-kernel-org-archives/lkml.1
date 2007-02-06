@@ -1,56 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752312AbXBFUgg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965396AbXBFUhz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752312AbXBFUgg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 15:36:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752314AbXBFUgg
+	id S965396AbXBFUhz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 15:37:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965416AbXBFUhz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 15:36:36 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:45472 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752309AbXBFUgf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 15:36:35 -0500
-Date: Tue, 6 Feb 2007 21:36:38 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Srinivasa Ds <srinivasa@in.ibm.com>, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org, jkenisto@us.ibm.com,
-       anil.s.keshavamurthy@intel.com, prasanna@in.ibm.com, ananth@in.ibm.com
-Subject: Re: [RFC] [PATCH] To list all active probes in the system
-Message-ID: <20070206203638.GA23716@elte.hu>
-References: <45C85097.1000106@in.ibm.com> <20070206021300.698ecb2c.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070206021300.698ecb2c.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.3
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.3 required=5.9 tests=ALL_TRUSTED,BAYES_50 autolearn=no SpamAssassin version=3.0.3
-	-3.3 ALL_TRUSTED            Did not pass through any untrusted hosts
-	1.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
-	[score: 0.4504]
+	Tue, 6 Feb 2007 15:37:55 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:52854 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965396AbXBFUhz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Feb 2007 15:37:55 -0500
+Date: Tue, 6 Feb 2007 20:37:35 +0000 (GMT)
+From: James Simmons <jsimmons@infradead.org>
+To: Luca Tettamanti <kronos@people.it>
+cc: linux-fbdev-devel@lists.sourceforge.net, Andrew Morton <akpm@osdl.org>,
+       Dave Airlie <airlied@gmail.com>,
+       Giuseppe Bilotta <giuseppe.bilotta@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [Linux-fbdev-devel] [PATCH] nvidiafb: allow ignoring EDID info
+In-Reply-To: <20070204201713.GA12867@dreamland.darkstar.lan>
+Message-ID: <Pine.LNX.4.64.0702062034380.9224@pentafluge.infradead.org>
+References: <ephv35$4i3$1@sea.gmane.org> <20070128160831.fb51347f.akpm@osdl.org>
+ <21d7e9970701281612q56b694edp6efd1a5556dea3fe@mail.gmail.com>
+ <20070128162907.370f5476.akpm@osdl.org> <21d7e9970701281639w57edc2efw4ba620d4c1bdcee7@mail.gmail.com>
+ <cb7bb73a0701290637q2ce0ff16t28f82d0c0339a2ba@mail.gmail.com>
+ <20070130203301.GA15067@dreamland.darkstar.lan> <20070204201713.GA12867@dreamland.darkstar.lan>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Andrew Morton <akpm@linux-foundation.org> wrote:
-
-> On Tue, 06 Feb 2007 15:25:35 +0530 Srinivasa Ds <srinivasa@in.ibm.com> wrote:
+> > > Although solving the problem at the fb layer level is probably the
+> > > correct/best way to do it, I am not aware of people having problems
+> > > with broken EDIDs and non-nVidia cards. By contrast, workarounds for
+> > > nVidia and broken EDIDs is a very common thing to do even on Windows.
+> > 
+> > Not all drivers have support for reading EDID information, so in many
+> > cases it just "works". My old monitor had garbage in the EDID eeprom and
+> > I had to pass "ignore_edid" to radeonfb (before I reprogrammed the
+> > eeprom that is :P).
+> > 
+> > > Plus, providing an fb-layer-level solution is way beyond my kernel
+> > > programming experience :)
+> > 
+> > I'll try to code something in the weekend.
 > 
-> >         I have developed a patch, that lists all active probes in 
-> > the system.
+> I'm somewhat stuck. fbmon has the library functions to parse and
+> optionally fix EDID block, but it lacks the knowledge of the source of
+> the data; IOW it's not possible to ignore the EDID coming from a certain
+> head, the flag would be global (which may be less that optimal with
+> multi-head setups).
+> So instead of adding an option I'd use the existing broken EDID db,
+> adding another state (say 'unfixable') which causes the data to be
+> discarded. Comments?
 > 
-> userspace added the probes, so userspace should know where they all 
-> are?
+> Giuseppe, can you send me the EDID block of your monitor?
 
-it's a kernel resource that user-space can influence so it's sensible to 
-have some sort of visibility to them. For example if the userspace that 
-has the 'info' crashes then another piece of user-space might want to 
-recreate that info, to zap the probes.
+If you can find post the manufacturer and model number we can place it on 
+the backlist in fbmon. Also we should figure out what is wrong and fix it.
 
-also, this resource could leak, etc.
-
-	Ingo
