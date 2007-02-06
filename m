@@ -1,71 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965605AbXBFXzA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965606AbXBFXzf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965605AbXBFXzA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 18:55:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965606AbXBFXzA
+	id S965606AbXBFXzf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 18:55:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965609AbXBFXze
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 18:55:00 -0500
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:38496
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965605AbXBFXy7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 18:54:59 -0500
-From: Rob Landley <rob@landley.net>
-To: dwalker@mvista.com
-Subject: Re: 2.6.20-rc6-mm3
-Date: Tue, 6 Feb 2007 18:55:04 -0500
-User-Agent: KMail/1.9.1
-Cc: Thomas Gleixner <tglx@linutronix.de>, Andrew Morton <akpm@osdl.org>,
-       linux-kernel@vger.kernel.org, mingo@elte.hu
-References: <20070129204528.eb8d695e.akpm@osdl.org> <200702061815.41078.rob@landley.net> <1170804518.3455.115.camel@dwalker1>
-In-Reply-To: <1170804518.3455.115.camel@dwalker1>
+	Tue, 6 Feb 2007 18:55:34 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:55930 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965606AbXBFXz3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Feb 2007 18:55:29 -0500
+Date: Tue, 6 Feb 2007 15:55:09 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: David Woodhouse <dwmw2@infradead.org>
+cc: Randy Dunlap <randy.dunlap@oracle.com>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [patch] MTD: fix DOC2000/2001/2001PLUS build error
+In-Reply-To: <1170804983.29759.1051.camel@pmac.infradead.org>
+Message-ID: <Pine.LNX.4.64.0702061550010.8424@woody.linux-foundation.org>
+References: <1170801484.29759.1000.camel@pmac.infradead.org> 
+ <Pine.LNX.4.64.0702061451560.8424@woody.linux-foundation.org> 
+ <1170803515.29759.1032.camel@pmac.infradead.org> 
+ <Pine.LNX.4.64.0702061516110.8424@woody.linux-foundation.org>
+ <1170804983.29759.1051.camel@pmac.infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200702061855.05020.rob@landley.net>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 06 February 2007 6:28 pm, Daniel Walker wrote:
-> On Tue, 2007-02-06 at 18:15 -0500, Rob Landley wrote:
-> > On Tuesday 06 February 2007 3:40 pm, Daniel Walker wrote:
-> > > In this case "different" goes into userspace .. So different could mean
-> > > userspace regression, which is something that we don't want. I have no
-> > > idea if any apps use /proc/interrupts , but it's possible since it's
-> > > been around for a long time.
-> > > 
-> > > The reason that I'm bringing it up at all is because people have ask me
-> > > "Why isn't my timer ticking??"
 
-Ah, you can't answer this question.  Right:
 
-A) Because there are multiple timer interrupt sources in the system, and we're 
-now using a newer (better) one.
+On Tue, 6 Feb 2007, David Woodhouse wrote:
+>
+> Really, if our config is set up in sensible submenus (as in general it
+> _is_), the "see everything" behaviour really isn't bad.
 
-B) This measures interrupts.  It doesn't measure jiffies.  Interrupts != 
-jiffies.  This is a conceptual issue.
+There are two fundamental problems with that statement:
 
-C) /proc/uptime may be of use here.
+ - no, it really isn't always
 
-> > Because there are two clock sources in the machine and it's using the 
-other 
-> > one, so the interrupt isn't firing?
-> > 
-> > Are you saying that the /proc statistics aren't accurate, or that you 
-> > previously misunderstood what it was actually measuring and you'd now like 
-it 
-> > to lie?
-> 
-> I understand exactly what is happening . The statistics are unclear, and
-> tend to confuse people .
+   Quite often, our Kconfig files have dependencies that are about where 
+   the *code* exists, rather than about some nice hierarchical system.
 
-You find /proc/interrupts showing interrupts to be _unclear_?
+   Think of it this way: would you use a programming language that didn't 
+   allow you anything but totally hierarcical language constructs? No sane 
+   person would - because real life isn't hierarchical. Yes, there are 
+   many things that are, but not all things are.
 
-> Daniel
+   Example: many cryptographic algorithms are in crypto/. But then a lot 
+   of them ARE NOT. They are in arch/so-and-so/crypto/ or similar. Notice? 
 
-Rob
--- 
-"Perfection is reached, not when there is no longer anything to add, but
-when there is no longer anything to take away." - Antoine de Saint-Exupery
+   NOT HIERARCHICAL.
+
+ - I don't use menus at all. I use the good old textual "make oldconfig". 
+   Trust me, I _want_ those irrelevant questions gone. They aren't "grayed 
+   out".
+
+So you seem to have this *wish* that real life was different than it is. 
+But we aren't hierarchical, and even if we were, it *still* wouldn't work 
+the way you want things to work.
+
+		Linus "reality bites" Torvalds
