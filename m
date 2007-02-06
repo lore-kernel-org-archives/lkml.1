@@ -1,48 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965424AbXBFAsp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965412AbXBFAsU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965424AbXBFAsp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 19:48:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965421AbXBFAso
+	id S965412AbXBFAsU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 19:48:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965413AbXBFAsR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 19:48:44 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:51336 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965411AbXBFAsd (ORCPT
+	Mon, 5 Feb 2007 19:48:17 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:52546
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S965411AbXBFAsN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 19:48:33 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Tue, 6 Feb 2007 01:48:25 +0100 (CET)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: Re: ohci1394 broke 2.6.19 -> 2.6.20-rc1
-To: Robert Crocombe <rcrocomb@gmail.com>
-cc: linux1394-devel <linux1394-devel@lists.sourceforge.net>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <tkrat.f2510ec744e6b5c8@s5r6.in-berlin.de>
-Message-ID: <tkrat.064c609db01a3918@s5r6.in-berlin.de>
-References: <e6babb600702051521l4a08eb2dw2a7f423fd0d7edd7@mail.gmail.com>
- <tkrat.c39467d7194502c4@s5r6.in-berlin.de>
- <tkrat.f2510ec744e6b5c8@s5r6.in-berlin.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+	Mon, 5 Feb 2007 19:48:13 -0500
+Date: Mon, 05 Feb 2007 16:48:12 -0800 (PST)
+Message-Id: <20070205.164812.28787904.davem@davemloft.net>
+To: scot.mckinley@oracle.com
+Cc: torvalds@linux-foundation.org, bert.hubert@netherlabs.nl,
+       davidel@xmailserver.org, mingo@elte.hu, zach.brown@oracle.com,
+       linux-kernel@vger.kernel.org, linux-aio@kvack.org, suparna@in.ibm.com,
+       bcrl@kvack.org
+Subject: Re: [PATCH 2 of 4] Introduce i386 fibril scheduling
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <45C7CB80.4040402@oracle.com>
+References: <20070205213618.GA30923@outpost.ds9a.nl>
+	<Pine.LNX.4.64.0702051350010.8424@woody.linux-foundation.org>
+	<45C7CB80.4040402@oracle.com>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I wrote:
-> @@ -1132,6 +1132,7 @@ static int __init ieee1394_init(void)
->  		}
->  	}
->  
-> +	ret = driver_register(&nodemgr_mid_layer_driver);
->  	ret = class_register(&hpsb_host_class);
->  	if (ret < 0)
->  		goto release_all_bus;
+From: Scot McKinley <scot.mckinley@oracle.com>
+Date: Mon, 05 Feb 2007 16:27:44 -0800
 
-I think I make that a
-	WARN_ON(driver_register(&nodemgr_mid_layer_driver));
--- 
-Stefan Richter
--=====-=-=== --=- --==-
-http://arcgraph.de/sr/
+> As Joel mentioned earlier, from an Oracle perspective, one of the key 
+> things we are looking for is a nice clean *common* wait point.
 
+How much investigation have the Oracle folks (besides Zach :-) done
+into Evgeniy's kevent interfaces and how much feedback have they given
+to him.
 
+I know it sounds like I'm being a pain in the ass, but it saddens
+me that there is this whole large body of work implemented to solve
+a problem, the maintainer keeps posting patch sets and the whole
+discussions has gone silent.
+
+I'd be quiet if there were some well formulated objections to his work
+being posted, but people are posting nothing.  So either it's a
+perfect API or people aren't giving it the attention and consideration
+it deserves.
