@@ -1,57 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932518AbXBFPuV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932099AbXBFPxX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932518AbXBFPuV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 10:50:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932606AbXBFPuV
+	id S932099AbXBFPxX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 10:53:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932671AbXBFPxX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 10:50:21 -0500
-Received: from terminus.zytor.com ([192.83.249.54]:55419 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932518AbXBFPuU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 10:50:20 -0500
-Message-ID: <45C8A3B3.6000802@zytor.com>
-Date: Tue, 06 Feb 2007 07:50:11 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
+	Tue, 6 Feb 2007 10:53:23 -0500
+Received: from mail.tmr.com ([64.65.253.246]:35124 "EHLO gaimboi.tmr.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932663AbXBFPxX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Feb 2007 10:53:23 -0500
+Message-ID: <45C8A411.7020006@tmr.com>
+Date: Tue, 06 Feb 2007 10:51:45 -0500
+From: Bill Davidsen <davidsen@tmr.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
 MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: vgoyal@in.ibm.com, Etienne Lorrain <etienne_lorrain@yahoo.fr>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Compressed ia32 ELF file generation for loading by Gujin
- 1/3
-References: <522909.27613.qm@web26909.mail.ukl.yahoo.com>	<45C7CDD7.20806@zytor.com> <20070206052514.GA15613@in.ibm.com>	<45C81D5B.3050408@zytor.com> <20070206063320.GA26462@in.ibm.com>	<45C82266.3010007@zytor.com> <20070206065104.GB26462@in.ibm.com> <m1abzrvjdj.fsf@ebiederm.dsl.xmission.com>
-In-Reply-To: <m1abzrvjdj.fsf@ebiederm.dsl.xmission.com>
+To: David Woodhouse <dwmw2@infradead.org>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [patch] MTD: fix DOC2000/2001/2001PLUS build error
+References: <Pine.LNX.4.64.0702041057090.8424@woody.linux-foundation.org>	 <20070205084523.GA21858@elte.hu>	 <1170682488.29759.795.camel@pmac.infradead.org>	 <20070205155627.GA8354@elte.hu>	 <1170692539.29759.856.camel@pmac.infradead.org>	 <20070205162635.GA755@elte.hu> <20070205163152.GA2464@elte.hu>	 <Pine.LNX.4.64.0702050852160.8424@woody.linux-foundation.org>	 <1170710272.29759.894.camel@pmac.infradead.org>	 <Pine.LNX.4.64.0702051322580.8424@woody.linux-foundation.org>	 <1170711587.29759.909.camel@pmac.infradead.org>	 <Pine.LNX.4.64.0702051345380.8424@woody.linux-foundation.org>	 <1170712393.29759.925.camel@pmac.infradead.org>	 <Pine.LNX.4.64.0702051409110.8424@woody.linux-foundation.org>	 <20070205143110.fca62b57.randy.dunlap@oracle.com>	 <Pine.LNX.4.64.0702051502370.8424@woody.linux-foundation.org>	 <1170717694.29759.941.camel@pmac.infradead.org>	 <Pine.LNX.4.64.0702051525320.8424@woody.linux-foundation.org> <1170755101.29759.960.camel@pmac.infradead.org>
+In-Reply-To: <1170755101.29759.960.camel@pmac.infradead.org>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
+David Woodhouse wrote:
+> On Mon, 2007-02-05 at 15:32 -0800, Linus Torvalds wrote:
+>> On Mon, 5 Feb 2007, David Woodhouse wrote:
+>>> The netfilter example is totally irrelevant here, since 'select' is
+>>> neither necessary nor sufficient for that. Russell and I have both
+>>> pointed that out to you already.
+>> No, the example IS relevant.
+>>
+>> Why?
+>>
+>> Because you don't seem to be getting the whole "be nice" part.
 > 
-> Just for documentation the current interface is you come in through
-> the kernels 16bit entry point and get all of it's BIOS calls, or your
-> bootloader is responsible for getting the equivalent information
-> somehow.
+> If you'd come down from your high horse for a moment you might realise
+> that I _agree_ with the 'be nice' part, as long as you don't pessimise
+> things for those who _do_ know what they're doing. 
 > 
-> From what little I skimmed part of what Gujin wanted to do was sane
-> at first glance. Just boot a gziped vmlinux like the other
-> architectures.  The problem was the 16bit code.  
-> 
-> So there may be some good ideas buried in there somewhere, but it
-> likely to take some doing, and patches that I have to save before
-> I read them are a real pain!
-> 
+> The thing you want for netfilter is a _GOOD IDEA_. I agree. I've even
+> implemented something _very_ similar, for JFFS2 compression options. If
+> you want to play about with individual compressors you have to enable
+> the 'Advanced options' first; otherwise you get the sane defaults.
+> Unless you really want to get your hands dirty, you don't have to know
+> which compressors we use by default.
 
-Actually, as far as I can see, he has re-invented having a real-mode 
-code chunk which then gets run before the protected-mode kernel.  We 
-already have that!  You can even intercept between running real-mode and 
-protected-mode if you really want to.
+One thing which can be solved at the tool level, particularly for 
+netfilter, is to provide options for "turn it all of and I'll select," 
+"turn it all on (or module)," and "reset this page to defaults." Because 
+those starting points will cover a majority of the options. Useful for 
+device drivers as well, particularly network cards and disk controllers, 
+where there are a vast number of choices.
 
-I don't really see anything new here.  The one thing that he does which 
-we might want to consider emulating is writing the real-mode code in C. 
-  Right now, the assembly code is very cluttered, and with the size 
-limit having been, long ago, raised from 2K to 32K we should be able to 
-fit a fair bit of code even if we use C.
-
-	-hpa
+-- 
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
