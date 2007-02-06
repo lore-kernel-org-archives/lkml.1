@@ -1,52 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933187AbXBFSpM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933189AbXBFSqp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933187AbXBFSpM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 13:45:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933195AbXBFSpM
+	id S933189AbXBFSqp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 13:46:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933200AbXBFSqo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 13:45:12 -0500
-Received: from rtr.ca ([64.26.128.89]:3623 "EHLO mail.rtr.ca"
+	Tue, 6 Feb 2007 13:46:44 -0500
+Received: from serv04.lahn.de ([213.239.197.57]:50027 "EHLO serv04.lahn.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933187AbXBFSpL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 13:45:11 -0500
-Message-ID: <45C8CCB2.4030508@rtr.ca>
-Date: Tue, 06 Feb 2007 13:45:06 -0500
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061206)
-MIME-Version: 1.0
-To: Bill Davidsen <davidsen@tmr.com>
-Cc: Robert Hancock <hancockr@shaw.ca>, Stephen.Clark@seclark.us,
-       Patrick Ale <patrick.ale@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: hdparm for lib_pata
-References: <fa.L/RjDlo6Njb5Jt7/9ENZuiASoV0@ifi.uio.no> <45C4DF2A.1070501@shaw.ca> <45C5178A.1000501@seclark.us> <45C51A80.3050308@shaw.ca> <45C8BE89.9000705@tmr.com>
-In-Reply-To: <45C8BE89.9000705@tmr.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S933189AbXBFSqn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Feb 2007 13:46:43 -0500
+Date: Tue, 6 Feb 2007 19:43:18 +0100
+From: Michael Leun <ml@newton.leun.net>
+To: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+Cc: mitr@volny.cz, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] wistron button support for fujitsu-siemens Amilo D88x0
+Message-ID: <20070206194318.1d8e1fc0@xenia.leun.net>
+In-Reply-To: <d120d5000702060837j7382d429ned3fb5a5e47ac76b@mail.gmail.com>
+References: <20070205103521.0f20779d@xenia.leun.net>
+	<20070205110529.0e4ae6c0@xenia.leun.net>
+	<d120d5000702060837j7382d429ned3fb5a5e47ac76b@mail.gmail.com>
+Organization: Not Organized
+X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; i586-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-re: hdparm -d
+Hello Dmitry,
 
->> Support for that ioctl could likely be added, but these days I don't 
->> think there's much use for it. I can't see how anybody in their right 
->> mind would want to disable DMA on a modern drive, and if libata turns 
->> it off automatically then there's likely some serious hardware or 
->> driver problem that will end up biting you some other way if you force 
->> it back on.
->>
-> I think deciding to turn off DMA which works fine in old kernels 
-> qualifies as a "serious driver problem," which is why it should be under 
-> user control.
+On Tue, 6 Feb 2007 11:37:44 -0500
+"Dmitry Torokhov" <dmitry.torokhov@gmail.com> wrote:
 
-Fair enough.
+> Could you please resend your patch with "Signed-off-by: ..." line and
+> I will apply it.
 
-The original reason for that functionality in the drivers/ide stuff,
-was that I wanted a way to be able to continue to test the IDE driver
-in PIO mode, despite all of my own devices having good DMA support.
+Yes, of course.
 
-If there's no way to force the driver to use a particular transfer
-method, then it becomes difficult to (re)test the driver over time.
+Wistron button support for fujitsu-siemens Amilo D88x0 - works just fine
+for me on a Amilo D8820. 
 
-Cheers
+Signed-off-by: Michael Leun <ml@newton.leun.net>
+
+--- linux-2.6.20/drivers/input/misc/wistron_btns.c.orig	2007-02-04 19:44:54.000000000 +0100
++++ linux-2.6.20/drivers/input/misc/wistron_btns.c	2007-02-05 10:05:47.000000000 +0100
+@@ -335,6 +335,17 @@
+ 	{ KE_END,  0 },
+ };
  
++static struct key_entry keymap_fs_amilo_d88x0[] = {
++	{ KE_KEY, 0x01, KEY_HELP },
++	{ KE_KEY, 0x08, KEY_MUTE },
++	{ KE_KEY, 0x31, KEY_MAIL },
++	{ KE_KEY, 0x36, KEY_WWW },
++	{ KE_KEY, 0x11, KEY_PROG1 },
++	{ KE_KEY, 0x12, KEY_PROG2 },
++	{ KE_KEY, 0x13, KEY_PROG3 },
++	{ KE_END, 0 }
++};
++
+ /*
+  * If your machine is not here (which is currently rather likely), please send
+  * a list of buttons and their key codes (reported when loading this module
+@@ -413,6 +424,15 @@
+ 		},
+ 		.driver_data = keymap_wistron_ms2111
+ 	},
++	{
++		.callback = dmi_matched,
++		.ident = "Fujitsu Siemens Amilo D88x0",
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "FUJITSU SIEMENS"),
++			DMI_MATCH(DMI_PRODUCT_NAME, "AMILO D"),
++		},
++		.driver_data = keymap_fs_amilo_d88x0
++	},
+ 	{ NULL, }
+ };
+ 
+
+
+-- 
+MfG,
+
+Michael Leun
 
