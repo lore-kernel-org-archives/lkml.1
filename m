@@ -1,61 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030598AbXBFXo2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030599AbXBFXqN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030598AbXBFXo2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 18:44:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030599AbXBFXo2
+	id S1030599AbXBFXqN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 18:46:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030602AbXBFXqM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 18:44:28 -0500
-Received: from www.osadl.org ([213.239.205.134]:38215 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1030598AbXBFXo1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 18:44:27 -0500
-Subject: Re: 2.6.20-rc6-mm3
-From: Thomas Gleixner <tglx@linutronix.de>
-To: dwalker@mvista.com
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@osdl.org>,
+	Tue, 6 Feb 2007 18:46:12 -0500
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:52208 "EHLO
+	pd4mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030599AbXBFXqM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Feb 2007 18:46:12 -0500
+Date: Tue, 06 Feb 2007 17:45:22 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: hdparm for lib_pata
+In-reply-to: <45C8BE89.9000705@tmr.com>
+To: Bill Davidsen <davidsen@tmr.com>
+Cc: Stephen.Clark@seclark.us, Patrick Ale <patrick.ale@gmail.com>,
        linux-kernel@vger.kernel.org
-In-Reply-To: <1170804903.3455.121.camel@dwalker1>
-References: <20070206210959.GC25430@elte.hu>
-	 <1170796999.3455.43.camel@dwalker1> <20070206214131.GA1176@elte.hu>
-	 <1170798879.3455.58.camel@dwalker1> <20070206220855.GB5109@elte.hu>
-	 <1170801742.3455.87.camel@dwalker1> <20070206225650.GA14853@elte.hu>
-	 <1170803070.3455.93.camel@dwalker1> <20070206231421.GA18654@elte.hu>
-	 <1170804177.3455.109.camel@dwalker1>  <20070206232828.GA21969@elte.hu>
-	 <1170804903.3455.121.camel@dwalker1>
-Content-Type: text/plain
-Date: Wed, 07 Feb 2007 00:44:37 +0100
-Message-Id: <1170805477.3785.63.camel@chaos>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
-Content-Transfer-Encoding: 7bit
+Message-id: <45C91312.2030403@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.L/RjDlo6Njb5Jt7/9ENZuiASoV0@ifi.uio.no>
+ <45C4DF2A.1070501@shaw.ca> <45C5178A.1000501@seclark.us>
+ <45C51A80.3050308@shaw.ca> <45C8BE89.9000705@tmr.com>
+User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-02-06 at 15:35 -0800, Daniel Walker wrote:
-> Last and final correction. I'm saying drop the timer entry, which means
-> drop the call to request_irq() for irq0.
+Bill Davidsen wrote:
+>> Support for that ioctl could likely be added, but these days I don't 
+>> think there's much use for it. I can't see how anybody in their right 
+>> mind would want to disable DMA on a modern drive, and if libata turns 
+>> it off automatically then there's likely some serious hardware or 
+>> driver problem that will end up biting you some other way if you force 
+>> it back on.
+>>
+> I think deciding to turn off DMA which works fine in old kernels 
+> qualifies as a "serious driver problem," which is why it should be under 
+> user control.
 
-Right, that's a real good suggestion. Here's the patch especially for
-you. Apply it and figure out yourself, why your computer won't boot
-anymore.
+Point is, if the DMA's not working such that the system decides to turn 
+it off, it's obviously having some issues, and thus turning it back on 
+without fixing the problem could cause problems or even cause data 
+corruption.
 
-	tglx
-
-
-Index: linux-2.6.20/arch/i386/mach-default/setup.c
-===================================================================
---- linux-2.6.20.orig/arch/i386/mach-default/setup.c
-+++ linux-2.6.20/arch/i386/mach-default/setup.c
-@@ -95,8 +95,10 @@ static struct irqaction irq0  = {
-  **/
- void __init time_init_hook(void)
- {
-+#ifdef CONFIG_THIS_IS_NOT_DWALKERS_COMPUTER
- 	irq0.mask = cpumask_of_cpu(0);
- 	setup_irq(0, &irq0);
-+#endif
- }
- 
- #ifdef CONFIG_MCA
-
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
 
