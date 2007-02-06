@@ -1,404 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965256AbXBFDUr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965261AbXBFDVH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965256AbXBFDUr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 22:20:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965260AbXBFDUr
+	id S965261AbXBFDVH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 22:21:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965281AbXBFDVH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 22:20:47 -0500
-Received: from nwd2mail10.analog.com ([137.71.25.55]:21347 "EHLO
-	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965256AbXBFDUq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 22:20:46 -0500
-X-IronPort-AV: i="4.13,286,1167627600"; 
-   d="scan'208"; a="26198555:sNHT38355527"
-Subject: [PATCH 3/3, try #2] Blackfin: documents and maintainer patch
-From: "Wu, Bryan" <bryan.wu@analog.com>
-Reply-To: bryan.wu@analog.com
-To: akpm@osdl.org, alan@lxorguk.ukuu.org.uk, rdunlap@xenotime.net,
-       vapier.adi@gmail.com, linux-kernel@vger.kernel.org
-Content-Type: text/plain
+	Mon, 5 Feb 2007 22:21:07 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:45888 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965261AbXBFDVE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Feb 2007 22:21:04 -0500
+From: Andreas Gruenbacher <agruen@suse.de>
+Organization: SuSE Labs, Novell
+To: Christoph Hellwig <hch@infradead.org>
+Subject: Re: [RFC 0/28] Patches to pass vfsmount to LSM inode security hooks
+Date: Mon, 5 Feb 2007 19:20:35 -0800
+User-Agent: KMail/1.9.5
+Cc: Trond Myklebust <trond.myklebust@fys.uio.no>, Tony Jones <tonyj@suse.de>,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       chrisw@sous-sol.org, linux-security-module@vger.kernel.org,
+       viro@zeniv.linux.org.uk
+References: <20070205182213.12164.40927.sendpatchset@ermintrude.int.wirex.com> <1170701906.5934.41.camel@lade.trondhjem.org> <20070205190230.GA23104@infradead.org>
+In-Reply-To: <20070205190230.GA23104@infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Organization: Analog Devices, Inc.
-Date: Tue, 06 Feb 2007 11:20:43 +0800
-Message-Id: <1170732044.31450.51.camel@roc-desktop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+Content-Disposition: inline
+Message-Id: <200702051920.36057.agruen@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi everyone,
+On Monday 05 February 2007 11:02, Christoph Hellwig wrote:
+> On Mon, Feb 05, 2007 at 10:58:26AM -0800, Trond Myklebust wrote:
+> > On Mon, 2007-02-05 at 18:44 +0000, Christoph Hellwig wrote:
+> > > Just FYI:  Al was very opposed to the idea of passing the vfsmount to
+> > > the vfs_ helpers, so you should discuss this with him.
+> > >
+> > > Looking at the actual patches I see you're lazy in a lot of places.
+> > > Please make sure that when you introduce a vfsmount argument somewhere
+> > > that it is _always_ passed and not just when it's conveniant.  Yes,
+> > > that's more work, but then again if you're not consistant anyone
+> > > half-serious will laught at a security model using this infrasturcture.
+> >
+> > nfsd in particular tends to be a bit lazy about passing around vfsmount
+> > info. Forcing it to do so should not be hard since the vfsmount is
+> > already cached in the "struct export" (which can be found using the
+> > filehandle). It will take a bit of re-engineering in order to pass that
+> > information around inside the nfsd code, though.
+>
+> I actually have a patch to fix that.  It's part of a bigger series
+> that's not quite ready, but I hope to finish all of it this month.
 
-This is the documents patch for Blackfin arch, also includes the MAINTAINERS file change.
+It's actually not hard to "fix", and nfsd would look a little less weird. But 
+what would this add, what do pathnames mean in the context of nfsd, and would 
+nfsd actually become less weird?
 
-Thank Mike, I update this patch and regenerate it in -p1 format.
+On the wire, nfs transmits file handles, not filenames. The file handle 
+usually contains the inode numbers of the file and the containing directory.
 
-Sorry for starting a new thread, because I switch to a new email client.
+The code in fs/exportfs/expfs.c:find_exported_dentry() shows that fh_verify() 
+should return a dentry that may be connected or not, depending on the export 
+options and whether it's a file or directory. Together with the vfsmount from 
+the svc_export, we could compute a pathname.
 
-Signed-off-by: Bryan Wu <bryan.wu@analog.com>
----
- Documentation/blackfin/00-INDEX          |   11 ++
- Documentation/blackfin/Filesystems       |  169 +++++++++++++++++++++++++++++++
- Documentation/blackfin/cache-lock.txt    |   48 ++++++++
- Documentation/blackfin/cachefeatures.txt |   65 +++++++++++
- MAINTAINERS                              |   30 +++++
- 5 files changed, 323 insertions(+)
-Index: linux-2.6/Documentation/blackfin/00-INDEX
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6/Documentation/blackfin/00-INDEX	2007-02-06 01:20:13.000000000 +0800
-@@ -0,0 +1,11 @@
-+00-INDEX
-+	- This file
-+
-+cache-lock.txt
-+	- HOWTO for blackfin cache locking.
-+
-+cachefeatures.txt
-+	- Supported cache features.
-+
-+Filesystems
-+	- Requirements for mounting the root file system.
-Index: linux-2.6/Documentation/blackfin/Filesystems
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6/Documentation/blackfin/Filesystems	2007-02-06 01:20:13.000000000 +0800
-@@ -0,0 +1,169 @@
-+/*
-+ * File:         Documentation/blackfin/Filesystems
-+ * Based on:
-+ * Author:
-+ *
-+ * Created:
-+ * Description:  This file contains the simple DMA Implementation for Blackfin
-+ *
-+ * Rev:          $Id: Filesystems 2384 2006-11-01 04:12:43Z magicyang $
-+ *
-+ * Modified:
-+ *               Copyright 2004-2006 Analog Devices Inc.
-+ *
-+ * Bugs:         Enter bugs at http://blackfin.uclinux.org/
-+ *
-+ */
-+
-+		How to mount the root file system in uClinux/Blackfin
-+		-----------------------------------------------------
-+
-+1	Mounting EXT3 File system.
-+	------------------------
-+
-+	Creating an EXT3 File system for uClinux/Blackfin:
-+
-+
-+Please follow the steps to form the EXT3 File system and mount the same as root
-+file system.
-+
-+a	Make an ext3 file system as large as you want the final root file
-+	system.
-+
-+		mkfs.ext3  /dev/ram0 <your-rootfs-size-in-1k-blocks>
-+
-+b	Mount this Empty file system on a free directory as:
-+
-+		mount -t ext3 /dev/ram0  ./test
-+			where ./test is the empty directory.
-+
-+c	Copy your root fs directory that you have so carefully made over.
-+
-+		cp -af  /tmp/my_final_rootfs_files/* ./test
-+
-+		(For ex: cp -af uClinux-dist/romfs/* ./test)
-+
-+d	If you have done everything right till now you should be able to see
-+	the required "root" dir's (that's etc, root, bin, lib, sbin...)
-+
-+e	Now unmount the file system
-+
-+		umount  ./test
-+
-+f	Create the root file system image.
-+
-+		dd if=/dev/ram0 bs=1k count=<your-rootfs-size-in-1k-blocks> \
-+		> ext3fs.img
-+
-+
-+Now you have to tell the kernel that will be mounting this file system as
-+rootfs.
-+So do a make menuconfig under kernel and select the Ext3 journaling file system
-+support under File system --> submenu.
-+
-+
-+2.	Mounting EXT2 File system.
-+	-------------------------
-+
-+By default the ext2 file system image will be created if you invoke make from
-+the top uClinux-dist directory.
-+
-+
-+3.	Mounting CRAMFS File System
-+	----------------------------
-+
-+To create a CRAMFS file system image execute the command
-+
-+	mkfs.cramfs ./test cramfs.img
-+
-+	where ./test is the target directory.
-+
-+
-+4.	Mounting ROMFS File System
-+	--------------------------
-+
-+To create a ROMFS file system image execute the command
-+
-+	genromfs -v -V "ROMdisk" -f romfs.img -d ./test
-+
-+	where ./test is the target directory
-+
-+
-+5.	Mounting the JFFS2 Filesystem
-+	-----------------------------
-+
-+To create a compressed JFFS filesystem (JFFS2), please execute the command
-+
-+	mkfs.jffs2 -d ./test -o jffs2.img
-+
-+	where ./test is the target directory.
-+
-+However, please make sure the following is in your kernel config.
-+
-+/*
-+ * RAM/ROM/Flash chip drivers
-+ */
-+#define CONFIG_MTD_CFI 1
-+#define CONFIG_MTD_ROM 1
-+/*
-+ * Mapping drivers for chip access
-+ */
-+#define CONFIG_MTD_COMPLEX_MAPPINGS 1
-+#define CONFIG_MTD_BF533 1
-+#undef CONFIG_MTD_UCLINUX
-+
-+Through the u-boot boot loader, use the jffs2.img in the corresponding
-+partition made in linux-2.6.x/drivers/mtd/maps/bf533_flash.c.
-+
-+NOTE - 	Currently the Flash driver is available only for EZKIT. Watch out for a
-+	STAMP driver soon.
-+
-+
-+6. 	Mounting the NFS File system
-+	-----------------------------
-+
-+	For mounting the NFS please do the following in the kernel config.
-+
-+	In Networking Support --> Networking options --> TCP/IP networking -->
-+		IP: kernel level autoconfiguration
-+
-+	Enable BOOTP Support.
-+
-+	In Kernel hacking --> Compiled-in kernel boot parameter add the following
-+
-+		root=/dev/nfs rw ip=bootp
-+
-+	In File system --> Network File system, Enable
-+
-+		NFS file system support --> NFSv3 client support
-+		Root File system on NFS
-+
-+	in uClibc menuconfig, do the following
-+	In Networking Support
-+		enable Remote Procedure Call (RPC) support
-+			Full RPC Support
-+
-+	On the Host side, ensure that /etc/dhcpd.conf looks something like this
-+
-+		ddns-update-style ad-hoc;
-+		allow bootp;
-+		subnet 10.100.4.0 netmask 255.255.255.0 {
-+		default-lease-time 122209600;
-+		max-lease-time 31557600;
-+		group {
-+			host bf533 {
-+				hardware ethernet 00:CF:52:49:C3:01;
-+				fixed-address 10.100.4.50;
-+				option root-path "/home/nfsmount";
-+			}
-+		}
-+
-+	ensure that /etc/exports looks something like this
-+		/home/nfsmount *(rw,no_root_squash,no_all_squash)
-+
-+	 run the following commands as root (may differ depending on your
-+	 distribution) :
-+		-  service nfs start
-+		-  service portmap start
-+		-  service dhcpd start
-+		-  /usr/sbin/exportfs
-Index: linux-2.6/Documentation/blackfin/cache-lock.txt
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6/Documentation/blackfin/cache-lock.txt	2007-02-06 01:20:13.000000000 +0800
-@@ -0,0 +1,48 @@
-+/*
-+ * File:         Documentation/blackfin/cache-lock.txt
-+ * Based on:
-+ * Author:
-+ *
-+ * Created:
-+ * Description:  This file contains the simple DMA Implementation for Blackfin
-+ *
-+ * Rev:          $Id: cache-lock.txt 2384 2006-11-01 04:12:43Z magicyang $
-+ *
-+ * Modified:
-+ *               Copyright 2004-2006 Analog Devices Inc.
-+ *
-+ * Bugs:         Enter bugs at http://blackfin.uclinux.org/
-+ *
-+ */
-+
-+How to lock your code in cache in uClinux/blackfin
-+--------------------------------------------------
-+
-+There are only a few steps required to lock your code into the cache.
-+Currently you can lock the code by Way.
-+
-+Below are the interface provided for locking the cache.
-+
-+
-+1. cache_grab_lock(int Ways);
-+
-+This function grab the lock for locking your code into the cache specified
-+by Ways.
-+
-+
-+2. cache_lock(int Ways);
-+
-+This function should be called after your critical code has been executed.
-+Once the critical code exits, the code is now loaded into the cache. This
-+function locks the code into the cache.
-+
-+
-+So, the example sequence will be:
-+
-+	cache_grab_lock(WAY0_L);	/* Grab the lock */
-+
-+	critical_code();		/* Execute the code of interest */
-+
-+	cache_lock(WAY0_L);		/* Lock the cache */
-+
-+Where WAY0_L signifies WAY0 locking.
-Index: linux-2.6/Documentation/blackfin/cachefeatures.txt
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6/Documentation/blackfin/cachefeatures.txt	2007-02-06 01:20:13.000000000 +0800
-@@ -0,0 +1,65 @@
-+/*
-+ * File:         Documentation/blackfin/cachefeatures.txt
-+ * Based on:
-+ * Author:
-+ *
-+ * Created:
-+ * Description:  This file contains the simple DMA Implementation for Blackfin
-+ *
-+ * Rev:          $Id: cachefeatures.txt 2384 2006-11-01 04:12:43Z magicyang $
-+ *
-+ * Modified:
-+ *               Copyright 2004-2006 Analog Devices Inc.
-+ *
-+ * Bugs:         Enter bugs at http://blackfin.uclinux.org/
-+ *
-+ */
-+
-+	- Instruction and Data cache initialization.
-+		icache_init();
-+		dcache_init();
-+
-+	-  Instruction and Data cache Invalidation Routines, when flushing the
-+	   same is not required.
-+		_icache_invalidate();
-+		_dcache_invalidate();
-+
-+	Also, for invalidating the entire instruction and data cache, the below
-+	routines are provided (another method for invalidation, refer page no 267 and 287 of
-+	ADSP-BF533 Hardware Reference manual)
-+
-+		invalidate_entire_dcache();
-+		invalidate_entire_icache();
-+
-+	-External Flushing of Instruction and data cache routines.
-+
-+		flush_instruction_cache();
-+		flush_data_cache();
-+
-+	- Internal Flushing of Instruction and Data Cache.
-+
-+		icplb_flush();
-+		dcplb_flush();
-+
-+	- Locking the cache.
-+
-+		cache_grab_lock();
-+		cache_lock();
-+
-+	Please refer linux-2.6.x/Documentation/blackfin/cache-lock.txt for how to
-+	lock the cache.
-+
-+	Locking the cache is optional feature.
-+
-+	- Miscellaneous cache functions.
-+
-+		flush_cache_all();
-+		flush_cache_mm();
-+		invalidate_dcache_range();
-+		flush_dcache_range();
-+		flush_dcache_page();
-+		flush_cache_range();
-+		flush_cache_page();
-+		invalidate_dcache_range();
-+		flush_page_to_ram();
-+
-Index: linux-2.6/MAINTAINERS
-===================================================================
---- linux-2.6.orig/MAINTAINERS	2007-02-06 01:13:42.000000000 +0800
-+++ linux-2.6/MAINTAINERS	2007-02-06 02:19:15.000000000 +0800
-@@ -637,6 +637,36 @@
- W:	http://www.linux-ax25.org/
- S:	Maintained
- 
-+BLACKFIN ARCHITECTURE
-+P:     Aubery Li
-+M:     aubery.li@analog.com
-+P:     Bernd Schmidt
-+M:     bernd.schmidt@analog.com
-+P:     Bryan Wu
-+M:     bryan.wu@analog.com
-+P:     Michael Hennerich
-+M:     michael.hennerich@analog.com
-+P:     Mike Frysinger
-+M:     michael.frysinger@analog.com
-+P:     Jie Zhang
-+M:     jie.zhang@analog.com
-+P:     Robin Getz
-+M:     robin.retz@analog.com
-+P:     Roy Huang
-+M:     roy.huang@analog.com
-+P:     Sonic Zhang
-+M:     sonic.zhang@analog.com
-+L:     uclinux-dist-devel@blackfin.uclinux.org
-+W:     http://blackfin.uclinux.org
-+S:     Supported
-+
-+BLACKFIN SERIAL DRIVER
-+P:     Sonic Zhang
-+M:     sonic.zhang@analog.com
-+L:     uclinux-dist-devel@blackfin.uclinux.org
-+W:     http://blackfin.uclinux.org
-+S:     Supported
-+
- BAYCOM/HDLCDRV DRIVERS FOR AX.25
- P:	Thomas Sailer
- M:	t.sailer@alumni.ethz.ch
----
+But there is no way to tell different hardlinks to the same inode in the same 
+directory from each other (both the file and directory inode are the same), 
+and depending on the export options, we may or may not be able to distinguish 
+different hardlinks across directories.
 
-Thanks a lot
-Best Regards
-Bryan Wu <bryan.wu@analog.com>
+If the nohide or crossmnt export options are used, we might run into similar 
+aliasing issues with mounts (I'm not sure about this).
+
+So we could compute pathnames, but they wouldn't be very meaningful. Instead 
+of going that way, it seems more reasonable to not do pathname based access 
+control for the kernel kernel nfsd at all. Passing NULL as the vfsmounts does 
+that. With a properly configured nfsd, the areas that remote users could 
+access would still be well confined.
+
+The focus with this whole pathname based security stuff really is to be able 
+to better confine local processes. The kernel nfsd is a kernel thread, and as 
+such, confining it from a security point of view cannot really work, anyway.
+
+> > Note also that it might be nice to enforce the vfsmount argument by
+> > replacing the existing dentry parameters with a struct path instead of
+> > adding an extra reference to the vfsmount to existing functions.
+>
+> That definitly sounds like a good idea, independent of whether we want
+> to pass the vfsmount in more places or not.
+
+Note that you can still pass a NULL vfsmount in a struct path.
+
+Thanks,
+Andreas
