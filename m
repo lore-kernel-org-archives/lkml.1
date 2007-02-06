@@ -1,115 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965449AbXBFUwb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965446AbXBFUwk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965449AbXBFUwb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 15:52:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965446AbXBFUwb
+	id S965446AbXBFUwk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 15:52:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965450AbXBFUwk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 15:52:31 -0500
-Received: from mail.icabo.tv.br ([200.220.202.3]:39987 "EHLO mail.icabo.tv.br"
+	Tue, 6 Feb 2007 15:52:40 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:48870 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965449AbXBFUwa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 15:52:30 -0500
-Message-ID: <45C8EA79.1030309@fliagreco.com.ar>
-Date: Tue, 06 Feb 2007 17:52:09 -0300
-From: Pablo Sebastian Greco <lkml@fliagreco.com.ar>
-User-Agent: Thunderbird 3.0a1 (Windows/20070206)
-MIME-Version: 1.0
-To: Arjan van de Ven <arjan@linux.intel.com>
-CC: Marc Donner <donner@dbd-breitband.de>, linux-kernel@vger.kernel.org
-Subject: Re: cpu load balancing problem on smp
-References: <200702061832.17771.donner@dbd-breitband.de> <1170785364.7324.31.camel@laptopd505.fenrus.org> <200702061941.32907.donner@dbd-breitband.de> <45C8CC2A.90403@linux.intel.com> <45C8DD9E.7010309@fliagreco.com.ar> <45C8E112.9070701@linux.intel.com>
-In-Reply-To: <45C8E112.9070701@linux.intel.com>
-Content-Type: multipart/mixed;
- boundary="------------060304030609060605090306"
-X-ICABO-MailScanner-Information: Please contact the ISP for more information
-X-ICABO-MailScanner: Sem Virus encontrado
-X-MailScanner-From: lkml@fliagreco.com.ar
+	id S965446AbXBFUwj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Feb 2007 15:52:39 -0500
+Date: Tue, 6 Feb 2007 21:52:31 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Daniel Walker <dwalker@mvista.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Andrew Morton <akpm@osdl.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: 2.6.20-rc6-mm3
+Message-ID: <20070206205231.GA25430@elte.hu>
+References: <20070129204528.eb8d695e.akpm@osdl.org> <1170777802.9781.353.camel@imap.mvista.com> <1170786992.3785.0.camel@chaos> <1170787543.9781.362.camel@imap.mvista.com> <1170788870.3785.9.camel@chaos> <1170791739.3455.3.camel@dwalker1> <1170793206.3785.16.camel@chaos> <1170794437.3455.20.camel@dwalker1>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1170794437.3455.20.camel@dwalker1>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -5.3
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-5.3 required=5.9 tests=ALL_TRUSTED,BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-3.3 ALL_TRUSTED            Did not pass through any untrusted hosts
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------060304030609060605090306
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
 
-Arjan van de Ven wrote:
-> Pablo Sebastian Greco wrote:
->
->> 2296:        427        426        436  134563009   PCI-MSI-edge      
->> eth1
->> 2297:        252        252  135926471        257   PCI-MSI-edge      
->> eth0
->
-> this suggests that  cores would be busy rather than only one....
-> -
-Yes, but you are looking at mm kernel statistics, but if you look at the 
-standard kernel, you'll see that eth interrupts are on the same core 
-according to attached /proc/cpuinfo.
-OTOH, take a look at timer interrupt distribution
+* Daniel Walker <dwalker@mvista.com> wrote:
 
---------------060304030609060605090306
-Content-Type: text/plain;
- name="cpuinfo.txt"
-Content-Transfer-Encoding: base64
-Content-Disposition: inline;
- filename="cpuinfo.txt"
+> On Tue, 2007-02-06 at 21:20 +0100, Thomas Gleixner wrote:
+> > On Tue, 2007-02-06 at 11:55 -0800, Daniel Walker wrote:
+> > > > What kind of artificial problem are you creating here ?
+> > >
+> > > I'm not trying to create anything .. However, as I said before
+> > > the /proc/interrupts "timer" entry doesn't work the same as it has in
+> > > other kernels.
+> > 
+> > Yes, it is different. Why are you insisting, that something is a problem
+> > just because it is different ?
+> 
+> In this case "different" goes into userspace .. So different could 
+> mean userspace regression, which is something that we don't want. I 
+> have no idea if any apps use /proc/interrupts , but it's possible 
+> since it's been around for a long time.
 
-cHJvY2Vzc29yICAgICAgIDogMA0KdmVuZG9yX2lkICAgICAgIDogR2VudWluZUludGVsDQpj
-cHUgZmFtaWx5ICAgICAgOiAxNQ0KbW9kZWwgICAgICAgICAgIDogNg0KbW9kZWwgbmFtZSAg
-ICAgIDogICAgICAgICAgICAgICAgICAgSW50ZWwoUikgWGVvbihUTSkgQ1BVIDIuNjZHSHoN
-CnN0ZXBwaW5nICAgICAgICA6IDQNCmNwdSBNSHogICAgICAgICA6IDI2NTYuMDAwDQpjYWNo
-ZSBzaXplICAgICAgOiAyMDQ4IEtCDQpwaHlzaWNhbCBpZCAgICAgOiAwDQpzaWJsaW5ncyAg
-ICAgICAgOiA0DQpjb3JlIGlkICAgICAgICAgOiAwDQpjcHUgY29yZXMgICAgICAgOiAyDQpm
-cHUgICAgICAgICAgICAgOiB5ZXMNCmZwdV9leGNlcHRpb24gICA6IHllcw0KY3B1aWQgbGV2
-ZWwgICAgIDogNg0Kd3AgICAgICAgICAgICAgIDogeWVzDQpmbGFncyAgICAgICAgICAgOiBm
-cHUgdm1lIGRlIHBzZSB0c2MgbXNyIHBhZSBtY2UgY3g4IGFwaWMgc2VwIG10cnIgcGdlIG1j
-YSBjbW92IHBhdCBwc2UzNiBjbGZsdXNoIGR0cyBhY3BpIG1teCBmeHNyIHNzZSBzc2UyIHNz
-IGh0IHRtIHN5c2NhbGwgbnggbG0gY29uc3RhbnRfdHNjIHBuaSBtb25pdG9yIGRzX2NwbCB2
-bXggZXN0IGNpZCBjeDE2IHh0cHIgbGFoZl9sbQ0KYm9nb21pcHMgICAgICAgIDogNTMyNC44
-Mg0KY2xmbHVzaCBzaXplICAgIDogNjQNCmNhY2hlX2FsaWdubWVudCA6IDEyOA0KYWRkcmVz
-cyBzaXplcyAgIDogMzYgYml0cyBwaHlzaWNhbCwgNDggYml0cyB2aXJ0dWFsDQpwb3dlciBt
-YW5hZ2VtZW50Og0KDQpwcm9jZXNzb3IgICAgICAgOiAxDQp2ZW5kb3JfaWQgICAgICAgOiBH
-ZW51aW5lSW50ZWwNCmNwdSBmYW1pbHkgICAgICA6IDE1DQptb2RlbCAgICAgICAgICAgOiA2
-DQptb2RlbCBuYW1lICAgICAgOiAgICAgICAgICAgICAgICAgICBJbnRlbChSKSBYZW9uKFRN
-KSBDUFUgMi42NkdIeg0Kc3RlcHBpbmcgICAgICAgIDogNA0KY3B1IE1IeiAgICAgICAgIDog
-MjY1Ni4wMDANCmNhY2hlIHNpemUgICAgICA6IDIwNDggS0INCnBoeXNpY2FsIGlkICAgICA6
-IDANCnNpYmxpbmdzICAgICAgICA6IDQNCmNvcmUgaWQgICAgICAgICA6IDENCmNwdSBjb3Jl
-cyAgICAgICA6IDINCmZwdSAgICAgICAgICAgICA6IHllcw0KZnB1X2V4Y2VwdGlvbiAgIDog
-eWVzDQpjcHVpZCBsZXZlbCAgICAgOiA2DQp3cCAgICAgICAgICAgICAgOiB5ZXMNCmZsYWdz
-ICAgICAgICAgICA6IGZwdSB2bWUgZGUgcHNlIHRzYyBtc3IgcGFlIG1jZSBjeDggYXBpYyBz
-ZXAgbXRyciBwZ2UgbWNhIGNtb3YgcGF0IHBzZTM2IGNsZmx1c2ggZHRzIGFjcGkgbW14IGZ4
-c3Igc3NlIHNzZTIgc3MgaHQgdG0gc3lzY2FsbCBueCBsbSBjb25zdGFudF90c2MgcG5pIG1v
-bml0b3IgZHNfY3BsIHZteCBlc3QgY2lkIGN4MTYgeHRwciBsYWhmX2xtDQpib2dvbWlwcyAg
-ICAgICAgOiA1MzIwLjA2DQpjbGZsdXNoIHNpemUgICAgOiA2NA0KY2FjaGVfYWxpZ25tZW50
-IDogMTI4DQphZGRyZXNzIHNpemVzICAgOiAzNiBiaXRzIHBoeXNpY2FsLCA0OCBiaXRzIHZp
-cnR1YWwNCnBvd2VyIG1hbmFnZW1lbnQ6DQoNCnByb2Nlc3NvciAgICAgICA6IDINCnZlbmRv
-cl9pZCAgICAgICA6IEdlbnVpbmVJbnRlbA0KY3B1IGZhbWlseSAgICAgIDogMTUNCm1vZGVs
-ICAgICAgICAgICA6IDYNCm1vZGVsIG5hbWUgICAgICA6ICAgICAgICAgICAgICAgICAgIElu
-dGVsKFIpIFhlb24oVE0pIENQVSAyLjY2R0h6DQpzdGVwcGluZyAgICAgICAgOiA0DQpjcHUg
-TUh6ICAgICAgICAgOiAyNjU2LjAwMA0KY2FjaGUgc2l6ZSAgICAgIDogMjA0OCBLQg0KcGh5
-c2ljYWwgaWQgICAgIDogMA0Kc2libGluZ3MgICAgICAgIDogNA0KY29yZSBpZCAgICAgICAg
-IDogMA0KY3B1IGNvcmVzICAgICAgIDogMg0KZnB1ICAgICAgICAgICAgIDogeWVzDQpmcHVf
-ZXhjZXB0aW9uICAgOiB5ZXMNCmNwdWlkIGxldmVsICAgICA6IDYNCndwICAgICAgICAgICAg
-ICA6IHllcw0KZmxhZ3MgICAgICAgICAgIDogZnB1IHZtZSBkZSBwc2UgdHNjIG1zciBwYWUg
-bWNlIGN4OCBhcGljIHNlcCBtdHJyIHBnZSBtY2EgY21vdiBwYXQgcHNlMzYgY2xmbHVzaCBk
-dHMgYWNwaSBtbXggZnhzciBzc2Ugc3NlMiBzcyBodCB0bSBzeXNjYWxsIG54IGxtIGNvbnN0
-YW50X3RzYyBwbmkgbW9uaXRvciBkc19jcGwgdm14IGVzdCBjaWQgY3gxNiB4dHByIGxhaGZf
-bG0NCmJvZ29taXBzICAgICAgICA6IDUzMjAuMjANCmNsZmx1c2ggc2l6ZSAgICA6IDY0DQpj
-YWNoZV9hbGlnbm1lbnQgOiAxMjgNCmFkZHJlc3Mgc2l6ZXMgICA6IDM2IGJpdHMgcGh5c2lj
-YWwsIDQ4IGJpdHMgdmlydHVhbA0KcG93ZXIgbWFuYWdlbWVudDoNCg0KcHJvY2Vzc29yICAg
-ICAgIDogMw0KdmVuZG9yX2lkICAgICAgIDogR2VudWluZUludGVsDQpjcHUgZmFtaWx5ICAg
-ICAgOiAxNQ0KbW9kZWwgICAgICAgICAgIDogNg0KbW9kZWwgbmFtZSAgICAgIDogICAgICAg
-ICAgICAgICAgICAgSW50ZWwoUikgWGVvbihUTSkgQ1BVIDIuNjZHSHoNCnN0ZXBwaW5nICAg
-ICAgICA6IDQNCmNwdSBNSHogICAgICAgICA6IDI2NTYuMDAwDQpjYWNoZSBzaXplICAgICAg
-OiAyMDQ4IEtCDQpwaHlzaWNhbCBpZCAgICAgOiAwDQpzaWJsaW5ncyAgICAgICAgOiA0DQpj
-b3JlIGlkICAgICAgICAgOiAxDQpjcHUgY29yZXMgICAgICAgOiAyDQpmcHUgICAgICAgICAg
-ICAgOiB5ZXMNCmZwdV9leGNlcHRpb24gICA6IHllcw0KY3B1aWQgbGV2ZWwgICAgIDogNg0K
-d3AgICAgICAgICAgICAgIDogeWVzDQpmbGFncyAgICAgICAgICAgOiBmcHUgdm1lIGRlIHBz
-ZSB0c2MgbXNyIHBhZSBtY2UgY3g4IGFwaWMgc2VwIG10cnIgcGdlIG1jYSBjbW92IHBhdCBw
-c2UzNiBjbGZsdXNoIGR0cyBhY3BpIG1teCBmeHNyIHNzZSBzc2UyIHNzIGh0IHRtIHN5c2Nh
-bGwgbnggbG0gY29uc3RhbnRfdHNjIHBuaSBtb25pdG9yIGRzX2NwbCB2bXggZXN0IGNpZCBj
-eDE2IHh0cHIgbGFoZl9sbQ0KYm9nb21pcHMgICAgICAgIDogNTMyMC4xNg0KY2xmbHVzaCBz
-aXplICAgIDogNjQNCmNhY2hlX2FsaWdubWVudCA6IDEyOA0KYWRkcmVzcyBzaXplcyAgIDog
-MzYgYml0cyBwaHlzaWNhbCwgNDggYml0cyB2aXJ0dWFsDQpwb3dlciBtYW5hZ2VtZW50Og0K
+Well, if you enable dynticks you should expect the number of timer irqs 
+to go down. There's no problem here.
 
---------------060304030609060605090306--
+> The reason that I'm bringing it up at all is because people have ask 
+> me "Why isn't my timer ticking??"
+
+it's quite easy to explain: because of the new dynticks feature. Both 
+'timer' and 'LOC' counts go way down.
+
+> It might be nicer to list all the registered clock event sources in 
+> /proc/interrupts, with more descriptive names ..
+
+they are already listed in /proc/interrupts, depending on how they use 
+interrupts. For a more complete list of in-use clockevent drivers see 
+/proc/timer_info. But it would be wrong to touch /proc/interrupts to 
+create some special-case for clockevents.
+
+	Ingo
