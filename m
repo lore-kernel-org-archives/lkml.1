@@ -1,40 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965315AbXBFFxb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965355AbXBFFx7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965315AbXBFFxb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 00:53:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965312AbXBFFxb
+	id S965355AbXBFFx7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 00:53:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965340AbXBFFx7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 00:53:31 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:50824 "EHLO mx2.suse.de"
+	Tue, 6 Feb 2007 00:53:59 -0500
+Received: from THUNK.ORG ([69.25.196.29]:46378 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965305AbXBFFxa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 00:53:30 -0500
-Date: Tue, 6 Feb 2007 06:53:28 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Linux Filesystems <linux-fsdevel@vger.kernel.org>,
-       Linux Memory Management <linux-mm@kvack.org>
-Subject: Re: [patch 9/9] mm: fix pagecache write deadlocks
-Message-ID: <20070206055328.GD16647@wotan.suse.de>
-References: <20070204104609.GA29943@wotan.suse.de> <20070204025602.a5f8c53a.akpm@linux-foundation.org> <20070204110317.GA9034@wotan.suse.de> <20070204031549.203f7b47.akpm@linux-foundation.org> <20070204151051.GB12771@wotan.suse.de> <20070204103620.33c24cad.akpm@linux-foundation.org> <20070206022549.GB31476@wotan.suse.de> <20070206044146.GA11856@wotan.suse.de> <20070205213006.0ea2d918.akpm@linux-foundation.org> <20070206054905.GC16647@wotan.suse.de>
-Mime-Version: 1.0
+	id S965321AbXBFFx5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Feb 2007 00:53:57 -0500
+Date: Mon, 5 Feb 2007 22:17:44 -0500
+From: Theodore Tso <tytso@mit.edu>
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>
+Cc: Christoph Hellwig <hch@lst.de>, akpm@osdl.org, haveblue@us.ibm.com,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH[RFC] kill sysrq-u (emergency remount r/o)
+Message-ID: <20070206031744.GA11018@thunk.org>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Jan Engelhardt <jengelh@linux01.gwdg.de>,
+	Christoph Hellwig <hch@lst.de>, akpm@osdl.org, haveblue@us.ibm.com,
+	linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20070205173247.GA25790@lst.de> <Pine.LNX.4.61.0702052136310.19384@yvahk01.tjqt.qr>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070206054905.GC16647@wotan.suse.de>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <Pine.LNX.4.61.0702052136310.19384@yvahk01.tjqt.qr>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 06, 2007 at 06:49:05AM +0100, Nick Piggin wrote:
-> > - If the get_user() doesn't fault, and if we're copying from and to the
-> >   same page, we know that we've locked it, so nobody will be able to unmap
-> >   it while we're copying from it.
-> > 
-> > Close, but no cigar!  This is still vulnerable to Hugh's ab/ba deadlock
-> > scenario.
+On Mon, Feb 05, 2007 at 09:40:08PM +0100, Jan Engelhardt wrote:
 > 
-> Yes I considered this too. Hard isn't it?
+> On Feb 5 2007 18:32, Christoph Hellwig wrote:
+> >
+> >in two recent discussions (file_list_lock scalability and remount r/o
+> >on suspend) I stumbled over this emergency remount feature.  It's not
+> >actually useful because it tries a potentially dangerous remount
+> >despite writers still beeing in progress, which we can't get rid.
+> 
+> The current way is to remount things, and return -EROFS to any process
+> that attempts to write(). Unless we want to kill processes to get rid of
+> them [most likely we possibly won't], I am fine with how things are atm.
+> So, what's the "dangerous" part, actually?
 
-BTW, there are two different abba deadlocks. It's all documented in the
-patch 9/9 description.
+The dangerous part is that we change f->f_mode for all open files
+without regard for whether there might be any writes underway at the
+time.  This isn't *serious* although the results might be a little
+strange and it might result in a confused return from write(2).  More
+seriously, mark_files_ro() in super.c *only* changes f->f_mode and
+doesn't deal with the possibility that the file might be mapped
+read-write.  For filesystems that do delayed allocation, I'm not at
+all convinced that an emergency read-only will result in the
+filesystem doing anything at all sane, depending on what else the
+filesystem might do when the filesystem is forced into read-only state.
+
+> sysrq+u is helpful. It is like \( sysrq+s && make sure no further writes
+> go to disk \).
+
+I agree it is useful, but if we're going to do it we really should do
+it right.  We should have real revoke() functionality on file
+descriptors, which revokes all of the mmap()'s (any attempt to write
+into a previously read/write mmap will cause a SEGV) as well as
+changing f_mode, and then use that to implement emergency read-only
+remount.
+
+						- Ted
