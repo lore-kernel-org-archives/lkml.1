@@ -1,59 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932344AbXBFSdO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933025AbXBFSgU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932344AbXBFSdO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 13:33:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933025AbXBFSdO
+	id S933025AbXBFSgU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 13:36:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933153AbXBFSgU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 13:33:14 -0500
-Received: from gate.criticalsoftware.com ([212.13.37.242]:21227 "EHLO
-	gate.criticalsoftware.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932344AbXBFSdO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 13:33:14 -0500
-X-Greylist: delayed 1633 seconds by postgrey-1.27 at vger.kernel.org; Tue, 06 Feb 2007 13:33:13 EST
-From: Jorge Almeida <j-almeida@criticalsoftware.com>
-Reply-To: j-almeida@criticalsoftware.com
-Organization: Critical Software
-To: linux-kernel@vger.kernel.org
-Subject: IRQ Sharing
-Date: Tue, 6 Feb 2007 18:01:58 +0000
-User-Agent: KMail/1.9.5
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Tue, 6 Feb 2007 13:36:20 -0500
+Received: from www.osadl.org ([213.239.205.134]:49852 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S933025AbXBFSgU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Feb 2007 13:36:20 -0500
+Subject: Re: 2.6.20-rc6-mm3
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Daniel Walker <dwalker@mvista.com>
+Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org, mingo@elte.hu
+In-Reply-To: <1170777802.9781.353.camel@imap.mvista.com>
+References: <20070129204528.eb8d695e.akpm@osdl.org>
+	 <1170777802.9781.353.camel@imap.mvista.com>
+Content-Type: text/plain
+Date: Tue, 06 Feb 2007 19:36:32 +0100
+Message-Id: <1170786992.3785.0.camel@chaos>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200702061801.58465.j-almeida@criticalsoftware.com>
-X-Copyrighted-Material: Please visit http://www.criticalsoftware.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 2007-02-06 at 08:03 -0800, Daniel Walker wrote:
+> It appears there a problem with the /proc/interrupts entry for
+> "timer" .. It doesn't increment anymore .. This problem exists in the
+> -rt tree also .. I haven't done a bisect , but I'm assuming this is HRT
+> related ..
 
-Hello to all.
+And why should it increment ? Is there a rule that it has to ?
 
-I'm running an application that uses several IO boards in a PCI bus.
+	tglx
 
-My main problem is the virtual IRQ sharing between several boards.
-I mean for example:
-	1 ethernet board IRQ = 169;
-	1 ADC card IRQ         = 169;
 
-I want to get ride of this behaviour, and changing the slot position of each 
-board is not enought, to get something like (for example):
-	1 ethernet board IRQ = 169;
-	1 ADC card IRQ         = 170;
 
-Where in the kernel i can see the algorithms for the APIC system where the 
-virtual IRQs are distributed? Or exist already any patch that permits to 
-solve my problem?
-
-I'm using kernel 2.6.16.27, in a single machine with Intel pentium IV 
-processor and chipset ICH4.
-
-Thanks for any reply.
-Greetings.
-
--- 
-Jorge Almeida
-j-almeida@criticalsoftware.com
-DISCLAIMER: This message may contain confidential information or privileged material and is intended only for the individual(s) named. If you are not a named addressee and mistakenly received this message you should not copy or otherwise disseminate it: please delete this e-mail from your system and notify the sender immediately. E-mail transmissions are not guaranteed to be secure or without errors as information could be intercepted, corrupted, lost, destroyed, arrive late or incomplete or contain viruses. Therefore, the sender does not accept liability for any errors or omissions in the contents of this message that arise as a result of e-mail transmissions. Please request a hard copy version if verification is required. Critical Software, SA.
