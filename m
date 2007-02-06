@@ -1,59 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750936AbXBFLGE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750912AbXBFLLF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750936AbXBFLGE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 06:06:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751041AbXBFLGE
+	id S1750912AbXBFLLF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 06:11:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750959AbXBFLLE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 06:06:04 -0500
-Received: from mail.screens.ru ([213.234.233.54]:50679 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750936AbXBFLGB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 06:06:01 -0500
-Date: Tue, 6 Feb 2007 14:05:39 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: S?bastien Dugu? <sebastien.dugue@bull.net>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
-       linux-aio <linux-aio@kvack.org>, Bharata B Rao <bharata@in.ibm.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
-       Badari Pulavarty <pbadari@us.ibm.com>,
-       Jean Pierre Dion <jean-pierre.dion@bull.net>
-Subject: Re: [PATCH -mm][AIO] AIO completion signal notification fixes and cleanups
-Message-ID: <20070206110539.GA129@tv-sign.ru>
-References: <20070201102252.240130c6@frecb000686> <20070201103053.64489048@frecb000686> <20070202180039.GA658@tv-sign.ru> <20070205131839.6f601c3e@frecb000686> <20070205134314.GA283@tv-sign.ru> <20070205170056.6a29b19b@frecb000686> <20070205171335.GA528@tv-sign.ru> <20070206102253.20b121ae@frecb000686>
-Mime-Version: 1.0
+	Tue, 6 Feb 2007 06:11:04 -0500
+Received: from styx.suse.cz ([82.119.242.94]:19324 "EHLO duck.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750912AbXBFLLD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Feb 2007 06:11:03 -0500
+Date: Tue, 6 Feb 2007 12:13:44 +0100
+From: Jan Kara <jack@suse.cz>
+To: Christoph Hellwig <hch@lst.de>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] move remove_dquot_ref to dqout.c
+Message-ID: <20070206111344.GD328@duck.suse.cz>
+References: <20070205180527.GA26951@lst.de>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070206102253.20b121ae@frecb000686>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <20070205180527.GA26951@lst.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/06, S?bastien Dugu? wrote:
+On Mon 05-02-07 19:05:27, Christoph Hellwig wrote:
+> Remove_dquot_ref can move to dqout.c instead of beeing in inode.c
+> under #ifdef CONFIG_QUOTA.  Also clean the resulting code up
+  Yes, this was because at the time the code was written, inode_lock was not exported
+from inode.c.
+
+> a tiny little bit by testing sb->dq_op earlier - it's constant
+> over a filesystems lifetime.
+  Looks fine.
+
+> Signed-off-by: Christoph Hellwig <hch@lst.de>
+  Signed-off-by: Jan Kara <jack@suse.cz>
+
 > 
-> @@ -970,8 +969,14 @@ static long aio_setup_sigevent(struct ai
->  	rcu_read_lock();
->  	target = sigevent_find_task(&event);
+> Index: linux-2.6/fs/dquot.c
+> ===================================================================
+> --- linux-2.6.orig/fs/dquot.c	2007-02-05 18:49:41.000000000 +0100
+> +++ linux-2.6/fs/dquot.c	2007-02-05 18:53:49.000000000 +0100
+> @@ -79,6 +79,7 @@
+>  #include <linux/buffer_head.h>
+>  #include <linux/capability.h>
+>  #include <linux/quotaops.h>
+> +#include <linux/writeback.h> /* for inode_lock, oddly enough.. */
 >  
-> -	if (unlikely(!target))
-> +	if (unlikely(!target)) {
-> +		/*
-> +		 * Revert notify to SIGEV_NONE so that really_put_req()
-> +		 * knows that no ref has been taken on a task.
-> +		 */
-> +		notify->notify = SIGEV_NONE;
->  		goto out_unlock;
+>  #include <asm/uaccess.h>
+>  
+> @@ -756,15 +757,30 @@
+>  	}
+>  }
+>  
+> +static void remove_dquot_ref(struct super_block *sb, int type,
+> +		struct list_head *tofree_head)
+> +{
+> +	struct inode *inode;
+> +
+> +	spin_lock(&inode_lock);
+> +	list_for_each_entry(inode, &sb->s_inodes, i_sb_list) {
+> +		if (!IS_NOQUOTA(inode))
+> +			remove_inode_dquot_ref(inode, type, tofree_head);
 > +	}
+> +	spin_unlock(&inode_lock);
+> +}
+> +
+>  /* Gather all references from inodes and drop them */
+>  static void drop_dquot_ref(struct super_block *sb, int type)
+>  {
+>  	LIST_HEAD(tofree_head);
+>  
+> -	down_write(&sb_dqopt(sb)->dqptr_sem);
+> -	remove_dquot_ref(sb, type, &tofree_head);
+> -	up_write(&sb_dqopt(sb)->dqptr_sem);
+> -	put_dquot_list(&tofree_head);
+> +	if (sb->dq_op) {
+> +		down_write(&sb_dqopt(sb)->dqptr_sem);
+> +		remove_dquot_ref(sb, type, &tofree_head);
+> +		up_write(&sb_dqopt(sb)->dqptr_sem);
+> +		put_dquot_list(&tofree_head);
+> +	}
+>  }
+>  
+>  static inline void dquot_incr_inodes(struct dquot *dquot, unsigned long number)
+> Index: linux-2.6/fs/inode.c
+> ===================================================================
+> --- linux-2.6.orig/fs/inode.c	2007-02-05 18:49:41.000000000 +0100
+> +++ linux-2.6/fs/inode.c	2007-02-05 18:49:56.000000000 +0100
+> @@ -1252,33 +1252,6 @@
+>  
+>  EXPORT_SYMBOL(inode_needs_sync);
+>  
+> -/*
+> - *	Quota functions that want to walk the inode lists..
+> - */
+> -#ifdef CONFIG_QUOTA
+> -
+> -void remove_dquot_ref(struct super_block *sb, int type,
+> -			struct list_head *tofree_head)
+> -{
+> -	struct inode *inode;
+> -
+> -	if (!sb->dq_op)
+> -		return;	/* nothing to do */
+> -	spin_lock(&inode_lock);	/* This lock is for inodes code */
+> -
+> -	/*
+> -	 * We don't have to lock against quota code - test IS_QUOTAINIT is
+> -	 * just for speedup...
+> -	 */
+> -	list_for_each_entry(inode, &sb->s_inodes, i_sb_list)
+> -		if (!IS_NOQUOTA(inode))
+> -			remove_inode_dquot_ref(inode, type, tofree_head);
+> -
+> -	spin_unlock(&inode_lock);
+> -}
+> -
+> -#endif
+> -
+>  int inode_wait(void *word)
+>  {
+>  	schedule();
+> Index: linux-2.6/include/linux/fs.h
+> ===================================================================
+> --- linux-2.6.orig/include/linux/fs.h	2007-02-05 18:51:48.000000000 +0100
+> +++ linux-2.6/include/linux/fs.h	2007-02-05 18:51:52.000000000 +0100
+> @@ -1681,7 +1681,6 @@
+>  extern int __remove_suid(struct dentry *, int);
+>  extern int should_remove_suid(struct dentry *);
+>  extern int remove_suid(struct dentry *);
+> -extern void remove_dquot_ref(struct super_block *, int, struct list_head *);
+>  
+>  extern void __insert_inode_hash(struct inode *, unsigned long hashval);
+>  extern void remove_inode_hash(struct inode *);
 
-Very minor nit, feel free to ignore.
-
-Isn't it better to move "notify->* = event.*;" down, when we know that
-target != NULL. Imho, a bit easier to follow. This way we don't need to
-reset notify->notify = SIGEV_NONE.
-
-aio_setup_sigevent() relies on the fact that ->notify = SIGEV_NONE on
-entry anyway.
-
-Oleg.
-
+										Honza
+-- 
+Jan Kara <jack@suse.cz>
+SuSE CR Labs
