@@ -1,50 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965351AbXBFF4V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965360AbXBFF7K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965351AbXBFF4V (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 00:56:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965361AbXBFF4V
+	id S965360AbXBFF7K (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 00:59:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965361AbXBFF7K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 00:56:21 -0500
-Received: from outbound4.mail.tds.net ([216.170.230.94]:35482 "EHLO
-	outbound4.mail.tds.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965344AbXBFF4T (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 00:56:19 -0500
-X-Greylist: delayed 44285 seconds by postgrey-1.27 at vger.kernel.org; Tue, 06 Feb 2007 00:56:19 EST
-Subject: Re: [take35 0/10] kevent: Generic event handling mechanism.
-From: "David M. Lloyd" <dmlloyd@flurg.com>
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Cc: David Miller <davem@davemloft.net>, Ulrich Drepper <drepper@redhat.com>,
-       Andrew Morton <akpm@osdl.org>, Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       netdev <netdev@vger.kernel.org>, Zach Brown <zach.brown@oracle.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Chase Venters <chase.venters@clientec.com>,
-       Johann Borck <johann.borck@densedata.com>, linux-kernel@vger.kernel.org,
-       Jeff Garzik <jeff@garzik.org>, Jamal Hadi Salim <hadi@cyberus.ca>,
-       Ingo Molnar <mingo@elte.hu>, linux-fsdevel@vger.kernel.org
-In-Reply-To: <11703247503374@2ka.mipt.ru>
-References: <11703247503374@2ka.mipt.ru>
-Content-Type: text/plain
-Date: Mon, 05 Feb 2007 11:28:05 -0600
-Message-Id: <1170696485.22199.1.camel@localhost>
+	Tue, 6 Feb 2007 00:59:10 -0500
+Received: from waste.org ([66.93.16.53]:38259 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965360AbXBFF7J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Feb 2007 00:59:09 -0500
+Date: Mon, 5 Feb 2007 23:46:12 -0600
+From: Matt Mackall <mpm@selenic.com>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [patch] MTD: fix DOC2000/2001/2001PLUS build error
+Message-ID: <20070206054612.GL16722@waste.org>
+References: <Pine.LNX.4.64.0702041057090.8424@woody.linux-foundation.org> <20070205084523.GA21858@elte.hu> <1170682488.29759.795.camel@pmac.infradead.org> <20070205155627.GA8354@elte.hu> <1170692539.29759.856.camel@pmac.infradead.org> <20070205162635.GA755@elte.hu> <20070205163152.GA2464@elte.hu> <Pine.LNX.4.64.0702050852160.8424@woody.linux-foundation.org> <1170710272.29759.894.camel@pmac.infradead.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1170710272.29759.894.camel@pmac.infradead.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-02-01 at 13:12 +0300, Evgeniy Polyakov wrote:
-> Generic event handling mechanism.
+On Mon, Feb 05, 2007 at 09:17:52PM +0000, David Woodhouse wrote:
+> On Mon, 2007-02-05 at 08:58 -0800, Linus Torvalds wrote:
+> > More importantly, some things that *are* visible probably shouldn't be, or 
+> > should perhaps only be in expert mode (aka "EMBEDDED").
+> 
+> I've heard some fairly stupid abuse of the term 'embedded' in my time,
+> but rarely have I heard people daft enough to abuse it to mean 'expert'.
+> But yes, that's what we use CONFIG_EMBEDDED for.
 
-The patch applied cleanly to 2.6.20 final, but I got a build error:
+I'd be happy to turn this into CONFIG_NONSTANDARD or
+CONFIG_EXPERT, which is how I described it in the Kconfig help texts:
 
-  CC      kernel/kevent/kevent.o
-  CC      kernel/kevent/kevent_user.o
-  CC      kernel/kevent/kevent_timer.o
-  CC      kernel/kevent/kevent_poll.o
-make[2]: *** No rule to make target `kernel/kevent/epoll.o', needed by `kernel/kevent/built-in.o'.  Stop.
-make[1]: *** [kernel/kevent] Error 2
-make: *** [kernel] Error 2
+menuconfig EMBEDDED
+        bool "Configure standard kernel features (for small systems)"
+        help
+          This option allows certain base kernel options and settings
+          to be disabled or tweaked. This is for specialized
+          environments which can tolerate a "non-standard" kernel.
+          Only use this if you really know what you are doing.
 
-- DML
+A number of current users are indeed bogus. Stuff like:
 
+config SUPERH
+        bool
+        default y
+        select EMBEDDED
+
+Just because you're using a SuperH board doesn't mean you want to turn
+off standard features.
+
+-- 
+Mathematics is the supreme nostalgia of our time.
