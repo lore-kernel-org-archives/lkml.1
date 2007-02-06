@@ -1,85 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932991AbXBFFZs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965253AbXBFFaP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932991AbXBFFZs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 00:25:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752770AbXBFFZs
+	id S965253AbXBFFaP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 00:30:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965222AbXBFFaP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 00:25:48 -0500
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:60807 "EHLO e3.ny.us.ibm.com"
+	Tue, 6 Feb 2007 00:30:15 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:49643 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752765AbXBFFZr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 00:25:47 -0500
-Date: Tue, 6 Feb 2007 10:55:14 +0530
-From: Vivek Goyal <vgoyal@in.ibm.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Etienne Lorrain <etienne_lorrain@yahoo.fr>, linux-kernel@vger.kernel.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH] Compressed ia32 ELF file generation for loading by Gujin 1/3
-Message-ID: <20070206052514.GA15613@in.ibm.com>
-Reply-To: vgoyal@in.ibm.com
-References: <522909.27613.qm@web26909.mail.ukl.yahoo.com> <45C7CDD7.20806@zytor.com>
+	id S965201AbXBFFaM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Feb 2007 00:30:12 -0500
+Date: Mon, 5 Feb 2007 21:30:06 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Linux Filesystems <linux-fsdevel@vger.kernel.org>,
+       Linux Memory Management <linux-mm@kvack.org>
+Subject: Re: [patch 9/9] mm: fix pagecache write deadlocks
+Message-Id: <20070205213006.0ea2d918.akpm@linux-foundation.org>
+In-Reply-To: <20070206044146.GA11856@wotan.suse.de>
+References: <20070204014445.88e6c8c7.akpm@linux-foundation.org>
+	<20070204101529.GA22004@wotan.suse.de>
+	<20070204023055.2583fd65.akpm@linux-foundation.org>
+	<20070204104609.GA29943@wotan.suse.de>
+	<20070204025602.a5f8c53a.akpm@linux-foundation.org>
+	<20070204110317.GA9034@wotan.suse.de>
+	<20070204031549.203f7b47.akpm@linux-foundation.org>
+	<20070204151051.GB12771@wotan.suse.de>
+	<20070204103620.33c24cad.akpm@linux-foundation.org>
+	<20070206022549.GB31476@wotan.suse.de>
+	<20070206044146.GA11856@wotan.suse.de>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <45C7CDD7.20806@zytor.com>
-User-Agent: Mutt/1.5.11
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 05, 2007 at 04:37:43PM -0800, H. Peter Anvin wrote:
-> First of all, if sending attached patches, *MAKE SURE* they're text/plain.
+On Tue, 6 Feb 2007 05:41:46 +0100 Nick Piggin <npiggin@suse.de> wrote:
+
+> On Tue, Feb 06, 2007 at 03:25:49AM +0100, Nick Piggin wrote:
+> > On Sun, Feb 04, 2007 at 10:36:20AM -0800, Andrew Morton wrote:
+> > > On Sun, 4 Feb 2007 16:10:51 +0100 Nick Piggin <npiggin@suse.de> wrote:
+> > > 
+> > > > They're not likely to hit the deadlocks, either. Probability gets more
+> > > > likely after my patch to lock the page in the fault path. But practially,
+> > > > we could live without that too, because the data corruption it fixes is
+> > > > very rare as well. Which is exactly what we've been doing quite happily
+> > > > for most of 2.6, including all distro kernels (I think).
+> > > 
+> > > Thing is, an application which is relying on the contents of that page is
+> > > already unreliable (or really peculiar), because it can get indeterminate
+> > > results anyway.
+> > 
+> > Not necessarily -- they could read from one part of a page and write to
+> > another. I see this as the biggest data corruption problem.
+
+The kernel gets that sort of thing wrong anyway, and always has, because
+it uses memcpy()-style copying and not memmove()-style.
+
+I can't imagine what sort of application you're envisaging here.  The
+problem was only ever observed from userspace by an artificial stress-test
+thing.
+
+> And in fact, it is not just transient errors either. This problem can
+> add permanent corruption into the pagecache and onto disk, and it doesn't
+> even require two processes to race.
 > 
-> >diff -uprN -X linux-2.6.20/Documentation/dontdiff 
-> >linux-2.6.20/arch/i386/kernel/setup.c 
-> >linux-2.6.20-gujin/arch/i386/kernel/setup.c
-> >--- linux-2.6.20/arch/i386/kernel/setup.c       2007-02-04 
-> >18:44:54.000000000 +0000
-> >+++ linux-2.6.20-gujin/arch/i386/kernel/setup.c 2007-02-05 
-> >21:27:01.000000000 +0000
-> >@@ -579,6 +579,19 @@ void __init setup_arch(char **cmdline_p)
-> >        strlcpy(command_line, saved_command_line, COMMAND_LINE_SIZE);
-> >        *cmdline_p = command_line;
-> >
-> >+       /*
-> >+        * If the command line begin with '/', it is the filename of the
-> >+        * kernel file - like a shell command line. That can be used to
-> >+        * deduce where root was located when the kernel was compiled,
-> >+        * inside a directory of root named /boot, inside a small partition
-> >+        * mounted on a directory of root named /boot or in the root
-> >+        * directory itself.
-> >+        */
-> >+       if (**cmdline_p == '/')
-> >+               while (**cmdline_p != ' ' && **cmdline_p != '\t'
-> >+                       && **cmdline_p != '\n' && **cmdline_p != '\0')
-> >+                       ++*cmdline_p;
-> >+
-> >        max_low_pfn = setup_memory();
-> >
-> >        /*
-> 
-> The standard way to do this is to have a command line argument named 
-> BOOT_IMAGE (as in BOOT_IMAGE=/foo/bar/baz).  There is no reason to do 
-> this differently from every other bootloader.
-> 
-> Why build the real-mode code as part of the kernel binary?  If you have 
-> to reference kernel symbols, you can do that with the -R option to ld. 
-> Bundling it into the kernel binary just to then extract it later is 
-> silly at best.
+> After zeroing out the uncopied part of the page, and attempting to loop
+> again, we might bail out of the loop for any reason before completing the
+> rest of the copy, leaving the pagecache corrupted, which will soon go out
+> to disk.
 > 
 
-Building real mode code with kernel binary (vmlinux) has got another
-disadvantage that it breaks using vmlinux for kdump purposes. One compiles
-the kernel binary to execute from a different address but real mode code/data
-will continue to be at virtual/physical addr 0 and kexec can not load it
-as that physical memory is not available at all. Kdump skips the real mode
-code execution.
+Only because ->commit_write() went and incorrectly marked parts of the page
+as up-to-date.
 
-I don't know much about Gujin, but advantage here seems to be that it has
-capability to load elf files and that's why the attempt to turn kernel binary
-into a compressed elf image. Why don't we then simply add an ELF header to
-bzImage and Gujin and any ELF loader including Gujin, should be able to load
-it? (As Eric had done in one of the implementations in the past?) Why to 
-create the new infrastructure?
+Zeroing out the fag end of the copy_from_user() on fault is actually incorrect. 
+What we _should_ do is to bring those uncopyable, non-uptodate parts of the
+page uptodate rather than zeroing them.  ->readpage() does that.
 
-Thanks
-Vivek
+So...  what happens if we do
+
+	lock_page()
+	prepare_write()
+	if (copy_from_user_atomic()) {
+		readpage()
+		wait_on_page()
+		lock_page()
+	}
+	commit_write()
+	unlock_page()
+
+- If the page has no buffers then it is either fully uptodate or fully
+  not uptodate.  In the former case, don't call readpage at all.  In the
+  latter case, readpage() is the correct thing to do.
+
+- If the page had buffers, then readpage() won't touch the uptodate ones
+  and will bring the non-uptodate ones up to date from disk.
+
+  Some of the data which we copied from userspace may get overwritten
+  from backing store, but that's OK.
+
+seems crazy, but it's close.  We do have the minor problem that readpage
+went and unlocked the page so we need to relock it.  I bet there are holes
+in there.
+
+
+
+
+Idea #42: after we've locked the pagecache page, do an atomic get_user()
+against the source page(s) before attempting the copy_from_user().  If that
+faults, don't run prepare_write or anything else: drop the page lock and
+try again.
+
+Because
+
+- If the get_user() faults, it might be because the page we're copying
+  from and to is the same page, and someone went and unmapped it: deadlock.
+
+- If the get_user() doesn't fault, and if we're copying from and to the
+  same page, we know that we've locked it, so nobody will be able to unmap
+  it while we're copying from it.
+
+Close, but no cigar!  This is still vulnerable to Hugh's ab/ba deadlock
+scenario.
+
+
+btw, to fix the writev() performance problem we may need to go off and run
+get_user() against up to 1024 separate user pages before locking the
+pagecache page, which sounds fairly idiotic.  Are you doing that in the
+implemetnations which you've been working on?  I forget...
