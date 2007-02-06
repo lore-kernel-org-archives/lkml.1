@@ -1,83 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751753AbXBFUZN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752299AbXBFUZx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751753AbXBFUZN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 15:25:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751938AbXBFUZN
+	id S1752299AbXBFUZx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 15:25:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752310AbXBFUZx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 15:25:13 -0500
-Received: from x35.xmailserver.org ([64.71.152.41]:1128 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751753AbXBFUZL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 15:25:11 -0500
-X-AuthUser: davidel@xmailserver.org
-Date: Tue, 6 Feb 2007 12:25:00 -0800 (PST)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Kent Overstreet <kent.overstreet@gmail.com>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Zach Brown <zach.brown@oracle.com>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-aio@kvack.org, Suparna Bhattacharya <suparna@in.ibm.com>,
-       Benjamin LaHaise <bcrl@kvack.org>
-Subject: Re: [PATCH 2 of 4] Introduce i386 fibril scheduling
-In-Reply-To: <6f703f960702051331v3ceab725h68aea4cd77617f84@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0702061220050.19136@alien.or.mcafeemobile.com>
-References: <patchbomb.1170193181@tetsuo.zabbo.net>  <20070202235531.GA18904@elte.hu>
-  <Pine.LNX.4.64.0702021636410.15057@woody.linux-foundation.org> 
- <20070203082308.GA6748@elte.hu>  <B27B1E97-10E3-4A60-A476-4ED4173481A5@oracle.com>
-  <Pine.LNX.4.64.0702051121420.14453@alien.or.mcafeemobile.com> 
- <8CF4BE18-8EEF-4ACA-A4B4-B627ED3B4831@oracle.com> 
- <Pine.LNX.4.64.0702051147100.14453@alien.or.mcafeemobile.com> 
- <Pine.LNX.4.64.0702051223390.8424@woody.linux-foundation.org> 
- <Pine.LNX.4.64.0702051259030.14453@alien.or.mcafeemobile.com>
- <6f703f960702051331v3ceab725h68aea4cd77617f84@mail.gmail.com>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 6 Feb 2007 15:25:53 -0500
+Received: from gate.crashing.org ([63.228.1.57]:38366 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752299AbXBFUZw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Feb 2007 15:25:52 -0500
+Subject: Re: [PATCH] (2.6.20-rt3) PowerPC: convert spinlocks into raw
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Cc: mingo@elte.hu, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+       dwalker@mvista.com
+In-Reply-To: <200702062026.40875.sshtylyov@ru.mvista.com>
+References: <200702062026.40875.sshtylyov@ru.mvista.com>
+Content-Type: text/plain
+Date: Wed, 07 Feb 2007 07:24:24 +1100
+Message-Id: <1170793464.2620.251.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 5 Feb 2007, Kent Overstreet wrote:
+On Tue, 2007-02-06 at 20:26 +0300, Sergei Shtylyov wrote:
+> Convert the spinlocks in the PowerPC interrupt related code into the raw ones,
+> also convert the PURR and PMC related spinlocks...
 
-> > > HOWEVER, they get returned differently. The cookie gets returned
-> > > immediately, the system call result gets returned in-memory only after the
-> > > async thing has actually completed.
-> > >
-> > > I would actually argue that it's not the kernel that should generate any
-> > > cookie, but that user-space should *pass*in* the cookie it wants to, and
-> > > the kernel should consider it a pointer to a 64-bit entity which is the
-> > > return code.
-> > 
-> > Yes. Let's have the userspace to "mark" the async operation. IMO the
-> > cookie should be something transparent to the kernel.
-> > Like you said though, that'd require compat-code (unless we fix the size).
+Care to explain the difference ? This is related to the -rt stuff ?
+
+Cheers,
+Ben.
+
+> Signed-off-by: Mark A. Greer <mgreer@mvista.com>
+> Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 > 
-> You don't need an explicit cookie if you're passing in a pointer to
-> the return code, it doesn't really save you anything to do so. Say
-> you've got a bunch of user threads (with or without stacks, it doesn't
-> matter).
+> Index: linux-2.6/arch/powerpc/kernel/irq.c
+> ===================================================================
+> --- linux-2.6.orig/arch/powerpc/kernel/irq.c
+> +++ linux-2.6/arch/powerpc/kernel/irq.c
+> @@ -392,7 +392,7 @@ EXPORT_SYMBOL(do_softirq);
+>  #ifdef CONFIG_PPC_MERGE
+>  
+>  static LIST_HEAD(irq_hosts);
+> -static spinlock_t irq_big_lock = SPIN_LOCK_UNLOCKED;
+> +static DEFINE_RAW_SPINLOCK(irq_big_lock);
+>  static DEFINE_PER_CPU(unsigned int, irq_radix_reader);
+>  static unsigned int irq_radix_writer;
+>  struct irq_map_entry irq_map[NR_IRQS];
+> Index: linux-2.6/arch/powerpc/kernel/pmc.c
+> ===================================================================
+> --- linux-2.6.orig/arch/powerpc/kernel/pmc.c
+> +++ linux-2.6/arch/powerpc/kernel/pmc.c
+> @@ -52,7 +52,7 @@ static void dummy_perf(struct pt_regs *r
+>  }
+>  #endif
+>  
+> -static DEFINE_SPINLOCK(pmc_owner_lock);
+> +static DEFINE_RAW_SPINLOCK(pmc_owner_lock);
+>  static void *pmc_owner_caller; /* mostly for debugging */
+>  perf_irq_t perf_irq = dummy_perf;
+>  
+> Index: linux-2.6/arch/powerpc/kernel/time.c
+> ===================================================================
+> --- linux-2.6.orig/arch/powerpc/kernel/time.c
+> +++ linux-2.6/arch/powerpc/kernel/time.c
+> @@ -223,7 +223,7 @@ struct cpu_purr_data {
+>  	int	initialized;			/* thread is running */
+>  	u64	tb;			/* last TB value read */
+>  	u64	purr;			/* last PURR value read */
+> -	spinlock_t lock;
+> +	raw_spinlock_t lock;
+>  };
+>  
+>  static DEFINE_PER_CPU(struct cpu_purr_data, cpu_purr_data);
+> Index: linux-2.6/arch/powerpc/sysdev/i8259.c
+> ===================================================================
+> --- linux-2.6.orig/arch/powerpc/sysdev/i8259.c
+> +++ linux-2.6/arch/powerpc/sysdev/i8259.c
+> @@ -23,7 +23,7 @@ static unsigned char cached_8259[2] = { 
+>  #define cached_A1 (cached_8259[0])
+>  #define cached_21 (cached_8259[1])
+>  
+> -static DEFINE_SPINLOCK(i8259_lock);
+> +static DEFINE_RAW_SPINLOCK(i8259_lock);
+>  
+>  static struct device_node *i8259_node;
+>  static struct irq_host *i8259_host;
+> Index: linux-2.6/arch/powerpc/sysdev/ipic.c
+> ===================================================================
+> --- linux-2.6.orig/arch/powerpc/sysdev/ipic.c
+> +++ linux-2.6/arch/powerpc/sysdev/ipic.c
+> @@ -30,7 +30,7 @@
+>  #include "ipic.h"
+>  
+>  static struct ipic * primary_ipic;
+> -static DEFINE_SPINLOCK(ipic_lock);
+> +static DEFINE_RAW_SPINLOCK(ipic_lock);
+>  
+>  static struct ipic_info ipic_info[] = {
+>  	[9] = {
+> Index: linux-2.6/arch/powerpc/sysdev/mpic.c
+> ===================================================================
+> --- linux-2.6.orig/arch/powerpc/sysdev/mpic.c
+> +++ linux-2.6/arch/powerpc/sysdev/mpic.c
+> @@ -44,7 +44,7 @@
+>  
+>  static struct mpic *mpics;
+>  static struct mpic *mpic_primary;
+> -static DEFINE_SPINLOCK(mpic_lock);
+> +static DEFINE_RAW_SPINLOCK(mpic_lock);
+>  
+>  #ifdef CONFIG_PPC32	/* XXX for now */
+>  #ifdef CONFIG_IRQ_ALL_CPUS
+> Index: linux-2.6/include/asm-powerpc/mpic.h
+> ===================================================================
+> --- linux-2.6.orig/include/asm-powerpc/mpic.h
+> +++ linux-2.6/include/asm-powerpc/mpic.h
+> @@ -279,7 +279,7 @@ struct mpic
+>  #ifdef CONFIG_MPIC_BROKEN_U3
+>  	/* The fixup table */
+>  	struct mpic_irq_fixup	*fixups;
+> -	spinlock_t		fixup_lock;
+> +	raw_spinlock_t		fixup_lock;
+>  #endif
+>  
+>  	/* Register access method */
 > 
-> struct asys_ret {
->     int ret;
->     struct thread *p;
-> };
-> 
-> struct asys_ret r;
-> r.p = me;
-> 
-> async_read(fd, buf, nbytes, &r);
-
-Hmm, are you working for Symbian? Because that's exactly how they track 
-pending async operations (address of a status variable - wrapped in a 
-class of course, being them) ;)
-That's another way of doing it, IMO no better no worse than letting 
-explicit cookie selection from userspace. You still have to have the 
-compat code though, either ways.
-
-
-
-- Davide
-
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
 
