@@ -1,106 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752233AbXBFQx7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752234AbXBFQy3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752233AbXBFQx7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 11:53:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932085AbXBFQx7
+	id S1752234AbXBFQy3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 11:54:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752256AbXBFQy3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 11:53:59 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:40456 "EHLO smtp.osdl.org"
+	Tue, 6 Feb 2007 11:54:29 -0500
+Received: from waste.org ([66.93.16.53]:44278 "EHLO waste.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752233AbXBFQx6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 11:53:58 -0500
-Date: Tue, 6 Feb 2007 08:53:37 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: David Woodhouse <dwmw2@infradead.org>
-cc: Randy Dunlap <randy.dunlap@oracle.com>, Ingo Molnar <mingo@elte.hu>,
+	id S1752201AbXBFQy2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Feb 2007 11:54:28 -0500
+Date: Tue, 6 Feb 2007 10:41:18 -0600
+From: Matt Mackall <mpm@selenic.com>
+To: Bill Davidsen <davidsen@tmr.com>
+Cc: Theodore Tso <tytso@mit.edu>, David Woodhouse <dwmw2@infradead.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>, Ingo Molnar <mingo@elte.hu>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Subject: Re: [patch] MTD: fix DOC2000/2001/2001PLUS build error
-In-Reply-To: <1170755101.29759.960.camel@pmac.infradead.org>
-Message-ID: <Pine.LNX.4.64.0702060841440.8424@woody.linux-foundation.org>
-References: <Pine.LNX.4.64.0702041057090.8424@woody.linux-foundation.org> 
- <20070205084523.GA21858@elte.hu>  <1170682488.29759.795.camel@pmac.infradead.org>
-  <20070205155627.GA8354@elte.hu>  <1170692539.29759.856.camel@pmac.infradead.org>
-  <20070205162635.GA755@elte.hu> <20070205163152.GA2464@elte.hu> 
- <Pine.LNX.4.64.0702050852160.8424@woody.linux-foundation.org> 
- <1170710272.29759.894.camel@pmac.infradead.org> 
- <Pine.LNX.4.64.0702051322580.8424@woody.linux-foundation.org> 
- <1170711587.29759.909.camel@pmac.infradead.org> 
- <Pine.LNX.4.64.0702051345380.8424@woody.linux-foundation.org> 
- <1170712393.29759.925.camel@pmac.infradead.org> 
- <Pine.LNX.4.64.0702051409110.8424@woody.linux-foundation.org> 
- <20070205143110.fca62b57.randy.dunlap@oracle.com> 
- <Pine.LNX.4.64.0702051502370.8424@woody.linux-foundation.org> 
- <1170717694.29759.941.camel@pmac.infradead.org> 
- <Pine.LNX.4.64.0702051525320.8424@woody.linux-foundation.org>
- <1170755101.29759.960.camel@pmac.infradead.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-ID: <20070206164118.GP10108@waste.org>
+References: <1170711587.29759.909.camel@pmac.infradead.org> <Pine.LNX.4.64.0702051345380.8424@woody.linux-foundation.org> <1170712393.29759.925.camel@pmac.infradead.org> <Pine.LNX.4.64.0702051409110.8424@woody.linux-foundation.org> <20070205143110.fca62b57.randy.dunlap@oracle.com> <Pine.LNX.4.64.0702051502370.8424@woody.linux-foundation.org> <1170717694.29759.941.camel@pmac.infradead.org> <20070206010958.GA31809@thunk.org> <20070206060937.GM16722@waste.org> <45C8A70F.9090507@tmr.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <45C8A70F.9090507@tmr.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 6 Feb 2007, David Woodhouse wrote:
+On Tue, Feb 06, 2007 at 11:04:31AM -0500, Bill Davidsen wrote:
+> >There's no reason we shouldn't be able to do exactly that with config
+> >symbols in Kconfig-land. The only difference is that we've got
+> >slightly different semantics for our "depend" keyword. Things which
+> >don't have their "depend" requirements met aren't offered as options.
+> >Whereas "select" is "automatically pull in dependencies"
+> >apt/yum-style.
 > 
-> It's a bad example because it's not relevant to the 'select' question,
-> and you're trying to use it as a straw man; assigning to me a belief I
-> just don't have.
+> Perhaps this is because there is a lacking keyword. The depends controls 
+> visibility, perhaps a "requires" could be used to provide advisory 
+> information which mean "these other things will be turned on if you 
+> build this feature."
 
-It *is* relevant.
+"require" is a bad name as it's a synonym of "depend".
 
-Why are you ignoring the ATA example? Which is exactly the same thing? 
-(And where we do the right thing - we just "select SCSI")
+> >While we're at it, it would also be nice to be able to do:
+> >
+> >$ kconfig enable ACPI
+> >CONFIG_ACPI conflicts with CONFIG_APM
+> >$ kconfig enable -F ACPI
+> >disabling CONFIG_APM
+> >$ kconfig disable SCSI
+> >CONFIG_USB_STORAGE depends on CONFIG_SCSI
+> >$ kconfig disable -f SCSI
+> >disabling USB_STORAGE
+> >$ make
+> >
+> I think depends and select provide this now, the postulated "requires" 
+> might make building the trees easier.
 
-Why are you ignoring the USB example - which is exactly the same thing 
-(and where we do the *wrong* thing: we "depend on SCSI" and then we have 
-about 5 lines of warning both around USB and around SCSI and documentation 
-just to say that USB needs it!)
+The above is all about having a scriptable command line interface so
+that people don't need the broken sed + make oldconfig thing.
 
-> Perhaps I haven't spoken carefully enough. I mean to argue that being
-> nice is good -- but that we shouldn't do so in a way which _costs_ those
-> who use the system most.
-
-It costs you nothing but arguing. 
-
-> No, you really aren't paying attention. You CAN DO IT WITHOUT SELECT.
-
-No, I was paying attention. You seem to just be obtuse on purpose.
-
-WE WANT TO BE NICE.
- - the firewall example was not an example of 'select', but of the "we 
-   want to be nice". But you simply DID NOT GET IT.
- - the USB and SATA examples are *also* examples of "we want to be nice", 
-   and hell yeah, you need 'select' to do them. Claiming anything else is 
-   just stupid.
-
-So: are you stupid, or do you just refuse to even think about it?
-
-> My point is not that we shouldn't be helpful. My point is that 'select'
-> is the _wrong_ way to be 'helpful', because that's a PITA for other
-> people.
-
-It's a PITA just because you don't listen, and ignore everything I say.
-
-In other words, the problem is *you*.
-
-The problem is NOT "select".
-
-People have even pointed out that you don't even have to create new tools. 
-Use menuconfig and "?", which apparently already tells you what the 
-dependencies are, and why you can't turn something off..
-
-And yes, I just tried. I couldn't turn SCSI off in menuconfig, so I 
-pressed '?', and at the end it does actually say:
-
-	Selected by: ATA && BLOCK && (!M32R && !M68K || BROKEN) && (!SUN4 || BROKEN)
-
-Not hugely readable, and I'm sure it could be improved a lot. 
-
-And yes, I certainly think that it would be a good idea if there would be 
-other tools that told you too.  The Kconfig engine *internally* already 
-knows all this, of course, so all the hard work has already effectively 
-been done, it's just not *shown*.
-
-So you should just face it: the problem *really* isn't 'select'. 
-
-		Linus
+-- 
+Mathematics is the supreme nostalgia of our time.
