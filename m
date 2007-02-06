@@ -1,72 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965484AbXBFVKJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965483AbXBFVKW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965484AbXBFVKJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 16:10:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965481AbXBFVKI
+	id S965483AbXBFVKW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 16:10:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965487AbXBFVKW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 16:10:08 -0500
-Received: from mtagate7.de.ibm.com ([195.212.29.156]:2426 "EHLO
-	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965483AbXBFVKG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 16:10:06 -0500
-Date: Tue, 6 Feb 2007 22:10:06 +0100
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
-Cc: heiko.carstens@de.ibm.com
-Subject: [S390] Add/extend WARN_ONs in smp_call_function & smp_call_function_on.
-Message-ID: <20070206211006.GB30335@skybase>
-MIME-Version: 1.0
+	Tue, 6 Feb 2007 16:10:22 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:40156 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965483AbXBFVKU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Feb 2007 16:10:20 -0500
+Date: Tue, 6 Feb 2007 22:09:59 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Daniel Walker <dwalker@mvista.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Andrew Morton <akpm@osdl.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: 2.6.20-rc6-mm3
+Message-ID: <20070206210959.GC25430@elte.hu>
+References: <20070129204528.eb8d695e.akpm@osdl.org> <1170777802.9781.353.camel@imap.mvista.com> <1170786992.3785.0.camel@chaos> <1170787543.9781.362.camel@imap.mvista.com> <1170788870.3785.9.camel@chaos> <1170791739.3455.3.camel@dwalker1> <1170793206.3785.16.camel@chaos> <1170794437.3455.20.camel@dwalker1> <20070206205231.GA25430@elte.hu> <1170795378.3455.31.camel@dwalker1>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <1170795378.3455.31.camel@dwalker1>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -5.3
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-5.3 required=5.9 tests=ALL_TRUSTED,BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-3.3 ALL_TRUSTED            Did not pass through any untrusted hosts
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
 
-[S390] Add/extend WARN_ONs in smp_call_function & smp_call_function_on.
+* Daniel Walker <dwalker@mvista.com> wrote:
 
-Let smp_call_function & smp_call_function_on complain if called with
-interrupts disabled or called from a wrong context.
+> > it's quite easy to explain: because of the new dynticks feature. 
+> > Both 'timer' and 'LOC' counts go way down.
+> 
+> I don't have that enabled tho .. This is with HRT/dynamic tick both 
+> off..
 
-Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
-Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
----
+your kernel utilizes the kernelin a more optimal way: the new 
+clockevents code now utilizes the local APIC timer irq (represented by 
+the LOC field) for periodic interrupts. The local APIC timer irq has a 
+cost of ~2 usecs per IRQ, while the PIT irq is ~10 usecs per irq. With 
+HZ=1000 this means savings of ~8000 usecs per second - i.e. 8 msecs per 
+second, which is 0.8% more raw CPU power available - which isnt that 
+bad.
 
- arch/s390/kernel/smp.c |    9 ++++++---
- 1 files changed, 6 insertions(+), 3 deletions(-)
+we could make this clearer by renaming 'LOC' (which stands for 'LOCal 
+timer interupts' and was added [and misnamed] by yours truly many moons 
+ago) to 'apic-timer' and 'timer' to 'PIT-timer' but /that/ would be more 
+of a userspace visible change than the change in the counter rates.
 
-diff -urpN linux-2.6/arch/s390/kernel/smp.c linux-2.6-patched/arch/s390/kernel/smp.c
---- linux-2.6/arch/s390/kernel/smp.c	2007-02-06 21:43:03.000000000 +0100
-+++ linux-2.6-patched/arch/s390/kernel/smp.c	2007-02-06 21:43:35.000000000 +0100
-@@ -57,7 +57,7 @@ static void smp_ext_bitcall(int, ec_bit_
- static void smp_ext_bitcall_others(ec_bit_sig);
- 
- /*
--5B * Structure and data for smp_call_function(). This is designed to minimise
-+ * Structure and data for smp_call_function(). This is designed to minimise
-  * static memory requirements. It also looks cleaner.
-  */
- static DEFINE_SPINLOCK(call_lock);
-@@ -113,8 +113,8 @@ int smp_call_function (void (*func) (voi
- 	if (cpus <= 0)
- 		return 0;
- 
--	/* Can deadlock when called with interrupts disabled */
--	WARN_ON(irqs_disabled());
-+	/* Can deadlock when interrupts are disabled or if in wrong context */
-+	WARN_ON(irqs_disabled() || in_interrupt());
- 
- 	data.func = func;
- 	data.info = info;
-@@ -159,6 +159,9 @@ int smp_call_function_on(void (*func) (v
- 	if (!cpu_online(cpu))
- 		return -EINVAL;
- 
-+	/* Can deadlock when interrupts are disabled or if in wrong context */
-+	WARN_ON(irqs_disabled() || in_irq());
-+
- 	/* disable preemption for local function call */
- 	curr_cpu = get_cpu();
- 
+	Ingo
