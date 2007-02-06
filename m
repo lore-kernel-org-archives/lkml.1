@@ -1,105 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752259AbXBFRQj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933005AbXBFRRK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752259AbXBFRQj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 12:16:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752257AbXBFRQj
+	id S933005AbXBFRRK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 12:17:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932999AbXBFRRJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 12:16:39 -0500
-Received: from nat-132.atmel.no ([80.232.32.132]:54989 "EHLO relay.atmel.no"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752153AbXBFRQi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 12:16:38 -0500
-Date: Tue, 6 Feb 2007 18:16:12 +0100
-From: Haavard Skinnemoen <hskinnemoen@atmel.com>
-To: Andrew Victor <andrew@sanpeople.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH] atmel_serial: Use __raw I/O register access
-Message-ID: <20070206181612.3002449a@dhcp-252-105.norway.atmel.com>
-Organization: Atmel Norway
-X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 6 Feb 2007 12:17:09 -0500
+Received: from mga03.intel.com ([143.182.124.21]:13330 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932952AbXBFRRH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Feb 2007 12:17:07 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: i="4.13,291,1167638400"; 
+   d="scan'208"; a="177923677:sNHT5212313680"
+Message-ID: <45C8B808.3080908@intel.com>
+Date: Tue, 06 Feb 2007 09:16:56 -0800
+From: Auke Kok <auke-jan.h.kok@intel.com>
+User-Agent: Mail/News 1.5.0.9 (X11/20061228)
+MIME-Version: 1.0
+To: "Ahmed S. Darwish" <darwish.07@gmail.com>
+CC: cramerj@intel.com, john.ronciak@intel.com, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH 2.6.20] e1000: Use ARRAY_SIZE macro when appropriate
+References: <20070205165546.GE3896@Ahmed>
+In-Reply-To: <20070205165546.GE3896@Ahmed>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 06 Feb 2007 17:16:57.0468 (UTC) FILETIME=[9B0F33C0:01C74A12]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Access to chip-internal registers should always be native-endian.
-This is especially important for AVR32 since it's a big-endian
-architecture and the non-raw readl() and writel() macros are defined
-to do little-endian accesses.
+Ahmed S. Darwish wrote:
+> Hi,
+> 
+> A patch to use ARRAY_SIZE macro already defined in kernel.h.
+> 
+> Signed-off-by: Ahmed S. Darwish <darwish.07@gmail.com>
 
-Signed-off-by: Haavard Skinnemoen <hskinnemoen@atmel.com>
----
- drivers/serial/atmel_serial.c |   54 ++++++++++++++++++++--------------------
- 1 files changed, 27 insertions(+), 27 deletions(-)
+Acked-by: Auke Kok <auke-jan.h.kok@intel.com>
 
-diff --git a/drivers/serial/atmel_serial.c b/drivers/serial/atmel_serial.c
-index ed7f720..896c51c 100644
---- a/drivers/serial/atmel_serial.c
-+++ b/drivers/serial/atmel_serial.c
-@@ -73,35 +73,35 @@
- 
- #define ATMEL_ISR_PASS_LIMIT	256
- 
--#define UART_PUT_CR(port,v)	writel(v, (port)->membase + ATMEL_US_CR)
--#define UART_GET_MR(port)	readl((port)->membase + ATMEL_US_MR)
--#define UART_PUT_MR(port,v)	writel(v, (port)->membase + ATMEL_US_MR)
--#define UART_PUT_IER(port,v)	writel(v, (port)->membase + ATMEL_US_IER)
--#define UART_PUT_IDR(port,v)	writel(v, (port)->membase + ATMEL_US_IDR)
--#define UART_GET_IMR(port)	readl((port)->membase + ATMEL_US_IMR)
--#define UART_GET_CSR(port)	readl((port)->membase + ATMEL_US_CSR)
--#define UART_GET_CHAR(port)	readl((port)->membase + ATMEL_US_RHR)
--#define UART_PUT_CHAR(port,v)	writel(v, (port)->membase + ATMEL_US_THR)
--#define UART_GET_BRGR(port)	readl((port)->membase + ATMEL_US_BRGR)
--#define UART_PUT_BRGR(port,v)	writel(v, (port)->membase + ATMEL_US_BRGR)
--#define UART_PUT_RTOR(port,v)	writel(v, (port)->membase + ATMEL_US_RTOR)
--
--// #define UART_GET_CR(port)	readl((port)->membase + ATMEL_US_CR)		// is write-only
-+#define UART_PUT_CR(port,v)	__raw_writel(v, (port)->membase + ATMEL_US_CR)
-+#define UART_GET_MR(port)	__raw_readl((port)->membase + ATMEL_US_MR)
-+#define UART_PUT_MR(port,v)	__raw_writel(v, (port)->membase + ATMEL_US_MR)
-+#define UART_PUT_IER(port,v)	__raw_writel(v, (port)->membase + ATMEL_US_IER)
-+#define UART_PUT_IDR(port,v)	__raw_writel(v, (port)->membase + ATMEL_US_IDR)
-+#define UART_GET_IMR(port)	__raw_readl((port)->membase + ATMEL_US_IMR)
-+#define UART_GET_CSR(port)	__raw_readl((port)->membase + ATMEL_US_CSR)
-+#define UART_GET_CHAR(port)	__raw_readl((port)->membase + ATMEL_US_RHR)
-+#define UART_PUT_CHAR(port,v)	__raw_writel(v, (port)->membase + ATMEL_US_THR)
-+#define UART_GET_BRGR(port)	__raw_readl((port)->membase + ATMEL_US_BRGR)
-+#define UART_PUT_BRGR(port,v)	__raw_writel(v, (port)->membase + ATMEL_US_BRGR)
-+#define UART_PUT_RTOR(port,v)	__raw_writel(v, (port)->membase + ATMEL_US_RTOR)
-+
-+// #define UART_GET_CR(port)	__raw_readl((port)->membase + ATMEL_US_CR)		// is write-only
- 
-  /* PDC registers */
--#define UART_PUT_PTCR(port,v)	writel(v, (port)->membase + ATMEL_PDC_PTCR)
--#define UART_GET_PTSR(port)	readl((port)->membase + ATMEL_PDC_PTSR)
--
--#define UART_PUT_RPR(port,v)	writel(v, (port)->membase + ATMEL_PDC_RPR)
--#define UART_GET_RPR(port)	readl((port)->membase + ATMEL_PDC_RPR)
--#define UART_PUT_RCR(port,v)	writel(v, (port)->membase + ATMEL_PDC_RCR)
--#define UART_PUT_RNPR(port,v)	writel(v, (port)->membase + ATMEL_PDC_RNPR)
--#define UART_PUT_RNCR(port,v)	writel(v, (port)->membase + ATMEL_PDC_RNCR)
--
--#define UART_PUT_TPR(port,v)	writel(v, (port)->membase + ATMEL_PDC_TPR)
--#define UART_PUT_TCR(port,v)	writel(v, (port)->membase + ATMEL_PDC_TCR)
--//#define UART_PUT_TNPR(port,v)	writel(v, (port)->membase + ATMEL_PDC_TNPR)
--//#define UART_PUT_TNCR(port,v)	writel(v, (port)->membase + ATMEL_PDC_TNCR)
-+#define UART_PUT_PTCR(port,v)	__raw_writel(v, (port)->membase + ATMEL_PDC_PTCR)
-+#define UART_GET_PTSR(port)	__raw_readl((port)->membase + ATMEL_PDC_PTSR)
-+
-+#define UART_PUT_RPR(port,v)	__raw_writel(v, (port)->membase + ATMEL_PDC_RPR)
-+#define UART_GET_RPR(port)	__raw_readl((port)->membase + ATMEL_PDC_RPR)
-+#define UART_PUT_RCR(port,v)	__raw_writel(v, (port)->membase + ATMEL_PDC_RCR)
-+#define UART_PUT_RNPR(port,v)	__raw_writel(v, (port)->membase + ATMEL_PDC_RNPR)
-+#define UART_PUT_RNCR(port,v)	__raw_writel(v, (port)->membase + ATMEL_PDC_RNCR)
-+
-+#define UART_PUT_TPR(port,v)	__raw_writel(v, (port)->membase + ATMEL_PDC_TPR)
-+#define UART_PUT_TCR(port,v)	__raw_writel(v, (port)->membase + ATMEL_PDC_TCR)
-+//#define UART_PUT_TNPR(port,v)	__raw_writel(v, (port)->membase + ATMEL_PDC_TNPR)
-+//#define UART_PUT_TNCR(port,v)	__raw_writel(v, (port)->membase + ATMEL_PDC_TNCR)
- 
- static int (*atmel_open_hook)(struct uart_port *);
- static void (*atmel_close_hook)(struct uart_port *);
--- 
-1.4.4.3
+Cheers,
 
+Auke
+
+> ---
+> Patch is compile tested.
+> 
+> diff --git a/drivers/net/e1000/e1000_ethtool.c b/drivers/net/e1000/e1000_ethtool.c
+> index fb96c87..d21706e 100644
+> --- a/drivers/net/e1000/e1000_ethtool.c
+> +++ b/drivers/net/e1000/e1000_ethtool.c
+> @@ -746,7 +746,7 @@ err_setup:
+>  	uint32_t pat, value;                                                   \
+>  	uint32_t test[] =                                                      \
+>  		{0x5A5A5A5A, 0xA5A5A5A5, 0x00000000, 0xFFFFFFFF};              \
+> -	for (pat = 0; pat < sizeof(test)/sizeof(test[0]); pat++) {              \
+> +	for (pat = 0; pat < ARRAY_SIZE(test); pat++) {              \
+>  		E1000_WRITE_REG(&adapter->hw, R, (test[pat] & W));             \
+>  		value = E1000_READ_REG(&adapter->hw, R);                       \
+>  		if (value != (test[pat] & W & M)) {                             \
+> 
