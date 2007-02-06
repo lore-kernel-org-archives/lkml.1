@@ -1,57 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965404AbXBFUKa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965407AbXBFULu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965404AbXBFUKa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 15:10:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965407AbXBFUKa
+	id S965407AbXBFULu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 15:11:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965408AbXBFULu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 15:10:30 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:58310 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965404AbXBFUK3 (ORCPT
+	Tue, 6 Feb 2007 15:11:50 -0500
+Received: from mail1.webmaster.com ([216.152.64.169]:1125 "EHLO
+	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965407AbXBFULu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 15:10:29 -0500
-Date: Tue, 6 Feb 2007 20:10:26 +0000 (GMT)
-From: James Simmons <jsimmons@infradead.org>
-To: Vojtech Pavlik <vojtech@suse.cz>
-cc: ksummit-2007-discuss@thunk.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: +1 4 cz (Re: [Ksummit-2006-discuss] 2007 Linux Kernel Summit)
-In-Reply-To: <20070206200004.GA15910@suse.cz>
-Message-ID: <Pine.LNX.4.64.0702062007360.9224@pentafluge.infradead.org>
-References: <E1H8tIr-0006QH-Bg@candygram.thunk.org> <20070122110711.GA5917@lst.de>
- <20070122124502.GC30124@devserv.devel.redhat.com> <20070123.095756.30177490.davem@davemloft.net>
- <E1H9RAM-0007ny-NP@flower> <20070125152238.GA6494@suse.cz>
- <Pine.LNX.4.64.0702061924310.9224@pentafluge.infradead.org>
- <20070206200004.GA15910@suse.cz>
+	Tue, 6 Feb 2007 15:11:50 -0500
+From: "David Schwartz" <davids@webmaster.com>
+To: "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+Subject: RE: Problem with unix sockets: SOCK_DGRAM ignores MSG_TRUNC
+Date: Tue, 6 Feb 2007 12:11:31 -0800
+Message-ID: <MDEHLPKNGKAHNMBLJOLKCEKJBGAC.davids@webmaster.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+X-Priority: 3 (Normal)
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
+In-Reply-To: <200702061355.39660.daniel.kabs@mobotix.com>
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
+Importance: Normal
+X-Authenticated-Sender: joelkatz@webmaster.com
+X-Spam-Processed: mail1.webmaster.com, Tue, 06 Feb 2007 12:11:46 -0800
+	(not processed: message from trusted or authenticated source)
+X-MDRemoteIP: 206.171.168.138
+X-Return-Path: davids@webmaster.com
+X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
+Reply-To: davids@webmaster.com
+X-MDAV-Processed: mail1.webmaster.com, Tue, 06 Feb 2007 12:11:48 -0800
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-> On Tue, Feb 06, 2007 at 07:29:09PM +0000, James Simmons wrote:
-> > 
-> > Has the place for the KS been decided? If not I like to suggest switzerland. 
-> > 
-> > > On Tue, Jan 23, 2007 at 07:18:46PM +0000, Oleg Verych wrote:
-> > > 
-> > > > >> Ditto..
-> > > > >> 
-> > > > >> Definitely disagree with that. I'd like to see the conference somewhere
-> > > > >> else different this time - perhaps *Czech Republic*, or somewhere else more
-> > > > >> easterly and Linux active (or even Finland...)
-> > > > >
-> > > > > This is my position as well.
-> > > > > 
-> > > > > For the first time in many years I'm strongly considering actually
-> > > > > going to the kernel summit, however if it goes back to Ottawa I
-> > > > > definitely will stop going again.
-> > > > 
-> > > > It would be interesting. Thank you Alan, David!
-> > > 
-> > > I (and SUSE/Novell) would be happy to help organizing the Kernel Summit
-> > > in Czech Republic.
->  
-> I didn't get any response yet to my proposal.
+> Why not improve consistency and make unix_dgram_recvmsg() return the full
+> packet length? So it would behave as UDP does. What do you think about
+> adding the following code to linux/net/unix/af_unix.c:
 
-So it is between Britian or the Czech Republic. BTW how long of a train 
-ride is to swizterland from CZ. My wife's family lives there.
+It would be nice if the world worked that way, but you can't break POSIX
+compliance. Perhaps another receive flag?
+
+DS
+
+
