@@ -1,174 +1,238 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965443AbXBFBXc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965454AbXBFBYH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965443AbXBFBXc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Feb 2007 20:23:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965444AbXBFBXc
+	id S965454AbXBFBYH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Feb 2007 20:24:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965444AbXBFBYH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Feb 2007 20:23:32 -0500
-Received: from raven.upol.cz ([158.194.120.4]:52437 "EHLO raven.upol.cz"
+	Mon, 5 Feb 2007 20:24:07 -0500
+Received: from raven.upol.cz ([158.194.120.4]:52460 "EHLO raven.upol.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965443AbXBFBXX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Feb 2007 20:23:23 -0500
-Message-Id: <20070206012207.805083000@flower.upol.cz>
+	id S965451AbXBFBYF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Feb 2007 20:24:05 -0500
+Message-Id: <20070206012207.925430000@flower.upol.cz>
 References: <20070206011819.160359000@flower.upol.cz>
 User-Agent: jed + quilt/0.45-1
 X-Mailer: formail (procmail)
-Date: Tue, 06 Feb 2007 02:18:20 +0100
+Date: Tue, 06 Feb 2007 02:18:21 +0100
 From: Oleg Verych <olecom@flower.upol.cz>
-To: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Jesper Juhl <jesper.juhl@gmail.com>, Roman Zippel <zippel@linux-m68k.org>,
-       Sam Ravnborg <sam@ravnborg.org>, William Stearns <wstearns@pobox.com>,
-       Martin Schlemmer <azarah@nosferatu.za.org>
-Subject: [patch 1/3, resend] scripts: replace gawk, head, bc with shell, update
-Content-Disposition: inline; filename=scripts-replace-gawk-and-by-shell-with-some-cleanup_update.patch
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jesper Juhl <jesper.juhl@gmail.com>,
+       Roman Zippel <zippel@linux-m68k.org>, Sam Ravnborg <sam@ravnborg.org>,
+       Horst Schirmeier <horst@schirmeier.com>,
+       Jan Beulich <jbeulich@novell.com>, Daniel Drake <dsd@gentoo.org>,
+       Andi Kleen <ak@suse.de>, Randy Dunlap <randy.dunlap@oracle.com>
+Subject: [patch 2/3, resend] kbuild: improve option checking, Kbuild.include cleanup
+Content-Disposition: inline; filename=kbuild-improve-option-checking.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-scripts: replace gawk, head, bc with shell, update
+kbuild: improve option checking, Kbuild.include cleanup
 
-  Replacing overhead of using some (external) programs
-  instead of good old `sh'.
+ GNU binutils, root users, tmpfiles, external modules ro builds must
+ be fixed to do the right thing now.
 
 Cc: Roman Zippel <zippel@linux-m68k.org>
 Cc: Sam Ravnborg <sam@ravnborg.org>
-Cc: William Stearns <wstearns@pobox.com>
-Cc: Martin Schlemmer <azarah@nosferatu.za.org>
+Cc: Horst Schirmeier <horst@schirmeier.com>
+Cc: Jan Beulich <jbeulich@novell.com>
+Cc: Daniel Drake <dsd@gentoo.org>
+Cc: Andi Kleen <ak@suse.de>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>
 Signed-off-by: Oleg Verych <olecom@flower.upol.cz>
 ---
 
- Whitespace cleanup included.
+-- all checks by shell united in one macro -- checker-shell;
+-- one disposable output sym. link to /dev/null per shell,
+   thus no racing, `-Z' is removed;
+-- modules' build output directory is used, if supplied;
+-- every option checking function calls shell wrapper, acquires probe;
+-- `echo -e' bashizm substituted (people with sh != bash have distinct
+   CC options!);
+-- some spelling and sense added to the comments;
+-- small shuffle of whitespace.
 
- scripts/gen_initramfs_list.sh | 43 +++++++++++++++++++++---------------------
- scripts/makelst               | 34 ++++++++++++++++-----------------
- 2 files changed, 39 insertions(+), 38 deletions(-)
+Mostly all people, discussing this back in October are in the Cc list.
+Sam Ravnborg have not much time to reply. I've added Roman Zippel, as
+a very kind reviewer and commiter of previous fix. Comments and
+testing are appreciated. Thanks.
 
-Index: linux-2.6.20/scripts/makelst
+ scripts/Kbuild.include | 96 +++++++++++++++++++++++++++----------------------
+ 1 file changed, 53 insertions(+), 43 deletions(-)
+
+Index: linux-2.6.20/scripts/Kbuild.include
 ===================================================================
---- linux-2.6.20.orig/scripts/makelst	2007-02-06 02:12:38.811908000 +0100
-+++ linux-2.6.20/scripts/makelst	2007-02-06 02:12:43.688212750 +0100
-@@ -1,31 +1,31 @@
--#!/bin/bash
-+#!/bin/sh
- # A script to dump mixed source code & assembly
- # with correct relocations from System.map
--# Requires the following lines in Rules.make.
--# Author(s): DJ Barrow (djbarrow@de.ibm.com,barrow_dj@yahoo.com) 
--#            William Stearns <wstearns@pobox.com>
-+# Requires the following lines in makefile:
- #%.lst: %.c
- #	$(CC) $(CFLAGS) $(EXTRA_CFLAGS) $(CFLAGS_$@) -g -c -o $*.o $<
--#	$(TOPDIR)/scripts/makelst $*.o $(TOPDIR)/System.map $(OBJDUMP)
-+#	$(srctree)/scripts/makelst $*.o $(objtree)/System.map $(OBJDUMP)
- #
--#    Copyright (C) 2000 IBM Corporation
--#    Author(s): DJ Barrow (djbarrow@de.ibm.com,barrow_dj@yahoo.com) 
-+# Copyright (C) 2000 IBM Corporation
-+# Author(s): DJ Barrow (djbarrow@de.ibm.com,barrow_dj@yahoo.com)
-+#            William Stearns <wstearns@pobox.com>
- #
+--- linux-2.6.20.orig/scripts/Kbuild.include	2007-02-06 02:12:37.543828750 +0100
++++ linux-2.6.20/scripts/Kbuild.include	2007-02-06 02:14:37.575330250 +0100
+@@ -2,5 +2,5 @@
+ # kbuild: Generic definitions
  
--t1=`$3 --syms $1 | grep .text | grep " F " | head -n 1`
-+# awk style field access
-+field() {
-+  shift $1 ; echo $1
-+}
-+
-+t1=`$3 --syms $1 | grep .text | grep -m1 " F "`
- if [ -n "$t1" ]; then
--  t2=`echo $t1 | gawk '{ print $6 }'`
-+  t2=`field 6 $t1`
-   if [ ! -r $2 ]; then
-     echo "No System.map" >&2
--    t7=0
-   else
-     t3=`grep $t2 $2`
--    t4=`echo $t3 | gawk '{ print $1 }'`
--    t5=`echo $t1 | gawk '{ print $1 }'`
--    t6=`echo $t4 - $t5 | tr a-f A-F`
--    t7=`( echo  ibase=16 ; echo $t6 ) | bc`
-+    t4=`field 1 $t3`
-+    t5=`field 1 $t1`
-+    t6=`printf "%lu" $((0x$t4 - 0x$t5))`
-   fi
--else
--  t7=0
- fi
--$3 -r --source --adjust-vma=$t7 $1
-+$3 -r --source --adjust-vma=${t6:-0} $1
-Index: linux-2.6.20/scripts/gen_initramfs_list.sh
-===================================================================
---- linux-2.6.20.orig/scripts/gen_initramfs_list.sh	2007-02-06 02:12:38.819908500 +0100
-+++ linux-2.6.20/scripts/gen_initramfs_list.sh	2007-02-06 02:12:43.688212750 +0100
-@@ -1,5 +1,5 @@
- #!/bin/bash
- # Copyright (C) Martin Schlemmer <azarah@nosferatu.za.org>
--# Copyright (c) 2006           Sam Ravnborg <sam@ravnborg.org>
-+# Copyright (C) 2006 Sam Ravnborg <sam@ravnborg.org>
- #
- # Released under the terms of the GNU GPL
-@@ -18,13 +18,13 @@ Usage:
- $0 [-o <file>] [-u <uid>] [-g <gid>] {-d | <cpio_source>} ...
- 	-o <file>      Create gzipped initramfs file named <file> using
--	               gen_init_cpio and gzip
-+		       gen_init_cpio and gzip
- 	-u <uid>       User ID to map to user ID 0 (root).
--	               <uid> is only meaningful if <cpio_source>
--	               is a directory.
-+		       <uid> is only meaningful if <cpio_source>
-+		       is a directory.
- 	-g <gid>       Group ID to map to group ID 0 (root).
--	               <gid> is only meaningful if <cpio_source>
--	               is a directory.
-+		       <gid> is only meaningful if <cpio_source>
-+		       is a directory.
- 	<cpio_source>  File list or directory for cpio archive.
--	               If <cpio_source> is a .cpio file it will be used
-+		       If <cpio_source> is a .cpio file it will be used
- 		       as direct input to initramfs.
- 	-d             Output the default cpio list.
-@@ -37,4 +37,10 @@ EOF
- }
+-# Convinient variables
++# Convenient constants
+ comma   := ,
+ squote  := '
+@@ -57,38 +57,44 @@ endef
+ # See documentation in Documentation/kbuild/makefiles.txt
  
-+# awk style field access
-+# $1 - field number; rest is argument string
-+field() {
-+	shift $1 ; echo $1
-+}
-+
- list_default_initramfs() {
- 	# echo usr/kinit/kinit
-@@ -120,20 +126,15 @@ parse() {
- 			;;
- 		"nod")
--			local dev_type=
--			local maj=$(LC_ALL=C ls -l "${location}" | \
--					gawk '{sub(/,/, "", $5); print $5}')
--			local min=$(LC_ALL=C ls -l "${location}" | \
--					gawk '{print $6}')
+-# output directory for tests below
+-TMPOUT := $(if $(KBUILD_EXTMOD),$(firstword $(KBUILD_EXTMOD))/)
++# checker-shell
++# Usage: option = $(call checker-shell, $(CC)...-o $$OUT, option-ok, otherwise)
++# Exit code chooses option. $$OUT is safe location for needless output.
++define checker-shell
++  $(shell set -e; \
++    DIR=$(KBUILD_EXTMOD); \
++    cd $${DIR:-$(objtree)}; \
++    OUT=$$PWD/.$$$$.null; \
++    \
++    ln -s /dev/null $$OUT; \
++    if $(1) >/dev/null 2>&1; \
++      then echo "$(2)"; \
++      else echo "$(3)"; \
++    fi; \
++    rm -f $$OUT)
++endef
+ 
+ # as-option
+ # Usage: cflags-y += $(call as-option, -Wa$(comma)-isa=foo,)
 -
--			if [ -b "${location}" ]; then
--				dev_type="b"
--			else
--				dev_type="c"
--			fi
--			str="${ftype} ${name} ${str} ${dev_type} ${maj} ${min}"
-+			local dev=`LC_ALL=C ls -l "${location}"`
-+			local maj=`field 5 ${dev}`
-+			local min=`field 6 ${dev}`
-+			maj=${maj%,}
+-as-option = $(shell if $(CC) $(CFLAGS) $(1) -Wa,-Z -c -o /dev/null \
+-	     -xassembler /dev/null > /dev/null 2>&1; then echo "$(1)"; \
+-	     else echo "$(2)"; fi ;)
++as-option = $(call checker-shell, \
++   $(CC) $(CFLAGS) $(1) -c -xassembler /dev/null -o $$OUT, $(1), $(2))
+ 
+ # as-instr
+ # Usage: cflags-y += $(call as-instr, instr, option1, option2)
+-
+-as-instr = $(shell if echo -e "$(1)" | \
+-		      $(CC) $(AFLAGS) -c -xassembler - \
+-			    -o $(TMPOUT)astest$$$$.out > /dev/null 2>&1; \
+-		   then rm $(TMPOUT)astest$$$$.out; echo "$(2)"; \
+-		   else echo "$(3)"; fi)
++as-instr = $(call checker-shell, \
++   printf "$(1)" | $(CC) $(AFLAGS) -c -xassembler -o $$OUT -, $(2), $(3))
+ 
+ # cc-option
+ # Usage: cflags-y += $(call cc-option, -march=winchip-c6, -march=i586)
+-
+-cc-option = $(shell if $(CC) $(CFLAGS) $(1) -S -o /dev/null -xc /dev/null \
+-             > /dev/null 2>&1; then echo "$(1)"; else echo "$(2)"; fi ;)
++cc-option = $(call checker-shell, \
++   $(CC) $(CFLAGS) $(if $(3),$(3),$(1)) -S -xc /dev/null -o $$OUT, $(1), $(2))
+ 
+ # cc-option-yn
+ # Usage: flag := $(call cc-option-yn, -march=winchip-c6)
+-cc-option-yn = $(shell if $(CC) $(CFLAGS) $(1) -S -o /dev/null -xc /dev/null \
+-                > /dev/null 2>&1; then echo "y"; else echo "n"; fi;)
++cc-option-yn = $(call cc-option, "y", "n", $(1))
+ 
+ # cc-option-align
+ # Prefix align with either -falign or -malign
+ cc-option-align = $(subst -functions=0,,\
+-	$(call cc-option,-falign-functions=0,-malign-functions=0))
++   $(call cc-option,-falign-functions=0,-malign-functions=0))
+ 
+ # cc-version
+@@ -98,15 +104,13 @@ cc-version = $(shell $(CONFIG_SHELL) $(s
+ # cc-ifversion
+ # Usage:  EXTRA_CFLAGS += $(call cc-ifversion, -lt, 0402, -O1)
+-cc-ifversion = $(shell if [ $(call cc-version, $(CC)) $(1) $(2) ]; then \
+-                       echo $(3); fi;)
++cc-ifversion = $(shell [ $(call cc-version, $(CC)) $(1) $(2) ] && echo $(3))
+ 
+ # ld-option
+ # Usage: ldflags += $(call ld-option, -Wl$(comma)--hash-style=both)
+-ld-option = $(shell if $(CC) $(1) -nostdlib -xc /dev/null \
+-			     -o $(TMPOUT)ldtest$$$$.out > /dev/null 2>&1; \
+-             then rm $(TMPOUT)ldtest$$$$.out; echo "$(1)"; \
+-             else echo "$(2)"; fi)
++ld-option = $(call checker-shell, \
++   $(CC) $(1) -nostdlib -xc /dev/null -o $$OUT, $(1), $(2))
 +
-+			[ -b "${location}" ] && dev="b" || dev="c"
++######
+ 
+-###
+ # Shorthand for $(Q)$(MAKE) -f scripts/Makefile.build obj=
+ # Usage:
+@@ -114,17 +118,26 @@ ld-option = $(shell if $(CC) $(1) -nostd
+ build := -f $(if $(KBUILD_SRC),$(srctree)/)scripts/Makefile.build obj
+ 
+-# Prefix -I with $(srctree) if it is not an absolute path
+-addtree = $(if $(filter-out -I/%,$(1)),$(patsubst -I%,-I$(srctree)/%,$(1))) $(1)
++# Prefix -I with $(srctree) if it is not an absolute path,
++# add original to the end
++addtree = $(if \
++	$(filter-out -I/%, $(1)), $(patsubst -I%,-I$(srctree)/%,$(1))) $(1)
 +
-+			str="${ftype} ${name} ${str} ${dev} ${maj} ${min}"
- 			;;
- 		"slink")
--			local target=$(LC_ALL=C ls -l "${location}" | \
--					gawk '{print $11}')
-+			local target=`field 11 $(LC_ALL=C ls -l "${location}")`
- 			str="${ftype} ${name} ${target} ${str}"
- 			;;
+ # Find all -I options and call addtree
+-flags = $(foreach o,$($(1)),$(if $(filter -I%,$(o)),$(call addtree,$(o)),$(o)))
++flags = $(foreach o,$($(1)), \
++	$(if $(filter -I%,$(o)), $(call addtree, $(o)), $(o)))
+ 
+-# If quiet is set, only print short version of command
++# echo command.
++# Short version is used, if $(quiet) equals `quiet_', otherwise full one.
++echo-cmd = $(if $($(quiet)cmd_$(1)), \
++	echo '  $(call escsq,$($(quiet)cmd_$(1)))$(echo-why)';)
++
++# printing commands
+ cmd = @$(echo-cmd) $(cmd_$(1))
+ 
+-# Add $(obj)/ for paths that is not absolute
+-objectify = $(foreach o,$(1),$(if $(filter /%,$(o)),$(o),$(obj)/$(o)))
++# Add $(obj)/ for paths that are not absolute
++objectify = $(foreach o,$(1), $(if $(filter /%,$(o)), $(o), $(obj)/$(o)))
+ 
+ ###
+-# if_changed      - execute command if any prerequisite is newer than 
++# if_changed      - execute command if any prerequisite is newer than
+ #                   target, or command line has changed
+ # if_changed_dep  - as if_changed, but uses fixdep to reveal dependencies
+@@ -134,5 +147,5 @@ objectify = $(foreach o,$(1),$(if $(filt
+ 
+ ifneq ($(KBUILD_NOCMDDEP),1)
+-# Check if both arguments has same arguments. Result in empty string if equal
++# Check if both arguments has same arguments. Result is empty string, if equal.
+ # User may override this check using make KBUILD_NOCMDDEP=1
+ arg-check = $(strip $(filter-out $(cmd_$(1)), $(cmd_$@)) \
+@@ -140,8 +153,4 @@ arg-check = $(strip $(filter-out $(cmd_$
+ endif
+ 
+-# echo command. Short version is $(quiet) equals quiet, otherwise full command
+-echo-cmd = $(if $($(quiet)cmd_$(1)), \
+-	echo '  $(call escsq,$($(quiet)cmd_$(1)))$(echo-why)';)
+-
+ # >'< substitution is for echo to work,
+ # >$< substitution to preserve $ when reloading .cmd file
+@@ -154,5 +163,5 @@ make-cmd = $(subst \#,\\\#,$(subst $$,$$
+ any-prereq = $(filter-out $(PHONY),$?) $(filter-out $(PHONY) $(wildcard $^),$^)
+ 
+-# Execute command if command has changed or prerequisitei(s) are updated
++# Execute command if command has changed or prerequisite(s) are updated.
+ #
+ if_changed = $(if $(strip $(any-prereq) $(arg-check)),                       \
+@@ -161,6 +170,6 @@ if_changed = $(if $(strip $(any-prereq) 
+ 	echo 'cmd_$@ := $(make-cmd)' > $(dot-target).cmd)
+ 
+-# execute the command and also postprocess generated .d dependencies
+-# file
++# Execute the command and also postprocess generated .d dependencies file.
++#
+ if_changed_dep = $(if $(strip $(any-prereq) $(arg-check) ),                  \
+ 	@set -e;                                                             \
+@@ -170,7 +179,8 @@ if_changed_dep = $(if $(strip $(any-prer
+ 	mv -f $(dot-target).tmp $(dot-target).cmd)
+ 
++# Will check if $(cmd_foo) changed, or any of the prerequisites changed,
++# and if so will execute $(rule_foo).
+ # Usage: $(call if_changed_rule,foo)
+-# will check if $(cmd_foo) changed, or any of the prequisites changed,
+-# and if so will execute $(rule_foo)
++#
+ if_changed_rule = $(if $(strip $(any-prereq) $(arg-check) ),                 \
+ 	@set -e;                                                             \
 
 --
 
