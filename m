@@ -1,57 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030309AbXBGAWx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030378AbXBGAYF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030309AbXBGAWx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 19:22:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030337AbXBGAWx
+	id S1030378AbXBGAYF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 19:24:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030374AbXBGAYF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 19:22:53 -0500
-Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:32929 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1030309AbXBGAWw (ORCPT
+	Tue, 6 Feb 2007 19:24:05 -0500
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:39954 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1030352AbXBGAYD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 19:22:52 -0500
-Message-ID: <45C91BDB.9060403@vmware.com>
-Date: Tue, 06 Feb 2007 16:22:51 -0800
-From: Zachary Amsden <zach@vmware.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061206)
+	Tue, 6 Feb 2007 19:24:03 -0500
+Date: Wed, 7 Feb 2007 01:24:05 +0100
+From: Adrian Bunk <bunk@stusta.de>
+To: Jay Cliburn <jacliburn@bellsouth.net>
+Cc: Andrew Morton <akpm@osdl.org>, Xiong Huang <xiong_huang@attansic.com>,
+       Chris Snook <csnook@redhat.com>, jgarzik@pobox.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [RFC: -mm patch] drivers/net/atl1/: possible cleanups
+Message-ID: <20070207002405.GA12958@stusta.de>
+References: <20070129204528.eb8d695e.akpm@osdl.org> <20070206221229.GH27397@stusta.de> <20070206181910.4d27046a@osprey.hogchain.net>
 MIME-Version: 1.0
-To: Andi Kleen <ak@muc.de>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, Rusty Russell <rusty@rustcorp.com.au>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Chris Wright <chrisw@sous-sol.org>
-Subject: Re: [PATCH 6/11] Vmi timer no idle hz fixes.patch
-References: <200702060353.l163r9ec000751@zach-dev.vmware.com> <20070206122917.GD47229@muc.de>
-In-Reply-To: <20070206122917.GD47229@muc.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070206181910.4d27046a@osprey.hogchain.net>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
->> -#ifdef CONFIG_S390
->> -#ifdef CONFIG_MATHEMU
->> -	{
->> -		.ctl_name	= KERN_IEEE_EMULATION_WARNINGS,
->> -		.procname	= "ieee_emulation_warnings",
->> -		.data		= &sysctl_ieee_emulation_warnings,
->> -		.maxlen		= sizeof(int),
->> -		.mode		= 0644,
->> -		.proc_handler	= &proc_dointvec,
->> -	},
->>     
->
-> I think there needs to be a way to have this syctl only
-> when it's really implemented for the paravirt ops.
->
-> I suppose you should move it to dynamic registration on demand.
->   
+On Tue, Feb 06, 2007 at 06:19:10PM -0600, Jay Cliburn wrote:
+> On Tue, 6 Feb 2007 23:12:29 +0100
+> Adrian Bunk <bunk@stusta.de> wrote:
+>...
+> > This patch contains the following possible cleanups:
+> > - move extern declarations to atl1.h
+> > - make needlessly global code static
+> 
+> Adrian,
+> 
+> The atl1 driver currently follows this development pathway:
+> 
+> developer -> netdev#atl1 -> netdev#ALL -> -mm
+> 
+> Your patch is just a little bit out ahead of us.  Some of your suggested
+> changes are already in the pipeline; we're just waiting for Jeff to
+> merge netdev#atl1 into netdev#ALL.  Should be soon.
+> 
+> > 
+> > Signed-off-by: Adrian Bunk <bunk@stusta.de>
+> > 
+> > ---
+> > 
+> > BTW: Can we get a MAINTAINERS entry for this driver?
+> 
+> Already submitted to netdev#atl1.
+> 
+> http://lkml.org/lkml/2007/2/3/174
 
-Hmm, is there a way to do that and share the sysctl with Xen?  Yes, I 
-think if we move the data to paravirt.c and call 
-paravirt_start_no_idle_hz (or something_with_fewer_underbars), then we 
-can both share this call site instead of silly duplicating the .ctl_name ...
+:-)
 
-Will code it up.
+> > -s32 atl1_setup_ring_resources(struct atl1_adapter *adapter);
+> > -void atl1_free_ring_resources(struct atl1_adapter *adapter);
+> > +
+> > +extern char atl1_driver_name[];
+> > +extern char atl1_driver_version[];
+> 
+> netdev#atl1 already has this change.
+> 
+> The rest of these I'll bundle up and submit to netdev#atl1, too.  Will
+> that work for you?
+>...
 
-Zach
+Do what you consider the right thing - I don't care how it gets into the 
+various trees.
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
