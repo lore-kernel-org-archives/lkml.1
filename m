@@ -1,45 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422689AbXBGTG7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030565AbXBGTNJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422689AbXBGTG7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Feb 2007 14:06:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422710AbXBGTG6
+	id S1030565AbXBGTNJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Feb 2007 14:13:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030640AbXBGTNJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Feb 2007 14:06:58 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:51260 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422689AbXBGTG5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Feb 2007 14:06:57 -0500
-Date: Wed, 7 Feb 2007 19:06:32 +0000
-From: Christoph Hellwig <hch@infradead.org>
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-Cc: Christoph Hellwig <hch@lst.de>, Andrew Morton <akpm@linux-foundation.org>,
-       jack@suse.cz, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] remove sb->s_files and file_list_lock usage in dquot.c
-Message-ID: <20070207190632.GA3350@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Jan Engelhardt <jengelh@linux01.gwdg.de>,
-	Christoph Hellwig <hch@lst.de>,
-	Andrew Morton <akpm@linux-foundation.org>, jack@suse.cz,
-	linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20070206132333.GA9919@lst.de> <20070206155001.22ab74f6.akpm@linux-foundation.org> <20070207072259.GA22083@lst.de> <Pine.LNX.4.61.0702071901150.20245@yvahk01.tjqt.qr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 7 Feb 2007 14:13:09 -0500
+Received: from ns2.uludag.org.tr ([193.140.100.220]:47058 "EHLO uludag.org.tr"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1030565AbXBGTNI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Feb 2007 14:13:08 -0500
+From: Ismail =?iso-8859-1?q?D=F6nmez?= <ismail@pardus.org.tr>
+Organization: TUBITAK/UEKAE
+To: Levitsky Maxim <maximlevitsky@yahoo.com>
+Subject: Re: [PATCH] [NET] dmfe : number of fixes and features
+Date: Wed, 7 Feb 2007 21:13:02 +0200
+User-Agent: KMail/1.9.6
+References: <131364.59702.qm@web38502.mail.mud.yahoo.com>
+In-Reply-To: <131364.59702.qm@web38502.mail.mud.yahoo.com>
+Cc: linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.61.0702071901150.20245@yvahk01.tjqt.qr>
-User-Agent: Mutt/1.4.2.2i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Message-Id: <200702072113.02951.ismail@pardus.org.tr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 07, 2007 at 07:03:05PM +0100, Jan Engelhardt wrote:
-> With filesystems that can turn on their quota after mount time (about 
-> every fs except xfs), I can surely have a ton of files open, and hence, 
-> if I understand correctly, have lots of inodes instantiated.
+Hi,
+On Wednesday 07 February 2007 19:57:21 you wrote:
+> Hello,
+>
+> Before some time I decided to fix suspend/resume on my Davicom network
+> card. During development I also fixed couple of bugs and added support for
+> link detection and WOL Note : 2.6.20 already has support for link detection
+> , but it is broken when card has external PHY , like mine.
+>
+> So here it goes:
+>
+> [PATCH] [NET] [001] dmfe : trivial/spelling fixes
+> [PATCH] [NET] [002] dmfe : Fix possible oops
+> [PATCH] [NET] [003] dmfe : fix link detection
+> [PATCH] [NET] [004] dmfe : Add suspend/resume support
+> [PATCH] [NET] [005] dmfe : Add support for wake-on-lan
 
-Yes, you can in theory.  But turning on quota on a filesystem in full
-steam useage is not a common use case and thus there is no point in
-optimizing for it.
 
+CC netdev@vger.kernel.org for network patches.
+
+Regards,
+ismail
