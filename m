@@ -1,46 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422768AbXBGSyl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422851AbXBGS42@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422768AbXBGSyl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Feb 2007 13:54:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422800AbXBGSyl
+	id S1422851AbXBGS42 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Feb 2007 13:56:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422899AbXBGS41
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Feb 2007 13:54:41 -0500
-Received: from mail8.sea5.speakeasy.net ([69.17.117.10]:33029 "EHLO
+	Wed, 7 Feb 2007 13:56:27 -0500
+Received: from mail8.sea5.speakeasy.net ([69.17.117.10]:43124 "EHLO
 	mail8.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422768AbXBGSyj (ORCPT
+	with ESMTP id S1422894AbXBGS4Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Feb 2007 13:54:39 -0500
-Message-ID: <45CA206C.2080205@kernel.org>
-Date: Wed, 07 Feb 2007 10:54:36 -0800
+	Wed, 7 Feb 2007 13:56:24 -0500
+Message-ID: <45CA20D5.1070800@kernel.org>
+Date: Wed, 07 Feb 2007 10:56:21 -0800
 From: Josh Triplett <josh@kernel.org>
 User-Agent: Icedove 1.5.0.9 (X11/20061220)
 MIME-Version: 1.0
 To: Andrew Morton <akpm@linux-foundation.org>
-CC: "Ahmed S. Darwish" <darwish.07@gmail.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH 1/3] rcutorture: Use ARRAY_SIZE macro when appropriate
+CC: linux-kernel@vger.kernel.org
+Subject: [PATCH 2/3] rcutorture: style cleanup: avoid != NULL in boolean tests
+References: <45CA206C.2080205@kernel.org>
+In-Reply-To: <45CA206C.2080205@kernel.org>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Replace open-coded array size calculation with standard ARRAY_SIZE macro.
-
-Signed-off-by: Ahmed S. Darwish <darwish.07@gmail.com>
 Signed-off-by: Josh Triplett <josh@kernel.org>
 ---
- kernel/rcutorture.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ kernel/rcutorture.c |   28 ++++++++++++++--------------
+ 1 files changed, 14 insertions(+), 14 deletions(-)
 
 diff --git a/kernel/rcutorture.c b/kernel/rcutorture.c
-index 482b11f..97c2277 100644
+index 97c2277..0c7bf0c 100644
 --- a/kernel/rcutorture.c
 +++ b/kernel/rcutorture.c
-@@ -899,7 +899,7 @@ rcu_torture_init(void)
- 	/* Set up the freelist. */
+@@ -534,7 +534,7 @@ rcu_torture_writer(void *arg)
+ 		rp->rtort_mbtest = 1;
+ 		rcu_assign_pointer(rcu_torture_current, rp);
+ 		smp_wmb();
+-		if (old_rp != NULL) {
++		if (old_rp) {
+ 			i = old_rp->rtort_pipe_count;
+ 			if (i > RCU_TORTURE_PIPE_LEN)
+ 				i = RCU_TORTURE_PIPE_LEN;
+@@ -685,7 +685,7 @@ rcu_torture_printk(char *page)
+ 			       atomic_read(&rcu_torture_wcount[i]));
+ 	}
+ 	cnt += sprintf(&page[cnt], "\n");
+-	if (cur_ops->stats != NULL)
++	if (cur_ops->stats)
+ 		cnt += cur_ops->stats(&page[cnt]);
+ 	return cnt;
+ }
+@@ -749,13 +749,13 @@ static void rcu_torture_shuffle_tasks(void)
  
- 	INIT_LIST_HEAD(&rcu_torture_freelist);
--	for (i = 0; i < sizeof(rcu_tortures) / sizeof(rcu_tortures[0]); i++) {
-+	for (i = 0; i < ARRAY_SIZE(rcu_tortures); i++) {
- 		rcu_tortures[i].rtort_mbtest = 0;
- 		list_add_tail(&rcu_tortures[i].rtort_free,
- 			      &rcu_torture_freelist);
+ 	set_cpus_allowed(current, tmp_mask);
+ 
+-	if (reader_tasks != NULL) {
++	if (reader_tasks) {
+ 		for (i = 0; i < nrealreaders; i++)
+ 			if (reader_tasks[i])
+ 				set_cpus_allowed(reader_tasks[i], tmp_mask);
+ 	}
+ 
+-	if (fakewriter_tasks != NULL) {
++	if (fakewriter_tasks) {
+ 		for (i = 0; i < nfakewriters; i++)
+ 			if (fakewriter_tasks[i])
+ 				set_cpus_allowed(fakewriter_tasks[i], tmp_mask);
+@@ -808,21 +808,21 @@ rcu_torture_cleanup(void)
+ 	int i;
+ 
+ 	fullstop = 1;
+-	if (shuffler_task != NULL) {
++	if (shuffler_task) {
+ 		VERBOSE_PRINTK_STRING("Stopping rcu_torture_shuffle task");
+ 		kthread_stop(shuffler_task);
+ 	}
+ 	shuffler_task = NULL;
+ 
+-	if (writer_task != NULL) {
++	if (writer_task) {
+ 		VERBOSE_PRINTK_STRING("Stopping rcu_torture_writer task");
+ 		kthread_stop(writer_task);
+ 	}
+ 	writer_task = NULL;
+ 
+-	if (reader_tasks != NULL) {
++	if (reader_tasks) {
+ 		for (i = 0; i < nrealreaders; i++) {
+-			if (reader_tasks[i] != NULL) {
++			if (reader_tasks[i]) {
+ 				VERBOSE_PRINTK_STRING(
+ 					"Stopping rcu_torture_reader task");
+ 				kthread_stop(reader_tasks[i]);
+@@ -834,9 +834,9 @@ rcu_torture_cleanup(void)
+ 	}
+ 	rcu_torture_current = NULL;
+ 
+-	if (fakewriter_tasks != NULL) {
++	if (fakewriter_tasks) {
+ 		for (i = 0; i < nfakewriters; i++) {
+-			if (fakewriter_tasks[i] != NULL) {
++			if (fakewriter_tasks[i]) {
+ 				VERBOSE_PRINTK_STRING(
+ 					"Stopping rcu_torture_fakewriter task");
+ 				kthread_stop(fakewriter_tasks[i]);
+@@ -847,7 +847,7 @@ rcu_torture_cleanup(void)
+ 		fakewriter_tasks = NULL;
+ 	}
+ 
+-	if (stats_task != NULL) {
++	if (stats_task) {
+ 		VERBOSE_PRINTK_STRING("Stopping rcu_torture_stats task");
+ 		kthread_stop(stats_task);
+ 	}
+@@ -858,7 +858,7 @@ rcu_torture_cleanup(void)
+ 
+ 	rcu_torture_stats_print();  /* -After- the stats thread is stopped! */
+ 
+-	if (cur_ops->cleanup != NULL)
++	if (cur_ops->cleanup)
+ 		cur_ops->cleanup();
+ 	if (atomic_read(&n_rcu_torture_error))
+ 		rcu_torture_print_module_parms("End of test: FAILURE");
+@@ -875,7 +875,7 @@ rcu_torture_init(void)
+ 
+ 	/* Process args and tell the world that the torturer is on the job. */
+ 
+-	for (i = 0; cur_ops = torture_ops[i], cur_ops != NULL; i++) {
++	for (i = 0; cur_ops = torture_ops[i], cur_ops; i++) {
+ 		cur_ops = torture_ops[i];
+ 		if (strcmp(torture_type, cur_ops->name) == 0) {
+ 			break;
+@@ -886,7 +886,7 @@ rcu_torture_init(void)
+ 		       torture_type);
+ 		return (-EINVAL);
+ 	}
+-	if (cur_ops->init != NULL)
++	if (cur_ops->init)
+ 		cur_ops->init(); /* no "goto unwind" prior to this point!!! */
+ 
+ 	if (nreaders >= 0)
