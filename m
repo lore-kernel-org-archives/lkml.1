@@ -1,64 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965613AbXBGPD4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161359AbXBGPOc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965613AbXBGPD4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Feb 2007 10:03:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161350AbXBGPDz
+	id S1161359AbXBGPOc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Feb 2007 10:14:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161360AbXBGPOc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Feb 2007 10:03:55 -0500
-Received: from mga05.intel.com ([192.55.52.89]:38766 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S965613AbXBGPDz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Feb 2007 10:03:55 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.13,295,1167638400"; 
-   d="scan'208"; a="196802439:sNHT19781090"
-Date: Wed, 7 Feb 2007 07:41:33 -0800
-From: "Lombard, David N" <dnlombar@ichips.intel.com>
-To: Horms <horms@verge.net.au>
-Cc: "Robert P. J. Day" <rpjday@mindspring.com>, fastboot@osdl.org,
-       Judith Lebzelter <judith@osdl.org>, ebiederm@xmission.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [Fastboot] [ PATCH ] fix to documentation for kexec
-Message-ID: <20070207154133.GA29525@nlxdcldnl2.cl.intel.com>
-Mail-Followup-To: Horms <horms@verge.net.au>,
-	"Robert P. J. Day" <rpjday@mindspring.com>, fastboot@osdl.org,
-	Judith Lebzelter <judith@osdl.org>, ebiederm@xmission.com,
-	linux-kernel@vger.kernel.org
-References: <20070201181955.GE5825@shell0.pdx.osdl.net> <Pine.LNX.4.64.0702011324050.16833@CPE00045a9c397f-CM001225dbafb6> <20070207073316.GF26314@verge.net.au>
+	Wed, 7 Feb 2007 10:14:32 -0500
+Received: from mail.screens.ru ([213.234.233.54]:44621 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161359AbXBGPOc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Feb 2007 10:14:32 -0500
+Date: Wed, 7 Feb 2007 18:16:30 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Daniel Drake <dsd@gentoo.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, David Howells <dhowells@redhat.com>
+Subject: Re: [PATCH 3/6] workqueue: make cancel_rearming_delayed_workqueue() work on idle dwork
+Message-ID: <20070207151630.GA138@tv-sign.ru>
+References: <20070206233016.GA108@tv-sign.ru> <45C9E320.3070001@gentoo.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070207073316.GF26314@verge.net.au>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <45C9E320.3070001@gentoo.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 07, 2007 at 04:33:16PM +0900, Horms wrote:
-> On Thu, Feb 01, 2007 at 01:25:04PM -0500, Robert P. J. Day wrote:
-> > On Thu, 1 Feb 2007, Judith Lebzelter wrote:
-> > >
-> > > -* "init 1" boots the dump-capture kernel into single-user mode without
-> > > -  networking. If you want networking, use "init 3."
-> > > +* Boot parameter "1" boots the dump-capture kernel into single-user mode
-> > > +  without networking. If you want networking, use "3".
-> > 
-> > i'm not sure you want to totally remove those first two lines, they
-> > appear to talk about getting to run level 1 *from a running system*.
+On 02/07, Daniel Drake wrote:
+>
+> Oleg Nesterov wrote:
+> >cancel_rearming_delayed_workqueue(dwork) will hang forever if dwork was not
+> >scheduled, because in that case cancel_delayed_work()->del_timer_sync() 
+> >never
+> >returns true.
 > 
-> I think that it is refering to a kernel command line parameter,
-> not a shell command executed on a running system, so I think the patch
-> is correct in that respect.
+> Thanks! We hit this problem before with the zd1211rw driver and avoided 
+> using cancel_rearming_delayed_workqueue() for this reason.
 
-Agree with removing the "init" word.  A single digit is assumed by the kernel
-to be the run level.
+Great. But I am afraid my changelog was incomplete. This patch only fixes
+the cancel_rearming_delayed_workqueue(freshly_initialized_dwork) lockup.
 
-Also, given the variability of those values, leave the current documentation
-at levels 1 and 3.
+The following code
 
-BTW, the "init" keyword, *with* a value, specifies an alternate init process
-binary, e.g,, the default is "init=/sbin/init"
+	schedule_delayed_work(dw);
+	cancel_rearming_delayed_workqueue(dw);	// OK
+	cancel_rearming_delayed_workqueue(dw);	// HANGS!
 
--- 
-David N. Lombard, Intel, Irvine, CA
-I do not speak for Intel Corporation; all comments are strictly my own.
+still doesn't work.
+
+Is it worth fixing? The fix is very simple, and probably makes sense by
+itself:
+
+	cancel_delayed_work:
+
+	-	work_release(&work->work);
+	+	work->work.data = NULL;
+
+Oleg.
+
