@@ -1,42 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161449AbXBGWEg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422778AbXBGWFv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161449AbXBGWEg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Feb 2007 17:04:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422778AbXBGWEg
+	id S1422778AbXBGWFv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Feb 2007 17:05:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422816AbXBGWFu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Feb 2007 17:04:36 -0500
-Received: from [212.12.190.117] ([212.12.190.117]:32958 "EHLO raad.intranet"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1161449AbXBGWEf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Feb 2007 17:04:35 -0500
-From: Al Boldi <a1426z@gawab.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: [GIT PATCH] ACPI patches for 2.6.21
-Date: Thu, 8 Feb 2007 00:55:33 +0300
-User-Agent: KMail/1.5
+	Wed, 7 Feb 2007 17:05:50 -0500
+Received: from terminus.zytor.com ([192.83.249.54]:50613 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422778AbXBGWFu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Feb 2007 17:05:50 -0500
+Message-ID: <45CA4D32.6010302@zytor.com>
+Date: Wed, 07 Feb 2007 14:05:38 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070102)
 MIME-Version: 1.0
-Content-Disposition: inline
-Content-Type: text/plain;
-  charset="us-ascii"
+To: Andrew Morton <akpm@osdl.org>
+CC: Tilman Schmidt <tilman@imap.cc>, linux-kernel@vger.kernel.org
+Subject: Re: where to maintain userspace daemon for line discipline
+References: <45AE507E.3040601@imap.cc> <20070122115644.b538908f.akpm@osdl.org>
+In-Reply-To: <20070122115644.b538908f.akpm@osdl.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <200702080055.33939.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Len Brown wrote:
-> ACPICA Core version 2070126 simplifies the ACPI table manager
-> code by consolidating multiple table definitions into one.
-> It also saves memory by mapping the tables where the BIOS provides them
-> rather than copying them into the kernel.
+Andrew Morton wrote:
+>>
+>> Is there an appropriate place in or near the kernel tree for
+>> stuff like that?
+> 
+> Nope.  The requirement arises regularly.
+> 
+> util-linux would seem to be a suitable place, but apparently there
+> are, umm, isues surrounding that.
 
-Thanks for the update, but does it fix the ISA VGA STR-regression in 2.6.20?
+util-linux-ng is already going, so it's a good place.
 
-Also, is there some dependency that requires a display card to be present for 
-STR to work?
-
-
-Thanks!
-
---
-Al
-
+	-hpa
