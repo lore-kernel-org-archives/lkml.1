@@ -1,49 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422933AbXBGT44@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422910AbXBGT53@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422933AbXBGT44 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Feb 2007 14:56:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422910AbXBGTzn
+	id S1422910AbXBGT53 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Feb 2007 14:57:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422760AbXBGTzA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Feb 2007 14:55:43 -0500
-Received: from ns1.suse.de ([195.135.220.2]:39809 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161435AbXBGTza (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Feb 2007 14:55:30 -0500
-From: Andreas Gruenbacher <agruen@suse.de>
-Organization: SuSE Labs, Novell
-To: Jeff Mahoney <jeffm@suse.de>
-Subject: Re: [RFC 0/28] Patches to pass vfsmount to LSM inode security hooks
-Date: Wed, 7 Feb 2007 11:55:06 -0800
-User-Agent: KMail/1.9.5
-Cc: Chris Wright <chrisw@sous-sol.org>, Stephen Smalley <sds@tycho.nsa.gov>,
-       Christoph Hellwig <hch@infradead.org>, Tony Jones <tonyj@suse.de>,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, viro@zeniv.linux.org.uk
-References: <20070205182213.12164.40927.sendpatchset@ermintrude.int.wirex.com> <20070207154332.GF10574@sequoia.sous-sol.org> <45C9FD8C.7020502@suse.de>
-In-Reply-To: <45C9FD8C.7020502@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200702071155.07295.agruen@suse.de>
+	Wed, 7 Feb 2007 14:55:00 -0500
+Received: from [198.99.130.12] ([198.99.130.12]:34296 "EHLO
+	saraswathi.solana.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1422906AbXBGTy5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Feb 2007 14:54:57 -0500
+Message-Id: <200702071947.l17Jlc5a006595@ccure.user-mode-linux.org>
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.0.4
+To: akpm@osdl.org
+cc: linux-kernel@vger.kernel.org, user-mode-linux-devel@lists.sourceforge.net
+Subject: [PATCH 0/7] UML - Locking commentary and cleanups
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Date: Wed, 07 Feb 2007 14:47:37 -0500
+From: Jeff Dike <jdike@addtoit.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 07 February 2007 08:25, Jeff Mahoney wrote:
-> Chris Wright wrote:
-> > * Andreas Gruenbacher (agruen@suse.de) wrote:
-> >> Reiserfs currently only marks the ".reiserfs_priv" directory as private,
-> >> but not the files below it -- how about the attached patch to fix that?
-> >
-> > I don't think that's right.  Look at ->create or ->lookup.  Both of those
-> > properly set the private flag.  This patch looks like a step backwards,
-> > sprinkling the init in so many places.
->
-> Yeah, this is exactly what happens. The flag is purposely only set once,
-> and then is inherited up the tree.
+These patches are 2.6.21 material - they are mostly comments and code tidying
+with a few small bug fixes.
 
-That's much better. I take back the patch; sorry I overlooked that.
+				Jeff
 
-Thanks,
-Andreas
