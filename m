@@ -1,56 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030522AbXBGBPd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030245AbXBGBWI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030522AbXBGBPd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 20:15:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030518AbXBGBPc
+	id S1030245AbXBGBWI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 20:22:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030510AbXBGBWI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 20:15:32 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:58094 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030510AbXBGBPa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 20:15:30 -0500
-Date: Tue, 6 Feb 2007 17:15:09 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Neil Brown <neilb@suse.de>
-Cc: "Kai" <epimetreus@fastmail.fm>, stable@suse.de, org@suse.de,
-       linux-kernel@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [PATCH] Re: Bio device too big | kernel BUG at
- mm/filemap.c:537!
-Message-Id: <20070206171509.f92e0ed2.akpm@linux-foundation.org>
-In-Reply-To: <17865.3776.511594.763544@notabene.brown>
-References: <1170734919.15636.1173102761@webmail.messagingengine.com>
-	<20070205203750.7be7f772.akpm@linux-foundation.org>
-	<17864.4339.925700.626157@notabene.brown>
-	<17865.3776.511594.763544@notabene.brown>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 6 Feb 2007 20:22:08 -0500
+Received: from nf-out-0910.google.com ([64.233.182.191]:46578 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030245AbXBGBWF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Feb 2007 20:22:05 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=og0r2Qf5SEz0jSA/mEY9QivDCGl/0nwRMtc5k/FdwZk5vfkEfD2Kgyj+QsctzOqOxR/435wKfbA5edIp2OGt7C13OK5oVL6MFR6ozFyb0o+YtYS6uvRnFMyPlAwu9nw1R1Lt9NrU6g9LeiwzB2xYvVLrXrUH/mY3em8QDQa0W2s=
+Message-ID: <6f703f960702061722h3987c6fev1a330c3d954bccc8@mail.gmail.com>
+Date: Tue, 6 Feb 2007 16:22:04 -0900
+From: "Kent Overstreet" <kent.overstreet@gmail.com>
+To: "Linus Torvalds" <torvalds@linux-foundation.org>
+Subject: Re: [PATCH 2 of 4] Introduce i386 fibril scheduling
+Cc: "Davide Libenzi" <davidel@xmailserver.org>,
+       "Zach Brown" <zach.brown@oracle.com>, "Ingo Molnar" <mingo@elte.hu>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       linux-aio@kvack.org, "Suparna Bhattacharya" <suparna@in.ibm.com>,
+       "Benjamin LaHaise" <bcrl@kvack.org>
+In-Reply-To: <Pine.LNX.4.64.0702061500270.8424@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <patchbomb.1170193181@tetsuo.zabbo.net>
+	 <Pine.LNX.4.64.0702051121420.14453@alien.or.mcafeemobile.com>
+	 <8CF4BE18-8EEF-4ACA-A4B4-B627ED3B4831@oracle.com>
+	 <Pine.LNX.4.64.0702051147100.14453@alien.or.mcafeemobile.com>
+	 <Pine.LNX.4.64.0702051223390.8424@woody.linux-foundation.org>
+	 <Pine.LNX.4.64.0702051259030.14453@alien.or.mcafeemobile.com>
+	 <6f703f960702051331v3ceab725h68aea4cd77617f84@mail.gmail.com>
+	 <Pine.LNX.4.64.0702061238300.8424@woody.linux-foundation.org>
+	 <6f703f960702061445q23dd9d48q7afec75d2400ef62@mail.gmail.com>
+	 <Pine.LNX.4.64.0702061500270.8424@woody.linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 7 Feb 2007 10:26:56 +1100
-Neil Brown <neilb@suse.de> wrote:
+On 2/6/07, Linus Torvalds <torvalds@linux-foundation.org> wrote:
+> On Tue, 6 Feb 2007, Kent Overstreet wrote:
+> >
+> > The "struct aiocb" isn't something you have to or necessarily want to
+> > keep around.
+>
+> Oh, don't get me wrong - the _only_ reason for "struct aiocb" would be
+> backwards compatibility. The point is, we'd need to keep that
+> compatibility to be useful - otherwise we just end up having to duplicate
+> the work (do _both_ fibrils _and_ the in-kernel AIO).
 
-> +static int bio_fits_rdev(struct bio *bi)
-> +{
-> +	request_queue_t *q = bdev_get_queue(bi->bi_bdev);
-> +
-> +	if ((bi->bi_size>>9) > q->max_sectors)
-> +		return 0;
-> +	blk_recount_segments(q, bi);
-> +	if (bi->bi_phys_segments > q->max_phys_segments ||
-> +	    bi->bi_hw_segments > q->max_hw_segments)
-> +		return 0;
-> +
-> +	if (q->merge_bvec_fn)
-> +		/* it's too hard to apply the merge_bvec_fn at this stage,
-> +		 * just just give up
-> +		 */
-> +		return 0;
-> +
-> +	return 1;
-> +}
+Bah, I was unclear here, sorry. I was talking about the userspace interface.
 
-Isn't think going to return 0 rather a lot of the time?
+Right now, with the aio interface, io_submit passes in an array of
+pointers to struct iocb; there's nothing that says the kernel will be
+done with the structs when io_submit returns, so while userspace is
+free to reuse the array of pointers, it can't free the actual iocbs
+until they complete.
 
+This is slightly stupid, for a couple reasons, and if we're making a
+new pair of sycalls it'd be better to do it slightly differently.
+
+What you want is for the async_submit syscall (or whatever it's
+called) to pass in an array of structs, and for the kernel to not
+reference them after async_submit returns. This is easy; after
+async_submit returns, each syscall in the array is either completed
+(if it could be without blocking), or in progress, and there's no
+reason to need the arguments again.
+
+It also means that the kernel has to copy in only a single userspace
+buffer, instead of one buffer per syscall; as Joel mentions, there are
+plenty of apps that will be doing 1000s of syscalls at once. From a
+userspace perspective it's awesome, it simplifies coding for it and
+means you have to hit the heap that much less.
