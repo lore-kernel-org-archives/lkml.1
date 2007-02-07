@@ -1,65 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161453AbXBGWVx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161273AbXBGWWH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161453AbXBGWVx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Feb 2007 17:21:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161273AbXBGWVx
+	id S1161273AbXBGWWH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Feb 2007 17:22:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161455AbXBGWWG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Feb 2007 17:21:53 -0500
-Received: from web52902.mail.yahoo.com ([206.190.49.12]:26233 "HELO
-	web52902.mail.yahoo.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1422918AbXBGWVv (ORCPT
+	Wed, 7 Feb 2007 17:22:06 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:40575 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161273AbXBGWWF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Feb 2007 17:21:51 -0500
-X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Wed, 07 Feb 2007 17:21:50 EST
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=OXiKTxwYtmOJwT5u/GrEyBKEdCf4uDDkP9qImHZniA/mbaoSXhjjmIiUJX4qR3LDZMtdJxrPGPzsEfqmP4JtjKj4jgRZJHTitYDH177idHsjIIcyarJocfnc2qVwCEFhxnf7cRczo4ozd9sXIscPi77KfSzz4PmfdzCOROS7IT4=;
-X-YMail-OSG: Ez009UYVM1mhDqAWIlzvopOqYIcQ.RTwX4WZA5JftPQSXz8pp_mkr6vrYvbw6.k4Acwl5isa6..fvm5jgAiXO9VJnNgjPRW5lroaKpv2J0yGcrcYonSYIBmoPJKKREr19_uqqmVyXU752kFZnAiNPsDlng--
-Date: Wed, 7 Feb 2007 14:15:08 -0800 (PST)
-From: Simon White <sidplay2@yahoo.com>
-Subject: Multiple virtual bus instances
-To: linux-kernel@vger.kernel.org
+	Wed, 7 Feb 2007 17:22:05 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Stephen Smalley <sds@tycho.nsa.gov>
+Cc: Andrew Morton <akpm@osdl.org>, Ingo Molnar <mingo@elte.hu>,
+       tglx@linutronix.de, linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov,
+       jmorris@namei.org
+Subject: Re: [PATCH 2/2] sysctl: Restore the selinux path based label lookup for sysctls.
+References: <200701280106.l0S16CG3019873@shell0.pdx.osdl.net>
+	<20070127172410.2b041952.akpm@osdl.org>
+	<1169972718.17469.164.camel@localhost.localdomain>
+	<20070128003549.2ca38dc8.akpm@osdl.org>
+	<20070128093358.GA2071@elte.hu> <20070128095712.GA6485@elte.hu>
+	<20070128100627.GA8416@elte.hu>
+	<20070128104548.a835d859.akpm@osdl.org>
+	<m1r6tfq7nv.fsf_-_@ebiederm.dsl.xmission.com>
+	<1170075866.8720.15.camel@moss-spartans.epoch.ncsc.mil>
+	<m17iuvrnpk.fsf_-_@ebiederm.dsl.xmission.com>
+	<m13b5jrngt.fsf_-_@ebiederm.dsl.xmission.com>
+	<1170872654.11912.87.camel@moss-spartans.epoch.ncsc.mil>
+	<1170882738.11912.144.camel@moss-spartans.epoch.ncsc.mil>
+	<1170885244.11912.168.camel@moss-spartans.epoch.ncsc.mil>
+Date: Wed, 07 Feb 2007 15:21:02 -0700
+In-Reply-To: <1170885244.11912.168.camel@moss-spartans.epoch.ncsc.mil>
+	(Stephen Smalley's message of "Wed, 07 Feb 2007 16:54:04 -0500")
+Message-ID: <m17iutobht.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <883291.79449.qm@web52902.mail.yahoo.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Stephen Smalley <sds@tycho.nsa.gov> writes:
 
-I've been working through trying to create a virtual
-bus.  I've
-successfuly made it work for a single instance but
-wanted to
-confirm how to create multiple instances of the
-virtual bus.  I
-believe to do this you have only one instance of your
-new
-bus_type registered but register multiple instances of
-struct
-device for it.  I just wanted to confirm that was
-correct.
+> Actually, on further inspection, it looks like the real issue is the
+> "path" name generation; "cat /proc/sys/kernel/modprobe" yields a call to
+> security_genfs_sid() with just "/modprobe" rather than the expected
+> "/sys/kernel/modprobe".  Which likewise leaves us with the generic proc
+> label, just as with the inode permission check, so I end up seeing
+> checks against it only.
 
-Lastly how do you walk over all devices on a bus
-instance?  I
-note bus_for_each_dev but that appears to take a
-bus_type
-rather than struct device instance, hence I assume it
-will return
-all devices from all instances.  I know I could
-compare each
-device to see if it is on a certain bus instance but
-wondered if
-there was a better way?
+Ok.  It looks like two silly thing are going on here.
+I failed to register the root sysctl table, so none of the parent
+pointers got set.
 
-Regards,
-Simon
+I didn't prepend /sys in the compatibility code, so for something with
+the parent pointers set you would have gotten "/kernel/modprobe" instead
+of /sys/kernel/modprobe"
 
+Sorry about that.
 
+I think the patch below will fix it.
+
+Eric
+
+diff --git a/include/linux/sysctl.h b/include/linux/sysctl.h
+index 24f36f1..f316854 100644
+--- a/include/linux/sysctl.h
++++ b/include/linux/sysctl.h
+@@ -929,8 +929,6 @@ extern struct ctl_table_header *sysctl_head_next(struct ctl_table_header *prev);
+ extern void sysctl_head_finish(struct ctl_table_header *prev);
+ extern int sysctl_perm(struct ctl_table *table, int op);
  
-____________________________________________________________________________________
-Don't get soaked.  Take a quick peak at the forecast
-with the Yahoo! Search weather shortcut.
-http://tools.search.yahoo.com/shortcuts/#loc_weather
+-extern void sysctl_init(void);
+-
+ typedef struct ctl_table ctl_table;
+ 
+ typedef int ctl_handler (ctl_table *table, int __user *name, int nlen,
+diff --git a/kernel/sysctl.c b/kernel/sysctl.c
+index 0a5499f..0bb2c5f 100644
+--- a/kernel/sysctl.c
++++ b/kernel/sysctl.c
+@@ -1241,6 +1241,14 @@ static void sysctl_set_parent(struct ctl_table *parent, struct ctl_table *table)
+ 	}
+ }
+ 
++static __init int sysctl_init(void)
++{
++	sysctl_set_parent(NULL, root_table);
++	return 0;
++}
++
++core_initcall(sysctl_init);
++
+ /**
+  * register_sysctl_table - register a sysctl hierarchy
+  * @table: the top-level table structure
+diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
+index c17a8dd..aad2697 100644
+--- a/security/selinux/hooks.c
++++ b/security/selinux/hooks.c
+@@ -1452,6 +1452,12 @@ static int selinux_sysctl_get_sid(ctl_table *table, u16 tclass, u32 *sid)
+ 		path = end;
+ 		table = table->parent;
+ 	}
++	buflen -= 4;
++	if (buflen < 0)
++		goto out_free;
++	end -= 4;
++	memcpy(end, "/sys", 4);
++	path = end;
+ 	rc = security_genfs_sid("proc", path, tclass, sid);
+ out_free:
+ 	free_page((unsigned long)buffer);
