@@ -1,51 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161051AbXBGJEc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030500AbXBGJMX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161051AbXBGJEc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Feb 2007 04:04:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161047AbXBGJEb
+	id S1030500AbXBGJMX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Feb 2007 04:12:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161047AbXBGJMW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Feb 2007 04:04:31 -0500
-Received: from ns2.suse.de ([195.135.220.15]:39425 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030597AbXBGJEa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Feb 2007 04:04:30 -0500
-From: Andreas Gruenbacher <agruen@suse.de>
-Organization: SuSE Labs, Novell
-To: Christoph Hellwig <hch@infradead.org>, viro@zeniv.linux.org.uk
-Subject: Re: [RFC 0/28] Patches to pass vfsmount to LSM inode security hooks
-Date: Wed, 7 Feb 2007 01:04:24 -0800
-User-Agent: KMail/1.9.5
-Cc: Tony Jones <tonyj@suse.de>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, chrisw@sous-sol.org,
-       linux-security-module@vger.kernel.org
-References: <20070205182213.12164.40927.sendpatchset@ermintrude.int.wirex.com> <200702051813.26958.agruen@suse.de> <20070206095231.GD5328@infradead.org>
-In-Reply-To: <20070206095231.GD5328@infradead.org>
+	Wed, 7 Feb 2007 04:12:22 -0500
+Received: from mis011-2.exch011.intermedia.net ([64.78.21.129]:10860 "EHLO
+	mis011-2.exch011.intermedia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1030500AbXBGJMV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Feb 2007 04:12:21 -0500
+Message-ID: <45C997F1.9060102@qumranet.com>
+Date: Wed, 07 Feb 2007 11:12:17 +0200
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070130)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Ingo Molnar <mingo@elte.hu>
+CC: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org
+Subject: Re: [patch] KVM, hotplug: export register_cpu_notifier
+References: <20070207081633.GA6723@elte.hu>
+In-Reply-To: <20070207081633.GA6723@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200702070104.24450.agruen@suse.de>
+X-OriginalArrivalTime: 07 Feb 2007 09:12:20.0882 (UTC) FILETIME=[127A0720:01C74A98]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 06 February 2007 01:52, Christoph Hellwig wrote:
-> On Mon, Feb 05, 2007 at 06:13:26PM -0800, Andreas Gruenbacher wrote:
-> > On Monday 05 February 2007 10:44, Christoph Hellwig wrote:
-> > > Looking at the actual patches I see you're lazy in a lot of places.
-> > > Please make sure that when you introduce a vfsmount argument somewhere
-> > > that it is _always_ passed and not just when it's conveniant.  Yes,
-> > > that's more work, but then again if you're not consistant anyone
-> > > half-serious will laught at a security model using this infrasturcture.
-> >
-> > It may appear like laziness, but it's not. Let's look at where we're
-> > passing NULL at the moment:
+Ingo Molnar wrote:
+> Subject: [patch] KVM, hotplug: export register_cpu_notifier
+> From: Ingo Molnar <mingo@elte.hu>
 >
-> You know, I've tracked a lot of this down previously when I submitted
-> patches to add vfsmount arguments to the vfs_ helpers, just to get tought
-> by Al that this is a bad idea :)
+> KVM-trunk uses register_cpu_notifier() but it's a module and we only 
+> export this if CONFIG_HOTPLUG_CPU. Export it otherwise too.
+>
+> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> ---
+>  kernel/cpu.c |    4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+>
+> Index: linux/kernel/cpu.c
+> ===================================================================
+> --- linux.orig/kernel/cpu.c
+> +++ linux/kernel/cpu.c
+> @@ -75,10 +75,10 @@ int __cpuinit register_cpu_notifier(stru
+>  	return ret;
+>  }
+>  
+> -#ifdef CONFIG_HOTPLUG_CPU
+> -
+>  EXPORT_SYMBOL(register_cpu_notifier);
+>  
+> +#ifdef CONFIG_HOTPLUG_CPU
+> +
+>  void unregister_cpu_notifier(struct notifier_block *nb)
+>  {
+>  	mutex_lock(&cpu_add_remove_lock);
+>   
 
-Hmmm, I really would like to know how else we could get at that information in 
-the lsm hooks then.
+This is broken: register_cpu_notifier() is __cpuinit, which means it 
+disappears at module time if !CONFIG_CPU_HOTPLUG.
 
-Andreas
+I submitted a hackaround to Andrew some time ago with the suspend patchset.
+
+-- 
+Do not meddle in the internals of kernels, for they are subtle and quick to panic.
+
