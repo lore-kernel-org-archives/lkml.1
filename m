@@ -1,53 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030299AbXBGWxH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161475AbXBGXDk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030299AbXBGWxH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Feb 2007 17:53:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422807AbXBGWxH
+	id S1161475AbXBGXDk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Feb 2007 18:03:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161477AbXBGXDk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Feb 2007 17:53:07 -0500
-Received: from mga06.intel.com ([134.134.136.21]:6588 "EHLO
-	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1030299AbXBGWxE (ORCPT
+	Wed, 7 Feb 2007 18:03:40 -0500
+Received: from rgminet01.oracle.com ([148.87.113.118]:47313 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161475AbXBGXDj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Feb 2007 17:53:04 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.13,297,1167638400"; 
-   d="scan'208"; a="194117277:sNHT110345767"
-Date: Wed, 7 Feb 2007 14:19:19 -0800
-From: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-To: mingo@elte.hu
-Cc: Ingo Molnar <mingo@elte.hu>, vatsa@in.ibm.com, clameter@sgi.com,
-       tglx@linutronix.de, arjan@linux.intel.com, linux-kernel@vger.kernel.org
-Subject: Re: [RFC] Patch: dynticks: idle load balancing
-Message-ID: <20070207141919.C19581@unix-os.sc.intel.com>
-References: <20061211155304.A31760@unix-os.sc.intel.com> <20061213224317.GA2986@elte.hu> <20061213231316.GA13849@elte.hu> <20061213150314.B12795@unix-os.sc.intel.com> <20061213233157.GA20470@elte.hu> <20061213151926.C12795@unix-os.sc.intel.com> <20061219201247.GA12648@elte.hu> <20061219131223.E23105@unix-os.sc.intel.com> <20070116113505.GA6294@elte.hu> <20070130135709.B32010@unix-os.sc.intel.com>
+	Wed, 7 Feb 2007 18:03:39 -0500
+Date: Wed, 7 Feb 2007 14:58:05 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Esben Nielsen <nielsen.esben@googlemail.com>
+Cc: Jeff Garzik <jeff@garzik.org>, Andrew Morton <akpm@osdl.org>,
+       linux-kernel@vger.kernel.org, netdev <netdev@vger.kernel.org>
+Subject: Re: [PATCH] Broken ArcNet com20020 pcmcia driver in 2.6.20
+Message-Id: <20070207145805.863a6039.randy.dunlap@oracle.com>
+In-Reply-To: <Pine.LNX.4.64.0702072315080.31566@frodo.shire>
+References: <Pine.LNX.4.64.0702071418440.31566@frodo.shire>
+	<45CA0373.5080508@oracle.com>
+	<Pine.LNX.4.64.0702072315080.31566@frodo.shire>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.0 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.2.5.1i
-In-Reply-To: <20070130135709.B32010@unix-os.sc.intel.com>; from suresh.b.siddha@intel.com on Tue, Jan 30, 2007 at 01:57:09PM -0800
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 30, 2007 at 01:57:09PM -0800, Siddha, Suresh B wrote:
-> Please let me know if you still see this issue with the latest -rt kernel.
+On Wed, 7 Feb 2007 23:24:21 +0100 (CET) Esben Nielsen wrote:
+
+> On Wed, 7 Feb 2007, Randy Dunlap wrote:
 > 
-> On Tue, Jan 16, 2007 at 12:35:05PM +0100, Ingo Molnar wrote:
-> > on the latest -rt kernel, when the dynticks load-balancer is enabled, 
-> > then a dual-core Core2 Duo test-system increases its irq rate from the 
-> > normal 15/17 per second to 300-400/sec - on a completely idle system(!). 
-> > Any idea what's going on? I'll disable the load balancer for now.
+> > Esben Nielsen wrote:
+> >>  Hi,
+> >>  I can not get my com20020 pcmcia driver to work as a module under 2.6.20.
+> >>  There is the build problem:
+> >
+> The relevant parts:
+> ...
+> CONFIG_ARCNET_COM20020=m
+> # CONFIG_ARCNET_COM20020_ISA is not set
+> # CONFIG_ARCNET_COM20020_PCI is not set
+> ...
+> CONFIG_ARCNET_COM20020_CS=m
 
-Ok. got time to look into this.
+Sorry about that.
 
-The answer is simple. load_balancing in the recent kernels is happening
-using SCHED_SOFTIRQ and in -rt tree that happens not in the idle process
-context but in the context of softirqd for SCHED_SOFTIRQ.
+> In this hiracy it is not nice for the com20020 module to check wether 
+> there are users for it. It breaks the direction of dependency. What if I 
+> first compile com20020 install it, and then decide I want one of the other
+> modules? Then would I have to recompile com20020 and reload it.
+> Therefore: Remove the check, do always export the symbols.
 
-This breaks the dynticks load balancer and also the regular idle load balancing
-too :(
+That's not the usual kernel way, but I'll leave it up to the netdev
+people.  (and net mailing list changed from linux-net to netdev)
 
-Am on to fixing the problem now :)
+An alternative patch is below.
+Thanks for your report and patch.
 
-thanks,
-suresh
+
+> As for actually testing: I have access to ArcNet hardware for 3 more 
+> weeks. Then I will start at a new job, where there is no ArcNet.
+
+> >> WARNING:  "com20020_found" [drivers/net/pcmcia/com20020_cs.ko] undefined!
+> >> WARNING:  "com20020_check" [drivers/net/pcmcia/com20020_cs.ko] undefined!
+> >>
+> >>  The solution:
+> >>  Always export com20020_found and com20020_check.
+> >>
+> >>  Esben
+> >>
+> >>   drivers/net/arcnet/com20020.c |    3 ---
+> >>   1 file changed, 3 deletions(-)
+> >>
+> >>  Index: linux-2.6.20/drivers/net/arcnet/com20020.c
+> >>  ===================================================================
+> >>  --- linux-2.6.20.orig/drivers/net/arcnet/com20020.c
+> >>  +++ linux-2.6.20/drivers/net/arcnet/com20020.c
+> >>  @@ -337,11 +337,8 @@ static void com20020_set_mc_list(struct
+> >>       }
+> >>   }
+> >>
+> >>  -#if defined(CONFIG_ARCNET_COM20020_PCI_MODULE) || \
+> >>  -    defined(CONFIG_ARCNET_COM20020_ISA_MODULE)
+> >>   EXPORT_SYMBOL(com20020_check);
+> >>   EXPORT_SYMBOL(com20020_found);
+> >>  -#endif
+> >>
+> >>   MODULE_LICENSE("GPL");
+---
+
+
+From: Randy Dunlap <randy.dunlap@oracle.com>
+
+Need to export com20020 symbols for com20020_cs also.
+
+WARNING:  "com20020_found" [drivers/net/pcmcia/com20020_cs.ko] undefined!
+WARNING:  "com20020_check" [drivers/net/pcmcia/com20020_cs.ko] undefined!
+
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ drivers/net/arcnet/com20020.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+--- linux-2620-work.orig/drivers/net/arcnet/com20020.c
++++ linux-2620-work/drivers/net/arcnet/com20020.c
+@@ -338,7 +338,8 @@ static void com20020_set_mc_list(struct 
+ }
+ 
+ #if defined(CONFIG_ARCNET_COM20020_PCI_MODULE) || \
+-    defined(CONFIG_ARCNET_COM20020_ISA_MODULE)
++    defined(CONFIG_ARCNET_COM20020_ISA_MODULE) || \
++    defined(CONFIG_ARCNET_COM20020_CS_MODULE)
+ EXPORT_SYMBOL(com20020_check);
+ EXPORT_SYMBOL(com20020_found);
+ #endif
+
