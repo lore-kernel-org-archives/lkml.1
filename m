@@ -1,139 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965656AbXBGG6M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965646AbXBGHLc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965656AbXBGG6M (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Feb 2007 01:58:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965653AbXBGG6M
+	id S965646AbXBGHLc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Feb 2007 02:11:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161014AbXBGHLb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Feb 2007 01:58:12 -0500
-Received: from colo.lackof.org ([198.49.126.79]:58029 "EHLO colo.lackof.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965656AbXBGG6L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Feb 2007 01:58:11 -0500
-Date: Tue, 6 Feb 2007 23:58:03 -0700
-From: Grant Grundler <grundler@parisc-linux.org>
-To: Manu Abraham <abraham.manu@gmail.com>
-Cc: Grant Grundler <grundler@parisc-linux.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz, greg@kroah.com
-Subject: Re: 2.6.20 PCI Cannot allocate resource region 2
-Message-ID: <20070207065803.GA15076@colo.lackof.org>
-References: <1a297b360702041709l3b0309c7y8fcd33df1d487889@mail.gmail.com> <20070206045528.GA4228@colo.lackof.org> <20070206050331.GB4228@colo.lackof.org> <20070205213339.80239a22.akpm@linux-foundation.org> <20070206084638.GB20752@colo.lackof.org> <1a297b360702060313n34a8f941oebf9f373630b070f@mail.gmail.com> <1a297b360702060352y3faa0f46i7c4a01499fae2eff@mail.gmail.com>
+	Wed, 7 Feb 2007 02:11:31 -0500
+Received: from outbound-cpk.frontbridge.com ([207.46.163.16]:6024 "EHLO
+	outbound1-cpk-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S965645AbXBGHLa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Feb 2007 02:11:30 -0500
+X-BigFish: V
+Subject: Re: [git patches] libata fixes
+From: Conke Hu <conke.hu@amd.com>
+Reply-To: conke.hu@amd.com
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Andrew Morton <akpm@osdl.org>, Linus Torvalds <torvalds@osdl.org>,
+       linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070202165842.GA6412@havoc.gtf.org>
+References: <20070202165842.GA6412@havoc.gtf.org>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Organization: AMD
+Date: Wed, 07 Feb 2007 15:11:57 +0800
+Message-Id: <1170832317.3787.20.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1a297b360702060352y3faa0f46i7c4a01499fae2eff@mail.gmail.com>
-X-Home-Page: http://www.parisc-linux.org/
-User-Agent: Mutt/1.5.9i
+X-Mailer: Evolution 2.8.0 (2.8.0-7.fc6) 
+X-OriginalArrivalTime: 07 Feb 2007 07:10:17.0699 (UTC) FILETIME=[0584FB30:01C74A87]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 06, 2007 at 03:52:47PM +0400, Manu Abraham wrote:
-> >attaching a dump of the regs (on 2.6.17.7) as well as the diff
+On Fri, 2007-02-02 at 11:58 -0500, Jeff Garzik wrote:
+> Brian and Tejun's patches fix really ugly bugs, Alan's are of less
+> importance
 > 
-> The device now works, used the demodulator driver alongwith the bridge 
-> driver.
-
-Ok - thanks for the dmesg output and log. I suspect you've already
-tried cycling power on the machine (If not, please do).
-I have no idea what M$ XP was doing that might "fix" the problem.
-
-I was just suspicious of our byte accesses to the same dword.
-To answer you previous question, it's possible that M$ only
-uses dword accesses. I don't know.
-
-> inlined the log
-
-excellent - sounds like you are making forward progress even
-if we can not reproduce the problem...worst case other users
-(or customers) have a "work around" :^/
-
-thanks,
-grant
-
-ps. I'll be unavailable until this weekend when I want to look at
-the old and new logs a bit more.
-
+> Please pull from 'upstream-linus' branch of
+> master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/libata-dev.git upstream-linus
 > 
-> regards,
-> manu
+> to receive the following updates:
 > 
+>  drivers/ata/libata-core.c  |    1 +
+>  drivers/ata/pata_atiixp.c  |   11 +++++++++--
+>  drivers/ata/pata_jmicron.c |   18 +++++-------------
+>  drivers/ata/pata_via.c     |    3 ++-
+>  drivers/pci/quirks.c       |    4 ++--
+>  include/linux/libata.h     |    2 ++
+>  6 files changed, 21 insertions(+), 18 deletions(-)
 > 
-> [17181623.040000] gpif status: 6000  irqcfg: 0000
-> [17181623.040000] irq: 18, latency: 64
-> [17181623.040000]  memory: 0xefeff000, mmio: 0xe18f4000
-> [17181623.040000] found a UNKNOWN PCI UNKNOWN device on (02:0a.0),
-> [17181623.040000]     Mantis Rev 1 [1822:0031], irq: 18, latency: 64
-> [17181623.040000]     memory: 0xefeff000, mmio: 0xe18f4000
-> [17181623.040000]         mantis_i2c_write: Address=[0x50] <W>[ 08 ]
-> [17181623.040000]         mantis_i2c_read:  Address=[0x50] <R>[ 00 00
-> 00 00 00 00 ]
-> [17181623.044000]     MAC Address=[00:00:00:00:00:00]
-> [17181623.044000] mantis_alloc_buffers (0): DMA=0x186b0000
-> cpu=0xd86b0000 size=65536
-> [17181623.044000] mantis_alloc_buffers (0): RISC=0x1c3af000
-> cpu=0xdc3af000 size=1000
-> [17181623.044000] DVB: registering new adapter (Mantis dvb adapter).
-> [17181623.564000] mantis_frontend_init (0): Probing for STB0899
-> (DVB-S/DSS/DVB-S2)
-> [17181623.564000] stb0899_write_regs [0xf1b6]: 02
-> [17181623.564000]         mantis_i2c_write: Address=[0x68] <W>[ f1 b6 02 ]
-> [17181623.564000] stb0899_write_regs [0xf1c2]: 00
-> [17181623.564000]         mantis_i2c_write: Address=[0x68] <W>[ f1 c2 00 ]
-> [17181623.568000] stb0899_write_regs [0xf1c3]: 00
-> [17181623.568000]         mantis_i2c_write: Address=[0x68] <W>[ f1 c3 00 ]
-> [17181623.568000]         mantis_i2c_write: Address=[0x68] <W>[ f0 00 ]
-> [17181623.568000]         mantis_i2c_read:  Address=[0x68] <R>[ 82 ]
-> [17181623.568000] stb0899_read_reg: Reg=[0xf000], data=82
-> [17181623.568000] stb0899_get_dev_id: Device ID=[8], Release=[2]
-> [17181623.568000]         mantis_i2c_write: Address=[0x68] <W>[ f3 fc
-> 00 04 00 00 ]
-> [17181623.572000]         mantis_i2c_write: Address=[0x68] <W>[ f3 34 ]
-> [17181623.572000]         mantis_i2c_read:  Address=[0x68] <R>[ 31 44 4d 44 
-> ]
-> [17181623.572000]         mantis_i2c_write: Address=[0x68] <W>[ f3 34 ]
-> [17181623.572000]         mantis_i2c_read:  Address=[0x68] <R>[ 31 44 4d 44 
-> ]
-> [17181623.576000] stb0899_read_s2reg Device=[0xf3fc], Base
-> address=[0x00000400], Offset=[0xf334], Data=[0x444d4431]
-> [17181623.576000]         mantis_i2c_write: Address=[0x68] <W>[ f3 fc
-> 00 04 00 00 ]
-> [17181623.576000]         mantis_i2c_write: Address=[0x68] <W>[ f3 00 ]
-> [17181623.576000]         mantis_i2c_read:  Address=[0x68] <R>[ 01 00 00 00 
-> ]
-> [17181623.580000]         mantis_i2c_write: Address=[0x68] <W>[ f3 3c ]
-> [17181623.580000]         mantis_i2c_read:  Address=[0x68] <R>[ 01 00 00 00 
-> ]
-> [17181623.580000] stb0899_read_s2reg Device=[0xf3fc], Base
-> address=[0x00000400], Offset=[0xf33c], Data=[0x00000001]
-> [17181623.580000] stb0899_get_dev_id: Demodulator Core ID=[DMD1], 
-> Version=[1]
-> [17181623.580000]         mantis_i2c_write: Address=[0x68] <W>[ fa fc
-> 00 08 00 00 ]
-> [17181623.584000]         mantis_i2c_write: Address=[0x68] <W>[ fa 00 ]
-> [17181623.584000]         mantis_i2c_read:  Address=[0x68] <R>[ 4c 00 00 00 
-> ]
-> [17181623.588000]         mantis_i2c_write: Address=[0x68] <W>[ fa 2c ]
-> [17181623.588000]         mantis_i2c_read:  Address=[0x68] <R>[ 31 43 45 46 
-> ]
-> [17181623.588000] stb0899_read_s2reg Device=[0xfafc], Base
-> address=[0x00000800], Offset=[0xfa2c], Data=[0x46454331]
-> [17181623.588000]         mantis_i2c_write: Address=[0x68] <W>[ fa fc
-> 00 08 00 00 ]
-> [17181623.592000]         mantis_i2c_write: Address=[0x68] <W>[ fa 34 ]
-> [17181623.592000]         mantis_i2c_read:  Address=[0x68] <R>[ 01 00 00 00 
-> ]
-> [17181623.592000]         mantis_i2c_write: Address=[0x68] <W>[ fa 34 ]
-> [17181623.592000]         mantis_i2c_read:  Address=[0x68] <R>[ 01 00 00 00 
-> ]
-> [17181623.596000] stb0899_read_s2reg Device=[0xfafc], Base
-> address=[0x00000800], Offset=[0xfa34], Data=[0x00000001]
-> [17181623.596000] stb0899_get_dev_id: FEC Core ID=[FEC1], Version=[1]
-> [17181623.596000] stb0899_attach: Attaching STB0899
-> [17181623.596000] mantis_frontend_init (0): found STB0899
-> DVB-S/DSS/DVB-S2 frontend @0x68
-> [17181623.596000] mantis_frontend_init (0): Probing for STB6100 tuner
-> [17181623.596000] stb6100_attach: Attaching
-> [17181623.596000] mantis_frontend_init (0): found STB6100 tuner @0x60
-> [17181623.596000] mantis_frontend_init (0): Probing for LNBP21 SEC
-> [17181623.596000]         mantis_i2c_write: Address=[0x08] <W>[ 40 ]
-> [17181623.596000] DVB: registering frontend 0 (STB0899 Multistandard)...
+> Alan (3):
+>       pata_atiixp: propogate cable detection hack from drivers/ide to the new driver
+>       pata_via: Correct missing comments
+>       libata: Fix ata_busy_wait() kernel docs
+> 
+> Brian King (1):
+>       libata: Initialize nbytes for internal sg commands
+> 
+> Tejun Heo (1):
+>       ahci/pata_jmicron: fix JMicron quirk
+> 
+> diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
+> index cf70702..667acd2 100644
+> --- a/drivers/ata/libata-core.c
+> +++ b/drivers/ata/libata-core.c
+> @@ -1250,6 +1250,7 @@ unsigned ata_exec_internal_sg(struct ata_device *dev,
+>  
+>  		ata_sg_init(qc, sg, n_elem);
+>  		qc->nsect = buflen / ATA_SECT_SIZE;
+> +		qc->nbytes = buflen;
+>  	}
+>  
+>  	qc->private_data = &wait;
+> diff --git a/drivers/ata/pata_atiixp.c b/drivers/ata/pata_atiixp.c
+> index 6f6672c..504e1db 100644
+> --- a/drivers/ata/pata_atiixp.c
+> +++ b/drivers/ata/pata_atiixp.c
+> @@ -36,15 +36,22 @@ enum {
+>  static int atiixp_pre_reset(struct ata_port *ap)
+>  {
+>  	struct pci_dev *pdev = to_pci_dev(ap->host->dev);
+> -	static struct pci_bits atiixp_enable_bits[] = {
+> +	static const struct pci_bits atiixp_enable_bits[] = {
+>  		{ 0x48, 1, 0x01, 0x00 },
+>  		{ 0x48, 1, 0x08, 0x00 }
+>  	};
+> +	u8 udma;
+>  
+>  	if (!pci_test_config_bits(pdev, &atiixp_enable_bits[ap->port_no]))
+>  		return -ENOENT;
+>  
+> -	ap->cbl = ATA_CBL_PATA80;
+> +	/* Hack from drivers/ide/pci. Really we want to know how to do the
+> +	   raw detection not play follow the bios mode guess */
+> +	pci_read_config_byte(pdev, ATIIXP_IDE_UDMA_MODE + ap->port_no, &udma);
+> +	if ((udma & 0x07) >= 0x04 || (udma & 0x70) >= 0x40)
+> +		ap->cbl = ATA_CBL_PATA80;
+> +	else
+> +		ap->cbl = ATA_CBL_PATA40;
+>  	return ata_std_prereset(ap);
+>  }
+> (snip)
+>  
+
+Alan's patch is also important. Thank you :)
+
+Without the patch, OS on 40-pin cable maybe get IDE DMA error (CRC
+error, system hang, or even data crash).
+
+Conke
+
+
