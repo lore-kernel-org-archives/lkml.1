@@ -1,108 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161300AbXBGNlG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161302AbXBGNui@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161300AbXBGNlG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Feb 2007 08:41:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161299AbXBGNlF
+	id S1161302AbXBGNui (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Feb 2007 08:50:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161303AbXBGNui
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Feb 2007 08:41:05 -0500
-Received: from mail14.messagelabs.com ([212.125.75.19]:57913 "HELO
-	mail14.messagelabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1161300AbXBGNlE (ORCPT
+	Wed, 7 Feb 2007 08:50:38 -0500
+Received: from caffeine.uwaterloo.ca ([129.97.134.17]:51927 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1161302AbXBGNuh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Feb 2007 08:41:04 -0500
-X-VirusChecked: Checked
-X-Env-Sender: martyn.welch@radstone.co.uk
-X-Msg-Ref: server-11.tower-14.messagelabs.com!1170855662!59910!1
-X-StarScan-Version: 5.5.10.7.1; banners=radstone.co.uk,-,-
-X-Originating-IP: [193.130.116.242]
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-Subject: alloc_bootmem - Kernel panic
-Date: Wed, 7 Feb 2007 13:41:02 -0000
-Message-ID: <F38DEABE0E171746B133C1ABBD142D97063253D0@radmail.Radstone.Local>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: alloc_bootmem - Kernel panic
-Thread-Index: AcdKvZvcBNPbqGZNTRKeXbvyZl7MtA==
-From: "Martyn Welch" <martyn.welch@radstone.co.uk>
-To: <linux-kernel@vger.kernel.org>
+	Wed, 7 Feb 2007 08:50:37 -0500
+Date: Wed, 7 Feb 2007 08:50:36 -0500
+To: Sunil Naidu <akula2.shark@gmail.com>
+Cc: Akemi Yagi <amyagi@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: Free Linux Driver Development!
+Message-ID: <20070207135036.GJ7584@csclub.uwaterloo.ca>
+References: <20070130012904.GA9617@kroah.com> <ada8xfks90x.fsf@cisco.com> <20070130191020.GF20642@kroah.com> <20070131011340.GP3754@stusta.de> <20070131012428.GA31759@kroah.com> <20070131021431.GR3754@stusta.de> <20070205094947.GA32384@suse.de> <8355959a0702060537jbd96e96sc10772f72f9491b3@mail.gmail.com> <pan.2007.02.06.21.14.43.802992@gmail.com> <8355959a0702070533r73332e2enfdef9ee7edd24fb@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <8355959a0702070533r73332e2enfdef9ee7edd24fb@mail.gmail.com>
+User-Agent: Mutt/1.5.9i
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Everyone,
+On Wed, Feb 07, 2007 at 07:03:26PM +0530, Sunil Naidu wrote:
+> Yep, still floppies are useful. Example, when we buy a new device
+> (driver) with a floppy (sometimes by manufacturer). Plus, from the
+> customer (not user) POV, what's wrong in spending another $10 for a
+> FDD in a typical $1000 PC? Makes sense right ;-)
 
-First I'd like to appologise if my query is glaringly obvious. I'm
-reasonable new to this, but every that I have read (including the Linux
-Device Drivers book) seems to suggest that what I am doing should
-work...
+Well certainly anyone with windows that needed a driver for their sata
+controller better have a floppy drive (well apparenly vista now knows
+about these amazing things called usb and optical drives... :).  I also
+find them handy as an emergency grub boot method, although I guess most
+new machines could boot that from cd if necesary.
 
-I am attempting to allocate a large buffer for DMA transfers in a driver
-I am working on. I understand that the kernel normally will not allocate
-block of coherent memory larger than 128KB, the suggested solution seems
-to be to compile the driver into the kernel and allocate memory at boot
-using alloc_bootmem. When attempting this I receive a kernel panic:
+Personally I just stick in a $25 floppy and usb memory card reader in
+one.  Very handy, and doesn't waste space that way.
 
-=========================================
-
-Loading driver.
-bootmem alloc of 4096 bytes failed!
-Kernel panic - not syncing: Out of memory
-
-=========================================
-This is using:
-
-kernel version 2.6.20
-gcc version 4.1.1 20070105 (Red Hat 4.1.1-51)
-
-The config is based on the default i386 config + one extra option to
-cause my driver to be compiled in.
-
-The offending code is listed below,
-
-Thank you for any help in advance,
-
-Martyn
-
-=========================================
-
-#include <linux/version.h>
-#include <linux/kernel.h>
-#include <linux/module.h>
-#include <linux/init.h>
-#include <linux/bootmem.h>
-
-void *buffer;
-
-static int __init universeII_init(void)
-{
-        printk(KERN_INFO "Loading driver.\n");
-
-        buffer = alloc_bootmem(PAGE_SIZE);
-
-        return 0;
-
-}
-
-
-static void __exit universeII_exit(void)
-{
-        if (buffer != NULL) {
-                free_bootmem((unsigned long)buffer, PAGE_SIZE);
-        }
-        printk(KERN_INFO "Driver removed.\n");
-}
-
-
-MODULE_DESCRIPTION("alloc_bootmem_x Test");
-MODULE_AUTHOR("Martyn Welch <martyn.welch@radstone.co.uk>");
-MODULE_LICENSE("GPL");
-
-/** Register initilisation function */
-module_init(universeII_init);
-/** Register cleanup function */
-module_exit(universeII_exit);
-
-
-________________________________________________________________________
-This e-mail has been scanned for all viruses by Star.The service is powered by MessageLabs. 
-________________________________________________________________________
+--
+Len Sorensen
