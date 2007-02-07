@@ -1,47 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161443AbXBGWCX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422885AbXBGWDJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161443AbXBGWCX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Feb 2007 17:02:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161453AbXBGWCX
+	id S1422885AbXBGWDJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Feb 2007 17:03:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422816AbXBGWDI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Feb 2007 17:02:23 -0500
-Received: from hancock.steeleye.com ([71.30.118.248]:58020 "EHLO
-	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1161443AbXBGWCW (ORCPT
+	Wed, 7 Feb 2007 17:03:08 -0500
+Received: from wr-out-0506.google.com ([64.233.184.231]:37717 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422885AbXBGWDG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Feb 2007 17:02:22 -0500
-Subject: Re: [PATCH 4/5] scsi: megaraid_sas - preallocate memory for ioctl
-	processing
-From: James Bottomley <James.Bottomley@SteelEye.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Sumant Patro <sumantp@lsil.com>, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, neela.kolli@lsi.com, bo.yang@lsi.com,
-       sumant.patro@lsi.com
-In-Reply-To: <20070207133020.4c58e271.akpm@linux-foundation.org>
-References: <1170800394.10482.41.camel@dumbo>
-	 <20070207133020.4c58e271.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Wed, 07 Feb 2007 17:02:13 -0500
-Message-Id: <1170885734.3852.30.camel@mulgrave.il.steeleye.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
+	Wed, 7 Feb 2007 17:03:06 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=WoNeuTpnUOJkP1Jfuco86MXMHEoII5iCCCi6GlxCa8nBqm2Y0S5X0FRrcnqoJMnPW+YY9rGeYbFyeDx6vCuN4R3YhsBWEwb4Sk62oZ3t/cyJ8leTARbpPw4HSqNgqxfGMPjxfgEoLVnxsJPdTiV1PrxXXVhaA7BM+P35meQofaQ=
+Message-ID: <6bffcb0e0702071403v767681edk2179fdb968b57e5a@mail.gmail.com>
+Date: Wed, 7 Feb 2007 23:03:04 +0100
+From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: mm snapshot broken-out-2007-02-06-16-59.tar.gz uploaded
+Cc: linux-kernel@vger.kernel.org, "Cedric Le Goater" <clg@fr.ibm.com>
+In-Reply-To: <45CA0065.80705@fr.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200702070059.l170xPY0002614@shell0.pdx.osdl.net>
+	 <45CA0065.80705@fr.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-02-07 at 13:30 -0800, Andrew Morton wrote:
-> I suspect all this horror is due to stupidity in the DMA API.
-> 
-> pci_alloc_consistent() just goes and assumes GFP_ATOMIC, whereas
-> the caller (megasas_mgmt_fw_ioctl) would have been perfectly happy
-> to use GFP_KERNEL.
-> 
-> I bet this fixes it
+Hi Andrew,
 
-It does, but the DMA API was expanded to cope with this exact case, so
-use dma_alloc_coherent() directly in the megaraid code instead.  The dev
-is just &pci_dev->dev.
+On 07/02/07, Cedric Le Goater <clg@fr.ibm.com> wrote:
+> akpm@linux-foundation.org wrote:
+> > The mm snapshot broken-out-2007-02-06-16-59.tar.gz has been uploaded to
+> >
+> >    ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/mm/broken-out-2007-02-06-16-59.tar.gz
+>
+> I'm having download issues : wrong modes :(
+>
+> ftp.kernel.org:/pub/linux/kernel/people/akpm/mm> ls
+> ...
+> -rw-rw-r--    1 536      536           248 Jan 28 08:31 broken-out-2007-01-28-00-31.tar.gz.sign
+> -rw-rw-r--    1 536      536           248 Jan 28 08:31 broken-out-2007-01-28-00-31.tar.sign
+> -rw-r-----    1 536      536       4065035 Feb 07 00:59 broken-out-2007-02-06-16-59.tar.bz2
+> -rw-r-----    1 536      536           248 Feb 07 00:59 broken-out-2007-02-06-16-59.tar.bz2.sign
+> -rw-r-----    1 536      536       5000290 Feb 07 00:59 broken-out-2007-02-06-16-59.tar.gz
+> -rw-r-----    1 536      536           248 Feb 07 00:59 broken-out-2007-02-06-16-59.tar.gz.sign
+> -rw-r-----    1 536      536           248 Feb 07 00:59 broken-out-2007-02-06-16-59.tar.sign
+>
 
-James
+I still can't wget it...
 
+Can you upload a new snapshot (broken-out-2007-02-06-16-59 + latest
+80+ patches)?
 
+Regards,
+Michal
+
+-- 
+Michal K. K. Piotrowski
+LTG - Linux Testers Group
+(http://www.stardust.webpages.pl/ltg/)
