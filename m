@@ -1,98 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965617AbXBGCq5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965239AbXBGCt0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965617AbXBGCq5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 21:46:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965620AbXBGCq5
+	id S965239AbXBGCt0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 21:49:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965632AbXBGCt0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 21:46:57 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.158]:29334 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965617AbXBGCq5 (ORCPT
+	Tue, 6 Feb 2007 21:49:26 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:40175 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965239AbXBGCtZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 21:46:57 -0500
-Subject: Re: 2.6.20-rc6-mm3
-From: Daniel Walker <dwalker@mvista.com>
-Reply-To: dwalker@mvista.com
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Andrew Morton <akpm@osdl.org>,
+	Tue, 6 Feb 2007 21:49:25 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Etienne Lorrain <etienne_lorrain@yahoo.fr>, vgoyal@in.ibm.com,
        linux-kernel@vger.kernel.org
-In-Reply-To: <20070206235102.GC21969@elte.hu>
-References: <20070206214131.GA1176@elte.hu>
-	 <1170798879.3455.58.camel@dwalker1> <20070206220855.GB5109@elte.hu>
-	 <1170801742.3455.87.camel@dwalker1> <20070206225650.GA14853@elte.hu>
-	 <1170803070.3455.93.camel@dwalker1> <20070206231421.GA18654@elte.hu>
-	 <1170804177.3455.109.camel@dwalker1> <20070206232828.GA21969@elte.hu>
-	 <1170804903.3455.121.camel@dwalker1>  <20070206235102.GC21969@elte.hu>
-Content-Type: text/plain
-Date: Tue, 06 Feb 2007 18:46:55 -0800
-Message-Id: <1170816415.3455.193.camel@dwalker1>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
-Content-Transfer-Encoding: 7bit
+Subject: Re: Re : Re : Re : Re : [PATCH] Compressed ia32 ELF file generation for loading by Gujin 1/3
+References: <965140.82745.qm@web26914.mail.ukl.yahoo.com>
+	<45C9246F.9050300@zytor.com>
+Date: Tue, 06 Feb 2007 19:48:43 -0700
+In-Reply-To: <45C9246F.9050300@zytor.com> (H. Peter Anvin's message of "Tue,
+	06 Feb 2007 16:59:27 -0800")
+Message-ID: <m14ppyr8c4.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I guess I will respond ....
+"H. Peter Anvin" <hpa@zytor.com> writes:
 
-On Wed, 2007-02-07 at 00:51 +0100, Ingo Molnar wrote:
-> * Daniel Walker <dwalker@mvista.com> wrote:
-> 
-> > > | If we change the current "timer" entry to be listed as 
-> > > | "lapic-timer" and not "IO-APIC-edge" (or one of the other names) 
-> > > | and replace it with the count from LOC
-> > > 
-> > > this is a pretty clear sentence, i dont think i misunderstood 
-> > > anything about it. If i did, please point it out specifically.
-> > 
-> > Geez , man I've corrected this statement already .. [...]
-> 
-> i'm sorry, but where did you "correct this statement already"? You 
-> havent replied to your mail to correct it explicitly, and there's no 
-> later statement of yours that says anything near to "let me correct this 
-> via X" or "i was wrong here, i meant Y".
+> Etienne Lorrain wrote:
+>> H. Peter Anvin wrote:
+>>> I've long wished that someone would do a proper 16-bit x86 port of gcc;
+>>
+>>> however, the .code16gcc is usually good enough, although it produces code
+>>> which is a lot bigger than it needs to be.
+>>
+>>   It is only that much bigger if you compare to 16 bits integer compilers,
+>>  but once you deal with 32 bits integers in real mode you have one extra byte
+>>  out of the two - which is still better than dealing with dx:ax.
+>>
+>>  Last time I compiled (long time ago) some piece of code with and without
+>>  .code16gcc it was approx 15% bigger - approx what you get when optimising.
+>>
+>
+> That's not a valid comparison, because you're using 32-bit registers to hold
+> 16-bit pointers, and then sticking 67 prefixes on completely unnecessarily.
 
-I know that you see corrections as responses to your own email, but it's
-not universal .. Everyone has their own methodology, AFAIK it's free
-form ..
+Regardless if the size is good enough we can use it :)
 
-> the only subsequent reference of yours seems to be:
-> 
-> | I'm not saying we should "fake" anything .. I'm saying list what's 
-> | really happening .. In a human readable way .
-> 
-> what you write here does not read as a 'correction', this disputes my 
-> characterisation, suggesting that your original point is still intact. 
-> How should i have known that you meant this to be a 'correction' of your 
-> original point, and that this (whatever it means precisely) replaces it?
-> 
-> if you concede a point or correct a statement then /please/ make it 
-> clear. There's nothing bad about being wrong or being stupid 
-> occasionally, it happens to all of us.
+For romcc I had a 3x code bloat over had crafted assembler, because I
+had no memory and had to inline every single function call because I
+didn't have someplace to put a return register.  So I have the
+scenario with the most code bloat.  I win!
 
-I don't take a literal approach to email, which you seem to be taking ..
-I think your seeing this thread as an argument for or against something
-and you have taken a position which you diligently stick to..
-
-My position is not fixed. However, your arguing as if my position was
-fixed. My perspective of this thread was not to argue for a specific
-change, but to throw out changes and see if anything stuck ..
-
-Where my statements were suppose to be loose to begin with, so loose as
-to only spark the start of an idea, not to promote something specific.
-If you read the start of the thread you'll notice that I gave Thomas two
-totally opposite ideas.
-
-"We could just remove the timer entry."
-or
-"[..]how about adding the interrupts to the list which are driving the
-timer ?"
-
-When I started the thread I had a similar position as Thomas, but I was
-concerned that I was missing something or the code was missing
-something.. This was the reason for starting the thread ..
-
-So I'll gladly concede all points. To me it wasn't about the argument,
-or even my own ideas ..
-
-Daniel
-
+Eric
