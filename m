@@ -1,51 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161427AbXBGUhi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161121AbXBGUho@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161427AbXBGUhi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Feb 2007 15:37:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161425AbXBGUhi
+	id S1161121AbXBGUho (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Feb 2007 15:37:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161431AbXBGUhk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Feb 2007 15:37:38 -0500
-Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:4489 "EHLO
-	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161427AbXBGUhg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Feb 2007 15:37:36 -0500
-From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-To: Alan <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH] pata_acpi: take two
-Date: Wed, 7 Feb 2007 21:38:02 +0100
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org, akpm@osdl.org, jeff@garzik.org
-References: <20070207172220.04c96dc5@localhost.localdomain>
-In-Reply-To: <20070207172220.04c96dc5@localhost.localdomain>
+	Wed, 7 Feb 2007 15:37:40 -0500
+Received: from mx2.suse.de ([195.135.220.15]:50306 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161422AbXBGUhW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Feb 2007 15:37:22 -0500
+Date: Wed, 7 Feb 2007 12:36:06 -0800
+From: Greg KH <greg@kroah.com>
+To: Chuck Ebbert <cebbert@redhat.com>
+Cc: Josh Boyer <jwboyer@gmail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@stusta.de>
+Subject: Re: How many people are using 2.6.16?
+Message-ID: <20070207203605.GA19675@kroah.com>
+References: <45BE5948.6060403@redhat.com> <625fc13d0701291235m48742e77mdce0b3678ce6a104@mail.gmail.com> <45BE5B52.7050608@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200702072138.03167.m.kozlowski@tuxland.pl>
+In-Reply-To: <45BE5B52.7050608@redhat.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Mon, Jan 29, 2007 at 03:38:42PM -0500, Chuck Ebbert wrote:
+> Josh Boyer wrote:
+> > On 1/29/07, Chuck Ebbert <cebbert@redhat.com> wrote:
+> >> Is there any way to estimate the size of the user base for 2.6.16?
+> >>
+> >> e.g. how many downloads does it get?
+> >
+> > Are you including distros that use it as well?
+> >
+> 
+> Yes, if they're based on Adrian's stable series.
 
-	Just asking ... in:
-
-> +static void *ata_pata_find_handle(struct device *dev, int port)
-
-...
-
-> +       chan_handle = acpi_get_child(handle, port);
-> +       if (chan_handle == NULL)
-> +               return NULL;
-> +       return chan_handle;
-> +}
-
-why not simply:
-
-	return acpi_get_child(hadnle, port);
-
-?
-
-Regards,
-
-	Mariusz Kozlowski
+SLES 10 is based on it.  So there's a few thousand users for ya :)
