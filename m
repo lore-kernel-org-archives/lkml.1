@@ -1,59 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422686AbXBGS3t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422691AbXBGSaV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422686AbXBGS3t (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Feb 2007 13:29:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422677AbXBGS3t
+	id S1422691AbXBGSaV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Feb 2007 13:30:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422695AbXBGSaV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Feb 2007 13:29:49 -0500
-Received: from mail7.sea5.speakeasy.net ([69.17.117.9]:35420 "EHLO
-	mail7.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422675AbXBGS3s (ORCPT
+	Wed, 7 Feb 2007 13:30:21 -0500
+Received: from web38504.mail.mud.yahoo.com ([209.191.125.50]:44463 "HELO
+	web38504.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1422693AbXBGSaT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Feb 2007 13:29:48 -0500
-Message-ID: <45CA1A99.3060202@freedesktop.org>
-Date: Wed, 07 Feb 2007 10:29:45 -0800
-From: Josh Triplett <josh@freedesktop.org>
-User-Agent: Icedove 1.5.0.9 (X11/20061220)
+	Wed, 7 Feb 2007 13:30:19 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=31/WVLwlrylFe0cyjOZSM8Krm47gTJhqyDKa6UFoNrppBZG3xvD3Q65bCo3dhXsLAJl9xEs0L3JAYyevIbG6lBajNI/aY3oXzHF6obb92VjoMu+62oJQt7coHzSz+6dsm3ClKMkc554/Xc0501UCl26Kdw0WJm5IZZ9zSIcPWuw=;
+X-YMail-OSG: XUTa1x0VM1ldqQE_j_KWIpptBihI7KIro3c02ttS
+Date: Wed, 7 Feb 2007 10:30:17 -0800 (PST)
+From: Levitsky Maxim <maximlevitsky@yahoo.com>
+Subject: [PATCH] [NETDEV] [002] dmfe : Fix possible oops
+To: linux-kernel@vger.kernel.org
+Cc: tori@unhappy.mine.nu, netdev@vger.kernel.org
 MIME-Version: 1.0
-To: "Ahmed S. Darwish" <darwish.07@gmail.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2.6.20] rcutorture: Use ARRAY_SIZE macro when appropriate
-References: <20070206160806.GL8991@Ahmed>
-In-Reply-To: <20070206160806.GL8991@Ahmed>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig1AB964744DD557BCBF981B18"
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+Message-ID: <38301.22381.qm@web38504.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig1AB964744DD557BCBF981B18
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+From: Maxim Levitsky <maximlevitsky@yahoo.com>
+Subject: [PATCH] [NET] [002] dmfe : Fix possible oops
 
-Ahmed S. Darwish wrote:
-> Signed-off-by: Ahmed S. Darwish <darwish.07@gmail.com>
+Deallocate memory after driver is unregistred to prevent oops
+Don't dereference NULL pointer that can be returned by dev_alloc_skb in case of oom
 
-Thanks.  I've applied to my local tree, and I'll push it out shortly alon=
-g
-with some other cleanup patches.
+Signed-off-by: Maxim Levitsky <maximlevitsky@yahoo.com>
 
-- Josh Triplett
+---
+
+--- linux-2.6.20-mod/drivers/net/tulip/dmfe.c   2007-02-07 18:27:07.000000000 +0200
++++ linux-2.6.20-test/drivers/net/tulip/dmfe.c  2007-02-07 18:27:59.000000000 +0200
+@@ -497,13 +497,16 @@ static void __devexit dmfe_remove_one (s
+        DMFE_DBUG(0, "dmfe_remove_one()", 0);
+ 
+        if (dev) {
++               
++               unregister_netdev(dev);
++               pci_release_regions(pdev);
++               
++               
+                pci_free_consistent(db->pdev, sizeof(struct tx_desc) *
+                                        DESC_ALL_CNT + 0x20, db->desc_pool_ptr,
+                                        db->desc_pool_dma_ptr);
+                pci_free_consistent(db->pdev, TX_BUF_ALLOC * TX_DESC_CNT + 4,
+                                        db->buf_pool_ptr, db->buf_pool_dma_ptr);
+-               unregister_netdev(dev);
+-               pci_release_regions(pdev);
+                free_netdev(dev);       /* free board information */
+                pci_set_drvdata(pdev, NULL);
+        }
+@@ -921,7 +924,7 @@ static inline u32 cal_CRC(unsigned char 
+ static void dmfe_rx_packet(struct DEVICE *dev, struct dmfe_board_info * db)
+ {
+        struct rx_desc *rxptr;
+-       struct sk_buff *skb;
++       struct sk_buff *skb, *newskb;
+        int rxlen;
+        u32 rdes0;
+ 
+@@ -974,8 +977,10 @@ static void dmfe_rx_packet(struct DEVICE
+                                        /* Good packet, send to upper layer */
+                                        /* Shorst packet used new SKB */
+                                        if ( (rxlen < RX_COPY_SIZE) &&
+-                                               ( (skb = dev_alloc_skb(rxlen + 2) )
++                                               ( (newskb = dev_alloc_skb(rxlen + 2) )
+                                                != NULL) ) {
++                                               
++                                               skb = newskb;
+                                                /* size less than COPY_SIZE, allocate a rxlen SKB
+*/
+                                                skb->dev = dev;
+                                                skb_reserve(skb, 2); /* 16byte align */
 
 
---------------enig1AB964744DD557BCBF981B18
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iD8DBQFFyhqZGJuZRtD+evsRAqk/AJ4ySkr6KHLbhqB5soSVWd/P1gMGSgCgr5yJ
-2XCtyC+83Ne7HmaCHnDWJ/g=
-=wKTc
------END PGP SIGNATURE-----
-
---------------enig1AB964744DD557BCBF981B18--
+ 
+____________________________________________________________________________________
+8:00? 8:25? 8:40? Find a flick in no time 
+with the Yahoo! Search movie showtime shortcut.
+http://tools.search.yahoo.com/shortcuts/#news
