@@ -1,83 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422786AbXBGVVd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422801AbXBGVZA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422786AbXBGVVd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Feb 2007 16:21:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422794AbXBGVVd
+	id S1422801AbXBGVZA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Feb 2007 16:25:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422808AbXBGVZA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Feb 2007 16:21:33 -0500
-Received: from lx1.pxnet.com ([195.227.45.3]:60862 "EHLO lx1.pxnet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422786AbXBGVVc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Feb 2007 16:21:32 -0500
-Date: Wed, 7 Feb 2007 22:21:07 +0100
-Message-Id: <200702072121.l17LL7Wn000193@lx1.pxnet.com>
-From: Tilman Schmidt <tilman@imap.cc>
-Subject: [PATCH] drivers/isdn/gigaset: reduce mutex scope
-To: Andrew Morton <akpm@osdl.org>, Karsten Keil <kkeil@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       i4ldeveloper@listserv.isdn4linux.de
-CC: Hansjoerg Lipp <hjlipp@web.de>
+	Wed, 7 Feb 2007 16:25:00 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:51424 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422801AbXBGVY7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Feb 2007 16:24:59 -0500
+Message-ID: <45CA42A7.4030305@oracle.com>
+Date: Wed, 07 Feb 2007 13:20:39 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
+MIME-Version: 1.0
+To: Thibaud Hulin <hulin.thibaud@wanadoo.fr>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [patch] Re: error 2 after a compile
+References: <45C8DE76.5000109@wanadoo.fr> <20070206121027.0a38e6ad.randy.dunlap@oracle.com> <45CA40F0.10808@wanadoo.fr>
+In-Reply-To: <45CA40F0.10808@wanadoo.fr>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Do not lock the cardstate structure mutex earlier than necessary.
+Thibaud Hulin wrote:
+> Thanks. Before seeing your message, I erase the line with this module in 
+> the .config, and if worked. However, I must recompile it, because I 
+> forgot someting for suspend2.
+> I'd like install your patch. But how can I do it ? Have you join a patch 
+> sched.h ?
 
-Signed-off-by: Tilman Schmidt <tilman@imap.cc>
+Just apply the patch and rebuild the kernel.
+Or edit drivers/usb/atm/ueagle-atm.c and add that one line
+and then rebuild the kernel.
 
----
+Applying patches is covered somewhat in the README file at the
+top-level of the kernel source tree and more in the file
+Documentation/applying-patches.txt .  A quick summary is:
 
- drivers/isdn/gigaset/common.c    |    4 +---
- drivers/isdn/gigaset/interface.c |    3 +++
- 3 files changed, 4 insertions(+), 3 deletions(-)
+save the patch from the email as ueagle.patch
 
-diff -rupX dont-diff linux-2.6.20-rc6-mm3-orig/drivers/isdn/gigaset/common.c local/drivers/isdn/gigaset/common.c
---- linux-2.6.20-rc6-mm3-orig/drivers/isdn/gigaset/common.c	2007-02-01 01:24:38.000000000 +0100
-+++ local/drivers/isdn/gigaset/common.c	2007-02-01 01:09:51.000000000 +0100
-@@ -640,7 +640,6 @@ struct cardstate *gigaset_initcs(struct 
- 		return NULL;
- 	}
- 	mutex_init(&cs->mutex);
--	mutex_lock(&cs->mutex);
- 
- 	gig_dbg(DEBUG_INIT, "allocating bcs[0..%d]", channels - 1);
- 	cs->bcs = kmalloc(channels * sizeof(struct bc_state), GFP_KERNEL);
-@@ -738,6 +737,7 @@ struct cardstate *gigaset_initcs(struct 
- 
- 	++cs->cs_init;
- 
-+	/* set up character device */
- 	gigaset_if_init(cs);
- 
- 	/* set up device sysfs */
-@@ -753,11 +753,9 @@ struct cardstate *gigaset_initcs(struct 
- 	add_timer(&cs->timer);
- 
- 	gig_dbg(DEBUG_INIT, "cs initialized");
--	mutex_unlock(&cs->mutex);
- 	return cs;
- 
- error:
--	mutex_unlock(&cs->mutex);
- 	gig_dbg(DEBUG_INIT, "failed");
- 	gigaset_freecs(cs);
- 	return NULL;
-diff -rupX dont-diff linux-2.6.20-rc6-mm3-orig/drivers/isdn/gigaset/interface.c local/drivers/isdn/gigaset/interface.c
---- linux-2.6.20-rc6-mm3-orig/drivers/isdn/gigaset/interface.c	2007-02-01 01:24:38.000000000 +0100
-+++ local/drivers/isdn/gigaset/interface.c	2007-02-01 01:10:47.000000000 +0100
-@@ -615,6 +615,8 @@ void gigaset_if_init(struct cardstate *c
- 		return;
- 
- 	tasklet_init(&cs->if_wake_tasklet, &if_wake, (unsigned long) cs);
-+
-+	mutex_lock(&cs->mutex);
- 	cs->tty_dev = tty_register_device(drv->tty, cs->minor_index, NULL);
- 
- 	if (!IS_ERR(cs->tty_dev))
-@@ -623,6 +625,7 @@ void gigaset_if_init(struct cardstate *c
- 		warn("could not register device to the tty subsystem");
- 		cs->tty_dev = NULL;
- 	}
-+	mutex_unlock(&cs->mutex);
- }
- 
- void gigaset_if_free(struct cardstate *cs)
+cd linux-2.6.19
+patch -p1 < ~/ueagle.patch
+re-enable the config option if it is still disabled
+make all
+
+
+> Randy Dunlap a écrit :
+>> On Tue, 06 Feb 2007 21:00:54 +0100 Thibaud Hulin wrote:
+>>
+>>> Hello !
+>>> I'm trying to compile a kernel from 2.6.17-10 to 2.6.19 with suspend2.
+>>> After this command :
+>>> make-kpkg --append-to-version=swsusp2.070206 kernel_image --initrd 
+>>> kernel_headers --revision=2.6.1
+>>>
+>>> I obtain :
+>>>   Building modules, stage 2.
+>>>    MODPOST 1479 modules
+>>> WARNING: Can't handle masks in drivers/ide/pci/atiixp:FFFF05
+>>> WARNING: "try_to_freeze" [drivers/usb/atm/ueagle-atm.ko] undefined!
+>>> make[2]: *** [__modpost] Erreur 1
+>>> make[1]: *** [modules] Erreur 2
+>>> make[1]: quittant le répertoire « /home/hulin/src/linux-2.6.19 »
+>>> make: *** [debian/stamp-build-kernel] Erreur 2
+>>>
+>>> I don't understand the error ?
+>>
+>>
+>> The driver is missing #include <linux/sched.h>.
+>> Please try the patch below and report back on it.
+>> ---
+>>
+>> From: Randy Dunlap <randy.dunlap@oracle.com>
+>>
+>> Driver needs sched.h for try_to_freeze().
+>>
+>> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+>> ---
+>>  drivers/usb/atm/ueagle-atm.c |    1 +
+>>  1 file changed, 1 insertion(+)
+>>
+>> --- linux-2619-pv.orig/drivers/usb/atm/ueagle-atm.c
+>> +++ linux-2619-pv/drivers/usb/atm/ueagle-atm.c
+>> @@ -61,6 +61,7 @@
+>>  #include <linux/usb.h>
+>>  #include <linux/firmware.h>
+>>  #include <linux/ctype.h>
+>> +#include <linux/sched.h>
+>>  #include <linux/kthread.h>
+>>  #include <linux/version.h>
+>>  #include <linux/mutex.h>
+
+-- 
+~Randy
