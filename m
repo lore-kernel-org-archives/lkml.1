@@ -1,174 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161035AbXBGIzi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161045AbXBGI6P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161035AbXBGIzi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Feb 2007 03:55:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030600AbXBGIzi
+	id S1161045AbXBGI6P (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Feb 2007 03:58:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161046AbXBGI6P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Feb 2007 03:55:38 -0500
-Received: from ns1.suse.de ([195.135.220.2]:52084 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030578AbXBGIzg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Feb 2007 03:55:36 -0500
-From: Andreas Gruenbacher <agruen@suse.de>
-Organization: SuSE Labs, Novell
-To: Stephen Smalley <sds@tycho.nsa.gov>, Jeff Mahoney <jeffm@suse.de>
-Subject: Re: [RFC 0/28] Patches to pass vfsmount to LSM inode security hooks
-Date: Wed, 7 Feb 2007 00:55:10 -0800
-User-Agent: KMail/1.9.5
-Cc: Christoph Hellwig <hch@infradead.org>, Tony Jones <tonyj@suse.de>,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       chrisw@sous-sol.org, linux-security-module@vger.kernel.org,
-       viro@zeniv.linux.org.uk
-References: <20070205182213.12164.40927.sendpatchset@ermintrude.int.wirex.com> <200702051813.26958.agruen@suse.de> <1170766539.12293.370.camel@moss-spartans.epoch.ncsc.mil>
-In-Reply-To: <1170766539.12293.370.camel@moss-spartans.epoch.ncsc.mil>
+	Wed, 7 Feb 2007 03:58:15 -0500
+Received: from wr-out-0506.google.com ([64.233.184.235]:34276 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161045AbXBGI6N (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Feb 2007 03:58:13 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=aRx+eYLZSkYn3YYOwtn2aPi8PIyuH2G5PMo+947IRZHjW6Gb0Mc0UrqCL2imvJdSk1sKiNxO5TIn7Ges2LI9Yfx14Tnl+dXiw0aWmBSvsajT3GUKrKy8LM3cZ3e9INyibWa0lrJwfFnwlig2+ahrxuvYKWAzXSc9H1Hi2XxAGCI=
+Message-ID: <9a8748490702070058rab5a9d6vd57cf49b722e4850@mail.gmail.com>
+Date: Wed, 7 Feb 2007 09:58:12 +0100
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: "Oleg Verych" <olecom@flower.upol.cz>
+Subject: Re: [patch 1/3, resend] scripts: replace gawk, head, bc with shell, update
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Roman Zippel" <zippel@linux-m68k.org>,
+       "Sam Ravnborg" <sam@ravnborg.org>,
+       "William Stearns" <wstearns@pobox.com>,
+       "Martin Schlemmer" <azarah@nosferatu.za.org>
+In-Reply-To: <20070206012207.805083000@flower.upol.cz>
 MIME-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_uPZyFo7/DQLocWI"
-Message-Id: <200702070055.10856.agruen@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070206011819.160359000@flower.upol.cz>
+	 <20070206012207.805083000@flower.upol.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Boundary-00=_uPZyFo7/DQLocWI
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-On Tuesday 06 February 2007 04:55, Stephen Smalley wrote:
-> On Mon, 2007-02-05 at 18:13 -0800, Andreas Gruenbacher wrote:
-> > 	Reiserfs should probably just mark all its xattr inodes as private in
-> > order to play nicely with other lsms. As far as pathname based lsms are
-> > concerned, pathnames to those fs-internal objects are meaningless though,
-> > and so we pass NULL here.
+On 06/02/07, Oleg Verych <olecom@flower.upol.cz> wrote:
+> scripts: replace gawk, head, bc with shell, update
 >
-> That should be handled by the current marking of reiserfs xattr inodes
-> with S_PRIVATE and the tests for IS_PRIVATE in include/linux/security.h
-> (and in one instance, within SELinux itself).
+>   Replacing overhead of using some (external) programs
+>   instead of good old `sh'.
+>
+> Cc: Roman Zippel <zippel@linux-m68k.org>
+> Cc: Sam Ravnborg <sam@ravnborg.org>
+> Cc: William Stearns <wstearns@pobox.com>
+> Cc: Martin Schlemmer <azarah@nosferatu.za.org>
+> Signed-off-by: Oleg Verych <olecom@flower.upol.cz>
+> ---
+>
+>  Whitespace cleanup included.
+>
+>  scripts/gen_initramfs_list.sh | 43 +++++++++++++++++++++---------------------
+>  scripts/makelst               | 34 ++++++++++++++++-----------------
+>  2 files changed, 39 insertions(+), 38 deletions(-)
+>
+> Index: linux-2.6.20/scripts/makelst
+> ===================================================================
+> --- linux-2.6.20.orig/scripts/makelst   2007-02-06 02:12:38.811908000 +0100
+> +++ linux-2.6.20/scripts/makelst        2007-02-06 02:12:43.688212750 +0100
+> @@ -1,31 +1,31 @@
+> -#!/bin/bash
+> +#!/bin/sh
 
-Reiserfs currently only marks the ".reiserfs_priv" directory as private, but 
-not the files below it -- how about the attached patch to fix that?
+I don't like this change much.  We don't know what shell /bin/sh is on
+a random users system - much better to be explicit and make sure we
+use/require bash.
+I expect this change to cause pain for users who have zsh, csh, ksh,
+ash or some other shell as /bin/sh but also have /bin/bash available.
+Previously things would just work, but now it will possibly break due
+to using a different shell.
 
-Andreas
-
---Boundary-00=_uPZyFo7/DQLocWI
-Content-Type: text/x-diff;
-  charset="utf-8";
-  name="reiserfs-mark-xattrs-private.diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="reiserfs-mark-xattrs-private.diff"
-
-Fix reiserfs xattrs for selinux
-
-Mark all inodes used for reiserfs xattrs as private so that selinux
-(or any other LSM) will not try to mediate access to the files and
-directories used as the xattr backing store. The xattr operations
-are already protected through the xattr LSM hooks.
-
-There is no real reason for having reiserfs_mark_inode_private --
-remove it and directly mark the inodes as private.
-
-Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
-Cc: Jeff Mahoney <jeffm@suse.de>
-
-Index: b/fs/reiserfs/xattr.c
-===================================================================
---- a/fs/reiserfs/xattr.c
-+++ b/fs/reiserfs/xattr.c
-@@ -79,6 +79,7 @@ static struct dentry *create_xa_root(str
- 			dput(privroot);
- 			return ERR_PTR(err);
- 		}
-+		xaroot->d_inode->i_flags |= S_PRIVATE;
- 		REISERFS_SB(sb)->xattr_root = dget(xaroot);
- 	}
- 
-@@ -108,6 +109,7 @@ static struct dentry *__get_xa_root(stru
- 		goto out;
- 	}
- 
-+	xaroot->d_inode->i_flags |= S_PRIVATE;
- 	REISERFS_SB(s)->xattr_root = dget(xaroot);
- 
-       out:
-@@ -183,6 +185,7 @@ static struct dentry *open_xa_dir(const 
- 			return ERR_PTR(-ENODATA);
- 		}
- 	}
-+	xadir->d_inode->i_flags |= S_PRIVATE;
- 
- 	dput(xaroot);
- 	return xadir;
-@@ -235,6 +238,8 @@ static struct dentry *get_xa_file_dentry
- 	dput(xadir);
- 	if (err)
- 		xafile = ERR_PTR(err);
-+	else
-+		xafile->d_inode->i_flags |= S_PRIVATE;
- 	return xafile;
- }
- 
-@@ -715,6 +720,7 @@ __reiserfs_xattr_del(struct dentry *xadi
- 		err = -ENODATA;
- 		goto out_file;
- 	}
-+	dentry->d_inode->i_flags |= S_PRIVATE;
- 
- 	/* Skip directories.. */
- 	if (S_ISDIR(dentry->d_inode->i_mode))
-@@ -865,6 +871,7 @@ reiserfs_chown_xattrs_filler(void *buf, 
- 		dput(xafile);
- 		return -ENODATA;
- 	}
-+	xafile->d_inode->i_flags |= S_PRIVATE;
- 
- 	if (!S_ISDIR(xafile->d_inode->i_mode))
- 		err = notify_change(xafile, NULL, attrs);
-@@ -1289,7 +1296,7 @@ int reiserfs_xattr_init(struct super_blo
- 
- 		if (!err && dentry) {
- 			s->s_root->d_op = &xattr_lookup_poison_ops;
--			reiserfs_mark_inode_private(dentry->d_inode);
-+			dentry->d_inode->i_flags |= S_PRIVATE;
- 			REISERFS_SB(s)->priv_root = dentry;
- 		} else if (!(mount_flags & MS_RDONLY)) {	/* xattrs are unavailable */
- 			/* If we're read-only it just means that the dir hasn't been
-Index: b/include/linux/reiserfs_xattr.h
-===================================================================
---- a/include/linux/reiserfs_xattr.h
-+++ b/include/linux/reiserfs_xattr.h
-@@ -92,11 +92,6 @@ static inline void reiserfs_read_unlock_
- 	up_read(&REISERFS_I(inode)->xattr_sem);
- }
- 
--static inline void reiserfs_mark_inode_private(struct inode *inode)
--{
--	inode->i_flags |= S_PRIVATE;
--}
--
- static inline void reiserfs_init_xattr_rwsem(struct inode *inode)
- {
- 	init_rwsem(&REISERFS_I(inode)->xattr_sem);
-@@ -105,7 +100,6 @@ static inline void reiserfs_init_xattr_r
- #else
- 
- #define is_reiserfs_priv_object(inode) 0
--#define reiserfs_mark_inode_private(inode) do {;} while(0)
- #define reiserfs_getxattr NULL
- #define reiserfs_setxattr NULL
- #define reiserfs_listxattr NULL
-Index: b/fs/reiserfs/xattr_acl.c
-===================================================================
---- a/fs/reiserfs/xattr_acl.c
-+++ b/fs/reiserfs/xattr_acl.c
-@@ -336,7 +336,7 @@ reiserfs_inherit_default_acl(struct inod
- 	 * would be useless since permissions are ignored, and a pain because
- 	 * it introduces locking cycles */
- 	if (is_reiserfs_priv_object(dir)) {
--		reiserfs_mark_inode_private(inode);
-+		inode->i_flags |= S_PRIVATE;
- 		goto apply_umask;
- 	}
- 
-
---Boundary-00=_uPZyFo7/DQLocWI--
+-- 
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
