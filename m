@@ -1,175 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965693AbXBGSHI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965698AbXBGSHZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965693AbXBGSHI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Feb 2007 13:07:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965699AbXBGSHI
+	id S965698AbXBGSHZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Feb 2007 13:07:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965699AbXBGSHZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Feb 2007 13:07:08 -0500
-Received: from out5.smtp.messagingengine.com ([66.111.4.29]:39782 "EHLO
-	out5.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S965693AbXBGSHG (ORCPT
+	Wed, 7 Feb 2007 13:07:25 -0500
+Received: from rgminet01.oracle.com ([148.87.113.118]:11742 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965698AbXBGSHX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Feb 2007 13:07:06 -0500
-X-Sasl-enc: yFnSj9S9B3Ufw8bazWeToF4XCTpOb2CLym+K4oYyp2KT 1170871622
-Subject: Re: [autofs] Bad race condition in the new autofs protocol
-	somewhere
-From: Ian Kent <raven@themaw.net>
-To: Olivier Galibert <galibert@pobox.com>
-Cc: "Hack inc." <linux-kernel@vger.kernel.org>, autofs@linux.kernel.org
-In-Reply-To: <20070207173414.GA64492@dspnet.fr.eu.org>
-References: <20070207173414.GA64492@dspnet.fr.eu.org>
-Content-Type: text/plain
-Date: Thu, 08 Feb 2007 03:07:41 +0900
-Message-Id: <1170871661.3415.36.camel@raven.themaw.net>
+	Wed, 7 Feb 2007 13:07:23 -0500
+Date: Wed, 7 Feb 2007 10:03:39 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Levitsky Maxim <maximlevitsky@yahoo.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [NET] dmfe : number of fixes and features
+Message-Id: <20070207100339.2e4c4824.randy.dunlap@oracle.com>
+In-Reply-To: <131364.59702.qm@web38502.mail.mud.yahoo.com>
+References: <131364.59702.qm@web38502.mail.mud.yahoo.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.0 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-32.el5) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-02-07 at 18:34 +0100, Olivier Galibert wrote:
-> The setup:
->   /people is a NIS automount.  /people/gadda points to m179:/disk05/disk11/gadda
->   /hosts is a two-level automount, /hosts/xx/yy points to xx:/yy using:
-> 
-> in auto.master:
->   /hosts file:/etc/auto.hosts
-> 
-> in /etc/auto.hosts:
->   * -fstype=autofs,-Dhost=& file=/etc/auto.hosts.sub
-> 
-> in /etc/auto.hosts.sub:
->   * ${host}:/&
-> 
-> /people/gadda/normalisation is a symlink to /hosts/m179/disk03/gadda/lemonde
-> 
-> I have a small test program:
-> 
-> #include <stdio.h>
-> #include <stdlib.h>
-> #include <string.h>
-> #include <sys/time.h>
-> #include <sys/types.h>
-> #include <sys/stat.h>
-> #include <fcntl.h>
-> #include <time.h>
-> #include <unistd.h>
-> 
-> int main(void)
-> {
->   for(;;) {
->     struct timeval tv1, tv2;
->     struct timespec ts;
->     gettimeofday(&tv1, 0);
->     int fd = open("/people/gadda/normalisation/tempo4.general", O_RDONLY);
->     gettimeofday(&tv2, 0);
->     if(fd < 0)
->       printf("%d.%06d - %d.%06d failure\n", (int)tv1.tv_sec, (int)tv1.tv_usec, (int)tv2.tv_sec, (int)tv2.tv_usec);
->     else
->       close(fd);
-> 
->     ts.tv_sec = 0;
->     ts.tv_nsec = lrand48() % 100000;
->     nanosleep(&ts, 0);    
->   }
-> }
-> 
-> I.e. try opening an existing file "through" the symlink and the
-> automounts, give the time before and after the open syscall if it
-> fails.  Wait for a random time no more than 0.1s and try again.
-> 
-> Actually the random time is no more than 0.1ms, oops.  Whatever.
-> 
-> Then I start the automounter with a 1 second timeout, and I get random
-> failures.
-> 
-> 1170867758.212109 - 1170867758.222789 failure
-> 1170867758.668086 - 1170867758.678607 failure
-> 1170867760.007998 - 1170867760.057324 failure
-> 
-> The log from an extra-verbose, but otherwise unchanged, git-of-today
-> version of autofs is:
-> 
-> Feb  7 18:02:24 m78 automount[16532]: Starting automounter version 5.0.1-rc3, master map auto.master
-> Feb  7 18:02:24 m78 automount[16532]: using kernel protocol version 5.00
-> Feb  7 18:02:24 m78 automount[16532]: mounted indirect mount on /hosts with timeout 1, freq 1 seconds
-> Feb  7 18:02:24 m78 automount[16532]: mounted indirect mount on /people with timeout 1, freq 1 seconds
-> Feb  7 18:02:24 m78 automount[16532]: mounted indirect mount on /corpora with timeout 1, freq 1 seconds
-> Feb  7 18:02:24 m78 automount[16532]: mounted indirect mount on /w3 with timeout 1, freq 1 seconds
-> Feb  7 18:02:24 m78 automount[16532]: mounted indirect mount on /vol with timeout 1, freq 1 seconds
-> Feb  7 18:02:33 m78 automount[16532]: 1170867753.258726 got packet type 3
-> Feb  7 18:02:33 m78 automount[16532]: attempting to mount entry /people/gadda
-> Feb  7 18:02:33 m78 automount[16532]: mount(nfs): mounted m179:/disk05/disk11/gadda on /people/gadda
-> Feb  7 18:02:33 m78 automount[16532]: mounted /people/gadda
-> Feb  7 18:02:33 m78 automount[16532]: 1170867753.355598 got packet type 3
-> Feb  7 18:02:33 m78 automount[16532]: attempting to mount entry /hosts/m179
-> Feb  7 18:02:33 m78 automount[16532]: mounted indirect mount on /hosts/m179 with timeout 1, freq 1 seconds
-> Feb  7 18:02:33 m78 automount[16532]: mounted /hosts/m179
-> Feb  7 18:02:33 m78 automount[16532]: 1170867753.456997 got packet type 3
-> Feb  7 18:02:33 m78 automount[16532]: attempting to mount entry /hosts/m179/disk03
-> Feb  7 18:02:33 m78 automount[16532]: mount(nfs): mounted m179:/disk03 on /hosts/m179/disk03
-> Feb  7 18:02:33 m78 automount[16532]: mounted /hosts/m179/disk03
-> Feb  7 18:02:35 m78 automount[16532]: mount still busy /people
-> Feb  7 18:02:35 m78 automount[16532]: mount still busy /hosts/m179
-> Feb  7 18:02:36 m78 automount[16532]: mount still busy /hosts
-> Feb  7 18:02:37 m78 automount[16532]: mount still busy /people
-> Feb  7 18:02:38 m78 automount[16532]: 1170867758.212137 got packet type 4
-> Feb  7 18:02:38 m78 automount[16532]: 1170867758.212282 expiring path /people/gadda
-> Feb  7 18:02:38 m78 automount[16532]: 1170867758.212983 unmounting dir = /people/gadda
-> Feb  7 18:02:38 m78 automount[16532]: 1170867758.222742 expired /people/gadda
-> Feb  7 18:02:38 m78 automount[16532]: 1170867758.224147 got packet type 3
-> Feb  7 18:02:38 m78 automount[16532]: attempting to mount entry /people/gadda
-> Feb  7 18:02:38 m78 automount[16532]: mount(nfs): mounted m179:/disk05/disk11/gadda on /people/gadda
-> Feb  7 18:02:38 m78 automount[16532]: mounted /people/gadda
-> Feb  7 18:02:38 m78 automount[16532]: 1170867758.668221 got packet type 4
-> Feb  7 18:02:38 m78 automount[16532]: 1170867758.668379 expiring path /hosts/m179/disk03
-> Feb  7 18:02:38 m78 automount[16532]: 1170867758.669053 unmounting dir = /hosts/m179/disk03
-> Feb  7 18:02:38 m78 automount[16532]: 1170867758.678567 expired /hosts/m179/disk03
-> Feb  7 18:02:38 m78 automount[16532]: 1170867758.680159 got packet type 3
-> Feb  7 18:02:38 m78 automount[16532]: attempting to mount entry /hosts/m179/disk03
-> Feb  7 18:02:38 m78 automount[16532]: mount(nfs): mounted m179:/disk03 on /hosts/m179/disk03
-> Feb  7 18:02:38 m78 automount[16532]: mounted /hosts/m179/disk03
-> Feb  7 18:02:38 m78 automount[16532]: mount still busy /hosts/m179
-> Feb  7 18:02:39 m78 automount[16532]: mount still busy /people
-> Feb  7 18:02:39 m78 automount[16532]: mount still busy /hosts
-> Feb  7 18:02:40 m78 automount[16532]: 1170867760.004392 got packet type 4
-> Feb  7 18:02:40 m78 automount[16532]: 1170867760.004561 expiring path /people/gadda
-> Feb  7 18:02:40 m78 automount[16532]: 1170867760.005341 unmounting dir = /people/gadda
-> Feb  7 18:02:40 m78 automount[16532]: 1170867760.057275 expired /people/gadda
-> Feb  7 18:02:40 m78 automount[16532]: 1170867760.060045 got packet type 3
-> Feb  7 18:02:40 m78 automount[16532]: attempting to mount entry /people/gadda
-> Feb  7 18:02:40 m78 automount[16532]: mount(nfs): mounted m179:/disk05/disk11/gadda on /people/gadda
-> Feb  7 18:02:40 m78 automount[16532]: mounted /people/gadda
-> Feb  7 18:02:41 m78 automount[16532]: 1170867761.200013 got packet type 4
-> Feb  7 18:02:41 m78 automount[16532]: 1170867761.200177 expiring path /people/gadda
-> Feb  7 18:02:41 m78 automount[16532]: 1170867761.200877 unmounting dir = /people/gadda
-> Feb  7 18:02:41 m78 automount[16532]: 1170867761.210517 expired /people/gadda
-> Feb  7 18:02:41 m78 automount[16532]: 1170867761.687942 got packet type 4
-> Feb  7 18:02:41 m78 automount[16532]: 1170867761.688101 expiring path /hosts/m179/disk03
-> Feb  7 18:02:41 m78 automount[16532]: 1170867761.688816 unmounting dir = /hosts/m179/disk03
-> Feb  7 18:02:41 m78 automount[16532]: 1170867761.698293 expired /hosts/m179/disk03
-> Feb  7 18:02:42 m78 automount[16532]: mount still busy /hosts
-> Feb  7 18:02:43 m78 automount[16532]: mount still busy /hosts
-> Feb  7 18:02:44 m78 automount[16532]: umounted indirect mount /hosts/m179
-> Feb  7 18:02:44 m78 automount[16532]: shut down path /hosts/m179
-> 
-> So we can see that the requests fail from losing either of the
-> mountpoints and having a race between the umount, the remount and the
-> open.
-> 
-> Kernel is fedora core 5 2.6.18-2200.fc5.  I can reproduce the problem
-> at will and in a very short time, and m78 is currently dedicated to
-> fixing it, so what should I do at that point?
-> 
-> Note that autofs4 fails too on that race, but my guess is that autofs5
-> has a higher probability of being fixed.
+On Wed, 7 Feb 2007 09:57:21 -0800 (PST) Levitsky Maxim wrote:
 
-This looks like it may be a kernel bug that Jeff Moyer and I have been
-working on. I'm testing now.
+> Hello,
+> 
+> Before some time I decided to fix suspend/resume on my Davicom network card.
+> During development I also fixed couple of bugs and added support for link detection and WOL
+> Note : 2.6.20 already has support for link detection , but it is broken when card has external PHY
+> , like mine.
+> 
+> So here it goes:
+> 
+> [PATCH] [NET] [001] dmfe : trivial/spelling fixes
+> [PATCH] [NET] [002] dmfe : Fix possible oops
+> [PATCH] [NET] [003] dmfe : fix link detection
+> [PATCH] [NET] [004] dmfe : Add suspend/resume support
+> [PATCH] [NET] [005] dmfe : Add support for wake-on-lan
 
-It may be better to update to a later kernel so I don't have to port the
-patch to several different kernels. Is that possible?
+Hi,
+Please use a different Subject: line for each patch (like you have
+listed them above).
 
-Ian
+Also, please send network driver patches to netdev@vger.kernel.org .
 
+Oops, MAINTAINERS should list netdev@ for DMFE.
+And it does list a maintainer for DMFE, so you should cc: him on
+the patches.
 
+Thanks.
+---
+~Randy
