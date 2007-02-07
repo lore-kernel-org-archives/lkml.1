@@ -1,113 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161140AbXBGKYO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161147AbXBGK0u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161140AbXBGKYO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Feb 2007 05:24:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161141AbXBGKYO
+	id S1161147AbXBGK0u (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Feb 2007 05:26:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161148AbXBGK0u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Feb 2007 05:24:14 -0500
-Received: from tim.rpsys.net ([194.106.48.114]:40272 "EHLO tim.rpsys.net"
+	Wed, 7 Feb 2007 05:26:50 -0500
+Received: from smtp8-g19.free.fr ([212.27.42.65]:55772 "EHLO smtp8-g19.free.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161140AbXBGKYN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Feb 2007 05:24:13 -0500
-Subject: Re: [PATCH] input: Schedule removal of compaq touchscreen
-	emulation (tsdev.c)
-From: Richard Purdie <rpurdie@rpsys.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-kernel@vger.kernel.org,
-       Linux-Input <linux-input@atrey.karlin.mff.cuni.cz>,
-       James Simmons <jsimmons@infradead.org>
-In-Reply-To: <20070206205202.fde782ce.akpm@linux-foundation.org>
-References: <1170780159.5826.71.camel@localhost.localdomain>
-	 <20070206205202.fde782ce.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Wed, 07 Feb 2007 10:23:46 +0000
-Message-Id: <1170843826.5920.23.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+	id S1161147AbXBGK0t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Feb 2007 05:26:49 -0500
+X-Greylist: delayed 654 seconds by postgrey-1.27 at vger.kernel.org; Wed, 07 Feb 2007 05:26:49 EST
+Message-ID: <45C9A8FE.3090705@free.fr>
+Date: Wed, 07 Feb 2007 11:25:02 +0100
+From: John <linux.kernel@free.fr>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061108 SeaMonkey/1.0.6
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+CC: Peter Zijlstra <a.p.zijlstra@chello.nl>, tglx@timesys.com, mingo@elte.hu,
+       johnstul@us.ibm.com, akpm@osdl.org, linux.kernel@free.fr
+Subject: Re: One-shot high-resolution POSIX timer periodically late
+References: <fa.4zD54Ie6Ozt0P4YqQSicS+XzXGw@ifi.uio.no>	 <fa.G+/T32f2o1M3+YGLca/O8NaAQyY@ifi.uio.no>	 <fa.6Ua8xjNfLKQEZZgDsoJgPMyww4g@ifi.uio.no>	 <fa.yQlV+WU0TgrJTVqjopa01tgCnT0@ifi.uio.no>	 <fa.ucVrLJ1Lh6FjdBHRglsIUc8/evk@ifi.uio.no>	 <fa.Id9oufyELrVbe5Wb8SRakwC0V50@ifi.uio.no>  <45C75D2D.9010506@free.fr> <1170747081.4672.11.camel@twins>
+In-Reply-To: <1170747081.4672.11.camel@twins>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-02-06 at 20:52 -0800, Andrew Morton wrote:
-> On Tue, 06 Feb 2007 16:42:39 +0000 Richard Purdie <rpurdie@rpsys.net> wrote:
+Peter Zijlstra wrote:
+
+> John wrote:
+>
+>> Ingo Molnar wrote:
+>>
+>>> John wrote:
+>>>
+>>>> John Stultz wrote:
+>>>>
+>>>>> Also do check the -rt tree as Ingo suggested. I mis-read your earlier
+>>>>> email and thought you were running it.
+>>>>
+>>>> I've been pulling my hair over a related issue for the past two days.
+>>>>
+>>>> (I think I may be tickling a -hrt bug...)
+>>>>
+>>>> I'm working with 2.6.18.6 + patch-2.6.18-rt7
+>>>
+>>> 2.6.18-rt7 is pretty old, do you see the problem in 2.6.20-rc6-rt5 too?
+>>
+>> Ingo, Thomas,
+>>
+>> As far as I can tell, the -rt patch set is only updated for the latest 
+>> kernel version available. Is that correct?
+>>
+>> http://people.redhat.com/mingo/realtime-preempt/older/?M=D
+>>
+>> In other words, once 2.6.20 is released, and work starts on 2.6.21, if a 
+>> bug is discovered in -rt, the fix will not be back-ported to the 
+>> 2.6.20.x (and 2.6.19.x, and 2.6.18.x, etc) patch set?
 > 
-> >  ---------------------------
-> > +
-> > +What:   Compaq touchscreen device emulation
-> > +When:   Oct 2007
-> > +Files:  drivers/input/tsdev.c
-> > +Why:    The code says it was obsolete when it was written in 2001.
-> > +        tslib is a userspace library which does anything tsdev can do and
-> > +        much more besides in userspace where this code belongs. There is no
-> > +        longer any need for tsdev and applications should have converted to
-> > +        use tslib by now.
-> > +        The name "tsdev" is also extremely confusing and lots of people have
-> > +        it loaded when they don't need/use it.
-> > +Who:    Richard Purdie <rpurdie@rpsys.net>
-> 
-> I think it best to add a printk to the driver's initialisation routine warning
-> any remaining users that it is going away.
+> Correct, there is only 1 live branch.
 
-I suspect a message upon driver init will scare a lot of people due to
-the "lots of people have it loaded when they don't need/use it" above.
-How about printing something upon device open? A revised version is
-below.
+Are there people that use the -rt patch set in real industrial applications?
 
-----
+It seems that, if an important bug is found in the -rt part, I will have 
+to either upgrade to the latest kernel, or back port all the -rt changes 
+to the kernel I chose for my application?
 
-Schedule removal of Compaq touchscreen emulation (drivers/input/tsdev.c)
+Regards,
 
-Its old, was obsolete when it was written by the authors own admission
-and much better userspace solutions like tslib now exist. The name is
-also confusing.
-
-Signed-off-by: Richard Purdie <rpurdie@rpsys.net>
-Acked-by: James Simmons <jsimmons@infradead.org>
----
-
- Documentation/feature-removal-schedule.txt |   14 ++++++++++++++
- drivers/input/tsdev.c                      |    4 ++++
- 2 files changed, 18 insertions(+)
-
-Index: linux/Documentation/feature-removal-schedule.txt
-===================================================================
---- linux.orig/Documentation/feature-removal-schedule.txt	2007-02-06 20:32:59.000000000 +0000
-+++ linux/Documentation/feature-removal-schedule.txt	2007-02-07 09:15:40.000000000 +0000
-@@ -325,3 +325,17 @@ Why:	Unmaintained for years, superceded 
- Who:	Jeff Garzik <jeff@garzik.org>
- 
- ---------------------------
-+
-+What:   Compaq touchscreen device emulation
-+When:   Oct 2007
-+Files:  drivers/input/tsdev.c
-+Why:    The code says it was obsolete when it was written in 2001.
-+        tslib is a userspace library which does anything tsdev can do and
-+	much more besides in userspace where this code belongs. There is no
-+	longer any need for tsdev and applications should have converted to
-+	use tslib by now.
-+        The name "tsdev" is also extremely confusing and lots of people have
-+	it loaded when they don't need/use it.
-+Who:    Richard Purdie <rpurdie@rpsys.net>
-+
-+---------------------------
-Index: linux/drivers/input/tsdev.c
-===================================================================
---- linux.orig/drivers/input/tsdev.c	2007-01-18 00:52:44.000000000 +0000
-+++ linux/drivers/input/tsdev.c	2007-02-07 09:32:15.000000000 +0000
-@@ -151,6 +151,10 @@ static int tsdev_open(struct inode *inod
- 	int i = iminor(inode) - TSDEV_MINOR_BASE;
- 	struct tsdev_list *list;
- 
-+	printk(KERN_WARNING "tsdev (compaq touchscreen emulation) is scheduled "
-+		"for removal.\nSee Documentation/feature-removal-schedule.txt "
-+		"for details.\n");
-+
- 	if (i >= TSDEV_MINORS || !tsdev_table[i & TSDEV_MINOR_MASK])
- 		return -ENODEV;
- 
-
-
-
-
+John
 
