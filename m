@@ -1,50 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030620AbXBGMRM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161275AbXBGMUq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030620AbXBGMRM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Feb 2007 07:17:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030232AbXBGMRM
+	id S1161275AbXBGMUq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Feb 2007 07:20:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030618AbXBGMUq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Feb 2007 07:17:12 -0500
-Received: from nf-out-0910.google.com ([64.233.182.189]:6240 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030620AbXBGMRM (ORCPT
+	Wed, 7 Feb 2007 07:20:46 -0500
+Received: from thccv19.oz.nthu.edu.tw ([140.114.63.219]:35421 "EHLO
+	thccv19.oz.nthu.edu.tw" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030258AbXBGMUp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Feb 2007 07:17:12 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=S7F2I9EGyGoYtxV2NUbSwbxnvxTDLwLpUYVGUwjV+HlCgHNDWX6Kv1twpv0NIlHmhgsxoP7omRrIn+/3zkcZqYBly1tML8V8UD5dcnUsR8+ccdq2vRJnWgYs8bd/OELaC9KcUbGbO23daL6AvlcL49xEIJkj/Mz40EmH/4HyTIw=
-Message-ID: <d9def9db0702070417h5666cf98k9cc1abce695773a3@mail.gmail.com>
-Date: Wed, 7 Feb 2007 13:17:04 +0100
-From: "Markus Rechberger" <mrechberger@gmail.com>
-To: "Arnd Bergmann" <arnd@arndb.de>
-Subject: Re: [Ksummit-2007-discuss] Re: +1 4 cz (Re: [Ksummit-2006-discuss] 2007 Linux Kernel Summit)
-Cc: ksummit-2007-discuss@thunk.org, "James Simmons" <jsimmons@infradead.org>,
-       "Vojtech Pavlik" <vojtech@suse.cz>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <200702071306.19901.arnd@arndb.de>
+	Wed, 7 Feb 2007 07:20:45 -0500
+From: "Yu-Chen Wu" <g944370@oz.nthu.edu.tw>
+To: "'Neil Brown'" <neilb@suse.de>
+Cc: <linux-kernel@vger.kernel.org>, <linux-raid@vger.kernel.org>
+References: <005a01c74a01$ec1832a0$0100a8c0@sslabmayasky> <17864.56037.855359.839197@notabene.brown>
+Subject: RE: Could "bio_vec" be referenced any time?
+Date: Wed, 7 Feb 2007 20:20:42 +0800
+Message-ID: <009601c74ab2$6330b8c0$0100a8c0@sslabmayasky>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+	charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <E1H8tIr-0006QH-Bg@candygram.thunk.org>
-	 <20070206200004.GA15910@suse.cz>
-	 <Pine.LNX.4.64.0702062007360.9224@pentafluge.infradead.org>
-	 <200702071306.19901.arnd@arndb.de>
+X-Mailer: Microsoft Office Outlook 11
+In-Reply-To: <17864.56037.855359.839197@notabene.brown>
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
+Thread-Index: AcdKJ3y4oT+FVId1THOcPIDIW+J2EAAijsJg
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/7/07, Arnd Bergmann <arnd@arndb.de> wrote:
-> On Tuesday 06 February 2007 21:10, James Simmons wrote:
-> >
-> > So it is between Britian or the Czech Republic. BTW how long of a train
-> > ride is to swizterland from CZ. My wife's family lives there.
->
-> Too long. 15 hours according to
-> http://reiseauskunft.bahn.de/bin/query.exe/en .
-> You probably want to take a cheap flight instead.
->
+Hi NeilBrown,
+	Thank you for your help and introducing "ksymoops" to me. 
+	I think you are right.
+	The BIO is passed by MD put BIO into a share "kfifo".
+	THX : )
+-----Original Message-----
+From: linux-raid-owner@vger.kernel.org
+[mailto:linux-raid-owner@vger.kernel.org] On Behalf Of Neil Brown
+Sent: Wednesday, February 07, 2007 3:46 AM
+To: Yu-Chen Wu
+Cc: linux-kernel@vger.kernel.org; linux-raid@vger.kernel.org
+Subject: Re: Could "bio_vec" be referenced any time?
 
-Isn't there a nighttrain? You could (try to) sleep during the journey.
-I'd be interested in Czech too.
+On Tuesday February 6, g944370@oz.nthu.edu.tw wrote:
+> Hi all,
+> 	I write a module that creates a kernel thread to show the BIOs from
+> MD modules.
+> 	The kernel thread will call show_bio() when md passing a BIO to my
+> module,else sleep.
+> 	Sometimes, show_bio() continues working successfully ,but it
+> somtimes makes "general protection fault".
+> 	The show_bio() always works when I comment the
+> "bio_for_each_segment" loop. 
+> 	Is the zone I comment the cause of the fault? 
+> 	As above, I consider it's the main problem.Also, I strongly want to
+> know your opinions.Thank you for help.
+> 
+> 	THX
 
-Markus
+Without seeing how the bio gets to show_bio it is hard to be certain,
+but my guess would be that by the time show_bio tries to inspect the
+bio, the IO request involving it has already completed and the bio has
+been freed, so you are accessing freed memory.
+
+> Feb  6 22:00:28 RAID-SUSE kernel: Code: 8b 00 f6 c4 08 74 0e 48 c7 c7 14
+9c
+> 45 88 31 c0 e8 b5 bf e2
+
+If you feed this line into ksymoops you get:
+
+Code;  0000000000000000 Before first symbol
+   0:   8b 00                     mov    (%rax),%eaxC
+...
+
+so it is trying to dereference $rax.
+
+> Feb  6 22:00:28 RAID-SUSE kernel: RAX: 6b6b6b6b6b6b6b6b RBX:
+> ffff810037f52668 RCX: 0000000000040000
+
+Which contains 6b6b6b6b6b6b6b6b.
+which is lots of copies of 'POISON_FREE' (defined in
+include/linux/poison.h) which makes it really look like that memory
+has already been freed.
+
+NeilBrown
+-
+To unsubscribe from this list: send the line "unsubscribe linux-raid" in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
