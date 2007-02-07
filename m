@@ -1,49 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030373AbXBGAYm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030448AbXBGAZK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030373AbXBGAYm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 19:24:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030443AbXBGAYj
+	id S1030448AbXBGAZK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 19:25:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030447AbXBGAZK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 19:24:39 -0500
-Received: from ug-out-1314.google.com ([66.249.92.174]:40986 "EHLO
+	Tue, 6 Feb 2007 19:25:10 -0500
+Received: from ug-out-1314.google.com ([66.249.92.169]:41178 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030335AbXBGAYi (ORCPT
+	with ESMTP id S1030448AbXBGAZH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 19:24:38 -0500
+	Tue, 6 Feb 2007 19:25:07 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=EiqvmiaKjkf68CbWmIRL8vTxIBenOtPvnmXo9RXlmgzEzd2vHU0/KtbnL5ccQ9Pcel+44fuLPnIgk/oMSb5Rci+L3jJUTsqAz+cnZaGsH5zQI9atIqpUTIkQEpkYFwqiZggubkxZzgz8oUK2hKtOeynD28mJZFklax+mOqaUIbM=
-Message-ID: <3400f2f60702061624v69f29cfcme80a0736aa6243e2@mail.gmail.com>
-Date: Tue, 6 Feb 2007 18:24:34 -0600
-From: "J. K. Cliburn" <jcliburn@gmail.com>
-To: "Jeff Garzik" <jgarzik@pobox.com>
-Subject: Re: [RFC: -mm patch] drivers/net/atl1/: possible cleanups
-Cc: "Jay Cliburn" <jacliburn@bellsouth.net>, "Adrian Bunk" <bunk@stusta.de>,
-       "Andrew Morton" <akpm@osdl.org>,
-       "Xiong Huang" <xiong_huang@attansic.com>,
-       "Chris Snook" <csnook@redhat.com>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-In-Reply-To: <45C91BCA.3030108@pobox.com>
+        b=BjejMFWqyFeXZ2x7gJfqVwa7w2esSjG1zOWTcHjWrUfuFzBtNHOc1viPE9w1WmjBE16Du8Lp07HPObXZg2nSndKAZtkAWqDQsZQK3TU3DUUwXLV+Lv/4BpmYCNcTrMm2VbBaT5nKr4rGa/KDtcL3lfi32TppOvDdm1oT8JP7/ao=
+Message-ID: <21d7e9970702061625u24e09305v63c7f9780b02de93@mail.gmail.com>
+Date: Wed, 7 Feb 2007 11:25:03 +1100
+From: "Dave Airlie" <airlied@gmail.com>
+To: landwer@free.fr
+Subject: Re: 2.6.20 [drm:i915_wait_irq] *ERROR*
+Cc: linux-kernel@vger.kernel.org, dri-devel <dri-devel@lists.sourceforge.net>
+In-Reply-To: <1170806926.5669.6.camel@cocoduo>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20070129204528.eb8d695e.akpm@osdl.org>
-	 <20070206221229.GH27397@stusta.de>
-	 <20070206181910.4d27046a@osprey.hogchain.net>
-	 <45C91BCA.3030108@pobox.com>
+References: <1170806926.5669.6.camel@cocoduo>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/6/07, Jeff Garzik <jgarzik@pobox.com> wrote:
-> Jay Cliburn wrote:
-> > Your patch is just a little bit out ahead of us.  Some of your suggested
-> > changes are already in the pipeline; we're just waiting for Jeff to
-> > merge netdev#atl1 into netdev#ALL.  Should be soon.
 >
+> I'm running a 2.6.20 kernel on my macbook. When running an openGL
+> application, if the opengl window's region is moved somewhere outside
+> the screen limits, then keyboard locks, I can only move the mouse,
+> nothing response. I can only reboot the box by pressing the power button
+> 5 seconds. /var/log/syslog contains that :
 >
-> Technical note:  merging #atl1 into #ALL happens each time
-> netdev-2.6.git is flushed out from my local machine.
+> kernel: [drm:i915_wait_irq] *ERROR* i915_wait_irq: EBUSY -- rec: 730561 emitted: 730570
+>
+> The macbook uses an intel card :
+>
+> 00:00.0 Host bridge: Intel Corporation Mobile 945GM/PM/GMS/940GML and 945GT Express Memory Controller Hub (rev 03)
+> 00:02.0 VGA compatible controller: Intel Corporation Mobile 945GM/GMS/940GML Express Integrated Graphics Controller (rev 03)
+>
 
-Noted.  Thanks.
+I'm cc'ing dri devel in case anyone there knows why this might happen...
+
+Dave.
