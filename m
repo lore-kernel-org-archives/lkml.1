@@ -1,186 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752321AbXBGDHV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030228AbXBGDNM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752321AbXBGDHV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 22:07:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965634AbXBGDHV
+	id S1030228AbXBGDNM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 22:13:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965634AbXBGDNM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 22:07:21 -0500
-Received: from mail0.lsil.com ([147.145.40.20]:34168 "EHLO mail0.lsil.com"
+	Tue, 6 Feb 2007 22:13:12 -0500
+Received: from mx1.suse.de ([195.135.220.2]:37593 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752296AbXBGDHU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 22:07:20 -0500
-Subject: [PATCH 2/5] scsi: megaraid_sas - added bios_param in
-	scsi_host_template
-From: Sumant Patro <sumantp@lsil.com>
-To: James.Bottomley@SteelEye.com, akpm@osdl.org, linux-scsi@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, neela.kolli@lsi.com, bo.yang@lsi.com,
-       sumant.patro@lsi.com
-Content-Type: multipart/mixed; boundary="=-2T7332oRectjrvKqLJtH"
-Date: Tue, 06 Feb 2007 13:57:23 -0800
-Message-Id: <1170799043.10482.20.camel@dumbo>
+	id S965620AbXBGDNL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Feb 2007 22:13:11 -0500
+Date: Wed, 7 Feb 2007 04:13:04 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: David Chinner <dgc@sgi.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Hugh Dickins <hugh@veritas.com>, Andrew Morton <akpm@osdl.org>,
+       Linux Memory Management <linux-mm@kvack.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Linux Filesystems <linux-fsdevel@vger.kernel.org>
+Subject: Re: [patch 0/3] 2.6.20 fix for PageUptodate memorder problem
+Message-ID: <20070207031304.GB31074@wotan.suse.de>
+References: <20070206054925.21042.50546.sendpatchset@linux.site> <20070206225857.GV44411608@melbourne.sgi.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.0.2 (2.0.2-22) 
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070206225857.GV44411608@melbourne.sgi.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Feb 07, 2007 at 09:58:57AM +1100, David Chinner wrote:
+> On Tue, Feb 06, 2007 at 09:02:01AM +0100, Nick Piggin wrote:
+> > Still no independent confirmation as to whether this is a problem or not.
+> > I think it is, so I'll propose this patchset to fix it. Patch 1/3 has a
+> > reasonable description of the problem.
+> > 
+> 
+> Nick, can you include a diffstat at the head of your patches? Makes
+> it much easier to see what the scope of the changes are when you
+> are changing code in several filesystems....
 
---=-2T7332oRectjrvKqLJtH
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+Good idea, I'll do that.
 
-Added bios_param in scsi_host_template to return disk geometry.
-
-Signed-off-by: Sumant Patro <sumant.patro@lsi.com>
----
-
- drivers/scsi/megaraid/megaraid_sas.c |   45 +++++++++++++++++++++++++
- 1 files changed, 45 insertions(+)
-
-diff -uprN 2.6.new-p1/drivers/scsi/megaraid/megaraid_sas.c 2.6.new-p2/drivers/scsi/megaraid/megaraid_sas.c
---- 2.6.new-p1/drivers/scsi/megaraid/megaraid_sas.c	2007-02-06 06:54:07.000000000 -0800
-+++ 2.6.new-p2/drivers/scsi/megaraid/megaraid_sas.c	2007-02-06 08:43:40.000000000 -0800
-@@ -35,6 +35,7 @@
- #include <asm/uaccess.h>
- #include <linux/fs.h>
- #include <linux/compat.h>
-+#include <linux/blkdev.h>
- #include <linux/mutex.h>
- 
- #include <scsi/scsi.h>
-@@ -1015,6 +1016,49 @@ static int megasas_reset_bus_host(struct
- }
- 
- /**
-+ * megasas_bios_param - Returns disk geometry for a disk
-+ * @sdev: 		device handle
-+ * @bdev:		block device
-+ * @capacity:		drive capacity
-+ * @geom:		geometry parameters
-+ */
-+static int
-+megasas_bios_param(struct scsi_device *sdev, struct block_device *bdev,
-+		 sector_t capacity, int geom[])
-+{
-+	int 		heads;
-+	int 		sectors;
-+	sector_t	cylinders;
-+	ulong		dummy;
-+	/* Default heads (64) & sectors (32) */
-+	heads 		= 64;
-+	sectors 	= 32;
-+
-+	dummy		= heads * sectors;
-+	cylinders	=  capacity;
-+
-+	sector_div(cylinders, dummy);
-+
-+	/*
-+	 * Handle extended translation size for logical drives > 1Gb
-+	 */
-+	
-+	if ((ulong)capacity >= 0x200000) {
-+		heads = 255;
-+		sectors = 63;
-+		dummy = heads*sectors;
-+		cylinders = capacity;
-+		sector_div(cylinders, dummy);
-+	}
-+	
-+	geom[0] = heads;
-+	geom[1] = sectors;
-+	geom[2] = cylinders;
-+
-+	return 0;
-+}
-+
-+/**
-  * megasas_service_aen -	Processes an event notification
-  * @instance:			Adapter soft state
-  * @cmd:			AEN command completed by the ISR
-@@ -1054,6 +1098,7 @@ static struct scsi_host_template megasas
- 	.eh_device_reset_handler = megasas_reset_device,
- 	.eh_bus_reset_handler = megasas_reset_bus_host,
- 	.eh_host_reset_handler = megasas_reset_bus_host,
-+	.bios_param = megasas_bios_param,
- 	.use_clustering = ENABLE_CLUSTERING,
- };
- 
-
-
---=-2T7332oRectjrvKqLJtH
-Content-Disposition: attachment; filename=p2-bios_param.patch
-Content-Type: text/x-patch; name=p2-bios_param.patch; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-
-diff -uprN 2.6.new-p1/drivers/scsi/megaraid/megaraid_sas.c 2.6.new-p2/drivers/scsi/megaraid/megaraid_sas.c
---- 2.6.new-p1/drivers/scsi/megaraid/megaraid_sas.c	2007-02-06 06:54:07.000000000 -0800
-+++ 2.6.new-p2/drivers/scsi/megaraid/megaraid_sas.c	2007-02-06 08:43:40.000000000 -0800
-@@ -35,6 +35,7 @@
- #include <asm/uaccess.h>
- #include <linux/fs.h>
- #include <linux/compat.h>
-+#include <linux/blkdev.h>
- #include <linux/mutex.h>
- 
- #include <scsi/scsi.h>
-@@ -1015,6 +1016,49 @@ static int megasas_reset_bus_host(struct
- }
- 
- /**
-+ * megasas_bios_param - Returns disk geometry for a disk
-+ * @sdev: 		device handle
-+ * @bdev:		block device
-+ * @capacity:		drive capacity
-+ * @geom:		geometry parameters
-+ */
-+static int
-+megasas_bios_param(struct scsi_device *sdev, struct block_device *bdev,
-+		 sector_t capacity, int geom[])
-+{
-+	int 		heads;
-+	int 		sectors;
-+	sector_t	cylinders;
-+	ulong		dummy;
-+	/* Default heads (64) & sectors (32) */
-+	heads 		= 64;
-+	sectors 	= 32;
-+
-+	dummy		= heads * sectors;
-+	cylinders	=  capacity;
-+
-+	sector_div(cylinders, dummy);
-+
-+	/*
-+	 * Handle extended translation size for logical drives > 1Gb
-+	 */
-+	
-+	if ((ulong)capacity >= 0x200000) {
-+		heads = 255;
-+		sectors = 63;
-+		dummy = heads*sectors;
-+		cylinders = capacity;
-+		sector_div(cylinders, dummy);
-+	}
-+	
-+	geom[0] = heads;
-+	geom[1] = sectors;
-+	geom[2] = cylinders;
-+
-+	return 0;
-+}
-+
-+/**
-  * megasas_service_aen -	Processes an event notification
-  * @instance:			Adapter soft state
-  * @cmd:			AEN command completed by the ISR
-@@ -1054,6 +1098,7 @@ static struct scsi_host_template megasas
- 	.eh_device_reset_handler = megasas_reset_device,
- 	.eh_bus_reset_handler = megasas_reset_bus_host,
- 	.eh_host_reset_handler = megasas_reset_bus_host,
-+	.bios_param = megasas_bios_param,
- 	.use_clustering = ENABLE_CLUSTERING,
- };
- 
-
---=-2T7332oRectjrvKqLJtH--
-
+Thanks,
+Nick
