@@ -1,83 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422771AbXBGVQQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422780AbXBGVRL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422771AbXBGVQQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Feb 2007 16:16:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422778AbXBGVQQ
+	id S1422780AbXBGVRL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Feb 2007 16:17:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422779AbXBGVRK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Feb 2007 16:16:16 -0500
-Received: from smtp19.orange.fr ([80.12.242.1]:49836 "EHLO smtp19.orange.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422771AbXBGVQP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Feb 2007 16:16:15 -0500
-X-ME-UUID: 20070207211343434.6A1751C00082@mwinf1922.orange.fr
-Message-ID: <45CA40F0.10808@wanadoo.fr>
-Date: Wed, 07 Feb 2007 22:13:20 +0100
-From: Thibaud Hulin <hulin.thibaud@wanadoo.fr>
-User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
-MIME-Version: 1.0
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [patch] Re: error 2 after a compile
-References: <45C8DE76.5000109@wanadoo.fr> <20070206121027.0a38e6ad.randy.dunlap@oracle.com>
-In-Reply-To: <20070206121027.0a38e6ad.randy.dunlap@oracle.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+	Wed, 7 Feb 2007 16:17:10 -0500
+Received: from mummy.ncsc.mil ([144.51.88.129]:60324 "EHLO jazzhorn.ncsc.mil"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1422780AbXBGVRJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Feb 2007 16:17:09 -0500
+Subject: Re: [PATCH 2/2] sysctl: Restore the selinux path based label
+	lookup for sysctls.
+From: Stephen Smalley <sds@tycho.nsa.gov>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Andrew Morton <akpm@osdl.org>, Ingo Molnar <mingo@elte.hu>,
+       tglx@linutronix.de, linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov,
+       jmorris@namei.org
+In-Reply-To: <1170872654.11912.87.camel@moss-spartans.epoch.ncsc.mil>
+References: <200701280106.l0S16CG3019873@shell0.pdx.osdl.net>
+	 <20070127172410.2b041952.akpm@osdl.org>
+	 <1169972718.17469.164.camel@localhost.localdomain>
+	 <20070128003549.2ca38dc8.akpm@osdl.org> <20070128093358.GA2071@elte.hu>
+	 <20070128095712.GA6485@elte.hu> <20070128100627.GA8416@elte.hu>
+	 <20070128104548.a835d859.akpm@osdl.org>
+	 <m1r6tfq7nv.fsf_-_@ebiederm.dsl.xmission.com>
+	 <1170075866.8720.15.camel@moss-spartans.epoch.ncsc.mil>
+	 <m17iuvrnpk.fsf_-_@ebiederm.dsl.xmission.com>
+	 <m13b5jrngt.fsf_-_@ebiederm.dsl.xmission.com>
+	 <1170872654.11912.87.camel@moss-spartans.epoch.ncsc.mil>
+Content-Type: text/plain
+Organization: National Security Agency
+Date: Wed, 07 Feb 2007 16:12:18 -0500
+Message-Id: <1170882738.11912.144.camel@moss-spartans.epoch.ncsc.mil>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks. Before seeing your message, I erase the line with this module in 
-the .config, and if worked. However, I must recompile it, because I 
-forgot someting for suspend2.
-I'd like install your patch. But how can I do it ? Have you join a patch 
-sched.h ?
+On Wed, 2007-02-07 at 13:24 -0500, Stephen Smalley wrote:
+> On Tue, 2007-02-06 at 14:21 -0700, Eric W. Biederman wrote:
+> > This time instead of generating the generating the paths from proc_dir_entries
+> > generate the labels from the names in the sysctl ctl_tables themselves.  This
+> > removes an unnecessary layer of indirection, allows this to work even when
+> > procfs support is not compiled into the kernel, and especially allows it
+> > to work now that ctl_tables no longer have a proc_dir_entry field.
+> 
+> Thanks, looks sane.
+> 
+> > I continue passing "proc" into genfs sid although that is complete nonsense
+> > to allow existing selinux policies to work without modification.
+> > 
+> > Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+> 
+> Acked-by:  Stephen Smalley <sds@tycho.nsa.gov>
 
+Hmmm...but in testing the patch, I don't seem to (consistently) reach
+these checks when accessing via /proc/sys.  I see that you are caching
+the mode information and using it in some cases rather than calling the
+sysctl_perm function.
 
-Randy Dunlap a écrit :
-> On Tue, 06 Feb 2007 21:00:54 +0100 Thibaud Hulin wrote:
+One related but separate issue is that the /proc/sys inode labeling is
+also affected by the sysctl patch series.  Those inodes used to be
+labeled by selinux_proc_get_sid (from selinux_d_instantiate), but that
+no longer works, so they now fall back to the superblock SID (generic
+proc label).  That changes the inode permission checks on an attempt to
+access a /proc/sys node and will likely cause denials under current
+policy for confined domains since one wouldn't generally be writing to
+the generic proc label. If you always called sysctl_perm from the proc
+sysctl code, we could possibly dispense with inode permission checking
+on those inodes, e.g. marking them private.
+  
 > 
->> Hello !
->> I'm trying to compile a kernel from 2.6.17-10 to 2.6.19 with suspend2.
->> After this command :
->> make-kpkg --append-to-version=swsusp2.070206 kernel_image --initrd 
->> kernel_headers --revision=2.6.1
->>
->> I obtain :
->>   Building modules, stage 2.
->>    MODPOST 1479 modules
->> WARNING: Can't handle masks in drivers/ide/pci/atiixp:FFFF05
->> WARNING: "try_to_freeze" [drivers/usb/atm/ueagle-atm.ko] undefined!
->> make[2]: *** [__modpost] Erreur 1
->> make[1]: *** [modules] Erreur 2
->> make[1]: quittant le répertoire « /home/hulin/src/linux-2.6.19 »
->> make: *** [debian/stamp-build-kernel] Erreur 2
->>
->> I don't understand the error ?
-> 
-> 
-> The driver is missing #include <linux/sched.h>.
-> Please try the patch below and report back on it.
-> ---
-> 
-> From: Randy Dunlap <randy.dunlap@oracle.com>
-> 
-> Driver needs sched.h for try_to_freeze().
-> 
-> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-> ---
->  drivers/usb/atm/ueagle-atm.c |    1 +
->  1 file changed, 1 insertion(+)
-> 
-> --- linux-2619-pv.orig/drivers/usb/atm/ueagle-atm.c
-> +++ linux-2619-pv/drivers/usb/atm/ueagle-atm.c
-> @@ -61,6 +61,7 @@
->  #include <linux/usb.h>
->  #include <linux/firmware.h>
->  #include <linux/ctype.h>
-> +#include <linux/sched.h>
->  #include <linux/kthread.h>
->  #include <linux/version.h>
->  #include <linux/mutex.h>
-> 
-> 
-
+> > ---
+> >  security/selinux/hooks.c |   43 +++++++++++++++++++++++++++++++++++++++++--
+> >  1 files changed, 41 insertions(+), 2 deletions(-)
+> > 
+> > diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
+> > index 3a36057..c17a8dd 100644
+> > --- a/security/selinux/hooks.c
+> > +++ b/security/selinux/hooks.c
+> > @@ -1424,6 +1424,41 @@ static int selinux_capable(struct task_struct *tsk, int cap)
+> >  	return task_has_capability(tsk,cap);
+> >  }
+> >  
+> > +static int selinux_sysctl_get_sid(ctl_table *table, u16 tclass, u32 *sid)
+> > +{
+> > +	int buflen, rc;
+> > +	char *buffer, *path, *end;
+> > +
+> > +	rc = -ENOMEM;
+> > +	buffer = (char*)__get_free_page(GFP_KERNEL);
+> > +	if (!buffer)
+> > +		goto out;
+> > +
+> > +	buflen = PAGE_SIZE;
+> > +	end = buffer+buflen;
+> > +	*--end = '\0';
+> > +	buflen--;
+> > +	path = end-1;
+> > +	*path = '/';
+> > +	while (table) {
+> > +		const char *name = table->procname;
+> > +		size_t namelen = strlen(name);
+> > +		buflen -= namelen + 1;
+> > +		if (buflen < 0)
+> > +			goto out_free;
+> > +		end -= namelen;
+> > +		memcpy(end, name, namelen);
+> > +		*--end = '/';
+> > +		path = end;
+> > +		table = table->parent;
+> > +	}
+> > +	rc = security_genfs_sid("proc", path, tclass, sid);
+> > +out_free:
+> > +	free_page((unsigned long)buffer);
+> > +out:
+> > +	return rc;
+> > +}
+> > +
+> >  static int selinux_sysctl(ctl_table *table, int op)
+> >  {
+> >  	int error = 0;
+> > @@ -1438,8 +1473,12 @@ static int selinux_sysctl(ctl_table *table, int op)
+> >  
+> >  	tsec = current->security;
+> >  
+> > -	/* Use the well-defined sysctl SID. */
+> > -	tsid = SECINITSID_SYSCTL;
+> > +	rc = selinux_sysctl_get_sid(table, (op == 0001) ?
+> > +				    SECCLASS_DIR : SECCLASS_FILE, &tsid);
+> > +	if (rc) {
+> > +		/* Default to the well-defined sysctl SID. */
+> > +		tsid = SECINITSID_SYSCTL;
+> > +	}
+> >  
+> >  	/* The op values are "defined" in sysctl.c, thereby creating
+> >  	 * a bad coupling between this module and sysctl.c */
+-- 
+Stephen Smalley
+National Security Agency
 
