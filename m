@@ -1,50 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933320AbXBGGbg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1160997AbXBGGdu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933320AbXBGGbg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Feb 2007 01:31:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933326AbXBGGbf
+	id S1160997AbXBGGdu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Feb 2007 01:33:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965544AbXBGGdu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Feb 2007 01:31:35 -0500
-Received: from smtp.ocgnet.org ([64.20.243.3]:33757 "EHLO smtp.ocgnet.org"
+	Wed, 7 Feb 2007 01:33:50 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:36058 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933327AbXBGGbe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Feb 2007 01:31:34 -0500
-Date: Wed, 7 Feb 2007 15:29:34 +0900
-From: Paul Mundt <lethal@linux-sh.org>
+	id S965539AbXBGGdt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Feb 2007 01:33:49 -0500
+Date: Tue, 6 Feb 2007 22:33:36 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
 To: David Rientjes <rientjes@google.com>
-Cc: Andrew Morton <akpm@osdl.org>, Hugh Dickins <hugh@veritas.com>,
+Cc: Hugh Dickins <hugh@veritas.com>, Paul Mundt <lethal@linux-sh.org>,
        Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org
-Subject: Re: [patch 1/3 take2] smaps: extract pte walker from smaps code
-Message-ID: <20070207062934.GA11967@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	David Rientjes <rientjes@google.com>, Andrew Morton <akpm@osdl.org>,
-	Hugh Dickins <hugh@veritas.com>,
-	Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org
+Subject: Re: [patch 3/3 take2] smaps: add clear_refs file to clear reference
+Message-Id: <20070206223336.74595ecc.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0702062214400.13931@chino.kir.corp.google.com>
 References: <Pine.LNX.4.64.0702062212550.13931@chino.kir.corp.google.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0702062212550.13931@chino.kir.corp.google.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	<Pine.LNX.4.64.0702062214070.13931@chino.kir.corp.google.com>
+	<Pine.LNX.4.64.0702062214400.13931@chino.kir.corp.google.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 06, 2007 at 10:15:47PM -0800, David Rientjes wrote:
-> Extracts the page table entry walker from the smaps-specific code in
-> fs/proc/task_mmu.c.  This will be used later for clearing the reference
-> bits on pages to measure the number of pages accessed over a time period
-> through /proc/pid/smaps.
-> 
-I like the general idea of this patch set, however..
+On Tue, 6 Feb 2007 22:15:59 -0800 (PST) David Rientjes <rientjes@google.com> wrote:
 
-> Since the PTE walker is now extracted from the smaps code,
-> smaps_pte_func() is invoked for each PTE in the VMA.  Its behavior is
-> identical to the existing implementation, except it is slightly slower
-> because each PTE now invokes a function call.
-> 
-Perhaps this is something that needs to be looked at more closely and
-made more generic? There are many ranged page table walkers that aren't
-so performance critical that the function call cost would cause too much
-pain. ioremap_page_range() comes to mind, and there's bound to be others.
-This would also help people to get the pte map/unmap right, which seems
-to pop up from time to time as well..
+> +static void clear_refs_pte_func(struct pte_walker *walker, pte_t *pte,
+> +				unsigned long addr)
+> +{
+> +	struct page *page;
+> +	pte_t ptent;
+> +
+> +	ptent = *pte;
+> +	if (!pte_present(ptent))
+> +		return;
+> +
+> +	page = vm_normal_page(walker->vma, addr, ptent);
+> +	if (!page)
+> +		return;
+> +	pte_mkold(ptent);
+
+That only changed the local variable, and not the pagetable entry.
+
+> +	ClearPageReferenced(page);
+> +}
+
+Please, do some good runtime testing.  Write a script to monitor the
+overall working set, run it for some sample workloads (your X server or
+mozilla would be good choices).  Share the results with us so we can marvel
+at the efficiency of modern applications.  Include these examples in the
+changelog.
+
+Also, we will need to do tlb writeback and invalidation prior to this
+operation.  Documentation/cachetlb.txt has details.
