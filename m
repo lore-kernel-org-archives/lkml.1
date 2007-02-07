@@ -1,81 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422907AbXBGWVg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161453AbXBGWVx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422907AbXBGWVg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Feb 2007 17:21:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030662AbXBGWVg
+	id S1161453AbXBGWVx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Feb 2007 17:21:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161273AbXBGWVx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Feb 2007 17:21:36 -0500
-Received: from ug-out-1314.google.com ([66.249.92.171]:43607 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030661AbXBGWVf (ORCPT
+	Wed, 7 Feb 2007 17:21:53 -0500
+Received: from web52902.mail.yahoo.com ([206.190.49.12]:26233 "HELO
+	web52902.mail.yahoo.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1422918AbXBGWVv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Feb 2007 17:21:35 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=gnsjiUjIaRIeKe/51VVEFFH/KsokJh0Fu+uqJ3cNi5c3qUIjkp4NanxziL/ZH4w7WtIF84XZJ+HUXHACFSBS1jxGl/H9JPC+qGjj90QAWS1IoZgZ76iIn/VifIHrgQDImy6pDcaj9dIVnPZrtGJPRUW0ovh5VNntYOSUfRO+wqo=
-Message-ID: <6bffcb0e0702071421o346f35i3955a94467fe62ae@mail.gmail.com>
-Date: Wed, 7 Feb 2007 23:21:34 +0100
-From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: mm snapshot broken-out-2007-02-06-16-59.tar.gz uploaded
-Cc: linux-kernel@vger.kernel.org, "Cedric Le Goater" <clg@fr.ibm.com>
-In-Reply-To: <20070207141532.9c1ac548.akpm@linux-foundation.org>
+	Wed, 7 Feb 2007 17:21:51 -0500
+X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Wed, 07 Feb 2007 17:21:50 EST
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=OXiKTxwYtmOJwT5u/GrEyBKEdCf4uDDkP9qImHZniA/mbaoSXhjjmIiUJX4qR3LDZMtdJxrPGPzsEfqmP4JtjKj4jgRZJHTitYDH177idHsjIIcyarJocfnc2qVwCEFhxnf7cRczo4ozd9sXIscPi77KfSzz4PmfdzCOROS7IT4=;
+X-YMail-OSG: Ez009UYVM1mhDqAWIlzvopOqYIcQ.RTwX4WZA5JftPQSXz8pp_mkr6vrYvbw6.k4Acwl5isa6..fvm5jgAiXO9VJnNgjPRW5lroaKpv2J0yGcrcYonSYIBmoPJKKREr19_uqqmVyXU752kFZnAiNPsDlng--
+Date: Wed, 7 Feb 2007 14:15:08 -0800 (PST)
+From: Simon White <sidplay2@yahoo.com>
+Subject: Multiple virtual bus instances
+To: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200702070059.l170xPY0002614@shell0.pdx.osdl.net>
-	 <45CA0065.80705@fr.ibm.com>
-	 <6bffcb0e0702071403v767681edk2179fdb968b57e5a@mail.gmail.com>
-	 <20070207141532.9c1ac548.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <883291.79449.qm@web52902.mail.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/02/07, Andrew Morton <akpm@linux-foundation.org> wrote:
-> On Wed, 7 Feb 2007 23:03:04 +0100
-> "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com> wrote:
->
-> > Hi Andrew,
-> >
-> > On 07/02/07, Cedric Le Goater <clg@fr.ibm.com> wrote:
-> > > akpm@linux-foundation.org wrote:
-> > > > The mm snapshot broken-out-2007-02-06-16-59.tar.gz has been uploaded to
-> > > >
-> > > >    ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/mm/broken-out-2007-02-06-16-59.tar.gz
-> > >
-> > > I'm having download issues : wrong modes :(
-> > >
-> > > ftp.kernel.org:/pub/linux/kernel/people/akpm/mm> ls
-> > > ...
-> > > -rw-rw-r--    1 536      536           248 Jan 28 08:31 broken-out-2007-01-28-00-31.tar.gz.sign
-> > > -rw-rw-r--    1 536      536           248 Jan 28 08:31 broken-out-2007-01-28-00-31.tar.sign
-> > > -rw-r-----    1 536      536       4065035 Feb 07 00:59 broken-out-2007-02-06-16-59.tar.bz2
-> > > -rw-r-----    1 536      536           248 Feb 07 00:59 broken-out-2007-02-06-16-59.tar.bz2.sign
-> > > -rw-r-----    1 536      536       5000290 Feb 07 00:59 broken-out-2007-02-06-16-59.tar.gz
-> > > -rw-r-----    1 536      536           248 Feb 07 00:59 broken-out-2007-02-06-16-59.tar.gz.sign
-> > > -rw-r-----    1 536      536           248 Feb 07 00:59 broken-out-2007-02-06-16-59.tar.sign
-> > >
-> >
-> > I still can't wget it...
->
-> You probably can compile it either.
->
-> > Can you upload a new snapshot (broken-out-2007-02-06-16-59 + latest
-> > 80+ patches)?
->
-> I copied it to
-> http://userweb.kernel.org/~akpm/broken-out-2007-02-06-16-59.tar.gz but
-> there's really not much point in using it - it's ancient.
->
+Hi,
 
-It's time to improve witcher script :)
-http://www.gossamer-threads.com/lists/linux/kernel/727199
+I've been working through trying to create a virtual
+bus.  I've
+successfuly made it work for a single instance but
+wanted to
+confirm how to create multiple instances of the
+virtual bus.  I
+believe to do this you have only one instance of your
+new
+bus_type registered but register multiple instances of
+struct
+device for it.  I just wanted to confirm that was
+correct.
+
+Lastly how do you walk over all devices on a bus
+instance?  I
+note bus_for_each_dev but that appears to take a
+bus_type
+rather than struct device instance, hence I assume it
+will return
+all devices from all instances.  I know I could
+compare each
+device to see if it is on a certain bus instance but
+wondered if
+there was a better way?
 
 Regards,
-Michal
+Simon
 
--- 
-Michal K. K. Piotrowski
-LTG - Linux Testers Group
-(http://www.stardust.webpages.pl/ltg/)
+
+ 
+____________________________________________________________________________________
+Don't get soaked.  Take a quick peak at the forecast
+with the Yahoo! Search weather shortcut.
+http://tools.search.yahoo.com/shortcuts/#loc_weather
