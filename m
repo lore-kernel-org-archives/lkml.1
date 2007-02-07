@@ -1,44 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030259AbXBGAIu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030271AbXBGAJ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030259AbXBGAIu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 19:08:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030261AbXBGAIt
+	id S1030271AbXBGAJ2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 19:09:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030272AbXBGAJ1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 19:08:49 -0500
-Received: from smtp3-g19.free.fr ([212.27.42.29]:38209 "EHLO smtp3-g19.free.fr"
+	Tue, 6 Feb 2007 19:09:27 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:56543 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030259AbXBGAIs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 19:08:48 -0500
-Subject: 2.6.20 [drm:i915_wait_irq] *ERROR*
-From: Lionel Landwerlin <landwer@free.fr>
-Reply-To: landwer@free.fr
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Date: Wed, 07 Feb 2007 01:08:46 +0100
-Message-Id: <1170806926.5669.6.camel@cocoduo>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
+	id S1030271AbXBGAJ0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Feb 2007 19:09:26 -0500
+Message-ID: <45C918B1.8060400@garzik.org>
+Date: Tue, 06 Feb 2007 19:09:21 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070130)
+MIME-Version: 1.0
+To: Jay Cliburn <jacliburn@bellsouth.net>
+CC: csnook@redhat.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       atl1-devel@lists.sourceforge.net
+Subject: Re: [PATCH netdev#atl1 1/3] atl1: remove whitespace damage
+References: <20070204022358.GB4063@osprey.hogchain.net>
+In-Reply-To: <20070204022358.GB4063@osprey.hogchain.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.7 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+Jay Cliburn wrote:
+> From: Jay Cliburn <jacliburn@bellsouth.net>
+> 
+> atl1: fix whitespace damage
+> 
+> Remove trailing whitespace and spaces preceding tabs.
+> 
+> Signed-off-by: Jay Cliburn <jacliburn@bellsouth.net>
 
-I'm running a 2.6.20 kernel on my macbook. When running an openGL
-application, if the opengl window's region is moved somewhere outside
-the screen limits, then keyboard locks, I can only move the mouse,
-nothing response. I can only reboot the box by pressing the power button
-5 seconds. /var/log/syslog contains that :
+applied 1-3
 
-kernel: [drm:i915_wait_irq] *ERROR* i915_wait_irq: EBUSY -- rec: 730561 emitted: 730570
-
-The macbook uses an intel card :
-
-00:00.0 Host bridge: Intel Corporation Mobile 945GM/PM/GMS/940GML and 945GT Express Memory Controller Hub (rev 03)
-00:02.0 VGA compatible controller: Intel Corporation Mobile 945GM/GMS/940GML Express Integrated Graphics Controller (rev 03)
-
-Xorg version 7.1.1
-
--- 
-Lionel Landwerlin <landwer@free.fr>
 
