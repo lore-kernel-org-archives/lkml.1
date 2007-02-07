@@ -1,108 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161398AbXBGRKL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161446AbXBGRK6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161398AbXBGRKL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Feb 2007 12:10:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161393AbXBGRKK
+	id S1161446AbXBGRK6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Feb 2007 12:10:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161436AbXBGRK6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Feb 2007 12:10:10 -0500
-Received: from 87-194-8-8.bethere.co.uk ([87.194.8.8]:51668 "EHLO
-	aeryn.fluff.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161398AbXBGRKI (ORCPT
+	Wed, 7 Feb 2007 12:10:58 -0500
+Received: from mga01.intel.com ([192.55.52.88]:1387 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161435AbXBGRK4 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Feb 2007 12:10:08 -0500
-Date: Wed, 7 Feb 2007 17:09:49 +0000
-From: Ben Dooks <ben-linux@fluff.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Ben Dooks <ben-linux@fluff.org>, linux-kernel@vger.kernel.org,
-       linux-fbdev-devel@lists.sourceforge.net, Greg KH <greg@kroah.com>
-Subject: Re: [PATCH] mfd: SM501 core driver
-Message-ID: <20070207170949.GD21120@fluff.org.uk>
-References: <20070206192628.GA13644@fluff.org.uk> <20070206210930.fc814bf6.akpm@linux-foundation.org> <20070207114825.GA21120@fluff.org.uk> <20070207085225.c2371cfd.akpm@linux-foundation.org>
+	Wed, 7 Feb 2007 12:10:56 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: i="4.13,296,1167638400"; 
+   d="scan'208"; a="196881727:sNHT687840377"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070207085225.c2371cfd.akpm@linux-foundation.org>
-X-Disclaimer: I speak for me, myself, and the other one of me.
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Subject: RE: [PATCH] [IA64] Include kexec.h in arch/ia64/kernel/process.c
+Date: Wed, 7 Feb 2007 09:07:40 -0800
+Message-ID: <617E1C2C70743745A92448908E030B2A0117C67C@scsmsx411.amr.corp.intel.com>
+In-Reply-To: <20070207064935.GB726@verge.net.au>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] [IA64] Include kexec.h in arch/ia64/kernel/process.c
+Thread-Index: AcdKhJhkjB+INUURQVeaU3a4Fa6bRAAVR6/Q
+From: "Luck, Tony" <tony.luck@intel.com>
+To: "Horms" <horms@verge.net.au>, <linux-ia64@vger.kernel.org>,
+       <linux-kernel@vger.kernel.org>, <fastboot@lists.osdl.org>
+Cc: "Zou, Nanhai" <nanhai.zou@intel.com>, "Khalid Aziz" <khalid_aziz@hp.com>,
+       "Adrian Bunk" <trivial@kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Magnus Damm" <magnus.damm@gmail.com>
+X-OriginalArrivalTime: 07 Feb 2007 17:07:42.0617 (UTC) FILETIME=[7AC16890:01C74ADA]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 07, 2007 at 08:52:25AM -0800, Andrew Morton wrote:
-> On Wed, 7 Feb 2007 11:48:25 +0000 Ben Dooks <ben-linux@fluff.org> wrote:
-> 
-> > On Tue, Feb 06, 2007 at 09:09:30PM -0800, Andrew Morton wrote:
-> > > On Tue, 6 Feb 2007 19:26:28 +0000 Ben Dooks <ben-linux@fluff.org> wrote:
-> > > 
-> > > > This patch is an update patch, ready for merging
-> > > > for the Silicon Motion SM501 multi-function device
-> > > > core.
-> > > > 
-> > > > This driver handles the core function of the chip,
-> > > > including the clock, power control and allocation
-> > > > of resources for drivers. It also exports a series
-> > > > of platform devices for the function drivers to
-> > > > attach to.
-> > > > 
-> > > > This patch supports both platform and PCI bus
-> > > > attached devices.
-> > > > 
-> > > > Signed-off-by: Ben Dooks <ben-linux@fluff.org>
-> > > 
-> > > Can we get Vincent's signoff here?
-> > > 
-> > > > +#ifdef CONFIG_DEBUG
-> > > 
-> > > This doesn't appear to be defined anywhere, and nor should it be. 
-> > > Something subsystem-specific should be used here?
-> > 
-> > This protects the code being used by dev_dbg() only from being
-> > warned as not being used.
-> 
-> I know what is does, but I query the use of "CONFIG_DEBUG".  I don't think
-> there's a CONFIG_DEBUG defined in existing Kconfig, and your patch doesn't
-> add a CONFIG_DEBUG and nor should it, because that would be an
-> inappropriate identifier to use.
-> 
-> So I'd suggest you just use DEBUG, as many other drivers do.  Or call it
-> CONFIG_SM501_DEBUG and add the Kconfig record to enable it.
+> kexec.h is needed by arch/ia64/kernel/process.c so for the
+> declaration of kexec_disable_iosapic() which is used in machine_shutdown().
 
-You are right, too used to adding CONFIG_ from playing with Kconfig
- 
-> > > > +#define fmt_freq(x) ((x) / MHZ), ((x) % MHZ), (x)
-> > > 
-> > > eww.
-> > 
-> > Do you have a better way of printing a nice formatted MHz with
-> > fractional parts?
-> 
-> Nope.
-> 
-> >  Is it going to be necessary to remove this?
-> 
-> Nope.  But ewww.
-> 
-> > > > +		(void)readl(sm->regs);
-> > > 
-> > > Is there any benefit in all those casts?  Generally we prefer to avoid
-> > > them.
-> > 
-> > I thoguht they where necessary to stop the compiler optimising
-> > away the readl() ?
-> 
-> No, that shuldn't be necessary.  If it was, the compiler would optimise
-> away the first readl() in 
-> 
-> 	my_local = readl(foo);
-> 	my_local = readl(bar);
-> 
-> which would break stuff.  readl() implementations use volatile to prevent
-> this.
+> +#include <asm/kexec.h>
 
-Ok, i've moved these into their own function called
-sm501_sync_regs() to make it more explicit what it is
-being used for.
+I merged this into your earlier change (moving machine_shutdown() into
+process.c).  Linus pulled it last night.
 
--- 
-Ben (ben@fluff.org, http://www.fluff.org/)
+I also added a "#ifdef CONFIG_KEXEC" around the call to kexec_disable_iosapic()
+(because I first noticed that this was undefined when building non-KEXEC kernels).
+But perhaps it might have been better to #define an empty stub for this function
+inside kexec.h for the #ifndef CONFIG_KEXEC case?
 
-  'a smiley only costs 4 bytes'
+-Tony
