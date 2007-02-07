@@ -1,29 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422910AbXBGT53@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422925AbXBGT6a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422910AbXBGT53 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Feb 2007 14:57:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422760AbXBGTzA
+	id S1422925AbXBGT6a (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Feb 2007 14:58:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422928AbXBGT6a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Feb 2007 14:55:00 -0500
-Received: from [198.99.130.12] ([198.99.130.12]:34296 "EHLO
-	saraswathi.solana.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1422906AbXBGTy5 (ORCPT
+	Wed, 7 Feb 2007 14:58:30 -0500
+Received: from thumper2.emsphone.com ([199.67.51.102]:49368 "EHLO
+	thumper2.emsphone.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422925AbXBGT63 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Feb 2007 14:54:57 -0500
-Message-Id: <200702071947.l17Jlc5a006595@ccure.user-mode-linux.org>
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.0.4
-To: akpm@osdl.org
-cc: linux-kernel@vger.kernel.org, user-mode-linux-devel@lists.sourceforge.net
-Subject: [PATCH 0/7] UML - Locking commentary and cleanups
-Mime-Version: 1.0
+	Wed, 7 Feb 2007 14:58:29 -0500
+X-Greylist: delayed 536 seconds by postgrey-1.27 at vger.kernel.org; Wed, 07 Feb 2007 14:58:28 EST
+Date: Wed, 7 Feb 2007 13:41:37 -0600
+From: Andy <genanr@emsphone.com>
+To: linux-kernel@vger.kernel.org
+Subject: console scroll lock causes DOS
+Message-ID: <20070207194137.GA25325@thumper2>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Date: Wed, 07 Feb 2007 14:47:37 -0500
-From: Jeff Dike <jdike@addtoit.com>
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-These patches are 2.6.21 material - they are mostly comments and code tidying
-with a few small bug fixes.
+If the scroll lock is on and there is a bunch of console output, the machine
+will eventually stop responding to the network, until scroll lock is turned
+off (at sometimes that doesn't even help). 
 
-				Jeff
+Easy test:
+
+hit scroll lock
+do a few echo t > /proc/sysrq-trigger on that machine from a ssh/telnet session
+and it should stop responding after two or three of them.
+
+This is bad (for me) because we have a stupid switch box that uses scroll
+lock to bring up the system selection menu, so sometimes scroll lock gets
+left on by accident, and the machine eventually locks up.
+
+Andy
 
