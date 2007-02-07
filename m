@@ -1,45 +1,175 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965696AbXBGSFv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965693AbXBGSHI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965696AbXBGSFv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Feb 2007 13:05:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422635AbXBGSFu
+	id S965693AbXBGSHI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Feb 2007 13:07:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965699AbXBGSHI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Feb 2007 13:05:50 -0500
-Received: from tmailer.gwdg.de ([134.76.10.23]:41179 "EHLO tmailer.gwdg.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965660AbXBGSFt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Feb 2007 13:05:49 -0500
-Date: Wed, 7 Feb 2007 19:03:05 +0100 (MET)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: Christoph Hellwig <hch@lst.de>
-cc: Andrew Morton <akpm@linux-foundation.org>, jack@suse.cz,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] remove sb->s_files and file_list_lock usage in dquot.c
-In-Reply-To: <20070207072259.GA22083@lst.de>
-Message-ID: <Pine.LNX.4.61.0702071901150.20245@yvahk01.tjqt.qr>
-References: <20070206132333.GA9919@lst.de> <20070206155001.22ab74f6.akpm@linux-foundation.org>
- <20070207072259.GA22083@lst.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+	Wed, 7 Feb 2007 13:07:08 -0500
+Received: from out5.smtp.messagingengine.com ([66.111.4.29]:39782 "EHLO
+	out5.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S965693AbXBGSHG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Feb 2007 13:07:06 -0500
+X-Sasl-enc: yFnSj9S9B3Ufw8bazWeToF4XCTpOb2CLym+K4oYyp2KT 1170871622
+Subject: Re: [autofs] Bad race condition in the new autofs protocol
+	somewhere
+From: Ian Kent <raven@themaw.net>
+To: Olivier Galibert <galibert@pobox.com>
+Cc: "Hack inc." <linux-kernel@vger.kernel.org>, autofs@linux.kernel.org
+In-Reply-To: <20070207173414.GA64492@dspnet.fr.eu.org>
+References: <20070207173414.GA64492@dspnet.fr.eu.org>
+Content-Type: text/plain
+Date: Thu, 08 Feb 2007 03:07:41 +0900
+Message-Id: <1170871661.3415.36.camel@raven.themaw.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0 (2.8.0-32.el5) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 2007-02-07 at 18:34 +0100, Olivier Galibert wrote:
+> The setup:
+>   /people is a NIS automount.  /people/gadda points to m179:/disk05/disk11/gadda
+>   /hosts is a two-level automount, /hosts/xx/yy points to xx:/yy using:
+> 
+> in auto.master:
+>   /hosts file:/etc/auto.hosts
+> 
+> in /etc/auto.hosts:
+>   * -fstype=autofs,-Dhost=& file=/etc/auto.hosts.sub
+> 
+> in /etc/auto.hosts.sub:
+>   * ${host}:/&
+> 
+> /people/gadda/normalisation is a symlink to /hosts/m179/disk03/gadda/lemonde
+> 
+> I have a small test program:
+> 
+> #include <stdio.h>
+> #include <stdlib.h>
+> #include <string.h>
+> #include <sys/time.h>
+> #include <sys/types.h>
+> #include <sys/stat.h>
+> #include <fcntl.h>
+> #include <time.h>
+> #include <unistd.h>
+> 
+> int main(void)
+> {
+>   for(;;) {
+>     struct timeval tv1, tv2;
+>     struct timespec ts;
+>     gettimeofday(&tv1, 0);
+>     int fd = open("/people/gadda/normalisation/tempo4.general", O_RDONLY);
+>     gettimeofday(&tv2, 0);
+>     if(fd < 0)
+>       printf("%d.%06d - %d.%06d failure\n", (int)tv1.tv_sec, (int)tv1.tv_usec, (int)tv2.tv_sec, (int)tv2.tv_usec);
+>     else
+>       close(fd);
+> 
+>     ts.tv_sec = 0;
+>     ts.tv_nsec = lrand48() % 100000;
+>     nanosleep(&ts, 0);    
+>   }
+> }
+> 
+> I.e. try opening an existing file "through" the symlink and the
+> automounts, give the time before and after the open syscall if it
+> fails.  Wait for a random time no more than 0.1s and try again.
+> 
+> Actually the random time is no more than 0.1ms, oops.  Whatever.
+> 
+> Then I start the automounter with a 1 second timeout, and I get random
+> failures.
+> 
+> 1170867758.212109 - 1170867758.222789 failure
+> 1170867758.668086 - 1170867758.678607 failure
+> 1170867760.007998 - 1170867760.057324 failure
+> 
+> The log from an extra-verbose, but otherwise unchanged, git-of-today
+> version of autofs is:
+> 
+> Feb  7 18:02:24 m78 automount[16532]: Starting automounter version 5.0.1-rc3, master map auto.master
+> Feb  7 18:02:24 m78 automount[16532]: using kernel protocol version 5.00
+> Feb  7 18:02:24 m78 automount[16532]: mounted indirect mount on /hosts with timeout 1, freq 1 seconds
+> Feb  7 18:02:24 m78 automount[16532]: mounted indirect mount on /people with timeout 1, freq 1 seconds
+> Feb  7 18:02:24 m78 automount[16532]: mounted indirect mount on /corpora with timeout 1, freq 1 seconds
+> Feb  7 18:02:24 m78 automount[16532]: mounted indirect mount on /w3 with timeout 1, freq 1 seconds
+> Feb  7 18:02:24 m78 automount[16532]: mounted indirect mount on /vol with timeout 1, freq 1 seconds
+> Feb  7 18:02:33 m78 automount[16532]: 1170867753.258726 got packet type 3
+> Feb  7 18:02:33 m78 automount[16532]: attempting to mount entry /people/gadda
+> Feb  7 18:02:33 m78 automount[16532]: mount(nfs): mounted m179:/disk05/disk11/gadda on /people/gadda
+> Feb  7 18:02:33 m78 automount[16532]: mounted /people/gadda
+> Feb  7 18:02:33 m78 automount[16532]: 1170867753.355598 got packet type 3
+> Feb  7 18:02:33 m78 automount[16532]: attempting to mount entry /hosts/m179
+> Feb  7 18:02:33 m78 automount[16532]: mounted indirect mount on /hosts/m179 with timeout 1, freq 1 seconds
+> Feb  7 18:02:33 m78 automount[16532]: mounted /hosts/m179
+> Feb  7 18:02:33 m78 automount[16532]: 1170867753.456997 got packet type 3
+> Feb  7 18:02:33 m78 automount[16532]: attempting to mount entry /hosts/m179/disk03
+> Feb  7 18:02:33 m78 automount[16532]: mount(nfs): mounted m179:/disk03 on /hosts/m179/disk03
+> Feb  7 18:02:33 m78 automount[16532]: mounted /hosts/m179/disk03
+> Feb  7 18:02:35 m78 automount[16532]: mount still busy /people
+> Feb  7 18:02:35 m78 automount[16532]: mount still busy /hosts/m179
+> Feb  7 18:02:36 m78 automount[16532]: mount still busy /hosts
+> Feb  7 18:02:37 m78 automount[16532]: mount still busy /people
+> Feb  7 18:02:38 m78 automount[16532]: 1170867758.212137 got packet type 4
+> Feb  7 18:02:38 m78 automount[16532]: 1170867758.212282 expiring path /people/gadda
+> Feb  7 18:02:38 m78 automount[16532]: 1170867758.212983 unmounting dir = /people/gadda
+> Feb  7 18:02:38 m78 automount[16532]: 1170867758.222742 expired /people/gadda
+> Feb  7 18:02:38 m78 automount[16532]: 1170867758.224147 got packet type 3
+> Feb  7 18:02:38 m78 automount[16532]: attempting to mount entry /people/gadda
+> Feb  7 18:02:38 m78 automount[16532]: mount(nfs): mounted m179:/disk05/disk11/gadda on /people/gadda
+> Feb  7 18:02:38 m78 automount[16532]: mounted /people/gadda
+> Feb  7 18:02:38 m78 automount[16532]: 1170867758.668221 got packet type 4
+> Feb  7 18:02:38 m78 automount[16532]: 1170867758.668379 expiring path /hosts/m179/disk03
+> Feb  7 18:02:38 m78 automount[16532]: 1170867758.669053 unmounting dir = /hosts/m179/disk03
+> Feb  7 18:02:38 m78 automount[16532]: 1170867758.678567 expired /hosts/m179/disk03
+> Feb  7 18:02:38 m78 automount[16532]: 1170867758.680159 got packet type 3
+> Feb  7 18:02:38 m78 automount[16532]: attempting to mount entry /hosts/m179/disk03
+> Feb  7 18:02:38 m78 automount[16532]: mount(nfs): mounted m179:/disk03 on /hosts/m179/disk03
+> Feb  7 18:02:38 m78 automount[16532]: mounted /hosts/m179/disk03
+> Feb  7 18:02:38 m78 automount[16532]: mount still busy /hosts/m179
+> Feb  7 18:02:39 m78 automount[16532]: mount still busy /people
+> Feb  7 18:02:39 m78 automount[16532]: mount still busy /hosts
+> Feb  7 18:02:40 m78 automount[16532]: 1170867760.004392 got packet type 4
+> Feb  7 18:02:40 m78 automount[16532]: 1170867760.004561 expiring path /people/gadda
+> Feb  7 18:02:40 m78 automount[16532]: 1170867760.005341 unmounting dir = /people/gadda
+> Feb  7 18:02:40 m78 automount[16532]: 1170867760.057275 expired /people/gadda
+> Feb  7 18:02:40 m78 automount[16532]: 1170867760.060045 got packet type 3
+> Feb  7 18:02:40 m78 automount[16532]: attempting to mount entry /people/gadda
+> Feb  7 18:02:40 m78 automount[16532]: mount(nfs): mounted m179:/disk05/disk11/gadda on /people/gadda
+> Feb  7 18:02:40 m78 automount[16532]: mounted /people/gadda
+> Feb  7 18:02:41 m78 automount[16532]: 1170867761.200013 got packet type 4
+> Feb  7 18:02:41 m78 automount[16532]: 1170867761.200177 expiring path /people/gadda
+> Feb  7 18:02:41 m78 automount[16532]: 1170867761.200877 unmounting dir = /people/gadda
+> Feb  7 18:02:41 m78 automount[16532]: 1170867761.210517 expired /people/gadda
+> Feb  7 18:02:41 m78 automount[16532]: 1170867761.687942 got packet type 4
+> Feb  7 18:02:41 m78 automount[16532]: 1170867761.688101 expiring path /hosts/m179/disk03
+> Feb  7 18:02:41 m78 automount[16532]: 1170867761.688816 unmounting dir = /hosts/m179/disk03
+> Feb  7 18:02:41 m78 automount[16532]: 1170867761.698293 expired /hosts/m179/disk03
+> Feb  7 18:02:42 m78 automount[16532]: mount still busy /hosts
+> Feb  7 18:02:43 m78 automount[16532]: mount still busy /hosts
+> Feb  7 18:02:44 m78 automount[16532]: umounted indirect mount /hosts/m179
+> Feb  7 18:02:44 m78 automount[16532]: shut down path /hosts/m179
+> 
+> So we can see that the requests fail from losing either of the
+> mountpoints and having a race between the umount, the remount and the
+> open.
+> 
+> Kernel is fedora core 5 2.6.18-2200.fc5.  I can reproduce the problem
+> at will and in a very short time, and m78 is currently dedicated to
+> fixing it, so what should I do at that point?
+> 
+> Note that autofs4 fails too on that race, but my guess is that autofs5
+> has a higher probability of being fixed.
 
-On Feb 7 2007 08:22, Christoph Hellwig wrote:
+This looks like it may be a kernel bug that Jeff Moyer and I have been
+working on. I'm testing now.
 
->> That loop has (and had) up to O(n^n) operations.  Is there something which
->> prevents this from going insane?
->
->I don't think so.  Then again it's only called when you call quotaon on
->a mounted filesystem, and normally you don't have that many inodes
->instanciated at that time.
+It may be better to update to a later kernel so I don't have to port the
+patch to several different kernels. Is that possible?
 
-With filesystems that can turn on their quota after mount time (about 
-every fs except xfs), I can surely have a ton of files open, and hence, 
-if I understand correctly, have lots of inodes instantiated.
+Ian
 
 
-Jan
--- 
