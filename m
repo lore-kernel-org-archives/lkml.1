@@ -1,111 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965282AbXBGCfV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965617AbXBGCq5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965282AbXBGCfV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 21:35:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965329AbXBGCfV
+	id S965617AbXBGCq5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 21:46:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965620AbXBGCq5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 21:35:21 -0500
-Received: from imf20aec.mail.bellsouth.net ([205.152.59.68]:59275 "EHLO
-	imf20aec.mail.bellsouth.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S965282AbXBGCfT (ORCPT
+	Tue, 6 Feb 2007 21:46:57 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.158]:29334 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965617AbXBGCq5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 21:35:19 -0500
-Date: Tue, 6 Feb 2007 20:34:53 -0600
-From: Jay Cliburn <jacliburn@bellsouth.net>
-To: jeff@garzik.org
-Cc: csnook@redhat.com, bunk@stusta.de, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, atl1-devel@lists.sourceforge.net
-Subject: [PATCH netdev#atl1 1/1] atl1: clean up extern, global scope declarations
-Message-ID: <20070207023453.GA2657@osprey.hogchain.net>
+	Tue, 6 Feb 2007 21:46:57 -0500
+Subject: Re: 2.6.20-rc6-mm3
+From: Daniel Walker <dwalker@mvista.com>
+Reply-To: dwalker@mvista.com
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Andrew Morton <akpm@osdl.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20070206235102.GC21969@elte.hu>
+References: <20070206214131.GA1176@elte.hu>
+	 <1170798879.3455.58.camel@dwalker1> <20070206220855.GB5109@elte.hu>
+	 <1170801742.3455.87.camel@dwalker1> <20070206225650.GA14853@elte.hu>
+	 <1170803070.3455.93.camel@dwalker1> <20070206231421.GA18654@elte.hu>
+	 <1170804177.3455.109.camel@dwalker1> <20070206232828.GA21969@elte.hu>
+	 <1170804903.3455.121.camel@dwalker1>  <20070206235102.GC21969@elte.hu>
+Content-Type: text/plain
+Date: Tue, 06 Feb 2007 18:46:55 -0800
+Message-Id: <1170816415.3455.193.camel@dwalker1>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.2i
+X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jay Cliburn <jacliburn@bellsouth.net>
+I guess I will respond ....
 
-atl1: move extern to header file; make some global code static
+On Wed, 2007-02-07 at 00:51 +0100, Ingo Molnar wrote:
+> * Daniel Walker <dwalker@mvista.com> wrote:
+> 
+> > > | If we change the current "timer" entry to be listed as 
+> > > | "lapic-timer" and not "IO-APIC-edge" (or one of the other names) 
+> > > | and replace it with the count from LOC
+> > > 
+> > > this is a pretty clear sentence, i dont think i misunderstood 
+> > > anything about it. If i did, please point it out specifically.
+> > 
+> > Geez , man I've corrected this statement already .. [...]
+> 
+> i'm sorry, but where did you "correct this statement already"? You 
+> havent replied to your mail to correct it explicitly, and there's no 
+> later statement of yours that says anything near to "let me correct this 
+> via X" or "i was wrong here, i meant Y".
 
-Move an extern declaration to a header file.  Make needlessly global
-functions static.  Noticed by Adrian Bunk.
+I know that you see corrections as responses to your own email, but it's
+not universal .. Everyone has their own methodology, AFAIK it's free
+form ..
 
-Signed-off-by: Jay Cliburn <jacliburn@bellsouth.net>
----
+> the only subsequent reference of yours seems to be:
+> 
+> | I'm not saying we should "fake" anything .. I'm saying list what's 
+> | really happening .. In a human readable way .
+> 
+> what you write here does not read as a 'correction', this disputes my 
+> characterisation, suggesting that your original point is still intact. 
+> How should i have known that you meant this to be a 'correction' of your 
+> original point, and that this (whatever it means precisely) replaces it?
+> 
+> if you concede a point or correct a statement then /please/ make it 
+> clear. There's nothing bad about being wrong or being stupid 
+> occasionally, it happens to all of us.
 
- drivers/net/atl1/atl1.h         |    1 +
- drivers/net/atl1/atl1_ethtool.c |    2 +-
- drivers/net/atl1/atl1_hw.c      |    4 ++--
- drivers/net/atl1/atl1_main.c    |    4 +---
- 4 files changed, 5 insertions(+), 6 deletions(-)
+I don't take a literal approach to email, which you seem to be taking ..
+I think your seeing this thread as an argument for or against something
+and you have taken a position which you diligently stick to..
 
-diff --git a/drivers/net/atl1/atl1.h b/drivers/net/atl1/atl1.h
-index 3ff978b..b1c6034 100644
---- a/drivers/net/atl1/atl1.h
-+++ b/drivers/net/atl1/atl1.h
-@@ -38,6 +38,7 @@ void atl1_free_ring_resources(struct atl1_adapter *adapter);
- 
- extern char atl1_driver_name[];
- extern char atl1_driver_version[];
-+extern const struct ethtool_ops atl1_ethtool_ops;
- 
- struct atl1_adapter;
- 
-diff --git a/drivers/net/atl1/atl1_ethtool.c b/drivers/net/atl1/atl1_ethtool.c
-index 01c2348..c11c277 100644
---- a/drivers/net/atl1/atl1_ethtool.c
-+++ b/drivers/net/atl1/atl1_ethtool.c
-@@ -318,7 +318,7 @@ static void atl1_get_ringparam(struct net_device *netdev,
- 	ring->rx_jumbo_pending = 0;
- }
- 
--static int atl1_set_ringparam (struct net_device *netdev,
-+static int atl1_set_ringparam(struct net_device *netdev,
- 				struct ethtool_ringparam *ring)
- {
- 	struct atl1_adapter *adapter = netdev_priv(netdev);
-diff --git a/drivers/net/atl1/atl1_hw.c b/drivers/net/atl1/atl1_hw.c
-index a5e92e7..08b2d78 100644
---- a/drivers/net/atl1/atl1_hw.c
-+++ b/drivers/net/atl1/atl1_hw.c
-@@ -206,7 +206,7 @@ static bool atl1_spi_read(struct atl1_hw *hw, u32 addr, u32 *buf)
-  * get_permanent_address
-  * return 0 if get valid mac address, 
-  */
--int atl1_get_permanent_address(struct atl1_hw *hw)
-+static int atl1_get_permanent_address(struct atl1_hw *hw)
- {
- 	u32 addr[2];
- 	u32 i, control;
-@@ -592,7 +592,7 @@ static s32 atl1_setup_link(struct atl1_hw *hw)
- 	return ret_val;
- }
- 
--struct atl1_spi_flash_dev flash_table[] = {
-+static struct atl1_spi_flash_dev flash_table[] = {
- /*	MFR_NAME  WRSR  READ  PRGM  WREN  WRDI  RDSR  RDID  SECTOR_ERASE CHIP_ERASE */
- 	{"Atmel", 0x00, 0x03, 0x02, 0x06, 0x04, 0x05, 0x15, 0x52,        0x62},
- 	{"SST",   0x01, 0x03, 0x02, 0x06, 0x04, 0x05, 0x90, 0x20,        0x60},
-diff --git a/drivers/net/atl1/atl1_main.c b/drivers/net/atl1/atl1_main.c
-index 9a3fb86..6655640 100644
---- a/drivers/net/atl1/atl1_main.c
-+++ b/drivers/net/atl1/atl1_main.c
-@@ -96,8 +96,6 @@ MODULE_DESCRIPTION("Attansic 1000M Ethernet Network Driver");
- MODULE_LICENSE("GPL");
- MODULE_VERSION(DRIVER_VERSION);
- 
--extern struct ethtool_ops atl1_ethtool_ops;
--
- /*
-  * atl1_pci_tbl - PCI Device ID Table
-  */
-@@ -1205,7 +1203,7 @@ static u32 atl1_configure(struct atl1_adapter *adapter)
-  * atl1_irq_disable - Mask off interrupt generation on the NIC
-  * @adapter: board private structure
-  */
--void atl1_irq_disable(struct atl1_adapter *adapter)
-+static void atl1_irq_disable(struct atl1_adapter *adapter)
- {
- 	atomic_inc(&adapter->irq_sem);
- 	iowrite32(0, adapter->hw.hw_addr + REG_IMR);
+My position is not fixed. However, your arguing as if my position was
+fixed. My perspective of this thread was not to argue for a specific
+change, but to throw out changes and see if anything stuck ..
+
+Where my statements were suppose to be loose to begin with, so loose as
+to only spark the start of an idea, not to promote something specific.
+If you read the start of the thread you'll notice that I gave Thomas two
+totally opposite ideas.
+
+"We could just remove the timer entry."
+or
+"[..]how about adding the interrupts to the list which are driving the
+timer ?"
+
+When I started the thread I had a similar position as Thomas, but I was
+concerned that I was missing something or the code was missing
+something.. This was the reason for starting the thread ..
+
+So I'll gladly concede all points. To me it wasn't about the argument,
+or even my own ideas ..
+
+Daniel
+
