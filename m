@@ -1,79 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965671AbXBGHnL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965573AbXBGICf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965671AbXBGHnL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Feb 2007 02:43:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965674AbXBGHnL
+	id S965573AbXBGICf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Feb 2007 03:02:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965675AbXBGICf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Feb 2007 02:43:11 -0500
-Received: from koto.vergenet.net ([210.128.90.7]:57004 "EHLO koto.vergenet.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965671AbXBGHnK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Feb 2007 02:43:10 -0500
-Date: Wed, 7 Feb 2007 16:33:16 +0900
-From: Horms <horms@verge.net.au>
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-Cc: Judith Lebzelter <judith@osdl.org>, fastboot@osdl.org,
-       ebiederm@xmission.com, linux-kernel@vger.kernel.org
-Subject: Re: [Fastboot] [ PATCH ] fix to documentation for kexec
-Message-ID: <20070207073316.GF26314@verge.net.au>
-References: <20070201181955.GE5825@shell0.pdx.osdl.net> <Pine.LNX.4.64.0702011324050.16833@CPE00045a9c397f-CM001225dbafb6>
+	Wed, 7 Feb 2007 03:02:35 -0500
+Received: from omx2-ext.sgi.com ([192.48.171.19]:51134 "EHLO omx2.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S965573AbXBGICf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Feb 2007 03:02:35 -0500
+Date: Wed, 7 Feb 2007 00:02:17 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+To: Nate Diller <nate.diller@gmail.com>
+cc: Arjan van de Ven <arjan@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Rik van Riel <riel@redhat.com>
+Subject: Re: [RFC] Tracking mlocked pages and moving them off the LRU
+In-Reply-To: <5c49b0ed0702061405u1c5e58a6n4e214f65987ab8d3@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0702062356130.2188@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0702022214580.3960@schroedinger.engr.sgi.com> 
+ <20070203005316.eb0b4042.akpm@linux-foundation.org> 
+ <Pine.LNX.4.64.0702030946330.5388@schroedinger.engr.sgi.com> 
+ <1170525860.3073.1054.camel@laptopd505.fenrus.org> 
+ <Pine.LNX.4.64.0702031055210.18224@schroedinger.engr.sgi.com> 
+ <20070203172242.e5bf2534.akpm@linux-foundation.org> 
+ <Pine.LNX.4.64.0702031744060.31986@schroedinger.engr.sgi.com> 
+ <1170576977.3073.1100.camel@laptopd505.fenrus.org> 
+ <Pine.LNX.4.64.0702042236250.6748@schroedinger.engr.sgi.com>
+ <5c49b0ed0702061405u1c5e58a6n4e214f65987ab8d3@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0702011324050.16833@CPE00045a9c397f-CM001225dbafb6>
-User-Agent: mutt-ng/devel-r804 (Debian)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 01, 2007 at 01:25:04PM -0500, Robert P. J. Day wrote:
-> On Thu, 1 Feb 2007, Judith Lebzelter wrote:
-> 
-> > Hello,
-> >
-> > I've noticed that the boot options are not correct for in
-> > the documentation for kdump. The "init" keyword is not
-> > necessary, and causes a kernel panic when booting with an
-> > initrd on Fedora 5.
-> >
-> > Thanks;
-> > Judith Lebzelter
-> >
-> > ---
-> > Signed-off-by: Judith Lebzelter <judith@osdl.org>
-> > ---
-> >
-> >
-> > Index: linux/Documentation/kdump/kdump.txt
-> > ===================================================================
-> > --- linux.orig/Documentation/kdump/kdump.txt
-> > +++ linux/Documentation/kdump/kdump.txt
-> > @@ -207,7 +207,7 @@ the following command:
-> >
-> >     kexec -p <dump-capture-kernel> \
-> >     --initrd=<initrd-for-dump-capture-kernel> --args-linux \
-> > -   --append="root=<root-dev> init 1 irqpoll"
-> > +   --append="root=<root-dev> 1 irqpoll"
-> >
-> >
-> >  Notes on loading the dump-capture kernel:
-> > @@ -228,8 +228,8 @@ Notes on loading the dump-capture kernel
-> >  * You must specify <root-dev> in the format corresponding to the root
-> >    device name in the output of mount command.
-> >
-> > -* "init 1" boots the dump-capture kernel into single-user mode without
-> > -  networking. If you want networking, use "init 3."
-> > +* Boot parameter "1" boots the dump-capture kernel into single-user mode
-> > +  without networking. If you want networking, use "3".
-> 
-> i'm not sure you want to totally remove those first two lines, they
-> appear to talk about getting to run level 1 *from a running system*.
+On Tue, 6 Feb 2007, Nate Diller wrote:
 
-I think that it is refering to a kernel command line parameter,
-not a shell command executed on a running system, so I think the patch
-is correct in that respect.
+> > The dirty ratio with the ZVCS would be
+> > 
+> > NR_DIRTY + NR_UNSTABLE_NFS
+> >         /
+> > NR_FREE_PAGES + NR_INACTIVE + NR_ACTIVE + NR_MLOCK
+> 
+> I don't understand why you want to account mlocked pages in
+> dirty_ratio.  of course mlocked pages *can* be dirty, but they have no
+> relevance in the write throttling code.  the point of dirty ratio is
 
--- 
-Horms
-  H: http://www.vergenet.net/~horms/
-  W: http://www.valinux.co.jp/en/
+mlocked pages can be counted as dirty pages. So if we do not include
+NR_MLOCK in the number of total pages that could be dirty then we may in 
+some cases have >100% dirty pages.
+
+> to guarantee that there are some number of non-dirty, non-pinned,
+> non-mlocked pages on the LRU, to (try to) avoid deadlocks where the
+> writeback path needs to allocate pages, which many filesystems like to
+> do.  if an mlocked page is clean, there's still no way to free it up,
+> so it should not be treated as being on the LRU at all, for write
+> throttling.  the ideal (IMO) dirty ratio would be
+
+Hmmm... I think write throttling is different from reclaim. In write 
+throttling the major objective is to decouple the applications from
+the physical I/O. So the dirty ratio specifies how much "buffer" space
+can be used for I/O. There is an issue that too many dirty pages will
+cause difficulty for reclaim because pages can only be reclaimed after
+writeback is complete.
+
+And yes this is not true for mlocked pages.
+
+> 
+> NR_DIRTY - NR_DIRTY_MLOCKED + NR_UNSTABLE_NFS
+>        /
+> NR_FREE_PAGES + NR_INACTIVE + NR_ACTIVE
+> 
+> obviously it's kinda useless to keep an NR_DIRTY_MLOCKED counter, any
+> of these mlock accounting schemes could easily be modified to update
+> the NR_DIRTY counter so that it only reflects dirty unpinned pages,
+> and not mlocked ones.
+
+So you would be okay with dirty_ratio possibly be >100% of mlocked pages 
+are dirty?
+
+> is that the only place you wanted to have an accurate mocked page count?
+
+Rik had some other ideas on what to do with it. I also think we may end up 
+checking for excessive high mlock counts in various tight VM situations.
 
