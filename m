@@ -1,63 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161276AbXBGM7T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965563AbXBGM7w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161276AbXBGM7T (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Feb 2007 07:59:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965563AbXBGM7T
+	id S965563AbXBGM7w (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Feb 2007 07:59:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030299AbXBGM7v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Feb 2007 07:59:19 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:2114 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S965542AbXBGM7S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Feb 2007 07:59:18 -0500
-Date: Wed, 7 Feb 2007 12:35:52 +0000
-From: Pavel Machek <pavel@ucw.cz>
-To: Zachary Amsden <zach@vmware.com>
-Cc: Andi Kleen <ak@muc.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, Rusty Russell <rusty@rustcorp.com.au>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Chris Wright <chrisw@sous-sol.org>
-Subject: Re: [PATCH 9/11] Panic delay fix
-Message-ID: <20070207123552.GD4481@ucw.cz>
-References: <200702060353.l163rUmj000771@zach-dev.vmware.com> <20070206122729.GC47229@muc.de> <45C8FA2D.6010706@vmware.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <45C8FA2D.6010706@vmware.com>
-User-Agent: Mutt/1.5.9i
+	Wed, 7 Feb 2007 07:59:51 -0500
+Received: from postoffice10.mail.cornell.edu ([132.236.56.14]:33282 "EHLO
+	postoffice10.mail.cornell.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S965563AbXBGM7u (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Feb 2007 07:59:50 -0500
+Message-ID: <32895.74.71.32.29.1170853186.squirrel@webmail.cornell.edu>
+In-Reply-To: <20070207094105.7ab1c601@localhost>
+References: <34171.74.71.32.29.1170727713.squirrel@webmail.cornell.edu>
+    <20070207094105.7ab1c601@localhost>
+Date: Wed, 7 Feb 2007 07:59:46 -0500 (EST)
+Subject: Re: PROBLEM: sata timeouts with intel 82801HB on amd64
+From: "Trevor Offner Caira" <toc3@cornell.edu>
+To: "Paolo Ornati" <ornati@fastwebnet.it>
+Cc: "Trevor Offner Caira" <toc3@cornell.edu>, linux-kernel@vger.kernel.org,
+       "Tejun Heo" <htejun@gmail.com>
+User-Agent: SquirrelMail/1.4.9a
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-> >  
-> >>Failure to use real-time delay here causes the 
-> >>keyboard to become demonically
-> >>possessed in the event of a kernel crash, with wildly 
-> >>blinking lights and
-> >>unpredictable behavior.  This has resulted in several 
-> >>injuries.
-> >
-> >There must be a reason why it wasn't default before. 
-> >Has this
-> >reason changed?
-> 
-> This only matters under paravirt; non-paravirt kernels 
-> and kernels running on native hardware will always 
-> behave properly.
-> 
-> But paravirtualized kernels with fake devices have no 
-> need to udelay to accommodate slow hardware - the 
-> hardware is just virtual.  The USE_REAL_TIME_DELAY 
-> define allows udelay to be specifically reverted back to 
-> being a real delay.  There are only a couple cases where 
+> Are you using XFS, right?
+For /usr, /var and /home, yes. For /, no, my root partition is ext3.
 
-Ugh, it sounds like paravirt is more b0rken then I thought. It should
-always to the proper delay, then replace those udelays that are not
-needed on virtualized hardware with something else.
+> Can you see if the problem goes away either:
+>
+> 1) disabling NCQ ("echo 1 > /sys/block/sda/device/queue_depth" in a
+> boot script)
 
-Just magically defining udelay into nop is broken.
+No, this does not fix it.
 
-							Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+> 	OR
+>
+> 2) mounting XFS filesystem(s) with "nobarrier" option
+
+Neither does this.
+
+Thanks,
+
+Trevor Caira
+
