@@ -1,72 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161281AbXBGMLo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030620AbXBGMRM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161281AbXBGMLo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Feb 2007 07:11:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161253AbXBGMLo
+	id S1030620AbXBGMRM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Feb 2007 07:17:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030232AbXBGMRM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Feb 2007 07:11:44 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:39015 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161237AbXBGMLn (ORCPT
+	Wed, 7 Feb 2007 07:17:12 -0500
+Received: from nf-out-0910.google.com ([64.233.182.189]:6240 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030620AbXBGMRM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Feb 2007 07:11:43 -0500
-Date: Wed, 7 Feb 2007 12:11:25 +0000
-From: Christoph Hellwig <hch@infradead.org>
-To: Andreas Gruenbacher <agruen@suse.de>
-Cc: Christoph Hellwig <hch@infradead.org>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Tony Jones <tonyj@suse.de>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, chrisw@sous-sol.org,
-       linux-security-module@vger.kernel.org, viro@zeniv.linux.org.uk
-Subject: Re: [RFC 0/28] Patches to pass vfsmount to LSM inode security hooks
-Message-ID: <20070207121125.GA15989@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Andreas Gruenbacher <agruen@suse.de>,
-	Trond Myklebust <trond.myklebust@fys.uio.no>,
-	Tony Jones <tonyj@suse.de>, linux-kernel@vger.kernel.org,
-	linux-fsdevel@vger.kernel.org, chrisw@sous-sol.org,
-	linux-security-module@vger.kernel.org, viro@zeniv.linux.org.uk
-References: <20070205182213.12164.40927.sendpatchset@ermintrude.int.wirex.com> <200702051920.36057.agruen@suse.de> <20070206094709.GB5328@infradead.org> <200702070158.15997.agruen@suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 7 Feb 2007 07:17:12 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=S7F2I9EGyGoYtxV2NUbSwbxnvxTDLwLpUYVGUwjV+HlCgHNDWX6Kv1twpv0NIlHmhgsxoP7omRrIn+/3zkcZqYBly1tML8V8UD5dcnUsR8+ccdq2vRJnWgYs8bd/OELaC9KcUbGbO23daL6AvlcL49xEIJkj/Mz40EmH/4HyTIw=
+Message-ID: <d9def9db0702070417h5666cf98k9cc1abce695773a3@mail.gmail.com>
+Date: Wed, 7 Feb 2007 13:17:04 +0100
+From: "Markus Rechberger" <mrechberger@gmail.com>
+To: "Arnd Bergmann" <arnd@arndb.de>
+Subject: Re: [Ksummit-2007-discuss] Re: +1 4 cz (Re: [Ksummit-2006-discuss] 2007 Linux Kernel Summit)
+Cc: ksummit-2007-discuss@thunk.org, "James Simmons" <jsimmons@infradead.org>,
+       "Vojtech Pavlik" <vojtech@suse.cz>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <200702071306.19901.arnd@arndb.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200702070158.15997.agruen@suse.de>
-User-Agent: Mutt/1.4.2.2i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+References: <E1H8tIr-0006QH-Bg@candygram.thunk.org>
+	 <20070206200004.GA15910@suse.cz>
+	 <Pine.LNX.4.64.0702062007360.9224@pentafluge.infradead.org>
+	 <200702071306.19901.arnd@arndb.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 07, 2007 at 01:58:15AM -0800, Andreas Gruenbacher wrote:
-> > It's not actually a pathname we care about, but a vfsmount + dentry
-> > combo.  That one means as much in nfsd as elsewhere.  We want nfsd
-> > to obey r/o or noatime mount flags if /export/foo is exported with them
-> > but /foo not.
-> 
-> This assumes that you can discover from the file handle which export it 
-> belongs to. And right, this can be done using the fsid export option. Okay, 
-> I'm now convinced that passing the vfsmounts from the svc_export to the vfs_ 
-> helpers is good at least for *something*. I'll update the patches.
+On 2/7/07, Arnd Bergmann <arnd@arndb.de> wrote:
+> On Tuesday 06 February 2007 21:10, James Simmons wrote:
+> >
+> > So it is between Britian or the Czech Republic. BTW how long of a train
+> > ride is to swizterland from CZ. My wife's family lives there.
+>
+> Too long. 15 hours according to
+> http://reiseauskunft.bahn.de/bin/query.exe/en .
+> You probably want to take a cheap flight instead.
+>
 
-As I mentioned before I have a big patchset reworking this area, so please
-wait a week or two for me two finish it instead of creating lots of rejects.
+Isn't there a nighttrain? You could (try to) sleep during the journey.
+I'd be interested in Czech too.
 
-> > This doesn't matter.  hardlinks are per definition on the same vfsmount.
-> 
-> Hardlinks are per definition on the same filesystem. This doesn't mean that 
-> you can't have two filehandles for the same file but with different 
-> vfsmounts -- you can have the same file visible in multiple locations, each 
-> with their own vfsmount.
-
-Sure, but that doesn't matter here.  Exports are per-vfsmount, and
-each export has the vfsmount stored in it.  So we know which of the
-vfsmount we want before we even resolve the dentry.  And yes, if
-I have /export/foo mounted with option but /foo now I want those
-options to apply to the nfs export.  Note that we actually have another
-little bug in this area currently:  if you export two different
-patch that have the same underlying filesystems they actually do get
-the same file handle unless using fsid=.  We probably need to put
-a check into svc_export_parse so that we don't export the same
-device twice without using fsid=.
-
-
+Markus
