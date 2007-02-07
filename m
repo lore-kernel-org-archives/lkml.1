@@ -1,168 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161440AbXBGVz5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161439AbXBGV6m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161440AbXBGVz5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Feb 2007 16:55:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161450AbXBGVz5
+	id S1161439AbXBGV6m (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Feb 2007 16:58:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422778AbXBGV6m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Feb 2007 16:55:57 -0500
-Received: from raven.upol.cz ([158.194.120.4]:60149 "EHLO raven.upol.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161440AbXBGVz4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Feb 2007 16:55:56 -0500
-Date: Wed, 7 Feb 2007 23:04:35 +0100
-To: Roman Zippel <zippel@linux-m68k.org>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>, torvalds@osdl.org, sam@ravnborg.org,
-       linux-kernel@vger.kernel.org
-Subject: [patch, fix build regression] kbuild: Kbuild.include avoid using spaces in call arguments
-Message-ID: <20070207220435.GC22699@flower.upol.cz>
-References: <20070207165204.GA5537@martell.zuzino.mipt.ru> <Pine.LNX.4.64.0702071846180.14457@scrub.home>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0702071846180.14457@scrub.home>
-Organization: Palacky University in Olomouc, experimental physics department.
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Oleg Verych <olecom@flower.upol.cz>
+	Wed, 7 Feb 2007 16:58:42 -0500
+Received: from zombie.ncsc.mil ([144.51.88.131]:56931 "EHLO jazzdrum.ncsc.mil"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1161439AbXBGV6l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Feb 2007 16:58:41 -0500
+Subject: Re: [PATCH 2/2] sysctl: Restore the selinux path based label
+	lookup for sysctls.
+From: Stephen Smalley <sds@tycho.nsa.gov>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Andrew Morton <akpm@osdl.org>, Ingo Molnar <mingo@elte.hu>,
+       tglx@linutronix.de, linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov,
+       jmorris@namei.org
+In-Reply-To: <1170882738.11912.144.camel@moss-spartans.epoch.ncsc.mil>
+References: <200701280106.l0S16CG3019873@shell0.pdx.osdl.net>
+	 <20070127172410.2b041952.akpm@osdl.org>
+	 <1169972718.17469.164.camel@localhost.localdomain>
+	 <20070128003549.2ca38dc8.akpm@osdl.org> <20070128093358.GA2071@elte.hu>
+	 <20070128095712.GA6485@elte.hu> <20070128100627.GA8416@elte.hu>
+	 <20070128104548.a835d859.akpm@osdl.org>
+	 <m1r6tfq7nv.fsf_-_@ebiederm.dsl.xmission.com>
+	 <1170075866.8720.15.camel@moss-spartans.epoch.ncsc.mil>
+	 <m17iuvrnpk.fsf_-_@ebiederm.dsl.xmission.com>
+	 <m13b5jrngt.fsf_-_@ebiederm.dsl.xmission.com>
+	 <1170872654.11912.87.camel@moss-spartans.epoch.ncsc.mil>
+	 <1170882738.11912.144.camel@moss-spartans.epoch.ncsc.mil>
+Content-Type: text/plain
+Organization: National Security Agency
+Date: Wed, 07 Feb 2007 16:54:04 -0500
+Message-Id: <1170885244.11912.168.camel@moss-spartans.epoch.ncsc.mil>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 07, 2007 at 06:47:15PM +0100, Roman Zippel wrote:
-> Hi,
+On Wed, 2007-02-07 at 16:12 -0500, Stephen Smalley wrote:
+> On Wed, 2007-02-07 at 13:24 -0500, Stephen Smalley wrote:
+> > On Tue, 2007-02-06 at 14:21 -0700, Eric W. Biederman wrote:
+> > > This time instead of generating the generating the paths from proc_dir_entries
+> > > generate the labels from the names in the sysctl ctl_tables themselves.  This
+> > > removes an unnecessary layer of indirection, allows this to work even when
+> > > procfs support is not compiled into the kernel, and especially allows it
+> > > to work now that ctl_tables no longer have a proc_dir_entry field.
+> > 
+> > Thanks, looks sane.
+> > 
+> > > I continue passing "proc" into genfs sid although that is complete nonsense
+> > > to allow existing selinux policies to work without modification.
+> > > 
+> > > Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+> > 
+> > Acked-by:  Stephen Smalley <sds@tycho.nsa.gov>
 > 
-> On Wed, 7 Feb 2007, Alexey Dobriyan wrote:
-> 
-> > The change below is shitting i386 defconfig (as well as my usual config)
-> > build log with warnings:
-> > 
-> >   CC      init/main.o
-> > `-mcpu=' is deprecated. Use `-mtune=' or '-march=' instead.
-> > `-mcpu=' is deprecated. Use `-mtune=' or '-march=' instead.
-> > 
-> > gcc is 4.1.1.
-> > 
-> > ------------------
-> > $ git-cat-file commit 5de043f4bd11a9e0a3e8daec7d1905da575a76b7
-> > tree 1cdafacd6a0f6e12bd5b88d9031a6130169ca868
-> > parent f6112ec27a8f0eee6c5a996f65c7bfd9457d9f85
-> > author Oleg Verych <olecom@flower.upol.cz> 1170724701 +0100
-> > committer Linus Torvalds <torvalds@woody.linux-foundation.org>
-> > 1170801049 -0800
-> > 
-> > [PATCH] kbuild: improve option checking, Kbuild.include cleanup
-> > 
-> >  GNU binutils, root users, tmpfiles, external modules ro builds must
-> >  be fixed to do the right thing now.
-> 
-> Linus, please revert. Thanks.
- 
-Roman, while it went so fast to Linus, i didn't expect that, let me
-try to fix all this with this little patch.
+> Hmmm...but in testing the patch, I don't seem to (consistently) reach
+> these checks when accessing via /proc/sys.  I see that you are caching
+> the mode information and using it in some cases rather than calling the
+> sysctl_perm function.
 
----
-Subject: [patch] kbuild, Kbuild.include: avoid using spaces in call arguments
+Actually, on further inspection, it looks like the real issue is the
+"path" name generation; "cat /proc/sys/kernel/modprobe" yields a call to
+security_genfs_sid() with just "/modprobe" rather than the expected
+"/sys/kernel/modprobe".  Which likewise leaves us with the generic proc
+label, just as with the inode permission check, so I end up seeing
+checks against it only.
 
-  Do not use whitespace in arguments of functions in makefiles, as
-  they propagate further without notice. Thus we get
+> One related but separate issue is that the /proc/sys inode labeling is
+> also affected by the sysctl patch series.  Those inodes used to be
+> labeled by selinux_proc_get_sid (from selinux_d_instantiate), but that
+> no longer works, so they now fall back to the superblock SID (generic
+> proc label).  That changes the inode permission checks on an attempt to
+> access a /proc/sys node and will likely cause denials under current
+> policy for confined domains since one wouldn't generally be writing to
+> the generic proc label. If you always called sysctl_perm from the proc
+> sysctl code, we could possibly dispense with inode permission checking
+> on those inodes, e.g. marking them private.
 
-  + echo ' y'
-
-  instead of
-
-  + echo y
-
-  Fix misleading comments.
-
-Signed-off-by: Oleg Verych <olecom@flower.upol.cz>
----
-
- Whitespaces in makefiles are PITA. But i've learnt this already.
-
- scripts/Kbuild.include |   40 ++++++++++++++++++++--------------------
- 1 file changed, 20 insertions(+), 20 deletions(-)
-
-Index: linux-2.6.20/scripts/Kbuild.include
-===================================================================
---- linux-2.6.20.orig/scripts/Kbuild.include	2007-02-07 22:54:01.814467250 +0100
-+++ linux-2.6.20/scripts/Kbuild.include	2007-02-07 22:54:17.099422500 +0100
-@@ -58,5 +58,5 @@ endef
- 
- # checker-shell
--# Usage: option = $(call checker-shell, $(CC)...-o $$OUT, option-ok, otherwise)
-+# Usage: option = $(call checker-shell,$(CC)...-o $$OUT,option-ok,otherwise)
- # Exit code chooses option. $$OUT is safe location for needless output.
- define checker-shell
-@@ -75,21 +75,21 @@ endef
- 
- # as-option
--# Usage: cflags-y += $(call as-option, -Wa$(comma)-isa=foo,)
--as-option = $(call checker-shell, \
--   $(CC) $(CFLAGS) $(1) -c -xassembler /dev/null -o $$OUT, $(1), $(2))
-+# Usage: cflags-y += $(call as-option,-Wa$(comma)-isa=foo,)
-+as-option = $(call checker-shell,\
-+   $(CC) $(CFLAGS) $(1) -c -xassembler /dev/null -o $$OUT,$(1),$(2))
- 
- # as-instr
--# Usage: cflags-y += $(call as-instr, instr, option1, option2)
--as-instr = $(call checker-shell, \
--   printf "$(1)" | $(CC) $(AFLAGS) -c -xassembler -o $$OUT -, $(2), $(3))
-+# Usage: cflags-y += $(call as-instr,instr,option1,option2)
-+as-instr = $(call checker-shell,\
-+   printf "$(1)" | $(CC) $(AFLAGS) -c -xassembler -o $$OUT -,$(2),$(3))
- 
- # cc-option
--# Usage: cflags-y += $(call cc-option, -march=winchip-c6, -march=i586)
--cc-option = $(call checker-shell, \
--   $(CC) $(CFLAGS) $(if $(3),$(3),$(1)) -S -xc /dev/null -o $$OUT, $(1), $(2))
-+# Usage: cflags-y += $(call cc-option,-march=winchip-c6,-march=i586)
-+cc-option = $(call checker-shell,\
-+   $(CC) $(CFLAGS) $(if $(3),$(3),$(1)) -S -xc /dev/null -o $$OUT,$(1),$(2))
- 
- # cc-option-yn
--# Usage: flag := $(call cc-option-yn, -march=winchip-c6)
--cc-option-yn = $(call cc-option, "y", "n", $(1))
-+# Usage: flag := $(call cc-option-yn,-march=winchip-c6)
-+cc-option-yn = $(call cc-option,"y","n",$(1))
- 
- # cc-option-align
-@@ -99,5 +99,5 @@ cc-option-align = $(subst -functions=0,,
- 
- # cc-version
--# Usage gcc-ver := $(call cc-version, $(CC))
-+# Usage gcc-ver := $(call cc-version,$(CC))
- cc-version = $(shell $(CONFIG_SHELL) $(srctree)/scripts/gcc-version.sh $(CC))
- 
-@@ -108,6 +108,6 @@ cc-ifversion = $(shell [ $(call cc-versi
- # ld-option
- # Usage: ldflags += $(call ld-option, -Wl$(comma)--hash-style=both)
--ld-option = $(call checker-shell, \
--   $(CC) $(1) -nostdlib -xc /dev/null -o $$OUT, $(1), $(2))
-+ld-option = $(call checker-shell,\
-+   $(CC) $(1) -nostdlib -xc /dev/null -o $$OUT,$(1),$(2))
- 
- ######
-@@ -121,13 +121,13 @@ build := -f $(if $(KBUILD_SRC),$(srctree
- # add original to the end
- addtree = $(if \
--	$(filter-out -I/%, $(1)), $(patsubst -I%,-I$(srctree)/%,$(1))) $(1)
-+	$(filter-out -I/%,$(1)),$(patsubst -I%,-I$(srctree)/%,$(1))) $(1)
- 
- # Find all -I options and call addtree
--flags = $(foreach o,$($(1)), \
--	$(if $(filter -I%,$(o)), $(call addtree, $(o)), $(o)))
-+flags = $(foreach o,$($(1)),\
-+	$(if $(filter -I%,$(o)),$(call addtree,$(o)),$(o)))
- 
- # echo command.
- # Short version is used, if $(quiet) equals `quiet_', otherwise full one.
--echo-cmd = $(if $($(quiet)cmd_$(1)), \
-+echo-cmd = $(if $($(quiet)cmd_$(1)),\
- 	echo '  $(call escsq,$($(quiet)cmd_$(1)))$(echo-why)';)
- 
-@@ -136,5 +136,5 @@ cmd = @$(echo-cmd) $(cmd_$(1))
- 
- # Add $(obj)/ for paths that are not absolute
--objectify = $(foreach o,$(1), $(if $(filter /%,$(o)), $(o), $(obj)/$(o)))
-+objectify = $(foreach o,$(1),$(if $(filter /%,$(o)),$(o),$(obj)/$(o)))
- 
- ###
+-- 
+Stephen Smalley
+National Security Agency
 
