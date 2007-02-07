@@ -1,101 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422801AbXBGVZA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422817AbXBGVa3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422801AbXBGVZA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Feb 2007 16:25:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422808AbXBGVZA
+	id S1422817AbXBGVa3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Feb 2007 16:30:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422808AbXBGVa3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Feb 2007 16:25:00 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:51424 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422801AbXBGVY7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Feb 2007 16:24:59 -0500
-Message-ID: <45CA42A7.4030305@oracle.com>
-Date: Wed, 07 Feb 2007 13:20:39 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
-MIME-Version: 1.0
-To: Thibaud Hulin <hulin.thibaud@wanadoo.fr>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [patch] Re: error 2 after a compile
-References: <45C8DE76.5000109@wanadoo.fr> <20070206121027.0a38e6ad.randy.dunlap@oracle.com> <45CA40F0.10808@wanadoo.fr>
-In-Reply-To: <45CA40F0.10808@wanadoo.fr>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+	Wed, 7 Feb 2007 16:30:29 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:38157 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1422794AbXBGVa2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Feb 2007 16:30:28 -0500
+Date: Wed, 7 Feb 2007 13:30:20 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Sumant Patro <sumantp@lsil.com>
+Cc: James.Bottomley@SteelEye.com, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, neela.kolli@lsi.com, bo.yang@lsi.com,
+       sumant.patro@lsi.com
+Subject: Re: [PATCH 4/5] scsi: megaraid_sas - preallocate memory for ioctl
+ processing
+Message-Id: <20070207133020.4c58e271.akpm@linux-foundation.org>
+In-Reply-To: <1170800394.10482.41.camel@dumbo>
+References: <1170800394.10482.41.camel@dumbo>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thibaud Hulin wrote:
-> Thanks. Before seeing your message, I erase the line with this module in 
-> the .config, and if worked. However, I must recompile it, because I 
-> forgot someting for suspend2.
-> I'd like install your patch. But how can I do it ? Have you join a patch 
-> sched.h ?
+On Tue, 06 Feb 2007 14:19:54 -0800
+Sumant Patro <sumantp@lsil.com> wrote:
 
-Just apply the patch and rebuild the kernel.
-Or edit drivers/usb/atm/ueagle-atm.c and add that one line
-and then rebuild the kernel.
+> Preallocate memory for ioctl processing. This is to avoid situations 
+> where ioctl fails for lack of memory (when system under heavy stress).
+> The memory pool will have 8*4K, 4*8K and 1*64K memory chunks
 
-Applying patches is covered somewhat in the README file at the
-top-level of the kernel source tree and more in the file
-Documentation/applying-patches.txt .  A quick summary is:
+mutter.
 
-save the patch from the email as ueagle.patch
+I suspect all this horror is due to stupidity in the DMA API.
 
-cd linux-2.6.19
-patch -p1 < ~/ueagle.patch
-re-enable the config option if it is still disabled
-make all
+pci_alloc_consistent() just goes and assumes GFP_ATOMIC, whereas
+the caller (megasas_mgmt_fw_ioctl) would have been perfectly happy
+to use GFP_KERNEL.
+
+I bet this fixes it:
 
 
-> Randy Dunlap a écrit :
->> On Tue, 06 Feb 2007 21:00:54 +0100 Thibaud Hulin wrote:
->>
->>> Hello !
->>> I'm trying to compile a kernel from 2.6.17-10 to 2.6.19 with suspend2.
->>> After this command :
->>> make-kpkg --append-to-version=swsusp2.070206 kernel_image --initrd 
->>> kernel_headers --revision=2.6.1
->>>
->>> I obtain :
->>>   Building modules, stage 2.
->>>    MODPOST 1479 modules
->>> WARNING: Can't handle masks in drivers/ide/pci/atiixp:FFFF05
->>> WARNING: "try_to_freeze" [drivers/usb/atm/ueagle-atm.ko] undefined!
->>> make[2]: *** [__modpost] Erreur 1
->>> make[1]: *** [modules] Erreur 2
->>> make[1]: quittant le répertoire « /home/hulin/src/linux-2.6.19 »
->>> make: *** [debian/stamp-build-kernel] Erreur 2
->>>
->>> I don't understand the error ?
->>
->>
->> The driver is missing #include <linux/sched.h>.
->> Please try the patch below and report back on it.
->> ---
->>
->> From: Randy Dunlap <randy.dunlap@oracle.com>
->>
->> Driver needs sched.h for try_to_freeze().
->>
->> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
->> ---
->>  drivers/usb/atm/ueagle-atm.c |    1 +
->>  1 file changed, 1 insertion(+)
->>
->> --- linux-2619-pv.orig/drivers/usb/atm/ueagle-atm.c
->> +++ linux-2619-pv/drivers/usb/atm/ueagle-atm.c
->> @@ -61,6 +61,7 @@
->>  #include <linux/usb.h>
->>  #include <linux/firmware.h>
->>  #include <linux/ctype.h>
->> +#include <linux/sched.h>
->>  #include <linux/kthread.h>
->>  #include <linux/version.h>
->>  #include <linux/mutex.h>
 
--- 
-~Randy
+diff -puN include/asm-generic/pci-dma-compat.h~a include/asm-generic/pci-dma-compat.h
+--- a/include/asm-generic/pci-dma-compat.h~a
++++ a/include/asm-generic/pci-dma-compat.h
+@@ -4,6 +4,7 @@
+ #ifndef _ASM_GENERIC_PCI_DMA_COMPAT_H
+ #define _ASM_GENERIC_PCI_DMA_COMPAT_H
+ 
++#include <linux/types.h>
+ #include <linux/dma-mapping.h>
+ 
+ /* note pci_set_dma_mask isn't here, since it's a public function
+@@ -22,6 +23,13 @@ pci_alloc_consistent(struct pci_dev *hwd
+ 	return dma_alloc_coherent(hwdev == NULL ? NULL : &hwdev->dev, size, dma_handle, GFP_ATOMIC);
+ }
+ 
++static inline void *
++pci_alloc_consistent_not_stupid(struct pci_dev *hwdev, size_t size,
++		     dma_addr_t *dma_handle, gfp_t flags)
++{
++	return dma_alloc_coherent(hwdev == NULL ? NULL : &hwdev->dev, size, dma_handle, flags);
++}
++
+ static inline void
+ pci_free_consistent(struct pci_dev *hwdev, size_t size,
+ 		    void *vaddr, dma_addr_t dma_handle)
+diff -puN drivers/scsi/megaraid/megaraid_sas.c~a drivers/scsi/megaraid/megaraid_sas.c
+--- a/drivers/scsi/megaraid/megaraid_sas.c~a
++++ a/drivers/scsi/megaraid/megaraid_sas.c
+@@ -2655,9 +2655,9 @@ megasas_mgmt_fw_ioctl(struct megasas_ins
+ 	 * For each user buffer, create a mirror buffer and copy in
+ 	 */
+ 	for (i = 0; i < ioc->sge_count; i++) {
+-		kbuff_arr[i] = pci_alloc_consistent(instance->pdev,
++		kbuff_arr[i] = pci_alloc_consistent_not_stupid(instance->pdev,
+ 						    ioc->sgl[i].iov_len,
+-						    &buf_handle);
++						    &buf_handle, GFP_KERNEL);
+ 		if (!kbuff_arr[i]) {
+ 			printk(KERN_DEBUG "megasas: Failed to alloc "
+ 			       "kernel SGL buffer for IOCTL \n");
+@@ -2684,8 +2684,9 @@ megasas_mgmt_fw_ioctl(struct megasas_ins
+ 	}
+ 
+ 	if (ioc->sense_len) {
+-		sense = pci_alloc_consistent(instance->pdev, ioc->sense_len,
+-					     &sense_handle);
++		sense = pci_alloc_consistent_nopt_stupid(instance->pdev,
++					ioc->sense_len, &sense_handle,
++					GFP_KERNEL);
+ 		if (!sense) {
+ 			error = -ENOMEM;
+ 			goto out;
+_
+
