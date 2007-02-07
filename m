@@ -1,69 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161225AbXBGLnb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161227AbXBGLrZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161225AbXBGLnb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Feb 2007 06:43:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161226AbXBGLnb
+	id S1161227AbXBGLrZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Feb 2007 06:47:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161229AbXBGLrZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Feb 2007 06:43:31 -0500
-Received: from nigel.suspend2.net ([203.171.70.205]:49169 "EHLO
-	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161225AbXBGLna (ORCPT
+	Wed, 7 Feb 2007 06:47:25 -0500
+Received: from nz-out-0506.google.com ([64.233.162.231]:34130 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161227AbXBGLrY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Feb 2007 06:43:30 -0500
-Subject: Re: [patch 1/1] PM: Adds remount fs ro at suspend
-From: Nigel Cunningham <nigel@nigel.suspend2.net>
-Reply-To: nigel@nigel.suspend2.net
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Cc: Andrew Morton <akpm@linux-foundation.org>, akuster@mvista.com,
-       linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-In-Reply-To: <20070207112539.GD8148@khazad-dum.debian.net>
-References: <20070202235132.EDBDF1C448@hermes.mvista.com>
-	 <20070202161611.cf8b4328.akpm@linux-foundation.org>
-	 <20070203003536.GA619@khazad-dum.debian.net>
-	 <1170710913.6105.39.camel@nigel.suspend2.net>
-	 <20070206143231.GD18392@khazad-dum.debian.net>
-	 <1170797924.14398.19.camel@nigel.suspend2.net>
-	 <20070207112539.GD8148@khazad-dum.debian.net>
-Content-Type: text/plain
-Date: Wed, 07 Feb 2007 22:43:13 +1100
-Message-Id: <1170848593.9827.24.camel@nigel.suspend2.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
+	Wed, 7 Feb 2007 06:47:24 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=G2PVy71zpJu1dCzzZ3ot/FCf64ovq9Hwr0+Aw6SiPcCYWHcoNt21l5d/6jPGQdSf494ZWoVHzlrCpJvDHXCgLGcyFFlo4BSRR6mUycMShG4PBM5aO+3nogVZLagCY/JMT2jSRnD4bS+cyMIDrM9q5QkeDpm8+/zk84z1ey7dAzQ=
+Message-ID: <8d158e1f0702070347n4398c878i1b591d09e9c25d48@mail.gmail.com>
+Date: Wed, 7 Feb 2007 12:47:23 +0100
+From: "Patrick Ale" <patrick.ale@gmail.com>
+To: "Adam J. Richter" <adam@yggdrasil.com>
+Subject: Re: hdparm for lib_pata
+Cc: Stephen.Clark@seclark.us, linux-kernel@vger.kernel.org
+In-Reply-To: <200702071055.l17AtrZf014135@freya.yggdrasil.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200702071055.l17AtrZf014135@freya.yggdrasil.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+>         Do you know if these drives were advertising less capability
+> than they were spec-ed at?  Do you recall if the IDE driver without
+> kernel arguments printed its rationale for reverting to the slower
+> setting?
 
-On Wed, 2007-02-07 at 09:25 -0200, Henrique de Moraes Holschuh wrote:
-> On Wed, 07 Feb 2007, Nigel Cunningham wrote:
-> > Ok, as far as usage scenario goes, that's fair enough. But as to the
-> > solution, I wonder though whether it's making life more complicated than
-> > it needs to be. After all, we should also be able to cope okay with
-> > having the power suddenly go out. If we can cope with that, cleaning
-> > filesystems prior to suspending should be a non-issue.
-> 
-> We don't cope okay with the power going out, at all.  And as an user case, a
-> need for fsck if you do something that is a reasonable use case (unplugging
-> devices while suspended) is not okay, either.
+I can only speak for myself of course.
+On boot time the libsata driver detected my harddisks were capable of
+UDMA100, and used it.
 
-Maybe it depends on the filesystem you use. I've used ext3 for 6 or so
-years of development on Suspend2, and it's never given me a single
-problem, despite the fact that I've sometimes done the equivalent of
-pulling the plug without a sync or unmount. I did try XFS at one stage.
-It's performance was better, but it did give problems. Nevertheless, I'm
-more than happy to make the above claim about ext3.
+Then, after 2 hours, and resyncing RAID1 MD 1 devices, I started
+seeing things like:
+"Drive not ready"
+"DMA timeout on ..."
 
-> > Likewise with changes in hardware. Once hotplugging support is mature,
-> > suspending, switching around hardware and resuming should just result in
-> > hot[un]plug events.
-> 
-> Well, if we add *move* events for when someone unplugs a usb stick in one
-> port and replugs it in another while the system is in lala-land... maybe :-)
-> It would be normal to do it, when dealing with docks.
+After this, I saw a bus reset, the master disk (the one with problems)
+reverted to UDMA/44 and the slave (no problems appearantly staid
+(stayed?) at UDMA100.
 
-Isn't that part of the point to having those uuid thingys? I hate them
-at the moment (from the point of view of suspend code), but hopefully
-they'll end up being nicer to deal with.
+Then, after literaly some minutes, same messages, "Drive not ready" ,
+"DMA timeout". And it went to an even lower UDMA mode, till the point
+it was out of UDMA modes, switched to PIO, and when it dropped to the
+lowest PIO mode, it just said how it couldnt go any lower
 
+>         I ask because I'd like to know if this sort of thing can ever
+> happen with libata.  If so, then that is yet another reason to have
+> the ability to override DMA settings from user level in libata.
+
+Please note: I DID have problems, major ones, So yes, libsata does
+fall back to slower transfer modes, but as far of my experience
+concerned, not without a reason which should be addressed.
+
+
+Patrick
