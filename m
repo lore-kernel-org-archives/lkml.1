@@ -1,63 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422805AbXBGX50@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422793AbXBGX5f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422805AbXBGX50 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Feb 2007 18:57:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422821AbXBGX50
+	id S1422793AbXBGX5f (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Feb 2007 18:57:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422821AbXBGX5f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Feb 2007 18:57:26 -0500
-Received: from gepetto.dc.ltu.se ([130.240.42.40]:48444 "EHLO
-	gepetto.dc.ltu.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422805AbXBGX5Z (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Feb 2007 18:57:25 -0500
-Message-ID: <45CA6711.40502@student.ltu.se>
-Date: Thu, 08 Feb 2007 00:56:01 +0100
-From: Richard Knutsson <ricknu-0@student.ltu.se>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
+	Wed, 7 Feb 2007 18:57:35 -0500
+Received: from jack.tiscali.it ([213.205.33.53]:33282 "EHLO jack.tiscali.it"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1422793AbXBGX5e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Feb 2007 18:57:34 -0500
+Date: Thu, 8 Feb 2007 00:57:28 +0100
+From: Luca Tettamanti <kronos@people.it>
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: Andrew Morton <akpm@osdl.org>, Dave Airlie <airlied@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [Linux-fbdev-devel] [PATCH] nvidiafb: allow ignoring EDID info
+Message-ID: <20070207235728.GA28695@dreamland.darkstar.lan>
+References: <20070128160831.fb51347f.akpm@osdl.org> <21d7e9970701281612q56b694edp6efd1a5556dea3fe@mail.gmail.com> <20070128162907.370f5476.akpm@osdl.org> <21d7e9970701281639w57edc2efw4ba620d4c1bdcee7@mail.gmail.com> <cb7bb73a0701290637q2ce0ff16t28f82d0c0339a2ba@mail.gmail.com> <20070130203301.GA15067@dreamland.darkstar.lan> <20070204201713.GA12867@dreamland.darkstar.lan> <cb7bb73a0702041317u4ca2fbabp45cf56526e57c982@mail.gmail.com> <20070205201824.GA13431@dreamland.darkstar.lan> <cb7bb73a0702051328n50c889d9o461ac2bb9f9ea75e@mail.gmail.com>
 MIME-Version: 1.0
-To: Josh Triplett <josh@kernel.org>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/3] rcutorture: Remove redundant assignment to cur_ops
- in for loop
-References: <45CA206C.2080205@kernel.org> <45CA212A.7000504@kernel.org>
-In-Reply-To: <45CA212A.7000504@kernel.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <cb7bb73a0702051328n50c889d9o461ac2bb9f9ea75e@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Josh Triplett wrote:
-> The for loop in rcutorture_init uses the condition
-> cur_ops = torture_ops[i], cur_ops
-> but then makes the same assignment to cur_ops inside the loop.  Remove the
-> redundant assignment inside the loop, and remove now-unnecessary braces.
->
-> Signed-off-by: Josh Triplett <josh@kernel.org>
-> ---
->  kernel/rcutorture.c |    7 ++-----
->  1 files changed, 2 insertions(+), 5 deletions(-)
->
-> diff --git a/kernel/rcutorture.c b/kernel/rcutorture.c
-> index 0c7bf0c..7258bcb 100644
-> --- a/kernel/rcutorture.c
-> +++ b/kernel/rcutorture.c
-> @@ -875,12 +875,9 @@ rcu_torture_init(void)
->  
->  	/* Process args and tell the world that the torturer is on the job. */
->  
-> -	for (i = 0; cur_ops = torture_ops[i], cur_ops; i++) {
-> -		cur_ops = torture_ops[i];
-> -		if (strcmp(torture_type, cur_ops->name) == 0) {
-> +	for (i = 0; cur_ops = torture_ops[i], cur_ops; i++)
->   
-May be tired right now, but wouldn't it be more logical with:
+Il Mon, Feb 05, 2007 at 10:28:36PM +0100, Giuseppe Bilotta ha scritto: 
+> On 2/5/07, Luca Tettamanti <kronos@people.it> wrote:
+> > get-edid uses the BIOS, while the other two talk directly over the I2C
+> > bus.
+> >
+> > Try loading i2c-dev (I2C_CHARDEV); With i2cdump[1] you can read the EDID
+> > block, which resides at address 0x50:
+> >
+> > i2cdump N 0x50 (where N is the bus number)
+> >
+> > If you are unshure about bus number try with all the available
+> > /dev/i2c-* devices (you may want to unload HW monitor drivers first, so
+> > you don't poke at random stuff).
+[...]
+> There is no such thing as /dev/i2c* UNLESS I load nvidiafb.
 
-for (i = 0; cur_ops = torture_ops[i], i++)
+Of course :)
 
-Right now it seems to have two conditions for cur_ops.
+> When I
+> load that, I get three busses (i2c-0, -1, and -2), but i2cdump N 0x50
+> gives me a nice tableau of X's all around, for all values of N.
 
+There may be a bug in the serial clock line control, at least the code
+looks strange. I'll check and come back with a patch ASAP.
 
-Just my 2cent
-Richard Knutsson
-
-
+Luca
+-- 
+"Sei l'unica donna della mia vita".
+(Adamo)
