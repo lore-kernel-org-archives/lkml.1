@@ -1,56 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161325AbXBGOOc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161331AbXBGOQg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161325AbXBGOOc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Feb 2007 09:14:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161327AbXBGOOc
+	id S1161331AbXBGOQg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Feb 2007 09:16:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161327AbXBGOQg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Feb 2007 09:14:32 -0500
-Received: from [212.12.190.12] ([212.12.190.12]:32853 "EHLO raad.intranet"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1161325AbXBGOOa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Feb 2007 09:14:30 -0500
-From: Al Boldi <a1426z@gawab.com>
-To: Andi Kleen <ak@suse.de>
-Subject: Re: 2.6.20 doesn't compile with gcc-3.2.2
-Date: Wed, 7 Feb 2007 17:16:43 +0300
-User-Agent: KMail/1.5
-Cc: linux-kernel@vger.kernel.org
-References: <200702051531.20326.a1426z@gawab.com> <p7364aemf3j.fsf@bingen.suse.de>
-In-Reply-To: <p7364aemf3j.fsf@bingen.suse.de>
+	Wed, 7 Feb 2007 09:16:36 -0500
+Received: from ug-out-1314.google.com ([66.249.92.170]:31110 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161331AbXBGOQf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Feb 2007 09:16:35 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:date:from:x-x-sender:to:cc:subject:message-id:mime-version:content-type;
+        b=XBCIXifx7euwYOwLfU7f/StSiQch2pI5Lwkc8Za/bCnsa8QZYm3EnkhtbWVwVoxfKA96rAlu+SBPqLHWnOrYwOkUoOi14cS30/2/CKzLjIWEW7fjXItiFGqBL7mhIKCfRj5bN/26FnCpVa9wpmkjfnTgoS1cuhDyx8TJ2qtEcuQ=
+Date: Wed, 7 Feb 2007 15:16:10 +0100 (CET)
+From: Esben Nielsen <nielsen.esben@googlemail.com>
+X-X-Sender: simlo@frodo.shire
+To: Randy Dunlap <randy.dunlap@oracle.com>, Jeff Garzik <jeff@garzik.org>,
+       Andrew Morton <akpm@osdl.org>
+cc: linux-kernel@vger.kernel.org, linux-net@vger.kernel.org
+Subject: [PATCH] Broken ArcNet com20020 pcmcia driver in 2.6.20
+Message-ID: <Pine.LNX.4.64.0702071418440.31566@frodo.shire>
 MIME-Version: 1.0
-Content-Disposition: inline
-Content-Type: text/plain;
-  charset="windows-1256"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200702071716.43288.a1426z@gawab.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> Al Boldi <a1426z@gawab.com> writes:
-> > Doing the following results in an incomplete vmlinuz:
-> >
-> > # make mrproper
-> > # make allnoconfig
-> > # make bzlilo
-> >
-> > objcopy: arch/i386/boot/compressed/vmlinux.bin: File truncated
->
-> This looks more like some local problem.
+Hi,
+  I can not get my com20020 pcmcia driver to work as a module under 2.6.20.
+There is the build problem:
 
-It's a binutils problem.
+MODPOST 30 modules
+WARNING: "com20020_found" [drivers/net/pcmcia/com20020_cs.ko] undefined!
+WARNING: "com20020_check" [drivers/net/pcmcia/com20020_cs.ko] undefined!
 
-As Scott mentioned, upgrading from
-	GNU ld version 2.13.90.0.18 20030121
-to
-	GNU ld version 2.15.92.0.2 20040927
-solves it.
+The solution:
+Always export com20020_found and com20020_check.
 
-But it's still not clear what change in 2.6.20 required the upgrade.
+Esben
+
+  drivers/net/arcnet/com20020.c |    3 ---
+  1 file changed, 3 deletions(-)
+
+Index: linux-2.6.20/drivers/net/arcnet/com20020.c
+===================================================================
+--- linux-2.6.20.orig/drivers/net/arcnet/com20020.c
++++ linux-2.6.20/drivers/net/arcnet/com20020.c
+@@ -337,11 +337,8 @@ static void com20020_set_mc_list(struct
+  	}
+  }
+
+-#if defined(CONFIG_ARCNET_COM20020_PCI_MODULE) || \
+-    defined(CONFIG_ARCNET_COM20020_ISA_MODULE)
+  EXPORT_SYMBOL(com20020_check);
+  EXPORT_SYMBOL(com20020_found);
+-#endif
+
+  MODULE_LICENSE("GPL");
 
 
-Thanks!
-
---
-Al
 
