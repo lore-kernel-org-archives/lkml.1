@@ -1,41 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161250AbXBGMHP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161269AbXBGMHV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161250AbXBGMHP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Feb 2007 07:07:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161263AbXBGMHP
+	id S1161269AbXBGMHV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Feb 2007 07:07:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161264AbXBGMHU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Feb 2007 07:07:15 -0500
-Received: from moutng.kundenserver.de ([212.227.126.187]:52440 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161250AbXBGMHN (ORCPT
+	Wed, 7 Feb 2007 07:07:20 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:56969 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1161263AbXBGMHS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Feb 2007 07:07:13 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: ksummit-2007-discuss@thunk.org
-Subject: Re: [Ksummit-2007-discuss] Re: +1 4 cz (Re: [Ksummit-2006-discuss] 2007 Linux Kernel Summit)
-Date: Wed, 7 Feb 2007 13:06:19 +0100
-User-Agent: KMail/1.9.5
-Cc: James Simmons <jsimmons@infradead.org>, Vojtech Pavlik <vojtech@suse.cz>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <E1H8tIr-0006QH-Bg@candygram.thunk.org> <20070206200004.GA15910@suse.cz> <Pine.LNX.4.64.0702062007360.9224@pentafluge.infradead.org>
-In-Reply-To: <Pine.LNX.4.64.0702062007360.9224@pentafluge.infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Wed, 7 Feb 2007 07:07:18 -0500
+Date: Wed, 7 Feb 2007 12:20:00 +0000
+From: Alan <alan@lxorguk.ukuu.org.uk>
+To: Luigi Genoni <genoni@sns.it>
+Cc: linux-ide@vger.kernel.org, jgarzik@pobox.com, htejun@gmail.com,
+       alan@red-hat.com, linux-kernel@vger.kernel.org
+Subject: Re: [BUG?] ata disk running maximum at DMA33 with 2.6.20 and new
+ pata driver, NV CK804 ide controller.
+Message-ID: <20070207122000.2e17ecb6@localhost.localdomain>
+In-Reply-To: <200702070119.36320.genoni@darkstar.oltrelinux.com>
+References: <200702070119.36320.genoni@darkstar.oltrelinux.com>
+X-Mailer: Claws Mail 2.7.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200702071306.19901.arnd@arndb.de>
-X-Provags-ID: kundenserver.de abuse@kundenserver.de login:c48f057754fc1b1a557605ab9fa6da41
-X-Provags-ID2: V01U2FsdGVkX1/EfSU1mdLum61f+zYO07Zn5ieQ4M7HKEEmrZ9T5xn4qHSKZ6ezvRbSicB6Dj851P+WgS3N8B7FZ8aU74WPXX7gcKJ+NU0p/mr4rGE7iA3JNA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 06 February 2007 21:10, James Simmons wrote:
-> 
-> So it is between Britian or the Czech Republic. BTW how long of a train 
-> ride is to swizterland from CZ. My wife's family lives there.
+On Wed, 7 Feb 2007 01:19:36 +0100
+Luigi Genoni <genoni@sns.it> wrote:
 
-Too long. 15 hours according to http://reiseauskunft.bahn.de/bin/query.exe/en .
-You probably want to take a cheap flight instead.
+> Hi,
+> since upgrading to kernel 2.6.20 my pata disk, using new pata driver, is
+> initialized maximum  in DMA33 mode (and obviously performances drop 
+> consequently), as you can see from:
 
-	Arnd <><
+Interesting.
+
+> Willing to test any patch.
+
+Firstly can you see if its consistently the case that booting 2.6.20
+gives UDMA33 and 2.6.19 UDMA100 over a few reboots. If it is please drop
+the 2.6.19 drivers/ata/pamd_amd into 2.6.20 and try that.
+
+Thanks
+
+Alan
