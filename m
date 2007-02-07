@@ -1,68 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161249AbXBGMFM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161251AbXBGMFt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161249AbXBGMFM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Feb 2007 07:05:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161251AbXBGMFM
+	id S1161251AbXBGMFt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Feb 2007 07:05:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161253AbXBGMFt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Feb 2007 07:05:12 -0500
-Received: from out5.smtp.messagingengine.com ([66.111.4.29]:46297 "EHLO
-	out5.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1161249AbXBGMFK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Feb 2007 07:05:10 -0500
-X-Sasl-enc: duheyc9ATZgQ4rQS+mVMaPulA/tL4NKJwr0jGSxx/3Kn 1170849908
-Date: Wed, 7 Feb 2007 10:05:00 -0200
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Nigel Cunningham <nigel@nigel.suspend2.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>, akuster@mvista.com,
-       linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [patch 1/1] PM: Adds remount fs ro at suspend
-Message-ID: <20070207120500.GF8148@khazad-dum.debian.net>
-References: <20070202235132.EDBDF1C448@hermes.mvista.com> <20070202161611.cf8b4328.akpm@linux-foundation.org> <20070203003536.GA619@khazad-dum.debian.net> <1170710913.6105.39.camel@nigel.suspend2.net> <20070206143231.GD18392@khazad-dum.debian.net> <1170797924.14398.19.camel@nigel.suspend2.net> <20070207112539.GD8148@khazad-dum.debian.net> <1170848593.9827.24.camel@nigel.suspend2.net>
+	Wed, 7 Feb 2007 07:05:49 -0500
+Received: from cacti.profiwh.com ([85.93.165.66]:46684 "EHLO cacti.profiwh.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161251AbXBGMFs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Feb 2007 07:05:48 -0500
+Message-ID: <45C9C0B6.9090704@gmail.com>
+Date: Wed, 07 Feb 2007 13:06:14 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0b2 (X11/20070116)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1170848593.9827.24.camel@nigel.suspend2.net>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F 1CDB 0FE3
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Pavel Machek <pavel@suse.cz>, linux-acpi@vger.kernel.org
+Subject: Re: hwsusp defunct
+References: <45C5DBBA.20502@gmail.com> <200702041452.28874.rjw@sisk.pl> <45C86405.1070902@gmail.com> <200702061855.49077.rjw@sisk.pl>
+In-Reply-To: <200702061855.49077.rjw@sisk.pl>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 07 Feb 2007, Nigel Cunningham wrote:
-> > We don't cope okay with the power going out, at all.  And as an user case, a
-> > need for fsck if you do something that is a reasonable use case (unplugging
-> > devices while suspended) is not okay, either.
+Cc: linux-acpi
+not-cc: linux-pm
+
+Rafael J. Wysocki napsal(a):
+> On Tuesday, 6 February 2007 12:18, Jiri Slaby wrote:
+>> This is blindly written dmesg after resume. See it whole at [2]:
+>> Suspending device 0.0
+>> ACPI Exception (exoparg2-0442): AE_AML_PACKAGE_LIMIT, Index (000000007) is beyon
+>> d end of object [20070126]
+>> ACPI Error (psparse-0537): Method parse/execution failed [\_SB_.PCI0.IDE0.GTM_]
+>> (Node dfe64fcc), AE_AML_PACKAGE_LIMIT
+>> ACPI Error (psparse-0537): Method parse/execution failed [\_SB_.PCI0.IDE0.CHN0._
+>> GTM] (Node dfe649f0), AE_AML_PACKAGE_LIMIT
+>> ...
+>> hda: selected mode 0x45
+>> ACPI Error (dsopcode-0481): Attempt to CreateField of length zero [20070126]
+>> ACPI Error (psparse-0537): Method parse/execution failed [\_SB_.PCI0.IDE0.RATA]
+>> (Node dfe64ec8), AE_AML_OPERAND_VALUE
+>> ACPI Error (psparse-0537): Method parse/execution failed [\_SB_.PCI0.IDE0.CHN0.D
+>> RV1._GTF] (Node dfe64964), AE_AML_OPERAND_VALUE
+>> do_drive_get_GTF: Run _GTF error: status = 0x3006
 > 
-> Maybe it depends on the filesystem you use. I've used ext3 for 6 or so
-> years of development on Suspend2, and it's never given me a single
-> problem, despite the fact that I've sometimes done the equivalent of
-> pulling the plug without a sync or unmount. I did try XFS at one stage.
-> It's performance was better, but it did give problems. Nevertheless, I'm
-> more than happy to make the above claim about ext3.
-
-XFS comes to mind, indeed. But as I said, a need for fsck and unclean
-partitions are enough to label it as an "unsuitable" solution.
-
-> > > Likewise with changes in hardware. Once hotplugging support is mature,
-> > > suspending, switching around hardware and resuming should just result in
-> > > hot[un]plug events.
-> > 
-> > Well, if we add *move* events for when someone unplugs a usb stick in one
-> > port and replugs it in another while the system is in lala-land... maybe :-)
-> > It would be normal to do it, when dealing with docks.
+> This looks like an ACPI-vs-IDE problem.  You can try to use libata drivers instead
+> of the "old IDE" ones.
 > 
-> Isn't that part of the point to having those uuid thingys? I hate them
-> at the moment (from the point of view of suspend code), but hopefully
-> they'll end up being nicer to deal with.
+>> $ ls -l /sys/block/hda/device
+>> lrwxrwxrwx 1 root root 0 úno  6 12:14 /sys/block/hda/device -> 
+>> ../../devices/pci0000:00/0000:00:1f.1/ide0/0.0
+>> $ ls -l /sys/block/hda/device/driver
+>> lrwxrwxrwx 1 root root 0 úno  6 12:15 /sys/block/hda/device/driver -> 
+>> ../../../../../bus/ide/drivers/ide-disk
+>> $ ls -l /sys/block/hda/device/driver/0.0
+>> lrwxrwxrwx 1 root root 0 úno  6 12:16 /sys/block/hda/device/driver/0.0 -> 
+>> ../../../../devices/pci0000:00/0000:00:1f.1/ide0/0.0
+>> # lspci -vvvxxs 0000:00:1f.1
+>> 00:1f.1 IDE interface: Intel Corporation 82801EB/ER (ICH5/ICH5R) IDE Controller 
+>> (rev 02) (prog-if 8a [Master SecP PriP])
+>>          Subsystem: ASUSTeK Computer Inc. P5P800-MX Mainboard
+>>          Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- 
+>> Stepping- SERR- FastB2B-
+>>          Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- 
+>> <TAbort- <MAbort- >SERR- <PERR-
+>>          Latency: 0
+>>          Interrupt: pin A routed to IRQ 5
+>>          Region 0: I/O ports at 01f0 [size=8]
+>>          Region 1: I/O ports at 03f4 [size=1]
+>>          Region 2: I/O ports at 0170 [size=8]
+>>          Region 3: I/O ports at 0374 [size=1]
+>>          Region 4: I/O ports at fc00 [size=16]
+>>          Region 5: Memory at 30100000 (32-bit, non-prefetchable) [size=1K]
+>> 00: 86 80 db 24 07 00 80 02 02 8a 01 01 00 00 00 00
+>> 10: 01 00 00 00 01 00 00 00 01 00 00 00 01 00 00 00
+>> 20: 01 fc 00 00 00 00 10 30 00 00 00 00 43 10 a6 80
+>> 30: 00 00 00 00 00 00 00 00 00 00 00 00 00 01 00 00
+>>
+>> Do you want acpidump?
+> 
+> I'm not an ACPI expert, it won't tell me a lot, but perhaps you should add
+> linux-acpi to the Cc list. ;-)
+[...]
+ > [1]
+ >   http://www.fi.muni.cz/~xslaby/sklad/config-mm
+ > [2]
+ >   http://www.fi.muni.cz/~xpapiez/test/dmesg-mm.txt
 
-When you have files open for writing (thus neither mount R/O or umount will
-suceed)?   No, you really need kernel support for this, and yes, I imagine
-it is a royal pain to deal with these cases, they clearly belong on the "20%
-of stuff that causes 80% of the work" side :-)
+Ok, acpi folks, any suggests?
 
+thanks,
 -- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+http://www.fi.muni.cz/~xslaby/            Jiri Slaby
+faculty of informatics, masaryk university, brno, cz
+e-mail: jirislaby gmail com, gpg pubkey fingerprint:
+B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
