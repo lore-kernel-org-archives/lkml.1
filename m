@@ -1,55 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965487AbXBGFbX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752304AbXBGFob@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965487AbXBGFbX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Feb 2007 00:31:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965642AbXBGFbX
+	id S1752304AbXBGFob (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Feb 2007 00:44:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752288AbXBGFoa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Feb 2007 00:31:23 -0500
-Received: from ug-out-1314.google.com ([66.249.92.169]:20537 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965487AbXBGFbW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Feb 2007 00:31:22 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=bh9QKawhl0ab/6xJfYrWda1i7ISWOab6THezSeWzo+6eD0yCZsIkI06vHUsV+opNH44YXESb4I8FDMg+sb9w4UsbnRdcilxRUCDx5GZNbi94TqwTmfoEuCo9UPrwtm23gH3PuOOJp/M6CwVfNOn5OQbZ2oMKmPfFPlzzF9wQOrM=
-Message-ID: <5157576d0702062131u3365881bw87a29eaabac69c40@mail.gmail.com>
-Date: Wed, 7 Feb 2007 08:31:20 +0300
-From: "Tomasz Kvarsin" <kvarsin@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [PATCH]: warrning fix: unsigned->signed
-Cc: viro@zeniv.linux.org.uk, axboe@kernel.dk, linux-kernel@vger.kernel.org
-In-Reply-To: <20070206140936.24bbaded.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 7 Feb 2007 00:44:30 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:35189 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752110AbXBGFoa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Feb 2007 00:44:30 -0500
+Date: Tue, 6 Feb 2007 21:44:14 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: David Rientjes <rientjes@google.com>
+Cc: Hugh Dickins <hugh@veritas.com>, Paul Mundt <lethal@linux-sh.org>,
+       Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org
+Subject: Re: [patch 2/3] smaps: add pages referenced count to smaps
+Message-Id: <20070206214414.96b0336b.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0702062122540.8623@chino.kir.corp.google.com>
+References: <Pine.LNX.4.64.0702062121160.8623@chino.kir.corp.google.com>
+	<Pine.LNX.4.64.0702062122540.8623@chino.kir.corp.google.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <5157576d0702061339w28adbf5fp2dbc5e86661d894@mail.gmail.com>
-	 <20070206140936.24bbaded.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I uses gcc "trunk" with -Wconversion,
- because of they finaly implement warrning for such things:
-uint16_t a;
-uint8_t b;
-b = a;
-see
-http://gcc.gnu.org/wiki/NewWconversion
+On Tue, 6 Feb 2007 21:27:03 -0800 (PST) David Rientjes <rientjes@google.com> wrote:
 
-On 2/7/07, Andrew Morton <akpm@linux-foundation.org> wrote:
-> On Wed, 7 Feb 2007 00:39:45 +0300
-> "Tomasz Kvarsin" <kvarsin@gmail.com> wrote:
+> @@ -190,18 +191,20 @@ static int show_map_internal(struct seq_file *m, void *v, struct mem_size_stats
+>  
+>  	if (mss)
+>  		seq_printf(m,
+> -			   "Size:          %8lu kB\n"
+> -			   "Rss:           %8lu kB\n"
+> -			   "Shared_Clean:  %8lu kB\n"
+> -			   "Shared_Dirty:  %8lu kB\n"
+> -			   "Private_Clean: %8lu kB\n"
+> -			   "Private_Dirty: %8lu kB\n",
+> +			   "Size:           %8lu kB\n"
+> +			   "Rss:            %8lu kB\n"
+> +			   "Shared_Clean:   %8lu kB\n"
+> +			   "Shared_Dirty:   %8lu kB\n"
+> +			   "Private_Clean:  %8lu kB\n"
+> +			   "Private_Dirty:  %8lu kB\n"
+> +			   "Pgs_Referenced: %8li\n",
+
+I guess we might as well make this %8lu kB as well?
+
+>  			   (vma->vm_end - vma->vm_start) >> 10,
+>  			   mss->resident >> 10,
+>  			   mss->shared_clean  >> 10,
+>  			   mss->shared_dirty  >> 10,
+>  			   mss->private_clean >> 10,
+> -			   mss->private_dirty >> 10);
+> +			   mss->private_dirty >> 10,
+> +			   mss->referenced);
 >
-> > While compiling my code, I always get bunch of warrning from headers,
-> > here is fix for them:
-> > __getblk is alawys called with unsigned argument,
-> > but it takes signed, the same story with __bread,__breadahead and so on.
+> ...
 >
-> The patch seems OK, but I'm curious to know why you're seeing this warning
-> and nobody else is.  Are you using a compiler other than gcc?  If gcc,
-> which version?  Did you add any new compiler options?
->
-> Thanks.
->
+> +	/* Accumulate the number of pages that have been accessed. */
+> +	if (PageReferenced(page))
+> +		mss->referenced++;
+
+This is testing the software-referenced bit.  We want to be counting the
+pte-referenced bits (pte_young).
+
+Hence poking clear_refs should run pte_mkold().
+
+Perhaps we should also be running ClearPageReferenced and counting pages
+which are pte_young()||PageReferenced.
+
