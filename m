@@ -1,57 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030511AbXBGJcH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161082AbXBGJdk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030511AbXBGJcH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Feb 2007 04:32:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030600AbXBGJcG
+	id S1161082AbXBGJdk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Feb 2007 04:33:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030610AbXBGJdk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Feb 2007 04:32:06 -0500
-Received: from mail2.domainserver.de ([213.83.41.143]:2260 "EHLO
-	smtp.domainserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030511AbXBGJcF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Feb 2007 04:32:05 -0500
-Envelope-to: linux-kernel@vger.kernel.org
-Delivery-date: Wed, 07 Feb 2007 10:32:05 +0100
-From: Daniel Kabs <dkabs@mobotix.com>
-Organization: MOBOTIX AG
-To: David Miller <davem@davemloft.net>
-Subject: Re: Problem with unix sockets: SOCK_DGRAM ignores MSG_TRUNC
-Date: Wed, 7 Feb 2007 10:31:57 +0100
-User-Agent: KMail/1.7.2
+	Wed, 7 Feb 2007 04:33:40 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:40629 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030609AbXBGJdj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Feb 2007 04:33:39 -0500
+To: Al Boldi <a1426z@gawab.com>
 Cc: linux-kernel@vger.kernel.org
-References: <200701291259.50155.dkabs@mobotix.com> <20070204.165235.26305735.davem@davemloft.net>
-In-Reply-To: <20070204.165235.26305735.davem@davemloft.net>
+Subject: Re: 2.6.20 doesn't compile with gcc-3.2.2
+References: <200702051531.20326.a1426z@gawab.com>
+From: Andi Kleen <ak@suse.de>
+Date: 07 Feb 2007 11:33:52 +0100
+In-Reply-To: <200702051531.20326.a1426z@gawab.com>
+Message-ID: <p7364aemf3j.fsf@bingen.suse.de>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200702071031.58463.dkabs@mobotix.com>
-X-AUTH: - 
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 05 February 2007 01:52, David Miller wrote:
-> What UDP is doing is different, it's returning the full packet length
-> when the packet is larger then the given buffer size, but it does this
-> irregardless of whether you set MSG_TRUNC in the recvmsg() passed-in
-> flags.  UDP itself sets the MSG_TRUNC flag when it detects this
-> situation.
+Al Boldi <a1426z@gawab.com> writes:
 
-I hope that I am researching the appropriate kernel source tree, but if I 
-am not mistaken, this behaviour was introduced with change 1.66 according 
-to bitkeeper:
-  http://linux.bkbits.net:8080/linux-2.6/net/ipv4/udp.c?PAGE=history
+> Doing the following results in an incomplete vmlinuz:
+> 
+> # make mrproper
+> # make allnoconfig
+> # make bzlilo
+> 
+> objcopy: arch/i386/boot/compressed/vmlinux.bin: File truncated
 
-I think the bitkeeper comment on that change (1.66) is misleading:
-  "[UDP]: Return true length if user specifies MSG_TRUNC."
+This looks more like some local problem. Are you sure you didn't run out of
+disk space or similar?  When you rerun make what error do you see?
 
-As you said, this is wrong. The true length is returned, regardless 
-whether the user specified MSG_TRUNC.
+> make[2]: *** [arch/i386/boot/compressed/vmlinux.bin] Error 1
+> make[1]: *** [arch/i386/boot/compressed/vmlinux] Error 2
+> make: *** [bzlilo] Error 2
+> 
+> # gcc -v
+> Reading specs from /usr/lib/gcc-lib/i586-mandrake-linux-gnu/3.2.2/specs
+> Configured with: ../configure --prefix=/usr --libdir=/usr/lib 
+> --with-slibdir=/lib --mandir=/usr/share/man --infodir=/usr/share/info 
+> --enable-shared --enable-threads=posix --disable-checking --enable-long-long 
+> --enable-__cxa_atexit --enable-languages=c,c++,ada,f77,objc,java 
+> --host=i586-mandrake-linux-gnu --with-system-zlib
+> Thread model: posix
+> gcc version 3.2.2 (Mandrake Linux 9.1 3.2.2-3mdk)
+> 
+> 
+> Is gcc-4.0.1 now the minimum required to compile the kernel?
 
-Exploring this topic I learned a lot about browsing and reading kernel 
-source code, e.g. that commit statements have to be taken with a grain of 
-salt :-)
+3.2 should work. Only 2.xx support was dropped.
 
-Cheers
-Daniel
+-Andi
