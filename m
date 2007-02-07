@@ -1,57 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965239AbXBGCt0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752285AbXBGC4T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965239AbXBGCt0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 21:49:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965632AbXBGCt0
+	id S1752285AbXBGC4T (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 21:56:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752321AbXBGC4T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 21:49:26 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:40175 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965239AbXBGCtZ (ORCPT
+	Tue, 6 Feb 2007 21:56:19 -0500
+Received: from mf2.realtek.com.tw ([60.248.182.6]:1995 "EHLO
+	mf2.realtek.com.tw" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752285AbXBGC4S (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 21:49:25 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Etienne Lorrain <etienne_lorrain@yahoo.fr>, vgoyal@in.ibm.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: Re : Re : Re : Re : [PATCH] Compressed ia32 ELF file generation for loading by Gujin 1/3
-References: <965140.82745.qm@web26914.mail.ukl.yahoo.com>
-	<45C9246F.9050300@zytor.com>
-Date: Tue, 06 Feb 2007 19:48:43 -0700
-In-Reply-To: <45C9246F.9050300@zytor.com> (H. Peter Anvin's message of "Tue,
-	06 Feb 2007 16:59:27 -0800")
-Message-ID: <m14ppyr8c4.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Tue, 6 Feb 2007 21:56:18 -0500
+Message-ID: <45C93FCC.4080609@realtek.com.tw>
+Date: Wed, 07 Feb 2007 10:56:12 +0800
+From: =?UTF-8?B?6Kix5oGG5ZiJ?= <edward_hsu@realtek.com.tw>
+User-Agent: Mozilla Thunderbird 1.0.2 (Windows/20050317)
+X-Accept-Language: zh-tw, en-us, en, zh
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Francois Romieu <romieu@fr.zoreil.com>
+CC: jeff@garzik.org, linux-kernel@vger.kernel.org, hiwu@realtek.com.tw
+Subject: Re: [PATCH 2.6.19.2] r8169: support RTL8169SC/8110SC
+References: <45C2F390.4070805@realtek.com.tw> <20070203003952.GA22823@electric-eye.fr.zoreil.com> <45C6A8EC.5090201@realtek.com.tw> <20070206003130.GA18236@electric-eye.fr.zoreil.com> <45C7EB8A.1090700@realtek.com.tw> <20070206213827.GA25119@electric-eye.fr.zoreil.com>
+In-Reply-To: <20070206213827.GA25119@electric-eye.fr.zoreil.com>
+X-MIMETrack: Itemize by SMTP Server on msx/Realtek(Release 6.5.3|September 14, 2004) at
+ 2007/02/07 =?Bog5?B?pFekyCAxMDo1NjoxMg==?=,
+	Serialize by Router on msx/Realtek(Release 6.5.3|September 14, 2004) at
+ 2007/02/07 =?Bog5?B?pFekyCAxMDo1NjoxMw==?=,
+	Serialize complete at 2007/02/07 =?Bog5?B?pFekyCAxMDo1NjoxMw==?=
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"H. Peter Anvin" <hpa@zytor.com> writes:
 
-> Etienne Lorrain wrote:
->> H. Peter Anvin wrote:
->>> I've long wished that someone would do a proper 16-bit x86 port of gcc;
->>
->>> however, the .code16gcc is usually good enough, although it produces code
->>> which is a lot bigger than it needs to be.
->>
->>   It is only that much bigger if you compare to 16 bits integer compilers,
->>  but once you deal with 32 bits integers in real mode you have one extra byte
->>  out of the two - which is still better than dealing with dx:ax.
->>
->>  Last time I compiled (long time ago) some piece of code with and without
->>  .code16gcc it was approx 15% bigger - approx what you get when optimising.
+
+Francois Romieu 提到:
+
+>edward_hsu@realtek.com.tw :
+>[...]
+>  
+>
+>>ANS_2:
+>>So, do you think that it is a good idea to keep other vendos's PID and
+>>DID in the part?
+>>    
 >>
 >
-> That's not a valid comparison, because you're using 32-bit registers to hold
-> 16-bit pointers, and then sticking 67 prefixes on completely unnecessarily.
+>Yes.
+>  
+>
 
-Regardless if the size is good enough we can use it :)
+ANS_3:
 
-For romcc I had a 3x code bloat over had crafted assembler, because I
-had no memory and had to inline every single function call because I
-didn't have someplace to put a return register.  So I have the
-scenario with the most code bloat.  I win!
+OK! I will do it.
 
-Eric
+>[...]
+>  
+>
+>>ANS_2:
+>>
+>>Sure! You are right. RTL8110SC, RTL8111B and RTL8101E have modest
+>>differences, now. However, RTL8101E is a PCI-E fast ethernet controller.
+>>I don't think is a good idea to merge its Linux driver into r8168.c or
+>>r8169.c. RTL8110SC is the final version of Realtek PCI gigabit ethernet
+>>controller. Moreover, due to the increasing popularity of PCI-E, Realtek
+>>is going to design several generations of PCI-E ethernet controllers to
+>>satisfy customer requests. I have discussed this issue with my hardware
+>>colleagues. They believe that both MAC register layout and tx/rx
+>>descriptor layout will be changed a lot in new PCI-E ICs. Actually, they
+>>already did. Therefore, the hardwares of RTL8111B(PCI-E gigabit
+>>ethernet) and RTL8101E(PCI-E fast ethernet) will have frequent and
+>>drastic changes. So, I think that it's a good moment to separate their
+>>Linux drivers, and r8169.c can become stable.
+>>    
+>>
+>
+>Well, code and facts will tell. :o)
+>
+>Since you asked for questions:
+>
+>- will the ~7k limit for the jumbo frames be fixed ? One can hardly call
+>  it a feature.
+>  
+>
+ANS_3:
+
+Realtek does implement 7k limit for jumbo frames. I think there is no standard to require how large a jumbo frame should be implemented.
+
+
+>- out of curiosity, did you try the current in-kernel r8169 driver with
+>  a 8111B or a 8101E ?
+>  
+>
+ANS_3:
+Yes I did! I tried Linux kernel 2.6.19. It seems that r8169.c supports 
+RTL8111B and RTL8101E.
+
+>- is there any plan to open the programming manuals of the PCI-E chipsets ?
+>  
+>
+ANS_3:
+Realtek does not have the plan to open  the programming manuals of the 
+PCI-E chipsets.
