@@ -1,67 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161097AbXBGJfw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161087AbXBGJhU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161097AbXBGJfw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Feb 2007 04:35:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161092AbXBGJfw
+	id S1161087AbXBGJhU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Feb 2007 04:37:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161068AbXBGJhU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Feb 2007 04:35:52 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:21176 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161097AbXBGJfu (ORCPT
+	Wed, 7 Feb 2007 04:37:20 -0500
+Received: from wr-out-0506.google.com ([64.233.184.237]:46169 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161087AbXBGJhT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Feb 2007 04:35:50 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
-	message-id:references:mime-version:content-type;
-	b=cLSBPJUXrGcOSPkcqA0AB7O4OcATl8hITi8WJe/LpdA9SQdAdwEMV6VVYAaPX8du7
-	hPhZVyPelS0oG8mco9eYQ==
-Date: Wed, 7 Feb 2007 01:35:31 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Christoph Lameter <clameter@sgi.com>
-cc: Andrew Morton <akpm@osdl.org>, Hugh Dickins <hugh@veritas.com>,
-       Paul Mundt <lethal@linux-sh.org>, Paul Davies <pauld@cse.unsw.edu.au>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 1/3 take2] smaps: extract pte walker from smaps code
-In-Reply-To: <Pine.LNX.4.64.0702070017360.26926@schroedinger.engr.sgi.com>
-Message-ID: <Pine.LNX.4.64.0702070124210.22710@chino.kir.corp.google.com>
-References: <Pine.LNX.4.64.0702062212550.13931@chino.kir.corp.google.com>
- <Pine.LNX.4.64.0702070017360.26926@schroedinger.engr.sgi.com>
+	Wed, 7 Feb 2007 04:37:19 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=NndlAuASUfh743ngHHXymhsBdh4fhPnVu63Xasu6uYfu4eYA7bk0Ur2bSHqBKgcTubOYKlcxNh/QfFJ8SiFJSepg9RA6LplQUQUjbDcJGVNjTOoVpc2lyoupTOR2cu9dT9ijqhcx1RmqBe+/xAgUmXZHtLX2TxTMS3uVGpp29os=
+Message-ID: <f2b55d220702070137k58d99449g604ebb352ad84c69@mail.gmail.com>
+Date: Wed, 7 Feb 2007 01:37:17 -0800
+From: "Michael K. Edwards" <medwards.linux@gmail.com>
+To: "Davide Libenzi" <davidel@xmailserver.org>,
+       "Kent Overstreet" <kent.overstreet@gmail.com>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Zach Brown" <zach.brown@oracle.com>, "Ingo Molnar" <mingo@elte.hu>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       linux-aio@kvack.org, "Suparna Bhattacharya" <suparna@in.ibm.com>,
+       "Benjamin LaHaise" <bcrl@kvack.org>
+Subject: Re: [PATCH 2 of 4] Introduce i386 fibril scheduling
+In-Reply-To: <f2b55d220702070117r7fb612f0ta3151820ab33ecbc@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <Pine.LNX.4.64.0702051223390.8424@woody.linux-foundation.org>
+	 <6f703f960702061445q23dd9d48q7afec75d2400ef62@mail.gmail.com>
+	 <Pine.LNX.4.64.0702061518220.19136@alien.or.mcafeemobile.com>
+	 <20070206233907.GW32307@ca-server1.us.oracle.com>
+	 <Pine.LNX.4.64.0702061541590.19136@alien.or.mcafeemobile.com>
+	 <20070207000626.GC32307@ca-server1.us.oracle.com>
+	 <Pine.LNX.4.64.0702061612220.19136@alien.or.mcafeemobile.com>
+	 <20070207004443.GE32307@ca-server1.us.oracle.com>
+	 <f2b55d220702062216n6b6757e5h10701851b422bc62@mail.gmail.com>
+	 <f2b55d220702070117r7fb612f0ta3151820ab33ecbc@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 7 Feb 2007, Christoph Lameter wrote:
+An idiot using my keyboard wrote:
+>     - AIO requests that are serviced from cache ought to immediately
+> invoke the callback, in the same thread context as the caller, fixing
+> up the stack so that the callback returns to the instruction following
+> the syscall.  That way the "immediate completion" path through the
+> callback can manipulate data structures, allocate memory, etc. just as
+> if it had followed a synchronous call.
 
-> Clearing reference bits? Ummm... That is a pretty inaccurate measure since 
-> reclaim can remove pages and revert the reference bits. It can never work 
-> reliably.
-> 
+Or, of course:
+    if (async_stat(entry) == 0) {
+        ... immediate completion code path ...
+    }
 
-It's not intended to work precisely, it's intended to give a good estimate 
-of task memory footprint.  There are several different scenarios that can 
-interfere with getting a precise measurement via this method; then again 
-/proc/pid/smaps is so expensive already because of the iteration through 
-VMA's that it's not something you'd do regularly.
+Ugh.  But I think the discussion about the delayed path still holds.
 
-Any other suggestions on how to obtain this data is certainly welcome.
-
-> Would it be possible to sync up with the people doing the page table 
-> interface?
-> 
-
-(+pauld)
-
-Is there an update on Paul Davies' implementation that would allow us to 
-iterate through a set of pte's in a vm_area_struct range?
-
-> Could we somehow consolidate smaps and numa_maps?
-> 
-
-Sure, but that's beyond the scope of this patchset.  My intention in 
-extracting away a new pte_walker was to prevent having two identical 
-implementations and it could easily be extracted even further to lib for 
-the ioremap case that Paul mentioned.
-
-		David
+- Michael
