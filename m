@@ -1,63 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161331AbXBGOQg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161334AbXBGOZ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161331AbXBGOQg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Feb 2007 09:16:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161327AbXBGOQg
+	id S1161334AbXBGOZ3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Feb 2007 09:25:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161335AbXBGOZ3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Feb 2007 09:16:36 -0500
-Received: from ug-out-1314.google.com ([66.249.92.170]:31110 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161331AbXBGOQf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Feb 2007 09:16:35 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:date:from:x-x-sender:to:cc:subject:message-id:mime-version:content-type;
-        b=XBCIXifx7euwYOwLfU7f/StSiQch2pI5Lwkc8Za/bCnsa8QZYm3EnkhtbWVwVoxfKA96rAlu+SBPqLHWnOrYwOkUoOi14cS30/2/CKzLjIWEW7fjXItiFGqBL7mhIKCfRj5bN/26FnCpVa9wpmkjfnTgoS1cuhDyx8TJ2qtEcuQ=
-Date: Wed, 7 Feb 2007 15:16:10 +0100 (CET)
-From: Esben Nielsen <nielsen.esben@googlemail.com>
-X-X-Sender: simlo@frodo.shire
-To: Randy Dunlap <randy.dunlap@oracle.com>, Jeff Garzik <jeff@garzik.org>,
-       Andrew Morton <akpm@osdl.org>
-cc: linux-kernel@vger.kernel.org, linux-net@vger.kernel.org
-Subject: [PATCH] Broken ArcNet com20020 pcmcia driver in 2.6.20
-Message-ID: <Pine.LNX.4.64.0702071418440.31566@frodo.shire>
+	Wed, 7 Feb 2007 09:25:29 -0500
+Received: from mx2.suse.de ([195.135.220.15]:55540 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161334AbXBGOZ2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Feb 2007 09:25:28 -0500
+Date: Wed, 7 Feb 2007 06:24:15 -0800
+From: Greg KH <greg@kroah.com>
+To: Ben Dooks <ben-linux@fluff.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-fbdev-devel@lists.sourceforge.net
+Subject: Re: [PATCH] mfd: SM501 core driver
+Message-ID: <20070207142415.GE1712@kroah.com>
+References: <20070206192628.GA13644@fluff.org.uk> <20070206210930.fc814bf6.akpm@linux-foundation.org> <20070207114825.GA21120@fluff.org.uk>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070207114825.GA21120@fluff.org.uk>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-  I can not get my com20020 pcmcia driver to work as a module under 2.6.20.
-There is the build problem:
+On Wed, Feb 07, 2007 at 11:48:25AM +0000, Ben Dooks wrote:
+> On Tue, Feb 06, 2007 at 09:09:30PM -0800, Andrew Morton wrote:
+> > On Tue, 6 Feb 2007 19:26:28 +0000 Ben Dooks <ben-linux@fluff.org> wrote:
+> > > +/* sm501_null_release
+> > > + *
+> > > + * A release function for the platform devices we create to keep the
+> > > + * driver core happy, and stop any crashed when the devices are removed
+> > > +*/
+> > > +
+> > > +static void sm501_null_release(struct device *dev)
+> > > +{
+> > > +}
+> > 
+> > Greg might have an opinion on that ;)
+> 
+> Without this the system OOPses when the driver is removed.
 
-MODPOST 30 modules
-WARNING: "com20020_found" [drivers/net/pcmcia/com20020_cs.ko] undefined!
-WARNING: "com20020_check" [drivers/net/pcmcia/com20020_cs.ko] undefined!
+Are you sure about that?  And it's not just an error message being
+printed out telling you that you must provide a release function?
 
-The solution:
-Always export com20020_found and com20020_check.
+And BIG hint, providing an empty release function just to shut up the
+kernel is NOT a fix.  You really need to free your memory here, not just
+ignore it.
 
-Esben
+thanks,
 
-  drivers/net/arcnet/com20020.c |    3 ---
-  1 file changed, 3 deletions(-)
-
-Index: linux-2.6.20/drivers/net/arcnet/com20020.c
-===================================================================
---- linux-2.6.20.orig/drivers/net/arcnet/com20020.c
-+++ linux-2.6.20/drivers/net/arcnet/com20020.c
-@@ -337,11 +337,8 @@ static void com20020_set_mc_list(struct
-  	}
-  }
-
--#if defined(CONFIG_ARCNET_COM20020_PCI_MODULE) || \
--    defined(CONFIG_ARCNET_COM20020_ISA_MODULE)
-  EXPORT_SYMBOL(com20020_check);
-  EXPORT_SYMBOL(com20020_found);
--#endif
-
-  MODULE_LICENSE("GPL");
-
-
-
+greg k-h
