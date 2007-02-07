@@ -1,61 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422804AbXBGXxH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422819AbXBGXx0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422804AbXBGXxH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Feb 2007 18:53:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422776AbXBGXxH
+	id S1422819AbXBGXx0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Feb 2007 18:53:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422814AbXBGXx0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Feb 2007 18:53:07 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:46119 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422804AbXBGXxF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Feb 2007 18:53:05 -0500
-Date: Wed, 7 Feb 2007 15:52:54 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Roman Zippel <zippel@linux-m68k.org>
-cc: Oleg Verych <olecom@flower.upol.cz>, Alexey Dobriyan <adobriyan@gmail.com>,
-       sam@ravnborg.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kai Germaschewski <kai@germaschewski.name>
-Subject: Re: [patch, fix build regression] kbuild: Kbuild.include avoid using
- spaces in call arguments
-In-Reply-To: <Pine.LNX.4.64.0702080029030.14457@scrub.home>
-Message-ID: <Pine.LNX.4.64.0702071546420.8424@woody.linux-foundation.org>
-References: <20070207165204.GA5537@martell.zuzino.mipt.ru>
- <Pine.LNX.4.64.0702071846180.14457@scrub.home> <20070207220435.GC22699@flower.upol.cz>
- <Pine.LNX.4.64.0702080029030.14457@scrub.home>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 7 Feb 2007 18:53:26 -0500
+Received: from electric-eye.fr.zoreil.com ([213.41.134.224]:50849 "EHLO
+	fr.zoreil.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1422805AbXBGXxY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Feb 2007 18:53:24 -0500
+Date: Thu, 8 Feb 2007 00:49:43 +0100
+From: Francois Romieu <romieu@fr.zoreil.com>
+To: =?unknown-8bit?B?6Kix5oGG5ZiJ?= <edward_hsu@realtek.com.tw>
+Cc: jeff@garzik.org, linux-kernel@vger.kernel.org, hiwu@realtek.com.tw
+Subject: Re: [PATCH 2.6.19.2] r8169: support RTL8169SC/8110SC
+Message-ID: <20070207234943.GA4445@electric-eye.fr.zoreil.com>
+References: <45C2F390.4070805@realtek.com.tw> <20070203003952.GA22823@electric-eye.fr.zoreil.com> <45C6A8EC.5090201@realtek.com.tw> <20070206003130.GA18236@electric-eye.fr.zoreil.com> <45C7EB8A.1090700@realtek.com.tw> <20070206213827.GA25119@electric-eye.fr.zoreil.com> <45C94693.5090900@realtek.com.tw>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=unknown-8bit
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <45C94693.5090900@realtek.com.tw>
+User-Agent: Mutt/1.4.2.1i
+X-Organisation: Land of Sunshine Inc.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Thu, 8 Feb 2007, Roman Zippel wrote:
+許恆嘉 <edward_hsu@realtek.com.tw> :
+> Dear Francois:
 > 
-> Sorry, it needs more changes, the patch simply wasn't ready.
+> I think I didn't make it clear about the programming manuals for PCI-E ICs.
+> 
+> Due to several legal issues, Realtek won't put the programming guide on 
+> its website. However, Realtek does offer the programming guide if the 
+> customers need it. If you want to have a copy of it, please contact 
+> Realtek FAE<ryankao@realtek.com.tw>.
 
-One problem I find very problematic with all the Kbuild setup is that 
-people tend to be very quiet about any build issues until they simply go 
-in.
+Does it mean that the documentation is NDAed ?
 
-Things don't "get ready" on their own. In other areas, people comment on 
-why they don't like patches. In Kbuild, for some reason, we often seem to 
-have this situation where people don't react at all.
+On an unrelated topic, revision 8.001.00 of your 8168 driver includes
+a workaround for an rx fifo overflow issue. Is it an event which can
+happen at any time, repeteadly if some rare conditions are met or is
+it enough to whack the device once for all when the problem happens ?
 
-Sam is great about maintaining the kernel build stuff most of the time, 
-but because it's clearly a "secondary" thing, there tends to be some 
-periods when nothing happens. Which is problematic for me..
-
-So I end up in a situation where I just basically will apply the patches 
-just becauseif I don't, nothing ever happens. The good news is that _once_ 
-I apply them, people will usually notice problems and send in fixes fairly 
-quickly. But this particular email was NOT useful, for example.  "needs 
-more changes" is the epitome of a "not useful" comment.
-
-I notice that Kai should probably have been Cc'd, and quite possibly 
-wasn't. So I added him now.
-
-In the meantime, I've applied the fixup patch. And more specific problem 
-reports or patches are welcome.
-
-		Linus
+-- 
+Ueimor
