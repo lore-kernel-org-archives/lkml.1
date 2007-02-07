@@ -1,37 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161189AbXBGLHo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161181AbXBGLIk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161189AbXBGLHo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Feb 2007 06:07:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161136AbXBGLHo
+	id S1161181AbXBGLIk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Feb 2007 06:08:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161193AbXBGLIk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Feb 2007 06:07:44 -0500
-Received: from [221.219.160.65] ([221.219.160.65]:47237 "EHLO
-	freya.yggdrasil.com" rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1161189AbXBGLHn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Feb 2007 06:07:43 -0500
-X-Greylist: delayed 832 seconds by postgrey-1.27 at vger.kernel.org; Wed, 07 Feb 2007 06:07:43 EST
-Date: Wed, 7 Feb 2007 18:55:53 +0800
-From: "Adam J. Richter" <adam@yggdrasil.com>
-Message-Id: <200702071055.l17AtrZf014135@freya.yggdrasil.com>
-To: Stephen.Clark@seclark.us
-Subject: Re: hdparm for lib_pata
-Cc: linux-kernel@vger.kernel.org
+	Wed, 7 Feb 2007 06:08:40 -0500
+Received: from smtp2-g19.free.fr ([212.27.42.28]:38741 "EHLO smtp2-g19.free.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161181AbXBGLIj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Feb 2007 06:08:39 -0500
+Message-ID: <45C9B2BB.3010404@free.fr>
+Date: Wed, 07 Feb 2007 12:06:35 +0100
+From: John <linux.kernel@free.fr>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061108 SeaMonkey/1.0.6
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+CC: jesse.brandeburg@gmail.com, jesse.brandeburg@intel.com,
+       netdev@vger.kernel.org, auke-jan.h.kok@intel.com, bunk@stusta.de,
+       jgarzik@pobox.com, saw@saw.sw.com.sg, linux.kernel@free.fr
+Subject: Re: Intel 82559 NIC corrupted EEPROM
+References: <fa.FcMVUlqOXU3cAnxsPEN6d8T0wxU@ifi.uio.no> <fa.0FC8eT8GQaLxmNQTrsqyNFjRK4E@ifi.uio.no> <fa.nds0CFkNbotWh4VNM05EixY68wE@ifi.uio.no> <fa.K3Gpuu7oYQv+4q85Ziy3ljV6u+E@ifi.uio.no> <fa./RNOPU0DwWMrnKJSqlMaY+Y16JM@ifi.uio.no> <fa.yV32AYzot0OkvPVCY7VTCvd6rJw@ifi.uio.no>
+In-Reply-To: <fa.yV32AYzot0OkvPVCY7VTCvd6rJw@ifi.uio.no>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2007-02-04 Stephen Clark wrote:
->I have had two different laptops that had to have boot time command line 
->overrides to get the
->driver to allow the hardware work at what it was spec-ed at.
+Jesse Brandeburg wrote:
 
-	Do you know if these drives were advertising less capability
-than they were spec-ed at?  Do you recall if the IDE driver without
-kernel arguments printed its rationale for reverting to the slower
-setting?
+> John wrote:
+>
+>> Jesse Brandeburg wrote:
+>>
+>>> can you try adding mdelay(100); in e100_eeprom_load before the for loop,
+>>> and then change the multiple udelay(4) to mdelay(1) in e100_eeprom_read
+>>
+>> I applied the attached patch.
+>>
+>> Loading the driver now takes around one minute :-)
+> 
+> ouch, but yep, thats what happens when you use "super extra delay"
+> 
+>> I ran 'source load_unload' 25 times in a loop.
+>>
+>> The first 12 times were successful. The last 13 times failed.
+>> (cf. attached archive)
+>>
+>> I noticed something very strange.
+>>
+>> The number of words obviously in error (0xFFFF) returned by the EEPROM
+>> on 00:09.0 is not constant.
+> 
+> That is very strange, I would think that maybe you have something else
+> on the bus with the e100 that may be hogging bus cycles you have
+> failing hardware (maybe a bad eeprom, or possibly a bad mac chip)
+> 
+>> $ grep -c 0xFFFF insmod*
+>> insmod_300.txt:0
+>> insmod_301.txt:0
+>> insmod_302.txt:0
+>> insmod_303.txt:0
+>> insmod_304.txt:0
+>> insmod_305.txt:0
+>> insmod_306.txt:0
+>> insmod_307.txt:0
+>> insmod_308.txt:0
+>> insmod_309.txt:0
+>> insmod_310.txt:0
+>> insmod_311.txt:0
+>> insmod_312.txt:1
+>> insmod_313.txt:5
+>> insmod_314.txt:24
+>> insmod_315.txt:45
+>> insmod_316.txt:243
+>> insmod_317.txt:256
+>> insmod_318.txt:256
+>> insmod_319.txt:256
+>> insmod_320.txt:256
+>> insmod_321.txt:256
+>> insmod_322.txt:256
+>> insmod_323.txt:253
+>> insmod_324.txt:240
+> 
+> this is even stranger, does it cycle back down (sine wave) to zero
+> again?  The delays did seem to work, at least sometimes.  This
+> indicates that something needs that extra delay to successfully read
+> the eeprom.  I might try changing all the udelay(4) to udelay(40) (x10
+> increase) and see if that gives you a happy medium of "most times
+> driver loads without error"
+> 
+> John, this problem seems to be very specific to your hardware.  I know
+> that you have put in a lot of time debugging this, but I'm not sure
+> what we can do from here.  If this were a generic code problem more
+> people would be reporting the issue.
+> 
+> What would you like to do?  At this stage I would like e100 to work
+> better than it is, but I'm not sure what to do next.
 
-	I ask because I'd like to know if this sort of thing can ever
-happen with libata.  If so, then that is yet another reason to have
-the ability to override DMA settings from user level in libata.
+Hello everyone,
 
-Adam Richter
+I'm resurrecting this thread because it appears we'll need to support 
+these motherboards for several months to come, yet Adrian Bunk has 
+scheduled the removal of eepro100 in January 2007.
+
+To recap, we have to support ~30 EBC-2000T motherboards.
+http://www.adlinktech.com/PD/web/PD_detail.php?pid=213
+These motherboards come with three on-board Intel 82559 NICs.
+
+Last time I checked, i.e. two months ago, e100 did not correctly 
+initialize all three NICs on these motherboards. Therefore, we've been 
+using eepro100.
+
+I will be testing the latest 2.6.20 kernel to see if the situation has 
+changed, but I wanted to let you all know that there are still some 
+eepro100 users out there, out of necessity.
+
+Regards,
+
+John
+
