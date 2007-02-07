@@ -1,65 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161133AbXBGKQ6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161137AbXBGKTK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161133AbXBGKQ6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Feb 2007 05:16:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161130AbXBGKQ6
+	id S1161137AbXBGKTK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Feb 2007 05:19:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161140AbXBGKTJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Feb 2007 05:16:58 -0500
-Received: from postfix2-g20.free.fr ([212.27.60.43]:44339 "EHLO
-	postfix2-g20.free.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161133AbXBGKQ5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Feb 2007 05:16:57 -0500
-Message-ID: <45C9A666.7010703@free.fr>
-Date: Wed, 07 Feb 2007 11:13:58 +0100
-From: John <linux.kernel@free.fr>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061108 SeaMonkey/1.0.6
+	Wed, 7 Feb 2007 05:19:09 -0500
+Received: from ns1.suse.de ([195.135.220.2]:57004 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161137AbXBGKTI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Feb 2007 05:19:08 -0500
+From: Andi Kleen <ak@suse.de>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [2.6.20][PATCH] fix mempolicy error check on a system with memory-less-node
+Date: Wed, 7 Feb 2007 11:19:02 +0100
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org, y-goto@jp.fujitsu.com, clameter@engr.sgi.com,
+       akpm@osdl.org
+References: <20070206202312.4f979bcf.kamezawa.hiroyu@jp.fujitsu.com> <p73ejp2mfqh.fsf@bingen.suse.de> <20070207190738.30f1d419.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20070207190738.30f1d419.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: mingo@elte.hu, tglx@timesys.com, johnstul@us.ibm.com, akpm@osdl.org,
-       linux.kernel@free.fr
-Subject: Re: One-shot high-resolution POSIX timer periodically late
-References: <fa.4zD54Ie6Ozt0P4YqQSicS+XzXGw@ifi.uio.no> <fa.G+/T32f2o1M3+YGLca/O8NaAQyY@ifi.uio.no> <fa.6Ua8xjNfLKQEZZgDsoJgPMyww4g@ifi.uio.no> <fa.yQlV+WU0TgrJTVqjopa01tgCnT0@ifi.uio.no> <fa.ucVrLJ1Lh6FjdBHRglsIUc8/evk@ifi.uio.no> <fa.Id9oufyELrVbe5Wb8SRakwC0V50@ifi.uio.no> <45C1BE5C.9050001@free.fr> <20070206123716.GA8481@elte.hu>
-In-Reply-To: <20070206123716.GA8481@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200702071119.03125.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
 
-> John wrote:
+> AFAIK, ia64 creates nodes just depends on SRAT's possible resource information.
+> Then, ia64 can create cpu-memory-less-node(node with no available resource.).
+> (*)I don't like this.
 > 
->> Ingo Molnar wrote:
->> 
->>> 2.6.18-rt7 is pretty old, do you see the problem in 2.6.20-rc6-rt5 too?
->> 
->> Ingo, Thomas,
->> 
->> I cannot reproduce in 2.6.20-rc6-rt6, but it is not strictly an 
->> apples-to-apples comparison because I get a tsc clocksource in 
->> 2.6.20-rc6-rt6, and an acpi_pm clocksource in 2.6.18.6-rt7.
-> 
-> That suggests that the TSC was not deemed reliable by the newer kernel, 
-> which almost always means it's not realiable. I think the problems you 
-> were seeing are consistent with TSC being non-monotonic - so the fix is 
-> to not use the TSC - and the newer kernel does this automatically.
+> If we don't allow memory-less-node, we may have to add several codes for cpu-hot-add.
+> cpus should be moved to nearby node at hotadd .
+> And node-hot-add have to care that cpus mustn't be added before memory, cpu-driven 
+> node-hot-add will never occur. (ACPI's 'container' device spec can't guaranntee this.)
 
-Ingo,
+You can also alias node numbers to solve this: just point multiple node numbers 
+to the same pgdat. For a memory less node this would be a nearby one.
 
-Perhaps you've mis-read my message?
+-Andi
 
-*2.6.18.6-rt7* installed an acpi_pm clocksource. When I used a boot 
-parameter to force the clocksource to tsc, the high-resolution timer 
-infrastructure broke (timers expired several *ms* too late).
-
-On the other hand, *2.6.20-rc6-rt6* and *2.6.20-rt2* both installed a 
-tsc clock source, and it works.
-
-Therefore, it is not the newer kernel that ignored the tsc, but the 
-older kernel. Thus I don't know what to make of your comment :-)
-
-Regards,
-
-John
-
+ 
