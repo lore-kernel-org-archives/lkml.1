@@ -1,163 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965615AbXBGFJq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965460AbXBGFZe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965615AbXBGFJq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Feb 2007 00:09:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965639AbXBGFJq
+	id S965460AbXBGFZe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Feb 2007 00:25:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965500AbXBGFZe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Feb 2007 00:09:46 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:34627 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965615AbXBGFJp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Feb 2007 00:09:45 -0500
-Date: Tue, 6 Feb 2007 21:09:30 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ben Dooks <ben-linux@fluff.org>
-Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net,
-       Greg KH <greg@kroah.com>
-Subject: Re: [PATCH] mfd: SM501 core driver
-Message-Id: <20070206210930.fc814bf6.akpm@linux-foundation.org>
-In-Reply-To: <20070206192628.GA13644@fluff.org.uk>
-References: <20070206192628.GA13644@fluff.org.uk>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 7 Feb 2007 00:25:34 -0500
+Received: from ug-out-1314.google.com ([66.249.92.169]:15222 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965460AbXBGFZd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Feb 2007 00:25:33 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=ofWyyrDkq3ydU+u7K9A0s372nsDUa+CViJgZx5t6eqkBGsnlQWqtC0mm3iXDJiSpwdUgWTdkrTntxIWYQ3Ud+sJDAxi6IDOuTSIHqVP0eHuNKtkyRDK0lYmVSrAE4BOZuukS1k3340puKlZ3HAzIHpvaLlgQqswB834SeZltV7A=
+Message-ID: <1a297b360702062125p33c2f932ra61e49e4b1c9439d@mail.gmail.com>
+Date: Wed, 7 Feb 2007 09:25:31 +0400
+From: "Manu Abraham" <abraham.manu@gmail.com>
+To: "Luming Yu" <luming.yu@gmail.com>
+Subject: Re: 2.6.20 PCI Cannot allocate resource region 2
+Cc: "Grant Grundler" <grundler@parisc-linux.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
+       greg@kroah.com
+In-Reply-To: <3877989d0702062019w5e57471di540404b60f7bdd43@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1a297b360702041709l3b0309c7y8fcd33df1d487889@mail.gmail.com>
+	 <20070206045528.GA4228@colo.lackof.org>
+	 <20070206050331.GB4228@colo.lackof.org>
+	 <20070205213339.80239a22.akpm@linux-foundation.org>
+	 <20070206084638.GB20752@colo.lackof.org>
+	 <1a297b360702060106x321bfb8dw918d15df76952576@mail.gmail.com>
+	 <1a297b360702060129n54f73e66qc753a2ccb35cb3cd@mail.gmail.com>
+	 <3877989d0702060421g1a00c114yba9e193db55f3d11@mail.gmail.com>
+	 <1a297b360702060424m393d66cdka4a446b24cbd1ff@mail.gmail.com>
+	 <3877989d0702062019w5e57471di540404b60f7bdd43@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 6 Feb 2007 19:26:28 +0000 Ben Dooks <ben-linux@fluff.org> wrote:
-
-> This patch is an update patch, ready for merging
-> for the Silicon Motion SM501 multi-function device
-> core.
-> 
-> This driver handles the core function of the chip,
-> including the clock, power control and allocation
-> of resources for drivers. It also exports a series
-> of platform devices for the function drivers to
-> attach to.
-> 
-> This patch supports both platform and PCI bus
-> attached devices.
-> 
-> Signed-off-by: Ben Dooks <ben-linux@fluff.org>
-
-Can we get Vincent's signoff here?
-
-> +#ifdef CONFIG_DEBUG
-
-This doesn't appear to be defined anywhere, and nor should it be. 
-Something subsystem-specific should be used here?
-
-> +static const unsigned int misc_div[] = {
-> +	[0]		= 1,
-> +	[1]		= 2,
-> +	[2]		= 4,
-> +	[3]		= 8,
-> +	[4]		= 16,
-> +	[5]		= 32,
-> +	[6]		= 64,
-> +	[7]		= 128,
-> +	[8]		= 3,
-> +	[9]		= 6,
-> +	[10]		= 12,
-> +	[11]		= 24,
-> +	[12]		= 48,
-> +	[13]		= 96,
-> +	[14]		= 192,
-> +	[15]		= 384,
-> +};
-> +
-> +static const unsigned int px_div[] = {
-> +	[0]		= 1,
-> +	[1]		= 2,
-> +	[2]		= 4,
-> +	[3]		= 8,
-> +	[4]		= 16,
-> +	[5]		= 32,
-> +	[6]		= 64,
-> +	[7]		= 128,
-> +	[8]		= 3,
-> +	[9]		= 6,
-> +	[10]	        = 12,
-> +	[11]		= 24,
-> +	[12]		= 48,
-> +	[13]		= 96,
-> +	[14]		= 192,
-> +	[15]		= 384,
-> +	[16]		= 5,
-> +	[17]		= 10,
-> +	[18]		= 20,
-> +	[19]		= 40,
-> +	[20]		= 80,
-> +	[21]		= 160,
-> +	[22]		= 320,
-> +	[23]		= 604,
-> +};
-> +#endif
-> +
-> +#define decode_div(val, lshft, selbit, mask, dtab) \
-> +	((((val) & (selbit)) ? pll2 : 288 * MHZ) / dtab[(((val) >> (lshft)) & (mask))])
-
-A C function would be nicer here, if poss.
-
-> +#define fmt_freq(x) ((x) / MHZ), ((x) % MHZ), (x)
-
-eww.
-
-> +		(void)readl(sm->regs);
-
-Is there any benefit in all those casts?  Generally we prefer to avoid
-them.
-
-> +EXPORT_SYMBOL_GPL(sm501_misc_control);
-
-The driver exports a lot of symbols.  Does it really need to?
-
-> +	down(&sm->clock_lock);
-
-Please convert to a mutex, if possible.
-
-> +/* sm501_null_release
-> + *
-> + * A release function for the platform devices we create to keep the
-> + * driver core happy, and stop any crashed when the devices are removed
-> +*/
-> +
-> +static void sm501_null_release(struct device *dev)
-> +{
-> +}
-
-Greg might have an opinion on that ;)
-
-> +static void sm501_create_mem(struct sm501_devdata *sm,
-> +			     struct resource *res,
-> +			     unsigned long *offs,
-> +			     unsigned long size)
-> +{
-> +	*offs -= size;		/* adjust memory size */
-> +
-> +	res->flags = IORESOURCE_MEM;
-> +	res->parent = sm->mem_res;
-> +	res->start = sm->mem_res->start + *offs;
-> +	res->end = res->start + size - 1;
-> +}
-
-Please use resource_size_t throughout, test with CONFIG_RESOURCES_64BIT on
-and off.
-
-> +static inline void sm501_init_reg(struct sm501_devdata *sm,
-> +				  unsigned long reg,
-> +				  struct sm501_reg_init *r)
-> +{
-> +	unsigned long tmp;
-> +
-> +	tmp = readl(sm->regs + reg);
-> +	tmp |= r->set;
-> +	tmp &= ~r->mask;
-> +	writel(tmp, sm->regs + reg);
-> +}
-
-This might be too large to inline.
+On 2/7/07, Luming Yu <luming.yu@gmail.com> wrote:
+> > none on the card, a flash or a firmware .. it has a 24c02 EEPROM for
+> > vendor information, that's all
+>
+> Ok, sounds like windows driver can fix the broken EEPROM  on you card.
+> Otherwise, I can not explain how windows driver can fix the problem for linux.
 
 
+I have the windows driver sources for the device, it does _not_ write
+anything to the EEPROM under any circumstance.
+
+moreover the EEPROM is write protected in hardware by a jumper. So no
+application can write to it, AFAICS
+
+> Anyway, this issue is NOT linux problem. right?
+>
+
+I am not very sure about that.
+
+really i am thinking this way .. On booting up windows, it could have
+changed some BIOS stuff (written something to NVRAM or something like
+that ?).. that's the only possibility that i can see here.
+
+really lost on this one.
+
+regards,
+manu
