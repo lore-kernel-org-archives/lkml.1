@@ -1,312 +1,248 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965520AbXBGFZx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965535AbXBGF1U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965520AbXBGFZx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Feb 2007 00:25:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965639AbXBGFZx
+	id S965535AbXBGF1U (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Feb 2007 00:27:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965641AbXBGF1U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Feb 2007 00:25:53 -0500
-Received: from ausmtp04.au.ibm.com ([202.81.18.152]:33257 "EHLO
-	ausmtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965520AbXBGFZr (ORCPT
+	Wed, 7 Feb 2007 00:27:20 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:63386 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965535AbXBGF1S (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Feb 2007 00:25:47 -0500
-Message-ID: <45C962C3.2020904@in.ibm.com>
-Date: Wed, 07 Feb 2007 10:55:23 +0530
-From: Srinivasa Ds <srinivasa@in.ibm.com>
-User-Agent: Thunderbird 1.5.0.7 (X11/20060918)
+	Wed, 7 Feb 2007 00:27:18 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:date:from:x-x-sender:to:cc:subject:message-id:
+	mime-version:content-type;
+	b=igupNhdzISeA0QozDB+Png28zzTUoGuPXqy/lC9mbdLco5bPWd9SNVOGqD3Mfmgi9
+	F0ugXTmgkbIrpWd5R+Zuw==
+Date: Tue, 6 Feb 2007 21:26:58 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Andrew Morton <akpm@osdl.org>
+cc: Hugh Dickins <hugh@veritas.com>, Paul Mundt <lethal@linux-sh.org>,
+       Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org
+Subject: [patch 1/3] smaps: extract pte walker from smaps code
+Message-ID: <Pine.LNX.4.64.0702062121160.8623@chino.kir.corp.google.com>
 MIME-Version: 1.0
-To: Frederik Deweerdt <deweerdt@free.fr>
-CC: Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
-       akpm@osdl.org, torvalds@osdl.org, jkenisto@us.ibm.com,
-       anil.s.keshavamurthy@intel.com, prasanna@in.ibm.com, ananth@in.ibm.com
-Subject: Re: [RFC] [PATCH] To list all active probes in the system
-References: <45C85097.1000106@in.ibm.com> <20070206100607.GA10296@infradead.org> <45C856F1.7060403@in.ibm.com> <45C894EA.4060305@in.ibm.com> <20070206145609.GA11249@slug>
-In-Reply-To: <20070206145609.GA11249@slug>
-Content-Type: multipart/mixed;
- boundary="------------060103070602020904000204"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------060103070602020904000204
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Extracts the page table entry walker from the smaps-specific code in
+fs/proc/task_mmu.c.  This will be used later for clearing the reference
+bits on pages to measure the number of pages accessed over a time period
+through /proc/pid/smaps.
 
-Frederik Deweerdt wrote:
-> Hi,
-> 
-> Comments below,
-> 
-> On Tue, Feb 06, 2007 at 08:17:06PM +0530, Srinivasa Ds wrote:
->> Srinivasa Ds wrote:
->>> Christoph Hellwig wrote:
->>>> On Tue, Feb 06, 2007 at 03:25:35PM +0530, Srinivasa Ds wrote:
->>>>> Hi folks
->>>>>
->>>>>         I have developed a patch, that lists all active probes in the
->>>>> system. I have done this through /proc interface. Currently list is
->>>>> available under /proc/kprobes/list. Any suggestions for better place and
->>>>> name??
->>>> /debug/kprobes/list? :)
->>>>
->>> Good Idea, I will update my patch to use debugfs.
->> Patch that uses debugfs.
->>
->> Signed-off-by: Srinivasa DS <srinivasa@in.ibm.com>
->>
->>
->>
->>
->>
-> 
->>  fs/debugfs/inode.c      |    4 ++
->>  include/linux/kprobes.h |    4 ++
->>  kernel/kprobes.c        |   92 ++++++++++++++++++++++++++++++++++++++++++++++++
->>  3 files changed, 100 insertions(+)
->>
->> Index: linux-2.6.20/fs/debugfs/inode.c
->> ===================================================================
->> --- linux-2.6.20.orig/fs/debugfs/inode.c
->> +++ linux-2.6.20/fs/debugfs/inode.c
->> @@ -25,6 +25,7 @@
->>  #include <linux/namei.h>
->>  #include <linux/debugfs.h>
->>  #include <linux/fsnotify.h>
->> +#include <linux/kprobes.h>
->>  
->>  #define DEBUGFS_MAGIC	0x64626720
->>  
->> @@ -320,6 +321,9 @@ static int __init debugfs_init(void)
->>  	retval = register_filesystem(&debug_fs_type);
->>  	if (retval)
->>  		subsystem_unregister(&debug_subsys);
->> +#ifdef CONFIG_KPROBES
->> +	debugfs_kprobe_init();
->> +#endif
-> The ifdef here could be skipped if ....
->>  	return retval;
->>  }
->>  
-> [... snip ...]
->> Index: linux-2.6.20/include/linux/kprobes.h
->> ===================================================================
->> --- linux-2.6.20.orig/include/linux/kprobes.h
->> +++ linux-2.6.20/include/linux/kprobes.h
->> @@ -203,6 +203,7 @@ struct kretprobe_instance *get_free_rp_i
->>  void add_rp_inst(struct kretprobe_instance *ri);
->>  void kprobe_flush_task(struct task_struct *tk);
->>  void recycle_rp_inst(struct kretprobe_instance *ri, struct hlist_head *head);
->> +void debugfs_kprobe_init(void);
->>  #else /* CONFIG_KPROBES */
->>  
->>  #define __kprobes	/**/
->> @@ -240,5 +241,8 @@ static inline void unregister_kretprobe(
->>  static inline void kprobe_flush_task(struct task_struct *tk)
->>  {
->>  }
->> +static inline void proc_kprobe_init(void)
->> +{
->> +}
-> ... this was renamed to debugfs_kprobe_init() instead -which was your
-> first intention I suppose ;)-
-> 
-> Regards,
-> Frederik
+The new struct pte_walker includes the struct vm_area_struct of the memory
+to walk over.  Iteration begins at the start address and completes at the
+the end address.  A pointer to another data structure may be stored in the
+private field such as the struct mem_size_stats, which acts as the smaps
+accumulator.  For each page table entry in the VMA, the func function is
+called with the corresponding struct pte_walker, the pte_t, and its
+address.
 
-Oh, Iam sorry, It should be renamed to debugfs_kprobe_init().
+Since the PTE walker is now extracted from the smaps code,
+smaps_pte_func() is invoked for each PTE in the VMA.  Its behavior is
+identical to the existing implementation, except it is slightly slower
+because each PTE now invokes a function call.
 
-So finally
+Cc: Hugh Dickins <hugh@veritas.com>
+Cc: Paul Mundt <lethal@linux-sh.org>
+Cc: Christoph Lameter <clameter@sgi.com>
+Signed-off-by: David Rientjes <rientjes@google.com>
+---
+ fs/proc/task_mmu.c |  126 ++++++++++++++++++++++++++++++++++------------------
+ 1 files changed, 82 insertions(+), 44 deletions(-)
 
- My patch lists all active probes in the system by scanning through
-kprobe_table[]. It takes care of aggregate handlers and prints the type
-of the probe.
-Letter "k" for kprobes, "j" for jprobes, "r" for kretprobes. It also
-lists address of the instruction,its symbolic name(function name +
-offset) and the module name. One can access this file through
-/sys/kernel/debug/kprobes/list.
-
-Output looks like this
-=====================
-llm40:~/a # cat /sys/kernel/debug/kprobes/list
-c0169ae3  r  sys_read+0x0
-c0169ae3  k  sys_read+0x0
-c01694c8  k  vfs_write+0x0
-c0167d20  r  sys_open+0x0
-f8e658a6  k  reiserfs_delete_inode+0x0  reiserfs
-c0120f4a  k  do_fork+0x0
-c0120f4a  j  do_fork+0x0
-c0169b4a  r  sys_write+0x0
-c0169b4a  k  sys_write+0x0
-c0169622  r  vfs_read+0x0
-=================================
-
-
-Signed-off-by: Srinivasa DS <srinivasa@in.ibm.com>
-
-
-
---------------060103070602020904000204
-Content-Type: text/plain;
- name="final-2.fix"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="final-2.fix"
-
- fs/debugfs/inode.c      |    2 +
- include/linux/kprobes.h |    4 ++
- kernel/kprobes.c        |   92 ++++++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 98 insertions(+)
-
-Index: linux-2.6.20/fs/debugfs/inode.c
-===================================================================
---- linux-2.6.20.orig/fs/debugfs/inode.c
-+++ linux-2.6.20/fs/debugfs/inode.c
-@@ -25,6 +25,7 @@
- #include <linux/namei.h>
- #include <linux/debugfs.h>
- #include <linux/fsnotify.h>
-+#include <linux/kprobes.h>
+diff --git a/fs/proc/task_mmu.c b/fs/proc/task_mmu.c
+index 55ade0d..e87824b 100644
+--- a/fs/proc/task_mmu.c
++++ b/fs/proc/task_mmu.c
+@@ -122,6 +122,15 @@ struct mem_size_stats
+ 	unsigned long private_dirty;
+ };
  
- #define DEBUGFS_MAGIC	0x64626720
- 
-@@ -320,6 +321,7 @@ static int __init debugfs_init(void)
- 	retval = register_filesystem(&debug_fs_type);
- 	if (retval)
- 		subsystem_unregister(&debug_subsys);
-+	debugfs_kprobe_init();
- 	return retval;
- }
- 
-Index: linux-2.6.20/kernel/kprobes.c
-===================================================================
---- linux-2.6.20.orig/kernel/kprobes.c
-+++ linux-2.6.20/kernel/kprobes.c
-@@ -39,6 +39,8 @@
- #include <linux/moduleloader.h>
- #include <linux/kallsyms.h>
- #include <linux/freezer.h>
-+#include <linux/seq_file.h>
-+#include <linux/debugfs.h>
- #include <asm-generic/sections.h>
- #include <asm/cacheflush.h>
- #include <asm/errno.h>
-@@ -815,6 +817,96 @@ static int __init init_kprobes(void)
- 	return err;
- }
- 
-+static void __kprobes report_probe(struct seq_file *pi, struct kprobe *p,
-+               const char *sym, int offset,char *modname)
-+{
-+	char *kprobe_type;
-+
-+	if (p->pre_handler == pre_handler_kretprobe)
-+		kprobe_type = "r";
-+	else if (p->pre_handler == setjmp_pre_handler)
-+		kprobe_type = "j";
-+	else
-+		kprobe_type = "k";
-+	if (sym)
-+		seq_printf(pi, "%p  %s  %s+0x%x  %s\n", p->addr, kprobe_type,
-+			sym, offset, (modname ? modname : " "));
-+	else
-+		seq_printf(pi, "%p  %s  %p\n", p->addr, kprobe_type, p->addr);
-+}
-+
-+void __kprobes *kprobe_seq_start(struct seq_file *f, loff_t *pos)
-+{
-+	return (*pos < KPROBE_TABLE_SIZE) ? pos : NULL;
-+}
-+
-+void __kprobes *kprobe_seq_next(struct seq_file *f, void *v, loff_t *pos)
-+{
-+	(*pos)++;
-+	if (*pos >= KPROBE_TABLE_SIZE)
-+		return NULL;
-+	return pos;
-+}
-+
-+void __kprobes kprobe_seq_stop(struct seq_file *f, void *v)
-+{
-+	/* Nothing to do */
-+}
-+
-+int __kprobes show_kprobe_addr(struct seq_file *pi, void *v)
-+{
-+	struct hlist_head *head;
-+	struct hlist_node *node;
-+	struct kprobe *p, *kp;
-+	unsigned int i = *(loff_t *) v;
-+	unsigned long size, offset = 0;
-+	char *modname, namebuf[128];
-+	const char *sym = NULL;
-+
-+	head = &kprobe_table[i];
-+	preempt_disable();
-+	hlist_for_each_entry_rcu(p, node, head, hlist) {
-+		sym = kallsyms_lookup((unsigned long)p->addr, &size,
-+					&offset, &modname, namebuf);
-+		if (p->pre_handler == aggr_pre_handler) {
-+			list_for_each_entry_rcu(kp, &p->list, list)
-+				report_probe(pi, kp, sym, offset, modname);
-+		} else
-+			report_probe(pi, p, sym, offset, modname);
-+	}
-+	preempt_enable();
-+	return 0;
-+}
-+
-+struct seq_operations kprobes_seq_ops = {
-+	.start = kprobe_seq_start,
-+	.next  = kprobe_seq_next,
-+	.stop  = kprobe_seq_stop,
-+	.show  = show_kprobe_addr
++struct pte_walker {
++	struct vm_area_struct *vma;	/* VMA */
++	unsigned long start;		/* start address */
++	unsigned long end;		/* end address */
++	void *private;			/* private data */
++	/* function to invoke for each pte in the above range */
++	void (*func)(struct pte_walker*, pte_t*, unsigned long);
 +};
 +
-+static int __kprobes kprobes_open(struct inode *inode, struct file *filp)
-+{
-+	return seq_open(filp, &kprobes_seq_ops);
-+}
-+
-+static struct file_operations proc_kprobes_operations = {
-+	.open           = kprobes_open,
-+	.read           = seq_read,
-+	.llseek         = seq_lseek,
-+	.release        = seq_release,
-+};
-+
-+void __kprobes debugfs_kprobe_init(void)
-+{
-+	struct dentry *dir;
-+	
-+	dir = debugfs_create_dir("kprobes", NULL);
-+	if (dir == NULL)
-+		return;
-+	debugfs_create_file("list", 0444, dir , 0 , &proc_kprobes_operations);
-+}
-+
- __initcall(init_kprobes);
- 
- EXPORT_SYMBOL_GPL(register_kprobe);
-Index: linux-2.6.20/include/linux/kprobes.h
-===================================================================
---- linux-2.6.20.orig/include/linux/kprobes.h
-+++ linux-2.6.20/include/linux/kprobes.h
-@@ -203,6 +203,7 @@ struct kretprobe_instance *get_free_rp_i
- void add_rp_inst(struct kretprobe_instance *ri);
- void kprobe_flush_task(struct task_struct *tk);
- void recycle_rp_inst(struct kretprobe_instance *ri, struct hlist_head *head);
-+void debugfs_kprobe_init(void);
- #else /* CONFIG_KPROBES */
- 
- #define __kprobes	/**/
-@@ -240,5 +241,8 @@ static inline void unregister_kretprobe(
- static inline void kprobe_flush_task(struct task_struct *tk)
+ static int show_map_internal(struct seq_file *m, void *v, struct mem_size_stats *mss)
  {
+ 	struct proc_maps_private *priv = m->private;
+@@ -204,98 +213,127 @@ static int show_map(struct seq_file *m, void *v)
+ 	return show_map_internal(m, v, NULL);
  }
-+static inline void debugfs_kprobe_init(void)
+ 
+-static void smaps_pte_range(struct vm_area_struct *vma, pmd_t *pmd,
+-				unsigned long addr, unsigned long end,
+-				struct mem_size_stats *mss)
++/*
++ * Walks each PTE in the struct pte_walker address range and calls
++ * walker->func() for each entry.
++ */
++static void walk_ptes(struct pte_walker *walker, pmd_t *pmd)
+ {
+-	pte_t *pte, ptent;
++	struct vm_area_struct *vma = walker->vma;
++	unsigned long addr = walker->start;
+ 	spinlock_t *ptl;
+-	struct page *page;
++	pte_t *pte;
+ 
+ 	pte = pte_offset_map_lock(vma->vm_mm, pmd, addr, &ptl);
+ 	do {
+-		ptent = *pte;
+-		if (!pte_present(ptent))
+-			continue;
+-
+-		mss->resident += PAGE_SIZE;
+-
+-		page = vm_normal_page(vma, addr, ptent);
+-		if (!page)
+-			continue;
+-
+-		if (page_mapcount(page) >= 2) {
+-			if (pte_dirty(ptent))
+-				mss->shared_dirty += PAGE_SIZE;
+-			else
+-				mss->shared_clean += PAGE_SIZE;
+-		} else {
+-			if (pte_dirty(ptent))
+-				mss->private_dirty += PAGE_SIZE;
+-			else
+-				mss->private_clean += PAGE_SIZE;
+-		}
+-	} while (pte++, addr += PAGE_SIZE, addr != end);
++		walker->func(walker, pte, addr);
++	} while (pte++, addr += PAGE_SIZE, addr != walker->end);
+ 	pte_unmap_unlock(pte - 1, ptl);
+ 	cond_resched();
+ }
+ 
+-static inline void smaps_pmd_range(struct vm_area_struct *vma, pud_t *pud,
+-				unsigned long addr, unsigned long end,
+-				struct mem_size_stats *mss)
++static inline void walk_pmds(struct pte_walker *walker, pud_t *pud)
+ {
+-	pmd_t *pmd;
++	unsigned long addr = walker->start;
++	unsigned long end = walker->end;
+ 	unsigned long next;
++	pmd_t *pmd;
+ 
+ 	pmd = pmd_offset(pud, addr);
+ 	do {
+ 		next = pmd_addr_end(addr, end);
+ 		if (pmd_none_or_clear_bad(pmd))
+ 			continue;
+-		smaps_pte_range(vma, pmd, addr, next, mss);
++		walk_ptes(walker, pmd);
+ 	} while (pmd++, addr = next, addr != end);
+ }
+ 
+-static inline void smaps_pud_range(struct vm_area_struct *vma, pgd_t *pgd,
+-				unsigned long addr, unsigned long end,
+-				struct mem_size_stats *mss)
++static inline void walk_puds(struct pte_walker *walker, pgd_t *pgd)
+ {
+-	pud_t *pud;
++	unsigned long addr = walker->start;
++	unsigned long end = walker->end;
+ 	unsigned long next;
++	pud_t *pud;
+ 
+ 	pud = pud_offset(pgd, addr);
+ 	do {
+ 		next = pud_addr_end(addr, end);
+ 		if (pud_none_or_clear_bad(pud))
+ 			continue;
+-		smaps_pmd_range(vma, pud, addr, next, mss);
++		walk_pmds(walker, pud);
+ 	} while (pud++, addr = next, addr != end);
+ }
+ 
+-static inline void smaps_pgd_range(struct vm_area_struct *vma,
+-				unsigned long addr, unsigned long end,
+-				struct mem_size_stats *mss)
++static inline void walk_pgds(struct pte_walker *walker)
+ {
+-	pgd_t *pgd;
++	unsigned long addr = walker->start;
++	unsigned long end = walker->end;
+ 	unsigned long next;
++	pgd_t *pgd;
+ 
+-	pgd = pgd_offset(vma->vm_mm, addr);
++	pgd = pgd_offset(walker->vma->vm_mm, addr);
+ 	do {
+ 		next = pgd_addr_end(addr, end);
+ 		if (pgd_none_or_clear_bad(pgd))
+ 			continue;
+-		smaps_pud_range(vma, pgd, addr, next, mss);
++		walk_puds(walker, pgd);
+ 	} while (pgd++, addr = next, addr != end);
+ }
+ 
++/*
++ * Called for each PTE in the struct pte_walker address range.  For all normal,
++ * present pages, we accumulate the size (in pages) grouped by shared and
++ * private attributes and dirty bits.
++ */
++static void smaps_pte_func(struct pte_walker *walker, pte_t *pte,
++			   unsigned long addr)
 +{
++	struct mem_size_stats *mss = walker->private;
++	struct page *page;
++	pte_t ptent;
++
++	ptent = *pte;
++	if (!pte_present(ptent))
++		return;
++
++	mss->resident += PAGE_SIZE;
++
++	page = vm_normal_page(walker->vma, addr, ptent);
++	if (!page)
++		return;
++
++	if (page_mapcount(page) >= 2) {
++		if (pte_dirty(ptent))
++			mss->shared_dirty += PAGE_SIZE;
++		else
++			mss->shared_clean += PAGE_SIZE;
++	} else {
++		if (pte_dirty(ptent))
++			mss->private_dirty += PAGE_SIZE;
++		else
++			mss->private_clean += PAGE_SIZE;
++	}
 +}
- #endif				/* CONFIG_KPROBES */
- #endif				/* _LINUX_KPROBES_H */
-
---------------060103070602020904000204--
++
++/*
++ * Displays the smap for the process.  smaps_pte_func() is called for each PTE
++ * in the range from vma->vm_start to vma->vm_end.
++ */
+ static int show_smap(struct seq_file *m, void *v)
+ {
+ 	struct vm_area_struct *vma = v;
+ 	struct mem_size_stats mss;
++	struct pte_walker walker = {
++		.vma		= vma,
++		.start		= vma->vm_start,
++		.end		= vma->vm_end,
++		.private	= &mss,
++		.func		= smaps_pte_func,
++	};
+ 
+ 	memset(&mss, 0, sizeof mss);
+ 	if (vma->vm_mm && !is_vm_hugetlb_page(vma))
+-		smaps_pgd_range(vma, vma->vm_start, vma->vm_end, &mss);
++		walk_pgds(&walker);
+ 	return show_map_internal(m, v, &mss);
+ }
+ 
