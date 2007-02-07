@@ -1,63 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030634AbXBGPty@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161329AbXBGQME@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030634AbXBGPty (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Feb 2007 10:49:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030637AbXBGPty
+	id S1161329AbXBGQME (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Feb 2007 11:12:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161357AbXBGQMD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Feb 2007 10:49:54 -0500
-Received: from wx-out-0506.google.com ([66.249.82.227]:62654 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030634AbXBGPty (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Feb 2007 10:49:54 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=cyuI2Ru4a6heUJ9zWSFLiDlFZg4DnFmXkCJpldw0fc/sRR6HjBegCdSTpp0phKRWDttncsTxez6GctOzHgvqGeFnkzWurcvqbdpdSR0aQ3sM3GGsiXJFr3dl9y7XMC5zygAf5m+HfmKrYP5rFrMAkuQUpunTace4t10aQGrxqjo=
-Message-ID: <a80eebd40702070749t103c2b5qa8ac627eb997056d@mail.gmail.com>
-Date: Wed, 7 Feb 2007 10:49:53 -0500
-From: "Sen Horak" <sen.horak@gmail.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Subject: Performance of concurrent senders
-In-Reply-To: <a80eebd40702061251v54153e7ficdae109111c91a27@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 7 Feb 2007 11:12:03 -0500
+Received: from mummy.ncsc.mil ([144.51.88.129]:56581 "EHLO jazzhorn.ncsc.mil"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1030632AbXBGQMA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Feb 2007 11:12:00 -0500
+Subject: Re: [RFC 0/28] Patches to pass vfsmount to LSM inode security hooks
+From: Stephen Smalley <sds@tycho.nsa.gov>
+To: Chris Wright <chrisw@sous-sol.org>
+Cc: Andreas Gruenbacher <agruen@suse.de>, Jeff Mahoney <jeffm@suse.de>,
+       Christoph Hellwig <hch@infradead.org>, Tony Jones <tonyj@suse.de>,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       linux-security-module@vger.kernel.org, viro@zeniv.linux.org.uk
+In-Reply-To: <20070207154332.GF10574@sequoia.sous-sol.org>
+References: <20070205182213.12164.40927.sendpatchset@ermintrude.int.wirex.com>
+	 <200702051813.26958.agruen@suse.de>
+	 <1170766539.12293.370.camel@moss-spartans.epoch.ncsc.mil>
+	 <200702070055.10856.agruen@suse.de>
+	 <20070207154332.GF10574@sequoia.sous-sol.org>
+Content-Type: text/plain
+Organization: National Security Agency
+Date: Wed, 07 Feb 2007 11:06:43 -0500
+Message-Id: <1170864403.11912.43.camel@moss-spartans.epoch.ncsc.mil>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <a80eebd40702061251v54153e7ficdae109111c91a27@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi --
+On Wed, 2007-02-07 at 07:43 -0800, Chris Wright wrote:
+> * Andreas Gruenbacher (agruen@suse.de) wrote:
+> > Reiserfs currently only marks the ".reiserfs_priv" directory as private, but 
+> > not the files below it -- how about the attached patch to fix that?
+> 
+> I don't think that's right.  Look at ->create or ->lookup.  Both of those
+> properly set the private flag.  This patch looks like a step backwards,
+> sprinkling the init in so many places.
 
-I have been running some experiments involving processes sending large
-volumes of data concurrently. The results show (on Linux 2.6.19.2)
-that although the total throughput achieved by all the processes
-remains constant, the jitter increases as the number of processes
-increases. Beyond about 64 processes (on a 2.4GHz Xeon with 4Mb of
-cache), processes start getting starved and the streams get very
-bursty.
+Yes, I thought that this was already covered by the existing inheritance
+of the private flag from the parent directory.
 
-Are there any steps one can take to make the jitter scale better, eg.
-by using another scheduler? I guess that it is reasonable that the
-jitter grow with added contention through the TCP/IP stack - but what
-growth rate is acceptable? Is the data I have below reasonable?
+On a separate note, I believe that the current problem with using
+reiserfs and selinux is just that reiserfs hasn't been updated to call
+security_inode_init_security() and set the security xattr when creating
+a new file; see ext3 or jfs for an example.  But I don't know of anyone
+using reiserfs with selinux presently.
 
-The jitter varies as follows and is shown as an average+/- sd across
-25 10-second intervals.
+-- 
+Stephen Smalley
+National Security Agency
 
-Concurrency            Jitter (us)
-
-1                               1.6+/-0.8
-2                               1.5+/-1.1
-4                               1.4+/-0.6
-8                               0.8+/-0.5
-12                             2.3+/-1.2
-16                             3.3+/-2.1
-20                             4.6+/-2.5
-24                             6.2+/-1.4
-28                             7.8+/-3.2
-32                             10.0+/-3.4
-64                             100+
-
-Sen
