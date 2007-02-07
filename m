@@ -1,121 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161181AbXBGLIk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161212AbXBGLT5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161181AbXBGLIk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Feb 2007 06:08:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161193AbXBGLIk
+	id S1161212AbXBGLT5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Feb 2007 06:19:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161207AbXBGLT5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Feb 2007 06:08:40 -0500
-Received: from smtp2-g19.free.fr ([212.27.42.28]:38741 "EHLO smtp2-g19.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161181AbXBGLIj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Feb 2007 06:08:39 -0500
-Message-ID: <45C9B2BB.3010404@free.fr>
-Date: Wed, 07 Feb 2007 12:06:35 +0100
-From: John <linux.kernel@free.fr>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061108 SeaMonkey/1.0.6
-MIME-Version: 1.0
+	Wed, 7 Feb 2007 06:19:57 -0500
+Received: from mailgw1.uni-kl.de ([131.246.120.220]:38320 "EHLO
+	mailgw1.uni-kl.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161215AbXBGLT4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Feb 2007 06:19:56 -0500
+Date: Wed, 7 Feb 2007 12:19:53 +0100
+From: Eduard Bloch <edi@gmx.de>
 To: linux-kernel@vger.kernel.org
-CC: jesse.brandeburg@gmail.com, jesse.brandeburg@intel.com,
-       netdev@vger.kernel.org, auke-jan.h.kok@intel.com, bunk@stusta.de,
-       jgarzik@pobox.com, saw@saw.sw.com.sg, linux.kernel@free.fr
-Subject: Re: Intel 82559 NIC corrupted EEPROM
-References: <fa.FcMVUlqOXU3cAnxsPEN6d8T0wxU@ifi.uio.no> <fa.0FC8eT8GQaLxmNQTrsqyNFjRK4E@ifi.uio.no> <fa.nds0CFkNbotWh4VNM05EixY68wE@ifi.uio.no> <fa.K3Gpuu7oYQv+4q85Ziy3ljV6u+E@ifi.uio.no> <fa./RNOPU0DwWMrnKJSqlMaY+Y16JM@ifi.uio.no> <fa.yV32AYzot0OkvPVCY7VTCvd6rJw@ifi.uio.no>
-In-Reply-To: <fa.yV32AYzot0OkvPVCY7VTCvd6rJw@ifi.uio.no>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Subject: [2.6.20 regression] No text console picture after X start
+Message-ID: <20070207111953.GA4105@rotes76.wohnheim.uni-kl.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jesse Brandeburg wrote:
+Hello,
 
-> John wrote:
->
->> Jesse Brandeburg wrote:
->>
->>> can you try adding mdelay(100); in e100_eeprom_load before the for loop,
->>> and then change the multiple udelay(4) to mdelay(1) in e100_eeprom_read
->>
->> I applied the attached patch.
->>
->> Loading the driver now takes around one minute :-)
-> 
-> ouch, but yep, thats what happens when you use "super extra delay"
-> 
->> I ran 'source load_unload' 25 times in a loop.
->>
->> The first 12 times were successful. The last 13 times failed.
->> (cf. attached archive)
->>
->> I noticed something very strange.
->>
->> The number of words obviously in error (0xFFFF) returned by the EEPROM
->> on 00:09.0 is not constant.
-> 
-> That is very strange, I would think that maybe you have something else
-> on the bus with the e100 that may be hogging bus cycles you have
-> failing hardware (maybe a bad eeprom, or possibly a bad mac chip)
-> 
->> $ grep -c 0xFFFF insmod*
->> insmod_300.txt:0
->> insmod_301.txt:0
->> insmod_302.txt:0
->> insmod_303.txt:0
->> insmod_304.txt:0
->> insmod_305.txt:0
->> insmod_306.txt:0
->> insmod_307.txt:0
->> insmod_308.txt:0
->> insmod_309.txt:0
->> insmod_310.txt:0
->> insmod_311.txt:0
->> insmod_312.txt:1
->> insmod_313.txt:5
->> insmod_314.txt:24
->> insmod_315.txt:45
->> insmod_316.txt:243
->> insmod_317.txt:256
->> insmod_318.txt:256
->> insmod_319.txt:256
->> insmod_320.txt:256
->> insmod_321.txt:256
->> insmod_322.txt:256
->> insmod_323.txt:253
->> insmod_324.txt:240
-> 
-> this is even stranger, does it cycle back down (sine wave) to zero
-> again?  The delays did seem to work, at least sometimes.  This
-> indicates that something needs that extra delay to successfully read
-> the eeprom.  I might try changing all the udelay(4) to udelay(40) (x10
-> increase) and see if that gives you a happy medium of "most times
-> driver loads without error"
-> 
-> John, this problem seems to be very specific to your hardware.  I know
-> that you have put in a lot of time debugging this, but I'm not sure
-> what we can do from here.  If this were a generic code problem more
-> people would be reporting the issue.
-> 
-> What would you like to do?  At this stage I would like e100 to work
-> better than it is, but I'm not sure what to do next.
+I have an ATI Radeon X800 GTO card [1], which works "well"[2] with
+xserver-xorg-video-ati 6.6.3-2 (Debian Sid). However, after upgrading to
+2.6.20, the console screen is no longer restored after switching the
+virtual terminal to first console when X has been started once.
+Apparently the keyboard input does work but the picture is frozen at the
+last image seen in X and some colors become changed (like on wrong color
+pallette mapping).
 
-Hello everyone,
+There was no such problem with 2.6.19.2. No VESA framebuffer is used,
+just plain VGA 80x25 text mode. I can return to the X11 console and
+continue the work there.
 
-I'm resurrecting this thread because it appears we'll need to support 
-these motherboards for several months to come, yet Adrian Bunk has 
-scheduled the removal of eepro100 in January 2007.
+Eduard.
 
-To recap, we have to support ~30 EBC-2000T motherboards.
-http://www.adlinktech.com/PD/web/PD_detail.php?pid=213
-These motherboards come with three on-board Intel 82559 NICs.
+[1]
+02:00.0 VGA compatible controller: ATI Technologies Inc R480 [Radeon X800 GTO (PCIE)] (prog-if 00 [VGA])
+        Subsystem: PC Partner Limited Unknown device 1600
+        Flags: bus master, fast devsel, latency 0, IRQ 3
+        Memory at c8000000 (64-bit, prefetchable) [size=128M]
+        Memory at d1000000 (64-bit, non-prefetchable) [size=64K]
+        I/O ports at 9000 [size=256]
+        [virtual] Expansion ROM at d0000000 [disabled] [size=128K]
+        Capabilities: [50] Power Management version 2
+        Capabilities: [58] Express Endpoint IRQ 0
+        Capabilities: [80] Message Signalled Interrupts: Mask- 64bit+ Queue=0/0 Enable-
+        Capabilities: [100] Advanced Error Reporting
 
-Last time I checked, i.e. two months ago, e100 did not correctly 
-initialize all three NICs on these motherboards. Therefore, we've been 
-using eepro100.
+02:00.1 Display controller: ATI Technologies Inc R480 [Radeon X800 GTO (PCIE)] (Secondary)
+        Subsystem: PC Partner Limited Unknown device 1601
+        Flags: fast devsel
+        Memory at d1010000 (64-bit, non-prefetchable) [disabled] [size=64K]
+        Capabilities: [50] Power Management version 2
+        Capabilities: [58] Express Endpoint IRQ 0
 
-I will be testing the latest 2.6.20 kernel to see if the situation has 
-changed, but I wanted to let you all know that there are still some 
-eepro100 users out there, out of necessity.
+processor       : 0
+vendor_id       : AuthenticAMD
+cpu family      : 15
+model           : 47
+model name      : AMD Athlon(tm) 64 Processor 3500+
+stepping        : 0
+cpu MHz         : 1000.000
+cache size      : 512 KB
+fpu             : yes
+fpu_exception   : yes
+cpuid level     : 1
+wp              : yes
+flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 syscall nx mmxext fxsr_opt lm 3dnowext 3dnow pni lahf_lm
+bogomips        : 2001.55
+TLB size        : 1024 4K pages
+clflush size    : 64
+cache_alignment : 64
+address sizes   : 40 bits physical, 48 bits virtual
+power management: ts fid vid ttp tm stc
 
-Regards,
 
-John
+[2]
+Well like: I need to disable the dri module in xorg.conf otherwise the
+kernel locks up when X starts. This fun has began with 2.6.16 or 2.6.17
+or so.
 
+Eduard.
+
+-- 
+Naja, Garbage Collector eben. Holt den Müll sogar vom Himmel.
+       (Heise Trollforum über Java in der Flugzeugsteuerung)
