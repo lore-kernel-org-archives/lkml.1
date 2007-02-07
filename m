@@ -1,43 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161191AbXBGLCd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161189AbXBGLHo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161191AbXBGLCd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Feb 2007 06:02:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161190AbXBGLCd
+	id S1161189AbXBGLHo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Feb 2007 06:07:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161136AbXBGLHo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Feb 2007 06:02:33 -0500
-Received: from styx.suse.cz ([82.119.242.94]:50761 "EHLO duck.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1161180AbXBGLCc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Feb 2007 06:02:32 -0500
-Date: Wed, 7 Feb 2007 12:05:19 +0100
-From: Jan Kara <jack@suse.cz>
-To: Pekka J Enberg <penberg@cs.helsinki.fi>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org, hch@lst.de,
-       alan@lxorguk.ukuu.org.uk
-Subject: Re: [RFC/PATCH] revokeat/frevoke system calls V5
-Message-ID: <20070207110519.GA5361@duck.suse.cz>
-References: <Pine.LNX.4.64.0701282200450.17167@sbz-30.cs.Helsinki.FI> <20070207104549.GF24590@atrey.karlin.mff.cuni.cz> <Pine.LNX.4.64.0702071248260.25085@sbz-30.cs.Helsinki.FI>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0702071248260.25085@sbz-30.cs.Helsinki.FI>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 7 Feb 2007 06:07:44 -0500
+Received: from [221.219.160.65] ([221.219.160.65]:47237 "EHLO
+	freya.yggdrasil.com" rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1161189AbXBGLHn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Feb 2007 06:07:43 -0500
+X-Greylist: delayed 832 seconds by postgrey-1.27 at vger.kernel.org; Wed, 07 Feb 2007 06:07:43 EST
+Date: Wed, 7 Feb 2007 18:55:53 +0800
+From: "Adam J. Richter" <adam@yggdrasil.com>
+Message-Id: <200702071055.l17AtrZf014135@freya.yggdrasil.com>
+To: Stephen.Clark@seclark.us
+Subject: Re: hdparm for lib_pata
+Cc: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 07-02-07 12:50:34, Pekka J Enberg wrote:
-> Hi Honza,
-> 
-> On Wed, 7 Feb 2007, Jan Kara wrote:
-> >   Have you considered using similar hack as bad_inode.c instead of
-> > revoked_inode.c?
-> 
-> I am not sure what you mean, revoked_inode.c looks pretty much the same as 
-> bad_inode.c in mainline...
-  Oops, sorry for confusion. I was looking into 2.6.19 and there the code
-looks differently. In 2.6.20, obviously your method was preferred.
+On 2007-02-04 Stephen Clark wrote:
+>I have had two different laptops that had to have boot time command line 
+>overrides to get the
+>driver to allow the hardware work at what it was spec-ed at.
 
-								Honza
--- 
-Jan Kara <jack@suse.cz>
-SuSE CR Labs
+	Do you know if these drives were advertising less capability
+than they were spec-ed at?  Do you recall if the IDE driver without
+kernel arguments printed its rationale for reverting to the slower
+setting?
+
+	I ask because I'd like to know if this sort of thing can ever
+happen with libata.  If so, then that is yet another reason to have
+the ability to override DMA settings from user level in libata.
+
+Adam Richter
