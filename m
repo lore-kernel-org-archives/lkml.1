@@ -1,47 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422819AbXBGXx0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422805AbXBGX50@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422819AbXBGXx0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Feb 2007 18:53:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422814AbXBGXx0
+	id S1422805AbXBGX50 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Feb 2007 18:57:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422821AbXBGX50
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Feb 2007 18:53:26 -0500
-Received: from electric-eye.fr.zoreil.com ([213.41.134.224]:50849 "EHLO
-	fr.zoreil.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422805AbXBGXxY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Feb 2007 18:53:24 -0500
-Date: Thu, 8 Feb 2007 00:49:43 +0100
-From: Francois Romieu <romieu@fr.zoreil.com>
-To: =?unknown-8bit?B?6Kix5oGG5ZiJ?= <edward_hsu@realtek.com.tw>
-Cc: jeff@garzik.org, linux-kernel@vger.kernel.org, hiwu@realtek.com.tw
-Subject: Re: [PATCH 2.6.19.2] r8169: support RTL8169SC/8110SC
-Message-ID: <20070207234943.GA4445@electric-eye.fr.zoreil.com>
-References: <45C2F390.4070805@realtek.com.tw> <20070203003952.GA22823@electric-eye.fr.zoreil.com> <45C6A8EC.5090201@realtek.com.tw> <20070206003130.GA18236@electric-eye.fr.zoreil.com> <45C7EB8A.1090700@realtek.com.tw> <20070206213827.GA25119@electric-eye.fr.zoreil.com> <45C94693.5090900@realtek.com.tw>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=unknown-8bit
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <45C94693.5090900@realtek.com.tw>
-User-Agent: Mutt/1.4.2.1i
-X-Organisation: Land of Sunshine Inc.
+	Wed, 7 Feb 2007 18:57:26 -0500
+Received: from gepetto.dc.ltu.se ([130.240.42.40]:48444 "EHLO
+	gepetto.dc.ltu.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422805AbXBGX5Z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Feb 2007 18:57:25 -0500
+Message-ID: <45CA6711.40502@student.ltu.se>
+Date: Thu, 08 Feb 2007 00:56:01 +0100
+From: Richard Knutsson <ricknu-0@student.ltu.se>
+User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
+MIME-Version: 1.0
+To: Josh Triplett <josh@kernel.org>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/3] rcutorture: Remove redundant assignment to cur_ops
+ in for loop
+References: <45CA206C.2080205@kernel.org> <45CA212A.7000504@kernel.org>
+In-Reply-To: <45CA212A.7000504@kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-許恆嘉 <edward_hsu@realtek.com.tw> :
-> Dear Francois:
-> 
-> I think I didn't make it clear about the programming manuals for PCI-E ICs.
-> 
-> Due to several legal issues, Realtek won't put the programming guide on 
-> its website. However, Realtek does offer the programming guide if the 
-> customers need it. If you want to have a copy of it, please contact 
-> Realtek FAE<ryankao@realtek.com.tw>.
+Josh Triplett wrote:
+> The for loop in rcutorture_init uses the condition
+> cur_ops = torture_ops[i], cur_ops
+> but then makes the same assignment to cur_ops inside the loop.  Remove the
+> redundant assignment inside the loop, and remove now-unnecessary braces.
+>
+> Signed-off-by: Josh Triplett <josh@kernel.org>
+> ---
+>  kernel/rcutorture.c |    7 ++-----
+>  1 files changed, 2 insertions(+), 5 deletions(-)
+>
+> diff --git a/kernel/rcutorture.c b/kernel/rcutorture.c
+> index 0c7bf0c..7258bcb 100644
+> --- a/kernel/rcutorture.c
+> +++ b/kernel/rcutorture.c
+> @@ -875,12 +875,9 @@ rcu_torture_init(void)
+>  
+>  	/* Process args and tell the world that the torturer is on the job. */
+>  
+> -	for (i = 0; cur_ops = torture_ops[i], cur_ops; i++) {
+> -		cur_ops = torture_ops[i];
+> -		if (strcmp(torture_type, cur_ops->name) == 0) {
+> +	for (i = 0; cur_ops = torture_ops[i], cur_ops; i++)
+>   
+May be tired right now, but wouldn't it be more logical with:
 
-Does it mean that the documentation is NDAed ?
+for (i = 0; cur_ops = torture_ops[i], i++)
 
-On an unrelated topic, revision 8.001.00 of your 8168 driver includes
-a workaround for an rx fifo overflow issue. Is it an event which can
-happen at any time, repeteadly if some rare conditions are met or is
-it enough to whack the device once for all when the problem happens ?
+Right now it seems to have two conditions for cur_ops.
 
--- 
-Ueimor
+
+Just my 2cent
+Richard Knutsson
+
+
