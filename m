@@ -1,45 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161198AbXBGLVb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161197AbXBGLYJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161198AbXBGLVb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Feb 2007 06:21:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161215AbXBGLVb
+	id S1161197AbXBGLYJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Feb 2007 06:24:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161207AbXBGLYJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Feb 2007 06:21:31 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4073 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1161198AbXBGLVa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Feb 2007 06:21:30 -0500
-Date: Wed, 7 Feb 2007 11:21:21 +0000
-From: Pavel Machek <pavel@ucw.cz>
-To: Christian Axelsson <smiler@lanil.mine.nu>
+	Wed, 7 Feb 2007 06:24:09 -0500
+Received: from mtagate4.uk.ibm.com ([195.212.29.137]:5258 "EHLO
+	mtagate4.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161197AbXBGLYG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Feb 2007 06:24:06 -0500
+Date: Wed, 7 Feb 2007 12:23:01 +0100
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Andrew Morton <akpm@osdl.org>, Ingo Molnar <mingo@elte.hu>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
 Cc: linux-kernel@vger.kernel.org
-Subject: Re: [swsusp] s2ram fails to restore graphics
-Message-ID: <20070207112120.GA4481@ucw.cz>
-References: <45C8B688.1080105@lanil.mine.nu>
-Mime-Version: 1.0
+Subject: [patch] lockdep: forward declare struct trask_struct
+Message-ID: <20070207112301.GA9212@osiris.boeblingen.de.ibm.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <45C8B688.1080105@lanil.mine.nu>
-User-Agent: Mutt/1.5.9i
+User-Agent: mutt-ng/devel-r804 (Linux)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
 
-> I'm having problems with s2ram being unable to restore 
-> my Intel 945GM (a Dell D420 laptop) when resuming. I 
-> think everything else is restored properly (I have input 
-> so I can reboot or suspend again). Full hibernation is 
-> working flawless on this machine including restoring 
-> framebuffer and X (kudos to the suspend team :).
+3117df0453828bd045c16244e6f50e5714667a8a causes this:
 
-> I've tried both with and without framebuffer on 2.6.20.
-> Using the vbetool-trick brings the backlight on (it's 
-> otherwise off after resume).
+In file included from arch/s390/kernel/early.c:13:
+include/linux/lockdep.h:300: warning:
+		"struct task_struct" declared inside parameter list
+include/linux/lockdep.h:300:
+		warning: its scope is only this definition or
+		declaration, which is probably not what you want
 
-Use latest s2ram from suspend.sf.net...
-							Pavel
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+---
+ include/linux/lockdep.h |    2 ++
+ 1 files changed, 2 insertions(+)
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Index: linux-2.6/include/linux/lockdep.h
+===================================================================
+--- linux-2.6.orig/include/linux/lockdep.h
++++ linux-2.6/include/linux/lockdep.h
+@@ -286,6 +286,8 @@ static inline void early_init_irq_lock_c
+ }
+ #endif
+ 
++struct task_struct;
++
+ #ifdef CONFIG_TRACE_IRQFLAGS
+ extern void early_boot_irqs_off(void);
+ extern void early_boot_irqs_on(void);
