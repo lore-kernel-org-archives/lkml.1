@@ -1,46 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161452AbXBGWJI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422787AbXBGWJj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161452AbXBGWJI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Feb 2007 17:09:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422787AbXBGWJI
+	id S1422787AbXBGWJj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Feb 2007 17:09:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422909AbXBGWJi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Feb 2007 17:09:08 -0500
-Received: from ug-out-1314.google.com ([66.249.92.172]:29389 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161452AbXBGWJG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Feb 2007 17:09:06 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=gwBcTUMmrQU5EID4ZLCREEnL8QGCHWaENxxwXFp2H8IGQlMyCceqf+QkSJlqDFW/mh2cQY58kleFxcIHqFyprrzqqbONrXI+VZXEAefgyi0Q+UXewU7yIxTuMr3Gvip2AbIhezN4xaxWwYgSDM/w+17eQGKkdsPMqv3DVKWIB+I=
-Message-ID: <b6c5339f0702071408g70fd3cbcvc8039245bbd99bb7@mail.gmail.com>
-Date: Wed, 7 Feb 2007 17:08:51 -0500
-From: "Bob Copeland" <me@bobcopeland.com>
-To: "Alan Stern" <stern@rowland.harvard.edu>
-Subject: Re: [PATCH] Kwatch: kernel watchpoints using CPU debug registers
-Cc: "Roland McGrath" <roland@redhat.com>,
-       "Prasanna S Panchamukhi" <prasanna@in.ibm.com>,
-       "Kernel development list" <linux-kernel@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.44L0.0702071356580.4502-100000@iolanthe.rowland.org>
+	Wed, 7 Feb 2007 17:09:38 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:54984 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1422787AbXBGWJh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Feb 2007 17:09:37 -0500
+From: Neil Brown <neilb@suse.de>
+To: "Kai" <epimetreus@fastmail.fm>
+Date: Thu, 8 Feb 2007 09:08:58 +1100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070207025008.1B11118005D@magilla.sf.frob.com>
-	 <Pine.LNX.4.44L0.0702071356580.4502-100000@iolanthe.rowland.org>
-X-Google-Sender-Auth: 696adb153d720203
+Message-ID: <17866.19962.601479.638730@notabene.brown>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Re: Bio device too big | kernel BUG at mm/filemap.c:537!
+In-Reply-To: message from Kai on Wednesday February 7
+References: <1170734919.15636.1173102761@webmail.messagingengine.com>
+	<20070205203750.7be7f772.akpm@linux-foundation.org>
+	<17864.4339.925700.626157@notabene.brown>
+	<17865.3776.511594.763544@notabene.brown>
+	<1170865619.16808.1173403963@webmail.messagingengine.com>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/7/07, Alan Stern <stern@rowland.harvard.edu> wrote:
-> I wonder where this convention of using lower numbers to indicate higher
-> priorities comes from...  It seems to be quite prevalent even though it's
-> obviously backwards.
+On Wednesday February 7, epimetreus@fastmail.fm wrote:
+> 
+> On Wed, 7 Feb 2007 10:26:56 +1100, "Neil Brown" <neilb@suse.de> said:
+> > On Tuesday February 6, neilb@suse.de wrote:
+> > > 
+> > > This patch should fix the worst of the offences, but I'd like to
+> > > experiment and think a bit more before I submit it to stable.
+> > > And probably test it too - as yet I have only compile and brain
+> > > tested.
+> > 
+> > Ok, I've experimented and tested and now I know what was causing the
+> > double-unlock.
+> > 
+> > The following patch is suitable for 2.6.20.1 and mainline.  There is
+> > room for a bit more improvement, but only for performance, not
+> > correctness.  I'll look into that later.
+> > 
+> > Thanks,
+> > NeilBrown
+> 
+> I figure I should test this on my hardware, but since the RAID array
+> resynched itself when I rebooted back into an earlier kernel version,
+> I'm guessing it means this bug introduced some corruption into the
+> array, when it occurred, so I'd like some pointers on how I can test it
+> out without compromising my data.
 
-I agree but at least in the case of 'nice' it works in the sense that
-the value increases with increasing niceness.  Done the other way,
-they would have to call it 'mean,' then someone would wonder why 'mean
-10 20' prints 'No such file or directory' instead of '15'...
+This bug should not introduce any data corruption.
+It causes some read requests to get a failure from the device, which
+will cause raid5 to remove the device from the array (Though the data
+will still be intact).
+On restart a resync will put everything back as it was.
 
-Bob
+It is quite possible (this happened to me in my testing) for several
+devices to get these errors and for several or even all of these
+device to get failed.  However even in this case the data is still
+intact and "mdadm --assemble --force ..." will put everything back
+together.
+
+So there should be no risk of data corruption.
+
+NeilBrown
