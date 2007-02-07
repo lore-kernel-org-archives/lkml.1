@@ -1,90 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030642AbXBGRzo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030646AbXBGR4M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030642AbXBGRzo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Feb 2007 12:55:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030640AbXBGRzn
+	id S1030646AbXBGR4M (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Feb 2007 12:56:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161416AbXBGR4D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Feb 2007 12:55:43 -0500
-Received: from ug-out-1314.google.com ([66.249.92.170]:36954 "EHLO
+	Wed, 7 Feb 2007 12:56:03 -0500
+Received: from ug-out-1314.google.com ([66.249.92.173]:37109 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030632AbXBGRzf (ORCPT
+	with ESMTP id S1161392AbXBGRzr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Feb 2007 12:55:35 -0500
+	Wed, 7 Feb 2007 12:55:47 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=awp7FenhSt5Ly+kTkcqcD6ey6GMKVBe1PnTJjMUfroddvg9d6S9K+jp9qaBHZSBlt7jSKSlTg9Se+MJ7+O1S+b3H0Qy1VQbAHwz1RVoJJ6FdWRgPqsG85BDZEOeM4sFyj6xQKbyeJdoJmA+BDAqBgiWnRm3KXrPhMjDIPwhfUlY=
-Message-ID: <45C97B56.8020800@gmail.com>
-Date: Tue, 06 Feb 2007 23:10:14 -0800
+        b=HwyG63bjGQzVW1PztEjn1bXLHf/RImMLsAp+C9g/yvMWnGpC5e7ytMzG6p4qi60cNXZumEf0EA0wU5jH7lSIfZskbGwonKJIg2Oq/I+d/fDBI8BGmE4gAVj9VF2EFy0QY7hIyEwheGxcAoLyrei5SGB5yGLaOtVBDH1gduqWaT8=
+Message-ID: <45C9DC4E.7090901@gmail.com>
+Date: Wed, 07 Feb 2007 06:03:58 -0800
 From: Tejun Heo <htejun@gmail.com>
 User-Agent: Icedove 1.5.0.9 (X11/20061220)
 MIME-Version: 1.0
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-CC: Jeff Garzik <jeff@garzik.org>, linux-ide@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [QUESTION] ATA: abnormal status 0x80 on port 0xCC07
-References: <6bffcb0e0702031044v601e4fc3icf859544af292789@mail.gmail.com> <45C8EAAD.5000905@googlemail.com>
-In-Reply-To: <45C8EAAD.5000905@googlemail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Eric Sandeen <sandeen@sandeen.net>
+CC: Jeff Garzik <jeff@garzik.org>, Roland Dreier <rdreier@cisco.com>,
+       Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org
+Subject: Re: Free Linux Driver Development!
+References: <20070130012904.GA9617@kroah.com> <ada8xfks90x.fsf@cisco.com>	<20070130191020.GF20642@kroah.com> <adaodogqpmx.fsf@cisco.com> <45BFA087.6020905@garzik.org> <45C0CBF7.9000206@sandeen.net> <45C0CCE3.6030008@garzik.org> <45C0CD52.3080908@sandeen.net>
+In-Reply-To: <45C0CD52.3080908@sandeen.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-
-Michal Piotrowski wrote:
-[--snip--]
-> diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
-> index a388a8d..cf70702 100644
-> --- a/drivers/ata/libata-core.c
-> +++ b/drivers/ata/libata-core.c
-> @@ -1037,7 +1037,7 @@ static unsigned int ata_id_xfermask(cons
->                  * the PIO timing number for the maximum. Turn it into
->                  * a mask.
->                  */
-> -               u8 mode = id[ATA_ID_OLD_PIO_MODES] & 0xFF;
-> +               u8 mode = (id[ATA_ID_OLD_PIO_MODES] >> 8) & 0xFF;
->                 if (mode < 5)   /* Valid PIO range */
->                         pio_mask = (2 << mode) - 1;
->                 else
-
-All modern devices implement word53 and the above code probably never 
-runs in your case.
-
-> There are 55 per cent chances that this is a hardware problem and
-> 45 % that this is a software bug.
-
-This seems more like a hardware problem to me.
-
->   9 Power_On_Hours          0x0032   098   098   000    Old_age   Always       -       2207
+Eric Sandeen wrote:
+> Jeff Garzik wrote:
+>> Eric Sandeen wrote:
+>>> Jeff Garzik wrote:
+>>>> Roland Dreier wrote:
+>>>>> And I seem to recall there's more SATA chipset documentation than Jeff
+>>>>> Garzik has time to implement support for.
+>>>> I seriously doubt you can come up with even a single concrete example here.
+>>> Not trying to slight Jeff here in any way, but I thought I'd point out
+>>> one driver-less SATA chip that seems to have docs available.
+>>>
+>>> When looking for a sata controller I came across several inexpensive
+>>> ones based on an Initio chipset, and at first glance it seems that they
+>>> have docs out there*: http://www.initio.com/products/sata.htm
+>>>
+>>> but no drivers yet.  Just in case anyone is interested :)
+>> The driver is in libata-dev.git#upstream and queued for 2.6.21.
+>>
+>> 	Jeff
 > 
-> Error 6 occurred at disk power-on lifetime: 2202 hours (91 days + 18 hours)
->   When the command that caused the error occurred, the device was active or idle.
-> 
->   After command completion occurred, registers were:
->   ER ST SC SN CL CH DH
->   -- -- -- -- -- -- --
->   40 51 00 bc 0c 02 e0  Error: UNC at LBA = 0x00020cbc = 134332
-> 
->   Commands leading to the command that caused the error were:
->   CR FR SC SN CL CH DH DC   Powered_Up_Time  Command/Feature_Name
->   -- -- -- -- -- -- -- --  ----------------  --------------------
->   c8 00 00 2f 0c 02 e0 00      00:01:07.193  READ DMA
->   ec 03 46 00 00 00 a0 02      00:01:07.192  IDENTIFY DEVICE
->   ef 03 46 00 00 00 a0 00      00:01:07.180  SET FEATURES [Set transfer mode]
->   ec 00 00 bc 0c 02 a0 02      00:01:05.100  IDENTIFY DEVICE
->   c8 00 00 2f 0c 02 e0 00      00:01:05.096  READ DMA
+> Woo!  that was fast.  Ok I stand corrected. :)
 
-There have been a series of read errors on LBA 0x20cbc about five hours 
-before the smart log was dumped.  The error status as seen by the drive 
-is uncorrectable media error at LBA 0x20cbc.  The failing command is 
-READ for LBA 0x20c2f, so the drive could read some sectors but not all 
-of them.  Maybe the command times out while the drive keeps retrying read.
+Be warned.  The driver is marked HIGHLY EXPERIMENTAL and it seem to work 
+only on my machine.  Seems to have some problem with LBA48 support.
 
-Hmmm.. errors in smart log and dmesg don't have matching LBAs.  So, it's 
-possible that those failed read and the command timeouts are unrelated. 
-  Please keep watching and report.  We need more info to determine 
-what's going on.
+The datasheet initio posted on the website just contains register 
+descriptions, which is much better than nothing but I still had to do a 
+LOT of trial-and-error to make that thing quasi-working.  I've tried to 
+contact them in many ways but couldn't get any response.  I'll probably 
+get back to it in a few weeks.
+
+I can write ATA drivers for most hardware in a few days given 1. 
+actually useful datasheet 2. hardware at hand 3. an ENGINEER to talk to 
+when I get stuck.  So, sign me up.
+
+It will be nice to have some central web site / wiki / whatever to 
+monitor progress, arbitrate jobs, provides link to relevant info and 
+people (probably some of them being open-by-request) and possibly 
+provide links to bugzilla entries.
 
 -- 
 tejun
