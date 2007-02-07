@@ -1,125 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422858AbXBGTxT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422704AbXBGTy7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422858AbXBGTxT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Feb 2007 14:53:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422890AbXBGTxS
+	id S1422704AbXBGTy7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Feb 2007 14:54:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422915AbXBGTy6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Feb 2007 14:53:18 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:54119 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422858AbXBGTxR (ORCPT
+	Wed, 7 Feb 2007 14:54:58 -0500
+Received: from [198.99.130.12] ([198.99.130.12]:34295 "EHLO
+	saraswathi.solana.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1422760AbXBGTy5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Feb 2007 14:53:17 -0500
-Date: Wed, 7 Feb 2007 19:53:09 +0000 (GMT)
-From: James Simmons <jsimmons@infradead.org>
-To: Greg KH <greg@kroah.com>
-cc: Linux Fbdev development list 
-	<linux-fbdev-devel@lists.sourceforge.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] class device cleanup for fbdev
-Message-ID: <Pine.LNX.4.64.0702071950110.9071@pentafluge.infradead.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 7 Feb 2007 14:54:57 -0500
+Message-Id: <200702071947.l17JlhGW006605@ccure.user-mode-linux.org>
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.0.4
+To: akpm@osdl.org
+cc: linux-kernel@vger.kernel.org, user-mode-linux-devel@lists.sourceforge.net
+Subject: [PATCH 2/7] UML - SIGIO locking comment
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Date: Wed, 07 Feb 2007 14:47:43 -0500
+From: Jeff Dike <jdike@addtoit.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Comment the use of a mysterious-looking lock.
 
-Let me know if this is the right approach. This patch uses the class field 
-in struct device.
+Signed-off-by: Jeff Dike <jdike@addtoit.com>
+--
+ arch/um/kernel/sigio.c |    1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
-index 3cfea31..c3a9222 100644
---- a/drivers/video/fbmem.c
-+++ b/drivers/video/fbmem.c
-@@ -1296,14 +1296,9 @@ register_framebuffer(struct fb_info *fb_info)
- 			break;
- 	fb_info->node = i;
- 
--	fb_info->dev = device_create(fb_class, fb_info->device,
--				     MKDEV(FB_MAJOR, i), "fb%d", i);
--	if (IS_ERR(fb_info->dev)) {
--		/* Not fatal */
-+	/* Not fatal */
-+	if (fb_init_device(fb_info, fb_class))
- 		printk(KERN_WARNING "Unable to create device for framebuffer %d; errno = %ld\n", i, PTR_ERR(fb_info->dev));
--		fb_info->dev = NULL;
--	} else
--		fb_init_device(fb_info);
- 
- 	if (fb_info->pixmap.addr == NULL) {
- 		fb_info->pixmap.addr = kmalloc(FBPIXMAPSIZE, GFP_KERNEL);
-diff --git a/drivers/video/fbsysfs.c b/drivers/video/fbsysfs.c
-index 323bdf6..ce3804c 100644
---- a/drivers/video/fbsysfs.c
-+++ b/drivers/video/fbsysfs.c
-@@ -505,40 +505,32 @@ static struct device_attribute device_attrs[] = {
- #endif
- };
- 
--int fb_init_device(struct fb_info *fb_info)
-+int fb_init_device(struct fb_info *fb_info, struct class *fb_class)
- {
--	int i, error = 0;
-+	int error = 0;
- 
--	dev_set_drvdata(fb_info->dev, fb_info);
-+	if (!fb_class->dev_attrs)
-+		fb_class->dev_attrs = device_attrs;
- 
--	fb_info->class_flag |= FB_SYSFS_FLAG_ATTR;
--
--	for (i = 0; i < ARRAY_SIZE(device_attrs); i++) {
--		error = device_create_file(fb_info->dev, &device_attrs[i]);
--
--		if (error)
--			break;
--	}
--
--	if (error) {
--		while (--i >= 0)
--			device_remove_file(fb_info->dev, &device_attrs[i]);
-+	fb_info->dev = device_create(fb_class, fb_info->device,
-+                                     MKDEV(FB_MAJOR, fb_info->node),
-+				     "fb%d", fb_info->node);
-+        if (IS_ERR(fb_info->dev)) {
- 		fb_info->class_flag &= ~FB_SYSFS_FLAG_ATTR;
-+		fb_info->dev = NULL;
-+		error = -EINVAL;
-+	} else {
-+		dev_set_drvdata(fb_info->dev, fb_info);
-+		fb_info->class_flag |= FB_SYSFS_FLAG_ATTR;
- 	}
--
--	return 0;
-+	return error;
+Index: linux-2.6.18-mm/arch/um/kernel/sigio.c
+===================================================================
+--- linux-2.6.18-mm.orig/arch/um/kernel/sigio.c	2007-01-10 15:12:51.000000000 -0500
++++ linux-2.6.18-mm/arch/um/kernel/sigio.c	2007-01-10 15:44:08.000000000 -0500
+@@ -42,6 +42,7 @@ int write_sigio_irq(int fd)
+ 	return(0);
  }
  
- void fb_cleanup_device(struct fb_info *fb_info)
- {
--	unsigned int i;
--
--	if (fb_info->class_flag & FB_SYSFS_FLAG_ATTR) {
--		for (i = 0; i < ARRAY_SIZE(device_attrs); i++)
--			device_remove_file(fb_info->dev, &device_attrs[i]);
--
--		fb_info->class_flag &= ~FB_SYSFS_FLAG_ATTR;
--	}
-+	fb_info->class_flag &= ~FB_SYSFS_FLAG_ATTR;
-+	dev_set_drvdata(fb_info->dev, NULL);
-+	device_unregister(fb_info->dev);
- }
++/* These are called from os-Linux/sigio.c to protect its pollfds arrays. */
+ static DEFINE_SPINLOCK(sigio_spinlock);
  
- #ifdef CONFIG_FB_BACKLIGHT
-diff --git a/include/linux/fb.h b/include/linux/fb.h
-index 64177ec..37c4819 100644
---- a/include/linux/fb.h
-+++ b/include/linux/fb.h
-@@ -910,7 +910,7 @@ static inline void __fb_pad_aligned_buffer(u8 *dst, u32 d_pitch,
- /* drivers/video/fbsysfs.c */
- extern struct fb_info *framebuffer_alloc(size_t size, struct device *dev);
- extern void framebuffer_release(struct fb_info *info);
--extern int fb_init_device(struct fb_info *fb_info);
-+extern int fb_init_device(struct fb_info *fb_info, struct class *fb_class);
- extern void fb_cleanup_device(struct fb_info *head);
- extern void fb_bl_default_curve(struct fb_info *fb_info, u8 off, u8 min, u8 max);
- 
+ void sigio_lock(void)
+
