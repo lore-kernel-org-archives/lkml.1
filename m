@@ -1,66 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161406AbXBGRnx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965679AbXBGRny@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161406AbXBGRnx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Feb 2007 12:43:53 -0500
+	id S965679AbXBGRny (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Feb 2007 12:43:54 -0500
 Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161022AbXBGRnx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Wed, 7 Feb 2007 12:43:53 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:57257 "EHLO smtp.osdl.org"
+Received: from dspnet.fr.eu.org ([213.186.44.138]:2933 "EHLO dspnet.fr.eu.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965691AbXBGRnw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S965693AbXBGRnw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 7 Feb 2007 12:43:52 -0500
-Date: Wed, 7 Feb 2007 09:43:44 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Andi Kleen <ak@suse.de>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       LKML <linux-kernel@vger.kernel.org>, GOTO <y-goto@jp.fujitsu.com>,
-       Christoph Lameter <clameter@engr.sgi.com>
-Subject: Re: [2.6.20][PATCH] fix mempolicy error check on a system with
- memory-less-node
-Message-Id: <20070207094344.0efdde10.akpm@linux-foundation.org>
-In-Reply-To: <200702071750.55283.ak@suse.de>
-References: <20070206202312.4f979bcf.kamezawa.hiroyu@jp.fujitsu.com>
-	<p73ejp2mfqh.fsf@bingen.suse.de>
-	<20070207082330.d07525ec.akpm@linux-foundation.org>
-	<200702071750.55283.ak@suse.de>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Date: Wed, 7 Feb 2007 18:43:51 +0100
+From: Olivier Galibert <galibert@pobox.com>
+To: Alan <alan@lxorguk.ukuu.org.uk>,
+       "Hack inc." <linux-kernel@vger.kernel.org>
+Subject: Re: What does this scsi error mean ?
+Message-ID: <20070207174351.GA71395@dspnet.fr.eu.org>
+Mail-Followup-To: Olivier Galibert <galibert@pobox.com>,
+	Alan <alan@lxorguk.ukuu.org.uk>,
+	"Hack inc." <linux-kernel@vger.kernel.org>
+References: <20070115171602.GA23661@dspnet.fr.eu.org> <20070115184540.2b3c4f78@localhost.localdomain> <20070115214503.GA56952@dspnet.fr.eu.org> <20070115231452.3528bd32@localhost.localdomain> <20070118140846.GA30702@dspnet.fr.eu.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070118140846.GA30702@dspnet.fr.eu.org>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 7 Feb 2007 17:50:55 +0100 Andi Kleen <ak@suse.de> wrote:
-
-> On Wednesday 07 February 2007 17:23, Andrew Morton wrote:
-> > On 07 Feb 2007 11:20:06 +0100 Andi Kleen <ak@suse.de> wrote:
+On Thu, Jan 18, 2007 at 03:08:46PM +0100, Olivier Galibert wrote:
+> On Mon, Jan 15, 2007 at 11:14:52PM +0000, Alan wrote:
+> > > Both smart and the internal blade diagnostics say "everything is a-ok
+> > > with the drive, there hasn't been any error ever except a bunch of
+> > > corrected ECC ones, and no more than with a similar drive in another
+> > > working blade".  Hence my initial post.  "Hardware error" is kinda
+> > > imprecise, so I was wondering whether it was unexpected controller
+> > > answer, detected transmission error, block write error, sector not
+> > > found...  Is there a way to have more information?
 > > 
-> > > KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> writes:
-> > > 
-> > > > current mempolicy just checks whether a node is online or not.
-> > > > If there is memory-less-node, mempolicy's target node can be
-> > > > invalid.
-> > > > This patch adds a check whether a node has memory or not.
-> > > 
-> > > IMHO there shouldn't be any memory less nodes. The architecture code
-> > > should not create them. The CPU should be assigned to a nearby node instead.
+> > Well the right place to look would indeed have been the SMART data
+> > providing the drive didn't get into a state it couldn't update it.
+> > Hardware error comes from the drive deciding something is wrong (or a
+> > raid card faking it I guess). That covers everything from power
+> > fluctuations and overheating through firmware consistency failures and
+> > more.
 > > 
-> > umm, why?
-> > 
-> > A node which has CPUs and no memory is obviously physically possible and
-> > isn't a completely insane thing for a user to do.  I'd have thought that
-> > the kernel should be able to cleanly and clearly handle it,
+> > If you pull the drive and test it in another box does it show the same ?
 > 
-> It doesn't.
+> Ok, inverted the disks, got a crash of the same blade with the new
+> disk, so the problem is not the drive itself.  Gonna try inverting two
+> blades to check if it's the power supply connector/rail.
 
-Fix it?
+...and it is the power supply/connector.  Failure is linked to the
+position of the blade in the box (as in the blade in the first
+position always fails).  Now that's a cute failure.  Having the
+support act on it is going to be fun.
 
-> > and to 
-> > accurately present the machine's topology to the user without us having to
-> > go adding falsehoods like this?
-> 
-> a node is a piece of memory. Without memory it doesn't make sense.
+  OG.
 
-Who said?  I can pick up a piece of circuitry which has four CPUs and no
-RAM, wave it about then stick it in a computer.  The kernel is just wrong,
-surely?
+PS: Yes, I did forget to send that email :-)
