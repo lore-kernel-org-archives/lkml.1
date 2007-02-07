@@ -1,77 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161045AbXBGI6P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030497AbXBGI7F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161045AbXBGI6P (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Feb 2007 03:58:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161046AbXBGI6P
+	id S1030497AbXBGI7F (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Feb 2007 03:59:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030500AbXBGI7F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Feb 2007 03:58:15 -0500
-Received: from wr-out-0506.google.com ([64.233.184.235]:34276 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161045AbXBGI6N (ORCPT
+	Wed, 7 Feb 2007 03:59:05 -0500
+Received: from mail2.domainserver.de ([213.83.41.143]:2007 "EHLO
+	smtp.domainserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030497AbXBGI7E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Feb 2007 03:58:13 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=aRx+eYLZSkYn3YYOwtn2aPi8PIyuH2G5PMo+947IRZHjW6Gb0Mc0UrqCL2imvJdSk1sKiNxO5TIn7Ges2LI9Yfx14Tnl+dXiw0aWmBSvsajT3GUKrKy8LM3cZ3e9INyibWa0lrJwfFnwlig2+ahrxuvYKWAzXSc9H1Hi2XxAGCI=
-Message-ID: <9a8748490702070058rab5a9d6vd57cf49b722e4850@mail.gmail.com>
-Date: Wed, 7 Feb 2007 09:58:12 +0100
-From: "Jesper Juhl" <jesper.juhl@gmail.com>
-To: "Oleg Verych" <olecom@flower.upol.cz>
-Subject: Re: [patch 1/3, resend] scripts: replace gawk, head, bc with shell, update
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Roman Zippel" <zippel@linux-m68k.org>,
-       "Sam Ravnborg" <sam@ravnborg.org>,
-       "William Stearns" <wstearns@pobox.com>,
-       "Martin Schlemmer" <azarah@nosferatu.za.org>
-In-Reply-To: <20070206012207.805083000@flower.upol.cz>
+	Wed, 7 Feb 2007 03:59:04 -0500
+Envelope-to: linux-kernel@vger.kernel.org
+Delivery-date: Wed, 07 Feb 2007 09:59:03 +0100
+From: Daniel Kabs <dkabs@mobotix.com>
+Organization: MOBOTIX AG
+To: davids@webmaster.com
+Subject: Re: Problem with unix sockets: SOCK_DGRAM ignores MSG_TRUNC
+Date: Wed, 7 Feb 2007 09:58:51 +0100
+User-Agent: KMail/1.7.2
+Cc: "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+References: <MDEHLPKNGKAHNMBLJOLKCEKJBGAC.davids@webmaster.com>
+In-Reply-To: <MDEHLPKNGKAHNMBLJOLKCEKJBGAC.davids@webmaster.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20070206011819.160359000@flower.upol.cz>
-	 <20070206012207.805083000@flower.upol.cz>
+Message-Id: <200702070958.51520.dkabs@mobotix.com>
+X-AUTH: - 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/02/07, Oleg Verych <olecom@flower.upol.cz> wrote:
-> scripts: replace gawk, head, bc with shell, update
+On Tuesday 06 February 2007 21:11, David Schwartz wrote:
+> > Why not improve consistency and make unix_dgram_recvmsg() return the
+> > full packet length? So it would behave as UDP does. What do you think
+> > about adding the following code to linux/net/unix/af_unix.c:
 >
->   Replacing overhead of using some (external) programs
->   instead of good old `sh'.
->
-> Cc: Roman Zippel <zippel@linux-m68k.org>
-> Cc: Sam Ravnborg <sam@ravnborg.org>
-> Cc: William Stearns <wstearns@pobox.com>
-> Cc: Martin Schlemmer <azarah@nosferatu.za.org>
-> Signed-off-by: Oleg Verych <olecom@flower.upol.cz>
-> ---
->
->  Whitespace cleanup included.
->
->  scripts/gen_initramfs_list.sh | 43 +++++++++++++++++++++---------------------
->  scripts/makelst               | 34 ++++++++++++++++-----------------
->  2 files changed, 39 insertions(+), 38 deletions(-)
->
-> Index: linux-2.6.20/scripts/makelst
-> ===================================================================
-> --- linux-2.6.20.orig/scripts/makelst   2007-02-06 02:12:38.811908000 +0100
-> +++ linux-2.6.20/scripts/makelst        2007-02-06 02:12:43.688212750 +0100
-> @@ -1,31 +1,31 @@
-> -#!/bin/bash
-> +#!/bin/sh
+> It would be nice if the world worked that way, but you can't break
+> POSIX compliance. Perhaps another receive flag?
 
-I don't like this change much.  We don't know what shell /bin/sh is on
-a random users system - much better to be explicit and make sure we
-use/require bash.
-I expect this change to cause pain for users who have zsh, csh, ksh,
-ash or some other shell as /bin/sh but also have /bin/bash available.
-Previously things would just work, but now it will possibly break due
-to using a different shell.
+I now understand that setting the MSG_TRUNC flag is only applicable for 
+PF_PACKET. I do not argue about that any more. :-)
 
--- 
-Jesper Juhl <jesper.juhl@gmail.com>
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please      http://www.expita.com/nomime.html
+What I question is the return value when receiving from a local socket 
+using recv(). Sorry, I don't know what the POSIX standard has to say 
+about receiving from local sockets in contrast to UDP sockets as my only 
+reference are the man pages.
+
+According to "man 2 recv", on success the return value is the "the  number  
+of bytes received". Since patch-2.6.8, UDP is always returning the full 
+packet length. I'd like to see local sockets (PF_UNIX) to do the same. 
+
+Does POSIX stipulate a different behaviour for local sockets?
+
+Cheers
+Daniel
