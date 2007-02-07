@@ -1,73 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161014AbXBGHMK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965545AbXBGHXL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161014AbXBGHMK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Feb 2007 02:12:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161009AbXBGHMK
+	id S965545AbXBGHXL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Feb 2007 02:23:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965667AbXBGHXK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Feb 2007 02:12:10 -0500
-Received: from an-out-0708.google.com ([209.85.132.245]:49694 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161014AbXBGHMH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Feb 2007 02:12:07 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=qs1B2pxOYs5a6X+mT5yIV0FQaOm+n00iK8fjtQihf+rMCMnl7JPxUr7WzIWeXbKIyKacvRAzp5uzmfZS0ej5m8tn/5BjlNUMLrG+X82lqeUsA6xg7//6ixAXHY5HyCKWd734OjKGm6S5ip/Fn32DhbIIfwPhpOyLZUdfk14yxiw=
-Message-ID: <653402b90702062312g1434ed03o25696e76b23fdab@mail.gmail.com>
-Date: Wed, 7 Feb 2007 08:12:05 +0100
-From: "Miguel Ojeda" <maxextreme@gmail.com>
-To: "Greg KH" <greg@kroah.com>
-Subject: Re: Free Linux Driver Development!
-Cc: "Manu Abraham" <abraham.manu@gmail.com>,
-       "Pierre Ossman" <drzeus-list@drzeus.cx>, linux-kernel@vger.kernel.org
-In-Reply-To: <20070206182122.GC18731@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 7 Feb 2007 02:23:10 -0500
+Received: from verein.lst.de ([213.95.11.210]:60620 "EHLO mail.lst.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965545AbXBGHXJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Feb 2007 02:23:09 -0500
+Date: Wed, 7 Feb 2007 08:22:59 +0100
+From: Christoph Hellwig <hch@lst.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Christoph Hellwig <hch@lst.de>, jack@suse.cz,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] remove sb->s_files and file_list_lock usage in dquot.c
+Message-ID: <20070207072259.GA22083@lst.de>
+References: <20070206132333.GA9919@lst.de> <20070206155001.22ab74f6.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20070130012904.GA9617@kroah.com> <45C62D23.9040307@drzeus.cx>
-	 <20070206064448.GE9071@kroah.com>
-	 <1a297b360702060029q578b6b2anc8658e9d565e54a7@mail.gmail.com>
-	 <20070206182122.GC18731@kroah.com>
+In-Reply-To: <20070206155001.22ab74f6.akpm@linux-foundation.org>
+User-Agent: Mutt/1.3.28i
+X-Spam-Score: -0.001 () BAYES_44
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/6/07, Greg KH <greg@kroah.com> wrote:
-> On Tue, Feb 06, 2007 at 12:29:03PM +0400, Manu Abraham wrote:
-> > On 2/6/07, Greg KH <greg@kroah.com> wrote:
-> > >On Sun, Feb 04, 2007 at 07:59:47PM +0100, Pierre Ossman wrote:
-> > >> Hi Greg,
-> > >>
-> > >> Although I am a bit of a cynic, I really hope that this endeavor works
-> > >> the way you hope.
-> > >>
-> > >> I'd also like to offer my services to this quest of yours. If you get
-> > >> any SD, MMC or SDIO requests, feel free to pass them along to me. I am
-> > >> not a big fan of debug-by-email though, so I'd prefer vendors who
-> either
-> > >> can provide samples or where the hardware is cheap and freely available
-> > >> so I can just go out and by one.
-> > >
-> > >Great, thanks for letting me know, I've added you to the list.
-> >
-> > for any DVB/DAB/DMB (PCI based) devices, if any vendors would like to
-> > offer sample device and specs, would like to join the bandwagon.
->
-> thanks, I've added you to the list.
->
-> greg k-h
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+On Tue, Feb 06, 2007 at 03:50:01PM -0800, Andrew Morton wrote:
+> On Tue, 6 Feb 2007 14:23:33 +0100
+> Christoph Hellwig <hch@lst.de> wrote:
+> 
+> >  static void add_dquot_ref(struct super_block *sb, int type)
+> >  {
+> > -	struct list_head *p;
+> > +	struct inode *inode;
+> >  
+> >  restart:
+> > -	file_list_lock();
+> > -	list_for_each(p, &sb->s_files) {
+> > -		struct file *filp = list_entry(p, struct file, f_u.fu_list);
+> > -		struct inode *inode = filp->f_path.dentry->d_inode;
+> > -		if (filp->f_mode & FMODE_WRITE && dqinit_needed(inode, type)) {
+> > -			struct dentry *dentry = dget(filp->f_path.dentry);
+> > -			file_list_unlock();
+> > -			sb->dq_op->initialize(inode, type);
+> > -			dput(dentry);
+> > -			/* As we may have blocked we had better restart... */
+> > -			goto restart;
+> > -		}
+> > +	spin_lock(&inode_lock);
+> > +	list_for_each_entry(inode, &sb->s_inodes, i_sb_list) {
+> > +		if (!atomic_read(&inode->i_writecount))
+> > +			continue;
+> > +		if (!dqinit_needed(inode, type))
+> > +			continue;
+> > +		if (inode->i_state & (I_FREEING|I_WILL_FREE))
+> > +			continue;
+> > +
+> > +		__iget(inode);
+> > +		spin_unlock(&inode_lock);
+> > +
+> > +		sb->dq_op->initialize(inode, type);
+> > +		iput(inode);
+> > +		/* As we may have blocked we had better restart... */
+> > +		goto restart;
+> >  	}
+> > -	file_list_unlock();
+> > +	spin_unlock(&inode_lock);
+> >  }
+> 
+> That loop has (and had) up to O(n^n) operations.  Is there something which
+> prevents this from going insane?
 
-As I'm not an expert in any kind of device, so I would like to join
-for any device which its type has not been assigned to any person yet
-(wild card?). Also, I would code for small LCDs.
-
--- 
-Miguel Ojeda
-http://maxextreme.googlepages.com/index.htm
+I don't think so.  Then again it's only called when you call quotaon on
+a mounted filesystem, and normally you don't have that many inodes
+instanciated at that time.
