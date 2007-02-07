@@ -1,158 +1,734 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161177AbXBGKoh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161174AbXBGKpx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161177AbXBGKoh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Feb 2007 05:44:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161175AbXBGKoh
+	id S1161174AbXBGKpx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Feb 2007 05:45:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161173AbXBGKpx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Feb 2007 05:44:37 -0500
-Received: from serv04.lahn.de ([213.239.197.57]:49334 "EHLO serv04.lahn.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161177AbXBGKog (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Feb 2007 05:44:36 -0500
-Date: Wed, 7 Feb 2007 11:43:46 +0100
-From: Michael Leun <ml@newton.leun.net>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, mitr@volny.cz,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] wistron button support for fujitsu-siemens Amilo D88x0
-Message-ID: <20070207114346.73eecf40@xenia.leun.net>
-In-Reply-To: <20070207095807.GA15088@srcf.ucam.org>
-References: <20070205103521.0f20779d@xenia.leun.net>
-	<20070205110529.0e4ae6c0@xenia.leun.net>
-	<d120d5000702060837j7382d429ned3fb5a5e47ac76b@mail.gmail.com>
-	<20070206194318.1d8e1fc0@xenia.leun.net>
-	<20070206200748.GA24176@srcf.ucam.org>
-	<20070207072347.7b30781d@xenia.leun.net>
-	<20070207095807.GA15088@srcf.ucam.org>
-Organization: Not Organized
-X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; i586-suse-linux-gnu)
+	Wed, 7 Feb 2007 05:45:53 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:47806 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161168AbXBGKpv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Feb 2007 05:45:51 -0500
+Date: Wed, 7 Feb 2007 11:45:49 +0100
+From: Jan Kara <jack@suse.cz>
+To: Pekka J Enberg <penberg@cs.helsinki.fi>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org, hch@lst.de,
+       alan@lxorguk.ukuu.org.uk
+Subject: Re: [RFC/PATCH] revokeat/frevoke system calls V5
+Message-ID: <20070207104549.GF24590@atrey.karlin.mff.cuni.cz>
+References: <Pine.LNX.4.64.0701282200450.17167@sbz-30.cs.Helsinki.FI>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0701282200450.17167@sbz-30.cs.Helsinki.FI>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 7 Feb 2007 09:58:07 +0000
-Matthew Garrett <mjg59@srcf.ucam.org> wrote:
+  Hello,
 
-> On Wed, Feb 07, 2007 at 07:23:47AM +0100, Michael Leun wrote:
-> > Matthew Garrett <mjg59@srcf.ucam.org> wrote:
-> > > Hm. Is there really no PNP id that tends to be associated with
-> > > this wistron hardware? Fujitsu (at least) seem to be quite good at
-> > > exposing a lot of their magic hardware that way.
-> > 
-> > Sorry, I do not know and I do not know how to find out. If there is
-> > any testing I should do on my machine I will happily do that, but
-> > you would have to tell me what to do.
+> From: Pekka Enberg <penberg@cs.helsinki.fi>
 > 
-> cat /sys/bus/pnp/devices/*/id should give a list of the available IDs.
+> The revokeat(2) and frevoke(2) system calls invalidate open file
+> descriptors and shared mappings of an inode. After an successful
+> revocation, operations on file descriptors fail with the EBADF or
+> ENXIO error code for regular and device files,
+> respectively. Attempting to read from or write to a revoked mapping
+> causes SIGBUS.
+> 
+> The actual operation is done in two passes:
+> 
+>  1. Revoke all file descriptors that point to the given inode. We do
+>     this under tasklist_lock so that after this pass, we don't need
+>     to worry about racing with close(2) or dup(2).
+>    
+>  2. Take down shared memory mappings of each revoked file and close
+>     the file pointer.
+> 
+> The file descriptors are kept until the owning task does close(2) and
+> memory mapping ranges preserved until the owning task does munmap(2).
+> 
+> Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+  Have you considered using similar hack as bad_inode.c instead of
+revoked_inode.c?
 
-ml@xenia:~> cat /sys/bus/pnp/devices/*/id
-PNP0a03
-PNP0200
-PNP0b00
-PNP0800
-PNP0c02
-PNP0c04
-PNP0303
-PNP0f13
-PNP0700
-PNP0400
-PNP0501
+> Index: 2.6/fs/revoked_inode.c
+> ===================================================================
+> --- /dev/null
+> +++ 2.6/fs/revoked_inode.c
+> @@ -0,0 +1,664 @@
+> +/*
+> + *  linux/fs/revoked_inode.c
+> + *
+> + *  Copyright (C) 1997, Stephen Tweedie
+> + *
+> + *  Provide stub functions for revoked inodes
+> + */
+> +
+> +#include <linux/fs.h>
+> +#include <linux/module.h>
+> +#include <linux/stat.h>
+> +#include <linux/time.h>
+> +#include <linux/smp_lock.h>
+> +#include <linux/namei.h>
+> +#include <linux/poll.h>
+> +
+> +static loff_t revoked_file_llseek(struct file *file, loff_t offset, int origin)
+> +{
+> +	return -EBADF;
+> +}
+> +
+> +static ssize_t revoked_file_read(struct file *filp, char __user * buf,
+> +				 size_t size, loff_t * ppos)
+> +{
+> +	return -EBADF;
+> +}
+> +
+> +static ssize_t revoked_file_write(struct file *filp, const char __user * buf,
+> +				  size_t siz, loff_t * ppos)
+> +{
+> +	return -EBADF;
+> +}
+> +
+> +static ssize_t revoked_file_aio_read(struct kiocb *iocb,
+> +				     const struct iovec *iov,
+> +				     unsigned long nr_segs, loff_t pos)
+> +{
+> +	return -EBADF;
+> +}
+> +
+> +static ssize_t revoked_file_aio_write(struct kiocb *iocb,
+> +				      const struct iovec *iov,
+> +				      unsigned long nr_segs, loff_t pos)
+> +{
+> +	return -EBADF;
+> +}
+> +
+> +static int revoked_file_readdir(struct file *filp, void *dirent,
+> +				filldir_t filldir)
+> +{
+> +	return -EBADF;
+> +}
+> +
+> +static unsigned int revoked_file_poll(struct file *filp, poll_table * wait)
+> +{
+> +	return POLLERR;
+> +}
+> +
+> +static int revoked_file_ioctl(struct inode *inode, struct file *filp,
+> +			      unsigned int cmd, unsigned long arg)
+> +{
+> +	return -EBADF;
+> +}
+> +
+> +static long revoked_file_unlocked_ioctl(struct file *file, unsigned cmd,
+> +					unsigned long arg)
+> +{
+> +	return -EBADF;
+> +}
+> +
+> +static long revoked_file_compat_ioctl(struct file *file, unsigned int cmd,
+> +				      unsigned long arg)
+> +{
+> +	return -EBADF;
+> +}
+> +
+> +static int revoked_file_mmap(struct file *file, struct vm_area_struct *vma)
+> +{
+> +	return -EBADF;
+> +}
+> +
+> +static int revoked_file_open(struct inode *inode, struct file *filp)
+> +{
+> +	return -EBADF;
+> +}
+> +
+> +static int revoked_file_flush(struct file *file, fl_owner_t id)
+> +{
+> +	return 0;
+> +}
+> +
+> +static int revoked_file_release(struct inode *inode, struct file *filp)
+> +{
+> +	return -EBADF;
+> +}
+> +
+> +static int revoked_file_fsync(struct file *file, struct dentry *dentry,
+> +			      int datasync)
+> +{
+> +	return -EBADF;
+> +}
+> +
+> +static int revoked_file_aio_fsync(struct kiocb *iocb, int datasync)
+> +{
+> +	return -EBADF;
+> +}
+> +
+> +static int revoked_file_fasync(int fd, struct file *filp, int on)
+> +{
+> +	return -EBADF;
+> +}
+> +
+> +static int revoked_file_lock(struct file *file, int cmd, struct file_lock *fl)
+> +{
+> +	return -EBADF;
+> +}
+> +
+> +static ssize_t revoked_file_sendfile(struct file *in_file, loff_t * ppos,
+> +				     size_t count, read_actor_t actor,
+> +				     void *target)
+> +{
+> +	return -EBADF;
+> +}
+> +
+> +static ssize_t revoked_file_sendpage(struct file *file, struct page *page,
+> +				     int off, size_t len, loff_t * pos,
+> +				     int more)
+> +{
+> +	return -EBADF;
+> +}
+> +
+> +static unsigned long revoked_file_get_unmapped_area(struct file *file,
+> +						    unsigned long addr,
+> +						    unsigned long len,
+> +						    unsigned long pgoff,
+> +						    unsigned long flags)
+> +{
+> +	return -EBADF;
+> +}
+> +
+> +static int revoked_file_check_flags(int flags)
+> +{
+> +	return -EBADF;
+> +}
+> +
+> +static int revoked_file_dir_notify(struct file *file, unsigned long arg)
+> +{
+> +	return -EBADF;
+> +}
+> +
+> +static int revoked_file_flock(struct file *filp, int cmd, struct file_lock *fl)
+> +{
+> +	return -EBADF;
+> +}
+> +
+> +static ssize_t revoked_file_splice_write(struct pipe_inode_info *pipe,
+> +					 struct file *out, loff_t * ppos,
+> +					 size_t len, unsigned int flags)
+> +{
+> +	return -EBADF;
+> +}
+> +
+> +static ssize_t revoked_file_splice_read(struct file *in, loff_t * ppos,
+> +					struct pipe_inode_info *pipe,
+> +					size_t len, unsigned int flags)
+> +{
+> +	return -EBADF;
+> +}
+> +
+> +static const struct file_operations revoked_file_ops = {
+> +	.llseek = revoked_file_llseek,
+> +	.read = revoked_file_read,
+> +	.write = revoked_file_write,
+> +	.aio_read = revoked_file_aio_read,
+> +	.aio_write = revoked_file_aio_write,
+> +	.readdir = revoked_file_readdir,
+> +	.poll = revoked_file_poll,
+> +	.ioctl = revoked_file_ioctl,
+> +	.unlocked_ioctl = revoked_file_unlocked_ioctl,
+> +	.compat_ioctl = revoked_file_compat_ioctl,
+> +	.mmap = revoked_file_mmap,
+> +	.open = revoked_file_open,
+> +	.flush = revoked_file_flush,
+> +	.release = revoked_file_release,
+> +	.fsync = revoked_file_fsync,
+> +	.aio_fsync = revoked_file_aio_fsync,
+> +	.fasync = revoked_file_fasync,
+> +	.lock = revoked_file_lock,
+> +	.sendfile = revoked_file_sendfile,
+> +	.sendpage = revoked_file_sendpage,
+> +	.get_unmapped_area = revoked_file_get_unmapped_area,
+> +	.check_flags = revoked_file_check_flags,
+> +	.dir_notify = revoked_file_dir_notify,
+> +	.flock = revoked_file_flock,
+> +	.splice_write = revoked_file_splice_write,
+> +	.splice_read = revoked_file_splice_read,
+> +};
+> +
+> +static int revoked_inode_create(struct inode *dir, struct dentry *dentry,
+> +				int mode, struct nameidata *nd)
+> +{
+> +	return -EBADF;
+> +}
+> +
+> +static struct dentry *revoked_inode_lookup(struct inode *dir,
+> +					   struct dentry *dentry,
+> +					   struct nameidata *nd)
+> +{
+> +	return ERR_PTR(-EBADF);
+> +}
+> +
+> +static int revoked_inode_link(struct dentry *old_dentry, struct inode *dir,
+> +			      struct dentry *dentry)
+> +{
+> +	return -EBADF;
+> +}
+> +
+> +static int revoked_inode_unlink(struct inode *dir, struct dentry *dentry)
+> +{
+> +	return -EBADF;
+> +}
+> +
+> +static int revoked_inode_symlink(struct inode *dir, struct dentry *dentry,
+> +				 const char *symname)
+> +{
+> +	return -EBADF;
+> +}
+> +
+> +static int revoked_inode_mkdir(struct inode *dir, struct dentry *dentry,
+> +			       int mode)
+> +{
+> +	return -EBADF;
+> +}
+> +
+> +static int revoked_inode_rmdir(struct inode *dir, struct dentry *dentry)
+> +{
+> +	return -EBADF;
+> +}
+> +
+> +static int revoked_inode_mknod(struct inode *dir, struct dentry *dentry,
+> +			       int mode, dev_t rdev)
+> +{
+> +	return -EBADF;
+> +}
+> +
+> +static int revoked_inode_rename(struct inode *old_dir,
+> +				struct dentry *old_dentry,
+> +				struct inode *new_dir,
+> +				struct dentry *new_dentry)
+> +{
+> +	return -EBADF;
+> +}
+> +
+> +static int revoked_inode_readlink(struct dentry *dentry, char __user * buffer,
+> +				  int buflen)
+> +{
+> +	return -EBADF;
+> +}
+> +
+> +static int revoked_inode_permission(struct inode *inode, int mask,
+> +				    struct nameidata *nd)
+> +{
+> +	return -EBADF;
+> +}
+> +
+> +static int revoked_inode_getattr(struct vfsmount *mnt, struct dentry *dentry,
+> +				 struct kstat *stat)
+> +{
+> +	return -EBADF;
+> +}
+> +
+> +static int revoked_inode_setattr(struct dentry *direntry, struct iattr *attrs)
+> +{
+> +	return -EBADF;
+> +}
+> +
+> +static int revoked_inode_setxattr(struct dentry *dentry, const char *name,
+> +				  const void *value, size_t size, int flags)
+> +{
+> +	return -EBADF;
+> +}
+> +
+> +static ssize_t revoked_inode_getxattr(struct dentry *dentry, const char *name,
+> +				      void *buffer, size_t size)
+> +{
+> +	return -EBADF;
+> +}
+> +
+> +static ssize_t revoked_inode_listxattr(struct dentry *dentry, char *buffer,
+> +				       size_t buffer_size)
+> +{
+> +	return -EBADF;
+> +}
+> +
+> +static int revoked_inode_removexattr(struct dentry *dentry, const char *name)
+> +{
+> +	return -EBADF;
+> +}
+> +
+> +static struct inode_operations revoked_inode_ops = {
+> +	.create = revoked_inode_create,
+> +	.lookup = revoked_inode_lookup,
+> +	.link = revoked_inode_link,
+> +	.unlink = revoked_inode_unlink,
+> +	.symlink = revoked_inode_symlink,
+> +	.mkdir = revoked_inode_mkdir,
+> +	.rmdir = revoked_inode_rmdir,
+> +	.mknod = revoked_inode_mknod,
+> +	.rename = revoked_inode_rename,
+> +	.readlink = revoked_inode_readlink,
+> +	/* follow_link must be no-op, otherwise unmounting this inode
+> +	   won't work */
+> +	/* put_link returns void */
+> +	/* truncate returns void */
+> +	.permission = revoked_inode_permission,
+> +	.getattr = revoked_inode_getattr,
+> +	.setattr = revoked_inode_setattr,
+> +	.setxattr = revoked_inode_setxattr,
+> +	.getxattr = revoked_inode_getxattr,
+> +	.listxattr = revoked_inode_listxattr,
+> +	.removexattr = revoked_inode_removexattr,
+> +	/* truncate_range returns void */
+> +};
+> +
+> +static loff_t revoked_special_file_llseek(struct file *file, loff_t offset,
+> +					  int origin)
+> +{
+> +	return -ENXIO;
+> +}
+> +
+> +static ssize_t revoked_special_file_read(struct file *filp, char __user * buf,
+> +					 size_t size, loff_t * ppos)
+> +{
+> +	return -ENXIO;
+> +}
+> +
+> +static ssize_t revoked_special_file_write(struct file *filp,
+> +					  const char __user * buf, size_t siz,
+> +					  loff_t * ppos)
+> +{
+> +	return -ENXIO;
+> +}
+> +
+> +static ssize_t revoked_special_file_aio_read(struct kiocb *iocb,
+> +					     const struct iovec *iov,
+> +					     unsigned long nr_segs, loff_t pos)
+> +{
+> +	return -ENXIO;
+> +}
+> +
+> +static ssize_t revoked_special_file_aio_write(struct kiocb *iocb,
+> +					      const struct iovec *iov,
+> +					      unsigned long nr_segs, loff_t pos)
+> +{
+> +	return -ENXIO;
+> +}
+> +
+> +static int revoked_special_file_readdir(struct file *filp, void *dirent,
+> +					filldir_t filldir)
+> +{
+> +	return -ENXIO;
+> +}
+> +
+> +static unsigned int revoked_special_file_poll(struct file *filp,
+> +					      poll_table * wait)
+> +{
+> +	return POLLERR;
+> +}
+> +
+> +static int revoked_special_file_ioctl(struct inode *inode, struct file *filp,
+> +				      unsigned int cmd, unsigned long arg)
+> +{
+> +	return -ENXIO;
+> +}
+> +
+> +static long revoked_special_file_unlocked_ioctl(struct file *file, unsigned cmd,
+> +						unsigned long arg)
+> +{
+> +	return -ENXIO;
+> +}
+> +
+> +static long revoked_special_file_compat_ioctl(struct file *file,
+> +					      unsigned int cmd,
+> +					      unsigned long arg)
+> +{
+> +	return -ENXIO;
+> +}
+> +
+> +static int revoked_special_file_mmap(struct file *file,
+> +				     struct vm_area_struct *vma)
+> +{
+> +	return -ENXIO;
+> +}
+> +
+> +static int revoked_special_file_open(struct inode *inode, struct file *filp)
+> +{
+> +	return -ENXIO;
+> +}
+> +
+> +static int revoked_special_file_flush(struct file *file, fl_owner_t id)
+> +{
+> +	return 0;
+> +}
+> +
+> +static int revoked_special_file_release(struct inode *inode, struct file *filp)
+> +{
+> +	return -ENXIO;
+> +}
+> +
+> +static int revoked_special_file_fsync(struct file *file, struct dentry *dentry,
+> +				      int datasync)
+> +{
+> +	return -ENXIO;
+> +}
+> +
+> +static int revoked_special_file_aio_fsync(struct kiocb *iocb, int datasync)
+> +{
+> +	return -ENXIO;
+> +}
+> +
+> +static int revoked_special_file_fasync(int fd, struct file *filp, int on)
+> +{
+> +	return -ENXIO;
+> +}
+> +
+> +static int revoked_special_file_lock(struct file *file, int cmd,
+> +				     struct file_lock *fl)
+> +{
+> +	return -ENXIO;
+> +}
+> +
+> +static ssize_t revoked_special_file_sendfile(struct file *in_file,
+> +					     loff_t * ppos, size_t count,
+> +					     read_actor_t actor, void *target)
+> +{
+> +	return -ENXIO;
+> +}
+> +
+> +static ssize_t revoked_special_file_sendpage(struct file *file,
+> +					     struct page *page, int off,
+> +					     size_t len, loff_t * pos, int more)
+> +{
+> +	return -ENXIO;
+> +}
+> +
+> +static unsigned long revoked_special_file_get_unmapped_area(struct file *file,
+> +							    unsigned long addr,
+> +							    unsigned long len,
+> +							    unsigned long pgoff,
+> +							    unsigned long flags)
+> +{
+> +	return -ENXIO;
+> +}
+> +
+> +static int revoked_special_file_check_flags(int flags)
+> +{
+> +	return -ENXIO;
+> +}
+> +
+> +static int revoked_special_file_dir_notify(struct file *file, unsigned long arg)
+> +{
+> +	return -ENXIO;
+> +}
+> +
+> +static int revoked_special_file_flock(struct file *filp, int cmd,
+> +				      struct file_lock *fl)
+> +{
+> +	return -ENXIO;
+> +}
+> +
+> +static ssize_t revoked_special_file_splice_write(struct pipe_inode_info *pipe,
+> +						 struct file *out,
+> +						 loff_t * ppos, size_t len,
+> +						 unsigned int flags)
+> +{
+> +	return -ENXIO;
+> +}
+> +
+> +static ssize_t revoked_special_file_splice_read(struct file *in, loff_t * ppos,
+> +						struct pipe_inode_info *pipe,
+> +						size_t len, unsigned int flags)
+> +{
+> +	return -ENXIO;
+> +}
+> +
+> +static const struct file_operations revoked_special_file_ops = {
+> +	.llseek = revoked_special_file_llseek,
+> +	.read = revoked_special_file_read,
+> +	.write = revoked_special_file_write,
+> +	.aio_read = revoked_special_file_aio_read,
+> +	.aio_write = revoked_special_file_aio_write,
+> +	.readdir = revoked_special_file_readdir,
+> +	.poll = revoked_special_file_poll,
+> +	.ioctl = revoked_special_file_ioctl,
+> +	.unlocked_ioctl = revoked_special_file_unlocked_ioctl,
+> +	.compat_ioctl = revoked_special_file_compat_ioctl,
+> +	.mmap = revoked_special_file_mmap,
+> +	.open = revoked_special_file_open,
+> +	.flush = revoked_special_file_flush,
+> +	.release = revoked_special_file_release,
+> +	.fsync = revoked_special_file_fsync,
+> +	.aio_fsync = revoked_special_file_aio_fsync,
+> +	.fasync = revoked_special_file_fasync,
+> +	.lock = revoked_special_file_lock,
+> +	.sendfile = revoked_special_file_sendfile,
+> +	.sendpage = revoked_special_file_sendpage,
+> +	.get_unmapped_area = revoked_special_file_get_unmapped_area,
+> +	.check_flags = revoked_special_file_check_flags,
+> +	.dir_notify = revoked_special_file_dir_notify,
+> +	.flock = revoked_special_file_flock,
+> +	.splice_write = revoked_special_file_splice_write,
+> +	.splice_read = revoked_special_file_splice_read,
+> +};
+> +
+> +static int revoked_special_inode_create(struct inode *dir,
+> +					struct dentry *dentry, int mode,
+> +					struct nameidata *nd)
+> +{
+> +	return -ENXIO;
+> +}
+> +
+> +static struct dentry *revoked_special_inode_lookup(struct inode *dir,
+> +						   struct dentry *dentry,
+> +						   struct nameidata *nd)
+> +{
+> +	return ERR_PTR(-ENXIO);
+> +}
+> +
+> +static int revoked_special_inode_link(struct dentry *old_dentry,
+> +				      struct inode *dir, struct dentry *dentry)
+> +{
+> +	return -ENXIO;
+> +}
+> +
+> +static int revoked_special_inode_unlink(struct inode *dir,
+> +					struct dentry *dentry)
+> +{
+> +	return -ENXIO;
+> +}
+> +
+> +static int revoked_special_inode_symlink(struct inode *dir,
+> +					 struct dentry *dentry,
+> +					 const char *symname)
+> +{
+> +	return -ENXIO;
+> +}
+> +
+> +static int revoked_special_inode_mkdir(struct inode *dir, struct dentry *dentry,
+> +				       int mode)
+> +{
+> +	return -ENXIO;
+> +}
+> +
+> +static int revoked_special_inode_rmdir(struct inode *dir, struct dentry *dentry)
+> +{
+> +	return -ENXIO;
+> +}
+> +
+> +static int revoked_special_inode_mknod(struct inode *dir, struct dentry *dentry,
+> +				       int mode, dev_t rdev)
+> +{
+> +	return -ENXIO;
+> +}
+> +
+> +static int revoked_special_inode_rename(struct inode *old_dir,
+> +					struct dentry *old_dentry,
+> +					struct inode *new_dir,
+> +					struct dentry *new_dentry)
+> +{
+> +	return -ENXIO;
+> +}
+> +
+> +static int revoked_special_inode_readlink(struct dentry *dentry,
+> +					  char __user * buffer, int buflen)
+> +{
+> +	return -ENXIO;
+> +}
+> +
+> +static int revoked_special_inode_permission(struct inode *inode, int mask,
+> +					    struct nameidata *nd)
+> +{
+> +	return -ENXIO;
+> +}
+> +
+> +static int revoked_special_inode_getattr(struct vfsmount *mnt,
+> +					 struct dentry *dentry,
+> +					 struct kstat *stat)
+> +{
+> +	return -ENXIO;
+> +}
+> +
+> +static int revoked_special_inode_setattr(struct dentry *direntry,
+> +					 struct iattr *attrs)
+> +{
+> +	return -ENXIO;
+> +}
+> +
+> +static int revoked_special_inode_setxattr(struct dentry *dentry,
+> +					  const char *name, const void *value,
+> +					  size_t size, int flags)
+> +{
+> +	return -ENXIO;
+> +}
+> +
+> +static ssize_t revoked_special_inode_getxattr(struct dentry *dentry,
+> +					      const char *name, void *buffer,
+> +					      size_t size)
+> +{
+> +	return -ENXIO;
+> +}
+> +
+> +static ssize_t revoked_special_inode_listxattr(struct dentry *dentry,
+> +					       char *buffer, size_t buffer_size)
+> +{
+> +	return -ENXIO;
+> +}
+> +
+> +static int revoked_special_inode_removexattr(struct dentry *dentry,
+> +					     const char *name)
+> +{
+> +	return -ENXIO;
+> +}
+> +
+> +static struct inode_operations revoked_special_inode_ops = {
+> +	.create = revoked_special_inode_create,
+> +	.lookup = revoked_special_inode_lookup,
+> +	.link = revoked_special_inode_link,
+> +	.unlink = revoked_special_inode_unlink,
+> +	.symlink = revoked_special_inode_symlink,
+> +	.mkdir = revoked_special_inode_mkdir,
+> +	.rmdir = revoked_special_inode_rmdir,
+> +	.mknod = revoked_special_inode_mknod,
+> +	.rename = revoked_special_inode_rename,
+> +	.readlink = revoked_special_inode_readlink,
+> +	/* follow_link must be no-op, otherwise unmounting this inode
+> +	   won't work */
+> +	/* put_link returns void */
+> +	/* truncate returns void */
+> +	.permission = revoked_special_inode_permission,
+> +	.getattr = revoked_special_inode_getattr,
+> +	.setattr = revoked_special_inode_setattr,
+> +	.setxattr = revoked_special_inode_setxattr,
+> +	.getxattr = revoked_special_inode_getxattr,
+> +	.listxattr = revoked_special_inode_listxattr,
+> +	.removexattr = revoked_special_inode_removexattr,
+> +	/* truncate_range returns void */
+> +};
+> +
+> +void make_revoked_inode(struct inode *inode, int mode)
+> +{
+> +	remove_inode_hash(inode);
+> +
+> +	inode->i_mode = mode;
+> +	inode->i_atime = inode->i_mtime = inode->i_ctime =
+> +	    current_fs_time(inode->i_sb);
+> +
+> +	if (special_file(mode)) {
+> +		inode->i_op = &revoked_special_inode_ops;
+> +		inode->i_fop = &revoked_special_file_ops;
+> +	} else {
+> +		inode->i_op = &revoked_inode_ops;
+> +		inode->i_fop = &revoked_file_ops;
+> +	}
+> +}
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-OK, it does, but what to do with them?
-
-Looking around there shows that some of them cover kbd, psaux,
-parport, and serial.
-
-ml@xenia:/sys/bus/pnp/devices> for i in *; do ls -l $i/; done
-insgesamt 0
--r--r--r-- 1 root root 4096  7. Feb 11:27 id
--r--r--r-- 1 root root 4096  7. Feb 11:27 options
-drwxr-xr-x 2 root root    0  7. Feb 11:28 power
--rw-r--r-- 1 root root 4096  7. Feb 11:27 resources
-lrwxrwxrwx 1 root root    0  7. Feb 11:27 subsystem -> ../../../bus/pnp
---w------- 1 root root 4096  7. Feb 11:27 uevent
-insgesamt 0
--r--r--r-- 1 root root 4096  7. Feb 11:27 id
--r--r--r-- 1 root root 4096  7. Feb 11:28 options
-drwxr-xr-x 2 root root    0  7. Feb 11:28 power
--rw-r--r-- 1 root root 4096  7. Feb 11:28 resources
-lrwxrwxrwx 1 root root    0  7. Feb 11:28 subsystem -> ../../../bus/pnp
---w------- 1 root root 4096  7. Feb 11:28 uevent
-insgesamt 0
--r--r--r-- 1 root root 4096  7. Feb 11:27 id
--r--r--r-- 1 root root 4096  7. Feb 11:28 options
-drwxr-xr-x 2 root root    0  7. Feb 11:28 power
--rw-r--r-- 1 root root 4096  7. Feb 11:28 resources
-lrwxrwxrwx 1 root root    0  7. Feb 11:28 subsystem -> ../../../bus/pnp
---w------- 1 root root 4096  7. Feb 11:28 uevent
-insgesamt 0
--r--r--r-- 1 root root 4096  7. Feb 11:27 id
--r--r--r-- 1 root root 4096  7. Feb 11:28 options
-drwxr-xr-x 2 root root    0  7. Feb 11:28 power
--rw-r--r-- 1 root root 4096  7. Feb 11:28 resources
-lrwxrwxrwx 1 root root    0  7. Feb 11:28 subsystem -> ../../../bus/pnp
---w------- 1 root root 4096  7. Feb 11:28 uevent
-insgesamt 0
-lrwxrwxrwx 1 root root    0  7. Feb 11:28 driver -> ../../../bus/pnp/drivers/system
--r--r--r-- 1 root root 4096  7. Feb 11:27 id
--r--r--r-- 1 root root 4096  7. Feb 11:28 options
-drwxr-xr-x 2 root root    0  7. Feb 11:28 power
--rw-r--r-- 1 root root 4096  7. Feb 11:28 resources
-lrwxrwxrwx 1 root root    0  7. Feb 11:28 subsystem -> ../../../bus/pnp
---w------- 1 root root 4096  7. Feb 11:28 uevent
-insgesamt 0
--r--r--r-- 1 root root 4096  7. Feb 11:27 id
--r--r--r-- 1 root root 4096  7. Feb 11:28 options
-drwxr-xr-x 2 root root    0  7. Feb 11:28 power
--rw-r--r-- 1 root root 4096  7. Feb 11:28 resources
-lrwxrwxrwx 1 root root    0  7. Feb 11:28 subsystem -> ../../../bus/pnp
---w------- 1 root root 4096  7. Feb 11:28 uevent
-insgesamt 0
-lrwxrwxrwx 1 root root    0  7. Feb 11:28 driver -> ../../../bus/pnp/drivers/i8042 kbd
--r--r--r-- 1 root root 4096  7. Feb 11:27 id
--r--r--r-- 1 root root 4096  7. Feb 11:28 options
-drwxr-xr-x 2 root root    0  7. Feb 11:28 power
--rw-r--r-- 1 root root 4096  7. Feb 11:28 resources
-lrwxrwxrwx 1 root root    0  7. Feb 11:28 subsystem -> ../../../bus/pnp
---w------- 1 root root 4096  7. Feb 11:28 uevent
-insgesamt 0
-lrwxrwxrwx 1 root root    0  7. Feb 11:28 driver -> ../../../bus/pnp/drivers/i8042 aux
--r--r--r-- 1 root root 4096  7. Feb 11:27 id
--r--r--r-- 1 root root 4096  7. Feb 11:28 options
-drwxr-xr-x 2 root root    0  7. Feb 11:28 power
--rw-r--r-- 1 root root 4096  7. Feb 11:28 resources
-lrwxrwxrwx 1 root root    0  7. Feb 11:28 subsystem -> ../../../bus/pnp
---w------- 1 root root 4096  7. Feb 11:28 uevent
-insgesamt 0
--r--r--r-- 1 root root 4096  7. Feb 11:27 id
--r--r--r-- 1 root root 4096  7. Feb 11:28 options
-drwxr-xr-x 2 root root    0  7. Feb 11:28 power
--rw-r--r-- 1 root root 4096  7. Feb 11:28 resources
-lrwxrwxrwx 1 root root    0  7. Feb 11:28 subsystem -> ../../../bus/pnp
---w------- 1 root root 4096  7. Feb 11:28 uevent
-insgesamt 0
-lrwxrwxrwx 1 root root    0  7. Feb 11:28 driver -> ../../../bus/pnp/drivers/parport_pc
--r--r--r-- 1 root root 4096  7. Feb 11:27 id
--r--r--r-- 1 root root 4096  7. Feb 11:28 options
-drwxr-xr-x 2 root root    0  7. Feb 11:28 power
--rw-r--r-- 1 root root 4096  7. Feb 11:28 resources
-lrwxrwxrwx 1 root root    0  7. Feb 11:28 subsystem -> ../../../bus/pnp
---w------- 1 root root 4096  7. Feb 11:28 uevent
-insgesamt 0
-lrwxrwxrwx 1 root root    0  7. Feb 11:28 driver -> ../../../bus/pnp/drivers/serial
--r--r--r-- 1 root root 4096  7. Feb 11:27 id
--r--r--r-- 1 root root 4096  7. Feb 11:28 options
-drwxr-xr-x 2 root root    0  7. Feb 11:28 power
--rw-r--r-- 1 root root 4096  7. Feb 11:28 resources
-lrwxrwxrwx 1 root root    0  7. Feb 11:28 subsystem -> ../../../bus/pnp
-drwxr-xr-x 3 root root    0  7. Feb 11:28 ttyS0
---w------- 1 root root 4096  7. Feb 11:28 uevent
-
-
+										Honza
 -- 
-MfG,
-
-Michael Leun
-
+Jan Kara <jack@suse.cz>
+SuSE CR Labs
