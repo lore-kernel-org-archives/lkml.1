@@ -1,92 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030652AbXBGT0w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422712AbXBGTeI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030652AbXBGT0w (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Feb 2007 14:26:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030654AbXBGT0w
+	id S1422712AbXBGTeI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Feb 2007 14:34:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422704AbXBGTeI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Feb 2007 14:26:52 -0500
-Received: from caramon.arm.linux.org.uk ([217.147.92.249]:2544 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030652AbXBGT0v (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Feb 2007 14:26:51 -0500
-Date: Wed, 7 Feb 2007 19:26:33 +0000
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: "Wu, Bryan" <bryan.wu@analog.com>
-Cc: alan@lxorguk.ukuu.org.uk, aubreylee@gmail.com, akpm@linux-foundation.org,
-       rdunlap@xenotime.net, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3, try #3] Blackfin: serial driver for Blackfinarchitecture against Linux kernel 2.6.20
-Message-ID: <20070207192633.GA27194@flint.arm.linux.org.uk>
-Mail-Followup-To: "Wu, Bryan" <bryan.wu@analog.com>,
-	alan@lxorguk.ukuu.org.uk, aubreylee@gmail.com,
-	akpm@linux-foundation.org, rdunlap@xenotime.net,
-	linux-kernel@vger.kernel.org
-References: <1170845398.5399.36.camel@roc-desktop>
+	Wed, 7 Feb 2007 14:34:08 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:38540 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1422699AbXBGTeG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Feb 2007 14:34:06 -0500
+Date: Wed, 7 Feb 2007 20:33:19 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Tilman Schmidt <tilman@imap.cc>,
+       linux-kernel@vger.kernel.org, mingo@redhat.com, netdev@vger.kernel.org,
+       netfilter-devel@lists.netfilter.org
+Subject: Re: dynticks + iptables almost stops the boot process [was: Re: 2.6.20-rc6-mm3]
+Message-ID: <20070207193319.GA6960@elte.hu>
+References: <20070201211137.GA2830@inferi.kami.home> <1170369202.29240.339.camel@localhost.localdomain> <20070202191802.GA4262@inferi.kami.home> <1170448034.29240.364.camel@localhost.localdomain> <20070202204344.GB4262@inferi.kami.home> <20070206164826.GA3491@elte.hu> <20070206192840.GB2971@inferi.kami.home> <45C90B57.90104@imap.cc> <1170803853.3785.45.camel@chaos> <20070206170157.114f0e65.akpm@linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1170845398.5399.36.camel@roc-desktop>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20070206170157.114f0e65.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.8
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.8 required=5.9 tests=ALL_TRUSTED,BAYES_40 autolearn=no SpamAssassin version=3.0.3
+	-3.3 ALL_TRUSTED            Did not pass through any untrusted hosts
+	0.5 BAYES_40               BODY: Bayesian spam probability is 20 to 40%
+	[score: 0.2306]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 07, 2007 at 06:49:58PM +0800, Wu, Bryan wrote:
-> Thanks Russell's review, we update the serial core driver according to
-> Russell's comments.  Here is the change log:
+
+* Andrew Morton <akpm@linux-foundation.org> wrote:
+
+> On Wed, 07 Feb 2007 00:17:33 +0100
+> Thomas Gleixner <tglx@linutronix.de> wrote:
 > 
-> a) use "ttyBF" as blackfin serial name and use new serial major/minor number 
-> b) can accept command line serial setting like "console=ttyBF0,115200", delete the baud rate setting macros
-> c) termios can be changed on the fly
+> > On Wed, 2007-02-07 at 00:12 +0100, Tilman Schmidt wrote:
+> > > > No, not this. Anyway the last patch Thomas forwarded does fix the
+> > > > problem.
+> > > 
+> > > Which one would that be? I might try it for comparison.
+> > 
+> > Find the combined patch of all fixlets on top of -mm3 below.
+> 
+> err, I don't have most of this.
+> 
+> I just uploaded the crappile-of-the-moment to
+>    ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/mm/broken-out-2007-02-06-16-59.tar.gz
 
-Since you're not implementing the ability to handle INPCK, BRKINT, PARMRK,
-IGNPAR and IGNBRK, please arrange for your driver to reflect the real
-settings in the termios.
+hm:
 
-In other words:
+ ERROR 404: Not Found.
 
-> +static void
-> +bfin_serial_set_termios(struct uart_port *port, struct ktermios *termios,
-> +		   struct ktermios *old)
-> +{
-> +	struct bfin_serial_port *uart = (struct bfin_serial_port *)port;
-> +	unsigned long flags;
-> +	unsigned int baud, quot;
-> +	unsigned short val, ier, lcr = 0;
-> +
-> +	switch (termios->c_cflag & CSIZE) {
-> +	case CS8:
-> +		lcr = WLS(8);
-> +		break;
-> +	case CS7:
-> +		lcr = WLS(7);
-> +		break;
-> +	case CS6:
-> +		lcr = WLS(6);
-> +		break;
-> +	case CS5:
-> +		lcr = WLS(5);
-> +		break;
-> +	default:
-> +		printk(KERN_ERR "%s: word lengh not supported\n", 
-> +			__FUNCTION__);
-> +	}
-> +	
-> +	if (termios->c_cflag & CSTOPB);
-> +		lcr |= STB;
-> +	if (termios->c_cflag & PARENB) {
-> +		lcr |= PEN;
-> +		if (!(termios->c_cflag & PARODD))
-> +			lcr |= EPS;
-> +	}
+pls. do:
 
-Insert here:
-	termios->c_iflag |= INPCK | BRKINT | PARMRK;
-	termios->c_iflag &= ~(IGNPAR | IGNBRK);
+ssh master.kernel.org chmod a+r /pub/linux/kernel/people/akpm/mm/broken-out-2007-02-06-16-59.tar.gz
 
-This way applications will know that these controls are not implemented
-for this port.
-
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+	Ingo
