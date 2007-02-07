@@ -1,95 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422628AbXBGSY0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965707AbXBGS06@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422628AbXBGSY0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Feb 2007 13:24:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422644AbXBGSYZ
+	id S965707AbXBGS06 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Feb 2007 13:26:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965706AbXBGS06
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Feb 2007 13:24:25 -0500
-Received: from nz-out-0506.google.com ([64.233.162.226]:12809 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422628AbXBGSYY (ORCPT
+	Wed, 7 Feb 2007 13:26:58 -0500
+Received: from web38511.mail.mud.yahoo.com ([209.191.125.57]:42716 "HELO
+	web38511.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S965707AbXBGS06 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Feb 2007 13:24:24 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Z5yMfe77qs0ot0fbcL4XlsJX760DLuU2shRDitStEND6xBmFszMlsBgyuOSS/sXEf80A0mSlapOanwmqDLb28ljwaHFu2cP91Z1TZHMdsjnS/UCjJIrfCHyQVUXpgffe4kbpggNBHJs91BPCE+ivnjI86Dtq8outIy68MawEADY=
-Message-ID: <a8f16e2b0702071024s10625997s1bca1f2f52290c44@mail.gmail.com>
-Date: Wed, 7 Feb 2007 21:24:20 +0300
-From: Asgard <dubalom@gmail.com>
-To: "Martyn Welch" <martyn.welch@radstone.co.uk>, linux-kernel@vger.kernel.org
-Subject: Re: alloc_bootmem - Kernel panic
-In-Reply-To: <F38DEABE0E171746B133C1ABBD142D9706325502@radmail.Radstone.Local>
+	Wed, 7 Feb 2007 13:26:58 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=WStDIWAeEgrkQOsbuI24lWMB+RCumCd4zOh4eXcKwQnNbdtN07chDsg1npn7dPQvrJPlLN4Gl6DZEV1638azglT9skd16cJ2KUMjP+12zAKis+uWg6glzHYyMjZsA8YRh7vCq0zXIoAWzl+u+uH+c/DxlvY6053dvDuJUa6L36g=;
+X-YMail-OSG: kAEagU4VM1kymiQm1AAz8LOjGusrwterbG.xbi0D
+Date: Wed, 7 Feb 2007 10:26:56 -0800 (PST)
+From: Levitsky Maxim <maximlevitsky@yahoo.com>
+Subject: [PATCH] [NETDEV] [000]  dmfe : fix bugs and add features
+To: linux-kernel@vger.kernel.org
+Cc: tori@unhappy.mine.nu, netdev@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <F38DEABE0E171746B133C1ABBD142D9706325502@radmail.Radstone.Local>
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+Message-ID: <96797.60132.qm@web38511.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/7/07, Martyn Welch <martyn.welch@radstone.co.uk> wrote:
->
-> Which leads me to the question: what is the best method to reserve a large (~4MB) coherent buffer for DMA transfers?
->
+Hello,
 
-May be you should to use alloc_pages with __GFP_DMA flag, and then use
-page_address to get address of first allocated page.
+Before some time I decided to fix suspend/resume on my Davicom network card.
+During development I also fixed couple of bugs and added support for link detection and WOL
+Note : 2.6.20 already has support for link detection , but it is broken when card has external PHY
+, like mine.
 
-> Is there any way of using alloc_bootmem from a driver (compiled into the kernel) without delving further into kernel code?
+So here it goes:
 
-yes, i think:
+[PATCH] [NET] [001] dmfe : trivial/spelling fixes
+[PATCH] [NET] [002] dmfe : Fix possible oops
+[PATCH] [NET] [003] dmfe : fix link detection
+[PATCH] [NET] [004] dmfe : Add suspend/resume support
+[PATCH] [NET] [005] dmfe : Add support for wake-on-lan
 
--> (~/devel/learn/src/kernels/linux-2.6.19)
-[asgard@midgard]$ find drivers/ -name "*" | xargs grep alloc_bootmem
-drivers/char/vt.c:        vc_cons[currcons].d = vc =
-alloc_bootmem(sizeof(struct vc_data));
-drivers/char/vt.c:        vc->vc_screenbuf = (unsigned short
-*)alloc_bootmem(vc->vc_screenbuf_size);
-Binary file drivers/char/vt.o matches
-Binary file drivers/char/built-in.o matches
-Binary file drivers/firmware/dmi_scan.o matches
-Binary file drivers/firmware/built-in.o matches
-drivers/macintosh/smu.c:    smu = alloc_bootmem(sizeof(struct smu_device));
-drivers/s390/char/con3215.c:        req = (struct raw3215_req *)
-alloc_bootmem_low(sizeof(struct raw3215_req));
-drivers/s390/char/con3215.c:        alloc_bootmem_low(sizeof(struct
-raw3215_info));
-drivers/s390/char/con3215.c:    raw->buffer = (char *)
-alloc_bootmem_low(RAW3215_BUFFER_SIZE);
-drivers/s390/char/con3215.c:    raw->inbuf = (char *)
-alloc_bootmem_low(RAW3215_INBUF_SIZE);
-drivers/s390/char/con3270.c:    condev = (struct con3270 *)
-alloc_bootmem_low(sizeof(struct con3270));
-drivers/s390/char/con3270.c:    condev->read = raw3270_request_alloc_bootmem(0);
-drivers/s390/char/con3270.c:
-raw3270_request_alloc_bootmem(CON3270_OUTPUT_BUFFER_SIZE);
-drivers/s390/char/con3270.c:    condev->kreset =
-raw3270_request_alloc_bootmem(1);
-drivers/s390/char/con3270.c:        cbuf = (void *)
-alloc_bootmem_low_pages(PAGE_SIZE);
-drivers/s390/char/raw3270.c:raw3270_request_alloc_bootmem(size_t size)
-drivers/s390/char/raw3270.c:    rq = alloc_bootmem_low(sizeof(struct raw3270));
-drivers/s390/char/raw3270.c:        rq->buffer = alloc_bootmem_low(size);
-drivers/s390/char/raw3270.c:    rp = (struct raw3270 *)
-alloc_bootmem_low(sizeof(struct raw3270));
-drivers/s390/char/raw3270.c:    ascebc = (char *) alloc_bootmem(256);
-drivers/s390/char/raw3270.h:struct raw3270_request
-*raw3270_request_alloc_bootmem(size_t size);
-drivers/s390/char/sclp_con.c:        page = alloc_bootmem_low_pages(PAGE_SIZE);
-drivers/s390/char/sclp_vt220.c:            page =
-alloc_bootmem_low_pages(PAGE_SIZE);
-drivers/serial/cpm_uart/cpm_uart_cpm2.c:        mem_addr = alloc_bootmem(memsz);
-drivers/video/console/vgacon.c:    vgacon_scrollback =
-alloc_bootmem(CONFIG_VGACON_SOFT_SCROLLBACK_SIZE
-Binary file drivers/video/console/vgacon.o matches
-Binary file drivers/video/console/built-in.o matches
-Binary file drivers/video/built-in.o matches
-Binary file drivers/built-in.o matches
+        Maxim Levitsky
 
-> Martyn
->
-> ________________________________________________________________________
-> This e-mail has been scanned for all viruses by Star.The service is powered by MessageLabs.
-> ________________________________________________________________________
->
+
+ 
+____________________________________________________________________________________
+Finding fabulous fares is fun.  
+Let Yahoo! FareChase search your favorite travel sites to find flight and hotel bargains.
+http://farechase.yahoo.com/promo-generic-14795097
