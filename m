@@ -1,103 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752285AbXBGC4T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965273AbXBGC4k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752285AbXBGC4T (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 21:56:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752321AbXBGC4T
+	id S965273AbXBGC4k (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 21:56:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965634AbXBGC4k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 21:56:19 -0500
-Received: from mf2.realtek.com.tw ([60.248.182.6]:1995 "EHLO
-	mf2.realtek.com.tw" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752285AbXBGC4S (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 21:56:18 -0500
-Message-ID: <45C93FCC.4080609@realtek.com.tw>
-Date: Wed, 07 Feb 2007 10:56:12 +0800
-From: =?UTF-8?B?6Kix5oGG5ZiJ?= <edward_hsu@realtek.com.tw>
-User-Agent: Mozilla Thunderbird 1.0.2 (Windows/20050317)
-X-Accept-Language: zh-tw, en-us, en, zh
+	Tue, 6 Feb 2007 21:56:40 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:58108 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965273AbXBGC4j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Feb 2007 21:56:39 -0500
 MIME-Version: 1.0
-To: Francois Romieu <romieu@fr.zoreil.com>
-CC: jeff@garzik.org, linux-kernel@vger.kernel.org, hiwu@realtek.com.tw
-Subject: Re: [PATCH 2.6.19.2] r8169: support RTL8169SC/8110SC
-References: <45C2F390.4070805@realtek.com.tw> <20070203003952.GA22823@electric-eye.fr.zoreil.com> <45C6A8EC.5090201@realtek.com.tw> <20070206003130.GA18236@electric-eye.fr.zoreil.com> <45C7EB8A.1090700@realtek.com.tw> <20070206213827.GA25119@electric-eye.fr.zoreil.com>
-In-Reply-To: <20070206213827.GA25119@electric-eye.fr.zoreil.com>
-X-MIMETrack: Itemize by SMTP Server on msx/Realtek(Release 6.5.3|September 14, 2004) at
- 2007/02/07 =?Bog5?B?pFekyCAxMDo1NjoxMg==?=,
-	Serialize by Router on msx/Realtek(Release 6.5.3|September 14, 2004) at
- 2007/02/07 =?Bog5?B?pFekyCAxMDo1NjoxMw==?=,
-	Serialize complete at 2007/02/07 =?Bog5?B?pFekyCAxMDo1NjoxMw==?=
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Prasanna S Panchamukhi <prasanna@in.ibm.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Kwatch: kernel watchpoints using CPU debug registers
+In-Reply-To: Alan Stern's message of  Tuesday, 6 February 2007 14:58:05 -0500 <Pine.LNX.4.44L0.0702061430520.2664-100000@iolanthe.rowland.org>
+X-Fcc: ~/Mail/utrace
+Message-Id: <20070207025631.3027E18005D@magilla.sf.frob.com>
+Date: Tue,  6 Feb 2007 18:56:31 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> That's good.  So I'll assume an updated version of kwatch can be submitted 
+> without regard to the progress of utrace (other than minor conflicts over 
+> the exact location of the ptrace code to change).
+
+Indeed.
+
+> Right.  I had been thinking in terms of a developer using kwatch to track 
+> down some particularly nasty problem, something that would happen rather 
+> infrequently, where one wouldn't care about side effects on user programs.  
+> But of course those side effects might alter an important aspect of the 
+> kernel problem being debugged...
+
+This is indeed a way it might reasonably be used.  As I said, it's fine for
+an individual use to be that way.  But think also of using it for
+performance measurement (i.e. "how hot is this counter") in something like
+systemtap, where you might have long-running instrumentation over arbitrary
+workloads.
+
+> It's also true that the current kwatch version affects the user experience
+> even when no kernel debugging is going on, as it forcibly prevents ptrace
+> calls from setting the Global-Enable bits in dr7.  That at least can be
+> fixed quite easily.  (On the other hand, userspace should never do 
+> anything other than a Local Enable.)
+
+The distinction between local and global here never matters on Linux.  We
+don't use hardware task switching at all, and if we did it would be part of
+context switch, which already switches in debug register values.  
+
+The local vs global distinction you have in debugreg allocation (when one
+Linux task_struct is on the CPU vs always on every CPU) is a
+machine-independent notion at the level of your debugreg sharing
+abstraction, and has nothing to do with particular %dr7 bit values
+(just with the allocation of all the bits in %dr7 that correspond to a
+particular allocated %drN).
+
+> How about a pair of callbacks: One to notify whenever the watchpoint is 
+> enabled and one to notify whenever it is disabled?
+
+That sounds fine.  You'll want to make sure it's structured so it doesn't
+get too hairy when a caller wants to just give up and unregister when its
+slot is unavailable (hopefully shouldn't lead to calling unregister from
+the callback made inside the register call and such twists).
+
+> So for the sake of argument, let's assume that debug registers can be 
+> assigned with priority values ranging from 0 to 7 (overkill, but who 
+> cares?).  By fiat, ptrace assignments use priority 4.  Then kwatch callers 
+> can request whatever priority they like.  The well-behaved cases you've 
+> been discussing will use priority 0, and the invasive cases can use 
+> priority 7.  (With appropriate symbolic names instead of raw numeric 
+> values, naturally.)
+
+Sure.  Or make it signed with lower value wins, have ptrace use -1 and the
+average bear use 0 or something especially unobtrusive use >0, and
+something very obtrusive use -many.  Unless you are really going to pack it
+into a few bits somewhere, I'd make it an arbitrary int rather than a
+special small range; it's just for sort order comparison.  Bottom line, I
+don't really care about the numerology.  Just so "break ptrace", "don't
+break ptrace", and "readily get out of the way on demand" can be expressed.
+We can always fine-tune it later as there are more concrete users.
+
+> Or maybe that's too complicated.  Perhaps all userspace assignments should 
+> always use the same priority level.  
+
+No, I want priorities among user-mode watchpoint users too.  ptrace is
+rigid, but newer facilities can coexist with ptrace on the same thread and
+with kwatch, and do fancy new things to fall back when there is debugreg
+allocation pressure.  Future user facilities might be able to do VM tricks
+that are harder to make workable for kernel mode, for example.  
+
+> For now I would prefer to avoid that.  It's true that kwatch is intended
+> _only_ for kernelspace watchpoints, not userspace.  But I'd rather leave
+> the complications up to someone else.
+
+Understood.  If you constrain the kwatch interface so it cannot be used
+with user addresses (checks < TASK_SIZE or whatever), then the problem will
+be clearly defined as the slightly simpler one whenever someone does come
+along in need of more complications.
+
+> It seems likely that the interfaces added by kwatch will need to be
+> generalized in various ways in order to handle the requirements of other
+> architectures.  However I don't know what those requirements might be, so
+> it seems best to start out small with x86 only and leave more refinements
+> for the future.
+
+Agreed, just to keep it in mind.  I think the features on other machines
+are roughly similar except for not offering size choices other than
+"anywhere in this aligned word".  
+
+> If I update the patch, adding a priority level and the callback 
+> notifications, do you think it would then be acceptable?
+
+I expect so.
 
 
-Francois Romieu 提到:
-
->edward_hsu@realtek.com.tw :
->[...]
->  
->
->>ANS_2:
->>So, do you think that it is a good idea to keep other vendos's PID and
->>DID in the part?
->>    
->>
->
->Yes.
->  
->
-
-ANS_3:
-
-OK! I will do it.
-
->[...]
->  
->
->>ANS_2:
->>
->>Sure! You are right. RTL8110SC, RTL8111B and RTL8101E have modest
->>differences, now. However, RTL8101E is a PCI-E fast ethernet controller.
->>I don't think is a good idea to merge its Linux driver into r8168.c or
->>r8169.c. RTL8110SC is the final version of Realtek PCI gigabit ethernet
->>controller. Moreover, due to the increasing popularity of PCI-E, Realtek
->>is going to design several generations of PCI-E ethernet controllers to
->>satisfy customer requests. I have discussed this issue with my hardware
->>colleagues. They believe that both MAC register layout and tx/rx
->>descriptor layout will be changed a lot in new PCI-E ICs. Actually, they
->>already did. Therefore, the hardwares of RTL8111B(PCI-E gigabit
->>ethernet) and RTL8101E(PCI-E fast ethernet) will have frequent and
->>drastic changes. So, I think that it's a good moment to separate their
->>Linux drivers, and r8169.c can become stable.
->>    
->>
->
->Well, code and facts will tell. :o)
->
->Since you asked for questions:
->
->- will the ~7k limit for the jumbo frames be fixed ? One can hardly call
->  it a feature.
->  
->
-ANS_3:
-
-Realtek does implement 7k limit for jumbo frames. I think there is no standard to require how large a jumbo frame should be implemented.
-
-
->- out of curiosity, did you try the current in-kernel r8169 driver with
->  a 8111B or a 8101E ?
->  
->
-ANS_3:
-Yes I did! I tried Linux kernel 2.6.19. It seems that r8169.c supports 
-RTL8111B and RTL8101E.
-
->- is there any plan to open the programming manuals of the PCI-E chipsets ?
->  
->
-ANS_3:
-Realtek does not have the plan to open  the programming manuals of the 
-PCI-E chipsets.
+Thanks,
+Roland
