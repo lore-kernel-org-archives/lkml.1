@@ -1,53 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161446AbXBGRK6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965692AbXBGRND@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161446AbXBGRK6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Feb 2007 12:10:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161436AbXBGRK6
+	id S965692AbXBGRND (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Feb 2007 12:13:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965691AbXBGRND
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Feb 2007 12:10:58 -0500
-Received: from mga01.intel.com ([192.55.52.88]:1387 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161435AbXBGRK4 convert rfc822-to-8bit (ORCPT
+	Wed, 7 Feb 2007 12:13:03 -0500
+Received: from terminus.zytor.com ([192.83.249.54]:45817 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965689AbXBGRNB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Feb 2007 12:10:56 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.13,296,1167638400"; 
-   d="scan'208"; a="196881727:sNHT687840377"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Wed, 7 Feb 2007 12:13:01 -0500
+Message-ID: <45CA0895.8040201@zytor.com>
+Date: Wed, 07 Feb 2007 09:12:53 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: RE: [PATCH] [IA64] Include kexec.h in arch/ia64/kernel/process.c
-Date: Wed, 7 Feb 2007 09:07:40 -0800
-Message-ID: <617E1C2C70743745A92448908E030B2A0117C67C@scsmsx411.amr.corp.intel.com>
-In-Reply-To: <20070207064935.GB726@verge.net.au>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] [IA64] Include kexec.h in arch/ia64/kernel/process.c
-Thread-Index: AcdKhJhkjB+INUURQVeaU3a4Fa6bRAAVR6/Q
-From: "Luck, Tony" <tony.luck@intel.com>
-To: "Horms" <horms@verge.net.au>, <linux-ia64@vger.kernel.org>,
-       <linux-kernel@vger.kernel.org>, <fastboot@lists.osdl.org>
-Cc: "Zou, Nanhai" <nanhai.zou@intel.com>, "Khalid Aziz" <khalid_aziz@hp.com>,
-       "Adrian Bunk" <trivial@kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Magnus Damm" <magnus.damm@gmail.com>
-X-OriginalArrivalTime: 07 Feb 2007 17:07:42.0617 (UTC) FILETIME=[7AC16890:01C74ADA]
+To: Etienne Lorrain <etienne_lorrain@yahoo.fr>
+CC: "Eric W. Biederman" <ebiederm@xmission.com>, vgoyal@in.ibm.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: Re : [PATCH] Compressed ia32 ELF file generation for loading
+ by Gujin 1/3
+References: <923904.35193.qm@web26909.mail.ukl.yahoo.com>
+In-Reply-To: <923904.35193.qm@web26909.mail.ukl.yahoo.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> kexec.h is needed by arch/ia64/kernel/process.c so for the
-> declaration of kexec_disable_iosapic() which is used in machine_shutdown().
+Etienne Lorrain wrote:
+>  I did try to remove by "sed" some structure easily converted, like:
+>   mov 26(%ebx),%eax
+>  by:
+>   mov 26(%bx),%eax
+> for all registers esi,edi,ebx,ebp but it saved so few bytes that I did not keep it.
 
-> +#include <asm/kexec.h>
+Well, *of course*, since you still do all your pointer arithmetic in 
+32-bit space, plus you can't convert all 32-bit modes this way.  This is 
+a far cry from a proper port.
 
-I merged this into your earlier change (moving machine_shutdown() into
-process.c).  Linus pulled it last night.
-
-I also added a "#ifdef CONFIG_KEXEC" around the call to kexec_disable_iosapic()
-(because I first noticed that this was undefined when building non-KEXEC kernels).
-But perhaps it might have been better to #define an empty stub for this function
-inside kexec.h for the #ifndef CONFIG_KEXEC case?
-
--Tony
+	-hpa
