@@ -1,64 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030630AbXBGPaH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161360AbXBGPgZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030630AbXBGPaH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Feb 2007 10:30:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030629AbXBGPaG
+	id S1161360AbXBGPgZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Feb 2007 10:36:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030632AbXBGPgZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Feb 2007 10:30:06 -0500
-Received: from 87-194-8-8.bethere.co.uk ([87.194.8.8]:51515 "EHLO
-	aeryn.fluff.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030632AbXBGPaF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Feb 2007 10:30:05 -0500
-Date: Wed, 7 Feb 2007 15:29:47 +0000
-From: Ben Dooks <ben@fluff.org>
-To: Greg KH <greg@kroah.com>
-Cc: Ben Dooks <ben-linux@fluff.org>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
-Subject: Re: [PATCH] mfd: SM501 core driver
-Message-ID: <20070207152947.GB21120@fluff.org.uk>
-References: <20070206192628.GA13644@fluff.org.uk> <20070206210930.fc814bf6.akpm@linux-foundation.org> <20070207114825.GA21120@fluff.org.uk> <20070207142415.GE1712@kroah.com>
-MIME-Version: 1.0
+	Wed, 7 Feb 2007 10:36:25 -0500
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:45783 "EHLO
+	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030631AbXBGPgX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Feb 2007 10:36:23 -0500
+Date: Wed, 7 Feb 2007 07:43:32 -0800
+From: Chris Wright <chrisw@sous-sol.org>
+To: Andreas Gruenbacher <agruen@suse.de>
+Cc: Stephen Smalley <sds@tycho.nsa.gov>, Jeff Mahoney <jeffm@suse.de>,
+       Christoph Hellwig <hch@infradead.org>, Tony Jones <tonyj@suse.de>,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       chrisw@sous-sol.org, linux-security-module@vger.kernel.org,
+       viro@zeniv.linux.org.uk
+Subject: Re: [RFC 0/28] Patches to pass vfsmount to LSM inode security hooks
+Message-ID: <20070207154332.GF10574@sequoia.sous-sol.org>
+References: <20070205182213.12164.40927.sendpatchset@ermintrude.int.wirex.com> <200702051813.26958.agruen@suse.de> <1170766539.12293.370.camel@moss-spartans.epoch.ncsc.mil> <200702070055.10856.agruen@suse.de>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070207142415.GE1712@kroah.com>
-X-Disclaimer: I speak for me, myself, and the other one of me.
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <200702070055.10856.agruen@suse.de>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 07, 2007 at 06:24:15AM -0800, Greg KH wrote:
-> On Wed, Feb 07, 2007 at 11:48:25AM +0000, Ben Dooks wrote:
-> > On Tue, Feb 06, 2007 at 09:09:30PM -0800, Andrew Morton wrote:
-> > > On Tue, 6 Feb 2007 19:26:28 +0000 Ben Dooks <ben-linux@fluff.org> wrote:
-> > > > +/* sm501_null_release
-> > > > + *
-> > > > + * A release function for the platform devices we create to keep the
-> > > > + * driver core happy, and stop any crashed when the devices are removed
-> > > > +*/
-> > > > +
-> > > > +static void sm501_null_release(struct device *dev)
-> > > > +{
-> > > > +}
-> > > 
-> > > Greg might have an opinion on that ;)
-> > 
-> > Without this the system OOPses when the driver is removed.
+* Andreas Gruenbacher (agruen@suse.de) wrote:
+> Reiserfs currently only marks the ".reiserfs_priv" directory as private, but 
+> not the files below it -- how about the attached patch to fix that?
+
+I don't think that's right.  Look at ->create or ->lookup.  Both of those
+properly set the private flag.  This patch looks like a step backwards,
+sprinkling the init in so many places.
+
+> Fix reiserfs xattrs for selinux
 > 
-> Are you sure about that?  And it's not just an error message being
-> printed out telling you that you must provide a release function?
+> Mark all inodes used for reiserfs xattrs as private so that selinux
+> (or any other LSM) will not try to mediate access to the files and
+> directories used as the xattr backing store. The xattr operations
+> are already protected through the xattr LSM hooks.
 > 
-> And BIG hint, providing an empty release function just to shut up the
-> kernel is NOT a fix.  You really need to free your memory here, not just
-> ignore it.
+> There is no real reason for having reiserfs_mark_inode_private --
+> remove it and directly mark the inodes as private.
+> 
+> Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
+> Cc: Jeff Mahoney <jeffm@suse.de>
+> 
+> Index: b/fs/reiserfs/xattr.c
+> ===================================================================
+> --- a/fs/reiserfs/xattr.c
+> +++ b/fs/reiserfs/xattr.c
+> @@ -79,6 +79,7 @@ static struct dentry *create_xa_root(str
+>  			dput(privroot);
+>  			return ERR_PTR(err);
+>  		}
+> +		xaroot->d_inode->i_flags |= S_PRIVATE;
 
-Sorry, you where right, confused OOPS and backtrace from call to
-BUG(). I also realise that having earlier changed from carrying
-the devices pre-allocated in the per-device data, to kmalloc pool
-that we do need to free the device data on release. I will fix for
-the next release.
+Already handled in the above ->mkdir
 
--- 
-Ben (ben@fluff.org, http://www.fluff.org/)
+>  		REISERFS_SB(sb)->xattr_root = dget(xaroot);
+>  	}
+>  
+> @@ -108,6 +109,7 @@ static struct dentry *__get_xa_root(stru
+>  		goto out;
+>  	}
+>  
+> +	xaroot->d_inode->i_flags |= S_PRIVATE;
 
-  'a smiley only costs 4 bytes'
+Already handled during xa_root creation
+
+>  	REISERFS_SB(s)->xattr_root = dget(xaroot);
+>  
+>        out:
+> @@ -183,6 +185,7 @@ static struct dentry *open_xa_dir(const 
+>  			return ERR_PTR(-ENODATA);
+>  		}
+>  	}
+> +	xadir->d_inode->i_flags |= S_PRIVATE;
+
+Already handled in lookup or mkdir
+
+>  	dput(xaroot);
+>  	return xadir;
+> @@ -235,6 +238,8 @@ static struct dentry *get_xa_file_dentry
+>  	dput(xadir);
+>  	if (err)
+>  		xafile = ERR_PTR(err);
+> +	else
+> +		xafile->d_inode->i_flags |= S_PRIVATE;
+
+Already handled in lookup or create
+
+>  	return xafile;
+>  }
+>  
+> @@ -715,6 +720,7 @@ __reiserfs_xattr_del(struct dentry *xadi
+>  		err = -ENODATA;
+>  		goto out_file;
+>  	}
+Already handled in lookup
+
+etc...
