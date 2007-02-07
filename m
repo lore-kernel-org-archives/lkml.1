@@ -1,44 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161085AbXBGIEs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030261AbXBGIQS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161085AbXBGIEs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Feb 2007 03:04:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161097AbXBGIEr
+	id S1030261AbXBGIQS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Feb 2007 03:16:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030440AbXBGIQS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Feb 2007 03:04:47 -0500
-Received: from omx2-ext.sgi.com ([192.48.171.19]:51190 "EHLO omx2.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1161085AbXBGIEr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Feb 2007 03:04:47 -0500
-Date: Wed, 7 Feb 2007 00:04:41 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-cc: linux-kernel@vger.kernel.org, y-goto@jp.fujitsu.com, clameter@engr.sgi.com,
-       akpm@osdl.org
-Subject: Re: [2.6.20][PATCH] fix mempolicy error check on a system with
- memory-less-node
-In-Reply-To: <20070207101400.feda1bf9.kamezawa.hiroyu@jp.fujitsu.com>
-Message-ID: <Pine.LNX.4.64.0702070002430.2188@schroedinger.engr.sgi.com>
-References: <20070206202312.4f979bcf.kamezawa.hiroyu@jp.fujitsu.com>
- <Pine.LNX.4.64.0702060925130.9812@schroedinger.engr.sgi.com>
- <20070207101400.feda1bf9.kamezawa.hiroyu@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 7 Feb 2007 03:16:18 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:47395 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030261AbXBGIQR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Feb 2007 03:16:17 -0500
+Date: Wed, 7 Feb 2007 09:16:33 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Andrew Morton <akpm@osdl.org>
+Cc: Avi Kivity <avi@qumranet.com>, linux-kernel@vger.kernel.org
+Subject: [patch] KVM, hotplug: export register_cpu_notifier
+Message-ID: <20070207081633.GA6723@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -5.3
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-5.3 required=5.9 tests=ALL_TRUSTED,BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-3.3 ALL_TRUSTED            Did not pass through any untrusted hosts
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 7 Feb 2007, KAMEZAWA Hiroyuki wrote:
+Subject: [patch] KVM, hotplug: export register_cpu_notifier
+From: Ingo Molnar <mingo@elte.hu>
 
-> > Hmmm... Remove the node from the node_online_map instead?
-> > 
-> Changing defintion of node_online_map is harmfil. (there are cpu-only-nodes.)
-> How about adding  nodemask for nodes equips memory ?
+KVM-trunk uses register_cpu_notifier() but it's a module and we only 
+export this if CONFIG_HOTPLUG_CPU. Export it otherwise too.
 
-Ok that is better but...
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ kernel/cpu.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Would it be possible to attach the cpus to the 
-next nodes with memory and mark the node offline? That way we could avoid 
-another mask that we constantly have to check?
-
-Or fix the location where the error occurred to be able to tolerate a node 
-with no zones?
-
+Index: linux/kernel/cpu.c
+===================================================================
+--- linux.orig/kernel/cpu.c
++++ linux/kernel/cpu.c
+@@ -75,10 +75,10 @@ int __cpuinit register_cpu_notifier(stru
+ 	return ret;
+ }
+ 
+-#ifdef CONFIG_HOTPLUG_CPU
+-
+ EXPORT_SYMBOL(register_cpu_notifier);
+ 
++#ifdef CONFIG_HOTPLUG_CPU
++
+ void unregister_cpu_notifier(struct notifier_block *nb)
+ {
+ 	mutex_lock(&cpu_add_remove_lock);
