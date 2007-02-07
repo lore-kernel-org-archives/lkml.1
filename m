@@ -1,57 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030252AbXBGM17@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030624AbXBGMcE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030252AbXBGM17 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Feb 2007 07:27:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030618AbXBGM17
+	id S1030624AbXBGMcE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Feb 2007 07:32:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030623AbXBGMcE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Feb 2007 07:27:59 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:45337 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030252AbXBGM16 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Feb 2007 07:27:58 -0500
-Date: Wed, 7 Feb 2007 21:27:27 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Andi Kleen <ak@suse.de>
-Cc: linux-kernel@vger.kernel.org, y-goto@jp.fujitsu.com, clameter@engr.sgi.com,
-       akpm@osdl.org
-Subject: Re: [2.6.20][PATCH] fix mempolicy error check on a system with
- memory-less-node
-Message-Id: <20070207212727.6aacb0b4.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <200702071232.36689.ak@suse.de>
-References: <20070206202312.4f979bcf.kamezawa.hiroyu@jp.fujitsu.com>
-	<200702071141.25990.ak@suse.de>
-	<20070207194909.658aa454.kamezawa.hiroyu@jp.fujitsu.com>
-	<200702071232.36689.ak@suse.de>
-X-Mailer: Sylpheed version 2.2.0 (GTK+ 2.6.10; i686-pc-mingw32)
+	Wed, 7 Feb 2007 07:32:04 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:60295 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030618AbXBGMcD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Feb 2007 07:32:03 -0500
+Date: Wed, 7 Feb 2007 13:32:17 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
+Subject: Re: v2.6.20-rt1, yum/rpm
+Message-ID: <20070207123217.GA12977@elte.hu>
+References: <20070205065636.GA1652@elte.hu> <1170756645.7324.8.camel@laptopd505.fenrus.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1170756645.7324.8.camel@laptopd505.fenrus.org>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.3
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.3 required=5.9 tests=ALL_TRUSTED,BAYES_50 autolearn=no SpamAssassin version=3.0.3
+	-3.3 ALL_TRUSTED            Did not pass through any untrusted hosts
+	1.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
+	[score: 0.4996]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 7 Feb 2007 12:32:36 +0100
-Andi Kleen <ak@suse.de> wrote:
 
-> 
-> > How for_each_online_node(nid) works ? it can handle alias-nid ?
-> > 
-> > ==
-> > 	for_each_online_node(nid) {
-> > 		pgdat = NODE_DATA(nid);
-> > ==
-> > This code never accesses pgdat_for_A twice ?
-> 
-> It would. If there's a problem it could be changed to walk the pgdat lists instead,
-> but at least when x86-64 still did it there wasn't.
-> 
+* Arjan van de Ven <arjan@infradead.org> wrote:
 
-Thank you for discussion. 
+> patch below has 2 tweaks
+> 1) the new RCU feature wakes up once per second, make sure this is using
+> the new round_jiffies() infrastructure
+> 2) the slab background reap code is waking up once per 2 seconds per
+> cpu. The patch makes this more dynamic; if no work was done (no activity
+> on the cpu happened) then this is made to be 4 seconds
 
-I'll try another hot-fix just for this NULL pointer access problem,
-which is not invasive and not costly.
+thanks, i've applied both tweaks.
 
-Thanks,
--Kame
-
-
+	Ingo
