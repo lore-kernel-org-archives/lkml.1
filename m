@@ -1,54 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965683AbXBGQrX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965676AbXBGQvM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965683AbXBGQrX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Feb 2007 11:47:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965684AbXBGQrX
+	id S965676AbXBGQvM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Feb 2007 11:51:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965688AbXBGQvM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Feb 2007 11:47:23 -0500
-Received: from mail14.messagelabs.com ([212.125.75.19]:45898 "HELO
-	mail14.messagelabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S965683AbXBGQrW convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Feb 2007 11:47:22 -0500
-X-VirusChecked: Checked
-X-Env-Sender: martyn.welch@radstone.co.uk
-X-Msg-Ref: server-5.tower-14.messagelabs.com!1170866840!88643!1
-X-StarScan-Version: 5.5.10.7.1; banners=radstone.co.uk,-,-
-X-Originating-IP: [193.130.116.242]
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Wed, 7 Feb 2007 11:51:12 -0500
+Received: from ns1.suse.de ([195.135.220.2]:54918 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965676AbXBGQvL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Feb 2007 11:51:11 -0500
+From: Andi Kleen <ak@suse.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [2.6.20][PATCH] fix mempolicy error check on a system with memory-less-node
+Date: Wed, 7 Feb 2007 17:50:55 +0100
+User-Agent: KMail/1.9.5
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       LKML <linux-kernel@vger.kernel.org>, GOTO <y-goto@jp.fujitsu.com>,
+       Christoph Lameter <clameter@engr.sgi.com>
+References: <20070206202312.4f979bcf.kamezawa.hiroyu@jp.fujitsu.com> <p73ejp2mfqh.fsf@bingen.suse.de> <20070207082330.d07525ec.akpm@linux-foundation.org>
+In-Reply-To: <20070207082330.d07525ec.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: RE: alloc_bootmem - Kernel panic
-Date: Wed, 7 Feb 2007 16:47:20 -0000
-Message-ID: <F38DEABE0E171746B133C1ABBD142D9706325502@radmail.Radstone.Local>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: alloc_bootmem - Kernel panic
-Thread-Index: AcdKygIyKyLLVSoWR5yMmxWxq/nG1QACjIBg
-From: "Martyn Welch" <martyn.welch@radstone.co.uk>
-To: "Asgard" <dubalom@gmail.com>, <linux-kernel@vger.kernel.org>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200702071750.55283.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Asgard,
+On Wednesday 07 February 2007 17:23, Andrew Morton wrote:
+> On 07 Feb 2007 11:20:06 +0100 Andi Kleen <ak@suse.de> wrote:
+> 
+> > KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> writes:
+> > 
+> > > current mempolicy just checks whether a node is online or not.
+> > > If there is memory-less-node, mempolicy's target node can be
+> > > invalid.
+> > > This patch adds a check whether a node has memory or not.
+> > 
+> > IMHO there shouldn't be any memory less nodes. The architecture code
+> > should not create them. The CPU should be assigned to a nearby node instead.
+> 
+> umm, why?
+> 
+> A node which has CPUs and no memory is obviously physically possible and
+> isn't a completely insane thing for a user to do.  I'd have thought that
+> the kernel should be able to cleanly and clearly handle it,
 
-Thank you for your reply.
-	
-> I don't sure, that linux performs to allocate bootmem after kernel already booted.
-> As I know, bootmem allocator "destroyed" when kernel initializes buddy allocator.
-> Indeed you can look at arch/i385/mm/init.c, mem_init routine.
-> kernel passes all bootmem pages to buddy system, so bootmem allocator can't be used after it. 
-	
-That explains why I can't use alloc_bootmem. It'd assumed that do_initcalls and hence functions labelled with module_init() were called early enough, mainly because LDD3 suggests using alloc_bootmem. It seems the vt driver uses console_init() instead, which is called much earlier.
+It doesn't.
 
-Which leads me to the question: what is the best method to reserve a large (~4MB) coherent buffer for DMA transfers?
+> and to 
+> accurately present the machine's topology to the user without us having to
+> go adding falsehoods like this?
 
-Is there any way of using alloc_bootmem from a driver (compiled into the kernel) without delving further into kernel code?
+a node is a piece of memory. Without memory it doesn't make sense.
 
-Martyn
-
-________________________________________________________________________
-This e-mail has been scanned for all viruses by Star.The service is powered by MessageLabs. 
-________________________________________________________________________
+-Andi
+ 
