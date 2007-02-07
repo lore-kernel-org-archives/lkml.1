@@ -1,64 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030625AbXBGMkg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933327AbXBGMoW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030625AbXBGMkg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Feb 2007 07:40:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030623AbXBGMkg
+	id S933327AbXBGMoW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Feb 2007 07:44:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933326AbXBGMoV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Feb 2007 07:40:36 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:32860 "EHLO mail.dvmed.net"
+	Wed, 7 Feb 2007 07:44:21 -0500
+Received: from vsmtp14.tin.it ([212.216.176.118]:41140 "EHLO vsmtp14.tin.it"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030625AbXBGMkf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Feb 2007 07:40:35 -0500
-Message-ID: <45C9C8BF.6030501@garzik.org>
-Date: Wed, 07 Feb 2007 07:40:31 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070130)
+	id S933269AbXBGMoU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Feb 2007 07:44:20 -0500
+Date: Wed, 7 Feb 2007 13:44:16 +0100 (CET)
+From: l.genoni@oltrelinux.com
+X-X-Sender: venom@Phoenix.oltrelinux.com
+To: Alan <alan@lxorguk.ukuu.org.uk>
+cc: linux-ide@vger.kernel.org, jgarzik@pobox.com, htejun@gmail.com,
+       alan@red-hat.com, linux-kernel@vger.kernel.org
+Subject: Re: [BUG?] ata disk running maximum at DMA33 with 2.6.20 and new
+ pata driver, NV CK804 ide controller.
+In-Reply-To: <20070207122000.2e17ecb6@localhost.localdomain>
+Message-ID: <Pine.LNX.4.64.0702071341350.28168@Phoenix.oltrelinux.com>
+References: <200702070119.36320.genoni@darkstar.oltrelinux.com>
+ <20070207122000.2e17ecb6@localhost.localdomain>
 MIME-Version: 1.0
-To: conke.hu@amd.com
-CC: Alan <alan@lxorguk.ukuu.org.uk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [LIBATA BUG] sr.c: TEST_UNIT_READY error
-References: <1170101430.29240.34.camel@localhost.localdomain>	 <20070129133849.1b523226@freekitty>	 <1170109401.29240.49.camel@localhost.localdomain>	 <Pine.LNX.4.64.0701291431320.3611@woody.linux-foundation.org>	 <20070129144055.151cfe52@freekitty> <Pine.LNX130065457.GA23390@elte.hu>	 <45BEF61F.7000400@garzik.org> <1170310503.5166.17.camel@localhost.localdomain>
-In-Reply-To: <1170310503.5166.17.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.7 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Conke Hu wrote:
-> Hi,
->    TEST_UNIT_READY in get_capabilities (drivers/scsi/sr.c line 743, or
-> see below) always returns error.
+I did the test you asked and yes, it is consistently booting at DMA33 with 
+2.6.20 and DMA100 with 2.6.19.3 (20 reboots, 10 2.6.20 and 10 2.6.19 in 
+sparse order).
+I am compiling a 2.6.20 kernel with older pata_amd.c driver and will let 
+you know. seeing the diff I do exspect it to compile cleanly.
+
+Luigi
+
+
+On Wed, 7 Feb 2007, Alan wrote:
+
+> Date: Wed, 7 Feb 2007 12:20:00 +0000
+> From: Alan <alan@lxorguk.ukuu.org.uk>
+> To: Luigi Genoni <genoni@sns.it>
+> Cc: linux-ide@vger.kernel.org, jgarzik@pobox.com, htejun@gmail.com,
+>     alan@red-hat.com, linux-kernel@vger.kernel.org
+> Subject: Re: [BUG?] ata disk running maximum at DMA33 with 2.6.20 and new pata
+>      driver, NV CK804 ide controller.
+> Resent-Date: Wed, 07 Feb 2007 13:17:42 +0100
+> Resent-From: <l.genoni@sns.it>
 > 
->   ---------------- code begin -----------------------------
->     retries = 0;
->     do {
->         memset((void *)cmd, 0, MAX_COMMAND_SIZE);
->         cmd[0] = TEST_UNIT_READY;
-> 
->         the_result = scsi_execute_req (cd->device, cmd, DMA_NONE, NULL,
->                            0, &sshdr, SR_TIMEOUT,
->                            MAX_RETRIES);
-> 
->         retries++;
->     } while (retries < 5 &&
->          (!scsi_status_is_good(the_result) ||
->           (scsi_sense_valid(&sshdr) &&
->            sshdr.sense_key == UNIT_ATTENTION)));
->   ---------------- code end -----------------------------
-> 
->   I debugged all kernel versions from 2.6.17 to 2.6.20 on several AMD
-> and other vendor's PATA/IDE controllers, and I get the_result==0x8000002
-> and retries==5; on silicon image 3132, i get the_result=0x2eb.
->   Does 0x8000002 mean ((DRIVER_SENSE << 24) | SAM_STAT_CHECK_CONDITION)?
-> what's wrong?
-
-What does the sense data returned in the sense buffer say is wrong?
-
-	Jeff
-
-
-
+> On Wed, 7 Feb 2007 01:19:36 +0100
+> Luigi Genoni <genoni@sns.it> wrote:
+>
+>> Hi,
+>> since upgrading to kernel 2.6.20 my pata disk, using new pata driver, is
+>> initialized maximum  in DMA33 mode (and obviously performances drop
+>> consequently), as you can see from:
+>
+> Interesting.
+>
+>> Willing to test any patch.
+>
+> Firstly can you see if its consistently the case that booting 2.6.20
+> gives UDMA33 and 2.6.19 UDMA100 over a few reboots. If it is please drop
+> the 2.6.19 drivers/ata/pamd_amd into 2.6.20 and try that.
+>
+> Thanks
+>
+> Alan
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
