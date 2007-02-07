@@ -1,60 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933113AbXBGBxN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933300AbXBGCJa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933113AbXBGBxN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Feb 2007 20:53:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933218AbXBGBxN
+	id S933300AbXBGCJa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Feb 2007 21:09:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965223AbXBGCJa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Feb 2007 20:53:13 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:58842 "EHLO smtp.osdl.org"
+	Tue, 6 Feb 2007 21:09:30 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:59086 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933113AbXBGBxM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Feb 2007 20:53:12 -0500
-Date: Tue, 6 Feb 2007 17:51:52 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: NeilBrown <neilb@suse.de>
-Cc: stable@kernel.org, nfs@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] knfsd: Fix a race in closing NFSd connections.
-Message-Id: <20070206175152.39d767dd.akpm@linux-foundation.org>
-In-Reply-To: <1070207001026.9413@suse.de>
-References: <20070207110636.9166.patches@notabene>
-	<1070207001026.9413@suse.de>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S933300AbXBGCJ3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Feb 2007 21:09:29 -0500
+Date: Tue, 6 Feb 2007 18:09:07 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: David Woodhouse <dwmw2@infradead.org>
+cc: Randy Dunlap <randy.dunlap@oracle.com>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [patch] MTD: fix DOC2000/2001/2001PLUS build error
+In-Reply-To: <1170808679.29759.1081.camel@pmac.infradead.org>
+Message-ID: <Pine.LNX.4.64.0702061757420.8424@woody.linux-foundation.org>
+References: <1170801484.29759.1000.camel@pmac.infradead.org> 
+ <Pine.LNX.4.64.0702061451560.8424@woody.linux-foundation.org> 
+ <1170803515.29759.1032.camel@pmac.infradead.org> 
+ <Pine.LNX.4.64.0702061516110.8424@woody.linux-foundation.org> 
+ <1170804983.29759.1051.camel@pmac.infradead.org> 
+ <Pine.LNX.4.64.0702061550010.8424@woody.linux-foundation.org> 
+ <1170806622.29759.1063.camel@pmac.infradead.org> 
+ <Pine.LNX.4.64.0702061615480.8424@woody.linux-foundation.org>
+ <1170808679.29759.1081.camel@pmac.infradead.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 7 Feb 2007 11:10:26 +1100
-NeilBrown <neilb@suse.de> wrote:
 
-> If you lose this race, it can iput a socket inode twice and you
-> get a BUG in fs/inode.c
-> 
-> When I added the option for user-space to close a socket,
-> I added some cruft to svc_delete_socket so that I could call
-> that function when closing a socket per user-space request.
-> 
-> This was the wrong thing to do.  I should have just set SK_CLOSE
-> and let normal mechanisms do the work.
-> 
-> Not only wrong, but buggy.  The locking is all wrong and it openned
-> up a race where-by a socket could be closed twice.
-> 
-> So this patch:
->   Introduces svc_close_socket which sets SK_CLOSE then either leave
->   the close up to a thread, or calls svc_delete_socket if it can
->   get SK_BUSY.
-> 
->   Adds a bias to sk_busy which is removed when SK_DEAD is set,
->   This avoid races around shutting down the socket.
-> 
->   Changes several 'spin_lock' to 'spin_lock_bh' where the _bh 
->   was missing.
-> 
 
-This patch assumes the presence of
-knfsd-sunrpc-allow-creating-an-rpc-service-without-registering-with-portmapper.patch which
-obviously isn't appropriate for -stable.
+On Wed, 7 Feb 2007, David Woodhouse wrote:
+> 
+> I think 'make oldconfig_noselect' is the way forward. We can both have
+> what we want.
 
-Please confirm that the patch which I merged is still OK, thanks.
+Actually, I think there might be an even more interesting schenario.
+
+The Kconfig language right not is ternary, which is fine as an arithmetic, 
+but the problem *may* be that we actually want it to be more expressive.
+
+If instead of a ternary "y/m/n" calculus, we would use a "Y/y/m/n/N" 
+quinary logic, where "Y" and "N" are like "force on/off", you might have 
+the following:
+
+	"y + depends on => n"
+	"Y + depends on => Y, and the depends on to Y too"
+	"n/N + depends on => n"
+
+	"y/Y + selected => y"
+	"n + select => y"
+	"N + select => N, and the select to N"
+
+In other words, "Y" means "force to Y, even if it has a dependency (which 
+we'll also have to force", while "N" means "force to N, even if it is 
+getting selected, in which case the selection will also be forced to N").
+
+So then you can say things like
+
+ - edit .config, and set *any* value to "Y", and it will force-enable 
+   anything that that depends on when you run "make oldconfig", even if it 
+   was an "depends on"
+
+ - edit .config, and set *any* value to "N", and it fill force-disable 
+   anything that selects that when you you run "make oldconfig"
+
+The problem here is that:
+
+ - you can get inconsistent situations ("but he wanted to both force that 
+   on *and* off!")
+
+ - "select" actually is much nicer, in that it unambiguously selects one 
+   other symbol. But "depends on" is very hard to force, because you may 
+   have something like (totally made up)
+
+	depends on X86 || (ALPHA && PCI)
+
+   which is impossible to force (*which* one do you force?) on.
+
+but something like this would be nice for both the text-based "make 
+oldconfig" kind of thing *and* for any graphical configuration things 
+("dammit, I want this OFF, when I press the force-off-buffon you turn 
+anything off that needs it!")
+
+But the two problems above might make it impractical..
+
+			Linus
