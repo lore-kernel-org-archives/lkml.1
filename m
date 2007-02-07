@@ -1,72 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161147AbXBGK0u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161148AbXBGKaH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161147AbXBGK0u (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Feb 2007 05:26:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161148AbXBGK0u
+	id S1161148AbXBGKaH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Feb 2007 05:30:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161157AbXBGKaH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Feb 2007 05:26:50 -0500
-Received: from smtp8-g19.free.fr ([212.27.42.65]:55772 "EHLO smtp8-g19.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161147AbXBGK0t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Feb 2007 05:26:49 -0500
-X-Greylist: delayed 654 seconds by postgrey-1.27 at vger.kernel.org; Wed, 07 Feb 2007 05:26:49 EST
-Message-ID: <45C9A8FE.3090705@free.fr>
-Date: Wed, 07 Feb 2007 11:25:02 +0100
-From: John <linux.kernel@free.fr>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061108 SeaMonkey/1.0.6
+	Wed, 7 Feb 2007 05:30:07 -0500
+Received: from outmx007.isp.belgacom.be ([195.238.5.234]:56078 "EHLO
+	outmx007.isp.belgacom.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161148AbXBGKaG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Feb 2007 05:30:06 -0500
+From: Laurent Pinchart <laurent.pinchart@skynet.be>
+To: Roland Dreier <rdreier@cisco.com>
+Subject: Re: Free Linux Driver Development!
+Date: Wed, 7 Feb 2007 11:30:51 +0100
+User-Agent: KMail/1.9.5
+Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org
+References: <20070130012904.GA9617@kroah.com> <20070130195445.GE22022@kroah.com> <adazm80p4qp.fsf@cisco.com>
+In-Reply-To: <adazm80p4qp.fsf@cisco.com>
+X-Face: 4Mf^tnii7k\_EnR5aobBm6Di[DZ9@AX1wJ"okBdX-UoJ>:SRn]c6DDU"qUIwfs98vF>=?utf-8?q?Tnf=0A=09SacR=7B?=(0Du"N%_.#X]"TXx)A'gKB1i7SK$CTLuy{h})c=g:'w3
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: Peter Zijlstra <a.p.zijlstra@chello.nl>, tglx@timesys.com, mingo@elte.hu,
-       johnstul@us.ibm.com, akpm@osdl.org, linux.kernel@free.fr
-Subject: Re: One-shot high-resolution POSIX timer periodically late
-References: <fa.4zD54Ie6Ozt0P4YqQSicS+XzXGw@ifi.uio.no>	 <fa.G+/T32f2o1M3+YGLca/O8NaAQyY@ifi.uio.no>	 <fa.6Ua8xjNfLKQEZZgDsoJgPMyww4g@ifi.uio.no>	 <fa.yQlV+WU0TgrJTVqjopa01tgCnT0@ifi.uio.no>	 <fa.ucVrLJ1Lh6FjdBHRglsIUc8/evk@ifi.uio.no>	 <fa.Id9oufyELrVbe5Wb8SRakwC0V50@ifi.uio.no>  <45C75D2D.9010506@free.fr> <1170747081.4672.11.camel@twins>
-In-Reply-To: <1170747081.4672.11.camel@twins>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200702071130.52108.laurent.pinchart@skynet.be>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
-
-> John wrote:
+>  > > I have a Cisco USB webcam that supposedly conforms to the "USB Video
+>  > > Device Class", but nothing happens when I plug it into my Linux box.
+>  > > I assume the device class is specified as part of the USB spec...
+>  >
+>  > Are you sure?  That spec just came out not so long ago and I haven't
+>  > seen any real devices support it just yet.  That said, I do know of a
+>  > few people who are working on implementing the standard, try asking on
+>  > the linux-usb-devel mailing list to find out what their status is.
 >
->> Ingo Molnar wrote:
->>
->>> John wrote:
->>>
->>>> John Stultz wrote:
->>>>
->>>>> Also do check the -rt tree as Ingo suggested. I mis-read your earlier
->>>>> email and thought you were running it.
->>>>
->>>> I've been pulling my hair over a related issue for the past two days.
->>>>
->>>> (I think I may be tickling a -hrt bug...)
->>>>
->>>> I'm working with 2.6.18.6 + patch-2.6.18-rt7
->>>
->>> 2.6.18-rt7 is pretty old, do you see the problem in 2.6.20-rc6-rt5 too?
->>
->> Ingo, Thomas,
->>
->> As far as I can tell, the -rt patch set is only updated for the latest 
->> kernel version available. Is that correct?
->>
->> http://people.redhat.com/mingo/realtime-preempt/older/?M=D
->>
->> In other words, once 2.6.20 is released, and work starts on 2.6.21, if a 
->> bug is discovered in -rt, the fix will not be back-ported to the 
->> 2.6.20.x (and 2.6.19.x, and 2.6.18.x, etc) patch set?
-> 
-> Correct, there is only 1 live branch.
+> A quick web search finds http://linux-uvc.berlios.de/ but I don't see
+> any signs that anyone plans to submit it upstream.
 
-Are there people that use the -rt patch set in real industrial applications?
+If you want a sign, here it is: I plan to submit the driver upstream :-)
 
-It seems that, if an important bug is found in the -rt part, I will have 
-to either upgrade to the latest kernel, or back port all the -rt changes 
-to the kernel I chose for my application?
+After more than a year of development, the Linux UVC driver is now stable 
+enough to be included in the kernel. There is a show stopper though: V4L2.
+
+The UVC specification defines a set of standard controls. Most of them are 
+part of the V4L2 specification as well (brightness, contrast, ...), but some 
+of them aren't. Those controls are currently exposed through private controls 
+(which drivers are allowed to expose by V4L2), but I don't want to keep 
+private controls around for standard controls defined by UVC.
+
+Once V4L2 will be updated (hopefully soon, I keep trying :-)), I will submit 
+the driver upstream.
 
 Regards,
 
-John
-
+Laurent Pinchart
