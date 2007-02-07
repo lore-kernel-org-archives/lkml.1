@@ -1,88 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422700AbXBGXqu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161416AbXBGXtE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422700AbXBGXqu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Feb 2007 18:46:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161483AbXBGXqu
+	id S1161416AbXBGXtE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Feb 2007 18:49:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161482AbXBGXtE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Feb 2007 18:46:50 -0500
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:5303 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161482AbXBGXqt (ORCPT
+	Wed, 7 Feb 2007 18:49:04 -0500
+Received: from averell.tiscali.it ([213.205.33.55]:44322 "EHLO
+	averell.tiscali.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161416AbXBGXtB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Feb 2007 18:46:49 -0500
-X-AuditID: d80ac287-a257fbb000007e48-2d-45ca678a5c20 
-Date: Wed, 7 Feb 2007 23:27:42 +0000 (GMT)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.wat.veritas.com
-To: Adam Litke <agl@us.ibm.com>
-cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH] Define the shmem_inode_info flags directly
-In-Reply-To: <20070207204030.30615.77294.stgit@localhost.localdomain>
-Message-ID: <Pine.LNX.4.64.0702072320410.3025@blonde.wat.veritas.com>
-References: <20070207204030.30615.77294.stgit@localhost.localdomain>
+	Wed, 7 Feb 2007 18:49:01 -0500
+Date: Thu, 8 Feb 2007 00:48:37 +0100
+From: Luca Tettamanti <kronos@people.it>
+To: James Simmons <jsimmons@infradead.org>
+Cc: Giuseppe Bilotta <giuseppe.bilotta@gmail.com>,
+       linux-fbdev-devel@lists.sourceforge.net, Andrew Morton <akpm@osdl.org>,
+       Dave Airlie <airlied@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [Linux-fbdev-devel] [PATCH] nvidiafb: allow ignoring EDID info
+Message-ID: <20070207234837.GA27822@dreamland.darkstar.lan>
+References: <21d7e9970701281612q56b694edp6efd1a5556dea3fe@mail.gmail.com> <20070128162907.370f5476.akpm@osdl.org> <21d7e9970701281639w57edc2efw4ba620d4c1bdcee7@mail.gmail.com> <cb7bb73a0701290637q2ce0ff16t28f82d0c0339a2ba@mail.gmail.com> <20070130203301.GA15067@dreamland.darkstar.lan> <20070204201713.GA12867@dreamland.darkstar.lan> <cb7bb73a0702041317u4ca2fbabp45cf56526e57c982@mail.gmail.com> <20070205201824.GA13431@dreamland.darkstar.lan> <cb7bb73a0702051328n50c889d9o461ac2bb9f9ea75e@mail.gmail.com> <Pine.LNX.4.64.0702062118450.9224@pentafluge.infradead.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-OriginalArrivalTime: 07 Feb 2007 23:46:32.0782 (UTC) FILETIME=[323ECEE0:01C74B12]
-X-Brightmail-Tracker: AAAAAA==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0702062118450.9224@pentafluge.infradead.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 7 Feb 2007, Adam Litke wrote:
+Il Tue, Feb 06, 2007 at 09:22:00PM +0000, James Simmons ha scritto: 
 > 
-> Andrew: This is a pretty basic and obvious cleanup IMO.  How about a ride in
-> -mm?
+> > On 2/5/07, Luca Tettamanti <kronos@people.it> wrote:
+> > > get-edid uses the BIOS, while the other two talk directly over the I2C
+> > > bus.
+> > > 
+> > > Try loading i2c-dev (I2C_CHARDEV); With i2cdump[1] you can read the EDID
+> > > block, which resides at address 0x50:
+> > > 
+> > > i2cdump N 0x50 (where N is the bus number)
+> > > 
+> > > If you are unshure about bus number try with all the available
+> > > /dev/i2c-* devices (you may want to unload HW monitor drivers first, so
+> > > you don't poke at random stuff).
+> > 
+> > No luck. i2c-dev and dependencies are loaded
+> > """ lsmod | grep i2c reports """
+> > i2c_i801                7404  0
+> > i2c_isa                 5152  0
+> > i2c_piix4               8140  0
+> > i2c_algo_pcf            6180  0
+> > i2c_algo_pca            5380  0
+> > i2c_algo_bit            8424  0
+> > i2c_dev                 8548  0
+> > i2c_core               19680  7
+> > i2c_i801,i2c_isa,i2c_piix4,i2c_algo_pcf,i2c_algo_pca,i2c_algo_bit,i2c_dev
+> > """"
+> > 
+> > There is no such thing as /dev/i2c* UNLESS I load nvidiafb. When I
+> > load that, I get three busses (i2c-0, -1, and -2), but i2cdump N 0x50
+> > gives me a nice tableau of X's all around, for all values of N. This
+> > is using kernel 2.6.18-3 stock Debian kernel. I'll keep trying with
+> > some variations, to see if I can get more sensible information.
 > 
-> Defining flags in terms of other flags is always confusing.  Give them literal
-> values instead of defining them in terms of VM_flags.  While we're at it, move
-> them to a header file in preparation for the introduction of a
-> SHMEM_HUGETLB flag.
+> There is no stand alone nvidia card i2c driver. Its the issue of sharing 
+> device interfaces with the same hardware problem again!!! 
 
-NAK.  Look further and you'll find at least VM_LOCKED and VM_ACCOUNT
-also used straight in shmem info->flags: it's trying to ensure there
-won't be a clash when applying VM_flags there.  So you've a choice of
-three ways forward, I don't mind which: (a) leave it alone, (b) add
-comments, (c) define a separate set of flags for SHMEM and convert
-where necessary.  But NAK to this patch.
+Nah, nvidiafb registers the I2C busses, you can drive them with whatever
+you want through the devices exported by I2C core.
+The fact the none of them work makes me think that the EDID is coming
+from the BIOS, we do VBE calls in real mode during early kernel setup.
 
-(Sorry, I'm way behind and haven't checked your earlier mails yet.)
-
-Hugh
-
-> 
-> Signed-off-by: Adam Litke <agl@us.ibm.com>
-> ---
-> 
->  include/linux/shmem_fs.h |    4 ++++
->  mm/shmem.c               |    4 ----
->  2 files changed, 4 insertions(+), 4 deletions(-)
-> 
-> diff --git a/include/linux/shmem_fs.h b/include/linux/shmem_fs.h
-> index f3c5189..3ea0b6e 100644
-> --- a/include/linux/shmem_fs.h
-> +++ b/include/linux/shmem_fs.h
-> @@ -8,6 +8,10 @@
->  
->  #define SHMEM_NR_DIRECT 16
->  
-> +/* These info->flags are used to handle pagein/truncate races efficiently */
-> +#define SHMEM_PAGEIN	0x00000001
-> +#define SHMEM_TRUNCATE	0x00000002
-> +
->  struct shmem_inode_info {
->  	spinlock_t		lock;
->  	unsigned long		flags;
-> diff --git a/mm/shmem.c b/mm/shmem.c
-> index 70da7a0..a9bdb0d 100644
-> --- a/mm/shmem.c
-> +++ b/mm/shmem.c
-> @@ -66,10 +66,6 @@
->  
->  #define VM_ACCT(size)    (PAGE_CACHE_ALIGN(size) >> PAGE_SHIFT)
->  
-> -/* info->flags needs VM_flags to handle pagein/truncate races efficiently */
-> -#define SHMEM_PAGEIN	 VM_READ
-> -#define SHMEM_TRUNCATE	 VM_WRITE
-> -
->  /* Definition to limit shmem_truncate's steps between cond_rescheds */
->  #define LATENCY_LIMIT	 64
+Luca
+-- 
+Se non sei parte della soluzione, allora sei parte del problema.
