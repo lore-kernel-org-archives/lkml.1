@@ -1,95 +1,174 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030534AbXBGIlX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161035AbXBGIzi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030534AbXBGIlX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Feb 2007 03:41:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030560AbXBGIlX
+	id S1161035AbXBGIzi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Feb 2007 03:55:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030600AbXBGIzi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Feb 2007 03:41:23 -0500
-Received: from aa012msr.fastwebnet.it ([85.18.95.72]:48735 "EHLO
-	aa012msr.fastwebnet.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030534AbXBGIlW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Feb 2007 03:41:22 -0500
-Date: Wed, 7 Feb 2007 09:41:05 +0100
-From: Paolo Ornati <ornati@fastwebnet.it>
-To: "Trevor Offner Caira" <toc3@cornell.edu>
-Cc: linux-kernel@vger.kernel.org, Tejun Heo <htejun@gmail.com>
-Subject: Re: PROBLEM: sata timeouts with intel 82801HB on amd64
-Message-ID: <20070207094105.7ab1c601@localhost>
-In-Reply-To: <34171.74.71.32.29.1170727713.squirrel@webmail.cornell.edu>
-References: <34171.74.71.32.29.1170727713.squirrel@webmail.cornell.edu>
-X-Mailer: Sylpheed-Claws 2.4.0 (GTK+ 2.10.6; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 7 Feb 2007 03:55:38 -0500
+Received: from ns1.suse.de ([195.135.220.2]:52084 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030578AbXBGIzg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Feb 2007 03:55:36 -0500
+From: Andreas Gruenbacher <agruen@suse.de>
+Organization: SuSE Labs, Novell
+To: Stephen Smalley <sds@tycho.nsa.gov>, Jeff Mahoney <jeffm@suse.de>
+Subject: Re: [RFC 0/28] Patches to pass vfsmount to LSM inode security hooks
+Date: Wed, 7 Feb 2007 00:55:10 -0800
+User-Agent: KMail/1.9.5
+Cc: Christoph Hellwig <hch@infradead.org>, Tony Jones <tonyj@suse.de>,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       chrisw@sous-sol.org, linux-security-module@vger.kernel.org,
+       viro@zeniv.linux.org.uk
+References: <20070205182213.12164.40927.sendpatchset@ermintrude.int.wirex.com> <200702051813.26958.agruen@suse.de> <1170766539.12293.370.camel@moss-spartans.epoch.ncsc.mil>
+In-Reply-To: <1170766539.12293.370.camel@moss-spartans.epoch.ncsc.mil>
+MIME-Version: 1.0
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-00=_uPZyFo7/DQLocWI"
+Message-Id: <200702070055.10856.agruen@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 5 Feb 2007 21:08:33 -0500 (EST)
-"Trevor Offner Caira" <toc3@cornell.edu> wrote:
+--Boundary-00=_uPZyFo7/DQLocWI
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-> (1) One-line summary: I'm getting SATA timeouts with Intel 82801HB on amd64.
-> 
-> (2) Full description: Unless CONFIG_RCU_TORTURE_TEST is set, I get sata
-> timeouts of this form periodically:
-> 
-> ata1.00: exception Emask 0x0 SAct 0x1 SErr 0x0 action 0x2 frozen
-> ata1.00: cmd 60/18:00:b3:22:0a/00:00:00:00:00/40 tag 0 cdb 0x0 data 12288 in
->          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
-> ata1: soft resetting port
-> ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
-> ata1.00: configured for UDMA/133
-> ata1: EH complete
-> SCSI device sda: 625142448 512-byte hdwr sectors (320073 MB)
-> sda: Write Protect is off
-> SCSI device sda: write cache: enabled, read cache: enabled, doesn't
-> support DPO or FUA
-> 
-> This entails complete blocking of all disk i/o (I only have one disk) for
-> about 45 seconds. The kernel then negotiates the next lowest transfer
-> speed (UDMA/166 all the way down to PIO0, when it errors saying it cannot
-> go slower). I get this issue on amd64 kernels only. The issue is only
-> present in 2.6.18+, since earlier kernels do not support my chipset at all
-> (intel 82801HB).
-> 
-> Knoppix 5.1.1 does not show this issue (i.e., no disk i/o issues even
-> without rcutorture running). However, a native amd64 build of exactly the
-> same kernel config shows the issue.
-> 
-> (3) Keywords: SATA, AHCI, modules, kernel, Intel.
-> 
+On Tuesday 06 February 2007 04:55, Stephen Smalley wrote:
+> On Mon, 2007-02-05 at 18:13 -0800, Andreas Gruenbacher wrote:
+> > 	Reiserfs should probably just mark all its xattr inodes as private in
+> > order to play nicely with other lsms. As far as pathname based lsms are
+> > concerned, pathnames to those fs-internal objects are meaningless though,
+> > and so we pass NULL here.
+>
+> That should be handled by the current marking of reiserfs xattr inodes
+> with S_PRIVATE and the tests for IS_PRIVATE in include/linux/security.h
+> (and in one instance, within SELinux itself).
 
-[CUT]
+Reiserfs currently only marks the ".reiserfs_priv" directory as private, but 
+not the files below it -- how about the attached patch to fix that?
 
-> (8.7) Other information: There's nothing in the system except for the
-> DG965WH motherboard, E6600 processor, 1GB of kingston RAM, the ST3320620AS
-> hard drive and 430 W PSU.
-> 
-> Thanks for reading this far! :)
+Andreas
 
+--Boundary-00=_uPZyFo7/DQLocWI
+Content-Type: text/x-diff;
+  charset="utf-8";
+  name="reiserfs-mark-xattrs-private.diff"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+	filename="reiserfs-mark-xattrs-private.diff"
 
-Are you using XFS, right?
+Fix reiserfs xattrs for selinux
 
-Can you see if the problem goes away either:
+Mark all inodes used for reiserfs xattrs as private so that selinux
+(or any other LSM) will not try to mediate access to the files and
+directories used as the xattr backing store. The xattr operations
+are already protected through the xattr LSM hooks.
 
-1) disabling NCQ ("echo 1 > /sys/block/sda/device/queue_depth" in a
-boot script)
+There is no real reason for having reiserfs_mark_inode_private --
+remove it and directly mark the inodes as private.
 
-	OR
+Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
+Cc: Jeff Mahoney <jeffm@suse.de>
 
-2) mounting XFS filesystem(s) with "nobarrier" option
+Index: b/fs/reiserfs/xattr.c
+===================================================================
+--- a/fs/reiserfs/xattr.c
++++ b/fs/reiserfs/xattr.c
+@@ -79,6 +79,7 @@ static struct dentry *create_xa_root(str
+ 			dput(privroot);
+ 			return ERR_PTR(err);
+ 		}
++		xaroot->d_inode->i_flags |= S_PRIVATE;
+ 		REISERFS_SB(sb)->xattr_root = dget(xaroot);
+ 	}
+ 
+@@ -108,6 +109,7 @@ static struct dentry *__get_xa_root(stru
+ 		goto out;
+ 	}
+ 
++	xaroot->d_inode->i_flags |= S_PRIVATE;
+ 	REISERFS_SB(s)->xattr_root = dget(xaroot);
+ 
+       out:
+@@ -183,6 +185,7 @@ static struct dentry *open_xa_dir(const 
+ 			return ERR_PTR(-ENODATA);
+ 		}
+ 	}
++	xadir->d_inode->i_flags |= S_PRIVATE;
+ 
+ 	dput(xaroot);
+ 	return xadir;
+@@ -235,6 +238,8 @@ static struct dentry *get_xa_file_dentry
+ 	dput(xadir);
+ 	if (err)
+ 		xafile = ERR_PTR(err);
++	else
++		xafile->d_inode->i_flags |= S_PRIVATE;
+ 	return xafile;
+ }
+ 
+@@ -715,6 +720,7 @@ __reiserfs_xattr_del(struct dentry *xadi
+ 		err = -ENODATA;
+ 		goto out_file;
+ 	}
++	dentry->d_inode->i_flags |= S_PRIVATE;
+ 
+ 	/* Skip directories.. */
+ 	if (S_ISDIR(dentry->d_inode->i_mode))
+@@ -865,6 +871,7 @@ reiserfs_chown_xattrs_filler(void *buf, 
+ 		dput(xafile);
+ 		return -ENODATA;
+ 	}
++	xafile->d_inode->i_flags |= S_PRIVATE;
+ 
+ 	if (!S_ISDIR(xafile->d_inode->i_mode))
+ 		err = notify_change(xafile, NULL, attrs);
+@@ -1289,7 +1296,7 @@ int reiserfs_xattr_init(struct super_blo
+ 
+ 		if (!err && dentry) {
+ 			s->s_root->d_op = &xattr_lookup_poison_ops;
+-			reiserfs_mark_inode_private(dentry->d_inode);
++			dentry->d_inode->i_flags |= S_PRIVATE;
+ 			REISERFS_SB(s)->priv_root = dentry;
+ 		} else if (!(mount_flags & MS_RDONLY)) {	/* xattrs are unavailable */
+ 			/* If we're read-only it just means that the dir hasn't been
+Index: b/include/linux/reiserfs_xattr.h
+===================================================================
+--- a/include/linux/reiserfs_xattr.h
++++ b/include/linux/reiserfs_xattr.h
+@@ -92,11 +92,6 @@ static inline void reiserfs_read_unlock_
+ 	up_read(&REISERFS_I(inode)->xattr_sem);
+ }
+ 
+-static inline void reiserfs_mark_inode_private(struct inode *inode)
+-{
+-	inode->i_flags |= S_PRIVATE;
+-}
+-
+ static inline void reiserfs_init_xattr_rwsem(struct inode *inode)
+ {
+ 	init_rwsem(&REISERFS_I(inode)->xattr_sem);
+@@ -105,7 +100,6 @@ static inline void reiserfs_init_xattr_r
+ #else
+ 
+ #define is_reiserfs_priv_object(inode) 0
+-#define reiserfs_mark_inode_private(inode) do {;} while(0)
+ #define reiserfs_getxattr NULL
+ #define reiserfs_setxattr NULL
+ #define reiserfs_listxattr NULL
+Index: b/fs/reiserfs/xattr_acl.c
+===================================================================
+--- a/fs/reiserfs/xattr_acl.c
++++ b/fs/reiserfs/xattr_acl.c
+@@ -336,7 +336,7 @@ reiserfs_inherit_default_acl(struct inod
+ 	 * would be useless since permissions are ignored, and a pain because
+ 	 * it introduces locking cycles */
+ 	if (is_reiserfs_priv_object(dir)) {
+-		reiserfs_mark_inode_private(inode);
++		inode->i_flags |= S_PRIVATE;
+ 		goto apply_umask;
+ 	}
+ 
 
-	?
-
-
-I've seen this problem with very similar hardware (and so I've added
-Tejun to CC :).
-
-
-If mounting XFS with "nobarrier" fixes the problem it seems that more
-than one Seagate disk cannot handle the Cache Flush command while other
-commands are in fly...
-
--- 
-	Paolo Ornati
-	Linux 2.6.20 on x86_64
+--Boundary-00=_uPZyFo7/DQLocWI--
