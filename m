@@ -1,46 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161232AbXBGLxy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161228AbXBGLyN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161232AbXBGLxy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Feb 2007 06:53:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161228AbXBGLxy
+	id S1161228AbXBGLyN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Feb 2007 06:54:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161234AbXBGLyM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Feb 2007 06:53:54 -0500
-Received: from brick.kernel.dk ([62.242.22.158]:25264 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161232AbXBGLxy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Feb 2007 06:53:54 -0500
-Date: Wed, 7 Feb 2007 12:56:26 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Tomasz Kvarsin <kvarsin@gmail.com>, viro@zeniv.linux.org.uk,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH]: warrning fix: unsigned->signed
-Message-ID: <20070207115626.GF4487@kernel.dk>
-References: <5157576d0702061339w28adbf5fp2dbc5e86661d894@mail.gmail.com> <20070206140936.24bbaded.akpm@linux-foundation.org>
+	Wed, 7 Feb 2007 06:54:12 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:2072 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1161228AbXBGLyL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Feb 2007 06:54:11 -0500
+Date: Wed, 7 Feb 2007 11:54:01 +0000
+From: Pavel Machek <pavel@ucw.cz>
+To: CIJOML <cijoml@volny.cz>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Some "patch" between 2.6.20-rc7 and 2.6.20-final-vanilla has broken my SWSUSP resume
+Message-ID: <20070207115400.GC4481@ucw.cz>
+References: <200702051049.49705.cijoml@volny.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070206140936.24bbaded.akpm@linux-foundation.org>
+In-Reply-To: <200702051049.49705.cijoml@volny.cz>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 06 2007, Andrew Morton wrote:
-> On Wed, 7 Feb 2007 00:39:45 +0300
-> "Tomasz Kvarsin" <kvarsin@gmail.com> wrote:
-> 
-> > While compiling my code, I always get bunch of warrning from headers,
-> > here is fix for them:
-> > __getblk is alawys called with unsigned argument,
-> > but it takes signed, the same story with __bread,__breadahead and so on.
-> 
-> The patch seems OK, but I'm curious to know why you're seeing this warning
-> and nobody else is.  Are you using a compiler other than gcc?  If gcc,
-> which version?  Did you add any new compiler options?
+Hi!
 
-While I'm not a big fan of fixing signed vs unsigned -W generated
-warnings (they tend to cause more harm than good), this patch looks ok
-to me as well.
+> please take a look at my bugreport. It is very important for me...
+> 
+> http://bugzilla.kernel.org/show_bug.cgi?id=7936
+> 
+> Thanks a lot
 
+If it is really caused by difference between -rc7 and -final... then I
+guess it is 'git bisect' time...
+							Pavel
 -- 
-Jens Axboe
-
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
