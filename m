@@ -1,101 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030441AbXBGNfU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161012AbXBGNfn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030441AbXBGNfU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Feb 2007 08:35:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030342AbXBGNfU
+	id S1161012AbXBGNfn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Feb 2007 08:35:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161300AbXBGNfn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Feb 2007 08:35:20 -0500
-Received: from mkedef1.rockwellautomation.com ([208.22.104.18]:19199 "EHLO
-	ramilwsmtp01.ra.rockwell.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1030441AbXBGNfS (ORCPT
+	Wed, 7 Feb 2007 08:35:43 -0500
+Received: from ug-out-1314.google.com ([66.249.92.172]:39047 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161295AbXBGNfa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Feb 2007 08:35:18 -0500
+	Wed, 7 Feb 2007 08:35:30 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=pP8u5Hip9MpKtUqjfsLxqk8d3r5bBPCZZe8+ryu6iK8q/1L9NpCEq5vpkwuKJBeUCWs4k2jLd+h1VNbGVdsj8HEE1VQIrUka7xi9uXVR1860tXJ4PkmcOD3dtV3+dzkfkUp/fCsPun2U8OTsqXFH9wveu96memPCnBdv2hWNrCM=
+Message-ID: <d0383f90702070535q3a26ff41t85daef531f13256e@mail.gmail.com>
+Date: Wed, 7 Feb 2007 15:35:17 +0200
+From: "Ian Brown" <ianbrn@gmail.com>
 To: linux-kernel@vger.kernel.org
-Subject: posix-timers overrun broken?
+Subject: doors in linux (a bit OT)
 MIME-Version: 1.0
-X-Mailer: Lotus Notes Release 6.5.5  CCH1 March 07, 2006
-Message-ID: <OFA77229BB.3038F286-ONC125727B.0048DC3E-C125727B.004AA20A@ra.rockwell.com>
-From: Milan Svoboda <msvoboda@ra.rockwell.com>
-Date: Wed, 7 Feb 2007 14:36:12 +0100
-X-MIMETrack: Serialize by Router on RAMilwSMTP01/Milwaukee/RA/Rockwell(Release 6.5.4FP1|June
- 19, 2005) at 02/07/2007 07:36:19 AM,
-	Serialize complete at 02/07/2007 07:36:19 AM
-Content-Type: text/plain; charset="US-ASCII"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Hello,
+ I saw that there is a project in sf.net called Linux Doors.
+ (nikitadanilov)
 
-I'm creating a driver for timer on ixp4xx (there are two hardware timers). 
-It shall use posix api
-so I looked at the only driver that implements it in kernel: 
-drivers/char/mmtimer.c. My driver uses almost the
-same logic that handles overruns.
+see http://sourceforge.net/projects/ldoor/
+It is from 2001.
 
-However, I found that receiving of number of overruns in waitsiginfo is 
-somewhat broken.
+The doors in a lightweight and fast IPC mechanism.
+It seems to me better (and maybe simpler?) than Unix local sockets or others
+podix IPC  (maybe I am wrong) in terms of overhead.
 
-Linux-2.6.20:
+My question is : It seems that the
+implementation of doors is not very complex in Open Solaris
+Is there a reason that the doors mechanism was not
+adopted by the linux kernel?
 
-Look at posix_timer_event - this is called when interrupt wants to signal 
-the thread that
-event happend. The very first operation there is
-        memset(&timr->sigq->info, 0, sizeof(siginfo_t));
-this clears all info members - si.overrun included.
-Then send_sigqueue or send_group_sigqueue is called. They both check if 
-it's
-SI_TIMER and if so, they increase si.overrun if the signal is already 
-queued.
-
-But if the next interrupt arrives before function collect_signal is called 
-to actually deliver the
-siginfo_t to userspace, the si.overrun is cleared in posix_timer_event and 
-we have just forgotten
-one overrun...
-
-Am I wrong?
-
-Patch follows, but please note that it is more to describe the problem 
-than solve the problem in proper
-way...
-
-Please, CC me, I'm not subscribed on the list.
-
-Signed-off-by: Milan Svoboda <msvoboda@ra.rockwell.com>
-
-Index: linux/kernel/posix-timers.c
-===================================================================
---- linux.orig/kernel/posix-timers.c
-+++ linux/kernel/posix-timers.c
-@@ -298,7 +298,10 @@ void do_schedule_next_timer(struct sigin
- 
- int posix_timer_event(struct k_itimer *timr,int si_private)
- {
-+       int overrun = timr->sigq->info.si_overrun;
-        memset(&timr->sigq->info, 0, sizeof(siginfo_t));
-+       timr->sigq->info.si_overrun = overrun;
-+
-        timr->sigq->info.si_sys_private = si_private;
-        /* Send signal to the process that owns this timer.*/
- 
-@@ -407,6 +410,7 @@ static struct k_itimer * alloc_posix_tim
-                kmem_cache_free(posix_timers_cache, tmr);
-                tmr = NULL;
-        }
-+       tmr->sigq->info.si_overrun = 0;
-        return tmr;
- }
- 
-Index: linux/kernel/signal.c
-===================================================================
---- linux.orig/kernel/signal.c
-+++ linux/kernel/signal.c
-@@ -402,6 +402,7 @@ static int collect_signal(int sig, struc
-        if (first) {
-                list_del_init(&first->list);
-                copy_siginfo(info, &first->info);
-+               first->info.si_overrun = 0;
-                __sigqueue_free(first);
-                if (!still_pending)
-                        sigdelset(&list->signal, sig);
-
+Regards,
+Ian
