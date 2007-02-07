@@ -1,58 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030614AbXBGKIa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161120AbXBGKJF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030614AbXBGKIa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Feb 2007 05:08:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030618AbXBGKIa
+	id S1161120AbXBGKJF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Feb 2007 05:09:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161130AbXBGKJF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Feb 2007 05:08:30 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:39864 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030614AbXBGKI3 (ORCPT
+	Wed, 7 Feb 2007 05:09:05 -0500
+Received: from mailx.hitachi.co.jp ([133.145.228.49]:42596 "EHLO
+	mailx.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161124AbXBGKJD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Feb 2007 05:08:29 -0500
-Date: Wed, 7 Feb 2007 19:07:38 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Andi Kleen <ak@suse.de>
-Cc: linux-kernel@vger.kernel.org, y-goto@jp.fujitsu.com, clameter@engr.sgi.com,
-       akpm@osdl.org
-Subject: Re: [2.6.20][PATCH] fix mempolicy error check on a system with
- memory-less-node
-Message-Id: <20070207190738.30f1d419.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <p73ejp2mfqh.fsf@bingen.suse.de>
-References: <20070206202312.4f979bcf.kamezawa.hiroyu@jp.fujitsu.com>
-	<p73ejp2mfqh.fsf@bingen.suse.de>
-Organization: Fujitsu
-X-Mailer: Sylpheed version 2.2.0 (GTK+ 2.6.10; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 7 Feb 2007 05:09:03 -0500
+Message-ID: <45C9A43F.2010401@hitachi.com>
+Date: Wed, 07 Feb 2007 19:04:47 +0900
+From: Tomoki Sekiyama <tomoki.sekiyama.qu@hitachi.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Cc: yumiko.sugita.yf@hitachi.com, masami.hiramatsu.pt@hitachi.com,
+       yuji.kakutani.uw@hitachi.com, hidehiro.kawai.ez@hitachi.com,
+       satoshi.oshima.fk@hitachi.com
+Subject: [BUG][PATCH] mm: Fix dirty page accounting per backing_dev
+Content-Type: text/plain; charset=ISO-2022-JP
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07 Feb 2007 11:20:06 +0100
-Andi Kleen <ak@suse.de> wrote:
+Hello Andrew,
 
-> KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> writes:
-> 
-> > current mempolicy just checks whether a node is online or not.
-> > If there is memory-less-node, mempolicy's target node can be
-> > invalid.
-> > This patch adds a check whether a node has memory or not.
-> 
-> IMHO there shouldn't be any memory less nodes. The architecture code
-> should not create them. The CPU should be assigned to a nearby node instead.
-> At least x86-64 ensures that.
-> 
-AFAIK, ia64 creates nodes just depends on SRAT's possible resource information.
-Then, ia64 can create cpu-memory-less-node(node with no available resource.).
-(*)I don't like this.
+I found a suspicious bug of I/O accounting in 2.6.20-rc6-mm3.
+The number of dirty pages per backing_dev available from
+/sys/block/<dev>/queue/nr_dirty keeps growing when a file is
+rapidly overwritten several times.
 
-If we don't allow memory-less-node, we may have to add several codes for cpu-hot-add.
-cpus should be moved to nearby node at hotadd .
-And node-hot-add have to care that cpus mustn't be added before memory, cpu-driven 
-node-hot-add will never occur. (ACPI's 'container' device spec can't guaranntee this.)
+For example:
+% cat /sys/block/sda/queue/nr_dirty
+104
+% for i in 1 2; do dd if=/dev/zero of=dummy bs=4096 count=1; done; sync
+% cat /sys/block/sda/queue/nr_dirty
+105
+% for i in 1 2 3; do dd if=/dev/zero of=dummy bs=4096 count=1; done; sync
+% cat /sys/block/sda/queue/nr_dirty
+107
 
--Kame
+This patch fixes it.
 
+Signed-off-by: Tomoki Sekiyama <tomoki.sekiyama.qu@hitachi.com>
+---
+ mm/truncate.c |    1 +
+ 1 file changed, 1 insertion(+)
 
-
+Index: linux-2.6.20-rc6-mm3/mm/truncate.c
+===================================================================
+--- linux-2.6.20-rc6-mm3.orig/mm/truncate.c
++++ linux-2.6.20-rc6-mm3/mm/truncate.c
+@@ -70,6 +70,7 @@ void cancel_dirty_page(struct page *page
+ 	if (TestClearPageDirty(page)) {
+ 		struct address_space *mapping = page->mapping;
+ 		if (mapping && mapping_cap_account_dirty(mapping)) {
++			atomic_long_dec(&mapping->backing_dev_info->nr_dirty);
+ 			dec_zone_page_state(page, NR_FILE_DIRTY);
+ 			if (account_size)
+ 				task_io_account_cancelled_write(account_size);
