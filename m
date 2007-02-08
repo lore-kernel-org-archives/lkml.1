@@ -1,97 +1,220 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423446AbXBHViH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423444AbXBHVlB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423446AbXBHViH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Feb 2007 16:38:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423444AbXBHViG
+	id S1423444AbXBHVlB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Feb 2007 16:41:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423447AbXBHVlB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Feb 2007 16:38:06 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:40826 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423446AbXBHViE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Feb 2007 16:38:04 -0500
-Date: Thu, 8 Feb 2007 13:37:50 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-cc: Jeff Garzik <jeff@garzik.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: somebody dropped a (warning) bomb
-In-Reply-To: <Pine.LNX.4.61.0702082202180.24888@yvahk01.tjqt.qr>
-Message-ID: <Pine.LNX.4.64.0702081324090.8424@woody.linux-foundation.org>
-References: <45CB3B28.60102@garzik.org> <Pine.LNX.4.64.0702080819350.8424@woody.linux-foundation.org>
- <Pine.LNX.4.61.0702081851310.1364@yvahk01.tjqt.qr>
- <Pine.LNX.4.64.0702081145470.8424@woody.linux-foundation.org>
- <Pine.LNX.4.61.0702082202180.24888@yvahk01.tjqt.qr>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 8 Feb 2007 16:41:01 -0500
+Received: from gepetto.dc.ltu.se ([130.240.42.40]:52106 "EHLO
+	gepetto.dc.ltu.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423444AbXBHVlA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Feb 2007 16:41:00 -0500
+Date: Thu, 8 Feb 2007 22:39:35 +0100 (MET)
+From: Richard Knutsson <ricknu-0@student.ltu.se>
+To: akpm@osdl.org
+Cc: trivial@kernel.org, linux-kernel@vger.kernel.org,
+       Richard Knutsson <ricknu-0@student.ltu.se>
+Message-Id: <20070208213935.4864.40124.sendpatchset@thinktank.campus.ltu.se>
+Subject: [PATCH] drivers/telephony/ixj: Convert to generic boolean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Convert:
+BOOL  -> bool
+FALSE -> false
+TRUE  -> true
+
+Change a variable ('mContinue') to boolean from char, since it is used
+as boolean.
+
+Signed-off-by: Richard Knutsson <ricknu-0@student.ltu.se>
+---
+Compile-tested with "allyes", "allmod" and "allno" on i386
+Get a few warning-messages, none related to this patch
+Sent on 2007-01-21
 
 
-On Thu, 8 Feb 2007, Jan Engelhardt wrote:
-> 
-> Thank you for this insight, I don't usually read standards, only RFCs :)
-> Uh, does that also apply to the longer types, int, long etc.? I hope not.
-
-No. An "int" or "long" is always signed.
-
-But bitfields, enums or "char" can - and do - have signedness that depends 
-on the architecture and/or compiler writers whims.
-
-So if you do
-
-	enum my_enum {
-		orange = 1,
-		blue = 2,
-		green = 3
-	};
-
-you don't know if "enum my_enum" is signed or not. The compiler could 
-decide to use "int". Or it could decide to use "unsigned char" for it. You 
-simply don't know.
-
-Same goes for
-
-	struct dummy {
-		int flag:1;
-	} a_variable;
-
-which could make "a_variable.d" be either signed or unsigned. In the 
-absense of an explicit "signed" or "unsigned" by the programmer, you 
-really won't even _know_ whether "flag" can contain the values {0,1} or 
-{-1,0}.
-
-Normally you wouldn't ever even care. A one-bit bitfield would only ever 
-really be tested against 0, but it really is possible that when you assign 
-"1" to that value, and read it back, it will read back -1. Try it. 
-
-Those are the three only types I can think of, but the point is, they 
-really don't have any standard-defined sign. It's up to the compiler. 
-
-Now, passing a "pointer to bitfield" is impossible, and if you pass a 
-pointer to an enum you'd better *always* use the same enum anyway (because 
-not only is the signedness implementation-defined, the _size_ of the enum 
-is also implementation-defined), so in those two cases, -Wpointer-sign 
-doesn't hurt.
-
-But in the case of "char", it really is insane. It's doubly insane exactly 
-because the C standard defines a lot of standard functions that take "char 
-*", and that make tons of sense with unsigned chars too, and you may have 
-100% good reasons to use "unsigned char" for many of them.
-
-> >It really is that simple. gcc is broken. The C language isn't, it's purely 
-> >a broken compiler issue.
-> 
-> Maybe you could send in a patch to gcc that fixes the issue?
-
-I've butted heads with too many broken gcc decisions. I've occasionally 
-used to try to discuss these kinds of things on the gcc mailing lists, but 
-I got too fed up with language lawyers that said "the standard _allows_ us 
-to be total *ssholes, so stop complaining". It seemed to be an almost 
-universal defense.
-
-(And yes, the standard allows any warnings at all. So technically, gcc can 
-warn about whatever hell it wants. It doesn't make it a good idea).
-
-			Linus
+diff --git a/drivers/telephony/ixj.c b/drivers/telephony/ixj.c
+index df4cc1f..58deaac 100644
+--- a/drivers/telephony/ixj.c
++++ b/drivers/telephony/ixj.c
+@@ -648,9 +648,9 @@ static inline BYTE SLIC_GetState(IXJ *j)
+ 	return j->pld_slicr.bits.state;
+ }
+ 
+-static BOOL SLIC_SetState(BYTE byState, IXJ *j)
++static bool SLIC_SetState(BYTE byState, IXJ *j)
+ {
+-	BOOL fRetVal = FALSE;
++	bool fRetVal = false;
+ 
+ 	if (j->cardtype == QTI_PHONECARD) {
+ 		if (j->flags.pcmciasct) {
+@@ -659,14 +659,14 @@ static BOOL SLIC_SetState(BYTE byState, IXJ *j)
+ 			case PLD_SLIC_STATE_OC:
+ 				j->pslic.bits.powerdown = 1;
+ 				j->pslic.bits.ring0 = j->pslic.bits.ring1 = 0;
+-				fRetVal = TRUE;
++				fRetVal = true;
+ 				break;
+ 			case PLD_SLIC_STATE_RINGING:
+ 				if (j->readers || j->writers) {
+ 					j->pslic.bits.powerdown = 0;
+ 					j->pslic.bits.ring0 = 1;
+ 					j->pslic.bits.ring1 = 0;
+-					fRetVal = TRUE;
++					fRetVal = true;
+ 				}
+ 				break;
+ 			case PLD_SLIC_STATE_OHT:	/* On-hook transmit */
+@@ -679,14 +679,14 @@ static BOOL SLIC_SetState(BYTE byState, IXJ *j)
+ 					j->pslic.bits.powerdown = 1;
+ 				}
+ 				j->pslic.bits.ring0 = j->pslic.bits.ring1 = 0;
+-				fRetVal = TRUE;
++				fRetVal = true;
+ 				break;
+ 			case PLD_SLIC_STATE_APR:	/* Active polarity reversal */
+ 
+ 			case PLD_SLIC_STATE_OHTPR:	/* OHT polarity reversal */
+ 
+ 			default:
+-				fRetVal = FALSE;
++				fRetVal = false;
+ 				break;
+ 			}
+ 			j->psccr.bits.dev = 3;
+@@ -703,7 +703,7 @@ static BOOL SLIC_SetState(BYTE byState, IXJ *j)
+ 			j->pld_slicw.bits.c3 = 0;
+ 			j->pld_slicw.bits.b2en = 0;
+ 			outb_p(j->pld_slicw.byte, j->XILINXbase + 0x01);
+-			fRetVal = TRUE;
++			fRetVal = true;
+ 			break;
+ 		case PLD_SLIC_STATE_RINGING:
+ 			j->pld_slicw.bits.c1 = 1;
+@@ -711,7 +711,7 @@ static BOOL SLIC_SetState(BYTE byState, IXJ *j)
+ 			j->pld_slicw.bits.c3 = 0;
+ 			j->pld_slicw.bits.b2en = 1;
+ 			outb_p(j->pld_slicw.byte, j->XILINXbase + 0x01);
+-			fRetVal = TRUE;
++			fRetVal = true;
+ 			break;
+ 		case PLD_SLIC_STATE_ACTIVE:
+ 			j->pld_slicw.bits.c1 = 0;
+@@ -719,7 +719,7 @@ static BOOL SLIC_SetState(BYTE byState, IXJ *j)
+ 			j->pld_slicw.bits.c3 = 0;
+ 			j->pld_slicw.bits.b2en = 0;
+ 			outb_p(j->pld_slicw.byte, j->XILINXbase + 0x01);
+-			fRetVal = TRUE;
++			fRetVal = true;
+ 			break;
+ 		case PLD_SLIC_STATE_OHT:	/* On-hook transmit */
+ 
+@@ -728,7 +728,7 @@ static BOOL SLIC_SetState(BYTE byState, IXJ *j)
+ 			j->pld_slicw.bits.c3 = 0;
+ 			j->pld_slicw.bits.b2en = 0;
+ 			outb_p(j->pld_slicw.byte, j->XILINXbase + 0x01);
+-			fRetVal = TRUE;
++			fRetVal = true;
+ 			break;
+ 		case PLD_SLIC_STATE_TIPOPEN:
+ 			j->pld_slicw.bits.c1 = 0;
+@@ -736,7 +736,7 @@ static BOOL SLIC_SetState(BYTE byState, IXJ *j)
+ 			j->pld_slicw.bits.c3 = 1;
+ 			j->pld_slicw.bits.b2en = 0;
+ 			outb_p(j->pld_slicw.byte, j->XILINXbase + 0x01);
+-			fRetVal = TRUE;
++			fRetVal = true;
+ 			break;
+ 		case PLD_SLIC_STATE_STANDBY:
+ 			j->pld_slicw.bits.c1 = 1;
+@@ -744,7 +744,7 @@ static BOOL SLIC_SetState(BYTE byState, IXJ *j)
+ 			j->pld_slicw.bits.c3 = 1;
+ 			j->pld_slicw.bits.b2en = 1;
+ 			outb_p(j->pld_slicw.byte, j->XILINXbase + 0x01);
+-			fRetVal = TRUE;
++			fRetVal = true;
+ 			break;
+ 		case PLD_SLIC_STATE_APR:	/* Active polarity reversal */
+ 
+@@ -753,7 +753,7 @@ static BOOL SLIC_SetState(BYTE byState, IXJ *j)
+ 			j->pld_slicw.bits.c3 = 1;
+ 			j->pld_slicw.bits.b2en = 0;
+ 			outb_p(j->pld_slicw.byte, j->XILINXbase + 0x01);
+-			fRetVal = TRUE;
++			fRetVal = true;
+ 			break;
+ 		case PLD_SLIC_STATE_OHTPR:	/* OHT polarity reversal */
+ 
+@@ -762,10 +762,10 @@ static BOOL SLIC_SetState(BYTE byState, IXJ *j)
+ 			j->pld_slicw.bits.c3 = 1;
+ 			j->pld_slicw.bits.b2en = 0;
+ 			outb_p(j->pld_slicw.byte, j->XILINXbase + 0x01);
+-			fRetVal = TRUE;
++			fRetVal = true;
+ 			break;
+ 		default:
+-			fRetVal = FALSE;
++			fRetVal = false;
+ 			break;
+ 		}
+ 	}
+@@ -4969,7 +4969,8 @@ static int ixj_daa_cid_read(IXJ *j)
+ {
+ 	int i;
+ 	BYTES bytes;
+-	char CID[ALISDAA_CALLERID_SIZE], mContinue;
++	char CID[ALISDAA_CALLERID_SIZE];
++	bool mContinue;
+ 	char *pIn, *pOut;
+ 
+ 	if (!SCI_Prepare(j))
+@@ -5013,7 +5014,7 @@ static int ixj_daa_cid_read(IXJ *j)
+ 
+ 	pIn = CID;
+ 	pOut = j->m_DAAShadowRegs.CAO_REGS.CAO.CallerID;
+-	mContinue = 1;
++	mContinue = true;
+ 	while (mContinue) {
+ 		if ((pIn[1] & 0x03) == 0x01) {
+ 			pOut[0] = pIn[0];
+@@ -5027,7 +5028,7 @@ static int ixj_daa_cid_read(IXJ *j)
+ 		if ((pIn[4] & 0xc0) == 0x40) {
+ 			pOut[3] = ((pIn[4] & 0x3f) << 2) | ((pIn[3] & 0xc0) >> 6);
+ 		} else {
+-			mContinue = FALSE;
++			mContinue = false;
+ 		}
+ 		pIn += 5, pOut += 4;
+ 	}
+@@ -7498,7 +7499,7 @@ static BYTE PCIEE_ReadBit(WORD wEEPROMAddress, BYTE lastLCC)
+ 	return ((inb(wEEPROMAddress) >> 3) & 1);
+ }
+ 
+-static BOOL PCIEE_ReadWord(WORD wAddress, WORD wLoc, WORD * pwResult)
++static bool PCIEE_ReadWord(WORD wAddress, WORD wLoc, WORD * pwResult)
+ {
+ 	BYTE lastLCC;
+ 	WORD wEEPROMAddress = wAddress + 3;
+diff --git a/drivers/telephony/ixj.h b/drivers/telephony/ixj.h
+index 8d69bcd..4c32a43 100644
+--- a/drivers/telephony/ixj.h
++++ b/drivers/telephony/ixj.h
+@@ -48,15 +48,11 @@
+ typedef __u16 WORD;
+ typedef __u32 DWORD;
+ typedef __u8 BYTE;
+-typedef __u8 BOOL;
+ 
+ #ifndef IXJMAX
+ #define IXJMAX 16
+ #endif
+ 
+-#define TRUE 1
+-#define FALSE 0
+-
+ /******************************************************************************
+ *
+ *  This structure when unioned with the structures below makes simple byte
