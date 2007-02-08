@@ -1,60 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423267AbXBHTh0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423280AbXBHTif@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423267AbXBHTh0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Feb 2007 14:37:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423280AbXBHTh0
+	id S1423280AbXBHTif (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Feb 2007 14:38:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423282AbXBHTif
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Feb 2007 14:37:26 -0500
-Received: from tim.rpsys.net ([194.106.48.114]:38987 "EHLO tim.rpsys.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423278AbXBHThZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Feb 2007 14:37:25 -0500
-Subject: Re: Git backlight subsystem tree
-From: Richard Purdie <rpurdie@rpsys.net>
-To: James Simmons <jsimmons@infradead.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>,
-       Marcin Juszkiewicz <openembedded@hrw.one.pl>, Greg KH <greg@kroah.com>
-In-Reply-To: <Pine.LNX.4.64.0702081830520.7686@pentafluge.infradead.org>
-References: <1170901826.5859.2.camel@localhost.localdomain>
-	 <Pine.LNX.4.64.0702081520110.824@pentafluge.infradead.org>
-	 <1170957595.5849.11.camel@localhost.localdomain>
-	 <Pine.LNX.4.64.0702081830520.7686@pentafluge.infradead.org>
-Content-Type: text/plain
-Date: Thu, 08 Feb 2007 19:37:06 +0000
-Message-Id: <1170963426.5849.23.camel@localhost.localdomain>
+	Thu, 8 Feb 2007 14:38:35 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:41095 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423280AbXBHTie (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Feb 2007 14:38:34 -0500
+Date: Thu, 8 Feb 2007 19:38:27 +0000
+From: Christoph Hellwig <hch@infradead.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Sumant Patro <sumantp@lsil.com>, James.Bottomley@SteelEye.com,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       neela.kolli@lsi.com, bo.yang@lsi.com, sumant.patro@lsi.com
+Subject: Re: [PATCH 4/5] scsi: megaraid_sas - preallocate memory for ioctl processing
+Message-ID: <20070208193827.GA2354@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Sumant Patro <sumantp@lsil.com>, James.Bottomley@SteelEye.com,
+	linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+	neela.kolli@lsi.com, bo.yang@lsi.com, sumant.patro@lsi.com
+References: <1170800394.10482.41.camel@dumbo> <20070207133020.4c58e271.akpm@linux-foundation.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070207133020.4c58e271.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.2.2i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-02-08 at 18:32 +0000, James Simmons wrote:
-> On Thu, 8 Feb 2007, Richard Purdie wrote:
+On Wed, Feb 07, 2007 at 01:30:20PM -0800, Andrew Morton wrote:
+> On Tue, 06 Feb 2007 14:19:54 -0800
+> Sumant Patro <sumantp@lsil.com> wrote:
 > 
-> > On Thu, 2007-02-08 at 15:28 +0000, James Simmons wrote:
-> > > I have some patches that move the backlight away from using the class 
-> > > stuff. The only problem is the patch requires all backlight devices 
-> > > to be linked to a real struct device. Right now the acpi backligths are 
-> > > not.
-> > 
-> > Why would you want to do that?
-[...]
->
-> I CC Greg to explain. The backlight class didn't go away. The way it is 
-> handled is different.
+> > Preallocate memory for ioctl processing. This is to avoid situations 
+> > where ioctl fails for lack of memory (when system under heavy stress).
+> > The memory pool will have 8*4K, 4*8K and 1*64K memory chunks
+> 
+> mutter.
+> 
+> I suspect all this horror is due to stupidity in the DMA API.
+> 
+> pci_alloc_consistent() just goes and assumes GFP_ATOMIC, whereas
+> the caller (megasas_mgmt_fw_ioctl) would have been perfectly happy
+> to use GFP_KERNEL.
+> 
+> I bet this fixes it:
 
->From the changelog and a quick skim though the patch it looked like you
-were just removing the class functionality and using the struct device
-directly but I see what you're trying to do now.
-
-I'm not sure I agree with it though as it results in two devices for
-each backlight user as almost all users have an existing struct device.
-The current approach allows you to attach the class to an existing
-device and also means you can attach multiple classes to a given device
-which gives more flexibility.
-
-So the above question stills stands, why would you want to do this
-(apart from removing some code)?
-
-Richard
+but it's ugly as hell, why there is a much more trivial fix for it:
+simply use dma_alloc_coherent.
 
