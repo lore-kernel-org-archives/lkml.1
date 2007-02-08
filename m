@@ -1,64 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423298AbXBHTtB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423288AbXBHTt4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423298AbXBHTtB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Feb 2007 14:49:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423288AbXBHTs7
+	id S1423288AbXBHTt4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Feb 2007 14:49:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423282AbXBHTt4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Feb 2007 14:48:59 -0500
-Received: from hera.kernel.org ([140.211.167.34]:34288 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423290AbXBHTso (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Feb 2007 14:48:44 -0500
-From: Len Brown <lenb@kernel.org>
-Organization: Intel Open Source Technology Center
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>, linux-acpi@vger.kernel.org
-Subject: Re: [git patches] IDE updates for 2.6.20
-Date: Thu, 8 Feb 2007 14:47:06 -0500
-User-Agent: KMail/1.9.5
-Cc: Alan <alan@lxorguk.ukuu.org.uk>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20070207180814.27444.59159.sendpatchset@localhost.localdomain> <20070207182748.1c0c3588@localhost.localdomain> <45CA1916.6020709@ru.mvista.com>
-In-Reply-To: <45CA1916.6020709@ru.mvista.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Thu, 8 Feb 2007 14:49:56 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:45538 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423288AbXBHTty (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Feb 2007 14:49:54 -0500
+Date: Thu, 8 Feb 2007 19:49:53 +0000
+From: Christoph Hellwig <hch@infradead.org>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Linux Filesystems <linux-fsdevel@vger.kernel.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch 1/3] fs: add an iovec iterator
+Message-ID: <20070208194953.GA4118@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Nick Piggin <npiggin@suse.de>,
+	Linux Filesystems <linux-fsdevel@vger.kernel.org>,
+	Linux Kernel <linux-kernel@vger.kernel.org>,
+	Andrew Morton <akpm@linux-foundation.org>
+References: <20070208105437.26443.35653.sendpatchset@linux.site> <20070208105446.26443.35864.sendpatchset@linux.site>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200702081447.07223.lenb@kernel.org>
+In-Reply-To: <20070208105446.26443.35864.sendpatchset@linux.site>
+User-Agent: Mutt/1.4.2.2i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 07 February 2007 13:23, Sergei Shtylyov wrote:
-> Hello.
-> 
-> Alan wrote:
-> > On Wed, 07 Feb 2007 19:08:14 +0100
-> > Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
-> > 
-> >>- ACPI support for IDE (has been in SuSE kernels for months)
-> >>  (Hannes Reinecke <hare@suse.de>)
-> 
-> > I can find no public copy of this or discussion of it, please post a
-> 
-> http://marc.theaimsgroup.com/?l=linux-ide&m=116916643921306
-> 
-> > reference to the previous discussion or put the ACPI patch somewhere for
-> > review first.
-> 
-> http://kernel.org/pub/linux/kernel/people/bart/pata-2.6/patches/ide-acpi-support.patch
+On Thu, Feb 08, 2007 at 02:07:24PM +0100, Nick Piggin wrote:
+> Add an iterator data structure to operate over an iovec. Add usercopy
+> operators needed by generic_file_buffered_write, and convert that function
+> over.
 
-So it looks like...
-if (CONFIG_BLK_DEV_IDEACPI=y)
-	suspend uses _GTM
-	resume uses _STM
+iovec_iterator is an awfully long and not very descriptive name.
+In past discussions we named this thingy iodesc and wanted to pass it
+down all the I/O path, including the file operations.
 
-But it looks like _GTF and using the task file is disabled by default,
-and needs to be enabled by invoking "ide=acpigtf".  Why is that?
-
-Also, what's the story on ide=acpionboot -- when/why is that expected
-to be invoked, and why is it not the default?
-
-thanks,
--Len
