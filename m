@@ -1,50 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422964AbXBHMh2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422744AbXBHMjH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422964AbXBHMh2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Feb 2007 07:37:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422744AbXBHMh1
+	id S1422744AbXBHMjH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Feb 2007 07:39:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422969AbXBHMjH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Feb 2007 07:37:27 -0500
-Received: from brick.kernel.dk ([62.242.22.158]:11032 "EHLO kernel.dk"
+	Thu, 8 Feb 2007 07:39:07 -0500
+Received: from raven.upol.cz ([158.194.120.4]:34789 "EHLO raven.upol.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422969AbXBHMh1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Feb 2007 07:37:27 -0500
-Date: Thu, 8 Feb 2007 13:40:03 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Nigel Cunningham <nigel@nigel.suspend2.net>
-Cc: Otavio Salvador <otavio@debian.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Add PM_TRACE x86_64 support.
-Message-ID: <20070208124003.GE4487@kernel.dk>
-References: <1170895857.4451.55.camel@nigel.suspend2.net> <87lkj9bg67.fsf@neumann.lab.ossystems.com.br> <1170900487.4451.62.camel@nigel.suspend2.net>
-Mime-Version: 1.0
+	id S1422744AbXBHMjG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Feb 2007 07:39:06 -0500
+Date: Thu, 8 Feb 2007 13:47:56 +0100
+To: Paul Mackerras <paulus@samba.org>
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org
+Subject: Re: Kbuild change breaks the ppc64 build
+Message-ID: <20070208124756.GU22699@flower.upol.cz>
+References: <17867.1342.763881.188430@cargo.ozlabs.ibm.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1170900487.4451.62.camel@nigel.suspend2.net>
+In-Reply-To: <17867.1342.763881.188430@cargo.ozlabs.ibm.com>
+Organization: Palacky University in Olomouc, experimental physics department.
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Oleg Verych <olecom@flower.upol.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 08 2007, Nigel Cunningham wrote:
-> On Wed, 2007-02-07 at 23:18 -0200, Otavio Salvador wrote:
-> > Nigel Cunningham <nigel@nigel.suspend2.net> writes:
-> > 
-> > > -	for (tracedata = &__tracedata_start ; tracedata < &__tracedata_end ; tracedata += 6) {
-> > > +	for (tracedata = &__tracedata_start ; tracedata < &__tracedata_end ; tracedata += 2 + sizeof(unsigned long)) {
-> > 
-> > Could you split this line?
+On Thu, Feb 08, 2007 at 10:10:54PM +1100, Paul Mackerras wrote:
+> Commit 5de043f4bd11a9e0a3e8daec7d1905da575a76b7 breaks the build on
+> 64-bit powerpc because we no longer get the -m64 flag passed to gcc.
+> There is code in arch/powerpc/Makefile which adds (or used to add)
+> -m64 to AS, LD and CC if we are running on a 64-bit machine (which I
+> am) and have a biarch toolchain (which I do).  Without -m64, the
+> toolchain assumes 32-bit and all sorts of things break spectacularly.
 > 
-> Sure.
-> 
-> -- New version -- (What's the right way to do this?)
-> 
-> This patch add x86_64 support for PM_TRACE, and shifts per-arch code to
-> the appropriate subdirectories.
-> 
-> Symbol exports are added so tracing can be used from drivers built as
-> modules too.
+> I haven't yet tracked down exactly why this commit has this effect,
+> since I find it takes considerable time and effort to understand
+> Kbuild.
 
-Don't include exports in a patch that doesn't use them. Introduce the
-exports in a later patch series, for when you actually need it.
+As i have refactored some CC checking code in Kbuild.include, it
+turned, that some versions of `make' after calling nested functions,
+add (or leave) prefix whitespace to result, thus ifeq[0] fails:
 
--- 
-Jens Axboe
+ .-*- (ppc Makefile)
+ |HAS_BIARCH      := $(call cc-option-yn, -m32)
+0|ifeq ($(HAS_BIARCH),y)
+ |AS              := $(AS) -a32
+ |LD              := $(LD) -m elf32ppc
+ |CC              := $(CC) -m32
+ |endif
 
+David wrote and showed a testcase.
+Adding $(strip ) wrapper helped with this, but may screw many other
+things. Maybe you will help, unless Linus will finally revert this :)
+
+____
