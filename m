@@ -1,378 +1,759 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422852AbXBHAif@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422844AbXBHAbw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422852AbXBHAif (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Feb 2007 19:38:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965710AbXBHAiB
+	id S1422844AbXBHAbw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Feb 2007 19:31:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422834AbXBHAbt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Feb 2007 19:38:01 -0500
-Received: from mail.suse.de ([195.135.220.2]:56409 "EHLO mx1.suse.de"
+	Wed, 7 Feb 2007 19:31:49 -0500
+Received: from mail.suse.de ([195.135.220.2]:56346 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422936AbXBHAc0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Feb 2007 19:32:26 -0500
+	id S1422850AbXBHAbb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Feb 2007 19:31:31 -0500
 From: Greg KH <greg@kroah.com>
 To: linux-kernel@vger.kernel.org
-Cc: Oliver Neukum <oliver@neukum.org>, Oliver Neukum <oliver@neukum.name>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 17/28] Driver core: fix race in sysfs between sysfs_remove_file() and read()/write()
-Date: Wed,  7 Feb 2007 16:30:05 -0800
-Message-Id: <11708946762594-git-send-email-greg@kroah.com>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 2/28] Driver core: convert pcmcia code to use struct device
+Date: Wed,  7 Feb 2007 16:29:50 -0800
+Message-Id: <1170894620889-git-send-email-greg@kroah.com>
 X-Mailer: git-send-email 1.4.4.4
-In-Reply-To: <11708946734097-git-send-email-greg@kroah.com>
-References: <20070208002908.GA4796@kroah.com> <11708946163722-git-send-email-greg@kroah.com> <1170894620889-git-send-email-greg@kroah.com> <11708946251265-git-send-email-greg@kroah.com> <11708946283719-git-send-email-greg@kroah.com> <11708946362677-git-send-email-greg@kroah.com> <11708946391465-git-send-email-greg@kroah.com> <11708946432920-git-send-email-greg@kroah.com> <11708946472324-git-send-email-greg@kroah.com> <1170894650872-git-send-email-greg@kroah.com> <11708946533931-git-send-email-greg@kroah.com> <11708946561557-git-send-email-greg@kroah.com> <11708946601643-git-send-email-greg@kroah.com> <1170894664547-git-send-email-greg@kroah.com> <11708946672133-git-send-email-greg@kroah.com> <1170894670676-git-send-email-greg@kroah.com> <11708946734097-git-send-email-greg@kroah.com>
+In-Reply-To: <11708946163722-git-send-email-greg@kroah.com>
+References: <20070208002908.GA4796@kroah.com> <11708946163722-git-send-email-greg@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Oliver Neukum <oliver@neukum.org>
+From: Greg Kroah-Hartman <gregkh@suse.de>
 
-This patch prevents a race between IO and removing a file from sysfs.
-It introduces a list of sysfs_buffers associated with a file at the inode.
-Upon removal of a file the list is walked and the buffers marked orphaned.
-IO to orphaned buffers fails with -ENODEV. The driver can safely free
-associated data structures or be unloaded.
+Converts from using struct "class_device" to "struct device" making
+everything show up properly in /sys/devices/ with symlinks from the
+/sys/class directory.
 
-Signed-off-by: Oliver Neukum <oliver@neukum.name>
-Acked-by: Maneesh Soni <maneesh@in.ibm.com>
+Cc: <linux-pcmcia@lists.infradead.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- fs/sysfs/bin.c     |    1 +
- fs/sysfs/dir.c     |    1 +
- fs/sysfs/file.c    |   67 ++++++++++++++++++++++++++++++++++++++-------------
- fs/sysfs/group.c   |    1 +
- fs/sysfs/inode.c   |   24 ++++++++++++++++++
- fs/sysfs/mount.c   |    9 +++++++
- fs/sysfs/symlink.c |    1 +
- fs/sysfs/sysfs.h   |   16 ++++++++++++
- 8 files changed, 103 insertions(+), 17 deletions(-)
+ drivers/pcmcia/cs.c              |   34 ++++++------
+ drivers/pcmcia/cs_internal.h     |    4 +-
+ drivers/pcmcia/ds.c              |   14 +++---
+ drivers/pcmcia/i82092.c          |    2 +-
+ drivers/pcmcia/i82365.c          |    2 +-
+ drivers/pcmcia/pcmcia_ioctl.c    |    1 -
+ drivers/pcmcia/pcmcia_resource.c |    1 -
+ drivers/pcmcia/pd6729.c          |    2 +-
+ drivers/pcmcia/rsrc_nonstatic.c  |   56 +++++++++++---------
+ drivers/pcmcia/soc_common.c      |    6 +-
+ drivers/pcmcia/socket_sysfs.c    |  104 ++++++++++++++++++++++----------------
+ drivers/pcmcia/tcic.c            |    2 +-
+ drivers/pcmcia/yenta_socket.c    |    2 +-
+ include/pcmcia/ss.h              |    2 +-
+ 14 files changed, 127 insertions(+), 105 deletions(-)
 
-diff --git a/fs/sysfs/bin.c b/fs/sysfs/bin.c
-index e8f540d..9ec1c85 100644
---- a/fs/sysfs/bin.c
-+++ b/fs/sysfs/bin.c
-@@ -16,6 +16,7 @@
- #include <linux/slab.h>
+diff --git a/drivers/pcmcia/cs.c b/drivers/pcmcia/cs.c
+index 606a467..ac00424 100644
+--- a/drivers/pcmcia/cs.c
++++ b/drivers/pcmcia/cs.c
+@@ -110,7 +110,7 @@ int pcmcia_socket_dev_suspend(struct device *dev, pm_message_t state)
  
- #include <asm/uaccess.h>
-+#include <asm/semaphore.h>
+ 	down_read(&pcmcia_socket_list_rwsem);
+ 	list_for_each_entry(socket, &pcmcia_socket_list, socket_list) {
+-		if (socket->dev.dev != dev)
++		if (socket->dev.parent != dev)
+ 			continue;
+ 		mutex_lock(&socket->skt_mutex);
+ 		socket_suspend(socket);
+@@ -128,7 +128,7 @@ int pcmcia_socket_dev_resume(struct device *dev)
  
- #include "sysfs.h"
+ 	down_read(&pcmcia_socket_list_rwsem);
+ 	list_for_each_entry(socket, &pcmcia_socket_list, socket_list) {
+-		if (socket->dev.dev != dev)
++		if (socket->dev.parent != dev)
+ 			continue;
+ 		mutex_lock(&socket->skt_mutex);
+ 		socket_resume(socket);
+@@ -143,12 +143,12 @@ EXPORT_SYMBOL(pcmcia_socket_dev_resume);
  
-diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
-index 2bab1b4..9ff0449 100644
---- a/fs/sysfs/dir.c
-+++ b/fs/sysfs/dir.c
-@@ -9,6 +9,7 @@
- #include <linux/module.h>
- #include <linux/kobject.h>
- #include <linux/namei.h>
-+#include <asm/semaphore.h>
- #include "sysfs.h"
+ struct pcmcia_socket * pcmcia_get_socket(struct pcmcia_socket *skt)
+ {
+-	struct class_device *cl_dev = class_device_get(&skt->dev);
+-	if (!cl_dev)
++	struct device *dev = get_device(&skt->dev);
++	if (!dev)
+ 		return NULL;
+-	skt = class_get_devdata(cl_dev);
++	skt = dev_get_drvdata(dev);
+ 	if (!try_module_get(skt->owner)) {
+-		class_device_put(&skt->dev);
++		put_device(&skt->dev);
+ 		return NULL;
+ 	}
+ 	return (skt);
+@@ -159,14 +159,14 @@ EXPORT_SYMBOL(pcmcia_get_socket);
+ void pcmcia_put_socket(struct pcmcia_socket *skt)
+ {
+ 	module_put(skt->owner);
+-	class_device_put(&skt->dev);
++	put_device(&skt->dev);
+ }
+ EXPORT_SYMBOL(pcmcia_put_socket);
  
- DECLARE_RWSEM(sysfs_rename_sem);
-diff --git a/fs/sysfs/file.c b/fs/sysfs/file.c
-index 9cfe53e..cba4c1c 100644
---- a/fs/sysfs/file.c
-+++ b/fs/sysfs/file.c
-@@ -7,6 +7,7 @@
- #include <linux/kobject.h>
- #include <linux/namei.h>
- #include <linux/poll.h>
-+#include <linux/list.h>
- #include <asm/uaccess.h>
- #include <asm/semaphore.h>
  
-@@ -50,17 +51,29 @@ static struct sysfs_ops subsys_sysfs_ops = {
- 	.store	= subsys_attr_store,
+-static void pcmcia_release_socket(struct class_device *class_dev)
++static void pcmcia_release_socket(struct device *dev)
+ {
+-	struct pcmcia_socket *socket = class_get_devdata(class_dev);
++	struct pcmcia_socket *socket = dev_get_drvdata(dev);
+ 
+ 	complete(&socket->socket_released);
+ }
+@@ -181,7 +181,7 @@ int pcmcia_register_socket(struct pcmcia_socket *socket)
+ 	struct task_struct *tsk;
+ 	int ret;
+ 
+-	if (!socket || !socket->ops || !socket->dev.dev || !socket->resource_ops)
++	if (!socket || !socket->ops || !socket->dev.parent || !socket->resource_ops)
+ 		return -EINVAL;
+ 
+ 	cs_dbg(socket, 0, "pcmcia_register_socket(0x%p)\n", socket->ops);
+@@ -226,9 +226,9 @@ int pcmcia_register_socket(struct pcmcia_socket *socket)
+ #endif
+ 
+ 	/* set proper values in socket->dev */
+-	socket->dev.class_data = socket;
++	dev_set_drvdata(&socket->dev, socket);
+ 	socket->dev.class = &pcmcia_socket_class;
+-	snprintf(socket->dev.class_id, BUS_ID_SIZE, "pcmcia_socket%u", socket->sock);
++	snprintf(socket->dev.bus_id, BUS_ID_SIZE, "pcmcia_socket%u", socket->sock);
+ 
+ 	/* base address = 0, map = 0 */
+ 	socket->cis_mem.flags = 0;
+@@ -640,7 +640,7 @@ static int pccardd(void *__skt)
+ 	skt->ops->set_socket(skt, &skt->socket);
+ 
+ 	/* register with the device core */
+-	ret = class_device_register(&skt->dev);
++	ret = device_register(&skt->dev);
+ 	if (ret) {
+ 		printk(KERN_WARNING "PCMCIA: unable to register socket 0x%p\n",
+ 			skt);
+@@ -689,7 +689,7 @@ static int pccardd(void *__skt)
+ 	remove_wait_queue(&skt->thread_wait, &wait);
+ 
+ 	/* remove from the device core */
+-	class_device_unregister(&skt->dev);
++	device_unregister(&skt->dev);
+ 
+ 	return 0;
+ }
+@@ -904,7 +904,7 @@ int pcmcia_insert_card(struct pcmcia_socket *skt)
+ EXPORT_SYMBOL(pcmcia_insert_card);
+ 
+ 
+-static int pcmcia_socket_uevent(struct class_device *dev, char **envp,
++static int pcmcia_socket_uevent(struct device *dev, char **envp,
+ 			        int num_envp, char *buffer, int buffer_size)
+ {
+ 	struct pcmcia_socket *s = container_of(dev, struct pcmcia_socket, dev);
+@@ -930,8 +930,8 @@ static void pcmcia_release_socket_class(struct class *data)
+ 
+ struct class pcmcia_socket_class = {
+ 	.name = "pcmcia_socket",
+-	.uevent = pcmcia_socket_uevent,
+-	.release = pcmcia_release_socket,
++	.dev_uevent = pcmcia_socket_uevent,
++	.dev_release = pcmcia_release_socket,
+ 	.class_release = pcmcia_release_socket_class,
+ };
+ EXPORT_SYMBOL(pcmcia_socket_class);
+diff --git a/drivers/pcmcia/cs_internal.h b/drivers/pcmcia/cs_internal.h
+index f573ea0..9fa207e 100644
+--- a/drivers/pcmcia/cs_internal.h
++++ b/drivers/pcmcia/cs_internal.h
+@@ -142,7 +142,7 @@ struct pcmcia_callback{
+ 
+ int pccard_register_pcmcia(struct pcmcia_socket *s, struct pcmcia_callback *c);
+ 
+-#define cs_socket_name(skt)	((skt)->dev.class_id)
++#define cs_socket_name(skt)	((skt)->dev.bus_id)
+ 
+ #ifdef DEBUG
+ extern int cs_debug_level(int);
+@@ -158,6 +158,6 @@ extern int cs_debug_level(int);
+ #endif
+ 
+ #define cs_err(skt, fmt, arg...) \
+-	printk(KERN_ERR "cs: %s: " fmt, (skt)->dev.class_id , ## arg)
++	printk(KERN_ERR "cs: %s: " fmt, (skt)->dev.bus_id , ## arg)
+ 
+ #endif /* _LINUX_CS_INTERNAL_H */
+diff --git a/drivers/pcmcia/ds.c b/drivers/pcmcia/ds.c
+index 7355eb4..18e111e 100644
+--- a/drivers/pcmcia/ds.c
++++ b/drivers/pcmcia/ds.c
+@@ -572,7 +572,7 @@ struct pcmcia_device * pcmcia_device_add(struct pcmcia_socket *s, unsigned int f
+ 	p_dev->func   = function;
+ 
+ 	p_dev->dev.bus = &pcmcia_bus_type;
+-	p_dev->dev.parent = s->dev.dev;
++	p_dev->dev.parent = s->dev.parent;
+ 	p_dev->dev.release = pcmcia_release_dev;
+ 	bus_id_len = sprintf (p_dev->dev.bus_id, "%d.%d", p_dev->socket->sock, p_dev->device_no);
+ 
+@@ -1328,10 +1328,10 @@ static struct pcmcia_callback pcmcia_bus_callback = {
+ 	.resume = pcmcia_bus_resume,
  };
  
-+/**
-+ *	add_to_collection - add buffer to a collection
-+ *	@buffer:	buffer to be added
-+ *	@node		inode of set to add to
-+ */
- 
--struct sysfs_buffer {
--	size_t			count;
--	loff_t			pos;
--	char			* page;
--	struct sysfs_ops	* ops;
--	struct semaphore	sem;
--	int			needs_read_fill;
--	int			event;
--};
-+static inline void
-+add_to_collection(struct sysfs_buffer *buffer, struct inode *node)
-+{
-+	struct sysfs_buffer_collection *set = node->i_private;
- 
-+	mutex_lock(&node->i_mutex);
-+	list_add(&buffer->associates, &set->associates);
-+	mutex_unlock(&node->i_mutex);
-+}
-+
-+static inline void
-+remove_from_collection(struct sysfs_buffer *buffer, struct inode *node)
-+{
-+	mutex_lock(&node->i_mutex);
-+	list_del(&buffer->associates);
-+	mutex_unlock(&node->i_mutex);
-+}
- 
- /**
-  *	fill_read_buffer - allocate and fill buffer from object.
-@@ -153,6 +166,10 @@ sysfs_read_file(struct file *file, char __user *buf, size_t count, loff_t *ppos)
- 	ssize_t retval = 0;
- 
- 	down(&buffer->sem);
-+	if (buffer->orphaned) {
-+		retval = -ENODEV;
-+		goto out;
-+	}
- 	if (buffer->needs_read_fill) {
- 		if ((retval = fill_read_buffer(file->f_path.dentry,buffer)))
- 			goto out;
-@@ -165,7 +182,6 @@ out:
- 	return retval;
- }
- 
--
- /**
-  *	fill_write_buffer - copy buffer from userspace.
-  *	@buffer:	data buffer for file.
-@@ -243,19 +259,25 @@ sysfs_write_file(struct file *file, const char __user *buf, size_t count, loff_t
- 	ssize_t len;
- 
- 	down(&buffer->sem);
-+	if (buffer->orphaned) {
-+		len = -ENODEV;
-+		goto out;
-+	}
- 	len = fill_write_buffer(buffer, buf, count);
- 	if (len > 0)
- 		len = flush_write_buffer(file->f_path.dentry, buffer, len);
- 	if (len > 0)
- 		*ppos += len;
-+out:
- 	up(&buffer->sem);
- 	return len;
- }
- 
--static int check_perm(struct inode * inode, struct file * file)
-+static int sysfs_open_file(struct inode *inode, struct file *file)
+-static int __devinit pcmcia_bus_add_socket(struct class_device *class_dev,
++static int __devinit pcmcia_bus_add_socket(struct device *dev,
+ 					   struct class_interface *class_intf)
  {
- 	struct kobject *kobj = sysfs_get_kobject(file->f_path.dentry->d_parent);
- 	struct attribute * attr = to_attr(file->f_path.dentry);
-+	struct sysfs_buffer_collection *set;
- 	struct sysfs_buffer * buffer;
- 	struct sysfs_ops * ops = NULL;
- 	int error = 0;
-@@ -285,6 +307,18 @@ static int check_perm(struct inode * inode, struct file * file)
- 	if (!ops)
- 		goto Eaccess;
+-	struct pcmcia_socket *socket = class_get_devdata(class_dev);
++	struct pcmcia_socket *socket = dev_get_drvdata(dev);
+ 	int ret;
  
-+	/* make sure we have a collection to add our buffers to */
-+	mutex_lock(&inode->i_mutex);
-+	if (!(set = inode->i_private)) {
-+		if (!(set = inode->i_private = kmalloc(sizeof(struct sysfs_buffer_collection), GFP_KERNEL))) {
-+			error = -ENOMEM;
-+			goto Done;
-+		} else {
-+			INIT_LIST_HEAD(&set->associates);
-+		}
-+	}
-+	mutex_unlock(&inode->i_mutex);
-+
- 	/* File needs write support.
- 	 * The inode's perms must say it's ok, 
- 	 * and we must have a store method.
-@@ -310,9 +344,11 @@ static int check_perm(struct inode * inode, struct file * file)
- 	 */
- 	buffer = kzalloc(sizeof(struct sysfs_buffer), GFP_KERNEL);
- 	if (buffer) {
-+		INIT_LIST_HEAD(&buffer->associates);
- 		init_MUTEX(&buffer->sem);
- 		buffer->needs_read_fill = 1;
- 		buffer->ops = ops;
-+		add_to_collection(buffer, inode);
- 		file->private_data = buffer;
- 	} else
- 		error = -ENOMEM;
-@@ -330,11 +366,6 @@ static int check_perm(struct inode * inode, struct file * file)
- 	return error;
+ 	socket = pcmcia_get_socket(socket);
+@@ -1364,10 +1364,10 @@ static int __devinit pcmcia_bus_add_socket(struct class_device *class_dev,
+ 	return 0;
  }
  
--static int sysfs_open_file(struct inode * inode, struct file * filp)
--{
--	return check_perm(inode,filp);
--}
--
- static int sysfs_release(struct inode * inode, struct file * filp)
+-static void pcmcia_bus_remove_socket(struct class_device *class_dev,
++static void pcmcia_bus_remove_socket(struct device *dev,
+ 				     struct class_interface *class_intf)
  {
- 	struct kobject * kobj = to_kobj(filp->f_path.dentry->d_parent);
-@@ -342,6 +373,8 @@ static int sysfs_release(struct inode * inode, struct file * filp)
- 	struct module * owner = attr->owner;
- 	struct sysfs_buffer * buffer = filp->private_data;
+-	struct pcmcia_socket *socket = class_get_devdata(class_dev);
++	struct pcmcia_socket *socket = dev_get_drvdata(dev);
  
-+	if (buffer)
-+		remove_from_collection(buffer, inode);
- 	if (kobj) 
- 		kobject_put(kobj);
- 	/* After this point, attr should not be accessed. */
-@@ -548,7 +581,7 @@ EXPORT_SYMBOL_GPL(sysfs_chmod_file);
- 
- void sysfs_remove_file(struct kobject * kobj, const struct attribute * attr)
- {
--	sysfs_hash_and_remove(kobj->dentry,attr->name);
-+	sysfs_hash_and_remove(kobj->dentry, attr->name);
- }
- 
- 
-diff --git a/fs/sysfs/group.c b/fs/sysfs/group.c
-index 122145b..46a277b 100644
---- a/fs/sysfs/group.c
-+++ b/fs/sysfs/group.c
-@@ -13,6 +13,7 @@
- #include <linux/dcache.h>
- #include <linux/namei.h>
- #include <linux/err.h>
-+#include <asm/semaphore.h>
- #include "sysfs.h"
- 
- 
-diff --git a/fs/sysfs/inode.c b/fs/sysfs/inode.c
-index e79e38d..1a81ebc 100644
---- a/fs/sysfs/inode.c
-+++ b/fs/sysfs/inode.c
-@@ -13,6 +13,7 @@
- #include <linux/backing-dev.h>
- #include <linux/capability.h>
- #include <linux/errno.h>
-+#include <asm/semaphore.h>
- #include "sysfs.h"
- 
- extern struct super_block * sysfs_sb;
-@@ -209,6 +210,22 @@ const unsigned char * sysfs_get_name(struct sysfs_dirent *sd)
- 	return NULL;
- }
- 
-+static inline void orphan_all_buffers(struct inode *node)
-+{
-+	struct sysfs_buffer_collection *set = node->i_private;
-+	struct sysfs_buffer *buf;
-+
-+	mutex_lock(&node->i_mutex);
-+	if (node->i_private) {
-+		list_for_each_entry(buf, &set->associates, associates) {
-+			down(&buf->sem);
-+			buf->orphaned = 1;
-+			up(&buf->sem);
-+		}
-+	}
-+	mutex_unlock(&node->i_mutex);
-+}
-+
- 
- /*
-  * Unhashes the dentry corresponding to given sysfs_dirent
-@@ -217,16 +234,23 @@ const unsigned char * sysfs_get_name(struct sysfs_dirent *sd)
- void sysfs_drop_dentry(struct sysfs_dirent * sd, struct dentry * parent)
- {
- 	struct dentry * dentry = sd->s_dentry;
-+	struct inode *inode;
- 
- 	if (dentry) {
- 		spin_lock(&dcache_lock);
- 		spin_lock(&dentry->d_lock);
- 		if (!(d_unhashed(dentry) && dentry->d_inode)) {
-+			inode = dentry->d_inode;
-+			spin_lock(&inode->i_lock);
-+			__iget(inode);
-+			spin_unlock(&inode->i_lock);
- 			dget_locked(dentry);
- 			__d_drop(dentry);
- 			spin_unlock(&dentry->d_lock);
- 			spin_unlock(&dcache_lock);
- 			simple_unlink(parent->d_inode, dentry);
-+			orphan_all_buffers(inode);
-+			iput(inode);
- 		} else {
- 			spin_unlock(&dentry->d_lock);
- 			spin_unlock(&dcache_lock);
-diff --git a/fs/sysfs/mount.c b/fs/sysfs/mount.c
-index e503f85..a1a58b9 100644
---- a/fs/sysfs/mount.c
-+++ b/fs/sysfs/mount.c
-@@ -8,6 +8,7 @@
- #include <linux/mount.h>
- #include <linux/pagemap.h>
- #include <linux/init.h>
-+#include <asm/semaphore.h>
- 
- #include "sysfs.h"
- 
-@@ -18,9 +19,12 @@ struct vfsmount *sysfs_mount;
- struct super_block * sysfs_sb = NULL;
- struct kmem_cache *sysfs_dir_cachep;
- 
-+static void sysfs_clear_inode(struct inode *inode);
-+
- static struct super_operations sysfs_ops = {
- 	.statfs		= simple_statfs,
- 	.drop_inode	= generic_delete_inode,
-+	.clear_inode	= sysfs_clear_inode,
+ 	if (!socket)
+ 		return;
+@@ -1389,8 +1389,8 @@ static void pcmcia_bus_remove_socket(struct class_device *class_dev,
+ /* the pcmcia_bus_interface is used to handle pcmcia socket devices */
+ static struct class_interface pcmcia_bus_interface = {
+ 	.class = &pcmcia_socket_class,
+-	.add = &pcmcia_bus_add_socket,
+-	.remove = &pcmcia_bus_remove_socket,
++	.add_dev = &pcmcia_bus_add_socket,
++	.remove_dev = &pcmcia_bus_remove_socket,
  };
  
- static struct sysfs_dirent sysfs_root = {
-@@ -31,6 +35,11 @@ static struct sysfs_dirent sysfs_root = {
- 	.s_iattr	= NULL,
+ 
+diff --git a/drivers/pcmcia/i82092.c b/drivers/pcmcia/i82092.c
+index c2ea07a..df21e2d 100644
+--- a/drivers/pcmcia/i82092.c
++++ b/drivers/pcmcia/i82092.c
+@@ -161,7 +161,7 @@ static int __devinit i82092aa_pci_probe(struct pci_dev *dev, const struct pci_de
+ 	pci_set_drvdata(dev, &sockets[i].socket);
+ 
+ 	for (i = 0; i<socket_count; i++) {
+-		sockets[i].socket.dev.dev = &dev->dev;
++		sockets[i].socket.dev.parent = &dev->dev;
+ 		sockets[i].socket.ops = &i82092aa_operations;
+ 		sockets[i].socket.resource_ops = &pccard_nonstatic_ops;
+ 		ret = pcmcia_register_socket(&sockets[i].socket);
+diff --git a/drivers/pcmcia/i82365.c b/drivers/pcmcia/i82365.c
+index ea74f98..72ff2f6 100644
+--- a/drivers/pcmcia/i82365.c
++++ b/drivers/pcmcia/i82365.c
+@@ -1298,7 +1298,7 @@ static int __init init_i82365(void)
+     
+     /* register sockets with the pcmcia core */
+     for (i = 0; i < sockets; i++) {
+-	    socket[i].socket.dev.dev = &i82365_device->dev;
++	    socket[i].socket.dev.parent = &i82365_device->dev;
+ 	    socket[i].socket.ops = &pcic_operations;
+ 	    socket[i].socket.resource_ops = &pccard_nonstatic_ops;
+ 	    socket[i].socket.owner = THIS_MODULE;
+diff --git a/drivers/pcmcia/pcmcia_ioctl.c b/drivers/pcmcia/pcmcia_ioctl.c
+index 327372b..8849414 100644
+--- a/drivers/pcmcia/pcmcia_ioctl.c
++++ b/drivers/pcmcia/pcmcia_ioctl.c
+@@ -59,7 +59,6 @@ typedef struct user_info_t {
+ 
+ #ifdef DEBUG
+ extern int ds_pc_debug;
+-#define cs_socket_name(skt)    ((skt)->dev.class_id)
+ 
+ #define ds_dbg(lvl, fmt, arg...) do {		\
+ 	if (ds_pc_debug >= lvl)				\
+diff --git a/drivers/pcmcia/pcmcia_resource.c b/drivers/pcmcia/pcmcia_resource.c
+index b9201c2..0ce39de 100644
+--- a/drivers/pcmcia/pcmcia_resource.c
++++ b/drivers/pcmcia/pcmcia_resource.c
+@@ -48,7 +48,6 @@ static u8 pcmcia_used_irq[NR_IRQS];
+ 
+ #ifdef DEBUG
+ extern int ds_pc_debug;
+-#define cs_socket_name(skt)    ((skt)->dev.class_id)
+ 
+ #define ds_dbg(skt, lvl, fmt, arg...) do {			\
+ 	if (ds_pc_debug >= lvl)					\
+diff --git a/drivers/pcmcia/pd6729.c b/drivers/pcmcia/pd6729.c
+index 360c248..dd0ddf1 100644
+--- a/drivers/pcmcia/pd6729.c
++++ b/drivers/pcmcia/pd6729.c
+@@ -682,7 +682,7 @@ static int __devinit pd6729_pci_probe(struct pci_dev *dev,
+ 
+ 		socket[i].socket.ops = &pd6729_operations;
+ 		socket[i].socket.resource_ops = &pccard_nonstatic_ops;
+-		socket[i].socket.dev.dev = &dev->dev;
++		socket[i].socket.dev.parent = &dev->dev;
+ 		socket[i].socket.driver_data = &socket[i];
+ 	}
+ 
+diff --git a/drivers/pcmcia/rsrc_nonstatic.c b/drivers/pcmcia/rsrc_nonstatic.c
+index c3176b1..bfcaad6 100644
+--- a/drivers/pcmcia/rsrc_nonstatic.c
++++ b/drivers/pcmcia/rsrc_nonstatic.c
+@@ -616,7 +616,7 @@ static int nonstatic_adjust_io_region(struct resource *res, unsigned long r_star
+ static struct resource *nonstatic_find_io_region(unsigned long base, int num,
+ 		   unsigned long align, struct pcmcia_socket *s)
+ {
+-	struct resource *res = make_resource(0, num, IORESOURCE_IO, s->dev.class_id);
++	struct resource *res = make_resource(0, num, IORESOURCE_IO, s->dev.bus_id);
+ 	struct socket_data *s_data = s->resource_data;
+ 	struct pcmcia_align_data data;
+ 	unsigned long min = base;
+@@ -650,7 +650,7 @@ static struct resource *nonstatic_find_io_region(unsigned long base, int num,
+ static struct resource * nonstatic_find_mem_region(u_long base, u_long num,
+ 		u_long align, int low, struct pcmcia_socket *s)
+ {
+-	struct resource *res = make_resource(0, num, IORESOURCE_MEM, s->dev.class_id);
++	struct resource *res = make_resource(0, num, IORESOURCE_MEM, s->dev.bus_id);
+ 	struct socket_data *s_data = s->resource_data;
+ 	struct pcmcia_align_data data;
+ 	unsigned long min, max;
+@@ -897,9 +897,10 @@ EXPORT_SYMBOL(pccard_nonstatic_ops);
+ 
+ /* sysfs interface to the resource database */
+ 
+-static ssize_t show_io_db(struct class_device *class_dev, char *buf)
++static ssize_t show_io_db(struct device *dev,
++			  struct device_attribute *attr, char *buf)
+ {
+-	struct pcmcia_socket *s = class_get_devdata(class_dev);
++	struct pcmcia_socket *s = dev_get_drvdata(dev);
+ 	struct socket_data *data;
+ 	struct resource_map *p;
+ 	ssize_t ret = 0;
+@@ -920,9 +921,11 @@ static ssize_t show_io_db(struct class_device *class_dev, char *buf)
+ 	return (ret);
+ }
+ 
+-static ssize_t store_io_db(struct class_device *class_dev, const char *buf, size_t count)
++static ssize_t store_io_db(struct device *dev,
++			   struct device_attribute *attr,
++			   const char *buf, size_t count)
+ {
+-	struct pcmcia_socket *s = class_get_devdata(class_dev);
++	struct pcmcia_socket *s = dev_get_drvdata(dev);
+ 	unsigned long start_addr, end_addr;
+ 	unsigned int add = ADD_MANAGED_RESOURCE;
+ 	ssize_t ret = 0;
+@@ -947,11 +950,12 @@ static ssize_t store_io_db(struct class_device *class_dev, const char *buf, size
+ 
+ 	return ret ? ret : count;
+ }
+-static CLASS_DEVICE_ATTR(available_resources_io, 0600, show_io_db, store_io_db);
++static DEVICE_ATTR(available_resources_io, 0600, show_io_db, store_io_db);
+ 
+-static ssize_t show_mem_db(struct class_device *class_dev, char *buf)
++static ssize_t show_mem_db(struct device *dev,
++			   struct device_attribute *attr, char *buf)
+ {
+-	struct pcmcia_socket *s = class_get_devdata(class_dev);
++	struct pcmcia_socket *s = dev_get_drvdata(dev);
+ 	struct socket_data *data;
+ 	struct resource_map *p;
+ 	ssize_t ret = 0;
+@@ -972,9 +976,11 @@ static ssize_t show_mem_db(struct class_device *class_dev, char *buf)
+ 	return (ret);
+ }
+ 
+-static ssize_t store_mem_db(struct class_device *class_dev, const char *buf, size_t count)
++static ssize_t store_mem_db(struct device *dev,
++			    struct device_attribute *attr,
++			    const char *buf, size_t count)
+ {
+-	struct pcmcia_socket *s = class_get_devdata(class_dev);
++	struct pcmcia_socket *s = dev_get_drvdata(dev);
+ 	unsigned long start_addr, end_addr;
+ 	unsigned int add = ADD_MANAGED_RESOURCE;
+ 	ssize_t ret = 0;
+@@ -999,25 +1005,25 @@ static ssize_t store_mem_db(struct class_device *class_dev, const char *buf, siz
+ 
+ 	return ret ? ret : count;
+ }
+-static CLASS_DEVICE_ATTR(available_resources_mem, 0600, show_mem_db, store_mem_db);
++static DEVICE_ATTR(available_resources_mem, 0600, show_mem_db, store_mem_db);
+ 
+-static struct class_device_attribute *pccard_rsrc_attributes[] = {
+-	&class_device_attr_available_resources_io,
+-	&class_device_attr_available_resources_mem,
++static struct device_attribute *pccard_rsrc_attributes[] = {
++	&dev_attr_available_resources_io,
++	&dev_attr_available_resources_mem,
+ 	NULL,
  };
  
-+static void sysfs_clear_inode(struct inode *inode)
-+{
-+	kfree(inode->i_private);
-+}
-+
- static int sysfs_fill_super(struct super_block *sb, void *data, int silent)
+-static int __devinit pccard_sysfs_add_rsrc(struct class_device *class_dev,
++static int __devinit pccard_sysfs_add_rsrc(struct device *dev,
+ 					   struct class_interface *class_intf)
  {
- 	struct inode *inode;
-diff --git a/fs/sysfs/symlink.c b/fs/sysfs/symlink.c
-index f50e3cc..4869f61 100644
---- a/fs/sysfs/symlink.c
-+++ b/fs/sysfs/symlink.c
-@@ -7,6 +7,7 @@
- #include <linux/module.h>
- #include <linux/kobject.h>
- #include <linux/namei.h>
-+#include <asm/semaphore.h>
+-	struct pcmcia_socket *s = class_get_devdata(class_dev);
+-	struct class_device_attribute **attr;
++	struct pcmcia_socket *s = dev_get_drvdata(dev);
++	struct device_attribute **attr;
+ 	int ret = 0;
+ 	if (s->resource_ops != &pccard_nonstatic_ops)
+ 		return 0;
  
- #include "sysfs.h"
+ 	for (attr = pccard_rsrc_attributes; *attr; attr++) {
+-		ret = class_device_create_file(class_dev, *attr);
++		ret = device_create_file(dev, *attr);
+ 		if (ret)
+ 			break;
+ 	}
+@@ -1025,23 +1031,23 @@ static int __devinit pccard_sysfs_add_rsrc(struct class_device *class_dev,
+ 	return ret;
+ }
  
-diff --git a/fs/sysfs/sysfs.h b/fs/sysfs/sysfs.h
-index bd7cec2..39c623f 100644
---- a/fs/sysfs/sysfs.h
-+++ b/fs/sysfs/sysfs.h
-@@ -33,6 +33,22 @@ struct sysfs_symlink {
- 	struct kobject * target_kobj;
+-static void __devexit pccard_sysfs_remove_rsrc(struct class_device *class_dev,
++static void __devexit pccard_sysfs_remove_rsrc(struct device *dev,
+ 					       struct class_interface *class_intf)
+ {
+-	struct pcmcia_socket *s = class_get_devdata(class_dev);
+-	struct class_device_attribute **attr;
++	struct pcmcia_socket *s = dev_get_drvdata(dev);
++	struct device_attribute **attr;
+ 
+ 	if (s->resource_ops != &pccard_nonstatic_ops)
+ 		return;
+ 
+ 	for (attr = pccard_rsrc_attributes; *attr; attr++)
+-		class_device_remove_file(class_dev, *attr);
++		device_remove_file(dev, *attr);
+ }
+ 
+ static struct class_interface pccard_rsrc_interface = {
+ 	.class = &pcmcia_socket_class,
+-	.add = &pccard_sysfs_add_rsrc,
+-	.remove = __devexit_p(&pccard_sysfs_remove_rsrc),
++	.add_dev = &pccard_sysfs_add_rsrc,
++	.remove_dev = __devexit_p(&pccard_sysfs_remove_rsrc),
  };
  
-+struct sysfs_buffer {
-+	struct list_head		associates;
-+	size_t				count;
-+	loff_t				pos;
-+	char				* page;
-+	struct sysfs_ops		* ops;
-+	struct semaphore		sem;
-+	int				orphaned;
-+	int				needs_read_fill;
-+	int				event;
-+};
-+
-+struct sysfs_buffer_collection {
-+	struct list_head	associates;
-+};
-+
- static inline struct kobject * to_kobj(struct dentry * dentry)
+ static int __init nonstatic_sysfs_init(void)
+diff --git a/drivers/pcmcia/soc_common.c b/drivers/pcmcia/soc_common.c
+index e433704..d2a3bea 100644
+--- a/drivers/pcmcia/soc_common.c
++++ b/drivers/pcmcia/soc_common.c
+@@ -478,10 +478,10 @@ dump_bits(char **p, const char *prefix, unsigned int val, struct bittbl *bits, i
+  *
+  * Returns: the number of characters added to the buffer
+  */
+-static ssize_t show_status(struct class_device *class_dev, char *buf)
++static ssize_t show_status(struct device *dev, char *buf)
  {
- 	struct sysfs_dirent * sd = dentry->d_fsdata;
+ 	struct soc_pcmcia_socket *skt =
+-		container_of(class_dev, struct soc_pcmcia_socket, socket.dev);
++		container_of(dev, struct soc_pcmcia_socket, socket.dev);
+ 	char *p = buf;
+ 
+ 	p+=sprintf(p, "slot     : %d\n", skt->nr);
+@@ -747,7 +747,7 @@ int soc_common_drv_pcmcia_probe(struct device *dev, struct pcmcia_low_level *ops
+ 
+ 		add_timer(&skt->poll_timer);
+ 
+-		class_device_create_file(&skt->socket.dev, &class_device_attr_status);
++		device_create_file(&skt->socket.dev, &device_attr_status);
+ 	}
+ 
+ 	dev_set_drvdata(dev, sinfo);
+diff --git a/drivers/pcmcia/socket_sysfs.c b/drivers/pcmcia/socket_sysfs.c
+index b005602..ea5765c 100644
+--- a/drivers/pcmcia/socket_sysfs.c
++++ b/drivers/pcmcia/socket_sysfs.c
+@@ -40,7 +40,8 @@
+ 
+ #define to_socket(_dev) container_of(_dev, struct pcmcia_socket, dev)
+ 
+-static ssize_t pccard_show_type(struct class_device *dev, char *buf)
++static ssize_t pccard_show_type(struct device *dev, struct device_attribute *attr,
++				char *buf)
+ {
+ 	struct pcmcia_socket *s = to_socket(dev);
+ 
+@@ -50,9 +51,10 @@ static ssize_t pccard_show_type(struct class_device *dev, char *buf)
+ 		return sprintf(buf, "32-bit\n");
+ 	return sprintf(buf, "16-bit\n");
+ }
+-static CLASS_DEVICE_ATTR(card_type, 0444, pccard_show_type, NULL);
++static DEVICE_ATTR(card_type, 0444, pccard_show_type, NULL);
+ 
+-static ssize_t pccard_show_voltage(struct class_device *dev, char *buf)
++static ssize_t pccard_show_voltage(struct device *dev, struct device_attribute *attr,
++				   char *buf)
+ {
+ 	struct pcmcia_socket *s = to_socket(dev);
+ 
+@@ -63,28 +65,31 @@ static ssize_t pccard_show_voltage(struct class_device *dev, char *buf)
+ 			       s->socket.Vcc % 10);
+ 	return sprintf(buf, "X.XV\n");
+ }
+-static CLASS_DEVICE_ATTR(card_voltage, 0444, pccard_show_voltage, NULL);
++static DEVICE_ATTR(card_voltage, 0444, pccard_show_voltage, NULL);
+ 
+-static ssize_t pccard_show_vpp(struct class_device *dev, char *buf)
++static ssize_t pccard_show_vpp(struct device *dev, struct device_attribute *attr,
++			       char *buf)
+ {
+ 	struct pcmcia_socket *s = to_socket(dev);
+ 	if (!(s->state & SOCKET_PRESENT))
+ 		return -ENODEV;
+ 	return sprintf(buf, "%d.%dV\n", s->socket.Vpp / 10, s->socket.Vpp % 10);
+ }
+-static CLASS_DEVICE_ATTR(card_vpp, 0444, pccard_show_vpp, NULL);
++static DEVICE_ATTR(card_vpp, 0444, pccard_show_vpp, NULL);
+ 
+-static ssize_t pccard_show_vcc(struct class_device *dev, char *buf)
++static ssize_t pccard_show_vcc(struct device *dev, struct device_attribute *attr,
++			       char *buf)
+ {
+ 	struct pcmcia_socket *s = to_socket(dev);
+ 	if (!(s->state & SOCKET_PRESENT))
+ 		return -ENODEV;
+ 	return sprintf(buf, "%d.%dV\n", s->socket.Vcc / 10, s->socket.Vcc % 10);
+ }
+-static CLASS_DEVICE_ATTR(card_vcc, 0444, pccard_show_vcc, NULL);
++static DEVICE_ATTR(card_vcc, 0444, pccard_show_vcc, NULL);
+ 
+ 
+-static ssize_t pccard_store_insert(struct class_device *dev, const char *buf, size_t count)
++static ssize_t pccard_store_insert(struct device *dev, struct device_attribute *attr,
++				   const char *buf, size_t count)
+ {
+ 	ssize_t ret;
+ 	struct pcmcia_socket *s = to_socket(dev);
+@@ -96,16 +101,20 @@ static ssize_t pccard_store_insert(struct class_device *dev, const char *buf, si
+ 
+ 	return ret ? ret : count;
+ }
+-static CLASS_DEVICE_ATTR(card_insert, 0200, NULL, pccard_store_insert);
++static DEVICE_ATTR(card_insert, 0200, NULL, pccard_store_insert);
+ 
+ 
+-static ssize_t pccard_show_card_pm_state(struct class_device *dev, char *buf)
++static ssize_t pccard_show_card_pm_state(struct device *dev,
++					 struct device_attribute *attr,
++					 char *buf)
+ {
+ 	struct pcmcia_socket *s = to_socket(dev);
+ 	return sprintf(buf, "%s\n", s->state & SOCKET_SUSPEND ? "off" : "on");
+ }
+ 
+-static ssize_t pccard_store_card_pm_state(struct class_device *dev, const char *buf, size_t count)
++static ssize_t pccard_store_card_pm_state(struct device *dev,
++					  struct device_attribute *attr,
++					  const char *buf, size_t count)
+ {
+ 	ssize_t ret = -EINVAL;
+ 	struct pcmcia_socket *s = to_socket(dev);
+@@ -120,9 +129,11 @@ static ssize_t pccard_store_card_pm_state(struct class_device *dev, const char *
+ 
+ 	return ret ? -ENODEV : count;
+ }
+-static CLASS_DEVICE_ATTR(card_pm_state, 0644, pccard_show_card_pm_state, pccard_store_card_pm_state);
++static DEVICE_ATTR(card_pm_state, 0644, pccard_show_card_pm_state, pccard_store_card_pm_state);
+ 
+-static ssize_t pccard_store_eject(struct class_device *dev, const char *buf, size_t count)
++static ssize_t pccard_store_eject(struct device *dev,
++				  struct device_attribute *attr,
++				  const char *buf, size_t count)
+ {
+ 	ssize_t ret;
+ 	struct pcmcia_socket *s = to_socket(dev);
+@@ -134,16 +145,20 @@ static ssize_t pccard_store_eject(struct class_device *dev, const char *buf, siz
+ 
+ 	return ret ? ret : count;
+ }
+-static CLASS_DEVICE_ATTR(card_eject, 0200, NULL, pccard_store_eject);
++static DEVICE_ATTR(card_eject, 0200, NULL, pccard_store_eject);
+ 
+ 
+-static ssize_t pccard_show_irq_mask(struct class_device *dev, char *buf)
++static ssize_t pccard_show_irq_mask(struct device *dev,
++				    struct device_attribute *attr,
++				    char *buf)
+ {
+ 	struct pcmcia_socket *s = to_socket(dev);
+ 	return sprintf(buf, "0x%04x\n", s->irq_mask);
+ }
+ 
+-static ssize_t pccard_store_irq_mask(struct class_device *dev, const char *buf, size_t count)
++static ssize_t pccard_store_irq_mask(struct device *dev,
++				     struct device_attribute *attr,
++				     const char *buf, size_t count)
+ {
+ 	ssize_t ret;
+ 	struct pcmcia_socket *s = to_socket(dev);
+@@ -161,16 +176,19 @@ static ssize_t pccard_store_irq_mask(struct class_device *dev, const char *buf,
+ 
+ 	return ret ? ret : count;
+ }
+-static CLASS_DEVICE_ATTR(card_irq_mask, 0600, pccard_show_irq_mask, pccard_store_irq_mask);
++static DEVICE_ATTR(card_irq_mask, 0600, pccard_show_irq_mask, pccard_store_irq_mask);
+ 
+ 
+-static ssize_t pccard_show_resource(struct class_device *dev, char *buf)
++static ssize_t pccard_show_resource(struct device *dev,
++				    struct device_attribute *attr, char *buf)
+ {
+ 	struct pcmcia_socket *s = to_socket(dev);
+ 	return sprintf(buf, "%s\n", s->resource_setup_done ? "yes" : "no");
+ }
+ 
+-static ssize_t pccard_store_resource(struct class_device *dev, const char *buf, size_t count)
++static ssize_t pccard_store_resource(struct device *dev,
++				     struct device_attribute *attr,
++				     const char *buf, size_t count)
+ {
+ 	unsigned long flags;
+ 	struct pcmcia_socket *s = to_socket(dev);
+@@ -196,7 +214,7 @@ static ssize_t pccard_store_resource(struct class_device *dev, const char *buf,
+ 
+ 	return count;
+ }
+-static CLASS_DEVICE_ATTR(available_resources_setup_done, 0600, pccard_show_resource, pccard_store_resource);
++static DEVICE_ATTR(available_resources_setup_done, 0600, pccard_show_resource, pccard_store_resource);
+ 
+ 
+ static ssize_t pccard_extract_cis(struct pcmcia_socket *s, char *buf, loff_t off, size_t count)
+@@ -279,7 +297,7 @@ static ssize_t pccard_show_cis(struct kobject *kobj, char *buf, loff_t off, size
+ 		if (off + count > size)
+ 			count = size - off;
+ 
+-		s = to_socket(container_of(kobj, struct class_device, kobj));
++		s = to_socket(container_of(kobj, struct device, kobj));
+ 
+ 		if (!(s->state & SOCKET_PRESENT))
+ 			return -ENODEV;
+@@ -296,7 +314,7 @@ static ssize_t pccard_show_cis(struct kobject *kobj, char *buf, loff_t off, size
+ 
+ static ssize_t pccard_store_cis(struct kobject *kobj, char *buf, loff_t off, size_t count)
+ {
+-	struct pcmcia_socket *s = to_socket(container_of(kobj, struct class_device, kobj));
++	struct pcmcia_socket *s = to_socket(container_of(kobj, struct device, kobj));
+ 	cisdump_t *cis;
+ 	int error;
+ 
+@@ -335,16 +353,16 @@ static ssize_t pccard_store_cis(struct kobject *kobj, char *buf, loff_t off, siz
+ }
+ 
+ 
+-static struct class_device_attribute *pccard_socket_attributes[] = {
+-	&class_device_attr_card_type,
+-	&class_device_attr_card_voltage,
+-	&class_device_attr_card_vpp,
+-	&class_device_attr_card_vcc,
+-	&class_device_attr_card_insert,
+-	&class_device_attr_card_pm_state,
+-	&class_device_attr_card_eject,
+-	&class_device_attr_card_irq_mask,
+-	&class_device_attr_available_resources_setup_done,
++static struct device_attribute *pccard_socket_attributes[] = {
++	&dev_attr_card_type,
++	&dev_attr_card_voltage,
++	&dev_attr_card_vpp,
++	&dev_attr_card_vcc,
++	&dev_attr_card_insert,
++	&dev_attr_card_pm_state,
++	&dev_attr_card_eject,
++	&dev_attr_card_irq_mask,
++	&dev_attr_available_resources_setup_done,
+ 	NULL,
+ };
+ 
+@@ -355,35 +373,35 @@ static struct bin_attribute pccard_cis_attr = {
+ 	.write = pccard_store_cis,
+ };
+ 
+-static int __devinit pccard_sysfs_add_socket(struct class_device *class_dev,
++static int __devinit pccard_sysfs_add_socket(struct device *dev,
+ 					     struct class_interface *class_intf)
+ {
+-	struct class_device_attribute **attr;
++	struct device_attribute **attr;
+ 	int ret = 0;
+ 
+ 	for (attr = pccard_socket_attributes; *attr; attr++) {
+-		ret = class_device_create_file(class_dev, *attr);
++		ret = device_create_file(dev, *attr);
+ 		if (ret)
+ 			break;
+ 	}
+ 	if (!ret)
+-		ret = sysfs_create_bin_file(&class_dev->kobj, &pccard_cis_attr);
++		ret = sysfs_create_bin_file(&dev->kobj, &pccard_cis_attr);
+ 
+ 	return ret;
+ }
+ 
+-static void __devexit pccard_sysfs_remove_socket(struct class_device *class_dev,
++static void __devexit pccard_sysfs_remove_socket(struct device *dev,
+ 						 struct class_interface *class_intf)
+ {
+-	struct class_device_attribute **attr;
++	struct device_attribute **attr;
+ 
+-	sysfs_remove_bin_file(&class_dev->kobj, &pccard_cis_attr);
++	sysfs_remove_bin_file(&dev->kobj, &pccard_cis_attr);
+ 	for (attr = pccard_socket_attributes; *attr; attr++)
+-		class_device_remove_file(class_dev, *attr);
++		device_remove_file(dev, *attr);
+ }
+ 
+ struct class_interface pccard_sysfs_interface = {
+ 	.class = &pcmcia_socket_class,
+-	.add = &pccard_sysfs_add_socket,
+-	.remove = __devexit_p(&pccard_sysfs_remove_socket),
++	.add_dev = &pccard_sysfs_add_socket,
++	.remove_dev = __devexit_p(&pccard_sysfs_remove_socket),
+ };
+diff --git a/drivers/pcmcia/tcic.c b/drivers/pcmcia/tcic.c
+index 2d2f415..c158cf3 100644
+--- a/drivers/pcmcia/tcic.c
++++ b/drivers/pcmcia/tcic.c
+@@ -512,7 +512,7 @@ static int __init init_tcic(void)
+     for (i = 0; i < sockets; i++) {
+ 	    socket_table[i].socket.ops = &tcic_operations;
+ 	    socket_table[i].socket.resource_ops = &pccard_nonstatic_ops;
+-	    socket_table[i].socket.dev.dev = &tcic_device.dev;
++	    socket_table[i].socket.dev.parent = &tcic_device.dev;
+ 	    ret = pcmcia_register_socket(&socket_table[i].socket);
+ 	    if (ret && i)
+ 		    pcmcia_unregister_socket(&socket_table[0].socket);
+diff --git a/drivers/pcmcia/yenta_socket.c b/drivers/pcmcia/yenta_socket.c
+index da471bd..a61d768 100644
+--- a/drivers/pcmcia/yenta_socket.c
++++ b/drivers/pcmcia/yenta_socket.c
+@@ -1104,7 +1104,7 @@ static int __devinit yenta_probe (struct pci_dev *dev, const struct pci_device_i
+ 	/* prepare pcmcia_socket */
+ 	socket->socket.ops = &yenta_socket_operations;
+ 	socket->socket.resource_ops = &pccard_nonstatic_ops;
+-	socket->socket.dev.dev = &dev->dev;
++	socket->socket.dev.parent = &dev->dev;
+ 	socket->socket.driver_data = socket;
+ 	socket->socket.owner = THIS_MODULE;
+ 	socket->socket.features = SS_CAP_PAGE_REGS | SS_CAP_PCCARD;
+diff --git a/include/pcmcia/ss.h b/include/pcmcia/ss.h
+index 623a0fc..6e84258 100644
+--- a/include/pcmcia/ss.h
++++ b/include/pcmcia/ss.h
+@@ -284,7 +284,7 @@ struct pcmcia_socket {
+ #endif
+ 
+ 	/* socket device */
+-	struct class_device		dev;
++	struct device			dev;
+ 	void				*driver_data;	/* data internal to the socket driver */
+ 
+ };
 -- 
 1.4.4.4
 
