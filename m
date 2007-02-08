@@ -1,53 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422773AbXBHMwm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422869AbXBHNHV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422773AbXBHMwm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Feb 2007 07:52:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422869AbXBHMwm
+	id S1422869AbXBHNHV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Feb 2007 08:07:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422890AbXBHNHU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Feb 2007 07:52:42 -0500
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:53206 "EHLO
-	vervifontaine.sonycom.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1422773AbXBHMwm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Feb 2007 07:52:42 -0500
-Date: Thu, 8 Feb 2007 13:52:40 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: David Miller <davem@davemloft.net>
-cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Paul Mackerras <paulus@samba.org>
-Subject: Re: checker-shell still hosed...
-In-Reply-To: <Pine.LNX.4.62.0702081340340.28405@pademelon.sonytel.be>
-Message-ID: <Pine.LNX.4.62.0702081351470.28405@pademelon.sonytel.be>
-References: <20070208.030531.112264703.davem@davemloft.net>
- <20070208.041004.07457320.davem@davemloft.net> <20070208.041229.18308943.davem@davemloft.net>
- <Pine.LNX.4.62.0702081340340.28405@pademelon.sonytel.be>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 8 Feb 2007 08:07:20 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:35359 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1422869AbXBHNHT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Feb 2007 08:07:19 -0500
+From: Nick Piggin <npiggin@suse.de>
+To: Linux Filesystems <linux-fsdevel@vger.kernel.org>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>, Nick Piggin <npiggin@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <akpm@linux-foundation.org>
+Message-Id: <20070208105437.26443.35653.sendpatchset@linux.site>
+Subject: [rfc][patch 0/3] a faster buffered write deadlock fix?
+Date: Thu,  8 Feb 2007 14:07:15 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 8 Feb 2007, Geert Uytterhoeven wrote:
-> On Thu, 8 Feb 2007, David Miller wrote:
-> > From: David Miller <davem@davemloft.net>
-> > Date: Thu, 08 Feb 2007 04:10:04 -0800 (PST)
-> > 
-> > > Removing them makes the spaces go away.
-> > 
-> > FWIW, this patch below seems to fix the sparc64 build for me.
-> > 
-> > Paul, does it work for you on powerpc too?
-> 
-> Thx, it seems to build now. I'll tell you whether it boots on PS3 soon.
+In my last set of numbers for my buffered-write deadlock fix using 2 copies
+per page, I realised there is no real performance hit for !uptodate pages
+as opposed to uptodate ones. This is unexpected because the uptodate pages
+only require a single copy...
 
-Build and boot were successful.
+The problem turns out to be operator error. I forgot tmpfs won't use this
+prepare_write path, so sorry about that.
 
-Gr{oetje,eeting}s,
+On ext2, copy 64MB of data from /dev/zero (IO isn't involved), using
+4K and 64K block sizes, and conv=notrunc for testing overwriting of
+uptodate pages. Numbers is elapsed time in seconds, lower is better.
 
-						Geert
+		2.6.20		bufferd write fix
+4K		0.0742		0.1208 (1.63x)
+4K-uptodate	0.0493		0.0479 (0.97x)
+64K		0.0671		0.1068 (1.59x)
+64K-uptodate	0.0357		0.0362 (1.01x)
+
+So we get about a 60% performance hit, which is more expected. I guess if
+0.5% doesn't fly, then 60% is right out ;)
+
+If there were any misconceptions, the problem is not that the code is
+incredibly tricky or impossible to fix with good performance. The problem
+is that the existing aops interface is crap. "correct, fast, compatible
+-- choose any 2"
+
+So I have finally finished a first slightly-working draft of my new aops
+op (perform_write) proposal. I would be interested to hear comments about
+it.  Most of my issues and concerns are in the patch headers themselves,
+so reply to them.
+
+The patches are against my latest buffered-write-fix patchset. This
+means filesystems not implementing the new aop, will remain safe, if slow.
+Here's some numbers after converting ext2 to the new aop:
+
+		2.6.20		perform_write aop
+4K		0.0742		0.0769 (1.04x)
+4K-uptodate	0.0493		0.0475 (0.96x)
+64K		0.0671		0.0613 (0.91x)
+64K-uptodate	0.0357		0.0343 (0.96x)
+
+Thanks,
+Nick
 
 --
-Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
-Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
-Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
+SuSE Labs
+
