@@ -1,52 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423485AbXBHV4P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1945903AbXBHWDW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423485AbXBHV4P (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Feb 2007 16:56:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423487AbXBHV4P
+	id S1945903AbXBHWDW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Feb 2007 17:03:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945911AbXBHWDW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Feb 2007 16:56:15 -0500
-Received: from marvin.h-e-r-e-s-y.com ([87.106.62.5]:39342 "EHLO
-	marvin.h-e-r-e-s-y.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423485AbXBHV4O (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Feb 2007 16:56:14 -0500
-X-Greylist: delayed 1486 seconds by postgrey-1.27 at vger.kernel.org; Thu, 08 Feb 2007 16:56:14 EST
-From: Andrew Walrond <andrew@walrond.org>
-To: linux-kernel@vger.kernel.org
-Subject: Linux header change breaks linux-atm userspace build
-Date: Thu, 8 Feb 2007 21:31:25 +0000
-User-Agent: KMail/1.9.5
+	Thu, 8 Feb 2007 17:03:22 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:41974 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1945903AbXBHWDV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Feb 2007 17:03:21 -0500
+Date: Thu, 8 Feb 2007 14:03:06 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: =?ISO-8859-1?Q?J=2EA=2E_Magall=C3=B3n?= <jamagallon@ono.com>
+cc: Jan Engelhardt <jengelh@linux01.gwdg.de>, Jeff Garzik <jeff@garzik.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: somebody dropped a (warning) bomb
+In-Reply-To: <Pine.LNX.4.64.0702081338010.8424@woody.linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0702081351410.8424@woody.linux-foundation.org>
+References: <45CB3B28.60102@garzik.org> <Pine.LNX.4.64.0702080819350.8424@woody.linux-foundation.org>
+ <Pine.LNX.4.61.0702081851310.1364@yvahk01.tjqt.qr>
+ <Pine.LNX.4.64.0702081145470.8424@woody.linux-foundation.org>
+ <20070208221317.5beedaeb@werewolf-wl> <Pine.LNX.4.64.0702081338010.8424@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200702082131.25192.andrew@walrond.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sometime between 2.6.18.3 and 2.6.20, this change...
 
---- /include/linux/atmarp.h     2007-01-10 16:32:05.000000000 +0000
-+++ pkg/linux/include/linux/atmarp.h    2007-02-08 20:02:08.000000000 +0000
-@@ -34,7 +34,7 @@
- struct atmarp_ctrl {
-        enum atmarp_ctrl_type   type;   /* message type */
-        int                     itf_num;/* interface number (if present) */
--       uint32_t                ip;     /* IP address (act_need only) */
-+       __be32                  ip;     /* IP address (act_need only) */
- };
 
- #endif
+On Thu, 8 Feb 2007, Linus Torvalds wrote:
+> 
+> But THE CALLER CANNOT AND MUST NOT CARE! Because the sign of "char" is 
+> implementation-defined, so if you call "strcmp()", you are already 
+> basically saying: I don't care (and I _cannot_ care) what sign you are 
+> using.
 
-was introduced, but __be32 is undefined, so atmarp.h should include 
-linux/types.h
+Let me explain it another way.
 
-I've cc'ed Adrian Bunk since he seemed interested last time I reported 
-something like this.
+Say you use
 
-	http://lkml.org/lkml/2007/1/19/39
+	signed char *myname, *yourname;
 
-Hope that is useful. 
+	if (strcmp(myname,yourname) < 0)
+		printf("Ha, I win!\n")
 
-Andrew Walrond
+and you compile this on an architecture where "char" is signed even 
+without the explicit "signed".
+
+What should happen?
+
+Should you get a warning? The types really *are* the same, so getting a 
+warning sounds obviously insane. But on the other hand, if you really care 
+about the sign that strcmp() uses internally, the code is wrong *anyway*, 
+because with another compiler, or with the *same* compiler on another 
+architecture or some other compiler flags, the very same code is buggy.
+
+In other words, either you should get a warning *regardless* of whether 
+the sign actually matches or not, or you shouldn't get a warning at all 
+for the above code. Either it's buggy code, or it isn't.
+
+Warning only when the sign doesn't _happen_ to match is crap. In that 
+case, it's not a warning about bad code, it's a warning about a bad 
+*compiler*.
+
+My suggestion is that if you *really* care about the sign so much that you 
+want the sign warning, make it really obvious to the compiler. Don't ever 
+call functions that have implicit signs. Make even "int" arguments (which 
+is well-defined in its sign) use "signed int", and then you can make the 
+compiler warn if anybody ever passes it an "unsigned int".
+
+Never mind even a pointer - if somebody actually took the time and effort 
+to spell out "signed int" in a function prototype, and you pass that 
+function an unsigned integer, maybe a warning is perfectly fine. Clearly 
+the programmer really cared, and if he didn't care about the sign that 
+much, he could have used just "int".
+
+Conversely, if somebody has a function with a "unsigned int" prototype, 
+and you pass it a regular "int", a compiler shouldn't complain, because an 
+"int" will just silently promote to unsigned. But perhaps the programmer 
+passes it something that he had _explicitly_ marked with "signed int". 
+Would it make sense to warn then? Makes sense to me.
+
+And no, none of this is about "strict C standards". All of it is about 
+"what makes sense". It simply doesn't make sense to complain about the 
+sign of "char", because it's not something that has a very hard 
+definition. Similarly, you shouldn't complain about regular "int" 
+conversions, because they are normal, and the standard defines them, but 
+maybe you can take a hint when the programmer gives you a hint by doing 
+something that is "obviously unnecessary", like explicitly saying that 
+"signed int" thing.
+
+Just an idea. 
+
+			Linus
