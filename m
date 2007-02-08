@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423388AbXBHVPF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423389AbXBHVQj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423388AbXBHVPF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Feb 2007 16:15:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423397AbXBHVPF
+	id S1423389AbXBHVQj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Feb 2007 16:16:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423403AbXBHVQj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Feb 2007 16:15:05 -0500
-Received: from nf-out-0910.google.com ([64.233.182.185]:35575 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423388AbXBHVPC (ORCPT
+	Thu, 8 Feb 2007 16:16:39 -0500
+Received: from ug-out-1314.google.com ([66.249.92.169]:35441 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423401AbXBHVQh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Feb 2007 16:15:02 -0500
+	Thu, 8 Feb 2007 16:16:37 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:from:to:subject:date:user-agent:references:in-reply-to:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=keEMCYsFXQ/7tmIohNjqHI4iskX+9lBVF20WTyPMcf4v9DklHpEelWNGh6W1v1nUe8nI+pmnWdTwiu33RpnhIGdAgAck8wivdVgTMEBUHwPH3jg52Exy8if9OufH+ByZ3j6kKnRu9TEdmDYKUxMWYGAI10CFbVESR2qImNb+hUQ=
+        b=VBsKTTvKDcHlnLoptrQF+rD9Cf8eqSp/wztP2rBFPEw9GbX0+ANy9tLa9q4DkkX0/macvTWTnazaUUC+RyU/i4+Q3A8NPanhn5EALkCC/SERcHGhUgyShPR+Bn5iHFBVOcV1yEWm5I9qSWZMRomZY3n/Kqa7uJjjhVwD7A5BkBg=
 From: Maxim Levitsky <maximlevitsky@gmail.com>
 To: netdev@vger.kernel.org
-Subject: [PATCH 2.6.20 2/5] dmfe: Fix two bugs
-Date: Thu, 8 Feb 2007 23:11:49 +0200
+Subject: [PATCH 2.6.20 3/5] dmfe: Fix link detection
+Date: Thu, 8 Feb 2007 23:13:23 +0200
 User-Agent: KMail/1.9.4
 References: <200702082305.26735.maximlevitsky@gmail.com>
 In-Reply-To: <200702082305.26735.maximlevitsky@gmail.com>
@@ -27,62 +27,132 @@ Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200702082311.50122.maximlevitsky@gmail.com>
+Message-Id: <200702082313.24158.maximlevitsky@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Maxim Levitsky <maximlevitsky@gmail.com>
-Subject : [PATCH 2.6.20 2/5] dmfe: Fix two bugs
+Subject: [PATCH 2.6.20 3/5] dmfe: Fix link detection
 
-Fix a oops on module removal due to deallocating memory before unregistring 
-driver
-Fix a NULL pointer dereference when dev_alloc_skb fails
+Remove unused 'link_failed' and fix link detection on cards that use external
+PHY
 
 Signed-off-by: Maxim Levitsky <maximlevitsky@gmail.com>
 
 ---
 
---- linux-2.6.20-mod/drivers/net/tulip/dmfe.c	2007-02-08 20:41:25.000000000 
+--- linux-2.6.20-mod/drivers/net/tulip/dmfe.c	2007-02-08 20:49:05.000000000 
 +0200
-+++ linux-2.6.20-test/drivers/net/tulip/dmfe.c	2007-02-08 20:48:11.000000000 
++++ linux-2.6.20-test/drivers/net/tulip/dmfe.c	2007-02-08 21:47:37.000000000 
 +0200
-@@ -504,14 +504,17 @@ static void __devexit dmfe_remove_one (s
- 	DMFE_DBUG(0, "dmfe_remove_one()", 0);
+@@ -248,7 +248,6 @@ struct dmfe_board_info {
+ 	u8 media_mode;			/* user specify media mode */
+ 	u8 op_mode;			/* real work media mode */
+ 	u8 phy_addr;
+-	u8 link_failed;			/* Ever link failed */
+ 	u8 wait_reset;			/* Hardware failed, need to reset */
+ 	u8 dm910x_chk_mode;		/* Operating mode check */
+ 	u8 first_in_callback;		/* Flag to record state */
+@@ -544,7 +543,6 @@ static int dmfe_open(struct DEVICE *dev)
+ 	db->tx_packet_cnt = 0;
+ 	db->tx_queue_cnt = 0;
+ 	db->rx_avail_cnt = 0;
+-	db->link_failed = 1;
+ 	db->wait_reset = 0;
  
-  	if (dev) {
-+		
-+		unregister_netdev(dev);
-+		
- 		pci_free_consistent(db->pdev, sizeof(struct tx_desc) *
- 					DESC_ALL_CNT + 0x20, db->desc_pool_ptr,
-  					db->desc_pool_dma_ptr);
- 		pci_free_consistent(db->pdev, TX_BUF_ALLOC * TX_DESC_CNT + 4,
- 					db->buf_pool_ptr, db->buf_pool_dma_ptr);
--		unregister_netdev(dev);
- 		pci_release_regions(pdev);
- 		free_netdev(dev);	/* free board information */
-+		
- 		pci_set_drvdata(pdev, NULL);
+ 	db->first_in_callback = 0;
+@@ -1101,6 +1099,8 @@ static void dmfe_timer(unsigned long dat
+ 	struct dmfe_board_info *db = netdev_priv(dev);
+  	unsigned long flags;
+ 
++	int link_ok, link_ok_phy;
++
+ 	DMFE_DBUG(0, "dmfe_timer()", 0);
+ 	spin_lock_irqsave(&db->lock, flags);
+ 
+@@ -1166,22 +1166,43 @@ static void dmfe_timer(unsigned long dat
+ 	else
+ 		tmp_cr12 = inb(db->ioaddr + DCR12);	/* DM9102/DM9102A */
+ 
++	
+ 	if ( ((db->chip_id == PCI_DM9102_ID) &&
+ 		(db->chip_revision == 0x02000030)) ||
+ 		((db->chip_id == PCI_DM9132_ID) &&
+ 		(db->chip_revision == 0x02000010)) ) {
+ 		/* DM9102A Chip */
+ 		if (tmp_cr12 & 2)
+-			tmp_cr12 = 0x0;		/* Link failed */
++			link_ok = 0;
+ 		else
+-			tmp_cr12 = 0x3;	/* Link OK */
++			link_ok = 1;
++	}
++	else
++		/*0x43 is used instead of 0x3 because bit 6 should represent  
++			link status of external PHY */
++		link_ok = (tmp_cr12 & 0x43) ? 1 : 0;
++	
++	
++	/* If chip reports that link is failed it could be because external 
++		PHY link status pin is not conected correctly to chip
++		To be sure ask PHY too.
++	*/
++	
++	/* need a dummy read because of PHY's register latch*/
++	phy_read (db->ioaddr, db->phy_addr, 1, db->chip_id); 
++	link_ok_phy = (phy_read (db->ioaddr, 
++		       db->phy_addr, 1, db->chip_id) & 0x4) ? 1 : 0;
++	
++	if (link_ok_phy != link_ok) {
++		DMFE_DBUG (0, "PHY and chip report different link status", 0);
++		link_ok = link_ok | link_ok_phy;
  	}
  
-@@ -930,7 +933,7 @@ static inline u32 cal_CRC(unsigned char 
- static void dmfe_rx_packet(struct DEVICE *dev, struct dmfe_board_info * db)
- {
- 	struct rx_desc *rxptr;
--	struct sk_buff *skb;
-+	struct sk_buff *skb, *newskb;
- 	int rxlen;
- 	u32 rdes0;
+-	if ( !(tmp_cr12 & 0x3) && !db->link_failed ) {
++	if ( !link_ok && netif_carrier_ok(dev) ) {
+ 		/* Link Failed */
+ 		DMFE_DBUG(0, "Link Failed", tmp_cr12);
+-		db->link_failed = 1;
+-		netif_carrier_off(db->dev);
++		
++		netif_carrier_off(dev);
  
-@@ -984,8 +987,10 @@ static void dmfe_rx_packet(struct DEVICE
- 					/* Good packet, send to upper layer */
- 					/* Shorst packet used new SKB */
- 					if ( (rxlen < RX_COPY_SIZE) &&
--						( (skb = dev_alloc_skb(rxlen + 2) )
-+						( (newskb = dev_alloc_skb(rxlen + 2) )
- 						!= NULL) ) {
-+						
-+						skb = newskb;
- 						/* size less than COPY_SIZE, allocate a rxlen SKB */
- 						skb->dev = dev;
- 						skb_reserve(skb, 2); /* 16byte align */
+ 		/* For Force 10/100M Half/Full mode: Enable Auto-Nego mode */
+ 		/* AUTO or force 1M Homerun/Longrun don't need */
+@@ -1196,19 +1217,17 @@ static void dmfe_timer(unsigned long dat
+ 			db->cr6_data&=~0x00000200;	/* bit9=0, HD mode */
+ 			update_cr6(db->cr6_data, db->ioaddr);
+ 		}
+-	} else
+-		if ((tmp_cr12 & 0x3) && db->link_failed) {
+-			DMFE_DBUG(0, "Link link OK", tmp_cr12);
+-			db->link_failed = 0;
++		
++	} else if (!netif_carrier_ok(dev)) {
++		
++		DMFE_DBUG(0, "Link OK", tmp_cr12);
+ 
+ 			/* Auto Sense Speed */
+-			if ( (db->media_mode & DMFE_AUTO) &&
+-				dmfe_sense_speed(db) )
+-				db->link_failed = 1;
+-			else
+-				netif_carrier_on(db->dev);
++		if (! (db->media_mode & DMFE_AUTO) || !dmfe_sense_speed(db)) {
++			netif_carrier_on(dev);
++			SHOW_MEDIA_TYPE(db->op_mode);
++		}
+ 			dmfe_process_mode(db);
+-			/* SHOW_MEDIA_TYPE(db->op_mode); */
+ 		}
+ 
+ 	/* HPNA remote command check */
+@@ -1255,7 +1274,7 @@ static void dmfe_dynamic_reset(struct DE
+ 	db->tx_packet_cnt = 0;
+ 	db->tx_queue_cnt = 0;
+ 	db->rx_avail_cnt = 0;
+-	db->link_failed = 1;
++	netif_carrier_off(dev);
+ 	db->wait_reset = 0;
+ 
+ 	/* Re-initilize DM910X board */
