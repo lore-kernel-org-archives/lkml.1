@@ -1,49 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422969AbXBHMmA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422971AbXBHMnW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422969AbXBHMmA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Feb 2007 07:42:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422970AbXBHMmA
+	id S1422971AbXBHMnW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Feb 2007 07:43:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422972AbXBHMnW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Feb 2007 07:42:00 -0500
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:53011 "EHLO
-	vervifontaine.sonycom.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1422969AbXBHMmA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Feb 2007 07:42:00 -0500
-Date: Thu, 8 Feb 2007 13:41:57 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: David Miller <davem@davemloft.net>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-       Paul Mackerras <paulus@samba.org>
-Subject: Re: checker-shell still hosed...
-In-Reply-To: <20070208.041229.18308943.davem@davemloft.net>
-Message-ID: <Pine.LNX.4.62.0702081340340.28405@pademelon.sonytel.be>
-References: <20070208.030531.112264703.davem@davemloft.net>
- <20070208.041004.07457320.davem@davemloft.net> <20070208.041229.18308943.davem@davemloft.net>
+	Thu, 8 Feb 2007 07:43:22 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:44813 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1422975AbXBHMnV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Feb 2007 07:43:21 -0500
+Message-ID: <45CB1AE6.9020707@garzik.org>
+Date: Thu, 08 Feb 2007 07:43:18 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070130)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+CC: netdev <netdev@vger.kernel.org>, Greg KH <greg@kroah.com>
+Subject: Re: Network: convert network devices to use struct device instead
+ of class_device
+References: <200702080400.l1840lFd002314@hera.kernel.org>
+In-Reply-To: <200702080400.l1840lFd002314@hera.kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.7 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 8 Feb 2007, David Miller wrote:
-> From: David Miller <davem@davemloft.net>
-> Date: Thu, 08 Feb 2007 04:10:04 -0800 (PST)
+Linux Kernel Mailing List wrote:
+> Gitweb:     http://git.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=43cb76d91ee85f579a69d42bc8efc08bac560278
+> Commit:     43cb76d91ee85f579a69d42bc8efc08bac560278
+> Parent:     2943ecf2ed32632473c06f1975db47a7aa98c10f
+> Author:     Greg Kroah-Hartman <gregkh@suse.de>
+> AuthorDate: Tue Apr 9 12:14:34 2002 -0700
+> Committer:  Greg Kroah-Hartman <gregkh@suse.de>
+> CommitDate: Wed Feb 7 10:37:11 2007 -0800
 > 
-> > Removing them makes the spaces go away.
-> 
-> FWIW, this patch below seems to fix the sparc64 build for me.
-> 
-> Paul, does it work for you on powerpc too?
+>     Network: convert network devices to use struct device instead of class_device
+>     
+>     This lets the network core have the ability to handle suspend/resume
+>     issues, if it wants to.
+>     
+>     Thanks to Frederik Deweerdt <frederik.deweerdt@gmail.com> for the arm
+>     driver fixes.
+>     
+>     Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> ---
+>  drivers/infiniband/ulp/ipoib/ipoib_main.c |   33 ++--
+>  drivers/infiniband/ulp/ipoib/ipoib_vlan.c |   11 +-
+>  drivers/net/arm/at91_ether.c              |    2 +-
+>  drivers/net/arm/etherh.c                  |    2 +-
+>  drivers/net/bonding/bond_sysfs.c          |  287 +++++++++++++++++-----------
+>  drivers/net/iseries_veth.c                |    2 +-
+>  drivers/net/macb.c                        |   36 ++--
+>  drivers/net/smc911x.c                     |    2 +-
+>  drivers/net/smc91x.c                      |    2 +-
+>  drivers/net/wireless/hostap/hostap_main.c |    2 +-
+>  drivers/net/wireless/orinoco.c            |    4 +-
+>  drivers/net/wireless/orinoco_cs.c         |    2 +-
+>  drivers/net/wireless/spectrum_cs.c        |    2 +-
+>  include/linux/netdevice.h                 |    5 +-
+>  net/bridge/br_if.c                        |    2 +-
+>  net/bridge/br_sysfs_br.c                  |  234 +++++++++++++-----------
+>  net/bridge/br_sysfs_if.c                  |    2 +-
+>  net/core/dev.c                            |    6 +-
+>  net/core/net-sysfs.c                      |  175 ++++++++++--------
+>  net/core/skbuff.c                         |    2 +-
+>  20 files changed, 451 insertions(+), 362 deletions(-)
 
-Thx, it seems to build now. I'll tell you whether it boots on PS3 soon.
+It's highly disappointing that this was never discussed on 
+netdev@vger.kernel.org, or even CC'd to me.
 
-Gr{oetje,eeting}s,
+	Jeff
 
-						Geert
 
---
-Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
-Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
-Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
