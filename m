@@ -1,96 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423018AbXBHQMk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423111AbXBHQQU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423018AbXBHQMk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Feb 2007 11:12:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423111AbXBHQMk
+	id S1423111AbXBHQQU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Feb 2007 11:16:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423121AbXBHQQU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Feb 2007 11:12:40 -0500
-Received: from smtp.gentoo.org ([140.211.166.183]:39138 "EHLO smtp.gentoo.org"
+	Thu, 8 Feb 2007 11:16:20 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:58335 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423018AbXBHQMj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Feb 2007 11:12:39 -0500
-From: Mike Frysinger <vapier@gentoo.org>
-Organization: wh0rd.org
-To: Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [patch] export ufs_fs.h to userspace
-Date: Thu, 8 Feb 2007 11:12:22 -0500
-User-Agent: KMail/1.9.6
-Cc: dushistov@mail.ru, linux-kernel@vger.kernel.org, sparc@gentoo.org
-References: <200702080246.16996.vapier@gentoo.org> <200702081010.51790.vapier@gentoo.org> <1170950377.8675.60.camel@laptopd505.fenrus.org>
-In-Reply-To: <1170950377.8675.60.camel@laptopd505.fenrus.org>
+	id S1423111AbXBHQQU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Feb 2007 11:16:20 -0500
+Message-ID: <45CB4C55.4070902@redhat.com>
+Date: Thu, 08 Feb 2007 11:14:13 -0500
+From: William Cohen <wcohen@redhat.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070130)
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1269227.K63AvDIclD";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200702081112.23632.vapier@gentoo.org>
+To: linux-kernel@vger.kernel.org
+Subject: Size of 2.6.20 task_struct on x86_64 machines
+Content-Type: multipart/mixed;
+ boundary="------------050801010509050305040603"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1269227.K63AvDIclD
-Content-Type: text/plain;
-  charset="iso-8859-6"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+This is a multi-part message in MIME format.
+--------------050801010509050305040603
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-On Thursday 08 February 2007, Arjan van de Ven wrote:
-> On Thu, 2007-02-08 at 10:10 -0500, Mike Frysinger wrote:
-> > On Thursday 08 February 2007, Arjan van de Ven wrote:
-> > > On Thu, 2007-02-08 at 02:46 -0500, Mike Frysinger wrote:
-> > > > was ufs_fs.h purposefully not exported to userspace or did it just
-> > > > slip through the cracks ?  assuming the latter scenario, the attach=
-ed
-> > > > patch touches up the relationship between ufs_fs.h and its sub
-> > > > headers (like ufs_fs_sb.h) so that we can export it ... the silo
-> > > > bootloader takes advantage of this header for example
-> > >
-> > > are you sure it actually uses anything from this header, and not just
-> > > assumes the magic number to be there??
-> > > (also.. I kind of would think it reasonable for things with their own
-> > > UFS fs reader to have their own header)
-> >
-> > silo utilizes the structures and the random defines so that it can query
-> > UFS filesystems directly
->
-> at which point arguably it should have it's own UFS header.
-> It's not using the UFS header to use as *kernel* interface!!
+This past week I was playing around with that pahole tool
+(http://oops.ghostprotocols.net:81/acme/dwarves/) and looking at the
+size of various struct in the kernel. I was surprised by the size of
+the task_struct on x86_64, approaching 4K.  I looked through the
+fields in task_struct and found that a number of them were declared as
+"unsigned long" rather than "unsigned int" despite them appearing okay
+as 32-bit sized fields. On x86_64 "unsigned long" ends up being 8
+bytes in size and forces 8 byte alignment. Is there a reason there
+a reason they are "unsigned long"?
 
-true, and i wont argue that point too much other than to say it's nice that=
-=20
-the kernel provides it so as to reduce code duplication in the world
+The patch below drops the size of the struct from 3808 bytes (60
+64-byte cachelines) to 3760 bytes (59 64-byte cachelines). A couple
+other fields in the task struct take a signficant amount of space:
 
-in more realistic terms, not exporting the ufs_fs.h header prevents any sor=
-t=20
-of raw filesystem checkers which would be running in userspace, but then=20
-again i cant quote any such packages that actually exist ;)
+struct thread_struct       thread;               688
+struct held_lock           held_locks[30];       1680
 
-in the end, it doesnt really matter to me right now one way or the other as=
-=20
-the silo guys do include some ufs code to handle the case where it is being=
-=20
-built by a non-linux toolchain
-=2Dmike
+CONFIG_LOCKDEP is turned on in the .config
 
---nextPart1269227.K63AvDIclD
-Content-Type: application/pgp-signature
+-Will
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.2 (GNU/Linux)
+--------------050801010509050305040603
+Content-Type: text/x-patch;
+ name="task_struct_compress.diff"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="task_struct_compress.diff"
 
-iQIVAwUARctL50FjO5/oN/WBAQK1BQ/+MkEhQDHmqHGEeIxusmgvXXdcK+8+8wv7
-id4btcDNtg9dBpen9LHXA2RufdhQRcDU9/3cJ0U68E1vDP1Au9GKgeb4Agh6gV5U
-3Vy8b+Xh1Jqe1F0I9PPo0QadoDoxtNOBfxrVgea3Rrn1zm+QCSl/nIV6fDUq+pPS
-emdIS8xyMIcILmfhAALx7sBfHVMtlqyvho/drxiW78Hpo7BMcSzn8iHQ8anNwzvQ
-kHFp6+rFAnbBM4077oIR8b03OJQvYTJWiVuFSIZsAaUd7qPRz+REIIvbMxP78w1O
-AixuS9gAIsLeRWcyRN31yzO7ajRC9SlVXFF9Shto80EzdpYgiZVKwqwhbef8CFtI
-5QcatJm03ytz4h/3XdnyKmMFN6HGH4N8gUCYidMf0fEYaq7762wNiB/bHRM/ALEY
-hInAnPtIH7+i4QXNZitAXWezvyonKbV0bIdszkUnVFwmicXothAK6V5kO9SJJjPi
-clhD5dPFxg4jjpGbn9lPzR2UQSofhXMoy48AjWcnqTD9kLTh3w7E5ywYwVEwjRgC
-C0ZxHIyQ2GevaBKOL6RFssmeOAf66uTpq/YYRD7NEd0/0WYTsvPLKObMFzXixXWz
-2xv3i0cGXAZgsJVA6SV07mCLQcU+kfBgfq4YI03ErFfndRf2YXtmHGc/P6WjzmK7
-IYcqlajW47c=
-=0lC4
------END PGP SIGNATURE-----
+--- include/linux/sched.h.compress	2007-02-06 16:16:14.000000000 -0500
++++ include/linux/sched.h	2007-02-07 18:09:34.000000000 -0500
+@@ -802,8 +802,8 @@
+ 	volatile long state;	/* -1 unrunnable, 0 runnable, >0 stopped */
+ 	struct thread_info *thread_info;
+ 	atomic_t usage;
+-	unsigned long flags;	/* per process flags, defined below */
+-	unsigned long ptrace;
++	unsigned int flags;	/* per process flags, defined below */
++	unsigned int ptrace;
+ 
+ 	int lock_depth;		/* BKL lock depth */
+ 
+@@ -826,7 +826,7 @@
+ 	unsigned long long sched_time; /* sched_clock time spent running */
+ 	enum sleep_type sleep_type;
+ 
+-	unsigned long policy;
++	unsigned int policy;
+ 	cpumask_t cpus_allowed;
+ 	unsigned int time_slice, first_time_slice;
+ 
+@@ -846,11 +846,11 @@
+ 
+ /* task state */
+ 	struct linux_binfmt *binfmt;
+-	long exit_state;
++	int exit_state;
+ 	int exit_code, exit_signal;
+ 	int pdeath_signal;  /*  The signal sent when the parent dies  */
+ 	/* ??? */
+-	unsigned long personality;
++	unsigned int personality;
+ 	unsigned did_exec:1;
+ 	pid_t pid;
+ 	pid_t tgid;
+@@ -882,7 +882,7 @@
+ 	int __user *set_child_tid;		/* CLONE_CHILD_SETTID */
+ 	int __user *clear_child_tid;		/* CLONE_CHILD_CLEARTID */
+ 
+-	unsigned long rt_priority;
++	unsigned int rt_priority;
+ 	cputime_t utime, stime;
+ 	unsigned long nvcsw, nivcsw; /* context switch counts */
+ 	struct timespec start_time;
 
---nextPart1269227.K63AvDIclD--
+--------------050801010509050305040603--
