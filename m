@@ -1,70 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423491AbXBHWWv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423455AbXBHWXc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423491AbXBHWWv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Feb 2007 17:22:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423493AbXBHWWv
+	id S1423455AbXBHWXc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Feb 2007 17:23:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423489AbXBHWXc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Feb 2007 17:22:51 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:42620 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423491AbXBHWWu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Feb 2007 17:22:50 -0500
-Date: Thu, 8 Feb 2007 14:22:33 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Roman Zippel <zippel@linux-m68k.org>
-cc: linux-kernel@vger.kernel.org, Oleg Verych <olecom@flower.upol.cz>
-Subject: Re: The who needs reviews anyways [PATCH]
-In-Reply-To: <Pine.LNX.4.64.0702082227020.14457@scrub.home>
-Message-ID: <Pine.LNX.4.64.0702081414150.8424@woody.linux-foundation.org>
-References: <Pine.LNX.4.64.0702082227020.14457@scrub.home>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 8 Feb 2007 17:23:32 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:37974 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423455AbXBHWXb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Feb 2007 17:23:31 -0500
+Date: Thu, 8 Feb 2007 14:19:30 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+Cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Roman Zippel <zippel@linux-m68k.org>
+Subject: Re: [PATCH] Kconfig:  Remove DEBUG_RWSEMS
+Message-Id: <20070208141930.a99f91f2.randy.dunlap@oracle.com>
+In-Reply-To: <Pine.LNX.4.64.0702081701530.4820@localhost.localdomain>
+References: <Pine.LNX.4.64.0702081701530.4820@localhost.localdomain>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.0 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 8 Feb 2007 17:06:12 -0500 (EST) Robert P. J. Day wrote:
 
-
-On Thu, 8 Feb 2007, Roman Zippel wrote:
 > 
-> Sorry for the delay, but the git server were gone.
+>   Remove the final vestiges of the kernel config option DEBUG_RWSEMS,
+> since it has no value, at least at the moment.
 > 
-> - the define command is inappropriate (it's primarily for rule 
->   definitions)
+> Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
 
-Looks fine. Especially considering the strange whitespace issues.
+Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
 
-> - execute commands in the current dir as all other commands
-> - .*.tmp (but not .*.null) files are also removed up by "make clean"
-> - printf has other side effects, instead stop pretending we support 
->   something else than bash
+no other uses of it.
 
-However, this one I have problems with .The problem is, many people 
-probably _do_ have bash, but it's in /bin/sh. That used to be a fairly 
-common setup a long time ago. Maybe it's not any more, but the whole "fall 
-back to sh" actually came from that.
+> ---
+> 
+>   my apologies for pushing this so high up the food chain, but i want
+> to submit another patch that sits *right* next to this one in the
+> Kconfig.debug file so i either have to do it in two steps, or submit
+> those two changes as a single patch, and i don't like doing that.
+> 
+>   so if this can go in in short order, well, that would be just ducky.
+> if it can't, then just toss it and i'll move on to that second patch.
+> 
+> 
+> diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
+> index 5c26818..356a5ab 100644
+> --- a/lib/Kconfig.debug
+> +++ b/lib/Kconfig.debug
+> @@ -181,19 +181,11 @@ config DEBUG_MUTEXES
+>  	 This feature allows mutex semantics violations to be detected and
+>  	 reported.
+> 
+> -config DEBUG_RWSEMS
+> -	bool "RW-sem debugging: basic checks"
+> -	depends on DEBUG_KERNEL
+> -	help
+> -	 This feature allows read-write semaphore semantics violations to
+> -	 be detected and reported.
+> -
+>  config DEBUG_LOCK_ALLOC
+>  	bool "Lock debugging: detect incorrect freeing of live locks"
+>  	depends on DEBUG_KERNEL && TRACE_IRQFLAGS_SUPPORT && STACKTRACE_SUPPORT && LOCKDEP_SUPPORT
+>  	select DEBUG_SPINLOCK
+>  	select DEBUG_MUTEXES
+> -	select DEBUG_RWSEMS
+>  	select LOCKDEP
+>  	help
+>  	 This feature will check whether any held lock (spinlock, rwlock,
+> @@ -209,7 +201,6 @@ config PROVE_LOCKING
+>  	select LOCKDEP
+>  	select DEBUG_SPINLOCK
+>  	select DEBUG_MUTEXES
+> -	select DEBUG_RWSEMS
+>  	select DEBUG_LOCK_ALLOC
+>  	default n
+>  	help
+> 
+> -- 
 
-The $BASH variable is only defined if you use bash as your *interactive* 
-shell, ie if you started "make" from a bash shell.
-
-Historically, people used to do:
- - /bin/sh was the "standard shell" (bash)
- - /bin/[t]csh is what clueless weenies use for interactive work.
-
-(Yeah, I'm not a [t]csh fan ;)
-
-And you did break that.
-
-It's quite possible that all modern distributions will install /bin/bash 
-as a link to /bin/sh, but I don't see the point of that particular change. 
-We aren't even all that bash-centric any more. If you have a 
-POSIX-compatible shell in /bin/sh, it really _should_ work. It just can't 
-be something really broken.
-
-> - proper quoting
-> - proper indentation
-
-One thing I'm wondering about is whether we could have a "does this warn" 
-test. I guess you can do it with -Werror, but it might be nice to have 
-some tests for "does the -Wxyzzy flag warn also for proper code"
-
-		Linus
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
