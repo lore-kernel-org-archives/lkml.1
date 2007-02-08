@@ -1,56 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422749AbXBHFaT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161532AbXBHFd4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422749AbXBHFaT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Feb 2007 00:30:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422758AbXBHFaT
+	id S1161532AbXBHFd4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Feb 2007 00:33:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161418AbXBHFdz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Feb 2007 00:30:19 -0500
-Received: from raven.upol.cz ([158.194.120.4]:44954 "EHLO raven.upol.cz"
+	Thu, 8 Feb 2007 00:33:55 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:56417 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422749AbXBHFaR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Feb 2007 00:30:17 -0500
-Date: Thu, 8 Feb 2007 06:39:12 +0100
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: situert@yahoo.com, LKML <linux-kernel@vger.kernel.org>
-Subject: + make-mkcompile_h-use-lang=c-and-lc_all=c-for-cc-v.patch
-Message-ID: <20070208053912.GM22699@flower.upol.cz>
-References: <20070207165204.GA5537@martell.zuzino.mipt.ru> <Pine.LNX.4.64.0702071846180.14457@scrub.home> <20070207220435.GC22699@flower.upol.cz> <Pine.LNX.4.64.0702080029030.14457@scrub.home> <Pine.LNX.4.64.0702071546420.8424@woody.linux-foundation.org> <20070207203047.51a95ad0.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070207203047.51a95ad0.akpm@linux-foundation.org>
-Organization: Palacky University in Olomouc, experimental physics department.
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Oleg Verych <olecom@flower.upol.cz>
+	id S1161222AbXBHFdy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Feb 2007 00:33:54 -0500
+Date: Wed, 7 Feb 2007 21:33:38 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Robert Hancock <hancockr@shaw.ca>, Daniel Barkalow <barkalow@iabervon.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
+       Jeff Garzik <jeff@garzik.org>, Ayaz Abdulla <aabdulla@nvidia.com>
+Subject: Re: forcedeth problems on 2.6.20-rc6-mm3
+Message-Id: <20070207213338.9864285b.akpm@linux-foundation.org>
+In-Reply-To: <20070205165224.df923c78.akpm@linux-foundation.org>
+References: <45C6BCE5.90103@shaw.ca>
+	<Pine.LNX.4.64.0702050124320.20138@iabervon.org>
+	<45C7CD3A.808@shaw.ca>
+	<20070205165224.df923c78.akpm@linux-foundation.org>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> make-mkcompile_h-use-lang=c-and-lc_all=c-for-cc-v.patch
-[]
-> Fix a minor bug in mkcompile_h.  As one can see, the current locale is used
-> while getting the version of gcc.  This produces problems when a locale
-> other than C or en_US is used.  As an example, my /proc/version contains
-> Turkish characters in iso-8859-9 encoding.
->
-> This patch fixes this issue by making sure that the C locale is used to get
-> gcc's version.
+On Mon, 5 Feb 2007 16:52:24 -0800 Andrew Morton <akpm@linux-foundation.org> wrote:
 
-Files in C must be in ASCII. Thus, my proposition is to
-"export LC_ALL=C LANG=C" first, and remove any all other "LC_ALL=C
-LANG=C", to have "compile.h" in it.
+> On Mon, 05 Feb 2007 18:35:06 -0600
+> Robert Hancock <hancockr@shaw.ca> wrote:
+> 
+> > Daniel Barkalow wrote:
+> > > On Sun, 4 Feb 2007, Robert Hancock wrote:
+> > > 
+> > >> Something's busted with forcedeth in 2.6.20-rc6-mm3 for me relative to
+> > >> 2.6.20-rc6. There's no errors in dmesg, but it seems no packets ever get
+> > >> received and so the machine can't get an IP address. I tried reverting all the
+> > >> -mm changes to drivers/net/forcedeth.c, which didn't help. The network
+> > >> controller shares an IRQ with the USB OHCI controller which is receiving
+> > >> interrupts, so it doesn't seem like an interrupt routing problem, though I
+> > >> suppose something wierd could be happening there.
+> > > 
+> > > IIRC, forcedeth tries to use MSI by default. Perhaps the hardware is using 
+> > > it, but the kernel thinks enabling it didn't work? I think there's a 
+> > > module option for forcedeth to disable MSI, which might be worth a try to 
+> > > see if it has any effect.
+> > 
+> > I must have messed something up when testing before - reverting to 
+> > forcedeth.c from 2.6.20-rc6 does indeed fix the problem. And it doesn't 
+> > seem like no packets at all are received with the -mm3 version (driver 
+> > version 0.60), either - if I do a tcpdump I can get Ethernet packets 
+> > showing up, but I can't ping my router so it seems like something isn't 
+> > getting through properly. With the 2.6.20-rc6 version (driver version 
+> > 0.59) it works fine. I switched back and forth between versions and this 
+> > seems repeatable.
+> > 
+> > I don't think it's MSI related, the CK804 version of these controllers 
+> > doesn't support MSI and the driver shouldn't be trying to use it. I 
+> > tried the MSI and MSI-X disable options on the 0.60 driver, but that 
+> > didn't help.
+> > 
+> 
+> OK, thanks.  Jeff, please note that the forcedeth changes in git-netdev-all
+> have a problem.
 
+Well all the forcedeth patches seems to have wandered into mainline anyway.
 
-@@ -58,7 +58,7 @@ UTS_TRUNCATE="sed -e s/\(.\{1,$UTS_LEN\}
-     echo \#define LINUX_COMPILE_DOMAIN
-   fi
- 
--  echo \#define LINUX_COMPILER \"`$CC -v 2>&1 | tail -n 1`\"
-+  echo \#define LINUX_COMPILER \"`LC_ALL=C LANG=C $CC -v 2>&1 | tail -n 1`\"
- ) > .tmpcompile
- 
- # Only replace the real compile.h if the new one is different,
-_
-
-Patches currently in -mm which might be from situert@yahoo.com are
-
-make-mkcompile_h-use-lang=c-and-lc_all=c-for-cc-v.patch
+Please test current git (or tomorrow's git snapshot), see if it works?
