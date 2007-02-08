@@ -1,245 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422938AbXBHAjq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965719AbXBHAj6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422938AbXBHAjq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Feb 2007 19:39:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422834AbXBHAbx
+	id S965719AbXBHAj6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Feb 2007 19:39:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965717AbXBHAjv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Feb 2007 19:31:53 -0500
-Received: from ns1.suse.de ([195.135.220.2]:56360 "EHLO mx1.suse.de"
+	Wed, 7 Feb 2007 19:39:51 -0500
+Received: from ns2.suse.de ([195.135.220.15]:34028 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422843AbXBHAbt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Feb 2007 19:31:49 -0500
+	id S1422843AbXBHAbz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Feb 2007 19:31:55 -0500
 From: Greg KH <greg@kroah.com>
 To: linux-kernel@vger.kernel.org
-Cc: Cornelia Huck <cornelia.huck@de.ibm.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 6/28] driver core: Allow device_move(dev, NULL).
-Date: Wed,  7 Feb 2007 16:29:54 -0800
-Message-Id: <11708946391465-git-send-email-greg@kroah.com>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 8/28] Modules: only add drivers/ direcory if needed
+Date: Wed,  7 Feb 2007 16:29:56 -0800
+Message-Id: <11708946472324-git-send-email-greg@kroah.com>
 X-Mailer: git-send-email 1.4.4.4
-In-Reply-To: <11708946362677-git-send-email-greg@kroah.com>
-References: <20070208002908.GA4796@kroah.com> <11708946163722-git-send-email-greg@kroah.com> <1170894620889-git-send-email-greg@kroah.com> <11708946251265-git-send-email-greg@kroah.com> <11708946283719-git-send-email-greg@kroah.com> <11708946362677-git-send-email-greg@kroah.com>
+In-Reply-To: <11708946432920-git-send-email-greg@kroah.com>
+References: <20070208002908.GA4796@kroah.com> <11708946163722-git-send-email-greg@kroah.com> <1170894620889-git-send-email-greg@kroah.com> <11708946251265-git-send-email-greg@kroah.com> <11708946283719-git-send-email-greg@kroah.com> <11708946362677-git-send-email-greg@kroah.com> <11708946391465-git-send-email-greg@kroah.com> <11708946432920-git-send-email-greg@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
+From: Greg Kroah-Hartman <gregkh@suse.de>
 
-If we allow NULL as the new parent in device_move(), we need to make sure
-that the device is placed into the same place as it would if it was
-newly registered:
+This changes the module core to only create the drivers/ directory if we
+are going to put something in it.
 
-- Consider the device virtual tree. In order to be able to reuse code,
-  setup_parent() has been tweaked a bit.
-- kobject_move() can fall back to the kset's kobject.
-- sysfs_move_dir() uses the sysfs root dir as fallback.
-
-Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
-Cc: Marcel Holtmann <marcel@holtmann.org>
+Cc: Kay Sievers <kay.sievers@vrfy.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/base/core.c |   76 +++++++++++++++++++++++++++++++-------------------
- fs/sysfs/dir.c      |    6 +---
- lib/kobject.c       |    6 ++--
- 3 files changed, 52 insertions(+), 36 deletions(-)
+ kernel/module.c |   20 +++++++++++---------
+ kernel/params.c |    1 -
+ 2 files changed, 11 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/base/core.c b/drivers/base/core.c
-index 36eedfd..c60114d 100644
---- a/drivers/base/core.c
-+++ b/drivers/base/core.c
-@@ -390,22 +390,23 @@ void device_initialize(struct device *dev)
- }
+diff --git a/kernel/module.c b/kernel/module.c
+index 0f4489a..9de4209 100644
+--- a/kernel/module.c
++++ b/kernel/module.c
+@@ -1131,12 +1131,6 @@ static int mod_sysfs_setup(struct module *mod,
+ 	if (err)
+ 		goto out;
  
- #ifdef CONFIG_SYSFS_DEPRECATED
--static int setup_parent(struct device *dev, struct device *parent)
-+static struct kobject * get_device_parent(struct device *dev,
-+					  struct device *parent)
- {
- 	/* Set the parent to the class, not the parent device */
- 	/* this keeps sysfs from having a symlink to make old udevs happy */
- 	if (dev->class)
--		dev->kobj.parent = &dev->class->subsys.kset.kobj;
-+		return &dev->class->subsys.kset.kobj;
- 	else if (parent)
--		dev->kobj.parent = &parent->kobj;
-+		return &parent->kobj;
- 
--	return 0;
-+	return NULL;
- }
- #else
--static int virtual_device_parent(struct device *dev)
-+static struct kobject * virtual_device_parent(struct device *dev)
- {
- 	if (!dev->class)
--		return -ENODEV;
-+		return ERR_PTR(-ENODEV);
- 
- 	if (!dev->class->virtual_dir) {
- 		static struct kobject *virtual_dir = NULL;
-@@ -415,25 +416,31 @@ static int virtual_device_parent(struct device *dev)
- 		dev->class->virtual_dir = kobject_add_dir(virtual_dir, dev->class->name);
- 	}
- 
--	dev->kobj.parent = dev->class->virtual_dir;
--	return 0;
-+	return dev->class->virtual_dir;
- }
- 
--static int setup_parent(struct device *dev, struct device *parent)
-+static struct kobject * get_device_parent(struct device *dev,
-+					  struct device *parent)
- {
--	int error;
+-	mod->mkobj.drivers_dir = kobject_add_dir(&mod->mkobj.kobj, "drivers");
+-	if (!mod->mkobj.drivers_dir) {
+-		err = -ENOMEM;
+-		goto out_unreg;
+-	}
 -
- 	/* if this is a class device, and has no parent, create one */
- 	if ((dev->class) && (parent == NULL)) {
--		error = virtual_device_parent(dev);
--		if (error)
--			return error;
-+		return virtual_device_parent(dev);
- 	} else if (parent)
--		dev->kobj.parent = &parent->kobj;
-+		return &parent->kobj;
-+	return NULL;
-+}
- 
-+#endif
-+static int setup_parent(struct device *dev, struct device *parent)
-+{
-+	struct kobject *kobj;
-+	kobj = get_device_parent(dev, parent);
-+	if (IS_ERR(kobj))
-+		return PTR_ERR(kobj);
-+	if (kobj)
-+		dev->kobj.parent = kobj;
- 	return 0;
- }
--#endif
- 
- /**
-  *	device_add - add device to device hierarchy.
-@@ -976,12 +983,18 @@ static int device_move_class_links(struct device *dev,
- 		sysfs_remove_link(&dev->kobj, "device");
- 		sysfs_remove_link(&old_parent->kobj, class_name);
- 	}
--	error = sysfs_create_link(&dev->kobj, &new_parent->kobj, "device");
--	if (error)
--		goto out;
--	error = sysfs_create_link(&new_parent->kobj, &dev->kobj, class_name);
--	if (error)
--		sysfs_remove_link(&dev->kobj, "device");
-+	if (new_parent) {
-+		error = sysfs_create_link(&dev->kobj, &new_parent->kobj,
-+					  "device");
-+		if (error)
-+			goto out;
-+		error = sysfs_create_link(&new_parent->kobj, &dev->kobj,
-+					  class_name);
-+		if (error)
-+			sysfs_remove_link(&dev->kobj, "device");
-+	}
-+	else
-+		error = 0;
+ 	err = module_param_sysfs_setup(mod, kparam, num_params);
+ 	if (err)
+ 		goto out_unreg_drivers;
+@@ -1151,8 +1145,6 @@ static int mod_sysfs_setup(struct module *mod,
+ out_unreg_param:
+ 	module_param_sysfs_remove(mod);
+ out_unreg_drivers:
+-	kobject_unregister(mod->mkobj.drivers_dir);
+-out_unreg:
+ 	kobject_del(&mod->mkobj.kobj);
+ 	kobject_put(&mod->mkobj.kobj);
  out:
- 	kfree(class_name);
- 	return error;
-@@ -993,25 +1006,28 @@ out:
- /**
-  * device_move - moves a device to a new parent
-  * @dev: the pointer to the struct device to be moved
-- * @new_parent: the new parent of the device
-+ * @new_parent: the new parent of the device (can by NULL)
-  */
- int device_move(struct device *dev, struct device *new_parent)
+@@ -1163,7 +1155,8 @@ static void mod_kobject_remove(struct module *mod)
  {
- 	int error;
- 	struct device *old_parent;
-+	struct kobject *new_parent_kobj;
+ 	module_remove_modinfo_attrs(mod);
+ 	module_param_sysfs_remove(mod);
+-	kobject_unregister(mod->mkobj.drivers_dir);
++	if (mod->mkobj.drivers_dir)
++		kobject_unregister(mod->mkobj.drivers_dir);
  
- 	dev = get_device(dev);
- 	if (!dev)
- 		return -EINVAL;
+ 	kobject_unregister(&mod->mkobj.kobj);
+ }
+@@ -2340,6 +2333,14 @@ static char *make_driver_name(struct device_driver *drv)
+ 	return driver_name;
+ }
  
- 	new_parent = get_device(new_parent);
--	if (!new_parent) {
--		error = -EINVAL;
-+	new_parent_kobj = get_device_parent (dev, new_parent);
-+	if (IS_ERR(new_parent_kobj)) {
-+		error = PTR_ERR(new_parent_kobj);
-+		put_device(new_parent);
- 		goto out;
- 	}
- 	pr_debug("DEVICE: moving '%s' to '%s'\n", dev->bus_id,
--		new_parent->bus_id);
--	error = kobject_move(&dev->kobj, &new_parent->kobj);
-+		 new_parent ? new_parent->bus_id : "<NULL>");
-+	error = kobject_move(&dev->kobj, new_parent_kobj);
- 	if (error) {
- 		put_device(new_parent);
- 		goto out;
-@@ -1020,7 +1036,8 @@ int device_move(struct device *dev, struct device *new_parent)
- 	dev->parent = new_parent;
- 	if (old_parent)
- 		klist_remove(&dev->knode_parent);
--	klist_add_tail(&dev->knode_parent, &new_parent->klist_children);
-+	if (new_parent)
-+		klist_add_tail(&dev->knode_parent, &new_parent->klist_children);
- 	if (!dev->class)
- 		goto out_put;
- 	error = device_move_class_links(dev, old_parent, new_parent);
-@@ -1028,7 +1045,8 @@ int device_move(struct device *dev, struct device *new_parent)
- 		/* We ignore errors on cleanup since we're hosed anyway... */
- 		device_move_class_links(dev, new_parent, old_parent);
- 		if (!kobject_move(&dev->kobj, &old_parent->kobj)) {
--			klist_remove(&dev->knode_parent);
-+			if (new_parent)
-+				klist_remove(&dev->knode_parent);
- 			if (old_parent)
- 				klist_add_tail(&dev->knode_parent,
- 					       &old_parent->klist_children);
-diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
-index 511edef..2bab1b4 100644
---- a/fs/sysfs/dir.c
-+++ b/fs/sysfs/dir.c
-@@ -378,12 +378,10 @@ int sysfs_move_dir(struct kobject *kobj, struct kobject *new_parent)
- 	struct sysfs_dirent *new_parent_sd, *sd;
- 	int error;
++static void module_create_drivers_dir(struct module_kobject *mk)
++{
++	if (!mk || mk->drivers_dir)
++		return;
++
++	mk->drivers_dir = kobject_add_dir(&mk->kobj, "drivers");
++}
++
+ void module_add_driver(struct module *mod, struct device_driver *drv)
+ {
+ 	char *driver_name;
+@@ -2367,6 +2368,7 @@ void module_add_driver(struct module *mod, struct device_driver *drv)
+ 	no_warn = sysfs_create_link(&drv->kobj, &mk->kobj, "module");
+ 	driver_name = make_driver_name(drv);
+ 	if (driver_name) {
++		module_create_drivers_dir(mk);
+ 		no_warn = sysfs_create_link(mk->drivers_dir, &drv->kobj,
+ 					    driver_name);
+ 		kfree(driver_name);
+diff --git a/kernel/params.c b/kernel/params.c
+index 737b7c5..cbaac85 100644
+--- a/kernel/params.c
++++ b/kernel/params.c
+@@ -565,7 +565,6 @@ static void __init kernel_param_sysfs_setup(const char *name,
+ 	ret = kobject_add(&mk->kobj);
+ 	BUG_ON(ret < 0);
+ 	param_sysfs_setup(mk, kparam, num_params, name_skip);
+-	mk->drivers_dir = kobject_add_dir(&mk->kobj, "drivers");
+ 	kobject_uevent(&mk->kobj, KOBJ_ADD);
+ }
  
--	if (!new_parent)
--		return -EINVAL;
--
- 	old_parent_dentry = kobj->parent ?
- 		kobj->parent->dentry : sysfs_mount->mnt_sb->s_root;
--	new_parent_dentry = new_parent->dentry;
-+	new_parent_dentry = new_parent ?
-+		new_parent->dentry : sysfs_mount->mnt_sb->s_root;
- 
- again:
- 	mutex_lock(&old_parent_dentry->d_inode->i_mutex);
-diff --git a/lib/kobject.c b/lib/kobject.c
-index 9aed594..c033dc8 100644
---- a/lib/kobject.c
-+++ b/lib/kobject.c
-@@ -314,7 +314,7 @@ int kobject_rename(struct kobject * kobj, const char *new_name)
- /**
-  *	kobject_move - move object to another parent
-  *	@kobj:	object in question.
-- *	@new_parent: object's new parent
-+ *	@new_parent: object's new parent (can be NULL)
-  */
- 
- int kobject_move(struct kobject *kobj, struct kobject *new_parent)
-@@ -330,8 +330,8 @@ int kobject_move(struct kobject *kobj, struct kobject *new_parent)
- 		return -EINVAL;
- 	new_parent = kobject_get(new_parent);
- 	if (!new_parent) {
--		error = -EINVAL;
--		goto out;
-+		if (kobj->kset)
-+			new_parent = kobject_get(&kobj->kset->kobj);
- 	}
- 	/* old object path */
- 	devpath = kobject_get_path(kobj, GFP_KERNEL);
 -- 
 1.4.4.4
 
