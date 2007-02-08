@@ -1,102 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752433AbXBHSpj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752440AbXBHSqb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752433AbXBHSpj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Feb 2007 13:45:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752436AbXBHSpi
+	id S1752440AbXBHSqb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Feb 2007 13:46:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752436AbXBHSqa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Feb 2007 13:45:38 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:55232 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752433AbXBHSph (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Feb 2007 13:45:37 -0500
-Date: Thu, 8 Feb 2007 18:45:34 +0000 (GMT)
-From: James Simmons <jsimmons@infradead.org>
-To: Alan <alan@lxorguk.ukuu.org.uk>
-cc: akpm@osdl.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] pm3fb: kill pci_find_device usage
-In-Reply-To: <20070131170620.13d88820@localhost.localdomain>
-Message-ID: <Pine.LNX.4.64.0702081845050.7686@pentafluge.infradead.org>
-References: <20070131170620.13d88820@localhost.localdomain>
+	Thu, 8 Feb 2007 13:46:30 -0500
+Received: from tmailer.gwdg.de ([134.76.10.23]:54539 "EHLO tmailer.gwdg.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1423243AbXBHSq3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Feb 2007 13:46:29 -0500
+Date: Thu, 8 Feb 2007 19:46:13 +0100 (MET)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: Alex Bounder <abounder@gmail.com>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: creating headless device on 2.6.18
+In-Reply-To: <8474209b0702081005t196c64bajbf94f119e4ed32e@mail.gmail.com>
+Message-ID: <Pine.LNX.4.61.0702081944230.1364@yvahk01.tjqt.qr>
+References: <8474209b0702081005t196c64bajbf94f119e4ed32e@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Wed, 31 Jan 2007, Alan wrote:
+On Feb 8 2007 20:05, Alex Bounder wrote:
+> Hello, all.
+> I'm trying to create a headless device based on kernel 2.6.18 (FEDORA
+> distro). What I need is to guarantee that LINUX kernel do not access
+> the graphical adapter (used by another OS).
+> My idea was to remove from .config everything that is graphic related.
+> Yet there are two flags, which are "irremovable". These are
+> :CONFIG_VGA_CONSOLE and CONFIG_VIDEO_V4L2. The only option for them is
+> [y]. Can anyone help me to get rid of them or suggest another way of
+> "blocking" the graphical adapter?
 
-> Signed-off-by: Alan Cox <alan@redhat.com>
-> 
-> diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.20-rc6-mm3/drivers/video/pm3fb.c linux-2.6.20-rc6-mm3/drivers/video/pm3fb.c
-> --- linux.vanilla-2.6.20-rc6-mm3/drivers/video/pm3fb.c	2007-01-31 14:20:10.000000000 +0000
-> +++ linux-2.6.20-rc6-mm3/drivers/video/pm3fb.c	2007-01-31 14:36:25.000000000 +0000
-> @@ -3299,14 +3299,12 @@
->  		fb_info[i].dev = NULL;
->  	}
->  
-> -	dev =
-> -	    pci_find_device(PCI_VENDOR_ID_3DLABS,
-> +	dev = pci_get_device(PCI_VENDOR_ID_3DLABS,
->  			    PCI_DEVICE_ID_3DLABS_PERMEDIA3, dev);
->  
->  	for (i = 0; ((i < PM3_MAX_BOARD) && dev); i++) {
->  		dev_array[i] = dev;
-> -		dev =
-> -		    pci_find_device(PCI_VENDOR_ID_3DLABS,
-> +		dev = pci_get_device(PCI_VENDOR_ID_3DLABS,
->  				    PCI_DEVICE_ID_3DLABS_PERMEDIA3, dev);
->  	}
->  
-> @@ -3353,7 +3351,7 @@
->  	/* now, initialize... or not */
->  	for (i = 0; i < PM3_MAX_BOARD; i++) {
->  		l_fb_info = &(fb_info[i]);
-> -		if ((l_fb_info->dev) && (!disable[i])) {	/* PCI device was found and not disabled by user */
-> +		if (l_fb_info->dev && !disable[i]) {	/* PCI device was found and not disabled by user */
->  			DPRINTK(2,
->  				"found @%lx Vendor %lx Device %lx ; base @ : %lx - %lx - %lx - %lx - %lx - %lx, irq %ld\n",
->  				(unsigned long) l_fb_info->dev,
-> @@ -3608,7 +3606,7 @@
->  
->  	pm3fb_init();
->  
-> -	return (0);
-> +	return 0;
->  }
->  
->  void cleanup_module(void)
-> @@ -3619,23 +3617,18 @@
->  		struct pm3fb_info *l_fb_info;
->  		for (i = 0; i < PM3_MAX_BOARD; i++) {
->  			l_fb_info = &(fb_info[i]);
-> -			if ((l_fb_info->dev != NULL)
-> -			    && (!(disable[l_fb_info->board_num]))) {
-> -				if (l_fb_info->vIOBase !=
-> -				    (unsigned char *) -1) {
-> +			pci_dev_put(l_fb_info->dev);
-> +			if (l_fb_info->dev != NULL  && !(disable[l_fb_info->board_num])) {
-> +				if (l_fb_info->vIOBase != (unsigned char *) -1) {
->  					pm3fb_unmapIO(l_fb_info);
->  					release_mem_region(l_fb_info->p_fb,
-> -							   l_fb_info->
-> -							   fb_size);
-> -					release_mem_region(l_fb_info->
-> -							   pIOBase,
-> -							   PM3_REGS_SIZE);
-> +						   l_fb_info->fb_size);
-> +					release_mem_region(l_fb_info->pIOBase,
-> +						   PM3_REGS_SIZE);
->  				}
-> -				unregister_framebuffer(&l_fb_info->gen.
-> -						       info);
-> +				unregister_framebuffer(&l_fb_info->gen.info);
->  			}
->  		}
->  	}
-> -	return;
->  }
->  #endif /* MODULE */
+V4L2 is something different. Turn on EMBEDDED, then you should be able to
+deactivate VGA_CONSOLE.
 
-Acked-By: James Simmons <jsimmons@infradead.org>
 
+Jan
+-- 
