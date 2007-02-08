@@ -1,45 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423131AbXBHQif@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423230AbXBHQiw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423131AbXBHQif (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Feb 2007 11:38:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423224AbXBHQif
+	id S1423230AbXBHQiw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Feb 2007 11:38:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423229AbXBHQiv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Feb 2007 11:38:35 -0500
-Received: from scrub.xs4all.nl ([194.109.195.176]:34455 "EHLO scrub.xs4all.nl"
+	Thu, 8 Feb 2007 11:38:51 -0500
+Received: from mr.exanet.com ([212.143.73.109]:38962 "EHLO mr.exanet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423131AbXBHQie (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Feb 2007 11:38:34 -0500
-Date: Thu, 8 Feb 2007 17:38:28 +0100 (CET)
-From: Roman Zippel <zippel@linux-m68k.org>
-X-X-Sender: roman@scrub.home
-To: Oleg Verych <olecom@flower.upol.cz>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Mike Frysinger <vapier.adi@gmail.com>, sam@ravnborg.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kai Germaschewski <kai@germaschewski.name>
-Subject: Re: + search-a-little-harder-for-mkimage.patch
-In-Reply-To: <20070208055832.GN22699@flower.upol.cz>
-Message-ID: <Pine.LNX.4.64.0702081735440.14457@scrub.home>
-References: <20070207165204.GA5537@martell.zuzino.mipt.ru>
- <Pine.LNX.4.64.0702071846180.14457@scrub.home> <20070207220435.GC22699@flower.upol.cz>
- <Pine.LNX.4.64.0702080029030.14457@scrub.home>
- <Pine.LNX.4.64.0702071546420.8424@woody.linux-foundation.org>
- <20070207203047.51a95ad0.akpm@linux-foundation.org> <20070208052439.GL22699@flower.upol.cz>
- <20070207211921.1f0220a4.akpm@linux-foundation.org> <20070208055832.GN22699@flower.upol.cz>
+	id S1423226AbXBHQiu convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Feb 2007 11:38:50 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+	charset="US-ASCII"
+Content-Transfer-Encoding: 8BIT
+Subject: Getting the nfs_fh of a specific file/dir from the kernel 
+Date: Thu, 8 Feb 2007 18:38:48 +0200
+Message-ID: <A6FDE6B975803043804A49F12F49028E0F573A@hawk.exanet-il.co.il>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Getting the nfs_fh of a specific file/dir from the kernel 
+Thread-Index: AcdLn5up1/T1xYF9QYycBACAGjynQg==
+From: "Menny Hamburger" <menny@exanet.com>
+To: <linux-kernel@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi,
 
-On Thu, 8 Feb 2007, Oleg Verych wrote:
+I have a piece of code in my 2.6 kernel that associates an ioctl
+file_operation to nfs in file.c and dir.c.
+This ioctl sends the nfs_fh to a userland application.
+I have been trying to remove this ugly code by creating my own device
+and implementing the ioctl but I keep getting junk instead.
+Please tell me if I'm doing anything wrong here:
 
-> BTW, Debian shell policy is to be bashizms-clear. Purpose -- to have
-> compatibility with any `sh'. Shall we?
+1) Define the I/O structure:
+    struct nfs_getfh {
+        int fd;
+        struct nfs_fh *fh;
+    };
+2) Receive the  fd of the wanted file/dir.
+3) inside the ioctl function:
 
-Wrong.
+    struct file *filp;
+    struct dentry *dentp;
+    struct inode *inop;
+    struct nfs_getfh getfh;
+    struct files_struct *files;
+    struct nfs_getfh __user *user_getfh = (struct nfs_getfh __user *)
+arg;
 
-http://www.debian.org/doc/debian-policy/ch-files.html#s-scripts
+    files = current->files;
+    if (files) {
+        spin_lock(&files->file_lock);
+        filp = fcheck(getfh.fd);
+        if (filp) {
+            dentp = dget(filp->f_dentry);
+	if (dentp) {
+	    inop = dentp->d_inode;
+	    if (inop) {
+	        getfh.fh = NFS_FH(inop);
+	        if (getfh.fh) {
+                        copy_to_user((void*) user_getfh->fh, getfh.fh,
+getfh.fh->size + ((int) &((struct nfs_fh*)0)->data)))
+                    }
+                }
+            }
+        }
+        spin_unlock(&files->file_lock);
+     }
 
-bye, Roman
+Best Regards,
+Menny
+
