@@ -1,63 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422950AbXBHHk0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422957AbXBHHkc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422950AbXBHHk0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Feb 2007 02:40:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422954AbXBHHk0
+	id S1422957AbXBHHkc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Feb 2007 02:40:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422961AbXBHHkc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Feb 2007 02:40:26 -0500
-Received: from mga05.intel.com ([192.55.52.89]:48160 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1422950AbXBHHkY (ORCPT
+	Thu, 8 Feb 2007 02:40:32 -0500
+Received: from ug-out-1314.google.com ([66.249.92.173]:41261 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422957AbXBHHka (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Feb 2007 02:40:24 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.13,299,1167638400"; 
-   d="scan'208"; a="197222103:sNHT47554332"
-Subject: [PATCH] ATA convert GSI to irq on ia64
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: linux-scsi@vger.kernel.org, linux-ide@vger.kernel.org,
-       Jeff Garzik <jgarzik@pobox.com>
-Content-Type: text/plain; charset=utf-8
-Date: Thu, 08 Feb 2007 15:40:22 +0800
-Message-Id: <1170920422.15989.354.camel@ymzhang>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.9.2 (2.9.2-2.fc7) 
+	Thu, 8 Feb 2007 02:40:30 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=gPdtwzthJtANxnnMzkYCkNRvesYOayx0IvXlAXWPgJyZHPPO+aEIkrzj7j4kQzYjUyWXJiWjPixkprK+S4tcLN5v1wK8ZFuUfqJ/K/O5nT1hRirPJiN4SJgfbzwYo8FkalupjeYZY2CR66pYG3Z1/NU8ZuMk8Uce9L+waUmwERY=
+Message-ID: <8bd0f97a0702072340w699ba70bre9d0828ae11c56b7@mail.gmail.com>
+Date: Thu, 8 Feb 2007 02:40:28 -0500
+From: "Mike Frysinger" <vapier.adi@gmail.com>
+To: "Oleg Verych" <olecom@flower.upol.cz>
+Subject: Re: search-a-little-harder-for-mkimage.patch
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Roman Zippel" <zippel@linux-m68k.org>, sam@ravnborg.org,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Kai Germaschewski" <kai@germaschewski.name>
+In-Reply-To: <20070208074213.GR22699@flower.upol.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070207165204.GA5537@martell.zuzino.mipt.ru>
+	 <Pine.LNX.4.64.0702071846180.14457@scrub.home>
+	 <20070207220435.GC22699@flower.upol.cz>
+	 <Pine.LNX.4.64.0702080029030.14457@scrub.home>
+	 <Pine.LNX.4.64.0702071546420.8424@woody.linux-foundation.org>
+	 <20070207203047.51a95ad0.akpm@linux-foundation.org>
+	 <20070208052439.GL22699@flower.upol.cz>
+	 <8bd0f97a0702072156q640d49b8of5f81a60b380ef81@mail.gmail.com>
+	 <20070208074213.GR22699@flower.upol.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If an ATA drive uses legacy mode, ata driver will choose 14 and 15 as the
-fixed irq number. On ia64 platform, such numbers are GSI and should be converted
-to irq vector.
+On 2/8/07, Oleg Verych <olecom@flower.upol.cz> wrote:
+> On Thu, Feb 08, 2007 at 12:56:17AM -0500, Mike Frysinger wrote:
+> > On 2/8/07, Oleg Verych <olecom@flower.upol.cz> wrote:
+> > >> Check to see if `${CROSS_COMPILE}mkimage` exists and if not, fall back to
+> > >> the standard `mkimage`
+> > >
+> > >Why this can't be done by
+> > >
+> > >  PATH=$CROSS_COMPILE:$PATH
+> > >
+> > >in your environment?
+> >
+> > because it wouldnt matter ?  the tool is called
+> > "$CROSS_COMPILE-mkimage", it isnt $CROSS_COMPILE_PATH/mkimage
+>
+> Well, i mean search for your `mkimage'.
+>
+> Let's see how all this used in Makefiles (avr32, ppc, sh are same)
+>
+> ../arch/arm/boot/Makefile:
+>
+>    MKIMAGE         := $(srctree)/scripts/mkuboot.sh
+>    ...
+>    quiet_cmd_uimage = UIMAGE  $@
+>          cmd_uimage = $(CONFIG_SHELL) $(MKIMAGE) -A arm -O linux -T kernel \
+>                    -C none -a $(ZRELADDR) -e $(ZRELADDR) \
+>                    -n 'Linux-$(KERNELRELEASE)' -d $< $@
+>
+> type, which with bash or whatever, doesn't matter. All they need *your*
+> toolchain in $PATH, why not just to put "$CROSS_COMPILE-mkimage" instead
+> of $(CONFIG_SHELL) $(MKIMAGE) here? mkuboot.sh just searches $PATH for
+> mkimage and run it. Double overkill, no?
 
-Below patch against kernel 2.6.20 fixes it.
+by this argument, why does mkuboot.sh exist at all then ?  let's
+simply delete mkuboot.sh and change all arch Makefile's like so:
+-    $(CONFIG_SHELL) $(MKIMAGE) ...
++    -mkimage ...
 
-Signed-off-by: Zhang Yanmin <yanmin.zhang@intel.com>
-
----
-
-diff -Nraup linux-2.6.20/include/asm-generic/libata-portmap.h linux-2.6.20_fix/include/asm-generic/libata-portmap.h
---- linux-2.6.20/include/asm-generic/libata-portmap.h	2007-02-08 15:13:44.000000000 +0800
-+++ linux-2.6.20_fix/include/asm-generic/libata-portmap.h	2007-02-08 15:20:13.000000000 +0800
-@@ -3,10 +3,20 @@
- 
- #define ATA_PRIMARY_CMD		0x1F0
- #define ATA_PRIMARY_CTL		0x3F6
-+#if defined(__ia64__)
-+#define ATA_PRIMARY_IRQ(dev)	isa_irq_to_vector(14)
-+#else
- #define ATA_PRIMARY_IRQ(dev)	14
-+#endif
-+
- 
- #define ATA_SECONDARY_CMD	0x170
- #define ATA_SECONDARY_CTL	0x376
-+#if defined(__ia64__)
-+#define ATA_SECONDARY_IRQ(dev)	isa_irq_to_vector(15)
-+#else
- #define ATA_SECONDARY_IRQ(dev)	15
-+#endif
-+
- 
- #endif
+i of course prefer the existing solution: call the mkuboot.sh script
+which checks for a few variations of the `mkimage` binary and if it
+does not exist, output a friendly message
+-mike
