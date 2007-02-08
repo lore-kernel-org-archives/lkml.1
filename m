@@ -1,60 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965678AbXBHFM2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965684AbXBHFPz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965678AbXBHFM2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Feb 2007 00:12:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965684AbXBHFM2
+	id S965684AbXBHFPz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Feb 2007 00:15:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965686AbXBHFPz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Feb 2007 00:12:28 -0500
-Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:53900 "EHLO
-	pd5mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965678AbXBHFM1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Feb 2007 00:12:27 -0500
-Date: Wed, 07 Feb 2007 23:12:05 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: [PATCH] pata_acpi: take two
-In-reply-to: <fa.E0XxdpTYuPtTLgPLQYHs2V10jM4@ifi.uio.no>
-To: Alan <alan@lxorguk.ukuu.org.uk>
-Cc: linux-kernel@vger.kernel.org, akpm@osdl.org, jeff@garzik.org
-Message-id: <45CAB125.7000907@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.E0XxdpTYuPtTLgPLQYHs2V10jM4@ifi.uio.no>
-User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
+	Thu, 8 Feb 2007 00:15:55 -0500
+Received: from raven.upol.cz ([158.194.120.4]:44389 "EHLO raven.upol.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965684AbXBHFPy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Feb 2007 00:15:54 -0500
+Date: Thu, 8 Feb 2007 06:24:40 +0100
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Mike Frysinger <vapier.adi@gmail.com>,
+       Roman Zippel <zippel@linux-m68k.org>, sam@ravnborg.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kai Germaschewski <kai@germaschewski.name>
+Subject: dd
+Message-ID: <20070208052439.GL22699@flower.upol.cz>
+References: <20070207165204.GA5537@martell.zuzino.mipt.ru> <Pine.LNX.4.64.0702071846180.14457@scrub.home> <20070207220435.GC22699@flower.upol.cz> <Pine.LNX.4.64.0702080029030.14457@scrub.home> <Pine.LNX.4.64.0702071546420.8424@woody.linux-foundation.org> <20070207203047.51a95ad0.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070207203047.51a95ad0.akpm@linux-foundation.org>
+Organization: Palacky University in Olomouc, experimental physics department.
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Oleg Verych <olecom@flower.upol.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan wrote:
-> --- linux.vanilla-2.6.20-rc6-mm3/drivers/ata/pata_amd.c	2007-01-31 14:20:10.000000000 +0000
-> +++ linux-2.6.20-rc6-mm3/drivers/ata/pata_amd.c	2007-02-06 17:04:19.000000000 +0000
-> @@ -642,6 +642,11 @@
->  	if (type == 1 && rev > 0x7)
->  		type = 2;
->  
-> +#if defined(CONFIG_ATA_ACPI)
-> +	/* Prefer the ACPI driver for Nvidia hardware */
-> +	if (pdev->vendor == PCI_VENDOR_ID_NVIDIA && ata_pata_acpi_present(pdev))
-> +		return -ENODEV;
-> +#endif		
->  	/* Check for AMD7411 */
->  	if (type == 3)
->  		/* FIFO is broken */
+Hallo.
 
-Problem with this approach is it may break distro/initrd setups since 
-the pata_amd driver appears to be the one that "should" work based on 
-the PCI ID, so the initrd would end up containing only this driver, 
-which will fail out with -ENODEV and cause a boot failure. If the root 
-filesystem was on a disk driven by this controller, the mkinitrd stuff 
-would have to "know" that it should also try loading pata_acpi.
+search-a-little-harder-for-mkimage.patch
 
-Unless there are some Nvidia boxes out there which don't provide 
-_GTM/_STM ACPI methods (which seems a bit unlikely given Allen Martin's 
-comments) then we could potentially move the Nvidia PATA PCI IDs into 
-the pata_acpi driver, at least if ACPI is enabled in the kernel build..
+------------------------------------------------------
+Subject: search a little harder for mkimage
+From: "Mike Frysinger" <vapier.adi@gmail.com>
 
--- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
+> Check to see if `${CROSS_COMPILE}mkimage` exists and if not, fall back to
+> the standard `mkimage`
 
+Why this can't be done by
+
+  PATH=$CROSS_COMPILE:$PATH
+
+in your environment?
+
+> The Blackfin toolchain includes mkimage, but we dont want to namespace
+> collide with any of the user's system setup, so we prefix it with our
+> toolchain name.
+
+If that matter, `type -path' is bashizm (BloAted SHell), and "blackbox"
+with "dash" (very good `sh' equivalents) will fail. I would recomend to
+use "which" command (btw, Debian has `sh' version of it), if you
+concerned about size and performance.
+
+Nack + proposition to move from `bash' to `sh'.
+
+-MKIMAGE=$(type -path mkimage)
++MKIMAGE=$(type -path ${CROSS_COMPILE}mkimage)
+ 
+ if [ -z "${MKIMAGE}" ]; then
+-	# Doesn't exist
+-	echo '"mkimage" command not found - U-Boot images will not be built' >&2
+-	exit 0;
++	MKIMAGE=$(type -path mkimage)
++	if [ -z "${MKIMAGE}" ]; then
++		# Doesn't exist
++		echo '"mkimage" command not found - U-Boot images will not be built' >&2
++		exit 0;
++	fi
+ fi
+
+____
