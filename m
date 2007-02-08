@@ -1,72 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161532AbXBHFd4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161424AbXBHFqd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161532AbXBHFd4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Feb 2007 00:33:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161418AbXBHFdz
+	id S1161424AbXBHFqd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Feb 2007 00:46:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161535AbXBHFqd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Feb 2007 00:33:55 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:56417 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161222AbXBHFdy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Feb 2007 00:33:54 -0500
-Date: Wed, 7 Feb 2007 21:33:38 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Robert Hancock <hancockr@shaw.ca>, Daniel Barkalow <barkalow@iabervon.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
-       Jeff Garzik <jeff@garzik.org>, Ayaz Abdulla <aabdulla@nvidia.com>
-Subject: Re: forcedeth problems on 2.6.20-rc6-mm3
-Message-Id: <20070207213338.9864285b.akpm@linux-foundation.org>
-In-Reply-To: <20070205165224.df923c78.akpm@linux-foundation.org>
-References: <45C6BCE5.90103@shaw.ca>
-	<Pine.LNX.4.64.0702050124320.20138@iabervon.org>
-	<45C7CD3A.808@shaw.ca>
-	<20070205165224.df923c78.akpm@linux-foundation.org>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 8 Feb 2007 00:46:33 -0500
+Received: from nf-out-0910.google.com ([64.233.182.187]:61418 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161424AbXBHFqc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Feb 2007 00:46:32 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=ijkEel5uyB9UptaakBty1M5kl4yXgH6Td7j2PrtbOfwjE6Gq2ddqiJgAQmX0uN//Xg3TqUn86tpXo6WzqpIxJcGz3/hikzTll7b9QX0/QOyjxsafFt6surDR6P1FHAEMmw5QKQjEF9w9a6FHUMoblM3cw/Ky4cYMZySgROYSk8U=
+Message-ID: <1a297b360702072146i649c0020q25b7b8765b3f666b@mail.gmail.com>
+Date: Thu, 8 Feb 2007 09:46:31 +0400
+From: "Manu Abraham" <abraham.manu@gmail.com>
+To: "Grant Grundler" <grundler@parisc-linux.org>
+Subject: Re: 2.6.20 PCI Cannot allocate resource region 2
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-pci@atrey.karlin.mff.cuni.cz, greg@kroah.com
+In-Reply-To: <20070207065803.GA15076@colo.lackof.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1a297b360702041709l3b0309c7y8fcd33df1d487889@mail.gmail.com>
+	 <20070206045528.GA4228@colo.lackof.org>
+	 <20070206050331.GB4228@colo.lackof.org>
+	 <20070205213339.80239a22.akpm@linux-foundation.org>
+	 <20070206084638.GB20752@colo.lackof.org>
+	 <1a297b360702060313n34a8f941oebf9f373630b070f@mail.gmail.com>
+	 <1a297b360702060352y3faa0f46i7c4a01499fae2eff@mail.gmail.com>
+	 <20070207065803.GA15076@colo.lackof.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 5 Feb 2007 16:52:24 -0800 Andrew Morton <akpm@linux-foundation.org> wrote:
+On 2/7/07, Grant Grundler <grundler@parisc-linux.org> wrote:
+> On Tue, Feb 06, 2007 at 03:52:47PM +0400, Manu Abraham wrote:
+> > >attaching a dump of the regs (on 2.6.17.7) as well as the diff
+> >
+> > The device now works, used the demodulator driver alongwith the bridge
+> > driver.
+>
+> Ok - thanks for the dmesg output and log. I suspect you've already
+> tried cycling power on the machine (If not, please do).
+> I have no idea what M$ XP was doing that might "fix" the problem.
+>
+> I was just suspicious of our byte accesses to the same dword.
+> To answer you previous question, it's possible that M$ only
+> uses dword accesses. I don't know.
 
-> On Mon, 05 Feb 2007 18:35:06 -0600
-> Robert Hancock <hancockr@shaw.ca> wrote:
-> 
-> > Daniel Barkalow wrote:
-> > > On Sun, 4 Feb 2007, Robert Hancock wrote:
-> > > 
-> > >> Something's busted with forcedeth in 2.6.20-rc6-mm3 for me relative to
-> > >> 2.6.20-rc6. There's no errors in dmesg, but it seems no packets ever get
-> > >> received and so the machine can't get an IP address. I tried reverting all the
-> > >> -mm changes to drivers/net/forcedeth.c, which didn't help. The network
-> > >> controller shares an IRQ with the USB OHCI controller which is receiving
-> > >> interrupts, so it doesn't seem like an interrupt routing problem, though I
-> > >> suppose something wierd could be happening there.
-> > > 
-> > > IIRC, forcedeth tries to use MSI by default. Perhaps the hardware is using 
-> > > it, but the kernel thinks enabling it didn't work? I think there's a 
-> > > module option for forcedeth to disable MSI, which might be worth a try to 
-> > > see if it has any effect.
-> > 
-> > I must have messed something up when testing before - reverting to 
-> > forcedeth.c from 2.6.20-rc6 does indeed fix the problem. And it doesn't 
-> > seem like no packets at all are received with the -mm3 version (driver 
-> > version 0.60), either - if I do a tcpdump I can get Ethernet packets 
-> > showing up, but I can't ping my router so it seems like something isn't 
-> > getting through properly. With the 2.6.20-rc6 version (driver version 
-> > 0.59) it works fine. I switched back and forth between versions and this 
-> > seems repeatable.
-> > 
-> > I don't think it's MSI related, the CK804 version of these controllers 
-> > doesn't support MSI and the driver shouldn't be trying to use it. I 
-> > tried the MSI and MSI-X disable options on the 0.60 driver, but that 
-> > didn't help.
-> > 
-> 
-> OK, thanks.  Jeff, please note that the forcedeth changes in git-netdev-all
-> have a problem.
+Does it sound too weird, if our PCI accesses could accidentally
+overwrite EEPROM contents on cards that have the EEPROM, R/W ?
 
-Well all the forcedeth patches seems to have wandered into mainline anyway.
+we came across with lot of issues on the same unfortunately under
+Linux only this issues comes up, we used to sling mud at each other,
+probably for bad I2C communications on a BT878 based chip.
 
-Please test current git (or tomorrow's git snapshot), see if it works?
+Recently, somebody came across a strange case where, booting into
+Windows , fixed his EEPROM contents. Since i have the driver sources
+for the described card from the vendor for windows, i don't see how
+any way in which the Windows driver does rewriting the EEPROM.
+
+http://thread.gmane.org/gmane.linux.drivers.dvb/23911/focus=31185
+
+Does this have any relation to the current situation ?
+
+regards,
+manu
