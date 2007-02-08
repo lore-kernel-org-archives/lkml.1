@@ -1,67 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423307AbXBHUWP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423324AbXBHU34@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423307AbXBHUWP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Feb 2007 15:22:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423318AbXBHUWP
+	id S1423324AbXBHU34 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Feb 2007 15:29:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423319AbXBHU34
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Feb 2007 15:22:15 -0500
-Received: from ug-out-1314.google.com ([66.249.92.170]:22009 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423306AbXBHUWN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Feb 2007 15:22:13 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=m9dJFTfAodGn9mXqNFRjyZudho0prD83MQ6+Kvxh9WlnU/oOycawOylWVZYdjy0G017lk9KaMYP6v2Ctb/cEONilkPTc+QFbYetGNZx8YyHW/9wvJyCDlQDVnsU8/pLPyV/FDuAkx8mhGVH9aSvlbRc5vkYIOX6MZDReDt8frv0=
-Date: Thu, 8 Feb 2007 23:22:11 +0300
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: ahendry <ahendry@tusc.com.au>
-Cc: linux-x25@vger.kernel.org, eis@baty.hanse.de, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH 2/3] X.25: Adds /proc/sys/net/x25/x25_forward to control forwarding.
-Message-ID: <20070208202211.GB5532@martell.zuzino.mipt.ru>
-References: <1170890071.5189.40.camel@localhost> <20070208201909.GA5532@martell.zuzino.mipt.ru>
+	Thu, 8 Feb 2007 15:29:56 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:38157 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1423284AbXBHU3z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Feb 2007 15:29:55 -0500
+Date: Thu, 8 Feb 2007 12:25:39 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org,
+       linux-ide@vger.kernel.org, Jeff Garzik <jgarzik@pobox.com>
+Subject: Re: [PATCH] ATA convert GSI to irq on ia64
+Message-Id: <20070208122539.d9c24ad9.akpm@linux-foundation.org>
+In-Reply-To: <20070208194204.GC2354@infradead.org>
+References: <1170920422.15989.354.camel@ymzhang>
+	<20070208194204.GC2354@infradead.org>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070208201909.GA5532@martell.zuzino.mipt.ru>
-User-Agent: Mutt/1.5.11
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 08, 2007 at 11:19:09PM +0300, Alexey Dobriyan wrote:
-> On Thu, Feb 08, 2007 at 10:14:31AM +1100, ahendry wrote:
-> > echo "1" > /proc/sys/net/x25/x25_forward
-> > To turn on x25_forwarding, defaults to off
-> 
-> > --- linux-2.6.20-vanilla/include/linux/sysctl.h
-> > +++ linux-2.6.20/include/linux/sysctl.h
-> > @@ -699,7 +699,8 @@ enum {
-> >  	NET_X25_CALL_REQUEST_TIMEOUT=2,
-> >  	NET_X25_RESET_REQUEST_TIMEOUT=3,
-> >  	NET_X25_CLEAR_REQUEST_TIMEOUT=4,
-> > -	NET_X25_ACK_HOLD_BACK_TIMEOUT=5
-> > +	NET_X25_ACK_HOLD_BACK_TIMEOUT=5,
-> > +	NET_X25_FORWARD=6
-> >  };
-> 
-> > --- linux-2.6.20-vanilla/net/x25/sysctl_net_x25.c
-> > +++ linux-2.6.20/net/x25/sysctl_net_x25.c
-> > @@ -73,6 +73,14 @@ static struct ctl_table x25_table[] = {
-> >  		.extra1 =	&min_timer,
-> >  		.extra2 =	&max_timer,
-> >  	},
-> > +	{
-> > +		.ctl_name =	NET_X25_FORWARD,
-> > +		.procname =	"x25_forward",
-> > +		.data = 	&sysctl_x25_forward,
-> > +		.maxlen = 	sizeof(int),
-> > +		.mode = 	0644,
-> > +		.proc_handler = &proc_dointvec,
-> > +	},
-> 
-> Reserving binary sysctl number and not defining ->strategy is strange.
+On Thu, 8 Feb 2007 19:42:04 +0000
+Christoph Hellwig <hch@infradead.org> wrote:
 
-Ouch, please, ignore. I misparsed sysctl code.
+> On Thu, Feb 08, 2007 at 03:40:22PM +0800, Zhang, Yanmin wrote:
+> > If an ATA drive uses legacy mode, ata driver will choose 14 and 15 as the
+> > fixed irq number. On ia64 platform, such numbers are GSI and should be converted
+> > to irq vector.
+> > 
+> > Below patch against kernel 2.6.20 fixes it.
+> 
+> These direct arch ifdefs in core aren't acceptable.
 
+For 2.6.21 that's true.  But this is a suitable fix for 2.6.20.x, no?
