@@ -1,64 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423036AbXBHOMN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423000AbXBHOYl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423036AbXBHOMN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Feb 2007 09:12:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423038AbXBHOMN
+	id S1423000AbXBHOYl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Feb 2007 09:24:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423046AbXBHOYl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Feb 2007 09:12:13 -0500
-Received: from e31.co.us.ibm.com ([32.97.110.149]:33557 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423036AbXBHOML (ORCPT
+	Thu, 8 Feb 2007 09:24:41 -0500
+Received: from web38508.mail.mud.yahoo.com ([209.191.125.54]:27914 "HELO
+	web38508.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1423000AbXBHOYk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Feb 2007 09:12:11 -0500
-Subject: Re: Kbuild change breaks the ppc64 build
-From: Michal Ostrowski <mostrows@watson.ibm.com>
-To: David Miller <davem@davemloft.net>
-Cc: paulus@samba.org, linuxppc-dev@ozlabs.org, olecom@flower.upol.cz,
-       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20070208.040003.112623191.davem@davemloft.net>
-References: <17867.1342.763881.188430@cargo.ozlabs.ibm.com>
-	 <20070208.040003.112623191.davem@davemloft.net>
-Content-Type: text/plain
-Date: Thu, 08 Feb 2007 08:12:00 -0600
-Message-Id: <1170943920.15584.234.camel@kdsk1.austin.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 8 Feb 2007 09:24:40 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=t8hO70DwD/tYuChdnbO7iWpOhhJ4ph/UNlnJysuXGba3GZbFPeTqMxIkk8w2KfbOkoo6I//I7NYiv8gIfmeV/Y+bJoS6YphcPYUVgjLgiKaBsHoIiwwmnFYQ9IflIz6TwBCZfG6BEan5pnX/GKUVA90UyDLs5hOYZC1xh/jwimE=;
+X-YMail-OSG: n5RvpGUVM1komKLWaZp4E5KRGfkEu2xmKLAY5FhHFguqtLDCFdWwu1whhq7zc5VQu8j6AURWhRXY3JAi5FdOy6EkC_bfioX9GC5Km0pF8vhJXFG6Fqx0zyQaRj6YchxVWPSCbfhCTdJVJZI-
+Date: Thu, 8 Feb 2007 06:24:39 -0800 (PST)
+From: Levitsky Maxim <maximlevitsky@yahoo.com>
+Subject: Re: OT: I don't recive mail from linux-kernel
+To: davem@davemloft.net
+Cc: postmaster@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20070208.051514.125893234.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <860686.27330.qm@web38508.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Isn't the extra space there because you've included it in the definition
-of "test"?  The attempt at introducing indentation introduces the extra
-space character.  Defining test without the internal indentation should
-produce the results you are looking for.
+
+--- David Miller <davem@davemloft.net> wrote:
+
+> From: Levitsky Maxim <maximlevitsky@yahoo.com>
+> Date: Thu, 8 Feb 2007 05:09:25 -0800 (PST)
+> 
+> > But now things changed, cause I wrote number of patches, and it is
+> > very difficult to send patches without subscription.
+> 
+> You don't need to be subscribed in order to send postings to the
+> mailing list.
+> 
+
+Nevermind that, I just registered a gmail account maximlevitsky at gmail.com so I won't use this
+one anymore, because yahoo webmail corrupts patches. I will unsubscribe this account now from lkml
+
+     Cheers,
+         Maxim Levitsky
 
 
--- 
-Michal Ostrowski <mostrows@watson.ibm.com>
 
 
-On Thu, 2007-02-08 at 04:00 -0800, David Miller wrote:
 
-> For some reason $(call ...) invocations add spaces.  I tried
-> another test case:
-> 
-> define test
->  $(shell echo -n)
-> endef
-> 
-> VAR:=$(call test)
-> 
-> all:
-> 	@echo "\'$(VAR)\'"
-> 
-> And this always prints:
-> 
-> ' TEST'
-> 
-> even with GNU Make version 3.81
-> 
-> If I put a $(strip ...) around the define, the space is
-> still there.  If I put the $(strip ...) around VAR's
-> $(call), the space goes away.
-
-
+ 
+____________________________________________________________________________________
+Finding fabulous fares is fun.  
+Let Yahoo! FareChase search your favorite travel sites to find flight and hotel bargains.
+http://farechase.yahoo.com/promo-generic-14795097
