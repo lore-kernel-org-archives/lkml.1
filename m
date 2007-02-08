@@ -1,62 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423371AbXBHVNm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423388AbXBHVPF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423371AbXBHVNm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Feb 2007 16:13:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423389AbXBHVNm
+	id S1423388AbXBHVPF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Feb 2007 16:15:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423397AbXBHVPF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Feb 2007 16:13:42 -0500
-Received: from smtp.ono.com ([62.42.230.12]:54365 "EHLO resmaa05.ono.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1423388AbXBHVNk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Feb 2007 16:13:40 -0500
-Date: Thu, 8 Feb 2007 22:13:17 +0100
-From: "J.A. =?UTF-8?B?TWFnYWxsw7Nu?=" <jamagallon@ono.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Jan Engelhardt <jengelh@linux01.gwdg.de>, Jeff Garzik <jeff@garzik.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: somebody dropped a (warning) bomb
-Message-ID: <20070208221317.5beedaeb@werewolf-wl>
-In-Reply-To: <Pine.LNX.4.64.0702081145470.8424@woody.linux-foundation.org>
-References: <45CB3B28.60102@garzik.org>
-	<Pine.LNX.4.64.0702080819350.8424@woody.linux-foundation.org>
-	<Pine.LNX.4.61.0702081851310.1364@yvahk01.tjqt.qr>
-	<Pine.LNX.4.64.0702081145470.8424@woody.linux-foundation.org>
-X-Mailer: Claws Mail 2.7.2cvs25 (GTK+ 2.10.9; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 8 Feb 2007 16:15:05 -0500
+Received: from nf-out-0910.google.com ([64.233.182.185]:35575 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423388AbXBHVPC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Feb 2007 16:15:02 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:references:in-reply-to:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=keEMCYsFXQ/7tmIohNjqHI4iskX+9lBVF20WTyPMcf4v9DklHpEelWNGh6W1v1nUe8nI+pmnWdTwiu33RpnhIGdAgAck8wivdVgTMEBUHwPH3jg52Exy8if9OufH+ByZ3j6kKnRu9TEdmDYKUxMWYGAI10CFbVESR2qImNb+hUQ=
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+To: netdev@vger.kernel.org
+Subject: [PATCH 2.6.20 2/5] dmfe: Fix two bugs
+Date: Thu, 8 Feb 2007 23:11:49 +0200
+User-Agent: KMail/1.9.4
+References: <200702082305.26735.maximlevitsky@gmail.com>
+In-Reply-To: <200702082305.26735.maximlevitsky@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200702082311.50122.maximlevitsky@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 8 Feb 2007 11:53:38 -0800 (PST), Linus Torvalds <torvalds@linux-foundation.org> wrote:
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+Subject : [PATCH 2.6.20 2/5] dmfe: Fix two bugs
 
-> 
-> 
-> On Thu, 8 Feb 2007, Jan Engelhardt wrote:
-> > 
-> > I generally have to agree with you about the unsigned char* vs char*. It 
-> > is a problem of the C language that char can be signed and unsigned, and 
-> > that people, as a result, have used it for storing 
-> > "shorter_than_short_t"s.
-> > 
-> > What C needs is a distinction between char and int8_t, rendering "char" 
-> > an unsigned at all times basically and making "unsigned char" and 
-> > "signed char" illegal types in turn.
-> 
-> No, it's really more fundamental than that.
-> 
-> Exactly because "char *" doesn't have a defined sign, only a TOTALLY 
-> INCOMPETENT compiler will warn about its signedness.
-> 
+Fix a oops on module removal due to deallocating memory before unregistring 
+driver
+Fix a NULL pointer dereference when dev_alloc_skb fails
 
-Perhaps the problem is that gcc warns you something like 'if you care
-anything about the sign behaviour of what you send to strlen() you're doomed'.
-Ie, you declared the var unsigned, so you care about it. But I can do
-anything without any regard to the sign.
+Signed-off-by: Maxim Levitsky <maximlevitsky@gmail.com>
 
---
-J.A. Magallon <jamagallon()ono!com>     \               Software is like sex:
-                                         \         It's better when it's free
-Mandriva Linux release 2007.1 (Cooker) for i586
-Linux 2.6.19-jam06 (gcc 4.1.2 20070115 (prerelease) (4.1.2-0.20070115.1mdv2007.1)) #1 SMP PREEMPT
+---
+
+--- linux-2.6.20-mod/drivers/net/tulip/dmfe.c	2007-02-08 20:41:25.000000000 
++0200
++++ linux-2.6.20-test/drivers/net/tulip/dmfe.c	2007-02-08 20:48:11.000000000 
++0200
+@@ -504,14 +504,17 @@ static void __devexit dmfe_remove_one (s
+ 	DMFE_DBUG(0, "dmfe_remove_one()", 0);
+ 
+  	if (dev) {
++		
++		unregister_netdev(dev);
++		
+ 		pci_free_consistent(db->pdev, sizeof(struct tx_desc) *
+ 					DESC_ALL_CNT + 0x20, db->desc_pool_ptr,
+  					db->desc_pool_dma_ptr);
+ 		pci_free_consistent(db->pdev, TX_BUF_ALLOC * TX_DESC_CNT + 4,
+ 					db->buf_pool_ptr, db->buf_pool_dma_ptr);
+-		unregister_netdev(dev);
+ 		pci_release_regions(pdev);
+ 		free_netdev(dev);	/* free board information */
++		
+ 		pci_set_drvdata(pdev, NULL);
+ 	}
+ 
+@@ -930,7 +933,7 @@ static inline u32 cal_CRC(unsigned char 
+ static void dmfe_rx_packet(struct DEVICE *dev, struct dmfe_board_info * db)
+ {
+ 	struct rx_desc *rxptr;
+-	struct sk_buff *skb;
++	struct sk_buff *skb, *newskb;
+ 	int rxlen;
+ 	u32 rdes0;
+ 
+@@ -984,8 +987,10 @@ static void dmfe_rx_packet(struct DEVICE
+ 					/* Good packet, send to upper layer */
+ 					/* Shorst packet used new SKB */
+ 					if ( (rxlen < RX_COPY_SIZE) &&
+-						( (skb = dev_alloc_skb(rxlen + 2) )
++						( (newskb = dev_alloc_skb(rxlen + 2) )
+ 						!= NULL) ) {
++						
++						skb = newskb;
+ 						/* size less than COPY_SIZE, allocate a rxlen SKB */
+ 						skb->dev = dev;
+ 						skb_reserve(skb, 2); /* 16byte align */
