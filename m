@@ -1,39 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161513AbXBHBeO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161512AbXBHBmn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161513AbXBHBeO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Feb 2007 20:34:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161516AbXBHBeN
+	id S1161512AbXBHBmn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Feb 2007 20:42:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422822AbXBHBmm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Feb 2007 20:34:13 -0500
-Received: from smtp103.sbc.mail.re2.yahoo.com ([68.142.229.102]:44460 "HELO
-	smtp103.sbc.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1161513AbXBHBeN (ORCPT
+	Wed, 7 Feb 2007 20:42:42 -0500
+Received: from mail4.sea5.speakeasy.net ([69.17.117.6]:51410 "EHLO
+	mail4.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161512AbXBHBmm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Feb 2007 20:34:13 -0500
-X-Greylist: delayed 483 seconds by postgrey-1.27 at vger.kernel.org; Wed, 07 Feb 2007 20:34:12 EST
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=IkBzCXrCsNi2VPQfVpdDBJDo4MfzOMs2e0yUilwQ5dGMZtCbWhayIg+whbmBJbS9qNewAZtmAce8Ec/O3gErmuTLiy7Mcy2KseAISi0ITowIRJuHZBmcPHLtWfJ3D4ZvVtL1aWK088YF8JST7J+Ir2Vkz8Q93fFkX346zNJUWbk=  ;
-X-YMail-OSG: G8knK14VM1lOlBy97snwH1eD58Ya4u2fyvImK0A9ISLBlC0D2kuX6A__hNHs4Un2.5r8n817pTz0eYAPMZcif8PiJyxbJqc7XoDT5Vg5uagfO899j23J9xVy6oa1tgKnQ9R5aXfXDehdRjwcT09FEpgitOs-
-From: David Brownell <david-b@pacbell.net>
-To: Linus Torvalds <torvalds@osdl.org>
-Subject: Re: [PATCH 3/28] Driver core: convert SPI code to use struct device
-Date: Wed, 7 Feb 2007 17:34:09 -0800
-User-Agent: KMail/1.7.1
-Cc: Linux Kernel list <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>
+	Wed, 7 Feb 2007 20:42:42 -0500
+Message-ID: <45CA8010.70803@kernel.org>
+Date: Wed, 07 Feb 2007 17:42:40 -0800
+From: Josh Triplett <josh@kernel.org>
+User-Agent: Icedove 1.5.0.9 (X11/20061220)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Richard Knutsson <ricknu-0@student.ltu.se>, linux-kernel@vger.kernel.org,
+       "Paul E. McKenney" <paulmck@us.ibm.com>
+Subject: Re: [PATCH 3/3] rcutorture: Remove redundant assignment to cur_ops
+ in for loop
+References: <45CA206C.2080205@kernel.org>	<45CA212A.7000504@kernel.org>	<45CA6711.40502@student.ltu.se>	<20070207162228.bd7fd822.akpm@linux-foundation.org> <20070207162410.581bcc98.akpm@linux-foundation.org>
+In-Reply-To: <20070207162410.581bcc98.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200702071734.09339.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-NAK.  This wasn't supposed to go upstream Greg; and it also
-conflicts with other pending SPI patches.
+Andrew Morton wrote:
+> On Wed, 7 Feb 2007 16:22:28 -0800
+> Andrew Morton <akpm@linux-foundation.org> wrote:
+>> I suspect we can do better than that...
+[...]
 
-- Dave
+Much better; please go ahead and replace my patch with this one.
 
+Signed-off-by: Josh Triplett <josh@kernel.org>
+
+- Josh Triplett
+
+> --- a/kernel/rcutorture.c~rcutorture-remove-redundant-assignment-to-cur_ops-in
+> +++ a/kernel/rcutorture.c
+> @@ -569,10 +569,6 @@ static struct rcu_torture_ops sched_ops 
+>  	.name = "sched"
+>  };
+>  
+> -static struct rcu_torture_ops *torture_ops[] =
+> -	{ &rcu_ops, &rcu_sync_ops, &rcu_bh_ops, &rcu_bh_sync_ops,
+> -	  &srcu_ops, &qrcu_ops, &sched_ops, NULL };
+> -
+>  /*
+>   * RCU torture writer kthread.  Repeatedly substitutes a new structure
+>   * for that pointed to by rcu_torture_current, freeing the old structure
+> @@ -939,16 +935,17 @@ rcu_torture_init(void)
+>  	int i;
+>  	int cpu;
+>  	int firsterr = 0;
+> +	static struct rcu_torture_ops *torture_ops[] =
+> +		{ &rcu_ops, &rcu_sync_ops, &rcu_bh_ops, &rcu_bh_sync_ops,
+> +		  &srcu_ops, &qrcu_ops, &sched_ops, };
+>  
+>  	/* Process args and tell the world that the torturer is on the job. */
+> -
+> -	for (i = 0; cur_ops = torture_ops[i], cur_ops; i++) {
+> +	for (i = 0; i < ARRAY_SIZE(torture_ops); i++) {
+>  		cur_ops = torture_ops[i];
+> -		if (strcmp(torture_type, cur_ops->name) == 0) {
+> +		if (strcmp(torture_type, cur_ops->name) == 0)
+>  			break;
+> -		}
+>  	}
+> -	if (cur_ops == NULL) {
+> +	if (i == ARRAY_SIZE(torture_ops)) {
+>  		printk(KERN_ALERT "rcutorture: invalid torture type: \"%s\"\n",
+>  		       torture_type);
+>  		return (-EINVAL);
+> _
+> 
+> 
+> 
 
