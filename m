@@ -1,64 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423215AbXBHLFd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161540AbXBHLU2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423215AbXBHLFd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Feb 2007 06:05:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423223AbXBHLFd
+	id S1161540AbXBHLU2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Feb 2007 06:20:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422790AbXBHLU2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Feb 2007 06:05:33 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:51158
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1423215AbXBHLFd (ORCPT
+	Thu, 8 Feb 2007 06:20:28 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:53890 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161540AbXBHLU1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Feb 2007 06:05:33 -0500
-Date: Thu, 08 Feb 2007 03:05:31 -0800 (PST)
-Message-Id: <20070208.030531.112264703.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-CC: linux-kernel@vger.kernel.org
-Subject: checker-shell still hosed...
-From: David Miller <davem@davemloft.net>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 8 Feb 2007 06:20:27 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Etienne Lorrain <etienne_lorrain@yahoo.fr>
+Cc: vgoyal@in.ibm.com, "H. Peter Anvin" <hpa@zytor.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Re : [PATCH] Compressed ia32 ELF file generation for loading by Gujin 1/3
+References: <20070208094831.56920.qmail@web26908.mail.ukl.yahoo.com>
+Date: Thu, 08 Feb 2007 04:20:10 -0700
+In-Reply-To: <20070208094831.56920.qmail@web26908.mail.ukl.yahoo.com> (Etienne
+	Lorrain's message of "Thu, 8 Feb 2007 09:48:31 +0000 (GMT)")
+Message-ID: <m1odo4aob9.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Etienne Lorrain <etienne_lorrain@yahoo.fr> writes:
 
-Linus, things still fail for me even with the $(strip ...) construct
-you added works properly.
+>> Currently relocation information is extracted from vmlinux and packed in
+>> final bzImage after some processing. After execution of real mode code
+>> and once the image is decompressed, all the relocations are performed and
+>> then control is transferred to kernel.
+>
+>   So here you are not really using the initial ELF program header of vmlinux,
+> but more the section header and my PT_LOAD section bother you, I better
+> understand. You cannot really claim you are only doing standard/usual
+> ELF treatment.
 
-For some reason things like $(call cc-option-yn...) still fail.
+The difference is that a boot loader is not doing the work.  The format is.
+Compiling -fPIC almost gets us there except ld has bugs processing absolute
+symbols.
 
-My make version 3.81beta4 has the space problem, and with your
-change it just returns a space. :-)  Without your change it
-gives the problematic " y" string.
+Anything we expect a bootloader to do need to be as close as possible to
+the usual ELF treatment.
 
-A running theory of mine is that it's a "$(call)" within a
-$(call) which generates the space.  So I wrote a little
-make.test:
-
-define test1
-  $(shell echo "str1")
-endef
-
-define test2
-  $(call test1)
-endef
-
-FOO := A$(call test2)B
-
-all:
-	echo A$(FOO)B
-
-If I run "make -f make.test" I get:
-
-davem@sunset:~/src/GIT/net-2.6$ make -f make.test
-echo AA    str1BB
-AA str1BB
-davem@sunset:~/src/GIT/net-2.6$
-
-Hmmm...  but I just checked on a proper "GNU Make 3.81" and that
-prints the space in the example above too.
-
-Weird...
-
+Eric
