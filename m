@@ -1,66 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422680AbXBHXiO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161104AbXBHXmw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422680AbXBHXiO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Feb 2007 18:38:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422636AbXBHXiN
+	id S1161104AbXBHXmw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Feb 2007 18:42:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422709AbXBHXmw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Feb 2007 18:38:13 -0500
-Received: from lucidpixels.com ([75.144.35.66]:53006 "EHLO lucidpixels.com"
+	Thu, 8 Feb 2007 18:42:52 -0500
+Received: from ns.suse.de ([195.135.220.2]:46390 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422680AbXBHXiM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Feb 2007 18:38:12 -0500
-Date: Thu, 8 Feb 2007 18:38:11 -0500 (EST)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-X-X-Sender: jpiszcz@p34.internal.lan
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: finger @finger.kernel.org -> Connection refused
-In-Reply-To: <Pine.LNX.4.61.0702090036030.24888@yvahk01.tjqt.qr>
-Message-ID: <Pine.LNX.4.64.0702081837390.11265@p34.internal.lan>
-References: <Pine.LNX.4.64.0702081826260.11265@p34.internal.lan>
- <Pine.LNX.4.61.0702090036030.24888@yvahk01.tjqt.qr>
+	id S1161104AbXBHXmv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Feb 2007 18:42:51 -0500
+Date: Thu, 8 Feb 2007 15:41:27 -0800
+From: Greg KH <greg@kroah.com>
+To: James Simmons <jsimmons@infradead.org>
+Cc: Richard Purdie <rpurdie@rpsys.net>, LKML <linux-kernel@vger.kernel.org>,
+       akpm <akpm@linux-foundation.org>,
+       Marcin Juszkiewicz <openembedded@hrw.one.pl>
+Subject: Re: Git backlight subsystem tree
+Message-ID: <20070208234127.GA23475@kroah.com>
+References: <1170901826.5859.2.camel@localhost.localdomain> <Pine.LNX.4.64.0702081520110.824@pentafluge.infradead.org> <1170957595.5849.11.camel@localhost.localdomain> <Pine.LNX.4.64.0702081830520.7686@pentafluge.infradead.org> <20070208212314.GA21165@kroah.com> <Pine.LNX.4.64.0702082154040.7686@pentafluge.infradead.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0702082154040.7686@pentafluge.infradead.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Feb 08, 2007 at 09:54:21PM +0000, James Simmons wrote:
+> 
+> > On Thu, Feb 08, 2007 at 06:32:02PM +0000, James Simmons wrote:
+> > > On Thu, 8 Feb 2007, Richard Purdie wrote:
+> > > 
+> > > > On Thu, 2007-02-08 at 15:28 +0000, James Simmons wrote:
+> > > > > I have some patches that move the backlight away from using the class 
+> > > > > stuff. The only problem is the patch requires all backlight devices 
+> > > > > to be linked to a real struct device. Right now the acpi backligths are 
+> > > > > not.
+> > > > 
+> > > > Why would you want to do that?
+> > > > 
+> > > > The whole point of having this is so that backlights appear as a
+> > > > standard interface under /sys/class/backlight.
+> > > > 
+> > > > An example of why standardised interfaces are good would be someone
+> > > > writing an applet for a handheld to control the backlight brightness.
+> > > > With the class in place, the applet can easily work with any backlight.
+> > > > Without it, it has to be written for each backlight.
+> > > > 
+> > > > So this is a very strong NAK but I'm curious why you'd want to do it...
+> > > 
+> > > I CC Greg to explain. The backlight class didn't go away. The way it is 
+> > > handled is different.
+> > 
+> > Have a pointer to the patch so I can help explain better?
+> > 
+> > As a short summary, 'struct class_device' is going away.  Using a
+> > 'struct device' in its place is what the conversion should have just
+> > done, no functionality change otherwise.
+> 
+> diff --git a/drivers/video/backlight/backlight.c b/drivers/video/backlight/backlight.c
 
+<snip>
 
-On Fri, 9 Feb 2007, Jan Engelhardt wrote:
+Looks good to me.  And it makes the code simpler too :)
 
->
->> It appears to have been dead for awhile now, did I miss something?
->> One of my scripts uses this functionality, which now appears
->> dead/disabled/offline.
->>
->> Can anyone provide an update?
->
-> kernel.org front page sayz:
->
-> Aug 21, 2003: Please don't use finger.kernel.org for any sort of
-> automatic monitoring. The number of automatic bots hitting this port is
-> causing the finger daemon to shut down more often than not. The same
-> information is available from http://www.kernel.org/kdist/finger_banner.
->
-> ;-)
->
->
-> Jan
-> -- 
-> ft: http://freshmeat.net/p/chaostables/
->
+thanks,
 
-Thanks!
-
-$ wget -q -O- http://www.kernel.org/kdist/finger_banner
-The latest stable version of the Linux kernel is:           2.6.20
-The latest snapshot for the stable Linux kernel tree is:    2.6.20-git1
-The latest 2.4 version of the Linux kernel is:              2.4.34.1
-The latest 2.2 version of the Linux kernel is:              2.2.26
-The latest prepatch for the 2.2 Linux kernel tree is:       2.2.27-rc2
-The latest -mm patch to the stable Linux kernels is:        2.6.20-rc6-mm3
-
-Wget it is.
-
-Justin.
-
+greg k-h
