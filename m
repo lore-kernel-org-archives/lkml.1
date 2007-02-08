@@ -1,81 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422940AbXBHLtG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422942AbXBHLth@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422940AbXBHLtG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Feb 2007 06:49:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422944AbXBHLtF
+	id S1422942AbXBHLth (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Feb 2007 06:49:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422946AbXBHLth
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Feb 2007 06:49:05 -0500
-Received: from mailhub.hp.com ([192.151.27.10]:46607 "EHLO mailhub.hp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422940AbXBHLtE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Feb 2007 06:49:04 -0500
-From: "Bob Picco" <bob.picco@hp.com>
-Date: Thu, 8 Feb 2007 06:49:01 -0500
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org,
-       y-goto@jp.fujitsu.com, clameter@engr.sgi.com, akpm@osdl.org,
-       linux-ia64@vger.kernel.org
-Subject: Re: [2.6.20][PATCH] fix mempolicy error check on a system with memory-less-node
-Message-ID: <20070208114901.GA25152@localhost>
-References: <20070206202312.4f979bcf.kamezawa.hiroyu@jp.fujitsu.com> <Pine.LNX.4.64.0702060925130.9812@schroedinger.engr.sgi.com> <20070207101400.feda1bf9.kamezawa.hiroyu@jp.fujitsu.com> <Pine.LNX.4.64.0702070002430.2188@schroedinger.engr.sgi.com> <20070207173647.86bd64c0.kamezawa.hiroyu@jp.fujitsu.com>
-Mime-Version: 1.0
+	Thu, 8 Feb 2007 06:49:37 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:38716 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422942AbXBHLtg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Feb 2007 06:49:36 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
+       "Lu, Yinghai" <yinghai.lu@amd.com>,
+       Luigi Genoni <luigi.genoni@pirelli.com>,
+       Natalie Protasevich <protasnb@gmail.com>, Andi Kleen <ak@suse.de>
+Subject: Re: [PATCH 2/2] x86_64 irq:  Handle irqs pending in IRR during irq migration.
+References: <200701221116.13154.luigi.genoni@pirelli.com>
+	<200702021848.55921.luigi.genoni@pirelli.com>
+	<m1ejp85tgm.fsf@ebiederm.dsl.xmission.com>
+	<200702021905.39922.luigi.genoni@pirelli.com>
+	<m1zm7w3wvr.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1veik3woc.fsf_-_@ebiederm.dsl.xmission.com>
+	<20070206073616.GA15016@elte.hu>
+	<m1odo7q6cq.fsf@ebiederm.dsl.xmission.com>
+	<20070206222523.GA11602@elte.hu>
+Date: Thu, 08 Feb 2007 04:48:50 -0700
+In-Reply-To: <20070206222523.GA11602@elte.hu> (Ingo Molnar's message of "Tue,
+	6 Feb 2007 23:25:23 +0100")
+Message-ID: <m1irecamzh.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070207173647.86bd64c0.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hiroyuki KAMEZAWA wrote:	[Wed Feb 07 2007, 03:36:47AM EST]
-> On Wed, 7 Feb 2007 00:04:41 -0800 (PST)
-> Christoph Lameter <clameter@sgi.com> wrote:
-> 
-> > On Wed, 7 Feb 2007, KAMEZAWA Hiroyuki wrote:
-> > 
-> > > > Hmmm... Remove the node from the node_online_map instead?
-> > > > 
-> > > Changing defintion of node_online_map is harmfil. (there are cpu-only-nodes.)
-> > > How about adding  nodemask for nodes equips memory ?
-> > 
-> > Ok that is better but...
-> > 
-> > Would it be possible to attach the cpus to the 
-> > next nodes with memory and mark the node offline? That way we could avoid 
-> > another mask that we constantly have to check?
-> > 
-> Added ia64 list to CC.
-> I know ia64 kernel did what you say in old days (I know RHEL4/2.6.9 kernel does it).
-> Someone changed it and created cpu-only-node for some purpose, I don't know why.
-That was me. It will probably be later today or Friday before I've had
-time to review the code.  For reference look for string memory_less in
-arch/ia64/mm/discontig.c.
+Ingo Molnar <mingo@elte.hu> writes:
 
-The short story is HP ships NUMA boxes with interleaved memory only by
-default which is represented by a single memory only node. Originally all
-the CPU nodes where assigned to the memory node. The code was very
-complicated and incorrect to me. Subsequently, and what we have now, the CPU
-only nodes are revealed and the memory only node too. I do believe that a
-cpu only nodes should be possible but now there seems to be a new issue.
+> * Eric W. Biederman <ebiederm@xmission.com> wrote:
+>
+>> Ingo would it be reasonable to get a wait queue so I can wait for an 
+>> irq that needs the delayed disable action to actually become masked?
+>
+> that might make sense, but what will do the wakeup - incidental IRQ 
+> arriving on the new CPU? Isnt that a bit risky - maybe the device wont 
+> generate IRQs for a really long time.
 
-bob
-> 
-> 
-> > Or fix the location where the error occurred to be able to tolerate a node 
-> > with no zones?
-> > 
-> Hmm, 
-> In this case, MPOL_MBIND, the user requests to allocate memory from specified nodes.
-> I think it's better to tell him "you can't do that" than silently allocating memory
-> from other places.
-> 
-> -Kame
-> 
-> 
-> 
-> 
-> 
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+I still need to test this, but I believe I have found a simpler
+way to avoid irr problems during migration, and I believe the code
+works equally well with either edge or level triggered interrupts.
+
+The idea is this: Instead of trying test for and handle when irr
+occurs, simply enable local interrupts after disabling and
+acknowledging the irq so that anything pending will be processed,
+before we perform the migration operation.
+
+I don't think the edge case cares about the mask/ack order but
+but masking before acking appears important for the level triggered
+case, so we might as well use that order for both.
+
+Does this look like a sane way to handle this?
+
+static void ack_apic(unsigned int irq)
+{
+	struct irq_desc *desc = irq_desc + irq;
+	int do_unmask_irq = 0;
+	if (unlikely((irq_desc[irq].status & IRQ_MOVE_PENDING) && !in_irq()) {
+		do_unmask_irq = 1;
+		desc->chip->mask(irq);
+	}
+	ack_APIC_irq();
+	if (unlikely(do_unmask_irq)) {
+		/* Don't let pending irqs accumulate */
+		local_irq_enable();
+                syncrhonize_irq(irq);
+		move_masked_irq(irq);
+		local_irq_disable();
+		desc->chip->unmask(irq);
+	}
+}
+
+Eric
