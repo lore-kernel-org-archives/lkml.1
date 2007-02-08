@@ -1,151 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423268AbXBHWwK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423308AbXBHWwO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423268AbXBHWwK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Feb 2007 17:52:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423315AbXBHWwK
+	id S1423308AbXBHWwO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Feb 2007 17:52:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423315AbXBHWwO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Feb 2007 17:52:10 -0500
-Received: from e36.co.us.ibm.com ([32.97.110.154]:60467 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423268AbXBHWwG (ORCPT
+	Thu, 8 Feb 2007 17:52:14 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:48010 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423308AbXBHWwI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Feb 2007 17:52:06 -0500
-Subject: Re: [Cbe-oss-dev] [RFC, PATCH] CELL Oprofile SPU profiling updated
-	patch
-From: Carl Love <cel@us.ibm.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: cbe-oss-dev@ozlabs.org, Milton Miller <miltonm@bga.com>,
-       linuxppc-dev@ozlabs.org, LKML <linux-kernel@vger.kernel.org>,
-       oprofile-list@lists.sourceforge.net
-In-Reply-To: <200702081821.57358.arnd@arndb.de>
-References: <1170721711.5204.44.camel@dyn9047021078.beaverton.ibm.com>
-	 <1170802957.5204.56.camel@dyn9047021078.beaverton.ibm.com>
-	 <b682962303654f4958a6c2c50d805907@bga.com>
-	 <200702081821.57358.arnd@arndb.de>
-Content-Type: text/plain
-Date: Thu, 08 Feb 2007 14:51:59 -0800
-Message-Id: <1170975119.5204.99.camel@dyn9047021078.beaverton.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.0.4 (2.0.4-2) 
-Content-Transfer-Encoding: 7bit
+	Thu, 8 Feb 2007 17:52:08 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Andrew Morton <akpm@osdl.org>
+Cc: Stephen Smalley <sds@tycho.nsa.gov>, Ingo Molnar <mingo@elte.hu>,
+       tglx@linutronix.de, linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov,
+       James Morris <jmorris@namei.org>
+Subject: [PATCH 0/5] sysctl cleanup selinux fixes
+References: <200701280106.l0S16CG3019873@shell0.pdx.osdl.net>
+	<20070127172410.2b041952.akpm@osdl.org>
+	<1169972718.17469.164.camel@localhost.localdomain>
+	<20070128003549.2ca38dc8.akpm@osdl.org>
+	<20070128093358.GA2071@elte.hu> <20070128095712.GA6485@elte.hu>
+	<20070128100627.GA8416@elte.hu>
+	<20070128104548.a835d859.akpm@osdl.org>
+	<m1r6tfq7nv.fsf_-_@ebiederm.dsl.xmission.com>
+	<1170075866.8720.15.camel@moss-spartans.epoch.ncsc.mil>
+	<m17iuvrnpk.fsf_-_@ebiederm.dsl.xmission.com>
+	<m13b5jrngt.fsf_-_@ebiederm.dsl.xmission.com>
+	<1170872654.11912.87.camel@moss-spartans.epoch.ncsc.mil>
+	<1170882738.11912.144.camel@moss-spartans.epoch.ncsc.mil>
+	<m17iutmmwh.fsf@ebiederm.dsl.xmission.com>
+	<1170946871.11912.250.camel@moss-spartans.epoch.ncsc.mil>
+	<m14ppwa64j.fsf@ebiederm.dsl.xmission.com>
+	<1170958404.11912.313.camel@moss-spartans.epoch.ncsc.mil>
+	<m1mz3o8fbf.fsf@ebiederm.dsl.xmission.com>
+Date: Thu, 08 Feb 2007 15:51:15 -0700
+In-Reply-To: <m1mz3o8fbf.fsf@ebiederm.dsl.xmission.com> (Eric W. Biederman's
+	message of "Thu, 08 Feb 2007 15:17:24 -0700")
+Message-ID: <m1abzo8dr0.fsf_-_@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-02-08 at 18:21 +0100, Arnd Bergmann wrote:
-> On Thursday 08 February 2007 15:18, Milton Miller wrote:
->  
-> > 1) sample rate setup
-> > 
-> >     In the current patch, the user specifies a sample rate as a time 
-> > interval.
-> >     The kernel is (a) calling cpufreq to get the current cpu frequency, 
-> > (b)
-> >     converting the rate to a cycle count, (c) converting this to a 24 bit
-> >     LFSR count, an iterative algorithm (in this patch, starting from
-> >     one of 256 values so a max of 2^16 or 64k iterations), (d) 
-> > calculating
-> >     an trace unload interval.   In addition, a cpufreq notifier is 
-> > registered
-> >     to recalculate on frequency changes.
 
-No.  The user issues the command opcontrol --event:N  where N is the
-number of events (cycles, l2 cache misses, instructions retired etc)
-that are to elapse between collecting the samples.  The OProfile passes
-the value N to the kernel via the variable ctr[i].count.  Where i is the
-performance counter entry for that event.  Specifically with SPU
-profiling, we do not use performance counters because the CELL HW does
-not allow the normal the PPU to read the SPU PC when a performance
-counter interrupt occurs.  We are using some additional hw support in
-the chip that allows us to periodically capture the SPU PC.  There is an
-LFSR hardware counter that can be started at an arbitrary LFSR value.
-When the last LFSR value in the sequence is reached, a sample is taken
-and stored in the trace buffer.  Hence, the value of N specified by the
-user must get converted to the LFSR value that is N from the end of the
-sequence.  The same clock that the processor is running at is used to
-control the LFSR count.  Hence the LFSR counter increments once per CPU
-clock cycle regardless of the CPU frequency or changes in the frequency.
-There is no calculation for the LFSR value that is a function of the
-processor frequency.  There is no need to adjust the LFSR when the
-processor frequency changes.  
+Andrew these are a set up simple fixes against the rollup you
+sent me last night that should leave selinux working and should
+close out the last of the outstanding issue with my sysctl cleanup.
 
-Milton had a comment about the code 
+Knowing how you organize I expect you will want to file most of
+these as fix patches.
 
- if (ctr[0].event == SPU_CYCLES_EVENT_NUM) {
-> +             spu_cycle_reset = ctr[0].count;
-> +             return;
-> +     }
+Patch 1 sysctl: Remove declaration of nonexistent sysctl_init
+This is a small fix against "sysctl: Reimplement the sysctl proc support"
+where I remove sysctl_init() but forgot to remove it's prototype in
+sysctl.h
 
-Well, given the above description, it is clear that if you are doing SPU
-event profiling, the value N is put into the cntr[0].cnt entry since
-there is only one event.  Thus in cell_global_start_spu() you use
-spu_cycle_reset as the argument to the lfsr calculation routine to get
-the LFSR value that is N from the end of the sequence.
 
-> > 
-> >     The obvious problem is step (c), running a loop potentially 64 
-> > thousand
-> >     times in kernel space will have a noticeable impact on other threads.
-> > 
-> >     I propose instead that user space perform the above 4 steps, and 
-> > provide
-> >     the kernel with two inputs: (1) the value to load in the LFSR and (2)
-> >     the periodic frequency / time interval at which to empty the hardware
-> >     trace buffer, perform sample analysis, and send the data to the 
-> > oprofile
-> >     subsystem.
-> > 
-> >     There should be no security issues with this approach.   If the LFSR 
-> > value
-> >     is calculated incorrectly, either it will be too short, causing the 
-> > trace
-> >     array to overfill and data to be dropped, or it will be too long, and
-> >     there will be fewer samples.   Likewise, the kernel periodic poll 
-> > can be
-> >     too long, again causing overflow, or too frequent, causing only timer
-> >     execution overhead.
-> > 
-> >     Various data is collected by the kernel while processing the 
-> > periodic timer,
-> >     this approach would also allow the profiling tools to control the
-> >     frequency of this collection.   More frequent collection results in 
-> > more
-> >     accurate sample data, with the linear cost of poll execution 
-> > overhead.
-> > 
-> >     Frequency changes can be handled either by the profile code setting
-> >     collection at a higher than necessary rate, or by interacting with 
-> > the
-> >     governor to limit the speeds.
-> > 
-> >     Optionally, the kernel can add a record indicating that some data was
-> >     likely dropped if it is able to read all 256 entries without 
-> > underflowing
-> >     the array.  This can be used as hint to user space that the kernel 
-> > time
-> >     was too long for the collection rate.
->  
-> Moving the sample rate computation to user space sounds like the right
-> idea, but why not have a more drastic version of it:
+Patch 2 sysctl: Set the parent field in the root sysctl table
+This is a small fix against 
+"sysctl: Add a parent entry to ctl_table and set the parent entry."
+where I forgot to call sysctl_set_parent on the root sysctl table.
 
-No, I do not agree.  The user/kernel API pass N where N is the number of
-events between samples.  We are not at liberty to just change the API.
-We we did do this, we fully expect that John Levon will push back saying
-why make an architecture specific API change when it isn't necessary.  
 
-Please define "drastic" in this context.  Do you mean make the table
-bigger i.e. more then 256 precomputed elements?  I did 256 since Arnd
-seemed to think that would be a reasonable size. Based on his example
-How much kernel space are we willing to use to same some computation?
-Keep in mind only one of the entries in the table will ever be used.
+Patch 3: sysctl: Fix selinux_sysctl_getsid
+This is a small fix against
+"sysctl: Restore the old selinux sysctl handling."
 
-I think if we found the LFSR that was with in 2^10 of the desired value
-that would be good enough. It would be within 1% of the minimum N the
-user can specify.  That would require a table with 2^14 entries.  That
-seems unreasonably large.
+Patch 4: selinux: Enhance selinux to always ignore private inodes
+Patch 5: sysctl: Hide the sysctl proc inodes from selinux
 
-Anyway, the user controls how often sampling is done by setting N. 
-
->  
-                Carl Love
-> [cut]
-
+Eric
