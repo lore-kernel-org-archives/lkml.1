@@ -1,58 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422824AbXBHATK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933331AbXBHAWM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422824AbXBHATK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Feb 2007 19:19:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422829AbXBHATK
+	id S933331AbXBHAWM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Feb 2007 19:22:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422829AbXBHAWL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Feb 2007 19:19:10 -0500
-Received: from nz-out-0506.google.com ([64.233.162.224]:20399 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422824AbXBHATJ (ORCPT
+	Wed, 7 Feb 2007 19:22:11 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:57068 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422828AbXBHAWK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Feb 2007 19:19:09 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=CamFFiRnCk52kaUY1ggaZTiMpyvnT33aJXqbR2TYIWgYJJhkf65WaB6IhWHrN5RTx7Yo6KD9TMGpjMlhD6foG1xA1A+qc+k7TqqLarx4lK27CcRJ5eDLajszefk7S/lsulW1SD3izH+jhfKe+dhMi31izrxCEgk/P3MGqiQ9DoE=
-Message-ID: <cb7bb73a0702071619p5984c39fs16e3d05c11d45585@mail.gmail.com>
-Date: Thu, 8 Feb 2007 01:19:08 +0100
-From: "Giuseppe Bilotta" <giuseppe.bilotta@gmail.com>
-To: "Luca Tettamanti" <kronos@people.it>
-Subject: Re: [Linux-fbdev-devel] [PATCH] nvidiafb: allow ignoring EDID info
-Cc: "James Simmons" <jsimmons@infradead.org>,
-       linux-fbdev-devel@lists.sourceforge.net,
-       "Andrew Morton" <akpm@osdl.org>, "Dave Airlie" <airlied@gmail.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20070207234837.GA27822@dreamland.darkstar.lan>
+	Wed, 7 Feb 2007 19:22:10 -0500
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Chuck Ebbert <cebbert@redhat.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org,
+       jejb <james.bottomley@steeleye.com>
+Subject: Re: [patch] Re: SCSI logging sucks
+From: "Martin K. Petersen" <martin.petersen@oracle.com>
+Organization: Oracle
+References: <45CA0716.5060803@redhat.com>
+	<20070207153530.70412bc3.randy.dunlap@oracle.com>
+Date: Wed, 07 Feb 2007 19:20:42 -0500
+In-Reply-To: <20070207153530.70412bc3.randy.dunlap@oracle.com> (Randy Dunlap's message of "Wed, 7 Feb 2007 15:35:30 -0800")
+Message-ID: <yq17iut7b51.fsf@sermon.lab.mkp.net>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.50 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <21d7e9970701281612q56b694edp6efd1a5556dea3fe@mail.gmail.com>
-	 <21d7e9970701281639w57edc2efw4ba620d4c1bdcee7@mail.gmail.com>
-	 <cb7bb73a0701290637q2ce0ff16t28f82d0c0339a2ba@mail.gmail.com>
-	 <20070130203301.GA15067@dreamland.darkstar.lan>
-	 <20070204201713.GA12867@dreamland.darkstar.lan>
-	 <cb7bb73a0702041317u4ca2fbabp45cf56526e57c982@mail.gmail.com>
-	 <20070205201824.GA13431@dreamland.darkstar.lan>
-	 <cb7bb73a0702051328n50c889d9o461ac2bb9f9ea75e@mail.gmail.com>
-	 <Pine.LNX.4.64.0702062118450.9224@pentafluge.infradead.org>
-	 <20070207234837.GA27822@dreamland.darkstar.lan>
+Content-Type: text/plain; charset=us-ascii
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/8/07, Luca Tettamanti <kronos@people.it> wrote:
-> Il Tue, Feb 06, 2007 at 09:22:00PM +0000, James Simmons ha scritto:
-> > There is no stand alone nvidia card i2c driver. Its the issue of sharing
-> > device interfaces with the same hardware problem again!!!
->
-> Nah, nvidiafb registers the I2C busses, you can drive them with whatever
-> you want through the devices exported by I2C core.
-> The fact the none of them work makes me think that the EDID is coming
-> from the BIOS, we do VBE calls in real mode during early kernel setup.
+>>>>> "Randy" == Randy Dunlap <randy.dunlap@oracle.com> writes:
 
-So what am I supposed to do to dump it, since neither i2cdump neither
-get-edid seem to work?
+Randy> There are a number of things that can be used for 'token' (you
+Randy> can find them in the source: <file:drivers/scsi/scsi.c>), and
+Randy> this allows you to select the types of information you want,
+Randy> and the level allows you to select the level of verbosity.  """
+
+There's a very convenient script called scsi_logging_level included in
+(of all things) the s390-tools package.
+
+Maybe provide a pointer to it -- or even just include it.  It's not
+very big...
+
+http://www-128.ibm.com/developerworks/linux/linux390/s390-tools-1.5.4.html
 
 -- 
-Giuseppe "Oblomov" Bilotta
+Martin K. Petersen	Oracle Linux Engineering
+
