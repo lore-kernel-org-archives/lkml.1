@@ -1,58 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423000AbXBHOYl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423060AbXBHO2H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423000AbXBHOYl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Feb 2007 09:24:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423046AbXBHOYl
+	id S1423060AbXBHO2H (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Feb 2007 09:28:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423007AbXBHO2H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Feb 2007 09:24:41 -0500
-Received: from web38508.mail.mud.yahoo.com ([209.191.125.54]:27914 "HELO
-	web38508.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1423000AbXBHOYk (ORCPT
+	Thu, 8 Feb 2007 09:28:07 -0500
+Received: from wx-out-0506.google.com ([66.249.82.237]:54617 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423060AbXBHO2G (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Feb 2007 09:24:40 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=t8hO70DwD/tYuChdnbO7iWpOhhJ4ph/UNlnJysuXGba3GZbFPeTqMxIkk8w2KfbOkoo6I//I7NYiv8gIfmeV/Y+bJoS6YphcPYUVgjLgiKaBsHoIiwwmnFYQ9IflIz6TwBCZfG6BEan5pnX/GKUVA90UyDLs5hOYZC1xh/jwimE=;
-X-YMail-OSG: n5RvpGUVM1komKLWaZp4E5KRGfkEu2xmKLAY5FhHFguqtLDCFdWwu1whhq7zc5VQu8j6AURWhRXY3JAi5FdOy6EkC_bfioX9GC5Km0pF8vhJXFG6Fqx0zyQaRj6YchxVWPSCbfhCTdJVJZI-
-Date: Thu, 8 Feb 2007 06:24:39 -0800 (PST)
-From: Levitsky Maxim <maximlevitsky@yahoo.com>
-Subject: Re: OT: I don't recive mail from linux-kernel
-To: davem@davemloft.net
-Cc: postmaster@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20070208.051514.125893234.davem@davemloft.net>
+	Thu, 8 Feb 2007 09:28:06 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=PXFos5U3RgSKrOUCuKsmZa10CEWLIIO85i2XLYf9HcjzO96E2YGuYGcQrBeFKgadkJMAa8Z6b/jB9oUClgbUdaqOZxzoX7+sBeP7BekzBTNn+HlbBRSn12Y49rdvZzXkzjNkjzHy+MDseflQqLq8dvSoR1dbtSZVmzulx4PdBmg=
+Message-ID: <8bd0f97a0702080628u5038191dm74139a7dd7bff909@mail.gmail.com>
+Date: Thu, 8 Feb 2007 09:28:03 -0500
+From: "Mike Frysinger" <vapier.adi@gmail.com>
+To: "Oleg Verych" <olecom@flower.upol.cz>
+Subject: Re: + search-a-little-harder-for-mkimage.patch added to -mm tree
+Cc: akpm@linux-foundation.org, sam@ravnborg.org, linux-kernel@vger.kernel.org
+In-Reply-To: <E1HF9zs-0006Ei-2k@flower>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <860686.27330.qm@web38508.mail.mud.yahoo.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200702080607.l1867c0D006861@shell0.pdx.osdl.net>
+	 <E1HF9zs-0006Ei-2k@flower>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 2/8/07, Oleg Verych <olecom@flower.upol.cz> wrote:
+> proposition is to substitute:
+>      "$(CONFIG_SHELL) $(MKIMAGE)"
+> with
+>      "mkimage"
 
---- David Miller <davem@davemloft.net> wrote:
+this isnt a one-to-one change ... let's look at the typical
+mkimage-missing scenario ...
 
-> From: Levitsky Maxim <maximlevitsky@yahoo.com>
-> Date: Thu, 8 Feb 2007 05:09:25 -0800 (PST)
-> 
-> > But now things changed, cause I wrote number of patches, and it is
-> > very difficult to send patches without subscription.
-> 
-> You don't need to be subscribed in order to send postings to the
-> mailing list.
-> 
+with mkuboot.sh you'd get output like:
+...
+  UIMAGE  arch/blackfin/boot/vmImage
+"mkimage" command not found - U-Boot images will not be built
+  Building modules, stage 2.
+...
 
-Nevermind that, I just registered a gmail account maximlevitsky at gmail.com so I won't use this
-one anymore, because yahoo webmail corrupts patches. I will unsubscribe this account now from lkml
+with mkimage you'd get output like:
+...
+  UIMAGE  arch/blackfin/boot/vmImage
+/bin/sh: mkimage: command not found
+make[1]: *** [arch/blackfin/boot/vmImage] Error 127
+make: *** [vmImage] Error 2
 
-     Cheers,
-         Maxim Levitsky
-
-
-
-
-
- 
-____________________________________________________________________________________
-Finding fabulous fares is fun.  
-Let Yahoo! FareChase search your favorite travel sites to find flight and hotel bargains.
-http://farechase.yahoo.com/promo-generic-14795097
+so while you could change all the Makefile's to insert - to ignore
+*all* failures, without the script, you loose the ability to only
+ignore "binary missing" errors
+-mike
