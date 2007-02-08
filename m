@@ -1,255 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423229AbXBHRKn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423235AbXBHRUJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423229AbXBHRKn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Feb 2007 12:10:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965730AbXBHRKn
+	id S1423235AbXBHRUJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Feb 2007 12:20:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965732AbXBHRUJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Feb 2007 12:10:43 -0500
-Received: from nommos.sslcatacombnetworking.com ([67.18.224.114]:2572 "EHLO
-	nommos.sslcatacombnetworking.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S965718AbXBHRKm (ORCPT
+	Thu, 8 Feb 2007 12:20:09 -0500
+Received: from ug-out-1314.google.com ([66.249.92.170]:39886 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965731AbXBHRUH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Feb 2007 12:10:42 -0500
-Date: Thu, 8 Feb 2007 11:08:03 -0600 (CST)
-From: Kumar Gala <galak@kernel.crashing.org>
-X-X-Sender: galak@localhost.localdomain
-To: Greg KH <greg@kroah.com>, jgarizk@kernel.crashing.org
-cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: [PATCH] Convert network devices to use struct device instead of
- class_device
-Message-ID: <Pine.LNX.4.64.0702081107300.29459@localhost.localdomain>
+	Thu, 8 Feb 2007 12:20:07 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=kwIN+dh3V6fYH0crWk2tiL3yrvxUESMJVpvCLfLVI1jluCsMCBoKPerSERtJYDTuVhJnTppovBm+nwlHyHzOaf82kXconytMiz1OebYWyiBl4SxH8eBVIjnGLcgyAbRe9Oa+7G0Fd98lwENWybWH7Xqak9XbmF2i9+Qc55NTD1E=
+Message-ID: <d120d5000702080920k5ea09180i8d9608ac1c9857db@mail.gmail.com>
+Date: Thu, 8 Feb 2007 12:20:05 -0500
+From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+To: "Greg KH" <greg@kroah.com>
+Subject: Re: [PATCH 10/28] SERIO: add the sysfs driver name to all modules
+Cc: linux-kernel@vger.kernel.org, "Greg Kroah-Hartman" <gregkh@suse.de>
+In-Reply-To: <11708946533931-git-send-email-greg@kroah.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-X-PopBeforeSMTPSenders: kumar-chaos@kgala.com,kumar-statements@kgala.com,kumar@kgala.com
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - nommos.sslcatacombnetworking.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - kernel.crashing.org
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070208002908.GA4796@kroah.com>
+	 <1170894620889-git-send-email-greg@kroah.com>
+	 <11708946251265-git-send-email-greg@kroah.com>
+	 <11708946283719-git-send-email-greg@kroah.com>
+	 <11708946362677-git-send-email-greg@kroah.com>
+	 <11708946391465-git-send-email-greg@kroah.com>
+	 <11708946432920-git-send-email-greg@kroah.com>
+	 <11708946472324-git-send-email-greg@kroah.com>
+	 <1170894650872-git-send-email-greg@kroah.com>
+	 <11708946533931-git-send-email-greg@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Convert network devices to use struct device instead of class_device.  Greg
-missed this one in his cleanup path.
+Hi Greg,
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+On 2/7/07, Greg KH <greg@kroah.com> wrote:
+> From: Greg Kroah-Hartman <gregkh@suse.de>
+>
+> This adds the module name to all SERIO drivers, if they are built into
+> the kernel or not.  It will show up in /sys/modules/MODULE_NAME/drivers/
+>
 
----
-commit 24c316396f71c6164f11ca1398151d8b15fd06e0
-tree d02ee36eaf848d200dacf3bf795abaec1e55cbc2
-parent b892afd1e60132a981b963929e352eabf3306ba2
-author Kumar Gala <galak@kernel.crashing.org> Thu, 08 Feb 2007 11:07:11 -0600
-committer Kumar Gala <galak@kernel.crashing.org> Thu, 08 Feb 2007 11:07:11 -0600
+What is this needed for?
 
-  drivers/net/gianfar_sysfs.c |  108 ++++++++++++++++++++++---------------------
-  1 files changed, 55 insertions(+), 53 deletions(-)
-
-diff --git a/drivers/net/gianfar_sysfs.c b/drivers/net/gianfar_sysfs.c
-index 9dd387f..6e2166a 100644
---- a/drivers/net/gianfar_sysfs.c
-+++ b/drivers/net/gianfar_sysfs.c
-@@ -39,13 +39,15 @@
-  #include "gianfar.h"
-
-  #define GFAR_ATTR(_name) \
--static ssize_t gfar_show_##_name(struct class_device *cdev, char *buf); \
--static ssize_t gfar_set_##_name(struct class_device *cdev, \
-+static ssize_t gfar_show_##_name(struct device *dev, \
-+	 struct device_attribute *attr, char *buf); \
-+static ssize_t gfar_set_##_name(struct device *dev, \
-+		struct device_attribute *attr, \
-  		const char *buf, size_t count); \
--static CLASS_DEVICE_ATTR(_name, 0644, gfar_show_##_name, gfar_set_##_name)
-+static DEVICE_ATTR(_name, 0644, gfar_show_##_name, gfar_set_##_name)
-
-  #define GFAR_CREATE_FILE(_dev, _name) \
--	class_device_create_file(&_dev->class_dev, &class_device_attr_##_name)
-+	device_create_file(&_dev->dev, &dev_attr_##_name)
-
-  GFAR_ATTR(bd_stash);
-  GFAR_ATTR(rx_stash_size);
-@@ -54,29 +56,28 @@ GFAR_ATTR(fifo_threshold);
-  GFAR_ATTR(fifo_starve);
-  GFAR_ATTR(fifo_starve_off);
-
--#define to_net_dev(cd) container_of(cd, struct net_device, class_dev)
--
--static ssize_t gfar_show_bd_stash(struct class_device *cdev, char *buf)
-+static ssize_t gfar_show_bd_stash(struct device *dev,
-+				  struct device_attribute *attr, char *buf)
-  {
--	struct net_device *dev = to_net_dev(cdev);
--	struct gfar_private *priv = netdev_priv(dev);
-+	struct gfar_private *priv = netdev_priv(to_net_dev(dev));
-
--	return sprintf(buf, "%s\n", priv->bd_stash_en? "on" : "off");
-+	return sprintf(buf, "%s\n", priv->bd_stash_en ? "on" : "off");
-  }
-
--static ssize_t gfar_set_bd_stash(struct class_device *cdev,
--		const char *buf, size_t count)
-+static ssize_t gfar_set_bd_stash(struct device *dev,
-+				 struct device_attribute *attr,
-+				 const char *buf, size_t count)
-  {
--	struct net_device *dev = to_net_dev(cdev);
--	struct gfar_private *priv = netdev_priv(dev);
-+	struct gfar_private *priv = netdev_priv(to_net_dev(dev));
-  	int new_setting = 0;
-  	u32 temp;
-  	unsigned long flags;
-
-  	/* Find out the new setting */
--	if (!strncmp("on", buf, count-1) || !strncmp("1", buf, count-1))
-+	if (!strncmp("on", buf, count - 1) || !strncmp("1", buf, count - 1))
-  		new_setting = 1;
--	else if (!strncmp("off", buf, count-1) || !strncmp("0", buf, count-1))
-+	else if (!strncmp("off", buf, count - 1)
-+		 || !strncmp("0", buf, count - 1))
-  		new_setting = 0;
-  	else
-  		return count;
-@@ -100,19 +101,19 @@ static ssize_t gfar_set_bd_stash(struct class_device *cdev,
-  	return count;
-  }
-
--static ssize_t gfar_show_rx_stash_size(struct class_device *cdev, char *buf)
-+static ssize_t gfar_show_rx_stash_size(struct device *dev,
-+				       struct device_attribute *attr, char *buf)
-  {
--	struct net_device *dev = to_net_dev(cdev);
--	struct gfar_private *priv = netdev_priv(dev);
-+	struct gfar_private *priv = netdev_priv(to_net_dev(dev));
-
-  	return sprintf(buf, "%d\n", priv->rx_stash_size);
-  }
-
--static ssize_t gfar_set_rx_stash_size(struct class_device *cdev,
--		const char *buf, size_t count)
-+static ssize_t gfar_set_rx_stash_size(struct device *dev,
-+				      struct device_attribute *attr,
-+				      const char *buf, size_t count)
-  {
--	struct net_device *dev = to_net_dev(cdev);
--	struct gfar_private *priv = netdev_priv(dev);
-+	struct gfar_private *priv = netdev_priv(to_net_dev(dev));
-  	unsigned int length = simple_strtoul(buf, NULL, 0);
-  	u32 temp;
-  	unsigned long flags;
-@@ -146,21 +147,21 @@ static ssize_t gfar_set_rx_stash_size(struct class_device *cdev,
-  	return count;
-  }
-
--
-  /* Stashing will only be enabled when rx_stash_size != 0 */
--static ssize_t gfar_show_rx_stash_index(struct class_device *cdev, char *buf)
-+static ssize_t gfar_show_rx_stash_index(struct device *dev,
-+					struct device_attribute *attr,
-+					char *buf)
-  {
--	struct net_device *dev = to_net_dev(cdev);
--	struct gfar_private *priv = netdev_priv(dev);
-+	struct gfar_private *priv = netdev_priv(to_net_dev(dev));
-
-  	return sprintf(buf, "%d\n", priv->rx_stash_index);
-  }
-
--static ssize_t gfar_set_rx_stash_index(struct class_device *cdev,
--		const char *buf, size_t count)
-+static ssize_t gfar_set_rx_stash_index(struct device *dev,
-+				       struct device_attribute *attr,
-+				       const char *buf, size_t count)
-  {
--	struct net_device *dev = to_net_dev(cdev);
--	struct gfar_private *priv = netdev_priv(dev);
-+	struct gfar_private *priv = netdev_priv(to_net_dev(dev));
-  	unsigned short index = simple_strtoul(buf, NULL, 0);
-  	u32 temp;
-  	unsigned long flags;
-@@ -184,19 +185,20 @@ static ssize_t gfar_set_rx_stash_index(struct class_device *cdev,
-  	return count;
-  }
-
--static ssize_t gfar_show_fifo_threshold(struct class_device *cdev, char *buf)
-+static ssize_t gfar_show_fifo_threshold(struct device *dev,
-+					struct device_attribute *attr,
-+					char *buf)
-  {
--	struct net_device *dev = to_net_dev(cdev);
--	struct gfar_private *priv = netdev_priv(dev);
-+	struct gfar_private *priv = netdev_priv(to_net_dev(dev));
-
-  	return sprintf(buf, "%d\n", priv->fifo_threshold);
-  }
-
--static ssize_t gfar_set_fifo_threshold(struct class_device *cdev,
--		const char *buf, size_t count)
-+static ssize_t gfar_set_fifo_threshold(struct device *dev,
-+				       struct device_attribute *attr,
-+				       const char *buf, size_t count)
-  {
--	struct net_device *dev = to_net_dev(cdev);
--	struct gfar_private *priv = netdev_priv(dev);
-+	struct gfar_private *priv = netdev_priv(to_net_dev(dev));
-  	unsigned int length = simple_strtoul(buf, NULL, 0);
-  	u32 temp;
-  	unsigned long flags;
-@@ -218,20 +220,19 @@ static ssize_t gfar_set_fifo_threshold(struct class_device *cdev,
-  	return count;
-  }
-
--static ssize_t gfar_show_fifo_starve(struct class_device *cdev, char *buf)
-+static ssize_t gfar_show_fifo_starve(struct device *dev,
-+				     struct device_attribute *attr, char *buf)
-  {
--	struct net_device *dev = to_net_dev(cdev);
--	struct gfar_private *priv = netdev_priv(dev);
-+	struct gfar_private *priv = netdev_priv(to_net_dev(dev));
-
-  	return sprintf(buf, "%d\n", priv->fifo_starve);
-  }
-
--
--static ssize_t gfar_set_fifo_starve(struct class_device *cdev,
--		const char *buf, size_t count)
-+static ssize_t gfar_set_fifo_starve(struct device *dev,
-+				    struct device_attribute *attr,
-+				    const char *buf, size_t count)
-  {
--	struct net_device *dev = to_net_dev(cdev);
--	struct gfar_private *priv = netdev_priv(dev);
-+	struct gfar_private *priv = netdev_priv(to_net_dev(dev));
-  	unsigned int num = simple_strtoul(buf, NULL, 0);
-  	u32 temp;
-  	unsigned long flags;
-@@ -253,19 +254,20 @@ static ssize_t gfar_set_fifo_starve(struct class_device *cdev,
-  	return count;
-  }
-
--static ssize_t gfar_show_fifo_starve_off(struct class_device *cdev, char *buf)
-+static ssize_t gfar_show_fifo_starve_off(struct device *dev,
-+					 struct device_attribute *attr,
-+					 char *buf)
-  {
--	struct net_device *dev = to_net_dev(cdev);
--	struct gfar_private *priv = netdev_priv(dev);
-+	struct gfar_private *priv = netdev_priv(to_net_dev(dev));
-
-  	return sprintf(buf, "%d\n", priv->fifo_starve_off);
-  }
-
--static ssize_t gfar_set_fifo_starve_off(struct class_device *cdev,
--		const char *buf, size_t count)
-+static ssize_t gfar_set_fifo_starve_off(struct device *dev,
-+					struct device_attribute *attr,
-+					const char *buf, size_t count)
-  {
--	struct net_device *dev = to_net_dev(cdev);
--	struct gfar_private *priv = netdev_priv(dev);
-+	struct gfar_private *priv = netdev_priv(to_net_dev(dev));
-  	unsigned int num = simple_strtoul(buf, NULL, 0);
-  	u32 temp;
-  	unsigned long flags;
+-- 
+Dmitry
