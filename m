@@ -1,24 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422900AbXBHMAG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422953AbXBHMKI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422900AbXBHMAG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Feb 2007 07:00:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422944AbXBHMAG
+	id S1422953AbXBHMKI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Feb 2007 07:10:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422956AbXBHMKI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Feb 2007 07:00:06 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:46006
+	Thu, 8 Feb 2007 07:10:08 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:38730
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1422900AbXBHMAE (ORCPT
+	by vger.kernel.org with ESMTP id S1422953AbXBHMKH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Feb 2007 07:00:04 -0500
-Date: Thu, 08 Feb 2007 04:00:03 -0800 (PST)
-Message-Id: <20070208.040003.112623191.davem@davemloft.net>
-To: paulus@samba.org
-Cc: olecom@flower.upol.cz, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: Re: Kbuild change breaks the ppc64 build
+	Thu, 8 Feb 2007 07:10:07 -0500
+Date: Thu, 08 Feb 2007 04:10:04 -0800 (PST)
+Message-Id: <20070208.041004.07457320.davem@davemloft.net>
+To: torvalds@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: checker-shell still hosed...
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <17867.1342.763881.188430@cargo.ozlabs.ibm.com>
-References: <17867.1342.763881.188430@cargo.ozlabs.ibm.com>
+In-Reply-To: <20070208.030531.112264703.davem@davemloft.net>
+References: <20070208.030531.112264703.davem@davemloft.net>
 X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -26,62 +25,17 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Paul Mackerras <paulus@samba.org>
-Date: Thu, 8 Feb 2007 22:10:54 +1100
+From: David Miller <davem@davemloft.net>
+Date: Thu, 08 Feb 2007 03:05:31 -0800 (PST)
 
-> Commit 5de043f4bd11a9e0a3e8daec7d1905da575a76b7 breaks the build on
-> 64-bit powerpc because we no longer get the -m64 flag passed to gcc.
-> There is code in arch/powerpc/Makefile which adds (or used to add)
-> -m64 to AS, LD and CC if we are running on a 64-bit machine (which I
-> am) and have a biarch toolchain (which I do).  Without -m64, the
-> toolchain assumes 32-bit and all sorts of things break spectacularly.
+> define test1
+>   $(shell echo "str1")
+> endef
 > 
-> I haven't yet tracked down exactly why this commit has this effect,
-> since I find it takes considerable time and effort to understand
-> Kbuild.
+> define test2
+>   $(call test1)
+> endef
 
-It's this commit:
-
-commit 5de043f4bd11a9e0a3e8daec7d1905da575a76b7
-Author: Oleg Verych <olecom@flower.upol.cz>
-Date:   Tue Feb 6 02:18:21 2007 +0100
-
-    [PATCH] kbuild: improve option checking, Kbuild.include cleanup
-    
-     GNU binutils, root users, tmpfiles, external modules ro builds must
-     be fixed to do the right thing now.
-    
-    Cc: Roman Zippel <zippel@linux-m68k.org>
-    Cc: Sam Ravnborg <sam@ravnborg.org>
-    Cc: Horst Schirmeier <horst@schirmeier.com>
-    Cc: Jan Beulich <jbeulich@novell.com>
-    Cc: Daniel Drake <dsd@gentoo.org>
-    Cc: Andi Kleen <ak@suse.de>
-    Cc: Randy Dunlap <randy.dunlap@oracle.com>
-    Signed-off-by: Oleg Verych <olecom@flower.upol.cz>
-    Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-
-Linus and Oleg tried to fix it with various subsequent changes
-to scripts/Kbuild.include, but it's still broken.
-
-For some reason $(call ...) invocations add spaces.  I tried
-another test case:
-
-define test
- $(shell echo -n)
-endef
-
-VAR:=$(call test)
-
-all:
-	@echo "\'$(VAR)\'"
-
-And this always prints:
-
-' TEST'
-
-even with GNU Make version 3.81
-
-If I put a $(strip ...) around the define, the space is
-still there.  If I put the $(strip ...) around VAR's
-$(call), the space goes away.
+Someone just privately explained that my test case is broken
+because of the spaces before the "$(shell " in the defines.
+Removing them makes the spaces go away.
