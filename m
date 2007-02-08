@@ -1,76 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422679AbXBHXh4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422680AbXBHXiO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422679AbXBHXh4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Feb 2007 18:37:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422709AbXBHXhz
+	id S1422680AbXBHXiO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Feb 2007 18:38:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422636AbXBHXiN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Feb 2007 18:37:55 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:45419 "EHLO smtp.osdl.org"
+	Thu, 8 Feb 2007 18:38:13 -0500
+Received: from lucidpixels.com ([75.144.35.66]:53006 "EHLO lucidpixels.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422679AbXBHXhy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Feb 2007 18:37:54 -0500
-Date: Thu, 8 Feb 2007 15:37:38 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: David Rientjes <rientjes@google.com>
-cc: Jan Engelhardt <jengelh@linux01.gwdg.de>, Jeff Garzik <jeff@garzik.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: somebody dropped a (warning) bomb
-In-Reply-To: <Pine.LNX.4.64.0702081432320.27603@chino.kir.corp.google.com>
-Message-ID: <Pine.LNX.4.64.0702081528070.8424@woody.linux-foundation.org>
-References: <45CB3B28.60102@garzik.org> <Pine.LNX.4.64.0702080819350.8424@woody.linux-foundation.org>
- <Pine.LNX.4.61.0702081851310.1364@yvahk01.tjqt.qr>
- <Pine.LNX.4.64.0702081145470.8424@woody.linux-foundation.org>
- <Pine.LNX.4.61.0702082202180.24888@yvahk01.tjqt.qr>
- <Pine.LNX.4.64.0702081324090.8424@woody.linux-foundation.org>
- <Pine.LNX.4.64.0702081432320.27603@chino.kir.corp.google.com>
+	id S1422680AbXBHXiM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Feb 2007 18:38:12 -0500
+Date: Thu, 8 Feb 2007 18:38:11 -0500 (EST)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+X-X-Sender: jpiszcz@p34.internal.lan
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: finger @finger.kernel.org -> Connection refused
+In-Reply-To: <Pine.LNX.4.61.0702090036030.24888@yvahk01.tjqt.qr>
+Message-ID: <Pine.LNX.4.64.0702081837390.11265@p34.internal.lan>
+References: <Pine.LNX.4.64.0702081826260.11265@p34.internal.lan>
+ <Pine.LNX.4.61.0702090036030.24888@yvahk01.tjqt.qr>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 
-On Thu, 8 Feb 2007, David Rientjes wrote:
-> 
-> And a compiler that makes a_variable.flag unsigned would be brain-dead 
-> because "int" is always signed.
+On Fri, 9 Feb 2007, Jan Engelhardt wrote:
 
-No, making bitfields unsigned is actually usually a good idea. It allows 
-you to often generate better code, and it actually tends to be what 
-programmers _expect_. A lot of people seem to be surprised to hear that a 
-one-bit bitfield actually often encodes -1/0, and not 0/1.
+>
+>> It appears to have been dead for awhile now, did I miss something?
+>> One of my scripts uses this functionality, which now appears
+>> dead/disabled/offline.
+>>
+>> Can anyone provide an update?
+>
+> kernel.org front page sayz:
+>
+> Aug 21, 2003: Please don't use finger.kernel.org for any sort of
+> automatic monitoring. The number of automatic bots hitting this port is
+> causing the finger daemon to shut down more often than not. The same
+> information is available from http://www.kernel.org/kdist/finger_banner.
+>
+> ;-)
+>
+>
+> Jan
+> -- 
+> ft: http://freshmeat.net/p/chaostables/
+>
 
-So unsigned bitfields are not only traditional K&R, they are also usually 
-_faster_ (which is probably why they are traditional K&R - along with 
-allowing "char" to be unsigned by default). Don't knock them.  It's much 
-better to just remember that bitfields simply don't _have_ any standard 
-sign unless you specify it explicitly, than saying "it should be signed 
-because 'int' is signed".
+Thanks!
 
-I will actually argue that having signed bit-fields is almost always a 
-bug, and that as a result you should _never_ use "int" at all. Especially 
-as you might as well just write it as
+$ wget -q -O- http://www.kernel.org/kdist/finger_banner
+The latest stable version of the Linux kernel is:           2.6.20
+The latest snapshot for the stable Linux kernel tree is:    2.6.20-git1
+The latest 2.4 version of the Linux kernel is:              2.4.34.1
+The latest 2.2 version of the Linux kernel is:              2.2.26
+The latest prepatch for the 2.2 Linux kernel tree is:       2.2.27-rc2
+The latest -mm patch to the stable Linux kernels is:        2.6.20-rc6-mm3
 
-	signed a:1;
+Wget it is.
 
-if you really want a signed bitfield.
+Justin.
 
-So I would reall yrecommend that you never use "int a:<bits>" AT ALL, 
-because there really is never any good reason to do so. Do it as
-
-	unsigned a:3;
-	signed b:2;
-
-but never 
-
-	int c:4;
-
-because the latter really isn't sensible.
-
-"sparse" will actually complain about single-bit signed bitfields, and it 
-found a number of cases where people used that "int x:1" kind of syntax. 
-
-Just don't do it.
-
-			Linus
