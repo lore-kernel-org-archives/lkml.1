@@ -1,90 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161428AbXBHCiv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161391AbXBHCuw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161428AbXBHCiv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Feb 2007 21:38:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161472AbXBHCiv
+	id S1161391AbXBHCuw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Feb 2007 21:50:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965678AbXBHCuw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Feb 2007 21:38:51 -0500
-Received: from smtp111.sbc.mail.re2.yahoo.com ([68.142.229.94]:28948 "HELO
-	smtp111.sbc.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1161428AbXBHCiv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Feb 2007 21:38:51 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=MyEXmWlWkkNyny+4qdm5+s5beGS6cZ2Ekzl5vc5s+XuMNy+NPhTJB2LXs6/c6ahQRif5olzOPwuj1fQUHdLFddvvmjXGuPsJguMrJHiG/mYkogDOBmEflE/kIVV4pqlOMR7vzjWfpzqH/on0/TMJXLNqFtH5JRC7oOpJqzCLj8M=  ;
-X-YMail-OSG: DvBUZqEVM1nzxWCoE4_vK1hDLN3VeSMKLGMP4iHKaaWItAah2vdvK8tVBgCcypg_5te6FYtOsaK3eDCH1MOasDxPsXBnUzK6lFEQ_AbUoTIP0QWccdpKJ7t7HHMsSS4BFJV31hz5_GEnpiI-
-From: David Brownell <david-b@pacbell.net>
-To: Haavard Skinnemoen <hskinnemoen@atmel.com>
-Subject: Re: [PATCH] Atmel SPI controller driver
-Date: Wed, 7 Feb 2007 13:30:15 -0800
-User-Agent: KMail/1.7.1
-Cc: Andrew Victor <andrew@sanpeople.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Nicolas FERRE <nicolas.ferre@rfo.atmel.com>,
-       Russell King <rmk@arm.linux.org.uk>
-References: <20070207171540.779c5a0b@dhcp-252-105.norway.atmel.com>
-In-Reply-To: <20070207171540.779c5a0b@dhcp-252-105.norway.atmel.com>
+	Wed, 7 Feb 2007 21:50:52 -0500
+Received: from raven.upol.cz ([158.194.120.4]:39127 "EHLO raven.upol.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965650AbXBHCuv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Feb 2007 21:50:51 -0500
+Date: Thu, 8 Feb 2007 03:59:35 +0100
+To: Roman Zippel <zippel@linux-m68k.org>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>,
+       Alexey Dobriyan <adobriyan@gmail.com>, torvalds@osdl.org,
+       sam@ravnborg.org, linux-kernel@vger.kernel.org
+Subject: Re: discussion of Kbuild fixes (kbuild: Kbuild.include avoid using spaces in call arguments)
+Message-ID: <20070208025934.GH22699@flower.upol.cz>
+References: <20070207165204.GA5537@martell.zuzino.mipt.ru> <Pine.LNX.4.64.0702071846180.14457@scrub.home> <20070207220435.GC22699@flower.upol.cz> <Pine.LNX.4.64.0702080029030.14457@scrub.home> <20070207153848.e02d355d.randy.dunlap@oracle.com> <Pine.LNX.4.64.0702080051520.14457@scrub.home> <20070208012049.GE22699@flower.upol.cz> <Pine.LNX.4.64.0702080301590.14457@scrub.home>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200702071330.16003.david-b@pacbell.net>
+In-Reply-To: <Pine.LNX.4.64.0702080301590.14457@scrub.home>
+Organization: Palacky University in Olomouc, experimental physics department.
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Oleg Verych <olecom@flower.upol.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 07 February 2007 8:15 am, Haavard Skinnemoen wrote:
-> Driver for the Atmel on-chip SPI master controller.
+On Thu, Feb 08, 2007 at 03:05:41AM +0100, Roman Zippel wrote:
+> Hi,
 > 
-> Tested primarily on AVR32/AT32AP7000/ATSTK1000 using mtd_dataflash and
-> the jffs2 filesystem.
-
-Call me paranoid, but until such controller drivers can withstand
-loads placed by filesystems I have a hard time trusting them!  ;)
-
-Various drivers using smaller transfers (control for LCD or audio DAC,
-sensors, EEPROM access) have also been reported to work.
-
-
-> Should also work fine on various AT91 ARM-based 
-> chips like AT91SAM926x.
-
-And answering a question we had:  I did get confirmation from one person,
-saying that they'd used a previous version of this driver on at91rm9200
-with success.
-
-I think that answers Andrew Victor's basic question about whether the
-"legacy" at91 SPI driver is ready to go away ... the main unresolved
-issue being a replacement for that old userspace interface.  (And that
-issue is nearly resolved too.)
-
-
-> Hardware documentation can be found in the AT32AP7000 data sheet,
-> which can be downloaded from
+> On Thu, 8 Feb 2007, Oleg Verych wrote:
 > 
-> http://www.atmel.com/dyn/products/datasheets.asp?family_id=682
+> > -- `find | sort' in localversion (i insist on split between paths and
+> >     files)
 > 
-> Signed-off-by: Haavard Skinnemoen <hskinnemoen@atmel.com>
+> make has dedicated functions for this.
 
-Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+I think, "make" (even whatever shiny new) that particular problem can't
+handle. Regexp on *file name* is needed, while PATH must be untouched.
+That what i meant with spliting tasks. Stripping strings of wildcards
+by "make dedicated functions" is ugly, IMHO. 
+
+Also, what do you think, if someone (very unlikely) will add port of build
+system to something different? Clear logic for a "rule" is there, one can
+easily make whole `include/config/kernel.release' with that.
+
+> > -- symlinks to /dev/null in option checking -- isn't it better to not
+> >    have any (though cached) access to files on filesystem, instead of to
+> >    /dev/null? cont.:
+> 
+> symlinks are not much else than special files.
+
+IMHO, cheap I/O. Yes, that isn't a big benefit, but i don't see anything
+against, except, probably, filesystems without support of symlinks.
+
+> > I wish to have more people to work on this (even with just comments),
+> > because "Kbuild.include" was only first step to reduce bloated top
+> > Makefile. Since then, it seems, Sam have more important things to do.
+> 
+> The problem is that you mix multiple changes into a single patch,
+
+Yes, from whitespace-issue point of view, that was a huge change (:,
+
+> but since kbuild is very central part that puts everything together,
+
+and patch set didn't make a single release of -mm tree (:
+
+> I don't think it's bad idea to be more conservative, especially if you
+> just start to work on it.
+
+.... alone. I think it will be OK, Linus is with us!
 
 
-> ---
-> Note that this driver depends on the arch-neutral GPIO API patches
-> currently in -mm.
+Thanks, Roman.
 
-So this should follow the merge of the AVR32 architecture updates, and
-the AT91 GPIO patch, to prevent creation of configs that won't build.
-
-ISTR that AT91 also needs some arch updates to make it _run_ properly
-(to use the same board init conventions), but IMO this can merge before
-those if that simplifies the process.  (That is, no need to wait for
-AT91 patches to go from Andrew to Russell to Linus first.)
-
-Thanks for making this driver happen!
-
-- Dave
-
- 
+____
