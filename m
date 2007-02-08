@@ -1,48 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422960AbXBHX1L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965599AbXBHX1U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422960AbXBHX1L (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Feb 2007 18:27:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422783AbXBHX1L
+	id S965599AbXBHX1U (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Feb 2007 18:27:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965608AbXBHX1U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Feb 2007 18:27:11 -0500
-Received: from directfb.org ([212.227.87.76]:64982 "EHLO www.directfb.org"
+	Thu, 8 Feb 2007 18:27:20 -0500
+Received: from lucidpixels.com ([75.144.35.66]:40097 "EHLO lucidpixels.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030231AbXBHX1K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Feb 2007 18:27:10 -0500
-X-Greylist: delayed 1337 seconds by postgrey-1.27 at vger.kernel.org; Thu, 08 Feb 2007 18:27:10 EST
-Message-ID: <45CBAC8A.3050806@directfb.org>
-Date: Fri, 09 Feb 2007 00:04:42 +0100
-From: Denis Oliver Kropp <dok@directfb.org>
-User-Agent: Thunderbird 1.5.0.4 (X11/20060619)
+	id S965599AbXBHX1R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Feb 2007 18:27:17 -0500
+Date: Thu, 8 Feb 2007 18:27:17 -0500 (EST)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+X-X-Sender: jpiszcz@p34.internal.lan
+To: linux-kernel@vger.kernel.org
+Subject: finger @finger.kernel.org -> Connection refused
+Message-ID: <Pine.LNX.4.64.0702081826260.11265@p34.internal.lan>
 MIME-Version: 1.0
-To: Jiri Slaby <jirislaby@gmail.com>
-CC: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
-       adaplas@pol.net, ajoshi@shell.unixbox.com, pfaffben@debian.org,
-       VANDROVE@vc.cvut.cz
-Subject: Re: [PATCH 1/2] Video: fb, add true ref_count atomicity
-References: <135662331710109923@wsc.cz>
-In-Reply-To: <135662331710109923@wsc.cz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jiri Slaby wrote:
-> video/fb, add true ref_count atomicity
-> 
-> Some of fb drivers uses atomic_t in bad manner, since there are still some
-> race-prone gaps. Use mutexes to protect open/close code sections with
-> ref_count testing and finally use simple uint.
-> 
-> Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+It appears to have been dead for awhile now, did I miss something?
+One of my scripts uses this functionality, which now appears 
+dead/disabled/offline.
 
-Acked-by: Denis Oliver Kropp <dok@directfb.org>
+Can anyone provide an update?
 
--- 
-Best regards,
-   Denis Oliver Kropp
+Thanks,
 
-.------------------------------------------.
-| DirectFB - Hardware accelerated graphics |
-| http://www.directfb.org/                 |
-'------------------------------------------'
+Justin.
