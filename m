@@ -1,59 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423149AbXBHJIS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423170AbXBHJPf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423149AbXBHJIS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Feb 2007 04:08:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423154AbXBHJIR
+	id S1423170AbXBHJPf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Feb 2007 04:15:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423184AbXBHJPf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Feb 2007 04:08:17 -0500
-Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:40819 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1423149AbXBHJIP (ORCPT
+	Thu, 8 Feb 2007 04:15:35 -0500
+Received: from wx-out-0506.google.com ([66.249.82.239]:62388 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423170AbXBHJPd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Feb 2007 04:08:15 -0500
-Message-ID: <45CAE87E.8070502@vmware.com>
-Date: Thu, 08 Feb 2007 01:08:14 -0800
-From: Zachary Amsden <zach@vmware.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061206)
+	Thu, 8 Feb 2007 04:15:33 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=JGWUhi7Fzac55UJ6h6poatB77ucC3mWHRa+fDZT387RUbiNW+LS09g+rqfxdV8N/RtHXskBE3Mc5YVb3AVByt3UZxQ2vO3U2/hneu6EEAQEH8SeiYmQgXwdr2sN8B5LeP+M2oCs/O1aIXhTCQy/dK7qicpz0w+bCXSxoHTJymok=
+Message-ID: <3877989d0702080115o15feb447h73e3fa310bc09fb4@mail.gmail.com>
+Date: Thu, 8 Feb 2007 17:15:32 +0800
+From: "Luming Yu" <luming.yu@gmail.com>
+To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+Subject: Re: [PATCH] ATA convert GSI to irq on ia64
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org,
+       linux-ide@vger.kernel.org, "Jeff Garzik" <jgarzik@pobox.com>
+In-Reply-To: <1170920422.15989.354.camel@ymzhang>
 MIME-Version: 1.0
-To: Andi Kleen <ak@muc.de>
-CC: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, Rusty Russell <rusty@rustcorp.com.au>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Chris Wright <chrisw@sous-sol.org>
-Subject: Re: [PATCH 9/11] Panic delay fix
-References: <200702060353.l163rUmj000771@zach-dev.vmware.com> <20070206122729.GC47229@muc.de> <45C8FA2D.6010706@vmware.com> <d120d5000702070658l1c018565n34a6d8814a20184d@mail.gmail.com> <45CA535D.1080700@vmware.com> <20070208082443.GA9928@muc.de>
-In-Reply-To: <20070208082443.GA9928@muc.de>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1170920422.15989.354.camel@ymzhang>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> On Wed, Feb 07, 2007 at 02:31:57PM -0800, Zachary Amsden wrote:
->   
->> Dmitry Torokhov wrote:
->>     
->>> I am confused - does i8042 talk to a virtual or real hardware here? In
->>> any case I think you need to fix kernel/panic.c to have proper
->>> (m)delay, not mess with i8042.
->>>       
->> I think I need to fix both of them actually.  This is virtual hardware, 
->> but when you grab focus on a VM, the virtual hardware gets reflected to 
->> the actual physical keyboard.  Driving physical hardware that fast is bad.
->>     
+if use ide_default_irq , then I guess the #if defined can be removed.
+#define ATA_PRIMARY_IRQ(dev)   isa_irq_to_vector(0x1F0)
+
+
+On 2/8/07, Zhang, Yanmin <yanmin_zhang@linux.intel.com> wrote:
+> If an ATA drive uses legacy mode, ata driver will choose 14 and 15 as the
+> fixed irq number. On ia64 platform, such numbers are GSI and should be converted
+> to irq vector.
 >
-> ???
+> Below patch against kernel 2.6.20 fixes it.
 >
-> Surely the physical keyboard is always handled by the host kernel? 
-> I hope you're not saying it's trying to access the io ports directly?
->   
-
-No, not that.  But the virtual keyboard I/O gets processed and converted 
-to physical keyboard I/O when a keyboard is attached to a VM.  The 
-result is that the virtual keyboard spinning out of control causes the 
-physical keyboard to receive the same commands, far too rapidly.
-
-So the keyboard blinks out of control and acts as if possessed by demons.
-
-Zach
+> Signed-off-by: Zhang Yanmin <yanmin.zhang@intel.com>
+>
+> ---
+>
+> diff -Nraup linux-2.6.20/include/asm-generic/libata-portmap.h linux-2.6.20_fix/include/asm-generic/libata-portmap.h
+> --- linux-2.6.20/include/asm-generic/libata-portmap.h   2007-02-08 15:13:44.000000000 +0800
+> +++ linux-2.6.20_fix/include/asm-generic/libata-portmap.h       2007-02-08 15:20:13.000000000 +0800
+> @@ -3,10 +3,20 @@
+>
+>  #define ATA_PRIMARY_CMD                0x1F0
+>  #define ATA_PRIMARY_CTL                0x3F6
+> +#if defined(__ia64__)
+> +#define ATA_PRIMARY_IRQ(dev)   isa_irq_to_vector(14)
+> +#else
+>  #define ATA_PRIMARY_IRQ(dev)   14
+> +#endif
+> +
+>
+>  #define ATA_SECONDARY_CMD      0x170
+>  #define ATA_SECONDARY_CTL      0x376
+> +#if defined(__ia64__)
+> +#define ATA_SECONDARY_IRQ(dev) isa_irq_to_vector(15)
+> +#else
+>  #define ATA_SECONDARY_IRQ(dev) 15
+> +#endif
+> +
+>
+>  #endif
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
