@@ -1,220 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423444AbXBHVlB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423448AbXBHVnD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423444AbXBHVlB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Feb 2007 16:41:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423447AbXBHVlB
+	id S1423448AbXBHVnD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Feb 2007 16:43:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423447AbXBHVnD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Feb 2007 16:41:01 -0500
-Received: from gepetto.dc.ltu.se ([130.240.42.40]:52106 "EHLO
-	gepetto.dc.ltu.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423444AbXBHVlA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Feb 2007 16:41:00 -0500
-Date: Thu, 8 Feb 2007 22:39:35 +0100 (MET)
-From: Richard Knutsson <ricknu-0@student.ltu.se>
-To: akpm@osdl.org
-Cc: trivial@kernel.org, linux-kernel@vger.kernel.org,
-       Richard Knutsson <ricknu-0@student.ltu.se>
-Message-Id: <20070208213935.4864.40124.sendpatchset@thinktank.campus.ltu.se>
-Subject: [PATCH] drivers/telephony/ixj: Convert to generic boolean
+	Thu, 8 Feb 2007 16:43:03 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:41005 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1423448AbXBHVnA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Feb 2007 16:43:00 -0500
+Date: Thu, 8 Feb 2007 13:42:47 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: =?ISO-8859-1?Q?J=2EA=2E_Magall=C3=B3n?= <jamagallon@ono.com>
+cc: Jan Engelhardt <jengelh@linux01.gwdg.de>, Jeff Garzik <jeff@garzik.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: somebody dropped a (warning) bomb
+In-Reply-To: <20070208221317.5beedaeb@werewolf-wl>
+Message-ID: <Pine.LNX.4.64.0702081338010.8424@woody.linux-foundation.org>
+References: <45CB3B28.60102@garzik.org> <Pine.LNX.4.64.0702080819350.8424@woody.linux-foundation.org>
+ <Pine.LNX.4.61.0702081851310.1364@yvahk01.tjqt.qr>
+ <Pine.LNX.4.64.0702081145470.8424@woody.linux-foundation.org>
+ <20070208221317.5beedaeb@werewolf-wl>
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="-1463790079-1725508962-1170970967=:8424"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Convert:
-BOOL  -> bool
-FALSE -> false
-TRUE  -> true
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Change a variable ('mContinue') to boolean from char, since it is used
-as boolean.
-
-Signed-off-by: Richard Knutsson <ricknu-0@student.ltu.se>
----
-Compile-tested with "allyes", "allmod" and "allno" on i386
-Get a few warning-messages, none related to this patch
-Sent on 2007-01-21
+---1463790079-1725508962-1170970967=:8424
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 
 
-diff --git a/drivers/telephony/ixj.c b/drivers/telephony/ixj.c
-index df4cc1f..58deaac 100644
---- a/drivers/telephony/ixj.c
-+++ b/drivers/telephony/ixj.c
-@@ -648,9 +648,9 @@ static inline BYTE SLIC_GetState(IXJ *j)
- 	return j->pld_slicr.bits.state;
- }
- 
--static BOOL SLIC_SetState(BYTE byState, IXJ *j)
-+static bool SLIC_SetState(BYTE byState, IXJ *j)
- {
--	BOOL fRetVal = FALSE;
-+	bool fRetVal = false;
- 
- 	if (j->cardtype == QTI_PHONECARD) {
- 		if (j->flags.pcmciasct) {
-@@ -659,14 +659,14 @@ static BOOL SLIC_SetState(BYTE byState, IXJ *j)
- 			case PLD_SLIC_STATE_OC:
- 				j->pslic.bits.powerdown = 1;
- 				j->pslic.bits.ring0 = j->pslic.bits.ring1 = 0;
--				fRetVal = TRUE;
-+				fRetVal = true;
- 				break;
- 			case PLD_SLIC_STATE_RINGING:
- 				if (j->readers || j->writers) {
- 					j->pslic.bits.powerdown = 0;
- 					j->pslic.bits.ring0 = 1;
- 					j->pslic.bits.ring1 = 0;
--					fRetVal = TRUE;
-+					fRetVal = true;
- 				}
- 				break;
- 			case PLD_SLIC_STATE_OHT:	/* On-hook transmit */
-@@ -679,14 +679,14 @@ static BOOL SLIC_SetState(BYTE byState, IXJ *j)
- 					j->pslic.bits.powerdown = 1;
- 				}
- 				j->pslic.bits.ring0 = j->pslic.bits.ring1 = 0;
--				fRetVal = TRUE;
-+				fRetVal = true;
- 				break;
- 			case PLD_SLIC_STATE_APR:	/* Active polarity reversal */
- 
- 			case PLD_SLIC_STATE_OHTPR:	/* OHT polarity reversal */
- 
- 			default:
--				fRetVal = FALSE;
-+				fRetVal = false;
- 				break;
- 			}
- 			j->psccr.bits.dev = 3;
-@@ -703,7 +703,7 @@ static BOOL SLIC_SetState(BYTE byState, IXJ *j)
- 			j->pld_slicw.bits.c3 = 0;
- 			j->pld_slicw.bits.b2en = 0;
- 			outb_p(j->pld_slicw.byte, j->XILINXbase + 0x01);
--			fRetVal = TRUE;
-+			fRetVal = true;
- 			break;
- 		case PLD_SLIC_STATE_RINGING:
- 			j->pld_slicw.bits.c1 = 1;
-@@ -711,7 +711,7 @@ static BOOL SLIC_SetState(BYTE byState, IXJ *j)
- 			j->pld_slicw.bits.c3 = 0;
- 			j->pld_slicw.bits.b2en = 1;
- 			outb_p(j->pld_slicw.byte, j->XILINXbase + 0x01);
--			fRetVal = TRUE;
-+			fRetVal = true;
- 			break;
- 		case PLD_SLIC_STATE_ACTIVE:
- 			j->pld_slicw.bits.c1 = 0;
-@@ -719,7 +719,7 @@ static BOOL SLIC_SetState(BYTE byState, IXJ *j)
- 			j->pld_slicw.bits.c3 = 0;
- 			j->pld_slicw.bits.b2en = 0;
- 			outb_p(j->pld_slicw.byte, j->XILINXbase + 0x01);
--			fRetVal = TRUE;
-+			fRetVal = true;
- 			break;
- 		case PLD_SLIC_STATE_OHT:	/* On-hook transmit */
- 
-@@ -728,7 +728,7 @@ static BOOL SLIC_SetState(BYTE byState, IXJ *j)
- 			j->pld_slicw.bits.c3 = 0;
- 			j->pld_slicw.bits.b2en = 0;
- 			outb_p(j->pld_slicw.byte, j->XILINXbase + 0x01);
--			fRetVal = TRUE;
-+			fRetVal = true;
- 			break;
- 		case PLD_SLIC_STATE_TIPOPEN:
- 			j->pld_slicw.bits.c1 = 0;
-@@ -736,7 +736,7 @@ static BOOL SLIC_SetState(BYTE byState, IXJ *j)
- 			j->pld_slicw.bits.c3 = 1;
- 			j->pld_slicw.bits.b2en = 0;
- 			outb_p(j->pld_slicw.byte, j->XILINXbase + 0x01);
--			fRetVal = TRUE;
-+			fRetVal = true;
- 			break;
- 		case PLD_SLIC_STATE_STANDBY:
- 			j->pld_slicw.bits.c1 = 1;
-@@ -744,7 +744,7 @@ static BOOL SLIC_SetState(BYTE byState, IXJ *j)
- 			j->pld_slicw.bits.c3 = 1;
- 			j->pld_slicw.bits.b2en = 1;
- 			outb_p(j->pld_slicw.byte, j->XILINXbase + 0x01);
--			fRetVal = TRUE;
-+			fRetVal = true;
- 			break;
- 		case PLD_SLIC_STATE_APR:	/* Active polarity reversal */
- 
-@@ -753,7 +753,7 @@ static BOOL SLIC_SetState(BYTE byState, IXJ *j)
- 			j->pld_slicw.bits.c3 = 1;
- 			j->pld_slicw.bits.b2en = 0;
- 			outb_p(j->pld_slicw.byte, j->XILINXbase + 0x01);
--			fRetVal = TRUE;
-+			fRetVal = true;
- 			break;
- 		case PLD_SLIC_STATE_OHTPR:	/* OHT polarity reversal */
- 
-@@ -762,10 +762,10 @@ static BOOL SLIC_SetState(BYTE byState, IXJ *j)
- 			j->pld_slicw.bits.c3 = 1;
- 			j->pld_slicw.bits.b2en = 0;
- 			outb_p(j->pld_slicw.byte, j->XILINXbase + 0x01);
--			fRetVal = TRUE;
-+			fRetVal = true;
- 			break;
- 		default:
--			fRetVal = FALSE;
-+			fRetVal = false;
- 			break;
- 		}
- 	}
-@@ -4969,7 +4969,8 @@ static int ixj_daa_cid_read(IXJ *j)
- {
- 	int i;
- 	BYTES bytes;
--	char CID[ALISDAA_CALLERID_SIZE], mContinue;
-+	char CID[ALISDAA_CALLERID_SIZE];
-+	bool mContinue;
- 	char *pIn, *pOut;
- 
- 	if (!SCI_Prepare(j))
-@@ -5013,7 +5014,7 @@ static int ixj_daa_cid_read(IXJ *j)
- 
- 	pIn = CID;
- 	pOut = j->m_DAAShadowRegs.CAO_REGS.CAO.CallerID;
--	mContinue = 1;
-+	mContinue = true;
- 	while (mContinue) {
- 		if ((pIn[1] & 0x03) == 0x01) {
- 			pOut[0] = pIn[0];
-@@ -5027,7 +5028,7 @@ static int ixj_daa_cid_read(IXJ *j)
- 		if ((pIn[4] & 0xc0) == 0x40) {
- 			pOut[3] = ((pIn[4] & 0x3f) << 2) | ((pIn[3] & 0xc0) >> 6);
- 		} else {
--			mContinue = FALSE;
-+			mContinue = false;
- 		}
- 		pIn += 5, pOut += 4;
- 	}
-@@ -7498,7 +7499,7 @@ static BYTE PCIEE_ReadBit(WORD wEEPROMAddress, BYTE lastLCC)
- 	return ((inb(wEEPROMAddress) >> 3) & 1);
- }
- 
--static BOOL PCIEE_ReadWord(WORD wAddress, WORD wLoc, WORD * pwResult)
-+static bool PCIEE_ReadWord(WORD wAddress, WORD wLoc, WORD * pwResult)
- {
- 	BYTE lastLCC;
- 	WORD wEEPROMAddress = wAddress + 3;
-diff --git a/drivers/telephony/ixj.h b/drivers/telephony/ixj.h
-index 8d69bcd..4c32a43 100644
---- a/drivers/telephony/ixj.h
-+++ b/drivers/telephony/ixj.h
-@@ -48,15 +48,11 @@
- typedef __u16 WORD;
- typedef __u32 DWORD;
- typedef __u8 BYTE;
--typedef __u8 BOOL;
- 
- #ifndef IXJMAX
- #define IXJMAX 16
- #endif
- 
--#define TRUE 1
--#define FALSE 0
--
- /******************************************************************************
- *
- *  This structure when unioned with the structures below makes simple byte
+
+On Thu, 8 Feb 2007, J.A. Magallón wrote:
+> 
+> Perhaps the problem is that gcc warns you something like 'if you care
+> anything about the sign behaviour of what you send to strlen() you're doomed'.
+
+But you *cannot* care. That's the point. The warning is insane. For any 
+function that takes "char *", you very fundamentally *cannot* care about 
+the signedness of the argument, because doing so would be wrong. If you 
+do care, you're already buggy.
+
+> Ie, you declared the var unsigned, so you care about it. But I can do
+> anything without any regard to the sign.
+
+That makes no sense. 
+
+First off, "strlen()" doesn't care about the sign of the buffer, so it's a 
+bad example anyway. But take something that *can* care, namely "strcmp()", 
+which can return different things depending on whether "char" is signed or 
+not (is 0xff larger than 0x00? Depends on whether char is signed or 
+not..).
+
+But THE CALLER CANNOT AND MUST NOT CARE! Because the sign of "char" is 
+implementation-defined, so if you call "strcmp()", you are already 
+basically saying: I don't care (and I _cannot_ care) what sign you are 
+using.
+
+So having the compiler warn about it is insane. It's like warnign about 
+the fact that it's Thursday today. It's not something the programmer cares 
+about.
+
+		Linus
+---1463790079-1725508962-1170970967=:8424--
