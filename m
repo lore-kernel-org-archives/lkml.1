@@ -1,70 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422989AbXBHNI3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422977AbXBHNJ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422989AbXBHNI3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Feb 2007 08:08:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422993AbXBHNI3
+	id S1422977AbXBHNJ2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Feb 2007 08:09:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422970AbXBHNJ2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Feb 2007 08:08:29 -0500
-Received: from koto.vergenet.net ([210.128.90.7]:33093 "EHLO koto.vergenet.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422980AbXBHNIG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Feb 2007 08:08:06 -0500
-Date: Thu, 8 Feb 2007 21:35:39 +0900
-From: Horms <horms@verge.net.au>
-To: Michael Neuling <mikey@neuling.org>
-Cc: Andrew Morton <akpm@osdl.org>, Al Viro <viro@ftp.linux.org.uk>,
-       "H. Peter Anvin" <hpa@zytor.com>, fastboot@lists.osdl.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [Fastboot] [PATCH] free initrds boot option
-Message-ID: <20070208123537.GB7304@verge.net.au>
-References: <4410.1165450723@neuling.org> <20061206163021.f434f09b.akpm@osdl.org> <4577624A.6010008@zytor.com> <13639.1165462578@neuling.org> <20061207164756.GA13873@in.ibm.com> <45788A56.9010706@us.ibm.com> <30054.1165534335@neuling.org> <20061213013506.GB22902@verge.net.au>
+	Thu, 8 Feb 2007 08:09:28 -0500
+Received: from web38505.mail.mud.yahoo.com ([209.191.125.51]:26313 "HELO
+	web38505.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1422985AbXBHNJ0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Feb 2007 08:09:26 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=3QGlKFYZSJOLv1uACx5fR04ojlgtcJEDDZjgO+klcV1sM5PUlsoA3FB19ytx2pXzBhAzwT3V5o2aImHolf3xqaxcbhuTSpkV2y08ZXkd+8dmroSi/mzcvVc8+tp6lxtqhliQQ+1LLh24siD+6NF0mKkeFAcw5YsSU4ymRWyx8yo=;
+X-YMail-OSG: tSDCAc4VM1lhq1Ul2yWHYn8v4VYUgYM_wnjJMlEIAN2sY6ggBeeGvFERunoHk.T3W_HykConLb_TtY_albu9S91YXJ8.fqAaS3TvM8IWnSvrBI4siwTqQw--
+Date: Thu, 8 Feb 2007 05:09:25 -0800 (PST)
+From: Levitsky Maxim <maximlevitsky@yahoo.com>
+Subject: OT: I don't recive mail from linux-kernel
+To: postmaster@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20061213013506.GB22902@verge.net.au>
-User-Agent: mutt-ng/devel-r804 (Debian)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <827812.16057.qm@web38505.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 13, 2006 at 10:35:08AM +0900, Horms wrote:
-> On Fri, Dec 08, 2006 at 10:32:15AM +1100, Michael Neuling wrote:
-> > > >Is there a kexec-tools patch too? How does second kernel know about
-> > > >the location of the first kernel's initrd to be reused?
-> > > >  
-> > > >
-> > > kexec-tools has to be modified to pass the first kernel initrd. On 
-> > > powerpc, initrd locations are exported using device-tree. At present, 
-> > > kexec-tool ignores the first kernel initrd property values and creates 
-> > > new initrd properties if the user passes '--initrd' option to the kexec 
-> > > command. So, will be an issue unless first kernel device-tree is passed 
-> > > as buffer.
-> > 
-> > We've been using the --devicetreeblob kexec-tools option available for
-> > POWERPC.  This enables you to setup the device tree (and hence, the
-> > initrd points) as you like.
-> > 
-> > I'm happy to put together a patch for kexec-tools. 
-> 
-> Please do. And please cc me on a copy that applies against kexec-tools-testing.
-> 
-> > Unfortunately this
-> > is arch specific.  A quick look through the x86, ia64, s390 and ppc64
-> > code shows the --initrd option for all these just reads the specified
-> > initrd file, pushes it out to memory and uses the base and size pointers
-> > to setup the next boot.  We'd obviously just skip to the last stage.
-> > 
-> > So what's the kexec-tools option called?  --initrd-location <base> <size>?
-> 
-> That sounds fine to me. I think its ok to make it arch specific for
-> starters and then move it out to generic code later. That said, if
-> you're feeling particularly entergetic, feel free to do the generic
-> stuff now and just add null stubs for the other architectures (does
-> that makes sense?).
+Good day,
 
-Did anything ever come of this?
+I don't recive mail from LKML    
+I am very sorry that I did't ask this before,
 
--- 
-Horms
-  H: http://www.vergenet.net/~horms/
-  W: http://www.valinux.co.jp/en/
+Before lot of time (about half a year) I lost password to my email box.
+But I managed to find it in old notebook, after about three months, and I found that my mailbox
+ceased to recive mail from LKML.
 
+Then I decided not to do anything about that cause I was't needed this subsrciption, and I read
+LKML through GMANE. 
+
+But now things changed, cause I wrote number of patches, and it is very difficult to send patches
+without subscription.
+
+So I want to ask you whenever my mailbox is banned or not and gently ask you to lift it if yes,
+case I said the reason my mailbox was unaviable ( or at least I think so)
+
+Best regards ,
+     Maxim Levitsky
+
+PS: I like linux kernel very much, especially the fact that it is written in C, I already had
+studied lot of it's code , and now I am focused on fixing drivers that I use on my system.
+
+
+
+
+ 
+____________________________________________________________________________________
+Now that's room service!  Choose from over 150,000 hotels
+in 45,000 destinations on Yahoo! Travel to find your fit.
+http://farechase.yahoo.com/promo-generic-14795097
