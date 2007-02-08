@@ -1,69 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161104AbXBHXmw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965717AbXBHXor@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161104AbXBHXmw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Feb 2007 18:42:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422709AbXBHXmw
+	id S965717AbXBHXor (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Feb 2007 18:44:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965680AbXBHXor
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Feb 2007 18:42:52 -0500
-Received: from ns.suse.de ([195.135.220.2]:46390 "EHLO mx1.suse.de"
+	Thu, 8 Feb 2007 18:44:47 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:45598 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161104AbXBHXmv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Feb 2007 18:42:51 -0500
-Date: Thu, 8 Feb 2007 15:41:27 -0800
-From: Greg KH <greg@kroah.com>
-To: James Simmons <jsimmons@infradead.org>
-Cc: Richard Purdie <rpurdie@rpsys.net>, LKML <linux-kernel@vger.kernel.org>,
-       akpm <akpm@linux-foundation.org>,
-       Marcin Juszkiewicz <openembedded@hrw.one.pl>
-Subject: Re: Git backlight subsystem tree
-Message-ID: <20070208234127.GA23475@kroah.com>
-References: <1170901826.5859.2.camel@localhost.localdomain> <Pine.LNX.4.64.0702081520110.824@pentafluge.infradead.org> <1170957595.5849.11.camel@localhost.localdomain> <Pine.LNX.4.64.0702081830520.7686@pentafluge.infradead.org> <20070208212314.GA21165@kroah.com> <Pine.LNX.4.64.0702082154040.7686@pentafluge.infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0702082154040.7686@pentafluge.infradead.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	id S965717AbXBHXoq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Feb 2007 18:44:46 -0500
+Date: Thu, 8 Feb 2007 15:44:42 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: -mm merge plans for 2.6.21
+Message-Id: <20070208154442.678a214b.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.61.0702090023270.24888@yvahk01.tjqt.qr>
+References: <20070208150710.1324f6b4.akpm@linux-foundation.org>
+	<Pine.LNX.4.61.0702090023270.24888@yvahk01.tjqt.qr>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 08, 2007 at 09:54:21PM +0000, James Simmons wrote:
+On Fri, 9 Feb 2007 00:29:06 +0100 (MET)
+Jan Engelhardt <jengelh@linux01.gwdg.de> wrote:
+
 > 
-> > On Thu, Feb 08, 2007 at 06:32:02PM +0000, James Simmons wrote:
-> > > On Thu, 8 Feb 2007, Richard Purdie wrote:
-> > > 
-> > > > On Thu, 2007-02-08 at 15:28 +0000, James Simmons wrote:
-> > > > > I have some patches that move the backlight away from using the class 
-> > > > > stuff. The only problem is the patch requires all backlight devices 
-> > > > > to be linked to a real struct device. Right now the acpi backligths are 
-> > > > > not.
-> > > > 
-> > > > Why would you want to do that?
-> > > > 
-> > > > The whole point of having this is so that backlights appear as a
-> > > > standard interface under /sys/class/backlight.
-> > > > 
-> > > > An example of why standardised interfaces are good would be someone
-> > > > writing an applet for a handheld to control the backlight brightness.
-> > > > With the class in place, the applet can easily work with any backlight.
-> > > > Without it, it has to be written for each backlight.
-> > > > 
-> > > > So this is a very strong NAK but I'm curious why you'd want to do it...
-> > > 
-> > > I CC Greg to explain. The backlight class didn't go away. The way it is 
-> > > handled is different.
-> > 
-> > Have a pointer to the patch so I can help explain better?
-> > 
-> > As a short summary, 'struct class_device' is going away.  Using a
-> > 'struct device' in its place is what the conversion should have just
-> > done, no functionality change otherwise.
+> On Feb 8 2007 15:07, Andrew Morton wrote:
 > 
-> diff --git a/drivers/video/backlight/backlight.c b/drivers/video/backlight/backlight.c
+> >scheduled-removal-of-sa_xxx-interrupt-flags-fixups.patch
+> >scheduled-removal-of-sa_xxx-interrupt-flags-fixups-2.patch
+> >scheduled-removal-of-sa_xxx-interrupt-flags.patch
+> >scheduled-removal-of-sa_xxx-interrupt-flags-ata-fix.patch
+> >
+> > This removes SA_INTERRUPT and friends, so 10000000 external drivers won't
+> > compile any more.  I think I'd prefer to find a way to get usage of SA_* to
+> > spit a deprecated warning.
+> 
+> Here's an idea:
+> 
+> #define SA_INTERRUPT sa_interrupt_with_warning()
+> static inline int sa_interrupt_with_warning(void) {
+>     if(more_or_less_often)
+>         printk(fat_warning);
+>     return 0x123456; /* whatever numerical value it is */
+> }
+> 
 
-<snip>
+Yeah, this seems to work.
 
-Looks good to me.  And it makes the code simpler too :)
+--- a/include/linux/interrupt.h~deprecate-sa_interrupt-and-friends
++++ a/include/linux/interrupt.h
+@@ -54,17 +54,32 @@
+  * Migration helpers. Scheduled for removal in 1/2007
+  * Do not use for new code !
+  */
+-#define SA_INTERRUPT		IRQF_DISABLED
+-#define SA_SAMPLE_RANDOM	IRQF_SAMPLE_RANDOM
+-#define SA_SHIRQ		IRQF_SHARED
+-#define SA_PROBEIRQ		IRQF_PROBE_SHARED
+-#define SA_PERCPU		IRQF_PERCPU
+-
+-#define SA_TRIGGER_LOW		IRQF_TRIGGER_LOW
+-#define SA_TRIGGER_HIGH		IRQF_TRIGGER_HIGH
+-#define SA_TRIGGER_FALLING	IRQF_TRIGGER_FALLING
+-#define SA_TRIGGER_RISING	IRQF_TRIGGER_RISING
+-#define SA_TRIGGER_MASK		IRQF_TRIGGER_MASK
++#define emit_old_interrupt_name(old, new)				\
++static inline unsigned __deprecated emit_old_interrupt_name##old(void)	\
++{									\
++	return (new);							\
++}
++
++emit_old_interrupt_name(SA_INTERRUPT, IRQF_DISABLED)
++#define SA_INTERRUPT emit_old_interrupt_nameSA_INTERRUPT()
++emit_old_interrupt_name(SA_SAMPLE_RANDOM, IRQF_SAMPLE_RANDOM)
++#define SA_SAMPLE_RANDOM emit_old_interrupt_nameSA_SAMPLE_RANDOM()
++emit_old_interrupt_name(SA_SHIRQ, IRQF_SHARED)
++#define SA_SHIRQ emit_old_interrupt_nameSA_SHIRQ()
++emit_old_interrupt_name(SA_PROBEIRQ, IRQF_PROBE_SHARED)
++#define SA_PROBEIRQ emit_old_interrupt_nameSA_PROBEIRQ()
++emit_old_interrupt_name(SA_PERCPU, IRQF_PERCPU)
++#define SA_PERCPU emit_old_interrupt_nameSA_PERCPU()
++emit_old_interrupt_name(SA_TRIGGER_LOW, IRQF_TRIGGER_LOW)
++#define SA_TRIGGER_LOW emit_old_interrupt_nameSA_TRIGGER_LOW()
++emit_old_interrupt_name(SA_TRIGGER_HIGH, IRQF_TRIGGER_HIGH)
++#define SA_TRIGGER_HIGH emit_old_interrupt_nameSA_TRIGGER_HIGH()
++emit_old_interrupt_name(SA_TRIGGER_FALLING, IRQF_TRIGGER_FALLING)
++#define SA_TRIGGER_FALLING emit_old_interrupt_nameSA_TRIGGER_FALLING()
++emit_old_interrupt_name(SA_TRIGGER_RISING, IRQF_TRIGGER_RISING)
++#define SA_TRIGGER_RISING emit_old_interrupt_nameSA_TRIGGER_RISING()
++emit_old_interrupt_name(SA_TRIGGER_MASK, IRQF_TRIGGER_MASK)
++#define SA_TRIGGER_MASK emit_old_interrupt_nameSA_TRIGGER_MASK()
+ 
+ typedef irqreturn_t (*irq_handler_t)(int, void *);
+ 
+_
 
-thanks,
+For some reason
 
-greg k-h
+	enum foo {
+		...
+	} __deprecated;
+
+doesn't work.
