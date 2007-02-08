@@ -1,158 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423389AbXBHVQj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423404AbXBHVSV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423389AbXBHVQj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Feb 2007 16:16:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423403AbXBHVQj
+	id S1423404AbXBHVSV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Feb 2007 16:18:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423406AbXBHVSU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Feb 2007 16:16:39 -0500
-Received: from ug-out-1314.google.com ([66.249.92.169]:35441 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423401AbXBHVQh (ORCPT
+	Thu, 8 Feb 2007 16:18:20 -0500
+Received: from nf-out-0910.google.com ([64.233.182.184]:40013 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423404AbXBHVST convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Feb 2007 16:16:37 -0500
+	Thu, 8 Feb 2007 16:18:19 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:from:to:subject:date:user-agent:references:in-reply-to:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=VBsKTTvKDcHlnLoptrQF+rD9Cf8eqSp/wztP2rBFPEw9GbX0+ANy9tLa9q4DkkX0/macvTWTnazaUUC+RyU/i4+Q3A8NPanhn5EALkCC/SERcHGhUgyShPR+Bn5iHFBVOcV1yEWm5I9qSWZMRomZY3n/Kqa7uJjjhVwD7A5BkBg=
+        b=U1TfqGyM1xA630skENwusnlg7x4NbgFd71z3zy6kBo+zd8IOqlUn8Hn4z+o3Qr0GdK4TfRZZaYty82EKEm4A+lB98WiKQlA4mgCeJGZounOlxMMwT8ijSDoJiRNoMj7dhAPsO6r6MNABo1cXOGCjBX+J9jsEba7Wp/sGlmTE3eg=
 From: Maxim Levitsky <maximlevitsky@gmail.com>
 To: netdev@vger.kernel.org
-Subject: [PATCH 2.6.20 3/5] dmfe: Fix link detection
-Date: Thu, 8 Feb 2007 23:13:23 +0200
+Subject: [PATCH 2.6.20 4/5] dmfe: Add support for suspend/resume
+Date: Thu, 8 Feb 2007 23:15:07 +0200
 User-Agent: KMail/1.9.4
 References: <200702082305.26735.maximlevitsky@gmail.com>
 In-Reply-To: <200702082305.26735.maximlevitsky@gmail.com>
 Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
 Content-Disposition: inline
-Message-Id: <200702082313.24158.maximlevitsky@gmail.com>
+Message-Id: <200702082315.07400.maximlevitsky@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: [PATCH 2.6.20 3/5] dmfe: Fix link detection
+>From Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: [PATCH 2.6.20 4/5] dmfe: Add support for suspend/resume
 
-Remove unused 'link_failed' and fix link detection on cards that use external
-PHY
+This adds support for suspend resume
 
 Signed-off-by: Maxim Levitsky <maximlevitsky@gmail.com>
 
 ---
 
---- linux-2.6.20-mod/drivers/net/tulip/dmfe.c	2007-02-08 20:49:05.000000000 
+--- linux-2.6.20-mod/drivers/net/tulip/dmfe.c	2007-02-08 21:49:19.000000000 
 +0200
-+++ linux-2.6.20-test/drivers/net/tulip/dmfe.c	2007-02-08 21:47:37.000000000 
++++ linux-2.6.20-test/drivers/net/tulip/dmfe.c	2007-02-08 22:02:03.000000000 
 +0200
-@@ -248,7 +248,6 @@ struct dmfe_board_info {
- 	u8 media_mode;			/* user specify media mode */
- 	u8 op_mode;			/* real work media mode */
- 	u8 phy_addr;
--	u8 link_failed;			/* Ever link failed */
- 	u8 wait_reset;			/* Hardware failed, need to reset */
- 	u8 dm910x_chk_mode;		/* Operating mode check */
- 	u8 first_in_callback;		/* Flag to record state */
-@@ -544,7 +543,6 @@ static int dmfe_open(struct DEVICE *dev)
- 	db->tx_packet_cnt = 0;
- 	db->tx_queue_cnt = 0;
- 	db->rx_avail_cnt = 0;
--	db->link_failed = 1;
- 	db->wait_reset = 0;
+@@ -55,9 +55,6 @@
  
- 	db->first_in_callback = 0;
-@@ -1101,6 +1099,8 @@ static void dmfe_timer(unsigned long dat
- 	struct dmfe_board_info *db = netdev_priv(dev);
-  	unsigned long flags;
+     TODO
  
-+	int link_ok, link_ok_phy;
+-    Implement pci_driver::suspend() and pci_driver::resume()
+-    power management methods.
+-
+     Check on 64 bit boxes.
+     Check and fix on big endian boxes.
+ 
+@@ -2054,11 +2051,56 @@ static struct pci_device_id dmfe_pci_tbl
+ MODULE_DEVICE_TABLE(pci, dmfe_pci_tbl);
+ 
+ 
 +
- 	DMFE_DBUG(0, "dmfe_timer()", 0);
- 	spin_lock_irqsave(&db->lock, flags);
++static int dmfe_suspend(struct pci_dev *pci_dev, pm_message_t state)
++{
++	struct net_device *dev = pci_get_drvdata(pci_dev);
++	struct dmfe_board_info *db = netdev_priv(dev);
++
++	/* Disable upper layer interface */
++	netif_device_detach (dev);
++
++	/* Disable Tx/Rx */
++	db->cr6_data &= ~(CR6_RXSC | CR6_TXSC);
++	update_cr6(db->cr6_data, dev->base_addr);
++
++	/* Disable Interrupt */
++	outl (0, dev->base_addr + DCR7);
++	outl (inl (dev->base_addr + DCR5), dev->base_addr + DCR5);
++
++	/* Fre RX buffers */
++	dmfe_free_rxbuffer (db);
++
++	/* Power down device*/
++	pci_set_power_state (pci_dev, pci_choose_state (pci_dev,state));
++	pci_save_state (pci_dev);
++
++	return 0;
++}
++
++static int dmfe_resume (struct pci_dev *pci_dev)
++{
++	struct net_device *dev = pci_get_drvdata (pci_dev);
++
++	pci_restore_state(pci_dev);
++	pci_set_power_state(pci_dev ,PCI_D0);
++
++	/* Re-initilize DM910X board */
++	dmfe_init_dm910x(dev);
++
++	/* Restart upper layer interface */
++	netif_device_attach(dev);
++
++	return 0;
++}
++
+ static struct pci_driver dmfe_driver = {
+ 	.name		= "dmfe",
+ 	.id_table	= dmfe_pci_tbl,
+ 	.probe		= dmfe_init_one,
+ 	.remove		= __devexit_p(dmfe_remove_one),
++        .suspend        = dmfe_suspend,
++        .resume         = dmfe_resume
+ };
  
-@@ -1166,22 +1166,43 @@ static void dmfe_timer(unsigned long dat
- 	else
- 		tmp_cr12 = inb(db->ioaddr + DCR12);	/* DM9102/DM9102A */
- 
-+	
- 	if ( ((db->chip_id == PCI_DM9102_ID) &&
- 		(db->chip_revision == 0x02000030)) ||
- 		((db->chip_id == PCI_DM9132_ID) &&
- 		(db->chip_revision == 0x02000010)) ) {
- 		/* DM9102A Chip */
- 		if (tmp_cr12 & 2)
--			tmp_cr12 = 0x0;		/* Link failed */
-+			link_ok = 0;
- 		else
--			tmp_cr12 = 0x3;	/* Link OK */
-+			link_ok = 1;
-+	}
-+	else
-+		/*0x43 is used instead of 0x3 because bit 6 should represent  
-+			link status of external PHY */
-+		link_ok = (tmp_cr12 & 0x43) ? 1 : 0;
-+	
-+	
-+	/* If chip reports that link is failed it could be because external 
-+		PHY link status pin is not conected correctly to chip
-+		To be sure ask PHY too.
-+	*/
-+	
-+	/* need a dummy read because of PHY's register latch*/
-+	phy_read (db->ioaddr, db->phy_addr, 1, db->chip_id); 
-+	link_ok_phy = (phy_read (db->ioaddr, 
-+		       db->phy_addr, 1, db->chip_id) & 0x4) ? 1 : 0;
-+	
-+	if (link_ok_phy != link_ok) {
-+		DMFE_DBUG (0, "PHY and chip report different link status", 0);
-+		link_ok = link_ok | link_ok_phy;
- 	}
- 
--	if ( !(tmp_cr12 & 0x3) && !db->link_failed ) {
-+	if ( !link_ok && netif_carrier_ok(dev) ) {
- 		/* Link Failed */
- 		DMFE_DBUG(0, "Link Failed", tmp_cr12);
--		db->link_failed = 1;
--		netif_carrier_off(db->dev);
-+		
-+		netif_carrier_off(dev);
- 
- 		/* For Force 10/100M Half/Full mode: Enable Auto-Nego mode */
- 		/* AUTO or force 1M Homerun/Longrun don't need */
-@@ -1196,19 +1217,17 @@ static void dmfe_timer(unsigned long dat
- 			db->cr6_data&=~0x00000200;	/* bit9=0, HD mode */
- 			update_cr6(db->cr6_data, db->ioaddr);
- 		}
--	} else
--		if ((tmp_cr12 & 0x3) && db->link_failed) {
--			DMFE_DBUG(0, "Link link OK", tmp_cr12);
--			db->link_failed = 0;
-+		
-+	} else if (!netif_carrier_ok(dev)) {
-+		
-+		DMFE_DBUG(0, "Link OK", tmp_cr12);
- 
- 			/* Auto Sense Speed */
--			if ( (db->media_mode & DMFE_AUTO) &&
--				dmfe_sense_speed(db) )
--				db->link_failed = 1;
--			else
--				netif_carrier_on(db->dev);
-+		if (! (db->media_mode & DMFE_AUTO) || !dmfe_sense_speed(db)) {
-+			netif_carrier_on(dev);
-+			SHOW_MEDIA_TYPE(db->op_mode);
-+		}
- 			dmfe_process_mode(db);
--			/* SHOW_MEDIA_TYPE(db->op_mode); */
- 		}
- 
- 	/* HPNA remote command check */
-@@ -1255,7 +1274,7 @@ static void dmfe_dynamic_reset(struct DE
- 	db->tx_packet_cnt = 0;
- 	db->tx_queue_cnt = 0;
- 	db->rx_avail_cnt = 0;
--	db->link_failed = 1;
-+	netif_carrier_off(dev);
- 	db->wait_reset = 0;
- 
- 	/* Re-initilize DM910X board */
+ MODULE_AUTHOR("Sten Wang, sten_wang@davicom.com.tw");
