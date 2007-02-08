@@ -1,66 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423241AbXBHR3Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423244AbXBHRcT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423241AbXBHR3Q (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Feb 2007 12:29:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423243AbXBHR3Q
+	id S1423244AbXBHRcT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Feb 2007 12:32:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423246AbXBHRcT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Feb 2007 12:29:16 -0500
-Received: from ug-out-1314.google.com ([66.249.92.170]:52698 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423237AbXBHR3O (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Feb 2007 12:29:14 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=kO4T8/QfnIsPh0IVQsVY8b2PiiCY2vtw8CsfCASW23P1Ex/3WJIfRSZjm3j1vDb2aBstHs4N9D9p5iCJYU6COJMZ5y1jE2Bj/yMFTFmKSNueW5nrV8ozSZwveeAfretFxhlvRffuvwCCeSznjNAe5kfzqjYVcp2ZqObA0ui9zMg=
-Message-ID: <d120d5000702080929r7016de12k292add26a0a72291@mail.gmail.com>
-Date: Thu, 8 Feb 2007 12:29:12 -0500
-From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-To: "Stephen Hemminger" <shemminger@linux-foundation.org>
-Subject: Re: Network: convert network devices to use struct device instead of class_device
-Cc: "Jeff Garzik" <jeff@garzik.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       netdev <netdev@vger.kernel.org>, "Greg KH" <greg@kroah.com>
-In-Reply-To: <20070208074130.29df585f@oldman>
+	Thu, 8 Feb 2007 12:32:19 -0500
+Received: from styx.suse.cz ([82.119.242.94]:44574 "EHLO duck.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1423244AbXBHRcS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Feb 2007 12:32:18 -0500
+Date: Thu, 8 Feb 2007 18:35:16 +0100
+From: Jan Kara <jack@suse.cz>
+To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Direct IO for fat
+Message-ID: <20070208173515.GB3780@duck.suse.cz>
+References: <20070208112808.GA3767@duck.suse.cz> <87k5ysfyd5.fsf@duaron.myhome.or.jp> <20070208161001.GB3767@duck.suse.cz> <87wt2sd2m8.fsf@duaron.myhome.or.jp>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <200702080400.l1840lFd002314@hera.kernel.org>
-	 <45CB1AE6.9020707@garzik.org> <20070208074130.29df585f@oldman>
+In-Reply-To: <87wt2sd2m8.fsf@duaron.myhome.or.jp>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/8/07, Stephen Hemminger <shemminger@linux-foundation.org> wrote:
-> On Thu, 08 Feb 2007 07:43:18 -0500
-> Jeff Garzik <jeff@garzik.org> wrote:
->
-> > Linux Kernel Mailing List wrote:
-> > > Gitweb:     http://git.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=43cb76d91ee85f579a69d42bc8efc08bac560278
-> > > Commit:     43cb76d91ee85f579a69d42bc8efc08bac560278
-> > > Parent:     2943ecf2ed32632473c06f1975db47a7aa98c10f
-> > > Author:     Greg Kroah-Hartman <gregkh@suse.de>
-> > > AuthorDate: Tue Apr 9 12:14:34 2002 -0700
-> > > Committer:  Greg Kroah-Hartman <gregkh@suse.de>
-> > > CommitDate: Wed Feb 7 10:37:11 2007 -0800
-> > >
-> > >     Network: convert network devices to use struct device instead of class_device
-> > >
-> > >     This lets the network core have the ability to handle suspend/resume
-> > >     issues, if it wants to.
->
-> It fixes a non-problem. I would like to see the network core suspend/resume
-> proposal as well. Last time I examined doing network core suspend help,
-> the problem was that the physical device suspend was called before the
-> class device. It is not clear how this change would help.
+On Fri 09-02-07 01:40:31, OGAWA Hirofumi wrote:
+> Jan Kara <jack@suse.cz> writes:
+> 
+> >> FAT has to fill the hole completely, but DIO doesn't seems to do.
+> >> 
+> >> e.g.
+> >>         fd = open("file", O_WRONLY | O_CREAT | O_TRUNC);
+> >>         write(fd, buf, 512);
+> >>         lseek(fd, 10000, SEEK_SET);
+> >>         write(fd, buf, 512);
+> >> 
+> >> We need to allocate the blocks on 512 ~ 10000, and fill it with zero.
+> >> However, I think DIO doesn't fill it. If I'm missing something, please
+> >> let me know, I'll kill that check.
+> >   I know. DIO doesn't do it. But the point is that if blockdev_direct_IO
+> > finds out it should allocate new blocks, it exits without allocating them.
+> > Then in __generic_file_aio_write_nolock() if we find out that we did not
+> > write everything in generic_file_direct_write(), we just call
+> > generic_file_buffered_write() to write the unwritten part.
+> >   Hence, in case you describe above, the second write() finds out that
+> > block is not allocated and eventually everything falls back to calling
+> > generic_file_buffered_write() which calls prepare_write() and everything is
+> > happy.
+> 
+> I see. But sorry, I can't see where is preventing it... Finally, I
+> think we do the following on second write(2).
+> 
+> This is write, so create == 1, and ->lock_type == DIO_LOCKING,
+> and dio->block_in_file > ->i_size, so DIO callback fat_get_block() with
+> create == 1.
+  I think you misread the code - see below.
 
-If physical devices are registered before class devices then when
-suspending class devices are naturally suspended first. It is still
-not clear to me why we need to convert everythign to struct device, I
-believe I've shown (with patches) that it is possible to integrate
-struct class_device into PM framework and avoid reshuffling half of
-the kernel code.
+> Then fat_get_block() seems to allocate block without fill hole,
+> because it can't know caller is prepre_write or not...
+> Well, anyway I'll test it on weekend. Thanks.
+> 
+> -> blockdev_direct_IO()
+>   -> direct_io_worker()
+>     -> do_direct_IO()
+>       -> get_more_blocks()
+> 
+> 		create = dio->rw & WRITE;
+  Here, create == 1.
 
+> 		if (dio->lock_type == DIO_LOCKING) {
+> 			if (dio->block_in_file < (i_size_read(dio->inode) >>
+> 							dio->blkbits))
+> 				create = 0;
+  But here create was reset back to 0 - exactly because
+dio->block_in_file > i_size...
+
+									Honza
 -- 
-Dmitry
+Jan Kara <jack@suse.cz>
+SuSE CR Labs
