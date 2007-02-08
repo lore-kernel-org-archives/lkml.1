@@ -1,29 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422842AbXBHF4W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422751AbXBHF63@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422842AbXBHF4W (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Feb 2007 00:56:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422880AbXBHF4V
+	id S1422751AbXBHF63 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Feb 2007 00:58:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422763AbXBHF63
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Feb 2007 00:56:21 -0500
-Received: from ug-out-1314.google.com ([66.249.92.174]:22988 "EHLO
+	Thu, 8 Feb 2007 00:58:29 -0500
+Received: from ug-out-1314.google.com ([66.249.92.175]:24339 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422842AbXBHF4T (ORCPT
+	with ESMTP id S1422751AbXBHF62 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Feb 2007 00:56:19 -0500
+	Thu, 8 Feb 2007 00:58:28 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=lpDUXxUmBnQTsMdvfIH/oIxkyadnLMWDIiWqr73IbYmrQ0zySJWf/OQW1JIL7URCp0JOfPs+gxpphssUxJkDzFMOfmN7GsTS89clf+ngREsKg0CBOr7CGsiinoEpkGq8chZlOHMT/wtrIsQdUuNuYQ1jx0o7jTpCz9i9p1DOlTc=
-Message-ID: <8bd0f97a0702072156q640d49b8of5f81a60b380ef81@mail.gmail.com>
-Date: Thu, 8 Feb 2007 00:56:17 -0500
+        b=RecYlRcAlAYP/SfqN3hfjcRwUmu83QFp9swZUayC/eVdosA9KL3/Hwvgj0seG5/GaYJH7k0GPVpLp+1QAcPlpLE9xGu3mU2bY4d8NBqQK0KV4c90zQLD9QJjT1IdEDkqPdMDyt3Xkkz+TdPs7KfJiqvMDpHcxJhE8RevOfpxizc=
+Message-ID: <8bd0f97a0702072158r36046dd7w64a8c7b5da1a5f9a@mail.gmail.com>
+Date: Thu, 8 Feb 2007 00:58:26 -0500
 From: "Mike Frysinger" <vapier.adi@gmail.com>
 To: "Oleg Verych" <olecom@flower.upol.cz>
-Subject: Re: dd
+Subject: Re: + search-a-little-harder-for-mkimage.patch
 Cc: "Andrew Morton" <akpm@linux-foundation.org>,
        "Roman Zippel" <zippel@linux-m68k.org>, sam@ravnborg.org,
        "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
        "Kai Germaschewski" <kai@germaschewski.name>
-In-Reply-To: <20070208052439.GL22699@flower.upol.cz>
+In-Reply-To: <20070208055832.GN22699@flower.upol.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
@@ -35,35 +35,29 @@ References: <20070207165204.GA5537@martell.zuzino.mipt.ru>
 	 <Pine.LNX.4.64.0702071546420.8424@woody.linux-foundation.org>
 	 <20070207203047.51a95ad0.akpm@linux-foundation.org>
 	 <20070208052439.GL22699@flower.upol.cz>
+	 <20070207211921.1f0220a4.akpm@linux-foundation.org>
+	 <20070208055832.GN22699@flower.upol.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 On 2/8/07, Oleg Verych <olecom@flower.upol.cz> wrote:
-> > Check to see if `${CROSS_COMPILE}mkimage` exists and if not, fall back to
-> > the standard `mkimage`
+> On Wed, Feb 07, 2007 at 09:19:21PM -0800, Andrew Morton wrote:
+> > On Thu, 8 Feb 2007 06:24:40 +0100 Oleg Verych <olecom@flower.upol.cz> wrote:
+> >
+> > > If that matter, `type -path' is bashizm (BloAted SHell), and "blackbox"
+> > > with "dash" (very good `sh' equivalents) will fail.
+> >
+> > Does the kernel presently build with that shell?
 >
-> Why this can't be done by
->
->   PATH=$CROSS_COMPILE:$PATH
->
-> in your environment?
+> build - yes, with dash being `$(shell)'. All scripts with `#!/bin/bash'
+> of course use bash, example is gen_initramfs_list.sh.
 
-because it wouldnt matter ?  the tool is called
-"$CROSS_COMPILE-mkimage", it isnt $CROSS_COMPILE_PATH/mkimage
+which is what mkuboot.sh is using now
 
-> > The Blackfin toolchain includes mkimage, but we dont want to namespace
-> > collide with any of the user's system setup, so we prefix it with our
-> > toolchain name.
->
-> If that matter, `type -path' is bashizm (BloAted SHell), and "blackbox"
-> with "dash" (very good `sh' equivalents) will fail. I would recomend to
-> use "which" command (btw, Debian has `sh' version of it), if you
-> concerned about size and performance.
->
-> Nack + proposition to move from `bash' to `sh'.
+> Trivial shell scripts, especially for embedded archs (Blackfin is
+> one, IIRC), may be easily converted.
 
-the script already uses "#!/bin/bash" and the patch doesnt change any
-of the existing conventions ... so if you want to rewrite the existing
-code to be POSIX compliant, then do so so i can add back in support
-for $CROSS_COMPILE-mkimage
+yes, but Blackfin is no-mmu so converting the script to use POSIX
+shell is pointless to us since no-mmu is not a self-hosting
+environment
 -mike
