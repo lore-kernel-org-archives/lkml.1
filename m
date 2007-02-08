@@ -1,59 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423040AbXBHI4a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423109AbXBHJBm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423040AbXBHI4a (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Feb 2007 03:56:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423061AbXBHI4a
+	id S1423109AbXBHJBm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Feb 2007 04:01:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423110AbXBHJBm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Feb 2007 03:56:30 -0500
-Received: from warden-p.diginsite.com ([208.29.163.248]:37281 "HELO
-	warden.diginsite.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with SMTP id S1423040AbXBHI43 (ORCPT
+	Thu, 8 Feb 2007 04:01:42 -0500
+Received: from adsl-69-232-92-238.dsl.sndg02.pacbell.net ([69.232.92.238]:39769
+	"EHLO gnuppy.monkey.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423109AbXBHJBl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Feb 2007 03:56:29 -0500
-Date: Thu, 8 Feb 2007 00:42:43 -0800 (PST)
-From: David Lang <david.lang@digitalinsight.com>
-X-X-Sender: dlang@dlang.diginsite.com
-To: Arjan van de Ven <arjan@linux.intel.com>
-cc: Marc Donner <donner@dbd-breitband.de>, linux-kernel@vger.kernel.org
-Subject: Re: cpu load balancing problem on smp
-In-Reply-To: <45C96AC1.4030301@linux.intel.com>
-Message-ID: <Pine.LNX.4.63.0702080040550.2981@qynat.qvtvafvgr.pbz>
-References: <200702061832.17771.donner@dbd-breitband.de> 
- <200702061941.32907.donner@dbd-breitband.de>  <45C8CC2A.90403@linux.intel.com>
-  <200702070049.51536.donner@dbd-breitband.de> <45C96AC1.4030301@linux.intel.com>
+	Thu, 8 Feb 2007 04:01:41 -0500
+Date: Thu, 8 Feb 2007 01:01:21 -0800
+To: Christoph Hellwig <hch@lst.de>
+Cc: jack@suse.cz, akpm@osdl.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       "Bill Huey (hui)" <billh@gnuppy.monkey.org>,
+       Peter Zijlstra <peter@programming.kicks-ass.net>
+Subject: Re: [PATCH] remove sb->s_files and file_list_lock usage in dquot.c
+Message-ID: <20070208090121.GA28005@gnuppy.monkey.org>
+References: <20070206132333.GA9919@lst.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070206132333.GA9919@lst.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Bill Huey (hui) <billh@gnuppy.monkey.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 7 Feb 2007, Arjan van de Ven wrote:
+On Tue, Feb 06, 2007 at 02:23:33PM +0100, Christoph Hellwig wrote:
+> Iterate over sb->s_inodes instead of sb->s_files in add_dquot_ref.
+> This reduces list search and lock hold time aswell as getting rid of
+> one of the few uses of file_list_lock which Ingo identified as a
+> scalability problem.
 
-> 
-> Marc Donner wrote:
->> 501:     215717     209388     209430     202514   PCI-MSI-edge      eth10
->> 502:        927       1019       1053        888   PCI-MSI-edge      eth11
->
-> this is odd, this is not an irq distribution that irqbalance should give you
-> 1
->> NMI:        451         39         42         46
->> LOC:     170899     170864     170846     170788
->> ERR:          0
->> 
->> top output:
->> 
->> top - 01:45:32 up 16 min,  2 users,  load average: 1.04, 0.92, 0.50
->> Tasks:  81 total,   3 running,  78 sleeping,   0 stopped,   0 zombie
->> Cpu0  :  0.0% us,  0.0% sy,  0.0% ni,  0.0% id,  0.0% wa,  0.0% hi, 100.0% 
->> si
->> 
-> and this doesn't match the irq output...
-> sounds as if something has a real bug; can you send an lsmod ? maybe some 
-> driver keeps doing si's
+Christoph,
 
-since this only happens when he adds more iptables rules, is it possible that 
-there sis some locking, or otherdata structure access that's serializing things 
-under load?
+The i_mutex lock the inode structure is also a source of contention
+heavy when running a lot of parallel "find"s. I'm sure that folks
+would be open to hearing suggestions regarding how to fix that.
 
-Marc, since you don't use modules, send your .config.
+bill
 
-David Lang
