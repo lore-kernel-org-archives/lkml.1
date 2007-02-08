@@ -1,52 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423311AbXBHUVW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423307AbXBHUWP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423311AbXBHUVW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Feb 2007 15:21:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423314AbXBHUVW
+	id S1423307AbXBHUWP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Feb 2007 15:22:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423318AbXBHUWP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Feb 2007 15:21:22 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:38331 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423311AbXBHUVV (ORCPT
+	Thu, 8 Feb 2007 15:22:15 -0500
+Received: from ug-out-1314.google.com ([66.249.92.170]:22009 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423306AbXBHUWN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Feb 2007 15:21:21 -0500
-Date: Thu, 8 Feb 2007 20:21:17 +0000
-From: Christoph Hellwig <hch@infradead.org>
-To: Mike Frysinger <vapier@gentoo.org>
-Cc: Christoph Hellwig <hch@infradead.org>, dushistov@mail.ru,
-       linux-kernel@vger.kernel.org, sparc@gentoo.org
-Subject: Re: [patch] export ufs_fs.h to userspace
-Message-ID: <20070208202117.GA8429@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Mike Frysinger <vapier@gentoo.org>, dushistov@mail.ru,
-	linux-kernel@vger.kernel.org, sparc@gentoo.org
-References: <200702080246.16996.vapier@gentoo.org> <20070208200216.GA5913@infradead.org> <200702081505.36513.vapier@gentoo.org>
+	Thu, 8 Feb 2007 15:22:13 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=m9dJFTfAodGn9mXqNFRjyZudho0prD83MQ6+Kvxh9WlnU/oOycawOylWVZYdjy0G017lk9KaMYP6v2Ctb/cEONilkPTc+QFbYetGNZx8YyHW/9wvJyCDlQDVnsU8/pLPyV/FDuAkx8mhGVH9aSvlbRc5vkYIOX6MZDReDt8frv0=
+Date: Thu, 8 Feb 2007 23:22:11 +0300
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: ahendry <ahendry@tusc.com.au>
+Cc: linux-x25@vger.kernel.org, eis@baty.hanse.de, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH 2/3] X.25: Adds /proc/sys/net/x25/x25_forward to control forwarding.
+Message-ID: <20070208202211.GB5532@martell.zuzino.mipt.ru>
+References: <1170890071.5189.40.camel@localhost> <20070208201909.GA5532@martell.zuzino.mipt.ru>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200702081505.36513.vapier@gentoo.org>
-User-Agent: Mutt/1.4.2.2i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+In-Reply-To: <20070208201909.GA5532@martell.zuzino.mipt.ru>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 08, 2007 at 03:05:35PM -0500, Mike Frysinger wrote:
-> > We should only export kernel interfaces and ufs_fs.h isn't one.  silo
-> > wants it because it defines the ufs format - but the linux structs for
-> > that can and do change, e.g. adding unions when we add support for the
-> > gazillion+1st ufs format variant.  silo should just grab a copy of it
-> > that it's happy with it and update it when it needs to support another
-> > format variant (which I think is a rather theoretical issue as silo
-> > only supports the solaris/sparc format IIR)
+On Thu, Feb 08, 2007 at 11:19:09PM +0300, Alexey Dobriyan wrote:
+> On Thu, Feb 08, 2007 at 10:14:31AM +1100, ahendry wrote:
+> > echo "1" > /proc/sys/net/x25/x25_forward
+> > To turn on x25_forwarding, defaults to off
 > 
-> seems logical to mean, thanks for the response
+> > --- linux-2.6.20-vanilla/include/linux/sysctl.h
+> > +++ linux-2.6.20/include/linux/sysctl.h
+> > @@ -699,7 +699,8 @@ enum {
+> >  	NET_X25_CALL_REQUEST_TIMEOUT=2,
+> >  	NET_X25_RESET_REQUEST_TIMEOUT=3,
+> >  	NET_X25_CLEAR_REQUEST_TIMEOUT=4,
+> > -	NET_X25_ACK_HOLD_BACK_TIMEOUT=5
+> > +	NET_X25_ACK_HOLD_BACK_TIMEOUT=5,
+> > +	NET_X25_FORWARD=6
+> >  };
+> 
+> > --- linux-2.6.20-vanilla/net/x25/sysctl_net_x25.c
+> > +++ linux-2.6.20/net/x25/sysctl_net_x25.c
+> > @@ -73,6 +73,14 @@ static struct ctl_table x25_table[] = {
+> >  		.extra1 =	&min_timer,
+> >  		.extra2 =	&max_timer,
+> >  	},
+> > +	{
+> > +		.ctl_name =	NET_X25_FORWARD,
+> > +		.procname =	"x25_forward",
+> > +		.data = 	&sysctl_x25_forward,
+> > +		.maxlen = 	sizeof(int),
+> > +		.mode = 	0644,
+> > +		.proc_handler = &proc_dointvec,
+> > +	},
+> 
+> Reserving binary sysctl number and not defining ->strategy is strange.
 
-Btw, if you're interesting in helping out in this area a little bit,
-it would be nice if we could split up and move ufs_fs.h a little bit.
-We should have an:
+Ouch, please, ignore. I misparsed sysctl code.
 
-  fs/ufs/ufs.h for all driver internal declarations
-  fs/ufs/ufs_layout.h that purely defines the layout can can be copied
-                      directly into other tools that need the ufs layout
-		      like silo
