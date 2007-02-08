@@ -1,307 +1,261 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422849AbXBHAbF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422848AbXBHAbp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422849AbXBHAbF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Feb 2007 19:31:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422846AbXBHAao
+	id S1422848AbXBHAbp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Feb 2007 19:31:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422874AbXBHAbo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Feb 2007 19:30:44 -0500
-Received: from ns1.suse.de ([195.135.220.2]:56302 "EHLO mx1.suse.de"
+	Wed, 7 Feb 2007 19:31:44 -0500
+Received: from ns1.suse.de ([195.135.220.2]:56349 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422839AbXBHAac (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Feb 2007 19:30:32 -0500
-Date: Wed, 7 Feb 2007 16:29:22 -0800
-From: Greg KH <gregkh@suse.de>
-To: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>
-Cc: linux-kernel@vger.kernel.org, linux-usb-devel@lists.sourceforge.net
-Subject: [GIT PATCH] USB patches for 2.6.20
-Message-ID: <20070208002922.GB4796@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=unknown-8bit
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	id S1422852AbXBHAbe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Feb 2007 19:31:34 -0500
+From: Greg KH <greg@kroah.com>
+To: linux-kernel@vger.kernel.org
+Cc: Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 3/28] Driver core: convert SPI code to use struct device
+Date: Wed,  7 Feb 2007 16:29:51 -0800
+Message-Id: <11708946251265-git-send-email-greg@kroah.com>
+X-Mailer: git-send-email 1.4.4.4
+In-Reply-To: <1170894620889-git-send-email-greg@kroah.com>
+References: <20070208002908.GA4796@kroah.com> <11708946163722-git-send-email-greg@kroah.com> <1170894620889-git-send-email-greg@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here are a bunch of USB patches against 2.6.20-git
+From: Greg Kroah-Hartman <gregkh@suse.de>
 
-They include some new drivers (including PS3 support), some new features
-(dynamic id support for usb-serial drivers), and loads of other stuff.
+Converts from using struct "class_device" to "struct device" making
+everything show up properly in /sys/devices/ with symlinks from the
+/sys/class directory.
 
-All of these have been in the -mm releases for quite some time.
+Cc: <dbrownell@users.sourceforge.net>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+---
+ drivers/spi/pxa2xx_spi.c    |    2 +-
+ drivers/spi/spi.c           |   32 ++++++++++++++++----------------
+ drivers/spi/spi_bitbang.c   |    6 +++---
+ drivers/spi/spi_butterfly.c |    4 ++--
+ include/linux/spi/spi.h     |   10 +++++-----
+ 5 files changed, 27 insertions(+), 27 deletions(-)
 
-Please pull from:
-	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/usb-2.6.git/
-
-The full patches will be sent to the linux-usb-devel mailing list, if
-anyone wants to see them.
-
-thanks,
-
-greg k-h
-
-
- Documentation/usb/proc_usb_info.txt        |   21 +-
- Documentation/usb/usbmon.txt               |  152 ++++-
- arch/powerpc/Kconfig                       |    5 +
- drivers/i2c/chips/isp1301_omap.c           |    2 +-
- drivers/media/video/zc0301/zc0301_sensor.h |    1 -
- drivers/usb/atm/speedtch.c                 |    2 +-
- drivers/usb/class/usblp.c                  |   16 +-
- drivers/usb/core/Kconfig                   |   13 -
- drivers/usb/core/buffer.c                  |   36 +-
- drivers/usb/core/devices.c                 |   22 +-
- drivers/usb/core/devio.c                   |   25 +-
- drivers/usb/core/driver.c                  |   35 +-
- drivers/usb/core/file.c                    |   13 +-
- drivers/usb/core/generic.c                 |   28 +-
- drivers/usb/core/hcd.c                     |  137 ----
- drivers/usb/core/hcd.h                     |    6 -
- drivers/usb/core/hub.c                     |   64 +-
- drivers/usb/core/message.c                 |    6 +-
- drivers/usb/core/sysfs.c                   |   98 ++--
- drivers/usb/core/urb.c                     |   21 +-
- drivers/usb/core/usb.c                     |   96 ++--
- drivers/usb/gadget/at91_udc.c              |   21 +-
- drivers/usb/gadget/at91_udc.h              |    1 +
- drivers/usb/gadget/config.c                |    2 +-
- drivers/usb/gadget/epautoconf.c            |    2 +-
- drivers/usb/gadget/ether.c                 |  148 +++-
- drivers/usb/gadget/file_storage.c          |   33 +-
- drivers/usb/gadget/gadget_chips.h          |    8 +
- drivers/usb/gadget/gmidi.c                 |    2 +-
- drivers/usb/gadget/goku_udc.c              |    2 +-
- drivers/usb/gadget/inode.c                 |  240 +++----
- drivers/usb/gadget/lh7a40x_udc.h           |    2 +-
- drivers/usb/gadget/net2280.c               |    2 +-
- drivers/usb/gadget/omap_udc.c              |    2 +-
- drivers/usb/gadget/pxa2xx_udc.c            |    2 +-
- drivers/usb/gadget/serial.c                |    2 +-
- drivers/usb/gadget/usbstring.c             |    2 +-
- drivers/usb/gadget/zero.c                  |    2 +-
- drivers/usb/host/Kconfig                   |   38 +-
- drivers/usb/host/ehci-dbg.c                |   24 +-
- drivers/usb/host/ehci-fsl.c                |    8 +-
- drivers/usb/host/ehci-hcd.c                |  127 ++-
- drivers/usb/host/ehci-hub.c                |  324 ++++++---
- drivers/usb/host/ehci-pci.c                |   38 +-
- drivers/usb/host/ehci-ps3.c                |  193 +++++
- drivers/usb/host/ehci-q.c                  |   16 +-
- drivers/usb/host/ehci-sched.c              |   22 +-
- drivers/usb/host/ehci.h                    |   46 ++-
- drivers/usb/host/ohci-at91.c               |   23 +-
- drivers/usb/host/ohci-au1xxx.c             |   16 -
- drivers/usb/host/ohci-ep93xx.c             |   12 -
- drivers/usb/host/ohci-hcd.c                |  128 +++-
- drivers/usb/host/ohci-lh7a404.c            |   16 -
- drivers/usb/host/ohci-omap.c               |   19 -
- drivers/usb/host/ohci-pci.c                |  219 ++++--
- drivers/usb/host/ohci-pnx4008.c            |   12 -
- drivers/usb/host/ohci-pnx8550.c            |   16 -
- drivers/usb/host/ohci-ppc-of.c             |  232 ++++++
- drivers/usb/host/ohci-ppc-soc.c            |   18 +-
- drivers/usb/host/ohci-ps3.c                |  196 +++++
- drivers/usb/host/ohci-pxa27x.c             |   16 -
- drivers/usb/host/ohci-s3c2410.c            |   12 -
- drivers/usb/host/ohci-sa1111.c             |   16 -
- drivers/usb/host/ohci.h                    |  155 +++--
- drivers/usb/host/uhci-debug.c              |   71 ++-
- drivers/usb/host/uhci-hcd.c                |   51 +-
- drivers/usb/host/uhci-hcd.h                |    8 +
- drivers/usb/host/uhci-q.c                  |  258 +++++--
- drivers/usb/image/mdc800.c                 |    4 +
- drivers/usb/input/Kconfig                  |   12 +
- drivers/usb/input/Makefile                 |    1 +
- drivers/usb/input/gtco.c                   | 1104 ++++++++++++++++++++++++++
- drivers/usb/input/hid-core.c               |   35 +
- drivers/usb/misc/idmouse.c                 |   10 +-
- drivers/usb/misc/rio500.c                  |   54 +-
- drivers/usb/mon/Makefile                   |    2 +-
- drivers/usb/mon/mon_bin.c                  | 1172 ++++++++++++++++++++++++++++
- drivers/usb/mon/mon_dma.c                  |   39 +-
- drivers/usb/mon/mon_main.c                 |   97 ++--
- drivers/usb/mon/mon_text.c                 |   67 ++-
- drivers/usb/mon/usb_mon.h                  |   30 +-
- drivers/usb/net/Kconfig                    |    6 +-
- drivers/usb/net/cdc_ether.c                |   60 ++-
- drivers/usb/net/kaweth.c                   |   37 +-
- drivers/usb/net/rndis_host.c               |   81 ++-
- drivers/usb/serial/aircable.c              |   21 +-
- drivers/usb/serial/airprime.c              |    1 +
- drivers/usb/serial/ark3116.c               |    2 +
- drivers/usb/serial/belkin_sa.c             |    1 +
- drivers/usb/serial/bus.c                   |   45 ++
- drivers/usb/serial/cp2101.c                |    1 +
- drivers/usb/serial/cyberjack.c             |    3 +-
- drivers/usb/serial/cypress_m8.c            |    3 +
- drivers/usb/serial/digi_acceleport.c       |    2 +
- drivers/usb/serial/empeg.c                 |    1 +
- drivers/usb/serial/ftdi_sio.c              |    2 +-
- drivers/usb/serial/ftdi_sio.h              |    1 -
- drivers/usb/serial/funsoft.c               |    1 +
- drivers/usb/serial/garmin_gps.c            |    1 +
- drivers/usb/serial/generic.c               |   35 +-
- drivers/usb/serial/hp4x.c                  |    1 +
- drivers/usb/serial/io_edgeport.c           |  417 ++++++++---
- drivers/usb/serial/io_edgeport.h           |    6 +-
- drivers/usb/serial/io_tables.h             |   61 ++
- drivers/usb/serial/io_ti.c                 |    2 +
- drivers/usb/serial/io_usbvend.h            |    5 +
- drivers/usb/serial/ipaq.c                  |    1 +
- drivers/usb/serial/ipw.c                   |    1 +
- drivers/usb/serial/ir-usb.c                |    1 +
- drivers/usb/serial/keyspan.c               |   49 ++-
- drivers/usb/serial/keyspan.h               |    7 +-
- drivers/usb/serial/keyspan_pda.c           |    3 +
- drivers/usb/serial/kl5kusb105.c            |    1 +
- drivers/usb/serial/kobil_sct.c             |    1 +
- drivers/usb/serial/mct_u232.c              |    1 +
- drivers/usb/serial/mos7720.c               |   16 +-
- drivers/usb/serial/mos7840.c               |   16 +-
- drivers/usb/serial/navman.c                |    1 +
- drivers/usb/serial/omninet.c               |    1 +
- drivers/usb/serial/option.c                |    1 +
- drivers/usb/serial/pl2303.c                |    1 +
- drivers/usb/serial/safe_serial.c           |    1 +
- drivers/usb/serial/sierra.c                |   29 +-
- drivers/usb/serial/ti_usb_3410_5052.c      |    2 +
- drivers/usb/serial/usb-serial.c            |  102 ++-
- drivers/usb/serial/visor.c                 |    6 +-
- drivers/usb/serial/visor.h                 |    1 -
- drivers/usb/serial/whiteheat.c             |    2 +
- drivers/usb/storage/onetouch.c             |    1 -
- drivers/usb/storage/scsiglue.c             |   31 +-
- drivers/usb/storage/unusual_devs.h         |    9 +-
- drivers/usb/storage/usb.c                  |   23 +-
- include/linux/Kbuild                       |    2 +-
- include/linux/hid.h                        |    1 +
- include/linux/usb.h                        |   34 +-
- include/linux/usb/Kbuild                   |    5 +
- include/linux/{usb_ch9.h => usb/ch9.h}     |    1 +
- include/linux/usb/serial.h                 |    5 +
- include/linux/usb_gadgetfs.h               |    2 +-
- 139 files changed, 5820 insertions(+), 1563 deletions(-)
- create mode 100644 drivers/usb/host/ehci-ps3.c
- create mode 100644 drivers/usb/host/ohci-ppc-of.c
- create mode 100644 drivers/usb/host/ohci-ps3.c
- create mode 100644 drivers/usb/input/gtco.c
- create mode 100644 drivers/usb/mon/mon_bin.c
- create mode 100644 include/linux/usb/Kbuild
- rename include/linux/{usb_ch9.h => usb/ch9.h} (100%)
-
----------------
-
-Alan Stern (12):
-      usbcore: remove unneeded error check
-      UHCI: improved debugging checks for the frame list
-      UHCI: no dummy TDs for Iso QHs
-      usb-storage: SCSI level fixes
-      UHCI: fix bandwidth allocation
-      usbcore: remove unused bandwith-related code
-      EHCI: local variable for port status register
-      EHCI: don't hide ports owned by the companion
-      EHCI: force high-speed devices to run at full speed
-      USB: gadgetfs AIO tweaks
-      EHCI: fix interrupt-driven remote wakeup
-      usb-storage: use first bulk endpoints, not last
-
-Benjamin Herrenschmidt (6):
-      USB: Rework the OHCI quirk mecanism as suggested by David
-      USB: Implement support for "split" endian OHCI
-      USB: Implement support for EHCI with big endian MMIO
-      USB: Fix OHCI warning
-      USB: Fix EHCI warning
-      USB: ohci error handling cleanup
-
-Dan Carpenter (1):
-      USB: devio.c add missing INIT_LIST_HEAD()
-
-David Brownell (10):
-      USB: <linux/usb_ch9.h> becomes <linux/usb/ch9.h>
-      USB: define USB_CLASS_MISC in <linux/usb/ch9.h>
-      USB: indicate active altsetting in proc/bus/usb/devices file
-      USB: ethernet gadget interop with MCCI Windows driver
-      usb: gadgetfs whitespace cleanup
-      USB: at91_udc wakeup event updates
-      USB: gadgetfs cleanups
-      USB: gadgetfs simplifications
-      USB: gadgetfs race fix
-      USB: gadgetfs behaves better on userspace init bug
-
-Geoff Levand (3):
-      USB: ps3 ehci bus glue
-      USB: ps3 controller hid quirk
-      USB: ps3 ohci bus glue
-
-Greg Kroah-Hartman (9):
-      USB: add EPIC support to the io_edgeport driver
-      USB: move usb_device_class class devices to be real devices
-      USB: convert usb class devices to real devices
-      USB serial: add dynamic id support to usb-serial core
-      USB: remove duplicate device id from visor
-      USB: remove duplicate device id from ftdi_sio
-      USB: remove duplicate device id from keyspan
-      USB: remove duplicate device id from usb_storage
-      USB: remove duplicate device id from zc0301
-
-Håvard Skinnemoen (2):
-      USB: list atmel husb2_udc gadget controller
-      USB: usb ethernet gadget recognizes HUSB2DEV
-
-Jeremy Roberson (1):
-      USB Input: Added kernel module to support all GTCO CalComp USB InterWrite School products
-
-Johannes HÃ¶lzl (2):
-      USB serial: add driver pointer to all usb-serial drivers
-      USB: Bugfix for aircable: Add module and name to usb_serial_driver
-
-John Daiker (1):
-      USB Gadget file_storage.c: remove unnecessary casts
-
-Kevin Lloyd (1):
-      USB: Sierra Wireless auto set D0
-
-Luiz Fernando N. Capitulino (1):
-      USB: unusual_devs.h for Sony floppy
-
-Marc Pignat (1):
-      USB: ohci-at91 refcount fix for irq wake enables
-
-Marcelo Tosatti (1):
-      USB: switch ehci-hcd to new polling scheme
-
-Ole Andre Vadla Ravnas (1):
-      rndis_host learns ActiveSync basics
-
-Oliver Neukum (11):
-      USB: mutexification of rio500
-      USB: race on disconnect in mdc800
-      USB: power management for kaweth
-      USB: better ethtool support for kaweth
-      USB: total removal of multithreaded probing in usb
-      USB: race fixes for usb-serial step 1
-      USB: race fixes for usb-serial, step 2
-      USB: race fixes for usb-serial, step 3
-      USB: autosuspend for usb printer driver
-      usbcore: trivial whitespace fixes
-      USB: a bit more coding style cleanup
-
-Pete Zaitcev (1):
-      USB: add binary API to usbmon
-
-Phil Endecott (1):
-      usb: gadgetfs remove delayed init mode
-
-Rainer Weikusat (1):
-      fix for bugzilla #7544 (keyspan USB-to-serial converter)
-
-Sarah Bailey (1):
-      USB: Add usb_endpoint_xfer_control to usb.h
-
-Sylvain Munaut (2):
-      ohci: Rework bus glue integration to allow several at once
-      ohci: Add support for OHCI controller on the of_platform bus
-
-Tobias Klauser (1):
-      USB: Remove unneeded void * casts in idmouse.c
+diff --git a/drivers/spi/pxa2xx_spi.c b/drivers/spi/pxa2xx_spi.c
+index 8b41f9c..dccdc50 100644
+--- a/drivers/spi/pxa2xx_spi.c
++++ b/drivers/spi/pxa2xx_spi.c
+@@ -1234,7 +1234,7 @@ static int init_queue(struct driver_data *drv_data)
+ 
+ 	INIT_WORK(&drv_data->pump_messages, pump_messages);
+ 	drv_data->workqueue = create_singlethread_workqueue(
+-					drv_data->master->cdev.dev->bus_id);
++					drv_data->master->dev.parent->bus_id);
+ 	if (drv_data->workqueue == NULL)
+ 		return -EBUSY;
+ 
+diff --git a/drivers/spi/spi.c b/drivers/spi/spi.c
+index 6307428..35d8c01 100644
+--- a/drivers/spi/spi.c
++++ b/drivers/spi/spi.c
+@@ -193,7 +193,7 @@ struct spi_device *__init_or_module
+ spi_new_device(struct spi_master *master, struct spi_board_info *chip)
+ {
+ 	struct spi_device	*proxy;
+-	struct device		*dev = master->cdev.dev;
++	struct device		*dev = &master->dev;
+ 	int			status;
+ 
+ 	/* NOTE:  caller did any chip->bus_num checks necessary */
+@@ -215,7 +215,7 @@ spi_new_device(struct spi_master *master, struct spi_board_info *chip)
+ 	proxy->modalias = chip->modalias;
+ 
+ 	snprintf(proxy->dev.bus_id, sizeof proxy->dev.bus_id,
+-			"%s.%u", master->cdev.class_id,
++			"%s.%u", master->dev.bus_id,
+ 			chip->chip_select);
+ 	proxy->dev.parent = dev;
+ 	proxy->dev.bus = &spi_bus_type;
+@@ -290,7 +290,7 @@ static void __init_or_module
+ scan_boardinfo(struct spi_master *master)
+ {
+ 	struct boardinfo	*bi;
+-	struct device		*dev = master->cdev.dev;
++	struct device		*dev = master->dev.parent;
+ 
+ 	down(&board_lock);
+ 	list_for_each_entry(bi, &board_list, list) {
+@@ -319,18 +319,18 @@ scan_boardinfo(struct spi_master *master)
+ 
+ /*-------------------------------------------------------------------------*/
+ 
+-static void spi_master_release(struct class_device *cdev)
++static void spi_master_release(struct device *dev)
+ {
+ 	struct spi_master *master;
+ 
+-	master = container_of(cdev, struct spi_master, cdev);
++	master = container_of(dev, struct spi_master, dev);
+ 	kfree(master);
+ }
+ 
+ static struct class spi_master_class = {
+ 	.name		= "spi_master",
+ 	.owner		= THIS_MODULE,
+-	.release	= spi_master_release,
++	.dev_release	= spi_master_release,
+ };
+ 
+ 
+@@ -364,9 +364,9 @@ spi_alloc_master(struct device *dev, unsigned size)
+ 	if (!master)
+ 		return NULL;
+ 
+-	class_device_initialize(&master->cdev);
+-	master->cdev.class = &spi_master_class;
+-	master->cdev.dev = get_device(dev);
++	device_initialize(&master->dev);
++	master->dev.class = &spi_master_class;
++	master->dev.parent = get_device(dev);
+ 	spi_master_set_devdata(master, &master[1]);
+ 
+ 	return master;
+@@ -396,7 +396,7 @@ int __init_or_module
+ spi_register_master(struct spi_master *master)
+ {
+ 	static atomic_t		dyn_bus_id = ATOMIC_INIT((1<<16) - 1);
+-	struct device		*dev = master->cdev.dev;
++	struct device		*dev = master->dev.parent;
+ 	int			status = -ENODEV;
+ 	int			dynamic = 0;
+ 
+@@ -412,12 +412,12 @@ spi_register_master(struct spi_master *master)
+ 	/* register the device, then userspace will see it.
+ 	 * registration fails if the bus ID is in use.
+ 	 */
+-	snprintf(master->cdev.class_id, sizeof master->cdev.class_id,
++	snprintf(master->dev.bus_id, sizeof master->dev.bus_id,
+ 		"spi%u", master->bus_num);
+-	status = class_device_add(&master->cdev);
++	status = device_add(&master->dev);
+ 	if (status < 0)
+ 		goto done;
+-	dev_dbg(dev, "registered master %s%s\n", master->cdev.class_id,
++	dev_dbg(dev, "registered master %s%s\n", master->dev.bus_id,
+ 			dynamic ? " (dynamic)" : "");
+ 
+ 	/* populate children from any spi device tables */
+@@ -449,8 +449,8 @@ void spi_unregister_master(struct spi_master *master)
+ {
+ 	int dummy;
+ 
+-	dummy = device_for_each_child(master->cdev.dev, NULL, __unregister);
+-	class_device_unregister(&master->cdev);
++	dummy = device_for_each_child(&master->dev, NULL, __unregister);
++	device_unregister(&master->dev);
+ }
+ EXPORT_SYMBOL_GPL(spi_unregister_master);
+ 
+@@ -471,7 +471,7 @@ struct spi_master *spi_busnum_to_master(u16 bus_num)
+ 
+ 	down(&spi_master_class.sem);
+ 	list_for_each_entry(cdev, &spi_master_class.children, node) {
+-		m = container_of(cdev, struct spi_master, cdev);
++		m = container_of(cdev, struct spi_master, dev.kobj);
+ 		if (m->bus_num == bus_num) {
+ 			master = spi_master_get(m);
+ 			break;
+diff --git a/drivers/spi/spi_bitbang.c b/drivers/spi/spi_bitbang.c
+index 57289b6..4638e6c 100644
+--- a/drivers/spi/spi_bitbang.c
++++ b/drivers/spi/spi_bitbang.c
+@@ -479,7 +479,7 @@ int spi_bitbang_start(struct spi_bitbang *bitbang)
+ 	/* this task is the only thing to touch the SPI bits */
+ 	bitbang->busy = 0;
+ 	bitbang->workqueue = create_singlethread_workqueue(
+-			bitbang->master->cdev.dev->bus_id);
++			bitbang->master->dev.parent->bus_id);
+ 	if (bitbang->workqueue == NULL) {
+ 		status = -EBUSY;
+ 		goto err1;
+@@ -513,14 +513,14 @@ int spi_bitbang_stop(struct spi_bitbang *bitbang)
+ 	while (!list_empty(&bitbang->queue) && limit--) {
+ 		spin_unlock_irq(&bitbang->lock);
+ 
+-		dev_dbg(bitbang->master->cdev.dev, "wait for queue\n");
++		dev_dbg(&bitbang->master->dev, "wait for queue\n");
+ 		msleep(10);
+ 
+ 		spin_lock_irq(&bitbang->lock);
+ 	}
+ 	spin_unlock_irq(&bitbang->lock);
+ 	if (!list_empty(&bitbang->queue)) {
+-		dev_err(bitbang->master->cdev.dev, "queue didn't empty\n");
++		dev_err(&bitbang->master->dev, "queue didn't empty\n");
+ 		return -EBUSY;
+ 	}
+ 
+diff --git a/drivers/spi/spi_butterfly.c b/drivers/spi/spi_butterfly.c
+index 312987a..31b7970 100644
+--- a/drivers/spi/spi_butterfly.c
++++ b/drivers/spi/spi_butterfly.c
+@@ -246,7 +246,7 @@ static void butterfly_attach(struct parport *p)
+ 	 * and no way to be selective about what it binds to.
+ 	 */
+ 
+-	/* FIXME where should master->cdev.dev come from?
++	/* FIXME where should master->dev.parent come from?
+ 	 * e.g. /sys/bus/pnp0/00:0b, some PCI thing, etc
+ 	 * setting up a platform device like this is an ugly kluge...
+ 	 */
+@@ -386,7 +386,7 @@ static void butterfly_detach(struct parport *p)
+ 	butterfly = NULL;
+ 
+ 	/* stop() unregisters child devices too */
+-	pdev = to_platform_device(pp->bitbang.master->cdev.dev);
++	pdev = to_platform_device(pp->bitbang.master->dev.parent);
+ 	status = spi_bitbang_stop(&pp->bitbang);
+ 
+ 	/* turn off VCC */
+diff --git a/include/linux/spi/spi.h b/include/linux/spi/spi.h
+index 176f6e3..8c2edd8 100644
+--- a/include/linux/spi/spi.h
++++ b/include/linux/spi/spi.h
+@@ -170,7 +170,7 @@ static inline void spi_unregister_driver(struct spi_driver *sdrv)
+  * message's completion function when the transaction completes.
+  */
+ struct spi_master {
+-	struct class_device	cdev;
++	struct device		dev;
+ 
+ 	/* other than negative (== assign one dynamically), bus_num is fully
+ 	 * board-specific.  usually that simplifies to being SOC-specific.
+@@ -216,17 +216,17 @@ struct spi_master {
+ 
+ static inline void *spi_master_get_devdata(struct spi_master *master)
+ {
+-	return class_get_devdata(&master->cdev);
++	return dev_get_drvdata(&master->dev);
+ }
+ 
+ static inline void spi_master_set_devdata(struct spi_master *master, void *data)
+ {
+-	class_set_devdata(&master->cdev, data);
++	dev_set_drvdata(&master->dev, data);
+ }
+ 
+ static inline struct spi_master *spi_master_get(struct spi_master *master)
+ {
+-	if (!master || !class_device_get(&master->cdev))
++	if (!master || !get_device(&master->dev))
+ 		return NULL;
+ 	return master;
+ }
+@@ -234,7 +234,7 @@ static inline struct spi_master *spi_master_get(struct spi_master *master)
+ static inline void spi_master_put(struct spi_master *master)
+ {
+ 	if (master)
+-		class_device_put(&master->cdev);
++		put_device(&master->dev);
+ }
+ 
+ 
+-- 
+1.4.4.4
 
