@@ -1,40 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423321AbXBHUjP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423326AbXBHUna@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423321AbXBHUjP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Feb 2007 15:39:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423325AbXBHUjP
+	id S1423326AbXBHUna (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Feb 2007 15:43:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423333AbXBHUna
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Feb 2007 15:39:15 -0500
-Received: from mail.fieldses.org ([66.93.2.214]:42686 "EHLO fieldses.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423321AbXBHUjP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Feb 2007 15:39:15 -0500
-X-Greylist: delayed 1614 seconds by postgrey-1.27 at vger.kernel.org; Thu, 08 Feb 2007 15:39:14 EST
-Date: Thu, 8 Feb 2007 15:12:19 -0500
-To: Menny Hamburger <menny@exanet.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Getting the nfs_fh of a specific file/dir from the kernel
-Message-ID: <20070208201219.GB22631@fieldses.org>
-References: <A6FDE6B975803043804A49F12F49028E0F573A@hawk.exanet-il.co.il>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <A6FDE6B975803043804A49F12F49028E0F573A@hawk.exanet-il.co.il>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+	Thu, 8 Feb 2007 15:43:30 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:32883
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1423326AbXBHUn3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Feb 2007 15:43:29 -0500
+Date: Thu, 08 Feb 2007 12:43:28 -0800 (PST)
+Message-Id: <20070208.124328.88477956.davem@davemloft.net>
+To: heiko.carstens@de.ibm.com
+Cc: akpm@osdl.org, mingo@elte.hu, ak@suse.de, jan.glauber@de.ibm.com,
+       schwidefsky@de.ibm.com, linux-kernel@vger.kernel.org
+Subject: Re: [patch] i386/x86_64: smp_call_function locking inconsistency
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20070208203210.GB9798@osiris.ibm.com>
+References: <20070208203210.GB9798@osiris.ibm.com>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 08, 2007 at 06:38:48PM +0200, Menny Hamburger wrote:
-> I have a piece of code in my 2.6 kernel that associates an ioctl
-> file_operation to nfs in file.c and dir.c.
-> This ioctl sends the nfs_fh to a userland application.
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+Date: Thu, 8 Feb 2007 21:32:10 +0100
 
-Doesn't /proc/fs/nfsd/filehandle do what you want already?
+> So either all spin_lock_bh's should be converted to spin_lock,
+> which would limit smp_call_function()/smp_call_function_single()
+> to process context & irqs enabled.
+> Or the spin_lock's could be converted to spin_lock_bh which would
+> make it possible to call these two functions even if in softirq
+> context. AFAICS this should be safe.
 
-See nfs-util/utils/mountd/cache.c:cache_get_filehandle(), or, for the
-kernel side, linux/fs/nfsd/nfsctl.c:write_filehandle().
+Sparc64 does not allow smp_call_function() from software interrupts
+either.
 
-(Just out of curiosity--why are you doing this?)
+Same for powerpc, mips, alpha.
 
---b.
+IA-64 has the inconsistency you've spotted between smp_call_function()
+and smp_call_function_single().
+
+In short, it's a mess :-)
+
+I think it's logically simpler if we disallow smp_call_function*()
+from any kind of asynchronous context.  But I'm sure your driver
+has a true need for this for some reason.
