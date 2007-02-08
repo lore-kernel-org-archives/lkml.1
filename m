@@ -1,52 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750774AbXBHSbr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752395AbXBHScH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750774AbXBHSbr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Feb 2007 13:31:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752344AbXBHSbr
+	id S1752395AbXBHScH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Feb 2007 13:32:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752413AbXBHScG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Feb 2007 13:31:47 -0500
-Received: from raven.upol.cz ([158.194.120.4]:54945 "EHLO raven.upol.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750774AbXBHSbq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Feb 2007 13:31:46 -0500
-Date: Thu, 8 Feb 2007 19:39:54 +0100
-To: Roman Zippel <zippel@linux-m68k.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Mike Frysinger <vapier.adi@gmail.com>, sam@ravnborg.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kai Germaschewski <kai@germaschewski.name>
-Subject: Re: + search-a-little-harder-for-mkimage.patch
-Message-ID: <20070208183954.GW22699@flower.upol.cz>
-References: <20070207165204.GA5537@martell.zuzino.mipt.ru> <Pine.LNX.4.64.0702071846180.14457@scrub.home> <20070207220435.GC22699@flower.upol.cz> <Pine.LNX.4.64.0702080029030.14457@scrub.home> <Pine.LNX.4.64.0702071546420.8424@woody.linux-foundation.org> <20070207203047.51a95ad0.akpm@linux-foundation.org> <20070208052439.GL22699@flower.upol.cz> <20070207211921.1f0220a4.akpm@linux-foundation.org> <20070208055832.GN22699@flower.upol.cz> <Pine.LNX.4.64.0702081735440.14457@scrub.home>
+	Thu, 8 Feb 2007 13:32:06 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:35810 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752395AbXBHScE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Feb 2007 13:32:04 -0500
+Date: Thu, 8 Feb 2007 18:32:02 +0000 (GMT)
+From: James Simmons <jsimmons@infradead.org>
+To: Richard Purdie <rpurdie@rpsys.net>
+cc: LKML <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>,
+       Marcin Juszkiewicz <openembedded@hrw.one.pl>, Greg KH <greg@kroah.com>
+Subject: Re: Git backlight subsystem tree
+In-Reply-To: <1170957595.5849.11.camel@localhost.localdomain>
+Message-ID: <Pine.LNX.4.64.0702081830520.7686@pentafluge.infradead.org>
+References: <1170901826.5859.2.camel@localhost.localdomain> 
+ <Pine.LNX.4.64.0702081520110.824@pentafluge.infradead.org>
+ <1170957595.5849.11.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0702081735440.14457@scrub.home>
-Organization: Palacky University in Olomouc, experimental physics department.
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Oleg Verych <olecom@flower.upol.cz>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 08, 2007 at 05:38:28PM +0100, Roman Zippel wrote:
-> Hi,
-> 
-> On Thu, 8 Feb 2007, Oleg Verych wrote:
-> 
-> > BTW, Debian shell policy is to be bashizms-clear. Purpose -- to have
-> > compatibility with any `sh'. Shall we?
-> 
-> Wrong.
-> 
-> http://www.debian.org/doc/debian-policy/ch-files.html#s-scripts
-"""
-   You may wish to restrict your script to POSIX features when possible
-   so that it may use /bin/sh as its interpreter. If your script works
-   with dash (originally called ash), it's probably POSIX compliant, but
-   if you are in doubt, use /bin/bash.
-"""
-I think, it's OK to start with ;)      
+On Thu, 8 Feb 2007, Richard Purdie wrote:
 
-> bye, Roman
+> On Thu, 2007-02-08 at 15:28 +0000, James Simmons wrote:
+> > I have some patches that move the backlight away from using the class 
+> > stuff. The only problem is the patch requires all backlight devices 
+> > to be linked to a real struct device. Right now the acpi backligths are 
+> > not.
+> 
+> Why would you want to do that?
+> 
+> The whole point of having this is so that backlights appear as a
+> standard interface under /sys/class/backlight.
+> 
+> An example of why standardised interfaces are good would be someone
+> writing an applet for a handheld to control the backlight brightness.
+> With the class in place, the applet can easily work with any backlight.
+> Without it, it has to be written for each backlight.
+> 
+> So this is a very strong NAK but I'm curious why you'd want to do it...
 
-____
+I CC Greg to explain. The backlight class didn't go away. The way it is 
+handled is different.
