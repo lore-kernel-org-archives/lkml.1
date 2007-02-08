@@ -1,48 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161425AbXBHFtp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422752AbXBHFvS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161425AbXBHFtp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Feb 2007 00:49:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161534AbXBHFtp
+	id S1422752AbXBHFvS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Feb 2007 00:51:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422763AbXBHFvR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Feb 2007 00:49:45 -0500
-Received: from raven.upol.cz ([158.194.120.4]:45784 "EHLO raven.upol.cz"
+	Thu, 8 Feb 2007 00:51:17 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:45323 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161425AbXBHFtp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Feb 2007 00:49:45 -0500
-Date: Thu, 8 Feb 2007 06:58:32 +0100
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Mike Frysinger <vapier.adi@gmail.com>,
-       Roman Zippel <zippel@linux-m68k.org>, sam@ravnborg.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kai Germaschewski <kai@germaschewski.name>
-Subject: Re: + search-a-little-harder-for-mkimage.patch
-Message-ID: <20070208055832.GN22699@flower.upol.cz>
-References: <20070207165204.GA5537@martell.zuzino.mipt.ru> <Pine.LNX.4.64.0702071846180.14457@scrub.home> <20070207220435.GC22699@flower.upol.cz> <Pine.LNX.4.64.0702080029030.14457@scrub.home> <Pine.LNX.4.64.0702071546420.8424@woody.linux-foundation.org> <20070207203047.51a95ad0.akpm@linux-foundation.org> <20070208052439.GL22699@flower.upol.cz> <20070207211921.1f0220a4.akpm@linux-foundation.org>
+	id S1422752AbXBHFvR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Feb 2007 00:51:17 -0500
+Date: Wed, 7 Feb 2007 21:50:08 -0800
+From: Greg KH <greg@kroah.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Trond Myklebust <trond.myklebust@fys.uio.no>, linux-kernel@vger.kernel.org
+Subject: Re: `-mcpu=' is deprecated. Use `-mtune=' or '-march=' instead.
+Message-ID: <20070208055008.GA13270@kroah.com>
+References: <1170897212.7070.15.camel@lade.trondhjem.org> <Pine.LNX.4.64.0702071924570.8424@woody.linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070207211921.1f0220a4.akpm@linux-foundation.org>
-Organization: Palacky University in Olomouc, experimental physics department.
+In-Reply-To: <Pine.LNX.4.64.0702071924570.8424@woody.linux-foundation.org>
 User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Oleg Verych <olecom@flower.upol.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 07, 2007 at 09:19:21PM -0800, Andrew Morton wrote:
-> On Thu, 8 Feb 2007 06:24:40 +0100 Oleg Verych <olecom@flower.upol.cz> wrote:
+On Wed, Feb 07, 2007 at 07:28:19PM -0800, Linus Torvalds wrote:
 > 
-> > If that matter, `type -path' is bashizm (BloAted SHell), and "blackbox"
-> > with "dash" (very good `sh' equivalents) will fail.
 > 
-> Does the kernel presently build with that shell?
+> On Wed, 7 Feb 2007, Trond Myklebust wrote:
+> >
+> > The latest pull from the git tree spews out a torrent of the above
+> > warning on a recent Fedora Core 6 machine running gcc-4.1.1. config file
+> > is attached...
+> 
+> Should hopefully be fixed already in current -git
 
-build - yes, with dash being `$(shell)'. All scripts with `#!/bin/bash'
-of course use bash, example is gen_initramfs_list.sh.
+It is, but now I'm getting this warning instead all over the place:
+  CC      init/initramfs.o
+In file included from include/asm/thread_info.h:17,
+                 from include/linux/thread_info.h:22,
+                 from include/linux/preempt.h:10,
+                 from include/linux/spinlock.h:50,
+                 from include/linux/capability.h:46,
+                 from include/linux/sched.h:47,
+                 from arch/i386/kernel/time.c:35:
+include/asm/processor.h: In function 'cpuid_count':
+include/asm/processor.h:611: warning: pointer targets in passing argument 1 of 'native_cpuid' differ in signedness
+include/asm/processor.h:611: warning: pointer targets in passing argument 2 of 'native_cpuid' differ in signedness
+include/asm/processor.h:611: warning: pointer targets in passing argument 3 of 'native_cpuid' differ in signedness
+include/asm/processor.h:611: warning: pointer targets in passing argument 4 of 'native_cpuid' differ in signedness
 
-Trivial shell scripts, especially for embedded archs (Blackfin is
-one, IIRC), may be easily converted.
 
-BTW, Debian shell policy is to be bashizms-clear. Purpose -- to have
-compatibility with any `sh'. Shall we?
+I'm using gcc 4.1.1 here if that matters any...
 
-____
+thanks,
+
+greg k-h
