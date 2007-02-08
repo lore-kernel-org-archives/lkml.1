@@ -1,49 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752363AbXBHSAV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752374AbXBHSFT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752363AbXBHSAV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Feb 2007 13:00:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752370AbXBHSAV
+	id S1752374AbXBHSFT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Feb 2007 13:05:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752380AbXBHSFS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Feb 2007 13:00:21 -0500
-Received: from tim.rpsys.net ([194.106.48.114]:57966 "EHLO tim.rpsys.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752363AbXBHSAU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Feb 2007 13:00:20 -0500
-Subject: Re: Git backlight subsystem tree
-From: Richard Purdie <rpurdie@rpsys.net>
-To: James Simmons <jsimmons@infradead.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>,
-       Marcin Juszkiewicz <openembedded@hrw.one.pl>
-In-Reply-To: <Pine.LNX.4.64.0702081520110.824@pentafluge.infradead.org>
-References: <1170901826.5859.2.camel@localhost.localdomain>
-	 <Pine.LNX.4.64.0702081520110.824@pentafluge.infradead.org>
-Content-Type: text/plain
-Date: Thu, 08 Feb 2007 17:59:55 +0000
-Message-Id: <1170957595.5849.11.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+	Thu, 8 Feb 2007 13:05:18 -0500
+Received: from wr-out-0506.google.com ([64.233.184.237]:6997 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752374AbXBHSFR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Feb 2007 13:05:17 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=QBqo9+7PyIVisJMtr/EUMSrzY3eFq/eYzkIHGoxOtcr+QT3ciePB7oX2kYIadWtf9qsFl0DLBtWIcsYBrFx54L3gSeLHXj6vGN9H4ktHlaRqPyalGGim/pOa+1is1l5UaZLI/R4cbu88v/ix/9P+yYrUbEsHZ9ZUMwKJ15jgJ3M=
+Message-ID: <8474209b0702081005t196c64bajbf94f119e4ed32e@mail.gmail.com>
+Date: Thu, 8 Feb 2007 20:05:15 +0200
+From: "Alex Bounder" <abounder@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: creating headless device on 2.6.18
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-02-08 at 15:28 +0000, James Simmons wrote:
-> I have some patches that move the backlight away from using the class 
-> stuff. The only problem is the patch requires all backlight devices 
-> to be linked to a real struct device. Right now the acpi backligths are 
-> not.
-
-Why would you want to do that?
-
-The whole point of having this is so that backlights appear as a
-standard interface under /sys/class/backlight.
-
-An example of why standardised interfaces are good would be someone
-writing an applet for a handheld to control the backlight brightness.
-With the class in place, the applet can easily work with any backlight.
-Without it, it has to be written for each backlight.
-
-So this is a very strong NAK but I'm curious why you'd want to do it...
-
-Richard
-
-
+Hello, all.
+ I'm trying to create a headless device based on kernel 2.6.18 (FEDORA
+distro). What I need is to guarantee that LINUX kernel do not access
+the graphical adapter (used by another OS).
+My idea was to remove from .config everything that is graphic related.
+Yet there are two flags, which are "irremovable". These are
+:CONFIG_VGA_CONSOLE and CONFIG_VIDEO_V4L2. The only option for them is
+[y]. Can anyone help me to get rid of them or suggest another way of
+"blocking" the graphical adapter?
+Thanks in advance,
+ Alex.
