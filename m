@@ -1,50 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422670AbXBHPlr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423041AbXBHPoP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422670AbXBHPlr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Feb 2007 10:41:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752347AbXBHPlr
+	id S1423041AbXBHPoP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Feb 2007 10:44:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423081AbXBHPoP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Feb 2007 10:41:47 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:46539 "EHLO smtp.osdl.org"
+	Thu, 8 Feb 2007 10:44:15 -0500
+Received: from mail.parknet.jp ([210.171.160.80]:3962 "EHLO parknet.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752342AbXBHPlq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Feb 2007 10:41:46 -0500
-Date: Thu, 8 Feb 2007 07:41:30 -0800
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netdev <netdev@vger.kernel.org>, Greg KH <greg@kroah.com>
-Subject: Re: Network: convert network devices to use struct device instead
- of class_device
-Message-ID: <20070208074130.29df585f@oldman>
-In-Reply-To: <45CB1AE6.9020707@garzik.org>
-References: <200702080400.l1840lFd002314@hera.kernel.org>
-	<45CB1AE6.9020707@garzik.org>
-X-Mailer: Sylpheed-Claws 2.5.0-rc3 (GTK+ 2.10.6; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1423041AbXBHPoP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Feb 2007 10:44:15 -0500
+X-AuthUser: hirofumi@parknet.jp
+To: Jan Kara <jack@suse.cz>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Direct IO for fat
+References: <20070208112808.GA3767@duck.suse.cz>
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Date: Fri, 09 Feb 2007 00:44:06 +0900
+In-Reply-To: <20070208112808.GA3767@duck.suse.cz> (Jan Kara's message of "Thu\, 8 Feb 2007 12\:28\:08 +0100")
+Message-ID: <87k5ysfyd5.fsf@duaron.myhome.or.jp>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.93 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 08 Feb 2007 07:43:18 -0500
-Jeff Garzik <jeff@garzik.org> wrote:
+Jan Kara <jack@suse.cz> writes:
 
-> Linux Kernel Mailing List wrote:
-> > Gitweb:     http://git.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=43cb76d91ee85f579a69d42bc8efc08bac560278
-> > Commit:     43cb76d91ee85f579a69d42bc8efc08bac560278
-> > Parent:     2943ecf2ed32632473c06f1975db47a7aa98c10f
-> > Author:     Greg Kroah-Hartman <gregkh@suse.de>
-> > AuthorDate: Tue Apr 9 12:14:34 2002 -0700
-> > Committer:  Greg Kroah-Hartman <gregkh@suse.de>
-> > CommitDate: Wed Feb 7 10:37:11 2007 -0800
-> > 
-> >     Network: convert network devices to use struct device instead of class_device
-> >     
-> >     This lets the network core have the ability to handle suspend/resume
-> >     issues, if it wants to.
+>   Hello,
 
-It fixes a non-problem. I would like to see the network core suspend/resume
-proposal as well. Last time I examined doing network core suspend help,
-the problem was that the physical device suspend was called before the
-class device. It is not clear how this change would help.
+Hello,
+
+>   I've noticed that extending a file using direct IO fails for FAT with
+> EINVAL. It's basically because of the following code in fat_direct_IO():
+>
+> if (rw == WRITE) {
+>         /*
+>          * FIXME: blockdev_direct_IO() doesn't use
+>          * ->prepare_write(),
+>          * so we need to update the ->mmu_private to block
+>          * boundary.
+>          *
+>          * But we must fill the remaining area or hole by nul for
+>          * updating ->mmu_private.
+>          */
+>         loff_t size = offset + iov_length(iov, nr_segs);
+>         if (MSDOS_I(inode)->mmu_private < size)
+>                 return -EINVAL;
+> }
+>
+>   But isn't this check bogus? blockdev_direct_IO writes only to space that
+> is already allocated and stops as soon as it needs to extend the file
+> (further extension is then handled by buffered writes). So it should
+> already do what it needed for FAT. Thanks for an answer in advance.
+
+FAT has to fill the hole completely, but DIO doesn't seems to do.
+
+e.g.
+        fd = open("file", O_WRONLY | O_CREAT | O_TRUNC);
+        write(fd, buf, 512);
+        lseek(fd, 10000, SEEK_SET);
+        write(fd, buf, 512);
+
+We need to allocate the blocks on 512 ~ 10000, and fill it with zero.
+However, I think DIO doesn't fill it. If I'm missing something, please
+let me know, I'll kill that check.
+
+Thanks.
+-- 
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
