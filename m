@@ -1,128 +1,237 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422932AbXBHLhM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422935AbXBHLqW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422932AbXBHLhM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Feb 2007 06:37:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422935AbXBHLhM
+	id S1422935AbXBHLqW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Feb 2007 06:46:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422939AbXBHLqW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Feb 2007 06:37:12 -0500
-Received: from e34.co.us.ibm.com ([32.97.110.152]:59949 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422932AbXBHLhK (ORCPT
+	Thu, 8 Feb 2007 06:46:22 -0500
+Received: from ausmtp05.au.ibm.com ([202.81.18.154]:59964 "EHLO
+	ausmtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422935AbXBHLqV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Feb 2007 06:37:10 -0500
-Date: Thu, 8 Feb 2007 17:07:06 +0530
-From: Vivek Goyal <vgoyal@in.ibm.com>
-To: Etienne Lorrain <etienne_lorrain@yahoo.fr>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: Re : [PATCH] Compressed ia32 ELF file generation for loading by Gujin 1/3
-Message-ID: <20070208113706.GB14039@in.ibm.com>
-Reply-To: vgoyal@in.ibm.com
-References: <20070208094831.56920.qmail@web26908.mail.ukl.yahoo.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070208094831.56920.qmail@web26908.mail.ukl.yahoo.com>
-User-Agent: Mutt/1.5.11
+	Thu, 8 Feb 2007 06:46:21 -0500
+Message-ID: <45CB0D87.8070808@in.ibm.com>
+Date: Thu, 08 Feb 2007 17:16:15 +0530
+From: Srinivasa Ds <srinivasa@in.ibm.com>
+User-Agent: Thunderbird 1.5.0.7 (X11/20060918)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Frederik Deweerdt <deweerdt@free.fr>,
+       Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org, jkenisto@us.ibm.com,
+       anil.s.keshavamurthy@intel.com, prasanna@in.ibm.com, ananth@in.ibm.com
+Subject: Re: [RFC] [PATCH] To list all active probes in the system---Take-2
+References: <45C85097.1000106@in.ibm.com> <20070206100607.GA10296@infradead.org> <45C856F1.7060403@in.ibm.com> <45C894EA.4060305@in.ibm.com> <20070206145609.GA11249@slug> <45C962C3.2020904@in.ibm.com> <20070207142717.5da4d8d4.akpm@linux-foundation.org>
+In-Reply-To: <20070207142717.5da4d8d4.akpm@linux-foundation.org>
+Content-Type: multipart/mixed;
+ boundary="------------010202090703000609090004"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 08, 2007 at 09:48:31AM +0000, Etienne Lorrain wrote:
-> Vivek Goyal wrote:
-> > > Etienne Lorrain wrote:
-> > >  Yes, any PT_LOAD below 64 Kbytes can only be real mode, and real-mode
-> > > cannot be loaded higher, and cannot be bigger than 640 Kbytes, anything
-> > > different (like with virtual address at 0xC0000000) is Linux protected mode.
-> > > Considering the linker used it is always the 4th program header, before there
-> > > were only 3 program header,third one stay the NOTE one.
-> >
-> > Well this is all a lot of speculation. This is not standard way of retrieving
-> > information from ELF. Number of program headers finally created keep on
-> > changing. Previously it was left to the linker and now people have changed
-> > it to 3 by specifically using PHDR directive.
+This is a multi-part message in MIME format.
+--------------010202090703000609090004
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+
+Andrew Morton wrote:
+> On Wed, 07 Feb 2007 10:55:23 +0530
+> Srinivasa Ds <srinivasa@in.ibm.com> wrote:
 > 
->   Well, the standard way is:
-> 1 - the code program header, to be write protected if possible
-> 2 - the (initialised) data program header, to be able to restart the program by just reload/re-entry,
->     and after that (memsiz - filesz) of BSS
->  Anything after is non standard. The number of program header is written in the ELF header,
-> but anything over 2 probably need a special loader for the extra treatment.
->  That isn't usual to have something near zero, because it is better not to map
-> any memory there to catch null pointer dereference (in virtual memory system).
+>> --- linux-2.6.20.orig/fs/debugfs/inode.c
+>> +++ linux-2.6.20/fs/debugfs/inode.c
+>> @@ -25,6 +25,7 @@
+>>  
+>>  	if (retval)
+>>  		subsystem_unregister(&debug_subsys);
+>> +	debugfs_kprobe_init();
+>>  	return retval;
+>>  }
 > 
+> eww.  Didn't it feel bad when you did that?
+> 
+> 
+> As this module has a dependency upon debugfs, I'd have thought the
+> approproate way of expressing that would be to run debugfs_kprobe_init()
+> at a lower initcall priority than debugfs_init()
+> 
+>> +
+>> +	if (dir == NULL)
+>> +		return;
+>> +	debugfs_create_file("list", 0444, dir , 0 , &proc_kprobes_operations);
+>> +}
+>> +
+>>  __initcall(init_kprobes);
+> 
+> debugfs_init() already runs at core_initcall level, presumably so that
+> debugfs clients can use plain old module_init().
+> 
+>> +static inline void debugfs_kprobe_init(void)
+>> +{
+>> +}
+> 
+> In which case we don't need this.	
 
-May be that's the ideal scenario. But if you leave it to linker to decide the
-number of progaram headers to linker then linker sometimes optimizes and
-creates more program headers if it finds empty space between various sections.
-Sometime one or two page space gets created between sections because of
-alignment restrictions. So effectively, number of program headers were not
-fixed, till recently.
+Updating the patch according to Andrew's comment.
 
->  I assume you care about this ELF header because you are also a user of
-> the ELF file vmlinux, aren't you?
->   
+  This patch lists all active probes in the system by scanning through
+kprobe_table[]. It takes care of aggregate handlers and prints the type
+of the probe.
+Letter "k" for kprobes, "j" for jprobes, "r" for kretprobes. It also
+lists address of the instruction,its symbolic name(function name +
+offset) and the module name. One can access this file through
+/sys/kernel/debug/kprobes/list.
 
-Yes I am. I use kexec boot loader which has capability to load ELF kernel
-images (vmlinux). That's why I am concerned about linking real mode code
-in vmlinux as for kdump case I shall have to be aware that kernel vmlinux
-might contain a special PT_LOAD type program header which will contain
-real mode code and it does not have to be loaded. Then I will run into
-guessing business which one is that real mode PT_LOAD  program header and
-my assumption might very well break in next few kernel release.
+Output looks like this
+=====================
+llm40:~/a # cat /sys/kernel/debug/kprobes/list
+c0169ae3  r  sys_read+0x0
+c0169ae3  k  sys_read+0x0
+c01694c8  k  vfs_write+0x0
+c0167d20  r  sys_open+0x0
+f8e658a6  k  reiserfs_delete_inode+0x0  reiserfs
+c0120f4a  k  do_fork+0x0
+c0120f4a  j  do_fork+0x0
+c0169b4a  r  sys_write+0x0
+c0169b4a  k  sys_write+0x0
+c0169622  r  vfs_read+0x0
+=================================
+
+
+Signed-off-by: Srinivasa DS <srinivasa@in.ibm.com>
+
+
+
+--------------010202090703000609090004
+Content-Type: text/x-patch;
+ name="list.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="list.patch"
+
+ kprobes.c |  104 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 104 insertions(+)
+
+Index: linux-2.6.20/kernel/kprobes.c
+===================================================================
+--- linux-2.6.20.orig/kernel/kprobes.c
++++ linux-2.6.20/kernel/kprobes.c
+@@ -39,6 +39,8 @@
+ #include <linux/moduleloader.h>
+ #include <linux/kallsyms.h>
+ #include <linux/freezer.h>
++#include <linux/seq_file.h>
++#include <linux/debugfs.h>
+ #include <asm-generic/sections.h>
+ #include <asm/cacheflush.h>
+ #include <asm/errno.h>
+@@ -815,6 +817,108 @@ static int __init init_kprobes(void)
+ 	return err;
+ }
  
-
-> > >  Just I did not completely understand why you need relocation (and the announce
-> > > was when I was in holidays far away). I know a simple kernel is needed to do
-> > > some debugging when the main kernel has crashed, this kernel is better loaded
-> > > at for instance 16 Mbytes. You probably do not want the same kernel as the main
-> > > one because it may crash the same way, and you start a loop - and even then
-> > > if you have exactly the same kernel it is easier to use the same write-protected
-> > > block of memory with different data sections.
-> > >  But I probably do not understand the problem so do not know what to write.
-> > 
-> > As long as one can make sure that test kernel boots (commonly the case with
-> > distros), same kernel can be used as capture kernel too. So the idea here
-> > is to be able to use same kernel binary as production kernel and capture
-> > kernel hence distros don't have to ship an additional kernel binary compiled
-> > for a different physical addr just for dump capturing purposes.
-> 
->  And you do not want to write protect the kernel code (if the CPU write protection
-> is not working, the hardware is not working so debug will be difficult, and a simple
-> CRC32 can tell kernel memory failure) and use twice the same code memory
-> (with different data area or saving kernel data elsewhere before reload).
->  Is that related to module loading or instruction set detection/patch or multiprocessor?
-> 
-
-If I understand it right, you seem to be suggesting that I don't have to 
-reload the kernel text and I can only reload the data for second kernel?
-
-We run the whole of the kernel from a mutually execlusive location from
-first kernel to mitigate the concerns that first kernel's ongoing DMA might
-corrupt second kernel. That's why first kernel's text can't be reused.
-Secondly, it gives flexibility to user that either he can choose to use 
-the production kernel as capture kernel or an entirely different custom
-kernel can be used as capture kernel.
++#ifdef CONFIG_DEBUG_FS
++static void __kprobes report_probe(struct seq_file *pi, struct kprobe *p,
++               const char *sym, int offset,char *modname)
++{
++	char *kprobe_type;
++
++	if (p->pre_handler == pre_handler_kretprobe)
++		kprobe_type = "r";
++	else if (p->pre_handler == setjmp_pre_handler)
++		kprobe_type = "j";
++	else
++		kprobe_type = "k";
++	if (sym)
++		seq_printf(pi, "%p  %s  %s+0x%x  %s\n", p->addr, kprobe_type,
++			sym, offset, (modname ? modname : " "));
++	else
++		seq_printf(pi, "%p  %s  %p\n", p->addr, kprobe_type, p->addr);
++}
++
++void __kprobes *kprobe_seq_start(struct seq_file *f, loff_t *pos)
++{
++	return (*pos < KPROBE_TABLE_SIZE) ? pos : NULL;
++}
++
++void __kprobes *kprobe_seq_next(struct seq_file *f, void *v, loff_t *pos)
++{
++	(*pos)++;
++	if (*pos >= KPROBE_TABLE_SIZE)
++		return NULL;
++	return pos;
++}
++
++void __kprobes kprobe_seq_stop(struct seq_file *f, void *v)
++{
++	/* Nothing to do */
++}
++
++int __kprobes show_kprobe_addr(struct seq_file *pi, void *v)
++{
++	struct hlist_head *head;
++	struct hlist_node *node;
++	struct kprobe *p, *kp;
++	const char *sym = NULL;
++	unsigned int i = *(loff_t *) v;
++	unsigned long size, offset = 0;
++	char *modname, namebuf[128];
++
++	head = &kprobe_table[i];
++	preempt_disable();
++	hlist_for_each_entry_rcu(p, node, head, hlist) {
++		sym = kallsyms_lookup((unsigned long)p->addr, &size,
++					&offset, &modname, namebuf);
++		if (p->pre_handler == aggr_pre_handler) {
++			list_for_each_entry_rcu(kp, &p->list, list)
++				report_probe(pi, kp, sym, offset, modname);
++		} else
++			report_probe(pi, p, sym, offset, modname);
++	}
++	preempt_enable();
++	return 0;
++}
++
++struct seq_operations kprobes_seq_ops = {
++	.start = kprobe_seq_start,
++	.next  = kprobe_seq_next,
++	.stop  = kprobe_seq_stop,
++	.show  = show_kprobe_addr
++};
++
++static int __kprobes kprobes_open(struct inode *inode, struct file *filp)
++{
++	return seq_open(filp, &kprobes_seq_ops);
++}
++
++static struct file_operations debugfs_kprobes_operations = {
++	.open           = kprobes_open,
++	.read           = seq_read,
++	.llseek         = seq_lseek,
++	.release        = seq_release,
++};
++
++static int __kprobes debugfs_kprobe_init(void)
++{
++	struct dentry *dir, *file;
++
++	dir = debugfs_create_dir("kprobes", NULL);
++	if (!dir)
++		return -ENOMEM;
++
++	file = debugfs_create_file("list", 0444, dir , 0 ,
++				&debugfs_kprobes_operations);
++	if (!file) {
++		debugfs_remove(dir);
++		return -ENOMEM;
++	}
++
++	return 0;
++}
++
++module_init(debugfs_kprobe_init);
++#endif /* CONFIG_DEBUG_FS */
++
+ __initcall(init_kprobes);
  
-> > Currently relocation information is extracted from vmlinux and packed in
-> > final bzImage after some processing. After execution of real mode code
-> > and once the image is decompressed, all the relocations are performed and
-> > then control is transferred to kernel.
-> 
->   So here you are not really using the initial ELF program header of vmlinux,
-> but more the section header and my PT_LOAD section bother you, I better
-> understand. You cannot really claim you are only doing standard/usual
-> ELF treatment.
-> 
+ EXPORT_SYMBOL_GPL(register_kprobe);
 
-Kexec as a boot loader allows to load both ELF vmlinux file or bzImage.
-Hence for kdump, a user got the flexibility to either use vmlinux or 
-bzImage for dump captruing purposes. Hence I am concerned about both. 
-
-If real mode code is linked with vmlinux, then kdump will be broken.
-
-bzImage is relocatable. If a new kernel image format is introduced
-(compressed ELF), then I will prefer it to be a relocatable one
-(if possible).
-
-Thanks
-Vivek
+--------------010202090703000609090004--
