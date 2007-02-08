@@ -1,62 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030640AbXBHDa7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030656AbXBHDeD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030640AbXBHDa7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Feb 2007 22:30:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030656AbXBHDa7
+	id S1030656AbXBHDeD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Feb 2007 22:34:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030661AbXBHDeD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Feb 2007 22:30:59 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:41329 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030640AbXBHDa6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Feb 2007 22:30:58 -0500
-From: Roland McGrath <roland@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-X-Fcc: ~/Mail/linus
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] fix cc-option-yn whitespace
-X-Antipastobozoticataclysm: When George Bush projectile vomits antipasto on the Japanese.
-Message-Id: <20070208033046.44D39180055@magilla.sf.frob.com>
-Date: Wed,  7 Feb 2007 19:30:46 -0800 (PST)
+	Wed, 7 Feb 2007 22:34:03 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:41812 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030656AbXBHDeA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Feb 2007 22:34:00 -0500
+Date: Wed, 7 Feb 2007 19:27:35 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Horms <horms@verge.net.au>
+Cc: "Luck, Tony" <tony.luck@intel.com>, linux-ia64@vger.kernel.org,
+       linux-kernel@vger.kernel.org, fastboot@lists.osdl.org,
+       "Zou, Nanhai" <nanhai.zou@intel.com>, Khalid Aziz <khalid_aziz@hp.com>,
+       Adrian Bunk <trivial@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Magnus Damm <magnus.damm@gmail.com>
+Subject: Re: [PATCH] [IA64] Include kexec.h in arch/ia64/kernel/process.c
+Message-Id: <20070207192735.2d06e984.randy.dunlap@oracle.com>
+In-Reply-To: <20070208021900.GB17585@verge.net.au>
+References: <20070207064935.GB726@verge.net.au>
+	<617E1C2C70743745A92448908E030B2A0117C67C@scsmsx411.amr.corp.intel.com>
+	<20070208021900.GB17585@verge.net.au>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.0 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This change:
+On Thu, 8 Feb 2007 11:19:03 +0900 Horms wrote:
 
-	commit 5de043f4bd11a9e0a3e8daec7d1905da575a76b7
-	Author: Oleg Verych <olecom@flower.upol.cz>
-	Date:   Tue Feb 6 02:18:21 2007 +0100
+> On Wed, Feb 07, 2007 at 09:07:40AM -0800, Luck, Tony wrote:
+> > > kexec.h is needed by arch/ia64/kernel/process.c so for the
+> > > declaration of kexec_disable_iosapic() which is used in
+> > > machine_shutdown().
+> > 
+> > > +#include <asm/kexec.h>
+> > 
+> > I merged this into your earlier change (moving machine_shutdown() into
+> > process.c).  Linus pulled it last night.
+> 
+> Thanks
+> 
+> > I also added a "#ifdef CONFIG_KEXEC" around the call to
+> > kexec_disable_iosapic() (because I first noticed that this was
+> > undefined when building non-KEXEC kernels).  But perhaps it might have
+> > been better to #define an empty stub for this function inside kexec.h
+> > for the #ifndef CONFIG_KEXEC case?
+> 
+> Good catch :)
 
-	    [PATCH] kbuild: improve option checking, Kbuild.include cleanup
+uh, every one of Andrew's commit emails now contains the line
+at the end of my mail sig...  Try it sometimes^W often.
 
-introduced leading whitespace in the results of cc-option-yn and such.
-This breaks some of their uses, like HAS_MTUNE in arch/i386/Makefile.cpu.
 
-This patch fixes the regression.
+> I think that #define in the process.c vs an empty stub inside
+> asm/kexec.h is really a style issue. I'm quite ok with things
+> the way they are. But If you are more comfortable with the stub
+> approach, I have no objections.
 
-Signed-off-by: Roland McGrath <roland@redhat.com>
+
 ---
- scripts/Kbuild.include |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
-
-diff --git a/scripts/Kbuild.include b/scripts/Kbuild.include
-index 96926eb..931d52f 100644  
---- a/scripts/Kbuild.include
-+++ b/scripts/Kbuild.include
-@@ -60,6 +60,7 @@ endef
- # Usage: option = $(call checker-shell, $(CC)...-o $$OUT, option-ok, otherwise)
- # Exit code chooses option. $$OUT is safe location for needless output.
- define checker-shell
-+$(strip \
-   $(shell set -e; \
-     DIR=$(KBUILD_EXTMOD); \
-     cd $${DIR:-$(objtree)}; \
-@@ -70,7 +71,7 @@ define checker-shell
-       then echo "$(2)"; \
-       else echo "$(3)"; \
-     fi; \
--    rm -f $$OUT)
-+    rm -f $$OUT))
- endef
- 
- # as-option
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
