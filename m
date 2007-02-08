@@ -1,45 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161314AbXBHIYl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161515AbXBHIYq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161314AbXBHIYl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Feb 2007 03:24:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161488AbXBHIYl
+	id S1161515AbXBHIYq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Feb 2007 03:24:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161488AbXBHIYq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Feb 2007 03:24:41 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:33060 "EHLO smtp.osdl.org"
+	Thu, 8 Feb 2007 03:24:46 -0500
+Received: from colin.muc.de ([193.149.48.1]:1923 "EHLO mail.muc.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161314AbXBHIYk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Feb 2007 03:24:40 -0500
-Date: Thu, 8 Feb 2007 00:24:28 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Andi Kleen <ak@suse.de>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       LKML <linux-kernel@vger.kernel.org>, clameter@sgi.com,
-       GOTO <y-goto@jp.fujitsu.com>
-Subject: Re: [BUG][PATCH] fix mempolcy's check on a system with
- memory-less-node take2
-Message-Id: <20070208002428.1b7aa485.akpm@linux-foundation.org>
-In-Reply-To: <200702080919.16879.ak@suse.de>
-References: <20070208110606.ebf668d3.kamezawa.hiroyu@jp.fujitsu.com>
-	<200702080903.46242.ak@suse.de>
-	<20070208000857.7296b94b.akpm@linux-foundation.org>
-	<200702080919.16879.ak@suse.de>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	id S1161543AbXBHIYp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Feb 2007 03:24:45 -0500
+Date: 8 Feb 2007 09:24:43 +0100
+Date: Thu, 8 Feb 2007 09:24:43 +0100
+From: Andi Kleen <ak@muc.de>
+To: Zachary Amsden <zach@vmware.com>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, Rusty Russell <rusty@rustcorp.com.au>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Chris Wright <chrisw@sous-sol.org>
+Subject: Re: [PATCH 9/11] Panic delay fix
+Message-ID: <20070208082443.GA9928@muc.de>
+References: <200702060353.l163rUmj000771@zach-dev.vmware.com> <20070206122729.GC47229@muc.de> <45C8FA2D.6010706@vmware.com> <d120d5000702070658l1c018565n34a6d8814a20184d@mail.gmail.com> <45CA535D.1080700@vmware.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <45CA535D.1080700@vmware.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 8 Feb 2007 09:19:16 +0100 Andi Kleen <ak@suse.de> wrote:
+On Wed, Feb 07, 2007 at 02:31:57PM -0800, Zachary Amsden wrote:
+> Dmitry Torokhov wrote:
+> >
+> >I am confused - does i8042 talk to a virtual or real hardware here? In
+> >any case I think you need to fix kernel/panic.c to have proper
+> >(m)delay, not mess with i8042.
+> 
+> I think I need to fix both of them actually.  This is virtual hardware, 
+> but when you grab focus on a VM, the virtual hardware gets reflected to 
+> the actual physical keyboard.  Driving physical hardware that fast is bad.
 
-> The reason we present nodes to user space is that we can tell the user
-> where the memory is. You seem to try to promote it to some abstract entity
-> beyond that, but that doesn't seem particularly fruitful to me. I think
-> I prefer "down to earth" memory nodes.
+???
 
-Who said a node is all about memory?
+Surely the physical keyboard is always handled by the host kernel? 
+I hope you're not saying it's trying to access the io ports directly?
 
-A node is (often) a circuit board, with an edge connector, containing some,
-all or even none of a) CPUs, b) memory and c) IO devices.
-
-That is how a kernel should model and treat it, surely?  That's reality.
+-Andi
