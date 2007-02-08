@@ -1,182 +1,259 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423236AbXBHRWW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423233AbXBHRWT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423236AbXBHRWW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Feb 2007 12:22:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423239AbXBHRWU
+	id S1423233AbXBHRWT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Feb 2007 12:22:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423236AbXBHRWS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Feb 2007 12:22:20 -0500
-Received: from moutng.kundenserver.de ([212.227.126.177]:51169 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965737AbXBHRWS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 8 Feb 2007 12:22:18 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: cbe-oss-dev@ozlabs.org
-Subject: Re: [Cbe-oss-dev] [RFC, PATCH] CELL Oprofile SPU profiling updated patch
-Date: Thu, 8 Feb 2007 18:21:56 +0100
-User-Agent: KMail/1.9.5
-Cc: Milton Miller <miltonm@bga.com>, Carl Love <cel@us.ibm.com>,
-       linuxppc-dev@ozlabs.org, LKML <linux-kernel@vger.kernel.org>,
-       oprofile-list@lists.sourceforge.net
-References: <1170721711.5204.44.camel@dyn9047021078.beaverton.ibm.com> <1170802957.5204.56.camel@dyn9047021078.beaverton.ibm.com> <b682962303654f4958a6c2c50d805907@bga.com>
-In-Reply-To: <b682962303654f4958a6c2c50d805907@bga.com>
+Received: from nommos.sslcatacombnetworking.com ([67.18.224.114]:2961 "EHLO
+	nommos.sslcatacombnetworking.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S965736AbXBHRWR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Feb 2007 12:22:17 -0500
+Date: Thu, 8 Feb 2007 11:19:37 -0600 (CST)
+From: Kumar Gala <galak@kernel.crashing.org>
+X-X-Sender: galak@localhost.localdomain
+To: Jeff Garzik <jgarzik@pobox.com>
+cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: [PATCH][RESEND] gianfar: Convert network devices to use struct device
+ instead of class_device
+Message-ID: <Pine.LNX.4.64.0702081118090.29779@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200702081821.57358.arnd@arndb.de>
-X-Provags-ID: kundenserver.de abuse@kundenserver.de login:c48f057754fc1b1a557605ab9fa6da41
-X-Provags-ID2: V01U2FsdGVkX18ZHEUVfJX3UPX/LW//5WINfZ/dXRIA3yfkpi+q6ZJ3lJV32yi+kmzQIfSBXdIT4VRTMsM/Euj/m0cipLxgaRDRNkJhHFJI0+iTujjb2K0LiQ==
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+X-PopBeforeSMTPSenders: kumar-chaos@kgala.com,kumar-statements@kgala.com,kumar@kgala.com
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - nommos.sslcatacombnetworking.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - kernel.crashing.org
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 08 February 2007 15:18, Milton Miller wrote:
+Convert network devices to use struct device instead of class_device.  Greg
+missed this one in his cleanup path.
 
-> 1) sample rate setup
-> 
->     In the current patch, the user specifies a sample rate as a time 
-> interval.
->     The kernel is (a) calling cpufreq to get the current cpu frequency, 
-> (b)
->     converting the rate to a cycle count, (c) converting this to a 24 bit
->     LFSR count, an iterative algorithm (in this patch, starting from
->     one of 256 values so a max of 2^16 or 64k iterations), (d) 
-> calculating
->     an trace unload interval.   In addition, a cpufreq notifier is 
-> registered
->     to recalculate on frequency changes.
-> 
->     The obvious problem is step (c), running a loop potentially 64 
-> thousand
->     times in kernel space will have a noticeable impact on other threads.
-> 
->     I propose instead that user space perform the above 4 steps, and 
-> provide
->     the kernel with two inputs: (1) the value to load in the LFSR and (2)
->     the periodic frequency / time interval at which to empty the hardware
->     trace buffer, perform sample analysis, and send the data to the 
-> oprofile
->     subsystem.
-> 
->     There should be no security issues with this approach.   If the LFSR 
-> value
->     is calculated incorrectly, either it will be too short, causing the 
-> trace
->     array to overfill and data to be dropped, or it will be too long, and
->     there will be fewer samples.   Likewise, the kernel periodic poll 
-> can be
->     too long, again causing overflow, or too frequent, causing only timer
->     execution overhead.
-> 
->     Various data is collected by the kernel while processing the 
-> periodic timer,
->     this approach would also allow the profiling tools to control the
->     frequency of this collection.   More frequent collection results in 
-> more
->     accurate sample data, with the linear cost of poll execution 
-> overhead.
-> 
->     Frequency changes can be handled either by the profile code setting
->     collection at a higher than necessary rate, or by interacting with 
-> the
->     governor to limit the speeds.
-> 
->     Optionally, the kernel can add a record indicating that some data was
->     likely dropped if it is able to read all 256 entries without 
-> underflowing
->     the array.  This can be used as hint to user space that the kernel 
-> time
->     was too long for the collection rate.
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 
-Moving the sample rate computation to user space sounds like the right
-idea, but why not have a more drastic version of it:
+---
 
-Right now, all products that support this feature run at the same clock
-rate (3.2 Ghz), with cpufreq, we can reduce this to 1.6 Ghz. If I understand
-this correctly, the value depends only on the frequency, so we could simply
-hardcode this in the kernel, and print out a warning message if we ever
-encounter a different frequency, right?
+Got Jeff's email wrong the first time.
 
-> The current patch specifically identifies that only single
-> elf objects are handled.  There is no code to handle dynamic
-> linked libraries or overlays.   Nor is there any method to
-> present samples that may have been collected during context
-> switch processing, they must be discarded.
+commit 24c316396f71c6164f11ca1398151d8b15fd06e0
+tree d02ee36eaf848d200dacf3bf795abaec1e55cbc2
+parent b892afd1e60132a981b963929e352eabf3306ba2
+author Kumar Gala <galak@kernel.crashing.org> Thu, 08 Feb 2007 11:07:11 -0600
+committer Kumar Gala <galak@kernel.crashing.org> Thu, 08 Feb 2007 11:07:11 -0600
 
-I thought it already did handle overlays, what did I miss here?
+  drivers/net/gianfar_sysfs.c |  108 ++++++++++++++++++++++---------------------
+  1 files changed, 55 insertions(+), 53 deletions(-)
 
-> My proposal is to change what is presented to user space.  Instead
-> of trying to translate the SPU address to the backing file
-> as the samples are recorded, store the samples as the SPU
-> context and address.  The context switch would record tid,
-> pid, object id as it does now.   In addition, if this is a
-> new object-id, the kernel would read elf headers as it does
-> today.  However, it would then proceed to provide accurate
-> dcookie information for each loader region and overlay.
+diff --git a/drivers/net/gianfar_sysfs.c b/drivers/net/gianfar_sysfs.c
+index 9dd387f..6e2166a 100644
+--- a/drivers/net/gianfar_sysfs.c
++++ b/drivers/net/gianfar_sysfs.c
+@@ -39,13 +39,15 @@
+  #include "gianfar.h"
 
-Doing the translation in two stages in user space, as you
-suggest here, definitely makes sense to me. I think it
-can be done a little simpler though:
+  #define GFAR_ATTR(_name) \
+-static ssize_t gfar_show_##_name(struct class_device *cdev, char *buf); \
+-static ssize_t gfar_set_##_name(struct class_device *cdev, \
++static ssize_t gfar_show_##_name(struct device *dev, \
++	 struct device_attribute *attr, char *buf); \
++static ssize_t gfar_set_##_name(struct device *dev, \
++		struct device_attribute *attr, \
+  		const char *buf, size_t count); \
+-static CLASS_DEVICE_ATTR(_name, 0644, gfar_show_##_name, gfar_set_##_name)
++static DEVICE_ATTR(_name, 0644, gfar_show_##_name, gfar_set_##_name)
 
-Why would you need the accurate dcookie information to be
-provided by the kernel? The ELF loader is done in user
-space, and the kernel only reproduces what it thinks that
-came up with. If the kernel only gives the dcookie information
-about the SPU ELF binary to the oprofile user space, then
-that can easily recreate the same mapping.
+  #define GFAR_CREATE_FILE(_dev, _name) \
+-	class_device_create_file(&_dev->class_dev, &class_device_attr_##_name)
++	device_create_file(&_dev->dev, &dev_attr_##_name)
 
-The kernel still needs to provide the overlay identifiers
-though.
+  GFAR_ATTR(bd_stash);
+  GFAR_ATTR(rx_stash_size);
+@@ -54,29 +56,28 @@ GFAR_ATTR(fifo_threshold);
+  GFAR_ATTR(fifo_starve);
+  GFAR_ATTR(fifo_starve_off);
 
-> To identify which overlays are active, (instead of the present
-> read on use and search the list to translate approach) the
-> kernel would record the location of the overlay identifiers
-> as it parsed the kernel, but would then read the identification
-> word and would record the present value as an sample from
-> a separate but related stream.   The kernel could maintain
-> the last value for each overlay and only send profile events
-> for the deltas.
+-#define to_net_dev(cd) container_of(cd, struct net_device, class_dev)
+-
+-static ssize_t gfar_show_bd_stash(struct class_device *cdev, char *buf)
++static ssize_t gfar_show_bd_stash(struct device *dev,
++				  struct device_attribute *attr, char *buf)
+  {
+-	struct net_device *dev = to_net_dev(cdev);
+-	struct gfar_private *priv = netdev_priv(dev);
++	struct gfar_private *priv = netdev_priv(to_net_dev(dev));
 
-right.
+-	return sprintf(buf, "%s\n", priv->bd_stash_en? "on" : "off");
++	return sprintf(buf, "%s\n", priv->bd_stash_en ? "on" : "off");
+  }
 
-> This approach trades translation lookup overhead for each
-> recorded sample for a burst of data on new context activation.
-> In addition it exposes the sample point of the overlay identifier
-> vs the address collection.  This allows the ambiguity to be
-> exposed to user space.   In addition, with the above proposed
-> kernel timer vs sample collection, user space could limit the
-> elapsed time between the address collection and the overlay
-> id check.
+-static ssize_t gfar_set_bd_stash(struct class_device *cdev,
+-		const char *buf, size_t count)
++static ssize_t gfar_set_bd_stash(struct device *dev,
++				 struct device_attribute *attr,
++				 const char *buf, size_t count)
+  {
+-	struct net_device *dev = to_net_dev(cdev);
+-	struct gfar_private *priv = netdev_priv(dev);
++	struct gfar_private *priv = netdev_priv(to_net_dev(dev));
+  	int new_setting = 0;
+  	u32 temp;
+  	unsigned long flags;
 
-yes, this sounds nice. But tt does not at all help accuracy,
-only performance, right?
- 
-> This approach allows multiple objects by its nature.  A new
-> elf header could be constructed in memory that contained
-> the union of the elf objects load segments, and the tools
-> will magically work.   Alternatively the object id could
-> point to a new structure, identified via a new header, that
-> it points to other elf headers (easily differentiated by the
-> elf magic headers).   Other binary formats, including several
-> objects in a ar archive, could be supported.
+  	/* Find out the new setting */
+-	if (!strncmp("on", buf, count-1) || !strncmp("1", buf, count-1))
++	if (!strncmp("on", buf, count - 1) || !strncmp("1", buf, count - 1))
+  		new_setting = 1;
+-	else if (!strncmp("off", buf, count-1) || !strncmp("0", buf, count-1))
++	else if (!strncmp("off", buf, count - 1)
++		 || !strncmp("0", buf, count - 1))
+  		new_setting = 0;
+  	else
+  		return count;
+@@ -100,19 +101,19 @@ static ssize_t gfar_set_bd_stash(struct class_device *cdev,
+  	return count;
+  }
 
-Yes, that would be a new feature if the kernel passed dcookie
-information for every section, but I doubt that it is worth
-it. I have not seen any program that allows loading code
-from more than one ELF file. In particular, the ELF format
-on the SPU is currently lacking the relocation mechanisms
-that you would need for resolving spu-side symbols at load
-time.
- 
-> If better overlay identification is required, in theory the
-> overlay switch code could be augmented to record the switches
-> (DMA reference time from the PowerPC memory and record a
-> relative decrementer in the SPU), this is obviously a future
-> item.  But it is facilitated by having user space resolve the
-> SPU to source file translation.
+-static ssize_t gfar_show_rx_stash_size(struct class_device *cdev, char *buf)
++static ssize_t gfar_show_rx_stash_size(struct device *dev,
++				       struct device_attribute *attr, char *buf)
+  {
+-	struct net_device *dev = to_net_dev(cdev);
+-	struct gfar_private *priv = netdev_priv(dev);
++	struct gfar_private *priv = netdev_priv(to_net_dev(dev));
 
-This seems to incur a run-time overhead on the SPU even if not
-profiling, I would consider that not acceptable.
+  	return sprintf(buf, "%d\n", priv->rx_stash_size);
+  }
 
-	Arnd <><
+-static ssize_t gfar_set_rx_stash_size(struct class_device *cdev,
+-		const char *buf, size_t count)
++static ssize_t gfar_set_rx_stash_size(struct device *dev,
++				      struct device_attribute *attr,
++				      const char *buf, size_t count)
+  {
+-	struct net_device *dev = to_net_dev(cdev);
+-	struct gfar_private *priv = netdev_priv(dev);
++	struct gfar_private *priv = netdev_priv(to_net_dev(dev));
+  	unsigned int length = simple_strtoul(buf, NULL, 0);
+  	u32 temp;
+  	unsigned long flags;
+@@ -146,21 +147,21 @@ static ssize_t gfar_set_rx_stash_size(struct class_device *cdev,
+  	return count;
+  }
+
+-
+  /* Stashing will only be enabled when rx_stash_size != 0 */
+-static ssize_t gfar_show_rx_stash_index(struct class_device *cdev, char *buf)
++static ssize_t gfar_show_rx_stash_index(struct device *dev,
++					struct device_attribute *attr,
++					char *buf)
+  {
+-	struct net_device *dev = to_net_dev(cdev);
+-	struct gfar_private *priv = netdev_priv(dev);
++	struct gfar_private *priv = netdev_priv(to_net_dev(dev));
+
+  	return sprintf(buf, "%d\n", priv->rx_stash_index);
+  }
+
+-static ssize_t gfar_set_rx_stash_index(struct class_device *cdev,
+-		const char *buf, size_t count)
++static ssize_t gfar_set_rx_stash_index(struct device *dev,
++				       struct device_attribute *attr,
++				       const char *buf, size_t count)
+  {
+-	struct net_device *dev = to_net_dev(cdev);
+-	struct gfar_private *priv = netdev_priv(dev);
++	struct gfar_private *priv = netdev_priv(to_net_dev(dev));
+  	unsigned short index = simple_strtoul(buf, NULL, 0);
+  	u32 temp;
+  	unsigned long flags;
+@@ -184,19 +185,20 @@ static ssize_t gfar_set_rx_stash_index(struct class_device *cdev,
+  	return count;
+  }
+
+-static ssize_t gfar_show_fifo_threshold(struct class_device *cdev, char *buf)
++static ssize_t gfar_show_fifo_threshold(struct device *dev,
++					struct device_attribute *attr,
++					char *buf)
+  {
+-	struct net_device *dev = to_net_dev(cdev);
+-	struct gfar_private *priv = netdev_priv(dev);
++	struct gfar_private *priv = netdev_priv(to_net_dev(dev));
+
+  	return sprintf(buf, "%d\n", priv->fifo_threshold);
+  }
+
+-static ssize_t gfar_set_fifo_threshold(struct class_device *cdev,
+-		const char *buf, size_t count)
++static ssize_t gfar_set_fifo_threshold(struct device *dev,
++				       struct device_attribute *attr,
++				       const char *buf, size_t count)
+  {
+-	struct net_device *dev = to_net_dev(cdev);
+-	struct gfar_private *priv = netdev_priv(dev);
++	struct gfar_private *priv = netdev_priv(to_net_dev(dev));
+  	unsigned int length = simple_strtoul(buf, NULL, 0);
+  	u32 temp;
+  	unsigned long flags;
+@@ -218,20 +220,19 @@ static ssize_t gfar_set_fifo_threshold(struct class_device *cdev,
+  	return count;
+  }
+
+-static ssize_t gfar_show_fifo_starve(struct class_device *cdev, char *buf)
++static ssize_t gfar_show_fifo_starve(struct device *dev,
++				     struct device_attribute *attr, char *buf)
+  {
+-	struct net_device *dev = to_net_dev(cdev);
+-	struct gfar_private *priv = netdev_priv(dev);
++	struct gfar_private *priv = netdev_priv(to_net_dev(dev));
+
+  	return sprintf(buf, "%d\n", priv->fifo_starve);
+  }
+
+-
+-static ssize_t gfar_set_fifo_starve(struct class_device *cdev,
+-		const char *buf, size_t count)
++static ssize_t gfar_set_fifo_starve(struct device *dev,
++				    struct device_attribute *attr,
++				    const char *buf, size_t count)
+  {
+-	struct net_device *dev = to_net_dev(cdev);
+-	struct gfar_private *priv = netdev_priv(dev);
++	struct gfar_private *priv = netdev_priv(to_net_dev(dev));
+  	unsigned int num = simple_strtoul(buf, NULL, 0);
+  	u32 temp;
+  	unsigned long flags;
+@@ -253,19 +254,20 @@ static ssize_t gfar_set_fifo_starve(struct class_device *cdev,
+  	return count;
+  }
+
+-static ssize_t gfar_show_fifo_starve_off(struct class_device *cdev, char *buf)
++static ssize_t gfar_show_fifo_starve_off(struct device *dev,
++					 struct device_attribute *attr,
++					 char *buf)
+  {
+-	struct net_device *dev = to_net_dev(cdev);
+-	struct gfar_private *priv = netdev_priv(dev);
++	struct gfar_private *priv = netdev_priv(to_net_dev(dev));
+
+  	return sprintf(buf, "%d\n", priv->fifo_starve_off);
+  }
+
+-static ssize_t gfar_set_fifo_starve_off(struct class_device *cdev,
+-		const char *buf, size_t count)
++static ssize_t gfar_set_fifo_starve_off(struct device *dev,
++					struct device_attribute *attr,
++					const char *buf, size_t count)
+  {
+-	struct net_device *dev = to_net_dev(cdev);
+-	struct gfar_private *priv = netdev_priv(dev);
++	struct gfar_private *priv = netdev_priv(to_net_dev(dev));
+  	unsigned int num = simple_strtoul(buf, NULL, 0);
+  	u32 temp;
+  	unsigned long flags;
