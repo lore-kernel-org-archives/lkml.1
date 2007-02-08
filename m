@@ -1,55 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422865AbXBHLed@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422897AbXBHLfx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422865AbXBHLed (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Feb 2007 06:34:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422897AbXBHLed
+	id S1422897AbXBHLfx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Feb 2007 06:35:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422900AbXBHLfx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Feb 2007 06:34:33 -0500
-Received: from tmailer.gwdg.de ([134.76.10.23]:52497 "EHLO tmailer.gwdg.de"
+	Thu, 8 Feb 2007 06:35:53 -0500
+Received: from ozlabs.org ([203.10.76.45]:57266 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422865AbXBHLec (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Feb 2007 06:34:32 -0500
-Date: Thu, 8 Feb 2007 12:29:07 +0100 (MET)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: Oleg Verych <olecom@flower.upol.cz>
-cc: Mike Frysinger <vapier.adi@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Roman Zippel <zippel@linux-m68k.org>, sam@ravnborg.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kai Germaschewski <kai@germaschewski.name>
-Subject: Re: + search-a-little-harder-for-mkimage.patch
-In-Reply-To: <20070208064347.GP22699@flower.upol.cz>
-Message-ID: <Pine.LNX.4.61.0702081227560.1364@yvahk01.tjqt.qr>
-References: <20070207165204.GA5537@martell.zuzino.mipt.ru>
- <Pine.LNX.4.64.0702071846180.14457@scrub.home> <20070207220435.GC22699@flower.upol.cz>
- <Pine.LNX.4.64.0702080029030.14457@scrub.home>
- <Pine.LNX.4.64.0702071546420.8424@woody.linux-foundation.org>
- <20070207203047.51a95ad0.akpm@linux-foundation.org> <20070208052439.GL22699@flower.upol.cz>
- <20070207211921.1f0220a4.akpm@linux-foundation.org> <20070208055832.GN22699@flower.upol.cz>
- <8bd0f97a0702072158r36046dd7w64a8c7b5da1a5f9a@mail.gmail.com>
- <20070208064347.GP22699@flower.upol.cz>
+	id S1422897AbXBHLfx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Feb 2007 06:35:53 -0500
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <17867.1342.763881.188430@cargo.ozlabs.ibm.com>
+Date: Thu, 8 Feb 2007 22:10:54 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Oleg Verych <olecom@flower.upol.cz>
+CC: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org
+Subject: Kbuild change breaks the ppc64 build
+X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Commit 5de043f4bd11a9e0a3e8daec7d1905da575a76b7 breaks the build on
+64-bit powerpc because we no longer get the -m64 flag passed to gcc.
+There is code in arch/powerpc/Makefile which adds (or used to add)
+-m64 to AS, LD and CC if we are running on a 64-bit machine (which I
+am) and have a biarch toolchain (which I do).  Without -m64, the
+toolchain assumes 32-bit and all sorts of things break spectacularly.
 
-On Feb 8 2007 07:43, Oleg Verych wrote:
->> >>
->> >> > If that matter, `type -path' is bashizm (BloAted SHell), and "blackbox"
->> >> > with "dash" (very good `sh' equivalents) will fail.
->> >>
->> >> Does the kernel presently build with that shell?
->> >
->> >build - yes, with dash being `$(shell)'. All scripts with `#!/bin/bash'
->> >of course use bash, example is gen_initramfs_list.sh.
->> 
->
->Heh, did i say POSIX? I said bloated shell, from man bash:
->
->BUGS
->       It's too big and too slow.
+I haven't yet tracked down exactly why this commit has this effect,
+since I find it takes considerable time and effort to understand
+Kbuild.
 
-Like it or lump it. Improve it, or write your own bash-compliant sh. :)
+Paul.
