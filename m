@@ -1,71 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422962AbXBHM1M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422959AbXBHMdY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422962AbXBHM1M (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Feb 2007 07:27:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422964AbXBHM1M
+	id S1422959AbXBHMdY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Feb 2007 07:33:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422964AbXBHMdY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Feb 2007 07:27:12 -0500
-Received: from raven.upol.cz ([158.194.120.4]:34140 "EHLO raven.upol.cz"
+	Thu, 8 Feb 2007 07:33:24 -0500
+Received: from vsmtp21.tin.it ([212.216.176.109]:33546 "EHLO vsmtp21.tin.it"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422962AbXBHM1K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Feb 2007 07:27:10 -0500
-Date: Thu, 8 Feb 2007 13:35:40 +0100
-To: David Miller <davem@davemloft.net>
-Cc: paulus@samba.org, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: Re: Kbuild change breaks the ppc64 build
-Message-ID: <20070208123540.GT22699@flower.upol.cz>
-References: <17867.1342.763881.188430@cargo.ozlabs.ibm.com> <20070208.040003.112623191.davem@davemloft.net>
+	id S1422959AbXBHMdX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Feb 2007 07:33:23 -0500
+Date: Thu, 8 Feb 2007 13:33:16 +0100 (CET)
+From: l.genoni@oltrelinux.com
+X-X-Sender: venom@Phoenix.oltrelinux.com
+To: Robert Hancock <hancockr@shaw.ca>
+cc: Alan <alan@lxorguk.ukuu.org.uk>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Luigi Genoni <genoni@sns.it>, l.genoni@sns.it
+Subject: Re: [BUG?] ata disk running maximum at DMA33 with 2.6.20 and new
+ pata driver, NV CK804 ide controller.
+In-Reply-To: <45CAA8EA.2010505@shaw.ca>
+Message-ID: <Pine.LNX.4.64.0702081332330.24105@Phoenix.oltrelinux.com>
+References: <fa.xQT7YaGQERXkjuW4tC35jsdiTD0@ifi.uio.no>
+ <fa.Bv1nbk8Z669RxoYF6zPFpsCsyd4@ifi.uio.no> <45CAA8EA.2010505@shaw.ca>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070208.040003.112623191.davem@davemloft.net>
-Organization: Palacky University in Olomouc, experimental physics department.
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Oleg Verych <olecom@flower.upol.cz>
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 08, 2007 at 04:00:03AM -0800, David Miller wrote:
-> From: Paul Mackerras <paulus@samba.org>
-> Date: Thu, 8 Feb 2007 22:10:54 +1100
-[]
-> Linus and Oleg tried to fix it with various subsequent changes
-> to scripts/Kbuild.include, but it's still broken.
+Well, the cable is OK, of course I checked.
 
-And Roland McGrath, but it turned to be very bad.
+On Wed, 7 Feb 2007, Robert Hancock wrote:
 
-Maybe you have older set of fixes. I have x86-64 and i386 built,
-though with make 3.81(debian).
-
-But it may be ppc specific, as
-
-        CFLAGS += $(call cc-option,-mcpu=970)
-	else
-	CFLAGS += $(call cc-option,-mcpu=power4)
-
-may be turned to be options without spaces (make V=1)!
-
-> For some reason $(call ...) invocations add spaces.  I tried
-> another test case:
+> Date: Wed, 07 Feb 2007 22:36:58 -0600
+> From: Robert Hancock <hancockr@shaw.ca>
+> To: Alan <alan@lxorguk.ukuu.org.uk>,
+>     linux-kernel <linux-kernel@vger.kernel.org>
+> Cc: Luigi Genoni <genoni@sns.it>
+> Subject: Re: [BUG?] ata disk running maximum at DMA33 with 2.6.20 and new pata
+>      driver, NV CK804 ide controller.
+> Resent-Date: Thu, 08 Feb 2007 05:47:22 +0100
+> Resent-From: <l.genoni@sns.it>
 > 
-> define test
->  $(shell echo -n)
-> endef
-> 
-> VAR:=$(call test)
-> 
-> all:
-> 	@echo "\'$(VAR)\'"
-> 
-> And this always prints:
-> 
-> ' TEST'
-> 
-> even with GNU Make version 3.81
-> 
-> If I put a $(strip ...) around the define, the space is
-> still there.  If I put the $(strip ...) around VAR's
-> $(call), the space goes away.
-
-____
+> Alan wrote:
+>> On Wed, 7 Feb 2007 01:19:36 +0100
+>> Luigi Genoni <genoni@sns.it> wrote:
+>> 
+>>> Hi,
+>>> since upgrading to kernel 2.6.20 my pata disk, using new pata driver, is
+>>> initialized maximum  in DMA33 mode (and obviously performances drop 
+>>> consequently), as you can see from:
+>> 
+>> Interesting.
+>> 
+>>> Willing to test any patch.
+>> 
+>> Firstly can you see if its consistently the case that booting 2.6.20
+>> gives UDMA33 and 2.6.19 UDMA100 over a few reboots. If it is please drop
+>> the 2.6.19 drivers/ata/pamd_amd into 2.6.20 and try that.
+>
+> As an aside to this sort of problem, shouldn't we print some kind of loud 
+> message in dmesg when we force a high-UDMA-capable device down to UDMA33 due 
+> to a 40-wire cable detection? In the case where it truly is a 40-wire cable 
+> the user may want to know that and replace the cable, if it isn't it gives 
+> more of a hint of why the drive isn't running at full speed..
+>
+> -- 
+> Robert Hancock      Saskatoon, SK, Canada
+> To email, remove "nospam" from hancockr@nospamshaw.ca
+> Home Page: http://www.roberthancock.com/
+>
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
