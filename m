@@ -1,49 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933356AbXBHDCG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422743AbXBHDJB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933356AbXBHDCG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Feb 2007 22:02:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933359AbXBHDCG
+	id S1422743AbXBHDJB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Feb 2007 22:09:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422741AbXBHDJA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Feb 2007 22:02:06 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:51918 "EHLO smtp.osdl.org"
+	Wed, 7 Feb 2007 22:09:00 -0500
+Received: from koto.vergenet.net ([210.128.90.7]:59874 "EHLO koto.vergenet.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933356AbXBHDCD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Feb 2007 22:02:03 -0500
-Date: Wed, 7 Feb 2007 19:01:53 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Richard Purdie <rpurdie@rpsys.net>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Marcin Juszkiewicz <openembedded@hrw.one.pl>
-Subject: Re: Git backlight subsystem tree
-Message-Id: <20070207190153.4acd6006.akpm@linux-foundation.org>
-In-Reply-To: <1170901826.5859.2.camel@localhost.localdomain>
-References: <1170901826.5859.2.camel@localhost.localdomain>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S965650AbXBHDJA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Feb 2007 22:09:00 -0500
+Date: Thu, 8 Feb 2007 11:20:51 +0900
+From: Horms <horms@verge.net.au>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Daniel Drake <dsd@gentoo.org>, Andrew Morton <akpm@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       David Howells <dhowells@redhat.com>
+Subject: Re: [PATCH 3/6] workqueue: make cancel_rearming_delayed_workqueue() work on idle dwork
+Message-ID: <20070208022051.GC17585@verge.net.au>
+References: <20070206233016.GA108@tv-sign.ru> <45C9E320.3070001@gentoo.org> <20070207151630.GA138@tv-sign.ru> <20070207174355.GA340@tv-sign.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070207174355.GA340@tv-sign.ru>
+User-Agent: mutt-ng/devel-r804 (Debian)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 08 Feb 2007 02:30:26 +0000 Richard Purdie <rpurdie@rpsys.net> wrote:
-
-> I'm thinking of more officially volunteering to maintain the Linux
-> backlight class/subsystem and have been trying to sort out the various
-> pending patches. I've made a backlight tree available as:
+On Wed, Feb 07, 2007 at 08:43:55PM +0300, Oleg Nesterov wrote:
+> On 02/07, Oleg Nesterov wrote:
+> > 
+> > The following code
+> > 
+> > 	schedule_delayed_work(dw);
+> > 	cancel_rearming_delayed_workqueue(dw);	// OK
+> > 	cancel_rearming_delayed_workqueue(dw);	// HANGS!
+> > 
+> > still doesn't work.
 > 
-> http://git.o-hand.com/?p=linux-rpurdie-backlight;a=shortlog;h=for-mm
+> I think we have another problem with delayed_works.
 > 
-> (or git://git.o-hand.com/linux-rpurdie-backlight)
+> cancel_rearming_delayed_workqueue() doesn't garantee that the ->func() is not
+> running upon return. I don't know if it is bug or not, the comment says nothing
+> about that.
 > 
-> This has a for-mm branch containing the backlight patches I've sorted
-> out so far. I still have some others left to deal with which are
-> probably more invasive and will need discussion and testing which I'll
-> send some mails about soon.
+> However, we have the callers which seem to assume the opposite, example
+> 
+> 	net/ipv4/ipvs/ip_vs_core.c
+> 
+> 		module_exit
+> 		    ip_vs_cleanup
+> 		        ip_vs_control_cleanup
+> 		            cancel_rearming_delayed_work
+> 		// done
+> 
+> This is unsafe. The module may be unloaded and the memory may be freed
+> while defense_work_handler() is still running/preempted.
+> 
+> Unless I missed something, which side should be fixed?
 
-No probs,  I added git://git.o-hand.com/linux-rpurdie-backlight#for-mm to
--mm as git-backlight.patch.
+Assuming the decision is to fix the ipvs side, is the fix
+just to remove the call to cancel_rearming_delayed_work() in
+ip_vs_control_cleanup() ?
 
-> I'm planning to setup an LED drivers/class tree too, I have a couple of
-> pending patches for that.
+-- 
+Horms
+  H: http://www.vergenet.net/~horms/
+  W: http://www.valinux.co.jp/en/
 
-ooh, patches!
