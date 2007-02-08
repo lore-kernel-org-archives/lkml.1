@@ -1,53 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422845AbXBHHVd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030664AbXBHHd1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422845AbXBHHVd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Feb 2007 02:21:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030670AbXBHHVd
+	id S1030664AbXBHHd1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Feb 2007 02:33:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030663AbXBHHd1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Feb 2007 02:21:33 -0500
-Received: from mtagate4.de.ibm.com ([195.212.29.153]:37851 "EHLO
-	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030668AbXBHHVc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Feb 2007 02:21:32 -0500
-In-Reply-To: <yq17iut7b51.fsf@sermon.lab.mkp.net>
-To: martin.petersen@oracle.com, cebbert@redhat.com,
-       james.bottomley@steeleye.com, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, randy.dunlap@oracle.com
+	Thu, 8 Feb 2007 02:33:27 -0500
+Received: from raven.upol.cz ([158.194.120.4]:50346 "EHLO raven.upol.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030664AbXBHHd0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Feb 2007 02:33:26 -0500
+Date: Thu, 8 Feb 2007 08:42:13 +0100
+To: Mike Frysinger <vapier.adi@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Roman Zippel <zippel@linux-m68k.org>, sam@ravnborg.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kai Germaschewski <kai@germaschewski.name>
+Subject: Re: search-a-little-harder-for-mkimage.patch
+Message-ID: <20070208074213.GR22699@flower.upol.cz>
+References: <20070207165204.GA5537@martell.zuzino.mipt.ru> <Pine.LNX.4.64.0702071846180.14457@scrub.home> <20070207220435.GC22699@flower.upol.cz> <Pine.LNX.4.64.0702080029030.14457@scrub.home> <Pine.LNX.4.64.0702071546420.8424@woody.linux-foundation.org> <20070207203047.51a95ad0.akpm@linux-foundation.org> <20070208052439.GL22699@flower.upol.cz> <8bd0f97a0702072156q640d49b8of5f81a60b380ef81@mail.gmail.com>
 MIME-Version: 1.0
-Subject: Re: [patch] Re: SCSI logging sucks
-X-Mailer: Lotus Notes Release 7.0 HF277 June 21, 2006
-From: Volker Sameske <SAMESKE@de.ibm.com>
-X-MIMETrack: S/MIME Sign by Notes Client on Volker Sameske/Germany/IBM(Release 7.0 HF277|June
- 21, 2006) at 08.02.2007 08:20:16,
-	Serialize by Notes Client on Volker Sameske/Germany/IBM(Release 7.0 HF277|June
- 21, 2006) at 08.02.2007 08:20:16,
-	Serialize complete at 08.02.2007 08:20:16,
-	S/MIME Sign failed at 08.02.2007 08:20:16: The cryptographic key was not
- found,
-	Serialize by Router on D12ML067/12/M/IBM(Release 6.5.5HF882 | September 26, 2006) at
- 08/02/2007 08:21:28,
-	Serialize complete at 08/02/2007 08:21:28
-Message-ID: <OF1C4B234E.A190DBFA-ONC125727C.0027B4A0-C125727C.002852B5@de.ibm.com>
-Date: Thu, 8 Feb 2007 08:21:26 +0100
-Content-Type: text/plain; charset="US-ASCII"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <8bd0f97a0702072156q640d49b8of5f81a60b380ef81@mail.gmail.com>
+Organization: Palacky University in Olomouc, experimental physics department.
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Oleg Verych <olecom@flower.upol.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> There's a very convenient script called scsi_logging_level included in
-> (of all things) the s390-tools package.
+On Thu, Feb 08, 2007 at 12:56:17AM -0500, Mike Frysinger wrote:
+> On 2/8/07, Oleg Verych <olecom@flower.upol.cz> wrote:
+> >> Check to see if `${CROSS_COMPILE}mkimage` exists and if not, fall back to
+> >> the standard `mkimage`
+> >
+> >Why this can't be done by
+> >
+> >  PATH=$CROSS_COMPILE:$PATH
+> >
+> >in your environment?
 > 
-> Maybe provide a pointer to it -- or even just include it.  It's not
-> very big...
+> because it wouldnt matter ?  the tool is called
+> "$CROSS_COMPILE-mkimage", it isnt $CROSS_COMPILE_PATH/mkimage
+
+Well, i mean search for your `mkimage'.
+
+Let's see how all this used in Makefiles (avr32, ppc, sh are same)
+
+../arch/arm/boot/Makefile:
+
+   MKIMAGE         := $(srctree)/scripts/mkuboot.sh
+   ...
+   quiet_cmd_uimage = UIMAGE  $@
+         cmd_uimage = $(CONFIG_SHELL) $(MKIMAGE) -A arm -O linux -T kernel \
+                   -C none -a $(ZRELADDR) -e $(ZRELADDR) \
+                   -n 'Linux-$(KERNELRELEASE)' -d $< $@
+
+type, which with bash or whatever, doesn't matter. All they need *your*
+toolchain in $PATH, why not just to put "$CROSS_COMPILE-mkimage" instead
+of $(CONFIG_SHELL) $(MKIMAGE) here? mkuboot.sh just searches $PATH for
+mkimage and run it. Double overkill, no?
+
+> >> The Blackfin toolchain includes mkimage, but we dont want to namespace
+> >> collide with any of the user's system setup, so we prefix it with our
+> >> toolchain name.
+> >
+> >If that matter, `type -path' is bashizm (BloAted SHell), and "blackbox"
+> >with "dash" (very good `sh' equivalents) will fail. I would recomend to
+> >use "which" command (btw, Debian has `sh' version of it), if you
+> >concerned about size and performance.
+> >
+> >Nack + proposition to move from `bash' to `sh'.
 > 
-> 
-http://www-128.ibm.com/developerworks/linux/linux390/s390-tools-1.5.4.html
+> the script already uses "#!/bin/bash" and the patch doesnt change any
+> of the existing conventions ... so if you want to rewrite the existing
+> code to be POSIX compliant, then do so so i can add back in support
+> for $CROSS_COMPILE-mkimage
 
-The scsi_logging_level script is described here in chapter 8:
-http://download.boulder.ibm.com/ibmdl/pub/software/dw/linux390/docu/l26cts01.pdf
-
-and here on page 312:
-http://download.boulder.ibm.com/ibmdl/pub/software/dw/linux390/docu/l26cdd02.pdf
-
-regards,
-Volker
+To run faster, but let me stop here.
+____
