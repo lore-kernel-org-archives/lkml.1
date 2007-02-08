@@ -1,221 +1,326 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423450AbXBHVs6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423481AbXBHVyb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423450AbXBHVs6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Feb 2007 16:48:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423453AbXBHVs6
+	id S1423481AbXBHVyb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Feb 2007 16:54:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423482AbXBHVyb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Feb 2007 16:48:58 -0500
-Received: from scrub.xs4all.nl ([194.109.195.176]:34870 "EHLO scrub.xs4all.nl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423450AbXBHVs5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Feb 2007 16:48:57 -0500
-Date: Thu, 8 Feb 2007 22:48:51 +0100 (CET)
-From: Roman Zippel <zippel@linux-m68k.org>
-X-X-Sender: roman@scrub.home
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: linux-kernel@vger.kernel.org, Oleg Verych <olecom@flower.upol.cz>
-Subject: The who needs reviews anyways [PATCH]
-Message-ID: <Pine.LNX.4.64.0702082227020.14457@scrub.home>
+	Thu, 8 Feb 2007 16:54:31 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:53246 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423481AbXBHVya (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Feb 2007 16:54:30 -0500
+Date: Thu, 8 Feb 2007 21:54:21 +0000 (GMT)
+From: James Simmons <jsimmons@infradead.org>
+To: Greg KH <greg@kroah.com>
+cc: Richard Purdie <rpurdie@rpsys.net>, LKML <linux-kernel@vger.kernel.org>,
+       akpm <akpm@linux-foundation.org>,
+       Marcin Juszkiewicz <openembedded@hrw.one.pl>
+Subject: Re: Git backlight subsystem tree
+In-Reply-To: <20070208212314.GA21165@kroah.com>
+Message-ID: <Pine.LNX.4.64.0702082154040.7686@pentafluge.infradead.org>
+References: <1170901826.5859.2.camel@localhost.localdomain>
+ <Pine.LNX.4.64.0702081520110.824@pentafluge.infradead.org>
+ <1170957595.5849.11.camel@localhost.localdomain>
+ <Pine.LNX.4.64.0702081830520.7686@pentafluge.infradead.org>
+ <20070208212314.GA21165@kroah.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-This adds the remaining changes which should have been part of the review 
-process. Oleg could have learned something in process, but who needs that 
-if wasting everyones time is so much more fun...
+> On Thu, Feb 08, 2007 at 06:32:02PM +0000, James Simmons wrote:
+> > On Thu, 8 Feb 2007, Richard Purdie wrote:
+> > 
+> > > On Thu, 2007-02-08 at 15:28 +0000, James Simmons wrote:
+> > > > I have some patches that move the backlight away from using the class 
+> > > > stuff. The only problem is the patch requires all backlight devices 
+> > > > to be linked to a real struct device. Right now the acpi backligths are 
+> > > > not.
+> > > 
+> > > Why would you want to do that?
+> > > 
+> > > The whole point of having this is so that backlights appear as a
+> > > standard interface under /sys/class/backlight.
+> > > 
+> > > An example of why standardised interfaces are good would be someone
+> > > writing an applet for a handheld to control the backlight brightness.
+> > > With the class in place, the applet can easily work with any backlight.
+> > > Without it, it has to be written for each backlight.
+> > > 
+> > > So this is a very strong NAK but I'm curious why you'd want to do it...
+> > 
+> > I CC Greg to explain. The backlight class didn't go away. The way it is 
+> > handled is different.
+> 
+> Have a pointer to the patch so I can help explain better?
+> 
+> As a short summary, 'struct class_device' is going away.  Using a
+> 'struct device' in its place is what the conversion should have just
+> done, no functionality change otherwise.
 
-Sorry for the delay, but the git server were gone.
-
-- the define command is inappropriate (it's primarily for rule 
-  definitions)
-- execute commands in the current dir as all other commands
-- .*.tmp (but not .*.null) files are also removed up by "make clean"
-- printf has other side effects, instead stop pretending we support 
-  something else than bash
-- proper quoting
-- proper indentation
-
-bye, Roman
-
-Signed-off-by: Roman Zippel <zippel@linux-m68k.org>
-
----
- Makefile               |    9 ++++--
- scripts/Kbuild.include |   72 ++++++++++++++++++++++++-------------------------
- 2 files changed, 42 insertions(+), 39 deletions(-)
-
-Index: linux-2.6/Makefile
-===================================================================
---- linux-2.6.orig/Makefile
-+++ linux-2.6/Makefile
-@@ -192,8 +192,11 @@ KCONFIG_CONFIG	?= .config
+diff --git a/drivers/video/backlight/backlight.c b/drivers/video/backlight/backlight.c
+index 9601bfe..b56fc33 100644
+--- a/drivers/video/backlight/backlight.c
++++ b/drivers/video/backlight/backlight.c
+@@ -14,6 +14,8 @@
+ #include <linux/err.h>
+ #include <linux/fb.h>
  
- # SHELL used by kbuild
- CONFIG_SHELL := $(shell if [ -x "$$BASH" ]; then echo $$BASH; \
--	  else if [ -x /bin/bash ]; then echo /bin/bash; \
--	  else echo sh; fi ; fi)
-+	  else if [ -x /bin/bash ]; then echo /bin/bash; fi; fi)
-+ifeq ($(CONFIG_SHELL),)
-+$(error bash is required to build the kernel)
-+endif
-+SHELL := $(CONFIG_SHELL)
++struct class *backlight_class;
++static int index;
  
- HOSTCC       = gcc
- HOSTCXX      = g++
-@@ -321,7 +324,7 @@ KERNELRELEASE = $(shell cat include/conf
- KERNELVERSION = $(VERSION).$(PATCHLEVEL).$(SUBLEVEL)$(EXTRAVERSION)
+ #if defined(CONFIG_FB) || (defined(CONFIG_FB_MODULE) && \
+ 			   defined(CONFIG_BACKLIGHT_CLASS_DEVICE_MODULE))
+@@ -67,10 +69,11 @@ static inline void backlight_unregister_fb(struct backlight_device *bd)
+ }
+ #endif /* CONFIG_FB */
  
- export VERSION PATCHLEVEL SUBLEVEL KERNELRELEASE KERNELVERSION
--export ARCH CONFIG_SHELL HOSTCC HOSTCFLAGS CROSS_COMPILE AS LD CC
-+export ARCH CONFIG_SHELL SHELL HOSTCC HOSTCFLAGS CROSS_COMPILE AS LD CC
- export CPP AR NM STRIP OBJCOPY OBJDUMP MAKE AWK GENKSYMS PERL UTS_MACHINE
- export HOSTCXX HOSTCXXFLAGS LDFLAGS_MODULE CHECK CHECKFLAGS
+-static ssize_t backlight_show_power(struct class_device *cdev, char *buf)
++static ssize_t backlight_show_power(struct device *dev, struct device_attribute *attr,
++					char *buf)
+ {
+ 	int rc = -ENXIO;
+-	struct backlight_device *bd = to_backlight_device(cdev);
++	struct backlight_device *bd = dev_get_drvdata(dev);
  
-Index: linux-2.6/scripts/Kbuild.include
-===================================================================
---- linux-2.6.orig/scripts/Kbuild.include
-+++ linux-2.6/scripts/Kbuild.include
-@@ -1,7 +1,7 @@
- ####
- # kbuild: Generic definitions
+ 	down(&bd->sem);
+ 	if (likely(bd->props))
+@@ -80,11 +83,12 @@ static ssize_t backlight_show_power(struct class_device *cdev, char *buf)
+ 	return rc;
+ }
  
--# Convenient constants
-+# Convenient variables
- comma   := ,
- squote  := '
- empty   :=
-@@ -56,44 +56,48 @@ endef
- # gcc support functions
- # See documentation in Documentation/kbuild/makefiles.txt
+-static ssize_t backlight_store_power(struct class_device *cdev, const char *buf, size_t count)
++static ssize_t backlight_store_power(struct device *dev, struct device_attribute *attr,
++					const char *buf, size_t count)
+ {
+ 	int rc = -ENXIO;
+ 	char *endp;
+-	struct backlight_device *bd = to_backlight_device(cdev);
++	struct backlight_device *bd = dev_get_drvdata(dev);
+ 	int power = simple_strtoul(buf, &endp, 0);
+ 	size_t size = endp - buf;
  
--# checker-shell
--# Usage: option = $(call checker-shell,$(CC)...-o $$OUT,option-ok,otherwise)
--# Exit code chooses option. $$OUT is safe location for needless output.
--define checker-shell
--$(shell set -e; \
--  DIR=$(KBUILD_EXTMOD); \
--  cd $${DIR:-$(objtree)}; \
--  OUT=$$PWD/.$$$$.null; \
--  if $(1) >/dev/null 2>&1; \
--    then echo "$(2)"; \
--    else echo "$(3)"; \
--  fi; \
--  rm -f $$OUT)
--endef
-+# output directory for tests below
-+TMPOUT := $(if $(KBUILD_EXTMOD),$(firstword $(KBUILD_EXTMOD))/)
+@@ -106,10 +110,11 @@ static ssize_t backlight_store_power(struct class_device *cdev, const char *buf,
+ 	return rc;
+ }
+ 
+-static ssize_t backlight_show_brightness(struct class_device *cdev, char *buf)
++static ssize_t backlight_show_brightness(struct device *dev, struct device_attribute *attr,
++						char *buf)
+ {
+ 	int rc = -ENXIO;
+-	struct backlight_device *bd = to_backlight_device(cdev);
++	struct backlight_device *bd = dev_get_drvdata(dev);
+ 
+ 	down(&bd->sem);
+ 	if (likely(bd->props))
+@@ -119,11 +124,12 @@ static ssize_t backlight_show_brightness(struct class_device *cdev, char *buf)
+ 	return rc;
+ }
+ 
+-static ssize_t backlight_store_brightness(struct class_device *cdev, const char *buf, size_t count)
++static ssize_t backlight_store_brightness(struct device *dev, struct device_attribute *attr,
++						const char *buf, size_t count)
+ {
+ 	int rc = -ENXIO;
+ 	char *endp;
+-	struct backlight_device *bd = to_backlight_device(cdev);
++	struct backlight_device *bd = dev_get_drvdata(dev);
+ 	int brightness = simple_strtoul(buf, &endp, 0);
+ 	size_t size = endp - buf;
+ 
+@@ -150,10 +156,11 @@ static ssize_t backlight_store_brightness(struct class_device *cdev, const char
+ 	return rc;
+ }
+ 
+-static ssize_t backlight_show_max_brightness(struct class_device *cdev, char *buf)
++static ssize_t backlight_show_max_brightness(struct device *dev, struct device_attribute *attr,
++						char *buf)
+ {
+ 	int rc = -ENXIO;
+-	struct backlight_device *bd = to_backlight_device(cdev);
++	struct backlight_device *bd = dev_get_drvdata(dev);
+ 
+ 	down(&bd->sem);
+ 	if (likely(bd->props))
+@@ -163,11 +170,11 @@ static ssize_t backlight_show_max_brightness(struct class_device *cdev, char *bu
+ 	return rc;
+ }
+ 
+-static ssize_t backlight_show_actual_brightness(struct class_device *cdev,
++static ssize_t backlight_show_actual_brightness(struct device *dev, struct device_attribute *attr,
+ 						char *buf)
+ {
++	struct backlight_device *bd = dev_get_drvdata(dev);
+ 	int rc = -ENXIO;
+-	struct backlight_device *bd = to_backlight_device(cdev);
+ 
+ 	down(&bd->sem);
+ 	if (likely(bd->props && bd->props->get_brightness))
+@@ -177,31 +184,12 @@ static ssize_t backlight_show_actual_brightness(struct class_device *cdev,
+ 	return rc;
+ }
+ 
+-static void backlight_class_release(struct class_device *dev)
+-{
+-	struct backlight_device *bd = to_backlight_device(dev);
+-	kfree(bd);
+-}
+-
+-static struct class backlight_class = {
+-	.name = "backlight",
+-	.release = backlight_class_release,
+-};
+-
+-#define DECLARE_ATTR(_name,_mode,_show,_store)			\
+-{							 	\
+-	.attr	= { .name = __stringify(_name), .mode = _mode, .owner = THIS_MODULE },	\
+-	.show	= _show,					\
+-	.store	= _store,					\
+-}
+-
+-static const struct class_device_attribute bl_class_device_attributes[] = {
+-	DECLARE_ATTR(power, 0644, backlight_show_power, backlight_store_power),
+-	DECLARE_ATTR(brightness, 0644, backlight_show_brightness,
+-		     backlight_store_brightness),
+-	DECLARE_ATTR(actual_brightness, 0444, backlight_show_actual_brightness,
+-		     NULL),
+-	DECLARE_ATTR(max_brightness, 0444, backlight_show_max_brightness, NULL),
++static struct device_attribute bl_class_device_attributes[] = {
++	__ATTR(power, S_IRUGO | S_IWUSR, backlight_show_power, backlight_store_power),
++	__ATTR(brightness, S_IRUGO | S_IWUSR, backlight_show_brightness,
++		backlight_store_brightness),
++	__ATTR(actual_brightness, S_IRUGO, backlight_show_actual_brightness, NULL),
++	__ATTR(max_brightness, S_IRUGO, backlight_show_max_brightness, NULL),
+ };
+ 
+ /**
+@@ -217,12 +205,11 @@ static const struct class_device_attribute bl_class_device_attributes[] = {
+  * ERR_PTR() or a pointer to the newly allocated device.
+  */
+ struct backlight_device *backlight_device_register(const char *name,
+-	struct device *dev,
+-	void *devdata,
++	struct device *parent, void *devdata,
+ 	struct backlight_properties *bp)
+ {
+-	int i, rc;
+ 	struct backlight_device *new_bd;
++	int rc;
+ 
+ 	pr_debug("backlight_device_alloc: name=%s\n", name);
+ 
+@@ -230,37 +217,21 @@ struct backlight_device *backlight_device_register(const char *name,
+ 	if (unlikely(!new_bd))
+ 		return ERR_PTR(-ENOMEM);
+ 
++	new_bd->device = device_create(backlight_class, parent, 0,
++					name, index++);
++	if (IS_ERR(new_bd->device)) {
++		new_bd->device = NULL;
++		return ERR_PTR(-EINVAL);
++	}
 +
-+# try-run
-+# Usage: option = $(call try-run, $(CC)...-o "$$TMP",option-ok,otherwise)
-+# Exit code chooses option. "$$TMP" is can be used as temporary file and
-+# is automatically cleaned up.
-+try-run = $(shell set -e;		\
-+	TMP="$(TMPOUT).$$$$.tmp";	\
-+	if ($(1)) >/dev/null 2>&1;	\
-+	then echo "$(2)";		\
-+	else echo "$(3)";		\
-+	fi;				\
-+	rm -f "$$TMP")
+ 	init_MUTEX(&new_bd->sem);
++	dev_set_drvdata(new_bd->device, devdata);
+ 	new_bd->props = bp;
+-	memset(&new_bd->class_dev, 0, sizeof(new_bd->class_dev));
+-	new_bd->class_dev.class = &backlight_class;
+-	new_bd->class_dev.dev = dev;
+-	strlcpy(new_bd->class_dev.class_id, name, KOBJ_NAME_LEN);
+-	class_set_devdata(&new_bd->class_dev, devdata);
  
- # as-option
- # Usage: cflags-y += $(call as-option,-Wa$(comma)-isa=foo,)
--as-option = $(call checker-shell,\
--   $(CC) $(CFLAGS) $(1) -c -xassembler /dev/null -o $$OUT,$(1),$(2))
-+
-+as-option = $(call try-run,\
-+	$(CC) $(CFLAGS) $(1) -c -xassembler /dev/null -o "$$TMP",$(1),$(2))
+-	rc = class_device_register(&new_bd->class_dev);
++	rc = backlight_register_fb(new_bd);
+ 	if (unlikely(rc)) {
+-error:		kfree(new_bd);
+-		return ERR_PTR(rc);
+-	}
  
- # as-instr
- # Usage: cflags-y += $(call as-instr,instr,option1,option2)
--as-instr = $(call checker-shell,\
--   printf "$(1)" | $(CC) $(AFLAGS) -c -xassembler -o $$OUT -,$(2),$(3))
-+
-+as-instr = $(call try-run,\
-+	echo -e "$(1)" | $(CC) $(AFLAGS) -c -xassembler -o "$$TMP" -,$(2),$(3))
+-	rc = backlight_register_fb(new_bd);
+-	if (unlikely(rc))
+-		goto error;
+-
+-	for (i = 0; i < ARRAY_SIZE(bl_class_device_attributes); i++) {
+-		rc = class_device_create_file(&new_bd->class_dev,
+-					      &bl_class_device_attributes[i]);
+-		if (unlikely(rc)) {
+-			while (--i >= 0)
+-				class_device_remove_file(&new_bd->class_dev,
+-							 &bl_class_device_attributes[i]);
+-			class_device_unregister(&new_bd->class_dev);
+-			/* No need to kfree(new_bd) since release() method was called */
+-			return ERR_PTR(rc);
+-		}
+ 	}
+-
+ 	return new_bd;
+ }
+ EXPORT_SYMBOL(backlight_device_register);
+@@ -273,35 +244,36 @@ EXPORT_SYMBOL(backlight_device_register);
+  */
+ void backlight_device_unregister(struct backlight_device *bd)
+ {
+-	int i;
+-
+ 	if (!bd)
+ 		return;
  
- # cc-option
- # Usage: cflags-y += $(call cc-option,-march=winchip-c6,-march=i586)
--cc-option = $(call checker-shell,\
--   $(CC) $(CFLAGS) $(if $(3),$(3),$(1)) -S -xc /dev/null -o $$OUT,$(1),$(2))
-+
-+cc-option = $(call try-run,\
-+	$(CC) $(CFLAGS) $(1) -S -xc /dev/null -o "$$TMP",$(1),$(2))
+-	pr_debug("backlight_device_unregister: name=%s\n", bd->class_dev.class_id);
+-
+-	for (i = 0; i < ARRAY_SIZE(bl_class_device_attributes); i++)
+-		class_device_remove_file(&bd->class_dev,
+-					 &bl_class_device_attributes[i]);
++	pr_debug("backlight_device_unregister\n");
  
- # cc-option-yn
- # Usage: flag := $(call cc-option-yn,-march=winchip-c6)
--cc-option-yn = $(call cc-option,"y","n",$(1))
-+cc-option-yn = $(call try-run,\
-+	$(CC) $(CFLAGS) $(1) -S -xc /dev/null -o "$$TMP",y,n)
+ 	down(&bd->sem);
+ 	bd->props = NULL;
+ 	up(&bd->sem);
  
- # cc-option-align
- # Prefix align with either -falign or -malign
- cc-option-align = $(subst -functions=0,,\
--   $(call cc-option,-falign-functions=0,-malign-functions=0))
-+	$(call cc-option,-falign-functions=0,-malign-functions=0))
+ 	backlight_unregister_fb(bd);
+-
+-	class_device_unregister(&bd->class_dev);
++	dev_set_drvdata(bd->device, NULL);
++	device_unregister(bd->device);
+ }
+ EXPORT_SYMBOL(backlight_device_unregister);
  
- # cc-version
- # Usage gcc-ver := $(call cc-version,$(CC))
-@@ -105,24 +109,22 @@ cc-ifversion = $(shell [ $(call cc-versi
+ static void __exit backlight_class_exit(void)
+ {
+-	class_unregister(&backlight_class);
++	class_destroy(backlight_class);
+ }
  
- # ld-option
- # Usage: ldflags += $(call ld-option, -Wl$(comma)--hash-style=both)
--ld-option = $(call checker-shell,\
--   $(CC) $(1) -nostdlib -xc /dev/null -o $$OUT,$(1),$(2))
-+ld-option = $(call try-run,\
-+	$(CC) $(1) -nostdlib -xc /dev/null -o "$$TMP",$(1),$(2))
+ static int __init backlight_class_init(void)
+ {
+-	return class_register(&backlight_class);
++	backlight_class = class_create(THIS_MODULE, "backlight");
++	if (IS_ERR(backlight_class)) {
++		printk(KERN_WARNING "Unable to create backlight class; errno = %ld\n",
++			PTR_ERR(backlight_class));
++		backlight_class = NULL;
++	} else
++		backlight_class->dev_attrs = bl_class_device_attributes;
++	return 0;
+ }
  
- ######
+ /*
+diff --git a/include/linux/backlight.h b/include/linux/backlight.h
+index a5cf1be..d593266 100644
+--- a/include/linux/backlight.h
++++ b/include/linux/backlight.h
+@@ -49,8 +49,10 @@ struct backlight_device {
+ 	struct backlight_properties *props;
+ 	/* The framebuffer notifier block */
+ 	struct notifier_block fb_notif;
+-	/* The class device structure */
+-	struct class_device class_dev;
++	/* Parent device */
++	struct device *parent;
++	/* The device structure */
++	struct device *device;
+ };
  
-+###
- # Shorthand for $(Q)$(MAKE) -f scripts/Makefile.build obj=
- # Usage:
- # $(Q)$(MAKE) $(build)=dir
- build := -f $(if $(KBUILD_SRC),$(srctree)/)scripts/Makefile.build obj
- 
--# Prefix -I with $(srctree) if it is not an absolute path,
--# add original to the end
--addtree = $(if \
--	$(filter-out -I/%,$(1)),$(patsubst -I%,-I$(srctree)/%,$(1))) $(1)
-+# Prefix -I with $(srctree) if it is not an absolute path.
-+addtree = $(if $(filter-out -I/%,$(1)),$(patsubst -I%,-I$(srctree)/%,$(1))) $(1)
- 
- # Find all -I options and call addtree
--flags = $(foreach o,$($(1)),\
--	$(if $(filter -I%,$(o)),$(call addtree,$(o)),$(o)))
-+flags = $(foreach o,$($(1)),$(if $(filter -I%,$(o)),$(call addtree,$(o)),$(o)))
- 
- # echo command.
- # Short version is used, if $(quiet) equals `quiet_', otherwise full one.
-@@ -144,7 +146,7 @@ objectify = $(foreach o,$(1),$(if $(filt
- # See Documentation/kbuild/makefiles.txt for more info
- 
- ifneq ($(KBUILD_NOCMDDEP),1)
--# Check if both arguments has same arguments. Result is empty string, if equal.
-+# Check if both arguments has same arguments. Result is empty string if equal.
- # User may override this check using make KBUILD_NOCMDDEP=1
- arg-check = $(strip $(filter-out $(cmd_$(1)), $(cmd_$@)) \
-                     $(filter-out $(cmd_$@),   $(cmd_$(1))) )
-@@ -168,7 +170,6 @@ if_changed = $(if $(strip $(any-prereq) 
- 	echo 'cmd_$@ := $(make-cmd)' > $(dot-target).cmd)
- 
- # Execute the command and also postprocess generated .d dependencies file.
--#
- if_changed_dep = $(if $(strip $(any-prereq) $(arg-check) ),                  \
- 	@set -e;                                                             \
- 	$(echo-cmd) $(cmd_$(1));                                             \
-@@ -176,10 +177,9 @@ if_changed_dep = $(if $(strip $(any-prer
- 	rm -f $(depfile);                                                    \
- 	mv -f $(dot-target).tmp $(dot-target).cmd)
- 
--# Will check if $(cmd_foo) changed, or any of the prerequisites changed,
--# and if so will execute $(rule_foo).
- # Usage: $(call if_changed_rule,foo)
--#
-+# Will check if $(cmd_foo) or any of the prerequisites changed,
-+# and if so will execute $(rule_foo).
- if_changed_rule = $(if $(strip $(any-prereq) $(arg-check) ),                 \
- 	@set -e;                                                             \
- 	$(rule_$(1)))
+ extern struct backlight_device *backlight_device_register(const char *name,
