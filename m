@@ -1,49 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422895AbXBHC23@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422894AbXBHCak@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422895AbXBHC23 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Feb 2007 21:28:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422828AbXBHC23
+	id S1422894AbXBHCak (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Feb 2007 21:30:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422902AbXBHCaj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Feb 2007 21:28:29 -0500
-Received: from [61.48.53.82] ([61.48.53.82]:58157 "EHLO freya.yggdrasil.com"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1422894AbXBHC23 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Feb 2007 21:28:29 -0500
-X-Greylist: delayed 780 seconds by postgrey-1.27 at vger.kernel.org; Wed, 07 Feb 2007 21:28:16 EST
-Date: Thu, 8 Feb 2007 10:16:52 +0800
-From: "Adam J. Richter" <adam@yggdrasil.com>
-Message-Id: <200702080216.l182Gql0014812@freya.yggdrasil.com>
-To: adam@yggdrasil.com, patrick.ale@gmail.com
-Subject: Re: hdparm for lib_pata
-Cc: linux-kernel@vger.kernel.org, Stephen.Clark@seclark.us
+	Wed, 7 Feb 2007 21:30:39 -0500
+Received: from tim.rpsys.net ([194.106.48.114]:36533 "EHLO tim.rpsys.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1422894AbXBHCaj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Feb 2007 21:30:39 -0500
+Subject: Git backlight subsystem tree
+From: Richard Purdie <rpurdie@rpsys.net>
+To: LKML <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>
+Cc: Marcin Juszkiewicz <openembedded@hrw.one.pl>
+Content-Type: text/plain
+Date: Thu, 08 Feb 2007 02:30:26 +0000
+Message-Id: <1170901826.5859.2.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> = Stephen Clark
->> = Adam Richter
->  = Patrick Ale
+I'm thinking of more officially volunteering to maintain the Linux
+backlight class/subsystem and have been trying to sort out the various
+pending patches. I've made a backlight tree available as:
 
->>         Do you know if these drives were advertising less capability
->> than they were spec-ed at?  Do you recall if the IDE driver without
->> kernel arguments printed its rationale for reverting to the slower
->> setting?
+http://git.o-hand.com/?p=linux-rpurdie-backlight;a=shortlog;h=for-mm
 
-[...]
->Then, after 2 hours, and resyncing RAID1 MD 1 devices, I started
->seeing things like:
->"Drive not ready"
->"DMA timeout on ..."
+(or git://git.o-hand.com/linux-rpurdie-backlight)
 
-I was not asking about Patrick's desktop computer, which was already
-established to be hardware problem that was fixed by replacing a
-broken fan.  I was asking about Stephen Clark's two laptop computers,
-which seemed like they might be examples of a need for user level
-hdparm DMA setting, which is why I prefaced my question with the
-following quotation:
+This has a for-mm branch containing the backlight patches I've sorted
+out so far. I still have some others left to deal with which are
+probably more invasive and will need discussion and testing which I'll
+send some mails about soon.
 
->>On 2007-02-04 Stephen Clark wrote:
->>>I have had two different laptops that had to have boot time command line 
->>>overrides to get the
->>>driver to allow the hardware work at what it was spec-ed at.
+I'm planning to setup an LED drivers/class tree too, I have a couple of
+pending patches for that.
 
-Adam Richter
+Cheers,
+
+Richard
+
+
+
