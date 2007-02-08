@@ -1,377 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423383AbXBHVNf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423371AbXBHVNm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423383AbXBHVNf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Feb 2007 16:13:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423388AbXBHVNe
+	id S1423371AbXBHVNm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Feb 2007 16:13:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423389AbXBHVNm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Feb 2007 16:13:34 -0500
-Received: from ug-out-1314.google.com ([66.249.92.169]:28878 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423363AbXBHVNc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Feb 2007 16:13:32 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:references:in-reply-to:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=YTf541+fslLteCLQWrcAKBm72KOeA34QM27TgeF0UgOPgS/yhFrrziEuPUoEYO8ES5UTDREpNmxvVCPTXD2/naoqHOEHRQ2z+s5pEbyvYc5iwqdbxAKo/tZrZO0k9DZUSbOZ5719lsUTnmIjRWw6PB4S19jFkZBHS9H3IiwQwGI=
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-To: netdev@vger.kernel.org
-Subject: [PATCH 2.6.20 1/5] dmfe : trivial/spelling fixes
-Date: Thu, 8 Feb 2007 23:10:18 +0200
-User-Agent: KMail/1.9.4
-References: <200702082305.26735.maximlevitsky@gmail.com>
-In-Reply-To: <200702082305.26735.maximlevitsky@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Thu, 8 Feb 2007 16:13:42 -0500
+Received: from smtp.ono.com ([62.42.230.12]:54365 "EHLO resmaa05.ono.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1423388AbXBHVNk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Feb 2007 16:13:40 -0500
+Date: Thu, 8 Feb 2007 22:13:17 +0100
+From: "J.A. =?UTF-8?B?TWFnYWxsw7Nu?=" <jamagallon@ono.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Jan Engelhardt <jengelh@linux01.gwdg.de>, Jeff Garzik <jeff@garzik.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: somebody dropped a (warning) bomb
+Message-ID: <20070208221317.5beedaeb@werewolf-wl>
+In-Reply-To: <Pine.LNX.4.64.0702081145470.8424@woody.linux-foundation.org>
+References: <45CB3B28.60102@garzik.org>
+	<Pine.LNX.4.64.0702080819350.8424@woody.linux-foundation.org>
+	<Pine.LNX.4.61.0702081851310.1364@yvahk01.tjqt.qr>
+	<Pine.LNX.4.64.0702081145470.8424@woody.linux-foundation.org>
+X-Mailer: Claws Mail 2.7.2cvs25 (GTK+ 2.10.9; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200702082310.18495.maximlevitsky@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: [PATCH 2.6.20 1/5] dmfe : trivial/spelling fixes
+On Thu, 8 Feb 2007 11:53:38 -0800 (PST), Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-Fix a typo, wrap lines on 80-th column, change KERN_ERR to KERN_INFO for
-link status message
+> 
+> 
+> On Thu, 8 Feb 2007, Jan Engelhardt wrote:
+> > 
+> > I generally have to agree with you about the unsigned char* vs char*. It 
+> > is a problem of the C language that char can be signed and unsigned, and 
+> > that people, as a result, have used it for storing 
+> > "shorter_than_short_t"s.
+> > 
+> > What C needs is a distinction between char and int8_t, rendering "char" 
+> > an unsigned at all times basically and making "unsigned char" and 
+> > "signed char" illegal types in turn.
+> 
+> No, it's really more fundamental than that.
+> 
+> Exactly because "char *" doesn't have a defined sign, only a TOTALLY 
+> INCOMPETENT compiler will warn about its signedness.
+> 
 
-Signed-off-by: Maxim Levitsky <maximlevitsky@gmail.com>
+Perhaps the problem is that gcc warns you something like 'if you care
+anything about the sign behaviour of what you send to strlen() you're doomed'.
+Ie, you declared the var unsigned, so you care about it. But I can do
+anything without any regard to the sign.
 
----
-
-
---- linux-2.6.20-orig/drivers/net/tulip/dmfe.c	2007-02-03 11:47:52.000000000 
-+0200
-+++ linux-2.6.20-test/drivers/net/tulip/dmfe.c	2007-02-08 20:29:33.000000000 
-+0200
-@@ -143,9 +143,16 @@
- #define DMFE_TX_TIMEOUT ((3*HZ)/2)	/* tx packet time-out time 1.5 s" */
- #define DMFE_TX_KICK 	(HZ/2)	/* tx packet Kick-out time 0.5 s" */
- 
--#define DMFE_DBUG(dbug_now, msg, value) if (dmfe_debug || (dbug_now)) 
-printk(KERN_ERR DRV_NAME ": %s %lx\n", (msg), (long) (value))
--
--#define SHOW_MEDIA_TYPE(mode) printk(KERN_ERR DRV_NAME ": Change Speed 
-to %sMhz %s duplex\n",mode & 1 ?"100":"10", mode & 4 ? "full":"half");
-+#define DMFE_DBUG(dbug_now, msg, value) \
-+	do { \
-+ 		if (dmfe_debug || (dbug_now)) \
-+			printk(KERN_ERR DRV_NAME ": %s %lx\n",\
-+ 				(msg), (long) (value)); \
-+	} while (0)
-+
-+#define SHOW_MEDIA_TYPE(mode) \
-+	printk (KERN_INFO DRV_NAME ": Change Speed to %sMhz %s duplex\n" , \
-+		(mode & 1) ? "100":"10", (mode & 4) ? "full":"half");
- 
- 
- /* CR9 definition: SROM/MII */
-@@ -163,10 +170,20 @@
- 
- #define SROM_V41_CODE   0x14
- 
--#define SROM_CLK_WRITE(data, ioaddr) outl(data|CR9_SROM_READ|
-CR9_SRCS,ioaddr);udelay(5);outl(data|CR9_SROM_READ|CR9_SRCS|
-CR9_SRCLK,ioaddr);udelay(5);outl(data|CR9_SROM_READ|
-CR9_SRCS,ioaddr);udelay(5);
-+#define SROM_CLK_WRITE(data, ioaddr) \
-+	outl(data|CR9_SROM_READ|CR9_SRCS,ioaddr); \
-+	udelay(5); \
-+	outl(data|CR9_SROM_READ|CR9_SRCS|CR9_SRCLK,ioaddr); \
-+	udelay(5); \
-+	outl(data|CR9_SROM_READ|CR9_SRCS,ioaddr); \
-+	udelay(5);
-+
-+#define __CHK_IO_SIZE(pci_id, dev_rev) \
-+ (( ((pci_id)==PCI_DM9132_ID) || ((dev_rev) >= 0x02000030) ) ? \
-+	DM9102A_IO_SIZE: DM9102_IO_SIZE)
- 
--#define __CHK_IO_SIZE(pci_id, dev_rev) ( ((pci_id)==PCI_DM9132_ID) || 
-((dev_rev) >= 0x02000030) ) ? DM9102A_IO_SIZE: DM9102_IO_SIZE
--#define CHK_IO_SIZE(pci_dev, dev_rev) __CHK_IO_SIZE(((pci_dev)->device << 
-16) | (pci_dev)->vendor, dev_rev)
-+#define CHK_IO_SIZE(pci_dev, dev_rev) \
-+	(__CHK_IO_SIZE(((pci_dev)->device << 16) | (pci_dev)->vendor, dev_rev))
- 
- /* Sten Check */
- #define DEVICE net_device
-@@ -329,7 +346,7 @@ static void dmfe_program_DM9802(struct d
- static void dmfe_HPNA_remote_cmd_chk(struct dmfe_board_info * );
- static void dmfe_set_phyxcer(struct dmfe_board_info *);
- 
--/* DM910X network baord routine ---------------------------- */
-+/* DM910X network board routine ---------------------------- */
- 
- /*
-  *	Search DM910X board ,allocate space and register it
-@@ -356,7 +373,8 @@ static int __devinit dmfe_init_one (stru
- 	SET_NETDEV_DEV(dev, &pdev->dev);
- 
- 	if (pci_set_dma_mask(pdev, DMA_32BIT_MASK)) {
--		printk(KERN_WARNING DRV_NAME ": 32-bit PCI DMA not available.\n");
-+		printk(KERN_WARNING DRV_NAME 
-+			": 32-bit PCI DMA not available.\n");
- 		err = -ENODEV;
- 		goto err_out_free;
- 	}
-@@ -402,8 +420,11 @@ static int __devinit dmfe_init_one (stru
- 	db->dev = dev;
- 
- 	/* Allocate Tx/Rx descriptor memory */
--	db->desc_pool_ptr = pci_alloc_consistent(pdev, sizeof(struct tx_desc) * 
-DESC_ALL_CNT + 0x20, &db->desc_pool_dma_ptr);
--	db->buf_pool_ptr = pci_alloc_consistent(pdev, TX_BUF_ALLOC * TX_DESC_CNT + 
-4, &db->buf_pool_dma_ptr);
-+	db->desc_pool_ptr = pci_alloc_consistent(pdev, sizeof(struct tx_desc) * 
-+			DESC_ALL_CNT + 0x20, &db->desc_pool_dma_ptr);
-+	
-+	db->buf_pool_ptr = pci_alloc_consistent(pdev, TX_BUF_ALLOC * 
-+			TX_DESC_CNT + 4, &db->buf_pool_dma_ptr);
- 
- 	db->first_tx_desc = (struct tx_desc *) db->desc_pool_ptr;
- 	db->first_tx_desc_dma = db->desc_pool_dma_ptr;
-@@ -440,7 +461,8 @@ static int __devinit dmfe_init_one (stru
- 
- 	/* read 64 word srom data */
- 	for (i = 0; i < 64; i++)
--		((u16 *) db->srom)[i] = cpu_to_le16(read_srom_word(db->ioaddr, i));
-+		((u16 *) db->srom)[i] = 
-+			cpu_to_le16(read_srom_word(db->ioaddr, i));
- 
- 	/* Set Node address */
- 	for (i = 0; i < 6; i++)
-@@ -509,7 +531,8 @@ static int dmfe_open(struct DEVICE *dev)
- 
- 	DMFE_DBUG(0, "dmfe_open", 0);
- 
--	ret = request_irq(dev->irq, &dmfe_interrupt, IRQF_SHARED, dev->name, dev);
-+	ret = request_irq(dev->irq, &dmfe_interrupt, 
-+			  IRQF_SHARED, dev->name, dev);
- 	if (ret)
- 		return ret;
- 
-@@ -650,7 +673,8 @@ static int dmfe_start_xmit(struct sk_buf
- 	/* No Tx resource check, it never happen nromally */
- 	if (db->tx_queue_cnt >= TX_FREE_DESC_CNT) {
- 		spin_unlock_irqrestore(&db->lock, flags);
--		printk(KERN_ERR DRV_NAME ": No Tx resource %ld\n", db->tx_queue_cnt);
-+		printk(KERN_ERR DRV_NAME ": No Tx resource %ld\n", 
-+		       db->tx_queue_cnt);
- 		return 1;
- 	}
- 
-@@ -722,7 +746,8 @@ static int dmfe_stop(struct DEVICE *dev)
- 
- #if 0
- 	/* show statistic counter */
--	printk(DRV_NAME ": FU:%lx EC:%lx LC:%lx NC:%lx LOC:%lx TXJT:%lx RESET:%lx 
-RCR8:%lx FAL:%lx TT:%lx\n",
-+	printk(DRV_NAME ": FU:%lx EC:%lx LC:%lx NC:%lx"
-+		" LOC:%lx TXJT:%lx RESET:%lx RCR8:%lx FAL:%lx TT:%lx\n",
- 		db->tx_fifo_underrun, db->tx_excessive_collision,
- 		db->tx_late_collision, db->tx_no_carrier, db->tx_loss_carrier,
- 		db->tx_jabber_timeout, db->reset_count, db->reset_cr8,
-@@ -919,7 +944,9 @@ static void dmfe_rx_packet(struct DEVICE
- 		db->rx_avail_cnt--;
- 		db->interval_rx_cnt++;
- 
--		pci_unmap_single(db->pdev, le32_to_cpu(rxptr->rdes2), RX_ALLOC_SIZE, 
-PCI_DMA_FROMDEVICE);
-+		pci_unmap_single(db->pdev, le32_to_cpu(rxptr->rdes2), 
-+				 RX_ALLOC_SIZE, PCI_DMA_FROMDEVICE);
-+		
- 		if ( (rdes0 & 0x300) != 0x300) {
- 			/* A packet without First/Last flag */
- 			/* reuse this SKB */
-@@ -1078,7 +1105,8 @@ static void dmfe_timer(unsigned long dat
- 		if (db->chip_type && (db->chip_id==PCI_DM9102_ID)) {
- 			db->cr6_data &= ~0x40000;
- 			update_cr6(db->cr6_data, db->ioaddr);
--			phy_write(db->ioaddr, db->phy_addr, 0, 0x1000, db->chip_id);
-+			phy_write(db->ioaddr, 
-+				  db->phy_addr, 0, 0x1000, db->chip_id);
- 			db->cr6_data |= 0x40000;
- 			update_cr6(db->cr6_data, db->ioaddr);
- 			db->timer.expires = DMFE_TIMER_WUT + HZ * 2;
-@@ -1153,7 +1181,8 @@ static void dmfe_timer(unsigned long dat
- 		/* For Force 10/100M Half/Full mode: Enable Auto-Nego mode */
- 		/* AUTO or force 1M Homerun/Longrun don't need */
- 		if ( !(db->media_mode & 0x38) )
--			phy_write(db->ioaddr, db->phy_addr, 0, 0x1000, db->chip_id);
-+			phy_write(db->ioaddr, db->phy_addr,
-+				  0, 0x1000, db->chip_id);
- 
- 		/* AUTO mode, if INT phyxcer link failed, select EXT device */
- 		if (db->media_mode & DMFE_AUTO) {
-@@ -1259,7 +1288,8 @@ static void dmfe_reuse_skb(struct dmfe_b
- 
- 	if (!(rxptr->rdes0 & cpu_to_le32(0x80000000))) {
- 		rxptr->rx_skb_ptr = skb;
--		rxptr->rdes2 = cpu_to_le32( pci_map_single(db->pdev, skb->data, 
-RX_ALLOC_SIZE, PCI_DMA_FROMDEVICE) );
-+		rxptr->rdes2 = cpu_to_le32( pci_map_single(db->pdev, 
-+			    skb->data, RX_ALLOC_SIZE, PCI_DMA_FROMDEVICE) );
- 		wmb();
- 		rxptr->rdes0 = cpu_to_le32(0x80000000);
- 		db->rx_avail_cnt++;
-@@ -1291,8 +1321,11 @@ static void dmfe_descriptor_init(struct 
- 	outl(db->first_tx_desc_dma, ioaddr + DCR4);     /* TX DESC address */
- 
- 	/* rx descriptor start pointer */
--	db->first_rx_desc = (void *)db->first_tx_desc + sizeof(struct tx_desc) * 
-TX_DESC_CNT;
--	db->first_rx_desc_dma =  db->first_tx_desc_dma + sizeof(struct tx_desc) * 
-TX_DESC_CNT;
-+	db->first_rx_desc = (void *)db->first_tx_desc + 
-+			sizeof(struct tx_desc) * TX_DESC_CNT;
-+	
-+	db->first_rx_desc_dma =  db->first_tx_desc_dma + 
-+			sizeof(struct tx_desc) * TX_DESC_CNT;
- 	db->rx_insert_ptr = db->first_rx_desc;
- 	db->rx_ready_ptr = db->first_rx_desc;
- 	outl(db->first_rx_desc_dma, ioaddr + DCR3);	/* RX DESC address */
-@@ -1470,7 +1503,8 @@ static void allocate_rx_buffer(struct dm
- 		if ( ( skb = dev_alloc_skb(RX_ALLOC_SIZE) ) == NULL )
- 			break;
- 		rxptr->rx_skb_ptr = skb; /* FIXME (?) */
--		rxptr->rdes2 = cpu_to_le32( pci_map_single(db->pdev, skb->data, 
-RX_ALLOC_SIZE, PCI_DMA_FROMDEVICE) );
-+		rxptr->rdes2 = cpu_to_le32( pci_map_single(db->pdev, skb->data, 
-+				    RX_ALLOC_SIZE, PCI_DMA_FROMDEVICE) );
- 		wmb();
- 		rxptr->rdes0 = cpu_to_le32(0x80000000);
- 		rxptr = rxptr->next_rx_desc;
-@@ -1510,7 +1544,8 @@ static u16 read_srom_word(long ioaddr, i
- 	for (i = 16; i > 0; i--) {
- 		outl(CR9_SROM_READ | CR9_SRCS | CR9_SRCLK, cr9_ioaddr);
- 		udelay(5);
--		srom_data = (srom_data << 1) | ((inl(cr9_ioaddr) & CR9_CRDOUT) ? 1 : 0);
-+		srom_data = (srom_data << 1) | 
-+				((inl(cr9_ioaddr) & CR9_CRDOUT) ? 1 : 0);
- 		outl(CR9_SROM_READ | CR9_SRCS, cr9_ioaddr);
- 		udelay(5);
- 	}
-@@ -1537,9 +1572,11 @@ static u8 dmfe_sense_speed(struct dmfe_b
- 
- 	if ( (phy_mode & 0x24) == 0x24 ) {
- 		if (db->chip_id == PCI_DM9132_ID)	/* DM9132 */
--			phy_mode = phy_read(db->ioaddr, db->phy_addr, 7, db->chip_id) & 0xf000;
-+			phy_mode = phy_read(db->ioaddr, 
-+				    db->phy_addr, 7, db->chip_id) & 0xf000;
- 		else 				/* DM9102/DM9102A */
--			phy_mode = phy_read(db->ioaddr, db->phy_addr, 17, db->chip_id) & 0xf000;
-+			phy_mode = phy_read(db->ioaddr, 
-+				    db->phy_addr, 17, db->chip_id) & 0xf000;
- 		/* printk(DRV_NAME ": Phy_mode %x ",phy_mode); */
- 		switch (phy_mode) {
- 		case 0x1000: db->op_mode = DMFE_10MHF; break;
-@@ -1576,8 +1613,11 @@ static void dmfe_set_phyxcer(struct dmfe
- 
- 	/* DM9009 Chip: Phyxcer reg18 bit12=0 */
- 	if (db->chip_id == PCI_DM9009_ID) {
--		phy_reg = phy_read(db->ioaddr, db->phy_addr, 18, db->chip_id) & ~0x1000;
--		phy_write(db->ioaddr, db->phy_addr, 18, phy_reg, db->chip_id);
-+		phy_reg = phy_read(db->ioaddr, 
-+				   db->phy_addr, 18, db->chip_id) & ~0x1000;
-+		
-+		phy_write(db->ioaddr, 
-+			  db->phy_addr, 18, phy_reg, db->chip_id);
- 	}
- 
- 	/* Phyxcer capability setting */
-@@ -1650,10 +1690,12 @@ static void dmfe_process_mode(struct dmf
- 			case DMFE_100MHF: phy_reg = 0x2000; break;
- 			case DMFE_100MFD: phy_reg = 0x2100; break;
- 			}
--			phy_write(db->ioaddr, db->phy_addr, 0, phy_reg, db->chip_id);
-+			phy_write(db->ioaddr, 
-+				  db->phy_addr, 0, phy_reg, db->chip_id);
-        			if ( db->chip_type && (db->chip_id == PCI_DM9102_ID) )
- 				mdelay(20);
--			phy_write(db->ioaddr, db->phy_addr, 0, phy_reg, db->chip_id);
-+			phy_write(db->ioaddr, 
-+				  db->phy_addr, 0, phy_reg, db->chip_id);
- 		}
- 	}
- }
-@@ -1663,7 +1705,8 @@ static void dmfe_process_mode(struct dmf
-  *	Write a word to Phy register
-  */
- 
--static void phy_write(unsigned long iobase, u8 phy_addr, u8 offset, u16 
-phy_data, u32 chip_id)
-+static void phy_write(unsigned long iobase, u8 phy_addr, u8 offset, 
-+		      u16 phy_data, u32 chip_id)
- {
- 	u16 i;
- 	unsigned long ioaddr;
-@@ -1689,11 +1732,13 @@ static void phy_write(unsigned long ioba
- 
- 		/* Send Phy address */
- 		for (i = 0x10; i > 0; i = i >> 1)
--			phy_write_1bit(ioaddr, phy_addr & i ? PHY_DATA_1 : PHY_DATA_0);
-+			phy_write_1bit(ioaddr, 
-+				       phy_addr & i ? PHY_DATA_1 : PHY_DATA_0);
- 
- 		/* Send register address */
- 		for (i = 0x10; i > 0; i = i >> 1)
--			phy_write_1bit(ioaddr, offset & i ? PHY_DATA_1 : PHY_DATA_0);
-+			phy_write_1bit(ioaddr, 
-+				       offset & i ? PHY_DATA_1 : PHY_DATA_0);
- 
- 		/* written trasnition */
- 		phy_write_1bit(ioaddr, PHY_DATA_1);
-@@ -1701,7 +1746,8 @@ static void phy_write(unsigned long ioba
- 
- 		/* Write a word data to PHY controller */
- 		for ( i = 0x8000; i > 0; i >>= 1)
--			phy_write_1bit(ioaddr, phy_data & i ? PHY_DATA_1 : PHY_DATA_0);
-+			phy_write_1bit(ioaddr, 
-+				       phy_data & i ? PHY_DATA_1 : PHY_DATA_0);
- 	}
- }
- 
-@@ -1738,11 +1784,13 @@ static u16 phy_read(unsigned long iobase
- 
- 		/* Send Phy address */
- 		for (i = 0x10; i > 0; i = i >> 1)
--			phy_write_1bit(ioaddr, phy_addr & i ? PHY_DATA_1 : PHY_DATA_0);
-+			phy_write_1bit(ioaddr, 
-+				       phy_addr & i ? PHY_DATA_1 : PHY_DATA_0);
- 
- 		/* Send register address */
- 		for (i = 0x10; i > 0; i = i >> 1)
--			phy_write_1bit(ioaddr, offset & i ? PHY_DATA_1 : PHY_DATA_0);
-+			phy_write_1bit(ioaddr, 
-+				       offset & i ? PHY_DATA_1 : PHY_DATA_0);
- 
- 		/* Skip transition state */
- 		phy_read_1bit(ioaddr);
-@@ -1963,7 +2011,8 @@ static void dmfe_HPNA_remote_cmd_chk(str
- 
- 	/* Check remote device status match our setting ot not */
- 	if ( phy_reg != (db->HPNA_command & 0x0f00) ) {
--		phy_write(db->ioaddr, db->phy_addr, 16, db->HPNA_command, db->chip_id);
-+		phy_write(db->ioaddr, db->phy_addr, 16, db->HPNA_command, 
-+			  db->chip_id);
- 		db->HPNA_timer=8;
- 	} else
- 		db->HPNA_timer=600;	/* Match, every 10 minutes, check */
-@@ -2003,8 +2052,11 @@ module_param(HPNA_tx_cmd, byte, 0);
- module_param(HPNA_NoiseFloor, byte, 0);
- module_param(SF_mode, byte, 0);
- MODULE_PARM_DESC(debug, "Davicom DM9xxx enable debugging (0-1)");
--MODULE_PARM_DESC(mode, "Davicom DM9xxx: Bit 0: 10/100Mbps, bit 2: duplex, bit 
-8: HomePNA");
--MODULE_PARM_DESC(SF_mode, "Davicom DM9xxx special function (bit 0: VLAN, bit 
-1 Flow Control, bit 2: TX pause packet)");
-+MODULE_PARM_DESC(mode, "Davicom DM9xxx: "
-+		"Bit 0: 10/100Mbps, bit 2: duplex, bit 8: HomePNA");
-+
-+MODULE_PARM_DESC(SF_mode, "Davicom DM9xxx special function "
-+		"(bit 0: VLAN, bit 1 Flow Control, bit 2: TX pause packet)");
- 
- /*	Description:
-  *	when user used insmod to add module, system invoked init_module()
+--
+J.A. Magallon <jamagallon()ono!com>     \               Software is like sex:
+                                         \         It's better when it's free
+Mandriva Linux release 2007.1 (Cooker) for i586
+Linux 2.6.19-jam06 (gcc 4.1.2 20070115 (prerelease) (4.1.2-0.20070115.1mdv2007.1)) #1 SMP PREEMPT
