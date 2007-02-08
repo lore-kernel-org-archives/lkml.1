@@ -1,65 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423253AbXBHT0i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423251AbXBHT2Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423253AbXBHT0i (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Feb 2007 14:26:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423259AbXBHT0i
+	id S1423251AbXBHT2Q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Feb 2007 14:28:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423257AbXBHT2Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Feb 2007 14:26:38 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:34837 "EHLO smtp.osdl.org"
+	Thu, 8 Feb 2007 14:28:16 -0500
+Received: from cacti.profiwh.com ([85.93.165.66]:46811 "EHLO cacti.profiwh.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423253AbXBHT0h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Feb 2007 14:26:37 -0500
-Date: Thu, 8 Feb 2007 11:26:29 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Andi Kleen <ak@suse.de>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       LKML <linux-kernel@vger.kernel.org>, GOTO <y-goto@jp.fujitsu.com>,
-       Christoph Lameter <clameter@engr.sgi.com>
-Subject: Re: [2.6.20][PATCH] fix mempolicy error check on a system with
- memory-less-node
-Message-Id: <20070208112629.3a4ce158.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0702081106460.11045@schroedinger.engr.sgi.com>
-References: <20070206202312.4f979bcf.kamezawa.hiroyu@jp.fujitsu.com>
-	<p73ejp2mfqh.fsf@bingen.suse.de>
-	<20070207082330.d07525ec.akpm@linux-foundation.org>
-	<200702071750.55283.ak@suse.de>
-	<20070207094344.0efdde10.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0702081106460.11045@schroedinger.engr.sgi.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1423251AbXBHT2P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Feb 2007 14:28:15 -0500
+Message-ID: <45CB79CF.9010702@gmail.com>
+Date: Thu, 08 Feb 2007 20:28:15 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0b2 (X11/20070116)
+MIME-Version: 1.0
+To: Reg Clemens <reg@dwf.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Why can't I build a running Kernel?
+References: <200702081817.l18IHlbE027996@deneb.dwf.com>
+In-Reply-To: <200702081817.l18IHlbE027996@deneb.dwf.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 8 Feb 2007 11:09:40 -0800 (PST) Christoph Lameter <clameter@sgi.com> wrote:
-
-> > > > and to 
-> > > > accurately present the machine's topology to the user without us having to
-> > > > go adding falsehoods like this?
-> > > 
-> > > a node is a piece of memory. Without memory it doesn't make sense.
-> > 
-> > Who said?  I can pick up a piece of circuitry which has four CPUs and no
-> > RAM, wave it about then stick it in a computer.  The kernel is just wrong,
-> > surely?
+Reg Clemens napsal(a):
+> Why can't I build a running Kernel?
+> I have in the past, but since some time in the 2.6.19 series,
+> I have got the following series of errors. 
+> Same thing now with 2.6.20.
 > 
-> Surely your computer has some memory so attach it to that memory (which 
-> in a NUMA system would be one or the other node).
+> I build with:
+> 
+>     make xconfig
+> 
+> changing only the Processor type to Pentium4,
+> then I
+> 
+>     make bzImage
+>     make modules
+>     make modules_install
+>     make install
+> 
+> Fine everything builds, no errors.
+> I then try booting, and I get 4 or 5 lines and then
+> 
+>     Unable to access resume device (/dev/sda5)
+>     mount: could not find filesystem '/dev/root'
+>     < 4 more lines with setuproot and switchroot >
+>   
+> and then
+> 
+>     Kernel panic - not syncing: Attempting to kill init!
+> 
+> Sigh.
+> What has changed, what do I need to do to get this thing to boot?
 
-"attach it".  But it _isn't_ attached.  There is no memory on this node. 
-We seem to be saying that we should misrepresent the physical topology
-because the kernel doesn't handle it appropriately.
+Re-enable sata/scsi/usb/whatever is your root behind stuff back again? What does 
+your .config look like?
 
-> Cpu only "nodes" would mean that all memory would be off node. Meaning 
-> whatever interconnect one has would be heavily used. Operating system and 
-> application performance will suffer.
-
->From this a logical step would be to change the kernel to refuse to bring
-memoryless nodes online at all.
-
-If that's not an approproate solution, then there must be a legtimate
-reason for using memoryless nodes.  
-
-Which is it?
+regards,
+-- 
+http://www.fi.muni.cz/~xslaby/            Jiri Slaby
+faculty of informatics, masaryk university, brno, cz
+e-mail: jirislaby gmail com, gpg pubkey fingerprint:
+B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
