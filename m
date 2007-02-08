@@ -1,44 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161401AbXBHDRX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030560AbXBHD2h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161401AbXBHDRX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Feb 2007 22:17:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161429AbXBHDRX
+	id S1030560AbXBHD2h (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Feb 2007 22:28:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030640AbXBHD2h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Feb 2007 22:17:23 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:40712 "EHLO mail.dvmed.net"
+	Wed, 7 Feb 2007 22:28:37 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:52524 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161401AbXBHDRW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Feb 2007 22:17:22 -0500
-Message-ID: <45CA9638.2010209@garzik.org>
-Date: Wed, 07 Feb 2007 22:17:12 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070130)
+	id S1030560AbXBHD2g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Feb 2007 22:28:36 -0500
+Date: Wed, 7 Feb 2007 19:28:19 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: `-mcpu=' is deprecated. Use `-mtune=' or '-march=' instead.
+In-Reply-To: <1170897212.7070.15.camel@lade.trondhjem.org>
+Message-ID: <Pine.LNX.4.64.0702071924570.8424@woody.linux-foundation.org>
+References: <1170897212.7070.15.camel@lade.trondhjem.org>
 MIME-Version: 1.0
-To: Greg KH <gregkh@suse.de>
-CC: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
-       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
-       pcihpd-discuss@lists.sourceforge.net
-Subject: Re: [GIT PATCH] PCI patches for 2.6.20
-References: <20070208002932.GC4796@kroah.com>
-In-Reply-To: <20070208002932.GC4796@kroah.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.7 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
-> Greg Kroah-Hartman (3):
->       PCI: remove duplicate device id from ata_piix
->       PCI: remove duplicate device id from ipr
->       Revert "PCI: remove duplicate device id from ata_piix"
 
 
-If these are coming out of quilt, why add these commit-then-revert 
-changesets at all?
+On Wed, 7 Feb 2007, Trond Myklebust wrote:
+>
+> The latest pull from the git tree spews out a torrent of the above
+> warning on a recent Fedora Core 6 machine running gcc-4.1.1. config file
+> is attached...
 
-	Jeff
+Should hopefully be fixed already in current -git
 
-
+		Linus
