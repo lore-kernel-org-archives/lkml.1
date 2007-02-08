@@ -1,55 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752393AbXBHSfb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752397AbXBHSlH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752393AbXBHSfb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Feb 2007 13:35:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752398AbXBHSfb
+	id S1752397AbXBHSlH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Feb 2007 13:41:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752422AbXBHSlH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Feb 2007 13:35:31 -0500
-Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:36264 "EHLO
-	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752391AbXBHSfa (ORCPT
+	Thu, 8 Feb 2007 13:41:07 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:46183 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752397AbXBHSlG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Feb 2007 13:35:30 -0500
-X-Greylist: delayed 2050 seconds by postgrey-1.27 at vger.kernel.org; Thu, 08 Feb 2007 13:35:30 EST
-Date: Thu, 8 Feb 2007 19:01:19 +0100
-From: Adrian Reber <adrian@lisas.de>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: cbe-oss-dev@ozlabs.org, linuxppc-dev@ozlabs.org,
-       oprofile-list@lists.sourceforge.net,
-       LKML <linux-kernel@vger.kernel.org>, Milton Miller <miltonm@bga.com>,
-       Carl Love <cel@us.ibm.com>
-Subject: Re: [Cbe-oss-dev] [RFC, PATCH] CELL Oprofile SPU profiling updated patch
-Message-ID: <20070208180119.GA24743@lisas.de>
-Mail-Followup-To: Arnd Bergmann <arnd@arndb.de>, cbe-oss-dev@ozlabs.org,
-	linuxppc-dev@ozlabs.org, oprofile-list@lists.sourceforge.net,
-	LKML <linux-kernel@vger.kernel.org>,
-	Milton Miller <miltonm@bga.com>, Carl Love <cel@us.ibm.com>
-References: <1170721711.5204.44.camel@dyn9047021078.beaverton.ibm.com> <1170802957.5204.56.camel@dyn9047021078.beaverton.ibm.com> <b682962303654f4958a6c2c50d805907@bga.com> <200702081821.57358.arnd@arndb.de>
+	Thu, 8 Feb 2007 13:41:06 -0500
+Date: Thu, 8 Feb 2007 19:41:04 +0100
+From: Jan Kara <jack@suse.cz>
+To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Direct IO for fat
+Message-ID: <20070208184104.GA24986@atrey.karlin.mff.cuni.cz>
+References: <20070208112808.GA3767@duck.suse.cz> <87k5ysfyd5.fsf@duaron.myhome.or.jp> <20070208161001.GB3767@duck.suse.cz> <87wt2sd2m8.fsf@duaron.myhome.or.jp> <20070208173515.GB3780@duck.suse.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200702081821.57358.arnd@arndb.de>
-User-Agent: Mutt/1.4.2.2i
-X-Url: <http://lisas.de/~adrian/>
-X-Operating-System: Linux (2.6.18-1.2869.fc6)
-X-Load-Average: 0.74 1.41 2.14
-X-Unexpected: The Spanish Inquisition
-X-GnuPG-Key: gpg --keyserver sks.keyserver.penguin.de --recv-keys 3ED6F034
+In-Reply-To: <20070208173515.GB3780@duck.suse.cz>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 08, 2007 at 06:21:56PM +0100, Arnd Bergmann wrote:
-[...]
-> Moving the sample rate computation to user space sounds like the right
-> idea, but why not have a more drastic version of it:
+> On Fri 09-02-07 01:40:31, OGAWA Hirofumi wrote:
+> > Jan Kara <jack@suse.cz> writes:
+> > 
+> > >> FAT has to fill the hole completely, but DIO doesn't seems to do.
+> > >> 
+> > >> e.g.
+> > >>         fd = open("file", O_WRONLY | O_CREAT | O_TRUNC);
+> > >>         write(fd, buf, 512);
+> > >>         lseek(fd, 10000, SEEK_SET);
+> > >>         write(fd, buf, 512);
+> > >> 
+> > >> We need to allocate the blocks on 512 ~ 10000, and fill it with zero.
+> > >> However, I think DIO doesn't fill it. If I'm missing something, please
+> > >> let me know, I'll kill that check.
+> > >   I know. DIO doesn't do it. But the point is that if blockdev_direct_IO
+> > > finds out it should allocate new blocks, it exits without allocating them.
+> > > Then in __generic_file_aio_write_nolock() if we find out that we did not
+> > > write everything in generic_file_direct_write(), we just call
+> > > generic_file_buffered_write() to write the unwritten part.
+> > >   Hence, in case you describe above, the second write() finds out that
+> > > block is not allocated and eventually everything falls back to calling
+> > > generic_file_buffered_write() which calls prepare_write() and everything is
+> > > happy.
+> > 
+> > I see. But sorry, I can't see where is preventing it... Finally, I
+> > think we do the following on second write(2).
+> > 
+> > This is write, so create == 1, and ->lock_type == DIO_LOCKING,
+> > and dio->block_in_file > ->i_size, so DIO callback fat_get_block() with
+> > create == 1.
+>   I think you misread the code - see below.
 > 
-> Right now, all products that support this feature run at the same clock
-> rate (3.2 Ghz), with cpufreq, we can reduce this to 1.6 Ghz. If I understand
-> this correctly, the value depends only on the frequency, so we could simply
-> hardcode this in the kernel, and print out a warning message if we ever
-> encounter a different frequency, right?
+> > Then fat_get_block() seems to allocate block without fill hole,
+> > because it can't know caller is prepre_write or not...
+> > Well, anyway I'll test it on weekend. Thanks.
+> > 
+> > -> blockdev_direct_IO()
+> >   -> direct_io_worker()
+> >     -> do_direct_IO()
+> >       -> get_more_blocks()
+> > 
+> > 		create = dio->rw & WRITE;
+>   Here, create == 1.
+> 
+> > 		if (dio->lock_type == DIO_LOCKING) {
+> > 			if (dio->block_in_file < (i_size_read(dio->inode) >>
+> > 							dio->blkbits))
+> > 				create = 0;
+>   But here create was reset back to 0 - exactly because
+> dio->block_in_file > i_size...
+  Obviously, I'm blind and you're right ;) This test is not satisfied
+and so create == 1.
+  But still it would seem better to me to return 0 from fat_direct_IO()
+instead of EINVAL so that write falls back to a buffered one, instead
+returning the error...
 
-Just for the record... CAB is running with 2.8 GHz. At least all the boards
-I have seen.
-
-		Adrian
+								Honza
+-- 
+Jan Kara <jack@suse.cz>
+SuSE CR Labs
