@@ -1,68 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423015AbXBHNdX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423020AbXBHNhY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423015AbXBHNdX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Feb 2007 08:33:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423020AbXBHNdX
+	id S1423020AbXBHNhY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Feb 2007 08:37:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423027AbXBHNhY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Feb 2007 08:33:23 -0500
-Received: from colin.muc.de ([193.149.48.1]:1225 "EHLO mail.muc.de"
+	Thu, 8 Feb 2007 08:37:24 -0500
+Received: from raven.upol.cz ([158.194.120.4]:38030 "EHLO raven.upol.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423015AbXBHNdW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Feb 2007 08:33:22 -0500
-Date: 8 Feb 2007 14:33:21 +0100
-Date: Thu, 8 Feb 2007 14:33:21 +0100
-From: Andi Kleen <ak@muc.de>
-To: Zachary Amsden <zach@vmware.com>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, Rusty Russell <rusty@rustcorp.com.au>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Chris Wright <chrisw@sous-sol.org>
-Subject: Re: [PATCH 9/11] Panic delay fix
-Message-ID: <20070208133321.GA36397@muc.de>
-References: <200702060353.l163rUmj000771@zach-dev.vmware.com> <20070206122729.GC47229@muc.de> <45C8FA2D.6010706@vmware.com> <d120d5000702070658l1c018565n34a6d8814a20184d@mail.gmail.com> <45CA535D.1080700@vmware.com> <20070208082443.GA9928@muc.de> <45CAE87E.8070502@vmware.com>
-Mime-Version: 1.0
+	id S1423020AbXBHNhX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Feb 2007 08:37:23 -0500
+Date: Thu, 8 Feb 2007 14:45:34 +0100
+To: David Miller <davem@davemloft.net>
+Cc: paulus@samba.org, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Subject: final (Re: Kbuild change breaks the ppc64 build)
+Message-ID: <20070208134534.GV22699@flower.upol.cz>
+References: <17867.1342.763881.188430@cargo.ozlabs.ibm.com> <20070208124756.GU22699@flower.upol.cz> <20070208.051706.112290704.davem@davemloft.net>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <45CAE87E.8070502@vmware.com>
-User-Agent: Mutt/1.4.1i
+In-Reply-To: <20070208.051706.112290704.davem@davemloft.net>
+Organization: Palacky University in Olomouc, experimental physics department.
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Oleg Verych <olecom@flower.upol.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 08, 2007 at 01:08:14AM -0800, Zachary Amsden wrote:
-> Andi Kleen wrote:
-> >On Wed, Feb 07, 2007 at 02:31:57PM -0800, Zachary Amsden wrote:
-> >  
-> >>Dmitry Torokhov wrote:
-> >>    
-> >>>I am confused - does i8042 talk to a virtual or real hardware here? In
-> >>>any case I think you need to fix kernel/panic.c to have proper
-> >>>(m)delay, not mess with i8042.
-> >>>      
-> >>I think I need to fix both of them actually.  This is virtual hardware, 
-> >>but when you grab focus on a VM, the virtual hardware gets reflected to 
-> >>the actual physical keyboard.  Driving physical hardware that fast is bad.
-> >>    
-> >
-> >???
-> >
-> >Surely the physical keyboard is always handled by the host kernel? 
-> >I hope you're not saying it's trying to access the io ports directly?
-> >  
+Date: Feb 08, 2007 at 05:17:06AM -0800
+From: David Miller
+
+> From: Oleg Verych <olecom@flower.upol.cz>
+> Date: Thu, 8 Feb 2007 13:47:56 +0100
 > 
-> No, not that.  But the virtual keyboard I/O gets processed and converted 
-> to physical keyboard I/O when a keyboard is attached to a VM.  The 
+[]
+> > As i have refactored some CC checking code in Kbuild.include, it
+> > turned, that some versions of `make' after calling nested functions,
+> > add (or leave) prefix whitespace to result, thus ifeq[0] fails:
+> 
+> That's not it, did you see my fix for this problem posted
+> already?
 
-You mean the commands to change the keyboard LEDs?
+Yes, i did. Thanks, David, for fix and for comprehencive approach.
 
-> result is that the virtual keyboard spinning out of control causes the 
-> physical keyboard to receive the same commands, far too rapidly.
+Kudos to everyone, who was forced to deal with this cr@p. Sorry for my
+confusion, that fast commit was a bit of stress.
 
-Hmm i would expect the host kernel keyboard driver to throttle these.
-I'm pretty sure the Linux one does the necessary mdelays at least.
+> The issue is the leading spaces on the first line of the define for
+> checker-shell.  Those propagate into the callers, although they are
+> reduced down to a single space.
 
-> So the keyboard blinks out of control and acts as if possessed by demons.
+Yes, defines leave spaces/tabs as is, it's known thing, but again,
+sorry.
 
-Still sounds weird.
+> This will give you spaces in the result on any version of
+> make.
+> 
+> Here is my fix again for your reference.
+> 
+> diff --git a/scripts/Kbuild.include b/scripts/Kbuild.include
+> index 8d7eabf..a1880e8 100644
+> --- a/scripts/Kbuild.include
+> +++ b/scripts/Kbuild.include
+> @@ -60,16 +60,15 @@ endef
+>  # Usage: option = $(call checker-shell,$(CC)...-o $$OUT,option-ok,otherwise)
+>  # Exit code chooses option. $$OUT is safe location for needless output.
+>  define checker-shell
+> - $(strip
+   ^
+Roland had no space here in his patch ;)
 
--Andi
+> -  $(shell set -e; \
+> -    DIR=$(KBUILD_EXTMOD); \
+> -    cd $${DIR:-$(objtree)}; \
+> -    OUT=$$PWD/.$$$$.null; \
+> -    if $(1) >/dev/null 2>&1; \
+> -      then echo "$(2)"; \
+> -      else echo "$(3)"; \
+> -    fi; \
+> -    rm -f $$OUT))
+> +$(shell set -e; \
+> +  DIR=$(KBUILD_EXTMOD); \
+> +  cd $${DIR:-$(objtree)}; \
+> +  OUT=$$PWD/.$$$$.null; \
+> +  if $(1) >/dev/null 2>&1; \
+> +    then echo "$(2)"; \
+> +    else echo "$(3)"; \
+> +  fi; \
+> +  rm -f $$OUT)
+>  endef
+>  
+>  # as-option
+>
+> 
+
+Thanks!
+____
