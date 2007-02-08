@@ -1,56 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423223AbXBHLdY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422865AbXBHLed@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423223AbXBHLdY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Feb 2007 06:33:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423229AbXBHLdY
+	id S1422865AbXBHLed (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Feb 2007 06:34:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422897AbXBHLed
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Feb 2007 06:33:24 -0500
-Received: from nf-out-0910.google.com ([64.233.182.189]:10516 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423223AbXBHLdX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Feb 2007 06:33:23 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=pY/cQA5RUXrnkLYZHuTTIIKjWLMpOzBnZwcN1nJ9hDfofZB+jM1gHX0UKMxZ2n/0Ro4PEOCIK7YpbVHynOBvHSQJLVMQ/65J3KzdVfy8x5r3WcrYRZLZ6zRcVXIqccH1FUmODUENjWiSRlDq2YXtHL1ORujE18tXqvtvYlSn5yM=
-Message-ID: <b6fcc0a0702080333q12bd7493y227ef92e5273a664@mail.gmail.com>
-Date: Thu, 8 Feb 2007 14:33:22 +0300
-From: "Alexey Dobriyan" <adobriyan@gmail.com>
-To: "Arjan van de Ven" <arjan@infradead.org>
-Subject: Re: [patch] export ufs_fs.h to userspace
-Cc: "Mike Frysinger" <vapier@gentoo.org>, dushistov@mail.ru,
-       linux-kernel@vger.kernel.org, sparc@gentoo.org
-In-Reply-To: <1170930819.8675.36.camel@laptopd505.fenrus.org>
+	Thu, 8 Feb 2007 06:34:33 -0500
+Received: from tmailer.gwdg.de ([134.76.10.23]:52497 "EHLO tmailer.gwdg.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1422865AbXBHLec (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Feb 2007 06:34:32 -0500
+Date: Thu, 8 Feb 2007 12:29:07 +0100 (MET)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: Oleg Verych <olecom@flower.upol.cz>
+cc: Mike Frysinger <vapier.adi@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Roman Zippel <zippel@linux-m68k.org>, sam@ravnborg.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kai Germaschewski <kai@germaschewski.name>
+Subject: Re: + search-a-little-harder-for-mkimage.patch
+In-Reply-To: <20070208064347.GP22699@flower.upol.cz>
+Message-ID: <Pine.LNX.4.61.0702081227560.1364@yvahk01.tjqt.qr>
+References: <20070207165204.GA5537@martell.zuzino.mipt.ru>
+ <Pine.LNX.4.64.0702071846180.14457@scrub.home> <20070207220435.GC22699@flower.upol.cz>
+ <Pine.LNX.4.64.0702080029030.14457@scrub.home>
+ <Pine.LNX.4.64.0702071546420.8424@woody.linux-foundation.org>
+ <20070207203047.51a95ad0.akpm@linux-foundation.org> <20070208052439.GL22699@flower.upol.cz>
+ <20070207211921.1f0220a4.akpm@linux-foundation.org> <20070208055832.GN22699@flower.upol.cz>
+ <8bd0f97a0702072158r36046dd7w64a8c7b5da1a5f9a@mail.gmail.com>
+ <20070208064347.GP22699@flower.upol.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200702080246.16996.vapier@gentoo.org>
-	 <1170930819.8675.36.camel@laptopd505.fenrus.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/8/07, Arjan van de Ven <arjan@infradead.org> wrote:
-> On Thu, 2007-02-08 at 02:46 -0500, Mike Frysinger wrote:
-> > was ufs_fs.h purposefully not exported to userspace or did it just slip
-> > through the cracks ?  assuming the latter scenario, the attached patch
-> > touches up the relationship between ufs_fs.h and its sub headers (like
-> > ufs_fs_sb.h) so that we can export it ... the silo bootloader takes
-> advantage
-> > of this header for example
->
->
-> are you sure it actually uses anything from this header, and not just
-> assumes the magic number to be there??
-> (also.. I kind of would think it reasonable for things with their own
-> UFS fs reader to have their own header)
 
-ufs_fs.h certainly has things which certain types of userspace
-programs could use:
-on-disk layouts of UFS(2) inodes, cylinder groups, ... So it should be exported.
+On Feb 8 2007 07:43, Oleg Verych wrote:
+>> >>
+>> >> > If that matter, `type -path' is bashizm (BloAted SHell), and "blackbox"
+>> >> > with "dash" (very good `sh' equivalents) will fail.
+>> >>
+>> >> Does the kernel presently build with that shell?
+>> >
+>> >build - yes, with dash being `$(shell)'. All scripts with `#!/bin/bash'
+>> >of course use bash, example is gen_initramfs_list.sh.
+>> 
+>
+>Heh, did i say POSIX? I said bloated shell, from man bash:
+>
+>BUGS
+>       It's too big and too slow.
 
-However, NAK patch in this form until all kernel internal things would
-dissapear from
-exported header: struct ufs_buffer_head, ufs_sb_private_info. Probably something
-else, I haven't looked closely.
+Like it or lump it. Improve it, or write your own bash-compliant sh. :)
