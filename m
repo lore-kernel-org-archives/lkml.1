@@ -1,122 +1,255 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965726AbXBHRId@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423229AbXBHRKn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965726AbXBHRId (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Feb 2007 12:08:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965723AbXBHRId
+	id S1423229AbXBHRKn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Feb 2007 12:10:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965730AbXBHRKn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Feb 2007 12:08:33 -0500
-Received: from havoc.gtf.org ([69.61.125.42]:39765 "EHLO havoc.gtf.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965716AbXBHRIb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Feb 2007 12:08:31 -0500
-Date: Thu, 8 Feb 2007 12:08:30 -0500
-From: Jeff Garzik <jeff@garzik.org>
-To: Andrew Morton <akpm@osdl.org>, Linus Torvalds <torvalds@osdl.org>
-Cc: linux-fsdevel@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: [git patch] remove jffs (v1)
-Message-ID: <20070208170830.GA1399@havoc.gtf.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.1i
+	Thu, 8 Feb 2007 12:10:43 -0500
+Received: from nommos.sslcatacombnetworking.com ([67.18.224.114]:2572 "EHLO
+	nommos.sslcatacombnetworking.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S965718AbXBHRKm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Feb 2007 12:10:42 -0500
+Date: Thu, 8 Feb 2007 11:08:03 -0600 (CST)
+From: Kumar Gala <galak@kernel.crashing.org>
+X-X-Sender: galak@localhost.localdomain
+To: Greg KH <greg@kroah.com>, jgarizk@kernel.crashing.org
+cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: [PATCH] Convert network devices to use struct device instead of
+ class_device
+Message-ID: <Pine.LNX.4.64.0702081107300.29459@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+X-PopBeforeSMTPSenders: kumar-chaos@kgala.com,kumar-statements@kgala.com,kumar@kgala.com
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - nommos.sslcatacombnetworking.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - kernel.crashing.org
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Convert network devices to use struct device instead of class_device.  Greg
+missed this one in his cleanup path.
 
-Please pull from 'kill-jffs' branch of
-master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/misc-2.6.git kill-jffs
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 
-to receive the following updates:
+---
+commit 24c316396f71c6164f11ca1398151d8b15fd06e0
+tree d02ee36eaf848d200dacf3bf795abaec1e55cbc2
+parent b892afd1e60132a981b963929e352eabf3306ba2
+author Kumar Gala <galak@kernel.crashing.org> Thu, 08 Feb 2007 11:07:11 -0600
+committer Kumar Gala <galak@kernel.crashing.org> Thu, 08 Feb 2007 11:07:11 -0600
 
- Documentation/feature-removal-schedule.txt |    7 -
- fs/Kconfig                                 |   26 -
- fs/Makefile                                |    1 -
- fs/jffs/Makefile                           |   11 -
- fs/jffs/inode-v23.c                        | 1847 ---------------
- fs/jffs/intrep.c                           | 3449 ----------------------------
- fs/jffs/intrep.h                           |   58 -
- fs/jffs/jffs_fm.c                          |  798 -------
- fs/jffs/jffs_fm.h                          |  149 --
- fs/jffs/jffs_proc.c                        |  261 ---
- fs/jffs/jffs_proc.h                        |   28 -
- include/linux/jffs.h                       |  224 --
- 12 files changed, 0 insertions(+), 6859 deletions(-)
- delete mode 100644 fs/jffs/Makefile
- delete mode 100644 fs/jffs/inode-v23.c
- delete mode 100644 fs/jffs/intrep.c
- delete mode 100644 fs/jffs/intrep.h
- delete mode 100644 fs/jffs/jffs_fm.c
- delete mode 100644 fs/jffs/jffs_fm.h
- delete mode 100644 fs/jffs/jffs_proc.c
- delete mode 100644 fs/jffs/jffs_proc.h
- delete mode 100644 include/linux/jffs.h
+  drivers/net/gianfar_sysfs.c |  108 ++++++++++++++++++++++---------------------
+  1 files changed, 55 insertions(+), 53 deletions(-)
 
-Jeff Garzik (1):
-      Delete JFFS (version 1), as scheduled.
+diff --git a/drivers/net/gianfar_sysfs.c b/drivers/net/gianfar_sysfs.c
+index 9dd387f..6e2166a 100644
+--- a/drivers/net/gianfar_sysfs.c
++++ b/drivers/net/gianfar_sysfs.c
+@@ -39,13 +39,15 @@
+  #include "gianfar.h"
 
-diff --git a/Documentation/feature-removal-schedule.txt b/Documentation/feature-removal-schedule.txt
-index 0ba6af0..fc53239 100644
---- a/Documentation/feature-removal-schedule.txt
-+++ b/Documentation/feature-removal-schedule.txt
-@@ -318,10 +318,3 @@ Why:	/proc/acpi/button has been replaced by events to the input layer
- Who:	Len Brown <len.brown@intel.com>
- 
- ---------------------------
--
--What:	JFFS (version 1)
--When:	2.6.21
--Why:	Unmaintained for years, superceded by JFFS2 for years.
--Who:	Jeff Garzik <jeff@garzik.org>
--
-----------------------------
-diff --git a/fs/Kconfig b/fs/Kconfig
-index 8cd2417..67a50c9 100644
---- a/fs/Kconfig
-+++ b/fs/Kconfig
-@@ -1196,32 +1196,6 @@ config EFS_FS
- 	  To compile the EFS file system support as a module, choose M here: the
- 	  module will be called efs.
- 
--config JFFS_FS
--	tristate "Journalling Flash File System (JFFS) support"
--	depends on MTD && BLOCK && BROKEN
--	help
--	  JFFS is the Journalling Flash File System developed by Axis
--	  Communications in Sweden, aimed at providing a crash/powerdown-safe
--	  file system for disk-less embedded devices. Further information is
--	  available at (<http://developer.axis.com/software/jffs/>).
--
--	  NOTE: This filesystem is deprecated and is scheduled for removal in
--	  2.6.21.  See Documentation/feature-removal-schedule.txt
--
--config JFFS_FS_VERBOSE
--	int "JFFS debugging verbosity (0 = quiet, 3 = noisy)"
--	depends on JFFS_FS
--	default "0"
--	help
--	  Determines the verbosity level of the JFFS debugging messages.
--
--config JFFS_PROC_FS
--	bool "JFFS stats available in /proc filesystem"
--	depends on JFFS_FS && PROC_FS
--	help
--	  Enabling this option will cause statistics from mounted JFFS file systems
--	  to be made available to the user in the /proc/fs/jffs/ directory.
--
- config JFFS2_FS
- 	tristate "Journalling Flash File System v2 (JFFS2) support"
- 	select CRC32
-diff --git a/fs/Makefile b/fs/Makefile
-index b9ffa63..9edf411 100644
---- a/fs/Makefile
-+++ b/fs/Makefile
-@@ -94,7 +94,6 @@ obj-$(CONFIG_HPFS_FS)		+= hpfs/
- obj-$(CONFIG_NTFS_FS)		+= ntfs/
- obj-$(CONFIG_UFS_FS)		+= ufs/
- obj-$(CONFIG_EFS_FS)		+= efs/
--obj-$(CONFIG_JFFS_FS)		+= jffs/
- obj-$(CONFIG_JFFS2_FS)		+= jffs2/
- obj-$(CONFIG_AFFS_FS)		+= affs/
- obj-$(CONFIG_ROMFS_FS)		+= romfs/
+  #define GFAR_ATTR(_name) \
+-static ssize_t gfar_show_##_name(struct class_device *cdev, char *buf); \
+-static ssize_t gfar_set_##_name(struct class_device *cdev, \
++static ssize_t gfar_show_##_name(struct device *dev, \
++	 struct device_attribute *attr, char *buf); \
++static ssize_t gfar_set_##_name(struct device *dev, \
++		struct device_attribute *attr, \
+  		const char *buf, size_t count); \
+-static CLASS_DEVICE_ATTR(_name, 0644, gfar_show_##_name, gfar_set_##_name)
++static DEVICE_ATTR(_name, 0644, gfar_show_##_name, gfar_set_##_name)
 
-[snip obvious diff that deletes fs/jffs/* and include/linux/jffs.h]
+  #define GFAR_CREATE_FILE(_dev, _name) \
+-	class_device_create_file(&_dev->class_dev, &class_device_attr_##_name)
++	device_create_file(&_dev->dev, &dev_attr_##_name)
+
+  GFAR_ATTR(bd_stash);
+  GFAR_ATTR(rx_stash_size);
+@@ -54,29 +56,28 @@ GFAR_ATTR(fifo_threshold);
+  GFAR_ATTR(fifo_starve);
+  GFAR_ATTR(fifo_starve_off);
+
+-#define to_net_dev(cd) container_of(cd, struct net_device, class_dev)
+-
+-static ssize_t gfar_show_bd_stash(struct class_device *cdev, char *buf)
++static ssize_t gfar_show_bd_stash(struct device *dev,
++				  struct device_attribute *attr, char *buf)
+  {
+-	struct net_device *dev = to_net_dev(cdev);
+-	struct gfar_private *priv = netdev_priv(dev);
++	struct gfar_private *priv = netdev_priv(to_net_dev(dev));
+
+-	return sprintf(buf, "%s\n", priv->bd_stash_en? "on" : "off");
++	return sprintf(buf, "%s\n", priv->bd_stash_en ? "on" : "off");
+  }
+
+-static ssize_t gfar_set_bd_stash(struct class_device *cdev,
+-		const char *buf, size_t count)
++static ssize_t gfar_set_bd_stash(struct device *dev,
++				 struct device_attribute *attr,
++				 const char *buf, size_t count)
+  {
+-	struct net_device *dev = to_net_dev(cdev);
+-	struct gfar_private *priv = netdev_priv(dev);
++	struct gfar_private *priv = netdev_priv(to_net_dev(dev));
+  	int new_setting = 0;
+  	u32 temp;
+  	unsigned long flags;
+
+  	/* Find out the new setting */
+-	if (!strncmp("on", buf, count-1) || !strncmp("1", buf, count-1))
++	if (!strncmp("on", buf, count - 1) || !strncmp("1", buf, count - 1))
+  		new_setting = 1;
+-	else if (!strncmp("off", buf, count-1) || !strncmp("0", buf, count-1))
++	else if (!strncmp("off", buf, count - 1)
++		 || !strncmp("0", buf, count - 1))
+  		new_setting = 0;
+  	else
+  		return count;
+@@ -100,19 +101,19 @@ static ssize_t gfar_set_bd_stash(struct class_device *cdev,
+  	return count;
+  }
+
+-static ssize_t gfar_show_rx_stash_size(struct class_device *cdev, char *buf)
++static ssize_t gfar_show_rx_stash_size(struct device *dev,
++				       struct device_attribute *attr, char *buf)
+  {
+-	struct net_device *dev = to_net_dev(cdev);
+-	struct gfar_private *priv = netdev_priv(dev);
++	struct gfar_private *priv = netdev_priv(to_net_dev(dev));
+
+  	return sprintf(buf, "%d\n", priv->rx_stash_size);
+  }
+
+-static ssize_t gfar_set_rx_stash_size(struct class_device *cdev,
+-		const char *buf, size_t count)
++static ssize_t gfar_set_rx_stash_size(struct device *dev,
++				      struct device_attribute *attr,
++				      const char *buf, size_t count)
+  {
+-	struct net_device *dev = to_net_dev(cdev);
+-	struct gfar_private *priv = netdev_priv(dev);
++	struct gfar_private *priv = netdev_priv(to_net_dev(dev));
+  	unsigned int length = simple_strtoul(buf, NULL, 0);
+  	u32 temp;
+  	unsigned long flags;
+@@ -146,21 +147,21 @@ static ssize_t gfar_set_rx_stash_size(struct class_device *cdev,
+  	return count;
+  }
+
+-
+  /* Stashing will only be enabled when rx_stash_size != 0 */
+-static ssize_t gfar_show_rx_stash_index(struct class_device *cdev, char *buf)
++static ssize_t gfar_show_rx_stash_index(struct device *dev,
++					struct device_attribute *attr,
++					char *buf)
+  {
+-	struct net_device *dev = to_net_dev(cdev);
+-	struct gfar_private *priv = netdev_priv(dev);
++	struct gfar_private *priv = netdev_priv(to_net_dev(dev));
+
+  	return sprintf(buf, "%d\n", priv->rx_stash_index);
+  }
+
+-static ssize_t gfar_set_rx_stash_index(struct class_device *cdev,
+-		const char *buf, size_t count)
++static ssize_t gfar_set_rx_stash_index(struct device *dev,
++				       struct device_attribute *attr,
++				       const char *buf, size_t count)
+  {
+-	struct net_device *dev = to_net_dev(cdev);
+-	struct gfar_private *priv = netdev_priv(dev);
++	struct gfar_private *priv = netdev_priv(to_net_dev(dev));
+  	unsigned short index = simple_strtoul(buf, NULL, 0);
+  	u32 temp;
+  	unsigned long flags;
+@@ -184,19 +185,20 @@ static ssize_t gfar_set_rx_stash_index(struct class_device *cdev,
+  	return count;
+  }
+
+-static ssize_t gfar_show_fifo_threshold(struct class_device *cdev, char *buf)
++static ssize_t gfar_show_fifo_threshold(struct device *dev,
++					struct device_attribute *attr,
++					char *buf)
+  {
+-	struct net_device *dev = to_net_dev(cdev);
+-	struct gfar_private *priv = netdev_priv(dev);
++	struct gfar_private *priv = netdev_priv(to_net_dev(dev));
+
+  	return sprintf(buf, "%d\n", priv->fifo_threshold);
+  }
+
+-static ssize_t gfar_set_fifo_threshold(struct class_device *cdev,
+-		const char *buf, size_t count)
++static ssize_t gfar_set_fifo_threshold(struct device *dev,
++				       struct device_attribute *attr,
++				       const char *buf, size_t count)
+  {
+-	struct net_device *dev = to_net_dev(cdev);
+-	struct gfar_private *priv = netdev_priv(dev);
++	struct gfar_private *priv = netdev_priv(to_net_dev(dev));
+  	unsigned int length = simple_strtoul(buf, NULL, 0);
+  	u32 temp;
+  	unsigned long flags;
+@@ -218,20 +220,19 @@ static ssize_t gfar_set_fifo_threshold(struct class_device *cdev,
+  	return count;
+  }
+
+-static ssize_t gfar_show_fifo_starve(struct class_device *cdev, char *buf)
++static ssize_t gfar_show_fifo_starve(struct device *dev,
++				     struct device_attribute *attr, char *buf)
+  {
+-	struct net_device *dev = to_net_dev(cdev);
+-	struct gfar_private *priv = netdev_priv(dev);
++	struct gfar_private *priv = netdev_priv(to_net_dev(dev));
+
+  	return sprintf(buf, "%d\n", priv->fifo_starve);
+  }
+
+-
+-static ssize_t gfar_set_fifo_starve(struct class_device *cdev,
+-		const char *buf, size_t count)
++static ssize_t gfar_set_fifo_starve(struct device *dev,
++				    struct device_attribute *attr,
++				    const char *buf, size_t count)
+  {
+-	struct net_device *dev = to_net_dev(cdev);
+-	struct gfar_private *priv = netdev_priv(dev);
++	struct gfar_private *priv = netdev_priv(to_net_dev(dev));
+  	unsigned int num = simple_strtoul(buf, NULL, 0);
+  	u32 temp;
+  	unsigned long flags;
+@@ -253,19 +254,20 @@ static ssize_t gfar_set_fifo_starve(struct class_device *cdev,
+  	return count;
+  }
+
+-static ssize_t gfar_show_fifo_starve_off(struct class_device *cdev, char *buf)
++static ssize_t gfar_show_fifo_starve_off(struct device *dev,
++					 struct device_attribute *attr,
++					 char *buf)
+  {
+-	struct net_device *dev = to_net_dev(cdev);
+-	struct gfar_private *priv = netdev_priv(dev);
++	struct gfar_private *priv = netdev_priv(to_net_dev(dev));
+
+  	return sprintf(buf, "%d\n", priv->fifo_starve_off);
+  }
+
+-static ssize_t gfar_set_fifo_starve_off(struct class_device *cdev,
+-		const char *buf, size_t count)
++static ssize_t gfar_set_fifo_starve_off(struct device *dev,
++					struct device_attribute *attr,
++					const char *buf, size_t count)
+  {
+-	struct net_device *dev = to_net_dev(cdev);
+-	struct gfar_private *priv = netdev_priv(dev);
++	struct gfar_private *priv = netdev_priv(to_net_dev(dev));
+  	unsigned int num = simple_strtoul(buf, NULL, 0);
+  	u32 temp;
+  	unsigned long flags;
