@@ -1,46 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422652AbXBHDsW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161429AbXBHDxE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422652AbXBHDsW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Feb 2007 22:48:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422670AbXBHDsW
+	id S1161429AbXBHDxE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Feb 2007 22:53:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161472AbXBHDxE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Feb 2007 22:48:22 -0500
-Received: from cantor.suse.de ([195.135.220.2]:36974 "EHLO mx1.suse.de"
+	Wed, 7 Feb 2007 22:53:04 -0500
+Received: from hera.kernel.org ([140.211.167.34]:47676 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422652AbXBHDsW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Feb 2007 22:48:22 -0500
-Date: Wed, 7 Feb 2007 19:47:12 -0800
-From: Greg KH <gregkh@suse.de>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
-       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
-       pcihpd-discuss@lists.sourceforge.net
-Subject: Re: [GIT PATCH] PCI patches for 2.6.20
-Message-ID: <20070208034712.GA9023@suse.de>
-References: <20070208002932.GC4796@kroah.com> <45CA9638.2010209@garzik.org>
+	id S1161429AbXBHDxD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Feb 2007 22:53:03 -0500
+From: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
+To: Al Boldi <a1426z@gawab.com>
+Subject: Re: [GIT PATCH] ACPI patches for 2.6.21
+Date: Wed, 7 Feb 2007 22:51:42 -0500
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org
+References: <200702080055.33939.a1426z@gawab.com>
+In-Reply-To: <200702080055.33939.a1426z@gawab.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <45CA9638.2010209@garzik.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200702072251.42413.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 07, 2007 at 10:17:12PM -0500, Jeff Garzik wrote:
-> Greg KH wrote:
-> >Greg Kroah-Hartman (3):
-> >      PCI: remove duplicate device id from ata_piix
-> >      PCI: remove duplicate device id from ipr
-> >      Revert "PCI: remove duplicate device id from ata_piix"
+On Wednesday 07 February 2007 16:55, Al Boldi wrote:
+> Len Brown wrote:
+> > ACPICA Core version 2070126 simplifies the ACPI table manager
+> > code by consolidating multiple table definitions into one.
+> > It also saves memory by mapping the tables where the BIOS provides them
+> > rather than copying them into the kernel.
 > 
-> 
-> If these are coming out of quilt, why add these commit-then-revert 
-> changesets at all?
+> Thanks for the update, but does it fix the ISA VGA STR-regression in 2.6.20?
 
-I commited them all out of quilt, and then realized that I had applied
-one in the middle that I shouldn't have.  So I then used git to just
-revert it.
+Unlikely.
+But I'm not aware of an ISA VGA STR-regression in 2.6.20, so I can't really say.
+In general, VGA STR issues are related to the BIOS and video drivers
+and have nothing to do with ACPI support itself.
 
-Sorry for the confusion.
+> Also, is there some dependency that requires a display card to be present for 
+> STR to work?
 
-greg k-h
+ACPI doesn't care if you have VGA or not.
+
+-Len
