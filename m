@@ -1,86 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423226AbXBHQki@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965726AbXBHRId@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423226AbXBHQki (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Feb 2007 11:40:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423168AbXBHQki
+	id S965726AbXBHRId (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Feb 2007 12:08:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965723AbXBHRId
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Feb 2007 11:40:38 -0500
-Received: from mail.parknet.jp ([210.171.160.80]:3979 "EHLO parknet.jp"
+	Thu, 8 Feb 2007 12:08:33 -0500
+Received: from havoc.gtf.org ([69.61.125.42]:39765 "EHLO havoc.gtf.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423226AbXBHQkh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Feb 2007 11:40:37 -0500
-X-AuthUser: hirofumi@parknet.jp
-To: Jan Kara <jack@suse.cz>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Direct IO for fat
-References: <20070208112808.GA3767@duck.suse.cz>
-	<87k5ysfyd5.fsf@duaron.myhome.or.jp>
-	<20070208161001.GB3767@duck.suse.cz>
-From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-Date: Fri, 09 Feb 2007 01:40:31 +0900
-In-Reply-To: <20070208161001.GB3767@duck.suse.cz> (Jan Kara's message of "Thu\, 8 Feb 2007 17\:10\:01 +0100")
-Message-ID: <87wt2sd2m8.fsf@duaron.myhome.or.jp>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.93 (gnu/linux)
-MIME-Version: 1.0
+	id S965716AbXBHRIb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Feb 2007 12:08:31 -0500
+Date: Thu, 8 Feb 2007 12:08:30 -0500
+From: Jeff Garzik <jeff@garzik.org>
+To: Andrew Morton <akpm@osdl.org>, Linus Torvalds <torvalds@osdl.org>
+Cc: linux-fsdevel@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: [git patch] remove jffs (v1)
+Message-ID: <20070208170830.GA1399@havoc.gtf.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Kara <jack@suse.cz> writes:
 
->> FAT has to fill the hole completely, but DIO doesn't seems to do.
->> 
->> e.g.
->>         fd = open("file", O_WRONLY | O_CREAT | O_TRUNC);
->>         write(fd, buf, 512);
->>         lseek(fd, 10000, SEEK_SET);
->>         write(fd, buf, 512);
->> 
->> We need to allocate the blocks on 512 ~ 10000, and fill it with zero.
->> However, I think DIO doesn't fill it. If I'm missing something, please
->> let me know, I'll kill that check.
->   I know. DIO doesn't do it. But the point is that if blockdev_direct_IO
-> finds out it should allocate new blocks, it exits without allocating them.
-> Then in __generic_file_aio_write_nolock() if we find out that we did not
-> write everything in generic_file_direct_write(), we just call
-> generic_file_buffered_write() to write the unwritten part.
->   Hence, in case you describe above, the second write() finds out that
-> block is not allocated and eventually everything falls back to calling
-> generic_file_buffered_write() which calls prepare_write() and everything is
-> happy.
+Please pull from 'kill-jffs' branch of
+master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/misc-2.6.git kill-jffs
 
-I see. But sorry, I can't see where is preventing it... Finally, I
-think we do the following on second write(2).
+to receive the following updates:
 
-This is write, so create == 1, and ->lock_type == DIO_LOCKING,
-and dio->block_in_file > ->i_size, so DIO callback fat_get_block() with
-create == 1.
+ Documentation/feature-removal-schedule.txt |    7 -
+ fs/Kconfig                                 |   26 -
+ fs/Makefile                                |    1 -
+ fs/jffs/Makefile                           |   11 -
+ fs/jffs/inode-v23.c                        | 1847 ---------------
+ fs/jffs/intrep.c                           | 3449 ----------------------------
+ fs/jffs/intrep.h                           |   58 -
+ fs/jffs/jffs_fm.c                          |  798 -------
+ fs/jffs/jffs_fm.h                          |  149 --
+ fs/jffs/jffs_proc.c                        |  261 ---
+ fs/jffs/jffs_proc.h                        |   28 -
+ include/linux/jffs.h                       |  224 --
+ 12 files changed, 0 insertions(+), 6859 deletions(-)
+ delete mode 100644 fs/jffs/Makefile
+ delete mode 100644 fs/jffs/inode-v23.c
+ delete mode 100644 fs/jffs/intrep.c
+ delete mode 100644 fs/jffs/intrep.h
+ delete mode 100644 fs/jffs/jffs_fm.c
+ delete mode 100644 fs/jffs/jffs_fm.h
+ delete mode 100644 fs/jffs/jffs_proc.c
+ delete mode 100644 fs/jffs/jffs_proc.h
+ delete mode 100644 include/linux/jffs.h
 
-Then fat_get_block() seems to allocate block without fill hole,
-because it can't know caller is prepre_write or not...
-Well, anyway I'll test it on weekend. Thanks.
+Jeff Garzik (1):
+      Delete JFFS (version 1), as scheduled.
 
--> blockdev_direct_IO()
-  -> direct_io_worker()
-    -> do_direct_IO()
-      -> get_more_blocks()
+diff --git a/Documentation/feature-removal-schedule.txt b/Documentation/feature-removal-schedule.txt
+index 0ba6af0..fc53239 100644
+--- a/Documentation/feature-removal-schedule.txt
++++ b/Documentation/feature-removal-schedule.txt
+@@ -318,10 +318,3 @@ Why:	/proc/acpi/button has been replaced by events to the input layer
+ Who:	Len Brown <len.brown@intel.com>
+ 
+ ---------------------------
+-
+-What:	JFFS (version 1)
+-When:	2.6.21
+-Why:	Unmaintained for years, superceded by JFFS2 for years.
+-Who:	Jeff Garzik <jeff@garzik.org>
+-
+----------------------------
+diff --git a/fs/Kconfig b/fs/Kconfig
+index 8cd2417..67a50c9 100644
+--- a/fs/Kconfig
++++ b/fs/Kconfig
+@@ -1196,32 +1196,6 @@ config EFS_FS
+ 	  To compile the EFS file system support as a module, choose M here: the
+ 	  module will be called efs.
+ 
+-config JFFS_FS
+-	tristate "Journalling Flash File System (JFFS) support"
+-	depends on MTD && BLOCK && BROKEN
+-	help
+-	  JFFS is the Journalling Flash File System developed by Axis
+-	  Communications in Sweden, aimed at providing a crash/powerdown-safe
+-	  file system for disk-less embedded devices. Further information is
+-	  available at (<http://developer.axis.com/software/jffs/>).
+-
+-	  NOTE: This filesystem is deprecated and is scheduled for removal in
+-	  2.6.21.  See Documentation/feature-removal-schedule.txt
+-
+-config JFFS_FS_VERBOSE
+-	int "JFFS debugging verbosity (0 = quiet, 3 = noisy)"
+-	depends on JFFS_FS
+-	default "0"
+-	help
+-	  Determines the verbosity level of the JFFS debugging messages.
+-
+-config JFFS_PROC_FS
+-	bool "JFFS stats available in /proc filesystem"
+-	depends on JFFS_FS && PROC_FS
+-	help
+-	  Enabling this option will cause statistics from mounted JFFS file systems
+-	  to be made available to the user in the /proc/fs/jffs/ directory.
+-
+ config JFFS2_FS
+ 	tristate "Journalling Flash File System v2 (JFFS2) support"
+ 	select CRC32
+diff --git a/fs/Makefile b/fs/Makefile
+index b9ffa63..9edf411 100644
+--- a/fs/Makefile
++++ b/fs/Makefile
+@@ -94,7 +94,6 @@ obj-$(CONFIG_HPFS_FS)		+= hpfs/
+ obj-$(CONFIG_NTFS_FS)		+= ntfs/
+ obj-$(CONFIG_UFS_FS)		+= ufs/
+ obj-$(CONFIG_EFS_FS)		+= efs/
+-obj-$(CONFIG_JFFS_FS)		+= jffs/
+ obj-$(CONFIG_JFFS2_FS)		+= jffs2/
+ obj-$(CONFIG_AFFS_FS)		+= affs/
+ obj-$(CONFIG_ROMFS_FS)		+= romfs/
 
-		create = dio->rw & WRITE;
-		if (dio->lock_type == DIO_LOCKING) {
-			if (dio->block_in_file < (i_size_read(dio->inode) >>
-							dio->blkbits))
-				create = 0;
-		} else if (dio->lock_type == DIO_NO_LOCKING) {
-			create = 0;
-		}
-
-		/*
-		 * For writes inside i_size we forbid block creations: only
-		 * overwrites are permitted.  We fall back to buffered writes
-		 * at a higher level for inside-i_size block-instantiating
-		 * writes.
-		 */
-		ret = (*dio->get_block)(dio->inode, fs_startblk,
-						map_bh, create);
--- 
-OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+[snip obvious diff that deletes fs/jffs/* and include/linux/jffs.h]
