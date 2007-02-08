@@ -1,45 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423287AbXBHTmM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423269AbXBHTsJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423287AbXBHTmM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Feb 2007 14:42:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423279AbXBHTmM
+	id S1423269AbXBHTsJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Feb 2007 14:48:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423282AbXBHTsJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Feb 2007 14:42:12 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:57163 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423276AbXBHTmK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Feb 2007 14:42:10 -0500
-Date: Thu, 8 Feb 2007 19:42:04 +0000
-From: Christoph Hellwig <hch@infradead.org>
-To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org,
-       linux-ide@vger.kernel.org, Jeff Garzik <jgarzik@pobox.com>
-Subject: Re: [PATCH] ATA convert GSI to irq on ia64
-Message-ID: <20070208194204.GC2354@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	"Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-	LKML <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org,
-	linux-ide@vger.kernel.org, Jeff Garzik <jgarzik@pobox.com>
-References: <1170920422.15989.354.camel@ymzhang>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1170920422.15989.354.camel@ymzhang>
-User-Agent: Mutt/1.4.2.2i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Thu, 8 Feb 2007 14:48:09 -0500
+Received: from cacti.profiwh.com ([85.93.165.66]:37230 "EHLO cacti.profiwh.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1423269AbXBHTsI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Feb 2007 14:48:08 -0500
+Message-id: <156451408997831024@wsc.cz>
+Subject: [PATCH 1/2] Char: specialix, isr have 2 params
+From: Jiri Slaby <jirislaby@gmail.com>
+To: Andrew Morton <akpm@osdl.org>
+Cc: <linux-kernel@vger.kernel.org>
+Cc: <R.E.Wolff@BitWizard.nl>
+Date: Thu,  8 Feb 2007 20:48:17 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 08, 2007 at 03:40:22PM +0800, Zhang, Yanmin wrote:
-> If an ATA drive uses legacy mode, ata driver will choose 14 and 15 as the
-> fixed irq number. On ia64 platform, such numbers are GSI and should be converted
-> to irq vector.
-> 
-> Below patch against kernel 2.6.20 fixes it.
+specialix, isr have 2 params
 
-These direct arch ifdefs in core aren't acceptable.  The again I'm
-pretty sure we have patches floating around to turn these two macros
-into architecture-supplied ones, IIRC it came from the powerpc side.
+pt_regs are no longer the third parameter of isr, call sx_interrupt without
+it.
 
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+
+---
+commit fc1cfd05e494252ac71a223e0cdd35cff7dd9844
+tree eaca805ac95536c421feadf5a798f89c485e0628
+parent e8d5617886087b5c8eee9df2c73381495672e23c
+author Jiri Slaby <jirislaby@gmail.com> Thu, 08 Feb 2007 13:08:26 +0100
+committer Jiri Slaby <jirislaby@gmail.com> Thu, 08 Feb 2007 13:08:26 +0100
+
+ drivers/char/specialix.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/char/specialix.c b/drivers/char/specialix.c
+index 92043c8..f1688fe 100644
+--- a/drivers/char/specialix.c
++++ b/drivers/char/specialix.c
+@@ -459,7 +459,7 @@ void missed_irq (unsigned long data)
+ 	if (irq) {
+ 		printk (KERN_INFO "Missed interrupt... Calling int from timer. \n");
+ 		sx_interrupt (((struct specialix_board *)data)->irq,
+-		              (void*)data, NULL);
++				(void*)data);
+ 	}
+ 	missed_irq_timer.expires = jiffies + sx_poll;
+ 	add_timer (&missed_irq_timer);
