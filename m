@@ -1,89 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161526AbXBHEp3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161528AbXBHEsK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161526AbXBHEp3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Feb 2007 23:45:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161531AbXBHEp3
+	id S1161528AbXBHEsK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Feb 2007 23:48:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161529AbXBHEsK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Feb 2007 23:45:29 -0500
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:43219 "EHLO e3.ny.us.ibm.com"
+	Wed, 7 Feb 2007 23:48:10 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:54877 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161526AbXBHEp2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Feb 2007 23:45:28 -0500
-Date: Thu, 8 Feb 2007 10:15:25 +0530
-From: Vivek Goyal <vgoyal@in.ibm.com>
-To: Etienne Lorrain <etienne_lorrain@yahoo.fr>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: Re : Re : [PATCH] Compressed ia32 ELF file generation for loading by Gujin 1/3
-Message-ID: <20070208044525.GA5997@in.ibm.com>
-Reply-To: vgoyal@in.ibm.com
-References: <848486.58910.qm@web26907.mail.ukl.yahoo.com>
+	id S1161528AbXBHEsI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Feb 2007 23:48:08 -0500
+Date: Wed, 7 Feb 2007 20:47:45 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Lukasz Trabinski <lukasz@wsisiz.edu.pl>
+Cc: linux-kernel@vger.kernel.org,
+       Bartlomiej Solarz-Niesluchowski <solarz@wsisiz.edu.pl>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: 2.6.20 BUG: soft lockup detected on CPU#0!
+Message-Id: <20070207204745.a2640c43.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0702080000060.13077@oceanic.wsisiz.edu.pl>
+References: <Pine.LNX.4.64.0702080000060.13077@oceanic.wsisiz.edu.pl>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <848486.58910.qm@web26907.mail.ukl.yahoo.com>
-User-Agent: Mutt/1.5.11
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 07, 2007 at 02:55:39PM +0000, Etienne Lorrain wrote:
-> Vivek Goyal wrote:
-> >How do I know which program header is real mode code and the boot loader
-> > is not supposed to load it? May be PT_LOAD header with physical addr 0?
-> > What happens if changes happen and down the line we start compiling 
-> > real mode code for non-zero address?
+On Thu, 8 Feb 2007 00:02:10 +0100 (CET) Lukasz Trabinski <lukasz@wsisiz.edu.pl> wrote:
+
+> Hello
 > 
->  Yes, any PT_LOAD below 64 Kbytes can only be real mode, and real-mode
-> cannot be loaded higher, and cannot be bigger than 640 Kbytes, anything
-> different (like with virtual address at 0xC0000000) is Linux protected mode.
-> Considering the linker used it is always the 4th program header, before there
-> were only 3 program header,third one stay the NOTE one.
+> On 2.6.19 I had about 60 days uptime, on 2.6.20 2 days :(
 > 
 
-Well this is all a lot of speculation. This is not standard way of retrieving
-information from ELF. Number of program headers finally created keep on
-changing. Previously it was left to the linker and now people have changed
-it to 3 by specifically using PHDR directive.
-  
-> > Hence I think keeping real mode code out of vmlinux might prove to be a good idea.
+Did the machine actually fail?  Or did it just print these messages and
+keep going?
+
+
 > 
->  Well, ELF is a format made to describe what to load, at which addres, and I assume
-> everyone recognise that some ELF section shall not be loaded, like the debug information.
-> Gujin accepts having the real-mode treated like a program text and so in the program header,
-> or like extra memory block with content like the symbol table used by a debugger, I do not
-> know what is best so have implemented the two.
+> oceanic:~$ uname -a
+> Linux oceanic.wsisiz.edu.pl 2.6.20-oceanic #2 SMP Sun Feb 4 21:55:29 CET 
+> 2007 x86_64 x86_64 x86_64 GNU/Linux
 > 
-> > Secondly, if you compile real mode code with vmlinux, what would be the
-> > entry point for this ELF file? Real mode entry? Then I have not way to
-> > find out from ELF headers where is the protected mode entry point and
-> > I can not do use this vmlinux with kexec/kdump.
-> 
->  I did not touch the kernel entry point, the real mode entry point is at offset zero
-> in the real-mode program header/section table.
-> 
-> > OTOH, now bzImage is relocatable. Is this image going to be relocatable?
-> > How do we take care of that?
-> 
->  Just I did not completely understand why you need relocation (and the announce
-> was when I was in holidays far away). I know a simple kernel is needed to do
-> some debugging when the main kernel has crashed, this kernel is better loaded
-> at for instance 16 Mbytes. You probably do not want the same kernel as the main
-> one because it may crash the same way, and you start a loop - and even then
-> if you have exactly the same kernel it is easier to use the same write-protected
-> block of memory with different data sections.
->  But I probably do not understand the problem so do not know what to write.
+> Feb  7 22:46:00 oceanic kernel: BUG: soft lockup detected on CPU#0! 
+> Feb  7 22:46:00 oceanic kernel: 
+> Feb  7 22:46:00 oceanic kernel: Call Trace: 
+> Feb  7 22:46:00 oceanic kernel:  <IRQ>  [<ffffffff80250550>] softlockup_tick+0xdb/0xed 
+> Feb  7 22:46:00 oceanic kernel:  [<ffffffff8022ea87>] __do_softirq+0x55/0xc4 
+> Feb  7 22:46:00 oceanic kernel:  [<ffffffff8023256c>] update_process_times+0x42/0x68 
+> Feb  7 22:46:00 oceanic kernel:  [<ffffffff80213e36>] smp_local_timer_interrupt+0x34/0x55 
+> Feb  7 22:46:00 oceanic kernel:  [<ffffffff80214316>] smp_apic_timer_interrupt+0x51/0x68 
+> Feb  7 22:46:00 oceanic kernel:  [<ffffffff8020a3a6>] apic_timer_interrupt+0x66/0x70 
+> Feb  7 22:46:00 oceanic kernel:  <EOI>  [<ffffffff804393c3>] _spin_unlock_irqrestore+0x8/0x9 
+> Feb  7 22:46:00 oceanic kernel:  [<ffffffff804393c3>] _spin_unlock_irqrestore+0x8/0x9 
+> Feb  7 22:46:00 oceanic kernel:  [<ffffffff8023dddd>] hrtimer_try_to_cancel+0x4a/0x53 
+> Feb  7 22:46:00 oceanic kernel:  [<ffffffff8023ddf2>] hrtimer_cancel+0xc/0x16 
+> Feb  7 22:46:00 oceanic kernel:  [<ffffffff8023ddf2>] hrtimer_cancel+0xc/0x16 
+> Feb  7 22:46:00 oceanic kernel:  [<ffffffff8022cc66>] do_exit+0x1c8/0x800 
+> Feb  7 22:46:00 oceanic kernel:  [<ffffffff8022d31d>] sys_exit_group+0x0/0xe 
+> Feb  7 22:46:00 oceanic kernel:  [<ffffffff8020995c>] tracesys+0xdc/0xe1 
+> Feb  7 22:46:00 oceanic kernel: 
+> Feb  7 22:46:00 oceanic kernel: BUG: soft lockup detected on CPU#1! 
+> Feb  7 22:46:00 oceanic kernel: 
+> Feb  7 22:46:00 oceanic kernel: Call Trace: 
+> Feb  7 22:46:00 oceanic kernel:  <IRQ>  [<ffffffff80250550>] softlockup_tick+0xdb/0xed 
+> Feb  7 22:46:00 oceanic kernel:  [<ffffffff8023256c>] update_process_times+0x42/0x68 
+> Feb  7 22:46:00 oceanic kernel:  [<ffffffff80213e36>] smp_local_timer_interrupt+0x34/0x55 
+> Feb  7 22:46:00 oceanic kernel:  [<ffffffff80214316>] smp_apic_timer_interrupt+0x51/0x68 
+> Feb  7 22:46:00 oceanic kernel:  [<ffffffff802338c8>] __group_send_sig_info+0x35/0x8b 
+> Feb  7 22:46:00 oceanic kernel:  [<ffffffff8022e0f1>] it_real_fn+0x0/0x4f 
+> Feb  7 22:46:00 oceanic kernel:  [<ffffffff8020a3a6>] apic_timer_interrupt+0x66/0x70 
+> Feb  7 22:46:00 oceanic kernel:  [<ffffffff802164da>] flat_send_IPI_mask+0x0/0x3d 
+> Feb  7 22:46:00 oceanic kernel:  [<ffffffff8023dc52>] hrtimer_run_queues+0x105/0x164 
+> Feb  7 22:46:00 oceanic kernel:  [<ffffffff80231d0f>] run_timer_softirq+0x21/0x19f 
+> Feb  7 22:46:00 oceanic kernel:  [<ffffffff8022eb49>] tasklet_action+0x53/0x9d 
+> Feb  7 22:46:00 oceanic kernel:  [<ffffffff8022ea87>] __do_softirq+0x55/0xc4 
+> Feb  7 22:46:00 oceanic kernel:  [<ffffffff8020a8fc>] call_softirq+0x1c/0x28 
+> Feb  7 22:46:00 oceanic kernel:  [<ffffffff8020c3b1>] do_softirq+0x2c/0x7d 
+> Feb  7 22:46:00 oceanic kernel:  [<ffffffff8021431b>] smp_apic_timer_interrupt+0x56/0x68 
+> Feb  7 22:46:00 oceanic kernel:  [<ffffffff80208a55>] default_idle+0x0/0x3d 
+> Feb  7 22:46:00 oceanic kernel:  [<ffffffff8020a3a6>] apic_timer_interrupt+0x66/0x70 
+> Feb  7 22:46:00 oceanic kernel:  <EOI>  [<ffffffff80208a7e>] default_idle+0x29/0x3d 
+> Feb  7 22:46:00 oceanic kernel:  [<ffffffff80208ae4>] cpu_idle+0x52/0x71 
+> Feb  7 22:46:00 oceanic kernel:  [<ffffffff8057fbbc>] start_secondary+0x465/0x474
 > 
 
-As long as one can make sure that test kernel boots (commonly the case with
-distros), same kernel can be used as capture kernel too. So the idea here
-is to be able to use same kernel binary as production kernel and capture
-kernel hence distros don't have to ship an additional kernel binary compiled
-for a different physical addr just for dump capturing purposes.
+The softlock detector has a long history of false positives and precious
+few true positives, in my experience.
 
-Currently relocation information is extracted from vmlinux and packed in
-final bzImage after some processing. After execution of real mode code
-and once the image is decompressed, all the relocations are performed and
-then control is transferred to kernel.
-
-Thanks
-Vivek
