@@ -1,98 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423112AbXBHQfY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423220AbXBHQhY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423112AbXBHQfY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Feb 2007 11:35:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423222AbXBHQfY
+	id S1423220AbXBHQhY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Feb 2007 11:37:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423222AbXBHQhY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Feb 2007 11:35:24 -0500
-Received: from artemis.sr.unh.edu ([132.177.249.69]:23981 "EHLO
-	artemis.sr.unh.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423112AbXBHQfX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Feb 2007 11:35:23 -0500
-X-Greylist: delayed 1958 seconds by postgrey-1.27 at vger.kernel.org; Thu, 08 Feb 2007 11:35:23 EST
-Message-ID: <45CB4996.1050903@unh.edu>
-Date: Thu, 08 Feb 2007 11:02:30 -0500
-From: Kai Germaschewski <kai.germaschewski@unh.edu>
-User-Agent: Thunderbird 1.5.0.9 (X11/20060911)
+	Thu, 8 Feb 2007 11:37:24 -0500
+Received: from mail.tmr.com ([64.65.253.246]:37498 "EHLO gaimboi.tmr.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1423220AbXBHQhX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Feb 2007 11:37:23 -0500
+Message-ID: <45CB4C01.2060709@tmr.com>
+Date: Thu, 08 Feb 2007 11:12:49 -0500
+From: Bill Davidsen <davidsen@tmr.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
 MIME-Version: 1.0
-To: Bill Davidsen <davidsen@tmr.com>
-CC: Philippe De Muyter <phdm@macqel.be>,
-       "Ahmed S. Darwish" <darwish.07@gmail.com>,
-       Joe Perches <joe@perches.com>, kkeil@suse.de, kai.germaschewski@gmx.de,
-       linux-kernel@vger.kernel.org, isdn4linux@listserv.isdn4linux.de
-Subject: Re: [PATCH 2.6.20] isdn-capi: Use ARRAY_SIZE macro when appropriate
-References: <20070206160446.GE8991@Ahmed> <1170784337.3688.18.camel@localhost> <20070206204130.GU8991@Ahmed> <20070206211813.GD2649@ingate.macqel.be> <45CB4766.30909@tmr.com>
-In-Reply-To: <45CB4766.30909@tmr.com>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+CC: Linux Frame Buffer Device Development 
+	<linux-fbdev-devel@lists.sourceforge.net>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.20: Modular fb and logo crash
+References: <Pine.LNX.4.62.0702071521340.29060@pademelon.sonytel.be>
+In-Reply-To: <Pine.LNX.4.62.0702071521340.29060@pademelon.sonytel.be>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bill Davidsen wrote:
-> Philippe De Muyter wrote:
->> On Tue, Feb 06, 2007 at 10:41:30PM +0200, Ahmed S. Darwish wrote:
->>> On Tue, Feb 06, 2007 at 09:52:17AM -0800, Joe Perches wrote:
->>>> On Tue, 2007-02-06 at 18:04 +0200, Ahmed S. Darwish wrote:
->>>>> A patch to use ARRAY_SIZE macro already defined in kernel.h
->>>>> Signed-off-by: Ahmed S. Darwish <darwish.07@gmail.com>
->>> [...]
->>>>> -    int nelem = sizeof(procfsentries)/sizeof(procfsentries[0]);
->>>>> +    int nelem = ARRAY_SIZE(procfsentries);
->>>>>      int i;
->>>>>  
->>>>>      for (i=0; i < nelem; i++) {
->>>> For these patches, perhaps you can eliminate the temporary
->>>> variable and change the loop to the more common form of
->>>>
->>>>     for (i = 0; i < ARRAY_SIZE(array); i++) {
->>> Thanks, I think it's better too. Here's the modified patch.
->>>
->>> A patch to use ARRAY_SIZE macro when appropriate.
->>>
->>> Signed-off-by: Ahmed S. Darwish <darwish.07@gmail.com>
->>> ---
->>> diff --git a/drivers/isdn/capi/capi.c b/drivers/isdn/capi/capi.c
->>> index d22c022..87fe89c 100644
->>> --- a/drivers/isdn/capi/capi.c
->>> +++ b/drivers/isdn/capi/capi.c
->>> @@ -1456,10 +1456,9 @@ static struct procfsentries {
->>>  
->>>  static void __init proc_init(void)
->>>  {
->>> -    int nelem = sizeof(procfsentries)/sizeof(procfsentries[0]);
->>>      int i;
->>>  
->>> -    for (i=0; i < nelem; i++) {
->>> +    for (i = 0; i < ARRAY_SIZE(procfsentries); i++) {
->>>          struct procfsentries *p = procfsentries + i;
->>>      p->procent = create_proc_entry(p->name, p->mode, NULL);
->>>      if (p->procent) p->procent->read_proc = p->read_proc;
->>> @@ -1468,10 +1467,9 @@ static void __init proc_init(void)
->>>  
->>>  static void __exit proc_exit(void)
->>>  {
->>> -    int nelem = sizeof(procfsentries)/sizeof(procfsentries[0]);
->>>      int i;
->>>  
->>> -    for (i=nelem-1; i >= 0; i--) {
->>> +    for (i = ARRAY_SIZE(procfsentries) - 1; i >= 0; i--) {
->>
->> I would write such decrementing loops as :
->>
->>        for (i = ARRAY_SIZE(procfsentries); --i >= 0; ) {
->>
->> Long time ago, that produced better code.  I did not check recently
->> though.
->
-> Why would you write "--i >= 0" instead of just "i--"? The size of an
-> array can't be negative.
->
-In my opinion, the first way of writing it is the way to go. I've not
-seen it put like the 2nd or 3rd way anywhere in the kernel (of course I
-haven't read all of the code), and while it's correct, it's less
-readable. I don't think gcc would generate different code between
-variant 1 and 2, and anyway, this is called once at module init/exit
-time, so whether you save 10 cycles there or not is totally insignificant.
+Geert Uytterhoeven wrote:
+> If you don't have any builtin frame buffer device driver and insmod a frame
+> buffer device driver, the logo code will still try to display the logo (which
+> is __initdata). This may cause a crash.
+> 
+> Originally (2.1.x, is it that long ago I used a modular frame buffer device
+> driver?), this didn't happen because initmem_freed (which no longer exists) was
+> checked. BTW, there's still a comment in drivers/video/console/fbcon.c about
+> this.
+> 
+> Anyone else who's seeing this? Anyone with an idea how to fix this?
+> Moving the logo code to userspace is not considered a solution ;-)
 
---Kai
+I used to see this when loading from a booted system, but not when the 
+modules were in initrd. Don't know if that offers you any help or not. 
+Clearly you want the fb built-in so you see the penguins, anyway. ;-D
+
+-- 
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
+
