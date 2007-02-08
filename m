@@ -1,109 +1,233 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422986AbXBHNLG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423001AbXBHNOS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422986AbXBHNLG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Feb 2007 08:11:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422970AbXBHNLF
+	id S1423001AbXBHNOS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Feb 2007 08:14:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423000AbXBHNOS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Feb 2007 08:11:05 -0500
-Received: from web26903.mail.ukl.yahoo.com ([217.146.176.92]:32624 "HELO
-	web26903.mail.ukl.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1422985AbXBHNLD convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Feb 2007 08:11:03 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.fr;
-  h=X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=UoUb9bwlpZAO/PAaEsI3Qa1nDuHvwLD2IV2LbJYqr3zBf6DxplS5+B+9L631XbF+t3H07UVZxtnNYBU+mM7qBLXXdweN9vGT13VI9+sEMsdfkqpqeFl2QWRBotIr8hbeLJqOD+lSzCdyaOMRYrU6Quub/e9dFDA0flb+Ig9oTzM=;
-X-YMail-OSG: qRB82l8VM1l.Yy.TxBN2zO52FN5jepb5p3gdz_uN3VRtdEWykKCiHigz_Yl6nRj6Cv0ueThJkp1TpmQ0RExBAUEmkOjsO2z4P2tBHNA2ZJloncEPzpW6VoF03TaW3kcz.gSZfCnDa1zY
-X-Mailer: YahooMailRC/368.7 YahooMailWebService/0.6.132.7
-Date: Thu, 8 Feb 2007 13:10:58 +0000 (GMT)
-From: Etienne Lorrain <etienne_lorrain@yahoo.fr>
-Subject: Re : [PATCH] Compressed ia32 ELF file generation for loading by Gujin 1/3
-To: vgoyal@in.ibm.com
-Cc: "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
-Message-ID: <737880.23190.qm@web26903.mail.ukl.yahoo.com>
+	Thu, 8 Feb 2007 08:14:18 -0500
+Received: from mailhub.sw.ru ([195.214.233.200]:38051 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1422994AbXBHNOR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Feb 2007 08:14:17 -0500
+Date: Thu, 8 Feb 2007 16:20:12 +0300
+From: Alexey Dobriyan <adobriyan@openvz.org>
+To: akpm@osdl.org
+Cc: viro@ftp.linux.org.uk, linux-kernel@vger.kernel.org,
+       duncan.sands@math.u-psud.fr
+Subject: [PATCH v3] Fix rmmod/read/write races in /proc entries
+Message-ID: <20070208132012.GA6041@localhost.sw.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> >  I assume you care about this ELF header because you are also a user of
-> > the ELF file vmlinux, aren't you?
->
-> Yes I am. I use kexec boot loader which has capability to load ELF kernel
-> images (vmlinux). That's why I am concerned about linking real mode code
-> in vmlinux as for kdump case I shall have to be aware that kernel vmlinux
-> might contain a special PT_LOAD type program header which will contain
-> real mode code and it does not have to be loaded. Then I will run into
-> guessing business which one is that real mode PT_LOAD  program header and
-> my assumption might very well break in next few kernel release.
+Fed up with verifying various barrier-based schemes, this version uses
+spinlock.
+---------------------------------------------------------------------------
 
- So is kexec able to relocate this vmlinux? If kexec and Gujin do approximately
-the same thing they should do it the same way. If you cannot get a PT_LOAD
-section, maybe we can put a simple system in NOTE, or just create a
-PT_LOAD16 if the linker accepts other values.
- I do not really like to relocate after vmlinux has been linked at a fixed address,
-because I am not sure you can guess each address to relocate or not:
-you can define permanent address in the linker file by simply "symbol = address"
-and those should never be relocated. For instance the very high addresses
-on ia32 may point to registers or FPU instead of memory, so may or may not
-have to be relocated. I also would better like you not to relocate the real-mode
-addresses.
+Current /proc creation interfaces suffer from at least two types of races:
+--------------------------------------------------------
+1. Write via ->write_proc sleeps in copy_from_user(). Module disappears
+   meanwhile.
+
+   pde = create_proc_entry()
+   if (!pde)
+	return -ENOMEM;
+   pde->write_proc = ...
+				open
+				write
+				copy_from_user
+   pde = create_proc_entry();
+   if (!pde) {
+	remove_proc_entry();
+	return -ENOMEM;
+	/* module unloaded */
+   }
+				*boom*
+--------------------------------------------------------
+2. Read/write happens when PDE only partially initialized. ->data is NULL
+   when create_proc_entry() returns. Almost all ->read_proc and
+   ->write_proc handlers assume that ->data is valid.
+
+   pde = create_proc_entry();
+   if (pde) {
+	/* which dereferences ->data */
+	pde->write_proc = ...
+				open
+				write
+	pde->data = ...
+   }
+--------------------------------------------------------
+
+The following plan is going to be executed (as per Al Viro's explanations):
+
+PDE gets counter counting reads and writes in progress done via ->read_proc,
+->write_proc, ->get_info . Generic proc code will bump PDE's counter before
+calling into module-specific method and decrement it after it returns.
+
+remove_proc_entry() will wait until all readers and writers are done.
+To do this reliably it will set ->proc_fops to NULL and generic proc
+code won't call into module it it sees NULL ->proc_fops.
+
+This patch implements part above. So far, no changes in proc users
+required. Patch fixes races of type 1.
+
+Signed-off-by: Alexey Dobriyan <adobriyan@openvz.org>
+---
+
+ fs/proc/generic.c       |   69 +++++++++++++++++++++++++++++++++++++++++++++---
+ include/linux/proc_fs.h |   16 +++++++++++
+ 2 files changed, 82 insertions(+), 3 deletions(-)
+
+--- a/fs/proc/generic.c
++++ b/fs/proc/generic.c
+@@ -76,6 +76,21 @@ proc_file_read(struct file *file, char _
+ 	if (!(page = (char*) __get_free_page(GFP_KERNEL)))
+ 		return -ENOMEM;
  
-> >  And you do not want to write protect the kernel code (if the CPU write protection
-> > is not working, the hardware is not working so debug will be difficult, and a simple
-> > CRC32 can tell kernel memory failure) and use twice the same code memory
-> > (with different data area or saving kernel data elsewhere before reload).
-> >  Is that related to module loading or instruction set detection/patch or multiprocessor?
->
-> If I understand it right, you seem to be suggesting that I don't have to 
-> reload the kernel text and I can only reload the data for second kernel?
-> 
-> We run the whole of the kernel from a mutually execlusive location from
-> first kernel to mitigate the concerns that first kernel's ongoing DMA might
-> corrupt second kernel. That's why first kernel's text can't be reused.
++	spin_lock(&dp->pde_unload_lock);
++	if (!dp->proc_fops)
++		/*
++		 * remove_proc_entry() marked PDE as "going away".
++		 * No new readers allowed.
++		 */
++		goto out_unlock;
++	/*
++	 * We are going to call into module's code via ->get_info or
++	 * ->read_proc. Bump refcount so that remove_proc_entry() will
++	 * wait for read to complete.
++	 */
++	dp->pde_users++;
++	spin_unlock(&dp->pde_unload_lock);
++
+ 	while ((nbytes > 0) && !eof) {
+ 		count = min_t(size_t, PROC_BLOCK_SIZE, nbytes);
+ 
+@@ -195,6 +210,11 @@ proc_file_read(struct file *file, char _
+ 		buf += n;
+ 		retval += n;
+ 	}
++
++	spin_lock(&dp->pde_unload_lock);
++	dp->pde_users--;
++out_unlock:
++	spin_unlock(&dp->pde_unload_lock);
+ 	free_page((unsigned long) page);
+ 	return retval;
+ }
+@@ -205,14 +225,39 @@ proc_file_write(struct file *file, const
+ {
+ 	struct inode *inode = file->f_path.dentry->d_inode;
+ 	struct proc_dir_entry * dp;
++	ssize_t rv = -EIO;
+ 	
+ 	dp = PDE(inode);
+ 
+ 	if (!dp->write_proc)
+-		return -EIO;
++		goto out;
++
++	spin_lock(&dp->pde_unload_lock);
++	if (!dp->proc_fops)
++		/*
++		 * remove_proc_entry() marked PDE as "going away".
++		 * No new writers allowed.
++		 */
++		goto out_unlock;
++	/*
++	 * We are going to call into module's code via ->write_proc .
++	 * Bump refcount so that module won't dissapear while ->write_proc
++	 * sleeps in copy_from_user(). remove_proc_entry() will wait for
++	 * write to complete.
++	 */
++	dp->pde_users++;
++	spin_unlock(&dp->pde_unload_lock);
+ 
++	/* PDE is ready, refcount bumped, call into module. */
+ 	/* FIXME: does this routine need ppos?  probably... */
+-	return dp->write_proc(file, buffer, count, dp->data);
++	rv = dp->write_proc(file, buffer, count, dp->data);
++
++	spin_lock(&dp->pde_unload_lock);
++	dp->pde_users--;
++out_unlock:
++	spin_unlock(&dp->pde_unload_lock);
++out:
++	return rv;
+ }
+ 
+ 
+@@ -604,6 +649,8 @@ static struct proc_dir_entry *proc_creat
+ 	ent->namelen = len;
+ 	ent->mode = mode;
+ 	ent->nlink = nlink;
++	ent->pde_users = 0;
++	spin_lock_init(&ent->pde_unload_lock);
+  out:
+ 	return ent;
+ }
+@@ -717,12 +764,28 @@ void remove_proc_entry(const char *name,
+ 	if (!parent && xlate_proc_name(name, &parent, &fn) != 0)
+ 		goto out;
+ 	len = strlen(fn);
+-
++again:
+ 	spin_lock(&proc_subdir_lock);
+ 	for (p = &parent->subdir; *p; p=&(*p)->next ) {
+ 		if (!proc_match(len, fn, *p))
+ 			continue;
+ 		de = *p;
++
++		/*
++		 * Stop accepting new readers/writers. If you're dynamically
++		 * allocating ->proc_fops, save a pointer somewhere.
++		 */
++		spin_lock(&de->pde_unload_lock);
++		de->proc_fops = NULL;
++		/* Wait until all readers/writers are done. */
++		if (de->pde_users > 0) {
++			spin_unlock(&de->pde_unload_lock);
++			spin_unlock(&proc_subdir_lock);
++			schedule();
++			goto again;
++		}
++		spin_unlock(&de->pde_unload_lock);
++
+ 		*p = de->next;
+ 		de->next = NULL;
+ 		if (S_ISDIR(de->mode))
+--- a/include/linux/proc_fs.h
++++ b/include/linux/proc_fs.h
+@@ -56,6 +56,19 @@ struct proc_dir_entry {
+ 	gid_t gid;
+ 	loff_t size;
+ 	struct inode_operations * proc_iops;
++	/*
++	 * NULL ->proc_fops means "PDE is going away RSN" or
++	 * "PDE is just created". In either case ->get_info, ->read_proc,
++	 * ->write_proc won't be called because it's too late or too early,
++	 * respectively.
++	 *
++	 * Valid ->proc_fops means "use this file_operations" or
++	 * "->data is setup, it's safe to call ->read_proc, ->write_proc which
++	 * can dereference it".
++	 *
++	 * If you're allocating ->proc_fops dynamically, save a pointer
++	 * somewhere.
++	 */
+ 	const struct file_operations * proc_fops;
+ 	get_info_t *get_info;
+ 	struct module *owner;
+@@ -66,6 +79,9 @@ struct proc_dir_entry {
+ 	atomic_t count;		/* use count */
+ 	int deleted;		/* delete flag */
+ 	void *set;
++	int pde_users;	/* number of readers + number of writers via
++			 * ->read_proc, ->write_proc, ->get_info */
++	spinlock_t pde_unload_lock;
+ };
+ 
+ struct kcore_list {
 
-  So in some exception handler, you detect something is wrong and then
- jump to a new kernel. Maybe this class of bug (DMA or hardware bit flipped)
- should be detected even without this double kernel environment, by running a
- CRC32 on the kernel text section in this exception handler, displayed that in
- the crash dump.
-
-> Secondly, it gives flexibility to user that either he can choose to use 
-> the production kernel as capture kernel or an entirely different custom
-> kernel can be used as capture kernel.
-
-  IHMO if it is just capturing the memory, I would have a kernel without
- any modules (usb-storage drivers linked-in) and save to USB key the
- core. Automatically loading modules after the crash may be a problem.
-
-> If real mode code is linked with vmlinux, then kdump will be broken.
-
- I do not want to break anything for fun. I need either a reason or a bug.
-
-> bzImage is relocatable. If a new kernel image format is introduced
-> (compressed ELF), then I will prefer it to be a relocatable one
-> (if possible).
-
- It may be possible to do some kind of "ld -r -o vmlinux", but delaying
-the decision where to run the kernel is just delaying: someone has to
-decide, and even if Gujin do not decide It will ask the user who most
-of the time will have no clue... and on which basis do you want the
-bootloader to decide... maybe this SDRAM is faulty and usually the
-SDRAM are 512 Mbytes so run the kernel at 512 + 16 Mbytes, but
-only if there is more than 1024 Mbytes of SDRAM?
-
-  Thanks,
-  Etienne.
-
-
-	
-
-	
-		
-___________________________________________________________________________ 
-Découvrez une nouvelle façon d'obtenir des réponses à toutes vos questions ! 
-Profitez des connaissances, des opinions et des expériences des internautes sur Yahoo! Questions/Réponses 
-http://fr.answers.yahoo.com
