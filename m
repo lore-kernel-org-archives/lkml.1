@@ -1,67 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423456AbXBHWq5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423247AbXBHWtI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423456AbXBHWq5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Feb 2007 17:46:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423459AbXBHWq5
+	id S1423247AbXBHWtI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Feb 2007 17:49:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423268AbXBHWtI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Feb 2007 17:46:57 -0500
-Received: from twin.jikos.cz ([213.151.79.26]:37933 "EHLO twin.jikos.cz"
+	Thu, 8 Feb 2007 17:49:08 -0500
+Received: from twin.jikos.cz ([213.151.79.26]:38049 "EHLO twin.jikos.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423456AbXBHWq5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Feb 2007 17:46:57 -0500
-Date: Thu, 8 Feb 2007 23:45:43 +0100 (CET)
+	id S1423247AbXBHWtH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Feb 2007 17:49:07 -0500
+Date: Thu, 8 Feb 2007 23:48:39 +0100 (CET)
 From: Jiri Kosina <jikos@jikos.cz>
-To: Jeff Garzik <jeff@garzik.org>
-cc: Greg KH <greg@kroah.com>, hjlipp@web.de, tilman@imap.cc,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: gigaset build broken on current linux-2.6.git
-In-Reply-To: <45CBA41D.3000406@garzik.org>
-Message-ID: <Pine.LNX.4.64.0702082344100.25686@twin.jikos.cz>
-References: <45CBA41D.3000406@garzik.org>
+To: Takashi Iwai <tiwai@suse.de>
+cc: linux-kernel@vger.kernel.org, linux-sound@vger.kernel.org
+Subject: [PATCH] USB SOUND: usbaudio - remove urb->bandwidth reference
+Message-ID: <Pine.LNX.4.64.0702082345460.25686@twin.jikos.cz>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 8 Feb 2007, Jeff Garzik wrote:
+Hi,
 
-> [jgarzik@pretzel linux-2.6]$ make -sj4
->   CHK     include/linux/version.h
->   CHK     include/linux/utsrelease.h
->   CHK     include/linux/compile.h
-> drivers/isdn/gigaset/bas-gigaset.c: In function 'dump_urb':
-> drivers/isdn/gigaset/bas-gigaset.c:258: error: 'struct urb' has no member
-> named 'bandwidth'
+Jeff spotted forgotten occurence of urb->bandwidth in isdn subsystem. When 
+fixing it, I have done quick grep over the tree and found another one 
+(which was even commented out). Let's just remove it.
 
-ISDN: gigaset - remove forgotten urb->bandwidth reference
+[PATCH] USB SOUND: usbaudio - remove urb->bandwidth reference
 
 Recent changes in usbcore removed the bandwidth field from struct urb.
-Remove the forgotten occurence in bas-gigaset.c
+Remove the occurence in usbaudio.c
 
 Signed-off-by: Jiri Kosina <jkosina@suse.cz>
 
 ---
 
- drivers/isdn/gigaset/bas-gigaset.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ sound/usb/usbaudio.c |   10 ----------
+ 1 files changed, 0 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/isdn/gigaset/bas-gigaset.c b/drivers/isdn/gigaset/bas-gigaset.c
-index b5e7f9c..63e51dd 100644
---- a/drivers/isdn/gigaset/bas-gigaset.c
-+++ b/drivers/isdn/gigaset/bas-gigaset.c
-@@ -257,10 +257,10 @@ static inline void dump_urb(enum debuglevel level, const char *tag,
- 			urb->transfer_flags);
- 		gig_dbg(level,
- 			"  transfer_buffer=0x%08lx[%d], actual_length=%d, "
--			"bandwidth=%d, setup_packet=0x%08lx,",
-+			"setup_packet=0x%08lx,",
- 			(unsigned long) urb->transfer_buffer,
- 			urb->transfer_buffer_length, urb->actual_length,
--			urb->bandwidth, (unsigned long) urb->setup_packet);
-+			(unsigned long) urb->setup_packet);
- 		gig_dbg(level,
- 			"  start_frame=%d, number_of_packets=%d, interval=%d, "
- 			"error_count=%d,",
+diff --git a/sound/usb/usbaudio.c b/sound/usb/usbaudio.c
+index 19bdcc7..56fc9e9 100644
+--- a/sound/usb/usbaudio.c
++++ b/sound/usb/usbaudio.c
+@@ -324,16 +324,6 @@ static int prepare_capture_urb(struct snd_usb_substream *subs,
+ 	}
+ 	urb->transfer_buffer_length = offs;
+ 	urb->number_of_packets = ctx->packets;
+-#if 0 // for check
+-	if (! urb->bandwidth) {
+-		int bustime;
+-		bustime = usb_check_bandwidth(urb->dev, urb);
+-		if (bustime < 0)
+-			return bustime;
+-		printk("urb %d: bandwidth = %d (packets = %d)\n", ctx->index, bustime, urb->number_of_packets);
+-		usb_claim_bandwidth(urb->dev, urb, bustime, 1);
+-	}
+-#endif // for check
+ 	return 0;
+ }
+ 
 
 -- 
 Jiri Kosina
