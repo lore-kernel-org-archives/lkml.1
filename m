@@ -1,51 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161050AbXBHX3g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933269AbXBHXa6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161050AbXBHX3g (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Feb 2007 18:29:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161070AbXBHX3g
+	id S933269AbXBHXa6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Feb 2007 18:30:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933225AbXBHXa6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Feb 2007 18:29:36 -0500
-Received: from tmailer.gwdg.de ([134.76.10.23]:38490 "EHLO tmailer.gwdg.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161050AbXBHX3d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Feb 2007 18:29:33 -0500
-Date: Fri, 9 Feb 2007 00:29:06 +0100 (MET)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: -mm merge plans for 2.6.21
-In-Reply-To: <20070208150710.1324f6b4.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.61.0702090023270.24888@yvahk01.tjqt.qr>
-References: <20070208150710.1324f6b4.akpm@linux-foundation.org>
+	Thu, 8 Feb 2007 18:30:58 -0500
+Received: from stout.engsoc.carleton.ca ([134.117.69.22]:35858 "EHLO
+	stout.engsoc.carleton.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933269AbXBHXa5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Feb 2007 18:30:57 -0500
+Date: Thu, 8 Feb 2007 18:30:44 -0500
+From: Kyle McMartin <kyle@mcmartin.ca>
+To: Justin Piszcz <jpiszcz@lucidpixels.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: finger @finger.kernel.org -> Connection refused
+Message-ID: <20070208233044.GB18899@athena.road.mcmartin.ca>
+References: <Pine.LNX.4.64.0702081826260.11265@p34.internal.lan>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0702081826260.11265@p34.internal.lan>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Feb 08, 2007 at 06:27:17PM -0500, Justin Piszcz wrote:
+> It appears to have been dead for awhile now, did I miss something?
+> One of my scripts uses this functionality, which now appears 
+> dead/disabled/offline.
+> 
 
-On Feb 8 2007 15:07, Andrew Morton wrote:
-
->scheduled-removal-of-sa_xxx-interrupt-flags-fixups.patch
->scheduled-removal-of-sa_xxx-interrupt-flags-fixups-2.patch
->scheduled-removal-of-sa_xxx-interrupt-flags.patch
->scheduled-removal-of-sa_xxx-interrupt-flags-ata-fix.patch
->
-> This removes SA_INTERRUPT and friends, so 10000000 external drivers won't
-> compile any more.  I think I'd prefer to find a way to get usage of SA_* to
-> spit a deprecated warning.
-
-Here's an idea:
-
-#define SA_INTERRUPT sa_interrupt_with_warning()
-static inline int sa_interrupt_with_warning(void) {
-    if(more_or_less_often)
-        printk(fat_warning);
-    return 0x123456; /* whatever numerical value it is */
-}
-
-
-Jan
--- 
-ft: http://freshmeat.net/p/chaostables/
+Why not use this instead?
+http://www.kernel.org/kdist/finger_banner
