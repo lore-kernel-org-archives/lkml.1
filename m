@@ -1,30 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423034AbXBHADb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161493AbXBHAOQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423034AbXBHADb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Feb 2007 19:03:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423045AbXBHADb
+	id S1161493AbXBHAOQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Feb 2007 19:14:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161495AbXBHAOQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Feb 2007 19:03:31 -0500
-Received: from scrub.xs4all.nl ([194.109.195.176]:32837 "EHLO scrub.xs4all.nl"
+	Wed, 7 Feb 2007 19:14:16 -0500
+Received: from scrub.xs4all.nl ([194.109.195.176]:32844 "EHLO scrub.xs4all.nl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423034AbXBHADa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Feb 2007 19:03:30 -0500
-Date: Thu, 8 Feb 2007 01:03:23 +0100 (CET)
+	id S1161493AbXBHAOP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Feb 2007 19:14:15 -0500
+Date: Thu, 8 Feb 2007 01:13:39 +0100 (CET)
 From: Roman Zippel <zippel@linux-m68k.org>
 X-X-Sender: roman@scrub.home
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Oleg Verych <olecom@flower.upol.cz>, Alexey Dobriyan <adobriyan@gmail.com>,
-       sam@ravnborg.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kai Germaschewski <kai@germaschewski.name>
-Subject: Re: [patch, fix build regression] kbuild: Kbuild.include avoid using
- spaces in call arguments
-In-Reply-To: <Pine.LNX.4.64.0702071546420.8424@woody.linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0702080058420.14457@scrub.home>
-References: <20070207165204.GA5537@martell.zuzino.mipt.ru>
- <Pine.LNX.4.64.0702071846180.14457@scrub.home> <20070207220435.GC22699@flower.upol.cz>
- <Pine.LNX.4.64.0702080029030.14457@scrub.home>
- <Pine.LNX.4.64.0702071546420.8424@woody.linux-foundation.org>
+To: Andrew Morton <akpm@osdl.org>
+cc: olecom@flower.upol.cz, linux-kernel@vger.kernel.org
+Subject: [PATCH] refix localversion handling
+Message-ID: <Pine.LNX.4.64.0702080109550.14457@scrub.home>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -32,20 +23,38 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi,
 
-On Wed, 7 Feb 2007, Linus Torvalds wrote:
+This reverts part of the localversion patch, which now already got into 
+git. It removes the unnecessary find call, with the simpler $(notdir ...) 
+fix.
 
-> So I end up in a situation where I just basically will apply the patches 
-> just becauseif I don't, nothing ever happens. The good news is that _once_ 
-> I apply them, people will usually notice problems and send in fixes fairly 
-> quickly. But this particular email was NOT useful, for example.  "needs 
-> more changes" is the epitome of a "not useful" comment.
+Signed-off-by: Roman Zippel <zippel@linux-m68k.org>
 
-The patch was already in -mm and being worked on...
+---
+ Makefile |   14 ++++++++------
+ 1 file changed, 8 insertions(+), 6 deletions(-)
 
-> In the meantime, I've applied the fixup patch. And more specific problem 
-> reports or patches are welcome.
-
-_Please_ revert completely and wait for Andrew to send it via -mm, when 
-it's ready.
-
-bye, Roman
+Index: linux-2.6/Makefile
+===================================================================
+--- linux-2.6.orig/Makefile
++++ linux-2.6/Makefile
+@@ -787,12 +787,14 @@ $(vmlinux-dirs): prepare scripts
+ # moment, only git is supported but other SCMs can edit the script
+ # scripts/setlocalversion and add the appropriate checks as needed.
+ 
+-pattern = ".*/localversion[^~]*"
+-string  = $(shell cat /dev/null \
+-	   `find $(objtree) $(srctree) -maxdepth 1 -regex $(pattern) | sort`)
+-
+-localver = $(subst $(space),, $(string) \
+-			      $(patsubst "%",%,$(CONFIG_LOCALVERSION)))
++___localver = $(objtree)/localversion* $(srctree)/localversion*
++__localver  = $(sort $(wildcard $(___localver)))
++# skip files containing '~' (like backup files)
++_localver = $(foreach f,$(__localver),$(if $(findstring ~,$(notdir $(f))),,$(f)))
++
++localver = $(subst $(space),, \
++	   $(shell cat /dev/null $(_localver)) \
++	   $(patsubst "%",%,$(CONFIG_LOCALVERSION)))
+ 
+ # If CONFIG_LOCALVERSION_AUTO is set scripts/setlocalversion is called
+ # and if the SCM is know a tag from the SCM is appended.
