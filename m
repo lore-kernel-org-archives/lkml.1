@@ -1,56 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423328AbXBHUe7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423331AbXBHUfh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423328AbXBHUe7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Feb 2007 15:34:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423326AbXBHUe7
+	id S1423331AbXBHUfh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Feb 2007 15:35:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423327AbXBHUfh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Feb 2007 15:34:59 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:57085 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423317AbXBHUe5 (ORCPT
+	Thu, 8 Feb 2007 15:35:37 -0500
+Received: from ug-out-1314.google.com ([66.249.92.168]:38509 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423331AbXBHUfg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Feb 2007 15:34:57 -0500
-Date: Thu, 8 Feb 2007 20:34:53 +0000
-From: Christoph Hellwig <hch@infradead.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Christoph Hellwig <hch@infradead.org>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       LKML <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org,
-       linux-ide@vger.kernel.org, Jeff Garzik <jgarzik@pobox.com>
-Subject: Re: [PATCH] ATA convert GSI to irq on ia64
-Message-ID: <20070208203453.GA10122@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	"Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-	LKML <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org,
-	linux-ide@vger.kernel.org, Jeff Garzik <jgarzik@pobox.com>
-References: <1170920422.15989.354.camel@ymzhang> <20070208194204.GC2354@infradead.org> <20070208122539.d9c24ad9.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 8 Feb 2007 15:35:36 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=l6YliAcxqFbKA4FLSCTSccTrp+5V/XAqtHXsmpVQRBPjfBF3tJUWBeOj3hItxEORuMSDzzr/unD2FzSbBhr0BjXhhGsbiJh6+VX8jcp3fnUOIwTJdD4Ku8dCk7VeZykPhakKE9epEzrj2PNwv/xIpG9AkORaCLQ2MSGkfFHQZr0=
+Message-ID: <8bd0f97a0702081235v2e083301g49c1950fa61d8113@mail.gmail.com>
+Date: Thu, 8 Feb 2007 15:35:34 -0500
+From: "Mike Frysinger" <vapier.adi@gmail.com>
+To: "Oleg Verych" <olecom@flower.upol.cz>
+Subject: Re: + search-a-little-harder-for-mkimage.patch added to -mm tree
+Cc: akpm@linux-foundation.org, sam@ravnborg.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20070208202535.GX22699@flower.upol.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070208122539.d9c24ad9.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.2i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+References: <200702080607.l1867c0D006861@shell0.pdx.osdl.net>
+	 <E1HF9zs-0006Ei-2k@flower>
+	 <8bd0f97a0702080628u5038191dm74139a7dd7bff909@mail.gmail.com>
+	 <20070208202535.GX22699@flower.upol.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 08, 2007 at 12:25:39PM -0800, Andrew Morton wrote:
-> On Thu, 8 Feb 2007 19:42:04 +0000
-> Christoph Hellwig <hch@infradead.org> wrote:
-> 
-> > On Thu, Feb 08, 2007 at 03:40:22PM +0800, Zhang, Yanmin wrote:
-> > > If an ATA drive uses legacy mode, ata driver will choose 14 and 15 as the
-> > > fixed irq number. On ia64 platform, such numbers are GSI and should be converted
-> > > to irq vector.
-> > > 
-> > > Below patch against kernel 2.6.20 fixes it.
-> > 
-> > These direct arch ifdefs in core aren't acceptable.
-> 
-> For 2.6.21 that's true.  But this is a suitable fix for 2.6.20.x, no?
+On 2/8/07, Oleg Verych <olecom@flower.upol.cz> wrote:
+> On Thu, Feb 08, 2007 at 09:28:03AM -0500, Mike Frysinger wrote:
+> > On 2/8/07, Oleg Verych <olecom@flower.upol.cz> wrote:
+> > >proposition is to substitute:
+> > >     "$(CONFIG_SHELL) $(MKIMAGE)"
+> > >with
+> > >     "mkimage"
+> >
+> > this isnt a one-to-one change ... let's look at the typical
+> > mkimage-missing scenario ...
+>
+> You are interested in presents of `mkimage', but yet we discussing its
+> missing, or "Error -> Don't care" behavior.
 
-Just putting in an #ifndef and allow to to set it up in asm/ata.h
-is almost as trivial and a lot nice conceptually.  Then again
-what happened to the idea of putting fixes into mainline before
--stable?
+i'm interested in having the system work for the Blackfin port and
+that's it.  if people want to redefine the current standard of how
+u-boot images are generated, then go for it and get the approval of
+all the existing arches.
+
+there's a difference between NACKing my changes because the patch
+breaks things versus because you think the whole system should be
+taking some other form.
+
+so if you dont like the mkuboot.sh script, fine, have at it with
+rewriting the system ... otherwise the patch i proposed should
+continue on for inclusion.
+-mike
