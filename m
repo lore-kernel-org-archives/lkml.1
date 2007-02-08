@@ -1,47 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422943AbXBHHgW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422950AbXBHHk0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422943AbXBHHgW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Feb 2007 02:36:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422936AbXBHHgW
+	id S1422950AbXBHHk0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Feb 2007 02:40:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422954AbXBHHk0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Feb 2007 02:36:22 -0500
-Received: from mtagate6.de.ibm.com ([195.212.29.155]:55180 "EHLO
-	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422943AbXBHHgV (ORCPT
+	Thu, 8 Feb 2007 02:40:26 -0500
+Received: from mga05.intel.com ([192.55.52.89]:48160 "EHLO
+	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1422950AbXBHHkY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Feb 2007 02:36:21 -0500
-Message-ID: <45CAD2F1.7030705@fr.ibm.com>
-Date: Thu, 08 Feb 2007 08:36:17 +0100
-From: Cedric Le Goater <clg@fr.ibm.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070130)
-MIME-Version: 1.0
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-CC: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: mm snapshot broken-out-2007-02-06-16-59.tar.gz uploaded
-References: <200702070059.l170xPY0002614@shell0.pdx.osdl.net> <45CA0065.80705@fr.ibm.com> <6bffcb0e0702071403v767681edk2179fdb968b57e5a@mail.gmail.com> <20070207141532.9c1ac548.akpm@linux-foundation.org> <6bffcb0e0702071512i2567a2br3a873921b0d3d308@mail.gmail.com>
-In-Reply-To: <6bffcb0e0702071512i2567a2br3a873921b0d3d308@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 8 Feb 2007 02:40:24 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: i="4.13,299,1167638400"; 
+   d="scan'208"; a="197222103:sNHT47554332"
+Subject: [PATCH] ATA convert GSI to irq on ia64
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: linux-scsi@vger.kernel.org, linux-ide@vger.kernel.org,
+       Jeff Garzik <jgarzik@pobox.com>
+Content-Type: text/plain; charset=utf-8
+Date: Thu, 08 Feb 2007 15:40:22 +0800
+Message-Id: <1170920422.15989.354.camel@ymzhang>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.9.2 (2.9.2-2.fc7) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michal Piotrowski wrote:
-> On 07/02/07, Andrew Morton <akpm@linux-foundation.org> wrote:
->> I copied it to
->> http://userweb.kernel.org/~akpm/broken-out-2007-02-06-16-59.tar.gz but
->> there's really not much point in using it - it's ancient.
-> 
-> Cedric, here is an updated version
-> http://www.stardust.webpages.pl/files/mm-snapshot/mm-snapshot-07-02-07-22-21.tar.bz2
-> 
-> 
-> Without four patches
-> 
-> #swiotlb-uninlinings.patch
-> #git-cryptodev-fixup.patch
-> #add-vm_insert_pfn.patch
-> #knfsd-fix-a-race-in-closing-nfsd-connections.patch
+If an ATA drive uses legacy mode, ata driver will choose 14 and 15 as the
+fixed irq number. On ia64 platform, such numbers are GSI and should be converted
+to irq vector.
 
-Thanks !
+Below patch against kernel 2.6.20 fixes it.
 
-c.
+Signed-off-by: Zhang Yanmin <yanmin.zhang@intel.com>
+
+---
+
+diff -Nraup linux-2.6.20/include/asm-generic/libata-portmap.h linux-2.6.20_fix/include/asm-generic/libata-portmap.h
+--- linux-2.6.20/include/asm-generic/libata-portmap.h	2007-02-08 15:13:44.000000000 +0800
++++ linux-2.6.20_fix/include/asm-generic/libata-portmap.h	2007-02-08 15:20:13.000000000 +0800
+@@ -3,10 +3,20 @@
+ 
+ #define ATA_PRIMARY_CMD		0x1F0
+ #define ATA_PRIMARY_CTL		0x3F6
++#if defined(__ia64__)
++#define ATA_PRIMARY_IRQ(dev)	isa_irq_to_vector(14)
++#else
+ #define ATA_PRIMARY_IRQ(dev)	14
++#endif
++
+ 
+ #define ATA_SECONDARY_CMD	0x170
+ #define ATA_SECONDARY_CTL	0x376
++#if defined(__ia64__)
++#define ATA_SECONDARY_IRQ(dev)	isa_irq_to_vector(15)
++#else
+ #define ATA_SECONDARY_IRQ(dev)	15
++#endif
++
+ 
+ #endif
