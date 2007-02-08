@@ -1,59 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752422AbXBHSmM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752424AbXBHSnx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752422AbXBHSmM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Feb 2007 13:42:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752432AbXBHSmM
+	id S1752424AbXBHSnx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Feb 2007 13:43:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752434AbXBHSnx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Feb 2007 13:42:12 -0500
-Received: from c-69-254-139-13.hsd1.nm.comcast.net ([69.254.139.13]:52687 "EHLO
-	deneb.dwf.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752422AbXBHSmL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Feb 2007 13:42:11 -0500
-X-Greylist: delayed 1463 seconds by postgrey-1.27 at vger.kernel.org; Thu, 08 Feb 2007 13:42:11 EST
-Message-Id: <200702081817.l18IHlbE027996@deneb.dwf.com>
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.1
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Why can't I build a running Kernel?
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Date: Thu, 08 Feb 2007 11:17:47 -0700
-From: Reg Clemens <reg@dwf.com>
+	Thu, 8 Feb 2007 13:43:53 -0500
+Received: from tmailer.gwdg.de ([134.76.10.23]:52446 "EHLO tmailer.gwdg.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752424AbXBHSnw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Feb 2007 13:43:52 -0500
+Date: Thu, 8 Feb 2007 19:42:07 +0100 (MET)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Jeff Garzik <jeff@garzik.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: somebody dropped a (warning) bomb
+In-Reply-To: <Pine.LNX.4.64.0702080819350.8424@woody.linux-foundation.org>
+Message-ID: <Pine.LNX.4.61.0702081851310.1364@yvahk01.tjqt.qr>
+References: <45CB3B28.60102@garzik.org> <Pine.LNX.4.64.0702080819350.8424@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Why can't I build a running Kernel?
-I have in the past, but since some time in the 2.6.19 series,
-I have got the following series of errors. 
-Same thing now with 2.6.20.
+On Feb 8 2007 08:33, Linus Torvalds wrote:
+>
+>And the thing is, sometimes -Wpointer-sign-compare is just horribly 
+>broken. For example, you cannot write a "strlen()" that doesn't 
+>complain about "unsigned char *" vs "char *". And that is just a BUG.
+>
+>I'm continually amazed at how totally clueless some gcc warnings are. 
+>You'd think that the people writing them are competent. And then 
+>sometimes they show just how totally incompetent they are, by making it 
+>impossible to use "unsigned char" arrays together with standard 
+>functions.
 
-I build with:
+I generally have to agree with you about the unsigned char* vs char*. It 
+is a problem of the C language that char can be signed and unsigned, and 
+that people, as a result, have used it for storing 
+"shorter_than_short_t"s.
 
-    make xconfig
+What C needs is a distinction between char and int8_t, rendering "char" 
+an unsigned at all times basically and making "unsigned char" and 
+"signed char" illegal types in turn.
 
-changing only the Processor type to Pentium4,
-then I
 
-    make bzImage
-    make modules
-    make modules_install
-    make install
-
-Fine everything builds, no errors.
-I then try booting, and I get 4 or 5 lines and then
-
-    Unable to access resume device (/dev/sda5)
-    mount: could not find filesystem '/dev/root'
-    < 4 more lines with setuproot and switchroot >
-  
-and then
-
-    Kernel panic - not syncing: Attempting to kill init!
-
-Sigh.
-What has changed, what do I need to do to get this thing to boot?
+Jan
 -- 
-                                        Reg.Clemens
-                                        reg@dwf.com
-
-
+ft: http://freshmeat.net/p/chaostables/
