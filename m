@@ -1,48 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161540AbXBHLU2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422790AbXBHLZP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161540AbXBHLU2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Feb 2007 06:20:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422790AbXBHLU2
+	id S1422790AbXBHLZP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Feb 2007 06:25:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423216AbXBHLZP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Feb 2007 06:20:28 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:53890 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161540AbXBHLU1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Feb 2007 06:20:27 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Etienne Lorrain <etienne_lorrain@yahoo.fr>
-Cc: vgoyal@in.ibm.com, "H. Peter Anvin" <hpa@zytor.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Re : [PATCH] Compressed ia32 ELF file generation for loading by Gujin 1/3
-References: <20070208094831.56920.qmail@web26908.mail.ukl.yahoo.com>
-Date: Thu, 08 Feb 2007 04:20:10 -0700
-In-Reply-To: <20070208094831.56920.qmail@web26908.mail.ukl.yahoo.com> (Etienne
-	Lorrain's message of "Thu, 8 Feb 2007 09:48:31 +0000 (GMT)")
-Message-ID: <m1odo4aob9.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Thu, 8 Feb 2007 06:25:15 -0500
+Received: from styx.suse.cz ([82.119.242.94]:34053 "EHLO duck.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1422790AbXBHLZO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Feb 2007 06:25:14 -0500
+Date: Thu, 8 Feb 2007 12:28:08 +0100
+From: Jan Kara <jack@suse.cz>
+To: hirofumi@mail.parknet.co.jp
+Cc: linux-kernel@vger.kernel.org
+Subject: Direct IO for fat
+Message-ID: <20070208112808.GA3767@duck.suse.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Etienne Lorrain <etienne_lorrain@yahoo.fr> writes:
+  Hello,
 
->> Currently relocation information is extracted from vmlinux and packed in
->> final bzImage after some processing. After execution of real mode code
->> and once the image is decompressed, all the relocations are performed and
->> then control is transferred to kernel.
->
->   So here you are not really using the initial ELF program header of vmlinux,
-> but more the section header and my PT_LOAD section bother you, I better
-> understand. You cannot really claim you are only doing standard/usual
-> ELF treatment.
+  I've noticed that extending a file using direct IO fails for FAT with
+EINVAL. It's basically because of the following code in fat_direct_IO():
 
-The difference is that a boot loader is not doing the work.  The format is.
-Compiling -fPIC almost gets us there except ld has bugs processing absolute
-symbols.
+if (rw == WRITE) {
+        /*
+         * FIXME: blockdev_direct_IO() doesn't use
+         * ->prepare_write(),
+         * so we need to update the ->mmu_private to block
+         * boundary.
+         *
+         * But we must fill the remaining area or hole by nul for
+         * updating ->mmu_private.
+         */
+        loff_t size = offset + iov_length(iov, nr_segs);
+        if (MSDOS_I(inode)->mmu_private < size)
+                return -EINVAL;
+}
 
-Anything we expect a bootloader to do need to be as close as possible to
-the usual ELF treatment.
+  But isn't this check bogus? blockdev_direct_IO writes only to space that
+is already allocated and stops as soon as it needs to extend the file
+(further extension is then handled by buffered writes). So it should
+already do what it needed for FAT. Thanks for an answer in advance.
 
-Eric
+									Honza
+-- 
+Jan Kara <jack@suse.cz>
+SuSE CR Labs
