@@ -1,39 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422886AbXBHGah@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422882AbXBHGfA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422886AbXBHGah (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Feb 2007 01:30:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422923AbXBHGah
+	id S1422882AbXBHGfA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Feb 2007 01:35:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422898AbXBHGfA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Feb 2007 01:30:37 -0500
-Received: from fed1rmmtao102.cox.net ([68.230.241.44]:60298 "EHLO
-	fed1rmmtao102.cox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422886AbXBHGag (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Feb 2007 01:30:36 -0500
-From: Junio C Hamano <junkio@cox.net>
-To: Jeff Garzik <jeff@garzik.org>
-Subject: Re: [git patches] net driver updates
-References: <20070208002959.GA29961@havoc.gtf.org>
-cc: linux-kernel@vger.kernel.org
-Date: Wed, 07 Feb 2007 22:30:34 -0800
-In-Reply-To: <20070208002959.GA29961@havoc.gtf.org> (Jeff Garzik's message of
-	"Wed, 7 Feb 2007 19:29:59 -0500")
-Message-ID: <7vired2mb9.fsf@assigned-by-dhcp.cox.net>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Thu, 8 Feb 2007 01:35:00 -0500
+Received: from raven.upol.cz ([158.194.120.4]:47617 "EHLO raven.upol.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1422882AbXBHGe7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Feb 2007 01:34:59 -0500
+Date: Thu, 8 Feb 2007 07:43:47 +0100
+To: Mike Frysinger <vapier.adi@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Roman Zippel <zippel@linux-m68k.org>, sam@ravnborg.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kai Germaschewski <kai@germaschewski.name>
+Subject: Re: + search-a-little-harder-for-mkimage.patch
+Message-ID: <20070208064347.GP22699@flower.upol.cz>
+References: <20070207165204.GA5537@martell.zuzino.mipt.ru> <Pine.LNX.4.64.0702071846180.14457@scrub.home> <20070207220435.GC22699@flower.upol.cz> <Pine.LNX.4.64.0702080029030.14457@scrub.home> <Pine.LNX.4.64.0702071546420.8424@woody.linux-foundation.org> <20070207203047.51a95ad0.akpm@linux-foundation.org> <20070208052439.GL22699@flower.upol.cz> <20070207211921.1f0220a4.akpm@linux-foundation.org> <20070208055832.GN22699@flower.upol.cz> <8bd0f97a0702072158r36046dd7w64a8c7b5da1a5f9a@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <8bd0f97a0702072158r36046dd7w64a8c7b5da1a5f9a@mail.gmail.com>
+Organization: Palacky University in Olomouc, experimental physics department.
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Oleg Verych <olecom@flower.upol.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik <jeff@garzik.org> writes:
+On Thu, Feb 08, 2007 at 12:58:26AM -0500, Mike Frysinger wrote:
+> On 2/8/07, Oleg Verych <olecom@flower.upol.cz> wrote:
+> >On Wed, Feb 07, 2007 at 09:19:21PM -0800, Andrew Morton wrote:
+> >> On Thu, 8 Feb 2007 06:24:40 +0100 Oleg Verych <olecom@flower.upol.cz> 
+> >wrote:
+> >>
+> >> > If that matter, `type -path' is bashizm (BloAted SHell), and "blackbox"
+> >> > with "dash" (very good `sh' equivalents) will fail.
+> >>
+> >> Does the kernel presently build with that shell?
+> >
+> >build - yes, with dash being `$(shell)'. All scripts with `#!/bin/bash'
+> >of course use bash, example is gen_initramfs_list.sh.
+> 
+> which is what mkuboot.sh is using now
+> 
+> >Trivial shell scripts, especially for embedded archs (Blackfin is
+> >one, IIRC), may be easily converted.
+> 
+> yes, but Blackfin is no-mmu so converting the script to use POSIX
+> shell is pointless to us since no-mmu is not a self-hosting
+> environment
 
->  mode change 100644 => 100755 drivers/net/qla3xxx.c
->  mode change 100644 => 100755 drivers/net/qla3xxx.h
+Heh, did i say POSIX? I said bloated shell, from man bash:
 
-Did you mean to have these?  Commit bd36b0ac appears to have
-brought the mode bits change in.
-
-Not trying to nitpick --- I am trying to find out if this was
-caused by a git bug.
+BUGS
+       It's too big and too slow.
 
 
+____
