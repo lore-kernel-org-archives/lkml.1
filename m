@@ -1,53 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752424AbXBHSnx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752433AbXBHSpj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752424AbXBHSnx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Feb 2007 13:43:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752434AbXBHSnx
+	id S1752433AbXBHSpj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Feb 2007 13:45:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752436AbXBHSpi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Feb 2007 13:43:53 -0500
-Received: from tmailer.gwdg.de ([134.76.10.23]:52446 "EHLO tmailer.gwdg.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752424AbXBHSnw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Feb 2007 13:43:52 -0500
-Date: Thu, 8 Feb 2007 19:42:07 +0100 (MET)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Jeff Garzik <jeff@garzik.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: somebody dropped a (warning) bomb
-In-Reply-To: <Pine.LNX.4.64.0702080819350.8424@woody.linux-foundation.org>
-Message-ID: <Pine.LNX.4.61.0702081851310.1364@yvahk01.tjqt.qr>
-References: <45CB3B28.60102@garzik.org> <Pine.LNX.4.64.0702080819350.8424@woody.linux-foundation.org>
+	Thu, 8 Feb 2007 13:45:38 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:55232 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752433AbXBHSph (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Feb 2007 13:45:37 -0500
+Date: Thu, 8 Feb 2007 18:45:34 +0000 (GMT)
+From: James Simmons <jsimmons@infradead.org>
+To: Alan <alan@lxorguk.ukuu.org.uk>
+cc: akpm@osdl.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] pm3fb: kill pci_find_device usage
+In-Reply-To: <20070131170620.13d88820@localhost.localdomain>
+Message-ID: <Pine.LNX.4.64.0702081845050.7686@pentafluge.infradead.org>
+References: <20070131170620.13d88820@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Feb 8 2007 08:33, Linus Torvalds wrote:
->
->And the thing is, sometimes -Wpointer-sign-compare is just horribly 
->broken. For example, you cannot write a "strlen()" that doesn't 
->complain about "unsigned char *" vs "char *". And that is just a BUG.
->
->I'm continually amazed at how totally clueless some gcc warnings are. 
->You'd think that the people writing them are competent. And then 
->sometimes they show just how totally incompetent they are, by making it 
->impossible to use "unsigned char" arrays together with standard 
->functions.
 
-I generally have to agree with you about the unsigned char* vs char*. It 
-is a problem of the C language that char can be signed and unsigned, and 
-that people, as a result, have used it for storing 
-"shorter_than_short_t"s.
+On Wed, 31 Jan 2007, Alan wrote:
 
-What C needs is a distinction between char and int8_t, rendering "char" 
-an unsigned at all times basically and making "unsigned char" and 
-"signed char" illegal types in turn.
+> Signed-off-by: Alan Cox <alan@redhat.com>
+> 
+> diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.20-rc6-mm3/drivers/video/pm3fb.c linux-2.6.20-rc6-mm3/drivers/video/pm3fb.c
+> --- linux.vanilla-2.6.20-rc6-mm3/drivers/video/pm3fb.c	2007-01-31 14:20:10.000000000 +0000
+> +++ linux-2.6.20-rc6-mm3/drivers/video/pm3fb.c	2007-01-31 14:36:25.000000000 +0000
+> @@ -3299,14 +3299,12 @@
+>  		fb_info[i].dev = NULL;
+>  	}
+>  
+> -	dev =
+> -	    pci_find_device(PCI_VENDOR_ID_3DLABS,
+> +	dev = pci_get_device(PCI_VENDOR_ID_3DLABS,
+>  			    PCI_DEVICE_ID_3DLABS_PERMEDIA3, dev);
+>  
+>  	for (i = 0; ((i < PM3_MAX_BOARD) && dev); i++) {
+>  		dev_array[i] = dev;
+> -		dev =
+> -		    pci_find_device(PCI_VENDOR_ID_3DLABS,
+> +		dev = pci_get_device(PCI_VENDOR_ID_3DLABS,
+>  				    PCI_DEVICE_ID_3DLABS_PERMEDIA3, dev);
+>  	}
+>  
+> @@ -3353,7 +3351,7 @@
+>  	/* now, initialize... or not */
+>  	for (i = 0; i < PM3_MAX_BOARD; i++) {
+>  		l_fb_info = &(fb_info[i]);
+> -		if ((l_fb_info->dev) && (!disable[i])) {	/* PCI device was found and not disabled by user */
+> +		if (l_fb_info->dev && !disable[i]) {	/* PCI device was found and not disabled by user */
+>  			DPRINTK(2,
+>  				"found @%lx Vendor %lx Device %lx ; base @ : %lx - %lx - %lx - %lx - %lx - %lx, irq %ld\n",
+>  				(unsigned long) l_fb_info->dev,
+> @@ -3608,7 +3606,7 @@
+>  
+>  	pm3fb_init();
+>  
+> -	return (0);
+> +	return 0;
+>  }
+>  
+>  void cleanup_module(void)
+> @@ -3619,23 +3617,18 @@
+>  		struct pm3fb_info *l_fb_info;
+>  		for (i = 0; i < PM3_MAX_BOARD; i++) {
+>  			l_fb_info = &(fb_info[i]);
+> -			if ((l_fb_info->dev != NULL)
+> -			    && (!(disable[l_fb_info->board_num]))) {
+> -				if (l_fb_info->vIOBase !=
+> -				    (unsigned char *) -1) {
+> +			pci_dev_put(l_fb_info->dev);
+> +			if (l_fb_info->dev != NULL  && !(disable[l_fb_info->board_num])) {
+> +				if (l_fb_info->vIOBase != (unsigned char *) -1) {
+>  					pm3fb_unmapIO(l_fb_info);
+>  					release_mem_region(l_fb_info->p_fb,
+> -							   l_fb_info->
+> -							   fb_size);
+> -					release_mem_region(l_fb_info->
+> -							   pIOBase,
+> -							   PM3_REGS_SIZE);
+> +						   l_fb_info->fb_size);
+> +					release_mem_region(l_fb_info->pIOBase,
+> +						   PM3_REGS_SIZE);
+>  				}
+> -				unregister_framebuffer(&l_fb_info->gen.
+> -						       info);
+> +				unregister_framebuffer(&l_fb_info->gen.info);
+>  			}
+>  		}
+>  	}
+> -	return;
+>  }
+>  #endif /* MODULE */
 
+Acked-By: James Simmons <jsimmons@infradead.org>
 
-Jan
--- 
-ft: http://freshmeat.net/p/chaostables/
