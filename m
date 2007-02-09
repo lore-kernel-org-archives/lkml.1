@@ -1,69 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946296AbXBIKKg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946297AbXBIKLr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946296AbXBIKKg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Feb 2007 05:10:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946265AbXBIKKb
+	id S1946297AbXBIKLr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Feb 2007 05:11:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946295AbXBIKLr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Feb 2007 05:10:31 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:40985 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1946294AbXBIKJ7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Feb 2007 05:09:59 -0500
-Date: Fri, 9 Feb 2007 02:09:54 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Linux Filesystems <linux-fsdevel@vger.kernel.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [rfc][patch 0/3] a faster buffered write deadlock fix?
-Message-Id: <20070209020954.4951256e.akpm@linux-foundation.org>
-In-Reply-To: <20070209095405.GA14398@wotan.suse.de>
-References: <20070208105437.26443.35653.sendpatchset@linux.site>
-	<20070209004101.3e4a88fc.akpm@linux-foundation.org>
-	<20070209095405.GA14398@wotan.suse.de>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Fri, 9 Feb 2007 05:11:47 -0500
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:43860 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1946265AbXBIKLq convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Feb 2007 05:11:46 -0500
+Date: Fri, 9 Feb 2007 11:10:10 +0100
+From: =?ISO-8859-1?Q?S=E9bastien_Dugu=E9?= <sebastien.dugue@bull.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "Bharata B Rao" <bharata.rao@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: -mm merge plans for 2.6.21
+Message-ID: <20070209111010.47e99c17@frecb000686.frec.bull.fr>
+In-Reply-To: <20070209010557.6506d39a.akpm@linux-foundation.org>
+References: <20070208150710.1324f6b4.akpm@linux-foundation.org>
+	<344eb09a0702082132w100e3b27saea61ee30a28b50a@mail.gmail.com>
+	<20070209092611.72c221d3@frecb000686.frec.bull.fr>
+	<20070209010557.6506d39a.akpm@linux-foundation.org>
+X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 09/02/2007 11:12:52,
+	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 09/02/2007 11:12:54,
+	Serialize complete at 09/02/2007 11:12:54
+Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 9 Feb 2007 10:54:05 +0100 Nick Piggin <npiggin@suse.de> wrote:
+On Fri, 9 Feb 2007 01:05:57 -0800 Andrew Morton <akpm@linux-foundation.org> wrote:
 
-> On Fri, Feb 09, 2007 at 12:41:01AM -0800, Andrew Morton wrote:
-> > On Thu,  8 Feb 2007 14:07:15 +0100 (CET) Nick Piggin <npiggin@suse.de> wrote:
-> > 
-> > > So I have finally finished a first slightly-working draft of my new aops
-> > > op (perform_write) proposal. I would be interested to hear comments about
-> > > it.  Most of my issues and concerns are in the patch headers themselves,
-> > > so reply to them.
-> > > 
-> > > The patches are against my latest buffered-write-fix patchset.
-> > 
-> > What happened with Linus's proposal to instantiate the page as pinned,
-> > non-uptodate, unlocked and in pagecache while we poke the user address?
+> On Fri, 9 Feb 2007 09:26:11 +0100 Sébastien Dugué <sebastien.dugue@bull.net> wrote:
 > 
-> That's still got a deadlock,
+> > On Fri, 9 Feb 2007 11:02:28 +0530 "Bharata B Rao" <bharata.rao@gmail.com> wrote:
+> > 
+> > > Andrew,
+> > > 
+> > > On 2/9/07, Andrew Morton <akpm@linux-foundation.org> wrote:
+> > > > fsaio-add-a-wait-queue-arg-to-the-wait_bit-action-routine.patch
+> > > > fsaio-add-a-wait-queue-arg-to-the-wait_bit-action-routine-gfs2-fix.patch
+> > > > fsaio-rename-__lock_page-to-lock_page_blocking.patch
+> > > > fsaio-interfaces-to-initialize-and-to-test-a-wait-bit-key.patch
+> > > > fsaio-add-a-default-io-wait-bit-field-in-task-struct.patch
+> > > > fsaio-enable-wait-bit-based-filtered-wakeups-to-work-for-aio.patch
+> > > > fsaio-enable-wait-bit-based-filtered-wakeups-to-work-for-aio-fix.patch
+> > > > fsaio-enable-wait-bit-based-filtered-wakeups-to-work-for-aio-fix-sparse-fix.patch
+> > > > fsaio-enable-asynchronous-wait-page-and-lock-page.patch
+> > > > fsaio-filesystem-aio-read.patch
+> > > > fsaio-aio-o_sync-filesystem-write.patch
+> > > >
+> > > >  Will wait to see what happens with febrils.
+> > > >
+> > > > aio-is-unlikely.patch
+> > > >
+> > > >  Will merge.
+> > > >
+> > > > rework-compat_sys_io_submit.patch
+> > > > fix-aioh-includes.patch
+> > > > fix-access_ok-checks.patch
+> > > > make-good_sigevent-non-static.patch
+> > > > make-good_sigevent-non-static-fix.patch
+> > > > make-__sigqueue_free-and.patch
+> > > > aio-completion-signal-notification.patch
+> > > > aio-completion-signal-notification-fix.patch
+> > > > aio-completion-signal-notification-fixes-and-cleanups.patch
+> > > > aio-completion-signal-notification-small-cleanup.patch
+> > > > add-listio-syscall-support.patch
+> > > >
+> > > >  I guess these are dependent upon fsaio.
+> > > 
+> > > No. AIO completion signal notification patches and listio patch work
+> > > independently of fsaio patches. Just that for buffered AIO case, the
+> > > fsaio patches will make the behaviour truly asynchronous.
+> > > 
+> > > Regards,
+> > > Bharata.
+> > 
+> >   I concur.
+> > 
+> 
+> But is the proposed listio implementation still relevant if we go and add
+> the async syscalls? 
 
-It does?
+  I think the listio syscall could be emulated in userspace using async
+syscalls.
 
->  and also it doesn't work if we want to lock
-> the page when performing a minor fault (which I want to fix fault vs
-> invalidate),
+  Even more, the whole POSIX AIO functions could benefit from this, rendering
+aio.c obsolete.
 
-It's hard to discuss this without a description of what you want to fix
-there, and a description of how you plan to fix it.
-
-> and also assumes nobody's ->nopage locks the page or
-> requires any resources that are held by prepare_write (something not
-> immediately clear to me with the cluster filesystems, at least).
-
-The nopage handler is filemap_nopage().  Are there any exceptions to that?
-
-> But that all becomes legacy path, so do we really care? Supposing fs
-> maintainers like perform_write, then after the main ones have implementations
-> we could switch over to the slow-but-correct prepare_write legacy path.
-> Or we could leave it, or we could use Linus's slightly-less-buggy scheme...
-> by that point I expect I'd be sick of arguing about it ;)
-
-It's worth "arguing" about.  This is write().  What matters more??
+  Sébastien.
