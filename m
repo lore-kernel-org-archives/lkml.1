@@ -1,84 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752455AbXBIWuK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752461AbXBIWuU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752455AbXBIWuK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Feb 2007 17:50:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752461AbXBIWuJ
+	id S1752461AbXBIWuU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Feb 2007 17:50:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752463AbXBIWuU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Feb 2007 17:50:09 -0500
-Received: from mail26.syd.optusnet.com.au ([211.29.133.167]:53741 "EHLO
-	mail26.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752455AbXBIWuI (ORCPT
+	Fri, 9 Feb 2007 17:50:20 -0500
+Received: from x35.xmailserver.org ([64.71.152.41]:2001 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752461AbXBIWuT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Feb 2007 17:50:08 -0500
-X-Greylist: delayed 7170 seconds by postgrey-1.27 at vger.kernel.org; Fri, 09 Feb 2007 17:50:07 EST
-From: Con Kolivas <kernel@kolivas.org>
-To: ck@vds.kolivas.org
-Subject: Re: Swap prefetch merge plans
-Date: Sat, 10 Feb 2007 09:49:50 +1100
-User-Agent: KMail/1.9.5
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-References: <200702091038.37143.kernel@kolivas.org> <20070209123029.633934eb.akpm@linux-foundation.org> <200702100750.22487.kernel@kolivas.org>
-In-Reply-To: <200702100750.22487.kernel@kolivas.org>
+	Fri, 9 Feb 2007 17:50:19 -0500
+X-AuthUser: davidel@xmailserver.org
+Date: Fri, 9 Feb 2007 14:50:12 -0800 (PST)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: David Woodhouse <dwmw2@infradead.org>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Alexey Dobriyan <adobriyan@openvz.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ulrich Drepper <drepper@redhat.com>
+Subject: Re: -mm merge plans for 2.6.21
+In-Reply-To: <1171058342.29713.136.camel@pmac.infradead.org>
+Message-ID: <Pine.LNX.4.64.0702091442230.2786@alien.or.mcafeemobile.com>
+References: <20070208150710.1324f6b4.akpm@linux-foundation.org> 
+ <1171042535.29713.96.camel@pmac.infradead.org>  <20070209134516.2367a7aa.akpm@linux-foundation.org>
+ <1171058342.29713.136.camel@pmac.infradead.org>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200702100949.50598.kernel@kolivas.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 10 February 2007 07:50, Con Kolivas wrote:
-> On Saturday 10 February 2007 07:30, Andrew Morton wrote:
-> > On Fri, 09 Feb 2007 14:13:03 +0100
-> >
-> > jos poortvliet <jos@mijnkamer.nl> wrote:
-> > > Nick's comment, replying to me some time ago:
-> >
-> > I think I was thinking of this:
-> >
-> > 	http://lkml.org/lkml/2006/2/6/509
->
-> Fortunately that predates a lot of changes where I did address all those.
-> These will seem out of context without looking at that original email so I
-> apologise in advance.
->
-> buffered_rmqueue and prefetching x86 specific (not into DMA) were dropped
->
-> It is NUMA aware
->
-> Global cacheline bouncing in page allocation and page reclaim paths I have
-> no answer for as I have to tell swap prefetch that the vm is busy somehow
-> and I do that by setting precisely one bit in a lockless manner.
->
-> The trylocks were dropped.
->
-> The other ideas were to :
-> -extend the prefetching. That's extra features
-> -knowing for sure when a system is really idle. I've tried hard to do that
-> as cheaply as possible.
-> -putting pages on the lru? well it puts them on the tail
-> -papering over an issue? As I said, no matter how good the vm is, there
-> will always be loads that swap.
+On Fri, 9 Feb 2007, David Woodhouse wrote:
 
-Perhaps I haven't made this clear enough.
+> On Fri, 2007-02-09 at 13:45 -0800, Andrew Morton wrote:
+> > > I would strongly recommend that in the general case, you don't merge new
+> > > system calls unless the corresponding compat_ system call is
+> > > implemented.
+> > 
+> > Good point. 
+> 
+> It's a _damn_ good point, but I see we went ahead and merged
+> sys_epoll_pwait without it anyway -- despite the fact that it's
+> include/linux/eventpoll.h which contains the example of why we should
+> think first :)
+> 
+> I think I even threw together an untested implementation of
+> compat_sys_epoll_pwait() at one point to assist with that task, but it
+> didn't seem to help much.
 
-Nick has been kind enough to review pretty much all of swap prefetch at every 
-turn. He is understandably suspicious about any code that I generate since 
-I'm a doctor and not a computer programmer. I have addressed every concern he 
-has made along the way and even joked at the end that he "threatened to 
-review it over and over and over" which he did not take in jest. 
+Damn! I always forget. Doing it right now ...
 
-Swap prefetch has actually had far more review than a lot of code so I'm 
-surprised that this is a remaning concern.  It has been reviewed, and I have 
-addressed the concerns. It is possible to hold back code forever at the 
-suggestion that more review is always required, and basically that's what I 
-feel this has become.
 
-If there is one valid concern with swap prefetch, there is a numa=64 scenario 
-that Rohit Seth brought to my attention and I gave him a patch to test 2 
-months ago. I've pinged him since, but I understand he's busy so has not had 
-a chance to test the patch.
+- Davide
 
--- 
--ck
+
