@@ -1,45 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946394AbXBIMEJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423021AbXBIMGx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946394AbXBIMEJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Feb 2007 07:04:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946402AbXBIMEJ
+	id S1423021AbXBIMGx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Feb 2007 07:06:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946389AbXBIMGx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Feb 2007 07:04:09 -0500
-Received: from cantor.suse.de ([195.135.220.2]:52783 "EHLO mx1.suse.de"
+	Fri, 9 Feb 2007 07:06:53 -0500
+Received: from ozlabs.org ([203.10.76.45]:42091 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1946394AbXBIMEG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Feb 2007 07:04:06 -0500
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       Frederik Deweerdt <deweerdt@free.fr>,
-       Jan Engelhardt <jengelh@linux01.gwdg.de>, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de
-Subject: Re: -mm merge plans for 2.6.21
-References: <20070208150710.1324f6b4.akpm@linux-foundation.org>
-	<Pine.LNX.4.61.0702090023270.24888@yvahk01.tjqt.qr>
-	<20070209105737.GF5785@slug>
-	<1171020273.8675.150.camel@laptopd505.fenrus.org>
-	<20070209033936.41be141b.akpm@linux-foundation.org>
-From: Andi Kleen <ak@suse.de>
-Date: 09 Feb 2007 14:04:02 +0100
-In-Reply-To: <20070209033936.41be141b.akpm@linux-foundation.org>
-Message-ID: <p73ps8j1nzx.fsf@bingen.suse.de>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1423021AbXBIMGw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Feb 2007 07:06:52 -0500
+Subject: Re: [PATCH 2/10] lguest: Export symbols for lguest as a module
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Andi Kleen <ak@muc.de>
+Cc: virtualization@lists.osdl.org,
+       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>
+In-Reply-To: <200702091032.44547.ak@muc.de>
+References: <1171012296.2718.26.camel@localhost.localdomain>
+	 <1171012458.2718.30.camel@localhost.localdomain>
+	 <1171012513.2718.32.camel@localhost.localdomain>
+	 <200702091032.44547.ak@muc.de>
+Content-Type: text/plain
+Date: Fri, 09 Feb 2007 23:06:06 +1100
+Message-Id: <1171022766.2718.94.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton <akpm@linux-foundation.org> writes:
+On Fri, 2007-02-09 at 10:32 +0100, Andi Kleen wrote:
+> On Friday 09 February 2007 10:15, Rusty Russell wrote:
 > 
-> As long as nobody takes the address of them (which wouldn't compile today
-> anyway) then the compiler should be able to not allocate store for these. 
+> > tsc_khz:
+> > 	Simplest way of telling the guest how to interpret the TSC
+> > 	counter.
+> 
+> 
+> Are you sure this will work with varying TSC frequencies? 
 
-This would only work for unit-at-a-time compilers (if it works at all,
-i'm not sure), but not older 3.x compilers
+I'm actually quite sure it doesn't (there's a FIXME in the lguest code).
+Given the debate over how useful the TSC was, I originally didn't use
+it, but (1) it's simple, and (2) when it doesn't change, it's pretty
+accurate.
 
-> That they're const might help too.
+> In general you should get this from cpufreq.
 
-Don't think it does.
+Hmm, ok, I'll bite: how?  Time is a mystery I've avoided so far 8)
 
--Andi
+Thanks!
+Rusty.
+
+
