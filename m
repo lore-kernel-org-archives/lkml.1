@@ -1,89 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423348AbXBIWox@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423357AbXBIWpt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423348AbXBIWox (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Feb 2007 17:44:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423357AbXBIWox
+	id S1423357AbXBIWpt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Feb 2007 17:45:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423355AbXBIWpt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Feb 2007 17:44:53 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:48174 "EHLO mx1.redhat.com"
+	Fri, 9 Feb 2007 17:45:49 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:59360 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423348AbXBIWow (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Feb 2007 17:44:52 -0500
-Message-ID: <45CCF993.1030501@redhat.com>
-Date: Fri, 09 Feb 2007 17:45:39 -0500
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
+	id S1423357AbXBIWps (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Feb 2007 17:45:48 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: nigel@nigel.suspend2.net
+Subject: Re: NAK new drivers without proper power management?
+Date: Fri, 9 Feb 2007 23:44:14 +0100
+User-Agent: KMail/1.9.5
+Cc: Arjan van de Ven <arjan@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.osdl.org>
+References: <1171058269.1484.64.camel@nigel.suspend2.net> <1171059433.8675.195.camel@laptopd505.fenrus.org> <1171059968.1484.90.camel@nigel.suspend2.net>
+In-Reply-To: <1171059968.1484.90.camel@nigel.suspend2.net>
 MIME-Version: 1.0
-To: Randy Dunlap <randy.dunlap@oracle.com>
-CC: linux-kernel <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org,
-       jejb <james.bottomley@steeleye.com>
-Subject: Re: [patch] Re: SCSI logging sucks
-References: <45CA0716.5060803@redhat.com> <20070207153530.70412bc3.randy.dunlap@oracle.com>
-In-Reply-To: <20070207153530.70412bc3.randy.dunlap@oracle.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200702092344.14984.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Randy Dunlap wrote:
-> Patch for Documentation/kernel-parameters.txt is below.
-> Want more/different?
->
->
-> Is this part of drivers/scsi/Kconfig correct??
->
-> """
-> config SCSI_LOGGING
-> 	bool "SCSI logging facility"
-> 	depends on SCSI
-> 	---help---
-> 	  This turns on a logging facility that can be used to debug a number
-> 	  of SCSI related problems.
->
-> 	  If you say Y here, no logging output will appear by default, but you
-> 	  can enable logging by saying Y to "/proc file system support" and
-> 	  "Sysctl support" below and executing the command
->
-> 	  echo "scsi log token [level]" > /proc/scsi/scsi
->
-> 	  at boot time after the /proc file system has been mounted.
->
-> 	  There are a number of things that can be used for 'token' (you can
-> 	  find them in the source: <file:drivers/scsi/scsi.c>), and this
-> 	  allows you to select the types of information you want, and the
-> 	  level allows you to select the level of verbosity.
-> """
->
->   
-I have no clue whether that works, but looking at scsi.c it would
-seem it doesn't.  I only see add-single-device and remove-single-device
-in there.
-> From: Randy Dunlap <randy.dunlap@oracle.com>
->
-> Minor corrections and additions to 'scsi_logging_level', as pointed out
-> by Chuck Ebbert.
->
-> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-> ---
->  Documentation/kernel-parameters.txt |    5 ++++-
->  1 file changed, 4 insertions(+), 1 deletion(-)
->
-> --- linux-2620-work.orig/Documentation/kernel-parameters.txt
-> +++ linux-2620-work/Documentation/kernel-parameters.txt
-> @@ -1444,7 +1444,10 @@ and is between 256 and 4096 characters. 
->  			Format: <vendor>:<model>:<flags>
->  			(flags are integer value)
->  
-> -	scsi_logging=	[SCSI]
-> +	scsi_logging_level=	[SCSI] a bit mask of logging levels
-> +			See drivers/scsi/scsi_logging.h for bits.  Also
-> +			settable via sysctl at dev.scsi.logging_level
-> +			(/proc/sys/dev/scsi/logging_level).
->  
->  	scsi_mod.scan=	[SCSI] sync (default) scans SCSI busses as they are
->  			discovered.  async scans them in kernel threads,
->   
+On Friday, 9 February 2007 23:26, Nigel Cunningham wrote:
+> Hi.
+> 
+> On Fri, 2007-02-09 at 23:17 +0100, Arjan van de Ven wrote:
+> > On Sat, 2007-02-10 at 08:57 +1100, Nigel Cunningham wrote:
+> > > Hi.
+> > > 
+> > > I don't think this is already done (feel free to correct me if I'm
+> > > wrong)..
+> > > 
+> > > Can we start to NAK new drivers that don't have proper power management
+> > > implemented? There really is no excuse for writing a new driver and not
+> > > putting .suspend and .resume methods in anymore, is there?
+> > 
+> > 
+> > to a large degree, a device driver that doesn't suspend is better than
+> > no device driver at all, right?
+> 
+> I'm not sure it is. It only makes more work for everyone else: We have
+> to help people figure out what causes their computer to fail to resume
+> (which can take quite a while), then get them them complain to driver
+> author, and the driver author has to submit patches to fix it.
+> 
+> All of this is avoided if they'll just do it right in the first place.
+> 
+> > now.. if you want to make the core warn about it, that's very fair
+> 
+> That's probably a good idea too, since I'm only suggesting this for new
+> drivers.
 
-Patch looks good. The script from IBM looks even better.
+I think if CONFIG_PM_DEBUG is set, the core should warn about drivers not
+having .suspend or .resume routines.
 
+Greetings,
+Rafael
+
+
+-- 
+If you don't have the time to read,
+you don't have the time or the tools to write.
+		- Stephen King
