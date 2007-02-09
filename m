@@ -1,49 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946428AbXBIM6J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946431AbXBIM7q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946428AbXBIM6J (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Feb 2007 07:58:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946431AbXBIM6J
+	id S1946431AbXBIM7q (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Feb 2007 07:59:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946433AbXBIM7q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Feb 2007 07:58:09 -0500
-Received: from mtagate4.de.ibm.com ([195.212.29.153]:35420 "EHLO
-	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1946428AbXBIM6G (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Feb 2007 07:58:06 -0500
-Subject: Re: [patch] i386/x86_64: smp_call_function locking inconsistency
-From: Jan Glauber <jan.glauber@de.ibm.com>
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: David Miller <davem@davemloft.net>, akpm@osdl.org, mingo@elte.hu,
-       ak@suse.de, schwidefsky@de.ibm.com, linux-kernel@vger.kernel.org
-In-Reply-To: <20070209084221.GA8259@osiris.boeblingen.de.ibm.com>
-References: <20070208203210.GB9798@osiris.ibm.com>
-	 <20070208.124328.88477956.davem@davemloft.net>
-	 <20070209084221.GA8259@osiris.boeblingen.de.ibm.com>
-Content-Type: text/plain
-Date: Fri, 09 Feb 2007 13:57:18 +0100
-Message-Id: <1171025838.5349.14.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 
-Content-Transfer-Encoding: 7bit
+	Fri, 9 Feb 2007 07:59:46 -0500
+Received: from tristate.vision.ee ([194.204.30.144]:59550 "HELO mail.city.ee"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1946431AbXBIM7p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Feb 2007 07:59:45 -0500
+Message-ID: <45CC703F.9090302@vision.ee>
+Date: Fri, 09 Feb 2007 14:59:43 +0200
+From: =?UTF-8?B?TGVuYXIgTMO1aG11cw==?= <lenar@vision.ee>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070102)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: -mm merge plans for 2.6.21
+References: <20070208150710.1324f6b4.akpm@linux-foundation.org>	<45CC44D5.6050602@vision.ee> <20070209021242.03ba88d8.akpm@linux-foundation.org>
+In-Reply-To: <20070209021242.03ba88d8.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-02-09 at 09:42 +0100, Heiko Carstens wrote:
-> I just want to avoid that s390 has different semantics for
-> smp_call_functiom*() than any other architecture. But then again it
-> will probably not hurt since we allow more.
-> Another thing that comes into my mind is smp_call_function together
-> with cpu hotplug. Who is responsible that preemption and with that
-> cpu hotplug is disabled?
-> Is it the caller or smp_call_function itself?
+Andrew Morton wrote:
+> On Fri, 09 Feb 2007 11:54:29 +0200 Lenar Lõhmus <lenar@vision.ee> wrote:
+> Has it?  I don't think I've ever observed any benefits from it and I don't
+> think anyone has ever got down and worked out what its drawbacks might be,
+> and seen if they can be demonstrated in practice.
+>   
+Who should get down? It seems no serious kernel developer cares enough
+to get to it. It's just a desktop feature you know - no big iron - 
+uninteresting.
+>> Why keep it in -mm for so long?
+>>     
+>
+> I'm waiting to be shown that its benefits exceed its costs.  Sometimes
+> that's hard.
+>   
+Swap prefetch and those mystic _costs_. But nobody
+hasn't communicated loud and clear what those costs are. I imagine
+it must be really hard to fight to something you don't even exists.
+Or prove that you are better than somebody you have never seen or heard of.
 
-I think the caller must disable preemption since smp_call_function()
-means "do something on all but the current cpu". If the preempt_disable
-would happen only in smp_call_function() it could already be running on
-a different cpu, which is not what the caller wants.
+Please somebody qualified, take the time, dig that code, and show us 
+those costs.
+With details. So Con can make the code even better and included in 
+mainline or
+drop altogether if it's really bad and move on to other endeavours.
 
-If preemption must be disabled before smp_call_function() we should have
-the same semantics for all smp_call_function_* variants.
-
-Jan
+With best,
+Lenar
 
