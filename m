@@ -1,42 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752575AbXBIXyc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423367AbXBIXzb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752575AbXBIXyc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Feb 2007 18:54:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752580AbXBIXyc
+	id S1423367AbXBIXzb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Feb 2007 18:55:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423360AbXBIXzb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Feb 2007 18:54:32 -0500
-Received: from ug-out-1314.google.com ([66.249.92.168]:43962 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752575AbXBIXyb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Feb 2007 18:54:31 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=QcbZ8aP0N0oyJ27L0yTYN18a9Y+Xib/s5TgcOzBGdv+g211Qo9PmZkqJmphlDgg0Ox3lCUvxs/wj87GNGrL6d8Jj21PHEkySDvLqW6feBxFtFfnHQLaCaDuDuEkWnVQpfa1xGXs0UtlWMmNZXteQmucRZrPGc85Re91WOoYzhSo=
-Message-ID: <7579f7fb0702091554v3dbd5ae9ldcddcc4cca549548@mail.gmail.com>
-Date: Fri, 9 Feb 2007 15:54:29 -0800
-From: "Matthew Jacob" <lydianconcepts@gmail.com>
-To: "Kumar Gala" <galak@kernel.crashing.org>
-Subject: Re: DMA mapping API for non-system memory pools
-Cc: "Russell King" <rmk@arm.linux.org.uk>,
-       "James Bottomley" <James.Bottomley@hansenpartnership.com>,
-       "Linux Kernel list" <linux-kernel@vger.kernel.org>
-In-Reply-To: <4479FB80-8703-4BCA-925E-DA25B65EE916@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 9 Feb 2007 18:55:31 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:2811 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1946135AbXBIXza (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Feb 2007 18:55:30 -0500
+Date: Fri, 9 Feb 2007 20:54:52 +0000
+From: Pavel Machek <pavel@ucw.cz>
+To: Levitsky Maxim <maximlevitsky@yahoo.com>
+Cc: linux-kernel@vger.kernel.org, tori@unhappy.mine.nu, netdev@vger.kernel.org
+Subject: Re: [PATCH] [NETDEV] [004] dmfe : Add suspend/resume support
+Message-ID: <20070209205451.GA3949@ucw.cz>
+References: <549393.8054.qm@web38506.mail.mud.yahoo.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-References: <4479FB80-8703-4BCA-925E-DA25B65EE916@kernel.crashing.org>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <549393.8054.qm@web38506.mail.mud.yahoo.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yes- this would be interesting to know wrt to doing things like
-PCI<>PCI xfers (e.g., for things like the Micromemory NVRAM card).
+Hi!
 
-On 2/9/07, Kumar Gala <galak@kernel.crashing.org> wrote:
-> We've been having a discussion on the linuxppc-dev list about how to
-> handle IO memory that exists on some PPC SoC devices.  These IO
-> memories behave like system memory but are faster to the processor or
-> device needed accessing for things like buffer descriptors.
->
+> From: Maxim Levitsky <maximlevitsky@yahoo.com>
+> Subject: [PATCH] [NETDEV] [004] dmfe : Add suspend/resume support
+> 
+> Adds support for suspend/resume
+
+Patch looks ok, but your mailer damaged it heavily.
+
+> --- linux-2.6.20-mod/drivers/net/tulip/dmfe.c   2007-02-07 18:46:13.000000000 +0200
+> +++ linux-2.6.20-test/drivers/net/tulip/dmfe.c  2007-02-07 18:50:52.000000000 +0200
+> @@ -55,9 +55,6 @@
+>  
+>      TODO
+>  
+> -    Implement pci_driver::suspend() and pci_driver::resume()
+> -    power management methods.
+> -
+>      Check on 64 bit boxes.
+>      Check and fix on big endian boxes.
+>  
+> @@ -2027,11 +2024,59 @@ static struct pci_device_id dmfe_pci_tbl
+>  MODULE_DEVICE_TABLE(pci, dmfe_pci_tbl);
+>  
+>  
+> +
+> +static int dmfe_suspend(struct pci_dev *pci_dev, pm_message_t state)
+> +{
+
+							Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
