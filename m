@@ -1,55 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992461AbXBIRva@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946623AbXBIR4T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992461AbXBIRva (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Feb 2007 12:51:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992464AbXBIRva
+	id S1946623AbXBIR4T (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Feb 2007 12:56:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946627AbXBIR4S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Feb 2007 12:51:30 -0500
-Received: from hera.kernel.org ([140.211.167.34]:46706 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992461AbXBIRv3 convert rfc822-to-8bit (ORCPT
+	Fri, 9 Feb 2007 12:56:18 -0500
+Received: from nz-out-0506.google.com ([64.233.162.232]:55207 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1946623AbXBIR4S (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Feb 2007 12:51:29 -0500
-From: Len Brown <lenb@kernel.org>
-Organization: Intel Open Source Technology Center
-To: James Morris <jmorris@namei.org>
-Subject: Re: [PATCH 6c/10] lguest: the guest code
-Date: Fri, 9 Feb 2007 12:49:57 -0500
-User-Agent: KMail/1.9.5
-Cc: Rusty Russell <rusty@rustcorp.com.au>,
-       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, Andi Kleen <ak@muc.de>,
-       virtualization <virtualization@lists.osdl.org>
-References: <1171012296.2718.26.camel@localhost.localdomain> <200702091206.31797.lenb@kernel.org> <Pine.LNX.4.64.0702091212360.9007@d.namei>
-In-Reply-To: <Pine.LNX.4.64.0702091212360.9007@d.namei>
+	Fri, 9 Feb 2007 12:56:18 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=U95l5mzH5saBAHlptoPgwJjE3WRfQiARORteS2pkBHl1ioflvv/wXRU+cFAPOJ5sDh3HE2AoN/kgQxDmrk0l+o/L8T7fqmJERo7l7+QpvK8GqItLbFeVoEa4m8MHoDXVlKzS8tBH6pBqbWxEzlgS4rIOmYZI0go7Q6uvPrH60Fw=
+Message-ID: <64d833020702090956oa30c9dfpbd752dad1313d606@mail.gmail.com>
+Date: Fri, 9 Feb 2007 12:56:16 -0500
+From: koan <koan00@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.18.2: sporadic SATA port resets (Broadcom BCM5785 (HT1000))
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200702091249.58204.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 09 February 2007 12:14, James Morris wrote:
-> On Fri, 9 Feb 2007, Len Brown wrote:
-> 
-> > On Friday 09 February 2007 05:57, Rusty Russell wrote:
-> > 
-> > > +#ifdef CONFIG_ACPI
-> > > +       acpi_disabled = 1;
-> > > +       acpi_ht = 0;
-> > > +#endif
-> > 
-> > If this is hard-coded to have ACPI disabled, why isn't it enforced at build-time?
-> 
-> This is being disabled in the guest kernel only.  The host and guest 
-> kernels are expected to be the same build.
+I believe you need to add the flag '-d ata' to the smartctl command in
+order to see the smart status of a SATA device.
 
-Okay, but better to use disable_acpi()
-indeed, since this would be the first code not already inside CONFIG_ACPI
-to invoke disable_acpi(), we could define the inline as empty and you could
-then scratch the #ifdef too.
+-Jesse
 
-cheers,
--Len
+-------------------------------------------------------------
+here it is:
+
+-->
+
+# smartctl -a /dev/sda
+smartctl version 5.36 [x86_64-unknown-linux-gnu] Copyright (C) 2002-6 Bruce
+Allen
+Home page is http://smartmontools.sourceforge.net/
+
+Device: ATA      WDC WD1500ADFD-0 Version: 20.0
+Serial number:      WD-WMAP41246348
+Device type: disk
+Local Time is: Fri Feb  9 18:06:23 2007 CET
+Device does not support SMART
+
+Error Counter logging not supported
+
+[GLTSD (Global Logging Target Save Disable) set. Enable Save with '-S on']
+Device does not support Self Test logging
+
+<--
+
+cu,
+ Emmy
