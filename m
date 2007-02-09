@@ -1,56 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161237AbXBILZA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752342AbXBILbT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161237AbXBILZA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Feb 2007 06:25:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946354AbXBILZA
+	id S1752342AbXBILbT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Feb 2007 06:31:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946370AbXBILbS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Feb 2007 06:25:00 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:37897 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161237AbXBILZA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Feb 2007 06:25:00 -0500
-Subject: Re: -mm merge plans for 2.6.21
-From: Arjan van de Ven <arjan@infradead.org>
-To: Frederik Deweerdt <deweerdt@free.fr>
-Cc: Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de
-In-Reply-To: <20070209105737.GF5785@slug>
-References: <20070208150710.1324f6b4.akpm@linux-foundation.org>
-	 <Pine.LNX.4.61.0702090023270.24888@yvahk01.tjqt.qr>
-	 <20070209105737.GF5785@slug>
-Content-Type: text/plain
-Organization: Intel International BV
-Date: Fri, 09 Feb 2007 12:24:33 +0100
-Message-Id: <1171020273.8675.150.camel@laptopd505.fenrus.org>
+	Fri, 9 Feb 2007 06:31:18 -0500
+Received: from mx1.suse.de ([195.135.220.2]:50587 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752308AbXBILbR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Feb 2007 06:31:17 -0500
+Date: Fri, 9 Feb 2007 12:31:16 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Linux Filesystems <linux-fsdevel@vger.kernel.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [rfc][patch 0/3] a faster buffered write deadlock fix?
+Message-ID: <20070209113116.GB11287@wotan.suse.de>
+References: <20070208105437.26443.35653.sendpatchset@linux.site> <20070209004101.3e4a88fc.akpm@linux-foundation.org> <20070209095405.GA14398@wotan.suse.de> <20070209020954.4951256e.akpm@linux-foundation.org> <20070209103258.GC14398@wotan.suse.de> <20070209025249.0a87a435.akpm@linux-foundation.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070209025249.0a87a435.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-02-09 at 10:57 +0000, Frederik Deweerdt wrote:
-> +static const int __deprecated SA_INTERRUPT = IRQF_DISABLED;
-> +static const int __deprecated SA_SAMPLE_RANDOM = IRQF_SAMPLE_RANDOM;
-> +static const int __deprecated SA_SHIRQ = IRQF_SHARED;
-> +static const int __deprecated SA_PROBEIRQ = IRQF_PROBE_SHARED;
-> +static const int __deprecated SA_PERCPU = IRQF_PERCPU;
-> +
-> +static const int __deprecated SA_TRIGGER_LOW = IRQF_TRIGGER_LOW;
-> +static const int __deprecated SA_TRIGGER_HIGH = IRQF_TRIGGER_HIGH;
-> +static const int __deprecated SA_TRIGGER_FALLING = IRQF_TRIGGER_FALLING;
-> +static const int __deprecated SA_TRIGGER_RISING = IRQF_TRIGGER_RISING;
-> +static const int __deprecated SA_TRIGGER_MASK = IRQF_TRIGGER_MASK;
+On Fri, Feb 09, 2007 at 02:52:49AM -0800, Andrew Morton wrote:
+> On Fri, 9 Feb 2007 11:32:58 +0100 Nick Piggin <npiggin@suse.de> wrote:
+> 
+> > On Fri, Feb 09, 2007 at 02:09:54AM -0800, Andrew Morton wrote:
+> > > On Fri, 9 Feb 2007 10:54:05 +0100 Nick Piggin <npiggin@suse.de> wrote:
+> > > 
+> > > > 
+> > > > That's still got a deadlock,
+> > > 
+> > > It does?
+> > 
+> > Yes, PG_lock vs mm->mmap_sem.
+> 
+> Where?  It requires that someone hold mmap_sem for writing as well as a
+> page lock (in an order which would require some thought).  Do we ever do
+> that?
 
-this will include these in every .o file for which the .c file includes
-the header. NOT GOOD(tm)
+task1			task2			task3
+lock_page(page)		down_read(mmap_sem)
+						down_write(mmap_sem)
+down_read(mmap_sem)
+			lock_page(page)
 
-why not just bite the bullet?
-removing version.h also broke the same all external modules, and they
-got fixed in days.. no big deal. kernel api change all the time, this
-one has been around in "double mode" quite some time...
+t1 is blocked by t3
+t2 is blocked by t1
+t3 is blocked by t2
 
+OK, it isn't quite ABBA, but that's shorthand if we remember that
+that an rwsem read must obey normal lock nesting rules.
+
+> > > >  and also it doesn't work if we want to lock
+> > > > the page when performing a minor fault (which I want to fix fault vs
+> > > > invalidate),
+> > > 
+> > > It's hard to discuss this without a description of what you want to fix
+> > > there, and a description of how you plan to fix it.
+> > 
+> > http://marc.theaimsgroup.com/?l=linux-mm&m=116865911432667&w=2
+> 
+> mutter.
+> 
+> Could perhaps fix that by running ClearPageUptodate in invalidate, thus
+> forcing the pagefault code to take the page lock (which we already hold).
+> 
+> That does mean that we'll fleetingly have a non-uptodate page in pagetables
+> which is a bit nasty.
+> 
+> Or, probably better, we could add a new page flag (heh) telling nopage that
+> it needs to lock the page even if it's uptodate.
+
+I don't see how either of those suggestions would fix this bug.
+
+> > > > and also assumes nobody's ->nopage locks the page or
+> > > > requires any resources that are held by prepare_write (something not
+> > > > immediately clear to me with the cluster filesystems, at least).
+> > > 
+> > > The nopage handler is filemap_nopage().  Are there any exceptions to that?
+> > 
+> > OCFS2 and GFS2.
+> 
+> So the rule is that ->nopage handlers against pagecache mustn't lock the
+> page if it's already uptodate.  That's OK.  But it might conflict with the
+> above invalidate proposal.
+
+Well that _will_ be the rule if you want to do Linus's half-fix. It will
+also be the rule that they're not to deadlock against prepare_write.
+
+> > > > But that all becomes legacy path, so do we really care? Supposing fs
+> > > > maintainers like perform_write, then after the main ones have implementations
+> > > > we could switch over to the slow-but-correct prepare_write legacy path.
+> > > > Or we could leave it, or we could use Linus's slightly-less-buggy scheme...
+> > > > by that point I expect I'd be sick of arguing about it ;)
+> > > 
+> > > It's worth "arguing" about.  This is write().  What matters more??
+> > 
+> > That's the legacy path that uses prepare/commit (ie. supposing that all
+> > major filesystems did get converted to perform_write).
+> 
+> We'll never, ever, ever update and test all filesytems.  What you're
+> calling "legacy" code will be there for all time.
+
+I didn't say all; I still prefer correct than fast; you are still free
+to keep the fast-and-buggy code in the legacy path.
+
+> 
+> I haven't had time to look at the perform_write stuff yet.
+> 
+> > Of course I would still want my correct-but-slow version in that case,
+> > but I just wouldn't care to argue if you still wanted to keep it fast.
+> 
+> This is write().  We just cannot go and double-copy all the memory or take
+> mmap_sem and do a full pagetable walk in there.  It just means that we
+> haven't found a suitable solution yet.
+
+You prefer speed over correctness even for little used filessytems, which
+is fine because I'm sick of arguing about it. The main thing for me is that
+important filesystems can be correct and fast.
 
