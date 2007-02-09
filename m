@@ -1,96 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946091AbXBIEfG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946092AbXBIEfa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946091AbXBIEfG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Feb 2007 23:35:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946092AbXBIEfF
+	id S1946092AbXBIEfa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Feb 2007 23:35:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946097AbXBIEfa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Feb 2007 23:35:05 -0500
-Received: from gateway.insightbb.com ([74.128.0.19]:25972 "EHLO
-	asav01.insightbb.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1946091AbXBIEfE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Feb 2007 23:35:04 -0500
-X-Greylist: delayed 598 seconds by postgrey-1.27 at vger.kernel.org; Thu, 08 Feb 2007 23:35:03 EST
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ah4FALaFy0VKhRO4UGdsb2JhbACOSgEBKpINAQEB
-From: Dmitry Torokhov <dtor@insightbb.com>
-To: Greg KH <greg@kroah.com>
-Subject: Re: Network: convert network devices to use struct device instead of class_device
-Date: Thu, 8 Feb 2007 22:59:46 -0500
-User-Agent: KMail/1.9.3
-Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
-       Jeff Garzik <jeff@garzik.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netdev <netdev@vger.kernel.org>, Kay Sievers <kay.sievers@vrfy.org>
-References: <200702080400.l1840lFd002314@hera.kernel.org> <d120d5000702080929r7016de12k292add26a0a72291@mail.gmail.com> <20070209005601.GE30794@kroah.com>
-In-Reply-To: <20070209005601.GE30794@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Thu, 8 Feb 2007 23:35:30 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:54701 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1946092AbXBIEf2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Feb 2007 23:35:28 -0500
+Date: Thu, 8 Feb 2007 20:35:07 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Ananiev, Leonid I" <leonid.i.ananiev@intel.com>
+Cc: <linux-kernel@vger.kernel.org>, "linux-aio" <linux-aio@kvack.org>,
+       "Zach Brown" <zach.brown@oracle.com>, <suparna@in.ibm.com>,
+       "Chris Mason" <chris.mason@oracle.com>,
+       "Badari Pulavarty" <pbadari@us.ibm.com>
+Subject: Re: [PATCH] aio: fix kernel bug when page is  temporally busy
+Message-Id: <20070208203507.347cff98.akpm@linux-foundation.org>
+In-Reply-To: <B41635854730A14CA71C92B36EC22AAC8048C3@mssmsx411>
+References: <B41635854730A14CA71C92B36EC22AAC8048C3@mssmsx411>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200702082259.47685.dtor@insightbb.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 08 February 2007 19:56, Greg KH wrote:
-> On Thu, Feb 08, 2007 at 12:29:12PM -0500, Dmitry Torokhov wrote:
-> > On 2/8/07, Stephen Hemminger <shemminger@linux-foundation.org> wrote:
-> > >On Thu, 08 Feb 2007 07:43:18 -0500
-> > >Jeff Garzik <jeff@garzik.org> wrote:
-> > >
-> > >> Linux Kernel Mailing List wrote:
-> > >> > Gitweb:     
-> > >http://git.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=43cb76d91ee85f579a69d42bc8efc08bac560278
-> > >> > Commit:     43cb76d91ee85f579a69d42bc8efc08bac560278
-> > >> > Parent:     2943ecf2ed32632473c06f1975db47a7aa98c10f
-> > >> > Author:     Greg Kroah-Hartman <gregkh@suse.de>
-> > >> > AuthorDate: Tue Apr 9 12:14:34 2002 -0700
-> > >> > Committer:  Greg Kroah-Hartman <gregkh@suse.de>
-> > >> > CommitDate: Wed Feb 7 10:37:11 2007 -0800
-> > >> >
-> > >> >     Network: convert network devices to use struct device instead of 
-> > >class_device
-> > >> >
-> > >> >     This lets the network core have the ability to handle 
-> > >suspend/resume
-> > >> >     issues, if it wants to.
-> > >
-> > >It fixes a non-problem. I would like to see the network core suspend/resume
-> > >proposal as well. Last time I examined doing network core suspend help,
-> > >the problem was that the physical device suspend was called before the
-> > >class device. It is not clear how this change would help.
-> > 
-> > If physical devices are registered before class devices then when
-> > suspending class devices are naturally suspended first. It is still
-> > not clear to me why we need to convert everythign to struct device, I
-> > believe I've shown (with patches) that it is possible to integrate
-> > struct class_device into PM framework and avoid reshuffling half of
-> > the kernel code.
-> 
-> I don't want to have two separate device trees in the kernel (well, one
-> big device tree and a bunch of little class_device trees.)  The code
-> duplication in the class_device code is just too much, and I get
-> questions all the time as to what the differences are.
->
+On Fri, 9 Feb 2007 07:29:31 +0300 "Ananiev, Leonid I" <leonid.i.ananiev@intel.com> wrote:
 
-While duplication of code is a real concern my worry is constant fattening
-of struct device. For example most physical devices do not interface
-directly with userspace but every single one of them now has dev_t.
-Former class_devices do not need suspend/resume early framework either.
-And so on, and so forth.
- 
-> With these slow and gradual changes, we are getting a true, unified,
-> device tree, and it will reduce the amount of code and complexity we
-> need to maintain and fix in the driver core itself.
+> >From Leonid Ananiev
 > 
-> And it should also alow for proper power management functionality, using
-> the changes that Linus put into the driver core about 8 months ago.
+> Fix "Kernel BUG at fs/aio.c:509". Return EIOCBRETRY but not  EIO if page
+> is busy.
 > 
-> Don't worry, I have input patches queued up next for you Dmitry :)
+> Signed-off-by: Leonid Ananiev <leonid.i.ananiev@intel.com>
 > 
+> "Kernel BUG at fs/aio.c:509"
+> http://marc.theaimsgroup.com/?l=linux-kernel&m=117031052517746&w=2 
+> is present in 2.6.20 as well as 2.6.19.
+> The investigation shows that the bug's panic occurs when aio_complete()
+> is called with argument ret=EIO which is returned from
+> invalidate_inode_pages2_range() because the page is temporally busy.
+> Call Trace:
+>  [<ffffffff802573c3>] invalidate_inode_pages2_range+0x236/0x26b
+>  [<ffffffff802af77b>] ext3_direct_IO+0x16c/0x19e
+>  [<ffffffff802adc1d>] ext3_get_block+0x0/0xe2
+>  [<ffffffff802518c0>] generic_file_direct_IO+0xb9/0xcf
+>  [<ffffffff8025193d>] generic_file_direct_write+0x67/0x10e
+>  [<ffffffff80252308>] __generic_file_aio_write_nolock+0x2d6/0x3fe
+>  [<ffffffff802082c0>] __switch_to+0x26f/0x27e
+>  [<ffffffff8047b8e9>] thread_return+0x0/0xd8
+>  [<ffffffff80252497>] generic_file_aio_write+0x67/0xc7
+>  [<ffffffff802ab2cc>] ext3_file_write+0x0/0x8f
+>  [<ffffffff802ab2e2>] ext3_file_write+0x16/0x8f
+>  [<ffffffff802ab2cc>] ext3_file_write+0x0/0x8f
+>  [<ffffffff80283f61>] aio_rw_vect_retry+0x72/0x14f
+>  [<ffffffff80284ad9>] aio_run_iocb+0xe6/0x187
+>  [<ffffffff802853e2>] io_submit_one+0x296/0x2e3
+>  [<ffffffff80285979>] sys_io_submit+0x9b/0x108
+>  [<ffffffff80229b49>] default_wake_function+0x0/0xe
+>  [<ffffffff8020983e>] system_call+0x7e/0x83
+> 
+> As a result aio_complete() is called while it should not be.
+> When IO is finished  aio_complete() is called once more
+> and iocb->ki_users becomes negative.
+> 
+> Taking into account aio.c lines in aio_run_iocb()
+>         if (ret != -EIOCBRETRY && ret != -EIOCBQUEUED) {
+>                 aio_complete(iocb, ret, 0);
+> 
+> proposed patch makes function invalidate_inode_pages2_range()
+> to return EIOCBRETRY but not  EIO if page is busy.
+> The patch is tested on 2.6.20.
+> 
+> --- linux-2.6.20/mm/truncate.c  2007-02-04 10:44:54.000000000 -0800
+> +++ linux-2.6.20p/mm/truncate.c 2007-02-08 11:38:11.000000000 -0800
+> @@ -366,7 +366,7 @@ static int do_launder_page(struct addres
+>   * Any pages which are found to be mapped into pagetables are unmapped
+> prior to
+>   * invalidation.
+>   *
+> - * Returns -EIO if any pages could not be invalidated.
+> + * Returns -EIOCBRETRY if any pages could not be invalidated.
+>   */
+>  int invalidate_inode_pages2_range(struct address_space *mapping,
+>                                   pgoff_t start, pgoff_t end)
+> @@ -423,7 +423,7 @@ int invalidate_inode_pages2_range(struct
+>                         }
+>                         ret = do_launder_page(mapping, page);
+>                         if (ret == 0 &&
+> !invalidate_complete_page2(mapping, page))
+> -                               ret = -EIO;
+> +                               ret = -EIOCBRETRY;
+>                         unlock_page(page);
+>                 }
+>                 pagevec_release(&pvec);
+> @@ -440,7 +440,7 @@ EXPORT_SYMBOL_GPL(invalidate_inode_pages
+>   * Any pages which are found to be mapped into pagetables are unmapped
+> prior to
+>   * invalidation.
+>   *
+> - * Returns -EIO if any pages could not be invalidated.
+> + * Returns -EIOCBRETRY if any pages could not be invalidated.
+>   */
+>  int invalidate_inode_pages2(struct address_space *mapping)
+>  {
 
-;)
+The patch is wildly wordwrapped and has had it tabs replaced with spaces.
 
--- 
-Dmitry
+invalidate_inode_pages2() has other callers.  I suspect with this change
+we'll end up leaking EIOCBRETRY back to userspace.
+
