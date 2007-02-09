@@ -1,44 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946557AbXBIQFT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946595AbXBIQFq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946557AbXBIQFT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Feb 2007 11:05:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946569AbXBIQFT
+	id S1946595AbXBIQFq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Feb 2007 11:05:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946594AbXBIQFp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Feb 2007 11:05:19 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:53625 "EHLO
+	Fri, 9 Feb 2007 11:05:45 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:53643 "EHLO
 	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1946557AbXBIQFR (ORCPT
+	with ESMTP id S1946590AbXBIQFm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Feb 2007 11:05:17 -0500
+	Fri, 9 Feb 2007 11:05:42 -0500
 To: torvalds@linux-foundation.org
-Subject: [PATCH] spider_net breakage from class_device -> device
-Cc: jgarzik@pobox.com, linux-kernel@vger.kernel.org
-Message-Id: <E1HFYFM-0004ql-0L@ZenIV.linux.org.uk>
+Subject: [PATCH] TIFM should depend on PCI - TIFM_CORE leads to use of pci primitives
+Cc: linux-kernel@vger.kernel.org
+Message-Id: <E1HFYFq-0004t4-1a@ZenIV.linux.org.uk>
 From: Al Viro <viro@ftp.linux.org.uk>
-Date: Fri, 09 Feb 2007 16:05:12 +0000
+Date: Fri, 09 Feb 2007 16:05:42 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 ---
- drivers/net/spider_net.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ drivers/misc/Kconfig |    2 +-
+ drivers/mmc/Kconfig  |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/spider_net.c b/drivers/net/spider_net.c
-index bf6ff39..64ed8ff 100644
---- a/drivers/net/spider_net.c
-+++ b/drivers/net/spider_net.c
-@@ -1907,7 +1907,7 @@ spider_net_stop(struct net_device *netdev)
- 	spider_net_write_reg(card, SPIDER_NET_GHIINT2MSK, 0);
+diff --git a/drivers/misc/Kconfig b/drivers/misc/Kconfig
+index 89bba27..bedae4a 100644
+--- a/drivers/misc/Kconfig
++++ b/drivers/misc/Kconfig
+@@ -42,7 +42,7 @@ config SGI_IOC4
  
- 	/* free_irq(netdev->irq, netdev);*/
--	free_irq(to_pci_dev(netdev->class_dev.dev)->irq, netdev);
-+	free_irq(to_pci_dev(netdev->dev.parent)->irq, netdev);
+ config TIFM_CORE
+ 	tristate "TI Flash Media interface support (EXPERIMENTAL)"
+-	depends on EXPERIMENTAL
++	depends on EXPERIMENTAL && PCI
+ 	help
+ 	  If you want support for Texas Instruments(R) Flash Media adapters
+ 	  you should select this option and then also choose an appropriate
+diff --git a/drivers/mmc/Kconfig b/drivers/mmc/Kconfig
+index 4224686..12af9c7 100644
+--- a/drivers/mmc/Kconfig
++++ b/drivers/mmc/Kconfig
+@@ -111,7 +111,7 @@ config MMC_IMX
  
- 	spider_net_write_reg(card, SPIDER_NET_GDTDMACCNTR,
- 			     SPIDER_NET_DMA_TX_FEND_VALUE);
+ config MMC_TIFM_SD
+ 	tristate "TI Flash Media MMC/SD Interface support  (EXPERIMENTAL)"
+-	depends on MMC && EXPERIMENTAL
++	depends on MMC && EXPERIMENTAL && PCI
+ 	select TIFM_CORE
+ 	help
+ 	  Say Y here if you want to be able to access MMC/SD cards with
 -- 
 1.5.0-rc2.GIT
-
 
