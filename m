@@ -1,53 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946647AbXBIQrV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946671AbXBIQrg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946647AbXBIQrV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Feb 2007 11:47:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946671AbXBIQq6
+	id S1946671AbXBIQrg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Feb 2007 11:47:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946667AbXBIQrV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Feb 2007 11:46:58 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:51694 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1946647AbXBIQjC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Feb 2007 11:39:02 -0500
-To: torvalds@linux-foundation.org
-Subject: [PATCH] uintptr_t is unsigned long, not u32
-Cc: jgarzik@pobox.com, linux-kernel@vger.kernel.org
-Message-Id: <E1HFYm4-0006nm-MY@ZenIV.linux.org.uk>
-From: Al Viro <viro@ftp.linux.org.uk>
-Date: Fri, 09 Feb 2007 16:39:00 +0000
+	Fri, 9 Feb 2007 11:47:21 -0500
+Received: from cacti.profiwh.com ([85.93.165.66]:44924 "EHLO cacti.profiwh.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1946638AbXBIQrG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Feb 2007 11:47:06 -0500
+Message-ID: <45CCA58C.90604@gmail.com>
+Date: Fri, 09 Feb 2007 17:47:08 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0b2 (X11/20070116)
+MIME-Version: 1.0
+To: Alon Bar-Lev <alon.barlev@gmail.com>
+Cc: linux-kernel@vger.kernel.org, akpm@osdl.org, bwalle@suse.de,
+       rmk+lkml@arm.linux.org.uk, rth@twiddle.net
+Subject: Re: [PATCH 01/34] __initdata cleanup - alpha
+References: <200702091711.34441.alon.barlev@gmail.com> <200702091713.23091.alon.barlev@gmail.com>
+In-Reply-To: <200702091713.23091.alon.barlev@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Alon Bar-Lev napsal(a):
+> Trivial.
+> 
+> Signed-off-by: Alon Bar-Lev <alon.barlev@gmail.com>
+> Signed-off-by: Bernhard Walle <bwalle@suse.de>
+> 
+> ---
+> 
+> diff -urNp linux-2.6.20-rc6-mm3.org/arch/alpha/kernel/setup.c linux-2.6.20-rc6-mm3/arch/alpha/kernel/setup.c
+> --- linux-2.6.20-rc6-mm3.org/arch/alpha/kernel/setup.c	2007-01-31 22:15:30.000000000 +0200
+> +++ linux-2.6.20-rc6-mm3/arch/alpha/kernel/setup.c	2007-01-31 22:19:30.000000000 +0200
+> @@ -122,7 +122,7 @@ static void get_sysnames(unsigned long, 
+>  			 char **, char **);
+>  static void determine_cpu_caches (unsigned int);
+>  
+> -static char __initdata command_line[COMMAND_LINE_SIZE];
+> +static char __initdata command_line[COMMAND_LINE_SIZE] = "";
 
-Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
----
- drivers/net/r8169.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+Why is this "= 0" to static global variables needed?
 
-diff --git a/drivers/net/r8169.c b/drivers/net/r8169.c
-index 577babd..5598d86 100644
---- a/drivers/net/r8169.c
-+++ b/drivers/net/r8169.c
-@@ -2016,7 +2016,7 @@ static int rtl8169_alloc_rx_skb(struct pci_dev *pdev, struct sk_buff **sk_buff,
- 	if (!skb)
- 		goto err_out;
- 
--	skb_reserve(skb, (align - 1) & (u32)skb->data);
-+	skb_reserve(skb, (align - 1) & (unsigned long)skb->data);
- 	*sk_buff = skb;
- 
- 	mapping = pci_map_single(pdev, skb->data, rx_buf_sz,
-@@ -2487,7 +2487,7 @@ static inline int rtl8169_try_rx_copy(struct sk_buff **sk_buff, int pkt_size,
- 
- 		skb = dev_alloc_skb(pkt_size + align);
- 		if (skb) {
--			skb_reserve(skb, (align - 1) & (u32)skb->data);
-+			skb_reserve(skb, (align - 1) & (unsigned long)skb->data);
- 			eth_copy_and_sum(skb, sk_buff[0]->data, pkt_size, 0);
- 			*sk_buff = skb;
- 			rtl8169_mark_to_asic(desc, rx_buf_sz);
+regards,
 -- 
-1.5.0-rc2.GIT
-
-
+http://www.fi.muni.cz/~xslaby/            Jiri Slaby
+faculty of informatics, masaryk university, brno, cz
+e-mail: jirislaby gmail com, gpg pubkey fingerprint:
+B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
