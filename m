@@ -1,24 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946575AbXBIPnL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946546AbXBIPnM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946575AbXBIPnL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Feb 2007 10:43:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946546AbXBIPer
+	id S1946546AbXBIPnM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Feb 2007 10:43:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946550AbXBIPep
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Feb 2007 10:34:47 -0500
-Received: from ug-out-1314.google.com ([66.249.92.172]:2873 "EHLO
+	Fri, 9 Feb 2007 10:34:45 -0500
+Received: from ug-out-1314.google.com ([66.249.92.168]:2693 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1946553AbXBIPeh (ORCPT
+	with ESMTP id S1946561AbXBIPej (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Feb 2007 10:34:37 -0500
+	Fri, 9 Feb 2007 10:34:39 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:from:to:subject:date:user-agent:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=s//uzXXcpveDeQbvORVqhOQs6RR1sbTVjageKYdGqpmp0vubw8OU0xPbiJYxUYT6ZFoAv3i9iuRwVGvTPMOVqRxqFz++oAzzaAi1G6bxHVIq6ItmnZMlTQ+60Og5zapFfgeMfPVcnFezsHl7WGiGIL5a+h+Qqu7/R4/vo7VvwkY=
+        b=MxMbB/EwRR9KMZzBxkGEtx7y42HXarpIoik7hO42FeJTthcWco1wCtH2B4AWP/x4+lKlPK8oSW6X7beiWiBVpOCWIbnIzFOlHVdZ+GUBhUcsQbTaik2mpTl7BoBVS8wpXxCgf6U8fAOoLCJDd/GVBxujrgnik5RadTlowi7Tv2s=
 From: Alon Bar-Lev <alon.barlev@gmail.com>
 To: linux-kernel@vger.kernel.org, akpm@osdl.org, bwalle@suse.de,
-       rmk+lkml@arm.linux.org.uk, paulus@samba.org
-Subject: [PATCH 13/34] __initdata cleanup - ppc
-Date: Fri, 9 Feb 2007 17:21:41 +0200
+       rmk+lkml@arm.linux.org.uk, schwidefsky@de.ibm.com,
+       heiko.carstens@de.ibm.com
+Subject: [PATCH 14/34] __initdata cleanup - s390
+Date: Fri, 9 Feb 2007 17:22:04 +0200
 User-Agent: KMail/1.9.6
 References: <200702091711.34441.alon.barlev@gmail.com>
 In-Reply-To: <200702091711.34441.alon.barlev@gmail.com>
@@ -27,7 +28,7 @@ Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200702091721.41777.alon.barlev@gmail.com>
+Message-Id: <200702091722.04603.alon.barlev@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
@@ -41,63 +42,44 @@ Signed-off-by: Bernhard Walle <bwalle@suse.de>
 
 ---
 
-diff -urNp linux-2.6.20-rc6-mm3.org/arch/ppc/platforms/4xx/bamboo.c linux-2.6.20-rc6-mm3/arch/ppc/platforms/4xx/bamboo.c
---- linux-2.6.20-rc6-mm3.org/arch/ppc/platforms/4xx/bamboo.c	2007-01-25 04:19:28.000000000 +0200
-+++ linux-2.6.20-rc6-mm3/arch/ppc/platforms/4xx/bamboo.c	2007-01-31 22:19:30.000000000 +0200
-@@ -50,7 +50,7 @@
+diff -urNp linux-2.6.20-rc6-mm3.org/arch/s390/kernel/setup.c linux-2.6.20-rc6-mm3/arch/s390/kernel/setup.c
+--- linux-2.6.20-rc6-mm3.org/arch/s390/kernel/setup.c
++++ linux-2.6.20-rc6-mm3/arch/s390/kernel/setup.c
+@@ -74,9 +74,9 @@ unsigned int console_devno = -1;
+ unsigned int console_irq = -1;
+ unsigned long machine_flags = 0;
  
- extern bd_t __res;
- 
--static struct ibm44x_clocks clocks __initdata;
-+static struct ibm44x_clocks clocks __initdata = {0};
- 
- /*
-  * Bamboo external IRQ triggering/polarity settings
-diff -urNp linux-2.6.20-rc6-mm3.org/arch/ppc/platforms/4xx/ebony.c linux-2.6.20-rc6-mm3/arch/ppc/platforms/4xx/ebony.c
---- linux-2.6.20-rc6-mm3.org/arch/ppc/platforms/4xx/ebony.c	2007-01-25 04:19:28.000000000 +0200
-+++ linux-2.6.20-rc6-mm3/arch/ppc/platforms/4xx/ebony.c	2007-01-31 22:19:30.000000000 +0200
-@@ -53,7 +53,7 @@
- 
- extern bd_t __res;
- 
--static struct ibm44x_clocks clocks __initdata;
-+static struct ibm44x_clocks clocks __initdata = {0};
+-struct mem_chunk __initdata memory_chunk[MEMORY_CHUNKS];
++struct mem_chunk __initdata memory_chunk[MEMORY_CHUNKS] = {{0}};
+ volatile int __cpu_logical_map[NR_CPUS]; /* logical cpu to cpu address */
+-static unsigned long __initdata memory_end;
++static unsigned long __initdata memory_end = 0l;
  
  /*
-  * Ebony external IRQ triggering/polarity settings
-diff -urNp linux-2.6.20-rc6-mm3.org/arch/ppc/platforms/4xx/luan.c linux-2.6.20-rc6-mm3/arch/ppc/platforms/4xx/luan.c
---- linux-2.6.20-rc6-mm3.org/arch/ppc/platforms/4xx/luan.c	2007-01-25 04:19:28.000000000 +0200
-+++ linux-2.6.20-rc6-mm3/arch/ppc/platforms/4xx/luan.c	2007-01-31 22:19:30.000000000 +0200
-@@ -51,7 +51,7 @@
+  * This is set up by the setup-routine at boot-time
+diff -urNp linux-2.6.20-rc6-mm3.org/arch/s390/kernel/smp.c linux-2.6.20-rc6-mm3/arch/s390/kernel/smp.c
+--- linux-2.6.20-rc6-mm3.org/arch/s390/kernel/smp.c
++++ linux-2.6.20-rc6-mm3/arch/s390/kernel/smp.c
+@@ -603,8 +603,8 @@ __cpu_up(unsigned int cpu)
+ 	return 0;
+ }
  
- extern bd_t __res;
+-static unsigned int __initdata additional_cpus;
+-static unsigned int __initdata possible_cpus;
++static unsigned int __initdata additional_cpus = 0;
++static unsigned int __initdata possible_cpus = 0;
  
--static struct ibm44x_clocks clocks __initdata;
-+static struct ibm44x_clocks clocks __initdata = {0};
+ void __init smp_setup_cpu_possible_map(void)
+ {
+diff -urNp linux-2.6.20-rc6-mm3.org/drivers/s390/block/xpram.c linux-2.6.20-rc6-mm3/drivers/s390/block/xpram.c
+--- linux-2.6.20-rc6-mm3.org/drivers/s390/block/xpram.c
++++ linux-2.6.20-rc6-mm3/drivers/s390/block/xpram.c
+@@ -63,7 +63,7 @@ static int xpram_devs;
+  * Parameter parsing functions.
+  */
+ static int __initdata devs = XPRAM_DEVS;
+-static char __initdata *sizes[XPRAM_MAX_DEVS];
++static char __initdata *sizes[XPRAM_MAX_DEVS] = {0};
  
- static void __init
- luan_calibrate_decr(void)
-diff -urNp linux-2.6.20-rc6-mm3.org/arch/ppc/platforms/4xx/ocotea.c linux-2.6.20-rc6-mm3/arch/ppc/platforms/4xx/ocotea.c
---- linux-2.6.20-rc6-mm3.org/arch/ppc/platforms/4xx/ocotea.c	2007-01-25 04:19:28.000000000 +0200
-+++ linux-2.6.20-rc6-mm3/arch/ppc/platforms/4xx/ocotea.c	2007-01-31 22:19:30.000000000 +0200
-@@ -51,7 +51,7 @@
- 
- extern bd_t __res;
- 
--static struct ibm44x_clocks clocks __initdata;
-+static struct ibm44x_clocks clocks __initdata = {0};
- 
- static void __init
- ocotea_calibrate_decr(void)
-diff -urNp linux-2.6.20-rc6-mm3.org/arch/ppc/platforms/4xx/yucca.c linux-2.6.20-rc6-mm3/arch/ppc/platforms/4xx/yucca.c
---- linux-2.6.20-rc6-mm3.org/arch/ppc/platforms/4xx/yucca.c	2007-01-25 04:19:28.000000000 +0200
-+++ linux-2.6.20-rc6-mm3/arch/ppc/platforms/4xx/yucca.c	2007-01-31 22:19:30.000000000 +0200
-@@ -53,7 +53,7 @@
- 
- extern bd_t __res;
- 
--static struct ibm44x_clocks clocks __initdata;
-+static struct ibm44x_clocks clocks __initdata = {0};
- 
- static void __init
- yucca_calibrate_decr(void)
+ module_param(devs, int, 0);
+ module_param_array(sizes, charp, NULL, 0);
