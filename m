@@ -1,83 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946408AbXBIMLV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946403AbXBIMYk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946408AbXBIMLV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Feb 2007 07:11:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946407AbXBIMLV
+	id S1946403AbXBIMYk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Feb 2007 07:24:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946407AbXBIMYk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Feb 2007 07:11:21 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:41080 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1946405AbXBIMLT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Feb 2007 07:11:19 -0500
-Date: Fri, 9 Feb 2007 13:11:18 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Linux Filesystems <linux-fsdevel@vger.kernel.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [rfc][patch 0/3] a faster buffered write deadlock fix?
-Message-ID: <20070209121118.GA510@wotan.suse.de>
-References: <20070208105437.26443.35653.sendpatchset@linux.site> <20070209004101.3e4a88fc.akpm@linux-foundation.org> <20070209095405.GA14398@wotan.suse.de> <20070209020954.4951256e.akpm@linux-foundation.org> <20070209103258.GC14398@wotan.suse.de> <20070209025249.0a87a435.akpm@linux-foundation.org> <20070209113116.GB11287@wotan.suse.de> <20070209034644.cc5fe40a.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070209034644.cc5fe40a.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.9i
+	Fri, 9 Feb 2007 07:24:40 -0500
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:50399 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1946403AbXBIMYj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Feb 2007 07:24:39 -0500
+Message-ID: <45CC68BA.4010403@bull.net>
+Date: Fri, 09 Feb 2007 13:27:38 +0100
+From: Nadia Derbey <Nadia.Derbey@bull.net>
+Organization: BULL/DT/OSwR&D/Linux
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.6) Gecko/20040115
+X-Accept-Language: en-us, en
+MIME-Version: 1.0
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH 6/6] automatic tuning applied to some kernel components
+References: <20070116061516.899460000@bull.net>	<20070116063030.761795000@bull.net>	<20070122115638.835b26a1.akpm@osdl.org> <45B61E50.6020607@bull.net> <m1mz3poeda.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <m1mz3poeda.fsf@ebiederm.dsl.xmission.com>
+X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 09/02/2007 13:25:44,
+	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 09/02/2007 13:25:47,
+	Serialize complete at 09/02/2007 13:25:47
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 09, 2007 at 03:46:44AM -0800, Andrew Morton wrote:
-> On Fri, 9 Feb 2007 12:31:16 +0100 Nick Piggin <npiggin@suse.de> wrote:
+Eric W. Biederman wrote:
+> Nadia Derbey <Nadia.Derbey@bull.net> writes:
 > 
-> > > 
-> > > We'll never, ever, ever update and test all filesytems.  What you're
-> > > calling "legacy" code will be there for all time.
-> > 
-> > I didn't say all; I still prefer correct than fast;
 > 
-> For gawd's sake.  You can make the kernel less buggy by removing SMP
-> support.
-
-I'm talking about known bugs.
-
-> Guess what?  Tradeoffs exist.
-
-I agree that 60% is much too big of a hit for all filesystems. Which is
-why I propose this new aop.
-
-> > you are still free
-> > to keep the fast-and-buggy code in the legacy path.
+>>2) why autotuning:
+>>There are at least 3 cases where it can be useful
+>>. for workloads that are known to need a big amount of a given resource type
+>>(say shared memories), but we don't know what the maximum amount needed will be
+>>. to solve the case of multiple applications running on a single system, and
+>>that need the same tunable to be adjusted to feet their needs
+>>. to make a system correctly react to eventual peak loads for a given resource
+>>usage, i.e. make it tune up *and down* as needed.
 > 
-> You make it sound like this is a choice.  It isn't.  Nobody is going to go
-> in and convert all those filesystems.
-
-IMO, once all the maintained filesystems are converted then it would be
-a good choice to make. You think otherwise and I won't argue.
-
-> > > 
-> > > I haven't had time to look at the perform_write stuff yet.
-> > > 
-> > > > Of course I would still want my correct-but-slow version in that case,
-> > > > but I just wouldn't care to argue if you still wanted to keep it fast.
-> > > 
-> > > This is write().  We just cannot go and double-copy all the memory or take
-> > > mmap_sem and do a full pagetable walk in there.  It just means that we
-> > > haven't found a suitable solution yet.
-> > 
-> > You prefer speed over correctness even for little used filessytems, which
-> > is fine because I'm sick of arguing about it. The main thing for me is that
-> > important filesystems can be correct and fast.
 > 
-> I wouldn't characterise it as "arguing".  It's development.  Going and
-> sticking enormous slowdowns into write() to fix some bug which nobody is
-> hitting is insane.
+>>In all these cases, the akt framework will enable the kernel to adapt to
+>>increasing / decreasing resource consumption:
+>>1) avoid allocating "a priori" a big amount of memory that will be used only in
+>>extreme cases. This is the effect of doing an "echo <huge_value>
+>>
+>>>/proc/sys/kernel/shmmni"
+>>
+>>2) the system will come back to the default values as soon as the peak load is
+>>over.
+> 
+> 
+> At least the ipc ones are supposed to be DOS limits not behavior
+> modifiers.  I do admit from looking at the code that there are some
+> consequences of increasing things like shmmni.  However I think we
+> would be better off with  better data structures and implementations
+> that remove these consequences than this autotuning of
+> denial-of-service limits.
+> 
 
-Actually I'm doing this because I try to fix real data corruption problems
-which people are hitting. You told me I can't get those fixes in until I
-fix this problem.
+I do not fully agree with you:
+It is true that some ipc tunables play the role of DoS limits.
+But IMHO the *mni ones (semmni, msgmni, shmmni) are used by the ipc 
+subsystem to adapt its data structures sizes to what is being asked for 
+through the tunable value. I think this is how they manage to take into 
+account a new tunable value without a need for rebooting the system: 
+reallocate some more memory on demand.
 
-> We need to find a better fix, that's all.
+Now, what the akt framework does, is that it takes advantage of this 
+concept of "on demand memory allocation" to replace a user (or a daemon) 
+that would periodically check its ipcs consumptions and manually adjust 
+the ipcs tunables: Doing this from the user space would imply a latency 
+that makes it difficult to react fast enough to resources running out.
 
-I actually found perform_write to be a speedup. And if perform_write is
-merged then I would be happy to not fix the prepare_write path, or wait for
-someone to come up with a better fix.
+Now, talking about DoS limits, akt implements them in a sense: each 
+tunable managed by akt has 3 attributes exported to sysfs:
+. autotune: enable / disable auto-tuning
+. min: min value the tunable can ever reach
+. max: max value the tunable can ever reach
+
+Enabling a sysadmin to play with these min and max values makes it 
+possible to refine the dynamic adjustment, and avoid that the tunable 
+reaches really huge values.
+
+Regards,
+Nadia
+
