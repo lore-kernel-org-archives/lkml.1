@@ -1,76 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946578AbXBIPnL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946575AbXBIPnL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946578AbXBIPnL (ORCPT <rfc822;w@1wt.eu>);
+	id S1946575AbXBIPnL (ORCPT <rfc822;w@1wt.eu>);
 	Fri, 9 Feb 2007 10:43:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946575AbXBIPnK
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946546AbXBIPer
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Feb 2007 10:43:10 -0500
-Received: from nommos.sslcatacombnetworking.com ([67.18.224.114]:40547 "EHLO
-	nommos.sslcatacombnetworking.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1946551AbXBIPmg (ORCPT
+	Fri, 9 Feb 2007 10:34:47 -0500
+Received: from ug-out-1314.google.com ([66.249.92.172]:2873 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1946553AbXBIPeh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Feb 2007 10:42:36 -0500
-Date: Fri, 9 Feb 2007 09:39:57 -0600 (CST)
-From: Kumar Gala <galak@kernel.crashing.org>
-X-X-Sender: galak@localhost.localdomain
-To: stable@kernel.org
-cc: linux-kernel@vger.kernel.org, linuxppc-embedded@ozlabs.org,
-       imr@rtschenk.de
-Subject: [PPC] Fix compile error for e500 core based processors
-Message-ID: <Pine.LNX.4.64.0702090938360.26617@localhost.localdomain>
+	Fri, 9 Feb 2007 10:34:37 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=s//uzXXcpveDeQbvORVqhOQs6RR1sbTVjageKYdGqpmp0vubw8OU0xPbiJYxUYT6ZFoAv3i9iuRwVGvTPMOVqRxqFz++oAzzaAi1G6bxHVIq6ItmnZMlTQ+60Og5zapFfgeMfPVcnFezsHl7WGiGIL5a+h+Qqu7/R4/vo7VvwkY=
+From: Alon Bar-Lev <alon.barlev@gmail.com>
+To: linux-kernel@vger.kernel.org, akpm@osdl.org, bwalle@suse.de,
+       rmk+lkml@arm.linux.org.uk, paulus@samba.org
+Subject: [PATCH 13/34] __initdata cleanup - ppc
+Date: Fri, 9 Feb 2007 17:21:41 +0200
+User-Agent: KMail/1.9.6
+References: <200702091711.34441.alon.barlev@gmail.com>
+In-Reply-To: <200702091711.34441.alon.barlev@gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-X-PopBeforeSMTPSenders: kumar-chaos@kgala.com,kumar-statements@kgala.com,kumar@kgala.com
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - nommos.sslcatacombnetworking.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - kernel.crashing.org
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200702091721.41777.alon.barlev@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We get the following compiler error:
 
-   CC      arch/ppc/kernel/ppc_ksyms.o
-arch/ppc/kernel/ppc_ksyms.c:275: error: '__mtdcr' undeclared here (not in a function)
-arch/ppc/kernel/ppc_ksyms.c:275: warning: type defaults to 'int' in declaration of '__mtdcr'
-arch/ppc/kernel/ppc_ksyms.c:276: error: '__mfdcr' undeclared here (not in a function)
-arch/ppc/kernel/ppc_ksyms.c:276: warning: type defaults to 'int' in declaration of '__mfdcr'
-make[1]: *** [arch/ppc/kernel/ppc_ksyms.o] Error 1
+Trivial.
 
-This is due to the EXPORT_SYMBOL for __mtdcr/__mfdcr not having the proper CONFIG protection
+**NOT TESTED***
 
-Signed-off-by: Rojhalat Ibrahim <imr@rtschenk.de>
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+Signed-off-by: Alon Bar-Lev <alon.barlev@gmail.com>
+Signed-off-by: Bernhard Walle <bwalle@suse.de>
 
 ---
 
-This should go in for 2.6.20,1, got in a sub-arch tree for 2.6.21.
-
-- k
-
-commit 862a7284980d809a583e9a34c774fab84e0a46f8
-tree 021a5c277818f63a85d1cbecad69815bedce7174
-parent 27630bec9478a2dd387c68b5e435ed3fdd3a513e
-author Rojhalat Ibrahim <imr@rtschenk.de> Fri, 09 Feb 2007 15:10:38 +0100
-committer Kumar Gala <galak@kernel.crashing.org> Fri, 09 Feb 2007 09:36:37 -0600
-
-  arch/ppc/kernel/ppc_ksyms.c |    2 +-
-  1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/arch/ppc/kernel/ppc_ksyms.c b/arch/ppc/kernel/ppc_ksyms.c
-index 1f49503..1318b6f 100644
---- a/arch/ppc/kernel/ppc_ksyms.c
-+++ b/arch/ppc/kernel/ppc_ksyms.c
-@@ -271,7 +271,7 @@ EXPORT_SYMBOL(mmu_hash_lock); /* For MOL */
-  extern long *intercept_table;
-  EXPORT_SYMBOL(intercept_table);
-  #endif /* CONFIG_PPC_STD_MMU */
--#if defined(CONFIG_40x) || defined(CONFIG_BOOKE)
-+#ifdef CONFIG_PPC_DCR_NATIVE
-  EXPORT_SYMBOL(__mtdcr);
-  EXPORT_SYMBOL(__mfdcr);
-  #endif
+diff -urNp linux-2.6.20-rc6-mm3.org/arch/ppc/platforms/4xx/bamboo.c linux-2.6.20-rc6-mm3/arch/ppc/platforms/4xx/bamboo.c
+--- linux-2.6.20-rc6-mm3.org/arch/ppc/platforms/4xx/bamboo.c	2007-01-25 04:19:28.000000000 +0200
++++ linux-2.6.20-rc6-mm3/arch/ppc/platforms/4xx/bamboo.c	2007-01-31 22:19:30.000000000 +0200
+@@ -50,7 +50,7 @@
+ 
+ extern bd_t __res;
+ 
+-static struct ibm44x_clocks clocks __initdata;
++static struct ibm44x_clocks clocks __initdata = {0};
+ 
+ /*
+  * Bamboo external IRQ triggering/polarity settings
+diff -urNp linux-2.6.20-rc6-mm3.org/arch/ppc/platforms/4xx/ebony.c linux-2.6.20-rc6-mm3/arch/ppc/platforms/4xx/ebony.c
+--- linux-2.6.20-rc6-mm3.org/arch/ppc/platforms/4xx/ebony.c	2007-01-25 04:19:28.000000000 +0200
++++ linux-2.6.20-rc6-mm3/arch/ppc/platforms/4xx/ebony.c	2007-01-31 22:19:30.000000000 +0200
+@@ -53,7 +53,7 @@
+ 
+ extern bd_t __res;
+ 
+-static struct ibm44x_clocks clocks __initdata;
++static struct ibm44x_clocks clocks __initdata = {0};
+ 
+ /*
+  * Ebony external IRQ triggering/polarity settings
+diff -urNp linux-2.6.20-rc6-mm3.org/arch/ppc/platforms/4xx/luan.c linux-2.6.20-rc6-mm3/arch/ppc/platforms/4xx/luan.c
+--- linux-2.6.20-rc6-mm3.org/arch/ppc/platforms/4xx/luan.c	2007-01-25 04:19:28.000000000 +0200
++++ linux-2.6.20-rc6-mm3/arch/ppc/platforms/4xx/luan.c	2007-01-31 22:19:30.000000000 +0200
+@@ -51,7 +51,7 @@
+ 
+ extern bd_t __res;
+ 
+-static struct ibm44x_clocks clocks __initdata;
++static struct ibm44x_clocks clocks __initdata = {0};
+ 
+ static void __init
+ luan_calibrate_decr(void)
+diff -urNp linux-2.6.20-rc6-mm3.org/arch/ppc/platforms/4xx/ocotea.c linux-2.6.20-rc6-mm3/arch/ppc/platforms/4xx/ocotea.c
+--- linux-2.6.20-rc6-mm3.org/arch/ppc/platforms/4xx/ocotea.c	2007-01-25 04:19:28.000000000 +0200
++++ linux-2.6.20-rc6-mm3/arch/ppc/platforms/4xx/ocotea.c	2007-01-31 22:19:30.000000000 +0200
+@@ -51,7 +51,7 @@
+ 
+ extern bd_t __res;
+ 
+-static struct ibm44x_clocks clocks __initdata;
++static struct ibm44x_clocks clocks __initdata = {0};
+ 
+ static void __init
+ ocotea_calibrate_decr(void)
+diff -urNp linux-2.6.20-rc6-mm3.org/arch/ppc/platforms/4xx/yucca.c linux-2.6.20-rc6-mm3/arch/ppc/platforms/4xx/yucca.c
+--- linux-2.6.20-rc6-mm3.org/arch/ppc/platforms/4xx/yucca.c	2007-01-25 04:19:28.000000000 +0200
++++ linux-2.6.20-rc6-mm3/arch/ppc/platforms/4xx/yucca.c	2007-01-31 22:19:30.000000000 +0200
+@@ -53,7 +53,7 @@
+ 
+ extern bd_t __res;
+ 
+-static struct ibm44x_clocks clocks __initdata;
++static struct ibm44x_clocks clocks __initdata = {0};
+ 
+ static void __init
+ yucca_calibrate_decr(void)
