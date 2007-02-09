@@ -1,53 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992753AbXBITAA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992754AbXBITAH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992753AbXBITAA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Feb 2007 14:00:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992754AbXBITAA
+	id S2992754AbXBITAH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Feb 2007 14:00:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992756AbXBITAH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Feb 2007 14:00:00 -0500
-Received: from ip-216-152-249-241.servata.com ([216.152.249.241]:39346 "EHLO
-	servata.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S2992753AbXBIS77 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Feb 2007 13:59:59 -0500
-X-Greylist: delayed 1539 seconds by postgrey-1.27 at vger.kernel.org; Fri, 09 Feb 2007 13:59:59 EST
-Subject: oom_kill.c badness() correction for shared memory
-From: Jeff Davis <linux@j-davis.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Date: Fri, 09 Feb 2007 10:34:15 -0800
-Message-Id: <1171046056.10824.71.camel@dogma.v10.wvs>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.0.4 (2.0.4-7) 
-Content-Transfer-Encoding: 7bit
+	Fri, 9 Feb 2007 14:00:07 -0500
+Received: from dsl3-63-249-91-56.cruzio.com ([63.249.91.56]:59221 "EHLO
+	cichlid.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2992754AbXBITAG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Feb 2007 14:00:06 -0500
+X-Greylist: delayed 3026 seconds by postgrey-1.27 at vger.kernel.org; Fri, 09 Feb 2007 14:00:06 EST
+Date: Fri, 9 Feb 2007 10:09:22 -0800
+From: Andrew Burgess <aab@cichlid.com>
+Message-Id: <200702091809.l19I9MgS025574@cichlid.com>
+To: kernel@kolivas.org, ck@vds.kolivas.org, akpm@osdl.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Swap prefetch merge plans
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+>I'm stuck developing code I'm having trouble proving it helps. Normal users 
+>find it helps and an artificial testcase shows it helps, but that is not 
+>enough, since the normal users will be tainted in their opinion, and the 
+>artificial testcase will always be artificial. My mistake of developing novel 
+>code in areas that were unquantifiable has been my undoing.
 
-In oom_kill.c, badness() takes into account many factors, including half
-the total_vm of all the children.
+Could you add some statistics gathering to measure
+cumulatively how long processes wait for swapin?  Then you
+could run with and without and maybe say "on average my
+system waits 4 minutes a day without swap prefetch and 2
+minutes with? Or if a simple sum doesn't work, some sort of
+graph? Then anyone could run and measure the benefit.
 
-The problem with this calculation is that, if the parent and children
-share memory, the shared memory segment is counted many times for the
-parent.
-
-I don't think we need to count the shared memory at all when calculating
-badness, because there's already a hard limit on the amount of shared
-memory, so it's unlikely that process is runaway due to shared memory
-consumption.
-
-Would it be better to just use (total_vm-shared_vm) in the badness
-function in each instance it currently uses total_vm? At a minimum, we
-should do that for the loop that counts each child's vm against the
-parent.
-
-An example of a practical problem is with PostgreSQL. PostgreSQL
-installations often have very large shared memory regions shared between
-the parent and all the child processes. If the OOM killer is invoked,
-it's almost guaranteed to kill the PostgreSQL parent process first, even
-if the PostgreSQL processes all combined use much less memory than the
-"real" bad process (because the same shared memory is counted many
-times).
-
-Regards,
-	Jeff Davis
+Apologies if you've already thought of this...
 
