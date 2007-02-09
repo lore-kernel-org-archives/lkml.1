@@ -1,259 +1,176 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752476AbXBIWxf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752471AbXBIWxe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752476AbXBIWxf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Feb 2007 17:53:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752486AbXBIWxf
+	id S1752471AbXBIWxe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Feb 2007 17:53:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752478AbXBIWxe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Feb 2007 17:53:35 -0500
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:53957 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752476AbXBIWxd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Feb 2007 17:53:34 -0500
+Received: from e35.co.us.ibm.com ([32.97.110.153]:46824 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752471AbXBIWxd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 9 Feb 2007 17:53:33 -0500
-Subject: [PATCH 01/22] filesystem helpers for custom 'struct file's
+Subject: [PATCH 03/22] record when sb_writer_count elevated for inode
 To: linux-kernel@vger.kernel.org
 Cc: akpm@osdl.org, hch@infradead.org, Dave Hansen <hansendc@us.ibm.com>
 From: Dave Hansen <hansendc@us.ibm.com>
-Date: Fri, 09 Feb 2007 14:53:29 -0800
-Message-Id: <20070209225329.27619A62@localhost.localdomain>
+Date: Fri, 09 Feb 2007 14:53:31 -0800
+References: <20070209225329.27619A62@localhost.localdomain>
+In-Reply-To: <20070209225329.27619A62@localhost.localdomain>
+Message-Id: <20070209225331.4457B8CB@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Some filesystems forego the vfs and may_open() and create their
-own 'struct file's.
+There are a number of filesystems that do iput()s without first
+having messed with i_nlink.  In order to keep from accidentally
+decrementing the superblock writer count for these, we record
+when the count is bumped up, so that we can properly balance
+it.
 
-This patch creates a couple of helper functions which can be
-used by these filesystems, and will provide a unified place
-which the r/o bind mount code may patch.
+I first tried to do this by assuming that, for each dec_nlink() to
+zero, there was exactly one call to iput_final().  But, there are
+a number of cases where this isn't true, especially in error handling
+code.  Even if all of the filesystems were fixed up, it would be simple
+to reintroduce new bugs imbalancing the mnt writer count.  This patch
+trades that possibility for the chance that we will miss a i_nlink--,
+and not bump the sb writer count.
+
+I like the idea screwing up writing out a single inode better than
+screwing up a global superblock count imbalance that will affect
+all inodes on the superblock.
+
+Also, since this is the first non-trivial use of the inc/drop_nlink()
+functions, add some kernel docs for them.
 
 Signed-off-by: Dave Hansen <haveblue@us.ibm.com>
 ---
 
- lxc-dave/fs/file_table.c      |   36 ++++++++++++++++++++++++++++++++++++
- lxc-dave/fs/hugetlbfs/inode.c |   22 +++++++++-------------
- lxc-dave/include/linux/file.h |    8 ++++++++
- lxc-dave/mm/shmem.c           |    7 ++-----
- lxc-dave/mm/tiny-shmem.c      |   24 +++++++++---------------
- lxc-dave/net/socket.c         |   18 +++++++++---------
- 6 files changed, 73 insertions(+), 42 deletions(-)
+ lxc-dave/fs/inode.c         |    7 +++++
+ lxc-dave/fs/libfs.c         |    1 
+ lxc-dave/include/linux/fs.h |   58 ++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 66 insertions(+)
 
-diff -puN fs/file_table.c~01-24-filesystem-helpers-for-custom-struct-file-s fs/file_table.c
---- lxc/fs/file_table.c~01-24-filesystem-helpers-for-custom-struct-file-s	2007-02-09 14:26:46.000000000 -0800
-+++ lxc-dave/fs/file_table.c	2007-02-09 14:26:46.000000000 -0800
-@@ -140,6 +140,42 @@ fail:
- 
- EXPORT_SYMBOL(get_empty_filp);
- 
-+struct file *alloc_file(struct vfsmount *mnt,  struct dentry *dentry,
-+		mode_t mode, const struct file_operations *fop)
-+{
-+	struct file *file;
-+
-+	file = get_empty_filp();
-+	if (!file)
-+		return NULL;
-+
-+	init_file(file, mnt, dentry, mode, fop);
-+	return file;
-+}
-+
-+EXPORT_SYMBOL(alloc_file);
-+
-+/*
-+ * Note: This is a crappy interface.  It is here to make
-+ * merging with the existing users of get_empty_filp()
-+ * who have complex failure logic easier.  All users
-+ * of this should be moving to alloc_file().
-+ */
-+int init_file(struct file *file, struct vfsmount *mnt,
-+	   struct dentry *dentry, mode_t mode,
-+	   const struct file_operations *fop)
-+{
-+	int error = 0;
-+	file->f_vfsmnt = mntget(mnt);
-+	file->f_dentry = dentry;
-+	file->f_mapping = dentry->d_inode->i_mapping;
-+	file->f_mode = mode;
-+	file->f_op = fop;
-+	return error;
-+}
-+
-+EXPORT_SYMBOL(init_file);
-+
- void fastcall fput(struct file *file)
+diff -puN fs/inode.c~04-24-record-when-sb-writer-count-elevated-for-inode fs/inode.c
+--- lxc/fs/inode.c~04-24-record-when-sb-writer-count-elevated-for-inode	2007-02-09 14:26:48.000000000 -0800
++++ lxc-dave/fs/inode.c	2007-02-09 14:26:48.000000000 -0800
+@@ -1097,10 +1097,17 @@ static inline void iput_final(struct ino
  {
- 	if (atomic_dec_and_test(&file->f_count))
-diff -puN fs/hugetlbfs/inode.c~01-24-filesystem-helpers-for-custom-struct-file-s fs/hugetlbfs/inode.c
---- lxc/fs/hugetlbfs/inode.c~01-24-filesystem-helpers-for-custom-struct-file-s	2007-02-09 14:26:46.000000000 -0800
-+++ lxc-dave/fs/hugetlbfs/inode.c	2007-02-09 14:26:46.000000000 -0800
-@@ -756,16 +756,11 @@ struct file *hugetlb_zero_setup(size_t s
- 	if (!dentry)
- 		goto out_shm_unlock;
+ 	const struct super_operations *op = inode->i_sb->s_op;
+ 	void (*drop)(struct inode *) = generic_drop_inode;
++	int must_drop_sb_write = (inode->i_state & I_AWAITING_FINAL_IPUT);
++	struct super_block *sb = inode->i_sb;
  
--	error = -ENFILE;
--	file = get_empty_filp();
--	if (!file)
--		goto out_dentry;
--
- 	error = -ENOSPC;
- 	inode = hugetlbfs_get_inode(root->d_sb, current->fsuid,
- 				current->fsgid, S_IFREG | S_IRWXUGO, 0);
- 	if (!inode)
--		goto out_file;
-+		goto out_dentry;
+ 	if (op && op->drop_inode)
+ 		drop = op->drop_inode;
+ 	drop(inode);
++	if (must_drop_sb_write) {
++		spin_lock(&sb->s_mnt_writers_lock);
++		sb->s_writers--;
++		spin_unlock(&sb->s_mnt_writers_lock);
++	}
+ }
  
- 	error = -ENOMEM;
- 	if (hugetlb_reserve_pages(inode, 0, size >> HPAGE_SHIFT))
-@@ -774,17 +769,18 @@ struct file *hugetlb_zero_setup(size_t s
- 	d_instantiate(dentry, inode);
- 	inode->i_size = size;
- 	inode->i_nlink = 0;
--	file->f_path.mnt = mntget(hugetlbfs_vfsmount);
--	file->f_path.dentry = dentry;
--	file->f_mapping = inode->i_mapping;
--	file->f_op = &hugetlbfs_file_operations;
--	file->f_mode = FMODE_WRITE | FMODE_READ;
-+
-+	error = -ENFILE;
-+	file = alloc_file(hugetlbfs_vfsmount, dentry,
-+			FMODE_WRITE | FMODE_READ,
-+			&hugetlbfs_file_operations);
-+	if (!file)
-+		goto out_inode;
-+
- 	return file;
- 
- out_inode:
- 	iput(inode);
--out_file:
--	put_filp(file);
- out_dentry:
- 	dput(dentry);
- out_shm_unlock:
-diff -puN include/linux/file.h~01-24-filesystem-helpers-for-custom-struct-file-s include/linux/file.h
---- lxc/include/linux/file.h~01-24-filesystem-helpers-for-custom-struct-file-s	2007-02-09 14:26:46.000000000 -0800
-+++ lxc-dave/include/linux/file.h	2007-02-09 14:26:46.000000000 -0800
-@@ -62,6 +62,14 @@ extern struct kmem_cache *filp_cachep;
- extern void FASTCALL(__fput(struct file *));
- extern void FASTCALL(fput(struct file *));
- 
-+struct file_operations;
-+struct vfsmount;
-+struct dentry;
-+extern int init_file(struct file *, struct vfsmount *, struct dentry *dentry,
-+		mode_t mode, const struct file_operations *fop);
-+extern struct file *alloc_file(struct vfsmount *, struct dentry *dentry,
-+		mode_t mode, const struct file_operations *fop);
-+
- static inline void fput_light(struct file *file, int fput_needed)
- {
- 	if (unlikely(fput_needed))
-diff -puN mm/shmem.c~01-24-filesystem-helpers-for-custom-struct-file-s mm/shmem.c
---- lxc/mm/shmem.c~01-24-filesystem-helpers-for-custom-struct-file-s	2007-02-09 14:26:46.000000000 -0800
-+++ lxc-dave/mm/shmem.c	2007-02-09 14:26:46.000000000 -0800
-@@ -2497,11 +2497,8 @@ struct file *shmem_file_setup(char *name
- 	d_instantiate(dentry, inode);
- 	inode->i_size = size;
- 	inode->i_nlink = 0;	/* It is unlinked */
--	file->f_path.mnt = mntget(shm_mnt);
--	file->f_path.dentry = dentry;
--	file->f_mapping = inode->i_mapping;
--	file->f_op = &shmem_file_operations;
--	file->f_mode = FMODE_WRITE | FMODE_READ;
-+	init_file(file, shm_mnt, dentry, FMODE_WRITE | FMODE_READ,
-+			&shmem_file_operations);
- 	return file;
- 
- close_file:
-diff -puN mm/tiny-shmem.c~01-24-filesystem-helpers-for-custom-struct-file-s mm/tiny-shmem.c
---- lxc/mm/tiny-shmem.c~01-24-filesystem-helpers-for-custom-struct-file-s	2007-02-09 14:26:46.000000000 -0800
-+++ lxc-dave/mm/tiny-shmem.c	2007-02-09 14:26:46.000000000 -0800
-@@ -66,24 +66,19 @@ struct file *shmem_file_setup(char *name
- 	if (!dentry)
- 		goto put_memory;
- 
--	error = -ENFILE;
--	file = get_empty_filp();
--	if (!file)
--		goto put_dentry;
--
- 	error = -ENOSPC;
- 	inode = ramfs_get_inode(root->d_sb, S_IFREG | S_IRWXUGO, 0);
- 	if (!inode)
--		goto close_file;
-+		goto put_dentry;
- 
- 	d_instantiate(dentry, inode);
--	inode->i_nlink = 0;	/* It is unlinked */
-+	error = -ENFILE;
-+	file = alloc_file(shm_mnt, dentry, FMODE_WRITE | FMODE_READ,
-+			&ramfs_file_operations);
-+	if (!file)
-+		goto put_inode;
- 
--	file->f_path.mnt = mntget(shm_mnt);
--	file->f_path.dentry = dentry;
--	file->f_mapping = inode->i_mapping;
--	file->f_op = &ramfs_file_operations;
--	file->f_mode = FMODE_WRITE | FMODE_READ;
-+	inode->i_nlink = 0;	/* It is unlinked */
- 
- 	/* notify everyone as to the change of file size */
- 	error = do_truncate(dentry, size, 0, file);
-@@ -91,9 +86,8 @@ struct file *shmem_file_setup(char *name
- 		goto close_file;
- 
- 	return file;
--
--close_file:
--	put_filp(file);
-+put_inode:
-+	iput(inode);
- put_dentry:
- 	dput(dentry);
- put_memory:
-diff -puN net/socket.c~01-24-filesystem-helpers-for-custom-struct-file-s net/socket.c
---- lxc/net/socket.c~01-24-filesystem-helpers-for-custom-struct-file-s	2007-02-09 14:26:46.000000000 -0800
-+++ lxc-dave/net/socket.c	2007-02-09 14:26:46.000000000 -0800
-@@ -355,6 +355,7 @@ static int sock_alloc_fd(struct file **f
- 
- static int sock_attach_fd(struct socket *sock, struct file *file)
- {
-+	struct dentry *dentry;
- 	struct qstr this;
- 	char name[32];
- 
-@@ -362,24 +363,23 @@ static int sock_attach_fd(struct socket 
- 	this.name = name;
- 	this.hash = 0;
- 
--	file->f_path.dentry = d_alloc(sock_mnt->mnt_sb->s_root, &this);
--	if (unlikely(!file->f_path.dentry))
-+	dentry = d_alloc(sock_mnt->mnt_sb->s_root, &this);
-+	if (unlikely(!dentry))
- 		return -ENOMEM;
- 
--	file->f_path.dentry->d_op = &sockfs_dentry_operations;
-+	dentry->d_op = &sockfs_dentry_operations;
- 	/*
- 	 * We dont want to push this dentry into global dentry hash table.
- 	 * We pretend dentry is already hashed, by unsetting DCACHE_UNHASHED
- 	 * This permits a working /proc/$pid/fd/XXX on sockets
+ /**
+diff -puN fs/libfs.c~04-24-record-when-sb-writer-count-elevated-for-inode fs/libfs.c
+--- lxc/fs/libfs.c~04-24-record-when-sb-writer-count-elevated-for-inode	2007-02-09 14:26:48.000000000 -0800
++++ lxc-dave/fs/libfs.c	2007-02-09 14:26:48.000000000 -0800
+@@ -388,6 +388,7 @@ int simple_fill_super(struct super_block
+ 	 * because the root inode is 1, the files array must not contain an
+ 	 * entry at index 1
  	 */
--	file->f_path.dentry->d_flags &= ~DCACHE_UNHASHED;
--	d_instantiate(file->f_path.dentry, SOCK_INODE(sock));
--	file->f_path.mnt = mntget(sock_mnt);
--	file->f_mapping = file->f_path.dentry->d_inode->i_mapping;
--
-+	dentry->d_flags &= ~DCACHE_UNHASHED;
-+	d_instantiate(dentry, SOCK_INODE(sock));
-+	init_file(file, sock_mnt, dentry, FMODE_READ | FMODE_WRITE,
-+		&socket_file_ops);
-+	SOCK_INODE(sock)->i_fop = &socket_file_ops;
- 	sock->file = file;
- 	file->f_op = SOCK_INODE(sock)->i_fop = &socket_file_ops;
--	file->f_mode = FMODE_READ | FMODE_WRITE;
- 	file->f_flags = O_RDWR;
- 	file->f_pos = 0;
- 	file->private_data = sock;
++	inode->i_state |= I_AWAITING_FINAL_IPUT;
+ 	inode->i_ino = 1;
+ 	inode->i_mode = S_IFDIR | 0755;
+ 	inode->i_uid = inode->i_gid = 0;
+diff -puN include/linux/fs.h~04-24-record-when-sb-writer-count-elevated-for-inode include/linux/fs.h
+--- lxc/include/linux/fs.h~04-24-record-when-sb-writer-count-elevated-for-inode	2007-02-09 14:26:48.000000000 -0800
++++ lxc-dave/include/linux/fs.h	2007-02-09 14:26:48.000000000 -0800
+@@ -1230,6 +1230,7 @@ struct super_operations {
+ #define I_CLEAR			32
+ #define I_NEW			64
+ #define I_WILL_FREE		128
++#define I_AWAITING_FINAL_IPUT		256
+ 
+ #define I_DIRTY (I_DIRTY_SYNC | I_DIRTY_DATASYNC | I_DIRTY_PAGES)
+ 
+@@ -1244,6 +1245,14 @@ static inline void mark_inode_dirty_sync
+ 	__mark_inode_dirty(inode, I_DIRTY_SYNC);
+ }
+ 
++/**
++ * inc_nlink - directly increment an inode's link count
++ * @inode: inode
++ *
++ * This is a low-level filesystem helper to replace any
++ * direct filesystem manipulation of i_nlink.  Currently,
++ * it is only here for parity with dec_nlink().
++ */
+ static inline void inc_nlink(struct inode *inode)
+ {
+ 	inode->i_nlink++;
+@@ -1255,14 +1264,63 @@ static inline void inode_inc_link_count(
+ 	mark_inode_dirty(inode);
+ }
+ 
++/**
++ * check_nlink - check an inode's status after direct
++ * 		 i_nlink modification.
++ * @inode: inode
++ *
++ * Some filesystems can not make simple incremental changes
++ * to i_nlink, most notably clustered ones.  They must do
++ * direct manipulation of i_nlink.  This function must be
++ * called after such modifications are complete to make
++ * sure that the VFS knows that the inode is going to go
++ * away.
++ */
++static inline void check_nlink(struct inode *inode)
++{
++	if (inode->i_nlink)
++		return;
++
++	inode->i_state |= I_AWAITING_FINAL_IPUT;
++	spin_lock(&inode->i_sb->s_mnt_writers_lock);
++	inode->i_sb->s_writers++;
++	spin_unlock(&inode->i_sb->s_mnt_writers_lock);
++}
++
++/**
++ * drop_nlink - directly drop an inode's link count
++ * @inode: inode
++ *
++ * This is a low-level filesystem helper to replace any
++ * direct filesystem manipulation of i_nlink.  In cases
++ * where we are attempting to track writes to the
++ * filesystem, a decrement to zero means an imminent
++ * write when the file is truncated and actually unlinked
++ * on the filesystem.
++ */
+ static inline void drop_nlink(struct inode *inode)
+ {
+ 	inode->i_nlink--;
++	check_nlink(inode);
+ }
+ 
++/**
++ * clear_nlink - directly zero an inode's link count
++ * @inode: inode
++ *
++ * This is a low-level filesystem helper to replace any
++ * direct filesystem manipulation of i_nlink.  See
++ * drop_nlink() for why we care about i_nlink hitting zero.
++ *
++ * Note that we could do the i_state flag directly in here,
++ * but we call check_nlink() to keep the number of places
++ * where the flag is set to exactly one.  The compiler
++ * should get rid of the superfluous i_nlink check.
++ */
+ static inline void clear_nlink(struct inode *inode)
+ {
+ 	inode->i_nlink = 0;
++	check_nlink(inode);
+ }
+ 
+ static inline void inode_dec_link_count(struct inode *inode)
 _
