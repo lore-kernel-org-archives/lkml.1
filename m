@@ -1,57 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946549AbXBIX4A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423360AbXBIX6B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946549AbXBIX4A (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Feb 2007 18:56:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946544AbXBIXzi
+	id S1423360AbXBIX6B (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Feb 2007 18:58:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423359AbXBIX6B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Feb 2007 18:55:38 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:2815 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1423355AbXBIXze (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Feb 2007 18:55:34 -0500
-Date: Fri, 9 Feb 2007 22:52:55 +0000
-From: Pavel Machek <pavel@ucw.cz>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Otavio Salvador <otavio@debian.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Add PM_TRACE x86_64 support.
-Message-ID: <20070209225255.GC3949@ucw.cz>
-References: <1170895857.4451.55.camel@nigel.suspend2.net> <87lkj9bg67.fsf@neumann.lab.ossystems.com.br> <1170900487.4451.62.camel@nigel.suspend2.net> <20070208124003.GE4487@kernel.dk>
+	Fri, 9 Feb 2007 18:58:01 -0500
+Received: from rgminet01.oracle.com ([148.87.113.118]:39114 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423360AbXBIX6A (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Feb 2007 18:58:00 -0500
+Date: Fri, 9 Feb 2007 15:54:10 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Chuck Ebbert <cebbert@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       jos poortvliet <jos@mijnkamer.nl>, ck@vds.kolivas.org,
+       Con Kolivas <kernel@kolivas.org>, linux-kernel@vger.kernel.org
+Subject: Re: [ck] Re: Swap prefetch merge plans
+Message-Id: <20070209155410.59e0cf4b.randy.dunlap@oracle.com>
+In-Reply-To: <45CD0557.4090709@redhat.com>
+References: <200702091038.37143.kernel@kolivas.org>
+	<200702092054.10232.ocilent1@gmail.com>
+	<200702092321.20615.kernel@kolivas.org>
+	<200702091413.06949.jos@mijnkamer.nl>
+	<20070209123029.633934eb.akpm@linux-foundation.org>
+	<45CD0557.4090709@redhat.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.0 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070208124003.GE4487@kernel.dk>
-User-Agent: Mutt/1.5.9i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Fri, 09 Feb 2007 18:35:51 -0500 Chuck Ebbert wrote:
 
-> > > Nigel Cunningham <nigel@nigel.suspend2.net> writes:
-> > > 
-> > > > -	for (tracedata = &__tracedata_start ; tracedata < &__tracedata_end ; tracedata += 6) {
-> > > > +	for (tracedata = &__tracedata_start ; tracedata < &__tracedata_end ; tracedata += 2 + sizeof(unsigned long)) {
-> > > 
-> > > Could you split this line?
-> > 
-> > Sure.
-> > 
-> > -- New version -- (What's the right way to do this?)
-> > 
-> > This patch add x86_64 support for PM_TRACE, and shifts per-arch code to
-> > the appropriate subdirectories.
-> > 
-> > Symbol exports are added so tracing can be used from drivers built as
-> > modules too.
-> 
-> Don't include exports in a patch that doesn't use them. Introduce the
-> exports in a later patch series, for when you actually need it.
+> Andrew Morton wrote:
+> > I have an email sitting in my drafts folder stating that I'll no longer
+> > accept any features unless they've been publically reviewed in detail and
+> > run-time tested by a third party.  The idea being to force people to spend
+> > more time reviewing and testing each other's stuff and less time writing
+> > new stuff.  Maybe on a sufficiently gloomy day I'll actually send it.
+> >   
+> /me sneaks into Andrew's office and sends it out.
 
-It is debugging infrastructure, so export actually makes sense... It
-will not ever be used in mainline kernel; you need to modify code
-manually to use this code..
+Thanks.  8)
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
