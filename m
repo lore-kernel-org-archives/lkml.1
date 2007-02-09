@@ -1,240 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752452AbXBIWBq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423266AbXBIWCg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752452AbXBIWBq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Feb 2007 17:01:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752449AbXBIWBp
+	id S1423266AbXBIWCg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Feb 2007 17:02:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423270AbXBIWCg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Feb 2007 17:01:45 -0500
-Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:59525 "EHLO
-	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752452AbXBIWBo (ORCPT
+	Fri, 9 Feb 2007 17:02:36 -0500
+Received: from mtiwmhc12.worldnet.att.net ([204.127.131.116]:52178 "EHLO
+	mtiwmhc12.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1423266AbXBIWCf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Feb 2007 17:01:44 -0500
-To: akpm@osdl.org
-CC: "Russ Cox" <rsc@swtch.com>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] fix quadratic behavior of shrink_dcache_parent()
-Message-Id: <E1HFdnm-0006DB-00@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Fri, 09 Feb 2007 23:01:06 +0100
+	Fri, 9 Feb 2007 17:02:35 -0500
+Message-ID: <45CCEF79.1060105@lwfinger.net>
+Date: Fri, 09 Feb 2007 16:02:33 -0600
+From: Larry Finger <Larry.Finger@lwfinger.net>
+User-Agent: Thunderbird 1.5.0.9 (X11/20060911)
+MIME-Version: 1.0
+To: LKML <linux-kernel@vger.kernel.org>
+CC: asil.jinn@gmail.com
+Subject: Strange message in log upon resuming a PCIe system
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Miklos Szeredi <mszeredi@suse.cz>
+A bcm43xx user is having problems with suspend/resume with a PCIe system. This may be the first time
+we have tried to resume with PCIe. The problem occurs someplace within the initialization of the
+bcm43xx chip and we are still tracing it; however, there are some strange messages in the log from
+the pnp, namely:
 
-The time shrink_dcache_parent() takes, grows quadratically with the
-depth of the tree under 'parent'.  This starts to get noticable at
-about 10,000.
+pnp: Device 00:04 does not support activation.
+pnp: Device 00:05 does not support activation.
 
-These kinds of depths don't occur normally, and filesystems which
-invoke shrink_dcache_parent() via d_invalidate() seem to have other
-depth dependent timings, so it's not even easy to expose this problem.
+How does one trace back these device numbers? The output of 'lspci -v' shows the following:
 
-However with FUSE it's easy to create a deep tree and d_invalidate()
-will also get called.  This can make a syscall hang for a very long
-time.
+00:00.0 Host bridge: Intel Corporation Mobile 945GM/PM/GMS/940GML and 945GT Express Memory
+Controller Hub (rev 03)
+        Subsystem: Dell Unknown device 01c2
+        Flags: bus master, fast devsel, latency 0
+        Capabilities: <access denied>
 
-This is the original discovery of the problem by Russ Cox:
+00:01.0 PCI bridge: Intel Corporation Mobile 945GM/PM/GMS/940GML and 945GT Express PCI Express Root
+Port (rev 03) (prog-if 00 [Normal decode])
+        Flags: bus master, fast devsel, latency 0
+        Bus: primary=00, secondary=01, subordinate=01, sec-latency=0
+        Memory behind bridge: dd000000-dfefffff
+        Prefetchable memory behind bridge: 00000000c0000000-00000000cfffffff
+        Capabilities: <access denied>
 
-  http://article.gmane.org/gmane.comp.file-systems.fuse.devel/3826
+00:1b.0 Audio device: Intel Corporation 82801G (ICH7 Family) High Definition Audio Controller (rev 01)
+        Subsystem: Dell Unknown device 01c2
+        Flags: bus master, fast devsel, latency 0, IRQ 19
+        Memory at dfffc000 (64-bit, non-prefetchable) [size=16K]
+        Capabilities: <access denied>
 
-The following patch fixes the quadratic behavior, by optionally
-allowing prune_dcache() to prune ancestors of a dentry in one go,
-instead of doing it one at a time.
+00:1c.0 PCI bridge: Intel Corporation 82801G (ICH7 Family) PCI Express Port 1 (rev 01) (prog-if 00
+[Normal decode])
+        Flags: bus master, fast devsel, latency 0
+        Bus: primary=00, secondary=0b, subordinate=0b, sec-latency=0
+        Capabilities: <access denied>
 
-Common code in dput() and prune_one_dentry() is extracted into a new
-helper function d_kill().
+00:1c.1 PCI bridge: Intel Corporation 82801G (ICH7 Family) PCI Express Port 2 (rev 01) (prog-if 00
+[Normal decode])
+        Flags: bus master, fast devsel, latency 0
+        Bus: primary=00, secondary=0c, subordinate=0c, sec-latency=0
+        Memory behind bridge: dcf00000-dcffffff
+        Capabilities: <access denied>
 
-shrink_dcache_parent() as well as shrink_dcache_sb() are converted to
-use the ancestry-pruner option.  Only for shrink_dcache_memory() is
-this behavior not desirable, so it keeps using the old algorithm.
+00:1c.2 PCI bridge: Intel Corporation 82801G (ICH7 Family) PCI Express Port 3 (rev 01) (prog-if 00
+[Normal decode])
+        Flags: bus master, fast devsel, latency 0
+        Bus: primary=00, secondary=09, subordinate=09, sec-latency=0
+        Memory behind bridge: dce00000-dcefffff
+        Capabilities: <access denied>
 
-Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
+00:1d.0 USB Controller: Intel Corporation 82801G (ICH7 Family) USB UHCI #1 (rev 01) (prog-if 00 [UHCI])
+        Subsystem: Dell Unknown device 01c2
+        Flags: bus master, medium devsel, latency 0, IRQ 20
+        I/O ports at bf80 [size=32]
 
----
-Index: linux/fs/dcache.c
-===================================================================
---- linux.orig/fs/dcache.c	2007-02-09 22:11:02.000000000 +0100
-+++ linux/fs/dcache.c	2007-02-09 22:51:02.000000000 +0100
-@@ -121,6 +121,28 @@ static void dentry_iput(struct dentry * 
- 	}
- }
- 
-+/**
-+ * d_kill - kill dentry and return parent
-+ * @dentry: dentry to kill
-+ *
-+ * Called with dcache_lock and d_lock, releases both.  The dentry must
-+ * already be unhashed and removed from the LRU.
-+ *
-+ * If this is the root of the dentry tree, return NULL.
-+ */
-+static struct dentry *d_kill(struct dentry *dentry)
-+{
-+	struct dentry *parent;
-+
-+	list_del(&dentry->d_u.d_child);
-+	dentry_stat.nr_dentry--;	/* For d_free, below */
-+	/*drops the locks, at that point nobody can reach this dentry */
-+	dentry_iput(dentry);
-+	parent = dentry->d_parent;
-+	d_free(dentry);
-+	return dentry == parent ? NULL : parent;
-+}
-+
- /* 
-  * This is dput
-  *
-@@ -189,28 +211,17 @@ repeat:
- 
- unhash_it:
- 	__d_drop(dentry);
--
--kill_it: {
--		struct dentry *parent;
--
--		/* If dentry was on d_lru list
--		 * delete it from there
--		 */
--  		if (!list_empty(&dentry->d_lru)) {
--  			list_del(&dentry->d_lru);
--  			dentry_stat.nr_unused--;
--  		}
--  		list_del(&dentry->d_u.d_child);
--		dentry_stat.nr_dentry--;	/* For d_free, below */
--		/*drops the locks, at that point nobody can reach this dentry */
--		dentry_iput(dentry);
--		parent = dentry->d_parent;
--		d_free(dentry);
--		if (dentry == parent)
--			return;
--		dentry = parent;
--		goto repeat;
-+kill_it:
-+	/* If dentry was on d_lru list
-+	 * delete it from there
-+	 */
-+	if (!list_empty(&dentry->d_lru)) {
-+		list_del(&dentry->d_lru);
-+		dentry_stat.nr_unused--;
- 	}
-+	dentry = d_kill(dentry);
-+	if (dentry)
-+		goto repeat;
- }
- 
- /**
-@@ -371,22 +382,41 @@ restart:
-  * Throw away a dentry - free the inode, dput the parent.  This requires that
-  * the LRU list has already been removed.
-  *
-+ * If prune_parents is true, try to prune ancestors as well.
-+ *
-  * Called with dcache_lock, drops it and then regains.
-  * Called with dentry->d_lock held, drops it.
-  */
--static void prune_one_dentry(struct dentry * dentry)
-+static void prune_one_dentry(struct dentry * dentry, int prune_parents)
- {
--	struct dentry * parent;
--
- 	__d_drop(dentry);
--	list_del(&dentry->d_u.d_child);
--	dentry_stat.nr_dentry--;	/* For d_free, below */
--	dentry_iput(dentry);
--	parent = dentry->d_parent;
--	d_free(dentry);
--	if (parent != dentry)
--		dput(parent);
-+	dentry = d_kill(dentry);
-+	if (!prune_parents) {
-+		if (dentry)
-+			dput(dentry);
-+		spin_lock(&dcache_lock);
-+		return;
-+	}
-+
-+	/*
-+	 * Prune ancestors.  Locking is simpler than in dput(),
-+	 * because dcache_lock needs to be taken anyway.
-+	 */
- 	spin_lock(&dcache_lock);
-+	while (dentry) {
-+		if (!atomic_dec_and_lock(&dentry->d_count, &dentry->d_lock))
-+			return;
-+
-+		if (dentry->d_op && dentry->d_op->d_delete)
-+			dentry->d_op->d_delete(dentry);
-+		if (!list_empty(&dentry->d_lru)) {
-+			list_del(&dentry->d_lru);
-+			dentry_stat.nr_unused--;
-+		}
-+		__d_drop(dentry);
-+		dentry = d_kill(dentry);
-+		spin_lock(&dcache_lock);
-+	}
- }
- 
- /**
-@@ -394,6 +424,7 @@ static void prune_one_dentry(struct dent
-  * @count: number of entries to try and free
-  * @sb: if given, ignore dentries for other superblocks
-  *         which are being unmounted.
-+ * @prune_parents: if true, try to prune ancestors as well in one go
-  *
-  * Shrink the dcache. This is done when we need
-  * more memory, or simply when we need to unmount
-@@ -404,7 +435,7 @@ static void prune_one_dentry(struct dent
-  * all the dentries are in use.
-  */
-  
--static void prune_dcache(int count, struct super_block *sb)
-+static void prune_dcache(int count, struct super_block *sb, int prune_parents)
- {
- 	spin_lock(&dcache_lock);
- 	for (; count ; count--) {
-@@ -464,7 +495,7 @@ static void prune_dcache(int count, stru
- 		 * without taking the s_umount lock (I already hold it).
- 		 */
- 		if (sb && dentry->d_sb == sb) {
--			prune_one_dentry(dentry);
-+			prune_one_dentry(dentry, prune_parents);
- 			continue;
- 		}
- 		/*
-@@ -479,7 +510,7 @@ static void prune_dcache(int count, stru
- 		s_umount = &dentry->d_sb->s_umount;
- 		if (down_read_trylock(s_umount)) {
- 			if (dentry->d_sb->s_root != NULL) {
--				prune_one_dentry(dentry);
-+				prune_one_dentry(dentry, prune_parents);
- 				up_read(s_umount);
- 				continue;
- 			}
-@@ -550,7 +581,7 @@ repeat:
- 			spin_unlock(&dentry->d_lock);
- 			continue;
- 		}
--		prune_one_dentry(dentry);
-+		prune_one_dentry(dentry, 1);
- 		cond_resched_lock(&dcache_lock);
- 		goto repeat;
- 	}
-@@ -829,7 +860,7 @@ void shrink_dcache_parent(struct dentry 
- 	int found;
- 
- 	while ((found = select_parent(parent)) != 0)
--		prune_dcache(found, parent->d_sb);
-+		prune_dcache(found, parent->d_sb, 1);
- }
- 
- /*
-@@ -849,7 +880,7 @@ static int shrink_dcache_memory(int nr, 
- 	if (nr) {
- 		if (!(gfp_mask & __GFP_FS))
- 			return -1;
--		prune_dcache(nr, NULL);
-+		prune_dcache(nr, NULL, 0);
- 	}
- 	return (dentry_stat.nr_unused / 100) * sysctl_vfs_cache_pressure;
- }
+00:1d.1 USB Controller: Intel Corporation 82801G (ICH7 Family) USB UHCI #2 (rev 01) (prog-if 00 [UHCI])
+        Subsystem: Dell Unknown device 01c2
+        Flags: bus master, medium devsel, latency 0, IRQ 19
+        I/O ports at bf60 [size=32]
+
+00:1d.2 USB Controller: Intel Corporation 82801G (ICH7 Family) USB UHCI #3 (rev 01) (prog-if 00 [UHCI])
+        Subsystem: Dell Unknown device 01c2
+        Flags: bus master, medium devsel, latency 0, IRQ 21
+        I/O ports at bf40 [size=32]
+
+00:1d.3 USB Controller: Intel Corporation 82801G (ICH7 Family) USB UHCI #4 (rev 01) (prog-if 00 [UHCI])
+        Subsystem: Dell Unknown device 01c2
+        Flags: bus master, medium devsel, latency 0, IRQ 22
+        I/O ports at bf20 [size=32]
+
+00:1d.7 USB Controller: Intel Corporation 82801G (ICH7 Family) USB2 EHCI Controller (rev 01)
+(prog-if 20 [EHCI])
+        Subsystem: Dell Unknown device 01c2
+        Flags: bus master, medium devsel, latency 0, IRQ 20
+        Memory at ffa80000 (32-bit, non-prefetchable) [size=1K]
+        Capabilities: <access denied>
+
+00:1e.0 PCI bridge: Intel Corporation 82801 Mobile PCI Bridge (rev e1) (prog-if 01 [Subtractive decode])
+        Flags: bus master, fast devsel, latency 0
+        Bus: primary=00, secondary=03, subordinate=03, sec-latency=32
+        Capabilities: <access denied>
+
+00:1f.0 ISA bridge: Intel Corporation 82801GBM (ICH7-M) LPC Interface Bridge (rev 01)
+        Subsystem: Dell Unknown device 01c2
+        Flags: bus master, medium devsel, latency 0
+        Capabilities: <access denied>
+
+00:1f.2 IDE interface: Intel Corporation 82801GBM/GHM (ICH7 Family) Serial ATA Storage Controller
+IDE (rev 01) (prog-if 80 [Master])
+        Subsystem: Dell Unknown device 01c2
+        Flags: bus master, 66MHz, medium devsel, latency 0, IRQ 17
+        I/O ports at 01f0 [size=8]
+        I/O ports at 03f4 [size=1]
+        I/O ports at 0170 [size=8]
+        I/O ports at 0374 [size=1]
+        I/O ports at bfa0 [size=16]
+        Capabilities: <access denied>
+
+00:1f.3 SMBus: Intel Corporation 82801G (ICH7 Family) SMBus Controller (rev 01)
+        Subsystem: Dell Unknown device 01c2
+        Flags: medium devsel, IRQ 17
+        I/O ports at 10c0 [size=32]
+
+01:00.0 VGA compatible controller: nVidia Corporation Quadro NVS 110M / GeForce Go 7300 (rev a1)
+(prog-if 00 [VGA])
+        Subsystem: Dell Unknown device 01c2
+        Flags: bus master, fast devsel, latency 0, IRQ 16
+        Memory at dd000000 (32-bit, non-prefetchable) [size=16M]
+        Memory at c0000000 (64-bit, prefetchable) [size=256M]
+        Memory at de000000 (64-bit, non-prefetchable) [size=16M]
+        [virtual] Expansion ROM at df000000 [disabled] [size=128K]
+        Capabilities: <access denied>
+
+09:00.0 Ethernet controller: Broadcom Corporation NetXtreme BCM5752 Gigabit Ethernet PCI Express
+(rev 02)
+        Subsystem: Dell Unknown device 01c2
+        Flags: bus master, fast devsel, latency 0, IRQ 18
+        Memory at dcef0000 (64-bit, non-prefetchable) [size=64K]
+        Capabilities: <access denied>
+
+0c:00.0 Network controller: Broadcom Corporation BCM4310 UART (rev 01)
+        Subsystem: Dell Unknown device 0007
+        Flags: bus master, fast devsel, latency 0, IRQ 17
+        Memory at dcffc000 (32-bit, non-prefetchable) [size=16K]
+        Capabilities: <access denied>
+
+Thanks,
+
+Larry
+
+
