@@ -1,66 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946009AbXBIWLr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423323AbXBIWMh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946009AbXBIWLr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Feb 2007 17:11:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946120AbXBIWLr
+	id S1423323AbXBIWMh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Feb 2007 17:12:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423342AbXBIWMg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Feb 2007 17:11:47 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:49980 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1946009AbXBIWLq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Feb 2007 17:11:46 -0500
-Date: Fri, 9 Feb 2007 14:11:37 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Alon Bar-Lev" <alon.barlev@gmail.com>
-Cc: linux-kernel@vger.kernel.org, bwalle@suse.de, rmk+lkml@arm.linux.org.uk
-Subject: Re: [PATCH 00/34] __initdata cleanup
-Message-Id: <20070209141137.76013fa9.akpm@linux-foundation.org>
-In-Reply-To: <9e0cf0bf0702091348v226ea8acra42bcf4463e9cdc9@mail.gmail.com>
-References: <200702091711.34441.alon.barlev@gmail.com>
-	<20070209170005.GA8500@osiris.ibm.com>
-	<Pine.LNX.4.64.0702091831150.14457@scrub.home>
-	<20070209133355.d5df1ab5.akpm@linux-foundation.org>
-	<9e0cf0bf0702091348v226ea8acra42bcf4463e9cdc9@mail.gmail.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+	Fri, 9 Feb 2007 17:12:36 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:53776 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423323AbXBIWMg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Feb 2007 17:12:36 -0500
+Subject: Re: -mm merge plans for 2.6.21
+From: David Woodhouse <dwmw2@infradead.org>
+To: Russell King <rmk+lkml@arm.linux.org.uk>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Alexey Dobriyan <adobriyan@openvz.org>, linux-kernel@vger.kernel.org,
+       drepper@redhat.com
+In-Reply-To: <20070209220327.GB16158@flint.arm.linux.org.uk>
+References: <20070208150710.1324f6b4.akpm@linux-foundation.org>
+	 <1171042535.29713.96.camel@pmac.infradead.org>
+	 <20070209134516.2367a7aa.akpm@linux-foundation.org>
+	 <20070209214944.GA16158@flint.arm.linux.org.uk>
+	 <1171057999.29713.129.camel@pmac.infradead.org>
+	 <20070209220327.GB16158@flint.arm.linux.org.uk>
+Content-Type: text/plain
+Date: Fri, 09 Feb 2007 22:12:27 +0000
+Message-Id: <1171059147.29713.146.camel@pmac.infradead.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6.dwmw2.1) 
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 9 Feb 2007 23:48:36 +0200
-"Alon Bar-Lev" <alon.barlev@gmail.com> wrote:
-
-> On 2/9/07, Andrew Morton <akpm@linux-foundation.org> wrote:
-> > If we really do have a problem here it'd be better to fix it in some
-> > central and global fashion: either by ensuring that each architecture's
-> > startup code will zero this memory or by some compiler/linker option such
-> > as -fno-common.
+On Fri, 2007-02-09 at 22:03 +0000, Russell King wrote:
+> > Is that actually written anywhere, and does anyone bother to check?
 > 
-> Great,
-> But what about the variables that are not in global scope?
-> As I understand from init.h description:
-> "Don't forget to initialize data not at file scope, i.e. within a function,
-> as gcc otherwise puts the data into the bss section and not into the init
-> section."
-> 
+> Mostly mailing list archives I'd guess.  As far as anyone bothering
+> to check, that's me when I'm aware of new syscalls... which typically
+> happens a long time after the syscalls have been introduced on x86
+> etc.
 
-It could be that this is referring to a toolchain which we don't use any
-more.  That comment has been there for at least seven years.
+I suspect we could do with a Documentation/syscalls.txt collecting such
+rules from various architectures.
 
-This:
+We could _also_ do with a way to warn about unimplemented syscalls on
+any given architecture. I'm thinking about something along the lines of
+a kernel/syscalls.c containing nothing but...
 
---- a/fs/open.c~a
-+++ a/fs/open.c
-@@ -223,6 +223,8 @@ static long do_sys_truncate(const char _
- 	struct inode * inode;
- 	int error;
- 
-+	static char blobwozzle[100] __initdata;
-+
- 	error = -EINVAL;
- 	if (length < 0)	/* sorry, but loff_t says... */
- 		goto out;
-_
+	#include <asm/unistd.h>
 
-puts the array in .init.data on my fairly old toolchain.
+	#ifndef __NR_sys_foo
+	#warning The sys_foo system call is not implemented on this architecture
+	#endif
+
+Ideally, that wants to be auto-generated from the union of all
+<asm-*/unistd.h> files, but in practice I suspect we could do it just
+from <asm-i386/unistd.h>. Even I usually manage to add new syscalls on
+i386 after I've done PowerPC.
+
+-- 
+dwmw2
+
