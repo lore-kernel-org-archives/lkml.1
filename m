@@ -1,53 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1945972AbXBIBLY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1945977AbXBIBPx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1945972AbXBIBLY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Feb 2007 20:11:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945974AbXBIBLY
+	id S1945977AbXBIBPx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Feb 2007 20:15:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945955AbXBIBPx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Feb 2007 20:11:24 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:48216 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1945972AbXBIBLX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Feb 2007 20:11:23 -0500
-Date: Thu, 8 Feb 2007 17:11:09 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: David Rientjes <rientjes@google.com>
-cc: Jan Engelhardt <jengelh@linux01.gwdg.de>, Jeff Garzik <jeff@garzik.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: somebody dropped a (warning) bomb
-In-Reply-To: <Pine.LNX.4.64.0702081643280.30166@chino.kir.corp.google.com>
-Message-ID: <Pine.LNX.4.64.0702081705300.8424@woody.linux-foundation.org>
-References: <45CB3B28.60102@garzik.org> <Pine.LNX.4.64.0702080819350.8424@woody.linux-foundation.org>
- <Pine.LNX.4.61.0702081851310.1364@yvahk01.tjqt.qr>
- <Pine.LNX.4.64.0702081145470.8424@woody.linux-foundation.org>
- <Pine.LNX.4.61.0702082202180.24888@yvahk01.tjqt.qr>
- <Pine.LNX.4.64.0702081324090.8424@woody.linux-foundation.org>
- <Pine.LNX.4.64.0702081432320.27603@chino.kir.corp.google.com>
- <Pine.LNX.4.64.0702081528070.8424@woody.linux-foundation.org>
- <Pine.LNX.4.64.0702081554380.29559@chino.kir.corp.google.com>
- <Pine.LNX.4.64.0702081632200.8424@woody.linux-foundation.org>
- <Pine.LNX.4.64.0702081643280.30166@chino.kir.corp.google.com>
+	Thu, 8 Feb 2007 20:15:53 -0500
+Received: from rwcrmhc12.comcast.net ([204.127.192.82]:53111 "EHLO
+	rwcrmhc12.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1945948AbXBIBPw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Feb 2007 20:15:52 -0500
+X-Greylist: delayed 302 seconds by postgrey-1.27 at vger.kernel.org; Thu, 08 Feb 2007 20:15:52 EST
+Message-ID: <45CBCA11.9050604@massspec.com>
+Date: Thu, 08 Feb 2007 17:10:41 -0800
+From: Jeff Morrow <Jeff_Morrow@massspec.com>
+User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: akpm@osdl.org, jeff@garzik.org, davem@davemloft.net
+CC: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: [patch] bugfixes and new hardware support for arcnet driver
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+The modifications and bug fixes noted below were done by Realtime
+Control Works and Contemporary Control Systems, Inc, Jan 2005.  They
+were incorporated into the 2.6 kernel by Jeff Morrow of Sierra
+Analytics, Feb 2007.  <jmorrow@massspec.com>
 
+The changes have been tested on a Contemporary Controls PCI20U-4000.
 
-On Thu, 8 Feb 2007, David Rientjes wrote:
->
-> Maybe you should read my first post, we're talking about gcc's behavior 
-> here, not the C standard.
+Summary of changes:
 
-Give it up, David.
+Arc-rawmode.c:
+      rx():
+      - Fixed error in received packet lengths; 256 byte packets were
+        being received as 257 bytes packets.
 
-Even gcc DOES DIFFERENT THINGS! Have you even read the docs?
+      prepare_tx():
+      - Fixed error in transmit length calcs; 257 byte packets were being
+        transmitted as 260 byte packets.
 
-	By default it is treated as signed int but this may be changed by 
-	the -funsigned-bitfields option.
+com20020.c:
+      com20020_check():
+      - We now load the SETUP2 register if the 'clockm' parameter is
+        non-zero, instead of checking for ARC_CAN_10MBIT. The user is
+        now responsible for whether or not SETUP2 is loaded.  If the
+        clock multiplier is non-zero, this means that the user wants a
+        baud rate greater than 2.5Mbps. This is not possible unless the
+        SETUP2 register is present (COM20020D, or COM20022). So, we're
+        relying on the user to be smart about what kind of chip he's
+        dealing with...
 
-So even for gcc, it's just a default. I think you can even change the 
-default in the spec file.
+com20020-pci.c
+      - Added several entries to com20020pci_id_table[].
 
-		Linus
+Signed-off-by: Jeff Morrow <jmorrow@massspec.com>
+
+---
+diff -uprN -X linux-source-2.6.18/Documentation/dontdiff 
+linux-source-2.6.18/drivers/net/arcnet/arcnet.c 
+linux-source-2.6.18.changed/drivers/net/arcnet/arcnet.c
+--- linux-source-2.6.18/drivers/net/arcnet/arcnet.c     2006-09-19 
+20:42:06.000000000 -0700
++++ linux-source-2.6.18.changed/drivers/net/arcnet/arcnet.c 
+2007-02-08 16:40:50.000000000 -0800
+@@ -41,7 +41,7 @@
+   *     <jojo@repas.de>
+   */
+
+-#define VERSION "arcnet: v3.93 BETA 2000/04/29 - by Avery Pennarun et 
+al.\n"
++#define VERSION "arcnet: v3.94 BETA 2006/02/08 - by Avery Pennarun et 
+al.\n"
+
+  #include <linux/module.h>
+  #include <linux/types.h>
+diff -uprN -X linux-source-2.6.18/Documentation/dontdiff 
+linux-source-2.6.18/drivers/net/arcnet/arc-rawmode.c 
+linux-source-2.6.18.changed/drivers/net/arcnet/arc-rawmode.c
+--- linux-source-2.6.18/drivers/net/arcnet/arc-rawmode.c 
+2006-09-19 20:42:06.000000000 -0700
++++ linux-source-2.6.18.changed/drivers/net/arcnet/arc-rawmode.c 
+2007-02-08 16:28:29.000000000 -0800
+@@ -94,7 +94,7 @@ static void rx(struct net_device *dev, i
+
+         BUGMSG(D_DURING, "it's a raw packet (length=%d)\n", length);
+
+-       if (length >= MinTU)
++       if (length > MTU)
+                 ofs = 512 - length;
+         else
+                 ofs = 256 - length;
+@@ -183,7 +183,7 @@ static int prepare_tx(struct net_device
+                        length, XMTU);
+                 length = XMTU;
+         }
+-       if (length > MinTU) {
++       if (length >= MinTU) {
+                 hard->offset[0] = 0;
+                 hard->offset[1] = ofs = 512 - length;
+         } else if (length > MTU) {
+diff -uprN -X linux-source-2.6.18/Documentation/dontdiff 
+linux-source-2.6.18/drivers/net/arcnet/com20020.c 
+linux-source-2.6.18.changed/drivers/net/arcnet/com20020.c
+--- linux-source-2.6.18/drivers/net/arcnet/com20020.c   2006-09-19 
+20:42:06.000000000 -0700
++++ linux-source-2.6.18.changed/drivers/net/arcnet/com20020.c 
+2007-02-08 16:39:40.000000000 -0800
+@@ -104,7 +104,7 @@ int com20020_check(struct net_device *de
+         SET_SUBADR(SUB_SETUP1);
+         outb(lp->setup, _XREG);
+
+-       if (lp->card_flags & ARC_CAN_10MBIT)
++        if (lp->clockm != 0)
+         {
+                 SET_SUBADR(SUB_SETUP2);
+                 outb(lp->setup2, _XREG);
+diff -uprN -X linux-source-2.6.18/Documentation/dontdiff 
+linux-source-2.6.18/drivers/net/arcnet/com20020-pci.c 
+linux-source-2.6.18.changed/drivers/net/arcnet/com20020-pci.c
+--- linux-source-2.6.18/drivers/net/arcnet/com20020-pci.c 
+2006-09-19 20:42:06.000000000 -0700
++++ linux-source-2.6.18.changed/drivers/net/arcnet/com20020-pci.c 
+2007-02-08 16:24:27.000000000 -0800
+@@ -155,6 +155,7 @@ static struct pci_device_id com20020pci_
+         { 0x1571, 0xa00b, PCI_ANY_ID, PCI_ANY_ID, 0, 0, ARC_IS_5MBIT },
+         { 0x1571, 0xa00c, PCI_ANY_ID, PCI_ANY_ID, 0, 0, ARC_IS_5MBIT },
+         { 0x1571, 0xa00d, PCI_ANY_ID, PCI_ANY_ID, 0, 0, ARC_IS_5MBIT },
++        { 0x1571, 0xa00e, PCI_ANY_ID, PCI_ANY_ID, 0, 0, ARC_CAN_10MBIT },
+         { 0x1571, 0xa201, PCI_ANY_ID, PCI_ANY_ID, 0, 0, ARC_CAN_10MBIT },
+         { 0x1571, 0xa202, PCI_ANY_ID, PCI_ANY_ID, 0, 0, ARC_CAN_10MBIT },
+         { 0x1571, 0xa203, PCI_ANY_ID, PCI_ANY_ID, 0, 0, ARC_CAN_10MBIT },
+@@ -162,6 +163,8 @@ static struct pci_device_id com20020pci_
+         { 0x1571, 0xa205, PCI_ANY_ID, PCI_ANY_ID, 0, 0, ARC_CAN_10MBIT },
+         { 0x1571, 0xa206, PCI_ANY_ID, PCI_ANY_ID, 0, 0, ARC_CAN_10MBIT },
+         { 0x10B5, 0x9050, PCI_ANY_ID, PCI_ANY_ID, 0, 0, ARC_CAN_10MBIT },
++       { 0x14BA, 0x6000, PCI_ANY_ID, PCI_ANY_ID, 0, 0, ARC_CAN_10MBIT },
++       { 0x10B5, 0x2200, PCI_ANY_ID, PCI_ANY_ID, 0, 0, ARC_CAN_10MBIT },
+         {0,}
+  };
+
