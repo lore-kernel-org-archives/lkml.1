@@ -1,70 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423357AbXBIWpt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752455AbXBIWuK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423357AbXBIWpt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Feb 2007 17:45:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423355AbXBIWpt
+	id S1752455AbXBIWuK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Feb 2007 17:50:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752461AbXBIWuJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Feb 2007 17:45:49 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:59360 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423357AbXBIWps (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Feb 2007 17:45:48 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: nigel@nigel.suspend2.net
-Subject: Re: NAK new drivers without proper power management?
-Date: Fri, 9 Feb 2007 23:44:14 +0100
+	Fri, 9 Feb 2007 17:50:09 -0500
+Received: from mail26.syd.optusnet.com.au ([211.29.133.167]:53741 "EHLO
+	mail26.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752455AbXBIWuI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Feb 2007 17:50:08 -0500
+X-Greylist: delayed 7170 seconds by postgrey-1.27 at vger.kernel.org; Fri, 09 Feb 2007 17:50:07 EST
+From: Con Kolivas <kernel@kolivas.org>
+To: ck@vds.kolivas.org
+Subject: Re: Swap prefetch merge plans
+Date: Sat, 10 Feb 2007 09:49:50 +1100
 User-Agent: KMail/1.9.5
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.osdl.org>
-References: <1171058269.1484.64.camel@nigel.suspend2.net> <1171059433.8675.195.camel@laptopd505.fenrus.org> <1171059968.1484.90.camel@nigel.suspend2.net>
-In-Reply-To: <1171059968.1484.90.camel@nigel.suspend2.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+References: <200702091038.37143.kernel@kolivas.org> <20070209123029.633934eb.akpm@linux-foundation.org> <200702100750.22487.kernel@kolivas.org>
+In-Reply-To: <200702100750.22487.kernel@kolivas.org>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-15"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200702092344.14984.rjw@sisk.pl>
+Message-Id: <200702100949.50598.kernel@kolivas.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 9 February 2007 23:26, Nigel Cunningham wrote:
-> Hi.
-> 
-> On Fri, 2007-02-09 at 23:17 +0100, Arjan van de Ven wrote:
-> > On Sat, 2007-02-10 at 08:57 +1100, Nigel Cunningham wrote:
-> > > Hi.
-> > > 
-> > > I don't think this is already done (feel free to correct me if I'm
-> > > wrong)..
-> > > 
-> > > Can we start to NAK new drivers that don't have proper power management
-> > > implemented? There really is no excuse for writing a new driver and not
-> > > putting .suspend and .resume methods in anymore, is there?
-> > 
-> > 
-> > to a large degree, a device driver that doesn't suspend is better than
-> > no device driver at all, right?
-> 
-> I'm not sure it is. It only makes more work for everyone else: We have
-> to help people figure out what causes their computer to fail to resume
-> (which can take quite a while), then get them them complain to driver
-> author, and the driver author has to submit patches to fix it.
-> 
-> All of this is avoided if they'll just do it right in the first place.
-> 
-> > now.. if you want to make the core warn about it, that's very fair
-> 
-> That's probably a good idea too, since I'm only suggesting this for new
-> drivers.
+On Saturday 10 February 2007 07:50, Con Kolivas wrote:
+> On Saturday 10 February 2007 07:30, Andrew Morton wrote:
+> > On Fri, 09 Feb 2007 14:13:03 +0100
+> >
+> > jos poortvliet <jos@mijnkamer.nl> wrote:
+> > > Nick's comment, replying to me some time ago:
+> >
+> > I think I was thinking of this:
+> >
+> > 	http://lkml.org/lkml/2006/2/6/509
+>
+> Fortunately that predates a lot of changes where I did address all those.
+> These will seem out of context without looking at that original email so I
+> apologise in advance.
+>
+> buffered_rmqueue and prefetching x86 specific (not into DMA) were dropped
+>
+> It is NUMA aware
+>
+> Global cacheline bouncing in page allocation and page reclaim paths I have
+> no answer for as I have to tell swap prefetch that the vm is busy somehow
+> and I do that by setting precisely one bit in a lockless manner.
+>
+> The trylocks were dropped.
+>
+> The other ideas were to :
+> -extend the prefetching. That's extra features
+> -knowing for sure when a system is really idle. I've tried hard to do that
+> as cheaply as possible.
+> -putting pages on the lru? well it puts them on the tail
+> -papering over an issue? As I said, no matter how good the vm is, there
+> will always be loads that swap.
 
-I think if CONFIG_PM_DEBUG is set, the core should warn about drivers not
-having .suspend or .resume routines.
+Perhaps I haven't made this clear enough.
 
-Greetings,
-Rafael
+Nick has been kind enough to review pretty much all of swap prefetch at every 
+turn. He is understandably suspicious about any code that I generate since 
+I'm a doctor and not a computer programmer. I have addressed every concern he 
+has made along the way and even joked at the end that he "threatened to 
+review it over and over and over" which he did not take in jest. 
 
+Swap prefetch has actually had far more review than a lot of code so I'm 
+surprised that this is a remaning concern.  It has been reviewed, and I have 
+addressed the concerns. It is possible to hold back code forever at the 
+suggestion that more review is always required, and basically that's what I 
+feel this has become.
+
+If there is one valid concern with swap prefetch, there is a numa=64 scenario 
+that Rohit Seth brought to my attention and I gave him a patch to test 2 
+months ago. I've pinged him since, but I understand he's busy so has not had 
+a chance to test the patch.
 
 -- 
-If you don't have the time to read,
-you don't have the time or the tools to write.
-		- Stephen King
+-ck
