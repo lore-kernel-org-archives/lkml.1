@@ -1,67 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946217AbXBIIW7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946211AbXBII1p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946217AbXBIIW7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Feb 2007 03:22:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946219AbXBIIW6
+	id S1946211AbXBII1p (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Feb 2007 03:27:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946212AbXBII1p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Feb 2007 03:22:58 -0500
-Received: from truxi.wincor-nixdorf.com ([217.115.67.78]:34628 "EHLO
-	truxi.wincor-nixdorf.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1946217AbXBIIW6 (ORCPT
+	Fri, 9 Feb 2007 03:27:45 -0500
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:40467 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1946211AbXBII1o convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Feb 2007 03:22:58 -0500
-Message-ID: <45CC1FA5.3090507@wincor-nixdorf.com>
-Date: Fri, 09 Feb 2007 08:15:49 +0100
-From: Frank Salomon <frank.salomon@wincor-nixdorf.com>
-Reply-To: frank.salomon@wincor-nixdorf.com
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.4) Gecko/20030624 Netscape/7.1
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: EV_MSC / driver/input/input.c (Input Handler)
-References: <45CAE5A1.80409@wincor-nixdorf.com> <d120d5000702080715u2902bc81oda4b9250892a1bf2@mail.gmail.com>
-In-Reply-To: <d120d5000702080715u2902bc81oda4b9250892a1bf2@mail.gmail.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 9 Feb 2007 03:27:44 -0500
+Date: Fri, 9 Feb 2007 09:26:11 +0100
+From: =?ISO-8859-1?Q?S=E9bastien_Dugu=E9?= <sebastien.dugue@bull.net>
+To: "Bharata B Rao" <bharata.rao@gmail.com>
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: -mm merge plans for 2.6.21
+Message-ID: <20070209092611.72c221d3@frecb000686.frec.bull.fr>
+In-Reply-To: <344eb09a0702082132w100e3b27saea61ee30a28b50a@mail.gmail.com>
+References: <20070208150710.1324f6b4.akpm@linux-foundation.org>
+	<344eb09a0702082132w100e3b27saea61ee30a28b50a@mail.gmail.com>
+X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 09/02/2007 09:28:52,
+	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 09/02/2007 09:28:52,
+	Serialize complete at 09/02/2007 09:28:52
+Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Dmitry,
+On Fri, 9 Feb 2007 11:02:28 +0530 "Bharata B Rao" <bharata.rao@gmail.com> wrote:
 
-Dmitry Torokhov wrote:
+> Andrew,
+> 
+> On 2/9/07, Andrew Morton <akpm@linux-foundation.org> wrote:
+> > fsaio-add-a-wait-queue-arg-to-the-wait_bit-action-routine.patch
+> > fsaio-add-a-wait-queue-arg-to-the-wait_bit-action-routine-gfs2-fix.patch
+> > fsaio-rename-__lock_page-to-lock_page_blocking.patch
+> > fsaio-interfaces-to-initialize-and-to-test-a-wait-bit-key.patch
+> > fsaio-add-a-default-io-wait-bit-field-in-task-struct.patch
+> > fsaio-enable-wait-bit-based-filtered-wakeups-to-work-for-aio.patch
+> > fsaio-enable-wait-bit-based-filtered-wakeups-to-work-for-aio-fix.patch
+> > fsaio-enable-wait-bit-based-filtered-wakeups-to-work-for-aio-fix-sparse-fix.patch
+> > fsaio-enable-asynchronous-wait-page-and-lock-page.patch
+> > fsaio-filesystem-aio-read.patch
+> > fsaio-aio-o_sync-filesystem-write.patch
+> >
+> >  Will wait to see what happens with febrils.
+> >
+> > aio-is-unlikely.patch
+> >
+> >  Will merge.
+> >
+> > rework-compat_sys_io_submit.patch
+> > fix-aioh-includes.patch
+> > fix-access_ok-checks.patch
+> > make-good_sigevent-non-static.patch
+> > make-good_sigevent-non-static-fix.patch
+> > make-__sigqueue_free-and.patch
+> > aio-completion-signal-notification.patch
+> > aio-completion-signal-notification-fix.patch
+> > aio-completion-signal-notification-fixes-and-cleanups.patch
+> > aio-completion-signal-notification-small-cleanup.patch
+> > add-listio-syscall-support.patch
+> >
+> >  I guess these are dependent upon fsaio.
+> 
+> No. AIO completion signal notification patches and listio patch work
+> independently of fsaio patches. Just that for buffered AIO case, the
+> fsaio patches will make the behaviour truly asynchronous.
+> 
+> Regards,
+> Bharata.
 
-> That is because by default atkbd uses software-emulated raw mode.
-> bootk with atkbd.softraw=0 or switch it off after boot through sysfs
-> attribute to get EV_MSC/MSC_RAW passed through).
+  I concur.
 
-Thank you for your advice, but I really don't know, what will be the 
-secondary effect if it will be switched off.
+  Thanks,
 
-> No, input core should not pass any events device did not claim to support.
-
-I am not sure, but I think the function input_event in 
-drivers/input/input.c has 2 tasks:
-One is to send events to the device (first part: "switch (type){").
-
-The other one is to send the events to the handler (second part: 
-"list_for_each_entry(handle, &dev->h_list, d_node)").
-
-This is the reason why I had the idea of changing the code as I have 
-described it before.
-
-With the current implementation, the device sends events to the handler. 
-But only events, known/claimed by the device are passed through to the 
-handler. I believe, this should be handled transparently.
-
-> What are you trying to do though? Why are you interested in raw atkbd
-> events? What will your handler do with events from other input devices
-> that might emit raw events?
-
-I have to connected special Point Of Sales Keyboards. Sometimes they are 
-sending none standard scan codes, only make codes and no break codes. I 
-had successfully implemented this in kernel version 2.4 and now I have 
-to do it in 2.6.
-
-Best regards, Frank
+  Sébastien.
 
