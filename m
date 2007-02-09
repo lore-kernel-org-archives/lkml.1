@@ -1,75 +1,259 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752466AbXBIWvf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752476AbXBIWxf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752466AbXBIWvf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Feb 2007 17:51:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752474AbXBIWvf
+	id S1752476AbXBIWxf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Feb 2007 17:53:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752486AbXBIWxf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Feb 2007 17:51:35 -0500
-Received: from nigel.suspend2.net ([203.171.70.205]:49431 "EHLO
-	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752463AbXBIWve (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Feb 2007 17:51:34 -0500
-Subject: Re: NAK new drivers without proper power management?
-From: Nigel Cunningham <nigel@nigel.suspend2.net>
-Reply-To: nigel@nigel.suspend2.net
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.osdl.org>
-In-Reply-To: <200702092344.14984.rjw@sisk.pl>
-References: <1171058269.1484.64.camel@nigel.suspend2.net>
-	 <1171059433.8675.195.camel@laptopd505.fenrus.org>
-	 <1171059968.1484.90.camel@nigel.suspend2.net>
-	 <200702092344.14984.rjw@sisk.pl>
-Content-Type: text/plain
-Date: Sat, 10 Feb 2007 09:51:29 +1100
-Message-Id: <1171061489.1484.100.camel@nigel.suspend2.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 9 Feb 2007 17:53:35 -0500
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:53957 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752476AbXBIWxd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Feb 2007 17:53:33 -0500
+Subject: [PATCH 01/22] filesystem helpers for custom 'struct file's
+To: linux-kernel@vger.kernel.org
+Cc: akpm@osdl.org, hch@infradead.org, Dave Hansen <hansendc@us.ibm.com>
+From: Dave Hansen <hansendc@us.ibm.com>
+Date: Fri, 09 Feb 2007 14:53:29 -0800
+Message-Id: <20070209225329.27619A62@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
 
-On Fri, 2007-02-09 at 23:44 +0100, Rafael J. Wysocki wrote:
-> On Friday, 9 February 2007 23:26, Nigel Cunningham wrote:
-> > Hi.
-> > 
-> > On Fri, 2007-02-09 at 23:17 +0100, Arjan van de Ven wrote:
-> > > On Sat, 2007-02-10 at 08:57 +1100, Nigel Cunningham wrote:
-> > > > Hi.
-> > > > 
-> > > > I don't think this is already done (feel free to correct me if I'm
-> > > > wrong)..
-> > > > 
-> > > > Can we start to NAK new drivers that don't have proper power management
-> > > > implemented? There really is no excuse for writing a new driver and not
-> > > > putting .suspend and .resume methods in anymore, is there?
-> > > 
-> > > 
-> > > to a large degree, a device driver that doesn't suspend is better than
-> > > no device driver at all, right?
-> > 
-> > I'm not sure it is. It only makes more work for everyone else: We have
-> > to help people figure out what causes their computer to fail to resume
-> > (which can take quite a while), then get them them complain to driver
-> > author, and the driver author has to submit patches to fix it.
-> > 
-> > All of this is avoided if they'll just do it right in the first place.
-> > 
-> > > now.. if you want to make the core warn about it, that's very fair
-> > 
-> > That's probably a good idea too, since I'm only suggesting this for new
-> > drivers.
-> 
-> I think if CONFIG_PM_DEBUG is set, the core should warn about drivers not
-> having .suspend or .resume routines.
+Some filesystems forego the vfs and may_open() and create their
+own 'struct file's.
 
-The only problem with that is, not everyone turns on CONFIG_PM_DEBUG.
-CONFIG_PM instead?
+This patch creates a couple of helper functions which can be
+used by these filesystems, and will provide a unified place
+which the r/o bind mount code may patch.
 
-Regards,
+Signed-off-by: Dave Hansen <haveblue@us.ibm.com>
+---
 
-Nigel
+ lxc-dave/fs/file_table.c      |   36 ++++++++++++++++++++++++++++++++++++
+ lxc-dave/fs/hugetlbfs/inode.c |   22 +++++++++-------------
+ lxc-dave/include/linux/file.h |    8 ++++++++
+ lxc-dave/mm/shmem.c           |    7 ++-----
+ lxc-dave/mm/tiny-shmem.c      |   24 +++++++++---------------
+ lxc-dave/net/socket.c         |   18 +++++++++---------
+ 6 files changed, 73 insertions(+), 42 deletions(-)
 
+diff -puN fs/file_table.c~01-24-filesystem-helpers-for-custom-struct-file-s fs/file_table.c
+--- lxc/fs/file_table.c~01-24-filesystem-helpers-for-custom-struct-file-s	2007-02-09 14:26:46.000000000 -0800
++++ lxc-dave/fs/file_table.c	2007-02-09 14:26:46.000000000 -0800
+@@ -140,6 +140,42 @@ fail:
+ 
+ EXPORT_SYMBOL(get_empty_filp);
+ 
++struct file *alloc_file(struct vfsmount *mnt,  struct dentry *dentry,
++		mode_t mode, const struct file_operations *fop)
++{
++	struct file *file;
++
++	file = get_empty_filp();
++	if (!file)
++		return NULL;
++
++	init_file(file, mnt, dentry, mode, fop);
++	return file;
++}
++
++EXPORT_SYMBOL(alloc_file);
++
++/*
++ * Note: This is a crappy interface.  It is here to make
++ * merging with the existing users of get_empty_filp()
++ * who have complex failure logic easier.  All users
++ * of this should be moving to alloc_file().
++ */
++int init_file(struct file *file, struct vfsmount *mnt,
++	   struct dentry *dentry, mode_t mode,
++	   const struct file_operations *fop)
++{
++	int error = 0;
++	file->f_vfsmnt = mntget(mnt);
++	file->f_dentry = dentry;
++	file->f_mapping = dentry->d_inode->i_mapping;
++	file->f_mode = mode;
++	file->f_op = fop;
++	return error;
++}
++
++EXPORT_SYMBOL(init_file);
++
+ void fastcall fput(struct file *file)
+ {
+ 	if (atomic_dec_and_test(&file->f_count))
+diff -puN fs/hugetlbfs/inode.c~01-24-filesystem-helpers-for-custom-struct-file-s fs/hugetlbfs/inode.c
+--- lxc/fs/hugetlbfs/inode.c~01-24-filesystem-helpers-for-custom-struct-file-s	2007-02-09 14:26:46.000000000 -0800
++++ lxc-dave/fs/hugetlbfs/inode.c	2007-02-09 14:26:46.000000000 -0800
+@@ -756,16 +756,11 @@ struct file *hugetlb_zero_setup(size_t s
+ 	if (!dentry)
+ 		goto out_shm_unlock;
+ 
+-	error = -ENFILE;
+-	file = get_empty_filp();
+-	if (!file)
+-		goto out_dentry;
+-
+ 	error = -ENOSPC;
+ 	inode = hugetlbfs_get_inode(root->d_sb, current->fsuid,
+ 				current->fsgid, S_IFREG | S_IRWXUGO, 0);
+ 	if (!inode)
+-		goto out_file;
++		goto out_dentry;
+ 
+ 	error = -ENOMEM;
+ 	if (hugetlb_reserve_pages(inode, 0, size >> HPAGE_SHIFT))
+@@ -774,17 +769,18 @@ struct file *hugetlb_zero_setup(size_t s
+ 	d_instantiate(dentry, inode);
+ 	inode->i_size = size;
+ 	inode->i_nlink = 0;
+-	file->f_path.mnt = mntget(hugetlbfs_vfsmount);
+-	file->f_path.dentry = dentry;
+-	file->f_mapping = inode->i_mapping;
+-	file->f_op = &hugetlbfs_file_operations;
+-	file->f_mode = FMODE_WRITE | FMODE_READ;
++
++	error = -ENFILE;
++	file = alloc_file(hugetlbfs_vfsmount, dentry,
++			FMODE_WRITE | FMODE_READ,
++			&hugetlbfs_file_operations);
++	if (!file)
++		goto out_inode;
++
+ 	return file;
+ 
+ out_inode:
+ 	iput(inode);
+-out_file:
+-	put_filp(file);
+ out_dentry:
+ 	dput(dentry);
+ out_shm_unlock:
+diff -puN include/linux/file.h~01-24-filesystem-helpers-for-custom-struct-file-s include/linux/file.h
+--- lxc/include/linux/file.h~01-24-filesystem-helpers-for-custom-struct-file-s	2007-02-09 14:26:46.000000000 -0800
++++ lxc-dave/include/linux/file.h	2007-02-09 14:26:46.000000000 -0800
+@@ -62,6 +62,14 @@ extern struct kmem_cache *filp_cachep;
+ extern void FASTCALL(__fput(struct file *));
+ extern void FASTCALL(fput(struct file *));
+ 
++struct file_operations;
++struct vfsmount;
++struct dentry;
++extern int init_file(struct file *, struct vfsmount *, struct dentry *dentry,
++		mode_t mode, const struct file_operations *fop);
++extern struct file *alloc_file(struct vfsmount *, struct dentry *dentry,
++		mode_t mode, const struct file_operations *fop);
++
+ static inline void fput_light(struct file *file, int fput_needed)
+ {
+ 	if (unlikely(fput_needed))
+diff -puN mm/shmem.c~01-24-filesystem-helpers-for-custom-struct-file-s mm/shmem.c
+--- lxc/mm/shmem.c~01-24-filesystem-helpers-for-custom-struct-file-s	2007-02-09 14:26:46.000000000 -0800
++++ lxc-dave/mm/shmem.c	2007-02-09 14:26:46.000000000 -0800
+@@ -2497,11 +2497,8 @@ struct file *shmem_file_setup(char *name
+ 	d_instantiate(dentry, inode);
+ 	inode->i_size = size;
+ 	inode->i_nlink = 0;	/* It is unlinked */
+-	file->f_path.mnt = mntget(shm_mnt);
+-	file->f_path.dentry = dentry;
+-	file->f_mapping = inode->i_mapping;
+-	file->f_op = &shmem_file_operations;
+-	file->f_mode = FMODE_WRITE | FMODE_READ;
++	init_file(file, shm_mnt, dentry, FMODE_WRITE | FMODE_READ,
++			&shmem_file_operations);
+ 	return file;
+ 
+ close_file:
+diff -puN mm/tiny-shmem.c~01-24-filesystem-helpers-for-custom-struct-file-s mm/tiny-shmem.c
+--- lxc/mm/tiny-shmem.c~01-24-filesystem-helpers-for-custom-struct-file-s	2007-02-09 14:26:46.000000000 -0800
++++ lxc-dave/mm/tiny-shmem.c	2007-02-09 14:26:46.000000000 -0800
+@@ -66,24 +66,19 @@ struct file *shmem_file_setup(char *name
+ 	if (!dentry)
+ 		goto put_memory;
+ 
+-	error = -ENFILE;
+-	file = get_empty_filp();
+-	if (!file)
+-		goto put_dentry;
+-
+ 	error = -ENOSPC;
+ 	inode = ramfs_get_inode(root->d_sb, S_IFREG | S_IRWXUGO, 0);
+ 	if (!inode)
+-		goto close_file;
++		goto put_dentry;
+ 
+ 	d_instantiate(dentry, inode);
+-	inode->i_nlink = 0;	/* It is unlinked */
++	error = -ENFILE;
++	file = alloc_file(shm_mnt, dentry, FMODE_WRITE | FMODE_READ,
++			&ramfs_file_operations);
++	if (!file)
++		goto put_inode;
+ 
+-	file->f_path.mnt = mntget(shm_mnt);
+-	file->f_path.dentry = dentry;
+-	file->f_mapping = inode->i_mapping;
+-	file->f_op = &ramfs_file_operations;
+-	file->f_mode = FMODE_WRITE | FMODE_READ;
++	inode->i_nlink = 0;	/* It is unlinked */
+ 
+ 	/* notify everyone as to the change of file size */
+ 	error = do_truncate(dentry, size, 0, file);
+@@ -91,9 +86,8 @@ struct file *shmem_file_setup(char *name
+ 		goto close_file;
+ 
+ 	return file;
+-
+-close_file:
+-	put_filp(file);
++put_inode:
++	iput(inode);
+ put_dentry:
+ 	dput(dentry);
+ put_memory:
+diff -puN net/socket.c~01-24-filesystem-helpers-for-custom-struct-file-s net/socket.c
+--- lxc/net/socket.c~01-24-filesystem-helpers-for-custom-struct-file-s	2007-02-09 14:26:46.000000000 -0800
++++ lxc-dave/net/socket.c	2007-02-09 14:26:46.000000000 -0800
+@@ -355,6 +355,7 @@ static int sock_alloc_fd(struct file **f
+ 
+ static int sock_attach_fd(struct socket *sock, struct file *file)
+ {
++	struct dentry *dentry;
+ 	struct qstr this;
+ 	char name[32];
+ 
+@@ -362,24 +363,23 @@ static int sock_attach_fd(struct socket 
+ 	this.name = name;
+ 	this.hash = 0;
+ 
+-	file->f_path.dentry = d_alloc(sock_mnt->mnt_sb->s_root, &this);
+-	if (unlikely(!file->f_path.dentry))
++	dentry = d_alloc(sock_mnt->mnt_sb->s_root, &this);
++	if (unlikely(!dentry))
+ 		return -ENOMEM;
+ 
+-	file->f_path.dentry->d_op = &sockfs_dentry_operations;
++	dentry->d_op = &sockfs_dentry_operations;
+ 	/*
+ 	 * We dont want to push this dentry into global dentry hash table.
+ 	 * We pretend dentry is already hashed, by unsetting DCACHE_UNHASHED
+ 	 * This permits a working /proc/$pid/fd/XXX on sockets
+ 	 */
+-	file->f_path.dentry->d_flags &= ~DCACHE_UNHASHED;
+-	d_instantiate(file->f_path.dentry, SOCK_INODE(sock));
+-	file->f_path.mnt = mntget(sock_mnt);
+-	file->f_mapping = file->f_path.dentry->d_inode->i_mapping;
+-
++	dentry->d_flags &= ~DCACHE_UNHASHED;
++	d_instantiate(dentry, SOCK_INODE(sock));
++	init_file(file, sock_mnt, dentry, FMODE_READ | FMODE_WRITE,
++		&socket_file_ops);
++	SOCK_INODE(sock)->i_fop = &socket_file_ops;
+ 	sock->file = file;
+ 	file->f_op = SOCK_INODE(sock)->i_fop = &socket_file_ops;
+-	file->f_mode = FMODE_READ | FMODE_WRITE;
+ 	file->f_flags = O_RDWR;
+ 	file->f_pos = 0;
+ 	file->private_data = sock;
+_
