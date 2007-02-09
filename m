@@ -1,86 +1,241 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1945986AbXBIBbX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1945990AbXBIBhG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1945986AbXBIBbX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Feb 2007 20:31:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945988AbXBIBbX
+	id S1945990AbXBIBhG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Feb 2007 20:37:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945992AbXBIBhG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Feb 2007 20:31:23 -0500
-Received: from ns2.suse.de ([195.135.220.15]:43864 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1945986AbXBIBbW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Feb 2007 20:31:22 -0500
-Date: Fri, 9 Feb 2007 02:31:16 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Andrew Morton <akpm@osdl.org>,
-       Linux Memory Management <linux-mm@kvack.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [patch 0/3] 2.6.20 fix for PageUptodate memorder problem (try 2)
-Message-ID: <20070209013115.GA17334@wotan.suse.de>
-References: <20070208111421.30513.77904.sendpatchset@linux.site> <Pine.LNX.4.64.0702090027580.29905@blonde.wat.veritas.com>
+	Thu, 8 Feb 2007 20:37:06 -0500
+Received: from rgminet01.oracle.com ([148.87.113.118]:40418 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1945990AbXBIBhE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Feb 2007 20:37:04 -0500
+Date: Thu, 8 Feb 2007 17:32:07 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Richard Knutsson <ricknu-0@student.ltu.se>
+Cc: akpm@osdl.org, trivial@kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] drivers/telephony/ixj: Convert to generic boolean
+Message-Id: <20070208173207.2cddd490.randy.dunlap@oracle.com>
+In-Reply-To: <20070208213935.4864.40124.sendpatchset@thinktank.campus.ltu.se>
+References: <20070208213935.4864.40124.sendpatchset@thinktank.campus.ltu.se>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.0 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0702090027580.29905@blonde.wat.veritas.com>
-User-Agent: Mutt/1.5.9i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 09, 2007 at 12:41:51AM +0000, Hugh Dickins wrote:
-> On Thu, 8 Feb 2007, Nick Piggin wrote:
-> > Still no independent confirmation as to whether this is a problem or not.
+On Thu, 8 Feb 2007 22:39:35 +0100 (MET) Richard Knutsson wrote:
+
+> Convert:
+> BOOL  -> bool
+> FALSE -> false
+> TRUE  -> true
 > 
-> I'm trying to convince myself none of your patch is necessary.  Probably
-> shall fail.  But how come we've survived for years with such an issue?
-
-Well I'm almost sure that the POWER guys hit this with anonymous pages
-being zeroed out then added to process address space -- they would
-occasionally see junk (via another thread, I presume).
-
-If that were the case, then I think that a read-vs-read over a hole
-(for example) should be buggy in the same way.
-
-> > Updated some comments, added diffstats to patches, don't use
-> > __SetPageUptodate as an internal page-flags.h private function.
+> Change a variable ('mContinue') to boolean from char, since it is used
+> as boolean.
 > 
-> Depressed by profusion of PageUptodate_UpperAndlowercasevariants.
-> Those rmbs, you really only want them when it says "yes", don't you?
+> Signed-off-by: Richard Knutsson <ricknu-0@student.ltu.se>
 
-Yeah, any help with naming suggestions would be appreciated. I think
-we can get rid of the SetPageUptodate_nowarn variant, by making
-SetNewPageUptodate simply do an smp_wmb + __set_bit on all architectures?
-This frees us from the extra atomic ops I'd added into the page fault
-fastpaths as well.
+Looks good to me.  Built on x86_64.
 
-Yes, we do only need the rmb if it is uptodate, that's a good point.
+Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
 
-> > I would like to eventually get an ack from Hugh regarding the anon memory
-> > and especially swap side of the equation,
+> ---
+> Compile-tested with "allyes", "allmod" and "allno" on i386
+> Get a few warning-messages, none related to this patch
+> Sent on 2007-01-21
 > 
-> Plea noted.  I'm pondering.  "Eventually" indeed.  OTOH I expect you're
-> right to criticize anon/swap PageUptodate being set where it was needed
-> to get by, rather than where it was natural to do so.
-
-Well if I can get you to warm to that aspect of the patch... :) I expect
-that using non-atomic bitops might help.
-
-Should I make that change into its own patch?
-
-> > and a glance from whoever put the
-> > smp_wmb()s into the copy functions (Was it Ben H or Anton maybe?)
 > 
-> From: Linus Torvalds <torvalds@ppc970.osdl.org>
-> Date: Thu, 14 Oct 2004 04:00:06 +0000 (-0700)
-> Subject: Fix threaded user page write memory ordering
-> X-Git-Tag: v2.6.9-final~3
-> X-Git-Url: http://127.0.0.1:1234/?p=.git;a=commitdiff_plain;h=538ce05c0ef4055cf29a92a4abcdf139d180a0f9;hp=8c225dbc5a7b13801a8254aae0ccebab8e4bece7
-> 
-> Fix threaded user page write memory ordering
+> diff --git a/drivers/telephony/ixj.c b/drivers/telephony/ixj.c
+> index df4cc1f..58deaac 100644
+> --- a/drivers/telephony/ixj.c
+> +++ b/drivers/telephony/ixj.c
+> @@ -648,9 +648,9 @@ static inline BYTE SLIC_GetState(IXJ *j)
+>  	return j->pld_slicr.bits.state;
+>  }
+>  
+> -static BOOL SLIC_SetState(BYTE byState, IXJ *j)
+> +static bool SLIC_SetState(BYTE byState, IXJ *j)
+>  {
+> -	BOOL fRetVal = FALSE;
+> +	bool fRetVal = false;
+>  
+>  	if (j->cardtype == QTI_PHONECARD) {
+>  		if (j->flags.pcmciasct) {
+> @@ -659,14 +659,14 @@ static BOOL SLIC_SetState(BYTE byState, IXJ *j)
+>  			case PLD_SLIC_STATE_OC:
+>  				j->pslic.bits.powerdown = 1;
+>  				j->pslic.bits.ring0 = j->pslic.bits.ring1 = 0;
+> -				fRetVal = TRUE;
+> +				fRetVal = true;
+>  				break;
+>  			case PLD_SLIC_STATE_RINGING:
+>  				if (j->readers || j->writers) {
+>  					j->pslic.bits.powerdown = 0;
+>  					j->pslic.bits.ring0 = 1;
+>  					j->pslic.bits.ring1 = 0;
+> -					fRetVal = TRUE;
+> +					fRetVal = true;
+>  				}
+>  				break;
+>  			case PLD_SLIC_STATE_OHT:	/* On-hook transmit */
+> @@ -679,14 +679,14 @@ static BOOL SLIC_SetState(BYTE byState, IXJ *j)
+>  					j->pslic.bits.powerdown = 1;
+>  				}
+>  				j->pslic.bits.ring0 = j->pslic.bits.ring1 = 0;
+> -				fRetVal = TRUE;
+> +				fRetVal = true;
+>  				break;
+>  			case PLD_SLIC_STATE_APR:	/* Active polarity reversal */
+>  
+>  			case PLD_SLIC_STATE_OHTPR:	/* OHT polarity reversal */
+>  
+>  			default:
+> -				fRetVal = FALSE;
+> +				fRetVal = false;
+>  				break;
+>  			}
+>  			j->psccr.bits.dev = 3;
+> @@ -703,7 +703,7 @@ static BOOL SLIC_SetState(BYTE byState, IXJ *j)
+>  			j->pld_slicw.bits.c3 = 0;
+>  			j->pld_slicw.bits.b2en = 0;
+>  			outb_p(j->pld_slicw.byte, j->XILINXbase + 0x01);
+> -			fRetVal = TRUE;
+> +			fRetVal = true;
+>  			break;
+>  		case PLD_SLIC_STATE_RINGING:
+>  			j->pld_slicw.bits.c1 = 1;
+> @@ -711,7 +711,7 @@ static BOOL SLIC_SetState(BYTE byState, IXJ *j)
+>  			j->pld_slicw.bits.c3 = 0;
+>  			j->pld_slicw.bits.b2en = 1;
+>  			outb_p(j->pld_slicw.byte, j->XILINXbase + 0x01);
+> -			fRetVal = TRUE;
+> +			fRetVal = true;
+>  			break;
+>  		case PLD_SLIC_STATE_ACTIVE:
+>  			j->pld_slicw.bits.c1 = 0;
+> @@ -719,7 +719,7 @@ static BOOL SLIC_SetState(BYTE byState, IXJ *j)
+>  			j->pld_slicw.bits.c3 = 0;
+>  			j->pld_slicw.bits.b2en = 0;
+>  			outb_p(j->pld_slicw.byte, j->XILINXbase + 0x01);
+> -			fRetVal = TRUE;
+> +			fRetVal = true;
+>  			break;
+>  		case PLD_SLIC_STATE_OHT:	/* On-hook transmit */
+>  
+> @@ -728,7 +728,7 @@ static BOOL SLIC_SetState(BYTE byState, IXJ *j)
+>  			j->pld_slicw.bits.c3 = 0;
+>  			j->pld_slicw.bits.b2en = 0;
+>  			outb_p(j->pld_slicw.byte, j->XILINXbase + 0x01);
+> -			fRetVal = TRUE;
+> +			fRetVal = true;
+>  			break;
+>  		case PLD_SLIC_STATE_TIPOPEN:
+>  			j->pld_slicw.bits.c1 = 0;
+> @@ -736,7 +736,7 @@ static BOOL SLIC_SetState(BYTE byState, IXJ *j)
+>  			j->pld_slicw.bits.c3 = 1;
+>  			j->pld_slicw.bits.b2en = 0;
+>  			outb_p(j->pld_slicw.byte, j->XILINXbase + 0x01);
+> -			fRetVal = TRUE;
+> +			fRetVal = true;
+>  			break;
+>  		case PLD_SLIC_STATE_STANDBY:
+>  			j->pld_slicw.bits.c1 = 1;
+> @@ -744,7 +744,7 @@ static BOOL SLIC_SetState(BYTE byState, IXJ *j)
+>  			j->pld_slicw.bits.c3 = 1;
+>  			j->pld_slicw.bits.b2en = 1;
+>  			outb_p(j->pld_slicw.byte, j->XILINXbase + 0x01);
+> -			fRetVal = TRUE;
+> +			fRetVal = true;
+>  			break;
+>  		case PLD_SLIC_STATE_APR:	/* Active polarity reversal */
+>  
+> @@ -753,7 +753,7 @@ static BOOL SLIC_SetState(BYTE byState, IXJ *j)
+>  			j->pld_slicw.bits.c3 = 1;
+>  			j->pld_slicw.bits.b2en = 0;
+>  			outb_p(j->pld_slicw.byte, j->XILINXbase + 0x01);
+> -			fRetVal = TRUE;
+> +			fRetVal = true;
+>  			break;
+>  		case PLD_SLIC_STATE_OHTPR:	/* OHT polarity reversal */
+>  
+> @@ -762,10 +762,10 @@ static BOOL SLIC_SetState(BYTE byState, IXJ *j)
+>  			j->pld_slicw.bits.c3 = 1;
+>  			j->pld_slicw.bits.b2en = 0;
+>  			outb_p(j->pld_slicw.byte, j->XILINXbase + 0x01);
+> -			fRetVal = TRUE;
+> +			fRetVal = true;
+>  			break;
+>  		default:
+> -			fRetVal = FALSE;
+> +			fRetVal = false;
+>  			break;
+>  		}
+>  	}
+> @@ -4969,7 +4969,8 @@ static int ixj_daa_cid_read(IXJ *j)
+>  {
+>  	int i;
+>  	BYTES bytes;
+> -	char CID[ALISDAA_CALLERID_SIZE], mContinue;
+> +	char CID[ALISDAA_CALLERID_SIZE];
+> +	bool mContinue;
+>  	char *pIn, *pOut;
+>  
+>  	if (!SCI_Prepare(j))
+> @@ -5013,7 +5014,7 @@ static int ixj_daa_cid_read(IXJ *j)
+>  
+>  	pIn = CID;
+>  	pOut = j->m_DAAShadowRegs.CAO_REGS.CAO.CallerID;
+> -	mContinue = 1;
+> +	mContinue = true;
+>  	while (mContinue) {
+>  		if ((pIn[1] & 0x03) == 0x01) {
+>  			pOut[0] = pIn[0];
+> @@ -5027,7 +5028,7 @@ static int ixj_daa_cid_read(IXJ *j)
+>  		if ((pIn[4] & 0xc0) == 0x40) {
+>  			pOut[3] = ((pIn[4] & 0x3f) << 2) | ((pIn[3] & 0xc0) >> 6);
+>  		} else {
+> -			mContinue = FALSE;
+> +			mContinue = false;
+>  		}
+>  		pIn += 5, pOut += 4;
+>  	}
+> @@ -7498,7 +7499,7 @@ static BYTE PCIEE_ReadBit(WORD wEEPROMAddress, BYTE lastLCC)
+>  	return ((inb(wEEPROMAddress) >> 3) & 1);
+>  }
+>  
+> -static BOOL PCIEE_ReadWord(WORD wAddress, WORD wLoc, WORD * pwResult)
+> +static bool PCIEE_ReadWord(WORD wAddress, WORD wLoc, WORD * pwResult)
+>  {
+>  	BYTE lastLCC;
+>  	WORD wEEPROMAddress = wAddress + 3;
+> diff --git a/drivers/telephony/ixj.h b/drivers/telephony/ixj.h
+> index 8d69bcd..4c32a43 100644
+> --- a/drivers/telephony/ixj.h
+> +++ b/drivers/telephony/ixj.h
+> @@ -48,15 +48,11 @@
+>  typedef __u16 WORD;
+>  typedef __u32 DWORD;
+>  typedef __u8 BYTE;
+> -typedef __u8 BOOL;
+>  
+>  #ifndef IXJMAX
+>  #define IXJMAX 16
+>  #endif
+>  
+> -#define TRUE 1
+> -#define FALSE 0
+> -
+>  /******************************************************************************
+>  *
+>  *  This structure when unioned with the structures below makes simple byte
+> -
 
-Thanks, I did see that, but I'm sure it must have been prompted by a
-discussion or another proposed patch from IBM. Maybe I'm wrong
-though.
-
-Thanks,
-Nick
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
