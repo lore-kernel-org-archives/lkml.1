@@ -1,62 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423224AbXBIW0T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423354AbXBIW1A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423224AbXBIW0T (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Feb 2007 17:26:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423343AbXBIW0T
+	id S1423354AbXBIW1A (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Feb 2007 17:27:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423352AbXBIW1A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Feb 2007 17:26:19 -0500
-Received: from nigel.suspend2.net ([203.171.70.205]:45066 "EHLO
-	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423224AbXBIW0S (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Feb 2007 17:26:18 -0500
-Subject: Re: NAK new drivers without proper power management?
-From: Nigel Cunningham <nigel@nigel.suspend2.net>
-Reply-To: nigel@nigel.suspend2.net
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1171059433.8675.195.camel@laptopd505.fenrus.org>
-References: <1171058269.1484.64.camel@nigel.suspend2.net>
-	 <1171059433.8675.195.camel@laptopd505.fenrus.org>
-Content-Type: text/plain
-Date: Sat, 10 Feb 2007 09:26:08 +1100
-Message-Id: <1171059968.1484.90.camel@nigel.suspend2.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
+	Fri, 9 Feb 2007 17:27:00 -0500
+Received: from ns2.suse.de ([195.135.220.15]:51351 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1423347AbXBIW06 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Feb 2007 17:26:58 -0500
+From: Neil Brown <neilb@suse.de>
+To: James Ketrenos <jketreno@linux.intel.com>
+Date: Sat, 10 Feb 2007 09:26:22 +1100
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <17868.62734.497825.667962@notabene.brown>
+Cc: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
+       ipw3945-devel@lists.sourceforge.net, netdev@vger.kernel.org
+Subject: Re: [ANNOUNCE] d80211 based driver for Intel PRO/Wireless 3945ABG
+In-Reply-To: message from James Ketrenos on Friday February 9
+References: <45CCE3CA.4050904@linux.intel.com>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
-
-On Fri, 2007-02-09 at 23:17 +0100, Arjan van de Ven wrote:
-> On Sat, 2007-02-10 at 08:57 +1100, Nigel Cunningham wrote:
-> > Hi.
-> > 
-> > I don't think this is already done (feel free to correct me if I'm
-> > wrong)..
-> > 
-> > Can we start to NAK new drivers that don't have proper power management
-> > implemented? There really is no excuse for writing a new driver and not
-> > putting .suspend and .resume methods in anymore, is there?
+On Friday February 9, jketreno@linux.intel.com wrote:
 > 
+> Ok.  Now... any questions?
 > 
-> to a large degree, a device driver that doesn't suspend is better than
-> no device driver at all, right?
 
-I'm not sure it is. It only makes more work for everyone else: We have
-to help people figure out what causes their computer to fail to resume
-(which can take quite a while), then get them them complain to driver
-author, and the driver author has to submit patches to fix it.
+Yes.  Does this require a closed user-space helper like the other
+3945ABG driver, or is it completely open (maybe excepting firmware)?
 
-All of this is avoided if they'll just do it right in the first place.
-
-> now.. if you want to make the core warn about it, that's very fair
-
-That's probably a good idea too, since I'm only suggesting this for new
-drivers.
-
-Regards,
-
-Nigel
-
+Thanks,
+NeilBrown
