@@ -1,43 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992443AbXBIRLd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946640AbXBIROK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992443AbXBIRLd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Feb 2007 12:11:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992445AbXBIRLd
+	id S1946640AbXBIROK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Feb 2007 12:14:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946638AbXBIROK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Feb 2007 12:11:33 -0500
-Received: from cacti.profiwh.com ([85.93.165.66]:37878 "EHLO cacti.profiwh.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992443AbXBIRLc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Feb 2007 12:11:32 -0500
-Message-ID: <45CCAB48.9010906@gmail.com>
-Date: Fri, 09 Feb 2007 18:11:36 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0b2 (X11/20070116)
+	Fri, 9 Feb 2007 12:14:10 -0500
+Received: from mail2.sea5.speakeasy.net ([69.17.117.4]:46103 "EHLO
+	mail2.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1946640AbXBIROJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Feb 2007 12:14:09 -0500
+Date: Fri, 9 Feb 2007 12:14:05 -0500 (EST)
+From: James Morris <jmorris@namei.org>
+X-X-Sender: jmorris@d.namei
+To: Len Brown <lenb@kernel.org>
+cc: Rusty Russell <rusty@rustcorp.com.au>,
+       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, Andi Kleen <ak@muc.de>,
+       virtualization <virtualization@lists.osdl.org>
+Subject: Re: [PATCH 6c/10] lguest: the guest code
+In-Reply-To: <200702091206.31797.lenb@kernel.org>
+Message-ID: <Pine.LNX.4.64.0702091212360.9007@d.namei>
+References: <1171012296.2718.26.camel@localhost.localdomain>
+ <1171018590.2718.60.camel@localhost.localdomain> <1171018674.2718.63.camel@localhost.localdomain>
+ <200702091206.31797.lenb@kernel.org>
 MIME-Version: 1.0
-To: Alon Bar-Lev <alon.barlev@gmail.com>
-Cc: Jiri Slaby <jirislaby@gmail.com>, linux-kernel@vger.kernel.org,
-       akpm@osdl.org, bwalle@suse.de, rmk+lkml@arm.linux.org.uk,
-       rth@twiddle.net
-Subject: Re: [PATCH 01/34] __initdata cleanup - alpha
-References: <200702091711.34441.alon.barlev@gmail.com>	 <200702091713.23091.alon.barlev@gmail.com> <45CCA58C.90604@gmail.com> <9e0cf0bf0702090852g273e254dj71e06c9133cffd0c@mail.gmail.com>
-In-Reply-To: <9e0cf0bf0702090852g273e254dj71e06c9133cffd0c@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: MULTIPART/MIXED; BOUNDARY="537530981-931463441-1171041245=:9007"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alon Bar-Lev napsal(a):
-> On 2/9/07, Jiri Slaby <jirislaby@gmail.com> wrote:
->> > -static char __initdata command_line[COMMAND_LINE_SIZE];
->> > +static char __initdata command_line[COMMAND_LINE_SIZE] = "";
->>
->> Why is this "= 0" to static global variables needed?
-> 
-> Please review http://lkml.org/lkml/2007/1/22/267
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Ok, thanks,
+--537530981-931463441-1171041245=:9007
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+
+On Fri, 9 Feb 2007, Len Brown wrote:
+
+> On Friday 09 February 2007 05:57, Rusty Russell wrote:
+> 
+> > +#ifdef CONFIG_ACPI
+> > +       acpi_disabled = 1;
+> > +       acpi_ht = 0;
+> > +#endif
+> 
+> If this is hard-coded to have ACPI disabled, why isn't it enforced at build-time?
+
+This is being disabled in the guest kernel only.  The host and guest 
+kernels are expected to be the same build.
+
+
+
+- James
 -- 
-http://www.fi.muni.cz/~xslaby/            Jiri Slaby
-faculty of informatics, masaryk university, brno, cz
-e-mail: jirislaby gmail com, gpg pubkey fingerprint:
-B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
+James Morris
+<jmorris@namei.org>
+--537530981-931463441-1171041245=:9007--
