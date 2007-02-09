@@ -1,79 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752488AbXBIXOE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752499AbXBIXTJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752488AbXBIXOE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Feb 2007 18:14:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752512AbXBIXOE
+	id S1752499AbXBIXTJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Feb 2007 18:19:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752542AbXBIXTJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Feb 2007 18:14:04 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:59505 "EHLO ogre.sisk.pl"
+	Fri, 9 Feb 2007 18:19:09 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:53745 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752488AbXBIXOB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Feb 2007 18:14:01 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: nigel@nigel.suspend2.net
-Subject: Re: NAK new drivers without proper power management?
-Date: Sat, 10 Feb 2007 00:12:16 +0100
-User-Agent: KMail/1.9.5
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.osdl.org>
-References: <1171058269.1484.64.camel@nigel.suspend2.net> <200702092344.14984.rjw@sisk.pl> <1171061489.1484.100.camel@nigel.suspend2.net>
-In-Reply-To: <1171061489.1484.100.camel@nigel.suspend2.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+	id S1752540AbXBIXTI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Feb 2007 18:19:08 -0500
+Date: Fri, 9 Feb 2007 15:18:48 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Dave Hansen <hansendc@us.ibm.com>
+Cc: linux-kernel@vger.kernel.org, hch@infradead.org
+Subject: Re: [PATCH 01/22] filesystem helpers for custom 'struct file's
+Message-Id: <20070209151848.3b7f98c1.akpm@linux-foundation.org>
+In-Reply-To: <20070209225329.27619A62@localhost.localdomain>
+References: <20070209225329.27619A62@localhost.localdomain>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200702100012.17430.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Fri, 09 Feb 2007 14:53:29 -0800
+Dave Hansen <hansendc@us.ibm.com> wrote:
 
-On Friday, 9 February 2007 23:51, Nigel Cunningham wrote:
-> Hi.
-> 
-> On Fri, 2007-02-09 at 23:44 +0100, Rafael J. Wysocki wrote:
-> > On Friday, 9 February 2007 23:26, Nigel Cunningham wrote:
-> > > Hi.
-> > > 
-> > > On Fri, 2007-02-09 at 23:17 +0100, Arjan van de Ven wrote:
-> > > > On Sat, 2007-02-10 at 08:57 +1100, Nigel Cunningham wrote:
-> > > > > Hi.
-> > > > > 
-> > > > > I don't think this is already done (feel free to correct me if I'm
-> > > > > wrong)..
-> > > > > 
-> > > > > Can we start to NAK new drivers that don't have proper power management
-> > > > > implemented? There really is no excuse for writing a new driver and not
-> > > > > putting .suspend and .resume methods in anymore, is there?
-> > > > 
-> > > > 
-> > > > to a large degree, a device driver that doesn't suspend is better than
-> > > > no device driver at all, right?
-> > > 
-> > > I'm not sure it is. It only makes more work for everyone else: We have
-> > > to help people figure out what causes their computer to fail to resume
-> > > (which can take quite a while), then get them them complain to driver
-> > > author, and the driver author has to submit patches to fix it.
-> > > 
-> > > All of this is avoided if they'll just do it right in the first place.
-> > > 
-> > > > now.. if you want to make the core warn about it, that's very fair
-> > > 
-> > > That's probably a good idea too, since I'm only suggesting this for new
-> > > drivers.
-> > 
-> > I think if CONFIG_PM_DEBUG is set, the core should warn about drivers not
-> > having .suspend or .resume routines.
-> 
-> The only problem with that is, not everyone turns on CONFIG_PM_DEBUG.
-> CONFIG_PM instead?
+> +/*
+> + * Note: This is a crappy interface.  It is here to make
+> + * merging with the existing users of get_empty_filp()
+> + * who have complex failure logic easier.  All users
+> + * of this should be moving to alloc_file().
+> + */
+> +int init_file(struct file *file, struct vfsmount *mnt,
+> +	   struct dentry *dentry, mode_t mode,
+> +	   const struct file_operations *fop)
 
-Well, I can imagine a driver that doesn't need a .suspend routine, for example,
-and I don't think we should make the kernel always complain about that.
+crappy name too ;)  At least two filesystems have defined their own
+static-scope init_file() and so they'll explode if they somehow maange
+to include file.h.
 
-I think if someone doesn't set CONFIG_PM_DEBUG, we can ask him to set it
-and report back.
-
-Greetings,
-Rafael
+I guess we can cross that bridge when we fall off it, but sometime it might be
+prudent to do s/init_file/configfs_init_file/ and ditto sysfs_init_file.
