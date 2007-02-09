@@ -1,65 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423323AbXBIWMh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423330AbXBIWOs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423323AbXBIWMh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Feb 2007 17:12:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423342AbXBIWMg
+	id S1423330AbXBIWOs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Feb 2007 17:14:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946123AbXBIWOs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Feb 2007 17:12:36 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:53776 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423323AbXBIWMg (ORCPT
+	Fri, 9 Feb 2007 17:14:48 -0500
+Received: from ug-out-1314.google.com ([66.249.92.169]:63542 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1946120AbXBIWOr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Feb 2007 17:12:36 -0500
-Subject: Re: -mm merge plans for 2.6.21
-From: David Woodhouse <dwmw2@infradead.org>
-To: Russell King <rmk+lkml@arm.linux.org.uk>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Alexey Dobriyan <adobriyan@openvz.org>, linux-kernel@vger.kernel.org,
-       drepper@redhat.com
-In-Reply-To: <20070209220327.GB16158@flint.arm.linux.org.uk>
-References: <20070208150710.1324f6b4.akpm@linux-foundation.org>
-	 <1171042535.29713.96.camel@pmac.infradead.org>
-	 <20070209134516.2367a7aa.akpm@linux-foundation.org>
-	 <20070209214944.GA16158@flint.arm.linux.org.uk>
-	 <1171057999.29713.129.camel@pmac.infradead.org>
-	 <20070209220327.GB16158@flint.arm.linux.org.uk>
-Content-Type: text/plain
-Date: Fri, 09 Feb 2007 22:12:27 +0000
-Message-Id: <1171059147.29713.146.camel@pmac.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6.dwmw2.1) 
+	Fri, 9 Feb 2007 17:14:47 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=A47gIsSkdlDEJ425GFib0XbrLm6g72/3/p+BCRhhRtRQwaH10nUgMO5cw1PW8b+Ug2KLE3RF7/xOUyNbBxCU6OkqdPtl+sScz+tjFvMroU9++Qn6fgBOACTFS/5erQr6ZMfpUhz9xKzyewATEYcreH0I3rEWRV/BMjzhpvuP6hM=
+Message-ID: <9e0cf0bf0702091414w5d15511fk3b5e06a457772865@mail.gmail.com>
+Date: Sat, 10 Feb 2007 00:14:45 +0200
+From: "Alon Bar-Lev" <alon.barlev@gmail.com>
+To: "James Ketrenos" <jketreno@linux.intel.com>
+Subject: Re: [ANNOUNCE] d80211 based driver for Intel PRO/Wireless 3945ABG
+Cc: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
+       ipw3945-devel@lists.sourceforge.net, netdev@vger.kernel.org
+In-Reply-To: <45CCE3CA.4050904@linux.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
+References: <45CCE3CA.4050904@linux.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-02-09 at 22:03 +0000, Russell King wrote:
-> > Is that actually written anywhere, and does anyone bother to check?
-> 
-> Mostly mailing list archives I'd guess.  As far as anyone bothering
-> to check, that's me when I'm aware of new syscalls... which typically
-> happens a long time after the syscalls have been introduced on x86
-> etc.
+On 2/9/07, James Ketrenos <jketreno@linux.intel.com> wrote:
+> Ok.  Now... any questions?
 
-I suspect we could do with a Documentation/syscalls.txt collecting such
-rules from various architectures.
+No... Just that it is great news!
 
-We could _also_ do with a way to warn about unimplemented syscalls on
-any given architecture. I'm thinking about something along the lines of
-a kernel/syscalls.c containing nothing but...
-
-	#include <asm/unistd.h>
-
-	#ifndef __NR_sys_foo
-	#warning The sys_foo system call is not implemented on this architecture
-	#endif
-
-Ideally, that wants to be auto-generated from the union of all
-<asm-*/unistd.h> files, but in practice I suspect we could do it just
-from <asm-i386/unistd.h>. Even I usually manage to add new syscalls on
-i386 after I've done PowerPC.
-
--- 
-dwmw2
-
+Best Regards,
+Alon Bar-Lev.
