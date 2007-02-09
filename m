@@ -1,79 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161220AbXBIK7i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422860AbXBILAh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161220AbXBIK7i (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Feb 2007 05:59:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161180AbXBIK7i
+	id S1422860AbXBILAh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Feb 2007 06:00:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422998AbXBILAh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Feb 2007 05:59:38 -0500
-Received: from ozlabs.org ([203.10.76.45]:41563 "EHLO ozlabs.org"
+	Fri, 9 Feb 2007 06:00:37 -0500
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:49718 "EHLO e5.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161168AbXBIK7h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Feb 2007 05:59:37 -0500
-Subject: [PATCH 6d/10] lguest: the Makefiles
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Andrew Morton <akpm@osdl.org>, Andi Kleen <ak@muc.de>,
-       virtualization <virtualization@lists.osdl.org>
-In-Reply-To: <1171018674.2718.63.camel@localhost.localdomain>
-References: <1171012296.2718.26.camel@localhost.localdomain>
-	 <1171012458.2718.30.camel@localhost.localdomain>
-	 <1171012693.2718.37.camel@localhost.localdomain>
-	 <1171012761.2718.40.camel@localhost.localdomain>
-	 <1171018524.2718.58.camel@localhost.localdomain>
-	 <1171018590.2718.60.camel@localhost.localdomain>
-	 <1171018674.2718.63.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Fri, 09 Feb 2007 21:58:53 +1100
-Message-Id: <1171018733.2718.64.camel@localhost.localdomain>
+	id S1422860AbXBILAf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Feb 2007 06:00:35 -0500
+Date: Fri, 9 Feb 2007 16:35:55 +0530
+From: Suparna Bhattacharya <suparna@in.ibm.com>
+To: Jiri Kosina <jikos@jikos.cz>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "Ananiev, Leonid I" <leonid.i.ananiev@intel.com>,
+       linux-kernel@vger.kernel.org, linux-aio <linux-aio@kvack.org>,
+       Zach Brown <zach.brown@oracle.com>,
+       Chris Mason <chris.mason@oracle.com>,
+       Badari Pulavarty <pbadari@us.ibm.com>, Jan Kara <jack@suse.cz>
+Subject: Re: [PATCH] aio: fix kernel bug when page is  temporally busy
+Message-ID: <20070209110555.GA11232@in.ibm.com>
+Reply-To: suparna@in.ibm.com
+References: <B41635854730A14CA71C92B36EC22AAC8048C3@mssmsx411> <Pine.LNX.4.64.0702091042330.25686@twin.jikos.cz> <20070209021444.2213deb6.akpm@linux-foundation.org> <Pine.LNX.4.64.0702091137530.25686@twin.jikos.cz>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0702091137530.25686@twin.jikos.cz>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Finally, we put in the Makefile, so it will build.
+On Fri, Feb 09, 2007 at 11:40:27AM +0100, Jiri Kosina wrote:
+> On Fri, 9 Feb 2007, Andrew Morton wrote:
+>  
+> > > @@ -1204,7 +1204,7 @@ generic_file_aio_read(struct kiocb *iocb, const struct iovec *iov,
+> > >  			do_generic_file_read(filp,ppos,&desc,file_read_actor);
+> > >  			retval += desc.written;
+> > >  			if (desc.error) {
+> > > -				retval = retval ?: desc.error;
+> > > +				retval = desc.error;
+> > >  				break;
+> > >  			}
+> > Nope.  On error the read() syscall must return the number of bytes which
+> > were successfully read.
+>  
+> You are right. 
+>  
+> In current mainline this even is not a problem, because noone seems to be 
+> setting the error values to EIOCBRETRY. But it still stinks a bit, as 
+> there are tests for EIOCBRETRY.
 
-You can see the pain involved in creating the switcher code
-(hypervisor.S) ready to be copied into the top of memory.
+We'd want retries to act only on the remaining bytes which haven't been
+transferred as yet, so even in the EIOCBRETRY case the right thing to do
+is to return the number of bytes that were successfully read without
+blocking. The high level AIO code (see aio_rw_vect_rety) has the ability
+to handle this.
 
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+So this is still correct.
 
-===================================================================
---- a/arch/i386/Makefile
-+++ b/arch/i386/Makefile
-@@ -108,6 +108,7 @@ drivers-$(CONFIG_PCI)			+= arch/i386/pci
- # must be linked after kernel/
- drivers-$(CONFIG_OPROFILE)		+= arch/i386/oprofile/
- drivers-$(CONFIG_PM)			+= arch/i386/power/
-+drivers-$(CONFIG_LGUEST_GUEST)		+= arch/i386/lguest/
- 
- CFLAGS += $(mflags-y)
- AFLAGS += $(mflags-y)
-===================================================================
---- /dev/null
-+++ b/arch/i386/lguest/Makefile
-@@ -0,0 +1,22 @@
-+# Guest requires the paravirt_ops replacement and the bus driver.
-+obj-$(CONFIG_LGUEST_GUEST) += lguest.o lguest_bus.o
-+
-+# Host requires the other files, which can be a module.
-+obj-$(CONFIG_LGUEST)	+= lg.o
-+lg-objs := core.o hypercalls.o page_tables.o interrupts_and_traps.o \
-+	segments.o io.o lguest_user.o
-+
-+# We use top 4MB for guest traps page, then hypervisor. */
-+HYPE_ADDR := (0xFFC00000+4096)
-+# The data is only 1k (256 interrupt handler pointers)
-+HYPE_DATA_SIZE := 1024
-+CFLAGS += -DHYPE_ADDR="$(HYPE_ADDR)" -DHYPE_DATA_SIZE="$(HYPE_DATA_SIZE)"
-+
-+$(obj)/core.o: $(obj)/hypervisor-blob.c
-+# This links the hypervisor in the right place and turns it into a C array.
-+$(obj)/hypervisor-raw: $(obj)/hypervisor.o
-+	@$(LD) -static -Tdata=`printf %#x $$(($(HYPE_ADDR)))` -Ttext=`printf %#x $$(($(HYPE_ADDR)+$(HYPE_DATA_SIZE)))` -o $@ $< && $(OBJCOPY) -O binary $@
-+$(obj)/hypervisor-blob.c: $(obj)/hypervisor-raw
-+	@od -tx1 -An -v $< | sed -e 's/^ /0x/' -e 's/$$/,/' -e 's/ /,0x/g' > $@
-+
-+clean-files := hypervisor-blob.c hypervisor-raw
+Is there a real bug that you are seeing here ?
 
+Regards
+Suparna
+
+>  
+> -- 
+> Jiri Kosina
+>  
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-aio' in
+> the body to majordomo@kvack.org.  For more info on Linux AIO,
+> see: http://www.kvack.org/aio/
+> Don't email: <a href=mailto:"aart@kvack.org">aart@kvack.org</a>
+
+-- 
+Suparna Bhattacharya (suparna@in.ibm.com)
+Linux Technology Center
+IBM Software Lab, India
 
