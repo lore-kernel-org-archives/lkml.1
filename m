@@ -1,43 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992729AbXBISNn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992439AbXBISPc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992729AbXBISNn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Feb 2007 13:13:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992730AbXBISNn
+	id S2992439AbXBISPc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Feb 2007 13:15:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992730AbXBISPb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Feb 2007 13:13:43 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:54132 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992729AbXBISNm (ORCPT
+	Fri, 9 Feb 2007 13:15:31 -0500
+Received: from mail3.sea5.speakeasy.net ([69.17.117.5]:57536 "EHLO
+	mail3.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992439AbXBISPb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Feb 2007 13:13:42 -0500
-To: torvalds@linux-foundation.org
-Subject: [PATCH] fix misannotation of linkinfo_dn
-Cc: davem@davemloft.net, linux-kernel@vger.kernel.org
-Message-Id: <E1HFaFi-0004Nh-3I@ZenIV.linux.org.uk>
-From: Al Viro <viro@ftp.linux.org.uk>
-Date: Fri, 09 Feb 2007 18:13:42 +0000
+	Fri, 9 Feb 2007 13:15:31 -0500
+Date: Fri, 9 Feb 2007 13:15:28 -0500 (EST)
+From: James Morris <jmorris@namei.org>
+X-X-Sender: jmorris@d.namei
+To: Rusty Russell <rusty@rustcorp.com.au>
+cc: lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andi Kleen <ak@muc.de>, Andrew Morton <akpm@linux-foundation.org>,
+       virtualization <virtualization@lists.osdl.org>
+Subject: Re: [PATCH 4 of 7]  lguest: Config and headers
+In-Reply-To: <1171033741.2718.172.camel@localhost.localdomain>
+Message-ID: <Pine.LNX.4.64.0702091304090.9927@d.namei>
+References: <1171033146.2718.157.camel@localhost.localdomain> 
+ <1171033383.2718.163.camel@localhost.localdomain> 
+ <1171033436.2718.165.camel@localhost.localdomain> 
+ <1171033484.2718.167.camel@localhost.localdomain>
+ <1171033741.2718.172.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, 10 Feb 2007, Rusty Russell wrote:
 
-Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
----
- include/linux/dn.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+> +/* 64k ought to be enough for anybody! */
+> +#define HYPERVISOR_MAP_ORDER 16
+> +#define HYPERVISOR_PAGES ((1 << HYPERVISOR_MAP_ORDER)/PAGE_SIZE)
 
-diff --git a/include/linux/dn.h b/include/linux/dn.h
-index 10b6a6f..02bba04 100644
---- a/include/linux/dn.h
-+++ b/include/linux/dn.h
-@@ -113,7 +113,7 @@ struct accessdata_dn
-  * DECnet logical link information structure
-  */
- struct linkinfo_dn {
--        __le16  idn_segsize;    /* Segment size for link */
-+        __u16  idn_segsize;    /* Segment size for link */
-         __u8   idn_linkstate;  /* Logical link state    */
- };
- 
+I think it'd be better to go back to defining HYPERVISOR_SIZE then derive 
+the map order from that via get_order(), as it should be 4 instead of 16; 
+and this code is now both implying PAGE_SIZE while also using it for 
+calculations. 
+
+
+- James
 -- 
-1.5.0-rc2.GIT
-
+James Morris
+<jmorris@namei.org>
