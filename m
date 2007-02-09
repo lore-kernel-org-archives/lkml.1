@@ -1,64 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752556AbXBIXlr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752558AbXBIXmm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752556AbXBIXlr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Feb 2007 18:41:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752558AbXBIXlr
+	id S1752558AbXBIXmm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Feb 2007 18:42:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752560AbXBIXmm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Feb 2007 18:41:47 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:44484 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752556AbXBIXlq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Feb 2007 18:41:46 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Sat, 10 Feb 2007 00:40:17 +0100 (CET)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [stable patch 2.6.20 1/3] Missing critical phys_to_virt in
- lib/swiotlb.c
-To: stable@kernel.org
-cc: linux-kernel@vger.kernel.org, linux1394-devel@lists.sourceforge.net
-Message-ID: <tkrat.3758c666718465a8@s5r6.in-berlin.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+	Fri, 9 Feb 2007 18:42:42 -0500
+Received: from ozlabs.org ([203.10.76.45]:53119 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752558AbXBIXml (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Feb 2007 18:42:41 -0500
+Subject: Re: [PATCH 4 of 7]  lguest: Config and headers
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: James Morris <jmorris@namei.org>
+Cc: lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andi Kleen <ak@muc.de>, Andrew Morton <akpm@linux-foundation.org>,
+       virtualization <virtualization@lists.osdl.org>
+In-Reply-To: <Pine.LNX.4.64.0702091304090.9927@d.namei>
+References: <1171033146.2718.157.camel@localhost.localdomain>
+	 <1171033383.2718.163.camel@localhost.localdomain>
+	 <1171033436.2718.165.camel@localhost.localdomain>
+	 <1171033484.2718.167.camel@localhost.localdomain>
+	 <1171033741.2718.172.camel@localhost.localdomain>
+	 <Pine.LNX.4.64.0702091304090.9927@d.namei>
+Content-Type: text/plain
+Date: Sat, 10 Feb 2007 10:41:55 +1100
+Message-Id: <1171064515.15356.10.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Date: Sun, 04 Feb 2007 13:39:40 -0500
-From: David Moore <dcm@acm.org>
+On Fri, 2007-02-09 at 13:15 -0500, James Morris wrote:
+> On Sat, 10 Feb 2007, Rusty Russell wrote:
+> 
+> > +/* 64k ought to be enough for anybody! */
+> > +#define HYPERVISOR_MAP_ORDER 16
+> > +#define HYPERVISOR_PAGES ((1 << HYPERVISOR_MAP_ORDER)/PAGE_SIZE)
+> 
+> I think it'd be better to go back to defining HYPERVISOR_SIZE then derive 
+> the map order from that via get_order(), as it should be 4 instead of 16; 
+> and this code is now both implying PAGE_SIZE while also using it for 
+> calculations. 
 
-Adds missing call to phys_to_virt() in the
-lib/swiotlb.c:swiotlb_sync_sg() function.  Without this change, a kernel
-panic will always occur whenever a SWIOTLB bounce buffer from a
-scatter-gather list gets synced.
+Well it was the use of get_order() which triggered Andi's alarm bells,
+so I went back to deriving it.  This code is correct, however.
 
-Signed-off-by: David Moore <dcm@acm.org>
-Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
----
+get_order() is one of those classic functions only a kernel coder could
+love.  Look how lovingly it has been optimized:
 
-This is a fraction of patch "[IA64] swiotlb bug fixes" in 2.6.20-git#,
-commit cde14bbfb3aa79b479db35bd29e6c083513d8614.  Unlike its heading
-suggests, it is also important for EM64T.
+#define get_order(n)							\
+(									\
+	__builtin_constant_p(n) ?					\
+	((n < (1UL << PAGE_SHIFT)) ? 0 : ilog2(n) - PAGE_SHIFT) :	\
+	__get_order(n, PAGE_SHIFT)					\
+ )
 
-Example crashes caused by swiotlb_sync_sg:
-http://lists.opensuse.org/opensuse-bugs/2006-12/msg02943.html
-http://qa.mandriva.com/show_bug.cgi?id=28224
-http://www.pchdtv.com/forum/viewtopic.php?t=2063&sid=a959a14a4c2db0eebaab7b0df56103ce
+All that time spent, yet no consideration that it should be called
+"get_page_order()" or some name which hints that the divide by page size
+is happening.  It's even documented in the comment above, so someone
+thought it needed explaining.  Too bad they chose to explain it instead
+of actually clarifying it. 8(
 
---- linux-2.6.20.orig/lib/swiotlb.c	2007-02-04 13:18:41.000000000 -0500
-+++ linux-2.6.20/lib/swiotlb.c	2007-02-04 13:19:43.000000000 -0500
-@@ -750,7 +750,7 @@ swiotlb_sync_sg(struct device *hwdev, st
- 
- 	for (i = 0; i < nelems; i++, sg++)
- 		if (sg->dma_address != SG_ENT_PHYS_ADDRESS(sg))
--			sync_single(hwdev, (void *) sg->dma_address,
-+			sync_single(hwdev, phys_to_virt(sg->dma_address),
- 				    sg->dma_length, dir, target);
- }
- 
+Cheers,
+Rusty.
 
--- 
-Stefan Richter
--=====-=-=== --=- -=-=-
-http://arcgraph.de/sr/
 
