@@ -1,65 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992453AbXBIRsO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992459AbXBIRuF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992453AbXBIRsO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Feb 2007 12:48:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992456AbXBIRsN
+	id S2992459AbXBIRuF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Feb 2007 12:50:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992463AbXBIRuE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Feb 2007 12:48:13 -0500
-Received: from nf-out-0910.google.com ([64.233.182.185]:47525 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992453AbXBIRsM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Feb 2007 12:48:12 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=r3rJK1HG8WHTr6WIi34yewl2CAt7tmDigodnoNqdObKKevUpinBKbIcqpYILU925lEUd+cmUV+MuozIuEt5SuYQP4XS6FdGLPz5fRUCrj5HDOAxcshAMjLQggl81O4PbfYGaaqbZR9rzLfHtdIVYgPp7Jm8CJX5HP9db4GM/d2s=
-Message-ID: <512afbf90702090948v403b6e2fmedfb938645415928@mail.gmail.com>
-Date: Fri, 9 Feb 2007 09:48:10 -0800
-From: "Kristen Accardi" <kristen.kml@gmail.com>
-To: "Al Viro" <viro@ftp.linux.org.uk>
-Subject: Re: [PATCH] wrong order of kzalloc arguments
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-In-Reply-To: <E1HFYFH-0004qI-0v@ZenIV.linux.org.uk>
+	Fri, 9 Feb 2007 12:50:04 -0500
+Received: from tmailer.gwdg.de ([134.76.10.23]:48466 "EHLO tmailer.gwdg.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2992457AbXBIRuB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Feb 2007 12:50:01 -0500
+Date: Fri, 9 Feb 2007 18:45:54 +0100 (MET)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: "linux-os (Dick Johnson)" <linux-os@analogic.com>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       David Rientjes <rientjes@google.com>, Jeff Garzik <jeff@garzik.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: somebody dropped a (warning) bomb
+In-Reply-To: <Pine.LNX.4.61.0702090755530.7642@chaos.analogic.com>
+Message-ID: <Pine.LNX.4.61.0702091842450.31955@yvahk01.tjqt.qr>
+References: <45CB3B28.60102@garzik.org> <Pine.LNX.4.64.0702080819350.8424@woody.linux-foundation.org>
+ <Pine.LNX.4.61.0702081851310.1364@yvahk01.tjqt.qr>
+ <Pine.LNX.4.64.0702081145470.8424@woody.linux-foundation.org>
+ <Pine.LNX.4.61.0702082202180.24888@yvahk01.tjqt.qr>
+ <Pine.LNX.4.64.0702081324090.8424@woody.linux-foundation.org>
+ <Pine.LNX.4.64.0702081432320.27603@chino.kir.corp.google.com>
+ <Pine.LNX.4.64.0702081528070.8424@woody.linux-foundation.org>
+ <Pine.LNX.4.64.0702081554380.29559@chino.kir.corp.google.com>
+ <Pine.LNX.4.64.0702081632200.8424@woody.linux-foundation.org>
+ <Pine.LNX.4.61.0702091330380.31955@yvahk01.tjqt.qr>
+ <Pine.LNX.4.61.0702090755530.7642@chaos.analogic.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <E1HFYFH-0004qI-0v@ZenIV.linux.org.uk>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/9/07, Al Viro <viro@ftp.linux.org.uk> wrote:
->
-> Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
-> ---
->  drivers/acpi/bay.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
->
-> diff --git a/drivers/acpi/bay.c b/drivers/acpi/bay.c
-> index 667fa1d..91082ce 100644
-> --- a/drivers/acpi/bay.c
-> +++ b/drivers/acpi/bay.c
-> @@ -296,7 +296,7 @@ static int bay_add(acpi_handle handle, int id)
->         /*
->          * Initialize bay device structure
->          */
-> -       new_bay = kzalloc(GFP_ATOMIC, sizeof(*new_bay));
-> +       new_bay = kzalloc(sizeof(*new_bay), GFP_ATOMIC);
->         INIT_LIST_HEAD(&new_bay->list);
->         new_bay->handle = handle;
->         new_bay->name = (char *)nbuffer.pointer;
-> --
-> 1.5.0-rc2.GIT
->
->
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
 
-Oops.  thanks for taking the time to review and fix this.
+On Feb 9 2007 08:16, linux-os (Dick Johnson) wrote:
+>On Fri, 9 Feb 2007, Jan Engelhardt wrote:
+>> On Feb 8 2007 16:42, Linus Torvalds wrote:
+>>>
+>> Further, giving again answer to the question whether they generate
+>> signed or unsigned comparisons: Have you ever seen a computer which
+>> addresses memory with negative numbers? Since the answer is most likely
+>> no, signed comparisons would
+>
+>Yes, most all do. Indexed memory operands are signed displacements. See
+>page 2-16, Intel486 Microprocessor Programmer's Reference Manual. This
 
-Kristen
+I was referring to "absolute memory", not the offset magic that assembler
+allows. After all, (reg+relativeOffset) will yield an absolute address.
+What I was out at: for machines that have more than 2 GB of memory, you
+don't call the address that is given by 0x80000000U actually "byte
+-2147483648", but "byte 2147483648".
+
+>gets hidden by higher-level languages such as 'C'. It is also non-obvious
+>when using the AT&T (GNU) assembly language. However, the Intel documentation
+>shows it clearly:
+> 			MOV	AL,  [EBX+0xFFFFFFFF]	; -1
+
+It can be debated what exactly this is... negative offset or "using
+overflow to get where we want".
+
+
+
+Jan
+-- 
+ft: http://freshmeat.net/p/chaostables/
