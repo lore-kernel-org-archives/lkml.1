@@ -1,82 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992449AbXBIRPw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423038AbXBIRWk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992449AbXBIRPw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Feb 2007 12:15:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992452AbXBIRPw
+	id S1423038AbXBIRWk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Feb 2007 12:22:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423143AbXBIRWk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Feb 2007 12:15:52 -0500
-Received: from out5.smtp.messagingengine.com ([66.111.4.29]:47831 "EHLO
-	out5.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S2992449AbXBIRPv (ORCPT
+	Fri, 9 Feb 2007 12:22:40 -0500
+Received: from ug-out-1314.google.com ([66.249.92.174]:48860 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423038AbXBIRWj convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Feb 2007 12:15:51 -0500
-Message-Id: <1171041349.4099.1173808365@webmail.messagingengine.com>
-X-Sasl-Enc: dB0TH3BPUVuRw4D5HHw1GCcP5AyocE53Yw7plOHnaH2H 1171041349
-From: "Kai" <epimetreus@fastmail.fm>
-To: linux-kernel@vger.kernel.org
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="ISO-8859-1"
+	Fri, 9 Feb 2007 12:22:39 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id:sender;
+        b=oldIYUAJEIgO8zRXfoR//xbE0z35/oMdSJmpMQ8pdl7RpzS9/pY/o6+BH3gAEOdmAZ8i9IotjUFleNDMlQakDU88VHbJftTY508lVHi4fBFY4MYMlX7lwTpdcuKbB/4dr21+zsLN6tTkVSTPpR6ZuQcm2G25FvpGCtq5ItJfAcI=
+From: Alon Bar-Lev <alonbl@opensc-project.org>
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+Subject: Re: [PATCH 00/34] __initdata cleanup
+Date: Fri, 9 Feb 2007 19:25:02 +0200
+User-Agent: KMail/1.9.6
+Cc: linux-kernel@vger.kernel.org, akpm@osdl.org, bwalle@suse.de,
+       rmk+lkml@arm.linux.org.uk, spyro@f2s.com, davej@codemonkey.org.uk,
+       hpa@zytor.com, Riley@williams.name, tony.luck@intel.com,
+       geert@linux-m68k.org, zippel@linux-m68k.org, ralf@linux-mips.org,
+       matthew@wil.cx, grundler@parisc-linux.org, kyle@parisc-linux.org,
+       paulus@samba.org, schwidefsky@de.ibm.com, lethal@linux-sh.org,
+       davem@davemloft.net, uclinux-v850@lsi.nec.co.jp, ak@muc.de,
+       vojtech@suse.cz, chris@zankel.net, len.brown@intel.com, lenb@kernel.org,
+       herbert@gondor.apana.org.au, viro@zeniv.linux.org.uk,
+       bzolnier@gmail.com, dmitry.torokhov@gmail.com, dtor@mail.ru,
+       jgarzik@pobox.com, linux-mm@kvack.org, dwmw2@infradead.org,
+       patrick@tykepenguin.com, kuznet@ms2.inr.ac.ru, pekkas@netcore.fi,
+       jmorris@namei.org, philb@gnu.org, tim@cyberelk.net, andrea@suse.de,
+       ambx1@neo.rr.com, James.Bottomley@steeleye.com,
+       linux-serial@vger.kernel.org
+References: <200702091711.34441.alon.barlev@gmail.com> <20070209170005.GA8500@osiris.ibm.com>
+In-Reply-To: <20070209170005.GA8500@osiris.ibm.com>
 MIME-Version: 1.0
-X-Mailer: MessagingEngine.com Webmail Interface
-References: <1170734919.15636.1173102761@webmail.messagingengine.com>
-   <20070205203750.7be7f772.akpm@linux-foundation.org>
-   <17864.4339.925700.626157@notabene.brown>
-   <17865.3776.511594.763544@notabene.brown>
-   <1170865619.16808.1173403963@webmail.messagingengine.com>
-   <17866.19962.601479.638730@notabene.brown>
-Subject: Re: [PATCH] Re: Bio device too big | kernel BUG at mm/filemap.c:537!
-In-Reply-To: <17866.19962.601479.638730@notabene.brown>
-Date: Fri, 09 Feb 2007 09:15:49 -0800
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Content-Disposition: inline
+Message-Id: <200702091925.03314.alonbl@opensc-project.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Friday 09 February 2007, Heiko Carstens wrote:
+> And the top-level Makefile has:
+> 
+> CFLAGS          := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
+>                    -fno-strict-aliasing -fno-common
+> 
+> Note the -fno-common.
+> 
+> And indeed all the __initdata annotated local and global variables on
+> s390 are in the init.data section. So I'm wondering what this patch
+> series is about. Or I must have missed something.
+> 
 
-On Thu, 8 Feb 2007 09:08:58 +1100, "Neil Brown" <neilb@suse.de> said:
-> On Wednesday February 7, epimetreus@fastmail.fm wrote:
-> > 
-> > On Wed, 7 Feb 2007 10:26:56 +1100, "Neil Brown" <neilb@suse.de> said:
-> > > On Tuesday February 6, neilb@suse.de wrote:
-> > > > 
-> > > > This patch should fix the worst of the offences, but I'd like to
-> > > > experiment and think a bit more before I submit it to stable.
-> > > > And probably test it too - as yet I have only compile and brain
-> > > > tested.
-> > > 
-> > > Ok, I've experimented and tested and now I know what was causing the
-> > > double-unlock.
-> > > 
-> > > The following patch is suitable for 2.6.20.1 and mainline.  There is
-> > > room for a bit more improvement, but only for performance, not
-> > > correctness.  I'll look into that later.
-> > > 
-> > > Thanks,
-> > > NeilBrown
-> > 
-> > I figure I should test this on my hardware, but since the RAID array
-> > resynched itself when I rebooted back into an earlier kernel version,
-> > I'm guessing it means this bug introduced some corruption into the
-> > array, when it occurred, so I'd like some pointers on how I can test it
-> > out without compromising my data.
-> 
-> This bug should not introduce any data corruption.
-> It causes some read requests to get a failure from the device, which
-> will cause raid5 to remove the device from the array (Though the data
-> will still be intact).
-> On restart a resync will put everything back as it was.
-> 
-> It is quite possible (this happened to me in my testing) for several
-> devices to get these errors and for several or even all of these
-> device to get failed.  However even in this case the data is still
-> intact and "mdadm --assemble --force ..." will put everything back
-> together.
-> 
-> So there should be no risk of data corruption.
-> 
-> NeilBrown
+Hmmm... You have a valid point!
+So it reduces the patch to the following.
+>From the previous discussion I was afraid that I added some invalid variables.
 
-I've been running it for the last few hours, and no error output, yet; I
-even did some fairly heavy I/O stuff to try and mess with it, but it
-hasn't budged. I'm ready to say, works for me.
+Thanks!
 
--Kai
+Best Regards,
+Alon Bar-Lev.
+
+---
+
+diff -urNp linux-2.6.20-rc6-mm3.org/arch/x86_64/kernel/e820.c linux-2.6.20-rc6-mm3/arch/x86_64/kernel/e820.c
+--- linux-2.6.20-rc6-mm3.org/arch/x86_64/kernel/e820.c
++++ linux-2.6.20-rc6-mm3/arch/x86_64/kernel/e820.c
+@@ -402,10 +402,10 @@ static int __init sanitize_e820_map(stru
+ 		struct e820entry *pbios; /* pointer to original bios entry */
+ 		unsigned long long addr; /* address for this change point */
+ 	};
+-	static struct change_member change_point_list[2*E820MAX] __initdata;
+-	static struct change_member *change_point[2*E820MAX] __initdata;
+-	static struct e820entry *overlap_list[E820MAX] __initdata;
+-	static struct e820entry new_bios[E820MAX] __initdata;
++	static struct change_member change_point_list[2*E820MAX] __initdata = {{0}};
++	static struct change_member *change_point[2*E820MAX] __initdata = {0};
++	static struct e820entry *overlap_list[E820MAX] __initdata = {0};
++	static struct e820entry new_bios[E820MAX] __initdata = {{0}};
+ 	struct change_member *change_tmp;
+ 	unsigned long current_type, last_type;
+ 	unsigned long long last_addr;
+diff -urNp linux-2.6.20-rc6-mm3.org/fs/nfs/nfsroot.c linux-2.6.20-rc6-mm3/fs/nfs/nfsroot.c
+--- linux-2.6.20-rc6-mm3.org/fs/nfs/nfsroot.c	2007-01-25 04:19:28.000000000 +0200
++++ linux-2.6.20-rc6-mm3/fs/nfs/nfsroot.c	2007-01-31 22:19:30.000000000 +0200
+@@ -289,7 +289,7 @@ static int __init root_nfs_parse(char *n
+  */
+ static int __init root_nfs_name(char *name)
+ {
+-	static char buf[NFS_MAXPATHLEN] __initdata;
++	static char buf[NFS_MAXPATHLEN] __initdata = { 0, };
+ 	char *cp;
+ 
+ 	/* Set some default values */
+diff -urNp linux-2.6.20-rc6-mm3.org/init/main.c linux-2.6.20-rc6-mm3/init/main.c
+--- linux-2.6.20-rc6-mm3.org/init/main.c	2007-01-31 22:15:41.000000000 +0200
++++ linux-2.6.20-rc6-mm3/init/main.c	2007-01-31 22:19:30.000000000 +0200
+@@ -470,7 +470,7 @@ static int __init do_early_param(char *p
+ void __init parse_early_param(void)
+ {
+ 	static __initdata int done = 0;
+-	static __initdata char tmp_cmdline[COMMAND_LINE_SIZE];
++	static __initdata char tmp_cmdline[COMMAND_LINE_SIZE] = "";
+ 
+ 	if (done)
+ 		return;
+diff -urNp linux-2.6.20-rc6-mm3.org/drivers/input/keyboard/amikbd.c linux-2.6.20-rc6-mm3/drivers/input/keyboard/amikbd.c
+--- linux-2.6.20-rc6-mm3.org/drivers/input/keyboard/amikbd.c	2007-01-25 04:19:28.000000000 +0200
++++ linux-2.6.20-rc6-mm3/drivers/input/keyboard/amikbd.c	2007-01-31 22:19:30.000000000 +0200
+@@ -215,7 +215,7 @@ static int __init amikbd_init(void)
+ 		set_bit(i, amikbd_dev->keybit);
+ 
+ 	for (i = 0; i < MAX_NR_KEYMAPS; i++) {
+-		static u_short temp_map[NR_KEYS] __initdata;
++		static u_short temp_map[NR_KEYS] __initdata = {0};
+ 		if (!key_maps[i])
+ 			continue;
+ 		memset(temp_map, 0, sizeof(temp_map));
