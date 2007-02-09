@@ -1,51 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946604AbXBIQHs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946576AbXBIQI0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946604AbXBIQHs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Feb 2007 11:07:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946593AbXBIQHr
+	id S1946576AbXBIQI0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Feb 2007 11:08:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946593AbXBIQHt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Feb 2007 11:07:47 -0500
-Received: from qb-out-0506.google.com ([72.14.204.235]:22744 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1946601AbXBIQHn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Feb 2007 11:07:43 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=ow18LlPl2v7EfhJJ9ChZtOxKo/t/KWBl8VPgFneAMzJWSpJgfqN9p9h+4rGsCB77DByFlz31lDZnKpLYDqjcdgPx6+BD+Bppg64MFlC7BFIj3cCPnW7jfj59cUfqxk08Yl5trPx44m4b7+/32kqnna7ttcLj6qS+UPPwbMT0PIg=
-Message-ID: <38b2ab8a0702090807m133e8f89n9857b8f7814e3685@mail.gmail.com>
-Date: Fri, 9 Feb 2007 17:07:41 +0100
-From: "Francis Moreau" <francis.moro@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Question about EXPORT_SYMBOL implementation
+	Fri, 9 Feb 2007 11:07:49 -0500
+Received: from gate.perex.cz ([212.20.107.50]:37786 "EHLO gate.perex.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1946582AbXBIQHk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Feb 2007 11:07:40 -0500
+Date: Fri, 9 Feb 2007 17:07:38 +0100 (CET)
+From: Jaroslav Kysela <perex@suse.cz>
+X-X-Sender: perex@tm8103-a.perex-int.cz
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Takashi Iwai <tiwai@suse.de>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [ALSA PATCH] alsa-git merge request
+In-Reply-To: <Pine.LNX.4.64.0702090758380.8424@woody.linux-foundation.org>
+Message-ID: <Pine.LNX.4.61.0702091705570.5511@tm8103-a.perex-int.cz>
+References: <Pine.LNX.4.61.0702091451010.5511@tm8103-a.perex-int.cz>
+ <s5hk5yro1rr.wl%tiwai@suse.de> <Pine.LNX.4.64.0702090758380.8424@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Fri, 9 Feb 2007, Linus Torvalds wrote:
 
-Here is the implementation of EXPORT_SYMBOL:
+> On Fri, 9 Feb 2007, Takashi Iwai wrote:
+> 
+> > At Fri, 9 Feb 2007 15:02:05 +0100 (CET),
+> > Jaroslav Kysela wrote:
+> > > 
+> > > Linus, please do an update from:
+> > > 
+> > >   http://www.kernel.org/pub/scm/linux/kernel/git/perex/alsa.git
+> > >   (linus branch)
+> > 
+> > Jaroslav, as I wrote you many times, this tree includes the wrong
+> > patches!  If it's merged, we'd need fix patches in addition
+> > eventually...
+> 
+> Ok, not pulled. Get your stories straight first ;)
 
-#define __EXPORT_SYMBOL(sym, sec)                               \
-        extern typeof(sym) sym;                                 \
-        __CRC_SYMBOL(sym, sec)                                  \
-        static const char __kstrtab_##sym[]                     \
-        __attribute__((section("__ksymtab_strings")))           \
-        = MODULE_SYMBOL_PREFIX #sym;                            \
-        static const struct kernel_symbol __ksymtab_##sym       \
-        __attribute_used__                                      \
-        __attribute__((section("__ksymtab" sec), unused))       \
-        = { (unsigned long)&sym, __kstrtab_##sym }
+It's fixed. The right two line fix patch is in alsa.git repo now.
+Please, pull.
 
+					Thanks,
+						Jaroslav
 
-I'm wondering why it's using '__attribute_used__' _and_
-'__attribute__((section("__ksymtab" sec), unused)'. Isn't the unused
-attribute redundant with '__attribute_used__' ?
-
-thanks
--- 
-Francis
+-----
+Jaroslav Kysela <perex@suse.cz>
+Linux Kernel Sound Maintainer
+ALSA Project, SUSE Labs
