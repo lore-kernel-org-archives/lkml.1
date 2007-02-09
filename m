@@ -1,77 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1945960AbXBIA6S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1945965AbXBIA6U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1945960AbXBIA6S (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Feb 2007 19:58:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945965AbXBIA6S
+	id S1945965AbXBIA6U (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Feb 2007 19:58:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945966AbXBIA6U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Feb 2007 19:58:18 -0500
-Received: from rwcrmhc13.comcast.net ([216.148.227.153]:64446 "EHLO
-	rwcrmhc13.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1945960AbXBIA6R (ORCPT
+	Thu, 8 Feb 2007 19:58:20 -0500
+Received: from rwcrmhc11.comcast.net ([216.148.227.151]:36989 "EHLO
+	rwcrmhc11.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1945965AbXBIA6T (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Feb 2007 19:58:17 -0500
-X-Greylist: delayed 301 seconds by postgrey-1.27 at vger.kernel.org; Thu, 08 Feb 2007 19:58:17 EST
-Message-ID: <45CBC5F0.7080907@ubiqx.mn.org>
-Date: Thu, 08 Feb 2007 18:53:04 -0600
+	Thu, 8 Feb 2007 19:58:19 -0500
+Message-ID: <45CBC71F.30607@ubiqx.mn.org>
+Date: Thu, 08 Feb 2007 18:58:07 -0600
 From: "Christopher R. Hertel" <crh@ubiqx.mn.org>
 User-Agent: Thunderbird 1.5.0.9 (X11/20060911)
 MIME-Version: 1.0
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-CC: Steve French <smfrench@gmail.com>, linux-cifs-client@lists.samba.org,
+To: Shirish S Pargaonkar <shirishp@us.ibm.com>
+CC: Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       Steve French <smfrench@gmail.com>, linux-cifs-client@lists.samba.org,
+       linux-cifs-client-bounces+shirishp=us.ibm.com@lists.samba.org,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Subject: Re: [linux-cifs-client] Re: SMB support still missing?
-References: <Pine.LNX.4.61.0702090101490.24888@yvahk01.tjqt.qr>	<45CBC072.90102@ubiqx.mn.org> <Pine.LNX.4.61.0702090130440.8587@yvahk01.tjqt.qr>
-In-Reply-To: <Pine.LNX.4.61.0702090130440.8587@yvahk01.tjqt.qr>
+References: <OFCB86D528.05DE4D00-ON8725727D.000397BF-8625727D.0003B058@us.ibm.com>
+In-Reply-To: <OFCB86D528.05DE4D00-ON8725727D.000397BF-8625727D.0003B058@us.ibm.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Engelhardt wrote:
-> On Feb 8 2007 18:29, Christopher R. Hertel wrote:
->> Jan Engelhardt wrote:
->>
->> It does seem to me that it is some sort of name resolution issue, but it may
->> have more to do with the multi-homed nature of your setup.
->>
->> Did you try:
->>
->>  mount.cifs //CL0/c /mnt
+Shirish S Pargaonkar wrote:
+:
+> This is what Steve had mailed me once, a while ago....
 > 
-> Yes, that one _fails_ with "mount error 112 = Host is down" (though tcpdump
-> _does_ show that cifs connects to port 139 and then disconnects using FIN)
+> Win9x and Windows ME and OS/2 only listen on port 139
+> 
+> WindowsNT 4 (?) and later listen on port 445 and port 139.
+> 
+> When you connect on the older port 139, you are supposed to send a
+> RFC1001 (NBSS Session Request to indicate your client netbios name, but
+> the problem is that you don't know the target netbios name of the server
+> - which is why the either needs to support the fake name "*SMBSERVER" or
+> the client needs to specify the "servernetbiosname=<name>" option on
+> mount to identify which name on the server to try to connect to.
+> 
+> So
+> 1) try tcp  connection on  445,
+>     then if it works send SMB negprot
+> 2) else try tcp connection on port 139
+>     then if it works send nbss request to *SMBSERVER or to the name
+> specified on servernetbiosname
+>     (cifs really should do an ASTAT command and list the valid names and
+> find one if that approach fails but we don't have code for this yet)
 
-It would be interesting to see that capture.
+This is all correct, and also note that W/9x systems do not support the
+"*SMBSERVER" name.
 
-- The client is clearly finding the server (via NBT lookup or DNS
-  lookup--doesn't matter, it's being found).
+On the other hand, the name was resolved somehow.  The typical work-arounds
+to not knowning the NBT name of the server are:
+1) Use the name you just resolved (in this case, "CL0").
+2) Send a Node Status Query and look for the first unique <20> name.
 
-- The client is creating the TCP connection.
-
-- The server (W9x) is closing the connection.  Why?
-
-  + The most likely reason is 0x82: Called Name Not Present
-
-That's my guess, anyway.  My bet is that W9x is being picky about the case
-of the CALLED NAME.
-
-It would not surprise me that the NBT name resolution code *does* convert
-the case as part of the NBT encoding (that weird string that reads
-EDEMDACACACACACACACACACACACACACA).  It would also not surprise me if the NBT
-Session Request code *doesn't* convert the case.  The Session Request uses
-the un-encoded string (in this case, "cl0").
-
-The Windows 9x implementation of the NBT layer tends to be much more
-"correct" than the NT family and its descendants.  As a result, W9x is
-pickier about things like exact matches to the CALLED NAME.
-
-That's all a guess, mind you, but it's something more to go on.
-
-Again, the capture would hold the answer.
+The second (as Steve explained to me a long time ago) is less reliable
+because there are some applications out there which (incorrectly) register
+names with a suffix byte of <20>.
 
 Chris -)-----
 
---
+-- 
 "Implementing CIFS - the Common Internet FileSystem" ISBN: 013047116X
 Samba Team -- http://www.samba.org/     -)-----   Christopher R. Hertel
 jCIFS Team -- http://jcifs.samba.org/   -)-----   ubiqx development, uninq.
