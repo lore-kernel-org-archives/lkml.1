@@ -1,80 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422860AbXBILAh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965596AbXBILA6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422860AbXBILAh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Feb 2007 06:00:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422998AbXBILAh
+	id S965596AbXBILA6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Feb 2007 06:00:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965728AbXBILA6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Feb 2007 06:00:37 -0500
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:49718 "EHLO e5.ny.us.ibm.com"
+	Fri, 9 Feb 2007 06:00:58 -0500
+Received: from ozlabs.org ([203.10.76.45]:41616 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422860AbXBILAf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Feb 2007 06:00:35 -0500
-Date: Fri, 9 Feb 2007 16:35:55 +0530
-From: Suparna Bhattacharya <suparna@in.ibm.com>
-To: Jiri Kosina <jikos@jikos.cz>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "Ananiev, Leonid I" <leonid.i.ananiev@intel.com>,
-       linux-kernel@vger.kernel.org, linux-aio <linux-aio@kvack.org>,
-       Zach Brown <zach.brown@oracle.com>,
-       Chris Mason <chris.mason@oracle.com>,
-       Badari Pulavarty <pbadari@us.ibm.com>, Jan Kara <jack@suse.cz>
-Subject: Re: [PATCH] aio: fix kernel bug when page is  temporally busy
-Message-ID: <20070209110555.GA11232@in.ibm.com>
-Reply-To: suparna@in.ibm.com
-References: <B41635854730A14CA71C92B36EC22AAC8048C3@mssmsx411> <Pine.LNX.4.64.0702091042330.25686@twin.jikos.cz> <20070209021444.2213deb6.akpm@linux-foundation.org> <Pine.LNX.4.64.0702091137530.25686@twin.jikos.cz>
+	id S965745AbXBILA5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Feb 2007 06:00:57 -0500
+Subject: Re: [PATCH 6/10] lguest code: the little linux hypervisor.
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andi Kleen <ak@muc.de>, virtualization <virtualization@lists.osdl.org>,
+       Paul Mackerras <paulus@samba.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>
+In-Reply-To: <20070209013518.e75d5036.akpm@linux-foundation.org>
+References: <1171012296.2718.26.camel@localhost.localdomain>
+	 <1171012458.2718.30.camel@localhost.localdomain>
+	 <1171012693.2718.37.camel@localhost.localdomain>
+	 <1171012761.2718.40.camel@localhost.localdomain>
+	 <1171012827.2718.42.camel@localhost.localdomain>
+	 <20070209013518.e75d5036.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Fri, 09 Feb 2007 22:00:12 +1100
+Message-Id: <1171018812.2718.66.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0702091137530.25686@twin.jikos.cz>
-User-Agent: Mutt/1.5.11
+X-Mailer: Evolution 2.8.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 09, 2007 at 11:40:27AM +0100, Jiri Kosina wrote:
-> On Fri, 9 Feb 2007, Andrew Morton wrote:
->  
-> > > @@ -1204,7 +1204,7 @@ generic_file_aio_read(struct kiocb *iocb, const struct iovec *iov,
-> > >  			do_generic_file_read(filp,ppos,&desc,file_read_actor);
-> > >  			retval += desc.written;
-> > >  			if (desc.error) {
-> > > -				retval = retval ?: desc.error;
-> > > +				retval = desc.error;
-> > >  				break;
-> > >  			}
-> > Nope.  On error the read() syscall must return the number of bytes which
-> > were successfully read.
->  
-> You are right. 
->  
-> In current mainline this even is not a problem, because noone seems to be 
-> setting the error values to EIOCBRETRY. But it still stinks a bit, as 
-> there are tests for EIOCBRETRY.
+On Fri, 2007-02-09 at 01:35 -0800, Andrew Morton wrote:
+> On Fri, 09 Feb 2007 20:20:27 +1100 Rusty Russell <rusty@rustcorp.com.au> wrote:
+> 
+> > +#define log(...)					\
+> > +	do {						\
+> > +		mm_segment_t oldfs = get_fs();		\
+> > +		char buf[100];				\
+> > +		sprintf(buf, "lguest:" __VA_ARGS__);	\
+> > +		set_fs(KERNEL_DS);			\
+> > +		sys_write(1, buf, strlen(buf));		\
+> > +		set_fs(oldfs);				\
+> > +	} while(0)
+> 
+> Due to gcc shortcomings, each instance of this will chew an additional 100
+> bytes of stack.  Unless they fixed it recently.  Is a bit of a timebomb.  I
+> guess ksaprintf() could be used.
+> 
+> It also looks a bit, umm, innovative.
 
-We'd want retries to act only on the remaining bytes which haven't been
-transferred as yet, so even in the EIOCBRETRY case the right thing to do
-is to return the number of bytes that were successfully read without
-blocking. The high level AIO code (see aio_rw_vect_rety) has the ability
-to handle this.
+It's also unused 8)
 
-So this is still correct.
+It's an extremely useful macro for doing grossly invasive logging of the
+guest.  I'll drop it if you prefer.
 
-Is there a real bug that you are seeing here ?
-
-Regards
-Suparna
-
->  
-> -- 
-> Jiri Kosina
->  
-> --
-> To unsubscribe, send a message with 'unsubscribe linux-aio' in
-> the body to majordomo@kvack.org.  For more info on Linux AIO,
-> see: http://www.kvack.org/aio/
-> Don't email: <a href=mailto:"aart@kvack.org">aart@kvack.org</a>
-
--- 
-Suparna Bhattacharya (suparna@in.ibm.com)
-Linux Technology Center
-IBM Software Lab, India
+Cheers,
+Rusty.
 
