@@ -1,63 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946295AbXBIKMq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946302AbXBIKMx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946295AbXBIKMq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Feb 2007 05:12:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946299AbXBIKMp
+	id S1946302AbXBIKMx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Feb 2007 05:12:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946299AbXBIKMw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Feb 2007 05:12:45 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:41326 "EHLO smtp.osdl.org"
+	Fri, 9 Feb 2007 05:12:52 -0500
+Received: from twin.jikos.cz ([213.151.79.26]:37815 "EHLO twin.jikos.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1946295AbXBIKMo convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Feb 2007 05:12:44 -0500
-Date: Fri, 9 Feb 2007 02:12:42 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Lenar =?ISO-8859-1?B?TPVobXVz?= <lenar@vision.ee>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: -mm merge plans for 2.6.21
-Message-Id: <20070209021242.03ba88d8.akpm@linux-foundation.org>
-In-Reply-To: <45CC44D5.6050602@vision.ee>
-References: <20070208150710.1324f6b4.akpm@linux-foundation.org>
-	<45CC44D5.6050602@vision.ee>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	id S1946302AbXBIKMu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Feb 2007 05:12:50 -0500
+Date: Fri, 9 Feb 2007 11:11:52 +0100 (CET)
+From: Jiri Kosina <jikos@jikos.cz>
+To: "Ananiev, Leonid I" <leonid.i.ananiev@intel.com>
+cc: suparna@in.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-aio <linux-aio@kvack.org>,
+       Zach Brown <zach.brown@oracle.com>,
+       Chris Mason <chris.mason@oracle.com>,
+       Badari Pulavarty <pbadari@us.ibm.com>, Jan Kara <jack@suse.cz>
+Subject: RE: [PATCH] aio: fix kernel bug when page is  temporally busy
+In-Reply-To: <B41635854730A14CA71C92B36EC22AAC804976@mssmsx411>
+Message-ID: <Pine.LNX.4.64.0702091106100.25686@twin.jikos.cz>
+References: <B41635854730A14CA71C92B36EC22AAC804976@mssmsx411>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 09 Feb 2007 11:54:29 +0200 Lenar Lõhmus <lenar@vision.ee> wrote:
+On Fri, 9 Feb 2007, Ananiev, Leonid I wrote:
 
-> Hello,
-> 
-> Andrew Morton wrote:
-> > sched-add-above-background-load-function.patch
-> > mm-implement-swap-prefetching.patch
-> > mm-implement-swap-prefetching-vs-zvc-stuff.patch
-> > mm-implement-swap-prefetching-vs-zvc-stuff-2.patch
-> > mm-implement-swap-prefetching-use-ctl_unnumbered.patch
-> > swap_prefetch-vs-zoned-counters.patch
-> > add-include-linux-freezerh-and-move-definitions-from-prefetch.patch
-> > zvc-support-nr_slab_reclaimable--nr_slab_unreclaimable-swap_prefetch.patch
-> > reduce-max_nr_zones-swap_prefetch-remove-incorrect-use-of-zone_highmem.patch
-> > sched-cleanup-remove-task_t-convert-to-struct-task_struct-prefetch.patch
-> > numa-add-zone_to_nid-function-swap_prefetch.patch
-> > remove-uses-of-kmem_cache_t-from-mm-and-include-linux-slabh-prefetch.patch
-> >
-> >  Hold.
-> Why hold?
-> 
-> It's been shown this patchset really helps desktop users.
+> I have used EIOCBRETRY in the patch to minimize source code modification 
+> only. It is notable that EIOCBRETRY is never set in kernel, but tested 
+> only.
 
-Has it?  I don't think I've ever observed any benefits from it and I don't
-think anyone has ever got down and worked out what its drawbacks might be,
-and seen if they can be demonstrated in practice.
+There is indeed something strange in aio in 2.6.20 (and maybe older) - for 
+example do_generic_mapping_read() gets stuck inside lock_page() in the 
+situation when the page is not up-to-date, instead of returning properl 
+error to aio_run_cb().
 
-I also have vague memories of some serious-sounding review comments about
-the code from Nick.
+Or does it work in some other way and I get it wrong?
 
-> Why keep it in -mm for so long?
-
-I'm waiting to be shown that its benefits exceed its costs.  Sometimes
-that's hard.
-
+-- 
+Jiri Kosina
