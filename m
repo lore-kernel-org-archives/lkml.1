@@ -1,128 +1,204 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946191AbXBIIE1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946200AbXBIIOL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946191AbXBIIE1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Feb 2007 03:04:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946192AbXBIIE1
+	id S1946200AbXBIIOL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Feb 2007 03:14:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946205AbXBIIOL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Feb 2007 03:04:27 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:34323 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1946191AbXBIIE0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Feb 2007 03:04:26 -0500
-Date: Fri, 9 Feb 2007 00:03:53 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Srinivasa Ds <srinivasa@in.ibm.com>
-Cc: Frederik Deweerdt <deweerdt@free.fr>,
-       Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org, jkenisto@us.ibm.com,
-       anil.s.keshavamurthy@intel.com, prasanna@in.ibm.com, ananth@in.ibm.com
-Subject: Re: [RFC] [PATCH] To list all active probes in the system---Take-2
-Message-Id: <20070209000353.f4c2057e.akpm@linux-foundation.org>
-In-Reply-To: <45CB0D87.8070808@in.ibm.com>
-References: <45C85097.1000106@in.ibm.com>
-	<20070206100607.GA10296@infradead.org>
-	<45C856F1.7060403@in.ibm.com>
-	<45C894EA.4060305@in.ibm.com>
-	<20070206145609.GA11249@slug>
-	<45C962C3.2020904@in.ibm.com>
-	<20070207142717.5da4d8d4.akpm@linux-foundation.org>
-	<45CB0D87.8070808@in.ibm.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 9 Feb 2007 03:14:11 -0500
+Received: from mtagate1.de.ibm.com ([195.212.29.150]:16580 "EHLO
+	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1946200AbXBIIOJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Feb 2007 03:14:09 -0500
+From: Jan-Bernd Themann <ossthema@de.ibm.com>
+Subject: [PATCH 2.6.21-rc1] ehea: Fixed error recovery
+Date: Fri, 9 Feb 2007 09:10:51 +0100
+User-Agent: KMail/1.8.2
+MIME-Version: 1.0
+Content-Disposition: inline
+To: Jeff Garzik <jeff@garzik.org>
+Cc: netdev <netdev@vger.kernel.org>, Christoph Raisch <raisch@de.ibm.com>,
+       "Jan-Bernd Themann" <themann@de.ibm.com>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>,
+       "linux-ppc" <linuxppc-dev@ozlabs.org>, Marcus Eder <meder@de.ibm.com>,
+       Thomas Klein <tklein@de.ibm.com>,
+       Stefan Roscher <stefan.roscher@de.ibm.com>
+Message-Id: <200702090910.51646.ossthema@de.ibm.com>
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 08 Feb 2007 17:16:15 +0530 Srinivasa Ds <srinivasa@in.ibm.com> wrote:
+Error recovery for QP errors: Reset QPs and dump error information
 
-> +module_init(debugfs_kprobe_init);
-> +#endif /* CONFIG_DEBUG_FS */
-> +
->  __initcall(init_kprobes);
-
-I think you'll find this doesn't work when loaded as a module: we only
-support a single initcall per module.  (Which might be a bit dumb of us -
-it's probably easy to fix and is an inconsistency between modular and
-built-in).
-
-<looks>
-
-Oh, kernel/kprobes.o can't be linked as a module.  It looks like it could
-be though?
-
-You have a little race: debugfs_kprobe_init() will be called before
-init_kprobes().  If someone were able to read from the debugfs files in
-that window (they probably can't as we don't support modular kprobes.ko)
-they'll crash the kernel.  I'll switch debugfs_kprobe_init() to
-late_initcall to fix that.
-
-There are quite a few things in there which could have static scope.
+Signed-off-by: Jan-Bernd Themann <themann@de.ibm.com>
+---
 
 
-I'll apply this:
+ drivers/net/ehea/ehea.h      |    2 +-
+ drivers/net/ehea/ehea_main.c |    8 +++++++-
+ drivers/net/ehea/ehea_phyp.c |   10 ++++++++++
+ drivers/net/ehea/ehea_phyp.h |    3 +++
+ drivers/net/ehea/ehea_qmr.c  |   42 ++++++++++++++++++++++++++++++++++++++++++
+ drivers/net/ehea/ehea_qmr.h  |    5 +++++
+ 6 files changed, 68 insertions(+), 2 deletions(-)
 
-
-
-diff -puN kernel/kprobes.c~kprobes-list-all-active-probes-in-the-system-tidy kernel/kprobes.c
---- a/kernel/kprobes.c~kprobes-list-all-active-probes-in-the-system-tidy
-+++ a/kernel/kprobes.c
-@@ -836,12 +836,12 @@ static void __kprobes report_probe(struc
- 		seq_printf(pi, "%p  %s  %p\n", p->addr, kprobe_type, p->addr);
- }
+diff --git a/drivers/net/ehea/ehea.h b/drivers/net/ehea/ehea.h
+index 272e1ec..42295d6 100644
+--- a/drivers/net/ehea/ehea.h
++++ b/drivers/net/ehea/ehea.h
+@@ -39,7 +39,7 @@ #include <asm/abs_addr.h>
+ #include <asm/io.h>
  
--void __kprobes *kprobe_seq_start(struct seq_file *f, loff_t *pos)
-+static void __kprobes *kprobe_seq_start(struct seq_file *f, loff_t *pos)
+ #define DRV_NAME	"ehea"
+-#define DRV_VERSION	"EHEA_0045"
++#define DRV_VERSION	"EHEA_0046"
+ 
+ #define EHEA_MSG_DEFAULT (NETIF_MSG_LINK | NETIF_MSG_TIMER \
+ 	| NETIF_MSG_RX_ERR | NETIF_MSG_TX_ERR)
+diff --git a/drivers/net/ehea/ehea_main.c b/drivers/net/ehea/ehea_main.c
+index 9de2d38..1ef3846 100644
+--- a/drivers/net/ehea/ehea_main.c
++++ b/drivers/net/ehea/ehea_main.c
+@@ -76,7 +76,7 @@ void ehea_dump(void *adr, int len, char 
+ 	int x;
+ 	unsigned char *deb = adr;
+ 	for (x = 0; x < len; x += 16) {
+-		printk(DRV_NAME "%s adr=%p ofs=%04x %016lx %016lx\n", msg,
++		printk(DRV_NAME " %s adr=%p ofs=%04x %016lx %016lx\n", msg,
+ 			  deb, x, *((u64*)&deb[0]), *((u64*)&deb[8]));
+ 		deb += 16;
+ 	}
+@@ -555,6 +555,7 @@ static irqreturn_t ehea_qp_aff_irq_handl
  {
- 	return (*pos < KPROBE_TABLE_SIZE) ? pos : NULL;
+ 	struct ehea_port *port = param;
+ 	struct ehea_eqe *eqe;
++	struct ehea_qp *qp;
+ 	u32 qp_token;
+ 
+ 	eqe = ehea_poll_eq(port->qp_eq);
+@@ -563,9 +564,14 @@ static irqreturn_t ehea_qp_aff_irq_handl
+ 		qp_token = EHEA_BMASK_GET(EHEA_EQE_QP_TOKEN, eqe->entry);
+ 		ehea_error("QP aff_err: entry=0x%lx, token=0x%x",
+ 			   eqe->entry, qp_token);
++
++		qp = port->port_res[qp_token].qp;
++		ehea_error_data(port->adapter, qp->fw_handle);
+ 		eqe = ehea_poll_eq(port->qp_eq);
+ 	}
+ 
++	queue_work(port->adapter->ehea_wq, &port->reset_task);
++
+ 	return IRQ_HANDLED;
  }
  
--void __kprobes *kprobe_seq_next(struct seq_file *f, void *v, loff_t *pos)
-+static void __kprobes *kprobe_seq_next(struct seq_file *f, void *v, loff_t *pos)
+diff --git a/drivers/net/ehea/ehea_phyp.c b/drivers/net/ehea/ehea_phyp.c
+index 37716e0..bc3c005 100644
+--- a/drivers/net/ehea/ehea_phyp.c
++++ b/drivers/net/ehea/ehea_phyp.c
+@@ -612,3 +612,13 @@ u64 ehea_h_reset_events(const u64 adapte
+ 				       event_mask,		/* R6 */
+ 				       0, 0, 0, 0);		/* R7-R12 */
+ }
++
++u64 ehea_h_error_data(const u64 adapter_handle, const u64 ressource_handle,
++		      void *rblock)
++{
++	return ehea_plpar_hcall_norets(H_ERROR_DATA,
++				       adapter_handle,          /* R4 */
++				       ressource_handle,        /* R5 */
++				       virt_to_abs(rblock),     /* R6 */
++				       0, 0, 0, 0);             /* R7-R12 */
++}
+diff --git a/drivers/net/ehea/ehea_phyp.h b/drivers/net/ehea/ehea_phyp.h
+index 919f94b..90acddb 100644
+--- a/drivers/net/ehea/ehea_phyp.h
++++ b/drivers/net/ehea/ehea_phyp.h
+@@ -454,4 +454,7 @@ u64 ehea_h_reg_dereg_bcmc(const u64 adap
+ u64 ehea_h_reset_events(const u64 adapter_handle, const u64 neq_handle,
+ 			const u64 event_mask);
+ 
++u64 ehea_h_error_data(const u64 adapter_handle, const u64 ressource_handle,
++		      void *rblock);
++
+ #endif	/* __EHEA_PHYP_H__ */
+diff --git a/drivers/net/ehea/ehea_qmr.c b/drivers/net/ehea/ehea_qmr.c
+index f143e13..96ff3b6 100644
+--- a/drivers/net/ehea/ehea_qmr.c
++++ b/drivers/net/ehea/ehea_qmr.c
+@@ -486,6 +486,7 @@ int ehea_destroy_qp(struct ehea_qp *qp)
+ 	if (!qp)
+ 		return 0;
+ 
++	ehea_h_disable_and_get_hea(qp->adapter->handle, qp->fw_handle);
+ 	hret = ehea_h_free_resource(qp->adapter->handle, qp->fw_handle);
+ 	if (hret != H_SUCCESS) {
+ 		ehea_error("destroy_qp failed");
+@@ -581,4 +582,45 @@ out:
+ 	return ret;
+ }
+ 
++void print_error_data(u64 *data)
++{
++	int length;
++	u64 type = EHEA_BMASK_GET(ERROR_DATA_TYPE, data[2]);
++	u64 resource = data[1];
++
++	length = EHEA_BMASK_GET(ERROR_DATA_LENGTH, data[0]);
++
++	if (length > EHEA_PAGESIZE)
++		length = EHEA_PAGESIZE;
++
++	if (type == 0x8) /* Queue Pair */
++		ehea_error("QP (resource=%lX) state: AER=0x%lX, AERR=0x%lX, "
++			   "port=%lX", resource, data[6], data[12], data[22]);
++
++	ehea_dump(data, length, "error data");
++}
++
++void ehea_error_data(struct ehea_adapter *adapter, u64 res_handle)
++{
++	unsigned long ret;
++	u64 *rblock;
++
++	rblock = kzalloc(PAGE_SIZE, GFP_KERNEL);
++	if (!rblock) {
++		ehea_error("Cannot allocate rblock memory.");
++		return;
++	}
+ 
++	ret = ehea_h_error_data(adapter->handle,
++				res_handle,
++				rblock);
++
++	if (ret == H_R_STATE)
++		ehea_error("No error data is available: %lX.", res_handle);
++	else if (ret == H_SUCCESS)
++		print_error_data(rblock);
++	else
++		ehea_error("Error data could not be fetched: %lX", res_handle);
++
++	kfree(rblock);
++}
+diff --git a/drivers/net/ehea/ehea_qmr.h b/drivers/net/ehea/ehea_qmr.h
+index 7efdc96..1ff6098 100644
+--- a/drivers/net/ehea/ehea_qmr.h
++++ b/drivers/net/ehea/ehea_qmr.h
+@@ -180,6 +180,9 @@ struct ehea_eqe {
+ 	u64 entry;
+ };
+ 
++#define ERROR_DATA_LENGTH  EHEA_BMASK_IBM(52,63)
++#define ERROR_DATA_TYPE    EHEA_BMASK_IBM(0,7)
++
+ static inline void *hw_qeit_calc(struct hw_queue *queue, u64 q_offset)
  {
- 	(*pos)++;
- 	if (*pos >= KPROBE_TABLE_SIZE)
-@@ -849,12 +849,12 @@ void __kprobes *kprobe_seq_next(struct s
- 	return pos;
- }
+ 	struct ehea_page *current_page;
+@@ -355,4 +358,6 @@ int ehea_destroy_qp(struct ehea_qp *qp);
  
--void __kprobes kprobe_seq_stop(struct seq_file *f, void *v)
-+static void __kprobes kprobe_seq_stop(struct seq_file *f, void *v)
- {
- 	/* Nothing to do */
- }
+ int ehea_reg_mr_adapter(struct ehea_adapter *adapter);
  
--int __kprobes show_kprobe_addr(struct seq_file *pi, void *v)
-+static int __kprobes show_kprobe_addr(struct seq_file *pi, void *v)
- {
- 	struct hlist_head *head;
- 	struct hlist_node *node;
-@@ -879,7 +879,7 @@ int __kprobes show_kprobe_addr(struct se
- 	return 0;
- }
- 
--struct seq_operations kprobes_seq_ops = {
-+static struct seq_operations kprobes_seq_ops = {
- 	.start = kprobe_seq_start,
- 	.next  = kprobe_seq_next,
- 	.stop  = kprobe_seq_stop,
-@@ -916,10 +916,10 @@ static int __kprobes debugfs_kprobe_init
- 	return 0;
- }
- 
--module_init(debugfs_kprobe_init);
-+late_initcall(debugfs_kprobe_init);
- #endif /* CONFIG_DEBUG_FS */
- 
--__initcall(init_kprobes);
-+module_init(init_kprobes);
- 
- EXPORT_SYMBOL_GPL(register_kprobe);
- EXPORT_SYMBOL_GPL(unregister_kprobe);
-@@ -928,4 +928,3 @@ EXPORT_SYMBOL_GPL(unregister_jprobe);
- EXPORT_SYMBOL_GPL(jprobe_return);
- EXPORT_SYMBOL_GPL(register_kretprobe);
- EXPORT_SYMBOL_GPL(unregister_kretprobe);
--
-_
-
++void ehea_error_data(struct ehea_adapter *adapter, u64 res_handle);
++
+ #endif	/* __EHEA_QMR_H__ */
