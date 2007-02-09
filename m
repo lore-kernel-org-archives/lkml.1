@@ -1,49 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1945989AbXBIBmQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946000AbXBIBoK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1945989AbXBIBmQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Feb 2007 20:42:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946000AbXBIBmQ
+	id S1946000AbXBIBoK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Feb 2007 20:44:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946001AbXBIBoJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Feb 2007 20:42:16 -0500
-Received: from gate.crashing.org ([63.228.1.57]:35741 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1945989AbXBIBmP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Feb 2007 20:42:15 -0500
-Subject: Re: [patch 0/3] 2.6.20 fix for PageUptodate memorder problem (try
-	2)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Nick Piggin <npiggin@suse.de>, Andrew Morton <akpm@osdl.org>,
-       Linux Memory Management <linux-mm@kvack.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0702090027580.29905@blonde.wat.veritas.com>
-References: <20070208111421.30513.77904.sendpatchset@linux.site>
-	 <Pine.LNX.4.64.0702090027580.29905@blonde.wat.veritas.com>
-Content-Type: text/plain
-Date: Fri, 09 Feb 2007 12:41:35 +1100
-Message-Id: <1170985295.2620.389.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
+	Thu, 8 Feb 2007 20:44:09 -0500
+Received: from terminus.zytor.com ([192.83.249.54]:34688 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1946000AbXBIBoI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Feb 2007 20:44:08 -0500
+Message-ID: <45CBD1C6.1020403@zytor.com>
+Date: Thu, 08 Feb 2007 17:43:34 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070102)
+MIME-Version: 1.0
+To: Neil Brown <neilb@suse.de>
+CC: Andi Kleen <ak@muc.de>, Rusty Russell <rusty@rustcorp.com.au>,
+       Andrew Morton <akpm@osdl.org>, Linus Torvalds <torvalds@osdl.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       virtualization <virtualization@lists.osdl.org>
+Subject: Re: [PATCH] Use correct macros in raid code, not raw asm
+References: <1167348861.30506.46.camel@localhost.localdomain>	<20061228155659.462eaa9c.akpm@osdl.org>	<1167350803.30506.49.camel@localhost.localdomain>	<20061229111355.GA82929@muc.de>	<45CBCC72.6080409@zytor.com> <17867.53342.333989.501336@notabene.brown>
+In-Reply-To: <17867.53342.333989.501336@notabene.brown>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-> Fix threaded user page write memory ordering
+Neil Brown wrote:
 > 
-> Make sure we order the writes to a newly created page
-> with the page table update that potentially exposes the
-> page to another CPU.
+> So does this look right (no, I haven't compiled it yet)
 > 
-> This is a no-op on any architecture where getting the
-> page table spinlock will already do the ordering (notably
-> x86), but other architectures can care.
 
+No, the whole raid6_*_save_t should be removed.  I'll try to have a 
+patch for you later.
 
-Ah yes, the clear_* ones I knew about as I'm the one who tracked down
-that bug on power :-) I though the ones Nick pointed out were different
-tho.
-
-Ben.
-
-
+	-hpa
