@@ -1,47 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946555AbXBIQC3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946556AbXBIQFK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946555AbXBIQC3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Feb 2007 11:02:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946556AbXBIQC3
+	id S1946556AbXBIQFK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Feb 2007 11:05:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946566AbXBIQFK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Feb 2007 11:02:29 -0500
-Received: from hp3.statik.TU-Cottbus.De ([141.43.120.68]:48897 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1946555AbXBIQC2 (ORCPT
+	Fri, 9 Feb 2007 11:05:10 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:53622 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1946569AbXBIQFI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Feb 2007 11:02:28 -0500
-Message-ID: <45CC9B12.7040808@s5r6.in-berlin.de>
-Date: Fri, 09 Feb 2007 17:02:26 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.0.8) Gecko/20061030 SeaMonkey/1.0.6
-MIME-Version: 1.0
-To: Pavel Pisa <pisa@cmp.felk.cvut.cz>
-CC: Russell King - ARM Linux <linux@arm.linux.org.uk>,
-       linux-kernel@vger.kernel.org, Sascha Hauer <s.hauer@pengutronix.de>,
-       Pierre Ossman <drzeus@drzeus.cx>
-Subject: Re: Coding style question
-References: <200702091132.09741.pisa@cmp.felk.cvut.cz>
-In-Reply-To: <200702091132.09741.pisa@cmp.felk.cvut.cz>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Fri, 9 Feb 2007 11:05:08 -0500
+To: torvalds@linux-foundation.org
+Subject: [PATCH] wrong order of kzalloc arguments
+Cc: linux-kernel@vger.kernel.org
+Message-Id: <E1HFYFH-0004qI-0v@ZenIV.linux.org.uk>
+From: Al Viro <viro@ftp.linux.org.uk>
+Date: Fri, 09 Feb 2007 16:05:07 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Pisa wrote:
-> There are tightly copled two macros for preparation
-> and acquisition of muti-bit masked fields values
-> 
-> #define __val2mfld(mask,val) (((mask)&~((mask)<<1))*(val)&(mask))
-> 
-> #define __mfld2val(mask,val) (((val)&(mask))/((mask)&~((mask)<<1)))
 
-The macro names are awkward.
-http://lxr.linux.no/source/Documentation/CodingStyle?v=2.6.18#L133
+Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+---
+ drivers/acpi/bay.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Consider longer names (and to partially counteract column consumption,
-omit the leading underscores) or at least spell their purpose out in a
-short comment at the macro definitions.
+diff --git a/drivers/acpi/bay.c b/drivers/acpi/bay.c
+index 667fa1d..91082ce 100644
+--- a/drivers/acpi/bay.c
++++ b/drivers/acpi/bay.c
+@@ -296,7 +296,7 @@ static int bay_add(acpi_handle handle, int id)
+ 	/*
+ 	 * Initialize bay device structure
+ 	 */
+-	new_bay = kzalloc(GFP_ATOMIC, sizeof(*new_bay));
++	new_bay = kzalloc(sizeof(*new_bay), GFP_ATOMIC);
+ 	INIT_LIST_HEAD(&new_bay->list);
+ 	new_bay->handle = handle;
+ 	new_bay->name = (char *)nbuffer.pointer;
 -- 
-Stefan Richter
--=====-=-=== --=- -=--=
-http://arcgraph.de/sr/
+1.5.0-rc2.GIT
+
+
