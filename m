@@ -1,86 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946066AbXBID3y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946050AbXBIDbo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946066AbXBID3y (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Feb 2007 22:29:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946054AbXBID3y
+	id S1946050AbXBIDbo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Feb 2007 22:31:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946054AbXBIDbo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Feb 2007 22:29:54 -0500
-Received: from mga05.intel.com ([192.55.52.89]:6105 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1946052AbXBID3x (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Feb 2007 22:29:53 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.13,303,1167638400"; 
-   d="scan'208"; a="197688866:sNHT21514570"
-Subject: Re: [PATCH] ATA convert GSI to irq on ia64
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: Jeff Garzik <jeff@garzik.org>, Andrew Morton <akpm@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org,
-       linux-ide@vger.kernel.org
-In-Reply-To: <45CBCC31.7070909@garzik.org>
-References: <1170920422.15989.354.camel@ymzhang>
-	 <45CBCC31.7070909@garzik.org>
-Content-Type: text/plain; charset=utf-8
-Date: Fri, 09 Feb 2007 11:29:51 +0800
-Message-Id: <1170991791.15989.364.camel@ymzhang>
+	Thu, 8 Feb 2007 22:31:44 -0500
+Received: from mail.suse.de ([195.135.220.2]:54907 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1946050AbXBIDbn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Feb 2007 22:31:43 -0500
+Date: Fri, 9 Feb 2007 04:31:33 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Nate Diller <nate.diller@gmail.com>
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Linux Filesystems <linux-fsdevel@vger.kernel.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch 1/3] fs: add an iovec iterator
+Message-ID: <20070209033133.GA18400@wotan.suse.de>
+References: <20070208105437.26443.35653.sendpatchset@linux.site> <20070208105446.26443.35864.sendpatchset@linux.site> <20070208194953.GA4118@infradead.org> <20070209014626.GB17334@wotan.suse.de> <5c49b0ed0702081803o6d2ba99ct5703f76465c524f4@mail.gmail.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.9.2 (2.9.2-2.fc7) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <5c49b0ed0702081803o6d2ba99ct5703f76465c524f4@mail.gmail.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-02-08 at 20:19 -0500, Jeff Garzik wrote:
-> Zhang, Yanmin wrote:
-> > If an ATA drive uses legacy mode, ata driver will choose 14 and 15 as the
-> > fixed irq number. On ia64 platform, such numbers are GSI and should be converted
-> > to irq vector.
-> > 
-> > Below patch against kernel 2.6.20 fixes it.
-> > 
-> > Signed-off-by: Zhang Yanmin <yanmin.zhang@intel.com>
+On Thu, Feb 08, 2007 at 06:03:50PM -0800, Nate Diller wrote:
+> On 2/8/07, Nick Piggin <npiggin@suse.de> wrote:
+> >On Thu, Feb 08, 2007 at 07:49:53PM +0000, Christoph Hellwig wrote:
+> >> On Thu, Feb 08, 2007 at 02:07:24PM +0100, Nick Piggin wrote:
+> >> > Add an iterator data structure to operate over an iovec. Add usercopy
+> >> > operators needed by generic_file_buffered_write, and convert that 
+> >function
+> >> > over.
+> >>
+> >> iovec_iterator is an awfully long and not very descriptive name.
+> >> In past discussions we named this thingy iodesc and wanted to pass it
+> >> down all the I/O path, including the file operations.
+> >
+> >Hi Christoph,
+> >
+> >Sure I think it would be a good idea to shorten the name. And yes, although
+> >I just construct the iterator to pass into perform_write, I think it should
+> >make sense to go much further up the call stack instead of passing all 
+> >those
+> >args around. iodesc seems like a fine name, so I'll use that unless
+> >anyone objects.
 > 
-> IA64 should create its own libata-portmap.h, rather than modifying the 
-> one in asm-generic with arch-specific choices.
-> 
-> powerpc is a current example of this (and currently the only 
-> non-asm-generic user) found in kernel 2.6.20.
-Thank Jeff. I worked out a new patch.
+> i had a patch integrating the iodesc idea, but after some thought, had
+> decided to call it struct file_io.  That name reflects the fact that
+> it's doing I/O in arbitrary lengths with byte offsets, and struct
+> file_io *fio contrasts well with struct bio (block_io).  I also had
+> used the field ->nbytes instead of ->count, to clarify the difference
+> between segment iterators, segment offsets, and absolute bytecount.
 
-If an ATA drive uses legacy mode, ata driver will choose 14 and 15 as the fixed
-irq number. On ia64 platform, such numbers are GSI and should be converted to irq
-vector.
+The field name is a good suggestion.
 
-Below patch against kernel 2.6.20 fixes it.
- 
-Signed-off-by: Zhang Yanmin <yanmin.zhang@intel.com>
+What I have there is not actually a full-blown file io descriptor, because
+there is no file or offset. It is just an iovec iterator (so maybe I should
+rename it to iov_iter, rather than iodesc). 
 
----
+I think it might be a nice idea to keep this iov_iter as a standalone
+structure, and it could be embedded into a struct file_io?
 
-diff -Nraup linux-2.6.20/arch/ia64/Kconfig linux-2.6.20_fix/arch/ia64/Kconfig
---- linux-2.6.20/arch/ia64/Kconfig	2007-02-08 15:13:41.000000000 +0800
-+++ linux-2.6.20_fix/arch/ia64/Kconfig	2007-02-09 11:19:35.000000000 +0800
-@@ -11,6 +11,7 @@ menu "Processor type and features"
- 
- config IA64
- 	bool
-+	select ATA_NONSTANDARD if ATA
- 	default y
- 	help
- 	  The Itanium Processor Family is Intel's 64-bit successor to
-diff -Nraup linux-2.6.20/include/asm-ia64/libata-portmap.h linux-2.6.20_fix/include/asm-ia64/libata-portmap.h
---- linux-2.6.20/include/asm-ia64/libata-portmap.h	1970-01-01 08:00:00.000000000 +0800
-+++ linux-2.6.20_fix/include/asm-ia64/libata-portmap.h	2007-02-09 11:19:55.000000000 +0800
-@@ -0,0 +1,12 @@
-+#ifndef __ASM_IA64_LIBATA_PORTMAP_H
-+#define __ASM_IA64_LIBATA_PORTMAP_H
-+
-+#define ATA_PRIMARY_CMD		0x1F0
-+#define ATA_PRIMARY_CTL		0x3F6
-+#define ATA_PRIMARY_IRQ(dev)	isa_irq_to_vector(14)
-+
-+#define ATA_SECONDARY_CMD	0x170
-+#define ATA_SECONDARY_CTL	0x376
-+#define ATA_SECONDARY_IRQ(dev)	isa_irq_to_vector(15)
-+
-+#endif
+Thanks,
+Nick
