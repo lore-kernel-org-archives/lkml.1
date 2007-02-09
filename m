@@ -1,74 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1945965AbXBIA6U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1945971AbXBIA7g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1945965AbXBIA6U (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Feb 2007 19:58:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945966AbXBIA6U
+	id S1945971AbXBIA7g (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Feb 2007 19:59:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945966AbXBIA7g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Feb 2007 19:58:20 -0500
-Received: from rwcrmhc11.comcast.net ([216.148.227.151]:36989 "EHLO
-	rwcrmhc11.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1945965AbXBIA6T (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Feb 2007 19:58:19 -0500
-Message-ID: <45CBC71F.30607@ubiqx.mn.org>
-Date: Thu, 08 Feb 2007 18:58:07 -0600
-From: "Christopher R. Hertel" <crh@ubiqx.mn.org>
-User-Agent: Thunderbird 1.5.0.9 (X11/20060911)
+	Thu, 8 Feb 2007 19:59:36 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:47698 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1945971AbXBIA7f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Feb 2007 19:59:35 -0500
+Date: Thu, 8 Feb 2007 16:59:16 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: David Rientjes <rientjes@google.com>
+cc: Jan Engelhardt <jengelh@linux01.gwdg.de>, Jeff Garzik <jeff@garzik.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: somebody dropped a (warning) bomb
+In-Reply-To: <Pine.LNX.4.64.0702081632200.8424@woody.linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0702081645020.8424@woody.linux-foundation.org>
+References: <45CB3B28.60102@garzik.org> <Pine.LNX.4.64.0702080819350.8424@woody.linux-foundation.org>
+ <Pine.LNX.4.61.0702081851310.1364@yvahk01.tjqt.qr>
+ <Pine.LNX.4.64.0702081145470.8424@woody.linux-foundation.org>
+ <Pine.LNX.4.61.0702082202180.24888@yvahk01.tjqt.qr>
+ <Pine.LNX.4.64.0702081324090.8424@woody.linux-foundation.org>
+ <Pine.LNX.4.64.0702081432320.27603@chino.kir.corp.google.com>
+ <Pine.LNX.4.64.0702081528070.8424@woody.linux-foundation.org>
+ <Pine.LNX.4.64.0702081554380.29559@chino.kir.corp.google.com>
+ <Pine.LNX.4.64.0702081632200.8424@woody.linux-foundation.org>
 MIME-Version: 1.0
-To: Shirish S Pargaonkar <shirishp@us.ibm.com>
-CC: Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       Steve French <smfrench@gmail.com>, linux-cifs-client@lists.samba.org,
-       linux-cifs-client-bounces+shirishp=us.ibm.com@lists.samba.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [linux-cifs-client] Re: SMB support still missing?
-References: <OFCB86D528.05DE4D00-ON8725727D.000397BF-8625727D.0003B058@us.ibm.com>
-In-Reply-To: <OFCB86D528.05DE4D00-ON8725727D.000397BF-8625727D.0003B058@us.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Shirish S Pargaonkar wrote:
-:
-> This is what Steve had mailed me once, a while ago....
+
+
+On Thu, 8 Feb 2007, Linus Torvalds wrote:
 > 
-> Win9x and Windows ME and OS/2 only listen on port 139
-> 
-> WindowsNT 4 (?) and later listen on port 445 and port 139.
-> 
-> When you connect on the older port 139, you are supposed to send a
-> RFC1001 (NBSS Session Request to indicate your client netbios name, but
-> the problem is that you don't know the target netbios name of the server
-> - which is why the either needs to support the fake name "*SMBSERVER" or
-> the client needs to specify the "servernetbiosname=<name>" option on
-> mount to identify which name on the server to try to connect to.
-> 
-> So
-> 1) try tcp  connection on  445,
->     then if it works send SMB negprot
-> 2) else try tcp connection on port 139
->     then if it works send nbss request to *SMBSERVER or to the name
-> specified on servernetbiosname
->     (cifs really should do an ASTAT command and list the valid names and
-> find one if that approach fails but we don't have code for this yet)
+> The C language clearly says that bitfields have implementation-defined 
+> types.
 
-This is all correct, and also note that W/9x systems do not support the
-"*SMBSERVER" name.
+Btw, this isn't even some "theoretical discussion". LOTS of compilers do 
+unsigned bitfields. It may even be the majority. There may (or may not) be 
+some correlation with what the default for "char" is, I haven't looked 
+into it.
 
-On the other hand, the name was resolved somehow.  The typical work-arounds
-to not knowning the NBT name of the server are:
-1) Use the name you just resolved (in this case, "CL0").
-2) Send a Node Status Query and look for the first unique <20> name.
-
-The second (as Steve explained to me a long time ago) is less reliable
-because there are some applications out there which (incorrectly) register
-names with a suffix byte of <20>.
-
-Chris -)-----
-
--- 
-"Implementing CIFS - the Common Internet FileSystem" ISBN: 013047116X
-Samba Team -- http://www.samba.org/     -)-----   Christopher R. Hertel
-jCIFS Team -- http://jcifs.samba.org/   -)-----   ubiqx development, uninq.
-ubiqx Team -- http://www.ubiqx.org/     -)-----   crh@ubiqx.mn.org
-OnLineBook -- http://ubiqx.org/cifs/    -)-----   crh@ubiqx.org
+		Linus
