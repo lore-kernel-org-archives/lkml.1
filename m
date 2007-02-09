@@ -1,180 +1,175 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992801AbXBIUOd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992805AbXBIU3G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992801AbXBIUOd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Feb 2007 15:14:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992802AbXBIUOc
+	id S2992805AbXBIU3G (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Feb 2007 15:29:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992806AbXBIU3G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Feb 2007 15:14:32 -0500
-Received: from mail01.syd.optusnet.com.au ([211.29.132.182]:36915 "EHLO
-	mail01.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S2992801AbXBIUOc (ORCPT
+	Fri, 9 Feb 2007 15:29:06 -0500
+Received: from spirit.analogic.com ([204.178.40.4]:3118 "EHLO
+	spirit.analogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992805AbXBIU3E convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Feb 2007 15:14:32 -0500
-From: Con Kolivas <kernel@kolivas.org>
-To: Andrew Burgess <aab@cichlid.com>
-Subject: Re: Swap prefetch merge plans
-Date: Sat, 10 Feb 2007 07:12:52 +1100
-User-Agent: KMail/1.9.5
-Cc: ck@vds.kolivas.org, akpm@osdl.org, linux-kernel@vger.kernel.org
-References: <200702091809.l19I9MgS025574@cichlid.com>
-In-Reply-To: <200702091809.l19I9MgS025574@cichlid.com>
+	Fri, 9 Feb 2007 15:29:04 -0500
 MIME-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_EXNzF5okoHiL0Dh"
-Message-Id: <200702100712.52819.kernel@kolivas.org>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-MimeOLE: Produced By Microsoft Exchange V6.5.7226.0
+X-OriginalArrivalTime: 09 Feb 2007 20:29:02.0516 (UTC) FILETIME=[EFC33740:01C74C88]
+Content-class: urn:content-classes:message
+Subject: Re: somebody dropped a (warning) bomb
+Date: Fri, 9 Feb 2007 15:29:01 -0500
+Message-ID: <Pine.LNX.4.61.0702091509360.8711@chaos.analogic.com>
+In-Reply-To: <Pine.LNX.4.61.0702091842450.31955@yvahk01.tjqt.qr>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: somebody dropped a (warning) bomb
+Thread-Index: AcdMiO/MEl3sdQKRRPuu7GjcpcNS1g==
+References: <45CB3B28.60102@garzik.org> <Pine.LNX.4.64.0702080819350.8424@woody.linux-foundation.org> <Pine.LNX.4.61.0702081851310.1364@yvahk01.tjqt.qr> <Pine.LNX.4.64.0702081145470.8424@woody.linux-foundation.org> <Pine.LNX.4.61.0702082202180.24888@yvahk01.tjqt.qr> <Pine.LNX.4.64.0702081324090.8424@woody.linux-foundation.org> <Pine.LNX.4.64.0702081432320.27603@chino.kir.corp.google.com> <Pine.LNX.4.64.0702081528070.8424@woody.linux-foundation.org> <Pine.LNX.4.64.0702081554380.29559@chino.kir.corp.google.com> <Pine.LNX.4.64.0702081632200.8424@woody.linux-foundation.org> <Pine.LNX.4.61.0702091330380.31955@yvahk01.tjqt.qr> <Pine.LNX.4.61.0702090755530.7642@chaos.analogic.com> <Pine.LNX.4.61.0702091842450.31955@yvahk01.tjqt.qr>
+From: "linux-os \(Dick Johnson\)" <linux-os@analogic.com>
+To: "Jan Engelhardt" <jengelh@linux01.gwdg.de>
+Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "David Rientjes" <rientjes@google.com>, "Jeff Garzik" <jeff@garzik.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+Reply-To: "linux-os \(Dick Johnson\)" <linux-os@analogic.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Boundary-00=_EXNzF5okoHiL0Dh
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 
-On Saturday 10 February 2007 05:09, Andrew Burgess wrote:
-> >I'm stuck developing code I'm having trouble proving it helps. Normal
-> > users find it helps and an artificial testcase shows it helps, but that
-> > is not enough, since the normal users will be tainted in their opinion,
-> > and the artificial testcase will always be artificial. My mistake of
-> > developing novel code in areas that were unquantifiable has been my
-> > undoing.
+On Fri, 9 Feb 2007, Jan Engelhardt wrote:
+
 >
-> Could you add some statistics gathering to measure
-> cumulatively how long processes wait for swapin?  Then you
-> could run with and without and maybe say "on average my
-> system waits 4 minutes a day without swap prefetch and 2
-> minutes with? Or if a simple sum doesn't work, some sort of
-> graph? Then anyone could run and measure the benefit.
+> On Feb 9 2007 08:16, linux-os (Dick Johnson) wrote:
+>> On Fri, 9 Feb 2007, Jan Engelhardt wrote:
+>>> On Feb 8 2007 16:42, Linus Torvalds wrote:
+>>>>
+>>> Further, giving again answer to the question whether they generate
+>>> signed or unsigned comparisons: Have you ever seen a computer which
+>>> addresses memory with negative numbers? Since the answer is most likely
+>>> no, signed comparisons would
+>>
+>> Yes, most all do. Indexed memory operands are signed displacements. See
+>> page 2-16, Intel486 Microprocessor Programmer's Reference Manual. This
 >
-> Apologies if you've already thought of this...
+> I was referring to "absolute memory", not the offset magic that assembler
+> allows. After all, (reg+relativeOffset) will yield an absolute address.
+> What I was out at: for machines that have more than 2 GB of memory, you
+> don't call the address that is given by 0x80000000U actually "byte
+> -2147483648", but "byte 2147483648".
 
-It would depend entirely on the workload / how you use your machine and the 
-balance of ram size vs hard drive speed vs swap size. The simple test app I 
-used attached below used on a 1GB machine with a fairly modern hard drive 
-saved:
+Don't make any large bets on that!
 
-Without:
-Timed portion 6272175 microseconds
-With:
-Timed portion 523623 microseconds
-
-This was with 700MB of what would be considered "application data". So if you 
-had lots of firefox windows open, openoffice, email client etc open and then 
-did something which caused a big swap load (I have this effect when printing 
-an full page colour picture at high resolution), then the total time saved 
-over clicking those applications back to life after some idle time (so you 
-printed and walked away while it was printing) was about 5.5 seconds. 
-
-So the total saved time over a day would depend on how often you hit swap, and 
-how often you clicked things back to life. Of course if you never hit swap 
-the code does basically nothing.
-
-
-Note this app is a silly little thing that only worked on 32bit if I recall 
-correctly but here it is.
-
-build with 
-gcc -o mallocall mallocall.c -W -Wall -lrt
-
-then test without swap prefetch enabled, and then enable it and test again.
-
--- 
--ck
-
---Boundary-00=_EXNzF5okoHiL0Dh
-Content-Type: text/x-csrc;
-  charset="utf-8";
-  name="mallocall.c"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
-	filename="mallocall.c"
-
-#include <stdio.h>
-#include <stdarg.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <sys/mman.h>
-#include <time.h>
-
-void fatal(const char *format, ...)
+char foo()
 {
-	va_list ap;
+    volatile char *p = (char *)0x80000000;
+    return *p;
+}
+Optimized....
+ 	.file	"zzz.c"
+ 	.text
+ 	.p2align 2,,3
+.globl foo
+ 	.type	foo, @function
+foo:
+ 	pushl	%ebp
+ 	movb	-2147483648, %al
+ 	movl	%esp, %ebp
+ 	movsbl	%al,%eax
+ 	leave
+ 	ret
+ 	.size	foo, .-foo
+ 	.section	.note.GNU-stack,"",@progbits
+ 	.ident	"GCC: (GNU) 3.3.3 20040412 (Red Hat Linux 3.3.3-7)"
 
-	if (format) {
-		va_start(ap, format);
-		vfprintf(stderr, format, ap);
-		va_end(ap);
-	}
+Not optimized...
 
-	fprintf(stderr, "Fatal error - exiting\n");
-	exit(1);
+ 	.file	"zzz.c"
+ 	.text
+.globl foo
+ 	.type	foo, @function
+foo:
+ 	pushl	%ebp
+ 	movl	%esp, %ebp
+ 	subl	$4, %esp
+ 	movl	$-2147483648, -4(%ebp)
+ 	movl	-4(%ebp), %eax
+ 	movb	(%eax), %al
+ 	movsbl	%al,%eax
+ 	leave
+ 	ret
+ 	.size	foo, .-foo
+ 	.section	.note.GNU-stack,"",@progbits
+ 	.ident	"GCC: (GNU) 3.3.3 20040412 (Red Hat Linux 3.3.3-7)"
+
+... Still negative numbers!
+
+>
+>> gets hidden by higher-level languages such as 'C'. It is also non-obvious
+>> when using the AT&T (GNU) assembly language. However, the Intel documentation
+>> shows it clearly:
+>> 			MOV	AL,  [EBX+0xFFFFFFFF]	; -1
+>
+> It can be debated what exactly this is... negative offset or "using
+> overflow to get where we want".
+>
+
+No debate at all, and no overflow. The construction is even used in
+'C' to optimize memory access while unrolling loops:
+
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=*/
+/*
+  *   This converts an array of integers to an array of double floats.
+  */
+void int2float(double *fp, int *ip, size_t len)
+{
+     while(len >= 0x10)
+     {
+         fp  += 0x10;
+         ip  += 0x10;
+         len -= 0x10;
+         fp[-0x10] = (double) ip[-0x10];
+         fp[-0x0f] = (double) ip[-0x0f];
+         fp[-0x0e] = (double) ip[-0x0e];
+         fp[-0x0d] = (double) ip[-0x0d];
+         fp[-0x0c] = (double) ip[-0x0c];
+         fp[-0x0b] = (double) ip[-0x0b];
+         fp[-0x0a] = (double) ip[-0x0a];
+         fp[-0x09] = (double) ip[-0x09];
+         fp[-0x08] = (double) ip[-0x08];
+         fp[-0x07] = (double) ip[-0x07];
+         fp[-0x06] = (double) ip[-0x06];
+         fp[-0x05] = (double) ip[-0x05];
+         fp[-0x04] = (double) ip[-0x04];
+         fp[-0x03] = (double) ip[-0x03];
+         fp[-0x02] = (double) ip[-0x02];
+         fp[-0x01] = (double) ip[-0x01];
+     }
+     while(len--)
+        *fp++ = (double) *ip++;
 }
 
-size_t get_ram(void)
-{
-        unsigned long ramsize;
-	FILE *meminfo;
-        char aux[256];
+This makes certain that each memory access uses the same type
+and the address-calculation for the next memory access can be done
+in parallel with the current fetch. This is one of the methods
+used to save a few machine cycles. Doesn't mean much until you
+end up with large arrays such as used in image processing. Then,
+it may be the difference that makes or breaks the project!
 
-	if(!(meminfo = fopen("/proc/meminfo", "r")))
-		fatal("fopen\n");
+>
+> Jan
+> -- 
+> ft: http://freshmeat.net/p/chaostables/
+>
 
-	while( !feof(meminfo) && !fscanf(meminfo, "MemTotal: %lu kB", &ramsize) )
-		fgets(aux,sizeof(aux),meminfo);
-	if (fclose(meminfo) == -1)
-		fatal("fclose");
-	return ramsize * 1000;
-}
+Cheers,
+Dick Johnson
+Penguin : Linux version 2.6.16.24 on an i686 machine (5592.61 BogoMips).
+New book: http://www.AbominableFirebug.com/
+_
+
 
-unsigned long get_usecs(struct timespec *myts)
-{
-	if (clock_gettime(CLOCK_REALTIME, myts))
-		fatal("clock_gettime");
-	return (myts->tv_sec * 1000000 + myts->tv_nsec / 1000 );
-}
+****************************************************************
+The information transmitted in this message is confidential and may be privileged.  Any review, retransmission, dissemination, or other use of this information by persons or entities other than the intended recipient is prohibited.  If you are not the intended recipient, please notify Analogic Corporation immediately - by replying to this message or by sending an email to DeliveryErrors@analogic.com - and destroy all copies of this information, including any attachments, without reading or disclosing them.
 
-int main(void)
-{
-	unsigned long current_time, time_diff;
-	struct timespec myts;
-	char *buf1, *buf2, *buf3, *buf4;
-	size_t size, full_size = get_ram();
-	int sleep_seconds = 600;
-
-	size = full_size * 7 / 10;
-	printf("Starting first malloc of %d bytes\n", size);
-	buf1 = malloc(size);
-	if (buf1 == (char *)-1)
-		fatal("Failed to malloc 1st buffer\n");
-	memset(buf1, 0, size);
-	printf("Completed first malloc and starting second malloc of %d bytes\n", full_size);
-
-	buf2 = malloc(full_size);
-	if (buf2 == (char *)-1)
-		fatal("Failed to malloc 2nd buffer\n");
-	memset(buf2, 0, full_size);
-	buf4 = malloc(1);
-	for (buf3 = buf2 + full_size; buf3 > buf2; buf3--)
-		*buf4 = *buf3;
-	free(buf2);
-	printf("Completed second malloc and free\n");
-
-	printf("Sleeping for %d seconds\n", sleep_seconds);
-	sleep(sleep_seconds);
-
-	printf("Important part - starting read of first malloc\n");
-	time_diff = current_time = get_usecs(&myts);
-	for (buf3 = buf1; buf3 < buf1 + size; buf3++)
-		*buf4 = *buf3;
-	current_time = get_usecs(&myts);
-	free(buf4);
-	free(buf1);
-	printf("Completed read and freeing of first malloc\n");
-	time_diff = current_time - time_diff;
-	printf("Timed portion %lu microseconds\n",time_diff);
-
-	return 0;
-}
-
---Boundary-00=_EXNzF5okoHiL0Dh--
+Thank you.
