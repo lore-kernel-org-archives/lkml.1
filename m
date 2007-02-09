@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946563AbXBIPfu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946579AbXBIPgN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946563AbXBIPfu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Feb 2007 10:35:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946569AbXBIPfq
+	id S1946579AbXBIPgN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Feb 2007 10:36:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946569AbXBIPfw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Feb 2007 10:35:46 -0500
-Received: from ug-out-1314.google.com ([66.249.92.172]:2873 "EHLO
+	Fri, 9 Feb 2007 10:35:52 -0500
+Received: from ug-out-1314.google.com ([66.249.92.168]:2693 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1946567AbXBIPfF (ORCPT
+	with ESMTP id S1946562AbXBIPfA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Feb 2007 10:35:05 -0500
+	Fri, 9 Feb 2007 10:35:00 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:from:to:subject:date:user-agent:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=hRf1p43OhDvpbqq7kOl2hyGJ7JZ0Ge5AA97cSEYxbUharnISZA7PAHyXQSVoLTSRZ7Uwc6S6D+lNzQm+ngSeqPOeJmOOMvBec71iRGy72FZNZu+65HBsr6ykI6ixEcOZpLWRCSas47/75WLe1X6rH9F3BUFDugU2//jRTRVyEGg=
+        b=YkczaZXvhJCB8Ok0rnP0Ff0+JSYyD9oGsQs1WH8tJBsdethS6kMSvzeAYaaQ+9SVmhJcKeGklPOJph6LWUkT4bcwZxH2gIylpssSUNMYxvNdTvNuM5DNn6r1mLy9LEJwC/GCt8Rw6uuAioQHRKv3jXrV0alY5AzlcgQ5AJr3Qxw=
 From: Alon Bar-Lev <alon.barlev@gmail.com>
 To: linux-kernel@vger.kernel.org, akpm@osdl.org, bwalle@suse.de,
-       rmk+lkml@arm.linux.org.uk, jgarzik@pobox.com
-Subject: [PATCH 26/34] __initdata cleanup - intel-rng
-Date: Fri, 9 Feb 2007 17:31:12 +0200
+       rmk+lkml@arm.linux.org.uk, bzolnier@gmail.com
+Subject: [PATCH 23/34] __initdata cleanup -  ide
+Date: Fri, 9 Feb 2007 17:27:32 +0200
 User-Agent: KMail/1.9.6
 References: <200702091711.34441.alon.barlev@gmail.com>
 In-Reply-To: <200702091711.34441.alon.barlev@gmail.com>
@@ -27,7 +27,7 @@ Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200702091731.12209.alon.barlev@gmail.com>
+Message-Id: <200702091727.32477.alon.barlev@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
@@ -39,24 +39,40 @@ Signed-off-by: Bernhard Walle <bwalle@suse.de>
 
 ---
 
-diff -urNp linux-2.6.20-rc6-mm3.org/drivers/char/hw_random/intel-rng.c linux-2.6.20-rc6-mm3/drivers/char/hw_random/intel-rng.c
---- linux-2.6.20-rc6-mm3.org/drivers/char/hw_random/intel-rng.c	2007-01-25 04:19:28.000000000 +0200
-+++ linux-2.6.20-rc6-mm3/drivers/char/hw_random/intel-rng.c	2007-01-31 22:19:30.000000000 +0200
-@@ -143,7 +143,7 @@ static const struct pci_device_id pci_tb
- };
- MODULE_DEVICE_TABLE(pci, pci_tbl);
+diff -urNp linux-2.6.20-rc6-mm3.org/drivers/ide/ide.c linux-2.6.20-rc6-mm3/drivers/ide/ide.c
+--- linux-2.6.20-rc6-mm3.org/drivers/ide/ide.c	2007-01-31 22:15:39.000000000 +0200
++++ linux-2.6.20-rc6-mm3/drivers/ide/ide.c	2007-01-31 22:19:30.000000000 +0200
+@@ -1483,27 +1483,27 @@ static int __init match_parm (char *s, c
+ }
  
--static __initdata int no_fwh_detect;
-+static __initdata int no_fwh_detect = 0;
- module_param(no_fwh_detect, int, 0);
- MODULE_PARM_DESC(no_fwh_detect, "Skip FWH detection:\n"
-                                 " positive value - skip if FWH space locked read-only\n"
-@@ -219,7 +219,7 @@ static struct hwrng intel_rng = {
+ #ifdef CONFIG_BLK_DEV_ALI14XX
+-static int __initdata probe_ali14xx;
++static int __initdata probe_ali14xx = 0;
+ extern int ali14xx_init(void);
+ #endif
+ #ifdef CONFIG_BLK_DEV_UMC8672
+-static int __initdata probe_umc8672;
++static int __initdata probe_umc8672 = 0;
+ extern int umc8672_init(void);
+ #endif
+ #ifdef CONFIG_BLK_DEV_DTC2278
+-static int __initdata probe_dtc2278;
++static int __initdata probe_dtc2278 = 0;
+ extern int dtc2278_init(void);
+ #endif
+ #ifdef CONFIG_BLK_DEV_HT6560B
+-static int __initdata probe_ht6560b;
++static int __initdata probe_ht6560b = 0;
+ extern int ht6560b_init(void);
+ #endif
+ #ifdef CONFIG_BLK_DEV_QD65XX
+-static int __initdata probe_qd65xx;
++static int __initdata probe_qd65xx = 0;
+ extern int qd65xx_init(void);
+ #endif
  
+-static int __initdata is_chipset_set[MAX_HWIFS];
++static int __initdata is_chipset_set[MAX_HWIFS] = {0};
  
- #ifdef CONFIG_SMP
--static char __initdata waitflag;
-+static char __initdata waitflag = 0;
- 
- static void __init intel_init_wait(void *unused)
- {
+ /*
+  * ide_setup() gets called VERY EARLY during initialization,
