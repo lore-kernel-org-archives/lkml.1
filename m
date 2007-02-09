@@ -1,106 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946530AbXBIP2b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946535AbXBIPb1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946530AbXBIP2b (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Feb 2007 10:28:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946533AbXBIP2b
+	id S1946535AbXBIPb1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Feb 2007 10:31:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946536AbXBIPb1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Feb 2007 10:28:31 -0500
-Received: from ug-out-1314.google.com ([66.249.92.170]:56234 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1946530AbXBIP23 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Feb 2007 10:28:29 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=PhDqPO1k7B6+FuX55MdbyiFfD84Q75ZaFn7H8KFC0KPwE84UlMim61bwecELwT2ZofRpos53KruOA4o7PxYYe5rjJ0d9hmFgoj34Sx7RwI3zrYj+WpzORadYss2iwXGBRQXtSPuHAK8MS7op6cgs7ZazjWKEks04CMAGrg4MqC4=
-Message-ID: <d120d5000702090728i51818b1xc1c0c0aa4b67a76c@mail.gmail.com>
-Date: Fri, 9 Feb 2007 10:28:28 -0500
-From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-To: "Kay Sievers" <kay.sievers@vrfy.org>
-Subject: Re: Network: convert network devices to use struct device instead of class_device
-Cc: "Greg KH" <greg@kroah.com>,
-       "Stephen Hemminger" <shemminger@linux-foundation.org>,
-       "Jeff Garzik" <jeff@garzik.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       netdev <netdev@vger.kernel.org>
-In-Reply-To: <1171009322.10605.39.camel@pim.off.vrfy.org>
+	Fri, 9 Feb 2007 10:31:27 -0500
+Received: from gate.perex.cz ([212.20.107.50]:37454 "EHLO gate.perex.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1946535AbXBIPb1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Feb 2007 10:31:27 -0500
+Date: Fri, 9 Feb 2007 16:30:29 +0100 (CET)
+From: Jaroslav Kysela <perex@suse.cz>
+X-X-Sender: perex@tm8103-a.perex-int.cz
+To: Takashi Iwai <tiwai@suse.de>
+Cc: Linus Torvalds <torvalds@osdl.org>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>
+Subject: Re: [ALSA PATCH] alsa-git merge request
+In-Reply-To: <s5hd54jnzoj.wl%tiwai@suse.de>
+Message-ID: <Pine.LNX.4.61.0702091630010.5511@tm8103-a.perex-int.cz>
+References: <Pine.LNX.4.61.0702091451010.5511@tm8103-a.perex-int.cz>
+ <s5hk5yro1rr.wl%tiwai@suse.de> <Pine.LNX.4.61.0702091538270.5511@tm8103-a.perex-int.cz>
+ <s5hejozo0al.wl%tiwai@suse.de> <s5hd54jnzoj.wl%tiwai@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200702080400.l1840lFd002314@hera.kernel.org>
-	 <d120d5000702080929r7016de12k292add26a0a72291@mail.gmail.com>
-	 <20070209005601.GE30794@kroah.com>
-	 <200702082259.47685.dtor@insightbb.com>
-	 <1171009322.10605.39.camel@pim.off.vrfy.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/9/07, Kay Sievers <kay.sievers@vrfy.org> wrote:
-> On Thu, 2007-02-08 at 22:59 -0500, Dmitry Torokhov wrote:
-> > On Thursday 08 February 2007 19:56, Greg KH wrote:
-> > > On Thu, Feb 08, 2007 at 12:29:12PM -0500, Dmitry Torokhov wrote:
-> > > > On 2/8/07, Stephen Hemminger <shemminger@linux-foundation.org> wrote:
-> > > > >On Thu, 08 Feb 2007 07:43:18 -0500
->
-> > > > >> >     Network: convert network devices to use struct device instead of
-> > > > >class_device
-> > > > >> >
-> > > > >> >     This lets the network core have the ability to handle
-> > > > >suspend/resume
-> > > > >> >     issues, if it wants to.
-> > > > >
-> > > > >It fixes a non-problem. I would like to see the network core suspend/resume
-> > > > >proposal as well. Last time I examined doing network core suspend help,
-> > > > >the problem was that the physical device suspend was called before the
-> > > > >class device. It is not clear how this change would help.
-> > > >
-> > > > If physical devices are registered before class devices then when
-> > > > suspending class devices are naturally suspended first. It is still
-> > > > not clear to me why we need to convert everythign to struct device, I
-> > > > believe I've shown (with patches) that it is possible to integrate
-> > > > struct class_device into PM framework and avoid reshuffling half of
-> > > > the kernel code.
-> > >
-> > > I don't want to have two separate device trees in the kernel (well, one
-> > > big device tree and a bunch of little class_device trees.)  The code
-> > > duplication in the class_device code is just too much, and I get
-> > > questions all the time as to what the differences are.
-> > >
-> >
-> > While duplication of code is a real concern my worry is constant fattening
-> > of struct device. For example most physical devices do not interface
-> > directly with userspace but every single one of them now has dev_t.
-> > Former class_devices do not need suspend/resume early framework either.
-> > And so on, and so forth.
->
-> The dev_t is a good example for the mess we try to fix here. Not having
-> a dev_t for "devices" lead to the creation of a lot of otherwise
-> completely useless "class devices" which are just a total pain to
-> interpret, and follow the events they create, from userspace.
->
-> Things like the scsi_device devices, usb_device devices, ... just exist,
-> because only this type of devices was allowed to pass information for
-> device nodes to userspace.
->
+On Fri, 9 Feb 2007, Takashi Iwai wrote:
 
-I admit I do not know scsi stack but I would expect that the only
-things that need dev_t there would be sd, sr and sg interfaces. As
-such they are separate entities and "deserve" their own structures no
-mater what.
+> At Fri, 09 Feb 2007 15:47:30 +0100,
+> I wrote:
+> > 
+> > At Fri, 9 Feb 2007 15:40:21 +0100 (CET),
+> > Jaroslav Kysela wrote:
+> > > 
+> > > On Fri, 9 Feb 2007, Takashi Iwai wrote:
+> > > 
+> > > > At Fri, 9 Feb 2007 15:02:05 +0100 (CET),
+> > > > Jaroslav Kysela wrote:
+> > > > > 
+> > > > > Linus, please do an update from:
+> > > > > 
+> > > > >   http://www.kernel.org/pub/scm/linux/kernel/git/perex/alsa.git
+> > > > >   (linus branch)
+> > > > 
+> > > > Jaroslav, as I wrote you many times, this tree includes the wrong
+> > > > patches!  If it's merged, we'd need fix patches in addition
+> > > > eventually...
+> > > 
+> > > I replaced patches with your code a few days ago. If something else is 
+> > > broken, please, let me know.
+> > 
+> > Strange, my local tree freshly pulled have old files.
+> > I'll try to pull cleanly and check again.
+> 
+> Reconfirmed that it's still broken.  The below is a patch to fix.
+> Please apply.
 
-I can bet that number of real devices that need dev_t is smaller than
-number of virtual devices that do not need full power management:
+The bug-fix patch has been applied to alsa.git tree.
 
-PCI cards, ACPI tree, etc, etc - hardware devices interfacing with
-other parts of the kernel, not userspace directly.
+					Thanks,
+						Jaroslav
 
-NET, input, tty, etc - no need to suspend late/resume early
-
-And, btw, having separate device and struct device does not prevent
-exporting them as a unified sysfs tree and is in fact pretty easy to
-do (I believe I posted patches to do that as well).
-
--- 
-Dmitry
+-----
+Jaroslav Kysela <perex@suse.cz>
+Linux Kernel Sound Maintainer
+ALSA Project, SUSE Labs
