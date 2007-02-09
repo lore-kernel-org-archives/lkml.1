@@ -1,51 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1945951AbXBIBVW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1945955AbXBIBWH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1945951AbXBIBVW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Feb 2007 20:21:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945986AbXBIBVW
+	id S1945955AbXBIBWH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Feb 2007 20:22:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945995AbXBIBWH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Feb 2007 20:21:22 -0500
-Received: from terminus.zytor.com ([192.83.249.54]:43095 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1945951AbXBIBVV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Feb 2007 20:21:21 -0500
-Message-ID: <45CBCC72.6080409@zytor.com>
-Date: Thu, 08 Feb 2007 17:20:50 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070102)
+	Thu, 8 Feb 2007 20:22:07 -0500
+Received: from scrub.xs4all.nl ([194.109.195.176]:35359 "EHLO scrub.xs4all.nl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1945955AbXBIBWF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Feb 2007 20:22:05 -0500
+Date: Fri, 9 Feb 2007 02:21:59 +0100 (CET)
+From: Roman Zippel <zippel@linux-m68k.org>
+X-X-Sender: roman@scrub.home
+To: Andreas Schwab <schwab@suse.de>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Oleg Verych <olecom@flower.upol.cz>
+Subject: Re: The who needs reviews anyways [PATCH]
+In-Reply-To: <jey7n8urcg.fsf@sykes.suse.de>
+Message-ID: <Pine.LNX.4.64.0702090214460.14457@scrub.home>
+References: <Pine.LNX.4.64.0702082227020.14457@scrub.home> <jey7n8urcg.fsf@sykes.suse.de>
 MIME-Version: 1.0
-To: Andi Kleen <ak@muc.de>
-CC: Rusty Russell <rusty@rustcorp.com.au>, Andrew Morton <akpm@osdl.org>,
-       Linus Torvalds <torvalds@osdl.org>, Ingo Molnar <mingo@elte.hu>,
-       Neil Brown <neilb@suse.de>,
-       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       virtualization <virtualization@lists.osdl.org>,
-       Neil Brown <neilb@suse.de>
-Subject: Re: [PATCH] Use correct macros in raid code, not raw asm
-References: <1167348861.30506.46.camel@localhost.localdomain> <20061228155659.462eaa9c.akpm@osdl.org> <1167350803.30506.49.camel@localhost.localdomain> <20061229111355.GA82929@muc.de>
-In-Reply-To: <20061229111355.GA82929@muc.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
->> The code looks like it's designed to be included from userspace for
->> testing; as it compiles without this include (and has no other
->> includes), I chose not to add it.
->>
->> Linus makes a good point, but someone who actually knows the code
->> should, y'know, test it and stuff...
+Hi,
+
+On Fri, 9 Feb 2007, Andreas Schwab wrote:
+
+> Roman Zippel <zippel@linux-m68k.org> writes:
 > 
-> It should use kernel_fpu_begin() imho. If someone wants to test
-> it in user space again they can add dummy definitions of that
-> to their user space  header.
+> > - printf has other side effects, instead stop pretending we support 
+> >   something else than bash
+> 
+> printf is a much better echo, but you need to use it properly as well.
+> Either use %s to print a literal string or %b to let it interpret escape
+> sequences.
 
-I hadn't seen this thread until now, when Neil pointed me to the thread.
+Hmm, I didn't know about %b, which would indeed be another possibility 
+here, although I think it would only make a real difference if we decided 
+to make (and more importantly keep) all our scripts POSIX clean.
 
-Using kernel_fpu_begin() ... kernel_fpu_end() is probably indeed the 
-best option.
-
-	-hpa
-
+bye, Roman
