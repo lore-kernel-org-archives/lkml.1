@@ -1,82 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946118AbXBIFN4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946115AbXBIFca@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946118AbXBIFN4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Feb 2007 00:13:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946119AbXBIFN4
+	id S1946115AbXBIFca (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Feb 2007 00:32:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946121AbXBIFca
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Feb 2007 00:13:56 -0500
-Received: from raven.upol.cz ([158.194.120.4]:52909 "EHLO raven.upol.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1946118AbXBIFNz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Feb 2007 00:13:55 -0500
-Date: Fri, 9 Feb 2007 06:22:45 +0100
-To: Roman Zippel <zippel@linux-m68k.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: The who needs reviews anyways [PATCH]
-Message-ID: <20070209052245.GC28386@flower.upol.cz>
-References: <Pine.LNX.4.64.0702082227020.14457@scrub.home>
+	Fri, 9 Feb 2007 00:32:30 -0500
+Received: from wr-out-0506.google.com ([64.233.184.235]:20754 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1946115AbXBIFc3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Feb 2007 00:32:29 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=hGTRRI4xTqCPYLP82+wdk9v4pRQb9ZqpABBOUglA2+5oVgvkv6zV5ZNkIVaB6hb1es8XdtxygoO7gaq3gv4/5eMPvmgqxGLB/X0coFDxsssjtxELcgBFxMN/w7NUIdACZgmMx2yT7pBLK+iFpMge9/ByCCLFR6gKHwDYbES8MYE=
+Message-ID: <344eb09a0702082132w100e3b27saea61ee30a28b50a@mail.gmail.com>
+Date: Fri, 9 Feb 2007 11:02:28 +0530
+From: "Bharata B Rao" <bharata.rao@gmail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: -mm merge plans for 2.6.21
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20070208150710.1324f6b4.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0702082227020.14457@scrub.home>
-Organization: Palacky University in Olomouc, experimental physics department.
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Oleg Verych <olecom@flower.upol.cz>
+References: <20070208150710.1324f6b4.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 08, 2007 at 10:48:51PM +0100, Roman Zippel wrote:
-[]
-> - printf has other side effects, instead stop pretending we support 
->   something else than bash
+Andrew,
 
-More on printf, `sh', tmpfiles.
+On 2/9/07, Andrew Morton <akpm@linux-foundation.org> wrote:
+> fsaio-add-a-wait-queue-arg-to-the-wait_bit-action-routine.patch
+> fsaio-add-a-wait-queue-arg-to-the-wait_bit-action-routine-gfs2-fix.patch
+> fsaio-rename-__lock_page-to-lock_page_blocking.patch
+> fsaio-interfaces-to-initialize-and-to-test-a-wait-bit-key.patch
+> fsaio-add-a-default-io-wait-bit-field-in-task-struct.patch
+> fsaio-enable-wait-bit-based-filtered-wakeups-to-work-for-aio.patch
+> fsaio-enable-wait-bit-based-filtered-wakeups-to-work-for-aio-fix.patch
+> fsaio-enable-wait-bit-based-filtered-wakeups-to-work-for-aio-fix-sparse-fix.patch
+> fsaio-enable-asynchronous-wait-page-and-lock-page.patch
+> fsaio-filesystem-aio-read.patch
+> fsaio-aio-o_sync-filesystem-write.patch
+>
+>  Will wait to see what happens with febrils.
+>
+> aio-is-unlikely.patch
+>
+>  Will merge.
+>
+> rework-compat_sys_io_submit.patch
+> fix-aioh-includes.patch
+> fix-access_ok-checks.patch
+> make-good_sigevent-non-static.patch
+> make-good_sigevent-non-static-fix.patch
+> make-__sigqueue_free-and.patch
+> aio-completion-signal-notification.patch
+> aio-completion-signal-notification-fix.patch
+> aio-completion-signal-notification-fixes-and-cleanups.patch
+> aio-completion-signal-notification-small-cleanup.patch
+> add-listio-syscall-support.patch
+>
+>  I guess these are dependent upon fsaio.
 
-As we know original problem is: something from binutils is removing
-output files on failure. 
+No. AIO completion signal notification patches and listio patch work
+independently of fsaio patches. Just that for buffered AIO case, the
+fsaio patches will make the behaviour truly asynchronous.
 
-> -	  else if [ -x /bin/bash ]; then echo /bin/bash; \
-> -	  else echo sh; fi ; fi)
-> +	  else if [ -x /bin/bash ]; then echo /bin/bash; fi; fi)
-> +ifeq ($(CONFIG_SHELL),)
-> +$(error bash is required to build the kernel)
-> +endif
-> +SHELL := $(CONFIG_SHELL)
-
-here is policy to have `bash' introduced, so due to original
-issue, where `root' users ended with removed /dev/null, may policy to have
-`non root' user to build kernel be added? Thus
-
-this:
-> +# output directory for tests below
-> +TMPOUT := $(if $(KBUILD_EXTMOD),$(firstword $(KBUILD_EXTMOD))/)
-[]
-> +# try-run
-> +# Usage: option = $(call try-run, $(CC)...-o "$$TMP",option-ok,otherwise)
-> +# Exit code chooses option. "$$TMP" is can be used as temporary file and
-> +# is automatically cleaned up.
-> +try-run = $(shell set -e;		\
-this:
-> +	TMP="$(TMPOUT).$$$$.tmp";	\
-[]
-> +	if ($(1)) >/dev/null 2>&1;	\
-> +	then echo "$(2)";		\
-> +	else echo "$(3)";		\
-> +	fi;				\
-this:
-> +	rm -f "$$TMP")
-
-may be removed, and to make TMP=/dev/null? And to forget currently about
-my silly symlinks, and this crappy sets of output files?
-
-As for `printf', as i've wrote, only in case of % and quotes in
-arguments, something else must be added to handle that. But i think, it's
-paranoia.
-
-> -as-instr = $(call checker-shell,\
-> -   printf "$(1)" | $(CC) $(AFLAGS) -c -xassembler -o $$OUT -,$(2),$(3))
-
-`printf $(1)' is pretty enough.
-
-____
+Regards,
+Bharata.
