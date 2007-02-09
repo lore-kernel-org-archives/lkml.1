@@ -1,69 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946321AbXBIKdA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946323AbXBIKdK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946321AbXBIKdA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Feb 2007 05:33:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946347AbXBIKdA
+	id S1946323AbXBIKdK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Feb 2007 05:33:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946347AbXBIKdK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Feb 2007 05:33:00 -0500
-Received: from mx2.suse.de ([195.135.220.15]:35078 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1946321AbXBIKc7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Feb 2007 05:32:59 -0500
-Date: Fri, 9 Feb 2007 11:32:58 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Linux Filesystems <linux-fsdevel@vger.kernel.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [rfc][patch 0/3] a faster buffered write deadlock fix?
-Message-ID: <20070209103258.GC14398@wotan.suse.de>
-References: <20070208105437.26443.35653.sendpatchset@linux.site> <20070209004101.3e4a88fc.akpm@linux-foundation.org> <20070209095405.GA14398@wotan.suse.de> <20070209020954.4951256e.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 9 Feb 2007 05:33:10 -0500
+Received: from mx0.karneval.cz ([81.27.192.15]:57380 "EHLO av6.karneval.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1946323AbXBIKdF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Feb 2007 05:33:05 -0500
+From: Pavel Pisa <pisa@cmp.felk.cvut.cz>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       linux-kernel@vger.kernel.org
+Subject: Coding style question
+Date: Fri, 9 Feb 2007 11:32:09 +0100
+User-Agent: KMail/1.9.4
+Cc: Sascha Hauer <s.hauer@pengutronix.de>, Pierre Ossman <drzeus@drzeus.cx>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070209020954.4951256e.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.9i
+Message-Id: <200702091132.09741.pisa@cmp.felk.cvut.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 09, 2007 at 02:09:54AM -0800, Andrew Morton wrote:
-> On Fri, 9 Feb 2007 10:54:05 +0100 Nick Piggin <npiggin@suse.de> wrote:
-> 
-> > 
-> > That's still got a deadlock,
-> 
-> It does?
+Hello All,
 
-Yes, PG_lock vs mm->mmap_sem.
+I have question if next style of macros definitions
+for hardware registers is acceptable (tastefull for
+maintainers) for Linux kernel.
 
-> >  and also it doesn't work if we want to lock
-> > the page when performing a minor fault (which I want to fix fault vs
-> > invalidate),
-> 
-> It's hard to discuss this without a description of what you want to fix
-> there, and a description of how you plan to fix it.
+/* Register offset against peripheral base */
+#define SUBSYSTEM_REGISTER_o 0x00000
 
-http://marc.theaimsgroup.com/?l=linux-mm&m=116865911432667&w=2
+/* The register field mask */
+#define REGISTER_FUNCTION_m 0x00000
 
-> > and also assumes nobody's ->nopage locks the page or
-> > requires any resources that are held by prepare_write (something not
-> > immediately clear to me with the cluster filesystems, at least).
-> 
-> The nopage handler is filemap_nopage().  Are there any exceptions to that?
+/* The register field starting bit */
+#define REGISTER_FUNCTION_b 0x00
 
-OCFS2 and GFS2.
+I am used to use this over many of our embedded
+targets mainly developed without operating system.
+I would like to use this for Linux drivers as well.
 
-> > But that all becomes legacy path, so do we really care? Supposing fs
-> > maintainers like perform_write, then after the main ones have implementations
-> > we could switch over to the slow-but-correct prepare_write legacy path.
-> > Or we could leave it, or we could use Linus's slightly-less-buggy scheme...
-> > by that point I expect I'd be sick of arguing about it ;)
-> 
-> It's worth "arguing" about.  This is write().  What matters more??
+The naming convention has advantage, that it
+prevents mistakes, when mask value (*_m) is used
+in bit set/clear function without notice instead
+of bitnumber (*_b).
 
-That's the legacy path that uses prepare/commit (ie. supposing that all
-major filesystems did get converted to perform_write).
+The SUBSYSTEM_REGISTER -> REGISTER_FUNCTION
+prevents mistakes, when field defined for one register
+is used with incorrect register by mistake.
 
-Of course I would still want my correct-but-slow version in that case,
-but I just wouldn't care to argue if you still wanted to keep it fast.
+I would like to use this style in i.MX SDHC to
+allow support both controllers on MX21.
+I would like to use it in other areas as well.
 
+There are tightly copled two macros for preparation
+and acquisition of muti-bit masked fields values
+
+#define __val2mfld(mask,val) (((mask)&~((mask)<<1))*(val)&(mask))
+
+#define __mfld2val(mask,val) (((val)&(mask))/((mask)&~((mask)<<1)))
+
+__raw_writel(REGISTER_SINGLEBIT_m |
+             __val2mfld(REGISTER_MULTIBIT_m,value),
+             periph_base + SUBSYSTEM_REGISTER_o)
+
+x = __mfld2val(REGISTER_MULTIBIT_m,
+           _raw_readl(periph_base + SUBSYSTEM_REGISTER_o))
+
+The macros seems to be complicated, but they generate optimal
+code for constant fields masks. I am not aware, that there
+is some commonly available alternative in Linux kernel
+header files.
+
+Suggestions, names corrections etc. are welcomed.
+If you think, that it is not good idea to introduce
+yet another style, I would try to follow actual style
+found in each source file. If you prefer some already
+utilized style, direct me to right examples, please.
+
+Best wishes
+
+              Pavel Pisa
