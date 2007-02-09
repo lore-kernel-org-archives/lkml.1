@@ -1,61 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946525AbXBIP0u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946530AbXBIP2b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946525AbXBIP0u (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Feb 2007 10:26:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946532AbXBIP0t
+	id S1946530AbXBIP2b (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Feb 2007 10:28:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946533AbXBIP2b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Feb 2007 10:26:49 -0500
-Received: from smtp3-g19.free.fr ([212.27.42.29]:60232 "EHLO smtp3-g19.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1946530AbXBIP0t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Feb 2007 10:26:49 -0500
-Message-ID: <45CC9257.8080806@free.fr>
-Date: Fri, 09 Feb 2007 16:25:11 +0100
-From: John <linux.kernel@free.fr>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061108 SeaMonkey/1.0.6
+	Fri, 9 Feb 2007 10:28:31 -0500
+Received: from ug-out-1314.google.com ([66.249.92.170]:56234 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1946530AbXBIP23 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Feb 2007 10:28:29 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=PhDqPO1k7B6+FuX55MdbyiFfD84Q75ZaFn7H8KFC0KPwE84UlMim61bwecELwT2ZofRpos53KruOA4o7PxYYe5rjJ0d9hmFgoj34Sx7RwI3zrYj+WpzORadYss2iwXGBRQXtSPuHAK8MS7op6cgs7ZazjWKEks04CMAGrg4MqC4=
+Message-ID: <d120d5000702090728i51818b1xc1c0c0aa4b67a76c@mail.gmail.com>
+Date: Fri, 9 Feb 2007 10:28:28 -0500
+From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+To: "Kay Sievers" <kay.sievers@vrfy.org>
+Subject: Re: Network: convert network devices to use struct device instead of class_device
+Cc: "Greg KH" <greg@kroah.com>,
+       "Stephen Hemminger" <shemminger@linux-foundation.org>,
+       "Jeff Garzik" <jeff@garzik.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       netdev <netdev@vger.kernel.org>
+In-Reply-To: <1171009322.10605.39.camel@pim.off.vrfy.org>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: Thomas Gleixner <tglx@timesys.com>, a.p.zijlstra@chello.nl, mingo@elte.hu,
-       johnstul@us.ibm.com, akpm@osdl.org
-Subject: Re: One-shot high-resolution POSIX timer periodically late
-References: <fa.4zD54Ie6Ozt0P4YqQSicS+XzXGw@ifi.uio.no>	 <fa.G+/T32f2o1M3+YGLca/O8NaAQyY@ifi.uio.no>	 <fa.6Ua8xjNfLKQEZZgDsoJgPMyww4g@ifi.uio.no>	 <fa.yQlV+WU0TgrJTVqjopa01tgCnT0@ifi.uio.no>	 <fa.ucVrLJ1Lh6FjdBHRglsIUc8/evk@ifi.uio.no>	 <fa.Id9oufyELrVbe5Wb8SRakwC0V50@ifi.uio.no>  <45C75D2D.9010506@free.fr>	 <1170747081.4672.11.camel@twins>  <45C9A8FE.3090705@free.fr> <1170955962.3646.51.camel@chaos>
-In-Reply-To: <1170955962.3646.51.camel@chaos>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200702080400.l1840lFd002314@hera.kernel.org>
+	 <d120d5000702080929r7016de12k292add26a0a72291@mail.gmail.com>
+	 <20070209005601.GE30794@kroah.com>
+	 <200702082259.47685.dtor@insightbb.com>
+	 <1171009322.10605.39.camel@pim.off.vrfy.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Gleixner wrote:
+On 2/9/07, Kay Sievers <kay.sievers@vrfy.org> wrote:
+> On Thu, 2007-02-08 at 22:59 -0500, Dmitry Torokhov wrote:
+> > On Thursday 08 February 2007 19:56, Greg KH wrote:
+> > > On Thu, Feb 08, 2007 at 12:29:12PM -0500, Dmitry Torokhov wrote:
+> > > > On 2/8/07, Stephen Hemminger <shemminger@linux-foundation.org> wrote:
+> > > > >On Thu, 08 Feb 2007 07:43:18 -0500
+>
+> > > > >> >     Network: convert network devices to use struct device instead of
+> > > > >class_device
+> > > > >> >
+> > > > >> >     This lets the network core have the ability to handle
+> > > > >suspend/resume
+> > > > >> >     issues, if it wants to.
+> > > > >
+> > > > >It fixes a non-problem. I would like to see the network core suspend/resume
+> > > > >proposal as well. Last time I examined doing network core suspend help,
+> > > > >the problem was that the physical device suspend was called before the
+> > > > >class device. It is not clear how this change would help.
+> > > >
+> > > > If physical devices are registered before class devices then when
+> > > > suspending class devices are naturally suspended first. It is still
+> > > > not clear to me why we need to convert everythign to struct device, I
+> > > > believe I've shown (with patches) that it is possible to integrate
+> > > > struct class_device into PM framework and avoid reshuffling half of
+> > > > the kernel code.
+> > >
+> > > I don't want to have two separate device trees in the kernel (well, one
+> > > big device tree and a bunch of little class_device trees.)  The code
+> > > duplication in the class_device code is just too much, and I get
+> > > questions all the time as to what the differences are.
+> > >
+> >
+> > While duplication of code is a real concern my worry is constant fattening
+> > of struct device. For example most physical devices do not interface
+> > directly with userspace but every single one of them now has dev_t.
+> > Former class_devices do not need suspend/resume early framework either.
+> > And so on, and so forth.
+>
+> The dev_t is a good example for the mess we try to fix here. Not having
+> a dev_t for "devices" lead to the creation of a lot of otherwise
+> completely useless "class devices" which are just a total pain to
+> interpret, and follow the events they create, from userspace.
+>
+> Things like the scsi_device devices, usb_device devices, ... just exist,
+> because only this type of devices was allowed to pass information for
+> device nodes to userspace.
+>
 
-> On Wed, 2007-02-07 at 11:25 +0100, John wrote:
-> 
->> Are there people that use the -rt patch set in real industrial applications?
-> 
-> Yes. But we use a stabilized version of 2.6.16-rt29.
-> http://www.osadl.org/projects/downloads/preempt-rt/linux-2.6.16/
+I admit I do not know scsi stack but I would expect that the only
+things that need dev_t there would be sd, sr and sg interfaces. As
+such they are separate entities and "deserve" their own structures no
+mater what.
 
-Thanks for the pointer.
+I can bet that number of real devices that need dev_t is smaller than
+number of virtual devices that do not need full power management:
 
-I'm confused: patch-2.6.16-rt29-tglx3 is dated 2006-09-07, yet there
-have been numerous revisions of the -rt patch set since then. Does that
-mean that no serious bugs have been found since September? Do the -rt
-patch sets for 2.6.17 - 2.6.20 only bring new features and/or adapt the
--rt infrastructure to the newer kernels?
+PCI cards, ACPI tree, etc, etc - hardware devices interfacing with
+other parts of the kernel, not userspace directly.
 
->> It seems that, if an important bug is found in the -rt part, I will have 
->> to either upgrade to the latest kernel, or back port all the -rt changes 
->> to the kernel I chose for my application?
-> 
-> Yep.
+NET, input, tty, etc - no need to suspend late/resume early
 
-Ouch :-)
+And, btw, having separate device and struct device does not prevent
+exporting them as a unified sysfs tree and is in fact pretty easy to
+do (I believe I posted patches to do that as well).
 
-I think I'll try my luck with 2.6.20 (it's been working so far).
-
-By the way, I have a question: when I compile glibc for this system,
-should I compile it against the vanilla 2.6.20 includes, or against the
-patched 2.6.20-rt includes?
-
-Regards.
-
-
+-- 
+Dmitry
