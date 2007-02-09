@@ -1,47 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946521AbXBIPYG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946525AbXBIP0u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946521AbXBIPYG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Feb 2007 10:24:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946523AbXBIPYG
+	id S1946525AbXBIP0u (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Feb 2007 10:26:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946532AbXBIP0t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Feb 2007 10:24:06 -0500
-Received: from ozlabs.org ([203.10.76.45]:47973 "EHLO ozlabs.org"
+	Fri, 9 Feb 2007 10:26:49 -0500
+Received: from smtp3-g19.free.fr ([212.27.42.29]:60232 "EHLO smtp3-g19.free.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1946521AbXBIPYF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Feb 2007 10:24:05 -0500
-Subject: Re: [PATCH 6/10] lguest code: the little linux hypervisor.
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Andi Kleen <ak@muc.de>, virtualization@lists.osdl.org,
-       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>
-In-Reply-To: <20070209141728.GA26749@uranus.ravnborg.org>
-References: <1171012296.2718.26.camel@localhost.localdomain>
-	 <1171012761.2718.40.camel@localhost.localdomain>
-	 <1171012827.2718.42.camel@localhost.localdomain>
-	 <200702091109.20061.ak@muc.de>
-	 <1171024771.2718.129.camel@localhost.localdomain>
-	 <20070209141728.GA26749@uranus.ravnborg.org>
-Content-Type: text/plain
-Date: Sat, 10 Feb 2007 02:23:19 +1100
-Message-Id: <1171034599.2718.190.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
+	id S1946530AbXBIP0t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Feb 2007 10:26:49 -0500
+Message-ID: <45CC9257.8080806@free.fr>
+Date: Fri, 09 Feb 2007 16:25:11 +0100
+From: John <linux.kernel@free.fr>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061108 SeaMonkey/1.0.6
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+CC: Thomas Gleixner <tglx@timesys.com>, a.p.zijlstra@chello.nl, mingo@elte.hu,
+       johnstul@us.ibm.com, akpm@osdl.org
+Subject: Re: One-shot high-resolution POSIX timer periodically late
+References: <fa.4zD54Ie6Ozt0P4YqQSicS+XzXGw@ifi.uio.no>	 <fa.G+/T32f2o1M3+YGLca/O8NaAQyY@ifi.uio.no>	 <fa.6Ua8xjNfLKQEZZgDsoJgPMyww4g@ifi.uio.no>	 <fa.yQlV+WU0TgrJTVqjopa01tgCnT0@ifi.uio.no>	 <fa.ucVrLJ1Lh6FjdBHRglsIUc8/evk@ifi.uio.no>	 <fa.Id9oufyELrVbe5Wb8SRakwC0V50@ifi.uio.no>  <45C75D2D.9010506@free.fr>	 <1170747081.4672.11.camel@twins>  <45C9A8FE.3090705@free.fr> <1170955962.3646.51.camel@chaos>
+In-Reply-To: <1170955962.3646.51.camel@chaos>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-02-09 at 15:17 +0100, Sam Ravnborg wrote:
-> I do not quite see what you ask for.
-> Care to try to describe the problem a bit then I may look at it sometime.
+Thomas Gleixner wrote:
+
+> On Wed, 2007-02-07 at 11:25 +0100, John wrote:
 > 
-> [Heading for vacation in a few hours so no prompt reply]
+>> Are there people that use the -rt patch set in real industrial applications?
+> 
+> Yes. But we use a stabilized version of 2.6.16-rt29.
+> http://www.osadl.org/projects/downloads/preempt-rt/linux-2.6.16/
 
-I'd like my own, private "asm-offsets.h".  In this case, in
-arch/i386/lguest/.  I guess it's a matter of extracting the core of the
-asm-offsets.h magic and generalizing it.
+Thanks for the pointer.
 
-Have a good break!
-Rusty.
+I'm confused: patch-2.6.16-rt29-tglx3 is dated 2006-09-07, yet there
+have been numerous revisions of the -rt patch set since then. Does that
+mean that no serious bugs have been found since September? Do the -rt
+patch sets for 2.6.17 - 2.6.20 only bring new features and/or adapt the
+-rt infrastructure to the newer kernels?
+
+>> It seems that, if an important bug is found in the -rt part, I will have 
+>> to either upgrade to the latest kernel, or back port all the -rt changes 
+>> to the kernel I chose for my application?
+> 
+> Yep.
+
+Ouch :-)
+
+I think I'll try my luck with 2.6.20 (it's been working so far).
+
+By the way, I have a question: when I compile glibc for this system,
+should I compile it against the vanilla 2.6.20 includes, or against the
+patched 2.6.20-rt includes?
+
+Regards.
 
 
