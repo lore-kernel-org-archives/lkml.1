@@ -1,40 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752642AbXBIVvz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946139AbXBIVxm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752642AbXBIVvz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Feb 2007 16:51:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752637AbXBIVvz
+	id S1946139AbXBIVxm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Feb 2007 16:53:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946143AbXBIVxl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Feb 2007 16:51:55 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:48723 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752642AbXBIVvy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Feb 2007 16:51:54 -0500
-Date: Fri, 9 Feb 2007 13:51:51 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Alan <alan@lxorguk.ukuu.org.uk>
-Cc: linux-kernel@vger.kernel.org
+	Fri, 9 Feb 2007 16:53:41 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:36908 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1946139AbXBIVxl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Feb 2007 16:53:41 -0500
 Subject: Re: -mm merge plans for 2.6.21
-Message-Id: <20070209135151.4b839204.akpm@linux-foundation.org>
-In-Reply-To: <20070209193753.76bc2430@localhost.localdomain>
+From: David Woodhouse <dwmw2@infradead.org>
+To: Russell King <rmk+lkml@arm.linux.org.uk>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Alexey Dobriyan <adobriyan@openvz.org>, linux-kernel@vger.kernel.org,
+       drepper@redhat.com
+In-Reply-To: <20070209214944.GA16158@flint.arm.linux.org.uk>
 References: <20070208150710.1324f6b4.akpm@linux-foundation.org>
-	<20070209193753.76bc2430@localhost.localdomain>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+	 <1171042535.29713.96.camel@pmac.infradead.org>
+	 <20070209134516.2367a7aa.akpm@linux-foundation.org>
+	 <20070209214944.GA16158@flint.arm.linux.org.uk>
+Content-Type: text/plain
+Date: Fri, 09 Feb 2007 21:53:19 +0000
+Message-Id: <1171057999.29713.129.camel@pmac.infradead.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6.dwmw2.1) 
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 9 Feb 2007 19:37:53 +0000
-Alan <alan@lxorguk.ukuu.org.uk> wrote:
+On Fri, 2007-02-09 at 21:49 +0000, Russell King wrote:
+> urgh, new system calls... wonder if they fit in the ARM ABI...  Looks
+> fine.
 
-> Please just push the EDAC K8 stuff.
+Can you elucidate on _what_ you just checked for?
 
-OK.
+There was something about alignment of 64-bit arguments to syscalls
+which affects MIPS and/or ARM which I can't quite remember-- something
+about putting it them arguments in either an even-numbered or
+odd-numbered position to make it work nicely. Is that actually written
+anywhere, and does anyone bother to check?
 
-> Andi will say "no" from now until the
-> end of time, but end users want it, distributions want it, and Andi is
-> not the EDAC maintainer so should consider himself overruled on what
-> isn't a technical issue but a personal political viewpoint.
+-- 
+dwmw2
 
-I'll just tell him I sent it by accident.
