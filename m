@@ -1,57 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946235AbXBIJBW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946236AbXBIJGK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946235AbXBIJBW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Feb 2007 04:01:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946237AbXBIJBW
+	id S1946236AbXBIJGK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Feb 2007 04:06:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946237AbXBIJGK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Feb 2007 04:01:22 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:36611 "EHLO smtp.osdl.org"
+	Fri, 9 Feb 2007 04:06:10 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:36766 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1946235AbXBIJBV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Feb 2007 04:01:21 -0500
-Date: Fri, 9 Feb 2007 01:00:37 -0800
+	id S1946236AbXBIJGI convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Feb 2007 04:06:08 -0500
+Date: Fri, 9 Feb 2007 01:05:57 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Alexey Dobriyan <adobriyan@openvz.org>
-Cc: viro@ftp.linux.org.uk, linux-kernel@vger.kernel.org,
-       duncan.sands@math.u-psud.fr
-Subject: Re: [PATCH v3] Fix rmmod/read/write races in /proc entries
-Message-Id: <20070209010037.7f4393c5.akpm@linux-foundation.org>
-In-Reply-To: <20070208132012.GA6041@localhost.sw.ru>
-References: <20070208132012.GA6041@localhost.sw.ru>
+To: =?ISO-8859-1?B?U+liYXN0aWVuIER1Z3Xp?= <sebastien.dugue@bull.net>
+Cc: "Bharata B Rao" <bharata.rao@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: -mm merge plans for 2.6.21
+Message-Id: <20070209010557.6506d39a.akpm@linux-foundation.org>
+In-Reply-To: <20070209092611.72c221d3@frecb000686.frec.bull.fr>
+References: <20070208150710.1324f6b4.akpm@linux-foundation.org>
+	<344eb09a0702082132w100e3b27saea61ee30a28b50a@mail.gmail.com>
+	<20070209092611.72c221d3@frecb000686.frec.bull.fr>
 X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 8 Feb 2007 16:20:12 +0300 Alexey Dobriyan <adobriyan@openvz.org> wrote:
+On Fri, 9 Feb 2007 09:26:11 +0100 Sébastien Dugué <sebastien.dugue@bull.net> wrote:
 
-> +again:
->  	spin_lock(&proc_subdir_lock);
->  	for (p = &parent->subdir; *p; p=&(*p)->next ) {
->  		if (!proc_match(len, fn, *p))
->  			continue;
->  		de = *p;
-> +
-> +		/*
-> +		 * Stop accepting new readers/writers. If you're dynamically
-> +		 * allocating ->proc_fops, save a pointer somewhere.
-> +		 */
-> +		spin_lock(&de->pde_unload_lock);
-> +		de->proc_fops = NULL;
-> +		/* Wait until all readers/writers are done. */
-> +		if (de->pde_users > 0) {
-> +			spin_unlock(&de->pde_unload_lock);
-> +			spin_unlock(&proc_subdir_lock);
-> +			schedule();
-> +			goto again;
-> +		}
-> +		spin_unlock(&de->pde_unload_lock);
+> On Fri, 9 Feb 2007 11:02:28 +0530 "Bharata B Rao" <bharata.rao@gmail.com> wrote:
+> 
+> > Andrew,
+> > 
+> > On 2/9/07, Andrew Morton <akpm@linux-foundation.org> wrote:
+> > > fsaio-add-a-wait-queue-arg-to-the-wait_bit-action-routine.patch
+> > > fsaio-add-a-wait-queue-arg-to-the-wait_bit-action-routine-gfs2-fix.patch
+> > > fsaio-rename-__lock_page-to-lock_page_blocking.patch
+> > > fsaio-interfaces-to-initialize-and-to-test-a-wait-bit-key.patch
+> > > fsaio-add-a-default-io-wait-bit-field-in-task-struct.patch
+> > > fsaio-enable-wait-bit-based-filtered-wakeups-to-work-for-aio.patch
+> > > fsaio-enable-wait-bit-based-filtered-wakeups-to-work-for-aio-fix.patch
+> > > fsaio-enable-wait-bit-based-filtered-wakeups-to-work-for-aio-fix-sparse-fix.patch
+> > > fsaio-enable-asynchronous-wait-page-and-lock-page.patch
+> > > fsaio-filesystem-aio-read.patch
+> > > fsaio-aio-o_sync-filesystem-write.patch
+> > >
+> > >  Will wait to see what happens with febrils.
+> > >
+> > > aio-is-unlikely.patch
+> > >
+> > >  Will merge.
+> > >
+> > > rework-compat_sys_io_submit.patch
+> > > fix-aioh-includes.patch
+> > > fix-access_ok-checks.patch
+> > > make-good_sigevent-non-static.patch
+> > > make-good_sigevent-non-static-fix.patch
+> > > make-__sigqueue_free-and.patch
+> > > aio-completion-signal-notification.patch
+> > > aio-completion-signal-notification-fix.patch
+> > > aio-completion-signal-notification-fixes-and-cleanups.patch
+> > > aio-completion-signal-notification-small-cleanup.patch
+> > > add-listio-syscall-support.patch
+> > >
+> > >  I guess these are dependent upon fsaio.
+> > 
+> > No. AIO completion signal notification patches and listio patch work
+> > independently of fsaio patches. Just that for buffered AIO case, the
+> > fsaio patches will make the behaviour truly asynchronous.
+> > 
+> > Regards,
+> > Bharata.
+> 
+>   I concur.
+> 
 
-aergh.  This will devolve into busy-wait-until-we-expire-our-timeslice.
-
-Would be nicer to do this with a wait_for_completion().
-
-I guess it doesn't happen very often - if another process happens to
-be in the middle or a read or write syscall to that /proc file.
+But is the proposed listio implementation still relevant if we go and add
+the async syscalls? 
