@@ -1,82 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992442AbXBIRID@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992436AbXBIRIG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992442AbXBIRID (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Feb 2007 12:08:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992436AbXBIRIB
+	id S2992436AbXBIRIG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Feb 2007 12:08:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992446AbXBIRIG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Feb 2007 12:08:01 -0500
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:51317 "EHLO
-	outbound4-sin-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S2992442AbXBIRIA (ORCPT
+	Fri, 9 Feb 2007 12:08:06 -0500
+Received: from hera.kernel.org ([140.211.167.34]:54392 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2992436AbXBIRIE convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Feb 2007 12:08:00 -0500
-X-BigFish: V
-Message-ID: <45CCA568.6090607@am.sony.com>
-Date: Fri, 09 Feb 2007 08:46:32 -0800
-From: Geoff Levand <geoffrey.levand@am.sony.com>
-User-Agent: Mozilla Thunderbird 1.0.8-1.1.fc4 (X11/20060501)
-X-Accept-Language: en-us, en
+	Fri, 9 Feb 2007 12:08:04 -0500
+From: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
+To: Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [PATCH 6c/10] lguest: the guest code
+Date: Fri, 9 Feb 2007 12:06:31 -0500
+User-Agent: KMail/1.9.5
+Cc: lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, Andi Kleen <ak@muc.de>,
+       virtualization <virtualization@lists.osdl.org>
+References: <1171012296.2718.26.camel@localhost.localdomain> <1171018590.2718.60.camel@localhost.localdomain> <1171018674.2718.63.camel@localhost.localdomain>
+In-Reply-To: <1171018674.2718.63.camel@localhost.localdomain>
 MIME-Version: 1.0
-To: Geoff Levand <geoffrey.levand@am.sony.com>
-CC: Al Viro <viro@ftp.linux.org.uk>, torvalds@linux-foundation.org,
-       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, greg@kroah.com
-Subject: Re: [PATCH] ps3 usb missed the addition of new argument to	ps3_alloc_io_irq()
-References: <E1HFYFg-0004rz-19@ZenIV.linux.org.uk> <45CC9DDC.2060305@am.sony.com>
-In-Reply-To: <45CC9DDC.2060305@am.sony.com>
-X-Enigmail-Version: 0.93.0.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 09 Feb 2007 16:46:33.0105 (UTC) FILETIME=[DAE4C010:01C74C69]
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200702091206.31797.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Geoff Levand wrote:
-> Al Viro wrote:
->> Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
-> 
-> Greg had this same change queued for his usb tree.
-> 
-> Acked-by: Geoff Levand <geoffrey.levand@am.sony.com>
-> 
+On Friday 09 February 2007 05:57, Rusty Russell wrote:
 
-Update the PS3 irq allocation routines to take an argument indicating which
-cpu (processor thread) the interrupt should be serviced on.
+> +#ifdef CONFIG_ACPI
+> +       acpi_disabled = 1;
+> +       acpi_ht = 0;
+> +#endif
 
-Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
-Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
+If this is hard-coded to have ACPI disabled, why isn't it enforced at build-time?
 
----
-I fixed Al's patch to have the proper line lengths.
-
--Geoff
-
- drivers/usb/host/ehci-ps3.c |    3 ++-
- drivers/usb/host/ohci-ps3.c |    3 ++-
- 2 files changed, 4 insertions(+), 2 deletions(-)
-
---- ps3-linux-dev.orig/drivers/usb/host/ehci-ps3.c
-+++ ps3-linux-dev/drivers/usb/host/ehci-ps3.c
-@@ -104,7 +104,8 @@ static int ps3_ehci_sb_probe(struct ps3_
- 	dev_dbg(&dev->core, "%s:%d: mmio mapped_addr %lxh\n", __func__,
- 		__LINE__, dev->m_region->lpar_addr);
- 
--	result = ps3_alloc_io_irq(dev->interrupt_id, &virq);
-+	result = ps3_alloc_io_irq(PS3_BINDING_CPU_ANY, dev->interrupt_id,
-+		&virq);
- 
- 	if (result) {
- 		dev_dbg(&dev->core, "%s:%d: ps3_construct_io_irq(%d) failed.\n",
---- ps3-linux-dev.orig/drivers/usb/host/ohci-ps3.c
-+++ ps3-linux-dev/drivers/usb/host/ohci-ps3.c
-@@ -107,7 +107,8 @@ static int ps3_ohci_sb_probe(struct ps3_
- 	dev_dbg(&dev->core, "%s:%d: mmio mapped_addr %lxh\n", __func__,
- 		__LINE__, dev->m_region->lpar_addr);
- 
--	result = ps3_alloc_io_irq(dev->interrupt_id, &virq);
-+	result = ps3_alloc_io_irq(PS3_BINDING_CPU_ANY, dev->interrupt_id,
-+		&virq);
- 
- 	if (result) {
- 		dev_dbg(&dev->core, "%s:%d: ps3_construct_io_irq(%d) failed.\n",
-
-
+thanks,
+-Len
