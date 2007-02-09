@@ -1,71 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992459AbXBIRuF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992461AbXBIRva@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992459AbXBIRuF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Feb 2007 12:50:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992463AbXBIRuE
+	id S2992461AbXBIRva (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Feb 2007 12:51:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992464AbXBIRva
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Feb 2007 12:50:04 -0500
-Received: from tmailer.gwdg.de ([134.76.10.23]:48466 "EHLO tmailer.gwdg.de"
+	Fri, 9 Feb 2007 12:51:30 -0500
+Received: from hera.kernel.org ([140.211.167.34]:46706 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992457AbXBIRuB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Feb 2007 12:50:01 -0500
-Date: Fri, 9 Feb 2007 18:45:54 +0100 (MET)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: "linux-os (Dick Johnson)" <linux-os@analogic.com>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       David Rientjes <rientjes@google.com>, Jeff Garzik <jeff@garzik.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: somebody dropped a (warning) bomb
-In-Reply-To: <Pine.LNX.4.61.0702090755530.7642@chaos.analogic.com>
-Message-ID: <Pine.LNX.4.61.0702091842450.31955@yvahk01.tjqt.qr>
-References: <45CB3B28.60102@garzik.org> <Pine.LNX.4.64.0702080819350.8424@woody.linux-foundation.org>
- <Pine.LNX.4.61.0702081851310.1364@yvahk01.tjqt.qr>
- <Pine.LNX.4.64.0702081145470.8424@woody.linux-foundation.org>
- <Pine.LNX.4.61.0702082202180.24888@yvahk01.tjqt.qr>
- <Pine.LNX.4.64.0702081324090.8424@woody.linux-foundation.org>
- <Pine.LNX.4.64.0702081432320.27603@chino.kir.corp.google.com>
- <Pine.LNX.4.64.0702081528070.8424@woody.linux-foundation.org>
- <Pine.LNX.4.64.0702081554380.29559@chino.kir.corp.google.com>
- <Pine.LNX.4.64.0702081632200.8424@woody.linux-foundation.org>
- <Pine.LNX.4.61.0702091330380.31955@yvahk01.tjqt.qr>
- <Pine.LNX.4.61.0702090755530.7642@chaos.analogic.com>
+	id S2992461AbXBIRv3 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Feb 2007 12:51:29 -0500
+From: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
+To: James Morris <jmorris@namei.org>
+Subject: Re: [PATCH 6c/10] lguest: the guest code
+Date: Fri, 9 Feb 2007 12:49:57 -0500
+User-Agent: KMail/1.9.5
+Cc: Rusty Russell <rusty@rustcorp.com.au>,
+       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, Andi Kleen <ak@muc.de>,
+       virtualization <virtualization@lists.osdl.org>
+References: <1171012296.2718.26.camel@localhost.localdomain> <200702091206.31797.lenb@kernel.org> <Pine.LNX.4.64.0702091212360.9007@d.namei>
+In-Reply-To: <Pine.LNX.4.64.0702091212360.9007@d.namei>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200702091249.58204.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Friday 09 February 2007 12:14, James Morris wrote:
+> On Fri, 9 Feb 2007, Len Brown wrote:
+> 
+> > On Friday 09 February 2007 05:57, Rusty Russell wrote:
+> > 
+> > > +#ifdef CONFIG_ACPI
+> > > +       acpi_disabled = 1;
+> > > +       acpi_ht = 0;
+> > > +#endif
+> > 
+> > If this is hard-coded to have ACPI disabled, why isn't it enforced at build-time?
+> 
+> This is being disabled in the guest kernel only.  The host and guest 
+> kernels are expected to be the same build.
 
-On Feb 9 2007 08:16, linux-os (Dick Johnson) wrote:
->On Fri, 9 Feb 2007, Jan Engelhardt wrote:
->> On Feb 8 2007 16:42, Linus Torvalds wrote:
->>>
->> Further, giving again answer to the question whether they generate
->> signed or unsigned comparisons: Have you ever seen a computer which
->> addresses memory with negative numbers? Since the answer is most likely
->> no, signed comparisons would
->
->Yes, most all do. Indexed memory operands are signed displacements. See
->page 2-16, Intel486 Microprocessor Programmer's Reference Manual. This
+Okay, but better to use disable_acpi()
+indeed, since this would be the first code not already inside CONFIG_ACPI
+to invoke disable_acpi(), we could define the inline as empty and you could
+then scratch the #ifdef too.
 
-I was referring to "absolute memory", not the offset magic that assembler
-allows. After all, (reg+relativeOffset) will yield an absolute address.
-What I was out at: for machines that have more than 2 GB of memory, you
-don't call the address that is given by 0x80000000U actually "byte
--2147483648", but "byte 2147483648".
-
->gets hidden by higher-level languages such as 'C'. It is also non-obvious
->when using the AT&T (GNU) assembly language. However, the Intel documentation
->shows it clearly:
-> 			MOV	AL,  [EBX+0xFFFFFFFF]	; -1
-
-It can be debated what exactly this is... negative offset or "using
-overflow to get where we want".
-
-
-
-Jan
--- 
-ft: http://freshmeat.net/p/chaostables/
+cheers,
+-Len
