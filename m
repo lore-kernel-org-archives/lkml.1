@@ -1,25 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946567AbXBIPiL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946543AbXBIPe4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946567AbXBIPiL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Feb 2007 10:38:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946571AbXBIPfh
+	id S1946543AbXBIPe4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Feb 2007 10:34:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946568AbXBIPez
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Feb 2007 10:35:37 -0500
-Received: from ug-out-1314.google.com ([66.249.92.168]:2693 "EHLO
+	Fri, 9 Feb 2007 10:34:55 -0500
+Received: from ug-out-1314.google.com ([66.249.92.173]:2436 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1946570AbXBIPfO (ORCPT
+	with ESMTP id S1946545AbXBIPea (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Feb 2007 10:35:14 -0500
+	Fri, 9 Feb 2007 10:34:30 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:from:to:subject:date:user-agent:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=PjnDofYYOg3Tns8zxmHgo59YanteTB4dk+l4cArMIGBBi+/jMfixa8gkGsMaa95sicGdLX7cDCKsMsE3N8u4cA0vMrYW+HZxQDSmGOXPMdAwjbl9yV+a3Lt5y3kBsDxT50VPz5cYND/KQSedOPxthwWuooyuX+U4sRJeGxMZDUw=
+        b=iY0OuIvbGAQt1l/lmMIjfoQesCPF1gmHNsuscYXzuJunGGF5N8Ucq0xw+JPgnZ0ufO/BfYNtqmcxPIwQQZwjn/t7Ir/nRc+L4URckM4qsbPRbw4F1bqVxxd2JtqEefZcgpEdHj76PCupB0Mhx7V3vSwfbwOmisIXwIc32RBBWaY=
 From: Alon Bar-Lev <alon.barlev@gmail.com>
 To: linux-kernel@vger.kernel.org, akpm@osdl.org, bwalle@suse.de,
-       rmk+lkml@arm.linux.org.uk, philb@gnu.org, tim@cyberelk.net,
-       andrea@suse.de
-Subject: [PATCH 30/34] __initdata cleanup - parallel
-Date: Fri, 9 Feb 2007 17:33:36 +0200
+       rmk+lkml@arm.linux.org.uk, geert@linux-m68k.org, zippel@linux-m68k.org
+Subject: [PATCH 09/34] __initdata cleanup - m68knommu
+Date: Fri, 9 Feb 2007 17:19:20 +0200
 User-Agent: KMail/1.9.6
 References: <200702091711.34441.alon.barlev@gmail.com>
 In-Reply-To: <200702091711.34441.alon.barlev@gmail.com>
@@ -28,7 +27,7 @@ Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200702091733.36249.alon.barlev@gmail.com>
+Message-Id: <200702091719.20390.alon.barlev@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
@@ -40,15 +39,15 @@ Signed-off-by: Bernhard Walle <bwalle@suse.de>
 
 ---
 
-diff -urNp linux-2.6.20-rc6-mm3.org/drivers/parport/parport_gsc.c linux-2.6.20-rc6-mm3/drivers/parport/parport_gsc.c
---- linux-2.6.20-rc6-mm3.org/drivers/parport/parport_gsc.c	2007-01-31 22:15:40.000000000 +0200
-+++ linux-2.6.20-rc6-mm3/drivers/parport/parport_gsc.c	2007-01-31 22:19:30.000000000 +0200
-@@ -350,7 +350,7 @@ struct parport *__devinit parport_gsc_pr
+diff -urNp linux-2.6.20-rc6-mm3.org/arch/m68knommu/kernel/setup.c linux-2.6.20-rc6-mm3/arch/m68knommu/kernel/setup.c
+--- linux-2.6.20-rc6-mm3.org/arch/m68knommu/kernel/setup.c	2007-01-31 22:15:31.000000000 +0200
++++ linux-2.6.20-rc6-mm3/arch/m68knommu/kernel/setup.c	2007-01-31 22:19:30.000000000 +0200
+@@ -44,7 +44,7 @@ unsigned long memory_end;
+ EXPORT_SYMBOL(memory_start);
+ EXPORT_SYMBOL(memory_end);
  
- #define PARPORT_GSC_OFFSET 0x800
+-char __initdata command_line[COMMAND_LINE_SIZE];
++char __initdata command_line[COMMAND_LINE_SIZE] = "";
  
--static int __initdata parport_count;
-+static int __initdata parport_count = 0;
- 
- static int __devinit parport_init_chip(struct parisc_device *dev)
- {
+ /* setup some dummy routines */
+ static void dummy_waitbut(void)
