@@ -1,27 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946354AbXBILkJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946377AbXBILq7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946354AbXBILkJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Feb 2007 06:40:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946356AbXBILkI
+	id S1946377AbXBILq7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Feb 2007 06:46:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946376AbXBILq7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Feb 2007 06:40:08 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:45836 "EHLO smtp.osdl.org"
+	Fri, 9 Feb 2007 06:46:59 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:46001 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1946354AbXBILkH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Feb 2007 06:40:07 -0500
-Date: Fri, 9 Feb 2007 03:39:36 -0800
+	id S1946370AbXBILq6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Feb 2007 06:46:58 -0500
+Date: Fri, 9 Feb 2007 03:46:44 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Frederik Deweerdt <deweerdt@free.fr>,
-       Jan Engelhardt <jengelh@linux01.gwdg.de>, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de
-Subject: Re: -mm merge plans for 2.6.21
-Message-Id: <20070209033936.41be141b.akpm@linux-foundation.org>
-In-Reply-To: <1171020273.8675.150.camel@laptopd505.fenrus.org>
-References: <20070208150710.1324f6b4.akpm@linux-foundation.org>
-	<Pine.LNX.4.61.0702090023270.24888@yvahk01.tjqt.qr>
-	<20070209105737.GF5785@slug>
-	<1171020273.8675.150.camel@laptopd505.fenrus.org>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Linux Filesystems <linux-fsdevel@vger.kernel.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [rfc][patch 0/3] a faster buffered write deadlock fix?
+Message-Id: <20070209034644.cc5fe40a.akpm@linux-foundation.org>
+In-Reply-To: <20070209113116.GB11287@wotan.suse.de>
+References: <20070208105437.26443.35653.sendpatchset@linux.site>
+	<20070209004101.3e4a88fc.akpm@linux-foundation.org>
+	<20070209095405.GA14398@wotan.suse.de>
+	<20070209020954.4951256e.akpm@linux-foundation.org>
+	<20070209103258.GC14398@wotan.suse.de>
+	<20070209025249.0a87a435.akpm@linux-foundation.org>
+	<20070209113116.GB11287@wotan.suse.de>
 X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -29,36 +32,51 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 09 Feb 2007 12:24:33 +0100 Arjan van de Ven <arjan@infradead.org> wrote:
+On Fri, 9 Feb 2007 12:31:16 +0100 Nick Piggin <npiggin@suse.de> wrote:
 
-> On Fri, 2007-02-09 at 10:57 +0000, Frederik Deweerdt wrote:
-> > +static const int __deprecated SA_INTERRUPT = IRQF_DISABLED;
-> > +static const int __deprecated SA_SAMPLE_RANDOM = IRQF_SAMPLE_RANDOM;
-> > +static const int __deprecated SA_SHIRQ = IRQF_SHARED;
-> > +static const int __deprecated SA_PROBEIRQ = IRQF_PROBE_SHARED;
-> > +static const int __deprecated SA_PERCPU = IRQF_PERCPU;
-> > +
-> > +static const int __deprecated SA_TRIGGER_LOW = IRQF_TRIGGER_LOW;
-> > +static const int __deprecated SA_TRIGGER_HIGH = IRQF_TRIGGER_HIGH;
-> > +static const int __deprecated SA_TRIGGER_FALLING = IRQF_TRIGGER_FALLING;
-> > +static const int __deprecated SA_TRIGGER_RISING = IRQF_TRIGGER_RISING;
-> > +static const int __deprecated SA_TRIGGER_MASK = IRQF_TRIGGER_MASK;
+> > > > > But that all becomes legacy path, so do we really care? Supposing fs
+> > > > > maintainers like perform_write, then after the main ones have implementations
+> > > > > we could switch over to the slow-but-correct prepare_write legacy path.
+> > > > > Or we could leave it, or we could use Linus's slightly-less-buggy scheme...
+> > > > > by that point I expect I'd be sick of arguing about it ;)
+> > > > 
+> > > > It's worth "arguing" about.  This is write().  What matters more??
+> > > 
+> > > That's the legacy path that uses prepare/commit (ie. supposing that all
+> > > major filesystems did get converted to perform_write).
+> > 
+> > We'll never, ever, ever update and test all filesytems.  What you're
+> > calling "legacy" code will be there for all time.
 > 
-> this will include these in every .o file for which the .c file includes
-> the header. NOT GOOD(tm)
+> I didn't say all; I still prefer correct than fast;
 
-As long as nobody takes the address of them (which wouldn't compile today
-anyway) then the compiler should be able to not allocate store for these. 
-That they're const might help too.
+For gawd's sake.  You can make the kernel less buggy by removing SMP
+support.
 
-> why not just bite the bullet?
-> removing version.h also broke the same all external modules, and they
-> got fixed in days.. no big deal. kernel api change all the time, this
-> one has been around in "double mode" quite some time...
+Guess what?  Tradeoffs exist.
 
-Pretty much every driver in the world will want these symbols.  I expect
-we'll help some people by doing this, and the cost to us is very small.  
+> you are still free
+> to keep the fast-and-buggy code in the legacy path.
 
-Plus we're getting a bad reputation out there for breaking stuff and
-screwing people around, which isn't good.
+You make it sound like this is a choice.  It isn't.  Nobody is going to go
+in and convert all those filesystems.
 
+> > 
+> > I haven't had time to look at the perform_write stuff yet.
+> > 
+> > > Of course I would still want my correct-but-slow version in that case,
+> > > but I just wouldn't care to argue if you still wanted to keep it fast.
+> > 
+> > This is write().  We just cannot go and double-copy all the memory or take
+> > mmap_sem and do a full pagetable walk in there.  It just means that we
+> > haven't found a suitable solution yet.
+> 
+> You prefer speed over correctness even for little used filessytems, which
+> is fine because I'm sick of arguing about it. The main thing for me is that
+> important filesystems can be correct and fast.
+
+I wouldn't characterise it as "arguing".  It's development.  Going and
+sticking enormous slowdowns into write() to fix some bug which nobody is
+hitting is insane.
+
+We need to find a better fix, that's all.
