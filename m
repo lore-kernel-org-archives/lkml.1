@@ -1,59 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946465AbXBIVzL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752388AbXBIV5u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946465AbXBIVzL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Feb 2007 16:55:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946157AbXBIVzL
+	id S1752388AbXBIV5u (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Feb 2007 16:57:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752446AbXBIV5u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Feb 2007 16:55:11 -0500
-Received: from mga06.intel.com ([134.134.136.21]:6598 "EHLO
-	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1946151AbXBIVzJ (ORCPT
+	Fri, 9 Feb 2007 16:57:50 -0500
+Received: from nigel.suspend2.net ([203.171.70.205]:40901 "EHLO
+	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752388AbXBIV5u (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Feb 2007 16:55:09 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.13,308,1167638400"; 
-   d="scan'208"; a="195081930:sNHT28209706"
-Message-ID: <45CCE3CA.4050904@linux.intel.com>
-Date: Fri, 09 Feb 2007 13:12:42 -0800
-From: James Ketrenos <jketreno@linux.intel.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070104)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
-       ipw3945-devel@lists.sourceforge.net, netdev@vger.kernel.org
-Subject: [ANNOUNCE] d80211 based driver for Intel PRO/Wireless 3945ABG
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 9 Feb 2007 16:57:50 -0500
+Subject: NAK new drivers without proper power management?
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
+Reply-To: nigel@nigel.suspend2.net
+To: LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Sat, 10 Feb 2007 08:57:49 +1100
+Message-Id: <1171058269.1484.64.camel@nigel.suspend2.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Please hold all questions until I am done with this email.  Thank you.
+Hi.
 
-We are pleased to announce the availability of a new driver for the 
-Intel PRO/Wireless 3945ABG Network Connection adapter.  This new driver 
-uses the new d80211 subsystem previously only available as part of the 
-wireless-dev tree.
+I don't think this is already done (feel free to correct me if I'm
+wrong)..
 
-You can find the new driver, and additional information about it, here:
+Can we start to NAK new drivers that don't have proper power management
+implemented? There really is no excuse for writing a new driver and not
+putting .suspend and .resume methods in anymore, is there?
 
-   http://intellinuxwireless.org/iwlwifi.
+Regards,
 
-Within the new driver package are sources which we plan to submit for 
-kernel inclusion as well as scripts and patches which create a version 
-of the driver which can be loaded into kernels based on 2.6.18 and newer 
-(provided you have installed the d80211 subsystem as well)  The README 
-document can walk you through pretty quickly.
+Nigel-getting-sick-of-drivers-without-pm-support Cunningham
 
-Since a lot of our users are not able to move to the latest versions of 
-the Linux kernel, we have put together a d80211 package allowing the 
-installation of the d80211 subsystem into an existing kernel image 
-without the need to migrate to wireless-dev, or upgrade to a newer 
-kernel at all (assuming you are using 2.6.18 or newer).
-
-You can find that package at:
-
-   http://intellinuxwireless.org/d80211
-
-Ok.  Now... any questions?
-
-Thanks,
-James / Intel Corporation
