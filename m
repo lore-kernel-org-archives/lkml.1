@@ -1,63 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1945967AbXBIBSc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1945980AbXBIBTs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1945967AbXBIBSc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Feb 2007 20:18:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945974AbXBIBSc
+	id S1945980AbXBIBTs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Feb 2007 20:19:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945988AbXBIBTs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Feb 2007 20:18:32 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:27020 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1945967AbXBIBSb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Feb 2007 20:18:31 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
-	message-id:references:mime-version:content-type;
-	b=NSJRJHn1g9zLH1b7a4guppVn0MvWJV7SPQ4JymnE6ImhVRh+mIGG0AINVzNlWOAeZ
-	I6ODX6qARH5OcY86BEFLg==
-Date: Thu, 8 Feb 2007 17:18:13 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Jan Engelhardt <jengelh@linux01.gwdg.de>, Jeff Garzik <jeff@garzik.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: somebody dropped a (warning) bomb
-In-Reply-To: <Pine.LNX.4.64.0702081705300.8424@woody.linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0702081715020.30410@chino.kir.corp.google.com>
-References: <45CB3B28.60102@garzik.org> <Pine.LNX.4.64.0702080819350.8424@woody.linux-foundation.org>
- <Pine.LNX.4.61.0702081851310.1364@yvahk01.tjqt.qr>
- <Pine.LNX.4.64.0702081145470.8424@woody.linux-foundation.org>
- <Pine.LNX.4.61.0702082202180.24888@yvahk01.tjqt.qr>
- <Pine.LNX.4.64.0702081324090.8424@woody.linux-foundation.org>
- <Pine.LNX.4.64.0702081432320.27603@chino.kir.corp.google.com>
- <Pine.LNX.4.64.0702081528070.8424@woody.linux-foundation.org>
- <Pine.LNX.4.64.0702081554380.29559@chino.kir.corp.google.com>
- <Pine.LNX.4.64.0702081632200.8424@woody.linux-foundation.org>
- <Pine.LNX.4.64.0702081643280.30166@chino.kir.corp.google.com>
- <Pine.LNX.4.64.0702081705300.8424@woody.linux-foundation.org>
+	Thu, 8 Feb 2007 20:19:48 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:51339 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1945974AbXBIBTr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Feb 2007 20:19:47 -0500
+Message-ID: <45CBCC31.7070909@garzik.org>
+Date: Thu, 08 Feb 2007 20:19:45 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070130)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+CC: LKML <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org,
+       linux-ide@vger.kernel.org
+Subject: Re: [PATCH] ATA convert GSI to irq on ia64
+References: <1170920422.15989.354.camel@ymzhang>
+In-Reply-To: <1170920422.15989.354.camel@ymzhang>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.7 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 8 Feb 2007, Linus Torvalds wrote:
-
-> Even gcc DOES DIFFERENT THINGS! Have you even read the docs?
+Zhang, Yanmin wrote:
+> If an ATA drive uses legacy mode, ata driver will choose 14 and 15 as the
+> fixed irq number. On ia64 platform, such numbers are GSI and should be converted
+> to irq vector.
 > 
-> 	By default it is treated as signed int but this may be changed by 
-> 	the -funsigned-bitfields option.
+> Below patch against kernel 2.6.20 fixes it.
 > 
+> Signed-off-by: Zhang Yanmin <yanmin.zhang@intel.com>
 
-Yes, I read the 4.1.1 docs:
+IA64 should create its own libata-portmap.h, rather than modifying the 
+one in asm-generic with arch-specific choices.
 
-	By default, such a bit-field is signed, because this is
-	consistent: the basic integer types such as int are signed
-	types.
+powerpc is a current example of this (and currently the only 
+non-asm-generic user) found in kernel 2.6.20.
 
-That is the whole basis for my argument, when you declare something "int," 
-most programmers would consider that to be SIGNED regardless of whether it 
-is 32 bits, 13 bits, or 1 bit.
+	Jeff
 
-No doubt it is configurable because of the existance of brain-dead 
-compilers that treat them as unsigned.
+
+
