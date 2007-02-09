@@ -1,50 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946267AbXBIJfk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946273AbXBIJgO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946267AbXBIJfk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Feb 2007 04:35:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946268AbXBIJfk
+	id S1946273AbXBIJgO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Feb 2007 04:36:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946271AbXBIJgO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Feb 2007 04:35:40 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:39298 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1946267AbXBIJfj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Feb 2007 04:35:39 -0500
-Date: Fri, 9 Feb 2007 01:35:18 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andi Kleen <ak@muc.de>, virtualization <virtualization@lists.osdl.org>,
-       Paul Mackerras <paulus@samba.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH 6/10] lguest code: the little linux hypervisor.
-Message-Id: <20070209013518.e75d5036.akpm@linux-foundation.org>
-In-Reply-To: <1171012827.2718.42.camel@localhost.localdomain>
-References: <1171012296.2718.26.camel@localhost.localdomain>
-	<1171012458.2718.30.camel@localhost.localdomain>
-	<1171012693.2718.37.camel@localhost.localdomain>
-	<1171012761.2718.40.camel@localhost.localdomain>
-	<1171012827.2718.42.camel@localhost.localdomain>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Fri, 9 Feb 2007 04:36:14 -0500
+Received: from rgminet01.oracle.com ([148.87.113.118]:30732 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1946269AbXBIJgM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Feb 2007 04:36:12 -0500
+Date: Fri, 9 Feb 2007 17:34:24 +0800
+From: Joe Jin <joe.jin@oracle.com>
+To: davem@davemloft.net
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org, joe.jin@oracle.com
+Subject: [PATCH] [ipv6]: adjust inet6_exit() cleanup sequence against inet6_init()
+Message-ID: <20070209093424.GA7078@joejin-pc.cn.oracle.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.1i
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 09 Feb 2007 20:20:27 +1100 Rusty Russell <rusty@rustcorp.com.au> wrote:
+Hi,
 
-> +#define log(...)					\
-> +	do {						\
-> +		mm_segment_t oldfs = get_fs();		\
-> +		char buf[100];				\
-> +		sprintf(buf, "lguest:" __VA_ARGS__);	\
-> +		set_fs(KERNEL_DS);			\
-> +		sys_write(1, buf, strlen(buf));		\
-> +		set_fs(oldfs);				\
-> +	} while(0)
+This patch for adjust inet6_exit() to inverse sequence to inet6_init().
 
-Due to gcc shortcomings, each instance of this will chew an additional 100
-bytes of stack.  Unless they fixed it recently.  Is a bit of a timebomb.  I
-guess ksaprintf() could be used.
+At ipv6_init, it first create proc_root/net/dev_snmp6 entry by call
+ipv6_misc_proc_init(), then call addrconf_init() to create the corresponding
+device entry at this directory, but at inet6_exit, ipv6_misc_proc_exit()
+called first, then call addrconf_init().
 
-It also looks a bit, umm, innovative.
+Signed-off-by: Joe Jin <joe.jin@oracle.com>
+
+--- linux-2.6.20/net/ipv6/af_inet6.c.orig	2007-02-09 14:05:10.000000000 +0800
++++ linux-2.6.20/net/ipv6/af_inet6.c	2007-02-09 14:21:54.000000000 +0800
+@@ -930,25 +930,28 @@
+ {
+ 	/* First of all disallow new sockets creation. */
+ 	sock_unregister(PF_INET6);
+-#ifdef CONFIG_PROC_FS
+-	if6_proc_exit();
+-	ac6_proc_exit();
+- 	ipv6_misc_proc_exit();
+- 	udp6_proc_exit();
+- 	udplite6_proc_exit();
+- 	tcp6_proc_exit();
+- 	raw6_proc_exit();
+-#endif
++	
++	/* Cleanup code parts. */
++	ipv6_packet_cleanup();
+ #ifdef CONFIG_IPV6_MIP6
+ 	mip6_fini();
+ #endif
+-	/* Cleanup code parts. */
+-	ip6_flowlabel_cleanup();
+ 	addrconf_cleanup();
++	ip6_flowlabel_cleanup();
+ 	ip6_route_cleanup();
+-	ipv6_packet_cleanup();
+-	igmp6_cleanup();
++#ifdef CONFIG_PROC_FS
++
++	/* Cleanup code parts. */
++	if6_proc_exit();
++	ac6_proc_exit();
++	ipv6_misc_proc_exit();
++	udplite6_proc_exit();
++	udp6_proc_exit();
++	tcp6_proc_exit();
++	raw6_proc_exit();
++#endif
+ 	ipv6_netfilter_fini();
++	igmp6_cleanup();
+ 	ndisc_cleanup();
+ 	icmpv6_cleanup();
+ #ifdef CONFIG_SYSCTL
+@@ -956,6 +959,7 @@
+ #endif
+ 	cleanup_ipv6_mibs();
+ 	proto_unregister(&rawv6_prot);
++	proto_unregister(&udplitev6_prot);
+ 	proto_unregister(&udpv6_prot);
+ 	proto_unregister(&tcpv6_prot);
+ }
