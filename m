@@ -1,101 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946466AbXBIN5m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946467AbXBIN66@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946466AbXBIN5m (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Feb 2007 08:57:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946467AbXBIN5m
+	id S1946467AbXBIN66 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Feb 2007 08:58:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946468AbXBIN66
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Feb 2007 08:57:42 -0500
-Received: from colin.muc.de ([193.149.48.1]:1383 "EHLO mail.muc.de"
+	Fri, 9 Feb 2007 08:58:58 -0500
+Received: from colin.muc.de ([193.149.48.1]:2983 "EHLO mail.muc.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1946466AbXBIN5l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Feb 2007 08:57:41 -0500
-Date: 9 Feb 2007 14:57:39 +0100
-Date: Fri, 9 Feb 2007 14:57:39 +0100
+	id S1946467AbXBIN65 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Feb 2007 08:58:57 -0500
+Date: 9 Feb 2007 14:58:55 +0100
+Date: Fri, 9 Feb 2007 14:58:55 +0100
 From: Andi Kleen <ak@muc.de>
 To: Rusty Russell <rusty@rustcorp.com.au>
 Cc: virtualization@lists.osdl.org,
        lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [PATCH 6/10] lguest code: the little linux hypervisor.
-Message-ID: <20070209135739.GB18080@muc.de>
-References: <1171012296.2718.26.camel@localhost.localdomain> <1171012761.2718.40.camel@localhost.localdomain> <1171012827.2718.42.camel@localhost.localdomain> <200702091109.20061.ak@muc.de> <1171024771.2718.129.camel@localhost.localdomain>
+       Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH 2/10] lguest: Export symbols for lguest as a module
+Message-ID: <20070209135855.GC18080@muc.de>
+References: <1171012296.2718.26.camel@localhost.localdomain> <1171012458.2718.30.camel@localhost.localdomain> <1171012513.2718.32.camel@localhost.localdomain> <200702091032.44547.ak@muc.de> <1171022766.2718.94.camel@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1171024771.2718.129.camel@localhost.localdomain>
+In-Reply-To: <1171022766.2718.94.camel@localhost.localdomain>
 User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 09, 2007 at 11:39:31PM +1100, Rusty Russell wrote:
-> On Fri, 2007-02-09 at 11:09 +0100, Andi Kleen wrote:
-> > > +# This links the hypervisor in the right place and turns it into a C array.
-> > > +$(obj)/hypervisor-raw: $(obj)/hypervisor.o
-> > > +	@$(LD) -static -Tdata=`printf %#x $$(($(HYPE_ADDR)))` -Ttext=`printf %#x $$(($(HYPE_ADDR)+$(HYPE_DATA_SIZE)))` -o $@ $< && $(OBJCOPY) -O binary $@
-> > > +$(obj)/hypervisor-blob.c: $(obj)/hypervisor-raw
-> > > +	@od -tx1 -An -v $< | sed -e 's/^ /0x/' -e 's/$$/,/' -e 's/ /,0x/g' > $@
+On Fri, Feb 09, 2007 at 11:06:06PM +1100, Rusty Russell wrote:
+> On Fri, 2007-02-09 at 10:32 +0100, Andi Kleen wrote:
+> > On Friday 09 February 2007 10:15, Rusty Russell wrote:
 > > 
-> > an .S file with .incbin is more efficient and simpler
-> > (note it has to be an separate .S file, otherwise icecream/distcc break) 
+> > > tsc_khz:
+> > > 	Simplest way of telling the guest how to interpret the TSC
+> > > 	counter.
 > > 
-> > It won't allow to show off any sed skills, but I guess we can live with that ;-)
+> > 
+> > Are you sure this will work with varying TSC frequencies? 
 > 
-> Good idea, except I currently use sizeof(hypervisor_blob): I'd have to
-> extract the size separately and hand it in the CFLAGS 8(
+> I'm actually quite sure it doesn't (there's a FIXME in the lguest code).
+> Given the debate over how useful the TSC was, I originally didn't use
+> it, but (1) it's simple, and (2) when it doesn't change, it's pretty
+> accurate.
 
-hypervisor_start:
-	.incbin "hypervisor"
-hypervisor_end:
+But when it changes users become pretty unhappy
 
-...
-	extern char hypervisor_start[], hypervisor_end[];
-
-	size = hypervisor_end - hypervisor_start;
-
-	
-
-
-> > > +static int cpu_had_pge;
-> > > +static struct {
-> > > +	unsigned long offset;
-> > > +	unsigned short segment;
-> > > +} lguest_entry;
-> > > +struct page *hype_pages; /* Contiguous pages. */
-> > 
-> > Statics? looks funky.  Why only a single hypervisor_vma?
 > 
-> We only have one switcher: it contains an array of "struct
-> lguest_state"; one for each guest.  (This is host code we're looking at
-> here).
-
-This means it is not SMP safe? 
-
-> No, the guest should not be able to evoke a printk from the host kernel.
-
-This means nobody will know why it failed.
-
-> > > +	else if (i < FIRST_EXTERNAL_VECTOR || i == SYSCALL_VECTOR)
-> > > +		setup_idt(lg, i, &d);
-> > > +	/* A virtual interrupt */
-> > > +	else if (i < FIRST_EXTERNAL_VECTOR + LGUEST_IRQS)
-> > > +		copy_trap(lg, &lg->interrupt[i-FIRST_EXTERNAL_VECTOR], &d);\
-> > 
-> > switch is not cool enough anymore?
+> > In general you should get this from cpufreq.
 > 
-> It would have to be a switch then gunk at the bottom, because those last
-> two tests don't switch-ify.  IIRC I changed back from a switch because
-> of that.
+> Hmm, ok, I'll bite: how?  Time is a mystery I've avoided so far 8)
 
-gcc has a handy extension for this: 
+the old x86-64 time.c (before -mm) has a example in #ifdef CONFIG_CPUFREQ
 
-case 0...FIRST_EXTERNAL_VECTOR-1:
-case SYSCALL_VECTOR:
-case FIRST_EXTERNAL_VECTOR...FIRST_EXTERNAL_VECTOR+LGUEST_IRQS:
-
-
-Re: the loops; e.g. we used to have possible loop cases
-when a page fault does read instructions and then causes another
-page fault etc.etc. I haven't seen any immediate danger of this,
-but it might be worth double checking.
 
 -Andi
