@@ -1,45 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422738AbXBIAGr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161064AbXBIAPb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422738AbXBIAGr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Feb 2007 19:06:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422759AbXBIAGr
+	id S1161064AbXBIAPb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Feb 2007 19:15:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965730AbXBIAPb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Feb 2007 19:06:47 -0500
-Received: from ns2.suse.de ([195.135.220.15]:40413 "EHLO mx2.suse.de"
+	Thu, 8 Feb 2007 19:15:31 -0500
+Received: from tmailer.gwdg.de ([134.76.10.23]:33135 "EHLO tmailer.gwdg.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422738AbXBIAGq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Feb 2007 19:06:46 -0500
-From: Andreas Schwab <schwab@suse.de>
-To: Roman Zippel <zippel@linux-m68k.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Oleg Verych <olecom@flower.upol.cz>
-Subject: Re: The who needs reviews anyways [PATCH]
-References: <Pine.LNX.4.64.0702082227020.14457@scrub.home>
-X-Yow: Yow!  Am I having fun yet?
-Date: Fri, 09 Feb 2007 01:06:39 +0100
-In-Reply-To: <Pine.LNX.4.64.0702082227020.14457@scrub.home> (Roman Zippel's
-	message of "Thu, 8 Feb 2007 22:48:51 +0100 (CET)")
-Message-ID: <jey7n8urcg.fsf@sykes.suse.de>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.0.91 (gnu/linux)
+	id S965596AbXBIAPa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Feb 2007 19:15:30 -0500
+Date: Fri, 9 Feb 2007 01:14:38 +0100 (MET)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: linux-cifs-client@lists.samba.org
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Steve French <smfrench@gmail.com>
+Subject: [linux-cifs-client] Re: SMB support still missing?
+Message-ID: <Pine.LNX.4.61.0702090101490.24888@yvahk01.tjqt.qr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roman Zippel <zippel@linux-m68k.org> writes:
+Hi,
 
-> - printf has other side effects, instead stop pretending we support 
->   something else than bash
 
-printf is a much better echo, but you need to use it properly as well.
-Either use %s to print a literal string or %b to let it interpret escape
-sequences.
+I tried the various suggestions from the last mails, but nothing of 
+that worked. --verbose did not return anything useful. It's the kernel 
+module that returns -EHOSTDOWN.
 
-Andreas.
+...
 
+Eventually I found out that this one works:
+
+	mount.cifs //cl0/c /mnt -o servernetbiosname=CL0
+
+So what did I change? Casing. Note that "CL0" is entirely uppercase. 
+Although strange, it actually coincides with how LANMAN works. 
+Everything is uppercased in lanman, hostnames, usernames, heck, even 
+plaintext passwords (samba-smbd has a good time trying a ton of 
+combinations in such setups).
+
+No other options like sec=none or thelike were needed. Login as 
+anonymous worked directly.
+
+
+Please consider updating the cifs kernel module to account for the LM 
+oddity of uppercasing things. (Then, smbfs can finally be ripped out I 
+hope.)
+
+
+
+Jan
 -- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+ft: http://freshmeat.net/p/chaostables/
