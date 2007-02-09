@@ -1,90 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946273AbXBIJgO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946280AbXBIJqw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946273AbXBIJgO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Feb 2007 04:36:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946271AbXBIJgO
+	id S1946280AbXBIJqw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Feb 2007 04:46:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946282AbXBIJqw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Feb 2007 04:36:14 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:30732 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1946269AbXBIJgM (ORCPT
+	Fri, 9 Feb 2007 04:46:52 -0500
+Received: from nz-out-0506.google.com ([64.233.162.230]:32377 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1946280AbXBIJqv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Feb 2007 04:36:12 -0500
-Date: Fri, 9 Feb 2007 17:34:24 +0800
-From: Joe Jin <joe.jin@oracle.com>
-To: davem@davemloft.net
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org, joe.jin@oracle.com
-Subject: [PATCH] [ipv6]: adjust inet6_exit() cleanup sequence against inet6_init()
-Message-ID: <20070209093424.GA7078@joejin-pc.cn.oracle.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.1i
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
+	Fri, 9 Feb 2007 04:46:51 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=ErWG+JmL6IKIJbVp6d640nEbiFPifmzw/qF3F0rUhBFxipF2zHC4S1dZwsu2PJ3h3ZKEqkUyd84AoSQhSAbfXr3WBGDPj4ufXZKNBHthwHprqtSc3JC1Jl0jjheqYzxl7VJXhpPB4FQRa2PLYeznLBjkWUpRDrLwJeXC1ICm1aM=
+Message-ID: <45CC42FF.5030507@gmail.com>
+Date: Fri, 09 Feb 2007 04:46:39 -0500
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Icedove 1.5.0.9 (X11/20061220)
+MIME-Version: 1.0
+To: lepalom@wol.es
+CC: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: Sata_via problems in a Vintage2-AE1
+References: <200702090010.06897.lepalom@wol.es>
+In-Reply-To: <200702090010.06897.lepalom@wol.es>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Leopold Palomo Avellaneda wrote:
+> Dear people,
+> 
+> I have a barebone Asus Vintage2-AE1 [1]. This box has a mobo Asus A8V-MQ. The 
+> board has:
+> - the Socket 939 for AMD Athlon 64FX/Athlon 64.
+> - North Bridge: VIA K8M800  
+> - South Bridge: VIA VT8251
+> - VIA Graphics Integrated
+> - IDE 2 x UltraDMA 133
+> - 4 x Serial ATA
+> ...
+> 
+> I'm using the bios version 0206. The 0210 doesn't show me the vga card, so I 
+> don't have graphics mode. I think that is a buggy bios.
+> 
+> The bios is configured with vt8251 in AHCI mode and bios boot up activated, so 
+> the hd is recognized in the beginning. I don't have any raid, only one hd. 
+> The hd is a Maxtor 6V250F0.
+> 
+> I'm using a debian etch but the i386 version. The only way that I can use the 
+> hd is using a 2.6.16 standard kernel with the modifications explained in this 
+> page [2]. Basically you have to use their ahci.c and sata_via.c. The 
+> modifications are small from the original code from Mr Jeff Garzik.
+> 
+> I have tried to use the 2.6.18 and 2.6.20rc6 and the result is the same. The  
+> kernel boots, but when arrives at the ata3, 
+> 
+> scsi2 : ahci
+> ata3: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+> ata3.00: qc timeout (cmd 0xec)
+> ata3.00: failed to IDENTIFY (I/O error, err_mask=0x104)
+> .... repeated some times ...
+> scsi3 : ahci
+> ata4: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+> scsi4 : ahci
+> ata4: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+> scsi5 : ahci
+> ata6: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+> Done.
+> Begin: Mounting root file system... ...
+> Begin: Running /scripts/local-top
+> ide0: I/O resource 0x3F6-0x3F6 not free.
+> ide0: ports already in use, skipping probe.
+> ide1: I/O resource 0x376-0x376 not free.
+> ide1: ports already in use, skipping probe.
+> Done.
+> Begin: Waiting for root file system ...
 
-This patch for adjust inet6_exit() to inverse sequence to inet6_init().
+It might be VIA IRQ quirk problem.
 
-At ipv6_init, it first create proc_root/net/dev_snmp6 entry by call
-ipv6_misc_proc_init(), then call addrconf_init() to create the corresponding
-device entry at this directory, but at inet6_exit, ipv6_misc_proc_exit()
-called first, then call addrconf_init().
+1. Does giving 'irqpoll' parameter to kernel make any difference?
 
-Signed-off-by: Joe Jin <joe.jin@oracle.com>
+2. Can you give a shot at 2.6.20?
 
---- linux-2.6.20/net/ipv6/af_inet6.c.orig	2007-02-09 14:05:10.000000000 +0800
-+++ linux-2.6.20/net/ipv6/af_inet6.c	2007-02-09 14:21:54.000000000 +0800
-@@ -930,25 +930,28 @@
- {
- 	/* First of all disallow new sockets creation. */
- 	sock_unregister(PF_INET6);
--#ifdef CONFIG_PROC_FS
--	if6_proc_exit();
--	ac6_proc_exit();
-- 	ipv6_misc_proc_exit();
-- 	udp6_proc_exit();
-- 	udplite6_proc_exit();
-- 	tcp6_proc_exit();
-- 	raw6_proc_exit();
--#endif
-+	
-+	/* Cleanup code parts. */
-+	ipv6_packet_cleanup();
- #ifdef CONFIG_IPV6_MIP6
- 	mip6_fini();
- #endif
--	/* Cleanup code parts. */
--	ip6_flowlabel_cleanup();
- 	addrconf_cleanup();
-+	ip6_flowlabel_cleanup();
- 	ip6_route_cleanup();
--	ipv6_packet_cleanup();
--	igmp6_cleanup();
-+#ifdef CONFIG_PROC_FS
-+
-+	/* Cleanup code parts. */
-+	if6_proc_exit();
-+	ac6_proc_exit();
-+	ipv6_misc_proc_exit();
-+	udplite6_proc_exit();
-+	udp6_proc_exit();
-+	tcp6_proc_exit();
-+	raw6_proc_exit();
-+#endif
- 	ipv6_netfilter_fini();
-+	igmp6_cleanup();
- 	ndisc_cleanup();
- 	icmpv6_cleanup();
- #ifdef CONFIG_SYSCTL
-@@ -956,6 +959,7 @@
- #endif
- 	cleanup_ipv6_mibs();
- 	proto_unregister(&rawv6_prot);
-+	proto_unregister(&udplitev6_prot);
- 	proto_unregister(&udpv6_prot);
- 	proto_unregister(&tcpv6_prot);
- }
+-- 
+tejun
