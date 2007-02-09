@@ -1,142 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946076AbXBIDsr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946088AbXBIE3m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946076AbXBIDsr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Feb 2007 22:48:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946079AbXBIDsr
+	id S1946088AbXBIE3m (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Feb 2007 23:29:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946091AbXBIE3m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Feb 2007 22:48:47 -0500
-Received: from ozlabs.org ([203.10.76.45]:51479 "EHLO ozlabs.org"
+	Thu, 8 Feb 2007 23:29:42 -0500
+Received: from mga03.intel.com ([143.182.124.21]:20290 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1946076AbXBIDsq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Feb 2007 22:48:46 -0500
-Date: Fri, 9 Feb 2007 14:48:42 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: mingo@elte.hu, Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org
-Subject: genirq: Add a set_irq_handler_locked() function
-Message-ID: <20070209034842.GF3489@localhost.localdomain>
-Mail-Followup-To: David Gibson <david@gibson.dropbear.id.au>,
-	Thomas Gleixner <tglx@linutronix.de>, mingo@elte.hu,
-	Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org
-References: <20070207023353.GC23870@localhost.localdomain> <1170940949.3646.1.camel@chaos>
+	id S1946088AbXBIE3l convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Feb 2007 23:29:41 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: i="4.13,304,1167638400"; 
+   d="scan'208"; a="179423711:sNHT25959843"
+Content-class: urn:content-classes:message
+Subject: [PATCH] aio: fix kernel bug when page is  temporally busy
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1170940949.3646.1.camel@chaos>
-User-Agent: Mutt/1.5.12-2006-07-14
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Date: Fri, 9 Feb 2007 07:29:31 +0300
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Message-ID: <B41635854730A14CA71C92B36EC22AAC8048C3@mssmsx411>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] aio: fix kernel bug when page is  temporally busy
+Thread-Index: AcdMAuUDCeoetW/ZQ+6aifBmyDKgUA==
+From: "Ananiev, Leonid I" <leonid.i.ananiev@intel.com>
+To: <linux-kernel@vger.kernel.org>
+Cc: "linux-aio" <linux-aio@kvack.org>, "Andrew Morton" <akpm@osdl.org>,
+       "Zach Brown" <zach.brown@oracle.com>, <suparna@in.ibm.com>,
+       "Chris Mason" <chris.mason@oracle.com>,
+       "Badari Pulavarty" <pbadari@us.ibm.com>
+X-OriginalArrivalTime: 09 Feb 2007 04:29:39.0619 (UTC) FILETIME=[E99A2F30:01C74C02]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas, as discussed previously over IRC and private email.  Please
-apply.
+>From Leonid Ananiev
 
-At present set_irq_handler() and all the existing variants take the
-desc->lock for the irq in question before adjusting the irq's flow
-handler.  This can cause problems for irq chips for which a given
-interrupt can be either level or edge depending on what's attached.
-The chip->set_type() callback, which is used to switch the interrupt
-type in this case may need to alter the flow handler - but it is
-called with the desc->lock already held, so it cannot safely call
-set_irq_handler().
+Fix "Kernel BUG at fs/aio.c:509". Return EIOCBRETRY but not  EIO if page
+is busy.
 
-This patch pulls the core logic out of set_irq_handler() into a new
-set_irq_handler_locked() which assumes the desc->lock is already held.
-It can safely be used from the chip->set_type() callback.
+Signed-off-by: Leonid Ananiev <leonid.i.ananiev@intel.com>
 
-Signed-off-by: David Gibson <dwg@au1.ibm.com>
+"Kernel BUG at fs/aio.c:509"
+http://marc.theaimsgroup.com/?l=linux-kernel&m=117031052517746&w=2 
+is present in 2.6.20 as well as 2.6.19.
+The investigation shows that the bug's panic occurs when aio_complete()
+is called with argument ret=EIO which is returned from
+invalidate_inode_pages2_range() because the page is temporally busy.
+Call Trace:
+ [<ffffffff802573c3>] invalidate_inode_pages2_range+0x236/0x26b
+ [<ffffffff802af77b>] ext3_direct_IO+0x16c/0x19e
+ [<ffffffff802adc1d>] ext3_get_block+0x0/0xe2
+ [<ffffffff802518c0>] generic_file_direct_IO+0xb9/0xcf
+ [<ffffffff8025193d>] generic_file_direct_write+0x67/0x10e
+ [<ffffffff80252308>] __generic_file_aio_write_nolock+0x2d6/0x3fe
+ [<ffffffff802082c0>] __switch_to+0x26f/0x27e
+ [<ffffffff8047b8e9>] thread_return+0x0/0xd8
+ [<ffffffff80252497>] generic_file_aio_write+0x67/0xc7
+ [<ffffffff802ab2cc>] ext3_file_write+0x0/0x8f
+ [<ffffffff802ab2e2>] ext3_file_write+0x16/0x8f
+ [<ffffffff802ab2cc>] ext3_file_write+0x0/0x8f
+ [<ffffffff80283f61>] aio_rw_vect_retry+0x72/0x14f
+ [<ffffffff80284ad9>] aio_run_iocb+0xe6/0x187
+ [<ffffffff802853e2>] io_submit_one+0x296/0x2e3
+ [<ffffffff80285979>] sys_io_submit+0x9b/0x108
+ [<ffffffff80229b49>] default_wake_function+0x0/0xe
+ [<ffffffff8020983e>] system_call+0x7e/0x83
 
-Index: working-2.6/kernel/irq/chip.c
-===================================================================
---- working-2.6.orig/kernel/irq/chip.c	2007-01-24 12:01:21.000000000 +1100
-+++ working-2.6/kernel/irq/chip.c	2007-02-09 14:28:55.000000000 +1100
-@@ -500,6 +500,43 @@ handle_percpu_irq(unsigned int irq, stru
- 
- #endif /* CONFIG_SMP */
- 
-+/**
-+ *	set_irq_handler_locked - Set irq flow handler. *
-+ *	@irq:		the interrupt number
-+ *	@handle:	the flow handler function
-+ *	@is_chained:	is this a chained handler (used for cascade interrupts)
-+ *	@name:		name for this handler, usually "level" or "edge"
-+ *
-+ *	This version of set_irq_handler() assumes that desc->lock for
-+ *	the interrupt in question is already taken.  In particular,
-+ *	this means it is safe to call from a chip->set_type() callback
-+ *	function.
-+ */
-+void set_irq_handler_locked(unsigned int irq, irq_flow_handler_t handle,
-+			    int is_chained, const char *name)
-+{
-+	struct irq_desc *desc = irq_desc + irq;
-+
-+	/* Uninstall? */
-+	if (handle == handle_bad_irq) {
-+		if (desc->chip != &no_irq_chip) {
-+			desc->chip->mask(irq);
-+			desc->chip->ack(irq);
-+		}
-+		desc->status |= IRQ_DISABLED;
-+		desc->depth = 1;
-+	}
-+	desc->handle_irq = handle;
-+	desc->name = name;
-+
-+	if (handle != handle_bad_irq && is_chained) {
-+		desc->status &= ~IRQ_DISABLED;
-+		desc->status |= IRQ_NOREQUEST | IRQ_NOPROBE;
-+		desc->depth = 0;
-+		desc->chip->unmask(irq);
-+	}
-+}
-+
- void
- __set_irq_handler(unsigned int irq, irq_flow_handler_t handle, int is_chained,
- 		  const char *name)
-@@ -531,25 +568,7 @@ __set_irq_handler(unsigned int irq, irq_
- 	}
- 
- 	spin_lock_irqsave(&desc->lock, flags);
--
--	/* Uninstall? */
--	if (handle == handle_bad_irq) {
--		if (desc->chip != &no_irq_chip) {
--			desc->chip->mask(irq);
--			desc->chip->ack(irq);
--		}
--		desc->status |= IRQ_DISABLED;
--		desc->depth = 1;
--	}
--	desc->handle_irq = handle;
--	desc->name = name;
--
--	if (handle != handle_bad_irq && is_chained) {
--		desc->status &= ~IRQ_DISABLED;
--		desc->status |= IRQ_NOREQUEST | IRQ_NOPROBE;
--		desc->depth = 0;
--		desc->chip->unmask(irq);
--	}
-+	set_irq_handler_locked(irq, handle, is_chained, name);
- 	spin_unlock_irqrestore(&desc->lock, flags);
- }
- 
-Index: working-2.6/include/linux/irq.h
-===================================================================
---- working-2.6.orig/include/linux/irq.h	2007-01-24 12:01:21.000000000 +1100
-+++ working-2.6/include/linux/irq.h	2007-02-09 14:04:12.000000000 +1100
-@@ -329,6 +329,9 @@ set_irq_chip_and_handler_name(unsigned i
- 			      irq_flow_handler_t handle, const char *name);
- 
- extern void
-+set_irq_handler_locked(unsigned int irq, irq_flow_handler_t handle,
-+		       int is_chained, const char *name);
-+extern void
- __set_irq_handler(unsigned int irq, irq_flow_handler_t handle, int is_chained,
- 		  const char *name);
- 
+As a result aio_complete() is called while it should not be.
+When IO is finished  aio_complete() is called once more
+and iocb->ki_users becomes negative.
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Taking into account aio.c lines in aio_run_iocb()
+        if (ret != -EIOCBRETRY && ret != -EIOCBQUEUED) {
+                aio_complete(iocb, ret, 0);
+
+proposed patch makes function invalidate_inode_pages2_range()
+to return EIOCBRETRY but not  EIO if page is busy.
+The patch is tested on 2.6.20.
+
+--- linux-2.6.20/mm/truncate.c  2007-02-04 10:44:54.000000000 -0800
++++ linux-2.6.20p/mm/truncate.c 2007-02-08 11:38:11.000000000 -0800
+@@ -366,7 +366,7 @@ static int do_launder_page(struct addres
+  * Any pages which are found to be mapped into pagetables are unmapped
+prior to
+  * invalidation.
+  *
+- * Returns -EIO if any pages could not be invalidated.
++ * Returns -EIOCBRETRY if any pages could not be invalidated.
+  */
+ int invalidate_inode_pages2_range(struct address_space *mapping,
+                                  pgoff_t start, pgoff_t end)
+@@ -423,7 +423,7 @@ int invalidate_inode_pages2_range(struct
+                        }
+                        ret = do_launder_page(mapping, page);
+                        if (ret == 0 &&
+!invalidate_complete_page2(mapping, page))
+-                               ret = -EIO;
++                               ret = -EIOCBRETRY;
+                        unlock_page(page);
+                }
+                pagevec_release(&pvec);
+@@ -440,7 +440,7 @@ EXPORT_SYMBOL_GPL(invalidate_inode_pages
+  * Any pages which are found to be mapped into pagetables are unmapped
+prior to
+  * invalidation.
+  *
+- * Returns -EIO if any pages could not be invalidated.
++ * Returns -EIOCBRETRY if any pages could not be invalidated.
+  */
+ int invalidate_inode_pages2(struct address_space *mapping)
+ {
