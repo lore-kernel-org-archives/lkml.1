@@ -1,49 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1945943AbXBIAdh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1945938AbXBIAiR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1945943AbXBIAdh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Feb 2007 19:33:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945945AbXBIAdh
+	id S1945938AbXBIAiR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Feb 2007 19:38:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945945AbXBIAiP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Feb 2007 19:33:37 -0500
-Received: from tmailer.gwdg.de ([134.76.10.23]:42124 "EHLO tmailer.gwdg.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1945943AbXBIAdg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Feb 2007 19:33:36 -0500
-Date: Fri, 9 Feb 2007 01:31:58 +0100 (MET)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: "Christopher R. Hertel" <crh@ubiqx.mn.org>
-cc: linux-cifs-client@lists.samba.org, Steve French <smfrench@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [linux-cifs-client] Re: SMB support still missing?
-In-Reply-To: <45CBC072.90102@ubiqx.mn.org>
-Message-ID: <Pine.LNX.4.61.0702090130440.8587@yvahk01.tjqt.qr>
-References: <Pine.LNX.4.61.0702090101490.24888@yvahk01.tjqt.qr>
- <45CBC072.90102@ubiqx.mn.org>
+	Thu, 8 Feb 2007 19:38:15 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:28963 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1945938AbXBIAiO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Feb 2007 19:38:14 -0500
+Date: Thu, 8 Feb 2007 16:38:01 -0800
+From: Mark Fasheh <mark.fasheh@oracle.com>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Linux Filesystems <linux-fsdevel@vger.kernel.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [rfc][patch 0/3] a faster buffered write deadlock fix?
+Message-ID: <20070209003801.GX14799@ca-server1.us.oracle.com>
+Reply-To: Mark Fasheh <mark.fasheh@oracle.com>
+References: <20070208105437.26443.35653.sendpatchset@linux.site>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070208105437.26443.35653.sendpatchset@linux.site>
+Organization: Oracle Corporation
+User-Agent: Mutt/1.5.11
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Feb 08, 2007 at 02:07:15PM +0100, Nick Piggin wrote:
+> The problem is that the existing aops interface is crap. "correct, fast,
+> compatible -- choose any 2"
 
-On Feb 8 2007 18:29, Christopher R. Hertel wrote:
->Jan Engelhardt wrote:
->
->It does seem to me that it is some sort of name resolution issue, but it may
->have more to do with the multi-homed nature of your setup.
->
->Did you try:
->
->  mount.cifs //CL0/c /mnt
-
-Yes, that one _fails_ with "mount error 112 = Host is down" (though tcpdump
-_does_ show that cifs connects to port 139 and then disconnects using FIN)
-
->If mount.cifs is not converting the case, that should fix the problem.
->Curious to know...
+Agreed. There's lots of problems with the interface (imho), but my biggest
+two issues are the page lock being held on ->prepare_write() /
+->commit_write() and the fact that the file system only sees the write one
+page at a time
 
 
-Jan
--- 
-ft: http://freshmeat.net/p/chaostables/
+> So I have finally finished a first slightly-working draft of my new aops
+> op (perform_write) proposal. I would be interested to hear comments about
+> it.  Most of my issues and concerns are in the patch headers themselves,
+> so reply to them.
+
+I like ->perform_write(). It allows the file system to make re-use of the
+checks in the generic write path, but gives a maximum amount of information
+about the overall operation to be done. There's an added advantage in that
+some file systems (ocfs2 is one of these) want to be more careful about
+ordering page locks, which should be much easier with it.
+
+If this goes in, it could probably be helpful to me in some of the code I'm
+currently writing which needs to be better about page lock / cluster lock
+ordering and wants to see as much of the (allocating) writes as possible.
+	--Mark
+
+--
+Mark Fasheh
+Senior Software Developer, Oracle
+mark.fasheh@oracle.com
