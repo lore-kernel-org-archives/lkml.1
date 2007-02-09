@@ -1,203 +1,263 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946012AbXBICpX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946025AbXBICrO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946012AbXBICpX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Feb 2007 21:45:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946025AbXBICpX
+	id S1946025AbXBICrO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Feb 2007 21:47:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946027AbXBICrO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Feb 2007 21:45:23 -0500
-Received: from alpha.polcom.net ([217.79.150.67]:40821 "EHLO alpha.polcom.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1946012AbXBICpW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Feb 2007 21:45:22 -0500
-X-Greylist: delayed 1119 seconds by postgrey-1.27 at vger.kernel.org; Thu, 08 Feb 2007 21:45:22 EST
-Date: Fri, 9 Feb 2007 03:26:42 +0100 (CET)
-From: Grzegorz Kulewski <kangur@polcom.net>
-To: linux-kernel@vger.kernel.org
-Subject: Strange oops in iret_exc with my own module
-Message-ID: <Pine.LNX.4.63.0702090309050.6097@alpha.polcom.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Thu, 8 Feb 2007 21:47:14 -0500
+Received: from mercury.realtime.net ([205.238.132.86]:40564 "EHLO
+	ruth.realtime.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1946025AbXBICrN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Feb 2007 21:47:13 -0500
+In-Reply-To: <1170975119.5204.99.camel@dyn9047021078.beaverton.ibm.com>
+References: <1170721711.5204.44.camel@dyn9047021078.beaverton.ibm.com> <1170802957.5204.56.camel@dyn9047021078.beaverton.ibm.com> <b682962303654f4958a6c2c50d805907@bga.com> <200702081821.57358.arnd@arndb.de> <1170975119.5204.99.camel@dyn9047021078.beaverton.ibm.com>
+Mime-Version: 1.0 (Apple Message framework v624)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <e03c784bc3aff642ef10d0e2ed8eab45@bga.com>
+Content-Transfer-Encoding: 7bit
+Cc: cbe-oss-dev@ozlabs.org, Arnd Bergmann <arnd@arndb.de>,
+       LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
+       oprofile-list@lists.sourceforge.net
+From: Milton Miller <miltonm@bga.com>
+Subject: Re: [Cbe-oss-dev] [RFC, PATCH] CELL Oprofile SPU profiling updated patch
+Date: Thu, 8 Feb 2007 20:46:48 -0600
+To: Carl Love <cel@us.ibm.com>
+X-Mailer: Apple Mail (2.624)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-I written really simple and stupid module (the design wasn't mine). One 
-tester of this module provided me the following oops it caused quite often 
-(on many automated tests):
+On Feb 8, 2007, at 4:51 PM, Carl Love wrote:
 
-[17179765.492000] BUG: unable to handle kernel NULL pointer dereference at 
-virtual address 00000000
-[17179765.492000]  printing eip:
-[17179765.492000] c02c4845
-[17179765.492000] *pde = 00000000
-[17179765.492000] Oops: 0002 [#1]
-[17179765.492000] Modules linked in: altpinfo rfcomm l2cap bluetooth ppdev 
-cpufreq_userspace cpufreq_stats freq_table
-cpufreq_powersave cpufreq_ondemand cpufreq_conservative video button 
-battery container ac af_packet dm_mod md_mod ipv6
-lp snd_seq_dummy snd_seq_oss snd_seq_midi snd_seq_midi_event snd_seq 
-snd_via82xx gameport snd_ac97_codec snd_ac97_bus
-via686a snd_pcm_oss snd_mixer_oss tsdev i2c_isa i2c_viapro usbhid snd_pcm 
-snd_timer snd_page_alloc snd_mpu401_uart
-snd_rawmidi snd_seq_device i2c_core snd soundcore psmouse 8139too mii 
-pcspkr floppy serio_raw parport_pc rtc via_agp
-agpgart parport shpchp pci_hotplug evdev ext3 jbd mbcache ide_generic 
-uhci_hcd usbcore ide_cd cdrom ide_disk via82cxxx
-generic thermal processor fan vga16fb cfbcopyarea vgastate cfbimgblt 
-cfbfillrect
-[17179765.492000] CPU:    0
-[17179765.492000] EIP:    0060:[<c02c4845>]    Not tainted VLI
-[17179765.492000] EFLAGS: 00210246   (2.6.17.13nopreempt #3)
-[17179765.492000] EIP is at iret_exc+0x4fd/0x75d
-[17179765.492000] eax: 00000000   ebx: 00000000   ecx: 2b646970   edx: 
-336e3094
-[17179765.492000] esi: 0809c724   edi: 00000000   ebp: 00000003   esp: 
-c32b3f34
-[17179765.492000] ds: 007b   es: 007b   ss: 0068
-[17179765.492000] Process so6-3-test (pid: 7227, threadinfo=c32b2000 
-task=c620e550)
-[17179765.492000] Stack: 00000000 2b646970 00000000 2b646970 d0833913 
-00000000 0809c724 2b646970
-[17179765.492000]        0809c720 c47c8d40 40040c01 0809c720 c016a5f2 
-cadb0624 c47c8d40 40040c01
-[17179765.492000]        0809c720 c47c8d40 00000000 c016a654 c015845a 
-cffefa80 c47c8d40 c016a90d
-[17179765.492000] Call Trace:
-[17179765.492000]  <d0833913> altpinfo_ioctl+0x103/0x170 [altpinfo] 
-<c016a5f2> do_ioctl+0x52/0x60
-[17179765.492000]  <c016a654> vfs_ioctl+0x54/0x2b0  <c015845a> 
-do_sys_open+0x9a/0xd0
-[17179765.492000]  <c016a90d> sys_ioctl+0x5d/0x90  <c0102d27> 
-syscall_call+0x7/0xb
-[17179765.492000] Code: 5c 24 28 c7 03 f2 ff ff ff e9 12 be f0 ff ba f2 ff 
-ff ff e9 6d c0 f0 ff 8d 0c 8a e9 8f c0 f0 ff
-01 c1 eb 03 8d 0c 88 51 50 31 c0 <f3> aa 58 59 e9 ca c0 f0 ff 8d 0c 88 51 
-50 31 c0 f3 aa 58 59 e9
-[17179765.492000] EIP: [<c02c4845>] iret_exc+0x4fd/0x75d SS:ESP 
-0068:c32b3f34
-[17179765.492000]  <6>altpinfo: unloaded
+> On Thu, 2007-02-08 at 18:21 +0100, Arnd Bergmann wrote:
+>> On Thursday 08 February 2007 15:18, Milton Miller wrote:
+>>
+>>> 1) sample rate setup
+>>>
+>>>     In the current patch, the user specifies a sample rate as a time
+>>> interval.
+>>>     The kernel is (a) calling cpufreq to get the current cpu 
+>>> frequency,
+>>> (b)
+>>>     converting the rate to a cycle count, (c) converting this to a 
+>>> 24 bit
+>>>     LFSR count, an iterative algorithm (in this patch, starting from
+>>>     one of 256 values so a max of 2^16 or 64k iterations), (d)
+>>> calculating
+>>>     an trace unload interval.   In addition, a cpufreq notifier is
+>>> registered
+>>>     to recalculate on frequency changes.
+>
+> No.  The user issues the command opcontrol --event:N  where N is the
+> number of events (cycles, l2 cache misses, instructions retired etc)
+> that are to elapse between collecting the samples.
+
+So you are saying that b and c are primary, and a is used to calculate
+a safe value for d.   All of the above work is dont, just from a
+different starting point?
 
 
-The function altpinfo_ioctl looks like this:
+> The OProfile passes
+> the value N to the kernel via the variable ctr[i].count.  Where i is 
+> the
+> performance counter entry for that event.
 
-static int altpinfo_ioctl(struct inode *inode, struct file *f, unsigned 
-int cmd, unsigned long arg)
-{
-         int ret = 0;
+Ok I haven't looked a the api closely.
 
-         switch (cmd) {
+> Specifically with SPU
+> profiling, we do not use performance counters because the CELL HW does
+> not allow the normal the PPU to read the SPU PC when a performance
+> counter interrupt occurs.  We are using some additional hw support in
+> the chip that allows us to periodically capture the SPU PC.  There is 
+> an
+> LFSR hardware counter that can be started at an arbitrary LFSR value.
+> When the last LFSR value in the sequence is reached, a sample is taken
+> and stored in the trace buffer.  Hence, the value of N specified by the
+> user must get converted to the LFSR value that is N from the end of the
+> sequence.
 
-         case API_GET_FMT:
-                 ret = put_fmt((char __user *)arg);
-                 break;
+Ok so its arbitray load count to max vs count and compare.   A critical
+detail when computing the value to load, but the net result is the
+same; the value for the count it hard to determine.
 
-         case API_SET_FMT:
-                 if (!capable(CAP_SYS_ADMIN)) {
-                         return -EPERM;
-                 }
-
-                 ret = get_fmt((char __user *)arg);
-                 break;
-
-         case API_GET_CURLEN:
-                 ret = put_curlen(f, (int __user *)arg);
-                 break;
-
-         default:
-                 ret = -ENOTTY;
-                 break;
-
-         }
-
-         return ret;
-}
+> The same clock that the processor is running at is used to
+> control the LFSR count.  Hence the LFSR counter increments once per CPU
+> clock cycle regardless of the CPU frequency or changes in the 
+> frequency.
+> There is no calculation for the LFSR value that is a function of the
+> processor frequency.  There is no need to adjust the LFSR when the
+> processor frequency changes.
 
 
-Helper functions look like this:
 
-static int put_curlen(struct file *f, int __user *arg)
-{
-         int left;
-         struct private_data *p = (struct private_data *) f->private_data;
+Oh, so the lfsr doesn't have to be recomputed, only the time
+between unloads.
 
-         if (down_interruptible(&p->sem) != 0) {
-                 return -ERESTARTSYS;
-         }
+>
+> Milton had a comment about the code
+>
+>  if (ctr[0].event == SPU_CYCLES_EVENT_NUM) {
+>> +             spu_cycle_reset = ctr[0].count;
+>> +             return;
+>> +     }
+>
+> Well, given the above description, it is clear that if you are doing 
+> SPU
+> event profiling, the value N is put into the cntr[0].cnt entry since
+> there is only one event.  Thus in cell_global_start_spu() you use
+> spu_cycle_reset as the argument to the lfsr calculation routine to get
+> the LFSR value that is N from the end of the sequence.
 
-         left = p->buffer_size - f->f_pos;
+I was looking at the patch and the context was not very good.   You
+might consider adding -p to your diff command, it provides the function
+name after the @@.
 
-         up(&p->sem);
+However, in this case, I think I just need to see the final result.
 
-         return put_user(left, arg);
-}
+>
+>>>
+>>>     The obvious problem is step (c), running a loop potentially 64
+>>> thousand
+>>>     times in kernel space will have a noticeable impact on other 
+>>> threads.
+>>>
+>>>     I propose instead that user space perform the above 4 steps, and
+>>> provide
+>>>     the kernel with two inputs: (1) the value to load in the LFSR 
+>>> and (2)
+>>>     the periodic frequency / time interval at which to empty the 
+>>> hardware
+>>>     trace buffer, perform sample analysis, and send the data to the
+>>> oprofile
+>>>     subsystem.
+>>>
+>>>     There should be no security issues with this approach.   If the 
+>>> LFSR
+>>> value
+>>>     is calculated incorrectly, either it will be too short, causing 
+>>> the
+>>> trace
+>>>     array to overfill and data to be dropped, or it will be too 
+>>> long, and
+>>>     there will be fewer samples.   Likewise, the kernel periodic poll
+>>> can be
+>>>     too long, again causing overflow, or too frequent, causing only 
+>>> timer
+>>>     execution overhead.
+>>>
+>>>     Various data is collected by the kernel while processing the
+>>> periodic timer,
+>>>     this approach would also allow the profiling tools to control the
+>>>     frequency of this collection.   More frequent collection results 
+>>> in
+>>> more
+>>>     accurate sample data, with the linear cost of poll execution
+>>> overhead.
+>>>
+>>>     Frequency changes can be handled either by the profile code 
+>>> setting
+>>>     collection at a higher than necessary rate, or by interacting 
+>>> with
+>>> the
+>>>     governor to limit the speeds.
+>>>
+>>>     Optionally, the kernel can add a record indicating that some 
+>>> data was
+>>>     likely dropped if it is able to read all 256 entries without
+>>> underflowing
+>>>     the array.  This can be used as hint to user space that the 
+>>> kernel
+>>> time
+>>>     was too long for the collection rate.
+>>
+>> Moving the sample rate computation to user space sounds like the right
+>> idea, but why not have a more drastic version of it:
+>
+> No, I do not agree.  The user/kernel API pass N where N is the number 
+> of
+> events between samples.  We are not at liberty to just change the API.
+> We we did do this, we fully expect that John Levon will push back 
+> saying
+> why make an architecture specific API change when it isn't necessary.
 
-static int put_fmt(char __user *arg)
-{
-         char *fmt;
-         int ret;
+[So you have not asked.]
 
-         ret = get_format_string(&fmt);
+<Kludge> If you want to overlaod the existing array, one
+event could be the lfsr sample rate, and another event be
+the collection time.  That would stay within the framework.
+But that is a kludge. </Kludge>
 
-         if (ret != 0) {
-                 return ret;
-         }
+[Me goes and reads kernel profile driver and skims powerpc code].
 
-         if (copy_to_user(arg, fmt, strlen(fmt)) != 0) {
-                 return -EIO;
-         }
+You are confusing the user interface (what the user specifies on the
+command line) with the kernel API.
 
-         kfree(fmt);
+It is somewhat hidden by the PowerPC specific common code in
+arch/powerpc/oprofile/common.c.  That is where the counter
+array is exposd.
 
-         return 0;
-}
+The user to kernel api is not fill out an array of counter
+event names and sampling intervals.
 
-/* Better make arg buffer at least 4 bytes alligned in userspace! */
-static int get_fmt(char __user *arg)
-{
-         int ret;
-         int len;
-         char *buf;
+The user to kernel interface is a file system that contains a
+heirachy of files.  Each file consists of the hex ascii
+represntation of a unsigned long.   The filesystem interfaces
+to the kernel by provding an API to create directorys and files,
+specifing the name of the directory or file.  Theere are helper
+routines to connect a file to a ulong and read access to an atomic_t.
+The common driver (in drivers/oprofile) creates the file system
+and some common files that implement the control interface, which
+interfaces to the architecture specific driver through the ops
+array.
 
-         ret = get_user(len, (int __user *)arg);
+The powerpc common driver creates a heiarchy exposing the
+values to be placed in the performance monitor registers,
+and directory of counters with the event selection.
 
-         if (ret != 0) {
-                 return ret;
-         }
+Since this architeture code does not seem to match the
+capabilitys of the hardware, it would seem that this is
+the area to change.   This driver does not seem to use
+the actual PMU interrput or sprs.   Lets make it its
+own directory with its own controls.
 
-         buf = kcalloc(len, sizeof(char), GFP_KERNEL);
+I don't see how exposing the sample collection to
+rate and the computation of the LFSR create a userspace
+api change;  I think its totally within the framework.
 
-         if (copy_from_user(buf, arg + 4, len) != 0) {
-                 kfree(buf);
-                 return -EIO;
-         }
+> Please define "drastic" in this context.  Do you mean make the table
+> bigger i.e. more then 256 precomputed elements?  I did 256 since Arnd
+> seemed to think that would be a reasonable size. Based on his example
+> How much kernel space are we willing to use to same some computation?
+> Keep in mind only one of the entries in the table will ever be used.
+>
+> I think if we found the LFSR that was with in 2^10 of the desired value
+> that would be good enough. It would be within 1% of the minimum N the
+> user can specify.  That would require a table with 2^14 entries.  That
+> seems unreasonably large.
 
-         buf[len] = '\0';
+Why does the table have to be linear?  Compute samples at various
+logrimathic staring points.   Determine how many significant bits
+you want to keep, and have an array for each sample length.
 
-         ret = parse_format(buf);
+ie for 3 bits of significance, you could have
+F00000, E00000, ... 800000,   0F0000, ......
+this would take (24-n) * 2^(n-1) slots, while maintaing user
+control of the range.
 
-         if (ret != 0) {
-                 kfree(buf);
-                 return ret;
-         }
+>
+> Anyway, the user controls how often sampling is done by setting N.
 
-         return 0;
-}
+When calling a user space program.   The events are converted to
+a series of control register values that are communicated to the
+kernel by writing to files in the file system.   The writes are
+interpreted (converted from ascii hex to binary longs) and stored
+until the control files are written, at which point callbacks
+copy and interpret the controls and start the hardware collection.
 
-
-I wonder what does this oops mean and what that function iret_exc really 
-does and why? It looks like some automagical exception handler but I am 
-not sure about it.
-
-I can't reproduce this oops for now on my machine. Could anybody tell me 
-why that code is wrong and why is this oops in iret_exc? (At the same time 
-I am waiting for further info from the tester but I am not sure when and 
-how much I will get.)
-
-Any help on tracing this down would be appreciated.
+Frankly, I would expect a lot more resistance to the event data
+stream generation changes and duplicaton.
 
 
-Thanks,
-
-Grzegorz Kulewski
+milton
 
