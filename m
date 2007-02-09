@@ -1,49 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992429AbXBIRAp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992444AbXBIRBZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992429AbXBIRAp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Feb 2007 12:00:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992440AbXBIRAp
+	id S2992444AbXBIRBZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Feb 2007 12:01:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992442AbXBIRBZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Feb 2007 12:00:45 -0500
-Received: from ug-out-1314.google.com ([66.249.92.168]:15546 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992429AbXBIRAo (ORCPT
+	Fri, 9 Feb 2007 12:01:25 -0500
+Received: from mtagate4.uk.ibm.com ([195.212.29.137]:5891 "EHLO
+	mtagate4.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992438AbXBIRBX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Feb 2007 12:00:44 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=K74Evj32LdStdo19eQlO+PWcEiFcfmCFqbkPJW0KGoJn19y/MaW/HdUAPHz7+HHzmEqsBecc1QsXOKwxLvR3fZy5cH9TAUYfRCtUt1uQvDw4frrxyv61usLnPWBuUaAb1pjlrNNstUW8G+QdEwMU16fSVsZlXAGeySk6goYCGf0=
-Message-ID: <d120d5000702090900r1ad57d9dyb0c7f544686e7c40@mail.gmail.com>
-Date: Fri, 9 Feb 2007 12:00:41 -0500
-From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-To: "Andi Kleen" <ak@suse.de>
-Subject: Re: WHATIS scan_keyb
-Cc: "Jiri Slaby" <jirislaby@gmail.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <p73lkj71bcm.fsf@bingen.suse.de>
+	Fri, 9 Feb 2007 12:01:23 -0500
+Date: Fri, 9 Feb 2007 18:00:05 +0100
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Alon Bar-Lev <alon.barlev@gmail.com>
+Cc: linux-kernel@vger.kernel.org, akpm@osdl.org, bwalle@suse.de,
+       rmk+lkml@arm.linux.org.uk, spyro@f2s.com, davej@codemonkey.org.uk,
+       hpa@zytor.com, Riley@williams.name, tony.luck@intel.com,
+       geert@linux-m68k.org, zippel@linux-m68k.org, ralf@linux-mips.org,
+       matthew@wil.cx, grundler@parisc-linux.org, kyle@parisc-linux.org,
+       paulus@samba.org, schwidefsky@de.ibm.com, lethal@linux-sh.org,
+       davem@davemloft.net, uclinux-v850@lsi.nec.co.jp, ak@muc.de,
+       vojtech@suse.cz, chris@zankel.net, len.brown@intel.com, lenb@kernel.org,
+       herbert@gondor.apana.org.au, viro@zeniv.linux.org.uk,
+       bzolnier@gmail.com, dmitry.torokhov@gmail.com, dtor@mail.ru,
+       jgarzik@pobox.com, linux-mm@kvack.org, dwmw2@infradead.org,
+       patrick@tykepenguin.com, kuznet@ms2.inr.ac.ru, pekkas@netcore.fi,
+       jmorris@namei.org, philb@gnu.org, tim@cyberelk.net, andrea@suse.de,
+       ambx1@neo.rr.com, James.Bottomley@steeleye.com,
+       linux-serial@vger.kernel.org
+Subject: Re: [PATCH 00/34] __initdata cleanup
+Message-ID: <20070209170005.GA8500@osiris.ibm.com>
+References: <200702091711.34441.alon.barlev@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <45CC8F2D.3070902@gmail.com> <p73lkj71bcm.fsf@bingen.suse.de>
+In-Reply-To: <200702091711.34441.alon.barlev@gmail.com>
+User-Agent: mutt-ng/devel-r804 (Linux)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/9/07, Andi Kleen <ak@suse.de> wrote:
-> Jiri Slaby <jirislaby@gmail.com> writes:
+On Fri, Feb 09, 2007 at 05:11:32PM +0200, Alon Bar-Lev wrote:
+>  
+> Follow-up Russell King comment at http://lkml.org/lkml/2007/1/22/267
 >
-> > Hi.
-> >
-> > What's drivers/char/scan_keyb.{c,h} for, when it's referenced in no
-> > place (aside a fact, that it uses some old API and hence is broken)?
->
-> iirc it was an interface for braille reader modules. Probably they
-> never made it into tree.
->
+> All __initdata variables should be initialized so they won't end up
+> in BSS.
+>  
+> There is no dependency between patches or even hunks.
+>  
+> Some architecture patches are untested, this is documented as "UNTESTED"
+>  
+> Against 2.6.20-rc6-mm3.
 
-It looks like it is a generic portion of drivers for scan-matrix
-keyboards. I think we can nuke it.
+To quote parts of that:
 
--- 
-Dmitry
+Anyway, here's what the GCC manual has to say about use of
+__attribute__((section)) on variables:
+
+`section ("SECTION-NAME")'
+     Use the `section' attribute with an _initialized_ definition of a
+     _global_ variable, as shown in the example.  GCC issues a warning
+     and otherwise ignores the `section' attribute in uninitialized
+     variable declarations.
+
+     You may only use the `section' attribute with a fully initialized
+     global definition because of the way linkers work.  The linker
+     requires each object be defined once, with the exception that
+     uninitialized variables tentatively go in the `common' (or `bss')
+     section and can be multiply "defined".  You can force a variable
+     to be initialized with the `-fno-common' flag or the `nocommon'
+     attribute.
+
+And the top-level Makefile has:
+
+CFLAGS          := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
+                   -fno-strict-aliasing -fno-common
+
+Note the -fno-common.
+
+And indeed all the __initdata annotated local and global variables on
+s390 are in the init.data section. So I'm wondering what this patch
+series is about. Or I must have missed something.
