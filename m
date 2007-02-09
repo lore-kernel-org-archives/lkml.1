@@ -1,57 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946585AbXBIQG5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946569AbXBIQG5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946585AbXBIQG5 (ORCPT <rfc822;w@1wt.eu>);
+	id S1946569AbXBIQG5 (ORCPT <rfc822;w@1wt.eu>);
 	Fri, 9 Feb 2007 11:06:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946569AbXBIQFx
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946601AbXBIQFw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Feb 2007 11:05:53 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:53636 "EHLO
+	Fri, 9 Feb 2007 11:05:52 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:53640 "EHLO
 	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1946581AbXBIQFc (ORCPT
+	with ESMTP id S1946582AbXBIQFh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Feb 2007 11:05:32 -0500
+	Fri, 9 Feb 2007 11:05:37 -0500
 To: torvalds@linux-foundation.org
-Subject: [PATCH] ps3 usb missed the addition of new argument to ps3_alloc_io_irq()
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Message-Id: <E1HFYFg-0004rz-19@ZenIV.linux.org.uk>
+Subject: [PATCH] m32r: class_device -> device fallout
+Cc: linux-kernel@vger.kernel.org
+Message-Id: <E1HFYFl-0004sP-1N@ZenIV.linux.org.uk>
 From: Al Viro <viro@ftp.linux.org.uk>
-Date: Fri, 09 Feb 2007 16:05:32 +0000
+Date: Fri, 09 Feb 2007 16:05:37 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 ---
- drivers/usb/host/ehci-ps3.c |    2 +-
- drivers/usb/host/ohci-ps3.c |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/pcmcia/m32r_pcc.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/usb/host/ehci-ps3.c b/drivers/usb/host/ehci-ps3.c
-index 371f194..4d781a2 100644
---- a/drivers/usb/host/ehci-ps3.c
-+++ b/drivers/usb/host/ehci-ps3.c
-@@ -104,7 +104,7 @@ static int ps3_ehci_sb_probe(struct ps3_system_bus_device *dev)
- 	dev_dbg(&dev->core, "%s:%d: mmio mapped_addr %lxh\n", __func__,
- 		__LINE__, dev->m_region->lpar_addr);
+diff --git a/drivers/pcmcia/m32r_pcc.c b/drivers/pcmcia/m32r_pcc.c
+index bbf0258..4dbef07 100644
+--- a/drivers/pcmcia/m32r_pcc.c
++++ b/drivers/pcmcia/m32r_pcc.c
+@@ -722,7 +722,7 @@ static int __init init_m32r_pcc(void)
+ 	/* Set up interrupt handler(s) */
  
--	result = ps3_alloc_io_irq(dev->interrupt_id, &virq);
-+	result = ps3_alloc_io_irq(PS3_BINDING_CPU_ANY, dev->interrupt_id, &virq);
- 
- 	if (result) {
- 		dev_dbg(&dev->core, "%s:%d: ps3_construct_io_irq(%d) failed.\n",
-diff --git a/drivers/usb/host/ohci-ps3.c b/drivers/usb/host/ohci-ps3.c
-index 69d948b..62283a3 100644
---- a/drivers/usb/host/ohci-ps3.c
-+++ b/drivers/usb/host/ohci-ps3.c
-@@ -107,7 +107,7 @@ static int ps3_ohci_sb_probe(struct ps3_system_bus_device *dev)
- 	dev_dbg(&dev->core, "%s:%d: mmio mapped_addr %lxh\n", __func__,
- 		__LINE__, dev->m_region->lpar_addr);
- 
--	result = ps3_alloc_io_irq(dev->interrupt_id, &virq);
-+	result = ps3_alloc_io_irq(PS3_BINDING_CPU_ANY, dev->interrupt_id, &virq);
- 
- 	if (result) {
- 		dev_dbg(&dev->core, "%s:%d: ps3_construct_io_irq(%d) failed.\n",
+ 	for (i = 0 ; i < pcc_sockets ; i++) {
+-		socket[i].socket.dev.dev = &pcc_device.dev;
++		socket[i].socket.dev.parent = &pcc_device.dev;
+ 		socket[i].socket.ops = &pcc_operations;
+ 		socket[i].socket.resource_ops = &pccard_static_ops;
+ 		socket[i].socket.owner = THIS_MODULE;
 -- 
 1.5.0-rc2.GIT
 
