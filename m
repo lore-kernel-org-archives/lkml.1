@@ -1,122 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423085AbXBIAYW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423135AbXBIAYh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423085AbXBIAYW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Feb 2007 19:24:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423078AbXBIAYW
+	id S1423135AbXBIAYh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Feb 2007 19:24:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423086AbXBIAYh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Feb 2007 19:24:22 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:20768 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423085AbXBIAYU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Feb 2007 19:24:20 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
-	message-id:references:mime-version:content-type;
-	b=kqG7KiqPau2hSk8Cq+ELh8tnr7mRfJ4petR+47+LD2EO/FCRKHLc0A2XK2QrWtFtH
-	FG/IK77msKdOk4Uqgaz8A==
-Date: Thu, 8 Feb 2007 16:24:00 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Jan Engelhardt <jengelh@linux01.gwdg.de>, Jeff Garzik <jeff@garzik.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: somebody dropped a (warning) bomb
-In-Reply-To: <Pine.LNX.4.64.0702081528070.8424@woody.linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0702081554380.29559@chino.kir.corp.google.com>
-References: <45CB3B28.60102@garzik.org> <Pine.LNX.4.64.0702080819350.8424@woody.linux-foundation.org>
- <Pine.LNX.4.61.0702081851310.1364@yvahk01.tjqt.qr>
- <Pine.LNX.4.64.0702081145470.8424@woody.linux-foundation.org>
- <Pine.LNX.4.61.0702082202180.24888@yvahk01.tjqt.qr>
- <Pine.LNX.4.64.0702081324090.8424@woody.linux-foundation.org>
- <Pine.LNX.4.64.0702081432320.27603@chino.kir.corp.google.com>
- <Pine.LNX.4.64.0702081528070.8424@woody.linux-foundation.org>
+	Thu, 8 Feb 2007 19:24:37 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:41105 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1423078AbXBIAYf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Feb 2007 19:24:35 -0500
+Date: Thu, 8 Feb 2007 16:23:25 -0800
+From: Greg KH <greg@kroah.com>
+To: Richard Purdie <rpurdie@rpsys.net>
+Cc: James Simmons <jsimmons@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>,
+       Marcin Juszkiewicz <openembedded@hrw.one.pl>
+Subject: Re: Git backlight subsystem tree
+Message-ID: <20070209002325.GA29979@kroah.com>
+References: <1170901826.5859.2.camel@localhost.localdomain> <Pine.LNX.4.64.0702081520110.824@pentafluge.infradead.org> <1170957595.5849.11.camel@localhost.localdomain> <Pine.LNX.4.64.0702081830520.7686@pentafluge.infradead.org> <20070208212314.GA21165@kroah.com> <1170978623.5849.63.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1170978623.5849.63.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 8 Feb 2007, Linus Torvalds wrote:
-
-> No, making bitfields unsigned is actually usually a good idea. It allows 
-> you to often generate better code, and it actually tends to be what 
-> programmers _expect_. A lot of people seem to be surprised to hear that a 
-> one-bit bitfield actually often encodes -1/0, and not 0/1.
+On Thu, Feb 08, 2007 at 11:50:23PM +0000, Richard Purdie wrote:
+> Hi Greg,
 > 
-
-Your struct:
-
-	struct dummy {
-		int flag:1;
-	} a_variable;
-
-should expect a_varible.flag to be signed, that's what the int says.  
-There is no special case here with regard to type.  It's traditional K&R 
-that writing signed flag:1 here is redundant (K&R pg. 211).  Now whether 
-that's what you wanted or not is irrelevant.  As typical with C, it gives 
-you exactly what you asked for.
-
-You're arguing for inconsistency in how bitfields are qualified based on 
-their size.  If you declare a bitfield as int byte:8, then you're going 
-to expect this to behave exactly like a signed char, which it does.
-
-	struct {
-		int byte:8;
-	} __attribute__((packed)) b_variable;
-
-b_variable.byte is identical to a signed char.
-
-Just because a_variable.flag happens to be one bit, you cannot say that 
-programmers _expect_ it to be unsigned, or you would also expect 
-b_variable.byte to act as an unsigned char.  signed is the default 
-behavior for all types besides char, so the behavior is appropriate based 
-on what most programmers would expect.
-
-> So unsigned bitfields are not only traditional K&R, they are also usually 
-> _faster_ (which is probably why they are traditional K&R - along with 
-> allowing "char" to be unsigned by default). Don't knock them.  It's much 
-> better to just remember that bitfields simply don't _have_ any standard 
-> sign unless you specify it explicitly, than saying "it should be signed 
-> because 'int' is signed".
+> On Thu, 2007-02-08 at 13:23 -0800, Greg KH wrote:
+> > On Thu, Feb 08, 2007 at 06:32:02PM +0000, James Simmons wrote:
+> > > I CC Greg to explain. The backlight class didn't go away. The way it is 
+> > > handled is different.
+> > 
+> > Have a pointer to the patch so I can help explain better?
 > 
+> You've been cc'd on the proposed patch a couple of times in this thread
+> so it should be in your mailbox now.
+> 
+> > As a short summary, 'struct class_device' is going away.  Using a
+> > 'struct device' in its place is what the conversion should have just
+> > done, no functionality change otherwise.
+> 
+> The backlight class is drivers/video/backlight/backlight.c and if I
+> understand things correctly what shows up in sysfs changes.
+> 
+> At the moment (as I understand the code which could be wrong), the
+> backlight functionality is tagged onto an existing device. Taking
+> drivers/video/backlight/corgi_bl.c as an example, the corgi_bl device
+> exists under /sys/devices/platform/corgi_bl with an associated struct
+> device. The backlight code then appends some magic to this to link in
+> some class attributes that show up under /sys/class/backlight. There is
+> only ever one device.
+> 
+> By replacing class_device_register() with device_create(), the proposed
+> patch appears to generate a second struct device with the original as
+> its parent. I'm not sure where it appears in /sys/devices? Having
+> another full blown struct device around makes me uneasy as wherever it
+> appears, we only have one device, not two.
 
-Of course they're faster, it doesn't require the sign extension.  But 
-you're adding additional semantics to the language by your interpretation 
-of what is expected by the programmer in the bitfield case as opposed to a 
-normal variable definition.
+No, your blacklight "device" is also a device now, not just a
+class_device.  You want to show that heirachy properly for a variety of
+different reasons (power management being one of the most important.)
 
-> I will actually argue that having signed bit-fields is almost always a 
-> bug, and that as a result you should _never_ use "int" at all. Especially 
-> as you might as well just write it as
-> 
-> 	signed a:1;
-> 
-> if you really want a signed bitfield.
-> 
+> If I had some kind of platform device which had an LED, backlight and
+> say battery component and registered with the three appropriate classes
+> would that mean four struct devices? Where under /sys/devices do they
+> each appear?
 
-How can signed bitfields almost always be a bug?  I'm the programmer and I 
-want to store my data in a variable that I define, so I must follow the 
-twos-complement rule and allot a sign bit if I declare it as a signed 
-value.  In C, you do this with "int"; otherwise, you use "unsigned".
+Under the main device itself, as they are children of it.
 
-> So I would reall yrecommend that you never use "int a:<bits>" AT ALL, 
-> because there really is never any good reason to do so. Do it as
-> 
-> 	unsigned a:3;
-> 	signed b:2;
-> 
-> but never 
-> 
-> 	int c:4;
-> 
-> because the latter really isn't sensible.
-> 
+As an example, look at a sound device now on 2.6.20 with
+CONFIG_SYSFS_DEPRECATED turned off:
 
-That _is_ sensible because anything you declare "int" is going to be 
-signed as far as gcc is concerned.  "c" just happens to be 4-bits wide 
-instead of 32.  But for everything else, it's the same as an int.  I know 
-exactly what I'm getting by writing "int c:4", as would most programmers 
-who use bitfields to begin with.
+$ tree /sys/class/sound/
+/sys/class/sound/
+|-- adsp -> ../../devices/pci0000:00/0000:00:1b.0/card0/adsp
+|-- audio -> ../../devices/pci0000:00/0000:00:1b.0/card0/audio
+|-- card0 -> ../../devices/pci0000:00/0000:00:1b.0/card0
+|-- controlC0 -> ../../devices/pci0000:00/0000:00:1b.0/card0/controlC0
+|-- dsp -> ../../devices/pci0000:00/0000:00:1b.0/card0/dsp
+|-- mixer -> ../../devices/pci0000:00/0000:00:1b.0/card0/mixer
+|-- pcmC0D0c -> ../../devices/pci0000:00/0000:00:1b.0/card0/pcmC0D0c
+|-- pcmC0D0p -> ../../devices/pci0000:00/0000:00:1b.0/card0/pcmC0D0p
+|-- pcmC0D1p -> ../../devices/pci0000:00/0000:00:1b.0/card0/pcmC0D1p
+|-- seq -> ../../devices/virtual/sound/seq
+|-- sequencer -> ../../devices/virtual/sound/sequencer
+|-- sequencer2 -> ../../devices/virtual/sound/sequencer2
+`-- timer -> ../../devices/virtual/sound/timer
 
-		David
+There are a bunch of mixer and other interfaces, all now real devices
+under the proper PCI device (sound added the "card0" intermediate level
+also, but you will not have that for your devices.
+
+> Also, it was mentioned that a parent struct device is a requirement and
+> this isn't the case for all backlight users. I think this constraint on
+> device_create has been removed in more recent code though? 
+
+Yes, if NULL is passed in, it will be created in the
+/sys/devices/virtual/CLASS_NAME/ directory.  See the above "seq" and
+"timer" devices as an example of that.
+
+Hope this helps,
+
+greg k-h
