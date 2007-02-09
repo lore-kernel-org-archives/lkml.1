@@ -1,153 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946107AbXBIE42@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946118AbXBIFN4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946107AbXBIE42 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Feb 2007 23:56:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946109AbXBIE42
+	id S1946118AbXBIFN4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Feb 2007 00:13:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946119AbXBIFN4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Feb 2007 23:56:28 -0500
-Received: from hqemgate01.nvidia.com ([216.228.112.170]:15924 "EHLO
-	HQEMGATE01.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1946107AbXBIE42 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Feb 2007 23:56:28 -0500
-X-Greylist: delayed 302 seconds by postgrey-1.27 at vger.kernel.org; Thu, 08 Feb 2007 23:56:27 EST
-Message-ID: <45CBE30D.5030006@nvidia.com>
-Date: Thu, 08 Feb 2007 21:57:17 -0500
-From: Ayaz Abdulla <aabdulla@nvidia.com>
-User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
-X-Accept-Language: en-us, en
+	Fri, 9 Feb 2007 00:13:56 -0500
+Received: from raven.upol.cz ([158.194.120.4]:52909 "EHLO raven.upol.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1946118AbXBIFNz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Feb 2007 00:13:55 -0500
+Date: Fri, 9 Feb 2007 06:22:45 +0100
+To: Roman Zippel <zippel@linux-m68k.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: The who needs reviews anyways [PATCH]
+Message-ID: <20070209052245.GC28386@flower.upol.cz>
+References: <Pine.LNX.4.64.0702082227020.14457@scrub.home>
 MIME-Version: 1.0
-To: David Ford <firefighterblu3@gmail.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Robert Hancock <hancockr@shaw.ca>,
-       linux-kernel <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
-Subject: Re: forcedeth problems on 2.6.20-rc6-mm3
-References: <45C6BCE5.90103@shaw.ca>	 <20070204213603.a5bce839.akpm@linux-foundation.org>	 <45C6C531.20508@shaw.ca>	 <20070204221741.63152cbe.akpm@linux-foundation.org> <523e55a00702081326j43de05e3hdd8cf35e946eae9@mail.gmail.com>
-In-Reply-To: <523e55a00702081326j43de05e3hdd8cf35e946eae9@mail.gmail.com>
-Content-Type: multipart/mixed;
- boundary="------------050806070701070306040204"
-X-OriginalArrivalTime: 09 Feb 2007 04:50:33.0201 (UTC) FILETIME=[D4CB9E10:01C74C05]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0702082227020.14457@scrub.home>
+Organization: Palacky University in Olomouc, experimental physics department.
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Oleg Verych <olecom@flower.upol.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------050806070701070306040204
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+On Thu, Feb 08, 2007 at 10:48:51PM +0100, Roman Zippel wrote:
+[]
+> - printf has other side effects, instead stop pretending we support 
+>   something else than bash
 
-David Ford wrote:
-> On 2/5/07, *Andrew Morton* <akpm@linux-foundation.org 
-> <mailto:akpm@linux-foundation.org>> wrote:
-> 
->     On Sun, 04 Feb 2007 23:48:33 -0600 Robert Hancock <hancockr@shaw.ca
->     <mailto:hancockr@shaw.ca>> wrote:
-> 
->      > Andrew Morton wrote:
->      > > On Sun, 04 Feb 2007 23:13:09 -0600 Robert Hancock <
->     hancockr@shaw.ca <mailto:hancockr@shaw.ca>> wrote:
->      > >
->      > >> Something's busted with forcedeth in 2.6.20-rc6-mm3 for me
->     relative to
->      > >> 2.6.20-rc6. There's no errors in dmesg, but it seems no
->     packets ever get
->      > >> received and so the machine can't get an IP address. I tried
->     reverting
->      > >> all the -mm changes to drivers/net/forcedeth.c, which didn't
->     help. The
->      > >> network controller shares an IRQ with the USB OHCI controller
->     which is
->      > >> receiving interrupts, so it doesn't seem like an interrupt routing
->      > >> problem, though I suppose something wierd could be happening
->     there.
->      > >>
->      > >> This is on an Asus A8N-SLI Deluxe (CK804 chipset) on x86_64.
->      > >>
->      > >> Any suggestions on how to debug/what to try reverting to see
->     what's
->      > >> causing this?
->      > >
->      > > There are many forcedeth changes in git-netdev-all.patch.  Can you
->      > > try reverting drivers/net/forcedeth.c back to the unpatched version
->      > > from 2.6.20-rc6?
->      > >
->      > > Thanks.
->      > >
->      >
->      > That's essentially what I did, it didn't appear to help. I assume
->     the
->      > problem must lie elsewhere..
->      >
-> 
->     doh, I missed that.
-> 
->     It's presumably not the driver and nobody else seems to be hitting
->     this, so
->     it must be something peculiar to your setup.  But I don't know what it
->     might be, sorry.
-> 
-> 
-> 
-> Actually it has been reported by several other people here including 
-> myself but it seems to have been overlooked here ;)
-> 
-> See the messages with forcedeth in the subject line over the past few 
-> weeks.
-> 
-> I put 2.6.20-gentoo on my machine this weekend with debug printks 
-> enabled and right now I have yet to lose connectivity -- going on ~20 
-> hours worth.
-> 
-> Previously I would lose connectivity within minutes of booting up.  I 
-> had a script set up that detected the ping loss of a gateway and would 
-> restart both interfaces (dual onboard nics).
-> 
-> Tonight I will disable the debug printks and see if the system remains 
-> online.  There was a big patch applied to forcedeth for 2.6.20, 
-> previously I was having these issues for several of the -19 series.
-> 
-> David
+More on printf, `sh', tmpfiles.
 
-For all those who are having issues, please try out the attached patch.
+As we know original problem is: something from binutils is removing
+output files on failure. 
 
-Ayaz
+> -	  else if [ -x /bin/bash ]; then echo /bin/bash; \
+> -	  else echo sh; fi ; fi)
+> +	  else if [ -x /bin/bash ]; then echo /bin/bash; fi; fi)
+> +ifeq ($(CONFIG_SHELL),)
+> +$(error bash is required to build the kernel)
+> +endif
+> +SHELL := $(CONFIG_SHELL)
 
+here is policy to have `bash' introduced, so due to original
+issue, where `root' users ended with removed /dev/null, may policy to have
+`non root' user to build kernel be added? Thus
 
------------------------------------------------------------------------------------
-This email message is for the sole use of the intended recipient(s) and may contain
-confidential information.  Any unauthorized review, use, disclosure or distribution
-is prohibited.  If you are not the intended recipient, please contact the sender by
-reply email and destroy all copies of the original message.
------------------------------------------------------------------------------------
+this:
+> +# output directory for tests below
+> +TMPOUT := $(if $(KBUILD_EXTMOD),$(firstword $(KBUILD_EXTMOD))/)
+[]
+> +# try-run
+> +# Usage: option = $(call try-run, $(CC)...-o "$$TMP",option-ok,otherwise)
+> +# Exit code chooses option. "$$TMP" is can be used as temporary file and
+> +# is automatically cleaned up.
+> +try-run = $(shell set -e;		\
+this:
+> +	TMP="$(TMPOUT).$$$$.tmp";	\
+[]
+> +	if ($(1)) >/dev/null 2>&1;	\
+> +	then echo "$(2)";		\
+> +	else echo "$(3)";		\
+> +	fi;				\
+this:
+> +	rm -f "$$TMP")
 
---------------050806070701070306040204
-Content-Type: text/plain;
- name="forcedeth_napi_fix"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="forcedeth_napi_fix"
+may be removed, and to make TMP=/dev/null? And to forget currently about
+my silly symlinks, and this crappy sets of output files?
 
---- orig/drivers/net/forcedeth.c	2007-02-08 21:41:59.000000000 -0500
-+++ new/drivers/net/forcedeth.c	2007-02-08 21:44:53.000000000 -0500
-@@ -3104,13 +3104,17 @@
- 	struct fe_priv *np = netdev_priv(dev);
- 	u8 __iomem *base = get_hwbase(dev);
- 	unsigned long flags;
-+	u32 retcode;
- 
--	if (np->desc_ver == DESC_VER_1 || np->desc_ver == DESC_VER_2)
-+	if (np->desc_ver == DESC_VER_1 || np->desc_ver == DESC_VER_2) {
- 		pkts = nv_rx_process(dev, limit);
--	else
-+		retcode = nv_alloc_rx(dev);
-+	} else {
- 		pkts = nv_rx_process_optimized(dev, limit);
-+		retcode = nv_alloc_rx_optimized(dev);
-+	}
- 
--	if (nv_alloc_rx(dev)) {
-+	if (retcode) {
- 		spin_lock_irqsave(&np->lock, flags);
- 		if (!np->in_shutdown)
- 			mod_timer(&np->oom_kick, jiffies + OOM_REFILL);
+As for `printf', as i've wrote, only in case of % and quotes in
+arguments, something else must be added to handle that. But i think, it's
+paranoia.
 
---------------050806070701070306040204--
+> -as-instr = $(call checker-shell,\
+> -   printf "$(1)" | $(CC) $(AFLAGS) -c -xassembler -o $$OUT -,$(2),$(3))
+
+`printf $(1)' is pretty enough.
+
+____
