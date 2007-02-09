@@ -1,37 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992769AbXBITX2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992761AbXBITYg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992769AbXBITX2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Feb 2007 14:23:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992771AbXBITX2
+	id S2992761AbXBITYg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Feb 2007 14:24:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423246AbXBITYg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Feb 2007 14:23:28 -0500
-Received: from khc.piap.pl ([195.187.100.11]:40632 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992769AbXBITX2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Feb 2007 14:23:28 -0500
-To: Al Viro <viro@ftp.linux.org.uk>
-Cc: torvalds@linux-foundation.org, jgarzik@pobox.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] pc300too annotation fixes
-References: <E1HFYn7-0006s2-P2@ZenIV.linux.org.uk>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Fri, 09 Feb 2007 20:23:25 +0100
-In-Reply-To: <E1HFYn7-0006s2-P2@ZenIV.linux.org.uk> (Al Viro's message of "Fri, 09 Feb 2007 16:40:05 +0000")
-Message-ID: <m3d54j9lua.fsf@maximus.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 9 Feb 2007 14:24:36 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:42495 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1423231AbXBITYg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Feb 2007 14:24:36 -0500
+Date: Fri, 9 Feb 2007 19:37:53 +0000
+From: Alan <alan@lxorguk.ukuu.org.uk>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: -mm merge plans for 2.6.21
+Message-ID: <20070209193753.76bc2430@localhost.localdomain>
+In-Reply-To: <20070208150710.1324f6b4.akpm@linux-foundation.org>
+References: <20070208150710.1324f6b4.akpm@linux-foundation.org>
+X-Mailer: Claws Mail 2.7.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Al Viro <viro@ftp.linux.org.uk> writes:
+Please just push the EDAC K8 stuff. Andi will say "no" from now until the
+end of time, but end users want it, distributions want it, and Andi is
+not the EDAC maintainer so should consider himself overruled on what
+isn't a technical issue but a personal political viewpoint.
 
-> Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
-> ---
->  drivers/net/wan/pc300too.c |   16 ++++++++--------
->  1 files changed, 8 insertions(+), 8 deletions(-)
-
-Many thanks, Al.
-I should've done it all myself but am currently -ENOTIME.
-Acked-by: me of course.
--- 
-Krzysztof Halasa
+Alan
