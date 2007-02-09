@@ -1,61 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946447AbXBIN0U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946459AbXBINmi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946447AbXBIN0U (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Feb 2007 08:26:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946449AbXBIN0U
+	id S1946459AbXBINmi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Feb 2007 08:42:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946460AbXBINmi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Feb 2007 08:26:20 -0500
-Received: from fallbackmx02.syd.optusnet.com.au ([211.29.133.72]:45853 "EHLO
-	fallbackmx02.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1946447AbXBIN0T (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Feb 2007 08:26:19 -0500
-From: Con Kolivas <kernel@kolivas.org>
-To: jos poortvliet <jos@mijnkamer.nl>
-Subject: Re: [ck] Re: Swap prefetch merge plans
-Date: Sat, 10 Feb 2007 00:22:45 +1100
-User-Agent: KMail/1.9.5
-Cc: ck@vds.kolivas.org, Andrew Morton <akpm@osdl.org>,
-       linux-kernel@vger.kernel.org
-References: <200702091038.37143.kernel@kolivas.org> <200702092321.20615.kernel@kolivas.org> <200702091413.06949.jos@mijnkamer.nl>
-In-Reply-To: <200702091413.06949.jos@mijnkamer.nl>
+	Fri, 9 Feb 2007 08:42:38 -0500
+Received: from mail.parknet.jp ([210.171.160.80]:4131 "EHLO parknet.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1946459AbXBINmh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Feb 2007 08:42:37 -0500
+X-AuthUser: hirofumi@parknet.jp
+To: Jan Kara <jack@suse.cz>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Direct IO for fat
+References: <20070208112808.GA3767@duck.suse.cz>
+	<87k5ysfyd5.fsf@duaron.myhome.or.jp>
+	<20070208161001.GB3767@duck.suse.cz>
+	<87wt2sd2m8.fsf@duaron.myhome.or.jp>
+	<20070208173515.GB3780@duck.suse.cz>
+	<20070208184104.GA24986@atrey.karlin.mff.cuni.cz>
+	<873b5g2zq9.fsf@duaron.myhome.or.jp>
+	<20070209071955.GB5433@duck.suse.cz>
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Date: Fri, 09 Feb 2007 22:42:29 +0900
+In-Reply-To: <20070209071955.GB5433@duck.suse.cz> (Jan Kara's message of "Fri\, 9 Feb 2007 08\:19\:55 +0100")
+Message-ID: <87y7n71m7u.fsf@duaron.myhome.or.jp>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.93 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200702100022.45464.kernel@kolivas.org>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 10 February 2007 00:13, jos poortvliet wrote:
-> Nobody has said anything about costs, indeed. Now afaik, swap prefetch is
-> designed to have no/as little as possible costs, so that makes sense. Does
-> it have to have some bugs, which have to be adressed, before it can enter?
-> I'm sure this can be arranged, right, Con?
->
-> Sorry if I sound sarcastic. I'm no hacker myself, and sometimes these
-> discussions don't make sense to me. A bit like the Staircase thingy ->
->
-> "hi, I've got this piece of code which does the same as that piece, but
-> better"
-> "Why didn't you improve the old code?"
-> "This is a better design -> half the code but doing a better job"
-> "Well, it's not tested as much, so it won't go in. Go away!"
->
-> There where those comments from Torvalds some time ago in an interview,
-> about the kernel community becoming harder to get involved with. As an
-> outsider, it sure seems so. I read frustrations everywhere. What about the
-> kevent guy, his blog: http://tservice.net.ru/~s0mbre/blog
->
-> I stumbled upon it when reading LWN. Seems pretty sad... I don't get the
-> technical stuff, but the frustration almost blows up your monitor. Is there
-> something fundamentally wrong with the kernel-hackers-culture, or are these
-> incidents?
+Jan Kara <jack@suse.cz> writes:
 
-I greatly appreciate the support. Truly I do. 
+>> I see. When I wrote this, I thought kernel should use DIO to write if
+>> user sets O_DIRECT. Because the wrong alignment request isn't fallback
+>> to buffered-write, and it's also returns EINVAL.
+>   I understand. It's just that I've got some surprised users who could not
+> track why the hell does write() return EINVAL to them when they have
+> everything alligned and the same code works for EXT3 :). Of course, nothing
+> guarantees that FAT should behave the same way as EXT3 but I can understand
+> they were surprised (I had to look in the code too).
+>   I also don't have a strong opinion whether we should fallback to buffered
+> write automagically or whether we should return EINVAL and let the user fall
+> back to the buffered write himself. But I'd slightly prefer the first
+> option.
 
-But I do not like the direction this argument is going. Please let it go.
+Hm, ok. I'll change EINVAL to zero as soon as possible after test.
 
+Thanks.
 -- 
--ck
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
