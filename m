@@ -1,101 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946542AbXBIPym@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946524AbXBIP6V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946542AbXBIPym (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Feb 2007 10:54:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946552AbXBIPym
+	id S1946524AbXBIP6V (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Feb 2007 10:58:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946555AbXBIP6V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Feb 2007 10:54:42 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:58301 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1946542AbXBIPyl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Feb 2007 10:54:41 -0500
-Date: Fri, 9 Feb 2007 10:54:40 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Roland McGrath <roland@redhat.com>
-cc: Prasanna S Panchamukhi <prasanna@in.ibm.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Kwatch: kernel watchpoints using CPU debug registers
-In-Reply-To: <20070209102124.1DF3618003C@magilla.sf.frob.com>
-Message-ID: <Pine.LNX.4.44L0.0702091044230.4548-100000@iolanthe.rowland.org>
+	Fri, 9 Feb 2007 10:58:21 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:57121 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1946524AbXBIP6U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Feb 2007 10:58:20 -0500
+Date: Fri, 9 Feb 2007 07:58:00 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Sergei Organov <s.organov@javad.com>
+cc: =?ISO-8859-1?Q?J=2EA=2E_Magall=C3=C2=B3n?= <jamagallon@ono.com>,
+       Jan Engelhardt <jengelh@linux01.gwdg.de>, Jeff Garzik <jeff@garzik.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: somebody dropped a (warning) bomb
+In-Reply-To: <87abznsdyo.fsf@javad.com>
+Message-ID: <Pine.LNX.4.64.0702090753500.8424@woody.linux-foundation.org>
+References: <45CB3B28.60102@garzik.org> <Pine.LNX.4.64.0702080819350.8424@woody.linux-foundation.org>
+ <Pine.LNX.4.61.0702081851310.1364@yvahk01.tjqt.qr>
+ <Pine.LNX.4.64.0702081145470.8424@woody.linux-foundation.org>
+ <20070208221317.5beedaeb@werewolf-wl> <Pine.LNX.4.64.0702081338010.8424@woody.linux-foundation.org>
+ <Pine.LNX.4.64.0702081351410.8424@woody.linux-foundation.org>
+ <87abznsdyo.fsf@javad.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 9 Feb 2007, Roland McGrath wrote:
 
-> > All right.  However this means thread_struct will have to grow in order to
-> > hold each task's debug-register allocations and priorities.  Would that be
-> > acceptable?  (This might be a good reason to keep the number of bits
-> > down.)
+
+On Fri, 9 Feb 2007, Sergei Organov wrote:
 > 
-> Well, noone seems to mind the wasted debugreg[5..6] words. ;-) 
-> 
-> I'm inclined to make thread_struct smaller than it is now by making it
-> indirect (debugreg[8] -> one pointer).  It feels like this would be pretty
-> safe now that we have TIF_DEBUG anyway.  Already nothing should be looking
-> at the field when TIF_DEBUG isn't set.
+> As far as I can read the C99 standard, the "char", "signed char", and
+> "unsigned char", are all different types:
 
-I had the same thought.
+Indeed. Search for "pseudo-unsigned", and you'll see more. There are 
+actually cases where "char" can act differently from _both_ "unsigned 
+char" and "signed char".
 
-> > Another question: How can a program using the ptrace API ever give up a
-> > debug-register allocation?  Disabling the register isn't sufficient; a
-> > user program should be able to store a watchpoint address in dr1, enable
-> > it in dr7, disable it in dr7, and then re-enable it in the expectation
-> > that the address stored in dr1 hasn't been overwritten.  As far as I can
-> > see, ptrace-type allocations have to be permanent (until the task exits or
-> > execs, or uses some other to-be-determined API to do the de-allocation.)
-> 
-> I hadn't really thought about this before, but it's pretty straightforward.
-> Each allocation is for one of %dr[0-3] and for its associated bits in %dr7.
-> %dr0 and bits 0,1,16-19; %dr1 and bits 2,3,20-23; etc.
-> %dr7 & (0x000f0003 << N) for %drN, I guess it is.
-> ((((1 << DR_CONTROL_SIZE) - 1) << DR_CONTROL_SHIFT) |
->  ((1 << DR_ENABLE_SIZE) - 1)) << N, I should say.
-> 
-> Each allocation owns those 38 bits (70 bits on x86_64).  When all those
-> bits are zero, the allocation is not active and might as well not be there
-> (except for whatever semantics you might want to have about an allocation's
-> lifetime as distinct from the event of resetting its contents).  
+> If so, then the code above is broken no matter what representation of
+> "char" is chosen for given arch, as strcmp() takes "char*" arguments,
+> that are not compatible with either "signed char*" or "unsigned char*".
 
-Okay, that makes sense.
+..and my argument is that a warning which doesn't allow you to call 
+"strlen()" on a "unsigned char" array without triggering is a bogus 
+warning, and must be removed.
 
-> Your question made me think about the %dr6 issue, too, which I also hadn't
-> thought about before.  It looks like your patch handles this correctly, but
-> it's a subtle point that I think warrants some comments in the code.  When
-> userland inserts a watchpoint and it's hit, it gets a SIGTRAP via do_debug
-> and eventually looks at dr6 (via ptrace) to see what happened.  Kernel
-> watchpoints that come along after the user signal is generated can clobber
-> the CPU %dr6 with new hits, but userland should not perceive this.  This
-> works out because what userland sees is thread.debugreg[6], the only place
-> that sets it is do_debug, and a kwatch hit bails out before changing it.
-> Any other new users of the debugreg sharing interface need to be cognizant
-> of the %dr6 issue to avoid stepping on old ptrace uses.
+Which is all I've ever said from the beginning.
 
-Yes.  In fact, the current existing code does not handle dr6 correctly.  
-It never clears the register, which means you're likely to get into 
-trouble when multiple breakpoints (or watchpoints) are enabled.
+I've never disputed that "char" and "unsigned char" are different types. 
+They *clearly* are different types. 
 
+But that doesn't make the warning valid. There is a real need for NOT 
+warning about sign differences.
 
-Here's another complication -- and this is one I can't figure out any easy
-solutions for.  The type of API we've been discussing will work well
-enough on UP systems, but what about SMP?  I don't see any value in having
-a kernel watchpoint enabled on some CPUs and not others.  But then what
-should happen when a debug register is in use by kwatch and a ptrace
-request on one CPU usurps it (leaving no other register in which to put
-it)?  Not to mention the difficulties of keeping track of everything when
-the same kwatch watchpoint is stored in different debug registers on
-different CPUs.
+But this argument has apparently again broken down and become a "language 
+lawyer" argument instead of being about what a reasonable compiler 
+actually can and should do.
 
-It's really quite a tricky matter.  Should a register be allocated to
-kwatch only when no user process needs it?  Should we really go about
-checking the requirements of every single process whenever a kwatch
-allocation request comes in?  What if the processes which need a
-particular register aren't running -- should the register then be given to
-kwatch?  What if one of those processes then does start running on one
-CPU?
+As long as gcc warns about idiotic things, the kernel will keep shutting 
+that warning off. I'd _like_ to use the warning, but if the gcc 
+implementation is on crack, we clearly cannot.
 
-Alan Stern
+There's simply an issue of "quality of implementation". In the case of 
+this warning, gcc is just not very high quality.
 
+		Linus
