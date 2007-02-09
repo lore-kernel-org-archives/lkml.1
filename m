@@ -1,67 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946143AbXBIWyF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423363AbXBIWyp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946143AbXBIWyF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Feb 2007 17:54:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423364AbXBIWxk
+	id S1423363AbXBIWyp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Feb 2007 17:54:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946549AbXBIWyi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Feb 2007 17:53:40 -0500
-Received: from e35.co.us.ibm.com ([32.97.110.153]:46936 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752484AbXBIWxf (ORCPT
+	Fri, 9 Feb 2007 17:54:38 -0500
+Received: from e34.co.us.ibm.com ([32.97.110.152]:44317 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423362AbXBIWxi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Feb 2007 17:53:35 -0500
-Subject: [PATCH 05/22] elevate mnt writers for callers of vfs_mkdir()
+	Fri, 9 Feb 2007 17:53:38 -0500
+Subject: [PATCH 09/22] mount_is_safe(): add comment
 To: linux-kernel@vger.kernel.org
 Cc: akpm@osdl.org, hch@infradead.org, Dave Hansen <hansendc@us.ibm.com>
 From: Dave Hansen <hansendc@us.ibm.com>
-Date: Fri, 09 Feb 2007 14:53:32 -0800
+Date: Fri, 09 Feb 2007 14:53:35 -0800
 References: <20070209225329.27619A62@localhost.localdomain>
 In-Reply-To: <20070209225329.27619A62@localhost.localdomain>
-Message-Id: <20070209225332.1EE0065B@localhost.localdomain>
+Message-Id: <20070209225335.017500FA@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-elevate mnt writers for callers of vfs_mkdir()
 
-Pretty self-explanatory.  Fits in with the rest of the series.
+This area of code is currently #ifdef'd out, so add a comment
+for the time when it is actually used.
 
 Signed-off-by: Dave Hansen <haveblue@us.ibm.com>
 ---
 
- lxc-dave/fs/namei.c            |    5 +++++
- lxc-dave/fs/nfsd/nfs4recover.c |    4 ++++
- 2 files changed, 9 insertions(+)
+ lxc-dave/fs/namespace.c |    4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff -puN fs/namei.c~07-24-elevate-mnt-writers-for-callers-of-vfs-mkdir fs/namei.c
---- lxc/fs/namei.c~07-24-elevate-mnt-writers-for-callers-of-vfs-mkdir	2007-02-09 14:26:49.000000000 -0800
-+++ lxc-dave/fs/namei.c	2007-02-09 14:26:49.000000000 -0800
-@@ -1963,7 +1963,12 @@ asmlinkage long sys_mkdirat(int dfd, con
- 
- 	if (!IS_POSIXACL(nd.dentry->d_inode))
- 		mode &= ~current->fs->umask;
-+	error = mnt_want_write(nd.mnt);
-+	if (error)
-+		goto out_dput;
- 	error = vfs_mkdir(nd.dentry->d_inode, dentry, mode);
-+	mnt_drop_write(nd.mnt);
-+out_dput:
- 	dput(dentry);
- out_unlock:
- 	mutex_unlock(&nd.dentry->d_inode->i_mutex);
-diff -puN fs/nfsd/nfs4recover.c~07-24-elevate-mnt-writers-for-callers-of-vfs-mkdir fs/nfsd/nfs4recover.c
---- lxc/fs/nfsd/nfs4recover.c~07-24-elevate-mnt-writers-for-callers-of-vfs-mkdir	2007-02-09 14:26:49.000000000 -0800
-+++ lxc-dave/fs/nfsd/nfs4recover.c	2007-02-09 14:26:49.000000000 -0800
-@@ -156,7 +156,11 @@ nfsd4_create_clid_dir(struct nfs4_client
- 		dprintk("NFSD: nfsd4_create_clid_dir: DIRECTORY EXISTS\n");
- 		goto out_put;
+diff -puN fs/namespace.c~11-24-mount-is-safe-add-comment fs/namespace.c
+--- lxc/fs/namespace.c~11-24-mount-is-safe-add-comment	2007-02-09 14:26:52.000000000 -0800
++++ lxc-dave/fs/namespace.c	2007-02-09 14:26:52.000000000 -0800
+@@ -744,6 +744,10 @@ static int mount_is_safe(struct nameidat
+ 		if (current->uid != nd->dentry->d_inode->i_uid)
+ 			return -EPERM;
  	}
-+	status = mnt_want_write(rec_dir.mnt);
-+	if (status)
-+		goto out_put;
- 	status = vfs_mkdir(rec_dir.dentry->d_inode, dentry, S_IRWXU);
-+	mnt_drop_write(rec_dir.mnt);
- out_put:
- 	dput(dentry);
- out_unlock:
++	/*
++	 * We will eventually check for the mnt->writer_count here,
++	 * but since the code is not used now, skip it - Dave Hansen
++	 */
+ 	if (vfs_permission(nd, MAY_WRITE))
+ 		return -EPERM;
+ 	return 0;
 _
