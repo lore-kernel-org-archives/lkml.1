@@ -1,79 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992779AbXBITpF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992782AbXBITpk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992779AbXBITpF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Feb 2007 14:45:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992774AbXBITpF
+	id S2992782AbXBITpk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Feb 2007 14:45:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992780AbXBITpk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Feb 2007 14:45:05 -0500
-Received: from kirby.webscope.com ([204.141.84.54]:46052 "EHLO
-	kirby.webscope.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423258AbXBITpD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Feb 2007 14:45:03 -0500
-Message-ID: <45CCCE51.8090103@linuxtv.org>
-Date: Fri, 09 Feb 2007 14:41:05 -0500
-From: Michael Krufky <mkrufky@linuxtv.org>
-User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
+	Fri, 9 Feb 2007 14:45:40 -0500
+Received: from mx1.suse.de ([195.135.220.2]:57872 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2992782AbXBITpj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Feb 2007 14:45:39 -0500
+Date: Fri, 9 Feb 2007 20:45:17 +0100
+From: Bernhard Walle <bwalle@suse.de>
+To: Andi Kleen <ak@muc.de>
+Cc: Alon Bar-Lev <alon.barlev@gmail.com>, linux-kernel@vger.kernel.org,
+       akpm@osdl.org, rmk+lkml@arm.linux.org.uk, vojtech@suse.cz
+Subject: Re: [PATCH 18/34] __initdata cleanup - x86_64
+Message-ID: <20070209194517.GA25456@strauss.suse.de>
+Mail-Followup-To: Andi Kleen <ak@muc.de>,
+	Alon Bar-Lev <alon.barlev@gmail.com>, linux-kernel@vger.kernel.org,
+	akpm@osdl.org, rmk+lkml@arm.linux.org.uk, vojtech@suse.cz
+References: <200702091711.34441.alon.barlev@gmail.com> <200702091724.28770.alon.barlev@gmail.com> <20070209193533.GA79395@muc.de>
 MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
-CC: Chris Wright <chrisw@sous-sol.org>, stable@kernel.org,
-       v4l-dvb maintainer list <v4l-dvb-maintainer@linuxtv.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [stable] [patch 00/50] -stable review
-References: <20070106022753.334962000@sous-sol.org> <45C624D2.9030403@linuxtv.org> <20070205214332.GB18230@kroah.com> <45C7ACAB.6060408@linuxtv.org> <20070205223304.GA19793@kroah.com> <45CA3FBD.70407@linuxtv.org>
-In-Reply-To: <45CA3FBD.70407@linuxtv.org>
-X-Enigmail-Version: 0.94.0.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="OgqxwSJOaUobr8KG"
+Content-Disposition: inline
+In-Reply-To: <20070209193533.GA79395@muc.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael Krufky wrote:
-> Greg KH wrote:
-> 
->>>> I'll go through the archives and see if there's enough to do a .18
->>>> release (and the patches are serious enough to warrent it.)
->>> Actually, I have a few more -stable patches for both 2.6.18.y and 2.6.19.y, if
->>> you don't mind holding off a day or two (wont have time to prepare these until
->>> tomorrow evening)...  One of them is a security fix, that allows a non-root user
->>> to hang the kernel given the correct circumstances.
->> Ok, that's serious enough :)
->>
->> I'll wait for your patches.
->>
->> thanks,
->>
->> greg k-h
-> 
-> I've uploaded the remaining pending v4l/dvb -stable patches for both 2.6.18.y
-> and 2.6.19.y to the following locations:
-> 
-> http://linuxtv.org/~mkrufky/stable/2.6.18.y/ (8 patches)
-> 
-> and
-> 
-> http://linuxtv.org/~mkrufky/stable/2.6.19.y/ (5 patches)
-> 
-> Using the mailer at my current location, I am unable to send patches inline, and
-> I won't have the time for it this evening.  In the interest of saving time, I
-> figured that sending them to you in this method is good enough.  If you still
-> need for me to send them via email inline, please let me know.
 
-Greg & Chris,
+--OgqxwSJOaUobr8KG
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I haven't heard from either of you about these patches, nor have I seen any
-update to the stable-queue.
+* Andi Kleen <ak@muc.de> [2007-02-09 20:35]:
+> On Fri, Feb 09, 2007 at 05:24:28PM +0200, Alon Bar-Lev wrote:
+> >=20
+> > Trivial.
+>=20
+> What is this change good for?
 
-Just for clarification, the security fix patch, that prevents a non-root user
-from hanging the kernel is the patch entitled,
+It was because http://lkml.org/lkml/2007/1/22/267. But since the
+kernel is compiled with -fno-common, it's superflous.
 
-"V4L: buf_qbuf: fix videobuf_queue->stream corruption and lockup"
-
-...as per Mauro's description, here:
-
-http://www.mail-archive.com/linux-kernel@vger.kernel.org/msg113820.html
 
 Regards,
+Bernhard
 
-Michael Krufky
+--OgqxwSJOaUobr8KG
+Content-Type: application/pgp-signature
+Content-Disposition: inline
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
+
+iD8DBQFFzM9NiGU2lt2vZFQRAoT8AJ9X0f6ZB9p8XxX3lT8Wezvv+FZNJACgmSYL
+QdlF1tqF2wgrpu2l+HJdy34=
+=YZ8o
+-----END PGP SIGNATURE-----
+
+--OgqxwSJOaUobr8KG--
