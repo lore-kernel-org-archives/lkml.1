@@ -1,24 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946561AbXBIPkq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946588AbXBIPl1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946561AbXBIPkq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Feb 2007 10:40:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946559AbXBIPe5
+	id S1946588AbXBIPl1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Feb 2007 10:41:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946559AbXBIPku
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Feb 2007 10:34:57 -0500
-Received: from ug-out-1314.google.com ([66.249.92.168]:2693 "EHLO
+	Fri, 9 Feb 2007 10:40:50 -0500
+Received: from ug-out-1314.google.com ([66.249.92.173]:2436 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1946563AbXBIPex (ORCPT
+	with ESMTP id S1946547AbXBIPe4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Feb 2007 10:34:53 -0500
+	Fri, 9 Feb 2007 10:34:56 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:from:to:subject:date:user-agent:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=YFdhgVkBSaBxB3dS6JJpsXpZgXP8u34mvwpBTeEjVNJ+KBF53yy0OdLHoRuoU1K2p+JLxRE7B6VcnhPmvzybHjwpPejs8ss6f4a/k+mK5lEjs2F84xbPrRh1otXi3wh6Wxe5GQzjxc5KGW2te6jh47jqgOP0H2WGXEV1EuW6lS4=
+        b=OPZ7kDrPFqdBuvhr09cusF3DFhiDQJIn0eHBgsBtH7E9bDapbACfgsUaG79nc8Ufcxp4ZguOU8VZxOg09iSflauGBu4m7ZzHShaw/zEq9CVVk95+xgbjKOUE4VoySmvPTfOte4j9CDPztyzRF4X1GGdD1uF/J/6DXQs5yAaBILc=
 From: Alon Bar-Lev <alon.barlev@gmail.com>
 To: linux-kernel@vger.kernel.org, akpm@osdl.org, bwalle@suse.de,
-       rmk+lkml@arm.linux.org.uk, len.brown@intel.com, lenb@kernel.org
-Subject: [PATCH 20/34] __initdata cleanup - acpi
-Date: Fri, 9 Feb 2007 17:25:21 +0200
+       rmk+lkml@arm.linux.org.uk, herbert@gondor.apana.org.au,
+       davem@davemloft.net
+Subject: [PATCH 21/34] __initdata cleanup - aes
+Date: Fri, 9 Feb 2007 17:25:58 +0200
 User-Agent: KMail/1.9.6
 References: <200702091711.34441.alon.barlev@gmail.com>
 In-Reply-To: <200702091711.34441.alon.barlev@gmail.com>
@@ -27,7 +28,7 @@ Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200702091725.21721.alon.barlev@gmail.com>
+Message-Id: <200702091725.58885.alon.barlev@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
@@ -39,27 +40,21 @@ Signed-off-by: Bernhard Walle <bwalle@suse.de>
 
 ---
 
-diff -urNp linux-2.6.20-rc6-mm3.org/drivers/acpi/ec.c linux-2.6.20-rc6-mm3/drivers/acpi/ec.c
---- linux-2.6.20-rc6-mm3.org/drivers/acpi/ec.c	2007-01-31 22:15:32.000000000 +0200
-+++ linux-2.6.20-rc6-mm3/drivers/acpi/ec.c	2007-01-31 22:19:30.000000000 +0200
-@@ -911,7 +911,7 @@ static int __init acpi_ec_get_real_ecdt(
- 	return -ENODEV;
- }
+diff -urNp linux-2.6.20-rc6-mm3.org/crypto/aes.c linux-2.6.20-rc6-mm3/crypto/aes.c
+--- linux-2.6.20-rc6-mm3.org/crypto/aes.c	2007-01-25 04:19:28.000000000 +0200
++++ linux-2.6.20-rc6-mm3/crypto/aes.c	2007-01-31 22:19:30.000000000 +0200
+@@ -81,10 +81,10 @@ struct aes_ctx {
+ #define E_KEY (&ctx->buf[0])
+ #define D_KEY (&ctx->buf[60])
  
--static int __initdata acpi_fake_ecdt_enabled;
-+static int __initdata acpi_fake_ecdt_enabled = 0;
- int __init acpi_ec_ecdt_probe(void)
- {
- 	acpi_status status;
-diff -urNp linux-2.6.20-rc6-mm3.org/drivers/acpi/tables.c linux-2.6.20-rc6-mm3/drivers/acpi/tables.c
---- linux-2.6.20-rc6-mm3.org/drivers/acpi/tables.c	2007-01-31 22:15:32.000000000 +0200
-+++ linux-2.6.20-rc6-mm3/drivers/acpi/tables.c	2007-01-31 22:21:09.000000000 +0200
-@@ -40,7 +40,7 @@
- static char *mps_inti_flags_polarity[] = { "dfl", "high", "res", "low" };
- static char *mps_inti_flags_trigger[] = { "dfl", "edge", "res", "level" };
- 
--static struct acpi_table_desc initial_tables[ACPI_MAX_TABLES] __initdata;
-+static struct acpi_table_desc initial_tables[ACPI_MAX_TABLES] __initdata = {{0}};
- 
- void acpi_table_print_madt_entry(struct acpi_subtable_header * header)
- {
+-static u8 pow_tab[256] __initdata;
+-static u8 log_tab[256] __initdata;
+-static u8 sbx_tab[256] __initdata;
+-static u8 isb_tab[256] __initdata;
++static u8 pow_tab[256] __initdata = {0};
++static u8 log_tab[256] __initdata = {0};
++static u8 sbx_tab[256] __initdata = {0};
++static u8 isb_tab[256] __initdata = {0};
+ static u32 rco_tab[10];
+ static u32 ft_tab[4][256];
+ static u32 it_tab[4][256];
