@@ -1,109 +1,229 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423366AbXBIW6t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423362AbXBIW6v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423366AbXBIW6t (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Feb 2007 17:58:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423378AbXBIWyL
+	id S1423362AbXBIW6v (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Feb 2007 17:58:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423361AbXBIWxi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Feb 2007 17:54:11 -0500
-Received: from e31.co.us.ibm.com ([32.97.110.149]:47924 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423376AbXBIWxs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Feb 2007 17:53:48 -0500
-Subject: [PATCH 22/22] kill open files traverse on remount ro
+	Fri, 9 Feb 2007 17:53:38 -0500
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:53959 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752483AbXBIWxd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Feb 2007 17:53:33 -0500
+Subject: [PATCH 02/22] r/o bind mounts: add vfsmount writer counts
 To: linux-kernel@vger.kernel.org
 Cc: akpm@osdl.org, hch@infradead.org, Dave Hansen <hansendc@us.ibm.com>
 From: Dave Hansen <hansendc@us.ibm.com>
-Date: Fri, 09 Feb 2007 14:53:45 -0800
+Date: Fri, 09 Feb 2007 14:53:30 -0800
 References: <20070209225329.27619A62@localhost.localdomain>
 In-Reply-To: <20070209225329.27619A62@localhost.localdomain>
-Message-Id: <20070209225345.D9BAC383@localhost.localdomain>
+Message-Id: <20070209225330.42133693@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Now that we have the sb writer count, and all of the
-writers marked with mnt_want_write(), we don't need to
-go looking at all of the individual open files.
+This patch actually adds the mount and superblock writer
+counts, and the mnt_want/drop_write() functions that use
+them.
 
-Kill the open files walk, and use the sb writer count.
+Before these can become useful, we must first cover each
+place in the VFS where writes are performed with a
+want/drop pair.  When that is complete, we can actually
+introduce code that will safely check the counts before
+allowing r/w<->r/o transitions to occur.
 
 Signed-off-by: Dave Hansen <haveblue@us.ibm.com>
 ---
 
- lxc-dave/fs/file_table.c    |   25 -------------------------
- lxc-dave/fs/super.c         |   13 ++++++++++++-
- lxc-dave/include/linux/fs.h |    2 --
- 3 files changed, 12 insertions(+), 28 deletions(-)
+ lxc-dave/fs/namespace.c        |   53 +++++++++++++++++++++++++++++++++++++++++
+ lxc-dave/fs/super.c            |   18 ++++++++++---
+ lxc-dave/include/linux/fs.h    |    2 +
+ lxc-dave/include/linux/mount.h |   21 ++++++++++++++++
+ 4 files changed, 90 insertions(+), 4 deletions(-)
 
-diff -puN fs/file_table.c~24-24-kill-open-files-traverse-on-remount-ro fs/file_table.c
---- lxc/fs/file_table.c~24-24-kill-open-files-traverse-on-remount-ro	2007-02-09 14:27:01.000000000 -0800
-+++ lxc-dave/fs/file_table.c	2007-02-09 14:27:01.000000000 -0800
-@@ -308,31 +308,6 @@ void file_kill(struct file *file)
- 	}
+diff -puN fs/namespace.c~03-24-add-vfsmount-writer-count fs/namespace.c
+--- lxc/fs/namespace.c~03-24-add-vfsmount-writer-count	2007-02-09 14:26:47.000000000 -0800
++++ lxc-dave/fs/namespace.c	2007-02-09 14:26:47.000000000 -0800
+@@ -58,6 +58,7 @@ struct vfsmount *alloc_vfsmnt(const char
+ 	if (mnt) {
+ 		mnt->mnt_user_ns = get_user_ns(current->nsproxy->user_ns);
+ 		atomic_set(&mnt->mnt_count, 1);
++		mnt->mnt_writers = 0;
+ 		INIT_LIST_HEAD(&mnt->mnt_hash);
+ 		INIT_LIST_HEAD(&mnt->mnt_child);
+ 		INIT_LIST_HEAD(&mnt->mnt_mounts);
+@@ -78,6 +79,56 @@ struct vfsmount *alloc_vfsmnt(const char
+ 	return mnt;
  }
  
--int fs_may_remount_ro(struct super_block *sb)
--{
--	struct list_head *p;
--
--	/* Check that no files are currently opened for writing. */
--	file_list_lock();
--	list_for_each(p, &sb->s_files) {
--		struct file *file = list_entry(p, struct file, f_u.fu_list);
--		struct inode *inode = file->f_path.dentry->d_inode;
--
--		/* File with pending delete? */
--		if (inode->i_nlink == 0)
--			goto too_bad;
--
--		/* Writeable file? */
--		if (S_ISREG(inode->i_mode) && (file->f_mode & FMODE_WRITE))
--			goto too_bad;
--	}
--	file_list_unlock();
--	return 1; /* Tis' cool bro. */
--too_bad:
--	file_list_unlock();
--	return 0;
--}
--
- void __init files_init(unsigned long mempages)
- { 
- 	int n; 
-diff -puN fs/super.c~24-24-kill-open-files-traverse-on-remount-ro fs/super.c
---- lxc/fs/super.c~24-24-kill-open-files-traverse-on-remount-ro	2007-02-09 14:27:01.000000000 -0800
-+++ lxc-dave/fs/super.c	2007-02-09 14:27:01.000000000 -0800
-@@ -580,7 +580,18 @@ static void mark_files_ro(struct super_b
- 
- static int sb_remount_ro(struct super_block *sb)
- {
--	return fs_may_remount_ro(sb);
++int mnt_make_readonly(struct vfsmount *mnt)
++{
 +	int ret = 0;
 +
-+	/*
-+	 * The r/o flag actually gets set
-+	 * by the caller.
-+	 */
-+	spin_lock(&sb->s_mnt_writers_lock);
-+	if (sb->s_writers)
-+		ret = -EBUSY;
-+	spin_unlock(&sb->s_mnt_writers_lock);
++	WARN_ON(__mnt_is_readonly(mnt));
 +
++	/*
++	 * This flag set is actually redundant with what
++	 * happens in do_remount(), but since we do this
++	 * under the lock, anyone attempting to get a write
++	 * on it after this will fail.
++	 */
++	spin_lock(&mnt->mnt_sb->s_mnt_writers_lock);
++	if (!mnt->mnt_writers)
++		mnt->mnt_flags |= MNT_READONLY;
++	else
++		ret = -EBUSY;
++	spin_unlock(&mnt->mnt_sb->s_mnt_writers_lock);
 +	return ret;
++}
++
++int mnt_want_write(struct vfsmount *mnt)
++{
++	int ret = 0;
++
++	spin_lock(&mnt->mnt_sb->s_mnt_writers_lock);
++	if (mnt->mnt_writers)
++		goto out;
++
++	if (__mnt_is_readonly(mnt)) {
++		ret = -EROFS;
++		goto out;
++	}
++	mnt->mnt_sb->s_writers++;
++	mnt->mnt_writers++;
++out:
++	spin_unlock(&mnt->mnt_sb->s_mnt_writers_lock);
++	return ret;
++}
++EXPORT_SYMBOL_GPL(mnt_want_write);
++
++void mnt_drop_write(struct vfsmount *mnt)
++{
++	spin_lock(&mnt->mnt_sb->s_mnt_writers_lock);
++	mnt->mnt_sb->s_writers--;
++	mnt->mnt_writers--;
++	spin_unlock(&mnt->mnt_sb->s_mnt_writers_lock);
++}
++EXPORT_SYMBOL_GPL(mnt_drop_write);
++
+ int simple_set_mnt(struct vfsmount *mnt, struct super_block *sb)
+ {
+ 	mnt->mnt_sb = sb;
+@@ -1415,6 +1466,8 @@ long do_mount(char *dev_name, char *dir_
+ 		((char *)data_page)[PAGE_SIZE - 1] = 0;
+ 
+ 	/* Separate the per-mountpoint flags */
++	if (flags & MS_RDONLY)
++		mnt_flags |= MNT_READONLY;
+ 	if (flags & MS_NOSUID)
+ 		mnt_flags |= MNT_NOSUID;
+ 	if (flags & MS_NODEV)
+diff -puN fs/super.c~03-24-add-vfsmount-writer-count fs/super.c
+--- lxc/fs/super.c~03-24-add-vfsmount-writer-count	2007-02-09 14:26:47.000000000 -0800
++++ lxc-dave/fs/super.c	2007-02-09 14:26:47.000000000 -0800
+@@ -93,6 +93,8 @@ static struct super_block *alloc_super(s
+ 		s->s_qcop = sb_quotactl_ops;
+ 		s->s_op = &default_op;
+ 		s->s_time_gran = 1000000000;
++		s->s_writers = 0;
++		spin_lock_init(&s->s_mnt_writers_lock);
+ 	}
+ out:
+ 	return s;
+@@ -576,6 +578,11 @@ static void mark_files_ro(struct super_b
+ 	file_list_unlock();
  }
  
++static int sb_remount_ro(struct super_block *sb)
++{
++	return fs_may_remount_ro(sb);
++}
++
  /**
-diff -puN include/linux/fs.h~24-24-kill-open-files-traverse-on-remount-ro include/linux/fs.h
---- lxc/include/linux/fs.h~24-24-kill-open-files-traverse-on-remount-ro	2007-02-09 14:27:01.000000000 -0800
-+++ lxc-dave/include/linux/fs.h	2007-02-09 14:27:01.000000000 -0800
-@@ -1657,8 +1657,6 @@ extern const struct file_operations read
- extern const struct file_operations write_fifo_fops;
- extern const struct file_operations rdwr_fifo_fops;
- 
--extern int fs_may_remount_ro(struct super_block *);
--
+  *	do_remount_sb - asks filesystem to change mount options.
+  *	@sb:	superblock in question
+@@ -587,7 +594,8 @@ static void mark_files_ro(struct super_b
+  */
+ int do_remount_sb(struct super_block *sb, int flags, void *data, int force)
+ {
+-	int retval;
++	int retval = 0;
++	int sb_started_ro = (sb->s_flags & MS_RDONLY);
+ 	
  #ifdef CONFIG_BLOCK
- /*
-  * return READ, READA, or WRITE
+ 	if (!(flags & MS_RDONLY) && bdev_read_only(sb->s_bdev))
+@@ -600,11 +608,13 @@ int do_remount_sb(struct super_block *sb
+ 
+ 	/* If we are remounting RDONLY and current sb is read/write,
+ 	   make sure there are no rw files opened */
+-	if ((flags & MS_RDONLY) && !(sb->s_flags & MS_RDONLY)) {
++	if ((flags & MS_RDONLY) && !sb_started_ro) {
+ 		if (force)
+ 			mark_files_ro(sb);
+-		else if (!fs_may_remount_ro(sb))
+-			return -EBUSY;
++		else
++			retval = sb_remount_ro(sb);
++		if (retval)
++			return retval;
+ 	}
+ 
+ 	if (sb->s_op->remount_fs) {
+diff -puN include/linux/fs.h~03-24-add-vfsmount-writer-count include/linux/fs.h
+--- lxc/include/linux/fs.h~03-24-add-vfsmount-writer-count	2007-02-09 14:26:47.000000000 -0800
++++ lxc-dave/include/linux/fs.h	2007-02-09 14:26:47.000000000 -0800
+@@ -972,6 +972,8 @@ struct super_block {
+ 	struct list_head	s_io;		/* parked for writeback */
+ 	struct hlist_head	s_anon;		/* anonymous dentries for (nfs) exporting */
+ 	struct list_head	s_files;
++	int			s_writers;	/* number of files open for write */
++	spinlock_t		s_mnt_writers_lock; /* taken when mounts change rw state */
+ 
+ 	struct block_device	*s_bdev;
+ 	struct list_head	s_instances;
+diff -puN include/linux/mount.h~03-24-add-vfsmount-writer-count include/linux/mount.h
+--- lxc/include/linux/mount.h~03-24-add-vfsmount-writer-count	2007-02-09 14:26:47.000000000 -0800
++++ lxc-dave/include/linux/mount.h	2007-02-09 14:26:47.000000000 -0800
+@@ -29,6 +29,7 @@ struct user_namespace;
+ #define MNT_NOATIME	0x08
+ #define MNT_NODIRATIME	0x10
+ #define MNT_RELATIME	0x20
++#define MNT_READONLY	0x40 /* does the user want this to be r/o? */
+ 
+ #define MNT_SHRINKABLE	0x100
+ 
+@@ -56,6 +57,7 @@ struct vfsmount {
+ 	struct vfsmount *mnt_master;	/* slave is on master->mnt_slave_list */
+ 	struct mnt_namespace *mnt_ns;	/* containing namespace */
+ 	struct user_namespace *mnt_user_ns; /* namespace for uid interpretation */
++	int mnt_writers;		/* nr files open for write */
+ 	/*
+ 	 * We put mnt_count & mnt_expiry_mark at the end of struct vfsmount
+ 	 * to let these frequently modified fields in a separate cache line
+@@ -72,7 +74,26 @@ static inline struct vfsmount *mntget(st
+ 		atomic_inc(&mnt->mnt_count);
+ 	return mnt;
+ }
++/*
++ * This is temporary for now.  We also don't want to check
++ * the SB in because it is already checked in other
++ * code paths.  We'll have a better way to do this in
++ * the end of this series
++ */
++static inline int __mnt_is_readonly(struct vfsmount *mnt)
++{
++	return mnt->mnt_flags & MNT_READONLY;
++}
++
++static inline void __mnt_unmake_readonly(struct vfsmount *mnt)
++{
++	WARN_ON(!__mnt_is_readonly(mnt));
++	mnt->mnt_flags &= ~MNT_READONLY;
++}
+ 
++extern int mnt_make_readonly(struct vfsmount *mnt);
++extern int mnt_want_write(struct vfsmount *mnt);
++extern void mnt_drop_write(struct vfsmount *mnt);
+ extern void mntput_no_expire(struct vfsmount *mnt);
+ extern void mnt_pin(struct vfsmount *mnt);
+ extern void mnt_unpin(struct vfsmount *mnt);
 _
