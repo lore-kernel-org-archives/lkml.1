@@ -1,54 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946663AbXBIQoS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946646AbXBIQol@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946663AbXBIQoS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Feb 2007 11:44:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946639AbXBIQjU
+	id S1946646AbXBIQol (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Feb 2007 11:44:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946667AbXBIQoT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Feb 2007 11:39:20 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:51704 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1946651AbXBIQjQ (ORCPT
+	Fri, 9 Feb 2007 11:44:19 -0500
+Received: from 65-117-135-114.dia.static.qwest.net ([65.117.135.114]:60084
+	"EHLO postfix.timesys.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1946659AbXBIQoQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Feb 2007 11:39:16 -0500
-To: torvalds@linux-foundation.org
-Subject: [PATCH] hpet: trivial __iomem annotations
-Cc: linux-kernel@vger.kernel.org
-Message-Id: <E1HFYmJ-0006ol-N3@ZenIV.linux.org.uk>
-From: Al Viro <viro@ftp.linux.org.uk>
-Date: Fri, 09 Feb 2007 16:39:15 +0000
+	Fri, 9 Feb 2007 11:44:16 -0500
+Subject: Re: One-shot high-resolution POSIX timer periodically late
+From: Thomas Gleixner <tglx@timesys.com>
+To: John <linux.kernel@free.fr>
+Cc: linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl, mingo@elte.hu,
+       johnstul@us.ibm.com, akpm@osdl.org
+In-Reply-To: <45CC9257.8080806@free.fr>
+References: <fa.4zD54Ie6Ozt0P4YqQSicS+XzXGw@ifi.uio.no>
+	 <fa.G+/T32f2o1M3+YGLca/O8NaAQyY@ifi.uio.no>
+	 <fa.6Ua8xjNfLKQEZZgDsoJgPMyww4g@ifi.uio.no>
+	 <fa.yQlV+WU0TgrJTVqjopa01tgCnT0@ifi.uio.no>
+	 <fa.ucVrLJ1Lh6FjdBHRglsIUc8/evk@ifi.uio.no>
+	 <fa.Id9oufyELrVbe5Wb8SRakwC0V50@ifi.uio.no>  <45C75D2D.9010506@free.fr>
+	 <1170747081.4672.11.camel@twins>  <45C9A8FE.3090705@free.fr>
+	 <1170955962.3646.51.camel@chaos>  <45CC9257.8080806@free.fr>
+Content-Type: text/plain
+Date: Fri, 09 Feb 2007 17:43:59 +0100
+Message-Id: <1171039439.3697.16.camel@chaos>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+John,
 
-Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
----
- arch/i386/kernel/hpet.c |    5 ++---
- 1 files changed, 2 insertions(+), 3 deletions(-)
+On Fri, 2007-02-09 at 16:25 +0100, John wrote:
+> I'm confused: patch-2.6.16-rt29-tglx3 is dated 2006-09-07, yet there
+> have been numerous revisions of the -rt patch set since then. Does that
+> mean that no serious bugs have been found since September? Do the -rt
+> patch sets for 2.6.17 - 2.6.20 only bring new features and/or adapt the
+> -rt infrastructure to the newer kernels?
 
-diff --git a/arch/i386/kernel/hpet.c b/arch/i386/kernel/hpet.c
-index 45a8685..0b29d41 100644
---- a/arch/i386/kernel/hpet.c
-+++ b/arch/i386/kernel/hpet.c
-@@ -12,7 +12,7 @@
- /* FSEC = 10^-15 NSEC = 10^-9 */
- #define FSEC_PER_NSEC	1000000
- 
--static void *hpet_ptr;
-+static void __iomem *hpet_ptr;
- 
- static cycle_t read_hpet(void)
- {
-@@ -40,8 +40,7 @@ static int __init init_hpet_clocksource(void)
- 		return -ENODEV;
- 
- 	/* calculate the hpet address: */
--	hpet_base =
--		(void __iomem*)ioremap_nocache(hpet_address, HPET_MMAP_SIZE);
-+	hpet_base = ioremap_nocache(hpet_address, HPET_MMAP_SIZE);
- 	hpet_ptr = hpet_base + HPET_COUNTER;
- 
- 	/* calculate the frequency: */
--- 
-1.5.0-rc2.GIT
+There were many bugs found, but mostly related to the newer versions of
+the code or features, which have been added after 2.6.16-rt29. My -tglx
+series has the back ports of fixes which were applicable to 2-6-16-rt29.
+
+	tglx
 
 
