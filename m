@@ -1,58 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992798AbXBIUEv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423295AbXBIUJx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992798AbXBIUEv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Feb 2007 15:04:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992800AbXBIUEv
+	id S1423295AbXBIUJx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Feb 2007 15:09:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423291AbXBIUJx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Feb 2007 15:04:51 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:41695 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S2992798AbXBIUEu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Feb 2007 15:04:50 -0500
-Date: Fri, 9 Feb 2007 20:18:07 +0000
-From: Alan <alan@lxorguk.ukuu.org.uk>
-To: Robert Hancock <hancockr@shaw.ca>
-Cc: linux-kernel@vger.kernel.org, akpm@osdl.org, jeff@garzik.org
-Subject: Re: [PATCH] pata_acpi: take two
-Message-ID: <20070209201807.57e727a4@localhost.localdomain>
-In-Reply-To: <45CAB125.7000907@shaw.ca>
-References: <fa.E0XxdpTYuPtTLgPLQYHs2V10jM4@ifi.uio.no>
-	<45CAB125.7000907@shaw.ca>
-X-Mailer: Claws Mail 2.7.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 9 Feb 2007 15:09:53 -0500
+Received: from aybabtu.com ([69.60.117.155]:52323 "EHLO aybabtu.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1423258AbXBIUJw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Feb 2007 15:09:52 -0500
+From: Leopold Palomo Avellaneda <lepalom@wol.es>
+Reply-To: lepalom@wol.es
+To: Tejun Heo <htejun@gmail.com>
+Subject: Re: Sata_via problems in a Vintage2-AE1
+Date: Fri, 9 Feb 2007 21:09:14 +0100
+User-Agent: KMail/1.9.5
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <200702090010.06897.lepalom@wol.es> <45CC42FF.5030507@gmail.com> <200702091814.02530.lepalom@wol.es>
+In-Reply-To: <200702091814.02530.lepalom@wol.es>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart1254112.qIsd4vc07o";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
+Message-Id: <200702092109.25029.lepalom@wol.es>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > +#if defined(CONFIG_ATA_ACPI)
-> > +	/* Prefer the ACPI driver for Nvidia hardware */
-> > +	if (pdev->vendor == PCI_VENDOR_ID_NVIDIA && ata_pata_acpi_present(pdev))
-> > +		return -ENODEV;
-> > +#endif		
-> >  	/* Check for AMD7411 */
-> >  	if (type == 3)
-> >  		/* FIFO is broken */
-> 
-> Problem with this approach is it may break distro/initrd setups since 
-> the pata_amd driver appears to be the one that "should" work based on 
-> the PCI ID, so the initrd would end up containing only this driver, 
+--nextPart1254112.qIsd4vc07o
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Diddums
+A Divendres 09 Febrer 2007 18:13, Leopold Palomo Avellaneda va escriure:
+> A Divendres 09 Febrer 2007 10:46, Tejun Heo va escriure:
+> > Leopold Palomo Avellaneda wrote:
+> > > Dear people,
+> > >
+> > > I have a barebone Asus Vintage2-AE1 [1]. This box has a mobo Asus
+> > > A8V-MQ. The board has:
+> > > - the Socket 939 for AMD Athlon 64FX/Athlon 64.
+> > > - North Bridge: VIA K8M800
+> > > - South Bridge: VIA VT8251
+> > > - VIA Graphics Integrated
+> > > - IDE 2 x UltraDMA 133
+> > > - 4 x Serial ATA
+> > > ...
+> > >
+> > > I'm using the bios version 0206. The 0210 doesn't show me the vga car=
+d,
+> > > so I don't have graphics mode. I think that is a buggy bios.
+> > >
+> > > The bios is configured with vt8251 in AHCI mode and bios boot up
+> > > activated, so the hd is recognized in the beginning. I don't have any
+> > > raid, only one hd. The hd is a Maxtor 6V250F0.
+> > >
+> > > I'm using a debian etch but the i386 version. The only way that I can
+> > > use the hd is using a 2.6.16 standard kernel with the modifications
+> > > explained in this page [2]. Basically you have to use their ahci.c and
+> > > sata_via.c. The modifications are small from the original code from Mr
+> > > Jeff Garzik.
+> > >
+> > > I have tried to use the 2.6.18 and 2.6.20rc6 and the result is the
+> > > same. The kernel boots, but when arrives at the ata3,
+> > >
+> > > scsi2 : ahci
+> > > ata3: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+> > > ata3.00: qc timeout (cmd 0xec)
+> > > ata3.00: failed to IDENTIFY (I/O error, err_mask=3D0x104)
+> > > .... repeated some times ...
+> > > scsi3 : ahci
+> > > ata4: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+> > > scsi4 : ahci
+> > > ata4: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+> > > scsi5 : ahci
+> > > ata6: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+> > > Done.
+> > > Begin: Mounting root file system... ...
+> > > Begin: Running /scripts/local-top
+> > > ide0: I/O resource 0x3F6-0x3F6 not free.
+> > > ide0: ports already in use, skipping probe.
+> > > ide1: I/O resource 0x376-0x376 not free.
+> > > ide1: ports already in use, skipping probe.
+> > > Done.
+> > > Begin: Waiting for root file system ...
+> >
+> > It might be VIA IRQ quirk problem.
+> >
+> > 1. Does giving 'irqpoll' parameter to kernel make any difference?
+>
+> yes. Now it boots. However I'm having a lot of messages:
+> APIC error on CPU0
+> and I begin to have problems with the network card.
+>
+> > 2. Can you give a shot at 2.6.20?
+>
+> yes, I'm doing it now.
+>
+> Thank's a lot. But, why with irqpoll works and without no?
 
-> which will fail out with -ENODEV and cause a boot failure. If the root 
-> filesystem was on a disk driven by this controller, the mkinitrd stuff 
-> would have to "know" that it should also try loading pata_acpi.
+well, I summarize.=20
 
-Indeed they will.
+With the default options of the kernel I cannot boot in this device with an=
+y=20
+kernel. Only with 2.6.20 and the irqpoll or the 2.6.16 modified files I can=
+=20
+boot.
 
-> Unless there are some Nvidia boxes out there which don't provide 
-> _GTM/_STM ACPI methods (which seems a bit unlikely given Allen Martin's 
-> comments) then we could potentially move the Nvidia PATA PCI IDs into 
-> the pata_acpi driver, at least if ACPI is enabled in the kernel build..
+I have a lot of APIC error on CPU0.
 
-No we can't. It is a dynamic evaluation. The user may be booting with
-acpi=off to work around BIOS problems, so the distribution initrd tools
-will just have to learn this out as they do the sata_nv funnies. (Nvidia
-is already a special case)
+Regards and thanks a lot. You have opened a windows with fresh air in this=
+=20
+dammed problem.
+
+Regards,
+
+Leo
+
+=2D-=20
+=2D-
+Linux User 152692
+PGP: 0xF944807E
+Catalonia
+
+--nextPart1254112.qIsd4vc07o
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBFzNT1aC7AnPlEgH4RAsDVAJ91emvjugFrpn7Mj8/ztATZ/2HTHQCfX9da
+Qp+HH5AOAAZCyW4NsgFKGIQ=
+=9pJC
+-----END PGP SIGNATURE-----
+
+--nextPart1254112.qIsd4vc07o--
