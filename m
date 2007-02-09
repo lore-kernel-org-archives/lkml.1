@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946579AbXBIPgN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946560AbXBIPgN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946579AbXBIPgN (ORCPT <rfc822;w@1wt.eu>);
+	id S1946560AbXBIPgN (ORCPT <rfc822;w@1wt.eu>);
 	Fri, 9 Feb 2007 10:36:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946569AbXBIPfw
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946562AbXBIPfy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Feb 2007 10:35:52 -0500
-Received: from ug-out-1314.google.com ([66.249.92.168]:2693 "EHLO
+	Fri, 9 Feb 2007 10:35:54 -0500
+Received: from ug-out-1314.google.com ([66.249.92.172]:2873 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1946562AbXBIPfA (ORCPT
+	with ESMTP id S1946560AbXBIPe6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Feb 2007 10:35:00 -0500
+	Fri, 9 Feb 2007 10:34:58 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:from:to:subject:date:user-agent:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=YkczaZXvhJCB8Ok0rnP0Ff0+JSYyD9oGsQs1WH8tJBsdethS6kMSvzeAYaaQ+9SVmhJcKeGklPOJph6LWUkT4bcwZxH2gIylpssSUNMYxvNdTvNuM5DNn6r1mLy9LEJwC/GCt8Rw6uuAioQHRKv3jXrV0alY5AzlcgQ5AJr3Qxw=
+        b=kmYAmSRYJrt7t1pAndCYITNCf1vxwC+1jPkb8FSxCu4nU7PfmE6nZVZVJ8f3kLMEx16OzllWjZnIinfi11e76/4mQV8J8bph4SY0ab9UQz9bV0dr5cNSumJ1zKCEqmbWX4TzinNKQHnKOoLJ+ogXCioRlBAoYjWdYdsl1umrwKA=
 From: Alon Bar-Lev <alon.barlev@gmail.com>
 To: linux-kernel@vger.kernel.org, akpm@osdl.org, bwalle@suse.de,
-       rmk+lkml@arm.linux.org.uk, bzolnier@gmail.com
-Subject: [PATCH 23/34] __initdata cleanup -  ide
-Date: Fri, 9 Feb 2007 17:27:32 +0200
+       rmk+lkml@arm.linux.org.uk, viro@zeniv.linux.org.uk
+Subject: [PATCH 22/34] __initdata cleanup - fs
+Date: Fri, 9 Feb 2007 17:26:53 +0200
 User-Agent: KMail/1.9.6
 References: <200702091711.34441.alon.barlev@gmail.com>
 In-Reply-To: <200702091711.34441.alon.barlev@gmail.com>
@@ -27,7 +27,7 @@ Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200702091727.32477.alon.barlev@gmail.com>
+Message-Id: <200702091726.53262.alon.barlev@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
@@ -39,40 +39,39 @@ Signed-off-by: Bernhard Walle <bwalle@suse.de>
 
 ---
 
-diff -urNp linux-2.6.20-rc6-mm3.org/drivers/ide/ide.c linux-2.6.20-rc6-mm3/drivers/ide/ide.c
---- linux-2.6.20-rc6-mm3.org/drivers/ide/ide.c	2007-01-31 22:15:39.000000000 +0200
-+++ linux-2.6.20-rc6-mm3/drivers/ide/ide.c	2007-01-31 22:19:30.000000000 +0200
-@@ -1483,27 +1483,27 @@ static int __init match_parm (char *s, c
+diff -urNp linux-2.6.20-rc6-mm3.org/fs/dcache.c linux-2.6.20-rc6-mm3/fs/dcache.c
+--- linux-2.6.20-rc6-mm3.org/fs/dcache.c	2007-01-25 04:19:28.000000000 +0200
++++ linux-2.6.20-rc6-mm3/fs/dcache.c	2007-01-31 22:19:30.000000000 +0200
+@@ -2009,7 +2009,7 @@ ino_t find_inode_number(struct dentry *d
+ 	return ino;
  }
  
- #ifdef CONFIG_BLK_DEV_ALI14XX
--static int __initdata probe_ali14xx;
-+static int __initdata probe_ali14xx = 0;
- extern int ali14xx_init(void);
- #endif
- #ifdef CONFIG_BLK_DEV_UMC8672
--static int __initdata probe_umc8672;
-+static int __initdata probe_umc8672 = 0;
- extern int umc8672_init(void);
- #endif
- #ifdef CONFIG_BLK_DEV_DTC2278
--static int __initdata probe_dtc2278;
-+static int __initdata probe_dtc2278 = 0;
- extern int dtc2278_init(void);
- #endif
- #ifdef CONFIG_BLK_DEV_HT6560B
--static int __initdata probe_ht6560b;
-+static int __initdata probe_ht6560b = 0;
- extern int ht6560b_init(void);
- #endif
- #ifdef CONFIG_BLK_DEV_QD65XX
--static int __initdata probe_qd65xx;
-+static int __initdata probe_qd65xx = 0;
- extern int qd65xx_init(void);
- #endif
+-static __initdata unsigned long dhash_entries;
++static __initdata unsigned long dhash_entries = 0l;
+ static int __init set_dhash_entries(char *str)
+ {
+ 	if (!str)
+diff -urNp linux-2.6.20-rc6-mm3.org/fs/inode.c linux-2.6.20-rc6-mm3/fs/inode.c
+--- linux-2.6.20-rc6-mm3.org/fs/inode.c	2007-01-31 22:15:41.000000000 +0200
++++ linux-2.6.20-rc6-mm3/fs/inode.c	2007-01-31 22:19:30.000000000 +0200
+@@ -1355,7 +1355,7 @@ void inode_double_unlock(struct inode *i
+ }
+ EXPORT_SYMBOL(inode_double_unlock);
  
--static int __initdata is_chipset_set[MAX_HWIFS];
-+static int __initdata is_chipset_set[MAX_HWIFS] = {0};
+-static __initdata unsigned long ihash_entries;
++static __initdata unsigned long ihash_entries = 0l;
+ static int __init set_ihash_entries(char *str)
+ {
+ 	if (!str)
+diff -urNp linux-2.6.20-rc6-mm3.org/fs/nfs/nfsroot.c linux-2.6.20-rc6-mm3/fs/nfs/nfsroot.c
+--- linux-2.6.20-rc6-mm3.org/fs/nfs/nfsroot.c	2007-01-25 04:19:28.000000000 +0200
++++ linux-2.6.20-rc6-mm3/fs/nfs/nfsroot.c	2007-01-31 22:19:30.000000000 +0200
+@@ -289,7 +289,7 @@ static int __init root_nfs_parse(char *n
+  */
+ static int __init root_nfs_name(char *name)
+ {
+-	static char buf[NFS_MAXPATHLEN] __initdata;
++	static char buf[NFS_MAXPATHLEN] __initdata = { 0, };
+ 	char *cp;
  
- /*
-  * ide_setup() gets called VERY EARLY during initialization,
+ 	/* Set some default values */
