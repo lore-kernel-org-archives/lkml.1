@@ -1,72 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992448AbXBIR16@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992450AbXBIR23@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992448AbXBIR16 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Feb 2007 12:27:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946667AbXBIR16
+	id S2992450AbXBIR23 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Feb 2007 12:28:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992451AbXBIR23
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Feb 2007 12:27:58 -0500
-Received: from brick.kernel.dk ([62.242.22.158]:27481 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1946642AbXBIR15 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Feb 2007 12:27:57 -0500
-Date: Fri, 9 Feb 2007 18:28:20 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Vasily Tarasov <vtaras@openvz.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       OpenVZ developers ML <devel@openvz.org>
-Subject: Re: [PATCH] block: blk_max_pfn is somtimes wrong
-Message-ID: <20070209172820.GA3873@kernel.dk>
-References: <200702081239.l18CdIs3007071@white.sw.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200702081239.l18CdIs3007071@white.sw.ru>
+	Fri, 9 Feb 2007 12:28:29 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:19464 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992450AbXBIR21 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Feb 2007 12:28:27 -0500
+In-Reply-To: <20070209033133.GA18400@wotan.suse.de>
+References: <20070208105437.26443.35653.sendpatchset@linux.site> <20070208105446.26443.35864.sendpatchset@linux.site> <20070208194953.GA4118@infradead.org> <20070209014626.GB17334@wotan.suse.de> <5c49b0ed0702081803o6d2ba99ct5703f76465c524f4@mail.gmail.com> <20070209033133.GA18400@wotan.suse.de>
+Mime-Version: 1.0 (Apple Message framework v752.3)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <A45C279B-2105-4FDA-9C14-E37158858176@oracle.com>
+Cc: Nate Diller <nate.diller@gmail.com>, Christoph Hellwig <hch@infradead.org>,
+       Linux Filesystems <linux-fsdevel@vger.kernel.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Content-Transfer-Encoding: 7bit
+From: Zach Brown <zach.brown@oracle.com>
+Subject: Re: [patch 1/3] fs: add an iovec iterator
+Date: Fri, 9 Feb 2007 12:28:06 -0500
+To: Nick Piggin <npiggin@suse.de>
+X-Mailer: Apple Mail (2.752.3)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 08 2007, Vasily Tarasov wrote:
-> There is a small problem in handling page bounce.
-> 
-> At the moment blk_max_pfn equals max_pfn, which is in fact
-> not maximum possible _number_ of a page frame,  but the _amount_
-> of page frames. For example for the 32bit x86 node with 4Gb RAM,
-> max_pfn = 0x100000, but not 0xFFFF.
-> 
-> request_queue structure has a member q->bounce_pfn and queue needs
-> bounce pages for the pages _above_ this limit. This routine is handled
-> by blk_queue_bounce(), where the following check is produced:
-> 
-> 	if (q->bounce_pfn >= blk_max_pfn)
-> 		return;
-> 
-> Assume, that a driver has set q->bounce_pfn to 0xFFFF, but
-> blk_max_pfn equals 0x10000. In such situation the check above
-> fails and for each bio we always fall down for iterating over
-> pages tied to the bio.
-> 
-> I want to notice, that for quite a big range of device drivers
-> (ide, md, ...) such problem doesn't happen because they use
-> BLK_BOUNCE_ANY for bounce_pfn. BLK_BOUNCE_ANY is defined as
-> blk_max_pfn << PAGE_SHIFT, and then the check above doesn't fail.
-> But for other drivers, which obtain reuired value from drivers,
-> it fails. For example sata_nv uses ATA_DMA_MASK or dev->dma_mask.
-> 
-> I propose to use (max_pfn - 1) for blk_max_pfn. And the
-> same for blk_max_low_pfn. The patch also cleanses some checks
-> related with bounce_pfn.
-> 
-> Signed-off-by: Vasily Tarasov <vtaras@openvz.org>
+> What I have there is not actually a full-blown file io descriptor,  
+> because
+> there is no file or offset. It is just an iovec iterator (so maybe  
+> I should
+> rename it to iov_iter, rather than iodesc).
+>
+> I think it might be a nice idea to keep this iov_iter as a standalone
+> structure, and it could be embedded into a struct file_io?
 
-I will add that this is also a performance optimization, as it was
-initially discovered by Vasily because he saw bounces issues with
-blktrace. The blktrace notify was done early when we iterated the bio
-segments to check for bounces, no bounces were actually issued (this
-problem was fixed for 2.6.20 by moving the notify in mm/bounce.c to when
-we actually bounce). So it does cause needless bio segment iterations on
-some setups, because of this one-off.
+Yeah, maybe.
 
-Acked-by: Jens Axboe <jens.axboe@oracle.com>
+I'm not sure we need something as generic as a "file_io" struct.
 
--- 
-Jens Axboe
+To recap, I've hoped for the expression of the state of an iovec  
+array with a richer structure to avoid the multiple walks of the  
+array at different parts of the kernel that previously only had  
+access to the raw iovec * and size_t count.
 
+Stuff like the alignment checks in __blockdev_direct_IO() and the  
+pages_in_io accounting in direct_io_worker().
+
+I imagined building up the state in this 'iodesc' structure as we  
+first copied and verified the structure from userspace.  (say in  
+rw_copy_check_uvector()).
+
+If as we copied we, say, stored in the bits of the buffer and length  
+fields then by the time we got to __blockdev_direct_IO() we'd just  
+test the bits for misalignment instead of iterating over the array  
+again.
+
+It starts to get gross as some paths currently modify the kernel copy  
+of the array as they process it :/.
+
+- z
