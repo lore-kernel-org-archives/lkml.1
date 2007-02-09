@@ -1,88 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946280AbXBIJqw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946283AbXBIJwg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946280AbXBIJqw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Feb 2007 04:46:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946282AbXBIJqw
+	id S1946283AbXBIJwg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Feb 2007 04:52:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946284AbXBIJwg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Feb 2007 04:46:52 -0500
-Received: from nz-out-0506.google.com ([64.233.162.230]:32377 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1946280AbXBIJqv (ORCPT
+	Fri, 9 Feb 2007 04:52:36 -0500
+Received: from mga09.intel.com ([134.134.136.24]:17549 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1946283AbXBIJwf convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Feb 2007 04:46:51 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=ErWG+JmL6IKIJbVp6d640nEbiFPifmzw/qF3F0rUhBFxipF2zHC4S1dZwsu2PJ3h3ZKEqkUyd84AoSQhSAbfXr3WBGDPj4ufXZKNBHthwHprqtSc3JC1Jl0jjheqYzxl7VJXhpPB4FQRa2PLYeznLBjkWUpRDrLwJeXC1ICm1aM=
-Message-ID: <45CC42FF.5030507@gmail.com>
-Date: Fri, 09 Feb 2007 04:46:39 -0500
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Icedove 1.5.0.9 (X11/20061220)
+	Fri, 9 Feb 2007 04:52:35 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: i="4.13,304,1167638400"; 
+   d="scan'208"; a="44797616:sNHT25848513"
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: lepalom@wol.es
-CC: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: Sata_via problems in a Vintage2-AE1
-References: <200702090010.06897.lepalom@wol.es>
-In-Reply-To: <200702090010.06897.lepalom@wol.es>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH] aio: fix kernel bug when page is  temporally busy
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Date: Fri, 9 Feb 2007 12:52:27 +0300
+Message-ID: <B41635854730A14CA71C92B36EC22AAC804976@mssmsx411>
+In-Reply-To: <20070209071600.GA21276@in.ibm.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] aio: fix kernel bug when page is  temporally busy
+Thread-Index: AcdMGXvUapKqcOb2RfmbfhjKN6VqHgABAw2w
+From: "Ananiev, Leonid I" <leonid.i.ananiev@intel.com>
+To: <suparna@in.ibm.com>
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       <linux-kernel@vger.kernel.org>, "linux-aio" <linux-aio@kvack.org>,
+       "Zach Brown" <zach.brown@oracle.com>,
+       "Chris Mason" <chris.mason@oracle.com>,
+       "Badari Pulavarty" <pbadari@us.ibm.com>
+X-OriginalArrivalTime: 09 Feb 2007 09:52:34.0791 (UTC) FILETIME=[061ACF70:01C74C30]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Leopold Palomo Avellaneda wrote:
-> Dear people,
-> 
-> I have a barebone Asus Vintage2-AE1 [1]. This box has a mobo Asus A8V-MQ. The 
-> board has:
-> - the Socket 939 for AMD Athlon 64FX/Athlon 64.
-> - North Bridge: VIA K8M800  
-> - South Bridge: VIA VT8251
-> - VIA Graphics Integrated
-> - IDE 2 x UltraDMA 133
-> - 4 x Serial ATA
-> ...
-> 
-> I'm using the bios version 0206. The 0210 doesn't show me the vga card, so I 
-> don't have graphics mode. I think that is a buggy bios.
-> 
-> The bios is configured with vt8251 in AHCI mode and bios boot up activated, so 
-> the hd is recognized in the beginning. I don't have any raid, only one hd. 
-> The hd is a Maxtor 6V250F0.
-> 
-> I'm using a debian etch but the i386 version. The only way that I can use the 
-> hd is using a 2.6.16 standard kernel with the modifications explained in this 
-> page [2]. Basically you have to use their ahci.c and sata_via.c. The 
-> modifications are small from the original code from Mr Jeff Garzik.
-> 
-> I have tried to use the 2.6.18 and 2.6.20rc6 and the result is the same. The  
-> kernel boots, but when arrives at the ata3, 
-> 
-> scsi2 : ahci
-> ata3: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
-> ata3.00: qc timeout (cmd 0xec)
-> ata3.00: failed to IDENTIFY (I/O error, err_mask=0x104)
-> .... repeated some times ...
-> scsi3 : ahci
-> ata4: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
-> scsi4 : ahci
-> ata4: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
-> scsi5 : ahci
-> ata6: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
-> Done.
-> Begin: Mounting root file system... ...
-> Begin: Running /scripts/local-top
-> ide0: I/O resource 0x3F6-0x3F6 not free.
-> ide0: ports already in use, skipping probe.
-> ide1: I/O resource 0x376-0x376 not free.
-> ide1: ports already in use, skipping probe.
-> Done.
-> Begin: Waiting for root file system ...
+I have used EIOCBRETRY in the patch to minimize source code modification
+only.
+It is notable that EIOCBRETRY is never set in kernel, but tested only.
 
-It might be VIA IRQ quirk problem.
+EAGAIN - means that you may want to recall the same function with the
+same argument. But user have not to recall it just now. He may want to
+free or process some other his resources before recall for success.
+EIOCBRETRY - means that you may not recall the same function with the
+same argument because an argument has no sense already in cuurnt
+context. The result is in processing already. You may want to recall
+much higher level or external function to get the common result. It is
+means that inernal caller should ignore or let through errno to its
+caller but do not recall the function which has returned this errno.
 
-1. Does giving 'irqpoll' parameter to kernel make any difference?
+A lot of errno's have different meaning in different functions or
+contexts. EAGAIN could be used instated of EIOCBRETRY for irredundant
+set.
 
-2. Can you give a shot at 2.6.20?
+Leonid
+
+-----Original Message-----
+From: Suparna Bhattacharya [mailto:suparna@in.ibm.com] 
+Sent: Friday, February 09, 2007 10:16 AM
+To: Ananiev, Leonid I
+Cc: Andrew Morton; linux-kernel@vger.kernel.org; linux-aio; Zach Brown;
+Chris Mason; Badari Pulavarty
+Subject: Re: [PATCH] aio: fix kernel bug when page is temporally busy
+
+On Fri, Feb 09, 2007 at 08:41:41AM +0300, Ananiev, Leonid I wrote:
+> > invalidate_inode_pages2() has other callers.  I suspect with this
+> change
+> > we'll end up leaking EIOCBRETRY back to userspace.
+>  
+> EIOCBRETRY is used and caught already in do_sync_read() and
+> do_sync_readv_writev().
+>  
+> Below fixed patch against kernel 2.6.20.
+
+I agree with Andrew, this doesn't look like the right solution.
+
+EIOCBRETRY isn't the same as EAGAIN or "try again later". EIOCBRETRY
+means
+"I have queued up an action to notify (wakeup) the callback to retry the
+operation once data is ready".
+
+Regards
+Suparna
+
+>  
+> >From Leonid Ananiev
+>  
+> Fix kernel bug when IO page is temporally busy:
+> invalidate_inode_pages2() returns EIOCBRETRY but not  EIO..
+>  
+> Signed-off-by: Leonid Ananiev <leonid.i.ananiev@intel.com>
+> ---
+> --- linux-2.6.20/mm/truncate.c	2007-02-04 10:44:54.000000000
+-0800
+> +++ linux-2.6.20p/mm/truncate.c	2007-02-08 11:38:11.000000000
+-0800
+> @@ -366,7 +366,7 @@ static int do_launder_page(struct addres
+>   * Any pages which are found to be mapped into pagetables are
+unmapped
+> prior to
+>   * invalidation.
+>   *
+> - * Returns -EIO if any pages could not be invalidated.
+> + * Returns -EIOCBRETRY if any pages could not be invalidated.
+>   */
+>  int invalidate_inode_pages2_range(struct address_space *mapping,
+>  				  pgoff_t start, pgoff_t end)
+> @@ -423,7 +423,7 @@ int invalidate_inode_pages2_range(struct
+>  			}
+>  			ret = do_launder_page(mapping, page);
+>  			if (ret == 0 &&
+> !invalidate_complete_page2(mapping, page))
+> -				ret = -EIO;
+> +				ret = -EIOCBRETRY;
+>  			unlock_page(page);
+>  		}
+>  		pagevec_release(&pvec);
+> @@ -440,7 +440,7 @@ EXPORT_SYMBOL_GPL(invalidate_inode_pages
+>   * Any pages which are found to be mapped into pagetables are
+unmapped
+> prior to
+>   * invalidation.
+>   *
+> - * Returns -EIO if any pages could not be invalidated.
+> + * Returns -EIOCBRETRY if any pages could not be invalidated.
+>   */
+>  int invalidate_inode_pages2(struct address_space *mapping)
+>  {
+>  
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-aio' in
+> the body to majordomo@kvack.org.  For more info on Linux AIO,
+> see: http://www.kvack.org/aio/
+> Don't email: <a href=mailto:"aart@kvack.org">aart@kvack.org</a>
 
 -- 
-tejun
+Suparna Bhattacharya (suparna@in.ibm.com)
+Linux Technology Center
+IBM Software Lab, India
