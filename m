@@ -1,45 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946596AbXBIP7D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946555AbXBIQC3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946596AbXBIP7D (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Feb 2007 10:59:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946605AbXBIP7D
+	id S1946555AbXBIQC3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Feb 2007 11:02:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946556AbXBIQC3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Feb 2007 10:59:03 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:57145 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1946596AbXBIP7B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Feb 2007 10:59:01 -0500
-Date: Fri, 9 Feb 2007 07:58:52 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Takashi Iwai <tiwai@suse.de>
-cc: Jaroslav Kysela <perex@suse.cz>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [ALSA PATCH] alsa-git merge request
-In-Reply-To: <s5hk5yro1rr.wl%tiwai@suse.de>
-Message-ID: <Pine.LNX.4.64.0702090758380.8424@woody.linux-foundation.org>
-References: <Pine.LNX.4.61.0702091451010.5511@tm8103-a.perex-int.cz>
- <s5hk5yro1rr.wl%tiwai@suse.de>
+	Fri, 9 Feb 2007 11:02:29 -0500
+Received: from hp3.statik.TU-Cottbus.De ([141.43.120.68]:48897 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1946555AbXBIQC2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Feb 2007 11:02:28 -0500
+Message-ID: <45CC9B12.7040808@s5r6.in-berlin.de>
+Date: Fri, 09 Feb 2007 17:02:26 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.0.8) Gecko/20061030 SeaMonkey/1.0.6
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Pavel Pisa <pisa@cmp.felk.cvut.cz>
+CC: Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       linux-kernel@vger.kernel.org, Sascha Hauer <s.hauer@pengutronix.de>,
+       Pierre Ossman <drzeus@drzeus.cx>
+Subject: Re: Coding style question
+References: <200702091132.09741.pisa@cmp.felk.cvut.cz>
+In-Reply-To: <200702091132.09741.pisa@cmp.felk.cvut.cz>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Fri, 9 Feb 2007, Takashi Iwai wrote:
-
-> At Fri, 9 Feb 2007 15:02:05 +0100 (CET),
-> Jaroslav Kysela wrote:
-> > 
-> > Linus, please do an update from:
-> > 
-> >   http://www.kernel.org/pub/scm/linux/kernel/git/perex/alsa.git
-> >   (linus branch)
+Pavel Pisa wrote:
+> There are tightly copled two macros for preparation
+> and acquisition of muti-bit masked fields values
 > 
-> Jaroslav, as I wrote you many times, this tree includes the wrong
-> patches!  If it's merged, we'd need fix patches in addition
-> eventually...
+> #define __val2mfld(mask,val) (((mask)&~((mask)<<1))*(val)&(mask))
+> 
+> #define __mfld2val(mask,val) (((val)&(mask))/((mask)&~((mask)<<1)))
 
-Ok, not pulled. Get your stories straight first ;)
+The macro names are awkward.
+http://lxr.linux.no/source/Documentation/CodingStyle?v=2.6.18#L133
 
-		Linus
+Consider longer names (and to partially counteract column consumption,
+omit the leading underscores) or at least spell their purpose out in a
+short comment at the macro definitions.
+-- 
+Stefan Richter
+-=====-=-=== --=- -=--=
+http://arcgraph.de/sr/
