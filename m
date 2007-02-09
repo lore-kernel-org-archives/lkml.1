@@ -1,52 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946629AbXBIRlV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992452AbXBIRoE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946629AbXBIRlV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Feb 2007 12:41:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946642AbXBIRlV
+	id S2992452AbXBIRoE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Feb 2007 12:44:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992453AbXBIRoE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Feb 2007 12:41:21 -0500
-Received: from scrub.xs4all.nl ([194.109.195.176]:36875 "EHLO scrub.xs4all.nl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1946629AbXBIRlU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Feb 2007 12:41:20 -0500
-Date: Fri, 9 Feb 2007 18:37:34 +0100 (CET)
-From: Roman Zippel <zippel@linux-m68k.org>
-X-X-Sender: roman@scrub.home
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-cc: Alon Bar-Lev <alon.barlev@gmail.com>, linux-kernel@vger.kernel.org,
-       akpm@osdl.org, bwalle@suse.de, rmk+lkml@arm.linux.org.uk, spyro@f2s.com,
-       davej@codemonkey.org.uk, hpa@zytor.com, Riley@williams.name,
-       tony.luck@intel.com, geert@linux-m68k.org, ralf@linux-mips.org,
-       matthew@wil.cx, grundler@parisc-linux.org, kyle@parisc-linux.org,
-       paulus@samba.org, schwidefsky@de.ibm.com, lethal@linux-sh.org,
-       davem@davemloft.net, uclinux-v850@lsi.nec.co.jp, ak@muc.de,
-       vojtech@suse.cz, chris@zankel.net, len.brown@intel.com, lenb@kernel.org,
-       herbert@gondor.apana.org.au, viro@zeniv.linux.org.uk,
-       bzolnier@gmail.com, dmitry.torokhov@gmail.com, dtor@mail.ru,
-       jgarzik@pobox.com, linux-mm@kvack.org, dwmw2@infradead.org,
-       patrick@tykepenguin.com, kuznet@ms2.inr.ac.ru, pekkas@netcore.fi,
-       jmorris@namei.org, philb@gnu.org, tim@cyberelk.net, andrea@suse.de,
-       ambx1@neo.rr.com, James.Bottomley@steeleye.com,
-       linux-serial@vger.kernel.org
-Subject: Re: [PATCH 00/34] __initdata cleanup
-In-Reply-To: <20070209170005.GA8500@osiris.ibm.com>
-Message-ID: <Pine.LNX.4.64.0702091831150.14457@scrub.home>
-References: <200702091711.34441.alon.barlev@gmail.com> <20070209170005.GA8500@osiris.ibm.com>
+	Fri, 9 Feb 2007 12:44:04 -0500
+Received: from wbmler2.mail.xerox.com ([13.13.138.217]:42680 "EHLO
+	wbmler2.mail.xerox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992452AbXBIRoD convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Feb 2007 12:44:03 -0500
+X-Greylist: delayed 870 seconds by postgrey-1.27 at vger.kernel.org; Fri, 09 Feb 2007 12:44:02 EST
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: force insmod on 2.6
+Date: Fri, 9 Feb 2007 12:27:32 -0500
+Message-ID: <556445368AFA1C438794ABDA8901891C034456F2@usa0300ms03.na.xerox.net>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: force insmod on 2.6
+thread-index: AcdMb5UEOIyDzzUQTRGH3levdAs8uQ==
+From: "Leisner, Martin" <Martin.Leisner@xerox.com>
+To: <linux-kernel@vger.kernel.org>
+Cc: <leisner@rochester.rr.com>
+X-OriginalArrivalTime: 09 Feb 2007 17:27:33.0619 (UTC) FILETIME=[95796430:01C74C6F]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+I had modules which were compiled with another kernel version string
+(same kernel though).
 
-On Fri, 9 Feb 2007, Heiko Carstens wrote:
+In 2.4, you could do a force in the modules.conf files or in the insmod
+command line.
 
-> And indeed all the __initdata annotated local and global variables on
-> s390 are in the init.data section. So I'm wondering what this patch
-> series is about. Or I must have missed something.
+The current insmod doesn't have a force option.
 
-I think it reaches back to times when gcc 2.7.* was still supported, which 
-does behave as described in the documentation. gcc 2.95 and newer don't 
-require explicit initialization anymore, so this has become a non-issue.
+Modprobe CAN force, but the modules has to be in the modules tree (i.e.
+not arbitrary places on the 
+file system)
 
-bye, Roman
+Is there a way to force load a module at an arbitrary location?
+
+This is very handy for development (not production).
+
+marty
