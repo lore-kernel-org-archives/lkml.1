@@ -1,697 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423027AbXBIAXh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423085AbXBIAYW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423027AbXBIAXh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Feb 2007 19:23:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422906AbXBIAXS
+	id S1423085AbXBIAYW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Feb 2007 19:24:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423078AbXBIAYW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Feb 2007 19:23:18 -0500
-Received: from [63.64.152.142] ([63.64.152.142]:1310 "EHLO gitlost.site"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1422972AbXBIAXP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Feb 2007 19:23:15 -0500
-From: "Kok, Auke" <auke-jan.h.kok@intel.com>
-Subject: [PATCH 1/2] NET: Multiple queue network device support
-Date: Thu, 08 Feb 2007 16:09:50 -0800
-To: "David Miller" <davem@davemloft.net>, "Garzik, Jeff" <jgarzik@pobox.com>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: "Kok, Auke" <auke-jan.h.kok@intel.com>,
-       "Peter Waskiewicz Jr" <peter.p.waskiewicz.jr@intel.com>,
-       "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
-       "Kok, Auke" <auke@foo-projects.org>,
-       "Ronciak, John" <john.ronciak@intel.com>
-Message-Id: <20070209000950.5155.24763.stgit@gitlost.site>
-In-Reply-To: <20070209000942.5155.78998.stgit@gitlost.site>
-References: <20070209000942.5155.78998.stgit@gitlost.site>
+	Thu, 8 Feb 2007 19:24:22 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:20768 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423085AbXBIAYU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Feb 2007 19:24:20 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
+	message-id:references:mime-version:content-type;
+	b=kqG7KiqPau2hSk8Cq+ELh8tnr7mRfJ4petR+47+LD2EO/FCRKHLc0A2XK2QrWtFtH
+	FG/IK77msKdOk4Uqgaz8A==
+Date: Thu, 8 Feb 2007 16:24:00 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Jan Engelhardt <jengelh@linux01.gwdg.de>, Jeff Garzik <jeff@garzik.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: somebody dropped a (warning) bomb
+In-Reply-To: <Pine.LNX.4.64.0702081528070.8424@woody.linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0702081554380.29559@chino.kir.corp.google.com>
+References: <45CB3B28.60102@garzik.org> <Pine.LNX.4.64.0702080819350.8424@woody.linux-foundation.org>
+ <Pine.LNX.4.61.0702081851310.1364@yvahk01.tjqt.qr>
+ <Pine.LNX.4.64.0702081145470.8424@woody.linux-foundation.org>
+ <Pine.LNX.4.61.0702082202180.24888@yvahk01.tjqt.qr>
+ <Pine.LNX.4.64.0702081324090.8424@woody.linux-foundation.org>
+ <Pine.LNX.4.64.0702081432320.27603@chino.kir.corp.google.com>
+ <Pine.LNX.4.64.0702081528070.8424@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 8 Feb 2007, Linus Torvalds wrote:
 
-From: Peter Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>
+> No, making bitfields unsigned is actually usually a good idea. It allows 
+> you to often generate better code, and it actually tends to be what 
+> programmers _expect_. A lot of people seem to be surprised to hear that a 
+> one-bit bitfield actually often encodes -1/0, and not 0/1.
+> 
 
-Added an API and associated supporting routines for multiqueue network
-devices.  This allows network devices supporting multiple TX queues to
-configure each queue within the netdevice and manage each queue
-independantly.  Changes to the PRIO Qdisc also allow a user to map
-multiple flows to individual TX queues, taking advantage of each queue
-on the device.
+Your struct:
 
-Signed-off-by: Peter Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>
-Signed-off-by: Auke Kok <auke-jan.h.kok@intel.com>
----
+	struct dummy {
+		int flag:1;
+	} a_variable;
 
- include/linux/netdevice.h |   73 ++++++++++++++++++++++++++++
- include/net/sch_generic.h |    3 +
- net/Kconfig               |   20 ++++++++
- net/core/dev.c            |   51 ++++++++++++++++++++
- net/sched/sch_generic.c   |  117 +++++++++++++++++++++++++++++++++++++++++++++
- net/sched/sch_prio.c      |  106 ++++++++++++++++++++++++++++++++++++++---
- 6 files changed, 364 insertions(+), 6 deletions(-)
+should expect a_varible.flag to be signed, that's what the int says.  
+There is no special case here with regard to type.  It's traditional K&R 
+that writing signed flag:1 here is redundant (K&R pg. 211).  Now whether 
+that's what you wanted or not is irrelevant.  As typical with C, it gives 
+you exactly what you asked for.
 
-diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
-index 2e37f50..c7f94a8 100644
---- a/include/linux/netdevice.h
-+++ b/include/linux/netdevice.h
-@@ -106,6 +106,16 @@ struct netpoll_info;
- #define MAX_HEADER (LL_MAX_HEADER + 48)
- #endif
- 
-+#ifdef CONFIG_NET_MULTI_QUEUE_DEVICE
-+
-+struct net_device_subqueue
-+{
-+	/* Give a lock and a flow control state for each queue */
-+	unsigned long	state;
-+	spinlock_t	queue_lock ____cacheline_aligned_in_smp;
-+};
-+#endif
-+
- /*
-  *	Network device statistics. Akin to the 2.0 ether stats but
-  *	with byte counters.
-@@ -339,6 +349,10 @@ struct net_device
- #define NETIF_F_GEN_CSUM	(NETIF_F_NO_CSUM | NETIF_F_HW_CSUM)
- #define NETIF_F_ALL_CSUM	(NETIF_F_IP_CSUM | NETIF_F_GEN_CSUM)
- 
-+#ifdef CONFIG_NET_MULTI_QUEUE_DEVICE
-+#define NETIF_F_MULTI_QUEUE	8192	/* Has multiple TX/RX queues */
-+#endif
-+
- 	struct net_device	*next_sched;
- 
- 	/* Interface index. Unique device identifier	*/
-@@ -532,6 +546,19 @@ struct net_device
- 	struct device		dev;
- 	/* space for optional statistics and wireless sysfs groups */
- 	struct attribute_group  *sysfs_groups[3];
-+
-+#ifdef CONFIG_NET_MULTI_QUEUE_DEVICE
-+	/* To retrieve statistics per subqueue - FOR FUTURE USE */
-+	struct net_device_stats* (*get_subqueue_stats)(struct net_device *dev,
-+							int queue_index);
-+
-+	/* The TX queue control structures */
-+	struct net_device_subqueue	*egress_subqueue;
-+	int				egress_subqueue_count;
-+	int			(*hard_start_subqueue_xmit)(struct sk_buff *skb,
-+							struct net_device *dev,
-+							int queue_index);
-+#endif /* CONFIG_NET_MULTI_QUEUE_DEVICE */
- };
- #define to_net_dev(d) container_of(d, struct net_device, dev)
- 
-@@ -673,6 +700,52 @@ static inline int netif_running(const struct net_device *dev)
- 	return test_bit(__LINK_STATE_START, &dev->state);
- }
- 
-+#ifdef CONFIG_NET_MULTI_QUEUE_DEVICE
-+
-+/*
-+ * Routines to manage the subqueues on a device.  We only need start
-+ * stop, and a check if it's stopped.  All other device management is
-+ * done at the overall netdevice level.
-+ * Also test the netif state if we're multi-queue at all.
-+ */
-+static inline void netif_start_subqueue(struct net_device *dev, int queue_index)
-+{
-+	clear_bit(__LINK_STATE_XOFF, &dev->egress_subqueue[queue_index].state);
-+}
-+
-+static inline void netif_stop_subqueue(struct net_device *dev, int queue_index)
-+{
-+#ifdef CONFIG_NETPOLL_TRAP
-+	if (netpoll_trap())
-+		return;
-+#endif
-+	set_bit(__LINK_STATE_XOFF, &dev->egress_subqueue[queue_index].state);
-+}
-+
-+static inline int netif_subqueue_stopped(const struct net_device *dev,
-+                                         int queue_index)
-+{
-+	return test_bit(__LINK_STATE_XOFF,
-+	                &dev->egress_subqueue[queue_index].state);
-+}
-+
-+static inline void netif_wake_subqueue(struct net_device *dev, int queue_index)
-+{
-+#ifdef CONFIG_NETPOLL_TRAP
-+	if (netpoll_trap())
-+		return;
-+#endif
-+	if (test_and_clear_bit(__LINK_STATE_XOFF,
-+	                       &dev->egress_subqueue[queue_index].state))
-+		__netif_schedule(dev);
-+}
-+
-+static inline int netif_is_multiqueue(const struct net_device *dev)
-+{
-+	return (!!(NETIF_F_MULTI_QUEUE & dev->features));
-+}
-+#endif /* CONFIG_NET_MULTI_QUEUE_DEVICE */
-+
- 
- /* Use this variant when it is known for sure that it
-  * is executing from interrupt context.
-diff --git a/include/net/sch_generic.h b/include/net/sch_generic.h
-index 8208639..8751ba6 100644
---- a/include/net/sch_generic.h
-+++ b/include/net/sch_generic.h
-@@ -102,6 +102,9 @@ struct Qdisc_ops
- 
- 	int			(*dump)(struct Qdisc *, struct sk_buff *);
- 	int			(*dump_stats)(struct Qdisc *, struct gnet_dump *);
-+#ifdef CONFIG_NET_MULTI_QUEUE_DEVICE
-+	int			(*map_queue)(struct sk_buff *, struct Qdisc *);
-+#endif
- 
- 	struct module		*owner;
- };
-diff --git a/net/Kconfig b/net/Kconfig
-index 7dfc949..796edb3 100644
---- a/net/Kconfig
-+++ b/net/Kconfig
-@@ -38,6 +38,26 @@ source "net/packet/Kconfig"
- source "net/unix/Kconfig"
- source "net/xfrm/Kconfig"
- 
-+config NET_MULTI_QUEUE_DEVICE
-+	bool "Multiple queue network device support (EXPERIMENTAL)"
-+	depends on NET_SCHED && EXPERIMENTAL
-+	help
-+	  Saying Y here will add support for network devices that have more than
-+	  one physical TX queue and/or RX queue.
-+
-+	  Multiple queue devices will require qdiscs that understand how to
-+	  queue to multiple targets.  The default packet scheduler will default
-+	  to the first queue in a device.  In other words, if you need the
-+	  ability to spread traffic across queues, your queueing discipline
-+	  needs to know how to do that.
-+
-+	  Note that saying Y here will give preferential treatment to multiple
-+	  queue devices in the network stack.  A slight drop in single-queue
-+	  device performance may be seen.
-+
-+	  Say N here unless you know your network device supports multiple
-+	  TX and/or RX queues.
-+
- config INET
- 	bool "TCP/IP networking"
- 	---help---
-diff --git a/net/core/dev.c b/net/core/dev.c
-index 455d589..42b635c 100644
---- a/net/core/dev.c
-+++ b/net/core/dev.c
-@@ -1477,6 +1477,49 @@ gso:
- 	skb->tc_verd = SET_TC_AT(skb->tc_verd,AT_EGRESS);
- #endif
- 	if (q->enqueue) {
-+#ifdef CONFIG_NET_MULTI_QUEUE_DEVICE
-+		int queue_index;
-+		/* If we're a multi-queue device, get a queue index to lock */
-+		if (netif_is_multiqueue(dev))
-+		{
-+			/* Get the queue index and lock it. */
-+			if (likely(q->ops->map_queue)) {
-+				queue_index = q->ops->map_queue(skb, q);
-+				spin_lock(&dev->egress_subqueue[queue_index].queue_lock);
-+				rc = q->enqueue(skb, q);
-+				/*
-+				 * Unlock because the underlying qdisc
-+				 * may queue and send a packet from a
-+				 * different queue.
-+				 */
-+				spin_unlock(&dev->egress_subqueue[queue_index].queue_lock);
-+				qdisc_run(dev);
-+				rc = rc == NET_XMIT_BYPASS
-+				           ? NET_XMIT_SUCCESS : rc;
-+				goto out;
-+			} else {
-+				printk(KERN_CRIT "Device %s is "
-+					"multiqueue, but map_queue is "
-+					"undefined in the qdisc!!\n",
-+					dev->name);
-+				kfree_skb(skb);
-+			}
-+		} else {
-+			/* We're not a multi-queue device. */
-+			spin_lock(&dev->queue_lock);
-+			q = dev->qdisc;
-+			if (q->enqueue) {
-+				rc = q->enqueue(skb, q);
-+				qdisc_run(dev);
-+				spin_unlock(&dev->queue_lock);
-+				rc = rc == NET_XMIT_BYPASS
-+				           ? NET_XMIT_SUCCESS : rc;
-+				goto out;
-+			}
-+			spin_unlock(&dev->queue_lock);
-+		}
-+#else /* No multi-queue support compiled in */
-+
- 		/* Grab device queue */
- 		spin_lock(&dev->queue_lock);
- 		q = dev->qdisc;
-@@ -1489,6 +1532,7 @@ gso:
- 			goto out;
- 		}
- 		spin_unlock(&dev->queue_lock);
-+#endif /* CONFIG_NET_MULTI_QUEUE_DEVICE */
- 	}
- 
- 	/* The device has no queue. Common case for software devices:
-@@ -2879,6 +2923,9 @@ int register_netdevice(struct net_device *dev)
- 	struct hlist_head *head;
- 	struct hlist_node *p;
- 	int ret;
-+#ifdef CONFIG_NET_MULTI_QUEUE_DEVICE
-+	int i;
-+#endif
- 
- 	BUG_ON(dev_boot_phase);
- 	ASSERT_RTNL();
-@@ -2894,6 +2941,10 @@ int register_netdevice(struct net_device *dev)
- #ifdef CONFIG_NET_CLS_ACT
- 	spin_lock_init(&dev->ingress_lock);
- #endif
-+#ifdef CONFIG_NET_MULTI_QUEUE_DEVICE
-+	for (i = 0; i < dev->egress_subqueue_count; i++)
-+		spin_lock_init(&dev->egress_subqueue[i].queue_lock);
-+#endif
- 
- 	dev->iflink = -1;
- 
-diff --git a/net/sched/sch_generic.c b/net/sched/sch_generic.c
-index bc116bd..62ca23e 100644
---- a/net/sched/sch_generic.c
-+++ b/net/sched/sch_generic.c
-@@ -42,6 +42,7 @@
-    to data, participating in scheduling must be additionally
-    protected with dev->queue_lock spinlock.
- 
-+   For single-queue devices:
-    The idea is the following:
-    - enqueue, dequeue are serialized via top level device
-      spinlock dev->queue_lock.
-@@ -51,6 +52,12 @@
-      hence this lock may be made without local bh disabling.
- 
-    qdisc_tree_lock must be grabbed BEFORE dev->queue_lock!
-+
-+   For multi-queue devices:
-+   - enqueue, dequeue are serialized with individual queue locks,
-+     dev->egress_subqueue[queue_index].queue_lock.
-+   - Everything else with tree protection with single queue devices apply
-+     to multiqueue devices.
-  */
- DEFINE_RWLOCK(qdisc_tree_lock);
- 
-@@ -92,6 +99,9 @@ static inline int qdisc_restart(struct net_device *dev)
- {
- 	struct Qdisc *q = dev->qdisc;
- 	struct sk_buff *skb;
-+#ifdef CONFIG_NET_MULTI_QUEUE_DEVICE
-+	int queue_index = 0;
-+#endif
- 
- 	/* Dequeue packet */
- 	if (((skb = dev->gso_skb)) || ((skb = q->dequeue(q)))) {
-@@ -130,6 +140,72 @@ static inline int qdisc_restart(struct net_device *dev)
- 		}
- 		
- 		{
-+#ifdef CONFIG_NET_MULTI_QUEUE_DEVICE
-+			if (netif_is_multiqueue(dev)) {
-+				if (likely(q->ops->map_queue)) {
-+					queue_index = q->ops->map_queue(skb, q);
-+				} else {
-+					printk(KERN_CRIT "Device %s is "
-+						"multiqueue, but map_queue is "
-+						"undefined in the qdisc!!\n",
-+						dev->name);
-+					goto requeue;
-+				}
-+				spin_unlock(&dev->egress_subqueue[queue_index].queue_lock);
-+				/* Check top level device, and any sub-device */
-+				if ((!netif_queue_stopped(dev)) &&
-+				  (!netif_subqueue_stopped(dev, queue_index))) {
-+					int ret;
-+					ret = dev->hard_start_subqueue_xmit(skb, dev, queue_index);
-+					if (ret == NETDEV_TX_OK) {
-+						if (!nolock) {
-+							netif_tx_unlock(dev);
-+						}
-+						return -1;
-+					}
-+					if (ret == NETDEV_TX_LOCKED && nolock) {
-+						spin_lock(&dev->egress_subqueue[queue_index].queue_lock);
-+						goto collision;
-+					}
-+				}
-+				/* NETDEV_TX_BUSY - we need to requeue */
-+				/* Release the driver */
-+				if (!nolock) {
-+					netif_tx_unlock(dev);
-+				}
-+				spin_lock(&dev->egress_subqueue[queue_index].queue_lock);
-+				q = dev->qdisc;
-+			}
-+			else
-+			{
-+				/* We're a single-queue device */
-+				/* And release queue */
-+				spin_unlock(&dev->queue_lock);
-+				if (!netif_queue_stopped(dev)) {
-+					int ret;
-+
-+					ret = dev->hard_start_xmit(skb, dev);
-+					if (ret == NETDEV_TX_OK) {
-+						if (!nolock) {
-+							netif_tx_unlock(dev);
-+						}
-+						spin_lock(&dev->queue_lock);
-+						return -1;
-+					}
-+					if (ret == NETDEV_TX_LOCKED && nolock) {
-+						spin_lock(&dev->queue_lock);
-+						goto collision;
-+					}
-+				}
-+				/* NETDEV_TX_BUSY - we need to requeue */
-+				/* Release the driver */
-+				if (!nolock) {
-+					netif_tx_unlock(dev);
-+				}
-+				spin_lock(&dev->queue_lock);
-+				q = dev->qdisc;
-+			}
-+#else /* CONFIG_NET_MULTI_QUEUE_DEVICE */
- 			/* And release queue */
- 			spin_unlock(&dev->queue_lock);
- 
-@@ -157,6 +233,7 @@ static inline int qdisc_restart(struct net_device *dev)
- 			} 
- 			spin_lock(&dev->queue_lock);
- 			q = dev->qdisc;
-+#endif /* CONFIG_NET_MULTI_QUEUE_DEVICE */
- 		}
- 
- 		/* Device kicked us out :(
-@@ -175,9 +252,17 @@ requeue:
- 		else
- 			q->ops->requeue(skb, q);
- 		netif_schedule(dev);
-+#ifdef CONFIG_NET_MULTI_QUEUE_DEVICE
-+		if (netif_is_multiqueue(dev))
-+			spin_unlock(&dev->egress_subqueue[queue_index].queue_lock);
-+#endif
- 		return 1;
- 	}
- 	BUG_ON((int) q->q.qlen < 0);
-+#ifdef CONFIG_NET_MULTI_QUEUE_DEVICE
-+	if (netif_is_multiqueue(dev))
-+		spin_unlock(&dev->egress_subqueue[queue_index].queue_lock);
-+#endif
- 	return q->q.qlen;
- }
- 
-@@ -287,12 +372,22 @@ static int noop_requeue(struct sk_buff *skb, struct Qdisc* qdisc)
- 	return NET_XMIT_CN;
- }
- 
-+#ifdef CONFIG_NET_MULTI_QUEUE_DEVICE
-+static int noop_map_queue(struct sk_buff *skb, struct Qdisc *qdisc)
-+{
-+	return 0;
-+}
-+#endif
-+
- struct Qdisc_ops noop_qdisc_ops = {
- 	.id		=	"noop",
- 	.priv_size	=	0,
- 	.enqueue	=	noop_enqueue,
- 	.dequeue	=	noop_dequeue,
- 	.requeue	=	noop_requeue,
-+#ifdef CONFIG_NET_MULTI_QUEUE_DEVICE
-+	.map_queue	=	noop_map_queue,
-+#endif
- 	.owner		=	THIS_MODULE,
- };
- 
-@@ -310,6 +405,9 @@ static struct Qdisc_ops noqueue_qdisc_ops = {
- 	.enqueue	=	noop_enqueue,
- 	.dequeue	=	noop_dequeue,
- 	.requeue	=	noop_requeue,
-+#ifdef CONFIG_NET_MULTI_QUEUE_DEVICE
-+	.map_queue	=	noop_map_queue,
-+#endif
- 	.owner		=	THIS_MODULE,
- };
- 
-@@ -356,10 +454,18 @@ static struct sk_buff *pfifo_fast_dequeue(struct Qdisc* qdisc)
- 	struct sk_buff_head *list = qdisc_priv(qdisc);
- 
- 	for (prio = 0; prio < PFIFO_FAST_BANDS; prio++) {
-+#ifdef CONFIG_NET_MULTI_QUEUE_DEVICE
-+		if (netif_is_multiqueue(qdisc->dev))
-+			spin_lock(&qdisc->dev->egress_subqueue[0].queue_lock);
-+#endif
- 		if (!skb_queue_empty(list + prio)) {
- 			qdisc->q.qlen--;
- 			return __qdisc_dequeue_head(qdisc, list + prio);
- 		}
-+#ifdef CONFIG_NET_MULTI_QUEUE_DEVICE
-+		if (netif_is_multiqueue(qdisc->dev))
-+			spin_unlock(&qdisc->dev->egress_subqueue[0].queue_lock);
-+#endif
- 	}
- 
- 	return NULL;
-@@ -406,6 +512,14 @@ static int pfifo_fast_init(struct Qdisc *qdisc, struct rtattr *opt)
- 	return 0;
- }
- 
-+#ifdef CONFIG_NET_MULTI_QUEUE_DEVICE
-+static int pfifo_fast_map_queue(struct sk_buff *skb, struct Qdisc *qdisc)
-+{
-+	/* Generic qdisc, so always return queue index 0. */
-+	return 0;
-+}
-+#endif
-+
- static struct Qdisc_ops pfifo_fast_ops = {
- 	.id		=	"pfifo_fast",
- 	.priv_size	=	PFIFO_FAST_BANDS * sizeof(struct sk_buff_head),
-@@ -415,6 +529,9 @@ static struct Qdisc_ops pfifo_fast_ops = {
- 	.init		=	pfifo_fast_init,
- 	.reset		=	pfifo_fast_reset,
- 	.dump		=	pfifo_fast_dump,
-+#ifdef CONFIG_NET_MULTI_QUEUE_DEVICE
-+	.map_queue	=	pfifo_fast_map_queue,
-+#endif
- 	.owner		=	THIS_MODULE,
- };
- 
-diff --git a/net/sched/sch_prio.c b/net/sched/sch_prio.c
-index 2567b4c..0e24071 100644
---- a/net/sched/sch_prio.c
-+++ b/net/sched/sch_prio.c
-@@ -43,16 +43,19 @@ struct prio_sched_data
- 	struct tcf_proto *filter_list;
- 	u8  prio2band[TC_PRIO_MAX+1];
- 	struct Qdisc *queues[TCQ_PRIO_BANDS];
-+#ifdef CONFIG_NET_MULTI_QUEUE_DEVICE
-+	int band2queue[TC_PRIO_MAX + 1];
-+#endif
- };
- 
--
- static struct Qdisc *
--prio_classify(struct sk_buff *skb, struct Qdisc *sch, int *qerr)
-+prio_classify(struct sk_buff *skb, struct Qdisc *sch, int *qerr, int *retband)
- {
- 	struct prio_sched_data *q = qdisc_priv(sch);
- 	u32 band = skb->priority;
- 	struct tcf_result res;
- 
-+	*retband = band;
- 	*qerr = NET_XMIT_BYPASS;
- 	if (TC_H_MAJ(skb->priority) != sch->handle) {
- #ifdef CONFIG_NET_CLS_ACT
-@@ -68,13 +71,16 @@ prio_classify(struct sk_buff *skb, struct Qdisc *sch, int *qerr)
- #else
- 		if (!q->filter_list || tc_classify(skb, q->filter_list, &res)) {
- #endif
--			if (TC_H_MAJ(band))
-+			if (TC_H_MAJ(band)) {
- 				band = 0;
-+				*retband = 0;
-+			}
- 			return q->queues[q->prio2band[band&TC_PRIO_MAX]];
- 		}
- 		band = res.classid;
- 	}
- 	band = TC_H_MIN(band) - 1;
-+	*retband = band;
- 	if (band > q->bands)
- 		return q->queues[q->prio2band[0]];
- 
-@@ -86,8 +92,15 @@ prio_enqueue(struct sk_buff *skb, struct Qdisc *sch)
- {
- 	struct Qdisc *qdisc;
- 	int ret;
-+	int band; /* Unused in this function, just here for multi-queue */
-+
-+	/*
-+	 * NOTE: if a device is multiqueue, then it is imperative the
-+	 * underlying qdisc NOT be another PRIO qdisc.  Otherwise we're going
-+	 * to deadlock.  Fixme please.
-+	 */
-+	qdisc = prio_classify(skb, sch, &ret, &band);
- 
--	qdisc = prio_classify(skb, sch, &ret);
- #ifdef CONFIG_NET_CLS_ACT
- 	if (qdisc == NULL) {
- 
-@@ -108,14 +121,34 @@ prio_enqueue(struct sk_buff *skb, struct Qdisc *sch)
- 	return ret; 
- }
- 
-+#ifdef CONFIG_NET_MULTI_QUEUE_DEVICE
-+static int
-+prio_map_queue(struct sk_buff *skb, struct Qdisc *sch)
-+{
-+	/*
-+	 * We'll classify the skb here, so return the Qdisc back through
-+	 * the function call.  The return value is the queue we need to
-+	 * lock, which will be the value returned through band.  This will help
-+	 * speed up enqueue, since it won't have to do the classify again.
-+	 */
-+	int ret;
-+	int band;
-+	struct prio_sched_data *q = qdisc_priv(sch);
-+
-+	sch = prio_classify(skb, sch, &ret, &band);
-+	return q->band2queue[band];
-+}
-+#endif
- 
- static int
- prio_requeue(struct sk_buff *skb, struct Qdisc* sch)
- {
- 	struct Qdisc *qdisc;
- 	int ret;
-+	int band;
-+
-+	qdisc = prio_classify(skb, sch, &ret, &band);
- 
--	qdisc = prio_classify(skb, sch, &ret);
- #ifdef CONFIG_NET_CLS_ACT
- 	if (qdisc == NULL) {
- 		if (ret == NET_XMIT_BYPASS)
-@@ -141,18 +174,53 @@ prio_dequeue(struct Qdisc* sch)
- 	struct sk_buff *skb;
- 	struct prio_sched_data *q = qdisc_priv(sch);
- 	int prio;
-+#ifdef CONFIG_NET_MULTI_QUEUE_DEVICE
-+	int queue;
-+#endif
- 	struct Qdisc *qdisc;
- 
-+	/*
-+	 * If we're multiqueue, the basic approach is try the lock on each
-+	 * queue.  If it's locked, either we're already dequeuing, or enqueue
-+	 * is doing something.  Go to the next band if we're locked.  Once we
-+	 * have a packet, unlock the queue.  NOTE: the underlying qdisc CANNOT
-+	 * be a PRIO qdisc, otherwise we will deadlock.  FIXME
-+	 */
- 	for (prio = 0; prio < q->bands; prio++) {
-+#ifdef CONFIG_NET_MULTI_QUEUE_DEVICE
-+		if (netif_is_multiqueue(sch->dev)) {
-+			queue = q->band2queue[prio];
-+			if (spin_trylock(&sch->dev->egress_subqueue[queue].queue_lock)) {
-+				qdisc = q->queues[prio];
-+				skb = qdisc->dequeue(qdisc);
-+				if (skb) {
-+					sch->q.qlen--;
-+					skb->priority = prio;
-+					spin_unlock(&sch->dev->egress_subqueue[queue].queue_lock);
-+					return skb;
-+				}
-+				spin_unlock(&sch->dev->egress_subqueue[queue].queue_lock);
-+			}
-+		} else {
-+			qdisc = q->queues[prio];
-+			skb = qdisc->dequeue(qdisc);
-+			if (skb) {
-+				sch->q.qlen--;
-+				skb->priority = prio;
-+				return skb;
-+			}
-+		}
-+#else
- 		qdisc = q->queues[prio];
- 		skb = qdisc->dequeue(qdisc);
- 		if (skb) {
- 			sch->q.qlen--;
-+			skb->priority = prio;
- 			return skb;
- 		}
-+#endif
- 	}
- 	return NULL;
--
- }
- 
- static unsigned int prio_drop(struct Qdisc* sch)
-@@ -205,6 +273,10 @@ static int prio_tune(struct Qdisc *sch, struct rtattr *opt)
- 	struct prio_sched_data *q = qdisc_priv(sch);
- 	struct tc_prio_qopt *qopt = RTA_DATA(opt);
- 	int i;
-+#ifdef CONFIG_NET_MULTI_QUEUE_DEVICE
-+	int queue;
-+	int qmapoffset;
-+#endif
- 
- 	if (opt->rta_len < RTA_LENGTH(sizeof(*qopt)))
- 		return -EINVAL;
-@@ -247,6 +319,25 @@ static int prio_tune(struct Qdisc *sch, struct rtattr *opt)
- 			}
- 		}
- 	}
-+#ifdef CONFIG_NET_MULTI_QUEUE_DEVICE
-+	/* setup queue to band mapping */
-+	if (netif_is_multiqueue(sch->dev)) {
-+		if (q->bands == sch->dev->egress_subqueue_count)
-+			qmapoffset = 0;
-+		else
-+			qmapoffset = q->bands / sch->dev->egress_subqueue_count;
-+
-+		queue = 0;
-+		for (i = 0; i < q->bands; i++) {
-+			q->band2queue[i] = queue;
-+			if ( (((i + 1) - queue) == qmapoffset) &&
-+			     (queue < (sch->dev->egress_subqueue_count - 1))) {
-+				queue++;
-+			}
-+		}
-+	}
-+
-+#endif
- 	return 0;
- }
- 
-@@ -430,6 +521,9 @@ static struct Qdisc_ops prio_qdisc_ops = {
- 	.destroy	=	prio_destroy,
- 	.change		=	prio_tune,
- 	.dump		=	prio_dump,
-+#ifdef CONFIG_NET_MULTI_QUEUE_DEVICE
-+	.map_queue	=	prio_map_queue,
-+#endif
- 	.owner		=	THIS_MODULE,
- };
- 
+You're arguing for inconsistency in how bitfields are qualified based on 
+their size.  If you declare a bitfield as int byte:8, then you're going 
+to expect this to behave exactly like a signed char, which it does.
 
+	struct {
+		int byte:8;
+	} __attribute__((packed)) b_variable;
 
+b_variable.byte is identical to a signed char.
 
----
-Auke Kok <auke-jan.h.kok@intel.com>
+Just because a_variable.flag happens to be one bit, you cannot say that 
+programmers _expect_ it to be unsigned, or you would also expect 
+b_variable.byte to act as an unsigned char.  signed is the default 
+behavior for all types besides char, so the behavior is appropriate based 
+on what most programmers would expect.
+
+> So unsigned bitfields are not only traditional K&R, they are also usually 
+> _faster_ (which is probably why they are traditional K&R - along with 
+> allowing "char" to be unsigned by default). Don't knock them.  It's much 
+> better to just remember that bitfields simply don't _have_ any standard 
+> sign unless you specify it explicitly, than saying "it should be signed 
+> because 'int' is signed".
+> 
+
+Of course they're faster, it doesn't require the sign extension.  But 
+you're adding additional semantics to the language by your interpretation 
+of what is expected by the programmer in the bitfield case as opposed to a 
+normal variable definition.
+
+> I will actually argue that having signed bit-fields is almost always a 
+> bug, and that as a result you should _never_ use "int" at all. Especially 
+> as you might as well just write it as
+> 
+> 	signed a:1;
+> 
+> if you really want a signed bitfield.
+> 
+
+How can signed bitfields almost always be a bug?  I'm the programmer and I 
+want to store my data in a variable that I define, so I must follow the 
+twos-complement rule and allot a sign bit if I declare it as a signed 
+value.  In C, you do this with "int"; otherwise, you use "unsigned".
+
+> So I would reall yrecommend that you never use "int a:<bits>" AT ALL, 
+> because there really is never any good reason to do so. Do it as
+> 
+> 	unsigned a:3;
+> 	signed b:2;
+> 
+> but never 
+> 
+> 	int c:4;
+> 
+> because the latter really isn't sensible.
+> 
+
+That _is_ sensible because anything you declare "int" is going to be 
+signed as far as gcc is concerned.  "c" just happens to be 4-bits wide 
+instead of 32.  But for everything else, it's the same as an int.  I know 
+exactly what I'm getting by writing "int c:4", as would most programmers 
+who use bitfields to begin with.
+
+		David
