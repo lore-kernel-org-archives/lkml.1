@@ -1,125 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423129AbXBIROw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992449AbXBIRPw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423129AbXBIROw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Feb 2007 12:14:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423171AbXBIROv
+	id S2992449AbXBIRPw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Feb 2007 12:15:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992452AbXBIRPw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Feb 2007 12:14:51 -0500
-Received: from aybabtu.com ([69.60.117.155]:52246 "EHLO aybabtu.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423129AbXBIROt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Feb 2007 12:14:49 -0500
-From: Leopold Palomo Avellaneda <lepalom@wol.es>
-Reply-To: lepalom@wol.es
-To: Tejun Heo <htejun@gmail.com>
-Subject: Re: Sata_via problems in a Vintage2-AE1
-Date: Fri, 9 Feb 2007 18:13:57 +0100
-User-Agent: KMail/1.9.5
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <200702090010.06897.lepalom@wol.es> <45CC42FF.5030507@gmail.com>
-In-Reply-To: <45CC42FF.5030507@gmail.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1934883.cEBtQvnG0i";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+	Fri, 9 Feb 2007 12:15:52 -0500
+Received: from out5.smtp.messagingengine.com ([66.111.4.29]:47831 "EHLO
+	out5.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S2992449AbXBIRPv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Feb 2007 12:15:51 -0500
+Message-Id: <1171041349.4099.1173808365@webmail.messagingengine.com>
+X-Sasl-Enc: dB0TH3BPUVuRw4D5HHw1GCcP5AyocE53Yw7plOHnaH2H 1171041349
+From: "Kai" <epimetreus@fastmail.fm>
+To: linux-kernel@vger.kernel.org
+Content-Disposition: inline
 Content-Transfer-Encoding: 7bit
-Message-Id: <200702091814.02530.lepalom@wol.es>
+Content-Type: text/plain; charset="ISO-8859-1"
+MIME-Version: 1.0
+X-Mailer: MessagingEngine.com Webmail Interface
+References: <1170734919.15636.1173102761@webmail.messagingengine.com>
+   <20070205203750.7be7f772.akpm@linux-foundation.org>
+   <17864.4339.925700.626157@notabene.brown>
+   <17865.3776.511594.763544@notabene.brown>
+   <1170865619.16808.1173403963@webmail.messagingengine.com>
+   <17866.19962.601479.638730@notabene.brown>
+Subject: Re: [PATCH] Re: Bio device too big | kernel BUG at mm/filemap.c:537!
+In-Reply-To: <17866.19962.601479.638730@notabene.brown>
+Date: Fri, 09 Feb 2007 09:15:49 -0800
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1934883.cEBtQvnG0i
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
 
-A Divendres 09 Febrer 2007 10:46, Tejun Heo va escriure:
-> Leopold Palomo Avellaneda wrote:
-> > Dear people,
-> >
-> > I have a barebone Asus Vintage2-AE1 [1]. This box has a mobo Asus A8V-M=
-Q.
-> > The board has:
-> > - the Socket 939 for AMD Athlon 64FX/Athlon 64.
-> > - North Bridge: VIA K8M800
-> > - South Bridge: VIA VT8251
-> > - VIA Graphics Integrated
-> > - IDE 2 x UltraDMA 133
-> > - 4 x Serial ATA
-> > ...
-> >
-> > I'm using the bios version 0206. The 0210 doesn't show me the vga card,
-> > so I don't have graphics mode. I think that is a buggy bios.
-> >
-> > The bios is configured with vt8251 in AHCI mode and bios boot up
-> > activated, so the hd is recognized in the beginning. I don't have any
-> > raid, only one hd. The hd is a Maxtor 6V250F0.
-> >
-> > I'm using a debian etch but the i386 version. The only way that I can u=
-se
-> > the hd is using a 2.6.16 standard kernel with the modifications explain=
-ed
-> > in this page [2]. Basically you have to use their ahci.c and sata_via.c.
-> > The modifications are small from the original code from Mr Jeff Garzik.
-> >
-> > I have tried to use the 2.6.18 and 2.6.20rc6 and the result is the same.
-> > The kernel boots, but when arrives at the ata3,
-> >
-> > scsi2 : ahci
-> > ata3: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
-> > ata3.00: qc timeout (cmd 0xec)
-> > ata3.00: failed to IDENTIFY (I/O error, err_mask=3D0x104)
-> > .... repeated some times ...
-> > scsi3 : ahci
-> > ata4: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
-> > scsi4 : ahci
-> > ata4: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
-> > scsi5 : ahci
-> > ata6: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
-> > Done.
-> > Begin: Mounting root file system... ...
-> > Begin: Running /scripts/local-top
-> > ide0: I/O resource 0x3F6-0x3F6 not free.
-> > ide0: ports already in use, skipping probe.
-> > ide1: I/O resource 0x376-0x376 not free.
-> > ide1: ports already in use, skipping probe.
-> > Done.
-> > Begin: Waiting for root file system ...
->
-> It might be VIA IRQ quirk problem.
->
-> 1. Does giving 'irqpoll' parameter to kernel make any difference?
+On Thu, 8 Feb 2007 09:08:58 +1100, "Neil Brown" <neilb@suse.de> said:
+> On Wednesday February 7, epimetreus@fastmail.fm wrote:
+> > 
+> > On Wed, 7 Feb 2007 10:26:56 +1100, "Neil Brown" <neilb@suse.de> said:
+> > > On Tuesday February 6, neilb@suse.de wrote:
+> > > > 
+> > > > This patch should fix the worst of the offences, but I'd like to
+> > > > experiment and think a bit more before I submit it to stable.
+> > > > And probably test it too - as yet I have only compile and brain
+> > > > tested.
+> > > 
+> > > Ok, I've experimented and tested and now I know what was causing the
+> > > double-unlock.
+> > > 
+> > > The following patch is suitable for 2.6.20.1 and mainline.  There is
+> > > room for a bit more improvement, but only for performance, not
+> > > correctness.  I'll look into that later.
+> > > 
+> > > Thanks,
+> > > NeilBrown
+> > 
+> > I figure I should test this on my hardware, but since the RAID array
+> > resynched itself when I rebooted back into an earlier kernel version,
+> > I'm guessing it means this bug introduced some corruption into the
+> > array, when it occurred, so I'd like some pointers on how I can test it
+> > out without compromising my data.
+> 
+> This bug should not introduce any data corruption.
+> It causes some read requests to get a failure from the device, which
+> will cause raid5 to remove the device from the array (Though the data
+> will still be intact).
+> On restart a resync will put everything back as it was.
+> 
+> It is quite possible (this happened to me in my testing) for several
+> devices to get these errors and for several or even all of these
+> device to get failed.  However even in this case the data is still
+> intact and "mdadm --assemble --force ..." will put everything back
+> together.
+> 
+> So there should be no risk of data corruption.
+> 
+> NeilBrown
 
-yes. Now it boots. However I'm having a lot of messages:
-APIC error on CPU0
+I've been running it for the last few hours, and no error output, yet; I
+even did some fairly heavy I/O stuff to try and mess with it, but it
+hasn't budged. I'm ready to say, works for me.
 
-and I begin to have problems with the network card.
-
-> 2. Can you give a shot at 2.6.20?
-
-yes, I'm doing it now.=20
-
-Thank's a lot. But, why with irqpoll works and without no?
-
-Leo
-
-
-=2D-=20
-=2D-
-Linux User 152692
-PGP: 0xF944807E
-Catalonia
-
---nextPart1934883.cEBtQvnG0i
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBFzKvaaC7AnPlEgH4RAq+QAJsEsI+KzoVaJXDsxwBDjHfQsPTlswCgmL4c
-+l94MtlXXkDtcL6BhePSNiY=
-=fvhp
------END PGP SIGNATURE-----
-
---nextPart1934883.cEBtQvnG0i--
+-Kai
