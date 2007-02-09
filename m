@@ -1,49 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423363AbXBIWyp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423364AbXBIWyq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423363AbXBIWyp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Feb 2007 17:54:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946549AbXBIWyi
+	id S1423364AbXBIWyq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Feb 2007 17:54:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946544AbXBIWyh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Feb 2007 17:54:38 -0500
-Received: from e34.co.us.ibm.com ([32.97.110.152]:44317 "EHLO
+	Fri, 9 Feb 2007 17:54:37 -0500
+Received: from e34.co.us.ibm.com ([32.97.110.152]:44346 "EHLO
 	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423362AbXBIWxi (ORCPT
+	with ESMTP id S1423363AbXBIWxi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 9 Feb 2007 17:53:38 -0500
-Subject: [PATCH 09/22] mount_is_safe(): add comment
+Subject: [PATCH 10/22] unix_find_other() elevate write count for touch_atime()
 To: linux-kernel@vger.kernel.org
 Cc: akpm@osdl.org, hch@infradead.org, Dave Hansen <hansendc@us.ibm.com>
 From: Dave Hansen <hansendc@us.ibm.com>
-Date: Fri, 09 Feb 2007 14:53:35 -0800
+Date: Fri, 09 Feb 2007 14:53:36 -0800
 References: <20070209225329.27619A62@localhost.localdomain>
 In-Reply-To: <20070209225329.27619A62@localhost.localdomain>
-Message-Id: <20070209225335.017500FA@localhost.localdomain>
+Message-Id: <20070209225336.8096B175@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 
-This area of code is currently #ifdef'd out, so add a comment
-for the time when it is actually used.
 
 Signed-off-by: Dave Hansen <haveblue@us.ibm.com>
 ---
 
- lxc-dave/fs/namespace.c |    4 ++++
- 1 file changed, 4 insertions(+)
+ lxc-dave/net/unix/af_unix.c |   16 ++++++++++++----
+ 1 file changed, 12 insertions(+), 4 deletions(-)
 
-diff -puN fs/namespace.c~11-24-mount-is-safe-add-comment fs/namespace.c
---- lxc/fs/namespace.c~11-24-mount-is-safe-add-comment	2007-02-09 14:26:52.000000000 -0800
-+++ lxc-dave/fs/namespace.c	2007-02-09 14:26:52.000000000 -0800
-@@ -744,6 +744,10 @@ static int mount_is_safe(struct nameidat
- 		if (current->uid != nd->dentry->d_inode->i_uid)
- 			return -EPERM;
+diff -puN net/unix/af_unix.c~12-24-unix-find-other-elevate-write-count-for-touch-atime net/unix/af_unix.c
+--- lxc/net/unix/af_unix.c~12-24-unix-find-other-elevate-write-count-for-touch-atime	2007-02-09 14:26:52.000000000 -0800
++++ lxc-dave/net/unix/af_unix.c	2007-02-09 14:26:52.000000000 -0800
+@@ -703,21 +703,27 @@ static struct sock *unix_find_other(stru
+ 		err = path_lookup(sunname->sun_path, LOOKUP_FOLLOW, &nd);
+ 		if (err)
+ 			goto fail;
++
++		err = mnt_want_write(nd.mnt);
++		if (err)
++			goto put_path_fail;
++
+ 		err = vfs_permission(&nd, MAY_WRITE);
+ 		if (err)
+-			goto put_fail;
++			goto mnt_drop_write_fail;
+ 
+ 		err = -ECONNREFUSED;
+ 		if (!S_ISSOCK(nd.dentry->d_inode->i_mode))
+-			goto put_fail;
++			goto mnt_drop_write_fail;
+ 		u=unix_find_socket_byinode(nd.dentry->d_inode);
+ 		if (!u)
+-			goto put_fail;
++			goto mnt_drop_write_fail;
+ 
+ 		if (u->sk_type == type)
+ 			touch_atime(nd.mnt, nd.dentry);
+ 
+ 		path_release(&nd);
++		mnt_drop_write(nd.mnt);
+ 
+ 		err=-EPROTOTYPE;
+ 		if (u->sk_type != type) {
+@@ -737,7 +743,9 @@ static struct sock *unix_find_other(stru
  	}
-+	/*
-+	 * We will eventually check for the mnt->writer_count here,
-+	 * but since the code is not used now, skip it - Dave Hansen
-+	 */
- 	if (vfs_permission(nd, MAY_WRITE))
- 		return -EPERM;
- 	return 0;
+ 	return u;
+ 
+-put_fail:
++mnt_drop_write_fail:
++	mnt_drop_write(nd.mnt);
++put_path_fail:
+ 	path_release(&nd);
+ fail:
+ 	*error=err;
 _
