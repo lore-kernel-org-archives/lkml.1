@@ -1,62 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946532AbXBIPqU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946542AbXBIPym@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946532AbXBIPqU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Feb 2007 10:46:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946549AbXBIPeV
+	id S1946542AbXBIPym (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Feb 2007 10:54:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946552AbXBIPym
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Feb 2007 10:34:21 -0500
-Received: from ug-out-1314.google.com ([66.249.92.168]:2693 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1946538AbXBIPeT (ORCPT
+	Fri, 9 Feb 2007 10:54:42 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:58301 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1946542AbXBIPyl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Feb 2007 10:34:19 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=kgVKniSlbYUpEzjnqrpQoPQzj4T7d9FN4NGwfMHYu50TD1GRx8VRYvCrKjIVeDpRbRFEcPpAz9tmgr9JZXj4zvYz9n7JhZw2dNQirvUnt2gux+FqKq3OxU0O7IlY7Vf0mwthDIzd0r6UYp3jbEwQlQlC18LHl/7Dl5aK8VmhWu4=
-From: Alon Bar-Lev <alon.barlev@gmail.com>
-To: linux-kernel@vger.kernel.org, akpm@osdl.org, bwalle@suse.de,
-       rmk+lkml@arm.linux.org.uk
-Subject: [PATCH 04/34] __initdata cleanup - frv
-Date: Fri, 9 Feb 2007 17:15:16 +0200
-User-Agent: KMail/1.9.6
-References: <200702091711.34441.alon.barlev@gmail.com>
-In-Reply-To: <200702091711.34441.alon.barlev@gmail.com>
+	Fri, 9 Feb 2007 10:54:41 -0500
+Date: Fri, 9 Feb 2007 10:54:40 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Roland McGrath <roland@redhat.com>
+cc: Prasanna S Panchamukhi <prasanna@in.ibm.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Kwatch: kernel watchpoints using CPU debug registers
+In-Reply-To: <20070209102124.1DF3618003C@magilla.sf.frob.com>
+Message-ID: <Pine.LNX.4.44L0.0702091044230.4548-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200702091715.16876.alon.barlev@gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 9 Feb 2007, Roland McGrath wrote:
 
-Trivial.
+> > All right.  However this means thread_struct will have to grow in order to
+> > hold each task's debug-register allocations and priorities.  Would that be
+> > acceptable?  (This might be a good reason to keep the number of bits
+> > down.)
+> 
+> Well, noone seems to mind the wasted debugreg[5..6] words. ;-) 
+> 
+> I'm inclined to make thread_struct smaller than it is now by making it
+> indirect (debugreg[8] -> one pointer).  It feels like this would be pretty
+> safe now that we have TIF_DEBUG anyway.  Already nothing should be looking
+> at the field when TIF_DEBUG isn't set.
 
-Signed-off-by: Alon Bar-Lev <alon.barlev@gmail.com>
-Signed-off-by: Bernhard Walle <bwalle@suse.de>
+I had the same thought.
 
----
+> > Another question: How can a program using the ptrace API ever give up a
+> > debug-register allocation?  Disabling the register isn't sufficient; a
+> > user program should be able to store a watchpoint address in dr1, enable
+> > it in dr7, disable it in dr7, and then re-enable it in the expectation
+> > that the address stored in dr1 hasn't been overwritten.  As far as I can
+> > see, ptrace-type allocations have to be permanent (until the task exits or
+> > execs, or uses some other to-be-determined API to do the de-allocation.)
+> 
+> I hadn't really thought about this before, but it's pretty straightforward.
+> Each allocation is for one of %dr[0-3] and for its associated bits in %dr7.
+> %dr0 and bits 0,1,16-19; %dr1 and bits 2,3,20-23; etc.
+> %dr7 & (0x000f0003 << N) for %drN, I guess it is.
+> ((((1 << DR_CONTROL_SIZE) - 1) << DR_CONTROL_SHIFT) |
+>  ((1 << DR_ENABLE_SIZE) - 1)) << N, I should say.
+> 
+> Each allocation owns those 38 bits (70 bits on x86_64).  When all those
+> bits are zero, the allocation is not active and might as well not be there
+> (except for whatever semantics you might want to have about an allocation's
+> lifetime as distinct from the event of resetting its contents).  
 
-diff -urNp linux-2.6.20-rc6-mm3.org/arch/frv/kernel/setup.c linux-2.6.20-rc6-mm3/arch/frv/kernel/setup.c
---- linux-2.6.20-rc6-mm3.org/arch/frv/kernel/setup.c	2007-01-31 22:15:30.000000000 +0200
-+++ linux-2.6.20-rc6-mm3/arch/frv/kernel/setup.c	2007-01-31 22:19:30.000000000 +0200
-@@ -105,13 +105,13 @@ unsigned long __nongprelbss memory_end;
- unsigned long __nongprelbss dma_coherent_mem_start;
- unsigned long __nongprelbss dma_coherent_mem_end;
- 
--unsigned long __initdata __sdram_old_base;
--unsigned long __initdata num_mappedpages;
-+unsigned long __initdata __sdram_old_base = 0l;
-+unsigned long __initdata num_mappedpages = 0l;
- 
- struct cpuinfo_frv __nongprelbss boot_cpu_data;
- 
--char __initdata command_line[COMMAND_LINE_SIZE];
--char __initdata redboot_command_line[COMMAND_LINE_SIZE];
-+char __initdata command_line[COMMAND_LINE_SIZE] = "";
-+char __initdata redboot_command_line[COMMAND_LINE_SIZE] = "";
- 
- #ifdef CONFIG_PM
- #define __pminit
+Okay, that makes sense.
+
+> Your question made me think about the %dr6 issue, too, which I also hadn't
+> thought about before.  It looks like your patch handles this correctly, but
+> it's a subtle point that I think warrants some comments in the code.  When
+> userland inserts a watchpoint and it's hit, it gets a SIGTRAP via do_debug
+> and eventually looks at dr6 (via ptrace) to see what happened.  Kernel
+> watchpoints that come along after the user signal is generated can clobber
+> the CPU %dr6 with new hits, but userland should not perceive this.  This
+> works out because what userland sees is thread.debugreg[6], the only place
+> that sets it is do_debug, and a kwatch hit bails out before changing it.
+> Any other new users of the debugreg sharing interface need to be cognizant
+> of the %dr6 issue to avoid stepping on old ptrace uses.
+
+Yes.  In fact, the current existing code does not handle dr6 correctly.  
+It never clears the register, which means you're likely to get into 
+trouble when multiple breakpoints (or watchpoints) are enabled.
+
+
+Here's another complication -- and this is one I can't figure out any easy
+solutions for.  The type of API we've been discussing will work well
+enough on UP systems, but what about SMP?  I don't see any value in having
+a kernel watchpoint enabled on some CPUs and not others.  But then what
+should happen when a debug register is in use by kwatch and a ptrace
+request on one CPU usurps it (leaving no other register in which to put
+it)?  Not to mention the difficulties of keeping track of everything when
+the same kwatch watchpoint is stored in different debug registers on
+different CPUs.
+
+It's really quite a tricky matter.  Should a register be allocated to
+kwatch only when no user process needs it?  Should we really go about
+checking the requirements of every single process whenever a kwatch
+allocation request comes in?  What if the processes which need a
+particular register aren't running -- should the register then be given to
+kwatch?  What if one of those processes then does start running on one
+CPU?
+
+Alan Stern
+
