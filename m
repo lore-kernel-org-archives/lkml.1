@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946565AbXBIPez@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946547AbXBIPmU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946565AbXBIPez (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Feb 2007 10:34:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946561AbXBIPey
+	id S1946547AbXBIPmU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Feb 2007 10:42:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946555AbXBIPeu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Feb 2007 10:34:54 -0500
-Received: from ug-out-1314.google.com ([66.249.92.172]:2873 "EHLO
+	Fri, 9 Feb 2007 10:34:50 -0500
+Received: from ug-out-1314.google.com ([66.249.92.173]:2436 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1946543AbXBIPeb (ORCPT
+	with ESMTP id S1946548AbXBIPeg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Feb 2007 10:34:31 -0500
+	Fri, 9 Feb 2007 10:34:36 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:from:to:subject:date:user-agent:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=PyEUbDgdLqFIqt0dsO+W02eBgDPZGexUbYcs/JAbkraPSfRd1O8CxAvvUhtymAKGIyYlfsTSkg7BTEUp9Ecgbv9NThLLuKvk1kvuD7FE/UVMZeID9+ddS/K0aAMzX52uvKYEr4C3L5cj2ABTQGmmCGE3fHnJJce/2+KwnWT0LFY=
+        b=p7ArB4hFF+uE/cPfSDBfEMWbfZq7aFQI8ICefK9QOcziooSi2haM9DdBdLl1IT7OTUe2J88NFxHgVA96ieOO3xYzA+Kjh6N9a7Ce1IhIoaDWApq0jm2BpJFRDgVAUaELOsEIYZzs7RqBZPKGVKgbM/PPxcFN/9eleerPYS9ZdnU=
 From: Alon Bar-Lev <alon.barlev@gmail.com>
 To: linux-kernel@vger.kernel.org, akpm@osdl.org, bwalle@suse.de,
-       rmk+lkml@arm.linux.org.uk, ralf@linux-mips.org
-Subject: [PATCH 10/34] __initdata cleanup - mips
-Date: Fri, 9 Feb 2007 17:19:52 +0200
+       rmk+lkml@arm.linux.org.uk, paulus@samba.org
+Subject: [PATCH 12/34] __initdata cleanup - powerpc
+Date: Fri, 9 Feb 2007 17:21:11 +0200
 User-Agent: KMail/1.9.6
 References: <200702091711.34441.alon.barlev@gmail.com>
 In-Reply-To: <200702091711.34441.alon.barlev@gmail.com>
@@ -27,7 +27,7 @@ Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200702091719.52200.alon.barlev@gmail.com>
+Message-Id: <200702091721.11735.alon.barlev@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
@@ -39,136 +39,170 @@ Signed-off-by: Bernhard Walle <bwalle@suse.de>
 
 ---
 
-diff -urNp linux-2.6.20-rc6-mm3.org/arch/mips/kernel/traps.c linux-2.6.20-rc6-mm3/arch/mips/kernel/traps.c
---- linux-2.6.20-rc6-mm3.org/arch/mips/kernel/traps.c
-+++ linux-2.6.20-rc6-mm3/arch/mips/kernel/traps.c
-@@ -1432,7 +1432,7 @@ void __init set_uncached_handler (unsign
- 	memcpy((void *)(uncached_ebase + offset), addr, size);
- }
+diff -urNp linux-2.6.20-rc6-mm3.org/arch/powerpc/kernel/legacy_serial.c linux-2.6.20-rc6-mm3/arch/powerpc/kernel/legacy_serial.c
+--- linux-2.6.20-rc6-mm3.org/arch/powerpc/kernel/legacy_serial.c	2007-01-31 22:15:31.000000000 +0200
++++ linux-2.6.20-rc6-mm3/arch/powerpc/kernel/legacy_serial.c	2007-01-31 22:19:30.000000000 +0200
+@@ -565,7 +565,7 @@ static int __init check_legacy_serial_co
+ 	DBG("Found serial console at ttyS%d\n", offset);
  
--static int __initdata rdhwr_noopt;
-+static int __initdata rdhwr_noopt = 0;
- static int __init set_rdhwr_noopt(char *str)
+ 	if (speed) {
+-		static char __initdata opt[16];
++		static char __initdata opt[16] = {0};
+ 		sprintf(opt, "%d", speed);
+ 		return add_preferred_console("ttyS", offset, opt);
+ 	} else
+diff -urNp linux-2.6.20-rc6-mm3.org/arch/powerpc/kernel/pci_32.c linux-2.6.20-rc6-mm3/arch/powerpc/kernel/pci_32.c
+--- linux-2.6.20-rc6-mm3.org/arch/powerpc/kernel/pci_32.c	2007-01-31 22:15:31.000000000 +0200
++++ linux-2.6.20-rc6-mm3/arch/powerpc/kernel/pci_32.c	2007-01-31 22:19:30.000000000 +0200
+@@ -889,7 +889,7 @@ void __init
+ pci_process_bridge_OF_ranges(struct pci_controller *hose,
+ 			   struct device_node *dev, int primary)
  {
- 	rdhwr_noopt = 1;
-diff -urNp linux-2.6.20-rc6-mm3.org/arch/mips/mm/pg-r4k.c linux-2.6.20-rc6-mm3/arch/mips/mm/pg-r4k.c
---- linux-2.6.20-rc6-mm3.org/arch/mips/mm/pg-r4k.c
-+++ linux-2.6.20-rc6-mm3/arch/mips/mm/pg-r4k.c
-@@ -67,13 +67,13 @@ EXPORT_SYMBOL(copy_page);
- static int pref_offset_clear __initdata = 512;
- static int pref_offset_copy  __initdata = 256;
+-	static unsigned int static_lc_ranges[256] __initdata;
++	static unsigned int static_lc_ranges[256] __initdata = {0};
+ 	const unsigned int *dt_ranges;
+ 	unsigned int *lc_ranges, *ranges, *prev, size;
+ 	int rlen = 0, orig_rlen;
+diff -urNp linux-2.6.20-rc6-mm3.org/arch/powerpc/kernel/prom.c linux-2.6.20-rc6-mm3/arch/powerpc/kernel/prom.c
+--- linux-2.6.20-rc6-mm3.org/arch/powerpc/kernel/prom.c	2007-01-31 22:15:31.000000000 +0200
++++ linux-2.6.20-rc6-mm3/arch/powerpc/kernel/prom.c	2007-01-31 22:19:30.000000000 +0200
+@@ -60,8 +60,8 @@
+ #endif
  
--static unsigned int pref_src_mode __initdata;
--static unsigned int pref_dst_mode __initdata;
-+static unsigned int pref_src_mode __initdata = 0;
-+static unsigned int pref_dst_mode __initdata = 0;
  
--static int load_offset __initdata;
--static int store_offset __initdata;
-+static int load_offset __initdata = 0;
-+static int store_offset __initdata = 0;
+-static int __initdata dt_root_addr_cells;
+-static int __initdata dt_root_size_cells;
++static int __initdata dt_root_addr_cells = 0;
++static int __initdata dt_root_size_cells = 0;
  
--static unsigned int __initdata *dest, *epc;
-+static unsigned int __initdata *dest = NULL, *epc = NULL;
+ #ifdef CONFIG_PPC64
+ int __initdata iommu_is_off;
+diff -urNp linux-2.6.20-rc6-mm3.org/arch/powerpc/kernel/prom_init.c linux-2.6.20-rc6-mm3/arch/powerpc/kernel/prom_init.c
+--- linux-2.6.20-rc6-mm3.org/arch/powerpc/kernel/prom_init.c	2007-01-31 22:15:31.000000000 +0200
++++ linux-2.6.20-rc6-mm3/arch/powerpc/kernel/prom_init.c	2007-01-31 22:19:30.000000000 +0200
+@@ -157,26 +157,26 @@ extern void copy_and_flush(unsigned long
+ 			   unsigned long size, unsigned long offset);
  
- static unsigned int instruction_pending;
- static union mips_instruction delayed_mi;
-diff -urNp linux-2.6.20-rc6-mm3.org/arch/mips/mm/tlbex.c linux-2.6.20-rc6-mm3/arch/mips/mm/tlbex.c
---- linux-2.6.20-rc6-mm3.org/arch/mips/mm/tlbex.c
-+++ linux-2.6.20-rc6-mm3/arch/mips/mm/tlbex.c
-@@ -728,11 +728,11 @@ il_bgez(u32 **p, struct reloc **r, unsig
-  * We deliberately chose a buffer size of 128, so we won't scribble
-  * over anything important on overflow before we panic.
-  */
--static __initdata u32 tlb_handler[128];
-+static __initdata u32 tlb_handler[128] = {0};
+ /* prom structure */
+-static struct prom_t __initdata prom;
++static struct prom_t __initdata prom = {0};
  
- /* simply assume worst case size for labels and relocs */
--static __initdata struct label labels[128];
--static __initdata struct reloc relocs[128];
-+static __initdata struct label labels[128] = {{NULL}};
-+static __initdata struct reloc relocs[128] = {{NULL}};
+-static unsigned long prom_entry __initdata;
++static unsigned long prom_entry __initdata = 0l;
+ 
+ #define PROM_SCRATCH_SIZE 256
+ 
+-static char __initdata of_stdout_device[256];
+-static char __initdata prom_scratch[PROM_SCRATCH_SIZE];
++static char __initdata of_stdout_device[256] = {0};
++static char __initdata prom_scratch[PROM_SCRATCH_SIZE] = {0};
+ 
+-static unsigned long __initdata dt_header_start;
+-static unsigned long __initdata dt_struct_start, dt_struct_end;
+-static unsigned long __initdata dt_string_start, dt_string_end;
++static unsigned long __initdata dt_header_start = 0l;
++static unsigned long __initdata dt_struct_start = 0l, dt_struct_end = 0l;
++static unsigned long __initdata dt_string_start = 0l, dt_string_end = 0l;
+ 
+-static unsigned long __initdata prom_initrd_start, prom_initrd_end;
++static unsigned long __initdata prom_initrd_start = 0l, prom_initrd_end = 0l;
+ 
+ #ifdef CONFIG_PPC64
+-static int __initdata prom_iommu_force_on;
+-static int __initdata prom_iommu_off;
+-static unsigned long __initdata prom_tce_alloc_start;
+-static unsigned long __initdata prom_tce_alloc_end;
++static int __initdata prom_iommu_force_on = 0;
++static int __initdata prom_iommu_off = 0;
++static unsigned long __initdata prom_tce_alloc_start = 0l;
++static unsigned long __initdata prom_tce_alloc_end = 0l;
+ #endif
+ 
+ /* Platforms codes are now obsolete in the kernel. Now only used within this
+@@ -189,20 +189,20 @@ static unsigned long __initdata prom_tce
+ #define PLATFORM_POWERMAC	0x0400
+ #define PLATFORM_GENERIC	0x0500
+ 
+-static int __initdata of_platform;
++static int __initdata of_platform = 0;
+ 
+-static char __initdata prom_cmd_line[COMMAND_LINE_SIZE];
++static char __initdata prom_cmd_line[COMMAND_LINE_SIZE] = "";
+ 
+-static unsigned long __initdata alloc_top;
+-static unsigned long __initdata alloc_top_high;
+-static unsigned long __initdata alloc_bottom;
+-static unsigned long __initdata rmo_top;
+-static unsigned long __initdata ram_top;
++static unsigned long __initdata alloc_top = 0l;
++static unsigned long __initdata alloc_top_high = 0l;
++static unsigned long __initdata alloc_bottom = 0l;
++static unsigned long __initdata rmo_top = 0l;
++static unsigned long __initdata ram_top = 0l;
+ 
+-static struct mem_map_entry __initdata mem_reserve_map[MEM_RESERVE_MAP_SIZE];
+-static int __initdata mem_reserve_cnt;
++static struct mem_map_entry __initdata mem_reserve_map[MEM_RESERVE_MAP_SIZE] = {{0}};
++static int __initdata mem_reserve_cnt = 0;
+ 
+-static cell_t __initdata regbuf[1024];
++static cell_t __initdata regbuf[1024] = {0};
+ 
+ 
+ #define MAX_CPU_THREADS 2
+diff -urNp linux-2.6.20-rc6-mm3.org/arch/powerpc/mm/numa.c linux-2.6.20-rc6-mm3/arch/powerpc/mm/numa.c
+--- linux-2.6.20-rc6-mm3.org/arch/powerpc/mm/numa.c	2007-01-25 04:19:28.000000000 +0200
++++ linux-2.6.20-rc6-mm3/arch/powerpc/mm/numa.c	2007-01-31 22:19:30.000000000 +0200
+@@ -35,7 +35,7 @@ EXPORT_SYMBOL(numa_cpu_lookup_table);
+ EXPORT_SYMBOL(numa_cpumask_lookup_table);
+ EXPORT_SYMBOL(node_data);
+ 
+-static bootmem_data_t __initdata plat_node_bdata[MAX_NUMNODES];
++static bootmem_data_t __initdata plat_node_bdata[MAX_NUMNODES] = {{0}};
+ static int min_common_depth;
+ static int n_mem_addr_cells, n_mem_size_cells;
+ 
+diff -urNp linux-2.6.20-rc6-mm3.org/arch/powerpc/platforms/iseries/dt.c linux-2.6.20-rc6-mm3/arch/powerpc/platforms/iseries/dt.c
+--- linux-2.6.20-rc6-mm3.org/arch/powerpc/platforms/iseries/dt.c	2007-01-25 04:19:28.000000000 +0200
++++ linux-2.6.20-rc6-mm3/arch/powerpc/platforms/iseries/dt.c	2007-01-31 22:19:30.000000000 +0200
+@@ -61,7 +61,7 @@ struct iseries_flat_dt {
+ 	u64 reserve_map[2];
+ };
+ 
+-static void * __initdata dt_data;
++static void * __initdata dt_data = NULL;
  
  /*
-  * The R3000 TLB handler is simple.
-@@ -786,7 +786,7 @@ static void __init build_r3000_tlb_refil
-  * other one.To keep things simple, we first assume linear space,
-  * then we relocate it to the final handler layout as needed.
-  */
--static __initdata u32 final_handler[64];
-+static __initdata u32 final_handler[64] = {0};
+  * Putting these strings here keeps them out of the section
+diff -urNp linux-2.6.20-rc6-mm3.org/arch/powerpc/platforms/powermac/bootx_init.c linux-2.6.20-rc6-mm3/arch/powerpc/platforms/powermac/bootx_init.c
+--- linux-2.6.20-rc6-mm3.org/arch/powerpc/platforms/powermac/bootx_init.c	2007-01-25 04:19:28.000000000 +0200
++++ linux-2.6.20-rc6-mm3/arch/powerpc/platforms/powermac/bootx_init.c	2007-01-31 22:19:30.000000000 +0200
+@@ -32,11 +32,11 @@
  
- /*
-  * Hazards
-diff -urNp linux-2.6.20-rc6-mm3.org/arch/mips/mm/tlb-r4k.c linux-2.6.20-rc6-mm3/arch/mips/mm/tlb-r4k.c
---- linux-2.6.20-rc6-mm3.org/arch/mips/mm/tlb-r4k.c
-+++ linux-2.6.20-rc6-mm3/arch/mips/mm/tlb-r4k.c
-@@ -367,7 +367,7 @@ void __init add_wired_entry(unsigned lon
-  * lifetime of the system
-  */
+ extern void __start(unsigned long r3, unsigned long r4, unsigned long r5);
  
--static int temp_tlb_entry __initdata;
-+static int temp_tlb_entry __initdata = 0;
+-static unsigned long __initdata bootx_dt_strbase;
+-static unsigned long __initdata bootx_dt_strend;
+-static unsigned long __initdata bootx_node_chosen;
+-static boot_infos_t * __initdata bootx_info;
+-static char __initdata bootx_disp_path[256];
++static unsigned long __initdata bootx_dt_strbase = 0l;
++static unsigned long __initdata bootx_dt_strend = 0l;
++static unsigned long __initdata bootx_node_chosen = 0l;
++static boot_infos_t * __initdata bootx_info = NULL;
++static char __initdata bootx_disp_path[256] = {0};
  
- __init int add_temporary_entry(unsigned long entrylo0, unsigned long entrylo1,
- 			       unsigned long entryhi, unsigned long pagemask)
-diff -urNp linux-2.6.20-rc6-mm3.org/arch/mips/pci/fixup-malta.c linux-2.6.20-rc6-mm3/arch/mips/pci/fixup-malta.c
---- linux-2.6.20-rc6-mm3.org/arch/mips/pci/fixup-malta.c
-+++ linux-2.6.20-rc6-mm3/arch/mips/pci/fixup-malta.c
-@@ -8,7 +8,7 @@
- #define PCID		4
+ /* Is boot-info compatible ? */
+ #define BOOT_INFO_IS_COMPATIBLE(bi) \
+diff -urNp linux-2.6.20-rc6-mm3.org/arch/powerpc/xmon/xmon.c linux-2.6.20-rc6-mm3/arch/powerpc/xmon/xmon.c
+--- linux-2.6.20-rc6-mm3.org/arch/powerpc/xmon/xmon.c	2007-01-25 04:19:28.000000000 +0200
++++ linux-2.6.20-rc6-mm3/arch/powerpc/xmon/xmon.c	2007-01-31 22:19:30.000000000 +0200
+@@ -2632,7 +2632,7 @@ static int __init setup_xmon_sysrq(void)
+ __initcall(setup_xmon_sysrq);
+ #endif /* CONFIG_MAGIC_SYSRQ */
  
- /* This table is filled in by interrogating the PIIX4 chip */
--static char pci_irq[5] __initdata;
-+static char pci_irq[5] __initdata = {0};
+-int __initdata xmon_early, xmon_off;
++int __initdata xmon_early = 0, xmon_off = 0;
  
- static char irq_tab[][5] __initdata = {
- 	/*      INTA    INTB    INTC    INTD */
-diff -urNp linux-2.6.20-rc6-mm3.org/arch/mips/pmc-sierra/yosemite/smp.c linux-2.6.20-rc6-mm3/arch/mips/pmc-sierra/yosemite/smp.c
---- linux-2.6.20-rc6-mm3.org/arch/mips/pmc-sierra/yosemite/smp.c
-+++ linux-2.6.20-rc6-mm3/arch/mips/pmc-sierra/yosemite/smp.c
-@@ -9,11 +9,11 @@
- 
- static __initdata DEFINE_SPINLOCK(launch_lock);
- 
--static unsigned long secondary_sp __initdata;
--static unsigned long secondary_gp __initdata;
-+static unsigned long secondary_sp __initdata = 0l;
-+static unsigned long secondary_gp __initdata = 0l;
- 
- static unsigned char launchstack[LAUNCHSTACK_SIZE] __initdata
--	__attribute__((aligned(2 * sizeof(long))));
-+	__attribute__((aligned(2 * sizeof(long)))) = {0};
- 
- static void __init prom_smp_bootstrap(void)
+ static int __init early_parse_xmon(char *p)
  {
-diff -urNp linux-2.6.20-rc6-mm3.org/arch/mips/sgi-ip27/ip27-memory.c linux-2.6.20-rc6-mm3/arch/mips/sgi-ip27/ip27-memory.c
---- linux-2.6.20-rc6-mm3.org/arch/mips/sgi-ip27/ip27-memory.c
-+++ linux-2.6.20-rc6-mm3/arch/mips/sgi-ip27/ip27-memory.c
-@@ -34,9 +34,9 @@
- 
- #define SLOT_IGNORED		0xffff
- 
--static short __initdata slot_lastfilled_cache[MAX_COMPACT_NODES];
--static unsigned short __initdata slot_psize_cache[MAX_COMPACT_NODES][MAX_MEM_SLOTS];
--static struct bootmem_data __initdata plat_node_bdata[MAX_COMPACT_NODES];
-+static short __initdata slot_lastfilled_cache[MAX_COMPACT_NODES] = {0};
-+static unsigned short __initdata slot_psize_cache[MAX_COMPACT_NODES][MAX_MEM_SLOTS] = {0};
-+static struct bootmem_data __initdata plat_node_bdata[MAX_COMPACT_NODES] = {0};
- 
- struct node_data *__node_data[MAX_COMPACT_NODES];
- 
-diff -urNp linux-2.6.20-rc6-mm3.org/arch/mips/tx4938/toshiba_rbtx4938/setup.c linux-2.6.20-rc6-mm3/arch/mips/tx4938/toshiba_rbtx4938/setup.c
---- linux-2.6.20-rc6-mm3.org/arch/mips/tx4938/toshiba_rbtx4938/setup.c
-+++ linux-2.6.20-rc6-mm3/arch/mips/tx4938/toshiba_rbtx4938/setup.c
-@@ -63,8 +63,8 @@ struct tx4938_pcic_reg *pcicptrs[4] = {
- static struct {
- 	unsigned long base;
- 	unsigned long size;
--} phys_regions[16] __initdata;
--static int num_phys_regions  __initdata;
-+} phys_regions[16] __initdata = {{0}};
-+static int num_phys_regions  __initdata = 0;
- 
- #define PHYS_REGION_MINSIZE	0x10000
- 
