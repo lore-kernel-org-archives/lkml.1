@@ -1,72 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946645AbXBIQk1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946649AbXBIQkw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946645AbXBIQk1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Feb 2007 11:40:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946663AbXBIQk0
+	id S1946649AbXBIQkw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Feb 2007 11:40:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946666AbXBIQkh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Feb 2007 11:40:26 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:51750 "EHLO
+	Fri, 9 Feb 2007 11:40:37 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:51739 "EHLO
 	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1946645AbXBIQkQ (ORCPT
+	with ESMTP id S1946635AbXBIQkB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Feb 2007 11:40:16 -0500
+	Fri, 9 Feb 2007 11:40:01 -0500
 To: torvalds@linux-foundation.org
-Subject: [PATCH] trivial s2io annotations
-Cc: jgarzik@pobox.com, linux-kernel@vger.kernel.org
-Message-Id: <E1HFYnH-0006sQ-PP@ZenIV.linux.org.uk>
+Subject: [PATCH] [eo]hci_{read,write}l() does force casts to wrong type for no reason
+Cc: gregkh@suse.de, linux-kernel@vger.kernel.org
+Message-Id: <E1HFYn2-0006rQ-On@ZenIV.linux.org.uk>
 From: Al Viro <viro@ftp.linux.org.uk>
-Date: Fri, 09 Feb 2007 16:40:15 +0000
+Date: Fri, 09 Feb 2007 16:40:00 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+readl() et.al. expect iomem pointer, so WTF force-cast it to normal one???
+
 Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 ---
- drivers/net/s2io.c |    2 +-
- drivers/net/s2io.h |    6 +++---
- 2 files changed, 4 insertions(+), 4 deletions(-)
+ drivers/usb/host/ehci.h |   12 ++++++------
+ drivers/usb/host/ohci.h |   12 ++++++------
+ 2 files changed, 12 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/net/s2io.c b/drivers/net/s2io.c
-index 639fbc0..8646b64 100644
---- a/drivers/net/s2io.c
-+++ b/drivers/net/s2io.c
-@@ -7298,7 +7298,7 @@ static void update_L3L4_header(struct s2io_nic *sp, struct lro *lro)
+diff --git a/drivers/usb/host/ehci.h b/drivers/usb/host/ehci.h
+index ec0da03..46fa57a 100644
+--- a/drivers/usb/host/ehci.h
++++ b/drivers/usb/host/ehci.h
+@@ -677,10 +677,10 @@ static inline unsigned int ehci_readl (const struct ehci_hcd *ehci,
  {
- 	struct iphdr *ip = lro->iph;
- 	struct tcphdr *tcp = lro->tcph;
--	u16 nchk;
-+	__sum16 nchk;
- 	struct stat_block *statinfo = sp->mac_control.stats_info;
- 	DBG_PRINT(INFO_DBG,"%s: Been here...\n", __FUNCTION__);
+ #ifdef CONFIG_USB_EHCI_BIG_ENDIAN_MMIO
+ 	return ehci_big_endian_mmio(ehci) ?
+-		readl_be((__force u32 *)regs) :
+-		readl((__force u32 *)regs);
++		readl_be(regs) :
++		readl(regs);
+ #else
+-	return readl((__force u32 *)regs);
++	return readl(regs);
+ #endif
+ }
  
-diff --git a/drivers/net/s2io.h b/drivers/net/s2io.h
-index a5e1a51..0de0c65 100644
---- a/drivers/net/s2io.h
-+++ b/drivers/net/s2io.h
-@@ -727,12 +727,12 @@ struct lro {
- 	struct iphdr	*iph;
- 	struct tcphdr	*tcph;
- 	u32		tcp_next_seq;
--	u32		tcp_ack;
-+	__be32		tcp_ack;
- 	int		total_len;
- 	int		frags_len;
- 	int		sg_num;
- 	int		in_use;
--	u16		window;
-+	__be16		window;
- 	u32		cur_tsval;
- 	u32		cur_tsecr;
- 	u8		saw_ts;
-@@ -1005,7 +1005,7 @@ static int s2io_set_swapper(struct s2io_nic * sp);
- static void s2io_card_down(struct s2io_nic *nic);
- static int s2io_card_up(struct s2io_nic *nic);
- static int get_xena_rev_id(struct pci_dev *pdev);
--static int wait_for_cmd_complete(void *addr, u64 busy_bit);
-+static int wait_for_cmd_complete(void __iomem *addr, u64 busy_bit);
- static int s2io_add_isr(struct s2io_nic * sp);
- static void s2io_rem_isr(struct s2io_nic * sp);
+@@ -689,10 +689,10 @@ static inline void ehci_writel (const struct ehci_hcd *ehci,
+ {
+ #ifdef CONFIG_USB_EHCI_BIG_ENDIAN_MMIO
+ 	ehci_big_endian_mmio(ehci) ?
+-		writel_be(val, (__force u32 *)regs) :
+-		writel(val, (__force u32 *)regs);
++		writel_be(val, regs) :
++		writel(val, regs);
+ #else
+-	writel(val, (__force u32 *)regs);
++	writel(val, regs);
+ #endif
+ }
+ 
+diff --git a/drivers/usb/host/ohci.h b/drivers/usb/host/ohci.h
+index 0dafcda..c2b5ecf 100644
+--- a/drivers/usb/host/ohci.h
++++ b/drivers/usb/host/ohci.h
+@@ -507,10 +507,10 @@ static inline unsigned int _ohci_readl (const struct ohci_hcd *ohci,
+ {
+ #ifdef CONFIG_USB_OHCI_BIG_ENDIAN_MMIO
+ 	return big_endian_mmio(ohci) ?
+-		readl_be ((__force u32 *)regs) :
+-		readl ((__force u32 *)regs);
++		readl_be (regs) :
++		readl (regs);
+ #else
+-	return readl ((__force u32 *)regs);
++	return readl (regs);
+ #endif
+ }
+ 
+@@ -519,10 +519,10 @@ static inline void _ohci_writel (const struct ohci_hcd *ohci,
+ {
+ #ifdef CONFIG_USB_OHCI_BIG_ENDIAN_MMIO
+ 	big_endian_mmio(ohci) ?
+-		writel_be (val, (__force u32 *)regs) :
+-		writel (val, (__force u32 *)regs);
++		writel_be (val, regs) :
++		writel (val, regs);
+ #else
+-		writel (val, (__force u32 *)regs);
++		writel (val, regs);
+ #endif
+ }
  
 -- 
 1.5.0-rc2.GIT
+
 
