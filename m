@@ -1,68 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1945997AbXBICDx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946014AbXBICEF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1945997AbXBICDx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Feb 2007 21:03:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946014AbXBICDx
+	id S1946014AbXBICEF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Feb 2007 21:04:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946023AbXBICEF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Feb 2007 21:03:53 -0500
-Received: from nf-out-0910.google.com ([64.233.182.184]:50220 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1946012AbXBICDw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Feb 2007 21:03:52 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=SpTDe7Dit0xqbfd8anem3Pao3w9hwT0hcsMXdxdZKoEQV/8gMxAGtaaqIg5eBvqn/AYLrGW/v96WataGRxvZ0oZWzJB+O/spPIGh4onAROno9N/d+5yuCo5uGRm8jdyFXxkeSl9XRcZlR/IH8SZPq2BK+x8viJKEzDlclH4GPvk=
-Message-ID: <5c49b0ed0702081803o6d2ba99ct5703f76465c524f4@mail.gmail.com>
-Date: Thu, 8 Feb 2007 18:03:50 -0800
-From: "Nate Diller" <nate.diller@gmail.com>
-To: "Nick Piggin" <npiggin@suse.de>
-Subject: Re: [patch 1/3] fs: add an iovec iterator
-Cc: "Christoph Hellwig" <hch@infradead.org>,
-       "Linux Filesystems" <linux-fsdevel@vger.kernel.org>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-In-Reply-To: <20070209014626.GB17334@wotan.suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 8 Feb 2007 21:04:05 -0500
+Received: from ns2.suse.de ([195.135.220.15]:45037 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1946017AbXBICEE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Feb 2007 21:04:04 -0500
+Date: Fri, 9 Feb 2007 03:04:02 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Mark Fasheh <mark.fasheh@oracle.com>
+Cc: Linux Filesystems <linux-fsdevel@vger.kernel.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [rfc][patch 0/3] a faster buffered write deadlock fix?
+Message-ID: <20070209020402.GC17334@wotan.suse.de>
+References: <20070208105437.26443.35653.sendpatchset@linux.site> <20070209003801.GX14799@ca-server1.us.oracle.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20070208105437.26443.35653.sendpatchset@linux.site>
-	 <20070208105446.26443.35864.sendpatchset@linux.site>
-	 <20070208194953.GA4118@infradead.org>
-	 <20070209014626.GB17334@wotan.suse.de>
+In-Reply-To: <20070209003801.GX14799@ca-server1.us.oracle.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/8/07, Nick Piggin <npiggin@suse.de> wrote:
-> On Thu, Feb 08, 2007 at 07:49:53PM +0000, Christoph Hellwig wrote:
-> > On Thu, Feb 08, 2007 at 02:07:24PM +0100, Nick Piggin wrote:
-> > > Add an iterator data structure to operate over an iovec. Add usercopy
-> > > operators needed by generic_file_buffered_write, and convert that function
-> > > over.
-> >
-> > iovec_iterator is an awfully long and not very descriptive name.
-> > In past discussions we named this thingy iodesc and wanted to pass it
-> > down all the I/O path, including the file operations.
->
-> Hi Christoph,
->
-> Sure I think it would be a good idea to shorten the name. And yes, although
-> I just construct the iterator to pass into perform_write, I think it should
-> make sense to go much further up the call stack instead of passing all those
-> args around. iodesc seems like a fine name, so I'll use that unless
-> anyone objects.
+On Thu, Feb 08, 2007 at 04:38:01PM -0800, Mark Fasheh wrote:
+> On Thu, Feb 08, 2007 at 02:07:15PM +0100, Nick Piggin wrote:
+> > The problem is that the existing aops interface is crap. "correct, fast,
+> > compatible -- choose any 2"
+> 
+> Agreed. There's lots of problems with the interface (imho), but my biggest
+> two issues are the page lock being held on ->prepare_write() /
+> ->commit_write() and the fact that the file system only sees the write one
+> page at a time
+> 
+> 
+> > So I have finally finished a first slightly-working draft of my new aops
+> > op (perform_write) proposal. I would be interested to hear comments about
+> > it.  Most of my issues and concerns are in the patch headers themselves,
+> > so reply to them.
+> 
+> I like ->perform_write(). It allows the file system to make re-use of the
+> checks in the generic write path, but gives a maximum amount of information
+> about the overall operation to be done. There's an added advantage in that
+> some file systems (ocfs2 is one of these) want to be more careful about
+> ordering page locks, which should be much easier with it.
 
-i had a patch integrating the iodesc idea, but after some thought, had
-decided to call it struct file_io.  That name reflects the fact that
-it's doing I/O in arbitrary lengths with byte offsets, and struct
-file_io *fio contrasts well with struct bio (block_io).  I also had
-used the field ->nbytes instead of ->count, to clarify the difference
-between segment iterators, segment offsets, and absolute bytecount.
+Yeah, if possible I like a range based interface rather than page
+based. As you say it gives the most information with the least constraints.
 
-FYI, the patch is still in the works and would convert the whole file
-I/O stack to use the new structure.  I would like to base it off of
-this work as well if this makes it into -mm (as I think it should)
+> If this goes in, it could probably be helpful to me in some of the code I'm
+> currently writing which needs to be better about page lock / cluster lock
+> ordering and wants to see as much of the (allocating) writes as possible.
 
-NATE
+I think it would be important to have a non trivial user of this new API
+before it goes into mainline. It would be great if you could look at
+using it, after it passes some review.
+
+Thanks,
+Nick
