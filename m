@@ -1,40 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753105AbXBJKUs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753107AbXBJKXR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753105AbXBJKUs (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Feb 2007 05:20:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753106AbXBJKUs
+	id S1753107AbXBJKXR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Feb 2007 05:23:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753108AbXBJKXR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Feb 2007 05:20:48 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:45429 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753094AbXBJKUr (ORCPT
+	Sat, 10 Feb 2007 05:23:17 -0500
+Received: from mtagate3.de.ibm.com ([195.212.29.152]:27783 "EHLO
+	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753107AbXBJKXQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Feb 2007 05:20:47 -0500
-Subject: Re: [git patches] libata updates 1 of 3
-From: David Woodhouse <dwmw2@infradead.org>
-To: Markus Trippelsdorf <markus@trippelsdorf.de>
-Cc: Jeff Garzik <jeff@garzik.org>, linux-ide@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20070210054629.GA4395@gentoox2.trippelsdorf.de>
-References: <20070210010914.GA19717@havoc.gtf.org>
-	 <20070210054629.GA4395@gentoox2.trippelsdorf.de>
-Content-Type: text/plain
-Date: Sat, 10 Feb 2007 10:20:09 +0000
-Message-Id: <1171102809.29713.221.camel@pmac.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6.dwmw2.1) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sat, 10 Feb 2007 05:23:16 -0500
+Date: Sat, 10 Feb 2007 11:22:05 +0100
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Davide Libenzi <davidel@xmailserver.org>, ralf@linux-mips.org,
+       linux-mips@linux-mips.org
+Cc: David Woodhouse <dwmw2@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alexey Dobriyan <adobriyan@openvz.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ulrich Drepper <drepper@redhat.com>
+Subject: Re: -mm merge plans for 2.6.21
+Message-ID: <20070210102205.GB8145@osiris.boeblingen.de.ibm.com>
+References: <20070208150710.1324f6b4.akpm@linux-foundation.org> <1171042535.29713.96.camel@pmac.infradead.org> <20070209134516.2367a7aa.akpm@linux-foundation.org> <1171058342.29713.136.camel@pmac.infradead.org> <Pine.LNX.4.64.0702091442230.2786@alien.or.mcafeemobile.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0702091442230.2786@alien.or.mcafeemobile.com>
+User-Agent: mutt-ng/devel-r804 (Linux)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-02-10 at 06:46 +0100, Markus Trippelsdorf wrote:
->  sata_via 0000:00:0f.0 : failed to iomap PCI BAR 0
+On Fri, Feb 09, 2007 at 02:50:12PM -0800, Davide Libenzi wrote:
+> On Fri, 9 Feb 2007, David Woodhouse wrote:
+> 
+> > On Fri, 2007-02-09 at 13:45 -0800, Andrew Morton wrote:
+> > > > I would strongly recommend that in the general case, you don't merge new
+> > > > system calls unless the corresponding compat_ system call is
+> > > > implemented.
+> > > 
+> > > Good point. 
+> > 
+> > It's a _damn_ good point, but I see we went ahead and merged
+> > sys_epoll_pwait without it anyway -- despite the fact that it's
+> > include/linux/eventpoll.h which contains the example of why we should
+> > think first :)
+> > 
+> > I think I even threw together an untested implementation of
+> > compat_sys_epoll_pwait() at one point to assist with that task, but it
+> > didn't seem to help much.
+> 
+> Damn! I always forget. Doing it right now ...
 
-Zero probably isn't allowed any more. We have to use PCI BAR 1 and
-upwards only or the poor driver authors will get confused :)
-
--- 
-dwmw2
-
+Which remembers me that I think that MIPS is using the non-compat version
+of sys_epoll_pwait for compat syscalls. But maybe MIPS doesn't need a compat
+syscall for some reason. Dunno.
