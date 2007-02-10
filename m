@@ -1,53 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753040AbXBJJez@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752191AbXBJJf4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753040AbXBJJez (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Feb 2007 04:34:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753041AbXBJJez
+	id S1752191AbXBJJf4 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Feb 2007 04:35:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752210AbXBJJf4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Feb 2007 04:34:55 -0500
-Received: from ns01.unsolicited.net ([69.10.132.115]:3970 "EHLO
-	ns01.unsolicited.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753040AbXBJJey convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Feb 2007 04:34:54 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=simple; s=one; d=unsolicited.net;
-	h=Message-ID:Date:From:User-Agent:MIME-Version:To:CC:Subject:References:In-Reply-To:X-Enigmail-Version:Content-Type:Content-Transfer-Encoding;
-	b=C9A9l8PG5RJUpbqgVwQ3wxVZi/Aj0/ufPSC+aRxT7K3YfjZerfLhH4cLM9RsxuRs2q63FlkjSEQ4K0qq71gnod4RHXJru0xCKIiLcBrEwaFmkTwTpy7o2nT1N6iZcyNBtG6K6WI2ZIRmfrCEqgg63O/XIg7I79KhWBlJD8peQ7U=;
-Message-ID: <45CD91B6.5000709@unsolicited.net>
-Date: Sat, 10 Feb 2007 09:34:46 +0000
-From: David R <david@unsolicited.net>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061206)
+	Sat, 10 Feb 2007 04:35:56 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:60845 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752191AbXBJJfz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Feb 2007 04:35:55 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: nigel@nigel.suspend2.net
+Subject: Re: [PATCH] Re: NAK new drivers without proper power management?
+Date: Sat, 10 Feb 2007 10:34:03 +0100
+User-Agent: KMail/1.9.5
+Cc: Robert Hancock <hancockr@shaw.ca>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Jeff Garzik <jeff@garzik.org>, Pavel Machek <pavel@ucw.cz>,
+       pm list <linux-pm@lists.osdl.org>
+References: <fa.xSKPgY66Q+DPCZ1pszFFfdrJ0To@ifi.uio.no> <45CD24F6.8090107@shaw.ca> <1171076554.10170.5.camel@nigel.suspend2.net>
+In-Reply-To: <1171076554.10170.5.camel@nigel.suspend2.net>
 MIME-Version: 1.0
-To: Robert Hancock <hancockr@shaw.ca>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: sata_nv - ADMA issues with 2.6.20
-References: <fa.uoZWqSFxPjjB7zobQOwk/2zqG5A@ifi.uio.no> <45CD20DB.9030808@shaw.ca>
-In-Reply-To: <45CD20DB.9030808@shaw.ca>
-X-Enigmail-Version: 0.94.0.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200702101034.04410.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert Hancock wrote:
+Hi,
 
-> So it was tag 0 that timed out , and according to the CPBs the
-> controller indeed believes the command is still outstanding, i.e. we
-> didn't lose an interrupt. I'm suspicious of the fact that only one of
-> two identical drives produced this error.. some kind of hardware-related
-> problem perhaps? 30 seconds is an awfully long time for a drive to take
-
-That was my first thought. Maybe the drive has some fault that only shows up
-with NCQ in use. I'll keep an eye on it.
-
-> You can also try disabling NCQ without disabling ADMA and see what that
-> does:
+On Saturday, 10 February 2007 04:02, Nigel Cunningham wrote:
+> Hi.
 > 
-> echo 1 > /sys/block/sdX/device/queue_depth
+> On Fri, 2007-02-09 at 19:50 -0600, Robert Hancock wrote:
+> > It also kind of bothers me that if a driver has no suspend/resume 
+> > functions, and you suspend and resume the system, we don't complain 
+> > about it even though there's a very good chance that device is not going 
+> > to function properly. How about something in dmesg like:
+> > 
+> > Warning: driver for device XXXX has no suspend or resume support.
+> > Device may not function properly after resume.
+> > 
+> > so that users know who to complain to. Maybe there are some devices that 
+> > truly don't need any handling for suspend, but if so I suspect the 
+> > number of those is small enough that adding empty functions would be a 
+> > good-enough solution.
+> 
+> Here's my current version of a patch to do this, if anyone wants to try
+> it out. It dumps stack with the warning to make it easier to see what
+> the source of the message is:
 
-I'll give this a go when I next reboot.
+I have an alternative idea.
 
-Thanks
-David
+There is a test mode of swsusp that's triggered with
+"echo test > /sys/power/disk" and "echo disk > /sys/power/state".  We can make
+it set a switch that will be used to trigger the warnings in the core.
 
+This way the warnings will only appear in the user's dmesg in the test mode
+and not always.
 
+Would that be acceptable?
+
+Rafael
