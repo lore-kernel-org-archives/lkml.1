@@ -1,50 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752951AbXBJD1Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752952AbXBJDfG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752951AbXBJD1Z (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Feb 2007 22:27:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752953AbXBJD1Z
+	id S1752952AbXBJDfG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Feb 2007 22:35:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752959AbXBJDfF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Feb 2007 22:27:25 -0500
-Received: from gateway.insightbb.com ([74.128.0.19]:47749 "EHLO
-	asav00.insightbb.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752950AbXBJD1Y convert rfc822-to-8bit (ORCPT
+	Fri, 9 Feb 2007 22:35:05 -0500
+Received: from cavan.codon.org.uk ([217.147.92.49]:54380 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752958AbXBJDfB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Feb 2007 22:27:24 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Aj0KAJTKzEVKhRO4UGdsb2JhbACHIYcpAQEqkWwBAQE
-From: Dmitry Torokhov <dtor@insightbb.com>
-To: nigel@nigel.suspend2.net
-Subject: Re: NAK new drivers without proper power management?
-Date: Fri, 9 Feb 2007 22:27:21 -0500
-User-Agent: KMail/1.9.3
-Cc: Robert Hancock <hancockr@shaw.ca>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Jeff Garzik <jeff@garzik.org>
-References: <fa.xSKPgY66Q+DPCZ1pszFFfdrJ0To@ifi.uio.no> <45CD24F6.8090107@shaw.ca> <1171073149.3863.4.camel@nigel.suspend2.net>
-In-Reply-To: <1171073149.3863.4.camel@nigel.suspend2.net>
+	Fri, 9 Feb 2007 22:35:01 -0500
+Date: Sat, 10 Feb 2007 03:34:24 +0000
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+Cc: Pavel Machek <pavel@ucw.cz>, Len Brown <lenb@kernel.org>,
+       Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
+       tony.luck@intel.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-acpi@vger.kernel.org
+Message-ID: <20070210033424.GA16490@srcf.ucam.org>
+References: <200702071418.51058.lenb@kernel.org> <20070209230928.GD3949@ucw.cz> <20070209172410.e2c4566b.kristen.c.accardi@intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200702092227.22283.dtor@insightbb.com>
+In-Reply-To: <20070209172410.e2c4566b.kristen.c.accardi@intel.com>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+Subject: Re: [GIT PATCH] ACPI patches for 2.6.21
+X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
+X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Nigel,
+On Fri, Feb 09, 2007 at 05:24:10PM -0800, Kristen Carlson Accardi wrote:
 
-On Friday 09 February 2007 21:05, Nigel Cunningham wrote:
-> [   17.684475] Device driver serio0 lacks bus and class support for being resumed.
-> [   17.684724] Device driver serio1 lacks bus and class support for being resumed.
-> [   17.684874] Device driver psaux lacks bus and class support for being suspended or resumed.
-> [   17.685015] Device driver serio2 lacks bus and class support for being resumed.
-> [   18.373576] Device driver serio3 lacks bus and class support for being resumed.
-> [   18.375666] Device driver serio4 lacks bus and class support for being resumed.
-> 
+> The user interface for the Bay driver is via sysfs - it is a platform
+> driver
 
-You should probably only warn if driver does not have resume method - not
-having suspend is quite valid if driver is able to restore state at resume
-without explicitely saving anything at suspend time.
+Though, ideally, in the long run it'll be tied into the PATA/SATA 
+interface that it's associated with. That involves a little more magic, 
+though :)
 
 -- 
-Dmitry
+Matthew Garrett | mjg59@srcf.ucam.org
