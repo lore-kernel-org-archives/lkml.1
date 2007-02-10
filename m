@@ -1,50 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752975AbXBJDpo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753000AbXBJESK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752975AbXBJDpo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Feb 2007 22:45:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752976AbXBJDpo
+	id S1753000AbXBJESK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Feb 2007 23:18:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753001AbXBJESK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Feb 2007 22:45:44 -0500
-Received: from mail5.sea5.speakeasy.net ([69.17.117.7]:52480 "EHLO
-	mail5.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752975AbXBJDpo (ORCPT
+	Fri, 9 Feb 2007 23:18:10 -0500
+Received: from nigel.suspend2.net ([203.171.70.205]:34831 "EHLO
+	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753000AbXBJESJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Feb 2007 22:45:44 -0500
-Date: Fri, 9 Feb 2007 22:45:41 -0500 (EST)
-From: James Morris <jmorris@namei.org>
-X-X-Sender: jmorris@d.namei
-To: Rusty Russell <rusty@rustcorp.com.au>
-cc: lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andi Kleen <ak@muc.de>, Andrew Morton <akpm@linux-foundation.org>,
-       virtualization <virtualization@lists.osdl.org>
-Subject: Re: [PATCH 4 of 7]  lguest: Config and headers
-In-Reply-To: <1171064515.15356.10.camel@localhost.localdomain>
-Message-ID: <Pine.LNX.4.64.0702092243170.13855@d.namei>
-References: <1171033146.2718.157.camel@localhost.localdomain> 
- <1171033383.2718.163.camel@localhost.localdomain> 
- <1171033436.2718.165.camel@localhost.localdomain> 
- <1171033484.2718.167.camel@localhost.localdomain> 
- <1171033741.2718.172.camel@localhost.localdomain>  <Pine.LNX.4.64.0702091304090.9927@d.namei>
- <1171064515.15356.10.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 9 Feb 2007 23:18:09 -0500
+Subject: Re: NAK new drivers without proper power management?
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
+Reply-To: nigel@nigel.suspend2.net
+To: Dmitry Torokhov <dtor@insightbb.com>
+Cc: Robert Hancock <hancockr@shaw.ca>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Jeff Garzik <jeff@garzik.org>
+In-Reply-To: <200702092227.22283.dtor@insightbb.com>
+References: <fa.xSKPgY66Q+DPCZ1pszFFfdrJ0To@ifi.uio.no>
+	 <45CD24F6.8090107@shaw.ca> <1171073149.3863.4.camel@nigel.suspend2.net>
+	 <200702092227.22283.dtor@insightbb.com>
+Content-Type: text/plain
+Date: Sat, 10 Feb 2007 15:18:05 +1100
+Message-Id: <1171081085.10170.7.camel@nigel.suspend2.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 10 Feb 2007, Rusty Russell wrote:
+Hi Dmitry!
 
-> Well it was the use of get_order() which triggered Andi's alarm bells,
-> so I went back to deriving it.  This code is correct, however.
+On Fri, 2007-02-09 at 22:27 -0500, Dmitry Torokhov wrote:
+> Hi Nigel,
+> 
+> On Friday 09 February 2007 21:05, Nigel Cunningham wrote:
+> > [   17.684475] Device driver serio0 lacks bus and class support for being resumed.
+> > [   17.684724] Device driver serio1 lacks bus and class support for being resumed.
+> > [   17.684874] Device driver psaux lacks bus and class support for being suspended or resumed.
+> > [   17.685015] Device driver serio2 lacks bus and class support for being resumed.
+> > [   18.373576] Device driver serio3 lacks bus and class support for being resumed.
+> > [   18.375666] Device driver serio4 lacks bus and class support for being resumed.
+> > 
+> 
+> You should probably only warn if driver does not have resume method - not
+> having suspend is quite valid if driver is able to restore state at resume
+> without explicitely saving anything at suspend time.
 
-+       hype_pages = alloc_pages(GFP_KERNEL|__GFP_ZERO, HYPERVISOR_MAP_ORDER);
-+       if (!hype_pages)
-+               return -ENOMEM;
+Can do. Will do :)
 
-This will try and allocate 2^16 pages.  I guess we need a 
-HYPERVISOR_PAGE_ORDER ?
+Nigel
 
-
-- James
--- 
-James Morris
-<jmorris@namei.org>
