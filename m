@@ -1,46 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753054AbXBJElE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753065AbXBJEm7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753054AbXBJElE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Feb 2007 23:41:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753058AbXBJElE
+	id S1753065AbXBJEm7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Feb 2007 23:42:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753066AbXBJEm7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Feb 2007 23:41:04 -0500
-Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:28116 "EHLO
-	pd2mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753053AbXBJElB (ORCPT
+	Fri, 9 Feb 2007 23:42:59 -0500
+Received: from nigel.suspend2.net ([203.171.70.205]:38999 "EHLO
+	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753064AbXBJEm7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Feb 2007 23:41:01 -0500
-Date: Fri, 09 Feb 2007 22:40:58 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: forcedeth problems on 2.6.20-rc6-mm3
-In-reply-to: <45CBE30D.5030006@nvidia.com>
-To: Ayaz Abdulla <aabdulla@nvidia.com>
-Cc: David Ford <firefighterblu3@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
-Message-id: <45CD4CDA.7050600@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <45C6BCE5.90103@shaw.ca>
- <20070204213603.a5bce839.akpm@linux-foundation.org> <45C6C531.20508@shaw.ca>
- <20070204221741.63152cbe.akpm@linux-foundation.org>
- <523e55a00702081326j43de05e3hdd8cf35e946eae9@mail.gmail.com>
- <45CBE30D.5030006@nvidia.com>
-User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
+	Fri, 9 Feb 2007 23:42:59 -0500
+Subject: Re: NAK new drivers without proper power management?
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
+Reply-To: nigel@nigel.suspend2.net
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070210034210.GB16490@srcf.ucam.org>
+References: <1171058269.1484.64.camel@nigel.suspend2.net>
+	 <20070210034210.GB16490@srcf.ucam.org>
+Content-Type: text/plain
+Date: Sat, 10 Feb 2007 15:42:56 +1100
+Message-Id: <1171082576.10170.20.camel@nigel.suspend2.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ayaz Abdulla wrote:
-> For all those who are having issues, please try out the attached patch.
+Hi.
+
+On Sat, 2007-02-10 at 03:42 +0000, Matthew Garrett wrote:
+> On Sat, Feb 10, 2007 at 08:57:49AM +1100, Nigel Cunningham wrote:
 > 
-> Ayaz
+> > Can we start to NAK new drivers that don't have proper power management
+> > implemented? There really is no excuse for writing a new driver and not
+> > putting .suspend and .resume methods in anymore, is there?
+> 
+> The PCI layer is able to deal with drivers that have no PM methods in 
+> the most simple case.
 
-Seems to solve the problem for me (not heavily tested, but certainly 
-isn't totally dead as it was before).
+Yeah. I suppose we could use a pm_safe bit flag in struct device_driver
+and/or struct pci_driver. I have other things to do right now, but will
+seek to understand the relationship between those structs better later.
 
--- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
+Regards,
+
+Nigel
 
