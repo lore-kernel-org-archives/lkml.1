@@ -1,363 +1,167 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752893AbXBJCcY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752912AbXBJDCi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752893AbXBJCcY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Feb 2007 21:32:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752903AbXBJCcY
+	id S1752912AbXBJDCi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Feb 2007 22:02:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752918AbXBJDCi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Feb 2007 21:32:24 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:32982 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752893AbXBJCb7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Feb 2007 21:31:59 -0500
-From: Nick Piggin <npiggin@suse.de>
-To: Andrew Morton <akpm@osdl.org>
-Cc: Hugh Dickins <hugh@veritas.com>, Nick Piggin <npiggin@suse.de>,
-       Linux Memory Management <linux-mm@kvack.org>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Message-Id: <20070210001915.21921.48637.sendpatchset@linux.site>
-In-Reply-To: <20070210001844.21921.48605.sendpatchset@linux.site>
-References: <20070210001844.21921.48605.sendpatchset@linux.site>
-Subject: [patch 3/3] mm: fix PageUptodate memorder
-Date: Sat, 10 Feb 2007 03:31:53 +0100 (CET)
+	Fri, 9 Feb 2007 22:02:38 -0500
+Received: from nigel.suspend2.net ([203.171.70.205]:37616 "EHLO
+	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752912AbXBJDCh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Feb 2007 22:02:37 -0500
+Subject: [PATCH] Re: NAK new drivers without proper power management?
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
+Reply-To: nigel@nigel.suspend2.net
+To: Robert Hancock <hancockr@shaw.ca>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, Jeff Garzik <jeff@garzik.org>
+In-Reply-To: <45CD24F6.8090107@shaw.ca>
+References: <fa.xSKPgY66Q+DPCZ1pszFFfdrJ0To@ifi.uio.no>
+	 <fa.FzHdYYYH5Ru57c8/yRxLylpH0Kk@ifi.uio.no>
+	 <fa.DuG12yQo+RR4jIjJTnoOwtKM0Ao@ifi.uio.no>
+	 <fa.Jy0FJQtASvVEpsy8Q96uoHtyEVA@ifi.uio.no>  <45CD24F6.8090107@shaw.ca>
+Content-Type: text/plain
+Date: Sat, 10 Feb 2007 14:02:34 +1100
+Message-Id: <1171076554.10170.5.camel@nigel.suspend2.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-After running SetPageUptodate, preceeding stores to the page contents to
-actually bring it uptodate may not be ordered with the store to set the page
-uptodate.
+Hi.
 
-Therefore, another CPU which checks PageUptodate is true, then reads the
-page contents can get stale data.
+On Fri, 2007-02-09 at 19:50 -0600, Robert Hancock wrote:
+> It also kind of bothers me that if a driver has no suspend/resume 
+> functions, and you suspend and resume the system, we don't complain 
+> about it even though there's a very good chance that device is not going 
+> to function properly. How about something in dmesg like:
+> 
+> Warning: driver for device XXXX has no suspend or resume support.
+> Device may not function properly after resume.
+> 
+> so that users know who to complain to. Maybe there are some devices that 
+> truly don't need any handling for suspend, but if so I suspect the 
+> number of those is small enough that adding empty functions would be a 
+> good-enough solution.
 
-Fix this by ensuring SetPageUptodate is always called with the page locked
-(except in the case of a new page that cannot be visible to other CPUs), and
-requiring PageUptodate be checked only when the page is locked.
+Here's my current version of a patch to do this, if anyone wants to try
+it out. It dumps stack with the warning to make it easier to see what
+the source of the message is:
 
-To facilitate lockless checks, SetPageUptodate contains an smp_wmb to order
-preceeding stores before the store to page flags, and a new PageUptodate_NoLock
-is introduced, which issues a smp_rmb after the page flags are loaded for the
-test.
-
-I'm still not sure that a DMA memory barrier is not required, however I think
-the logical place to put such a barrier would be in the IO completion routines,
-when they come back to tell us that they have succeeded. (Help? Anyone?)
-
-One thing I like about it is that it unifies the anonymous page handling
-with the rest of the page management, by marking anon pages as uptodate
-when they _are_ uptodate, rather than when our implementation requires
-that they be marked as such. Doing this let me get rid of the smp_wmb's
-in the page copying functions, which were specially added for anonymous
-pages for a closely related issue, always vaguely troubled me.
-
-Convert core code and some filesystems to use PageUptodate_NoLock, just for
-reference (a more complete patch follows).
-
-Signed-off-by: Nick Piggin <npiggin@suse.de>
-
- fs/ext2/dir.c              |    2 -
- fs/namei.c                 |    2 -
- fs/partitions/check.c      |    2 -
- fs/splice.c                |    4 +--
- include/linux/highmem.h    |    4 ---
- include/linux/page-flags.h |   57 +++++++++++++++++++++++++++++++++++++++++----
- mm/filemap.c               |   28 +++++++++++++++-------
- mm/hugetlb.c               |    2 +
- mm/memory.c                |    9 +++----
- mm/page_io.c               |    2 -
- mm/swap_state.c            |    2 -
- mm/swapfile.c              |    2 -
- 12 files changed, 86 insertions(+), 30 deletions(-)
-
-Index: linux-2.6/include/linux/highmem.h
-===================================================================
---- linux-2.6.orig/include/linux/highmem.h
-+++ linux-2.6/include/linux/highmem.h
-@@ -57,8 +57,6 @@ static inline void clear_user_highpage(s
- 	void *addr = kmap_atomic(page, KM_USER0);
- 	clear_user_page(addr, vaddr, page);
- 	kunmap_atomic(addr, KM_USER0);
--	/* Make sure this page is cleared on other CPU's too before using it */
--	smp_wmb();
- }
- 
- #ifndef __HAVE_ARCH_ALLOC_ZEROED_USER_HIGHPAGE
-@@ -108,8 +106,6 @@ static inline void copy_user_highpage(st
- 	copy_user_page(vto, vfrom, vaddr, to);
- 	kunmap_atomic(vfrom, KM_USER0);
- 	kunmap_atomic(vto, KM_USER1);
--	/* Make sure this page is cleared on other CPU's too before using it */
--	smp_wmb();
- }
- 
- #endif
-Index: linux-2.6/include/linux/page-flags.h
-===================================================================
---- linux-2.6.orig/include/linux/page-flags.h
-+++ linux-2.6/include/linux/page-flags.h
-@@ -126,16 +126,60 @@
- #define ClearPageReferenced(page)	clear_bit(PG_referenced, &(page)->flags)
- #define TestClearPageReferenced(page) test_and_clear_bit(PG_referenced, &(page)->flags)
- 
--#define PageUptodate(page)	test_bit(PG_uptodate, &(page)->flags)
--#ifdef CONFIG_S390
-+static inline int PageUptodate(struct page *page)
-+{
-+	WARN_ON(!PageLocked(page));
-+	return test_bit(PG_uptodate, &(page)->flags);
-+}
-+
-+/*
-+ * PageUptodate to be used when not holding the page lock.
-+ */
-+static inline int PageUptodate_NoLock(struct page *page)
-+{
-+	int ret = test_bit(PG_uptodate, &(page)->flags);
-+
-+	/*
-+	 * Must ensure that the data we read out of the page is loaded
-+	 * _after_ we've loaded page->flags and found that it is uptodate.
-+	 * See SetPageUptodate() for the other side of the story.
-+	 */
-+	if (ret)
-+		smp_rmb();
-+
-+	return ret;
-+}
-+
- static inline void SetPageUptodate(struct page *page)
- {
-+	WARN_ON(!PageLocked(page));
-+#ifdef CONFIG_S390
- 	if (!test_and_set_bit(PG_uptodate, &page->flags))
- 		page_test_and_clear_dirty(page);
--}
- #else
--#define SetPageUptodate(page)	set_bit(PG_uptodate, &(page)->flags)
-+	/*
-+	 * Memory barrier must be issued before setting the PG_uptodate bit,
-+	 * so all previous writes that served to bring the page uptodate are
-+	 * visible before PageUptodate becomes true.
-+	 *
-+	 * S390 is guaranteed to have a barrier in the test_and_set operation
-+	 * (see Documentation/atomic_ops.txt).
-+	 *
-+	 * This memory barrier should not need to provide ordering against
-+	 * DMA writes into the page, because the IO completion should really
-+	 * be doing that.
-+	 */
-+	smp_wmb();
-+	set_bit(PG_uptodate, &(page)->flags);
- #endif
-+}
-+
-+static inline void SetNewPageUptodate(struct page *page)
-+{
-+	smp_wmb();
-+	__set_bit(PG_uptodate, &(page)->flags);
-+}
-+
- #define ClearPageUptodate(page)	clear_bit(PG_uptodate, &(page)->flags)
- 
- #define PageDirty(page)		test_bit(PG_dirty, &(page)->flags)
-Index: linux-2.6/mm/hugetlb.c
-===================================================================
---- linux-2.6.orig/mm/hugetlb.c
-+++ linux-2.6/mm/hugetlb.c
-@@ -443,6 +443,7 @@ static int hugetlb_cow(struct mm_struct 
- 
- 	spin_unlock(&mm->page_table_lock);
- 	copy_huge_page(new_page, old_page, address, vma);
-+	SetNewPageUptodate(new_page);
- 	spin_lock(&mm->page_table_lock);
- 
- 	ptep = huge_pte_offset(mm, address & HPAGE_MASK);
-@@ -506,6 +507,7 @@ retry:
- 		} else
- 			lock_page(page);
+ drivers/base/core.c       |   25 +++++++++++++++++++++++++
+ drivers/pci/pci-driver.c  |    6 ++++++
+ drivers/usb/core/driver.c |    5 +++++
+ include/linux/device.h    |    1 +
+ 4 files changed, 37 insertions(+)
+diff -ruNp 920-report-no-pm-support.patch-old/drivers/base/core.c 920-report-no-pm-support.patch-new/drivers/base/core.c
+--- 920-report-no-pm-support.patch-old/drivers/base/core.c	2007-02-06 14:48:31.000000000 +1100
++++ 920-report-no-pm-support.patch-new/drivers/base/core.c	2007-02-10 13:36:33.000000000 +1100
+@@ -552,6 +552,30 @@ int device_add(struct device *dev)
+ 				class_intf->add_dev(dev, class_intf);
+ 		up(&dev->class->sem);
  	}
-+	SetNewPageUptodate(page);
++
++#ifdef CONFIG_PM
++	{
++	int nosusp = 0, nores = 0;
++
++	if (!((dev->class && dev->class->suspend) ||
++	      (dev->bus && (dev->bus->suspend || dev->bus->suspend_late))))
++		nosusp = 1;
++
++	if (!((dev->class && dev->class->resume) ||
++	      (dev->bus && (dev->bus->resume || dev->bus->resume_early))))
++		nores = 1;
++
++	if ((nosusp || nores) && !dev->pm_safe) {
++		printk("Device driver %s lacks bus and class support for "
++				"being %s.\n",
++			kobject_name(&dev->kobj),
++			nosusp ? (nores ? "suspended or resumed" :
++				"resumed") : "suspended");
++		dump_stack();
++	}
++	}
++#endif
++
+  Done:
+  	kfree(class_name);
+ 	put_device(dev);
+@@ -851,6 +875,7 @@ struct device *device_create(struct clas
+ 	dev->class = class;
+ 	dev->parent = parent;
+ 	dev->release = device_create_release;
++	dev->pm_safe = 1;
  
- 	spin_lock(&mm->page_table_lock);
- 	size = i_size_read(mapping->host) >> HPAGE_SHIFT;
-Index: linux-2.6/mm/memory.c
-===================================================================
---- linux-2.6.orig/mm/memory.c
-+++ linux-2.6/mm/memory.c
-@@ -1463,10 +1463,8 @@ static inline void cow_user_page(struct 
- 			memset(kaddr, 0, PAGE_SIZE);
- 		kunmap_atomic(kaddr, KM_USER0);
- 		flush_dcache_page(dst);
--		return;
--
--	}
--	copy_user_highpage(dst, src, va, vma);
-+	} else
-+		copy_user_highpage(dst, src, va, vma);
+ 	va_start(args, fmt);
+ 	vsnprintf(dev->bus_id, BUS_ID_SIZE, fmt, args);
+diff -ruNp 920-report-no-pm-support.patch-old/drivers/pci/pci-driver.c 920-report-no-pm-support.patch-new/drivers/pci/pci-driver.c
+--- 920-report-no-pm-support.patch-old/drivers/pci/pci-driver.c	2007-02-06 14:48:44.000000000 +1100
++++ 920-report-no-pm-support.patch-new/drivers/pci/pci-driver.c	2007-02-10 14:00:39.000000000 +1100
+@@ -449,6 +449,12 @@ int __pci_register_driver(struct pci_dri
+ 	if (error)
+ 		driver_unregister(&drv->driver);
+ 
++	if (!drv->suspend || !drv->resume)
++		printk("PCI driver %s lacks driver specific %s support.\n",
++				drv->name,
++				!drv->suspend ? (drv->resume ? "suspend" :
++					"suspend and resume") :	"resume");
++
+ 	return error;
  }
  
- /*
-@@ -1579,6 +1577,7 @@ gotten:
- 			goto oom;
- 		cow_user_page(new_page, old_page, address, vma);
- 	}
-+	SetNewPageUptodate(new_page);
+diff -ruNp 920-report-no-pm-support.patch-old/drivers/usb/core/driver.c 920-report-no-pm-support.patch-new/drivers/usb/core/driver.c
+--- 920-report-no-pm-support.patch-old/drivers/usb/core/driver.c	2007-02-06 14:48:47.000000000 +1100
++++ 920-report-no-pm-support.patch-new/drivers/usb/core/driver.c	2007-02-10 12:32:57.000000000 +1100
+@@ -709,6 +709,11 @@ int usb_register_device_driver(struct us
+ 		pr_info("%s: registered new device driver %s\n",
+ 			usbcore_name, new_udriver->name);
+ 		usbfs_update_special();
++		if (!new_udriver->suspend || !new_udriver->resume)
++			printk("USB driver %s lacks %s support.\n",
++				new_udriver->name, !new_udriver->suspend ?
++				(new_udriver->resume ? "suspend" :
++				 "suspend and resume") : "resume");
+ 	} else {
+ 		printk(KERN_ERR "%s: error %d registering device "
+ 			"	driver %s\n",
+diff -ruNp 920-report-no-pm-support.patch-old/include/linux/device.h 920-report-no-pm-support.patch-new/include/linux/device.h
+--- 920-report-no-pm-support.patch-old/include/linux/device.h	2007-02-06 14:48:56.000000000 +1100
++++ 920-report-no-pm-support.patch-new/include/linux/device.h	2007-02-10 13:36:01.000000000 +1100
+@@ -356,6 +356,7 @@ struct device {
+ 	struct kobject kobj;
+ 	char	bus_id[BUS_ID_SIZE];	/* position on parent bus */
+ 	unsigned		is_registered:1;
++	unsigned		pm_safe:1; /* No suspend/resume fns ok? */
+ 	struct device_attribute uevent_attr;
+ 	struct device_attribute *devt_attr;
  
- 	/*
- 	 * Re-check the pte - we dropped the lock
-@@ -2097,6 +2096,7 @@ static int do_anonymous_page(struct mm_s
- 		page = alloc_zeroed_user_highpage(vma, address);
- 		if (!page)
- 			goto oom;
-+		SetNewPageUptodate(page);
  
- 		entry = mk_pte(page, vma->vm_page_prot);
- 		entry = maybe_mkwrite(pte_mkdirty(entry), vma);
-@@ -2203,6 +2203,7 @@ retry:
- 			copy_user_highpage(page, new_page, address, vma);
- 			page_cache_release(new_page);
- 			new_page = page;
-+			SetNewPageUptodate(new_page);
- 			anon = 1;
- 
- 		} else {
-Index: linux-2.6/mm/filemap.c
-===================================================================
---- linux-2.6.orig/mm/filemap.c
-+++ linux-2.6/mm/filemap.c
-@@ -932,7 +932,7 @@ find_page:
- 			handle_ra_miss(mapping, &ra, index);
- 			goto no_cached_page;
- 		}
--		if (!PageUptodate(page))
-+		if (!PageUptodate_NoLock(page))
- 			goto page_not_up_to_date;
- page_ok:
- 
-@@ -1000,7 +1000,7 @@ readpage:
- 			goto readpage_error;
- 		}
- 
--		if (!PageUptodate(page)) {
-+		if (!PageUptodate_NoLock(page)) {
- 			lock_page(page);
- 			if (!PageUptodate(page)) {
- 				if (page->mapping == NULL) {
-@@ -1417,7 +1417,7 @@ retry_find:
- 	 * Ok, found a page in the page cache, now we need to check
- 	 * that it's up-to-date.
- 	 */
--	if (!PageUptodate(page))
-+	if (!PageUptodate_NoLock(page))
- 		goto page_not_uptodate;
- 
- success:
-@@ -1484,7 +1484,7 @@ page_not_uptodate:
- 	error = mapping->a_ops->readpage(file, page);
- 	if (!error) {
- 		wait_on_page_locked(page);
--		if (PageUptodate(page))
-+		if (PageUptodate_NoLock(page))
- 			goto success;
- 	} else if (error == AOP_TRUNCATED_PAGE) {
- 		page_cache_release(page);
-@@ -1515,7 +1515,7 @@ page_not_uptodate:
- 	error = mapping->a_ops->readpage(file, page);
- 	if (!error) {
- 		wait_on_page_locked(page);
--		if (PageUptodate(page))
-+		if (PageUptodate_NoLock(page))
- 			goto success;
- 	} else if (error == AOP_TRUNCATED_PAGE) {
- 		page_cache_release(page);
-@@ -1554,7 +1554,7 @@ retry_find:
- 	 * Ok, found a page in the page cache, now we need to check
- 	 * that it's up-to-date.
- 	 */
--	if (!PageUptodate(page)) {
-+	if (!PageUptodate_NoLock(page)) {
- 		if (nonblock) {
- 			page_cache_release(page);
- 			return NULL;
-@@ -1605,7 +1605,7 @@ page_not_uptodate:
- 	error = mapping->a_ops->readpage(file, page);
- 	if (!error) {
- 		wait_on_page_locked(page);
--		if (PageUptodate(page))
-+		if (PageUptodate_NoLock(page))
- 			goto success;
- 	} else if (error == AOP_TRUNCATED_PAGE) {
- 		page_cache_release(page);
-@@ -1635,7 +1635,7 @@ page_not_uptodate:
- 	error = mapping->a_ops->readpage(file, page);
- 	if (!error) {
- 		wait_on_page_locked(page);
--		if (PageUptodate(page))
-+		if (PageUptodate_NoLock(page))
- 			goto success;
- 	} else if (error == AOP_TRUNCATED_PAGE) {
- 		page_cache_release(page);
-@@ -1800,7 +1800,7 @@ retry:
- 	if (IS_ERR(page))
- 		goto out;
- 	mark_page_accessed(page);
--	if (PageUptodate(page))
-+	if (PageUptodate_NoLock(page))
- 		goto out;
- 
- 	lock_page(page);
-Index: linux-2.6/mm/page_io.c
-===================================================================
---- linux-2.6.orig/mm/page_io.c
-+++ linux-2.6/mm/page_io.c
-@@ -134,7 +134,7 @@ int swap_readpage(struct file *file, str
- 	int ret = 0;
- 
- 	BUG_ON(!PageLocked(page));
--	ClearPageUptodate(page);
-+	BUG_ON(PageUptodate(page));
- 	bio = get_swap_bio(GFP_KERNEL, page_private(page), page,
- 				end_swap_bio_read);
- 	if (bio == NULL) {
-Index: linux-2.6/mm/swap_state.c
-===================================================================
---- linux-2.6.orig/mm/swap_state.c
-+++ linux-2.6/mm/swap_state.c
-@@ -149,6 +149,7 @@ int add_to_swap(struct page * page, gfp_
- 	int err;
- 
- 	BUG_ON(!PageLocked(page));
-+	BUG_ON(!PageUptodate(page));
- 
- 	for (;;) {
- 		entry = get_swap_page();
-@@ -171,7 +172,6 @@ int add_to_swap(struct page * page, gfp_
- 
- 		switch (err) {
- 		case 0:				/* Success */
--			SetPageUptodate(page);
- 			SetPageDirty(page);
- 			INC_CACHE_INFO(add_total);
- 			return 1;
-Index: linux-2.6/fs/splice.c
-===================================================================
---- linux-2.6.orig/fs/splice.c
-+++ linux-2.6/fs/splice.c
-@@ -107,7 +107,7 @@ static int page_cache_pipe_buf_pin(struc
- 	struct page *page = buf->page;
- 	int err;
- 
--	if (!PageUptodate(page)) {
-+	if (!PageUptodate_NoLock(page)) {
- 		lock_page(page);
- 
- 		/*
-@@ -373,7 +373,7 @@ __generic_file_splice_read(struct file *
- 		/*
- 		 * If the page isn't uptodate, we may need to start io on it
- 		 */
--		if (!PageUptodate(page)) {
-+		if (!PageUptodate_NoLock(page)) {
- 			/*
- 			 * If in nonblock mode then dont block on waiting
- 			 * for an in-flight io page
+
+
+My output:
+nigel@nigel:~$ dmesg | grep lacks
+[   15.113674] Device driver platform lacks bus and class support for being suspended or resumed.
+[   15.131601] Device driver pci0000:00 lacks bus and class support for being suspended or resumed.
+[   15.179802] Device driver pnp0 lacks bus and class support for being suspended or resumed.
+[   15.972661] Device driver ide0 lacks bus and class support for being suspended or resumed.
+[   17.829746] Device driver ide1 lacks bus and class support for being suspended or resumed.
+[   17.830878] PCI driver ALI15x3_IDE lacks driver specific suspend and resume support.
+[   17.830963] PCI driver PIIX_IDE lacks driver specific suspend and resume support.
+[   17.878190] Device driver serio0 lacks bus and class support for being resumed.
+[   17.878442] Device driver serio1 lacks bus and class support for being resumed.
+[   17.878672] Device driver serio2 lacks bus and class support for being resumed.
+[   18.555856] Device driver serio3 lacks bus and class support for being resumed.
+[   18.558109] Device driver serio4 lacks bus and class support for being resumed.
+[   78.487717] Device driver usbdev1.1_ep00 lacks bus and class support for being suspended or resumed.
+[   78.595362] Device driver usbdev1.1_ep81 lacks bus and class support for being suspended or resumed.
+[   78.657382] Device driver usbdev2.1_ep00 lacks bus and class support for being suspended or resumed.
+[   78.765044] Device driver usbdev2.1_ep81 lacks bus and class support for being suspended or resumed.
+[   78.795324] Device driver usbdev3.1_ep00 lacks bus and class support for being suspended or resumed.
+[   78.904912] Device driver usbdev3.1_ep81 lacks bus and class support for being suspended or resumed.
+[   78.936997] PCI driver ali15x3_smbus lacks driver specific suspend and resume support.
+[   78.996318] PCI driver ali1535_smbus lacks driver specific suspend and resume support.
+
+
