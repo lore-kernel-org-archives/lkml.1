@@ -1,73 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946815AbXBJBCa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946820AbXBJBIj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946815AbXBJBCa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Feb 2007 20:02:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946821AbXBJBCa
+	id S1946820AbXBJBIj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Feb 2007 20:08:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946821AbXBJBIj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Feb 2007 20:02:30 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:54537 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1946815AbXBJBCU (ORCPT
+	Fri, 9 Feb 2007 20:08:39 -0500
+Received: from alpha.logic.tuwien.ac.at ([128.130.175.20]:53375 "EHLO
+	alpha.logic.tuwien.ac.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1946820AbXBJBIi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Feb 2007 20:02:20 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
-	message-id:references:mime-version:content-type;
-	b=JN0B1T1x2KJBBUPkconictq13qYVC1vxQeE/G2iWhUi+kOF/Pv1tVlEWJmOGuRtk+
-	33gX8AzJrcgDZnbDFV9Ug==
-Date: Fri, 9 Feb 2007 17:01:54 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Oleg Nesterov <oleg@tv-sign.ru>
-cc: Hugh Dickins <hugh@veritas.com>, Paul Mundt <lethal@linux-sh.org>,
-       Christoph Lameter <clameter@sgi.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: + smaps-add-clear_refs-file-to-clear-reference.patch added to
- -mm tree
-In-Reply-To: <20070210003958.GA3047@tv-sign.ru>
-Message-ID: <Pine.LNX.4.64.0702091659230.14797@chino.kir.corp.google.com>
-References: <20070210003958.GA3047@tv-sign.ru>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 9 Feb 2007 20:08:38 -0500
+X-Greylist: delayed 1333 seconds by postgrey-1.27 at vger.kernel.org; Fri, 09 Feb 2007 20:08:37 EST
+Date: Sat, 10 Feb 2007 01:46:20 +0100
+To: James Ketrenos <jketreno@linux.intel.com>
+Cc: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
+       ipw3945-devel@lists.sourceforge.net, netdev@vger.kernel.org
+Subject: Re: [ipw3945-devel] [ANNOUNCE] d80211 based driver for Intel PRO/Wireless 3945ABG
+Message-ID: <20070210004620.GA5959@gamma.logic.tuwien.ac.at>
+References: <45CCE3CA.4050904@linux.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <45CCE3CA.4050904@linux.intel.com>
+User-Agent: Mutt/1.3.28i
+From: Norbert Preining <preining@logic.at>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Do not clear references when the task_struct's mm is NULL by using 
-/proc/pid/clear_refs.
+Hi all!
 
-Also, use mmap_sem since the mm_struct's VMA's are being iterated in 
-fs/proc/task_mmu.c.
+On Fre, 09 Feb 2007, James Ketrenos wrote:
+> We are pleased to announce the availability of a new driver for the 
+> Intel PRO/Wireless 3945ABG Network Connection adapter.  This new driver 
 
-Reported by Oleg Nesterov <oleg@tv-sign.ru>.
+I am impressed: I had 2.6.20 running with ipw3945 + wpa_supplicant. I
+installed the d80211 system and the new driver, rebooted, and you won't
+believe it, I had network connection even with WEP encryption.
 
-Signed-off-by: David Rientjes <rientjes@google.com>
----
- fs/proc/base.c |    9 ++++++++-
- 1 files changed, 8 insertions(+), 1 deletions(-)
+That was a big surprise for me that it worked out of the box without any
+magic.
 
-diff --git a/fs/proc/base.c b/fs/proc/base.c
---- a/fs/proc/base.c
-+++ b/fs/proc/base.c
-@@ -719,6 +719,7 @@ static ssize_t clear_refs_write(struct file *file, const char __user *buf,
- 				size_t count, loff_t *ppos)
- {
- 	struct task_struct *task;
-+	struct mm_struct *mm;
- 	char buffer[PROC_NUMBUF], *end;
- 
- 	memset(buffer, 0, sizeof(buffer));
-@@ -733,7 +734,13 @@ static ssize_t clear_refs_write(struct file *file, const char __user *buf,
- 	task = get_proc_task(file->f_path.dentry->d_inode);
- 	if (!task)
- 		return -ESRCH;
--	clear_refs_smap(task->mm->mmap);
-+	mm = get_task_mm(task);
-+	if (mm) {
-+		down_read(&mm->mmap_sem);
-+		clear_refs_smap(mm->mmap);
-+		up_read(&mm->mmap_sem);
-+		mmput(mm);
-+	}
- 	put_task_struct(task);
- 	if (end - buffer == 0)
- 		return -EIO;
+If you are interested in any dmesg/log output, please let me know.
+
+
+Ahhh ... one thing: The LED on my Acer Laptop (TM3012) does not show up,
+maybe because I have CONFIG_D80211_LEDS off?
+
+Again, thanks a lot for the good work!
+
+Norbert
+
+-------------------------------------------------------------------------------
+Dr. Norbert Preining <preining@logic.at>                    Università di Siena
+Debian Developer <preining@debian.org>                         Debian TeX Group
+gpg DSA: 0x09C5B094      fp: 14DF 2E6C 0307 BE6D AD76  A9C0 D2BF 4AA3 09C5 B094
+-------------------------------------------------------------------------------
+HARPENDEN (n.)
+The coda to a phone conversion, consisting of about eight exchanges,
+by which people try gracefully to get off the line.
+			--- Douglas Adams, The Meaning of Liff
