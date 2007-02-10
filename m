@@ -1,79 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753082AbXBJEuN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752977AbXBJFkw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753082AbXBJEuN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Feb 2007 23:50:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753072AbXBJEuM
+	id S1752977AbXBJFkw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Feb 2007 00:40:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752964AbXBJFkw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Feb 2007 23:50:12 -0500
-Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:31277 "EHLO
-	pd2mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753067AbXBJEuL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Feb 2007 23:50:11 -0500
-Date: Fri, 09 Feb 2007 22:49:27 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: [PATCH -mm] libata: warn if speed limited due to 40-wire cable
-To: linux-kernel <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
-       Jeff Garzik <jeff@garzik.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Message-id: <45CD4ED7.6000501@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
+	Sat, 10 Feb 2007 00:40:52 -0500
+Received: from hera.kernel.org ([140.211.167.34]:39504 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752960AbXBJFkv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Feb 2007 00:40:51 -0500
+From: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
+To: Michael Hanselmann <linux-kernel@hansmi.ch>, linux-acpi@vger.kernel.org
+Subject: Re: Fix null pointer dereference in appledisplay driver
+Date: Sat, 10 Feb 2007 00:39:20 -0500
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       cappaberra@gmail.com
+References: <20070210001823.GA3557@hansmi.ch>
+In-Reply-To: <20070210001823.GA3557@hansmi.ch>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200702100039.20956.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Print an explicit warning when a device's UDMA mode is limited due to
-a 40-wire cable being detected, so that users have some idea why their
-device isn't running as fast as it should.
+Applied.
 
-This moves the application of the drive's mode masks before the cable
-rule, so that can tell whether the rate is being limited by the cable
-and not the drive or controller.
+thanks,
+-Len
 
-I haven't tested whether the message actually shows up, as my system
-isn't horked in this manner..
-
-Signed-off-by: Robert Hancock <hancockr@shaw.ca>
-
---- linux-2.6.20-rc6-mm3/drivers/ata/libata-core.c	2007-02-04 21:48:25.000000000 -0600
-+++ linux-2.6.20-rc6-mm3edit/drivers/ata/libata-core.c	2007-02-09 21:04:14.000000000 -0600
-@@ -3393,22 +3393,24 @@ static void ata_dev_xfermask(struct ata_
- 	xfer_mask = ata_pack_xfermask(ap->pio_mask,
- 				      ap->mwdma_mask, ap->udma_mask);
- 
-+	/* drive modes available */
-+	xfer_mask &= ata_pack_xfermask(dev->pio_mask,
-+				       dev->mwdma_mask, dev->udma_mask);
-+	xfer_mask &= ata_id_xfermask(dev->id);
-+
- 	/* Apply cable rule here.  Don't apply it early because when
- 	 * we handle hot plug the cable type can itself change.
-+	 * Unknown or 80 wire cables reported host side are checked
-+	 * drive side as well. Cases where we know a 40wire cable
-+	 * is used safely for 80 are not checked here.
- 	 */
--	if (ap->cbl == ATA_CBL_PATA40)
--		xfer_mask &= ~(0xF8 << ATA_SHIFT_UDMA);
--	/* Apply drive side cable rule. Unknown or 80 pin cables reported
--	 * host side are checked drive side as well. Cases where we know a
--	 * 40wire cable is used safely for 80 are not checked here.
--	 */
--        if (ata_drive_40wire(dev->id) && (ap->cbl == ATA_CBL_PATA_UNK || ap->cbl == ATA_CBL_PATA80))
-+	if ((xfer_mask & (0xF8 << ATA_SHIFT_UDMA)) &&
-+	    ((ap->cbl == ATA_CBL_PATA40) ||
-+	     (ata_drive_40wire(dev->id) &&
-+	      (ap->cbl == ATA_CBL_PATA_UNK || ap->cbl == ATA_CBL_PATA80)))) {
-+	      	ata_dev_printk(dev, KERN_WARNING, "limited to UDMA2 due to 40-wire cable\n");
- 		xfer_mask &= ~(0xF8 << ATA_SHIFT_UDMA);
--
--
--	xfer_mask &= ata_pack_xfermask(dev->pio_mask,
--				       dev->mwdma_mask, dev->udma_mask);
--	xfer_mask &= ata_id_xfermask(dev->id);
-+	}
- 
- 	/*
- 	 *	CFA Advanced TrueIDE timings are not allowed on a shared
-
+On Friday 09 February 2007 19:18, Michael Hanselmann wrote:
+> Commit 40b20c257a13c5a526ac540bc5e43d0fdf29792a by Len Brown introduced
+> a null pointer dereference in the appledisplay driver. This patch fixes
+> it.
+> 
+> Signed-off-by: Michael Hanselmann <linux-kernel@hansmi.ch>
+> 
+> ---
+> I suggest adding this to 2.6.20.1 because this bug causes the kernel to
+> panic on boot when the driver is compiled in.
+> 
+> diff -Nrup --exclude-from linux-exclude-from linux-2.6.20.orig/drivers/usb/misc/appledisplay.c linux-2.6.20/drivers/usb/misc/appledisplay.c
+> --- linux-2.6.20.orig/drivers/usb/misc/appledisplay.c	2007-02-09 22:35:56.000000000 +0100
+> +++ linux-2.6.20/drivers/usb/misc/appledisplay.c	2007-02-10 01:00:28.000000000 +0100
+> @@ -281,8 +281,8 @@ static int appledisplay_probe(struct usb
+>  	/* Register backlight device */
+>  	snprintf(bl_name, sizeof(bl_name), "appledisplay%d",
+>  		atomic_inc_return(&count_displays) - 1);
+> -	pdata->bd = backlight_device_register(bl_name, NULL, NULL,
+> -						&appledisplay_bl_data);
+> +	pdata->bd = backlight_device_register(bl_name, NULL,
+> +		pdata, &appledisplay_bl_data);
+>  	if (IS_ERR(pdata->bd)) {
+>  		err("appledisplay: Backlight registration failed");
+>  		goto error;
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
