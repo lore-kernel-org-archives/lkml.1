@@ -1,61 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933398AbXBJMHF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932154AbXBJMHW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933398AbXBJMHF (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Feb 2007 07:07:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933329AbXBJMHF
+	id S932154AbXBJMHW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Feb 2007 07:07:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933350AbXBJMHW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Feb 2007 07:07:05 -0500
-Received: from ns1.suse.de ([195.135.220.2]:51505 "EHLO mx1.suse.de"
+	Sat, 10 Feb 2007 07:07:22 -0500
+Received: from mx1.suse.de ([195.135.220.2]:51521 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933366AbXBJMHD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Feb 2007 07:07:03 -0500
-Date: Sat, 10 Feb 2007 13:07:13 +0100
-From: Holger Macht <hmacht@suse.de>
-To: Ismail =?iso-8859-1?Q?D=F6nmez?= <ismail@pardus.org.tr>
-Cc: Len Brown <lenb@kernel.org>, Linus Torvalds <torvalds@osdl.org>,
-       Andrew Morton <akpm@osdl.org>, tony.luck@intel.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-acpi@vger.kernel.org,
-       "Accardi, Kristen" <kristen.c.accardi@intel.com>
-Subject: Re: [GIT PATCH] ACPI patches for 2.6.21
-Message-ID: <20070210120713.GA31473@homac2>
-Mail-Followup-To: Ismail =?iso-8859-1?Q?D=F6nmez?= <ismail@pardus.org.tr>,
-	Len Brown <lenb@kernel.org>, Linus Torvalds <torvalds@osdl.org>,
-	Andrew Morton <akpm@osdl.org>, tony.luck@intel.com,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	linux-acpi@vger.kernel.org,
-	"Accardi, Kristen" <kristen.c.accardi@intel.com>
-References: <200702071418.51058.lenb@kernel.org> <200702101027.25372.ismail@pardus.org.tr>
+	id S932106AbXBJMHU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Feb 2007 07:07:20 -0500
+From: Andi Kleen <ak@suse.de>
+To: Arjan van de Ven <arjan@linux.intel.com>
+Subject: Re: [PATCH 2.6.21 review I] [18/25] x86_64: Fix x86_64 ioremap base_address
+Date: Sat, 10 Feb 2007 13:07:15 +0100
+User-Agent: KMail/1.9.5
+Cc: OGAWA Hirofumi <hogawa@miraclelinux.com>, patches@x86-64.org,
+       linux-kernel@vger.kernel.org
+References: <200702101250.142420000@suse.de> <20070210115031.3D4CE13DFB@wotan.suse.de> <45CDB370.2020401@linux.intel.com>
+In-Reply-To: <45CDB370.2020401@linux.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200702101027.25372.ismail@pardus.org.tr>
-User-Agent: mutt-ng/devel-r804 (Linux)
+Message-Id: <200702101307.16093.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat 10. Feb - 10:27:14, Ismail Dönmez wrote:
-> On Wednesday 07 February 2007 21:18:50 Len Brown wrote:
-> > Hi Linus,
-> >
-> > please pull from:
-> >
-> > git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux-acpi-2.6.git
-> > release
-> >
-> > ACPICA Core version 2070126 simplifies the ACPI table manager
-> > code by consolidating multiple table definitions into one.
-> > It also saves memory by mapping the tables where the BIOS provides them
-> > rather than copying them into the kernel.
+On Saturday 10 February 2007 12:58, Arjan van de Ven wrote:
+> Andi Kleen wrote:
+> > From: OGAWA Hirofumi <hogawa@miraclelinux.com>
+> > 
+> > Current mmconfig has some problems of remapped range.
 > 
-> This breaks kpowersave, now it always says laptop is plugged in and does not 
-> show any battery status. Any /proc changes in this release?
+> 
+> eh wasn't there a patch that just ignored the MCFG for the broken 
+> system instead?
 
-kpowersave just reflects what HAL thinks, and HAL reflects what the kernel
-thinks. So please post the content of /proc/acpi/ac_adapter/AC/state when
-AC is not plugged in to figure out if it's just a userland bug or a kernel
-issue.
+That's done in a followup patch
 
-Regards,
-	Holger
+-Andi
