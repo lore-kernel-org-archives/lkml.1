@@ -1,39 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751713AbXBJTqT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750969AbXBJTro@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751713AbXBJTqT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Feb 2007 14:46:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751811AbXBJTqT
+	id S1750969AbXBJTro (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Feb 2007 14:47:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751802AbXBJTro
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Feb 2007 14:46:19 -0500
-Received: from cacti.profiwh.com ([85.93.165.66]:47741 "EHLO cacti.profiwh.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751713AbXBJTqS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Feb 2007 14:46:18 -0500
-Message-ID: <45CE20E5.8000107@gmail.com>
-Date: Sat, 10 Feb 2007 20:45:41 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0b2 (X11/20070116)
+	Sat, 10 Feb 2007 14:47:44 -0500
+Received: from mtagate6.de.ibm.com ([195.212.29.155]:19232 "EHLO
+	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750969AbXBJTrn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Feb 2007 14:47:43 -0500
+Date: Sat, 10 Feb 2007 20:46:30 +0100
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Tejun Heo <htejun@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Jeff Garzik <jgarzik@pobox.com>, linux-kernel@vger.kernel.org,
+       linux-s390@vger.kernel.org
+Subject: Re: [PATCH] iomap: make PCI iomap stuff excluded when PCI isn't configured
+Message-ID: <20070210194630.GA13416@osiris.ibm.com>
+References: <20070210114314.GB12642@osiris.boeblingen.de.ibm.com> <45CE0434.30105@gmail.com>
 MIME-Version: 1.0
-To: Linux kernel mailing list <linux-kernel@vger.kernel.org>
-Cc: avi@qumranet.com, kvm-devel@lists.sourceforge.net
-Subject: KVM oops: killing interrupt handler
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <45CE0434.30105@gmail.com>
+User-Agent: mutt-ng/devel-r804 (Linux)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Sat, Feb 10, 2007 at 12:43:16PM -0500, Tejun Heo wrote:
+> devres iomap made lib/iomap.c always built and added several
+> arch-indep PCI routines to include/linux/io.h and lib/iomap.c without
+> wrapping them inside CONFIG_PCI.  This breaks configurations where PCI
+> is not configured.  Wrap pci_iomap() in CONFIG_PCI and move managed
+> PCI iomap functions into include/linux/pci.h and drivers/pci/pci.c.
+> 
+> Signed-off-by: Tejun Heo <htejun@gmail.com>
+> Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
+> ---
+> Heiko, how about this?  Does it fix s390?
 
-My schoolmate got this while using kvm-12 on 2.6.20-rc6:
-http://www.fi.muni.cz/~xslaby/sklad/kvm-intel-panic/a/
+Unfortunately not. Now I get
 
-Unfortunately it's only shots taken by camera. If we are able to reproduce it in 
-2.6.20, we'll grab netconsole output.
+  CC      lib/iomap.o
+lib/iomap.c: In function 'devm_ioport_map_release':
+lib/iomap.c:270: warning: implicit declaration of function 'ioport_unmap'
+lib/iomap.c: In function 'devm_ioport_map':
+lib/iomap.c:297: warning: implicit declaration of function 'ioport_map'
+lib/iomap.c:297: warning: assignment makes pointer from integer without a cast
 
-regards,
--- 
-http://www.fi.muni.cz/~xslaby/            Jiri Slaby
-faculty of informatics, masaryk university, brno, cz
-e-mail: jirislaby gmail com, gpg pubkey fingerprint:
-B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
+and
 
+lib/built-in.o: In function `devm_ioport_unmap': undefined reference to `ioport_unmap'
+lib/built-in.o: In function `devm_ioport_map_release':iomap.c:(.text+0xf20): undefined reference to `ioport_unmap'
+lib/built-in.o: In function `devm_ioport_map': undefined reference to `ioport_map'
+drivers/built-in.o: In function `dmam_noncoherent_release':dma-mapping.c:(.text+0x15238): undefined reference to `dma_free_noncoherent'
+drivers/built-in.o: In function `dmam_free_noncoherent': undefined reference to `dma_free_noncoherent'
+drivers/built-in.o: In function `dmam_alloc_noncoherent': undefined reference to `dma_alloc_noncoherent'
+make: *** [.tmp_vmlinux1] Error 1
