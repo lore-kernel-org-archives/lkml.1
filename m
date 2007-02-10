@@ -1,57 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946799AbXBJAkf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946807AbXBJAnR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946799AbXBJAkf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Feb 2007 19:40:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946794AbXBJAkf
+	id S1946807AbXBJAnR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Feb 2007 19:43:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946808AbXBJAnR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Feb 2007 19:40:35 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:57769 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1946516AbXBJAkd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Feb 2007 19:40:33 -0500
-Date: Fri, 9 Feb 2007 16:40:18 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Russ Cox" <rsc@swtch.com>
-Cc: "Miklos Szeredi" <miklos@szeredi.hu>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] fix quadratic behavior of shrink_dcache_parent()
-Message-Id: <20070209164018.e4d29be0.akpm@linux-foundation.org>
-In-Reply-To: <ee9e417a0702091623t1ccf55b8wb05b64b9c51474a6@mail.gmail.com>
-References: <E1HFdnm-0006DB-00@dorka.pomaz.szeredi.hu>
-	<20070209160055.bbd20c9f.akpm@linux-foundation.org>
-	<ee9e417a0702091623t1ccf55b8wb05b64b9c51474a6@mail.gmail.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+	Fri, 9 Feb 2007 19:43:17 -0500
+Received: from rwcrmhc12.comcast.net ([204.127.192.82]:63129 "EHLO
+	rwcrmhc12.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1946807AbXBJAnR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Feb 2007 19:43:17 -0500
+X-Greylist: delayed 301 seconds by postgrey-1.27 at vger.kernel.org; Fri, 09 Feb 2007 19:43:17 EST
+Date: Fri, 9 Feb 2007 16:00:55 -0800
+From: Christopher Li <sparse@chrisli.org>
+To: linux-sparse@vger.kernel.org
+Cc: linux kernel mail list <linux-kernel@vger.kernel.org>,
+       Josh Triplett <josh@freedesktop.org>
+Subject: [ANNOUNCE] sparse-0.2-cl2 is now available
+Message-ID: <20070210000055.GA19968@chrisli.org>
+References: <20070204085329.GA6520@chrisli.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070204085329.GA6520@chrisli.org>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 9 Feb 2007 19:23:31 -0500
-"Russ Cox" <rsc@swtch.com> wrote:
 
-> > "The file system mounted on /tmp/z in the example contains 2^50
-> > directories".   heh.
-> >
-> > I do wonder how realistic this problem is in real life.
-> 
-> That's a fair concern, although I was trying this as part
-> of evaluating how much someone could hose a system
-> if we let them mount arbitrary FUSE servers.  And the
-> answer is: they could make it completely unusable,
-> requiring reboot.
-> 
-> I ran a later test that printed how deep it got into
-> the file tree and it was only a few hundred thousand
-> if I recall correctly.  A determined attacker might even
-> manage to do this in a normal file system.
-> 
-> But sure, it's not a common case.  ;-)
+Temporarily at:
+    http://userweb.kernel.org/~chrisl/sparse-0.2-cl2
 
-Well that's a good point - sometimes people do crazy things on purpose.  We
-were all University students once ;) 
+Will appear later at:
+    http://ftp.kernel.org//pub/linux/kernel/people/chrisl/patches/sparse/sparse-0.2-cl2/
 
-The patches look nice and as I said, potentially of some use for memory
-reclaim.  But I hope that someone who has worked on dcache.c more recently
-than I has time to apply a toothcomb to this work.
+
+I have been play with sparse to add more Stanford checker style
+of checking. The paper is "Checking System Rules Using System-
+Specific, Programmer-Written Compiler Extensions" by Dawson Engler
+etc.
+
+Unlike the Stanford checker and smatch, this checker is working on
+the linearization level instead of AST level. Linearization code
+can be very convenient (when it works) to trace the data flow because
+pseudo is in SSA form. There is define/user chain to avoid scan
+every instruction.
+
+I take the malloc checking for example to explain how the checker
+works. The checking usually happen in three step:
+
+The first step is scanning the linearize instruction. It look for
+relevant operations. For malloc checker, the task is find out
+the malloc/free function call and usage of malloced pointer.
+
+The second step is converting the relevant operations into checker
+instruction. The checker instruction is a simplification of the whole
+program, only contain the operation relevant to checker.
+
+The third step is executing the checker instruction. It try to execute
+every possible execution flow in the function. The execution engine
+will let the checker instruction perform state changes.
+
+Thanks to step two, the size and complexity of the of program has been
+greatly reduced.
+
+The new checking has been very fast, it add a few seconds to the make C=1
+run.
+
+Again, comment and feed back are always welcome.
+
+Chris
+
+Change log in sparse-0.2-cl2:
+ - adding pointer signedness fix
+ - adding spinlock checking
+
+Change log in sparse-0.2-cl1:
+  The most interesting part is the inline function annotation.
+  The new checker can find out inlined function usage. The interrupt
+  checker does not depend on x86 asm instruction any more.
+
+
+origin.patch
+    006eff06c7adcfb0d06c6fadf6e9b64f0488b2bf URL: git://git.kernel.org/pub/scm/linux/kernel/git/josh/sparse.git
+incompatible-ptr-signess
+    Bug fix in pointer modifiers inherent at function degeneration.
+sizeof-incomplete
+    Fix double semicolon in struct declare
+anon-symbol
+    Fix core dump on anonymous symbol.
+instruction-buffer-size
+    Fix core dump on huge switch
+debug-checker
+    Adding debug option for showing the linearized instruction.
+no-dead-instruction
+    Disable liveness "dead" instruction by default.
+ptr-allocator
+    Make the ptrlist using the sparse allocator.
+annotate-inline-2
+    Add annotation for inline function call.
+malloc-checker
+    Adding the malloc NULL pointer checker.
+interrupt-checker
+    Adding the interrupt checker
+spinlock-checker
+    Adding spinlock checker
+
+
+Total 12 patches
+
 
