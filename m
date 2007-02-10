@@ -1,64 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751783AbXBJTQm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751797AbXBJTgJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751783AbXBJTQm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Feb 2007 14:16:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751797AbXBJTQm
+	id S1751797AbXBJTgJ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Feb 2007 14:36:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751800AbXBJTgI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Feb 2007 14:16:42 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:48449 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751783AbXBJTQl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Feb 2007 14:16:41 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <45CE19F3.2070603@s5r6.in-berlin.de>
-Date: Sat, 10 Feb 2007 20:16:03 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.9) Gecko/20070121 SeaMonkey/1.0.7
+	Sat, 10 Feb 2007 14:36:08 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:55798 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751797AbXBJTgG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Feb 2007 14:36:06 -0500
+Date: Sat, 10 Feb 2007 11:35:09 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Davide Libenzi <davidel@xmailserver.org>
+cc: Zach Brown <zach.brown@oracle.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-aio@kvack.org, Suparna Bhattacharya <suparna@in.ibm.com>,
+       Benjamin LaHaise <bcrl@kvack.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH 0 of 4] Generic AIO by scheduling stacks
+In-Reply-To: <Pine.LNX.4.64.0702101054250.8424@woody.linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0702101114220.8424@woody.linux-foundation.org>
+References: <patchbomb.1170193181@tetsuo.zabbo.net>
+ <Pine.LNX.4.64.0702091419470.8424@woody.linux-foundation.org>
+ <Pine.LNX.4.64.0702091458180.2786@alien.or.mcafeemobile.com>
+ <Pine.LNX.4.64.0702091519330.8424@woody.linux-foundation.org>
+ <Pine.LNX.4.64.0702101034220.11630@alien.or.mcafeemobile.com>
+ <Pine.LNX.4.64.0702101054250.8424@woody.linux-foundation.org>
 MIME-Version: 1.0
-To: Andi Kleen <ak@suse.de>
-CC: Stefan Richter <stefanr@s5r6.in-berlin.de>, Bernhard Kaindl <bk@suse.de>,
-       discuss@x86-64.org, linux1394-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: remote debugging via FireWire
-References: <200702101242.48467.ak@suse.de> <200702101502.59431.ak@suse.de>	<45CDE14C.4040203@s5r6.in-berlin.de> <200702101641.36239.ak@suse.de>
-In-Reply-To: <200702101641.36239.ak@suse.de>
-X-Enigmail-Version: 0.94.1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[ohci1394_early]
 
-Some remarks to the September 2006 version at
-http://www.suse.de/~bk/firewire/ :
 
-  - Seems its .remove won't work properly if more than one OHCI-1394
-    controller is installed.  And it's .probe isn't reentrant, but that
-    might be less of a problem.
-  - Its functionality will be lost if there is a FireWire bus reset,
-    e.g. when something is plugged in or out.  To keep physical DMA
-    alive, an interrupt handler had to be installed which writes ~0
-    to OHCI1394_PhyReqFilter{Hi,Lo}Set.  Can interrupt handlers be
-    registered in an early setup stage?
-  - There might be some register accesses in the setup which could be
-    omitted; I'd have to look this up.
-  - Could be optimized to not use ohci1394.h::struct ti_ohci.
-  - PCI_CLASS_FIREWIRE_OHCI can be replaced by
-    include/linux/pci_ids.h::PCI_CLASS_SERIAL_FIREWIRE_OHCI which
-    was newly added in 2.6.20-git#.
-  - I suppose .probe should check for PCI_CLASS_SERIAL_FIREWIRE_OHCI
-    instead of PCI_CLASS_SERIAL_FIREWIRE.
-  - How about dropping support for configuring this as module, to
-    simplify the code?  Unless this would interfere with ohci1394; and
-    it probably would if there was an interrupt handler...
-  - "depends on X86_64" is missing in Kconfig.
-  - Maybe put it into arch/x86_64/drivers/ instead of drivers/ieee1394?
-  - Plus what I mentioned earlier in the thread.
+On Sat, 10 Feb 2007, Linus Torvalds wrote:
+> 
+> But that makes it impossible to do things synchronously, which I think is 
+> a *major* mistake.
+> 
+> The whole (and really _only_) point of my patch was really the whole 
+> "synchronous call" part. I'm personally of the opinion that if you cannot 
+> handle the cached case as fast as just doing the system call directly, 
+> then the whole thing is almost pointless.
 
-I could send code to address some of this at next weekend or later.
--- 
-Stefan Richter
--=====-=-=== --=- -=-=-
-http://arcgraph.de/sr/
+Side note: one of the nice things with "do it synchronously if you can" is 
+that it also likely would allow us to do a reasonable job at "self-tuning" 
+things in the kernel. With my async approach, we get notified only when we 
+block, so it'seasy (for example) to have a simple counter that 
+automatically adapts to the number of outstanding IO's, in a way that it's 
+_not_ if we do things at submit time when we won't even know whether it 
+will block or not.
+
+As a trivial example: we actually see what *kind* of blocking it is. Is it 
+blocking interruptibly ("long wait") or uninterruptibly ("disk wait")? So 
+by the time schedule_async() is called, we actually have some more 
+information about the situation, and we can even do different things 
+(possibly based on just hints that the user and/or system maintainer gives 
+us; ie you can tune the behaviour from _outside_ by setting different 
+limits, for example).
+
+			Linus
