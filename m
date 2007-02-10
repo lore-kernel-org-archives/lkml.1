@@ -1,51 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753042AbXBJIrI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753034AbXBJJMH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753042AbXBJIrI (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Feb 2007 03:47:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753039AbXBJIrI
+	id S1753034AbXBJJMH (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Feb 2007 04:12:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753039AbXBJJMH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Feb 2007 03:47:08 -0500
-Received: from mail-gw1.sa.eol.hu ([212.108.200.67]:45050 "EHLO
-	mail-gw1.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753034AbXBJIrH (ORCPT
+	Sat, 10 Feb 2007 04:12:07 -0500
+Received: from web36703.mail.mud.yahoo.com ([209.191.85.37]:30687 "HELO
+	web36703.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753034AbXBJJMF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Feb 2007 03:47:07 -0500
-To: rsc@swtch.com
-CC: akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-reply-to: <ee9e417a0702091623t1ccf55b8wb05b64b9c51474a6@mail.gmail.com>
-	(rsc@swtch.com)
-Subject: Re: [PATCH] fix quadratic behavior of shrink_dcache_parent()
-References: <E1HFdnm-0006DB-00@dorka.pomaz.szeredi.hu>
-	 <20070209160055.bbd20c9f.akpm@linux-foundation.org> <ee9e417a0702091623t1ccf55b8wb05b64b9c51474a6@mail.gmail.com>
-Message-Id: <E1HFnsK-0007Ep-00@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Sat, 10 Feb 2007 09:46:28 +0100
+	Sat, 10 Feb 2007 04:12:05 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=NqdL/eyawGozHqN4s56K78h7yWmPaccXrm+LPso/+JHVF+hSTCojjrzMV0eboN4j3RbHixPqXBGx4reRVaNxbE5ojcid3z2hXPOTteJgplUMQKQqog/5w1lXaviDm7Gh7oMVfAECzDzfSC44SGCyTThBnzZkkQmacsZCRKao+Xk=;
+X-YMail-OSG: pgWW.c8VM1n_TaOwptlEY.vG0n3vE8IAmTtZcmxn479q2NdArvbDOMU_Z0UarhnhOfBKl3HQ25r5Lld7MqFTaCx6efbumDq9dj_FrpQKbruf7yKvnV4fHxnt.kq0RR_CmyXHal0qbSQcBsnrcQeMTiGSNrxbYfQuDg--
+Date: Sat, 10 Feb 2007 01:12:02 -0800 (PST)
+From: Alex Dubov <oakad@yahoo.com>
+Subject: Re: Recent and not-so problems with tifm_sd driver - one more
+To: Pierre Ossman <drzeus-mmc@drzeus.cx>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <45CCC72A.8020904@drzeus.cx>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <113489.35158.qm@web36703.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > "The file system mounted on /tmp/z in the example contains 2^50
-> > directories".   heh.
-> >
-> > I do wonder how realistic this problem is in real life.
-> 
-> That's a fair concern, although I was trying this as part
-> of evaluating how much someone could hose a system
-> if we let them mount arbitrary FUSE servers.  And the
-> answer is: they could make it completely unusable,
-> requiring reboot.
-> 
-> I ran a later test that printed how deep it got into
-> the file tree and it was only a few hundred thousand
-> if I recall correctly.  A determined attacker might even
-> manage to do this in a normal file system.
+One more problem (you may already know about it) - I was contacted by somebody from the hald
+project and indeed I can confirm that on 2.6.20 kernel hald fails to take action on card
+insertion. I can't see anything in my code so this may be a general mmc problem.
+The problem is described here:
+http://lists.freedesktop.org/archives/hal/2007-January/006960.html
 
-Unfortunately this patch doesn't completely solve this problem, since
-the system will still be hosed due to all memory being used up by
-dentries.  And I bet the OOM killer won't find the real target (du)
-but will kill anything before that.
 
-So the second part of the problem is to somehow limit the number of
-dentries used.  Not easy...
 
-Miklos
+ 
+____________________________________________________________________________________
+Food fight? Enjoy some healthy debate 
+in the Yahoo! Answers Food & Drink Q&A.
+http://answers.yahoo.com/dir/?link=list&sid=396545367
