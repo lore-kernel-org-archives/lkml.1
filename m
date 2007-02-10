@@ -1,167 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752912AbXBJDCi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752926AbXBJDVn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752912AbXBJDCi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Feb 2007 22:02:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752918AbXBJDCi
+	id S1752926AbXBJDVn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Feb 2007 22:21:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752927AbXBJDVn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Feb 2007 22:02:38 -0500
-Received: from nigel.suspend2.net ([203.171.70.205]:37616 "EHLO
-	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752912AbXBJDCh (ORCPT
+	Fri, 9 Feb 2007 22:21:43 -0500
+Received: from emailgw01.pnl.gov ([192.101.109.33]:3686 "EHLO
+	emailgw01.pnl.gov" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752921AbXBJDVm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Feb 2007 22:02:37 -0500
-Subject: [PATCH] Re: NAK new drivers without proper power management?
-From: Nigel Cunningham <nigel@nigel.suspend2.net>
-Reply-To: nigel@nigel.suspend2.net
-To: Robert Hancock <hancockr@shaw.ca>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, Jeff Garzik <jeff@garzik.org>
-In-Reply-To: <45CD24F6.8090107@shaw.ca>
+	Fri, 9 Feb 2007 22:21:42 -0500
+X-IronPort-AV: i="4.13,308,1167638400"; 
+   d="scan'208"; a="19955766:sNHT27664987"
+Subject: Re: NAK new drivers without proper power management?
+From: Kevin Fox <Kevin.Fox@pnl.gov>
+To: Lee Revell <rlrevell@joe-job.com>
+Cc: nigel@nigel.suspend2.net, Robert Hancock <hancockr@shaw.ca>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Jeff Garzik <jeff@garzik.org>
+In-Reply-To: <75b66ecd0702091822n19cf88b8k63bbd705cf5367ae@mail.gmail.com>
 References: <fa.xSKPgY66Q+DPCZ1pszFFfdrJ0To@ifi.uio.no>
 	 <fa.FzHdYYYH5Ru57c8/yRxLylpH0Kk@ifi.uio.no>
 	 <fa.DuG12yQo+RR4jIjJTnoOwtKM0Ao@ifi.uio.no>
-	 <fa.Jy0FJQtASvVEpsy8Q96uoHtyEVA@ifi.uio.no>  <45CD24F6.8090107@shaw.ca>
+	 <fa.Jy0FJQtASvVEpsy8Q96uoHtyEVA@ifi.uio.no> <45CD24F6.8090107@shaw.ca>
+	 <75b66ecd0702091759q4140680atee2e80f7ca26af03@mail.gmail.com>
+	 <1171073398.3863.9.camel@nigel.suspend2.net>
+	 <75b66ecd0702091822n19cf88b8k63bbd705cf5367ae@mail.gmail.com>
 Content-Type: text/plain
-Date: Sat, 10 Feb 2007 14:02:34 +1100
-Message-Id: <1171076554.10170.5.camel@nigel.suspend2.net>
+Date: Fri, 09 Feb 2007 19:21:27 -0800
+Message-Id: <1171077687.3078.202.camel@zathras.emsl.pnl.gov>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
+X-Mailer: Evolution 2.8.1.1 (2.8.1.1-3.fc6) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
-
-On Fri, 2007-02-09 at 19:50 -0600, Robert Hancock wrote:
-> It also kind of bothers me that if a driver has no suspend/resume 
-> functions, and you suspend and resume the system, we don't complain 
-> about it even though there's a very good chance that device is not going 
-> to function properly. How about something in dmesg like:
+On Fri, 2007-02-09 at 18:22 -0800, Lee Revell wrote:
+> On 2/9/07, Nigel Cunningham <nigel@nigel.suspend2.net> wrote:
+> > On Fri, 2007-02-09 at 20:59 -0500, Lee Revell wrote:
+> > > On 2/9/07, Robert Hancock <hancockr@shaw.ca> wrote:
+> > > > I would disagree that it's a peripheral issue, it's pretty core
+> these
+> > > > days, at least for any hardware that you can stuff in a laptop
+> (though a
+> > > > fair number of desktops get suspended and resumed these days
+> too).
+> > >
+> > > Servers are still the most important Linux market, and don't care
+> > > about suspend/resume.  I would consider implementing
+> suspend./resume
+> > > for a driver that will only be used in server or HPC class
+> hardware a
+> > > waste of valuable development resources.
+> >
+> > Not necessarily. Imagine suspending to disk in order to replace a
+> faulty
+> > card. That could be way faster and less disruptive than shutting
+> down
+> > normally and loosing caches and so on.
+> >
 > 
-> Warning: driver for device XXXX has no suspend or resume support.
-> Device may not function properly after resume.
+> Hmm.  If uptime is critical I would make sure to have redundant
+> systems anyway and I would just reboot the thing.  I would not expect
+> the suspend/resume paths on server class hardware like 10gig ethernet,
+> Infiniband adapters, or high end SCSI to be particularly well tested.
+
+Speaking from the HPC standpoint, we are gaining more and more nodes in
+clusters as time goes on, so the potential for single failures affecting
+performance is growing. A lot of the server class nodes have redundancy
+such that the node slows down but not die on failure. Unfortunately,
+slowdown in a single node in a tightly coupled job can greatly affect
+performance. A good example would be ECC memory. If a chip is going bad,
+the machine can detect it but it will run slower until the memory is
+replaced. This one node can affect thousands of other nodes in the same
+job. Having a mechanism to migrate the operating system that is running
+on this failing node to another node would be quite beneficial to
+performance. If all drivers properly supported suspend/resume, it could
+possibly be extended to support migration to another node as well. At
+least for the HPC world, we'd like to see, and encourage, the hardware
+you describe getting full support for suspend/resume.
+
+Kevin
+
+> > Irrespective of the above, servers tend not to have too much in the
+> way
+> > of hardware unique to them anyway, and even if you don't find it
+> useful,
+> > that's not to say others won't want it.
 > 
-> so that users know who to complain to. Maybe there are some devices that 
-> truly don't need any handling for suspend, but if so I suspect the 
-> number of those is small enough that adding empty functions would be a 
-> good-enough solution.
-
-Here's my current version of a patch to do this, if anyone wants to try
-it out. It dumps stack with the warning to make it easier to see what
-the source of the message is:
-
- drivers/base/core.c       |   25 +++++++++++++++++++++++++
- drivers/pci/pci-driver.c  |    6 ++++++
- drivers/usb/core/driver.c |    5 +++++
- include/linux/device.h    |    1 +
- 4 files changed, 37 insertions(+)
-diff -ruNp 920-report-no-pm-support.patch-old/drivers/base/core.c 920-report-no-pm-support.patch-new/drivers/base/core.c
---- 920-report-no-pm-support.patch-old/drivers/base/core.c	2007-02-06 14:48:31.000000000 +1100
-+++ 920-report-no-pm-support.patch-new/drivers/base/core.c	2007-02-10 13:36:33.000000000 +1100
-@@ -552,6 +552,30 @@ int device_add(struct device *dev)
- 				class_intf->add_dev(dev, class_intf);
- 		up(&dev->class->sem);
- 	}
-+
-+#ifdef CONFIG_PM
-+	{
-+	int nosusp = 0, nores = 0;
-+
-+	if (!((dev->class && dev->class->suspend) ||
-+	      (dev->bus && (dev->bus->suspend || dev->bus->suspend_late))))
-+		nosusp = 1;
-+
-+	if (!((dev->class && dev->class->resume) ||
-+	      (dev->bus && (dev->bus->resume || dev->bus->resume_early))))
-+		nores = 1;
-+
-+	if ((nosusp || nores) && !dev->pm_safe) {
-+		printk("Device driver %s lacks bus and class support for "
-+				"being %s.\n",
-+			kobject_name(&dev->kobj),
-+			nosusp ? (nores ? "suspended or resumed" :
-+				"resumed") : "suspended");
-+		dump_stack();
-+	}
-+	}
-+#endif
-+
-  Done:
-  	kfree(class_name);
- 	put_device(dev);
-@@ -851,6 +875,7 @@ struct device *device_create(struct clas
- 	dev->class = class;
- 	dev->parent = parent;
- 	dev->release = device_create_release;
-+	dev->pm_safe = 1;
- 
- 	va_start(args, fmt);
- 	vsnprintf(dev->bus_id, BUS_ID_SIZE, fmt, args);
-diff -ruNp 920-report-no-pm-support.patch-old/drivers/pci/pci-driver.c 920-report-no-pm-support.patch-new/drivers/pci/pci-driver.c
---- 920-report-no-pm-support.patch-old/drivers/pci/pci-driver.c	2007-02-06 14:48:44.000000000 +1100
-+++ 920-report-no-pm-support.patch-new/drivers/pci/pci-driver.c	2007-02-10 14:00:39.000000000 +1100
-@@ -449,6 +449,12 @@ int __pci_register_driver(struct pci_dri
- 	if (error)
- 		driver_unregister(&drv->driver);
- 
-+	if (!drv->suspend || !drv->resume)
-+		printk("PCI driver %s lacks driver specific %s support.\n",
-+				drv->name,
-+				!drv->suspend ? (drv->resume ? "suspend" :
-+					"suspend and resume") :	"resume");
-+
- 	return error;
- }
- 
-diff -ruNp 920-report-no-pm-support.patch-old/drivers/usb/core/driver.c 920-report-no-pm-support.patch-new/drivers/usb/core/driver.c
---- 920-report-no-pm-support.patch-old/drivers/usb/core/driver.c	2007-02-06 14:48:47.000000000 +1100
-+++ 920-report-no-pm-support.patch-new/drivers/usb/core/driver.c	2007-02-10 12:32:57.000000000 +1100
-@@ -709,6 +709,11 @@ int usb_register_device_driver(struct us
- 		pr_info("%s: registered new device driver %s\n",
- 			usbcore_name, new_udriver->name);
- 		usbfs_update_special();
-+		if (!new_udriver->suspend || !new_udriver->resume)
-+			printk("USB driver %s lacks %s support.\n",
-+				new_udriver->name, !new_udriver->suspend ?
-+				(new_udriver->resume ? "suspend" :
-+				 "suspend and resume") : "resume");
- 	} else {
- 		printk(KERN_ERR "%s: error %d registering device "
- 			"	driver %s\n",
-diff -ruNp 920-report-no-pm-support.patch-old/include/linux/device.h 920-report-no-pm-support.patch-new/include/linux/device.h
---- 920-report-no-pm-support.patch-old/include/linux/device.h	2007-02-06 14:48:56.000000000 +1100
-+++ 920-report-no-pm-support.patch-new/include/linux/device.h	2007-02-10 13:36:01.000000000 +1100
-@@ -356,6 +356,7 @@ struct device {
- 	struct kobject kobj;
- 	char	bus_id[BUS_ID_SIZE];	/* position on parent bus */
- 	unsigned		is_registered:1;
-+	unsigned		pm_safe:1; /* No suspend/resume fns ok? */
- 	struct device_attribute uevent_attr;
- 	struct device_attribute *devt_attr;
- 
- 
-
-
-My output:
-nigel@nigel:~$ dmesg | grep lacks
-[   15.113674] Device driver platform lacks bus and class support for being suspended or resumed.
-[   15.131601] Device driver pci0000:00 lacks bus and class support for being suspended or resumed.
-[   15.179802] Device driver pnp0 lacks bus and class support for being suspended or resumed.
-[   15.972661] Device driver ide0 lacks bus and class support for being suspended or resumed.
-[   17.829746] Device driver ide1 lacks bus and class support for being suspended or resumed.
-[   17.830878] PCI driver ALI15x3_IDE lacks driver specific suspend and resume support.
-[   17.830963] PCI driver PIIX_IDE lacks driver specific suspend and resume support.
-[   17.878190] Device driver serio0 lacks bus and class support for being resumed.
-[   17.878442] Device driver serio1 lacks bus and class support for being resumed.
-[   17.878672] Device driver serio2 lacks bus and class support for being resumed.
-[   18.555856] Device driver serio3 lacks bus and class support for being resumed.
-[   18.558109] Device driver serio4 lacks bus and class support for being resumed.
-[   78.487717] Device driver usbdev1.1_ep00 lacks bus and class support for being suspended or resumed.
-[   78.595362] Device driver usbdev1.1_ep81 lacks bus and class support for being suspended or resumed.
-[   78.657382] Device driver usbdev2.1_ep00 lacks bus and class support for being suspended or resumed.
-[   78.765044] Device driver usbdev2.1_ep81 lacks bus and class support for being suspended or resumed.
-[   78.795324] Device driver usbdev3.1_ep00 lacks bus and class support for being suspended or resumed.
-[   78.904912] Device driver usbdev3.1_ep81 lacks bus and class support for being suspended or resumed.
-[   78.936997] PCI driver ali15x3_smbus lacks driver specific suspend and resume support.
-[   78.996318] PCI driver ali1535_smbus lacks driver specific suspend and resume support.
-
-
+> Yes but for such hardware, suspend/resume is likely to be a lot of
+> work to implement, and I'd rather the developers devote those
+> resources to making the driver as stable and performant as possible.
+> 
+> I agree 100% that drivers for desktop and laptop hardware should be
+> rejected if missing suspend/resume.
+> 
+> Lee
+> -
+> To unsubscribe from this list: send the line "unsubscribe
+> linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+> 
