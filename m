@@ -1,56 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030188AbXBJL6n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946804AbXBJL7S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030188AbXBJL6n (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Feb 2007 06:58:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933390AbXBJL6U
+	id S1946804AbXBJL7S (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Feb 2007 06:59:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946833AbXBJL7E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Feb 2007 06:58:20 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:56166 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1946829AbXBJL6J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Feb 2007 06:58:09 -0500
-To: Parag Warudkar <parag.warudkar@gmail.com>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       joerg@hydrops.han.de, dsd@gentoo.org, paulus@samba.org,
-       benh@kernel.crashing.org, lethal@linux-sh.org
-Subject: Re: [PATCH] Make aout executables work again
-References: <Pine.LNX.4.64.0702092100540.3984@localhost.localdomain>
-From: Andi Kleen <ak@suse.de>
-Date: 10 Feb 2007 13:58:13 +0100
-In-Reply-To: <Pine.LNX.4.64.0702092100540.3984@localhost.localdomain>
-Message-ID: <p73y7n6goey.fsf@bingen.suse.de>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+	Sat, 10 Feb 2007 06:59:04 -0500
+Received: from mga07.intel.com ([143.182.124.22]:17559 "EHLO
+	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1946829AbXBJL7B (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Feb 2007 06:59:01 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: i="4.13,309,1167638400"; 
+   d="scan'208"; a="179980893:sNHT17492454"
+Message-ID: <45CDB370.2020401@linux.intel.com>
+Date: Sat, 10 Feb 2007 12:58:40 +0100
+From: Arjan van de Ven <arjan@linux.intel.com>
+User-Agent: Thunderbird 1.5 (Windows/20051201)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Andi Kleen <ak@suse.de>
+CC: OGAWA Hirofumi <hogawa@miraclelinux.com>, patches@x86-64.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2.6.21 review I] [18/25] x86_64: Fix x86_64 ioremap base_address
+References: <200702101250.142420000@suse.de> <20070210115031.3D4CE13DFB@wotan.suse.de>
+In-Reply-To: <20070210115031.3D4CE13DFB@wotan.suse.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Parag Warudkar <parag.warudkar@gmail.com> writes:
-
-> This a reworked, replacement version of
-> x86-fix-vdso-mapping-for-aout-executables-* series of patches in -mm.
+Andi Kleen wrote:
+> From: OGAWA Hirofumi <hogawa@miraclelinux.com>
 > 
-> 1) Define arch_setup_additional_pages() as weak in linux/interp.h
-> 2) Include linux/interp.h in appropriate places
-> 3) Conditionally call arch_setup_additional_pages() from binfmt_*.c if
-> the arch defines it
-> 4) EXPORT_SYMBOL_GPL(arch_setup_additional_pages) for all x86{64},
-> powerpc, sh - binfmt_aout can be built as module
-> 5) Get rid of ARCH_HAS_SETUP_ADDITIONAL_PAGES from various places
-> 6) For x86_64 - define and export arch_setup_additional_pages as a
-> wrapper over syscall32_setup_pages, call it from ia32_aout.c
-> 
-> Fully tested on x86. (Compile, boot and run the aout binary at
-> http://ftp.funet.fi/pub/Linux/bin/as86.tar.Z). Other arches - changes
-> are minimal but still I'll appreciate if someone tests them.
+> Current mmconfig has some problems of remapped range.
 
-I already fixed this in a different way -- just use the stack
-trampoline on a.out
 
-Can you double check
-
-ftp://ftp.firstfloor.org/pub/ak/x86_64/quilt/patches/aout-no-vdso
-
-works for you?
-
--Andi
+eh wasn't there a patch that just ignored the MCFG for the broken 
+system instead?
