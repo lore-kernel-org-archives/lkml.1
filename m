@@ -1,47 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965307AbXBLS6V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964978AbXBLS7i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965307AbXBLS6V (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Feb 2007 13:58:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965310AbXBLS6U
+	id S964978AbXBLS7i (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Feb 2007 13:59:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965313AbXBLS7i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 13:58:20 -0500
-Received: from nz-out-0506.google.com ([64.233.162.226]:59880 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965307AbXBLS6U (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Feb 2007 13:58:20 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=XXs0JJXIjxkJEFu5EeKhsYX/eDi15mrGdKcXrYSFr+7FPXwFqzv4iyMAW0x2Dle6CyZrc8NqjY0oHZ9mUDSl7AWlAFFqARjeJr0efaOJd9JkJ7POz7elhrvl0p4vWI02iFFKeWVPNW2JTQWDAV3kAZGgrEf36WdDGgQ+35sJO/w=
-Message-ID: <b6a2187b0702121058p2dc0681fv47dc412c4f7a6424@mail.gmail.com>
-Date: Tue, 13 Feb 2007 02:58:18 +0800
-From: "Jeff Chua" <jeff.chua.linux@gmail.com>
-To: "Miquel van Smoorenburg" <miquels@cistron.nl>
-Subject: Re: [QUESTION] file access time in millisecond?
+	Mon, 12 Feb 2007 13:59:38 -0500
+Received: from mbox.ssc.unict.it ([151.97.230.9]:42637 "EHLO ssc.unict.it"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S964978AbXBLS7h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Feb 2007 13:59:37 -0500
+X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Mon, 12 Feb 2007 13:59:36 EST
+From: "Paolo 'Blaisorblade' Giarrusso" <blaisorblade@yahoo.it>
+To: Andrew Morton <akpm@osdl.org>, stable@kernel.org
 Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <45d03af4$0$326$e4fe514c@news.xs4all.nl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <b6a2187b0702112327t7294c221w460b3bd0f77d0e@mail.gmail.com>
-	 <p73bqjzhhp7.fsf@bingen.suse.de>
-	 <b6a2187b0702120152s1279b931x813413a4234d8dec@mail.gmail.com>
-	 <45d03af4$0$326$e4fe514c@news.xs4all.nl>
+Subject: [PATCH] Kconfig: FAULT_INJECTION can be selected only if LOCKDEP is enabled.
+Date: Sat, 10 Feb 2007 17:45:37 +0100
+Message-Id: <11711259371905-git-send-email-blaisorblade@yahoo.it>
+X-Mailer: git-send-email 1.4.4.4.ga596b
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12 Feb 2007 10:01:24 GMT, Miquel van Smoorenburg <miquels@cistron.nl>
+There is no prompt for STACKTRACE, so it is enabled only when 'select'ed.
+FAULT_INJECTION depends on it, while LOCKDEP selects it. So FAULT_INJECTION
+becomes visible in Kconfig only when LOCKDEP is enabled.
 
-> Check out /usr/include/bits/stat.h
-
-Mike,
-
-Thanks for the pointer. Got it. But as I mentioned to Andi, it doesn't
-work with my filesystems (ext2, reiserfs). But at least it save me
-from upgrading my glibc!
-
-
-Thanks,
-Jeff.
+Signed-off-by: Paolo 'Blaisorblade' Giarrusso <blaisorblade@yahoo.it>
+Index: linux-2.6.git/lib/Kconfig.debug
+===================================================================
+--- linux-2.6.git.orig/lib/Kconfig.debug
++++ linux-2.6.git/lib/Kconfig.debug
+@@ -400,7 +400,7 @@ config LKDTM
+ config FAULT_INJECTION
+ 	bool "Fault-injection framework"
+ 	depends on DEBUG_KERNEL
+-	depends on STACKTRACE
++	select STACKTRACE
+ 	select FRAME_POINTER
+ 	help
+ 	  Provide fault-injection framework.
