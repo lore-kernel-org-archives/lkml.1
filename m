@@ -1,80 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751945AbXBJVIs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751927AbXBJVuT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751945AbXBJVIs (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Feb 2007 16:08:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751936AbXBJVIs
+	id S1751927AbXBJVuT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Feb 2007 16:50:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751936AbXBJVuT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Feb 2007 16:08:48 -0500
-Received: from sardaukar.technologeek.org ([213.41.134.240]:47609 "EHLO
-	sonic.technologeek.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751954AbXBJVIr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Feb 2007 16:08:47 -0500
-From: Julien BLACHE <jb@jblache.org>
-To: linux-kernel@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@suse.de>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Marcel Holtmann <marcel@holtmann.org>, Jiri Kosina <jkosina@suse.cz>
-Subject: [PATCH] Fix USB vendor and product IDs endianness for USB HID devices
-Date: Sat, 10 Feb 2007 22:08:50 +0100
-Message-ID: <87k5yp90v1.fsf@sonic.technologeek.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) XEmacs/21.4.19 (linux)
-MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="=-=-="
+	Sat, 10 Feb 2007 16:50:19 -0500
+Received: from mail.screens.ru ([213.234.233.54]:60883 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751927AbXBJVuS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Feb 2007 16:50:18 -0500
+Date: Sun, 11 Feb 2007 00:50:14 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, David Howells <dhowells@redhat.com>,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH 0/3] delayed_work tweaks
+Message-ID: <20070210215014.GA2210@tv-sign.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---=-=-=
+Andrew, unless you stop me right now, I am going to send the following
+patches in addition:
 
-Hi,
+	[PATCH] kill cancel_rearming_delayed_workqueue()
 
-The generic HID layer changes introduced an endianness bug for USB HID
-devices.
+		cancel_rearming_delayed_workqueue(wq, dwork) does not
+		need the first parameter, it could be figured out from
+		dwork. So we can rename it to cancel_rearming_delayed_work
+		after the simple change and fix all callers.
 
-The USB vendor and product IDs are not byteswapped appropriately, and
-thus come out in the wrong endianness when fetched through the evdev
-using ioctl() on big endian platforms.
+		In other words:
 
-This byteswapping used to be done in hidinput_connect() (by
-usb_to_input_id()) when filling up the hid device structure, and now
-needs to be done upstream. USB is the only user so far, and the
-hid_device structure is set up in usb_hid_configure().
+			- cancel_rearming_delayed_work(dwork) will work
+			  for any workqueue, not just keventd_wq.
 
+			- all callers of cancel_rearming_delayed_workqueue()
+			  will be converted to use it.
 
-Signed-off-by: Julien BLACHE <jb@jblache.org>
+		No? This breaks the public interface, but we already did
+		this recently ...
 
+	[PATCH] kill flush_work_keventd()
 
---=-=-=
-Content-Type: text/x-diff
-Content-Disposition: inline; filename=usbhid_vid_pid_endianness_fix.patch
-Content-Description: [PATCH] Fix USB vendor and product IDs endianness for
- USB HID devices
+		The same is true for flush_work(), it doesn't need the
+		"struct workqueue_struct *wq" parameter. I missed this
+		fact when I was doing flush_work().
 
---- hid-core.c~	2007-02-05 11:16:33.905278861 +0100
-+++ hid-core.c	2007-02-10 21:53:52.366333019 +0100
-@@ -1220,8 +1220,8 @@
- 			 le16_to_cpu(dev->descriptor.idProduct));
- 
- 	hid->bus = BUS_USB;
--	hid->vendor = dev->descriptor.idVendor;
--	hid->product = dev->descriptor.idProduct;
-+	hid->vendor = le16_to_cpu(dev->descriptor.idVendor);
-+	hid->product = le16_to_cpu(dev->descriptor.idProduct);
- 
- 	usb_make_path(dev, hid->phys, sizeof(hid->phys));
- 	strlcat(hid->phys, "/input", sizeof(hid->phys));
+		This change is obviously good to do before flush_work()
+		goes to mainline.
 
---=-=-=
+		Also, I think the name "flush_work" is very bad. Isn't
+		it better to rename it as well?
 
+		cancel_work? cancel_work_sync? whatever.
 
+	[PATCH] bonus: mark kernel/workqueue.c as CONFIG_EXPERIMENTAL
 
-Please apply, and this is a candidate for -stable as it breaks a
-documented API/ABI in userspace.
+		too many non-reviewed changes ...
 
-JB.
+Oleg.
 
--- 
-Julien BLACHE                                   <http://www.jblache.org> 
-<jb@jblache.org>                                  GPG KeyID 0xF5D65169
-
---=-=-=--
