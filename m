@@ -1,62 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752279AbXBJLgV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752435AbXBJLlf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752279AbXBJLgV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Feb 2007 06:36:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752286AbXBJLgV
+	id S1752435AbXBJLlf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Feb 2007 06:41:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752439AbXBJLlf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Feb 2007 06:36:21 -0500
-Received: from vscan01.westnet.com.au ([203.10.1.131]:45813 "EHLO
-	vscan01.westnet.com.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752274AbXBJLgU (ORCPT
+	Sat, 10 Feb 2007 06:41:35 -0500
+Received: from mtagate4.uk.ibm.com ([195.212.29.137]:23360 "EHLO
+	mtagate4.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752435AbXBJLle (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Feb 2007 06:36:20 -0500
-X-Greylist: delayed 1188 seconds by postgrey-1.27 at vger.kernel.org; Sat, 10 Feb 2007 06:36:20 EST
-Message-ID: <45CDA98A.2030608@snapgear.com>
-Date: Sat, 10 Feb 2007 21:16:26 +1000
-From: Greg Ungerer <gerg@snapgear.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070102)
+	Sat, 10 Feb 2007 06:41:34 -0500
+Date: Sat, 10 Feb 2007 12:40:26 +0100
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Tejun Heo <htejun@gmail.com>, Jeff Garzik <jgarzik@pobox.com>,
+       linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
+Subject: [patch] iomap s390 build fix
+Message-ID: <20070210114026.GA12642@osiris.boeblingen.de.ibm.com>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH]: linux-2.6.20-uc0 (MMU-less updates)
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: mutt-ng/devel-r804 (Linux)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi All,
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
 
-An update of the uClinux (MMU-less) code against 2.6.20.
-Mostly cleanups, and a couple of bug fixes.
+9ac7849e35f705830f7b016ff272b0ff1f7ff759 breaks s390, we don't
+have any PCI devices...
 
-I have included a new style serial driver for the ColdFire too.
-Eventually I would like to replace the old style mcfserial.c
-driver with this. This is a good place to start testing and
-reviewing it more throughly.
+lib/built-in.o(.text+0xcdc): In function `devm_ioport_map_release':
+: undefined reference to `ioport_unmap'
+lib/built-in.o(.text+0xd64): In function `devm_ioport_map':
+: undefined reference to `ioport_map'
+lib/built-in.o(.text+0xdd2): In function `devm_ioport_unmap':
+: undefined reference to `ioport_unmap'
+lib/built-in.o(.text+0x10a2): In function `pcim_iomap_release':
+: undefined reference to `pci_iounmap'
+lib/built-in.o(.text+0x11bc): In function `pcim_iomap':
+: undefined reference to `pci_iomap'
+lib/built-in.o(.text+0x121e): In function `pcim_iounmap':
+: undefined reference to `pci_iounmap'
+lib/built-in.o(.text+0x136c): In function `pcim_iomap_regions':
+: undefined reference to `pci_request_region'
+lib/built-in.o(.text+0x13b4): In function `pcim_iomap_regions':
+: undefined reference to `pci_release_region'
+lib/built-in.o(.text+0x13e4): In function `pcim_iomap_regions':
+: undefined reference to `pci_release_region'
+make: *** [.tmp_vmlinux1] Error 1
 
-http://www.uclinux.org/pub/uClinux/uClinux-2.6.x/linux-2.6.20-uc0.patch.gz
+Cc: Tejun Heo <htejun@gmail.com>
+Cc: Jeff Garzik <jeff@garzik.org>
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+---
+ lib/Makefile |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletion(-)
 
-
-Change log:
-
-. use ARRAY_SIZE macro                          Ahmed S. Darwish
-. fix interrupt handler types for m68knommu     Greg Ungerer
-. remove regs arg from m68knommu timers         Greg Ungerer
-. add "unused" sections to m68knommu linker     Greg Ungerer
-. fix INIT_WORK usage in coldfire fec driver    Greg Ungerer
-. enable second phy on 5275                     Mike Cruse
-. fix INIT_WORK usage in old mcfserial.c        Greg Ungerer
-. fix pin assignment for 5282 in mcfserial.c    David Wu
-. remap mem mapping for flat fmt exes           Greg Ungerer
-. clean includes not needed m68knommu bitops.h  Greg Ungerer
-. use minimum whole pages for hash allocations  David McCullough
-
-
-Regards
-Greg
-
-
-------------------------------------------------------------------------
-Greg Ungerer  --  Chief Software Dude       EMAIL:     gerg@snapgear.com
-SnapGear -- a division of Secure Computing  PHONE:       +61 7 3435 2888
-825 Stanley St,                             FAX:         +61 7 3891 3630
-Woolloongabba, QLD, 4102, Australia         WEB: http://www.SnapGear.com
+Index: linux-2.6/lib/Makefile
+===================================================================
+--- linux-2.6.orig/lib/Makefile
++++ linux-2.6/lib/Makefile
+@@ -12,13 +12,14 @@ lib-$(CONFIG_SMP) += cpumask.o
+ 
+ lib-y	+= kobject.o kref.o kobject_uevent.o klist.o
+ 
+-obj-y += sort.o parser.o halfmd4.o debug_locks.o random32.o iomap.o
++obj-y += sort.o parser.o halfmd4.o debug_locks.o random32.o
+ 
+ ifeq ($(CONFIG_DEBUG_KOBJECT),y)
+ CFLAGS_kobject.o += -DDEBUG
+ CFLAGS_kobject_uevent.o += -DDEBUG
+ endif
+ 
++obj-$(CONFIG_PCI) += iomap.o
+ obj-$(CONFIG_IOMAP_COPY) += iomap_copy.o
+ obj-$(CONFIG_DEBUG_LOCKING_API_SELFTESTS) += locking-selftest.o
+ obj-$(CONFIG_DEBUG_SPINLOCK) += spinlock_debug.o
