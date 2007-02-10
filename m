@@ -1,57 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751847AbXBJUcy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751860AbXBJUfa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751847AbXBJUcy (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Feb 2007 15:32:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751850AbXBJUcy
+	id S1751860AbXBJUfa (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Feb 2007 15:35:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751869AbXBJUfa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Feb 2007 15:32:54 -0500
-Received: from wr-out-0506.google.com ([64.233.184.225]:63209 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751847AbXBJUcx (ORCPT
+	Sat, 10 Feb 2007 15:35:30 -0500
+Received: from gepetto.dc.ltu.se ([130.240.42.40]:64019 "EHLO
+	gepetto.dc.ltu.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751860AbXBJUf3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Feb 2007 15:32:53 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=iSQfWXyjWmrnJYzk/gg33r+W7/UgmN9/fwDPc77jnCNkX/Szejw9USzOPsv6C2zGo8+SIDMX57+MXKeeT31YMsK657j5muv8TJXHOzAYNJOTomfOxzZV1ZNjHbpKO6qlE3bEYnbtileYl23AoQsc/T8/1haHiChN1GQxTOOptrc=
-Message-ID: <8d158e1f0702101232q244a890fg450aa039689fcb3a@mail.gmail.com>
-Date: Sat, 10 Feb 2007 21:32:51 +0100
-From: "Patrick Ale" <patrick.ale@gmail.com>
-To: Alan <alan@lxorguk.ukuu.org.uk>
-Subject: Re: libsata tests started
-Cc: "Randy Dunlap" <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <20070210203504.129b35ac@localhost.localdomain>
+	Sat, 10 Feb 2007 15:35:29 -0500
+Message-ID: <45CE2C8C.80306@student.ltu.se>
+Date: Sat, 10 Feb 2007 21:35:24 +0100
+From: Richard Knutsson <ricknu-0@student.ltu.se>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070130)
 MIME-Version: 1.0
+To: James Bottomley <James.Bottomley@SteelEye.com>
+CC: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: [PATCH] drivers/scsi/aic7xxx_old: Convert to generic	boolean-values
+References: <20070210174628.3764.89569.sendpatchset@thinktank.campus.ltu.se> <1171132062.3373.31.camel@mulgrave.il.steeleye.com>
+In-Reply-To: <1171132062.3373.31.camel@mulgrave.il.steeleye.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <8d158e1f0702100822i28d0bcds91cf27fc34534d2c@mail.gmail.com>
-	 <20070210114155.6f7433c8.randy.dunlap@oracle.com>
-	 <8d158e1f0702101214j603e1880i7eae2d94b446bc0b@mail.gmail.com>
-	 <20070210203504.129b35ac@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/10/07, Alan <alan@lxorguk.ukuu.org.uk> wrote:
+James Bottomley wrote:
+> On Sat, 2007-02-10 at 18:46 +0100, Richard Knutsson wrote:
+>   
+>> Convert:
+>> FALSE -> false
+>> TRUE  -> true
+>>     
+>
+> Actually, downcasing true and false in this driver is pretty much a
+> retrograde step.  The reason for their being uppercased is that they
+> represent constants (and uppercase is the traditional defined constant
+> specifier).
+>   
+I would argue that 'false' and 'true' are values and not constants, but 
+further more C99 is defining them in lowercase (stdbool.h).
+> When discussion about TRUE and FALSE came up a long time a go in the
+> context of the mid layer we agreed to strip the defined constants out of
+> that code and just go with 1 and 0 inline ... because the code was
+> pretty much being rewritten.  We also decided to encourage but not force
+> the driver writers simply to use 1 and 0 as well ... a lot of people are
+> deeply wedded to the TRUE and FALSE defines, it turned out.
+>   
+As I have expressed before, I don't understand why people seem to 
+dislike 'false'/'true' but anyway, since you seem to approve booleans, 
+would it be possible to convert the obvious variables/functions into 
+boolean-type?
 
-> Right umm "Your honor the gentleman is human, this is not acceptable" ?
+Richard Knutsson
 
-Human and a looney who wishes Monty Python's Flying Circus still
-existed so he could be a main character and having a great excuse to
-act weird.
-
-
-> Beating the crap out of it using it for real work is one excellent form
-> of testing. We aren't yet at the point of only worrying about benchmark
-> tuning and corner cases.
-
-Exactly what I am doing :)
-I know bonnie++ is mostly used for benchmarking, but it also is a
-great tool to hammer down your hard-disks.
-
-I also break RAID1 arrays volunteerly (spelling) and resync them to do
-some stress tests on the disks, but I dont recommend others to do
-these kind of tests, unless you dont worry about your data, or are a
-fruitcake, like me.
-
-Patrick
