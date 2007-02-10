@@ -1,28 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932664AbXBJPvg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932697AbXBJPyQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932664AbXBJPvg (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Feb 2007 10:51:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932667AbXBJPvg
+	id S932697AbXBJPyQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Feb 2007 10:54:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932695AbXBJPyP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Feb 2007 10:51:36 -0500
-Received: from dsl3-63-249-91-56.cruzio.com ([63.249.91.56]:37644 "EHLO
-	cichlid.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932664AbXBJPvf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Feb 2007 10:51:35 -0500
-Date: Sat, 10 Feb 2007 07:51:20 -0800
-From: Andrew Burgess <aab@cichlid.com>
-Message-Id: <200702101551.l1AFpKUf019229@cichlid.com>
-To: mingo@elte.hu, rncbc@rncbc.org, linux-rt-users@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.20-rt5 Oops on boot
+	Sat, 10 Feb 2007 10:54:15 -0500
+Received: from ns2.uludag.org.tr ([193.140.100.220]:60468 "EHLO uludag.org.tr"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S932667AbXBJPyO convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Feb 2007 10:54:14 -0500
+From: Ismail =?iso-8859-1?q?D=F6nmez?= <ismail@pardus.org.tr>
+Organization: TUBITAK/UEKAE
+To: Holger Macht <hmacht@suse.de>
+Subject: Re: [GIT PATCH] ACPI patches for 2.6.21
+Date: Sat, 10 Feb 2007 17:52:13 +0200
+User-Agent: KMail/1.9.6
+Cc: Len Brown <lenb@kernel.org>, Linus Torvalds <torvalds@osdl.org>,
+       Andrew Morton <akpm@osdl.org>, tony.luck@intel.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-acpi@vger.kernel.org,
+       "Accardi, Kristen" <kristen.c.accardi@intel.com>
+References: <200702071418.51058.lenb@kernel.org> <200702101027.25372.ismail@pardus.org.tr> <20070210120713.GA31473@homac2>
+In-Reply-To: <20070210120713.GA31473@homac2>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200702101752.14797.ismail@pardus.org.tr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->I have terrible news: 2.6.20-rt5 does not boot at all on a couple
->machines I was brave enough to try -- a P4@3.3Ghz SMP/HT desktop, and a
->Core2 Duo T7200@2.0Ghz laptop.
+On Saturday 10 February 2007 14:07:13 Holger Macht wrote:
+> On Sat 10. Feb - 10:27:14, Ismail Dönmez wrote:
+> > On Wednesday 07 February 2007 21:18:50 Len Brown wrote:
+> > > Hi Linus,
+> > >
+> > > please pull from:
+> > >
+> > > git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux-acpi-2.6.git
+> > > release
+> > >
+> > > ACPICA Core version 2070126 simplifies the ACPI table manager
+> > > code by consolidating multiple table definitions into one.
+> > > It also saves memory by mapping the tables where the BIOS provides them
+> > > rather than copying them into the kernel.
+> >
+> > This breaks kpowersave, now it always says laptop is plugged in and does
+> > not show any battery status. Any /proc changes in this release?
+>
+> kpowersave just reflects what HAL thinks, and HAL reflects what the kernel
+> thinks. So please post the content of /proc/acpi/ac_adapter/AC/state when
+> AC is not plugged in to figure out if it's just a userland bug or a kernel
+> issue.
 
-Ditto for me on an ASUS AMD64 x2, just hangs, I have no
-serial console. 2.6.20-rc5-rt7 booted ok (the last one I
-tried). Both using SMP.
+[~]> cat /proc/acpi/ac_adapter/ADP1/state
+state:                   off-line
+
+
+Hmmf looks like a userspace bug, but it certainly did work before ACPI update.
+
+Regards,
+ismail
 
