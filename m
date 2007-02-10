@@ -1,56 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751399AbXBJSAc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751710AbXBJSFf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751399AbXBJSAc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Feb 2007 13:00:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751703AbXBJSAc
+	id S1751710AbXBJSFf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Feb 2007 13:05:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751711AbXBJSFf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Feb 2007 13:00:32 -0500
-Received: from mailgate.cesmail.net ([216.154.195.36]:43396 "HELO
-	mailgate.cesmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751399AbXBJSAb (ORCPT
+	Sat, 10 Feb 2007 13:05:35 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:15226 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751678AbXBJSFe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Feb 2007 13:00:31 -0500
-X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Sat, 10 Feb 2007 13:00:31 EST
-Message-ID: <20070210125351.05uo0o0sgw0w0ckc@webmail.spamcop.net>
-Date: Sat, 10 Feb 2007 12:53:51 -0500
-From: Pavel Roskin <proski@gnu.org>
-To: "John W. Linville" <linville@tuxdriver.com>
-Cc: Theodore Tso <tytso@mit.edu>, James Ketrenos <jketreno@linux.intel.com>,
-       linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
-       ipw3945-devel@lists.sourceforge.net, netdev@vger.kernel.org
-Subject: Re: [ipw3945-devel] [ANNOUNCE] d80211 based driver for Intel
-	PRO/Wireless 3945ABG
-References: <45CCE3CA.4050904@linux.intel.com>
-	<20070210162254.GC25607@thunk.org> <20070210163933.GA17140@tuxdriver.com>
-In-Reply-To: <20070210163933.GA17140@tuxdriver.com>
+	Sat, 10 Feb 2007 13:05:34 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=JOmmToWDndzXKT03pK+3LWE8izxoLpK8FtGGUfgQmRUWcErYO1cP9eOFIYhz2k4nQ
+	ruQIn+WGyuHxdGFiPpiEQ==
+Message-ID: <b040c32a0702101005q7ff4a679xd3586531aa8a99cc@mail.gmail.com>
+Date: Sat, 10 Feb 2007 10:05:24 -0800
+From: "Ken Chen" <kenchen@google.com>
+To: "Ananiev, Leonid I" <leonid.i.ananiev@intel.com>
+Subject: Re: [PATCH] aio: fix kernel bug when page is temporally busy
+Cc: suparna@in.ibm.com, "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-aio <linux-aio@kvack.org>,
+       "Zach Brown" <zach.brown@oracle.com>,
+       "Chris Mason" <chris.mason@oracle.com>,
+       "Badari Pulavarty" <pbadari@us.ibm.com>
+In-Reply-To: <B41635854730A14CA71C92B36EC22AAC804976@mssmsx411>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"
-Content-Disposition: inline
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-User-Agent: Internet Messaging Program (IMP) 4.0-cvs
+Content-Disposition: inline
+References: <20070209071600.GA21276@in.ibm.com>
+	 <B41635854730A14CA71C92B36EC22AAC804976@mssmsx411>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting "John W. Linville" <linville@tuxdriver.com>:
+On 2/9/07, Ananiev, Leonid I <leonid.i.ananiev@intel.com> wrote:
+> I have used EIOCBRETRY in the patch to minimize source code modification
+> only.
+> [...]
+> A lot of errno's have different meaning in different functions or
+> contexts. EAGAIN could be used instated of EIOCBRETRY for irredundant
+> set.
 
-> > Very cool!  Is it likely that d80211 and iwlwifi will be pushed into
-> > mainline in time for 2.6.21?
->
-> Hmmm...I think we need to spend a cycle or so in -mm.  2.6.22 seems
-> more likely for mainline.
+I also think the original patch is wrong.  It might shut up kernel
+panic by eliminate double calls to aio_complete(), but it will
+silently introduce data corruption.
 
-I think we should take this as a goal.  Last time I checked, d80211 wasn't in
--mm.  Perhaps it should go there.  And by the way, the latest changes from
-netdev->class_dev to netdev->dev break d80211.  Perhaps we should rebase
-wireless-dev immediately after 2.6.21-rc1, fix all compile issues and submit
-the patch to -mm.
+If invalidate_inode_pages2_range() says it can not invalidate pages,
+while dio to the same file offset range is in flight, something is
+really wrong there.  In generic_file_direct_IO, the function
+explicitly flushes all dirty pages and wait on them before submits
+DIO.
 
-And iwlwifi is surprisingly good for a just announced driver.  It worked for me
-from the first attempt, and that's the first d80211 driver to do so.  In my
-opinion, it should go to wireless-dev as soon as possible so it can go to -mm
-toghether with other drivers.  A couple of wrinkles in the standalone build
-system are irrelevant to the kernel interation.
+So any error value returned from invalidate_inode_pages2_range() has
+to be taken seriously in the direct IO submit path instead of dropping
+it to the floor.
 
---
-Regards,
-Pavel Roskin
+- Ken
