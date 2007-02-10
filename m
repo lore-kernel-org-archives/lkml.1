@@ -1,64 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946790AbXBJAPF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946801AbXBJAXd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946790AbXBJAPF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Feb 2007 19:15:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946791AbXBJAPF
+	id S1946801AbXBJAXd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Feb 2007 19:23:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946803AbXBJAXd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Feb 2007 19:15:05 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:56754 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1946790AbXBJAPD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Feb 2007 19:15:03 -0500
-Date: Fri, 9 Feb 2007 16:12:45 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Eric Dumazet <dada1@cosmosbay.com>
-cc: Zach Brown <zach.brown@oracle.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-aio@kvack.org, Suparna Bhattacharya <suparna@in.ibm.com>,
-       Benjamin LaHaise <bcrl@kvack.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH 0 of 4] Generic AIO by scheduling stacks
-In-Reply-To: <45CD0C07.5060601@cosmosbay.com>
-Message-ID: <Pine.LNX.4.64.0702091608120.8424@woody.linux-foundation.org>
-References: <patchbomb.1170193181@tetsuo.zabbo.net>
- <Pine.LNX.4.64.0702091419470.8424@woody.linux-foundation.org>
- <45CD0C07.5060601@cosmosbay.com>
+	Fri, 9 Feb 2007 19:23:33 -0500
+Received: from wr-out-0506.google.com ([64.233.184.229]:45944 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1946801AbXBJAXc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Feb 2007 19:23:32 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=nmho1zhHSjQv40eJFqtz6CWD+Xk2kadR7UIgXHamdanw2qtfcZ1PkyM7hv5D7nf5y39b7ECS9GmDYrLlqAc8DjL7gy64TQ9g7iVtX28bxKBJvUF86fcDAR48m9njV3UpF5ubgVA8JgznSIpEXTiYSDoDnB41UJvoKCM4qmb3ebw=
+Message-ID: <ee9e417a0702091623t1ccf55b8wb05b64b9c51474a6@mail.gmail.com>
+Date: Fri, 9 Feb 2007 19:23:31 -0500
+From: "Russ Cox" <rsc@swtch.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: [PATCH] fix quadratic behavior of shrink_dcache_parent()
+Cc: "Miklos Szeredi" <miklos@szeredi.hu>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20070209160055.bbd20c9f.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <E1HFdnm-0006DB-00@dorka.pomaz.szeredi.hu>
+	 <20070209160055.bbd20c9f.akpm@linux-foundation.org>
+X-Google-Sender-Auth: 8d365207a51bc89d
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> "The file system mounted on /tmp/z in the example contains 2^50
+> directories".   heh.
+>
+> I do wonder how realistic this problem is in real life.
 
+That's a fair concern, although I was trying this as part
+of evaluating how much someone could hose a system
+if we let them mount arbitrary FUSE servers.  And the
+answer is: they could make it completely unusable,
+requiring reboot.
 
-On Sat, 10 Feb 2007, Eric Dumazet wrote:
-> 
-> Well, I guess if the original program was mono-threaded, and syscall used
-> fget_light(), we might have a problem here if the child try a close(). So you
-> may have to disable fget_light() magic if async call is the originator of the
-> syscall.
+I ran a later test that printed how deep it got into
+the file tree and it was only a few hundred thousand
+if I recall correctly.  A determined attacker might even
+manage to do this in a normal file system.
 
-Yes. All the issues that I already brought up with Zach's patches are 
-still there. This doesn't really change any of them. Any optimization that 
-checks for "am I single-threaded" will need to be aware of pending and 
-running async things.
+But sure, it's not a common case.  ;-)
 
-With my patch, any _running_ async things will always be seen as normal 
-clones, but the pending ones won't. So you'd need to effectively change 
-anything that looks like
-
-	if (atomic_read(&current->mm->count) == 1)
-		.. do some simplified version ..
-
-into
-
-	if (!current->async_cookie && atomic_read(..) == 1)
-		.. do the simplified thing ..
-
-to make it safe.
-
-I think we only do it for fget_light and some VM TLB simplification, so it 
-shouldn't be a big burden to check.
-
-Side note: the real issues still remain. The interfaces, and the 
-performance testing.
-
-		Linus
+Russ
