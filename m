@@ -1,72 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752136AbXBJIev@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753025AbXBJIlx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752136AbXBJIev (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Feb 2007 03:34:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752139AbXBJIev
+	id S1753025AbXBJIlx (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Feb 2007 03:41:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753017AbXBJIlx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Feb 2007 03:34:51 -0500
-Received: from pxy2nd.nifty.com ([202.248.175.14]:16074 "HELO pxy2nd.nifty.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752136AbXBJIeu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Feb 2007 03:34:50 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=pxy2nd-default; d=mbf.nifty.com;
-  b=yjFituGK2rZXXQnYoNszKZ2KtcTw3qAvR4Sq9ny42mN8VF2n7wR7mtOUCnsiKIJODHgHI7qaPDay/EorZ1ERQg==  ;
-Date: Sat, 10 Feb 2007 17:34:45 +0900 (JST)
-Message-Id: <20070210.173445.242527990.takada@mbf.nifty.com>
-To: linux-kernel@vger.kernel.org
-Subject: i386: pit_latch_buggy has no effect.
-From: takada <takada@mbf.nifty.com>
-X-Mailer: Mew version 5.1 on Emacs 22.0.92 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Sat, 10 Feb 2007 03:41:53 -0500
+Received: from brick.kernel.dk ([62.242.22.158]:10646 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752139AbXBJIlw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Feb 2007 03:41:52 -0500
+Date: Sat, 10 Feb 2007 09:42:17 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Otavio Salvador <otavio@debian.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Add PM_TRACE x86_64 support.
+Message-ID: <20070210084217.GJ6152@kernel.dk>
+References: <1170895857.4451.55.camel@nigel.suspend2.net> <87lkj9bg67.fsf@neumann.lab.ossystems.com.br> <1170900487.4451.62.camel@nigel.suspend2.net> <20070208124003.GE4487@kernel.dk> <20070209225255.GC3949@ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070209225255.GC3949@ucw.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
-Eliminated the arch/i386/kernel/timers in 2.6.18, use clocksoures instead.
-pit_latch_buggy was referred in timers/timer_tsc.c, and currently removed.
-Therefore nobody refer it.
-Until 2.6.17, MediaGX's TSC works correctly. after 2.6.18, warned
-"TSC appears to be running slowly. Marking it as unstable". So marked 
-unstable TSC when CS55x0.
+On Fri, Feb 09 2007, Pavel Machek wrote:
+> Hi!
+> 
+> > > > Nigel Cunningham <nigel@nigel.suspend2.net> writes:
+> > > > 
+> > > > > -	for (tracedata = &__tracedata_start ; tracedata < &__tracedata_end ; tracedata += 6) {
+> > > > > +	for (tracedata = &__tracedata_start ; tracedata < &__tracedata_end ; tracedata += 2 + sizeof(unsigned long)) {
+> > > > 
+> > > > Could you split this line?
+> > > 
+> > > Sure.
+> > > 
+> > > -- New version -- (What's the right way to do this?)
+> > > 
+> > > This patch add x86_64 support for PM_TRACE, and shifts per-arch code to
+> > > the appropriate subdirectories.
+> > > 
+> > > Symbol exports are added so tracing can be used from drivers built as
+> > > modules too.
+> > 
+> > Don't include exports in a patch that doesn't use them. Introduce the
+> > exports in a later patch series, for when you actually need it.
+> 
+> It is debugging infrastructure, so export actually makes sense... It
+> will not ever be used in mainline kernel; you need to modify code
+> manually to use this code..
 
+Then add the exports while you are modifying the other code, it's no
+reason to put it in mainline.
 
-diff -Naru a/arch/i386/kernel/cpu/cyrix.c b/arch/i386/kernel/cpu/cyrix.c
---- a/arch/i386/kernel/cpu/cyrix.c	2007-02-05 03:44:54.000000000 +0900
-+++ b/arch/i386/kernel/cpu/cyrix.c	2007-02-10 16:11:31.000000000 +0900
-@@ -278,7 +278,7 @@
- 		 *  The 5510/5520 companion chips have a funky PIT.
- 		 */  
- 		if (pci_dev_present(cyrix_55x0))
--			pit_latch_buggy = 1;
-+			mark_tsc_unstable();
- #endif
- 		c->x86_cache_size=16;	/* Yep 16K integrated cache thats it */
- 
-diff -Naru a/arch/i386/kernel/time.c b/arch/i386/kernel/time.c
---- a/arch/i386/kernel/time.c	2007-02-05 03:44:54.000000000 +0900
-+++ b/arch/i386/kernel/time.c	2007-02-10 16:12:04.000000000 +0900
-@@ -70,8 +70,6 @@
- 
- #include <asm/i8259.h>
- 
--int pit_latch_buggy;              /* extern */
--
- #include "do_timer.h"
- 
- unsigned int cpu_khz;	/* Detected as we calibrate the TSC */
-diff -Naru a/include/asm-i386/timer.h b/include/asm-i386/timer.h
---- a/include/asm-i386/timer.h	2007-02-05 03:44:54.000000000 +0900
-+++ b/include/asm-i386/timer.h	2007-02-10 16:12:21.000000000 +0900
-@@ -5,8 +5,6 @@
- 
- #define TICK_SIZE (tick_nsec / 1000)
- void setup_pit_timer(void);
--/* Modifiers for buggy PIT handling */
--extern int pit_latch_buggy;
- extern int timer_ack;
- extern int recalibrate_cpu_khz(void);
- 
+-- 
+Jens Axboe
 
