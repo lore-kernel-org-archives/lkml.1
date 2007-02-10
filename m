@@ -1,261 +1,188 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933402AbXBJLvA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933416AbXBJLvp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933402AbXBJLvA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Feb 2007 06:51:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933415AbXBJLvA
+	id S933416AbXBJLvp (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Feb 2007 06:51:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933387AbXBJLve
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Feb 2007 06:51:00 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:55811 "EHLO mx2.suse.de"
+	Sat, 10 Feb 2007 06:51:34 -0500
+Received: from mx1.suse.de ([195.135.220.2]:50251 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933402AbXBJLuq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Feb 2007 06:50:46 -0500
+	id S933375AbXBJLua (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Feb 2007 06:50:30 -0500
 From: Andi Kleen <ak@suse.de>
 References: <200702101250.142420000@suse.de>
 In-Reply-To: <200702101250.142420000@suse.de>
-To: "Bryan O'Sullivan" <bos@pathscale.com>, Andi Kleen <ak@suse.de>,
-       Roland Dreier <rolandd@cisco.com>, patches@x86-64.org,
+To: Ingo Molnar <mingo@elte.hu>, Suresh Siddha <suresh.b.siddha@intel.com>,
+       Andi Kleen <ak@suse.de>, "Li, Shaohua" <shaohua.li@intel.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>, patches@x86-64.org,
        linux-kernel@vger.kernel.org
-Subject: [PATCH 2.6.21 review I] [21/25] x86_64: a memcpy that tries to reduce cache pressure
-Message-Id: <20070210115034.694B013DBF@wotan.suse.de>
-Date: Sat, 10 Feb 2007 12:50:34 +0100 (CET)
+Subject: [PATCH 2.6.21 review I] [9/25] x86_64: always use physical delivery mode on > 8 CPUs
+Message-Id: <20070210115021.B13B213DFE@wotan.suse.de>
+Date: Sat, 10 Feb 2007 12:50:21 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-From: "Bryan O'Sullivan" <bos@pathscale.com>
+From: Ingo Molnar <mingo@elte.hu>
 
-This copy routine is memcpy-compatible, but on some architectures will use
-cache-bypassing loads to avoid bringing the source data into the cache.
+Remove clustered APIC mode.  There's little point in the use of clustered APIC
+mode, broadcasting is limited to within the cluster only, and chipsets have
+bugs in this area as well.  So default to physical APIC mode when the CPU
+count is large, and default to logical APIC mode when the CPU count is 8 or
+smaller.
 
-One case where this is useful is when a device issues a DMA to a memory
-region, and the CPU must copy the DMAed data elsewhere before doing any work
-with it.  Since the source data is read-once, write-never from the CPU's
-perspective, caching the data at those addresses can only evict potentially
-useful data.
+(this patch only removes the use of genapic_cluster and cleans up the
+resulting genapic.c file - removal of all remaining traces of clustered
+mode will be done by another patch.)
 
-We provide an x86_64 implementation that uses SSE non-temporal loads, and a
-generic version that falls back to plain memcpy.
-
-Implementors for other arches should not use cache-bypassing stores to the
-destination, as in most cases, the destination is accessed almost immediately
-after a copy finishes.
-
-[akpm@osdl.org: add module export]
-[akpm@osdl.org: remove an ARCH_HAS_foo]
-Signed-off-by: Bryan O'Sullivan <bryan.osullivan@qlogic.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Andi Kleen <ak@suse.de>
+Cc: Suresh Siddha <suresh.b.siddha@intel.com>
 Cc: Andi Kleen <ak@suse.de>
-Cc: Roland Dreier <rolandd@cisco.com>
+Cc: "Li, Shaohua" <shaohua.li@intel.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>
 Signed-off-by: Andrew Morton <akpm@osdl.org>
 ---
 
- arch/x86_64/kernel/x8664_ksyms.c       |    2 
- arch/x86_64/lib/Makefile               |    1 
- arch/x86_64/lib/memcpy_uncached_read.S |  142 +++++++++++++++++++++++++++++++++
- include/asm-x86_64/string.h            |    2 
- include/linux/string.h                 |    3 
- 5 files changed, 150 insertions(+)
+ arch/x86_64/kernel/genapic.c |   71 +++++++++----------------------------------
+ include/asm-x86_64/genapic.h |    4 +-
+ 2 files changed, 18 insertions(+), 57 deletions(-)
 
-Index: linux/arch/x86_64/kernel/x8664_ksyms.c
+Index: linux/arch/x86_64/kernel/genapic.c
 ===================================================================
---- linux.orig/arch/x86_64/kernel/x8664_ksyms.c
-+++ linux/arch/x86_64/kernel/x8664_ksyms.c
-@@ -8,6 +8,7 @@
- #include <asm/processor.h>
- #include <asm/uaccess.h>
- #include <asm/pgtable.h>
-+#include <asm/string.h>
+--- linux.orig/arch/x86_64/kernel/genapic.c
++++ linux/arch/x86_64/kernel/genapic.c
+@@ -11,26 +11,24 @@
+ #include <linux/threads.h>
+ #include <linux/cpumask.h>
+ #include <linux/string.h>
++#include <linux/module.h>
+ #include <linux/kernel.h>
+ #include <linux/ctype.h>
+ #include <linux/init.h>
+-#include <linux/module.h>
  
- EXPORT_SYMBOL(kernel_thread);
+ #include <asm/smp.h>
+ #include <asm/ipi.h>
  
-@@ -54,6 +55,7 @@ extern void * __memcpy(void *,const void
- EXPORT_SYMBOL(memset);
- EXPORT_SYMBOL(memcpy);
- EXPORT_SYMBOL(__memcpy);
-+EXPORT_SYMBOL(memcpy_uncached_read);
- 
- EXPORT_SYMBOL(empty_zero_page);
- EXPORT_SYMBOL(init_level4_pgt);
-Index: linux/arch/x86_64/lib/Makefile
-===================================================================
---- linux.orig/arch/x86_64/lib/Makefile
-+++ linux/arch/x86_64/lib/Makefile
-@@ -10,3 +10,4 @@ lib-y := csum-partial.o csum-copy.o csum
- 	usercopy.o getuser.o putuser.o  \
- 	thunk.o clear_page.o copy_page.o bitstr.o bitops.o
- lib-y += memcpy.o memmove.o memset.o copy_user.o rwlock.o copy_user_nocache.o
-+lib-y += memcpy_uncached_read.o
-Index: linux/arch/x86_64/lib/memcpy_uncached_read.S
-===================================================================
---- /dev/null
-+++ linux/arch/x86_64/lib/memcpy_uncached_read.S
-@@ -0,0 +1,142 @@
-+/*
-+ * Copyright (c) 2006 QLogic Corporation.  All Rights Reserved.
-+ *
-+ * This file is free software; you can redistribute it and/or modify
-+ * it under the terms of version 2 of the GNU General Public License
-+ * as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software Foundation,
-+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.
-+ */
-+
-+/*
-+ * memcpy_uncached_read - memcpy-compatible copy routine, using streaming loads
-+ * @dest: destination address
-+ * @src: source address (will not be cached)
-+ * @count: number of bytes to copy
-+ *
-+ * Use streaming loads and normal stores for a special-case copy where
-+ * we know we won't be reading the source again, but will be reading the
-+ * destination again soon.
-+ */
-+	.text
-+	.p2align 4,,15
-+	/* rdi  destination, rsi source, rdx count */
-+	.globl	memcpy_uncached_read
-+	.type	memcpy_uncached_read, @function
-+memcpy_uncached_read:
-+	movq	%rdi, %rax
-+.L5:
-+	cmpq	$15, %rdx
-+	ja	.L34
-+.L3:
-+	cmpl	$8, %edx	/* rdx is 0..15 */
-+	jbe	.L9
-+.L6:
-+	testb	$8, %dxl	/* rdx is 3,5,6,7,9..15 */
-+	je	.L13
-+	movq	(%rsi), %rcx
-+	addq	$8, %rsi
-+	movq	%rcx, (%rdi)
-+	addq	$8, %rdi
-+.L13:
-+	testb	$4, %dxl
-+	je	.L15
-+	movl	(%rsi), %ecx
-+	addq	$4, %rsi
-+	movl	%ecx, (%rdi)
-+	addq	$4, %rdi
-+.L15:
-+	testb	$2, %dxl
-+	je	.L17
-+	movzwl	(%rsi), %ecx
-+	addq	$2, %rsi
-+	movw	%cx, (%rdi)
-+	addq	$2, %rdi
-+.L17:
-+	testb	$1, %dxl
-+	je	.L33
-+.L1:
-+	movzbl	(%rsi), %ecx
-+	movb	%cl, (%rdi)
-+.L33:
-+	ret
-+.L34:
-+	cmpq	$63, %rdx	/* rdx is > 15 */
-+	ja	.L64
-+	movl	$16, %ecx	/* rdx is 16..63 */
-+.L25:
-+	movq	8(%rsi), %r8
-+	movq	(%rsi), %r9
-+	addq	%rcx, %rsi
-+	movq	%r8, 8(%rdi)
-+	movq	%r9, (%rdi)
-+	addq	%rcx, %rdi
-+	subq	%rcx, %rdx
-+	cmpl	%edx, %ecx	/* is rdx >= 16? */
-+	jbe	.L25
-+	jmp	.L3		/* rdx is 0..15 */
-+	.p2align 4,,7
-+.L64:
-+	movl	$64, %ecx
-+.L42:
-+	prefetchnta	128(%rsi)
-+	movq	(%rsi), %r8
-+	movq	8(%rsi), %r9
-+	movq	16(%rsi), %r10
-+	movq	24(%rsi), %r11
-+	subq	%rcx, %rdx
-+	movq	%r8, (%rdi)
-+	movq	32(%rsi), %r8
-+	movq	%r9, 8(%rdi)
-+	movq	40(%rsi), %r9
-+	movq	%r10, 16(%rdi)
-+	movq	48(%rsi), %r10
-+	movq	%r11, 24(%rdi)
-+	movq	56(%rsi), %r11
-+	addq	%rcx, %rsi
-+	movq	%r8, 32(%rdi)
-+	movq	%r9, 40(%rdi)
-+	movq	%r10, 48(%rdi)
-+	movq	%r11, 56(%rdi)
-+	addq	%rcx, %rdi
-+	cmpq	%rdx, %rcx	/* is rdx >= 64? */
-+	jbe	.L42
-+	sfence
-+	orl	%edx, %edx
-+	je	.L33
-+	jmp	.L5
-+.L9:
-+	jmp	*.L12(,%rdx,8)	/* rdx is 0..8 */
-+	.section	.rodata
-+	.align 8
-+	.align 4
-+.L12:
-+	.quad	.L33
-+	.quad	.L1
-+	.quad	.L2
-+	.quad	.L6
-+	.quad	.L4
-+	.quad	.L6
-+	.quad	.L6
-+	.quad	.L6
-+	.quad	.L8
-+	.text
-+.L2:
-+	movzwl	(%rsi), %ecx
-+	movw	%cx, (%rdi)
-+	ret
-+.L4:
-+	movl	(%rsi), %ecx
-+	movl	%ecx, (%rdi)
-+	ret
-+.L8:
-+	movq	(%rsi), %rcx
-+	movq	%rcx, (%rdi)
-+	ret
-Index: linux/include/asm-x86_64/string.h
-===================================================================
---- linux.orig/include/asm-x86_64/string.h
-+++ linux/include/asm-x86_64/string.h
-@@ -39,6 +39,8 @@ extern void *__memcpy(void *to, const vo
- 		 __ret = __builtin_memcpy((dst),(src),__len);	\
- 	   __ret; }) 
- 
-+extern void *memcpy_uncached_read(void *to, const void *from, size_t len);
-+#define memcpy_uncached_read memcpy_uncached_read
- 
- #define __HAVE_ARCH_MEMSET
- void *memset(void *s, int c, size_t n);
-Index: linux/include/linux/string.h
-===================================================================
---- linux.orig/include/linux/string.h
-+++ linux/include/linux/string.h
-@@ -85,6 +85,9 @@ extern void * memset(void *,int,__kernel
- #ifndef __HAVE_ARCH_MEMCPY
- extern void * memcpy(void *,const void *,__kernel_size_t);
+-#if defined(CONFIG_ACPI)
++#ifdef CONFIG_ACPI
+ #include <acpi/acpi_bus.h>
  #endif
-+#ifndef memcpy_uncached_read
-+#define memcpy_uncached_read(dest, src, count) memcpy((dest), (src), (count))
-+#endif
- #ifndef __HAVE_ARCH_MEMMOVE
- extern void * memmove(void *,const void *,__kernel_size_t);
+ 
+ /* which logical CPU number maps to which CPU (physical APIC ID) */
+-u8 x86_cpu_to_apicid[NR_CPUS] __read_mostly = { [0 ... NR_CPUS-1] = BAD_APICID };
++u8 x86_cpu_to_apicid[NR_CPUS] __read_mostly
++					= { [0 ... NR_CPUS-1] = BAD_APICID };
+ EXPORT_SYMBOL(x86_cpu_to_apicid);
+-u8 x86_cpu_to_log_apicid[NR_CPUS] = { [0 ... NR_CPUS-1] = BAD_APICID };
+ 
+-extern struct genapic apic_cluster;
+-extern struct genapic apic_flat;
+-extern struct genapic apic_physflat;
++u8 x86_cpu_to_log_apicid[NR_CPUS]	= { [0 ... NR_CPUS-1] = BAD_APICID };
+ 
+ struct genapic __read_mostly *genapic = &apic_flat;
+ 
+@@ -39,76 +37,37 @@ struct genapic __read_mostly *genapic = 
+  */
+ void __init clustered_apic_check(void)
+ {
+-	int i;
+-	u8 clusters, max_cluster;
++	unsigned int i, max_apic = 0;
+ 	u8 id;
+-	u8 cluster_cnt[NUM_APIC_CLUSTERS];
+-	int max_apic = 0;
+ 
+ #ifdef CONFIG_ACPI
+ 	/*
+-	 * Some x86_64 machines use physical APIC mode regardless of how many
+-	 * procs/clusters are present (x86_64 ES7000 is an example).
++	 * Quirk: some x86_64 machines can only use physical APIC mode
++	 * regardless of how many processors are present (x86_64 ES7000
++	 * is an example).
+ 	 */
+-	if (acpi_gbl_FADT.header.revision > FADT2_REVISION_ID)
+-		if (acpi_gbl_FADT.flags & ACPI_FADT_APIC_PHYSICAL) {
+-			genapic = &apic_cluster;
+-			goto print;
+-		}
++	if (acpi_gbl_FADT.header.revision > FADT2_REVISION_ID &&
++			(acpi_gbl_FADT.flags & ACPI_FADT_APIC_PHYSICAL))
++		genapic = &apic_physflat;
+ #endif
+ 
+-	memset(cluster_cnt, 0, sizeof(cluster_cnt));
+ 	for (i = 0; i < NR_CPUS; i++) {
+ 		id = bios_cpu_apicid[i];
+ 		if (id == BAD_APICID)
+ 			continue;
+ 		if (id > max_apic)
+ 			max_apic = id;
+-		cluster_cnt[APIC_CLUSTERID(id)]++;
+ 	}
+ 
+-	/*
+-	 * Don't use clustered mode on AMD platforms, default
+-	 * to flat logical mode.
+-	 */
+- 	if (boot_cpu_data.x86_vendor == X86_VENDOR_AMD) {
+-		/*
+-		 * Switch to physical flat mode if more than 8 APICs
+-		 * (In the case of 8 CPUs APIC ID goes from 0 to 7):
+-		 */
+-		if (max_apic >= 8)
+-			genapic = &apic_physflat;
+- 		goto print;
+- 	}
+-
+-	clusters = 0;
+-	max_cluster = 0;
+-
+-	for (i = 0; i < NUM_APIC_CLUSTERS; i++) {
+-		if (cluster_cnt[i] > 0) {
+-			++clusters;
+-			if (cluster_cnt[i] > max_cluster)
+-				max_cluster = cluster_cnt[i];
+-		}
+-	}
+-
+-	/*
+-	 * If we have clusters <= 1 and CPUs <= 8 in cluster 0, then flat mode,
+-	 * else if max_cluster <= 4 and cluster_cnt[15] == 0, clustered logical
+-	 * else physical mode.
+-	 * (We don't use lowest priority delivery + HW APIC IRQ steering, so
+-	 * can ignore the clustered logical case and go straight to physical.)
+-	 */
+-	if (clusters <= 1 && max_cluster <= 8 && cluster_cnt[0] == max_cluster)
++	if (max_apic < 8)
+ 		genapic = &apic_flat;
+ 	else
+-		genapic = &apic_cluster;
++		genapic = &apic_physflat;
+ 
+-print:
+ 	printk(KERN_INFO "Setting APIC routing to %s\n", genapic->name);
+ }
+ 
+-/* Same for both flat and clustered. */
++/* Same for both flat and physical. */
+ 
+ void send_IPI_self(int vector)
+ {
+Index: linux/include/asm-x86_64/genapic.h
+===================================================================
+--- linux.orig/include/asm-x86_64/genapic.h
++++ linux/include/asm-x86_64/genapic.h
+@@ -29,7 +29,9 @@ struct genapic {
+ 	unsigned int (*phys_pkg_id)(int index_msb);
+ };
+ 
+-
+ extern struct genapic *genapic;
+ 
++extern struct genapic apic_flat;
++extern struct genapic apic_physflat;
++
  #endif
