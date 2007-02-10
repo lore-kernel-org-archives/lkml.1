@@ -1,57 +1,420 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751596AbXBJRdE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751614AbXBJRnd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751596AbXBJRdE (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Feb 2007 12:33:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751614AbXBJRdD
+	id S1751614AbXBJRnd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Feb 2007 12:43:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751643AbXBJRnd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Feb 2007 12:33:03 -0500
-Received: from tag.witbe.net ([81.88.96.48]:53267 "EHLO tag.witbe.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751596AbXBJRdB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Feb 2007 12:33:01 -0500
-Reply-To: <rol@as2917.net>
-From: "Paul Rolland" <rol@as2917.net>
-To: "'Robert Hancock'" <hancockr@shaw.ca>
-Cc: "'Linux Kernel Mailing List'" <linux-kernel@vger.kernel.org>
-Subject: RE: AHCI - remove probing of ata2
-Date: Sat, 10 Feb 2007 18:32:02 +0100
-Organization: AS2917.net
-Message-ID: <00ba01c74d39$604fddf0$2101a8c0@donald>
+	Sat, 10 Feb 2007 12:43:33 -0500
+Received: from wr-out-0506.google.com ([64.233.184.238]:12744 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751578AbXBJRnc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Feb 2007 12:43:32 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=UYo2v7uc29c0clzUD8n78jsT0q3IMdQAPlj4PXqv8bmL67wZMOQc97RYHY/0mZlYIl3cygPRcLcs/mbC6mFSG4D0Xb8W6AKPO0Xey3avmWwsVmPm/T7pF3gcyY7KwA2oLkFY69VxbptgJ5D9435y73U3dtY6BEMQFdms8pdj/1o=
+Message-ID: <45CE0434.30105@gmail.com>
+Date: Sat, 10 Feb 2007 12:43:16 -0500
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Icedove 1.5.0.9 (X11/20061220)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Jeff Garzik <jgarzik@pobox.com>, linux-kernel@vger.kernel.org,
+       linux-s390@vger.kernel.org
+Subject: [PATCH] iomap: make PCI iomap stuff excluded when PCI isn't configured
+References: <20070210114314.GB12642@osiris.boeblingen.de.ibm.com>
+In-Reply-To: <20070210114314.GB12642@osiris.boeblingen.de.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Mailer: Microsoft Office Outlook 11
-In-Reply-To: <45CDFECC.5060500@shaw.ca>
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
-Thread-Index: AcdNN7sLUrn+rpIGROWi4ShTlWpQ2wAARfXw
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+devres iomap made lib/iomap.c always built and added several
+arch-indep PCI routines to include/linux/io.h and lib/iomap.c without
+wrapping them inside CONFIG_PCI.  This breaks configurations where PCI
+is not configured.  Wrap pci_iomap() in CONFIG_PCI and move managed
+PCI iomap functions into include/linux/pci.h and drivers/pci/pci.c.
 
-> There is something connected, I believe what's actually there on this 
-> board on that port is the SiI4723 chip which is connected to 
-> two other 
-> SATA ports. For whatever reason it gets detected as a drive, 
-> and it also 
-> seems to be not responding until we do a few resets..
+Signed-off-by: Tejun Heo <htejun@gmail.com>
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
+---
+Heiko, how about this?  Does it fix s390?
 
-That's correct, there is this controller, used by Asus for their EZ-Backup
-feature. But I'm not using it, there is no disk connected on the associated
-ports, and it's disabled in the BIOS.
-
-> My advice on recent kernels is just set CONFIG_IDE=n and enable 
-> PATA_JMICRON if you want JMicron support, unless you really 
-> want to use the crusty old IDE layer..
-
-No real preferences... except for a working machine, which is not what
-I have for now...
-
-I've been trying this, but I ended with the ICH7 not detecting anymore
-my IDE disks... 
-Should try again, maybe I missed something.
-
-Regards,
-Paul
-
+diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+index 8b44cff..d6ec47a 100644
+--- a/drivers/pci/pci.c
++++ b/drivers/pci/pci.c
+@@ -1314,6 +1314,158 @@ int pci_select_bars(struct pci_dev *dev, unsigned long flags)
+ 	return bars;
+ }
+ 
++/*
++ * PCI iomap devres
++ */
++#define PCIM_IOMAP_MAX	PCI_ROM_RESOURCE
++
++struct pcim_iomap_devres {
++	void __iomem *table[PCIM_IOMAP_MAX];
++};
++
++static void pcim_iomap_release(struct device *gendev, void *res)
++{
++	struct pci_dev *dev = container_of(gendev, struct pci_dev, dev);
++	struct pcim_iomap_devres *this = res;
++	int i;
++
++	for (i = 0; i < PCIM_IOMAP_MAX; i++)
++		if (this->table[i])
++			pci_iounmap(dev, this->table[i]);
++}
++
++/**
++ * pcim_iomap_table - access iomap allocation table
++ * @pdev: PCI device to access iomap table for
++ *
++ * Access iomap allocation table for @dev.  If iomap table doesn't
++ * exist and @pdev is managed, it will be allocated.  All iomaps
++ * recorded in the iomap table are automatically unmapped on driver
++ * detach.
++ *
++ * This function might sleep when the table is first allocated but can
++ * be safely called without context and guaranteed to succed once
++ * allocated.
++ */
++void __iomem * const * pcim_iomap_table(struct pci_dev *pdev)
++{
++	struct pcim_iomap_devres *dr, *new_dr;
++
++	dr = devres_find(&pdev->dev, pcim_iomap_release, NULL, NULL);
++	if (dr)
++		return dr->table;
++
++	new_dr = devres_alloc(pcim_iomap_release, sizeof(*new_dr), GFP_KERNEL);
++	if (!new_dr)
++		return NULL;
++	dr = devres_get(&pdev->dev, new_dr, NULL, NULL);
++	return dr->table;
++}
++EXPORT_SYMBOL(pcim_iomap_table);
++
++/**
++ * pcim_iomap - Managed pcim_iomap()
++ * @pdev: PCI device to iomap for
++ * @bar: BAR to iomap
++ * @maxlen: Maximum length of iomap
++ *
++ * Managed pci_iomap().  Map is automatically unmapped on driver
++ * detach.
++ */
++void __iomem * pcim_iomap(struct pci_dev *pdev, int bar, unsigned long maxlen)
++{
++	void __iomem **tbl;
++
++	BUG_ON(bar >= PCIM_IOMAP_MAX);
++
++	tbl = (void __iomem **)pcim_iomap_table(pdev);
++	if (!tbl || tbl[bar])	/* duplicate mappings not allowed */
++		return NULL;
++
++	tbl[bar] = pci_iomap(pdev, bar, maxlen);
++	return tbl[bar];
++}
++EXPORT_SYMBOL(pcim_iomap);
++
++/**
++ * pcim_iounmap - Managed pci_iounmap()
++ * @pdev: PCI device to iounmap for
++ * @addr: Address to unmap
++ *
++ * Managed pci_iounmap().  @addr must have been mapped using pcim_iomap().
++ */
++void pcim_iounmap(struct pci_dev *pdev, void __iomem *addr)
++{
++	void __iomem **tbl;
++	int i;
++
++	pci_iounmap(pdev, addr);
++
++	tbl = (void __iomem **)pcim_iomap_table(pdev);
++	BUG_ON(!tbl);
++
++	for (i = 0; i < PCIM_IOMAP_MAX; i++)
++		if (tbl[i] == addr) {
++			tbl[i] = NULL;
++			return;
++		}
++	WARN_ON(1);
++}
++EXPORT_SYMBOL(pcim_iounmap);
++
++/**
++ * pcim_iomap_regions - Request and iomap PCI BARs
++ * @pdev: PCI device to map IO resources for
++ * @mask: Mask of BARs to request and iomap
++ * @name: Name used when requesting regions
++ *
++ * Request and iomap regions specified by @mask.
++ */
++int pcim_iomap_regions(struct pci_dev *pdev, u16 mask, const char *name)
++{
++	void __iomem * const *iomap;
++	int i, rc;
++
++	iomap = pcim_iomap_table(pdev);
++	if (!iomap)
++		return -ENOMEM;
++
++	for (i = 0; i < DEVICE_COUNT_RESOURCE; i++) {
++		unsigned long len;
++
++		if (!(mask & (1 << i)))
++			continue;
++
++		rc = -EINVAL;
++		len = pci_resource_len(pdev, i);
++		if (!len)
++			goto err_inval;
++
++		rc = pci_request_region(pdev, i, name);
++		if (rc)
++			goto err_region;
++
++		rc = -ENOMEM;
++		if (!pcim_iomap(pdev, i, 0))
++			goto err_iomap;
++	}
++
++	return 0;
++
++ err_iomap:
++	pcim_iounmap(pdev, iomap[i]);
++ err_region:
++	pci_release_region(pdev, i);
++ err_inval:
++	while (--i >= 0) {
++		pcim_iounmap(pdev, iomap[i]);
++		pci_release_region(pdev, i);
++	}
++
++	return rc;
++}
++EXPORT_SYMBOL(pcim_iomap_regions);
++
+ static int __devinit pci_init(void)
+ {
+ 	struct pci_dev *dev = NULL;
+diff --git a/include/linux/io.h b/include/linux/io.h
+index 9e419eb..c244a0c 100644
+--- a/include/linux/io.h
++++ b/include/linux/io.h
+@@ -43,12 +43,6 @@ void __iomem * devm_ioremap_nocache(struct device *dev, unsigned long offset,
+ 				    unsigned long size);
+ void devm_iounmap(struct device *dev, void __iomem *addr);
+ 
+-void __iomem * pcim_iomap(struct pci_dev *pdev, int bar, unsigned long maxlen);
+-void pcim_iounmap(struct pci_dev *pdev, void __iomem *addr);
+-void __iomem * const * pcim_iomap_table(struct pci_dev *pdev);
+-
+-int pcim_iomap_regions(struct pci_dev *pdev, u16 mask, const char *name);
+-
+ /**
+  *	check_signature		-	find BIOS signatures
+  *	@io_addr: mmio address to check
+diff --git a/include/linux/pci.h b/include/linux/pci.h
+index 9e3042e..c8f4b84 100644
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -611,6 +611,12 @@ void pci_walk_bus(struct pci_bus *top, void (*cb)(struct pci_dev *, void *),
+ int pci_cfg_space_size(struct pci_dev *dev);
+ unsigned char pci_bus_max_busnr(struct pci_bus* bus);
+ 
++/* PCI managed iomap interface */
++void __iomem * pcim_iomap(struct pci_dev *pdev, int bar, unsigned long maxlen);
++void pcim_iounmap(struct pci_dev *pdev, void __iomem *addr);
++void __iomem * const * pcim_iomap_table(struct pci_dev *pdev);
++int pcim_iomap_regions(struct pci_dev *pdev, u16 mask, const char *name);
++
+ /* kmem_cache style wrapper around pci_alloc_consistent() */
+ 
+ #include <linux/dmapool.h>
+diff --git a/lib/iomap.c b/lib/iomap.c
+index 4990c73..bdf31ba 100644
+--- a/lib/iomap.c
++++ b/lib/iomap.c
+@@ -228,6 +228,8 @@ void ioport_unmap(void __iomem *addr)
+ EXPORT_SYMBOL(ioport_map);
+ EXPORT_SYMBOL(ioport_unmap);
+ 
++#ifdef CONFIG_PCI
++
+ /* Create a virtual mapping cookie for a PCI BAR (memory or IO) */
+ void __iomem *pci_iomap(struct pci_dev *dev, int bar, unsigned long maxlen)
+ {
+@@ -257,6 +259,7 @@ void pci_iounmap(struct pci_dev *dev, void __iomem * addr)
+ EXPORT_SYMBOL(pci_iomap);
+ EXPORT_SYMBOL(pci_iounmap);
+ 
++#endif /* CONFIG_PCI */
+ #endif /* CONFIG_GENERIC_IOMAP */
+ 
+ /*
+@@ -399,155 +402,3 @@ void devm_iounmap(struct device *dev, void __iomem *addr)
+ 			       (void *)addr));
+ }
+ EXPORT_SYMBOL(devm_iounmap);
+-
+-/*
+- * PCI iomap devres
+- */
+-#define PCIM_IOMAP_MAX	PCI_ROM_RESOURCE
+-
+-struct pcim_iomap_devres {
+-	void __iomem *table[PCIM_IOMAP_MAX];
+-};
+-
+-static void pcim_iomap_release(struct device *gendev, void *res)
+-{
+-	struct pci_dev *dev = container_of(gendev, struct pci_dev, dev);
+-	struct pcim_iomap_devres *this = res;
+-	int i;
+-
+-	for (i = 0; i < PCIM_IOMAP_MAX; i++)
+-		if (this->table[i])
+-			pci_iounmap(dev, this->table[i]);
+-}
+-
+-/**
+- * pcim_iomap_table - access iomap allocation table
+- * @pdev: PCI device to access iomap table for
+- *
+- * Access iomap allocation table for @dev.  If iomap table doesn't
+- * exist and @pdev is managed, it will be allocated.  All iomaps
+- * recorded in the iomap table are automatically unmapped on driver
+- * detach.
+- *
+- * This function might sleep when the table is first allocated but can
+- * be safely called without context and guaranteed to succed once
+- * allocated.
+- */
+-void __iomem * const * pcim_iomap_table(struct pci_dev *pdev)
+-{
+-	struct pcim_iomap_devres *dr, *new_dr;
+-
+-	dr = devres_find(&pdev->dev, pcim_iomap_release, NULL, NULL);
+-	if (dr)
+-		return dr->table;
+-
+-	new_dr = devres_alloc(pcim_iomap_release, sizeof(*new_dr), GFP_KERNEL);
+-	if (!new_dr)
+-		return NULL;
+-	dr = devres_get(&pdev->dev, new_dr, NULL, NULL);
+-	return dr->table;
+-}
+-EXPORT_SYMBOL(pcim_iomap_table);
+-
+-/**
+- * pcim_iomap - Managed pcim_iomap()
+- * @pdev: PCI device to iomap for
+- * @bar: BAR to iomap
+- * @maxlen: Maximum length of iomap
+- *
+- * Managed pci_iomap().  Map is automatically unmapped on driver
+- * detach.
+- */
+-void __iomem * pcim_iomap(struct pci_dev *pdev, int bar, unsigned long maxlen)
+-{
+-	void __iomem **tbl;
+-
+-	BUG_ON(bar >= PCIM_IOMAP_MAX);
+-
+-	tbl = (void __iomem **)pcim_iomap_table(pdev);
+-	if (!tbl || tbl[bar])	/* duplicate mappings not allowed */
+-		return NULL;
+-
+-	tbl[bar] = pci_iomap(pdev, bar, maxlen);
+-	return tbl[bar];
+-}
+-EXPORT_SYMBOL(pcim_iomap);
+-
+-/**
+- * pcim_iounmap - Managed pci_iounmap()
+- * @pdev: PCI device to iounmap for
+- * @addr: Address to unmap
+- *
+- * Managed pci_iounmap().  @addr must have been mapped using pcim_iomap().
+- */
+-void pcim_iounmap(struct pci_dev *pdev, void __iomem *addr)
+-{
+-	void __iomem **tbl;
+-	int i;
+-
+-	pci_iounmap(pdev, addr);
+-
+-	tbl = (void __iomem **)pcim_iomap_table(pdev);
+-	BUG_ON(!tbl);
+-
+-	for (i = 0; i < PCIM_IOMAP_MAX; i++)
+-		if (tbl[i] == addr) {
+-			tbl[i] = NULL;
+-			return;
+-		}
+-	WARN_ON(1);
+-}
+-EXPORT_SYMBOL(pcim_iounmap);
+-
+-/**
+- * pcim_iomap_regions - Request and iomap PCI BARs
+- * @pdev: PCI device to map IO resources for
+- * @mask: Mask of BARs to request and iomap
+- * @name: Name used when requesting regions
+- *
+- * Request and iomap regions specified by @mask.
+- */
+-int pcim_iomap_regions(struct pci_dev *pdev, u16 mask, const char *name)
+-{
+-	void __iomem * const *iomap;
+-	int i, rc;
+-
+-	iomap = pcim_iomap_table(pdev);
+-	if (!iomap)
+-		return -ENOMEM;
+-
+-	for (i = 0; i < DEVICE_COUNT_RESOURCE; i++) {
+-		unsigned long len;
+-
+-		if (!(mask & (1 << i)))
+-			continue;
+-
+-		rc = -EINVAL;
+-		len = pci_resource_len(pdev, i);
+-		if (!len)
+-			goto err_inval;
+-
+-		rc = pci_request_region(pdev, i, name);
+-		if (rc)
+-			goto err_region;
+-
+-		rc = -ENOMEM;
+-		if (!pcim_iomap(pdev, i, 0))
+-			goto err_iomap;
+-	}
+-
+-	return 0;
+-
+- err_iomap:
+-	pcim_iounmap(pdev, iomap[i]);
+- err_region:
+-	pci_release_region(pdev, i);
+- err_inval:
+-	while (--i >= 0) {
+-		pcim_iounmap(pdev, iomap[i]);
+-		pci_release_region(pdev, i);
+-	}
+-
+-	return rc;
+-}
+-EXPORT_SYMBOL(pcim_iomap_regions);
