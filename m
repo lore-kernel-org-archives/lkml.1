@@ -1,42 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751830AbXCAExp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40zip.com.au-S1946823AbXBJClU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751830AbXCAExp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Feb 2007 23:53:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751065AbXCAExp
+	id S1946823AbXBJClU (ORCPT <rfc822;akpm@zip.com.au>);
+	Fri, 9 Feb 2007 21:41:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946827AbXBJClU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Feb 2007 23:53:45 -0500
-Received: from gateway.insightbb.com ([74.128.0.19]:6588 "EHLO
-	asav07.insightbb.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750709AbXCAExo (ORCPT
+	Fri, 9 Feb 2007 21:41:20 -0500
+Received: from wx-out-0506.google.com ([66.249.82.228]:16118 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1946823AbXBJClT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Feb 2007 23:53:44 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Aj0KAILq5UVKhRO4UGdsb2JhbACHTYdOAQEqlgkBAQE
-From: Dmitry Torokhov <dtor@insightbb.com>
-To: Nicolas Ferre <nicolas.ferre@rfo.atmel.com>
-Subject: Re: [PATCH] input/spi: add ads7843 support to ads7846 touchscreen driver
-Date: Wed, 28 Feb 2007 23:49:44 -0500
-User-Agent: KMail/1.9.3
-Cc: linux-kernel@vger.kernel.org, David Brownell <david-b@pacbell.net>,
-       Patrice Vilchez <patrice.vilchez@rfo.atmel.com>,
-       Andrew Victor <andrew@sanpeople.com>, tony@atomide.com,
-       imre.deak@solidboot.com
-References: <20061222192536.A206A1F0CDB@adsl-69-226-248-13.dsl.pltn13.pacbell.net> <200702191046.43909.david-b@pacbell.net> <45DABD2F.8000805@rfo.atmel.com>
-In-Reply-To: <45DABD2F.8000805@rfo.atmel.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Fri, 9 Feb 2007 21:41:19 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:in-reply-to:references:mime-version:content-type:message-id:cc:content-transfer-encoding:from:subject:date:to:x-mailer;
+        b=pbNGqZSnuKPVHgcA0bK8+qICZ1k4zgejanXd+p8I+5KpWjMkluDdP88dgfeT0N+nyG+LzDQ1C/wTDtCf/l+LgTSZhqhx5ChXkDn4k1TZRMkqrpytoR9hIdg/XdzfQJC+SdBbw6aaKBrpx5VTVFF0f6uWf+eOPcsaE8jxbkv1cYQ=
+In-Reply-To: <6051e9370702082229q6d3f025aqf24110bab816e908@mail.gmail.com>
+References: <6051e9370702082229q6d3f025aqf24110bab816e908@mail.gmail.com>
+Mime-Version: 1.0 (Apple Message framework v752.3)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <4D091145-F720-4FE8-91FB-9C16B7178B57@gmail.com>
+Cc: linux-kernel@vger.kernel.org
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200702282349.45206.dtor@insightbb.com>
+From: "hackmiester (Hunter Fuller)" <hackmiester@gmail.com>
+Subject: Re: 
+Date: Fri, 9 Feb 2007 20:41:14 -0600
+To: Priyanka Sharma <sharmapriyanka5@gmail.com>
+X-Mailer: Apple Mail (2.752.3)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 20 February 2007 04:19, Nicolas Ferre wrote:
-> Add support for the ads7843 touchscreen controller to the ads7846
-> driver code.
+You're doing it wrong. Please read the bottom of your emails.
+On 9 February 2007, at 00:29, Priyanka Sharma wrote:
 
-Applied to the input tree, thank you.
+> unsubscribe linux-kernel
+>
+> --  
+> Priyanka
+> 202.141.151.80/~priyanka
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux- 
+> kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
 -- 
-Dmitry
+hackmiester (Hunter Fuller)
+
+<badaboom> who can help me ? i'm french and i don't know irc
+<Paladine> can't help you with the being french part, you are screwed  
+their mate
+
+
+
+
+Phone
+Voice: +1 251 589 6348
+Fax: Call the voice number and ask.
+
+Email
+General chat: hackmiester@hackmiester.com
+Large attachments: hackmiester@gmail.com
+SPS-related stuff: hfuller@stpaulsmobile.net
+
+IM
+AIM: hackmiester1337
+Skype: hackmiester31337
+YIM: hackm1ester
+Gtalk: hackmiester
+MSN: hackmiester@hackmiester.com
+Xfire: hackmiester
+
+
+
+
+
+
