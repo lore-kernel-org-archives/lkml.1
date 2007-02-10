@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933416AbXBJLvp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933360AbXBJLvp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933416AbXBJLvp (ORCPT <rfc822;w@1wt.eu>);
+	id S933360AbXBJLvp (ORCPT <rfc822;w@1wt.eu>);
 	Sat, 10 Feb 2007 06:51:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933387AbXBJLve
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933416AbXBJLvi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Feb 2007 06:51:34 -0500
-Received: from mx1.suse.de ([195.135.220.2]:50251 "EHLO mx1.suse.de"
+	Sat, 10 Feb 2007 06:51:38 -0500
+Received: from ns.suse.de ([195.135.220.2]:50228 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933375AbXBJLua (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Feb 2007 06:50:30 -0500
+	id S933360AbXBJLu2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Feb 2007 06:50:28 -0500
 From: Andi Kleen <ak@suse.de>
 References: <200702101250.142420000@suse.de>
 In-Reply-To: <200702101250.142420000@suse.de>
@@ -16,24 +16,17 @@ To: Ingo Molnar <mingo@elte.hu>, Suresh Siddha <suresh.b.siddha@intel.com>,
        Andi Kleen <ak@suse.de>, "Li, Shaohua" <shaohua.li@intel.com>,
        "Eric W. Biederman" <ebiederm@xmission.com>, patches@x86-64.org,
        linux-kernel@vger.kernel.org
-Subject: [PATCH 2.6.21 review I] [9/25] x86_64: always use physical delivery mode on > 8 CPUs
-Message-Id: <20070210115021.B13B213DFE@wotan.suse.de>
-Date: Sat, 10 Feb 2007 12:50:21 +0100 (CET)
+Subject: [PATCH 2.6.21 review I] [11/25] x86: default to physical mode on hotplug CPU kernels
+Message-Id: <20070210115023.D19ED13DCE@wotan.suse.de>
+Date: Sat, 10 Feb 2007 12:50:23 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 From: Ingo Molnar <mingo@elte.hu>
 
-Remove clustered APIC mode.  There's little point in the use of clustered APIC
-mode, broadcasting is limited to within the cluster only, and chipsets have
-bugs in this area as well.  So default to physical APIC mode when the CPU
-count is large, and default to logical APIC mode when the CPU count is 8 or
-smaller.
-
-(this patch only removes the use of genapic_cluster and cleans up the
-resulting genapic.c file - removal of all remaining traces of clustered
-mode will be done by another patch.)
+Default to physical mode on hotplug CPU kernels.  Furher simplify and clean up
+the APIC initialization code.
 
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Andi Kleen <ak@suse.de>
@@ -44,145 +37,220 @@ Cc: "Eric W. Biederman" <ebiederm@xmission.com>
 Signed-off-by: Andrew Morton <akpm@osdl.org>
 ---
 
- arch/x86_64/kernel/genapic.c |   71 +++++++++----------------------------------
- include/asm-x86_64/genapic.h |    4 +-
- 2 files changed, 18 insertions(+), 57 deletions(-)
+ arch/i386/kernel/acpi/boot.c              |    2 +-
+ arch/i386/kernel/mpparse.c                |    2 +-
+ arch/x86_64/kernel/genapic.c              |   16 +++-------------
+ arch/x86_64/kernel/mpparse.c              |    2 +-
+ include/asm-i386/genapic.h                |    4 ++--
+ include/asm-i386/mach-bigsmp/mach_apic.h  |    2 +-
+ include/asm-i386/mach-default/mach_apic.h |    2 +-
+ include/asm-i386/mach-es7000/mach_apic.h  |    2 +-
+ include/asm-i386/mach-generic/mach_apic.h |    2 +-
+ include/asm-i386/mach-numaq/mach_apic.h   |    2 +-
+ include/asm-i386/mach-summit/mach_apic.h  |    2 +-
+ include/asm-i386/mach-visws/mach_apic.h   |    2 +-
+ include/asm-x86_64/apic.h                 |    2 +-
+ 13 files changed, 16 insertions(+), 26 deletions(-)
 
+Index: linux/arch/i386/kernel/acpi/boot.c
+===================================================================
+--- linux.orig/arch/i386/kernel/acpi/boot.c
++++ linux/arch/i386/kernel/acpi/boot.c
+@@ -890,7 +890,7 @@ static void __init acpi_process_madt(voi
+ 				acpi_ioapic = 1;
+ 
+ 				smp_found_config = 1;
+-				clustered_apic_check();
++				setup_apic_routing();
+ 			}
+ 		}
+ 		if (error == -EINVAL) {
+Index: linux/arch/i386/kernel/mpparse.c
+===================================================================
+--- linux.orig/arch/i386/kernel/mpparse.c
++++ linux/arch/i386/kernel/mpparse.c
+@@ -477,7 +477,7 @@ static int __init smp_read_mpc(struct mp
+ 		}
+ 		++mpc_record;
+ 	}
+-	clustered_apic_check();
++	setup_apic_routing();
+ 	if (!num_processors)
+ 		printk(KERN_ERR "SMP mptable: no processors registered!\n");
+ 	return num_processors;
 Index: linux/arch/x86_64/kernel/genapic.c
 ===================================================================
 --- linux.orig/arch/x86_64/kernel/genapic.c
 +++ linux/arch/x86_64/kernel/genapic.c
-@@ -11,26 +11,24 @@
- #include <linux/threads.h>
- #include <linux/cpumask.h>
- #include <linux/string.h>
-+#include <linux/module.h>
- #include <linux/kernel.h>
- #include <linux/ctype.h>
- #include <linux/init.h>
--#include <linux/module.h>
- 
- #include <asm/smp.h>
- #include <asm/ipi.h>
- 
--#if defined(CONFIG_ACPI)
-+#ifdef CONFIG_ACPI
- #include <acpi/acpi_bus.h>
- #endif
- 
- /* which logical CPU number maps to which CPU (physical APIC ID) */
--u8 x86_cpu_to_apicid[NR_CPUS] __read_mostly = { [0 ... NR_CPUS-1] = BAD_APICID };
-+u8 x86_cpu_to_apicid[NR_CPUS] __read_mostly
-+					= { [0 ... NR_CPUS-1] = BAD_APICID };
- EXPORT_SYMBOL(x86_cpu_to_apicid);
--u8 x86_cpu_to_log_apicid[NR_CPUS] = { [0 ... NR_CPUS-1] = BAD_APICID };
- 
--extern struct genapic apic_cluster;
--extern struct genapic apic_flat;
--extern struct genapic apic_physflat;
-+u8 x86_cpu_to_log_apicid[NR_CPUS]	= { [0 ... NR_CPUS-1] = BAD_APICID };
- 
- struct genapic __read_mostly *genapic = &apic_flat;
- 
-@@ -39,76 +37,37 @@ struct genapic __read_mostly *genapic = 
+@@ -35,11 +35,8 @@ struct genapic __read_mostly *genapic = 
+ /*
+  * Check the APIC IDs in bios_cpu_apicid and choose the APIC mode.
   */
- void __init clustered_apic_check(void)
+-void __init clustered_apic_check(void)
++void __init setup_apic_routing(void)
  {
--	int i;
--	u8 clusters, max_cluster;
-+	unsigned int i, max_apic = 0;
- 	u8 id;
--	u8 cluster_cnt[NUM_APIC_CLUSTERS];
--	int max_apic = 0;
- 
+-	unsigned int i, max_apic = 0;
+-	u8 id;
+-
  #ifdef CONFIG_ACPI
  	/*
--	 * Some x86_64 machines use physical APIC mode regardless of how many
--	 * procs/clusters are present (x86_64 ES7000 is an example).
-+	 * Quirk: some x86_64 machines can only use physical APIC mode
-+	 * regardless of how many processors are present (x86_64 ES7000
-+	 * is an example).
- 	 */
--	if (acpi_gbl_FADT.header.revision > FADT2_REVISION_ID)
--		if (acpi_gbl_FADT.flags & ACPI_FADT_APIC_PHYSICAL) {
--			genapic = &apic_cluster;
--			goto print;
--		}
-+	if (acpi_gbl_FADT.header.revision > FADT2_REVISION_ID &&
-+			(acpi_gbl_FADT.flags & ACPI_FADT_APIC_PHYSICAL))
-+		genapic = &apic_physflat;
+ 	 * Quirk: some x86_64 machines can only use physical APIC mode
+@@ -49,17 +46,10 @@ void __init clustered_apic_check(void)
+ 	if (acpi_gbl_FADT.header.revision > FADT2_REVISION_ID &&
+ 			(acpi_gbl_FADT.flags & ACPI_FADT_APIC_PHYSICAL))
+ 		genapic = &apic_physflat;
++	else
  #endif
  
--	memset(cluster_cnt, 0, sizeof(cluster_cnt));
- 	for (i = 0; i < NR_CPUS; i++) {
- 		id = bios_cpu_apicid[i];
- 		if (id == BAD_APICID)
- 			continue;
- 		if (id > max_apic)
- 			max_apic = id;
--		cluster_cnt[APIC_CLUSTERID(id)]++;
- 	}
- 
--	/*
--	 * Don't use clustered mode on AMD platforms, default
--	 * to flat logical mode.
--	 */
-- 	if (boot_cpu_data.x86_vendor == X86_VENDOR_AMD) {
--		/*
--		 * Switch to physical flat mode if more than 8 APICs
--		 * (In the case of 8 CPUs APIC ID goes from 0 to 7):
--		 */
--		if (max_apic >= 8)
--			genapic = &apic_physflat;
-- 		goto print;
-- 	}
--
--	clusters = 0;
--	max_cluster = 0;
--
--	for (i = 0; i < NUM_APIC_CLUSTERS; i++) {
--		if (cluster_cnt[i] > 0) {
--			++clusters;
--			if (cluster_cnt[i] > max_cluster)
--				max_cluster = cluster_cnt[i];
--		}
+-	for (i = 0; i < NR_CPUS; i++) {
+-		id = bios_cpu_apicid[i];
+-		if (id == BAD_APICID)
+-			continue;
+-		if (id > max_apic)
+-			max_apic = id;
 -	}
 -
--	/*
--	 * If we have clusters <= 1 and CPUs <= 8 in cluster 0, then flat mode,
--	 * else if max_cluster <= 4 and cluster_cnt[15] == 0, clustered logical
--	 * else physical mode.
--	 * (We don't use lowest priority delivery + HW APIC IRQ steering, so
--	 * can ignore the clustered logical case and go straight to physical.)
--	 */
--	if (clusters <= 1 && max_cluster <= 8 && cluster_cnt[0] == max_cluster)
-+	if (max_apic < 8)
+-	if (max_apic < 8)
++	if (cpus_weight(cpu_possible_map) <= 8)
  		genapic = &apic_flat;
  	else
--		genapic = &apic_cluster;
-+		genapic = &apic_physflat;
+ 		genapic = &apic_physflat;
+Index: linux/arch/x86_64/kernel/mpparse.c
+===================================================================
+--- linux.orig/arch/x86_64/kernel/mpparse.c
++++ linux/arch/x86_64/kernel/mpparse.c
+@@ -300,7 +300,7 @@ static int __init smp_read_mpc(struct mp
+ 			}
+ 		}
+ 	}
+-	clustered_apic_check();
++	setup_apic_routing();
+ 	if (!num_processors)
+ 		printk(KERN_ERR "MPTABLE: no processors registered!\n");
+ 	return num_processors;
+Index: linux/include/asm-i386/genapic.h
+===================================================================
+--- linux.orig/include/asm-i386/genapic.h
++++ linux/include/asm-i386/genapic.h
+@@ -36,7 +36,7 @@ struct genapic { 
+ 	void (*init_apic_ldr)(void);
+ 	physid_mask_t (*ioapic_phys_id_map)(physid_mask_t map);
  
--print:
- 	printk(KERN_INFO "Setting APIC routing to %s\n", genapic->name);
+-	void (*clustered_apic_check)(void);
++	void (*setup_apic_routing)(void);
+ 	int (*multi_timer_check)(int apic, int irq);
+ 	int (*apicid_to_node)(int logical_apicid); 
+ 	int (*cpu_to_logical_apicid)(int cpu);
+@@ -99,7 +99,7 @@ struct genapic { 
+ 	APICFUNC(check_apicid_present) \
+ 	APICFUNC(init_apic_ldr) \
+ 	APICFUNC(ioapic_phys_id_map) \
+-	APICFUNC(clustered_apic_check) \
++	APICFUNC(setup_apic_routing) \
+ 	APICFUNC(multi_timer_check) \
+ 	APICFUNC(apicid_to_node) \
+ 	APICFUNC(cpu_to_logical_apicid) \
+Index: linux/include/asm-i386/mach-bigsmp/mach_apic.h
+===================================================================
+--- linux.orig/include/asm-i386/mach-bigsmp/mach_apic.h
++++ linux/include/asm-i386/mach-bigsmp/mach_apic.h
+@@ -71,7 +71,7 @@ static inline void init_apic_ldr(void)
+ 	apic_write_around(APIC_LDR, val);
  }
  
--/* Same for both flat and clustered. */
-+/* Same for both flat and physical. */
- 
- void send_IPI_self(int vector)
+-static inline void clustered_apic_check(void)
++static inline void setup_apic_routing(void)
  {
-Index: linux/include/asm-x86_64/genapic.h
+ 	printk("Enabling APIC mode:  %s.  Using %d I/O APICs\n",
+ 		"Physflat", nr_ioapics);
+Index: linux/include/asm-i386/mach-default/mach_apic.h
 ===================================================================
---- linux.orig/include/asm-x86_64/genapic.h
-+++ linux/include/asm-x86_64/genapic.h
-@@ -29,7 +29,9 @@ struct genapic {
- 	unsigned int (*phys_pkg_id)(int index_msb);
- };
+--- linux.orig/include/asm-i386/mach-default/mach_apic.h
++++ linux/include/asm-i386/mach-default/mach_apic.h
+@@ -54,7 +54,7 @@ static inline physid_mask_t ioapic_phys_
+ 	return phys_map;
+ }
  
--
- extern struct genapic *genapic;
+-static inline void clustered_apic_check(void)
++static inline void setup_apic_routing(void)
+ {
+ 	printk("Enabling APIC mode:  %s.  Using %d I/O APICs\n",
+ 					"Flat", nr_ioapics);
+Index: linux/include/asm-i386/mach-es7000/mach_apic.h
+===================================================================
+--- linux.orig/include/asm-i386/mach-es7000/mach_apic.h
++++ linux/include/asm-i386/mach-es7000/mach_apic.h
+@@ -81,7 +81,7 @@ static inline void enable_apic_mode(void
+ }
  
-+extern struct genapic apic_flat;
-+extern struct genapic apic_physflat;
-+
- #endif
+ extern int apic_version [MAX_APICS];
+-static inline void clustered_apic_check(void)
++static inline void setup_apic_routing(void)
+ {
+ 	int apic = bios_cpu_apicid[smp_processor_id()];
+ 	printk("Enabling APIC mode:  %s.  Using %d I/O APICs, target cpus %lx\n",
+Index: linux/include/asm-i386/mach-generic/mach_apic.h
+===================================================================
+--- linux.orig/include/asm-i386/mach-generic/mach_apic.h
++++ linux/include/asm-i386/mach-generic/mach_apic.h
+@@ -13,7 +13,7 @@
+ #define apic_id_registered (genapic->apic_id_registered)
+ #define init_apic_ldr (genapic->init_apic_ldr)
+ #define ioapic_phys_id_map (genapic->ioapic_phys_id_map)
+-#define clustered_apic_check (genapic->clustered_apic_check) 
++#define setup_apic_routing (genapic->setup_apic_routing)
+ #define multi_timer_check (genapic->multi_timer_check)
+ #define apicid_to_node (genapic->apicid_to_node)
+ #define cpu_to_logical_apicid (genapic->cpu_to_logical_apicid) 
+Index: linux/include/asm-i386/mach-numaq/mach_apic.h
+===================================================================
+--- linux.orig/include/asm-i386/mach-numaq/mach_apic.h
++++ linux/include/asm-i386/mach-numaq/mach_apic.h
+@@ -34,7 +34,7 @@ static inline void init_apic_ldr(void)
+ 	/* Already done in NUMA-Q firmware */
+ }
+ 
+-static inline void clustered_apic_check(void)
++static inline void setup_apic_routing(void)
+ {
+ 	printk("Enabling APIC mode:  %s.  Using %d I/O APICs\n",
+ 		"NUMA-Q", nr_ioapics);
+Index: linux/include/asm-i386/mach-summit/mach_apic.h
+===================================================================
+--- linux.orig/include/asm-i386/mach-summit/mach_apic.h
++++ linux/include/asm-i386/mach-summit/mach_apic.h
+@@ -80,7 +80,7 @@ static inline int apic_id_registered(voi
+ 	return 1;
+ }
+ 
+-static inline void clustered_apic_check(void)
++static inline void setup_apic_routing(void)
+ {
+ 	printk("Enabling APIC mode:  Summit.  Using %d I/O APICs\n",
+ 						nr_ioapics);
+Index: linux/include/asm-i386/mach-visws/mach_apic.h
+===================================================================
+--- linux.orig/include/asm-i386/mach-visws/mach_apic.h
++++ linux/include/asm-i386/mach-visws/mach_apic.h
+@@ -47,7 +47,7 @@ static inline void summit_check(char *oe
+ {
+ }
+ 
+-static inline void clustered_apic_check(void)
++static inline void setup_apic_routing(void)
+ {
+ }
+ 
+Index: linux/include/asm-x86_64/apic.h
+===================================================================
+--- linux.orig/include/asm-x86_64/apic.h
++++ linux/include/asm-x86_64/apic.h
+@@ -83,7 +83,7 @@ extern void setup_secondary_APIC_clock (
+ extern int APIC_init_uniprocessor (void);
+ extern void disable_APIC_timer(void);
+ extern void enable_APIC_timer(void);
+-extern void clustered_apic_check(void);
++extern void setup_apic_routing(void);
+ 
+ extern void setup_APIC_extened_lvt(unsigned char lvt_off, unsigned char vector,
+ 				   unsigned char msg_type, unsigned char mask);
