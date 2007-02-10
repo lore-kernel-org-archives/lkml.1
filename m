@@ -1,205 +1,363 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752899AbXBJCcV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752893AbXBJCcY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752899AbXBJCcV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Feb 2007 21:32:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752656AbXBJCby
+	id S1752893AbXBJCcY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Feb 2007 21:32:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752903AbXBJCcY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Feb 2007 21:31:54 -0500
-Received: from nz-out-0506.google.com ([64.233.162.231]:46316 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752891AbXBJCbs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Feb 2007 21:31:48 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:to:cc:subject:message-id:mime-version:content-type:from;
-        b=Q36zkZdtiwQWHh/3UcnAaQwkNE6jk5/zjQcplgPwnFGn8ww/G4Rc7uYy/5J7F60RK+cmPMXK+Ld3OCy3N0X4Z2SEcmiQV9OJmHf4WUl1ZWOq5a3P2o9KU+3XbnEwWnWfo3cDcw7KnoIAP/Sr0zOw4O+DF/ldDj01LajJaZiqzWs=
-Date: Fri, 9 Feb 2007 21:31:45 -0500 (EST)
-To: akpm@linux-foundation.org
-cc: linux-kernel@vger.kernel.org, ak@suse.de, joerg@hydrops.han.de,
-       dsd@gentoo.org, paulus@samba.org, benh@kernel.crashing.org,
-       lethal@linux-sh.org
-Subject: [PATCH] Make aout executables work again
-Message-ID: <Pine.LNX.4.64.0702092100540.3984@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-From: Parag Warudkar <parag.warudkar@gmail.com>
+	Fri, 9 Feb 2007 21:32:24 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:32982 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752893AbXBJCb7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Feb 2007 21:31:59 -0500
+From: Nick Piggin <npiggin@suse.de>
+To: Andrew Morton <akpm@osdl.org>
+Cc: Hugh Dickins <hugh@veritas.com>, Nick Piggin <npiggin@suse.de>,
+       Linux Memory Management <linux-mm@kvack.org>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Message-Id: <20070210001915.21921.48637.sendpatchset@linux.site>
+In-Reply-To: <20070210001844.21921.48605.sendpatchset@linux.site>
+References: <20070210001844.21921.48605.sendpatchset@linux.site>
+Subject: [patch 3/3] mm: fix PageUptodate memorder
+Date: Sat, 10 Feb 2007 03:31:53 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+After running SetPageUptodate, preceeding stores to the page contents to
+actually bring it uptodate may not be ordered with the store to set the page
+uptodate.
 
-This a reworked, replacement version of 
-x86-fix-vdso-mapping-for-aout-executables-* series of patches in -mm.
+Therefore, another CPU which checks PageUptodate is true, then reads the
+page contents can get stale data.
 
-1) Define arch_setup_additional_pages() as weak in linux/interp.h
-2) Include linux/interp.h in appropriate places
-3) Conditionally call arch_setup_additional_pages() from binfmt_*.c if the 
-arch defines it
-4) EXPORT_SYMBOL_GPL(arch_setup_additional_pages) for all x86{64}, 
-powerpc, sh - binfmt_aout can be built as module
-5) Get rid of ARCH_HAS_SETUP_ADDITIONAL_PAGES from various places
-6) For x86_64 - define and export arch_setup_additional_pages as a wrapper 
-over syscall32_setup_pages, call it from ia32_aout.c
+Fix this by ensuring SetPageUptodate is always called with the page locked
+(except in the case of a new page that cannot be visible to other CPUs), and
+requiring PageUptodate be checked only when the page is locked.
 
-Fully tested on x86. (Compile, boot and run the aout binary at 
-http://ftp.funet.fi/pub/Linux/bin/as86.tar.Z). Other arches - changes are 
-minimal but still I'll appreciate if someone tests them.
+To facilitate lockless checks, SetPageUptodate contains an smp_wmb to order
+preceeding stores before the store to page flags, and a new PageUptodate_NoLock
+is introduced, which issues a smp_rmb after the page flags are loaded for the
+test.
 
-Signed-off-by: Parag Warudkar <parag.warudkar@gmail.com>
+I'm still not sure that a DMA memory barrier is not required, however I think
+the logical place to put such a barrier would be in the IO completion routines,
+when they come back to tell us that they have succeeded. (Help? Anyone?)
 
-diff -urN --exclude='*git*' --exclude='scripts*' linux-2.6-us/arch/i386/kernel/sysenter.c linux-2.6-wk/arch/i386/kernel/sysenter.c
---- linux-2.6-us/arch/i386/kernel/sysenter.c	2007-02-09 17:29:34.000000000 -0500
-+++ linux-2.6-wk/arch/i386/kernel/sysenter.c	2007-02-09 17:54:48.000000000 -0500
-@@ -137,6 +137,7 @@
-  	up_write(&mm->mmap_sem);
-  	return ret;
-  }
-+EXPORT_SYMBOL_GPL(arch_setup_additional_pages);
+One thing I like about it is that it unifies the anonymous page handling
+with the rest of the page management, by marking anon pages as uptodate
+when they _are_ uptodate, rather than when our implementation requires
+that they be marked as such. Doing this let me get rid of the smp_wmb's
+in the page copying functions, which were specially added for anonymous
+pages for a closely related issue, always vaguely troubled me.
 
-  const char *arch_vma_name(struct vm_area_struct *vma)
-  {
-diff -urN --exclude='*git*' --exclude='scripts*' linux-2.6-us/arch/powerpc/kernel/vdso.c linux-2.6-wk/arch/powerpc/kernel/vdso.c
---- linux-2.6-us/arch/powerpc/kernel/vdso.c	2007-02-09 17:29:34.000000000 -0500
-+++ linux-2.6-wk/arch/powerpc/kernel/vdso.c	2007-02-09 18:02:09.000000000 -0500
-@@ -254,6 +254,7 @@
-  	up_write(&mm->mmap_sem);
-  	return rc;
-  }
-+EXPORT_SYMBOL_GPL(arch_setup_additional_pages);
+Convert core code and some filesystems to use PageUptodate_NoLock, just for
+reference (a more complete patch follows).
 
-  const char *arch_vma_name(struct vm_area_struct *vma)
-  {
-diff -urN --exclude='*git*' --exclude='scripts*' linux-2.6-us/arch/sh/kernel/vsyscall/vsyscall.c linux-2.6-wk/arch/sh/kernel/vsyscall/vsyscall.c
---- linux-2.6-us/arch/sh/kernel/vsyscall/vsyscall.c	2007-02-09 17:29:34.000000000 -0500
-+++ linux-2.6-wk/arch/sh/kernel/vsyscall/vsyscall.c	2007-02-09 18:02:51.000000000 -0500
-@@ -85,6 +85,7 @@
-  	up_write(&mm->mmap_sem);
-  	return ret;
-  }
-+EXPORT_SYMBOL_GPL(arch_setup_additional_pages);
+Signed-off-by: Nick Piggin <npiggin@suse.de>
 
-  const char *arch_vma_name(struct vm_area_struct *vma)
-  {
-diff -urN --exclude='*git*' --exclude='scripts*' linux-2.6-us/arch/x86_64/ia32/ia32_aout.c linux-2.6-wk/arch/x86_64/ia32/ia32_aout.c
---- linux-2.6-us/arch/x86_64/ia32/ia32_aout.c	2007-01-26 18:49:37.000000000 -0500
-+++ linux-2.6-wk/arch/x86_64/ia32/ia32_aout.c	2007-02-09 20:29:01.000000000 -0500
-@@ -23,6 +23,7 @@
-  #include <linux/user.h>
-  #include <linux/slab.h>
-  #include <linux/binfmts.h>
-+#include <linux/interp.h>
-  #include <linux/personality.h>
-  #include <linux/init.h>
+ fs/ext2/dir.c              |    2 -
+ fs/namei.c                 |    2 -
+ fs/partitions/check.c      |    2 -
+ fs/splice.c                |    4 +--
+ include/linux/highmem.h    |    4 ---
+ include/linux/page-flags.h |   57 +++++++++++++++++++++++++++++++++++++++++----
+ mm/filemap.c               |   28 +++++++++++++++-------
+ mm/hugetlb.c               |    2 +
+ mm/memory.c                |    9 +++----
+ mm/page_io.c               |    2 -
+ mm/swap_state.c            |    2 -
+ mm/swapfile.c              |    2 -
+ 12 files changed, 86 insertions(+), 30 deletions(-)
 
-@@ -410,6 +411,12 @@
-  		send_sig(SIGKILL, current, 0);
-  		return retval;
-  	}
-+ 
-+	retval = arch_setup_additional_pages(bprm, EXSTACK_DEFAULT);
-+	if (retval < 0) { 
-+		send_sig(SIGKILL, current, 0); 
-+		return retval;
-+	}
-
-  	current->mm->start_stack =
-  		(unsigned long)create_aout_tables((char __user *)bprm->p, bprm);
-diff -urN --exclude='*git*' --exclude='scripts*' linux-2.6-us/arch/x86_64/ia32/ia32_binfmt.c linux-2.6-wk/arch/x86_64/ia32/ia32_binfmt.c
---- linux-2.6-us/arch/x86_64/ia32/ia32_binfmt.c	2007-01-27 17:23:08.000000000 -0500
-+++ linux-2.6-wk/arch/x86_64/ia32/ia32_binfmt.c	2007-02-09 17:58:42.000000000 -0500
-@@ -258,10 +258,6 @@
-
-  static void elf32_init(struct pt_regs *);
-
--#define ARCH_HAS_SETUP_ADDITIONAL_PAGES 1
--#define arch_setup_additional_pages syscall32_setup_pages
--extern int syscall32_setup_pages(struct linux_binprm *, int exstack);
--
-  #include "../../../fs/binfmt_elf.c"
-
-  static void elf32_init(struct pt_regs *regs)
-diff -urN --exclude='*git*' --exclude='scripts*' linux-2.6-us/arch/x86_64/ia32/syscall32.c linux-2.6-wk/arch/x86_64/ia32/syscall32.c
---- linux-2.6-us/arch/x86_64/ia32/syscall32.c	2007-02-09 17:29:34.000000000 -0500
-+++ linux-2.6-wk/arch/x86_64/ia32/syscall32.c	2007-02-09 18:01:23.000000000 -0500
-@@ -48,6 +48,12 @@
-  	return ret;
-  }
-
-+int arch_setup_additional_pages(struct linux_binprm* bprm, int exstack)
+Index: linux-2.6/include/linux/highmem.h
+===================================================================
+--- linux-2.6.orig/include/linux/highmem.h
++++ linux-2.6/include/linux/highmem.h
+@@ -57,8 +57,6 @@ static inline void clear_user_highpage(s
+ 	void *addr = kmap_atomic(page, KM_USER0);
+ 	clear_user_page(addr, vaddr, page);
+ 	kunmap_atomic(addr, KM_USER0);
+-	/* Make sure this page is cleared on other CPU's too before using it */
+-	smp_wmb();
+ }
+ 
+ #ifndef __HAVE_ARCH_ALLOC_ZEROED_USER_HIGHPAGE
+@@ -108,8 +106,6 @@ static inline void copy_user_highpage(st
+ 	copy_user_page(vto, vfrom, vaddr, to);
+ 	kunmap_atomic(vfrom, KM_USER0);
+ 	kunmap_atomic(vto, KM_USER1);
+-	/* Make sure this page is cleared on other CPU's too before using it */
+-	smp_wmb();
+ }
+ 
+ #endif
+Index: linux-2.6/include/linux/page-flags.h
+===================================================================
+--- linux-2.6.orig/include/linux/page-flags.h
++++ linux-2.6/include/linux/page-flags.h
+@@ -126,16 +126,60 @@
+ #define ClearPageReferenced(page)	clear_bit(PG_referenced, &(page)->flags)
+ #define TestClearPageReferenced(page) test_and_clear_bit(PG_referenced, &(page)->flags)
+ 
+-#define PageUptodate(page)	test_bit(PG_uptodate, &(page)->flags)
+-#ifdef CONFIG_S390
++static inline int PageUptodate(struct page *page)
 +{
-+	return syscall32_setup_pages(bprm, exstack);
++	WARN_ON(!PageLocked(page));
++	return test_bit(PG_uptodate, &(page)->flags);
 +}
-+EXPORT_SYMBOL_GPL(arch_setup_additional_pages);
 +
-  const char *arch_vma_name(struct vm_area_struct *vma)
-  {
-  	if (vma->vm_start == VSYSCALL32_BASE &&
-diff -urN --exclude='*git*' --exclude='scripts*' linux-2.6-us/fs/binfmt_aout.c linux-2.6-wk/fs/binfmt_aout.c
---- linux-2.6-us/fs/binfmt_aout.c	2007-01-26 18:49:39.000000000 -0500
-+++ linux-2.6-wk/fs/binfmt_aout.c	2007-02-09 17:53:33.000000000 -0500
-@@ -22,6 +22,7 @@
-  #include <linux/user.h>
-  #include <linux/slab.h>
-  #include <linux/binfmts.h>
-+#include <linux/interp.h>
-  #include <linux/personality.h>
-  #include <linux/init.h>
-
-@@ -445,6 +446,14 @@
-  		send_sig(SIGKILL, current, 0);
-  		return retval;
-  	}
-+ 
-+	if(arch_setup_additional_pages) {
-+		retval = arch_setup_additional_pages(bprm, EXSTACK_DEFAULT);
-+		if (retval < 0) { 
-+			send_sig(SIGKILL, current, 0); 
-+			return retval;
-+		}
-+	}
-
-  	current->mm->start_stack =
-  		(unsigned long) create_aout_tables((char __user *) bprm->p, bprm);
-diff -urN --exclude='*git*' --exclude='scripts*' linux-2.6-us/fs/binfmt_elf.c linux-2.6-wk/fs/binfmt_elf.c
---- linux-2.6-us/fs/binfmt_elf.c	2007-01-27 17:23:08.000000000 -0500
-+++ linux-2.6-wk/fs/binfmt_elf.c	2007-02-09 17:48:18.000000000 -0500
-@@ -20,6 +20,7 @@
-  #include <linux/errno.h>
-  #include <linux/signal.h>
-  #include <linux/binfmts.h>
-+#include <linux/interp.h>
-  #include <linux/string.h>
-  #include <linux/file.h>
-  #include <linux/fcntl.h>
-@@ -974,13 +975,13 @@
-
-  	set_binfmt(&elf_format);
-
--#ifdef ARCH_HAS_SETUP_ADDITIONAL_PAGES
--	retval = arch_setup_additional_pages(bprm, executable_stack);
--	if (retval < 0) {
--		send_sig(SIGKILL, current, 0);
--		goto out;
-+	if (arch_setup_additional_pages) {
-+		retval = arch_setup_additional_pages(bprm, executable_stack);
-+		if (retval < 0) {
-+			send_sig(SIGKILL, current, 0);
-+			goto out;
-+		}
-  	}
--#endif /* ARCH_HAS_SETUP_ADDITIONAL_PAGES */
-
-  	compute_creds(bprm);
-  	current->flags &= ~PF_FORKNOEXEC;
-diff -urN --exclude='*git*' --exclude='scripts*' linux-2.6-us/include/linux/interp.h linux-2.6-wk/include/linux/interp.h
---- linux-2.6-us/include/linux/interp.h	1969-12-31 19:00:00.000000000 -0500
-+++ linux-2.6-wk/include/linux/interp.h	2007-02-09 21:26:34.000000000 -0500
-@@ -0,0 +1,8 @@
-+#ifndef _LINUX_INTERP_H
-+#define _LINUX_INTERP_H
++/*
++ * PageUptodate to be used when not holding the page lock.
++ */
++static inline int PageUptodate_NoLock(struct page *page)
++{
++	int ret = test_bit(PG_uptodate, &(page)->flags);
 +
-+struct linux_binprm;
++	/*
++	 * Must ensure that the data we read out of the page is loaded
++	 * _after_ we've loaded page->flags and found that it is uptodate.
++	 * See SetPageUptodate() for the other side of the story.
++	 */
++	if (ret)
++		smp_rmb();
 +
-+extern int __attribute__((weak)) 
-+	arch_setup_additional_pages(struct linux_binprm*, int);
-+#endif /* _LINUX_INTERP_H */
++	return ret;
++}
++
+ static inline void SetPageUptodate(struct page *page)
+ {
++	WARN_ON(!PageLocked(page));
++#ifdef CONFIG_S390
+ 	if (!test_and_set_bit(PG_uptodate, &page->flags))
+ 		page_test_and_clear_dirty(page);
+-}
+ #else
+-#define SetPageUptodate(page)	set_bit(PG_uptodate, &(page)->flags)
++	/*
++	 * Memory barrier must be issued before setting the PG_uptodate bit,
++	 * so all previous writes that served to bring the page uptodate are
++	 * visible before PageUptodate becomes true.
++	 *
++	 * S390 is guaranteed to have a barrier in the test_and_set operation
++	 * (see Documentation/atomic_ops.txt).
++	 *
++	 * This memory barrier should not need to provide ordering against
++	 * DMA writes into the page, because the IO completion should really
++	 * be doing that.
++	 */
++	smp_wmb();
++	set_bit(PG_uptodate, &(page)->flags);
+ #endif
++}
++
++static inline void SetNewPageUptodate(struct page *page)
++{
++	smp_wmb();
++	__set_bit(PG_uptodate, &(page)->flags);
++}
++
+ #define ClearPageUptodate(page)	clear_bit(PG_uptodate, &(page)->flags)
+ 
+ #define PageDirty(page)		test_bit(PG_dirty, &(page)->flags)
+Index: linux-2.6/mm/hugetlb.c
+===================================================================
+--- linux-2.6.orig/mm/hugetlb.c
++++ linux-2.6/mm/hugetlb.c
+@@ -443,6 +443,7 @@ static int hugetlb_cow(struct mm_struct 
+ 
+ 	spin_unlock(&mm->page_table_lock);
+ 	copy_huge_page(new_page, old_page, address, vma);
++	SetNewPageUptodate(new_page);
+ 	spin_lock(&mm->page_table_lock);
+ 
+ 	ptep = huge_pte_offset(mm, address & HPAGE_MASK);
+@@ -506,6 +507,7 @@ retry:
+ 		} else
+ 			lock_page(page);
+ 	}
++	SetNewPageUptodate(page);
+ 
+ 	spin_lock(&mm->page_table_lock);
+ 	size = i_size_read(mapping->host) >> HPAGE_SHIFT;
+Index: linux-2.6/mm/memory.c
+===================================================================
+--- linux-2.6.orig/mm/memory.c
++++ linux-2.6/mm/memory.c
+@@ -1463,10 +1463,8 @@ static inline void cow_user_page(struct 
+ 			memset(kaddr, 0, PAGE_SIZE);
+ 		kunmap_atomic(kaddr, KM_USER0);
+ 		flush_dcache_page(dst);
+-		return;
+-
+-	}
+-	copy_user_highpage(dst, src, va, vma);
++	} else
++		copy_user_highpage(dst, src, va, vma);
+ }
+ 
+ /*
+@@ -1579,6 +1577,7 @@ gotten:
+ 			goto oom;
+ 		cow_user_page(new_page, old_page, address, vma);
+ 	}
++	SetNewPageUptodate(new_page);
+ 
+ 	/*
+ 	 * Re-check the pte - we dropped the lock
+@@ -2097,6 +2096,7 @@ static int do_anonymous_page(struct mm_s
+ 		page = alloc_zeroed_user_highpage(vma, address);
+ 		if (!page)
+ 			goto oom;
++		SetNewPageUptodate(page);
+ 
+ 		entry = mk_pte(page, vma->vm_page_prot);
+ 		entry = maybe_mkwrite(pte_mkdirty(entry), vma);
+@@ -2203,6 +2203,7 @@ retry:
+ 			copy_user_highpage(page, new_page, address, vma);
+ 			page_cache_release(new_page);
+ 			new_page = page;
++			SetNewPageUptodate(new_page);
+ 			anon = 1;
+ 
+ 		} else {
+Index: linux-2.6/mm/filemap.c
+===================================================================
+--- linux-2.6.orig/mm/filemap.c
++++ linux-2.6/mm/filemap.c
+@@ -932,7 +932,7 @@ find_page:
+ 			handle_ra_miss(mapping, &ra, index);
+ 			goto no_cached_page;
+ 		}
+-		if (!PageUptodate(page))
++		if (!PageUptodate_NoLock(page))
+ 			goto page_not_up_to_date;
+ page_ok:
+ 
+@@ -1000,7 +1000,7 @@ readpage:
+ 			goto readpage_error;
+ 		}
+ 
+-		if (!PageUptodate(page)) {
++		if (!PageUptodate_NoLock(page)) {
+ 			lock_page(page);
+ 			if (!PageUptodate(page)) {
+ 				if (page->mapping == NULL) {
+@@ -1417,7 +1417,7 @@ retry_find:
+ 	 * Ok, found a page in the page cache, now we need to check
+ 	 * that it's up-to-date.
+ 	 */
+-	if (!PageUptodate(page))
++	if (!PageUptodate_NoLock(page))
+ 		goto page_not_uptodate;
+ 
+ success:
+@@ -1484,7 +1484,7 @@ page_not_uptodate:
+ 	error = mapping->a_ops->readpage(file, page);
+ 	if (!error) {
+ 		wait_on_page_locked(page);
+-		if (PageUptodate(page))
++		if (PageUptodate_NoLock(page))
+ 			goto success;
+ 	} else if (error == AOP_TRUNCATED_PAGE) {
+ 		page_cache_release(page);
+@@ -1515,7 +1515,7 @@ page_not_uptodate:
+ 	error = mapping->a_ops->readpage(file, page);
+ 	if (!error) {
+ 		wait_on_page_locked(page);
+-		if (PageUptodate(page))
++		if (PageUptodate_NoLock(page))
+ 			goto success;
+ 	} else if (error == AOP_TRUNCATED_PAGE) {
+ 		page_cache_release(page);
+@@ -1554,7 +1554,7 @@ retry_find:
+ 	 * Ok, found a page in the page cache, now we need to check
+ 	 * that it's up-to-date.
+ 	 */
+-	if (!PageUptodate(page)) {
++	if (!PageUptodate_NoLock(page)) {
+ 		if (nonblock) {
+ 			page_cache_release(page);
+ 			return NULL;
+@@ -1605,7 +1605,7 @@ page_not_uptodate:
+ 	error = mapping->a_ops->readpage(file, page);
+ 	if (!error) {
+ 		wait_on_page_locked(page);
+-		if (PageUptodate(page))
++		if (PageUptodate_NoLock(page))
+ 			goto success;
+ 	} else if (error == AOP_TRUNCATED_PAGE) {
+ 		page_cache_release(page);
+@@ -1635,7 +1635,7 @@ page_not_uptodate:
+ 	error = mapping->a_ops->readpage(file, page);
+ 	if (!error) {
+ 		wait_on_page_locked(page);
+-		if (PageUptodate(page))
++		if (PageUptodate_NoLock(page))
+ 			goto success;
+ 	} else if (error == AOP_TRUNCATED_PAGE) {
+ 		page_cache_release(page);
+@@ -1800,7 +1800,7 @@ retry:
+ 	if (IS_ERR(page))
+ 		goto out;
+ 	mark_page_accessed(page);
+-	if (PageUptodate(page))
++	if (PageUptodate_NoLock(page))
+ 		goto out;
+ 
+ 	lock_page(page);
+Index: linux-2.6/mm/page_io.c
+===================================================================
+--- linux-2.6.orig/mm/page_io.c
++++ linux-2.6/mm/page_io.c
+@@ -134,7 +134,7 @@ int swap_readpage(struct file *file, str
+ 	int ret = 0;
+ 
+ 	BUG_ON(!PageLocked(page));
+-	ClearPageUptodate(page);
++	BUG_ON(PageUptodate(page));
+ 	bio = get_swap_bio(GFP_KERNEL, page_private(page), page,
+ 				end_swap_bio_read);
+ 	if (bio == NULL) {
+Index: linux-2.6/mm/swap_state.c
+===================================================================
+--- linux-2.6.orig/mm/swap_state.c
++++ linux-2.6/mm/swap_state.c
+@@ -149,6 +149,7 @@ int add_to_swap(struct page * page, gfp_
+ 	int err;
+ 
+ 	BUG_ON(!PageLocked(page));
++	BUG_ON(!PageUptodate(page));
+ 
+ 	for (;;) {
+ 		entry = get_swap_page();
+@@ -171,7 +172,6 @@ int add_to_swap(struct page * page, gfp_
+ 
+ 		switch (err) {
+ 		case 0:				/* Success */
+-			SetPageUptodate(page);
+ 			SetPageDirty(page);
+ 			INC_CACHE_INFO(add_total);
+ 			return 1;
+Index: linux-2.6/fs/splice.c
+===================================================================
+--- linux-2.6.orig/fs/splice.c
++++ linux-2.6/fs/splice.c
+@@ -107,7 +107,7 @@ static int page_cache_pipe_buf_pin(struc
+ 	struct page *page = buf->page;
+ 	int err;
+ 
+-	if (!PageUptodate(page)) {
++	if (!PageUptodate_NoLock(page)) {
+ 		lock_page(page);
+ 
+ 		/*
+@@ -373,7 +373,7 @@ __generic_file_splice_read(struct file *
+ 		/*
+ 		 * If the page isn't uptodate, we may need to start io on it
+ 		 */
+-		if (!PageUptodate(page)) {
++		if (!PageUptodate_NoLock(page)) {
+ 			/*
+ 			 * If in nonblock mode then dont block on waiting
+ 			 * for an in-flight io page
