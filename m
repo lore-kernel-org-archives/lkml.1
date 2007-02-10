@@ -1,164 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751813AbXBJTv2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751819AbXBJTwm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751813AbXBJTv2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Feb 2007 14:51:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751811AbXBJTv2
+	id S1751819AbXBJTwm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Feb 2007 14:52:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751821AbXBJTwm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Feb 2007 14:51:28 -0500
-Received: from ug-out-1314.google.com ([66.249.92.169]:28245 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751813AbXBJTv1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Feb 2007 14:51:27 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:x-mailer:mime-version:content-type:content-transfer-encoding;
-        b=WUctgOPrziH6Vsvu/r6Uc25gNY3hDtVDzsFkH2v6993DroePFB+6+2ZwWt+Om4m9zKrQHQg6dtypmXaTIlUZJ0Cc1SteCyADcjYEv63flBqaGhNh5MPn+WruXpNMXJ/lbxSJdxb7XU/gg+qsz5UnGi7laxuNfBBEP7McbXm1ibw=
-Date: Sat, 10 Feb 2007 20:51:23 +0100
-From: Miguel Ojeda <maxextreme@gmail.com>
-To: akpm@osdl.org
-Cc: dwalker@mvista.com, linux-kernel@vger.kernel.org
-Subject: [PATCH mm] cfag12864b: fix crash when built-in and no parport
- present
-Message-Id: <20070210205123.699abb9c.maxextreme@gmail.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.10.6; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 10 Feb 2007 14:52:42 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:34554 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751819AbXBJTwl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Feb 2007 14:52:41 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Daniel Barkalow <barkalow@iabervon.org>
+Subject: Re: [PATCH] Re: NAK new drivers without proper power management?
+Date: Sat, 10 Feb 2007 20:50:27 +0100
+User-Agent: KMail/1.9.5
+Cc: nigel@nigel.suspend2.net, Robert Hancock <hancockr@shaw.ca>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Jeff Garzik <jeff@garzik.org>, Pavel Machek <pavel@ucw.cz>,
+       pm list <linux-pm@lists.osdl.org>
+References: <fa.xSKPgY66Q+DPCZ1pszFFfdrJ0To@ifi.uio.no> <200702101130.44471.rjw@sisk.pl> <Pine.LNX.4.64.0702101231281.20138@iabervon.org>
+In-Reply-To: <Pine.LNX.4.64.0702101231281.20138@iabervon.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200702102050.28218.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew, Daniel who reported the crash has tested this patch and says that it works fine avoiding it, so you can merge.
+On Saturday, 10 February 2007 18:52, Daniel Barkalow wrote:
+> On Sat, 10 Feb 2007, Rafael J. Wysocki wrote:
+> 
+> > On Saturday, 10 February 2007 11:02, Nigel Cunningham wrote:
+> >
+> > > Well, the original desire was to stop new drivers getting in without
+> > > proper power management.
+> > 
+> > I know, but I agree with the argument that having a driver without the
+> > suspend/resume support is better than not having the driver at all.
+> 
+> How about if "proper power management" is defined to include the driver 
+> explicitly preventing suspend? It seems to me like the current problem is 
+> that driver writers don't think about power management at all, and the 
+> result is that, after suspend/resume, the system doesn't come back. It 
+> would be better if driver writers had to think about power management just 
+> enough to realize that it's not going to work, and make this information 
+> available to the system. At that point, it's relatively easy for the 
+> system to do something useful about it.
 
-drivers-add-lcd-support-fix-crash-when-built-in-and-no-parport-present.patch
-Signed-off-by: Miguel Ojeda Sandonis <maxextreme@gmail.com>
----
-diff --git a/drivers/auxdisplay/cfag12864b.c b/drivers/auxdisplay/cfag12864b.c
-index 889583d..cb44cb4 100644
---- a/drivers/auxdisplay/cfag12864b.c
-+++ b/drivers/auxdisplay/cfag12864b.c
-@@ -312,6 +312,17 @@ EXPORT_SYMBOL_GPL(cfag12864b_disable);
- EXPORT_SYMBOL_GPL(cfag12864b_isenabled);
- 
- /*
-+ * Is the module inited?
-+ */
-+
-+static unsigned char cfag12864b_inited;
-+unsigned char cfag12864b_isinited(void)
-+{
-+	return cfag12864b_inited;
-+}
-+EXPORT_SYMBOL_GPL(cfag12864b_isinited);
-+
-+/*
-  * Module Init & Exit
-  */
- 
-@@ -319,6 +330,13 @@ static int __init cfag12864b_init(void)
- {
- 	int ret = -EINVAL;
- 
-+	/* ks0108_init() must be called first */
-+	if (!ks0108_isinited()) {
-+		printk(KERN_ERR CFAG12864B_NAME ": ERROR: "
-+			"ks0108 is not initialized\n");
-+		goto none;
-+	}
-+
- 	if (PAGE_SIZE < CFAG12864B_SIZE) {
- 		printk(KERN_ERR CFAG12864B_NAME ": ERROR: "
- 			"page size (%i) < cfag12864b size (%i)\n",
-@@ -354,6 +372,7 @@ static int __init cfag12864b_init(void)
- 	cfag12864b_clear();
- 	cfag12864b_on();
- 
-+	cfag12864b_inited = 1;
- 	return 0;
- 
- cachealloced:
-diff --git a/drivers/auxdisplay/cfag12864bfb.c b/drivers/auxdisplay/cfag12864bfb.c
-index 94765e7..66fafbb 100644
---- a/drivers/auxdisplay/cfag12864bfb.c
-+++ b/drivers/auxdisplay/cfag12864bfb.c
-@@ -137,7 +137,14 @@ static struct platform_device *cfag12864
- 
- static int __init cfag12864bfb_init(void)
- {
--	int ret;
-+	int ret = -EINVAL;
-+
-+	/* cfag12864b_init() must be called first */
-+	if (!cfag12864b_isinited()) {
-+		printk(KERN_ERR CFAG12864BFB_NAME ": ERROR: "
-+			"cfag12864b is not initialized\n");
-+		goto none;
-+	}
- 
- 	if (cfag12864b_enable()) {
- 		printk(KERN_ERR CFAG12864BFB_NAME ": ERROR: "
-@@ -162,6 +169,7 @@ static int __init cfag12864bfb_init(void
- 		}
- 	}
- 
-+none:
- 	return ret;
- }
- 
-diff --git a/drivers/auxdisplay/ks0108.c b/drivers/auxdisplay/ks0108.c
-index a637575..e6c3646 100644
---- a/drivers/auxdisplay/ks0108.c
-+++ b/drivers/auxdisplay/ks0108.c
-@@ -111,6 +111,17 @@ EXPORT_SYMBOL_GPL(ks0108_address);
- EXPORT_SYMBOL_GPL(ks0108_page);
- 
- /*
-+ * Is the module inited?
-+ */
-+
-+static unsigned char ks0108_inited;
-+unsigned char ks0108_isinited(void)
-+{
-+	return ks0108_inited;
-+}
-+EXPORT_SYMBOL_GPL(ks0108_isinited);
-+
-+/*
-  * Module Init & Exit
-  */
- 
-@@ -142,6 +153,7 @@ static int __init ks0108_init(void)
- 		goto registered;
- 	}
- 
-+	ks0108_inited = 1;
- 	return 0;
- 
- registered:
-diff --git a/include/linux/cfag12864b.h b/include/linux/cfag12864b.h
-index 0bc45e6..1605dd8 100644
---- a/include/linux/cfag12864b.h
-+++ b/include/linux/cfag12864b.h
-@@ -73,5 +73,10 @@ extern void cfag12864b_disable(void);
-  */
- extern unsigned char cfag12864b_isenabled(void);
- 
-+/*
-+ * Is the module inited?
-+ */
-+extern unsigned char cfag12864b_isinited(void);
-+
- #endif /* _CFAG12864B_H_ */
- 
-diff --git a/include/linux/ks0108.h b/include/linux/ks0108.h
-index 8047d4b..a2c54ac 100644
---- a/include/linux/ks0108.h
-+++ b/include/linux/ks0108.h
-@@ -43,4 +43,7 @@ extern void ks0108_address(unsigned char
- /* Set the controller's current page (0..7) */
- extern void ks0108_page(unsigned char page);
- 
-+/* Is the module inited? */
-+extern unsigned char ks0108_isinited(void);
-+
- #endif /* _KS0108_H_ */
+Actually, it is easy for the driver authors to do this right now.  They can
+just make the .suspend() routine always return an error.
+
+Well, I think this is a good idea: if the device in question requires specific
+power management during the suspend/resume, but it is not implemented by the
+driver, we should require the author of the driver to define the .suspend()
+routine that returns -ENOSYS (preferably, with an explanatory warning in
+dmesg).
+
+Thoughts?
+
+> > Also, I think there are quite some drivers already in the tree that don't
+> > support suspend/resume explicitly and honestly we should start from adding the
+> > suspend/resume routines to these drivers _before_ we ban new drivers like that.
+> 
+> It'd be relatively quick to modify all the current drivers that don't 
+> explicitly support suspend/resume to explicitly not support it. (Or to 
+> explicitly support it trivially; /dev/null obviously doesn't need 
+> anything.)
+
+The problem is we have to review quite a lot of drivers for this purpose.
+Still it looks like we should do this anyway.
+
+Greetings,
+Rafael
+
+
+-- 
+If you don't have the time to read,
+you don't have the time or the tools to write.
+		- Stephen King
