@@ -1,92 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933388AbXBJLxD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946827AbXBJL4M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933388AbXBJLxD (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Feb 2007 06:53:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933392AbXBJLvU
+	id S1946827AbXBJL4M (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Feb 2007 06:56:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933389AbXBJLxI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Feb 2007 06:51:20 -0500
-Received: from mail.suse.de ([195.135.220.2]:50265 "EHLO mx1.suse.de"
+	Sat, 10 Feb 2007 06:53:08 -0500
+Received: from ns2.suse.de ([195.135.220.15]:55909 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933390AbXBJLue (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Feb 2007 06:50:34 -0500
+	id S933445AbXBJLwr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Feb 2007 06:52:47 -0500
 From: Andi Kleen <ak@suse.de>
-References: <200702101250.142420000@suse.de>
-In-Reply-To: <200702101250.142420000@suse.de>
-To: Eric Dumazet <dada1@cosmosbay.com>, Andi Kleen <ak@suse.de>,
-       patches@x86-64.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 2.6.21 review I] [20/25] x86_64: get rid of ARCH_HAVE_XTIME_LOCK
-Message-Id: <20070210115033.5AEF313DCE@wotan.suse.de>
-Date: Sat, 10 Feb 2007 12:50:33 +0100 (CET)
+References: <200702101252.033732000@suse.de>
+In-Reply-To: <200702101252.033732000@suse.de>
+To: Zachary Amsden <zach@vmware.com>, patches@x86-64.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH 2.6.21 review II] [7/10] VMI: Profile pc badness
+Message-Id: <20070210115235.6F12313DFE@wotan.suse.de>
+Date: Sat, 10 Feb 2007 12:52:35 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-From: Eric Dumazet <dada1@cosmosbay.com>
+From: Zachary Amsden <zach@vmware.com>
+Profile_pc was broken when using paravirtualization because the
+assumption the kernel was running at CPL 0 was violated, causing
+bad logic to read a random value off the stack.
 
-ARCH_HAVE_XTIME_LOCK is used by x86_64 arch .  This arch needs to place a
-read only copy of xtime_lock into vsyscall page.  This read only copy is
-named __xtime_lock, and xtime_lock is defined in
-arch/x86_64/kernel/vmlinux.lds.S as an alias.  So the declaration of
-xtime_lock in kernel/timer.c was guarded by ARCH_HAVE_XTIME_LOCK define,
-defined to true on x86_64.
+The only way to be in kernel lock functions is to be in kernel
+code, so validate that assumption explicitly by checking the CS
+value.  We don't want to be fooled by BIOS / APM segments and
+try to read those stacks, so only match KERNEL_CS.
 
-We can get same result with _attribute__((weak)) in the declaration. linker
-should do the job.
+I moved some stuff in segment.h to make it prettier.
 
-Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
-Signed-off-by: Andi Kleen <ak@suse.de>
-Cc: Andi Kleen <ak@suse.de>
-Signed-off-by: Andrew Morton <akpm@osdl.org>
----
+Signed-off-by: Zachary Amsden <zach@vmware.com>
 
- include/asm-x86_64/vsyscall.h |    5 -----
- include/linux/time.h          |    2 +-
- kernel/timer.c                |    4 +---
- 3 files changed, 2 insertions(+), 9 deletions(-)
-
-Index: linux/include/asm-x86_64/vsyscall.h
-===================================================================
---- linux.orig/include/asm-x86_64/vsyscall.h
-+++ linux/include/asm-x86_64/vsyscall.h
-@@ -56,11 +56,6 @@ extern struct vxtime_data vxtime;
- extern int vgetcpu_mode;
- extern struct timezone sys_tz;
- extern int sysctl_vsyscall;
--extern seqlock_t xtime_lock;
--
--extern int sysctl_vsyscall;
--
--#define ARCH_HAVE_XTIME_LOCK 1
+diff -r 69d0339b9997 arch/i386/kernel/time.c
+--- a/arch/i386/kernel/time.c	Fri Feb 02 15:55:46 2007 -0800
++++ b/arch/i386/kernel/time.c	Fri Feb 02 16:15:45 2007 -0800
+@@ -131,15 +131,13 @@ unsigned long profile_pc(struct pt_regs 
+ 	unsigned long pc = instruction_pointer(regs);
  
- #endif /* __KERNEL__ */
+ #ifdef CONFIG_SMP
+-	if (!user_mode_vm(regs) && in_lock_functions(pc)) {
++	if (!v8086_mode(regs) && SEGMENT_IS_KERNEL_CODE(regs->xcs) &&
++	    in_lock_functions(pc)) {
+ #ifdef CONFIG_FRAME_POINTER
+ 		return *(unsigned long *)(regs->ebp + 4);
+ #else
+-		unsigned long *sp;
+-		if ((regs->xcs & 3) == 0)
+-			sp = (unsigned long *)&regs->esp;
+-		else
+-			sp = (unsigned long *)regs->esp;
++		unsigned long *sp = (unsigned long *)&regs->esp;
++
+ 		/* Return address is either directly at stack pointer
+ 		   or above a saved eflags. Eflags has bits 22-31 zero,
+ 		   kernel addresses don't. */
+diff -r 69d0339b9997 include/asm-i386/ptrace.h
+--- a/include/asm-i386/ptrace.h	Fri Feb 02 15:55:46 2007 -0800
++++ b/include/asm-i386/ptrace.h	Fri Feb 02 16:12:37 2007 -0800
+@@ -49,6 +49,10 @@ static inline int user_mode_vm(struct pt
+ {
+ 	return ((regs->xcs & SEGMENT_RPL_MASK) | (regs->eflags & VM_MASK)) >= USER_RPL;
+ }
++static inline int v8086_mode(struct pt_regs *regs)
++{
++	return (regs->eflags & VM_MASK);
++}
  
-Index: linux/include/linux/time.h
-===================================================================
---- linux.orig/include/linux/time.h
-+++ linux/include/linux/time.h
-@@ -90,7 +90,7 @@ static inline struct timespec timespec_s
- 
- extern struct timespec xtime;
- extern struct timespec wall_to_monotonic;
--extern seqlock_t xtime_lock;
-+extern seqlock_t xtime_lock __attribute__((weak));
- 
- void timekeeping_init(void);
- 
-Index: linux/kernel/timer.c
-===================================================================
---- linux.orig/kernel/timer.c
-+++ linux/kernel/timer.c
-@@ -1162,11 +1162,9 @@ static inline void calc_load(unsigned lo
-  * This read-write spinlock protects us from races in SMP while
-  * playing with xtime and avenrun.
+ #define instruction_pointer(regs) ((regs)->eip)
+ #define regs_return_value(regs) ((regs)->eax)
+diff -r 69d0339b9997 include/asm-i386/segment.h
+--- a/include/asm-i386/segment.h	Fri Feb 02 15:55:46 2007 -0800
++++ b/include/asm-i386/segment.h	Fri Feb 02 16:08:50 2007 -0800
+@@ -83,13 +83,7 @@
+  * The GDT has 32 entries
   */
--#ifndef ARCH_HAVE_XTIME_LOCK
--__cacheline_aligned_in_smp DEFINE_SEQLOCK(xtime_lock);
-+__attribute__((weak)) __cacheline_aligned_in_smp DEFINE_SEQLOCK(xtime_lock);
+ #define GDT_ENTRIES 32
+-
+ #define GDT_SIZE (GDT_ENTRIES * 8)
+-
+-/* Matches __KERNEL_CS and __USER_CS (they must be 2 entries apart) */
+-#define SEGMENT_IS_FLAT_CODE(x)  (((x) & 0xec) == GDT_ENTRY_KERNEL_CS * 8)
+-/* Matches PNP_CS32 and PNP_CS16 (they must be consecutive) */
+-#define SEGMENT_IS_PNP_CODE(x)   (((x) & 0xf4) == GDT_ENTRY_PNPBIOS_BASE * 8)
  
- EXPORT_SYMBOL(xtime_lock);
--#endif
+ /* Simple and small GDT entries for booting only */
  
- /*
-  * This function runs timers and the timer-tq in bottom half context.
+@@ -134,4 +128,17 @@
+ #ifndef CONFIG_PARAVIRT
+ #define get_kernel_rpl()  0
+ #endif
++/*
++ * Matching rules for certain types of segments.
++ */
++
++/* Matches only __KERNEL_CS, ignoring PnP / USER / APM segments */
++#define SEGMENT_IS_KERNEL_CODE(x) (((x) & 0xfc) == GDT_ENTRY_KERNEL_CS * 8)
++
++/* Matches __KERNEL_CS and __USER_CS (they must be 2 entries apart) */
++#define SEGMENT_IS_FLAT_CODE(x)  (((x) & 0xec) == GDT_ENTRY_KERNEL_CS * 8)
++
++/* Matches PNP_CS32 and PNP_CS16 (they must be consecutive) */
++#define SEGMENT_IS_PNP_CODE(x)   (((x) & 0xf4) == GDT_ENTRY_PNPBIOS_BASE * 8)
++
+ #endif
+
