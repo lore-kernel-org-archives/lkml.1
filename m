@@ -1,82 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752631AbXBJBuX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752638AbXBJBu7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752631AbXBJBuX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Feb 2007 20:50:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752635AbXBJBuX
+	id S1752638AbXBJBu7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Feb 2007 20:50:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752637AbXBJBu7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Feb 2007 20:50:23 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:59756 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752623AbXBJBuW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Feb 2007 20:50:22 -0500
-Date: Fri, 9 Feb 2007 17:50:17 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Linux Filesystems <linux-fsdevel@vger.kernel.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [patch 3/3] ext2: use perform_write aop
-Message-Id: <20070209175017.c8a8c500.akpm@linux-foundation.org>
-In-Reply-To: <20070210013407.GB14349@wotan.suse.de>
-References: <20070208105437.26443.35653.sendpatchset@linux.site>
-	<20070208105508.26443.7806.sendpatchset@linux.site>
-	<20070209111455.67a69783.akpm@linux-foundation.org>
-	<20070209114539.8bd15ee0.akpm@linux-foundation.org>
-	<20070210013407.GB14349@wotan.suse.de>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 9 Feb 2007 20:50:59 -0500
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:31360 "EHLO
+	pd4mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752638AbXBJBu6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Feb 2007 20:50:58 -0500
+Date: Fri, 09 Feb 2007 19:50:46 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: NAK new drivers without proper power management?
+In-reply-to: <fa.Jy0FJQtASvVEpsy8Q96uoHtyEVA@ifi.uio.no>
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Cc: Jeff Garzik <jeff@garzik.org>, nigel@nigel.suspend2.net
+Message-id: <45CD24F6.8090107@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.xSKPgY66Q+DPCZ1pszFFfdrJ0To@ifi.uio.no>
+ <fa.FzHdYYYH5Ru57c8/yRxLylpH0Kk@ifi.uio.no>
+ <fa.DuG12yQo+RR4jIjJTnoOwtKM0Ao@ifi.uio.no>
+ <fa.Jy0FJQtASvVEpsy8Q96uoHtyEVA@ifi.uio.no>
+User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 10 Feb 2007 02:34:07 +0100
-Nick Piggin <npiggin@suse.de> wrote:
-
-> On Fri, Feb 09, 2007 at 11:45:39AM -0800, Andrew Morton wrote:
-> > On Fri, 9 Feb 2007 11:14:55 -0800 Andrew Morton <akpm@linux-foundation.org> wrote:
-> > 
-> > > If so, that might be preventable by leaving the buffer nonuptodate.
-> > 
-> > oh, OK, it was buffer_new(), so zeroes are the right thing for a reader to
-> > see.
-> > 
-> > But if it wasn't buffer_new() then the appropriate thing for the reader to
-> > see is what's on the disk.  But __block_prepare_write() won't read a buffer
-> > which is fully-inside the write area from disk.
-> > 
-> > And that's seemingly OK, because if a reader gets in there after the short
-> > copy, that reader will see the non-uptodate buffer and will populate it
-> > from disk.
-> > 
-> > But doing that will overwrite the data which the write() caller managed to
-> > copy into the page before it took a fault.  And that's not OK because
-> > block_perform_write() does iovec_iterator_advance(i, copied) in this case
-> > and hence will not rerun the copy after acquiring the page lock?
+Jeff Garzik wrote:
+> Nigel Cunningham wrote:
+>> Hi.
+>>
+>> On Fri, 2007-02-09 at 23:17 +0100, Arjan van de Ven wrote:
+>>> On Sat, 2007-02-10 at 08:57 +1100, Nigel Cunningham wrote:
+>>>> Hi.
+>>>>
+>>>> I don't think this is already done (feel free to correct me if I'm
+>>>> wrong)..
+>>>>
+>>>> Can we start to NAK new drivers that don't have proper power management
+>>>> implemented? There really is no excuse for writing a new driver and not
+>>>> putting .suspend and .resume methods in anymore, is there?
+>>>
+>>> to a large degree, a device driver that doesn't suspend is better than
+>>> no device driver at all, right?
+>>
+>> I'm not sure it is. It only makes more work for everyone else: We have
+>> to help people figure out what causes their computer to fail to resume
+>> (which can take quite a while), then get them them complain to driver
+>> author, and the driver author has to submit patches to fix it.
+>>
+>> All of this is avoided if they'll just do it right in the first place.
 > 
-> Hmm, yeah. This can be handled by not advancing partially into a !uptodate
-> buffer.
+> A lot of a lot of things could have been avoided, if they just did it 
+> right the first time.
+> 
+> I think it's more valuable to users to get a basic network driver that 
+> pings or a basic ATA driver that reads/writes, than peripheral issues 
+> like suspend/resume.
+> 
+> Certainly we should ask for it, but it shouldn't be a merge-stopper.
+> 
+>     Jeff
 
-Think so, yeah.
+I would disagree that it's a peripheral issue, it's pretty core these 
+days, at least for any hardware that you can stuff in a laptop (though a 
+fair number of desktops get suspended and resumed these days too). One 
+driver on a system which doesn't suspend or resume properly can ruin the 
+entire process, causing a ton of user frustration. Certainly I would 
+consider a driver without suspend/resume support to be incomplete.
 
-Overall, the implementation you have there seems reasonable to me. 
-Basically it's passing the responsibility for preventing the deadlock and
-the exposure-of-zeroes problem down into the filesystem itself, where we
-have visibility of the state of the various subsections of the page and can
-take appropriate actions in response to that.
+The trouble with deferring adding this support is that it's a lot harder 
+to add this support in after the fact than if it was considered during 
+the original driver development.
 
-It's got conceptually harder to follow as a result, which is a shame.  But
-still no magic bullet is on offer.
+I would be in favor of not merging drivers lacking suspend unless 
+there's a very good reason they're lacking it.
 
-I pity the poor schmuck who has to write ext3_journalled_perform_write(),
-ext3_ordered_perform_write(), ext3_writeback_perform_write(),
-ext3_writeback_nobh_perform_write() and all that other stuff.  But I think
-we need to do that pretty soon to validate the whole approach.  Also xfs
-and reiser3.
+It also kind of bothers me that if a driver has no suspend/resume 
+functions, and you suspend and resume the system, we don't complain 
+about it even though there's a very good chance that device is not going 
+to function properly. How about something in dmesg like:
 
-NTFS will be interesting from the can-this-be-made-to-work POV.
+Warning: driver for device XXXX has no suspend or resume support.
+Device may not function properly after resume.
 
-Is NFS vulnerable to the deadlock?  It looks to be.  Shudder.
+so that users know who to complain to. Maybe there are some devices that 
+truly don't need any handling for suspend, but if so I suspect the 
+number of those is small enough that adding empty functions would be a 
+good-enough solution.
 
-We'd need to find a way of communicating all this to the poor old
-fs maintainers.
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
 
