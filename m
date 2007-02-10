@@ -1,82 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751819AbXBJTwm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751811AbXBJUCw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751819AbXBJTwm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Feb 2007 14:52:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751821AbXBJTwm
+	id S1751811AbXBJUCw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Feb 2007 15:02:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751821AbXBJUCw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Feb 2007 14:52:42 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:34554 "EHLO ogre.sisk.pl"
+	Sat, 10 Feb 2007 15:02:52 -0500
+Received: from tag.witbe.net ([81.88.96.48]:55935 "EHLO tag.witbe.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751819AbXBJTwl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Feb 2007 14:52:41 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Daniel Barkalow <barkalow@iabervon.org>
-Subject: Re: [PATCH] Re: NAK new drivers without proper power management?
-Date: Sat, 10 Feb 2007 20:50:27 +0100
-User-Agent: KMail/1.9.5
-Cc: nigel@nigel.suspend2.net, Robert Hancock <hancockr@shaw.ca>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Jeff Garzik <jeff@garzik.org>, Pavel Machek <pavel@ucw.cz>,
-       pm list <linux-pm@lists.osdl.org>
-References: <fa.xSKPgY66Q+DPCZ1pszFFfdrJ0To@ifi.uio.no> <200702101130.44471.rjw@sisk.pl> <Pine.LNX.4.64.0702101231281.20138@iabervon.org>
-In-Reply-To: <Pine.LNX.4.64.0702101231281.20138@iabervon.org>
+	id S1751811AbXBJUCw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Feb 2007 15:02:52 -0500
+Reply-To: <rol@as2917.net>
+From: "Paul Rolland" <rol@as2917.net>
+To: "'Alan'" <alan@lxorguk.ukuu.org.uk>
+Cc: "'Robert Hancock'" <hancockr@shaw.ca>,
+       "'Linux Kernel Mailing List'" <linux-kernel@vger.kernel.org>
+Subject: RE: AHCI - remove probing of ata2
+Date: Sat, 10 Feb 2007 21:01:53 +0100
+Organization: AS2917.net
+Message-ID: <00d101c74d4e$4ff62df0$2101a8c0@donald>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+	charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200702102050.28218.rjw@sisk.pl>
+X-Mailer: Microsoft Office Outlook 11
+In-Reply-To: <20070210190643.2e865cc9@localhost.localdomain>
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
+Thread-Index: AcdNRLOehoesynT3SJCl+eCEPX82cAABgrdw
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday, 10 February 2007 18:52, Daniel Barkalow wrote:
-> On Sat, 10 Feb 2007, Rafael J. Wysocki wrote:
+Hi Alan,
+
+> You have the old driver 0n 0x1F0
 > 
-> > On Saturday, 10 February 2007 11:02, Nigel Cunningham wrote:
-> >
-> > > Well, the original desire was to stop new drivers getting in without
-> > > proper power management.
-> > 
-> > I know, but I agree with the argument that having a driver without the
-> > suspend/resume support is better than not having the driver at all.
 > 
-> How about if "proper power management" is defined to include the driver 
-> explicitly preventing suspend? It seems to me like the current problem is 
-> that driver writers don't think about power management at all, and the 
-> result is that, after suspend/resume, the system doesn't come back. It 
-> would be better if driver writers had to think about power management just 
-> enough to realize that it's not going to work, and make this information 
-> available to the system. At that point, it's relatively easy for the 
-> system to do something useful about it.
-
-Actually, it is easy for the driver authors to do this right now.  They can
-just make the .suspend() routine always return an error.
-
-Well, I think this is a good idea: if the device in question requires specific
-power management during the suspend/resume, but it is not implemented by the
-driver, we should require the author of the driver to define the .suspend()
-routine that returns -ENOSYS (preferably, with an explanatory warning in
-dmesg).
-
-Thoughts?
-
-> > Also, I think there are quite some drivers already in the tree that don't
-> > support suspend/resume explicitly and honestly we should start from adding the
-> > suspend/resume routines to these drivers _before_ we ban new drivers like that.
+> > PCI: Device 0000:02:00.0 not available because of resource 
+> collisions
+> > ahci: probe of 0000:02:00.0 failed with error -22
+> > ACPI: PCI Interrupt 0000:00:1f.1[A] -> GSI 22 (level, low) -> IRQ 22
+> > ata: 0x1F0 IDE port busy
 > 
-> It'd be relatively quick to modify all the current drivers that don't 
-> explicitly support suspend/resume to explicitly not support it. (Or to 
-> explicitly support it trivially; /dev/null obviously doesn't need 
-> anything.)
+> And the new drivers trying to manage the same port
+> 
+> > CONFIG_IDE=y
+> > CONFIG_BLK_DEV_IDE=y
+> 
+> Set those to "N" and try again
 
-The problem is we have to review quite a lot of drivers for this purpose.
-Still it looks like we should do this anyway.
+Done that, rebuilt and rebooted...
+/dev/hda and /dev/hdb (old driver) are gone... 
+OK, rebooting again, with a new root device as /dev/sde1...
+No problem for the old IDE devices, they are now /dev/sdX.
 
-Greetings,
-Rafael
+But the Jmicron stuff is still broken though no more conflict :(
+
+PCI: Enabling device 0000:02:00.1 (0000 -> 0001)
+ACPI: PCI Interrupt 0000:02:00.1[B] -> GSI 16 (level, low) -> IRQ 16
+ata7: PATA max UDMA/100 cmd 0x9C00 ctl 0x9882 bmdma 0x9400 irq 16
+ata8: PATA max UDMA/100 cmd 0x9800 ctl 0x9482 bmdma 0x9408 irq 16
+scsi6 : pata_jmicron
+ata7.00: ATAPI, max UDMA/66
+ata7.00: qc timeout (cmd 0xef)
+ata7.00: failed to set xfermode (err_mask=0x4)
+ata7.00: limiting speed to UDMA/44
+ata7: failed to recover some devices, retrying in 5 secs
+ata7.00: qc timeout (cmd 0xef)
+ata7.00: failed to set xfermode (err_mask=0x4)
+ata7.00: limiting speed to PIO0
+ata7: failed to recover some devices, retrying in 5 secs
+ata7.00: qc timeout (cmd 0xef)
+ata7.00: failed to set xfermode (err_mask=0x4)
+ata7.00: disabled
+scsi7 : pata_jmicron
+ATA: abnormal status 0x7F on port 0x9807
 
 
--- 
-If you don't have the time to read,
-you don't have the time or the tools to write.
-		- Stephen King
+Also, I've seen a :
+
+ata1: Spurious SDB FIS during NCQ issue=0x0 SAct=0x7ff8001f
+FIS=004040a1:00040000
+
+What's this ? Is it really bad or just a warning ???
+
+Regards,
+Paul
+
+
