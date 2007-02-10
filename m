@@ -1,54 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423360AbXBIX6B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423359AbXBJABF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423360AbXBIX6B (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Feb 2007 18:58:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423359AbXBIX6B
+	id S1423359AbXBJABF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Feb 2007 19:01:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423368AbXBJABE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Feb 2007 18:58:01 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:39114 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423360AbXBIX6A (ORCPT
+	Fri, 9 Feb 2007 19:01:04 -0500
+Received: from e33.co.us.ibm.com ([32.97.110.151]:55652 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423359AbXBJABD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Feb 2007 18:58:00 -0500
-Date: Fri, 9 Feb 2007 15:54:10 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Chuck Ebbert <cebbert@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       jos poortvliet <jos@mijnkamer.nl>, ck@vds.kolivas.org,
-       Con Kolivas <kernel@kolivas.org>, linux-kernel@vger.kernel.org
-Subject: Re: [ck] Re: Swap prefetch merge plans
-Message-Id: <20070209155410.59e0cf4b.randy.dunlap@oracle.com>
-In-Reply-To: <45CD0557.4090709@redhat.com>
-References: <200702091038.37143.kernel@kolivas.org>
-	<200702092054.10232.ocilent1@gmail.com>
-	<200702092321.20615.kernel@kolivas.org>
-	<200702091413.06949.jos@mijnkamer.nl>
-	<20070209123029.633934eb.akpm@linux-foundation.org>
-	<45CD0557.4090709@redhat.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.0 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+	Fri, 9 Feb 2007 19:01:03 -0500
+Subject: Re: [PATCH 21/22] honor r/w changes at do_remount() time
+From: Dave Hansen <hansendc@us.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, hch@infradead.org,
+       Dave Hansen <haveblue@us.ibm.com>
+In-Reply-To: <20070209152219.fa61d152.akpm@linux-foundation.org>
+References: <20070209225329.27619A62@localhost.localdomain>
+	 <20070209225344.93A75D35@localhost.localdomain>
+	 <20070209152219.fa61d152.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Fri, 09 Feb 2007 16:00:57 -0800
+Message-Id: <1171065657.24675.16.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.6.1 
 Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 09 Feb 2007 18:35:51 -0500 Chuck Ebbert wrote:
+On Fri, 2007-02-09 at 15:22 -0800, Andrew Morton wrote:
+> On Fri, 09 Feb 2007 14:53:44 -0800
+> Dave Hansen <hansendc@us.ibm.com> wrote:
+> 
+> > This is the core of the read-only bind mount patch set.
+> 
+> Who wants read-only bind mounts, and for what reason?
 
-> Andrew Morton wrote:
-> > I have an email sitting in my drafts folder stating that I'll no longer
-> > accept any features unless they've been publically reviewed in detail and
-> > run-time tested by a third party.  The idea being to force people to spend
-> > more time reviewing and testing each other's stuff and less time writing
-> > new stuff.  Maybe on a sufficiently gloomy day I'll actually send it.
-> >   
-> /me sneaks into Andrew's office and sends it out.
+The original desire came out of the linux-vserver project.  It allows a
+sysadmin to share directories between many vservers/containers and keep
+those containers from writing to it, even though the users in that
+vserver may have "root" privileges.
 
-Thanks.  8)
+This also has the advantage of cleaning up the somewhat hackish "look
+for writable-open-files during remount/ro operations".  It should also
+allow us to separate the concepts of the user wanting a filesystem to be
+r/o and the filesystem _itself_ being r/o because of a r/o device or
+some kind of corruption.
 
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+-- Dave
+
