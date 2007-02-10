@@ -1,42 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752971AbXBJDmY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752975AbXBJDpo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752971AbXBJDmY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Feb 2007 22:42:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752972AbXBJDmY
+	id S1752975AbXBJDpo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Feb 2007 22:45:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752976AbXBJDpo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Feb 2007 22:42:24 -0500
-Received: from cavan.codon.org.uk ([217.147.92.49]:56643 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752949AbXBJDmY (ORCPT
+	Fri, 9 Feb 2007 22:45:44 -0500
+Received: from mail5.sea5.speakeasy.net ([69.17.117.7]:52480 "EHLO
+	mail5.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752975AbXBJDpo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Feb 2007 22:42:24 -0500
-Date: Sat, 10 Feb 2007 03:42:11 +0000
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Nigel Cunningham <nigel@nigel.suspend2.net>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Message-ID: <20070210034210.GB16490@srcf.ucam.org>
-References: <1171058269.1484.64.camel@nigel.suspend2.net>
+	Fri, 9 Feb 2007 22:45:44 -0500
+Date: Fri, 9 Feb 2007 22:45:41 -0500 (EST)
+From: James Morris <jmorris@namei.org>
+X-X-Sender: jmorris@d.namei
+To: Rusty Russell <rusty@rustcorp.com.au>
+cc: lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andi Kleen <ak@muc.de>, Andrew Morton <akpm@linux-foundation.org>,
+       virtualization <virtualization@lists.osdl.org>
+Subject: Re: [PATCH 4 of 7]  lguest: Config and headers
+In-Reply-To: <1171064515.15356.10.camel@localhost.localdomain>
+Message-ID: <Pine.LNX.4.64.0702092243170.13855@d.namei>
+References: <1171033146.2718.157.camel@localhost.localdomain> 
+ <1171033383.2718.163.camel@localhost.localdomain> 
+ <1171033436.2718.165.camel@localhost.localdomain> 
+ <1171033484.2718.167.camel@localhost.localdomain> 
+ <1171033741.2718.172.camel@localhost.localdomain>  <Pine.LNX.4.64.0702091304090.9927@d.namei>
+ <1171064515.15356.10.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1171058269.1484.64.camel@nigel.suspend2.net>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-Subject: Re: NAK new drivers without proper power management?
-X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
-X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 10, 2007 at 08:57:49AM +1100, Nigel Cunningham wrote:
+On Sat, 10 Feb 2007, Rusty Russell wrote:
 
-> Can we start to NAK new drivers that don't have proper power management
-> implemented? There really is no excuse for writing a new driver and not
-> putting .suspend and .resume methods in anymore, is there?
+> Well it was the use of get_order() which triggered Andi's alarm bells,
+> so I went back to deriving it.  This code is correct, however.
 
-The PCI layer is able to deal with drivers that have no PM methods in 
-the most simple case.
++       hype_pages = alloc_pages(GFP_KERNEL|__GFP_ZERO, HYPERVISOR_MAP_ORDER);
++       if (!hype_pages)
++               return -ENOMEM;
 
+This will try and allocate 2^16 pages.  I guess we need a 
+HYPERVISOR_PAGE_ORDER ?
+
+
+- James
 -- 
-Matthew Garrett | mjg59@srcf.ucam.org
+James Morris
+<jmorris@namei.org>
