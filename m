@@ -1,58 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932585AbXBJPOv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932590AbXBJPWd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932585AbXBJPOv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Feb 2007 10:14:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932590AbXBJPOv
+	id S932590AbXBJPWd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Feb 2007 10:22:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932608AbXBJPWd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Feb 2007 10:14:51 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:34936 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932585AbXBJPOu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Feb 2007 10:14:50 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <45CDE14C.4040203@s5r6.in-berlin.de>
-Date: Sat, 10 Feb 2007 16:14:20 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.9) Gecko/20070121 SeaMonkey/1.0.7
+	Sat, 10 Feb 2007 10:22:33 -0500
+Received: from iona.labri.fr ([147.210.8.143]:41393 "EHLO iona.labri.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932590AbXBJPWc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Feb 2007 10:22:32 -0500
+Date: Sat, 10 Feb 2007 16:22:26 +0100
+From: Samuel Thibault <samuel.thibault@ens-lyon.org>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Levitsky Maxim <maximlevitsky@yahoo.com>, linux-kernel@vger.kernel.org,
+       tori@unhappy.mine.nu, netdev@vger.kernel.org,
+       sebastien.hinderer@loria.fr
+Subject: Re: [PATCH] [NETDEV] [000]  dmfe : fix bugs and add features
+Message-ID: <20070210152226.GA3482@interface.famille.thibault.fr>
+Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
+	Jeff Garzik <jeff@garzik.org>,
+	Levitsky Maxim <maximlevitsky@yahoo.com>,
+	linux-kernel@vger.kernel.org, tori@unhappy.mine.nu,
+	netdev@vger.kernel.org, sebastien.hinderer@loria.fr
+References: <96797.60132.qm@web38511.mail.mud.yahoo.com> <45CCE46E.9010902@garzik.org>
 MIME-Version: 1.0
-To: Andi Kleen <ak@suse.de>
-CC: Bernhard Kaindl <bk@suse.de>, discuss@x86-64.org,
-       linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: remote debugging via FireWire
-References: <200702101242.48467.ak@suse.de>	<45CDCDCD.5000609@s5r6.in-berlin.de> <200702101502.59431.ak@suse.de>
-In-Reply-To: <200702101502.59431.ak@suse.de>
-X-Enigmail-Version: 0.94.1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <45CCE46E.9010902@garzik.org>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> On Saturday 10 February 2007 14:51, Stefan Richter wrote:
->> Could be handled via linux1394-2.6.git, although a
->> different channel where the actual users of this facility watch would
->> IMO be more appropriate.
+Hi,
+
+Jeff Garzik, le Fri 09 Feb 2007 16:15:26 -0500, a écrit :
+> Levitsky Maxim wrote:
+> >Before some time I decided to fix suspend/resume on my Davicom
+> >network card.  During development I also fixed couple of bugs and
+> >added support for link detection and WOL Note : 2.6.20 already has
+> >support for link detection , but it is broken when card has external
+> >PHY, like mine.
+> >
+> >So here it goes:
+> >
+> >[PATCH] [NET] [001] dmfe : trivial/spelling fixes
+> >[PATCH] [NET] [002] dmfe : Fix possible oops
+> >[PATCH] [NET] [003] dmfe : fix link detection
+> >[PATCH] [NET] [004] dmfe : Add suspend/resume support
+> >[PATCH] [NET] [005] dmfe : Add support for wake-on-lan
 > 
-> It's more related to arch code than firewire, so I thought i would
-> handle it. But you can too if you want. It definitely needs much
-> more review anyways.
-
-It's better you do it. I don't know anything about the specifics of
-early initialization. Just Cc linux1394-devel on submission so that we
-can have a look at the OHCI-1394 related bits.
-
-Using linux1394-2.6.git could only be helpful if more code sharing
-between ohci1394.c and ohci1394_early.c would be desired. That's
-questionable though, given the rather small size of ohci1394_early.c.
-
->> A mostly unrelated note: A simple to set up remote-dmesg utility would
->> be nice to have on the terminal side.
+> >Commit 7628b0a8c01a02966d2228bdf741ddedb128e8f8 (drivers/net/tulip/dmfe: 
+> >support basic carrier detection) breaks networking on my Davicom DM9009. 
+> >ethtool always reports there is no link.  tcpdump shows incoming 
+> >packets, but TX is disabled.  Reverting the above patch fixes the 
+> >problem.
 > 
-> ftp://ftp.firstfloor.org/pub/ak/firescope/
+> What about the above report?
+> 
+> I would rather fix this first, before applying more patches on top of a 
+> problematic patch...
 
-Thanks, I wasn't aware that firescope actually does fill this gap.
--- 
-Stefan Richter
--=====-=-=== --=- -=-=-
-http://arcgraph.de/sr/
+My patch wasn't implementing anything actually: it was just making the
+existing-since-long link detection code available in ethtools.
+
+Samuel
