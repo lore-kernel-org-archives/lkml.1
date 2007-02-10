@@ -1,48 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751385AbXBJRCT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751365AbXBJRE4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751385AbXBJRCT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Feb 2007 12:02:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751365AbXBJRCS
+	id S1751365AbXBJRE4 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Feb 2007 12:04:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751391AbXBJRE4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Feb 2007 12:02:18 -0500
-Received: from ns2.uludag.org.tr ([193.140.100.220]:55841 "EHLO uludag.org.tr"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751252AbXBJRCS convert rfc822-to-8bit (ORCPT
+	Sat, 10 Feb 2007 12:04:56 -0500
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:44012 "EHLO
+	pd3mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751365AbXBJREz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Feb 2007 12:02:18 -0500
-From: Ismail =?iso-8859-1?q?D=F6nmez?= <ismail@pardus.org.tr>
-Organization: TUBITAK/UEKAE
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Subject: Re: [GIT PATCH] ACPI patches for 2.6.21
-Date: Sat, 10 Feb 2007 19:02:10 +0200
-User-Agent: KMail/1.9.6
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-acpi@vger.kernel.org
-References: <200702071418.51058.lenb@kernel.org> <200702101752.14797.ismail@pardus.org.tr> <20070210163927.GA489@khazad-dum.debian.net>
-In-Reply-To: <20070210163927.GA489@khazad-dum.debian.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200702101902.10776.ismail@pardus.org.tr>
+	Sat, 10 Feb 2007 12:04:55 -0500
+Date: Sat, 10 Feb 2007 11:04:48 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: -mm merge plans for 2.6.21
+In-reply-to: <fa.2ClW7C4ZyCP9QlT4vg7CbzjSqwg@ifi.uio.no>
+To: Frederik Deweerdt <deweerdt@free.fr>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Cc: Arnd Bergmann <arnd@arndb.de>
+Message-id: <45CDFB30.5090102@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.7Z67qjqJwFP7+8QiVtu5tq6CZyU@ifi.uio.no>
+ <fa.4Y/nCUol/tGEodoOl/Jm9nf2AEA@ifi.uio.no>
+ <fa.TgZy4z2lRhwhAWCUE8IuGvMVUCU@ifi.uio.no>
+ <fa.HINMjdGzCuxlEiWtVvmNz7Pv9Pc@ifi.uio.no>
+ <fa.2ClW7C4ZyCP9QlT4vg7CbzjSqwg@ifi.uio.no>
+User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 10 February 2007 18:39:27 Henrique de Moraes Holschuh wrote:
-> On Sat, 10 Feb 2007, Ismail Dönmez wrote:
-> > Hmmf looks like a userspace bug, but it certainly did work before ACPI
-> > update.
->
-> Well, I don't know if this is the case here, but after reading the userland
-> code that people use on most applets to read /proc/acpi/ibm, I was upset
-> and disgusted for days.
->
-> Some userland code *deserves* to be broken with extreme prejudice.
+Frederik Deweerdt wrote:
+>> How about this one instead then:
+> Well, the warning you get is not that obvious:
+> 
+> test.c: In function 'main':
+> test.c:11: warning: 'deprecated_irqf' is deprecated
+> 
+> And as far as I could test (gcc 4.1.1 and gcc 3.4.3), Arjan's comment is
+> not true, the "static const int" don't use extra space, they get
+> optimized away by the compiler (see http://lkml.org/lkml/2007/2/9/106).
 
-Must be because there is no unified way to read this info ;) Userspace is 
-honestly not guilty here.
+gcc 3.2 should be tested as well, that is still supported by the kernel, 
+and versions before 3.4 did not have unit-at-a-time optimizations.
 
-Regards,
-ismail
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
 
