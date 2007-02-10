@@ -1,61 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751263AbXBJRAK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751385AbXBJRCT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751263AbXBJRAK (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Feb 2007 12:00:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751365AbXBJRAK
+	id S1751385AbXBJRCT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Feb 2007 12:02:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751365AbXBJRCS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Feb 2007 12:00:10 -0500
-Received: from smtp23.orange.fr ([80.12.242.50]:20481 "EHLO smtp23.orange.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751263AbXBJRAI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Feb 2007 12:00:08 -0500
-X-ME-UUID: 20070210170006162.27B6E1C00097@mwinf2349.orange.fr
-Message-ID: <45CDF9F1.4060809@wanadoo.fr>
-Date: Sat, 10 Feb 2007 17:59:29 +0100
-From: Thibaud Hulin <hulin.thibaud@wanadoo.fr>
-User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
+	Sat, 10 Feb 2007 12:02:18 -0500
+Received: from ns2.uludag.org.tr ([193.140.100.220]:55841 "EHLO uludag.org.tr"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751252AbXBJRCS convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Feb 2007 12:02:18 -0500
+From: Ismail =?iso-8859-1?q?D=F6nmez?= <ismail@pardus.org.tr>
+Organization: TUBITAK/UEKAE
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Subject: Re: [GIT PATCH] ACPI patches for 2.6.21
+Date: Sat, 10 Feb 2007 19:02:10 +0200
+User-Agent: KMail/1.9.6
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-acpi@vger.kernel.org
+References: <200702071418.51058.lenb@kernel.org> <200702101752.14797.ismail@pardus.org.tr> <20070210163927.GA489@khazad-dum.debian.net>
+In-Reply-To: <20070210163927.GA489@khazad-dum.debian.net>
 MIME-Version: 1.0
-To: Alex Davis <alex14641@yahoo.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Problem of USB - error 71 : how configure kernel to dongle with
- chipset
-References: <292704.97873.qm@web50210.mail.yahoo.com>
-In-Reply-To: <292704.97873.qm@web50210.mail.yahoo.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200702101902.10776.ismail@pardus.org.tr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks. In effect, I already post this question in the ndiswrapper list. 
-So, they told me that was a problem of USB and of kernel. Then, I'm 
-looking for configuration of the kernel, because I compiled the 2.6.19, 
-but I no more success. Actually, lsusb recognize, then don't recognize 
-the machine a few seconds after. Ndiswrapper can be installed or not, 
-that change nothing.
+On Saturday 10 February 2007 18:39:27 Henrique de Moraes Holschuh wrote:
+> On Sat, 10 Feb 2007, Ismail Dönmez wrote:
+> > Hmmf looks like a userspace bug, but it certainly did work before ACPI
+> > update.
+>
+> Well, I don't know if this is the case here, but after reading the userland
+> code that people use on most applets to read /proc/acpi/ibm, I was upset
+> and disgusted for days.
+>
+> Some userland code *deserves* to be broken with extreme prejudice.
 
-This is the answer from which I was able to touch with you :
+Must be because there is no unified way to read this info ;) Userspace is 
+honestly not guilty here.
 
---- Thibaud Hulin <hulin.thibaud@wanadoo.fr> wrote:
-
- > > So, 30 seconds later, the dongle is not recognize. lsusb give :
- > > Bus 001 Device 001: ID 0000:0000
- > > So, I can't use my dongle.
-
-If 'lsusb' doesn't see the card, it may indicate problem with your USB host
-(either hardware, or host driver or both). You may want to try different
-kernels. Until that part works right, ndiswrapper won't be able to 
-initialize
-the card.
-
-Giri
-
-Alex Davis a écrit :
-> As you are using ndiswrapper, you won't much if any help from the kernel developers.
-> ndiswrapper taints the kernel as it links closed-source drivers into kernel space.
-> 
-> I strongly advise you to post this question on the ndiswrapper mailing list.
-> 
-> Good luck.
-> 
-> -Alex
+Regards,
+ismail
 
