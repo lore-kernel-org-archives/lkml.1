@@ -1,66 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932417AbXBJOlf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932422AbXBJOnT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932417AbXBJOlf (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Feb 2007 09:41:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932435AbXBJOlf
+	id S932422AbXBJOnT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Feb 2007 09:43:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932435AbXBJOnT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Feb 2007 09:41:35 -0500
-Received: from wx-out-0506.google.com ([66.249.82.227]:61464 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932417AbXBJOle (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Feb 2007 09:41:34 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=LoDfZFNI8ughsMFig67lMHxNuC3CXfD1y4zH+Hry7OChT+MrhhwOkLDISJnAknKrOXFj4X6P/AW1HKX4XUeezTPyX5cs39W+QqjmP7JUopxUsDplAS3QuqHcACm4N97SXIAufcSr5zekptgC4ol60PFJWMpXFhVaYMF8yMH+XI4=
-Message-ID: <82e4877d0702100641h7b479c95mce3dfa65b0e6c779@mail.gmail.com>
-Date: Sat, 10 Feb 2007 09:41:34 -0500
-From: "Parag Warudkar" <parag.warudkar@gmail.com>
-To: "Andi Kleen" <ak@suse.de>
-Subject: Re: [PATCH] Make aout executables work again
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       joerg@hydrops.han.de, dsd@gentoo.org, paulus@samba.org,
-       benh@kernel.crashing.org, lethal@linux-sh.org
-In-Reply-To: <200702101524.56098.ak@suse.de>
+	Sat, 10 Feb 2007 09:43:19 -0500
+Received: from mail.suse.de ([195.135.220.2]:33189 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932422AbXBJOnS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Feb 2007 09:43:18 -0500
+From: Andi Kleen <ak@suse.de>
+To: Alan <alan@lxorguk.ukuu.org.uk>
+Subject: Re: -mm merge plans for 2.6.21
+Date: Sat, 10 Feb 2007 15:43:14 +0100
+User-Agent: KMail/1.9.5
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+References: <20070208150710.1324f6b4.akpm@linux-foundation.org> <p73ps8igo0v.fsf@bingen.suse.de> <20070210134853.5ab6c211@localhost.localdomain>
+In-Reply-To: <20070210134853.5ab6c211@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <Pine.LNX.4.64.0702092100540.3984@localhost.localdomain>
-	 <p73y7n6goey.fsf@bingen.suse.de>
-	 <82e4877d0702100550ld369c8an2982a64dcc920169@mail.gmail.com>
-	 <200702101524.56098.ak@suse.de>
+Message-Id: <200702101543.14937.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > Is there a reason why we specifically want to make a distinction
-> > between binfmts having and not having VDSOs and do we want aout to
-> > have the possibility of NOT having VDSO when a) It used to have it
-> > unconditionally b) nothing special is needed in arch or common code to
-> > have it and c) Not letting have it requires special arch-specific
-> > code* ?
->
-> I mainly did it this way because it was quite a lot simpler.
-> I'm not worrying too much about other strange binfmts to be honest
->
+On Saturday 10 February 2007 14:48, Alan wrote:
+> > Well it's a technical issue -- it conflicts with the machine check
+> > code that is already implemented by stealing away its events.
+> > You would first need a CONFIG_MCE=n on x86-64 at least, otherwise
+> > one of them will be unhappy.
+> 
+> That is a fair point, albeit after far too long sitting stuck in the tree.
 
-Well with your suggestion of using weak definition (BTW, I find that
-thing cool :))  for arch_setup_additional_pages() I think my patch is
-simpler and it preserves existing behavior - it just boils down to
-actually calling the already existing function in binfmt_aout.c.
+I'm pretty sure I mentioned it earlier already.
 
+> I'll have a look into this a bit further, probably MCE_K8 should feed off
+> the output of the MCE driver.
 
-> > [*] I see the patch handles i386 and x86_64 - but I am not sure if
-> > something similar will be needed for the other arches to allow aout
-> > executables in absence of VDSO (powerpc, sh).
->
-> Neither powerpc nor sh support a.out.
->
+You could probably write a simple edac driver that just feeds of the events 
+mce.c generates and presents that as the EDAC drivers. Currently 
+the user space device is the only consumer, but it wouldn't be hard
+to full it off to other kernel users.
 
-Ok, that's not a concern then. Not that I care about aout but if a
-simple fix can let it have VDSO and prevent special casing, I would
-prefer to let it have VDSO and still work - at least in the interest
-of preserving existing behavior.
+Possibly keeping the existing code that reads the DIMMs and 
+then reads the address map of the NB and match that, then you
+get the same output.
 
-Parag
+[However see below -- i think matching it to SMBIOS using the address
+is a lot more useful for the user in the end]
+
+> 
+> > The other issue is that the existing code does everything EDAC
+> > K8 does already perfectly fine, just in a small fraction of 
+> > the code.
+> 
+> Which is false. It provided a totally inconsistent interface to user
+> space, while the EDAC layer provides the consistency many people need and
+> want.
+
+I still don't get that argument because unlike mce.c+mcelog EDAC cannot
+actually tell you where the DIMM that failed is located on your motherboard.
+
+As far as i can make it out it's only useful for people who either
+have full schematics of their motherboard and know how to read them
+or did a full try'n'error of all combinations run once to 
+figure out which channel is located where.
+
+Somehow I cannot imagine either of that is very common in "enterprises" ;-)
+
+Ok one argument was that some LinuxBIOS users don't seem to 
+set up these tables and have the necessary information at hand
+for their custom cluster hardware, but that's still a weird uncommon 
+case and it would be far better if they just fixed LB.
+
+> Also unless it has changed remarkably the MCE driver doesn't do 
+> scrubbing which is needed in software on some chip revisions.
+
+True, adding that might be a good idea.
+
+[Although I guess that could be done with a small user utility
+using /dev/mem though if you really wanted it?]
+
+One thing EDAC also does that mcelog doesn't is decode the ECC 
+syndromes -- but I haven't figured out a use case yet where that
+is actually useful to know afterwards.
+
+-Andi
