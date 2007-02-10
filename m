@@ -1,54 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752053AbXBJWoy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752118AbXBJWpp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752053AbXBJWoy (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Feb 2007 17:44:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752057AbXBJWoy
+	id S1752118AbXBJWpp (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Feb 2007 17:45:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752076AbXBJWpp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Feb 2007 17:44:54 -0500
-Received: from mtagate6.uk.ibm.com ([195.212.29.139]:34521 "EHLO
-	mtagate6.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752053AbXBJWox (ORCPT
+	Sat, 10 Feb 2007 17:45:45 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:43578 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752118AbXBJWpo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Feb 2007 17:44:53 -0500
-Subject: Re: [patch 0/3] 2.6.20 fix for PageUptodate memorder problem (try
-	3)
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Reply-To: schwidefsky@de.ibm.com
-To: Nick Piggin <npiggin@suse.de>
-Cc: Andrew Morton <akpm@osdl.org>, Hugh Dickins <hugh@veritas.com>,
-       Linux Memory Management <linux-mm@kvack.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <20070210001844.21921.48605.sendpatchset@linux.site>
-References: <20070210001844.21921.48605.sendpatchset@linux.site>
-Content-Type: text/plain
-Organization: IBM Corporation
-Date: Sat, 10 Feb 2007 23:44:55 +0100
-Message-Id: <1171147495.31563.5.camel@localhost>
+	Sat, 10 Feb 2007 17:45:44 -0500
+Date: Sat, 10 Feb 2007 14:41:56 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: gregkh@suse.de
+Cc: lkml <linux-kernel@vger.kernel.org>
+Subject: [PATCH 2/3] PCI/sysfs/kobject kernel-doc fixes
+Message-Id: <20070210144156.38a5e261.randy.dunlap@oracle.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.0 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-02-10 at 03:31 +0100, Nick Piggin wrote:
-> SetNewPageUptodate does not do the S390 page_test_and_clear_dirty, so
-> I'd like to make sure that's OK.
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-An I/O operation on s390 will set the dirty bit for a page. That is the
-reason to have SetPageUptodate clear the per page dirty bit when the
-page is made uptodate the first time. Otherwise we end up writing each
-page back to its backing device at least once. If SetNewPageUptodate is
-used on new anonymous pages exclusively I don't see a problem in
-omitting the page_test_clear_dirty.
+Fix kernel-doc warnings in PCI, sysfs, and kobject files.
 
--- 
-blue skies,
-  Martin.
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ drivers/pci/pci-driver.c |    1 +
+ drivers/pci/pci.c        |    2 +-
+ fs/sysfs/file.c          |    2 +-
+ lib/kobject.c            |    1 +
+ 4 files changed, 4 insertions(+), 2 deletions(-)
 
-Martin Schwidefsky
-Linux for zSeries Development & Services
-IBM Deutschland Entwicklung GmbH
-
-"Reality continues to ruin my life." - Calvin.
-
-
+--- linux-2.6.20-git6.orig/drivers/pci/pci-driver.c
++++ linux-2.6.20-git6/drivers/pci/pci-driver.c
+@@ -415,6 +415,7 @@ static struct kobj_type pci_driver_kobj_
+  * __pci_register_driver - register a new pci driver
+  * @drv: the driver structure to register
+  * @owner: owner module of drv
++ * @mod_name: module name string
+  * 
+  * Adds the driver structure to the list of registered drivers.
+  * Returns a negative value on error, otherwise 0. 
+--- linux-2.6.20-git6.orig/drivers/pci/pci.c
++++ linux-2.6.20-git6/drivers/pci/pci.c
+@@ -1300,7 +1300,7 @@ pci_set_consistent_dma_mask(struct pci_d
+ 
+ /**
+  * pci_select_bars - Make BAR mask from the type of resource
+- * @pdev: the PCI device for which BAR mask is made
++ * @dev: the PCI device for which BAR mask is made
+  * @flags: resource type mask to be selected
+  *
+  * This helper routine makes bar mask from the type of resource.
+--- linux-2.6.20-git6.orig/fs/sysfs/file.c
++++ linux-2.6.20-git6/fs/sysfs/file.c
+@@ -54,7 +54,7 @@ static struct sysfs_ops subsys_sysfs_ops
+ /**
+  *	add_to_collection - add buffer to a collection
+  *	@buffer:	buffer to be added
+- *	@node		inode of set to add to
++ *	@node:		inode of set to add to
+  */
+ 
+ static inline void
+--- linux-2.6.20-git6.orig/lib/kobject.c
++++ linux-2.6.20-git6/lib/kobject.c
+@@ -325,6 +325,7 @@ int kobject_rename(struct kobject * kobj
+ /**
+  *	kobject_rename - change the name of an object
+  *	@kobj:	object in question.
++ *	@new_parent: object's new parent
+  *	@new_name: object's new name
+  */
+ 
