@@ -1,88 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751811AbXBJUCw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751743AbXBJUOi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751811AbXBJUCw (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Feb 2007 15:02:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751821AbXBJUCw
+	id S1751743AbXBJUOi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Feb 2007 15:14:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751802AbXBJUOi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Feb 2007 15:02:52 -0500
-Received: from tag.witbe.net ([81.88.96.48]:55935 "EHLO tag.witbe.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751811AbXBJUCw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Feb 2007 15:02:52 -0500
-Reply-To: <rol@as2917.net>
-From: "Paul Rolland" <rol@as2917.net>
-To: "'Alan'" <alan@lxorguk.ukuu.org.uk>
-Cc: "'Robert Hancock'" <hancockr@shaw.ca>,
-       "'Linux Kernel Mailing List'" <linux-kernel@vger.kernel.org>
-Subject: RE: AHCI - remove probing of ata2
-Date: Sat, 10 Feb 2007 21:01:53 +0100
-Organization: AS2917.net
-Message-ID: <00d101c74d4e$4ff62df0$2101a8c0@donald>
+	Sat, 10 Feb 2007 15:14:38 -0500
+Received: from wr-out-0506.google.com ([64.233.184.235]:58660 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751743AbXBJUOi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Feb 2007 15:14:38 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=OAANrct1/MGm0sAEpGI1W5FwQfyf339Vsap1TlgxSUaTYrAZc8e9Fr8z1w1LSlMcsSGLyFpuV2eEHfI14rRra4Mv0/dWMOIQQHyftrWTzP7z2tju6F6epmWpwKIzOfzs2D4xzlD0rSEwgOtXTXwQCF2U7dB3Xw4uBzn99XR8Ag0=
+Message-ID: <8d158e1f0702101214j603e1880i7eae2d94b446bc0b@mail.gmail.com>
+Date: Sat, 10 Feb 2007 21:14:37 +0100
+From: "Patrick Ale" <patrick.ale@gmail.com>
+To: "Randy Dunlap" <randy.dunlap@oracle.com>
+Subject: Re: libsata tests started
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20070210114155.6f7433c8.randy.dunlap@oracle.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Mailer: Microsoft Office Outlook 11
-In-Reply-To: <20070210190643.2e865cc9@localhost.localdomain>
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
-Thread-Index: AcdNRLOehoesynT3SJCl+eCEPX82cAABgrdw
+Content-Disposition: inline
+References: <8d158e1f0702100822i28d0bcds91cf27fc34534d2c@mail.gmail.com>
+	 <20070210114155.6f7433c8.randy.dunlap@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Alan,
+On 2/10/07, Randy Dunlap <randy.dunlap@oracle.com> wrote:
 
-> You have the old driver 0n 0x1F0
-> 
-> 
-> > PCI: Device 0000:02:00.0 not available because of resource 
-> collisions
-> > ahci: probe of 0000:02:00.0 failed with error -22
-> > ACPI: PCI Interrupt 0000:00:1f.1[A] -> GSI 22 (level, low) -> IRQ 22
-> > ata: 0x1F0 IDE port busy
-> 
-> And the new drivers trying to manage the same port
-> 
-> > CONFIG_IDE=y
-> > CONFIG_BLK_DEV_IDE=y
-> 
-> Set those to "N" and try again
-
-Done that, rebuilt and rebooted...
-/dev/hda and /dev/hdb (old driver) are gone... 
-OK, rebooting again, with a new root device as /dev/sde1...
-No problem for the old IDE devices, they are now /dev/sdX.
-
-But the Jmicron stuff is still broken though no more conflict :(
-
-PCI: Enabling device 0000:02:00.1 (0000 -> 0001)
-ACPI: PCI Interrupt 0000:02:00.1[B] -> GSI 16 (level, low) -> IRQ 16
-ata7: PATA max UDMA/100 cmd 0x9C00 ctl 0x9882 bmdma 0x9400 irq 16
-ata8: PATA max UDMA/100 cmd 0x9800 ctl 0x9482 bmdma 0x9408 irq 16
-scsi6 : pata_jmicron
-ata7.00: ATAPI, max UDMA/66
-ata7.00: qc timeout (cmd 0xef)
-ata7.00: failed to set xfermode (err_mask=0x4)
-ata7.00: limiting speed to UDMA/44
-ata7: failed to recover some devices, retrying in 5 secs
-ata7.00: qc timeout (cmd 0xef)
-ata7.00: failed to set xfermode (err_mask=0x4)
-ata7.00: limiting speed to PIO0
-ata7: failed to recover some devices, retrying in 5 secs
-ata7.00: qc timeout (cmd 0xef)
-ata7.00: failed to set xfermode (err_mask=0x4)
-ata7.00: disabled
-scsi7 : pata_jmicron
-ATA: abnormal status 0x7F on port 0x9807
+> Hi,
+> What are the libsata tests and where are they, please?
+No where, I just compile the drivers,  see if my system boots up and
+then I run some I/O intensive stuff, like bonnie++, emerge -e world at
+the same time.
 
 
-Also, I've seen a :
+> So you are testing libata and ext4dev at the same time...
+Not really, i dont focus on ext4dev, it just happens to be a partition
+that's empty and has 40GB of space left for disk writes. I mostly use
+XFS on my system.
+>
 
-ata1: Spurious SDB FIS during NCQ issue=0x0 SAct=0x7ff8001f
-FIS=004040a1:00040000
+> libsata == libata ?
+I don't think there is a seperate libata, it's all put under libsata
+if I understand the working correctly (Alan, don't sue me if I am
+wrong).
 
-What's this ? Is it really bad or just a warning ???
+Maybe it *IS* a nice idea to outline some standard tests that
+developers want to have carried out or some specific tests to trace
+bugs or test if a patch/fix does its work.. But that's not up to me, I
+am not a coder, I can do some very basic stuff in C, that's where
+programming ends for me, unless it's shell scripting.
 
-Regards,
-Paul
 
-
+Patrick
