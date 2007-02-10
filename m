@@ -1,46 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751958AbXBJV6Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751960AbXBJWAe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751958AbXBJV6Z (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Feb 2007 16:58:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751967AbXBJV6Z
+	id S1751960AbXBJWAe (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Feb 2007 17:00:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751972AbXBJWAd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Feb 2007 16:58:25 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4946 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751958AbXBJV6Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Feb 2007 16:58:24 -0500
-Date: Sat, 10 Feb 2007 19:38:52 +0000
-From: Pavel Machek <pavel@ucw.cz>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: nigel@nigel.suspend2.net, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: NAK new drivers without proper power management?
-Message-ID: <20070210193851.GA3956@ucw.cz>
-References: <1171058269.1484.64.camel@nigel.suspend2.net> <1171059433.8675.195.camel@laptopd505.fenrus.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1171059433.8675.195.camel@laptopd505.fenrus.org>
-User-Agent: Mutt/1.5.9i
+	Sat, 10 Feb 2007 17:00:33 -0500
+Received: from tag.witbe.net ([81.88.96.48]:57983 "EHLO tag.witbe.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751960AbXBJWAd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Feb 2007 17:00:33 -0500
+Reply-To: <rol@as2917.net>
+From: "Paul Rolland" <rol@as2917.net>
+To: "'Alan'" <alan@lxorguk.ukuu.org.uk>
+Cc: "'Robert Hancock'" <hancockr@shaw.ca>,
+       "'Linux Kernel Mailing List'" <linux-kernel@vger.kernel.org>
+Subject: RE: AHCI - remove probing of ata2
+Date: Sat, 10 Feb 2007 22:59:41 +0100
+Organization: AS2917.net
+Message-ID: <00da01c74d5e$c446d730$2101a8c0@donald>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Microsoft Office Outlook 11
+In-Reply-To: <20070210203652.203f648a@localhost.localdomain>
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
+Thread-Index: AcdNUUsKKqkuhVMXTS6pEPYDkmW/CQADV1Hw
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+Hello,
 
-> > I don't think this is already done (feel free to correct me if I'm
-> > wrong)..
+> This looks like the problems that hopefully the patches from Tejun and
+> from Mark Lord cured (the delay after reset and the task file clear)
+
+Any chance I can find this patch(es) and try them ?
+ 
+> > Also, I've seen a :
 > > 
-> > Can we start to NAK new drivers that don't have proper power management
-> > implemented? There really is no excuse for writing a new driver and not
-> > putting .suspend and .resume methods in anymore, is there?
+> > ata1: Spurious SDB FIS during NCQ issue=0x0 SAct=0x7ff8001f
+> > FIS=004040a1:00040000
+> > 
+> > What's this ? Is it really bad or just a warning ???
 > 
-> to a large degree, a device driver that doesn't suspend is better than
-> no device driver at all, right?
-> now.. if you want to make the core warn about it, that's very fair
+> It's one Tejun stuck logging in for in order to investigate further.
 
-Well, driver that is broken on SMP is arguably better than no driver
-at all, yet we'd probably avoid merging that. It would be nice to
-start including suspend in 'must work' list...
-							Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+OK, will wait a little bit ;)
+
+Regards,
+Paul
+
