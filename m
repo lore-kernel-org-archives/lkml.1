@@ -1,58 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751690AbXBJRwR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751578AbXBJRxt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751690AbXBJRwR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Feb 2007 12:52:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751697AbXBJRwR
+	id S1751578AbXBJRxt (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Feb 2007 12:53:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751687AbXBJRxt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Feb 2007 12:52:17 -0500
-Received: from iabervon.org ([66.92.72.58]:1194 "EHLO iabervon.org"
+	Sat, 10 Feb 2007 12:53:49 -0500
+Received: from hera.kernel.org ([140.211.167.34]:51910 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751687AbXBJRwR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Feb 2007 12:52:17 -0500
-Date: Sat, 10 Feb 2007 12:52:15 -0500 (EST)
-From: Daniel Barkalow <barkalow@iabervon.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: nigel@nigel.suspend2.net, Robert Hancock <hancockr@shaw.ca>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Jeff Garzik <jeff@garzik.org>, Pavel Machek <pavel@ucw.cz>,
-       pm list <linux-pm@lists.osdl.org>
-Subject: Re: [PATCH] Re: NAK new drivers without proper power management?
-In-Reply-To: <200702101130.44471.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.64.0702101231281.20138@iabervon.org>
-References: <fa.xSKPgY66Q+DPCZ1pszFFfdrJ0To@ifi.uio.no> <200702101034.04410.rjw@sisk.pl>
- <1171101723.3821.22.camel@nigel.suspend2.net> <200702101130.44471.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1751578AbXBJRxs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Feb 2007 12:53:48 -0500
+Date: Sat, 10 Feb 2007 17:53:47 +0000
+From: Willy Tarreau <wtarreau@hera.kernel.org>
+To: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Linux 2.4.35-pre1
+Message-ID: <20070210175347.GA13971@hera.kernel.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 10 Feb 2007, Rafael J. Wysocki wrote:
+Hi all !
 
-> On Saturday, 10 February 2007 11:02, Nigel Cunningham wrote:
->
-> > Well, the original desire was to stop new drivers getting in without
-> > proper power management.
-> 
-> I know, but I agree with the argument that having a driver without the
-> suspend/resume support is better than not having the driver at all.
+Here comes 2.4.35-pre1. It contains the same fixes as 2.4.34.1, and
+provides an update for the e1000 driver as well as a backport of
+Stephen Hemminger's skge/sky2 driver which is being used in 2.6.
 
-How about if "proper power management" is defined to include the driver 
-explicitly preventing suspend? It seems to me like the current problem is 
-that driver writers don't think about power management at all, and the 
-result is that, after suspend/resume, the system doesn't come back. It 
-would be better if driver writers had to think about power management just 
-enough to realize that it's not going to work, and make this information 
-available to the system. At that point, it's relatively easy for the 
-system to do something useful about it.
+People concerned by the lack of support for recent chips in current
+stable e1000 driver are asked to test this version and complain
+loudly if they suspect any regression. I have personally tried it
+with success on x86-SMP and Alpha. Note that you need it if you
+recently bought some replacement NICs because the old driver is
+unlikely to support them anymore.
 
-> Also, I think there are quite some drivers already in the tree that don't
-> support suspend/resume explicitly and honestly we should start from adding the
-> suspend/resume routines to these drivers _before_ we ban new drivers like that.
+People equiped with a Marvell gigabit chip may be interested in
+giving a try to the current backport of the skge/sky2 driver. The
+skge driver seems to work correctly, and better than sk98lin on
+UDP. The sky2 driver is still a bit young and I could make it
+hang several times under high loads or dirty traffic. That said,
+in a testing tree I quickly backported a handful of more recent
+patches to it which made it rock solid, so it's just a matter of
+work and time. Stephen offered to update it to reflect the version
+running in 2.6. As he did a great job till there, I'm sure that
+the problems with current sk98lin will soon become bad old
+memories.
 
-It'd be relatively quick to modify all the current drivers that don't 
-explicitly support suspend/resume to explicitly not support it. (Or to 
-explicitly support it trivially; /dev/null obviously doesn't need 
-anything.)
+I delayed the integration of a bunch of harmless typo fixes so
+that we can focus on those changes first, so please test this
+version !
 
-	-Daniel
-*This .sig left intentionally blank*
+Thanks in advance,
+Willy
+
+
+Summary of changes from v2.4.34 to v2.4.35-pre1
+============================================
+
+Christian Praehauser (1):
+      [NET] ethernet: Fix first packet goes out with MAC 00:00:00:00:00:00
+
+dann frazier (1):
+      smbfs: fix problems introduced by last security backport
+
+Jesse Brandeburg (3):
+      e1000: integrate latest 2.4 linux driver
+      [MAINTAINERS]: update e1000 maintainers
+      e1000: update README
+
+Oliver Neukum (1):
+      proper locking on disconnect for mdc800
+
+Willy Tarreau (2):
+      merge 2.6 backport of skge/sky2 network drivers
+      Change VERSION to 2.4.35-pre1
+
