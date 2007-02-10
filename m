@@ -1,48 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932780AbXBJQXB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750853AbXBJQ0x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932780AbXBJQXB (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Feb 2007 11:23:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932789AbXBJQXA
+	id S1750853AbXBJQ0x (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Feb 2007 11:26:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750786AbXBJQ0x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Feb 2007 11:23:00 -0500
-Received: from THUNK.ORG ([69.25.196.29]:57680 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932772AbXBJQW7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Feb 2007 11:22:59 -0500
-Date: Sat, 10 Feb 2007 11:22:54 -0500
-From: Theodore Tso <tytso@mit.edu>
-To: James Ketrenos <jketreno@linux.intel.com>
-Cc: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
-       ipw3945-devel@lists.sourceforge.net, netdev@vger.kernel.org
-Subject: Re: [ANNOUNCE] d80211 based driver for Intel PRO/Wireless 3945ABG
-Message-ID: <20070210162254.GC25607@thunk.org>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	James Ketrenos <jketreno@linux.intel.com>,
-	linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
-	ipw3945-devel@lists.sourceforge.net, netdev@vger.kernel.org
-References: <45CCE3CA.4050904@linux.intel.com>
+	Sat, 10 Feb 2007 11:26:53 -0500
+Received: from smtpa1.netcabo.pt ([212.113.174.16]:53490 "EHLO
+	exch01smtp03.hdi.tvcabo" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750824AbXBJQ0w (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Feb 2007 11:26:52 -0500
+Message-ID: <45CDF35D.5000902@rncbc.org>
+Date: Sat, 10 Feb 2007 16:31:25 +0000
+From: Rui Nuno Capela <rncbc@rncbc.org>
+User-Agent: Thunderbird 1.5.0.9 (X11/20060911)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <45CCE3CA.4050904@linux.intel.com>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@thunk.org
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+To: Andrew Burgess <aab@cichlid.com>
+CC: mingo@elte.hu, linux-rt-users@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: 2.6.20-rt5 Oops on boot
+References: <200702101551.l1AFpKUf019229@cichlid.com>
+In-Reply-To: <200702101551.l1AFpKUf019229@cichlid.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 10 Feb 2007 16:26:50.0476 (UTC) FILETIME=[4467A2C0:01C74D30]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 09, 2007 at 01:12:42PM -0800, James Ketrenos wrote:
-> Please hold all questions until I am done with this email.  Thank you.
+Andrew Burgess wrote:
 > 
-> We are pleased to announce the availability of a new driver for the 
-> Intel PRO/Wireless 3945ABG Network Connection adapter.  This new driver 
-> uses the new d80211 subsystem previously only available as part of the 
-> wireless-dev tree.
+> Ditto for me on an ASUS AMD64 x2, just hangs, I have no
+> serial console. 2.6.20-rc5-rt7 booted ok (the last one I
+> tried). Both using SMP.
+> 
 
-Very cool!  Is it likely that d80211 and iwlwifi will be pushed into
-mainline in time for 2.6.21?
+Yep. The last one I've tried and pretty stable for the record, is
+2.6.20-rt3.
 
-Regards,
-
-						- Ted
+Cheers.
+-- 
+rncbc aka Rui Nuno Capela
+rncbc@rncbc.org
