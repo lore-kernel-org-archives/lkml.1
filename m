@@ -1,58 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751771AbXBJSxM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751788AbXBJTDH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751771AbXBJSxM (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Feb 2007 13:53:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751783AbXBJSxM
+	id S1751788AbXBJTDH (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Feb 2007 14:03:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751795AbXBJTDH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Feb 2007 13:53:12 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:34804 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751771AbXBJSxL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Feb 2007 13:53:11 -0500
-Date: Sat, 10 Feb 2007 19:06:43 +0000
-From: Alan <alan@lxorguk.ukuu.org.uk>
-To: <rol@as2917.net>
-Cc: "'Robert Hancock'" <hancockr@shaw.ca>,
-       "'Linux Kernel Mailing List'" <linux-kernel@vger.kernel.org>
-Subject: Re: AHCI - remove probing of ata2
-Message-ID: <20070210190643.2e865cc9@localhost.localdomain>
-In-Reply-To: <00c601c74d42$c81b2170$2101a8c0@donald>
-References: <00ba01c74d39$604fddf0$2101a8c0@donald>
-	<00c601c74d42$c81b2170$2101a8c0@donald>
-X-Mailer: Claws Mail 2.7.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 10 Feb 2007 14:03:07 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:54876 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751788AbXBJTDG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Feb 2007 14:03:06 -0500
+Date: Sat, 10 Feb 2007 11:01:49 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Davide Libenzi <davidel@xmailserver.org>
+cc: Zach Brown <zach.brown@oracle.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-aio@kvack.org, Suparna Bhattacharya <suparna@in.ibm.com>,
+       Benjamin LaHaise <bcrl@kvack.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH 0 of 4] Generic AIO by scheduling stacks
+In-Reply-To: <Pine.LNX.4.64.0702101034220.11630@alien.or.mcafeemobile.com>
+Message-ID: <Pine.LNX.4.64.0702101054250.8424@woody.linux-foundation.org>
+References: <patchbomb.1170193181@tetsuo.zabbo.net>
+ <Pine.LNX.4.64.0702091419470.8424@woody.linux-foundation.org>
+ <Pine.LNX.4.64.0702091458180.2786@alien.or.mcafeemobile.com>
+ <Pine.LNX.4.64.0702091519330.8424@woody.linux-foundation.org>
+ <Pine.LNX.4.64.0702101034220.11630@alien.or.mcafeemobile.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 10 Feb 2007 19:39:21 +0100
-"Paul Rolland" <rol@as2917.net> wrote:
 
-> > I've been trying this, but I ended with the ICH7 not detecting anymore
-> > my IDE disks... 
-> > Should try again, maybe I missed something.
+
+On Sat, 10 Feb 2007, Davide Libenzi wrote:
 > 
-> Done a new built, and I now have :
-> 
-> Uniform Multi-Platform E-IDE driver Revision: 7.00alpha2
-> ide: Assuming 33MHz system bus speed for PIO modes; override with idebus=xx
-> hda: Maxtor 6L200P0, ATA DISK drive
-> hdb: ASUS CRW-5232A3, ATAPI CD/DVD-ROM drive
+> For the queue approach, I meant the async_submit() to simply add the 
+> request (cookie, syscall number and params) inside queue, and not trying 
+> to execute the syscall. Once you're inside schedule, "stuff" has already 
+> partially happened, and you cannot have the same request re-initiated by a 
+> different thread.
 
-You have the old driver 0n 0x1F0
+But that makes it impossible to do things synchronously, which I think is 
+a *major* mistake.
 
+The whole (and really _only_) point of my patch was really the whole 
+"synchronous call" part. I'm personally of the opinion that if you cannot 
+handle the cached case as fast as just doing the system call directly, 
+then the whole thing is almost pointless.
 
-> PCI: Device 0000:02:00.0 not available because of resource collisions
-> ahci: probe of 0000:02:00.0 failed with error -22
-> ACPI: PCI Interrupt 0000:00:1f.1[A] -> GSI 22 (level, low) -> IRQ 22
-> ata: 0x1F0 IDE port busy
+Things that take a long time we already have good methods for. "epoll" and 
+"kevent" are always going to be the best way to handle the "we have ten 
+thousand events outstanding". There simply isn't any question about it. 
+You can *never* handle ten thousand long-running events efficiently with 
+threads - even if you ignore all the CPU overhead, you're going to have a 
+much bigger memory (and thus *cache*) footprint.
 
-And the new drivers trying to manage the same port
+So anybody who wants to use AIO to do those kinds of long-running async 
+things is out to lunch. It's not the point. 
 
-> CONFIG_IDE=y
-> CONFIG_BLK_DEV_IDE=y
+You use the AIO stuff for things that you *expect* to be almost 
+instantaneous. Even if you actually start ten thousand IO's in one go, and 
+they all do IO, you would hopefully expect that the first ones start 
+completingn before you've even submitted them all. If that's not true, 
+then you'd just be better off using epoll.
 
-Set those to "N" and try again
+Also, if you can make the cached case as fast as just doing the direct 
+system call itself, that just changes the whole equation for using it. You 
+suddenly don't have any downsides. You can start using the async 
+interfaces in places you simply couldn't otherwise, or in places where 
+you'd have to do a lot of performance tuning ("it makes sense under this 
+particular load because I actually need to get 100 IO's going at the same 
+time to saturate the disk").
 
+So the "do cached things synchronously" really is important. Just because 
+that makes a whole complicated optimization question go away: you 
+basically *always* win for normal stuff.
+
+		Linus
