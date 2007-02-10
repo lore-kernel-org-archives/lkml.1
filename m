@@ -1,56 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751860AbXBJUfa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751851AbXBJUkA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751860AbXBJUfa (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Feb 2007 15:35:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751869AbXBJUfa
+	id S1751851AbXBJUkA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Feb 2007 15:40:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751855AbXBJUkA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Feb 2007 15:35:30 -0500
-Received: from gepetto.dc.ltu.se ([130.240.42.40]:64019 "EHLO
-	gepetto.dc.ltu.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751860AbXBJUf3 (ORCPT
+	Sat, 10 Feb 2007 15:40:00 -0500
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:47434 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751851AbXBJUj7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Feb 2007 15:35:29 -0500
-Message-ID: <45CE2C8C.80306@student.ltu.se>
-Date: Sat, 10 Feb 2007 21:35:24 +0100
-From: Richard Knutsson <ricknu-0@student.ltu.se>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070130)
+	Sat, 10 Feb 2007 15:39:59 -0500
+Date: Sat, 10 Feb 2007 21:40:04 +0100
+From: Adrian Bunk <bunk@stusta.de>
+To: Lee Revell <rlrevell@joe-job.com>
+Cc: nigel@nigel.suspend2.net, Robert Hancock <hancockr@shaw.ca>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Jeff Garzik <jeff@garzik.org>
+Subject: Re: NAK new drivers without proper power management?
+Message-ID: <20070210204004.GO12958@stusta.de>
+References: <fa.xSKPgY66Q+DPCZ1pszFFfdrJ0To@ifi.uio.no> <fa.FzHdYYYH5Ru57c8/yRxLylpH0Kk@ifi.uio.no> <fa.DuG12yQo+RR4jIjJTnoOwtKM0Ao@ifi.uio.no> <fa.Jy0FJQtASvVEpsy8Q96uoHtyEVA@ifi.uio.no> <45CD24F6.8090107@shaw.ca> <75b66ecd0702091759q4140680atee2e80f7ca26af03@mail.gmail.com> <1171073398.3863.9.camel@nigel.suspend2.net> <75b66ecd0702091822n19cf88b8k63bbd705cf5367ae@mail.gmail.com>
 MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@SteelEye.com>
-CC: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: [PATCH] drivers/scsi/aic7xxx_old: Convert to generic	boolean-values
-References: <20070210174628.3764.89569.sendpatchset@thinktank.campus.ltu.se> <1171132062.3373.31.camel@mulgrave.il.steeleye.com>
-In-Reply-To: <1171132062.3373.31.camel@mulgrave.il.steeleye.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <75b66ecd0702091822n19cf88b8k63bbd705cf5367ae@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Bottomley wrote:
-> On Sat, 2007-02-10 at 18:46 +0100, Richard Knutsson wrote:
->   
->> Convert:
->> FALSE -> false
->> TRUE  -> true
->>     
->
-> Actually, downcasing true and false in this driver is pretty much a
-> retrograde step.  The reason for their being uppercased is that they
-> represent constants (and uppercase is the traditional defined constant
-> specifier).
->   
-I would argue that 'false' and 'true' are values and not constants, but 
-further more C99 is defining them in lowercase (stdbool.h).
-> When discussion about TRUE and FALSE came up a long time a go in the
-> context of the mid layer we agreed to strip the defined constants out of
-> that code and just go with 1 and 0 inline ... because the code was
-> pretty much being rewritten.  We also decided to encourage but not force
-> the driver writers simply to use 1 and 0 as well ... a lot of people are
-> deeply wedded to the TRUE and FALSE defines, it turned out.
->   
-As I have expressed before, I don't understand why people seem to 
-dislike 'false'/'true' but anyway, since you seem to approve booleans, 
-would it be possible to convert the obvious variables/functions into 
-boolean-type?
+On Fri, Feb 09, 2007 at 09:22:48PM -0500, Lee Revell wrote:
+> On 2/9/07, Nigel Cunningham <nigel@nigel.suspend2.net> wrote:
+> >On Fri, 2007-02-09 at 20:59 -0500, Lee Revell wrote:
+> >> On 2/9/07, Robert Hancock <hancockr@shaw.ca> wrote:
+> >> > I would disagree that it's a peripheral issue, it's pretty core these
+> >> > days, at least for any hardware that you can stuff in a laptop (though 
+> >a
+> >> > fair number of desktops get suspended and resumed these days too).
+> >>
+> >> Servers are still the most important Linux market, and don't care
+> >> about suspend/resume.  I would consider implementing suspend./resume
+> >> for a driver that will only be used in server or HPC class hardware a
+> >> waste of valuable development resources.
+> >
+> >Not necessarily. Imagine suspending to disk in order to replace a faulty
+> >card. That could be way faster and less disruptive than shutting down
+> >normally and loosing caches and so on.
+> >
+> 
+> Hmm.  If uptime is critical I would make sure to have redundant
+> systems anyway and I would just reboot the thing.  I would not expect
+> the suspend/resume paths on server class hardware like 10gig ethernet,
+> Infiniband adapters, or high end SCSI to be particularly well tested.
+>...
 
-Richard Knutsson
+10gig ethernet will be commodity hardware 5 years from now like 
+1gig ethernet today where you can get cards for 12 Euro and switches for 
+40 Euro.
+
+> Lee
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
