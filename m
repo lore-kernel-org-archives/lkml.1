@@ -1,133 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751572AbXBJRaM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751567AbXBJRaK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751572AbXBJRaM (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Feb 2007 12:30:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751534AbXBJRaM
-	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Feb 2007 12:30:12 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.155]:61748 "EHLO
-	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751532AbXBJRaK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+	id S1751567AbXBJRaK (ORCPT <rfc822;w@1wt.eu>);
 	Sat, 10 Feb 2007 12:30:10 -0500
-Message-ID: <45CE0119.9060401@ru.mvista.com>
-Date: Sat, 10 Feb 2007 20:30:01 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751534AbXBJRaJ
+	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Sat, 10 Feb 2007 12:30:09 -0500
+Received: from rubidium.solidboot.com ([81.22.244.175]:36122 "EHLO
+	mail.solidboot.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751519AbXBJRaI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Feb 2007 12:30:08 -0500
+Date: Sat, 10 Feb 2007 19:29:59 +0200
+From: Imre Deak <imre.deak@solidboot.com>
+To: rmk@arm.linux.org.uk
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] ARM: VM: fix user page protection values (was Re: [PATCH] DEV: zero: use correct pgprot for zeromapping)
+Message-ID: <20070210172959.GA25080@bitbox.mine.nu>
+References: <20070210091521.GA7350@bitbox.mine.nu> <20070210093954.GA29145@flint.arm.linux.org.uk> <20070210100340.GA7519@bitbox.mine.nu>
 MIME-Version: 1.0
-To: Marc St-Jean <Marc_St-Jean@pmc-sierra.com>
-Cc: linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-mips@linux-mips.org
-Subject: Re: [PATCH] serial driver PMC MSP71xx, kernel linux-mips.git mast
- er
-References: <45CCCDD4.7030104@pmc-sierra.com>
-In-Reply-To: <45CCCDD4.7030104@pmc-sierra.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070210100340.GA7519@bitbox.mine.nu>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+On Sat, Feb 10, 2007 at 12:03:40PM +0200, Imre Deak wrote:
+> On Sat, Feb 10, 2007 at 09:39:54AM +0000, Russell King wrote:
+> > On Sat, Feb 10, 2007 at 11:15:21AM +0200, Imre Deak wrote:
+> > > Instead of PAGE_COPY use the pgprot bits established already at
+> > > original mapping time of the VMA. This will also include any
+> > > architecture specific bits setup through protection_map.
+> > > zeromap_page_range will take care of COW'ing the passed pgprot.
+> > 
+> > NAK.  What if PAGE_COPY is used elsewhere and ends up accidentally
+> > allowing write access?
+> 
+> Or rather, result in the bogus global mapping. True.
+> 
+> > 
+> > I think the right solution is to make PAGE_COPY a variable in the same
+> > way that PAGE_KERNEL is, and adjust it as appropriate.
+> 
+> Ok, and also at least PAGE_SHARED and PAGE_READONLY I assume.
 
-Marc St-Jean wrote:
+[ For consistency base all PAGE_* macros off a variable. I tested this
+on ARM1136. ]
 
->> > Fourth attempt at the serial driver patch for the PMC-Sierra MSP71xx 
->>device.
+The PAGE_* user page protection macros don't take into account the
+configured memory policy and other architecture specific bits like
+the global/ASID and shared mapping bits. Instead of constants let
+these depend on a variable fixed up at init just like PAGE_KERNEL.
 
->> > There are three different fixes:
->> > 1. Fix for DesignWare THRE errata
->> > - Dropped our fix since the "8250-uart-backup-timer.patch" in the "mm"
->> > tree also fixes it. This patch needs to be applied on top of "mm" patch.
+Signed-off-by: Imre Deak <imre.deak@solidboot.com>
+---
+ arch/arm/mm/mmu.c         |    3 ++
+ include/asm-arm/pgtable.h |   54 ++++++++++++++++++++++++++------------------
+ 2 files changed, 35 insertions(+), 22 deletions(-)
 
-    I think you need to submit your patch to Andrew Morton since it requires a 
-patch from his tree.
+diff --git a/arch/arm/mm/mmu.c b/arch/arm/mm/mmu.c
+index 655c837..94fd4bf 100644
+--- a/arch/arm/mm/mmu.c
++++ b/arch/arm/mm/mmu.c
+@@ -49,8 +49,10 @@ pmd_t *top_pmd;
+ 
+ static unsigned int cachepolicy __initdata = CPOLICY_WRITEBACK;
+ static unsigned int ecc_mask __initdata = 0;
++pgprot_t pgprot_user;
+ pgprot_t pgprot_kernel;
+ 
++EXPORT_SYMBOL(pgprot_user);
+ EXPORT_SYMBOL(pgprot_kernel);
+ 
+ struct cachepolicy {
+@@ -345,6 +347,7 @@ static void __init build_mem_type_table(void)
+ 		mem_types[MT_MINICLEAN].prot_sect &= ~PMD_SECT_TEX(1);
+ 	}
+ 
++	pgprot_user   = __pgprot(L_PTE_PRESENT | L_PTE_YOUNG | user_pgprot);
+ 	pgprot_kernel = __pgprot(L_PTE_PRESENT | L_PTE_YOUNG |
+ 				 L_PTE_DIRTY | L_PTE_WRITE |
+ 				 L_PTE_EXEC | kern_pgprot);
+diff --git a/include/asm-arm/pgtable.h b/include/asm-arm/pgtable.h
+index b8cf2d5..7b2bafc 100644
+--- a/include/asm-arm/pgtable.h
++++ b/include/asm-arm/pgtable.h
+@@ -175,19 +175,29 @@ extern void __pgd_error(const char *file, int line, unsigned long val);
+ #ifndef __ASSEMBLY__
+ 
+ /*
+- * The following macros handle the cache and bufferable bits...
++ * The pgprot_* and protection_map entries will be fixed up in runtime
++ * to include the cachable and bufferable bits based on memory policy,
++ * as well as any architecture dependent bits like global/ASID and SMP
++ * shared mapping bits.
+  */
+ #define _L_PTE_DEFAULT	L_PTE_PRESENT | L_PTE_YOUNG | L_PTE_CACHEABLE | L_PTE_BUFFERABLE
+ #define _L_PTE_READ	L_PTE_USER | L_PTE_EXEC
+ 
++extern pgprot_t		pgprot_user;
+ extern pgprot_t		pgprot_kernel;
+ 
+-#define PAGE_NONE       __pgprot(_L_PTE_DEFAULT)
+-#define PAGE_COPY       __pgprot(_L_PTE_DEFAULT | _L_PTE_READ)
+-#define PAGE_SHARED     __pgprot(_L_PTE_DEFAULT | _L_PTE_READ | L_PTE_WRITE)
+-#define PAGE_READONLY   __pgprot(_L_PTE_DEFAULT | _L_PTE_READ)
++#define PAGE_NONE	pgprot_user
++#define PAGE_COPY	__pgprot(pgprot_val(pgprot_user) | _L_PTE_READ)
++#define PAGE_SHARED	__pgprot(pgprot_val(pgprot_user) | _L_PTE_READ | \
++				 L_PTE_WRITE)
++#define PAGE_READONLY	__pgprot(pgprot_val(pgprot_user) | _L_PTE_READ)
+ #define PAGE_KERNEL	pgprot_kernel
+ 
++#define __PAGE_NONE	__pgprot(_L_PTE_DEFAULT)
++#define __PAGE_COPY	__pgprot(_L_PTE_DEFAULT | _L_PTE_READ)
++#define __PAGE_SHARED	__pgprot(_L_PTE_DEFAULT | _L_PTE_READ | L_PTE_WRITE)
++#define __PAGE_READONLY	__pgprot(_L_PTE_DEFAULT | _L_PTE_READ)
++
+ #endif /* __ASSEMBLY__ */
+ 
+ /*
+@@ -198,23 +208,23 @@ extern pgprot_t		pgprot_kernel;
+  *  2) If we could do execute protection, then read is implied
+  *  3) write implies read permissions
+  */
+-#define __P000  PAGE_NONE
+-#define __P001  PAGE_READONLY
+-#define __P010  PAGE_COPY
+-#define __P011  PAGE_COPY
+-#define __P100  PAGE_READONLY
+-#define __P101  PAGE_READONLY
+-#define __P110  PAGE_COPY
+-#define __P111  PAGE_COPY
+-
+-#define __S000  PAGE_NONE
+-#define __S001  PAGE_READONLY
+-#define __S010  PAGE_SHARED
+-#define __S011  PAGE_SHARED
+-#define __S100  PAGE_READONLY
+-#define __S101  PAGE_READONLY
+-#define __S110  PAGE_SHARED
+-#define __S111  PAGE_SHARED
++#define __P000  __PAGE_NONE
++#define __P001  __PAGE_READONLY
++#define __P010  __PAGE_COPY
++#define __P011  __PAGE_COPY
++#define __P100  __PAGE_READONLY
++#define __P101  __PAGE_READONLY
++#define __P110  __PAGE_COPY
++#define __P111  __PAGE_COPY
++
++#define __S000  __PAGE_NONE
++#define __S001  __PAGE_READONLY
++#define __S010  __PAGE_SHARED
++#define __S011  __PAGE_SHARED
++#define __S100  __PAGE_READONLY
++#define __S101  __PAGE_READONLY
++#define __S110  __PAGE_SHARED
++#define __S111  __PAGE_SHARED
+ 
+ #ifndef __ASSEMBLY__
+ /*
+-- 
+1.4.4.3.GIT
 
->> > @@ -1383,6 +1399,19 @@ static irqreturn_t serial8250_interrupt(
->> >                       handled = 1;
->> >
->> >                       end = NULL;
->> > +             } else if (up->port.iotype == UPIO_DWAPB &&
->> > +                             (iir & UART_IIR_BUSY) == UART_IIR_BUSY) {
-
->>     Worth aligning this line with the opening paren of if... but's that's
->>nitpicking. :-)
-
-> No problem I'll change it. I just usually align to the closest tab stop to
-> the opening parenthesis.
-
-    It haven't really changed in the last patch. :-)
-
->> > +                     /* The DesignWare APB UART has an Busy Detect 
->>(0x07)
->> > +                      * interrupt meaning an LCR write attempt 
->>occured while the
->> > +                      * UART was busy. The interrupt must be cleared 
->>by reading
->> > +                      * the UART status register (USR) and the LCR 
->>re-written. */
->> > +                     unsigned int status;
->> > +                     status = *(volatile u32 *)up->port.private_data;
->> > +                     serial_out(up, UART_LCR, up->lcr);
->> > +
->> > +                     handled = 1;
->> > +
->> > +                     end = NULL;
->> >               } else if (end == NULL)
->> >                       end = l;
->> >
->> >       return 0;
-
->>    Still, shouldn't you be doing this in serial8250_timeout()
-
-> No, the serial8250_timeout is for issue 1 at the top, this is for
-> issue 2.
-
-    It's for lost interrupts, IIUC. They use anothe timeout handler for the 
-workaround...
-
->>also?
->>What IRQ numbers this UART is using, BTW?
-
-> For the ports on the device they are 27 and 42. Is there any significance
-> that I'm not aware of?
-
-    Yeah, IRQ0 is treated as no IRQ by 8250, and in this case it falls back to 
-using serial8250_timeout() to handle "interrupts".
-
->> > diff --git a/include/linux/serial_core.h b/include/linux/serial_core.h
->> > index cf23813..bd9711a 100644
->> > --- a/include/linux/serial_core.h
->> > +++ b/include/linux/serial_core.h
->> > @@ -276,6 +277,7 @@ #define UPF_USR_MASK              ((__force upf_t) (
->> >       struct device           *dev;                   /* parent 
->>device */
->> >       unsigned char           hub6;                   /* this should 
->>be in the 8250 driver */
->> >       unsigned char           unused[3];
->> > +     void                            *private_data;          /* 
->>generic platform data pointer */
-
->>    One tab to many before *private_data...
-
-> In my editor using 4 columns per tab it lines up with everything. Is there
-> some convention that patches should be made assuming 8 columns?
-
-    Documentation/CodingStyle, chapter 1. :-)
-
->>    Oops, your mailer went and did it again. :-)
-
-> I'm completely giving up on Thunderbird,unless someone can point out
-
-    Ypu should have long ago. :-)
-
-> the specific internal configuration items which needs a kick!
-
-    Only the attachments will work in the Mozilla kind mailer, AFAIK.
-The last patch looked OK at last. :-)
-
-> Thanks,
-> Marc
-
-WBR, Sergei
