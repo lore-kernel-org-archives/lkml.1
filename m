@@ -1,102 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752686AbXBJEcU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753052AbXBJEfe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752686AbXBJEcU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Feb 2007 23:32:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752689AbXBJEcU
+	id S1753052AbXBJEfe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Feb 2007 23:35:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753042AbXBJEfe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Feb 2007 23:32:20 -0500
-Received: from firewall.rowland.harvard.edu ([140.247.233.35]:33647 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with SMTP id S1752686AbXBJEcU (ORCPT
+	Fri, 9 Feb 2007 23:35:34 -0500
+Received: from ms-smtp-06.ohiordc.rr.com ([65.24.5.140]:52710 "EHLO
+	ms-smtp-06.ohiordc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752691AbXBJEfd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Feb 2007 23:32:20 -0500
-Date: Fri, 9 Feb 2007 23:32:17 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Roland McGrath <roland@redhat.com>
-cc: Prasanna S Panchamukhi <prasanna@in.ibm.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Kwatch: kernel watchpoints using CPU debug registers
-In-Reply-To: <20070209233150.B9542180055@magilla.sf.frob.com>
-Message-ID: <Pine.LNX.4.44L0.0702092316550.3251-100000@netrider.rowland.org>
+	Fri, 9 Feb 2007 23:35:33 -0500
+Date: Fri, 9 Feb 2007 23:35:15 -0500
+To: Lee Revell <rlrevell@joe-job.com>
+Cc: Robert Hancock <hancockr@shaw.ca>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Jeff Garzik <jeff@garzik.org>, nigel@nigel.suspend2.net
+Subject: Re: NAK new drivers without proper power management?
+Message-ID: <20070210043514.GA29679@nineveh.rivenstone.net>
+Mail-Followup-To: Lee Revell <rlrevell@joe-job.com>,
+	Robert Hancock <hancockr@shaw.ca>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	Jeff Garzik <jeff@garzik.org>, nigel@nigel.suspend2.net
+References: <fa.xSKPgY66Q+DPCZ1pszFFfdrJ0To@ifi.uio.no> <fa.FzHdYYYH5Ru57c8/yRxLylpH0Kk@ifi.uio.no> <fa.DuG12yQo+RR4jIjJTnoOwtKM0Ao@ifi.uio.no> <fa.Jy0FJQtASvVEpsy8Q96uoHtyEVA@ifi.uio.no> <45CD24F6.8090107@shaw.ca> <75b66ecd0702091759q4140680atee2e80f7ca26af03@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <75b66ecd0702091759q4140680atee2e80f7ca26af03@mail.gmail.com>
+User-Agent: Mutt/1.5.12-2006-07-14
+From: jhf@columbus.rr.com (Joseph Fannin)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 9 Feb 2007, Roland McGrath wrote:
+On Fri, Feb 09, 2007 at 08:59:55PM -0500, Lee Revell wrote:
+> On 2/9/07, Robert Hancock <hancockr@shaw.ca> wrote:
+> >I would disagree that it's a peripheral issue, it's pretty core these
+> >days, at least for any hardware that you can stuff in a laptop (though a
+> >fair number of desktops get suspended and resumed these days too).
+>
+> Servers are still the most important Linux market, and don't care
+> about suspend/resume.  I would consider implementing suspend./resume
+> for a driver that will only be used in server or HPC class hardware a
+> waste of valuable development resources.
 
-> I don't think I really object to the ABI change of clearing %dr6 after an
-> exception so that it does not accumulate multiple results.  But first I'll
-> have to convince myself that we never actually do want to accumulate
-> multiple results.  Hmm, I think we can, so maybe I do object.  If you set
-> two watchpoints inside a user buffer and then do a system call that touches
-> both those addresses (e.g. read), then you will go through do_debug (to
-> send_sigtrap) twice before returning to user mode.  When the syscall is
-> done, you'll have a pending SIGTRAP for the debugger to handle.  By looking
-> at your %dr6 the debugger can see that both watchpoints hit.  (gdb does not
-> handle this case, but it should.)  Am I wrong?
+    Please allow me to be offensively blunt for a moment.
 
-I think you're right.
+    So, the situation seems to be:
 
-> So this gets to the more complicated view of %dr6 handling that I had first
-> had in mind yesterday.  Each allocation "owns" one of the low 4 bits in
-> %dr6 too.  Only the dr6 bits owned by the userland "raw" allocation
-> (i.e. ptrace/utrace_regset) should appear nonzero in thread.debugreg[6].
-> So when kwatch swallows a debug exception, it should mask off its bit from
-> %dr6 in the CPU, but not clear %dr6 completely.  That way you can have a
-> sequence of user dr0 hit, kwatch dr3 hit, user dr1 hit, all inside one
-> system call (including interrupt handlers), and when it gets to the
-> userland debugger examining dr6 it sees the low 2 bits both set.
+    1. The work of the suspend developer who engages the users who put
+       effort into making suspend work on their hardware (bless
+       their addled little heads) often doesn't meet kernel standards,
+       or isn't well enough documented to prove the real *need* for
+       the features and/or hacks that have happened to get actual
+       users' systems sleeping and running again.
 
-Okay; I'll fix this too.  Come to think of it, kwatch needs to handle 
-multiple hits as well -- there might be two watchpoints set to the same 
-address.
+    2. The swsusp maintainer continues in the belief that as long as
+       their are no bug reports in kernel bugzilla or crossing the
+       (relatively obscure) swsusp mailing lists, it has zarro boogs
+       and meanwhile works on the fourth implementation of suspend
+       support in as many years.  It's in CVS on sourceforge.  There's
+       no documentation whatsoever.
 
-> > It's really quite a tricky matter.  Should a register be allocated to
-> > kwatch only when no user process needs it?  Should we really go about
-> > checking the requirements of every single process whenever a kwatch
-> > allocation request comes in?  What if the processes which need a
-> > particular register aren't running -- should the register then be given to
-> > kwatch?  What if one of those processes then does start running on one
-> > CPU?
-> 
-> To "go about checking the requirements of every single process" is not so
-> hard as it sounds when they're recorded as a single global use count per
-> slot, as your original code does.  When you mentioned a "your allocation is
-> available" callback, I was thinking it might come to that being called
-> inside context switch.  It's all rather tricky, indeed.  
-> 
-> The obvious answer is to start simple.  If any user process anywhere uses
-> drN, kwatch has to give it up for all CPUs (watchpoints with less than
-> "break ptrace" priority do).  If anyone really cares about more flexibility
-> than that, we can change or extend it.  Some copious comments in the
-> interface descriptions can lead them in the right direction if the
-> situation comes up.  Probably with systemtap support in a while, we'll get
-> a lot more concrete uses of watchpoints and people finding out what really 
-> matters to them.
+    3. There's another guy who appears to be doing a lot of work, so I
+       shan't leave him out.  Like the two developers previously
+       mentioned, he seems to be working pretty hard on the whole
+       thing.  The previously mentioned fourth suspend implementation
+       seems to be largely his doing, for good and for ill.
 
-It's still more complicated than you might think.  Let's say two user
-processes each have dr1 allocated, one with low priority and the other
-with high priority.  The kernel has to be aware of the high-priority
-allocation, so that it can refuse intermediate-priority kwatch allocation
-attempts.  Now suppose the second process exits.  dr1 is still allocated
-to the first user process but only with low priority, so now
-intermediate-priority kwatch allocation attempts should succeed.
+    4. "Everybody" knows suspend doesn't work on Linux without a huge
+       amount of tinkering, deep magic, and dead chickens.  Only
+       Gentoo users seem to bother; everyone else waits for Ubuntu
+       12.04 wherein suspend will "just work".  The Gentoo users all
+       use swsusp2, as it contains the hacks to work around:
 
-In order for this to work, when the second process gives up its allocation 
-I would have to either scan though all tasks to see the first process, or 
-else keep several global use counts for each slot -- in fact, one use 
-count for each priority level.  That's doable if there are only a few 
-levels, but not if there are many.
+    5. All the suspend developers blame the lack of power-management
+       support in drivers for the inablility of Linux to properly
+       suspend on anything that doesn't support APM.
 
-How do you suggest this be handled?  Maybe we should just keep track of a
-maximum user priority level for each slot, allowing it to go up but not
-down until all user processes have given up the slot.  (I.e., in the
-example above the later kwatch requests would still fail because we would
-continue to remember the high user priority level so long as the first
-process maintained its allocation.)  That would be overly pessimistic, but
-it would at least be safe.
+    6. Getting proper power-management support in Linux device drivers
+       is not a priority; drivers without any power management support
+       whatsoever should not only be accepted -- they should be merged
+       without comment or complaint.
 
-Alan Stern
+   How is working suspend support ever supposed to happen?
+
+--
+Joseph Fannin
+jfannin@gmail.com || jhf@columbus.rr.com
 
