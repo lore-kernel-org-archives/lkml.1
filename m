@@ -1,61 +1,164 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750969AbXBJTro@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751813AbXBJTv2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750969AbXBJTro (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Feb 2007 14:47:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751802AbXBJTro
+	id S1751813AbXBJTv2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Feb 2007 14:51:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751811AbXBJTv2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Feb 2007 14:47:44 -0500
-Received: from mtagate6.de.ibm.com ([195.212.29.155]:19232 "EHLO
-	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750969AbXBJTrn (ORCPT
+	Sat, 10 Feb 2007 14:51:28 -0500
+Received: from ug-out-1314.google.com ([66.249.92.169]:28245 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751813AbXBJTv1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Feb 2007 14:47:43 -0500
-Date: Sat, 10 Feb 2007 20:46:30 +0100
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Tejun Heo <htejun@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Jeff Garzik <jgarzik@pobox.com>, linux-kernel@vger.kernel.org,
-       linux-s390@vger.kernel.org
-Subject: Re: [PATCH] iomap: make PCI iomap stuff excluded when PCI isn't configured
-Message-ID: <20070210194630.GA13416@osiris.ibm.com>
-References: <20070210114314.GB12642@osiris.boeblingen.de.ibm.com> <45CE0434.30105@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <45CE0434.30105@gmail.com>
-User-Agent: mutt-ng/devel-r804 (Linux)
+	Sat, 10 Feb 2007 14:51:27 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:x-mailer:mime-version:content-type:content-transfer-encoding;
+        b=WUctgOPrziH6Vsvu/r6Uc25gNY3hDtVDzsFkH2v6993DroePFB+6+2ZwWt+Om4m9zKrQHQg6dtypmXaTIlUZJ0Cc1SteCyADcjYEv63flBqaGhNh5MPn+WruXpNMXJ/lbxSJdxb7XU/gg+qsz5UnGi7laxuNfBBEP7McbXm1ibw=
+Date: Sat, 10 Feb 2007 20:51:23 +0100
+From: Miguel Ojeda <maxextreme@gmail.com>
+To: akpm@osdl.org
+Cc: dwalker@mvista.com, linux-kernel@vger.kernel.org
+Subject: [PATCH mm] cfag12864b: fix crash when built-in and no parport
+ present
+Message-Id: <20070210205123.699abb9c.maxextreme@gmail.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.10.6; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 10, 2007 at 12:43:16PM -0500, Tejun Heo wrote:
-> devres iomap made lib/iomap.c always built and added several
-> arch-indep PCI routines to include/linux/io.h and lib/iomap.c without
-> wrapping them inside CONFIG_PCI.  This breaks configurations where PCI
-> is not configured.  Wrap pci_iomap() in CONFIG_PCI and move managed
-> PCI iomap functions into include/linux/pci.h and drivers/pci/pci.c.
-> 
-> Signed-off-by: Tejun Heo <htejun@gmail.com>
-> Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
-> ---
-> Heiko, how about this?  Does it fix s390?
+Andrew, Daniel who reported the crash has tested this patch and says that it works fine avoiding it, so you can merge.
 
-Unfortunately not. Now I get
-
-  CC      lib/iomap.o
-lib/iomap.c: In function 'devm_ioport_map_release':
-lib/iomap.c:270: warning: implicit declaration of function 'ioport_unmap'
-lib/iomap.c: In function 'devm_ioport_map':
-lib/iomap.c:297: warning: implicit declaration of function 'ioport_map'
-lib/iomap.c:297: warning: assignment makes pointer from integer without a cast
-
-and
-
-lib/built-in.o: In function `devm_ioport_unmap': undefined reference to `ioport_unmap'
-lib/built-in.o: In function `devm_ioport_map_release':iomap.c:(.text+0xf20): undefined reference to `ioport_unmap'
-lib/built-in.o: In function `devm_ioport_map': undefined reference to `ioport_map'
-drivers/built-in.o: In function `dmam_noncoherent_release':dma-mapping.c:(.text+0x15238): undefined reference to `dma_free_noncoherent'
-drivers/built-in.o: In function `dmam_free_noncoherent': undefined reference to `dma_free_noncoherent'
-drivers/built-in.o: In function `dmam_alloc_noncoherent': undefined reference to `dma_alloc_noncoherent'
-make: *** [.tmp_vmlinux1] Error 1
+drivers-add-lcd-support-fix-crash-when-built-in-and-no-parport-present.patch
+Signed-off-by: Miguel Ojeda Sandonis <maxextreme@gmail.com>
+---
+diff --git a/drivers/auxdisplay/cfag12864b.c b/drivers/auxdisplay/cfag12864b.c
+index 889583d..cb44cb4 100644
+--- a/drivers/auxdisplay/cfag12864b.c
++++ b/drivers/auxdisplay/cfag12864b.c
+@@ -312,6 +312,17 @@ EXPORT_SYMBOL_GPL(cfag12864b_disable);
+ EXPORT_SYMBOL_GPL(cfag12864b_isenabled);
+ 
+ /*
++ * Is the module inited?
++ */
++
++static unsigned char cfag12864b_inited;
++unsigned char cfag12864b_isinited(void)
++{
++	return cfag12864b_inited;
++}
++EXPORT_SYMBOL_GPL(cfag12864b_isinited);
++
++/*
+  * Module Init & Exit
+  */
+ 
+@@ -319,6 +330,13 @@ static int __init cfag12864b_init(void)
+ {
+ 	int ret = -EINVAL;
+ 
++	/* ks0108_init() must be called first */
++	if (!ks0108_isinited()) {
++		printk(KERN_ERR CFAG12864B_NAME ": ERROR: "
++			"ks0108 is not initialized\n");
++		goto none;
++	}
++
+ 	if (PAGE_SIZE < CFAG12864B_SIZE) {
+ 		printk(KERN_ERR CFAG12864B_NAME ": ERROR: "
+ 			"page size (%i) < cfag12864b size (%i)\n",
+@@ -354,6 +372,7 @@ static int __init cfag12864b_init(void)
+ 	cfag12864b_clear();
+ 	cfag12864b_on();
+ 
++	cfag12864b_inited = 1;
+ 	return 0;
+ 
+ cachealloced:
+diff --git a/drivers/auxdisplay/cfag12864bfb.c b/drivers/auxdisplay/cfag12864bfb.c
+index 94765e7..66fafbb 100644
+--- a/drivers/auxdisplay/cfag12864bfb.c
++++ b/drivers/auxdisplay/cfag12864bfb.c
+@@ -137,7 +137,14 @@ static struct platform_device *cfag12864
+ 
+ static int __init cfag12864bfb_init(void)
+ {
+-	int ret;
++	int ret = -EINVAL;
++
++	/* cfag12864b_init() must be called first */
++	if (!cfag12864b_isinited()) {
++		printk(KERN_ERR CFAG12864BFB_NAME ": ERROR: "
++			"cfag12864b is not initialized\n");
++		goto none;
++	}
+ 
+ 	if (cfag12864b_enable()) {
+ 		printk(KERN_ERR CFAG12864BFB_NAME ": ERROR: "
+@@ -162,6 +169,7 @@ static int __init cfag12864bfb_init(void
+ 		}
+ 	}
+ 
++none:
+ 	return ret;
+ }
+ 
+diff --git a/drivers/auxdisplay/ks0108.c b/drivers/auxdisplay/ks0108.c
+index a637575..e6c3646 100644
+--- a/drivers/auxdisplay/ks0108.c
++++ b/drivers/auxdisplay/ks0108.c
+@@ -111,6 +111,17 @@ EXPORT_SYMBOL_GPL(ks0108_address);
+ EXPORT_SYMBOL_GPL(ks0108_page);
+ 
+ /*
++ * Is the module inited?
++ */
++
++static unsigned char ks0108_inited;
++unsigned char ks0108_isinited(void)
++{
++	return ks0108_inited;
++}
++EXPORT_SYMBOL_GPL(ks0108_isinited);
++
++/*
+  * Module Init & Exit
+  */
+ 
+@@ -142,6 +153,7 @@ static int __init ks0108_init(void)
+ 		goto registered;
+ 	}
+ 
++	ks0108_inited = 1;
+ 	return 0;
+ 
+ registered:
+diff --git a/include/linux/cfag12864b.h b/include/linux/cfag12864b.h
+index 0bc45e6..1605dd8 100644
+--- a/include/linux/cfag12864b.h
++++ b/include/linux/cfag12864b.h
+@@ -73,5 +73,10 @@ extern void cfag12864b_disable(void);
+  */
+ extern unsigned char cfag12864b_isenabled(void);
+ 
++/*
++ * Is the module inited?
++ */
++extern unsigned char cfag12864b_isinited(void);
++
+ #endif /* _CFAG12864B_H_ */
+ 
+diff --git a/include/linux/ks0108.h b/include/linux/ks0108.h
+index 8047d4b..a2c54ac 100644
+--- a/include/linux/ks0108.h
++++ b/include/linux/ks0108.h
+@@ -43,4 +43,7 @@ extern void ks0108_address(unsigned char
+ /* Set the controller's current page (0..7) */
+ extern void ks0108_page(unsigned char page);
+ 
++/* Is the module inited? */
++extern unsigned char ks0108_isinited(void);
++
+ #endif /* _KS0108_H_ */
