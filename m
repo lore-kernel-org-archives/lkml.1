@@ -1,54 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752603AbXBJB5Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752620AbXBJB6p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752603AbXBJB5Q (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Feb 2007 20:57:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752641AbXBJB5Q
+	id S1752620AbXBJB6p (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Feb 2007 20:58:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752641AbXBJB6p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Feb 2007 20:57:16 -0500
-Received: from raven.upol.cz ([158.194.120.4]:56683 "EHLO raven.upol.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752620AbXBJB5P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Feb 2007 20:57:15 -0500
-Newsgroups: gmane.linux.kernel
-Subject: Re: -mm merge plans for 2.6.21
-In-Reply-To: <20070209220327.GB16158@flint.arm.linux.org.uk>
-References: <20070208150710.1324f6b4.akpm@linux-foundation.org> <1171042535.29713.96.camel@pmac.infradead.org> <20070209134516.2367a7aa.akpm@linux-foundation.org> <20070209214944.GA16158@flint.arm.linux.org.uk> <1171057999.29713.129.camel@pmac.infradead.org> <20070209220327.GB16158@flint.arm.linux.org.uk>
-Organization: Palacky University in Olomouc, experimental physics department.
-To: David Woodhouse <dwmw2@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Alexey Dobriyan <adobriyan@openvz.org>, linux-kernel@vger.kernel.org,
-       drepper@redhat.com
-Mail-Followup-To: David Woodhouse <dwmw2@infradead.org>, Andrew Morton <akpm@linux-foundation.org>, Alexey Dobriyan <adobriyan@openvz.org>, linux-kernel@vger.kernel.org, drepper@redhat.com, olecom@flower.upol.cz
-Date: Sat, 10 Feb 2007 03:05:58 +0100
-Message-Id: <E1HFhck-0008J9-KG@flower>
-From: Oleg Verych <olecom@flower.upol.cz>
+	Fri, 9 Feb 2007 20:58:45 -0500
+Received: from out5.smtp.messagingengine.com ([66.111.4.29]:46817 "EHLO
+	out5.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752635AbXBJB6o (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Feb 2007 20:58:44 -0500
+X-Sasl-enc: uPyLTZucqsMsDB681SJCMgji7owI0JLvv5vlVTS8IZ0f 1171072722
+Date: Fri, 9 Feb 2007 23:58:36 -0200
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-acpi@vger.kernel.org
+Subject: Re: [GIT PATCH] ACPI patches for 2.6.21
+Message-ID: <20070210015836.GA24082@khazad-dum.debian.net>
+References: <200702071418.51058.lenb@kernel.org> <20070209230928.GD3949@ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070209230928.GD3949@ucw.cz>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F 1CDB 0FE3
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> From: Russell King
-> Newsgroups: gmane.linux.kernel
-> Subject: Re: -mm merge plans for 2.6.21
-> Date: Fri, 9 Feb 2007 22:03:27 +0000
-[]
-> However:
->
-> sys_foo(int a, int c, unsigned long long b, unsigned long long d)
->
-> is entirely reasonable and leaves us with spare room for one additional
-> 32-bit arg to be passed.
->
->> Is that actually written anywhere, and does anyone bother to check?
->
-> Mostly mailing list archives I'd guess.  As far as anyone bothering
-> to check, that's me when I'm aware of new syscalls... which typically
-> happens a long time after the syscalls have been introduced on x86
-> etc.
+On Fri, 09 Feb 2007, Pavel Machek wrote:
+> Not including another /proc/acpi/ibm -like nightmare, is it?
 
-Why not to have "the most large argument first" rule here?
+Don't worry, I am already on my way to kill /proc/acpi/ibm... :-)
 
-  sys_bar(largest,..., larger,..., smaller,..., small);
-
-Put it in Documentation/ABI/README and bother only, when compiller
-will bark on -mm tree.
-
-____
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
