@@ -1,63 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751932AbXBJV5Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751958AbXBJV6Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751932AbXBJV5Z (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Feb 2007 16:57:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751958AbXBJV5Z
+	id S1751958AbXBJV6Z (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Feb 2007 16:58:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751967AbXBJV6Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Feb 2007 16:57:25 -0500
-Received: from mga09.intel.com ([134.134.136.24]:31850 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751932AbXBJV5Y convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Feb 2007 16:57:24 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.13,310,1167638400"; 
-   d="scan'208"; a="45219571:sNHT19401516"
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Subject: RE: [PATCH] aio: fix kernel bug when page is temporally busy
-Date: Sun, 11 Feb 2007 00:57:18 +0300
-Message-ID: <B41635854730A14CA71C92B36EC22AAC804B02@mssmsx411>
-In-Reply-To: <b040c32a0702101005q7ff4a679xd3586531aa8a99cc@mail.gmail.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] aio: fix kernel bug when page is temporally busy
-Thread-Index: AcdNPhCje+AZGt65T76Cw7xbV0K8hgAHeenw
-From: "Ananiev, Leonid I" <leonid.i.ananiev@intel.com>
-To: "Ken Chen" <kenchen@google.com>
-Cc: <suparna@in.ibm.com>, "Andrew Morton" <akpm@linux-foundation.org>,
-       <linux-kernel@vger.kernel.org>, "linux-aio" <linux-aio@kvack.org>,
-       "Zach Brown" <zach.brown@oracle.com>,
-       "Chris Mason" <chris.mason@oracle.com>,
-       "Badari Pulavarty" <pbadari@us.ibm.com>
-X-OriginalArrivalTime: 10 Feb 2007 21:57:23.0929 (UTC) FILETIME=[72106490:01C74D5E]
+	Sat, 10 Feb 2007 16:58:25 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4946 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751958AbXBJV6Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Feb 2007 16:58:24 -0500
+Date: Sat, 10 Feb 2007 19:38:52 +0000
+From: Pavel Machek <pavel@ucw.cz>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: nigel@nigel.suspend2.net, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: NAK new drivers without proper power management?
+Message-ID: <20070210193851.GA3956@ucw.cz>
+References: <1171058269.1484.64.camel@nigel.suspend2.net> <1171059433.8675.195.camel@laptopd505.fenrus.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1171059433.8675.195.camel@laptopd505.fenrus.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ken Chen writes:
-> So any error value returned from invalidate_inode_pages2_range() has
-> to be taken seriously in the direct IO submit path instead of dropping
-> it to the floor.
+Hi!
 
-If invalidate_inode_pages2_range() will return EIOCBRETRY as the patch 
-"aio: fix kernel bug when page is temporally busy"
-serts then do_sync_read/write() will not drop IO submit but will retry
-it:
-        for (;;) {
-                ret = filp->f_op->aio_read(&kiocb, &iov, 1,
-kiocb.ki_pos);
-                if (ret != -EIOCBRETRY)
-                        break;
-                wait_on_retry_sync_kiocb(&kiocb);
-        }
+> > I don't think this is already done (feel free to correct me if I'm
+> > wrong)..
+> > 
+> > Can we start to NAK new drivers that don't have proper power management
+> > implemented? There really is no excuse for writing a new driver and not
+> > putting .suspend and .resume methods in anymore, is there?
+> 
+> to a large degree, a device driver that doesn't suspend is better than
+> no device driver at all, right?
+> now.. if you want to make the core warn about it, that's very fair
 
-And do_sync_read/write() will not return EIO if page is busy as it does
-now, befor patching.
-Curretly do_sync_read/write() tests for EIOCBRETRY. But EIOCBRETRY is
-not set ever.
-
-Leonid
+Well, driver that is broken on SMP is arguably better than no driver
+at all, yet we'd probably avoid merging that. It would be nice to
+start including suspend in 'must work' list...
+							Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
