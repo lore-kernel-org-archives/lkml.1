@@ -1,54 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751796AbXBJTD5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751783AbXBJTQm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751796AbXBJTD5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Feb 2007 14:03:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751797AbXBJTD5
+	id S1751783AbXBJTQm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Feb 2007 14:16:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751797AbXBJTQm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Feb 2007 14:03:57 -0500
-Received: from moutng.kundenserver.de ([212.227.126.186]:61102 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751796AbXBJTD4 (ORCPT
+	Sat, 10 Feb 2007 14:16:42 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:48449 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751783AbXBJTQl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Feb 2007 14:03:56 -0500
-From: Gerhard Dirschl <gd@spherenet.de>
-To: Peter Osterlund <petero2@telia.com>
-Subject: [PATCH] pktcdvd: Correctly set cmd_len field in pkt_generic_packet
-Date: Sat, 10 Feb 2007 20:03:46 +0100
-User-Agent: KMail/1.9.6
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+	Sat, 10 Feb 2007 14:16:41 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <45CE19F3.2070603@s5r6.in-berlin.de>
+Date: Sat, 10 Feb 2007 20:16:03 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.9) Gecko/20070121 SeaMonkey/1.0.7
 MIME-Version: 1.0
-Content-Disposition: inline
-Content-Type: text/plain;
-  charset="us-ascii"
+To: Andi Kleen <ak@suse.de>
+CC: Stefan Richter <stefanr@s5r6.in-berlin.de>, Bernhard Kaindl <bk@suse.de>,
+       discuss@x86-64.org, linux1394-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: remote debugging via FireWire
+References: <200702101242.48467.ak@suse.de> <200702101502.59431.ak@suse.de>	<45CDE14C.4040203@s5r6.in-berlin.de> <200702101641.36239.ak@suse.de>
+In-Reply-To: <200702101641.36239.ak@suse.de>
+X-Enigmail-Version: 0.94.1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <200702102003.46376.gd@spherenet.de>
-X-Provags-ID: kundenserver.de abuse@kundenserver.de login:9a410c39813cf3098e4757d92f0a362c
-X-Provags-ID2: V01U2FsdGVkX1+kfMTyH+4nUuE+1pk66+s6Wex92E7Riqz86Kaqwhj3zZhoWMLTeVLvLOdgUWtxmXhckxfsDx+MjYb7ogMCVO03gVNAHK9gHxj0j0NQtpj7IQ==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fixes http://bugzilla.kernel.org/show_bug.cgi?id=7810 - a silly
-copy-paste bug introduced by the latest change.
+[ohci1394_early]
 
-Signed-off-by: Gerhard Dirschl <gd@spherenet.de>
----
-Maybe it fixes http://bugzilla.kernel.org/show_bug.cgi?id=7910
-as well.
+Some remarks to the September 2006 version at
+http://www.suse.de/~bk/firewire/ :
 
-diff --git a/drivers/block/pktcdvd.c b/drivers/block/pktcdvd.c
-index 6246219..dd38c30 100644
---- a/drivers/block/pktcdvd.c
-+++ b/drivers/block/pktcdvd.c
-@@ -777,7 +777,7 @@ static int pkt_generic_packet(struct pktcdvd_device *pd, struct packet_command *
- 			goto out;
- 	}
- 
--	rq->cmd_len = COMMAND_SIZE(rq->cmd[0]);
-+	rq->cmd_len = COMMAND_SIZE(cgc->cmd[0]);
- 	memcpy(rq->cmd, cgc->cmd, CDROM_PACKET_SIZE);
- 	if (sizeof(rq->cmd) > CDROM_PACKET_SIZE)
- 		memset(rq->cmd + CDROM_PACKET_SIZE, 0, sizeof(rq->cmd) - CDROM_PACKET_SIZE);
+  - Seems its .remove won't work properly if more than one OHCI-1394
+    controller is installed.  And it's .probe isn't reentrant, but that
+    might be less of a problem.
+  - Its functionality will be lost if there is a FireWire bus reset,
+    e.g. when something is plugged in or out.  To keep physical DMA
+    alive, an interrupt handler had to be installed which writes ~0
+    to OHCI1394_PhyReqFilter{Hi,Lo}Set.  Can interrupt handlers be
+    registered in an early setup stage?
+  - There might be some register accesses in the setup which could be
+    omitted; I'd have to look this up.
+  - Could be optimized to not use ohci1394.h::struct ti_ohci.
+  - PCI_CLASS_FIREWIRE_OHCI can be replaced by
+    include/linux/pci_ids.h::PCI_CLASS_SERIAL_FIREWIRE_OHCI which
+    was newly added in 2.6.20-git#.
+  - I suppose .probe should check for PCI_CLASS_SERIAL_FIREWIRE_OHCI
+    instead of PCI_CLASS_SERIAL_FIREWIRE.
+  - How about dropping support for configuring this as module, to
+    simplify the code?  Unless this would interfere with ohci1394; and
+    it probably would if there was an interrupt handler...
+  - "depends on X86_64" is missing in Kconfig.
+  - Maybe put it into arch/x86_64/drivers/ instead of drivers/ieee1394?
+  - Plus what I mentioned earlier in the thread.
 
+I could send code to address some of this at next weekend or later.
 -- 
-Gerhard Dirschl        PGP-Key-ID: 0x7B95AE94
-Germany
+Stefan Richter
+-=====-=-=== --=- -=-=-
+http://arcgraph.de/sr/
