@@ -1,47 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751756AbXBJSmW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751761AbXBJSpc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751756AbXBJSmW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Feb 2007 13:42:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751759AbXBJSmW
+	id S1751761AbXBJSpc (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Feb 2007 13:45:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751739AbXBJSpb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Feb 2007 13:42:22 -0500
-Received: from static-ip-62-75-166-246.inaddr.intergenia.de ([62.75.166.246]:49842
-	"EHLO vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751756AbXBJSmV (ORCPT
+	Sat, 10 Feb 2007 13:45:31 -0500
+Received: from x35.xmailserver.org ([64.71.152.41]:2862 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751761AbXBJSpb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Feb 2007 13:42:21 -0500
-From: Michael Buesch <mb@bu3sch.de>
-To: Theodore Tso <tytso@mit.edu>
-Subject: Re: [ANNOUNCE] d80211 based driver for Intel PRO/Wireless 3945ABG
-Date: Sat, 10 Feb 2007 19:42:04 +0100
-User-Agent: KMail/1.9.5
-Cc: James Ketrenos <jketreno@linux.intel.com>, linux-kernel@vger.kernel.org,
-       linux-wireless@vger.kernel.org, ipw3945-devel@lists.sourceforge.net,
-       netdev@vger.kernel.org
-References: <45CCE3CA.4050904@linux.intel.com> <20070210162254.GC25607@thunk.org>
-In-Reply-To: <20070210162254.GC25607@thunk.org>
+	Sat, 10 Feb 2007 13:45:31 -0500
+X-AuthUser: davidel@xmailserver.org
+Date: Sat, 10 Feb 2007 10:45:28 -0800 (PST)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Zach Brown <zach.brown@oracle.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-aio@kvack.org, Suparna Bhattacharya <suparna@in.ibm.com>,
+       Benjamin LaHaise <bcrl@kvack.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH 0 of 4] Generic AIO by scheduling stacks
+In-Reply-To: <Pine.LNX.4.64.0702091519330.8424@woody.linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0702101034220.11630@alien.or.mcafeemobile.com>
+References: <patchbomb.1170193181@tetsuo.zabbo.net>
+ <Pine.LNX.4.64.0702091419470.8424@woody.linux-foundation.org>
+ <Pine.LNX.4.64.0702091458180.2786@alien.or.mcafeemobile.com>
+ <Pine.LNX.4.64.0702091519330.8424@woody.linux-foundation.org>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200702101942.04740.mb@bu3sch.de>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 10 February 2007 17:22, Theodore Tso wrote:
-> On Fri, Feb 09, 2007 at 01:12:42PM -0800, James Ketrenos wrote:
-> > Please hold all questions until I am done with this email.  Thank you.
-> > 
-> > We are pleased to announce the availability of a new driver for the 
-> > Intel PRO/Wireless 3945ABG Network Connection adapter.  This new driver 
-> > uses the new d80211 subsystem previously only available as part of the 
-> > wireless-dev tree.
+On Fri, 9 Feb 2007, Linus Torvalds wrote:
+
+> > Another, even simpler way IMO, is to just have a plain per-task kthread 
+> > pool, and a queue.
 > 
-> Very cool!  Is it likely that d80211 and iwlwifi will be pushed into
-> mainline in time for 2.6.21?
+> Yes, that is actually quite doable with basically the same interface. It's 
+> literally a "small decision" inside of "schedule_async()" on how it 
+> actually would want to handle the case of "hey, we now have concurrent 
+> work to be done".
 
-Not at all.
+For the queue approach, I meant the async_submit() to simply add the 
+request (cookie, syscall number and params) inside queue, and not trying 
+to execute the syscall. Once you're inside schedule, "stuff" has already 
+partially happened, and you cannot have the same request re-initiated by a 
+different thread.
 
--- 
-Greetings Michael.
+
+
+> But I actually don't think a per-task kthread pool is necessarily a good 
+> idea. If a thread pool works for this, then it should have worked for 
+> regular thread create/destroy loads too - ie there really is little reason 
+> to special-case the "async system call" case.
+
+A per-process thread pool already has things correctly inherited, so we 
+don't need to add special "adopt" routines for things like "files" and such.
+
+
+
+> NOTE! I'm also not at all sure that we actually want to waste real threads 
+> on this. My patch is in no way meant to be an "exclusive alternative" to 
+> fibrils. Quite the reverse, actually: I _like_ those synchronous fibrils, 
+> but I didn't like how Zach did the overhead of creating them up-front, 
+> because I really would like the cached case to be totally *synchronous*.
+
+I'm not advocating threads against fibrils. The use of threads may make 
+things easier under certain POVs (less ad-hoc changes into mainline). The 
+ideal would be to have a look at both and see Pros&Cons under different 
+POVs (performance, code impact, etc..).
+
+
+
+- Davide
+
+
