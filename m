@@ -1,73 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752616AbXBJBd1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752625AbXBJBeL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752616AbXBJBd1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Feb 2007 20:33:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752617AbXBJBd1
+	id S1752625AbXBJBeL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Feb 2007 20:34:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752623AbXBJBeK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Feb 2007 20:33:27 -0500
-Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:30256 "EHLO
-	pd3mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752616AbXBJBd0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Feb 2007 20:33:26 -0500
-Date: Fri, 09 Feb 2007 19:33:15 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: sata_nv - ADMA issues with 2.6.20
-In-reply-to: <fa.uoZWqSFxPjjB7zobQOwk/2zqG5A@ifi.uio.no>
-To: David R <david@unsolicited.net>
-Cc: linux-kernel@vger.kernel.org
-Message-id: <45CD20DB.9030808@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.uoZWqSFxPjjB7zobQOwk/2zqG5A@ifi.uio.no>
-User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
+	Fri, 9 Feb 2007 20:34:10 -0500
+Received: from ns1.suse.de ([195.135.220.2]:49869 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752620AbXBJBeJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Feb 2007 20:34:09 -0500
+Date: Sat, 10 Feb 2007 02:34:07 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Linux Filesystems <linux-fsdevel@vger.kernel.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [patch 3/3] ext2: use perform_write aop
+Message-ID: <20070210013407.GB14349@wotan.suse.de>
+References: <20070208105437.26443.35653.sendpatchset@linux.site> <20070208105508.26443.7806.sendpatchset@linux.site> <20070209111455.67a69783.akpm@linux-foundation.org> <20070209114539.8bd15ee0.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070209114539.8bd15ee0.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David R wrote:
-> I've just upgraded my home server to 2.6.20. It's got an Athlon64 on an ASUS
-> nForce-4 motherboard running a 32 bit kernel. I've had to fall back to using
-> sata_nv.adma=0 on the kernel command line. One of the NCQ capable drives
-> repeatedly produced the following errors. There wasn't much disk IO going on
-> at the time. It's perfectly happy now with ADMA disabled. Strange thing is the
-> other identical drive ata8 showed no problems (they're both part of a software
-> raid1)
+On Fri, Feb 09, 2007 at 11:45:39AM -0800, Andrew Morton wrote:
+> On Fri, 9 Feb 2007 11:14:55 -0800 Andrew Morton <akpm@linux-foundation.org> wrote:
 > 
-> Some clues follow.
+> > If so, that might be preventable by leaving the buffer nonuptodate.
 > 
-> Cheers
-> David
+> oh, OK, it was buffer_new(), so zeroes are the right thing for a reader to
+> see.
 > 
->>> Feb  9 18:40:27 server kernel: ata7: EH in ADMA mode, notifier 0x0 notifier_error 0x0 gen_ctl 0x1501000 status 0x400
->>> Feb  9 18:40:27 server kernel: ata7: CPB 0: ctl_flags 0x1f, resp_flags 0x0
->>> Feb  9 18:40:27 server kernel: ata7: CPB 1: ctl_flags 0x1f, resp_flags 0x1
->>> Feb  9 18:40:27 server kernel: ata7: CPB 2: ctl_flags 0x1f, resp_flags 0x1
->>> Feb  9 18:40:27 server kernel: ata7: CPB 3: ctl_flags 0x1f, resp_flags 0x1
-> etc etc..
->>> Feb  9 18:40:29 server kernel: ata7: CPB 27: ctl_flags 0x1f, resp_flags 0x1
->>> Feb  9 18:40:29 server kernel: ata7: CPB 28: ctl_flags 0x1f, resp_flags 0x1
->>> Feb  9 18:40:29 server kernel: ata7: CPB 29: ctl_flags 0x1f, resp_flags 0x1
->>> Feb  9 18:40:29 server kernel: ata7: CPB 30: ctl_flags 0x1f, resp_flags 0x1
->>> Feb  9 18:40:29 server kernel: ata7: Resetting port
->>> Feb  9 18:40:29 server kernel: ata7.00: exception Emask 0x0 SAct 0x1 SErr 0x0 action 0x2 frozen
->>> Feb  9 18:40:29 server kernel: ata7.00: cmd 61/08:00:1f:e4:50/00:00:09:00:00/40 tag 0 cdb 0x0 data 4096 out
->>> Feb  9 18:40:29 server kernel:          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+> But if it wasn't buffer_new() then the appropriate thing for the reader to
+> see is what's on the disk.  But __block_prepare_write() won't read a buffer
+> which is fully-inside the write area from disk.
+> 
+> And that's seemingly OK, because if a reader gets in there after the short
+> copy, that reader will see the non-uptodate buffer and will populate it
+> from disk.
+> 
+> But doing that will overwrite the data which the write() caller managed to
+> copy into the page before it took a fault.  And that's not OK because
+> block_perform_write() does iovec_iterator_advance(i, copied) in this case
+> and hence will not rerun the copy after acquiring the page lock?
 
-So it was tag 0 that timed out , and according to the CPBs the 
-controller indeed believes the command is still outstanding, i.e. we 
-didn't lose an interrupt. I'm suspicious of the fact that only one of 
-two identical drives produced this error.. some kind of hardware-related 
-problem perhaps? 30 seconds is an awfully long time for a drive to take 
-to finish a command.
-
-You can also try disabling NCQ without disabling ADMA and see what that 
-does:
-
-echo 1 > /sys/block/sdX/device/queue_depth
-
--- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
-
+Hmm, yeah. This can be handled by not advancing partially into a !uptodate
+buffer.
