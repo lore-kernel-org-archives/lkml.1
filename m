@@ -1,51 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750710AbXBKVEZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750785AbXBKVFn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750710AbXBKVEZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Feb 2007 16:04:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750715AbXBKVEY
+	id S1750785AbXBKVFn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Feb 2007 16:05:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750715AbXBKVFn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Feb 2007 16:04:24 -0500
-Received: from hp3.statik.TU-Cottbus.De ([141.43.120.68]:57375 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750710AbXBKVEY (ORCPT
+	Sun, 11 Feb 2007 16:05:43 -0500
+Received: from nf-out-0910.google.com ([64.233.182.184]:10723 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750785AbXBKVFm convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Feb 2007 16:04:24 -0500
-Message-ID: <45CF84D4.3040305@s5r6.in-berlin.de>
-Date: Sun, 11 Feb 2007 22:04:20 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.0.8) Gecko/20061030 SeaMonkey/1.0.6
+	Sun, 11 Feb 2007 16:05:42 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:content-type:content-transfer-encoding:message-id;
+        b=n0urpFFzAzHwPgJf6sfZoji/bQGB6JGnFhULv8fmw1QZR4RhPHxfSygY714ibP2G6td21OSinvbxHd9OcJCkOXzbnTBMqFUDPTqWG3vGNMQFd0ZP0iz2PoVl1l2TOD7OMYPwMqo4IqWaluhXYtxq4iJbErqzD5YLHttCwKQDXto=
+From: Maxim <maximlevitsky@gmail.com>
+To: Pavel Machek <pavel@ucw.cz>, pavel@ucw.cz
+Subject: Re: [PATCH] [NETDEV] [004] dmfe : Add suspend/resume support
+Date: Sun, 11 Feb 2007 23:05:34 +0200
+User-Agent: KMail/1.9.6
+Cc: linux-kernel@vger.kernel.org, tori@unhappy.mine.nu, netdev@vger.kernel.org
+References: <549393.8054.qm@web38506.mail.mud.yahoo.com> <20070209205451.GA3949@ucw.cz>
+In-Reply-To: <20070209205451.GA3949@ucw.cz>
 MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Willy Tarreau <w@1wt.eu>, Matthew Garrett <mjg59@srcf.ucam.org>,
-       Daniel Barkalow <barkalow@iabervon.org>, nigel@nigel.suspend2.net,
-       Robert Hancock <hancockr@shaw.ca>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Jeff Garzik <jeff@garzik.org>, Pavel Machek <pavel@ucw.cz>,
-       pm list <linux-pm@lists.osdl.org>
-Subject: Re: [PATCH] Re: NAK new drivers without proper power management?
-References: <fa.xSKPgY66Q+DPCZ1pszFFfdrJ0To@ifi.uio.no> <200702111450.49736.rjw@sisk.pl> <20070211135708.GC1868@1wt.eu> <200702111536.20871.rjw@sisk.pl>
-In-Reply-To: <200702111536.20871.rjw@sisk.pl>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Message-ID: <45cf8524.034e66ed.1dc4.638d@mx.google.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki wrote:
-> - Problem what to do with drivers that work for some people and don't work
-> for the others (ie. if we don't flag them as known good, we will break the
-> setups in which they work)
+On Friday 09 February 2007 22:54:52 Pavel Machek wrote:
+> Hi!
+>
+> > From: Maxim Levitsky <maximlevitsky@yahoo.com>
+> > Subject: [PATCH] [NETDEV] [004] dmfe : Add suspend/resume support
+> >
+> > Adds support for suspend/resume
+>
+> Patch looks ok, but your mailer damaged it heavily.
+>
+> > --- linux-2.6.20-mod/drivers/net/tulip/dmfe.c   2007-02-07
+> > 18:46:13.000000000 +0200 +++
+> > linux-2.6.20-test/drivers/net/tulip/dmfe.c  2007-02-07 18:50:52.000000000
+> > +0200 @@ -55,9 +55,6 @@
+> >  
+> >      TODO
+> >  
+> > -    Implement pci_driver::suspend() and pci_driver::resume()
+> > -    power management methods.
+> > -
+> >      Check on 64 bit boxes.
+> >      Check and fix on big endian boxes.
+> >  
+> > @@ -2027,11 +2024,59 @@ static struct pci_device_id dmfe_pci_tbl
+> >  MODULE_DEVICE_TABLE(pci, dmfe_pci_tbl);
+> >  
+> >  
+> > +
+> > +static int dmfe_suspend(struct pci_dev *pci_dev, pm_message_t state)
+> > +{
+>
+> 							Pavel
 
-And this issue is independent of whether a driver has .suspend and
-.resume or not. For example, ohci1394 had them for ages but they didn't
-work as expected before 2.6.20.
 
-What's more, ohci1394's resume routine alone is insufficient; an
-additional facility in ieee1394 was necessary and added for 2.6.21(-rc).
-This shows that the original authors of ohci1394's .suspend and .resume
-didn't test with actual external devices or gave up when they figured
-that the problem reaches into upper subsystem layers. (We still haven't
-tested interaction with most of the IEEE 1394 high level.)
--- 
-Stefan Richter
--=====-=-=== --=- -=-==
-http://arcgraph.de/sr/
+Hi , thanks for reply , I will send them again, and this time I will check 
+that mailer doesn't mess with patches.
+
+I fixed word wrap problem.
+
+I also want to note that my address is now maximlevitsky@gmail.com , the 
+address I took recently because yahoo is only aviable via webmail
+and it is not good for patches.
+
+Thanks for reply, 
+
+regards , Maxim Levitsky
+
