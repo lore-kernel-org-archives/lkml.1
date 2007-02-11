@@ -1,81 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932081AbXBKTSW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932071AbXBKTSY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932081AbXBKTSW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Feb 2007 14:18:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932071AbXBKTRy
+	id S932071AbXBKTSY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Feb 2007 14:18:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932086AbXBKTSY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Feb 2007 14:17:54 -0500
-Received: from tomts43-srv.bellnexxia.net ([209.226.175.110]:48588 "EHLO
-	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750789AbXBKTRv (ORCPT
+	Sun, 11 Feb 2007 14:18:24 -0500
+Received: from tomts36-srv.bellnexxia.net ([209.226.175.93]:42237 "EHLO
+	tomts36-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932076AbXBKTSR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Feb 2007 14:17:51 -0500
+	Sun, 11 Feb 2007 14:18:17 -0500
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: linux-kernel@vger.kernel.org
 Cc: Andrew Morton <akpm@linux-foundation.org>,
        Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: [PATCH 05/10] atomic.h : Add atomic64 cmpxchg, xchg and add_unless to mips
-Date: Sun, 11 Feb 2007 14:17:43 -0500
-Message-Id: <117122146921-git-send-email-mathieu.desnoyers@polymtl.ca>
+Subject: [PATCH 01/10] local_t : architecture independant extension
+Date: Sun, 11 Feb 2007 14:18:06 -0500
+Message-Id: <11712214954065-git-send-email-mathieu.desnoyers@polymtl.ca>
 X-Mailer: git-send-email 1.4.4.4
-In-Reply-To: <11712214684187-git-send-email-mathieu.desnoyers@polymtl.ca>
-References: <11712214684187-git-send-email-mathieu.desnoyers@polymtl.ca>
+In-Reply-To: <117122149548-git-send-email-mathieu.desnoyers@polymtl.ca>
+References: <117122149548-git-send-email-mathieu.desnoyers@polymtl.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-atomic.h : Add atomic64 cmpxchg, xchg and add_unless to mips
+local_t : architecture independant extension
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 
---- a/include/asm-mips/atomic.h
-+++ b/include/asm-mips/atomic.h
-@@ -291,8 +291,8 @@ static __inline__ int atomic_sub_if_positive(int i, atomic_t * v)
- 	return result;
- }
+--- a/include/asm-generic/local.h
++++ b/include/asm-generic/local.h
+@@ -33,6 +33,19 @@ typedef struct
+ #define local_add(i,l)	atomic_long_add((i),(&(l)->a))
+ #define local_sub(i,l)	atomic_long_sub((i),(&(l)->a))
  
--#define atomic_cmpxchg(v, o, n) ((int)cmpxchg(&((v)->counter), (o), (n)))
--#define atomic_xchg(v, new) (xchg(&((v)->counter), new))
-+#define atomic_cmpxchg(v, o, n) (cmpxchg(&((v)->counter), (o), (n)))
-+#define atomic_xchg(v, new) (xchg(&((v)->counter), (new)))
- 
- /**
-  * atomic_add_unless - add unless the number is a given value
-@@ -305,7 +305,7 @@ static __inline__ int atomic_sub_if_positive(int i, atomic_t * v)
++#define local_sub_and_test(i, l) atomic_long_sub_and_test((i), (&(l)->a))
++#define local_dec_and_test(l) atomic_long_dec_and_test(&(l)->a)
++#define local_inc_and_test(l) atomic_long_inc_and_test(&(l)->a)
++#define local_add_negative(i, l) atomic_long_add_negative((i), (&(l)->a))
++#define local_add_return(i, l) atomic_long_add_return((i), (&(l)->a))
++#define local_sub_return(i, l) atomic_long_sub_return((i), (&(l)->a))
++#define local_inc_return(l) atomic_long_inc_return(&(l)->a)
++
++#define local_cmpxchg(l, o, n) atomic_long_cmpxchg((&(l)->a), (o), (n))
++#define local_xchg(l, n) atomic_long_xchg((&(l)->a), (n))
++#define local_add_unless(l, a, u) atomic_long_add_unless((&(l)->a), (a), (u))
++#define local_inc_not_zero(l) atomic_long_inc_not_zero(&(l)->a)
++
+ /* Non-atomic variants, ie. preemption disabled and won't be touched
+  * in interrupt, etc.  Some archs can optimize this case well. */
+ #define __local_inc(l)		local_set((l), local_read(l) + 1)
+@@ -44,19 +57,19 @@ typedef struct
+  * much more efficient than these naive implementations.  Note they take
+  * a variable (eg. mystruct.foo), not an address.
   */
- #define atomic_add_unless(v, a, u)				\
- ({								\
--	int c, old;						\
-+	__typeof__((v)->counter) c, old;			\
- 	c = atomic_read(v);					\
- 	while (c != (u) && (old = atomic_cmpxchg((v), c, c + (a))) != c) \
- 		c = old;					\
-@@ -651,6 +651,29 @@ static __inline__ long atomic64_sub_if_positive(long i, atomic64_t * v)
- 	return result;
- }
+-#define cpu_local_read(v)	local_read(&__get_cpu_var(v))
+-#define cpu_local_set(v, i)	local_set(&__get_cpu_var(v), (i))
+-#define cpu_local_inc(v)	local_inc(&__get_cpu_var(v))
+-#define cpu_local_dec(v)	local_dec(&__get_cpu_var(v))
+-#define cpu_local_add(i, v)	local_add((i), &__get_cpu_var(v))
+-#define cpu_local_sub(i, v)	local_sub((i), &__get_cpu_var(v))
++#define cpu_local_read(l)	local_read(&__get_cpu_var(l))
++#define cpu_local_set(l, i)	local_set(&__get_cpu_var(l), (i))
++#define cpu_local_inc(l)	local_inc(&__get_cpu_var(l))
++#define cpu_local_dec(l)	local_dec(&__get_cpu_var(l))
++#define cpu_local_add(i, l)	local_add((i), &__get_cpu_var(l))
++#define cpu_local_sub(i, l)	local_sub((i), &__get_cpu_var(l))
  
-+#define atomic64_cmpxchg(v, o, n) \
-+	(((__typeof__((v)->counter)))cmpxchg(&((v)->counter), (o), (n)))
-+#define atomic64_xchg(v, new) (xchg(&((v)->counter), (new)))
-+
-+/**
-+ * atomic64_add_unless - add unless the number is a given value
-+ * @v: pointer of type atomic64_t
-+ * @a: the amount to add to v...
-+ * @u: ...unless v is equal to u.
-+ *
-+ * Atomically adds @a to @v, so long as it was not @u.
-+ * Returns non-zero if @v was not @u, and zero otherwise.
-+ */
-+#define atomic64_add_unless(v, a, u)				\
-+({								\
-+	__typeof__((v)->counter) c, old;			\
-+	c = atomic_read(v);					\
-+	while (c != (u) && (old = atomic64_cmpxchg((v), c, c + (a))) != c) \
-+		c = old;					\
-+	c != (u);						\
-+})
-+#define atomic64_inc_not_zero(v) atomic64_add_unless((v), 1, 0)
-+
- #define atomic64_dec_return(v) atomic64_sub_return(1,(v))
- #define atomic64_inc_return(v) atomic64_add_return(1,(v))
+ /* Non-atomic increments, ie. preemption disabled and won't be touched
+  * in interrupt, etc.  Some archs can optimize this case well.
+  */
+-#define __cpu_local_inc(v)	__local_inc(&__get_cpu_var(v))
+-#define __cpu_local_dec(v)	__local_dec(&__get_cpu_var(v))
+-#define __cpu_local_add(i, v)	__local_add((i), &__get_cpu_var(v))
+-#define __cpu_local_sub(i, v)	__local_sub((i), &__get_cpu_var(v))
++#define __cpu_local_inc(l)	__local_inc(&__get_cpu_var(l))
++#define __cpu_local_dec(l)	__local_dec(&__get_cpu_var(l))
++#define __cpu_local_add(i, l)	__local_add((i), &__get_cpu_var(l))
++#define __cpu_local_sub(i, l)	__local_sub((i), &__get_cpu_var(l))
  
+ #endif /* _ASM_GENERIC_LOCAL_H */
