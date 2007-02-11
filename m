@@ -1,414 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932117AbXBKT2c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932113AbXBKTc7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932117AbXBKT2c (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Feb 2007 14:28:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932120AbXBKT2c
+	id S932113AbXBKTc7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Feb 2007 14:32:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932120AbXBKTc7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Feb 2007 14:28:32 -0500
-Received: from tomts20-srv.bellnexxia.net ([209.226.175.74]:50285 "EHLO
-	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932117AbXBKT2a (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Feb 2007 14:28:30 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: linux-kernel@vger.kernel.org
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: [PATCH 02/10] local_t : alpha extension
-Date: Sun, 11 Feb 2007 14:18:07 -0500
-Message-Id: <1171221495792-git-send-email-mathieu.desnoyers@polymtl.ca>
-X-Mailer: git-send-email 1.4.4.4
-In-Reply-To: <117122149548-git-send-email-mathieu.desnoyers@polymtl.ca>
-References: <117122149548-git-send-email-mathieu.desnoyers@polymtl.ca>
+	Sun, 11 Feb 2007 14:32:59 -0500
+Received: from wasp.net.au ([203.190.192.17]:42293 "EHLO wasp.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932113AbXBKTc6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Feb 2007 14:32:58 -0500
+Message-ID: <45CF6F64.60500@wasp.net.au>
+Date: Sun, 11 Feb 2007 23:32:52 +0400
+From: Brad Campbell <brad@wasp.net.au>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070104)
+MIME-Version: 1.0
+To: Pierre Ossman <drzeus-mmc@drzeus.cx>
+CC: Alex Dubov <oakad@yahoo.com>, linux-kernel@vger.kernel.org
+Subject: Re: Recent and not-so problems with tifm_sd driver - one more
+References: <113489.35158.qm@web36703.mail.mud.yahoo.com> <45CDC22B.6040408@drzeus.cx> <45CEB1C9.5010103@wasp.net.au> <45CF3904.5070401@drzeus.cx> <45CF3CA3.1010704@wasp.net.au> <45CF5AB0.6080309@drzeus.cx>
+In-Reply-To: <45CF5AB0.6080309@drzeus.cx>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-local_t : alpha extension
+Pierre Ossman wrote:
+> Brad Campbell wrote:
+>> brad@bklaptop2:/$ find sys/devices | grep mmc
+>> sys/devices/pci0000:00/0000:00:1e.0/0000:06:05.3/tifm_sd0:3/mmc_host:mmc0
+>>
+> 
+> This is strange. You should be getting more entries below that.
 
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+I believe that should be the case..
 
---- a/include/asm-alpha/local.h
-+++ b/include/asm-alpha/local.h
-@@ -4,37 +4,115 @@
- #include <linux/percpu.h>
- #include <asm/atomic.h>
- 
--typedef atomic64_t local_t;
-+typedef struct
-+{
-+	atomic_long_t a;
-+} local_t;
- 
--#define LOCAL_INIT(i)	ATOMIC64_INIT(i)
--#define local_read(v)	atomic64_read(v)
--#define local_set(v,i)	atomic64_set(v,i)
-+#define LOCAL_INIT(i)	{ ATOMIC_LONG_INIT(i) }
-+#define local_read(l)	atomic_long_read(&(l)->a)
-+#define local_set(l,i)	atomic_long_set(&(l)->a, (i))
-+#define local_inc(l)	atomic_long_inc(&(l)->a)
-+#define local_dec(l)	atomic_long_dec(&(l)->a)
-+#define local_add(i,l)	atomic_long_add((i),(&(l)->a))
-+#define local_sub(i,l)	atomic_long_sub((i),(&(l)->a))
- 
--#define local_inc(v)	atomic64_inc(v)
--#define local_dec(v)	atomic64_dec(v)
--#define local_add(i, v)	atomic64_add(i, v)
--#define local_sub(i, v)	atomic64_sub(i, v)
-+static __inline__ long local_add_return(long i, local_t * l)
-+{
-+	long temp, result;
-+	__asm__ __volatile__(
-+	"1:	ldq_l %0,%1\n"
-+	"	addq %0,%3,%2\n"
-+	"	addq %0,%3,%0\n"
-+	"	stq_c %0,%1\n"
-+	"	beq %0,2f\n"
-+	".subsection 2\n"
-+	"2:	br 1b\n"
-+	".previous"
-+	:"=&r" (temp), "=m" (l->a.counter), "=&r" (result)
-+	:"Ir" (i), "m" (l->a.counter) : "memory");
-+	return result;
-+}
- 
--#define __local_inc(v)		((v)->counter++)
--#define __local_dec(v)		((v)->counter++)
--#define __local_add(i,v)	((v)->counter+=(i))
--#define __local_sub(i,v)	((v)->counter-=(i))
-+static __inline__ long local_sub_return(long i, local_t * l)
-+{
-+	long temp, result;
-+	__asm__ __volatile__(
-+	"1:	ldq_l %0,%1\n"
-+	"	subq %0,%3,%2\n"
-+	"	subq %0,%3,%0\n"
-+	"	stq_c %0,%1\n"
-+	"	beq %0,2f\n"
-+	".subsection 2\n"
-+	"2:	br 1b\n"
-+	".previous"
-+	:"=&r" (temp), "=m" (l->a.counter), "=&r" (result)
-+	:"Ir" (i), "m" (l->a.counter) : "memory");
-+	return result;
-+}
-+
-+#define local_cmpxchg(l, o, n) \
-+	(cmpxchg_local(&((l)->a.counter), (o), (n)))
-+#define local_xchg(l, n) (xchg_local(&((l)->a.counter), (n)))
-+
-+/**
-+ * local_add_unless - add unless the number is a given value
-+ * @l: pointer of type local_t
-+ * @a: the amount to add to l...
-+ * @u: ...unless l is equal to u.
-+ *
-+ * Atomically adds @a to @l, so long as it was not @u.
-+ * Returns non-zero if @l was not @u, and zero otherwise.
-+ */
-+#define local_add_unless(l, a, u)				\
-+({								\
-+	long c, old;						\
-+	c = local_read(l);					\
-+	for (;;) {						\
-+		if (unlikely(c == (u)))				\
-+			break;					\
-+		old = local_cmpxchg((l), c, c + (a));	\
-+		if (likely(old == c))				\
-+			break;					\
-+		c = old;					\
-+	}							\
-+	c != (u);						\
-+})
-+#define local_inc_not_zero(l) local_add_unless((l), 1, 0)
-+
-+#define local_add_negative(a, l) (local_add_return((a), (l)) < 0)
-+
-+#define local_dec_return(l) local_sub_return(1,(l))
-+
-+#define local_inc_return(l) local_add_return(1,(l))
-+
-+#define local_sub_and_test(i,l) (local_sub_return((i), (l)) == 0)
-+
-+#define local_inc_and_test(l) (local_add_return(1, (l)) == 0)
-+
-+#define local_dec_and_test(l) (local_sub_return(1, (l)) == 0)
-+
-+/* Verify if faster than atomic ops */
-+#define __local_inc(l)		((l)->a.counter++)
-+#define __local_dec(l)		((l)->a.counter++)
-+#define __local_add(i,l)	((l)->a.counter+=(i))
-+#define __local_sub(i,l)	((l)->a.counter-=(i))
- 
- /* Use these for per-cpu local_t variables: on some archs they are
-  * much more efficient than these naive implementations.  Note they take
-  * a variable, not an address.
-  */
--#define cpu_local_read(v)	local_read(&__get_cpu_var(v))
--#define cpu_local_set(v, i)	local_set(&__get_cpu_var(v), (i))
--
--#define cpu_local_inc(v)	local_inc(&__get_cpu_var(v))
--#define cpu_local_dec(v)	local_dec(&__get_cpu_var(v))
--#define cpu_local_add(i, v)	local_add((i), &__get_cpu_var(v))
--#define cpu_local_sub(i, v)	local_sub((i), &__get_cpu_var(v))
--
--#define __cpu_local_inc(v)	__local_inc(&__get_cpu_var(v))
--#define __cpu_local_dec(v)	__local_dec(&__get_cpu_var(v))
--#define __cpu_local_add(i, v)	__local_add((i), &__get_cpu_var(v))
--#define __cpu_local_sub(i, v)	__local_sub((i), &__get_cpu_var(v))
-+#define cpu_local_read(l)	local_read(&__get_cpu_var(l))
-+#define cpu_local_set(l, i)	local_set(&__get_cpu_var(l), (i))
-+
-+#define cpu_local_inc(l)	local_inc(&__get_cpu_var(l))
-+#define cpu_local_dec(l)	local_dec(&__get_cpu_var(l))
-+#define cpu_local_add(i, l)	local_add((i), &__get_cpu_var(l))
-+#define cpu_local_sub(i, l)	local_sub((i), &__get_cpu_var(l))
-+
-+#define __cpu_local_inc(l)	__local_inc(&__get_cpu_var(l))
-+#define __cpu_local_dec(l)	__local_dec(&__get_cpu_var(l))
-+#define __cpu_local_add(i, l)	__local_add((i), &__get_cpu_var(l))
-+#define __cpu_local_sub(i, l)	__local_sub((i), &__get_cpu_var(l))
- 
- #endif /* _ALPHA_LOCAL_H */
---- a/include/asm-alpha/system.h
-+++ b/include/asm-alpha/system.h
-@@ -443,6 +443,111 @@ extern void __xchg_called_with_bad_pointer(void);
-      (__typeof__(*(ptr))) __xchg((ptr), (unsigned long)_x_, sizeof(*(ptr))); \
-   })
- 
-+static inline unsigned long
-+__xchg_u8_local(volatile char *m, unsigned long val)
-+{
-+	unsigned long ret, tmp, addr64;
-+
-+	__asm__ __volatile__(
-+	"	andnot	%4,7,%3\n"
-+	"	insbl	%1,%4,%1\n"
-+	"1:	ldq_l	%2,0(%3)\n"
-+	"	extbl	%2,%4,%0\n"
-+	"	mskbl	%2,%4,%2\n"
-+	"	or	%1,%2,%2\n"
-+	"	stq_c	%2,0(%3)\n"
-+	"	beq	%2,2f\n"
-+	".subsection 2\n"
-+	"2:	br	1b\n"
-+	".previous"
-+	: "=&r" (ret), "=&r" (val), "=&r" (tmp), "=&r" (addr64)
-+	: "r" ((long)m), "1" (val) : "memory");
-+
-+	return ret;
-+}
-+
-+static inline unsigned long
-+__xchg_u16_local(volatile short *m, unsigned long val)
-+{
-+	unsigned long ret, tmp, addr64;
-+
-+	__asm__ __volatile__(
-+	"	andnot	%4,7,%3\n"
-+	"	inswl	%1,%4,%1\n"
-+	"1:	ldq_l	%2,0(%3)\n"
-+	"	extwl	%2,%4,%0\n"
-+	"	mskwl	%2,%4,%2\n"
-+	"	or	%1,%2,%2\n"
-+	"	stq_c	%2,0(%3)\n"
-+	"	beq	%2,2f\n"
-+	".subsection 2\n"
-+	"2:	br	1b\n"
-+	".previous"
-+	: "=&r" (ret), "=&r" (val), "=&r" (tmp), "=&r" (addr64)
-+	: "r" ((long)m), "1" (val) : "memory");
-+
-+	return ret;
-+}
-+
-+static inline unsigned long
-+__xchg_u32_local(volatile int *m, unsigned long val)
-+{
-+	unsigned long dummy;
-+
-+	__asm__ __volatile__(
-+	"1:	ldl_l %0,%4\n"
-+	"	bis $31,%3,%1\n"
-+	"	stl_c %1,%2\n"
-+	"	beq %1,2f\n"
-+	".subsection 2\n"
-+	"2:	br 1b\n"
-+	".previous"
-+	: "=&r" (val), "=&r" (dummy), "=m" (*m)
-+	: "rI" (val), "m" (*m) : "memory");
-+
-+	return val;
-+}
-+
-+static inline unsigned long
-+__xchg_u64_local(volatile long *m, unsigned long val)
-+{
-+	unsigned long dummy;
-+
-+	__asm__ __volatile__(
-+	"1:	ldq_l %0,%4\n"
-+	"	bis $31,%3,%1\n"
-+	"	stq_c %1,%2\n"
-+	"	beq %1,2f\n"
-+	".subsection 2\n"
-+	"2:	br 1b\n"
-+	".previous"
-+	: "=&r" (val), "=&r" (dummy), "=m" (*m)
-+	: "rI" (val), "m" (*m) : "memory");
-+
-+	return val;
-+}
-+
-+#define __xchg_local(ptr, x, size) \
-+({ \
-+	unsigned long __xchg__res; \
-+	volatile void *__xchg__ptr = (ptr); \
-+	switch (size) { \
-+		case 1: __xchg__res = __xchg_u8_local(__xchg__ptr, x); break; \
-+		case 2: __xchg__res = __xchg_u16_local(__xchg__ptr, x); break; \
-+		case 4: __xchg__res = __xchg_u32_local(__xchg__ptr, x); break; \
-+		case 8: __xchg__res = __xchg_u64_local(__xchg__ptr, x); break; \
-+		default: __xchg_called_with_bad_pointer(); __xchg__res = x; \
-+	} \
-+	__xchg__res; \
-+})
-+
-+#define xchg_local(ptr,x)						     \
-+  ({									     \
-+     __typeof__(*(ptr)) _x_ = (x);					     \
-+     (__typeof__(*(ptr))) __xchg_local((ptr), (unsigned long)_x_,	     \
-+     		sizeof(*(ptr))); \
-+  })
-+
- #define tas(ptr) (xchg((ptr),1))
- 
- 
-@@ -596,6 +701,128 @@ __cmpxchg(volatile void *ptr, unsigned long old, unsigned long new, int size)
- 				    (unsigned long)_n_, sizeof(*(ptr))); \
-   })
- 
-+static inline unsigned long
-+__cmpxchg_u8_local(volatile char *m, long old, long new)
-+{
-+	unsigned long prev, tmp, cmp, addr64;
-+
-+	__asm__ __volatile__(
-+	"	andnot	%5,7,%4\n"
-+	"	insbl	%1,%5,%1\n"
-+	"1:	ldq_l	%2,0(%4)\n"
-+	"	extbl	%2,%5,%0\n"
-+	"	cmpeq	%0,%6,%3\n"
-+	"	beq	%3,2f\n"
-+	"	mskbl	%2,%5,%2\n"
-+	"	or	%1,%2,%2\n"
-+	"	stq_c	%2,0(%4)\n"
-+	"	beq	%2,3f\n"
-+	"2:\n"
-+	".subsection 2\n"
-+	"3:	br	1b\n"
-+	".previous"
-+	: "=&r" (prev), "=&r" (new), "=&r" (tmp), "=&r" (cmp), "=&r" (addr64)
-+	: "r" ((long)m), "Ir" (old), "1" (new) : "memory");
-+
-+	return prev;
-+}
-+
-+static inline unsigned long
-+__cmpxchg_u16_local(volatile short *m, long old, long new)
-+{
-+	unsigned long prev, tmp, cmp, addr64;
-+
-+	__asm__ __volatile__(
-+	"	andnot	%5,7,%4\n"
-+	"	inswl	%1,%5,%1\n"
-+	"1:	ldq_l	%2,0(%4)\n"
-+	"	extwl	%2,%5,%0\n"
-+	"	cmpeq	%0,%6,%3\n"
-+	"	beq	%3,2f\n"
-+	"	mskwl	%2,%5,%2\n"
-+	"	or	%1,%2,%2\n"
-+	"	stq_c	%2,0(%4)\n"
-+	"	beq	%2,3f\n"
-+	"2:\n"
-+	".subsection 2\n"
-+	"3:	br	1b\n"
-+	".previous"
-+	: "=&r" (prev), "=&r" (new), "=&r" (tmp), "=&r" (cmp), "=&r" (addr64)
-+	: "r" ((long)m), "Ir" (old), "1" (new) : "memory");
-+
-+	return prev;
-+}
-+
-+static inline unsigned long
-+__cmpxchg_u32_local(volatile int *m, int old, int new)
-+{
-+	unsigned long prev, cmp;
-+
-+	__asm__ __volatile__(
-+	"1:	ldl_l %0,%5\n"
-+	"	cmpeq %0,%3,%1\n"
-+	"	beq %1,2f\n"
-+	"	mov %4,%1\n"
-+	"	stl_c %1,%2\n"
-+	"	beq %1,3f\n"
-+	"2:\n"
-+	".subsection 2\n"
-+	"3:	br 1b\n"
-+	".previous"
-+	: "=&r"(prev), "=&r"(cmp), "=m"(*m)
-+	: "r"((long) old), "r"(new), "m"(*m) : "memory");
-+
-+	return prev;
-+}
-+
-+static inline unsigned long
-+__cmpxchg_u64_local(volatile long *m, unsigned long old, unsigned long new)
-+{
-+	unsigned long prev, cmp;
-+
-+	__asm__ __volatile__(
-+	"1:	ldq_l %0,%5\n"
-+	"	cmpeq %0,%3,%1\n"
-+	"	beq %1,2f\n"
-+	"	mov %4,%1\n"
-+	"	stq_c %1,%2\n"
-+	"	beq %1,3f\n"
-+	"2:\n"
-+	".subsection 2\n"
-+	"3:	br 1b\n"
-+	".previous"
-+	: "=&r"(prev), "=&r"(cmp), "=m"(*m)
-+	: "r"((long) old), "r"(new), "m"(*m) : "memory");
-+
-+	return prev;
-+}
-+
-+static __always_inline unsigned long
-+__cmpxchg_local(volatile void *ptr, unsigned long old, unsigned long new,
-+		int size)
-+{
-+	switch (size) {
-+		case 1:
-+			return __cmpxchg_u8_local(ptr, old, new);
-+		case 2:
-+			return __cmpxchg_u16_local(ptr, old, new);
-+		case 4:
-+			return __cmpxchg_u32_local(ptr, old, new);
-+		case 8:
-+			return __cmpxchg_u64_local(ptr, old, new);
-+	}
-+	__cmpxchg_called_with_bad_pointer();
-+	return old;
-+}
-+
-+#define cmpxchg_local(ptr,o,n)						 \
-+  ({									 \
-+     __typeof__(*(ptr)) _o_ = (o);					 \
-+     __typeof__(*(ptr)) _n_ = (n);					 \
-+     (__typeof__(*(ptr))) __cmpxchg_local((ptr), (unsigned long)_o_,	 \
-+				    (unsigned long)_n_, sizeof(*(ptr))); \
-+  })
-+
- #endif /* __ASSEMBLY__ */
- 
- #define arch_align_stack(x) (x)
+>> /sys/block/mmcblk0/device
+> 
+brad@bklaptop2:/sys/block/mmcblk0$ ls -laR
+.:
+total 0
+drwxr-xr-x  6 root root    0 2007-02-11 23:29 .
+drwxr-xr-x 13 root root    0 2007-02-11 23:27 ..
+-r--r--r--  1 root root 4096 2007-02-11 23:28 dev
+lrwxrwxrwx  1 root root    0 2007-02-11 23:27 device -> ../../class/mmc_host/mmc0/mmc0:b368
+drwxr-xr-x  2 root root    0 2007-02-11 23:27 holders
+drwxr-xr-x  3 root root    0 2007-02-11 23:29 mmcblk0p1
+drwxr-xr-x  3 root root    0 2007-02-11 23:27 queue
+-r--r--r--  1 root root 4096 2007-02-11 23:29 range
+-r--r--r--  1 root root 4096 2007-02-11 23:27 removable
+-r--r--r--  1 root root 4096 2007-02-11 23:29 size
+drwxr-xr-x  2 root root    0 2007-02-11 23:27 slaves
+-r--r--r--  1 root root 4096 2007-02-11 23:29 stat
+lrwxrwxrwx  1 root root    0 2007-02-11 23:27 subsystem -> ../../block
+--w-------  1 root root 4096 2007-02-11 23:29 uevent
+
+./holders:
+total 0
+drwxr-xr-x 2 root root 0 2007-02-11 23:27 .
+drwxr-xr-x 6 root root 0 2007-02-11 23:29 ..
+
+./mmcblk0p1:
+total 0
+drwxr-xr-x 3 root root    0 2007-02-11 23:29 .
+drwxr-xr-x 6 root root    0 2007-02-11 23:29 ..
+-r--r--r-- 1 root root 4096 2007-02-11 23:29 dev
+drwxr-xr-x 2 root root    0 2007-02-11 23:27 holders
+-r--r--r-- 1 root root 4096 2007-02-11 23:29 size
+-r--r--r-- 1 root root 4096 2007-02-11 23:29 start
+-r--r--r-- 1 root root 4096 2007-02-11 23:29 stat
+lrwxrwxrwx 1 root root    0 2007-02-11 23:29 subsystem -> ../../../block
+--w------- 1 root root 4096 2007-02-11 23:29 uevent
+
+./mmcblk0p1/holders:
+total 0
+drwxr-xr-x 2 root root 0 2007-02-11 23:27 .
+drwxr-xr-x 3 root root 0 2007-02-11 23:29 ..
+
+./queue:
+total 0
+drwxr-xr-x 3 root root    0 2007-02-11 23:27 .
+drwxr-xr-x 6 root root    0 2007-02-11 23:29 ..
+drwxr-xr-x 2 root root    0 2007-02-11 23:27 iosched
+-r--r--r-- 1 root root 4096 2007-02-11 23:29 max_hw_sectors_kb
+-rw-r--r-- 1 root root 4096 2007-02-11 23:29 max_sectors_kb
+-rw-r--r-- 1 root root 4096 2007-02-11 23:29 nr_requests
+-rw-r--r-- 1 root root 4096 2007-02-11 23:29 read_ahead_kb
+-rw-r--r-- 1 root root 4096 2007-02-11 23:29 scheduler
+
+./queue/iosched:
+total 0
+drwxr-xr-x 2 root root    0 2007-02-11 23:27 .
+drwxr-xr-x 3 root root    0 2007-02-11 23:29 ..
+-rw-r--r-- 1 root root 4096 2007-02-11 23:29 back_seek_max
+-rw-r--r-- 1 root root 4096 2007-02-11 23:29 back_seek_penalty
+-rw-r--r-- 1 root root 4096 2007-02-11 23:29 fifo_expire_async
+-rw-r--r-- 1 root root 4096 2007-02-11 23:29 fifo_expire_sync
+-rw-r--r-- 1 root root 4096 2007-02-11 23:29 quantum
+-rw-r--r-- 1 root root 4096 2007-02-11 23:29 slice_async
+-rw-r--r-- 1 root root 4096 2007-02-11 23:29 slice_async_rq
+-rw-r--r-- 1 root root 4096 2007-02-11 23:29 slice_idle
+-rw-r--r-- 1 root root 4096 2007-02-11 23:29 slice_sync
+
+./slaves:
+total 0
+drwxr-xr-x 2 root root 0 2007-02-11 23:27 .
+drwxr-xr-x 6 root root 0 2007-02-11 23:29 ..
+
+brad@bklaptop2:/sys/block/mmcblk0$ cd device
+brad@bklaptop2:/sys/block/mmcblk0/device$ ls -laR
+.:
+total 0
+drwxr-xr-x 3 root root    0 2007-02-11 23:30 .
+drwxr-xr-x 4 root root    0 2007-02-11 23:27 ..
+lrwxrwxrwx 1 root root    0 2007-02-11 23:30 block:mmcblk0 -> ../../../../block/mmcblk0
+lrwxrwxrwx 1 root root    0 2007-02-11 23:30 bus -> ../../../../bus/mmc
+-r--r--r-- 1 root root 4096 2007-02-11 23:30 cid
+-r--r--r-- 1 root root 4096 2007-02-11 23:30 csd
+-r--r--r-- 1 root root 4096 2007-02-11 23:30 date
+lrwxrwxrwx 1 root root    0 2007-02-11 23:27 driver -> ../../../../bus/mmc/drivers/mmcblk
+-r--r--r-- 1 root root 4096 2007-02-11 23:30 fwrev
+-r--r--r-- 1 root root 4096 2007-02-11 23:30 hwrev
+-r--r--r-- 1 root root 4096 2007-02-11 23:30 manfid
+-r--r--r-- 1 root root 4096 2007-02-11 23:30 name
+-r--r--r-- 1 root root 4096 2007-02-11 23:30 oemid
+drwxr-xr-x 2 root root    0 2007-02-11 23:27 power
+-r--r--r-- 1 root root 4096 2007-02-11 23:30 scr
+-r--r--r-- 1 root root 4096 2007-02-11 23:30 serial
+lrwxrwxrwx 1 root root    0 2007-02-11 23:27 subsystem -> ../../../../bus/mmc
+--w------- 1 root root 4096 2007-02-11 23:30 uevent
+
+./power:
+total 0
+drwxr-xr-x 2 root root    0 2007-02-11 23:27 .
+drwxr-xr-x 3 root root    0 2007-02-11 23:30 ..
+-rw-r--r-- 1 root root 4096 2007-02-11 23:30 wakeup
+
+Alex, it's still hit and miss getting this card detected. I had to insert/remove the card over 10 
+times with random driver load/unloads until it created the device entries..
+
+Brad
+-- 
+"Human beings, who are almost unique in having the ability
+to learn from the experience of others, are also remarkable
+for their apparent disinclination to do so." -- Douglas Adams
