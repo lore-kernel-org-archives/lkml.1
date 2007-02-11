@@ -1,41 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750737AbXBKRIu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750738AbXBKRKR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750737AbXBKRIu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Feb 2007 12:08:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750738AbXBKRIu
+	id S1750738AbXBKRKR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Feb 2007 12:10:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750739AbXBKRKQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Feb 2007 12:08:50 -0500
-Received: from wr-out-0506.google.com ([64.233.184.225]:53386 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750737AbXBKRIt (ORCPT
+	Sun, 11 Feb 2007 12:10:16 -0500
+Received: from mis011-1.exch011.intermedia.net ([64.78.21.128]:59852 "EHLO
+	mis011-1.exch011.intermedia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750738AbXBKRKP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Feb 2007 12:08:49 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=MZO2ipgwYbGr+XfK6ZWrg26ijCXdc+Vcj6HBc1BSmPYh9QMYqjqs+dJvH/EE9L4rm4klWpU1SH/sNj5l5Se59bYY5S8maX3szgM+1b2roj3mgnlnap8lXoszYYv1N7CeJzTiwaU4ttdOMngwbnqN+pmTfCyqQkww5SCWj3yCJuo=
-Message-ID: <8474209b0702110908o20f7c0cey3209b60610270db9@mail.gmail.com>
-Date: Sun, 11 Feb 2007 19:08:47 +0200
-From: "Alex Bounder" <abounder@gmail.com>
-To: "Jan Engelhardt" <jengelh@linux01.gwdg.de>
-Subject: Re: creating headless device on 2.6.18
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.61.0702081944230.1364@yvahk01.tjqt.qr>
+	Sun, 11 Feb 2007 12:10:15 -0500
+Message-ID: <45CF4DE9.8080904@qumranet.com>
+Date: Sun, 11 Feb 2007 19:10:01 +0200
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070130)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Jiri Slaby <jirislaby@gmail.com>
+CC: Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       kvm-devel@lists.sourceforge.net
+Subject: Re: KVM oops: killing interrupt handler
+References: <45CE20E5.8000107@gmail.com> <45CEDB95.2020705@qumranet.com> <4af2d03a0702110601g36b4780fuec82be8290d6a397@mail.gmail.com> <45CF3BF0.2070103@qumranet.com> <45CF4B23.5050401@gmail.com>
+In-Reply-To: <45CF4B23.5050401@gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <8474209b0702081005t196c64bajbf94f119e4ed32e@mail.gmail.com>
-	 <Pine.LNX.4.61.0702081944230.1364@yvahk01.tjqt.qr>
+X-OriginalArrivalTime: 11 Feb 2007 17:10:08.0830 (UTC) FILETIME=[7B8EBDE0:01C74DFF]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jiri Slaby wrote:
+> Avi Kivity napsal(a):
+>> kvm suspend/resume support is only present in -mm (what's more, I 
+>> don't think in any released -mm).  A workaround is to rmmod kvm_intel 
+>> before suspending.
 >
-> V4L2 is something different. Turn on EMBEDDED, then you should be able to
-> deactivate VGA_CONSOLE.
+> BTW. will kvm-13's external module work?
 >
->
-> Jan
 
-Thanks,
- I really appreciate your answer, everything is working ok.
+Try and report back :)
+
+
+
+-- 
+Do not meddle in the internals of kernels, for they are subtle and quick to panic.
+
