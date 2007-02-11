@@ -1,98 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932721AbXBKX34@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932915AbXBKXcW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932721AbXBKX34 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Feb 2007 18:29:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932825AbXBKX34
+	id S932915AbXBKXcW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Feb 2007 18:32:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932914AbXBKXcW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Feb 2007 18:29:56 -0500
-Received: from nigel.suspend2.net ([203.171.70.205]:40133 "EHLO
-	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932721AbXBKX3z (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Feb 2007 18:29:55 -0500
+	Sun, 11 Feb 2007 18:32:22 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:39437 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932821AbXBKXcV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Feb 2007 18:32:21 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: nigel@nigel.suspend2.net
 Subject: Re: NAK new drivers without proper power management?
-From: Nigel Cunningham <nigel@nigel.suspend2.net>
-Reply-To: nigel@nigel.suspend2.net
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Alan <alan@lxorguk.ukuu.org.uk>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Arjan van de Ven <arjan@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20070211232105.GG15445@elf.ucw.cz>
-References: <1171058269.1484.64.camel@nigel.suspend2.net>
-	 <1171059433.8675.195.camel@laptopd505.fenrus.org>
-	 <20070210193851.GA3956@ucw.cz> <200702102320.39531.rjw@sisk.pl>
-	 <20070211194202.GC15445@elf.ucw.cz>
-	 <20070211210258.0b8da53c@localhost.localdomain>
-	 <1171235428.4493.105.camel@nigel.suspend2.net>
-	 <20070211232105.GG15445@elf.ucw.cz>
-Content-Type: text/plain
-Date: Mon, 12 Feb 2007 10:29:54 +1100
-Message-Id: <1171236594.4493.127.camel@nigel.suspend2.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
+Date: Mon, 12 Feb 2007 00:29:22 +0100
+User-Agent: KMail/1.9.5
+Cc: Robert Hancock <hancockr@shaw.ca>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Pavel Machek <pavel@ucw.cz>
+References: <fa.xSKPgY66Q+DPCZ1pszFFfdrJ0To@ifi.uio.no> <200702110144.17783.rjw@sisk.pl> <1171233655.4493.78.camel@nigel.suspend2.net>
+In-Reply-To: <1171233655.4493.78.camel@nigel.suspend2.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200702120029.23657.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
-
-On Mon, 2007-02-12 at 00:21 +0100, Pavel Machek wrote:
-> Hi!
+On Sunday, 11 February 2007 23:40, Nigel Cunningham wrote:
+> Hi.
 > 
-> > > > > define .suspend that will always return -ENOSYS (then people will know they
-> > > > > have to unload the driver before the suspend).  Similarly, if you aren't sure
-> > > > > whether or not the device requires .suspend and .resume, define .suspend that
-> > > > > will always return -ENOSYS."
-> > > > 
-> > > > Sounds ok to me. Where should this text go?
-> > > > Documentation/SubmittingDrivers ?
-> > > 
-> > > And testing/submitting drivers, perhaps with additional text in that to
-> > > make it clear we want suspend/resume support or good excuses
-> > > 
-> > > "Please verify your driver correctly handles suspend and resume. If it
-> > > does not your patch submission is likely to be suspended and only resume
-> > > when the driver correctly handles this feature"
+> On Sun, 2007-02-11 at 01:44 +0100, Rafael J. Wysocki wrote:
+> > > Well, it's probably more acceptable than silently doing nothing and the 
+> > > device failing or locking up the machine on resume, but I couldn't agree 
+> > > more that it's not what we want to be encouraging. Perfect may be the 
+> > > enemy of the good, but "works except no power management" is hardly what 
+> > > I would call good these days, more like pretty sloppy..
 > > 
-> > Maybe make it explicit that testing should be done for both suspend to
-> > ram and to disk, and with the following usage scenarios as
->  > applicable?
+> > I think there are situations in which it can be justified, like:
+> > - The driver is not entirely finished, but we want to merge it early, because
+> > of many potential users,
+> > - The driver has only a few users who aren't interested in the suspend/resume
+> > functionality,
 > 
-> Well, for many people s2ram does not work even today... so requiring
-> them to test it is slightly draconian.
+> How do you determine that? How many users have to want suspend/resume
+> functionality before you say "Ok. It has to be done now"?
+
+That depends on what the driver author tells us.  If he says there's only one
+such device in the world and it needs a Linux drivers, but the system in
+question will never be suspended, that will be fine, I think.  There are such
+cases already and I see no reason why there won't be any more in the future.
+
+> > - The device is undocumented and we don't know how to make it handle the
+> > suspend/resume (we may learn that in the future or not).
 > 
-> > - built in;
-> > - modular, loaded while suspending but not loaded prior to resume from
-> > disk;
-> 
-> These two should be equivalent.
+> If we know how to initialise/cleanup, we know a good portion of what is
+> needed for suspend/resume. Sure, for some video chipsets, you need more
+> (you need to know how to reprogram the whole thing after S3), but
+> they're the exception. Yes, there are other cases. But on the whole,
+> we're not talking about esoteric knowledge.
 
-No. The differences are:
+No, in general this is not _that_ simple.  Please browse the archives of
+bcm43xx-dev, for example.
 
-Built in: The initcalls will have run, but the driver may or may not
-actually have been used, depending on whether it's used before we start
-the resume. It should probably be tested with both having been used and
-not having been used.
-Modular, loaded prior to suspending but not prior to resuming: At resume
-time, will still be in whatever config the bios puts it in. No Linux
-driver code will have touched it.
-Modular, loaded prior to suspending and resuming: Should be equivalent
-to built in (module initcalls will have run), but may vary if there's
-some difference in code/timing between being a module and built in.
-(This shouldn't happen, but that's the point to testing).
+While I agree that the support for suspend and resume _is_ generally important,
+I also admit that there are situations in which it doesn't matter and there are
+many people who won't care a whit for it.
 
-> > - modular, loaded while suspending and loaded prior to resume from disk;
-> 
-> Ok.. but I'm not sure how many people will actually test it _that_
-> thoroughly. "Try to test it" is good enough for a first version. When
-> suspend is in better shape, we can ask for more.
-
-I'd prefer to ask for what should be done from the start. Will we expect
-people to go back and retest if we change the rules, or do we prefer
-them to complain "You didn't adequately point out the testing I needed
-to do, and I got all these complaints from my users!"
-
-Regards,
-
-Nigel
-
+Greetings,
+Rafael 
