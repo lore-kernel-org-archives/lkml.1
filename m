@@ -1,72 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932915AbXBKXcW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932917AbXBKXdK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932915AbXBKXcW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Feb 2007 18:32:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932914AbXBKXcW
+	id S932917AbXBKXdK (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Feb 2007 18:33:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932920AbXBKXdK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Feb 2007 18:32:22 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:39437 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932821AbXBKXcV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Feb 2007 18:32:21 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: nigel@nigel.suspend2.net
+	Sun, 11 Feb 2007 18:33:10 -0500
+Received: from nigel.suspend2.net ([203.171.70.205]:34446 "EHLO
+	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932917AbXBKXdI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Feb 2007 18:33:08 -0500
 Subject: Re: NAK new drivers without proper power management?
-Date: Mon, 12 Feb 2007 00:29:22 +0100
-User-Agent: KMail/1.9.5
-Cc: Robert Hancock <hancockr@shaw.ca>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Pavel Machek <pavel@ucw.cz>
-References: <fa.xSKPgY66Q+DPCZ1pszFFfdrJ0To@ifi.uio.no> <200702110144.17783.rjw@sisk.pl> <1171233655.4493.78.camel@nigel.suspend2.net>
-In-Reply-To: <1171233655.4493.78.camel@nigel.suspend2.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
+Reply-To: nigel@nigel.suspend2.net
+To: Manu Abraham <abraham.manu@gmail.com>
+Cc: Willy Tarreau <w@1wt.eu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Pavel Machek <pavel@ucw.cz>, Arjan van de Ven <arjan@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>, tilman@imap.cc
+In-Reply-To: <1a297b360702111525v4f26ad4ax9af8fba45936c22f@mail.gmail.com>
+References: <1171058269.1484.64.camel@nigel.suspend2.net>
+	 <1171059433.8675.195.camel@laptopd505.fenrus.org>
+	 <20070210193851.GA3956@ucw.cz> <200702102320.39531.rjw@sisk.pl>
+	 <1171147026.19894.16.camel@nigel.suspend2.net>
+	 <20070211064636.GA12171@1wt.eu>
+	 <1171234027.4493.88.camel@nigel.suspend2.net>
+	 <1a297b360702111457k3a38eefei485f814f980e58c6@mail.gmail.com>
+	 <1171236000.4493.116.camel@nigel.suspend2.net>
+	 <1a297b360702111525v4f26ad4ax9af8fba45936c22f@mail.gmail.com>
+Content-Type: text/plain
+Date: Mon, 12 Feb 2007 10:33:06 +1100
+Message-Id: <1171236787.4493.132.camel@nigel.suspend2.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200702120029.23657.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 11 February 2007 23:40, Nigel Cunningham wrote:
-> Hi.
-> 
-> On Sun, 2007-02-11 at 01:44 +0100, Rafael J. Wysocki wrote:
-> > > Well, it's probably more acceptable than silently doing nothing and the 
-> > > device failing or locking up the machine on resume, but I couldn't agree 
-> > > more that it's not what we want to be encouraging. Perfect may be the 
-> > > enemy of the good, but "works except no power management" is hardly what 
-> > > I would call good these days, more like pretty sloppy..
-> > 
-> > I think there are situations in which it can be justified, like:
-> > - The driver is not entirely finished, but we want to merge it early, because
-> > of many potential users,
-> > - The driver has only a few users who aren't interested in the suspend/resume
-> > functionality,
-> 
-> How do you determine that? How many users have to want suspend/resume
-> functionality before you say "Ok. It has to be done now"?
+Hi.
 
-That depends on what the driver author tells us.  If he says there's only one
-such device in the world and it needs a Linux drivers, but the system in
-question will never be suspended, that will be fine, I think.  There are such
-cases already and I see no reason why there won't be any more in the future.
+On Mon, 2007-02-12 at 03:25 +0400, Manu Abraham wrote:
+> On 2/12/07, Nigel Cunningham <nigel@nigel.suspend2.net> wrote:
+> > Hi.
+> >
+> > On Mon, 2007-02-12 at 02:57 +0400, Manu Abraham wrote:
+> > > On 2/12/07, Nigel Cunningham <nigel@nigel.suspend2.net> wrote:
+> > >
+> > > > Neither am I. I'm just asking that new drivers have power management as
+> > > > standard.
+> >
+> > > What if the hardware doesn't support power management ?
+> >
+> > You would still want to do the cleanup and configuration that you'd do
+> > for module load/unload.
+> >
+> By adding dummy functions, wouldn't that just look awkward ?
 
-> > - The device is undocumented and we don't know how to make it handle the
-> > suspend/resume (we may learn that in the future or not).
-> 
-> If we know how to initialise/cleanup, we know a good portion of what is
-> needed for suspend/resume. Sure, for some video chipsets, you need more
-> (you need to know how to reprogram the whole thing after S3), but
-> they're the exception. Yes, there are other cases. But on the whole,
-> we're not talking about esoteric knowledge.
+If all you need to do is say 'I don't need to do anything' and we have a
+shared function that does that, all we're talking about doing is adding
+to your struct pci_device (or whatever)
 
-No, in general this is not _that_ simple.  Please browse the archives of
-bcm43xx-dev, for example.
+.resume = generic_empty_resume;
 
-While I agree that the support for suspend and resume _is_ generally important,
-I also admit that there are situations in which it doesn't matter and there are
-many people who won't care a whit for it.
+To me at least, that doesn't look awkward, and says cleanly and clearly
+that you've checked things over and decided you know what's required.
 
-Greetings,
-Rafael 
+Regards,
+
+Nigel
+
