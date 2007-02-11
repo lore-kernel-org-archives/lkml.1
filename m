@@ -1,99 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750860AbXBKOix@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750978AbXBKOww@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750860AbXBKOix (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Feb 2007 09:38:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750849AbXBKOix
+	id S1750978AbXBKOww (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Feb 2007 09:52:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750984AbXBKOww
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Feb 2007 09:38:53 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:37280 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750698AbXBKOiw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Feb 2007 09:38:52 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Willy Tarreau <w@1wt.eu>
-Subject: Re: [PATCH] Re: NAK new drivers without proper power management?
-Date: Sun, 11 Feb 2007 15:36:19 +0100
-User-Agent: KMail/1.9.5
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>,
-       Daniel Barkalow <barkalow@iabervon.org>, nigel@nigel.suspend2.net,
-       Robert Hancock <hancockr@shaw.ca>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Jeff Garzik <jeff@garzik.org>, Pavel Machek <pavel@ucw.cz>,
-       pm list <linux-pm@lists.osdl.org>
-References: <fa.xSKPgY66Q+DPCZ1pszFFfdrJ0To@ifi.uio.no> <200702111450.49736.rjw@sisk.pl> <20070211135708.GC1868@1wt.eu>
-In-Reply-To: <20070211135708.GC1868@1wt.eu>
+	Sun, 11 Feb 2007 09:52:52 -0500
+Received: from wx-out-0506.google.com ([66.249.82.224]:50974 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750907AbXBKOwv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Feb 2007 09:52:51 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=TzBbsazpilhFLCmpuhnvF5h9D+qAuyMMjuU0nFSUiAuQgzRmJa/4WUIH07Xim2k5gAnX6EEf55Jj+WeaL69KtJt9fcUvbWcJ9ncCsrBlwPBTj1IP/cuQtl1O8p6yy0+htM6y82+nWhIXPOTSkyq9sZJrQkQ2MYMitsJgPDnzjMQ=
+Message-ID: <b637ec0b0702110652t67a4d9b5r74c85d69c3c7ca9b@mail.gmail.com>
+Date: Sun, 11 Feb 2007 09:52:50 -0500
+From: "Fabio Comolli" <fabio.comolli@gmail.com>
+To: "Brad Campbell" <brad@wasp.net.au>, "Pierre Ossman" <drzeus-mmc@drzeus.cx>,
+       "Alex Dubov" <oakad@yahoo.com>
+Subject: Re: Recent and not-so problems with tifm_sd driver - one more
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <45CEB1C9.5010103@wasp.net.au>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200702111536.20871.rjw@sisk.pl>
+References: <113489.35158.qm@web36703.mail.mud.yahoo.com>
+	 <45CDC22B.6040408@drzeus.cx> <45CEB1C9.5010103@wasp.net.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 11 February 2007 14:57, Willy Tarreau wrote:
-> On Sun, Feb 11, 2007 at 02:50:48PM +0100, Rafael J. Wysocki wrote:
-> > On Sunday, 11 February 2007 14:37, Willy Tarreau wrote:
-> > > On Sun, Feb 11, 2007 at 01:19:57PM +0000, Matthew Garrett wrote:
-> > > > On Sun, Feb 11, 2007 at 02:09:43PM +0100, Willy Tarreau wrote:
-> > > > 
-> > > > > Then change the PCI layer to do the basic PM only for known compatible
-> > > > > drivers, and modify only the known-compatible drivers to mark them
-> > > > > explicitly compatible. IMHO, it generally is a bad idea to require that
-> > > > > any driver explicitly states what it *does not* support. It's the reason
-> > > > > why users encounter problem on new features with old drivers. For instance,
-> > > > > do you know if the old ISA NE2000 driver breaks suspend ? I don't know,
-> > > > > but I would at least expect it not to support it by default. It's best
-> > > > > to announce what *is* supported and consider everything unimplemented
-> > > > > otherwise explicitly stated.
-> > > > 
-> > > > This ignores the reality of the situation, which is that many drivers 
-> > > > support suspend and resume despite the lack of any explicit 
-> > > > implementation. Changing things so they're flagged as broken when 
-> > > > they're not would be a regression.
-> > > 
-> > > Those which are identified as OK should be flagged OK. Only those for
-> > > which we have no idea should be flagged broken.
-> > 
-> > I think we don't need to flag the drivers identified as OK.  Let's flag only
-> > the suspicious ones.
-> > 
-> > Whatever we finally come up with, I'd like to avoid modifying drivers that are
-> > known good.
-> 
-> I understand your concerns, but the problem is not *current* drivers, but
-> what will happen to *new* drivers. If we make it implicit that a driver
-> is compatible, then new drivers will be promoted as good even if nothing
-> has been done for this.
+Hi.
+I can see this problem too. I have CONFIG_SYSFS_DEPRECATED set.
 
-The problem is it was made implicit long ago.  The design is "optimistic", so
-to speak, and I think we have the following choices:
+It happens only with SD cards, with MMC everything is OK.
 
-1) Change the design to make the kernel refuse to suspend if there are any
-drivers not explicitly flagged as "suspend/resume-safe".  [This looks like a
-lot of work to me, but it is generally doable provided that someone has enough
-time to do it.  Unfortunately it has to be done in one shot for all of the
-known good drivers to avoid user-observable regressions.]
+Fabio
 
-2) Require the authors of new drivers to _either_ ensure that their drivers
-will be suspend/resume-safe (and I mean both STR and STD here), _or_ explicitly
-flag the drivers as "suspend/resume-unsafe", for example by impelenting
-.suspend() routines returning -ENOSYS.  [The existing drivers can be modified
-to follow this convention gradually.]
-
-Now IMO 1) has some disadvantages:
-- Potential for introducing some regressions (eg. if we omit a known-good
-driver)
-- Necessity to review a lot of drivers simultaneously
-- Problem what to do with drivers that work for some people and don't work
-for the others (ie. if we don't flag them as known good, we will break the
-setups in which they work)
-
-The advantage of 1), however, is that we can differentiate drivers that are
-safe only with respect to the suspend to disk from those that are safe with
-respect to the suspend to RAM too (there are some).
-
-I'd prefer 2), because it's simpler to make happen.
-
-Greetings,
-Rafael
+On 2/11/07, Brad Campbell <brad@wasp.net.au> wrote:
+> Pierre Ossman wrote:
+> > Alex Dubov wrote:
+> >> One more problem (you may already know about it) - I was contacted by somebody from the hald
+> >> project and indeed I can confirm that on 2.6.20 kernel hald fails to take action on card
+> >> insertion. I can't see anything in my code so this may be a general mmc problem.
+> >> The problem is described here:
+> >> http://lists.freedesktop.org/archives/hal/2007-January/006960.html
+> >>
+> >
+> > Odd. This might be the whole sysfs restructuring thing causing problems. Can you
+> > check if that user has CONFIG_SYSFS_DEPRECATED on?
+>
+> I've tested both with and without CONFIG_SYSFS_DEPRECATED on, both fail the same way.
+> hald reports that the device has no parent and decides to ignore it.
+>
+> I've also tested both combinations against hal from ubuntu 6.06LTS and a more recent version
+>
+> brad@bklaptop2:~$ hald --version
+> HAL package version: 0.5.8.1
+>
+> Again with and without CONFIG_SYSFS_DEPRECATED and all combinations fail.
+> Hal appears to go looking for /sys/block/mmcblk0/mmcblk0p1/range
+>
+> When it can't find it, it then looks for the parent of that to check what would be
+> /sys/block/mmcblk0/range, Complains it can't find a parent for /sys/block/mmcblk0/mmcblk0p1 and just
+> proceeds to ignore the event.
+>
+> Brad
+> --
+> "Human beings, who are almost unique in having the ability
+> to learn from the experience of others, are also remarkable
+> for their apparent disinclination to do so." -- Douglas Adams
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
